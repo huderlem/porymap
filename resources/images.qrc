@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons/folder.ico</file>
+        <file>icons/folder_closed.ico</file>
+        <file>icons/folder_closed_map.ico</file>
+        <file>icons/folder_image.ico</file>
+        <file>icons/folder_map.ico</file>
+        <file>icons/image.ico</file>
+        <file>icons/map.ico</file>
+    </qresource>
+</RCC>
