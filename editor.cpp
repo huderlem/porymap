@@ -1,8 +1,10 @@
 #include "editor.h"
+#include <QPainter>
+#include <QMouseEvent>
 
 Editor::Editor()
 {
-
+    selected_events = new QList<DraggablePixmapItem*>;
 }
 
 void Editor::saveProject() {
@@ -31,53 +33,111 @@ void Editor::redo() {
 
 void Editor::setEditingMap() {
     current_view = map_item;
-    map_item->draw();
-    map_item->setVisible(true);
-    map_item->setEnabled(true);
-    collision_item->setVisible(false);
-    objects_group->setVisible(false);
+    if (map_item) {
+        map_item->draw();
+        map_item->setVisible(true);
+        map_item->setEnabled(true);
+    }
+    if (collision_item) {
+        collision_item->setVisible(false);
+    }
+    if (objects_group) {
+        objects_group->setVisible(false);
+    }
 }
 
 void Editor::setEditingCollision() {
     current_view = collision_item;
-    collision_item->draw();
-    collision_item->setVisible(true);
-    map_item->setVisible(false);
-    objects_group->setVisible(false);
+    if (collision_item) {
+        collision_item->draw();
+        collision_item->setVisible(true);
+    }
+    if (map_item) {
+        map_item->setVisible(false);
+    }
+    if (objects_group) {
+        objects_group->setVisible(false);
+    }
 }
 
 void Editor::setEditingObjects() {
-    objects_group->setVisible(true);
-    map_item->setVisible(true);
-    map_item->setEnabled(false);
-    collision_item->setVisible(false);
+    current_view = map_item;
+    if (objects_group) {
+        objects_group->setVisible(true);
+    }
+    if (map_item) {
+        map_item->setVisible(true);
+        map_item->setEnabled(false);
+    }
+    if (collision_item) {
+        collision_item->setVisible(false);
+    }
 }
 
 void Editor::setMap(QString map_name) {
     if (map_name.isNull()) {
         return;
     }
-    map = project->getMap(map_name);
-    displayMap();
+    if (project) {
+        map = project->loadMap(map_name);
+        displayMap();
+        selected_events->clear();
+        updateSelectedObjects();
+    }
+}
+
+void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item) {
+    if (map_edit_mode == "paint") {
+        item->paint(event);
+    } else if (map_edit_mode == "fill") {
+        item->floodFill(event);
+    } else if (map_edit_mode == "pick") {
+        item->pick(event);
+    } else if (map_edit_mode == "select") {
+        item->select(event);
+    }
+}
+void Editor::mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixmapItem *item) {
+    if (map_edit_mode == "paint") {
+        item->paint(event);
+    } else if (map_edit_mode == "fill") {
+        item->floodFill(event);
+    } else if (map_edit_mode == "pick") {
+        item->pick(event);
+    } else if (map_edit_mode == "select") {
+        item->select(event);
+    }
 }
 
 void Editor::displayMap() {
     scene = new QGraphicsScene;
 
     map_item = new MapPixmapItem(map);
+    connect(map_item, SIGNAL(mouseEvent(QGraphicsSceneMouseEvent*,MapPixmapItem*)),
+            this, SLOT(mouseEvent_map(QGraphicsSceneMouseEvent*,MapPixmapItem*)));
+
     map_item->draw();
     scene->addItem(map_item);
 
     collision_item = new CollisionPixmapItem(map);
+    connect(collision_item, SIGNAL(mouseEvent(QGraphicsSceneMouseEvent*,CollisionPixmapItem*)),
+            this, SLOT(mouseEvent_collision(QGraphicsSceneMouseEvent*,CollisionPixmapItem*)));
+
     collision_item->draw();
     scene->addItem(collision_item);
 
-    objects_group = new QGraphicsItemGroup;
+    objects_group = new EventGroup;
     scene->addItem(objects_group);
 
-    map_item->setVisible(false);
-    collision_item->setVisible(false);
-    objects_group->setVisible(false);
+    if (map_item) {
+        map_item->setVisible(false);
+    }
+    if (collision_item) {
+        collision_item->setVisible(false);
+    }
+    if (objects_group) {
+        objects_group->setVisible(false);
+    }
 
     int tw = 16;
     int th = 16;
@@ -122,13 +182,22 @@ void Editor::displayMapObjects() {
         objects_group->removeFromGroup(child);
     }
 
-    project->loadObjectPixmaps(map->object_events);
-    for (int i = 0; i < map->object_events.length(); i++) {
-        ObjectEvent *object_event = map->object_events.value(i);
-        DraggablePixmapItem *object = new DraggablePixmapItem(object_event);
-        objects_group->addToGroup(object);
+    QList<Event *> events = map->getAllEvents();
+    project->loadObjectPixmaps(events);
+    for (Event *event : events) {
+        addMapObject(event);
     }
-    objects_group->setFiltersChildEvents(false);
+    //objects_group->setFiltersChildEvents(false);
+    objects_group->setHandlesChildEvents(false);
+
+    emit objectsChanged();
+}
+
+DraggablePixmapItem *Editor::addMapObject(Event *event) {
+    DraggablePixmapItem *object = new DraggablePixmapItem(event);
+    object->editor = this;
+    objects_group->addToGroup(object);
+    return object;
 }
 
 void Editor::displayMapConnections() {
@@ -139,7 +208,7 @@ void Editor::displayMapConnections() {
         Map *connected_map = project->getMap(connection->map_name);
         QPixmap pixmap = connected_map->renderConnection(*connection);
         int offset = connection->offset.toInt(nullptr, 0);
-        int x, y;
+        int x = 0, y = 0;
         if (connection->direction == "up") {
             x = offset * 16;
             y = -pixmap.height();
@@ -154,6 +223,7 @@ void Editor::displayMapConnections() {
             y = offset * 16;
         }
         QGraphicsPixmapItem *item = new QGraphicsPixmapItem(pixmap);
+        item->setZValue(-1);
         item->setX(x);
         item->setY(y);
         scene->addItem(item);
@@ -167,11 +237,14 @@ void Editor::displayMapBorder() {
         QGraphicsPixmapItem *item = new QGraphicsPixmapItem(pixmap);
         item->setX(x * 16);
         item->setY(y * 16);
-        item->setZValue(-1);
+        item->setZValue(-2);
         scene->addItem(item);
     }
 }
 
+void MetatilesPixmapItem::paintTileChanged(Map *map) {
+    draw();
+}
 
 void MetatilesPixmapItem::draw() {
     setPixmap(map->renderMetatiles());
@@ -179,7 +252,7 @@ void MetatilesPixmapItem::draw() {
 
 void MetatilesPixmapItem::pick(uint tile) {
     map->paint_tile = tile;
-    draw();
+    emit map->paintTileChanged(map);
 }
 
 void MetatilesPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
@@ -192,6 +265,9 @@ void MetatilesPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     if ((x >= 0 && x < width) && (y >=0 && y < height)) {
         pick(y * width + x);
     }
+}
+void MetatilesPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
+    mousePressEvent(event);
 }
 void MetatilesPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
     mousePressEvent(event);
@@ -206,7 +282,10 @@ void MapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
         Block *block = map->getBlock(x, y);
         if (block) {
             block->tile = map->paint_tile;
-            map->setBlock(x, y, *block);
+            map->_setBlock(x, y, *block);
+        }
+        if (event->type() == QEvent::GraphicsSceneMouseRelease) {
+            map->commit();
         }
         draw();
     }
@@ -222,45 +301,95 @@ void MapPixmapItem::floodFill(QGraphicsSceneMouseEvent *event) {
     }
 }
 
-void MapPixmapItem::draw() {
-    setPixmap(map->render());
-}
-
-void MapPixmapItem::undo() {
-    map->undo();
-    draw();
-}
-
-void MapPixmapItem::redo() {
-    map->redo();
-    draw();
-}
-
-void MapPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
-    active = true;
-    if (event->button() == Qt::RightButton) {
-        right_click = true;
-        floodFill(event);
-    } else {
-        right_click = false;
-        paint(event);
+void MapPixmapItem::pick(QGraphicsSceneMouseEvent *event) {
+    QPointF pos = event->pos();
+    int x = (int)(pos.x()) / 16;
+    int y = (int)(pos.y()) / 16;
+    Block *block = map->getBlock(x, y);
+    if (block) {
+        map->paint_tile = block->tile;
+        emit map->paintTileChanged(map);
     }
 }
-void MapPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
-    if (active) {
-        if (right_click) {
-            floodFill(event);
-        } else {
-            paint(event);
+
+#define SWAP(a, b) do { if (a != b) { a ^= b; b ^= a; a ^= b; } } while (0)
+
+void MapPixmapItem::select(QGraphicsSceneMouseEvent *event) {
+    QPointF pos = event->pos();
+    int x = (int)(pos.x()) / 16;
+    int y = (int)(pos.y()) / 16;
+    if (event->type() == QEvent::GraphicsSceneMousePress) {
+        selection_origin = QPoint(x, y);
+        selection.clear();
+    } else if (event->type() == QEvent::GraphicsSceneMouseMove) {
+        if (event->buttons() & Qt::LeftButton) {
+            selection.clear();
+            selection.append(QPoint(x, y));
+        }
+    } else if (event->type() == QEvent::GraphicsSceneMouseRelease) {
+        if (!selection.isEmpty()) {
+            QPoint pos = selection.last();
+            int x1 = selection_origin.x();
+            int y1 = selection_origin.y();
+            int x2 = pos.x();
+            int y2 = pos.y();
+            if (x1 > x2) SWAP(x1, x2);
+            if (y1 > y2) SWAP(y1, y2);
+            selection.clear();
+            for (int y = y1; y <= y2; y++) {
+                for (int x = x1; x <= x2; x++) {
+                    selection.append(QPoint(x, y));
+                }
+            }
+            qDebug() << QString("selected (%1, %2) -> (%3, %4)").arg(x1).arg(y1).arg(x2).arg(y2);
         }
     }
 }
+
+void MapPixmapItem::draw() {
+    if (map) {
+        setPixmap(map->render());
+    }
+}
+
+void MapPixmapItem::undo() {
+    if (map) {
+        map->undo();
+        draw();
+    }
+}
+
+void MapPixmapItem::redo() {
+    if (map) {
+        map->redo();
+        draw();
+    }
+}
+
+void MapPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+    emit mouseEvent(event, this);
+}
+void MapPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
+    emit mouseEvent(event, this);
+}
 void MapPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
-    active = false;
+    emit mouseEvent(event, this);
+}
+
+void CollisionPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+    emit mouseEvent(event, this);
+}
+void CollisionPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
+    emit mouseEvent(event, this);
+}
+void CollisionPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
+    emit mouseEvent(event, this);
 }
 
 void CollisionPixmapItem::draw() {
-    setPixmap(map->renderCollision());
+    if (map) {
+        setPixmap(map->renderCollision());
+    }
 }
 
 void CollisionPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
@@ -276,7 +405,10 @@ void CollisionPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
             if (map->paint_elevation >= 0) {
                 block->elevation = map->paint_elevation;
             }
-            map->setBlock(x, y, *block);
+            map->_setBlock(x, y, *block);
+        }
+        if (event->type() == QEvent::GraphicsSceneMouseRelease) {
+            map->commit();
         }
         draw();
     }
@@ -300,25 +432,177 @@ void CollisionPixmapItem::floodFill(QGraphicsSceneMouseEvent *event) {
     }
 }
 
+void CollisionPixmapItem::pick(QGraphicsSceneMouseEvent *event) {
+    QPointF pos = event->pos();
+    int x = (int)(pos.x()) / 16;
+    int y = (int)(pos.y()) / 16;
+    Block *block = map->getBlock(x, y);
+    if (block) {
+        map->paint_collision = block->collision;
+        map->paint_elevation = block->elevation;
+        emit map->paintCollisionChanged(map);
+    }
+}
+
 void DraggablePixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *mouse) {
     active = true;
-    last_x = mouse->pos().x() / 16;
-    last_y = mouse->pos().y() / 16;
-    qDebug() << event->x_ + ", " + event->y_;
+    clicking = true;
+    last_x = (mouse->pos().x() + this->pos().x()) / 16;
+    last_y = (mouse->pos().y() + this->pos().y()) / 16;
+    //qDebug() << QString("(%1, %2)").arg(event->get("x")).arg(event->get("y"));
+}
+
+void DraggablePixmapItem::move(int x, int y) {
+    event->setX(event->x() + x);
+    event->setY(event->y() + y);
+    updatePosition();
+    emitPositionChanged();
 }
 
 void DraggablePixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *mouse) {
     if (active) {
-        int x = mouse->pos().x() / 16;
-        int y = mouse->pos().y() / 16;
+        int x = (mouse->pos().x() + this->pos().x()) / 16;
+        int y = (mouse->pos().y() + this->pos().y()) / 16;
         if (x != last_x || y != last_y) {
-            event->setX(event->x() + x - last_x);
-            event->setY(event->y() + y - last_y);
-            update();
+            clicking = false;
+            if (editor->selected_events->contains(this)) {
+                for (DraggablePixmapItem *item : *editor->selected_events) {
+                    item->move(x - last_x, y - last_y);
+                }
+            } else {
+                move(x - last_x, y - last_y);
+            }
+            last_x = x;
+            last_y = y;
+            //qDebug() << QString("(%1, %2)").arg(event->get("x")).arg(event->get("x"));
         }
     }
 }
 
 void DraggablePixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouse) {
+    if (clicking) {
+        this->editor->selectMapObject(this, mouse->modifiers() & Qt::ControlModifier);
+        this->editor->updateSelectedObjects();
+    }
     active = false;
+}
+
+QList<DraggablePixmapItem *> *Editor::getObjects() {
+    QList<DraggablePixmapItem *> *list = new QList<DraggablePixmapItem *>;
+    for (Event *event : map->getAllEvents()) {
+        for (QGraphicsItem *child : objects_group->childItems()) {
+            DraggablePixmapItem *item = (DraggablePixmapItem *)child;
+            if (item->event == event) {
+                list->append(item);
+                break;
+            }
+        }
+    }
+    return list;
+}
+
+void Editor::redrawObject(DraggablePixmapItem *item) {
+    if (item) {
+        item->setPixmap(item->event->pixmap);
+        if (selected_events && selected_events->contains(item)) {
+            QImage image = item->pixmap().toImage();
+            QPainter painter(&image);
+            painter.setPen(QColor(250, 100, 25));
+            painter.drawRect(0, 0, image.width() - 1, image.height() - 1);
+            painter.end();
+            item->setPixmap(QPixmap::fromImage(image));
+        }
+    }
+}
+
+void Editor::updateSelectedObjects() {
+    for (DraggablePixmapItem *item : *(getObjects())) {
+        redrawObject(item);
+    }
+    emit selectedObjectsChanged();
+}
+
+void Editor::selectMapObject(DraggablePixmapItem *object) {
+    selectMapObject(object, false);
+}
+
+void Editor::selectMapObject(DraggablePixmapItem *object, bool toggle) {
+    if (selected_events && object) {
+        if (selected_events->contains(object)) {
+            if (toggle) {
+                selected_events->removeOne(object);
+            }
+        } else {
+            if (!toggle) {
+                selected_events->clear();
+            }
+            selected_events->append(object);
+        }
+        updateSelectedObjects();
+    }
+}
+
+DraggablePixmapItem* Editor::addNewEvent() {
+    return addNewEvent("object");
+}
+
+DraggablePixmapItem* Editor::addNewEvent(QString event_type) {
+    if (project && map) {
+        Event *event = new Event;
+        event->put("map_name", map->name);
+        event->put("event_type", event_type);
+        map->addEvent(event);
+        project->loadObjectPixmaps(map->getAllEvents());
+        DraggablePixmapItem *object = addMapObject(event);
+
+        return object;
+    }
+    return NULL;
+}
+
+void Editor::deleteEvent(Event *event) {
+    Map *map = project->getMap(event->get("map_name"));
+    if (map) {
+        map->removeEvent(event);
+    }
+    //selected_events->removeAll(event);
+    //updateSelectedObjects();
+}
+
+
+// dunno how to detect bubbling. QMouseEvent::isAccepted seems to always be true
+// check if selected_events changed instead. this has the side effect of deselecting
+// when you click on a selected event, since selected_events doesn't change.
+
+QList<DraggablePixmapItem *> selected_events_test;
+bool clicking = false;
+
+void Editor::objectsView_onMousePress(QMouseEvent *event) {
+    clicking = true;
+    selected_events_test = *selected_events;
+}
+
+void Editor::objectsView_onMouseMove(QMouseEvent *event) {
+    clicking = false;
+}
+
+void Editor::objectsView_onMouseRelease(QMouseEvent *event) {
+    if (clicking) {
+        if (selected_events_test.length()) {
+            if (selected_events_test.length() == selected_events->length()) {
+                bool deselect = true;
+                for (int i = 0; i < selected_events_test.length(); i++) {
+                    if (selected_events_test.at(i) != selected_events->at(i)) {
+                        deselect = false;
+                        break;
+                    }
+                }
+                if (deselect) {
+                    selected_events->clear();
+                    updateSelectedObjects();
+                }
+            }
+        }
+        clicking = false;
+    }
 }

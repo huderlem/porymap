@@ -13,12 +13,13 @@ public:
     explicit Blockdata(QObject *parent = 0);
 
 public:
-    QList<Block> *blocks;
+    QList<Block> *blocks = NULL;
     void addBlock(uint16_t);
     void addBlock(Block);
     QByteArray serialize();
     void copyFrom(Blockdata*);
     Blockdata* copy();
+    bool equals(Blockdata *);
 
 signals:
 

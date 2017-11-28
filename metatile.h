@@ -9,7 +9,7 @@ class Metatile
 public:
     Metatile();
 public:
-    QList<Tile> *tiles;
+    QList<Tile> *tiles = NULL;
     int attr;
 };
 

@@ -15,12 +15,17 @@ Project::Project()
 {
     groupNames = new QStringList;
     groupedMapNames = new QList<QStringList*>;
+    mapNames = new QStringList;
     map_cache = new QMap<QString, Map*>;
     tileset_cache = new QMap<QString, Tileset*>;
 }
 
 QString Project::getProjectTitle() {
-    return root.section('/', -1);
+    if (!root.isNull()) {
+        return root.section('/', -1);
+    } else {
+        return QString();
+    }
 }
 
 Map* Project::loadMap(QString map_name) {
@@ -35,6 +40,7 @@ Map* Project::loadMap(QString map_name) {
     readMapEvents(map);
     loadMapConnections(map);
     map->commit();
+    map->history.save();
 
     map_cache->insert(map_name, map);
     return map;
@@ -43,9 +49,9 @@ Map* Project::loadMap(QString map_name) {
 void Project::loadMapConnections(Map *map) {
     map->connections.clear();
     if (!map->connections_label.isNull()) {
-        QString path = root + QString("/data/maps/%1/connections.s").arg(map->name);
+        QString path = root + QString("/data/maps/%1/connections.inc").arg(map->name);
         QString text = readTextFile(path);
-        if (text != NULL) {
+        if (!text.isNull()) {
             QList<QStringList> *commands = parse(text);
             QStringList *list = getLabelValues(commands, map->connections_label);
 
@@ -114,7 +120,10 @@ void Project::readMapHeader(Map* map) {
     QString label = map->name;
     Asm *parser = new Asm;
 
-    QString header_text = readTextFile(root + "/data/maps/" + label + "/header.s");
+    QString header_text = readTextFile(root + "/data/maps/" + label + "/header.inc");
+    if (header_text.isNull()) {
+        return;
+    }
     QStringList *header = getLabelValues(parser->parse(header_text), label);
     map->attributes_label = header->value(0);
     map->events_label = header->value(1);
@@ -133,7 +142,7 @@ void Project::readMapHeader(Map* map) {
 
 void Project::saveMapHeader(Map *map) {
     QString label = map->name;
-    QString header_path = root + "/data/maps/" + label + "/header.s";
+    QString header_path = root + "/data/maps/" + label + "/header.inc";
     QString text = "";
     text += QString("%1::\n").arg(label);
     text += QString("\t.4byte %1\n").arg(map->attributes_label);
@@ -155,7 +164,10 @@ void Project::saveMapHeader(Map *map) {
 void Project::readMapAttributes(Map* map) {
     Asm *parser = new Asm;
 
-    QString assets_text = readTextFile(root + "/data/maps/_assets.s");
+    QString assets_text = readTextFile(root + "/data/maps/_assets.inc");
+    if (assets_text.isNull()) {
+        return;
+    }
     QStringList *attributes = getLabelValues(parser->parse(assets_text), map->attributes_label);
     map->width = attributes->value(0);
     map->height = attributes->value(1);
@@ -173,7 +185,7 @@ void Project::getTilesets(Map* map) {
 Tileset* Project::loadTileset(QString label) {
     Asm *parser = new Asm;
 
-    QString headers_text = readTextFile(root + "/data/tilesets/headers.s");
+    QString headers_text = readTextFile(root + "/data/tilesets/headers.inc");
     QStringList *values = getLabelValues(parser->parse(headers_text), label);
     Tileset *tileset = new Tileset;
     tileset->name = label;
@@ -193,7 +205,7 @@ Tileset* Project::loadTileset(QString label) {
 }
 
 QString Project::getBlockdataPath(Map* map) {
-    QString text = readTextFile(root + "/data/maps/_assets.s");
+    QString text = readTextFile(root + "/data/maps/_assets.inc");
     QStringList *values = getLabelValues(parse(text), map->blockdata_label);
     QString path;
     if (!values->isEmpty()) {
@@ -205,7 +217,7 @@ QString Project::getBlockdataPath(Map* map) {
 }
 
 QString Project::getMapBorderPath(Map *map) {
-    QString text = readTextFile(root + "/data/maps/_assets.s");
+    QString text = readTextFile(root + "/data/maps/_assets.inc");
     QStringList *values = getLabelValues(parse(text), map->border_label);
     QString path;
     if (!values->isEmpty()) {
@@ -229,6 +241,7 @@ void Project::loadMapBorder(Map *map) {
 void Project::saveBlockdata(Map* map) {
     QString path = getBlockdataPath(map);
     writeBlockdata(path, map->blockdata);
+    map->history.save();
 }
 
 void Project::writeBlockdata(QString path, Blockdata *blockdata) {
@@ -251,14 +264,18 @@ void Project::saveAllMaps() {
 void Project::saveMap(Map *map) {
     saveBlockdata(map);
     saveMapHeader(map);
+    saveMapEvents(map);
 }
 
 void Project::loadTilesetAssets(Tileset* tileset) {
     Asm* parser = new Asm;
     QString category = (tileset->is_secondary == "TRUE") ? "secondary" : "primary";
+    if (tileset->name.isNull()) {
+        return;
+    }
     QString dir_path = root + "/data/tilesets/" + category + "/" + tileset->name.replace("gTileset_", "").toLower();
 
-    QString graphics_text = readTextFile(root + "/data/tilesets/graphics.s");
+    QString graphics_text = readTextFile(root + "/data/tilesets/graphics.inc");
     QList<QStringList> *graphics = parser->parse(graphics_text);
     QStringList *tiles_values = getLabelValues(graphics, tileset->tiles_label);
     QStringList *palettes_values = getLabelValues(graphics, tileset->palettes_label);
@@ -288,7 +305,7 @@ void Project::loadTilesetAssets(Tileset* tileset) {
 
     QString metatiles_path;
     QString metatile_attrs_path;
-    QString metatiles_text = readTextFile(root + "/data/tilesets/metatiles.s");
+    QString metatiles_text = readTextFile(root + "/data/tilesets/metatiles.inc");
     QList<QStringList> *metatiles_macros = parser->parse(metatiles_text);
     QStringList *metatiles_values = getLabelValues(metatiles_macros, tileset->metatiles_label);
     if (!metatiles_values->isEmpty()) {
@@ -328,7 +345,7 @@ void Project::loadTilesetAssets(Tileset* tileset) {
         QList<Metatile*> *metatiles = new QList<Metatile*>;
         for (int i = 0; i < num_metatiles; i++) {
             Metatile *metatile = new Metatile;
-            int index = i * 16;
+            int index = i * (2 * 4 * num_layers);
             for (int j = 0; j < 4 * num_layers; j++) {
                 uint16_t word = data[index++] & 0xff;
                 word += (data[index++] & 0xff) << 8;
@@ -342,6 +359,9 @@ void Project::loadTilesetAssets(Tileset* tileset) {
             metatiles->append(metatile);
         }
         tileset->metatiles = metatiles;
+    } else {
+        tileset->metatiles = new QList<Metatile*>;
+        qDebug() << QString("Could not open '%1'").arg(metatiles_path);
     }
 
     QFile attrs_file(metatile_attrs_path);
@@ -354,6 +374,8 @@ void Project::loadTilesetAssets(Tileset* tileset) {
             word += (data[i*2 + 1] & 0xff) << 8;
             tileset->metatiles->value(i)->attr = word;
         }
+    } else {
+        qDebug() << QString("Could not open '%1'").arg(metatile_attrs_path);
     }
 
     // palettes
@@ -377,6 +399,11 @@ void Project::loadTilesetAssets(Tileset* tileset) {
                 QRgb color = qRgb(red * 8, green * 8, blue * 8);
                 palette.prepend(color);
             }
+        } else {
+            for (int j = 0; j < 16; j++) {
+                palette.append(qRgb(j * 16, j * 16, j * 16));
+            }
+            qDebug() << QString("Could not open '%1'").arg(path);
         }
         //qDebug() << path;
         palettes->append(palette);
@@ -420,7 +447,8 @@ QString Project::readTextFile(QString path) {
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly)) {
         //QMessageBox::information(0, "Error", QString("Could not open '%1': ").arg(path) + file.errorString());
-        return NULL;
+        qDebug() << QString("Could not open '%1': ").arg(path) + file.errorString();
+        return QString();
     }
     QTextStream in(&file);
     QString text = "";
@@ -434,12 +462,14 @@ void Project::saveTextFile(QString path, QString text) {
     QFile file(path);
     if (file.open(QIODevice::WriteOnly)) {
         file.write(text.toUtf8());
+    } else {
+        qDebug() << QString("Could not open '%1' for writing: ").arg(path) + file.errorString();
     }
 }
 
 void Project::readMapGroups() {
-    QString text = readTextFile(root + "/data/maps/_groups.s");
-    if (text == NULL) {
+    QString text = readTextFile(root + "/data/maps/_groups.inc");
+    if (text.isNull()) {
         return;
     }
     Asm *parser = new Asm;
@@ -466,12 +496,13 @@ void Project::readMapGroups() {
         }
     }
 
-    QList<QStringList*> *maps = new QList<QStringList*>;
+    QList<QStringList*> *groupedMaps = new QList<QStringList*>;
     for (int i = 0; i < groups->length(); i++) {
         QStringList *list = new QStringList;
-        maps->append(list);
+        groupedMaps->append(list);
     }
 
+    QStringList *maps = new QStringList;
     int group = -1;
     for (int i = 0; i < commands->length(); i++) {
         QStringList params = commands->value(i);
@@ -481,15 +512,17 @@ void Project::readMapGroups() {
         } else if (macro == ".4byte") {
             if (group != -1) {
                 for (int j = 1; j < params.length(); j++) {
-                    QStringList *list = maps->value(group);
+                    QStringList *list = groupedMaps->value(group);
                     list->append(params.value(j));
+                    maps->append(params.value(j));
                 }
             }
         }
     }
 
     groupNames = groups;
-    groupedMapNames = maps;
+    groupedMapNames = groupedMaps;
+    mapNames = maps;
 }
 
 QList<QStringList>* Project::parse(QString text) {
@@ -544,8 +577,8 @@ QStringList Project::getBattleScenes() {
 
 QStringList Project::getSongNames() {
     QStringList names;
-    QString text = readTextFile(root + "/constants/songs.s");
-    if (text != NULL) {
+    QString text = readTextFile(root + "/constants/songs.inc");
+    if (!text.isNull()) {
         QList<QStringList> *commands = parse(text);
         for (int i = 0; i < commands->length(); i++) {
             QStringList params = commands->value(i);
@@ -560,8 +593,8 @@ QStringList Project::getSongNames() {
 
 QString Project::getSongName(int value) {
     QStringList names;
-    QString text = readTextFile(root + "/constants/songs.s");
-    if (text != NULL) {
+    QString text = readTextFile(root + "/constants/songs.inc");
+    if (!text.isNull()) {
         QList<QStringList> *commands = parse(text);
         for (int i = 0; i < commands->length(); i++) {
             QStringList params = commands->value(i);
@@ -578,8 +611,8 @@ QString Project::getSongName(int value) {
 
 QMap<QString, int> Project::getMapObjGfxConstants() {
     QMap<QString, int> constants;
-    QString text = readTextFile(root + "/constants/map_object_constants.s");
-    if (text != NULL) {
+    QString text = readTextFile(root + "/constants/map_object_constants.inc");
+    if (!text.isNull()) {
         QList<QStringList> *commands = parse(text);
         for (int i = 0; i < commands->length(); i++) {
             QStringList params = commands->value(i);
@@ -602,9 +635,9 @@ QString Project::fixGraphicPath(QString path) {
     return path;
 }
 
-void Project::loadObjectPixmaps(QList<ObjectEvent*> objects) {
+void Project::loadObjectPixmaps(QList<Event*> objects) {
     bool needs_update = false;
-    for (ObjectEvent *object : objects) {
+    for (Event *object : objects) {
         if (object->pixmap.isNull()) {
             needs_update = true;
             break;
@@ -616,62 +649,152 @@ void Project::loadObjectPixmaps(QList<ObjectEvent*> objects) {
 
     QMap<QString, int> constants = getMapObjGfxConstants();
 
-    QString pointers_path = root + "/data/graphics/field_objects/map_object_graphics_info_pointers.s";
-    QString pointers_text = readTextFile(pointers_path);
-    if (pointers_text == NULL) {
-        return;
-    }
-    QString info_path = root + "/data/graphics/field_objects/map_object_graphics_info.s";
-    QString info_text = readTextFile(info_path);
-    if (info_text == NULL) {
-        return;
-    }
-    QString pic_path = root + "/data/graphics/field_objects/map_object_pic_tables.s";
-    QString pic_text = readTextFile(pic_path);
-    if (pic_text == NULL) {
-        return;
-    }
-    QString assets_path = root + "/data/graphics/field_objects/map_object_graphics.s";
-    QString assets_text = readTextFile(assets_path);
-    if (assets_text == NULL) {
-        return;
-    }
+    QString pointers_text = readTextFile(root + "/include/data/field_map_obj/map_object_graphics_info_pointers.h");
+    QString info_text = readTextFile(root + "/include/data/field_map_obj/map_object_graphics_info.h");
+    QString pic_text = readTextFile(root + "/include/data/field_map_obj/map_object_pic_tables.h");
+    QString assets_text = readTextFile(root + "/src/field_map_obj.c");
 
-    QStringList *pointers = getLabelValues(parse(pointers_text), "gMapObjectGraphicsInfoPointers");
-    QList<QStringList> *info_commands = parse(info_text);
-    QList<QStringList> *asset_commands = parse(assets_text);
-    QList<QStringList> *pic_commands = parse(pic_text);
+    QStringList pointers = readCArray(pointers_text, "gMapObjectGraphicsInfoPointers");
 
-    for (ObjectEvent *object : objects) {
+    for (Event *object : objects) {
         if (!object->pixmap.isNull()) {
             continue;
         }
-        int id = constants.value(object->sprite);
-        QString info_label = pointers->value(id);
-        QStringList *info = getLabelValues(info_commands, info_label);
-        QString pic_label = info->value(12);
+        QString event_type = object->get("event_type");
+        if (event_type == "object") {
+            object->pixmap = QPixmap(":/images/Entities_16x16.png").copy(0, 0, 16, 16);
+        } else if (event_type == "warp") {
+            object->pixmap = QPixmap(":/images/Entities_16x16.png").copy(16, 0, 16, 16);
+        } else if (event_type == "trap") {
+            object->pixmap = QPixmap(":/images/Entities_16x16.png").copy(32, 0, 16, 16);
+        } else if (event_type == "sign" || event_type == "hidden item") {
+            object->pixmap = QPixmap(":/images/Entities_16x16.png").copy(48, 0, 16, 16);
+        }
 
-        QList<QStringList> *pic = getLabelMacros(pic_commands, pic_label);
-        for (int i = 0; i < pic->length(); i++) {
-            QStringList command = pic->value(i);
-            QString macro = command.value(0);
-            if (macro == "obj_frame_tiles") {
-                QString label = command.value(1);
-                QStringList *incbins = getLabelValues(asset_commands, label);
-                QString path = incbins->value(0).section('"', 1, 1);
+        if (event_type == "object") {
+
+            int sprite_id = constants.value(object->get("sprite"));
+
+            QString info_label = pointers.value(sprite_id).replace("&", "");
+            QString pic_label = readCArray(info_text, info_label).value(14);
+            QString gfx_label = readCArray(pic_text, pic_label).value(0);
+            gfx_label = gfx_label.section(QRegExp("[\\(\\)]"), 1, 1);
+            QString path = readCIncbin(assets_text, gfx_label);
+
+            if (!path.isNull()) {
                 path = fixGraphicPath(path);
                 QPixmap pixmap(root + "/" + path);
-                object->pixmap = pixmap;
-                break;
+                if (!pixmap.isNull()) {
+                    object->pixmap = pixmap;
+                }
             }
+
         }
     }
+
+}
+
+void Project::saveMapEvents(Map *map) {
+    QString path = root + QString("/data/maps/events/%1.inc").arg(map->name);
+    QString text = "";
+
+    text += QString("%1::\n").arg(map->object_events_label);
+    for (int i = 0; i < map->events["object"].length(); i++) {
+        Event *object_event = map->events["object"].value(i);
+        int radius_x = object_event->getInt("radius_x");
+        int radius_y = object_event->getInt("radius_y");
+        QString radius = QString("%1").arg((radius_x & 0xf) + ((radius_y & 0xf) << 4));
+        uint16_t x = object_event->getInt("x");
+        uint16_t y = object_event->getInt("y");
+
+        text += QString("\tobject_event %1").arg(i + 1);
+        text += QString(", %1").arg(object_event->get("sprite"));
+        text += QString(", %1").arg(object_event->get("replacement"));
+        text += QString(", %1").arg(x & 0xff);
+        text += QString(", %1").arg((x >> 8) & 0xff);
+        text += QString(", %1").arg(y & 0xff);
+        text += QString(", %1").arg((y >> 8) & 0xff);
+        text += QString(", %1").arg(object_event->get("elevation"));
+        text += QString(", %1").arg(object_event->get("behavior"));
+        text += QString(", %1").arg(radius);
+        text += QString(", 0");
+        text += QString(", %1").arg(object_event->get("property"));
+        text += QString(", 0");
+        text += QString(", %1").arg(object_event->get("sight_radius"));
+        text += QString(", 0");
+        text += QString(", %1").arg(object_event->get("script_label"));
+        text += QString(", %1").arg(object_event->get("event_flag"));
+        text += QString(", 0");
+        text += QString(", 0");
+        text += "\n";
+    }
+    text += "\n";
+
+    text += QString("%1::\n").arg(map->warps_label);
+    for (Event *warp : map->events["warp"]) {
+        text += QString("\twarp_def %1").arg(warp->get("x"));
+        text += QString(", %1").arg(warp->get("y"));
+        text += QString(", %1").arg(warp->get("elevation"));
+        text += QString(", %1").arg(warp->get("destination_warp"));
+        text += QString(", %1").arg(warp->get("destination_map"));
+        text += "\n";
+    }
+    text += "\n";
+
+    text += QString("%1::\n").arg(map->coord_events_label);
+    for (Event *coords : map->events["trap"]) {
+        text += QString("\tcoord_event %1").arg(coords->get("x"));
+        text += QString(", %1").arg(coords->get("y"));
+        text += QString(", %1").arg(coords->get("elevation"));
+        text += QString(", 0");
+        text += QString(", %1").arg(coords->get("coord_unknown1"));
+        text += QString(", %1").arg(coords->get("coord_unknown2"));
+        text += QString(", 0");
+        text += QString(", %1").arg(coords->get("script_label"));
+        text += "\n";
+    }
+    text += "\n";
+
+    text += QString("%1::\n").arg(map->bg_events_label);
+    for (Event *sign : map->events["sign"]) {
+        text += QString("\tbg_event %1").arg(sign->get("x"));
+        text += QString(", %1").arg(sign->get("y"));
+        text += QString(", %1").arg(sign->get("elevation"));
+        text += QString(", %1").arg(sign->get("type"));
+        text += QString(", 0");
+        text += QString(", %1").arg(sign->get("script_label"));
+        text += "\n";
+    }
+    for (Event *item : map->events["hidden item"]) {
+        text += QString("\tbg_event %1").arg(item->get("x"));
+        text += QString(", %1").arg(item->get("y"));
+        text += QString(", %1").arg(item->get("elevation"));
+        text += QString(", %1").arg(item->get("type"));
+        text += QString(", 0");
+        text += QString(", %1").arg(item->get("item"));
+        text += QString(", %1").arg(item->get("item_unknown5"));
+        text += QString(", %1").arg(item->get("item_unknown6"));
+        text += "\n";
+    }
+    text += "\n";
+
+    text += QString("%1::\n").arg(map->events_label);
+    text += QString("\tmap_events %1, %2, %3, %4\n")
+            .arg(map->object_events_label)
+            .arg(map->warps_label)
+            .arg(map->coord_events_label)
+            .arg(map->bg_events_label);
+
+    saveTextFile(path, text);
 }
 
 void Project::readMapEvents(Map *map) {
     // lazy
-    QString path = root + QString("/data/maps/events/%1.s").arg(map->name);
+    QString path = root + QString("/data/maps/events/%1.inc").arg(map->name);
     QString text = readTextFile(path);
+    if (text.isNull()) {
+        return;
+    }
 
     QStringList *labels = getLabelValues(parse(text), map->events_label);
     map->object_events_label = labels->value(0);
@@ -680,10 +803,11 @@ void Project::readMapEvents(Map *map) {
     map->bg_events_label = labels->value(3);
 
     QList<QStringList> *object_events = getLabelMacros(parse(text), map->object_events_label);
-    map->object_events.clear();
+    map->events["object"].clear();
     for (QStringList command : *object_events) {
         if (command.value(0) == "object_event") {
-            ObjectEvent *object = new ObjectEvent;
+            Event *object = new Event;
+            object->put("map_name", map->name);
             // This macro is not fixed as of writing, but it should take fewer args.
             bool old_macro = false;
             if (command.length() >= 20) {
@@ -692,96 +816,156 @@ void Project::readMapEvents(Map *map) {
                 command.removeAt(15);
                 command.removeAt(13);
                 command.removeAt(11);
-                command.removeAt(7);
-                command.removeAt(5);
                 command.removeAt(1); // id. not 0, but is just the index in the list of objects
                 old_macro = true;
             }
             int i = 1;
-            object->sprite = command.value(i++);
-            object->replacement = command.value(i++);
-            object->x_ = command.value(i++);
-            object->y_ = command.value(i++);
-            object->elevation_ = command.value(i++);
-            object->behavior = command.value(i++);
+            object->put("sprite", command.value(i++));
+            object->put("replacement", command.value(i++));
+            int16_t x = command.value(i++).toInt(nullptr, 0) | (command.value(i++).toInt(nullptr, 0) << 8);
+            int16_t y = command.value(i++).toInt(nullptr, 0) | (command.value(i++).toInt(nullptr, 0) << 8);
+            object->put("x", x);
+            object->put("y", y);
+            object->put("elevation", command.value(i++));
+            object->put("behavior", command.value(i++));
             if (old_macro) {
                 int radius = command.value(i++).toInt(nullptr, 0);
-                object->radius_x = QString("%1").arg(radius & 0xf);
-                object->radius_y = QString("%1").arg((radius >> 4) & 0xf);
+                object->put("radius_x", radius & 0xf);
+                object->put("radius_y", (radius >> 4) & 0xf);
             } else {
-                object->radius_x = command.value(i++);
-                object->radius_y = command.value(i++);
+                object->put("radius_x", command.value(i++));
+                object->put("radius_y", command.value(i++));
             }
-            object->property = command.value(i++);
-            object->sight_radius = command.value(i++);
-            object->script_label = command.value(i++);
-            object->event_flag = command.value(i++);
+            object->put("property", command.value(i++));
+            object->put("sight_radius", command.value(i++));
+            object->put("script_label", command.value(i++));
+            object->put("event_flag", command.value(i++));
 
-            map->object_events.append(object);
+            object->put("event_type", "object");
+            map->events["object"].append(object);
         }
     }
 
     QList<QStringList> *warps = getLabelMacros(parse(text), map->warps_label);
-    map->warps.clear();
+    map->events["warp"].clear();
     for (QStringList command : *warps) {
         if (command.value(0) == "warp_def") {
-            Warp *warp = new Warp;
+            Event *warp = new Event;
+            warp->put("map_name", map->name);
             int i = 1;
-            warp->x_ = command.value(i++);
-            warp->y_ = command.value(i++);
-            warp->elevation_ = command.value(i++);
-            warp->destination_warp = command.value(i++);
-            warp->destination_map = command.value(i++);
-            map->warps.append(warp);
+            warp->put("x", command.value(i++));
+            warp->put("y", command.value(i++));
+            warp->put("elevation", command.value(i++));
+            warp->put("destination_warp", command.value(i++));
+            warp->put("destination_map", command.value(i++));
+
+            warp->put("event_type", "warp");
+            map->events["warp"].append(warp);
         }
     }
 
     QList<QStringList> *coords = getLabelMacros(parse(text), map->coord_events_label);
-    map->coord_events.clear();
+    map->events["trap"].clear();
     for (QStringList command : *coords) {
         if (command.value(0) == "coord_event") {
-            CoordEvent *coord = new CoordEvent;
+            Event *coord = new Event;
+            coord->put("map_name", map->name);
             bool old_macro = false;
             if (command.length() >= 9) {
                 command.removeAt(7);
-                command.removeAt(6);
                 command.removeAt(4);
                 old_macro = true;
             }
             int i = 1;
-            coord->x_ = command.value(i++);
-            coord->y_ = command.value(i++);
-            coord->elevation_ = command.value(i++);
-            coord->unknown1 = command.value(i++);
-            coord->script_label = command.value(i++);
-            map->coord_events.append(coord);
+            coord->put("x", command.value(i++));
+            coord->put("y", command.value(i++));
+            coord->put("elevation", command.value(i++));
+            coord->put("coord_unknown1", command.value(i++));
+            coord->put("coord_unknown2", command.value(i++));
+            coord->put("script_label", command.value(i++));
+            //coord_unknown3
+            //coord_unknown4
+
+            coord->put("event_type", "trap");
+            map->events["trap"].append(coord);
         }
     }
 
-    QList<QStringList> *bgs = getLabelMacros(parse(text), map->warps_label);
-    map->hidden_items.clear();
-    map->signs.clear();
+    QList<QStringList> *bgs = getLabelMacros(parse(text), map->bg_events_label);
+    map->events["hidden item"].clear();
+    map->events["sign"].clear();
     for (QStringList command : *bgs) {
         if (command.value(0) == "bg_event") {
-            BGEvent *bg = new BGEvent;
+            Event *bg = new Event;
+            bg->put("map_name", map->name);
             int i = 1;
-            bg->x_ = command.value(i++);
-            bg->y_ = command.value(i++);
-            bg->elevation_ = command.value(i++);
-            bg->type = command.value(i++);
+            bg->put("x", command.value(i++));
+            bg->put("y", command.value(i++));
+            bg->put("elevation", command.value(i++));
+            bg->put("type", command.value(i++));
             i++;
-            if (bg->is_item()) {
-                HiddenItem *item = new HiddenItem(*bg);
-                item->item = command.value(i++);
-                item->unknown5 = command.value(i++);
-                item->unknown6 = command.value(i++);
-                map->hidden_items.append(item);
+            if (bg->is_hidden_item()) {
+                bg->put("item", command.value(i++));
+                bg->put("item_unknown5", command.value(i++));
+                bg->put("item_unknown6", command.value(i++));
+
+                bg->put("event_type", "hidden item");
+                map->events["hidden item"].append(bg);
             } else {
-                Sign *sign = new Sign(*bg);
-                sign->script_label = command.value(i++);
-                map->signs.append(sign);
+                bg->put("script_label", command.value(i++));
+                //sign_unknown7
+
+                bg->put("event_type", "sign");
+                map->events["sign"].append(bg);
             }
         }
     }
 
+}
+
+QStringList Project::readCArray(QString text, QString label) {
+    QStringList list;
+
+    if (label.isNull()) {
+        return list;
+    }
+
+    QRegExp *re = new QRegExp(QString("\\b%1\\b\\s*\\[?\\s*\\]?\\s*=\\s*\\{([^\\}]*)\\}").arg(label));
+    int pos = re->indexIn(text);
+    if (pos != -1) {
+        QString body = re->cap(1);
+        body = body.replace(QRegExp("\\s*"), "");
+        list = body.split(',');
+        /*
+        QRegExp *inner = new QRegExp("&?\\b([A-Za-z0-9_\\(\\)]*)\\b,");
+        int pos = 0;
+        while ((pos = inner->indexIn(body, pos)) != -1) {
+            list << inner->cap(1);
+            pos += inner->matchedLength();
+        }
+        */
+    }
+
+    return list;
+}
+
+QString Project::readCIncbin(QString text, QString label) {
+    QString path;
+
+    if (label.isNull()) {
+        return path;
+    }
+
+    QRegExp *re = new QRegExp(QString(
+        "\\b%1\\b"
+        "\\s*\\[?\\s*\\]?\\s*=\\s*"
+        "INCBIN_[US][0-9][0-9]?"
+        "\\(\"([^\"]*)\"\\)").arg(label));
+
+    int pos = re->indexIn(text);
+    if (pos != -1) {
+        path = re->cap(1);
+    }
+
+    return path;
 }

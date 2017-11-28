@@ -19,9 +19,9 @@ public:
     QString callback_label;
     QString metatile_attrs_label;
 
-    QList<QImage> *tiles;
-    QList<Metatile*> *metatiles;
-    QList<QList<QRgb>> *palettes;
+    QList<QImage> *tiles = NULL;
+    QList<Metatile*> *metatiles = NULL;
+    QList<QList<QRgb>> *palettes = NULL;
 };
 
 #endif // TILESET_H

@@ -7,5 +7,13 @@
         <file>icons/folder_map.ico</file>
         <file>icons/image.ico</file>
         <file>icons/map.ico</file>
+        <file>icons/cursor.ico</file>
+        <file>icons/fill_color.ico</file>
+        <file>icons/pencil.ico</file>
+        <file>icons/pipette.ico</file>
+        <file>images/Entities_16x16.png</file>
+        <file>icons/add.ico</file>
+        <file>icons/delete.ico</file>
+        <file>icons/viewsprites.ico</file>
     </qresource>
 </RCC>

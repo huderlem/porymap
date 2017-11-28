@@ -14,10 +14,11 @@ template <typename T>
 class History {
 public:
     QList<T> history;
-    int head;
+    int head = -1;
+    int saved = -1;
 
     History() {
-        head = -1;
+
     }
     T pop() {
         if (head > 0) {
@@ -35,8 +36,17 @@ public:
         while (head + 1 < history.length()) {
             history.removeLast();
         }
+        if (saved > head) {
+            saved = -1;
+        }
         history.append(commit);
         head++;
+    }
+    void save() {
+        saved = head;
+    }
+    bool isSaved() {
+        return saved == head;
     }
 };
 
@@ -79,18 +89,19 @@ public:
     QString tileset_primary_label;
     QString tileset_secondary_label;
 
-    Tileset *tileset_primary;
-    Tileset *tileset_secondary;
+    Tileset *tileset_primary = NULL;
+    Tileset *tileset_secondary = NULL;
 
-    Blockdata* blockdata;
+    Blockdata* blockdata = NULL;
 
 public:
     int getWidth();
     int getHeight();
-    Tileset* getBlockTileset(uint);
-    Metatile* getMetatile(uint);
-    QImage getMetatileImage(uint);
-    QImage getMetatileTile(uint);
+    Tileset* getBlockTileset(int);
+    int getBlockIndex(int index);
+    Metatile* getMetatile(int);
+    QImage getMetatileImage(int);
+    QImage getMetatileTile(int);
     QPixmap render();
     QPixmap renderMetatiles();
 
@@ -107,9 +118,9 @@ public:
     void drawSelection(int i, int w, QPainter *painter);
 
     bool blockChanged(int, Blockdata*);
-    Blockdata* cached_blockdata;
+    Blockdata* cached_blockdata = NULL;
     void cacheBlockdata();
-    Blockdata* cached_collision;
+    Blockdata* cached_collision = NULL;
     void cacheCollision();
     QImage image;
     QPixmap pixmap;
@@ -141,23 +152,30 @@ public:
     QString coord_events_label;
     QString bg_events_label;
 
-    QList<ObjectEvent*> object_events;
-    QList<Warp*> warps;
-    QList<CoordEvent*> coord_events;
-    QList<Sign*> signs;
-    QList<HiddenItem*> hidden_items;
+    QList<Event*> getAllEvents();
+    QList<Event*> getEventsByType(QString type);
+    void removeEvent(Event *event);
+    void addEvent(Event *event);
+    QMap<QString, QList<Event*>> events;
 
     QList<Connection*> connections;
     QPixmap renderConnection(Connection);
 
     QImage border_image;
     QPixmap border_pixmap;
-    Blockdata *border;
-    Blockdata *cached_border;
+    Blockdata *border = NULL;
+    Blockdata *cached_border = NULL;
     QPixmap renderBorder();
     void cacheBorder();
 
+    bool hasUnsavedChanges();
+
+    QList<QList<QRgb> > getBlockPalettes(int metatile_index);
+
 signals:
+    void paintTileChanged(Map *map);
+    void paintCollisionChanged(Map *map);
+    void mapChanged(Map *map);
 
 public slots:
 };

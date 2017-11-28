@@ -32,6 +32,8 @@ private slots:
     void undo();
     void redo();
 
+    void onMapChanged(Map *map);
+
     void on_action_Save_triggered();
     void on_tabWidget_2_currentChanged(int index);
     void on_action_Exit_triggered();
@@ -49,9 +51,23 @@ private slots:
 
     void on_actionRedo_triggered();
 
+    void on_toolButton_newObject_clicked();
+
+    void on_toolButton_deleteObject_clicked();
+
+    void updateSelectedObjects();
+
+    void on_toolButton_Paint_clicked();
+
+    void on_toolButton_Select_clicked();
+
+    void on_toolButton_Fill_clicked();
+
+    void on_toolButton_Dropper_clicked();
+
 private:
     Ui::MainWindow *ui;
-    Editor *editor;
+    Editor *editor = NULL;
     void setMap(QString);
     void populateMapList();
     QString getExistingDirectory(QString);
@@ -64,6 +80,7 @@ private:
     void updateMapList();
 
     void displayMapProperties();
+    void checkToolButtons();
 };
 
 #endif // MAINWINDOW_H

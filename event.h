@@ -3,6 +3,7 @@
 
 #include <QString>
 #include <QPixmap>
+#include <QMap>
 
 class Event
 {
@@ -11,90 +12,39 @@ public:
 
 public:
     int x() {
-        return x_.toInt(nullptr, 0);
+        return getInt("x");
     }
     int y() {
-        return y_.toInt(nullptr, 0);
+        return getInt("y");
     }
     int elevation() {
-        return elevation_.toInt(nullptr, 0);
+        return getInt("elevation");
     }
     void setX(int x) {
-        x_ = QString("%1").arg(x);
+        put("x", x);
     }
     void setY(int y) {
-        y_ = QString("%1").arg(y);
+        put("y", y);
+    }
+    QString get(QString key) {
+        return values.value(key);
+    }
+    int getInt(QString key) {
+        return values.value(key).toInt(nullptr, 0);
+    }
+    void put(QString key, int value) {
+        put(key, QString("%1").arg(value));
+    }
+    void put(QString key, QString value) {
+        values.insert(key, value);
     }
 
-    QString x_;
-    QString y_;
-    QString elevation_;
+    bool is_hidden_item() {
+        return getInt("type") >= 5;
+    }
+
+    QMap<QString, QString> values;
     QPixmap pixmap;
-};
-
-class ObjectEvent : public Event {
-public:
-    ObjectEvent();
-
-public:
-    QString sprite;
-    QString replacement; // ????
-    QString behavior;
-    QString radius_x;
-    QString radius_y;
-    QString property;
-    QString sight_radius;
-    QString script_label;
-    QString event_flag;
-};
-
-class Warp : public Event {
-public:
-    Warp();
-
-public:
-    QString destination_warp;
-    QString destination_map;
-};
-
-class CoordEvent : public Event {
-public:
-    CoordEvent();
-
-public:
-    QString unknown1;
-    QString unknown2;
-    QString unknown3;
-    QString unknown4;
-    QString script_label;
-};
-
-class BGEvent : public Event {
-public:
-    BGEvent();
-public:
-    bool is_item() {
-        return type.toInt(nullptr, 0) >= 5;
-    }
-    QString type;
-};
-
-class Sign : public BGEvent {
-public:
-    Sign();
-    Sign(const BGEvent&);
-public:
-    QString script_label;
-};
-
-class HiddenItem : public BGEvent {
-public:
-    HiddenItem();
-    HiddenItem(const BGEvent&);
-public:
-    QString item;
-    QString unknown5;
-    QString unknown6;
 };
 
 #endif // EVENT_H

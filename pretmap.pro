@@ -23,7 +23,9 @@ SOURCES += main.cpp\
     metatile.cpp \
     tile.cpp \
     event.cpp \
-    editor.cpp
+    editor.cpp \
+    objectpropertiesframe.cpp \
+    graphicsview.cpp
 
 HEADERS  += mainwindow.h \
     project.h \
@@ -35,9 +37,12 @@ HEADERS  += mainwindow.h \
     metatile.h \
     tile.h \
     event.h \
-    editor.h
+    editor.h \
+    objectpropertiesframe.h \
+    graphicsview.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    objectpropertiesframe.ui
 
 RESOURCES += \
     resources/images.qrc

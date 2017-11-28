@@ -12,14 +12,15 @@ class Project
 public:
     Project();
     QString root;
-    QStringList *groupNames;
-    QList<QStringList*> *groupedMapNames;
+    QStringList *groupNames = NULL;
+    QList<QStringList*> *groupedMapNames = NULL;
+    QStringList *mapNames = NULL;
 
     QMap<QString, Map*> *map_cache;
     Map* loadMap(QString);
     Map* getMap(QString);
 
-    QMap<QString, Tileset*> *tileset_cache;
+    QMap<QString, Tileset*> *tileset_cache = NULL;
     Tileset* loadTileset(QString);
     Tileset* getTileset(QString);
 
@@ -55,7 +56,7 @@ public:
     QStringList getMapTypes();
     QStringList getBattleScenes();
 
-    void loadObjectPixmaps(QList<ObjectEvent*> objects);
+    void loadObjectPixmaps(QList<Event*> objects);
     QMap<QString, int> getMapObjGfxConstants();
     QString fixGraphicPath(QString path);
 
@@ -64,6 +65,11 @@ public:
 
     void loadMapBorder(Map *map);
     QString getMapBorderPath(Map *map);
+
+    void saveMapEvents(Map *map);
+
+    QStringList readCArray(QString text, QString label);
+    QString readCIncbin(QString text, QString label);
 };
 
 #endif // PROJECT_H

@@ -1,4 +1,5 @@
 #include "blockdata.h"
+#include <QDebug>
 
 Blockdata::Blockdata(QObject *parent) : QObject(parent)
 {
@@ -36,4 +37,19 @@ Blockdata* Blockdata::copy() {
     Blockdata* blockdata = new Blockdata;
     blockdata->copyFrom(this);
     return blockdata;
+}
+
+bool Blockdata::equals(Blockdata *other) {
+    if (!other) {
+        return false;
+    }
+    if (blocks->length() != other->blocks->length()) {
+        return false;
+    }
+    for (int i = 0; i < blocks->length(); i++) {
+        if (blocks->value(i) != other->blocks->value(i)) {
+            return false;
+        }
+    }
+    return true;
 }

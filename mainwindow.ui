@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1019</width>
-    <height>666</height>
+    <width>1117</width>
+    <height>747</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>pretmap</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout">
@@ -60,7 +60,7 @@
         </sizepolicy>
        </property>
        <property name="currentIndex">
-        <number>1</number>
+        <number>0</number>
        </property>
        <property name="tabsClosable">
         <bool>false</bool>
@@ -76,7 +76,7 @@
         <attribute name="title">
          <string>Map</string>
         </attribute>
-        <layout class="QGridLayout" name="gridLayout_2">
+        <layout class="QGridLayout" name="gridLayout_9">
          <property name="leftMargin">
           <number>0</number>
          </property>
@@ -89,349 +89,541 @@
          <property name="bottomMargin">
           <number>0</number>
          </property>
-         <property name="spacing">
-          <number>0</number>
+         <property name="verticalSpacing">
+          <number>6</number>
          </property>
          <item row="0" column="0">
           <widget class="QSplitter" name="splitter_2">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
            </property>
-           <widget class="QScrollArea" name="scrollArea">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-              <horstretch>1</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
+           <widget class="QFrame" name="frame_9">
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
             </property>
-            <property name="widgetResizable">
-             <bool>true</bool>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
             </property>
-            <widget class="QWidget" name="scrollAreaWidgetContents">
-             <property name="geometry">
-              <rect>
-               <x>0</x>
-               <y>0</y>
-               <width>571</width>
-               <height>564</height>
-              </rect>
+            <property name="lineWidth">
+             <number>1</number>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_4">
+             <property name="leftMargin">
+              <number>0</number>
              </property>
-             <layout class="QGridLayout" name="gridLayout_4">
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
-               <number>0</number>
-              </property>
-              <property name="spacing">
-               <number>0</number>
-              </property>
-              <item row="1" column="0">
-               <spacer name="horizontalSpacer_2">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <property name="spacing">
+              <number>0</number>
+             </property>
+             <item row="0" column="0">
+              <widget class="QFrame" name="frame_6">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>32</height>
+                </size>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+               </property>
+               <widget class="QToolButton" name="toolButton_Paint">
+                <property name="enabled">
+                 <bool>true</bool>
                 </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>166</width>
-                  <height>16</height>
-                 </size>
+                <property name="geometry">
+                 <rect>
+                  <x>0</x>
+                  <y>0</y>
+                  <width>31</width>
+                  <height>31</height>
+                 </rect>
                 </property>
-               </spacer>
-              </item>
-              <item row="2" column="1">
-               <spacer name="verticalSpacer_2">
-                <property name="orientation">
-                 <enum>Qt::Vertical</enum>
+                <property name="text">
+                 <string>Paint</string>
                 </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>16</width>
-                  <height>166</height>
-                 </size>
+                <property name="icon">
+                 <iconset resource="resources/images.qrc">
+                  <normaloff>:/icons/pencil.ico</normaloff>:/icons/pencil.ico</iconset>
                 </property>
-               </spacer>
-              </item>
-              <item row="1" column="2">
-               <spacer name="horizontalSpacer">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
+                <property name="checkable">
+                 <bool>true</bool>
                 </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>166</width>
-                  <height>16</height>
-                 </size>
+                <property name="checked">
+                 <bool>true</bool>
                 </property>
-               </spacer>
-              </item>
-              <item row="0" column="1">
-               <spacer name="verticalSpacer">
-                <property name="orientation">
-                 <enum>Qt::Vertical</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>16</width>
-                  <height>166</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item row="1" column="1">
-               <widget class="QGraphicsView" name="graphicsView_Map">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="autoFillBackground">
+                <property name="autoRaise">
                  <bool>false</bool>
                 </property>
                </widget>
-              </item>
-             </layout>
-            </widget>
+               <widget class="QToolButton" name="toolButton_Select">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+                <property name="geometry">
+                 <rect>
+                  <x>30</x>
+                  <y>0</y>
+                  <width>31</width>
+                  <height>31</height>
+                 </rect>
+                </property>
+                <property name="text">
+                 <string>Select</string>
+                </property>
+                <property name="icon">
+                 <iconset resource="resources/images.qrc">
+                  <normaloff>:/icons/cursor.ico</normaloff>:/icons/cursor.ico</iconset>
+                </property>
+                <property name="checkable">
+                 <bool>true</bool>
+                </property>
+               </widget>
+               <widget class="QToolButton" name="toolButton_Fill">
+                <property name="geometry">
+                 <rect>
+                  <x>60</x>
+                  <y>0</y>
+                  <width>31</width>
+                  <height>31</height>
+                 </rect>
+                </property>
+                <property name="text">
+                 <string>Fill</string>
+                </property>
+                <property name="icon">
+                 <iconset resource="resources/images.qrc">
+                  <normaloff>:/icons/fill_color.ico</normaloff>:/icons/fill_color.ico</iconset>
+                </property>
+                <property name="checkable">
+                 <bool>true</bool>
+                </property>
+               </widget>
+               <widget class="QToolButton" name="toolButton_Dropper">
+                <property name="geometry">
+                 <rect>
+                  <x>90</x>
+                  <y>0</y>
+                  <width>31</width>
+                  <height>31</height>
+                 </rect>
+                </property>
+                <property name="text">
+                 <string>Dropper</string>
+                </property>
+                <property name="icon">
+                 <iconset resource="resources/images.qrc">
+                  <normaloff>:/icons/pipette.ico</normaloff>:/icons/pipette.ico</iconset>
+                </property>
+                <property name="checkable">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QFrame" name="frame_7">
+               <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_2">
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <item row="0" column="0">
+                 <widget class="QScrollArea" name="scrollArea">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                    <horstretch>1</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="widgetResizable">
+                   <bool>true</bool>
+                  </property>
+                  <widget class="QWidget" name="scrollAreaWidgetContents_5">
+                   <property name="geometry">
+                    <rect>
+                     <x>0</x>
+                     <y>0</y>
+                     <width>617</width>
+                     <height>602</height>
+                    </rect>
+                   </property>
+                   <layout class="QGridLayout" name="gridLayout_8">
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="spacing">
+                     <number>0</number>
+                    </property>
+                    <item row="1" column="1">
+                     <widget class="QGraphicsView" name="graphicsView_Map">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
+                      <property name="autoFillBackground">
+                       <bool>false</bool>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="1" column="0">
+                     <spacer name="horizontalSpacer_4">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>166</width>
+                        <height>16</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item row="2" column="1">
+                     <spacer name="verticalSpacer_3">
+                      <property name="orientation">
+                       <enum>Qt::Vertical</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>16</width>
+                        <height>166</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item row="1" column="2">
+                     <spacer name="horizontalSpacer_5">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>166</width>
+                        <height>16</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item row="0" column="1">
+                     <spacer name="verticalSpacer_4">
+                      <property name="orientation">
+                       <enum>Qt::Vertical</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>16</width>
+                        <height>166</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                   </layout>
+                  </widget>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+            </layout>
            </widget>
-           <widget class="QTabWidget" name="tabWidget_2">
-            <property name="enabled">
-             <bool>true</bool>
+           <widget class="QFrame" name="frame_8">
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
             </property>
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
             </property>
-            <property name="minimumSize">
-             <size>
-              <width>156</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="currentIndex">
-             <number>1</number>
-            </property>
-            <widget class="QWidget" name="tab_blocks">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
+            <layout class="QVBoxLayout" name="verticalLayout_6">
+             <property name="leftMargin">
+              <number>0</number>
              </property>
-             <attribute name="title">
-              <string>Blocks</string>
-             </attribute>
-             <layout class="QGridLayout" name="gridLayout_3">
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
-               <number>0</number>
-              </property>
-              <property name="spacing">
-               <number>0</number>
-              </property>
-              <item row="0" column="0">
-               <widget class="QScrollArea" name="scrollArea_2">
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QTabWidget" name="tabWidget_2">
+               <property name="enabled">
+                <bool>true</bool>
+               </property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>156</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="currentIndex">
+                <number>0</number>
+               </property>
+               <widget class="QWidget" name="tab_blocks">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
-                <property name="verticalScrollBarPolicy">
-                 <enum>Qt::ScrollBarAlwaysOn</enum>
-                </property>
-                <property name="horizontalScrollBarPolicy">
-                 <enum>Qt::ScrollBarAsNeeded</enum>
-                </property>
-                <property name="sizeAdjustPolicy">
-                 <enum>QAbstractScrollArea::AdjustIgnored</enum>
-                </property>
-                <property name="widgetResizable">
-                 <bool>true</bool>
-                </property>
-                <widget class="QWidget" name="scrollAreaWidgetContents_2">
-                 <property name="enabled">
-                  <bool>true</bool>
+                <attribute name="title">
+                 <string>Blocks</string>
+                </attribute>
+                <layout class="QGridLayout" name="gridLayout_3">
+                 <property name="leftMargin">
+                  <number>0</number>
                  </property>
-                 <property name="geometry">
-                  <rect>
-                   <x>0</x>
-                   <y>0</y>
-                   <width>81</width>
-                   <height>28</height>
-                  </rect>
+                 <property name="topMargin">
+                  <number>0</number>
                  </property>
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
+                 <property name="rightMargin">
+                  <number>0</number>
                  </property>
-                 <layout class="QGridLayout" name="gridLayout_5" rowstretch="0" columnstretch="0">
-                  <property name="leftMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="topMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="rightMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="bottomMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="spacing">
-                   <number>0</number>
-                  </property>
-                  <item row="0" column="0">
-                   <widget class="QGraphicsView" name="graphicsView_Metatiles">
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="spacing">
+                  <number>0</number>
+                 </property>
+                 <item row="0" column="0">
+                  <widget class="QScrollArea" name="scrollArea_2">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="verticalScrollBarPolicy">
+                    <enum>Qt::ScrollBarAlwaysOn</enum>
+                   </property>
+                   <property name="horizontalScrollBarPolicy">
+                    <enum>Qt::ScrollBarAsNeeded</enum>
+                   </property>
+                   <property name="sizeAdjustPolicy">
+                    <enum>QAbstractScrollArea::AdjustIgnored</enum>
+                   </property>
+                   <property name="widgetResizable">
+                    <bool>true</bool>
+                   </property>
+                   <widget class="QWidget" name="scrollAreaWidgetContents_2">
                     <property name="enabled">
                      <bool>true</bool>
                     </property>
+                    <property name="geometry">
+                     <rect>
+                      <x>0</x>
+                      <y>0</y>
+                      <width>186</width>
+                      <height>609</height>
+                     </rect>
+                    </property>
                     <property name="sizePolicy">
-                     <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
+                     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                       <horstretch>0</horstretch>
                       <verstretch>0</verstretch>
                      </sizepolicy>
                     </property>
-                    <property name="verticalScrollBarPolicy">
-                     <enum>Qt::ScrollBarAlwaysOff</enum>
-                    </property>
-                    <property name="horizontalScrollBarPolicy">
-                     <enum>Qt::ScrollBarAlwaysOff</enum>
-                    </property>
-                    <property name="sizeAdjustPolicy">
-                     <enum>QAbstractScrollArea::AdjustIgnored</enum>
-                    </property>
+                    <layout class="QGridLayout" name="gridLayout_5" rowstretch="0" columnstretch="0">
+                     <property name="leftMargin">
+                      <number>0</number>
+                     </property>
+                     <property name="topMargin">
+                      <number>0</number>
+                     </property>
+                     <property name="rightMargin">
+                      <number>0</number>
+                     </property>
+                     <property name="bottomMargin">
+                      <number>0</number>
+                     </property>
+                     <property name="spacing">
+                      <number>0</number>
+                     </property>
+                     <item row="0" column="0">
+                      <widget class="QGraphicsView" name="graphicsView_Metatiles">
+                       <property name="enabled">
+                        <bool>true</bool>
+                       </property>
+                       <property name="sizePolicy">
+                        <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
+                         <horstretch>0</horstretch>
+                         <verstretch>0</verstretch>
+                        </sizepolicy>
+                       </property>
+                       <property name="verticalScrollBarPolicy">
+                        <enum>Qt::ScrollBarAlwaysOff</enum>
+                       </property>
+                       <property name="horizontalScrollBarPolicy">
+                        <enum>Qt::ScrollBarAlwaysOff</enum>
+                       </property>
+                       <property name="sizeAdjustPolicy">
+                        <enum>QAbstractScrollArea::AdjustIgnored</enum>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
                    </widget>
-                  </item>
-                 </layout>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+               <widget class="QWidget" name="tab_collision">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <attribute name="title">
+                 <string>Collision</string>
+                </attribute>
+                <widget class="Line" name="line">
+                 <property name="geometry">
+                  <rect>
+                   <x>20</x>
+                   <y>60</y>
+                   <width>111</width>
+                   <height>20</height>
+                  </rect>
+                 </property>
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+                <widget class="QFrame" name="frame">
+                 <property name="geometry">
+                  <rect>
+                   <x>0</x>
+                   <y>80</y>
+                   <width>151</width>
+                   <height>101</height>
+                  </rect>
+                 </property>
+                 <property name="frameShape">
+                  <enum>QFrame::StyledPanel</enum>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Raised</enum>
+                 </property>
+                 <widget class="QLabel" name="label_2">
+                  <property name="geometry">
+                   <rect>
+                    <x>10</x>
+                    <y>10</y>
+                    <width>47</width>
+                    <height>13</height>
+                   </rect>
+                  </property>
+                  <property name="text">
+                   <string>Elevation</string>
+                  </property>
+                 </widget>
+                 <widget class="QGraphicsView" name="graphicsView_Elevation">
+                  <property name="geometry">
+                   <rect>
+                    <x>10</x>
+                    <y>30</y>
+                    <width>131</width>
+                    <height>61</height>
+                   </rect>
+                  </property>
+                 </widget>
+                </widget>
+                <widget class="QFrame" name="frame_2">
+                 <property name="geometry">
+                  <rect>
+                   <x>0</x>
+                   <y>0</y>
+                   <width>151</width>
+                   <height>61</height>
+                  </rect>
+                 </property>
+                 <property name="frameShape">
+                  <enum>QFrame::StyledPanel</enum>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Raised</enum>
+                 </property>
+                 <widget class="QLabel" name="label">
+                  <property name="geometry">
+                   <rect>
+                    <x>10</x>
+                    <y>10</y>
+                    <width>47</width>
+                    <height>13</height>
+                   </rect>
+                  </property>
+                  <property name="text">
+                   <string>Collision</string>
+                  </property>
+                 </widget>
+                 <widget class="QGraphicsView" name="graphicsView_Collision">
+                  <property name="geometry">
+                   <rect>
+                    <x>40</x>
+                    <y>30</y>
+                    <width>66</width>
+                    <height>18</height>
+                   </rect>
+                  </property>
+                 </widget>
                 </widget>
                </widget>
-              </item>
-             </layout>
-            </widget>
-            <widget class="QWidget" name="tab_collision">
-             <property name="enabled">
-              <bool>true</bool>
-             </property>
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <attribute name="title">
-              <string>Collision</string>
-             </attribute>
-             <widget class="Line" name="line">
-              <property name="geometry">
-               <rect>
-                <x>20</x>
-                <y>60</y>
-                <width>111</width>
-                <height>20</height>
-               </rect>
-              </property>
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-             </widget>
-             <widget class="QFrame" name="frame">
-              <property name="geometry">
-               <rect>
-                <x>0</x>
-                <y>80</y>
-                <width>151</width>
-                <height>101</height>
-               </rect>
-              </property>
-              <property name="frameShape">
-               <enum>QFrame::StyledPanel</enum>
-              </property>
-              <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
-              </property>
-              <widget class="QLabel" name="label_2">
-               <property name="geometry">
-                <rect>
-                 <x>10</x>
-                 <y>10</y>
-                 <width>47</width>
-                 <height>13</height>
-                </rect>
-               </property>
-               <property name="text">
-                <string>Elevation</string>
-               </property>
               </widget>
-              <widget class="QGraphicsView" name="graphicsView_Elevation">
-               <property name="geometry">
-                <rect>
-                 <x>10</x>
-                 <y>30</y>
-                 <width>131</width>
-                 <height>61</height>
-                </rect>
-               </property>
-              </widget>
-             </widget>
-             <widget class="QFrame" name="frame_2">
-              <property name="geometry">
-               <rect>
-                <x>0</x>
-                <y>0</y>
-                <width>151</width>
-                <height>61</height>
-               </rect>
-              </property>
-              <property name="frameShape">
-               <enum>QFrame::StyledPanel</enum>
-              </property>
-              <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
-              </property>
-              <widget class="QLabel" name="label">
-               <property name="geometry">
-                <rect>
-                 <x>10</x>
-                 <y>10</y>
-                 <width>47</width>
-                 <height>13</height>
-                </rect>
-               </property>
-               <property name="text">
-                <string>Collision</string>
-               </property>
-              </widget>
-              <widget class="QGraphicsView" name="graphicsView_Collision">
-               <property name="geometry">
-                <rect>
-                 <x>40</x>
-                 <y>30</y>
-                 <width>66</width>
-                 <height>18</height>
-                </rect>
-               </property>
-              </widget>
-             </widget>
-            </widget>
+             </item>
+            </layout>
            </widget>
           </widget>
          </item>
@@ -459,6 +651,12 @@
          </property>
          <item row="0" column="0">
           <widget class="QSplitter" name="splitter_3">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
            </property>
@@ -477,8 +675,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>571</width>
-               <height>564</height>
+               <width>385</width>
+               <height>638</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_7">
@@ -498,7 +696,7 @@
                <number>0</number>
               </property>
               <item row="1" column="2">
-               <spacer name="horizontalSpacer_6">
+               <spacer name="horizontalSpacer_Objects_Map_right">
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
@@ -511,7 +709,7 @@
                </spacer>
               </item>
               <item row="1" column="0">
-               <spacer name="horizontalSpacer_5">
+               <spacer name="horizontalSpacer_Objects_Map_left">
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
@@ -524,7 +722,7 @@
                </spacer>
               </item>
               <item row="0" column="1">
-               <spacer name="verticalSpacer_6">
+               <spacer name="verticalSpacer_Objects_Map_top">
                 <property name="orientation">
                  <enum>Qt::Vertical</enum>
                 </property>
@@ -537,7 +735,7 @@
                </spacer>
               </item>
               <item row="2" column="1">
-               <spacer name="verticalSpacer_5">
+               <spacer name="verticalSpacer_Objects_Map_bottom">
                 <property name="orientation">
                  <enum>Qt::Vertical</enum>
                 </property>
@@ -550,7 +748,7 @@
                </spacer>
               </item>
               <item row="1" column="1">
-               <widget class="QGraphicsView" name="graphicsView_Objects_Map">
+               <widget class="GraphicsView" name="graphicsView_Objects_Map">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                   <horstretch>0</horstretch>
@@ -562,7 +760,7 @@
              </layout>
             </widget>
            </widget>
-           <widget class="QFrame" name="frame_3">
+           <widget class="QFrame" name="frame_Objects">
             <property name="enabled">
              <bool>true</bool>
             </property>
@@ -574,16 +772,92 @@
             </property>
             <property name="minimumSize">
              <size>
-              <width>156</width>
+              <width>444</width>
               <height>0</height>
              </size>
             </property>
             <layout class="QGridLayout" name="gridLayout_6">
              <item row="1" column="0">
-              <widget class="QGroupBox" name="groupBox">
+              <widget class="QGroupBox" name="groupBox_selectedObjects">
                <property name="title">
                 <string>Selected</string>
                </property>
+               <layout class="QVBoxLayout" name="verticalLayout">
+                <property name="spacing">
+                 <number>6</number>
+                </property>
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <item>
+                 <widget class="QFrame" name="frame_5">
+                  <property name="frameShape">
+                   <enum>QFrame::StyledPanel</enum>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                  <layout class="QVBoxLayout" name="verticalLayout_2">
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                   <item>
+                    <widget class="QScrollArea" name="scrollArea_4">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="sizeAdjustPolicy">
+                      <enum>QAbstractScrollArea::AdjustIgnored</enum>
+                     </property>
+                     <property name="widgetResizable">
+                      <bool>true</bool>
+                     </property>
+                     <property name="alignment">
+                      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                     </property>
+                     <widget class="QWidget" name="scrollAreaWidgetContents">
+                      <property name="geometry">
+                       <rect>
+                        <x>0</x>
+                        <y>0</y>
+                        <width>416</width>
+                        <height>557</height>
+                       </rect>
+                      </property>
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
+                     </widget>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+               </layout>
               </widget>
              </item>
              <item row="0" column="0">
@@ -600,32 +874,88 @@
                <property name="frameShadow">
                 <enum>QFrame::Raised</enum>
                </property>
-               <widget class="QToolButton" name="toolButton">
-                <property name="geometry">
-                 <rect>
-                  <x>0</x>
-                  <y>0</y>
-                  <width>31</width>
-                  <height>31</height>
-                 </rect>
+               <layout class="QHBoxLayout" name="horizontalLayout">
+                <property name="leftMargin">
+                 <number>0</number>
                 </property>
-                <property name="text">
-                 <string>New</string>
+                <property name="topMargin">
+                 <number>0</number>
                 </property>
-               </widget>
-               <widget class="QToolButton" name="toolButton_2">
-                <property name="geometry">
-                 <rect>
-                  <x>100</x>
-                  <y>0</y>
-                  <width>31</width>
-                  <height>31</height>
-                 </rect>
+                <property name="rightMargin">
+                 <number>0</number>
                 </property>
-                <property name="text">
-                 <string>Delete</string>
+                <property name="bottomMargin">
+                 <number>0</number>
                 </property>
-               </widget>
+                <item>
+                 <widget class="QToolButton" name="toolButton_newObject">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>40</width>
+                    <height>32</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>New</string>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="resources/images.qrc">
+                    <normaloff>:/icons/add.ico</normaloff>:/icons/add.ico</iconset>
+                  </property>
+                  <property name="toolButtonStyle">
+                   <enum>Qt::ToolButtonTextBesideIcon</enum>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QToolButton" name="toolButton_deleteObject">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>40</width>
+                    <height>32</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Delete</string>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="resources/images.qrc">
+                    <normaloff>:/icons/delete.ico</normaloff>:/icons/delete.ico</iconset>
+                  </property>
+                  <property name="toolButtonStyle">
+                   <enum>Qt::ToolButtonTextBesideIcon</enum>
+                  </property>
+                  <property name="autoRaise">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="horizontalSpacer_3">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+               </layout>
               </widget>
              </item>
             </layout>
@@ -639,6 +969,9 @@
          <string>Attributes</string>
         </attribute>
         <widget class="QFrame" name="frame_3">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="geometry">
           <rect>
            <x>10</x>
@@ -753,6 +1086,9 @@
             <height>22</height>
            </rect>
           </property>
+          <property name="editable">
+           <bool>true</bool>
+          </property>
          </widget>
          <widget class="QComboBox" name="comboBox_Visibility">
           <property name="geometry">
@@ -762,6 +1098,9 @@
             <width>211</width>
             <height>22</height>
            </rect>
+          </property>
+          <property name="editable">
+           <bool>true</bool>
           </property>
          </widget>
          <widget class="QComboBox" name="comboBox_Song">
@@ -773,6 +1112,9 @@
             <height>22</height>
            </rect>
           </property>
+          <property name="editable">
+           <bool>true</bool>
+          </property>
          </widget>
          <widget class="QComboBox" name="comboBox_Weather">
           <property name="geometry">
@@ -782,6 +1124,9 @@
             <width>211</width>
             <height>22</height>
            </rect>
+          </property>
+          <property name="editable">
+           <bool>true</bool>
           </property>
          </widget>
          <widget class="QComboBox" name="comboBox_Type">
@@ -793,6 +1138,9 @@
             <height>22</height>
            </rect>
           </property>
+          <property name="editable">
+           <bool>true</bool>
+          </property>
          </widget>
          <widget class="QComboBox" name="comboBox_BattleScene">
           <property name="geometry">
@@ -802,6 +1150,9 @@
             <width>201</width>
             <height>22</height>
            </rect>
+          </property>
+          <property name="editable">
+           <bool>true</bool>
           </property>
          </widget>
          <widget class="QCheckBox" name="checkBox_ShowLocation">
@@ -842,8 +1193,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1019</width>
-     <height>21</height>
+     <width>1117</width>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -920,10 +1271,7 @@
     <string>Redo</string>
    </property>
    <property name="font">
-    <font>
-     <weight>50</weight>
-     <bold>false</bold>
-    </font>
+    <font/>
    </property>
    <property name="shortcut">
     <string>Ctrl+Y</string>
@@ -931,6 +1279,13 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>GraphicsView</class>
+   <extends>QGraphicsView</extends>
+   <header>graphicsview.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="resources/images.qrc"/>
  </resources>

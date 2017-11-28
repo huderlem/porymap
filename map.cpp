@@ -3,9 +3,11 @@
 #include <QTime>
 #include <QDebug>
 #include <QPainter>
+#include <QImage>
 
 Map::Map(QObject *parent) : QObject(parent)
 {
+    blockdata = new Blockdata;
     cached_blockdata = new Blockdata;
     cached_collision = new Blockdata;
     cached_border = new Blockdata;
@@ -22,8 +24,8 @@ int Map::getHeight() {
     return height.toInt(nullptr, 0);
 }
 
-Tileset* Map::getBlockTileset(uint metatile_index) {
-    uint primary_size = 0x200;//tileset_primary->metatiles->length();
+Tileset* Map::getBlockTileset(int metatile_index) {
+    int primary_size = 0x200;//tileset_primary->metatiles->length();
     if (metatile_index < primary_size) {
         return tileset_primary;
     } else {
@@ -31,23 +33,43 @@ Tileset* Map::getBlockTileset(uint metatile_index) {
     }
 }
 
-QImage Map::getMetatileTile(uint tile) {
-    uint primary_size = 0x200;//tileset_primary->metatiles->length();
-    if (tile < primary_size) {
-        return tileset_primary->tiles->value(tile);
+QList<QList<QRgb>> Map::getBlockPalettes(int metatile_index) {
+    QList<QList<QRgb>> palettes;
+    for (int i = 0; i < 6; i++) {
+        palettes.append(tileset_primary->palettes->at(i));
+    }
+    for (int i = 6; i < tileset_secondary->palettes->length(); i++) {
+        palettes.append(tileset_secondary->palettes->at(i));
+    }
+    return palettes;
+}
+
+int Map::getBlockIndex(int index) {
+    int primary_size = 0x200;
+    if (index < primary_size) {
+        return index;
     } else {
-        return tileset_secondary->tiles->value(tile - primary_size);
+        return index - primary_size;
     }
 }
 
-Metatile* Map::getMetatile(uint index) {
-    uint primary_size = 0x200;//tileset_primary->metatiles->length();
-    if (index < primary_size) {
-        return tileset_primary->metatiles->value(index);
-    } else {
-        //qDebug() << QString("secondary tileset: %1").arg(index - primary_size, 0, 16);
-        return tileset_secondary->metatiles->value(index - primary_size);
+QImage Map::getMetatileTile(int tile) {
+    Tileset *tileset = getBlockTileset(tile);
+    int local_index = getBlockIndex(tile);
+    if (!tileset || !tileset->tiles) {
+        return QImage();
     }
+    return tileset->tiles->value(local_index, QImage());
+}
+
+Metatile* Map::getMetatile(int index) {
+    Tileset *tileset = getBlockTileset(index);
+    int local_index = getBlockIndex(index);
+    if (!tileset || !tileset->metatiles) {
+        return NULL;
+    }
+    Metatile *metatile = tileset->metatiles->value(local_index, NULL);
+    return metatile;
 }
 
 QImage Map::getCollisionMetatileImage(Block block) {
@@ -93,28 +115,38 @@ QImage Map::getElevationMetatileImage(int elevation) {
     return metatile_image;
 }
 
-QImage Map::getMetatileImage(uint tile) {
+QImage Map::getMetatileImage(int tile) {
 
     QImage metatile_image(16, 16, QImage::Format_RGBA8888);
 
     Metatile* metatile = getMetatile(tile);
-    if (metatile == NULL) {
+    if (!metatile || !metatile->tiles) {
         metatile_image.fill(0xffffffff);
         return metatile_image;
     }
 
     Tileset* blockTileset = getBlockTileset(tile);
+    if (!blockTileset) {
+        metatile_image.fill(0xffffffff);
+        return metatile_image;
+    }
+    QList<QList<QRgb>> palettes = getBlockPalettes(tile);
 
+    QPainter metatile_painter(&metatile_image);
     for (int layer = 0; layer < 2; layer++)
     for (int y = 0; y < 2; y++)
     for (int x = 0; x < 2; x++) {
-        //qDebug() << QString("x=%1 y=%2 layer=%3").arg(x).arg(y).arg(layer);
-        Tile tile = metatile->tiles->value((y * 2) + x + (layer * 4));
-        QImage tile_image = getMetatileTile(tile.tile);
-        QList<QRgb> palette = blockTileset->palettes->value(tile.palette);
-        for (int j = 0; j < palette.length(); j++) {
-            tile_image.setColor(j, palette.value(j));
-        }
+        Tile tile_ = metatile->tiles->value((y * 2) + x + (layer * 4));
+        QImage tile_image = getMetatileTile(tile_.tile);
+        //if (tile_image.isNull()) {
+        //    continue;
+        //}
+        //if (blockTileset->palettes) {
+            QList<QRgb> palette = palettes.value(tile_.palette);
+            for (int j = 0; j < palette.length(); j++) {
+                tile_image.setColor(j, palette.value(j));
+            }
+        //}
         //QVector<QRgb> vector = palette.toVector();
         //tile_image.setColorTable(vector);
         if (layer > 0) {
@@ -122,43 +154,66 @@ QImage Map::getMetatileImage(uint tile) {
             color.setAlpha(0);
             tile_image.setColor(15, color.rgba());
         }
-        QPainter metatile_painter(&metatile_image);
         QPoint origin = QPoint(x*8, y*8);
-        metatile_painter.drawImage(origin, tile_image.mirrored(tile.xflip == 1, tile.yflip == 1));
-        metatile_painter.end();
+        metatile_painter.drawImage(origin, tile_image.mirrored(tile_.xflip == 1, tile_.yflip == 1));
     }
+    metatile_painter.end();
 
     return metatile_image;
 }
 
 bool Map::blockChanged(int i, Blockdata *cache) {
+    if (cache == NULL || cache == nullptr) {
+        return true;
+    }
+    if (blockdata == NULL || blockdata == nullptr) {
+        return true;
+    }
+    if (cache->blocks == NULL || cache->blocks == nullptr) {
+        return true;
+    }
+    if (blockdata->blocks == NULL || blockdata->blocks == nullptr) {
+        return true;
+    }
     if (cache->blocks->length() <= i) {
+        return true;
+    }
+    if (blockdata->blocks->length() <= i) {
         return true;
     }
     return blockdata->blocks->value(i) != cache->blocks->value(i);
 }
 
 void Map::cacheBorder() {
+    if (cached_border) delete cached_border;
     cached_border = new Blockdata;
-    for (int i = 0; i < border->blocks->length(); i++) {
-        Block block = border->blocks->value(i);
-        cached_border->blocks->append(block);
+    if (border && border->blocks) {
+        for (int i = 0; i < border->blocks->length(); i++) {
+            Block block = border->blocks->value(i);
+            cached_border->blocks->append(block);
+        }
     }
 }
 
 void Map::cacheBlockdata() {
+    if (cached_blockdata) delete cached_blockdata;
     cached_blockdata = new Blockdata;
-    for (int i = 0; i < blockdata->blocks->length(); i++) {
-        Block block = blockdata->blocks->value(i);
-        cached_blockdata->blocks->append(block);
+    if (blockdata && blockdata->blocks) {
+        for (int i = 0; i < blockdata->blocks->length(); i++) {
+            Block block = blockdata->blocks->value(i);
+            cached_blockdata->blocks->append(block);
+        }
     }
 }
 
 void Map::cacheCollision() {
+    if (cached_collision) delete cached_collision;
     cached_collision = new Blockdata;
-    for (int i = 0; i < blockdata->blocks->length(); i++) {
-        Block block = blockdata->blocks->value(i);
-        cached_collision->blocks->append(block);
+    if (blockdata && blockdata->blocks) {
+        for (int i = 0; i < blockdata->blocks->length(); i++) {
+            Block block = blockdata->blocks->value(i);
+            cached_collision->blocks->append(block);
+        }
     }
 }
 
@@ -174,9 +229,13 @@ QPixmap Map::renderCollision() {
         collision_image = QImage(width_ * 16, height_ * 16, QImage::Format_RGBA8888);
         changed_any = true;
     }
+    if (!(blockdata && blockdata->blocks && width_ && height_)) {
+        collision_pixmap = collision_pixmap.fromImage(collision_image);
+        return collision_pixmap;
+    }
     QPainter painter(&collision_image);
     for (int i = 0; i < blockdata->blocks->length(); i++) {
-        if (!blockChanged(i, cached_collision)) {
+        if (cached_collision && !blockChanged(i, cached_collision)) {
             continue;
         }
         changed_any = true;
@@ -184,8 +243,8 @@ QPixmap Map::renderCollision() {
         QImage metatile_image = getMetatileImage(block.tile);
         QImage collision_metatile_image = getCollisionMetatileImage(block);
         QImage elevation_metatile_image = getElevationMetatileImage(block);
-        int map_y = i / width_;
-        int map_x = i % width_;
+        int map_y = width_ ? i / width_ : 0;
+        int map_x = width_ ? i % width_ : 0;
         QPoint metatile_origin = QPoint(map_x * 16, map_y * 16);
         painter.setOpacity(1);
         painter.drawImage(metatile_origin, metatile_image);
@@ -238,6 +297,11 @@ QPixmap Map::render() {
         image = QImage(width_ * 16, height_ * 16, QImage::Format_RGBA8888);
         changed_any = true;
     }
+    if (!(blockdata && blockdata->blocks && width_ && height_)) {
+        pixmap = pixmap.fromImage(image);
+        return pixmap;
+    }
+
     QPainter painter(&image);
     for (int i = 0; i < blockdata->blocks->length(); i++) {
         if (!blockChanged(i, cached_blockdata)) {
@@ -246,8 +310,8 @@ QPixmap Map::render() {
         changed_any = true;
         Block block = blockdata->blocks->value(i);
         QImage metatile_image = getMetatileImage(block.tile);
-        int map_y = i / width_;
-        int map_x = i % width_;
+        int map_y = width_ ? i / width_ : 0;
+        int map_x = width_ ? i % width_ : 0;
         QPoint metatile_origin = QPoint(map_x * 16, map_y * 16);
         painter.drawImage(metatile_origin, metatile_image);
     }
@@ -266,6 +330,10 @@ QPixmap Map::renderBorder() {
     if (border_image.isNull()) {
         border_image = QImage(width_ * 16, height_ * 16, QImage::Format_RGBA8888);
         changed_any = true;
+    }
+    if (!(border && border->blocks)) {
+        border_pixmap = border_pixmap.fromImage(border_image);
+        return border_pixmap;
     }
     QPainter painter(&border_image);
     for (int i = 0; i < border->blocks->length(); i++) {
@@ -371,6 +439,9 @@ void Map::drawSelection(int i, int w, QPainter *painter) {
 }
 
 QPixmap Map::renderMetatiles() {
+    if (!tileset_primary || !tileset_primary->metatiles || !tileset_secondary || !tileset_secondary->metatiles) {
+        return QPixmap();
+    }
     int primary_length = tileset_primary->metatiles->length();
     int length_ = primary_length + tileset_secondary->metatiles->length();
     int width_ = 8;
@@ -378,7 +449,7 @@ QPixmap Map::renderMetatiles() {
     QImage image(width_ * 16, height_ * 16, QImage::Format_RGBA8888);
     QPainter painter(&image);
     for (int i = 0; i < length_; i++) {
-        uint tile = i;
+        int tile = i;
         if (i >= primary_length) {
             tile += 0x200 - primary_length;
         }
@@ -396,17 +467,21 @@ QPixmap Map::renderMetatiles() {
 }
 
 Block* Map::getBlock(int x, int y) {
-    if (x >= 0 && x < getWidth())
-    if (y >= 0 && y < getHeight()) {
-        int i = y * getWidth() + x;
-        return new Block(blockdata->blocks->value(i));
+    if (blockdata && blockdata->blocks) {
+        if (x >= 0 && x < getWidth())
+        if (y >= 0 && y < getHeight()) {
+            int i = y * getWidth() + x;
+            return new Block(blockdata->blocks->value(i));
+        }
     }
     return NULL;
 }
 
 void Map::_setBlock(int x, int y, Block block) {
     int i = y * getWidth() + x;
-    blockdata->blocks->replace(i, block);
+    if (blockdata && blockdata->blocks) {
+        blockdata->blocks->replace(i, block);
+    }
 }
 
 void Map::_floodFill(int x, int y, uint tile) {
@@ -542,22 +617,33 @@ void Map::_floodFillCollisionElevation(int x, int y, uint collision, uint elevat
 
 
 void Map::undo() {
-    Blockdata *commit = history.pop();
-    if (commit != NULL) {
-        blockdata->copyFrom(commit);
+    if (blockdata) {
+        Blockdata *commit = history.pop();
+        if (commit != NULL) {
+            blockdata->copyFrom(commit);
+            emit mapChanged(this);
+        }
     }
 }
 
 void Map::redo() {
-    Blockdata *commit = history.next();
-    if (commit != NULL) {
-        blockdata->copyFrom(commit);
+    if (blockdata) {
+        Blockdata *commit = history.next();
+        if (commit != NULL) {
+            blockdata->copyFrom(commit);
+            emit mapChanged(this);
+        }
     }
 }
 
 void Map::commit() {
-    Blockdata* commit = blockdata->copy();
-    history.push(commit);
+    if (blockdata) {
+        if (!blockdata->equals(history.history.at(history.head))) {
+            Blockdata* commit = blockdata->copy();
+            history.push(commit);
+            emit mapChanged(this);
+        }
+    }
 }
 
 void Map::setBlock(int x, int y, Block block) {
@@ -597,4 +683,31 @@ void Map::floodFillCollisionElevation(int x, int y, uint collision, uint elevati
         _floodFillCollisionElevation(x, y, collision, elevation);
         commit();
     }
+}
+
+QList<Event *> Map::getAllEvents() {
+    QList<Event*> all;
+    for (QList<Event*> list : events.values()) {
+        all += list;
+    }
+    return all;
+}
+
+QList<Event *> Map::getEventsByType(QString type)
+{
+    return events.value(type);
+}
+
+void Map::removeEvent(Event *event) {
+    for (QString key : events.keys()) {
+        events[key].removeAll(event);
+    }
+}
+
+void Map::addEvent(Event *event) {
+    events[event->get("event_type")].append(event);
+}
+
+bool Map::hasUnsavedChanges() {
+    return !history.isSaved();
 }
