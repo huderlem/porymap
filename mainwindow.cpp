@@ -498,6 +498,9 @@ void MainWindow::updateSelectedObjects() {
         field_labels["script_label"] = "Script";
         field_labels["event_flag"] = "Event Flag";
         field_labels["replacement"] = "Replacement";
+        field_labels["behavior"] = "Behavior";
+        field_labels["radius_x"] = "Movement Radius X";
+        field_labels["radius_y"] = "Movement Radius Y";
         field_labels["property"] = "Property";
         field_labels["sight_radius"] = "Sight Radius";
         field_labels["destination_warp"] = "Destination Warp";
@@ -528,6 +531,9 @@ void MainWindow::updateSelectedObjects() {
             //connect(item, SIGNAL(scriptChanged(QString)), frame->ui->comboBox_script, SLOT(setValue(QString)));
             */
 
+            fields << "behavior";
+            fields << "radius_x";
+            fields << "radius_y";
             fields << "script_label";
             fields << "event_flag";
             fields << "replacement";
