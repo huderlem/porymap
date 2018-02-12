@@ -618,7 +618,7 @@ void Map::_floodFillCollisionElevation(int x, int y, uint collision, uint elevat
 
 void Map::undo() {
     if (blockdata) {
-        Blockdata *commit = history.pop();
+        Blockdata *commit = history.back();
         if (commit != NULL) {
             blockdata->copyFrom(commit);
             emit mapChanged(this);
@@ -638,7 +638,7 @@ void Map::redo() {
 
 void Map::commit() {
     if (blockdata) {
-        if (!blockdata->equals(history.history.at(history.head))) {
+        if (!blockdata->equals(history.current())) {
             Blockdata* commit = blockdata->copy();
             history.push(commit);
             emit mapChanged(this);
