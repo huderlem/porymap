@@ -609,20 +609,11 @@ QString Project::getSongName(int songNumber) {
 
 QMap<QString, int> Project::getMapObjGfxConstants() {
     QMap<QString, int> constants;
-    QString text = readTextFile(root + "/constants/map_object_constants.inc");
+    QString text = readTextFile(root + "/include/constants/map_objects.h");
     if (!text.isNull()) {
-        QList<QStringList> *commands = parse(text);
-        for (int i = 0; i < commands->length(); i++) {
-            QStringList params = commands->value(i);
-            QString macro = params.value(0);
-            if (macro == ".set") {
-                QString constant = params.value(1);
-                if (constant.startsWith("MAP_OBJ_GFX_")) {
-                    int value = params.value(2).toInt(nullptr, 0);
-                    constants.insert(constant, value);
-                }
-            }
-        }
+        QStringList mapObjGfxPrefixes;
+        mapObjGfxPrefixes << "MAP_OBJ_GFX_";
+        constants = readCDefines(text, mapObjGfxPrefixes);
     }
     return constants;
 }
