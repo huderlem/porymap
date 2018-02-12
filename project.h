@@ -70,6 +70,7 @@ public:
 
     QStringList readCArray(QString text, QString label);
     QString readCIncbin(QString text, QString label);
+    QMap<QString, int> readCDefines(QString text, QStringList prefixes);
 };
 
 #endif // PROJECT_H
