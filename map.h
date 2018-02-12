@@ -13,14 +13,10 @@
 template <typename T>
 class History {
 public:
-    QList<T> history;
-    int head = -1;
-    int saved = -1;
-
     History() {
 
     }
-    T pop() {
+    T back() {
         if (head > 0) {
             return history.at(--head);
         }
@@ -42,12 +38,23 @@ public:
         history.append(commit);
         head++;
     }
+    T current() {
+        if (head < 0 || history.length() == 0) {
+            return NULL;
+        }
+        return history.at(head);
+    }
     void save() {
         saved = head;
     }
     bool isSaved() {
         return saved == head;
     }
+
+private:
+    QList<T> history;
+    int head = -1;
+    int saved = -1;
 };
 
 class Connection {
