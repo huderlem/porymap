@@ -665,7 +665,7 @@ void Project::loadObjectPixmaps(QList<Event*> objects) {
             object->pixmap = QPixmap(":/images/Entities_16x16.png").copy(0, 0, 16, 16);
         } else if (event_type == "warp") {
             object->pixmap = QPixmap(":/images/Entities_16x16.png").copy(16, 0, 16, 16);
-        } else if (event_type == "trap") {
+        } else if (event_type == "trap" || event_type == "trap_weather") {
             object->pixmap = QPixmap(":/images/Entities_16x16.png").copy(32, 0, 16, 16);
         } else if (event_type == "sign" || event_type == "hidden item") {
             object->pixmap = QPixmap(":/images/Entities_16x16.png").copy(48, 0, 16, 16);
@@ -745,7 +745,7 @@ void Project::saveMapEvents(Map *map) {
         text += "\n";
     }
 
-    if (map->events["trap"].length() > 0) {
+    if (map->events["trap"].length() + map->events["trap_weather"].length() > 0) {
         text += QString("%1::\n").arg(map->coord_events_label);
         for (Event *coords : map->events["trap"]) {
             text += QString("\tcoord_event %1").arg(coords->get("x"));
@@ -756,6 +756,13 @@ void Project::saveMapEvents(Map *map) {
             text += QString(", %1").arg(coords->get("coord_unknown2"));
             text += QString(", 0");
             text += QString(", %1").arg(coords->get("script_label"));
+            text += "\n";
+        }
+        for (Event *coords : map->events["trap_weather"]) {
+            text += QString("\tcoord_weather_event %1").arg(coords->get("x"));
+            text += QString(", %1").arg(coords->get("y"));
+            text += QString(", %1").arg(coords->get("elevation"));
+            text += QString(", %1").arg(coords->get("weather"));
             text += "\n";
         }
         text += "\n";
@@ -880,6 +887,7 @@ void Project::readMapEvents(Map *map) {
 
     QList<QStringList> *coords = getLabelMacros(parse(text), map->coord_events_label);
     map->events["trap"].clear();
+    map->events["trap_weather"].clear();
     for (QStringList command : *coords) {
         if (command.value(0) == "coord_event") {
             Event *coord = new Event;
@@ -902,6 +910,16 @@ void Project::readMapEvents(Map *map) {
 
             coord->put("event_type", "trap");
             map->events["trap"].append(coord);
+        } else if (command.value(0) == "coord_weather_event") {
+            Event *coord = new Event;
+            coord->put("map_name", map->name);
+            int i = 1;
+            coord->put("x", command.value(i++));
+            coord->put("y", command.value(i++));
+            coord->put("elevation", command.value(i++));
+            coord->put("weather", command.value(i++));
+            coord->put("event_type", "trap_weather");
+            map->events["trap_weather"].append(coord);
         }
     }
 

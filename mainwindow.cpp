@@ -549,6 +549,9 @@ void MainWindow::updateSelectedObjects() {
             fields << "coord_unknown1";
             fields << "coord_unknown2";
         }
+        else if (event_type == "trap_weather") {
+            fields << "weather";
+        }
         else if (event_type == "sign") {
             fields << "type";
             fields << "script_label";
