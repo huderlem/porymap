@@ -504,7 +504,7 @@ void MainWindow::updateSelectedObjects() {
         field_labels["property"] = "Property";
         field_labels["sight_radius"] = "Sight Radius";
         field_labels["destination_warp"] = "Destination Warp";
-        field_labels["destination_map"] = "Destination Map";
+        field_labels["destination_map_name"] = "Destination Map";
         field_labels["coord_unknown1"] = "Unknown 1";
         field_labels["coord_unknown2"] = "Unknown 2";
         field_labels["type"] = "Type";
@@ -542,7 +542,7 @@ void MainWindow::updateSelectedObjects() {
         }
         else if (event_type == "warp") {
             fields << "destination_warp";
-            fields << "destination_map";
+            fields << "destination_map_name";
         }
         else if (event_type == "trap") {
             fields << "script_label";
@@ -568,7 +568,7 @@ void MainWindow::updateSelectedObjects() {
             combo->setEditable(true);
 
             QString value = item->event->get(key);
-            if (key == "destination_map") {
+            if (key == "destination_map_name") {
                 if (!editor->project->mapNames->contains(value)) {
                     combo->addItem(value);
                 }

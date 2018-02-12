@@ -517,13 +517,15 @@ void Project::readMapGroups() {
         } else if (macro == ".4byte") {
             if (group != -1) {
                 for (int j = 1; j < params.length(); j++) {
+                    QString mapName = params.value(j);
                     QStringList *list = groupedMaps->value(group);
-                    list->append(params.value(j));
-                    maps->append(params.value(j));
+                    list->append(mapName);
+                    maps->append(mapName);
 
-                    // Build the mapping between map constants and map names.
-                    QString mapConstant = Map::mapConstantFromName(params.value(j));
-                    mapConstantsToMapNames.insert(mapConstant, params.value(j));
+                    // Build the mapping and reverse mapping between map constants and map names.
+                    QString mapConstant = Map::mapConstantFromName(mapName);
+                    mapConstantsToMapNames.insert(mapConstant, mapName);
+                    mapNamesToMapConstants.insert(mapName, mapConstant);
                 }
             }
         }
@@ -855,10 +857,16 @@ void Project::readMapEvents(Map *map) {
             warp->put("y", command.value(i++));
             warp->put("elevation", command.value(i++));
             warp->put("destination_warp", command.value(i++));
-            warp->put("destination_map", command.value(i++));
 
-            warp->put("event_type", "warp");
-            map->events["warp"].append(warp);
+            // Ensure the warp destination map constant is valid before adding it to the warps.
+            QString mapConstant = command.value(i++);
+            if (mapConstantsToMapNames.contains(mapConstant)) {
+                warp->put("destination_map_name", mapConstantsToMapNames[mapConstant]);
+                warp->put("event_type", "warp");
+                map->events["warp"].append(warp);
+            } else {
+                qDebug() << QString("Destination map constant '%1' is invalid for warp").arg(mapConstant);
+            }
         }
     }
 
