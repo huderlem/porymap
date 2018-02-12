@@ -75,6 +75,7 @@ public:
 
 public:
     QString name;
+    QString constantName;
     QString attributes_label;
     QString events_label;
     QString scripts_label;
@@ -102,6 +103,8 @@ public:
     Blockdata* blockdata = NULL;
 
 public:
+    void setName(QString mapName);
+    static QString mapConstantFromName(QString mapName);
     int getWidth();
     int getHeight();
     Tileset* getBlockTileset(int);

@@ -31,7 +31,7 @@ QString Project::getProjectTitle() {
 Map* Project::loadMap(QString map_name) {
     Map *map = new Map;
 
-    map->name = map_name;
+    map->setName(map_name);
     readMapHeader(map);
     readMapAttributes(map);
     getTilesets(map);
@@ -66,8 +66,13 @@ void Project::loadMapConnections(Map *map) {
                     Connection *connection = new Connection;
                     connection->direction = command.value(1);
                     connection->offset = command.value(2);
-                    connection->map_name = command.value(3);
-                    map->connections.append(connection);
+                    QString mapConstant = command.value(3);
+                    if (mapConstantsToMapNames.contains(mapConstant)) {
+                        connection->map_name = mapConstantsToMapNames[mapConstant];
+                        map->connections.append(connection);
+                    } else {
+                        qDebug() << QString("Failed to find connected map for map constant '%1'").arg(mapConstant);
+                    }
                 }
             }
         }
@@ -515,6 +520,10 @@ void Project::readMapGroups() {
                     QStringList *list = groupedMaps->value(group);
                     list->append(params.value(j));
                     maps->append(params.value(j));
+
+                    // Build the mapping between map constants and map names.
+                    QString mapConstant = Map::mapConstantFromName(params.value(j));
+                    mapConstantsToMapNames.insert(mapConstant, params.value(j));
                 }
             }
         }
