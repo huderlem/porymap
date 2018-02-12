@@ -577,33 +577,31 @@ QStringList Project::getBattleScenes() {
 
 QStringList Project::getSongNames() {
     QStringList names;
-    QString text = readTextFile(root + "/constants/songs.inc");
+    QString text = readTextFile(root + "/include/constants/songs.h");
     if (!text.isNull()) {
-        QList<QStringList> *commands = parse(text);
-        for (int i = 0; i < commands->length(); i++) {
-            QStringList params = commands->value(i);
-            QString macro = params.value(0);
-            if (macro == ".equiv") {
-                names.append(params.value(1));
-            }
-        }
+        QStringList songDefinePrefixes;
+        songDefinePrefixes << "SE_" << "BGM_";
+        QMap<QString, int> songDefines = readCDefines(text, songDefinePrefixes);
+        names = songDefines.keys();
     }
     return names;
 }
 
-QString Project::getSongName(int value) {
+QString Project::getSongName(int songNumber) {
     QStringList names;
-    QString text = readTextFile(root + "/constants/songs.inc");
+    QString text = readTextFile(root + "/include/constants/songs.h");
     if (!text.isNull()) {
-        QList<QStringList> *commands = parse(text);
-        for (int i = 0; i < commands->length(); i++) {
-            QStringList params = commands->value(i);
-            QString macro = params.value(0);
-            if (macro == ".equiv") {
-                if (value == ((QString)(params.value(2))).toInt(nullptr, 0)) {
-                    return params.value(1);
-                }
+        QStringList songDefinePrefixes;
+        songDefinePrefixes << "SE_" << "BGM_";
+        QMap<QString, int> songDefines = readCDefines(text, songDefinePrefixes);
+
+        // Loop through song defines, and fine the one with the matching song number.
+        QMap<QString, int>::iterator iter = songDefines.begin();
+        while (iter != songDefines.end()) {
+            if (iter.value() == songNumber) {
+                return iter.key();
             }
+            iter++;
         }
     }
     return "";
@@ -611,20 +609,11 @@ QString Project::getSongName(int value) {
 
 QMap<QString, int> Project::getMapObjGfxConstants() {
     QMap<QString, int> constants;
-    QString text = readTextFile(root + "/constants/map_object_constants.inc");
+    QString text = readTextFile(root + "/include/constants/map_objects.h");
     if (!text.isNull()) {
-        QList<QStringList> *commands = parse(text);
-        for (int i = 0; i < commands->length(); i++) {
-            QStringList params = commands->value(i);
-            QString macro = params.value(0);
-            if (macro == ".set") {
-                QString constant = params.value(1);
-                if (constant.startsWith("MAP_OBJ_GFX_")) {
-                    int value = params.value(2).toInt(nullptr, 0);
-                    constants.insert(constant, value);
-                }
-            }
-        }
+        QStringList mapObjGfxPrefixes;
+        mapObjGfxPrefixes << "MAP_OBJ_GFX_";
+        constants = readCDefines(text, mapObjGfxPrefixes);
     }
     return constants;
 }
@@ -649,9 +638,9 @@ void Project::loadObjectPixmaps(QList<Event*> objects) {
 
     QMap<QString, int> constants = getMapObjGfxConstants();
 
-    QString pointers_text = readTextFile(root + "/include/data/field_map_obj/map_object_graphics_info_pointers.h");
-    QString info_text = readTextFile(root + "/include/data/field_map_obj/map_object_graphics_info.h");
-    QString pic_text = readTextFile(root + "/include/data/field_map_obj/map_object_pic_tables.h");
+    QString pointers_text = readTextFile(root + "/src/data/field_map_obj/map_object_graphics_info_pointers.h");
+    QString info_text = readTextFile(root + "/src/data/field_map_obj/map_object_graphics_info.h");
+    QString pic_text = readTextFile(root + "/src/data/field_map_obj/map_object_pic_tables.h");
     QString assets_text = readTextFile(root + "/src/field/field_map_obj.c");
 
     QStringList pointers = readCArray(pointers_text, "gMapObjectGraphicsInfoPointers");
@@ -968,4 +957,30 @@ QString Project::readCIncbin(QString text, QString label) {
     }
 
     return path;
+}
+
+QMap<QString, int> Project::readCDefines(QString text, QStringList prefixes) {
+    QMap<QString, int> defines;
+
+    QString combinedPrefixes = "[" + prefixes.join('|') + "]";
+    QRegularExpression re(QString("#define\\s+(?<defineName>%1\\w+)\\s(?<defineValue>\\w+)").arg(combinedPrefixes));
+    QRegularExpressionMatchIterator iter = re.globalMatch(text);
+    while (iter.hasNext()) {
+        QRegularExpressionMatch match = iter.next();
+        QString name = match.captured("defineName");
+        QString value = match.captured("defineValue");
+        bool valid;
+        int parsedValue = value.startsWith("0x") ? value.toInt(&valid, 16) : value.toInt(&valid, 10);
+        if (valid) {
+            if (!defines.contains(name)) {
+                defines.insert(name, parsedValue);
+            } else {
+                qDebug() << QString("Define '%1' is defined multiple times'").arg(name);
+            }
+        } else {
+            qDebug() << QString("Failed to parse define '%1' value '%2' as base 10 or hexadecimal value").arg(name, value);
+        }
+    }
+
+    return defines;
 }
