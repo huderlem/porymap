@@ -511,6 +511,8 @@ void MainWindow::updateSelectedObjects() {
         field_labels["item"] = "Item";
         field_labels["item_unknown5"] = "Unknown 5";
         field_labels["item_unknown6"] = "Unknown 6";
+        field_labels["weather"] = "Weather";
+        field_labels["flag"] = "Flag";
 
         QStringList fields;
 
@@ -556,11 +558,9 @@ void MainWindow::updateSelectedObjects() {
             fields << "type";
             fields << "script_label";
         }
-        else if (event_type == "hidden item") {
-            fields << "type";
+        else if (event_type == "event_hidden_item") {
             fields << "item";
-            fields << "item_unknown5";
-            fields << "item_unknown6";
+            fields << "flag";
         }
 
         for (QString key : fields) {

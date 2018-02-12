@@ -39,10 +39,6 @@ public:
         values.insert(key, value);
     }
 
-    bool is_hidden_item() {
-        return getInt("type") >= 5;
-    }
-
     QMap<QString, QString> values;
     QPixmap pixmap;
 };
