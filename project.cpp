@@ -667,7 +667,7 @@ void Project::loadObjectPixmaps(QList<Event*> objects) {
             object->pixmap = QPixmap(":/images/Entities_16x16.png").copy(16, 0, 16, 16);
         } else if (event_type == "trap" || event_type == "trap_weather") {
             object->pixmap = QPixmap(":/images/Entities_16x16.png").copy(32, 0, 16, 16);
-        } else if (event_type == "sign" || event_type == "event_hidden_item") {
+        } else if (event_type == "sign" || event_type == "event_hidden_item" || event_type == "event_secret_base") {
             object->pixmap = QPixmap(":/images/Entities_16x16.png").copy(48, 0, 16, 16);
         }
 
@@ -768,7 +768,10 @@ void Project::saveMapEvents(Map *map) {
         text += "\n";
     }
 
-    if (map->events["sign"].length() + map->events["event_hidden_item"].length() > 0) {
+    if (map->events["sign"].length() +
+        map->events["event_hidden_item"].length() +
+        map->events["event_secret_base"].length() > 0)
+    {
         text += QString("%1::\n").arg(map->bg_events_label);
         for (Event *sign : map->events["sign"]) {
             text += QString("\tbg_event %1").arg(sign->get("x"));
@@ -785,6 +788,13 @@ void Project::saveMapEvents(Map *map) {
             text += QString(", %1").arg(item->get("elevation"));
             text += QString(", %1").arg(item->get("item"));
             text += QString(", %1").arg(item->get("flag"));
+            text += "\n";
+        }
+        for (Event *item : map->events["event_secret_base"]) {
+            text += QString("\tbg_secret_base_event %1").arg(item->get("x"));
+            text += QString(", %1").arg(item->get("y"));
+            text += QString(", %1").arg(item->get("elevation"));
+            text += QString(", %1").arg(item->get("secret_base_map"));
             text += "\n";
         }
         text += "\n";
@@ -921,8 +931,9 @@ void Project::readMapEvents(Map *map) {
     }
 
     QList<QStringList> *bgs = getLabelMacros(parse(text), map->bg_events_label);
-    map->events["event_hidden_item"].clear();
     map->events["sign"].clear();
+    map->events["event_hidden_item"].clear();
+    map->events["event_secret_base"].clear();
     for (QStringList command : *bgs) {
         if (command.value(0) == "bg_event") {
             Event *bg = new Event;
@@ -948,6 +959,16 @@ void Project::readMapEvents(Map *map) {
             bg->put("flag", command.value(i++));
             bg->put("event_type", "event_hidden_item");
             map->events["event_hidden_item"].append(bg);
+        } else if (command.value(0) == "bg_secret_base_event") {
+            Event *bg = new Event;
+            bg->put("map_name", map->name);
+            int i = 1;
+            bg->put("x", command.value(i++));
+            bg->put("y", command.value(i++));
+            bg->put("elevation", command.value(i++));
+            bg->put("secret_base_map", command.value(i++));
+            bg->put("event_type", "event_secret_base");
+            map->events["event_secret_base"].append(bg);
         }
     }
 }
