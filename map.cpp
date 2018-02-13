@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QPainter>
 #include <QImage>
+#include <QRegularExpression>
 
 Map::Map(QObject *parent) : QObject(parent)
 {
@@ -14,6 +15,24 @@ Map::Map(QObject *parent) : QObject(parent)
     paint_tile = 1;
     paint_collision = 0;
     paint_elevation = 3;
+}
+
+void Map::setName(QString mapName) {
+    name = mapName;
+    constantName = mapConstantFromName(mapName);
+}
+
+QString Map::mapConstantFromName(QString mapName) {
+    // Transform map names of the form 'GraniteCave_B1F` into map constants like 'MAP_GRANITE_CAVE_B1F'.
+    QString nameWithUnderscores = mapName.replace(QRegularExpression("([a-z])([A-Z])"), "\\1_\\2");
+    QString withMapAndUppercase = "MAP_" + nameWithUnderscores.toUpper();
+    QString constantName = withMapAndUppercase.replace(QRegularExpression("_+"), "_");
+
+    // Handle special cases.
+    // SSTidal needs to be SS_TIDAL, rather than SSTIDAL
+    constantName = constantName.replace("SSTIDAL", "SS_TIDAL");
+
+    return constantName;
 }
 
 int Map::getWidth() {
@@ -138,22 +157,26 @@ QImage Map::getMetatileImage(int tile) {
     for (int x = 0; x < 2; x++) {
         Tile tile_ = metatile->tiles->value((y * 2) + x + (layer * 4));
         QImage tile_image = getMetatileTile(tile_.tile);
-        //if (tile_image.isNull()) {
-        //    continue;
-        //}
-        //if (blockTileset->palettes) {
-            QList<QRgb> palette = palettes.value(tile_.palette);
-            for (int j = 0; j < palette.length(); j++) {
-                tile_image.setColor(j, palette.value(j));
-            }
-        //}
-        //QVector<QRgb> vector = palette.toVector();
-        //tile_image.setColorTable(vector);
+        if (tile_image.isNull()) {
+            // Some metatiles specify tiles that are outside the valid range.
+            // These are treated as completely transparent, so they can be skipped without
+            // being drawn.
+            continue;
+        }
+
+        // Colorize the metatile tiles with its palette.
+        QList<QRgb> palette = palettes.value(tile_.palette);
+        for (int j = 0; j < palette.length(); j++) {
+            tile_image.setColor(j, palette.value(j));
+        }
+
+        // The top layer of the metatile has its last color displayed at transparent.
         if (layer > 0) {
             QColor color(tile_image.color(15));
             color.setAlpha(0);
             tile_image.setColor(15, color.rgba());
         }
+
         QPoint origin = QPoint(x*8, y*8);
         metatile_painter.drawImage(origin, tile_image.mirrored(tile_.xflip == 1, tile_.yflip == 1));
     }

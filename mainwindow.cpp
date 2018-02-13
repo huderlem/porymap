@@ -504,13 +504,16 @@ void MainWindow::updateSelectedObjects() {
         field_labels["property"] = "Property";
         field_labels["sight_radius"] = "Sight Radius";
         field_labels["destination_warp"] = "Destination Warp";
-        field_labels["destination_map"] = "Destination Map";
+        field_labels["destination_map_name"] = "Destination Map";
         field_labels["coord_unknown1"] = "Unknown 1";
         field_labels["coord_unknown2"] = "Unknown 2";
         field_labels["type"] = "Type";
         field_labels["item"] = "Item";
         field_labels["item_unknown5"] = "Unknown 5";
         field_labels["item_unknown6"] = "Unknown 6";
+        field_labels["weather"] = "Weather";
+        field_labels["flag"] = "Flag";
+        field_labels["secret_base_map"] = "Secret Base Map";
 
         QStringList fields;
 
@@ -542,22 +545,26 @@ void MainWindow::updateSelectedObjects() {
         }
         else if (event_type == "warp") {
             fields << "destination_warp";
-            fields << "destination_map";
+            fields << "destination_map_name";
         }
         else if (event_type == "trap") {
             fields << "script_label";
             fields << "coord_unknown1";
             fields << "coord_unknown2";
         }
+        else if (event_type == "trap_weather") {
+            fields << "weather";
+        }
         else if (event_type == "sign") {
             fields << "type";
             fields << "script_label";
         }
-        else if (event_type == "hidden item") {
-            fields << "type";
+        else if (event_type == "event_hidden_item") {
             fields << "item";
-            fields << "item_unknown5";
-            fields << "item_unknown6";
+            fields << "flag";
+        }
+        else if (event_type == "event_secret_base") {
+            fields << "secret_base_map";
         }
 
         for (QString key : fields) {
@@ -568,7 +575,7 @@ void MainWindow::updateSelectedObjects() {
             combo->setEditable(true);
 
             QString value = item->event->get(key);
-            if (key == "destination_map") {
+            if (key == "destination_map_name") {
                 if (!editor->project->mapNames->contains(value)) {
                     combo->addItem(value);
                 }

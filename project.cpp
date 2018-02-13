@@ -31,7 +31,7 @@ QString Project::getProjectTitle() {
 Map* Project::loadMap(QString map_name) {
     Map *map = new Map;
 
-    map->name = map_name;
+    map->setName(map_name);
     readMapHeader(map);
     readMapAttributes(map);
     getTilesets(map);
@@ -66,8 +66,13 @@ void Project::loadMapConnections(Map *map) {
                     Connection *connection = new Connection;
                     connection->direction = command.value(1);
                     connection->offset = command.value(2);
-                    connection->map_name = command.value(3);
-                    map->connections.append(connection);
+                    QString mapConstant = command.value(3);
+                    if (mapConstantsToMapNames.contains(mapConstant)) {
+                        connection->map_name = mapConstantsToMapNames[mapConstant];
+                        map->connections.append(connection);
+                    } else {
+                        qDebug() << QString("Failed to find connected map for map constant '%1'").arg(mapConstant);
+                    }
                 }
             }
         }
@@ -512,9 +517,15 @@ void Project::readMapGroups() {
         } else if (macro == ".4byte") {
             if (group != -1) {
                 for (int j = 1; j < params.length(); j++) {
+                    QString mapName = params.value(j);
                     QStringList *list = groupedMaps->value(group);
-                    list->append(params.value(j));
-                    maps->append(params.value(j));
+                    list->append(mapName);
+                    maps->append(mapName);
+
+                    // Build the mapping and reverse mapping between map constants and map names.
+                    QString mapConstant = Map::mapConstantFromName(mapName);
+                    mapConstantsToMapNames.insert(mapConstant, mapName);
+                    mapNamesToMapConstants.insert(mapName, mapConstant);
                 }
             }
         }
@@ -654,9 +665,9 @@ void Project::loadObjectPixmaps(QList<Event*> objects) {
             object->pixmap = QPixmap(":/images/Entities_16x16.png").copy(0, 0, 16, 16);
         } else if (event_type == "warp") {
             object->pixmap = QPixmap(":/images/Entities_16x16.png").copy(16, 0, 16, 16);
-        } else if (event_type == "trap") {
+        } else if (event_type == "trap" || event_type == "trap_weather") {
             object->pixmap = QPixmap(":/images/Entities_16x16.png").copy(32, 0, 16, 16);
-        } else if (event_type == "sign" || event_type == "hidden item") {
+        } else if (event_type == "sign" || event_type == "event_hidden_item" || event_type == "event_secret_base") {
             object->pixmap = QPixmap(":/images/Entities_16x16.png").copy(48, 0, 16, 16);
         }
 
@@ -687,85 +698,107 @@ void Project::saveMapEvents(Map *map) {
     QString path = root + QString("/data/maps/events/%1.inc").arg(map->name);
     QString text = "";
 
-    text += QString("%1::\n").arg(map->object_events_label);
-    for (int i = 0; i < map->events["object"].length(); i++) {
-        Event *object_event = map->events["object"].value(i);
-        int radius_x = object_event->getInt("radius_x");
-        int radius_y = object_event->getInt("radius_y");
-        QString radius = QString("%1").arg((radius_x & 0xf) + ((radius_y & 0xf) << 4));
-        uint16_t x = object_event->getInt("x");
-        uint16_t y = object_event->getInt("y");
+    if (map->events["object"].length() > 0) {
+        text += QString("%1::\n").arg(map->object_events_label);
+        for (int i = 0; i < map->events["object"].length(); i++) {
+            Event *object_event = map->events["object"].value(i);
+            int radius_x = object_event->getInt("radius_x");
+            int radius_y = object_event->getInt("radius_y");
+            QString radius = QString("%1").arg((radius_x & 0xf) + ((radius_y & 0xf) << 4));
+            uint16_t x = object_event->getInt("x");
+            uint16_t y = object_event->getInt("y");
 
-        text += QString("\tobject_event %1").arg(i + 1);
-        text += QString(", %1").arg(object_event->get("sprite"));
-        text += QString(", %1").arg(object_event->get("replacement"));
-        text += QString(", %1").arg(x & 0xff);
-        text += QString(", %1").arg((x >> 8) & 0xff);
-        text += QString(", %1").arg(y & 0xff);
-        text += QString(", %1").arg((y >> 8) & 0xff);
-        text += QString(", %1").arg(object_event->get("elevation"));
-        text += QString(", %1").arg(object_event->get("behavior"));
-        text += QString(", %1").arg(radius);
-        text += QString(", 0");
-        text += QString(", %1").arg(object_event->get("property"));
-        text += QString(", 0");
-        text += QString(", %1").arg(object_event->get("sight_radius"));
-        text += QString(", 0");
-        text += QString(", %1").arg(object_event->get("script_label"));
-        text += QString(", %1").arg(object_event->get("event_flag"));
-        text += QString(", 0");
-        text += QString(", 0");
+            text += QString("\tobject_event %1").arg(i + 1);
+            text += QString(", %1").arg(object_event->get("sprite"));
+            text += QString(", %1").arg(object_event->get("replacement"));
+            text += QString(", %1").arg(x & 0xff);
+            text += QString(", %1").arg((x >> 8) & 0xff);
+            text += QString(", %1").arg(y & 0xff);
+            text += QString(", %1").arg((y >> 8) & 0xff);
+            text += QString(", %1").arg(object_event->get("elevation"));
+            text += QString(", %1").arg(object_event->get("behavior"));
+            text += QString(", %1").arg(radius);
+            text += QString(", 0");
+            text += QString(", %1").arg(object_event->get("property"));
+            text += QString(", 0");
+            text += QString(", %1").arg(object_event->get("sight_radius"));
+            text += QString(", 0");
+            text += QString(", %1").arg(object_event->get("script_label"));
+            text += QString(", %1").arg(object_event->get("event_flag"));
+            text += QString(", 0");
+            text += QString(", 0");
+            text += "\n";
+        }
         text += "\n";
     }
-    text += "\n";
 
-    text += QString("%1::\n").arg(map->warps_label);
-    for (Event *warp : map->events["warp"]) {
-        text += QString("\twarp_def %1").arg(warp->get("x"));
-        text += QString(", %1").arg(warp->get("y"));
-        text += QString(", %1").arg(warp->get("elevation"));
-        text += QString(", %1").arg(warp->get("destination_warp"));
-        text += QString(", %1").arg(warp->get("destination_map"));
+    if (map->events["warp"].length() > 0) {
+        text += QString("%1::\n").arg(map->warps_label);
+        for (Event *warp : map->events["warp"]) {
+            text += QString("\twarp_def %1").arg(warp->get("x"));
+            text += QString(", %1").arg(warp->get("y"));
+            text += QString(", %1").arg(warp->get("elevation"));
+            text += QString(", %1").arg(warp->get("destination_warp"));
+            text += QString(", %1").arg(mapNamesToMapConstants[warp->get("destination_map_name")]);
+            text += "\n";
+        }
         text += "\n";
     }
-    text += "\n";
 
-    text += QString("%1::\n").arg(map->coord_events_label);
-    for (Event *coords : map->events["trap"]) {
-        text += QString("\tcoord_event %1").arg(coords->get("x"));
-        text += QString(", %1").arg(coords->get("y"));
-        text += QString(", %1").arg(coords->get("elevation"));
-        text += QString(", 0");
-        text += QString(", %1").arg(coords->get("coord_unknown1"));
-        text += QString(", %1").arg(coords->get("coord_unknown2"));
-        text += QString(", 0");
-        text += QString(", %1").arg(coords->get("script_label"));
+    if (map->events["trap"].length() + map->events["trap_weather"].length() > 0) {
+        text += QString("%1::\n").arg(map->coord_events_label);
+        for (Event *coords : map->events["trap"]) {
+            text += QString("\tcoord_event %1").arg(coords->get("x"));
+            text += QString(", %1").arg(coords->get("y"));
+            text += QString(", %1").arg(coords->get("elevation"));
+            text += QString(", 0");
+            text += QString(", %1").arg(coords->get("coord_unknown1"));
+            text += QString(", %1").arg(coords->get("coord_unknown2"));
+            text += QString(", 0");
+            text += QString(", %1").arg(coords->get("script_label"));
+            text += "\n";
+        }
+        for (Event *coords : map->events["trap_weather"]) {
+            text += QString("\tcoord_weather_event %1").arg(coords->get("x"));
+            text += QString(", %1").arg(coords->get("y"));
+            text += QString(", %1").arg(coords->get("elevation"));
+            text += QString(", %1").arg(coords->get("weather"));
+            text += "\n";
+        }
         text += "\n";
     }
-    text += "\n";
 
-    text += QString("%1::\n").arg(map->bg_events_label);
-    for (Event *sign : map->events["sign"]) {
-        text += QString("\tbg_event %1").arg(sign->get("x"));
-        text += QString(", %1").arg(sign->get("y"));
-        text += QString(", %1").arg(sign->get("elevation"));
-        text += QString(", %1").arg(sign->get("type"));
-        text += QString(", 0");
-        text += QString(", %1").arg(sign->get("script_label"));
+    if (map->events["sign"].length() +
+        map->events["event_hidden_item"].length() +
+        map->events["event_secret_base"].length() > 0)
+    {
+        text += QString("%1::\n").arg(map->bg_events_label);
+        for (Event *sign : map->events["sign"]) {
+            text += QString("\tbg_event %1").arg(sign->get("x"));
+            text += QString(", %1").arg(sign->get("y"));
+            text += QString(", %1").arg(sign->get("elevation"));
+            text += QString(", %1").arg(sign->get("type"));
+            text += QString(", 0");
+            text += QString(", %1").arg(sign->get("script_label"));
+            text += "\n";
+        }
+        for (Event *item : map->events["event_hidden_item"]) {
+            text += QString("\tbg_hidden_item_event %1").arg(item->get("x"));
+            text += QString(", %1").arg(item->get("y"));
+            text += QString(", %1").arg(item->get("elevation"));
+            text += QString(", %1").arg(item->get("item"));
+            text += QString(", %1").arg(item->get("flag"));
+            text += "\n";
+        }
+        for (Event *item : map->events["event_secret_base"]) {
+            text += QString("\tbg_secret_base_event %1").arg(item->get("x"));
+            text += QString(", %1").arg(item->get("y"));
+            text += QString(", %1").arg(item->get("elevation"));
+            text += QString(", %1").arg(item->get("secret_base_map"));
+            text += "\n";
+        }
         text += "\n";
     }
-    for (Event *item : map->events["hidden item"]) {
-        text += QString("\tbg_event %1").arg(item->get("x"));
-        text += QString(", %1").arg(item->get("y"));
-        text += QString(", %1").arg(item->get("elevation"));
-        text += QString(", %1").arg(item->get("type"));
-        text += QString(", 0");
-        text += QString(", %1").arg(item->get("item"));
-        text += QString(", %1").arg(item->get("item_unknown5"));
-        text += QString(", %1").arg(item->get("item_unknown6"));
-        text += "\n";
-    }
-    text += "\n";
 
     text += QString("%1::\n").arg(map->events_label);
     text += QString("\tmap_events %1, %2, %3, %4\n")
@@ -846,15 +879,22 @@ void Project::readMapEvents(Map *map) {
             warp->put("y", command.value(i++));
             warp->put("elevation", command.value(i++));
             warp->put("destination_warp", command.value(i++));
-            warp->put("destination_map", command.value(i++));
 
-            warp->put("event_type", "warp");
-            map->events["warp"].append(warp);
+            // Ensure the warp destination map constant is valid before adding it to the warps.
+            QString mapConstant = command.value(i++);
+            if (mapConstantsToMapNames.contains(mapConstant)) {
+                warp->put("destination_map_name", mapConstantsToMapNames[mapConstant]);
+                warp->put("event_type", "warp");
+                map->events["warp"].append(warp);
+            } else {
+                qDebug() << QString("Destination map constant '%1' is invalid for warp").arg(mapConstant);
+            }
         }
     }
 
     QList<QStringList> *coords = getLabelMacros(parse(text), map->coord_events_label);
     map->events["trap"].clear();
+    map->events["trap_weather"].clear();
     for (QStringList command : *coords) {
         if (command.value(0) == "coord_event") {
             Event *coord = new Event;
@@ -877,12 +917,23 @@ void Project::readMapEvents(Map *map) {
 
             coord->put("event_type", "trap");
             map->events["trap"].append(coord);
+        } else if (command.value(0) == "coord_weather_event") {
+            Event *coord = new Event;
+            coord->put("map_name", map->name);
+            int i = 1;
+            coord->put("x", command.value(i++));
+            coord->put("y", command.value(i++));
+            coord->put("elevation", command.value(i++));
+            coord->put("weather", command.value(i++));
+            coord->put("event_type", "trap_weather");
+            map->events["trap_weather"].append(coord);
         }
     }
 
     QList<QStringList> *bgs = getLabelMacros(parse(text), map->bg_events_label);
-    map->events["hidden item"].clear();
     map->events["sign"].clear();
+    map->events["event_hidden_item"].clear();
+    map->events["event_secret_base"].clear();
     for (QStringList command : *bgs) {
         if (command.value(0) == "bg_event") {
             Event *bg = new Event;
@@ -893,23 +944,33 @@ void Project::readMapEvents(Map *map) {
             bg->put("elevation", command.value(i++));
             bg->put("type", command.value(i++));
             i++;
-            if (bg->is_hidden_item()) {
-                bg->put("item", command.value(i++));
-                bg->put("item_unknown5", command.value(i++));
-                bg->put("item_unknown6", command.value(i++));
-
-                bg->put("event_type", "hidden item");
-                map->events["hidden item"].append(bg);
-            } else {
-                bg->put("script_label", command.value(i++));
-                //sign_unknown7
-
-                bg->put("event_type", "sign");
-                map->events["sign"].append(bg);
-            }
+            bg->put("script_label", command.value(i++));
+            //sign_unknown7
+            bg->put("event_type", "sign");
+            map->events["sign"].append(bg);
+        } else if (command.value(0) == "bg_hidden_item_event") {
+            Event *bg = new Event;
+            bg->put("map_name", map->name);
+            int i = 1;
+            bg->put("x", command.value(i++));
+            bg->put("y", command.value(i++));
+            bg->put("elevation", command.value(i++));
+            bg->put("item", command.value(i++));
+            bg->put("flag", command.value(i++));
+            bg->put("event_type", "event_hidden_item");
+            map->events["event_hidden_item"].append(bg);
+        } else if (command.value(0) == "bg_secret_base_event") {
+            Event *bg = new Event;
+            bg->put("map_name", map->name);
+            int i = 1;
+            bg->put("x", command.value(i++));
+            bg->put("y", command.value(i++));
+            bg->put("elevation", command.value(i++));
+            bg->put("secret_base_map", command.value(i++));
+            bg->put("event_type", "event_secret_base");
+            map->events["event_secret_base"].append(bg);
         }
     }
-
 }
 
 QStringList Project::readCArray(QString text, QString label) {

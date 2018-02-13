@@ -15,6 +15,8 @@ public:
     QStringList *groupNames = NULL;
     QList<QStringList*> *groupedMapNames = NULL;
     QStringList *mapNames = NULL;
+    QMap<QString, QString> mapConstantsToMapNames;
+    QMap<QString, QString> mapNamesToMapConstants;
 
     QMap<QString, Map*> *map_cache;
     Map* loadMap(QString);
