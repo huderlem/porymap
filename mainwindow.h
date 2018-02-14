@@ -4,6 +4,7 @@
 #include <QString>
 #include <QModelIndex>
 #include <QMainWindow>
+#include <QStandardItemModel>
 #include <QGraphicsPixmapItem>
 #include <QGraphicsItemGroup>
 #include <QGraphicsSceneMouseEvent>
@@ -65,8 +66,12 @@ private slots:
 
     void on_toolButton_Dropper_clicked();
 
+    void onOpenMapListContextMenu(const QPoint &point);
+    void addNewMapToGroup(QAction* triggeredAction);
+
 private:
     Ui::MainWindow *ui;
+    QStandardItemModel *mapListModel;
     Editor *editor = NULL;
     void setMap(QString);
     void populateMapList();
@@ -81,6 +86,10 @@ private:
 
     void displayMapProperties();
     void checkToolButtons();
+};
+
+enum MapListUserRoles {
+    TypeRole = Qt::UserRole + 10, // Used to differentiate between the different layers of the map list tree view.
 };
 
 #endif // MAINWINDOW_H

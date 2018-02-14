@@ -293,13 +293,13 @@ void MainWindow::populateMapList() {
     mapIcon.addFile(QStringLiteral(":/icons/map.ico"), QSize(), QIcon::Normal, QIcon::Off);
     mapIcon.addFile(QStringLiteral(":/icons/image.ico"), QSize(), QIcon::Normal, QIcon::On);
 
-    QStandardItemModel *model = new QStandardItemModel;
+    mapListModel = new QStandardItemModel;
 
     QStandardItem *entry = new QStandardItem;
     entry->setText(project->getProjectTitle());
     entry->setIcon(folderIcon);
     entry->setEditable(false);
-    model->appendRow(entry);
+    mapListModel->appendRow(entry);
 
     QStandardItem *maps = new QStandardItem;
     maps->setText("maps");
@@ -314,6 +314,8 @@ void MainWindow::populateMapList() {
         group->setText(group_name);
         group->setIcon(mapFolderIcon);
         group->setEditable(false);
+        group->setData(group_name, Qt::UserRole);
+        group->setData("map_group", MapListUserRoles::TypeRole);
         maps->appendRow(group);
         QStringList *names = project->groupedMapNames->value(i);
         for (int j = 0; j < names->length(); j++) {
@@ -323,15 +325,50 @@ void MainWindow::populateMapList() {
             map->setIcon(mapIcon);
             map->setEditable(false);
             map->setData(map_name, Qt::UserRole);
+            map->setData("map_name", MapListUserRoles::TypeRole);
             group->appendRow(map);
-            //ui->mapList->setExpanded(model->indexFromItem(map), false); // redundant
         }
     }
 
-    ui->mapList->setModel(model);
+    // Right-clicking on items in the map list tree view brings up a context menu.
+    ui->mapList->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->mapList, SIGNAL(customContextMenuRequested(const QPoint &)),
+            this, SLOT(onOpenMapListContextMenu(const QPoint &)));
+
+    ui->mapList->setModel(mapListModel);
     ui->mapList->setUpdatesEnabled(true);
     ui->mapList->expandToDepth(2);
     ui->mapList->repaint();
+}
+
+void MainWindow::onOpenMapListContextMenu(const QPoint &point)
+{
+    QModelIndex index = ui->mapList->indexAt(point);
+    if (!index.isValid()) {
+        return;
+    }
+
+    QStandardItem *selectedItem = mapListModel->itemFromIndex(index);
+    QVariant itemType = selectedItem->data(MapListUserRoles::TypeRole);
+    if (!itemType.isValid()) {
+        return;
+    }
+
+    // Build custom context menu depending on which type of item was selected (map group, map name, etc.)
+    if (itemType == "map_group") {
+        QString groupName = selectedItem->data(Qt::UserRole).toString();
+        QMenu* menu = new QMenu();
+        QActionGroup* actions = new QActionGroup(menu);
+        actions->addAction(menu->addAction("Add New Map to Group"))->setData(groupName);
+        connect(actions, SIGNAL(triggered(QAction*)), this, SLOT(addNewMapToGroup(QAction*)));
+        menu->exec(QCursor::pos());
+    }
+}
+
+void MainWindow::addNewMapToGroup(QAction* triggeredAction)
+{
+    QString groupName = triggeredAction->data().toString();
+    qDebug() << "Adding new map " << groupName;
 }
 
 void MainWindow::on_mapList_activated(const QModelIndex &index)
