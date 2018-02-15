@@ -6,6 +6,7 @@
 #include "event.h"
 
 #include <QDebug>
+#include <QDir>
 #include <QFile>
 #include <QTextStream>
 #include <QStandardItem>
@@ -542,6 +543,154 @@ void Project::readMapGroups() {
 }
 
 void Project::addNewMapToGroup(QString mapName, int groupNum) {
+    int mapIndex = 0;// TODO: need to calculate the new map index.
+
+    // Write new map to project files.
+    // 1. Create directory data/maps/<map_name>/
+    // 2. Create file data/maps/<map_name>/border.bin
+    // 3. Create file data/maps/<map_name>/header.inc
+    // 4. Create file data/maps/<map_name>/map.bin
+    // 5. Create file data/maps/events/<map_name>.inc
+    // 6. Create file data/scripts/maps/<map_name>.inc
+    // 7. Create file data/text/maps/<map_name>.inc
+    // 8. Modify data/event_scripts.s:
+    //     .include "data/scripts/maps/<map_name>.inc"
+    //     .include "data/text/maps/<map_name>.inc"
+    // 9. Modify data/map_events.s:
+    //     .include "data/maps/events/<map_name>.inc"
+    // 10. Modify data/maps/_assets.inc
+    // 11. Modify data/maps/_groups.inc
+    // 12. Modify data/maps/attributes_table.inc
+    // 13. Modify data/maps/headers.inc
+
+    // 1. Create directory data/maps/<map_name>/
+    QString dataDir = QString("%1/data/").arg(root);
+    QString dataMapsDir = QString("%1maps/").arg(dataDir);
+    QString newMapDataDir = QString("%1%2/").arg(dataMapsDir).arg(mapName);
+    if (!QDir::root().mkdir(newMapDataDir)) {
+        qDebug() << "Error: failed to create directory for new map. " << newMapDataDir;
+        return;
+    }
+
+    // 2. Create file data/maps/<map_name>/border.bin
+    QFile borderFile(newMapDataDir + "border.bin");
+    borderFile.open(QIODevice::WriteOnly);
+    QDataStream borderStream(&borderFile);
+    borderStream.setByteOrder(QDataStream::LittleEndian);
+    borderStream << qint16(0x01D4) << qint16(0x01D5) << qint16(0x01DC) << qint16(0x01DD);
+    borderFile.close();
+
+    // 3. Create file data/maps/<map_name>/header.inc
+    QFile headerFile(newMapDataDir + "header.inc");
+    headerFile.open(QIODevice::WriteOnly);
+    QTextStream headerStream(&headerFile);
+    headerStream << mapName << "::" << endl
+                 << "\t.4byte " << mapName << "_MapAttributes" << endl
+                 << "\t.4byte " << mapName << "_MapEvents" << endl
+                 << "\t.4byte " << mapName << "_MapScripts" << endl
+                 << "\t.4byte 0x0" << endl
+                 << "\t.2byte BGM_DAN02" << endl
+                 << "\t.2byte " << mapIndex << endl
+                 << "\t.byte 0" << endl
+                 << "\t.byte 0" << endl
+                 << "\t.byte 11" << endl
+                 << "\t.byte 4" << endl
+                 << "\t.2byte 0" << endl
+                 << "\t.byte 1" << endl
+                 << "\t.byte 0" << endl;
+    headerFile.close();
+
+    // 4. Create file data/maps/<map_name>/map.bin
+    QFile mapFile(newMapDataDir + "map.bin");
+    mapFile.open(QIODevice::WriteOnly);
+    QDataStream mapStream(&mapFile);
+    mapStream.setByteOrder(QDataStream::LittleEndian);
+    for (int i = 0; i < 20 * 20; i++) {
+        mapStream << qint16(0x3001);
+    }
+    mapFile.close();
+
+    // 5. Create file data/maps/events/<map_name>.inc
+    QFile eventsFile(dataMapsDir + "events/" + mapName + ".inc");
+    eventsFile.open(QIODevice::WriteOnly);
+    QTextStream eventsStream(&eventsFile);
+    eventsStream << mapName << "_MapEvents::" << endl
+                 << "\tmap_events 0x0, 0x0, 0x0, 0x0" << endl;
+    eventsFile.close();
+
+    // 6. Create file data/scripts/maps/<map_name>.inc
+    QFile scriptsFile(dataDir + "scripts/maps/" + mapName + ".inc");
+    scriptsFile.open(QIODevice::WriteOnly);
+    QTextStream scriptsStream(&scriptsFile);
+    scriptsStream << mapName << "_MapScripts::" << endl
+                  << "\t.byte 0" << endl;
+    scriptsFile.close();
+
+    // 7. Create file data/text/maps/<map_name>.inc
+    QFile textFile(dataDir + "text/maps/" + mapName + ".inc");
+    textFile.open(QIODevice::WriteOnly);
+    QTextStream textStream(&textFile);
+    textStream << endl;
+    textFile.close();
+
+    // 8. Modify data/event_scripts.s:
+    QFile eventScriptsFile(dataDir + "event_scripts.s");
+    eventScriptsFile.open(QIODevice::Append);
+    QTextStream eventScriptsStream(&eventScriptsFile);
+    eventScriptsStream << endl
+                       << "\t.include \"data/scripts/maps/" << mapName << ".inc\"" << endl
+                       << "\t.include \"data/text/maps/" << mapName << ".inc\"" << endl;
+    eventScriptsFile.close();
+
+    // 9. Modify data/map_events.s:
+    QFile mapEventsFile(dataDir + "map_events.s");
+    mapEventsFile.open(QIODevice::Append);
+    QTextStream mapEventsStream(&mapEventsFile);
+    mapEventsStream << endl
+                    << "\t.include \"data/maps/events/" << mapName << ".inc\"" << endl;
+    mapEventsFile.close();
+
+    // 10. Modify data/maps/_assets.inc
+    QFile assetsFile(dataMapsDir + "_assets.inc");
+    assetsFile.open(QIODevice::Append);
+    QTextStream assetsStream(&assetsFile);
+    assetsStream << endl
+                 << mapName << "_MapBorder::" << endl
+                 << "\t.incbin \"data/maps/" << mapName << "/border.bin\"" << endl
+                 << endl
+                 << mapName << "_MapBlockdata::" << endl
+                 << "\t.incbin \"data/maps/" << mapName << "/map.bin\"" << endl
+                 << endl
+                 << "\t.align 2" << endl
+                 << mapName << "_MapAttributes::" << endl
+                 << "\t.4byte 0x14" << endl
+                 << "\t.4byte 0x14" << endl
+                 << "\t.4byte " << mapName << "_MapBorder" << endl
+                 << "\t.4byte " << mapName << "_MapBlockdata" << endl
+                 << "\t.4byte gTileset_General" << endl
+                 << "\t.4byte gTileset_Pacifidlog" << endl
+                 << endl;
+    assetsFile.close();
+
+    // 11. Modify data/maps/_groups.inc
+    // TODO:
+
+    // 12. Modify data/maps/attributes_table.inc
+    QFile attributesFile(dataMapsDir + "attributes_table.inc");
+    attributesFile.open(QIODevice::Append);
+    QTextStream attributesStream(&attributesFile);
+    attributesStream << endl
+                    << "\t.4byte " << mapName << "_MapAttributes" << endl;
+    attributesFile.close();
+
+    // 13. Modify data/maps/headers.inc
+    QFile headersFile(dataMapsDir + "headers.inc");
+    headersFile.open(QIODevice::Append);
+    QTextStream headersStream(&headersFile);
+    headersStream << endl
+                    << "\t.include \"data/maps/" << mapName << "/header.inc\"" << endl;
+    headersFile.close();
+
     mapNames->append(mapName);
     map_groups->insert(mapName, groupNum);
     groupedMapNames->value(groupNum)->append(mapName);
