@@ -76,6 +76,7 @@ public:
 public:
     QString name;
     QString constantName;
+    QString group_num;
     QString attributes_label;
     QString events_label;
     QString scripts_label;
@@ -188,6 +189,15 @@ signals:
     void mapChanged(Map *map);
 
 public slots:
+};
+
+class MapGroup : public QObject
+{
+    Q_OBJECT
+public:
+    QString name;
+    int group_num;
+    QList<Map*> maps;
 };
 
 #endif // MAP_H

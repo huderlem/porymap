@@ -6,6 +6,7 @@
 
 #include <QStringList>
 #include <QList>
+#include <QStandardItem>
 
 class Project
 {
@@ -13,10 +14,11 @@ public:
     Project();
     QString root;
     QStringList *groupNames = NULL;
+    QMap<QString, int> *map_groups;
     QList<QStringList*> *groupedMapNames = NULL;
     QStringList *mapNames = NULL;
-    QMap<QString, QString> mapConstantsToMapNames;
-    QMap<QString, QString> mapNamesToMapConstants;
+    QMap<QString, QString> *mapConstantsToMapNames;
+    QMap<QString, QString> *mapNamesToMapConstants;
 
     QMap<QString, Map*> *map_cache;
     Map* loadMap(QString);
@@ -33,6 +35,8 @@ public:
     void saveTextFile(QString path, QString text);
 
     void readMapGroups();
+    void addNewMapToGroup(QString mapName, int groupNum);
+    QString getNewMapName();
     QString getProjectTitle();
 
     QList<QStringList>* getLabelMacros(QList<QStringList>*, QString);

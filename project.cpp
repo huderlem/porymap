@@ -8,15 +8,19 @@
 #include <QDebug>
 #include <QFile>
 #include <QTextStream>
+#include <QStandardItem>
 #include <QMessageBox>
 #include <QRegularExpression>
 
 Project::Project()
 {
     groupNames = new QStringList;
+    map_groups = new QMap<QString, int>;
     groupedMapNames = new QList<QStringList*>;
     mapNames = new QStringList;
     map_cache = new QMap<QString, Map*>;
+    mapConstantsToMapNames = new QMap<QString, QString>;
+    mapNamesToMapConstants = new QMap<QString, QString>;
     tileset_cache = new QMap<QString, Tileset*>;
 }
 
@@ -67,8 +71,8 @@ void Project::loadMapConnections(Map *map) {
                     connection->direction = command.value(1);
                     connection->offset = command.value(2);
                     QString mapConstant = command.value(3);
-                    if (mapConstantsToMapNames.contains(mapConstant)) {
-                        connection->map_name = mapConstantsToMapNames[mapConstant];
+                    if (mapConstantsToMapNames->contains(mapConstant)) {
+                        connection->map_name = mapConstantsToMapNames->value(mapConstant);
                         map->connections.append(connection);
                     } else {
                         qDebug() << QString("Failed to find connected map for map constant '%1'").arg(mapConstant);
@@ -521,11 +525,12 @@ void Project::readMapGroups() {
                     QStringList *list = groupedMaps->value(group);
                     list->append(mapName);
                     maps->append(mapName);
+                    map_groups->insert(mapName, group);
 
                     // Build the mapping and reverse mapping between map constants and map names.
                     QString mapConstant = Map::mapConstantFromName(mapName);
-                    mapConstantsToMapNames.insert(mapConstant, mapName);
-                    mapNamesToMapConstants.insert(mapName, mapConstant);
+                    mapConstantsToMapNames->insert(mapConstant, mapName);
+                    mapNamesToMapConstants->insert(mapName, mapConstant);
                 }
             }
         }
@@ -534,6 +539,23 @@ void Project::readMapGroups() {
     groupNames = groups;
     groupedMapNames = groupedMaps;
     mapNames = maps;
+}
+
+void Project::addNewMapToGroup(QString mapName, int groupNum) {
+    mapNames->append(mapName);
+    map_groups->insert(mapName, groupNum);
+    groupedMapNames->value(groupNum)->append(mapName);
+}
+
+QString Project::getNewMapName() {
+    // Ensure default name doesn't already exist.
+    int i = 0;
+    QString newMapName;
+    do {
+        newMapName = QString("NewMap%1").arg(++i);
+    } while (mapNames->contains(newMapName));
+
+    return newMapName;
 }
 
 QList<QStringList>* Project::parse(QString text) {
@@ -739,7 +761,7 @@ void Project::saveMapEvents(Map *map) {
             text += QString(", %1").arg(warp->get("y"));
             text += QString(", %1").arg(warp->get("elevation"));
             text += QString(", %1").arg(warp->get("destination_warp"));
-            text += QString(", %1").arg(mapNamesToMapConstants[warp->get("destination_map_name")]);
+            text += QString(", %1").arg(mapNamesToMapConstants->value(warp->get("destination_map_name")));
             text += "\n";
         }
         text += "\n";
@@ -882,8 +904,8 @@ void Project::readMapEvents(Map *map) {
 
             // Ensure the warp destination map constant is valid before adding it to the warps.
             QString mapConstant = command.value(i++);
-            if (mapConstantsToMapNames.contains(mapConstant)) {
-                warp->put("destination_map_name", mapConstantsToMapNames[mapConstant]);
+            if (mapConstantsToMapNames->contains(mapConstant)) {
+                warp->put("destination_map_name", mapConstantsToMapNames->value(mapConstant));
                 warp->put("event_type", "warp");
                 map->events["warp"].append(warp);
             } else {
