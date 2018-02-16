@@ -48,6 +48,13 @@ public:
     void getTilesets(Map*);
     void loadTilesetAssets(Tileset*);
 
+    void setNewMapHeader(Map* map, int mapIndex);
+    void setNewMapAttributes(Map* map);
+    void setNewMapBlockdata(Map* map);
+    void setNewMapBorder(Map *map);
+    void setNewMapEvents(Map *map);
+    void setNewMapConnections(Map *map);
+
     QString getBlockdataPath(Map*);
     void saveBlockdata(Map*);
     void writeBlockdata(QString, Blockdata*);

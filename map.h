@@ -103,6 +103,8 @@ public:
 
     Blockdata* blockdata = NULL;
 
+    bool isPersistedToFile = true;
+
 public:
     void setName(QString mapName);
     static QString mapConstantFromName(QString mapName);

@@ -391,6 +391,8 @@ void MainWindow::onAddNewMapToGroupClick(QAction* triggeredAction)
     int numMapsInGroup = groupItem->rowCount();
     QStandardItem *newMapItem = createMapItem(newMapName, groupNum, numMapsInGroup);
     groupItem->appendRow(newMapItem);
+
+    setMap(newMapName);
 }
 
 void MainWindow::on_mapList_activated(const QModelIndex &index)

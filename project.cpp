@@ -35,9 +35,15 @@ QString Project::getProjectTitle() {
 }
 
 Map* Project::loadMap(QString map_name) {
-    Map *map = new Map;
+    // New maps are saved to actual files yet, so we need to fetch their data from the map_cache.
+    Map *map;
+    if (map_cache->contains(map_name) && !map_cache->value(map_name)->isPersistedToFile) {
+        map = map_cache->value(map_name);
+    } else {
+        map = new Map;
+        map->setName(map_name);
+    }
 
-    map->setName(map_name);
     readMapHeader(map);
     readMapAttributes(map);
     getTilesets(map);
@@ -53,6 +59,10 @@ Map* Project::loadMap(QString map_name) {
 }
 
 void Project::loadMapConnections(Map *map) {
+    if (!map->isPersistedToFile) {
+        return;
+    }
+
     map->connections.clear();
     if (!map->connections_label.isNull()) {
         QString path = root + QString("/data/maps/%1/connections.inc").arg(map->name);
@@ -83,6 +93,10 @@ void Project::loadMapConnections(Map *map) {
             }
         }
     }
+}
+
+void Project::setNewMapConnections(Map *map) {
+    map->connections.clear();
 }
 
 QList<QStringList>* Project::getLabelMacros(QList<QStringList> *list, QString label) {
@@ -128,6 +142,10 @@ QStringList* Project::getLabelValues(QList<QStringList> *list, QString label) {
 }
 
 void Project::readMapHeader(Map* map) {
+    if (!map->isPersistedToFile) {
+        return;
+    }
+
     QString label = map->name;
     Asm *parser = new Asm;
 
@@ -149,6 +167,22 @@ void Project::readMapHeader(Map* map) {
     map->unknown = header->value(10);
     map->show_location = header->value(11);
     map->battle_scene = header->value(12);
+}
+
+void Project::setNewMapHeader(Map* map, int mapIndex) {
+    map->attributes_label = QString("%1_MapAttributes").arg(map->name);
+    map->events_label = QString("%1_MapEvents").arg(map->name);;
+    map->scripts_label = QString("%1_MapScripts").arg(map->name);;
+    map->connections_label = "0x0";
+    map->song = "BGM_DAN02";
+    map->index = mapIndex;
+    map->location = "0";
+    map->visibility = "0";
+    map->weather = "2";
+    map->type = "1";
+    map->unknown = "0";
+    map->show_location = "1";
+    map->battle_scene = "0";
 }
 
 void Project::saveMapHeader(Map *map) {
@@ -220,6 +254,10 @@ QString Project::getMapAttributesTableFilepath() {
 }
 
 void Project::readMapAttributes(Map* map) {
+    if (!map->isPersistedToFile) {
+        return;
+    }
+
     Asm *parser = new Asm;
 
     QString assets_text = readTextFile(root + "/data/maps/_assets.inc");
@@ -233,6 +271,15 @@ void Project::readMapAttributes(Map* map) {
     map->blockdata_label = attributes->value(3);
     map->tileset_primary_label = attributes->value(4);
     map->tileset_secondary_label = attributes->value(5);
+}
+
+void Project::setNewMapAttributes(Map* map) {
+    map->width = "20";
+    map->height = "20";
+    map->border_label = QString("%1_MapBorder").arg(map->name);
+    map->blockdata_label = QString("%1_MapBlockdata").arg(map->name);
+    map->tileset_primary_label = "gTileset_General";
+    map->tileset_secondary_label = "gTileset_Petalburg";
 }
 
 void Project::getTilesets(Map* map) {
@@ -287,13 +334,38 @@ QString Project::getMapBorderPath(Map *map) {
 }
 
 void Project::loadBlockdata(Map* map) {
+    if (!map->isPersistedToFile) {
+        return;
+    }
+
     QString path = getBlockdataPath(map);
     map->blockdata = readBlockdata(path);
 }
 
+void Project::setNewMapBlockdata(Map* map) {
+    Blockdata *blockdata = new Blockdata;
+    for (int i = 0; i < map->getWidth() * map->getHeight(); i++) {
+        blockdata->addBlock(qint16(0x3001));
+    }
+    map->blockdata = blockdata;
+}
+
 void Project::loadMapBorder(Map *map) {
+    if (!map->isPersistedToFile) {
+        return;
+    }
+
     QString path = getMapBorderPath(map);
     map->border = readBlockdata(path);
+}
+
+void Project::setNewMapBorder(Map *map) {
+    Blockdata *blockdata = new Blockdata;
+    blockdata->addBlock(qint16(0x01D4));
+    blockdata->addBlock(qint16(0x01D5));
+    blockdata->addBlock(qint16(0x01DC));
+    blockdata->addBlock(qint16(0x01DD));
+    map->border = blockdata;
 }
 
 void Project::saveBlockdata(Map* map) {
@@ -616,138 +688,154 @@ void Project::addNewMapToGroup(QString mapName, int groupNum) {
     int mapIndex = mapAttributesTable->count() + 1;
     mapAttributesTable->insert(mapIndex, mapName);
 
-    QString dataDir = QString("%1/data/").arg(root);
-    QString dataMapsDir = QString("%1maps/").arg(dataDir);
-    QString newMapDataDir = QString("%1%2/").arg(dataMapsDir).arg(mapName);
-
-    // 1. Create directory data/maps/<map_name>/
-    if (!QDir::root().mkdir(newMapDataDir)) {
-        qDebug() << "Error: failed to create directory for new map. " << newMapDataDir;
-        return;
-    }
-
-    // 2. Create file data/maps/<map_name>/border.bin
-    QFile borderFile(newMapDataDir + "border.bin");
-    borderFile.open(QIODevice::WriteOnly);
-    QDataStream borderStream(&borderFile);
-    borderStream.setByteOrder(QDataStream::LittleEndian);
-    borderStream << qint16(0x01D4) << qint16(0x01D5) << qint16(0x01DC) << qint16(0x01DD);
-    borderFile.close();
-
-    // 3. Create file data/maps/<map_name>/header.inc
-    QFile headerFile(newMapDataDir + "header.inc");
-    headerFile.open(QIODevice::WriteOnly);
-    QTextStream headerStream(&headerFile);
-    headerStream << mapName << "::" << endl
-                 << "\t.4byte " << mapName << "_MapAttributes" << endl
-                 << "\t.4byte " << mapName << "_MapEvents" << endl
-                 << "\t.4byte " << mapName << "_MapScripts" << endl
-                 << "\t.4byte 0x0" << endl
-                 << "\t.2byte BGM_DAN02" << endl
-                 << "\t.2byte " << mapIndex << endl
-                 << "\t.byte 0" << endl
-                 << "\t.byte 0" << endl
-                 << "\t.byte 11" << endl
-                 << "\t.byte 4" << endl
-                 << "\t.2byte 0" << endl
-                 << "\t.byte 1" << endl
-                 << "\t.byte 0" << endl;
-    headerFile.close();
-
-    // 4. Create file data/maps/<map_name>/map.bin
-    QFile mapFile(newMapDataDir + "map.bin");
-    mapFile.open(QIODevice::WriteOnly);
-    QDataStream mapStream(&mapFile);
-    mapStream.setByteOrder(QDataStream::LittleEndian);
-    for (int i = 0; i < 20 * 20; i++) {
-        mapStream << qint16(0x3001);
-    }
-    mapFile.close();
-
-    // 5. Create file data/maps/events/<map_name>.inc
-    QFile eventsFile(dataMapsDir + "events/" + mapName + ".inc");
-    eventsFile.open(QIODevice::WriteOnly);
-    QTextStream eventsStream(&eventsFile);
-    eventsStream << mapName << "_MapEvents::" << endl
-                 << "\tmap_events 0x0, 0x0, 0x0, 0x0" << endl;
-    eventsFile.close();
-
-    // 6. Create file data/scripts/maps/<map_name>.inc
-    QFile scriptsFile(dataDir + "scripts/maps/" + mapName + ".inc");
-    scriptsFile.open(QIODevice::WriteOnly);
-    QTextStream scriptsStream(&scriptsFile);
-    scriptsStream << mapName << "_MapScripts::" << endl
-                  << "\t.byte 0" << endl;
-    scriptsFile.close();
-
-    // 7. Create file data/text/maps/<map_name>.inc
-    QFile textFile(dataDir + "text/maps/" + mapName + ".inc");
-    textFile.open(QIODevice::WriteOnly);
-    QTextStream textStream(&textFile);
-    textStream << endl;
-    textFile.close();
-
-    // 8. Modify data/event_scripts.s:
-    QFile eventScriptsFile(dataDir + "event_scripts.s");
-    eventScriptsFile.open(QIODevice::Append);
-    QTextStream eventScriptsStream(&eventScriptsFile);
-    eventScriptsStream << endl
-                       << "\t.include \"data/scripts/maps/" << mapName << ".inc\"" << endl
-                       << "\t.include \"data/text/maps/" << mapName << ".inc\"" << endl;
-    eventScriptsFile.close();
-
-    // 9. Modify data/map_events.s:
-    QFile mapEventsFile(dataDir + "map_events.s");
-    mapEventsFile.open(QIODevice::Append);
-    QTextStream mapEventsStream(&mapEventsFile);
-    mapEventsStream << endl
-                    << "\t.include \"data/maps/events/" << mapName << ".inc\"" << endl;
-    mapEventsFile.close();
-
-    // 10. Modify data/maps/_assets.inc
-    QFile assetsFile(dataMapsDir + "_assets.inc");
-    assetsFile.open(QIODevice::Append);
-    QTextStream assetsStream(&assetsFile);
-    assetsStream << endl
-                 << mapName << "_MapBorder::" << endl
-                 << "\t.incbin \"data/maps/" << mapName << "/border.bin\"" << endl
-                 << endl
-                 << mapName << "_MapBlockdata::" << endl
-                 << "\t.incbin \"data/maps/" << mapName << "/map.bin\"" << endl
-                 << endl
-                 << "\t.align 2" << endl
-                 << mapName << "_MapAttributes::" << endl
-                 << "\t.4byte 0x14" << endl
-                 << "\t.4byte 0x14" << endl
-                 << "\t.4byte " << mapName << "_MapBorder" << endl
-                 << "\t.4byte " << mapName << "_MapBlockdata" << endl
-                 << "\t.4byte gTileset_General" << endl
-                 << "\t.4byte gTileset_Pacifidlog" << endl
-                 << endl;
-    assetsFile.close();
-
-    // 11. Modify data/maps/_groups.inc
-    // TODO:
-
-    // 12. Modify data/maps/attributes_table.inc
-    QFile attributesFile(dataMapsDir + "attributes_table.inc");
-    attributesFile.open(QIODevice::Append);
-    QTextStream attributesStream(&attributesFile);
-    attributesStream << endl
-                    << "\t.4byte " << mapName << "_MapAttributes" << endl;
-    attributesFile.close();
-
-    // 13. Modify data/maps/headers.inc
-    QFile headersFile(dataMapsDir + "headers.inc");
-    headersFile.open(QIODevice::Append);
-    QTextStream headersStream(&headersFile);
-    headersStream << endl
-                    << "\t.include \"data/maps/" << mapName << "/header.inc\"" << endl;
-    headersFile.close();
-
+    // Setup new map in memory, but don't write to file until map is actually saved later.
     mapNames->append(mapName);
     map_groups->insert(mapName, groupNum);
     groupedMapNames->value(groupNum)->append(mapName);
+
+    Map *map = new Map;
+    map->isPersistedToFile = false;
+    map->setName(mapName);
+    setNewMapHeader(map, mapIndex);
+    setNewMapAttributes(map);
+    getTilesets(map);
+    setNewMapBlockdata(map);
+    setNewMapBorder(map);
+    setNewMapEvents(map);
+    setNewMapConnections(map);
+    map->commit();
+    map->history.save();
+    map_cache->insert(mapName, map);
+
+
+//    QString dataDir = QString("%1/data/").arg(root);
+//    QString dataMapsDir = QString("%1maps/").arg(dataDir);
+//    QString newMapDataDir = QString("%1%2/").arg(dataMapsDir).arg(mapName);
+
+//    // 1. Create directory data/maps/<map_name>/
+//    if (!QDir::root().mkdir(newMapDataDir)) {
+//        qDebug() << "Error: failed to create directory for new map. " << newMapDataDir;
+//        return;
+//    }
+
+//    // 2. Create file data/maps/<map_name>/border.bin
+//    QFile borderFile(newMapDataDir + "border.bin");
+//    borderFile.open(QIODevice::WriteOnly);
+//    QDataStream borderStream(&borderFile);
+//    borderStream.setByteOrder(QDataStream::LittleEndian);
+//    borderStream << qint16(0x01D4) << qint16(0x01D5) << qint16(0x01DC) << qint16(0x01DD);
+//    borderFile.close();
+
+//    // 3. Create file data/maps/<map_name>/header.inc
+//    QFile headerFile(newMapDataDir + "header.inc");
+//    headerFile.open(QIODevice::WriteOnly);
+//    QTextStream headerStream(&headerFile);
+//    headerStream << mapName << "::" << endl
+//                 << "\t.4byte " << mapName << "_MapAttributes" << endl
+//                 << "\t.4byte " << mapName << "_MapEvents" << endl
+//                 << "\t.4byte " << mapName << "_MapScripts" << endl
+//                 << "\t.4byte 0x0" << endl
+//                 << "\t.2byte BGM_DAN02" << endl
+//                 << "\t.2byte " << mapIndex << endl
+//                 << "\t.byte 0" << endl
+//                 << "\t.byte 0" << endl
+//                 << "\t.byte 11" << endl
+//                 << "\t.byte 4" << endl
+//                 << "\t.2byte 0" << endl
+//                 << "\t.byte 1" << endl
+//                 << "\t.byte 0" << endl;
+//    headerFile.close();
+
+//    // 4. Create file data/maps/<map_name>/map.bin
+//    QFile mapFile(newMapDataDir + "map.bin");
+//    mapFile.open(QIODevice::WriteOnly);
+//    QDataStream mapStream(&mapFile);
+//    mapStream.setByteOrder(QDataStream::LittleEndian);
+//    for (int i = 0; i < 20 * 20; i++) {
+//        mapStream << qint16(0x3001);
+//    }
+//    mapFile.close();
+
+//    // 5. Create file data/maps/events/<map_name>.inc
+//    QFile eventsFile(dataMapsDir + "events/" + mapName + ".inc");
+//    eventsFile.open(QIODevice::WriteOnly);
+//    QTextStream eventsStream(&eventsFile);
+//    eventsStream << mapName << "_MapEvents::" << endl
+//                 << "\tmap_events 0x0, 0x0, 0x0, 0x0" << endl;
+//    eventsFile.close();
+
+//    // 6. Create file data/scripts/maps/<map_name>.inc
+//    QFile scriptsFile(dataDir + "scripts/maps/" + mapName + ".inc");
+//    scriptsFile.open(QIODevice::WriteOnly);
+//    QTextStream scriptsStream(&scriptsFile);
+//    scriptsStream << mapName << "_MapScripts::" << endl
+//                  << "\t.byte 0" << endl;
+//    scriptsFile.close();
+
+//    // 7. Create file data/text/maps/<map_name>.inc
+//    QFile textFile(dataDir + "text/maps/" + mapName + ".inc");
+//    textFile.open(QIODevice::WriteOnly);
+//    QTextStream textStream(&textFile);
+//    textStream << endl;
+//    textFile.close();
+
+//    // 8. Modify data/event_scripts.s:
+//    QFile eventScriptsFile(dataDir + "event_scripts.s");
+//    eventScriptsFile.open(QIODevice::Append);
+//    QTextStream eventScriptsStream(&eventScriptsFile);
+//    eventScriptsStream << endl
+//                       << "\t.include \"data/scripts/maps/" << mapName << ".inc\"" << endl
+//                       << "\t.include \"data/text/maps/" << mapName << ".inc\"" << endl;
+//    eventScriptsFile.close();
+
+//    // 9. Modify data/map_events.s:
+//    QFile mapEventsFile(dataDir + "map_events.s");
+//    mapEventsFile.open(QIODevice::Append);
+//    QTextStream mapEventsStream(&mapEventsFile);
+//    mapEventsStream << endl
+//                    << "\t.include \"data/maps/events/" << mapName << ".inc\"" << endl;
+//    mapEventsFile.close();
+
+//    // 10. Modify data/maps/_assets.inc
+//    QFile assetsFile(dataMapsDir + "_assets.inc");
+//    assetsFile.open(QIODevice::Append);
+//    QTextStream assetsStream(&assetsFile);
+//    assetsStream << endl
+//                 << mapName << "_MapBorder::" << endl
+//                 << "\t.incbin \"data/maps/" << mapName << "/border.bin\"" << endl
+//                 << endl
+//                 << mapName << "_MapBlockdata::" << endl
+//                 << "\t.incbin \"data/maps/" << mapName << "/map.bin\"" << endl
+//                 << endl
+//                 << "\t.align 2" << endl
+//                 << mapName << "_MapAttributes::" << endl
+//                 << "\t.4byte 0x14" << endl
+//                 << "\t.4byte 0x14" << endl
+//                 << "\t.4byte " << mapName << "_MapBorder" << endl
+//                 << "\t.4byte " << mapName << "_MapBlockdata" << endl
+//                 << "\t.4byte gTileset_General" << endl
+//                 << "\t.4byte gTileset_Pacifidlog" << endl
+//                 << endl;
+//    assetsFile.close();
+
+//    // 11. Modify data/maps/_groups.inc
+//    // TODO:
+
+//    // 12. Modify data/maps/attributes_table.inc
+//    QFile attributesFile(dataMapsDir + "attributes_table.inc");
+//    attributesFile.open(QIODevice::Append);
+//    QTextStream attributesStream(&attributesFile);
+//    attributesStream << endl
+//                    << "\t.4byte " << mapName << "_MapAttributes" << endl;
+//    attributesFile.close();
+
+//    // 13. Modify data/maps/headers.inc
+//    QFile headersFile(dataMapsDir + "headers.inc");
+//    headersFile.open(QIODevice::Append);
+//    QTextStream headersStream(&headersFile);
+//    headersStream << endl
+//                    << "\t.include \"data/maps/" << mapName << "/header.inc\"" << endl;
+//    headersFile.close();
 }
 
 QString Project::getNewMapName() {
@@ -1036,6 +1124,10 @@ void Project::saveMapEvents(Map *map) {
 }
 
 void Project::readMapEvents(Map *map) {
+    if (!map->isPersistedToFile) {
+        return;
+    }
+
     // lazy
     QString path = root + QString("/data/maps/events/%1.inc").arg(map->name);
     QString text = readTextFile(path);
@@ -1196,6 +1288,20 @@ void Project::readMapEvents(Map *map) {
             map->events["event_secret_base"].append(bg);
         }
     }
+}
+
+void Project::setNewMapEvents(Map *map) {
+    map->object_events_label = "0x0";
+    map->warps_label = "0x0";
+    map->coord_events_label = "0x0";
+    map->bg_events_label = "0x0";
+    map->events["object"].clear();
+    map->events["warp"].clear();
+    map->events["trap"].clear();
+    map->events["trap_weather"].clear();
+    map->events["sign"].clear();
+    map->events["event_hidden_item"].clear();
+    map->events["event_secret_base"].clear();
 }
 
 QStringList Project::readCArray(QString text, QString label) {

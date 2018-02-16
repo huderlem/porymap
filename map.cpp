@@ -732,5 +732,5 @@ void Map::addEvent(Event *event) {
 }
 
 bool Map::hasUnsavedChanges() {
-    return !history.isSaved();
+    return !history.isSaved() || !isPersistedToFile;
 }
