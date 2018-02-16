@@ -19,6 +19,7 @@ public:
     QStringList *mapNames = NULL;
     QMap<QString, QString> *mapConstantsToMapNames;
     QMap<QString, QString> *mapNamesToMapConstants;
+    QMap<int, QString> *mapAttributesTable;
 
     QMap<QString, Map*> *map_cache;
     Map* loadMap(QString);
@@ -42,6 +43,7 @@ public:
     QList<QStringList>* getLabelMacros(QList<QStringList>*, QString);
     QStringList* getLabelValues(QList<QStringList>*, QString);
     void readMapHeader(Map*);
+    void readMapAttributesTable();
     void readMapAttributes(Map*);
     void getTilesets(Map*);
     void loadTilesetAssets(Tileset*);
@@ -51,7 +53,7 @@ public:
     void writeBlockdata(QString, Blockdata*);
     void saveAllMaps();
     void saveMap(Map*);
-    void saveMapHeader(Map*);
+    void saveAllDataStructures();
 
     QList<QStringList>* parse(QString text);
     QStringList getSongNames();
@@ -77,6 +79,10 @@ public:
     QStringList readCArray(QString text, QString label);
     QString readCIncbin(QString text, QString label);
     QMap<QString, int> readCDefines(QString text, QStringList prefixes);
+private:
+    QString getMapAttributesTableFilepath();
+    void saveMapHeader(Map*);
+    void saveMapAttributesTable();
 };
 
 #endif // PROJECT_H

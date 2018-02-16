@@ -22,6 +22,7 @@ Project::Project()
     map_cache = new QMap<QString, Map*>;
     mapConstantsToMapNames = new QMap<QString, QString>;
     mapNamesToMapConstants = new QMap<QString, QString>;
+    mapAttributesTable = new QMap<int, QString>;
     tileset_cache = new QMap<QString, Tileset*>;
 }
 
@@ -171,6 +172,53 @@ void Project::saveMapHeader(Map *map) {
     saveTextFile(header_path, text);
 }
 
+void Project::readMapAttributesTable() {
+    int curMapIndex = 1;
+    QString attributesText = readTextFile(getMapAttributesTableFilepath());
+    QList<QStringList>* values = parse(attributesText);
+    bool inAttributePointers = false;
+    for (int i = 0; i < values->length(); i++) {
+        QStringList params = values->value(i);
+        QString macro = params.value(0);
+        if (macro == ".label") {
+            if (inAttributePointers) {
+                break;
+            }
+            if (params.value(1) == "gMapAttributes") {
+                inAttributePointers = true;
+            }
+        } else if (macro == ".4byte" && inAttributePointers) {
+            QString mapName = params.value(1);
+            if (!mapName.contains("UnknownMapAttributes")) {
+                // Strip off "_MapAttributes" from the label if it's a real map label.
+                mapName = mapName.remove(mapName.length() - 14, 14);
+            }
+            mapAttributesTable->insert(curMapIndex, mapName);
+            curMapIndex++;
+        }
+    }
+}
+
+void Project::saveMapAttributesTable() {
+    QString text = "";
+    text += QString("\t.align 2\n");
+    text += QString("gMapAttributes::\n");
+    for (int i = 0; i < mapAttributesTable->count(); i++) {
+        int mapIndex = i + 1;
+        QString mapName = mapAttributesTable->value(mapIndex);
+        if (!mapName.contains("UnknownMapAttributes")) {
+            text += QString("\t.4byte %1_MapAttributes\n").arg(mapName);
+        } else {
+            text += QString("\t.4byte %1\n").arg(mapName);
+        }
+    }
+    saveTextFile(getMapAttributesTableFilepath(), text);
+}
+
+QString Project::getMapAttributesTableFilepath() {
+    return QString("%1/data/maps/attributes_table.inc").arg(root);
+}
+
 void Project::readMapAttributes(Map* map) {
     Asm *parser = new Asm;
 
@@ -275,6 +323,10 @@ void Project::saveMap(Map *map) {
     saveBlockdata(map);
     saveMapHeader(map);
     saveMapEvents(map);
+}
+
+void Project::saveAllDataStructures() {
+    saveMapAttributesTable();
 }
 
 void Project::loadTilesetAssets(Tileset* tileset) {
@@ -543,8 +595,6 @@ void Project::readMapGroups() {
 }
 
 void Project::addNewMapToGroup(QString mapName, int groupNum) {
-    int mapIndex = 0;// TODO: need to calculate the new map index.
-
     // Write new map to project files.
     // 1. Create directory data/maps/<map_name>/
     // 2. Create file data/maps/<map_name>/border.bin
@@ -563,10 +613,14 @@ void Project::addNewMapToGroup(QString mapName, int groupNum) {
     // 12. Modify data/maps/attributes_table.inc
     // 13. Modify data/maps/headers.inc
 
-    // 1. Create directory data/maps/<map_name>/
+    int mapIndex = mapAttributesTable->count() + 1;
+    mapAttributesTable->insert(mapIndex, mapName);
+
     QString dataDir = QString("%1/data/").arg(root);
     QString dataMapsDir = QString("%1maps/").arg(dataDir);
     QString newMapDataDir = QString("%1%2/").arg(dataMapsDir).arg(mapName);
+
+    // 1. Create directory data/maps/<map_name>/
     if (!QDir::root().mkdir(newMapDataDir)) {
         qDebug() << "Error: failed to create directory for new map. " << newMapDataDir;
         return;

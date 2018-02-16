@@ -76,6 +76,7 @@ private:
     Editor *editor = NULL;
     QIcon* mapIcon;
     void setMap(QString);
+    void loadDataStructures();
     void populateMapList();
     QString getExistingDirectory(QString);
     void openProject(QString dir);

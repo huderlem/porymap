@@ -9,6 +9,7 @@ Editor::Editor()
 
 void Editor::saveProject() {
     if (project) {
+        project->saveAllDataStructures();
         project->saveAllMaps();
     }
 }

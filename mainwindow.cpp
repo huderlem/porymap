@@ -61,10 +61,12 @@ void MainWindow::openProject(QString dir) {
         editor->project = new Project;
         editor->project->root = dir;
         setWindowTitle(editor->project->getProjectTitle() + " - pretmap");
+        loadDataStructures();
         populateMapList();
         setMap(getDefaultMap());
     } else {
         setWindowTitle(editor->project->getProjectTitle() + " - pretmap");
+        loadDataStructures();
         populateMapList();
     }
 }
@@ -278,6 +280,10 @@ void MainWindow::on_checkBox_ShowLocation_clicked(bool checked)
     }
 }
 
+void MainWindow::loadDataStructures() {
+    Project *project = editor->project;
+    project->readMapAttributesTable();
+}
 
 void MainWindow::populateMapList() {
     Project *project = editor->project;
