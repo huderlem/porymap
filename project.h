@@ -64,6 +64,7 @@ public:
     void saveAllMaps();
     void saveMap(Map*);
     void saveAllDataStructures();
+    void saveAllMapAttributes();
 
     QList<QStringList>* parse(QString text);
     QStringList getSongNames();
@@ -91,6 +92,7 @@ public:
     QMap<QString, int> readCDefines(QString text, QStringList prefixes);
 private:
     QString getMapAttributesTableFilepath();
+    QString getMapAssetsFilepath();
     void saveMapHeader(Map*);
     void saveMapAttributesTable();
 };

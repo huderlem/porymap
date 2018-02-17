@@ -261,7 +261,7 @@ void Project::readMapAttributes(Map* map) {
 
     Asm *parser = new Asm;
 
-    QString assets_text = readTextFile(root + "/data/maps/_assets.inc");
+    QString assets_text = readTextFile(getMapAssetsFilepath());
     if (assets_text.isNull()) {
         return;
     }
@@ -278,7 +278,7 @@ void Project::readAllMapAttributes() {
     mapAttributes->clear();
 
     Asm *parser = new Asm;
-    QString assets_text = readTextFile(root + "/data/maps/_assets.inc");
+    QString assets_text = readTextFile(getMapAssetsFilepath());
     if (assets_text.isNull()) {
         return;
     }
@@ -306,10 +306,12 @@ void Project::readAllMapAttributes() {
             // Unknown map name has to match the MapAttributes label.
             mapName = borderLabel.replace("Border", "Attributes");
         }
-        mapAttributes->insert(mapName, new QMap<QString, QString>);
-        mapAttributes->value(mapName)->insert("border_label", borderParams.value(1));
+
+        QMap<QString, QString>* attrs = new QMap<QString, QString>;
+        mapAttributes->insert(mapName, attrs);
+        attrs->insert("border_label", borderParams.value(1));
         borderParams = commands->value(i++);
-        mapAttributes->value(mapName)->insert("border_filepath", borderParams.value(1).replace("\"", ""));
+        attrs->insert("border_filepath", borderParams.value(1).replace("\"", ""));
 
         // Read MapBlockData assets.
         QStringList blockDataParams = commands->value(i++);
@@ -319,21 +321,24 @@ void Project::readAllMapAttributes() {
             continue;
         }
         QString blockDataLabel = blockDataParams.value(1);
-        mapAttributes->value(mapName)->insert("blockdata_label", blockDataLabel);
+        attrs->insert("blockdata_label", blockDataLabel);
         blockDataParams = commands->value(i++);
-        mapAttributes->value(mapName)->insert("blockdata_filepath", blockDataParams.value(1).replace("\"", ""));
+        attrs->insert("blockdata_filepath", blockDataParams.value(1).replace("\"", ""));
 
         // Read MapAttributes assets.
         i++; // skip .align
         // Maps can share MapAttributes, so  gather a list of them.
         QStringList attributeMapLabels;
         QStringList attributesParams;
+        QStringList* sharedAttrMaps = new QStringList;
         while (i < commands->length()) {
             attributesParams = commands->value(i);
             if (attributesParams.value(0) != ".label") {
                 break;
             }
-            attributeMapLabels.append(attributesParams.value(1));
+            QString attrLabel = attributesParams.value(1);
+            attributeMapLabels.append(attrLabel);
+            sharedAttrMaps->append(attrLabel);
             i++;
         }
 
@@ -359,8 +364,84 @@ void Project::readAllMapAttributes() {
             mapAttributes->value(altMapName)->insert("blockdata_label", attrBlockdataLabel);
             mapAttributes->value(altMapName)->insert("tileset_primary", attrTilesetPrimary);
             mapAttributes->value(altMapName)->insert("tileset_secondary", attrTilesetSecondary);
+
+            if (sharedAttrMaps->length() > 1) {
+                mapAttributes->value(altMapName)->insert("shared_attr_maps", sharedAttrMaps->join(":"));
+            }
         }
     }
+}
+
+void Project::saveAllMapAttributes() {
+    QString text = "";
+    for (int i = 0; i < mapAttributesTable->count(); i++) {
+        int mapIndex = i + 1;
+        QString mapName = mapAttributesTable->value(mapIndex);
+        QMap<QString, QString>* attrs = mapAttributes->value(mapName);
+
+        // Find the map attributes object that contains the border data.
+        QMap<QString, QString>* attrsWithBorder;
+        if (attrs->contains("border_filepath")) {
+            attrsWithBorder = attrs;
+        } else {
+            QStringList labels = attrs->value("shared_attr_maps").split(":");
+            for (QString label : labels) {
+                label.remove(label.length() - 14, 14);
+                if (mapAttributes->contains(label) && mapAttributes->value(label)->contains("border_filepath")) {
+                    attrsWithBorder = mapAttributes->value(label);
+                    break;
+                }
+            }
+        }
+        if (attrsWithBorder != nullptr) {
+            text += QString("%1::\n").arg(attrsWithBorder->value("border_label"));
+            text += QString("\t.incbin \"%1\"\n").arg(attrsWithBorder->value("border_filepath"));
+            text += QString("\n");
+        }
+
+        // Find the map attributes object that contains the blockdata.
+        QMap<QString, QString>* attrsWithBlockdata;
+        if (attrs->contains("blockdata_filepath")) {
+            attrsWithBlockdata = attrs;
+        } else {
+            QStringList labels = attrs->value("shared_attr_maps").split(":");
+            for (QString label : labels) {
+                label.remove(label.length() - 14, 14);
+                if (mapAttributes->contains(label) && mapAttributes->value(label)->contains("blockdata_filepath")) {
+                    attrsWithBlockdata = mapAttributes->value(label);
+                    break;
+                }
+            }
+        }
+        if (attrsWithBlockdata != nullptr) {
+            text += QString("%1::\n").arg(attrsWithBlockdata->value("blockdata_label"));
+            text += QString("\t.incbin \"%1\"\n").arg(attrsWithBorder->value("blockdata_filepath"));
+            text += QString("\n");
+        }
+
+        text += QString("\t.align 2\n");
+        if (attrs->contains("shared_attr_maps")) {
+            QStringList labels = attrs->value("shared_attr_maps").split(":");
+            for (QString label : labels) {
+                text += QString("%1::\n").arg(label);
+            }
+        } else {
+            text += QString("%1::\n").arg(attrs->value("attributes_label"));
+        }
+        text += QString("\t.4byte %1\n").arg(attrs->value("width"));
+        text += QString("\t.4byte %1\n").arg(attrs->value("height"));
+        text += QString("\t.4byte %1\n").arg(attrs->value("border_label"));
+        text += QString("\t.4byte %1\n").arg(attrs->value("blockdata_label"));
+        text += QString("\t.4byte %1\n").arg(attrs->value("tileset_primary"));
+        text += QString("\t.4byte %1\n").arg(attrs->value("tileset_secondary"));
+        text += QString("\n");
+    }
+
+    saveTextFile(getMapAssetsFilepath(), text);
+}
+
+QString Project::getMapAssetsFilepath() {
+    return root + "/data/maps/_assets.inc";
 }
 
 void Project::setNewMapAttributes(Map* map) {
@@ -400,7 +481,7 @@ Tileset* Project::loadTileset(QString label) {
 }
 
 QString Project::getBlockdataPath(Map* map) {
-    QString text = readTextFile(root + "/data/maps/_assets.inc");
+    QString text = readTextFile(getMapAssetsFilepath());
     QStringList *values = getLabelValues(parse(text), map->blockdata_label);
     QString path;
     if (!values->isEmpty()) {
@@ -412,7 +493,7 @@ QString Project::getBlockdataPath(Map* map) {
 }
 
 QString Project::getMapBorderPath(Map *map) {
-    QString text = readTextFile(root + "/data/maps/_assets.inc");
+    QString text = readTextFile(getMapAssetsFilepath());
     QStringList *values = getLabelValues(parse(text), map->border_label);
     QString path;
     if (!values->isEmpty()) {
@@ -489,6 +570,7 @@ void Project::saveMap(Map *map) {
 
 void Project::saveAllDataStructures() {
     saveMapAttributesTable();
+    saveAllMapAttributes();
 }
 
 void Project::loadTilesetAssets(Tileset* tileset) {
