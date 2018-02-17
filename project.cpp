@@ -451,6 +451,19 @@ void Project::setNewMapAttributes(Map* map) {
     map->blockdata_label = QString("%1_MapBlockdata").arg(map->name);
     map->tileset_primary_label = "gTileset_General";
     map->tileset_secondary_label = "gTileset_Petalburg";
+
+    // Insert new entry into the global map attributes.
+    QMap<QString, QString>* attrs = new QMap<QString, QString>;
+    attrs->insert("border_label", QString("%1_MapBorder").arg(map->name));
+    attrs->insert("border_filepath", QString("data/maps/%1/border.bin").arg(map->name));
+    attrs->insert("blockdata_label", QString("%1_MapBlockdata").arg(map->name));
+    attrs->insert("blockdata_filepath", QString("data/maps/%1/map.bin").arg(map->name));
+    attrs->insert("attributes_label", QString("%1_MapAttributes").arg(map->name));
+    attrs->insert("width", map->width);
+    attrs->insert("height", map->height);
+    attrs->insert("tileset_primary", map->tileset_primary_label);
+    attrs->insert("tileset_secondary", map->tileset_secondary_label);
+    mapAttributes->insert(map->name, attrs);
 }
 
 void Project::getTilesets(Map* map) {
