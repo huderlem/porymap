@@ -26,7 +26,7 @@ QList<QStringList>* Asm::parse(QString text) {
         //QString macro;
         //QStringList *params;
         strip_comment(&line);
-        if (line.isEmpty()) {
+        if (line.trimmed().isEmpty()) {
         } else if (line.contains(':')) {
             label = line.left(line.indexOf(':'));
             QStringList *list = new QStringList;

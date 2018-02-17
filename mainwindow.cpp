@@ -283,6 +283,7 @@ void MainWindow::on_checkBox_ShowLocation_clicked(bool checked)
 void MainWindow::loadDataStructures() {
     Project *project = editor->project;
     project->readMapAttributesTable();
+    project->readAllMapAttributes();
 }
 
 void MainWindow::populateMapList() {

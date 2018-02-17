@@ -20,6 +20,8 @@ public:
     QMap<QString, QString> *mapConstantsToMapNames;
     QMap<QString, QString> *mapNamesToMapConstants;
     QMap<int, QString> *mapAttributesTable;
+    QMap<QString, QMap<QString, QString>*> *mapAttributes;
+
 
     QMap<QString, Map*> *map_cache;
     Map* loadMap(QString);
@@ -44,6 +46,7 @@ public:
     QStringList* getLabelValues(QList<QStringList>*, QString);
     void readMapHeader(Map*);
     void readMapAttributesTable();
+    void readAllMapAttributes();
     void readMapAttributes(Map*);
     void getTilesets(Map*);
     void loadTilesetAssets(Tileset*);

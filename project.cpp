@@ -23,6 +23,7 @@ Project::Project()
     mapConstantsToMapNames = new QMap<QString, QString>;
     mapNamesToMapConstants = new QMap<QString, QString>;
     mapAttributesTable = new QMap<int, QString>;
+    mapAttributes = new QMap<QString, QMap<QString, QString>*>;
     tileset_cache = new QMap<QString, Tileset*>;
 }
 
@@ -271,6 +272,95 @@ void Project::readMapAttributes(Map* map) {
     map->blockdata_label = attributes->value(3);
     map->tileset_primary_label = attributes->value(4);
     map->tileset_secondary_label = attributes->value(5);
+}
+
+void Project::readAllMapAttributes() {
+    mapAttributes->clear();
+
+    Asm *parser = new Asm;
+    QString assets_text = readTextFile(root + "/data/maps/_assets.inc");
+    if (assets_text.isNull()) {
+        return;
+    }
+
+    QList<QStringList> *commands = parser->parse(assets_text);
+
+    // Assume the _assets.inc file is grouped consistently in the order of:
+    // 1. <map_name>_MapBorder
+    // 2. <map_name>_MapBlockdata
+    // 3. <map_name>_MapAttributes
+    int i = 0;
+    while (i < commands->length()) {
+        // Read MapBorder assets.
+        QStringList borderParams = commands->value(i++);
+        bool isUnknownMapBorder = borderParams.value(1).startsWith("UnknownMapBorder_");
+        if (borderParams.value(0) != ".label" || (!borderParams.value(1).endsWith("_MapBorder") && !isUnknownMapBorder)) {
+            qDebug() << QString("Expected MapBorder label, but found %1").arg(borderParams.value(1));
+            continue;
+        }
+        QString borderLabel = borderParams.value(1);
+        QString mapName;
+        if (!isUnknownMapBorder) {
+            mapName = borderLabel.remove(borderLabel.length() - 10, 10);
+        } else {
+            // Unknown map name has to match the MapAttributes label.
+            mapName = borderLabel.replace("Border", "Attributes");
+        }
+        mapAttributes->insert(mapName, new QMap<QString, QString>);
+        mapAttributes->value(mapName)->insert("border_label", borderParams.value(1));
+        borderParams = commands->value(i++);
+        mapAttributes->value(mapName)->insert("border_filepath", borderParams.value(1).replace("\"", ""));
+
+        // Read MapBlockData assets.
+        QStringList blockDataParams = commands->value(i++);
+        bool isUnknownMapBlockdata = blockDataParams.value(1).startsWith("UnknownMapBlockdata_");
+        if (blockDataParams.value(0) != ".label" || (!blockDataParams.value(1).endsWith("_MapBlockdata") && !isUnknownMapBlockdata)) {
+            qDebug() << QString("Expected MapBlockdata label, but found %1").arg(blockDataParams.value(1));
+            continue;
+        }
+        QString blockDataLabel = blockDataParams.value(1);
+        mapAttributes->value(mapName)->insert("blockdata_label", blockDataLabel);
+        blockDataParams = commands->value(i++);
+        mapAttributes->value(mapName)->insert("blockdata_filepath", blockDataParams.value(1).replace("\"", ""));
+
+        // Read MapAttributes assets.
+        i++; // skip .align
+        // Maps can share MapAttributes, so  gather a list of them.
+        QStringList attributeMapLabels;
+        QStringList attributesParams;
+        while (i < commands->length()) {
+            attributesParams = commands->value(i);
+            if (attributesParams.value(0) != ".label") {
+                break;
+            }
+            attributeMapLabels.append(attributesParams.value(1));
+            i++;
+        }
+
+        // Apply the map attributes to each of the shared maps.
+        QString attrWidth = commands->value(i++).value(1);
+        QString attrHeight = commands->value(i++).value(1);
+        QString attrBorderLabel = commands->value(i++).value(1);
+        QString attrBlockdataLabel = commands->value(i++).value(1);
+        QString attrTilesetPrimary = commands->value(i++).value(1);
+        QString attrTilesetSecondary = commands->value(i++).value(1);
+        for (QString attributeMapLabel: attributeMapLabels) {
+            QString altMapName = attributeMapLabel;
+            if (!altMapName.startsWith("UnknownMapAttributes_")) {
+                altMapName.remove(altMapName.length() - 14, 14);
+            }
+            if (!mapAttributes->contains(altMapName)) {
+                mapAttributes->insert(altMapName, new QMap<QString, QString>);
+            }
+            mapAttributes->value(altMapName)->insert("attributes_label", attributeMapLabel);
+            mapAttributes->value(altMapName)->insert("width", attrWidth);
+            mapAttributes->value(altMapName)->insert("height", attrHeight);
+            mapAttributes->value(altMapName)->insert("border_label", attrBorderLabel);
+            mapAttributes->value(altMapName)->insert("blockdata_label", attrBlockdataLabel);
+            mapAttributes->value(altMapName)->insert("tileset_primary", attrTilesetPrimary);
+            mapAttributes->value(altMapName)->insert("tileset_secondary", attrTilesetSecondary);
+        }
+    }
 }
 
 void Project::setNewMapAttributes(Map* map) {
