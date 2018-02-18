@@ -6,6 +6,7 @@
 
 #include <QStringList>
 #include <QList>
+#include <QStandardItem>
 
 class Project
 {
@@ -13,10 +14,16 @@ public:
     Project();
     QString root;
     QStringList *groupNames = NULL;
-    QList<QStringList*> *groupedMapNames = NULL;
+    QMap<QString, int> *map_groups;
+    QList<QStringList> groupedMapNames;
     QStringList *mapNames = NULL;
-    QMap<QString, QString> mapConstantsToMapNames;
-    QMap<QString, QString> mapNamesToMapConstants;
+    QMap<QString, QString>* mapConstantsToMapNames;
+    QMap<QString, QString>* mapNamesToMapConstants;
+    QMap<int, QString> mapAttributesTable;
+    QMap<int, QString> mapAttributesTableMaster;
+    QMap<QString, QMap<QString, QString>> mapAttributes;
+    QMap<QString, QMap<QString, QString>> mapAttributesMaster;
+
 
     QMap<QString, Map*> *map_cache;
     Map* loadMap(QString);
@@ -31,23 +38,32 @@ public:
 
     QString readTextFile(QString path);
     void saveTextFile(QString path, QString text);
+    void appendTextFile(QString path, QString text);
 
     void readMapGroups();
+    Map* addNewMapToGroup(QString mapName, int groupNum);
+    QString getNewMapName();
     QString getProjectTitle();
 
     QList<QStringList>* getLabelMacros(QList<QStringList>*, QString);
     QStringList* getLabelValues(QList<QStringList>*, QString);
     void readMapHeader(Map*);
+    void readMapAttributesTable();
+    void readAllMapAttributes();
     void readMapAttributes(Map*);
     void getTilesets(Map*);
     void loadTilesetAssets(Tileset*);
 
     QString getBlockdataPath(Map*);
     void saveBlockdata(Map*);
+    void saveMapBorder(Map*);
     void writeBlockdata(QString, Blockdata*);
     void saveAllMaps();
     void saveMap(Map*);
-    void saveMapHeader(Map*);
+    void saveAllDataStructures();
+    void saveAllMapAttributes();
+    void saveMapGroupsTable();
+    void saveMapConstantsHeader();
 
     QList<QStringList>* parse(QString text);
     QStringList getSongNames();
@@ -73,6 +89,19 @@ public:
     QStringList readCArray(QString text, QString label);
     QString readCIncbin(QString text, QString label);
     QMap<QString, int> readCDefines(QString text, QStringList prefixes);
+private:
+    QString getMapAttributesTableFilepath();
+    QString getMapAssetsFilepath();
+    void saveMapHeader(Map*);
+    void saveMapAttributesTable();
+    void updateMapAttributes(Map* map);
+
+    void setNewMapHeader(Map* map, int mapIndex);
+    void setNewMapAttributes(Map* map);
+    void setNewMapBlockdata(Map* map);
+    void setNewMapBorder(Map *map);
+    void setNewMapEvents(Map *map);
+    void setNewMapConnections(Map *map);
 };
 
 #endif // PROJECT_H

@@ -4,6 +4,7 @@
 #include <QString>
 #include <QModelIndex>
 #include <QMainWindow>
+#include <QStandardItemModel>
 #include <QGraphicsPixmapItem>
 #include <QGraphicsItemGroup>
 #include <QGraphicsSceneMouseEvent>
@@ -65,15 +66,23 @@ private slots:
 
     void on_toolButton_Dropper_clicked();
 
+    void onOpenMapListContextMenu(const QPoint &point);
+    void onAddNewMapToGroupClick(QAction* triggeredAction);
+
 private:
     Ui::MainWindow *ui;
+    QStandardItemModel *mapListModel;
+    QList<QStandardItem*> *mapGroupsModel;
     Editor *editor = NULL;
+    QIcon* mapIcon;
     void setMap(QString);
+    void loadDataStructures();
     void populateMapList();
     QString getExistingDirectory(QString);
     void openProject(QString dir);
     QString getDefaultMap();
     void setRecentMap(QString map_name);
+    QStandardItem* createMapItem(QString mapName, int groupNum, int inGroupNum);
 
     void markAllEdited(QAbstractItemModel *model);
     void markEdited(QModelIndex index);
@@ -81,6 +90,11 @@ private:
 
     void displayMapProperties();
     void checkToolButtons();
+};
+
+enum MapListUserRoles {
+    GroupRole = Qt::UserRole + 1, // Used to hold the map group number.
+    TypeRole = Qt::UserRole + 2,  // Used to differentiate between the different layers of the map list tree view.
 };
 
 #endif // MAINWINDOW_H

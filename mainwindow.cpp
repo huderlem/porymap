@@ -61,36 +61,38 @@ void MainWindow::openProject(QString dir) {
         editor->project = new Project;
         editor->project->root = dir;
         setWindowTitle(editor->project->getProjectTitle() + " - pretmap");
+        loadDataStructures();
         populateMapList();
         setMap(getDefaultMap());
     } else {
         setWindowTitle(editor->project->getProjectTitle() + " - pretmap");
+        loadDataStructures();
         populateMapList();
     }
 }
 
 QString MainWindow::getDefaultMap() {
     if (editor && editor->project) {
-        QList<QStringList*> *names = editor->project->groupedMapNames;
-        if (names) {
+        QList<QStringList> names = editor->project->groupedMapNames;
+        if (!names.isEmpty()) {
             QSettings settings;
             QString key = "project:" + editor->project->root;
             if (settings.contains(key)) {
                 QMap<QString, QVariant> qmap = settings.value(key).toMap();
                 if (qmap.contains("recent_map")) {
                     QString map_name = qmap.value("recent_map").toString();
-                    for (int i = 0; i < names->length(); i++) {
-                        if (names->value(i)->contains(map_name)) {
+                    for (int i = 0; i < names.length(); i++) {
+                        if (names.value(i).contains(map_name)) {
                             return map_name;
                         }
                     }
                 }
             }
             // Failing that, just get the first map in the list.
-            for (int i = 0; i < names->length(); i++) {
-                QStringList *list = names->value(i);
-                if (list->length()) {
-                    return list->value(0);
+            for (int i = 0; i < names.length(); i++) {
+                QStringList list = names.value(i);
+                if (list.length()) {
+                    return list.value(0);
                 }
             }
         }
@@ -278,6 +280,11 @@ void MainWindow::on_checkBox_ShowLocation_clicked(bool checked)
     }
 }
 
+void MainWindow::loadDataStructures() {
+    Project *project = editor->project;
+    project->readMapAttributesTable();
+    project->readAllMapAttributes();
+}
 
 void MainWindow::populateMapList() {
     Project *project = editor->project;
@@ -289,17 +296,18 @@ void MainWindow::populateMapList() {
     QIcon folderIcon;
     folderIcon.addFile(QStringLiteral(":/icons/folder_closed.ico"), QSize(), QIcon::Normal, QIcon::Off);
 
-    QIcon mapIcon;
-    mapIcon.addFile(QStringLiteral(":/icons/map.ico"), QSize(), QIcon::Normal, QIcon::Off);
-    mapIcon.addFile(QStringLiteral(":/icons/image.ico"), QSize(), QIcon::Normal, QIcon::On);
+    mapIcon = new QIcon;
+    mapIcon->addFile(QStringLiteral(":/icons/map.ico"), QSize(), QIcon::Normal, QIcon::Off);
+    mapIcon->addFile(QStringLiteral(":/icons/image.ico"), QSize(), QIcon::Normal, QIcon::On);
 
-    QStandardItemModel *model = new QStandardItemModel;
+    mapListModel = new QStandardItemModel;
+    mapGroupsModel = new QList<QStandardItem*>;
 
     QStandardItem *entry = new QStandardItem;
     entry->setText(project->getProjectTitle());
     entry->setIcon(folderIcon);
     entry->setEditable(false);
-    model->appendRow(entry);
+    mapListModel->appendRow(entry);
 
     QStandardItem *maps = new QStandardItem;
     maps->setText("maps");
@@ -314,24 +322,80 @@ void MainWindow::populateMapList() {
         group->setText(group_name);
         group->setIcon(mapFolderIcon);
         group->setEditable(false);
+        group->setData(group_name, Qt::UserRole);
+        group->setData("map_group", MapListUserRoles::TypeRole);
+        group->setData(i, MapListUserRoles::GroupRole);
         maps->appendRow(group);
-        QStringList *names = project->groupedMapNames->value(i);
-        for (int j = 0; j < names->length(); j++) {
-            QString map_name = names->value(j);
-            QStandardItem *map = new QStandardItem;
-            map->setText(QString("[%1.%2] ").arg(i).arg(j, 2, 10, QLatin1Char('0')) + map_name);
-            map->setIcon(mapIcon);
-            map->setEditable(false);
-            map->setData(map_name, Qt::UserRole);
+        mapGroupsModel->append(group);
+        QStringList names = project->groupedMapNames.value(i);
+        for (int j = 0; j < names.length(); j++) {
+            QString map_name = names.value(j);
+            QStandardItem *map = createMapItem(map_name, i, j);
             group->appendRow(map);
-            //ui->mapList->setExpanded(model->indexFromItem(map), false); // redundant
         }
     }
 
-    ui->mapList->setModel(model);
+    // Right-clicking on items in the map list tree view brings up a context menu.
+    ui->mapList->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->mapList, SIGNAL(customContextMenuRequested(const QPoint &)),
+            this, SLOT(onOpenMapListContextMenu(const QPoint &)));
+
+    ui->mapList->setModel(mapListModel);
     ui->mapList->setUpdatesEnabled(true);
     ui->mapList->expandToDepth(2);
     ui->mapList->repaint();
+}
+
+QStandardItem* MainWindow::createMapItem(QString mapName, int groupNum, int inGroupNum) {
+    QStandardItem *map = new QStandardItem;
+    map->setText(QString("[%1.%2] ").arg(groupNum).arg(inGroupNum, 2, 10, QLatin1Char('0')) + mapName);
+    map->setIcon(*mapIcon);
+    map->setEditable(false);
+    map->setData(mapName, Qt::UserRole);
+    map->setData("map_name", MapListUserRoles::TypeRole);
+    return map;
+}
+
+void MainWindow::onOpenMapListContextMenu(const QPoint &point)
+{
+    QModelIndex index = ui->mapList->indexAt(point);
+    if (!index.isValid()) {
+        return;
+    }
+
+    QStandardItem *selectedItem = mapListModel->itemFromIndex(index);
+    QVariant itemType = selectedItem->data(MapListUserRoles::TypeRole);
+    if (!itemType.isValid()) {
+        return;
+    }
+
+    // Build custom context menu depending on which type of item was selected (map group, map name, etc.)
+    if (itemType == "map_group") {
+        QString groupName = selectedItem->data(Qt::UserRole).toString();
+        int groupNum = selectedItem->data(MapListUserRoles::GroupRole).toInt();
+        QMenu* menu = new QMenu();
+        QActionGroup* actions = new QActionGroup(menu);
+        actions->addAction(menu->addAction("Add New Map to Group"))->setData(groupNum);
+        connect(actions, SIGNAL(triggered(QAction*)), this, SLOT(onAddNewMapToGroupClick(QAction*)));
+        menu->exec(QCursor::pos());
+    }
+}
+
+void MainWindow::onAddNewMapToGroupClick(QAction* triggeredAction)
+{
+    int groupNum = triggeredAction->data().toInt();
+    QStandardItem* groupItem = mapGroupsModel->at(groupNum);
+
+    QString newMapName = editor->project->getNewMapName();
+    Map* newMap = editor->project->addNewMapToGroup(newMapName, groupNum);
+    editor->project->saveMap(newMap);
+    editor->project->saveAllDataStructures();
+
+    int numMapsInGroup = groupItem->rowCount();
+    QStandardItem *newMapItem = createMapItem(newMapName, groupNum, numMapsInGroup);
+    groupItem->appendRow(newMapItem);
+
+    setMap(newMapName);
 }
 
 void MainWindow::on_mapList_activated(const QModelIndex &index)

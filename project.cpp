@@ -6,17 +6,21 @@
 #include "event.h"
 
 #include <QDebug>
+#include <QDir>
 #include <QFile>
 #include <QTextStream>
+#include <QStandardItem>
 #include <QMessageBox>
 #include <QRegularExpression>
 
 Project::Project()
 {
     groupNames = new QStringList;
-    groupedMapNames = new QList<QStringList*>;
+    map_groups = new QMap<QString, int>;
     mapNames = new QStringList;
     map_cache = new QMap<QString, Map*>;
+    mapConstantsToMapNames = new QMap<QString, QString>;
+    mapNamesToMapConstants = new QMap<QString, QString>;
     tileset_cache = new QMap<QString, Tileset*>;
 }
 
@@ -29,9 +33,17 @@ QString Project::getProjectTitle() {
 }
 
 Map* Project::loadMap(QString map_name) {
-    Map *map = new Map;
+    Map *map;
+    if (map_cache->contains(map_name)) {
+        map = map_cache->value(map_name);
+        if (map->hasUnsavedChanges()) {
+            return map;
+        }
+    } else {
+        map = new Map;
+        map->setName(map_name);
+    }
 
-    map->setName(map_name);
     readMapHeader(map);
     readMapAttributes(map);
     getTilesets(map);
@@ -47,6 +59,10 @@ Map* Project::loadMap(QString map_name) {
 }
 
 void Project::loadMapConnections(Map *map) {
+    if (!map->isPersistedToFile) {
+        return;
+    }
+
     map->connections.clear();
     if (!map->connections_label.isNull()) {
         QString path = root + QString("/data/maps/%1/connections.inc").arg(map->name);
@@ -67,8 +83,8 @@ void Project::loadMapConnections(Map *map) {
                     connection->direction = command.value(1);
                     connection->offset = command.value(2);
                     QString mapConstant = command.value(3);
-                    if (mapConstantsToMapNames.contains(mapConstant)) {
-                        connection->map_name = mapConstantsToMapNames[mapConstant];
+                    if (mapConstantsToMapNames->contains(mapConstant)) {
+                        connection->map_name = mapConstantsToMapNames->value(mapConstant);
                         map->connections.append(connection);
                     } else {
                         qDebug() << QString("Failed to find connected map for map constant '%1'").arg(mapConstant);
@@ -77,6 +93,10 @@ void Project::loadMapConnections(Map *map) {
             }
         }
     }
+}
+
+void Project::setNewMapConnections(Map *map) {
+    map->connections.clear();
 }
 
 QList<QStringList>* Project::getLabelMacros(QList<QStringList> *list, QString label) {
@@ -122,6 +142,10 @@ QStringList* Project::getLabelValues(QList<QStringList> *list, QString label) {
 }
 
 void Project::readMapHeader(Map* map) {
+    if (!map->isPersistedToFile) {
+        return;
+    }
+
     QString label = map->name;
     Asm *parser = new Asm;
 
@@ -145,6 +169,22 @@ void Project::readMapHeader(Map* map) {
     map->battle_scene = header->value(12);
 }
 
+void Project::setNewMapHeader(Map* map, int mapIndex) {
+    map->attributes_label = QString("%1_MapAttributes").arg(map->name);
+    map->events_label = QString("%1_MapEvents").arg(map->name);;
+    map->scripts_label = QString("%1_MapScripts").arg(map->name);;
+    map->connections_label = "0x0";
+    map->song = "BGM_DAN02";
+    map->index = QString("%1").arg(mapIndex);
+    map->location = "0";
+    map->visibility = "0";
+    map->weather = "2";
+    map->type = "1";
+    map->unknown = "0";
+    map->show_location = "1";
+    map->battle_scene = "0";
+}
+
 void Project::saveMapHeader(Map *map) {
     QString label = map->name;
     QString header_path = root + "/data/maps/" + label + "/header.inc";
@@ -166,10 +206,65 @@ void Project::saveMapHeader(Map *map) {
     saveTextFile(header_path, text);
 }
 
+void Project::readMapAttributesTable() {
+    int curMapIndex = 1;
+    QString attributesText = readTextFile(getMapAttributesTableFilepath());
+    QList<QStringList>* values = parse(attributesText);
+    bool inAttributePointers = false;
+    for (int i = 0; i < values->length(); i++) {
+        QStringList params = values->value(i);
+        QString macro = params.value(0);
+        if (macro == ".label") {
+            if (inAttributePointers) {
+                break;
+            }
+            if (params.value(1) == "gMapAttributes") {
+                inAttributePointers = true;
+            }
+        } else if (macro == ".4byte" && inAttributePointers) {
+            QString mapName = params.value(1);
+            if (!mapName.contains("UnknownMapAttributes")) {
+                // Strip off "_MapAttributes" from the label if it's a real map label.
+                mapName = mapName.remove(mapName.length() - 14, 14);
+            }
+            mapAttributesTable.insert(curMapIndex, mapName);
+            curMapIndex++;
+        }
+    }
+
+    // Deep copy
+    mapAttributesTableMaster = mapAttributesTable;
+    mapAttributesTableMaster.detach();
+}
+
+void Project::saveMapAttributesTable() {
+    QString text = "";
+    text += QString("\t.align 2\n");
+    text += QString("gMapAttributes::\n");
+    for (int i = 0; i < mapAttributesTableMaster.count(); i++) {
+        int mapIndex = i + 1;
+        QString mapName = mapAttributesTableMaster.value(mapIndex);
+        if (!mapName.contains("UnknownMapAttributes")) {
+            text += QString("\t.4byte %1_MapAttributes\n").arg(mapName);
+        } else {
+            text += QString("\t.4byte %1\n").arg(mapName);
+        }
+    }
+    saveTextFile(getMapAttributesTableFilepath(), text);
+}
+
+QString Project::getMapAttributesTableFilepath() {
+    return QString("%1/data/maps/attributes_table.inc").arg(root);
+}
+
 void Project::readMapAttributes(Map* map) {
+    if (!map->isPersistedToFile) {
+        return;
+    }
+
     Asm *parser = new Asm;
 
-    QString assets_text = readTextFile(root + "/data/maps/_assets.inc");
+    QString assets_text = readTextFile(getMapAssetsFilepath());
     if (assets_text.isNull()) {
         return;
     }
@@ -180,6 +275,259 @@ void Project::readMapAttributes(Map* map) {
     map->blockdata_label = attributes->value(3);
     map->tileset_primary_label = attributes->value(4);
     map->tileset_secondary_label = attributes->value(5);
+}
+
+void Project::readAllMapAttributes() {
+    mapAttributes.clear();
+
+    Asm *parser = new Asm;
+    QString assets_text = readTextFile(getMapAssetsFilepath());
+    if (assets_text.isNull()) {
+        return;
+    }
+
+    QList<QStringList> *commands = parser->parse(assets_text);
+
+    // Assume the _assets.inc file is grouped consistently in the order of:
+    // 1. <map_name>_MapBorder
+    // 2. <map_name>_MapBlockdata
+    // 3. <map_name>_MapAttributes
+    int i = 0;
+    while (i < commands->length()) {
+        // Read MapBorder assets.
+        QStringList borderParams = commands->value(i++);
+        bool isUnknownMapBorder = borderParams.value(1).startsWith("UnknownMapBorder_");
+        if (borderParams.value(0) != ".label" || (!borderParams.value(1).endsWith("_MapBorder") && !isUnknownMapBorder)) {
+            qDebug() << QString("Expected MapBorder label, but found %1").arg(borderParams.value(1));
+            continue;
+        }
+        QString borderLabel = borderParams.value(1);
+        QString mapName;
+        if (!isUnknownMapBorder) {
+            mapName = borderLabel.remove(borderLabel.length() - 10, 10);
+        } else {
+            // Unknown map name has to match the MapAttributes label.
+            mapName = borderLabel.replace("Border", "Attributes");
+        }
+
+        mapAttributes[mapName].insert("border_label", borderParams.value(1));
+        borderParams = commands->value(i++);
+        mapAttributes[mapName].insert("border_filepath", borderParams.value(1).replace("\"", ""));
+
+        // Read MapBlockData assets.
+        QStringList blockDataParams = commands->value(i++);
+        bool isUnknownMapBlockdata = blockDataParams.value(1).startsWith("UnknownMapBlockdata_");
+        if (blockDataParams.value(0) != ".label" || (!blockDataParams.value(1).endsWith("_MapBlockdata") && !isUnknownMapBlockdata)) {
+            qDebug() << QString("Expected MapBlockdata label, but found %1").arg(blockDataParams.value(1));
+            continue;
+        }
+        QString blockDataLabel = blockDataParams.value(1);
+        mapAttributes[mapName].insert("blockdata_label", blockDataLabel);
+        blockDataParams = commands->value(i++);
+        mapAttributes[mapName].insert("blockdata_filepath", blockDataParams.value(1).replace("\"", ""));
+
+        // Read MapAttributes assets.
+        i++; // skip .align
+        // Maps can share MapAttributes, so  gather a list of them.
+        QStringList attributeMapLabels;
+        QStringList attributesParams;
+        QStringList* sharedAttrMaps = new QStringList;
+        while (i < commands->length()) {
+            attributesParams = commands->value(i);
+            if (attributesParams.value(0) != ".label") {
+                break;
+            }
+            QString attrLabel = attributesParams.value(1);
+            attributeMapLabels.append(attrLabel);
+            sharedAttrMaps->append(attrLabel);
+            i++;
+        }
+
+        // Apply the map attributes to each of the shared maps.
+        QString attrWidth = commands->value(i++).value(1);
+        QString attrHeight = commands->value(i++).value(1);
+        QString attrBorderLabel = commands->value(i++).value(1);
+        QString attrBlockdataLabel = commands->value(i++).value(1);
+        QString attrTilesetPrimary = commands->value(i++).value(1);
+        QString attrTilesetSecondary = commands->value(i++).value(1);
+        for (QString attributeMapLabel: attributeMapLabels) {
+            QString altMapName = attributeMapLabel;
+            if (!altMapName.startsWith("UnknownMapAttributes_")) {
+                altMapName.remove(altMapName.length() - 14, 14);
+            }
+            if (!mapAttributes.contains(altMapName)) {
+                mapAttributes.insert(altMapName, QMap<QString, QString>());
+            }
+            mapAttributes[altMapName].insert("attributes_label", attributeMapLabel);
+            mapAttributes[altMapName].insert("width", attrWidth);
+            mapAttributes[altMapName].insert("height", attrHeight);
+            mapAttributes[altMapName].insert("border_label", attrBorderLabel);
+            mapAttributes[altMapName].insert("blockdata_label", attrBlockdataLabel);
+            mapAttributes[altMapName].insert("tileset_primary", attrTilesetPrimary);
+            mapAttributes[altMapName].insert("tileset_secondary", attrTilesetSecondary);
+
+            if (sharedAttrMaps->length() > 1) {
+                mapAttributes[altMapName].insert("shared_attr_maps", sharedAttrMaps->join(":"));
+            }
+        }
+    }
+
+    // Deep copy
+    mapAttributesMaster = mapAttributes;
+    mapAttributesMaster.detach();
+}
+
+void Project::saveAllMapAttributes() {
+    QString text = "";
+    for (int i = 0; i < mapAttributesTableMaster.count(); i++) {
+        int mapIndex = i + 1;
+        QString mapName = mapAttributesTableMaster.value(mapIndex);
+        QMap<QString, QString> attrs = mapAttributesMaster.value(mapName);
+
+        // Find the map attributes object that contains the border data.
+        QMap<QString, QString> attrsWithBorder;
+        if (attrs.contains("border_filepath")) {
+            attrsWithBorder = attrs;
+        } else {
+            QStringList labels = attrs.value("shared_attr_maps").split(":");
+            for (QString label : labels) {
+                label.remove(label.length() - 14, 14);
+                if (mapAttributesMaster.contains(label) && mapAttributesMaster.value(label).contains("border_filepath")) {
+                    attrsWithBorder = mapAttributesMaster.value(label);
+                    break;
+                }
+            }
+        }
+        if (!attrsWithBorder.isEmpty()) {
+            text += QString("%1::\n").arg(attrsWithBorder.value("border_label"));
+            text += QString("\t.incbin \"%1\"\n").arg(attrsWithBorder.value("border_filepath"));
+            text += QString("\n");
+        }
+
+        // Find the map attributes object that contains the blockdata.
+        QMap<QString, QString> attrsWithBlockdata;
+        if (attrs.contains("blockdata_filepath")) {
+            attrsWithBlockdata = attrs;
+        } else {
+            QStringList labels = attrs["shared_attr_maps"].split(":");
+            for (QString label : labels) {
+                label.remove(label.length() - 14, 14);
+                if (mapAttributesMaster.contains(label) && mapAttributesMaster.value(label).contains("blockdata_filepath")) {
+                    attrsWithBlockdata = mapAttributesMaster.value(label);
+                    break;
+                }
+            }
+        }
+        if (!attrsWithBlockdata.isEmpty()) {
+            text += QString("%1::\n").arg(attrsWithBlockdata.value("blockdata_label"));
+            text += QString("\t.incbin \"%1\"\n").arg(attrsWithBorder.value("blockdata_filepath"));
+            text += QString("\n");
+        }
+
+        text += QString("\t.align 2\n");
+        if (attrs.contains("shared_attr_maps")) {
+            QStringList labels = attrs.value("shared_attr_maps").split(":");
+            for (QString label : labels) {
+                text += QString("%1::\n").arg(label);
+            }
+        } else {
+            text += QString("%1::\n").arg(attrs.value("attributes_label"));
+        }
+        text += QString("\t.4byte %1\n").arg(attrs.value("width"));
+        text += QString("\t.4byte %1\n").arg(attrs.value("height"));
+        text += QString("\t.4byte %1\n").arg(attrs.value("border_label"));
+        text += QString("\t.4byte %1\n").arg(attrs.value("blockdata_label"));
+        text += QString("\t.4byte %1\n").arg(attrs.value("tileset_primary"));
+        text += QString("\t.4byte %1\n").arg(attrs.value("tileset_secondary"));
+        text += QString("\n");
+    }
+
+    saveTextFile(getMapAssetsFilepath(), text);
+}
+
+QString Project::getMapAssetsFilepath() {
+    return root + "/data/maps/_assets.inc";
+}
+
+void Project::setNewMapAttributes(Map* map) {
+    map->width = "20";
+    map->height = "20";
+    map->border_label = QString("%1_MapBorder").arg(map->name);
+    map->blockdata_label = QString("%1_MapBlockdata").arg(map->name);
+    map->tileset_primary_label = "gTileset_General";
+    map->tileset_secondary_label = "gTileset_Petalburg";
+
+    // Insert new entry into the global map attributes.
+    QMap<QString, QString> attrs;
+    attrs.insert("border_label", QString("%1_MapBorder").arg(map->name));
+    attrs.insert("border_filepath", QString("data/maps/%1/border.bin").arg(map->name));
+    attrs.insert("blockdata_label", QString("%1_MapBlockdata").arg(map->name));
+    attrs.insert("blockdata_filepath", QString("data/maps/%1/map.bin").arg(map->name));
+    attrs.insert("attributes_label", QString("%1_MapAttributes").arg(map->name));
+    attrs.insert("width", map->width);
+    attrs.insert("height", map->height);
+    attrs.insert("tileset_primary", map->tileset_primary_label);
+    attrs.insert("tileset_secondary", map->tileset_secondary_label);
+    mapAttributes.insert(map->name, attrs);
+}
+
+void Project::saveMapGroupsTable() {
+    QString text = "";
+    int groupNum = 0;
+    for (QStringList mapNames : groupedMapNames) {
+        text += QString("\t.align 2\n");
+        text += QString("gMapGroup%1::\n").arg(groupNum);
+        for (QString mapName : mapNames) {
+            text += QString("\t.4byte %1\n").arg(mapName);
+        }
+        text += QString("\n");
+        groupNum++;
+    }
+
+    text += QString("\t.align 2\n");
+    text += QString("gMapGroups::\n");
+    for (int i = 0; i < groupNum; i++) {
+        text += QString("\t.4byte gMapGroup%1\n").arg(i);
+    }
+
+    saveTextFile(root + "/data/maps/_groups.inc", text);
+}
+
+void Project::saveMapConstantsHeader() {
+    QString text = QString("#ifndef GUARD_CONSTANTS_MAPS_H\n");
+    text += QString("#define GUARD_CONSTANTS_MAPS_H\n");
+    text += QString("\n");
+
+    int groupNum = 0;
+    for (QStringList mapNames : groupedMapNames) {
+        text += QString("// Map Group %1\n").arg(groupNum);
+        int maxLength = 0;
+        for (QString mapName : mapNames) {
+            QString mapConstantName = mapNamesToMapConstants->value(mapName);
+            if (mapConstantName.length() > maxLength)
+                maxLength = mapConstantName.length();
+        }
+        int groupIndex = 0;
+        for (QString mapName : mapNames) {
+            QString mapConstantName = mapNamesToMapConstants->value(mapName);
+            text += QString("#define %1%2(%3 | (%4 << 8))\n")
+                    .arg(mapConstantName)
+                    .arg(QString(" ").repeated(maxLength - mapConstantName.length() + 1))
+                    .arg(groupIndex)
+                    .arg(groupNum);
+            groupIndex++;
+        }
+        text += QString("\n");
+        groupNum++;
+    }
+
+    text += QString("\n");
+    text += QString("#define MAP_NONE (0x7F | (0x7F << 8))\n");
+    text += QString("#define MAP_UNDEFINED (0xFF | (0xFF << 8))\n\n\n");
+    text += QString("#define MAP_GROUP(map) (MAP_##map >> 8)\n");
+    text += QString("#define MAP_NUM(map) (MAP_##map & 0xFF)\n\n");
+    text += QString("#endif  // GUARD_CONSTANTS_MAPS_H\n");
+    saveTextFile(root + "/include/constants/maps.h", text);
 }
 
 void Project::getTilesets(Map* map) {
@@ -210,7 +558,7 @@ Tileset* Project::loadTileset(QString label) {
 }
 
 QString Project::getBlockdataPath(Map* map) {
-    QString text = readTextFile(root + "/data/maps/_assets.inc");
+    QString text = readTextFile(getMapAssetsFilepath());
     QStringList *values = getLabelValues(parse(text), map->blockdata_label);
     QString path;
     if (!values->isEmpty()) {
@@ -222,7 +570,7 @@ QString Project::getBlockdataPath(Map* map) {
 }
 
 QString Project::getMapBorderPath(Map *map) {
-    QString text = readTextFile(root + "/data/maps/_assets.inc");
+    QString text = readTextFile(getMapAssetsFilepath());
     QStringList *values = getLabelValues(parse(text), map->border_label);
     QString path;
     if (!values->isEmpty()) {
@@ -234,13 +582,43 @@ QString Project::getMapBorderPath(Map *map) {
 }
 
 void Project::loadBlockdata(Map* map) {
+    if (!map->isPersistedToFile) {
+        return;
+    }
+
     QString path = getBlockdataPath(map);
     map->blockdata = readBlockdata(path);
 }
 
+void Project::setNewMapBlockdata(Map* map) {
+    Blockdata *blockdata = new Blockdata;
+    for (int i = 0; i < map->getWidth() * map->getHeight(); i++) {
+        blockdata->addBlock(qint16(0x3001));
+    }
+    map->blockdata = blockdata;
+}
+
 void Project::loadMapBorder(Map *map) {
+    if (!map->isPersistedToFile) {
+        return;
+    }
+
     QString path = getMapBorderPath(map);
     map->border = readBlockdata(path);
+}
+
+void Project::setNewMapBorder(Map *map) {
+    Blockdata *blockdata = new Blockdata;
+    blockdata->addBlock(qint16(0x01D4));
+    blockdata->addBlock(qint16(0x01D5));
+    blockdata->addBlock(qint16(0x01DC));
+    blockdata->addBlock(qint16(0x01DD));
+    map->border = blockdata;
+}
+
+void Project::saveMapBorder(Map *map) {
+    QString path = getMapBorderPath(map);
+    writeBlockdata(path, map->border);
 }
 
 void Project::saveBlockdata(Map* map) {
@@ -267,9 +645,60 @@ void Project::saveAllMaps() {
 }
 
 void Project::saveMap(Map *map) {
-    saveBlockdata(map);
+    // Create/Modify a few collateral files for brand new maps.
+    if (!map->isPersistedToFile) {
+        QString newMapDataDir = QString(root + "/data/maps/%1").arg(map->name);
+        if (!QDir::root().mkdir(newMapDataDir)) {
+            qDebug() << "Error: failed to create directory for new map. " << newMapDataDir;
+        }
+
+        // TODO: In the future, these files needs more structure to allow for proper parsing/saving.
+        // Create file data/scripts/maps/<map_name>.inc
+        QString text = QString("%1_MapScripts::\n\t.byte 0\n").arg(map->name);
+        saveTextFile(root + "/data/scripts/maps/" + map->name + ".inc", text);
+
+        // Create file data/text/maps/<map_name>.inc
+        saveTextFile(root + "/data/text/maps/" + map->name + ".inc", "\n");
+
+        // Simply append to data/event_scripts.s.
+        text = QString("\n\t.include \"data/scripts/maps/%1.inc\"\n").arg(map->name);
+        text += QString("\t.include \"data/text/maps/%1.inc\"\n").arg(map->name);
+        appendTextFile(root + "/data/event_scripts.s", text);
+
+        // Simply append to data/map_events.s.
+        text = QString("\n\t.include \"data/maps/events/%1.inc\"\n").arg(map->name);
+        appendTextFile(root + "/data/map_events.s", text);
+
+        // Simply append to data/maps/headers.inc.
+        text = QString("\t.include \"data/maps/%1/header.inc\"\n").arg(map->name);
+        appendTextFile(root + "/data/maps/headers.inc", text);
+    }
+
+    saveMapBorder(map);
     saveMapHeader(map);
+    saveBlockdata(map);
     saveMapEvents(map);
+
+    // Update global data structures with current map data.
+    updateMapAttributes(map);
+
+    map->isPersistedToFile = true;
+}
+
+void Project::updateMapAttributes(Map* map) {
+    mapAttributesTableMaster.insert(map->index.toInt(nullptr, 0), map->name);
+
+    // Deep copy
+    QMap<QString, QString> attrs = mapAttributes.value(map->name);
+    attrs.detach();
+    mapAttributesMaster.insert(map->name, attrs);
+}
+
+void Project::saveAllDataStructures() {
+    saveMapAttributesTable();
+    saveAllMapAttributes();
+    saveMapGroupsTable();
+    saveMapConstantsHeader();
 }
 
 void Project::loadTilesetAssets(Tileset* tileset) {
@@ -472,6 +901,15 @@ void Project::saveTextFile(QString path, QString text) {
     }
 }
 
+void Project::appendTextFile(QString path, QString text) {
+    QFile file(path);
+    if (file.open(QIODevice::Append)) {
+        file.write(text.toUtf8());
+    } else {
+        qDebug() << QString("Could not open '%1' for appending: ").arg(path) + file.errorString();
+    }
+}
+
 void Project::readMapGroups() {
     QString text = readTextFile(root + "/data/maps/_groups.inc");
     if (text.isNull()) {
@@ -501,10 +939,9 @@ void Project::readMapGroups() {
         }
     }
 
-    QList<QStringList*> *groupedMaps = new QList<QStringList*>;
+    QList<QStringList> groupedMaps;
     for (int i = 0; i < groups->length(); i++) {
-        QStringList *list = new QStringList;
-        groupedMaps->append(list);
+        groupedMaps.append(QStringList());
     }
 
     QStringList *maps = new QStringList;
@@ -518,14 +955,14 @@ void Project::readMapGroups() {
             if (group != -1) {
                 for (int j = 1; j < params.length(); j++) {
                     QString mapName = params.value(j);
-                    QStringList *list = groupedMaps->value(group);
-                    list->append(mapName);
+                    groupedMaps[group].append(mapName);
                     maps->append(mapName);
+                    map_groups->insert(mapName, group);
 
                     // Build the mapping and reverse mapping between map constants and map names.
                     QString mapConstant = Map::mapConstantFromName(mapName);
-                    mapConstantsToMapNames.insert(mapConstant, mapName);
-                    mapNamesToMapConstants.insert(mapName, mapConstant);
+                    mapConstantsToMapNames->insert(mapConstant, mapName);
+                    mapNamesToMapConstants->insert(mapName, mapConstant);
                 }
             }
         }
@@ -534,6 +971,45 @@ void Project::readMapGroups() {
     groupNames = groups;
     groupedMapNames = groupedMaps;
     mapNames = maps;
+}
+
+Map* Project::addNewMapToGroup(QString mapName, int groupNum) {
+    int mapIndex = mapAttributesTable.count() + 1;
+    mapAttributesTable.insert(mapIndex, mapName);
+
+    // Setup new map in memory, but don't write to file until map is actually saved later.
+    mapNames->append(mapName);
+    map_groups->insert(mapName, groupNum);
+    groupedMapNames[groupNum].append(mapName);
+
+    Map *map = new Map;
+    map->isPersistedToFile = false;
+    map->setName(mapName);
+    mapConstantsToMapNames->insert(map->constantName, map->name);
+    mapNamesToMapConstants->insert(map->name, map->constantName);
+    setNewMapHeader(map, mapIndex);
+    setNewMapAttributes(map);
+    getTilesets(map);
+    setNewMapBlockdata(map);
+    setNewMapBorder(map);
+    setNewMapEvents(map);
+    setNewMapConnections(map);
+    map->commit();
+    map->history.save();
+    map_cache->insert(mapName, map);
+
+    return map;
+}
+
+QString Project::getNewMapName() {
+    // Ensure default name doesn't already exist.
+    int i = 0;
+    QString newMapName;
+    do {
+        newMapName = QString("NewMap%1").arg(++i);
+    } while (mapNames->contains(newMapName));
+
+    return newMapName;
 }
 
 QList<QStringList>* Project::parse(QString text) {
@@ -739,7 +1215,7 @@ void Project::saveMapEvents(Map *map) {
             text += QString(", %1").arg(warp->get("y"));
             text += QString(", %1").arg(warp->get("elevation"));
             text += QString(", %1").arg(warp->get("destination_warp"));
-            text += QString(", %1").arg(mapNamesToMapConstants[warp->get("destination_map_name")]);
+            text += QString(", %1").arg(mapNamesToMapConstants->value(warp->get("destination_map_name")));
             text += "\n";
         }
         text += "\n";
@@ -811,6 +1287,10 @@ void Project::saveMapEvents(Map *map) {
 }
 
 void Project::readMapEvents(Map *map) {
+    if (!map->isPersistedToFile) {
+        return;
+    }
+
     // lazy
     QString path = root + QString("/data/maps/events/%1.inc").arg(map->name);
     QString text = readTextFile(path);
@@ -882,8 +1362,8 @@ void Project::readMapEvents(Map *map) {
 
             // Ensure the warp destination map constant is valid before adding it to the warps.
             QString mapConstant = command.value(i++);
-            if (mapConstantsToMapNames.contains(mapConstant)) {
-                warp->put("destination_map_name", mapConstantsToMapNames[mapConstant]);
+            if (mapConstantsToMapNames->contains(mapConstant)) {
+                warp->put("destination_map_name", mapConstantsToMapNames->value(mapConstant));
                 warp->put("event_type", "warp");
                 map->events["warp"].append(warp);
             } else {
@@ -971,6 +1451,20 @@ void Project::readMapEvents(Map *map) {
             map->events["event_secret_base"].append(bg);
         }
     }
+}
+
+void Project::setNewMapEvents(Map *map) {
+    map->object_events_label = "0x0";
+    map->warps_label = "0x0";
+    map->coord_events_label = "0x0";
+    map->bg_events_label = "0x0";
+    map->events["object"].clear();
+    map->events["warp"].clear();
+    map->events["trap"].clear();
+    map->events["trap_weather"].clear();
+    map->events["sign"].clear();
+    map->events["event_hidden_item"].clear();
+    map->events["event_secret_base"].clear();
 }
 
 QStringList Project::readCArray(QString text, QString label) {

@@ -76,6 +76,7 @@ public:
 public:
     QString name;
     QString constantName;
+    QString group_num;
     QString attributes_label;
     QString events_label;
     QString scripts_label;
@@ -101,6 +102,8 @@ public:
     Tileset *tileset_secondary = NULL;
 
     Blockdata* blockdata = NULL;
+
+    bool isPersistedToFile = true;
 
 public:
     void setName(QString mapName);

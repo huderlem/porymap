@@ -10,12 +10,14 @@ Editor::Editor()
 void Editor::saveProject() {
     if (project) {
         project->saveAllMaps();
+        project->saveAllDataStructures();
     }
 }
 
 void Editor::save() {
     if (project && map) {
         project->saveMap(map);
+        project->saveAllDataStructures();
     }
 }
 
