@@ -73,26 +73,26 @@ void MainWindow::openProject(QString dir) {
 
 QString MainWindow::getDefaultMap() {
     if (editor && editor->project) {
-        QList<QStringList*> *names = editor->project->groupedMapNames;
-        if (names) {
+        QList<QStringList> names = editor->project->groupedMapNames;
+        if (!names.isEmpty()) {
             QSettings settings;
             QString key = "project:" + editor->project->root;
             if (settings.contains(key)) {
                 QMap<QString, QVariant> qmap = settings.value(key).toMap();
                 if (qmap.contains("recent_map")) {
                     QString map_name = qmap.value("recent_map").toString();
-                    for (int i = 0; i < names->length(); i++) {
-                        if (names->value(i)->contains(map_name)) {
+                    for (int i = 0; i < names.length(); i++) {
+                        if (names.value(i).contains(map_name)) {
                             return map_name;
                         }
                     }
                 }
             }
             // Failing that, just get the first map in the list.
-            for (int i = 0; i < names->length(); i++) {
-                QStringList *list = names->value(i);
-                if (list->length()) {
-                    return list->value(0);
+            for (int i = 0; i < names.length(); i++) {
+                QStringList list = names.value(i);
+                if (list.length()) {
+                    return list.value(0);
                 }
             }
         }
@@ -327,9 +327,9 @@ void MainWindow::populateMapList() {
         group->setData(i, MapListUserRoles::GroupRole);
         maps->appendRow(group);
         mapGroupsModel->append(group);
-        QStringList *names = project->groupedMapNames->value(i);
-        for (int j = 0; j < names->length(); j++) {
-            QString map_name = names->value(j);
+        QStringList names = project->groupedMapNames.value(i);
+        for (int j = 0; j < names.length(); j++) {
+            QString map_name = names.value(j);
             QStandardItem *map = createMapItem(map_name, i, j);
             group->appendRow(map);
         }
@@ -387,7 +387,9 @@ void MainWindow::onAddNewMapToGroupClick(QAction* triggeredAction)
     QStandardItem* groupItem = mapGroupsModel->at(groupNum);
 
     QString newMapName = editor->project->getNewMapName();
-    editor->project->addNewMapToGroup(newMapName, groupNum);
+    Map* newMap = editor->project->addNewMapToGroup(newMapName, groupNum);
+    editor->project->saveMap(newMap);
+    editor->project->saveAllDataStructures();
 
     int numMapsInGroup = groupItem->rowCount();
     QStandardItem *newMapItem = createMapItem(newMapName, groupNum, numMapsInGroup);

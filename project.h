@@ -15,12 +15,14 @@ public:
     QString root;
     QStringList *groupNames = NULL;
     QMap<QString, int> *map_groups;
-    QList<QStringList*> *groupedMapNames = NULL;
+    QList<QStringList> groupedMapNames;
     QStringList *mapNames = NULL;
-    QMap<QString, QString> *mapConstantsToMapNames;
-    QMap<QString, QString> *mapNamesToMapConstants;
-    QMap<int, QString> *mapAttributesTable;
-    QMap<QString, QMap<QString, QString>*> *mapAttributes;
+    QMap<QString, QString>* mapConstantsToMapNames;
+    QMap<QString, QString>* mapNamesToMapConstants;
+    QMap<int, QString> mapAttributesTable;
+    QMap<int, QString> mapAttributesTableMaster;
+    QMap<QString, QMap<QString, QString>> mapAttributes;
+    QMap<QString, QMap<QString, QString>> mapAttributesMaster;
 
 
     QMap<QString, Map*> *map_cache;
@@ -39,7 +41,7 @@ public:
     void appendTextFile(QString path, QString text);
 
     void readMapGroups();
-    void addNewMapToGroup(QString mapName, int groupNum);
+    Map* addNewMapToGroup(QString mapName, int groupNum);
     QString getNewMapName();
     QString getProjectTitle();
 
@@ -98,6 +100,7 @@ private:
     QString getMapAssetsFilepath();
     void saveMapHeader(Map*);
     void saveMapAttributesTable();
+    void updateMapAttributes(Map* map);
 };
 
 #endif // PROJECT_H
