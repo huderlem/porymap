@@ -70,6 +70,7 @@ public:
     void saveAllDataStructures();
     void saveAllMapAttributes();
     void saveMapGroupsTable();
+    void saveMapConstantsHeader();
 
     QList<QStringList>* parse(QString text);
     QStringList getSongNames();

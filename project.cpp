@@ -492,6 +492,43 @@ void Project::saveMapGroupsTable() {
     saveTextFile(root + "/data/maps/_groups.inc", text);
 }
 
+void Project::saveMapConstantsHeader() {
+    QString text = QString("#ifndef GUARD_CONSTANTS_MAPS_H\n");
+    text += QString("#define GUARD_CONSTANTS_MAPS_H\n");
+    text += QString("\n");
+
+    int groupNum = 0;
+    for (QStringList mapNames : groupedMapNames) {
+        text += QString("// Map Group %1\n").arg(groupNum);
+        int maxLength = 0;
+        for (QString mapName : mapNames) {
+            QString mapConstantName = mapNamesToMapConstants->value(mapName);
+            if (mapConstantName.length() > maxLength)
+                maxLength = mapConstantName.length();
+        }
+        int groupIndex = 0;
+        for (QString mapName : mapNames) {
+            QString mapConstantName = mapNamesToMapConstants->value(mapName);
+            text += QString("#define %1%2(%3 | (%4 << 8))\n")
+                    .arg(mapConstantName)
+                    .arg(QString(" ").repeated(maxLength - mapConstantName.length() + 1))
+                    .arg(groupIndex)
+                    .arg(groupNum);
+            groupIndex++;
+        }
+        text += QString("\n");
+        groupNum++;
+    }
+
+    text += QString("\n");
+    text += QString("#define MAP_NONE (0x7F | (0x7F << 8))\n");
+    text += QString("#define MAP_UNDEFINED (0xFF | (0xFF << 8))\n\n\n");
+    text += QString("#define MAP_GROUP(map) (MAP_##map >> 8)\n");
+    text += QString("#define MAP_NUM(map) (MAP_##map & 0xFF)\n\n");
+    text += QString("#endif  // GUARD_CONSTANTS_MAPS_H\n");
+    saveTextFile(root + "/include/constants/maps.h", text);
+}
+
 void Project::getTilesets(Map* map) {
     map->tileset_primary = getTileset(map->tileset_primary_label);
     map->tileset_secondary = getTileset(map->tileset_secondary_label);
@@ -659,6 +696,7 @@ void Project::saveAllDataStructures() {
     saveMapAttributesTable();
     saveAllMapAttributes();
     saveMapGroupsTable();
+    saveMapConstantsHeader();
 }
 
 void Project::loadTilesetAssets(Tileset* tileset) {
@@ -945,6 +983,8 @@ Map* Project::addNewMapToGroup(QString mapName, int groupNum) {
     Map *map = new Map;
     map->isPersistedToFile = false;
     map->setName(mapName);
+    mapConstantsToMapNames->insert(map->constantName, map->name);
+    mapNamesToMapConstants->insert(map->name, map->constantName);
     setNewMapHeader(map, mapIndex);
     setNewMapAttributes(map);
     getTilesets(map);
