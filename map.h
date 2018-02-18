@@ -193,13 +193,4 @@ signals:
 public slots:
 };
 
-class MapGroup : public QObject
-{
-    Q_OBJECT
-public:
-    QString name;
-    int group_num;
-    QList<Map*> maps;
-};
-
 #endif // MAP_H

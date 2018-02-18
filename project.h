@@ -54,13 +54,6 @@ public:
     void getTilesets(Map*);
     void loadTilesetAssets(Tileset*);
 
-    void setNewMapHeader(Map* map, int mapIndex);
-    void setNewMapAttributes(Map* map);
-    void setNewMapBlockdata(Map* map);
-    void setNewMapBorder(Map *map);
-    void setNewMapEvents(Map *map);
-    void setNewMapConnections(Map *map);
-
     QString getBlockdataPath(Map*);
     void saveBlockdata(Map*);
     void saveMapBorder(Map*);
@@ -102,6 +95,13 @@ private:
     void saveMapHeader(Map*);
     void saveMapAttributesTable();
     void updateMapAttributes(Map* map);
+
+    void setNewMapHeader(Map* map, int mapIndex);
+    void setNewMapAttributes(Map* map);
+    void setNewMapBlockdata(Map* map);
+    void setNewMapBorder(Map *map);
+    void setNewMapEvents(Map *map);
+    void setNewMapConnections(Map *map);
 };
 
 #endif // PROJECT_H

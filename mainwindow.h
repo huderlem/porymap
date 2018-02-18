@@ -94,7 +94,7 @@ private:
 
 enum MapListUserRoles {
     GroupRole = Qt::UserRole + 1, // Used to hold the map group number.
-    TypeRole = Qt::UserRole + 10, // Used to differentiate between the different layers of the map list tree view.
+    TypeRole = Qt::UserRole + 2,  // Used to differentiate between the different layers of the map list tree view.
 };
 
 #endif // MAINWINDOW_H

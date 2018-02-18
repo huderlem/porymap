@@ -232,6 +232,7 @@ void Project::readMapAttributesTable() {
         }
     }
 
+    // Deep copy
     mapAttributesTableMaster = mapAttributesTable;
     mapAttributesTableMaster.detach();
 }
@@ -357,7 +358,6 @@ void Project::readAllMapAttributes() {
             if (!mapAttributes.contains(altMapName)) {
                 mapAttributes.insert(altMapName, QMap<QString, QString>());
             }
-            mapAttributes[altMapName]["attributes_label"] = attributeMapLabel;
             mapAttributes[altMapName].insert("attributes_label", attributeMapLabel);
             mapAttributes[altMapName].insert("width", attrWidth);
             mapAttributes[altMapName].insert("height", attrHeight);
@@ -372,6 +372,7 @@ void Project::readAllMapAttributes() {
         }
     }
 
+    // Deep copy
     mapAttributesMaster = mapAttributes;
     mapAttributesMaster.detach();
 }
@@ -687,6 +688,7 @@ void Project::saveMap(Map *map) {
 void Project::updateMapAttributes(Map* map) {
     mapAttributesTableMaster.insert(map->index.toInt(nullptr, 0), map->name);
 
+    // Deep copy
     QMap<QString, QString> attrs = mapAttributes.value(map->name);
     attrs.detach();
     mapAttributesMaster.insert(map->name, attrs);
