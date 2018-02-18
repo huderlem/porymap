@@ -36,6 +36,7 @@ public:
 
     QString readTextFile(QString path);
     void saveTextFile(QString path, QString text);
+    void appendTextFile(QString path, QString text);
 
     void readMapGroups();
     void addNewMapToGroup(QString mapName, int groupNum);
@@ -60,6 +61,7 @@ public:
 
     QString getBlockdataPath(Map*);
     void saveBlockdata(Map*);
+    void saveMapBorder(Map*);
     void writeBlockdata(QString, Blockdata*);
     void saveAllMaps();
     void saveMap(Map*);

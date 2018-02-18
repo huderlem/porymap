@@ -176,7 +176,7 @@ void Project::setNewMapHeader(Map* map, int mapIndex) {
     map->scripts_label = QString("%1_MapScripts").arg(map->name);;
     map->connections_label = "0x0";
     map->song = "BGM_DAN02";
-    map->index = mapIndex;
+    map->index = QString("%1").arg(mapIndex);
     map->location = "0";
     map->visibility = "0";
     map->weather = "2";
@@ -552,6 +552,11 @@ void Project::setNewMapBorder(Map *map) {
     map->border = blockdata;
 }
 
+void Project::saveMapBorder(Map *map) {
+    QString path = getMapBorderPath(map);
+    writeBlockdata(path, map->border);
+}
+
 void Project::saveBlockdata(Map* map) {
     QString path = getBlockdataPath(map);
     writeBlockdata(path, map->blockdata);
@@ -576,14 +581,45 @@ void Project::saveAllMaps() {
 }
 
 void Project::saveMap(Map *map) {
-    saveBlockdata(map);
+    // Create/Modify a few collateral files for brand new maps.
+    if (!map->isPersistedToFile) {
+        QString newMapDataDir = QString(root + "/data/maps/%1").arg(map->name);
+        if (!QDir::root().mkdir(newMapDataDir)) {
+            qDebug() << "Error: failed to create directory for new map. " << newMapDataDir;
+        }
+
+        // Create file data/scripts/maps/<map_name>.inc
+        QString text = QString("%1_MapScripts::\n\t.byte 0\n").arg(map->name);
+        saveTextFile(root + "/data/scripts/maps/" + map->name + ".inc", text);
+
+        // Create file data/text/maps/<map_name>.inc
+        saveTextFile(root + "/data/text/maps/" + map->name + ".inc", "\n");
+
+        // Simply append to data/event_scripts.s.
+        // TODO: In the future, this file needs more structure to allow for proper parsing.
+        text = QString("\n\t.include \"data/scripts/maps/%1.inc\"\n").arg(map->name);
+        text += QString("\t.include \"data/text/maps/%1.inc\"\n").arg(map->name);
+        appendTextFile(root + "/data/event_scripts.s", text);
+
+        // Simply append to data/map_events.s.
+        text = QString("\n\t.include \"data/maps/events/%1.inc\"\n").arg(map->name);
+        appendTextFile(root + "/data/map_events.s", text);
+
+        // Simply append to data/maps/headers.inc.
+        text = QString("\t.include \"data/maps/%1/header.inc\"\n").arg(map->name);
+        appendTextFile(root + "/data/maps/headers.inc", text);
+    }
+
+    saveMapBorder(map);
     saveMapHeader(map);
+    saveBlockdata(map);
     saveMapEvents(map);
 }
 
 void Project::saveAllDataStructures() {
     saveMapAttributesTable();
     saveAllMapAttributes();
+    // TODO: saveMapGroupsTable();
 }
 
 void Project::loadTilesetAssets(Tileset* tileset) {
@@ -786,6 +822,15 @@ void Project::saveTextFile(QString path, QString text) {
     }
 }
 
+void Project::appendTextFile(QString path, QString text) {
+    QFile file(path);
+    if (file.open(QIODevice::Append)) {
+        file.write(text.toUtf8());
+    } else {
+        qDebug() << QString("Could not open '%1' for appending: ").arg(path) + file.errorString();
+    }
+}
+
 void Project::readMapGroups() {
     QString text = readTextFile(root + "/data/maps/_groups.inc");
     if (text.isNull()) {
@@ -852,24 +897,6 @@ void Project::readMapGroups() {
 }
 
 void Project::addNewMapToGroup(QString mapName, int groupNum) {
-    // Write new map to project files.
-    // 1. Create directory data/maps/<map_name>/
-    // 2. Create file data/maps/<map_name>/border.bin
-    // 3. Create file data/maps/<map_name>/header.inc
-    // 4. Create file data/maps/<map_name>/map.bin
-    // 5. Create file data/maps/events/<map_name>.inc
-    // 6. Create file data/scripts/maps/<map_name>.inc
-    // 7. Create file data/text/maps/<map_name>.inc
-    // 8. Modify data/event_scripts.s:
-    //     .include "data/scripts/maps/<map_name>.inc"
-    //     .include "data/text/maps/<map_name>.inc"
-    // 9. Modify data/map_events.s:
-    //     .include "data/maps/events/<map_name>.inc"
-    // 10. Modify data/maps/_assets.inc
-    // 11. Modify data/maps/_groups.inc
-    // 12. Modify data/maps/attributes_table.inc
-    // 13. Modify data/maps/headers.inc
-
     int mapIndex = mapAttributesTable->count() + 1;
     mapAttributesTable->insert(mapIndex, mapName);
 
