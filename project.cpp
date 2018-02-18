@@ -466,6 +466,28 @@ void Project::setNewMapAttributes(Map* map) {
     mapAttributes->insert(map->name, attrs);
 }
 
+void Project::saveMapGroupsTable() {
+    QString text = "";
+    int groupNum = 0;
+    for (QStringList* mapNames : *groupedMapNames) {
+        text += QString("\t.align 2\n");
+        text += QString("gMapGroup%1::\n").arg(groupNum);
+        for (QString mapName : *mapNames) {
+            text += QString("\t.4byte %1\n").arg(mapName);
+        }
+        text += QString("\n");
+        groupNum++;
+    }
+
+    text += QString("\t.align 2\n");
+    text += QString("gMapGroups::\n");
+    for (int i = 0; i < groupNum; i++) {
+        text += QString("\t.4byte gMapGroup%1\n").arg(i);
+    }
+
+    saveTextFile(root + "/data/maps/_groups.inc", text);
+}
+
 void Project::getTilesets(Map* map) {
     map->tileset_primary = getTileset(map->tileset_primary_label);
     map->tileset_secondary = getTileset(map->tileset_secondary_label);
@@ -614,12 +636,13 @@ void Project::saveMap(Map *map) {
     saveMapHeader(map);
     saveBlockdata(map);
     saveMapEvents(map);
+    map->isPersistedToFile = true;
 }
 
 void Project::saveAllDataStructures() {
     saveMapAttributesTable();
     saveAllMapAttributes();
-    // TODO: saveMapGroupsTable();
+    saveMapGroupsTable();
 }
 
 void Project::loadTilesetAssets(Tileset* tileset) {
