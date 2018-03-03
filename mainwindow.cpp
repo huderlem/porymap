@@ -203,11 +203,7 @@ void MainWindow::displayMapProperties() {
 
     QStringList songs = project->getSongNames();
     ui->comboBox_Song->addItems(songs);
-    QString song = map->song;
-    if (!songs.contains(song)) {
-        song = project->getSongName(song.toInt());
-    }
-    ui->comboBox_Song->setCurrentText(song);
+    ui->comboBox_Song->setCurrentText(map->song);
 
     ui->comboBox_Location->addItems(project->getLocations());
     ui->comboBox_Location->setCurrentText(map->location);

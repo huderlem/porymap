@@ -1114,26 +1114,6 @@ QStringList Project::getSongNames() {
     return names;
 }
 
-QString Project::getSongName(int songNumber) {
-    QStringList names;
-    QString text = readTextFile(root + "/include/constants/songs.h");
-    if (!text.isNull()) {
-        QStringList songDefinePrefixes;
-        songDefinePrefixes << "SE_" << "BGM_";
-        QMap<QString, int> songDefines = readCDefines(text, songDefinePrefixes);
-
-        // Loop through song defines, and fine the one with the matching song number.
-        QMap<QString, int>::iterator iter = songDefines.begin();
-        while (iter != songDefines.end()) {
-            if (iter.value() == songNumber) {
-                return iter.key();
-            }
-            iter++;
-        }
-    }
-    return "";
-}
-
 QMap<QString, int> Project::getMapObjGfxConstants() {
     QMap<QString, int> constants;
     QString text = readTextFile(root + "/include/constants/map_objects.h");

@@ -69,7 +69,6 @@ public:
 
     QList<QStringList>* parse(QString text);
     QStringList getSongNames();
-    QString getSongName(int);
     QStringList getLocations();
     QStringList getVisibilities();
     QStringList getWeathers();
