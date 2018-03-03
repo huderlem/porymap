@@ -284,6 +284,7 @@ void MainWindow::loadDataStructures() {
     Project *project = editor->project;
     project->readMapAttributesTable();
     project->readAllMapAttributes();
+    project->readItemNames();
 }
 
 void MainWindow::populateMapList() {
@@ -644,6 +645,11 @@ void MainWindow::updateSelectedObjects() {
                     combo->addItem(value);
                 }
                 combo->addItems(*editor->project->mapNames);
+            } else if (key == "item") {
+                if (!editor->project->itemNames->contains(value)) {
+                    combo->addItem(value);
+                }
+                combo->addItems(*editor->project->itemNames);
             } else {
                 combo->addItem(value);
             }

@@ -18,6 +18,7 @@ Project::Project()
     groupNames = new QStringList;
     map_groups = new QMap<QString, int>;
     mapNames = new QStringList;
+    itemNames = new QStringList;
     map_cache = new QMap<QString, Map*>;
     mapConstantsToMapNames = new QMap<QString, QString>;
     mapNamesToMapConstants = new QMap<QString, QString>;
@@ -1060,6 +1061,29 @@ QStringList Project::getBattleScenes() {
         names.append(QString("%1").arg(i));
     }
     return names;
+}
+
+void Project::readItemNames() {
+    QString text = readTextFile(root + "/include/constants/items.h");
+    if (!text.isNull()) {
+        QStringList itemDefinePrefixes;
+        itemDefinePrefixes << "ITEM_";
+        QMap<QString, int> itemDefines = readCDefines(text, itemDefinePrefixes);
+
+        // The item names should to be sorted by their underlying value, not alphabetically.
+        // Reverse the map and read out the resulting keys in order.
+        QMultiMap<int, QString> itemDefinesInverse;
+        for (QString itemName : itemDefines.keys()) {
+            itemDefinesInverse.insert(itemDefines[itemName], itemName);
+        }
+
+        for (int itemValue : itemDefinesInverse.keys()) {
+            QList<QString> names = itemDefinesInverse.values(itemValue);
+            for (QString name : names) {
+                itemNames->append(name);
+            }
+        }
+    }
 }
 
 QStringList Project::getSongNames() {

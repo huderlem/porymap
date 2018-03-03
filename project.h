@@ -23,7 +23,7 @@ public:
     QMap<int, QString> mapAttributesTableMaster;
     QMap<QString, QMap<QString, QString>> mapAttributes;
     QMap<QString, QMap<QString, QString>> mapAttributesMaster;
-
+    QStringList *itemNames = NULL;
 
     QMap<QString, Map*> *map_cache;
     Map* loadMap(QString);
@@ -73,6 +73,7 @@ public:
     QStringList getWeathers();
     QStringList getMapTypes();
     QStringList getBattleScenes();
+    void readItemNames();
 
     void loadObjectPixmaps(QList<Event*> objects);
     QMap<QString, int> getMapObjGfxConstants();
