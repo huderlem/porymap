@@ -1128,7 +1128,7 @@ void Project::loadObjectPixmaps(QList<Event*> objects) {
     QString pointers_text = readTextFile(root + "/src/data/field_map_obj/map_object_graphics_info_pointers.h");
     QString info_text = readTextFile(root + "/src/data/field_map_obj/map_object_graphics_info.h");
     QString pic_text = readTextFile(root + "/src/data/field_map_obj/map_object_pic_tables.h");
-    QString assets_text = readTextFile(root + "/src/field/field_map_obj.c");
+    QString assets_text = readTextFile(root + "/src/field/event_object_movement.c");
 
     QStringList pointers = readCArray(pointers_text, "gMapObjectGraphicsInfoPointers");
 
