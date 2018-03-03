@@ -24,6 +24,8 @@ public:
     QMap<QString, QMap<QString, QString>> mapAttributes;
     QMap<QString, QMap<QString, QString>> mapAttributesMaster;
     QStringList *itemNames = NULL;
+    QStringList *flagNames = NULL;
+    QStringList *varNames = NULL;
 
     QMap<QString, Map*> *map_cache;
     Map* loadMap(QString);
@@ -74,6 +76,8 @@ public:
     QStringList getMapTypes();
     QStringList getBattleScenes();
     void readItemNames();
+    void readFlagNames();
+    void readVarNames();
 
     void loadObjectPixmaps(QList<Event*> objects);
     QMap<QString, int> getMapObjGfxConstants();
@@ -90,12 +94,15 @@ public:
     QStringList readCArray(QString text, QString label);
     QString readCIncbin(QString text, QString label);
     QMap<QString, int> readCDefines(QString text, QStringList prefixes);
+    QMap<QString, int> readCDefines(QString text, QStringList prefixes, QString hardcodedDefine, int hardcodedDefineValue);
 private:
     QString getMapAttributesTableFilepath();
     QString getMapAssetsFilepath();
     void saveMapHeader(Map*);
     void saveMapAttributesTable();
     void updateMapAttributes(Map* map);
+    void readCDefinesSorted(QString, QStringList, QStringList*);
+    void readCDefinesSorted(QString, QStringList, QStringList*, QString, int);
 
     void setNewMapHeader(Map* map, int mapIndex);
     void setNewMapAttributes(Map* map);

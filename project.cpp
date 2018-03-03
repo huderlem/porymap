@@ -19,6 +19,8 @@ Project::Project()
     map_groups = new QMap<QString, int>;
     mapNames = new QStringList;
     itemNames = new QStringList;
+    flagNames = new QStringList;
+    varNames = new QStringList;
     map_cache = new QMap<QString, Map*>;
     mapConstantsToMapNames = new QMap<QString, QString>;
     mapNamesToMapConstants = new QMap<QString, QString>;
@@ -1064,25 +1066,39 @@ QStringList Project::getBattleScenes() {
 }
 
 void Project::readItemNames() {
-    QString text = readTextFile(root + "/include/constants/items.h");
+    QString filepath = root + "/include/constants/items.h";
+    QStringList prefixes = (QStringList() << "ITEM_");
+    readCDefinesSorted(filepath, prefixes, itemNames);
+}
+
+void Project::readFlagNames() {
+    QString filepath = root + "/include/constants/flags.h";
+    QStringList prefixes = (QStringList() << "FLAG_");
+    readCDefinesSorted(filepath, prefixes, flagNames, "SYSTEM_FLAGS", 0x800);
+}
+
+void Project::readVarNames() {
+    QString filepath = root + "/include/constants/vars.h";
+    QStringList prefixes = (QStringList() << "VAR_");
+    readCDefinesSorted(filepath, prefixes, varNames);
+}
+
+void Project::readCDefinesSorted(QString filepath, QStringList prefixes, QStringList* definesToSet) {
+    return readCDefinesSorted(filepath, prefixes, definesToSet, "", 0);
+}
+
+void Project::readCDefinesSorted(QString filepath, QStringList prefixes, QStringList* definesToSet, QString hardcodedDefine, int hardcodedDefineValue) {
+    QString text = readTextFile(filepath);
     if (!text.isNull()) {
-        QStringList itemDefinePrefixes;
-        itemDefinePrefixes << "ITEM_";
-        QMap<QString, int> itemDefines = readCDefines(text, itemDefinePrefixes);
+        QMap<QString, int> defines = readCDefines(text, prefixes, hardcodedDefine, hardcodedDefineValue);
 
-        // The item names should to be sorted by their underlying value, not alphabetically.
+        // The defines should to be sorted by their underlying value, not alphabetically.
         // Reverse the map and read out the resulting keys in order.
-        QMultiMap<int, QString> itemDefinesInverse;
-        for (QString itemName : itemDefines.keys()) {
-            itemDefinesInverse.insert(itemDefines[itemName], itemName);
+        QMultiMap<int, QString> definesInverse;
+        for (QString defineName : defines.keys()) {
+            definesInverse.insert(defines[defineName], defineName);
         }
-
-        for (int itemValue : itemDefinesInverse.keys()) {
-            QList<QString> names = itemDefinesInverse.values(itemValue);
-            for (QString name : names) {
-                itemNames->append(name);
-            }
-        }
+        *definesToSet = definesInverse.values();
     }
 }
 
@@ -1252,8 +1268,8 @@ void Project::saveMapEvents(Map *map) {
             text += QString(", %1").arg(coords->get("y"));
             text += QString(", %1").arg(coords->get("elevation"));
             text += QString(", 0");
-            text += QString(", %1").arg(coords->get("coord_unknown1"));
-            text += QString(", %1").arg(coords->get("coord_unknown2"));
+            text += QString(", %1").arg(coords->get("script_var"));
+            text += QString(", %1").arg(coords->get("script_var_value"));
             text += QString(", 0");
             text += QString(", %1").arg(coords->get("script_label"));
             text += "\n";
@@ -1413,8 +1429,8 @@ void Project::readMapEvents(Map *map) {
             coord->put("x", command.value(i++));
             coord->put("y", command.value(i++));
             coord->put("elevation", command.value(i++));
-            coord->put("coord_unknown1", command.value(i++));
-            coord->put("coord_unknown2", command.value(i++));
+            coord->put("script_var", command.value(i++));
+            coord->put("script_var_value", command.value(i++));
             coord->put("script_label", command.value(i++));
             //coord_unknown3
             //coord_unknown4
@@ -1539,23 +1555,37 @@ QString Project::readCIncbin(QString text, QString label) {
 }
 
 QMap<QString, int> Project::readCDefines(QString text, QStringList prefixes) {
+    return readCDefines(text, prefixes, "", 0);
+}
+
+QMap<QString, int> Project::readCDefines(QString text, QStringList prefixes, QString hardcodedDefine, int hardcodedDefineValue) {
     QMap<QString, int> defines;
 
-    QString combinedPrefixes = "[" + prefixes.join('|') + "]";
-    QRegularExpression re(QString("#define\\s+(?<defineName>%1\\w+)\\s(?<defineValue>\\w+)").arg(combinedPrefixes));
+    QString combinedPrefixes = "(" + prefixes.join('|') + ")";
+    QString regex;
+    if (hardcodedDefine.isEmpty()) {
+        regex = QString("#define\\s+(?<defineName>(%1)\\w+)\\s+(?<defineValue>\\w+)").arg(combinedPrefixes);
+    } else {
+        regex = QString("#define\\s+(?<defineName>(%1)\\w+)\\s+\\(*(?<hardcodedDefineName>\\\s*%2\\s+\\+\\s+)*(?<defineValue>\\w+\)\\)*").arg(combinedPrefixes, hardcodedDefine);
+    }
+
+    QRegularExpression re(regex);
     QRegularExpressionMatchIterator iter = re.globalMatch(text);
     while (iter.hasNext()) {
         QRegularExpressionMatch match = iter.next();
         QString name = match.captured("defineName");
+        QString hardcodedDefineName = match.captured("hardcodedDefineName");
         QString value = match.captured("defineValue");
         bool valid;
         int parsedValue = value.startsWith("0x") ? value.toInt(&valid, 16) : value.toInt(&valid, 10);
         if (valid) {
-            if (!defines.contains(name)) {
-                defines.insert(name, parsedValue);
-            } else {
-                qDebug() << QString("Define '%1' is defined multiple times'").arg(name);
+            int actualValue = parsedValue;
+            if (!hardcodedDefine.isEmpty() && !hardcodedDefineName.isEmpty()) {
+                actualValue += hardcodedDefineValue;
             }
+            defines.insert(name, actualValue);
+        } else if (defines.contains(value)) {
+            defines.insert(name, defines.value(value));
         } else {
             qDebug() << QString("Failed to parse define '%1' value '%2' as base 10 or hexadecimal value").arg(name, value);
         }
