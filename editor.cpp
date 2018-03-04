@@ -295,6 +295,31 @@ void MetatilesPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
     mousePressEvent(event);
 }
 
+void CollisionMetatilesPixmapItem::updateCurHoveredMetatile(QPointF pos) {
+    int x = ((int)pos.x()) / 16;
+    int y = ((int)pos.y()) / 16;
+    int width = pixmap().width() / 16;
+    int height = pixmap().height() / 16;
+    if (x < 0 || x >= width || y < 0 || y >= height) {
+        map->clearHoveredCollisionTile();
+    } else {
+        int collision = y * width + x;
+        map->hoveredCollisionTileChanged(collision);
+    }
+}
+
+void ElevationMetatilesPixmapItem::updateCurHoveredMetatile(QPointF pos) {
+    int x = ((int)pos.x()) / 16;
+    int y = ((int)pos.y()) / 16;
+    int width = pixmap().width() / 16;
+    int height = pixmap().height() / 16;
+    if (x < 0 || x >= width || y < 0 || y >= height) {
+        map->clearHoveredElevationTile();
+    } else {
+        int elevation = y * width + x;
+        map->hoveredElevationTileChanged(elevation);
+    }
+}
 
 void MapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
     if (map) {

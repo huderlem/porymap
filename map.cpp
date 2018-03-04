@@ -754,3 +754,19 @@ void Map::hoveredMetatileChanged(int block) {
 void Map::clearHoveredMetatile() {
     emit statusBarMessage(QString(""));
 }
+
+void Map::hoveredCollisionTileChanged(int collision) {
+    emit statusBarMessage(QString("Collision: %1").arg(collision));
+}
+
+void Map::clearHoveredCollisionTile() {
+    emit statusBarMessage(QString(""));
+}
+
+void Map::hoveredElevationTileChanged(int elevation) {
+    emit statusBarMessage(QString("Elevation: %1").arg(elevation));
+}
+
+void Map::clearHoveredElevationTile() {
+    emit statusBarMessage(QString(""));
+}

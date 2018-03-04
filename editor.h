@@ -247,8 +247,8 @@ public:
     Map* map = NULL;
     virtual void pick(uint);
     virtual void draw();
-private:
-    void updateCurHoveredMetatile(QPointF pos);
+protected:
+    virtual void updateCurHoveredMetatile(QPointF pos);
 private slots:
     void paintTileChanged(Map *map);
 protected:
@@ -272,6 +272,8 @@ public:
     virtual void draw() {
         setPixmap(map->renderCollisionMetatiles());
     }
+protected:
+    virtual void updateCurHoveredMetatile(QPointF pos);
 private slots:
     void paintCollisionChanged(Map *map) {
         draw();
@@ -291,6 +293,8 @@ public:
     virtual void draw() {
         setPixmap(map->renderElevationMetatiles());
     }
+protected:
+    virtual void updateCurHoveredMetatile(QPointF pos);
 private slots:
     void paintCollisionChanged(Map *map) {
         draw();

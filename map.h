@@ -186,6 +186,10 @@ public:
     void clearHoveredTile();
     void hoveredMetatileChanged(int block);
     void clearHoveredMetatile();
+    void hoveredCollisionTileChanged(int collision);
+    void clearHoveredCollisionTile();
+    void hoveredElevationTileChanged(int elevation);
+    void clearHoveredElevationTile();
 
     QList<QList<QRgb> > getBlockPalettes(int metatile_index);
 
