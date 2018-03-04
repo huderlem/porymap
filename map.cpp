@@ -745,3 +745,12 @@ void Map::hoveredTileChanged(int x, int y, int block) {
 void Map::clearHoveredTile() {
     emit statusBarMessage(QString(""));
 }
+
+void Map::hoveredMetatileChanged(int block) {
+    emit statusBarMessage(QString("Block: 0x%1")
+                          .arg(QString("%1").arg(block, 3, 16, QChar('0')).toUpper()));
+}
+
+void Map::clearHoveredMetatile() {
+    emit statusBarMessage(QString(""));
+}

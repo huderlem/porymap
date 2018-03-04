@@ -257,6 +257,25 @@ void MetatilesPixmapItem::pick(uint tile) {
     emit map->paintTileChanged(map);
 }
 
+void MetatilesPixmapItem::updateCurHoveredMetatile(QPointF pos) {
+    int x = ((int)pos.x()) / 16;
+    int y = ((int)pos.y()) / 16;
+    int width = pixmap().width() / 16;
+    int height = pixmap().height() / 16;
+    if (x < 0 || x >= width || y < 0 || y >= height) {
+        map->clearHoveredMetatile();
+    } else {
+        int block = y * width + x;
+        map->hoveredMetatileChanged(block);
+    }
+}
+
+void MetatilesPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
+    updateCurHoveredMetatile(event->pos());
+}
+void MetatilesPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event) {
+    map->clearHoveredMetatile();
+}
 void MetatilesPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     QPointF pos = event->pos();
     int x = ((int)pos.x()) / 16;
@@ -269,6 +288,7 @@ void MetatilesPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     }
 }
 void MetatilesPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
+    updateCurHoveredMetatile(event->pos());
     mousePressEvent(event);
 }
 void MetatilesPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {

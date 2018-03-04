@@ -241,14 +241,19 @@ public:
     }
     MetatilesPixmapItem(Map *map_) {
         map = map_;
+        setAcceptHoverEvents(true);
         connect(map, SIGNAL(paintTileChanged(Map*)), this, SLOT(paintTileChanged(Map *)));
     }
     Map* map = NULL;
     virtual void pick(uint);
     virtual void draw();
+private:
+    void updateCurHoveredMetatile(QPointF pos);
 private slots:
     void paintTileChanged(Map *map);
 protected:
+    void hoverMoveEvent(QGraphicsSceneHoverEvent*);
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent*);
     void mousePressEvent(QGraphicsSceneMouseEvent*);
     void mouseMoveEvent(QGraphicsSceneMouseEvent*);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent*);

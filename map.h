@@ -184,6 +184,8 @@ public:
     bool hasUnsavedChanges();
     void hoveredTileChanged(int x, int y, int block);
     void clearHoveredTile();
+    void hoveredMetatileChanged(int block);
+    void clearHoveredMetatile();
 
     QList<QList<QRgb> > getBlockPalettes(int metatile_index);
 
