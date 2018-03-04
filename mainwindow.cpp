@@ -203,11 +203,7 @@ void MainWindow::displayMapProperties() {
 
     QStringList songs = project->getSongNames();
     ui->comboBox_Song->addItems(songs);
-    QString song = map->song;
-    if (!songs.contains(song)) {
-        song = project->getSongName(song.toInt());
-    }
-    ui->comboBox_Song->setCurrentText(song);
+    ui->comboBox_Song->setCurrentText(map->song);
 
     ui->comboBox_Location->addItems(project->getLocations());
     ui->comboBox_Location->setCurrentText(map->location);
@@ -284,6 +280,9 @@ void MainWindow::loadDataStructures() {
     Project *project = editor->project;
     project->readMapAttributesTable();
     project->readAllMapAttributes();
+    project->readItemNames();
+    project->readFlagNames();
+    project->readVarNames();
 }
 
 void MainWindow::populateMapList() {
@@ -569,8 +568,8 @@ void MainWindow::updateSelectedObjects() {
         field_labels["sight_radius"] = "Sight Radius";
         field_labels["destination_warp"] = "Destination Warp";
         field_labels["destination_map_name"] = "Destination Map";
-        field_labels["coord_unknown1"] = "Unknown 1";
-        field_labels["coord_unknown2"] = "Unknown 2";
+        field_labels["script_var"] = "Var";
+        field_labels["script_var_value"] = "Var Value";
         field_labels["type"] = "Type";
         field_labels["item"] = "Item";
         field_labels["item_unknown5"] = "Unknown 5";
@@ -613,8 +612,8 @@ void MainWindow::updateSelectedObjects() {
         }
         else if (event_type == "trap") {
             fields << "script_label";
-            fields << "coord_unknown1";
-            fields << "coord_unknown2";
+            fields << "script_var";
+            fields << "script_var_value";
         }
         else if (event_type == "trap_weather") {
             fields << "weather";
@@ -644,6 +643,21 @@ void MainWindow::updateSelectedObjects() {
                     combo->addItem(value);
                 }
                 combo->addItems(*editor->project->mapNames);
+            } else if (key == "item") {
+                if (!editor->project->itemNames->contains(value)) {
+                    combo->addItem(value);
+                }
+                combo->addItems(*editor->project->itemNames);
+            } else if (key == "flag") {
+                if (!editor->project->flagNames->contains(value)) {
+                    combo->addItem(value);
+                }
+                combo->addItems(*editor->project->flagNames);
+            } else if (key == "script_var") {
+                if (!editor->project->varNames->contains(value)) {
+                    combo->addItem(value);
+                }
+                combo->addItems(*editor->project->varNames);
             } else {
                 combo->addItem(value);
             }

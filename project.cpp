@@ -1,4 +1,4 @@
-#include "asm.h"
+#include "parseutil.h"
 #include "project.h"
 #include "tile.h"
 #include "tileset.h"
@@ -18,6 +18,9 @@ Project::Project()
     groupNames = new QStringList;
     map_groups = new QMap<QString, int>;
     mapNames = new QStringList;
+    itemNames = new QStringList;
+    flagNames = new QStringList;
+    varNames = new QStringList;
     map_cache = new QMap<QString, Map*>;
     mapConstantsToMapNames = new QMap<QString, QString>;
     mapNamesToMapConstants = new QMap<QString, QString>;
@@ -68,7 +71,7 @@ void Project::loadMapConnections(Map *map) {
         QString path = root + QString("/data/maps/%1/connections.inc").arg(map->name);
         QString text = readTextFile(path);
         if (!text.isNull()) {
-            QList<QStringList> *commands = parse(text);
+            QList<QStringList> *commands = parseAsm(text);
             QStringList *list = getLabelValues(commands, map->connections_label);
 
             //// Avoid using this value. It ought to be generated instead.
@@ -147,13 +150,13 @@ void Project::readMapHeader(Map* map) {
     }
 
     QString label = map->name;
-    Asm *parser = new Asm;
+    ParseUtil *parser = new ParseUtil;
 
     QString header_text = readTextFile(root + "/data/maps/" + label + "/header.inc");
     if (header_text.isNull()) {
         return;
     }
-    QStringList *header = getLabelValues(parser->parse(header_text), label);
+    QStringList *header = getLabelValues(parser->parseAsm(header_text), label);
     map->attributes_label = header->value(0);
     map->events_label = header->value(1);
     map->scripts_label = header->value(2);
@@ -209,7 +212,7 @@ void Project::saveMapHeader(Map *map) {
 void Project::readMapAttributesTable() {
     int curMapIndex = 1;
     QString attributesText = readTextFile(getMapAttributesTableFilepath());
-    QList<QStringList>* values = parse(attributesText);
+    QList<QStringList>* values = parseAsm(attributesText);
     bool inAttributePointers = false;
     for (int i = 0; i < values->length(); i++) {
         QStringList params = values->value(i);
@@ -262,13 +265,13 @@ void Project::readMapAttributes(Map* map) {
         return;
     }
 
-    Asm *parser = new Asm;
+    ParseUtil *parser = new ParseUtil;
 
     QString assets_text = readTextFile(getMapAssetsFilepath());
     if (assets_text.isNull()) {
         return;
     }
-    QStringList *attributes = getLabelValues(parser->parse(assets_text), map->attributes_label);
+    QStringList *attributes = getLabelValues(parser->parseAsm(assets_text), map->attributes_label);
     map->width = attributes->value(0);
     map->height = attributes->value(1);
     map->border_label = attributes->value(2);
@@ -280,13 +283,13 @@ void Project::readMapAttributes(Map* map) {
 void Project::readAllMapAttributes() {
     mapAttributes.clear();
 
-    Asm *parser = new Asm;
+    ParseUtil *parser = new ParseUtil;
     QString assets_text = readTextFile(getMapAssetsFilepath());
     if (assets_text.isNull()) {
         return;
     }
 
-    QList<QStringList> *commands = parser->parse(assets_text);
+    QList<QStringList> *commands = parser->parseAsm(assets_text);
 
     // Assume the _assets.inc file is grouped consistently in the order of:
     // 1. <map_name>_MapBorder
@@ -536,10 +539,10 @@ void Project::getTilesets(Map* map) {
 }
 
 Tileset* Project::loadTileset(QString label) {
-    Asm *parser = new Asm;
+    ParseUtil *parser = new ParseUtil;
 
     QString headers_text = readTextFile(root + "/data/tilesets/headers.inc");
-    QStringList *values = getLabelValues(parser->parse(headers_text), label);
+    QStringList *values = getLabelValues(parser->parseAsm(headers_text), label);
     Tileset *tileset = new Tileset;
     tileset->name = label;
     tileset->is_compressed = values->value(0);
@@ -559,7 +562,7 @@ Tileset* Project::loadTileset(QString label) {
 
 QString Project::getBlockdataPath(Map* map) {
     QString text = readTextFile(getMapAssetsFilepath());
-    QStringList *values = getLabelValues(parse(text), map->blockdata_label);
+    QStringList *values = getLabelValues(parseAsm(text), map->blockdata_label);
     QString path;
     if (!values->isEmpty()) {
         path = root + "/" + values->value(0).section('"', 1, 1);
@@ -571,7 +574,7 @@ QString Project::getBlockdataPath(Map* map) {
 
 QString Project::getMapBorderPath(Map *map) {
     QString text = readTextFile(getMapAssetsFilepath());
-    QStringList *values = getLabelValues(parse(text), map->border_label);
+    QStringList *values = getLabelValues(parseAsm(text), map->border_label);
     QString path;
     if (!values->isEmpty()) {
         path = root + "/" + values->value(0).section('"', 1, 1);
@@ -702,7 +705,7 @@ void Project::saveAllDataStructures() {
 }
 
 void Project::loadTilesetAssets(Tileset* tileset) {
-    Asm* parser = new Asm;
+    ParseUtil* parser = new ParseUtil;
     QString category = (tileset->is_secondary == "TRUE") ? "secondary" : "primary";
     if (tileset->name.isNull()) {
         return;
@@ -710,7 +713,7 @@ void Project::loadTilesetAssets(Tileset* tileset) {
     QString dir_path = root + "/data/tilesets/" + category + "/" + tileset->name.replace("gTileset_", "").toLower();
 
     QString graphics_text = readTextFile(root + "/data/tilesets/graphics.inc");
-    QList<QStringList> *graphics = parser->parse(graphics_text);
+    QList<QStringList> *graphics = parser->parseAsm(graphics_text);
     QStringList *tiles_values = getLabelValues(graphics, tileset->tiles_label);
     QStringList *palettes_values = getLabelValues(graphics, tileset->palettes_label);
 
@@ -740,7 +743,7 @@ void Project::loadTilesetAssets(Tileset* tileset) {
     QString metatiles_path;
     QString metatile_attrs_path;
     QString metatiles_text = readTextFile(root + "/data/tilesets/metatiles.inc");
-    QList<QStringList> *metatiles_macros = parser->parse(metatiles_text);
+    QList<QStringList> *metatiles_macros = parser->parseAsm(metatiles_text);
     QStringList *metatiles_values = getLabelValues(metatiles_macros, tileset->metatiles_label);
     if (!metatiles_values->isEmpty()) {
         metatiles_path = root + "/" + metatiles_values->value(0).section('"', 1, 1);
@@ -915,8 +918,8 @@ void Project::readMapGroups() {
     if (text.isNull()) {
         return;
     }
-    Asm *parser = new Asm;
-    QList<QStringList> *commands = parser->parse(text);
+    ParseUtil *parser = new ParseUtil;
+    QList<QStringList> *commands = parser->parseAsm(text);
 
     bool in_group_pointers = false;
     QStringList *groups = new QStringList;
@@ -1012,9 +1015,9 @@ QString Project::getNewMapName() {
     return newMapName;
 }
 
-QList<QStringList>* Project::parse(QString text) {
-    Asm *parser = new Asm;
-    return parser->parse(text);
+QList<QStringList>* Project::parseAsm(QString text) {
+    ParseUtil *parser = new ParseUtil;
+    return parser->parseAsm(text);
 }
 
 QStringList Project::getLocations() {
@@ -1062,6 +1065,39 @@ QStringList Project::getBattleScenes() {
     return names;
 }
 
+void Project::readItemNames() {
+    QString filepath = root + "/include/constants/items.h";
+    QStringList prefixes = (QStringList() << "ITEM_");
+    readCDefinesSorted(filepath, prefixes, itemNames);
+}
+
+void Project::readFlagNames() {
+    QString filepath = root + "/include/constants/flags.h";
+    QStringList prefixes = (QStringList() << "FLAG_");
+    readCDefinesSorted(filepath, prefixes, flagNames);
+}
+
+void Project::readVarNames() {
+    QString filepath = root + "/include/constants/vars.h";
+    QStringList prefixes = (QStringList() << "VAR_");
+    readCDefinesSorted(filepath, prefixes, varNames);
+}
+
+void Project::readCDefinesSorted(QString filepath, QStringList prefixes, QStringList* definesToSet) {
+    QString text = readTextFile(filepath);
+    if (!text.isNull()) {
+        QMap<QString, int> defines = readCDefines(text, prefixes);
+
+        // The defines should to be sorted by their underlying value, not alphabetically.
+        // Reverse the map and read out the resulting keys in order.
+        QMultiMap<int, QString> definesInverse;
+        for (QString defineName : defines.keys()) {
+            definesInverse.insert(defines[defineName], defineName);
+        }
+        *definesToSet = definesInverse.values();
+    }
+}
+
 QStringList Project::getSongNames() {
     QStringList names;
     QString text = readTextFile(root + "/include/constants/songs.h");
@@ -1072,26 +1108,6 @@ QStringList Project::getSongNames() {
         names = songDefines.keys();
     }
     return names;
-}
-
-QString Project::getSongName(int songNumber) {
-    QStringList names;
-    QString text = readTextFile(root + "/include/constants/songs.h");
-    if (!text.isNull()) {
-        QStringList songDefinePrefixes;
-        songDefinePrefixes << "SE_" << "BGM_";
-        QMap<QString, int> songDefines = readCDefines(text, songDefinePrefixes);
-
-        // Loop through song defines, and fine the one with the matching song number.
-        QMap<QString, int>::iterator iter = songDefines.begin();
-        while (iter != songDefines.end()) {
-            if (iter.value() == songNumber) {
-                return iter.key();
-            }
-            iter++;
-        }
-    }
-    return "";
 }
 
 QMap<QString, int> Project::getMapObjGfxConstants() {
@@ -1128,7 +1144,7 @@ void Project::loadObjectPixmaps(QList<Event*> objects) {
     QString pointers_text = readTextFile(root + "/src/data/field_map_obj/map_object_graphics_info_pointers.h");
     QString info_text = readTextFile(root + "/src/data/field_map_obj/map_object_graphics_info.h");
     QString pic_text = readTextFile(root + "/src/data/field_map_obj/map_object_pic_tables.h");
-    QString assets_text = readTextFile(root + "/src/field/field_map_obj.c");
+    QString assets_text = readTextFile(root + "/src/field/event_object_movement.c");
 
     QStringList pointers = readCArray(pointers_text, "gMapObjectGraphicsInfoPointers");
 
@@ -1228,8 +1244,8 @@ void Project::saveMapEvents(Map *map) {
             text += QString(", %1").arg(coords->get("y"));
             text += QString(", %1").arg(coords->get("elevation"));
             text += QString(", 0");
-            text += QString(", %1").arg(coords->get("coord_unknown1"));
-            text += QString(", %1").arg(coords->get("coord_unknown2"));
+            text += QString(", %1").arg(coords->get("script_var"));
+            text += QString(", %1").arg(coords->get("script_var_value"));
             text += QString(", 0");
             text += QString(", %1").arg(coords->get("script_label"));
             text += "\n";
@@ -1298,13 +1314,13 @@ void Project::readMapEvents(Map *map) {
         return;
     }
 
-    QStringList *labels = getLabelValues(parse(text), map->events_label);
+    QStringList *labels = getLabelValues(parseAsm(text), map->events_label);
     map->object_events_label = labels->value(0);
     map->warps_label = labels->value(1);
     map->coord_events_label = labels->value(2);
     map->bg_events_label = labels->value(3);
 
-    QList<QStringList> *object_events = getLabelMacros(parse(text), map->object_events_label);
+    QList<QStringList> *object_events = getLabelMacros(parseAsm(text), map->object_events_label);
     map->events["object"].clear();
     for (QStringList command : *object_events) {
         if (command.value(0) == "object_event") {
@@ -1348,7 +1364,7 @@ void Project::readMapEvents(Map *map) {
         }
     }
 
-    QList<QStringList> *warps = getLabelMacros(parse(text), map->warps_label);
+    QList<QStringList> *warps = getLabelMacros(parseAsm(text), map->warps_label);
     map->events["warp"].clear();
     for (QStringList command : *warps) {
         if (command.value(0) == "warp_def") {
@@ -1372,7 +1388,7 @@ void Project::readMapEvents(Map *map) {
         }
     }
 
-    QList<QStringList> *coords = getLabelMacros(parse(text), map->coord_events_label);
+    QList<QStringList> *coords = getLabelMacros(parseAsm(text), map->coord_events_label);
     map->events["trap"].clear();
     map->events["trap_weather"].clear();
     for (QStringList command : *coords) {
@@ -1389,8 +1405,8 @@ void Project::readMapEvents(Map *map) {
             coord->put("x", command.value(i++));
             coord->put("y", command.value(i++));
             coord->put("elevation", command.value(i++));
-            coord->put("coord_unknown1", command.value(i++));
-            coord->put("coord_unknown2", command.value(i++));
+            coord->put("script_var", command.value(i++));
+            coord->put("script_var_value", command.value(i++));
             coord->put("script_label", command.value(i++));
             //coord_unknown3
             //coord_unknown4
@@ -1410,7 +1426,7 @@ void Project::readMapEvents(Map *map) {
         }
     }
 
-    QList<QStringList> *bgs = getLabelMacros(parse(text), map->bg_events_label);
+    QList<QStringList> *bgs = getLabelMacros(parseAsm(text), map->bg_events_label);
     map->events["sign"].clear();
     map->events["event_hidden_item"].clear();
     map->events["event_secret_base"].clear();
@@ -1515,27 +1531,23 @@ QString Project::readCIncbin(QString text, QString label) {
 }
 
 QMap<QString, int> Project::readCDefines(QString text, QStringList prefixes) {
-    QMap<QString, int> defines;
-
-    QString combinedPrefixes = "[" + prefixes.join('|') + "]";
-    QRegularExpression re(QString("#define\\s+(?<defineName>%1\\w+)\\s(?<defineValue>\\w+)").arg(combinedPrefixes));
+    ParseUtil parser;
+    QMap<QString, int> allDefines;
+    QMap<QString, int> filteredDefines;
+    QRegularExpression re("#define\\s+(?<defineName>\\w+)[^\\S\\n]+(?<defineValue>.+)");
     QRegularExpressionMatchIterator iter = re.globalMatch(text);
     while (iter.hasNext()) {
         QRegularExpressionMatch match = iter.next();
         QString name = match.captured("defineName");
-        QString value = match.captured("defineValue");
-        bool valid;
-        int parsedValue = value.startsWith("0x") ? value.toInt(&valid, 16) : value.toInt(&valid, 10);
-        if (valid) {
-            if (!defines.contains(name)) {
-                defines.insert(name, parsedValue);
-            } else {
-                qDebug() << QString("Define '%1' is defined multiple times'").arg(name);
+        QString expression = match.captured("defineValue");
+        expression.replace(QRegularExpression("//.*"), "");
+        int value = parser.evaluateDefine(expression, &allDefines);
+        allDefines.insert(name, value);
+        for (QString prefix : prefixes) {
+            if (name.startsWith(prefix)) {
+                filteredDefines.insert(name, value);
             }
-        } else {
-            qDebug() << QString("Failed to parse define '%1' value '%2' as base 10 or hexadecimal value").arg(name, value);
         }
     }
-
-    return defines;
+    return filteredDefines;
 }
