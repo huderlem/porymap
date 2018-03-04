@@ -15,7 +15,6 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     project.cpp \
-    asm.cpp \
     map.cpp \
     blockdata.cpp \
     block.cpp \
@@ -25,11 +24,11 @@ SOURCES += main.cpp\
     event.cpp \
     editor.cpp \
     objectpropertiesframe.cpp \
-    graphicsview.cpp
+    graphicsview.cpp \
+    parseutil.cpp
 
 HEADERS  += mainwindow.h \
     project.h \
-    asm.h \
     map.h \
     blockdata.h \
     block.h \
@@ -39,7 +38,8 @@ HEADERS  += mainwindow.h \
     event.h \
     editor.h \
     objectpropertiesframe.h \
-    graphicsview.h
+    graphicsview.h \
+    parseutil.h
 
 FORMS    += mainwindow.ui \
     objectpropertiesframe.ui

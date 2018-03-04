@@ -67,7 +67,7 @@ public:
     void saveMapGroupsTable();
     void saveMapConstantsHeader();
 
-    QList<QStringList>* parse(QString text);
+    QList<QStringList>* parseAsm(QString text);
     QStringList getSongNames();
     QStringList getLocations();
     QStringList getVisibilities();
@@ -93,7 +93,6 @@ public:
     QStringList readCArray(QString text, QString label);
     QString readCIncbin(QString text, QString label);
     QMap<QString, int> readCDefines(QString text, QStringList prefixes);
-    QMap<QString, int> readCDefines(QString text, QStringList prefixes, QString hardcodedDefine, int hardcodedDefineValue);
 private:
     QString getMapAttributesTableFilepath();
     QString getMapAssetsFilepath();
