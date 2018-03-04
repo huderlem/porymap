@@ -185,6 +185,7 @@ public:
     Map *map = NULL;
     MapPixmapItem(Map *map_) {
         map = map_;
+        setAcceptHoverEvents(true);
     }
     bool active;
     bool right_click;
@@ -198,10 +199,15 @@ public:
     virtual void redo();
     virtual void draw();
 
+private:
+    void updateCurHoveredTile(QPointF pos);
+
 signals:
     void mouseEvent(QGraphicsSceneMouseEvent *, MapPixmapItem *);
 
 protected:
+    void hoverMoveEvent(QGraphicsSceneHoverEvent*);
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent*);
     void mousePressEvent(QGraphicsSceneMouseEvent*);
     void mouseMoveEvent(QGraphicsSceneMouseEvent*);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent*);
@@ -235,14 +241,19 @@ public:
     }
     MetatilesPixmapItem(Map *map_) {
         map = map_;
+        setAcceptHoverEvents(true);
         connect(map, SIGNAL(paintTileChanged(Map*)), this, SLOT(paintTileChanged(Map *)));
     }
     Map* map = NULL;
     virtual void pick(uint);
     virtual void draw();
+protected:
+    virtual void updateCurHoveredMetatile(QPointF pos);
 private slots:
     void paintTileChanged(Map *map);
 protected:
+    void hoverMoveEvent(QGraphicsSceneHoverEvent*);
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent*);
     void mousePressEvent(QGraphicsSceneMouseEvent*);
     void mouseMoveEvent(QGraphicsSceneMouseEvent*);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent*);
@@ -261,6 +272,8 @@ public:
     virtual void draw() {
         setPixmap(map->renderCollisionMetatiles());
     }
+protected:
+    virtual void updateCurHoveredMetatile(QPointF pos);
 private slots:
     void paintCollisionChanged(Map *map) {
         draw();
@@ -280,6 +293,8 @@ public:
     virtual void draw() {
         setPixmap(map->renderElevationMetatiles());
     }
+protected:
+    virtual void updateCurHoveredMetatile(QPointF pos);
 private slots:
     void paintCollisionChanged(Map *map) {
         draw();

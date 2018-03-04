@@ -257,6 +257,25 @@ void MetatilesPixmapItem::pick(uint tile) {
     emit map->paintTileChanged(map);
 }
 
+void MetatilesPixmapItem::updateCurHoveredMetatile(QPointF pos) {
+    int x = ((int)pos.x()) / 16;
+    int y = ((int)pos.y()) / 16;
+    int width = pixmap().width() / 16;
+    int height = pixmap().height() / 16;
+    if (x < 0 || x >= width || y < 0 || y >= height) {
+        map->clearHoveredMetatile();
+    } else {
+        int block = y * width + x;
+        map->hoveredMetatileChanged(block);
+    }
+}
+
+void MetatilesPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
+    updateCurHoveredMetatile(event->pos());
+}
+void MetatilesPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event) {
+    map->clearHoveredMetatile();
+}
 void MetatilesPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     QPointF pos = event->pos();
     int x = ((int)pos.x()) / 16;
@@ -269,12 +288,38 @@ void MetatilesPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     }
 }
 void MetatilesPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
+    updateCurHoveredMetatile(event->pos());
     mousePressEvent(event);
 }
 void MetatilesPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
     mousePressEvent(event);
 }
 
+void CollisionMetatilesPixmapItem::updateCurHoveredMetatile(QPointF pos) {
+    int x = ((int)pos.x()) / 16;
+    int y = ((int)pos.y()) / 16;
+    int width = pixmap().width() / 16;
+    int height = pixmap().height() / 16;
+    if (x < 0 || x >= width || y < 0 || y >= height) {
+        map->clearHoveredCollisionTile();
+    } else {
+        int collision = y * width + x;
+        map->hoveredCollisionTileChanged(collision);
+    }
+}
+
+void ElevationMetatilesPixmapItem::updateCurHoveredMetatile(QPointF pos) {
+    int x = ((int)pos.x()) / 16;
+    int y = ((int)pos.y()) / 16;
+    int width = pixmap().width() / 16;
+    int height = pixmap().height() / 16;
+    if (x < 0 || x >= width || y < 0 || y >= height) {
+        map->clearHoveredElevationTile();
+    } else {
+        int elevation = y * width + x;
+        map->hoveredElevationTileChanged(elevation);
+    }
+}
 
 void MapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
     if (map) {
@@ -368,10 +413,29 @@ void MapPixmapItem::redo() {
     }
 }
 
+void MapPixmapItem::updateCurHoveredTile(QPointF pos) {
+    int x = ((int)pos.x()) / 16;
+    int y = ((int)pos.y()) / 16;
+    int blockIndex = y * map->getWidth() + x;
+    if (x < 0 || x >= map->getWidth() || y < 0 || y >= map->getHeight()) {
+        map->clearHoveredTile();
+    } else {
+        int tile = map->blockdata->blocks->at(blockIndex).tile;
+        map->hoveredTileChanged(x, y, tile);
+    }
+}
+
+void MapPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
+    updateCurHoveredTile(event->pos());
+}
+void MapPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event) {
+    map->clearHoveredTile();
+}
 void MapPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     emit mouseEvent(event, this);
 }
 void MapPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
+    updateCurHoveredTile(event->pos());
     emit mouseEvent(event, this);
 }
 void MapPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {

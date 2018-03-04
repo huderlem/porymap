@@ -734,3 +734,39 @@ void Map::addEvent(Event *event) {
 bool Map::hasUnsavedChanges() {
     return !history.isSaved() || !isPersistedToFile;
 }
+
+void Map::hoveredTileChanged(int x, int y, int block) {
+    emit statusBarMessage(QString("X: %1, Y: %2, Block: 0x%3")
+                          .arg(x)
+                          .arg(y)
+                          .arg(QString("%1").arg(block, 3, 16, QChar('0')).toUpper()));
+}
+
+void Map::clearHoveredTile() {
+    emit statusBarMessage(QString(""));
+}
+
+void Map::hoveredMetatileChanged(int block) {
+    emit statusBarMessage(QString("Block: 0x%1")
+                          .arg(QString("%1").arg(block, 3, 16, QChar('0')).toUpper()));
+}
+
+void Map::clearHoveredMetatile() {
+    emit statusBarMessage(QString(""));
+}
+
+void Map::hoveredCollisionTileChanged(int collision) {
+    emit statusBarMessage(QString("Collision: %1").arg(collision));
+}
+
+void Map::clearHoveredCollisionTile() {
+    emit statusBarMessage(QString(""));
+}
+
+void Map::hoveredElevationTileChanged(int elevation) {
+    emit statusBarMessage(QString("Elevation: %1").arg(elevation));
+}
+
+void Map::clearHoveredElevationTile() {
+    emit statusBarMessage(QString(""));
+}
