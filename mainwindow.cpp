@@ -48,10 +48,17 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::setStatusBarMessage(QString message, int timeout/* = 0*/) {
+    statusBar()->showMessage(message, timeout);
+}
+
 void MainWindow::openProject(QString dir) {
     if (dir.isNull()) {
         return;
     }
+
+    setStatusBarMessage(QString("Opening project %1").arg(dir));
+
     bool already_open = (
         (editor != NULL && editor != nullptr)
         && (editor->project != NULL && editor->project != nullptr)
@@ -69,6 +76,8 @@ void MainWindow::openProject(QString dir) {
         loadDataStructures();
         populateMapList();
     }
+
+    setStatusBarMessage(QString("Opened project %1").arg(dir));
 }
 
 QString MainWindow::getDefaultMap() {
@@ -169,6 +178,7 @@ void MainWindow::setMap(QString map_name) {
     setWindowTitle(map_name + " - " + editor->project->getProjectTitle() + " - pretmap");
 
     connect(editor->map, SIGNAL(mapChanged(Map*)), this, SLOT(onMapChanged(Map *)));
+    connect(editor->map, SIGNAL(statusBarMessage(QString)), this, SLOT(setStatusBarMessage(QString)));
 
     setRecentMap(map_name);
     updateMapList();

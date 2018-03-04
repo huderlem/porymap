@@ -185,6 +185,7 @@ public:
     Map *map = NULL;
     MapPixmapItem(Map *map_) {
         map = map_;
+        setAcceptHoverEvents(true);
     }
     bool active;
     bool right_click;
@@ -198,10 +199,15 @@ public:
     virtual void redo();
     virtual void draw();
 
+private:
+    void updateCurHoveredTile(QPointF pos);
+
 signals:
     void mouseEvent(QGraphicsSceneMouseEvent *, MapPixmapItem *);
 
 protected:
+    void hoverMoveEvent(QGraphicsSceneHoverEvent*);
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent*);
     void mousePressEvent(QGraphicsSceneMouseEvent*);
     void mouseMoveEvent(QGraphicsSceneMouseEvent*);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent*);

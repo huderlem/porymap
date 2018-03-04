@@ -182,6 +182,8 @@ public:
     void cacheBorder();
 
     bool hasUnsavedChanges();
+    void hoveredTileChanged(int x, int y, int block);
+    void clearHoveredTile();
 
     QList<QList<QRgb> > getBlockPalettes(int metatile_index);
 
@@ -189,6 +191,7 @@ signals:
     void paintTileChanged(Map *map);
     void paintCollisionChanged(Map *map);
     void mapChanged(Map *map);
+    void statusBarMessage(QString);
 
 public slots:
 };

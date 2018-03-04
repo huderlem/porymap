@@ -368,10 +368,29 @@ void MapPixmapItem::redo() {
     }
 }
 
+void MapPixmapItem::updateCurHoveredTile(QPointF pos) {
+    int x = ((int)pos.x()) / 16;
+    int y = ((int)pos.y()) / 16;
+    int blockIndex = y * map->getWidth() + x;
+    if (x < 0 || x >= map->getWidth() || y < 0 || y >= map->getHeight()) {
+        map->clearHoveredTile();
+    } else {
+        int tile = map->blockdata->blocks->at(blockIndex).tile;
+        map->hoveredTileChanged(x, y, tile);
+    }
+}
+
+void MapPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
+    updateCurHoveredTile(event->pos());
+}
+void MapPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event) {
+    map->clearHoveredTile();
+}
 void MapPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     emit mouseEvent(event, this);
 }
 void MapPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
+    updateCurHoveredTile(event->pos());
     emit mouseEvent(event, this);
 }
 void MapPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {

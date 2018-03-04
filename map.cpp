@@ -734,3 +734,14 @@ void Map::addEvent(Event *event) {
 bool Map::hasUnsavedChanges() {
     return !history.isSaved() || !isPersistedToFile;
 }
+
+void Map::hoveredTileChanged(int x, int y, int block) {
+    emit statusBarMessage(QString("X: %1, Y: %2, Block: 0x%3")
+                          .arg(x)
+                          .arg(y)
+                          .arg(QString("%1").arg(block, 3, 16, QChar('0')).toUpper()));
+}
+
+void Map::clearHoveredTile() {
+    emit statusBarMessage(QString(""));
+}
