@@ -271,11 +271,6 @@ void MetatilesPixmapItem::draw() {
     setPixmap(map->renderMetatiles());
 }
 
-void MetatilesPixmapItem::pick(uint tile) {
-    map->paint_tile = tile;
-    emit map->paintTileChanged(map);
-}
-
 void MetatilesPixmapItem::updateCurHoveredMetatile(QPointF pos) {
     int x = ((int)pos.x()) / 16;
     int y = ((int)pos.y()) / 16;
@@ -299,19 +294,30 @@ void MetatilesPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     QPointF pos = event->pos();
     int x = ((int)pos.x()) / 16;
     int y = ((int)pos.y()) / 16;
-    //qDebug() << QString("(%1, %2)").arg(x).arg(y);
-    int width = pixmap().width() / 16;
-    int height = pixmap().height() / 16;
-    if ((x >= 0 && x < width) && (y >=0 && y < height)) {
-        pick(y * width + x);
-    }
+    map->paint_metatile_initial_x = x;
+    map->paint_metatile_initial_y = y;
+    updateSelection(event->pos());
 }
 void MetatilesPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     updateCurHoveredMetatile(event->pos());
-    mousePressEvent(event);
+    updateSelection(event->pos());
 }
 void MetatilesPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
-    mousePressEvent(event);
+    updateSelection(event->pos());
+}
+void MetatilesPixmapItem::updateSelection(QPointF pos) {
+    int x = ((int)pos.x()) / 16;
+    int y = ((int)pos.y()) / 16;
+    int width = pixmap().width() / 16;
+    int height = pixmap().height() / 16;
+    if ((x >= 0 && x < width) && (y >=0 && y < height)) {
+        int baseTileX = x < map->paint_metatile_initial_x ? x : map->paint_metatile_initial_x;
+        int baseTileY = y < map->paint_metatile_initial_y ? y : map->paint_metatile_initial_y;
+        map->paint_tile = baseTileY * 8 + baseTileX;
+        map->paint_tile_width = abs(map->paint_metatile_initial_x - x) + 1;
+        map->paint_tile_height = abs(map->paint_metatile_initial_y - y) + 1;
+        emit map->paintTileChanged(map);
+    }
 }
 
 void CollisionMetatilesPixmapItem::updateCurHoveredMetatile(QPointF pos) {
@@ -345,10 +351,24 @@ void MapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
         QPointF pos = event->pos();
         int x = (int)(pos.x()) / 16;
         int y = (int)(pos.y()) / 16;
-        Block *block = map->getBlock(x, y);
-        if (block) {
-            block->tile = map->paint_tile;
-            map->_setBlock(x, y, *block);
+        // Snap the selected position to the top-left of the block boundary.
+        // This allows painting via dragging the mouse to tile the painted region.
+        int xDiff = x - map->paint_tile_initial_x;
+        int yDiff = y - map->paint_tile_initial_y;
+        if (xDiff < 0 && xDiff % map->paint_tile_width != 0) xDiff -= map->paint_tile_width;
+        if (yDiff < 0 && yDiff % map->paint_tile_height != 0) yDiff -= map->paint_tile_height;
+
+        x = map->paint_tile_initial_x + (xDiff / map->paint_tile_width) * map->paint_tile_width;
+        y = map->paint_tile_initial_y + (yDiff / map->paint_tile_height) * map->paint_tile_height;
+        for (int i = 0; i < map->paint_tile_width && i + x < map->getWidth(); i++)
+        for (int j = 0; j < map->paint_tile_height && j + y < map->getHeight(); j++) {
+            int actualX = i + x;
+            int actualY = j + y;
+            Block *block = map->getBlock(actualX, actualY);
+            if (block) {
+                block->tile = map->paint_tile + i + (j * 8);
+                map->_setBlock(actualX, actualY, *block);
+            }
         }
         if (event->type() == QEvent::GraphicsSceneMouseRelease) {
             map->commit();
@@ -374,6 +394,8 @@ void MapPixmapItem::pick(QGraphicsSceneMouseEvent *event) {
     Block *block = map->getBlock(x, y);
     if (block) {
         map->paint_tile = block->tile;
+        map->paint_tile_width = 1;
+        map->paint_tile_height = 1;
         emit map->paintTileChanged(map);
     }
 }
@@ -451,6 +473,11 @@ void MapPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event) {
     map->clearHoveredTile();
 }
 void MapPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+    QPointF pos = event->pos();
+    int x = ((int)pos.x()) / 16;
+    int y = ((int)pos.y()) / 16;
+    map->paint_tile_initial_x = x;
+    map->paint_tile_initial_y = y;
     emit mouseEvent(event, this);
 }
 void MapPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {

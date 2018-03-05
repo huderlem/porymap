@@ -248,8 +248,9 @@ public:
         connect(map, SIGNAL(paintTileChanged(Map*)), this, SLOT(paintTileChanged(Map *)));
     }
     Map* map = NULL;
-    virtual void pick(uint);
     virtual void draw();
+private:
+    void updateSelection(QPointF pos);
 protected:
     virtual void updateCurHoveredMetatile(QPointF pos);
 private slots:

@@ -138,7 +138,13 @@ public:
     QImage image;
     QPixmap pixmap;
     QList<QImage> metatile_images;
+    int paint_metatile_initial_x;
+    int paint_metatile_initial_y;
     int paint_tile;
+    int paint_tile_width = 1;
+    int paint_tile_height = 1;
+    int paint_tile_initial_x;
+    int paint_tile_initial_y;
     int paint_collision;
     int paint_elevation;
 
