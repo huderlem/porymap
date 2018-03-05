@@ -1221,6 +1221,8 @@
     <addaction name="action_Save"/>
     <addaction name="action_Save_Project"/>
     <addaction name="separator"/>
+    <addaction name="action_Export_Map_Image"/>
+    <addaction name="separator"/>
     <addaction name="action_Exit"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
@@ -1283,6 +1285,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Y</string>
+   </property>
+  </action>
+  <action name="action_Export_Map_Image">
+   <property name="text">
+    <string>Export Map Image...</string>
    </property>
   </action>
  </widget>

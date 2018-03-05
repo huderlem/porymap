@@ -759,3 +759,12 @@ void MainWindow::checkToolButtons() {
 void MainWindow::onMapChanged(Map *map) {
     updateMapList();
 }
+
+void MainWindow::on_action_Export_Map_Image_triggered()
+{
+    QString defaultFilepath = QString("%1/%2.png").arg(editor->project->root).arg(editor->map->name);
+    QString filepath = QFileDialog::getSaveFileName(this, "Export Map Image", defaultFilepath, "Image Files (*.png *.jpg *.bmp)");
+    if (!filepath.isEmpty()) {
+        editor->map_item->pixmap().save(filepath);
+    }
+}
