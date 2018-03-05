@@ -72,7 +72,7 @@ private slots:
     void onOpenMapListContextMenu(const QPoint &point);
     void onAddNewMapToGroupClick(QAction* triggeredAction);
 
-    void on_checkBox_ToggleGrid_toggled(bool checked);
+    void on_action_Export_Map_Image_triggered();
 
 private:
     Ui::MainWindow *ui;
