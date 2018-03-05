@@ -37,6 +37,7 @@ public:
     void displayMapObjects();
     void displayMapConnections();
     void displayMapBorder();
+    void displayMapGrid();
 
     void setEditingMap();
     void setEditingCollision();

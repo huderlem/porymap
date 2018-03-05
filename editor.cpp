@@ -156,6 +156,7 @@ void Editor::displayMap() {
     displayMapObjects();
     displayMapConnections();
     displayMapBorder();
+    displayMapGrid();
 }
 
 void Editor::displayMetatiles() {
@@ -241,6 +242,19 @@ void Editor::displayMapBorder() {
         item->setY(y * 16);
         item->setZValue(-2);
         scene->addItem(item);
+    }
+}
+
+void Editor::displayMapGrid() {
+    int pixelWidth = map->getWidth() * 16;
+    int pixelHeight = map->getHeight() * 16;
+    for (int i = 0; i <= map->getWidth(); i++) {
+        int x = i * 16;
+        QGraphicsLineItem *line = scene->addLine(x, 0, x, pixelHeight);
+    }
+    for (int j = 0; j <= map->getHeight(); j++) {
+        int y = j * 16;
+        QGraphicsLineItem *line = scene->addLine(0, y, pixelWidth, y);
     }
 }
 
