@@ -126,7 +126,7 @@
              <item row="0" column="0">
               <widget class="QFrame" name="frame_6">
                <property name="sizePolicy">
-                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                  <horstretch>0</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
@@ -143,98 +143,114 @@
                <property name="frameShadow">
                 <enum>QFrame::Raised</enum>
                </property>
-               <widget class="QToolButton" name="toolButton_Paint">
-                <property name="enabled">
-                 <bool>true</bool>
+               <layout class="QHBoxLayout" name="horizontalLayout_2">
+                <property name="spacing">
+                 <number>4</number>
                 </property>
-                <property name="geometry">
-                 <rect>
-                  <x>0</x>
-                  <y>0</y>
-                  <width>31</width>
-                  <height>31</height>
-                 </rect>
+                <property name="leftMargin">
+                 <number>4</number>
                 </property>
-                <property name="text">
-                 <string>Paint</string>
+                <property name="topMargin">
+                 <number>4</number>
                 </property>
-                <property name="icon">
-                 <iconset resource="resources/images.qrc">
-                  <normaloff>:/icons/pencil.ico</normaloff>:/icons/pencil.ico</iconset>
+                <property name="rightMargin">
+                 <number>4</number>
                 </property>
-                <property name="checkable">
-                 <bool>true</bool>
+                <property name="bottomMargin">
+                 <number>4</number>
                 </property>
-                <property name="checked">
-                 <bool>true</bool>
-                </property>
-                <property name="autoRaise">
-                 <bool>false</bool>
-                </property>
-               </widget>
-               <widget class="QToolButton" name="toolButton_Select">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
-                <property name="geometry">
-                 <rect>
-                  <x>30</x>
-                  <y>0</y>
-                  <width>31</width>
-                  <height>31</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Select</string>
-                </property>
-                <property name="icon">
-                 <iconset resource="resources/images.qrc">
-                  <normaloff>:/icons/cursor.ico</normaloff>:/icons/cursor.ico</iconset>
-                </property>
-                <property name="checkable">
-                 <bool>true</bool>
-                </property>
-               </widget>
-               <widget class="QToolButton" name="toolButton_Fill">
-                <property name="geometry">
-                 <rect>
-                  <x>60</x>
-                  <y>0</y>
-                  <width>31</width>
-                  <height>31</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Fill</string>
-                </property>
-                <property name="icon">
-                 <iconset resource="resources/images.qrc">
-                  <normaloff>:/icons/fill_color.ico</normaloff>:/icons/fill_color.ico</iconset>
-                </property>
-                <property name="checkable">
-                 <bool>true</bool>
-                </property>
-               </widget>
-               <widget class="QToolButton" name="toolButton_Dropper">
-                <property name="geometry">
-                 <rect>
-                  <x>90</x>
-                  <y>0</y>
-                  <width>31</width>
-                  <height>31</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Dropper</string>
-                </property>
-                <property name="icon">
-                 <iconset resource="resources/images.qrc">
-                  <normaloff>:/icons/pipette.ico</normaloff>:/icons/pipette.ico</iconset>
-                </property>
-                <property name="checkable">
-                 <bool>true</bool>
-                </property>
-               </widget>
+                <item>
+                 <widget class="QToolButton" name="toolButton_Paint">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                  <property name="text">
+                   <string>Paint</string>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="resources/images.qrc">
+                    <normaloff>:/icons/pencil.ico</normaloff>:/icons/pencil.ico</iconset>
+                  </property>
+                  <property name="checkable">
+                   <bool>true</bool>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                  <property name="autoRaise">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QToolButton" name="toolButton_Select">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                  <property name="text">
+                   <string>Select</string>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="resources/images.qrc">
+                    <normaloff>:/icons/cursor.ico</normaloff>:/icons/cursor.ico</iconset>
+                  </property>
+                  <property name="checkable">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QToolButton" name="toolButton_Fill">
+                  <property name="text">
+                   <string>Fill</string>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="resources/images.qrc">
+                    <normaloff>:/icons/fill_color.ico</normaloff>:/icons/fill_color.ico</iconset>
+                  </property>
+                  <property name="checkable">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QToolButton" name="toolButton_Dropper">
+                  <property name="text">
+                   <string>Dropper</string>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="resources/images.qrc">
+                    <normaloff>:/icons/pipette.ico</normaloff>:/icons/pipette.ico</iconset>
+                  </property>
+                  <property name="checkable">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="checkBox_ToggleGrid">
+                  <property name="styleSheet">
+                   <string notr="true">margin-left: 10px</string>
+                  </property>
+                  <property name="text">
+                   <string>Show Grid</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="horizontalSpacer">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+               </layout>
               </widget>
              </item>
              <item row="1" column="0">
@@ -274,8 +290,8 @@
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>617</width>
-                     <height>602</height>
+                     <width>614</width>
+                     <height>621</height>
                     </rect>
                    </property>
                    <layout class="QGridLayout" name="gridLayout_8">
@@ -462,8 +478,8 @@
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>186</width>
-                      <height>609</height>
+                      <width>180</width>
+                      <height>629</height>
                      </rect>
                     </property>
                     <property name="sizePolicy">
@@ -675,8 +691,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>385</width>
-               <height>638</height>
+               <width>381</width>
+               <height>657</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_7">
@@ -841,8 +857,8 @@
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>416</width>
-                        <height>557</height>
+                        <width>420</width>
+                        <height>584</height>
                        </rect>
                       </property>
                       <property name="sizePolicy">
@@ -1194,7 +1210,7 @@
      <x>0</x>
      <y>0</y>
      <width>1117</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

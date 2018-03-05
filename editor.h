@@ -6,6 +6,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsItemAnimation>
 #include <QComboBox>
+#include <QCheckBox>
 
 #include "project.h"
 
@@ -25,6 +26,7 @@ public:
     QObject *parent = NULL;
     Project *project = NULL;
     Map *map = NULL;
+    QCheckBox *gridToggleCheckbox = NULL;
     void saveProject();
     void save();
     void undo();
