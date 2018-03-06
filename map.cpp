@@ -453,11 +453,15 @@ void Map::drawSelection(int i, int w, QPainter *painter) {
     int x = i % w;
     int y = i / w;
     painter->save();
-    painter->setPen(QColor(0xff, 0xff, 0xff));
-    painter->drawRect(x * 16, y * 16, 15, 15);
+
+    QColor penColor = smart_paths_enabled ? QColor(0xff, 0x0, 0xff) : QColor(0xff, 0xff, 0xff);
+    painter->setPen(penColor);
+    int rectWidth = paint_tile_width * 16;
+    int rectHeight = paint_tile_height * 16;
+    painter->drawRect(x * 16, y * 16, rectWidth - 1, rectHeight -1);
     painter->setPen(QColor(0, 0, 0));
-    painter->drawRect(x * 16 - 1, y * 16 - 1, 17, 17);
-    painter->drawRect(x * 16 + 1, y * 16 + 1, 13, 13);
+    painter->drawRect(x * 16 - 1, y * 16 - 1, rectWidth + 1, rectHeight + 1);
+    painter->drawRect(x * 16 + 1, y * 16 + 1, rectWidth - 3, rectHeight - 3);
     painter->restore();
 }
 

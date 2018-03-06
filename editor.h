@@ -204,6 +204,9 @@ public:
 
 private:
     void updateCurHoveredTile(QPointF pos);
+    void paintNormal(int x, int y);
+    void paintSmartPath(int x, int y);
+    static QList<int> smartPathTable;
 
 signals:
     void mouseEvent(QGraphicsSceneMouseEvent *, MapPixmapItem *);
@@ -248,8 +251,9 @@ public:
         connect(map, SIGNAL(paintTileChanged(Map*)), this, SLOT(paintTileChanged(Map *)));
     }
     Map* map = NULL;
-    virtual void pick(uint);
     virtual void draw();
+private:
+    void updateSelection(QPointF pos, Qt::MouseButton button);
 protected:
     virtual void updateCurHoveredMetatile(QPointF pos);
 private slots:
