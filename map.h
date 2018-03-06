@@ -138,6 +138,7 @@ public:
     QImage image;
     QPixmap pixmap;
     QList<QImage> metatile_images;
+    bool smart_paths_enabled = false;
     int paint_metatile_initial_x;
     int paint_metatile_initial_y;
     int paint_tile;

@@ -296,16 +296,25 @@ void MetatilesPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     int y = ((int)pos.y()) / 16;
     map->paint_metatile_initial_x = x;
     map->paint_metatile_initial_y = y;
-    updateSelection(event->pos());
+    updateSelection(event->pos(), event->button());
 }
 void MetatilesPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     updateCurHoveredMetatile(event->pos());
-    updateSelection(event->pos());
+    Qt::MouseButton button = event->button();
+    if (button == Qt::MouseButton::NoButton) {
+        Qt::MouseButtons heldButtons = event->buttons();
+        if (heldButtons & Qt::RightButton) {
+            button = Qt::RightButton;
+        } else if (heldButtons & Qt::LeftButton) {
+            button = Qt::LeftButton;
+        }
+    }
+    updateSelection(event->pos(), button);
 }
 void MetatilesPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
-    updateSelection(event->pos());
+    updateSelection(event->pos(), event->button());
 }
-void MetatilesPixmapItem::updateSelection(QPointF pos) {
+void MetatilesPixmapItem::updateSelection(QPointF pos, Qt::MouseButton button) {
     int x = ((int)pos.x()) / 16;
     int y = ((int)pos.y()) / 16;
     int width = pixmap().width() / 16;
@@ -316,6 +325,9 @@ void MetatilesPixmapItem::updateSelection(QPointF pos) {
         map->paint_tile = baseTileY * 8 + baseTileX;
         map->paint_tile_width = abs(map->paint_metatile_initial_x - x) + 1;
         map->paint_tile_height = abs(map->paint_metatile_initial_y - y) + 1;
+        map->smart_paths_enabled = button == Qt::RightButton
+                                && map->paint_tile_width == 3
+                                && map->paint_tile_height == 3;
         emit map->paintTileChanged(map);
     }
 }
@@ -351,29 +363,125 @@ void MapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
         QPointF pos = event->pos();
         int x = (int)(pos.x()) / 16;
         int y = (int)(pos.y()) / 16;
-        // Snap the selected position to the top-left of the block boundary.
-        // This allows painting via dragging the mouse to tile the painted region.
-        int xDiff = x - map->paint_tile_initial_x;
-        int yDiff = y - map->paint_tile_initial_y;
-        if (xDiff < 0 && xDiff % map->paint_tile_width != 0) xDiff -= map->paint_tile_width;
-        if (yDiff < 0 && yDiff % map->paint_tile_height != 0) yDiff -= map->paint_tile_height;
 
-        x = map->paint_tile_initial_x + (xDiff / map->paint_tile_width) * map->paint_tile_width;
-        y = map->paint_tile_initial_y + (yDiff / map->paint_tile_height) * map->paint_tile_height;
-        for (int i = 0; i < map->paint_tile_width && i + x < map->getWidth(); i++)
-        for (int j = 0; j < map->paint_tile_height && j + y < map->getHeight(); j++) {
-            int actualX = i + x;
-            int actualY = j + y;
-            Block *block = map->getBlock(actualX, actualY);
-            if (block) {
-                block->tile = map->paint_tile + i + (j * 8);
-                map->_setBlock(actualX, actualY, *block);
-            }
+        if (map->smart_paths_enabled) {
+            paintSmartPath(x, y);
+        } else {
+            paintNormal(x, y);
         }
+
         if (event->type() == QEvent::GraphicsSceneMouseRelease) {
             map->commit();
         }
         draw();
+    }
+}
+
+void MapPixmapItem::paintNormal(int x, int y) {
+    // Snap the selected position to the top-left of the block boundary.
+    // This allows painting via dragging the mouse to tile the painted region.
+    int xDiff = x - map->paint_tile_initial_x;
+    int yDiff = y - map->paint_tile_initial_y;
+    if (xDiff < 0 && xDiff % map->paint_tile_width != 0) xDiff -= map->paint_tile_width;
+    if (yDiff < 0 && yDiff % map->paint_tile_height != 0) yDiff -= map->paint_tile_height;
+
+    x = map->paint_tile_initial_x + (xDiff / map->paint_tile_width) * map->paint_tile_width;
+    y = map->paint_tile_initial_y + (yDiff / map->paint_tile_height) * map->paint_tile_height;
+    for (int i = 0; i < map->paint_tile_width && i + x < map->getWidth(); i++)
+    for (int j = 0; j < map->paint_tile_height && j + y < map->getHeight(); j++) {
+        int actualX = i + x;
+        int actualY = j + y;
+        Block *block = map->getBlock(actualX, actualY);
+        if (block) {
+            block->tile = map->paint_tile + i + (j * 8);
+            map->_setBlock(actualX, actualY, *block);
+        }
+    }
+}
+
+// These are tile offsets from the top-left tile in the 3x3 smart path selection.
+// Each entry is for one possibility from the marching squares value for a tile.
+// (Marching Squares: https://en.wikipedia.org/wiki/Marching_squares)
+QList<int> MapPixmapItem::smartPathTable = QList<int>({
+    8 + 1, // 0000
+    8 + 1, // 0001
+    8 + 1, // 0010
+   16 + 0, // 0011
+    8 + 1, // 0100
+    8 + 1, // 0101
+    0 + 0, // 0110
+    8 + 0, // 0111
+    8 + 1, // 1000
+   16 + 2, // 1001
+    8 + 1, // 1010
+   16 + 1, // 1011
+    0 + 2, // 1100
+    8 + 2, // 1101
+    0 + 1, // 1110
+    8 + 1, // 1111
+});
+
+#define IS_SMART_PATH_TILE(block) ((block->tile >= map->paint_tile && block->tile < map->paint_tile + 3) \
+                                || (block->tile >= map->paint_tile + 8 && block->tile < map->paint_tile + 11) \
+                                || (block->tile >= map->paint_tile + 16 && block->tile < map->paint_tile + 19))
+
+void MapPixmapItem::paintSmartPath(int x, int y) {
+    // Smart path should never be enabled without a 3x3 block selection.
+    if (map->paint_tile_width != 3 || map->paint_tile_height != 3) return;
+
+    // Shift to the middle tile of the smart path selection.
+    int openTile = map->paint_tile + 8 + 1;
+
+    // Fill the region with the open tile.
+    for (int i = -1; i <= 1 && i + x < map->getWidth() && i + x >= 0; i++)
+    for (int j = -1; j <= 1 && j + y < map->getHeight() && j + y >= 0; j++) {
+        int actualX = i + x;
+        int actualY = j + y;
+        Block *block = map->getBlock(actualX, actualY);
+        if (block) {
+            block->tile = openTile;
+            map->_setBlock(actualX, actualY, *block);
+        }
+    }
+
+    // Go back and resolve the edge tiles
+    for (int i = -2; i <= 2 && i + x < map->getWidth() && i + x >= 0; i++)
+    for (int j = -2; j <= 2 && j + y < map->getHeight() && j + y >= 0; j++) {
+        // Ignore the corners, which can't possible be affected by the smart path.
+        if ((i == -2 && j == -2) || (i == 2 && j == -2) ||
+            (i == -2 && j ==  2) || (i == 2 && j ==  2))
+            continue;
+
+        // Ignore tiles that aren't part of the smart path set.
+        int actualX = i + x;
+        int actualY = j + y;
+        Block *block = map->getBlock(actualX, actualY);
+        if (!block || !IS_SMART_PATH_TILE(block)) {
+            continue;
+        }
+
+        int id = 0;
+        Block *top = map->getBlock(actualX, actualY - 1);
+        Block *right = map->getBlock(actualX + 1, actualY);
+        Block *bottom = map->getBlock(actualX, actualY + 1);
+        Block *left = map->getBlock(actualX - 1, actualY);
+
+        // Get marching squares value, to determine which tile to use.
+        if (top && IS_SMART_PATH_TILE(top))
+            id += 1;
+        if (right && IS_SMART_PATH_TILE(right))
+            id += 2;
+        if (bottom && IS_SMART_PATH_TILE(bottom))
+            id += 4;
+        if (left && IS_SMART_PATH_TILE(left))
+            id += 8;
+
+        if (block) {
+            qDebug() << "tile: " << block->tile << "base: " << map->paint_tile << "id: " << id;
+        }
+
+        block->tile = map->paint_tile + smartPathTable[id];;
+        map->_setBlock(actualX, actualY, *block);
     }
 }
 
