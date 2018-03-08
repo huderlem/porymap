@@ -97,6 +97,7 @@ private:
     QString getMapAttributesTableFilepath();
     QString getMapAssetsFilepath();
     void saveMapHeader(Map*);
+    void saveMapConnections(Map*);
     void saveMapAttributesTable();
     void updateMapAttributes(Map* map);
     void readCDefinesSorted(QString, QStringList, QStringList*);

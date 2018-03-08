@@ -210,6 +210,30 @@ void Project::saveMapHeader(Map *map) {
     saveTextFile(header_path, text);
 }
 
+void Project::saveMapConnections(Map *map) {
+    QString connections_path = root + "/data/maps/" + map->name + "/connections.inc";
+    QString connectionsListLabel = QString("%1_MapConnectionsList").arg(map->name);
+    int numValidConnections = 0;
+    QString text = "";
+    text += QString("%1::\n").arg(connectionsListLabel);
+    for (Connection* connection : map->connections) {
+        if (mapNamesToMapConstants->contains(connection->map_name)) {
+            text += QString("\tconnection %1, %2, %3\n")
+                    .arg(connection->direction)
+                    .arg(connection->offset)
+                    .arg(mapNamesToMapConstants->value(connection->map_name));
+            numValidConnections++;
+        } else {
+            qDebug() << QString("Failed to write map connection. %1 not a valid map name").arg(connection->map_name);
+        }
+    }
+    text += QString("\n");
+    text += QString("%1::\n").arg(map->connections_label);
+    text += QString("\t.4byte %1\n").arg(numValidConnections);
+    text += QString("\t.4byte %1\n").arg(connectionsListLabel);
+    saveTextFile(connections_path, text);
+}
+
 void Project::readMapAttributesTable() {
     int curMapIndex = 1;
     QString attributesText = readTextFile(getMapAttributesTableFilepath());
@@ -680,6 +704,7 @@ void Project::saveMap(Map *map) {
 
     saveMapBorder(map);
     saveMapHeader(map);
+    saveMapConnections(map);
     saveBlockdata(map);
     saveMapEvents(map);
 
