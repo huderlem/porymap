@@ -74,6 +74,12 @@ private slots:
 
     void on_action_Export_Map_Image_triggered();
 
+    void on_comboBox_ConnectionDirection_currentIndexChanged(const QString &arg1);
+
+    void on_spinBox_ConnectionOffset_valueChanged(int offset);
+
+    void onConnectionOffsetChanged(int offset);
+
 private:
     Ui::MainWindow *ui;
     QStandardItemModel *mapListModel;

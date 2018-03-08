@@ -60,7 +60,7 @@
         </sizepolicy>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>3</number>
        </property>
        <property name="tabsClosable">
         <bool>false</bool>
@@ -1266,7 +1266,7 @@
               <property name="frameShadow">
                <enum>QFrame::Raised</enum>
               </property>
-              <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,0,0,0,0">
+              <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,0,0,0,0,0,0">
                <property name="spacing">
                 <number>4</number>
                </property>
@@ -1286,22 +1286,22 @@
                 <widget class="QComboBox" name="comboBox_ConnectionDirection">
                  <item>
                   <property name="text">
-                   <string>North</string>
+                   <string>Up</string>
                   </property>
                  </item>
                  <item>
                   <property name="text">
-                   <string>East</string>
+                   <string>Right</string>
                   </property>
                  </item>
                  <item>
                   <property name="text">
-                   <string>South</string>
+                   <string>Down</string>
                   </property>
                  </item>
                  <item>
                   <property name="text">
-                   <string>West</string>
+                   <string>Left</string>
                   </property>
                  </item>
                 </widget>
@@ -1333,6 +1333,20 @@
                 <widget class="QComboBox" name="comboBox_ConnectedMap">
                  <property name="editable">
                   <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_12">
+                 <property name="text">
+                  <string>Offset</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSpinBox" name="spinBox_ConnectionOffset">
+                 <property name="minimum">
+                  <number>-99</number>
                  </property>
                 </widget>
                </item>
@@ -1377,78 +1391,7 @@
                 <number>0</number>
                </property>
                <item row="0" column="0">
-                <widget class="QScrollArea" name="scrollArea_5">
-                 <property name="widgetResizable">
-                  <bool>true</bool>
-                 </property>
-                 <widget class="QWidget" name="scrollAreaWidgetContents_3">
-                  <property name="geometry">
-                   <rect>
-                    <x>0</x>
-                    <y>0</y>
-                    <width>826</width>
-                    <height>621</height>
-                   </rect>
-                  </property>
-                  <layout class="QGridLayout" name="gridLayout_15">
-                   <item row="1" column="1">
-                    <widget class="QGraphicsView" name="graphicsView"/>
-                   </item>
-                   <item row="0" column="1">
-                    <spacer name="verticalSpacer">
-                     <property name="orientation">
-                      <enum>Qt::Vertical</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>20</width>
-                       <height>40</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                   <item row="2" column="1">
-                    <spacer name="verticalSpacer_2">
-                     <property name="orientation">
-                      <enum>Qt::Vertical</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>20</width>
-                       <height>40</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                   <item row="1" column="0">
-                    <spacer name="horizontalSpacer_7">
-                     <property name="orientation">
-                      <enum>Qt::Horizontal</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>40</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                   <item row="1" column="2">
-                    <spacer name="horizontalSpacer_8">
-                     <property name="orientation">
-                      <enum>Qt::Horizontal</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>40</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                  </layout>
-                 </widget>
-                </widget>
+                <widget class="QGraphicsView" name="graphicsView_Connections"/>
                </item>
               </layout>
              </widget>

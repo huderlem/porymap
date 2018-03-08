@@ -30,6 +30,7 @@ MainWindow::MainWindow(QWidget *parent) :
     editor->gridToggleCheckbox = ui->checkBox_ToggleGrid;
     connect(editor, SIGNAL(objectsChanged()), this, SLOT(updateSelectedObjects()));
     connect(editor, SIGNAL(selectedObjectsChanged()), this, SLOT(updateSelectedObjects()));
+    connect(editor, SIGNAL(connectionOffsetChanged(int)), this, SLOT(onConnectionOffsetChanged(int)));
 
     on_toolButton_Paint_clicked();
 
@@ -143,15 +144,7 @@ void MainWindow::setMap(QString map_name) {
     }
     editor->setMap(map_name);
 
-    if (ui->tabWidget->currentIndex() == 1) {
-        editor->setEditingObjects();
-    } else {
-        if (ui->tabWidget_2->currentIndex() == 1) {
-            editor->setEditingCollision();
-        } else {
-            editor->setEditingMap();
-        }
-    }
+    on_tabWidget_currentChanged(ui->tabWidget->currentIndex());
 
     ui->graphicsView_Map->setScene(editor->scene);
     ui->graphicsView_Map->setSceneRect(editor->scene->sceneRect());
@@ -161,6 +154,8 @@ void MainWindow::setMap(QString map_name) {
     ui->graphicsView_Objects_Map->setSceneRect(editor->scene->sceneRect());
     ui->graphicsView_Objects_Map->setFixedSize(editor->scene->width() + 2, editor->scene->height() + 2);
     ui->graphicsView_Objects_Map->editor = editor;
+
+    ui->graphicsView_Connections->setScene(editor->scene);
 
     ui->graphicsView_Metatiles->setScene(editor->scene_metatiles);
     //ui->graphicsView_Metatiles->setSceneRect(editor->scene_metatiles->sceneRect());
@@ -491,6 +486,8 @@ void MainWindow::on_tabWidget_currentChanged(int index)
         on_tabWidget_2_currentChanged(ui->tabWidget_2->currentIndex());
     } else if (index == 1) {
         editor->setEditingObjects();
+    } else if (index == 3) {
+        editor->setEditingConnections(ui->comboBox_ConnectionDirection->currentText().toLower());
     }
 }
 
@@ -767,4 +764,21 @@ void MainWindow::on_action_Export_Map_Image_triggered()
     if (!filepath.isEmpty()) {
         editor->map_item->pixmap().save(filepath);
     }
+}
+
+void MainWindow::on_comboBox_ConnectionDirection_currentIndexChanged(const QString &direction)
+{
+    editor->showCurrentConnectionMap(direction.toLower());
+}
+
+void MainWindow::on_spinBox_ConnectionOffset_valueChanged(int offset)
+{
+    editor->updateConnectionOffset(offset);
+}
+
+void MainWindow::onConnectionOffsetChanged(int offset)
+{
+    ui->spinBox_ConnectionOffset->blockSignals(true);
+    ui->spinBox_ConnectionOffset->setValue(offset);
+    ui->spinBox_ConnectionOffset->blockSignals(false);
 }

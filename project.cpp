@@ -67,6 +67,7 @@ void Project::loadMapConnections(Map *map) {
     }
 
     map->connections.clear();
+    map->connection_items.clear();
     if (!map->connections_label.isNull()) {
         QString path = root + QString("/data/maps/%1/connections.inc").arg(map->name);
         QString text = readTextFile(path);

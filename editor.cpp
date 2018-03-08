@@ -40,6 +40,7 @@ void Editor::setEditingMap() {
         map_item->draw();
         map_item->setVisible(true);
         map_item->setEnabled(true);
+        setConnectionsVisibility(true);
     }
     if (collision_item) {
         collision_item->setVisible(false);
@@ -52,8 +53,8 @@ void Editor::setEditingMap() {
 void Editor::setEditingCollision() {
     current_view = collision_item;
     if (collision_item) {
-        collision_item->draw();
         collision_item->setVisible(true);
+        setConnectionsVisibility(true);
     }
     if (map_item) {
         map_item->setVisible(false);
@@ -71,9 +72,85 @@ void Editor::setEditingObjects() {
     if (map_item) {
         map_item->setVisible(true);
         map_item->setEnabled(false);
+        setConnectionsVisibility(true);
     }
     if (collision_item) {
         collision_item->setVisible(false);
+    }
+}
+
+void Editor::setEditingConnections(QString direction) {
+    current_view = map_item;
+    if (map_item) {
+        map_item->draw();
+        map_item->setVisible(true);
+        map_item->setEnabled(true);
+        setConnectionsVisibility(false);
+        showCurrentConnectionMap(direction);
+    }
+    if (collision_item) {
+        collision_item->setVisible(false);
+    }
+    if (objects_group) {
+        objects_group->setVisible(false);
+    }
+}
+
+void Editor::showCurrentConnectionMap(QString curDirection) {
+    bool connectionExists = false;
+    for (Connection* connection : map->connections) {
+        if (connection->direction != curDirection) continue;
+        if (connection_item) {
+            scene->removeItem(connection_item);
+            delete connection_item;
+            connection_item = NULL;
+        }
+
+        connectionExists = true;
+        Map *connected_map = project->getMap(connection->map_name);
+        QPixmap pixmap = connected_map->renderConnection(*connection);
+        int offset = connection->offset.toInt(nullptr, 0);
+        int x = 0, y = 0;
+        if (connection->direction == "up") {
+            x = offset * 16;
+            y = -pixmap.height();
+        } else if (connection->direction == "down") {
+            x = offset * 16;
+            y = map->getHeight() * 16;
+        } else if (connection->direction == "left") {
+            x = -pixmap.width();
+            y = offset * 16;
+        } else if (connection->direction == "right") {
+            x = map->getWidth() * 16;
+            y = offset * 16;
+        }
+        connection_item = new ConnectionPixmapItem(pixmap, connection, x, y);
+        connection_item->setX(x);
+        connection_item->setY(y);
+        connection_item->setZValue(21);
+        scene->addItem(connection_item);
+        scene->setSceneRect(0, 0, pixmap.width() + map_item->pixmap().width(), pixmap.height() + map_item->pixmap().height());
+
+        connect(connection_item, SIGNAL(connectionMoved(int)), this, SLOT(onConnectionOffsetChanged(int)));
+        onConnectionOffsetChanged(connection->offset.toInt());
+        break;
+    }
+
+    if (!connectionExists && connection_item) {
+        scene->removeItem(connection_item);
+        delete connection_item;
+        connection_item = NULL;
+    }
+}
+
+void Editor::onConnectionOffsetChanged(int newOffset) {
+    emit connectionOffsetChanged(newOffset);
+}
+
+void Editor::setConnectionsVisibility(bool visible) {
+    for (QGraphicsPixmapItem* item : map->connection_items) {
+        item->setVisible(visible);
+        item->setActive(visible);
     }
 }
 
@@ -231,6 +308,7 @@ void Editor::displayMapConnections() {
         item->setX(x);
         item->setY(y);
         scene->addItem(item);
+        map->connection_items.insert(connection->direction, item);
     }
 }
 
@@ -261,6 +339,17 @@ void Editor::displayMapGrid() {
         line->setVisible(gridToggleCheckbox->isChecked());
         connect(gridToggleCheckbox, &QCheckBox::toggled, [=](bool checked){line->setVisible(checked);});
     }
+}
+
+void Editor::updateConnectionOffset(int offset) {
+    connection_item->blockSignals(true);
+    connection_item->connection->offset = QString::number(offset);
+    if (connection_item->connection->direction == "up" || connection_item->connection->direction == "down") {
+        connection_item->setX(connection_item->initialX + (offset - connection_item->initialOffset) * 16);
+    } else {
+        connection_item->setY(connection_item->initialY + (offset - connection_item->initialOffset) * 16);
+    }
+    connection_item->blockSignals(false);
 }
 
 void MetatilesPixmapItem::paintTileChanged(Map *map) {
@@ -343,6 +432,57 @@ void CollisionMetatilesPixmapItem::updateCurHoveredMetatile(QPointF pos) {
         int collision = y * width + x;
         map->hoveredCollisionTileChanged(collision);
     }
+}
+
+QVariant ConnectionPixmapItem::itemChange(GraphicsItemChange change, const QVariant &value)
+{
+    if (change == ItemPositionChange) {
+        QPointF newPos = value.toPointF();
+
+        qreal x, y;
+        int newOffset = initialOffset;
+        if (connection->direction == "up" || connection->direction == "down") {
+            x = round(newPos.x() / 16) * 16;
+            newOffset += (x - initialX) / 16;
+        }
+        else {
+            x = initialX;
+        }
+
+        if (connection->direction == "right" || connection->direction == "left") {
+            y = round(newPos.y() / 16) * 16;
+            newOffset += (y - initialY) / 16;
+        }
+        else {
+            y = initialY;
+        }
+
+        emit connectionMoved(newOffset);
+        connection->offset = QString::number(newOffset);
+        return QPointF(x, y);
+    }
+    else {
+        return QGraphicsItem::itemChange(change, value);
+    }
+}
+void ConnectionPixmapItem::dragEnterEvent(QGraphicsSceneDragDropEvent *event) {
+    QPointF pos = event->pos();
+    qDebug() << "enter: " << pos.x() << ", " << pos.y();
+}
+void ConnectionPixmapItem::dragMoveEvent(QGraphicsSceneDragDropEvent *event) {
+    QPointF pos = event->pos();
+    qDebug() << "drag: " << pos.x() << ", " << pos.y();
+}
+void ConnectionPixmapItem::dragLeaveEvent(QGraphicsSceneDragDropEvent *event) {
+    QPointF pos = event->pos();
+    qDebug() << "leave: " << pos.x() << ", " << pos.y();
+}
+void ConnectionPixmapItem::dropEvent(QGraphicsSceneDragDropEvent *event) {
+    QPointF pos = event->pos();
+    qDebug() << "drop: " << pos.x() << ", " << pos.y();
+}
+void ConnectionPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent* event) {
+    QPointF pos = event->pos();
 }
 
 void ElevationMetatilesPixmapItem::updateCurHoveredMetatile(QPointF pos) {

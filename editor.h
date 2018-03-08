@@ -13,6 +13,7 @@
 class DraggablePixmapItem;
 class MapPixmapItem;
 class CollisionPixmapItem;
+class ConnectionPixmapItem;
 class MetatilesPixmapItem;
 class CollisionMetatilesPixmapItem;
 class ElevationMetatilesPixmapItem;
@@ -44,6 +45,10 @@ public:
     void setEditingMap();
     void setEditingCollision();
     void setEditingObjects();
+    void setEditingConnections(QString direction);
+    void showCurrentConnectionMap(QString curDirection);
+    void setConnectionsVisibility(bool visible);
+    void updateConnectionOffset(int offset);
 
     DraggablePixmapItem *addMapObject(Event *event);
     void selectMapObject(DraggablePixmapItem *object);
@@ -58,6 +63,7 @@ public:
     QGraphicsScene *scene = NULL;
     QGraphicsPixmapItem *current_view = NULL;
     MapPixmapItem *map_item = NULL;
+    ConnectionPixmapItem *connection_item = NULL;
     CollisionPixmapItem *collision_item = NULL;
     QGraphicsItemGroup *objects_group = NULL;
 
@@ -80,10 +86,12 @@ public:
 private slots:
     void mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item);
     void mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixmapItem *item);
+    void onConnectionOffsetChanged(int newOffset);
 
 signals:
     void objectsChanged();
     void selectedObjectsChanged();
+    void connectionOffsetChanged(int newOffset);
 };
 
 
@@ -238,6 +246,33 @@ protected:
     void mousePressEvent(QGraphicsSceneMouseEvent*);
     void mouseMoveEvent(QGraphicsSceneMouseEvent*);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent*);
+};
+
+class ConnectionPixmapItem : public QObject, public QGraphicsPixmapItem {
+    Q_OBJECT
+public:
+    ConnectionPixmapItem(QPixmap pixmap, Connection* connection, int x, int y): QGraphicsPixmapItem(pixmap) {
+        this->connection = connection;
+        setFlag(ItemIsMovable);
+        setFlag(ItemIsSelectable);
+        setFlag(ItemSendsGeometryChanges);
+        this->initialX = x;
+        this->initialY = y;
+        this->initialOffset = connection->offset.toInt();
+    }
+    Connection* connection;
+    int initialX;
+    int initialY;
+    int initialOffset;
+protected:
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value);
+    void dragEnterEvent(QGraphicsSceneDragDropEvent *event) override;
+    void dragLeaveEvent(QGraphicsSceneDragDropEvent *event) override;
+    void dropEvent(QGraphicsSceneDragDropEvent *event) override;
+    void dragMoveEvent(QGraphicsSceneDragDropEvent *event) override;
+    void mousePressEvent(QGraphicsSceneMouseEvent*);
+signals:
+    void connectionMoved(int offset);
 };
 
 class MetatilesPixmapItem : public QObject, public QGraphicsPixmapItem {
