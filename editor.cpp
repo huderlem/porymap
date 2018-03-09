@@ -38,6 +38,7 @@ void Editor::redo() {
 void Editor::setEditingMap() {
     current_view = map_item;
     if (map_item) {
+        displayMapConnections();
         map_item->draw();
         map_item->setVisible(true);
         map_item->setEnabled(true);
@@ -48,6 +49,10 @@ void Editor::setEditingMap() {
     }
     if (objects_group) {
         objects_group->setVisible(false);
+    }
+    if (connection_item) {
+        connection_item->setVisible(false);
+        connection_item->setEnabled(false);
     }
 }
 
@@ -62,6 +67,10 @@ void Editor::setEditingCollision() {
     }
     if (objects_group) {
         objects_group->setVisible(false);
+    }
+    if (connection_item) {
+        connection_item->setVisible(false);
+        connection_item->setEnabled(false);
     }
 }
 
@@ -78,6 +87,10 @@ void Editor::setEditingObjects() {
     if (collision_item) {
         collision_item->setVisible(false);
     }
+    if (connection_item) {
+        connection_item->setVisible(false);
+        connection_item->setEnabled(false);
+    }
 }
 
 void Editor::setEditingConnections(QString direction) {
@@ -85,7 +98,7 @@ void Editor::setEditingConnections(QString direction) {
     if (map_item) {
         map_item->draw();
         map_item->setVisible(true);
-        map_item->setEnabled(true);
+        map_item->setEnabled(false);
         ui->comboBox_ConnectedMap->blockSignals(true);
         ui->comboBox_ConnectedMap->clear();
         ui->comboBox_ConnectedMap->addItems(*project->mapNames);
@@ -304,6 +317,11 @@ DraggablePixmapItem *Editor::addMapObject(Event *event) {
 }
 
 void Editor::displayMapConnections() {
+    for (QString key : map->connection_items.keys()) {
+        scene->removeItem(map->connection_items.value(key));
+        delete map->connection_items.value(key);
+    }
+
     for (Connection *connection : map->connections) {
         if (connection->direction == "dive" || connection->direction == "emerge") {
             continue;
