@@ -78,7 +78,7 @@ private slots:
 
     void on_spinBox_ConnectionOffset_valueChanged(int offset);
 
-    void onConnectionOffsetChanged(int offset);
+    void on_comboBox_ConnectedMap_currentTextChanged(const QString &mapName);
 
 private:
     Ui::MainWindow *ui;

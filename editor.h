@@ -9,6 +9,7 @@
 #include <QCheckBox>
 
 #include "project.h"
+#include "ui_mainwindow.h"
 
 class DraggablePixmapItem;
 class MapPixmapItem;
@@ -22,12 +23,12 @@ class Editor : public QObject
 {
     Q_OBJECT
 public:
-    Editor();
+    Editor(Ui::MainWindow* ui);
 public:
+    Ui::MainWindow* ui;
     QObject *parent = NULL;
     Project *project = NULL;
     Map *map = NULL;
-    QCheckBox *gridToggleCheckbox = NULL;
     void saveProject();
     void save();
     void undo();
@@ -49,6 +50,7 @@ public:
     void showCurrentConnectionMap(QString curDirection);
     void setConnectionsVisibility(bool visible);
     void updateConnectionOffset(int offset);
+    void updateConnectionMap(QString mapName, QString direction);
 
     DraggablePixmapItem *addMapObject(Event *event);
     void selectMapObject(DraggablePixmapItem *object);
@@ -91,7 +93,6 @@ private slots:
 signals:
     void objectsChanged();
     void selectedObjectsChanged();
-    void connectionOffsetChanged(int newOffset);
 };
 
 
@@ -254,7 +255,6 @@ public:
     ConnectionPixmapItem(QPixmap pixmap, Connection* connection, int x, int y): QGraphicsPixmapItem(pixmap) {
         this->connection = connection;
         setFlag(ItemIsMovable);
-        setFlag(ItemIsSelectable);
         setFlag(ItemSendsGeometryChanges);
         this->initialX = x;
         this->initialY = y;

@@ -26,11 +26,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Z), this, SLOT(redo()));
 
-    editor = new Editor;
-    editor->gridToggleCheckbox = ui->checkBox_ToggleGrid;
+    editor = new Editor(ui);
     connect(editor, SIGNAL(objectsChanged()), this, SLOT(updateSelectedObjects()));
     connect(editor, SIGNAL(selectedObjectsChanged()), this, SLOT(updateSelectedObjects()));
-    connect(editor, SIGNAL(connectionOffsetChanged(int)), this, SLOT(onConnectionOffsetChanged(int)));
 
     on_toolButton_Paint_clicked();
 
@@ -776,9 +774,7 @@ void MainWindow::on_spinBox_ConnectionOffset_valueChanged(int offset)
     editor->updateConnectionOffset(offset);
 }
 
-void MainWindow::onConnectionOffsetChanged(int offset)
+void MainWindow::on_comboBox_ConnectedMap_currentTextChanged(const QString &mapName)
 {
-    ui->spinBox_ConnectionOffset->blockSignals(true);
-    ui->spinBox_ConnectionOffset->setValue(offset);
-    ui->spinBox_ConnectionOffset->blockSignals(false);
+    editor->updateConnectionMap(mapName, ui->comboBox_ConnectionDirection->currentText().toLower());
 }

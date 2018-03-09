@@ -3,8 +3,9 @@
 #include <QPainter>
 #include <QMouseEvent>
 
-Editor::Editor()
+Editor::Editor(Ui::MainWindow* ui)
 {
+    this->ui = ui;
     selected_events = new QList<DraggablePixmapItem*>;
 }
 
@@ -85,6 +86,10 @@ void Editor::setEditingConnections(QString direction) {
         map_item->draw();
         map_item->setVisible(true);
         map_item->setEnabled(true);
+        ui->comboBox_ConnectedMap->blockSignals(true);
+        ui->comboBox_ConnectedMap->clear();
+        ui->comboBox_ConnectedMap->addItems(*project->mapNames);
+        ui->comboBox_ConnectedMap->blockSignals(false);
         setConnectionsVisibility(false);
         showCurrentConnectionMap(direction);
     }
@@ -124,6 +129,11 @@ void Editor::showCurrentConnectionMap(QString curDirection) {
             x = map->getWidth() * 16;
             y = offset * 16;
         }
+
+        QPainter painter(&pixmap);
+        painter.setPen(QColor(255, 0, 255));
+        painter.drawRect(0, 0, pixmap.width() - 1, pixmap.height() - 1);
+        painter.end();
         connection_item = new ConnectionPixmapItem(pixmap, connection, x, y);
         connection_item->setX(x);
         connection_item->setY(y);
@@ -133,18 +143,30 @@ void Editor::showCurrentConnectionMap(QString curDirection) {
 
         connect(connection_item, SIGNAL(connectionMoved(int)), this, SLOT(onConnectionOffsetChanged(int)));
         onConnectionOffsetChanged(connection->offset.toInt());
+
+        ui->comboBox_ConnectedMap->setCurrentText(connection->map_name);
         break;
     }
 
-    if (!connectionExists && connection_item) {
-        scene->removeItem(connection_item);
-        delete connection_item;
-        connection_item = NULL;
+    if (!connectionExists) {
+        if (connection_item) {
+            scene->removeItem(connection_item);
+            delete connection_item;
+            connection_item = NULL;
+        }
+
+        ui->comboBox_ConnectedMap->setCurrentText("");
+        ui->spinBox_ConnectionOffset->setDisabled(true);
+        ui->spinBox_ConnectionOffset->setValue(0);
+    } else {
+        ui->spinBox_ConnectionOffset->setDisabled(false);
     }
 }
 
 void Editor::onConnectionOffsetChanged(int newOffset) {
-    emit connectionOffsetChanged(newOffset);
+    ui->spinBox_ConnectionOffset->blockSignals(true);
+    ui->spinBox_ConnectionOffset->setValue(newOffset);
+    ui->spinBox_ConnectionOffset->blockSignals(false);
 }
 
 void Editor::setConnectionsVisibility(bool visible) {
@@ -330,18 +352,21 @@ void Editor::displayMapGrid() {
     for (int i = 0; i <= map->getWidth(); i++) {
         int x = i * 16;
         QGraphicsLineItem *line = scene->addLine(x, 0, x, pixelHeight);
-        line->setVisible(gridToggleCheckbox->isChecked());
-        connect(gridToggleCheckbox, &QCheckBox::toggled, [=](bool checked){line->setVisible(checked);});
+        line->setVisible(ui->checkBox_ToggleGrid->isChecked());
+        connect(ui->checkBox_ToggleGrid, &QCheckBox::toggled, [=](bool checked){line->setVisible(checked);});
     }
     for (int j = 0; j <= map->getHeight(); j++) {
         int y = j * 16;
         QGraphicsLineItem *line = scene->addLine(0, y, pixelWidth, y);
-        line->setVisible(gridToggleCheckbox->isChecked());
-        connect(gridToggleCheckbox, &QCheckBox::toggled, [=](bool checked){line->setVisible(checked);});
+        line->setVisible(ui->checkBox_ToggleGrid->isChecked());
+        connect(ui->checkBox_ToggleGrid, &QCheckBox::toggled, [=](bool checked){line->setVisible(checked);});
     }
 }
 
 void Editor::updateConnectionOffset(int offset) {
+    if (!connection_item)
+        return;
+
     connection_item->blockSignals(true);
     connection_item->connection->offset = QString::number(offset);
     if (connection_item->connection->direction == "up" || connection_item->connection->direction == "down") {
@@ -350,6 +375,38 @@ void Editor::updateConnectionOffset(int offset) {
         connection_item->setY(connection_item->initialY + (offset - connection_item->initialOffset) * 16);
     }
     connection_item->blockSignals(false);
+}
+
+void Editor::updateConnectionMap(QString mapName, QString direction) {
+    if (!mapName.isEmpty() && !project->mapNames->contains(mapName)) {
+        qDebug() << "Invalid map name " << mapName << " specified for connection.";
+        return;
+    }
+
+    if (connection_item) {
+        // Find the connection we are updating.
+        bool foundConnection = false;
+        for (Connection* connection : map->connections) {
+            if (connection->direction == direction) {
+                foundConnection = true;
+                if (mapName.isEmpty()) {
+                    map->connections.removeOne(connection);
+                } else {
+                    connection->map_name = mapName;
+                }
+                break;
+            }
+        }
+    } else if (!mapName.isEmpty()) {
+        // Create a brand new connection.
+        Connection* newConnection = new Connection;
+        newConnection->direction = direction;
+        newConnection->offset = "0";
+        newConnection->map_name = mapName;
+        map->connections.append(newConnection);
+    }
+
+    showCurrentConnectionMap(direction);
 }
 
 void MetatilesPixmapItem::paintTileChanged(Map *map) {
