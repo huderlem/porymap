@@ -166,6 +166,11 @@ void Editor::showCurrentConnectionMap(QString curDirection) {
             scene->removeItem(connection_item);
             delete connection_item;
             connection_item = NULL;
+
+            if (map->connection_items.contains(curDirection)) {
+                delete map->connection_items.value(curDirection);
+                map->connection_items.remove(curDirection);
+            }
         }
 
         ui->comboBox_ConnectedMap->setCurrentText("");
