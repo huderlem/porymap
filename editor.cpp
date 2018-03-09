@@ -152,7 +152,6 @@ void Editor::showCurrentConnectionMap(QString curDirection) {
         connection_item->setY(y);
         connection_item->setZValue(21);
         scene->addItem(connection_item);
-        scene->setSceneRect(0, 0, pixmap.width() + map_item->pixmap().width(), pixmap.height() + map_item->pixmap().height());
 
         connect(connection_item, SIGNAL(connectionMoved(int)), this, SLOT(onConnectionOffsetChanged(int)));
         onConnectionOffsetChanged(connection->offset.toInt());
@@ -163,7 +162,6 @@ void Editor::showCurrentConnectionMap(QString curDirection) {
 
     if (!connectionExists) {
         if (connection_item) {
-            scene->removeItem(connection_item);
             delete connection_item;
             connection_item = NULL;
 

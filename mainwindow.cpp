@@ -154,6 +154,8 @@ void MainWindow::setMap(QString map_name) {
     ui->graphicsView_Objects_Map->editor = editor;
 
     ui->graphicsView_Connections->setScene(editor->scene);
+    ui->graphicsView_Connections->setSceneRect(editor->scene->sceneRect());
+    ui->graphicsView_Connections->setFixedSize(editor->scene->width() + 2, editor->scene->height() + 2);
 
     ui->graphicsView_Metatiles->setScene(editor->scene_metatiles);
     //ui->graphicsView_Metatiles->setSceneRect(editor->scene_metatiles->sceneRect());
