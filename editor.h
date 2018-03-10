@@ -266,10 +266,24 @@ protected:
     void mouseReleaseEvent(QGraphicsSceneMouseEvent*);
 };
 
-class CollisionMetatilesPixmapItem : public MetatilesPixmapItem {
+class MovementPermissionsPixmapItem : public MetatilesPixmapItem {
     Q_OBJECT
 public:
-    CollisionMetatilesPixmapItem(Map *map_): MetatilesPixmapItem(map_) {
+    MovementPermissionsPixmapItem(Map *map_): MetatilesPixmapItem(map_) {}
+    virtual void pick(uint collision) {
+        map->paint_collision = collision;
+        draw();
+    }
+protected:
+    void mousePressEvent(QGraphicsSceneMouseEvent*);
+    void mouseMoveEvent(QGraphicsSceneMouseEvent*);
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent*);
+};
+
+class CollisionMetatilesPixmapItem : public MovementPermissionsPixmapItem {
+    Q_OBJECT
+public:
+    CollisionMetatilesPixmapItem(Map *map_): MovementPermissionsPixmapItem(map_) {
         connect(map, SIGNAL(paintCollisionChanged(Map*)), this, SLOT(paintCollisionChanged(Map *)));
     }
     virtual void pick(uint collision) {
@@ -287,10 +301,10 @@ private slots:
     }
 };
 
-class ElevationMetatilesPixmapItem : public MetatilesPixmapItem {
+class ElevationMetatilesPixmapItem : public MovementPermissionsPixmapItem {
     Q_OBJECT
 public:
-    ElevationMetatilesPixmapItem(Map *map_): MetatilesPixmapItem(map_) {
+    ElevationMetatilesPixmapItem(Map *map_): MovementPermissionsPixmapItem(map_) {
         connect(map, SIGNAL(paintCollisionChanged(Map*)), this, SLOT(paintCollisionChanged(Map *)));
     }
     virtual void pick(uint elevation) {

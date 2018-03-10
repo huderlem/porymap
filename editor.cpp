@@ -332,6 +332,24 @@ void MetatilesPixmapItem::updateSelection(QPointF pos, Qt::MouseButton button) {
     }
 }
 
+void MovementPermissionsPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent* event) {
+    QPointF pos = event->pos();
+    int x = ((int)pos.x()) / 16;
+    int y = ((int)pos.y()) / 16;
+    int width = pixmap().width() / 16;
+    int height = pixmap().height() / 16;
+    if ((x >= 0 && x < width) && (y >=0 && y < height)) {
+        pick(y * width + x);
+    }
+}
+void MovementPermissionsPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event) {
+    updateCurHoveredMetatile(event->pos());
+    mousePressEvent(event);
+}
+void MovementPermissionsPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event) {
+    mousePressEvent(event);
+}
+
 void CollisionMetatilesPixmapItem::updateCurHoveredMetatile(QPointF pos) {
     int x = ((int)pos.x()) / 16;
     int y = ((int)pos.y()) / 16;
