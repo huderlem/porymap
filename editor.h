@@ -53,6 +53,8 @@ public:
     void updateConnectionMap(QString mapName, QString direction);
     void addNewConnection();
     void removeCurrentConnection();
+    void updateDiveMap(QString mapName);
+    void updateEmergeMap(QString mapName);
 
     DraggablePixmapItem *addMapObject(Event *event);
     void selectMapObject(DraggablePixmapItem *object);
@@ -95,6 +97,9 @@ private:
     void setConnectionEditControlValues(Connection*);
     void setConnectionEditControlsEnabled(bool);
     void createConnectionItem(Connection* connection, bool hide);
+    void populateConnectionMapPickers();
+    void setDiveEmergeControls();
+    void updateDiveEmergeMap(QString mapName, QString direction);
 
 private slots:
     void mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item);

@@ -93,12 +93,10 @@ void Editor::setEditingConnections() {
         map_item->draw();
         map_item->setVisible(true);
         map_item->setEnabled(false);
-        ui->comboBox_ConnectedMap->blockSignals(true);
-        ui->comboBox_ConnectedMap->clear();
-        ui->comboBox_ConnectedMap->addItems(*project->mapNames);
-        ui->comboBox_ConnectedMap->blockSignals(false);
+        populateConnectionMapPickers();
         ui->label_NumConnections->setText(QString::number(map->connections.length()));
         setConnectionsVisibility(false);
+        setDiveEmergeControls();
         if (current_connection_edit_item) {
             onConnectionOffsetChanged(current_connection_edit_item->connection->offset.toInt());
             updateConnectionMap(current_connection_edit_item->connection->map_name, current_connection_edit_item->connection->direction);
@@ -112,6 +110,39 @@ void Editor::setEditingConnections() {
     }
     setBorderItemsVisible(true, 0.4);
     setConnectionItemsVisible(true);
+}
+
+void Editor::setDiveEmergeControls() {
+    ui->comboBox_DiveMap->blockSignals(true);
+    ui->comboBox_EmergeMap->blockSignals(true);
+    ui->comboBox_DiveMap->setCurrentText("");
+    ui->comboBox_EmergeMap->setCurrentText("");
+    for (Connection* connection : map->connections) {
+        if (connection->direction == "dive") {
+            ui->comboBox_DiveMap->setCurrentText(connection->map_name);
+        } else if (connection->direction == "emerge") {
+            ui->comboBox_EmergeMap->setCurrentText(connection->map_name);
+        }
+    }
+    ui->comboBox_DiveMap->blockSignals(false);
+    ui->comboBox_EmergeMap->blockSignals(false);
+}
+
+void Editor::populateConnectionMapPickers() {
+    ui->comboBox_ConnectedMap->blockSignals(true);
+    ui->comboBox_DiveMap->blockSignals(true);
+    ui->comboBox_EmergeMap->blockSignals(true);
+
+    ui->comboBox_ConnectedMap->clear();
+    ui->comboBox_ConnectedMap->addItems(*project->mapNames);
+    ui->comboBox_DiveMap->clear();
+    ui->comboBox_DiveMap->addItems(*project->mapNames);
+    ui->comboBox_EmergeMap->clear();
+    ui->comboBox_EmergeMap->addItems(*project->mapNames);
+
+    ui->comboBox_ConnectedMap->blockSignals(false);
+    ui->comboBox_DiveMap->blockSignals(true);
+    ui->comboBox_EmergeMap->blockSignals(true);
 }
 
 void Editor::setConnectionItemsVisible(bool visible) {
@@ -176,13 +207,17 @@ void Editor::onConnectionOffsetChanged(int newOffset) {
 }
 
 void Editor::setConnectionEditControlValues(Connection* connection) {
+    QString mapName = connection ? connection->map_name : "";
+    QString direction = connection ? connection->direction : "";
+    int offset = connection ? connection->offset.toInt() : 0;
+
     ui->comboBox_ConnectedMap->blockSignals(true);
     ui->comboBox_ConnectionDirection->blockSignals(true);
     ui->spinBox_ConnectionOffset->blockSignals(true);
 
-    ui->comboBox_ConnectedMap->setCurrentText(connection->map_name);
-    ui->comboBox_ConnectionDirection->setCurrentText(connection->direction);
-    ui->spinBox_ConnectionOffset->setValue(connection->offset.toInt());
+    ui->comboBox_ConnectedMap->setCurrentText(mapName);
+    ui->comboBox_ConnectionDirection->setCurrentText(direction);
+    ui->spinBox_ConnectionOffset->setValue(offset);
 
     ui->comboBox_ConnectedMap->blockSignals(false);
     ui->comboBox_ConnectionDirection->blockSignals(false);
@@ -193,6 +228,10 @@ void Editor::setConnectionEditControlsEnabled(bool enabled) {
     ui->comboBox_ConnectionDirection->setEnabled(enabled);
     ui->comboBox_ConnectedMap->setEnabled(enabled);
     ui->spinBox_ConnectionOffset->setEnabled(enabled);
+
+    if (!enabled) {
+        setConnectionEditControlValues(false);
+    }
 }
 
 void Editor::onConnectionItemSelected(ConnectionPixmapItem* connectionItem) {
@@ -525,6 +564,47 @@ void Editor::removeCurrentConnection() {
     if (connection_edit_items.length() > 0) {
         onConnectionItemSelected(connection_edit_items.last());
     }
+}
+
+void Editor::updateDiveMap(QString mapName) {
+    updateDiveEmergeMap(mapName, "dive");
+}
+
+void Editor::updateEmergeMap(QString mapName) {
+    updateDiveEmergeMap(mapName, "emerge");
+}
+
+void Editor::updateDiveEmergeMap(QString mapName, QString direction) {
+    if (!mapName.isEmpty() && !project->mapNamesToMapConstants->contains(mapName)) {
+        qDebug() << "Invalid " << direction << " map connection: " << mapName;
+        return;
+    }
+
+    Connection* connection = NULL;
+    for (Connection* conn : map->connections) {
+        if (conn->direction == direction) {
+            connection = conn;
+            break;
+        }
+    }
+
+    if (mapName.isEmpty()) {
+        // Remove dive/emerge connection
+        if (connection) {
+            map->connections.removeOne(connection);
+        }
+    } else {
+        if (!connection) {
+            connection = new Connection;
+            connection->direction = direction;
+            connection->offset = "0";
+            map->connections.append(connection);
+        }
+
+        connection->map_name = mapName;
+    }
+
+    ui->label_NumConnections->setText(QString::number(map->connections.length()));
 }
 
 void MetatilesPixmapItem::paintTileChanged(Map *map) {

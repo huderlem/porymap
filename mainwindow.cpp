@@ -790,3 +790,13 @@ void MainWindow::on_pushButton_RemoveConnection_clicked()
 {
     editor->removeCurrentConnection();
 }
+
+void MainWindow::on_comboBox_DiveMap_currentTextChanged(const QString &mapName)
+{
+    editor->updateDiveMap(mapName);
+}
+
+void MainWindow::on_comboBox_EmergeMap_currentTextChanged(const QString &mapName)
+{
+    editor->updateEmergeMap(mapName);
+}

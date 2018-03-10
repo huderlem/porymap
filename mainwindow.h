@@ -84,6 +84,10 @@ private slots:
 
     void on_pushButton_RemoveConnection_clicked();
 
+    void on_comboBox_DiveMap_currentTextChanged(const QString &mapName);
+
+    void on_comboBox_EmergeMap_currentTextChanged(const QString &mapName);
+
 private:
     Ui::MainWindow *ui;
     QStandardItemModel *mapListModel;
