@@ -80,6 +80,10 @@ private slots:
 
     void on_comboBox_ConnectedMap_currentTextChanged(const QString &mapName);
 
+    void on_pushButton_AddConnection_clicked();
+
+    void on_pushButton_RemoveConnection_clicked();
+
 private:
     Ui::MainWindow *ui;
     QStandardItemModel *mapListModel;

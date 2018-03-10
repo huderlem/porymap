@@ -51,6 +51,8 @@ public:
     void setConnectionsVisibility(bool visible);
     void updateConnectionOffset(int offset);
     void updateConnectionMap(QString mapName, QString direction);
+    void addNewConnection();
+    void removeCurrentConnection();
 
     DraggablePixmapItem *addMapObject(Event *event);
     void selectMapObject(DraggablePixmapItem *object);
@@ -92,6 +94,7 @@ private:
     void setBorderItemsVisible(bool, qreal = 1);
     void setConnectionEditControlValues(Connection*);
     void setConnectionEditControlsEnabled(bool);
+    void createConnectionItem(Connection* connection, bool hide);
 
 private slots:
     void mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item);

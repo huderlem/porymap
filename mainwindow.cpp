@@ -780,3 +780,13 @@ void MainWindow::on_comboBox_ConnectedMap_currentTextChanged(const QString &mapN
 {
     editor->updateConnectionMap(mapName, ui->comboBox_ConnectionDirection->currentText().toLower());
 }
+
+void MainWindow::on_pushButton_AddConnection_clicked()
+{
+    editor->addNewConnection();
+}
+
+void MainWindow::on_pushButton_RemoveConnection_clicked()
+{
+    editor->removeCurrentConnection();
+}
