@@ -46,8 +46,8 @@ public:
     void setEditingMap();
     void setEditingCollision();
     void setEditingObjects();
-    void setEditingConnections(QString direction);
-    void showCurrentConnectionMap(QString curDirection);
+    void setEditingConnections();
+    void setCurrentConnectionDirection(QString curDirection);
     void setConnectionsVisibility(bool visible);
     void updateConnectionOffset(int offset);
     void updateConnectionMap(QString mapName, QString direction);
@@ -65,9 +65,11 @@ public:
     QGraphicsScene *scene = NULL;
     QGraphicsPixmapItem *current_view = NULL;
     MapPixmapItem *map_item = NULL;
-    ConnectionPixmapItem *connection_item = NULL;
+    ConnectionPixmapItem* current_connection_edit_item = NULL;
+    QList<ConnectionPixmapItem*> connection_edit_items;
     CollisionPixmapItem *collision_item = NULL;
     QGraphicsItemGroup *objects_group = NULL;
+    QList<QGraphicsPixmapItem*> borderItems;
 
     QGraphicsScene *scene_metatiles = NULL;
     QGraphicsScene *scene_collision_metatiles = NULL;
@@ -85,10 +87,18 @@ public:
     void objectsView_onMouseMove(QMouseEvent *event);
     void objectsView_onMouseRelease(QMouseEvent *event);
 
+private:
+    void setConnectionItemsVisible(bool);
+    void setBorderItemsVisible(bool, qreal = 1);
+    void setConnectionEditControlValues(Connection*);
+    void setConnectionEditControlsEnabled(bool);
+
 private slots:
     void mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item);
     void mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixmapItem *item);
     void onConnectionOffsetChanged(int newOffset);
+    void onConnectionItemSelected(ConnectionPixmapItem* connectionItem);
+    void onConnectionDirectionChanged(QString newDirection);
 
 signals:
     void objectsChanged();
@@ -253,6 +263,7 @@ class ConnectionPixmapItem : public QObject, public QGraphicsPixmapItem {
     Q_OBJECT
 public:
     ConnectionPixmapItem(QPixmap pixmap, Connection* connection, int x, int y): QGraphicsPixmapItem(pixmap) {
+        this->basePixmap = pixmap;
         this->connection = connection;
         setFlag(ItemIsMovable);
         setFlag(ItemSendsGeometryChanges);
@@ -260,18 +271,26 @@ public:
         this->initialY = y;
         this->initialOffset = connection->offset.toInt();
     }
+    void render(qreal opacity = 1) {
+        QPixmap newPixmap = basePixmap.copy(0, 0, basePixmap.width(), basePixmap.height());
+        if (opacity < 1) {
+            QPainter painter(&newPixmap);
+            int alpha = (int)(255 * (1 - opacity));
+            painter.fillRect(0, 0, newPixmap.width(), newPixmap.height(), QColor(0, 0, 0, alpha));
+            painter.end();
+        }
+        this->setPixmap(newPixmap);
+    }
+    QPixmap basePixmap;
     Connection* connection;
     int initialX;
     int initialY;
     int initialOffset;
 protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
-    void dragEnterEvent(QGraphicsSceneDragDropEvent *event) override;
-    void dragLeaveEvent(QGraphicsSceneDragDropEvent *event) override;
-    void dropEvent(QGraphicsSceneDragDropEvent *event) override;
-    void dragMoveEvent(QGraphicsSceneDragDropEvent *event) override;
     void mousePressEvent(QGraphicsSceneMouseEvent*);
 signals:
+    void connectionItemSelected(ConnectionPixmapItem* connectionItem);
     void connectionMoved(int offset);
 };
 

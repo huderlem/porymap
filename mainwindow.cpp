@@ -487,7 +487,7 @@ void MainWindow::on_tabWidget_currentChanged(int index)
     } else if (index == 1) {
         editor->setEditingObjects();
     } else if (index == 3) {
-        editor->setEditingConnections(ui->comboBox_ConnectionDirection->currentText().toLower());
+        editor->setEditingConnections();
     }
 }
 
@@ -768,7 +768,7 @@ void MainWindow::on_action_Export_Map_Image_triggered()
 
 void MainWindow::on_comboBox_ConnectionDirection_currentIndexChanged(const QString &direction)
 {
-    editor->showCurrentConnectionMap(direction.toLower());
+    editor->setCurrentConnectionDirection(direction);
 }
 
 void MainWindow::on_spinBox_ConnectionOffset_valueChanged(int offset)

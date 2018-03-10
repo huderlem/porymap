@@ -180,7 +180,7 @@ public:
     QMap<QString, QList<Event*>> events;
 
     QList<Connection*> connections;
-    QMap<QString, QGraphicsPixmapItem*> connection_items;
+    QList<QGraphicsPixmapItem*> connection_items;
     QPixmap renderConnection(Connection);
 
     QImage border_image;
