@@ -270,7 +270,7 @@ protected:
 class ConnectionPixmapItem : public QObject, public QGraphicsPixmapItem {
     Q_OBJECT
 public:
-    ConnectionPixmapItem(QPixmap pixmap, Connection* connection, int x, int y): QGraphicsPixmapItem(pixmap) {
+    ConnectionPixmapItem(QPixmap pixmap, Connection* connection, int x, int y, int baseMapWidth, int baseMapHeight): QGraphicsPixmapItem(pixmap) {
         this->basePixmap = pixmap;
         this->connection = connection;
         setFlag(ItemIsMovable);
@@ -278,6 +278,8 @@ public:
         this->initialX = x;
         this->initialY = y;
         this->initialOffset = connection->offset.toInt();
+        this->baseMapWidth = baseMapWidth;
+        this->baseMapHeight = baseMapHeight;
     }
     void render(qreal opacity = 1) {
         QPixmap newPixmap = basePixmap.copy(0, 0, basePixmap.width(), basePixmap.height());
@@ -289,11 +291,15 @@ public:
         }
         this->setPixmap(newPixmap);
     }
+    int getMinOffset();
+    int getMaxOffset();
     QPixmap basePixmap;
     Connection* connection;
     int initialX;
     int initialY;
     int initialOffset;
+    int baseMapWidth;
+    int baseMapHeight;
 protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
     void mousePressEvent(QGraphicsSceneMouseEvent*);

@@ -257,6 +257,8 @@ void Editor::onConnectionItemSelected(ConnectionPixmapItem* connectionItem) {
     current_connection_edit_item->setZValue(0);
     setConnectionEditControlsEnabled(true);
     setConnectionEditControlValues(current_connection_edit_item->connection);
+    ui->spinBox_ConnectionOffset->setMaximum(current_connection_edit_item->getMaxOffset());
+    ui->spinBox_ConnectionOffset->setMinimum(current_connection_edit_item->getMinOffset());
 }
 
 void Editor::onConnectionDirectionChanged(QString newDirection) {
@@ -451,7 +453,7 @@ void Editor::createConnectionItem(Connection* connection, bool hide) {
     map->connection_items.append(item);
     item->setVisible(!hide);
 
-    ConnectionPixmapItem *connection_edit_item = new ConnectionPixmapItem(pixmap, connection, x, y);
+    ConnectionPixmapItem *connection_edit_item = new ConnectionPixmapItem(pixmap, connection, x, y, map->getWidth(), map->getHeight());
     connection_edit_item->setX(x);
     connection_edit_item->setY(y);
     connection_edit_item->setZValue(-1);
@@ -496,6 +498,8 @@ void Editor::updateConnectionOffset(int offset) {
         return;
 
     current_connection_edit_item->blockSignals(true);
+    offset = qMin(offset, current_connection_edit_item->getMaxOffset());
+    offset = qMax(offset, current_connection_edit_item->getMinOffset());
     current_connection_edit_item->connection->offset = QString::number(offset);
     if (current_connection_edit_item->connection->direction == "up" || current_connection_edit_item->connection->direction == "down") {
         current_connection_edit_item->setX(current_connection_edit_item->initialX + (offset - current_connection_edit_item->initialOffset) * 16);
@@ -690,6 +694,18 @@ void CollisionMetatilesPixmapItem::updateCurHoveredMetatile(QPointF pos) {
     }
 }
 
+int ConnectionPixmapItem::getMinOffset() {
+    if (connection->direction == "up" || connection->direction == "down")
+        return 1 - (this->pixmap().width() / 16);
+    else
+        return 1 - (this->pixmap().height() / 16);
+}
+int ConnectionPixmapItem::getMaxOffset() {
+    if (connection->direction == "up" || connection->direction == "down")
+        return baseMapWidth - 1;
+    else
+        return baseMapHeight - 1;
+}
 QVariant ConnectionPixmapItem::itemChange(GraphicsItemChange change, const QVariant &value)
 {
     if (change == ItemPositionChange) {
@@ -700,6 +716,9 @@ QVariant ConnectionPixmapItem::itemChange(GraphicsItemChange change, const QVari
         if (connection->direction == "up" || connection->direction == "down") {
             x = round(newPos.x() / 16) * 16;
             newOffset += (x - initialX) / 16;
+            newOffset = qMin(newOffset, this->getMaxOffset());
+            newOffset = qMax(newOffset, this->getMinOffset());
+            x = newOffset * 16;
         }
         else {
             x = initialX;
@@ -708,6 +727,9 @@ QVariant ConnectionPixmapItem::itemChange(GraphicsItemChange change, const QVari
         if (connection->direction == "right" || connection->direction == "left") {
             y = round(newPos.y() / 16) * 16;
             newOffset += (y - initialY) / 16;
+            newOffset = qMin(newOffset, this->getMaxOffset());
+            newOffset = qMax(newOffset, this->getMinOffset());
+            y = newOffset * 16;
         }
         else {
             y = initialY;
