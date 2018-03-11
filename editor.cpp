@@ -97,9 +97,11 @@ void Editor::setEditingConnections() {
         ui->label_NumConnections->setText(QString::number(map->connections.length()));
         setConnectionsVisibility(false);
         setDiveEmergeControls();
-        if (current_connection_edit_item) {
-            onConnectionOffsetChanged(current_connection_edit_item->connection->offset.toInt());
-            updateConnectionMap(current_connection_edit_item->connection->map_name, current_connection_edit_item->connection->direction);
+        setConnectionEditControlsEnabled(selected_connection_item != NULL);
+        if (selected_connection_item) {
+            onConnectionOffsetChanged(selected_connection_item->connection->offset.toInt());
+            setConnectionMap(selected_connection_item->connection->map_name);
+            setCurrentConnectionDirection(selected_connection_item->connection->direction);
         }
     }
     if (collision_item) {
@@ -160,44 +162,45 @@ void Editor::setBorderItemsVisible(bool visible, qreal opacity) {
 }
 
 void Editor::setCurrentConnectionDirection(QString curDirection) {
-    if (!current_connection_edit_item)
+    if (!selected_connection_item)
         return;
 
-    current_connection_edit_item->connection->direction = curDirection;
-    Map *connected_map = project->getMap(current_connection_edit_item->connection->map_name);
-    QPixmap pixmap = connected_map->renderConnection(*current_connection_edit_item->connection);
-    int offset = current_connection_edit_item->connection->offset.toInt(nullptr, 0);
-    current_connection_edit_item->initialOffset = offset;
+    selected_connection_item->connection->direction = curDirection;
+
+    Map *connected_map = project->getMap(selected_connection_item->connection->map_name);
+    QPixmap pixmap = connected_map->renderConnection(*selected_connection_item->connection);
+    int offset = selected_connection_item->connection->offset.toInt(nullptr, 0);
+    selected_connection_item->initialOffset = offset;
     int x = 0, y = 0;
-    if (current_connection_edit_item->connection->direction == "up") {
+    if (selected_connection_item->connection->direction == "up") {
         x = offset * 16;
         y = -pixmap.height();
-    } else if (current_connection_edit_item->connection->direction == "down") {
+    } else if (selected_connection_item->connection->direction == "down") {
         x = offset * 16;
         y = map->getHeight() * 16;
-    } else if (current_connection_edit_item->connection->direction == "left") {
+    } else if (selected_connection_item->connection->direction == "left") {
         x = -pixmap.width();
         y = offset * 16;
-    } else if (current_connection_edit_item->connection->direction == "right") {
+    } else if (selected_connection_item->connection->direction == "right") {
         x = map->getWidth() * 16;
         y = offset * 16;
     }
 
-    current_connection_edit_item->basePixmap = pixmap;
+    selected_connection_item->basePixmap = pixmap;
     QPainter painter(&pixmap);
     painter.setPen(QColor(255, 0, 255));
     painter.drawRect(0, 0, pixmap.width() - 1, pixmap.height() - 1);
     painter.end();
-    current_connection_edit_item->setPixmap(pixmap);
-    current_connection_edit_item->initialX = x;
-    current_connection_edit_item->initialY = y;
-    current_connection_edit_item->blockSignals(true);
-    current_connection_edit_item->setX(x);
-    current_connection_edit_item->setY(y);
-    current_connection_edit_item->setZValue(-1);
-    current_connection_edit_item->blockSignals(false);
+    selected_connection_item->setPixmap(pixmap);
+    selected_connection_item->initialX = x;
+    selected_connection_item->initialY = y;
+    selected_connection_item->blockSignals(true);
+    selected_connection_item->setX(x);
+    selected_connection_item->setY(y);
+    selected_connection_item->setZValue(-1);
+    selected_connection_item->blockSignals(false);
 
-    setConnectionEditControlValues(current_connection_edit_item->connection);
+    setConnectionEditControlValues(selected_connection_item->connection);
 }
 
 void Editor::onConnectionOffsetChanged(int newOffset) {
@@ -253,11 +256,11 @@ void Editor::onConnectionItemSelected(ConnectionPixmapItem* connectionItem) {
             item->setPixmap(pixmap);
         }
     }
-    current_connection_edit_item = connectionItem;
+    selected_connection_item = connectionItem;
     setConnectionEditControlsEnabled(true);
-    setConnectionEditControlValues(current_connection_edit_item->connection);
-    ui->spinBox_ConnectionOffset->setMaximum(current_connection_edit_item->getMaxOffset());
-    ui->spinBox_ConnectionOffset->setMinimum(current_connection_edit_item->getMinOffset());
+    setConnectionEditControlValues(selected_connection_item->connection);
+    ui->spinBox_ConnectionOffset->setMaximum(selected_connection_item->getMaxOffset());
+    ui->spinBox_ConnectionOffset->setMinimum(selected_connection_item->getMinOffset());
 }
 
 void Editor::setSelectedConnectionFromMap(QString mapName) {
@@ -424,7 +427,7 @@ void Editor::displayMapConnections() {
     for (ConnectionPixmapItem* item : connection_edit_items) {
         delete item;
     }
-    current_connection_edit_item = NULL;
+    selected_connection_item = NULL;
     connection_edit_items.clear();
 
     for (Connection *connection : map->connections) {
@@ -508,38 +511,37 @@ void Editor::displayMapGrid() {
 }
 
 void Editor::updateConnectionOffset(int offset) {
-    if (!current_connection_edit_item)
+    if (!selected_connection_item)
         return;
 
-    current_connection_edit_item->blockSignals(true);
-    offset = qMin(offset, current_connection_edit_item->getMaxOffset());
-    offset = qMax(offset, current_connection_edit_item->getMinOffset());
-    current_connection_edit_item->connection->offset = QString::number(offset);
-    if (current_connection_edit_item->connection->direction == "up" || current_connection_edit_item->connection->direction == "down") {
-        current_connection_edit_item->setX(current_connection_edit_item->initialX + (offset - current_connection_edit_item->initialOffset) * 16);
+    selected_connection_item->blockSignals(true);
+    offset = qMin(offset, selected_connection_item->getMaxOffset());
+    offset = qMax(offset, selected_connection_item->getMinOffset());
+    selected_connection_item->connection->offset = QString::number(offset);
+    if (selected_connection_item->connection->direction == "up" || selected_connection_item->connection->direction == "down") {
+        selected_connection_item->setX(selected_connection_item->initialX + (offset - selected_connection_item->initialOffset) * 16);
     } else {
-        current_connection_edit_item->setY(current_connection_edit_item->initialY + (offset - current_connection_edit_item->initialOffset) * 16);
+        selected_connection_item->setY(selected_connection_item->initialY + (offset - selected_connection_item->initialOffset) * 16);
     }
-    current_connection_edit_item->blockSignals(false);
+    selected_connection_item->blockSignals(false);
 }
 
-void Editor::updateConnectionMap(QString mapName, QString direction) {
+void Editor::setConnectionMap(QString mapName) {
     if (!mapName.isEmpty() && !project->mapNames->contains(mapName)) {
         qDebug() << "Invalid map name " << mapName << " specified for connection.";
         return;
     }
-    if (!current_connection_edit_item)
+    if (!selected_connection_item)
         return;
 
     if (mapName.isEmpty()) {
         removeCurrentConnection();
         return;
-    } else {
-        setConnectionEditControlsEnabled(true);
     }
 
-    current_connection_edit_item->connection->map_name = mapName;
-    setCurrentConnectionDirection(direction);
+    setConnectionEditControlsEnabled(true);
+    selected_connection_item->connection->map_name = mapName;
+    setCurrentConnectionDirection(selected_connection_item->connection->direction);
 }
 
 void Editor::addNewConnection() {
@@ -568,14 +570,14 @@ void Editor::addNewConnection() {
 }
 
 void Editor::removeCurrentConnection() {
-    if (!current_connection_edit_item)
+    if (!selected_connection_item)
         return;
 
-    map->connections.removeOne(current_connection_edit_item->connection);
-    connection_edit_items.removeOne(current_connection_edit_item);
-    scene->removeItem(current_connection_edit_item);
-    delete current_connection_edit_item;
-    current_connection_edit_item = NULL;
+    map->connections.removeOne(selected_connection_item->connection);
+    connection_edit_items.removeOne(selected_connection_item);
+    scene->removeItem(selected_connection_item);
+    delete selected_connection_item;
+    selected_connection_item = NULL;
     setConnectionEditControlsEnabled(false);
     ui->spinBox_ConnectionOffset->setValue(0);
     ui->label_NumConnections->setText(QString::number(map->connections.length()));

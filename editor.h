@@ -50,7 +50,7 @@ public:
     void setCurrentConnectionDirection(QString curDirection);
     void setConnectionsVisibility(bool visible);
     void updateConnectionOffset(int offset);
-    void updateConnectionMap(QString mapName, QString direction);
+    void setConnectionMap(QString mapName);
     void addNewConnection();
     void removeCurrentConnection();
     void updateDiveMap(QString mapName);
@@ -70,7 +70,7 @@ public:
     QGraphicsScene *scene = NULL;
     QGraphicsPixmapItem *current_view = NULL;
     MapPixmapItem *map_item = NULL;
-    ConnectionPixmapItem* current_connection_edit_item = NULL;
+    ConnectionPixmapItem* selected_connection_item = NULL;
     QList<ConnectionPixmapItem*> connection_edit_items;
     CollisionPixmapItem *collision_item = NULL;
     QGraphicsItemGroup *objects_group = NULL;

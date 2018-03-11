@@ -785,7 +785,7 @@ void MainWindow::on_spinBox_ConnectionOffset_valueChanged(int offset)
 
 void MainWindow::on_comboBox_ConnectedMap_currentTextChanged(const QString &mapName)
 {
-    editor->updateConnectionMap(mapName, ui->comboBox_ConnectionDirection->currentText().toLower());
+    editor->setConnectionMap(mapName);
 }
 
 void MainWindow::on_pushButton_AddConnection_clicked()
