@@ -29,6 +29,7 @@ MainWindow::MainWindow(QWidget *parent) :
     editor = new Editor(ui);
     connect(editor, SIGNAL(objectsChanged()), this, SLOT(updateSelectedObjects()));
     connect(editor, SIGNAL(selectedObjectsChanged()), this, SLOT(updateSelectedObjects()));
+    connect(editor, SIGNAL(loadMapRequested(QString, QString)), this, SLOT(onLoadMapRequested(QString, QString)));
 
     on_toolButton_Paint_clicked();
 
@@ -752,6 +753,11 @@ void MainWindow::checkToolButtons() {
     ui->toolButton_Select->setChecked(editor->map_edit_mode == "select");
     ui->toolButton_Fill->setChecked(editor->map_edit_mode == "fill");
     ui->toolButton_Dropper->setChecked(editor->map_edit_mode == "pick");
+}
+
+void MainWindow::onLoadMapRequested(QString mapName, QString fromMapName) {
+    setMap(mapName);
+    editor->setSelectedConnectionFromMap(fromMapName);
 }
 
 void MainWindow::onMapChanged(Map *map) {

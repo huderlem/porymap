@@ -254,11 +254,24 @@ void Editor::onConnectionItemSelected(ConnectionPixmapItem* connectionItem) {
         }
     }
     current_connection_edit_item = connectionItem;
-    current_connection_edit_item->setZValue(0);
     setConnectionEditControlsEnabled(true);
     setConnectionEditControlValues(current_connection_edit_item->connection);
     ui->spinBox_ConnectionOffset->setMaximum(current_connection_edit_item->getMaxOffset());
     ui->spinBox_ConnectionOffset->setMinimum(current_connection_edit_item->getMinOffset());
+}
+
+void Editor::setSelectedConnectionFromMap(QString mapName) {
+    // Search for the first connection that connects to the given map map.
+    for (ConnectionPixmapItem* item : connection_edit_items) {
+        if (item->connection->map_name == mapName) {
+            onConnectionItemSelected(item);
+            break;
+        }
+    }
+}
+
+void Editor::onConnectionItemDoubleClicked(ConnectionPixmapItem* connectionItem) {
+    emit loadMapRequested(connectionItem->connection->map_name, map->name);
 }
 
 void Editor::onConnectionDirectionChanged(QString newDirection) {
@@ -460,6 +473,7 @@ void Editor::createConnectionItem(Connection* connection, bool hide) {
     scene->addItem(connection_edit_item);
     connect(connection_edit_item, SIGNAL(connectionMoved(int)), this, SLOT(onConnectionOffsetChanged(int)));
     connect(connection_edit_item, SIGNAL(connectionItemSelected(ConnectionPixmapItem*)), this, SLOT(onConnectionItemSelected(ConnectionPixmapItem*)));
+    connect(connection_edit_item, SIGNAL(connectionItemDoubleClicked(ConnectionPixmapItem*)), this, SLOT(onConnectionItemDoubleClicked(ConnectionPixmapItem*)));
     connection_edit_items.append(connection_edit_item);
 }
 
@@ -745,6 +759,9 @@ QVariant ConnectionPixmapItem::itemChange(GraphicsItemChange change, const QVari
 }
 void ConnectionPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent* event) {
     emit connectionItemSelected(this);
+}
+void ConnectionPixmapItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent*) {
+    emit connectionItemDoubleClicked(this);
 }
 
 void ElevationMetatilesPixmapItem::updateCurHoveredMetatile(QPointF pos) {

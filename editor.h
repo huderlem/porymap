@@ -55,6 +55,7 @@ public:
     void removeCurrentConnection();
     void updateDiveMap(QString mapName);
     void updateEmergeMap(QString mapName);
+    void setSelectedConnectionFromMap(QString mapName);
 
     DraggablePixmapItem *addMapObject(Event *event);
     void selectMapObject(DraggablePixmapItem *object);
@@ -106,11 +107,13 @@ private slots:
     void mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixmapItem *item);
     void onConnectionOffsetChanged(int newOffset);
     void onConnectionItemSelected(ConnectionPixmapItem* connectionItem);
+    void onConnectionItemDoubleClicked(ConnectionPixmapItem* connectionItem);
     void onConnectionDirectionChanged(QString newDirection);
 
 signals:
     void objectsChanged();
     void selectedObjectsChanged();
+    void loadMapRequested(QString, QString);
 };
 
 
@@ -303,8 +306,10 @@ public:
 protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
     void mousePressEvent(QGraphicsSceneMouseEvent*);
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent*);
 signals:
     void connectionItemSelected(ConnectionPixmapItem* connectionItem);
+    void connectionItemDoubleClicked(ConnectionPixmapItem* connectionItem);
     void connectionMoved(int offset);
 };
 

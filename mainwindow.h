@@ -36,6 +36,7 @@ private slots:
     void undo();
     void redo();
 
+    void onLoadMapRequested(QString, QString);
     void onMapChanged(Map *map);
 
     void on_action_Save_triggered();
