@@ -409,6 +409,7 @@ void Editor::displayMapConnections() {
     for (ConnectionPixmapItem* item : connection_edit_items) {
         delete item;
     }
+    current_connection_edit_item = NULL;
     connection_edit_items.clear();
 
     for (Connection *connection : map->connections) {

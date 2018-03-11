@@ -289,6 +289,7 @@ void MainWindow::loadDataStructures() {
     project->readItemNames();
     project->readFlagNames();
     project->readVarNames();
+    project->readMapsWithConnections();
 }
 
 void MainWindow::populateMapList() {
