@@ -740,7 +740,9 @@ void Project::saveMap(Map *map) {
 }
 
 void Project::updateMapAttributes(Map* map) {
-    mapAttributesTableMaster.insert(map->index.toInt(nullptr, 0), map->name);
+    if (!mapAttributesTableMaster.contains(map->index.toInt())) {
+        mapAttributesTableMaster.insert(map->index.toInt(), map->name);
+    }
 
     // Deep copy
     QMap<QString, QString> attrs = mapAttributes.value(map->name);
