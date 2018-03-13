@@ -611,7 +611,9 @@ void Editor::updateMirroredConnection(Connection* connection, QString originalDi
         return;
 
     static QMap<QString, QString> oppositeDirections = QMap<QString, QString>({
-        {"up", "down"}, {"right", "left"}, {"down", "up"}, {"left", "right"}});
+        {"up", "down"}, {"right", "left"},
+        {"down", "up"}, {"left", "right"},
+        {"dive", "emerge"},{"emerge", "dive"}});
     QString oppositeDirection = oppositeDirections.value(originalDirection);
 
     // Find the matching connection in the connected map.
@@ -698,16 +700,21 @@ void Editor::updateDiveEmergeMap(QString mapName, QString direction) {
         // Remove dive/emerge connection
         if (connection) {
             map->connections.removeOne(connection);
+            removeMirroredConnection(connection);
         }
     } else {
         if (!connection) {
             connection = new Connection;
             connection->direction = direction;
             connection->offset = "0";
+            connection->map_name = mapName;
             map->connections.append(connection);
+            updateMirroredConnection(connection, connection->direction, connection->map_name);
+        } else {
+            QString originalMapName = connection->map_name;
+            connection->map_name = mapName;
+            updateMirroredConnectionMap(connection, originalMapName);
         }
-
-        connection->map_name = mapName;
     }
 
     ui->label_NumConnections->setText(QString::number(map->connections.length()));
