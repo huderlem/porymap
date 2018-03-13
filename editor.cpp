@@ -203,10 +203,25 @@ void Editor::setCurrentConnectionDirection(QString curDirection) {
     setConnectionEditControlValues(selected_connection_item->connection);
 }
 
+void Editor::updateCurrentConnectionDirection(QString curDirection) {
+    if (!selected_connection_item)
+        return;
+
+    QString originalDirection = selected_connection_item->connection->direction;
+    setCurrentConnectionDirection(curDirection);
+    updateMirroredConnectionDirection(selected_connection_item->connection, originalDirection);
+}
+
+void Editor::onConnectionMoved(Connection* connection) {
+    updateMirroredConnectionOffset(connection);
+    onConnectionOffsetChanged(connection->offset.toInt());
+}
+
 void Editor::onConnectionOffsetChanged(int newOffset) {
     ui->spinBox_ConnectionOffset->blockSignals(true);
     ui->spinBox_ConnectionOffset->setValue(newOffset);
     ui->spinBox_ConnectionOffset->blockSignals(false);
+
 }
 
 void Editor::setConnectionEditControlValues(Connection* connection) {
@@ -419,7 +434,6 @@ DraggablePixmapItem *Editor::addMapObject(Event *event) {
 
 void Editor::displayMapConnections() {
     for (QGraphicsPixmapItem* item : map->connection_items) {
-        scene->removeItem(item);
         delete item;
     }
     map->connection_items.clear();
@@ -474,7 +488,7 @@ void Editor::createConnectionItem(Connection* connection, bool hide) {
     connection_edit_item->setY(y);
     connection_edit_item->setZValue(-1);
     scene->addItem(connection_edit_item);
-    connect(connection_edit_item, SIGNAL(connectionMoved(int)), this, SLOT(onConnectionOffsetChanged(int)));
+    connect(connection_edit_item, SIGNAL(connectionMoved(Connection*)), this, SLOT(onConnectionMoved(Connection*)));
     connect(connection_edit_item, SIGNAL(connectionItemSelected(ConnectionPixmapItem*)), this, SLOT(onConnectionItemSelected(ConnectionPixmapItem*)));
     connect(connection_edit_item, SIGNAL(connectionItemDoubleClicked(ConnectionPixmapItem*)), this, SLOT(onConnectionItemDoubleClicked(ConnectionPixmapItem*)));
     connection_edit_items.append(connection_edit_item);
@@ -524,6 +538,7 @@ void Editor::updateConnectionOffset(int offset) {
         selected_connection_item->setY(selected_connection_item->initialY + (offset - selected_connection_item->initialOffset) * 16);
     }
     selected_connection_item->blockSignals(false);
+    updateMirroredConnectionOffset(selected_connection_item->connection);
 }
 
 void Editor::setConnectionMap(QString mapName) {
@@ -539,9 +554,11 @@ void Editor::setConnectionMap(QString mapName) {
         return;
     }
 
+    QString originalMapName = selected_connection_item->connection->map_name;
     setConnectionEditControlsEnabled(true);
     selected_connection_item->connection->map_name = mapName;
     setCurrentConnectionDirection(selected_connection_item->connection->direction);
+    updateMirroredConnectionMap(selected_connection_item->connection, originalMapName);
 }
 
 void Editor::addNewConnection() {
@@ -559,14 +576,80 @@ void Editor::addNewConnection() {
         }
     }
 
+    // Don't connect the map to itself.
+    QString defaultMapName = project->mapNames->first();
+    if (defaultMapName == map->name) {
+        defaultMapName = project->mapNames->value(1);
+    }
+
     Connection* newConnection = new Connection;
     newConnection->direction = minDirection;
     newConnection->offset = "0";
-    newConnection->map_name = project->mapNames->first();
+    newConnection->map_name = defaultMapName;
     map->connections.append(newConnection);
     createConnectionItem(newConnection, true);
     onConnectionItemSelected(connection_edit_items.last());
     ui->label_NumConnections->setText(QString::number(map->connections.length()));
+
+    updateMirroredConnection(newConnection, newConnection->direction, newConnection->map_name);
+}
+
+void Editor::updateMirroredConnectionOffset(Connection* connection) {
+    updateMirroredConnection(connection, connection->direction, connection->map_name);
+}
+void Editor::updateMirroredConnectionDirection(Connection* connection, QString originalDirection) {
+    updateMirroredConnection(connection, originalDirection, connection->map_name);
+}
+void Editor::updateMirroredConnectionMap(Connection* connection, QString originalMapName) {
+    updateMirroredConnection(connection, connection->direction, originalMapName);
+}
+void Editor::removeMirroredConnection(Connection* connection) {
+    updateMirroredConnection(connection, connection->direction, connection->map_name, true);
+}
+void Editor::updateMirroredConnection(Connection* connection, QString originalDirection, QString originalMapName, bool isDelete) {
+    if (!ui->checkBox_MirrorConnections->isChecked())
+        return;
+
+    static QMap<QString, QString> oppositeDirections = QMap<QString, QString>({
+        {"up", "down"}, {"right", "left"}, {"down", "up"}, {"left", "right"}});
+    QString oppositeDirection = oppositeDirections.value(originalDirection);
+
+    // Find the matching connection in the connected map.
+    QMap<QString, Map*> *mapcache = project->map_cache;
+    Connection* mirrorConnection = NULL;
+    Map* otherMap = project->getMap(originalMapName);
+    for (Connection* conn : otherMap->connections) {
+        if (conn->direction == oppositeDirection && conn->map_name == map->name) {
+            mirrorConnection = conn;
+        }
+    }
+
+    if (isDelete) {
+        if (mirrorConnection) {
+            otherMap->connections.removeOne(mirrorConnection);
+            delete mirrorConnection;
+        }
+        return;
+    }
+
+    if (connection->direction != originalDirection || connection->map_name != originalMapName) {
+        if (mirrorConnection) {
+            otherMap->connections.removeOne(mirrorConnection);
+            delete mirrorConnection;
+            mirrorConnection = NULL;
+            otherMap = project->getMap(connection->map_name);
+        }
+    }
+
+    // Create a new mirrored connection, if a matching one doesn't already exist.
+    if (!mirrorConnection) {
+        mirrorConnection = new Connection;
+        mirrorConnection->direction = oppositeDirections.value(connection->direction);
+        mirrorConnection->map_name = map->name;
+        otherMap->connections.append(mirrorConnection);
+    }
+
+    mirrorConnection->offset = QString::number(-connection->offset.toInt());
 }
 
 void Editor::removeCurrentConnection() {
@@ -575,6 +658,8 @@ void Editor::removeCurrentConnection() {
 
     map->connections.removeOne(selected_connection_item->connection);
     connection_edit_items.removeOne(selected_connection_item);
+    removeMirroredConnection(selected_connection_item->connection);
+
     scene->removeItem(selected_connection_item);
     delete selected_connection_item;
     selected_connection_item = NULL;
@@ -751,8 +836,8 @@ QVariant ConnectionPixmapItem::itemChange(GraphicsItemChange change, const QVari
             y = initialY;
         }
 
-        emit connectionMoved(newOffset);
         connection->offset = QString::number(newOffset);
+        emit connectionMoved(connection);
         return QPointF(x, y);
     }
     else {

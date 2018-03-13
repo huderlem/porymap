@@ -39,7 +39,8 @@ Map* Project::loadMap(QString map_name) {
     Map *map;
     if (map_cache->contains(map_name)) {
         map = map_cache->value(map_name);
-        if (map->hasUnsavedChanges()) {
+        // TODO: uncomment when undo/redo history is fully implemented for all actions.
+        if (true/*map->hasUnsavedChanges()*/) {
             return map;
         }
     } else {
@@ -1260,7 +1261,6 @@ void Project::loadObjectPixmaps(QList<Event*> objects) {
         }
 
         if (event_type == "object") {
-
             int sprite_id = constants.value(object->get("sprite"));
 
             QString info_label = pointers.value(sprite_id).replace("&", "");

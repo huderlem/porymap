@@ -775,7 +775,7 @@ void MainWindow::on_action_Export_Map_Image_triggered()
 
 void MainWindow::on_comboBox_ConnectionDirection_currentIndexChanged(const QString &direction)
 {
-    editor->setCurrentConnectionDirection(direction);
+    editor->updateCurrentConnectionDirection(direction);
 }
 
 void MainWindow::on_spinBox_ConnectionOffset_valueChanged(int offset)

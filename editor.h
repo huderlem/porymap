@@ -48,6 +48,7 @@ public:
     void setEditingObjects();
     void setEditingConnections();
     void setCurrentConnectionDirection(QString curDirection);
+    void updateCurrentConnectionDirection(QString curDirection);
     void setConnectionsVisibility(bool visible);
     void updateConnectionOffset(int offset);
     void setConnectionMap(QString mapName);
@@ -101,11 +102,17 @@ private:
     void populateConnectionMapPickers();
     void setDiveEmergeControls();
     void updateDiveEmergeMap(QString mapName, QString direction);
+    void onConnectionOffsetChanged(int newOffset);
+    void removeMirroredConnection(Connection*);
+    void updateMirroredConnectionOffset(Connection*);
+    void updateMirroredConnectionDirection(Connection*, QString);
+    void updateMirroredConnectionMap(Connection*, QString);
+    void updateMirroredConnection(Connection*, QString, QString, bool isDelete = false);
 
 private slots:
     void mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item);
     void mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixmapItem *item);
-    void onConnectionOffsetChanged(int newOffset);
+    void onConnectionMoved(Connection*);
     void onConnectionItemSelected(ConnectionPixmapItem* connectionItem);
     void onConnectionItemDoubleClicked(ConnectionPixmapItem* connectionItem);
     void onConnectionDirectionChanged(QString newDirection);
@@ -310,7 +317,7 @@ protected:
 signals:
     void connectionItemSelected(ConnectionPixmapItem* connectionItem);
     void connectionItemDoubleClicked(ConnectionPixmapItem* connectionItem);
-    void connectionMoved(int offset);
+    void connectionMoved(Connection*);
 };
 
 class MetatilesPixmapItem : public QObject, public QGraphicsPixmapItem {
