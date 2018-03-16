@@ -243,8 +243,6 @@ protected:
 class MetatilesPixmapItem : public QObject, public QGraphicsPixmapItem {
     Q_OBJECT
 public:
-    MetatilesPixmapItem(QPixmap pixmap): QGraphicsPixmapItem(pixmap) {
-    }
     MetatilesPixmapItem(Map *map_) {
         map = map_;
         setAcceptHoverEvents(true);
