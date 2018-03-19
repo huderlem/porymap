@@ -57,6 +57,7 @@ void Editor::setEditingMap() {
 void Editor::setEditingCollision() {
     current_view = collision_item;
     if (collision_item) {
+        collision_item->draw();
         collision_item->setVisible(true);
         setConnectionsVisibility(true);
     }
