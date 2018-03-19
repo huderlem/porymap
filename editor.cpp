@@ -276,6 +276,7 @@ void Editor::onConnectionItemSelected(ConnectionPixmapItem* connectionItem) {
     setConnectionEditControlValues(selected_connection_item->connection);
     ui->spinBox_ConnectionOffset->setMaximum(selected_connection_item->getMaxOffset());
     ui->spinBox_ConnectionOffset->setMinimum(selected_connection_item->getMinOffset());
+    onConnectionOffsetChanged(selected_connection_item->connection->offset.toInt());
 }
 
 void Editor::setSelectedConnectionFromMap(QString mapName) {
@@ -534,7 +535,7 @@ void Editor::updateConnectionOffset(int offset) {
     selected_connection_item->connection->offset = QString::number(offset);
     if (selected_connection_item->connection->direction == "up" || selected_connection_item->connection->direction == "down") {
         selected_connection_item->setX(selected_connection_item->initialX + (offset - selected_connection_item->initialOffset) * 16);
-    } else {
+    } else if (selected_connection_item->connection->direction == "left" || selected_connection_item->connection->direction == "right") {
         selected_connection_item->setY(selected_connection_item->initialY + (offset - selected_connection_item->initialOffset) * 16);
     }
     selected_connection_item->blockSignals(false);
