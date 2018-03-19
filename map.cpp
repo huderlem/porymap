@@ -12,7 +12,7 @@ Map::Map(QObject *parent) : QObject(parent)
     cached_blockdata = new Blockdata;
     cached_collision = new Blockdata;
     cached_border = new Blockdata;
-    paint_tile = 1;
+    paint_tile_index = 1;
     paint_collision = 0;
     paint_elevation = 3;
 }
@@ -69,6 +69,22 @@ int Map::getBlockIndex(int index) {
         return index;
     } else {
         return index - primary_size;
+    }
+}
+
+int Map::getSelectedBlockIndex(int index) {
+    if (index < tileset_primary->metatiles->length()) {
+        return index;
+    } else {
+        return 0x200 + (index - tileset_primary->metatiles->length());
+    }
+}
+
+int Map::getDisplayedBlockIndex(int index) {
+    if (index < tileset_primary->metatiles->length()) {
+        return index;
+    } else {
+        return index - 0x200 + tileset_primary->metatiles->length();
     }
 }
 
@@ -426,7 +442,7 @@ QPixmap Map::renderCollisionMetatiles() {
         QImage metatile_image = getCollisionMetatileImage(i);
         painter.drawImage(origin, metatile_image);
     }
-    drawSelection(paint_collision, width_, &painter);
+    drawSelection(paint_collision, width_, 1, 1, &painter);
     painter.end();
     return QPixmap::fromImage(image);
 }
@@ -444,20 +460,20 @@ QPixmap Map::renderElevationMetatiles() {
         QImage metatile_image = getElevationMetatileImage(i);
         painter.drawImage(origin, metatile_image);
     }
-    drawSelection(paint_elevation, width_, &painter);
+    drawSelection(paint_elevation, width_, 1, 1, &painter);
     painter.end();
     return QPixmap::fromImage(image);
 }
 
-void Map::drawSelection(int i, int w, QPainter *painter) {
+void Map::drawSelection(int i, int w, int selectionWidth, int selectionHeight, QPainter *painter) {
     int x = i % w;
     int y = i / w;
     painter->save();
 
     QColor penColor = smart_paths_enabled ? QColor(0xff, 0x0, 0xff) : QColor(0xff, 0xff, 0xff);
     painter->setPen(penColor);
-    int rectWidth = paint_tile_width * 16;
-    int rectHeight = paint_tile_height * 16;
+    int rectWidth = selectionWidth * 16;
+    int rectHeight = selectionHeight * 16;
     painter->drawRect(x * 16, y * 16, rectWidth - 1, rectHeight -1);
     painter->setPen(QColor(0, 0, 0));
     painter->drawRect(x * 16 - 1, y * 16 - 1, rectWidth + 1, rectHeight + 1);
@@ -487,7 +503,7 @@ QPixmap Map::renderMetatiles() {
         painter.drawImage(metatile_origin, metatile_image);
     }
 
-    drawSelection(paint_tile, width_, &painter);
+    drawSelection(paint_tile_index, width_, paint_tile_width, paint_tile_height, &painter);
 
     painter.end();
     return QPixmap::fromImage(image);
@@ -750,9 +766,10 @@ void Map::clearHoveredTile() {
     emit statusBarMessage(QString(""));
 }
 
-void Map::hoveredMetatileChanged(int block) {
+void Map::hoveredMetatileChanged(int blockIndex) {
+    int tile = getSelectedBlockIndex(blockIndex);
     emit statusBarMessage(QString("Block: 0x%1")
-                          .arg(QString("%1").arg(block, 3, 16, QChar('0')).toUpper()));
+                          .arg(QString("%1").arg(tile, 3, 16, QChar('0')).toUpper()));
 }
 
 void Map::clearHoveredMetatile() {

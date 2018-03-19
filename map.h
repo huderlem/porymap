@@ -113,6 +113,8 @@ public:
     int getHeight();
     Tileset* getBlockTileset(int);
     int getBlockIndex(int index);
+    int getSelectedBlockIndex(int index);
+    int getDisplayedBlockIndex(int index);
     Metatile* getMetatile(int);
     QImage getMetatileImage(int);
     QImage getMetatileTile(int);
@@ -129,7 +131,7 @@ public:
 
     QPixmap renderCollisionMetatiles();
     QPixmap renderElevationMetatiles();
-    void drawSelection(int i, int w, QPainter *painter);
+    void drawSelection(int i, int w, int selectionWidth, int selectionHeight, QPainter *painter);
 
     bool blockChanged(int, Blockdata*);
     Blockdata* cached_blockdata = NULL;
@@ -142,7 +144,7 @@ public:
     bool smart_paths_enabled = false;
     int paint_metatile_initial_x;
     int paint_metatile_initial_y;
-    int paint_tile;
+    int paint_tile_index;
     int paint_tile_width = 1;
     int paint_tile_height = 1;
     int paint_tile_initial_x;
