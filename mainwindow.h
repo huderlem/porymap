@@ -36,6 +36,7 @@ private slots:
     void undo();
     void redo();
 
+    void onLoadMapRequested(QString, QString);
     void onMapChanged(Map *map);
 
     void on_action_Save_triggered();
@@ -73,6 +74,20 @@ private slots:
     void onAddNewMapToGroupClick(QAction* triggeredAction);
 
     void on_action_Export_Map_Image_triggered();
+
+    void on_comboBox_ConnectionDirection_currentIndexChanged(const QString &arg1);
+
+    void on_spinBox_ConnectionOffset_valueChanged(int offset);
+
+    void on_comboBox_ConnectedMap_currentTextChanged(const QString &mapName);
+
+    void on_pushButton_AddConnection_clicked();
+
+    void on_pushButton_RemoveConnection_clicked();
+
+    void on_comboBox_DiveMap_currentTextChanged(const QString &mapName);
+
+    void on_comboBox_EmergeMap_currentTextChanged(const QString &mapName);
 
 private:
     Ui::MainWindow *ui;

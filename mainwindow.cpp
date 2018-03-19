@@ -26,10 +26,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Z), this, SLOT(redo()));
 
-    editor = new Editor;
-    editor->gridToggleCheckbox = ui->checkBox_ToggleGrid;
+    editor = new Editor(ui);
     connect(editor, SIGNAL(objectsChanged()), this, SLOT(updateSelectedObjects()));
     connect(editor, SIGNAL(selectedObjectsChanged()), this, SLOT(updateSelectedObjects()));
+    connect(editor, SIGNAL(loadMapRequested(QString, QString)), this, SLOT(onLoadMapRequested(QString, QString)));
 
     on_toolButton_Paint_clicked();
 
@@ -143,15 +143,7 @@ void MainWindow::setMap(QString map_name) {
     }
     editor->setMap(map_name);
 
-    if (ui->tabWidget->currentIndex() == 1) {
-        editor->setEditingObjects();
-    } else {
-        if (ui->tabWidget_2->currentIndex() == 1) {
-            editor->setEditingCollision();
-        } else {
-            editor->setEditingMap();
-        }
-    }
+    on_tabWidget_currentChanged(ui->tabWidget->currentIndex());
 
     ui->graphicsView_Map->setScene(editor->scene);
     ui->graphicsView_Map->setSceneRect(editor->scene->sceneRect());
@@ -161,6 +153,10 @@ void MainWindow::setMap(QString map_name) {
     ui->graphicsView_Objects_Map->setSceneRect(editor->scene->sceneRect());
     ui->graphicsView_Objects_Map->setFixedSize(editor->scene->width() + 2, editor->scene->height() + 2);
     ui->graphicsView_Objects_Map->editor = editor;
+
+    ui->graphicsView_Connections->setScene(editor->scene);
+    ui->graphicsView_Connections->setSceneRect(editor->scene->sceneRect());
+    ui->graphicsView_Connections->setFixedSize(editor->scene->width() + 2, editor->scene->height() + 2);
 
     ui->graphicsView_Metatiles->setScene(editor->scene_metatiles);
     //ui->graphicsView_Metatiles->setSceneRect(editor->scene_metatiles->sceneRect());
@@ -294,6 +290,7 @@ void MainWindow::loadDataStructures() {
     project->readItemNames();
     project->readFlagNames();
     project->readVarNames();
+    project->readMapsWithConnections();
 }
 
 void MainWindow::populateMapList() {
@@ -491,6 +488,8 @@ void MainWindow::on_tabWidget_currentChanged(int index)
         on_tabWidget_2_currentChanged(ui->tabWidget_2->currentIndex());
     } else if (index == 1) {
         editor->setEditingObjects();
+    } else if (index == 3) {
+        editor->setEditingConnections();
     }
 }
 
@@ -756,6 +755,11 @@ void MainWindow::checkToolButtons() {
     ui->toolButton_Dropper->setChecked(editor->map_edit_mode == "pick");
 }
 
+void MainWindow::onLoadMapRequested(QString mapName, QString fromMapName) {
+    setMap(mapName);
+    editor->setSelectedConnectionFromMap(fromMapName);
+}
+
 void MainWindow::onMapChanged(Map *map) {
     updateMapList();
 }
@@ -767,4 +771,39 @@ void MainWindow::on_action_Export_Map_Image_triggered()
     if (!filepath.isEmpty()) {
         editor->map_item->pixmap().save(filepath);
     }
+}
+
+void MainWindow::on_comboBox_ConnectionDirection_currentIndexChanged(const QString &direction)
+{
+    editor->updateCurrentConnectionDirection(direction);
+}
+
+void MainWindow::on_spinBox_ConnectionOffset_valueChanged(int offset)
+{
+    editor->updateConnectionOffset(offset);
+}
+
+void MainWindow::on_comboBox_ConnectedMap_currentTextChanged(const QString &mapName)
+{
+    editor->setConnectionMap(mapName);
+}
+
+void MainWindow::on_pushButton_AddConnection_clicked()
+{
+    editor->addNewConnection();
+}
+
+void MainWindow::on_pushButton_RemoveConnection_clicked()
+{
+    editor->removeCurrentConnection();
+}
+
+void MainWindow::on_comboBox_DiveMap_currentTextChanged(const QString &mapName)
+{
+    editor->updateDiveMap(mapName);
+}
+
+void MainWindow::on_comboBox_EmergeMap_currentTextChanged(const QString &mapName)
+{
+    editor->updateEmergeMap(mapName);
 }

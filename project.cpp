@@ -39,7 +39,8 @@ Map* Project::loadMap(QString map_name) {
     Map *map;
     if (map_cache->contains(map_name)) {
         map = map_cache->value(map_name);
-        if (map->hasUnsavedChanges()) {
+        // TODO: uncomment when undo/redo history is fully implemented for all actions.
+        if (true/*map->hasUnsavedChanges()*/) {
             return map;
         }
     } else {
@@ -67,6 +68,7 @@ void Project::loadMapConnections(Map *map) {
     }
 
     map->connections.clear();
+    map->connection_items.clear();
     if (!map->connections_label.isNull()) {
         QString path = root + QString("/data/maps/%1/connections.inc").arg(map->name);
         QString text = readTextFile(path);
@@ -196,7 +198,14 @@ void Project::saveMapHeader(Map *map) {
     text += QString("\t.4byte %1\n").arg(map->attributes_label);
     text += QString("\t.4byte %1\n").arg(map->events_label);
     text += QString("\t.4byte %1\n").arg(map->scripts_label);
+
+    if (map->connections.length() == 0) {
+        map->connections_label = "0x0";
+    } else {
+        map->connections_label = QString("%1_MapConnections").arg(map->name);
+    }
     text += QString("\t.4byte %1\n").arg(map->connections_label);
+
     text += QString("\t.2byte %1\n").arg(map->song);
     text += QString("\t.2byte %1\n").arg(map->index);
     text += QString("\t.byte %1\n").arg(map->location);
@@ -207,6 +216,48 @@ void Project::saveMapHeader(Map *map) {
     text += QString("\t.byte %1\n").arg(map->show_location);
     text += QString("\t.byte %1\n").arg(map->battle_scene);
     saveTextFile(header_path, text);
+}
+
+void Project::saveMapConnections(Map *map) {
+    QString path = root + "/data/maps/" + map->name + "/connections.inc";
+    if (map->connections.length() > 0) {
+        QString text = "";
+        QString connectionsListLabel = QString("%1_MapConnectionsList").arg(map->name);
+        int numValidConnections = 0;
+        text += QString("%1::\n").arg(connectionsListLabel);
+        for (Connection* connection : map->connections) {
+            if (mapNamesToMapConstants->contains(connection->map_name)) {
+                text += QString("\tconnection %1, %2, %3\n")
+                        .arg(connection->direction)
+                        .arg(connection->offset)
+                        .arg(mapNamesToMapConstants->value(connection->map_name));
+                numValidConnections++;
+            } else {
+                qDebug() << QString("Failed to write map connection. %1 not a valid map name").arg(connection->map_name);
+            }
+        }
+        text += QString("\n");
+        text += QString("%1::\n").arg(map->connections_label);
+        text += QString("\t.4byte %1\n").arg(numValidConnections);
+        text += QString("\t.4byte %1\n").arg(connectionsListLabel);
+        saveTextFile(path, text);
+    } else {
+        deleteFile(path);
+    }
+
+    updateMapsWithConnections(map);
+}
+
+void Project::updateMapsWithConnections(Map *map) {
+    if (map->connections.length() > 0) {
+        if (!mapsWithConnections.contains(map->name)) {
+            mapsWithConnections.append(map->name);
+        }
+    } else {
+        if (mapsWithConnections.contains(map->name)) {
+            mapsWithConnections.removeOne(map->name);
+        }
+    }
 }
 
 void Project::readMapAttributesTable() {
@@ -679,6 +730,7 @@ void Project::saveMap(Map *map) {
 
     saveMapBorder(map);
     saveMapHeader(map);
+    saveMapConnections(map);
     saveBlockdata(map);
     saveMapEvents(map);
 
@@ -689,7 +741,9 @@ void Project::saveMap(Map *map) {
 }
 
 void Project::updateMapAttributes(Map* map) {
-    mapAttributesTableMaster.insert(map->index.toInt(nullptr, 0), map->name);
+    if (!mapAttributesTableMaster.contains(map->index.toInt())) {
+        mapAttributesTableMaster.insert(map->index.toInt(), map->name);
+    }
 
     // Deep copy
     QMap<QString, QString> attrs = mapAttributes.value(map->name);
@@ -702,6 +756,7 @@ void Project::saveAllDataStructures() {
     saveAllMapAttributes();
     saveMapGroupsTable();
     saveMapConstantsHeader();
+    saveMapsWithConnections();
 }
 
 void Project::loadTilesetAssets(Tileset* tileset) {
@@ -913,6 +968,13 @@ void Project::appendTextFile(QString path, QString text) {
     }
 }
 
+void Project::deleteFile(QString path) {
+    QFile file(path);
+    if (file.exists() && !file.remove()) {
+        qDebug() << QString("Could not delete file '%1': ").arg(path) + file.errorString();
+    }
+}
+
 void Project::readMapGroups() {
     QString text = readTextFile(root + "/data/maps/_groups.inc");
     if (text.isNull()) {
@@ -1098,6 +1160,41 @@ void Project::readCDefinesSorted(QString filepath, QStringList prefixes, QString
     }
 }
 
+void Project::readMapsWithConnections() {
+    QString path = root + "/data/maps/connections.inc";
+    QString text = readTextFile(path);
+    if (text.isNull()) {
+        return;
+    }
+
+    mapsWithConnections.clear();
+    QRegularExpression re("data\\/maps\\/(?<mapName>\\w+)\\/connections.inc");
+    QList<QStringList>* includes = parseAsm(text);
+    for (QStringList values : *includes) {
+        if (values.length() != 2)
+            continue;
+
+        QRegularExpressionMatch match = re.match(values.value(1));
+        if (match.hasMatch()) {
+            QString mapName = match.captured("mapName");
+            mapsWithConnections.append(mapName);
+        }
+    }
+}
+
+void Project::saveMapsWithConnections() {
+    QString path = root + "/data/maps/connections.inc";
+    QString text = "";
+    for (QString mapName : mapsWithConnections) {
+        if (mapNamesToMapConstants->contains(mapName)) {
+            text += QString("\t.include \"data/maps/%1/connections.inc\"\n").arg(mapName);
+        } else {
+            qDebug() << QString("Failed to write connection include. %1 not a valid map name").arg(mapName);
+        }
+    }
+    saveTextFile(path, text);
+}
+
 QStringList Project::getSongNames() {
     QStringList names;
     QString text = readTextFile(root + "/include/constants/songs.h");
@@ -1164,7 +1261,6 @@ void Project::loadObjectPixmaps(QList<Event*> objects) {
         }
 
         if (event_type == "object") {
-
             int sprite_id = constants.value(object->get("sprite"));
 
             QString info_label = pointers.value(sprite_id).replace("&", "");

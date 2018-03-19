@@ -26,6 +26,7 @@ public:
     QStringList *itemNames = NULL;
     QStringList *flagNames = NULL;
     QStringList *varNames = NULL;
+    QStringList mapsWithConnections;
 
     QMap<QString, Map*> *map_cache;
     Map* loadMap(QString);
@@ -41,6 +42,7 @@ public:
     QString readTextFile(QString path);
     void saveTextFile(QString path, QString text);
     void appendTextFile(QString path, QString text);
+    void deleteFile(QString path);
 
     void readMapGroups();
     Map* addNewMapToGroup(QString mapName, int groupNum);
@@ -53,6 +55,7 @@ public:
     void readMapAttributesTable();
     void readAllMapAttributes();
     void readMapAttributes(Map*);
+    void readMapsWithConnections();
     void getTilesets(Map*);
     void loadTilesetAssets(Tileset*);
 
@@ -97,6 +100,9 @@ private:
     QString getMapAttributesTableFilepath();
     QString getMapAssetsFilepath();
     void saveMapHeader(Map*);
+    void saveMapConnections(Map*);
+    void updateMapsWithConnections(Map*);
+    void saveMapsWithConnections();
     void saveMapAttributesTable();
     void updateMapAttributes(Map* map);
     void readCDefinesSorted(QString, QStringList, QStringList*);

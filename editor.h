@@ -9,10 +9,12 @@
 #include <QCheckBox>
 
 #include "project.h"
+#include "ui_mainwindow.h"
 
 class DraggablePixmapItem;
 class MapPixmapItem;
 class CollisionPixmapItem;
+class ConnectionPixmapItem;
 class MetatilesPixmapItem;
 class CollisionMetatilesPixmapItem;
 class ElevationMetatilesPixmapItem;
@@ -21,12 +23,12 @@ class Editor : public QObject
 {
     Q_OBJECT
 public:
-    Editor();
+    Editor(Ui::MainWindow* ui);
 public:
+    Ui::MainWindow* ui;
     QObject *parent = NULL;
     Project *project = NULL;
     Map *map = NULL;
-    QCheckBox *gridToggleCheckbox = NULL;
     void saveProject();
     void save();
     void undo();
@@ -44,6 +46,17 @@ public:
     void setEditingMap();
     void setEditingCollision();
     void setEditingObjects();
+    void setEditingConnections();
+    void setCurrentConnectionDirection(QString curDirection);
+    void updateCurrentConnectionDirection(QString curDirection);
+    void setConnectionsVisibility(bool visible);
+    void updateConnectionOffset(int offset);
+    void setConnectionMap(QString mapName);
+    void addNewConnection();
+    void removeCurrentConnection();
+    void updateDiveMap(QString mapName);
+    void updateEmergeMap(QString mapName);
+    void setSelectedConnectionFromMap(QString mapName);
 
     DraggablePixmapItem *addMapObject(Event *event);
     void selectMapObject(DraggablePixmapItem *object);
@@ -58,8 +71,11 @@ public:
     QGraphicsScene *scene = NULL;
     QGraphicsPixmapItem *current_view = NULL;
     MapPixmapItem *map_item = NULL;
+    ConnectionPixmapItem* selected_connection_item = NULL;
+    QList<ConnectionPixmapItem*> connection_edit_items;
     CollisionPixmapItem *collision_item = NULL;
     QGraphicsItemGroup *objects_group = NULL;
+    QList<QGraphicsPixmapItem*> borderItems;
 
     QGraphicsScene *scene_metatiles = NULL;
     QGraphicsScene *scene_collision_metatiles = NULL;
@@ -77,13 +93,34 @@ public:
     void objectsView_onMouseMove(QMouseEvent *event);
     void objectsView_onMouseRelease(QMouseEvent *event);
 
+private:
+    void setConnectionItemsVisible(bool);
+    void setBorderItemsVisible(bool, qreal = 1);
+    void setConnectionEditControlValues(Connection*);
+    void setConnectionEditControlsEnabled(bool);
+    void createConnectionItem(Connection* connection, bool hide);
+    void populateConnectionMapPickers();
+    void setDiveEmergeControls();
+    void updateDiveEmergeMap(QString mapName, QString direction);
+    void onConnectionOffsetChanged(int newOffset);
+    void removeMirroredConnection(Connection*);
+    void updateMirroredConnectionOffset(Connection*);
+    void updateMirroredConnectionDirection(Connection*, QString);
+    void updateMirroredConnectionMap(Connection*, QString);
+    void updateMirroredConnection(Connection*, QString, QString, bool isDelete = false);
+
 private slots:
     void mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item);
     void mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixmapItem *item);
+    void onConnectionMoved(Connection*);
+    void onConnectionItemSelected(ConnectionPixmapItem* connectionItem);
+    void onConnectionItemDoubleClicked(ConnectionPixmapItem* connectionItem);
+    void onConnectionDirectionChanged(QString newDirection);
 
 signals:
     void objectsChanged();
     void selectedObjectsChanged();
+    void loadMapRequested(QString, QString);
 };
 
 
@@ -238,6 +275,49 @@ protected:
     void mousePressEvent(QGraphicsSceneMouseEvent*);
     void mouseMoveEvent(QGraphicsSceneMouseEvent*);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent*);
+};
+
+class ConnectionPixmapItem : public QObject, public QGraphicsPixmapItem {
+    Q_OBJECT
+public:
+    ConnectionPixmapItem(QPixmap pixmap, Connection* connection, int x, int y, int baseMapWidth, int baseMapHeight): QGraphicsPixmapItem(pixmap) {
+        this->basePixmap = pixmap;
+        this->connection = connection;
+        setFlag(ItemIsMovable);
+        setFlag(ItemSendsGeometryChanges);
+        this->initialX = x;
+        this->initialY = y;
+        this->initialOffset = connection->offset.toInt();
+        this->baseMapWidth = baseMapWidth;
+        this->baseMapHeight = baseMapHeight;
+    }
+    void render(qreal opacity = 1) {
+        QPixmap newPixmap = basePixmap.copy(0, 0, basePixmap.width(), basePixmap.height());
+        if (opacity < 1) {
+            QPainter painter(&newPixmap);
+            int alpha = (int)(255 * (1 - opacity));
+            painter.fillRect(0, 0, newPixmap.width(), newPixmap.height(), QColor(0, 0, 0, alpha));
+            painter.end();
+        }
+        this->setPixmap(newPixmap);
+    }
+    int getMinOffset();
+    int getMaxOffset();
+    QPixmap basePixmap;
+    Connection* connection;
+    int initialX;
+    int initialY;
+    int initialOffset;
+    int baseMapWidth;
+    int baseMapHeight;
+protected:
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value);
+    void mousePressEvent(QGraphicsSceneMouseEvent*);
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent*);
+signals:
+    void connectionItemSelected(ConnectionPixmapItem* connectionItem);
+    void connectionItemDoubleClicked(ConnectionPixmapItem* connectionItem);
+    void connectionMoved(Connection*);
 };
 
 class MetatilesPixmapItem : public QObject, public QGraphicsPixmapItem {

@@ -4,7 +4,7 @@
 #include <QGraphicsView>
 #include <QMouseEvent>
 
-#include "editor.h"
+class Editor;
 
 /*
 class GraphicsView_Object : public QObject
@@ -26,7 +26,7 @@ public:
 
 public:
 //    GraphicsView_Object object;
-    Editor *editor = NULL;
+    Editor *editor;
 protected:
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
