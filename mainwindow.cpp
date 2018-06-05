@@ -509,7 +509,7 @@ void MainWindow::on_toolButton_newObject_clicked()
         DraggablePixmapItem *object = editor->addNewEvent();
         if (object) {
             //if (editor->selected_events->length()) {
-                editor->selectMapObject(object, true);
+                editor->selectMapEvent(object, true);
             //}
         }
         updateSelectedObjects();
@@ -526,7 +526,7 @@ void MainWindow::updateSelectedObjects() {
         events = editor->selected_events;
     }
 
-    QMap<QString, int> map_obj_gfx_constants = editor->project->getMapObjGfxConstants();
+    QMap<QString, int> event_obj_gfx_constants = editor->project->getEventObjGfxConstants();
 
     QList<ObjectPropertiesFrame *> frames;
 
@@ -593,7 +593,7 @@ void MainWindow::updateSelectedObjects() {
         if (event_type == "object") {
 
             frame->ui->sprite->setVisible(true);
-            frame->ui->comboBox_sprite->addItems(map_obj_gfx_constants.keys());
+            frame->ui->comboBox_sprite->addItems(event_obj_gfx_constants.keys());
             frame->ui->comboBox_sprite->setCurrentText(item->event->get("sprite"));
             connect(frame->ui->comboBox_sprite, SIGNAL(activated(QString)), item, SLOT(set_sprite(QString)));
 

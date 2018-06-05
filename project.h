@@ -81,8 +81,8 @@ public:
     void readFlagNames();
     void readVarNames();
 
-    void loadObjectPixmaps(QList<Event*> objects);
-    QMap<QString, int> getMapObjGfxConstants();
+    void loadEventPixmaps(QList<Event*> objects);
+    QMap<QString, int> getEventObjGfxConstants();
     QString fixGraphicPath(QString path);
 
     void readMapEvents(Map *map);

@@ -1207,13 +1207,13 @@ QStringList Project::getSongNames() {
     return names;
 }
 
-QMap<QString, int> Project::getMapObjGfxConstants() {
+QMap<QString, int> Project::getEventObjGfxConstants() {
     QMap<QString, int> constants;
-    QString text = readTextFile(root + "/include/constants/map_objects.h");
+    QString text = readTextFile(root + "/include/constants/event_objects.h");
     if (!text.isNull()) {
-        QStringList mapObjGfxPrefixes;
-        mapObjGfxPrefixes << "MAP_OBJ_GFX_";
-        constants = readCDefines(text, mapObjGfxPrefixes);
+        QStringList eventObjGfxPrefixes;
+        eventObjGfxPrefixes << "EVENT_OBJ_GFX_";
+        constants = readCDefines(text, eventObjGfxPrefixes);
     }
     return constants;
 }
@@ -1224,7 +1224,7 @@ QString Project::fixGraphicPath(QString path) {
     return path;
 }
 
-void Project::loadObjectPixmaps(QList<Event*> objects) {
+void Project::loadEventPixmaps(QList<Event*> objects) {
     bool needs_update = false;
     for (Event *object : objects) {
         if (object->pixmap.isNull()) {
@@ -1236,14 +1236,14 @@ void Project::loadObjectPixmaps(QList<Event*> objects) {
         return;
     }
 
-    QMap<QString, int> constants = getMapObjGfxConstants();
+    QMap<QString, int> constants = getEventObjGfxConstants();
 
-    QString pointers_text = readTextFile(root + "/src/data/field_map_obj/map_object_graphics_info_pointers.h");
-    QString info_text = readTextFile(root + "/src/data/field_map_obj/map_object_graphics_info.h");
-    QString pic_text = readTextFile(root + "/src/data/field_map_obj/map_object_pic_tables.h");
-    QString assets_text = readTextFile(root + "/src/event_object_movement.c");
+    QString pointers_text = readTextFile(root + "/src/data/field_event_obj/event_object_graphics_info_pointers.h");
+    QString info_text = readTextFile(root + "/src/data/field_event_obj/event_object_graphics_info.h");
+    QString pic_text = readTextFile(root + "/src/data/field_event_obj/event_object_pic_tables.h");
+    QString assets_text = readTextFile(root + "/src/data/field_event_obj/event_object_graphics.h");
 
-    QStringList pointers = readCArray(pointers_text, "gMapObjectGraphicsInfoPointers");
+    QStringList pointers = readCArray(pointers_text, "gEventObjectGraphicsInfoPointers");
 
     for (Event *object : objects) {
         if (!object->pixmap.isNull()) {
