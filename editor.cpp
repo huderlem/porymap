@@ -47,8 +47,8 @@ void Editor::setEditingMap() {
     if (collision_item) {
         collision_item->setVisible(false);
     }
-    if (objects_group) {
-        objects_group->setVisible(false);
+    if (events_group) {
+        events_group->setVisible(false);
     }
     setBorderItemsVisible(true);
     setConnectionItemsVisible(false);
@@ -64,8 +64,8 @@ void Editor::setEditingCollision() {
     if (map_item) {
         map_item->setVisible(false);
     }
-    if (objects_group) {
-        objects_group->setVisible(false);
+    if (events_group) {
+        events_group->setVisible(false);
     }
     setBorderItemsVisible(true);
     setConnectionItemsVisible(false);
@@ -73,8 +73,8 @@ void Editor::setEditingCollision() {
 
 void Editor::setEditingObjects() {
     current_view = map_item;
-    if (objects_group) {
-        objects_group->setVisible(true);
+    if (events_group) {
+        events_group->setVisible(true);
     }
     if (map_item) {
         map_item->setVisible(true);
@@ -108,8 +108,8 @@ void Editor::setEditingConnections() {
     if (collision_item) {
         collision_item->setVisible(false);
     }
-    if (objects_group) {
-        objects_group->setVisible(false);
+    if (events_group) {
+        events_group->setVisible(false);
     }
     setBorderItemsVisible(true, 0.4);
     setConnectionItemsVisible(true);
@@ -315,7 +315,7 @@ void Editor::setMap(QString map_name) {
         map = project->loadMap(map_name);
         displayMap();
         selected_events->clear();
-        updateSelectedObjects();
+        updateSelectedEvents();
     }
 }
 
@@ -359,8 +359,8 @@ void Editor::displayMap() {
     collision_item->draw();
     scene->addItem(collision_item);
 
-    objects_group = new EventGroup;
-    scene->addItem(objects_group);
+    events_group = new EventGroup;
+    scene->addItem(events_group);
 
     if (map_item) {
         map_item->setVisible(false);
@@ -368,8 +368,8 @@ void Editor::displayMap() {
     if (collision_item) {
         collision_item->setVisible(false);
     }
-    if (objects_group) {
-        objects_group->setVisible(false);
+    if (events_group) {
+        events_group->setVisible(false);
     }
 
     int tw = 16;
@@ -384,7 +384,7 @@ void Editor::displayMap() {
     displayMetatiles();
     displayCollisionMetatiles();
     displayElevationMetatiles();
-    displayMapObjects();
+    displayMapEvents();
     displayMapConnections();
     displayMapBorder();
     displayMapGrid();
@@ -411,26 +411,26 @@ void Editor::displayElevationMetatiles() {
     scene_elevation_metatiles->addItem(elevation_metatiles_item);
 }
 
-void Editor::displayMapObjects() {
-    for (QGraphicsItem *child : objects_group->childItems()) {
-        objects_group->removeFromGroup(child);
+void Editor::displayMapEvents() {
+    for (QGraphicsItem *child : events_group->childItems()) {
+        events_group->removeFromGroup(child);
     }
 
     QList<Event *> events = map->getAllEvents();
-    project->loadObjectPixmaps(events);
+    project->loadEventPixmaps(events);
     for (Event *event : events) {
-        addMapObject(event);
+        addMapEvent(event);
     }
     //objects_group->setFiltersChildEvents(false);
-    objects_group->setHandlesChildEvents(false);
+    events_group->setHandlesChildEvents(false);
 
     emit objectsChanged();
 }
 
-DraggablePixmapItem *Editor::addMapObject(Event *event) {
+DraggablePixmapItem *Editor::addMapEvent(Event *event) {
     DraggablePixmapItem *object = new DraggablePixmapItem(event);
     object->editor = this;
-    objects_group->addToGroup(object);
+    events_group->addToGroup(object);
     return object;
 }
 
@@ -1236,8 +1236,8 @@ void DraggablePixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *mouse) {
 
 void DraggablePixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouse) {
     if (clicking) {
-        this->editor->selectMapObject(this, mouse->modifiers() & Qt::ControlModifier);
-        this->editor->updateSelectedObjects();
+        this->editor->selectMapEvent(this, mouse->modifiers() & Qt::ControlModifier);
+        this->editor->updateSelectedEvents();
     }
     active = false;
 }
@@ -1245,7 +1245,7 @@ void DraggablePixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouse) {
 QList<DraggablePixmapItem *> *Editor::getObjects() {
     QList<DraggablePixmapItem *> *list = new QList<DraggablePixmapItem *>;
     for (Event *event : map->getAllEvents()) {
-        for (QGraphicsItem *child : objects_group->childItems()) {
+        for (QGraphicsItem *child : events_group->childItems()) {
             DraggablePixmapItem *item = (DraggablePixmapItem *)child;
             if (item->event == event) {
                 list->append(item);
@@ -1270,18 +1270,18 @@ void Editor::redrawObject(DraggablePixmapItem *item) {
     }
 }
 
-void Editor::updateSelectedObjects() {
+void Editor::updateSelectedEvents() {
     for (DraggablePixmapItem *item : *(getObjects())) {
         redrawObject(item);
     }
     emit selectedObjectsChanged();
 }
 
-void Editor::selectMapObject(DraggablePixmapItem *object) {
-    selectMapObject(object, false);
+void Editor::selectMapEvent(DraggablePixmapItem *object) {
+    selectMapEvent(object, false);
 }
 
-void Editor::selectMapObject(DraggablePixmapItem *object, bool toggle) {
+void Editor::selectMapEvent(DraggablePixmapItem *object, bool toggle) {
     if (selected_events && object) {
         if (selected_events->contains(object)) {
             if (toggle) {
@@ -1293,7 +1293,7 @@ void Editor::selectMapObject(DraggablePixmapItem *object, bool toggle) {
             }
             selected_events->append(object);
         }
-        updateSelectedObjects();
+        updateSelectedEvents();
     }
 }
 
@@ -1307,8 +1307,8 @@ DraggablePixmapItem* Editor::addNewEvent(QString event_type) {
         event->put("map_name", map->name);
         event->put("event_type", event_type);
         map->addEvent(event);
-        project->loadObjectPixmaps(map->getAllEvents());
-        DraggablePixmapItem *object = addMapObject(event);
+        project->loadEventPixmaps(map->getAllEvents());
+        DraggablePixmapItem *object = addMapEvent(event);
 
         return object;
     }
@@ -1354,7 +1354,7 @@ void Editor::objectsView_onMouseRelease(QMouseEvent *event) {
                 }
                 if (deselect) {
                     selected_events->clear();
-                    updateSelectedObjects();
+                    updateSelectedEvents();
                 }
             }
         }

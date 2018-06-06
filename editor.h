@@ -38,7 +38,7 @@ public:
     void displayMetatiles();
     void displayCollisionMetatiles();
     void displayElevationMetatiles();
-    void displayMapObjects();
+    void displayMapEvents();
     void displayMapConnections();
     void displayMapBorder();
     void displayMapGrid();
@@ -58,13 +58,13 @@ public:
     void updateEmergeMap(QString mapName);
     void setSelectedConnectionFromMap(QString mapName);
 
-    DraggablePixmapItem *addMapObject(Event *event);
-    void selectMapObject(DraggablePixmapItem *object);
-    void selectMapObject(DraggablePixmapItem *object, bool toggle);
+    DraggablePixmapItem *addMapEvent(Event *event);
+    void selectMapEvent(DraggablePixmapItem *object);
+    void selectMapEvent(DraggablePixmapItem *object, bool toggle);
     DraggablePixmapItem *addNewEvent();
     DraggablePixmapItem *addNewEvent(QString event_type);
     void deleteEvent(Event *);
-    void updateSelectedObjects();
+    void updateSelectedEvents();
     void redrawObject(DraggablePixmapItem *item);
     QList<DraggablePixmapItem *> *getObjects();
 
@@ -74,7 +74,7 @@ public:
     ConnectionPixmapItem* selected_connection_item = NULL;
     QList<ConnectionPixmapItem*> connection_edit_items;
     CollisionPixmapItem *collision_item = NULL;
-    QGraphicsItemGroup *objects_group = NULL;
+    QGraphicsItemGroup *events_group = NULL;
     QList<QGraphicsPixmapItem*> borderItems;
 
     QGraphicsScene *scene_metatiles = NULL;
@@ -161,7 +161,7 @@ public:
         QList<Event*> objects;
         objects.append(event);
         event->pixmap = QPixmap();
-        editor->project->loadObjectPixmaps(objects);
+        editor->project->loadEventPixmaps(objects);
         editor->redrawObject(this);
         emit spriteChanged(event->pixmap);
     }
