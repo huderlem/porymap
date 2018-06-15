@@ -1292,29 +1292,22 @@ void Project::saveMapEvents(Map *map) {
             Event *object_event = map->events["object"].value(i);
             int radius_x = object_event->getInt("radius_x");
             int radius_y = object_event->getInt("radius_y");
-            QString radius = QString("%1").arg((radius_x & 0xf) + ((radius_y & 0xf) << 4));
             uint16_t x = object_event->getInt("x");
             uint16_t y = object_event->getInt("y");
 
             text += QString("\tobject_event %1").arg(i + 1);
             text += QString(", %1").arg(object_event->get("sprite"));
             text += QString(", %1").arg(object_event->get("replacement"));
-            text += QString(", %1").arg(x & 0xff);
-            text += QString(", %1").arg((x >> 8) & 0xff);
-            text += QString(", %1").arg(y & 0xff);
-            text += QString(", %1").arg((y >> 8) & 0xff);
+            text += QString(", %1").arg(x);
+            text += QString(", %1").arg(y);
             text += QString(", %1").arg(object_event->get("elevation"));
             text += QString(", %1").arg(object_event->get("behavior"));
-            text += QString(", %1").arg(radius);
-            text += QString(", 0");
+            text += QString(", %1").arg(radius_x);
+            text += QString(", %1").arg(radius_y);
             text += QString(", %1").arg(object_event->get("property"));
-            text += QString(", 0");
             text += QString(", %1").arg(object_event->get("sight_radius"));
-            text += QString(", 0");
             text += QString(", %1").arg(object_event->get("script_label"));
             text += QString(", %1").arg(object_event->get("event_flag"));
-            text += QString(", 0");
-            text += QString(", 0");
             text += "\n";
         }
         text += "\n";
@@ -1422,34 +1415,15 @@ void Project::readMapEvents(Map *map) {
         if (command.value(0) == "object_event") {
             Event *object = new Event;
             object->put("map_name", map->name);
-            // This macro is not fixed as of writing, but it should take fewer args.
-            bool old_macro = false;
-            if (command.length() >= 20) {
-                command.removeAt(19);
-                command.removeAt(18);
-                command.removeAt(15);
-                command.removeAt(13);
-                command.removeAt(11);
-                command.removeAt(1); // id. not 0, but is just the index in the list of objects
-                old_macro = true;
-            }
-            int i = 1;
+            int i = 2;
             object->put("sprite", command.value(i++));
             object->put("replacement", command.value(i++));
-            int16_t x = command.value(i++).toInt(nullptr, 0) | (command.value(i++).toInt(nullptr, 0) << 8);
-            int16_t y = command.value(i++).toInt(nullptr, 0) | (command.value(i++).toInt(nullptr, 0) << 8);
-            object->put("x", x);
-            object->put("y", y);
+            object->put("x", command.value(i++).toInt(nullptr, 0));
+            object->put("y", command.value(i++).toInt(nullptr, 0));
             object->put("elevation", command.value(i++));
             object->put("behavior", command.value(i++));
-            if (old_macro) {
-                int radius = command.value(i++).toInt(nullptr, 0);
-                object->put("radius_x", radius & 0xf);
-                object->put("radius_y", (radius >> 4) & 0xf);
-            } else {
-                object->put("radius_x", command.value(i++));
-                object->put("radius_y", command.value(i++));
-            }
+            object->put("radius_x", command.value(i++).toInt(nullptr, 0));
+            object->put("radius_y", command.value(i++).toInt(nullptr, 0));
             object->put("property", command.value(i++));
             object->put("sight_radius", command.value(i++));
             object->put("script_label", command.value(i++));
