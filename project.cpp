@@ -179,7 +179,7 @@ void Project::setNewMapHeader(Map* map, int mapIndex) {
     map->events_label = QString("%1_MapEvents").arg(map->name);;
     map->scripts_label = QString("%1_MapScripts").arg(map->name);;
     map->connections_label = "0x0";
-    map->song = "BGM_DAN02";
+    map->song = "MUS_DAN02";
     map->layout_id = QString("%1").arg(mapIndex);
     map->location = "0";
     map->visibility = "0";
@@ -1102,7 +1102,7 @@ QStringList Project::getSongNames() {
     QString text = readTextFile(root + "/include/constants/songs.h");
     if (!text.isNull()) {
         QStringList songDefinePrefixes;
-        songDefinePrefixes << "SE_" << "BGM_";
+        songDefinePrefixes << "SE_" << "MUS_";
         QMap<QString, int> songDefines = readCDefines(text, songDefinePrefixes);
         names = songDefines.keys();
     }
