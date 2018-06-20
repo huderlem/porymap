@@ -19,10 +19,10 @@ public:
     QStringList *mapNames = NULL;
     QMap<QString, QString>* mapConstantsToMapNames;
     QMap<QString, QString>* mapNamesToMapConstants;
-    QMap<int, QString> mapAttributesTable;
-    QMap<int, QString> mapAttributesTableMaster;
-    QMap<QString, QMap<QString, QString>> mapAttributes;
-    QMap<QString, QMap<QString, QString>> mapAttributesMaster;
+    QList<QString> mapLayoutsTable;
+    QList<QString> mapLayoutsTableMaster;
+    QMap<QString, MapLayout*> mapLayouts;
+    QMap<QString, MapLayout*> mapLayoutsMaster;
     QStringList *itemNames = NULL;
     QStringList *flagNames = NULL;
     QStringList *varNames = NULL;
@@ -52,21 +52,21 @@ public:
     QList<QStringList>* getLabelMacros(QList<QStringList>*, QString);
     QStringList* getLabelValues(QList<QStringList>*, QString);
     void readMapHeader(Map*);
-    void readMapAttributesTable();
-    void readAllMapAttributes();
-    void readMapAttributes(Map*);
+    void readMapLayoutsTable();
+    void readAllMapLayouts();
+    QStringList* readLayoutValues(QString layoutName);
+    void readMapLayout(Map*);
     void readMapsWithConnections();
     void getTilesets(Map*);
     void loadTilesetAssets(Tileset*);
 
-    QString getBlockdataPath(Map*);
     void saveBlockdata(Map*);
     void saveMapBorder(Map*);
     void writeBlockdata(QString, Blockdata*);
     void saveAllMaps();
     void saveMap(Map*);
     void saveAllDataStructures();
-    void saveAllMapAttributes();
+    void saveAllMapLayouts();
     void saveMapGroupsTable();
     void saveMapConstantsHeader();
 
@@ -89,7 +89,6 @@ public:
     void loadMapConnections(Map *map);
 
     void loadMapBorder(Map *map);
-    QString getMapBorderPath(Map *map);
 
     void saveMapEvents(Map *map);
 
@@ -97,19 +96,19 @@ public:
     QString readCIncbin(QString text, QString label);
     QMap<QString, int> readCDefines(QString text, QStringList prefixes);
 private:
-    QString getMapAttributesTableFilepath();
-    QString getMapAssetsFilepath();
+    QString getMapLayoutsTableFilepath();
+    QString getMapLayoutFilepath(QString);
     void saveMapHeader(Map*);
     void saveMapConnections(Map*);
     void updateMapsWithConnections(Map*);
     void saveMapsWithConnections();
-    void saveMapAttributesTable();
-    void updateMapAttributes(Map* map);
+    void saveMapLayoutsTable();
+    void updateMapLayout(Map*);
     void readCDefinesSorted(QString, QStringList, QStringList*);
     void readCDefinesSorted(QString, QStringList, QStringList*, QString, int);
 
     void setNewMapHeader(Map* map, int mapIndex);
-    void setNewMapAttributes(Map* map);
+    void setNewMapLayout(Map* map);
     void setNewMapBlockdata(Map* map);
     void setNewMapBorder(Map *map);
     void setNewMapEvents(Map *map);

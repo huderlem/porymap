@@ -8,10 +8,6 @@
 
 Map::Map(QObject *parent) : QObject(parent)
 {
-    blockdata = new Blockdata;
-    cached_blockdata = new Blockdata;
-    cached_collision = new Blockdata;
-    cached_border = new Blockdata;
     paint_tile_index = 1;
     paint_collision = 0;
     paint_elevation = 3;
@@ -36,29 +32,29 @@ QString Map::mapConstantFromName(QString mapName) {
 }
 
 int Map::getWidth() {
-    return width.toInt(nullptr, 0);
+    return layout->width.toInt(nullptr, 0);
 }
 
 int Map::getHeight() {
-    return height.toInt(nullptr, 0);
+    return layout->height.toInt(nullptr, 0);
 }
 
 Tileset* Map::getBlockTileset(int metatile_index) {
-    int primary_size = 0x200;//tileset_primary->metatiles->length();
+    int primary_size = 0x200;
     if (metatile_index < primary_size) {
-        return tileset_primary;
+        return layout->tileset_primary;
     } else {
-        return tileset_secondary;
+        return layout->tileset_secondary;
     }
 }
 
 QList<QList<QRgb>> Map::getBlockPalettes(int metatile_index) {
     QList<QList<QRgb>> palettes;
     for (int i = 0; i < 6; i++) {
-        palettes.append(tileset_primary->palettes->at(i));
+        palettes.append(layout->tileset_primary->palettes->at(i));
     }
-    for (int i = 6; i < tileset_secondary->palettes->length(); i++) {
-        palettes.append(tileset_secondary->palettes->at(i));
+    for (int i = 6; i < layout->tileset_secondary->palettes->length(); i++) {
+        palettes.append(layout->tileset_secondary->palettes->at(i));
     }
     return palettes;
 }
@@ -73,18 +69,18 @@ int Map::getBlockIndex(int index) {
 }
 
 int Map::getSelectedBlockIndex(int index) {
-    if (index < tileset_primary->metatiles->length()) {
+    if (index < layout->tileset_primary->metatiles->length()) {
         return index;
     } else {
-        return 0x200 + (index - tileset_primary->metatiles->length());
+        return 0x200 + (index - layout->tileset_primary->metatiles->length());
     }
 }
 
 int Map::getDisplayedBlockIndex(int index) {
-    if (index < tileset_primary->metatiles->length()) {
+    if (index < layout->tileset_primary->metatiles->length()) {
         return index;
     } else {
-        return index - 0x200 + tileset_primary->metatiles->length();
+        return index - 0x200 + layout->tileset_primary->metatiles->length();
     }
 }
 
@@ -205,58 +201,58 @@ bool Map::blockChanged(int i, Blockdata *cache) {
     if (cache == NULL || cache == nullptr) {
         return true;
     }
-    if (blockdata == NULL || blockdata == nullptr) {
+    if (layout->blockdata == NULL || layout->blockdata == nullptr) {
         return true;
     }
     if (cache->blocks == NULL || cache->blocks == nullptr) {
         return true;
     }
-    if (blockdata->blocks == NULL || blockdata->blocks == nullptr) {
+    if (layout->blockdata->blocks == NULL || layout->blockdata->blocks == nullptr) {
         return true;
     }
     if (cache->blocks->length() <= i) {
         return true;
     }
-    if (blockdata->blocks->length() <= i) {
+    if (layout->blockdata->blocks->length() <= i) {
         return true;
     }
-    return blockdata->blocks->value(i) != cache->blocks->value(i);
+    return layout->blockdata->blocks->value(i) != cache->blocks->value(i);
 }
 
 void Map::cacheBorder() {
-    if (cached_border) delete cached_border;
-    cached_border = new Blockdata;
-    if (border && border->blocks) {
-        for (int i = 0; i < border->blocks->length(); i++) {
-            Block block = border->blocks->value(i);
-            cached_border->blocks->append(block);
+    if (layout->cached_border) delete layout->cached_border;
+    layout->cached_border = new Blockdata;
+    if (layout->border && layout->border->blocks) {
+        for (int i = 0; i < layout->border->blocks->length(); i++) {
+            Block block = layout->border->blocks->value(i);
+            layout->cached_border->blocks->append(block);
         }
     }
 }
 
 void Map::cacheBlockdata() {
-    if (cached_blockdata) delete cached_blockdata;
-    cached_blockdata = new Blockdata;
-    if (blockdata && blockdata->blocks) {
-        for (int i = 0; i < blockdata->blocks->length(); i++) {
-            Block block = blockdata->blocks->value(i);
-            cached_blockdata->blocks->append(block);
+    if (layout->cached_blockdata) delete layout->cached_blockdata;
+    layout->cached_blockdata = new Blockdata;
+    if (layout->blockdata && layout->blockdata->blocks) {
+        for (int i = 0; i < layout->blockdata->blocks->length(); i++) {
+            Block block = layout->blockdata->blocks->value(i);
+            layout->cached_blockdata->blocks->append(block);
         }
     }
 }
 
 void Map::cacheCollision() {
-    if (cached_collision) delete cached_collision;
-    cached_collision = new Blockdata;
-    if (blockdata && blockdata->blocks) {
-        for (int i = 0; i < blockdata->blocks->length(); i++) {
-            Block block = blockdata->blocks->value(i);
-            cached_collision->blocks->append(block);
+    if (layout->cached_collision) delete layout->cached_collision;
+    layout->cached_collision = new Blockdata;
+    if (layout->blockdata && layout->blockdata->blocks) {
+        for (int i = 0; i < layout->blockdata->blocks->length(); i++) {
+            Block block = layout->blockdata->blocks->value(i);
+            layout->cached_collision->blocks->append(block);
         }
     }
 }
 
-QPixmap Map::renderCollision() {
+QPixmap Map::renderCollision(bool ignoreCache) {
     bool changed_any = false;
     int width_ = getWidth();
     int height_ = getHeight();
@@ -268,17 +264,17 @@ QPixmap Map::renderCollision() {
         collision_image = QImage(width_ * 16, height_ * 16, QImage::Format_RGBA8888);
         changed_any = true;
     }
-    if (!(blockdata && blockdata->blocks && width_ && height_)) {
+    if (!(layout->blockdata && layout->blockdata->blocks && width_ && height_)) {
         collision_pixmap = collision_pixmap.fromImage(collision_image);
         return collision_pixmap;
     }
     QPainter painter(&collision_image);
-    for (int i = 0; i < blockdata->blocks->length(); i++) {
-        if (cached_collision && !blockChanged(i, cached_collision)) {
+    for (int i = 0; i < layout->blockdata->blocks->length(); i++) {
+        if (!ignoreCache && layout->cached_collision && !blockChanged(i, layout->cached_collision)) {
             continue;
         }
         changed_any = true;
-        Block block = blockdata->blocks->value(i);
+        Block block = layout->blockdata->blocks->value(i);
         QImage metatile_image = getMetatileImage(block.tile);
         QImage collision_metatile_image = getCollisionMetatileImage(block);
         QImage elevation_metatile_image = getElevationMetatileImage(block);
@@ -324,7 +320,7 @@ QPixmap Map::renderCollision() {
     return collision_pixmap;
 }
 
-QPixmap Map::render() {
+QPixmap Map::render(bool ignoreCache = false) {
     bool changed_any = false;
     int width_ = getWidth();
     int height_ = getHeight();
@@ -336,18 +332,18 @@ QPixmap Map::render() {
         image = QImage(width_ * 16, height_ * 16, QImage::Format_RGBA8888);
         changed_any = true;
     }
-    if (!(blockdata && blockdata->blocks && width_ && height_)) {
+    if (!(layout->blockdata && layout->blockdata->blocks && width_ && height_)) {
         pixmap = pixmap.fromImage(image);
         return pixmap;
     }
 
     QPainter painter(&image);
-    for (int i = 0; i < blockdata->blocks->length(); i++) {
-        if (!blockChanged(i, cached_blockdata)) {
+    for (int i = 0; i < layout->blockdata->blocks->length(); i++) {
+        if (!ignoreCache && !blockChanged(i, layout->cached_blockdata)) {
             continue;
         }
         changed_any = true;
-        Block block = blockdata->blocks->value(i);
+        Block block = layout->blockdata->blocks->value(i);
         QImage metatile_image = getMetatileImage(block.tile);
         int map_y = width_ ? i / width_ : 0;
         int map_x = width_ ? i % width_ : 0;
@@ -366,21 +362,21 @@ QPixmap Map::renderBorder() {
     bool changed_any = false;
     int width_ = 2;
     int height_ = 2;
-    if (border_image.isNull()) {
-        border_image = QImage(width_ * 16, height_ * 16, QImage::Format_RGBA8888);
+    if (layout->border_image.isNull()) {
+        layout->border_image = QImage(width_ * 16, height_ * 16, QImage::Format_RGBA8888);
         changed_any = true;
     }
-    if (!(border && border->blocks)) {
-        border_pixmap = border_pixmap.fromImage(border_image);
-        return border_pixmap;
+    if (!(layout->border && layout->border->blocks)) {
+        layout->border_pixmap = layout->border_pixmap.fromImage(layout->border_image);
+        return layout->border_pixmap;
     }
-    QPainter painter(&border_image);
-    for (int i = 0; i < border->blocks->length(); i++) {
-        if (!blockChanged(i, cached_border)) {
+    QPainter painter(&layout->border_image);
+    for (int i = 0; i < layout->border->blocks->length(); i++) {
+        if (!blockChanged(i, layout->cached_border)) {
             continue;
         }
         changed_any = true;
-        Block block = border->blocks->value(i);
+        Block block = layout->border->blocks->value(i);
         QImage metatile_image = getMetatileImage(block.tile);
         int map_y = i / width_;
         int map_x = i % width_;
@@ -389,9 +385,9 @@ QPixmap Map::renderBorder() {
     painter.end();
     if (changed_any) {
         cacheBorder();
-        border_pixmap = border_pixmap.fromImage(border_image);
+        layout->border_pixmap = layout->border_pixmap.fromImage(layout->border_image);
     }
-    return border_pixmap;
+    return layout->border_pixmap;
 }
 
 QPixmap Map::renderConnection(Connection connection) {
@@ -482,11 +478,12 @@ void Map::drawSelection(int i, int w, int selectionWidth, int selectionHeight, Q
 }
 
 QPixmap Map::renderMetatiles() {
-    if (!tileset_primary || !tileset_primary->metatiles || !tileset_secondary || !tileset_secondary->metatiles) {
+    if (!layout->tileset_primary || !layout->tileset_primary->metatiles
+     || !layout->tileset_secondary || !layout->tileset_secondary->metatiles) {
         return QPixmap();
     }
-    int primary_length = tileset_primary->metatiles->length();
-    int length_ = primary_length + tileset_secondary->metatiles->length();
+    int primary_length = layout->tileset_primary->metatiles->length();
+    int length_ = primary_length + layout->tileset_secondary->metatiles->length();
     int width_ = 8;
     int height_ = length_ / width_;
     QImage image(width_ * 16, height_ * 16, QImage::Format_RGBA8888);
@@ -510,11 +507,11 @@ QPixmap Map::renderMetatiles() {
 }
 
 Block* Map::getBlock(int x, int y) {
-    if (blockdata && blockdata->blocks) {
+    if (layout->blockdata && layout->blockdata->blocks) {
         if (x >= 0 && x < getWidth())
         if (y >= 0 && y < getHeight()) {
             int i = y * getWidth() + x;
-            return new Block(blockdata->blocks->value(i));
+            return new Block(layout->blockdata->blocks->value(i));
         }
     }
     return NULL;
@@ -522,8 +519,8 @@ Block* Map::getBlock(int x, int y) {
 
 void Map::_setBlock(int x, int y, Block block) {
     int i = y * getWidth() + x;
-    if (blockdata && blockdata->blocks) {
-        blockdata->blocks->replace(i, block);
+    if (layout->blockdata && layout->blockdata->blocks) {
+        layout->blockdata->blocks->replace(i, block);
     }
 }
 
@@ -660,29 +657,29 @@ void Map::_floodFillCollisionElevation(int x, int y, uint collision, uint elevat
 
 
 void Map::undo() {
-    if (blockdata) {
+    if (layout->blockdata) {
         Blockdata *commit = history.back();
         if (commit != NULL) {
-            blockdata->copyFrom(commit);
+            layout->blockdata->copyFrom(commit);
             emit mapChanged(this);
         }
     }
 }
 
 void Map::redo() {
-    if (blockdata) {
+    if (layout->blockdata) {
         Blockdata *commit = history.next();
         if (commit != NULL) {
-            blockdata->copyFrom(commit);
+            layout->blockdata->copyFrom(commit);
             emit mapChanged(this);
         }
     }
 }
 
 void Map::commit() {
-    if (blockdata) {
-        if (!blockdata->equals(history.current())) {
-            Blockdata* commit = blockdata->copy();
+    if (layout->blockdata) {
+        if (!layout->blockdata->equals(history.current())) {
+            Blockdata* commit = layout->blockdata->copy();
             history.push(commit);
             emit mapChanged(this);
         }
@@ -752,7 +749,7 @@ void Map::addEvent(Event *event) {
 }
 
 bool Map::hasUnsavedChanges() {
-    return !history.isSaved() || !isPersistedToFile;
+    return !history.isSaved() || !isPersistedToFile || layout->has_unsaved_changes;
 }
 
 void Map::hoveredTileChanged(int x, int y, int block) {

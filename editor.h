@@ -237,7 +237,7 @@ public:
     virtual void select(QGraphicsSceneMouseEvent*);
     virtual void undo();
     virtual void redo();
-    virtual void draw();
+    virtual void draw(bool ignoreCache = false);
 
 private:
     void updateCurHoveredTile(QPointF pos);
@@ -266,7 +266,7 @@ public:
     virtual void paint(QGraphicsSceneMouseEvent*);
     virtual void floodFill(QGraphicsSceneMouseEvent*);
     virtual void pick(QGraphicsSceneMouseEvent*);
-    virtual void draw();
+    virtual void draw(bool ignoreCache = false);
 
 signals:
     void mouseEvent(QGraphicsSceneMouseEvent *, CollisionPixmapItem *);
