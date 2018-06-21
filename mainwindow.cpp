@@ -285,8 +285,8 @@ void MainWindow::on_checkBox_ShowLocation_clicked(bool checked)
 
 void MainWindow::loadDataStructures() {
     Project *project = editor->project;
-    project->readMapAttributesTable();
-    project->readAllMapAttributes();
+    project->readMapLayoutsTable();
+    project->readAllMapLayouts();
     project->readItemNames();
     project->readFlagNames();
     project->readVarNames();
@@ -761,6 +761,7 @@ void MainWindow::onLoadMapRequested(QString mapName, QString fromMapName) {
 }
 
 void MainWindow::onMapChanged(Map *map) {
+    map->layout->has_unsaved_changes = true;
     updateMapList();
 }
 

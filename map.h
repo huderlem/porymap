@@ -68,6 +68,37 @@ public:
     QString map_name;
 };
 
+class MapLayout {
+public:
+    MapLayout() {}
+    int index;
+    QString name;
+    QString label;
+    QString width;
+    QString height;
+    QString border_label;
+    QString border_path;
+    QString blockdata_label;
+    QString blockdata_path;
+    QString tileset_primary_label;
+    QString tileset_secondary_label;
+    Tileset *tileset_primary = NULL;
+    Tileset *tileset_secondary = NULL;
+    Blockdata* blockdata = NULL;
+    QImage border_image;
+    QPixmap border_pixmap;
+    Blockdata *border = NULL;
+    Blockdata *cached_blockdata = NULL;
+    Blockdata *cached_collision = NULL;
+    Blockdata *cached_border = NULL;
+    bool has_unsaved_changes = false;
+public:
+    static QString getNameFromLabel(QString label) {
+        // ASSUMPTION: strip off "_Layout" from layout label. Directories in 'data/layouts/' must be well-formed.
+        return label.replace(label.lastIndexOf("_Layout"), label.length(), "");
+    }
+};
+
 class Map : public QObject
 {
     Q_OBJECT
@@ -78,12 +109,12 @@ public:
     QString name;
     QString constantName;
     QString group_num;
-    QString attributes_label;
+    QString layout_label;
     QString events_label;
     QString scripts_label;
     QString connections_label;
     QString song;
-    QString index;
+    QString layout_id;
     QString location;
     QString visibility;
     QString weather;
@@ -91,18 +122,7 @@ public:
     QString unknown;
     QString show_location;
     QString battle_scene;
-
-    QString width;
-    QString height;
-    QString border_label;
-    QString blockdata_label;
-    QString tileset_primary_label;
-    QString tileset_secondary_label;
-
-    Tileset *tileset_primary = NULL;
-    Tileset *tileset_secondary = NULL;
-
-    Blockdata* blockdata = NULL;
+    MapLayout *layout;
 
     bool isPersistedToFile = true;
 
@@ -112,16 +132,16 @@ public:
     int getWidth();
     int getHeight();
     Tileset* getBlockTileset(int);
-    int getBlockIndex(int index);
-    int getSelectedBlockIndex(int index);
-    int getDisplayedBlockIndex(int index);
+    int getBlockIndex(int layout_id);
+    int getSelectedBlockIndex(int layout_id);
+    int getDisplayedBlockIndex(int layout_id);
     Metatile* getMetatile(int);
     QImage getMetatileImage(int);
     QImage getMetatileTile(int);
-    QPixmap render();
+    QPixmap render(bool ignoreCache);
     QPixmap renderMetatiles();
 
-    QPixmap renderCollision();
+    QPixmap renderCollision(bool ignoreCache);
     QImage collision_image;
     QPixmap collision_pixmap;
     QImage getCollisionMetatileImage(Block);
@@ -134,9 +154,7 @@ public:
     void drawSelection(int i, int w, int selectionWidth, int selectionHeight, QPainter *painter);
 
     bool blockChanged(int, Blockdata*);
-    Blockdata* cached_blockdata = NULL;
     void cacheBlockdata();
-    Blockdata* cached_collision = NULL;
     void cacheCollision();
     QImage image;
     QPixmap pixmap;
@@ -185,10 +203,6 @@ public:
     QList<QGraphicsPixmapItem*> connection_items;
     QPixmap renderConnection(Connection);
 
-    QImage border_image;
-    QPixmap border_pixmap;
-    Blockdata *border = NULL;
-    Blockdata *cached_border = NULL;
     QPixmap renderBorder();
     void cacheBorder();
 

@@ -349,14 +349,14 @@ void Editor::displayMap() {
     connect(map_item, SIGNAL(mouseEvent(QGraphicsSceneMouseEvent*,MapPixmapItem*)),
             this, SLOT(mouseEvent_map(QGraphicsSceneMouseEvent*,MapPixmapItem*)));
 
-    map_item->draw();
+    map_item->draw(true);
     scene->addItem(map_item);
 
     collision_item = new CollisionPixmapItem(map);
     connect(collision_item, SIGNAL(mouseEvent(QGraphicsSceneMouseEvent*,CollisionPixmapItem*)),
             this, SLOT(mouseEvent_collision(QGraphicsSceneMouseEvent*,CollisionPixmapItem*)));
 
-    collision_item->draw();
+    collision_item->draw(true);
     scene->addItem(collision_item);
 
     events_group = new EventGroup;
@@ -1077,9 +1077,9 @@ void MapPixmapItem::select(QGraphicsSceneMouseEvent *event) {
     }
 }
 
-void MapPixmapItem::draw() {
+void MapPixmapItem::draw(bool ignoreCache) {
     if (map) {
-        setPixmap(map->render());
+        setPixmap(map->render(ignoreCache));
     }
 }
 
@@ -1104,7 +1104,7 @@ void MapPixmapItem::updateCurHoveredTile(QPointF pos) {
     if (x < 0 || x >= map->getWidth() || y < 0 || y >= map->getHeight()) {
         map->clearHoveredTile();
     } else {
-        int tile = map->blockdata->blocks->at(blockIndex).tile;
+        int tile = map->layout->blockdata->blocks->at(blockIndex).tile;
         map->hoveredTileChanged(x, y, tile);
     }
 }
@@ -1141,9 +1141,9 @@ void CollisionPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
     emit mouseEvent(event, this);
 }
 
-void CollisionPixmapItem::draw() {
+void CollisionPixmapItem::draw(bool ignoreCache) {
     if (map) {
-        setPixmap(map->renderCollision());
+        setPixmap(map->renderCollision(ignoreCache));
     }
 }
 

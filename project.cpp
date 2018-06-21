@@ -49,10 +49,7 @@ Map* Project::loadMap(QString map_name) {
     }
 
     readMapHeader(map);
-    readMapAttributes(map);
-    getTilesets(map);
-    loadBlockdata(map);
-    loadMapBorder(map);
+    readMapLayout(map);
     readMapEvents(map);
     loadMapConnections(map);
     map->commit();
@@ -136,9 +133,12 @@ QStringList* Project::getLabelValues(QList<QStringList> *list, QString label) {
         QStringList params = list->value(i);
         QString macro = params.value(0);
         // Ignore .align
-        if (macro == ".align") {
+        if (macro == ".align")
             continue;
-        }
+        if (macro == ".ifdef")
+            continue;
+        if (macro == ".ifndef")
+            continue;
         for (int j = 1; j < params.length(); j++) {
             values->append(params.value(j));
         }
@@ -159,12 +159,12 @@ void Project::readMapHeader(Map* map) {
         return;
     }
     QStringList *header = getLabelValues(parser->parseAsm(header_text), label);
-    map->attributes_label = header->value(0);
+    map->layout_label = header->value(0);
     map->events_label = header->value(1);
     map->scripts_label = header->value(2);
     map->connections_label = header->value(3);
     map->song = header->value(4);
-    map->index = header->value(5);
+    map->layout_id = header->value(5);
     map->location = header->value(6);
     map->visibility = header->value(7);
     map->weather = header->value(8);
@@ -175,12 +175,12 @@ void Project::readMapHeader(Map* map) {
 }
 
 void Project::setNewMapHeader(Map* map, int mapIndex) {
-    map->attributes_label = QString("%1_MapAttributes").arg(map->name);
+    map->layout_label = QString("%1_Layout").arg(map->name);
     map->events_label = QString("%1_MapEvents").arg(map->name);;
     map->scripts_label = QString("%1_MapScripts").arg(map->name);;
     map->connections_label = "0x0";
-    map->song = "BGM_DAN02";
-    map->index = QString("%1").arg(mapIndex);
+    map->song = "MUS_DAN02";
+    map->layout_id = QString("%1").arg(mapIndex);
     map->location = "0";
     map->visibility = "0";
     map->weather = "2";
@@ -195,7 +195,7 @@ void Project::saveMapHeader(Map *map) {
     QString header_path = root + "/data/maps/" + label + "/header.inc";
     QString text = "";
     text += QString("%1::\n").arg(label);
-    text += QString("\t.4byte %1\n").arg(map->attributes_label);
+    text += QString("\t.4byte %1\n").arg(map->layout_label);
     text += QString("\t.4byte %1\n").arg(map->events_label);
     text += QString("\t.4byte %1\n").arg(map->scripts_label);
 
@@ -207,7 +207,7 @@ void Project::saveMapHeader(Map *map) {
     text += QString("\t.4byte %1\n").arg(map->connections_label);
 
     text += QString("\t.2byte %1\n").arg(map->song);
-    text += QString("\t.2byte %1\n").arg(map->index);
+    text += QString("\t.2byte %1\n").arg(map->layout_id);
     text += QString("\t.byte %1\n").arg(map->location);
     text += QString("\t.byte %1\n").arg(map->visibility);
     text += QString("\t.byte %1\n").arg(map->weather);
@@ -260,269 +260,180 @@ void Project::updateMapsWithConnections(Map *map) {
     }
 }
 
-void Project::readMapAttributesTable() {
-    int curMapIndex = 1;
-    QString attributesText = readTextFile(getMapAttributesTableFilepath());
-    QList<QStringList>* values = parseAsm(attributesText);
-    bool inAttributePointers = false;
+void Project::readMapLayoutsTable() {
+    int curIndex = 1;
+    QString layoutsText = readTextFile(getMapLayoutsTableFilepath());
+    QList<QStringList>* values = parseAsm(layoutsText);
+    bool inLayoutPointers = false;
     for (int i = 0; i < values->length(); i++) {
         QStringList params = values->value(i);
         QString macro = params.value(0);
         if (macro == ".label") {
-            if (inAttributePointers) {
+            if (inLayoutPointers) {
                 break;
             }
-            if (params.value(1) == "gMapAttributes") {
-                inAttributePointers = true;
+            if (params.value(1) == "gMapLayouts") {
+                inLayoutPointers = true;
             }
-        } else if (macro == ".4byte" && inAttributePointers) {
-            QString mapName = params.value(1);
-            if (!mapName.contains("UnknownMapAttributes")) {
-                // Strip off "_MapAttributes" from the label if it's a real map label.
-                mapName = mapName.remove(mapName.length() - 14, 14);
-            }
-            mapAttributesTable.insert(curMapIndex, mapName);
-            curMapIndex++;
+        } else if (macro == ".4byte" && inLayoutPointers) {
+            QString layoutName = params.value(1);
+            mapLayoutsTable.append(layoutName);
         }
     }
 
     // Deep copy
-    mapAttributesTableMaster = mapAttributesTable;
-    mapAttributesTableMaster.detach();
+    mapLayoutsTableMaster = mapLayoutsTable;
+    mapLayoutsTableMaster.detach();
 }
 
-void Project::saveMapAttributesTable() {
+void Project::saveMapLayoutsTable() {
     QString text = "";
     text += QString("\t.align 2\n");
-    text += QString("gMapAttributes::\n");
-    for (int i = 0; i < mapAttributesTableMaster.count(); i++) {
-        int mapIndex = i + 1;
-        QString mapName = mapAttributesTableMaster.value(mapIndex);
-        if (!mapName.contains("UnknownMapAttributes")) {
-            text += QString("\t.4byte %1_MapAttributes\n").arg(mapName);
-        } else {
-            text += QString("\t.4byte %1\n").arg(mapName);
-        }
+    text += QString("gMapLayouts::\n");
+    for (QString layoutName : mapLayoutsTableMaster) {
+        text += QString("\t.4byte %1\n").arg(layoutName);
     }
-    saveTextFile(getMapAttributesTableFilepath(), text);
+    saveTextFile(getMapLayoutsTableFilepath(), text);
 }
 
-QString Project::getMapAttributesTableFilepath() {
-    return QString("%1/data/maps/attributes_table.inc").arg(root);
+QString Project::getMapLayoutsTableFilepath() {
+    return QString("%1/data/layouts_table.inc").arg(root);
 }
 
-void Project::readMapAttributes(Map* map) {
+QStringList* Project::readLayoutValues(QString layoutLabel) {
+    ParseUtil *parser = new ParseUtil;
+
+    QString layoutText = readTextFile(getMapLayoutFilepath(layoutLabel));
+    if (layoutText.isNull()) {
+        return NULL;
+    }
+
+    QStringList *layoutValues = getLabelValues(parser->parseAsm(layoutText), layoutLabel);
+    QString borderLabel = layoutValues->value(2);
+    QString blockdataLabel = layoutValues->value(3);
+    QStringList *borderValues = getLabelValues(parser->parseAsm(layoutText), borderLabel);
+    QString borderPath = borderValues->value(0).replace("\"", "");
+    layoutValues->append(borderPath);
+    QStringList *blockdataValues = getLabelValues(parser->parseAsm(layoutText), blockdataLabel);
+    QString blockdataPath = blockdataValues->value(0).replace("\"", "");
+    layoutValues->append(blockdataPath);
+
+    if (layoutValues->size() != 8) {
+        qDebug() << "Error: Unexpected number of properties in layout '" << layoutLabel << "'";
+        return NULL;
+    }
+
+    return layoutValues;
+}
+
+void Project::readMapLayout(Map* map) {
     if (!map->isPersistedToFile) {
         return;
     }
 
-    ParseUtil *parser = new ParseUtil;
+    MapLayout *layout;
+    if (!mapLayouts.contains(map->layout_label)) {
+        QStringList *layoutValues = readLayoutValues(map->layout->label);
+        if (layoutValues == NULL) {
+            return;
+        }
 
-    QString assets_text = readTextFile(getMapAssetsFilepath());
-    if (assets_text.isNull()) {
-        return;
+        layout = new MapLayout();
+        mapLayouts.insert(map->layout_label, layout);
+        layout->name = MapLayout::getNameFromLabel(map->layout_label);
+        layout->label = map->layout_label;
+        layout->width = layoutValues->value(0);
+        layout->height = layoutValues->value(1);
+        layout->border_label = layoutValues->value(2);
+        layout->blockdata_label = layoutValues->value(3);
+        layout->tileset_primary_label = layoutValues->value(4);
+        layout->tileset_secondary_label = layoutValues->value(5);
+        layout->border_path = layoutValues->value(6);
+        layout->blockdata_path = layoutValues->value(7);
+        map->layout = layout;
+    } else {
+        map->layout = mapLayouts[map->layout_label];
     }
-    QStringList *attributes = getLabelValues(parser->parseAsm(assets_text), map->attributes_label);
-    map->width = attributes->value(0);
-    map->height = attributes->value(1);
-    map->border_label = attributes->value(2);
-    map->blockdata_label = attributes->value(3);
-    map->tileset_primary_label = attributes->value(4);
-    map->tileset_secondary_label = attributes->value(5);
+
+    getTilesets(map);
+    loadBlockdata(map);
+    loadMapBorder(map);
 }
 
-void Project::readAllMapAttributes() {
-    mapAttributes.clear();
+void Project::readAllMapLayouts() {
+    mapLayouts.clear();
 
-    ParseUtil *parser = new ParseUtil;
-    QString assets_text = readTextFile(getMapAssetsFilepath());
-    if (assets_text.isNull()) {
-        return;
-    }
-
-    QList<QStringList> *commands = parser->parseAsm(assets_text);
-
-    // Assume the _assets.inc file is grouped consistently in the order of:
-    // 1. <map_name>_MapBorder
-    // 2. <map_name>_MapBlockdata
-    // 3. <map_name>_MapAttributes
-    int i = 0;
-    while (i < commands->length()) {
-        // Read MapBorder assets.
-        QStringList borderParams = commands->value(i++);
-        bool isUnknownMapBorder = borderParams.value(1).startsWith("UnknownMapBorder_");
-        if (borderParams.value(0) != ".label" || (!borderParams.value(1).endsWith("_MapBorder") && !isUnknownMapBorder)) {
-            qDebug() << QString("Expected MapBorder label, but found %1").arg(borderParams.value(1));
-            continue;
-        }
-        QString borderLabel = borderParams.value(1);
-        QString mapName;
-        if (!isUnknownMapBorder) {
-            mapName = borderLabel.remove(borderLabel.length() - 10, 10);
-        } else {
-            // Unknown map name has to match the MapAttributes label.
-            mapName = borderLabel.replace("Border", "Attributes");
+    for (int i = 0; i < mapLayoutsTable.size(); i++) {
+        QString layoutLabel = mapLayoutsTable[i];
+        QStringList *layoutValues = readLayoutValues(layoutLabel);
+        if (layoutValues == NULL) {
+            return;
         }
 
-        mapAttributes[mapName].insert("border_label", borderParams.value(1));
-        borderParams = commands->value(i++);
-        mapAttributes[mapName].insert("border_filepath", borderParams.value(1).replace("\"", ""));
-
-        // Read MapBlockData assets.
-        QStringList blockDataParams = commands->value(i++);
-        bool isUnknownMapBlockdata = blockDataParams.value(1).startsWith("UnknownMapBlockdata_");
-        if (blockDataParams.value(0) != ".label" || (!blockDataParams.value(1).endsWith("_MapBlockdata") && !isUnknownMapBlockdata)) {
-            qDebug() << QString("Expected MapBlockdata label, but found %1").arg(blockDataParams.value(1));
-            continue;
-        }
-        QString blockDataLabel = blockDataParams.value(1);
-        mapAttributes[mapName].insert("blockdata_label", blockDataLabel);
-        blockDataParams = commands->value(i++);
-        mapAttributes[mapName].insert("blockdata_filepath", blockDataParams.value(1).replace("\"", ""));
-
-        // Read MapAttributes assets.
-        i++; // skip .align
-        // Maps can share MapAttributes, so  gather a list of them.
-        QStringList attributeMapLabels;
-        QStringList attributesParams;
-        QStringList* sharedAttrMaps = new QStringList;
-        while (i < commands->length()) {
-            attributesParams = commands->value(i);
-            if (attributesParams.value(0) != ".label") {
-                break;
-            }
-            QString attrLabel = attributesParams.value(1);
-            attributeMapLabels.append(attrLabel);
-            sharedAttrMaps->append(attrLabel);
-            i++;
-        }
-
-        // Apply the map attributes to each of the shared maps.
-        QString attrWidth = commands->value(i++).value(1);
-        QString attrHeight = commands->value(i++).value(1);
-        QString attrBorderLabel = commands->value(i++).value(1);
-        QString attrBlockdataLabel = commands->value(i++).value(1);
-        QString attrTilesetPrimary = commands->value(i++).value(1);
-        QString attrTilesetSecondary = commands->value(i++).value(1);
-        for (QString attributeMapLabel: attributeMapLabels) {
-            QString altMapName = attributeMapLabel;
-            if (!altMapName.startsWith("UnknownMapAttributes_")) {
-                altMapName.remove(altMapName.length() - 14, 14);
-            }
-            if (!mapAttributes.contains(altMapName)) {
-                mapAttributes.insert(altMapName, QMap<QString, QString>());
-            }
-            mapAttributes[altMapName].insert("attributes_label", attributeMapLabel);
-            mapAttributes[altMapName].insert("width", attrWidth);
-            mapAttributes[altMapName].insert("height", attrHeight);
-            mapAttributes[altMapName].insert("border_label", attrBorderLabel);
-            mapAttributes[altMapName].insert("blockdata_label", attrBlockdataLabel);
-            mapAttributes[altMapName].insert("tileset_primary", attrTilesetPrimary);
-            mapAttributes[altMapName].insert("tileset_secondary", attrTilesetSecondary);
-
-            if (sharedAttrMaps->length() > 1) {
-                mapAttributes[altMapName].insert("shared_attr_maps", sharedAttrMaps->join(":"));
-            }
-        }
+        MapLayout *layout = new MapLayout();
+        layout->name = MapLayout::getNameFromLabel(layoutLabel);
+        layout->label = layoutLabel;
+        layout->index = i;
+        layout->width = layoutValues->value(0);
+        layout->height = layoutValues->value(1);
+        layout->border_label = layoutValues->value(2);
+        layout->blockdata_label = layoutValues->value(3);
+        layout->tileset_primary_label = layoutValues->value(4);
+        layout->tileset_secondary_label = layoutValues->value(5);
+        layout->border_path = layoutValues->value(6);
+        layout->blockdata_path = layoutValues->value(7);
+        mapLayouts.insert(layoutLabel, layout);
     }
 
     // Deep copy
-    mapAttributesMaster = mapAttributes;
-    mapAttributesMaster.detach();
+    mapLayoutsMaster = mapLayouts;
+    mapLayoutsMaster.detach();
 }
 
-void Project::saveAllMapAttributes() {
-    QString text = "";
-    for (int i = 0; i < mapAttributesTableMaster.count(); i++) {
-        int mapIndex = i + 1;
-        QString mapName = mapAttributesTableMaster.value(mapIndex);
-        QMap<QString, QString> attrs = mapAttributesMaster.value(mapName);
-
-        // Find the map attributes object that contains the border data.
-        QMap<QString, QString> attrsWithBorder;
-        if (attrs.contains("border_filepath")) {
-            attrsWithBorder = attrs;
-        } else {
-            QStringList labels = attrs.value("shared_attr_maps").split(":");
-            for (QString label : labels) {
-                label.remove(label.length() - 14, 14);
-                if (mapAttributesMaster.contains(label) && mapAttributesMaster.value(label).contains("border_filepath")) {
-                    attrsWithBorder = mapAttributesMaster.value(label);
-                    break;
-                }
-            }
-        }
-        if (!attrsWithBorder.isEmpty()) {
-            text += QString("%1::\n").arg(attrsWithBorder.value("border_label"));
-            text += QString("\t.incbin \"%1\"\n").arg(attrsWithBorder.value("border_filepath"));
-            text += QString("\n");
-        }
-
-        // Find the map attributes object that contains the blockdata.
-        QMap<QString, QString> attrsWithBlockdata;
-        if (attrs.contains("blockdata_filepath")) {
-            attrsWithBlockdata = attrs;
-        } else {
-            QStringList labels = attrs["shared_attr_maps"].split(":");
-            for (QString label : labels) {
-                label.remove(label.length() - 14, 14);
-                if (mapAttributesMaster.contains(label) && mapAttributesMaster.value(label).contains("blockdata_filepath")) {
-                    attrsWithBlockdata = mapAttributesMaster.value(label);
-                    break;
-                }
-            }
-        }
-        if (!attrsWithBlockdata.isEmpty()) {
-            text += QString("%1::\n").arg(attrsWithBlockdata.value("blockdata_label"));
-            text += QString("\t.incbin \"%1\"\n").arg(attrsWithBorder.value("blockdata_filepath"));
-            text += QString("\n");
-        }
-
-        text += QString("\t.align 2\n");
-        if (attrs.contains("shared_attr_maps")) {
-            QStringList labels = attrs.value("shared_attr_maps").split(":");
-            for (QString label : labels) {
-                text += QString("%1::\n").arg(label);
-            }
-        } else {
-            text += QString("%1::\n").arg(attrs.value("attributes_label"));
-        }
-        text += QString("\t.4byte %1\n").arg(attrs.value("width"));
-        text += QString("\t.4byte %1\n").arg(attrs.value("height"));
-        text += QString("\t.4byte %1\n").arg(attrs.value("border_label"));
-        text += QString("\t.4byte %1\n").arg(attrs.value("blockdata_label"));
-        text += QString("\t.4byte %1\n").arg(attrs.value("tileset_primary"));
-        text += QString("\t.4byte %1\n").arg(attrs.value("tileset_secondary"));
+void Project::saveAllMapLayouts() {
+    for (QString layoutName : mapLayoutsTableMaster) {
+        MapLayout *layout = mapLayouts.value(layoutName);
+        QString text = QString("%1::\n").arg(layout->border_label);
+        text += QString("\t.incbin \"%1\"\n").arg(layout->border_path);
         text += QString("\n");
+        text += QString("%1::\n").arg(layout->blockdata_label);
+        text += QString("\t.incbin \"%1\"\n").arg(layout->blockdata_path);
+        text += QString("\n");
+        text += QString("\t.align 2\n");
+        text += QString("%1::\n").arg(layoutName);
+        text += QString("\t.4byte %1\n").arg(layout->width);
+        text += QString("\t.4byte %1\n").arg(layout->height);
+        text += QString("\t.4byte %1\n").arg(layout->border_label);
+        text += QString("\t.4byte %1\n").arg(layout->blockdata_label);
+        text += QString("\t.4byte %1\n").arg(layout->tileset_primary_label);
+        text += QString("\t.4byte %1\n").arg(layout->tileset_secondary_label);
+        text += QString("\n");
+        saveTextFile(getMapLayoutFilepath(layout->label), text);
     }
-
-    saveTextFile(getMapAssetsFilepath(), text);
 }
 
-QString Project::getMapAssetsFilepath() {
-    return root + "/data/maps/_assets.inc";
+QString Project::getMapLayoutFilepath(QString layoutLabel) {
+    return QString("%1/data/layouts/%2/layout.inc").arg(root).arg(MapLayout::getNameFromLabel(layoutLabel));
 }
 
-void Project::setNewMapAttributes(Map* map) {
-    map->width = "20";
-    map->height = "20";
-    map->border_label = QString("%1_MapBorder").arg(map->name);
-    map->blockdata_label = QString("%1_MapBlockdata").arg(map->name);
-    map->tileset_primary_label = "gTileset_General";
-    map->tileset_secondary_label = "gTileset_Petalburg";
+void Project::setNewMapLayout(Map* map) {
+    MapLayout *layout = new MapLayout();
+    layout->label = QString("%1_Layout").arg(map->name);
+    layout->name = MapLayout::getNameFromLabel(layout->label);
+    layout->width = "20";
+    layout->height = "20";
+    layout->border_label = QString("%1_MapBorder").arg(map->name);
+    layout->border_path = QString("data/layouts/%1/border.bin").arg(map->name);
+    layout->blockdata_label = QString("%1_MapBlockdata").arg(map->name);
+    layout->blockdata_path = QString("data/layouts/%1/map.bin").arg(map->name);
+    layout->tileset_primary_label = "gTileset_General";
+    layout->tileset_secondary_label = "gTileset_Petalburg";
+    map->layout = layout;
+    map->layout_label = layout->label;
 
-    // Insert new entry into the global map attributes.
-    QMap<QString, QString> attrs;
-    attrs.insert("border_label", QString("%1_MapBorder").arg(map->name));
-    attrs.insert("border_filepath", QString("data/maps/%1/border.bin").arg(map->name));
-    attrs.insert("blockdata_label", QString("%1_MapBlockdata").arg(map->name));
-    attrs.insert("blockdata_filepath", QString("data/maps/%1/map.bin").arg(map->name));
-    attrs.insert("attributes_label", QString("%1_MapAttributes").arg(map->name));
-    attrs.insert("width", map->width);
-    attrs.insert("height", map->height);
-    attrs.insert("tileset_primary", map->tileset_primary_label);
-    attrs.insert("tileset_secondary", map->tileset_secondary_label);
-    mapAttributes.insert(map->name, attrs);
+    // Insert new entry into the global map layouts.
+    mapLayouts.insert(layout->label, layout);
+    mapLayoutsTable.append(layout->label);
 }
 
 void Project::saveMapGroupsTable() {
@@ -544,7 +455,7 @@ void Project::saveMapGroupsTable() {
         text += QString("\t.4byte gMapGroup%1\n").arg(i);
     }
 
-    saveTextFile(root + "/data/maps/_groups.inc", text);
+    saveTextFile(root + "/data/maps/groups.inc", text);
 }
 
 void Project::saveMapConstantsHeader() {
@@ -585,8 +496,12 @@ void Project::saveMapConstantsHeader() {
 }
 
 void Project::getTilesets(Map* map) {
-    map->tileset_primary = getTileset(map->tileset_primary_label);
-    map->tileset_secondary = getTileset(map->tileset_secondary_label);
+    if (map->layout->has_unsaved_changes) {
+        return;
+    }
+
+    map->layout->tileset_primary = getTileset(map->layout->tileset_primary_label);
+    map->layout->tileset_secondary = getTileset(map->layout->tileset_secondary_label);
 }
 
 Tileset* Project::loadTileset(QString label) {
@@ -611,37 +526,13 @@ Tileset* Project::loadTileset(QString label) {
     return tileset;
 }
 
-QString Project::getBlockdataPath(Map* map) {
-    QString text = readTextFile(getMapAssetsFilepath());
-    QStringList *values = getLabelValues(parseAsm(text), map->blockdata_label);
-    QString path;
-    if (!values->isEmpty()) {
-        path = root + "/" + values->value(0).section('"', 1, 1);
-    } else {
-        path = root + "/data/maps/" + map->name + "/map.bin";
-    }
-    return path;
-}
-
-QString Project::getMapBorderPath(Map *map) {
-    QString text = readTextFile(getMapAssetsFilepath());
-    QStringList *values = getLabelValues(parseAsm(text), map->border_label);
-    QString path;
-    if (!values->isEmpty()) {
-        path = root + "/" + values->value(0).section('"', 1, 1);
-    } else {
-        path = root + "/data/maps/" + map->name + "/border.bin";
-    }
-    return path;
-}
-
 void Project::loadBlockdata(Map* map) {
-    if (!map->isPersistedToFile) {
+    if (!map->isPersistedToFile || map->layout->has_unsaved_changes) {
         return;
     }
 
-    QString path = getBlockdataPath(map);
-    map->blockdata = readBlockdata(path);
+    QString path = QString("%1/%2").arg(root).arg(map->layout->blockdata_path);
+    map->layout->blockdata = readBlockdata(path);
 }
 
 void Project::setNewMapBlockdata(Map* map) {
@@ -649,16 +540,16 @@ void Project::setNewMapBlockdata(Map* map) {
     for (int i = 0; i < map->getWidth() * map->getHeight(); i++) {
         blockdata->addBlock(qint16(0x3001));
     }
-    map->blockdata = blockdata;
+    map->layout->blockdata = blockdata;
 }
 
 void Project::loadMapBorder(Map *map) {
-    if (!map->isPersistedToFile) {
+    if (!map->isPersistedToFile || map->layout->has_unsaved_changes) {
         return;
     }
 
-    QString path = getMapBorderPath(map);
-    map->border = readBlockdata(path);
+    QString path = QString("%1/%2").arg(root).arg(map->layout->border_path);
+    map->layout->border = readBlockdata(path);
 }
 
 void Project::setNewMapBorder(Map *map) {
@@ -667,17 +558,17 @@ void Project::setNewMapBorder(Map *map) {
     blockdata->addBlock(qint16(0x01D5));
     blockdata->addBlock(qint16(0x01DC));
     blockdata->addBlock(qint16(0x01DD));
-    map->border = blockdata;
+    map->layout->border = blockdata;
 }
 
 void Project::saveMapBorder(Map *map) {
-    QString path = getMapBorderPath(map);
-    writeBlockdata(path, map->border);
+    QString path = QString("%1/%2").arg(root).arg(map->layout->border_path);
+    writeBlockdata(path, map->layout->border);
 }
 
 void Project::saveBlockdata(Map* map) {
-    QString path = getBlockdataPath(map);
-    writeBlockdata(path, map->blockdata);
+    QString path = QString("%1/%2").arg(root).arg(map->layout->blockdata_path);
+    writeBlockdata(path, map->layout->blockdata);
     map->history.save();
 }
 
@@ -686,6 +577,8 @@ void Project::writeBlockdata(QString path, Blockdata *blockdata) {
     if (file.open(QIODevice::WriteOnly)) {
         QByteArray data = blockdata->serialize();
         file.write(data);
+    } else {
+        qDebug() << "Failed to open blockdata file for writing: '" << path << "'";
     }
 }
 
@@ -706,26 +599,35 @@ void Project::saveMap(Map *map) {
             qDebug() << "Error: failed to create directory for new map. " << newMapDataDir;
         }
 
-        // TODO: In the future, these files needs more structure to allow for proper parsing/saving.
-        // Create file data/scripts/maps/<map_name>.inc
-        QString text = QString("%1_MapScripts::\n\t.byte 0\n").arg(map->name);
-        saveTextFile(root + "/data/scripts/maps/" + map->name + ".inc", text);
+        QString newLayoutDir = QString(root + "/data/layouts/%1").arg(map->name);
+        if (!QDir::root().mkdir(newLayoutDir)) {
+            qDebug() << "Error: failed to create directory for new layout. " << newLayoutDir;
+        }
 
-        // Create file data/text/maps/<map_name>.inc
-        saveTextFile(root + "/data/text/maps/" + map->name + ".inc", "\n");
+        // TODO: In the future, these files needs more structure to allow for proper parsing/saving.
+        // Create file data/maps/<map_name>/scripts.inc
+        QString text = QString("%1_MapScripts::\n\t.byte 0\n").arg(map->name);
+        saveTextFile(root + "/data/maps/" + map->name + "/scripts.inc", text);
+
+        // Create file data/maps/<map_name>/text.inc
+        saveTextFile(root + "/data/maps/" + map->name + "/text.inc", "\n");
 
         // Simply append to data/event_scripts.s.
-        text = QString("\n\t.include \"data/scripts/maps/%1.inc\"\n").arg(map->name);
-        text += QString("\t.include \"data/text/maps/%1.inc\"\n").arg(map->name);
+        text = QString("\n\t.include \"data/maps/%1/scripts.inc\"\n").arg(map->name);
+        text += QString("\t.include \"data/maps/%1/text.inc\"\n").arg(map->name);
         appendTextFile(root + "/data/event_scripts.s", text);
 
         // Simply append to data/map_events.s.
-        text = QString("\n\t.include \"data/maps/events/%1.inc\"\n").arg(map->name);
+        text = QString("\n\t.include \"data/maps/%1/events.inc\"\n").arg(map->name);
         appendTextFile(root + "/data/map_events.s", text);
 
         // Simply append to data/maps/headers.inc.
         text = QString("\t.include \"data/maps/%1/header.inc\"\n").arg(map->name);
         appendTextFile(root + "/data/maps/headers.inc", text);
+
+        // Simply append to data/layouts.inc.
+        text = QString("\t.include \"data/layouts/%1/layout.inc\"\n").arg(map->layout->name);
+        appendTextFile(root + "/data/layouts.inc", text);
     }
 
     saveMapBorder(map);
@@ -735,25 +637,27 @@ void Project::saveMap(Map *map) {
     saveMapEvents(map);
 
     // Update global data structures with current map data.
-    updateMapAttributes(map);
+    updateMapLayout(map);
 
     map->isPersistedToFile = true;
+    map->layout->has_unsaved_changes = false;
 }
 
-void Project::updateMapAttributes(Map* map) {
-    if (!mapAttributesTableMaster.contains(map->index.toInt())) {
-        mapAttributesTableMaster.insert(map->index.toInt(), map->name);
+void Project::updateMapLayout(Map* map) {
+    if (!mapLayoutsTableMaster.contains(map->layout_label)) {
+        mapLayoutsTableMaster.append(map->layout_label);
     }
 
     // Deep copy
-    QMap<QString, QString> attrs = mapAttributes.value(map->name);
-    attrs.detach();
-    mapAttributesMaster.insert(map->name, attrs);
+    MapLayout *layout = mapLayouts.value(map->layout_label);
+    MapLayout *newLayout = new MapLayout();
+    *newLayout = *layout;
+    mapLayoutsMaster.insert(map->layout_label, newLayout);
 }
 
 void Project::saveAllDataStructures() {
-    saveMapAttributesTable();
-    saveAllMapAttributes();
+    saveMapLayoutsTable();
+    saveAllMapLayouts();
     saveMapGroupsTable();
     saveMapConstantsHeader();
     saveMapsWithConnections();
@@ -828,7 +732,6 @@ void Project::loadTilesetAssets(Tileset* tileset) {
     tileset->tiles = tiles;
 
     // metatiles
-    //qDebug() << metatiles_path;
     QFile metatiles_file(metatiles_path);
     if (metatiles_file.open(QIODevice::ReadOnly)) {
         QByteArray data = metatiles_file.readAll();
@@ -895,9 +798,9 @@ void Project::loadTilesetAssets(Tileset* tileset) {
             for (int j = 0; j < 16; j++) {
                 palette.append(qRgb(j * 16, j * 16, j * 16));
             }
-            qDebug() << QString("Could not open '%1'").arg(path);
+            qDebug() << QString("Could not open palette path '%1'").arg(path);
         }
-        //qDebug() << path;
+
         palettes->append(palette);
     }
     tileset->palettes = palettes;
@@ -905,7 +808,6 @@ void Project::loadTilesetAssets(Tileset* tileset) {
 
 Blockdata* Project::readBlockdata(QString path) {
     Blockdata *blockdata = new Blockdata;
-    //qDebug() << path;
     QFile file(path);
     if (file.open(QIODevice::ReadOnly)) {
         QByteArray data = file.readAll();
@@ -913,7 +815,10 @@ Blockdata* Project::readBlockdata(QString path) {
             uint16_t word = (data[i] & 0xff) + ((data[i + 1] & 0xff) << 8);
             blockdata->addBlock(word);
         }
+    } else {
+        qDebug() << "Failed to open blockdata path '" << path << "'";
     }
+
     return blockdata;
 }
 
@@ -976,7 +881,7 @@ void Project::deleteFile(QString path) {
 }
 
 void Project::readMapGroups() {
-    QString text = readTextFile(root + "/data/maps/_groups.inc");
+    QString text = readTextFile(root + "/data/maps/groups.inc");
     if (text.isNull()) {
         return;
     }
@@ -1039,9 +944,6 @@ void Project::readMapGroups() {
 }
 
 Map* Project::addNewMapToGroup(QString mapName, int groupNum) {
-    int mapIndex = mapAttributesTable.count() + 1;
-    mapAttributesTable.insert(mapIndex, mapName);
-
     // Setup new map in memory, but don't write to file until map is actually saved later.
     mapNames->append(mapName);
     map_groups->insert(mapName, groupNum);
@@ -1052,8 +954,8 @@ Map* Project::addNewMapToGroup(QString mapName, int groupNum) {
     map->setName(mapName);
     mapConstantsToMapNames->insert(map->constantName, map->name);
     mapNamesToMapConstants->insert(map->name, map->constantName);
-    setNewMapHeader(map, mapIndex);
-    setNewMapAttributes(map);
+    setNewMapHeader(map, mapLayoutsTable.size() + 1);
+    setNewMapLayout(map);
     getTilesets(map);
     setNewMapBlockdata(map);
     setNewMapBorder(map);
@@ -1200,7 +1102,7 @@ QStringList Project::getSongNames() {
     QString text = readTextFile(root + "/include/constants/songs.h");
     if (!text.isNull()) {
         QStringList songDefinePrefixes;
-        songDefinePrefixes << "SE_" << "BGM_";
+        songDefinePrefixes << "SE_" << "MUS_";
         QMap<QString, int> songDefines = readCDefines(text, songDefinePrefixes);
         names = songDefines.keys();
     }
@@ -1283,7 +1185,7 @@ void Project::loadEventPixmaps(QList<Event*> objects) {
 }
 
 void Project::saveMapEvents(Map *map) {
-    QString path = root + QString("/data/maps/events/%1.inc").arg(map->name);
+    QString path = root + QString("/data/maps/%1/events.inc").arg(map->name);
     QString text = "";
 
     if (map->events["object"].length() > 0) {
@@ -1397,7 +1299,7 @@ void Project::readMapEvents(Map *map) {
     }
 
     // lazy
-    QString path = root + QString("/data/maps/events/%1.inc").arg(map->name);
+    QString path = root + QString("/data/maps/%1/events.inc").arg(map->name);
     QString text = readTextFile(path);
     if (text.isNull()) {
         return;
