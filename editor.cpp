@@ -2,6 +2,7 @@
 #include <QCheckBox>
 #include <QPainter>
 #include <QMouseEvent>
+#include <math.h>
 
 Editor::Editor(Ui::MainWindow* ui)
 {
@@ -249,7 +250,7 @@ void Editor::setConnectionEditControlsEnabled(bool enabled) {
     ui->spinBox_ConnectionOffset->setEnabled(enabled);
 
     if (!enabled) {
-        setConnectionEditControlValues(false);
+        setConnectionEditControlValues(0);
     }
 }
 
