@@ -25,7 +25,8 @@ SOURCES += main.cpp\
     editor.cpp \
     objectpropertiesframe.cpp \
     graphicsview.cpp \
-    parseutil.cpp
+    parseutil.cpp \
+    neweventtoolbutton.cpp
 
 HEADERS  += mainwindow.h \
     project.h \
@@ -39,7 +40,8 @@ HEADERS  += mainwindow.h \
     editor.h \
     objectpropertiesframe.h \
     graphicsview.h \
-    parseutil.h
+    parseutil.h \
+    neweventtoolbutton.h
 
 FORMS    += mainwindow.ui \
     objectpropertiesframe.ui

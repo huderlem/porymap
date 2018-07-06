@@ -24,6 +24,10 @@ MainWindow::MainWindow(QWidget *parent) :
     QCoreApplication::setApplicationName("pretmap");
 
     ui->setupUi(this);
+
+    ui->newEventToolButton->initButton();
+    connect(ui->newEventToolButton, SIGNAL(newEventAdded(QString)), this, SLOT(addNewEvent(QString)));
+
     new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Z), this, SLOT(redo()));
 
     editor = new Editor(ui);
@@ -503,10 +507,10 @@ void MainWindow::on_actionRedo_triggered()
     redo();
 }
 
-void MainWindow::on_toolButton_newObject_clicked()
+void MainWindow::addNewEvent(QString event_type)
 {
     if (editor) {
-        DraggablePixmapItem *object = editor->addNewEvent();
+        DraggablePixmapItem *object = editor->addNewEvent(event_type);
         if (object) {
             //if (editor->selected_events->length()) {
                 editor->selectMapEvent(object, true);
@@ -590,7 +594,7 @@ void MainWindow::updateSelectedObjects() {
 
         QStringList fields;
 
-        if (event_type == "object") {
+        if (event_type == EventType::Object) {
 
             frame->ui->sprite->setVisible(true);
             frame->ui->comboBox_sprite->addItems(event_obj_gfx_constants.keys());
@@ -616,27 +620,27 @@ void MainWindow::updateSelectedObjects() {
             fields << "property";
             fields << "sight_radius";
         }
-        else if (event_type == "warp") {
+        else if (event_type == EventType::Warp) {
             fields << "destination_warp";
             fields << "destination_map_name";
         }
-        else if (event_type == "trap") {
+        else if (event_type == EventType::CoordScript) {
             fields << "script_label";
             fields << "script_var";
             fields << "script_var_value";
         }
-        else if (event_type == "trap_weather") {
+        else if (event_type == EventType::CoordWeather) {
             fields << "weather";
         }
-        else if (event_type == "sign") {
+        else if (event_type == EventType::Sign) {
             fields << "type";
             fields << "script_label";
         }
-        else if (event_type == "event_hidden_item") {
+        else if (event_type == EventType::HiddenItem) {
             fields << "item";
             fields << "flag";
         }
-        else if (event_type == "event_secret_base") {
+        else if (event_type == EventType::SecretBase) {
             fields << "secret_base_map";
         }
 

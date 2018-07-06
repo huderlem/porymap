@@ -60,7 +60,7 @@
         </sizepolicy>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>1</number>
        </property>
        <property name="tabsClosable">
         <bool>false</bool>
@@ -904,13 +904,7 @@
                  <number>0</number>
                 </property>
                 <item>
-                 <widget class="QToolButton" name="toolButton_newObject">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
+                 <widget class="NewEventToolButton" name="newEventToolButton">
                   <property name="minimumSize">
                    <size>
                     <width>40</width>
@@ -918,7 +912,7 @@
                    </size>
                   </property>
                   <property name="text">
-                   <string>New</string>
+                   <string>New Object</string>
                   </property>
                   <property name="icon">
                    <iconset resource="resources/images.qrc">
@@ -1793,6 +1787,11 @@
    <class>GraphicsView</class>
    <extends>QGraphicsView</extends>
    <header>graphicsview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>NewEventToolButton</class>
+   <extends>QToolButton</extends>
+   <header>neweventtoolbutton.h</header>
   </customwidget>
  </customwidgets>
  <resources>

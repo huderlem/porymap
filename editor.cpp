@@ -1,4 +1,5 @@
 #include "editor.h"
+#include "event.h"
 #include <QCheckBox>
 #include <QPainter>
 #include <QMouseEvent>
@@ -1295,10 +1296,6 @@ void Editor::selectMapEvent(DraggablePixmapItem *object, bool toggle) {
         }
         updateSelectedEvents();
     }
-}
-
-DraggablePixmapItem* Editor::addNewEvent() {
-    return addNewEvent("object");
 }
 
 DraggablePixmapItem* Editor::addNewEvent(QString event_type) {

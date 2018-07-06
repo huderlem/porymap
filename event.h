@@ -5,11 +5,22 @@
 #include <QPixmap>
 #include <QMap>
 
+class EventType
+{
+public:
+    static QString Object;
+    static QString Warp;
+    static QString CoordScript;
+    static QString CoordWeather;
+    static QString Sign;
+    static QString HiddenItem;
+    static QString SecretBase;
+};
+
 class Event
 {
 public:
     Event();
-
 public:
     int x() {
         return getInt("x");

@@ -1152,17 +1152,17 @@ void Project::loadEventPixmaps(QList<Event*> objects) {
             continue;
         }
         QString event_type = object->get("event_type");
-        if (event_type == "object") {
+        if (event_type == EventType::Object) {
             object->pixmap = QPixmap(":/images/Entities_16x16.png").copy(0, 0, 16, 16);
-        } else if (event_type == "warp") {
+        } else if (event_type == EventType::Warp) {
             object->pixmap = QPixmap(":/images/Entities_16x16.png").copy(16, 0, 16, 16);
-        } else if (event_type == "trap" || event_type == "trap_weather") {
+        } else if (event_type == EventType::CoordScript || event_type == EventType::CoordWeather) {
             object->pixmap = QPixmap(":/images/Entities_16x16.png").copy(32, 0, 16, 16);
-        } else if (event_type == "sign" || event_type == "event_hidden_item" || event_type == "event_secret_base") {
+        } else if (event_type == EventType::Sign || event_type == EventType::HiddenItem || event_type == EventType::SecretBase) {
             object->pixmap = QPixmap(":/images/Entities_16x16.png").copy(48, 0, 16, 16);
         }
 
-        if (event_type == "object") {
+        if (event_type == EventType::Object) {
             int sprite_id = constants.value(object->get("sprite"));
 
             QString info_label = pointers.value(sprite_id).replace("&", "");
@@ -1178,10 +1178,8 @@ void Project::loadEventPixmaps(QList<Event*> objects) {
                     object->pixmap = pixmap;
                 }
             }
-
         }
     }
-
 }
 
 void Project::saveMapEvents(Map *map) {
@@ -1331,7 +1329,7 @@ void Project::readMapEvents(Map *map) {
             object->put("script_label", command.value(i++));
             object->put("event_flag", command.value(i++));
 
-            object->put("event_type", "object");
+            object->put("event_type", EventType::Object);
             map->events["object"].append(object);
         }
     }
@@ -1352,7 +1350,7 @@ void Project::readMapEvents(Map *map) {
             QString mapConstant = command.value(i++);
             if (mapConstantsToMapNames->contains(mapConstant)) {
                 warp->put("destination_map_name", mapConstantsToMapNames->value(mapConstant));
-                warp->put("event_type", "warp");
+                warp->put("event_type", EventType::Warp);
                 map->events["warp"].append(warp);
             } else {
                 qDebug() << QString("Destination map constant '%1' is invalid for warp").arg(mapConstant);
@@ -1383,7 +1381,7 @@ void Project::readMapEvents(Map *map) {
             //coord_unknown3
             //coord_unknown4
 
-            coord->put("event_type", "trap");
+            coord->put("event_type", EventType::CoordScript);
             map->events["trap"].append(coord);
         } else if (command.value(0) == "coord_weather_event") {
             Event *coord = new Event;
@@ -1393,7 +1391,7 @@ void Project::readMapEvents(Map *map) {
             coord->put("y", command.value(i++));
             coord->put("elevation", command.value(i++));
             coord->put("weather", command.value(i++));
-            coord->put("event_type", "trap_weather");
+            coord->put("event_type", EventType::CoordWeather);
             map->events["trap_weather"].append(coord);
         }
     }
@@ -1414,7 +1412,7 @@ void Project::readMapEvents(Map *map) {
             i++;
             bg->put("script_label", command.value(i++));
             //sign_unknown7
-            bg->put("event_type", "sign");
+            bg->put("event_type", EventType::Sign);
             map->events["sign"].append(bg);
         } else if (command.value(0) == "bg_hidden_item_event") {
             Event *bg = new Event;
@@ -1425,7 +1423,7 @@ void Project::readMapEvents(Map *map) {
             bg->put("elevation", command.value(i++));
             bg->put("item", command.value(i++));
             bg->put("flag", command.value(i++));
-            bg->put("event_type", "event_hidden_item");
+            bg->put("event_type", EventType::HiddenItem);
             map->events["event_hidden_item"].append(bg);
         } else if (command.value(0) == "bg_secret_base_event") {
             Event *bg = new Event;
@@ -1435,7 +1433,7 @@ void Project::readMapEvents(Map *map) {
             bg->put("y", command.value(i++));
             bg->put("elevation", command.value(i++));
             bg->put("secret_base_map", command.value(i++));
-            bg->put("event_type", "event_secret_base");
+            bg->put("event_type", EventType::SecretBase);
             map->events["event_secret_base"].append(bg);
         }
     }
