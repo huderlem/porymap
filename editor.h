@@ -173,7 +173,7 @@ public:
         emit spriteChanged(event->pixmap);
     }
     void bind(QComboBox *combo, QString key) {
-        connect(combo, static_cast<void (QComboBox::*)(const QString &)>(&QComboBox::activated),
+        connect(combo, static_cast<void (QComboBox::*)(const QString &)>(&QComboBox::currentTextChanged),
                 this, [this, key](QString value){
             this->event->put(key, value);
         });
