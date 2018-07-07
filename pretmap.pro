@@ -19,7 +19,6 @@ SOURCES += main.cpp\
     blockdata.cpp \
     block.cpp \
     tileset.cpp \
-    metatile.cpp \
     tile.cpp \
     event.cpp \
     editor.cpp \
@@ -34,7 +33,6 @@ HEADERS  += mainwindow.h \
     blockdata.h \
     block.h \
     tileset.h \
-    metatile.h \
     tile.h \
     event.h \
     editor.h \

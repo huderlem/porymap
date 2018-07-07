@@ -301,6 +301,10 @@ void Editor::onConnectionDirectionChanged(QString newDirection) {
     ui->comboBox_ConnectionDirection->blockSignals(false);
 }
 
+void Editor::onBorderMetatilesChanged() {
+    displayMapBorder();
+}
+
 void Editor::setConnectionsVisibility(bool visible) {
     for (QGraphicsPixmapItem* item : map->connection_items) {
         item->setVisible(visible);
@@ -383,6 +387,7 @@ void Editor::displayMap() {
     );
 
     displayMetatiles();
+    displayBorderMetatiles();
     displayCollisionMetatiles();
     displayElevationMetatiles();
     displayMapEvents();
@@ -396,6 +401,15 @@ void Editor::displayMetatiles() {
     metatiles_item = new MetatilesPixmapItem(map);
     metatiles_item->draw();
     scene_metatiles->addItem(metatiles_item);
+}
+
+void Editor::displayBorderMetatiles() {
+    scene_selected_border_metatiles = new QGraphicsScene;
+    selected_border_metatiles_item = new BorderMetatilesPixmapItem(map);
+    selected_border_metatiles_item->draw();
+    scene_selected_border_metatiles->addItem(selected_border_metatiles_item);
+
+    connect(selected_border_metatiles_item, SIGNAL(borderMetatilesChanged()), this, SLOT(onBorderMetatilesChanged()));
 }
 
 void Editor::displayCollisionMetatiles() {
@@ -790,6 +804,43 @@ void MetatilesPixmapItem::updateSelection(QPointF pos, Qt::MouseButton button) {
                                 && map->paint_tile_height == 3;
         emit map->paintTileChanged(map);
     }
+}
+
+void BorderMetatilesPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+    QPointF pos = event->pos();
+    int x = ((int)pos.x()) / 16;
+    int y = ((int)pos.y()) / 16;
+
+    for (int i = 0; i < map->paint_tile_width && (i + x) < 2; i++) {
+        for (int j = 0; j < map->paint_tile_height && (j + y) < 2; j++) {
+            int blockIndex = (j + y) * 2 + (i + x);
+            int tile = map->getSelectedBlockIndex(map->paint_tile_index + i + (j * 8));
+            (*map->layout->border->blocks)[blockIndex].tile = tile;
+        }
+    }
+
+    draw();
+    emit borderMetatilesChanged();
+}
+
+void BorderMetatilesPixmapItem::draw() {
+    QImage image(32, 32, QImage::Format_RGBA8888);
+    QPainter painter(&image);
+    QList<Block> *blocks = map->layout->border->blocks;
+
+    for (int i = 0; i < 2; i++)
+    for (int j = 0; j < 2; j++)
+    {
+        int x = i * 16;
+        int y = j * 16;
+        int index = j * 2 + i;
+        QImage metatile_image = Metatile::getMetatileImage(blocks->value(index).tile, map->layout->tileset_primary, map->layout->tileset_secondary);
+        QPoint metatile_origin = QPoint(x, y);
+        painter.drawImage(metatile_origin, metatile_image);
+    }
+
+    painter.end();
+    setPixmap(QPixmap::fromImage(image));
 }
 
 void MovementPermissionsPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent* event) {

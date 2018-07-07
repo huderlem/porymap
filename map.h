@@ -135,13 +135,8 @@ public:
     static QString bgEventsLabelFromName(QString mapName);
     int getWidth();
     int getHeight();
-    Tileset* getBlockTileset(int);
-    int getBlockIndex(int);
     int getSelectedBlockIndex(int);
     int getDisplayedBlockIndex(int);
-    Metatile* getMetatile(int);
-    QImage getMetatileImage(int);
-    QImage getMetatileTile(int);
     QPixmap render(bool ignoreCache);
     QPixmap renderMetatiles();
 
@@ -213,8 +208,6 @@ public:
     void clearHoveredCollisionTile();
     void hoveredElevationTileChanged(int elevation);
     void clearHoveredElevationTile();
-
-    QList<QList<QRgb> > getBlockPalettes(int metatile_index);
 
 signals:
     void paintTileChanged(Map *map);
