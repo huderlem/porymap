@@ -1185,9 +1185,14 @@ void Project::loadEventPixmaps(QList<Event*> objects) {
 void Project::saveMapEvents(Map *map) {
     QString path = root + QString("/data/maps/%1/events.inc").arg(map->name);
     QString text = "";
+    QString objectEventsLabel = "0x0";
+    QString warpEventsLabel = "0x0";
+    QString coordEventsLabel = "0x0";
+    QString bgEventsLabel = "0x0";
 
     if (map->events["object_event_group"].length() > 0) {
-        text += QString("%1::\n").arg(map->object_events_label);
+        objectEventsLabel = Map::objectEventsLabelFromName(map->name);
+        text += QString("%1::\n").arg(objectEventsLabel);
         for (int i = 0; i < map->events["object_event_group"].length(); i++) {
             Event *object_event = map->events["object_event_group"].value(i);
             text += object_event->buildObjectEventMacro(i);
@@ -1196,7 +1201,8 @@ void Project::saveMapEvents(Map *map) {
     }
 
     if (map->events["warp_event_group"].length() > 0) {
-        text += QString("%1::\n").arg(map->warps_label);
+        warpEventsLabel = Map::warpEventsLabelFromName(map->name);
+        text += QString("%1::\n").arg(warpEventsLabel);
         for (Event *warp : map->events["warp_event_group"]) {
             text += warp->buildWarpEventMacro(mapNamesToMapConstants);
         }
@@ -1204,7 +1210,8 @@ void Project::saveMapEvents(Map *map) {
     }
 
     if (map->events["coord_event_group"].length() > 0) {
-        text += QString("%1::\n").arg(map->coord_events_label);
+        coordEventsLabel = Map::coordEventsLabelFromName(map->name);
+        text += QString("%1::\n").arg(coordEventsLabel);
         for (Event *event : map->events["coord_event_group"]) {
             QString event_type = event->get("event_type");
             if (event_type == EventType::CoordScript) {
@@ -1218,7 +1225,8 @@ void Project::saveMapEvents(Map *map) {
 
     if (map->events["bg_event_group"].length() > 0)
     {
-        text += QString("%1::\n").arg(map->bg_events_label);
+        bgEventsLabel = Map::bgEventsLabelFromName(map->name);
+        text += QString("%1::\n").arg(bgEventsLabel);
         for (Event *event : map->events["bg_event_group"]) {
             QString event_type = event->get("event_type");
             if (event_type == EventType::Sign) {
@@ -1234,10 +1242,10 @@ void Project::saveMapEvents(Map *map) {
 
     text += QString("%1::\n").arg(map->events_label);
     text += QString("\tmap_events %1, %2, %3, %4\n")
-            .arg(map->object_events_label)
-            .arg(map->warps_label)
-            .arg(map->coord_events_label)
-            .arg(map->bg_events_label);
+            .arg(objectEventsLabel)
+            .arg(warpEventsLabel)
+            .arg(coordEventsLabel)
+            .arg(bgEventsLabel);
 
     saveTextFile(path, text);
 }
@@ -1255,12 +1263,12 @@ void Project::readMapEvents(Map *map) {
     }
 
     QStringList *labels = getLabelValues(parseAsm(text), map->events_label);
-    map->object_events_label = labels->value(0);
-    map->warps_label = labels->value(1);
-    map->coord_events_label = labels->value(2);
-    map->bg_events_label = labels->value(3);
+    QString objectEventsLabel = labels->value(0);
+    QString warpEventsLabel = labels->value(1);
+    QString coordEventsLabel = labels->value(2);
+    QString bgEventsLabel = labels->value(3);
 
-    QList<QStringList> *object_events = getLabelMacros(parseAsm(text), map->object_events_label);
+    QList<QStringList> *object_events = getLabelMacros(parseAsm(text), objectEventsLabel);
     map->events["object_event_group"].clear();
     for (QStringList command : *object_events) {
         if (command.value(0) == "object_event") {
@@ -1285,7 +1293,7 @@ void Project::readMapEvents(Map *map) {
         }
     }
 
-    QList<QStringList> *warps = getLabelMacros(parseAsm(text), map->warps_label);
+    QList<QStringList> *warps = getLabelMacros(parseAsm(text), warpEventsLabel);
     map->events["warp_event_group"].clear();
     for (QStringList command : *warps) {
         if (command.value(0) == "warp_def") {
@@ -1310,7 +1318,7 @@ void Project::readMapEvents(Map *map) {
         }
     }
 
-    QList<QStringList> *coords = getLabelMacros(parseAsm(text), map->coord_events_label);
+    QList<QStringList> *coords = getLabelMacros(parseAsm(text), coordEventsLabel);
     map->events["coord_event_group"].clear();
     for (QStringList command : *coords) {
         if (command.value(0) == "coord_event") {
@@ -1349,7 +1357,7 @@ void Project::readMapEvents(Map *map) {
         }
     }
 
-    QList<QStringList> *bgs = getLabelMacros(parseAsm(text), map->bg_events_label);
+    QList<QStringList> *bgs = getLabelMacros(parseAsm(text), bgEventsLabel);
     map->events["bg_event_group"].clear();
     for (QStringList command : *bgs) {
         if (command.value(0) == "bg_event") {
@@ -1394,10 +1402,6 @@ void Project::readMapEvents(Map *map) {
 }
 
 void Project::setNewMapEvents(Map *map) {
-    map->object_events_label = "0x0";
-    map->warps_label = "0x0";
-    map->coord_events_label = "0x0";
-    map->bg_events_label = "0x0";
     map->events["object_event_group"].clear();
     map->events["warp_event_group"].clear();
     map->events["coord_event_group"].clear();
