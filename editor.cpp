@@ -1300,9 +1300,8 @@ void Editor::selectMapEvent(DraggablePixmapItem *object, bool toggle) {
 
 DraggablePixmapItem* Editor::addNewEvent(QString event_type) {
     if (project && map) {
-        Event *event = new Event;
+        Event *event = Event::createNewEvent(event_type, map->name);
         event->put("map_name", map->name);
-        event->put("event_type", event_type);
         map->addEvent(event);
         project->loadEventPixmaps(map->getAllEvents());
         DraggablePixmapItem *object = addMapEvent(event);
@@ -1320,7 +1319,6 @@ void Editor::deleteEvent(Event *event) {
     //selected_events->removeAll(event);
     //updateSelectedObjects();
 }
-
 
 // dunno how to detect bubbling. QMouseEvent::isAccepted seems to always be true
 // check if selected_events changed instead. this has the side effect of deselecting

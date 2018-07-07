@@ -62,6 +62,7 @@ public:
     void selectMapEvent(DraggablePixmapItem *object);
     void selectMapEvent(DraggablePixmapItem *object, bool toggle);
     DraggablePixmapItem *addNewEvent(QString event_type);
+    Event* createNewEvent(QString event_type);
     void deleteEvent(Event *);
     void updateSelectedEvents();
     void redrawObject(DraggablePixmapItem *item);
@@ -107,6 +108,13 @@ private:
     void updateMirroredConnectionDirection(Connection*, QString);
     void updateMirroredConnectionMap(Connection*, QString);
     void updateMirroredConnection(Connection*, QString, QString, bool isDelete = false);
+    Event* createNewObjectEvent();
+    Event* createNewWarpEvent();
+    Event* createNewCoordScriptEvent();
+    Event* createNewCoordWeatherEvent();
+    Event* createNewSignEvent();
+    Event* createNewHiddenItemEvent();
+    Event* createNewSecretBaseEvent();
 
 private slots:
     void mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item);

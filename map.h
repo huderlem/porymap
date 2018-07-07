@@ -194,7 +194,6 @@ public:
     QString bg_events_label;
 
     QList<Event*> getAllEvents();
-    QList<Event*> getEventsByType(QString type);
     void removeEvent(Event *event);
     void addEvent(Event *event);
     QMap<QString, QList<Event*>> events;

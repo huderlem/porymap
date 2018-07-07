@@ -4,6 +4,7 @@
 #include <QString>
 #include <QPixmap>
 #include <QMap>
+#include <QDebug>
 
 class EventType
 {
@@ -49,6 +50,23 @@ public:
     void put(QString key, QString value) {
         values.insert(key, value);
     }
+
+    static Event* createNewEvent(QString, QString);
+    static Event* createNewObjectEvent();
+    static Event* createNewWarpEvent(QString);
+    static Event* createNewCoordScriptEvent();
+    static Event* createNewCoordWeatherEvent();
+    static Event* createNewSignEvent();
+    static Event* createNewHiddenItemEvent();
+    static Event* createNewSecretBaseEvent();
+
+    QString buildObjectEventMacro(int);
+    QString buildWarpEventMacro(QMap<QString, QString>*);
+    QString buildCoordScriptEventMacro();
+    QString buildCoordWeatherEventMacro();
+    QString buildSignEventMacro();
+    QString buildHiddenItemEventMacro();
+    QString buildSecretBaseEventMacro();
 
     QMap<QString, QString> values;
     QPixmap pixmap;

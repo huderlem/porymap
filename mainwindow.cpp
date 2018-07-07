@@ -512,9 +512,7 @@ void MainWindow::addNewEvent(QString event_type)
     if (editor) {
         DraggablePixmapItem *object = editor->addNewEvent(event_type);
         if (object) {
-            //if (editor->selected_events->length()) {
-                editor->selectMapEvent(object, true);
-            //}
+            editor->selectMapEvent(object, false);
         }
         updateSelectedObjects();
     }
@@ -558,12 +556,13 @@ void MainWindow::updateSelectedObjects() {
         font.setCapitalization(QFont::Capitalize);
         frame->ui->label_name->setFont(font);
         QString event_type = item->event->get("event_type");
+        QString event_group_type = item->event->get("event_group_type");
         QString map_name = item->event->get("map_name");
         frame->ui->label_name->setText(
-            QString("%1 %2 %3")
+            QString("%1: %2 %3")
+                .arg(editor->project->getMap(map_name)->events.value(event_group_type).indexOf(item->event) + 1)
                 .arg(map_name)
                 .arg(event_type)
-                .arg(editor->project->getMap(map_name)->events.value(event_type).indexOf(item->event) + 1)
         );
 
         frame->ui->label_spritePixmap->setPixmap(item->event->pixmap);
@@ -578,13 +577,13 @@ void MainWindow::updateSelectedObjects() {
         field_labels["behavior"] = "Behavior";
         field_labels["radius_x"] = "Movement Radius X";
         field_labels["radius_y"] = "Movement Radius Y";
-        field_labels["property"] = "Property";
-        field_labels["sight_radius"] = "Sight Radius";
+        field_labels["trainer_see_type"] = "Trainer See Type";
+        field_labels["sight_radius_tree_id"] = "Sight Radius / Berry Tree ID";
         field_labels["destination_warp"] = "Destination Warp";
         field_labels["destination_map_name"] = "Destination Map";
         field_labels["script_var"] = "Var";
         field_labels["script_var_value"] = "Var Value";
-        field_labels["type"] = "Type";
+        field_labels["player_facing_direction"] = "Player Facing Direction";
         field_labels["item"] = "Item";
         field_labels["item_unknown5"] = "Unknown 5";
         field_labels["item_unknown6"] = "Unknown 6";
@@ -617,8 +616,8 @@ void MainWindow::updateSelectedObjects() {
             fields << "script_label";
             fields << "event_flag";
             fields << "replacement";
-            fields << "property";
-            fields << "sight_radius";
+            fields << "trainer_see_type";
+            fields << "sight_radius_tree_id";
         }
         else if (event_type == EventType::Warp) {
             fields << "destination_warp";
@@ -633,7 +632,7 @@ void MainWindow::updateSelectedObjects() {
             fields << "weather";
         }
         else if (event_type == EventType::Sign) {
-            fields << "type";
+            fields << "player_facing_direction";
             fields << "script_label";
         }
         else if (event_type == EventType::HiddenItem) {

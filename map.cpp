@@ -733,11 +733,6 @@ QList<Event *> Map::getAllEvents() {
     return all;
 }
 
-QList<Event *> Map::getEventsByType(QString type)
-{
-    return events.value(type);
-}
-
 void Map::removeEvent(Event *event) {
     for (QString key : events.keys()) {
         events[key].removeAll(event);
@@ -745,7 +740,7 @@ void Map::removeEvent(Event *event) {
 }
 
 void Map::addEvent(Event *event) {
-    events[event->get("event_type")].append(event);
+    events[event->get("event_group_type")].append(event);
 }
 
 bool Map::hasUnsavedChanges() {
