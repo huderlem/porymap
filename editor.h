@@ -16,6 +16,7 @@ class MapPixmapItem;
 class CollisionPixmapItem;
 class ConnectionPixmapItem;
 class MetatilesPixmapItem;
+class BorderMetatilesPixmapItem;
 class CollisionMetatilesPixmapItem;
 class ElevationMetatilesPixmapItem;
 
@@ -36,6 +37,7 @@ public:
     void setMap(QString map_name);
     void displayMap();
     void displayMetatiles();
+    void displayBorderMetatiles();
     void displayCollisionMetatiles();
     void displayElevationMetatiles();
     void displayMapEvents();
@@ -78,9 +80,11 @@ public:
     QList<QGraphicsPixmapItem*> borderItems;
 
     QGraphicsScene *scene_metatiles = NULL;
+    QGraphicsScene *scene_selected_border_metatiles = NULL;
     QGraphicsScene *scene_collision_metatiles = NULL;
     QGraphicsScene *scene_elevation_metatiles = NULL;
     MetatilesPixmapItem *metatiles_item = NULL;
+    BorderMetatilesPixmapItem *selected_border_metatiles_item = NULL;
     CollisionMetatilesPixmapItem *collision_metatiles_item = NULL;
     ElevationMetatilesPixmapItem *elevation_metatiles_item = NULL;
 
@@ -123,6 +127,7 @@ private slots:
     void onConnectionItemSelected(ConnectionPixmapItem* connectionItem);
     void onConnectionItemDoubleClicked(ConnectionPixmapItem* connectionItem);
     void onConnectionDirectionChanged(QString newDirection);
+    void onBorderMetatilesChanged();
 
 signals:
     void objectsChanged();
@@ -349,6 +354,21 @@ protected:
     void mousePressEvent(QGraphicsSceneMouseEvent*);
     void mouseMoveEvent(QGraphicsSceneMouseEvent*);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent*);
+};
+
+class BorderMetatilesPixmapItem : public QObject, public QGraphicsPixmapItem {
+    Q_OBJECT
+public:
+    BorderMetatilesPixmapItem(Map *map_) {
+        map = map_;
+        setAcceptHoverEvents(true);
+    }
+    Map* map = NULL;
+    virtual void draw();
+signals:
+    void borderMetatilesChanged();
+protected:
+    void mousePressEvent(QGraphicsSceneMouseEvent*);
 };
 
 class MovementPermissionsPixmapItem : public MetatilesPixmapItem {

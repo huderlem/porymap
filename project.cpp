@@ -2,7 +2,6 @@
 #include "project.h"
 #include "tile.h"
 #include "tileset.h"
-#include "metatile.h"
 #include "event.h"
 
 #include <QDebug>

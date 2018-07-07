@@ -60,7 +60,7 @@
         </sizepolicy>
        </property>
        <property name="currentIndex">
-        <number>1</number>
+        <number>0</number>
        </property>
        <property name="tabsClosable">
         <bool>false</bool>
@@ -290,7 +290,7 @@
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>614</width>
+                     <width>475</width>
                      <height>621</height>
                     </rect>
                    </property>
@@ -478,8 +478,8 @@
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>180</width>
-                      <height>629</height>
+                      <width>358</width>
+                      <height>612</height>
                      </rect>
                     </property>
                     <property name="sizePolicy">
@@ -488,7 +488,10 @@
                       <verstretch>0</verstretch>
                      </sizepolicy>
                     </property>
-                    <layout class="QGridLayout" name="gridLayout_5" rowstretch="0" columnstretch="0">
+                    <layout class="QGridLayout" name="gridLayout_5" rowstretch="0,0" columnstretch="0">
+                     <property name="sizeConstraint">
+                      <enum>QLayout::SetDefaultConstraint</enum>
+                     </property>
                      <property name="leftMargin">
                       <number>0</number>
                      </property>
@@ -501,16 +504,97 @@
                      <property name="bottomMargin">
                       <number>0</number>
                      </property>
-                     <property name="spacing">
+                     <property name="horizontalSpacing">
                       <number>0</number>
                      </property>
+                     <property name="verticalSpacing">
+                      <number>8</number>
+                     </property>
                      <item row="0" column="0">
+                      <widget class="QFrame" name="frame_10">
+                       <property name="sizePolicy">
+                        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                         <horstretch>0</horstretch>
+                         <verstretch>0</verstretch>
+                        </sizepolicy>
+                       </property>
+                       <property name="frameShape">
+                        <enum>QFrame::NoFrame</enum>
+                       </property>
+                       <property name="frameShadow">
+                        <enum>QFrame::Raised</enum>
+                       </property>
+                       <layout class="QHBoxLayout" name="horizontalLayout_5">
+                        <property name="spacing">
+                         <number>6</number>
+                        </property>
+                        <property name="sizeConstraint">
+                         <enum>QLayout::SetDefaultConstraint</enum>
+                        </property>
+                        <item>
+                         <widget class="QLabel" name="label_16">
+                          <property name="sizePolicy">
+                           <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                           </sizepolicy>
+                          </property>
+                          <property name="text">
+                           <string>Border</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QGraphicsView" name="graphicsView_BorderMetatile">
+                          <property name="sizePolicy">
+                           <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                           </sizepolicy>
+                          </property>
+                          <property name="maximumSize">
+                           <size>
+                            <width>16777215</width>
+                            <height>48</height>
+                           </size>
+                          </property>
+                          <property name="frameShape">
+                           <enum>QFrame::StyledPanel</enum>
+                          </property>
+                          <property name="frameShadow">
+                           <enum>QFrame::Sunken</enum>
+                          </property>
+                          <property name="verticalScrollBarPolicy">
+                           <enum>Qt::ScrollBarAsNeeded</enum>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <spacer name="horizontalSpacer_12">
+                          <property name="orientation">
+                           <enum>Qt::Horizontal</enum>
+                          </property>
+                          <property name="sizeType">
+                           <enum>QSizePolicy::Maximum</enum>
+                          </property>
+                          <property name="sizeHint" stdset="0">
+                           <size>
+                            <width>40</width>
+                            <height>20</height>
+                           </size>
+                          </property>
+                         </spacer>
+                        </item>
+                       </layout>
+                      </widget>
+                     </item>
+                     <item row="1" column="0">
                       <widget class="QGraphicsView" name="graphicsView_Metatiles">
                        <property name="enabled">
                         <bool>true</bool>
                        </property>
                        <property name="sizePolicy">
-                        <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
+                        <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
                          <horstretch>0</horstretch>
                          <verstretch>0</verstretch>
                         </sizepolicy>
