@@ -61,8 +61,8 @@ public:
     DraggablePixmapItem *addMapEvent(Event *event);
     void selectMapEvent(DraggablePixmapItem *object);
     void selectMapEvent(DraggablePixmapItem *object, bool toggle);
-    DraggablePixmapItem *addNewEvent();
     DraggablePixmapItem *addNewEvent(QString event_type);
+    Event* createNewEvent(QString event_type);
     void deleteEvent(Event *);
     void updateSelectedEvents();
     void redrawObject(DraggablePixmapItem *item);
@@ -108,6 +108,13 @@ private:
     void updateMirroredConnectionDirection(Connection*, QString);
     void updateMirroredConnectionMap(Connection*, QString);
     void updateMirroredConnection(Connection*, QString, QString, bool isDelete = false);
+    Event* createNewObjectEvent();
+    Event* createNewWarpEvent();
+    Event* createNewCoordScriptEvent();
+    Event* createNewCoordWeatherEvent();
+    Event* createNewSignEvent();
+    Event* createNewHiddenItemEvent();
+    Event* createNewSecretBaseEvent();
 
 private slots:
     void mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item);
@@ -166,7 +173,7 @@ public:
         emit spriteChanged(event->pixmap);
     }
     void bind(QComboBox *combo, QString key) {
-        connect(combo, static_cast<void (QComboBox::*)(const QString &)>(&QComboBox::activated),
+        connect(combo, static_cast<void (QComboBox::*)(const QString &)>(&QComboBox::currentTextChanged),
                 this, [this, key](QString value){
             this->event->put(key, value);
         });

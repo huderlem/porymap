@@ -56,10 +56,9 @@ private slots:
 
     void on_actionRedo_triggered();
 
-    void on_toolButton_newObject_clicked();
-
     void on_toolButton_deleteObject_clicked();
 
+    void addNewEvent(QString);
     void updateSelectedObjects();
 
     void on_toolButton_Paint_clicked();

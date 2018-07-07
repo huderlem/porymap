@@ -31,6 +31,26 @@ QString Map::mapConstantFromName(QString mapName) {
     return constantName;
 }
 
+QString Map::objectEventsLabelFromName(QString mapName)
+{
+    return QString("%1_EventObjects").arg(mapName);
+}
+
+QString Map::warpEventsLabelFromName(QString mapName)
+{
+    return QString("%1_MapWarps").arg(mapName);
+}
+
+QString Map::coordEventsLabelFromName(QString mapName)
+{
+    return QString("%1_MapCoordEvents").arg(mapName);
+}
+
+QString Map::bgEventsLabelFromName(QString mapName)
+{
+    return QString("%1_MapBGEvents").arg(mapName);
+}
+
 int Map::getWidth() {
     return layout->width.toInt(nullptr, 0);
 }
@@ -733,11 +753,6 @@ QList<Event *> Map::getAllEvents() {
     return all;
 }
 
-QList<Event *> Map::getEventsByType(QString type)
-{
-    return events.value(type);
-}
-
 void Map::removeEvent(Event *event) {
     for (QString key : events.keys()) {
         events[key].removeAll(event);
@@ -745,7 +760,7 @@ void Map::removeEvent(Event *event) {
 }
 
 void Map::addEvent(Event *event) {
-    events[event->get("event_type")].append(event);
+    events[event->get("event_group_type")].append(event);
 }
 
 bool Map::hasUnsavedChanges() {
