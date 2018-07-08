@@ -59,6 +59,8 @@ public:
     void updateDiveMap(QString mapName);
     void updateEmergeMap(QString mapName);
     void setSelectedConnectionFromMap(QString mapName);
+    void updatePrimaryTileset(QString tilesetLabel);
+    void updateSecondaryTileset(QString tilesetLabel);
 
     DraggablePixmapItem *addMapEvent(Event *event);
     void selectMapEvent(DraggablePixmapItem *object);
@@ -74,10 +76,12 @@ public:
     QGraphicsPixmapItem *current_view = NULL;
     MapPixmapItem *map_item = NULL;
     ConnectionPixmapItem* selected_connection_item = NULL;
+    QList<QGraphicsPixmapItem*> connection_items;
     QList<ConnectionPixmapItem*> connection_edit_items;
     CollisionPixmapItem *collision_item = NULL;
     QGraphicsItemGroup *events_group = NULL;
     QList<QGraphicsPixmapItem*> borderItems;
+    QList<QGraphicsLineItem*> gridLines;
 
     QGraphicsScene *scene_metatiles = NULL;
     QGraphicsScene *scene_selected_border_metatiles = NULL;
@@ -133,6 +137,7 @@ signals:
     void objectsChanged();
     void selectedObjectsChanged();
     void loadMapRequested(QString, QString);
+    void tilesetChanged(QString);
 };
 
 

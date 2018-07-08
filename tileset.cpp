@@ -2,6 +2,7 @@
 
 #include <QPainter>
 #include <QImage>
+#include <QDebug>
 
 Tileset::Tileset()
 {
@@ -43,9 +44,13 @@ QImage Metatile::getMetatileImage(int tile, Tileset *primaryTileset, Tileset *se
         }
 
         // Colorize the metatile tiles with its palette.
-        QList<QRgb> palette = palettes.value(tile_.palette);
-        for (int j = 0; j < palette.length(); j++) {
-            tile_image.setColor(j, palette.value(j));
+        if (tile_.palette < palettes.length()) {
+            QList<QRgb> palette = palettes.value(tile_.palette);
+            for (int j = 0; j < palette.length(); j++) {
+                tile_image.setColor(j, palette.value(j));
+            }
+        } else {
+            qDebug() << "Tile is referring to invalid palette number: " << tile_.palette;
         }
 
         // The top layer of the metatile has its last color displayed at transparent.
@@ -105,7 +110,7 @@ QList<QList<QRgb>> Metatile::getBlockPalettes(Tileset *primaryTileset, Tileset *
     for (int i = 0; i < 6; i++) {
         palettes.append(primaryTileset->palettes->at(i));
     }
-    for (int i = 6; i < secondaryTileset->palettes->length(); i++) {
+    for (int i = 6; i < 12; i++) {
         palettes.append(secondaryTileset->palettes->at(i));
     }
     return palettes;

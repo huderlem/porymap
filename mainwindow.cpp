@@ -34,6 +34,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(editor, SIGNAL(objectsChanged()), this, SLOT(updateSelectedObjects()));
     connect(editor, SIGNAL(selectedObjectsChanged()), this, SLOT(updateSelectedObjects()));
     connect(editor, SIGNAL(loadMapRequested(QString, QString)), this, SLOT(onLoadMapRequested(QString, QString)));
+    connect(editor, SIGNAL(tilesetChanged(QString)), this, SLOT(onTilesetChanged(QString)));
 
     on_toolButton_Paint_clicked();
 
@@ -206,6 +207,8 @@ void MainWindow::displayMapProperties() {
     ui->comboBox_Weather->clear();
     ui->comboBox_Type->clear();
     ui->comboBox_BattleScene->clear();
+    ui->comboBox_PrimaryTileset->clear();
+    ui->comboBox_SecondaryTileset->clear();
     ui->checkBox_ShowLocation->setChecked(false);
     if (!editor || !editor->map || !editor->project) {
         ui->frame_3->setEnabled(false);
@@ -221,6 +224,12 @@ void MainWindow::displayMapProperties() {
 
     ui->comboBox_Location->addItems(project->getLocations());
     ui->comboBox_Location->setCurrentText(map->location);
+
+    QMap<QString, QStringList> tilesets = project->getTilesets();
+    ui->comboBox_PrimaryTileset->addItems(tilesets.value("primary"));
+    ui->comboBox_PrimaryTileset->setCurrentText(map->layout->tileset_primary_label);
+    ui->comboBox_SecondaryTileset->addItems(tilesets.value("secondary"));
+    ui->comboBox_SecondaryTileset->setCurrentText(map->layout->tileset_secondary_label);
 
     ui->comboBox_Visibility->addItems(project->getVisibilities());
     ui->comboBox_Visibility->setCurrentText(map->visibility);
@@ -410,6 +419,11 @@ void MainWindow::onAddNewMapToGroupClick(QAction* triggeredAction)
     groupItem->appendRow(newMapItem);
 
     setMap(newMapName);
+}
+
+void MainWindow::onTilesetChanged(QString mapName)
+{
+    setMap(mapName);
 }
 
 void MainWindow::on_mapList_activated(const QModelIndex &index)
@@ -813,4 +827,14 @@ void MainWindow::on_comboBox_DiveMap_currentTextChanged(const QString &mapName)
 void MainWindow::on_comboBox_EmergeMap_currentTextChanged(const QString &mapName)
 {
     editor->updateEmergeMap(mapName);
+}
+
+void MainWindow::on_comboBox_PrimaryTileset_activated(const QString &tilesetLabel)
+{
+    editor->updatePrimaryTileset(tilesetLabel);
+}
+
+void MainWindow::on_comboBox_SecondaryTileset_activated(const QString &tilesetLabel)
+{
+    editor->updateSecondaryTileset(tilesetLabel);
 }

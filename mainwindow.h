@@ -71,6 +71,7 @@ private slots:
 
     void onOpenMapListContextMenu(const QPoint &point);
     void onAddNewMapToGroupClick(QAction* triggeredAction);
+    void onTilesetChanged(QString);
 
     void on_action_Export_Map_Image_triggered();
 
@@ -87,6 +88,10 @@ private slots:
     void on_comboBox_DiveMap_currentTextChanged(const QString &mapName);
 
     void on_comboBox_EmergeMap_currentTextChanged(const QString &mapName);
+
+    void on_comboBox_PrimaryTileset_activated(const QString &arg1);
+
+    void on_comboBox_SecondaryTileset_activated(const QString &arg1);
 
 private:
     Ui::MainWindow *ui;
