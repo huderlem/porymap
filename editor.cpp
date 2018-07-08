@@ -306,7 +306,7 @@ void Editor::onBorderMetatilesChanged() {
 }
 
 void Editor::setConnectionsVisibility(bool visible) {
-    for (QGraphicsPixmapItem* item : map->connection_items) {
+    for (QGraphicsPixmapItem* item : connection_items) {
         item->setVisible(visible);
         item->setActive(visible);
     }
@@ -348,8 +348,13 @@ void Editor::mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixm
 }
 
 void Editor::displayMap() {
-    scene = new QGraphicsScene;
+    if (!scene)
+        scene = new QGraphicsScene;
 
+    if (map_item && scene) {
+        scene->removeItem(map_item);
+        delete map_item;
+    }
     map_item = new MapPixmapItem(map);
     connect(map_item, SIGNAL(mouseEvent(QGraphicsSceneMouseEvent*,MapPixmapItem*)),
             this, SLOT(mouseEvent_map(QGraphicsSceneMouseEvent*,MapPixmapItem*)));
@@ -357,25 +362,16 @@ void Editor::displayMap() {
     map_item->draw(true);
     scene->addItem(map_item);
 
+    if (collision_item && scene) {
+        scene->removeItem(collision_item);
+        delete collision_item;
+    }
     collision_item = new CollisionPixmapItem(map);
     connect(collision_item, SIGNAL(mouseEvent(QGraphicsSceneMouseEvent*,CollisionPixmapItem*)),
             this, SLOT(mouseEvent_collision(QGraphicsSceneMouseEvent*,CollisionPixmapItem*)));
 
     collision_item->draw(true);
     scene->addItem(collision_item);
-
-    events_group = new EventGroup;
-    scene->addItem(events_group);
-
-    if (map_item) {
-        map_item->setVisible(false);
-    }
-    if (collision_item) {
-        collision_item->setVisible(false);
-    }
-    if (events_group) {
-        events_group->setVisible(false);
-    }
 
     int tw = 16;
     int th = 16;
@@ -394,9 +390,24 @@ void Editor::displayMap() {
     displayMapConnections();
     displayMapBorder();
     displayMapGrid();
+
+    if (map_item) {
+        map_item->setVisible(false);
+    }
+    if (collision_item) {
+        collision_item->setVisible(false);
+    }
+    if (events_group) {
+        events_group->setVisible(false);
+    }
 }
 
 void Editor::displayMetatiles() {
+    if (metatiles_item && metatiles_item->scene()) {
+        metatiles_item->scene()->removeItem(metatiles_item);
+        delete metatiles_item;
+    }
+
     scene_metatiles = new QGraphicsScene;
     metatiles_item = new MetatilesPixmapItem(map);
     metatiles_item->draw();
@@ -404,6 +415,11 @@ void Editor::displayMetatiles() {
 }
 
 void Editor::displayBorderMetatiles() {
+    if (selected_border_metatiles_item && selected_border_metatiles_item->scene()) {
+        selected_border_metatiles_item->scene()->removeItem(selected_border_metatiles_item);
+        delete selected_border_metatiles_item;
+    }
+
     scene_selected_border_metatiles = new QGraphicsScene;
     selected_border_metatiles_item = new BorderMetatilesPixmapItem(map);
     selected_border_metatiles_item->draw();
@@ -413,6 +429,11 @@ void Editor::displayBorderMetatiles() {
 }
 
 void Editor::displayCollisionMetatiles() {
+    if (collision_metatiles_item && collision_metatiles_item->scene()) {
+        collision_metatiles_item->scene()->removeItem(collision_metatiles_item);
+        delete collision_metatiles_item;
+    }
+
     scene_collision_metatiles = new QGraphicsScene;
     collision_metatiles_item = new CollisionMetatilesPixmapItem(map);
     collision_metatiles_item->draw();
@@ -420,6 +441,11 @@ void Editor::displayCollisionMetatiles() {
 }
 
 void Editor::displayElevationMetatiles() {
+    if (elevation_metatiles_item && elevation_metatiles_item->scene()) {
+        elevation_metatiles_item->scene()->removeItem(elevation_metatiles_item);
+        delete elevation_metatiles_item;
+    }
+
     scene_elevation_metatiles = new QGraphicsScene;
     elevation_metatiles_item = new ElevationMetatilesPixmapItem(map);
     elevation_metatiles_item->draw();
@@ -427,9 +453,21 @@ void Editor::displayElevationMetatiles() {
 }
 
 void Editor::displayMapEvents() {
-    for (QGraphicsItem *child : events_group->childItems()) {
-        events_group->removeFromGroup(child);
+    if (events_group) {
+        for (QGraphicsItem *child : events_group->childItems()) {
+            events_group->removeFromGroup(child);
+            delete child;
+        }
+
+        if (events_group->scene()) {
+            events_group->scene()->removeItem(events_group);
+        }
+
+        delete events_group;
     }
+
+    events_group = new EventGroup;
+    scene->addItem(events_group);
 
     QList<Event *> events = map->getAllEvents();
     project->loadEventPixmaps(events);
@@ -450,12 +488,18 @@ DraggablePixmapItem *Editor::addMapEvent(Event *event) {
 }
 
 void Editor::displayMapConnections() {
-    for (QGraphicsPixmapItem* item : map->connection_items) {
+    for (QGraphicsPixmapItem* item : connection_items) {
+        if (item->scene()) {
+            item->scene()->removeItem(item);
+        }
         delete item;
     }
-    map->connection_items.clear();
+    connection_items.clear();
 
     for (ConnectionPixmapItem* item : connection_edit_items) {
+        if (item->scene()) {
+            item->scene()->removeItem(item);
+        }
         delete item;
     }
     selected_connection_item = NULL;
@@ -497,7 +541,7 @@ void Editor::createConnectionItem(Connection* connection, bool hide) {
     item->setX(x);
     item->setY(y);
     scene->addItem(item);
-    map->connection_items.append(item);
+    connection_items.append(item);
     item->setVisible(!hide);
 
     ConnectionPixmapItem *connection_edit_item = new ConnectionPixmapItem(pixmap, connection, x, y, map->getWidth(), map->getHeight());
@@ -512,6 +556,14 @@ void Editor::createConnectionItem(Connection* connection, bool hide) {
 }
 
 void Editor::displayMapBorder() {
+    for (QGraphicsPixmapItem* item : borderItems) {
+        if (item->scene()) {
+            item->scene()->removeItem(item);
+        }
+        delete item;
+    }
+    borderItems.clear();
+
     QPixmap pixmap = map->renderBorder();
     for (int y = -6; y < map->getHeight() + 6; y += 2)
     for (int x = -6; x < map->getWidth() + 6; x += 2) {
@@ -525,18 +577,29 @@ void Editor::displayMapBorder() {
 }
 
 void Editor::displayMapGrid() {
+    for (QGraphicsLineItem* item : gridLines) {
+        if (item && item->scene()) {
+            item->scene()->removeItem(item);
+        }
+        delete item;
+    }
+    gridLines.clear();
+    ui->checkBox_ToggleGrid->disconnect();
+
     int pixelWidth = map->getWidth() * 16;
     int pixelHeight = map->getHeight() * 16;
     for (int i = 0; i <= map->getWidth(); i++) {
         int x = i * 16;
         QGraphicsLineItem *line = scene->addLine(x, 0, x, pixelHeight);
         line->setVisible(ui->checkBox_ToggleGrid->isChecked());
+        gridLines.append(line);
         connect(ui->checkBox_ToggleGrid, &QCheckBox::toggled, [=](bool checked){line->setVisible(checked);});
     }
     for (int j = 0; j <= map->getHeight(); j++) {
         int y = j * 16;
         QGraphicsLineItem *line = scene->addLine(0, y, pixelWidth, y);
         line->setVisible(ui->checkBox_ToggleGrid->isChecked());
+        gridLines.append(line);
         connect(ui->checkBox_ToggleGrid, &QCheckBox::toggled, [=](bool checked){line->setVisible(checked);});
     }
 }
@@ -679,8 +742,11 @@ void Editor::removeCurrentConnection() {
     connection_edit_items.removeOne(selected_connection_item);
     removeMirroredConnection(selected_connection_item->connection);
 
-    scene->removeItem(selected_connection_item);
-    delete selected_connection_item;
+    if (selected_connection_item && selected_connection_item->scene()) {
+        selected_connection_item->scene()->removeItem(selected_connection_item);
+        delete selected_connection_item;
+    }
+
     selected_connection_item = NULL;
     setConnectionEditControlsEnabled(false);
     ui->spinBox_ConnectionOffset->setValue(0);
@@ -735,6 +801,20 @@ void Editor::updateDiveEmergeMap(QString mapName, QString direction) {
     }
 
     ui->label_NumConnections->setText(QString::number(map->connections.length()));
+}
+
+void Editor::updatePrimaryTileset(QString tilesetLabel)
+{
+    map->layout->tileset_primary_label = tilesetLabel;
+    map->layout->tileset_primary = project->getTileset(tilesetLabel);
+    emit tilesetChanged(map->name);
+}
+
+void Editor::updateSecondaryTileset(QString tilesetLabel)
+{
+    map->layout->tileset_secondary_label = tilesetLabel;
+    map->layout->tileset_secondary = project->getTileset(tilesetLabel);
+    emit tilesetChanged(map->name);
 }
 
 void MetatilesPixmapItem::paintTileChanged(Map *map) {

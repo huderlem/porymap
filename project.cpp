@@ -64,7 +64,6 @@ void Project::loadMapConnections(Map *map) {
     }
 
     map->connections.clear();
-    map->connection_items.clear();
     if (!map->connections_label.isNull()) {
         QString path = root + QString("/data/maps/%1/connections.inc").arg(map->name);
         QString text = readTextFile(path);
@@ -354,7 +353,7 @@ void Project::readMapLayout(Map* map) {
         map->layout = mapLayouts[map->layout_label];
     }
 
-    getMapTilesets(map);
+    loadMapTilesets(map);
     loadBlockdata(map);
     loadMapBorder(map);
 }
@@ -494,7 +493,7 @@ void Project::saveMapConstantsHeader() {
     saveTextFile(root + "/include/constants/maps.h", text);
 }
 
-void Project::getMapTilesets(Map* map) {
+void Project::loadMapTilesets(Map* map) {
     if (map->layout->has_unsaved_changes) {
         return;
     }
@@ -955,7 +954,7 @@ Map* Project::addNewMapToGroup(QString mapName, int groupNum) {
     mapNamesToMapConstants->insert(map->name, map->constantName);
     setNewMapHeader(map, mapLayoutsTable.size() + 1);
     setNewMapLayout(map);
-    getMapTilesets(map);
+    loadMapTilesets(map);
     setNewMapBlockdata(map);
     setNewMapBorder(map);
     setNewMapEvents(map);

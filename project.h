@@ -57,7 +57,7 @@ public:
     QStringList* readLayoutValues(QString layoutName);
     void readMapLayout(Map*);
     void readMapsWithConnections();
-    void getMapTilesets(Map*);
+    void loadMapTilesets(Map*);
     void loadTilesetAssets(Tileset*);
 
     void saveBlockdata(Map*);
