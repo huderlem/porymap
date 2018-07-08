@@ -354,7 +354,7 @@ void Project::readMapLayout(Map* map) {
         map->layout = mapLayouts[map->layout_label];
     }
 
-    getTilesets(map);
+    getMapTilesets(map);
     loadBlockdata(map);
     loadMapBorder(map);
 }
@@ -494,7 +494,7 @@ void Project::saveMapConstantsHeader() {
     saveTextFile(root + "/include/constants/maps.h", text);
 }
 
-void Project::getTilesets(Map* map) {
+void Project::getMapTilesets(Map* map) {
     if (map->layout->has_unsaved_changes) {
         return;
     }
@@ -955,7 +955,7 @@ Map* Project::addNewMapToGroup(QString mapName, int groupNum) {
     mapNamesToMapConstants->insert(map->name, map->constantName);
     setNewMapHeader(map, mapLayoutsTable.size() + 1);
     setNewMapLayout(map);
-    getTilesets(map);
+    getMapTilesets(map);
     setNewMapBlockdata(map);
     setNewMapBorder(map);
     setNewMapEvents(map);
@@ -999,6 +999,47 @@ QStringList Project::getVisibilities() {
         names.append(QString("%1").arg(i));
     }
     return names;
+}
+
+QMap<QString, QStringList> Project::getTilesets() {
+    QMap<QString, QStringList> allTilesets;
+    QStringList primaryTilesets;
+    QStringList secondaryTilesets;
+    allTilesets.insert("primary", primaryTilesets);
+    allTilesets.insert("secondary", secondaryTilesets);
+    QString headers_text = readTextFile(root + "/data/tilesets/headers.inc");
+    QList<QStringList>* commands = parseAsm(headers_text);
+    int i = 0;
+    while (i < commands->length()) {
+        if (commands->at(i).length() != 2)
+            continue;
+
+        if (commands->at(i).at(0) == ".label") {
+            QString tilesetLabel = commands->at(i).at(1);
+            // Advance to command specifying whether or not it is a secondary tileset
+            i += 2;
+            if (commands->at(i).at(0) != ".byte") {
+                qDebug() << "Unexpected command found for secondary tileset flag. Expected '.byte', but found: " << commands->at(i).at(0);
+                continue;
+            }
+
+            QString secondaryTilesetValue = commands->at(i).at(1);
+            if (secondaryTilesetValue != "TRUE" && secondaryTilesetValue != "FALSE" && secondaryTilesetValue != "0" && secondaryTilesetValue != "1") {
+                qDebug() << "Unexpected secondary tileset flag found. Expected \"TRUE\", \"FALSE\", \"0\", or \"1\", but found: " << secondaryTilesetValue;
+                continue;
+            }
+
+            bool isSecondaryTileset = (secondaryTilesetValue == "TRUE" || secondaryTilesetValue == "1");
+            if (isSecondaryTileset)
+                allTilesets["secondary"].append(tilesetLabel);
+            else
+                allTilesets["primary"].append(tilesetLabel);
+        }
+
+        i++;
+    }
+
+    return allTilesets;
 }
 
 QStringList Project::getWeathers() {

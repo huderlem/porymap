@@ -222,6 +222,12 @@ void MainWindow::displayMapProperties() {
     ui->comboBox_Location->addItems(project->getLocations());
     ui->comboBox_Location->setCurrentText(map->location);
 
+    QMap<QString, QStringList> tilesets = project->getTilesets();
+    ui->comboBox_PrimaryTileset->addItems(tilesets.value("primary"));
+    ui->comboBox_PrimaryTileset->setCurrentText(map->layout->tileset_primary_label);
+    ui->comboBox_SecondaryTileset->addItems(tilesets.value("secondary"));
+    ui->comboBox_SecondaryTileset->setCurrentText(map->layout->tileset_secondary_label);
+
     ui->comboBox_Visibility->addItems(project->getVisibilities());
     ui->comboBox_Visibility->setCurrentText(map->visibility);
 
