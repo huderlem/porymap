@@ -6,6 +6,7 @@
 #include <QImage>
 #include <QRegularExpression>
 
+
 Map::Map(QObject *parent) : QObject(parent)
 {
     paint_tile_index = 1;
@@ -276,6 +277,7 @@ QPixmap Map::render(bool ignoreCache = false) {
         cacheBlockdata();
         pixmap = pixmap.fromImage(image);
     }
+
     return pixmap;
 }
 
@@ -427,7 +429,7 @@ QPixmap Map::renderMetatiles() {
     return QPixmap::fromImage(image);
 }
 
-void Map::setDimensions(int newWidth, int newHeight) {
+void Map::setNewDimensionsBlockdata(int newWidth, int newHeight) {
     int oldWidth = getWidth();
     int oldHeight = getHeight();
 
@@ -444,9 +446,15 @@ void Map::setDimensions(int newWidth, int newHeight) {
     }
 
     layout->blockdata->copyFrom(newBlockData);
+}
+
+void Map::setDimensions(int newWidth, int newHeight, bool setNewBlockdata) {
+    if (setNewBlockdata) {
+        setNewDimensionsBlockdata(newWidth, newHeight);
+    }
+
     layout->width = QString::number(newWidth);
     layout->height = QString::number(newHeight);
-    commit();
 
     emit mapChanged(this);
 }
@@ -602,29 +610,48 @@ void Map::_floodFillCollisionElevation(int x, int y, uint collision, uint elevat
 
 
 void Map::undo() {
+    HistoryItem *commit = history.back();
+    if (!commit)
+        return;
+
     if (layout->blockdata) {
-        Blockdata *commit = history.back();
-        if (commit != NULL) {
-            layout->blockdata->copyFrom(commit);
-            emit mapChanged(this);
+        layout->blockdata->copyFrom(commit->metatiles);
+        if (commit->layoutWidth != this->getWidth() || commit->layoutHeight != this->getHeight())
+        {
+            this->setDimensions(commit->layoutWidth, commit->layoutHeight, false);
+            emit mapNeedsRedrawing(this);
         }
+
+        emit mapChanged(this);
     }
 }
 
 void Map::redo() {
+    HistoryItem *commit = history.next();
+    if (!commit)
+        return;
+
     if (layout->blockdata) {
-        Blockdata *commit = history.next();
-        if (commit != NULL) {
-            layout->blockdata->copyFrom(commit);
-            emit mapChanged(this);
+        layout->blockdata->copyFrom(commit->metatiles);
+        if (commit->layoutWidth != this->getWidth() || commit->layoutHeight != this->getHeight())
+        {
+            this->setDimensions(commit->layoutWidth, commit->layoutHeight, false);
+            emit mapNeedsRedrawing(this);
         }
+
+        emit mapChanged(this);
     }
 }
 
 void Map::commit() {
     if (layout->blockdata) {
-        if (!layout->blockdata->equals(history.current())) {
-            Blockdata* commit = layout->blockdata->copy();
+        HistoryItem *item = history.current();
+        bool atCurrentHistory = item
+                && layout->blockdata->equals(item->metatiles)
+                && this->getWidth() == item->layoutWidth
+                && this->getHeight() == item->layoutHeight;
+        if (!atCurrentHistory) {
+            HistoryItem *commit = new HistoryItem(layout->blockdata->copy(), this->getWidth(), this->getHeight());
             history.push(commit);
             emit mapChanged(this);
         }

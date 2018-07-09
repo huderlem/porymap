@@ -38,6 +38,7 @@ private slots:
 
     void onLoadMapRequested(QString, QString);
     void onMapChanged(Map *map);
+    void onMapNeedsRedrawing(Map *map);
 
     void on_action_Save_triggered();
     void on_tabWidget_2_currentChanged(int index);
@@ -102,6 +103,7 @@ private:
     Editor *editor = NULL;
     QIcon* mapIcon;
     void setMap(QString);
+    void redrawMapScene();
     void loadDataStructures();
     void populateMapList();
     QString getExistingDirectory(QString);

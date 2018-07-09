@@ -149,7 +149,22 @@ void MainWindow::setMap(QString map_name) {
         return;
     }
     editor->setMap(map_name);
+    redrawMapScene();
+    displayMapProperties();
 
+    setWindowTitle(map_name + " - " + editor->project->getProjectTitle() + " - pretmap");
+
+    connect(editor->map, SIGNAL(mapChanged(Map*)), this, SLOT(onMapChanged(Map *)));
+    connect(editor->map, SIGNAL(mapNeedsRedrawing(Map*)), this, SLOT(onMapNeedsRedrawing(Map *)));
+    connect(editor->map, SIGNAL(statusBarMessage(QString)), this, SLOT(setStatusBarMessage(QString)));
+
+    setRecentMap(map_name);
+    updateMapList();
+}
+
+void MainWindow::redrawMapScene()
+{
+    editor->displayMap();
     on_tabWidget_currentChanged(ui->tabWidget->currentIndex());
 
     ui->graphicsView_Map->setScene(editor->scene);
@@ -179,16 +194,6 @@ void MainWindow::setMap(QString map_name) {
     ui->graphicsView_Elevation->setScene(editor->scene_elevation_metatiles);
     //ui->graphicsView_Elevation->setSceneRect(editor->scene_elevation_metatiles->sceneRect());
     ui->graphicsView_Elevation->setFixedSize(editor->elevation_metatiles_item->pixmap().width() + 2, editor->elevation_metatiles_item->pixmap().height() + 2);
-
-    displayMapProperties();
-
-    setWindowTitle(map_name + " - " + editor->project->getProjectTitle() + " - pretmap");
-
-    connect(editor->map, SIGNAL(mapChanged(Map*)), this, SLOT(onMapChanged(Map *)));
-    connect(editor->map, SIGNAL(statusBarMessage(QString)), this, SLOT(setStatusBarMessage(QString)));
-
-    setRecentMap(map_name);
-    updateMapList();
 }
 
 void MainWindow::setRecentMap(QString map_name) {
@@ -787,6 +792,10 @@ void MainWindow::onMapChanged(Map *map) {
     updateMapList();
 }
 
+void MainWindow::onMapNeedsRedrawing(Map *map) {
+    redrawMapScene();
+}
+
 void MainWindow::on_action_Export_Map_Image_triggered()
 {
     QString defaultFilepath = QString("%1/%2.png").arg(editor->project->root).arg(editor->map->name);
@@ -896,6 +905,7 @@ void MainWindow::on_pushButton_clicked()
 
     if (dialog.exec() == QDialog::Accepted) {
         editor->map->setDimensions(widthSpinBox->value(), heightSpinBox->value());
-        setMap(editor->map->name);
+        editor->map->commit();
+        onMapNeedsRedrawing(editor->map);
     }
 }

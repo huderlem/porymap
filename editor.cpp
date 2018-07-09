@@ -26,13 +26,15 @@ void Editor::save() {
 
 void Editor::undo() {
     if (current_view) {
-        ((MapPixmapItem*)current_view)->undo();
+        map->undo();
+        map_item->draw();
     }
 }
 
 void Editor::redo() {
     if (current_view) {
-        ((MapPixmapItem*)current_view)->redo();
+        map->redo();
+        map_item->draw();
     }
 }
 
@@ -1213,20 +1215,6 @@ void MapPixmapItem::select(QGraphicsSceneMouseEvent *event) {
 void MapPixmapItem::draw(bool ignoreCache) {
     if (map) {
         setPixmap(map->render(ignoreCache));
-    }
-}
-
-void MapPixmapItem::undo() {
-    if (map) {
-        map->undo();
-        draw();
-    }
-}
-
-void MapPixmapItem::redo() {
-    if (map) {
-        map->redo();
-        draw();
     }
 }
 

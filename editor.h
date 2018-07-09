@@ -252,8 +252,6 @@ public:
     virtual void floodFill(QGraphicsSceneMouseEvent*);
     virtual void pick(QGraphicsSceneMouseEvent*);
     virtual void select(QGraphicsSceneMouseEvent*);
-    virtual void undo();
-    virtual void redo();
     virtual void draw(bool ignoreCache = false);
 
 private:
