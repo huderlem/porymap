@@ -93,6 +93,8 @@ private slots:
 
     void on_comboBox_SecondaryTileset_activated(const QString &arg1);
 
+    void on_pushButton_clicked();
+
 private:
     Ui::MainWindow *ui;
     QStandardItemModel *mapListModel;

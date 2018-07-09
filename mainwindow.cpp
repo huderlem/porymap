@@ -15,6 +15,8 @@
 #include <QSpacerItem>
 #include <QFont>
 #include <QScrollBar>
+#include <QMessageBox>
+#include <QDialogButtonBox>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -837,4 +839,33 @@ void MainWindow::on_comboBox_PrimaryTileset_activated(const QString &tilesetLabe
 void MainWindow::on_comboBox_SecondaryTileset_activated(const QString &tilesetLabel)
 {
     editor->updateSecondaryTileset(tilesetLabel);
+}
+
+void MainWindow::on_pushButton_clicked()
+{
+    QDialog dialog(this, Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
+    dialog.setWindowTitle("Change Map Dimensions");
+    dialog.setWindowModality(Qt::NonModal);
+
+    QFormLayout form(&dialog);
+
+    QSpinBox *widthSpinBox = new QSpinBox();
+    QSpinBox *heightSpinBox = new QSpinBox();
+    widthSpinBox->setValue(editor->map->getWidth());
+    heightSpinBox->setValue(editor->map->getHeight());
+    widthSpinBox->setMinimum(1);
+    heightSpinBox->setMinimum(1);
+    widthSpinBox->setMaximum(255);
+    heightSpinBox->setMaximum(255);
+    form.addRow(new QLabel("Width"), widthSpinBox);
+    form.addRow(new QLabel("Height"), heightSpinBox);
+
+    QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
+    form.addRow(&buttonBox);
+    connect(&buttonBox, SIGNAL(accepted()), &dialog, SLOT(accept()));
+    connect(&buttonBox, SIGNAL(rejected()), &dialog, SLOT(reject()));
+
+    if (dialog.exec() == QDialog::Accepted) {
+        qDebug() << "Change width";
+    }
 }

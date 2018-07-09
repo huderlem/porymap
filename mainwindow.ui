@@ -250,6 +250,13 @@
                   </property>
                  </spacer>
                 </item>
+                <item>
+                 <widget class="QPushButton" name="pushButton">
+                  <property name="text">
+                   <string>Change Dimensions</string>
+                  </property>
+                 </widget>
+                </item>
                </layout>
               </widget>
              </item>
@@ -291,7 +298,7 @@
                      <x>0</x>
                      <y>0</y>
                      <width>436</width>
-                     <height>621</height>
+                     <height>620</height>
                     </rect>
                    </property>
                    <layout class="QGridLayout" name="gridLayout_8">
