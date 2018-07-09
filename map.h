@@ -194,6 +194,7 @@ public:
 
     QList<Connection*> connections;
     QPixmap renderConnection(Connection);
+    void setDimensions(int, int);
 
     QPixmap renderBorder();
     void cacheBorder();

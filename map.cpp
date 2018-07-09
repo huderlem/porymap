@@ -427,6 +427,30 @@ QPixmap Map::renderMetatiles() {
     return QPixmap::fromImage(image);
 }
 
+void Map::setDimensions(int newWidth, int newHeight) {
+    int oldWidth = getWidth();
+    int oldHeight = getHeight();
+
+    Blockdata* newBlockData = new Blockdata;
+
+    for (int y = 0; y < newHeight; y++)
+    for (int x = 0; x < newWidth; x++) {
+        if (x < oldWidth && y < oldHeight) {
+            int index = y * oldWidth + x;
+            newBlockData->addBlock(layout->blockdata->blocks->value(index));
+        } else {
+            newBlockData->addBlock(0);
+        }
+    }
+
+    layout->blockdata->copyFrom(newBlockData);
+    layout->width = QString::number(newWidth);
+    layout->height = QString::number(newHeight);
+    commit();
+
+    emit mapChanged(this);
+}
+
 Block* Map::getBlock(int x, int y) {
     if (layout->blockdata && layout->blockdata->blocks) {
         if (x >= 0 && x < getWidth())

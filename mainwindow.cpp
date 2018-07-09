@@ -851,21 +851,51 @@ void MainWindow::on_pushButton_clicked()
 
     QSpinBox *widthSpinBox = new QSpinBox();
     QSpinBox *heightSpinBox = new QSpinBox();
-    widthSpinBox->setValue(editor->map->getWidth());
-    heightSpinBox->setValue(editor->map->getHeight());
     widthSpinBox->setMinimum(1);
     heightSpinBox->setMinimum(1);
-    widthSpinBox->setMaximum(255);
-    heightSpinBox->setMaximum(255);
+    // See below for explanation of maximum map dimensions
+    widthSpinBox->setMaximum(0x1E7);
+    heightSpinBox->setMaximum(0x1D1);
+    widthSpinBox->setValue(editor->map->getWidth());
+    heightSpinBox->setValue(editor->map->getHeight());
     form.addRow(new QLabel("Width"), widthSpinBox);
     form.addRow(new QLabel("Height"), heightSpinBox);
 
+    QLabel *errorLabel = new QLabel();
+    QPalette errorPalette;
+    errorPalette.setColor(QPalette::WindowText, Qt::red);
+    errorLabel->setPalette(errorPalette);
+    errorLabel->setVisible(false);
+
     QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
     form.addRow(&buttonBox);
-    connect(&buttonBox, SIGNAL(accepted()), &dialog, SLOT(accept()));
+    connect(&buttonBox, &QDialogButtonBox::accepted, [&dialog, &widthSpinBox, &heightSpinBox, &errorLabel](){
+        // Ensure width and height are an acceptable size.
+        // The maximum number of metatiles in a map is the following:
+        //    max = (width + 15) * (height + 14)
+        // This limit can be found in fieldmap.c in pokeruby/pokeemerald.
+        int realWidth = widthSpinBox->value() + 15;
+        int realHeight = heightSpinBox->value() + 14;
+        int numMetatiles = realWidth * realHeight;
+        if (numMetatiles <= 0x2800) {
+            dialog.accept();
+        } else {
+            QString errorText = QString("Error: The specified width and height are too large.\n"
+                    "The maximum width and height is the following: (width + 15) * (height + 14) <= 10240\n"
+                    "The specified width and height was: (%1 + 15) * (%2 + 14) = %3")
+                        .arg(widthSpinBox->value())
+                        .arg(heightSpinBox->value())
+                        .arg(numMetatiles);
+            errorLabel->setText(errorText);
+            errorLabel->setVisible(true);
+        }
+    });
     connect(&buttonBox, SIGNAL(rejected()), &dialog, SLOT(reject()));
 
+    form.addRow(errorLabel);
+
     if (dialog.exec() == QDialog::Accepted) {
-        qDebug() << "Change width";
+        editor->map->setDimensions(widthSpinBox->value(), heightSpinBox->value());
+        setMap(editor->map->name);
     }
 }
