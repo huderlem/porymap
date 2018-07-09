@@ -389,7 +389,7 @@ void Map::drawSelection(int i, int w, int selectionWidth, int selectionHeight, Q
     int y = i / w;
     painter->save();
 
-    QColor penColor = smart_paths_enabled ? QColor(0xff, 0x0, 0xff) : QColor(0xff, 0xff, 0xff);
+    QColor penColor = QColor(0xff, 0xff, 0xff);
     painter->setPen(penColor);
     int rectWidth = selectionWidth * 16;
     int rectHeight = selectionHeight * 16;
@@ -474,38 +474,6 @@ void Map::_setBlock(int x, int y, Block block) {
     int i = y * getWidth() + x;
     if (layout->blockdata && layout->blockdata->blocks) {
         layout->blockdata->blocks->replace(i, block);
-    }
-}
-
-void Map::_floodFill(int x, int y, uint tile) {
-    QList<QPoint> todo;
-    todo.append(QPoint(x, y));
-    while (todo.length()) {
-            QPoint point = todo.takeAt(0);
-            x = point.x();
-            y = point.y();
-            Block *block = getBlock(x, y);
-            if (block == NULL) {
-                continue;
-            }
-            uint old_tile = block->tile;
-            if (old_tile == tile) {
-                continue;
-            }
-            block->tile = tile;
-            _setBlock(x, y, *block);
-            if ((block = getBlock(x + 1, y)) && block->tile == old_tile) {
-                todo.append(QPoint(x + 1, y));
-            }
-            if ((block = getBlock(x - 1, y)) && block->tile == old_tile) {
-                todo.append(QPoint(x - 1, y));
-            }
-            if ((block = getBlock(x, y + 1)) && block->tile == old_tile) {
-                todo.append(QPoint(x, y + 1));
-            }
-            if ((block = getBlock(x, y - 1)) && block->tile == old_tile) {
-                todo.append(QPoint(x, y - 1));
-            }
     }
 }
 
@@ -662,14 +630,6 @@ void Map::setBlock(int x, int y, Block block) {
     Block *old_block = getBlock(x, y);
     if (old_block && (*old_block) != block) {
         _setBlock(x, y, block);
-        commit();
-    }
-}
-
-void Map::floodFill(int x, int y, uint tile) {
-    Block *block = getBlock(x, y);
-    if (block && block->tile != tile) {
-        _floodFill(x, y, tile);
         commit();
     }
 }

@@ -228,9 +228,19 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QCheckBox" name="checkBox_ToggleGrid">
+                 <widget class="QCheckBox" name="checkBox_smartPaths">
                   <property name="styleSheet">
                    <string notr="true">margin-left: 10px</string>
+                  </property>
+                  <property name="text">
+                   <string>Smart Paths</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="checkBox_ToggleGrid">
+                  <property name="styleSheet">
+                   <string notr="true"/>
                   </property>
                   <property name="text">
                    <string>Show Grid</string>

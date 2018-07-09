@@ -882,9 +882,6 @@ void MetatilesPixmapItem::updateSelection(QPointF pos, Qt::MouseButton button) {
         map->paint_tile_index = baseTileY * 8 + baseTileX;
         map->paint_tile_width = abs(map->paint_metatile_initial_x - x) + 1;
         map->paint_tile_height = abs(map->paint_metatile_initial_y - y) + 1;
-        map->smart_paths_enabled = button == Qt::RightButton
-                                && map->paint_tile_width == 3
-                                && map->paint_tile_height == 3;
         emit map->paintTileChanged(map);
     }
 }
@@ -1032,7 +1029,7 @@ void MapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
         int x = (int)(pos.x()) / 16;
         int y = (int)(pos.y()) / 16;
 
-        if (map->smart_paths_enabled) {
+        if (map->smart_paths_enabled && map->paint_tile_width == 3 && map->paint_tile_height == 3) {
             paintSmartPath(x, y);
         } else {
             paintNormal(x, y);
@@ -1160,8 +1157,160 @@ void MapPixmapItem::floodFill(QGraphicsSceneMouseEvent *event) {
         QPointF pos = event->pos();
         int x = (int)(pos.x()) / 16;
         int y = (int)(pos.y()) / 16;
-        map->floodFill(x, y, map->getSelectedBlockIndex(map->paint_tile_index));
+        Block *block = map->getBlock(x, y);
+        int tile = map->getSelectedBlockIndex(map->paint_tile_index);
+        if (block && block->tile != tile) {
+            if (map->smart_paths_enabled && map->paint_tile_width == 3 && map->paint_tile_height == 3)
+                this->_floodFillSmartPath(x, y);
+            else
+                this->_floodFill(x, y);
+        }
+
+        if (event->type() == QEvent::GraphicsSceneMouseRelease) {
+            map->commit();
+        }
         draw();
+    }
+}
+
+void MapPixmapItem::_floodFill(int initialX, int initialY) {
+    QList<QPoint> todo;
+    todo.append(QPoint(initialX, initialY));
+    while (todo.length()) {
+        QPoint point = todo.takeAt(0);
+        int x = point.x();
+        int y = point.y();
+
+        Block *block = map->getBlock(x, y);
+        if (block == NULL) {
+            continue;
+        }
+
+        int xDiff = x - initialX;
+        int yDiff = y - initialY;
+        int i = xDiff % map->paint_tile_width;
+        int j = yDiff % map->paint_tile_height;
+        if (i < 0) i = map->paint_tile_width + i;
+        if (j < 0) j = map->paint_tile_height + j;
+        int tile = map->getSelectedBlockIndex(map->paint_tile_index + i + (j * 8));
+        uint old_tile = block->tile;
+        if (old_tile == tile) {
+            continue;
+        }
+
+        block->tile = tile;
+        map->_setBlock(x, y, *block);
+        if ((block = map->getBlock(x + 1, y)) && block->tile == old_tile) {
+            todo.append(QPoint(x + 1, y));
+        }
+        if ((block = map->getBlock(x - 1, y)) && block->tile == old_tile) {
+            todo.append(QPoint(x - 1, y));
+        }
+        if ((block = map->getBlock(x, y + 1)) && block->tile == old_tile) {
+            todo.append(QPoint(x, y + 1));
+        }
+        if ((block = map->getBlock(x, y - 1)) && block->tile == old_tile) {
+            todo.append(QPoint(x, y - 1));
+        }
+    }
+}
+
+void MapPixmapItem::_floodFillSmartPath(int initialX, int initialY) {
+    // Smart path should never be enabled without a 3x3 block selection.
+    if (map->paint_tile_width != 3 || map->paint_tile_height != 3) return;
+
+    // Shift to the middle tile of the smart path selection.
+    int openTile = map->paint_tile_index + 8 + 1;
+
+    // Flood fill the region with the open tile.
+    QList<QPoint> todo;
+    todo.append(QPoint(initialX, initialY));
+    while (todo.length()) {
+        QPoint point = todo.takeAt(0);
+        int x = point.x();
+        int y = point.y();
+
+        Block *block = map->getBlock(x, y);
+        if (block == NULL) {
+            continue;
+        }
+
+        int tile = map->getSelectedBlockIndex(openTile);
+        uint old_tile = block->tile;
+        if (old_tile == tile) {
+            continue;
+        }
+
+        block->tile = tile;
+        map->_setBlock(x, y, *block);
+        if ((block = map->getBlock(x + 1, y)) && block->tile == old_tile) {
+            todo.append(QPoint(x + 1, y));
+        }
+        if ((block = map->getBlock(x - 1, y)) && block->tile == old_tile) {
+            todo.append(QPoint(x - 1, y));
+        }
+        if ((block = map->getBlock(x, y + 1)) && block->tile == old_tile) {
+            todo.append(QPoint(x, y + 1));
+        }
+        if ((block = map->getBlock(x, y - 1)) && block->tile == old_tile) {
+            todo.append(QPoint(x, y - 1));
+        }
+    }
+
+    // Go back and resolve the flood-filled edge tiles.
+    // Mark tiles as visited while we go.
+    bool visited[map->getWidth() * map->getHeight()];
+    for (int i = 0; i < sizeof visited; i++)
+        visited[i] = false;
+
+    todo.append(QPoint(initialX, initialY));
+    while (todo.length()) {
+        QPoint point = todo.takeAt(0);
+        int x = point.x();
+        int y = point.y();
+        visited[x + y * map->getWidth()] = true;
+
+        Block *block = map->getBlock(x, y);
+        if (block == NULL) {
+            continue;
+        }
+
+        int id = 0;
+        Block *top = map->getBlock(x, y - 1);
+        Block *right = map->getBlock(x + 1, y);
+        Block *bottom = map->getBlock(x, y + 1);
+        Block *left = map->getBlock(x - 1, y);
+
+        // Get marching squares value, to determine which tile to use.
+        if (top && IS_SMART_PATH_TILE(top))
+            id += 1;
+        if (right && IS_SMART_PATH_TILE(right))
+            id += 2;
+        if (bottom && IS_SMART_PATH_TILE(bottom))
+            id += 4;
+        if (left && IS_SMART_PATH_TILE(left))
+            id += 8;
+
+        block->tile = map->getSelectedBlockIndex(map->paint_tile_index + smartPathTable[id]);
+        map->_setBlock(x, y, *block);
+
+        // Visit neighbors if they are smart-path tiles, and don't revisit any.
+        if (!visited[x + 1 + y * map->getWidth()] && (block = map->getBlock(x + 1, y)) && IS_SMART_PATH_TILE(block)) {
+            todo.append(QPoint(x + 1, y));
+            visited[x + 1 + y * map->getWidth()] = true;
+        }
+        if (!visited[x - 1 + y * map->getWidth()] && (block = map->getBlock(x - 1, y)) && IS_SMART_PATH_TILE(block)) {
+            todo.append(QPoint(x - 1, y));
+            visited[x - 1 + y * map->getWidth()] = true;
+        }
+        if (!visited[x + (y + 1) * map->getWidth()] && (block = map->getBlock(x, y + 1)) && IS_SMART_PATH_TILE(block)) {
+            todo.append(QPoint(x, y + 1));
+            visited[x + (y + 1) * map->getWidth()] = true;
+        }
+        if (!visited[x + (y - 1) * map->getWidth()] && (block = map->getBlock(x, y - 1)) && IS_SMART_PATH_TILE(block)) {
+            todo.append(QPoint(x, y - 1));
+            visited[x + (y - 1) * map->getWidth()] = true;
+        }
     }
 }
 

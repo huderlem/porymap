@@ -96,6 +96,8 @@ private slots:
 
     void on_pushButton_clicked();
 
+    void on_checkBox_smartPaths_stateChanged(int selected);
+
 private:
     Ui::MainWindow *ui;
     QStandardItemModel *mapListModel;

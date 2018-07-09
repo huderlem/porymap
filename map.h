@@ -184,8 +184,6 @@ public:
     void setBlock(int x, int y, Block block);
     void _setBlock(int x, int y, Block block);
 
-    void floodFill(int x, int y, uint tile);
-    void _floodFill(int x, int y, uint tile);
     void floodFillCollision(int x, int y, uint collision);
     void _floodFillCollision(int x, int y, uint collision);
     void floodFillElevation(int x, int y, uint elevation);

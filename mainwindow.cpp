@@ -909,3 +909,8 @@ void MainWindow::on_pushButton_clicked()
         onMapNeedsRedrawing(editor->map);
     }
 }
+
+void MainWindow::on_checkBox_smartPaths_stateChanged(int selected)
+{
+    editor->map->smart_paths_enabled = selected == Qt::Checked;
+}
