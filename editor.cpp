@@ -321,8 +321,8 @@ void Editor::setMap(QString map_name) {
     }
     if (project) {
         map = project->loadMap(map_name);
-        displayMap();
         selected_events->clear();
+        displayMap();
         updateSelectedEvents();
     }
 }
