@@ -19,13 +19,13 @@ SOURCES += main.cpp\
     blockdata.cpp \
     block.cpp \
     tileset.cpp \
-    metatile.cpp \
     tile.cpp \
     event.cpp \
     editor.cpp \
     objectpropertiesframe.cpp \
     graphicsview.cpp \
-    parseutil.cpp
+    parseutil.cpp \
+    neweventtoolbutton.cpp
 
 HEADERS  += mainwindow.h \
     project.h \
@@ -33,13 +33,13 @@ HEADERS  += mainwindow.h \
     blockdata.h \
     block.h \
     tileset.h \
-    metatile.h \
     tile.h \
     event.h \
     editor.h \
     objectpropertiesframe.h \
     graphicsview.h \
-    parseutil.h
+    parseutil.h \
+    neweventtoolbutton.h
 
 FORMS    += mainwindow.ui \
     objectpropertiesframe.ui

@@ -16,6 +16,7 @@ class MapPixmapItem;
 class CollisionPixmapItem;
 class ConnectionPixmapItem;
 class MetatilesPixmapItem;
+class BorderMetatilesPixmapItem;
 class CollisionMetatilesPixmapItem;
 class ElevationMetatilesPixmapItem;
 
@@ -36,6 +37,7 @@ public:
     void setMap(QString map_name);
     void displayMap();
     void displayMetatiles();
+    void displayBorderMetatiles();
     void displayCollisionMetatiles();
     void displayElevationMetatiles();
     void displayMapEvents();
@@ -57,12 +59,14 @@ public:
     void updateDiveMap(QString mapName);
     void updateEmergeMap(QString mapName);
     void setSelectedConnectionFromMap(QString mapName);
+    void updatePrimaryTileset(QString tilesetLabel);
+    void updateSecondaryTileset(QString tilesetLabel);
 
     DraggablePixmapItem *addMapEvent(Event *event);
     void selectMapEvent(DraggablePixmapItem *object);
     void selectMapEvent(DraggablePixmapItem *object, bool toggle);
-    DraggablePixmapItem *addNewEvent();
     DraggablePixmapItem *addNewEvent(QString event_type);
+    Event* createNewEvent(QString event_type);
     void deleteEvent(Event *);
     void updateSelectedEvents();
     void redrawObject(DraggablePixmapItem *item);
@@ -72,15 +76,19 @@ public:
     QGraphicsPixmapItem *current_view = NULL;
     MapPixmapItem *map_item = NULL;
     ConnectionPixmapItem* selected_connection_item = NULL;
+    QList<QGraphicsPixmapItem*> connection_items;
     QList<ConnectionPixmapItem*> connection_edit_items;
     CollisionPixmapItem *collision_item = NULL;
     QGraphicsItemGroup *events_group = NULL;
     QList<QGraphicsPixmapItem*> borderItems;
+    QList<QGraphicsLineItem*> gridLines;
 
     QGraphicsScene *scene_metatiles = NULL;
+    QGraphicsScene *scene_selected_border_metatiles = NULL;
     QGraphicsScene *scene_collision_metatiles = NULL;
     QGraphicsScene *scene_elevation_metatiles = NULL;
     MetatilesPixmapItem *metatiles_item = NULL;
+    BorderMetatilesPixmapItem *selected_border_metatiles_item = NULL;
     CollisionMetatilesPixmapItem *collision_metatiles_item = NULL;
     ElevationMetatilesPixmapItem *elevation_metatiles_item = NULL;
 
@@ -108,6 +116,13 @@ private:
     void updateMirroredConnectionDirection(Connection*, QString);
     void updateMirroredConnectionMap(Connection*, QString);
     void updateMirroredConnection(Connection*, QString, QString, bool isDelete = false);
+    Event* createNewObjectEvent();
+    Event* createNewWarpEvent();
+    Event* createNewCoordScriptEvent();
+    Event* createNewCoordWeatherEvent();
+    Event* createNewSignEvent();
+    Event* createNewHiddenItemEvent();
+    Event* createNewSecretBaseEvent();
 
 private slots:
     void mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item);
@@ -116,11 +131,13 @@ private slots:
     void onConnectionItemSelected(ConnectionPixmapItem* connectionItem);
     void onConnectionItemDoubleClicked(ConnectionPixmapItem* connectionItem);
     void onConnectionDirectionChanged(QString newDirection);
+    void onBorderMetatilesChanged();
 
 signals:
     void objectsChanged();
     void selectedObjectsChanged();
     void loadMapRequested(QString, QString);
+    void tilesetChanged(QString);
 };
 
 
@@ -166,7 +183,7 @@ public:
         emit spriteChanged(event->pixmap);
     }
     void bind(QComboBox *combo, QString key) {
-        connect(combo, static_cast<void (QComboBox::*)(const QString &)>(&QComboBox::activated),
+        connect(combo, static_cast<void (QComboBox::*)(const QString &)>(&QComboBox::currentTextChanged),
                 this, [this, key](QString value){
             this->event->put(key, value);
         });
@@ -342,6 +359,21 @@ protected:
     void mousePressEvent(QGraphicsSceneMouseEvent*);
     void mouseMoveEvent(QGraphicsSceneMouseEvent*);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent*);
+};
+
+class BorderMetatilesPixmapItem : public QObject, public QGraphicsPixmapItem {
+    Q_OBJECT
+public:
+    BorderMetatilesPixmapItem(Map *map_) {
+        map = map_;
+        setAcceptHoverEvents(true);
+    }
+    Map* map = NULL;
+    virtual void draw();
+signals:
+    void borderMetatilesChanged();
+protected:
+    void mousePressEvent(QGraphicsSceneMouseEvent*);
 };
 
 class MovementPermissionsPixmapItem : public MetatilesPixmapItem {

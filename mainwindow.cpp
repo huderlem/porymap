@@ -24,12 +24,17 @@ MainWindow::MainWindow(QWidget *parent) :
     QCoreApplication::setApplicationName("pretmap");
 
     ui->setupUi(this);
+
+    ui->newEventToolButton->initButton();
+    connect(ui->newEventToolButton, SIGNAL(newEventAdded(QString)), this, SLOT(addNewEvent(QString)));
+
     new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Z), this, SLOT(redo()));
 
     editor = new Editor(ui);
     connect(editor, SIGNAL(objectsChanged()), this, SLOT(updateSelectedObjects()));
     connect(editor, SIGNAL(selectedObjectsChanged()), this, SLOT(updateSelectedObjects()));
     connect(editor, SIGNAL(loadMapRequested(QString, QString)), this, SLOT(onLoadMapRequested(QString, QString)));
+    connect(editor, SIGNAL(tilesetChanged(QString)), this, SLOT(onTilesetChanged(QString)));
 
     on_toolButton_Paint_clicked();
 
@@ -162,6 +167,9 @@ void MainWindow::setMap(QString map_name) {
     //ui->graphicsView_Metatiles->setSceneRect(editor->scene_metatiles->sceneRect());
     ui->graphicsView_Metatiles->setFixedSize(editor->metatiles_item->pixmap().width() + 2, editor->metatiles_item->pixmap().height() + 2);
 
+    ui->graphicsView_BorderMetatile->setScene(editor->scene_selected_border_metatiles);
+    ui->graphicsView_BorderMetatile->setFixedSize(editor->selected_border_metatiles_item->pixmap().width() + 2, editor->selected_border_metatiles_item->pixmap().height() + 2);
+
     ui->graphicsView_Collision->setScene(editor->scene_collision_metatiles);
     //ui->graphicsView_Collision->setSceneRect(editor->scene_collision_metatiles->sceneRect());
     ui->graphicsView_Collision->setFixedSize(editor->collision_metatiles_item->pixmap().width() + 2, editor->collision_metatiles_item->pixmap().height() + 2);
@@ -199,6 +207,8 @@ void MainWindow::displayMapProperties() {
     ui->comboBox_Weather->clear();
     ui->comboBox_Type->clear();
     ui->comboBox_BattleScene->clear();
+    ui->comboBox_PrimaryTileset->clear();
+    ui->comboBox_SecondaryTileset->clear();
     ui->checkBox_ShowLocation->setChecked(false);
     if (!editor || !editor->map || !editor->project) {
         ui->frame_3->setEnabled(false);
@@ -214,6 +224,12 @@ void MainWindow::displayMapProperties() {
 
     ui->comboBox_Location->addItems(project->getLocations());
     ui->comboBox_Location->setCurrentText(map->location);
+
+    QMap<QString, QStringList> tilesets = project->getTilesets();
+    ui->comboBox_PrimaryTileset->addItems(tilesets.value("primary"));
+    ui->comboBox_PrimaryTileset->setCurrentText(map->layout->tileset_primary_label);
+    ui->comboBox_SecondaryTileset->addItems(tilesets.value("secondary"));
+    ui->comboBox_SecondaryTileset->setCurrentText(map->layout->tileset_secondary_label);
 
     ui->comboBox_Visibility->addItems(project->getVisibilities());
     ui->comboBox_Visibility->setCurrentText(map->visibility);
@@ -405,6 +421,11 @@ void MainWindow::onAddNewMapToGroupClick(QAction* triggeredAction)
     setMap(newMapName);
 }
 
+void MainWindow::onTilesetChanged(QString mapName)
+{
+    setMap(mapName);
+}
+
 void MainWindow::on_mapList_activated(const QModelIndex &index)
 {
     QVariant data = index.data(Qt::UserRole);
@@ -503,14 +524,12 @@ void MainWindow::on_actionRedo_triggered()
     redo();
 }
 
-void MainWindow::on_toolButton_newObject_clicked()
+void MainWindow::addNewEvent(QString event_type)
 {
     if (editor) {
-        DraggablePixmapItem *object = editor->addNewEvent();
+        DraggablePixmapItem *object = editor->addNewEvent(event_type);
         if (object) {
-            //if (editor->selected_events->length()) {
-                editor->selectMapEvent(object, true);
-            //}
+            editor->selectMapEvent(object, false);
         }
         updateSelectedObjects();
     }
@@ -554,12 +573,13 @@ void MainWindow::updateSelectedObjects() {
         font.setCapitalization(QFont::Capitalize);
         frame->ui->label_name->setFont(font);
         QString event_type = item->event->get("event_type");
+        QString event_group_type = item->event->get("event_group_type");
         QString map_name = item->event->get("map_name");
         frame->ui->label_name->setText(
-            QString("%1 %2 %3")
+            QString("%1: %2 %3")
+                .arg(editor->project->getMap(map_name)->events.value(event_group_type).indexOf(item->event) + 1)
                 .arg(map_name)
                 .arg(event_type)
-                .arg(editor->project->getMap(map_name)->events.value(event_type).indexOf(item->event) + 1)
         );
 
         frame->ui->label_spritePixmap->setPixmap(item->event->pixmap);
@@ -574,13 +594,13 @@ void MainWindow::updateSelectedObjects() {
         field_labels["behavior"] = "Behavior";
         field_labels["radius_x"] = "Movement Radius X";
         field_labels["radius_y"] = "Movement Radius Y";
-        field_labels["property"] = "Property";
-        field_labels["sight_radius"] = "Sight Radius";
+        field_labels["trainer_see_type"] = "Trainer See Type";
+        field_labels["sight_radius_tree_id"] = "Sight Radius / Berry Tree ID";
         field_labels["destination_warp"] = "Destination Warp";
         field_labels["destination_map_name"] = "Destination Map";
         field_labels["script_var"] = "Var";
         field_labels["script_var_value"] = "Var Value";
-        field_labels["type"] = "Type";
+        field_labels["player_facing_direction"] = "Player Facing Direction";
         field_labels["item"] = "Item";
         field_labels["item_unknown5"] = "Unknown 5";
         field_labels["item_unknown6"] = "Unknown 6";
@@ -590,7 +610,7 @@ void MainWindow::updateSelectedObjects() {
 
         QStringList fields;
 
-        if (event_type == "object") {
+        if (event_type == EventType::Object) {
 
             frame->ui->sprite->setVisible(true);
             frame->ui->comboBox_sprite->addItems(event_obj_gfx_constants.keys());
@@ -613,30 +633,30 @@ void MainWindow::updateSelectedObjects() {
             fields << "script_label";
             fields << "event_flag";
             fields << "replacement";
-            fields << "property";
-            fields << "sight_radius";
+            fields << "trainer_see_type";
+            fields << "sight_radius_tree_id";
         }
-        else if (event_type == "warp") {
+        else if (event_type == EventType::Warp) {
             fields << "destination_warp";
             fields << "destination_map_name";
         }
-        else if (event_type == "trap") {
+        else if (event_type == EventType::CoordScript) {
             fields << "script_label";
             fields << "script_var";
             fields << "script_var_value";
         }
-        else if (event_type == "trap_weather") {
+        else if (event_type == EventType::CoordWeather) {
             fields << "weather";
         }
-        else if (event_type == "sign") {
-            fields << "type";
+        else if (event_type == EventType::Sign) {
+            fields << "player_facing_direction";
             fields << "script_label";
         }
-        else if (event_type == "event_hidden_item") {
+        else if (event_type == EventType::HiddenItem) {
             fields << "item";
             fields << "flag";
         }
-        else if (event_type == "event_secret_base") {
+        else if (event_type == EventType::SecretBase) {
             fields << "secret_base_map";
         }
 
@@ -807,4 +827,14 @@ void MainWindow::on_comboBox_DiveMap_currentTextChanged(const QString &mapName)
 void MainWindow::on_comboBox_EmergeMap_currentTextChanged(const QString &mapName)
 {
     editor->updateEmergeMap(mapName);
+}
+
+void MainWindow::on_comboBox_PrimaryTileset_activated(const QString &tilesetLabel)
+{
+    editor->updatePrimaryTileset(tilesetLabel);
+}
+
+void MainWindow::on_comboBox_SecondaryTileset_activated(const QString &tilesetLabel)
+{
+    editor->updateSecondaryTileset(tilesetLabel);
 }

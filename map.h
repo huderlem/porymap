@@ -129,15 +129,14 @@ public:
 public:
     void setName(QString mapName);
     static QString mapConstantFromName(QString mapName);
+    static QString objectEventsLabelFromName(QString mapName);
+    static QString warpEventsLabelFromName(QString mapName);
+    static QString coordEventsLabelFromName(QString mapName);
+    static QString bgEventsLabelFromName(QString mapName);
     int getWidth();
     int getHeight();
-    Tileset* getBlockTileset(int);
-    int getBlockIndex(int layout_id);
-    int getSelectedBlockIndex(int layout_id);
-    int getDisplayedBlockIndex(int layout_id);
-    Metatile* getMetatile(int);
-    QImage getMetatileImage(int);
-    QImage getMetatileTile(int);
+    int getSelectedBlockIndex(int);
+    int getDisplayedBlockIndex(int);
     QPixmap render(bool ignoreCache);
     QPixmap renderMetatiles();
 
@@ -188,19 +187,12 @@ public:
     void redo();
     void commit();
 
-    QString object_events_label;
-    QString warps_label;
-    QString coord_events_label;
-    QString bg_events_label;
-
     QList<Event*> getAllEvents();
-    QList<Event*> getEventsByType(QString type);
     void removeEvent(Event *event);
     void addEvent(Event *event);
     QMap<QString, QList<Event*>> events;
 
     QList<Connection*> connections;
-    QList<QGraphicsPixmapItem*> connection_items;
     QPixmap renderConnection(Connection);
 
     QPixmap renderBorder();
@@ -215,8 +207,6 @@ public:
     void clearHoveredCollisionTile();
     void hoveredElevationTileChanged(int elevation);
     void clearHoveredElevationTile();
-
-    QList<QList<QRgb> > getBlockPalettes(int metatile_index);
 
 signals:
     void paintTileChanged(Map *map);

@@ -56,10 +56,9 @@ private slots:
 
     void on_actionRedo_triggered();
 
-    void on_toolButton_newObject_clicked();
-
     void on_toolButton_deleteObject_clicked();
 
+    void addNewEvent(QString);
     void updateSelectedObjects();
 
     void on_toolButton_Paint_clicked();
@@ -72,6 +71,7 @@ private slots:
 
     void onOpenMapListContextMenu(const QPoint &point);
     void onAddNewMapToGroupClick(QAction* triggeredAction);
+    void onTilesetChanged(QString);
 
     void on_action_Export_Map_Image_triggered();
 
@@ -88,6 +88,10 @@ private slots:
     void on_comboBox_DiveMap_currentTextChanged(const QString &mapName);
 
     void on_comboBox_EmergeMap_currentTextChanged(const QString &mapName);
+
+    void on_comboBox_PrimaryTileset_activated(const QString &arg1);
+
+    void on_comboBox_SecondaryTileset_activated(const QString &arg1);
 
 private:
     Ui::MainWindow *ui;
