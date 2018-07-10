@@ -6,6 +6,7 @@
 #include <QImage>
 #include <QRegularExpression>
 
+
 Map::Map(QObject *parent) : QObject(parent)
 {
     paint_tile_index = 1;
@@ -276,6 +277,7 @@ QPixmap Map::render(bool ignoreCache = false) {
         cacheBlockdata();
         pixmap = pixmap.fromImage(image);
     }
+
     return pixmap;
 }
 
@@ -387,7 +389,7 @@ void Map::drawSelection(int i, int w, int selectionWidth, int selectionHeight, Q
     int y = i / w;
     painter->save();
 
-    QColor penColor = smart_paths_enabled ? QColor(0xff, 0x0, 0xff) : QColor(0xff, 0xff, 0xff);
+    QColor penColor = QColor(0xff, 0xff, 0xff);
     painter->setPen(penColor);
     int rectWidth = selectionWidth * 16;
     int rectHeight = selectionHeight * 16;
@@ -427,6 +429,36 @@ QPixmap Map::renderMetatiles() {
     return QPixmap::fromImage(image);
 }
 
+void Map::setNewDimensionsBlockdata(int newWidth, int newHeight) {
+    int oldWidth = getWidth();
+    int oldHeight = getHeight();
+
+    Blockdata* newBlockData = new Blockdata;
+
+    for (int y = 0; y < newHeight; y++)
+    for (int x = 0; x < newWidth; x++) {
+        if (x < oldWidth && y < oldHeight) {
+            int index = y * oldWidth + x;
+            newBlockData->addBlock(layout->blockdata->blocks->value(index));
+        } else {
+            newBlockData->addBlock(0);
+        }
+    }
+
+    layout->blockdata->copyFrom(newBlockData);
+}
+
+void Map::setDimensions(int newWidth, int newHeight, bool setNewBlockdata) {
+    if (setNewBlockdata) {
+        setNewDimensionsBlockdata(newWidth, newHeight);
+    }
+
+    layout->width = QString::number(newWidth);
+    layout->height = QString::number(newHeight);
+
+    emit mapChanged(this);
+}
+
 Block* Map::getBlock(int x, int y) {
     if (layout->blockdata && layout->blockdata->blocks) {
         if (x >= 0 && x < getWidth())
@@ -442,38 +474,6 @@ void Map::_setBlock(int x, int y, Block block) {
     int i = y * getWidth() + x;
     if (layout->blockdata && layout->blockdata->blocks) {
         layout->blockdata->blocks->replace(i, block);
-    }
-}
-
-void Map::_floodFill(int x, int y, uint tile) {
-    QList<QPoint> todo;
-    todo.append(QPoint(x, y));
-    while (todo.length()) {
-            QPoint point = todo.takeAt(0);
-            x = point.x();
-            y = point.y();
-            Block *block = getBlock(x, y);
-            if (block == NULL) {
-                continue;
-            }
-            uint old_tile = block->tile;
-            if (old_tile == tile) {
-                continue;
-            }
-            block->tile = tile;
-            _setBlock(x, y, *block);
-            if ((block = getBlock(x + 1, y)) && block->tile == old_tile) {
-                todo.append(QPoint(x + 1, y));
-            }
-            if ((block = getBlock(x - 1, y)) && block->tile == old_tile) {
-                todo.append(QPoint(x - 1, y));
-            }
-            if ((block = getBlock(x, y + 1)) && block->tile == old_tile) {
-                todo.append(QPoint(x, y + 1));
-            }
-            if ((block = getBlock(x, y - 1)) && block->tile == old_tile) {
-                todo.append(QPoint(x, y - 1));
-            }
     }
 }
 
@@ -578,29 +578,48 @@ void Map::_floodFillCollisionElevation(int x, int y, uint collision, uint elevat
 
 
 void Map::undo() {
+    HistoryItem *commit = history.back();
+    if (!commit)
+        return;
+
     if (layout->blockdata) {
-        Blockdata *commit = history.back();
-        if (commit != NULL) {
-            layout->blockdata->copyFrom(commit);
-            emit mapChanged(this);
+        layout->blockdata->copyFrom(commit->metatiles);
+        if (commit->layoutWidth != this->getWidth() || commit->layoutHeight != this->getHeight())
+        {
+            this->setDimensions(commit->layoutWidth, commit->layoutHeight, false);
+            emit mapNeedsRedrawing(this);
         }
+
+        emit mapChanged(this);
     }
 }
 
 void Map::redo() {
+    HistoryItem *commit = history.next();
+    if (!commit)
+        return;
+
     if (layout->blockdata) {
-        Blockdata *commit = history.next();
-        if (commit != NULL) {
-            layout->blockdata->copyFrom(commit);
-            emit mapChanged(this);
+        layout->blockdata->copyFrom(commit->metatiles);
+        if (commit->layoutWidth != this->getWidth() || commit->layoutHeight != this->getHeight())
+        {
+            this->setDimensions(commit->layoutWidth, commit->layoutHeight, false);
+            emit mapNeedsRedrawing(this);
         }
+
+        emit mapChanged(this);
     }
 }
 
 void Map::commit() {
     if (layout->blockdata) {
-        if (!layout->blockdata->equals(history.current())) {
-            Blockdata* commit = layout->blockdata->copy();
+        HistoryItem *item = history.current();
+        bool atCurrentHistory = item
+                && layout->blockdata->equals(item->metatiles)
+                && this->getWidth() == item->layoutWidth
+                && this->getHeight() == item->layoutHeight;
+        if (!atCurrentHistory) {
+            HistoryItem *commit = new HistoryItem(layout->blockdata->copy(), this->getWidth(), this->getHeight());
             history.push(commit);
             emit mapChanged(this);
         }
@@ -611,14 +630,6 @@ void Map::setBlock(int x, int y, Block block) {
     Block *old_block = getBlock(x, y);
     if (old_block && (*old_block) != block) {
         _setBlock(x, y, block);
-        commit();
-    }
-}
-
-void Map::floodFill(int x, int y, uint tile) {
-    Block *block = getBlock(x, y);
-    if (block && block->tile != tile) {
-        _floodFill(x, y, tile);
         commit();
     }
 }

@@ -250,10 +250,10 @@ public:
     QList<QPoint> selection;
     virtual void paint(QGraphicsSceneMouseEvent*);
     virtual void floodFill(QGraphicsSceneMouseEvent*);
+    void _floodFill(int x, int y);
+    void _floodFillSmartPath(int initialX, int initialY);
     virtual void pick(QGraphicsSceneMouseEvent*);
     virtual void select(QGraphicsSceneMouseEvent*);
-    virtual void undo();
-    virtual void redo();
     virtual void draw(bool ignoreCache = false);
 
 private:

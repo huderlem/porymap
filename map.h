@@ -10,6 +10,17 @@
 #include <QDebug>
 #include <QGraphicsPixmapItem>
 
+class HistoryItem {
+public:
+    Blockdata *metatiles;
+    short layoutWidth;
+    short layoutHeight;
+    HistoryItem(Blockdata *metatiles_, short layoutWidth_, short layoutHeight_) {
+        this->metatiles = metatiles_;
+        this->layoutWidth = layoutWidth_;
+        this->layoutHeight = layoutHeight_;
+    }
+};
 
 template <typename T>
 class History {
@@ -173,8 +184,6 @@ public:
     void setBlock(int x, int y, Block block);
     void _setBlock(int x, int y, Block block);
 
-    void floodFill(int x, int y, uint tile);
-    void _floodFill(int x, int y, uint tile);
     void floodFillCollision(int x, int y, uint collision);
     void _floodFillCollision(int x, int y, uint collision);
     void floodFillElevation(int x, int y, uint elevation);
@@ -182,7 +191,7 @@ public:
     void floodFillCollisionElevation(int x, int y, uint collision, uint elevation);
     void _floodFillCollisionElevation(int x, int y, uint collision, uint elevation);
 
-    History<Blockdata*> history;
+    History<HistoryItem*> history;
     void undo();
     void redo();
     void commit();
@@ -194,6 +203,8 @@ public:
 
     QList<Connection*> connections;
     QPixmap renderConnection(Connection);
+    void setNewDimensionsBlockdata(int newWidth, int newHeight);
+    void setDimensions(int newWidth, int newHeight, bool setNewBlockData = true);
 
     QPixmap renderBorder();
     void cacheBorder();
@@ -212,6 +223,7 @@ signals:
     void paintTileChanged(Map *map);
     void paintCollisionChanged(Map *map);
     void mapChanged(Map *map);
+    void mapNeedsRedrawing(Map *map);
     void statusBarMessage(QString);
 
 public slots:

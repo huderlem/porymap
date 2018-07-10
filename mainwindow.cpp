@@ -15,6 +15,8 @@
 #include <QSpacerItem>
 #include <QFont>
 #include <QScrollBar>
+#include <QMessageBox>
+#include <QDialogButtonBox>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -147,7 +149,22 @@ void MainWindow::setMap(QString map_name) {
         return;
     }
     editor->setMap(map_name);
+    redrawMapScene();
+    displayMapProperties();
 
+    setWindowTitle(map_name + " - " + editor->project->getProjectTitle() + " - pretmap");
+
+    connect(editor->map, SIGNAL(mapChanged(Map*)), this, SLOT(onMapChanged(Map *)));
+    connect(editor->map, SIGNAL(mapNeedsRedrawing(Map*)), this, SLOT(onMapNeedsRedrawing(Map *)));
+    connect(editor->map, SIGNAL(statusBarMessage(QString)), this, SLOT(setStatusBarMessage(QString)));
+
+    setRecentMap(map_name);
+    updateMapList();
+}
+
+void MainWindow::redrawMapScene()
+{
+    editor->displayMap();
     on_tabWidget_currentChanged(ui->tabWidget->currentIndex());
 
     ui->graphicsView_Map->setScene(editor->scene);
@@ -177,16 +194,6 @@ void MainWindow::setMap(QString map_name) {
     ui->graphicsView_Elevation->setScene(editor->scene_elevation_metatiles);
     //ui->graphicsView_Elevation->setSceneRect(editor->scene_elevation_metatiles->sceneRect());
     ui->graphicsView_Elevation->setFixedSize(editor->elevation_metatiles_item->pixmap().width() + 2, editor->elevation_metatiles_item->pixmap().height() + 2);
-
-    displayMapProperties();
-
-    setWindowTitle(map_name + " - " + editor->project->getProjectTitle() + " - pretmap");
-
-    connect(editor->map, SIGNAL(mapChanged(Map*)), this, SLOT(onMapChanged(Map *)));
-    connect(editor->map, SIGNAL(statusBarMessage(QString)), this, SLOT(setStatusBarMessage(QString)));
-
-    setRecentMap(map_name);
-    updateMapList();
 }
 
 void MainWindow::setRecentMap(QString map_name) {
@@ -785,6 +792,10 @@ void MainWindow::onMapChanged(Map *map) {
     updateMapList();
 }
 
+void MainWindow::onMapNeedsRedrawing(Map *map) {
+    redrawMapScene();
+}
+
 void MainWindow::on_action_Export_Map_Image_triggered()
 {
     QString defaultFilepath = QString("%1/%2.png").arg(editor->project->root).arg(editor->map->name);
@@ -837,4 +848,69 @@ void MainWindow::on_comboBox_PrimaryTileset_activated(const QString &tilesetLabe
 void MainWindow::on_comboBox_SecondaryTileset_activated(const QString &tilesetLabel)
 {
     editor->updateSecondaryTileset(tilesetLabel);
+}
+
+void MainWindow::on_pushButton_clicked()
+{
+    QDialog dialog(this, Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
+    dialog.setWindowTitle("Change Map Dimensions");
+    dialog.setWindowModality(Qt::NonModal);
+
+    QFormLayout form(&dialog);
+
+    QSpinBox *widthSpinBox = new QSpinBox();
+    QSpinBox *heightSpinBox = new QSpinBox();
+    widthSpinBox->setMinimum(1);
+    heightSpinBox->setMinimum(1);
+    // See below for explanation of maximum map dimensions
+    widthSpinBox->setMaximum(0x1E7);
+    heightSpinBox->setMaximum(0x1D1);
+    widthSpinBox->setValue(editor->map->getWidth());
+    heightSpinBox->setValue(editor->map->getHeight());
+    form.addRow(new QLabel("Width"), widthSpinBox);
+    form.addRow(new QLabel("Height"), heightSpinBox);
+
+    QLabel *errorLabel = new QLabel();
+    QPalette errorPalette;
+    errorPalette.setColor(QPalette::WindowText, Qt::red);
+    errorLabel->setPalette(errorPalette);
+    errorLabel->setVisible(false);
+
+    QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
+    form.addRow(&buttonBox);
+    connect(&buttonBox, &QDialogButtonBox::accepted, [&dialog, &widthSpinBox, &heightSpinBox, &errorLabel](){
+        // Ensure width and height are an acceptable size.
+        // The maximum number of metatiles in a map is the following:
+        //    max = (width + 15) * (height + 14)
+        // This limit can be found in fieldmap.c in pokeruby/pokeemerald.
+        int realWidth = widthSpinBox->value() + 15;
+        int realHeight = heightSpinBox->value() + 14;
+        int numMetatiles = realWidth * realHeight;
+        if (numMetatiles <= 0x2800) {
+            dialog.accept();
+        } else {
+            QString errorText = QString("Error: The specified width and height are too large.\n"
+                    "The maximum width and height is the following: (width + 15) * (height + 14) <= 10240\n"
+                    "The specified width and height was: (%1 + 15) * (%2 + 14) = %3")
+                        .arg(widthSpinBox->value())
+                        .arg(heightSpinBox->value())
+                        .arg(numMetatiles);
+            errorLabel->setText(errorText);
+            errorLabel->setVisible(true);
+        }
+    });
+    connect(&buttonBox, SIGNAL(rejected()), &dialog, SLOT(reject()));
+
+    form.addRow(errorLabel);
+
+    if (dialog.exec() == QDialog::Accepted) {
+        editor->map->setDimensions(widthSpinBox->value(), heightSpinBox->value());
+        editor->map->commit();
+        onMapNeedsRedrawing(editor->map);
+    }
+}
+
+void MainWindow::on_checkBox_smartPaths_stateChanged(int selected)
+{
+    editor->map->smart_paths_enabled = selected == Qt::Checked;
 }
