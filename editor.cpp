@@ -1515,11 +1515,13 @@ void DraggablePixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *mouse) {
 }
 
 void DraggablePixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouse) {
-    if (clicking) {
-        this->editor->selectMapEvent(this, mouse->modifiers() & Qt::ControlModifier);
-        this->editor->updateSelectedEvents();
-    }
     active = false;
+}
+
+void DraggablePixmapItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouse) {
+    if (this->event->get("event_type") == EventType::Warp) {
+        emit editor->warpEventDoubleClicked(this->event->get("destination_map_name"), this->event->get("destination_warp"));
+    }
 }
 
 QList<DraggablePixmapItem *> *Editor::getObjects() {

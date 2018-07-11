@@ -138,6 +138,7 @@ signals:
     void selectedObjectsChanged();
     void loadMapRequested(QString, QString);
     void tilesetChanged(QString);
+    void warpEventDoubleClicked(QString mapName, QString warpNum);
 };
 
 
@@ -228,6 +229,7 @@ protected:
     void mousePressEvent(QGraphicsSceneMouseEvent*);
     void mouseMoveEvent(QGraphicsSceneMouseEvent*);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent*);
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent*);
 };
 
 class EventGroup : public QGraphicsItemGroup {

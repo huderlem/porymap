@@ -37,6 +37,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(editor, SIGNAL(selectedObjectsChanged()), this, SLOT(updateSelectedObjects()));
     connect(editor, SIGNAL(loadMapRequested(QString, QString)), this, SLOT(onLoadMapRequested(QString, QString)));
     connect(editor, SIGNAL(tilesetChanged(QString)), this, SLOT(onTilesetChanged(QString)));
+    connect(editor, SIGNAL(warpEventDoubleClicked(QString,QString)), this, SLOT(openWarpMap(QString,QString)));
 
     on_toolButton_Paint_clicked();
 
@@ -194,6 +195,39 @@ void MainWindow::redrawMapScene()
     ui->graphicsView_Elevation->setScene(editor->scene_elevation_metatiles);
     //ui->graphicsView_Elevation->setSceneRect(editor->scene_elevation_metatiles->sceneRect());
     ui->graphicsView_Elevation->setFixedSize(editor->elevation_metatiles_item->pixmap().width() + 2, editor->elevation_metatiles_item->pixmap().height() + 2);
+}
+
+void MainWindow::openWarpMap(QString map_name, QString warp_num) {
+    // Ensure valid destination map name.
+    if (!editor->project->mapNames->contains(map_name)) {
+        qDebug() << QString("Invalid warp destination map name '%1'").arg(map_name);
+        return;
+    }
+
+    // Ensure valid destination warp number.
+    bool ok;
+    int warpNum = warp_num.toInt(&ok, 0);
+    if (!ok) {
+        qDebug() << QString("Invalid warp number '%1' for destination map '%2'").arg(warp_num).arg(map_name);
+        return;
+    }
+
+    // Open the destination map, and select the target warp event.
+    setMap(map_name);
+    QList<Event*> warp_events = editor->map->events["warp_event_group"];
+    if (warp_events.length() > warpNum) {
+        Event *warp_event = warp_events.at(warpNum);
+        QList<DraggablePixmapItem *> *all_events = editor->getObjects();
+        for (DraggablePixmapItem *item : *all_events) {
+            if (item->event == warp_event) {
+                editor->selected_events->clear();
+                editor->selected_events->append(item);
+                editor->updateSelectedEvents();
+            }
+        }
+
+        delete all_events;
+    }
 }
 
 void MainWindow::setRecentMap(QString map_name) {
