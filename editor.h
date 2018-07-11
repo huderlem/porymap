@@ -150,13 +150,12 @@ public:
     Editor *editor = NULL;
     Event *event = NULL;
     QGraphicsItemAnimation *pos_anim = NULL;
-    DraggablePixmapItem(Event *event_) : QGraphicsPixmapItem(event_->pixmap) {
+    DraggablePixmapItem(Event *event_, Editor *editor_) : QGraphicsPixmapItem(event_->pixmap) {
         event = event_;
+        editor = editor_;
         updatePosition();
     }
     bool active;
-    bool right_click;
-    bool clicking;
     int last_x;
     int last_y;
     void updatePosition() {

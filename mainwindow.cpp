@@ -548,12 +548,19 @@ void MainWindow::addNewEvent(QString event_type)
 
 // Should probably just pass layout and let the editor work it out
 void MainWindow::updateSelectedObjects() {
-
     QList<DraggablePixmapItem *> *all_events = editor->getObjects();
-    QList<DraggablePixmapItem *> *events = all_events;
+    QList<DraggablePixmapItem *> *events = NULL;
 
     if (editor->selected_events && editor->selected_events->length()) {
         events = editor->selected_events;
+    } else {
+        events = new QList<DraggablePixmapItem*>;
+        if (all_events && all_events->length()) {
+            DraggablePixmapItem *selectedEvent = all_events->first();
+            editor->selected_events->append(selectedEvent);
+            editor->redrawObject(selectedEvent);
+            events->append(selectedEvent);
+        }
     }
 
     QMap<QString, int> event_obj_gfx_constants = editor->project->getEventObjGfxConstants();
@@ -675,7 +682,7 @@ void MainWindow::updateSelectedObjects() {
             QWidget *widget = new QWidget(frame);
             QFormLayout *fl = new QFormLayout(widget);
             fl->setContentsMargins(9, 0, 9, 0);
-            QComboBox *combo = new QComboBox(widget);
+            NoScrollComboBox *combo = new NoScrollComboBox(widget);
             combo->setEditable(true);
 
             QString value = item->event->get(key);

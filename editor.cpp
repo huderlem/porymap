@@ -4,6 +4,8 @@
 #include <QPainter>
 #include <QMouseEvent>
 
+bool selectingEvent = false;
+
 Editor::Editor(Ui::MainWindow* ui)
 {
     this->ui = ui;
@@ -469,6 +471,8 @@ void Editor::displayMapEvents() {
         delete events_group;
     }
 
+    selected_events->clear();
+
     events_group = new EventGroup;
     scene->addItem(events_group);
 
@@ -484,8 +488,7 @@ void Editor::displayMapEvents() {
 }
 
 DraggablePixmapItem *Editor::addMapEvent(Event *event) {
-    DraggablePixmapItem *object = new DraggablePixmapItem(event);
-    object->editor = this;
+    DraggablePixmapItem *object = new DraggablePixmapItem(event, this);
     events_group->addToGroup(object);
     return object;
 }
@@ -808,16 +811,22 @@ void Editor::updateDiveEmergeMap(QString mapName, QString direction) {
 
 void Editor::updatePrimaryTileset(QString tilesetLabel)
 {
-    map->layout->tileset_primary_label = tilesetLabel;
-    map->layout->tileset_primary = project->getTileset(tilesetLabel);
-    emit tilesetChanged(map->name);
+    if (map->layout->tileset_primary_label != tilesetLabel)
+    {
+        map->layout->tileset_primary_label = tilesetLabel;
+        map->layout->tileset_primary = project->getTileset(tilesetLabel);
+        emit tilesetChanged(map->name);
+    }
 }
 
 void Editor::updateSecondaryTileset(QString tilesetLabel)
 {
-    map->layout->tileset_secondary_label = tilesetLabel;
-    map->layout->tileset_secondary = project->getTileset(tilesetLabel);
-    emit tilesetChanged(map->name);
+    if (map->layout->tileset_secondary_label != tilesetLabel)
+    {
+        map->layout->tileset_secondary_label = tilesetLabel;
+        map->layout->tileset_secondary = project->getTileset(tilesetLabel);
+        emit tilesetChanged(map->name);
+    }
 }
 
 void MetatilesPixmapItem::paintTileChanged(Map *map) {
@@ -1471,9 +1480,11 @@ void CollisionPixmapItem::pick(QGraphicsSceneMouseEvent *event) {
 
 void DraggablePixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *mouse) {
     active = true;
-    clicking = true;
     last_x = (mouse->pos().x() + this->pos().x()) / 16;
     last_y = (mouse->pos().y() + this->pos().y()) / 16;
+    this->editor->selectMapEvent(this, mouse->modifiers() & Qt::ControlModifier);
+    this->editor->updateSelectedEvents();
+    selectingEvent = true;
     //qDebug() << QString("(%1, %2)").arg(event->get("x")).arg(event->get("y"));
 }
 
@@ -1489,7 +1500,6 @@ void DraggablePixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *mouse) {
         int x = (mouse->pos().x() + this->pos().x()) / 16;
         int y = (mouse->pos().y() + this->pos().y()) / 16;
         if (x != last_x || y != last_y) {
-            clicking = false;
             if (editor->selected_events->contains(this)) {
                 for (DraggablePixmapItem *item : *editor->selected_events) {
                     item->move(x - last_x, y - last_y);
@@ -1532,7 +1542,7 @@ void Editor::redrawObject(DraggablePixmapItem *item) {
         if (selected_events && selected_events->contains(item)) {
             QImage image = item->pixmap().toImage();
             QPainter painter(&image);
-            painter.setPen(QColor(250, 100, 25));
+            painter.setPen(QColor(250, 0, 255));
             painter.drawRect(0, 0, image.width() - 1, image.height() - 1);
             painter.end();
             item->setPixmap(QPixmap::fromImage(image));
@@ -1589,39 +1599,19 @@ void Editor::deleteEvent(Event *event) {
     //updateSelectedObjects();
 }
 
-// dunno how to detect bubbling. QMouseEvent::isAccepted seems to always be true
-// check if selected_events changed instead. this has the side effect of deselecting
-// when you click on a selected event, since selected_events doesn't change.
-
-QList<DraggablePixmapItem *> selected_events_test;
-bool clicking = false;
-
+// It doesn't seem to be possible to prevent the mousePress event
+// from triggering both event's DraggablePixmapItem and the background mousePress.
+// Since the DraggablePixmapItem's event fires first, we can set a temp
+// variable "selectingEvent" so that we can detect whether or not the user
+// is clicking on the background instead of an event.
 void Editor::objectsView_onMousePress(QMouseEvent *event) {
-    clicking = true;
-    selected_events_test = *selected_events;
-}
-
-void Editor::objectsView_onMouseMove(QMouseEvent *event) {
-    clicking = false;
-}
-
-void Editor::objectsView_onMouseRelease(QMouseEvent *event) {
-    if (clicking) {
-        if (selected_events_test.length()) {
-            if (selected_events_test.length() == selected_events->length()) {
-                bool deselect = true;
-                for (int i = 0; i < selected_events_test.length(); i++) {
-                    if (selected_events_test.at(i) != selected_events->at(i)) {
-                        deselect = false;
-                        break;
-                    }
-                }
-                if (deselect) {
-                    selected_events->clear();
-                    updateSelectedEvents();
-                }
-            }
-        }
-        clicking = false;
+    bool multiSelect = event->modifiers() & Qt::ControlModifier;
+    if (!selectingEvent && !multiSelect && selected_events->length() > 1) {
+        DraggablePixmapItem *first = selected_events->first();
+        selected_events->clear();
+        selected_events->append(first);
+        updateSelectedEvents();
     }
+
+    selectingEvent = false;
 }
