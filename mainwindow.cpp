@@ -313,6 +313,10 @@ void MainWindow::loadDataStructures() {
     project->readItemNames();
     project->readFlagNames();
     project->readVarNames();
+    project->readMovementTypes();
+    project->readCoordEventWeatherNames();
+    project->readSecretBaseIds();
+    project->readBgEventFacingDirections();
     project->readMapsWithConnections();
 }
 
@@ -598,7 +602,7 @@ void MainWindow::updateSelectedObjects() {
         field_labels["script_label"] = "Script";
         field_labels["event_flag"] = "Event Flag";
         field_labels["replacement"] = "Replacement";
-        field_labels["behavior"] = "Behavior";
+        field_labels["movement_type"] = "Movement";
         field_labels["radius_x"] = "Movement Radius X";
         field_labels["radius_y"] = "Movement Radius Y";
         field_labels["trainer_see_type"] = "Trainer See Type";
@@ -613,7 +617,7 @@ void MainWindow::updateSelectedObjects() {
         field_labels["item_unknown6"] = "Unknown 6";
         field_labels["weather"] = "Weather";
         field_labels["flag"] = "Flag";
-        field_labels["secret_base_map"] = "Secret Base Map";
+        field_labels["secret_base_id"] = "Secret Base Id";
 
         QStringList fields;
 
@@ -634,7 +638,7 @@ void MainWindow::updateSelectedObjects() {
             //connect(item, SIGNAL(scriptChanged(QString)), frame->ui->comboBox_script, SLOT(setValue(QString)));
             */
 
-            fields << "behavior";
+            fields << "movement_type";
             fields << "radius_x";
             fields << "radius_y";
             fields << "script_label";
@@ -664,7 +668,7 @@ void MainWindow::updateSelectedObjects() {
             fields << "flag";
         }
         else if (event_type == EventType::SecretBase) {
-            fields << "secret_base_map";
+            fields << "secret_base_id";
         }
 
         for (QString key : fields) {
@@ -685,7 +689,7 @@ void MainWindow::updateSelectedObjects() {
                     combo->addItem(value);
                 }
                 combo->addItems(*editor->project->itemNames);
-            } else if (key == "flag") {
+            } else if (key == "flag" || key == "event_flag") {
                 if (!editor->project->flagNames->contains(value)) {
                     combo->addItem(value);
                 }
@@ -695,6 +699,26 @@ void MainWindow::updateSelectedObjects() {
                     combo->addItem(value);
                 }
                 combo->addItems(*editor->project->varNames);
+            } else if (key == "movement_type") {
+                if (!editor->project->movementTypes->contains(value)) {
+                    combo->addItem(value);
+                }
+                combo->addItems(*editor->project->movementTypes);
+            } else if (key == "weather") {
+                if (!editor->project->coordEventWeatherNames->contains(value)) {
+                    combo->addItem(value);
+                }
+                combo->addItems(*editor->project->coordEventWeatherNames);
+            } else if (key == "secret_base_id") {
+                if (!editor->project->secretBaseIds->contains(value)) {
+                    combo->addItem(value);
+                }
+                combo->addItems(*editor->project->secretBaseIds);
+            } else if (key == "player_facing_direction") {
+                if (!editor->project->bgEventFacingDirections->contains(value)) {
+                    combo->addItem(value);
+                }
+                combo->addItems(*editor->project->bgEventFacingDirections);
             } else {
                 combo->addItem(value);
             }

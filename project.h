@@ -26,6 +26,10 @@ public:
     QStringList *itemNames = NULL;
     QStringList *flagNames = NULL;
     QStringList *varNames = NULL;
+    QStringList *movementTypes = NULL;
+    QStringList *coordEventWeatherNames = NULL;
+    QStringList *secretBaseIds = NULL;
+    QStringList *bgEventFacingDirections = NULL;
     QStringList mapsWithConnections;
 
     QMap<QString, Map*> *map_cache;
@@ -81,6 +85,10 @@ public:
     void readItemNames();
     void readFlagNames();
     void readVarNames();
+    void readMovementTypes();
+    void readCoordEventWeatherNames();
+    void readSecretBaseIds();
+    void readBgEventFacingDirections();
 
     void loadEventPixmaps(QList<Event*> objects);
     QMap<QString, int> getEventObjGfxConstants();

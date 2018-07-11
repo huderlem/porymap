@@ -20,6 +20,10 @@ Project::Project()
     itemNames = new QStringList;
     flagNames = new QStringList;
     varNames = new QStringList;
+    movementTypes = new QStringList;
+    coordEventWeatherNames = new QStringList;
+    secretBaseIds = new QStringList;
+    bgEventFacingDirections = new QStringList;
     map_cache = new QMap<QString, Map*>;
     mapConstantsToMapNames = new QMap<QString, QString>;
     mapNamesToMapConstants = new QMap<QString, QString>;
@@ -1086,6 +1090,30 @@ void Project::readVarNames() {
     readCDefinesSorted(filepath, prefixes, varNames);
 }
 
+void Project::readMovementTypes() {
+    QString filepath = root + "/include/constants/event_object_movement_constants.h";
+    QStringList prefixes = (QStringList() << "MOVEMENT_TYPE_");
+    readCDefinesSorted(filepath, prefixes, movementTypes);
+}
+
+void Project::readCoordEventWeatherNames() {
+    QString filepath = root + "/include/constants/weather.h";
+    QStringList prefixes = (QStringList() << "COORD_EVENT_WEATHER_");
+    readCDefinesSorted(filepath, prefixes, coordEventWeatherNames);
+}
+
+void Project::readSecretBaseIds() {
+    QString filepath = root + "/include/constants/secret_bases.h";
+    QStringList prefixes = (QStringList() << "SECRET_BASE_");
+    readCDefinesSorted(filepath, prefixes, secretBaseIds);
+}
+
+void Project::readBgEventFacingDirections() {
+    QString filepath = root + "/include/constants/bg_event_constants.h";
+    QStringList prefixes = (QStringList() << "BG_EVENT_PLAYER_FACING_");
+    readCDefinesSorted(filepath, prefixes, bgEventFacingDirections);
+}
+
 void Project::readCDefinesSorted(QString filepath, QStringList prefixes, QStringList* definesToSet) {
     QString text = readTextFile(filepath);
     if (!text.isNull()) {
@@ -1098,6 +1126,8 @@ void Project::readCDefinesSorted(QString filepath, QStringList prefixes, QString
             definesInverse.insert(defines[defineName], defineName);
         }
         *definesToSet = definesInverse.values();
+    } else {
+        qDebug() << "Failed to read C defines file: " << filepath;
     }
 }
 
@@ -1319,7 +1349,7 @@ void Project::readMapEvents(Map *map) {
             object->put("x", command.value(i++).toInt(nullptr, 0));
             object->put("y", command.value(i++).toInt(nullptr, 0));
             object->put("elevation", command.value(i++));
-            object->put("behavior", command.value(i++));
+            object->put("movement_type", command.value(i++));
             object->put("radius_x", command.value(i++).toInt(nullptr, 0));
             object->put("radius_y", command.value(i++).toInt(nullptr, 0));
             object->put("trainer_see_type", command.value(i++));
@@ -1363,12 +1393,6 @@ void Project::readMapEvents(Map *map) {
         if (command.value(0) == "coord_event") {
             Event *coord = new Event;
             coord->put("map_name", map->name);
-            bool old_macro = false;
-            if (command.length() >= 9) {
-                command.removeAt(7);
-                command.removeAt(4);
-                old_macro = true;
-            }
             int i = 1;
             coord->put("x", command.value(i++));
             coord->put("y", command.value(i++));
@@ -1376,9 +1400,6 @@ void Project::readMapEvents(Map *map) {
             coord->put("script_var", command.value(i++));
             coord->put("script_var_value", command.value(i++));
             coord->put("script_label", command.value(i++));
-            //coord_unknown3
-            //coord_unknown4
-
             coord->put("event_group_type", "coord_event_group");
             coord->put("event_type", EventType::CoordScript);
             map->events["coord_event_group"].append(coord);
@@ -1407,7 +1428,6 @@ void Project::readMapEvents(Map *map) {
             bg->put("y", command.value(i++));
             bg->put("elevation", command.value(i++));
             bg->put("player_facing_direction", command.value(i++));
-            i++;
             bg->put("script_label", command.value(i++));
             //sign_unknown7
             bg->put("event_group_type", "bg_event_group");
@@ -1432,7 +1452,7 @@ void Project::readMapEvents(Map *map) {
             bg->put("x", command.value(i++));
             bg->put("y", command.value(i++));
             bg->put("elevation", command.value(i++));
-            bg->put("secret_base_map", command.value(i++));
+            bg->put("secret_base_id", command.value(i++));
             bg->put("event_group_type", "bg_event_group");
             bg->put("event_type", EventType::SecretBase);
             map->events["bg_event_group"].append(bg);
