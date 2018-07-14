@@ -110,7 +110,11 @@ QList<QList<QRgb>> Metatile::getBlockPalettes(Tileset *primaryTileset, Tileset *
     for (int i = 0; i < 6; i++) {
         palettes.append(primaryTileset->palettes->at(i));
     }
-    for (int i = 6; i < 12; i++) {
+
+    // TODO: Find a reliable way to detect Ruby vs. Emerald
+    // Ruby's secondary tilesets only use palettes 6-11, whereas
+    // Emerald uses 6-12.
+    for (int i = 6; i < 13; i++) {
         palettes.append(secondaryTileset->palettes->at(i));
     }
     return palettes;
