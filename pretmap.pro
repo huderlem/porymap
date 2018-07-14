@@ -25,7 +25,9 @@ SOURCES += main.cpp\
     objectpropertiesframe.cpp \
     graphicsview.cpp \
     parseutil.cpp \
-    neweventtoolbutton.cpp
+    neweventtoolbutton.cpp \
+    noscrollcombobox.cpp \
+    noscrollspinbox.cpp
 
 HEADERS  += mainwindow.h \
     project.h \
@@ -39,7 +41,9 @@ HEADERS  += mainwindow.h \
     objectpropertiesframe.h \
     graphicsview.h \
     parseutil.h \
-    neweventtoolbutton.h
+    neweventtoolbutton.h \
+    noscrollcombobox.h \
+    noscrollspinbox.h
 
 FORMS    += mainwindow.ui \
     objectpropertiesframe.ui

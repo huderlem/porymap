@@ -32,6 +32,7 @@ private slots:
     void on_action_Open_Project_triggered();
     void on_mapList_activated(const QModelIndex &index);
     void on_action_Save_Project_triggered();
+    void openWarpMap(QString map_name, QString warp_num);
 
     void undo();
     void redo();
@@ -97,6 +98,8 @@ private slots:
     void on_pushButton_clicked();
 
     void on_checkBox_smartPaths_stateChanged(int selected);
+
+    void on_checkBox_Visibility_clicked(bool checked);
 
 private:
     Ui::MainWindow *ui;

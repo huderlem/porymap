@@ -69,12 +69,18 @@
         <bool>false</bool>
        </property>
        <widget class="QWidget" name="tab_Map">
+        <property name="toolTip">
+         <string/>
+        </property>
         <attribute name="icon">
          <iconset resource="resources/images.qrc">
           <normaloff>:/icons/map.ico</normaloff>:/icons/map.ico</iconset>
         </attribute>
         <attribute name="title">
          <string>Map</string>
+        </attribute>
+        <attribute name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Edit the map layout.&lt;/p&gt;&lt;p&gt;Select metatiles or collision attributes from the right panel, and paint them onto the map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </attribute>
         <layout class="QGridLayout" name="gridLayout_9">
          <property name="leftMargin">
@@ -164,6 +170,9 @@
                   <property name="enabled">
                    <bool>true</bool>
                   </property>
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pencil&lt;/p&gt;&lt;p&gt;Click and drag to draw on the map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
                   <property name="text">
                    <string>Paint</string>
                   </property>
@@ -187,6 +196,9 @@
                   <property name="enabled">
                    <bool>true</bool>
                   </property>
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pointer&lt;/p&gt;&lt;p&gt;Does nothing&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
                   <property name="text">
                    <string>Select</string>
                   </property>
@@ -201,6 +213,9 @@
                 </item>
                 <item>
                  <widget class="QToolButton" name="toolButton_Fill">
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Flood Fill&lt;/p&gt;&lt;p&gt;Fills all similar tiles in a region with the selected metatiles or collision attributes&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
                   <property name="text">
                    <string>Fill</string>
                   </property>
@@ -215,6 +230,9 @@
                 </item>
                 <item>
                  <widget class="QToolButton" name="toolButton_Dropper">
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Eye Dropper&lt;/p&gt;&lt;p&gt;Click to select a metatile or collision attribute.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
                   <property name="text">
                    <string>Dropper</string>
                   </property>
@@ -229,6 +247,9 @@
                 </item>
                 <item>
                  <widget class="QCheckBox" name="checkBox_smartPaths">
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Smart-path mode allows easier drawing of paths. If a 3x3 metatile block is selcted in the right panel, then smart path mode will automatically form a pathway using those selected blocks.&lt;/p&gt;&lt;p&gt;When smart-path mode is &lt;span style=&quot; font-weight:600;&quot;&gt;not&lt;/span&gt; enabled, clicking and dragging a selection will tile it in a grid.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
                   <property name="styleSheet">
                    <string notr="true">margin-left: 10px</string>
                   </property>
@@ -239,6 +260,9 @@
                 </item>
                 <item>
                  <widget class="QCheckBox" name="checkBox_ToggleGrid">
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Toggles a grid over the map's metatile boundaries.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
                   <property name="styleSheet">
                    <string notr="true"/>
                   </property>
@@ -262,6 +286,9 @@
                 </item>
                 <item>
                  <widget class="QPushButton" name="pushButton">
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Change a map layout's width and height.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
                   <property name="text">
                    <string>Change Dimensions</string>
                   </property>
@@ -490,7 +517,13 @@
                      </widget>
                     </item>
                     <item row="0" column="1">
-                     <widget class="QComboBox" name="comboBox_PrimaryTileset">
+                     <widget class="NoScrollComboBox" name="comboBox_PrimaryTileset">
+                      <property name="focusPolicy">
+                       <enum>Qt::StrongFocus</enum>
+                      </property>
+                      <property name="toolTip">
+                       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Primary Tileset&lt;/p&gt;&lt;p&gt;Defines the first 0x200 metatiles available for the map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                      </property>
                       <property name="editable">
                        <bool>true</bool>
                       </property>
@@ -504,7 +537,13 @@
                      </widget>
                     </item>
                     <item row="1" column="1">
-                     <widget class="QComboBox" name="comboBox_SecondaryTileset">
+                     <widget class="NoScrollComboBox" name="comboBox_SecondaryTileset">
+                      <property name="focusPolicy">
+                       <enum>Qt::StrongFocus</enum>
+                      </property>
+                      <property name="toolTip">
+                       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Secondary Tileset&lt;/p&gt;&lt;p&gt;Defines the second 0x200 metatiles available for the map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                      </property>
                       <property name="editable">
                        <bool>true</bool>
                       </property>
@@ -573,6 +612,9 @@
                         <width>16777215</width>
                         <height>48</height>
                        </size>
+                      </property>
+                      <property name="toolTip">
+                       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The border is a 2x2 metatile which is repeated outside of the map layout's boundary. Draw on this border area to modify it.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                       </property>
                       <property name="frameShape">
                        <enum>QFrame::StyledPanel</enum>
@@ -846,7 +888,10 @@
          <bool>true</bool>
         </property>
         <attribute name="title">
-         <string>Objects</string>
+         <string>Events</string>
+        </attribute>
+        <attribute name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Edit the map's events.&lt;/p&gt;&lt;p&gt;View and modify objects, warps, signs, etc.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </attribute>
         <layout class="QGridLayout" name="gridLayout_10">
          <property name="leftMargin">
@@ -1107,6 +1152,9 @@
                     <height>32</height>
                    </size>
                   </property>
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Add a new event to the map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
                   <property name="text">
                    <string>New Object</string>
                   </property>
@@ -1132,6 +1180,9 @@
                     <width>40</width>
                     <height>32</height>
                    </size>
+                  </property>
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Delete the selected event from the map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                   </property>
                   <property name="text">
                    <string>Delete</string>
@@ -1172,7 +1223,7 @@
        </widget>
        <widget class="QWidget" name="tab_Attributes">
         <attribute name="title">
-         <string>Attributes</string>
+         <string>Header</string>
         </attribute>
         <widget class="QFrame" name="frame_3">
          <property name="enabled">
@@ -1182,9 +1233,15 @@
           <rect>
            <x>10</x>
            <y>10</y>
-           <width>301</width>
-           <height>251</height>
+           <width>381</width>
+           <height>311</height>
           </rect>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
          </property>
          <property name="frameShape">
           <enum>QFrame::StyledPanel</enum>
@@ -1192,201 +1249,130 @@
          <property name="frameShadow">
           <enum>QFrame::Raised</enum>
          </property>
-         <widget class="QLabel" name="label_3">
-          <property name="geometry">
-           <rect>
-            <x>20</x>
-            <y>30</y>
-            <width>47</width>
-            <height>21</height>
-           </rect>
+         <layout class="QFormLayout" name="formLayout_2">
+          <property name="verticalSpacing">
+           <number>12</number>
           </property>
-          <property name="text">
-           <string>Song</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_4">
-          <property name="geometry">
-           <rect>
-            <x>20</x>
-            <y>60</y>
-            <width>47</width>
-            <height>21</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Location</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_5">
-          <property name="geometry">
-           <rect>
-            <x>20</x>
-            <y>90</y>
-            <width>47</width>
-            <height>21</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Visibility</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_6">
-          <property name="geometry">
-           <rect>
-            <x>20</x>
-            <y>120</y>
-            <width>47</width>
-            <height>21</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Weather</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_7">
-          <property name="geometry">
-           <rect>
-            <x>20</x>
-            <y>150</y>
-            <width>47</width>
-            <height>21</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Type</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_8">
-          <property name="geometry">
-           <rect>
-            <x>20</x>
-            <y>180</y>
-            <width>101</width>
-            <height>21</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Show location name</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_9">
-          <property name="geometry">
-           <rect>
-            <x>20</x>
-            <y>210</y>
-            <width>81</width>
-            <height>21</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Battle scene</string>
-          </property>
-         </widget>
-         <widget class="QComboBox" name="comboBox_Location">
-          <property name="geometry">
-           <rect>
-            <x>80</x>
-            <y>60</y>
-            <width>211</width>
-            <height>22</height>
-           </rect>
-          </property>
-          <property name="editable">
-           <bool>true</bool>
-          </property>
-         </widget>
-         <widget class="QComboBox" name="comboBox_Visibility">
-          <property name="geometry">
-           <rect>
-            <x>80</x>
-            <y>90</y>
-            <width>211</width>
-            <height>22</height>
-           </rect>
-          </property>
-          <property name="editable">
-           <bool>true</bool>
-          </property>
-         </widget>
-         <widget class="QComboBox" name="comboBox_Song">
-          <property name="geometry">
-           <rect>
-            <x>80</x>
-            <y>30</y>
-            <width>211</width>
-            <height>22</height>
-           </rect>
-          </property>
-          <property name="editable">
-           <bool>true</bool>
-          </property>
-         </widget>
-         <widget class="QComboBox" name="comboBox_Weather">
-          <property name="geometry">
-           <rect>
-            <x>80</x>
-            <y>120</y>
-            <width>211</width>
-            <height>22</height>
-           </rect>
-          </property>
-          <property name="editable">
-           <bool>true</bool>
-          </property>
-         </widget>
-         <widget class="QComboBox" name="comboBox_Type">
-          <property name="geometry">
-           <rect>
-            <x>80</x>
-            <y>150</y>
-            <width>211</width>
-            <height>22</height>
-           </rect>
-          </property>
-          <property name="editable">
-           <bool>true</bool>
-          </property>
-         </widget>
-         <widget class="QComboBox" name="comboBox_BattleScene">
-          <property name="geometry">
-           <rect>
-            <x>90</x>
-            <y>210</y>
-            <width>201</width>
-            <height>22</height>
-           </rect>
-          </property>
-          <property name="editable">
-           <bool>true</bool>
-          </property>
-         </widget>
-         <widget class="QCheckBox" name="checkBox_ShowLocation">
-          <property name="geometry">
-           <rect>
-            <x>130</x>
-            <y>180</y>
-            <width>161</width>
-            <height>21</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_10">
-          <property name="geometry">
-           <rect>
-            <x>0</x>
-            <y>0</y>
-            <width>47</width>
-            <height>13</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Header</string>
-          </property>
-         </widget>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string>Song</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="comboBox_Song">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The default background music for this map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="editable">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string>Location</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QComboBox" name="comboBox_Location">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The section of the region map which the map is grouped under. This also determines the name of the map that is display when the player enters it.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="editable">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>Requires Flash</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_6">
+            <property name="text">
+             <string>Weather</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QComboBox" name="comboBox_Weather">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The default weather for this map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="editable">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_7">
+            <property name="text">
+             <string>Type</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QComboBox" name="comboBox_Type">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The map type is a general attribute, which is used for many different things. For example. it determines whether biking or running is allowed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="editable">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="label_8">
+            <property name="text">
+             <string>Show Location Name</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QCheckBox" name="checkBox_ShowLocation">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Whether or not to display the location name when the player enters the map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="label_9">
+            <property name="text">
+             <string>Battle scene</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="QComboBox" name="comboBox_BattleScene">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Determines the type of battle scene graphics to use.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="editable">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QCheckBox" name="checkBox_Visibility">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Whether or not the map is dark and requires Flash to illuminate.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </widget>
        <widget class="QWidget" name="tab_Connections">
@@ -1480,6 +1466,9 @@
                    <verstretch>0</verstretch>
                   </sizepolicy>
                  </property>
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Add a new connection.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
                  <property name="text">
                   <string/>
                  </property>
@@ -1492,6 +1481,9 @@
                </item>
                <item>
                 <widget class="QPushButton" name="pushButton_RemoveConnection">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Remove the currently-selected connection.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
                  <property name="text">
                   <string/>
                  </property>
@@ -1539,6 +1531,9 @@
                    <horstretch>0</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
+                 </property>
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled, connections will automatically be updated on the connected map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="text">
                   <string>Mirror</string>
@@ -1602,6 +1597,9 @@
                </property>
                <item>
                 <widget class="QComboBox" name="comboBox_ConnectionDirection">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The direction of the connection.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
                  <item>
                   <property name="text">
                    <string>up</string>
@@ -1649,6 +1647,9 @@
                </item>
                <item>
                 <widget class="QComboBox" name="comboBox_ConnectedMap">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The destination map name of the connection.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
                  <property name="editable">
                   <bool>true</bool>
                  </property>
@@ -1663,6 +1664,9 @@
                </item>
                <item>
                 <widget class="QSpinBox" name="spinBox_ConnectionOffset">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The number of metatiles to offset the connection.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
                  <property name="minimum">
                   <number>-999</number>
                  </property>
@@ -1840,6 +1844,9 @@
                   </item>
                   <item>
                    <widget class="QComboBox" name="comboBox_DiveMap">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Destination map name when using &lt;span style=&quot; font-weight:600;&quot;&gt;Dive&lt;/span&gt;. If empty, no such connection will exist.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
                     <property name="editable">
                      <bool>true</bool>
                     </property>
@@ -1854,6 +1861,9 @@
                   </item>
                   <item>
                    <widget class="QComboBox" name="comboBox_EmergeMap">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Destination map name when emerging using &lt;span style=&quot; font-weight:600;&quot;&gt;Dive&lt;/span&gt;. If empty, no such connection will exist.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
                     <property name="editable">
                      <bool>true</bool>
                     </property>
@@ -1988,6 +1998,11 @@
    <class>NewEventToolButton</class>
    <extends>QToolButton</extends>
    <header>neweventtoolbutton.h</header>
+  </customwidget>
+  <customwidget>
+   <class>NoScrollComboBox</class>
+   <extends>QComboBox</extends>
+   <header>noscrollcombobox.h</header>
   </customwidget>
  </customwidgets>
  <resources>
