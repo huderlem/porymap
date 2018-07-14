@@ -32,12 +32,14 @@ private slots:
     void on_action_Open_Project_triggered();
     void on_mapList_activated(const QModelIndex &index);
     void on_action_Save_Project_triggered();
+    void openWarpMap(QString map_name, QString warp_num);
 
     void undo();
     void redo();
 
     void onLoadMapRequested(QString, QString);
     void onMapChanged(Map *map);
+    void onMapNeedsRedrawing(Map *map);
 
     void on_action_Save_triggered();
     void on_tabWidget_2_currentChanged(int index);
@@ -93,6 +95,12 @@ private slots:
 
     void on_comboBox_SecondaryTileset_activated(const QString &arg1);
 
+    void on_pushButton_clicked();
+
+    void on_checkBox_smartPaths_stateChanged(int selected);
+
+    void on_checkBox_Visibility_clicked(bool checked);
+
 private:
     Ui::MainWindow *ui;
     QStandardItemModel *mapListModel;
@@ -100,6 +108,7 @@ private:
     Editor *editor = NULL;
     QIcon* mapIcon;
     void setMap(QString);
+    void redrawMapScene();
     void loadDataStructures();
     void populateMapList();
     QString getExistingDirectory(QString);

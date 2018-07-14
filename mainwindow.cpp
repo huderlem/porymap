@@ -15,6 +15,8 @@
 #include <QSpacerItem>
 #include <QFont>
 #include <QScrollBar>
+#include <QMessageBox>
+#include <QDialogButtonBox>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -35,6 +37,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(editor, SIGNAL(selectedObjectsChanged()), this, SLOT(updateSelectedObjects()));
     connect(editor, SIGNAL(loadMapRequested(QString, QString)), this, SLOT(onLoadMapRequested(QString, QString)));
     connect(editor, SIGNAL(tilesetChanged(QString)), this, SLOT(onTilesetChanged(QString)));
+    connect(editor, SIGNAL(warpEventDoubleClicked(QString,QString)), this, SLOT(openWarpMap(QString,QString)));
 
     on_toolButton_Paint_clicked();
 
@@ -147,7 +150,22 @@ void MainWindow::setMap(QString map_name) {
         return;
     }
     editor->setMap(map_name);
+    redrawMapScene();
+    displayMapProperties();
 
+    setWindowTitle(map_name + " - " + editor->project->getProjectTitle() + " - pretmap");
+
+    connect(editor->map, SIGNAL(mapChanged(Map*)), this, SLOT(onMapChanged(Map *)));
+    connect(editor->map, SIGNAL(mapNeedsRedrawing(Map*)), this, SLOT(onMapNeedsRedrawing(Map *)));
+    connect(editor->map, SIGNAL(statusBarMessage(QString)), this, SLOT(setStatusBarMessage(QString)));
+
+    setRecentMap(map_name);
+    updateMapList();
+}
+
+void MainWindow::redrawMapScene()
+{
+    editor->displayMap();
     on_tabWidget_currentChanged(ui->tabWidget->currentIndex());
 
     ui->graphicsView_Map->setScene(editor->scene);
@@ -177,16 +195,39 @@ void MainWindow::setMap(QString map_name) {
     ui->graphicsView_Elevation->setScene(editor->scene_elevation_metatiles);
     //ui->graphicsView_Elevation->setSceneRect(editor->scene_elevation_metatiles->sceneRect());
     ui->graphicsView_Elevation->setFixedSize(editor->elevation_metatiles_item->pixmap().width() + 2, editor->elevation_metatiles_item->pixmap().height() + 2);
+}
 
-    displayMapProperties();
+void MainWindow::openWarpMap(QString map_name, QString warp_num) {
+    // Ensure valid destination map name.
+    if (!editor->project->mapNames->contains(map_name)) {
+        qDebug() << QString("Invalid warp destination map name '%1'").arg(map_name);
+        return;
+    }
 
-    setWindowTitle(map_name + " - " + editor->project->getProjectTitle() + " - pretmap");
+    // Ensure valid destination warp number.
+    bool ok;
+    int warpNum = warp_num.toInt(&ok, 0);
+    if (!ok) {
+        qDebug() << QString("Invalid warp number '%1' for destination map '%2'").arg(warp_num).arg(map_name);
+        return;
+    }
 
-    connect(editor->map, SIGNAL(mapChanged(Map*)), this, SLOT(onMapChanged(Map *)));
-    connect(editor->map, SIGNAL(statusBarMessage(QString)), this, SLOT(setStatusBarMessage(QString)));
+    // Open the destination map, and select the target warp event.
+    setMap(map_name);
+    QList<Event*> warp_events = editor->map->events["warp_event_group"];
+    if (warp_events.length() > warpNum) {
+        Event *warp_event = warp_events.at(warpNum);
+        QList<DraggablePixmapItem *> *all_events = editor->getObjects();
+        for (DraggablePixmapItem *item : *all_events) {
+            if (item->event == warp_event) {
+                editor->selected_events->clear();
+                editor->selected_events->append(item);
+                editor->updateSelectedEvents();
+            }
+        }
 
-    setRecentMap(map_name);
-    updateMapList();
+        delete all_events;
+    }
 }
 
 void MainWindow::setRecentMap(QString map_name) {
@@ -203,7 +244,7 @@ void MainWindow::setRecentMap(QString map_name) {
 void MainWindow::displayMapProperties() {
     ui->comboBox_Song->clear();
     ui->comboBox_Location->clear();
-    ui->comboBox_Visibility->clear();
+    ui->checkBox_Visibility->setChecked(false);
     ui->comboBox_Weather->clear();
     ui->comboBox_Type->clear();
     ui->comboBox_BattleScene->clear();
@@ -222,7 +263,7 @@ void MainWindow::displayMapProperties() {
     ui->comboBox_Song->addItems(songs);
     ui->comboBox_Song->setCurrentText(map->song);
 
-    ui->comboBox_Location->addItems(project->getLocations());
+    ui->comboBox_Location->addItems(*project->regionMapSections);
     ui->comboBox_Location->setCurrentText(map->location);
 
     QMap<QString, QStringList> tilesets = project->getTilesets();
@@ -231,16 +272,15 @@ void MainWindow::displayMapProperties() {
     ui->comboBox_SecondaryTileset->addItems(tilesets.value("secondary"));
     ui->comboBox_SecondaryTileset->setCurrentText(map->layout->tileset_secondary_label);
 
-    ui->comboBox_Visibility->addItems(project->getVisibilities());
-    ui->comboBox_Visibility->setCurrentText(map->visibility);
+    ui->checkBox_Visibility->setChecked(map->requiresFlash.toInt() > 0 || map->requiresFlash == "TRUE");
 
-    ui->comboBox_Weather->addItems(project->getWeathers());
+    ui->comboBox_Weather->addItems(*project->weatherNames);
     ui->comboBox_Weather->setCurrentText(map->weather);
 
-    ui->comboBox_Type->addItems(project->getMapTypes());
+    ui->comboBox_Type->addItems(*project->mapTypes);
     ui->comboBox_Type->setCurrentText(map->type);
 
-    ui->comboBox_BattleScene->addItems(project->getBattleScenes());
+    ui->comboBox_BattleScene->addItems(*project->mapBattleScenes);
     ui->comboBox_BattleScene->setCurrentText(map->battle_scene);
 
     ui->checkBox_ShowLocation->setChecked(map->show_location.toInt() > 0 || map->show_location == "TRUE");
@@ -260,10 +300,10 @@ void MainWindow::on_comboBox_Location_activated(const QString &location)
     }
 }
 
-void MainWindow::on_comboBox_Visibility_activated(const QString &visibility)
+void MainWindow::on_comboBox_Visibility_activated(const QString &requiresFlash)
 {
     if (editor && editor->map) {
-        editor->map->visibility = visibility;
+        editor->map->requiresFlash = requiresFlash;
     }
 }
 
@@ -288,6 +328,17 @@ void MainWindow::on_comboBox_BattleScene_activated(const QString &battle_scene)
     }
 }
 
+void MainWindow::on_checkBox_Visibility_clicked(bool checked)
+{
+    if (editor && editor->map) {
+        if (checked) {
+            editor->map->requiresFlash = "TRUE";
+        } else {
+            editor->map->requiresFlash = "FALSE";
+        }
+    }
+}
+
 void MainWindow::on_checkBox_ShowLocation_clicked(bool checked)
 {
     if (editor && editor->map) {
@@ -303,9 +354,17 @@ void MainWindow::loadDataStructures() {
     Project *project = editor->project;
     project->readMapLayoutsTable();
     project->readAllMapLayouts();
+    project->readRegionMapSections();
     project->readItemNames();
     project->readFlagNames();
     project->readVarNames();
+    project->readMovementTypes();
+    project->readMapTypes();
+    project->readMapBattleScenes();
+    project->readWeatherNames();
+    project->readCoordEventWeatherNames();
+    project->readSecretBaseIds();
+    project->readBgEventFacingDirections();
     project->readMapsWithConnections();
 }
 
@@ -537,12 +596,19 @@ void MainWindow::addNewEvent(QString event_type)
 
 // Should probably just pass layout and let the editor work it out
 void MainWindow::updateSelectedObjects() {
-
     QList<DraggablePixmapItem *> *all_events = editor->getObjects();
-    QList<DraggablePixmapItem *> *events = all_events;
+    QList<DraggablePixmapItem *> *events = NULL;
 
     if (editor->selected_events && editor->selected_events->length()) {
         events = editor->selected_events;
+    } else {
+        events = new QList<DraggablePixmapItem*>;
+        if (all_events && all_events->length()) {
+            DraggablePixmapItem *selectedEvent = all_events->first();
+            editor->selected_events->append(selectedEvent);
+            editor->redrawObject(selectedEvent);
+            events->append(selectedEvent);
+        }
     }
 
     QMap<QString, int> event_obj_gfx_constants = editor->project->getEventObjGfxConstants();
@@ -590,11 +656,10 @@ void MainWindow::updateSelectedObjects() {
         QMap<QString, QString> field_labels;
         field_labels["script_label"] = "Script";
         field_labels["event_flag"] = "Event Flag";
-        field_labels["replacement"] = "Replacement";
-        field_labels["behavior"] = "Behavior";
+        field_labels["movement_type"] = "Movement";
         field_labels["radius_x"] = "Movement Radius X";
         field_labels["radius_y"] = "Movement Radius Y";
-        field_labels["trainer_see_type"] = "Trainer See Type";
+        field_labels["is_trainer"] = "Trainer";
         field_labels["sight_radius_tree_id"] = "Sight Radius / Berry Tree ID";
         field_labels["destination_warp"] = "Destination Warp";
         field_labels["destination_map_name"] = "Destination Map";
@@ -606,7 +671,7 @@ void MainWindow::updateSelectedObjects() {
         field_labels["item_unknown6"] = "Unknown 6";
         field_labels["weather"] = "Weather";
         field_labels["flag"] = "Flag";
-        field_labels["secret_base_map"] = "Secret Base Map";
+        field_labels["secret_base_id"] = "Secret Base Id";
 
         QStringList fields;
 
@@ -627,13 +692,12 @@ void MainWindow::updateSelectedObjects() {
             //connect(item, SIGNAL(scriptChanged(QString)), frame->ui->comboBox_script, SLOT(setValue(QString)));
             */
 
-            fields << "behavior";
+            fields << "movement_type";
             fields << "radius_x";
             fields << "radius_y";
             fields << "script_label";
             fields << "event_flag";
-            fields << "replacement";
-            fields << "trainer_see_type";
+            fields << "is_trainer";
             fields << "sight_radius_tree_id";
         }
         else if (event_type == EventType::Warp) {
@@ -657,37 +721,96 @@ void MainWindow::updateSelectedObjects() {
             fields << "flag";
         }
         else if (event_type == EventType::SecretBase) {
-            fields << "secret_base_map";
+            fields << "secret_base_id";
         }
 
         for (QString key : fields) {
+            QString value = item->event->get(key);
             QWidget *widget = new QWidget(frame);
             QFormLayout *fl = new QFormLayout(widget);
             fl->setContentsMargins(9, 0, 9, 0);
-            QComboBox *combo = new QComboBox(widget);
+
+            // is_trainer is the only non-combobox item.
+            if (key == "is_trainer") {
+                QCheckBox *checkbox = new QCheckBox(widget);
+                checkbox->setEnabled(true);
+                checkbox->setChecked(value.toInt() != 0 && value != "FALSE");
+                checkbox->setToolTip("Whether or not this object is trainer.");
+                fl->addRow(new QLabel(field_labels[key], widget), checkbox);
+                widget->setLayout(fl);
+                frame->layout()->addWidget(widget);
+                connect(checkbox, &QCheckBox::stateChanged, [=](int state) {
+                    QString isTrainer = state == Qt::Checked ? "TRUE" : "FALSE";
+                    item->event->put("is_trainer", isTrainer);
+                });
+                continue;
+            }
+
+            NoScrollComboBox *combo = new NoScrollComboBox(widget);
             combo->setEditable(true);
 
-            QString value = item->event->get(key);
             if (key == "destination_map_name") {
                 if (!editor->project->mapNames->contains(value)) {
                     combo->addItem(value);
                 }
                 combo->addItems(*editor->project->mapNames);
+                combo->setToolTip("The destination map name of the warp.");
+            } else if (key == "destination_warp") {
+                combo->setToolTip("The warp id on the destination map.");
             } else if (key == "item") {
                 if (!editor->project->itemNames->contains(value)) {
                     combo->addItem(value);
                 }
                 combo->addItems(*editor->project->itemNames);
-            } else if (key == "flag") {
+            } else if (key == "flag" || key == "event_flag") {
                 if (!editor->project->flagNames->contains(value)) {
                     combo->addItem(value);
                 }
                 combo->addItems(*editor->project->flagNames);
+                if (key == "flag")
+                    combo->setToolTip("The flag which is set when the hidden item is picked up.");
+                else if (key == "event_flag")
+                    combo->setToolTip("The flag which hides the object when set.");
             } else if (key == "script_var") {
                 if (!editor->project->varNames->contains(value)) {
                     combo->addItem(value);
                 }
                 combo->addItems(*editor->project->varNames);
+                combo->setToolTip("The variable by which the script is triggered. The script is triggered when this variable's value matches 'Var Value'.");
+            } else if (key == "script_var_value")  {
+                combo->setToolTip("The variable's value which triggers the script.");
+            } else if (key == "movement_type") {
+                if (!editor->project->movementTypes->contains(value)) {
+                    combo->addItem(value);
+                }
+                combo->addItems(*editor->project->movementTypes);
+                combo->setToolTip("The object's natural movement behavior when the player is not interacting with it.");
+            } else if (key == "weather") {
+                if (!editor->project->coordEventWeatherNames->contains(value)) {
+                    combo->addItem(value);
+                }
+                combo->addItems(*editor->project->coordEventWeatherNames);
+                combo->setToolTip("The weather that starts when the player steps on this spot.");
+            } else if (key == "secret_base_id") {
+                if (!editor->project->secretBaseIds->contains(value)) {
+                    combo->addItem(value);
+                }
+                combo->addItems(*editor->project->secretBaseIds);
+                combo->setToolTip("The secret base id which is inside this secret base entrance. Secret base ids are meant to be unique to each and every secret base entrance.");
+            } else if (key == "player_facing_direction") {
+                if (!editor->project->bgEventFacingDirections->contains(value)) {
+                    combo->addItem(value);
+                }
+                combo->addItems(*editor->project->bgEventFacingDirections);
+                combo->setToolTip("The direction which the player must be facing to be able to interact with this event.");
+            } else if (key == "radius_x") {
+                combo->setToolTip("The maximum number of metatiles this object is allowed to move left or right during its normal movement behavior actions.");
+            } else if (key == "radius_y") {
+                combo->setToolTip("The maximum number of metatiles this object is allowed to move up or down during its normal movement behavior actions.");
+            } else if (key == "script_label") {
+                combo->setToolTip("The script which is executed with this event.");
+            } else if (key == "sight_radius_tree_id") {
+                combo->setToolTip("The maximum sight range of a trainer, OR the unique id of the berry tree.");
             } else {
                 combo->addItem(value);
             }
@@ -785,6 +908,10 @@ void MainWindow::onMapChanged(Map *map) {
     updateMapList();
 }
 
+void MainWindow::onMapNeedsRedrawing(Map *map) {
+    redrawMapScene();
+}
+
 void MainWindow::on_action_Export_Map_Image_triggered()
 {
     QString defaultFilepath = QString("%1/%2.png").arg(editor->project->root).arg(editor->map->name);
@@ -837,4 +964,69 @@ void MainWindow::on_comboBox_PrimaryTileset_activated(const QString &tilesetLabe
 void MainWindow::on_comboBox_SecondaryTileset_activated(const QString &tilesetLabel)
 {
     editor->updateSecondaryTileset(tilesetLabel);
+}
+
+void MainWindow::on_pushButton_clicked()
+{
+    QDialog dialog(this, Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
+    dialog.setWindowTitle("Change Map Dimensions");
+    dialog.setWindowModality(Qt::NonModal);
+
+    QFormLayout form(&dialog);
+
+    QSpinBox *widthSpinBox = new QSpinBox();
+    QSpinBox *heightSpinBox = new QSpinBox();
+    widthSpinBox->setMinimum(1);
+    heightSpinBox->setMinimum(1);
+    // See below for explanation of maximum map dimensions
+    widthSpinBox->setMaximum(0x1E7);
+    heightSpinBox->setMaximum(0x1D1);
+    widthSpinBox->setValue(editor->map->getWidth());
+    heightSpinBox->setValue(editor->map->getHeight());
+    form.addRow(new QLabel("Width"), widthSpinBox);
+    form.addRow(new QLabel("Height"), heightSpinBox);
+
+    QLabel *errorLabel = new QLabel();
+    QPalette errorPalette;
+    errorPalette.setColor(QPalette::WindowText, Qt::red);
+    errorLabel->setPalette(errorPalette);
+    errorLabel->setVisible(false);
+
+    QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
+    form.addRow(&buttonBox);
+    connect(&buttonBox, &QDialogButtonBox::accepted, [&dialog, &widthSpinBox, &heightSpinBox, &errorLabel](){
+        // Ensure width and height are an acceptable size.
+        // The maximum number of metatiles in a map is the following:
+        //    max = (width + 15) * (height + 14)
+        // This limit can be found in fieldmap.c in pokeruby/pokeemerald.
+        int realWidth = widthSpinBox->value() + 15;
+        int realHeight = heightSpinBox->value() + 14;
+        int numMetatiles = realWidth * realHeight;
+        if (numMetatiles <= 0x2800) {
+            dialog.accept();
+        } else {
+            QString errorText = QString("Error: The specified width and height are too large.\n"
+                    "The maximum width and height is the following: (width + 15) * (height + 14) <= 10240\n"
+                    "The specified width and height was: (%1 + 15) * (%2 + 14) = %3")
+                        .arg(widthSpinBox->value())
+                        .arg(heightSpinBox->value())
+                        .arg(numMetatiles);
+            errorLabel->setText(errorText);
+            errorLabel->setVisible(true);
+        }
+    });
+    connect(&buttonBox, SIGNAL(rejected()), &dialog, SLOT(reject()));
+
+    form.addRow(errorLabel);
+
+    if (dialog.exec() == QDialog::Accepted) {
+        editor->map->setDimensions(widthSpinBox->value(), heightSpinBox->value());
+        editor->map->commit();
+        onMapNeedsRedrawing(editor->map);
+    }
+}
+
+void MainWindow::on_checkBox_smartPaths_stateChanged(int selected)
+{
+    editor->map->smart_paths_enabled = selected == Qt::Checked;
 }

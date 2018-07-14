@@ -105,7 +105,13 @@
              </widget>
             </item>
             <item>
-             <widget class="QSpinBox" name="spinBox_x">
+             <widget class="NoScrollSpinBox" name="spinBox_x">
+              <property name="focusPolicy">
+               <enum>Qt::StrongFocus</enum>
+              </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The X coordinate of this object.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <property name="minimum">
                <number>-32768</number>
               </property>
@@ -129,7 +135,13 @@
              </widget>
             </item>
             <item>
-             <widget class="QSpinBox" name="spinBox_y">
+             <widget class="NoScrollSpinBox" name="spinBox_y">
+              <property name="focusPolicy">
+               <enum>Qt::StrongFocus</enum>
+              </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The Y coordinate of this object.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <property name="minimum">
                <number>-32768</number>
               </property>
@@ -153,7 +165,13 @@
              </widget>
             </item>
             <item>
-             <widget class="QSpinBox" name="spinBox_z">
+             <widget class="NoScrollSpinBox" name="spinBox_z">
+              <property name="focusPolicy">
+               <enum>Qt::StrongFocus</enum>
+              </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The elevation of this object.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <property name="maximum">
                <number>15</number>
               </property>
@@ -210,7 +228,7 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QComboBox" name="comboBox_sprite">
+       <widget class="NoScrollComboBox" name="comboBox_sprite">
         <property name="enabled">
          <bool>true</bool>
         </property>
@@ -219,6 +237,12 @@
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
+        </property>
+        <property name="focusPolicy">
+         <enum>Qt::StrongFocus</enum>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The sprite graphics to use for this object.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="editable">
          <bool>true</bool>
@@ -239,6 +263,18 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>NoScrollComboBox</class>
+   <extends>QComboBox</extends>
+   <header>noscrollcombobox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>NoScrollSpinBox</class>
+   <extends>QSpinBox</extends>
+   <header>noscrollspinbox.h</header>
+  </customwidget>
+ </customwidgets>
  <tabstops>
   <tabstop>spinBox_x</tabstop>
   <tabstop>spinBox_y</tabstop>

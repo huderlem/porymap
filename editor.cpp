@@ -5,6 +5,8 @@
 #include <QMouseEvent>
 #include <math.h>
 
+bool selectingEvent = false;
+
 Editor::Editor(Ui::MainWindow* ui)
 {
     this->ui = ui;
@@ -27,13 +29,15 @@ void Editor::save() {
 
 void Editor::undo() {
     if (current_view) {
-        ((MapPixmapItem*)current_view)->undo();
+        map->undo();
+        map_item->draw();
     }
 }
 
 void Editor::redo() {
     if (current_view) {
-        ((MapPixmapItem*)current_view)->redo();
+        map->redo();
+        map_item->draw();
     }
 }
 
@@ -59,6 +63,7 @@ void Editor::setEditingMap() {
 void Editor::setEditingCollision() {
     current_view = collision_item;
     if (collision_item) {
+        displayMapConnections();
         collision_item->draw();
         collision_item->setVisible(true);
         setConnectionsVisibility(true);
@@ -319,8 +324,8 @@ void Editor::setMap(QString map_name) {
     }
     if (project) {
         map = project->loadMap(map_name);
-        displayMap();
         selected_events->clear();
+        displayMap();
         updateSelectedEvents();
     }
 }
@@ -467,6 +472,8 @@ void Editor::displayMapEvents() {
         delete events_group;
     }
 
+    selected_events->clear();
+
     events_group = new EventGroup;
     scene->addItem(events_group);
 
@@ -482,8 +489,7 @@ void Editor::displayMapEvents() {
 }
 
 DraggablePixmapItem *Editor::addMapEvent(Event *event) {
-    DraggablePixmapItem *object = new DraggablePixmapItem(event);
-    object->editor = this;
+    DraggablePixmapItem *object = new DraggablePixmapItem(event, this);
     events_group->addToGroup(object);
     return object;
 }
@@ -806,16 +812,22 @@ void Editor::updateDiveEmergeMap(QString mapName, QString direction) {
 
 void Editor::updatePrimaryTileset(QString tilesetLabel)
 {
-    map->layout->tileset_primary_label = tilesetLabel;
-    map->layout->tileset_primary = project->getTileset(tilesetLabel);
-    emit tilesetChanged(map->name);
+    if (map->layout->tileset_primary_label != tilesetLabel)
+    {
+        map->layout->tileset_primary_label = tilesetLabel;
+        map->layout->tileset_primary = project->getTileset(tilesetLabel);
+        emit tilesetChanged(map->name);
+    }
 }
 
 void Editor::updateSecondaryTileset(QString tilesetLabel)
 {
-    map->layout->tileset_secondary_label = tilesetLabel;
-    map->layout->tileset_secondary = project->getTileset(tilesetLabel);
-    emit tilesetChanged(map->name);
+    if (map->layout->tileset_secondary_label != tilesetLabel)
+    {
+        map->layout->tileset_secondary_label = tilesetLabel;
+        map->layout->tileset_secondary = project->getTileset(tilesetLabel);
+        emit tilesetChanged(map->name);
+    }
 }
 
 void MetatilesPixmapItem::paintTileChanged(Map *map) {
@@ -880,9 +892,6 @@ void MetatilesPixmapItem::updateSelection(QPointF pos, Qt::MouseButton button) {
         map->paint_tile_index = baseTileY * 8 + baseTileX;
         map->paint_tile_width = abs(map->paint_metatile_initial_x - x) + 1;
         map->paint_tile_height = abs(map->paint_metatile_initial_y - y) + 1;
-        map->smart_paths_enabled = button == Qt::RightButton
-                                && map->paint_tile_width == 3
-                                && map->paint_tile_height == 3;
         emit map->paintTileChanged(map);
     }
 }
@@ -1030,7 +1039,7 @@ void MapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
         int x = (int)(pos.x()) / 16;
         int y = (int)(pos.y()) / 16;
 
-        if (map->smart_paths_enabled) {
+        if (map->smart_paths_enabled && map->paint_tile_width == 3 && map->paint_tile_height == 3) {
             paintSmartPath(x, y);
         } else {
             paintNormal(x, y);
@@ -1158,8 +1167,160 @@ void MapPixmapItem::floodFill(QGraphicsSceneMouseEvent *event) {
         QPointF pos = event->pos();
         int x = (int)(pos.x()) / 16;
         int y = (int)(pos.y()) / 16;
-        map->floodFill(x, y, map->getSelectedBlockIndex(map->paint_tile_index));
+        Block *block = map->getBlock(x, y);
+        int tile = map->getSelectedBlockIndex(map->paint_tile_index);
+        if (block && block->tile != tile) {
+            if (map->smart_paths_enabled && map->paint_tile_width == 3 && map->paint_tile_height == 3)
+                this->_floodFillSmartPath(x, y);
+            else
+                this->_floodFill(x, y);
+        }
+
+        if (event->type() == QEvent::GraphicsSceneMouseRelease) {
+            map->commit();
+        }
         draw();
+    }
+}
+
+void MapPixmapItem::_floodFill(int initialX, int initialY) {
+    QList<QPoint> todo;
+    todo.append(QPoint(initialX, initialY));
+    while (todo.length()) {
+        QPoint point = todo.takeAt(0);
+        int x = point.x();
+        int y = point.y();
+
+        Block *block = map->getBlock(x, y);
+        if (block == NULL) {
+            continue;
+        }
+
+        int xDiff = x - initialX;
+        int yDiff = y - initialY;
+        int i = xDiff % map->paint_tile_width;
+        int j = yDiff % map->paint_tile_height;
+        if (i < 0) i = map->paint_tile_width + i;
+        if (j < 0) j = map->paint_tile_height + j;
+        int tile = map->getSelectedBlockIndex(map->paint_tile_index + i + (j * 8));
+        uint old_tile = block->tile;
+        if (old_tile == tile) {
+            continue;
+        }
+
+        block->tile = tile;
+        map->_setBlock(x, y, *block);
+        if ((block = map->getBlock(x + 1, y)) && block->tile == old_tile) {
+            todo.append(QPoint(x + 1, y));
+        }
+        if ((block = map->getBlock(x - 1, y)) && block->tile == old_tile) {
+            todo.append(QPoint(x - 1, y));
+        }
+        if ((block = map->getBlock(x, y + 1)) && block->tile == old_tile) {
+            todo.append(QPoint(x, y + 1));
+        }
+        if ((block = map->getBlock(x, y - 1)) && block->tile == old_tile) {
+            todo.append(QPoint(x, y - 1));
+        }
+    }
+}
+
+void MapPixmapItem::_floodFillSmartPath(int initialX, int initialY) {
+    // Smart path should never be enabled without a 3x3 block selection.
+    if (map->paint_tile_width != 3 || map->paint_tile_height != 3) return;
+
+    // Shift to the middle tile of the smart path selection.
+    int openTile = map->paint_tile_index + 8 + 1;
+
+    // Flood fill the region with the open tile.
+    QList<QPoint> todo;
+    todo.append(QPoint(initialX, initialY));
+    while (todo.length()) {
+        QPoint point = todo.takeAt(0);
+        int x = point.x();
+        int y = point.y();
+
+        Block *block = map->getBlock(x, y);
+        if (block == NULL) {
+            continue;
+        }
+
+        int tile = map->getSelectedBlockIndex(openTile);
+        uint old_tile = block->tile;
+        if (old_tile == tile) {
+            continue;
+        }
+
+        block->tile = tile;
+        map->_setBlock(x, y, *block);
+        if ((block = map->getBlock(x + 1, y)) && block->tile == old_tile) {
+            todo.append(QPoint(x + 1, y));
+        }
+        if ((block = map->getBlock(x - 1, y)) && block->tile == old_tile) {
+            todo.append(QPoint(x - 1, y));
+        }
+        if ((block = map->getBlock(x, y + 1)) && block->tile == old_tile) {
+            todo.append(QPoint(x, y + 1));
+        }
+        if ((block = map->getBlock(x, y - 1)) && block->tile == old_tile) {
+            todo.append(QPoint(x, y - 1));
+        }
+    }
+
+    // Go back and resolve the flood-filled edge tiles.
+    // Mark tiles as visited while we go.
+    bool visited[map->getWidth() * map->getHeight()];
+    for (int i = 0; i < sizeof visited; i++)
+        visited[i] = false;
+
+    todo.append(QPoint(initialX, initialY));
+    while (todo.length()) {
+        QPoint point = todo.takeAt(0);
+        int x = point.x();
+        int y = point.y();
+        visited[x + y * map->getWidth()] = true;
+
+        Block *block = map->getBlock(x, y);
+        if (block == NULL) {
+            continue;
+        }
+
+        int id = 0;
+        Block *top = map->getBlock(x, y - 1);
+        Block *right = map->getBlock(x + 1, y);
+        Block *bottom = map->getBlock(x, y + 1);
+        Block *left = map->getBlock(x - 1, y);
+
+        // Get marching squares value, to determine which tile to use.
+        if (top && IS_SMART_PATH_TILE(top))
+            id += 1;
+        if (right && IS_SMART_PATH_TILE(right))
+            id += 2;
+        if (bottom && IS_SMART_PATH_TILE(bottom))
+            id += 4;
+        if (left && IS_SMART_PATH_TILE(left))
+            id += 8;
+
+        block->tile = map->getSelectedBlockIndex(map->paint_tile_index + smartPathTable[id]);
+        map->_setBlock(x, y, *block);
+
+        // Visit neighbors if they are smart-path tiles, and don't revisit any.
+        if (!visited[x + 1 + y * map->getWidth()] && (block = map->getBlock(x + 1, y)) && IS_SMART_PATH_TILE(block)) {
+            todo.append(QPoint(x + 1, y));
+            visited[x + 1 + y * map->getWidth()] = true;
+        }
+        if (!visited[x - 1 + y * map->getWidth()] && (block = map->getBlock(x - 1, y)) && IS_SMART_PATH_TILE(block)) {
+            todo.append(QPoint(x - 1, y));
+            visited[x - 1 + y * map->getWidth()] = true;
+        }
+        if (!visited[x + (y + 1) * map->getWidth()] && (block = map->getBlock(x, y + 1)) && IS_SMART_PATH_TILE(block)) {
+            todo.append(QPoint(x, y + 1));
+            visited[x + (y + 1) * map->getWidth()] = true;
+        }
+        if (!visited[x + (y - 1) * map->getWidth()] && (block = map->getBlock(x, y - 1)) && IS_SMART_PATH_TILE(block)) {
+            todo.append(QPoint(x, y - 1));
+            visited[x + (y - 1) * map->getWidth()] = true;
+        }
     }
 }
 
@@ -1213,20 +1374,6 @@ void MapPixmapItem::select(QGraphicsSceneMouseEvent *event) {
 void MapPixmapItem::draw(bool ignoreCache) {
     if (map) {
         setPixmap(map->render(ignoreCache));
-    }
-}
-
-void MapPixmapItem::undo() {
-    if (map) {
-        map->undo();
-        draw();
-    }
-}
-
-void MapPixmapItem::redo() {
-    if (map) {
-        map->redo();
-        draw();
     }
 }
 
@@ -1334,9 +1481,11 @@ void CollisionPixmapItem::pick(QGraphicsSceneMouseEvent *event) {
 
 void DraggablePixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *mouse) {
     active = true;
-    clicking = true;
     last_x = (mouse->pos().x() + this->pos().x()) / 16;
     last_y = (mouse->pos().y() + this->pos().y()) / 16;
+    this->editor->selectMapEvent(this, mouse->modifiers() & Qt::ControlModifier);
+    this->editor->updateSelectedEvents();
+    selectingEvent = true;
     //qDebug() << QString("(%1, %2)").arg(event->get("x")).arg(event->get("y"));
 }
 
@@ -1352,7 +1501,6 @@ void DraggablePixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *mouse) {
         int x = (mouse->pos().x() + this->pos().x()) / 16;
         int y = (mouse->pos().y() + this->pos().y()) / 16;
         if (x != last_x || y != last_y) {
-            clicking = false;
             if (editor->selected_events->contains(this)) {
                 for (DraggablePixmapItem *item : *editor->selected_events) {
                     item->move(x - last_x, y - last_y);
@@ -1368,11 +1516,13 @@ void DraggablePixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *mouse) {
 }
 
 void DraggablePixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouse) {
-    if (clicking) {
-        this->editor->selectMapEvent(this, mouse->modifiers() & Qt::ControlModifier);
-        this->editor->updateSelectedEvents();
-    }
     active = false;
+}
+
+void DraggablePixmapItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouse) {
+    if (this->event->get("event_type") == EventType::Warp) {
+        emit editor->warpEventDoubleClicked(this->event->get("destination_map_name"), this->event->get("destination_warp"));
+    }
 }
 
 QList<DraggablePixmapItem *> *Editor::getObjects() {
@@ -1395,7 +1545,7 @@ void Editor::redrawObject(DraggablePixmapItem *item) {
         if (selected_events && selected_events->contains(item)) {
             QImage image = item->pixmap().toImage();
             QPainter painter(&image);
-            painter.setPen(QColor(250, 100, 25));
+            painter.setPen(QColor(250, 0, 255));
             painter.drawRect(0, 0, image.width() - 1, image.height() - 1);
             painter.end();
             item->setPixmap(QPixmap::fromImage(image));
@@ -1452,39 +1602,19 @@ void Editor::deleteEvent(Event *event) {
     //updateSelectedObjects();
 }
 
-// dunno how to detect bubbling. QMouseEvent::isAccepted seems to always be true
-// check if selected_events changed instead. this has the side effect of deselecting
-// when you click on a selected event, since selected_events doesn't change.
-
-QList<DraggablePixmapItem *> selected_events_test;
-bool clicking = false;
-
+// It doesn't seem to be possible to prevent the mousePress event
+// from triggering both event's DraggablePixmapItem and the background mousePress.
+// Since the DraggablePixmapItem's event fires first, we can set a temp
+// variable "selectingEvent" so that we can detect whether or not the user
+// is clicking on the background instead of an event.
 void Editor::objectsView_onMousePress(QMouseEvent *event) {
-    clicking = true;
-    selected_events_test = *selected_events;
-}
-
-void Editor::objectsView_onMouseMove(QMouseEvent *event) {
-    clicking = false;
-}
-
-void Editor::objectsView_onMouseRelease(QMouseEvent *event) {
-    if (clicking) {
-        if (selected_events_test.length()) {
-            if (selected_events_test.length() == selected_events->length()) {
-                bool deselect = true;
-                for (int i = 0; i < selected_events_test.length(); i++) {
-                    if (selected_events_test.at(i) != selected_events->at(i)) {
-                        deselect = false;
-                        break;
-                    }
-                }
-                if (deselect) {
-                    selected_events->clear();
-                    updateSelectedEvents();
-                }
-            }
-        }
-        clicking = false;
+    bool multiSelect = event->modifiers() & Qt::ControlModifier;
+    if (!selectingEvent && !multiSelect && selected_events->length() > 1) {
+        DraggablePixmapItem *first = selected_events->first();
+        selected_events->clear();
+        selected_events->append(first);
+        updateSelectedEvents();
     }
+
+    selectingEvent = false;
 }

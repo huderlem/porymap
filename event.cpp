@@ -43,13 +43,13 @@ Event* Event::createNewObjectEvent()
     event->put("event_group_type", "object_event_group");
     event->put("event_type", EventType::Object);
     event->put("sprite", "EVENT_OBJ_GFX_BOY_1");
-    event->put("behavior", "1");
+    event->put("movement_type", "MOVEMENT_TYPE_LOOK_AROUND");
     event->put("radius_x", 0);
     event->put("radius_y", 0);
     event->put("script_label", "NULL");
     event->put("event_flag", "0");
     event->put("replacement", "0");
-    event->put("trainer_see_type", "0");
+    event->put("is_trainer", "FALSE");
     event->put("sight_radius_tree_id", 0);
     return event;
 }
@@ -89,7 +89,7 @@ Event* Event::createNewSignEvent()
     Event *event = new Event;
     event->put("event_group_type", "bg_event_group");
     event->put("event_type", EventType::Sign);
-    event->put("player_facing_direction", "0");
+    event->put("player_facing_direction", "BG_EVENT_PLAYER_FACING_ANY");
     event->put("script_label", "NULL");
     return event;
 }
@@ -109,7 +109,7 @@ Event* Event::createNewSecretBaseEvent()
     Event *event = new Event;
     event->put("event_group_type", "bg_event_group");
     event->put("event_type", EventType::SecretBase);
-    event->put("secret_base_map", "SECRET_BASE_RED_CAVE2_1");
+    event->put("secret_base_id", "SECRET_BASE_RED_CAVE2_1");
     return event;
 }
 
@@ -127,10 +127,10 @@ QString Event::buildObjectEventMacro(int item_index)
     text += QString(", %1").arg(x);
     text += QString(", %1").arg(y);
     text += QString(", %1").arg(this->get("elevation"));
-    text += QString(", %1").arg(this->get("behavior"));
+    text += QString(", %1").arg(this->get("movement_type"));
     text += QString(", %1").arg(radius_x);
     text += QString(", %1").arg(radius_y);
-    text += QString(", %1").arg(this->get("trainer_see_type"));
+    text += QString(", %1").arg(this->get("is_trainer"));
     text += QString(", %1").arg(this->get("sight_radius_tree_id"));
     text += QString(", %1").arg(this->get("script_label"));
     text += QString(", %1").arg(this->get("event_flag"));
@@ -156,10 +156,8 @@ QString Event::buildCoordScriptEventMacro()
     text += QString("\tcoord_event %1").arg(this->get("x"));
     text += QString(", %1").arg(this->get("y"));
     text += QString(", %1").arg(this->get("elevation"));
-    text += QString(", 0");
     text += QString(", %1").arg(this->get("script_var"));
     text += QString(", %1").arg(this->get("script_var_value"));
-    text += QString(", 0");
     text += QString(", %1").arg(this->get("script_label"));
     text += "\n";
     return text;
@@ -183,7 +181,6 @@ QString Event::buildSignEventMacro()
     text += QString(", %1").arg(this->get("y"));
     text += QString(", %1").arg(this->get("elevation"));
     text += QString(", %1").arg(this->get("player_facing_direction"));
-    text += QString(", 0");
     text += QString(", %1").arg(this->get("script_label"));
     text += "\n";
     return text;
@@ -207,7 +204,7 @@ QString Event::buildSecretBaseEventMacro()
     text += QString("\tbg_secret_base_event %1").arg(this->get("x"));
     text += QString(", %1").arg(this->get("y"));
     text += QString(", %1").arg(this->get("elevation"));
-    text += QString(", %1").arg(this->get("secret_base_map"));
+    text += QString(", %1").arg(this->get("secret_base_id"));
     text += "\n";
     return text;
 }

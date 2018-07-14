@@ -23,9 +23,17 @@ public:
     QList<QString> mapLayoutsTableMaster;
     QMap<QString, MapLayout*> mapLayouts;
     QMap<QString, MapLayout*> mapLayoutsMaster;
+    QStringList *regionMapSections = NULL;
     QStringList *itemNames = NULL;
     QStringList *flagNames = NULL;
     QStringList *varNames = NULL;
+    QStringList *movementTypes = NULL;
+    QStringList *mapTypes = NULL;
+    QStringList *mapBattleScenes = NULL;
+    QStringList *weatherNames = NULL;
+    QStringList *coordEventWeatherNames = NULL;
+    QStringList *secretBaseIds = NULL;
+    QStringList *bgEventFacingDirections = NULL;
     QStringList mapsWithConnections;
 
     QMap<QString, Map*> *map_cache;
@@ -72,15 +80,19 @@ public:
 
     QList<QStringList>* parseAsm(QString text);
     QStringList getSongNames();
-    QStringList getLocations();
     QStringList getVisibilities();
     QMap<QString, QStringList> getTilesets();
-    QStringList getWeathers();
-    QStringList getMapTypes();
-    QStringList getBattleScenes();
+    void readRegionMapSections();
     void readItemNames();
     void readFlagNames();
     void readVarNames();
+    void readMovementTypes();
+    void readMapTypes();
+    void readMapBattleScenes();
+    void readWeatherNames();
+    void readCoordEventWeatherNames();
+    void readSecretBaseIds();
+    void readBgEventFacingDirections();
 
     void loadEventPixmaps(QList<Event*> objects);
     QMap<QString, int> getEventObjGfxConstants();

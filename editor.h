@@ -138,6 +138,7 @@ signals:
     void selectedObjectsChanged();
     void loadMapRequested(QString, QString);
     void tilesetChanged(QString);
+    void warpEventDoubleClicked(QString mapName, QString warpNum);
 };
 
 
@@ -150,13 +151,12 @@ public:
     Editor *editor = NULL;
     Event *event = NULL;
     QGraphicsItemAnimation *pos_anim = NULL;
-    DraggablePixmapItem(Event *event_) : QGraphicsPixmapItem(event_->pixmap) {
+    DraggablePixmapItem(Event *event_, Editor *editor_) : QGraphicsPixmapItem(event_->pixmap) {
         event = event_;
+        editor = editor_;
         updatePosition();
     }
     bool active;
-    bool right_click;
-    bool clicking;
     int last_x;
     int last_y;
     void updatePosition() {
@@ -229,6 +229,7 @@ protected:
     void mousePressEvent(QGraphicsSceneMouseEvent*);
     void mouseMoveEvent(QGraphicsSceneMouseEvent*);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent*);
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent*);
 };
 
 class EventGroup : public QGraphicsItemGroup {
@@ -250,10 +251,10 @@ public:
     QList<QPoint> selection;
     virtual void paint(QGraphicsSceneMouseEvent*);
     virtual void floodFill(QGraphicsSceneMouseEvent*);
+    void _floodFill(int x, int y);
+    void _floodFillSmartPath(int initialX, int initialY);
     virtual void pick(QGraphicsSceneMouseEvent*);
     virtual void select(QGraphicsSceneMouseEvent*);
-    virtual void undo();
-    virtual void redo();
     virtual void draw(bool ignoreCache = false);
 
 private:
