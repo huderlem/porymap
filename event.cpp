@@ -42,8 +42,8 @@ Event* Event::createNewObjectEvent()
     Event *event = new Event;
     event->put("event_group_type", "object_event_group");
     event->put("event_type", EventType::Object);
-    event->put("sprite", "MOVEMENT_TYPE_LOOK_AROUND");
-    event->put("movement_type", "1");
+    event->put("sprite", "EVENT_OBJ_GFX_BOY_1");
+    event->put("movement_type", "MOVEMENT_TYPE_LOOK_AROUND");
     event->put("radius_x", 0);
     event->put("radius_y", 0);
     event->put("script_label", "NULL");
@@ -89,7 +89,7 @@ Event* Event::createNewSignEvent()
     Event *event = new Event;
     event->put("event_group_type", "bg_event_group");
     event->put("event_type", EventType::Sign);
-    event->put("player_facing_direction", "0");
+    event->put("player_facing_direction", "BG_EVENT_PLAYER_FACING_ANY");
     event->put("script_label", "NULL");
     return event;
 }
