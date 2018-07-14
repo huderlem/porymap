@@ -109,6 +109,9 @@
               <property name="focusPolicy">
                <enum>Qt::StrongFocus</enum>
               </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The X coordinate of this object.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <property name="minimum">
                <number>-32768</number>
               </property>
@@ -136,6 +139,9 @@
               <property name="focusPolicy">
                <enum>Qt::StrongFocus</enum>
               </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The Y coordinate of this object.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <property name="minimum">
                <number>-32768</number>
               </property>
@@ -162,6 +168,9 @@
              <widget class="NoScrollSpinBox" name="spinBox_z">
               <property name="focusPolicy">
                <enum>Qt::StrongFocus</enum>
+              </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The elevation of this object.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="maximum">
                <number>15</number>
@@ -231,6 +240,9 @@
         </property>
         <property name="focusPolicy">
          <enum>Qt::StrongFocus</enum>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The sprite graphics to use for this object.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="editable">
          <bool>true</bool>

@@ -99,6 +99,8 @@ private slots:
 
     void on_checkBox_smartPaths_stateChanged(int selected);
 
+    void on_checkBox_Visibility_clicked(bool checked);
+
 private:
     Ui::MainWindow *ui;
     QStandardItemModel *mapListModel;

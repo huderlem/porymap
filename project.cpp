@@ -17,10 +17,14 @@ Project::Project()
     groupNames = new QStringList;
     map_groups = new QMap<QString, int>;
     mapNames = new QStringList;
+    regionMapSections = new QStringList;
     itemNames = new QStringList;
     flagNames = new QStringList;
     varNames = new QStringList;
     movementTypes = new QStringList;
+    mapTypes = new QStringList;
+    mapBattleScenes = new QStringList;
+    weatherNames = new QStringList;
     coordEventWeatherNames = new QStringList;
     secretBaseIds = new QStringList;
     bgEventFacingDirections = new QStringList;
@@ -168,7 +172,7 @@ void Project::readMapHeader(Map* map) {
     map->song = header->value(4);
     map->layout_id = header->value(5);
     map->location = header->value(6);
-    map->visibility = header->value(7);
+    map->requiresFlash = header->value(7);
     map->weather = header->value(8);
     map->type = header->value(9);
     map->unknown = header->value(10);
@@ -183,13 +187,13 @@ void Project::setNewMapHeader(Map* map, int mapIndex) {
     map->connections_label = "0x0";
     map->song = "MUS_DAN02";
     map->layout_id = QString("%1").arg(mapIndex);
-    map->location = "0";
-    map->visibility = "0";
-    map->weather = "2";
-    map->type = "1";
+    map->location = "MAPSEC_LITTLEROOT_TOWN";
+    map->requiresFlash = "FALSE";
+    map->weather = "WEATHER_SUNNY";
+    map->type = "MAP_TYPE_TOWN";
     map->unknown = "0";
-    map->show_location = "1";
-    map->battle_scene = "0";
+    map->show_location = "TRUE";
+    map->battle_scene = "MAP_BATTLE_SCENE_NORMAL";
 }
 
 void Project::saveMapHeader(Map *map) {
@@ -211,7 +215,7 @@ void Project::saveMapHeader(Map *map) {
     text += QString("\t.2byte %1\n").arg(map->song);
     text += QString("\t.2byte %1\n").arg(map->layout_id);
     text += QString("\t.byte %1\n").arg(map->location);
-    text += QString("\t.byte %1\n").arg(map->visibility);
+    text += QString("\t.byte %1\n").arg(map->requiresFlash);
     text += QString("\t.byte %1\n").arg(map->weather);
     text += QString("\t.byte %1\n").arg(map->type);
     text += QString("\t.2byte %1\n").arg(map->unknown);
@@ -986,15 +990,6 @@ QList<QStringList>* Project::parseAsm(QString text) {
     return parser->parseAsm(text);
 }
 
-QStringList Project::getLocations() {
-    // TODO
-    QStringList names;
-    for (int i = 0; i < 88; i++) {
-        names.append(QString("%1").arg(i));
-    }
-    return names;
-}
-
 QStringList Project::getVisibilities() {
     // TODO
     QStringList names;
@@ -1045,31 +1040,10 @@ QMap<QString, QStringList> Project::getTilesets() {
     return allTilesets;
 }
 
-QStringList Project::getWeathers() {
-    // TODO
-    QStringList names;
-    for (int i = 0; i < 16; i++) {
-        names.append(QString("%1").arg(i));
-    }
-    return names;
-}
-
-QStringList Project::getMapTypes() {
-    // TODO
-    QStringList names;
-    for (int i = 0; i < 16; i++) {
-        names.append(QString("%1").arg(i));
-    }
-    return names;
-}
-
-QStringList Project::getBattleScenes() {
-    // TODO
-    QStringList names;
-    for (int i = 0; i < 16; i++) {
-        names.append(QString("%1").arg(i));
-    }
-    return names;
+void Project::readRegionMapSections() {
+    QString filepath = root + "/include/constants/region_map_sections.h";
+    QStringList prefixes = (QStringList() << "MAPSEC_");
+    readCDefinesSorted(filepath, prefixes, regionMapSections);
 }
 
 void Project::readItemNames() {
@@ -1094,6 +1068,24 @@ void Project::readMovementTypes() {
     QString filepath = root + "/include/constants/event_object_movement_constants.h";
     QStringList prefixes = (QStringList() << "MOVEMENT_TYPE_");
     readCDefinesSorted(filepath, prefixes, movementTypes);
+}
+
+void Project::readMapTypes() {
+    QString filepath = root + "/include/constants/map_types.h";
+    QStringList prefixes = (QStringList() << "MAP_TYPE_");
+    readCDefinesSorted(filepath, prefixes, mapTypes);
+}
+
+void Project::readMapBattleScenes() {
+    QString filepath = root + "/include/constants/map_types.h";
+    QStringList prefixes = (QStringList() << "MAP_BATTLE_SCENE_");
+    readCDefinesSorted(filepath, prefixes, mapBattleScenes);
+}
+
+void Project::readWeatherNames() {
+    QString filepath = root + "/include/constants/weather.h";
+    QStringList prefixes = (QStringList() << "WEATHER_");
+    readCDefinesSorted(filepath, prefixes, weatherNames);
 }
 
 void Project::readCoordEventWeatherNames() {
@@ -1352,7 +1344,7 @@ void Project::readMapEvents(Map *map) {
             object->put("movement_type", command.value(i++));
             object->put("radius_x", command.value(i++).toInt(nullptr, 0));
             object->put("radius_y", command.value(i++).toInt(nullptr, 0));
-            object->put("trainer_see_type", command.value(i++));
+            object->put("is_trainer", command.value(i++));
             object->put("sight_radius_tree_id", command.value(i++));
             object->put("script_label", command.value(i++));
             object->put("event_flag", command.value(i++));

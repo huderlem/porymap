@@ -127,7 +127,7 @@ public:
     QString song;
     QString layout_id;
     QString location;
-    QString visibility;
+    QString requiresFlash;
     QString weather;
     QString type;
     QString unknown;
