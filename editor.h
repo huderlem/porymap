@@ -17,8 +17,11 @@ class CollisionPixmapItem;
 class ConnectionPixmapItem;
 class MetatilesPixmapItem;
 class BorderMetatilesPixmapItem;
+class CurrentSelectedMetatilesPixmapItem;
 class CollisionMetatilesPixmapItem;
 class ElevationMetatilesPixmapItem;
+
+#define SWAP(a, b) do { if (a != b) { a ^= b; b ^= a; a ^= b; } } while (0)
 
 class Editor : public QObject
 {
@@ -35,9 +38,12 @@ public:
     void undo();
     void redo();
     void setMap(QString map_name);
+    void updateCurrentMetatilesSelection();
     void displayMap();
     void displayMetatiles();
     void displayBorderMetatiles();
+    void displayCurrentMetatilesSelection();
+    void redrawCurrentMetatilesSelection();
     void displayCollisionMetatiles();
     void displayElevationMetatiles();
     void displayMapEvents();
@@ -84,16 +90,24 @@ public:
     QList<QGraphicsLineItem*> gridLines;
 
     QGraphicsScene *scene_metatiles = NULL;
+    QGraphicsScene *scene_current_metatile_selection = NULL;
     QGraphicsScene *scene_selected_border_metatiles = NULL;
     QGraphicsScene *scene_collision_metatiles = NULL;
     QGraphicsScene *scene_elevation_metatiles = NULL;
     MetatilesPixmapItem *metatiles_item = NULL;
+
     BorderMetatilesPixmapItem *selected_border_metatiles_item = NULL;
+    CurrentSelectedMetatilesPixmapItem *scene_current_metatile_selection_item = NULL;
     CollisionMetatilesPixmapItem *collision_metatiles_item = NULL;
     ElevationMetatilesPixmapItem *elevation_metatiles_item = NULL;
 
     QList<DraggablePixmapItem*> *events = NULL;
     QList<DraggablePixmapItem*> *selected_events = NULL;
+
+    bool lastSelectedMetatilesFromMap = false;
+    int copiedMetatileSelectionWidth = 0;
+    int copiedMetatileSelectionHeight = 0;
+    QList<int> *copiedMetatileSelection = new QList<int>;
 
     QString map_edit_mode;
 
@@ -139,6 +153,7 @@ signals:
     void loadMapRequested(QString, QString);
     void tilesetChanged(QString);
     void warpEventDoubleClicked(QString mapName, QString warpNum);
+    void currentMetatilesSelectionChanged();
 };
 
 
@@ -241,8 +256,10 @@ public:
     MapPixmapItem(QPixmap pixmap): QGraphicsPixmapItem(pixmap) {
     }
     Map *map = NULL;
-    MapPixmapItem(Map *map_) {
+    Editor *editor = NULL;
+    MapPixmapItem(Map *map_, Editor *editor_) {
         map = map_;
+        editor = editor_;
         setAcceptHoverEvents(true);
     }
     bool active;
@@ -256,6 +273,7 @@ public:
     virtual void pick(QGraphicsSceneMouseEvent*);
     virtual void select(QGraphicsSceneMouseEvent*);
     virtual void draw(bool ignoreCache = false);
+    void updateMetatileSelection(QGraphicsSceneMouseEvent *event);
 
 private:
     void updateCurHoveredTile(QPointF pos);
@@ -279,7 +297,7 @@ class CollisionPixmapItem : public MapPixmapItem {
 public:
     CollisionPixmapItem(QPixmap pixmap): MapPixmapItem(pixmap) {
     }
-    CollisionPixmapItem(Map *map_): MapPixmapItem(map_) {
+    CollisionPixmapItem(Map *map_, Editor *editor_): MapPixmapItem(map_, editor_) {
     }
     virtual void paint(QGraphicsSceneMouseEvent*);
     virtual void floodFill(QGraphicsSceneMouseEvent*);
@@ -349,7 +367,7 @@ public:
     Map* map = NULL;
     virtual void draw();
 private:
-    void updateSelection(QPointF pos, Qt::MouseButton button);
+    void updateSelection(QPointF pos);
 protected:
     virtual void updateCurHoveredMetatile(QPointF pos);
 private slots:
@@ -375,6 +393,16 @@ signals:
     void borderMetatilesChanged();
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent*);
+};
+
+class CurrentSelectedMetatilesPixmapItem : public QObject, public QGraphicsPixmapItem {
+    Q_OBJECT
+public:
+    CurrentSelectedMetatilesPixmapItem(Map *map_) {
+        map = map_;
+    }
+    Map* map = NULL;
+    virtual void draw();
 };
 
 class MovementPermissionsPixmapItem : public MetatilesPixmapItem {

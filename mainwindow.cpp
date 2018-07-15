@@ -38,6 +38,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(editor, SIGNAL(loadMapRequested(QString, QString)), this, SLOT(onLoadMapRequested(QString, QString)));
     connect(editor, SIGNAL(tilesetChanged(QString)), this, SLOT(onTilesetChanged(QString)));
     connect(editor, SIGNAL(warpEventDoubleClicked(QString,QString)), this, SLOT(openWarpMap(QString,QString)));
+    connect(editor, SIGNAL(currentMetatilesSelectionChanged()), this, SLOT(currentMetatilesSelectionChanged()));
 
     on_toolButton_Paint_clicked();
 
@@ -187,6 +188,9 @@ void MainWindow::redrawMapScene()
 
     ui->graphicsView_BorderMetatile->setScene(editor->scene_selected_border_metatiles);
     ui->graphicsView_BorderMetatile->setFixedSize(editor->selected_border_metatiles_item->pixmap().width() + 2, editor->selected_border_metatiles_item->pixmap().height() + 2);
+
+    ui->graphicsView_currentMetatileSelection->setScene(editor->scene_current_metatile_selection);
+    ui->graphicsView_currentMetatileSelection->setFixedSize(editor->scene_current_metatile_selection_item->pixmap().width() + 2, editor->scene_current_metatile_selection_item->pixmap().height() + 2);
 
     ui->graphicsView_Collision->setScene(editor->scene_collision_metatiles);
     //ui->graphicsView_Collision->setSceneRect(editor->scene_collision_metatiles->sceneRect());
@@ -483,6 +487,12 @@ void MainWindow::onAddNewMapToGroupClick(QAction* triggeredAction)
 void MainWindow::onTilesetChanged(QString mapName)
 {
     setMap(mapName);
+}
+
+void MainWindow::currentMetatilesSelectionChanged()
+{
+    ui->graphicsView_currentMetatileSelection->setFixedSize(editor->scene_current_metatile_selection_item->pixmap().width() + 2, editor->scene_current_metatile_selection_item->pixmap().height() + 2);
+    ui->graphicsView_currentMetatileSelection->setSceneRect(0, 0, editor->scene_current_metatile_selection_item->pixmap().width(), editor->scene_current_metatile_selection_item->pixmap().height());
 }
 
 void MainWindow::on_mapList_activated(const QModelIndex &index)

@@ -12,6 +12,10 @@ Map::Map(QObject *parent) : QObject(parent)
     paint_tile_index = 1;
     paint_collision = 0;
     paint_elevation = 3;
+    selected_metatiles_width = 1;
+    selected_metatiles_height = 1;
+    selected_metatiles = new QList<int>;
+    selected_metatiles->append(1);
 }
 
 void Map::setName(QString mapName) {
@@ -715,3 +719,16 @@ void Map::hoveredElevationTileChanged(int elevation) {
 void Map::clearHoveredElevationTile() {
     emit statusBarMessage(QString(""));
 }
+
+void Map::setSelectedMetatilesFromTilePicker() {
+    this->selected_metatiles_width = this->paint_tile_width;
+    this->selected_metatiles_height = this->paint_tile_height;
+    this->selected_metatiles->clear();
+    for (int j = 0; j < this->paint_tile_height; j++) {
+        for (int i = 0; i < this->paint_tile_width; i++) {
+            int metatile = this->getSelectedBlockIndex(this->paint_tile_index + i + (j * 8));
+            this->selected_metatiles->append(metatile);
+        }
+    }
+}
+

@@ -177,6 +177,9 @@ public:
     int paint_tile_height = 1;
     int paint_tile_initial_x;
     int paint_tile_initial_y;
+    int selected_metatiles_width;
+    int selected_metatiles_height;
+    QList<int> *selected_metatiles = NULL;
     int paint_collision;
     int paint_elevation;
 
@@ -218,6 +221,7 @@ public:
     void clearHoveredCollisionTile();
     void hoveredElevationTileChanged(int elevation);
     void clearHoveredElevationTile();
+    void setSelectedMetatilesFromTilePicker();
 
 signals:
     void paintTileChanged(Map *map);
