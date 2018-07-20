@@ -38,7 +38,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(editor, SIGNAL(loadMapRequested(QString, QString)), this, SLOT(onLoadMapRequested(QString, QString)));
     connect(editor, SIGNAL(tilesetChanged(QString)), this, SLOT(onTilesetChanged(QString)));
     connect(editor, SIGNAL(warpEventDoubleClicked(QString,QString)), this, SLOT(openWarpMap(QString,QString)));
-    connect(editor, SIGNAL(currentMetatilesSelectionChanged()), this, SLOT(currentMetatilesSelectionChanged()));
 
     on_toolButton_Paint_clicked();
 
@@ -195,10 +194,6 @@ void MainWindow::redrawMapScene()
     ui->graphicsView_Collision->setScene(editor->scene_collision_metatiles);
     //ui->graphicsView_Collision->setSceneRect(editor->scene_collision_metatiles->sceneRect());
     ui->graphicsView_Collision->setFixedSize(editor->collision_metatiles_item->pixmap().width() + 2, editor->collision_metatiles_item->pixmap().height() + 2);
-
-    ui->graphicsView_Elevation->setScene(editor->scene_elevation_metatiles);
-    //ui->graphicsView_Elevation->setSceneRect(editor->scene_elevation_metatiles->sceneRect());
-    ui->graphicsView_Elevation->setFixedSize(editor->elevation_metatiles_item->pixmap().width() + 2, editor->elevation_metatiles_item->pixmap().height() + 2);
 }
 
 void MainWindow::openWarpMap(QString map_name, QString warp_num) {

@@ -18,8 +18,7 @@ class ConnectionPixmapItem;
 class MetatilesPixmapItem;
 class BorderMetatilesPixmapItem;
 class CurrentSelectedMetatilesPixmapItem;
-class CollisionMetatilesPixmapItem;
-class ElevationMetatilesPixmapItem;
+class MovementPermissionsPixmapItem;
 
 #define SWAP(a, b) do { if (a != b) { a ^= b; b ^= a; a ^= b; } } while (0)
 
@@ -98,8 +97,7 @@ public:
 
     BorderMetatilesPixmapItem *selected_border_metatiles_item = NULL;
     CurrentSelectedMetatilesPixmapItem *scene_current_metatile_selection_item = NULL;
-    CollisionMetatilesPixmapItem *collision_metatiles_item = NULL;
-    ElevationMetatilesPixmapItem *elevation_metatiles_item = NULL;
+    MovementPermissionsPixmapItem *collision_metatiles_item = NULL;
 
     QList<DraggablePixmapItem*> *events = NULL;
     QList<DraggablePixmapItem*> *selected_events = NULL;
@@ -299,6 +297,7 @@ public:
     }
     CollisionPixmapItem(Map *map_, Editor *editor_): MapPixmapItem(map_, editor_) {
     }
+    void updateMovementPermissionSelection(QGraphicsSceneMouseEvent *event);
     virtual void paint(QGraphicsSceneMouseEvent*);
     virtual void floodFill(QGraphicsSceneMouseEvent*);
     virtual void pick(QGraphicsSceneMouseEvent*);
@@ -408,58 +407,26 @@ public:
 class MovementPermissionsPixmapItem : public MetatilesPixmapItem {
     Q_OBJECT
 public:
-    MovementPermissionsPixmapItem(Map *map_): MetatilesPixmapItem(map_) {}
-    virtual void pick(uint collision) {
-        map->paint_collision = collision;
-        draw();
-    }
-protected:
-    void mousePressEvent(QGraphicsSceneMouseEvent*);
-    void mouseMoveEvent(QGraphicsSceneMouseEvent*);
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent*);
-};
-
-class CollisionMetatilesPixmapItem : public MovementPermissionsPixmapItem {
-    Q_OBJECT
-public:
-    CollisionMetatilesPixmapItem(Map *map_): MovementPermissionsPixmapItem(map_) {
+    MovementPermissionsPixmapItem(Map *map_): MetatilesPixmapItem(map_) {
         connect(map, SIGNAL(paintCollisionChanged(Map*)), this, SLOT(paintCollisionChanged(Map *)));
     }
-    virtual void pick(uint collision) {
+    virtual void pick(uint collision, uint elevation) {
         map->paint_collision = collision;
+        map->paint_elevation = elevation;
         draw();
     }
     virtual void draw() {
         setPixmap(map->renderCollisionMetatiles());
     }
 protected:
+    void mousePressEvent(QGraphicsSceneMouseEvent*);
+    void mouseMoveEvent(QGraphicsSceneMouseEvent*);
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent*);
     virtual void updateCurHoveredMetatile(QPointF pos);
 private slots:
     void paintCollisionChanged(Map *map) {
         draw();
     }
 };
-
-class ElevationMetatilesPixmapItem : public MovementPermissionsPixmapItem {
-    Q_OBJECT
-public:
-    ElevationMetatilesPixmapItem(Map *map_): MovementPermissionsPixmapItem(map_) {
-        connect(map, SIGNAL(paintCollisionChanged(Map*)), this, SLOT(paintCollisionChanged(Map *)));
-    }
-    virtual void pick(uint elevation) {
-        map->paint_elevation = elevation;
-        draw();
-    }
-    virtual void draw() {
-        setPixmap(map->renderElevationMetatiles());
-    }
-protected:
-    virtual void updateCurHoveredMetatile(QPointF pos);
-private slots:
-    void paintCollisionChanged(Map *map) {
-        draw();
-    }
-};
-
 
 #endif // EDITOR_H

@@ -353,14 +353,18 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item
     }
 }
 void Editor::mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixmapItem *item) {
-    if (map_edit_mode == "paint") {
-        item->paint(event);
-    } else if (map_edit_mode == "fill") {
-        item->floodFill(event);
-    } else if (map_edit_mode == "pick") {
-        item->pick(event);
-    } else if (map_edit_mode == "select") {
-        item->select(event);
+    if (event->buttons() & Qt::RightButton) {
+        item->updateMovementPermissionSelection(event);
+    } else {
+        if (map_edit_mode == "paint") {
+            item->paint(event);
+        } else if (map_edit_mode == "fill") {
+            item->floodFill(event);
+        } else if (map_edit_mode == "pick") {
+            item->pick(event);
+        } else if (map_edit_mode == "select") {
+            item->select(event);
+        }
     }
 }
 
@@ -412,7 +416,6 @@ void Editor::displayMap() {
     displayBorderMetatiles();
     displayCurrentMetatilesSelection();
     displayCollisionMetatiles();
-    displayElevationMetatiles();
     displayMapEvents();
     displayMapConnections();
     displayMapBorder();
@@ -481,21 +484,9 @@ void Editor::displayCollisionMetatiles() {
     }
 
     scene_collision_metatiles = new QGraphicsScene;
-    collision_metatiles_item = new CollisionMetatilesPixmapItem(map);
+    collision_metatiles_item = new MovementPermissionsPixmapItem(map);
     collision_metatiles_item->draw();
     scene_collision_metatiles->addItem(collision_metatiles_item);
-}
-
-void Editor::displayElevationMetatiles() {
-    if (elevation_metatiles_item && elevation_metatiles_item->scene()) {
-        elevation_metatiles_item->scene()->removeItem(elevation_metatiles_item);
-        delete elevation_metatiles_item;
-    }
-
-    scene_elevation_metatiles = new QGraphicsScene;
-    elevation_metatiles_item = new ElevationMetatilesPixmapItem(map);
-    elevation_metatiles_item->draw();
-    scene_elevation_metatiles->addItem(elevation_metatiles_item);
 }
 
 void Editor::displayMapEvents() {
@@ -989,13 +980,17 @@ void CurrentSelectedMetatilesPixmapItem::draw() {
 
 void MovementPermissionsPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent* event) {
     QPointF pos = event->pos();
-    int x = ((int)pos.x()) / 16;
-    int y = ((int)pos.y()) / 16;
-    int width = pixmap().width() / 16;
-    int height = pixmap().height() / 16;
-    if ((x >= 0 && x < width) && (y >=0 && y < height)) {
-        pick(y * width + x);
-    }
+    int x = ((int)pos.x()) / 32;
+    int y = ((int)pos.y()) / 32;
+    int width = pixmap().width() / 32;
+    int height = pixmap().height() / 32;
+
+    // Snap to a valid position inside the selection area.
+    if (x < 0) x = 0;
+    if (x >= width) x = width - 1;
+    if (y < 0) y = 0;
+    if (y >= height) y = height - 1;
+    pick(x, y);
 }
 void MovementPermissionsPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event) {
     updateCurHoveredMetatile(event->pos());
@@ -1005,17 +1000,18 @@ void MovementPermissionsPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* 
     mousePressEvent(event);
 }
 
-void CollisionMetatilesPixmapItem::updateCurHoveredMetatile(QPointF pos) {
-    int x = ((int)pos.x()) / 16;
-    int y = ((int)pos.y()) / 16;
-    int width = pixmap().width() / 16;
-    int height = pixmap().height() / 16;
-    if (x < 0 || x >= width || y < 0 || y >= height) {
-        map->clearHoveredCollisionTile();
-    } else {
-        int collision = y * width + x;
-        map->hoveredCollisionTileChanged(collision);
-    }
+void MovementPermissionsPixmapItem::updateCurHoveredMetatile(QPointF pos) {
+    int x = ((int)pos.x()) / 32;
+    int y = ((int)pos.y()) / 32;
+    int width = pixmap().width() / 32;
+    int height = pixmap().height() / 32;
+
+    // Snap to a valid position inside the selection area.
+    if (x < 0) x = 0;
+    if (x >= width) x = width - 1;
+    if (y < 0) y = 0;
+    if (y >= height) y = height - 1;
+    map->hoveredMovementPermissionTileChanged(x, y);
 }
 
 int ConnectionPixmapItem::getMinOffset() {
@@ -1072,19 +1068,6 @@ void ConnectionPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent* event) {
 }
 void ConnectionPixmapItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent*) {
     emit connectionItemDoubleClicked(this);
-}
-
-void ElevationMetatilesPixmapItem::updateCurHoveredMetatile(QPointF pos) {
-    int x = ((int)pos.x()) / 16;
-    int y = ((int)pos.y()) / 16;
-    int width = pixmap().width() / 16;
-    int height = pixmap().height() / 16;
-    if (x < 0 || x >= width || y < 0 || y >= height) {
-        map->clearHoveredElevationTile();
-    } else {
-        int elevation = y * width + x;
-        map->hoveredElevationTileChanged(elevation);
-    }
 }
 
 void MapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
@@ -1487,8 +1470,14 @@ void MapPixmapItem::updateCurHoveredTile(QPointF pos) {
     if (x < 0 || x >= map->getWidth() || y < 0 || y >= map->getHeight()) {
         map->clearHoveredTile();
     } else {
-        int tile = map->layout->blockdata->blocks->at(blockIndex).tile;
-        map->hoveredTileChanged(x, y, tile);
+        if (editor->current_view == editor->map_item) {
+            int tile = map->layout->blockdata->blocks->at(blockIndex).tile;
+            map->hoveredTileChanged(x, y, tile);
+        } else if (editor->current_view == editor->collision_item) {
+            int collision = map->layout->blockdata->blocks->at(blockIndex).collision;
+            int elevation = map->layout->blockdata->blocks->at(blockIndex).elevation;
+            map->hoveredMovementPermissionTileChanged(collision, elevation);
+        }
     }
 }
 
@@ -1580,6 +1569,24 @@ void CollisionPixmapItem::pick(QGraphicsSceneMouseEvent *event) {
         map->paint_elevation = block->elevation;
         emit map->paintCollisionChanged(map);
     }
+}
+
+void CollisionPixmapItem::updateMovementPermissionSelection(QGraphicsSceneMouseEvent *event) {
+    QPointF pos = event->pos();
+    int x = (int)(pos.x()) / 16;
+    int y = (int)(pos.y()) / 16;
+
+    // Snap point to within map bounds.
+    if (x < 0) x = 0;
+    if (x >= map->getWidth()) x = map->getWidth() - 1;
+    if (y < 0) y = 0;
+    if (y >= map->getHeight()) y = map->getHeight() - 1;
+
+    int collision = map->getBlock(x, y)->collision;
+    int elevation = map->getBlock(x, y)->elevation;
+    map->paint_collision = collision;
+    map->paint_elevation = elevation;
+    editor->collision_metatiles_item->draw();
 }
 
 void DraggablePixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *mouse) {
