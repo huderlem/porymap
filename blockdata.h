@@ -11,6 +11,9 @@ class Blockdata : public QObject
     Q_OBJECT
 public:
     explicit Blockdata(QObject *parent = 0);
+    ~Blockdata() {
+        if (blocks) delete blocks;
+    }
 
 public:
     QList<Block> *blocks = NULL;
