@@ -38,6 +38,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(editor, SIGNAL(loadMapRequested(QString, QString)), this, SLOT(onLoadMapRequested(QString, QString)));
     connect(editor, SIGNAL(tilesetChanged(QString)), this, SLOT(onTilesetChanged(QString)));
     connect(editor, SIGNAL(warpEventDoubleClicked(QString,QString)), this, SLOT(openWarpMap(QString,QString)));
+    connect(editor, SIGNAL(currentMetatilesSelectionChanged()), this, SLOT(currentMetatilesSelectionChanged()));
 
     on_toolButton_Paint_clicked();
 

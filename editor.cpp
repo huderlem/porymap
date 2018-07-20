@@ -1072,19 +1072,19 @@ void ConnectionPixmapItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent*) {
 
 void MapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
     if (map) {
-        QPointF pos = event->pos();
-        int x = (int)(pos.x()) / 16;
-        int y = (int)(pos.y()) / 16;
-
-        // Paint onto the map.
-        if (map->smart_paths_enabled && map->selected_metatiles_width == 3 && map->selected_metatiles_height == 3) {
-            paintSmartPath(x, y);
-        } else {
-            paintNormal(x, y);
-        }
-
         if (event->type() == QEvent::GraphicsSceneMouseRelease) {
             map->commit();
+        } else {
+            QPointF pos = event->pos();
+            int x = (int)(pos.x()) / 16;
+            int y = (int)(pos.y()) / 16;
+
+            // Paint onto the map.
+            if (map->smart_paths_enabled && map->selected_metatiles_width == 3 && map->selected_metatiles_height == 3) {
+                paintSmartPath(x, y);
+            } else {
+                paintNormal(x, y);
+            }
         }
 
         draw();
@@ -1251,21 +1251,22 @@ void MapPixmapItem::updateMetatileSelection(QGraphicsSceneMouseEvent *event) {
 
 void MapPixmapItem::floodFill(QGraphicsSceneMouseEvent *event) {
     if (map) {
-        QPointF pos = event->pos();
-        int x = (int)(pos.x()) / 16;
-        int y = (int)(pos.y()) / 16;
-        Block *block = map->getBlock(x, y);
-        int tile = map->selected_metatiles->first();
-        if (block && block->tile != tile) {
-            if (map->smart_paths_enabled && map->selected_metatiles_width == 3 && map->selected_metatiles_height == 3)
-                this->_floodFillSmartPath(x, y);
-            else
-                this->_floodFill(x, y);
-        }
-
         if (event->type() == QEvent::GraphicsSceneMouseRelease) {
             map->commit();
+        } else {
+            QPointF pos = event->pos();
+            int x = (int)(pos.x()) / 16;
+            int y = (int)(pos.y()) / 16;
+            Block *block = map->getBlock(x, y);
+            int tile = map->selected_metatiles->first();
+            if (block && block->tile != tile) {
+                if (map->smart_paths_enabled && map->selected_metatiles_width == 3 && map->selected_metatiles_height == 3)
+                    this->_floodFillSmartPath(x, y);
+                else
+                    this->_floodFill(x, y);
+            }
         }
+
         draw();
     }
 }
