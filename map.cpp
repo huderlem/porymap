@@ -620,7 +620,7 @@ void Map::clearHoveredTile() {
 
 void Map::hoveredMetatileChanged(int blockIndex) {
     int tile = getSelectedBlockIndex(blockIndex);
-    emit statusBarMessage(QString("Block: 0x%1")
+    emit statusBarMessage(QString("Metatile: 0x%1")
                           .arg(QString("%1").arg(tile, 3, 16, QChar('0')).toUpper()));
 }
 
