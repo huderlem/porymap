@@ -12,6 +12,10 @@ Map::Map(QObject *parent) : QObject(parent)
     paint_tile_index = 1;
     paint_collision = 0;
     paint_elevation = 3;
+    selected_metatiles_width = 1;
+    selected_metatiles_height = 1;
+    selected_metatiles = new QList<int>;
+    selected_metatiles->append(1);
 }
 
 void Map::setName(QString mapName) {
@@ -77,46 +81,14 @@ int Map::getDisplayedBlockIndex(int index) {
 }
 
 QImage Map::getCollisionMetatileImage(Block block) {
-    return getCollisionMetatileImage(block.collision);
+    return getCollisionMetatileImage(block.collision, block.elevation);
 }
 
-QImage Map::getCollisionMetatileImage(int collision) {
-    QImage metatile_image(16, 16, QImage::Format_RGBA8888);
-    QColor color;
-    if (collision == 0) {
-        color.setGreen(0xff);
-    } else if (collision == 1) {
-        color.setRed(0xff);
-    } else if (collision == 2) {
-        color.setBlue(0xff);
-    } else if (collision == 3) {
-        // black
-    }
-    metatile_image.fill(color);
-    return metatile_image;
-}
-
-QImage Map::getElevationMetatileImage(Block block) {
-    return getElevationMetatileImage(block.elevation);
-}
-
-QImage Map::getElevationMetatileImage(int elevation) {
-    QImage metatile_image(16, 16, QImage::Format_RGBA8888);
-    QColor color;
-    if (elevation < 15) {
-        uint saturation = (elevation + 1) * 16 + 15;
-        color.setGreen(saturation);
-        color.setRed(saturation);
-        color.setBlue(saturation);
-    } else {
-        color.setGreen(0xd0);
-        color.setBlue(0xd0);
-        color.setRed(0);
-    }
-    metatile_image.fill(color);
-    //QPainter painter(&metatile_image);
-    //painter.end();
-    return metatile_image;
+QImage Map::getCollisionMetatileImage(int collision, int elevation) {
+    int x = collision * 16;
+    int y = elevation * 16;
+    QPixmap collisionImage = QPixmap(":/images/collisions.png").copy(x, y, 16, 16);
+    return collisionImage.toImage();
 }
 
 bool Map::blockChanged(int i, Blockdata *cache) {
@@ -199,39 +171,14 @@ QPixmap Map::renderCollision(bool ignoreCache) {
         Block block = layout->blockdata->blocks->value(i);
         QImage metatile_image = Metatile::getMetatileImage(block.tile, layout->tileset_primary, layout->tileset_secondary);
         QImage collision_metatile_image = getCollisionMetatileImage(block);
-        QImage elevation_metatile_image = getElevationMetatileImage(block);
         int map_y = width_ ? i / width_ : 0;
         int map_x = width_ ? i % width_ : 0;
         QPoint metatile_origin = QPoint(map_x * 16, map_y * 16);
         painter.setOpacity(1);
         painter.drawImage(metatile_origin, metatile_image);
-
         painter.save();
-        if (block.elevation == 15) {
-            painter.setOpacity(0.5);
-        } else if (block.elevation == 0) {
-            painter.setOpacity(0);
-        } else {
-            painter.setOpacity(1);//(block.elevation / 16.0) * 0.8);
-            painter.setCompositionMode(QPainter::CompositionMode_Overlay);
-        }
-        painter.drawImage(metatile_origin, elevation_metatile_image);
-        painter.restore();
-
-        painter.save();
-        if (block.collision == 0) {
-            painter.setOpacity(0.1);
-        } else {
-            painter.setOpacity(0.4);
-        }
+        painter.setOpacity(0.55);
         painter.drawImage(metatile_origin, collision_metatile_image);
-        painter.restore();
-
-        painter.save();
-        painter.setOpacity(0.6);
-        painter.setPen(QColor(255, 255, 255, 192));
-        painter.setFont(QFont("Helvetica", 8));
-        painter.drawText(QPoint(metatile_origin.x(), metatile_origin.y() + 8), QString("%1").arg(block.elevation));
         painter.restore();
     }
     painter.end();
@@ -349,54 +296,35 @@ QPixmap Map::renderConnection(Connection connection) {
 }
 
 QPixmap Map::renderCollisionMetatiles() {
-    int length_ = 4;
-    int height_ = 1;
-    int width_ = length_ / height_;
-    QImage image(width_ * 16, height_ * 16, QImage::Format_RGBA8888);
+    int width_ = 2;
+    int height_ = 16;
+    QImage image(width_ * 32, height_ * 32, QImage::Format_RGBA8888);
     QPainter painter(&image);
-    for (int i = 0; i < length_; i++) {
-        int y = i / width_;
-        int x = i % width_;
-        QPoint origin(x * 16, y * 16);
-        QImage metatile_image = getCollisionMetatileImage(i);
-        painter.drawImage(origin, metatile_image);
+    for (int i = 0; i < width_; i++) {
+        for (int j = 0; j < height_; j++) {
+            QPoint origin(i * 32, j * 32);
+            QImage metatile_image = getCollisionMetatileImage(i, j).scaled(32, 32);
+            painter.drawImage(origin, metatile_image);
+        }
     }
-    drawSelection(paint_collision, width_, 1, 1, &painter);
+    drawSelection(paint_collision + paint_elevation * width_, width_, 1, 1, &painter, 32);
     painter.end();
     return QPixmap::fromImage(image);
 }
 
-QPixmap Map::renderElevationMetatiles() {
-    int length_ = 16;
-    int height_ = 2;
-    int width_ = length_ / height_;
-    QImage image(width_ * 16, height_ * 16, QImage::Format_RGBA8888);
-    QPainter painter(&image);
-    for (int i = 0; i < length_; i++) {
-        int y = i / width_;
-        int x = i % width_;
-        QPoint origin(x * 16, y * 16);
-        QImage metatile_image = getElevationMetatileImage(i);
-        painter.drawImage(origin, metatile_image);
-    }
-    drawSelection(paint_elevation, width_, 1, 1, &painter);
-    painter.end();
-    return QPixmap::fromImage(image);
-}
-
-void Map::drawSelection(int i, int w, int selectionWidth, int selectionHeight, QPainter *painter) {
+void Map::drawSelection(int i, int w, int selectionWidth, int selectionHeight, QPainter *painter, int gridWidth) {
     int x = i % w;
     int y = i / w;
     painter->save();
 
     QColor penColor = QColor(0xff, 0xff, 0xff);
     painter->setPen(penColor);
-    int rectWidth = selectionWidth * 16;
-    int rectHeight = selectionHeight * 16;
-    painter->drawRect(x * 16, y * 16, rectWidth - 1, rectHeight -1);
+    int rectWidth = selectionWidth * gridWidth;
+    int rectHeight = selectionHeight * gridWidth;
+    painter->drawRect(x * gridWidth, y * gridWidth, rectWidth - 1, rectHeight -1);
     painter->setPen(QColor(0, 0, 0));
-    painter->drawRect(x * 16 - 1, y * 16 - 1, rectWidth + 1, rectHeight + 1);
-    painter->drawRect(x * 16 + 1, y * 16 + 1, rectWidth - 3, rectHeight - 3);
+    painter->drawRect(x * gridWidth - 1, y * gridWidth - 1, rectWidth + 1, rectHeight + 1);
+    painter->drawRect(x * gridWidth + 1, y * gridWidth + 1, rectWidth - 3, rectHeight - 3);
     painter->restore();
 }
 
@@ -423,7 +351,7 @@ QPixmap Map::renderMetatiles() {
         painter.drawImage(metatile_origin, metatile_image);
     }
 
-    drawSelection(paint_tile_index, width_, paint_tile_width, paint_tile_height, &painter);
+    drawSelection(paint_tile_index, width_, paint_tile_width, paint_tile_height, &painter, 16);
 
     painter.end();
     return QPixmap::fromImage(image);
@@ -680,7 +608,7 @@ bool Map::hasUnsavedChanges() {
 }
 
 void Map::hoveredTileChanged(int x, int y, int block) {
-    emit statusBarMessage(QString("X: %1, Y: %2, Block: 0x%3")
+    emit statusBarMessage(QString("X: %1, Y: %2, Metatile: 0x%3")
                           .arg(x)
                           .arg(y)
                           .arg(QString("%1").arg(block, 3, 16, QChar('0')).toUpper()));
@@ -692,7 +620,7 @@ void Map::clearHoveredTile() {
 
 void Map::hoveredMetatileChanged(int blockIndex) {
     int tile = getSelectedBlockIndex(blockIndex);
-    emit statusBarMessage(QString("Block: 0x%1")
+    emit statusBarMessage(QString("Metatile: 0x%1")
                           .arg(QString("%1").arg(tile, 3, 16, QChar('0')).toUpper()));
 }
 
@@ -700,18 +628,35 @@ void Map::clearHoveredMetatile() {
     emit statusBarMessage(QString(""));
 }
 
-void Map::hoveredCollisionTileChanged(int collision) {
-    emit statusBarMessage(QString("Collision: %1").arg(collision));
+void Map::hoveredMovementPermissionTileChanged(int collision, int elevation) {
+    QString message;
+    if (collision == 0 && elevation == 0) {
+        message = "Collision: Transition between elevations";
+    } else if (collision == 0 && elevation == 15) {
+        message = "Collision: Multi-Level (Bridge)";
+    } else if (collision == 0 && elevation == 1) {
+        message = "Collision: Surf";
+    } else if (collision == 0) {
+        message = QString("Collision: Passable, Elevation: %1").arg(elevation);
+    } else {
+        message = QString("Collision: Impassable, Elevation: %1").arg(elevation);
+    }
+    emit statusBarMessage(message);
 }
 
-void Map::clearHoveredCollisionTile() {
+void Map::clearHoveredMovementPermissionTile() {
     emit statusBarMessage(QString(""));
 }
 
-void Map::hoveredElevationTileChanged(int elevation) {
-    emit statusBarMessage(QString("Elevation: %1").arg(elevation));
+void Map::setSelectedMetatilesFromTilePicker() {
+    this->selected_metatiles_width = this->paint_tile_width;
+    this->selected_metatiles_height = this->paint_tile_height;
+    this->selected_metatiles->clear();
+    for (int j = 0; j < this->paint_tile_height; j++) {
+        for (int i = 0; i < this->paint_tile_width; i++) {
+            int metatile = this->getSelectedBlockIndex(this->paint_tile_index + i + (j * 8));
+            this->selected_metatiles->append(metatile);
+        }
+    }
 }
 
-void Map::clearHoveredElevationTile() {
-    emit statusBarMessage(QString(""));
-}
