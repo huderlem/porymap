@@ -74,6 +74,7 @@ private slots:
     void onOpenMapListContextMenu(const QPoint &point);
     void onAddNewMapToGroupClick(QAction* triggeredAction);
     void onTilesetChanged(QString);
+    void currentMetatilesSelectionChanged();
 
     void on_action_Export_Map_Image_triggered();
 

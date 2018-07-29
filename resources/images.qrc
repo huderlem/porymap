@@ -15,5 +15,6 @@
         <file>icons/add.ico</file>
         <file>icons/delete.ico</file>
         <file>icons/viewsprites.ico</file>
+        <file>images/collisions.png</file>
     </qresource>
 </RCC>

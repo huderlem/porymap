@@ -155,13 +155,10 @@ public:
     QImage collision_image;
     QPixmap collision_pixmap;
     QImage getCollisionMetatileImage(Block);
-    QImage getElevationMetatileImage(Block);
-    QImage getCollisionMetatileImage(int);
-    QImage getElevationMetatileImage(int);
-
+    QImage getCollisionMetatileImage(int, int);
     QPixmap renderCollisionMetatiles();
-    QPixmap renderElevationMetatiles();
-    void drawSelection(int i, int w, int selectionWidth, int selectionHeight, QPainter *painter);
+
+    void drawSelection(int i, int w, int selectionWidth, int selectionHeight, QPainter *painter, int gridWidth);
 
     bool blockChanged(int, Blockdata*);
     void cacheBlockdata();
@@ -177,6 +174,9 @@ public:
     int paint_tile_height = 1;
     int paint_tile_initial_x;
     int paint_tile_initial_y;
+    int selected_metatiles_width;
+    int selected_metatiles_height;
+    QList<int> *selected_metatiles = NULL;
     int paint_collision;
     int paint_elevation;
 
@@ -214,10 +214,9 @@ public:
     void clearHoveredTile();
     void hoveredMetatileChanged(int block);
     void clearHoveredMetatile();
-    void hoveredCollisionTileChanged(int collision);
-    void clearHoveredCollisionTile();
-    void hoveredElevationTileChanged(int elevation);
-    void clearHoveredElevationTile();
+    void hoveredMovementPermissionTileChanged(int collision, int elevation);
+    void clearHoveredMovementPermissionTile();
+    void setSelectedMetatilesFromTilePicker();
 
 signals:
     void paintTileChanged(Map *map);
