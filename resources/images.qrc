@@ -17,5 +17,8 @@
         <file>icons/delete.ico</file>
         <file>icons/viewsprites.ico</file>
         <file>images/collisions.png</file>
+        <file>icons/fill_color_cursor.ico</file>
+        <file>icons/pencil_cursor.ico</file>
+        <file>icons/pipette_cursor.ico</file>
     </qresource>
 </RCC>

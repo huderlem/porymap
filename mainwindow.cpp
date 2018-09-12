@@ -904,7 +904,7 @@ void MainWindow::on_toolButton_deleteObject_clicked()
 void MainWindow::on_toolButton_Paint_clicked()
 {
     editor->map_edit_mode = "paint";
-    editor->cursor = QCursor(QPixmap(":/icons/pencil.ico"), 0, 14);
+    editor->cursor = QCursor(QPixmap(":/icons/pencil_cursor.ico"), 10, 10);
     
     ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -928,7 +928,7 @@ void MainWindow::on_toolButton_Select_clicked()
 void MainWindow::on_toolButton_Fill_clicked()
 {
     editor->map_edit_mode = "fill";
-    editor->cursor = QCursor(QPixmap(":/icons/fill_color.ico"), 12, 10);
+    editor->cursor = QCursor(QPixmap(":/icons/fill_color_cursor.ico"), 10, 10);
     
     ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -940,7 +940,7 @@ void MainWindow::on_toolButton_Fill_clicked()
 void MainWindow::on_toolButton_Dropper_clicked()
 {
     editor->map_edit_mode = "pick";
-    editor->cursor = QCursor(QPixmap(":/icons/pipette.ico"), 1, 14);
+    editor->cursor = QCursor(QPixmap(":/icons/pipette_cursor.ico"), 10, 10);
 
     ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
