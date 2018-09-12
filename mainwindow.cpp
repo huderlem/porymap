@@ -647,9 +647,12 @@ void MainWindow::updateSelectedObjects() {
         QString event_type = item->event->get("event_type");
         QString event_group_type = item->event->get("event_group_type");
         QString map_name = item->event->get("map_name");
+        int event_offs;
+        if (event_type == "event_warp") { event_offs = 0; }
+        else { event_offs = 1; }
         frame->ui->label_name->setText(
             QString("%1: %2 %3")
-                .arg(editor->project->getMap(map_name)->events.value(event_group_type).indexOf(item->event) + 1)
+                .arg(editor->project->getMap(map_name)->events.value(event_group_type).indexOf(item->event) + event_offs)
                 .arg(map_name)
                 .arg(event_type)
         );
@@ -707,8 +710,8 @@ void MainWindow::updateSelectedObjects() {
             fields << "sight_radius_tree_id";
         }
         else if (event_type == EventType::Warp) {
-            fields << "destination_warp";
             fields << "destination_map_name";
+            fields << "destination_warp";
         }
         else if (event_type == EventType::CoordScript) {
             fields << "script_label";
