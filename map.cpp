@@ -608,10 +608,11 @@ bool Map::hasUnsavedChanges() {
 }
 
 void Map::hoveredTileChanged(int x, int y, int block) {
-    emit statusBarMessage(QString("X: %1, Y: %2, Metatile: 0x%3")
+    emit statusBarMessage(QString("X: %1, Y: %2, Metatile: 0x%3, Scale = %4x")
                           .arg(x)
                           .arg(y)
-                          .arg(QString("%1").arg(block, 3, 16, QChar('0')).toUpper()));
+                          .arg(QString("%1").arg(block, 3, 16, QChar('0')).toUpper())
+                          .arg(QString::number(pow(this->scale_base,this->scale_exp))));
 }
 
 void Map::clearHoveredTile() {

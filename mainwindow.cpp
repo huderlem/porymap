@@ -17,6 +17,8 @@
 #include <QScrollBar>
 #include <QMessageBox>
 #include <QDialogButtonBox>
+#include <QScroller>
+#include <math.h>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -31,6 +33,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->newEventToolButton, SIGNAL(newEventAdded(QString)), this, SLOT(addNewEvent(QString)));
 
     new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Z), this, SLOT(redo()));
+    new QShortcut(Qt::Key_M, this, SLOT(toggleEditModeMove()));
 
     editor = new Editor(ui);
     connect(editor, SIGNAL(objectsChanged()), this, SLOT(updateSelectedObjects()));
@@ -589,6 +592,31 @@ void MainWindow::on_actionRedo_triggered()
     redo();
 }
 
+void MainWindow::on_actionZoom_In_triggered() {
+    scaleMapView(1);
+}
+
+void MainWindow::on_actionZoom_Out_triggered() {
+    scaleMapView(-1);
+}
+
+void MainWindow::scaleMapView(int s) {
+    editor->map->scale_exp += s;
+
+    double base = (double)editor->map->scale_base;
+    double exp  = editor->map->scale_exp;
+    double sfactor = pow(base,s);
+
+    ui->graphicsView_Map->scale(sfactor,sfactor);
+    ui->graphicsView_Objects_Map->scale(sfactor,sfactor);
+
+    ui->graphicsView_Map->setFixedSize((editor->scene->width() + 2) * pow(base,exp), 
+                                       (editor->scene->height() + 2) * pow(base,exp));
+
+    ui->graphicsView_Objects_Map->setFixedSize((editor->scene->width() + 2) * pow(base,exp), 
+                                               (editor->scene->height() + 2) * pow(base,exp));
+}
+
 void MainWindow::addNewEvent(QString event_type)
 {
     if (editor) {
@@ -876,24 +904,60 @@ void MainWindow::on_toolButton_deleteObject_clicked()
 void MainWindow::on_toolButton_Paint_clicked()
 {
     editor->map_edit_mode = "paint";
+    editor->cursor = QCursor(QPixmap(":/icons/pencil.ico"), 0, 14);
+    
+    ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    QScroller::ungrabGesture(ui->scrollArea);
+
     checkToolButtons();
 }
 
 void MainWindow::on_toolButton_Select_clicked()
 {
     editor->map_edit_mode = "select";
+    editor->cursor = QCursor(QPixmap(":/icons/cursor.ico"), 0, 0);
+    
+    ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    QScroller::ungrabGesture(ui->scrollArea);
+
     checkToolButtons();
 }
 
 void MainWindow::on_toolButton_Fill_clicked()
 {
     editor->map_edit_mode = "fill";
+    editor->cursor = QCursor(QPixmap(":/icons/fill_color.ico"), 12, 10);
+    
+    ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    QScroller::ungrabGesture(ui->scrollArea);
+
     checkToolButtons();
 }
 
 void MainWindow::on_toolButton_Dropper_clicked()
 {
     editor->map_edit_mode = "pick";
+    editor->cursor = QCursor(QPixmap(":/icons/pipette.ico"), 1, 14);
+
+    ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    QScroller::ungrabGesture(ui->scrollArea);
+
+    checkToolButtons();
+}
+
+void MainWindow::on_toolButton_Move_clicked()
+{
+    editor->map_edit_mode = "move";
+    editor->cursor = QCursor(QPixmap(":/icons/move.ico"), 7, 7);
+    
+    ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    QScroller::grabGesture(ui->scrollArea, QScroller::LeftMouseButtonGesture);
+    
     checkToolButtons();
 }
 
@@ -902,6 +966,25 @@ void MainWindow::checkToolButtons() {
     ui->toolButton_Select->setChecked(editor->map_edit_mode == "select");
     ui->toolButton_Fill->setChecked(editor->map_edit_mode == "fill");
     ui->toolButton_Dropper->setChecked(editor->map_edit_mode == "pick");
+    ui->toolButton_Move->setChecked(editor->map_edit_mode == "move");
+}
+
+void MainWindow::toggleEditModeMove() {
+    if (editor->map_edit_mode == "move") {
+        if (editor->prev_edit_mode == "paint") {
+            on_toolButton_Paint_clicked();
+        } else if (editor->prev_edit_mode == "fill") {
+            on_toolButton_Fill_clicked();
+        } else if (editor->prev_edit_mode == "pick") {
+            on_toolButton_Dropper_clicked();
+        } else if (editor->prev_edit_mode == "select") {
+            on_toolButton_Select_clicked();
+        }
+    }
+    else {
+        editor->prev_edit_mode = editor->map_edit_mode;
+        on_toolButton_Move_clicked();
+    }
 }
 
 void MainWindow::onLoadMapRequested(QString mapName, QString fromMapName) {

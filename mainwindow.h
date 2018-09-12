@@ -37,6 +37,8 @@ private slots:
     void undo();
     void redo();
 
+    void toggleEditModeMove();
+
     void onLoadMapRequested(QString, QString);
     void onMapChanged(Map *map);
     void onMapNeedsRedrawing(Map *map);
@@ -58,6 +60,9 @@ private slots:
 
     void on_actionRedo_triggered();
 
+    void on_actionZoom_In_triggered();
+    void on_actionZoom_Out_triggered();
+
     void on_toolButton_deleteObject_clicked();
 
     void addNewEvent(QString);
@@ -70,6 +75,8 @@ private slots:
     void on_toolButton_Fill_clicked();
 
     void on_toolButton_Dropper_clicked();
+
+    void on_toolButton_Move_clicked();
 
     void onOpenMapListContextMenu(const QPoint &point);
     void onAddNewMapToGroupClick(QAction* triggeredAction);
@@ -124,6 +131,8 @@ private:
 
     void displayMapProperties();
     void checkToolButtons();
+
+    void scaleMapView(int);
 };
 
 enum MapListUserRoles {
