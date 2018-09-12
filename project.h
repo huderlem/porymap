@@ -18,7 +18,7 @@ public:
     QMap<QString, int> *map_groups;
     QList<QStringList> groupedMapNames;
     QStringList *mapNames = NULL;
-    QList<HealLocation> *flyableMaps = NULL; // can't be a QMap because duplicates
+    QList<HealLocation> flyableMaps;
     QMap<QString, QString>* mapConstantsToMapNames;
     QMap<QString, QString>* mapNamesToMapConstants;
     QList<QString> mapLayoutsTable;

@@ -514,36 +514,27 @@ void Project::saveHealLocationStruct(Map *map) {
     QMap<QString, int> flyableMapsDupes;
     QSet<QString> flyableMapsUnique;
 
-    // erase old location from flyableMaps list
     // set flyableMapsDupes and flyableMapsUnique
-    for (auto it = flyableMaps->begin(); it != flyableMaps->end(); it++) {
+    for (auto it = flyableMaps.begin(); it != flyableMaps.end(); it++) {
         HealLocation loc = *it;
         QString xname = loc.name;
         if (flyableMapsUnique.contains(xname)) {
             flyableMapsDupes[xname] = 1;
         }
-        if (xname == QString(mapNamesToMapConstants->value(map->name)).remove(0,4)) {
-            it = flyableMaps->erase(it) - 1;
-        }
-        else {
-            flyableMapsUnique.insert(xname);
-        }
+        flyableMapsUnique.insert(xname);
     }
 
     // set new location in flyableMapsList
     if (map->events["heal_event_group"].length() > 0) {
-        QList<HealLocation>* flymaps = flyableMaps;
-
         for (Event *heal : map->events["heal_event_group"]) {
             HealLocation hl = heal->buildHealLocation();
-            flymaps->insert(hl.index - 1, hl);
+            flyableMaps[hl.index - 1] = hl;
         }
-        flyableMaps = flymaps;
     }
 
     int i = 1;
 
-    for (auto map_in : *flyableMaps) {
+    for (auto map_in : flyableMaps) {
         data_text += QString("    {MAP_GROUP(%1), MAP_NUM(%1), %2, %3},\n")
                      .arg(map_in.name)
                      .arg(map_in.x)
@@ -1026,7 +1017,8 @@ void Project::readMapGroups() {
 
     QString hltext = readTextFile(root + QString("/src/data/heal_locations.h"));
     QList<HealLocation>* hl = parser->parseHealLocs(hltext);
-    flyableMaps = hl;
+    flyableMaps = *hl;
+    delete hl;
 }
 
 Map* Project::addNewMapToGroup(QString mapName, int groupNum) {
@@ -1412,12 +1404,10 @@ void Project::saveMapEvents(Map *map) {
 
     // save heal event changes
     if (map->events["heal_event_group"].length() > 0) {
-        QList<HealLocation>* flymaps = flyableMaps;
         for (Event *heal : map->events["heal_event_group"]) {
             HealLocation hl = heal->buildHealLocation();
-            flymaps->append(hl);
+            flyableMaps[hl.index - 1] = hl;
         }
-        flyableMaps = flymaps;
     }
     saveHealLocationStruct(map);
 }
@@ -1492,7 +1482,7 @@ void Project::readMapEvents(Map *map) {
 
     map->events["heal_event_group"].clear();
 
-    for (auto it = flyableMaps->begin(); it != flyableMaps->end(); it++) {
+    for (auto it = flyableMaps.begin(); it != flyableMaps.end(); it++) {
 
         HealLocation loc = *it;
 
