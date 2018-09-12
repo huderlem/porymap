@@ -20,6 +20,7 @@
 #include <QDialogButtonBox>
 #include <QProcess>
 #include <QSysInfo>
+#include <QDesktopServices>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -554,28 +555,8 @@ void MainWindow::redo() {
 
 // Open current map scripts in system default editor for .inc files
 void MainWindow::openInTextEditor() {
-    QProcess *process = new QProcess(this);
-    QSysInfo sysInfo;
-    process->setWorkingDirectory(editor->project->root);
-
-    #ifdef Q_OS_DARWIN
-        QString cmd = "open ";
-    #elif defined Q_OS_LINUX
-        QString cmd = "xdg-open ";
-    #elif defined Q_OS_WIN 
-        QString cmd = "cmd /c start \"";
-    #else
-        qDebug() << "Functionality is not available with this OS ("
-                 << sysInfo.productType() << ")";
-    #endif
-
-    cmd += "data/maps/" + editor->map->name + "/scripts.inc";
-
-    #ifdef Q_OS_WIN
-        cmd += "\"";
-    #endif
-
-    process->start(cmd);
+    QString path = QDir::cleanPath(editor->project->root + QDir::separator() + "data/maps/" + editor->map->name + "/scripts.inc");
+    QDesktopServices::openUrl(QUrl(path));
 }
 
 void MainWindow::on_action_Save_triggered() {
