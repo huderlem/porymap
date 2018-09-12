@@ -37,6 +37,8 @@ private slots:
     void undo();
     void redo();
 
+    void openInTextEditor();
+
     void onLoadMapRequested(QString, QString);
     void onMapChanged(Map *map);
     void onMapNeedsRedrawing(Map *map);
@@ -59,6 +61,7 @@ private slots:
     void on_actionRedo_triggered();
 
     void on_toolButton_deleteObject_clicked();
+    void on_toolButton_Open_Scripts_clicked();
 
     void addNewEvent(QString);
     void updateSelectedObjects();

@@ -15,8 +15,11 @@
 #include <QSpacerItem>
 #include <QFont>
 #include <QScrollBar>
+#include <QPushButton>
 #include <QMessageBox>
 #include <QDialogButtonBox>
+#include <QProcess>
+#include <QSysInfo>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -549,6 +552,32 @@ void MainWindow::redo() {
     editor->redo();
 }
 
+// Open current map scripts in system default editor for .inc files
+void MainWindow::openInTextEditor() {
+    QProcess *process = new QProcess(this);
+    QSysInfo sysInfo;
+    process->setWorkingDirectory(editor->project->root);
+
+    #ifdef Q_OS_DARWIN
+        QString cmd = "open ";
+    #elif defined Q_OS_LINUX
+        QString cmd = "xdg-open ";
+    #elif defined Q_OS_WIN 
+        QString cmd = "cmd /c start \"";
+    #else
+        qDebug() << "Functionality is not available with this OS ("
+                 << sysInfo.productType() << ")";
+    #endif
+
+    cmd += "data/maps/" + editor->map->name + "/scripts.inc";
+
+    #ifdef Q_OS_WIN
+        cmd += "\"";
+    #endif
+
+    process->start(cmd);
+}
+
 void MainWindow::on_action_Save_triggered() {
     editor->save();
     updateMapList();
@@ -871,6 +900,11 @@ void MainWindow::on_toolButton_deleteObject_clicked()
             updateSelectedObjects();
         }
     }
+}
+
+void MainWindow::on_toolButton_Open_Scripts_clicked()
+{
+    openInTextEditor();
 }
 
 void MainWindow::on_toolButton_Paint_clicked()
