@@ -128,6 +128,7 @@ public:
     QString layout_id;
     QString location;
     QString requiresFlash;
+    QString isFlyable; // TODO: implement this
     QString weather;
     QString type;
     QString unknown;
