@@ -1,6 +1,7 @@
 #ifndef EVENT_H
 #define EVENT_H
 
+#include "heallocation.h"
 #include <QString>
 #include <QPixmap>
 #include <QMap>
@@ -16,6 +17,7 @@ public:
     static QString Sign;
     static QString HiddenItem;
     static QString SecretBase;
+    static QString HealLocation;
 };
 
 class Event
@@ -54,6 +56,7 @@ public:
     static Event* createNewEvent(QString, QString);
     static Event* createNewObjectEvent();
     static Event* createNewWarpEvent(QString);
+    static Event* createNewHealLocationEvent(QString);
     static Event* createNewCoordScriptEvent();
     static Event* createNewCoordWeatherEvent();
     static Event* createNewSignEvent();
@@ -62,6 +65,7 @@ public:
 
     QString buildObjectEventMacro(int);
     QString buildWarpEventMacro(QMap<QString, QString>*);
+    HealLocation buildHealLocation();
     QString buildCoordScriptEventMacro();
     QString buildCoordWeatherEventMacro();
     QString buildSignEventMacro();

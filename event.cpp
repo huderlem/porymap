@@ -1,4 +1,5 @@
 #include "event.h"
+#include "map.h"
 
 QString EventType::Object = "event_object";
 QString EventType::Warp = "event_warp";
@@ -7,6 +8,7 @@ QString EventType::CoordWeather = "event_trap_weather";
 QString EventType::Sign = "event_sign";
 QString EventType::HiddenItem = "event_hidden_item";
 QString EventType::SecretBase = "event_secret_base";
+QString EventType::HealLocation = "event_heal_location";
 
 Event::Event()
 {
@@ -19,6 +21,8 @@ Event* Event::createNewEvent(QString event_type, QString map_name)
         event = createNewObjectEvent();
     } else if (event_type == EventType::Warp) {
         event = createNewWarpEvent(map_name);
+    } else if (event_type == EventType::HealLocation) {
+        event = createNewHealLocationEvent(map_name);
     } else if (event_type == EventType::CoordScript) {
         event = createNewCoordScriptEvent();
     } else if (event_type == EventType::CoordWeather) {
@@ -61,6 +65,15 @@ Event* Event::createNewWarpEvent(QString map_name)
     event->put("event_type", EventType::Warp);
     event->put("destination_warp", 0);
     event->put("destination_map_name", map_name);
+    return event;
+}
+
+Event* Event::createNewHealLocationEvent(QString map_name)
+{
+    Event *event = new Event;
+    event->put("event_group_type", "heal_event_group");
+    event->put("event_type", EventType::HealLocation);
+    event->put("loc_name", QString(Map::mapConstantFromName(map_name)).remove(0,4));
     return event;
 }
 
@@ -148,6 +161,21 @@ QString Event::buildWarpEventMacro(QMap<QString, QString> *mapNamesToMapConstant
     text += QString(", %1").arg(mapNamesToMapConstants->value(this->get("destination_map_name")));
     text += "\n";
     return text;
+}
+
+HealLocation Event::buildHealLocation()
+{
+    HealLocation hl;
+    hl.name  = this->get("loc_name");
+    try {
+        hl.index = this->get("index").toInt();
+    }
+    catch(...) {
+        hl.index = 0;
+    }
+    hl.x     = this->get("x").toInt();
+    hl.y     = this->get("y").toInt();
+    return hl;
 }
 
 QString Event::buildCoordScriptEventMacro()

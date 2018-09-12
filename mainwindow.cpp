@@ -865,11 +865,16 @@ void MainWindow::on_toolButton_deleteObject_clicked()
     if (editor && editor->selected_events) {
         if (editor->selected_events->length()) {
             for (DraggablePixmapItem *item : *editor->selected_events) {
-                editor->deleteEvent(item->event);
-                if (editor->scene->items().contains(item)) {
-                    editor->scene->removeItem(item);
+                if (item->event->get("event_type") != EventType::HealLocation) {
+                    editor->deleteEvent(item->event);
+                    if (editor->scene->items().contains(item)) {
+                        editor->scene->removeItem(item);
+                    }
+                    editor->selected_events->removeOne(item);
                 }
-                editor->selected_events->removeOne(item);
+                else { // don't allow deletion of heal locations
+                    qDebug() << "Cannot delete event of type " << item->event->get("event_type");
+                }
             }
             updateSelectedObjects();
         }

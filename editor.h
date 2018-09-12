@@ -130,6 +130,7 @@ private:
     void updateMirroredConnection(Connection*, QString, QString, bool isDelete = false);
     Event* createNewObjectEvent();
     Event* createNewWarpEvent();
+    Event* createNewHealLocationEvent();
     Event* createNewCoordScriptEvent();
     Event* createNewCoordWeatherEvent();
     Event* createNewSignEvent();
