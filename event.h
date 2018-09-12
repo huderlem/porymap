@@ -71,9 +71,14 @@ public:
     QString buildSignEventMacro();
     QString buildHiddenItemEventMacro();
     QString buildSecretBaseEventMacro();
+    void setPixmapFromSpritesheet(QImage, int, int);
+    int getPixelX();
+    int getPixelY();
 
     QMap<QString, QString> values;
     QPixmap pixmap;
+    int spriteWidth;
+    int spriteHeight;
 };
 
 #endif // EVENT_H

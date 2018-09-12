@@ -12,6 +12,8 @@ QString EventType::HealLocation = "event_heal_location";
 
 Event::Event()
 {
+    this->spriteWidth = 16;
+    this->spriteHeight = 16;
 }
 
 Event* Event::createNewEvent(QString event_type, QString map_name)
@@ -126,6 +128,16 @@ Event* Event::createNewSecretBaseEvent()
     return event;
 }
 
+int Event::getPixelX()
+{
+    return (this->x() * 16) - qMax(0, (this->spriteWidth - 16) / 2);
+}
+
+int Event::getPixelY()
+{
+    return (this->y() * 16) - qMax(0, this->spriteHeight - 16);
+}
+
 QString Event::buildObjectEventMacro(int item_index)
 {
     int radius_x = this->getInt("radius_x");
@@ -235,4 +247,14 @@ QString Event::buildSecretBaseEventMacro()
     text += QString(", %1").arg(this->get("secret_base_id"));
     text += "\n";
     return text;
+}
+
+void Event::setPixmapFromSpritesheet(QImage spritesheet, int spriteWidth, int spriteHeight)
+{
+    // Set first palette color fully transparent.
+    QImage img = spritesheet.copy(0, 0, spriteWidth, spriteHeight);
+    img.setColor(0, qRgba(0, 0, 0, 0));
+    pixmap = QPixmap::fromImage(img);
+    this->spriteWidth = spriteWidth;
+    this->spriteHeight = spriteHeight;
 }

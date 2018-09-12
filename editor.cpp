@@ -1653,6 +1653,7 @@ QList<DraggablePixmapItem *> *Editor::getObjects() {
 void Editor::redrawObject(DraggablePixmapItem *item) {
     if (item) {
         item->setPixmap(item->event->pixmap);
+        item->setShapeMode(QGraphicsPixmapItem::BoundingRectShape);
         if (selected_events && selected_events->contains(item)) {
             QImage image = item->pixmap().toImage();
             QPainter painter(&image);

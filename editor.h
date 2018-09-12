@@ -174,10 +174,8 @@ public:
     int last_x;
     int last_y;
     void updatePosition() {
-        int x = event->x() * 16;
-        int y = event->y() * 16;
-        x -= pixmap().width() / 32 * 16;
-        y -= pixmap().height() - 16;
+        int x = event->getPixelX();
+        int y = event->getPixelY();
         setX(x);
         setY(y);
         setZValue(event->y());
@@ -193,6 +191,7 @@ public:
         objects.append(event);
         event->pixmap = QPixmap();
         editor->project->loadEventPixmaps(objects);
+        this->updatePosition();
         editor->redrawObject(this);
         emit spriteChanged(event->pixmap);
     }

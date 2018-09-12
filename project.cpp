@@ -1292,6 +1292,9 @@ void Project::loadEventPixmaps(QList<Event*> objects) {
         if (!object->pixmap.isNull()) {
             continue;
         }
+
+        object->spriteWidth = 16;
+        object->spriteHeight = 16;
         QString event_type = object->get("event_type");
         if (event_type == EventType::Object) {
             object->pixmap = QPixmap(":/images/Entities_16x16.png").copy(0, 0, 16, 16);
@@ -1309,16 +1312,31 @@ void Project::loadEventPixmaps(QList<Event*> objects) {
             int sprite_id = constants.value(object->get("sprite"));
 
             QString info_label = pointers.value(sprite_id).replace("&", "");
-            QString pic_label = readCArray(info_text, info_label).value(14);
+            QStringList gfx_info = readCArray(info_text, info_label);
+            QString pic_label = gfx_info.value(14);
+            QString dimensions_label = gfx_info.value(11);
+            QString subsprites_label = gfx_info.value(12);
             QString gfx_label = readCArray(pic_text, pic_label).value(0);
             gfx_label = gfx_label.section(QRegExp("[\\(\\)]"), 1, 1);
             QString path = readCIncbin(assets_text, gfx_label);
 
             if (!path.isNull()) {
                 path = fixGraphicPath(path);
-                QPixmap pixmap(root + "/" + path);
-                if (!pixmap.isNull()) {
-                    object->pixmap = pixmap;
+                QImage spritesheet(root + "/" + path);
+                if (!spritesheet.isNull()) {
+                    // Infer the sprite dimensions from the OAM labels.
+                    int spriteWidth = spritesheet.width();
+                    int spriteHeight = spritesheet.height();
+                    QRegularExpression re("\\S+_(\\d+)x(\\d+)");
+                    QRegularExpressionMatch dimensionMatch = re.match(dimensions_label);
+                    if (dimensionMatch.hasMatch()) {
+                        QRegularExpressionMatch oamTablesMatch = re.match(subsprites_label);
+                        if (oamTablesMatch.hasMatch()) {
+                            spriteWidth = dimensionMatch.captured(1).toInt();
+                            spriteHeight = dimensionMatch.captured(2).toInt();
+                        }
+                    }
+                    object->setPixmapFromSpritesheet(spritesheet, spriteWidth, spriteHeight);
                 }
             }
         }
