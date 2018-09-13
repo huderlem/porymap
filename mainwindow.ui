@@ -334,8 +334,8 @@
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>429</width>
-                     <height>620</height>
+                     <width>462</width>
+                     <height>599</height>
                     </rect>
                    </property>
                    <layout class="QGridLayout" name="gridLayout_8">
@@ -708,7 +708,7 @@
                         <rect>
                          <x>0</x>
                          <y>0</y>
-                         <width>315</width>
+                         <width>252</width>
                          <height>86</height>
                         </rect>
                        </property>
@@ -812,10 +812,10 @@
                     </property>
                     <property name="geometry">
                      <rect>
-                      <x>0</x>
+                      <x>8</x>
                       <y>0</y>
-                      <width>365</width>
-                      <height>405</height>
+                      <width>323</width>
+                      <height>368</height>
                      </rect>
                     </property>
                     <property name="sizePolicy">
@@ -1050,8 +1050,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>381</width>
-               <height>657</height>
+               <width>371</width>
+               <height>643</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_7">
@@ -1216,8 +1216,8 @@
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>420</width>
-                        <height>584</height>
+                        <width>410</width>
+                        <height>560</height>
                        </rect>
                       </property>
                       <property name="sizePolicy">
@@ -1325,6 +1325,29 @@
                   <property name="sizeHint" stdset="0">
                    <size>
                     <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item>
+                 <widget class="QToolButton" name="toolButton_Open_Scripts">
+                  <property name="text">
+                   <string>Open Map Scripts</string>
+                  </property>
+                  <property name="autoRaise">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="horizontalSpacer_20">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>20</width>
                     <height>20</height>
                    </size>
                   </property>
@@ -1849,8 +1872,8 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>826</width>
-                    <height>557</height>
+                    <width>818</width>
+                    <height>539</height>
                    </rect>
                   </property>
                   <layout class="QGridLayout" name="gridLayout_14">
@@ -2022,7 +2045,7 @@
      <x>0</x>
      <y>0</y>
      <width>1117</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

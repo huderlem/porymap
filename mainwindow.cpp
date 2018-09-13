@@ -15,8 +15,12 @@
 #include <QSpacerItem>
 #include <QFont>
 #include <QScrollBar>
+#include <QPushButton>
 #include <QMessageBox>
 #include <QDialogButtonBox>
+#include <QProcess>
+#include <QSysInfo>
+#include <QDesktopServices>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -549,6 +553,12 @@ void MainWindow::redo() {
     editor->redo();
 }
 
+// Open current map scripts in system default editor for .inc files
+void MainWindow::openInTextEditor() {
+    QString path = QDir::cleanPath("file://" + editor->project->root + QDir::separator() + "data/maps/" + editor->map->name + "/scripts.inc");
+    QDesktopServices::openUrl(QUrl(path));
+}
+
 void MainWindow::on_action_Save_triggered() {
     editor->save();
     updateMapList();
@@ -879,6 +889,11 @@ void MainWindow::on_toolButton_deleteObject_clicked()
             updateSelectedObjects();
         }
     }
+}
+
+void MainWindow::on_toolButton_Open_Scripts_clicked()
+{
+    openInTextEditor();
 }
 
 void MainWindow::on_toolButton_Paint_clicked()
