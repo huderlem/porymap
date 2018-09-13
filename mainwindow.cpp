@@ -23,7 +23,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     QCoreApplication::setOrganizationName("pret");
-    QCoreApplication::setApplicationName("pretmap");
+    QCoreApplication::setApplicationName("porymap");
+    QApplication::setWindowIcon(QIcon(":/icons/porymap-icon-1.ico"));
 
     ui->setupUi(this);
 
@@ -51,6 +52,8 @@ MainWindow::MainWindow(QWidget *parent) :
             openProject(default_dir);
         }
     }
+
+    //ui->setIcon(QIcon(editor->root + "/resources/icons/porymap-icon-1.ico"));
 }
 
 MainWindow::~MainWindow()
@@ -77,12 +80,12 @@ void MainWindow::openProject(QString dir) {
     if (!already_open) {
         editor->project = new Project;
         editor->project->root = dir;
-        setWindowTitle(editor->project->getProjectTitle() + " - pretmap");
+        setWindowTitle(editor->project->getProjectTitle() + " - porymap");
         loadDataStructures();
         populateMapList();
         setMap(getDefaultMap());
     } else {
-        setWindowTitle(editor->project->getProjectTitle() + " - pretmap");
+        setWindowTitle(editor->project->getProjectTitle() + " - porymap");
         loadDataStructures();
         populateMapList();
     }
@@ -154,7 +157,7 @@ void MainWindow::setMap(QString map_name) {
     redrawMapScene();
     displayMapProperties();
 
-    setWindowTitle(map_name + " - " + editor->project->getProjectTitle() + " - pretmap");
+    setWindowTitle(map_name + " - " + editor->project->getProjectTitle() + " - porymap");
 
     connect(editor->map, SIGNAL(mapChanged(Map*)), this, SLOT(onMapChanged(Map *)));
     connect(editor->map, SIGNAL(mapNeedsRedrawing(Map*)), this, SLOT(onMapNeedsRedrawing(Map *)));

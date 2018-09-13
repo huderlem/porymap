@@ -16,5 +16,6 @@
         <file>icons/delete.ico</file>
         <file>icons/viewsprites.ico</file>
         <file>images/collisions.png</file>
+        <file>icons/porymap-icon-1.ico</file>
     </qresource>
 </RCC>
