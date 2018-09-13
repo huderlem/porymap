@@ -1145,8 +1145,8 @@ void MapPixmapItem::paintSmartPath(int x, int y) {
     int openTile = map->selected_metatiles->at(4);
 
     // Fill the region with the open tile.
-    for (int i = -1; i <= 1; i++)
-    for (int j = -1; j <= 1; j++) {
+    for (int i = 0; i <= 1; i++)
+    for (int j = 0; j <= 1; j++) {
         // Check if in map bounds.
         if (!(i + x < map->getWidth() && i + x >= 0 && j + y < map->getHeight() && j + y >= 0))
             continue;
@@ -1160,14 +1160,14 @@ void MapPixmapItem::paintSmartPath(int x, int y) {
     }
 
     // Go back and resolve the edge tiles
-    for (int i = -2; i <= 2; i++)
-    for (int j = -2; j <= 2; j++) {
+    for (int i = -1; i <= 2; i++)
+    for (int j = -1; j <= 2; j++) {
         // Check if in map bounds.
         if (!(i + x < map->getWidth() && i + x >= 0 && j + y < map->getHeight() && j + y >= 0))
             continue;
         // Ignore the corners, which can't possible be affected by the smart path.
-        if ((i == -2 && j == -2) || (i == 2 && j == -2) ||
-            (i == -2 && j ==  2) || (i == 2 && j ==  2))
+        if ((i == -1 && j == -1) || (i == 2 && j == -1) ||
+            (i == -1 && j ==  2) || (i == 2 && j ==  2))
             continue;
 
         // Ignore tiles that aren't part of the smart path set.
@@ -1659,6 +1659,7 @@ QList<DraggablePixmapItem *> *Editor::getObjects() {
 void Editor::redrawObject(DraggablePixmapItem *item) {
     if (item) {
         item->setPixmap(item->event->pixmap);
+        item->setShapeMode(QGraphicsPixmapItem::BoundingRectShape);
         if (selected_events && selected_events->contains(item)) {
             QImage image = item->pixmap().toImage();
             QPainter painter(&image);

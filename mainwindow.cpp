@@ -15,10 +15,14 @@
 #include <QSpacerItem>
 #include <QFont>
 #include <QScrollBar>
+#include <QPushButton>
 #include <QMessageBox>
 #include <QDialogButtonBox>
 #include <QScroller>
 #include <math.h>
+#include <QProcess>
+#include <QSysInfo>
+#include <QDesktopServices>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -556,6 +560,12 @@ void MainWindow::redo() {
     editor->redo();
 }
 
+// Open current map scripts in system default editor for .inc files
+void MainWindow::openInTextEditor() {
+    QString path = QDir::cleanPath("file://" + editor->project->root + QDir::separator() + "data/maps/" + editor->map->name + "/scripts.inc");
+    QDesktopServices::openUrl(QUrl(path));
+}
+
 void MainWindow::on_action_Save_triggered() {
     editor->save();
     updateMapList();
@@ -684,9 +694,12 @@ void MainWindow::updateSelectedObjects() {
         QString event_type = item->event->get("event_type");
         QString event_group_type = item->event->get("event_group_type");
         QString map_name = item->event->get("map_name");
+        int event_offs;
+        if (event_type == "event_warp") { event_offs = 0; }
+        else { event_offs = 1; }
         frame->ui->label_name->setText(
             QString("%1: %2 %3")
-                .arg(editor->project->getMap(map_name)->events.value(event_group_type).indexOf(item->event) + 1)
+                .arg(editor->project->getMap(map_name)->events.value(event_group_type).indexOf(item->event) + event_offs)
                 .arg(map_name)
                 .arg(event_type)
         );
@@ -744,8 +757,8 @@ void MainWindow::updateSelectedObjects() {
             fields << "sight_radius_tree_id";
         }
         else if (event_type == EventType::Warp) {
-            fields << "destination_warp";
             fields << "destination_map_name";
+            fields << "destination_warp";
         }
         else if (event_type == EventType::CoordScript) {
             fields << "script_label";
@@ -899,15 +912,25 @@ void MainWindow::on_toolButton_deleteObject_clicked()
     if (editor && editor->selected_events) {
         if (editor->selected_events->length()) {
             for (DraggablePixmapItem *item : *editor->selected_events) {
-                editor->deleteEvent(item->event);
-                if (editor->scene->items().contains(item)) {
-                    editor->scene->removeItem(item);
+                if (item->event->get("event_type") != EventType::HealLocation) {
+                    editor->deleteEvent(item->event);
+                    if (editor->scene->items().contains(item)) {
+                        editor->scene->removeItem(item);
+                    }
+                    editor->selected_events->removeOne(item);
                 }
-                editor->selected_events->removeOne(item);
+                else { // don't allow deletion of heal locations
+                    qDebug() << "Cannot delete event of type " << item->event->get("event_type");
+                }
             }
             updateSelectedObjects();
         }
     }
+}
+
+void MainWindow::on_toolButton_Open_Scripts_clicked()
+{
+    openInTextEditor();
 }
 
 void MainWindow::on_toolButton_Paint_clicked()

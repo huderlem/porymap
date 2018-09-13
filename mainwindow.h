@@ -38,6 +38,7 @@ private slots:
     void redo();
 
     void toggleEditModeMove();
+    void openInTextEditor();
 
     void onLoadMapRequested(QString, QString);
     void onMapChanged(Map *map);
@@ -65,6 +66,7 @@ private slots:
     void on_actionBetter_Cursors_triggered();
 
     void on_toolButton_deleteObject_clicked();
+    void on_toolButton_Open_Scripts_clicked();
 
     void addNewEvent(QString);
     void updateSelectedObjects();

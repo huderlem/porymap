@@ -351,7 +351,7 @@
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>492</width>
+                     <width>462</width>
                      <height>599</height>
                     </rect>
                    </property>
@@ -840,7 +840,7 @@
                      <rect>
                       <x>8</x>
                       <y>0</y>
-                      <width>293</width>
+                      <width>323</width>
                       <height>368</height>
                      </rect>
                     </property>
@@ -1351,6 +1351,29 @@
                   <property name="sizeHint" stdset="0">
                    <size>
                     <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item>
+                 <widget class="QToolButton" name="toolButton_Open_Scripts">
+                  <property name="text">
+                   <string>Open Map Scripts</string>
+                  </property>
+                  <property name="autoRaise">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="horizontalSpacer_20">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>20</width>
                     <height>20</height>
                    </size>
                   </property>

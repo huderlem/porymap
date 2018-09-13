@@ -3,6 +3,7 @@
 
 #include "map.h"
 #include "blockdata.h"
+#include "heallocation.h"
 
 #include <QStringList>
 #include <QList>
@@ -17,6 +18,7 @@ public:
     QMap<QString, int> *map_groups;
     QList<QStringList> groupedMapNames;
     QStringList *mapNames = NULL;
+    QList<HealLocation> flyableMaps;
     QMap<QString, QString>* mapConstantsToMapNames;
     QMap<QString, QString>* mapNamesToMapConstants;
     QList<QString> mapLayoutsTable;
@@ -77,6 +79,7 @@ public:
     void saveAllMapLayouts();
     void saveMapGroupsTable();
     void saveMapConstantsHeader();
+    void saveHealLocationStruct(Map*);
 
     QList<QStringList>* parseAsm(QString text);
     QStringList getSongNames();
