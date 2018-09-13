@@ -351,8 +351,8 @@
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>462</width>
-                     <height>599</height>
+                     <width>429</width>
+                     <height>620</height>
                     </rect>
                    </property>
                    <layout class="QGridLayout" name="gridLayout_8">
@@ -734,7 +734,7 @@
                         <rect>
                          <x>0</x>
                          <y>0</y>
-                         <width>222</width>
+                         <width>315</width>
                          <height>86</height>
                         </rect>
                        </property>
@@ -838,10 +838,10 @@
                     </property>
                     <property name="geometry">
                      <rect>
-                      <x>8</x>
+                      <x>0</x>
                       <y>0</y>
-                      <width>323</width>
-                      <height>368</height>
+                      <width>365</width>
+                      <height>405</height>
                      </rect>
                     </property>
                     <property name="sizePolicy">
@@ -1076,8 +1076,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>371</width>
-               <height>643</height>
+               <width>381</width>
+               <height>657</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_7">
@@ -1242,8 +1242,8 @@
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>410</width>
-                        <height>560</height>
+                        <width>420</width>
+                        <height>584</height>
                        </rect>
                       </property>
                       <property name="sizePolicy">
@@ -1898,8 +1898,8 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>818</width>
-                    <height>539</height>
+                    <width>826</width>
+                    <height>557</height>
                    </rect>
                   </property>
                   <layout class="QGridLayout" name="gridLayout_14">
@@ -2071,7 +2071,7 @@
      <x>0</x>
      <y>0</y>
      <width>1117</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -2186,7 +2186,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Better Cursors</string>
+    <string>Cursor Icons</string>
    </property>
    <property name="toolTip">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Use reticule-styled cursors with icon showing currently selected tool.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
