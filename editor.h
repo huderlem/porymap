@@ -7,6 +7,7 @@
 #include <QGraphicsItemAnimation>
 #include <QComboBox>
 #include <QCheckBox>
+#include <QCursor>
 
 #include "project.h"
 #include "ui_mainwindow.h"
@@ -108,6 +109,8 @@ public:
     QList<int> *copiedMetatileSelection = new QList<int>;
 
     QString map_edit_mode;
+    QString prev_edit_mode;
+    QCursor cursor;
 
     void objectsView_onMousePress(QMouseEvent *event);
     void objectsView_onMouseMove(QMouseEvent *event);
