@@ -171,7 +171,7 @@
                    <bool>true</bool>
                   </property>
                   <property name="toolTip">
-                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Editor&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Click&lt;/span&gt; and drag to draw on the map.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Right-click&lt;/span&gt; and drag to select tiles.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pencil&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Click&lt;/span&gt; and drag to draw on the map.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Right-click&lt;/span&gt; and drag to select tiles.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                   </property>
                   <property name="text">
                    <string>Paint</string>
@@ -214,7 +214,7 @@
                 <item>
                  <widget class="QToolButton" name="toolButton_Fill">
                   <property name="toolTip">
-                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Flood Fill&lt;/p&gt;&lt;p&gt;Fills all similar tiles in a region with the selected metatiles or collision attributes&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Bucket Fill&lt;/p&gt;&lt;p&gt;Fills all similar tiles in a region with the selected metatiles or collision attributes&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                   </property>
                   <property name="text">
                    <string>Fill</string>
@@ -231,7 +231,7 @@
                 <item>
                  <widget class="QToolButton" name="toolButton_Dropper">
                   <property name="toolTip">
-                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Eye Dropper&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Click&lt;/span&gt; to select a metatile or collision attribute.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Eyedropper&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Click&lt;/span&gt; to select a metatile or collision attribute.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                   </property>
                   <property name="text">
                    <string>Dropper</string>
@@ -256,7 +256,7 @@
                   <property name="icon">
                    <iconset resource="resources/images.qrc">
                     <normaloff>:/icons/move.ico</normaloff>:/icons/move.ico</iconset>
-                    </property>
+                  </property>
                   <property name="checkable">
                    <bool>true</bool>
                   </property>
@@ -378,7 +378,7 @@
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>442</width>
+                     <width>469</width>
                      <height>620</height>
                     </rect>
                    </property>
@@ -761,7 +761,7 @@
                         <rect>
                          <x>0</x>
                          <y>0</y>
-                         <width>302</width>
+                         <width>275</width>
                          <height>86</height>
                         </rect>
                        </property>
@@ -867,7 +867,7 @@
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>352</width>
+                      <width>325</width>
                       <height>405</height>
                      </rect>
                     </property>
@@ -2128,9 +2128,21 @@
     <addaction name="actionZoom_Out"/>
     <addaction name="actionBetter_Cursors"/>
    </widget>
+   <widget class="QMenu" name="menuTools">
+    <property name="title">
+     <string>Tools</string>
+    </property>
+    <addaction name="actionPencil"/>
+    <addaction name="actionPointer"/>
+    <addaction name="actionFlood_Fill"/>
+    <addaction name="actionEyedropper"/>
+    <addaction name="actionMove"/>
+    <addaction name="actionMap_Shift"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
    <addaction name="menuView"/>
+   <addaction name="menuTools"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="action_Save_Project">
@@ -2217,6 +2229,54 @@
    </property>
    <property name="toolTip">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Use reticule-styled cursors with icon showing currently selected tool.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </action>
+  <action name="actionPencil">
+   <property name="text">
+    <string>Pencil</string>
+   </property>
+   <property name="shortcut">
+    <string>N</string>
+   </property>
+  </action>
+  <action name="actionFlood_Fill">
+   <property name="text">
+    <string>Bucket Fill</string>
+   </property>
+   <property name="shortcut">
+    <string>B</string>
+   </property>
+  </action>
+  <action name="actionEyedropper">
+   <property name="text">
+    <string>Eyedropper</string>
+   </property>
+   <property name="shortcut">
+    <string>E</string>
+   </property>
+  </action>
+  <action name="actionMove">
+   <property name="text">
+    <string>Move</string>
+   </property>
+   <property name="shortcut">
+    <string>M</string>
+   </property>
+  </action>
+  <action name="actionMap_Shift">
+   <property name="text">
+    <string>Map Shift</string>
+   </property>
+   <property name="shortcut">
+    <string>S</string>
+   </property>
+  </action>
+  <action name="actionPointer">
+   <property name="text">
+    <string>Pointer</string>
+   </property>
+   <property name="shortcut">
+    <string>P</string>
    </property>
   </action>
  </widget>

@@ -63,6 +63,12 @@ private slots:
     void on_actionZoom_In_triggered();
     void on_actionZoom_Out_triggered();
     void on_actionBetter_Cursors_triggered();
+    void on_actionPencil_triggered();
+    void on_actionPointer_triggered();
+    void on_actionFlood_Fill_triggered();
+    void on_actionEyedropper_triggered();
+    void on_actionMove_triggered();
+    void on_actionMap_Shift_triggered();
 
     void on_toolButton_deleteObject_clicked();
     void on_toolButton_Open_Scripts_clicked();

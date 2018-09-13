@@ -618,6 +618,36 @@ void MainWindow::on_actionBetter_Cursors_triggered() {
     settings.setValue("cursor_mode", QString::number(ui->actionBetter_Cursors->isChecked()));
 }
 
+void MainWindow::on_actionPencil_triggered()
+{
+    on_toolButton_Paint_clicked();
+}
+
+void MainWindow::on_actionPointer_triggered()
+{
+    on_toolButton_Select_clicked();
+}
+
+void MainWindow::on_actionFlood_Fill_triggered()
+{
+    on_toolButton_Fill_clicked();
+}
+
+void MainWindow::on_actionEyedropper_triggered()
+{
+    on_toolButton_Dropper_clicked();
+}
+
+void MainWindow::on_actionMove_triggered()
+{
+    on_toolButton_Move_clicked();
+}
+
+void MainWindow::on_actionMap_Shift_triggered()
+{
+    on_toolButton_Shift_clicked();
+}
+
 void MainWindow::scaleMapView(int s) {
     editor->map->scale_exp += s;
 
