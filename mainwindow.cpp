@@ -993,12 +993,19 @@ void MainWindow::on_toolButton_Move_clicked()
     checkToolButtons();
 }
 
+void MainWindow::on_toolButton_Shift_clicked()
+{
+    editor->map_edit_mode = "shift";
+    checkToolButtons();
+}
+
 void MainWindow::checkToolButtons() {
     ui->toolButton_Paint->setChecked(editor->map_edit_mode == "paint");
     ui->toolButton_Select->setChecked(editor->map_edit_mode == "select");
     ui->toolButton_Fill->setChecked(editor->map_edit_mode == "fill");
     ui->toolButton_Dropper->setChecked(editor->map_edit_mode == "pick");
     ui->toolButton_Move->setChecked(editor->map_edit_mode == "move");
+    ui->toolButton_Shift->setChecked(editor->map_edit_mode == "shift");
 }
 
 void MainWindow::toggleEditModeMove() {
@@ -1011,6 +1018,8 @@ void MainWindow::toggleEditModeMove() {
             on_toolButton_Dropper_clicked();
         } else if (editor->prev_edit_mode == "select") {
             on_toolButton_Select_clicked();
+        }  else if (editor->prev_edit_mode == "shift") {
+            on_toolButton_Shift_clicked();
         }
     }
     else {
@@ -1150,4 +1159,10 @@ void MainWindow::on_pushButton_clicked()
 void MainWindow::on_checkBox_smartPaths_stateChanged(int selected)
 {
     editor->map->smart_paths_enabled = selected == Qt::Checked;
+}
+
+void MainWindow::on_checkBox_ToggleBorder_stateChanged(int selected)
+{
+    bool visible = selected != 0;
+    editor->toggleBorderVisibility(visible);
 }

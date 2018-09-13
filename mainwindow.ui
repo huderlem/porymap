@@ -231,7 +231,7 @@
                 <item>
                  <widget class="QToolButton" name="toolButton_Dropper">
                   <property name="toolTip">
-                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Eye Dropper&lt;/p&gt;&lt;p&gt;Click to select a metatile or collision attribute.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Eye Dropper&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Click&lt;/span&gt; to select a metatile or collision attribute.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                   </property>
                   <property name="text">
                    <string>Dropper</string>
@@ -256,6 +256,23 @@
                   <property name="icon">
                    <iconset resource="resources/images.qrc">
                     <normaloff>:/icons/move.ico</normaloff>:/icons/move.ico</iconset>
+                    </property>
+                  <property name="checkable">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QToolButton" name="toolButton_Shift">
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Map Shift&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Click and drag&lt;/span&gt; on the map to shift the positions all metatiles at once. This is useful after resizing a map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                  <property name="text">
+                   <string>Shift</string>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="resources/images.qrc">
+                    <normaloff>:/icons/shift.ico</normaloff>:/icons/shift.ico</iconset>
                   </property>
                   <property name="checkable">
                    <bool>true</bool>
@@ -265,7 +282,7 @@
                 <item>
                  <widget class="QCheckBox" name="checkBox_smartPaths">
                   <property name="toolTip">
-                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Smart-path mode allows easier drawing of paths. If a 3x3 metatile block is selcted in the right panel, then smart path mode will automatically form a pathway using those selected blocks.&lt;/p&gt;&lt;p&gt;When smart-path mode is &lt;span style=&quot; font-weight:600;&quot;&gt;not&lt;/span&gt; enabled, clicking and dragging a selection will tile it in a grid.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Smart-path mode allows easier drawing of paths. If a 3x3 metatile block is selcted in the right panel, then smart path mode will automatically form a pathway using those selected blocks.&lt;/p&gt;&lt;p&gt;When smart-path mode is &lt;span style=&quot; font-weight:600;&quot;&gt;not&lt;/span&gt; enabled, clicking and dragging a selection will tile it in a grid.&lt;/p&gt;&lt;p&gt;Hold down the &lt;span style=&quot; font-weight:600;&quot;&gt;shift&lt;/span&gt; key while editing to quickly enable smart-path mode.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                   </property>
                   <property name="styleSheet">
                    <string notr="true">margin-left: 10px</string>
@@ -284,7 +301,17 @@
                    <string notr="true"/>
                   </property>
                   <property name="text">
-                   <string>Show Grid</string>
+                   <string>Grid</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="checkBox_ToggleBorder">
+                  <property name="text">
+                   <string>Border</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
                   </property>
                  </widget>
                 </item>
@@ -351,7 +378,7 @@
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>429</width>
+                     <width>442</width>
                      <height>620</height>
                     </rect>
                    </property>
@@ -734,7 +761,7 @@
                         <rect>
                          <x>0</x>
                          <y>0</y>
-                         <width>315</width>
+                         <width>302</width>
                          <height>86</height>
                         </rect>
                        </property>
@@ -840,7 +867,7 @@
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>365</width>
+                      <width>352</width>
                       <height>405</height>
                      </rect>
                     </property>

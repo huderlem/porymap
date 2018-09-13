@@ -81,6 +81,8 @@ private slots:
 
     void on_toolButton_Move_clicked();
 
+    void on_toolButton_Shift_clicked();
+
     void onOpenMapListContextMenu(const QPoint &point);
     void onAddNewMapToGroupClick(QAction* triggeredAction);
     void onTilesetChanged(QString);
@@ -111,6 +113,8 @@ private slots:
     void on_checkBox_smartPaths_stateChanged(int selected);
 
     void on_checkBox_Visibility_clicked(bool checked);
+
+    void on_checkBox_ToggleBorder_stateChanged(int arg1);
 
 private:
     Ui::MainWindow *ui;

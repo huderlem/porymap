@@ -20,5 +20,6 @@
         <file>icons/fill_color_cursor.ico</file>
         <file>icons/pencil_cursor.ico</file>
         <file>icons/pipette_cursor.ico</file>
+        <file>icons/shift.ico</file>
     </qresource>
 </RCC>

@@ -67,6 +67,7 @@ public:
     void setSelectedConnectionFromMap(QString mapName);
     void updatePrimaryTileset(QString tilesetLabel);
     void updateSecondaryTileset(QString tilesetLabel);
+    void toggleBorderVisibility(bool visible);
 
     DraggablePixmapItem *addMapEvent(Event *event);
     void selectMapEvent(DraggablePixmapItem *object);
@@ -273,6 +274,7 @@ public:
     void _floodFillSmartPath(int initialX, int initialY);
     virtual void pick(QGraphicsSceneMouseEvent*);
     virtual void select(QGraphicsSceneMouseEvent*);
+    virtual void shift(QGraphicsSceneMouseEvent*);
     virtual void draw(bool ignoreCache = false);
     void updateMetatileSelection(QGraphicsSceneMouseEvent *event);
 
