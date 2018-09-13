@@ -37,7 +37,6 @@ private slots:
     void undo();
     void redo();
 
-    void toggleEditModeMove();
     void openInTextEditor();
 
     void onLoadMapRequested(QString, QString);

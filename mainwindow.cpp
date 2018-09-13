@@ -37,7 +37,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->newEventToolButton, SIGNAL(newEventAdded(QString)), this, SLOT(addNewEvent(QString)));
 
     new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Z), this, SLOT(redo()));
-    new QShortcut(Qt::Key_M, this, SLOT(toggleEditModeMove()));
 
     editor = new Editor(ui);
     connect(editor, SIGNAL(objectsChanged()), this, SLOT(updateSelectedObjects()));
@@ -996,6 +995,12 @@ void MainWindow::on_toolButton_Move_clicked()
 void MainWindow::on_toolButton_Shift_clicked()
 {
     editor->map_edit_mode = "shift";
+    editor->cursor = QCursor(QPixmap(":/icons/shift_cursor.ico"), 10, 10);
+
+    ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    QScroller::ungrabGesture(ui->scrollArea);
+
     checkToolButtons();
 }
 
@@ -1006,26 +1011,6 @@ void MainWindow::checkToolButtons() {
     ui->toolButton_Dropper->setChecked(editor->map_edit_mode == "pick");
     ui->toolButton_Move->setChecked(editor->map_edit_mode == "move");
     ui->toolButton_Shift->setChecked(editor->map_edit_mode == "shift");
-}
-
-void MainWindow::toggleEditModeMove() {
-    if (editor->map_edit_mode == "move") {
-        if (editor->prev_edit_mode == "paint") {
-            on_toolButton_Paint_clicked();
-        } else if (editor->prev_edit_mode == "fill") {
-            on_toolButton_Fill_clicked();
-        } else if (editor->prev_edit_mode == "pick") {
-            on_toolButton_Dropper_clicked();
-        } else if (editor->prev_edit_mode == "select") {
-            on_toolButton_Select_clicked();
-        }  else if (editor->prev_edit_mode == "shift") {
-            on_toolButton_Shift_clicked();
-        }
-    }
-    else {
-        editor->prev_edit_mode = editor->map_edit_mode;
-        on_toolButton_Move_clicked();
-    }
 }
 
 void MainWindow::onLoadMapRequested(QString mapName, QString fromMapName) {
