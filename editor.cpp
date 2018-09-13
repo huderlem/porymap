@@ -1484,11 +1484,15 @@ void MapPixmapItem::updateCurHoveredTile(QPointF pos) {
 
 void MapPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
     updateCurHoveredTile(event->pos());
-    setCursor(editor->cursor);
+    if (editor->ui->actionBetter_Cursors->isChecked()){
+        setCursor(editor->cursor);
+    }
 }
 void MapPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event) {
     map->clearHoveredTile();
-    unsetCursor();
+    if (editor->ui->actionBetter_Cursors->isChecked()){
+        unsetCursor();
+    }
 }
 void MapPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     QPointF pos = event->pos();

@@ -54,6 +54,10 @@ MainWindow::MainWindow(QWidget *parent) :
             openProject(default_dir);
         }
     }
+
+    if (settings.contains("cursor_mode") && settings.value("cursor_mode") == "0") {
+        ui->actionBetter_Cursors->setChecked(false);
+    }
 }
 
 MainWindow::~MainWindow()
@@ -598,6 +602,11 @@ void MainWindow::on_actionZoom_In_triggered() {
 
 void MainWindow::on_actionZoom_Out_triggered() {
     scaleMapView(-1);
+}
+
+void MainWindow::on_actionBetter_Cursors_triggered() {
+    QSettings settings;
+    settings.setValue("cursor_mode", QString::number(ui->actionBetter_Cursors->isChecked()));
 }
 
 void MainWindow::scaleMapView(int s) {

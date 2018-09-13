@@ -62,6 +62,7 @@ private slots:
 
     void on_actionZoom_In_triggered();
     void on_actionZoom_Out_triggered();
+    void on_actionBetter_Cursors_triggered();
 
     void on_toolButton_deleteObject_clicked();
 
