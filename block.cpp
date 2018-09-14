@@ -17,7 +17,10 @@ Block::Block(const Block &block) {
 }
 
 uint16_t Block::rawValue() {
-    return (tile & 0x3ff) + ((collision & 0x3) << 10) + ((elevation & 0xf) << 12);
+    return static_cast<uint16_t>(
+                (tile & 0x3ff) +
+                ((collision & 0x3) << 10) +
+                ((elevation & 0xf) << 12));
 }
 
 bool Block::operator ==(Block other) {

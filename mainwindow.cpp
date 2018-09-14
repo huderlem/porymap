@@ -81,8 +81,8 @@ void MainWindow::openProject(QString dir) {
     setStatusBarMessage(QString("Opening project %1").arg(dir));
 
     bool already_open = (
-        (editor != NULL && editor != nullptr)
-        && (editor->project != NULL && editor->project != nullptr)
+        (editor && editor != nullptr)
+        && (editor->project && editor->project != nullptr)
         && (editor->project->root == dir)
     );
     if (!already_open) {
@@ -168,7 +168,7 @@ void MainWindow::setMap(QString map_name) {
     setWindowTitle(map_name + " - " + editor->project->getProjectTitle() + " - porymap");
 
     connect(editor->map, SIGNAL(mapChanged(Map*)), this, SLOT(onMapChanged(Map *)));
-    connect(editor->map, SIGNAL(mapNeedsRedrawing(Map*)), this, SLOT(onMapNeedsRedrawing(Map *)));
+    connect(editor->map, SIGNAL(mapNeedsRedrawing()), this, SLOT(onMapNeedsRedrawing()));
     connect(editor->map, SIGNAL(statusBarMessage(QString)), this, SLOT(setStatusBarMessage(QString)));
 
     setRecentMap(map_name);
@@ -182,16 +182,16 @@ void MainWindow::redrawMapScene()
 
     ui->graphicsView_Map->setScene(editor->scene);
     ui->graphicsView_Map->setSceneRect(editor->scene->sceneRect());
-    ui->graphicsView_Map->setFixedSize(editor->scene->width() + 2, editor->scene->height() + 2);
+    ui->graphicsView_Map->setFixedSize(static_cast<int>(editor->scene->width()) + 2, static_cast<int>(editor->scene->height()) + 2);
 
     ui->graphicsView_Objects_Map->setScene(editor->scene);
     ui->graphicsView_Objects_Map->setSceneRect(editor->scene->sceneRect());
-    ui->graphicsView_Objects_Map->setFixedSize(editor->scene->width() + 2, editor->scene->height() + 2);
+    ui->graphicsView_Objects_Map->setFixedSize(static_cast<int>(editor->scene->width()) + 2, static_cast<int>(editor->scene->height()) + 2);
     ui->graphicsView_Objects_Map->editor = editor;
 
     ui->graphicsView_Connections->setScene(editor->scene);
     ui->graphicsView_Connections->setSceneRect(editor->scene->sceneRect());
-    ui->graphicsView_Connections->setFixedSize(editor->scene->width() + 2, editor->scene->height() + 2);
+    ui->graphicsView_Connections->setFixedSize(static_cast<int>(editor->scene->width()) + 2, static_cast<int>(editor->scene->height()) + 2);
 
     ui->graphicsView_Metatiles->setScene(editor->scene_metatiles);
     //ui->graphicsView_Metatiles->setSceneRect(editor->scene_metatiles->sceneRect());
@@ -508,7 +508,6 @@ void MainWindow::on_mapList_activated(const QModelIndex &index)
     if (!data.isNull()) {
         setMap(data.toString());
     }
-    //updateMapList();
 }
 
 void MainWindow::markAllEdited(QAbstractItemModel *model) {
@@ -652,18 +651,17 @@ void MainWindow::on_actionMap_Shift_triggered()
 void MainWindow::scaleMapView(int s) {
     editor->map->scale_exp += s;
 
-    double base = (double)editor->map->scale_base;
+    double base = editor->map->scale_base;
     double exp  = editor->map->scale_exp;
     double sfactor = pow(base,s);
 
     ui->graphicsView_Map->scale(sfactor,sfactor);
     ui->graphicsView_Objects_Map->scale(sfactor,sfactor);
 
-    ui->graphicsView_Map->setFixedSize((editor->scene->width() + 2) * pow(base,exp), 
-                                       (editor->scene->height() + 2) * pow(base,exp));
-
-    ui->graphicsView_Objects_Map->setFixedSize((editor->scene->width() + 2) * pow(base,exp), 
-                                               (editor->scene->height() + 2) * pow(base,exp));
+    int width = static_cast<int>((editor->scene->width() + 2) * pow(base,exp));
+    int height = static_cast<int>((editor->scene->height() + 2) * pow(base,exp));
+    ui->graphicsView_Map->setFixedSize(width, height);
+    ui->graphicsView_Objects_Map->setFixedSize(width, height);
 }
 
 void MainWindow::addNewEvent(QString event_type)
@@ -680,7 +678,7 @@ void MainWindow::addNewEvent(QString event_type)
 // Should probably just pass layout and let the editor work it out
 void MainWindow::updateSelectedObjects() {
     QList<DraggablePixmapItem *> *all_events = editor->getObjects();
-    QList<DraggablePixmapItem *> *events = NULL;
+    QList<DraggablePixmapItem *> *events = nullptr;
 
     if (editor->selected_events && editor->selected_events->length()) {
         events = editor->selected_events;
@@ -1054,7 +1052,7 @@ void MainWindow::onMapChanged(Map *map) {
     updateMapList();
 }
 
-void MainWindow::onMapNeedsRedrawing(Map *map) {
+void MainWindow::onMapNeedsRedrawing() {
     redrawMapScene();
 }
 
@@ -1168,7 +1166,7 @@ void MainWindow::on_pushButton_clicked()
     if (dialog.exec() == QDialog::Accepted) {
         editor->map->setDimensions(widthSpinBox->value(), heightSpinBox->value());
         editor->map->commit();
-        onMapNeedsRedrawing(editor->map);
+        onMapNeedsRedrawing();
     }
 }
 

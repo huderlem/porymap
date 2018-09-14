@@ -142,8 +142,8 @@ QString Event::buildObjectEventMacro(int item_index)
 {
     int radius_x = this->getInt("radius_x");
     int radius_y = this->getInt("radius_y");
-    uint16_t x = this->getInt("x");
-    uint16_t y = this->getInt("y");
+    uint16_t x = this->getU16("x");
+    uint16_t y = this->getU16("y");
 
     QString text = "";
     text += QString("\tobject_event %1").arg(item_index + 1);
@@ -185,8 +185,8 @@ HealLocation Event::buildHealLocation()
     catch(...) {
         hl.index = 0;
     }
-    hl.x     = this->get("x").toInt();
-    hl.y     = this->get("y").toInt();
+    hl.x     = this->getU16("x");
+    hl.y     = this->getU16("y");
     return hl;
 }
 

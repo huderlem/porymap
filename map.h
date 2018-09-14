@@ -14,9 +14,9 @@
 class HistoryItem {
 public:
     Blockdata *metatiles;
-    short layoutWidth;
-    short layoutHeight;
-    HistoryItem(Blockdata *metatiles_, short layoutWidth_, short layoutHeight_) {
+    int layoutWidth;
+    int layoutHeight;
+    HistoryItem(Blockdata *metatiles_, int layoutWidth_, int layoutHeight_) {
         this->metatiles = metatiles_;
         this->layoutWidth = layoutWidth_;
         this->layoutHeight = layoutHeight_;
@@ -150,7 +150,7 @@ public:
     static QString bgEventsLabelFromName(QString mapName);
     int getWidth();
     int getHeight();
-    int getSelectedBlockIndex(int);
+    uint16_t getSelectedBlockIndex(int);
     int getDisplayedBlockIndex(int);
     QPixmap render(bool ignoreCache);
     QPixmap renderMetatiles();
@@ -180,20 +180,16 @@ public:
     int paint_tile_initial_y;
     int selected_metatiles_width;
     int selected_metatiles_height;
-    QList<int> *selected_metatiles = NULL;
-    int paint_collision;
-    int paint_elevation;
+    QList<uint16_t> *selected_metatiles = nullptr;
+    uint16_t paint_collision;
+    uint16_t paint_elevation;
 
     Block *getBlock(int x, int y);
     void setBlock(int x, int y, Block block);
     void _setBlock(int x, int y, Block block);
 
-    void floodFillCollision(int x, int y, uint collision);
-    void _floodFillCollision(int x, int y, uint collision);
-    void floodFillElevation(int x, int y, uint elevation);
-    void _floodFillElevation(int x, int y, uint elevation);
-    void floodFillCollisionElevation(int x, int y, uint collision, uint elevation);
-    void _floodFillCollisionElevation(int x, int y, uint collision, uint elevation);
+    void floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
+    void _floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
 
     History<HistoryItem*> history;
     void undo();
@@ -223,10 +219,10 @@ public:
     void setSelectedMetatilesFromTilePicker();
 
 signals:
-    void paintTileChanged(Map *map);
+    void paintTileChanged();
     void paintCollisionChanged(Map *map);
     void mapChanged(Map *map);
-    void mapNeedsRedrawing(Map *map);
+    void mapNeedsRedrawing();
     void statusBarMessage(QString);
 
 public slots:

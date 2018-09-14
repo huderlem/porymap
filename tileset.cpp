@@ -72,9 +72,9 @@ Metatile* Metatile::getMetatile(int index, Tileset *primaryTileset, Tileset *sec
     Tileset *tileset = Metatile::getBlockTileset(index, primaryTileset, secondaryTileset);
     int local_index = Metatile::getBlockIndex(index);
     if (!tileset || !tileset->metatiles) {
-        return NULL;
+        return nullptr;
     }
-    Metatile *metatile = tileset->metatiles->value(local_index, NULL);
+    Metatile *metatile = tileset->metatiles->value(local_index, nullptr);
     return metatile;
 }
 
