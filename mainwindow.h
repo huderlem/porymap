@@ -37,6 +37,8 @@ private slots:
     void undo();
     void redo();
 
+    void openInTextEditor();
+
     void onLoadMapRequested(QString, QString);
     void onMapChanged(Map *map);
     void onMapNeedsRedrawing(Map *map);
@@ -58,7 +60,18 @@ private slots:
 
     void on_actionRedo_triggered();
 
+    void on_actionZoom_In_triggered();
+    void on_actionZoom_Out_triggered();
+    void on_actionBetter_Cursors_triggered();
+    void on_actionPencil_triggered();
+    void on_actionPointer_triggered();
+    void on_actionFlood_Fill_triggered();
+    void on_actionEyedropper_triggered();
+    void on_actionMove_triggered();
+    void on_actionMap_Shift_triggered();
+
     void on_toolButton_deleteObject_clicked();
+    void on_toolButton_Open_Scripts_clicked();
 
     void addNewEvent(QString);
     void updateSelectedObjects();
@@ -70,6 +83,10 @@ private slots:
     void on_toolButton_Fill_clicked();
 
     void on_toolButton_Dropper_clicked();
+
+    void on_toolButton_Move_clicked();
+
+    void on_toolButton_Shift_clicked();
 
     void onOpenMapListContextMenu(const QPoint &point);
     void onAddNewMapToGroupClick(QAction* triggeredAction);
@@ -102,6 +119,8 @@ private slots:
 
     void on_checkBox_Visibility_clicked(bool checked);
 
+    void on_checkBox_ToggleBorder_stateChanged(int arg1);
+
 private:
     Ui::MainWindow *ui;
     QStandardItemModel *mapListModel;
@@ -124,6 +143,8 @@ private:
 
     void displayMapProperties();
     void checkToolButtons();
+
+    void scaleMapView(int);
 };
 
 enum MapListUserRoles {

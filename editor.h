@@ -7,6 +7,7 @@
 #include <QGraphicsItemAnimation>
 #include <QComboBox>
 #include <QCheckBox>
+#include <QCursor>
 
 #include "project.h"
 #include "ui_mainwindow.h"
@@ -66,6 +67,7 @@ public:
     void setSelectedConnectionFromMap(QString mapName);
     void updatePrimaryTileset(QString tilesetLabel);
     void updateSecondaryTileset(QString tilesetLabel);
+    void toggleBorderVisibility(bool visible);
 
     DraggablePixmapItem *addMapEvent(Event *event);
     void selectMapEvent(DraggablePixmapItem *object);
@@ -108,6 +110,8 @@ public:
     QList<int> *copiedMetatileSelection = new QList<int>;
 
     QString map_edit_mode;
+    QString prev_edit_mode;
+    QCursor cursor;
 
     void objectsView_onMousePress(QMouseEvent *event);
     void objectsView_onMouseMove(QMouseEvent *event);
@@ -130,6 +134,7 @@ private:
     void updateMirroredConnection(Connection*, QString, QString, bool isDelete = false);
     Event* createNewObjectEvent();
     Event* createNewWarpEvent();
+    Event* createNewHealLocationEvent();
     Event* createNewCoordScriptEvent();
     Event* createNewCoordWeatherEvent();
     Event* createNewSignEvent();
@@ -173,10 +178,8 @@ public:
     int last_x;
     int last_y;
     void updatePosition() {
-        int x = event->x() * 16;
-        int y = event->y() * 16;
-        x -= pixmap().width() / 32 * 16;
-        y -= pixmap().height() - 16;
+        int x = event->getPixelX();
+        int y = event->getPixelY();
         setX(x);
         setY(y);
         setZValue(event->y());
@@ -192,6 +195,7 @@ public:
         objects.append(event);
         event->pixmap = QPixmap();
         editor->project->loadEventPixmaps(objects);
+        this->updatePosition();
         editor->redrawObject(this);
         emit spriteChanged(event->pixmap);
     }
@@ -270,6 +274,7 @@ public:
     void _floodFillSmartPath(int initialX, int initialY);
     virtual void pick(QGraphicsSceneMouseEvent*);
     virtual void select(QGraphicsSceneMouseEvent*);
+    virtual void shift(QGraphicsSceneMouseEvent*);
     virtual void draw(bool ignoreCache = false);
     void updateMetatileSelection(QGraphicsSceneMouseEvent *event);
 

@@ -29,7 +29,8 @@ SOURCES += main.cpp\
     parseutil.cpp \
     neweventtoolbutton.cpp \
     noscrollcombobox.cpp \
-    noscrollspinbox.cpp
+    noscrollspinbox.cpp \
+    heallocation.cpp
 
 HEADERS  += mainwindow.h \
     project.h \
@@ -45,7 +46,8 @@ HEADERS  += mainwindow.h \
     parseutil.h \
     neweventtoolbutton.h \
     noscrollcombobox.h \
-    noscrollspinbox.h
+    noscrollspinbox.h \
+    heallocation.h
 
 FORMS    += mainwindow.ui \
     objectpropertiesframe.ui

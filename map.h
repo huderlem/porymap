@@ -9,6 +9,7 @@
 #include <QObject>
 #include <QDebug>
 #include <QGraphicsPixmapItem>
+#include <math.h>
 
 class HistoryItem {
 public:
@@ -128,12 +129,15 @@ public:
     QString layout_id;
     QString location;
     QString requiresFlash;
+    QString isFlyable; // TODO: implement this
     QString weather;
     QString type;
     QString unknown;
     QString show_location;
     QString battle_scene;
     MapLayout *layout;
+    int scale_exp = 0;
+    double scale_base = sqrt(2); // adjust scale factor with this
 
     bool isPersistedToFile = true;
 

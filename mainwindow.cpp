@@ -15,8 +15,14 @@
 #include <QSpacerItem>
 #include <QFont>
 #include <QScrollBar>
+#include <QPushButton>
 #include <QMessageBox>
 #include <QDialogButtonBox>
+#include <QScroller>
+#include <math.h>
+#include <QProcess>
+#include <QSysInfo>
+#include <QDesktopServices>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -53,6 +59,9 @@ MainWindow::MainWindow(QWidget *parent) :
         }
     }
 
+    if (settings.contains("cursor_mode") && settings.value("cursor_mode") == "0") {
+        ui->actionBetter_Cursors->setChecked(false);
+    }
 }
 
 MainWindow::~MainWindow()
@@ -551,6 +560,12 @@ void MainWindow::redo() {
     editor->redo();
 }
 
+// Open current map scripts in system default editor for .inc files
+void MainWindow::openInTextEditor() {
+    QString path = QDir::cleanPath("file://" + editor->project->root + QDir::separator() + "data/maps/" + editor->map->name + "/scripts.inc");
+    QDesktopServices::openUrl(QUrl(path));
+}
+
 void MainWindow::on_action_Save_triggered() {
     editor->save();
     updateMapList();
@@ -589,6 +604,66 @@ void MainWindow::on_actionUndo_triggered()
 void MainWindow::on_actionRedo_triggered()
 {
     redo();
+}
+
+void MainWindow::on_actionZoom_In_triggered() {
+    scaleMapView(1);
+}
+
+void MainWindow::on_actionZoom_Out_triggered() {
+    scaleMapView(-1);
+}
+
+void MainWindow::on_actionBetter_Cursors_triggered() {
+    QSettings settings;
+    settings.setValue("cursor_mode", QString::number(ui->actionBetter_Cursors->isChecked()));
+}
+
+void MainWindow::on_actionPencil_triggered()
+{
+    on_toolButton_Paint_clicked();
+}
+
+void MainWindow::on_actionPointer_triggered()
+{
+    on_toolButton_Select_clicked();
+}
+
+void MainWindow::on_actionFlood_Fill_triggered()
+{
+    on_toolButton_Fill_clicked();
+}
+
+void MainWindow::on_actionEyedropper_triggered()
+{
+    on_toolButton_Dropper_clicked();
+}
+
+void MainWindow::on_actionMove_triggered()
+{
+    on_toolButton_Move_clicked();
+}
+
+void MainWindow::on_actionMap_Shift_triggered()
+{
+    on_toolButton_Shift_clicked();
+}
+
+void MainWindow::scaleMapView(int s) {
+    editor->map->scale_exp += s;
+
+    double base = (double)editor->map->scale_base;
+    double exp  = editor->map->scale_exp;
+    double sfactor = pow(base,s);
+
+    ui->graphicsView_Map->scale(sfactor,sfactor);
+    ui->graphicsView_Objects_Map->scale(sfactor,sfactor);
+
+    ui->graphicsView_Map->setFixedSize((editor->scene->width() + 2) * pow(base,exp), 
+                                       (editor->scene->height() + 2) * pow(base,exp));
+
+    ui->graphicsView_Objects_Map->setFixedSize((editor->scene->width() + 2) * pow(base,exp), 
+                                               (editor->scene->height() + 2) * pow(base,exp));
 }
 
 void MainWindow::addNewEvent(QString event_type)
@@ -649,9 +724,12 @@ void MainWindow::updateSelectedObjects() {
         QString event_type = item->event->get("event_type");
         QString event_group_type = item->event->get("event_group_type");
         QString map_name = item->event->get("map_name");
+        int event_offs;
+        if (event_type == "event_warp") { event_offs = 0; }
+        else { event_offs = 1; }
         frame->ui->label_name->setText(
             QString("%1: %2 %3")
-                .arg(editor->project->getMap(map_name)->events.value(event_group_type).indexOf(item->event) + 1)
+                .arg(editor->project->getMap(map_name)->events.value(event_group_type).indexOf(item->event) + event_offs)
                 .arg(map_name)
                 .arg(event_type)
         );
@@ -709,8 +787,8 @@ void MainWindow::updateSelectedObjects() {
             fields << "sight_radius_tree_id";
         }
         else if (event_type == EventType::Warp) {
-            fields << "destination_warp";
             fields << "destination_map_name";
+            fields << "destination_warp";
         }
         else if (event_type == EventType::CoordScript) {
             fields << "script_label";
@@ -864,38 +942,96 @@ void MainWindow::on_toolButton_deleteObject_clicked()
     if (editor && editor->selected_events) {
         if (editor->selected_events->length()) {
             for (DraggablePixmapItem *item : *editor->selected_events) {
-                editor->deleteEvent(item->event);
-                if (editor->scene->items().contains(item)) {
-                    editor->scene->removeItem(item);
+                if (item->event->get("event_type") != EventType::HealLocation) {
+                    editor->deleteEvent(item->event);
+                    if (editor->scene->items().contains(item)) {
+                        editor->scene->removeItem(item);
+                    }
+                    editor->selected_events->removeOne(item);
                 }
-                editor->selected_events->removeOne(item);
+                else { // don't allow deletion of heal locations
+                    qDebug() << "Cannot delete event of type " << item->event->get("event_type");
+                }
             }
             updateSelectedObjects();
         }
     }
 }
 
+void MainWindow::on_toolButton_Open_Scripts_clicked()
+{
+    openInTextEditor();
+}
+
 void MainWindow::on_toolButton_Paint_clicked()
 {
     editor->map_edit_mode = "paint";
+    editor->cursor = QCursor(QPixmap(":/icons/pencil_cursor.ico"), 10, 10);
+    
+    ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    QScroller::ungrabGesture(ui->scrollArea);
+
     checkToolButtons();
 }
 
 void MainWindow::on_toolButton_Select_clicked()
 {
     editor->map_edit_mode = "select";
+    editor->cursor = QCursor(QPixmap(":/icons/cursor.ico"), 0, 0);
+    
+    ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    QScroller::ungrabGesture(ui->scrollArea);
+
     checkToolButtons();
 }
 
 void MainWindow::on_toolButton_Fill_clicked()
 {
     editor->map_edit_mode = "fill";
+    editor->cursor = QCursor(QPixmap(":/icons/fill_color_cursor.ico"), 10, 10);
+    
+    ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    QScroller::ungrabGesture(ui->scrollArea);
+
     checkToolButtons();
 }
 
 void MainWindow::on_toolButton_Dropper_clicked()
 {
     editor->map_edit_mode = "pick";
+    editor->cursor = QCursor(QPixmap(":/icons/pipette_cursor.ico"), 10, 10);
+
+    ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    QScroller::ungrabGesture(ui->scrollArea);
+
+    checkToolButtons();
+}
+
+void MainWindow::on_toolButton_Move_clicked()
+{
+    editor->map_edit_mode = "move";
+    editor->cursor = QCursor(QPixmap(":/icons/move.ico"), 7, 7);
+    
+    ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    QScroller::grabGesture(ui->scrollArea, QScroller::LeftMouseButtonGesture);
+    
+    checkToolButtons();
+}
+
+void MainWindow::on_toolButton_Shift_clicked()
+{
+    editor->map_edit_mode = "shift";
+    editor->cursor = QCursor(QPixmap(":/icons/shift_cursor.ico"), 10, 10);
+
+    ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    QScroller::ungrabGesture(ui->scrollArea);
+
     checkToolButtons();
 }
 
@@ -904,6 +1040,8 @@ void MainWindow::checkToolButtons() {
     ui->toolButton_Select->setChecked(editor->map_edit_mode == "select");
     ui->toolButton_Fill->setChecked(editor->map_edit_mode == "fill");
     ui->toolButton_Dropper->setChecked(editor->map_edit_mode == "pick");
+    ui->toolButton_Move->setChecked(editor->map_edit_mode == "move");
+    ui->toolButton_Shift->setChecked(editor->map_edit_mode == "shift");
 }
 
 void MainWindow::onLoadMapRequested(QString mapName, QString fromMapName) {
@@ -1037,4 +1175,10 @@ void MainWindow::on_pushButton_clicked()
 void MainWindow::on_checkBox_smartPaths_stateChanged(int selected)
 {
     editor->map->smart_paths_enabled = selected == Qt::Checked;
+}
+
+void MainWindow::on_checkBox_ToggleBorder_stateChanged(int selected)
+{
+    bool visible = selected != 0;
+    editor->toggleBorderVisibility(visible);
 }
