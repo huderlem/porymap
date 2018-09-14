@@ -501,6 +501,73 @@ void Project::saveMapConstantsHeader() {
     saveTextFile(root + "/include/constants/maps.h", text);
 }
 
+// saves heal location coords in root + /src/data/heal_locations.h
+// and indexes as defines in root + /include/constants/heal_locations.h
+void Project::saveHealLocationStruct(Map *map) {
+    QString tab = QString("    ");
+
+    QString data_text = QString("static const struct HealLocation sHealLocations[] =\n{\n");
+
+    QString constants_text = QString("#ifndef GUARD_CONSTANTS_HEAL_LOCATIONS_H\n");
+    constants_text += QString("#define GUARD_CONSTANTS_HEAL_LOCATIONS_H\n\n");
+
+    QMap<QString, int> flyableMapsDupes;
+    QSet<QString> flyableMapsUnique;
+
+    // set flyableMapsDupes and flyableMapsUnique
+    for (auto it = flyableMaps.begin(); it != flyableMaps.end(); it++) {
+        HealLocation loc = *it;
+        QString xname = loc.name;
+        if (flyableMapsUnique.contains(xname)) {
+            flyableMapsDupes[xname] = 1;
+        }
+        flyableMapsUnique.insert(xname);
+    }
+
+    // set new location in flyableMapsList
+    if (map->events["heal_event_group"].length() > 0) {
+        for (Event *heal : map->events["heal_event_group"]) {
+            HealLocation hl = heal->buildHealLocation();
+            flyableMaps[hl.index - 1] = hl;
+        }
+    }
+
+    int i = 1;
+
+    for (auto map_in : flyableMaps) {
+        data_text += QString("    {MAP_GROUP(%1), MAP_NUM(%1), %2, %3},\n")
+                     .arg(map_in.name)
+                     .arg(map_in.x)
+                     .arg(map_in.y);
+
+        QString ending = QString("");
+
+        // must add _1 / _2 for maps that have duplicates
+        if (flyableMapsDupes.keys().contains(map_in.name)) {
+            // map contains multiple heal locations
+            ending += QString("_%1").arg(flyableMapsDupes[map_in.name]);
+            flyableMapsDupes[map_in.name]++;
+        }
+        if (map_in.index != 0) {
+            constants_text += QString("#define HEAL_LOCATION_%1 %2\n")
+                              .arg(map_in.name + ending)
+                              .arg(map_in.index);
+        }
+        else {
+            constants_text += QString("#define HEAL_LOCATION_%1 %2\n")
+                              .arg(map_in.name + ending)
+                              .arg(i);
+        }
+        i++;
+    }
+
+    data_text += QString("};\n");
+    constants_text += QString("\n#endif // GUARD_CONSTANTS_HEAL_LOCATIONS_H\n");
+
+    saveTextFile(root + "/src/data/heal_locations.h", data_text);
+    saveTextFile(root + "/include/constants/heal_locations.h", constants_text);
+}
+
 void Project::loadMapTilesets(Map* map) {
     if (map->layout->has_unsaved_changes) {
         return;
@@ -947,6 +1014,11 @@ void Project::readMapGroups() {
     groupNames = groups;
     groupedMapNames = groupedMaps;
     mapNames = maps;
+
+    QString hltext = readTextFile(root + QString("/src/data/heal_locations.h"));
+    QList<HealLocation>* hl = parser->parseHealLocs(hltext);
+    flyableMaps = *hl;
+    delete hl;
 }
 
 Map* Project::addNewMapToGroup(QString mapName, int groupNum) {
@@ -1212,6 +1284,9 @@ void Project::loadEventPixmaps(QList<Event*> objects) {
         if (!object->pixmap.isNull()) {
             continue;
         }
+
+        object->spriteWidth = 16;
+        object->spriteHeight = 16;
         QString event_type = object->get("event_type");
         if (event_type == EventType::Object) {
             object->pixmap = QPixmap(":/images/Entities_16x16.png").copy(0, 0, 16, 16);
@@ -1221,22 +1296,39 @@ void Project::loadEventPixmaps(QList<Event*> objects) {
             object->pixmap = QPixmap(":/images/Entities_16x16.png").copy(32, 0, 16, 16);
         } else if (event_type == EventType::Sign || event_type == EventType::HiddenItem || event_type == EventType::SecretBase) {
             object->pixmap = QPixmap(":/images/Entities_16x16.png").copy(48, 0, 16, 16);
+        } else if (event_type == EventType::HealLocation) {
+            object->pixmap = QPixmap(":/images/Entities_16x16.png").copy(64, 0, 16, 16);
         }
 
         if (event_type == EventType::Object) {
             int sprite_id = constants.value(object->get("sprite"));
 
             QString info_label = pointers.value(sprite_id).replace("&", "");
-            QString pic_label = readCArray(info_text, info_label).value(14);
+            QStringList gfx_info = readCArray(info_text, info_label);
+            QString pic_label = gfx_info.value(14);
+            QString dimensions_label = gfx_info.value(11);
+            QString subsprites_label = gfx_info.value(12);
             QString gfx_label = readCArray(pic_text, pic_label).value(0);
             gfx_label = gfx_label.section(QRegExp("[\\(\\)]"), 1, 1);
             QString path = readCIncbin(assets_text, gfx_label);
 
             if (!path.isNull()) {
                 path = fixGraphicPath(path);
-                QPixmap pixmap(root + "/" + path);
-                if (!pixmap.isNull()) {
-                    object->pixmap = pixmap;
+                QImage spritesheet(root + "/" + path);
+                if (!spritesheet.isNull()) {
+                    // Infer the sprite dimensions from the OAM labels.
+                    int spriteWidth = spritesheet.width();
+                    int spriteHeight = spritesheet.height();
+                    QRegularExpression re("\\S+_(\\d+)x(\\d+)");
+                    QRegularExpressionMatch dimensionMatch = re.match(dimensions_label);
+                    if (dimensionMatch.hasMatch()) {
+                        QRegularExpressionMatch oamTablesMatch = re.match(subsprites_label);
+                        if (oamTablesMatch.hasMatch()) {
+                            spriteWidth = dimensionMatch.captured(1).toInt();
+                            spriteHeight = dimensionMatch.captured(2).toInt();
+                        }
+                    }
+                    object->setPixmapFromSpritesheet(spritesheet, spriteWidth, spriteHeight);
                 }
             }
         }
@@ -1309,6 +1401,15 @@ void Project::saveMapEvents(Map *map) {
             .arg(bgEventsLabel);
 
     saveTextFile(path, text);
+
+    // save heal event changes
+    if (map->events["heal_event_group"].length() > 0) {
+        for (Event *heal : map->events["heal_event_group"]) {
+            HealLocation hl = heal->buildHealLocation();
+            flyableMaps[hl.index - 1] = hl;
+        }
+    }
+    saveHealLocationStruct(map);
 }
 
 void Project::readMapEvents(Map *map) {
@@ -1377,6 +1478,29 @@ void Project::readMapEvents(Map *map) {
                 qDebug() << QString("Destination map constant '%1' is invalid for warp").arg(mapConstant);
             }
         }
+    }
+
+    map->events["heal_event_group"].clear();
+
+    for (auto it = flyableMaps.begin(); it != flyableMaps.end(); it++) {
+
+        HealLocation loc = *it;
+
+        //if TRUE map is flyable / has healing location
+        if (loc.name == QString(mapNamesToMapConstants->value(map->name)).remove(0,4)) {
+            Event *heal = new Event;
+            heal->put("map_name", map->name);
+            heal->put("x", loc.x);
+            heal->put("y", loc.y);
+            heal->put("loc_name", loc.name);
+            heal->put("index", loc.index);
+            heal->put("elevation", 3); // TODO: change this?
+            heal->put("destination_map_name", mapConstantsToMapNames->value(map->name));
+            heal->put("event_group_type", "heal_event_group");
+            heal->put("event_type", EventType::HealLocation);
+            map->events["heal_event_group"].append(heal);
+        }
+
     }
 
     QList<QStringList> *coords = getLabelMacros(parseAsm(text), coordEventsLabel);
@@ -1455,6 +1579,7 @@ void Project::readMapEvents(Map *map) {
 void Project::setNewMapEvents(Map *map) {
     map->events["object_event_group"].clear();
     map->events["warp_event_group"].clear();
+    map->events["heal_event_group"].clear();
     map->events["coord_event_group"].clear();
     map->events["bg_event_group"].clear();
 }

@@ -14,6 +14,7 @@ public:
 public slots:
     void newObject();
     void newWarp();
+    void newHealLocation();
     void newCoordScript();
     void newCoordWeather();
     void newSign();
@@ -25,6 +26,7 @@ private:
     QString selectedEventType;
     QAction *newObjectAction;
     QAction *newWarpAction;
+    QAction *newHealLocationAction;
     QAction *newCoordScriptAction;
     QAction *newCoordWeatherAction;
     QAction *newSignAction;
