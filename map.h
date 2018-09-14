@@ -21,6 +21,9 @@ public:
         this->layoutWidth = layoutWidth_;
         this->layoutHeight = layoutHeight_;
     }
+    ~HistoryItem() {
+        if (metatiles) delete metatiles;
+    }
 };
 
 template <typename T>
@@ -43,7 +46,9 @@ public:
     }
     void push(T commit) {
         while (head + 1 < history.length()) {
+            HistoryItem *item = history.last();
             history.removeLast();
+            delete item;
         }
         if (saved > head) {
             saved = -1;
