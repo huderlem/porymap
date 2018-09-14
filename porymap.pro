@@ -8,8 +8,10 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = pretmap
+TARGET = porymap
 TEMPLATE = app
+RC_ICONS = resources/icons/porymap-icon-1.ico
+ICON = resources/icons/porymap-icon-1.ico
 
 
 SOURCES += main.cpp\
