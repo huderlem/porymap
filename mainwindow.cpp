@@ -53,7 +53,6 @@ MainWindow::MainWindow(QWidget *parent) :
         }
     }
 
-    //ui->setIcon(QIcon(editor->root + "/resources/icons/porymap-icon-1.ico"));
 }
 
 MainWindow::~MainWindow()
