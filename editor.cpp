@@ -50,7 +50,7 @@ void Editor::setEditingMap() {
         map_item->draw();
         map_item->setVisible(true);
         map_item->setEnabled(true);
-        setConnectionsVisibility(true);
+        setConnectionsVisibility(ui->checkBox_ToggleBorder->isChecked());
     }
     if (collision_item) {
         collision_item->setVisible(false);
@@ -58,7 +58,7 @@ void Editor::setEditingMap() {
     if (events_group) {
         events_group->setVisible(false);
     }
-    setBorderItemsVisible(true);
+    setBorderItemsVisible(ui->checkBox_ToggleBorder->isChecked());
     setConnectionItemsVisible(false);
 }
 
@@ -68,7 +68,7 @@ void Editor::setEditingCollision() {
         displayMapConnections();
         collision_item->draw();
         collision_item->setVisible(true);
-        setConnectionsVisibility(true);
+        setConnectionsVisibility(ui->checkBox_ToggleBorder->isChecked());
     }
     if (map_item) {
         map_item->setVisible(false);
@@ -76,7 +76,7 @@ void Editor::setEditingCollision() {
     if (events_group) {
         events_group->setVisible(false);
     }
-    setBorderItemsVisible(true);
+    setBorderItemsVisible(ui->checkBox_ToggleBorder->isChecked());
     setConnectionItemsVisible(false);
 }
 
@@ -88,12 +88,12 @@ void Editor::setEditingObjects() {
     if (map_item) {
         map_item->setVisible(true);
         map_item->setEnabled(false);
-        setConnectionsVisibility(true);
+        setConnectionsVisibility(ui->checkBox_ToggleBorder->isChecked());
     }
     if (collision_item) {
         collision_item->setVisible(false);
     }
-    setBorderItemsVisible(true);
+    setBorderItemsVisible(ui->checkBox_ToggleBorder->isChecked());
     setConnectionItemsVisible(false);
 }
 
@@ -338,33 +338,54 @@ void Editor::setMap(QString map_name) {
 }
 
 void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item) {
-    if (event->buttons() & Qt::RightButton) {
-        item->updateMetatileSelection(event);
-    } else {
-        if (map_edit_mode == "paint") {
-            item->paint(event);
-        } else if (map_edit_mode == "fill") {
+    if (map_edit_mode == "paint") {
+        if (event->buttons() & Qt::RightButton) {
+            item->updateMetatileSelection(event);
+        } else if (event->buttons() & Qt::MiddleButton) {
             item->floodFill(event);
-        } else if (map_edit_mode == "pick") {
-            item->pick(event);
-        } else if (map_edit_mode == "select") {
-            item->select(event);
+        } else {
+            item->paint(event);
         }
+    } else if (map_edit_mode == "select") {
+        item->select(event);
+    } else if (map_edit_mode == "fill") {
+        if (event->buttons() & Qt::RightButton) {
+            item->updateMetatileSelection(event);
+        } else {
+            item->floodFill(event);
+        }
+    } else if (map_edit_mode == "pick") {
+
+        if (event->buttons() & Qt::RightButton) {
+            item->updateMetatileSelection(event);
+        } else {
+            item->pick(event);
+        }
+    } else if (map_edit_mode == "shift") {
+        item->shift(event);
     }
 }
 void Editor::mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixmapItem *item) {
-    if (event->buttons() & Qt::RightButton) {
-        item->updateMovementPermissionSelection(event);
-    } else {
-        if (map_edit_mode == "paint") {
-            item->paint(event);
-        } else if (map_edit_mode == "fill") {
+    if (map_edit_mode == "paint") {
+        if (event->buttons() & Qt::RightButton) {
+            item->updateMovementPermissionSelection(event);
+        } else if (event->buttons() & Qt::MiddleButton) {
             item->floodFill(event);
-        } else if (map_edit_mode == "pick") {
-            item->pick(event);
-        } else if (map_edit_mode == "select") {
-            item->select(event);
+        } else {
+            item->paint(event);
         }
+    } else if (map_edit_mode == "select") {
+        item->select(event);
+    } else if (map_edit_mode == "fill") {
+        if (event->buttons() & Qt::RightButton) {
+            item->pick(event);
+        } else {
+            item->floodFill(event);
+        }
+    } else if (map_edit_mode == "pick") {
+        item->pick(event);
+    } else if (map_edit_mode == "shift") {
+        item->shift(event);
     }
 }
 
@@ -861,6 +882,12 @@ void Editor::updateSecondaryTileset(QString tilesetLabel)
     }
 }
 
+void Editor::toggleBorderVisibility(bool visible)
+{
+    this->setBorderItemsVisible(visible);
+    this->setConnectionsVisibility(visible);
+}
+
 void MetatilesPixmapItem::paintTileChanged(Map *map) {
     draw();
 }
@@ -1080,7 +1107,8 @@ void MapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
             int y = (int)(pos.y()) / 16;
 
             // Paint onto the map.
-            if (map->smart_paths_enabled && map->selected_metatiles_width == 3 && map->selected_metatiles_height == 3) {
+            bool smartPathsEnabled = event->modifiers() & Qt::ShiftModifier;
+            if ((map->smart_paths_enabled || smartPathsEnabled) && map->selected_metatiles_width == 3 && map->selected_metatiles_height == 3) {
                 paintSmartPath(x, y);
             } else {
                 paintNormal(x, y);
@@ -1088,6 +1116,51 @@ void MapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
         }
 
         draw();
+    }
+}
+
+void MapPixmapItem::shift(QGraphicsSceneMouseEvent *event) {
+    if (map) {
+        if (event->type() == QEvent::GraphicsSceneMouseRelease) {
+            map->commit();
+        } else {
+            QPointF pos = event->pos();
+            int x = (int)(pos.x()) / 16;
+            int y = (int)(pos.y()) / 16;
+
+            if (event->type() == QEvent::GraphicsSceneMousePress) {
+                selection_origin = QPoint(x, y);
+                selection.clear();
+            } else if (event->type() == QEvent::GraphicsSceneMouseMove) {
+                if (x != selection_origin.x() || y != selection_origin.y()) {
+                    int xDelta = x - selection_origin.x();
+                    int yDelta = y - selection_origin.y();
+                    Blockdata *backupBlockdata = map->layout->blockdata->copy();
+                    for (int i = 0; i < map->getWidth(); i++)
+                    for (int j = 0; j < map->getHeight(); j++) {
+                        int srcX = i;
+                        int srcY = j;
+                        int destX = i + xDelta;
+                        int destY = j + yDelta;
+                        if (destX < 0)
+                            do { destX += map->getWidth(); } while (destX < 0);
+                        if (destY < 0)
+                            do { destY += map->getHeight(); } while (destY < 0);
+                        destX %= map->getWidth();
+                        destY %= map->getHeight();
+
+                        int blockIndex = j * map->getWidth() + i;
+                        Block srcBlock = backupBlockdata->blocks->at(blockIndex);
+                        map->_setBlock(destX, destY, srcBlock);
+                    }
+
+                    delete backupBlockdata;
+                    selection_origin = QPoint(x, y);
+                    selection.clear();
+                    draw();
+                }
+            }
+        }
     }
 }
 
@@ -1260,7 +1333,8 @@ void MapPixmapItem::floodFill(QGraphicsSceneMouseEvent *event) {
             Block *block = map->getBlock(x, y);
             int tile = map->selected_metatiles->first();
             if (block && block->tile != tile) {
-                if (map->smart_paths_enabled && map->selected_metatiles_width == 3 && map->selected_metatiles_height == 3)
+                bool smartPathsEnabled = event->modifiers() & Qt::ShiftModifier;
+                if ((map->smart_paths_enabled || smartPathsEnabled) && map->selected_metatiles_width == 3 && map->selected_metatiles_height == 3)
                     this->_floodFillSmartPath(x, y);
                 else
                     this->_floodFill(x, y);
@@ -1484,9 +1558,15 @@ void MapPixmapItem::updateCurHoveredTile(QPointF pos) {
 
 void MapPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
     updateCurHoveredTile(event->pos());
+    if (editor->ui->actionBetter_Cursors->isChecked()){
+        setCursor(editor->cursor);
+    }
 }
 void MapPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event) {
     map->clearHoveredTile();
+    if (editor->ui->actionBetter_Cursors->isChecked()){
+        unsetCursor();
+    }
 }
 void MapPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     QPointF pos = event->pos();
