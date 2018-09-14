@@ -14,10 +14,10 @@ class Project
 public:
     Project();
     QString root;
-    QStringList *groupNames = NULL;
+    QStringList *groupNames = nullptr;
     QMap<QString, int> *map_groups;
     QList<QStringList> groupedMapNames;
-    QStringList *mapNames = NULL;
+    QStringList *mapNames = nullptr;
     QList<HealLocation> flyableMaps;
     QMap<QString, QString>* mapConstantsToMapNames;
     QMap<QString, QString>* mapNamesToMapConstants;
@@ -25,24 +25,24 @@ public:
     QList<QString> mapLayoutsTableMaster;
     QMap<QString, MapLayout*> mapLayouts;
     QMap<QString, MapLayout*> mapLayoutsMaster;
-    QStringList *regionMapSections = NULL;
-    QStringList *itemNames = NULL;
-    QStringList *flagNames = NULL;
-    QStringList *varNames = NULL;
-    QStringList *movementTypes = NULL;
-    QStringList *mapTypes = NULL;
-    QStringList *mapBattleScenes = NULL;
-    QStringList *weatherNames = NULL;
-    QStringList *coordEventWeatherNames = NULL;
-    QStringList *secretBaseIds = NULL;
-    QStringList *bgEventFacingDirections = NULL;
+    QStringList *regionMapSections = nullptr;
+    QStringList *itemNames = nullptr;
+    QStringList *flagNames = nullptr;
+    QStringList *varNames = nullptr;
+    QStringList *movementTypes = nullptr;
+    QStringList *mapTypes = nullptr;
+    QStringList *mapBattleScenes = nullptr;
+    QStringList *weatherNames = nullptr;
+    QStringList *coordEventWeatherNames = nullptr;
+    QStringList *secretBaseIds = nullptr;
+    QStringList *bgEventFacingDirections = nullptr;
     QStringList mapsWithConnections;
 
     QMap<QString, Map*> *map_cache;
     Map* loadMap(QString);
     Map* getMap(QString);
 
-    QMap<QString, Tileset*> *tileset_cache = NULL;
+    QMap<QString, Tileset*> *tileset_cache = nullptr;
     Tileset* loadTileset(QString);
     Tileset* getTileset(QString);
 

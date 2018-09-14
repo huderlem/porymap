@@ -18,7 +18,7 @@ Event::Event()
 
 Event* Event::createNewEvent(QString event_type, QString map_name)
 {
-    Event *event;
+    Event *event = new Event;
     if (event_type == EventType::Object) {
         event = createNewObjectEvent();
     } else if (event_type == EventType::Warp) {

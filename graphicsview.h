@@ -6,18 +6,6 @@
 
 class Editor;
 
-/*
-class GraphicsView_Object : public QObject
-{
-    Q_OBJECT
-
-signals:
-    void onMousePress(QMouseEvent *event);
-    void onMouseMove(QMouseEvent *event);
-    void onMouseRelease(QMouseEvent *event);
-};
-*/
-
 class GraphicsView : public QGraphicsView
 {
 public:

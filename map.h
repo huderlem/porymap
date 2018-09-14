@@ -99,15 +99,15 @@ public:
     QString blockdata_path;
     QString tileset_primary_label;
     QString tileset_secondary_label;
-    Tileset *tileset_primary = NULL;
-    Tileset *tileset_secondary = NULL;
-    Blockdata* blockdata = NULL;
+    Tileset *tileset_primary = nullptr;
+    Tileset *tileset_secondary = nullptr;
+    Blockdata* blockdata = nullptr;
     QImage border_image;
     QPixmap border_pixmap;
-    Blockdata *border = NULL;
-    Blockdata *cached_blockdata = NULL;
-    Blockdata *cached_collision = NULL;
-    Blockdata *cached_border = NULL;
+    Blockdata *border = nullptr;
+    Blockdata *cached_blockdata = nullptr;
+    Blockdata *cached_collision = nullptr;
+    Blockdata *cached_border = nullptr;
     bool has_unsaved_changes = false;
 public:
     static QString getNameFromLabel(QString label) {
@@ -120,7 +120,7 @@ class Map : public QObject
 {
     Q_OBJECT
 public:
-    explicit Map(QObject *parent = 0);
+    explicit Map(QObject *parent = nullptr);
 
 public:
     QString name;

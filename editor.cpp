@@ -1017,7 +1017,7 @@ void MovementPermissionsPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent* ev
     if (x >= width) x = width - 1;
     if (y < 0) y = 0;
     if (y >= height) y = height - 1;
-    pick(x, y);
+    pick(static_cast<uint16_t>(x), static_cast<uint16_t>(y));
 }
 void MovementPermissionsPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event) {
     updateCurHoveredMetatile(event->pos());

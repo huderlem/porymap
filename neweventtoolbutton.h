@@ -8,7 +8,7 @@ class NewEventToolButton : public QToolButton
 {
     Q_OBJECT
 public:
-    explicit NewEventToolButton(QWidget *parent = 0);
+    explicit NewEventToolButton(QWidget *parent = nullptr);
     void initButton();
     QString getSelectedEventType();
 public slots:

@@ -415,7 +415,7 @@ public:
     MovementPermissionsPixmapItem(Map *map_): MetatilesPixmapItem(map_) {
         connect(map, SIGNAL(paintCollisionChanged(Map*)), this, SLOT(paintCollisionChanged(Map *)));
     }
-    virtual void pick(int collision, int elevation) {
+    virtual void pick(uint16_t collision, uint16_t elevation) {
         map->paint_collision = collision;
         map->paint_elevation = elevation;
         draw();

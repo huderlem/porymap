@@ -10,13 +10,13 @@ class Blockdata : public QObject
 {
     Q_OBJECT
 public:
-    explicit Blockdata(QObject *parent = 0);
+    explicit Blockdata(QObject *parent = nullptr);
     ~Blockdata() {
         if (blocks) delete blocks;
     }
 
 public:
-    QList<Block> *blocks = NULL;
+    QList<Block> *blocks = nullptr;
     void addBlock(uint16_t);
     void addBlock(Block);
     QByteArray serialize();
