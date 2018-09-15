@@ -22,7 +22,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
+    explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
 public slots:
@@ -41,7 +41,7 @@ private slots:
 
     void onLoadMapRequested(QString, QString);
     void onMapChanged(Map *map);
-    void onMapNeedsRedrawing(Map *map);
+    void onMapNeedsRedrawing();
 
     void on_action_Save_triggered();
     void on_tabWidget_2_currentChanged(int index);
@@ -125,7 +125,7 @@ private:
     Ui::MainWindow *ui;
     QStandardItemModel *mapListModel;
     QList<QStandardItem*> *mapGroupsModel;
-    Editor *editor = NULL;
+    Editor *editor = nullptr;
     QIcon* mapIcon;
     void setMap(QString);
     void redrawMapScene();

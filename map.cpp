@@ -14,7 +14,7 @@ Map::Map(QObject *parent) : QObject(parent)
     paint_elevation = 3;
     selected_metatiles_width = 1;
     selected_metatiles_height = 1;
-    selected_metatiles = new QList<int>;
+    selected_metatiles = new QList<uint16_t>;
     selected_metatiles->append(1);
 }
 
@@ -64,11 +64,11 @@ int Map::getHeight() {
     return layout->height.toInt(nullptr, 0);
 }
 
-int Map::getSelectedBlockIndex(int index) {
+uint16_t Map::getSelectedBlockIndex(int index) {
     if (index < layout->tileset_primary->metatiles->length()) {
-        return index;
+        return static_cast<uint16_t>(index);
     } else {
-        return 0x200 + (index - layout->tileset_primary->metatiles->length());
+        return 0x200 + static_cast<uint16_t>(index - layout->tileset_primary->metatiles->length());
     }
 }
 
@@ -92,24 +92,19 @@ QImage Map::getCollisionMetatileImage(int collision, int elevation) {
 }
 
 bool Map::blockChanged(int i, Blockdata *cache) {
-    if (cache == NULL || cache == nullptr) {
+    if (!cache)
         return true;
-    }
-    if (layout->blockdata == NULL || layout->blockdata == nullptr) {
+    if (!layout->blockdata)
         return true;
-    }
-    if (cache->blocks == NULL || cache->blocks == nullptr) {
+    if (!cache->blocks)
         return true;
-    }
-    if (layout->blockdata->blocks == NULL || layout->blockdata->blocks == nullptr) {
+    if (!layout->blockdata->blocks)
         return true;
-    }
-    if (cache->blocks->length() <= i) {
+    if (cache->blocks->length() <= i)
         return true;
-    }
-    if (layout->blockdata->blocks->length() <= i) {
+    if (layout->blockdata->blocks->length() <= i)
         return true;
-    }
+
     return layout->blockdata->blocks->value(i) != cache->blocks->value(i);
 }
 
@@ -389,13 +384,12 @@ void Map::setDimensions(int newWidth, int newHeight, bool setNewBlockdata) {
 
 Block* Map::getBlock(int x, int y) {
     if (layout->blockdata && layout->blockdata->blocks) {
-        if (x >= 0 && x < getWidth())
-        if (y >= 0 && y < getHeight()) {
+        if (x >= 0 && x < getWidth() && y >= 0 && y < getHeight()) {
             int i = y * getWidth() + x;
             return new Block(layout->blockdata->blocks->value(i));
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 void Map::_setBlock(int x, int y, Block block) {
@@ -405,7 +399,7 @@ void Map::_setBlock(int x, int y, Block block) {
     }
 }
 
-void Map::_floodFillCollision(int x, int y, uint collision) {
+void Map::_floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation) {
     QList<QPoint> todo;
     todo.append(QPoint(x, y));
     while (todo.length()) {
@@ -413,79 +407,16 @@ void Map::_floodFillCollision(int x, int y, uint collision) {
             x = point.x();
             y = point.y();
             Block *block = getBlock(x, y);
-            if (block == NULL) {
+            if (!block) {
                 continue;
             }
-            uint old_coll = block->collision;
-            if (old_coll == collision) {
-                continue;
-            }
-            block->collision = collision;
-            _setBlock(x, y, *block);
-            if ((block = getBlock(x + 1, y)) && block->collision == old_coll) {
-                todo.append(QPoint(x + 1, y));
-            }
-            if ((block = getBlock(x - 1, y)) && block->collision == old_coll) {
-                todo.append(QPoint(x - 1, y));
-            }
-            if ((block = getBlock(x, y + 1)) && block->collision == old_coll) {
-                todo.append(QPoint(x, y + 1));
-            }
-            if ((block = getBlock(x, y - 1)) && block->collision == old_coll) {
-                todo.append(QPoint(x, y - 1));
-            }
-    }
-}
 
-void Map::_floodFillElevation(int x, int y, uint elevation) {
-    QList<QPoint> todo;
-    todo.append(QPoint(x, y));
-    while (todo.length()) {
-            QPoint point = todo.takeAt(0);
-            x = point.x();
-            y = point.y();
-            Block *block = getBlock(x, y);
-            if (block == NULL) {
-                continue;
-            }
-            uint old_z = block->elevation;
-            if (old_z == elevation) {
-                continue;
-            }
-            Block block_(*block);
-            block_.elevation = elevation;
-            _setBlock(x, y, block_);
-            if ((block = getBlock(x + 1, y)) && block->elevation == old_z) {
-                todo.append(QPoint(x + 1, y));
-            }
-            if ((block = getBlock(x - 1, y)) && block->elevation == old_z) {
-                todo.append(QPoint(x - 1, y));
-            }
-            if ((block = getBlock(x, y + 1)) && block->elevation == old_z) {
-                todo.append(QPoint(x, y + 1));
-            }
-            if ((block = getBlock(x, y - 1)) && block->elevation == old_z) {
-                todo.append(QPoint(x, y - 1));
-            }
-    }
-}
-
-void Map::_floodFillCollisionElevation(int x, int y, uint collision, uint elevation) {
-    QList<QPoint> todo;
-    todo.append(QPoint(x, y));
-    while (todo.length()) {
-            QPoint point = todo.takeAt(0);
-            x = point.x();
-            y = point.y();
-            Block *block = getBlock(x, y);
-            if (block == NULL) {
-                continue;
-            }
             uint old_coll = block->collision;
             uint old_elev = block->elevation;
             if (old_coll == collision && old_elev == elevation) {
                 continue;
             }
+
             block->collision = collision;
             block->elevation = elevation;
             _setBlock(x, y, *block);
@@ -515,7 +446,7 @@ void Map::undo() {
         if (commit->layoutWidth != this->getWidth() || commit->layoutHeight != this->getHeight())
         {
             this->setDimensions(commit->layoutWidth, commit->layoutHeight, false);
-            emit mapNeedsRedrawing(this);
+            emit mapNeedsRedrawing();
         }
 
         emit mapChanged(this);
@@ -532,7 +463,7 @@ void Map::redo() {
         if (commit->layoutWidth != this->getWidth() || commit->layoutHeight != this->getHeight())
         {
             this->setDimensions(commit->layoutWidth, commit->layoutHeight, false);
-            emit mapNeedsRedrawing(this);
+            emit mapNeedsRedrawing();
         }
 
         emit mapChanged(this);
@@ -562,22 +493,7 @@ void Map::setBlock(int x, int y, Block block) {
     }
 }
 
-void Map::floodFillCollision(int x, int y, uint collision) {
-    Block *block = getBlock(x, y);
-    if (block && block->collision != collision) {
-        _floodFillCollision(x, y, collision);
-        commit();
-    }
-}
-
-void Map::floodFillElevation(int x, int y, uint elevation) {
-    Block *block = getBlock(x, y);
-    if (block && block->elevation != elevation) {
-        _floodFillElevation(x, y, elevation);
-        commit();
-    }
-}
-void Map::floodFillCollisionElevation(int x, int y, uint collision, uint elevation) {
+void Map::floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation) {
     Block *block = getBlock(x, y);
     if (block && (block->collision != collision || block->elevation != elevation)) {
         _floodFillCollisionElevation(x, y, collision, elevation);
@@ -620,7 +536,7 @@ void Map::clearHoveredTile() {
 }
 
 void Map::hoveredMetatileChanged(int blockIndex) {
-    int tile = getSelectedBlockIndex(blockIndex);
+    uint16_t tile = getSelectedBlockIndex(blockIndex);
     emit statusBarMessage(QString("Metatile: 0x%1")
                           .arg(QString("%1").arg(tile, 3, 16, QChar('0')).toUpper()));
 }
@@ -655,7 +571,7 @@ void Map::setSelectedMetatilesFromTilePicker() {
     this->selected_metatiles->clear();
     for (int j = 0; j < this->paint_tile_height; j++) {
         for (int i = 0; i < this->paint_tile_width; i++) {
-            int metatile = this->getSelectedBlockIndex(this->paint_tile_index + i + (j * 8));
+            uint16_t metatile = this->getSelectedBlockIndex(this->paint_tile_index + i + (j * 8));
             this->selected_metatiles->append(metatile);
         }
     }

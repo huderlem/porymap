@@ -14,12 +14,15 @@
 class HistoryItem {
 public:
     Blockdata *metatiles;
-    short layoutWidth;
-    short layoutHeight;
-    HistoryItem(Blockdata *metatiles_, short layoutWidth_, short layoutHeight_) {
+    int layoutWidth;
+    int layoutHeight;
+    HistoryItem(Blockdata *metatiles_, int layoutWidth_, int layoutHeight_) {
         this->metatiles = metatiles_;
         this->layoutWidth = layoutWidth_;
         this->layoutHeight = layoutHeight_;
+    }
+    ~HistoryItem() {
+        if (metatiles) delete metatiles;
     }
 };
 
@@ -43,7 +46,9 @@ public:
     }
     void push(T commit) {
         while (head + 1 < history.length()) {
+            HistoryItem *item = history.last();
             history.removeLast();
+            delete item;
         }
         if (saved > head) {
             saved = -1;
@@ -94,15 +99,15 @@ public:
     QString blockdata_path;
     QString tileset_primary_label;
     QString tileset_secondary_label;
-    Tileset *tileset_primary = NULL;
-    Tileset *tileset_secondary = NULL;
-    Blockdata* blockdata = NULL;
+    Tileset *tileset_primary = nullptr;
+    Tileset *tileset_secondary = nullptr;
+    Blockdata* blockdata = nullptr;
     QImage border_image;
     QPixmap border_pixmap;
-    Blockdata *border = NULL;
-    Blockdata *cached_blockdata = NULL;
-    Blockdata *cached_collision = NULL;
-    Blockdata *cached_border = NULL;
+    Blockdata *border = nullptr;
+    Blockdata *cached_blockdata = nullptr;
+    Blockdata *cached_collision = nullptr;
+    Blockdata *cached_border = nullptr;
     bool has_unsaved_changes = false;
 public:
     static QString getNameFromLabel(QString label) {
@@ -115,7 +120,7 @@ class Map : public QObject
 {
     Q_OBJECT
 public:
-    explicit Map(QObject *parent = 0);
+    explicit Map(QObject *parent = nullptr);
 
 public:
     QString name;
@@ -150,7 +155,7 @@ public:
     static QString bgEventsLabelFromName(QString mapName);
     int getWidth();
     int getHeight();
-    int getSelectedBlockIndex(int);
+    uint16_t getSelectedBlockIndex(int);
     int getDisplayedBlockIndex(int);
     QPixmap render(bool ignoreCache);
     QPixmap renderMetatiles();
@@ -180,20 +185,16 @@ public:
     int paint_tile_initial_y;
     int selected_metatiles_width;
     int selected_metatiles_height;
-    QList<int> *selected_metatiles = NULL;
-    int paint_collision;
-    int paint_elevation;
+    QList<uint16_t> *selected_metatiles = nullptr;
+    uint16_t paint_collision;
+    uint16_t paint_elevation;
 
     Block *getBlock(int x, int y);
     void setBlock(int x, int y, Block block);
     void _setBlock(int x, int y, Block block);
 
-    void floodFillCollision(int x, int y, uint collision);
-    void _floodFillCollision(int x, int y, uint collision);
-    void floodFillElevation(int x, int y, uint elevation);
-    void _floodFillElevation(int x, int y, uint elevation);
-    void floodFillCollisionElevation(int x, int y, uint collision, uint elevation);
-    void _floodFillCollisionElevation(int x, int y, uint collision, uint elevation);
+    void floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
+    void _floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
 
     History<HistoryItem*> history;
     void undo();
@@ -223,10 +224,10 @@ public:
     void setSelectedMetatilesFromTilePicker();
 
 signals:
-    void paintTileChanged(Map *map);
+    void paintTileChanged();
     void paintCollisionChanged(Map *map);
     void mapChanged(Map *map);
-    void mapNeedsRedrawing(Map *map);
+    void mapNeedsRedrawing();
     void statusBarMessage(QString);
 
 public slots:

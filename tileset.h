@@ -21,9 +21,9 @@ public:
     QString callback_label;
     QString metatile_attrs_label;
 
-    QList<QImage> *tiles = NULL;
-    QList<Metatile*> *metatiles = NULL;
-    QList<QList<QRgb>> *palettes = NULL;
+    QList<QImage> *tiles = nullptr;
+    QList<Metatile*> *metatiles = nullptr;
+    QList<QList<QRgb>> *palettes = nullptr;
 };
 
 class Metatile
@@ -31,7 +31,7 @@ class Metatile
 public:
     Metatile();
 public:
-    QList<Tile> *tiles = NULL;
+    QList<Tile> *tiles = nullptr;
     int attr;
 
     static QImage getMetatileImage(int, Tileset*, Tileset*);

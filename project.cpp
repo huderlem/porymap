@@ -267,7 +267,6 @@ void Project::updateMapsWithConnections(Map *map) {
 }
 
 void Project::readMapLayoutsTable() {
-    int curIndex = 1;
     QString layoutsText = readTextFile(getMapLayoutsTableFilepath());
     QList<QStringList>* values = parseAsm(layoutsText);
     bool inLayoutPointers = false;
@@ -311,7 +310,7 @@ QStringList* Project::readLayoutValues(QString layoutLabel) {
 
     QString layoutText = readTextFile(getMapLayoutFilepath(layoutLabel));
     if (layoutText.isNull()) {
-        return NULL;
+        return nullptr;
     }
 
     QStringList *layoutValues = getLabelValues(parser->parseAsm(layoutText), layoutLabel);
@@ -326,7 +325,7 @@ QStringList* Project::readLayoutValues(QString layoutLabel) {
 
     if (layoutValues->size() != 8) {
         qDebug() << "Error: Unexpected number of properties in layout '" << layoutLabel << "'";
-        return NULL;
+        return nullptr;
     }
 
     return layoutValues;
@@ -340,7 +339,7 @@ void Project::readMapLayout(Map* map) {
     MapLayout *layout;
     if (!mapLayouts.contains(map->layout_label)) {
         QStringList *layoutValues = readLayoutValues(map->layout->label);
-        if (layoutValues == NULL) {
+        if (!layoutValues) {
             return;
         }
 
@@ -372,7 +371,7 @@ void Project::readAllMapLayouts() {
     for (int i = 0; i < mapLayoutsTable.size(); i++) {
         QString layoutLabel = mapLayoutsTable[i];
         QStringList *layoutValues = readLayoutValues(layoutLabel);
-        if (layoutValues == NULL) {
+        if (!layoutValues) {
             return;
         }
 
@@ -885,7 +884,7 @@ Blockdata* Project::readBlockdata(QString path) {
     if (file.open(QIODevice::ReadOnly)) {
         QByteArray data = file.readAll();
         for (int i = 0; (i + 1) < data.length(); i += 2) {
-            uint16_t word = (data[i] & 0xff) + ((data[i + 1] & 0xff) << 8);
+            uint16_t word = static_cast<uint16_t>((data[i] & 0xff) + ((data[i + 1] & 0xff) << 8));
             blockdata->addBlock(word);
         }
     } else {

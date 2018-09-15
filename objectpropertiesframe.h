@@ -12,7 +12,7 @@ class ObjectPropertiesFrame : public QFrame
     Q_OBJECT
 
 public:
-    explicit ObjectPropertiesFrame(QWidget *parent = 0);
+    explicit ObjectPropertiesFrame(QWidget *parent = nullptr);
     ~ObjectPropertiesFrame();
 
 public:

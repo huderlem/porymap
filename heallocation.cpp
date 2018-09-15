@@ -1,19 +1,15 @@
 #include "heallocation.h"
 
-//HealLocation::HealLocation() {}
-
-HealLocation::HealLocation(QString map, int i, size_t x0, size_t y0) {
-
-    name  = map;
-    index = i;
-    x     = x0;
-    y     = y0;
-
+HealLocation::HealLocation(QString map, int i, uint16_t x, uint16_t y)
+{
+    this->name = map;
+    this->index = i;
+    this->x = x;
+    this->y = y;
 }
 
-QDebug operator<<(QDebug debug, const HealLocation &hl) {
-
+QDebug operator<<(QDebug debug, const HealLocation &hl)
+{
     debug << "HealLocation_" + hl.name << "(" << hl.x << ',' << hl.y << ")";
     return debug;
-    
 }

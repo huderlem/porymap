@@ -22,5 +22,6 @@
         <file>icons/pipette_cursor.ico</file>
         <file>icons/shift.ico</file>
         <file>icons/shift_cursor.ico</file>
+        <file>icons/porymap-icon-1.ico</file>
     </qresource>
 </RCC>

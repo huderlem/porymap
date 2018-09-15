@@ -8,15 +8,15 @@ class HealLocation {
 
 public:
     HealLocation()=default;
-    HealLocation(QString, int, size_t, size_t);
+    HealLocation(QString, int, uint16_t, uint16_t);
     friend QDebug operator<<(QDebug debug, const HealLocation &hl);
 
 public:
     //QString group;
     QString name;
     int     index;
-    size_t  x;
-    size_t  y;
+    uint16_t  x;
+    uint16_t  y;
 
 };
 
