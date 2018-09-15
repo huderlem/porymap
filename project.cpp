@@ -1010,6 +1010,10 @@ void Project::readMapGroups() {
         }
     }
 
+    mapConstantsToMapNames->insert(NONE_MAP_CONSTANT, NONE_MAP_NAME);
+    mapNamesToMapConstants->insert(NONE_MAP_NAME, NONE_MAP_CONSTANT);
+    maps->append(NONE_MAP_NAME);
+
     groupNames = groups;
     groupedMapNames = groupedMaps;
     mapNames = maps;
@@ -1470,6 +1474,11 @@ void Project::readMapEvents(Map *map) {
             QString mapConstant = command.value(i++);
             if (mapConstantsToMapNames->contains(mapConstant)) {
                 warp->put("destination_map_name", mapConstantsToMapNames->value(mapConstant));
+                warp->put("event_group_type", "warp_event_group");
+                warp->put("event_type", EventType::Warp);
+                map->events["warp_event_group"].append(warp);
+            } else if (mapConstant == NONE_MAP_CONSTANT) {
+                warp->put("destination_map_name", NONE_MAP_NAME);
                 warp->put("event_group_type", "warp_event_group");
                 warp->put("event_type", EventType::Warp);
                 map->events["warp_event_group"].append(warp);
