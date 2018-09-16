@@ -864,7 +864,7 @@ void Project::loadTilesetAssets(Tileset* tileset) {
                 int green = (word >> 5) & 0x1f;
                 int blue = (word >> 10) & 0x1f;
                 QRgb color = qRgb(red * 8, green * 8, blue * 8);
-                palette.prepend(color);
+                palette.append(color);
             }
         } else {
             for (int j = 0; j < 16; j++) {

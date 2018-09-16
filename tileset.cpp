@@ -55,9 +55,9 @@ QImage Metatile::getMetatileImage(int tile, Tileset *primaryTileset, Tileset *se
 
         // The top layer of the metatile has its last color displayed at transparent.
         if (layer > 0) {
-            QColor color(tile_image.color(15));
+            QColor color(tile_image.color(0));
             color.setAlpha(0);
-            tile_image.setColor(15, color.rgba());
+            tile_image.setColor(0, color.rgba());
         }
 
         QPoint origin = QPoint(x*8, y*8);
