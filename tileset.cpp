@@ -53,7 +53,7 @@ QImage Metatile::getMetatileImage(int tile, Tileset *primaryTileset, Tileset *se
             qDebug() << "Tile is referring to invalid palette number: " << tile_.palette;
         }
 
-        // The top layer of the metatile has its last color displayed at transparent.
+        // The top layer of the metatile has its first color displayed at transparent.
         if (layer > 0) {
             QColor color(tile_image.color(0));
             color.setAlpha(0);
