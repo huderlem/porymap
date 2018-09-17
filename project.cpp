@@ -835,7 +835,13 @@ void Project::loadTilesetAssets(Tileset* tileset) {
     //qDebug() << metatile_attrs_path;
     if (attrs_file.open(QIODevice::ReadOnly)) {
         QByteArray data = attrs_file.readAll();
-        int num_metatiles = data.length() / 2;
+        int num_metatiles = tileset->metatiles->count();
+        int num_metatileAttrs = data.length() / 2;
+        if (num_metatiles != num_metatileAttrs) {
+            qDebug() << QString("Metatile count %1 does not match metatile attribute count %2").arg(num_metatiles).arg(num_metatileAttrs);
+            if (num_metatiles > num_metatileAttrs)
+                num_metatiles = num_metatileAttrs;
+        }
         for (int i = 0; i < num_metatiles; i++) {
             uint16_t word = data[i*2] & 0xff;
             word += (data[i*2 + 1] & 0xff) << 8;
@@ -1092,7 +1098,7 @@ QMap<QString, QStringList> Project::getTilesets() {
             // Advance to command specifying whether or not it is a secondary tileset
             i += 2;
             if (commands->at(i).at(0) != ".byte") {
-                qDebug() << "Unexpected command found for secondary tileset flag. Expected '.byte', but found: " << commands->at(i).at(0);
+                qDebug() << "Unexpected command found for secondary tileset flag in tileset" << tilesetLabel << ". Expected '.byte', but found: " << commands->at(i).at(0);
                 continue;
             }
 
