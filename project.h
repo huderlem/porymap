@@ -88,6 +88,7 @@ public:
     QStringList getSongNames();
     QStringList getVisibilities();
     QMap<QString, QStringList> getTilesets();
+    void readTilesetProperties();
     void readRegionMapSections();
     void readItemNames();
     void readFlagNames();

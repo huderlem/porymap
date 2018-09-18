@@ -1121,6 +1121,70 @@ QMap<QString, QStringList> Project::getTilesets() {
     return allTilesets;
 }
 
+void Project::readTilesetProperties() {
+    QStringList defines;
+    QString text = readTextFile(root + "/include/fieldmap.h");
+    if (!text.isNull()) {
+        bool error = false;
+        QStringList definePrefixes;
+        definePrefixes << "NUM_";
+        QMap<QString, int> defines = readCDefines(text, definePrefixes);
+        auto it = defines.find("NUM_TILES_IN_PRIMARY");
+        if (it != defines.end()) {
+            Tileset::num_tiles_primary = it.value();
+        }
+        else {
+            Tileset::num_tiles_primary = 512;
+            error = true;
+        }
+        it = defines.find("NUM_TILES_TOTAL");
+        if (it != defines.end()) {
+            Tileset::num_tiles_total = it.value();
+        }
+        else {
+            Tileset::num_tiles_total = 1024;
+            error = true;
+        }
+        it = defines.find("NUM_METATILES_IN_PRIMARY");
+        if (it != defines.end()) {
+            Tileset::num_metatiles_primary = it.value();
+        }
+        else {
+            Tileset::num_metatiles_primary = 512;
+            error = true;
+        }
+        it = defines.find("NUM_METATILES_TOTAL");
+        if (it != defines.end()) {
+            Tileset::num_metatiles_total = it.value();
+        }
+        else {
+            Tileset::num_metatiles_total = 1024;
+            error = true;
+        }
+        it = defines.find("NUM_PALS_IN_PRIMARY");
+        if (it != defines.end()) {
+            Tileset::num_pals_primary = it.value();
+        }
+        else {
+            Tileset::num_pals_primary = 6;
+            error = true;
+        }
+        it = defines.find("NUM_PALS_TOTAL");
+        if (it != defines.end()) {
+            Tileset::num_pals_total = it.value();
+        }
+        else {
+            Tileset::num_pals_total = 13;
+            error = true;
+        }
+
+        if (error)
+        {
+            qDebug() << "Some global tileset values could not be loaded. Using default values";
+        }
+    }
+}
+
 void Project::readRegionMapSections() {
     QString filepath = root + "/include/constants/region_map_sections.h";
     QStringList prefixes = (QStringList() << "MAPSEC_");

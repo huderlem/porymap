@@ -9,6 +9,13 @@ Tileset::Tileset()
 
 }
 
+int Tileset::num_tiles_primary;
+int Tileset::num_tiles_total;
+int Tileset::num_metatiles_primary;
+int Tileset::num_metatiles_total;
+int Tileset::num_pals_primary;
+int Tileset::num_pals_total;
+
 Metatile::Metatile()
 {
     tiles = new QList<Tile>;
@@ -88,8 +95,7 @@ QImage Metatile::getMetatileTile(int tile, Tileset *primaryTileset, Tileset *sec
 }
 
 Tileset* Metatile::getBlockTileset(int metatile_index, Tileset *primaryTileset, Tileset *secondaryTileset) {
-    int primary_size = 0x200;
-    if (metatile_index < primary_size) {
+    if (metatile_index < Tileset::num_metatiles_primary) {
         return primaryTileset;
     } else {
         return secondaryTileset;
@@ -97,24 +103,19 @@ Tileset* Metatile::getBlockTileset(int metatile_index, Tileset *primaryTileset, 
 }
 
 int Metatile::getBlockIndex(int index) {
-    int primary_size = 0x200;
-    if (index < primary_size) {
+    if (index < Tileset::num_metatiles_primary) {
         return index;
     } else {
-        return index - primary_size;
+        return index - Tileset::num_metatiles_primary;
     }
 }
 
 QList<QList<QRgb>> Metatile::getBlockPalettes(Tileset *primaryTileset, Tileset *secondaryTileset) {
     QList<QList<QRgb>> palettes;
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < Tileset::num_pals_primary; i++) {
         palettes.append(primaryTileset->palettes->at(i));
     }
-
-    // TODO: Find a reliable way to detect Ruby vs. Emerald
-    // Ruby's secondary tilesets only use palettes 6-11, whereas
-    // Emerald uses 6-12.
-    for (int i = 6; i < 13; i++) {
+    for (int i = Tileset::num_pals_primary; i < Tileset::num_pals_total; i++) {
         palettes.append(secondaryTileset->palettes->at(i));
     }
     return palettes;

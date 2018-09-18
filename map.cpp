@@ -68,7 +68,7 @@ uint16_t Map::getSelectedBlockIndex(int index) {
     if (index < layout->tileset_primary->metatiles->length()) {
         return static_cast<uint16_t>(index);
     } else {
-        return 0x200 + static_cast<uint16_t>(index - layout->tileset_primary->metatiles->length());
+        return static_cast<uint16_t>(Tileset::num_metatiles_primary + index - layout->tileset_primary->metatiles->length());
     }
 }
 
@@ -76,7 +76,7 @@ int Map::getDisplayedBlockIndex(int index) {
     if (index < layout->tileset_primary->metatiles->length()) {
         return index;
     } else {
-        return index - 0x200 + layout->tileset_primary->metatiles->length();
+        return index - Tileset::num_metatiles_primary + layout->tileset_primary->metatiles->length();
     }
 }
 
@@ -337,7 +337,7 @@ QPixmap Map::renderMetatiles() {
     for (int i = 0; i < length_; i++) {
         int tile = i;
         if (i >= primary_length) {
-            tile += 0x200 - primary_length;
+            tile += Tileset::num_metatiles_primary - primary_length;
         }
         QImage metatile_image = Metatile::getMetatileImage(tile, layout->tileset_primary, layout->tileset_secondary);
         int map_y = i / width_;
