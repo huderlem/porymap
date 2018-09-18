@@ -9,6 +9,9 @@
 #include <QList>
 #include <QStandardItem>
 
+static QString NONE_MAP_CONSTANT = "MAP_NONE";
+static QString NONE_MAP_NAME = "None";
+
 class Project
 {
 public:

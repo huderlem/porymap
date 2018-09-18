@@ -835,7 +835,13 @@ void Project::loadTilesetAssets(Tileset* tileset) {
     //qDebug() << metatile_attrs_path;
     if (attrs_file.open(QIODevice::ReadOnly)) {
         QByteArray data = attrs_file.readAll();
-        int num_metatiles = data.length() / 2;
+        int num_metatiles = tileset->metatiles->count();
+        int num_metatileAttrs = data.length() / 2;
+        if (num_metatiles != num_metatileAttrs) {
+            qDebug() << QString("Metatile count %1 does not match metatile attribute count %2").arg(num_metatiles).arg(num_metatileAttrs);
+            if (num_metatiles > num_metatileAttrs)
+                num_metatiles = num_metatileAttrs;
+        }
         for (int i = 0; i < num_metatiles; i++) {
             uint16_t word = data[i*2] & 0xff;
             word += (data[i*2 + 1] & 0xff) << 8;
@@ -864,7 +870,7 @@ void Project::loadTilesetAssets(Tileset* tileset) {
                 int green = (word >> 5) & 0x1f;
                 int blue = (word >> 10) & 0x1f;
                 QRgb color = qRgb(red * 8, green * 8, blue * 8);
-                palette.prepend(color);
+                palette.append(color);
             }
         } else {
             for (int j = 0; j < 16; j++) {
@@ -1010,6 +1016,10 @@ void Project::readMapGroups() {
         }
     }
 
+    mapConstantsToMapNames->insert(NONE_MAP_CONSTANT, NONE_MAP_NAME);
+    mapNamesToMapConstants->insert(NONE_MAP_NAME, NONE_MAP_CONSTANT);
+    maps->append(NONE_MAP_NAME);
+
     groupNames = groups;
     groupedMapNames = groupedMaps;
     mapNames = maps;
@@ -1088,7 +1098,7 @@ QMap<QString, QStringList> Project::getTilesets() {
             // Advance to command specifying whether or not it is a secondary tileset
             i += 2;
             if (commands->at(i).at(0) != ".byte") {
-                qDebug() << "Unexpected command found for secondary tileset flag. Expected '.byte', but found: " << commands->at(i).at(0);
+                qDebug() << "Unexpected command found for secondary tileset flag in tileset" << tilesetLabel << ". Expected '.byte', but found: " << commands->at(i).at(0);
                 continue;
             }
 
@@ -1470,6 +1480,11 @@ void Project::readMapEvents(Map *map) {
             QString mapConstant = command.value(i++);
             if (mapConstantsToMapNames->contains(mapConstant)) {
                 warp->put("destination_map_name", mapConstantsToMapNames->value(mapConstant));
+                warp->put("event_group_type", "warp_event_group");
+                warp->put("event_type", EventType::Warp);
+                map->events["warp_event_group"].append(warp);
+            } else if (mapConstant == NONE_MAP_CONSTANT) {
+                warp->put("destination_map_name", NONE_MAP_NAME);
                 warp->put("event_group_type", "warp_event_group");
                 warp->put("event_type", EventType::Warp);
                 map->events["warp_event_group"].append(warp);

@@ -1700,7 +1700,10 @@ void DraggablePixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *) {
 
 void DraggablePixmapItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *) {
     if (this->event->get("event_type") == EventType::Warp) {
-        emit editor->warpEventDoubleClicked(this->event->get("destination_map_name"), this->event->get("destination_warp"));
+        QString destMap = this->event->get("destination_map_name");
+        if (destMap != NONE_MAP_NAME) {
+            emit editor->warpEventDoubleClicked(this->event->get("destination_map_name"), this->event->get("destination_warp"));
+        }
     }
 }
 
