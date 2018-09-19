@@ -157,6 +157,11 @@ void MainWindow::on_action_Open_Project_triggered()
 }
 
 void MainWindow::setMap(QString map_name) {
+    // if clicking on map group, open first map in group
+    if (map_name.startsWith("gMapGroup")) {
+        int groupNum = map_name.remove("gMapGroup").toInt();
+        map_name = editor->project->groupedMapNames[groupNum][0];
+    }
     qDebug() << QString("setMap(%1)").arg(map_name);
     if (map_name.isNull()) {
         return;
@@ -437,6 +442,7 @@ void MainWindow::populateMapList() {
     ui->mapList->setUpdatesEnabled(true);
     ui->mapList->expandToDepth(2);
     ui->mapList->repaint();
+    ui->mapList->setExpandsOnDoubleClick(false);
 }
 
 QStandardItem* MainWindow::createMapItem(QString mapName, int groupNum, int inGroupNum) {
