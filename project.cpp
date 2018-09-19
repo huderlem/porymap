@@ -12,6 +12,13 @@
 #include <QMessageBox>
 #include <QRegularExpression>
 
+int Project::num_tiles_primary = 512;
+int Project::num_tiles_total = 1024;
+int Project::num_metatiles_primary = 512;
+int Project::num_metatiles_total = 1024;
+int Project::num_pals_primary = 6;
+int Project::num_pals_total = 13;
+
 Project::Project()
 {
     groupNames = new QStringList;
@@ -1131,50 +1138,44 @@ void Project::readTilesetProperties() {
         QMap<QString, int> defines = readCDefines(text, definePrefixes);
         auto it = defines.find("NUM_TILES_IN_PRIMARY");
         if (it != defines.end()) {
-            Tileset::num_tiles_primary = it.value();
+            Project::num_tiles_primary = it.value();
         }
         else {
-            Tileset::num_tiles_primary = 512;
             error = true;
         }
         it = defines.find("NUM_TILES_TOTAL");
         if (it != defines.end()) {
-            Tileset::num_tiles_total = it.value();
+            Project::num_tiles_total = it.value();
         }
         else {
-            Tileset::num_tiles_total = 1024;
             error = true;
         }
         it = defines.find("NUM_METATILES_IN_PRIMARY");
         if (it != defines.end()) {
-            Tileset::num_metatiles_primary = it.value();
+            Project::num_metatiles_primary = it.value();
         }
         else {
-            Tileset::num_metatiles_primary = 512;
             error = true;
         }
         it = defines.find("NUM_METATILES_TOTAL");
         if (it != defines.end()) {
-            Tileset::num_metatiles_total = it.value();
+            Project::num_metatiles_total = it.value();
         }
         else {
-            Tileset::num_metatiles_total = 1024;
             error = true;
         }
         it = defines.find("NUM_PALS_IN_PRIMARY");
         if (it != defines.end()) {
-            Tileset::num_pals_primary = it.value();
+            Project::num_pals_primary = it.value();
         }
         else {
-            Tileset::num_pals_primary = 6;
             error = true;
         }
         it = defines.find("NUM_PALS_TOTAL");
         if (it != defines.end()) {
-            Tileset::num_pals_total = it.value();
+            Project::num_pals_total = it.value();
         }
         else {
-            Tileset::num_pals_total = 13;
             error = true;
         }
 
@@ -1729,4 +1730,34 @@ QMap<QString, int> Project::readCDefines(QString text, QStringList prefixes) {
         }
     }
     return filteredDefines;
+}
+
+int Project::getNumTilesPrimary()
+{
+    return Project::num_tiles_primary;
+}
+
+int Project::getNumTilesTotal()
+{
+    return Project::num_tiles_total;
+}
+
+int Project::getNumMetatilesPrimary()
+{
+    return Project::num_metatiles_primary;
+}
+
+int Project::getNumMetatilesTotal()
+{
+    return Project::num_metatiles_total;
+}
+
+int Project::getNumPalettesPrimary()
+{
+    return Project::num_pals_primary;
+}
+
+int Project::getNumPalettesTotal()
+{
+    return Project::num_pals_total;
 }

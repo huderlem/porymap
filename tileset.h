@@ -24,13 +24,6 @@ public:
     QList<QImage> *tiles = nullptr;
     QList<Metatile*> *metatiles = nullptr;
     QList<QList<QRgb>> *palettes = nullptr;
-
-    static int num_tiles_primary;
-    static int num_tiles_total;
-    static int num_metatiles_primary;
-    static int num_metatiles_total;
-    static int num_pals_primary;
-    static int num_pals_total;
 };
 
 class Metatile

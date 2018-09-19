@@ -1,4 +1,5 @@
 #include "tileset.h"
+#include "project.h"
 
 #include <QPainter>
 #include <QImage>
@@ -8,13 +9,6 @@ Tileset::Tileset()
 {
 
 }
-
-int Tileset::num_tiles_primary;
-int Tileset::num_tiles_total;
-int Tileset::num_metatiles_primary;
-int Tileset::num_metatiles_total;
-int Tileset::num_pals_primary;
-int Tileset::num_pals_total;
 
 Metatile::Metatile()
 {
@@ -95,7 +89,7 @@ QImage Metatile::getMetatileTile(int tile, Tileset *primaryTileset, Tileset *sec
 }
 
 Tileset* Metatile::getBlockTileset(int metatile_index, Tileset *primaryTileset, Tileset *secondaryTileset) {
-    if (metatile_index < Tileset::num_metatiles_primary) {
+    if (metatile_index < Project::getNumMetatilesPrimary()) {
         return primaryTileset;
     } else {
         return secondaryTileset;
@@ -103,19 +97,19 @@ Tileset* Metatile::getBlockTileset(int metatile_index, Tileset *primaryTileset, 
 }
 
 int Metatile::getBlockIndex(int index) {
-    if (index < Tileset::num_metatiles_primary) {
+    if (index < Project::getNumMetatilesPrimary()) {
         return index;
     } else {
-        return index - Tileset::num_metatiles_primary;
+        return index - Project::getNumMetatilesPrimary();
     }
 }
 
 QList<QList<QRgb>> Metatile::getBlockPalettes(Tileset *primaryTileset, Tileset *secondaryTileset) {
     QList<QList<QRgb>> palettes;
-    for (int i = 0; i < Tileset::num_pals_primary; i++) {
+    for (int i = 0; i < Project::getNumPalettesPrimary(); i++) {
         palettes.append(primaryTileset->palettes->at(i));
     }
-    for (int i = Tileset::num_pals_primary; i < Tileset::num_pals_total; i++) {
+    for (int i = Project::getNumPalettesPrimary(); i < Project::getNumPalettesTotal(); i++) {
         palettes.append(secondaryTileset->palettes->at(i));
     }
     return palettes;
