@@ -54,8 +54,15 @@ MainWindow::MainWindow(QWidget *parent) :
     if (settings.contains(key)) {
         QString default_dir = settings.value(key).toStringList().last();
         if (!default_dir.isNull()) {
-            qDebug() << QString("default_dir: '%1'").arg(default_dir);
-            openProject(default_dir);
+            QDir dir(default_dir);
+            if (dir.exists()) {
+                qDebug() << QString("default_dir: '%1'").arg(default_dir);
+                openProject(default_dir);
+            }
+            else {
+                qDebug() << "No project found at" << default_dir;
+                closeProject();
+            }
         }
     }
 
@@ -99,6 +106,12 @@ void MainWindow::openProject(QString dir) {
     }
 
     setStatusBarMessage(QString("Opened project %1").arg(dir));
+}
+
+void MainWindow::closeProject() {
+    QSettings settings;
+    settings.remove("recent_projects");
+    //ui->setupUi(this);
 }
 
 QString MainWindow::getDefaultMap() {
@@ -154,6 +167,12 @@ void MainWindow::on_action_Open_Project_triggered()
 
         openProject(dir);
     }
+}
+
+void MainWindow::on_action_Close_Project_triggered()
+{
+    closeProject();
+    QApplication::quit();
 }
 
 void MainWindow::setMap(QString map_name) {
@@ -677,7 +696,7 @@ void MainWindow::scaleMapView(int s) {
 
     auto newWidth = floor((editor->scene->width() + 8) * pow(base,exp) + 2);
     auto newHeight = floor((editor->scene->height() + 8) * pow(base,exp) + 2);
-    
+
     ui->graphicsView_Map->setFixedSize(newWidth, newHeight);
     ui->graphicsView_Objects_Map->setFixedSize(newWidth, newHeight);
 }
