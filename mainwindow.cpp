@@ -680,6 +680,36 @@ void MainWindow::on_actionMap_Shift_triggered()
     on_toolButton_Shift_clicked();
 }
 
+void MainWindow::wheelEvent(QWheelEvent *event) {
+    const int THRESHOLD = 16;
+
+    QPoint moved = event->pixelDelta();
+
+    if (event->modifiers() & Qt::ControlModifier) {
+
+        ui->scrollArea->verticalScrollBar()->setEnabled(false);
+        ui->scrollArea->horizontalScrollBar()->setEnabled(false);
+
+        if (moved.y() >= THRESHOLD) {
+            scaleMapView(1);
+            event->accept();
+        }
+        else if (moved.y() <= -THRESHOLD) {
+            scaleMapView(-1);
+            event->accept();
+        }
+
+    }
+}
+
+void MainWindow::keyReleaseEvent(QKeyEvent *event) {
+    // when CTRL key is released after wheelEvent zooming, re-enable scrollbars
+    if(event->key() == Qt::Key_Control) {
+        ui->scrollArea->verticalScrollBar()->setEnabled(true);
+        ui->scrollArea->horizontalScrollBar()->setEnabled(true);
+    }
+}
+
 void MainWindow::scaleMapView(int s) {
     if (s == 0) { // reset to default scale then scale again
         int scaleTo = editor->project->scale_exp;
@@ -709,7 +739,7 @@ void MainWindow::scaleMapView(int s) {
 
 void MainWindow::resetMapScale(int mag)
 {
-    // safest way to un-scale map
+    // easiest way to un-scale map
     if (mag > 0) {
         for (int i = 0; i < mag; i++) {
             scaleMapView(-1);

@@ -9,6 +9,8 @@
 #include <QGraphicsItemGroup>
 #include <QGraphicsSceneMouseEvent>
 #include <QAbstractItemModel>
+#include <QWheelEvent>
+#include <QKeyEvent>
 #include "project.h"
 #include "map.h"
 #include "editor.h"
@@ -24,6 +26,9 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+
+    virtual void wheelEvent(QWheelEvent *event);
+    virtual void keyReleaseEvent(QKeyEvent *event);
 
 public slots:
     void setStatusBarMessage(QString message, int timeout = 0);
