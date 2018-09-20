@@ -116,12 +116,16 @@ public:
     QString readCIncbin(QString text, QString label);
     QMap<QString, int> readCDefines(QString text, QStringList prefixes);
 
+    int scale_exp = 0;
+    double scale_base = sqrt(2); // adjust scale factor with this
+
     static int getNumTilesPrimary();
     static int getNumTilesTotal();
     static int getNumMetatilesPrimary();
     static int getNumMetatilesTotal();
     static int getNumPalettesPrimary();
     static int getNumPalettesTotal();
+
 private:
     QString getMapLayoutsTableFilepath();
     QString getMapLayoutFilepath(QString);

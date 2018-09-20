@@ -9,6 +9,8 @@
 #include <QGraphicsItemGroup>
 #include <QGraphicsSceneMouseEvent>
 #include <QAbstractItemModel>
+#include <QWheelEvent>
+#include <QKeyEvent>
 #include "project.h"
 #include "map.h"
 #include "editor.h"
@@ -25,11 +27,15 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    virtual void wheelEvent(QWheelEvent *event);
+    virtual void keyReleaseEvent(QKeyEvent *event);
+
 public slots:
     void setStatusBarMessage(QString message, int timeout = 0);
 
 private slots:
     void on_action_Open_Project_triggered();
+    void on_action_Close_Project_triggered();
     void on_mapList_activated(const QModelIndex &index);
     void on_action_Save_Project_triggered();
     void openWarpMap(QString map_name, QString warp_num);
@@ -125,6 +131,7 @@ private:
     Ui::MainWindow *ui;
     QStandardItemModel *mapListModel;
     QList<QStandardItem*> *mapGroupsModel;
+    QMap<QString, QModelIndex> mapListIndexes;
     Editor *editor = nullptr;
     QIcon* mapIcon;
     void setMap(QString);
@@ -133,6 +140,7 @@ private:
     void populateMapList();
     QString getExistingDirectory(QString);
     void openProject(QString dir);
+    void closeProject();
     QString getDefaultMap();
     void setRecentMap(QString map_name);
     QStandardItem* createMapItem(QString mapName, int groupNum, int inGroupNum);
@@ -145,6 +153,7 @@ private:
     void checkToolButtons();
 
     void scaleMapView(int);
+    void resetMapScale(int);
 };
 
 enum MapListUserRoles {

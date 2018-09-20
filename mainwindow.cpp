@@ -19,7 +19,7 @@
 #include <QMessageBox>
 #include <QDialogButtonBox>
 #include <QScroller>
-#include <math.h>
+#include <cmath>
 #include <QProcess>
 #include <QSysInfo>
 #include <QDesktopServices>
@@ -54,8 +54,15 @@ MainWindow::MainWindow(QWidget *parent) :
     if (settings.contains(key)) {
         QString default_dir = settings.value(key).toStringList().last();
         if (!default_dir.isNull()) {
-            qDebug() << QString("default_dir: '%1'").arg(default_dir);
-            openProject(default_dir);
+            QDir dir(default_dir);
+            if (dir.exists()) {
+                qDebug() << QString("default_dir: '%1'").arg(default_dir);
+                openProject(default_dir);
+            }
+            else {
+                qDebug() << "No project found at" << default_dir;
+                closeProject();
+            }
         }
     }
 
@@ -99,6 +106,12 @@ void MainWindow::openProject(QString dir) {
     }
 
     setStatusBarMessage(QString("Opened project %1").arg(dir));
+}
+
+void MainWindow::closeProject() {
+    QSettings settings;
+    settings.remove("recent_projects");
+    //ui->setupUi(this);
 }
 
 QString MainWindow::getDefaultMap() {
@@ -156,14 +169,29 @@ void MainWindow::on_action_Open_Project_triggered()
     }
 }
 
+void MainWindow::on_action_Close_Project_triggered()
+{
+    closeProject();
+    QApplication::quit();
+}
+
 void MainWindow::setMap(QString map_name) {
+    // if clicking on map group, open first map in group
+    if (map_name.startsWith("gMapGroup")) {
+        int groupNum = map_name.remove("gMapGroup").toInt();
+        map_name = editor->project->groupedMapNames[groupNum][0];
+    }
     qDebug() << QString("setMap(%1)").arg(map_name);
     if (map_name.isNull()) {
         return;
     }
     editor->setMap(map_name);
     redrawMapScene();
+    scaleMapView(0);
     displayMapProperties();
+
+    ui->mapList->scrollTo(mapListIndexes.value(map_name));
+    ui->mapList->setCurrentIndex(mapListIndexes.value(map_name));
 
     setWindowTitle(map_name + " - " + editor->project->getProjectTitle() + " - porymap");
 
@@ -426,6 +454,7 @@ void MainWindow::populateMapList() {
             QString map_name = names.value(j);
             QStandardItem *map = createMapItem(map_name, i, j);
             group->appendRow(map);
+            mapListIndexes.insert(map_name, map->index());
         }
     }
 
@@ -438,6 +467,7 @@ void MainWindow::populateMapList() {
     ui->mapList->setUpdatesEnabled(true);
     ui->mapList->expandToDepth(2);
     ui->mapList->repaint();
+    ui->mapList->setExpandsOnDoubleClick(false);
 }
 
 QStandardItem* MainWindow::createMapItem(QString mapName, int groupNum, int inGroupNum) {
@@ -488,6 +518,7 @@ void MainWindow::onAddNewMapToGroupClick(QAction* triggeredAction)
     int numMapsInGroup = groupItem->rowCount();
     QStandardItem *newMapItem = createMapItem(newMapName, groupNum, numMapsInGroup);
     groupItem->appendRow(newMapItem);
+    mapListIndexes.insert(newMapName, newMapItem->index());
 
     setMap(newMapName);
 }
@@ -649,20 +680,77 @@ void MainWindow::on_actionMap_Shift_triggered()
     on_toolButton_Shift_clicked();
 }
 
-void MainWindow::scaleMapView(int s) {
-    editor->map->scale_exp += s;
+void MainWindow::wheelEvent(QWheelEvent *event) {
+    const int THRESHOLD = 16;
 
-    double base = editor->map->scale_base;
-    double exp  = editor->map->scale_exp;
+    QPoint moved = event->pixelDelta();
+
+    if (event->modifiers() & Qt::ControlModifier) {
+
+        ui->scrollArea->verticalScrollBar()->setEnabled(false);
+        ui->scrollArea->horizontalScrollBar()->setEnabled(false);
+
+        if (moved.y() >= THRESHOLD) {
+            scaleMapView(1);
+            event->accept();
+        }
+        else if (moved.y() <= -THRESHOLD) {
+            scaleMapView(-1);
+            event->accept();
+        }
+
+    }
+}
+
+void MainWindow::keyReleaseEvent(QKeyEvent *event) {
+    // when CTRL key is released after wheelEvent zooming, re-enable scrollbars
+    if(event->key() == Qt::Key_Control) {
+        ui->scrollArea->verticalScrollBar()->setEnabled(true);
+        ui->scrollArea->horizontalScrollBar()->setEnabled(true);
+    }
+}
+
+void MainWindow::scaleMapView(int s) {
+    if (s == 0) { // reset to default scale then scale again
+        int scaleTo = editor->project->scale_exp;
+        if (scaleTo != 0) {
+            resetMapScale(scaleTo);
+            scaleMapView(scaleTo);
+        }
+        return;
+    }
+
+    editor->project->scale_exp += s;
+
+    double base = editor->project->scale_base;
+    double exp  = editor->project->scale_exp;
+
     double sfactor = pow(base,s);
 
     ui->graphicsView_Map->scale(sfactor,sfactor);
     ui->graphicsView_Objects_Map->scale(sfactor,sfactor);
 
-    int width = static_cast<int>((editor->scene->width() + 2) * pow(base,exp));
-    int height = static_cast<int>((editor->scene->height() + 2) * pow(base,exp));
-    ui->graphicsView_Map->setFixedSize(width, height);
-    ui->graphicsView_Objects_Map->setFixedSize(width, height);
+    auto newWidth = floor((editor->scene->width() + 8) * pow(base,exp) + 2);
+    auto newHeight = floor((editor->scene->height() + 8) * pow(base,exp) + 2);
+
+    ui->graphicsView_Map->setFixedSize(newWidth, newHeight);
+    ui->graphicsView_Objects_Map->setFixedSize(newWidth, newHeight);
+}
+
+void MainWindow::resetMapScale(int mag)
+{
+    // easiest way to un-scale map
+    if (mag > 0) {
+        for (int i = 0; i < mag; i++) {
+            scaleMapView(-1);
+        }
+    }
+    else {
+        mag = -mag;
+        for (int i = 0; i < mag; i++) {
+            scaleMapView(1);
+        }
+    }
 }
 
 void MainWindow::addNewEvent(QString event_type)
