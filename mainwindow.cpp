@@ -402,6 +402,7 @@ void MainWindow::loadDataStructures() {
     project->readSecretBaseIds();
     project->readBgEventFacingDirections();
     project->readMapsWithConnections();
+    project->readTilesetProperties();
 }
 
 void MainWindow::populateMapList() {

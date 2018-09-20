@@ -88,6 +88,7 @@ public:
     QStringList getSongNames();
     QStringList getVisibilities();
     QMap<QString, QStringList> getTilesets();
+    void readTilesetProperties();
     void readRegionMapSections();
     void readItemNames();
     void readFlagNames();
@@ -117,7 +118,14 @@ public:
 
     int scale_exp = 0;
     double scale_base = sqrt(2); // adjust scale factor with this
-    
+
+    static int getNumTilesPrimary();
+    static int getNumTilesTotal();
+    static int getNumMetatilesPrimary();
+    static int getNumMetatilesTotal();
+    static int getNumPalettesPrimary();
+    static int getNumPalettesTotal();
+
 private:
     QString getMapLayoutsTableFilepath();
     QString getMapLayoutFilepath(QString);
@@ -136,6 +144,13 @@ private:
     void setNewMapBorder(Map *map);
     void setNewMapEvents(Map *map);
     void setNewMapConnections(Map *map);
+
+    static int num_tiles_primary;
+    static int num_tiles_total;
+    static int num_metatiles_primary;
+    static int num_metatiles_total;
+    static int num_pals_primary;
+    static int num_pals_total;
 };
 
 #endif // PROJECT_H
