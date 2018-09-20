@@ -126,6 +126,7 @@ private:
     Ui::MainWindow *ui;
     QStandardItemModel *mapListModel;
     QList<QStandardItem*> *mapGroupsModel;
+    QMap<QString, QModelIndex> mapListIndexes;
     Editor *editor = nullptr;
     QIcon* mapIcon;
     void setMap(QString);

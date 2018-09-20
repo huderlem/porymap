@@ -190,6 +190,9 @@ void MainWindow::setMap(QString map_name) {
     scaleMapView(0);
     displayMapProperties();
 
+    ui->mapList->scrollTo(mapListIndexes.value(map_name));
+    ui->mapList->setCurrentIndex(mapListIndexes.value(map_name));
+
     setWindowTitle(map_name + " - " + editor->project->getProjectTitle() + " - porymap");
 
     connect(editor->map, SIGNAL(mapChanged(Map*)), this, SLOT(onMapChanged(Map *)));
@@ -451,6 +454,7 @@ void MainWindow::populateMapList() {
             QString map_name = names.value(j);
             QStandardItem *map = createMapItem(map_name, i, j);
             group->appendRow(map);
+            mapListIndexes.insert(map_name, map->index());
         }
     }
 
@@ -514,6 +518,7 @@ void MainWindow::onAddNewMapToGroupClick(QAction* triggeredAction)
     int numMapsInGroup = groupItem->rowCount();
     QStandardItem *newMapItem = createMapItem(newMapName, groupNum, numMapsInGroup);
     groupItem->appendRow(newMapItem);
+    mapListIndexes.insert(newMapName, newMapItem->index());
 
     setMap(newMapName);
 }
