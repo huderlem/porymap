@@ -145,6 +145,7 @@ private:
     void checkToolButtons();
 
     void scaleMapView(int);
+    void resetMapScale(int);
 };
 
 enum MapListUserRoles {

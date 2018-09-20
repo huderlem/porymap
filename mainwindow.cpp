@@ -19,7 +19,7 @@
 #include <QMessageBox>
 #include <QDialogButtonBox>
 #include <QScroller>
-#include <math.h>
+#include <cmath>
 #include <QProcess>
 #include <QSysInfo>
 #include <QDesktopServices>
@@ -168,6 +168,7 @@ void MainWindow::setMap(QString map_name) {
     }
     editor->setMap(map_name);
     redrawMapScene();
+    scaleMapView(0);
     displayMapProperties();
 
     setWindowTitle(map_name + " - " + editor->project->getProjectTitle() + " - porymap");
@@ -655,19 +656,46 @@ void MainWindow::on_actionMap_Shift_triggered()
 }
 
 void MainWindow::scaleMapView(int s) {
-    editor->map->scale_exp += s;
+    if (s == 0) { // reset to default scale then scale again
+        int scaleTo = editor->project->scale_exp;
+        if (scaleTo != 0) {
+            resetMapScale(scaleTo);
+            scaleMapView(scaleTo);
+        }
+        return;
+    }
 
-    double base = editor->map->scale_base;
-    double exp  = editor->map->scale_exp;
+    editor->project->scale_exp += s;
+
+    double base = editor->project->scale_base;
+    double exp  = editor->project->scale_exp;
+
     double sfactor = pow(base,s);
 
     ui->graphicsView_Map->scale(sfactor,sfactor);
     ui->graphicsView_Objects_Map->scale(sfactor,sfactor);
 
-    int width = static_cast<int>((editor->scene->width() + 2) * pow(base,exp));
-    int height = static_cast<int>((editor->scene->height() + 2) * pow(base,exp));
-    ui->graphicsView_Map->setFixedSize(width, height);
-    ui->graphicsView_Objects_Map->setFixedSize(width, height);
+    auto newWidth = floor((editor->scene->width() + 8) * pow(base,exp) + 2);
+    auto newHeight = floor((editor->scene->height() + 8) * pow(base,exp) + 2);
+    
+    ui->graphicsView_Map->setFixedSize(newWidth, newHeight);
+    ui->graphicsView_Objects_Map->setFixedSize(newWidth, newHeight);
+}
+
+void MainWindow::resetMapScale(int mag)
+{
+    // safest way to un-scale map
+    if (mag > 0) {
+        for (int i = 0; i < mag; i++) {
+            scaleMapView(-1);
+        }
+    }
+    else {
+        mag = -mag;
+        for (int i = 0; i < mag; i++) {
+            scaleMapView(1);
+        }
+    }
 }
 
 void MainWindow::addNewEvent(QString event_type)
