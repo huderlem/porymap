@@ -1,8 +1,8 @@
 #ifndef MAP_H
 #define MAP_H
 
-#include "tileset.h"
-#include "blockdata.h"
+#include "core/tileset.h"
+#include "core/blockdata.h"
 #include "event.h"
 
 #include <QPixmap>
@@ -165,7 +165,6 @@ public:
     QPixmap collision_pixmap;
     QImage getCollisionMetatileImage(Block);
     QImage getCollisionMetatileImage(int, int);
-    QPixmap renderCollisionMetatiles();
 
     void drawSelection(int i, int w, int selectionWidth, int selectionHeight, QPainter *painter, int gridWidth);
 
@@ -186,8 +185,6 @@ public:
     int selected_metatiles_width;
     int selected_metatiles_height;
     QList<uint16_t> *selected_metatiles = nullptr;
-    uint16_t paint_collision;
-    uint16_t paint_elevation;
 
     Block *getBlock(int x, int y);
     void setBlock(int x, int y, Block block);
@@ -219,7 +216,6 @@ public:
     void clearHoveredTile();
     void hoveredMetatileChanged(int block);
     void clearHoveredMetatile();
-    void hoveredMovementPermissionTileChanged(int collision, int elevation);
     void clearHoveredMovementPermissionTile();
     void setSelectedMetatilesFromTilePicker();
 
@@ -231,6 +227,7 @@ signals:
     void statusBarMessage(QString);
 
 public slots:
+    void hoveredMovementPermissionTileChanged(int collision, int elevation);
 };
 
 #endif // MAP_H

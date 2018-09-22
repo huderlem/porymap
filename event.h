@@ -1,7 +1,7 @@
 #ifndef EVENT_H
 #define EVENT_H
 
-#include "heallocation.h"
+#include "core/heallocation.h"
 #include <QString>
 #include <QPixmap>
 #include <QMap>

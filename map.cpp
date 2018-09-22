@@ -11,8 +11,6 @@
 Map::Map(QObject *parent) : QObject(parent)
 {
     paint_tile_index = 1;
-    paint_collision = 0;
-    paint_elevation = 3;
     selected_metatiles_width = 1;
     selected_metatiles_height = 1;
     selected_metatiles = new QList<uint16_t>;
@@ -165,7 +163,7 @@ QPixmap Map::renderCollision(bool ignoreCache) {
         }
         changed_any = true;
         Block block = layout->blockdata->blocks->value(i);
-        QImage metatile_image = Metatile::getMetatileImage(block.tile, layout->tileset_primary, layout->tileset_secondary);
+        QImage metatile_image = Tileset::getMetatileImage(block.tile, layout->tileset_primary, layout->tileset_secondary);
         QImage collision_metatile_image = getCollisionMetatileImage(block);
         int map_y = width_ ? i / width_ : 0;
         int map_x = width_ ? i % width_ : 0;
@@ -209,7 +207,7 @@ QPixmap Map::render(bool ignoreCache = false) {
         }
         changed_any = true;
         Block block = layout->blockdata->blocks->value(i);
-        QImage metatile_image = Metatile::getMetatileImage(block.tile, layout->tileset_primary, layout->tileset_secondary);
+        QImage metatile_image = Tileset::getMetatileImage(block.tile, layout->tileset_primary, layout->tileset_secondary);
         int map_y = width_ ? i / width_ : 0;
         int map_x = width_ ? i % width_ : 0;
         QPoint metatile_origin = QPoint(map_x * 16, map_y * 16);
@@ -243,7 +241,7 @@ QPixmap Map::renderBorder() {
         }
         changed_any = true;
         Block block = layout->border->blocks->value(i);
-        QImage metatile_image = Metatile::getMetatileImage(block.tile, layout->tileset_primary, layout->tileset_secondary);
+        QImage metatile_image = Tileset::getMetatileImage(block.tile, layout->tileset_primary, layout->tileset_secondary);
         int map_y = i / width_;
         int map_x = i % width_;
         painter.drawImage(QPoint(map_x * 16, map_y * 16), metatile_image);
@@ -291,23 +289,6 @@ QPixmap Map::renderConnection(Connection connection) {
     return QPixmap::fromImage(connection_image);
 }
 
-QPixmap Map::renderCollisionMetatiles() {
-    int width_ = 2;
-    int height_ = 16;
-    QImage image(width_ * 32, height_ * 32, QImage::Format_RGBA8888);
-    QPainter painter(&image);
-    for (int i = 0; i < width_; i++) {
-        for (int j = 0; j < height_; j++) {
-            QPoint origin(i * 32, j * 32);
-            QImage metatile_image = getCollisionMetatileImage(i, j).scaled(32, 32);
-            painter.drawImage(origin, metatile_image);
-        }
-    }
-    drawSelection(paint_collision + paint_elevation * width_, width_, 1, 1, &painter, 32);
-    painter.end();
-    return QPixmap::fromImage(image);
-}
-
 void Map::drawSelection(int i, int w, int selectionWidth, int selectionHeight, QPainter *painter, int gridWidth) {
     int x = i % w;
     int y = i / w;
@@ -340,7 +321,7 @@ QPixmap Map::renderMetatiles() {
         if (i >= primary_length) {
             tile += Project::getNumMetatilesPrimary() - primary_length;
         }
-        QImage metatile_image = Metatile::getMetatileImage(tile, layout->tileset_primary, layout->tileset_secondary);
+        QImage metatile_image = Tileset::getMetatileImage(tile, layout->tileset_primary, layout->tileset_secondary);
         int map_y = i / width_;
         int map_x = i % width_;
         QPoint metatile_origin = QPoint(map_x * 16, map_y * 16);

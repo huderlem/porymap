@@ -14,40 +14,46 @@ RC_ICONS = resources/icons/porymap-icon-1.ico
 ICON = resources/icons/porymap-icon-1.ico
 
 
-SOURCES += main.cpp\
-        mainwindow.cpp \
-    project.cpp \
-    map.cpp \
-    blockdata.cpp \
-    block.cpp \
-    tileset.cpp \
-    tile.cpp \
-    event.cpp \
+SOURCES += core/block.cpp \
+    core/blockdata.cpp \
+    core/heallocation.cpp \
+    core/metatile.cpp \
+    core/tile.cpp \
+    core/tileset.cpp \
+    ui/movementpermissionsselector.cpp \
+    ui/selectablepixmapitem.cpp \
     editor.cpp \
-    objectpropertiesframe.cpp \
+    event.cpp \
     graphicsview.cpp \
-    parseutil.cpp \
+    main.cpp \
+    mainwindow.cpp \
+    map.cpp \
     neweventtoolbutton.cpp \
     noscrollcombobox.cpp \
     noscrollspinbox.cpp \
-    heallocation.cpp
+    objectpropertiesframe.cpp \
+    parseutil.cpp \
+    project.cpp
 
-HEADERS  += mainwindow.h \
-    project.h \
-    map.h \
-    blockdata.h \
-    block.h \
-    tileset.h \
-    tile.h \
-    event.h \
+HEADERS  += core/block.h \
+    core/blockdata.h \
+    core/heallocation.h \
+    core/metatile.h \
+    core/tile.h \
+    core/tileset.h \
+    ui/movementpermissionsselector.h \
+    ui/selectablepixmapitem.h \
     editor.h \
-    objectpropertiesframe.h \
+    event.h \
     graphicsview.h \
-    parseutil.h \
+    mainwindow.h \
+    map.h \
     neweventtoolbutton.h \
     noscrollcombobox.h \
     noscrollspinbox.h \
-    heallocation.h
+    objectpropertiesframe.h \
+    parseutil.h \
+    project.h
 
 FORMS    += mainwindow.ui \
     objectpropertiesframe.ui

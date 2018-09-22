@@ -9,6 +9,7 @@
 #include <QCheckBox>
 #include <QCursor>
 
+#include "ui/movementpermissionsselector.h"
 #include "project.h"
 #include "ui_mainwindow.h"
 
@@ -19,7 +20,6 @@ class ConnectionPixmapItem;
 class MetatilesPixmapItem;
 class BorderMetatilesPixmapItem;
 class CurrentSelectedMetatilesPixmapItem;
-class MovementPermissionsPixmapItem;
 
 #define SWAP(a, b) do { if (a != b) { a ^= b; b ^= a; a ^= b; } } while (0)
 
@@ -99,7 +99,7 @@ public:
 
     BorderMetatilesPixmapItem *selected_border_metatiles_item = nullptr;
     CurrentSelectedMetatilesPixmapItem *scene_current_metatile_selection_item = nullptr;
-    MovementPermissionsPixmapItem *collision_metatiles_item = nullptr;
+    MovementPermissionsSelector *movement_permissions_selector_item = nullptr;
 
     QList<DraggablePixmapItem*> *events = nullptr;
     QList<DraggablePixmapItem*> *selected_events = nullptr;
@@ -149,6 +149,8 @@ private slots:
     void onConnectionItemDoubleClicked(ConnectionPixmapItem* connectionItem);
     void onConnectionDirectionChanged(QString newDirection);
     void onBorderMetatilesChanged();
+    void onHoveredMovementPermissionChanged(uint16_t, uint16_t);
+    void onHoveredMovementPermissionCleared();
 
 signals:
     void objectsChanged();
@@ -407,31 +409,6 @@ public:
     }
     Map* map = nullptr;
     virtual void draw();
-};
-
-class MovementPermissionsPixmapItem : public MetatilesPixmapItem {
-    Q_OBJECT
-public:
-    MovementPermissionsPixmapItem(Map *map_): MetatilesPixmapItem(map_) {
-        connect(map, SIGNAL(paintCollisionChanged(Map*)), this, SLOT(paintCollisionChanged(Map *)));
-    }
-    virtual void pick(uint16_t collision, uint16_t elevation) {
-        map->paint_collision = collision;
-        map->paint_elevation = elevation;
-        draw();
-    }
-    virtual void draw() {
-        setPixmap(map->renderCollisionMetatiles());
-    }
-protected:
-    void mousePressEvent(QGraphicsSceneMouseEvent*);
-    void mouseMoveEvent(QGraphicsSceneMouseEvent*);
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent*);
-    virtual void updateCurHoveredMetatile(QPointF pos);
-private slots:
-    void paintCollisionChanged(Map *) {
-        draw();
-    }
 };
 
 #endif // EDITOR_H

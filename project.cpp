@@ -1,7 +1,7 @@
 #include "parseutil.h"
 #include "project.h"
-#include "tile.h"
-#include "tileset.h"
+#include "core/tile.h"
+#include "core/tileset.h"
 #include "event.h"
 
 #include <QDebug>
@@ -848,11 +848,6 @@ void Project::loadTilesetAssets(Tileset* tileset) {
             qDebug() << QString("Metatile count %1 does not match metatile attribute count %2").arg(num_metatiles).arg(num_metatileAttrs);
             if (num_metatiles > num_metatileAttrs)
                 num_metatiles = num_metatileAttrs;
-        }
-        for (int i = 0; i < num_metatiles; i++) {
-            uint16_t word = data[i*2] & 0xff;
-            word += (data[i*2 + 1] & 0xff) << 8;
-            tileset->metatiles->value(i)->attr = word;
         }
     } else {
         qDebug() << QString("Could not open '%1'").arg(metatile_attrs_path);
