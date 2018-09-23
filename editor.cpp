@@ -322,6 +322,18 @@ void Editor::onHoveredMovementPermissionCleared() {
     map->clearHoveredMovementPermissionTile();
 }
 
+void Editor::onHoveredMetatileSelectionChanged(uint16_t metatileId) {
+    map->hoveredMetatileSelectionChanged(metatileId);
+}
+
+void Editor::onHoveredMetatileSelectionCleared() {
+    map->clearHoveredMetatileSelection();
+}
+
+void Editor::onSelectedMetatilesChanged() {
+    this->redrawCurrentMetatilesSelection();
+}
+
 void Editor::setConnectionsVisibility(bool visible) {
     for (QGraphicsPixmapItem* item : connection_items) {
         item->setVisible(visible);
@@ -335,12 +347,7 @@ void Editor::setMap(QString map_name) {
     }
     if (project) {
         map = project->loadMap(map_name);
-        connect(map, &Map::paintTileChanged, [=]() {
-            lastSelectedMetatilesFromMap = false;
-            redrawCurrentMetatilesSelection();
-        });
         selected_events->clear();
-        updateCurrentMetatilesSelection();
         displayMap();
         updateSelectedEvents();
     }
@@ -398,15 +405,6 @@ void Editor::mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixm
     }
 }
 
-void Editor::updateCurrentMetatilesSelection() {
-    if (lastSelectedMetatilesFromMap) {
-        // Remember the copied metatiles from the previously-opened map
-        map->selected_metatiles_width = this->copiedMetatileSelectionWidth;
-        map->selected_metatiles_height = this->copiedMetatileSelectionHeight;
-        *map->selected_metatiles = *this->copiedMetatileSelection;
-    }
-}
-
 void Editor::displayMap() {
     if (!scene)
         scene = new QGraphicsScene;
@@ -442,10 +440,10 @@ void Editor::displayMap() {
         map_item->pixmap().height() + 12 * th
     );
 
-    displayMetatiles();
+    displayMetatileSelector();
     displayBorderMetatiles();
     displayCurrentMetatilesSelection();
-    displayCollisionMetatiles();
+    displayMovementPermissionSelector();
     displayMapEvents();
     displayMapConnections();
     displayMapBorder();
@@ -462,16 +460,27 @@ void Editor::displayMap() {
     }
 }
 
-void Editor::displayMetatiles() {
-    if (metatiles_item && metatiles_item->scene()) {
-        metatiles_item->scene()->removeItem(metatiles_item);
-        delete metatiles_item;
+void Editor::displayMetatileSelector() {
+    if (metatile_selector_item && metatile_selector_item->scene()) {
+        metatile_selector_item->scene()->removeItem(metatile_selector_item);
+        delete scene_metatiles;
     }
 
     scene_metatiles = new QGraphicsScene;
-    metatiles_item = new MetatilesPixmapItem(map);
-    metatiles_item->draw();
-    scene_metatiles->addItem(metatiles_item);
+    if (!metatile_selector_item) {
+        metatile_selector_item = new MetatileSelector(8, map->layout->tileset_primary, map->layout->tileset_secondary);
+        connect(metatile_selector_item, SIGNAL(hoveredMetatileSelectionChanged(uint16_t)),
+                this, SLOT(onHoveredMetatileSelectionChanged(uint16_t)));
+        connect(metatile_selector_item, SIGNAL(hoveredMetatileSelectionCleared()),
+                this, SLOT(onHoveredMetatileSelectionCleared()));
+        connect(metatile_selector_item, SIGNAL(selectedMetatilesChanged()),
+                this, SLOT(onSelectedMetatilesChanged()));
+        metatile_selector_item->select(0);
+    } else {
+        metatile_selector_item->setTilesets(map->layout->tileset_primary, map->layout->tileset_secondary);
+    }
+
+    scene_metatiles->addItem(metatile_selector_item);
 }
 
 void Editor::displayBorderMetatiles() {
@@ -481,7 +490,7 @@ void Editor::displayBorderMetatiles() {
     }
 
     scene_selected_border_metatiles = new QGraphicsScene;
-    selected_border_metatiles_item = new BorderMetatilesPixmapItem(map);
+    selected_border_metatiles_item = new BorderMetatilesPixmapItem(map, this);
     selected_border_metatiles_item->draw();
     scene_selected_border_metatiles->addItem(selected_border_metatiles_item);
 
@@ -495,7 +504,7 @@ void Editor::displayCurrentMetatilesSelection() {
     }
 
     scene_current_metatile_selection = new QGraphicsScene;
-    scene_current_metatile_selection_item = new CurrentSelectedMetatilesPixmapItem(map);
+    scene_current_metatile_selection_item = new CurrentSelectedMetatilesPixmapItem(map, this);
     scene_current_metatile_selection_item->draw();
     scene_current_metatile_selection->addItem(scene_current_metatile_selection_item);
 }
@@ -507,20 +516,22 @@ void Editor::redrawCurrentMetatilesSelection() {
     }
 }
 
-void Editor::displayCollisionMetatiles() {
+void Editor::displayMovementPermissionSelector() {
     if (movement_permissions_selector_item && movement_permissions_selector_item->scene()) {
         movement_permissions_selector_item->scene()->removeItem(movement_permissions_selector_item);
-        delete movement_permissions_selector_item;
+        delete scene_collision_metatiles;
     }
 
     scene_collision_metatiles = new QGraphicsScene;
-    movement_permissions_selector_item = new MovementPermissionsSelector();
-    connect(movement_permissions_selector_item, SIGNAL(hoveredMovementPermissionChanged(uint16_t, uint16_t)),
-            this, SLOT(onHoveredMovementPermissionChanged(uint16_t, uint16_t)));
-    connect(movement_permissions_selector_item, SIGNAL(hoveredMovementPermissionCleared()),
-            this, SLOT(onHoveredMovementPermissionCleared()));
-    movement_permissions_selector_item->select(0, 3);
-    movement_permissions_selector_item->draw();
+    if (!movement_permissions_selector_item) {
+        movement_permissions_selector_item = new MovementPermissionsSelector();
+        connect(movement_permissions_selector_item, SIGNAL(hoveredMovementPermissionChanged(uint16_t, uint16_t)),
+                this, SLOT(onHoveredMovementPermissionChanged(uint16_t, uint16_t)));
+        connect(movement_permissions_selector_item, SIGNAL(hoveredMovementPermissionCleared()),
+                this, SLOT(onHoveredMovementPermissionCleared()));
+        movement_permissions_selector_item->select(0, 3);
+    }
+
     scene_collision_metatiles->addItem(movement_permissions_selector_item);
 }
 
@@ -901,74 +912,17 @@ void Editor::toggleBorderVisibility(bool visible)
     this->setConnectionsVisibility(visible);
 }
 
-void MetatilesPixmapItem::paintTileChanged() {
-    draw();
-}
-
-void MetatilesPixmapItem::draw() {
-    setPixmap(map->renderMetatiles());
-}
-
-void MetatilesPixmapItem::updateCurHoveredMetatile(QPointF pos) {
-    int x = static_cast<int>(pos.x()) / 16;
-    int y = static_cast<int>(pos.y()) / 16;
-    int width = pixmap().width() / 16;
-    int height = pixmap().height() / 16;
-    if (x < 0 || x >= width || y < 0 || y >= height) {
-        map->clearHoveredMetatile();
-    } else {
-        int block = y * width + x;
-        map->hoveredMetatileChanged(block);
-    }
-}
-
-void MetatilesPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
-    updateCurHoveredMetatile(event->pos());
-}
-void MetatilesPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
-    map->clearHoveredMetatile();
-}
-void MetatilesPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
-    QPointF pos = event->pos();
-    int x = static_cast<int>(pos.x()) / 16;
-    int y = static_cast<int>(pos.y()) / 16;
-    map->paint_metatile_initial_x = x;
-    map->paint_metatile_initial_y = y;
-    updateSelection(event->pos());
-}
-void MetatilesPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
-    updateCurHoveredMetatile(event->pos());
-    updateSelection(event->pos());
-}
-void MetatilesPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
-    updateSelection(event->pos());
-}
-void MetatilesPixmapItem::updateSelection(QPointF pos) {
-    int x = static_cast<int>(pos.x()) / 16;
-    int y = static_cast<int>(pos.y()) / 16;
-    int width = pixmap().width() / 16;
-    int height = pixmap().height() / 16;
-    if ((x >= 0 && x < width) && (y >=0 && y < height)) {
-        int x1 = x < map->paint_metatile_initial_x ? x : map->paint_metatile_initial_x;
-        int y1 = y < map->paint_metatile_initial_y ? y : map->paint_metatile_initial_y;
-        map->paint_tile_index = y1 * 8 + x1;
-        map->paint_tile_width = abs(map->paint_metatile_initial_x - x) + 1;
-        map->paint_tile_height = abs(map->paint_metatile_initial_y - y) + 1;
-        map->setSelectedMetatilesFromTilePicker();
-
-        emit map->paintTileChanged();
-    }
-}
-
 void BorderMetatilesPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+    QList<uint16_t> *selectedMetatiles = editor->metatile_selector_item->getSelectedMetatiles();
+    QPoint selectionDimensions = editor->metatile_selector_item->getSelectionDimensions();
     QPointF pos = event->pos();
     int x = static_cast<int>(pos.x()) / 16;
     int y = static_cast<int>(pos.y()) / 16;
 
-    for (int i = 0; i < map->selected_metatiles_width && (i + x) < 2; i++) {
-        for (int j = 0; j < map->selected_metatiles_height && (j + y) < 2; j++) {
+    for (int i = 0; i < selectionDimensions.x() && (i + x) < 2; i++) {
+        for (int j = 0; j < selectionDimensions.y() && (j + y) < 2; j++) {
             int blockIndex = (j + y) * 2 + (i + x);
-            uint16_t tile = map->selected_metatiles->at(j * map->selected_metatiles_width + i);
+            uint16_t tile = selectedMetatiles->at(j * selectionDimensions.x() + i);
             (*map->layout->border->blocks)[blockIndex].tile = tile;
         }
     }
@@ -982,15 +936,15 @@ void BorderMetatilesPixmapItem::draw() {
     QPainter painter(&image);
     QList<Block> *blocks = map->layout->border->blocks;
 
-    for (int i = 0; i < 2; i++)
-    for (int j = 0; j < 2; j++)
-    {
-        int x = i * 16;
-        int y = j * 16;
-        int index = j * 2 + i;
-        QImage metatile_image = Tileset::getMetatileImage(blocks->value(index).tile, map->layout->tileset_primary, map->layout->tileset_secondary);
-        QPoint metatile_origin = QPoint(x, y);
-        painter.drawImage(metatile_origin, metatile_image);
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < 2; j++) {
+            int x = i * 16;
+            int y = j * 16;
+            int index = j * 2 + i;
+            QImage metatile_image = Tileset::getMetatileImage(blocks->value(index).tile, map->layout->tileset_primary, map->layout->tileset_secondary);
+            QPoint metatile_origin = QPoint(x, y);
+            painter.drawImage(metatile_origin, metatile_image);
+        }
     }
 
     painter.end();
@@ -998,20 +952,22 @@ void BorderMetatilesPixmapItem::draw() {
 }
 
 void CurrentSelectedMetatilesPixmapItem::draw() {
-    int width = map->selected_metatiles_width * 16;
-    int height = map->selected_metatiles_height * 16;
+    QList<uint16_t> *selectedMetatiles = editor->metatile_selector_item->getSelectedMetatiles();
+    QPoint selectionDimensions = editor->metatile_selector_item->getSelectionDimensions();
+    int width = selectionDimensions.x() * 16;
+    int height = selectionDimensions.y() * 16;
     QImage image(width, height, QImage::Format_RGBA8888);
     QPainter painter(&image);
 
-    for (int i = 0; i < map->selected_metatiles_width; i++)
-    for (int j = 0; j < map->selected_metatiles_height; j++)
-    {
-        int x = i * 16;
-        int y = j * 16;
-        int index = j * map->selected_metatiles_width + i;
-        QImage metatile_image = Tileset::getMetatileImage(map->selected_metatiles->at(index), map->layout->tileset_primary, map->layout->tileset_secondary);
-        QPoint metatile_origin = QPoint(x, y);
-        painter.drawImage(metatile_origin, metatile_image);
+    for (int i = 0; i < selectionDimensions.x(); i++) {
+        for (int j = 0; j < selectionDimensions.y(); j++) {
+            int x = i * 16;
+            int y = j * 16;
+            int index = j * selectionDimensions.x() + i;
+            QImage metatile_image = Tileset::getMetatileImage(selectedMetatiles->at(index), map->layout->tileset_primary, map->layout->tileset_secondary);
+            QPoint metatile_origin = QPoint(x, y);
+            painter.drawImage(metatile_origin, metatile_image);
+        }
     }
 
     painter.end();
@@ -1085,7 +1041,8 @@ void MapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
 
             // Paint onto the map.
             bool smartPathsEnabled = event->modifiers() & Qt::ShiftModifier;
-            if ((map->smart_paths_enabled || smartPathsEnabled) && map->selected_metatiles_width == 3 && map->selected_metatiles_height == 3) {
+            QPoint selectionDimensions = editor->metatile_selector_item->getSelectionDimensions();
+            if ((map->smart_paths_enabled || smartPathsEnabled) && selectionDimensions.x() == 3 && selectionDimensions.y() == 3) {
                 paintSmartPath(x, y);
             } else {
                 paintNormal(x, y);
@@ -1140,22 +1097,26 @@ void MapPixmapItem::shift(QGraphicsSceneMouseEvent *event) {
 }
 
 void MapPixmapItem::paintNormal(int x, int y) {
+    QPoint selectionDimensions = editor->metatile_selector_item->getSelectionDimensions();
+    QList<uint16_t> *selectedMetatiles = editor->metatile_selector_item->getSelectedMetatiles();
+
     // Snap the selected position to the top-left of the block boundary.
     // This allows painting via dragging the mouse to tile the painted region.
     int xDiff = x - map->paint_tile_initial_x;
     int yDiff = y - map->paint_tile_initial_y;
-    if (xDiff < 0 && xDiff % map->selected_metatiles_width != 0) xDiff -= map->selected_metatiles_width;
-    if (yDiff < 0 && yDiff % map->selected_metatiles_height != 0) yDiff -= map->selected_metatiles_height;
+    if (xDiff < 0 && xDiff % selectionDimensions.x() != 0) xDiff -= selectionDimensions.x();
+    if (yDiff < 0 && yDiff % selectionDimensions.y() != 0) yDiff -= selectionDimensions.y();
 
-    x = map->paint_tile_initial_x + (xDiff / map->selected_metatiles_width) * map->selected_metatiles_width;
-    y = map->paint_tile_initial_y + (yDiff / map->selected_metatiles_height) * map->selected_metatiles_height;
-    for (int i = 0; i < map->selected_metatiles_width && i + x < map->getWidth(); i++)
-    for (int j = 0; j < map->selected_metatiles_height && j + y < map->getHeight(); j++) {
+    x = map->paint_tile_initial_x + (xDiff / selectionDimensions.x()) * selectionDimensions.x();
+    y = map->paint_tile_initial_y + (yDiff / selectionDimensions.y()) * selectionDimensions.y();
+
+    for (int i = 0; i < selectionDimensions.x() && i + x < map->getWidth(); i++)
+    for (int j = 0; j < selectionDimensions.y() && j + y < map->getHeight(); j++) {
         int actualX = i + x;
         int actualY = j + y;
         Block *block = map->getBlock(actualX, actualY);
         if (block) {
-            block->tile = map->selected_metatiles->at(j * map->selected_metatiles_width + i);
+            block->tile = selectedMetatiles->at(j * selectionDimensions.x() + i);
             map->_setBlock(actualX, actualY, *block);
         }
     }
@@ -1183,14 +1144,17 @@ QList<int> MapPixmapItem::smartPathTable = QList<int>({
     4, // 1111
 });
 
-#define IS_SMART_PATH_TILE(block) (map->selected_metatiles->contains(block->tile))
+#define IS_SMART_PATH_TILE(block) (selectedMetatiles->contains(block->tile))
 
 void MapPixmapItem::paintSmartPath(int x, int y) {
+    QPoint selectionDimensions = editor->metatile_selector_item->getSelectionDimensions();
+    QList<uint16_t> *selectedMetatiles = editor->metatile_selector_item->getSelectedMetatiles();
+
     // Smart path should never be enabled without a 3x3 block selection.
-    if (map->selected_metatiles_width != 3 || map->selected_metatiles_height != 3) return;
+    if (selectionDimensions.x() != 3 || selectionDimensions.y() != 3) return;
 
     // Shift to the middle tile of the smart path selection.
-    uint16_t openTile = map->selected_metatiles->at(4);
+    uint16_t openTile = selectedMetatiles->at(4);
 
     // Fill the region with the open tile.
     for (int i = 0; i <= 1; i++)
@@ -1242,7 +1206,7 @@ void MapPixmapItem::paintSmartPath(int x, int y) {
         if (left && IS_SMART_PATH_TILE(left))
             id += 8;
 
-        block->tile = map->selected_metatiles->at(smartPathTable[id]);
+        block->tile = selectedMetatiles->at(smartPathTable[id]);
         map->_setBlock(actualX, actualY, *block);
     }
 }
@@ -1263,8 +1227,8 @@ void MapPixmapItem::updateMetatileSelection(QGraphicsSceneMouseEvent *event) {
         selection_origin = QPoint(x, y);
         selection.clear();
         selection.append(QPoint(x, y));
-        editor->copiedMetatileSelectionWidth = 1;
-        editor->copiedMetatileSelectionHeight = 1;
+        uint16_t metatileId = map->getBlock(x, y)->tile;
+        editor->metatile_selector_item->select(metatileId);
     } else if (event->type() == QEvent::GraphicsSceneMouseMove) {
         QPoint pos = QPoint(x, y);
         int x1 = selection_origin.x();
@@ -1280,21 +1244,13 @@ void MapPixmapItem::updateMetatileSelection(QGraphicsSceneMouseEvent *event) {
             }
         }
 
-        editor->copiedMetatileSelectionWidth = x2 - x1 + 1;
-        editor->copiedMetatileSelectionHeight = y2 - y1 + 1;
+        QList<uint16_t> metatiles;
+        for (QPoint point : selection) {
+            metatiles.append(map->getBlock(point.x(), point.y())->tile);
+        }
+
+        editor->metatile_selector_item->setExternalSelection(x2 - x1 + 1, y2 - y1 + 1, &metatiles);
     }
-
-    editor->copiedMetatileSelection->clear();
-    for (QPoint point : selection) {
-        editor->copiedMetatileSelection->append(map->getBlock(point.x(), point.y())->tile);
-    }
-
-    editor->lastSelectedMetatilesFromMap = true;
-    map->selected_metatiles_width = editor->copiedMetatileSelectionWidth;
-    map->selected_metatiles_height = editor->copiedMetatileSelectionHeight;
-    *map->selected_metatiles = *editor->copiedMetatileSelection;
-
-    editor->redrawCurrentMetatilesSelection();
 }
 
 void MapPixmapItem::floodFill(QGraphicsSceneMouseEvent *event) {
@@ -1306,10 +1262,12 @@ void MapPixmapItem::floodFill(QGraphicsSceneMouseEvent *event) {
             int x = static_cast<int>(pos.x()) / 16;
             int y = static_cast<int>(pos.y()) / 16;
             Block *block = map->getBlock(x, y);
-            int tile = map->selected_metatiles->first();
+            QList<uint16_t> *selectedMetatiles = editor->metatile_selector_item->getSelectedMetatiles();
+            QPoint selectionDimensions = editor->metatile_selector_item->getSelectionDimensions();
+            int tile = selectedMetatiles->first();
             if (block && block->tile != tile) {
                 bool smartPathsEnabled = event->modifiers() & Qt::ShiftModifier;
-                if ((map->smart_paths_enabled || smartPathsEnabled) && map->selected_metatiles_width == 3 && map->selected_metatiles_height == 3)
+                if ((map->smart_paths_enabled || smartPathsEnabled) && selectionDimensions.x() == 3 && selectionDimensions.y() == 3)
                     this->_floodFillSmartPath(x, y);
                 else
                     this->_floodFill(x, y);
@@ -1321,6 +1279,9 @@ void MapPixmapItem::floodFill(QGraphicsSceneMouseEvent *event) {
 }
 
 void MapPixmapItem::_floodFill(int initialX, int initialY) {
+    QPoint selectionDimensions = editor->metatile_selector_item->getSelectionDimensions();
+    QList<uint16_t> *selectedMetatiles = editor->metatile_selector_item->getSelectedMetatiles();
+
     QList<QPoint> todo;
     todo.append(QPoint(initialX, initialY));
     while (todo.length()) {
@@ -1335,11 +1296,11 @@ void MapPixmapItem::_floodFill(int initialX, int initialY) {
 
         int xDiff = x - initialX;
         int yDiff = y - initialY;
-        int i = xDiff % map->selected_metatiles_width;
-        int j = yDiff % map->selected_metatiles_height;
-        if (i < 0) i = map->selected_metatiles_width + i;
-        if (j < 0) j = map->selected_metatiles_height + j;
-        uint16_t tile = map->selected_metatiles->at(j * map->selected_metatiles_width + i);
+        int i = xDiff % selectionDimensions.x();
+        int j = yDiff % selectionDimensions.y();
+        if (i < 0) i = selectionDimensions.x() + i;
+        if (j < 0) j = selectionDimensions.y() + j;
+        uint16_t tile = selectedMetatiles->at(j * selectionDimensions.x() + i);
         uint16_t old_tile = block->tile;
         if (old_tile == tile) {
             continue;
@@ -1363,11 +1324,14 @@ void MapPixmapItem::_floodFill(int initialX, int initialY) {
 }
 
 void MapPixmapItem::_floodFillSmartPath(int initialX, int initialY) {
+    QPoint selectionDimensions = editor->metatile_selector_item->getSelectionDimensions();
+    QList<uint16_t> *selectedMetatiles = editor->metatile_selector_item->getSelectedMetatiles();
+
     // Smart path should never be enabled without a 3x3 block selection.
-    if (map->selected_metatiles_width != 3 || map->selected_metatiles_height != 3) return;
+    if (selectionDimensions.x() != 3 || selectionDimensions.y() != 3) return;
 
     // Shift to the middle tile of the smart path selection.
-    uint16_t openTile = map->selected_metatiles->at(4);
+    uint16_t openTile = selectedMetatiles->at(4);
 
     // Flood fill the region with the open tile.
     QList<QPoint> todo;
@@ -1438,7 +1402,7 @@ void MapPixmapItem::_floodFillSmartPath(int initialX, int initialY) {
         if (left && IS_SMART_PATH_TILE(left))
             id += 8;
 
-        block->tile = map->selected_metatiles->at(smartPathTable[id]);
+        block->tile = selectedMetatiles->at(smartPathTable[id]);
         map->_setBlock(x, y, *block);
 
         // Visit neighbors if they are smart-path tiles, and don't revisit any.
@@ -1469,12 +1433,7 @@ void MapPixmapItem::pick(QGraphicsSceneMouseEvent *event) {
     int y = static_cast<int>(pos.y()) / 16;
     Block *block = map->getBlock(x, y);
     if (block) {
-        map->paint_tile_index = map->getDisplayedBlockIndex(block->tile);
-        map->paint_tile_width = 1;
-        map->paint_tile_height = 1;
-        map->setSelectedMetatilesFromTilePicker();
-
-        emit map->paintTileChanged();
+        editor->metatile_selector_item->select(block->tile);
     }
 }
 
@@ -1615,7 +1574,6 @@ void CollisionPixmapItem::pick(QGraphicsSceneMouseEvent *event) {
     Block *block = map->getBlock(x, y);
     if (block) {
         editor->movement_permissions_selector_item->select(block->collision, block->elevation);
-        emit map->paintCollisionChanged(map);
     }
 }
 
@@ -1632,7 +1590,6 @@ void CollisionPixmapItem::updateMovementPermissionSelection(QGraphicsSceneMouseE
 
     Block *block = map->getBlock(x, y);
     editor->movement_permissions_selector_item->select(block->collision, block->elevation);
-    editor->movement_permissions_selector_item->draw();
 }
 
 void DraggablePixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *mouse) {

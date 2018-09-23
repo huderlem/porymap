@@ -9,6 +9,7 @@
 #include <QCheckBox>
 #include <QCursor>
 
+#include "ui/metatileselector.h"
 #include "ui/movementpermissionsselector.h"
 #include "project.h"
 #include "ui_mainwindow.h"
@@ -38,13 +39,12 @@ public:
     void undo();
     void redo();
     void setMap(QString map_name);
-    void updateCurrentMetatilesSelection();
     void displayMap();
-    void displayMetatiles();
+    void displayMetatileSelector();
     void displayBorderMetatiles();
     void displayCurrentMetatilesSelection();
     void redrawCurrentMetatilesSelection();
-    void displayCollisionMetatiles();
+    void displayMovementPermissionSelector();
     void displayElevationMetatiles();
     void displayMapEvents();
     void displayMapConnections();
@@ -95,7 +95,7 @@ public:
     QGraphicsScene *scene_selected_border_metatiles = nullptr;
     QGraphicsScene *scene_collision_metatiles = nullptr;
     QGraphicsScene *scene_elevation_metatiles = nullptr;
-    MetatilesPixmapItem *metatiles_item = nullptr;
+    MetatileSelector *metatile_selector_item = nullptr;
 
     BorderMetatilesPixmapItem *selected_border_metatiles_item = nullptr;
     CurrentSelectedMetatilesPixmapItem *scene_current_metatile_selection_item = nullptr;
@@ -103,11 +103,6 @@ public:
 
     QList<DraggablePixmapItem*> *events = nullptr;
     QList<DraggablePixmapItem*> *selected_events = nullptr;
-
-    bool lastSelectedMetatilesFromMap = false;
-    int copiedMetatileSelectionWidth = 0;
-    int copiedMetatileSelectionHeight = 0;
-    QList<uint16_t> *copiedMetatileSelection = new QList<uint16_t>;
 
     QString map_edit_mode;
     QString prev_edit_mode;
@@ -151,6 +146,9 @@ private slots:
     void onBorderMetatilesChanged();
     void onHoveredMovementPermissionChanged(uint16_t, uint16_t);
     void onHoveredMovementPermissionCleared();
+    void onHoveredMetatileSelectionChanged(uint16_t);
+    void onHoveredMetatileSelectionCleared();
+    void onSelectedMetatilesChanged();
 
 signals:
     void objectsChanged();
@@ -362,37 +360,15 @@ signals:
     void connectionMoved(Connection*);
 };
 
-class MetatilesPixmapItem : public QObject, public QGraphicsPixmapItem {
-    Q_OBJECT
-public:
-    MetatilesPixmapItem(Map *map_) {
-        map = map_;
-        setAcceptHoverEvents(true);
-        connect(map, SIGNAL(paintTileChanged()), this, SLOT(paintTileChanged()));
-    }
-    Map* map = nullptr;
-    virtual void draw();
-private:
-    void updateSelection(QPointF pos);
-protected:
-    virtual void updateCurHoveredMetatile(QPointF pos);
-private slots:
-    void paintTileChanged();
-protected:
-    void hoverMoveEvent(QGraphicsSceneHoverEvent*);
-    void hoverLeaveEvent(QGraphicsSceneHoverEvent*);
-    void mousePressEvent(QGraphicsSceneMouseEvent*);
-    void mouseMoveEvent(QGraphicsSceneMouseEvent*);
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent*);
-};
-
 class BorderMetatilesPixmapItem : public QObject, public QGraphicsPixmapItem {
     Q_OBJECT
 public:
-    BorderMetatilesPixmapItem(Map *map_) {
+    BorderMetatilesPixmapItem(Map *map_, Editor *editor_) {
         map = map_;
+        editor = editor_;
         setAcceptHoverEvents(true);
     }
+    Editor *editor = nullptr;
     Map* map = nullptr;
     virtual void draw();
 signals:
@@ -404,10 +380,12 @@ protected:
 class CurrentSelectedMetatilesPixmapItem : public QObject, public QGraphicsPixmapItem {
     Q_OBJECT
 public:
-    CurrentSelectedMetatilesPixmapItem(Map *map_) {
+    CurrentSelectedMetatilesPixmapItem(Map *map_, Editor *editor_) {
         map = map_;
+        editor = editor_;
     }
     Map* map = nullptr;
+    Editor *editor = nullptr;
     virtual void draw();
 };
 

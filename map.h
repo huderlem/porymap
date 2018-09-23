@@ -3,6 +3,7 @@
 
 #include "core/tileset.h"
 #include "core/blockdata.h"
+#include "core/maplayout.h"
 #include "event.h"
 
 #include <QPixmap>
@@ -85,37 +86,6 @@ public:
     QString map_name;
 };
 
-class MapLayout {
-public:
-    MapLayout() {}
-    int index;
-    QString name;
-    QString label;
-    QString width;
-    QString height;
-    QString border_label;
-    QString border_path;
-    QString blockdata_label;
-    QString blockdata_path;
-    QString tileset_primary_label;
-    QString tileset_secondary_label;
-    Tileset *tileset_primary = nullptr;
-    Tileset *tileset_secondary = nullptr;
-    Blockdata* blockdata = nullptr;
-    QImage border_image;
-    QPixmap border_pixmap;
-    Blockdata *border = nullptr;
-    Blockdata *cached_blockdata = nullptr;
-    Blockdata *cached_collision = nullptr;
-    Blockdata *cached_border = nullptr;
-    bool has_unsaved_changes = false;
-public:
-    static QString getNameFromLabel(QString label) {
-        // ASSUMPTION: strip off "_Layout" from layout label. Directories in 'data/layouts/' must be well-formed.
-        return label.replace(label.lastIndexOf("_Layout"), label.length(), "");
-    }
-};
-
 class Map : public QObject
 {
     Q_OBJECT
@@ -158,7 +128,6 @@ public:
     uint16_t getSelectedBlockIndex(int);
     int getDisplayedBlockIndex(int);
     QPixmap render(bool ignoreCache);
-    QPixmap renderMetatiles();
 
     QPixmap renderCollision(bool ignoreCache);
     QImage collision_image;
@@ -175,16 +144,8 @@ public:
     QPixmap pixmap;
     QList<QImage> metatile_images;
     bool smart_paths_enabled = false;
-    int paint_metatile_initial_x;
-    int paint_metatile_initial_y;
-    int paint_tile_index;
-    int paint_tile_width = 1;
-    int paint_tile_height = 1;
     int paint_tile_initial_x;
     int paint_tile_initial_y;
-    int selected_metatiles_width;
-    int selected_metatiles_height;
-    QList<uint16_t> *selected_metatiles = nullptr;
 
     Block *getBlock(int x, int y);
     void setBlock(int x, int y, Block block);
@@ -214,14 +175,11 @@ public:
     bool hasUnsavedChanges();
     void hoveredTileChanged(int x, int y, int block);
     void clearHoveredTile();
-    void hoveredMetatileChanged(int block);
-    void clearHoveredMetatile();
+    void hoveredMetatileSelectionChanged(uint16_t);
+    void clearHoveredMetatileSelection();
     void clearHoveredMovementPermissionTile();
-    void setSelectedMetatilesFromTilePicker();
 
 signals:
-    void paintTileChanged();
-    void paintCollisionChanged(Map *map);
     void mapChanged(Map *map);
     void mapNeedsRedrawing();
     void statusBarMessage(QString);

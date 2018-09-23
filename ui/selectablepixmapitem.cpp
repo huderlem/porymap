@@ -21,6 +21,7 @@ void SelectablePixmapItem::select(int x, int y, int width, int height)
     this->selectionInitialY = y;
     this->selectionOffsetX = qMax(0, qMin(width, this->maxSelectionWidth));
     this->selectionOffsetY = qMax(0, qMin(height, this->maxSelectionHeight));
+    this->draw();
 }
 
 void SelectablePixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event)

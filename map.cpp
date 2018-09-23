@@ -10,11 +10,6 @@
 
 Map::Map(QObject *parent) : QObject(parent)
 {
-    paint_tile_index = 1;
-    selected_metatiles_width = 1;
-    selected_metatiles_height = 1;
-    selected_metatiles = new QList<uint16_t>;
-    selected_metatiles->append(1);
 }
 
 void Map::setName(QString mapName) {
@@ -305,35 +300,6 @@ void Map::drawSelection(int i, int w, int selectionWidth, int selectionHeight, Q
     painter->restore();
 }
 
-QPixmap Map::renderMetatiles() {
-    if (!layout->tileset_primary || !layout->tileset_primary->metatiles
-     || !layout->tileset_secondary || !layout->tileset_secondary->metatiles) {
-        return QPixmap();
-    }
-    int primary_length = layout->tileset_primary->metatiles->length();
-    int length_ = primary_length + layout->tileset_secondary->metatiles->length();
-    int width_ = 8;
-    int height_ = length_ / width_;
-    QImage image(width_ * 16, height_ * 16, QImage::Format_RGBA8888);
-    QPainter painter(&image);
-    for (int i = 0; i < length_; i++) {
-        int tile = i;
-        if (i >= primary_length) {
-            tile += Project::getNumMetatilesPrimary() - primary_length;
-        }
-        QImage metatile_image = Tileset::getMetatileImage(tile, layout->tileset_primary, layout->tileset_secondary);
-        int map_y = i / width_;
-        int map_x = i % width_;
-        QPoint metatile_origin = QPoint(map_x * 16, map_y * 16);
-        painter.drawImage(metatile_origin, metatile_image);
-    }
-
-    drawSelection(paint_tile_index, width_, paint_tile_width, paint_tile_height, &painter, 16);
-
-    painter.end();
-    return QPixmap::fromImage(image);
-}
-
 void Map::setNewDimensionsBlockdata(int newWidth, int newHeight) {
     int oldWidth = getWidth();
     int oldHeight = getHeight();
@@ -517,13 +483,12 @@ void Map::clearHoveredTile() {
     emit statusBarMessage(QString(""));
 }
 
-void Map::hoveredMetatileChanged(int blockIndex) {
-    uint16_t tile = getSelectedBlockIndex(blockIndex);
+void Map::hoveredMetatileSelectionChanged(uint16_t metatileId) {
     emit statusBarMessage(QString("Metatile: 0x%1")
-                          .arg(QString("%1").arg(tile, 3, 16, QChar('0')).toUpper()));
+                          .arg(QString("%1").arg(metatileId, 3, 16, QChar('0')).toUpper()));
 }
 
-void Map::clearHoveredMetatile() {
+void Map::clearHoveredMetatileSelection() {
     emit statusBarMessage(QString(""));
 }
 
@@ -546,16 +511,3 @@ void Map::hoveredMovementPermissionTileChanged(int collision, int elevation) {
 void Map::clearHoveredMovementPermissionTile() {
     emit statusBarMessage(QString(""));
 }
-
-void Map::setSelectedMetatilesFromTilePicker() {
-    this->selected_metatiles_width = this->paint_tile_width;
-    this->selected_metatiles_height = this->paint_tile_height;
-    this->selected_metatiles->clear();
-    for (int j = 0; j < this->paint_tile_height; j++) {
-        for (int i = 0; i < this->paint_tile_width; i++) {
-            uint16_t metatile = this->getSelectedBlockIndex(this->paint_tile_index + i + (j * 8));
-            this->selected_metatiles->append(metatile);
-        }
-    }
-}
-

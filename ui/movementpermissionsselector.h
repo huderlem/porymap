@@ -15,9 +15,6 @@ public:
     void select(uint16_t collision, uint16_t elevation);
 
 protected:
-    void mousePressEvent(QGraphicsSceneMouseEvent*);
-    void mouseMoveEvent(QGraphicsSceneMouseEvent*);
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent*);
     void hoverMoveEvent(QGraphicsSceneHoverEvent*);
     void hoverLeaveEvent(QGraphicsSceneHoverEvent*);
 

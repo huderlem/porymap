@@ -195,7 +195,7 @@ void MainWindow::redrawMapScene()
 
     ui->graphicsView_Metatiles->setScene(editor->scene_metatiles);
     //ui->graphicsView_Metatiles->setSceneRect(editor->scene_metatiles->sceneRect());
-    ui->graphicsView_Metatiles->setFixedSize(editor->metatiles_item->pixmap().width() + 2, editor->metatiles_item->pixmap().height() + 2);
+    ui->graphicsView_Metatiles->setFixedSize(editor->metatile_selector_item->pixmap().width() + 2, editor->metatile_selector_item->pixmap().height() + 2);
 
     ui->graphicsView_BorderMetatile->setScene(editor->scene_selected_border_metatiles);
     ui->graphicsView_BorderMetatile->setFixedSize(editor->selected_border_metatiles_item->pixmap().width() + 2, editor->selected_border_metatiles_item->pixmap().height() + 2);

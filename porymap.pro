@@ -17,9 +17,11 @@ ICON = resources/icons/porymap-icon-1.ico
 SOURCES += core/block.cpp \
     core/blockdata.cpp \
     core/heallocation.cpp \
+    core/maplayout.cpp \
     core/metatile.cpp \
     core/tile.cpp \
     core/tileset.cpp \
+    ui/metatileselector.cpp \
     ui/movementpermissionsselector.cpp \
     ui/selectablepixmapitem.cpp \
     editor.cpp \
@@ -38,9 +40,11 @@ SOURCES += core/block.cpp \
 HEADERS  += core/block.h \
     core/blockdata.h \
     core/heallocation.h \
+    core/maplayout.h \
     core/metatile.h \
     core/tile.h \
     core/tileset.h \
+    ui/metatileselector.h \
     ui/movementpermissionsselector.h \
     ui/selectablepixmapitem.h \
     editor.h \
