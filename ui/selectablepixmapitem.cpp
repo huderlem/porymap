@@ -8,8 +8,11 @@ QPoint SelectablePixmapItem::getSelectionDimensions()
 
 QPoint SelectablePixmapItem::getSelectionStart()
 {
-    return QPoint(this->selectionInitialX + this->selectionOffsetX,
-                  this->selectionInitialY + this->selectionOffsetY);
+    int x = this->selectionInitialX;
+    int y = this->selectionInitialY;
+    if (this->selectionOffsetX < 0) x += this->selectionOffsetX;
+    if (this->selectionOffsetY < 0) y += this->selectionOffsetY;
+    return QPoint(x, y);
 }
 
 void SelectablePixmapItem::select(int x, int y, int width, int height)
