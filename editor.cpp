@@ -634,7 +634,7 @@ void Editor::createConnectionItem(MapConnection* connection, bool hide) {
     connection_edit_item->setY(y);
     connection_edit_item->setZValue(-1);
     scene->addItem(connection_edit_item);
-    connect(connection_edit_item, SIGNAL(connectionMoved(Connection*)), this, SLOT(onConnectionMoved(Connection*)));
+    connect(connection_edit_item, SIGNAL(connectionMoved(MapConnection*)), this, SLOT(onConnectionMoved(MapConnection*)));
     connect(connection_edit_item, SIGNAL(connectionItemSelected(ConnectionPixmapItem*)), this, SLOT(onConnectionItemSelected(ConnectionPixmapItem*)));
     connect(connection_edit_item, SIGNAL(connectionItemDoubleClicked(ConnectionPixmapItem*)), this, SLOT(onConnectionItemDoubleClicked(ConnectionPixmapItem*)));
     connection_edit_items.append(connection_edit_item);

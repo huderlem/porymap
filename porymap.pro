@@ -24,6 +24,9 @@ SOURCES += core/block.cpp \
     core/tileset.cpp \
     ui/metatileselector.cpp \
     ui/movementpermissionsselector.cpp \
+    ui/neweventtoolbutton.cpp \
+    ui/noscrollcombobox.cpp \
+    ui/noscrollspinbox.cpp \
     ui/selectablepixmapitem.cpp \
     editor.cpp \
     event.cpp \
@@ -31,9 +34,6 @@ SOURCES += core/block.cpp \
     main.cpp \
     mainwindow.cpp \
     map.cpp \
-    neweventtoolbutton.cpp \
-    noscrollcombobox.cpp \
-    noscrollspinbox.cpp \
     objectpropertiesframe.cpp \
     parseutil.cpp \
     project.cpp
@@ -50,15 +50,15 @@ HEADERS  += core/block.h \
     core/tileset.h \
     ui/metatileselector.h \
     ui/movementpermissionsselector.h \
+    ui/neweventtoolbutton.h \
+    ui/noscrollcombobox.h \
+    ui/noscrollspinbox.h \
     ui/selectablepixmapitem.h \
     editor.h \
     event.h \
     graphicsview.h \
     mainwindow.h \
     map.h \
-    neweventtoolbutton.h \
-    noscrollcombobox.h \
-    noscrollspinbox.h \
     objectpropertiesframe.h \
     parseutil.h \
     project.h
