@@ -22,6 +22,7 @@ SOURCES += core/block.cpp \
     core/metatile.cpp \
     core/tile.cpp \
     core/tileset.cpp \
+    ui/eventpropertiesframe.cpp \
     ui/metatileselector.cpp \
     ui/movementpermissionsselector.cpp \
     ui/neweventtoolbutton.cpp \
@@ -34,7 +35,6 @@ SOURCES += core/block.cpp \
     main.cpp \
     mainwindow.cpp \
     map.cpp \
-    objectpropertiesframe.cpp \
     parseutil.cpp \
     project.cpp
 
@@ -48,6 +48,7 @@ HEADERS  += core/block.h \
     core/metatile.h \
     core/tile.h \
     core/tileset.h \
+    ui/eventpropertiesframe.h \
     ui/metatileselector.h \
     ui/movementpermissionsselector.h \
     ui/neweventtoolbutton.h \
@@ -59,12 +60,11 @@ HEADERS  += core/block.h \
     graphicsview.h \
     mainwindow.h \
     map.h \
-    objectpropertiesframe.h \
     parseutil.h \
     project.h
 
 FORMS    += mainwindow.ui \
-    objectpropertiesframe.ui
+    eventpropertiesframe.ui
 
 RESOURCES += \
     resources/images.qrc

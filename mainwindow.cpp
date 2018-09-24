@@ -2,7 +2,7 @@
 #include "ui_mainwindow.h"
 #include "project.h"
 #include "editor.h"
-#include "objectpropertiesframe.h"
+#include "eventpropertiesframe.h"
 #include "ui_objectpropertiesframe.h"
 
 #include <QDebug>
@@ -695,10 +695,10 @@ void MainWindow::updateSelectedObjects() {
 
     QMap<QString, int> event_obj_gfx_constants = editor->project->getEventObjGfxConstants();
 
-    QList<ObjectPropertiesFrame *> frames;
+    QList<EventPropertiesFrame *> frames;
 
     for (DraggablePixmapItem *item : *events) {
-        ObjectPropertiesFrame *frame = new ObjectPropertiesFrame;
+        EventPropertiesFrame *frame = new EventPropertiesFrame;
 //        frame->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
         QSpinBox *x = frame->ui->spinBox_x;
@@ -925,7 +925,7 @@ void MainWindow::updateSelectedObjects() {
     ui->scrollArea_4->setWidgetResizable(true);
     ui->scrollArea_4->setWidget(target);
 
-    for (ObjectPropertiesFrame *frame : frames) {
+    for (EventPropertiesFrame *frame : frames) {
         layout->addWidget(frame);
     }
 
