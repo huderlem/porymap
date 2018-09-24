@@ -1,3 +1,5 @@
+#include "core/history.h"
+#include "core/historyitem.h"
 #include "map.h"
 #include "project.h"
 

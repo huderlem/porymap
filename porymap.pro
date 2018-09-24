@@ -17,6 +17,7 @@ ICON = resources/icons/porymap-icon-1.ico
 SOURCES += core/block.cpp \
     core/blockdata.cpp \
     core/heallocation.cpp \
+    core/historyitem.cpp \
     core/maplayout.cpp \
     core/metatile.cpp \
     core/tile.cpp \
@@ -40,6 +41,8 @@ SOURCES += core/block.cpp \
 HEADERS  += core/block.h \
     core/blockdata.h \
     core/heallocation.h \
+    core/history.h \
+    core/historyitem.h \
     core/maplayout.h \
     core/metatile.h \
     core/tile.h \

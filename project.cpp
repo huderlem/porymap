@@ -1,5 +1,7 @@
 #include "parseutil.h"
 #include "project.h"
+#include "core/history.h"
+#include "core/historyitem.h"
 #include "core/tile.h"
 #include "core/tileset.h"
 #include "event.h"

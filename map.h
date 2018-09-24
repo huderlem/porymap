@@ -1,9 +1,11 @@
 #ifndef MAP_H
 #define MAP_H
 
-#include "core/tileset.h"
 #include "core/blockdata.h"
+#include "core/history.h"
+#include "core/historyitem.h"
 #include "core/maplayout.h"
+#include "core/tileset.h"
 #include "event.h"
 
 #include <QPixmap>
@@ -11,70 +13,6 @@
 #include <QDebug>
 #include <QGraphicsPixmapItem>
 #include <math.h>
-
-class HistoryItem {
-public:
-    Blockdata *metatiles;
-    int layoutWidth;
-    int layoutHeight;
-    HistoryItem(Blockdata *metatiles_, int layoutWidth_, int layoutHeight_) {
-        this->metatiles = metatiles_;
-        this->layoutWidth = layoutWidth_;
-        this->layoutHeight = layoutHeight_;
-    }
-    ~HistoryItem() {
-        if (metatiles) delete metatiles;
-    }
-};
-
-template <typename T>
-class History {
-public:
-    History() {
-
-    }
-    T back() {
-        if (head > 0) {
-            return history.at(--head);
-        }
-        return NULL;
-    }
-    T next() {
-        if (head + 1 < history.length()) {
-            return history.at(++head);
-        }
-        return NULL;
-    }
-    void push(T commit) {
-        while (head + 1 < history.length()) {
-            HistoryItem *item = history.last();
-            history.removeLast();
-            delete item;
-        }
-        if (saved > head) {
-            saved = -1;
-        }
-        history.append(commit);
-        head++;
-    }
-    T current() {
-        if (head < 0 || history.length() == 0) {
-            return NULL;
-        }
-        return history.at(head);
-    }
-    void save() {
-        saved = head;
-    }
-    bool isSaved() {
-        return saved == head;
-    }
-
-private:
-    QList<T> history;
-    int head = -1;
-    int saved = -1;
-};
 
 class Connection {
 public:
