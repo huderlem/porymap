@@ -9,6 +9,7 @@
 #include <QCheckBox>
 #include <QCursor>
 
+#include "core/mapconnection.h"
 #include "ui/metatileselector.h"
 #include "ui/movementpermissionsselector.h"
 #include "project.h"
@@ -115,18 +116,18 @@ public:
 private:
     void setConnectionItemsVisible(bool);
     void setBorderItemsVisible(bool, qreal = 1);
-    void setConnectionEditControlValues(Connection*);
+    void setConnectionEditControlValues(MapConnection*);
     void setConnectionEditControlsEnabled(bool);
-    void createConnectionItem(Connection* connection, bool hide);
+    void createConnectionItem(MapConnection* connection, bool hide);
     void populateConnectionMapPickers();
     void setDiveEmergeControls();
     void updateDiveEmergeMap(QString mapName, QString direction);
     void onConnectionOffsetChanged(int newOffset);
-    void removeMirroredConnection(Connection*);
-    void updateMirroredConnectionOffset(Connection*);
-    void updateMirroredConnectionDirection(Connection*, QString);
-    void updateMirroredConnectionMap(Connection*, QString);
-    void updateMirroredConnection(Connection*, QString, QString, bool isDelete = false);
+    void removeMirroredConnection(MapConnection*);
+    void updateMirroredConnectionOffset(MapConnection*);
+    void updateMirroredConnectionDirection(MapConnection*, QString);
+    void updateMirroredConnectionMap(MapConnection*, QString);
+    void updateMirroredConnection(MapConnection*, QString, QString, bool isDelete = false);
     Event* createNewObjectEvent();
     Event* createNewWarpEvent();
     Event* createNewHealLocationEvent();
@@ -139,7 +140,7 @@ private:
 private slots:
     void mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item);
     void mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixmapItem *item);
-    void onConnectionMoved(Connection*);
+    void onConnectionMoved(MapConnection*);
     void onConnectionItemSelected(ConnectionPixmapItem* connectionItem);
     void onConnectionItemDoubleClicked(ConnectionPixmapItem* connectionItem);
     void onConnectionDirectionChanged(QString newDirection);
@@ -320,7 +321,7 @@ protected:
 class ConnectionPixmapItem : public QObject, public QGraphicsPixmapItem {
     Q_OBJECT
 public:
-    ConnectionPixmapItem(QPixmap pixmap, Connection* connection, int x, int y, int baseMapWidth, int baseMapHeight): QGraphicsPixmapItem(pixmap) {
+    ConnectionPixmapItem(QPixmap pixmap, MapConnection* connection, int x, int y, int baseMapWidth, int baseMapHeight): QGraphicsPixmapItem(pixmap) {
         this->basePixmap = pixmap;
         this->connection = connection;
         setFlag(ItemIsMovable);
@@ -344,7 +345,7 @@ public:
     int getMinOffset();
     int getMaxOffset();
     QPixmap basePixmap;
-    Connection* connection;
+    MapConnection* connection;
     int initialX;
     int initialY;
     int initialOffset;
@@ -357,7 +358,7 @@ protected:
 signals:
     void connectionItemSelected(ConnectionPixmapItem* connectionItem);
     void connectionItemDoubleClicked(ConnectionPixmapItem* connectionItem);
-    void connectionMoved(Connection*);
+    void connectionMoved(MapConnection*);
 };
 
 class BorderMetatilesPixmapItem : public QObject, public QGraphicsPixmapItem {

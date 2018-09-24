@@ -43,6 +43,7 @@ HEADERS  += core/block.h \
     core/heallocation.h \
     core/history.h \
     core/historyitem.h \
+    core/mapconnection.h \
     core/maplayout.h \
     core/metatile.h \
     core/tile.h \

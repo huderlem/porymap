@@ -4,6 +4,7 @@
 #include "core/blockdata.h"
 #include "core/history.h"
 #include "core/historyitem.h"
+#include "core/mapconnection.h"
 #include "core/maplayout.h"
 #include "core/tileset.h"
 #include "event.h"
@@ -13,16 +14,6 @@
 #include <QDebug>
 #include <QGraphicsPixmapItem>
 #include <math.h>
-
-class Connection {
-public:
-    Connection() {
-    }
-public:
-    QString direction;
-    QString offset;
-    QString map_name;
-};
 
 class Map : public QObject
 {
@@ -102,8 +93,8 @@ public:
     void addEvent(Event *event);
     QMap<QString, QList<Event*>> events;
 
-    QList<Connection*> connections;
-    QPixmap renderConnection(Connection);
+    QList<MapConnection*> connections;
+    QPixmap renderConnection(MapConnection);
     void setNewDimensionsBlockdata(int newWidth, int newHeight);
     void setDimensions(int newWidth, int newHeight, bool setNewBlockData = true);
 

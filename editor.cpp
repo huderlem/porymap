@@ -1,5 +1,6 @@
 #include "editor.h"
 #include "event.h"
+#include "core/mapconnection.h"
 #include <QCheckBox>
 #include <QPainter>
 #include <QMouseEvent>
@@ -130,7 +131,7 @@ void Editor::setDiveEmergeControls() {
     ui->comboBox_EmergeMap->blockSignals(true);
     ui->comboBox_DiveMap->setCurrentText("");
     ui->comboBox_EmergeMap->setCurrentText("");
-    for (Connection* connection : map->connections) {
+    for (MapConnection* connection : map->connections) {
         if (connection->direction == "dive") {
             ui->comboBox_DiveMap->setCurrentText(connection->map_name);
         } else if (connection->direction == "emerge") {
@@ -223,7 +224,7 @@ void Editor::updateCurrentConnectionDirection(QString curDirection) {
     updateMirroredConnectionDirection(selected_connection_item->connection, originalDirection);
 }
 
-void Editor::onConnectionMoved(Connection* connection) {
+void Editor::onConnectionMoved(MapConnection* connection) {
     updateMirroredConnectionOffset(connection);
     onConnectionOffsetChanged(connection->offset.toInt());
 }
@@ -235,7 +236,7 @@ void Editor::onConnectionOffsetChanged(int newOffset) {
 
 }
 
-void Editor::setConnectionEditControlValues(Connection* connection) {
+void Editor::setConnectionEditControlValues(MapConnection* connection) {
     QString mapName = connection ? connection->map_name : "";
     QString direction = connection ? connection->direction : "";
     int offset = connection ? connection->offset.toInt() : 0;
@@ -589,7 +590,7 @@ void Editor::displayMapConnections() {
     selected_connection_item = nullptr;
     connection_edit_items.clear();
 
-    for (Connection *connection : map->connections) {
+    for (MapConnection *connection : map->connections) {
         if (connection->direction == "dive" || connection->direction == "emerge") {
             continue;
         }
@@ -601,7 +602,7 @@ void Editor::displayMapConnections() {
     }
 }
 
-void Editor::createConnectionItem(Connection* connection, bool hide) {
+void Editor::createConnectionItem(MapConnection* connection, bool hide) {
     Map *connected_map = project->getMap(connection->map_name);
     QPixmap pixmap = connected_map->renderConnection(*connection);
     int offset = connection->offset.toInt(nullptr, 0);
@@ -728,7 +729,7 @@ void Editor::setConnectionMap(QString mapName) {
 void Editor::addNewConnection() {
     // Find direction with least number of connections.
     QMap<QString, int> directionCounts = QMap<QString, int>({{"up", 0}, {"right", 0}, {"down", 0}, {"left", 0}});
-    for (Connection* connection : map->connections) {
+    for (MapConnection* connection : map->connections) {
         directionCounts[connection->direction]++;
     }
     QString minDirection = "up";
@@ -746,7 +747,7 @@ void Editor::addNewConnection() {
         defaultMapName = project->mapNames->value(1);
     }
 
-    Connection* newConnection = new Connection;
+    MapConnection* newConnection = new MapConnection;
     newConnection->direction = minDirection;
     newConnection->offset = "0";
     newConnection->map_name = defaultMapName;
@@ -758,19 +759,19 @@ void Editor::addNewConnection() {
     updateMirroredConnection(newConnection, newConnection->direction, newConnection->map_name);
 }
 
-void Editor::updateMirroredConnectionOffset(Connection* connection) {
+void Editor::updateMirroredConnectionOffset(MapConnection* connection) {
     updateMirroredConnection(connection, connection->direction, connection->map_name);
 }
-void Editor::updateMirroredConnectionDirection(Connection* connection, QString originalDirection) {
+void Editor::updateMirroredConnectionDirection(MapConnection* connection, QString originalDirection) {
     updateMirroredConnection(connection, originalDirection, connection->map_name);
 }
-void Editor::updateMirroredConnectionMap(Connection* connection, QString originalMapName) {
+void Editor::updateMirroredConnectionMap(MapConnection* connection, QString originalMapName) {
     updateMirroredConnection(connection, connection->direction, originalMapName);
 }
-void Editor::removeMirroredConnection(Connection* connection) {
+void Editor::removeMirroredConnection(MapConnection* connection) {
     updateMirroredConnection(connection, connection->direction, connection->map_name, true);
 }
-void Editor::updateMirroredConnection(Connection* connection, QString originalDirection, QString originalMapName, bool isDelete) {
+void Editor::updateMirroredConnection(MapConnection* connection, QString originalDirection, QString originalMapName, bool isDelete) {
     if (!ui->checkBox_MirrorConnections->isChecked())
         return;
 
@@ -781,9 +782,9 @@ void Editor::updateMirroredConnection(Connection* connection, QString originalDi
     QString oppositeDirection = oppositeDirections.value(originalDirection);
 
     // Find the matching connection in the connected map.
-    Connection* mirrorConnection = nullptr;
+    MapConnection* mirrorConnection = nullptr;
     Map* otherMap = project->getMap(originalMapName);
-    for (Connection* conn : otherMap->connections) {
+    for (MapConnection* conn : otherMap->connections) {
         if (conn->direction == oppositeDirection && conn->map_name == map->name) {
             mirrorConnection = conn;
         }
@@ -808,7 +809,7 @@ void Editor::updateMirroredConnection(Connection* connection, QString originalDi
 
     // Create a new mirrored connection, if a matching one doesn't already exist.
     if (!mirrorConnection) {
-        mirrorConnection = new Connection;
+        mirrorConnection = new MapConnection;
         mirrorConnection->direction = oppositeDirections.value(connection->direction);
         mirrorConnection->map_name = map->name;
         otherMap->connections.append(mirrorConnection);
@@ -854,8 +855,8 @@ void Editor::updateDiveEmergeMap(QString mapName, QString direction) {
         return;
     }
 
-    Connection* connection = nullptr;
-    for (Connection* conn : map->connections) {
+    MapConnection* connection = nullptr;
+    for (MapConnection* conn : map->connections) {
         if (conn->direction == direction) {
             connection = conn;
             break;
@@ -870,7 +871,7 @@ void Editor::updateDiveEmergeMap(QString mapName, QString direction) {
         }
     } else {
         if (!connection) {
-            connection = new Connection;
+            connection = new MapConnection;
             connection->direction = direction;
             connection->offset = "0";
             connection->map_name = mapName;

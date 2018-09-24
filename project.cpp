@@ -96,7 +96,7 @@ void Project::loadMapConnections(Map *map) {
             for (QStringList command : *connections) {
                 QString macro = command.value(0);
                 if (macro == "connection") {
-                    Connection *connection = new Connection;
+                    MapConnection *connection = new MapConnection;
                     connection->direction = command.value(1);
                     connection->offset = command.value(2);
                     QString mapConstant = command.value(3);
@@ -240,7 +240,7 @@ void Project::saveMapConnections(Map *map) {
         QString connectionsListLabel = QString("%1_MapConnectionsList").arg(map->name);
         int numValidConnections = 0;
         text += QString("%1::\n").arg(connectionsListLabel);
-        for (Connection* connection : map->connections) {
+        for (MapConnection* connection : map->connections) {
             if (mapNamesToMapConstants->contains(connection->map_name)) {
                 text += QString("\tconnection %1, %2, %3\n")
                         .arg(connection->direction)
