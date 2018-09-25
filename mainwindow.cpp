@@ -2,7 +2,7 @@
 #include "ui_mainwindow.h"
 #include "project.h"
 #include "editor.h"
-#include "eventpropertiesframe.h"
+#include "ui/eventpropertiesframe.h"
 #include "ui_objectpropertiesframe.h"
 
 #include <QDebug>

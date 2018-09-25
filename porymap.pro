@@ -20,6 +20,7 @@ SOURCES += core/block.cpp \
     core/historyitem.cpp \
     core/maplayout.cpp \
     core/metatile.cpp \
+    core/parseutil.cpp \
     core/tile.cpp \
     core/tileset.cpp \
     ui/eventpropertiesframe.cpp \
@@ -35,7 +36,6 @@ SOURCES += core/block.cpp \
     main.cpp \
     mainwindow.cpp \
     map.cpp \
-    parseutil.cpp \
     project.cpp
 
 HEADERS  += core/block.h \
@@ -46,6 +46,7 @@ HEADERS  += core/block.h \
     core/mapconnection.h \
     core/maplayout.h \
     core/metatile.h \
+    core/parseutil.h \
     core/tile.h \
     core/tileset.h \
     ui/eventpropertiesframe.h \
@@ -60,7 +61,6 @@ HEADERS  += core/block.h \
     graphicsview.h \
     mainwindow.h \
     map.h \
-    parseutil.h \
     project.h
 
 FORMS    += mainwindow.ui \
@@ -68,3 +68,6 @@ FORMS    += mainwindow.ui \
 
 RESOURCES += \
     resources/images.qrc
+
+INCLUDEPATH += core
+INCLUDEPATH += ui
