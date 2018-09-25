@@ -25,6 +25,7 @@ SOURCES += core/block.cpp \
     core/tile.cpp \
     core/tileset.cpp \
     ui/eventpropertiesframe.cpp \
+    ui/imageproviders.cpp \
     ui/metatileselector.cpp \
     ui/movementpermissionsselector.cpp \
     ui/neweventtoolbutton.cpp \
@@ -51,6 +52,7 @@ HEADERS  += core/block.h \
     core/tile.h \
     core/tileset.h \
     ui/eventpropertiesframe.h \
+    ui/imageproviders.h \
     ui/metatileselector.h \
     ui/movementpermissionsselector.h \
     ui/neweventtoolbutton.h \

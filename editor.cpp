@@ -1,5 +1,6 @@
 #include "editor.h"
 #include "event.h"
+#include "imageproviders.h"
 #include "mapconnection.h"
 #include <QCheckBox>
 #include <QPainter>
@@ -942,7 +943,7 @@ void BorderMetatilesPixmapItem::draw() {
             int x = i * 16;
             int y = j * 16;
             int index = j * 2 + i;
-            QImage metatile_image = Tileset::getMetatileImage(blocks->value(index).tile, map->layout->tileset_primary, map->layout->tileset_secondary);
+            QImage metatile_image = getMetatileImage(blocks->value(index).tile, map->layout->tileset_primary, map->layout->tileset_secondary);
             QPoint metatile_origin = QPoint(x, y);
             painter.drawImage(metatile_origin, metatile_image);
         }
@@ -965,7 +966,7 @@ void CurrentSelectedMetatilesPixmapItem::draw() {
             int x = i * 16;
             int y = j * 16;
             int index = j * selectionDimensions.x() + i;
-            QImage metatile_image = Tileset::getMetatileImage(selectedMetatiles->at(index), map->layout->tileset_primary, map->layout->tileset_secondary);
+            QImage metatile_image = getMetatileImage(selectedMetatiles->at(index), map->layout->tileset_primary, map->layout->tileset_secondary);
             QPoint metatile_origin = QPoint(x, y);
             painter.drawImage(metatile_origin, metatile_image);
         }

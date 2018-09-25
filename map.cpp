@@ -2,6 +2,7 @@
 #include "historyitem.h"
 #include "map.h"
 #include "project.h"
+#include "imageproviders.h"
 
 #include <QTime>
 #include <QDebug>
@@ -74,17 +75,6 @@ int Map::getDisplayedBlockIndex(int index) {
     } else {
         return index - Project::getNumMetatilesPrimary() + layout->tileset_primary->metatiles->length();
     }
-}
-
-QImage Map::getCollisionMetatileImage(Block block) {
-    return getCollisionMetatileImage(block.collision, block.elevation);
-}
-
-QImage Map::getCollisionMetatileImage(int collision, int elevation) {
-    int x = collision * 16;
-    int y = elevation * 16;
-    QPixmap collisionImage = QPixmap(":/images/collisions.png").copy(x, y, 16, 16);
-    return collisionImage.toImage();
 }
 
 bool Map::blockChanged(int i, Blockdata *cache) {
@@ -160,7 +150,7 @@ QPixmap Map::renderCollision(bool ignoreCache) {
         }
         changed_any = true;
         Block block = layout->blockdata->blocks->value(i);
-        QImage metatile_image = Tileset::getMetatileImage(block.tile, layout->tileset_primary, layout->tileset_secondary);
+        QImage metatile_image = getMetatileImage(block.tile, layout->tileset_primary, layout->tileset_secondary);
         QImage collision_metatile_image = getCollisionMetatileImage(block);
         int map_y = width_ ? i / width_ : 0;
         int map_x = width_ ? i % width_ : 0;
@@ -204,7 +194,7 @@ QPixmap Map::render(bool ignoreCache = false) {
         }
         changed_any = true;
         Block block = layout->blockdata->blocks->value(i);
-        QImage metatile_image = Tileset::getMetatileImage(block.tile, layout->tileset_primary, layout->tileset_secondary);
+        QImage metatile_image = getMetatileImage(block.tile, layout->tileset_primary, layout->tileset_secondary);
         int map_y = width_ ? i / width_ : 0;
         int map_x = width_ ? i % width_ : 0;
         QPoint metatile_origin = QPoint(map_x * 16, map_y * 16);
@@ -238,7 +228,7 @@ QPixmap Map::renderBorder() {
         }
         changed_any = true;
         Block block = layout->border->blocks->value(i);
-        QImage metatile_image = Tileset::getMetatileImage(block.tile, layout->tileset_primary, layout->tileset_secondary);
+        QImage metatile_image = getMetatileImage(block.tile, layout->tileset_primary, layout->tileset_secondary);
         int map_y = i / width_;
         int map_x = i % width_;
         painter.drawImage(QPoint(map_x * 16, map_y * 16), metatile_image);

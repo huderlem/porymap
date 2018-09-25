@@ -25,9 +25,7 @@ public:
     QList<QList<QRgb>> *palettes = nullptr;
 
     static Tileset* getBlockTileset(int, Tileset*, Tileset*);
-    static QImage getMetatileImage(int, Tileset*, Tileset*);
     static Metatile* getMetatile(int, Tileset*, Tileset*);
-    static QImage getMetatileTile(int, Tileset*, Tileset*);
     static QList<QList<QRgb>> getBlockPalettes(Tileset*, Tileset*);
 };
 

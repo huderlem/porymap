@@ -57,12 +57,10 @@ public:
     uint16_t getSelectedBlockIndex(int);
     int getDisplayedBlockIndex(int);
     QPixmap render(bool ignoreCache);
-
     QPixmap renderCollision(bool ignoreCache);
+
     QImage collision_image;
     QPixmap collision_pixmap;
-    QImage getCollisionMetatileImage(Block);
-    QImage getCollisionMetatileImage(int, int);
 
     void drawSelection(int i, int w, int selectionWidth, int selectionHeight, QPainter *painter, int gridWidth);
 
