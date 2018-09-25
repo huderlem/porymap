@@ -10,9 +10,10 @@ NewEventToolButton::NewEventToolButton(QWidget *parent) :
     setPopupMode(QToolButton::MenuButtonPopup);
     QObject::connect(this, SIGNAL(triggered(QAction*)),
                      this, SLOT(setDefaultAction(QAction*)));
+    this->init();
 }
 
-void NewEventToolButton::initButton()
+void NewEventToolButton::init()
 {
     // Add a context menu to select different types of map events.
     this->newObjectAction = new QAction("New Object", this);

@@ -145,6 +145,11 @@ private:
     void checkToolButtons();
 
     void scaleMapView(int);
+    void initExtraShortcuts();
+    void initExtraSignals();
+    void initEditor();
+    void loadUserSettings();
+    void openRecentProject();
 };
 
 enum MapListUserRoles {

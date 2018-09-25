@@ -33,22 +33,46 @@ MainWindow::MainWindow(QWidget *parent) :
     QApplication::setWindowIcon(QIcon(":/icons/porymap-icon-1.ico"));
 
     ui->setupUi(this);
-
-    ui->newEventToolButton->initButton();
-    connect(ui->newEventToolButton, SIGNAL(newEventAdded(QString)), this, SLOT(addNewEvent(QString)));
-
-    new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Z), this, SLOT(redo()));
-
-    editor = new Editor(ui);
-    connect(editor, SIGNAL(objectsChanged()), this, SLOT(updateSelectedObjects()));
-    connect(editor, SIGNAL(selectedObjectsChanged()), this, SLOT(updateSelectedObjects()));
-    connect(editor, SIGNAL(loadMapRequested(QString, QString)), this, SLOT(onLoadMapRequested(QString, QString)));
-    connect(editor, SIGNAL(tilesetChanged(QString)), this, SLOT(onTilesetChanged(QString)));
-    connect(editor, SIGNAL(warpEventDoubleClicked(QString,QString)), this, SLOT(openWarpMap(QString,QString)));
-    connect(editor, SIGNAL(currentMetatilesSelectionChanged()), this, SLOT(currentMetatilesSelectionChanged()));
+    this->initExtraSignals();
+    this->initExtraShortcuts();
+    this->loadUserSettings();
+    this->initEditor();
+    this->openRecentProject();
 
     on_toolButton_Paint_clicked();
+}
 
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+void MainWindow::initExtraShortcuts() {
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Z), this, SLOT(redo()));
+}
+
+void MainWindow::initExtraSignals() {
+    connect(ui->newEventToolButton, SIGNAL(newEventAdded(QString)), this, SLOT(addNewEvent(QString)));
+}
+
+void MainWindow::initEditor() {
+    this->editor = new Editor(ui);
+    connect(this->editor, SIGNAL(objectsChanged()), this, SLOT(updateSelectedObjects()));
+    connect(this->editor, SIGNAL(selectedObjectsChanged()), this, SLOT(updateSelectedObjects()));
+    connect(this->editor, SIGNAL(loadMapRequested(QString, QString)), this, SLOT(onLoadMapRequested(QString, QString)));
+    connect(this->editor, SIGNAL(tilesetChanged(QString)), this, SLOT(onTilesetChanged(QString)));
+    connect(this->editor, SIGNAL(warpEventDoubleClicked(QString,QString)), this, SLOT(openWarpMap(QString,QString)));
+    connect(this->editor, SIGNAL(currentMetatilesSelectionChanged()), this, SLOT(currentMetatilesSelectionChanged()));
+}
+
+void MainWindow::loadUserSettings() {
+    QSettings settings;
+    if (settings.contains("cursor_mode") && settings.value("cursor_mode") == "0") {
+        ui->actionBetter_Cursors->setChecked(false);
+    }
+}
+
+void MainWindow::openRecentProject() {
     QSettings settings;
     QString key = "recent_projects";
     if (settings.contains(key)) {
@@ -58,15 +82,6 @@ MainWindow::MainWindow(QWidget *parent) :
             openProject(default_dir);
         }
     }
-
-    if (settings.contains("cursor_mode") && settings.value("cursor_mode") == "0") {
-        ui->actionBetter_Cursors->setChecked(false);
-    }
-}
-
-MainWindow::~MainWindow()
-{
-    delete ui;
 }
 
 void MainWindow::setStatusBarMessage(QString message, int timeout/* = 0*/) {

@@ -9,7 +9,6 @@ class NewEventToolButton : public QToolButton
     Q_OBJECT
 public:
     explicit NewEventToolButton(QWidget *parent = nullptr);
-    void initButton();
     QString getSelectedEventType();
 public slots:
     void newObject();
@@ -32,6 +31,7 @@ private:
     QAction *newSignAction;
     QAction *newHiddenItemAction;
     QAction *newSecretBaseAction;
+    void init();
 };
 
 #endif // NEWEVENTTOOLBUTTON_H
