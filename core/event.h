@@ -1,7 +1,6 @@
 #ifndef EVENT_H
 #define EVENT_H
 
-#include "heallocation.h"
 #include <QString>
 #include <QPixmap>
 #include <QMap>
@@ -68,7 +67,6 @@ public:
 
     QString buildObjectEventMacro(int);
     QString buildWarpEventMacro(QMap<QString, QString>*);
-    HealLocation buildHealLocation();
     QString buildCoordScriptEventMacro();
     QString buildCoordWeatherEventMacro();
     QString buildSignEventMacro();

@@ -1,6 +1,7 @@
 #ifndef HEALLOCATION_H
 #define HEALLOCATION_H
 
+#include "event.h"
 #include <QString>
 #include <QDebug>
 
@@ -17,7 +18,7 @@ public:
     int     index;
     uint16_t  x;
     uint16_t  y;
-
+    static HealLocation fromEvent(Event*);
 };
 
 #endif // HEALLOCATION_H

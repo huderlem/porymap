@@ -175,21 +175,6 @@ QString Event::buildWarpEventMacro(QMap<QString, QString> *mapNamesToMapConstant
     return text;
 }
 
-HealLocation Event::buildHealLocation()
-{
-    HealLocation hl;
-    hl.name  = this->get("loc_name");
-    try {
-        hl.index = this->get("index").toInt();
-    }
-    catch(...) {
-        hl.index = 0;
-    }
-    hl.x     = this->getU16("x");
-    hl.y     = this->getU16("y");
-    return hl;
-}
-
 QString Event::buildCoordScriptEventMacro()
 {
     QString text = "";

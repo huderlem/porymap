@@ -534,8 +534,8 @@ void Project::saveHealLocationStruct(Map *map) {
 
     // set new location in flyableMapsList
     if (map->events["heal_event_group"].length() > 0) {
-        for (Event *heal : map->events["heal_event_group"]) {
-            HealLocation hl = heal->buildHealLocation();
+        for (Event *healEvent : map->events["heal_event_group"]) {
+            HealLocation hl = HealLocation::fromEvent(healEvent);
             flyableMaps[hl.index - 1] = hl;
         }
     }
@@ -1475,8 +1475,8 @@ void Project::saveMapEvents(Map *map) {
 
     // save heal event changes
     if (map->events["heal_event_group"].length() > 0) {
-        for (Event *heal : map->events["heal_event_group"]) {
-            HealLocation hl = heal->buildHealLocation();
+        for (Event *healEvent : map->events["heal_event_group"]) {
+            HealLocation hl = HealLocation::fromEvent(healEvent);
             flyableMaps[hl.index - 1] = hl;
         }
     }
