@@ -2,8 +2,8 @@
 #define PROJECT_H
 
 #include "map.h"
-#include "core/blockdata.h"
-#include "core/heallocation.h"
+#include "blockdata.h"
+#include "heallocation.h"
 
 #include <QStringList>
 #include <QList>

@@ -1,5 +1,5 @@
-#include "core/tileset.h"
-#include "core/metatile.h"
+#include "tileset.h"
+#include "metatile.h"
 #include "project.h"
 
 #include <QPainter>

@@ -1,6 +1,6 @@
-#include "core/metatile.h"
+#include "metatile.h"
+#include "tileset.h"
 #include "project.h"
-#include "core/tileset.h"
 
 Metatile::Metatile()
 {

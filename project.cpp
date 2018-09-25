@@ -1,9 +1,9 @@
 #include "project.h"
-#include "core/history.h"
-#include "core/historyitem.h"
-#include "core/parseutil.h"
-#include "core/tile.h"
-#include "core/tileset.h"
+#include "history.h"
+#include "historyitem.h"
+#include "parseutil.h"
+#include "tile.h"
+#include "tileset.h"
 #include "event.h"
 
 #include <QDebug>

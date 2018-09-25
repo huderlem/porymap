@@ -16,6 +16,7 @@ ICON = resources/icons/porymap-icon-1.ico
 
 SOURCES += core/block.cpp \
     core/blockdata.cpp \
+    core/event.cpp \
     core/heallocation.cpp \
     core/historyitem.cpp \
     core/maplayout.cpp \
@@ -31,7 +32,6 @@ SOURCES += core/block.cpp \
     ui/noscrollspinbox.cpp \
     ui/selectablepixmapitem.cpp \
     editor.cpp \
-    event.cpp \
     graphicsview.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -40,6 +40,7 @@ SOURCES += core/block.cpp \
 
 HEADERS  += core/block.h \
     core/blockdata.h \
+    core/event.h \
     core/heallocation.h \
     core/history.h \
     core/historyitem.h \
@@ -57,7 +58,6 @@ HEADERS  += core/block.h \
     ui/noscrollspinbox.h \
     ui/selectablepixmapitem.h \
     editor.h \
-    event.h \
     graphicsview.h \
     mainwindow.h \
     map.h \

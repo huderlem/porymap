@@ -1,6 +1,6 @@
 #include "editor.h"
 #include "event.h"
-#include "core/mapconnection.h"
+#include "mapconnection.h"
 #include <QCheckBox>
 #include <QPainter>
 #include <QMouseEvent>

@@ -2,7 +2,7 @@
 #define METATILESELECTOR_H
 
 #include "selectablepixmapitem.h"
-#include "core/tileset.h"
+#include "tileset.h"
 
 class MetatileSelector: public SelectablePixmapItem {
     Q_OBJECT

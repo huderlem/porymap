@@ -1,4 +1,4 @@
-#include "core/blockdata.h"
+#include "blockdata.h"
 
 Blockdata::Blockdata(QObject *parent) : QObject(parent)
 {

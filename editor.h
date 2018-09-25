@@ -9,9 +9,9 @@
 #include <QCheckBox>
 #include <QCursor>
 
-#include "core/mapconnection.h"
-#include "ui/metatileselector.h"
-#include "ui/movementpermissionsselector.h"
+#include "mapconnection.h"
+#include "metatileselector.h"
+#include "movementpermissionsselector.h"
 #include "project.h"
 #include "ui_mainwindow.h"
 

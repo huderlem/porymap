@@ -1,12 +1,12 @@
 #ifndef MAP_H
 #define MAP_H
 
-#include "core/blockdata.h"
-#include "core/history.h"
-#include "core/historyitem.h"
-#include "core/mapconnection.h"
-#include "core/maplayout.h"
-#include "core/tileset.h"
+#include "blockdata.h"
+#include "history.h"
+#include "historyitem.h"
+#include "mapconnection.h"
+#include "maplayout.h"
+#include "tileset.h"
 #include "event.h"
 
 #include <QPixmap>

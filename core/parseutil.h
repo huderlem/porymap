@@ -1,7 +1,7 @@
 #ifndef PARSEUTIL_H
 #define PARSEUTIL_H
 
-#include "core/heallocation.h"
+#include "heallocation.h"
 
 #include <QString>
 #include <QList>

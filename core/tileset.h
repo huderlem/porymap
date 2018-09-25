@@ -1,8 +1,8 @@
 #ifndef TILESET_H
 #define TILESET_H
 
-#include "core/metatile.h"
-#include "core/tile.h"
+#include "metatile.h"
+#include "tile.h"
 #include <QImage>
 
 class Tileset
