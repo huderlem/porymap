@@ -108,6 +108,7 @@ public:
     QString map_edit_mode;
     QString prev_edit_mode;
     QCursor cursor;
+    bool smart_paths_enabled = false;
 
     void objectsView_onMousePress(QMouseEvent *event);
     void objectsView_onMouseMove(QMouseEvent *event);
@@ -136,6 +137,7 @@ private:
     Event* createNewSignEvent();
     Event* createNewHiddenItemEvent();
     Event* createNewSecretBaseEvent();
+    QString getMovementPermissionText(uint16_t collision, uint16_t elevation);
 
 private slots:
     void mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item);
@@ -149,6 +151,10 @@ private slots:
     void onHoveredMovementPermissionCleared();
     void onHoveredMetatileSelectionChanged(uint16_t);
     void onHoveredMetatileSelectionCleared();
+    void onHoveredMapMetatileChanged(int, int);
+    void onHoveredMapMetatileCleared();
+    void onHoveredMapMovementPermissionChanged(int, int);
+    void onHoveredMapMovementPermissionCleared();
     void onSelectedMetatilesChanged();
 
 signals:
@@ -267,6 +273,8 @@ public:
     }
     bool active;
     bool right_click;
+    int paint_tile_initial_x;
+    int paint_tile_initial_y;
     QPoint selection_origin;
     QList<QPoint> selection;
     virtual void paint(QGraphicsSceneMouseEvent*);
@@ -280,13 +288,14 @@ public:
     void updateMetatileSelection(QGraphicsSceneMouseEvent *event);
 
 private:
-    void updateCurHoveredTile(QPointF pos);
     void paintNormal(int x, int y);
     void paintSmartPath(int x, int y);
     static QList<int> smartPathTable;
 
 signals:
     void mouseEvent(QGraphicsSceneMouseEvent *, MapPixmapItem *);
+    void hoveredMapMetatileChanged(int x, int y);
+    void hoveredMapMetatileCleared();
 
 protected:
     void hoverMoveEvent(QGraphicsSceneHoverEvent*);
@@ -311,8 +320,12 @@ public:
 
 signals:
     void mouseEvent(QGraphicsSceneMouseEvent *, CollisionPixmapItem *);
+    void hoveredMapMovementPermissionChanged(int, int);
+    void hoveredMapMovementPermissionCleared();
 
 protected:
+    void hoverMoveEvent(QGraphicsSceneHoverEvent*);
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent*);
     void mousePressEvent(QGraphicsSceneMouseEvent*);
     void mouseMoveEvent(QGraphicsSceneMouseEvent*);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent*);

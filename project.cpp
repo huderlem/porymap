@@ -69,7 +69,7 @@ Map* Project::loadMap(QString map_name) {
     readMapEvents(map);
     loadMapConnections(map);
     map->commit();
-    map->history.save();
+    map->metatileHistory.save();
 
     map_cache->insert(map_name, map);
     return map;
@@ -650,7 +650,7 @@ void Project::saveMapBorder(Map *map) {
 void Project::saveBlockdata(Map* map) {
     QString path = QString("%1/%2").arg(root).arg(map->layout->blockdata_path);
     writeBlockdata(path, map->layout->blockdata);
-    map->history.save();
+    map->metatileHistory.save();
 }
 
 void Project::writeBlockdata(QString path, Blockdata *blockdata) {
@@ -1053,7 +1053,7 @@ Map* Project::addNewMapToGroup(QString mapName, int groupNum) {
     setNewMapEvents(map);
     setNewMapConnections(map);
     map->commit();
-    map->history.save();
+    map->metatileHistory.save();
     map_cache->insert(mapName, map);
 
     return map;

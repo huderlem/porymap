@@ -25,9 +25,6 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-public slots:
-    void setStatusBarMessage(QString message, int timeout = 0);
-
 private slots:
     void on_action_Open_Project_triggered();
     void on_mapList_activated(const QModelIndex &index);

@@ -84,16 +84,12 @@ void MainWindow::openRecentProject() {
     }
 }
 
-void MainWindow::setStatusBarMessage(QString message, int timeout/* = 0*/) {
-    statusBar()->showMessage(message, timeout);
-}
-
 void MainWindow::openProject(QString dir) {
     if (dir.isNull()) {
         return;
     }
 
-    setStatusBarMessage(QString("Opening project %1").arg(dir));
+    this->statusBar()->showMessage(QString("Opening project %1").arg(dir));
 
     bool already_open = (
         (editor && editor != nullptr)
@@ -113,7 +109,7 @@ void MainWindow::openProject(QString dir) {
         populateMapList();
     }
 
-    setStatusBarMessage(QString("Opened project %1").arg(dir));
+    this->statusBar()->showMessage(QString("Opened project %1").arg(dir));
 }
 
 QString MainWindow::getDefaultMap() {
@@ -184,7 +180,6 @@ void MainWindow::setMap(QString map_name) {
 
     connect(editor->map, SIGNAL(mapChanged(Map*)), this, SLOT(onMapChanged(Map *)));
     connect(editor->map, SIGNAL(mapNeedsRedrawing()), this, SLOT(onMapNeedsRedrawing()));
-    connect(editor->map, SIGNAL(statusBarMessage(QString)), this, SLOT(setStatusBarMessage(QString)));
 
     setRecentMap(map_name);
     updateMapList();
@@ -1188,7 +1183,7 @@ void MainWindow::on_pushButton_clicked()
 
 void MainWindow::on_checkBox_smartPaths_stateChanged(int selected)
 {
-    editor->map->smart_paths_enabled = selected == Qt::Checked;
+    editor->smart_paths_enabled = selected == Qt::Checked;
 }
 
 void MainWindow::on_checkBox_ToggleBorder_stateChanged(int selected)

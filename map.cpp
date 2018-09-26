@@ -61,22 +61,6 @@ int Map::getHeight() {
     return layout->height.toInt(nullptr, 0);
 }
 
-uint16_t Map::getSelectedBlockIndex(int index) {
-    if (index < layout->tileset_primary->metatiles->length()) {
-        return static_cast<uint16_t>(index);
-    } else {
-        return static_cast<uint16_t>(Project::getNumMetatilesPrimary() + index - layout->tileset_primary->metatiles->length());
-    }
-}
-
-int Map::getDisplayedBlockIndex(int index) {
-    if (index < layout->tileset_primary->metatiles->length()) {
-        return index;
-    } else {
-        return index - Project::getNumMetatilesPrimary() + layout->tileset_primary->metatiles->length();
-    }
-}
-
 bool Map::blockChanged(int i, Blockdata *cache) {
     if (!cache)
         return true;
@@ -276,22 +260,6 @@ QPixmap Map::renderConnection(MapConnection connection) {
     return QPixmap::fromImage(connection_image);
 }
 
-void Map::drawSelection(int i, int w, int selectionWidth, int selectionHeight, QPainter *painter, int gridWidth) {
-    int x = i % w;
-    int y = i / w;
-    painter->save();
-
-    QColor penColor = QColor(0xff, 0xff, 0xff);
-    painter->setPen(penColor);
-    int rectWidth = selectionWidth * gridWidth;
-    int rectHeight = selectionHeight * gridWidth;
-    painter->drawRect(x * gridWidth, y * gridWidth, rectWidth - 1, rectHeight -1);
-    painter->setPen(QColor(0, 0, 0));
-    painter->drawRect(x * gridWidth - 1, y * gridWidth - 1, rectWidth + 1, rectHeight + 1);
-    painter->drawRect(x * gridWidth + 1, y * gridWidth + 1, rectWidth - 3, rectHeight - 3);
-    painter->restore();
-}
-
 void Map::setNewDimensionsBlockdata(int newWidth, int newHeight) {
     int oldWidth = getWidth();
     int oldHeight = getHeight();
@@ -377,7 +345,7 @@ void Map::_floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_
 
 
 void Map::undo() {
-    HistoryItem *commit = history.back();
+    HistoryItem *commit = metatileHistory.back();
     if (!commit)
         return;
 
@@ -394,7 +362,7 @@ void Map::undo() {
 }
 
 void Map::redo() {
-    HistoryItem *commit = history.next();
+    HistoryItem *commit = metatileHistory.next();
     if (!commit)
         return;
 
@@ -412,14 +380,14 @@ void Map::redo() {
 
 void Map::commit() {
     if (layout->blockdata) {
-        HistoryItem *item = history.current();
+        HistoryItem *item = metatileHistory.current();
         bool atCurrentHistory = item
                 && layout->blockdata->equals(item->metatiles)
                 && this->getWidth() == item->layoutWidth
                 && this->getHeight() == item->layoutHeight;
         if (!atCurrentHistory) {
             HistoryItem *commit = new HistoryItem(layout->blockdata->copy(), this->getWidth(), this->getHeight());
-            history.push(commit);
+            metatileHistory.push(commit);
             emit mapChanged(this);
         }
     }
@@ -460,46 +428,5 @@ void Map::addEvent(Event *event) {
 }
 
 bool Map::hasUnsavedChanges() {
-    return !history.isSaved() || !isPersistedToFile || layout->has_unsaved_changes;
-}
-
-void Map::hoveredTileChanged(int x, int y, int block) {
-    emit statusBarMessage(QString("X: %1, Y: %2, Metatile: 0x%3, Scale = %4x")
-                          .arg(x)
-                          .arg(y)
-                          .arg(QString("%1").arg(block, 3, 16, QChar('0')).toUpper())
-                          .arg(QString::number(pow(this->scale_base,this->scale_exp))));
-}
-
-void Map::clearHoveredTile() {
-    emit statusBarMessage(QString(""));
-}
-
-void Map::hoveredMetatileSelectionChanged(uint16_t metatileId) {
-    emit statusBarMessage(QString("Metatile: 0x%1")
-                          .arg(QString("%1").arg(metatileId, 3, 16, QChar('0')).toUpper()));
-}
-
-void Map::clearHoveredMetatileSelection() {
-    emit statusBarMessage(QString(""));
-}
-
-void Map::hoveredMovementPermissionTileChanged(int collision, int elevation) {
-    QString message;
-    if (collision == 0 && elevation == 0) {
-        message = "Collision: Transition between elevations";
-    } else if (collision == 0 && elevation == 15) {
-        message = "Collision: Multi-Level (Bridge)";
-    } else if (collision == 0 && elevation == 1) {
-        message = "Collision: Surf";
-    } else if (collision == 0) {
-        message = QString("Collision: Passable, Elevation: %1").arg(elevation);
-    } else {
-        message = QString("Collision: Impassable, Elevation: %1").arg(elevation);
-    }
-    emit statusBarMessage(message);
-}
-
-void Map::clearHoveredMovementPermissionTile() {
-    emit statusBarMessage(QString(""));
+    return !metatileHistory.isSaved() || !isPersistedToFile || layout->has_unsaved_changes;
 }

@@ -317,23 +317,70 @@ void Editor::onBorderMetatilesChanged() {
 }
 
 void Editor::onHoveredMovementPermissionChanged(uint16_t collision, uint16_t elevation) {
-    map->hoveredMovementPermissionTileChanged(collision, elevation);
+    this->ui->statusBar->showMessage(this->getMovementPermissionText(collision, elevation));
 }
 
 void Editor::onHoveredMovementPermissionCleared() {
-    map->clearHoveredMovementPermissionTile();
+    this->ui->statusBar->clearMessage();
 }
 
 void Editor::onHoveredMetatileSelectionChanged(uint16_t metatileId) {
-    map->hoveredMetatileSelectionChanged(metatileId);
+    QString message = QString("Metatile: 0x%1")
+                        .arg(QString("%1").arg(metatileId, 3, 16, QChar('0')).toUpper());
+    this->ui->statusBar->showMessage(message);
 }
 
 void Editor::onHoveredMetatileSelectionCleared() {
-    map->clearHoveredMetatileSelection();
+    this->ui->statusBar->clearMessage();
 }
 
 void Editor::onSelectedMetatilesChanged() {
     this->redrawCurrentMetatilesSelection();
+}
+
+void Editor::onHoveredMapMetatileChanged(int x, int y) {
+    int blockIndex = y * map->getWidth() + x;
+    int tile = map->layout->blockdata->blocks->at(blockIndex).tile;
+    this->ui->statusBar->showMessage(QString("X: %1, Y: %2, Metatile: 0x%3, Scale = %4x")
+                          .arg(x)
+                          .arg(y)
+                          .arg(QString("%1").arg(tile, 3, 16, QChar('0')).toUpper())
+                          .arg(QString::number(pow(map->scale_base, map->scale_exp))));
+}
+
+void Editor::onHoveredMapMetatileCleared() {
+    this->ui->statusBar->clearMessage();
+}
+
+void Editor::onHoveredMapMovementPermissionChanged(int x, int y) {
+    int blockIndex = y * map->getWidth() + x;
+    uint16_t collision = map->layout->blockdata->blocks->at(blockIndex).collision;
+    uint16_t elevation = map->layout->blockdata->blocks->at(blockIndex).elevation;
+    QString message = QString("X: %1, Y: %2, %3")
+                        .arg(x)
+                        .arg(y)
+                        .arg(this->getMovementPermissionText(collision, elevation));
+    this->ui->statusBar->showMessage(message);
+}
+
+void Editor::onHoveredMapMovementPermissionCleared() {
+    this->ui->statusBar->clearMessage();
+}
+
+QString Editor::getMovementPermissionText(uint16_t collision, uint16_t elevation){
+    QString message;
+    if (collision == 0 && elevation == 0) {
+        message = "Collision: Transition between elevations";
+    } else if (collision == 0 && elevation == 15) {
+        message = "Collision: Multi-Level (Bridge)";
+    } else if (collision == 0 && elevation == 1) {
+        message = "Collision: Surf";
+    } else if (collision == 0) {
+        message = QString("Collision: Passable, Elevation: %1").arg(elevation);
+    } else {
+        message = QString("Collision: Impassable, Elevation: %1").arg(elevation);
+    }
+    return message;
 }
 
 void Editor::setConnectionsVisibility(bool visible) {
@@ -418,6 +465,10 @@ void Editor::displayMap() {
     map_item = new MapPixmapItem(map, this);
     connect(map_item, SIGNAL(mouseEvent(QGraphicsSceneMouseEvent*,MapPixmapItem*)),
             this, SLOT(mouseEvent_map(QGraphicsSceneMouseEvent*,MapPixmapItem*)));
+    connect(map_item, SIGNAL(hoveredMapMetatileChanged(int, int)),
+            this, SLOT(onHoveredMapMetatileChanged(int, int)));
+    connect(map_item, SIGNAL(hoveredMapMetatileCleared()),
+            this, SLOT(onHoveredMapMetatileCleared()));
 
     map_item->draw(true);
     scene->addItem(map_item);
@@ -429,6 +480,10 @@ void Editor::displayMap() {
     collision_item = new CollisionPixmapItem(map, this);
     connect(collision_item, SIGNAL(mouseEvent(QGraphicsSceneMouseEvent*,CollisionPixmapItem*)),
             this, SLOT(mouseEvent_collision(QGraphicsSceneMouseEvent*,CollisionPixmapItem*)));
+    connect(collision_item, SIGNAL(hoveredMapMovementPermissionChanged(int, int)),
+            this, SLOT(onHoveredMapMovementPermissionChanged(int, int)));
+    connect(collision_item, SIGNAL(hoveredMapMovementPermissionCleared()),
+            this, SLOT(onHoveredMapMovementPermissionCleared()));
 
     collision_item->draw(true);
     scene->addItem(collision_item);
@@ -1044,7 +1099,7 @@ void MapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
             // Paint onto the map.
             bool smartPathsEnabled = event->modifiers() & Qt::ShiftModifier;
             QPoint selectionDimensions = editor->metatile_selector_item->getSelectionDimensions();
-            if ((map->smart_paths_enabled || smartPathsEnabled) && selectionDimensions.x() == 3 && selectionDimensions.y() == 3) {
+            if ((editor->smart_paths_enabled || smartPathsEnabled) && selectionDimensions.x() == 3 && selectionDimensions.y() == 3) {
                 paintSmartPath(x, y);
             } else {
                 paintNormal(x, y);
@@ -1104,13 +1159,13 @@ void MapPixmapItem::paintNormal(int x, int y) {
 
     // Snap the selected position to the top-left of the block boundary.
     // This allows painting via dragging the mouse to tile the painted region.
-    int xDiff = x - map->paint_tile_initial_x;
-    int yDiff = y - map->paint_tile_initial_y;
+    int xDiff = x - this->paint_tile_initial_x;
+    int yDiff = y - this->paint_tile_initial_y;
     if (xDiff < 0 && xDiff % selectionDimensions.x() != 0) xDiff -= selectionDimensions.x();
     if (yDiff < 0 && yDiff % selectionDimensions.y() != 0) yDiff -= selectionDimensions.y();
 
-    x = map->paint_tile_initial_x + (xDiff / selectionDimensions.x()) * selectionDimensions.x();
-    y = map->paint_tile_initial_y + (yDiff / selectionDimensions.y()) * selectionDimensions.y();
+    x = this->paint_tile_initial_x + (xDiff / selectionDimensions.x()) * selectionDimensions.x();
+    y = this->paint_tile_initial_y + (yDiff / selectionDimensions.y()) * selectionDimensions.y();
 
     for (int i = 0; i < selectionDimensions.x() && i + x < map->getWidth(); i++)
     for (int j = 0; j < selectionDimensions.y() && j + y < map->getHeight(); j++) {
@@ -1269,7 +1324,7 @@ void MapPixmapItem::floodFill(QGraphicsSceneMouseEvent *event) {
             int tile = selectedMetatiles->first();
             if (block && block->tile != tile) {
                 bool smartPathsEnabled = event->modifiers() & Qt::ShiftModifier;
-                if ((map->smart_paths_enabled || smartPathsEnabled) && selectionDimensions.x() == 3 && selectionDimensions.y() == 3)
+                if ((editor->smart_paths_enabled || smartPathsEnabled) && selectionDimensions.x() == 3 && selectionDimensions.y() == 3)
                     this->_floodFillSmartPath(x, y);
                 else
                     this->_floodFill(x, y);
@@ -1477,32 +1532,16 @@ void MapPixmapItem::draw(bool ignoreCache) {
     }
 }
 
-void MapPixmapItem::updateCurHoveredTile(QPointF pos) {
-    int x = static_cast<int>(pos.x()) / 16;
-    int y = static_cast<int>(pos.y()) / 16;
-    int blockIndex = y * map->getWidth() + x;
-    if (x < 0 || x >= map->getWidth() || y < 0 || y >= map->getHeight()) {
-        map->clearHoveredTile();
-    } else {
-        if (editor->current_view == editor->map_item) {
-            int tile = map->layout->blockdata->blocks->at(blockIndex).tile;
-            map->hoveredTileChanged(x, y, tile);
-        } else if (editor->current_view == editor->collision_item) {
-            int collision = map->layout->blockdata->blocks->at(blockIndex).collision;
-            int elevation = map->layout->blockdata->blocks->at(blockIndex).elevation;
-            map->hoveredMovementPermissionTileChanged(collision, elevation);
-        }
-    }
-}
-
 void MapPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
-    updateCurHoveredTile(event->pos());
+    int x = static_cast<int>(event->pos().x()) / 16;
+    int y = static_cast<int>(event->pos().y()) / 16;
+    emit this->hoveredMapMetatileChanged(x, y);
     if (editor->ui->actionBetter_Cursors->isChecked()){
         setCursor(editor->cursor);
     }
 }
 void MapPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
-    map->clearHoveredTile();
+    emit this->hoveredMapMetatileCleared();
     if (editor->ui->actionBetter_Cursors->isChecked()){
         unsetCursor();
     }
@@ -1511,18 +1550,34 @@ void MapPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     QPointF pos = event->pos();
     int x = static_cast<int>(pos.x()) / 16;
     int y = static_cast<int>(pos.y()) / 16;
-    map->paint_tile_initial_x = x;
-    map->paint_tile_initial_y = y;
+    this->paint_tile_initial_x = x;
+    this->paint_tile_initial_y = y;
     emit mouseEvent(event, this);
 }
 void MapPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
-    updateCurHoveredTile(event->pos());
+    int x = static_cast<int>(event->pos().x()) / 16;
+    int y = static_cast<int>(event->pos().y()) / 16;
+    emit this->hoveredMapMetatileChanged(x, y);
     emit mouseEvent(event, this);
 }
 void MapPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
     emit mouseEvent(event, this);
 }
 
+void CollisionPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
+    int x = static_cast<int>(event->pos().x()) / 16;
+    int y = static_cast<int>(event->pos().y()) / 16;
+    emit this->hoveredMapMovementPermissionChanged(x, y);
+    if (editor->ui->actionBetter_Cursors->isChecked()){
+        setCursor(editor->cursor);
+    }
+}
+void CollisionPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
+    emit this->hoveredMapMovementPermissionCleared();
+    if (editor->ui->actionBetter_Cursors->isChecked()){
+        unsetCursor();
+    }
+}
 void CollisionPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     emit mouseEvent(event, this);
 }
