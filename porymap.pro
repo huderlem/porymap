@@ -19,13 +19,20 @@ SOURCES += core/block.cpp \
     core/event.cpp \
     core/heallocation.cpp \
     core/historyitem.cpp \
+    core/map.cpp \
     core/maplayout.cpp \
     core/metatile.cpp \
     core/parseutil.cpp \
     core/tile.cpp \
     core/tileset.cpp \
+    ui/bordermetatilespixmapitem.cpp \
+    ui/collisionpixmapitem.cpp \
+    ui/connectionpixmapitem.cpp \
+    ui/currentselectedmetatilespixmapitem.cpp \
     ui/eventpropertiesframe.cpp \
+    ui/graphicsview.cpp \
     ui/imageproviders.cpp \
+    ui/mappixmapitem.cpp \
     ui/metatileselector.cpp \
     ui/movementpermissionsselector.cpp \
     ui/neweventtoolbutton.cpp \
@@ -33,11 +40,10 @@ SOURCES += core/block.cpp \
     ui/noscrollspinbox.cpp \
     ui/selectablepixmapitem.cpp \
     editor.cpp \
-    graphicsview.cpp \
     main.cpp \
     mainwindow.cpp \
-    map.cpp \
-    project.cpp
+    project.cpp \
+    settings.cpp
 
 HEADERS  += core/block.h \
     core/blockdata.h \
@@ -45,14 +51,21 @@ HEADERS  += core/block.h \
     core/heallocation.h \
     core/history.h \
     core/historyitem.h \
+    core/map.h \
     core/mapconnection.h \
     core/maplayout.h \
     core/metatile.h \
     core/parseutil.h \
     core/tile.h \
     core/tileset.h \
+    ui/bordermetatilespixmapitem.h \
+    ui/collisionpixmapitem.h \
+    ui/connectionpixmapitem.h \
+    ui/currentselectedmetatilespixmapitem.h \
     ui/eventpropertiesframe.h \
+    ui/graphicsview.h \
     ui/imageproviders.h \
+    ui/mappixmapitem.h \
     ui/metatileselector.h \
     ui/movementpermissionsselector.h \
     ui/neweventtoolbutton.h \
@@ -60,10 +73,9 @@ HEADERS  += core/block.h \
     ui/noscrollspinbox.h \
     ui/selectablepixmapitem.h \
     editor.h \
-    graphicsview.h \
     mainwindow.h \
-    map.h \
-    project.h
+    project.h \
+    settings.h
 
 FORMS    += mainwindow.ui \
     eventpropertiesframe.ui

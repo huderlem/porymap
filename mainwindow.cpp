@@ -4,6 +4,8 @@
 #include "editor.h"
 #include "eventpropertiesframe.h"
 #include "ui_objectpropertiesframe.h"
+#include "bordermetatilespixmapitem.h"
+#include "currentselectedmetatilespixmapitem.h"
 
 #include <QDebug>
 #include <QFileDialog>
@@ -35,7 +37,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     this->initExtraSignals();
     this->initExtraShortcuts();
-    this->loadUserSettings();
     this->initEditor();
     this->openRecentProject();
 
@@ -63,13 +64,16 @@ void MainWindow::initEditor() {
     connect(this->editor, SIGNAL(tilesetChanged(QString)), this, SLOT(onTilesetChanged(QString)));
     connect(this->editor, SIGNAL(warpEventDoubleClicked(QString,QString)), this, SLOT(openWarpMap(QString,QString)));
     connect(this->editor, SIGNAL(currentMetatilesSelectionChanged()), this, SLOT(currentMetatilesSelectionChanged()));
+
+    this->loadUserSettings();
 }
 
 void MainWindow::loadUserSettings() {
     QSettings settings;
-    if (settings.contains("cursor_mode") && settings.value("cursor_mode") == "0") {
-        ui->actionBetter_Cursors->setChecked(false);
-    }
+
+    bool betterCursors = settings.contains("cursor_mode") && settings.value("cursor_mode") != "0";
+    ui->actionBetter_Cursors->setChecked(betterCursors);
+    this->editor->settings->betterCursors = betterCursors;
 }
 
 void MainWindow::openRecentProject() {
@@ -627,6 +631,7 @@ void MainWindow::on_actionZoom_Out_triggered() {
 void MainWindow::on_actionBetter_Cursors_triggered() {
     QSettings settings;
     settings.setValue("cursor_mode", QString::number(ui->actionBetter_Cursors->isChecked()));
+    this->editor->settings->betterCursors = ui->actionBetter_Cursors->isChecked();
 }
 
 void MainWindow::on_actionPencil_triggered()
@@ -975,7 +980,7 @@ void MainWindow::on_toolButton_Open_Scripts_clicked()
 void MainWindow::on_toolButton_Paint_clicked()
 {
     editor->map_edit_mode = "paint";
-    editor->cursor = QCursor(QPixmap(":/icons/pencil_cursor.ico"), 10, 10);
+    editor->settings->mapCursor = QCursor(QPixmap(":/icons/pencil_cursor.ico"), 10, 10);
     
     ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -987,7 +992,7 @@ void MainWindow::on_toolButton_Paint_clicked()
 void MainWindow::on_toolButton_Select_clicked()
 {
     editor->map_edit_mode = "select";
-    editor->cursor = QCursor(QPixmap(":/icons/cursor.ico"), 0, 0);
+    editor->settings->mapCursor = QCursor(QPixmap(":/icons/cursor.ico"), 0, 0);
     
     ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -999,7 +1004,7 @@ void MainWindow::on_toolButton_Select_clicked()
 void MainWindow::on_toolButton_Fill_clicked()
 {
     editor->map_edit_mode = "fill";
-    editor->cursor = QCursor(QPixmap(":/icons/fill_color_cursor.ico"), 10, 10);
+    editor->settings->mapCursor = QCursor(QPixmap(":/icons/fill_color_cursor.ico"), 10, 10);
     
     ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -1011,7 +1016,7 @@ void MainWindow::on_toolButton_Fill_clicked()
 void MainWindow::on_toolButton_Dropper_clicked()
 {
     editor->map_edit_mode = "pick";
-    editor->cursor = QCursor(QPixmap(":/icons/pipette_cursor.ico"), 10, 10);
+    editor->settings->mapCursor = QCursor(QPixmap(":/icons/pipette_cursor.ico"), 10, 10);
 
     ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -1023,7 +1028,7 @@ void MainWindow::on_toolButton_Dropper_clicked()
 void MainWindow::on_toolButton_Move_clicked()
 {
     editor->map_edit_mode = "move";
-    editor->cursor = QCursor(QPixmap(":/icons/move.ico"), 7, 7);
+    editor->settings->mapCursor = QCursor(QPixmap(":/icons/move.ico"), 7, 7);
     
     ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -1035,7 +1040,7 @@ void MainWindow::on_toolButton_Move_clicked()
 void MainWindow::on_toolButton_Shift_clicked()
 {
     editor->map_edit_mode = "shift";
-    editor->cursor = QCursor(QPixmap(":/icons/shift_cursor.ico"), 10, 10);
+    editor->settings->mapCursor = QCursor(QPixmap(":/icons/shift_cursor.ico"), 10, 10);
 
     ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -1183,7 +1188,7 @@ void MainWindow::on_pushButton_clicked()
 
 void MainWindow::on_checkBox_smartPaths_stateChanged(int selected)
 {
-    editor->smart_paths_enabled = selected == Qt::Checked;
+    editor->settings->smartPathsEnabled = selected == Qt::Checked;
 }
 
 void MainWindow::on_checkBox_ToggleBorder_stateChanged(int selected)
