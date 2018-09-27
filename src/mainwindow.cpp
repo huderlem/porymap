@@ -3,7 +3,7 @@
 #include "project.h"
 #include "editor.h"
 #include "eventpropertiesframe.h"
-#include "ui_objectpropertiesframe.h"
+#include "ui_eventpropertiesframe.h"
 #include "bordermetatilespixmapitem.h"
 #include "currentselectedmetatilespixmapitem.h"
 
