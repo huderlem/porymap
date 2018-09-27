@@ -531,7 +531,7 @@ void MainWindow::currentMetatilesSelectionChanged()
 void MainWindow::on_mapList_activated(const QModelIndex &index)
 {
     QVariant data = index.data(Qt::UserRole);
-    if (!data.isNull()) {
+    if (index.data(MapListUserRoles::TypeRole) == "map_name" && !data.isNull()) {
         setMap(data.toString());
     }
 }
@@ -690,6 +690,7 @@ void MainWindow::scaleMapView(int s) {
 
         ui->graphicsView_Map->scale(sfactor,sfactor);
         ui->graphicsView_Objects_Map->scale(sfactor,sfactor);
+        ui->graphicsView_Connections->scale(sfactor,sfactor);
 
         int width = static_cast<int>(ceil((editor->scene->width()) * pow(base,exp))) + 2;
         int height = static_cast<int>(ceil((editor->scene->height()) * pow(base,exp))) + 2;
