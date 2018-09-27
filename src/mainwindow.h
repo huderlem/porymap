@@ -25,6 +25,9 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+public slots:
+    void scaleMapView(int);
+
 private slots:
     void on_action_Open_Project_triggered();
     void on_mapList_activated(const QModelIndex &index);
@@ -118,6 +121,8 @@ private slots:
 
     void on_checkBox_ToggleBorder_stateChanged(int arg1);
 
+    void resetMapViewScale();
+
 private:
     Ui::MainWindow *ui;
     QStandardItemModel *mapListModel;
@@ -141,7 +146,6 @@ private:
     void displayMapProperties();
     void checkToolButtons();
 
-    void scaleMapView(int);
     void initExtraShortcuts();
     void initExtraSignals();
     void initEditor();

@@ -9,20 +9,19 @@
 #include <QCheckBox>
 #include <QCursor>
 
-#include "mapconnection.h"
-#include "metatileselector.h"
-#include "movementpermissionsselector.h"
 #include "project.h"
 #include "ui_mainwindow.h"
-#include "bordermetatilespixmapitem.h"
-#include "connectionpixmapitem.h"
-#include "currentselectedmetatilespixmapitem.h"
-#include "collisionpixmapitem.h"
-#include "mappixmapitem.h"
-#include "settings.h"
 
 class DraggablePixmapItem;
+class MapPixmapItem;
+class CollisionPixmapItem;
+class ConnectionPixmapItem;
 class MetatilesPixmapItem;
+class BorderMetatilesPixmapItem;
+class CurrentSelectedMetatilesPixmapItem;
+class MovementPermissionsPixmapItem;
+
+#define SWAP(a, b) do { if (a != b) { a ^= b; b ^= a; a ^= b; } } while (0)
 
 class Editor : public QObject
 {
@@ -34,20 +33,18 @@ public:
     QObject *parent = nullptr;
     Project *project = nullptr;
     Map *map = nullptr;
-    Settings *settings;
     void saveProject();
     void save();
     void undo();
     void redo();
     void setMap(QString map_name);
+    void updateCurrentMetatilesSelection();
     void displayMap();
-    void displayMetatileSelector();
-    void displayMapMetatiles();
-    void displayMapMovementPermissions();
+    void displayMetatiles();
     void displayBorderMetatiles();
     void displayCurrentMetatilesSelection();
     void redrawCurrentMetatilesSelection();
-    void displayMovementPermissionSelector();
+    void displayCollisionMetatiles();
     void displayElevationMetatiles();
     void displayMapEvents();
     void displayMapConnections();
@@ -98,20 +95,26 @@ public:
     QGraphicsScene *scene_selected_border_metatiles = nullptr;
     QGraphicsScene *scene_collision_metatiles = nullptr;
     QGraphicsScene *scene_elevation_metatiles = nullptr;
-    MetatileSelector *metatile_selector_item = nullptr;
+    MetatilesPixmapItem *metatiles_item = nullptr;
 
     BorderMetatilesPixmapItem *selected_border_metatiles_item = nullptr;
     CurrentSelectedMetatilesPixmapItem *scene_current_metatile_selection_item = nullptr;
-    MovementPermissionsSelector *movement_permissions_selector_item = nullptr;
+    MovementPermissionsPixmapItem *collision_metatiles_item = nullptr;
 
     QList<DraggablePixmapItem*> *events = nullptr;
     QList<DraggablePixmapItem*> *selected_events = nullptr;
 
-    QString map_edit_mode;
-    QString prev_edit_mode;
-    
+    bool lastSelectedMetatilesFromMap = false;
+    int copiedMetatileSelectionWidth = 0;
+    int copiedMetatileSelectionHeight = 0;
+    QList<uint16_t> *copiedMetatileSelection = new QList<uint16_t>;
+
     int scale_exp = 0;
     double scale_base = sqrt(2); // adjust scale factor with this
+
+    QString map_edit_mode;
+    QString prev_edit_mode;
+    QCursor cursor;
 
     void objectsView_onMousePress(QMouseEvent *event);
     void objectsView_onMouseMove(QMouseEvent *event);
@@ -120,18 +123,18 @@ public:
 private:
     void setConnectionItemsVisible(bool);
     void setBorderItemsVisible(bool, qreal = 1);
-    void setConnectionEditControlValues(MapConnection*);
+    void setConnectionEditControlValues(Connection*);
     void setConnectionEditControlsEnabled(bool);
-    void createConnectionItem(MapConnection* connection, bool hide);
+    void createConnectionItem(Connection* connection, bool hide);
     void populateConnectionMapPickers();
     void setDiveEmergeControls();
     void updateDiveEmergeMap(QString mapName, QString direction);
     void onConnectionOffsetChanged(int newOffset);
-    void removeMirroredConnection(MapConnection*);
-    void updateMirroredConnectionOffset(MapConnection*);
-    void updateMirroredConnectionDirection(MapConnection*, QString);
-    void updateMirroredConnectionMap(MapConnection*, QString);
-    void updateMirroredConnection(MapConnection*, QString, QString, bool isDelete = false);
+    void removeMirroredConnection(Connection*);
+    void updateMirroredConnectionOffset(Connection*);
+    void updateMirroredConnectionDirection(Connection*, QString);
+    void updateMirroredConnectionMap(Connection*, QString);
+    void updateMirroredConnection(Connection*, QString, QString, bool isDelete = false);
     Event* createNewObjectEvent();
     Event* createNewWarpEvent();
     Event* createNewHealLocationEvent();
@@ -140,25 +143,15 @@ private:
     Event* createNewSignEvent();
     Event* createNewHiddenItemEvent();
     Event* createNewSecretBaseEvent();
-    QString getMovementPermissionText(uint16_t collision, uint16_t elevation);
 
 private slots:
     void mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item);
     void mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixmapItem *item);
-    void onConnectionMoved(MapConnection*);
+    void onConnectionMoved(Connection*);
     void onConnectionItemSelected(ConnectionPixmapItem* connectionItem);
     void onConnectionItemDoubleClicked(ConnectionPixmapItem* connectionItem);
     void onConnectionDirectionChanged(QString newDirection);
     void onBorderMetatilesChanged();
-    void onHoveredMovementPermissionChanged(uint16_t, uint16_t);
-    void onHoveredMovementPermissionCleared();
-    void onHoveredMetatileSelectionChanged(uint16_t);
-    void onHoveredMetatileSelectionCleared();
-    void onHoveredMapMetatileChanged(int, int);
-    void onHoveredMapMetatileCleared();
-    void onHoveredMapMovementPermissionChanged(int, int);
-    void onHoveredMapMovementPermissionCleared();
-    void onSelectedMetatilesChanged();
 
 signals:
     void objectsChanged();
@@ -167,7 +160,6 @@ signals:
     void tilesetChanged(QString);
     void warpEventDoubleClicked(QString mapName, QString warpNum);
     void currentMetatilesSelectionChanged();
-    void wheelZoom(int delta);
 };
 
 
@@ -258,6 +250,191 @@ protected:
     void mouseMoveEvent(QGraphicsSceneMouseEvent*);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent*);
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent*);
+};
+
+class EventGroup : public QGraphicsItemGroup {
+};
+
+class MapPixmapItem : public QObject, public QGraphicsPixmapItem {
+    Q_OBJECT
+public:
+    MapPixmapItem(QPixmap pixmap): QGraphicsPixmapItem(pixmap) {
+    }
+    Map *map = nullptr;
+    Editor *editor = nullptr;
+    MapPixmapItem(Map *map_, Editor *editor_) {
+        map = map_;
+        editor = editor_;
+        setAcceptHoverEvents(true);
+    }
+    bool active;
+    bool right_click;
+    QPoint selection_origin;
+    QList<QPoint> selection;
+    virtual void paint(QGraphicsSceneMouseEvent*);
+    virtual void floodFill(QGraphicsSceneMouseEvent*);
+    void _floodFill(int x, int y);
+    void _floodFillSmartPath(int initialX, int initialY);
+    virtual void pick(QGraphicsSceneMouseEvent*);
+    virtual void select(QGraphicsSceneMouseEvent*);
+    virtual void shift(QGraphicsSceneMouseEvent*);
+    virtual void draw(bool ignoreCache = false);
+    void updateMetatileSelection(QGraphicsSceneMouseEvent *event);
+
+private:
+    void updateCurHoveredTile(QPointF pos);
+    void paintNormal(int x, int y);
+    void paintSmartPath(int x, int y);
+    static QList<int> smartPathTable;
+
+signals:
+    void mouseEvent(QGraphicsSceneMouseEvent *, MapPixmapItem *);
+
+protected:
+    void hoverMoveEvent(QGraphicsSceneHoverEvent*);
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent*);
+    void mousePressEvent(QGraphicsSceneMouseEvent*);
+    void mouseMoveEvent(QGraphicsSceneMouseEvent*);
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent*);
+};
+
+class CollisionPixmapItem : public MapPixmapItem {
+    Q_OBJECT
+public:
+    CollisionPixmapItem(QPixmap pixmap): MapPixmapItem(pixmap) {
+    }
+    CollisionPixmapItem(Map *map_, Editor *editor_): MapPixmapItem(map_, editor_) {
+    }
+    void updateMovementPermissionSelection(QGraphicsSceneMouseEvent *event);
+    virtual void paint(QGraphicsSceneMouseEvent*);
+    virtual void floodFill(QGraphicsSceneMouseEvent*);
+    virtual void pick(QGraphicsSceneMouseEvent*);
+    virtual void draw(bool ignoreCache = false);
+
+signals:
+    void mouseEvent(QGraphicsSceneMouseEvent *, CollisionPixmapItem *);
+
+protected:
+    void mousePressEvent(QGraphicsSceneMouseEvent*);
+    void mouseMoveEvent(QGraphicsSceneMouseEvent*);
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent*);
+};
+
+class ConnectionPixmapItem : public QObject, public QGraphicsPixmapItem {
+    Q_OBJECT
+public:
+    ConnectionPixmapItem(QPixmap pixmap, Connection* connection, int x, int y, int baseMapWidth, int baseMapHeight): QGraphicsPixmapItem(pixmap) {
+        this->basePixmap = pixmap;
+        this->connection = connection;
+        setFlag(ItemIsMovable);
+        setFlag(ItemSendsGeometryChanges);
+        this->initialX = x;
+        this->initialY = y;
+        this->initialOffset = connection->offset.toInt();
+        this->baseMapWidth = baseMapWidth;
+        this->baseMapHeight = baseMapHeight;
+    }
+    void render(qreal opacity = 1) {
+        QPixmap newPixmap = basePixmap.copy(0, 0, basePixmap.width(), basePixmap.height());
+        if (opacity < 1) {
+            QPainter painter(&newPixmap);
+            int alpha = static_cast<int>(255 * (1 - opacity));
+            painter.fillRect(0, 0, newPixmap.width(), newPixmap.height(), QColor(0, 0, 0, alpha));
+            painter.end();
+        }
+        this->setPixmap(newPixmap);
+    }
+    int getMinOffset();
+    int getMaxOffset();
+    QPixmap basePixmap;
+    Connection* connection;
+    int initialX;
+    int initialY;
+    int initialOffset;
+    int baseMapWidth;
+    int baseMapHeight;
+protected:
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value);
+    void mousePressEvent(QGraphicsSceneMouseEvent*);
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent*);
+signals:
+    void connectionItemSelected(ConnectionPixmapItem* connectionItem);
+    void connectionItemDoubleClicked(ConnectionPixmapItem* connectionItem);
+    void connectionMoved(Connection*);
+};
+
+class MetatilesPixmapItem : public QObject, public QGraphicsPixmapItem {
+    Q_OBJECT
+public:
+    MetatilesPixmapItem(Map *map_) {
+        map = map_;
+        setAcceptHoverEvents(true);
+        connect(map, SIGNAL(paintTileChanged()), this, SLOT(paintTileChanged()));
+    }
+    Map* map = nullptr;
+    virtual void draw();
+private:
+    void updateSelection(QPointF pos);
+protected:
+    virtual void updateCurHoveredMetatile(QPointF pos);
+private slots:
+    void paintTileChanged();
+protected:
+    void hoverMoveEvent(QGraphicsSceneHoverEvent*);
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent*);
+    void mousePressEvent(QGraphicsSceneMouseEvent*);
+    void mouseMoveEvent(QGraphicsSceneMouseEvent*);
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent*);
+};
+
+class BorderMetatilesPixmapItem : public QObject, public QGraphicsPixmapItem {
+    Q_OBJECT
+public:
+    BorderMetatilesPixmapItem(Map *map_) {
+        map = map_;
+        setAcceptHoverEvents(true);
+    }
+    Map* map = nullptr;
+    virtual void draw();
+signals:
+    void borderMetatilesChanged();
+protected:
+    void mousePressEvent(QGraphicsSceneMouseEvent*);
+};
+
+class CurrentSelectedMetatilesPixmapItem : public QObject, public QGraphicsPixmapItem {
+    Q_OBJECT
+public:
+    CurrentSelectedMetatilesPixmapItem(Map *map_) {
+        map = map_;
+    }
+    Map* map = nullptr;
+    virtual void draw();
+};
+
+class MovementPermissionsPixmapItem : public MetatilesPixmapItem {
+    Q_OBJECT
+public:
+    MovementPermissionsPixmapItem(Map *map_): MetatilesPixmapItem(map_) {
+        connect(map, SIGNAL(paintCollisionChanged(Map*)), this, SLOT(paintCollisionChanged(Map *)));
+    }
+    virtual void pick(uint16_t collision, uint16_t elevation) {
+        map->paint_collision = collision;
+        map->paint_elevation = elevation;
+        draw();
+    }
+    virtual void draw() {
+        setPixmap(map->renderCollisionMetatiles());
+    }
+protected:
+    void mousePressEvent(QGraphicsSceneMouseEvent*);
+    void mouseMoveEvent(QGraphicsSceneMouseEvent*);
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent*);
+    virtual void updateCurHoveredMetatile(QPointF pos);
+private slots:
+    void paintCollisionChanged(Map *) {
+        draw();
+    }
 };
 
 #endif // EDITOR_H

@@ -38,7 +38,11 @@ QImage getMetatileImage(int tile, Tileset *primaryTileset, Tileset *secondaryTil
         if (tile_image.isNull()) {
             // Some metatiles specify tiles that are outside the valid range.
             // These are treated as completely transparent, so they can be skipped without
-            // being drawn.
+            // being drawn unless they're on the bottom layer, in which case we need
+            // a placeholder because garbage will be drawn otherwise.
+            if (layer == 0) {
+                metatile_painter.fillRect(x * 8, y * 8, 8, 8, palettes.value(0).value(0));
+            }
             continue;
         }
 

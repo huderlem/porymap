@@ -2195,7 +2195,7 @@
     <string>Zoom In</string>
    </property>
    <property name="shortcut">
-    <string>+</string>
+    <string>Ctrl++</string>
    </property>
   </action>
   <action name="actionZoom_Out">
@@ -2203,7 +2203,7 @@
     <string>Zoom Out</string>
    </property>
    <property name="shortcut">
-    <string>-</string>
+    <string>Ctrl+-</string>
    </property>
   </action>
   <action name="actionBetter_Cursors">

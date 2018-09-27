@@ -40,8 +40,6 @@ public:
     QString show_location;
     QString battle_scene;
     MapLayout *layout;
-    int scale_exp = 0;
-    double scale_base = sqrt(2); // adjust scale factor with this
     bool isPersistedToFile = true;
     QImage collision_image;
     QPixmap collision_pixmap;

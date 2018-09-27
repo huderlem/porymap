@@ -43,7 +43,8 @@ SOURCES += core/block.cpp \
     main.cpp \
     mainwindow.cpp \
     project.cpp \
-    settings.cpp
+    settings.cpp \
+    ui/mapsceneeventfilter.cpp
 
 HEADERS  += core/block.h \
     core/blockdata.h \
@@ -75,7 +76,8 @@ HEADERS  += core/block.h \
     editor.h \
     mainwindow.h \
     project.h \
-    settings.h
+    settings.h \
+    ui/mapsceneeventfilter.h
 
 FORMS    += mainwindow.ui \
     eventpropertiesframe.ui
