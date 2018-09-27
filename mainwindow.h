@@ -12,6 +12,7 @@
 #include "project.h"
 #include "map.h"
 #include "editor.h"
+#include "mapsceneeventfilter.h"
 
 namespace Ui {
 class MainWindow;
@@ -121,12 +122,15 @@ private slots:
 
     void on_checkBox_ToggleBorder_stateChanged(int arg1);
 
+    void resetMapViewScale();
+
 private:
     Ui::MainWindow *ui;
     QStandardItemModel *mapListModel;
     QList<QStandardItem*> *mapGroupsModel;
     Editor *editor = nullptr;
     QIcon* mapIcon;
+    MapSceneEventFilter *mapSceneEventFilter;
     void setMap(QString);
     void redrawMapScene();
     void loadDataStructures();

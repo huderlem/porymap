@@ -39,6 +39,12 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->newEventToolButton, SIGNAL(newEventAdded(QString)), this, SLOT(addNewEvent(QString)));
 
     new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Z), this, SLOT(redo()));
+    new QShortcut(QKeySequence("Ctrl+0"), this, SLOT(resetMapViewScale()));
+
+    ui->actionZoom_In->setShortcuts({QKeySequence("Ctrl++"), QKeySequence("Ctrl+=")});
+
+    mapSceneEventFilter = new MapSceneEventFilter(this);
+    connect(mapSceneEventFilter, &MapSceneEventFilter::zoom, this, &MainWindow::scaleMapView);
 
     editor = new Editor(ui);
     connect(editor, SIGNAL(objectsChanged()), this, SLOT(updateSelectedObjects()));
@@ -158,11 +164,23 @@ void MainWindow::on_action_Open_Project_triggered()
 }
 
 void MainWindow::setMap(QString map_name) {
+    bool needsEventFilter = false;
+
     qDebug() << QString("setMap(%1)").arg(map_name);
     if (map_name.isNull()) {
         return;
     }
+
+    if (!editor->scene) {
+        needsEventFilter = true;
+    }
+
     editor->setMap(map_name);
+
+    if (needsEventFilter) {
+        editor->scene->installEventFilter(mapSceneEventFilter);
+    }
+
     redrawMapScene();
     displayMapProperties();
 
@@ -183,16 +201,22 @@ void MainWindow::redrawMapScene()
 
     ui->graphicsView_Map->setScene(editor->scene);
     ui->graphicsView_Map->setSceneRect(editor->scene->sceneRect());
-    ui->graphicsView_Map->setFixedSize(static_cast<int>(editor->scene->width()) + 2, static_cast<int>(editor->scene->height()) + 2);
+
+    double base = editor->scale_base;
+    double exp  = editor->scale_exp;
+
+    int width = static_cast<int>(ceil((editor->scene->width()) * pow(base,exp))) + 2;
+    int height = static_cast<int>(ceil((editor->scene->height()) * pow(base,exp))) + 2;
+    ui->graphicsView_Map->setFixedSize(width, height);
 
     ui->graphicsView_Objects_Map->setScene(editor->scene);
     ui->graphicsView_Objects_Map->setSceneRect(editor->scene->sceneRect());
-    ui->graphicsView_Objects_Map->setFixedSize(static_cast<int>(editor->scene->width()) + 2, static_cast<int>(editor->scene->height()) + 2);
+    ui->graphicsView_Objects_Map->setFixedSize(width, height);
     ui->graphicsView_Objects_Map->editor = editor;
 
     ui->graphicsView_Connections->setScene(editor->scene);
     ui->graphicsView_Connections->setSceneRect(editor->scene->sceneRect());
-    ui->graphicsView_Connections->setFixedSize(static_cast<int>(editor->scene->width()) + 2, static_cast<int>(editor->scene->height()) + 2);
+    ui->graphicsView_Connections->setFixedSize(width, height);
 
     ui->graphicsView_Metatiles->setScene(editor->scene_metatiles);
     //ui->graphicsView_Metatiles->setSceneRect(editor->scene_metatiles->sceneRect());
@@ -651,19 +675,32 @@ void MainWindow::on_actionMap_Shift_triggered()
 }
 
 void MainWindow::scaleMapView(int s) {
-    editor->map->scale_exp += s;
+    if ((editor->scale_exp + s) <= 5 && (editor->scale_exp + s) >= -2)    // sane limits
+    {
+        if (s == 0)
+        {
+            s = -editor->scale_exp;
+        }
 
-    double base = editor->map->scale_base;
-    double exp  = editor->map->scale_exp;
-    double sfactor = pow(base,s);
+        editor->scale_exp += s;
 
-    ui->graphicsView_Map->scale(sfactor,sfactor);
-    ui->graphicsView_Objects_Map->scale(sfactor,sfactor);
+        double base = editor->scale_base;
+        double exp  = editor->scale_exp;
+        double sfactor = pow(base,s);
 
-    int width = static_cast<int>((editor->scene->width() + 2) * pow(base,exp));
-    int height = static_cast<int>((editor->scene->height() + 2) * pow(base,exp));
-    ui->graphicsView_Map->setFixedSize(width, height);
-    ui->graphicsView_Objects_Map->setFixedSize(width, height);
+        ui->graphicsView_Map->scale(sfactor,sfactor);
+        ui->graphicsView_Objects_Map->scale(sfactor,sfactor);
+
+        int width = static_cast<int>(ceil((editor->scene->width()) * pow(base,exp))) + 2;
+        int height = static_cast<int>(ceil((editor->scene->height()) * pow(base,exp))) + 2;
+        ui->graphicsView_Map->setFixedSize(width, height);
+        ui->graphicsView_Objects_Map->setFixedSize(width, height);
+        ui->graphicsView_Connections->setFixedSize(width, height);
+    }
+}
+
+void MainWindow::resetMapViewScale() {
+    scaleMapView(0);
 }
 
 void MainWindow::addNewEvent(QString event_type)

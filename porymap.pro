@@ -30,7 +30,8 @@ SOURCES += main.cpp\
     neweventtoolbutton.cpp \
     noscrollcombobox.cpp \
     noscrollspinbox.cpp \
-    heallocation.cpp
+    heallocation.cpp \
+    mapsceneeventfilter.cpp
 
 HEADERS  += mainwindow.h \
     project.h \
@@ -47,7 +48,8 @@ HEADERS  += mainwindow.h \
     neweventtoolbutton.h \
     noscrollcombobox.h \
     noscrollspinbox.h \
-    heallocation.h
+    heallocation.h \
+    mapsceneeventfilter.h
 
 FORMS    += mainwindow.ui \
     objectpropertiesframe.ui

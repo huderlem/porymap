@@ -109,6 +109,9 @@ public:
     int copiedMetatileSelectionHeight = 0;
     QList<uint16_t> *copiedMetatileSelection = new QList<uint16_t>;
 
+    int scale_exp = 0;
+    double scale_base = sqrt(2); // adjust scale factor with this
+
     QString map_edit_mode;
     QString prev_edit_mode;
     QCursor cursor;
