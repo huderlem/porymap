@@ -3,7 +3,7 @@
 #include "project.h"
 #include "editor.h"
 #include "eventpropertiesframe.h"
-#include "ui_objectpropertiesframe.h"
+#include "ui_eventpropertiesframe.h"
 #include "bordermetatilespixmapitem.h"
 #include "currentselectedmetatilespixmapitem.h"
 
@@ -32,6 +32,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     QCoreApplication::setOrganizationName("pret");
     QCoreApplication::setApplicationName("porymap");
+    QApplication::setApplicationDisplayName("porymap");
     QApplication::setWindowIcon(QIcon(":/icons/porymap-icon-1.ico"));
 
     ui->setupUi(this);
@@ -50,6 +51,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::initExtraShortcuts() {
     new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Z), this, SLOT(redo()));
+    new QShortcut(QKeySequence("Ctrl+0"), this, SLOT(resetMapViewScale()));
+    ui->actionZoom_In->setShortcuts({QKeySequence("Ctrl++"), QKeySequence("Ctrl+=")});
 }
 
 void MainWindow::initExtraSignals() {
@@ -64,6 +67,7 @@ void MainWindow::initEditor() {
     connect(this->editor, SIGNAL(tilesetChanged(QString)), this, SLOT(onTilesetChanged(QString)));
     connect(this->editor, SIGNAL(warpEventDoubleClicked(QString,QString)), this, SLOT(openWarpMap(QString,QString)));
     connect(this->editor, SIGNAL(currentMetatilesSelectionChanged()), this, SLOT(currentMetatilesSelectionChanged()));
+    connect(this->editor, &Editor::wheelZoom, this, &MainWindow::scaleMapView);
 
     this->loadUserSettings();
 }
@@ -103,12 +107,12 @@ void MainWindow::openProject(QString dir) {
     if (!already_open) {
         editor->project = new Project;
         editor->project->root = dir;
-        setWindowTitle(editor->project->getProjectTitle() + " - porymap");
+        setWindowTitle(editor->project->getProjectTitle());
         loadDataStructures();
         populateMapList();
-        setMap(getDefaultMap());
+        setMap(getDefaultMap(), true);
     } else {
-        setWindowTitle(editor->project->getProjectTitle() + " - porymap");
+        setWindowTitle(editor->project->getProjectTitle());
         loadDataStructures();
         populateMapList();
     }
@@ -171,7 +175,7 @@ void MainWindow::on_action_Open_Project_triggered()
     }
 }
 
-void MainWindow::setMap(QString map_name) {
+void MainWindow::setMap(QString map_name, bool scrollTreeView) {
     qDebug() << QString("setMap(%1)").arg(map_name);
     if (map_name.isNull()) {
         return;
@@ -180,7 +184,12 @@ void MainWindow::setMap(QString map_name) {
     redrawMapScene();
     displayMapProperties();
 
-    setWindowTitle(map_name + " - " + editor->project->getProjectTitle() + " - porymap");
+    if (scrollTreeView) {
+        ui->mapList->setCurrentIndex(mapListIndexes.value(map_name));
+        ui->mapList->scrollTo(ui->mapList->currentIndex(), QAbstractItemView::PositionAtCenter);
+    }
+
+    setWindowTitle(map_name + " - " + editor->project->getProjectTitle());
 
     connect(editor->map, SIGNAL(mapChanged(Map*)), this, SLOT(onMapChanged(Map *)));
     connect(editor->map, SIGNAL(mapNeedsRedrawing()), this, SLOT(onMapNeedsRedrawing()));
@@ -194,18 +203,24 @@ void MainWindow::redrawMapScene()
     editor->displayMap();
     on_tabWidget_currentChanged(ui->tabWidget->currentIndex());
 
+    double base = editor->scale_base;
+    double exp  = editor->scale_exp;
+
+    int width = static_cast<int>(ceil((editor->scene->width()) * pow(base,exp))) + 2;
+    int height = static_cast<int>(ceil((editor->scene->height()) * pow(base,exp))) + 2;
+
     ui->graphicsView_Map->setScene(editor->scene);
     ui->graphicsView_Map->setSceneRect(editor->scene->sceneRect());
-    ui->graphicsView_Map->setFixedSize(static_cast<int>(editor->scene->width()) + 2, static_cast<int>(editor->scene->height()) + 2);
+    ui->graphicsView_Map->setFixedSize(width, height);
 
     ui->graphicsView_Objects_Map->setScene(editor->scene);
     ui->graphicsView_Objects_Map->setSceneRect(editor->scene->sceneRect());
-    ui->graphicsView_Objects_Map->setFixedSize(static_cast<int>(editor->scene->width()) + 2, static_cast<int>(editor->scene->height()) + 2);
+    ui->graphicsView_Objects_Map->setFixedSize(width, height);
     ui->graphicsView_Objects_Map->editor = editor;
 
     ui->graphicsView_Connections->setScene(editor->scene);
     ui->graphicsView_Connections->setSceneRect(editor->scene->sceneRect());
-    ui->graphicsView_Connections->setFixedSize(static_cast<int>(editor->scene->width()) + 2, static_cast<int>(editor->scene->height()) + 2);
+    ui->graphicsView_Connections->setFixedSize(width, height);
 
     ui->graphicsView_Metatiles->setScene(editor->scene_metatiles);
     //ui->graphicsView_Metatiles->setSceneRect(editor->scene_metatiles->sceneRect());
@@ -238,7 +253,7 @@ void MainWindow::openWarpMap(QString map_name, QString warp_num) {
     }
 
     // Open the destination map, and select the target warp event.
-    setMap(map_name);
+    setMap(map_name, true);
     QList<Event*> warp_events = editor->map->events["warp_event_group"];
     if (warp_events.length() > warpNum) {
         Event *warp_event = warp_events.at(warpNum);
@@ -440,6 +455,7 @@ void MainWindow::populateMapList() {
             QString map_name = names.value(j);
             QStandardItem *map = createMapItem(map_name, i, j);
             group->appendRow(map);
+            mapListIndexes.insert(map_name, map->index());
         }
     }
 
@@ -502,6 +518,7 @@ void MainWindow::onAddNewMapToGroupClick(QAction* triggeredAction)
     int numMapsInGroup = groupItem->rowCount();
     QStandardItem *newMapItem = createMapItem(newMapName, groupNum, numMapsInGroup);
     groupItem->appendRow(newMapItem);
+    mapListIndexes.insert(newMapName, newMapItem->index());
 
     setMap(newMapName);
 }
@@ -520,7 +537,7 @@ void MainWindow::currentMetatilesSelectionChanged()
 void MainWindow::on_mapList_activated(const QModelIndex &index)
 {
     QVariant data = index.data(Qt::UserRole);
-    if (!data.isNull()) {
+    if (index.data(MapListUserRoles::TypeRole) == "map_name" && !data.isNull()) {
         setMap(data.toString());
     }
 }
@@ -665,19 +682,33 @@ void MainWindow::on_actionMap_Shift_triggered()
 }
 
 void MainWindow::scaleMapView(int s) {
-    editor->map->scale_exp += s;
+    if ((editor->scale_exp + s) <= 5 && (editor->scale_exp + s) >= -2)    // sane limits
+    {
+        if (s == 0)
+        {
+            s = -editor->scale_exp;
+        }
 
-    double base = editor->map->scale_base;
-    double exp  = editor->map->scale_exp;
-    double sfactor = pow(base,s);
+        editor->scale_exp += s;
 
-    ui->graphicsView_Map->scale(sfactor,sfactor);
-    ui->graphicsView_Objects_Map->scale(sfactor,sfactor);
+        double base = editor->scale_base;
+        double exp  = editor->scale_exp;
+        double sfactor = pow(base,s);
 
-    int width = static_cast<int>((editor->scene->width() + 2) * pow(base,exp));
-    int height = static_cast<int>((editor->scene->height() + 2) * pow(base,exp));
-    ui->graphicsView_Map->setFixedSize(width, height);
-    ui->graphicsView_Objects_Map->setFixedSize(width, height);
+        ui->graphicsView_Map->scale(sfactor,sfactor);
+        ui->graphicsView_Objects_Map->scale(sfactor,sfactor);
+        ui->graphicsView_Connections->scale(sfactor,sfactor);
+
+        int width = static_cast<int>(ceil((editor->scene->width()) * pow(base,exp))) + 2;
+        int height = static_cast<int>(ceil((editor->scene->height()) * pow(base,exp))) + 2;
+        ui->graphicsView_Map->setFixedSize(width, height);
+        ui->graphicsView_Objects_Map->setFixedSize(width, height);
+        ui->graphicsView_Connections->setFixedSize(width, height);
+    }
+}
+
+void MainWindow::resetMapViewScale() {
+    scaleMapView(0);
 }
 
 void MainWindow::addNewEvent(QString event_type)
@@ -981,7 +1012,7 @@ void MainWindow::on_toolButton_Paint_clicked()
 {
     editor->map_edit_mode = "paint";
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/pencil_cursor.ico"), 10, 10);
-    
+
     ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     QScroller::ungrabGesture(ui->scrollArea);
@@ -993,7 +1024,7 @@ void MainWindow::on_toolButton_Select_clicked()
 {
     editor->map_edit_mode = "select";
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/cursor.ico"), 0, 0);
-    
+
     ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     QScroller::ungrabGesture(ui->scrollArea);
@@ -1005,7 +1036,7 @@ void MainWindow::on_toolButton_Fill_clicked()
 {
     editor->map_edit_mode = "fill";
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/fill_color_cursor.ico"), 10, 10);
-    
+
     ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     QScroller::ungrabGesture(ui->scrollArea);
@@ -1029,11 +1060,11 @@ void MainWindow::on_toolButton_Move_clicked()
 {
     editor->map_edit_mode = "move";
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/move.ico"), 7, 7);
-    
+
     ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     QScroller::grabGesture(ui->scrollArea, QScroller::LeftMouseButtonGesture);
-    
+
     checkToolButtons();
 }
 
@@ -1059,7 +1090,7 @@ void MainWindow::checkToolButtons() {
 }
 
 void MainWindow::onLoadMapRequested(QString mapName, QString fromMapName) {
-    setMap(mapName);
+    setMap(mapName, true);
     editor->setSelectedConnectionFromMap(fromMapName);
 }
 

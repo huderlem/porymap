@@ -1,9 +1,9 @@
 #include "eventpropertiesframe.h"
-#include "ui_objectpropertiesframe.h"
+#include "ui_eventpropertiesframe.h"
 
 EventPropertiesFrame::EventPropertiesFrame(QWidget *parent) :
     QFrame(parent),
-    ui(new Ui::ObjectPropertiesFrame)
+    ui(new Ui::EventPropertiesFrame)
 {
     ui->setupUi(this);
 }

@@ -1,10 +1,10 @@
-#ifndef OBJECTPROPERTIESFRAME_H
-#define OBJECTPROPERTIESFRAME_H
+#ifndef EVENTPROPERTIESFRAME_H
+#define EVENTPROPERTIESFRAME_H
 
 #include <QFrame>
 
 namespace Ui {
-class ObjectPropertiesFrame;
+class EventPropertiesFrame;
 }
 
 class EventPropertiesFrame : public QFrame
@@ -16,7 +16,7 @@ public:
     ~EventPropertiesFrame();
 
 public:
-    Ui::ObjectPropertiesFrame *ui;
+    Ui::EventPropertiesFrame *ui;
 };
 
-#endif // OBJECTPROPERTIESFRAME_H
+#endif // EVENTPROPERTIESFRAME_H

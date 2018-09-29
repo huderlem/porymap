@@ -109,6 +109,9 @@ public:
 
     QString map_edit_mode;
     QString prev_edit_mode;
+    
+    int scale_exp = 0;
+    double scale_base = sqrt(2); // adjust scale factor with this
 
     void objectsView_onMousePress(QMouseEvent *event);
     void objectsView_onMouseMove(QMouseEvent *event);
@@ -164,6 +167,7 @@ signals:
     void tilesetChanged(QString);
     void warpEventDoubleClicked(QString mapName, QString warpNum);
     void currentMetatilesSelectionChanged();
+    void wheelZoom(int delta);
 };
 
 

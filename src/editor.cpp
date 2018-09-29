@@ -3,6 +3,7 @@
 #include "imageproviders.h"
 #include "mapconnection.h"
 #include "currentselectedmetatilespixmapitem.h"
+#include "mapsceneeventfilter.h"
 #include <QCheckBox>
 #include <QPainter>
 #include <QMouseEvent>
@@ -348,7 +349,7 @@ void Editor::onHoveredMapMetatileChanged(int x, int y) {
                               .arg(x)
                               .arg(y)
                               .arg(QString("%1").arg(tile, 3, 16, QChar('0')).toUpper())
-                              .arg(QString::number(pow(map->scale_base, map->scale_exp))));
+                              .arg(QString::number(pow(scale_base, scale_exp), 'g', 2)));
     }
 }
 
@@ -461,8 +462,12 @@ void Editor::mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixm
 }
 
 void Editor::displayMap() {
-    if (!scene)
+    if (!scene) {
         scene = new QGraphicsScene;
+        MapSceneEventFilter *filter = new MapSceneEventFilter();
+        scene->installEventFilter(filter);
+        connect(filter, &MapSceneEventFilter::wheelZoom, this, &Editor::wheelZoom);
+    }
 
     if (map_item && scene) {
         scene->removeItem(map_item);
