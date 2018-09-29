@@ -7,7 +7,7 @@ MapSceneEventFilter::MapSceneEventFilter(QObject *parent) : QObject(parent)
 
 }
 
-bool MapSceneEventFilter::eventFilter(QObject *obj, QEvent *event)
+bool MapSceneEventFilter::eventFilter(QObject*, QEvent *event)
 {
     if (event->type() == QEvent::GraphicsSceneWheel)
     {
