@@ -73,7 +73,7 @@
          <string/>
         </property>
         <attribute name="icon">
-         <iconset resource="resources/images.qrc">
+         <iconset resource="../resources/images.qrc">
           <normaloff>:/icons/map.ico</normaloff>:/icons/map.ico</iconset>
         </attribute>
         <attribute name="title">
@@ -177,7 +177,7 @@
                    <string>Paint</string>
                   </property>
                   <property name="icon">
-                   <iconset resource="resources/images.qrc">
+                   <iconset resource="../resources/images.qrc">
                     <normaloff>:/icons/pencil.ico</normaloff>:/icons/pencil.ico</iconset>
                   </property>
                   <property name="checkable">
@@ -203,7 +203,7 @@
                    <string>Select</string>
                   </property>
                   <property name="icon">
-                   <iconset resource="resources/images.qrc">
+                   <iconset resource="../resources/images.qrc">
                     <normaloff>:/icons/cursor.ico</normaloff>:/icons/cursor.ico</iconset>
                   </property>
                   <property name="checkable">
@@ -220,7 +220,7 @@
                    <string>Fill</string>
                   </property>
                   <property name="icon">
-                   <iconset resource="resources/images.qrc">
+                   <iconset resource="../resources/images.qrc">
                     <normaloff>:/icons/fill_color.ico</normaloff>:/icons/fill_color.ico</iconset>
                   </property>
                   <property name="checkable">
@@ -237,7 +237,7 @@
                    <string>Dropper</string>
                   </property>
                   <property name="icon">
-                   <iconset resource="resources/images.qrc">
+                   <iconset resource="../resources/images.qrc">
                     <normaloff>:/icons/pipette.ico</normaloff>:/icons/pipette.ico</iconset>
                   </property>
                   <property name="checkable">
@@ -254,7 +254,7 @@
                    <string>...</string>
                   </property>
                   <property name="icon">
-                   <iconset resource="resources/images.qrc">
+                   <iconset resource="../resources/images.qrc">
                     <normaloff>:/icons/move.ico</normaloff>:/icons/move.ico</iconset>
                   </property>
                   <property name="checkable">
@@ -271,7 +271,7 @@
                    <string>Shift</string>
                   </property>
                   <property name="icon">
-                   <iconset resource="resources/images.qrc">
+                   <iconset resource="../resources/images.qrc">
                     <normaloff>:/icons/shift.ico</normaloff>:/icons/shift.ico</iconset>
                   </property>
                   <property name="checkable">
@@ -1355,7 +1355,7 @@
                    <string>New Object</string>
                   </property>
                   <property name="icon">
-                   <iconset resource="resources/images.qrc">
+                   <iconset resource="../resources/images.qrc">
                     <normaloff>:/icons/add.ico</normaloff>:/icons/add.ico</iconset>
                   </property>
                   <property name="toolButtonStyle">
@@ -1384,7 +1384,7 @@
                    <string>Delete</string>
                   </property>
                   <property name="icon">
-                   <iconset resource="resources/images.qrc">
+                   <iconset resource="../resources/images.qrc">
                     <normaloff>:/icons/delete.ico</normaloff>:/icons/delete.ico</iconset>
                   </property>
                   <property name="toolButtonStyle">
@@ -2127,6 +2127,8 @@
     <addaction name="actionEyedropper"/>
     <addaction name="actionMove"/>
     <addaction name="actionMap_Shift"/>
+    <addaction name="separator"/>
+    <addaction name="actionTileset_Editor"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -2268,6 +2270,11 @@
     <string>P</string>
    </property>
   </action>
+  <action name="actionTileset_Editor">
+   <property name="text">
+    <string>Tileset Editor</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -2288,7 +2295,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="resources/images.qrc"/>
+  <include location="../resources/images.qrc"/>
  </resources>
  <connections/>
 </ui>

@@ -71,6 +71,7 @@ public:
     void updatePrimaryTileset(QString tilesetLabel);
     void updateSecondaryTileset(QString tilesetLabel);
     void toggleBorderVisibility(bool visible);
+    Tileset *getCurrentMapPrimaryTileset();
 
     DraggablePixmapItem *addMapEvent(Event *event);
     void selectMapEvent(DraggablePixmapItem *object);

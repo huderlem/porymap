@@ -987,6 +987,12 @@ void Editor::toggleBorderVisibility(bool visible)
     this->setConnectionsVisibility(visible);
 }
 
+Tileset* Editor::getCurrentMapPrimaryTileset()
+{
+    QString tilesetLabel = map->layout->tileset_primary_label;
+    return project->getTileset(tilesetLabel);
+}
+
 void DraggablePixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *mouse) {
     active = true;
     last_x = static_cast<int>(mouse->pos().x() + this->pos().x()) / 16;

@@ -40,6 +40,7 @@ SOURCES += src/core/block.cpp \
     src/ui/noscrollcombobox.cpp \
     src/ui/noscrollspinbox.cpp \
     src/ui/selectablepixmapitem.cpp \
+    src/ui/tileseteditor.cpp \
     src/editor.cpp \
     src/main.cpp \
     src/mainwindow.cpp \
@@ -74,13 +75,15 @@ HEADERS  += include/core/block.h \
     include/ui/noscrollcombobox.h \
     include/ui/noscrollspinbox.h \
     include/ui/selectablepixmapitem.h \
+    include/ui/tileseteditor.h \
     include/editor.h \
     include/mainwindow.h \
     include/project.h \
     include/settings.h
 
 FORMS    += forms/mainwindow.ui \
-    forms/eventpropertiesframe.ui
+    forms/eventpropertiesframe.ui \
+    forms/tileseteditor.ui
 
 RESOURCES += \
     resources/images.qrc

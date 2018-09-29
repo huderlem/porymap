@@ -1227,3 +1227,16 @@ void MainWindow::on_checkBox_ToggleBorder_stateChanged(int selected)
     bool visible = selected != 0;
     editor->toggleBorderVisibility(visible);
 }
+
+void MainWindow::on_actionTileset_Editor_triggered()
+{
+    if (!this->tilesetEditor) {
+        this->tilesetEditor = new TilesetEditor(nullptr, this->editor->project);
+    }
+
+    if (!this->tilesetEditor->isVisible()) {
+        this->tilesetEditor->show();
+    } else {
+        this->tilesetEditor->activateWindow();
+    }
+}

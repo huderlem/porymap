@@ -12,6 +12,7 @@
 #include "project.h"
 #include "map.h"
 #include "editor.h"
+#include "tileseteditor.h"
 
 namespace Ui {
 class MainWindow;
@@ -123,8 +124,11 @@ private slots:
 
     void resetMapViewScale();
 
+    void on_actionTileset_Editor_triggered();
+
 private:
     Ui::MainWindow *ui;
+    TilesetEditor *tilesetEditor;
     QStandardItemModel *mapListModel;
     QList<QStandardItem*> *mapGroupsModel;
     QMap<QString, QModelIndex> mapListIndexes;
