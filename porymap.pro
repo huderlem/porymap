@@ -41,6 +41,7 @@ SOURCES += src/core/block.cpp \
     src/ui/noscrollspinbox.cpp \
     src/ui/selectablepixmapitem.cpp \
     src/ui/tileseteditor.cpp \
+    src/ui/tileseteditormetatileselector.cpp \
     src/editor.cpp \
     src/main.cpp \
     src/mainwindow.cpp \
@@ -76,6 +77,7 @@ HEADERS  += include/core/block.h \
     include/ui/noscrollspinbox.h \
     include/ui/selectablepixmapitem.h \
     include/ui/tileseteditor.h \
+    include/ui/tileseteditormetatileselector.h \
     include/editor.h \
     include/mainwindow.h \
     include/project.h \
