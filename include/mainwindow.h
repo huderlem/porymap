@@ -127,9 +127,10 @@ private:
     Ui::MainWindow *ui;
     QStandardItemModel *mapListModel;
     QList<QStandardItem*> *mapGroupsModel;
+    QMap<QString, QModelIndex> mapListIndexes;
     Editor *editor = nullptr;
     QIcon* mapIcon;
-    void setMap(QString);
+    void setMap(QString, bool scrollTreeView = false);
     void redrawMapScene();
     void loadDataStructures();
     void populateMapList();

@@ -110,7 +110,7 @@ void MainWindow::openProject(QString dir) {
         setWindowTitle(editor->project->getProjectTitle());
         loadDataStructures();
         populateMapList();
-        setMap(getDefaultMap());
+        setMap(getDefaultMap(), true);
     } else {
         setWindowTitle(editor->project->getProjectTitle());
         loadDataStructures();
@@ -175,7 +175,7 @@ void MainWindow::on_action_Open_Project_triggered()
     }
 }
 
-void MainWindow::setMap(QString map_name) {
+void MainWindow::setMap(QString map_name, bool scrollTreeView) {
     qDebug() << QString("setMap(%1)").arg(map_name);
     if (map_name.isNull()) {
         return;
@@ -183,6 +183,11 @@ void MainWindow::setMap(QString map_name) {
     editor->setMap(map_name);
     redrawMapScene();
     displayMapProperties();
+
+    if (scrollTreeView) {
+        ui->mapList->setCurrentIndex(mapListIndexes.value(map_name));
+        ui->mapList->scrollTo(ui->mapList->currentIndex(), QAbstractItemView::PositionAtCenter);
+    }
 
     setWindowTitle(map_name + " - " + editor->project->getProjectTitle());
 
@@ -248,7 +253,7 @@ void MainWindow::openWarpMap(QString map_name, QString warp_num) {
     }
 
     // Open the destination map, and select the target warp event.
-    setMap(map_name);
+    setMap(map_name, true);
     QList<Event*> warp_events = editor->map->events["warp_event_group"];
     if (warp_events.length() > warpNum) {
         Event *warp_event = warp_events.at(warpNum);
@@ -450,6 +455,7 @@ void MainWindow::populateMapList() {
             QString map_name = names.value(j);
             QStandardItem *map = createMapItem(map_name, i, j);
             group->appendRow(map);
+            mapListIndexes.insert(map_name, map->index());
         }
     }
 
@@ -512,6 +518,7 @@ void MainWindow::onAddNewMapToGroupClick(QAction* triggeredAction)
     int numMapsInGroup = groupItem->rowCount();
     QStandardItem *newMapItem = createMapItem(newMapName, groupNum, numMapsInGroup);
     groupItem->appendRow(newMapItem);
+    mapListIndexes.insert(newMapName, newMapItem->index());
 
     setMap(newMapName);
 }
@@ -1083,7 +1090,7 @@ void MainWindow::checkToolButtons() {
 }
 
 void MainWindow::onLoadMapRequested(QString mapName, QString fromMapName) {
-    setMap(mapName);
+    setMap(mapName, true);
     editor->setSelectedConnectionFromMap(fromMapName);
 }
 
