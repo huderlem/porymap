@@ -11,13 +11,13 @@ public:
         this->primaryTileset = primaryTileset;
         this->secondaryTileset = secondaryTileset;
         this->numTilesWide = 16;
-        this->paletteNum = 0;
+        this->paletteId = 0;
         setAcceptHoverEvents(true);
     }
     void draw();
     void select(uint16_t metatileId);
     void setTilesets(Tileset*, Tileset*);
-    void setPaletteNum(int);
+    void setPaletteId(int);
     uint16_t getSelectedTile();
 
 protected:
@@ -32,7 +32,7 @@ private:
     Tileset *secondaryTileset;
     uint16_t selectedTile;
     int numTilesWide;
-    int paletteNum;
+    int paletteId;
     void updateSelectedTile();
     uint16_t getTileId(int x, int y);
     QPoint getTileCoords(uint16_t);

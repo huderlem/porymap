@@ -39,3 +39,14 @@ QList<QList<QRgb>> Tileset::getBlockPalettes(Tileset *primaryTileset, Tileset *s
     }
     return palettes;
 }
+
+QList<QRgb> Tileset::getPalette(int paletteId, Tileset *primaryTileset, Tileset *secondaryTileset) {
+    QList<QRgb> paletteTable;
+    Tileset *tileset = paletteId < Project::getNumPalettesPrimary()
+            ? primaryTileset
+            : secondaryTileset;
+    for (int i = 0; i < tileset->palettes->at(paletteId).length(); i++) {
+        paletteTable.append(tileset->palettes->at(paletteId).at(i));
+    }
+    return paletteTable;
+}

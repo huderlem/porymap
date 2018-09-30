@@ -80,7 +80,8 @@ QImage getTileImage(uint16_t tile, Tileset *primaryTileset, Tileset *secondaryTi
     return tileset->tiles->value(local_index, QImage());
 }
 
-QImage getColoredTileImage(uint16_t tile, Tileset *primaryTileset, Tileset *secondaryTileset, QList<QRgb> palette) {
+QImage getColoredTileImage(uint16_t tile, Tileset *primaryTileset, Tileset *secondaryTileset, int paletteId) {
+    QList<QRgb> palette = Tileset::getPalette(paletteId, primaryTileset, secondaryTileset);
     QImage tileImage = getTileImage(tile, primaryTileset, secondaryTileset);
     for (int i = 0; i < 16; i++) {
         tileImage.setColor(i, palette.at(i));

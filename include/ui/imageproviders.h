@@ -10,6 +10,6 @@ QImage getCollisionMetatileImage(Block);
 QImage getCollisionMetatileImage(int, int);
 QImage getMetatileImage(uint16_t, Tileset*, Tileset*);
 QImage getTileImage(uint16_t, Tileset*, Tileset*);
-QImage getColoredTileImage(uint16_t, Tileset*, Tileset*, QList<QRgb>);
+QImage getColoredTileImage(uint16_t, Tileset*, Tileset*, int);
 
 #endif // IMAGEPROVIDERS_H

@@ -1,5 +1,6 @@
 #include "tileseteditor.h"
 #include "ui_tileseteditor.h"
+#include "imageproviders.h"
 #include <QDebug>
 
 TilesetEditor::TilesetEditor(Project *project, QString primaryTilesetLabel, QString secondaryTilesetLabel, QWidget *parent) :
@@ -9,11 +10,17 @@ TilesetEditor::TilesetEditor(Project *project, QString primaryTilesetLabel, QStr
     ui->setupUi(this);
     this->project = project;
 
+    this->tileXFlip = ui->checkBox_xFlip->isChecked();
+    this->tileYFlip = ui->checkBox_yFlip->isChecked();
+    this->paletteId = ui->spinBox_paletteSelector->value();
     this->primaryTilesetLabel = primaryTilesetLabel;
     this->secondaryTilesetLabel = secondaryTilesetLabel;
 
-    initMetatileSelector();
-    initTileSelector();
+    ui->spinBox_paletteSelector->setMinimum(0);
+    ui->spinBox_paletteSelector->setMaximum(Project::getNumPalettesTotal() - 1);
+    this->initMetatileSelector();
+    this->initTileSelector();
+    this->initSelectedTileItem();
 }
 
 TilesetEditor::~TilesetEditor()
@@ -63,6 +70,25 @@ void TilesetEditor::initTileSelector()
     this->ui->graphicsView_Tiles->setFixedSize(this->tileSelector->pixmap().width() + 2, this->tileSelector->pixmap().height() + 2);
 }
 
+void TilesetEditor::initSelectedTileItem() {
+    this->selectedTileScene = new QGraphicsScene;
+    this->drawSelectedTile();
+    this->ui->graphicsView_selectedTile->setScene(this->selectedTileScene);
+}
+
+void TilesetEditor::drawSelectedTile() {
+    if (!this->selectedTileScene) {
+        return;
+    }
+
+    Tileset *primaryTileset = this->project->getTileset(this->primaryTilesetLabel);
+    Tileset *secondaryTileset = this->project->getTileset(this->secondaryTilesetLabel);
+    QImage tileImage = getColoredTileImage(this->tileSelector->getSelectedTile(), primaryTileset, secondaryTileset, this->paletteId)
+            .mirrored(this->tileXFlip, this->tileYFlip);
+    this->selectedTilePixmapItem = new QGraphicsPixmapItem(QPixmap::fromImage(tileImage).scaled(32, 32));
+    this->selectedTileScene->addItem(this->selectedTilePixmapItem);
+}
+
 void TilesetEditor::onHoveredMetatileChanged(uint16_t metatileId) {
     QString message = QString("Metatile: 0x%1")
                         .arg(QString("%1").arg(metatileId, 3, 16, QChar('0')).toUpper());
@@ -88,5 +114,24 @@ void TilesetEditor::onHoveredTileCleared() {
 }
 
 void TilesetEditor::onSelectedTileChanged(uint16_t) {
+    this->drawSelectedTile();
+}
 
+void TilesetEditor::on_spinBox_paletteSelector_valueChanged(int paletteId)
+{
+    this->paletteId = paletteId;
+    this->tileSelector->setPaletteId(paletteId);
+    this->drawSelectedTile();
+}
+
+void TilesetEditor::on_checkBox_xFlip_stateChanged(int checked)
+{
+    this->tileXFlip = checked;
+    this->drawSelectedTile();
+}
+
+void TilesetEditor::on_checkBox_yFlip_stateChanged(int checked)
+{
+    this->tileYFlip = checked;
+    this->drawSelectedTile();
 }

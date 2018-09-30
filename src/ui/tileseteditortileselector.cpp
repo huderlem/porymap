@@ -13,19 +13,19 @@ void TilesetEditorTileSelector::draw() {
     int primaryLength = this->primaryTileset->tiles->length();
     int secondaryLength = this->secondaryTileset->tiles->length();
     int height = totalTiles / this->numTilesWide;
-    QList<QRgb> palette = this->getCurPaletteTable();
+    QList<QRgb> palette = Tileset::getPalette(this->paletteId, this->primaryTileset, this->secondaryTileset);
     QImage image(this->numTilesWide * 16, height * 16, QImage::Format_RGBA8888);
 
     QPainter painter(&image);
     for (uint16_t tile = 0; tile < totalTiles; tile++) {
         QImage tileImage;
         if (tile < primaryLength) {
-            tileImage = getColoredTileImage(tile, this->primaryTileset, this->secondaryTileset, palette).scaled(16, 16);
+            tileImage = getColoredTileImage(tile, this->primaryTileset, this->secondaryTileset, this->paletteId).scaled(16, 16);
         } else if (tile < Project::getNumTilesPrimary()) {
             tileImage = QImage(16, 16, QImage::Format_RGBA8888);
             tileImage.fill(palette.at(0));
         } else if (tile < Project::getNumTilesPrimary() + secondaryLength) {
-            tileImage = getColoredTileImage(tile, this->primaryTileset, this->secondaryTileset, palette).scaled(16, 16);
+            tileImage = getColoredTileImage(tile, this->primaryTileset, this->secondaryTileset, this->paletteId).scaled(16, 16);
         } else {
             tileImage = QImage(16, 16, QImage::Format_RGBA8888);
             QPainter painter(&tileImage);
@@ -43,15 +43,6 @@ void TilesetEditorTileSelector::draw() {
     this->drawSelection();
 }
 
-QList<QRgb> TilesetEditorTileSelector::getCurPaletteTable() {
-    QList<QRgb> paletteTable;
-    for (int i = 0; i < this->primaryTileset->palettes->at(this->paletteNum).length(); i++) {
-        paletteTable.append(this->primaryTileset->palettes->at(this->paletteNum).at(i));
-    }
-
-    return paletteTable;
-}
-
 void TilesetEditorTileSelector::select(uint16_t tile) {
     QPoint coords = this->getTileCoords(tile);
     SelectablePixmapItem::select(coords.x(), coords.y(), 0, 0);
@@ -65,8 +56,8 @@ void TilesetEditorTileSelector::setTilesets(Tileset *primaryTileset, Tileset *se
     this->draw();
 }
 
-void TilesetEditorTileSelector::setPaletteNum(int paletteNum) {
-    this->paletteNum = paletteNum;
+void TilesetEditorTileSelector::setPaletteId(int paletteId) {
+    this->paletteId = paletteId;
     this->draw();
 }
 
