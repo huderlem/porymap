@@ -44,7 +44,8 @@ SOURCES += core/block.cpp \
     mainwindow.cpp \
     project.cpp \
     settings.cpp \
-    ui/mapsceneeventfilter.cpp
+    ui/mapsceneeventfilter.cpp \
+    ui/tileseteditor.cpp
 
 HEADERS  += core/block.h \
     core/blockdata.h \
@@ -77,10 +78,12 @@ HEADERS  += core/block.h \
     mainwindow.h \
     project.h \
     settings.h \
-    ui/mapsceneeventfilter.h
+    ui/mapsceneeventfilter.h \
+    ui/tileseteditor.h
 
 FORMS    += mainwindow.ui \
-    eventpropertiesframe.ui
+    eventpropertiesframe.ui \
+    tileseteditor.ui
 
 RESOURCES += \
     resources/images.qrc

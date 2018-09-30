@@ -378,8 +378,8 @@
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>469</width>
-                     <height>608</height>
+                     <width>481</width>
+                     <height>606</height>
                     </rect>
                    </property>
                    <layout class="QGridLayout" name="gridLayout_8">
@@ -687,8 +687,8 @@
                            <rect>
                             <x>0</x>
                             <y>0</y>
-                            <width>324</width>
-                            <height>77</height>
+                            <width>300</width>
+                            <height>70</height>
                            </rect>
                           </property>
                           <layout class="QHBoxLayout" name="horizontalLayout_7">
@@ -799,8 +799,8 @@
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>307</width>
-                      <height>387</height>
+                      <width>304</width>
+                      <height>372</height>
                      </rect>
                     </property>
                     <property name="sizePolicy">
@@ -1116,8 +1116,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>381</width>
-               <height>657</height>
+               <width>385</width>
+               <height>655</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_7">
@@ -1294,8 +1294,8 @@
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>432</width>
-                        <height>596</height>
+                        <width>428</width>
+                        <height>586</height>
                        </rect>
                       </property>
                       <property name="sizePolicy">
@@ -1914,8 +1914,8 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>826</width>
-                    <height>557</height>
+                    <width>829</width>
+                    <height>552</height>
                    </rect>
                   </property>
                   <layout class="QGridLayout" name="gridLayout_14">
@@ -2087,7 +2087,7 @@
      <x>0</x>
      <y>0</y>
      <width>1117</width>
-     <height>21</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -2127,6 +2127,8 @@
     <addaction name="actionEyedropper"/>
     <addaction name="actionMove"/>
     <addaction name="actionMap_Shift"/>
+    <addaction name="separator"/>
+    <addaction name="actionTileset_Editor"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -2266,6 +2268,11 @@
    </property>
    <property name="shortcut">
     <string>P</string>
+   </property>
+  </action>
+  <action name="actionTileset_Editor">
+   <property name="text">
+    <string>Tileset Editor</string>
    </property>
   </action>
  </widget>
