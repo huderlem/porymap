@@ -349,7 +349,7 @@ void Editor::onHoveredMapMetatileChanged(int x, int y) {
                               .arg(x)
                               .arg(y)
                               .arg(QString("%1").arg(tile, 3, 16, QChar('0')).toUpper())
-                              .arg(QString::number(pow(scale_base, scale_exp))));
+                              .arg(QString::number(pow(scale_base, scale_exp), 'g', 2)));
     }
 }
 
