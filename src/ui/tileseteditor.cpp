@@ -12,7 +12,8 @@ TilesetEditor::TilesetEditor(Project *project, QString primaryTilesetLabel, QStr
     this->primaryTilesetLabel = primaryTilesetLabel;
     this->secondaryTilesetLabel = secondaryTilesetLabel;
 
-    initMetatilesSelector();
+    initMetatileSelector();
+    initTileSelector();
 }
 
 TilesetEditor::~TilesetEditor()
@@ -20,7 +21,7 @@ TilesetEditor::~TilesetEditor()
     delete ui;
 }
 
-void TilesetEditor::initMetatilesSelector()
+void TilesetEditor::initMetatileSelector()
 {
     Tileset *primaryTileset = this->project->getTileset(this->primaryTilesetLabel);
     Tileset *secondaryTileset = this->project->getTileset(this->secondaryTilesetLabel);
@@ -41,6 +42,27 @@ void TilesetEditor::initMetatilesSelector()
     this->ui->graphicsView_Metatiles->setFixedSize(this->metatileSelector->pixmap().width() + 2, this->metatileSelector->pixmap().height() + 2);
 }
 
+void TilesetEditor::initTileSelector()
+{
+    Tileset *primaryTileset = this->project->getTileset(this->primaryTilesetLabel);
+    Tileset *secondaryTileset = this->project->getTileset(this->secondaryTilesetLabel);
+    this->tileSelector = new TilesetEditorTileSelector(primaryTileset, secondaryTileset);
+    connect(this->tileSelector, SIGNAL(hoveredTileChanged(uint16_t)),
+            this, SLOT(onHoveredTileChanged(uint16_t)));
+    connect(this->tileSelector, SIGNAL(hoveredTileCleared()),
+            this, SLOT(onHoveredTileCleared()));
+    connect(this->tileSelector, SIGNAL(selectedTileChanged(uint16_t)),
+            this, SLOT(onSelectedTileChanged(uint16_t)));
+
+    this->tilesScene = new QGraphicsScene;
+    this->tilesScene->addItem(this->tileSelector);
+    this->tileSelector->select(0);
+    this->tileSelector->draw();
+
+    this->ui->graphicsView_Tiles->setScene(this->tilesScene);
+    this->ui->graphicsView_Tiles->setFixedSize(this->tileSelector->pixmap().width() + 2, this->tileSelector->pixmap().height() + 2);
+}
+
 void TilesetEditor::onHoveredMetatileChanged(uint16_t metatileId) {
     QString message = QString("Metatile: 0x%1")
                         .arg(QString("%1").arg(metatileId, 3, 16, QChar('0')).toUpper());
@@ -52,5 +74,19 @@ void TilesetEditor::onHoveredMetatileCleared() {
 }
 
 void TilesetEditor::onSelectedMetatileChanged(uint16_t) {
+
+}
+
+void TilesetEditor::onHoveredTileChanged(uint16_t tile) {
+    QString message = QString("Tile: 0x%1")
+                        .arg(QString("%1").arg(tile, 3, 16, QChar('0')).toUpper());
+    this->ui->statusbar->showMessage(message);
+}
+
+void TilesetEditor::onHoveredTileCleared() {
+    this->ui->statusbar->clearMessage();
+}
+
+void TilesetEditor::onSelectedTileChanged(uint16_t) {
 
 }

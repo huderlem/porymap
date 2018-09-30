@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include "project.h"
 #include "tileseteditormetatileselector.h"
+#include "tileseteditortileselector.h"
 
 namespace Ui {
 class TilesetEditor;
@@ -21,15 +22,22 @@ private slots:
     void onHoveredMetatileChanged(uint16_t);
     void onHoveredMetatileCleared();
     void onSelectedMetatileChanged(uint16_t);
+    void onHoveredTileChanged(uint16_t);
+    void onHoveredTileCleared();
+    void onSelectedTileChanged(uint16_t);
 
 private:
-    void initMetatilesSelector();
+    void initMetatileSelector();
+    void initTileSelector();
     Ui::TilesetEditor *ui;
     TilesetEditorMetatileSelector *metatileSelector;
+    TilesetEditorTileSelector *tileSelector;
     Project *project;
+    uint paletteNum;
     QString primaryTilesetLabel;
     QString secondaryTilesetLabel;
     QGraphicsScene *metatilesScene;
+    QGraphicsScene *tilesScene;
 };
 
 #endif // TILESETEDITOR_H

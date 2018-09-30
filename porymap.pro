@@ -42,6 +42,7 @@ SOURCES += src/core/block.cpp \
     src/ui/selectablepixmapitem.cpp \
     src/ui/tileseteditor.cpp \
     src/ui/tileseteditormetatileselector.cpp \
+    src/ui/tileseteditortileselector.cpp \
     src/editor.cpp \
     src/main.cpp \
     src/mainwindow.cpp \
@@ -78,6 +79,7 @@ HEADERS  += include/core/block.h \
     include/ui/selectablepixmapitem.h \
     include/ui/tileseteditor.h \
     include/ui/tileseteditormetatileselector.h \
+    include/ui/tileseteditortileselector.h \
     include/editor.h \
     include/mainwindow.h \
     include/project.h \

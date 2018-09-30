@@ -128,7 +128,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    TilesetEditor *tilesetEditor;
+    TilesetEditor *tilesetEditor = nullptr;
     QStandardItemModel *mapListModel;
     QList<QStandardItem*> *mapGroupsModel;
     QMap<QString, QModelIndex> mapListIndexes;
