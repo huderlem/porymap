@@ -19,8 +19,10 @@ TilesetEditor::TilesetEditor(Project *project, QString primaryTilesetLabel, QStr
     ui->spinBox_paletteSelector->setMinimum(0);
     ui->spinBox_paletteSelector->setMaximum(Project::getNumPalettesTotal() - 1);
     this->initMetatileSelector();
+    this->initMetatileLayersItem();
     this->initTileSelector();
     this->initSelectedTileItem();
+    this->metatileSelector->select(0);
 }
 
 TilesetEditor::~TilesetEditor()
@@ -42,7 +44,6 @@ void TilesetEditor::initMetatileSelector()
 
     this->metatilesScene = new QGraphicsScene;
     this->metatilesScene->addItem(this->metatileSelector);
-    this->metatileSelector->select(0);
     this->metatileSelector->draw();
 
     this->ui->graphicsView_Metatiles->setScene(this->metatilesScene);
@@ -81,12 +82,26 @@ void TilesetEditor::drawSelectedTile() {
         return;
     }
 
+    this->selectedTileScene->clear();
     Tileset *primaryTileset = this->project->getTileset(this->primaryTilesetLabel);
     Tileset *secondaryTileset = this->project->getTileset(this->secondaryTilesetLabel);
     QImage tileImage = getColoredTileImage(this->tileSelector->getSelectedTile(), primaryTileset, secondaryTileset, this->paletteId)
             .mirrored(this->tileXFlip, this->tileYFlip);
     this->selectedTilePixmapItem = new QGraphicsPixmapItem(QPixmap::fromImage(tileImage).scaled(32, 32));
     this->selectedTileScene->addItem(this->selectedTilePixmapItem);
+}
+
+void TilesetEditor::initMetatileLayersItem() {
+    Tileset *primaryTileset = this->project->getTileset(this->primaryTilesetLabel);
+    Tileset *secondaryTileset = this->project->getTileset(this->secondaryTilesetLabel);
+    Metatile *metatile = Tileset::getMetatile(this->metatileSelector->getSelectedMetatile(), primaryTileset, secondaryTileset);
+    this->metatileLayersItem = new MetatileLayersItem(metatile, primaryTileset, secondaryTileset);
+    connect(this->metatileLayersItem, SIGNAL(tileChanged(int)),
+            this, SLOT(onMetatileLayerTileChanged(int)));
+
+    this->metatileLayersScene = new QGraphicsScene;
+    this->metatileLayersScene->addItem(this->metatileLayersItem);
+    this->ui->graphicsView_metatileLayers->setScene(this->metatileLayersScene);
 }
 
 void TilesetEditor::onHoveredMetatileChanged(uint16_t metatileId) {
@@ -99,8 +114,12 @@ void TilesetEditor::onHoveredMetatileCleared() {
     this->ui->statusbar->clearMessage();
 }
 
-void TilesetEditor::onSelectedMetatileChanged(uint16_t) {
-
+void TilesetEditor::onSelectedMetatileChanged(uint16_t metatileId) {
+    Tileset *primaryTileset = this->project->getTileset(this->primaryTilesetLabel);
+    Tileset *secondaryTileset = this->project->getTileset(this->secondaryTilesetLabel);
+    this->metatile = Tileset::getMetatile(metatileId, primaryTileset, secondaryTileset);
+    this->metatileLayersItem->setMetatile(metatile);
+    this->metatileLayersItem->draw();
 }
 
 void TilesetEditor::onHoveredTileChanged(uint16_t tile) {
@@ -113,8 +132,19 @@ void TilesetEditor::onHoveredTileCleared() {
     this->ui->statusbar->clearMessage();
 }
 
-void TilesetEditor::onSelectedTileChanged(uint16_t) {
+void TilesetEditor::onSelectedTileChanged(uint16_t) {    
     this->drawSelectedTile();
+}
+
+void TilesetEditor::onMetatileLayerTileChanged(int tileIndex) {
+    Tile tile = this->metatile->tiles->at(tileIndex);
+    tile.tile = this->tileSelector->getSelectedTile();
+    tile.xflip = this->tileXFlip;
+    tile.yflip = this->tileYFlip;
+    tile.palette = this->paletteId;
+    (*this->metatile->tiles)[tileIndex] = tile;
+    this->metatileSelector->draw();
+    this->metatileLayersItem->draw();
 }
 
 void TilesetEditor::on_spinBox_paletteSelector_valueChanged(int paletteId)

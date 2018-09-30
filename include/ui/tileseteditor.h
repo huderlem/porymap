@@ -5,6 +5,7 @@
 #include "project.h"
 #include "tileseteditormetatileselector.h"
 #include "tileseteditortileselector.h"
+#include "metatilelayersitem.h"
 
 namespace Ui {
 class TilesetEditor;
@@ -25,6 +26,7 @@ private slots:
     void onHoveredTileChanged(uint16_t);
     void onHoveredTileCleared();
     void onSelectedTileChanged(uint16_t);
+    void onMetatileLayerTileChanged(int);
 
     void on_spinBox_paletteSelector_valueChanged(int arg1);
 
@@ -36,11 +38,14 @@ private:
     void initMetatileSelector();
     void initTileSelector();
     void initSelectedTileItem();
+    void initMetatileLayersItem();
     void drawSelectedTile();
     Ui::TilesetEditor *ui;
-    TilesetEditorMetatileSelector *metatileSelector;
-    TilesetEditorTileSelector *tileSelector;
+    TilesetEditorMetatileSelector *metatileSelector = nullptr;
+    TilesetEditorTileSelector *tileSelector = nullptr;
+    MetatileLayersItem *metatileLayersItem = nullptr;
     Project *project;
+    Metatile *metatile;
     int paletteId;
     bool tileXFlip;
     bool tileYFlip;
@@ -50,6 +55,7 @@ private:
     QGraphicsScene *tilesScene = nullptr;
     QGraphicsScene *selectedTileScene = nullptr;
     QGraphicsPixmapItem *selectedTilePixmapItem = nullptr;
+    QGraphicsScene *metatileLayersScene = nullptr;
 };
 
 #endif // TILESETEDITOR_H

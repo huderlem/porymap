@@ -34,6 +34,7 @@ SOURCES += src/core/block.cpp \
     src/ui/imageproviders.cpp \
     src/ui/mappixmapitem.cpp \
     src/ui/mapsceneeventfilter.cpp \
+    src/ui/metatilelayersitem.cpp \
     src/ui/metatileselector.cpp \
     src/ui/movementpermissionsselector.cpp \
     src/ui/neweventtoolbutton.cpp \
@@ -71,6 +72,7 @@ HEADERS  += include/core/block.h \
     include/ui/imageproviders.h \
     include/ui/mappixmapitem.h \
     include/ui/mapsceneeventfilter.h \
+    include/ui/metatilelayersitem.h \
     include/ui/metatileselector.h \
     include/ui/movementpermissionsselector.h \
     include/ui/neweventtoolbutton.h \
