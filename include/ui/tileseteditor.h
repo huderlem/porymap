@@ -19,6 +19,7 @@ public:
     explicit TilesetEditor(Project*, QString, QString, QWidget *parent = nullptr);
     ~TilesetEditor();
     void setTilesets(QString, QString);
+    void init(Project*, QString, QString);
 
 private slots:
     void onHoveredMetatileChanged(uint16_t);
@@ -46,6 +47,7 @@ private slots:
     void on_actionImport_Secondary_Tiles_triggered();
 
 private:
+    void closeEvent(QCloseEvent*);
     void initMetatileSelector();
     void initTileSelector();
     void initSelectedTileItem();
@@ -62,8 +64,9 @@ private:
     int paletteId;
     bool tileXFlip;
     bool tileYFlip;
-    Tileset *primaryTileset;
-    Tileset *secondaryTileset;
+    bool hasUnsavedChanges;
+    Tileset *primaryTileset = nullptr;
+    Tileset *secondaryTileset = nullptr;
     QGraphicsScene *metatilesScene = nullptr;
     QGraphicsScene *tilesScene = nullptr;
     QGraphicsScene *selectedTileScene = nullptr;
@@ -72,6 +75,7 @@ private:
 
 signals:
     void tilesetsSaved(QString, QString);
+    void closed();
 };
 
 #endif // TILESETEDITOR_H

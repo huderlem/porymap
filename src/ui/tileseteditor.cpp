@@ -9,15 +9,27 @@ TilesetEditor::TilesetEditor(Project *project, QString primaryTilesetLabel, QStr
     QMainWindow(parent),
     ui(new Ui::TilesetEditor)
 {
+    this->init(project, primaryTilesetLabel, secondaryTilesetLabel);
+}
+
+TilesetEditor::~TilesetEditor()
+{
+    delete ui;
+}
+
+void TilesetEditor::init(Project *project, QString primaryTilesetLabel, QString secondaryTilesetLabel) {
     ui->setupUi(this);
     this->project = project;
 
+    this->hasUnsavedChanges = false;
     this->tileXFlip = ui->checkBox_xFlip->isChecked();
     this->tileYFlip = ui->checkBox_yFlip->isChecked();
     this->paletteId = ui->spinBox_paletteSelector->value();
 
     Tileset *primaryTileset = project->getTileset(primaryTilesetLabel);
     Tileset *secondaryTileset = project->getTileset(secondaryTilesetLabel);
+    if (this->primaryTileset) delete this->primaryTileset;
+    if (this->secondaryTileset) delete this->secondaryTileset;
     this->primaryTileset = primaryTileset->copy();
     this->secondaryTileset = secondaryTileset->copy();
 
@@ -36,11 +48,6 @@ TilesetEditor::TilesetEditor(Project *project, QString primaryTilesetLabel, QStr
     this->initTileSelector();
     this->initSelectedTileItem();
     this->metatileSelector->select(0);
-}
-
-TilesetEditor::~TilesetEditor()
-{
-    delete ui;
 }
 
 void TilesetEditor::setTilesets(QString primaryTilesetLabel, QString secondaryTilesetLabel) {
@@ -202,6 +209,7 @@ void TilesetEditor::onMetatileLayerTileChanged(int x, int y) {
 
     this->metatileSelector->draw();
     this->metatileLayersItem->draw();
+    this->hasUnsavedChanges = true;
 }
 
 void TilesetEditor::on_spinBox_paletteSelector_valueChanged(int paletteId)
@@ -245,6 +253,7 @@ void TilesetEditor::on_actionSave_Tileset_triggered()
     this->project->saveTilesets(this->primaryTileset, this->secondaryTileset);
     emit this->tilesetsSaved(this->primaryTileset->name, this->secondaryTileset->name);
     this->ui->statusbar->showMessage(QString("Saved primary and secondary Tilesets!"), 5000);
+    this->hasUnsavedChanges = false;
 }
 
 void TilesetEditor::on_actionImport_Primary_Tiles_triggered()
@@ -319,4 +328,24 @@ void TilesetEditor::importTilesetTiles(Tileset *tileset, bool primary) {
     this->project->loadTilesetTiles(tileset, image);
     this->project->loadTilesetMetatiles(tileset);
     this->refresh();
+    this->hasUnsavedChanges = true;
+}
+
+void TilesetEditor::closeEvent(QCloseEvent *event)
+{
+    bool close = true;
+    if (this->hasUnsavedChanges) {
+        QMessageBox::StandardButton result = QMessageBox::question(this, "porymap",
+                                                                    "Discard unsaved Tileset changes?",
+                                                                    QMessageBox::No | QMessageBox::Yes,
+                                                                    QMessageBox::Yes);
+        close = result == QMessageBox::Yes;
+    }
+
+    if (close) {
+        event->accept();
+        emit closed();
+    } else {
+        event->ignore();
+    }
 }

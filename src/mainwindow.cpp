@@ -1246,11 +1246,21 @@ void MainWindow::on_actionTileset_Editor_triggered()
     if (!this->tilesetEditor) {
         this->tilesetEditor = new TilesetEditor(this->editor->project, this->editor->map->layout->tileset_primary_label, this->editor->map->layout->tileset_secondary_label, this);
         connect(this->tilesetEditor, SIGNAL(tilesetsSaved(QString, QString)), this, SLOT(onTilesetsSaved(QString, QString)));
+        connect(this->tilesetEditor, SIGNAL(closed()), this, SLOT(onTilesetEditorClosed()));
     }
 
     if (!this->tilesetEditor->isVisible()) {
         this->tilesetEditor->show();
+    } else if (this->tilesetEditor->isMinimized()) {
+        this->tilesetEditor->showNormal();
     } else {
         this->tilesetEditor->activateWindow();
+    }
+}
+
+void MainWindow::onTilesetEditorClosed() {
+    if (this->tilesetEditor) {
+        delete this->tilesetEditor;
+        this->tilesetEditor = nullptr;
     }
 }
