@@ -32,6 +32,7 @@ void TilesetEditorMetatileSelector::draw() {
 }
 
 void TilesetEditorMetatileSelector::select(uint16_t metatileId) {
+    metatileId = this->getValidMetatileId(metatileId);
     QPoint coords = this->getMetatileIdCoords(metatileId);
     SelectablePixmapItem::select(coords.x(), coords.y(), 0, 0);
     this->selectedMetatile = metatileId;
@@ -95,17 +96,19 @@ void TilesetEditorMetatileSelector::hoverLeaveEvent(QGraphicsSceneHoverEvent*) {
 }
 
 QPoint TilesetEditorMetatileSelector::getMetatileIdCoords(uint16_t metatileId) {
-    if (metatileId >= Project::getNumMetatilesTotal()
-       || (metatileId < Project::getNumMetatilesPrimary() && metatileId >= this->primaryTileset->metatiles->length())
-       || (metatileId < Project::getNumMetatilesTotal() && metatileId >= Project::getNumMetatilesPrimary() + this->secondaryTileset->metatiles->length()))
-    {
-        // Invalid metatile id.
-        return QPoint(0, 0);
-    }
-
     int index = metatileId < Project::getNumMetatilesPrimary()
                 ? metatileId
                 : metatileId - Project::getNumMetatilesPrimary() + this->primaryTileset->metatiles->length();
     return QPoint(index % this->numMetatilesWide, index / this->numMetatilesWide);
+}
+
+uint16_t TilesetEditorMetatileSelector::getValidMetatileId(uint16_t metatileId) {
+    if (metatileId >= Project::getNumMetatilesTotal()
+       || (metatileId < Project::getNumMetatilesPrimary() && metatileId >= this->primaryTileset->metatiles->length())
+       || (metatileId < Project::getNumMetatilesTotal() && metatileId >= Project::getNumMetatilesPrimary() + this->secondaryTileset->metatiles->length()))
+    {
+        return 0;
+    }
+    return metatileId;
 }
 

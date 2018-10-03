@@ -18,6 +18,7 @@ class TilesetEditor : public QMainWindow
 public:
     explicit TilesetEditor(Project*, QString, QString, QWidget *parent = nullptr);
     ~TilesetEditor();
+    void setTilesets(QString, QString);
 
 private slots:
     void onHoveredMetatileChanged(uint16_t);

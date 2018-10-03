@@ -41,6 +41,21 @@ TilesetEditor::~TilesetEditor()
     delete ui;
 }
 
+void TilesetEditor::setTilesets(QString primaryTilesetLabel, QString secondaryTilesetLabel) {
+    delete this->primaryTileset;
+    delete this->secondaryTileset;
+    Tileset *primaryTileset = project->getTileset(primaryTilesetLabel);
+    Tileset *secondaryTileset = project->getTileset(secondaryTilesetLabel);
+    this->primaryTileset = primaryTileset->copy();
+    this->secondaryTileset = secondaryTileset->copy();
+
+    this->metatileSelector->setTilesets(this->primaryTileset, this->secondaryTileset);
+    this->tileSelector->setTilesets(this->primaryTileset, this->secondaryTileset);
+    this->metatileLayersItem->setTilesets(this->primaryTileset, this->secondaryTileset);
+    this->metatileSelector->select(this->metatileSelector->getSelectedMetatile());
+    this->drawSelectedTile();
+}
+
 void TilesetEditor::initMetatileSelector()
 {
     this->metatileSelector = new TilesetEditorMetatileSelector(this->primaryTileset, this->secondaryTileset);

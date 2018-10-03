@@ -196,6 +196,7 @@ void MainWindow::setMap(QString map_name, bool scrollTreeView) {
 
     setRecentMap(map_name);
     updateMapList();
+    updateTilesetEditor();
 }
 
 void MainWindow::redrawMapScene()
@@ -527,6 +528,12 @@ void MainWindow::onAddNewMapToGroupClick(QAction* triggeredAction)
 void MainWindow::onTilesetChanged(QString mapName)
 {
     setMap(mapName);
+}
+
+void MainWindow::updateTilesetEditor() {
+    if (this->tilesetEditor) {
+        this->tilesetEditor->setTilesets(editor->ui->comboBox_PrimaryTileset->currentText(), editor->ui->comboBox_SecondaryTileset->currentText());
+    }
 }
 
 void MainWindow::currentMetatilesSelectionChanged()

@@ -157,6 +157,7 @@ private:
     void initEditor();
     void loadUserSettings();
     void openRecentProject();
+    void updateTilesetEditor();
 };
 
 enum MapListUserRoles {
