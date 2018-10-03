@@ -383,6 +383,9 @@
      <string>File</string>
     </property>
     <addaction name="actionSave_Tileset"/>
+    <addaction name="separator"/>
+    <addaction name="actionImport_Primary_Tiles"/>
+    <addaction name="actionImport_Secondary_Tiles"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
@@ -393,6 +396,16 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="actionImport_Primary_Tiles">
+   <property name="text">
+    <string>Import Primary Tiles</string>
+   </property>
+  </action>
+  <action name="actionImport_Secondary_Tiles">
+   <property name="text">
+    <string>Import Secondary Tiles</string>
    </property>
   </action>
  </widget>

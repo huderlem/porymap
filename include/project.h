@@ -74,6 +74,8 @@ public:
     void readMapsWithConnections();
     void loadMapTilesets(Map*);
     void loadTilesetAssets(Tileset*);
+    void loadTilesetTiles(Tileset*, QImage);
+    void loadTilesetMetatiles(Tileset*);
 
     void saveBlockdata(Map*);
     void saveMapBorder(Map*);
@@ -133,6 +135,7 @@ private:
     void saveMapConnections(Map*);
     void saveTilesetMetatileAttributes(Tileset*);
     void saveTilesetMetatiles(Tileset*);
+    void saveTilesetTilesImage(Tileset*);
     void updateMapsWithConnections(Map*);
     void saveMapsWithConnections();
     void saveMapLayoutsTable();

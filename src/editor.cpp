@@ -965,7 +965,6 @@ void Editor::updatePrimaryTileset(QString tilesetLabel, bool forceLoad)
 {
     if (map->layout->tileset_primary_label != tilesetLabel || forceLoad)
     {
-        qDebug() << "updatePrimaryTileset";
         map->layout->tileset_primary_label = tilesetLabel;
         map->layout->tileset_primary = project->getTileset(tilesetLabel, forceLoad);
         emit tilesetChanged(map->name);
@@ -974,7 +973,7 @@ void Editor::updatePrimaryTileset(QString tilesetLabel, bool forceLoad)
 
 void Editor::updateSecondaryTileset(QString tilesetLabel, bool forceLoad)
 {
-    if (map->layout->tileset_secondary_label != tilesetLabel)
+    if (map->layout->tileset_secondary_label != tilesetLabel || forceLoad)
     {
         map->layout->tileset_secondary_label = tilesetLabel;
         map->layout->tileset_secondary = project->getTileset(tilesetLabel, forceLoad);

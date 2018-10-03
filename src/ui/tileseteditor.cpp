@@ -1,6 +1,9 @@
 #include "tileseteditor.h"
 #include "ui_tileseteditor.h"
 #include "imageproviders.h"
+#include <QFileDialog>
+#include <QDebug>
+#include <QMessageBox>
 
 TilesetEditor::TilesetEditor(Project *project, QString primaryTilesetLabel, QString secondaryTilesetLabel, QWidget *parent) :
     QMainWindow(parent),
@@ -47,7 +50,10 @@ void TilesetEditor::setTilesets(QString primaryTilesetLabel, QString secondaryTi
     Tileset *secondaryTileset = project->getTileset(secondaryTilesetLabel);
     this->primaryTileset = primaryTileset->copy();
     this->secondaryTileset = secondaryTileset->copy();
+    this->refresh();
+}
 
+void TilesetEditor::refresh() {
     this->metatileSelector->setTilesets(this->primaryTileset, this->secondaryTileset);
     this->tileSelector->setTilesets(this->primaryTileset, this->secondaryTileset);
     this->metatileLayersItem->setTilesets(this->primaryTileset, this->secondaryTileset);
@@ -208,4 +214,78 @@ void TilesetEditor::on_actionSave_Tileset_triggered()
     this->project->saveTilesets(this->primaryTileset, this->secondaryTileset);
     emit this->tilesetsSaved(this->primaryTileset->name, this->secondaryTileset->name);
     this->ui->statusbar->showMessage(QString("Saved primary and secondary Tilesets!"), 5000);
+}
+
+void TilesetEditor::on_actionImport_Primary_Tiles_triggered()
+{
+    this->importTilesetTiles(this->primaryTileset, true);
+}
+
+void TilesetEditor::on_actionImport_Secondary_Tiles_triggered()
+{
+    this->importTilesetTiles(this->secondaryTileset, false);
+}
+
+void TilesetEditor::importTilesetTiles(Tileset *tileset, bool primary) {
+    QString descriptor = primary ? "primary" : "secondary";
+    QString descriptorCaps = primary ? "Primary" : "Secondary";
+
+    QString filepath = QFileDialog::getOpenFileName(
+                this,
+                QString("Import %1 Tileset Tiles Image").arg(descriptorCaps),
+                this->project->root,
+                "Image Files (*.png)");
+    if (filepath.isEmpty()) {
+        return;
+    }
+
+    qDebug() << QString("Importing %1 tileset tiles '%2'").arg(descriptor).arg(filepath);
+
+    // Validate image dimensions.
+    QImage image = QImage(filepath);
+    if (image.width() == 0 || image.height() == 0 || image.width() % 8 != 0 || image.height() % 8 != 0) {
+        QMessageBox msgBox(this);
+        msgBox.setText("Failed to import tiles.");
+        msgBox.setInformativeText(QString("The image dimensions (%1 x %2) are invalid. Width and height must be multiples of 8 pixels.")
+                                  .arg(image.width())
+                                  .arg(image.height()));
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        msgBox.setIcon(QMessageBox::Icon::Critical);
+        msgBox.exec();
+        return;
+    }
+
+    // Validate image is properly indexed to 16 colors.
+    if (image.colorCount() != 16) {
+        QMessageBox msgBox(this);
+        msgBox.setText("Failed to import tiles.");
+        msgBox.setInformativeText(QString("The image must be indexed and contain 16 total colors. The provided image has %1 indexed colors.")
+                                  .arg(image.colorCount()));
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        msgBox.setIcon(QMessageBox::Icon::Critical);
+        msgBox.exec();
+        return;
+    }
+
+    // Validate total number of tiles in image.
+    int numTilesWide = image.width() / 16;
+    int numTilesHigh = image.height() / 16;
+    int totalTiles = numTilesHigh * numTilesWide;
+    int maxAllowedTiles = primary ? Project::getNumTilesPrimary() : Project::getNumTilesTotal() - Project::getNumTilesPrimary();
+    if (totalTiles > maxAllowedTiles) {
+        QMessageBox msgBox(this);
+        msgBox.setText("Failed to import tiles.");
+        msgBox.setInformativeText(QString("The maximum number of tiles allowed in the %1 tileset is %2, but the provided image contains %3 total tiles.")
+                                  .arg(descriptor)
+                                  .arg(maxAllowedTiles)
+                                  .arg(totalTiles));
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        msgBox.setIcon(QMessageBox::Icon::Critical);
+        msgBox.exec();
+        return;
+    }
+
+    this->project->loadTilesetTiles(tileset, image);
+    this->project->loadTilesetMetatiles(tileset);
+    this->refresh();
 }

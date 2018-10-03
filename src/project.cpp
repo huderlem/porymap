@@ -581,6 +581,8 @@ void Project::saveTilesets(Tileset *primaryTileset, Tileset *secondaryTileset) {
     saveTilesetMetatileAttributes(secondaryTileset);
     saveTilesetMetatiles(primaryTileset);
     saveTilesetMetatiles(secondaryTileset);
+    saveTilesetTilesImage(primaryTileset);
+    saveTilesetTilesImage(secondaryTileset);
 }
 
 void Project::saveTilesetMetatileAttributes(Tileset *tileset) {
@@ -617,6 +619,11 @@ void Project::saveTilesetMetatiles(Tileset *tileset) {
         tileset->metatiles = new QList<Metatile*>;
         qDebug() << QString("Could not open tileset metatiles file '%1'").arg(tileset->metatiles_path);
     }
+}
+
+void Project::saveTilesetTilesImage(Tileset *tileset) {
+    qDebug() << QString("saving tiles png to '%1'").arg(tileset->tilesImagePath);
+    tileset->tilesImage.save(tileset->tilesImagePath);
 }
 
 void Project::loadMapTilesets(Map* map) {
@@ -841,22 +848,59 @@ void Project::loadTilesetAssets(Tileset* tileset) {
         tileset->metatile_attrs_path = dir_path + "/metatile_attributes.bin";
     }
 
-    // tiles
     tiles_path = fixGraphicPath(tiles_path);
-    QImage *image = new QImage(tiles_path);
-    //image->setColor(0, qRgb(0xff, 0, 0)); // debug
+    tileset->tilesImagePath = tiles_path;
+    QImage image = QImage(tileset->tilesImagePath);
+    this->loadTilesetTiles(tileset, image);
+    this->loadTilesetMetatiles(tileset);
 
+    // palettes
+    QList<QList<QRgb>> *palettes = new QList<QList<QRgb>>;
+    for (int i = 0; i < palette_paths->length(); i++) {
+        QString path = palette_paths->value(i);
+        // the palettes are not compressed. this should never happen. it's only a precaution.
+        path = path.replace(QRegExp("\\.lz$"), "");
+        // TODO default to .pal (JASC-PAL)
+        // just use .gbapal for now
+        QFile file(path);
+        QList<QRgb> palette;
+        if (file.open(QIODevice::ReadOnly)) {
+            QByteArray data = file.readAll();
+            for (int j = 0; j < 16; j++) {
+                uint16_t word = data[j*2] & 0xff;
+                word += (data[j*2 + 1] & 0xff) << 8;
+                int red = word & 0x1f;
+                int green = (word >> 5) & 0x1f;
+                int blue = (word >> 10) & 0x1f;
+                QRgb color = qRgb(red * 8, green * 8, blue * 8);
+                palette.append(color);
+            }
+        } else {
+            for (int j = 0; j < 16; j++) {
+                palette.append(qRgb(j * 16, j * 16, j * 16));
+            }
+            qDebug() << QString("Could not open palette path '%1'").arg(path);
+        }
+
+        palettes->append(palette);
+    }
+    tileset->palettes = palettes;
+}
+
+void Project::loadTilesetTiles(Tileset *tileset, QImage image) {
     QList<QImage> *tiles = new QList<QImage>;
     int w = 8;
     int h = 8;
-    for (int y = 0; y < image->height(); y += h)
-    for (int x = 0; x < image->width(); x += w) {
-        QImage tile = image->copy(x, y, w, h);
+    for (int y = 0; y < image.height(); y += h)
+    for (int x = 0; x < image.width(); x += w) {
+        QImage tile = image.copy(x, y, w, h);
         tiles->append(tile);
     }
+    tileset->tilesImage = image;
     tileset->tiles = tiles;
+}
 
-    // metatiles
+void Project::loadTilesetMetatiles(Tileset* tileset) {
     QFile metatiles_file(tileset->metatiles_path);
     if (metatiles_file.open(QIODevice::ReadOnly)) {
         QByteArray data = metatiles_file.readAll();
@@ -902,38 +946,6 @@ void Project::loadTilesetAssets(Tileset* tileset) {
     } else {
         qDebug() << QString("Could not open tileset metatile attributes file '%1'").arg(tileset->metatile_attrs_path);
     }
-
-    // palettes
-    QList<QList<QRgb>> *palettes = new QList<QList<QRgb>>;
-    for (int i = 0; i < palette_paths->length(); i++) {
-        QString path = palette_paths->value(i);
-        // the palettes are not compressed. this should never happen. it's only a precaution.
-        path = path.replace(QRegExp("\\.lz$"), "");
-        // TODO default to .pal (JASC-PAL)
-        // just use .gbapal for now
-        QFile file(path);
-        QList<QRgb> palette;
-        if (file.open(QIODevice::ReadOnly)) {
-            QByteArray data = file.readAll();
-            for (int j = 0; j < 16; j++) {
-                uint16_t word = data[j*2] & 0xff;
-                word += (data[j*2 + 1] & 0xff) << 8;
-                int red = word & 0x1f;
-                int green = (word >> 5) & 0x1f;
-                int blue = (word >> 10) & 0x1f;
-                QRgb color = qRgb(red * 8, green * 8, blue * 8);
-                palette.append(color);
-            }
-        } else {
-            for (int j = 0; j < 16; j++) {
-                palette.append(qRgb(j * 16, j * 16, j * 16));
-            }
-            qDebug() << QString("Could not open palette path '%1'").arg(path);
-        }
-
-        palettes->append(palette);
-    }
-    tileset->palettes = palettes;
 }
 
 Blockdata* Project::readBlockdata(QString path) {

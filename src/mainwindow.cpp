@@ -1244,7 +1244,7 @@ void MainWindow::on_checkBox_ToggleBorder_stateChanged(int selected)
 void MainWindow::on_actionTileset_Editor_triggered()
 {
     if (!this->tilesetEditor) {
-        this->tilesetEditor = new TilesetEditor(this->editor->project, this->editor->map->layout->tileset_primary_label, this->editor->map->layout->tileset_secondary_label);
+        this->tilesetEditor = new TilesetEditor(this->editor->project, this->editor->map->layout->tileset_primary_label, this->editor->map->layout->tileset_secondary_label, this);
         connect(this->tilesetEditor, SIGNAL(tilesetsSaved(QString, QString)), this, SLOT(onTilesetsSaved(QString, QString)));
     }
 

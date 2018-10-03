@@ -41,12 +41,18 @@ private slots:
 
     void on_actionSave_Tileset_triggered();
 
+    void on_actionImport_Primary_Tiles_triggered();
+
+    void on_actionImport_Secondary_Tiles_triggered();
+
 private:
     void initMetatileSelector();
     void initTileSelector();
     void initSelectedTileItem();
     void initMetatileLayersItem();
     void drawSelectedTile();
+    void importTilesetTiles(Tileset*, bool);
+    void refresh();
     Ui::TilesetEditor *ui;
     TilesetEditorMetatileSelector *metatileSelector = nullptr;
     TilesetEditorTileSelector *tileSelector = nullptr;

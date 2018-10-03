@@ -24,6 +24,8 @@ Tileset* Tileset::copy() {
     copy->callback_label = this->callback_label;
     copy->metatile_attrs_label = this->metatile_attrs_label;
     copy->metatile_attrs_path = this->metatile_attrs_path;
+    copy->tilesImage = this->tilesImage.copy();
+    copy->tilesImagePath = this->tilesImagePath;
     copy->tiles = new QList<QImage>;
     for (QImage tile : *this->tiles) {
         copy->tiles->append(tile.copy());
