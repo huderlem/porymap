@@ -83,8 +83,15 @@ QImage getTileImage(uint16_t tile, Tileset *primaryTileset, Tileset *secondaryTi
 QImage getColoredTileImage(uint16_t tile, Tileset *primaryTileset, Tileset *secondaryTileset, int paletteId) {
     QList<QRgb> palette = Tileset::getPalette(paletteId, primaryTileset, secondaryTileset);
     QImage tileImage = getTileImage(tile, primaryTileset, secondaryTileset);
-    for (int i = 0; i < 16; i++) {
-        tileImage.setColor(i, palette.at(i));
+    if (tileImage.isNull()) {
+        tileImage = QImage(16, 16, QImage::Format_RGBA8888);
+        QPainter painter(&tileImage);
+        painter.fillRect(0, 0, 16, 16, palette.at(0));
+    } else {
+        for (int i = 0; i < 16; i++) {
+            tileImage.setColor(i, palette.at(i));
+        }
     }
+
     return tileImage;
 }

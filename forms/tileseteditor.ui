@@ -70,7 +70,14 @@
          </spacer>
         </item>
         <item row="1" column="1">
-         <widget class="QGraphicsView" name="graphicsView_Metatiles"/>
+         <widget class="QGraphicsView" name="graphicsView_Metatiles">
+          <property name="verticalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOff</enum>
+          </property>
+          <property name="horizontalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOff</enum>
+          </property>
+         </widget>
         </item>
         <item row="0" column="1">
          <spacer name="verticalSpacer_2">
@@ -239,7 +246,14 @@
             </spacer>
            </item>
            <item row="1" column="1">
-            <widget class="QGraphicsView" name="graphicsView_Tiles"/>
+            <widget class="QGraphicsView" name="graphicsView_Tiles">
+             <property name="verticalScrollBarPolicy">
+              <enum>Qt::ScrollBarAlwaysOff</enum>
+             </property>
+             <property name="horizontalScrollBarPolicy">
+              <enum>Qt::ScrollBarAlwaysOff</enum>
+             </property>
+            </widget>
            </item>
            <item row="2" column="1">
             <spacer name="verticalSpacer_4">

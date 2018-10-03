@@ -1,7 +1,6 @@
 #include "tileseteditor.h"
 #include "ui_tileseteditor.h"
 #include "imageproviders.h"
-#include <QDebug>
 
 TilesetEditor::TilesetEditor(Project *project, QString primaryTilesetLabel, QString secondaryTilesetLabel, QWidget *parent) :
     QMainWindow(parent),
@@ -54,6 +53,11 @@ void TilesetEditor::setTilesets(QString primaryTilesetLabel, QString secondaryTi
     this->metatileLayersItem->setTilesets(this->primaryTileset, this->secondaryTileset);
     this->metatileSelector->select(this->metatileSelector->getSelectedMetatile());
     this->drawSelectedTile();
+
+    this->ui->graphicsView_Tiles->setSceneRect(0, 0, this->tileSelector->pixmap().width() + 2, this->tileSelector->pixmap().height() + 2);
+    this->ui->graphicsView_Tiles->setFixedSize(this->tileSelector->pixmap().width() + 2, this->tileSelector->pixmap().height() + 2);
+    this->ui->graphicsView_Metatiles->setSceneRect(0, 0, this->metatileSelector->pixmap().width() + 2, this->metatileSelector->pixmap().height() + 2);
+    this->ui->graphicsView_Metatiles->setFixedSize(this->metatileSelector->pixmap().width() + 2, this->metatileSelector->pixmap().height() + 2);
 }
 
 void TilesetEditor::initMetatileSelector()
@@ -203,4 +207,5 @@ void TilesetEditor::on_actionSave_Tileset_triggered()
 {
     this->project->saveTilesets(this->primaryTileset, this->secondaryTileset);
     emit this->tilesetsSaved(this->primaryTileset->name, this->secondaryTileset->name);
+    this->ui->statusbar->showMessage(QString("Saved primary and secondary Tilesets!"), 5000);
 }
