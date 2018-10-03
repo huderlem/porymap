@@ -307,7 +307,7 @@
             <x>0</x>
             <y>0</y>
             <width>386</width>
-            <height>361</height>
+            <height>359</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_2">
@@ -397,10 +397,17 @@
     </property>
     <addaction name="actionSave_Tileset"/>
     <addaction name="separator"/>
+   </widget>
+   <widget class="QMenu" name="menuTools">
+    <property name="title">
+     <string>Tools</string>
+    </property>
     <addaction name="actionImport_Primary_Tiles"/>
     <addaction name="actionImport_Secondary_Tiles"/>
+    <addaction name="actionChange_Metatiles_Count"/>
    </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuTools"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionSave_Tileset">
@@ -419,6 +426,11 @@
   <action name="actionImport_Secondary_Tiles">
    <property name="text">
     <string>Import Secondary Tiles</string>
+   </property>
+  </action>
+  <action name="actionChange_Metatiles_Count">
+   <property name="text">
+    <string>Change Number of Metatiles</string>
    </property>
   </action>
  </widget>

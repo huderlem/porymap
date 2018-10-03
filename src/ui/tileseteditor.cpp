@@ -4,6 +4,7 @@
 #include <QFileDialog>
 #include <QDebug>
 #include <QMessageBox>
+#include <QDialogButtonBox>
 
 TilesetEditor::TilesetEditor(Project *project, QString primaryTilesetLabel, QString secondaryTilesetLabel, QWidget *parent) :
     QMainWindow(parent),
@@ -347,5 +348,74 @@ void TilesetEditor::closeEvent(QCloseEvent *event)
         emit closed();
     } else {
         event->ignore();
+    }
+}
+
+void TilesetEditor::on_actionChange_Metatiles_Count_triggered()
+{
+    QDialog dialog(this, Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
+    dialog.setWindowTitle("Change Number of Metatiles");
+    dialog.setWindowModality(Qt::NonModal);
+
+    QFormLayout form(&dialog);
+
+    QSpinBox *primarySpinBox = new QSpinBox();
+    QSpinBox *secondarySpinBox = new QSpinBox();
+    primarySpinBox->setMinimum(1);
+    secondarySpinBox->setMinimum(1);
+    primarySpinBox->setMaximum(Project::getNumMetatilesPrimary());
+    secondarySpinBox->setMaximum(Project::getNumMetatilesTotal() - Project::getNumMetatilesPrimary());
+    primarySpinBox->setValue(this->primaryTileset->metatiles->length());
+    secondarySpinBox->setValue(this->secondaryTileset->metatiles->length());
+    form.addRow(new QLabel("Primary Tileset"), primarySpinBox);
+    form.addRow(new QLabel("Secondary Tileset"), secondarySpinBox);
+
+    QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
+    connect(&buttonBox, SIGNAL(accepted()), &dialog, SLOT(accept()));
+    connect(&buttonBox, SIGNAL(rejected()), &dialog, SLOT(reject()));
+    form.addRow(&buttonBox);
+
+    if (dialog.exec() == QDialog::Accepted) {
+        int numPrimaryMetatiles = primarySpinBox->value();
+        int numSecondaryMetatiles = secondarySpinBox->value();
+        while (this->primaryTileset->metatiles->length() > numPrimaryMetatiles) {
+            Metatile *metatile = this->primaryTileset->metatiles->takeLast();
+            delete metatile;
+        }
+        while (this->primaryTileset->metatiles->length() < numPrimaryMetatiles) {
+            Tile tile;
+            tile.palette = 0;
+            tile.tile = 0;
+            tile.xflip = 0;
+            tile.yflip = 0;
+            Metatile *metatile = new Metatile;
+            metatile->behavior = 0;
+            metatile->layerType = 0;
+            for (int i = 0; i < 8; i++) {
+                metatile->tiles->append(tile);
+            }
+            this->primaryTileset->metatiles->append(metatile);
+        }
+        while (this->secondaryTileset->metatiles->length() > numSecondaryMetatiles) {
+            Metatile *metatile = this->secondaryTileset->metatiles->takeLast();
+            delete metatile;
+        }
+        while (this->secondaryTileset->metatiles->length() < numSecondaryMetatiles) {
+            Tile tile;
+            tile.palette = 0;
+            tile.tile = 0;
+            tile.xflip = 0;
+            tile.yflip = 0;
+            Metatile *metatile = new Metatile;
+            metatile->behavior = 0;
+            metatile->layerType = 0;
+            for (int i = 0; i < 8; i++) {
+                metatile->tiles->append(tile);
+            }
+            this->secondaryTileset->metatiles->append(metatile);
+        }
+
+        this->refresh();
+        this->hasUnsavedChanges = true;
     }
 }

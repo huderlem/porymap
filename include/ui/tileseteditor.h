@@ -46,6 +46,8 @@ private slots:
 
     void on_actionImport_Secondary_Tiles_triggered();
 
+    void on_actionChange_Metatiles_Count_triggered();
+
 private:
     void closeEvent(QCloseEvent*);
     void initMetatileSelector();

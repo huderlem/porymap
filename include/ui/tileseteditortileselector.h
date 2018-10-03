@@ -12,6 +12,8 @@ public:
         this->secondaryTileset = secondaryTileset;
         this->numTilesWide = 16;
         this->paletteId = 0;
+        this->xFlip = false;
+        this->yFlip = false;
         setAcceptHoverEvents(true);
     }
     void draw();
