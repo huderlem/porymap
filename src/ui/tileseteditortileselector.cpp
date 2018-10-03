@@ -35,7 +35,7 @@ void TilesetEditorTileSelector::draw() {
         int y = tile / this->numTilesWide;
         int x = tile % this->numTilesWide;
         QPoint origin = QPoint(x * 16, y * 16);
-        painter.drawImage(origin, tileImage);
+        painter.drawImage(origin, tileImage.mirrored(this->xFlip, this->yFlip));
     }
 
     painter.end();
@@ -46,8 +46,8 @@ void TilesetEditorTileSelector::draw() {
 void TilesetEditorTileSelector::select(uint16_t tile) {
     QPoint coords = this->getTileCoords(tile);
     SelectablePixmapItem::select(coords.x(), coords.y(), 0, 0);
-    this->selectedTile = tile;
-    emit selectedTileChanged(tile);
+    this->updateSelectedTiles();
+    emit selectedTilesChanged();
 }
 
 void TilesetEditorTileSelector::setTilesets(Tileset *primaryTileset, Tileset *secondaryTileset) {
@@ -61,13 +61,26 @@ void TilesetEditorTileSelector::setPaletteId(int paletteId) {
     this->draw();
 }
 
-void TilesetEditorTileSelector::updateSelectedTile() {
-    QPoint origin = this->getSelectionStart();
-    this->selectedTile = this->getTileId(origin.x(), origin.y());
+void TilesetEditorTileSelector::setTileFlips(bool xFlip, bool yFlip) {
+    this->xFlip = xFlip;
+    this->yFlip = yFlip;
+    this->draw();
 }
 
-uint16_t TilesetEditorTileSelector::getSelectedTile() {
-    return this->selectedTile;
+void TilesetEditorTileSelector::updateSelectedTiles() {
+    this->selectedTiles.clear();
+    QPoint origin = this->getSelectionStart();
+    QPoint dimensions = this->getSelectionDimensions();
+    for (int j = 0; j < dimensions.y(); j++) {
+        for (int i = 0; i < dimensions.x(); i++) {
+            uint16_t metatileId = this->getTileId(origin.x() + i, origin.y() + j);
+            this->selectedTiles.append(metatileId);
+        }
+    }
+}
+
+QList<uint16_t> TilesetEditorTileSelector::getSelectedTiles() {
+    return this->selectedTiles;
 }
 
 uint16_t TilesetEditorTileSelector::getTileId(int x, int y) {
@@ -76,24 +89,24 @@ uint16_t TilesetEditorTileSelector::getTileId(int x, int y) {
 
 void TilesetEditorTileSelector::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     SelectablePixmapItem::mousePressEvent(event);
-    this->updateSelectedTile();
-    emit selectedTileChanged(this->selectedTile);
+    this->updateSelectedTiles();
+    emit selectedTilesChanged();
 }
 
 void TilesetEditorTileSelector::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     SelectablePixmapItem::mouseMoveEvent(event);
-    this->updateSelectedTile();
+    this->updateSelectedTiles();
 
     QPoint pos = this->getCellPos(event->pos());
     uint16_t tile = this->getTileId(pos.x(), pos.y());
     emit hoveredTileChanged(tile);
-    emit selectedTileChanged(tile);
+    emit selectedTilesChanged();
 }
 
 void TilesetEditorTileSelector::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
     SelectablePixmapItem::mouseReleaseEvent(event);
-    this->updateSelectedTile();
-    emit selectedTileChanged(this->selectedTile);
+    this->updateSelectedTiles();
+    emit selectedTilesChanged();
 }
 
 void TilesetEditorTileSelector::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {

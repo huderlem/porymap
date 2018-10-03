@@ -58,12 +58,13 @@ void TilesetEditor::refresh() {
     this->tileSelector->setTilesets(this->primaryTileset, this->secondaryTileset);
     this->metatileLayersItem->setTilesets(this->primaryTileset, this->secondaryTileset);
     this->metatileSelector->select(this->metatileSelector->getSelectedMetatile());
-    this->drawSelectedTile();
+    this->drawSelectedTiles();
 
     this->ui->graphicsView_Tiles->setSceneRect(0, 0, this->tileSelector->pixmap().width() + 2, this->tileSelector->pixmap().height() + 2);
     this->ui->graphicsView_Tiles->setFixedSize(this->tileSelector->pixmap().width() + 2, this->tileSelector->pixmap().height() + 2);
     this->ui->graphicsView_Metatiles->setSceneRect(0, 0, this->metatileSelector->pixmap().width() + 2, this->metatileSelector->pixmap().height() + 2);
     this->ui->graphicsView_Metatiles->setFixedSize(this->metatileSelector->pixmap().width() + 2, this->metatileSelector->pixmap().height() + 2);
+    this->ui->graphicsView_selectedTile->setFixedSize(this->selectedTilePixmapItem->pixmap().width(), this->selectedTilePixmapItem->pixmap().height());
 }
 
 void TilesetEditor::initMetatileSelector()
@@ -91,8 +92,8 @@ void TilesetEditor::initTileSelector()
             this, SLOT(onHoveredTileChanged(uint16_t)));
     connect(this->tileSelector, SIGNAL(hoveredTileCleared()),
             this, SLOT(onHoveredTileCleared()));
-    connect(this->tileSelector, SIGNAL(selectedTileChanged(uint16_t)),
-            this, SLOT(onSelectedTileChanged(uint16_t)));
+    connect(this->tileSelector, SIGNAL(selectedTilesChanged()),
+            this, SLOT(onSelectedTilesChanged()));
 
     this->tilesScene = new QGraphicsScene;
     this->tilesScene->addItem(this->tileSelector);
@@ -105,27 +106,42 @@ void TilesetEditor::initTileSelector()
 
 void TilesetEditor::initSelectedTileItem() {
     this->selectedTileScene = new QGraphicsScene;
-    this->drawSelectedTile();
+    this->drawSelectedTiles();
     this->ui->graphicsView_selectedTile->setScene(this->selectedTileScene);
+    this->ui->graphicsView_selectedTile->setFixedSize(this->selectedTilePixmapItem->pixmap().width(), this->selectedTilePixmapItem->pixmap().height());
 }
 
-void TilesetEditor::drawSelectedTile() {
+void TilesetEditor::drawSelectedTiles() {
     if (!this->selectedTileScene) {
         return;
     }
 
     this->selectedTileScene->clear();
-    QImage tileImage = getColoredTileImage(this->tileSelector->getSelectedTile(), this->primaryTileset, this->secondaryTileset, this->paletteId)
-            .mirrored(this->tileXFlip, this->tileYFlip);
-    this->selectedTilePixmapItem = new QGraphicsPixmapItem(QPixmap::fromImage(tileImage).scaled(32, 32));
+    QList<uint16_t> tiles = this->tileSelector->getSelectedTiles();
+    QPoint dimensions = this->tileSelector->getSelectionDimensions();
+    QImage selectionImage(32 * dimensions.x(), 32 * dimensions.y(), QImage::Format_RGBA8888);
+    QPainter painter(&selectionImage);
+    int tileIndex = 0;
+    for (int j = 0; j < dimensions.y(); j++) {
+        for (int i = 0; i < dimensions.x(); i++) {
+            QImage tileImage = getColoredTileImage(tiles.at(tileIndex), this->primaryTileset, this->secondaryTileset, this->paletteId)
+                    .mirrored(this->tileXFlip, this->tileYFlip)
+                    .scaled(32, 32);
+            tileIndex++;
+            painter.drawImage(i * 32, j * 32, tileImage);
+        }
+    }
+
+    this->selectedTilePixmapItem = new QGraphicsPixmapItem(QPixmap::fromImage(selectionImage));
     this->selectedTileScene->addItem(this->selectedTilePixmapItem);
+    this->ui->graphicsView_selectedTile->setFixedSize(this->selectedTilePixmapItem->pixmap().width(), this->selectedTilePixmapItem->pixmap().height());
 }
 
 void TilesetEditor::initMetatileLayersItem() {
     Metatile *metatile = Tileset::getMetatile(this->metatileSelector->getSelectedMetatile(), this->primaryTileset, this->secondaryTileset);
     this->metatileLayersItem = new MetatileLayersItem(metatile, this->primaryTileset, this->secondaryTileset);
-    connect(this->metatileLayersItem, SIGNAL(tileChanged(int)),
-            this, SLOT(onMetatileLayerTileChanged(int)));
+    connect(this->metatileLayersItem, SIGNAL(tileChanged(int, int)),
+            this, SLOT(onMetatileLayerTileChanged(int, int)));
 
     this->metatileLayersScene = new QGraphicsScene;
     this->metatileLayersScene->addItem(this->metatileLayersItem);
@@ -160,17 +176,30 @@ void TilesetEditor::onHoveredTileCleared() {
     this->ui->statusbar->clearMessage();
 }
 
-void TilesetEditor::onSelectedTileChanged(uint16_t) {    
-    this->drawSelectedTile();
+void TilesetEditor::onSelectedTilesChanged() {
+    this->drawSelectedTiles();
 }
 
-void TilesetEditor::onMetatileLayerTileChanged(int tileIndex) {
-    Tile tile = this->metatile->tiles->at(tileIndex);
-    tile.tile = this->tileSelector->getSelectedTile();
-    tile.xflip = this->tileXFlip;
-    tile.yflip = this->tileYFlip;
-    tile.palette = this->paletteId;
-    (*this->metatile->tiles)[tileIndex] = tile;
+void TilesetEditor::onMetatileLayerTileChanged(int x, int y) {
+    int maxTileIndex = x < 2 ? 3 : 7;
+    QPoint dimensions = this->tileSelector->getSelectionDimensions();
+    QList<uint16_t> tiles = this->tileSelector->getSelectedTiles();
+    int selectedTileIndex = 0;
+    for (int j = 0; j < dimensions.y(); j++) {
+        for (int i = 0; i < dimensions.x(); i++) {
+            int tileIndex = ((x + i) / 2 * 4) + ((y + j) * 2) + ((x + i) % 2);
+            if (tileIndex <= maxTileIndex) {
+                Tile tile = this->metatile->tiles->at(tileIndex);
+                tile.tile = tiles.at(selectedTileIndex);
+                tile.xflip = this->tileXFlip;
+                tile.yflip = this->tileYFlip;
+                tile.palette = this->paletteId;
+                (*this->metatile->tiles)[tileIndex] = tile;
+            }
+            selectedTileIndex++;
+        }
+    }
+
     this->metatileSelector->draw();
     this->metatileLayersItem->draw();
 }
@@ -179,19 +208,21 @@ void TilesetEditor::on_spinBox_paletteSelector_valueChanged(int paletteId)
 {
     this->paletteId = paletteId;
     this->tileSelector->setPaletteId(paletteId);
-    this->drawSelectedTile();
+    this->drawSelectedTiles();
 }
 
 void TilesetEditor::on_checkBox_xFlip_stateChanged(int checked)
 {
     this->tileXFlip = checked;
-    this->drawSelectedTile();
+    this->tileSelector->setTileFlips(this->tileXFlip, this->tileYFlip);
+    this->drawSelectedTiles();
 }
 
 void TilesetEditor::on_checkBox_yFlip_stateChanged(int checked)
 {
     this->tileYFlip = checked;
-    this->drawSelectedTile();
+    this->tileSelector->setTileFlips(this->tileXFlip, this->tileYFlip);
+    this->drawSelectedTiles();
 }
 
 void TilesetEditor::on_comboBox_metatileBehaviors_currentIndexChanged(const QString &metatileBehavior)

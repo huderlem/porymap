@@ -186,8 +186,8 @@
                </property>
                <property name="maximumSize">
                 <size>
-                 <width>32</width>
-                 <height>32</height>
+                 <width>64</width>
+                 <height>64</height>
                 </size>
                </property>
                <property name="verticalScrollBarPolicy">
@@ -215,7 +215,7 @@
             <x>0</x>
             <y>0</y>
             <width>309</width>
-            <height>415</height>
+            <height>409</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_2">

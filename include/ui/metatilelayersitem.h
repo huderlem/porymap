@@ -21,7 +21,7 @@ private:
     Tileset *primaryTileset;
     Tileset *secondaryTileset;
 signals:
-    void tileChanged(int);
+    void tileChanged(int, int);
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent*);
 };

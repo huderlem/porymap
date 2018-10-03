@@ -7,7 +7,7 @@
 class TilesetEditorTileSelector: public SelectablePixmapItem {
     Q_OBJECT
 public:
-    TilesetEditorTileSelector(Tileset *primaryTileset, Tileset *secondaryTileset): SelectablePixmapItem(16, 16, 1, 1) {
+    TilesetEditorTileSelector(Tileset *primaryTileset, Tileset *secondaryTileset): SelectablePixmapItem(16, 16, 2, 2) {
         this->primaryTileset = primaryTileset;
         this->secondaryTileset = secondaryTileset;
         this->numTilesWide = 16;
@@ -18,7 +18,8 @@ public:
     void select(uint16_t metatileId);
     void setTilesets(Tileset*, Tileset*);
     void setPaletteId(int);
-    uint16_t getSelectedTile();
+    void setTileFlips(bool, bool);
+    QList<uint16_t> getSelectedTiles();
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent*);
@@ -30,10 +31,12 @@ protected:
 private:
     Tileset *primaryTileset;
     Tileset *secondaryTileset;
-    uint16_t selectedTile;
+    QList<uint16_t> selectedTiles;
     int numTilesWide;
     int paletteId;
-    void updateSelectedTile();
+    bool xFlip;
+    bool yFlip;
+    void updateSelectedTiles();
     uint16_t getTileId(int x, int y);
     QPoint getTileCoords(uint16_t);
     QList<QRgb> getCurPaletteTable();
@@ -41,7 +44,7 @@ private:
 signals:
     void hoveredTileChanged(uint16_t);
     void hoveredTileCleared();
-    void selectedTileChanged(uint16_t);
+    void selectedTilesChanged();
 };
 
 #endif // TILESETEDITORTILESELECTOR_H

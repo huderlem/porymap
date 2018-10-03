@@ -26,8 +26,8 @@ private slots:
     void onSelectedMetatileChanged(uint16_t);
     void onHoveredTileChanged(uint16_t);
     void onHoveredTileCleared();
-    void onSelectedTileChanged(uint16_t);
-    void onMetatileLayerTileChanged(int);
+    void onSelectedTilesChanged();
+    void onMetatileLayerTileChanged(int, int);
 
     void on_spinBox_paletteSelector_valueChanged(int arg1);
 
@@ -50,7 +50,7 @@ private:
     void initTileSelector();
     void initSelectedTileItem();
     void initMetatileLayersItem();
-    void drawSelectedTile();
+    void drawSelectedTiles();
     void importTilesetTiles(Tileset*, bool);
     void refresh();
     Ui::TilesetEditor *ui;

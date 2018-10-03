@@ -41,6 +41,5 @@ void MetatileLayersItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     QPointF pos = event->pos();
     int x = static_cast<int>(pos.x()) / 16;
     int y = static_cast<int>(pos.y()) / 16;
-    int tileIndex = (x / 2 * 4) + (y * 2) + (x % 2);
-    emit this->tileChanged(tileIndex);
+    emit this->tileChanged(x, y);
 }
