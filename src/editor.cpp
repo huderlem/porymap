@@ -961,22 +961,23 @@ void Editor::updateDiveEmergeMap(QString mapName, QString direction) {
     ui->label_NumConnections->setText(QString::number(map->connections.length()));
 }
 
-void Editor::updatePrimaryTileset(QString tilesetLabel)
+void Editor::updatePrimaryTileset(QString tilesetLabel, bool forceLoad)
 {
-    if (map->layout->tileset_primary_label != tilesetLabel)
+    if (map->layout->tileset_primary_label != tilesetLabel || forceLoad)
     {
+        qDebug() << "updatePrimaryTileset";
         map->layout->tileset_primary_label = tilesetLabel;
-        map->layout->tileset_primary = project->getTileset(tilesetLabel);
+        map->layout->tileset_primary = project->getTileset(tilesetLabel, forceLoad);
         emit tilesetChanged(map->name);
     }
 }
 
-void Editor::updateSecondaryTileset(QString tilesetLabel)
+void Editor::updateSecondaryTileset(QString tilesetLabel, bool forceLoad)
 {
     if (map->layout->tileset_secondary_label != tilesetLabel)
     {
         map->layout->tileset_secondary_label = tilesetLabel;
-        map->layout->tileset_secondary = project->getTileset(tilesetLabel);
+        map->layout->tileset_secondary = project->getTileset(tilesetLabel, forceLoad);
         emit tilesetChanged(map->name);
     }
 }

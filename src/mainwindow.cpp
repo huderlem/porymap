@@ -1104,6 +1104,11 @@ void MainWindow::onMapNeedsRedrawing() {
     redrawMapScene();
 }
 
+void MainWindow::onTilesetsSaved(QString primaryTilesetLabel, QString secondaryTilesetLabel) {
+    this->editor->updatePrimaryTileset(primaryTilesetLabel, true);
+    this->editor->updateSecondaryTileset(secondaryTilesetLabel, true);
+}
+
 void MainWindow::on_action_Export_Map_Image_triggered()
 {
     QString defaultFilepath = QString("%1/%2.png").arg(editor->project->root).arg(editor->map->name);
@@ -1233,6 +1238,7 @@ void MainWindow::on_actionTileset_Editor_triggered()
 {
     if (!this->tilesetEditor) {
         this->tilesetEditor = new TilesetEditor(this->editor->project, this->editor->map->layout->tileset_primary_label, this->editor->map->layout->tileset_secondary_label);
+        connect(this->tilesetEditor, SIGNAL(tilesetsSaved(QString, QString)), this, SLOT(onTilesetsSaved(QString, QString)));
     }
 
     if (!this->tilesetEditor->isVisible()) {

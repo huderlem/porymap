@@ -55,13 +55,16 @@ private:
     int paletteId;
     bool tileXFlip;
     bool tileYFlip;
-    QString primaryTilesetLabel;
-    QString secondaryTilesetLabel;
+    Tileset *primaryTileset;
+    Tileset *secondaryTileset;
     QGraphicsScene *metatilesScene = nullptr;
     QGraphicsScene *tilesScene = nullptr;
     QGraphicsScene *selectedTileScene = nullptr;
     QGraphicsPixmapItem *selectedTilePixmapItem = nullptr;
     QGraphicsScene *metatileLayersScene = nullptr;
+
+signals:
+    void tilesetsSaved(QString, QString);
 };
 
 #endif // TILESETEDITOR_H

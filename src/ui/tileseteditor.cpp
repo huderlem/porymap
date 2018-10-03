@@ -13,8 +13,11 @@ TilesetEditor::TilesetEditor(Project *project, QString primaryTilesetLabel, QStr
     this->tileXFlip = ui->checkBox_xFlip->isChecked();
     this->tileYFlip = ui->checkBox_yFlip->isChecked();
     this->paletteId = ui->spinBox_paletteSelector->value();
-    this->primaryTilesetLabel = primaryTilesetLabel;
-    this->secondaryTilesetLabel = secondaryTilesetLabel;
+
+    Tileset *primaryTileset = project->getTileset(primaryTilesetLabel);
+    Tileset *secondaryTileset = project->getTileset(secondaryTilesetLabel);
+    this->primaryTileset = primaryTileset->copy();
+    this->secondaryTileset = secondaryTileset->copy();
 
     QList<QString> sortedBehaviors;
     for (int num : project->metatileBehaviorMapInverse.keys()) {
@@ -40,9 +43,7 @@ TilesetEditor::~TilesetEditor()
 
 void TilesetEditor::initMetatileSelector()
 {
-    Tileset *primaryTileset = this->project->getTileset(this->primaryTilesetLabel);
-    Tileset *secondaryTileset = this->project->getTileset(this->secondaryTilesetLabel);
-    this->metatileSelector = new TilesetEditorMetatileSelector(primaryTileset, secondaryTileset);
+    this->metatileSelector = new TilesetEditorMetatileSelector(this->primaryTileset, this->secondaryTileset);
     connect(this->metatileSelector, SIGNAL(hoveredMetatileChanged(uint16_t)),
             this, SLOT(onHoveredMetatileChanged(uint16_t)));
     connect(this->metatileSelector, SIGNAL(hoveredMetatileCleared()),
@@ -60,9 +61,7 @@ void TilesetEditor::initMetatileSelector()
 
 void TilesetEditor::initTileSelector()
 {
-    Tileset *primaryTileset = this->project->getTileset(this->primaryTilesetLabel);
-    Tileset *secondaryTileset = this->project->getTileset(this->secondaryTilesetLabel);
-    this->tileSelector = new TilesetEditorTileSelector(primaryTileset, secondaryTileset);
+    this->tileSelector = new TilesetEditorTileSelector(this->primaryTileset, this->secondaryTileset);
     connect(this->tileSelector, SIGNAL(hoveredTileChanged(uint16_t)),
             this, SLOT(onHoveredTileChanged(uint16_t)));
     connect(this->tileSelector, SIGNAL(hoveredTileCleared()),
@@ -91,19 +90,15 @@ void TilesetEditor::drawSelectedTile() {
     }
 
     this->selectedTileScene->clear();
-    Tileset *primaryTileset = this->project->getTileset(this->primaryTilesetLabel);
-    Tileset *secondaryTileset = this->project->getTileset(this->secondaryTilesetLabel);
-    QImage tileImage = getColoredTileImage(this->tileSelector->getSelectedTile(), primaryTileset, secondaryTileset, this->paletteId)
+    QImage tileImage = getColoredTileImage(this->tileSelector->getSelectedTile(), this->primaryTileset, this->secondaryTileset, this->paletteId)
             .mirrored(this->tileXFlip, this->tileYFlip);
     this->selectedTilePixmapItem = new QGraphicsPixmapItem(QPixmap::fromImage(tileImage).scaled(32, 32));
     this->selectedTileScene->addItem(this->selectedTilePixmapItem);
 }
 
 void TilesetEditor::initMetatileLayersItem() {
-    Tileset *primaryTileset = this->project->getTileset(this->primaryTilesetLabel);
-    Tileset *secondaryTileset = this->project->getTileset(this->secondaryTilesetLabel);
-    Metatile *metatile = Tileset::getMetatile(this->metatileSelector->getSelectedMetatile(), primaryTileset, secondaryTileset);
-    this->metatileLayersItem = new MetatileLayersItem(metatile, primaryTileset, secondaryTileset);
+    Metatile *metatile = Tileset::getMetatile(this->metatileSelector->getSelectedMetatile(), this->primaryTileset, this->secondaryTileset);
+    this->metatileLayersItem = new MetatileLayersItem(metatile, this->primaryTileset, this->secondaryTileset);
     connect(this->metatileLayersItem, SIGNAL(tileChanged(int)),
             this, SLOT(onMetatileLayerTileChanged(int)));
 
@@ -123,9 +118,7 @@ void TilesetEditor::onHoveredMetatileCleared() {
 }
 
 void TilesetEditor::onSelectedMetatileChanged(uint16_t metatileId) {
-    Tileset *primaryTileset = this->project->getTileset(this->primaryTilesetLabel);
-    Tileset *secondaryTileset = this->project->getTileset(this->secondaryTilesetLabel);
-    this->metatile = Tileset::getMetatile(metatileId, primaryTileset, secondaryTileset);
+    this->metatile = Tileset::getMetatile(metatileId, this->primaryTileset, this->secondaryTileset);
     this->metatileLayersItem->setMetatile(metatile);
     this->metatileLayersItem->draw();
     this->ui->comboBox_metatileBehaviors->setCurrentIndex(this->ui->comboBox_metatileBehaviors->findData(this->metatile->behavior));
@@ -193,7 +186,6 @@ void TilesetEditor::on_comboBox_layerType_currentIndexChanged(int layerType)
 
 void TilesetEditor::on_actionSave_Tileset_triggered()
 {
-    Tileset *primaryTileset = this->project->getTileset(this->primaryTilesetLabel);
-    Tileset *secondaryTileset = this->project->getTileset(this->secondaryTilesetLabel);
-    this->project->saveTilesets(primaryTileset, secondaryTileset);
+    this->project->saveTilesets(this->primaryTileset, this->secondaryTileset);
+    emit this->tilesetsSaved(this->primaryTileset->name, this->secondaryTileset->name);
 }

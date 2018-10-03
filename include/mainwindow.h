@@ -43,6 +43,7 @@ private slots:
     void onLoadMapRequested(QString, QString);
     void onMapChanged(Map *map);
     void onMapNeedsRedrawing();
+    void onTilesetsSaved(QString, QString);
 
     void on_action_Save_triggered();
     void on_tabWidget_2_currentChanged(int index);

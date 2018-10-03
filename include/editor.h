@@ -68,8 +68,8 @@ public:
     void updateDiveMap(QString mapName);
     void updateEmergeMap(QString mapName);
     void setSelectedConnectionFromMap(QString mapName);
-    void updatePrimaryTileset(QString tilesetLabel);
-    void updateSecondaryTileset(QString tilesetLabel);
+    void updatePrimaryTileset(QString tilesetLabel, bool forceLoad = false);
+    void updateSecondaryTileset(QString tilesetLabel, bool forceLoad = false);
     void toggleBorderVisibility(bool visible);
     Tileset *getCurrentMapPrimaryTileset();
 

@@ -13,6 +13,7 @@ public:
     uint8_t behavior;
     uint8_t layerType;
 
+    Metatile *copy();
     static int getBlockIndex(int);
 };
 

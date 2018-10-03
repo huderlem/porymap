@@ -26,8 +26,8 @@ protected:
     void hoverLeaveEvent(QGraphicsSceneHoverEvent*);
 
 private:
-    Tileset *primaryTileset;
-    Tileset *secondaryTileset;
+    Tileset *primaryTileset = nullptr;
+    Tileset *secondaryTileset = nullptr;
     uint16_t selectedMetatile;
     int numMetatilesWide;
     void updateSelectedMetatile();

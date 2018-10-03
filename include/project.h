@@ -48,8 +48,8 @@ public:
     Map* getMap(QString);
 
     QMap<QString, Tileset*> *tileset_cache = nullptr;
-    Tileset* loadTileset(QString);
-    Tileset* getTileset(QString);
+    Tileset* loadTileset(QString, Tileset *tileset = nullptr);
+    Tileset* getTileset(QString, bool forceLoad = false);
 
     Blockdata* readBlockdata(QString);
     void loadBlockdata(Map*);

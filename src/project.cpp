@@ -628,12 +628,14 @@ void Project::loadMapTilesets(Map* map) {
     map->layout->tileset_secondary = getTileset(map->layout->tileset_secondary_label);
 }
 
-Tileset* Project::loadTileset(QString label) {
+Tileset* Project::loadTileset(QString label, Tileset *tileset) {
     ParseUtil *parser = new ParseUtil;
 
     QString headers_text = readTextFile(root + "/data/tilesets/headers.inc");
     QStringList *values = getLabelValues(parser->parseAsm(headers_text), label);
-    Tileset *tileset = new Tileset;
+    if (tileset == nullptr) {
+        tileset = new Tileset;
+    }
     tileset->name = label;
     tileset->is_compressed = values->value(0);
     tileset->is_secondary = values->value(1);
@@ -793,7 +795,8 @@ void Project::loadTilesetAssets(Tileset* tileset) {
     if (tileset->name.isNull()) {
         return;
     }
-    QString dir_path = root + "/data/tilesets/" + category + "/" + tileset->name.replace("gTileset_", "").toLower();
+    QString tilesetName = tileset->name;
+    QString dir_path = root + "/data/tilesets/" + category + "/" + tilesetName.replace("gTileset_", "").toLower();
 
     QString graphics_text = readTextFile(root + "/data/tilesets/graphics.inc");
     QList<QStringList> *graphics = parser->parseAsm(graphics_text);
@@ -958,11 +961,16 @@ Map* Project::getMap(QString map_name) {
     }
 }
 
-Tileset* Project::getTileset(QString label) {
+Tileset* Project::getTileset(QString label, bool forceLoad) {
+    Tileset *existingTileset = nullptr;
     if (tileset_cache->contains(label)) {
+        existingTileset = tileset_cache->value(label);
+    }
+
+    if (existingTileset && !forceLoad) {
         return tileset_cache->value(label);
     } else {
-        Tileset *tileset = loadTileset(label);
+        Tileset *tileset = loadTileset(label, existingTileset);
         return tileset;
     }
 }
