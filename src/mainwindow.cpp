@@ -180,6 +180,10 @@ void MainWindow::setMap(QString map_name, bool scrollTreeView) {
     if (map_name.isNull()) {
         return;
     }
+    if (editor->map != nullptr && !editor->map->name.isNull()) {
+        ui->mapList->setExpanded(mapListIndexes.value(editor->map->name), false);
+    }
+    ui->mapList->setExpanded(mapListIndexes.value(map_name), true);
     editor->setMap(map_name);
     redrawMapScene();
     displayMapProperties();
@@ -418,25 +422,18 @@ void MainWindow::populateMapList() {
 
     QIcon folderIcon;
     folderIcon.addFile(QStringLiteral(":/icons/folder_closed.ico"), QSize(), QIcon::Normal, QIcon::Off);
+    folderIcon.addFile(QStringLiteral(":/icons/folder.ico"), QSize(), QIcon::Normal, QIcon::On);
 
     mapIcon = new QIcon;
     mapIcon->addFile(QStringLiteral(":/icons/map.ico"), QSize(), QIcon::Normal, QIcon::Off);
-    mapIcon->addFile(QStringLiteral(":/icons/image.ico"), QSize(), QIcon::Normal, QIcon::On);
+    mapIcon->addFile(QStringLiteral(":/icons/map_opened.ico"), QSize(), QIcon::Normal, QIcon::On);
+
+    mapEditedIcon = new QIcon;
+    mapEditedIcon->addFile(QStringLiteral(":/icons/map_edited.ico"), QSize(), QIcon::Normal, QIcon::Off);
+    mapEditedIcon->addFile(QStringLiteral(":/icons/map_opened.ico"), QSize(), QIcon::Normal , QIcon::On);
 
     mapListModel = new QStandardItemModel;
     mapGroupsModel = new QList<QStandardItem*>;
-
-    QStandardItem *entry = new QStandardItem;
-    entry->setText(project->getProjectTitle());
-    entry->setIcon(folderIcon);
-    entry->setEditable(false);
-    mapListModel->appendRow(entry);
-
-    QStandardItem *maps = new QStandardItem;
-    maps->setText("maps");
-    maps->setIcon(folderIcon);
-    maps->setEditable(false);
-    entry->appendRow(maps);
 
     project->readMapGroups();
     for (int i = 0; i < project->groupNames->length(); i++) {
@@ -448,7 +445,7 @@ void MainWindow::populateMapList() {
         group->setData(group_name, Qt::UserRole);
         group->setData("map_group", MapListUserRoles::TypeRole);
         group->setData(i, MapListUserRoles::GroupRole);
-        maps->appendRow(group);
+        mapListModel->appendRow(group);
         mapGroupsModel->append(group);
         QStringList names = project->groupedMapNames.value(i);
         for (int j = 0; j < names.length(); j++) {
@@ -466,7 +463,7 @@ void MainWindow::populateMapList() {
 
     ui->mapList->setModel(mapListModel);
     ui->mapList->setUpdatesEnabled(true);
-    ui->mapList->expandToDepth(2);
+    ui->mapList->expandToDepth(0);
     ui->mapList->repaint();
 }
 
@@ -563,10 +560,9 @@ void MainWindow::markEdited(QModelIndex index) {
         QString map_name = data.toString();
         if (editor->project) {
             if (editor->project->map_cache->contains(map_name)) {
-                // Just mark anything that's been opened for now.
-                // TODO if (project->getMap()->saved)
-                //ui->mapList->setExpanded(index, true);
-                ui->mapList->setExpanded(index, editor->project->map_cache->value(map_name)->hasUnsavedChanges());
+                if (editor->project->map_cache->value(map_name)->hasUnsavedChanges()) {
+                    mapListModel->itemFromIndex(mapListIndexes.value(map_name))->setIcon(*mapEditedIcon);
+                }
             }
         }
     }

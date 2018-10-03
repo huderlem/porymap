@@ -26,28 +26,144 @@
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
-      <widget class="QTreeView" name="mapList">
+      <widget class="QWidget" name="mapListContainer" native="true">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
-       <property name="minimumSize">
-        <size>
-         <width>100</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="selectionMode">
-        <enum>QAbstractItemView::SingleSelection</enum>
-       </property>
-       <property name="selectionBehavior">
-        <enum>QAbstractItemView::SelectItems</enum>
-       </property>
-       <attribute name="headerVisible">
-        <bool>false</bool>
-       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_11">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="leftMargin">
+           <number>3</number>
+          </property>
+          <property name="topMargin">
+           <number>3</number>
+          </property>
+          <property name="bottomMargin">
+           <number>3</number>
+          </property>
+          <item>
+           <widget class="QToolButton" name="toolButton_MapSortOrder">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="icon">
+             <iconset resource="../resources/images.qrc">
+              <normaloff>:/icons/sort_alphabet.ico</normaloff>:/icons/sort_alphabet.ico</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>16</width>
+              <height>16</height>
+             </size>
+            </property>
+            <property name="popupMode">
+             <enum>QToolButton::MenuButtonPopup</enum>
+            </property>
+            <property name="toolButtonStyle">
+             <enum>Qt::ToolButtonIconOnly</enum>
+            </property>
+            <property name="autoRaise">
+             <bool>true</bool>
+            </property>
+            <property name="arrowType">
+             <enum>Qt::NoArrow</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Preferred</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>24</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="lineEdit_filterBox">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="placeholderText">
+             <string>Filter maps...</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QTreeView" name="mapList">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>100</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="selectionMode">
+           <enum>QAbstractItemView::SingleSelection</enum>
+          </property>
+          <property name="selectionBehavior">
+           <enum>QAbstractItemView::SelectItems</enum>
+          </property>
+          <attribute name="headerVisible">
+           <bool>false</bool>
+          </attribute>
+         </widget>
+        </item>
+       </layout>
       </widget>
       <widget class="QTabWidget" name="tabWidget">
        <property name="enabled">
@@ -73,7 +189,7 @@
          <string/>
         </property>
         <attribute name="icon">
-         <iconset resource="resources/images.qrc">
+         <iconset resource="../resources/images.qrc">
           <normaloff>:/icons/map.ico</normaloff>:/icons/map.ico</iconset>
         </attribute>
         <attribute name="title">
@@ -177,7 +293,7 @@
                    <string>Paint</string>
                   </property>
                   <property name="icon">
-                   <iconset resource="resources/images.qrc">
+                   <iconset resource="../resources/images.qrc">
                     <normaloff>:/icons/pencil.ico</normaloff>:/icons/pencil.ico</iconset>
                   </property>
                   <property name="checkable">
@@ -203,7 +319,7 @@
                    <string>Select</string>
                   </property>
                   <property name="icon">
-                   <iconset resource="resources/images.qrc">
+                   <iconset resource="../resources/images.qrc">
                     <normaloff>:/icons/cursor.ico</normaloff>:/icons/cursor.ico</iconset>
                   </property>
                   <property name="checkable">
@@ -220,7 +336,7 @@
                    <string>Fill</string>
                   </property>
                   <property name="icon">
-                   <iconset resource="resources/images.qrc">
+                   <iconset resource="../resources/images.qrc">
                     <normaloff>:/icons/fill_color.ico</normaloff>:/icons/fill_color.ico</iconset>
                   </property>
                   <property name="checkable">
@@ -237,7 +353,7 @@
                    <string>Dropper</string>
                   </property>
                   <property name="icon">
-                   <iconset resource="resources/images.qrc">
+                   <iconset resource="../resources/images.qrc">
                     <normaloff>:/icons/pipette.ico</normaloff>:/icons/pipette.ico</iconset>
                   </property>
                   <property name="checkable">
@@ -254,7 +370,7 @@
                    <string>...</string>
                   </property>
                   <property name="icon">
-                   <iconset resource="resources/images.qrc">
+                   <iconset resource="../resources/images.qrc">
                     <normaloff>:/icons/move.ico</normaloff>:/icons/move.ico</iconset>
                   </property>
                   <property name="checkable">
@@ -271,7 +387,7 @@
                    <string>Shift</string>
                   </property>
                   <property name="icon">
-                   <iconset resource="resources/images.qrc">
+                   <iconset resource="../resources/images.qrc">
                     <normaloff>:/icons/shift.ico</normaloff>:/icons/shift.ico</iconset>
                   </property>
                   <property name="checkable">
@@ -1355,7 +1471,7 @@
                    <string>New Object</string>
                   </property>
                   <property name="icon">
-                   <iconset resource="resources/images.qrc">
+                   <iconset resource="../resources/images.qrc">
                     <normaloff>:/icons/add.ico</normaloff>:/icons/add.ico</iconset>
                   </property>
                   <property name="toolButtonStyle">
@@ -1384,7 +1500,7 @@
                    <string>Delete</string>
                   </property>
                   <property name="icon">
-                   <iconset resource="resources/images.qrc">
+                   <iconset resource="../resources/images.qrc">
                     <normaloff>:/icons/delete.ico</normaloff>:/icons/delete.ico</iconset>
                   </property>
                   <property name="toolButtonStyle">
@@ -2295,7 +2411,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="resources/images.qrc"/>
+  <include location="../resources/images.qrc"/>
  </resources>
  <connections/>
 </ui>

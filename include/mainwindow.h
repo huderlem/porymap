@@ -130,6 +130,7 @@ private:
     QMap<QString, QModelIndex> mapListIndexes;
     Editor *editor = nullptr;
     QIcon* mapIcon;
+    QIcon* mapEditedIcon;
     void setMap(QString, bool scrollTreeView = false);
     void redrawMapScene();
     void loadDataStructures();
