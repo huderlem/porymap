@@ -583,6 +583,8 @@ void Project::saveTilesets(Tileset *primaryTileset, Tileset *secondaryTileset) {
     saveTilesetMetatiles(secondaryTileset);
     saveTilesetTilesImage(primaryTileset);
     saveTilesetTilesImage(secondaryTileset);
+    saveTilesetPalettes(primaryTileset, true);
+    saveTilesetPalettes(secondaryTileset, false);
 }
 
 void Project::saveTilesetMetatileAttributes(Tileset *tileset) {
@@ -622,8 +624,27 @@ void Project::saveTilesetMetatiles(Tileset *tileset) {
 }
 
 void Project::saveTilesetTilesImage(Tileset *tileset) {
-    qDebug() << QString("saving tiles png to '%1'").arg(tileset->tilesImagePath);
     tileset->tilesImage.save(tileset->tilesImagePath);
+}
+
+void Project::saveTilesetPalettes(Tileset *tileset, bool primary) {
+    int startPaletteId = primary ? 0 : Project::getNumPalettesPrimary();
+    int endPaletteId = primary ? Project::getNumPalettesPrimary() : Project::getNumPalettesTotal();
+    for (int i = startPaletteId; i < endPaletteId; i++) {
+        QString filepath = tileset->palettePaths.at(i);
+        QString content = "JASC-PAL\r\n";
+        content += "0100\r\n";
+        content += "16\r\n";
+        for (int j = 0; j < 16; j++) {
+            QRgb color = tileset->palettes->at(i).at(j);
+            content += QString("%1 %2 %3\r\n")
+                    .arg(qRed(color))
+                    .arg(qGreen(color))
+                    .arg(qBlue(color));
+        }
+
+        saveTextFile(filepath, content);
+    }
 }
 
 void Project::loadMapTilesets(Map* map) {
@@ -820,16 +841,15 @@ void Project::loadTilesetAssets(Tileset* tileset) {
         }
     }
 
-    QStringList *palette_paths = new QStringList;
     if (!palettes_values->isEmpty()) {
         for (int i = 0; i < palettes_values->length(); i++) {
             QString value = palettes_values->value(i);
-            palette_paths->append(root + "/" + value.section('"', 1, 1));
+            tileset->palettePaths.append(this->fixPalettePath(root + "/" + value.section('"', 1, 1)));
         }
     } else {
         QString palettes_dir_path = dir_path + "/palettes";
         for (int i = 0; i < 16; i++) {
-            palette_paths->append(palettes_dir_path + "/" + QString("%1").arg(i, 2, 10, QLatin1Char('0')) + ".gbapal");
+            tileset->palettePaths.append(palettes_dir_path + "/" + QString("%1").arg(i, 2, 10, QLatin1Char('0')) + ".pal");
         }
     }
 
@@ -856,24 +876,31 @@ void Project::loadTilesetAssets(Tileset* tileset) {
 
     // palettes
     QList<QList<QRgb>> *palettes = new QList<QList<QRgb>>;
-    for (int i = 0; i < palette_paths->length(); i++) {
-        QString path = palette_paths->value(i);
-        // the palettes are not compressed. this should never happen. it's only a precaution.
-        path = path.replace(QRegExp("\\.lz$"), "");
-        // TODO default to .pal (JASC-PAL)
-        // just use .gbapal for now
-        QFile file(path);
+    for (int i = 0; i < tileset->palettePaths.length(); i++) {
         QList<QRgb> palette;
-        if (file.open(QIODevice::ReadOnly)) {
-            QByteArray data = file.readAll();
-            for (int j = 0; j < 16; j++) {
-                uint16_t word = data[j*2] & 0xff;
-                word += (data[j*2 + 1] & 0xff) << 8;
-                int red = word & 0x1f;
-                int green = (word >> 5) & 0x1f;
-                int blue = (word >> 10) & 0x1f;
-                QRgb color = qRgb(red * 8, green * 8, blue * 8);
-                palette.append(color);
+        QString path = tileset->palettePaths.value(i);
+        QString text = readTextFile(path);
+        if (!text.isNull()) {
+            QStringList lines = text.split(QRegExp("[\r\n]"),QString::SkipEmptyParts);
+            if (lines.length() == 19 && lines[0] == "JASC-PAL" && lines[1] == "0100" && lines[2] == "16") {
+                for (int j = 0; j < 16; j++) {
+                    QStringList rgb = lines[j + 3].split(QRegExp(" "), QString::SkipEmptyParts);
+                    if (rgb.length() != 3) {
+                        qDebug() << QString("Invalid tileset palette RGB value: '%1'").arg(lines[j + 3]);
+                        palette.append(qRgb((j - 3) * 16, (j - 3) * 16, (j - 3) * 16));
+                    } else {
+                        int red = rgb[0].toInt();
+                        int green = rgb[1].toInt();
+                        int blue = rgb[2].toInt();
+                        QRgb color = qRgb(red, green, blue);
+                        palette.append(color);
+                    }
+                }
+            } else {
+                qDebug() << QString("Invalid JASC-PAL palette file for tileset.");
+                for (int j = 0; j < 16; j++) {
+                    palette.append(qRgb(j * 16, j * 16, j * 16));
+                }
             }
         } else {
             for (int j = 0; j < 16; j++) {
@@ -1403,6 +1430,11 @@ QMap<QString, int> Project::getEventObjGfxConstants() {
         constants = readCDefines(text, eventObjGfxPrefixes);
     }
     return constants;
+}
+
+QString Project::fixPalettePath(QString path) {
+    path = path.replace(QRegExp("\\.gbapal$"), ".pal");
+    return path;
 }
 
 QString Project::fixGraphicPath(QString path) {

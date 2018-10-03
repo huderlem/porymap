@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "project.h"
+#include "paletteeditor.h"
 #include "tileseteditormetatileselector.h"
 #include "tileseteditortileselector.h"
 #include "metatilelayersitem.h"
@@ -29,6 +30,9 @@ private slots:
     void onHoveredTileCleared();
     void onSelectedTilesChanged();
     void onMetatileLayerTileChanged(int, int);
+    void onPaletteEditorClosed();
+    void onPaletteEditorChangedPaletteColor();
+    void onPaletteEditorChangedPalette(int);
 
     void on_spinBox_paletteSelector_valueChanged(int arg1);
 
@@ -48,6 +52,8 @@ private slots:
 
     void on_actionChange_Metatiles_Count_triggered();
 
+    void on_actionChange_Palettes_triggered();
+
 private:
     void closeEvent(QCloseEvent*);
     void initMetatileSelector();
@@ -61,6 +67,7 @@ private:
     TilesetEditorMetatileSelector *metatileSelector = nullptr;
     TilesetEditorTileSelector *tileSelector = nullptr;
     MetatileLayersItem *metatileLayersItem = nullptr;
+    PaletteEditor *paletteEditor = nullptr;
     Project *project = nullptr;
     Metatile *metatile = nullptr;
     int paletteId;

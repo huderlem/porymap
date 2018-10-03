@@ -405,6 +405,7 @@
     <addaction name="actionImport_Primary_Tiles"/>
     <addaction name="actionImport_Secondary_Tiles"/>
     <addaction name="actionChange_Metatiles_Count"/>
+    <addaction name="actionChange_Palettes"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTools"/>
@@ -431,6 +432,11 @@
   <action name="actionChange_Metatiles_Count">
    <property name="text">
     <string>Change Number of Metatiles</string>
+   </property>
+  </action>
+  <action name="actionChange_Palettes">
+   <property name="text">
+    <string>Change Palettes</string>
    </property>
   </action>
  </widget>

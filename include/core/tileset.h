@@ -23,6 +23,7 @@ public:
     QString metatile_attrs_path;
     QString tilesImagePath;
     QImage tilesImage;
+    QList<QString> palettePaths;
 
     QList<QImage> *tiles = nullptr;
     QList<Metatile*> *metatiles = nullptr;

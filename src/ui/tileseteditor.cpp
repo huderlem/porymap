@@ -215,9 +215,15 @@ void TilesetEditor::onMetatileLayerTileChanged(int x, int y) {
 
 void TilesetEditor::on_spinBox_paletteSelector_valueChanged(int paletteId)
 {
+    this->ui->spinBox_paletteSelector->blockSignals(true);
+    this->ui->spinBox_paletteSelector->setValue(paletteId);
+    this->ui->spinBox_paletteSelector->blockSignals(false);
     this->paletteId = paletteId;
     this->tileSelector->setPaletteId(paletteId);
     this->drawSelectedTiles();
+    if (this->paletteEditor) {
+        this->paletteEditor->setPaletteId(paletteId);
+    }
 }
 
 void TilesetEditor::on_checkBox_xFlip_stateChanged(int checked)
@@ -240,7 +246,6 @@ void TilesetEditor::on_comboBox_metatileBehaviors_currentIndexChanged(const QStr
         this->metatile->behavior = static_cast<uint8_t>(project->metatileBehaviorMap[metatileBehavior]);
     }
 }
-
 
 void TilesetEditor::on_comboBox_layerType_currentIndexChanged(int layerType)
 {
@@ -418,4 +423,38 @@ void TilesetEditor::on_actionChange_Metatiles_Count_triggered()
         this->refresh();
         this->hasUnsavedChanges = true;
     }
+}
+
+void TilesetEditor::onPaletteEditorClosed() {
+    if (this->paletteEditor) {
+        delete this->paletteEditor;
+        this->paletteEditor = nullptr;
+    }
+}
+
+void TilesetEditor::on_actionChange_Palettes_triggered()
+{
+    if (!this->paletteEditor) {
+        this->paletteEditor = new PaletteEditor(this->project, this->primaryTileset, this->secondaryTileset, this);
+        connect(this->paletteEditor, SIGNAL(closed()), this, SLOT(onPaletteEditorClosed()));
+        connect(this->paletteEditor, SIGNAL(changedPaletteColor()), this, SLOT(onPaletteEditorChangedPaletteColor()));
+        connect(this->paletteEditor, SIGNAL(changedPalette(int)), this, SLOT(onPaletteEditorChangedPalette(int)));
+    }
+
+    if (!this->paletteEditor->isVisible()) {
+        this->paletteEditor->show();
+    } else if (this->paletteEditor->isMinimized()) {
+        this->paletteEditor->showNormal();
+    } else {
+        this->paletteEditor->activateWindow();
+    }
+}
+
+void TilesetEditor::onPaletteEditorChangedPaletteColor() {
+    this->refresh();
+    this->hasUnsavedChanges = true;
+}
+
+void TilesetEditor::onPaletteEditorChangedPalette(int paletteId) {
+    this->on_spinBox_paletteSelector_valueChanged(paletteId);
 }

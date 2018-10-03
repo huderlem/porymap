@@ -40,6 +40,7 @@ SOURCES += src/core/block.cpp \
     src/ui/neweventtoolbutton.cpp \
     src/ui/noscrollcombobox.cpp \
     src/ui/noscrollspinbox.cpp \
+    src/ui/paletteeditor.cpp \
     src/ui/selectablepixmapitem.cpp \
     src/ui/tileseteditor.cpp \
     src/ui/tileseteditormetatileselector.cpp \
@@ -78,6 +79,7 @@ HEADERS  += include/core/block.h \
     include/ui/neweventtoolbutton.h \
     include/ui/noscrollcombobox.h \
     include/ui/noscrollspinbox.h \
+    include/ui/paletteeditor.h \
     include/ui/selectablepixmapitem.h \
     include/ui/tileseteditor.h \
     include/ui/tileseteditormetatileselector.h \
@@ -89,7 +91,8 @@ HEADERS  += include/core/block.h \
 
 FORMS    += forms/mainwindow.ui \
     forms/eventpropertiesframe.ui \
-    forms/tileseteditor.ui
+    forms/tileseteditor.ui \
+    forms/paletteeditor.ui
 
 RESOURCES += \
     resources/images.qrc

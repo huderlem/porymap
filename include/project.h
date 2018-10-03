@@ -109,6 +109,7 @@ public:
 
     void loadEventPixmaps(QList<Event*> objects);
     QMap<QString, int> getEventObjGfxConstants();
+    QString fixPalettePath(QString path);
     QString fixGraphicPath(QString path);
 
     void readMapEvents(Map *map);
@@ -136,6 +137,7 @@ private:
     void saveTilesetMetatileAttributes(Tileset*);
     void saveTilesetMetatiles(Tileset*);
     void saveTilesetTilesImage(Tileset*);
+    void saveTilesetPalettes(Tileset*, bool);
     void updateMapsWithConnections(Map*);
     void saveMapsWithConnections();
     void saveMapLayoutsTable();
