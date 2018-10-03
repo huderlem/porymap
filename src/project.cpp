@@ -576,6 +576,49 @@ void Project::saveHealLocationStruct(Map *map) {
     saveTextFile(root + "/include/constants/heal_locations.h", constants_text);
 }
 
+void Project::saveTilesets(Tileset *primaryTileset, Tileset *secondaryTileset) {
+    saveTilesetMetatileAttributes(primaryTileset);
+    saveTilesetMetatileAttributes(secondaryTileset);
+    saveTilesetMetatiles(primaryTileset);
+    saveTilesetMetatiles(secondaryTileset);
+}
+
+void Project::saveTilesetMetatileAttributes(Tileset *tileset) {
+    QFile attrs_file(tileset->metatile_attrs_path);
+    if (attrs_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        QByteArray data;
+        for (Metatile *metatile : *tileset->metatiles) {
+            data.append(static_cast<char>(metatile->behavior));
+            data.append(static_cast<char>((metatile->layerType << 4) & 0xF0));
+        }
+        attrs_file.write(data);
+    } else {
+        qDebug() << QString("Could not save tileset metatile attributes file '%1'").arg(tileset->metatile_attrs_path);
+    }
+}
+
+void Project::saveTilesetMetatiles(Tileset *tileset) {
+    QFile metatiles_file(tileset->metatiles_path);
+    if (metatiles_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        QByteArray data;
+        for (Metatile *metatile : *tileset->metatiles) {
+            for (int i = 0; i < 8; i++) {
+                Tile tile = metatile->tiles->at(i);
+                uint16_t value = static_cast<uint16_t>((tile.tile & 0x3ff)
+                                                    | ((tile.xflip & 1) << 10)
+                                                    | ((tile.yflip & 1) << 11)
+                                                    | ((tile.palette & 0xf) << 12));
+                data.append(static_cast<char>(value & 0xff));
+                data.append(static_cast<char>((value >> 8) & 0xff));
+            }
+        }
+        metatiles_file.write(data);
+    } else {
+        tileset->metatiles = new QList<Metatile*>;
+        qDebug() << QString("Could not open tileset metatiles file '%1'").arg(tileset->metatiles_path);
+    }
+}
+
 void Project::loadMapTilesets(Map* map) {
     if (map->layout->has_unsaved_changes) {
         return;
@@ -780,21 +823,19 @@ void Project::loadTilesetAssets(Tileset* tileset) {
         }
     }
 
-    QString metatiles_path;
-    QString metatile_attrs_path;
     QString metatiles_text = readTextFile(root + "/data/tilesets/metatiles.inc");
     QList<QStringList> *metatiles_macros = parser->parseAsm(metatiles_text);
     QStringList *metatiles_values = getLabelValues(metatiles_macros, tileset->metatiles_label);
     if (!metatiles_values->isEmpty()) {
-        metatiles_path = root + "/" + metatiles_values->value(0).section('"', 1, 1);
+        tileset->metatiles_path = root + "/" + metatiles_values->value(0).section('"', 1, 1);
     } else {
-        metatiles_path = dir_path + "/metatiles.bin";
+        tileset->metatiles_path = dir_path + "/metatiles.bin";
     }
     QStringList *metatile_attrs_values = getLabelValues(metatiles_macros, tileset->metatile_attrs_label);
     if (!metatile_attrs_values->isEmpty()) {
-        metatile_attrs_path = root + "/" + metatile_attrs_values->value(0).section('"', 1, 1);
+        tileset->metatile_attrs_path = root + "/" + metatile_attrs_values->value(0).section('"', 1, 1);
     } else {
-        metatile_attrs_path = dir_path + "/metatile_attributes.bin";
+        tileset->metatile_attrs_path = dir_path + "/metatile_attributes.bin";
     }
 
     // tiles
@@ -813,7 +854,7 @@ void Project::loadTilesetAssets(Tileset* tileset) {
     tileset->tiles = tiles;
 
     // metatiles
-    QFile metatiles_file(metatiles_path);
+    QFile metatiles_file(tileset->metatiles_path);
     if (metatiles_file.open(QIODevice::ReadOnly)) {
         QByteArray data = metatiles_file.readAll();
         int num_metatiles = data.length() / 16;
@@ -837,11 +878,10 @@ void Project::loadTilesetAssets(Tileset* tileset) {
         tileset->metatiles = metatiles;
     } else {
         tileset->metatiles = new QList<Metatile*>;
-        qDebug() << QString("Could not open '%1'").arg(metatiles_path);
+        qDebug() << QString("Could not open tileset metatiles file '%1'").arg(tileset->metatiles_path);
     }
 
-    QFile attrs_file(metatile_attrs_path);
-    //qDebug() << metatile_attrs_path;
+    QFile attrs_file(tileset->metatile_attrs_path);
     if (attrs_file.open(QIODevice::ReadOnly)) {
         QByteArray data = attrs_file.readAll();
         int num_metatiles = tileset->metatiles->count();
@@ -851,8 +891,13 @@ void Project::loadTilesetAssets(Tileset* tileset) {
             if (num_metatiles > num_metatileAttrs)
                 num_metatiles = num_metatileAttrs;
         }
+        for (int i = 0; i < num_metatileAttrs; i++) {
+            int value = (static_cast<unsigned char>(data.at(i * 2 + 1)) << 8) | static_cast<unsigned char>(data.at(i * 2));
+            tileset->metatiles->at(i)->behavior = value & 0xFF;
+            tileset->metatiles->at(i)->layerType = (value & 0xF000) >> 12;
+        }
     } else {
-        qDebug() << QString("Could not open '%1'").arg(metatile_attrs_path);
+        qDebug() << QString("Could not open tileset metatile attributes file '%1'").arg(tileset->metatile_attrs_path);
     }
 
     // palettes
@@ -1247,6 +1292,22 @@ void Project::readBgEventFacingDirections() {
     QString filepath = root + "/include/constants/bg_event_constants.h";
     QStringList prefixes = (QStringList() << "BG_EVENT_PLAYER_FACING_");
     readCDefinesSorted(filepath, prefixes, bgEventFacingDirections);
+}
+
+void Project::readMetatileBehaviors() {
+    this->metatileBehaviorMap.clear();
+    this->metatileBehaviorMapInverse.clear();
+    QString filepath = root + "/include/constants/metatile_behaviors.h";
+    QString text = readTextFile(filepath);
+    if (!text.isNull()) {
+        QStringList prefixes = (QStringList() << "MB_");
+        this->metatileBehaviorMap = readCDefines(text, prefixes);
+        for (QString defineName : this->metatileBehaviorMap.keys()) {
+            this->metatileBehaviorMapInverse.insert(this->metatileBehaviorMap[defineName], defineName);
+        }
+    } else {
+        qDebug() << "Failed to read C defines file: " << filepath;
+    }
 }
 
 void Project::readCDefinesSorted(QString filepath, QStringList prefixes, QStringList* definesToSet) {

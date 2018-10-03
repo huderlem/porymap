@@ -34,6 +34,12 @@ private slots:
 
     void on_checkBox_yFlip_stateChanged(int arg1);
 
+    void on_comboBox_metatileBehaviors_currentIndexChanged(const QString &arg1);
+
+    void on_comboBox_layerType_currentIndexChanged(int index);
+
+    void on_actionSave_Tileset_triggered();
+
 private:
     void initMetatileSelector();
     void initTileSelector();
@@ -44,8 +50,8 @@ private:
     TilesetEditorMetatileSelector *metatileSelector = nullptr;
     TilesetEditorTileSelector *tileSelector = nullptr;
     MetatileLayersItem *metatileLayersItem = nullptr;
-    Project *project;
-    Metatile *metatile;
+    Project *project = nullptr;
+    Metatile *metatile = nullptr;
     int paletteId;
     bool tileXFlip;
     bool tileYFlip;

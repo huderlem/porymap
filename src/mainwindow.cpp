@@ -406,6 +406,7 @@ void MainWindow::loadDataStructures() {
     project->readSecretBaseIds();
     project->readBgEventFacingDirections();
     project->readMapsWithConnections();
+    project->readMetatileBehaviors();
     project->readTilesetProperties();
 }
 

@@ -1,7 +1,6 @@
 #include "metatilelayersitem.h"
 #include "imageproviders.h"
 #include <QPainter>
-#include <QDebug>
 
 void MetatileLayersItem::draw() {
     const QList<QPoint> tileCoords = QList<QPoint>{
@@ -43,6 +42,5 @@ void MetatileLayersItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     int x = static_cast<int>(pos.x()) / 16;
     int y = static_cast<int>(pos.y()) / 16;
     int tileIndex = (x / 2 * 4) + (y * 2) + (x % 2);
-    qDebug() << tileIndex;
     emit this->tileChanged(tileIndex);
 }

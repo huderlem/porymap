@@ -17,8 +17,10 @@ public:
     QString tiles_label;
     QString palettes_label;
     QString metatiles_label;
+    QString metatiles_path;
     QString callback_label;
     QString metatile_attrs_label;
+    QString metatile_attrs_path;
 
     QList<QImage> *tiles = nullptr;
     QList<Metatile*> *metatiles = nullptr;

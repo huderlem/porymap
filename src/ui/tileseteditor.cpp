@@ -16,8 +16,16 @@ TilesetEditor::TilesetEditor(Project *project, QString primaryTilesetLabel, QStr
     this->primaryTilesetLabel = primaryTilesetLabel;
     this->secondaryTilesetLabel = secondaryTilesetLabel;
 
-    ui->spinBox_paletteSelector->setMinimum(0);
-    ui->spinBox_paletteSelector->setMaximum(Project::getNumPalettesTotal() - 1);
+    QList<QString> sortedBehaviors;
+    for (int num : project->metatileBehaviorMapInverse.keys()) {
+        this->ui->comboBox_metatileBehaviors->addItem(project->metatileBehaviorMapInverse[num], num);
+    }
+    this->ui->comboBox_layerType->addItem("Normal - Middle/Top", 0);
+    this->ui->comboBox_layerType->addItem("Covered - Bottom/Middle", 1);
+    this->ui->comboBox_layerType->addItem("Split - Bottom/Top", 2);
+    this->ui->spinBox_paletteSelector->setMinimum(0);
+    this->ui->spinBox_paletteSelector->setMaximum(Project::getNumPalettesTotal() - 1);
+
     this->initMetatileSelector();
     this->initMetatileLayersItem();
     this->initTileSelector();
@@ -120,6 +128,8 @@ void TilesetEditor::onSelectedMetatileChanged(uint16_t metatileId) {
     this->metatile = Tileset::getMetatile(metatileId, primaryTileset, secondaryTileset);
     this->metatileLayersItem->setMetatile(metatile);
     this->metatileLayersItem->draw();
+    this->ui->comboBox_metatileBehaviors->setCurrentIndex(this->ui->comboBox_metatileBehaviors->findData(this->metatile->behavior));
+    this->ui->comboBox_layerType->setCurrentIndex(this->ui->comboBox_layerType->findData(this->metatile->layerType));
 }
 
 void TilesetEditor::onHoveredTileChanged(uint16_t tile) {
@@ -164,4 +174,26 @@ void TilesetEditor::on_checkBox_yFlip_stateChanged(int checked)
 {
     this->tileYFlip = checked;
     this->drawSelectedTile();
+}
+
+void TilesetEditor::on_comboBox_metatileBehaviors_currentIndexChanged(const QString &metatileBehavior)
+{
+    if (this->metatile) {
+        this->metatile->behavior = static_cast<uint8_t>(project->metatileBehaviorMap[metatileBehavior]);
+    }
+}
+
+
+void TilesetEditor::on_comboBox_layerType_currentIndexChanged(int layerType)
+{
+    if (this->metatile) {
+        this->metatile->layerType = static_cast<uint8_t>(layerType);
+    }
+}
+
+void TilesetEditor::on_actionSave_Tileset_triggered()
+{
+    Tileset *primaryTileset = this->project->getTileset(this->primaryTilesetLabel);
+    Tileset *secondaryTileset = this->project->getTileset(this->secondaryTilesetLabel);
+    this->project->saveTilesets(primaryTileset, secondaryTileset);
 }

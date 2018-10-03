@@ -40,6 +40,8 @@ public:
     QStringList *secretBaseIds = nullptr;
     QStringList *bgEventFacingDirections = nullptr;
     QStringList mapsWithConnections;
+    QMap<QString, int> metatileBehaviorMap;
+    QMap<int, QString> metatileBehaviorMapInverse;
 
     QMap<QString, Map*> *map_cache;
     Map* loadMap(QString);
@@ -83,6 +85,7 @@ public:
     void saveMapGroupsTable();
     void saveMapConstantsHeader();
     void saveHealLocationStruct(Map*);
+    void saveTilesets(Tileset*, Tileset*);
 
     QList<QStringList>* parseAsm(QString text);
     QStringList getSongNames();
@@ -100,6 +103,7 @@ public:
     void readCoordEventWeatherNames();
     void readSecretBaseIds();
     void readBgEventFacingDirections();
+    void readMetatileBehaviors();
 
     void loadEventPixmaps(QList<Event*> objects);
     QMap<QString, int> getEventObjGfxConstants();
@@ -127,6 +131,8 @@ private:
     QString getMapLayoutFilepath(QString);
     void saveMapHeader(Map*);
     void saveMapConnections(Map*);
+    void saveTilesetMetatileAttributes(Tileset*);
+    void saveTilesetMetatiles(Tileset*);
     void updateMapsWithConnections(Map*);
     void saveMapsWithConnections();
     void saveMapLayoutsTable();
