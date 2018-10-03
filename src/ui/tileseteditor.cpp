@@ -126,16 +126,16 @@ void TilesetEditor::drawSelectedTiles() {
     this->selectedTileScene->clear();
     QList<uint16_t> tiles = this->tileSelector->getSelectedTiles();
     QPoint dimensions = this->tileSelector->getSelectionDimensions();
-    QImage selectionImage(32 * dimensions.x(), 32 * dimensions.y(), QImage::Format_RGBA8888);
+    QImage selectionImage(16 * dimensions.x(), 16 * dimensions.y(), QImage::Format_RGBA8888);
     QPainter painter(&selectionImage);
     int tileIndex = 0;
     for (int j = 0; j < dimensions.y(); j++) {
         for (int i = 0; i < dimensions.x(); i++) {
             QImage tileImage = getColoredTileImage(tiles.at(tileIndex), this->primaryTileset, this->secondaryTileset, this->paletteId)
                     .mirrored(this->tileXFlip, this->tileYFlip)
-                    .scaled(32, 32);
+                    .scaled(16, 16);
             tileIndex++;
-            painter.drawImage(i * 32, j * 32, tileImage);
+            painter.drawImage(i * 16, j * 16, tileImage);
         }
     }
 
