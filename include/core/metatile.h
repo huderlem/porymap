@@ -10,7 +10,10 @@ public:
     Metatile();
 public:
     QList<Tile> *tiles = nullptr;
+    uint8_t behavior;
+    uint8_t layerType;
 
+    Metatile *copy();
     static int getBlockIndex(int);
 };
 

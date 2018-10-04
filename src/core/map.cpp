@@ -226,7 +226,7 @@ QPixmap Map::renderBorder() {
 }
 
 QPixmap Map::renderConnection(MapConnection connection) {
-    render();
+    render(true);
     int x, y, w, h;
     if (connection.direction == "up") {
         x = 0;

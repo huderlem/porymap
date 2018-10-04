@@ -50,7 +50,7 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::initExtraShortcuts() {
-    new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Z), this, SLOT(redo()));
+    new QShortcut(QKeySequence("Ctrl+Shift+Z"), this, SLOT(redo()));
     new QShortcut(QKeySequence("Ctrl+0"), this, SLOT(resetMapViewScale()));
     ui->actionZoom_In->setShortcuts({QKeySequence("Ctrl++"), QKeySequence("Ctrl+=")});
 }
@@ -200,6 +200,7 @@ void MainWindow::setMap(QString map_name, bool scrollTreeView) {
 
     setRecentMap(map_name);
     updateMapList();
+    updateTilesetEditor();
 }
 
 void MainWindow::redrawMapScene()
@@ -410,6 +411,7 @@ void MainWindow::loadDataStructures() {
     project->readSecretBaseIds();
     project->readBgEventFacingDirections();
     project->readMapsWithConnections();
+    project->readMetatileBehaviors();
     project->readTilesetProperties();
 }
 
@@ -523,6 +525,12 @@ void MainWindow::onAddNewMapToGroupClick(QAction* triggeredAction)
 void MainWindow::onTilesetChanged(QString mapName)
 {
     setMap(mapName);
+}
+
+void MainWindow::updateTilesetEditor() {
+    if (this->tilesetEditor) {
+        this->tilesetEditor->setTilesets(editor->ui->comboBox_PrimaryTileset->currentText(), editor->ui->comboBox_SecondaryTileset->currentText());
+    }
 }
 
 void MainWindow::currentMetatilesSelectionChanged()
@@ -1099,6 +1107,11 @@ void MainWindow::onMapNeedsRedrawing() {
     redrawMapScene();
 }
 
+void MainWindow::onTilesetsSaved(QString primaryTilesetLabel, QString secondaryTilesetLabel) {
+    this->editor->updatePrimaryTileset(primaryTilesetLabel, true);
+    this->editor->updateSecondaryTileset(secondaryTilesetLabel, true);
+}
+
 void MainWindow::on_action_Export_Map_Image_triggered()
 {
     QString defaultFilepath = QString("%1/%2.png").arg(editor->project->root).arg(editor->map->name);
@@ -1222,4 +1235,28 @@ void MainWindow::on_checkBox_ToggleBorder_stateChanged(int selected)
 {
     bool visible = selected != 0;
     editor->toggleBorderVisibility(visible);
+}
+
+void MainWindow::on_actionTileset_Editor_triggered()
+{
+    if (!this->tilesetEditor) {
+        this->tilesetEditor = new TilesetEditor(this->editor->project, this->editor->map->layout->tileset_primary_label, this->editor->map->layout->tileset_secondary_label, this);
+        connect(this->tilesetEditor, SIGNAL(tilesetsSaved(QString, QString)), this, SLOT(onTilesetsSaved(QString, QString)));
+        connect(this->tilesetEditor, SIGNAL(closed()), this, SLOT(onTilesetEditorClosed()));
+    }
+
+    if (!this->tilesetEditor->isVisible()) {
+        this->tilesetEditor->show();
+    } else if (this->tilesetEditor->isMinimized()) {
+        this->tilesetEditor->showNormal();
+    } else {
+        this->tilesetEditor->activateWindow();
+    }
+}
+
+void MainWindow::onTilesetEditorClosed() {
+    if (this->tilesetEditor) {
+        delete this->tilesetEditor;
+        this->tilesetEditor = nullptr;
+    }
 }

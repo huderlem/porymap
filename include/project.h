@@ -40,14 +40,16 @@ public:
     QStringList *secretBaseIds = nullptr;
     QStringList *bgEventFacingDirections = nullptr;
     QStringList mapsWithConnections;
+    QMap<QString, int> metatileBehaviorMap;
+    QMap<int, QString> metatileBehaviorMapInverse;
 
     QMap<QString, Map*> *map_cache;
     Map* loadMap(QString);
     Map* getMap(QString);
 
     QMap<QString, Tileset*> *tileset_cache = nullptr;
-    Tileset* loadTileset(QString);
-    Tileset* getTileset(QString);
+    Tileset* loadTileset(QString, Tileset *tileset = nullptr);
+    Tileset* getTileset(QString, bool forceLoad = false);
 
     Blockdata* readBlockdata(QString);
     void loadBlockdata(Map*);
@@ -72,6 +74,8 @@ public:
     void readMapsWithConnections();
     void loadMapTilesets(Map*);
     void loadTilesetAssets(Tileset*);
+    void loadTilesetTiles(Tileset*, QImage);
+    void loadTilesetMetatiles(Tileset*);
 
     void saveBlockdata(Map*);
     void saveMapBorder(Map*);
@@ -83,6 +87,7 @@ public:
     void saveMapGroupsTable();
     void saveMapConstantsHeader();
     void saveHealLocationStruct(Map*);
+    void saveTilesets(Tileset*, Tileset*);
 
     QList<QStringList>* parseAsm(QString text);
     QStringList getSongNames();
@@ -100,9 +105,11 @@ public:
     void readCoordEventWeatherNames();
     void readSecretBaseIds();
     void readBgEventFacingDirections();
+    void readMetatileBehaviors();
 
     void loadEventPixmaps(QList<Event*> objects);
     QMap<QString, int> getEventObjGfxConstants();
+    QString fixPalettePath(QString path);
     QString fixGraphicPath(QString path);
 
     void readMapEvents(Map *map);
@@ -127,6 +134,10 @@ private:
     QString getMapLayoutFilepath(QString);
     void saveMapHeader(Map*);
     void saveMapConnections(Map*);
+    void saveTilesetMetatileAttributes(Tileset*);
+    void saveTilesetMetatiles(Tileset*);
+    void saveTilesetTilesImage(Tileset*);
+    void saveTilesetPalettes(Tileset*, bool);
     void updateMapsWithConnections(Map*);
     void saveMapsWithConnections();
     void saveMapLayoutsTable();

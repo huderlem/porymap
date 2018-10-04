@@ -80,6 +80,10 @@ void SelectablePixmapItem::updateSelection(int x, int y)
 
 QPoint SelectablePixmapItem::getCellPos(QPointF pos)
 {
+    if (pos.x() < 0) pos.setX(0);
+    if (pos.y() < 0) pos.setY(0);
+    if (pos.x() >= this->pixmap().width()) pos.setX(this->pixmap().width() - 1);
+    if (pos.y() >= this->pixmap().height()) pos.setY(this->pixmap().height() - 1);
     return QPoint(static_cast<int>(pos.x()) / this->cellWidth,
                   static_cast<int>(pos.y()) / this->cellHeight);
 }

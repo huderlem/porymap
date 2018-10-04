@@ -12,6 +12,7 @@
 #include "project.h"
 #include "map.h"
 #include "editor.h"
+#include "tileseteditor.h"
 
 namespace Ui {
 class MainWindow;
@@ -42,6 +43,7 @@ private slots:
     void onLoadMapRequested(QString, QString);
     void onMapChanged(Map *map);
     void onMapNeedsRedrawing();
+    void onTilesetsSaved(QString, QString);
 
     void on_action_Save_triggered();
     void on_tabWidget_2_currentChanged(int index);
@@ -92,6 +94,7 @@ private slots:
     void onAddNewMapToGroupClick(QAction* triggeredAction);
     void onTilesetChanged(QString);
     void currentMetatilesSelectionChanged();
+    void onTilesetEditorClosed();
 
     void on_action_Export_Map_Image_triggered();
 
@@ -123,8 +126,11 @@ private slots:
 
     void resetMapViewScale();
 
+    void on_actionTileset_Editor_triggered();
+
 private:
     Ui::MainWindow *ui;
+    TilesetEditor *tilesetEditor = nullptr;
     QStandardItemModel *mapListModel;
     QList<QStandardItem*> *mapGroupsModel;
     QMap<QString, QModelIndex> mapListIndexes;
@@ -153,6 +159,7 @@ private:
     void initEditor();
     void loadUserSettings();
     void openRecentProject();
+    void updateTilesetEditor();
 };
 
 enum MapListUserRoles {

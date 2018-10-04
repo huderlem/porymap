@@ -576,6 +576,77 @@ void Project::saveHealLocationStruct(Map *map) {
     saveTextFile(root + "/include/constants/heal_locations.h", constants_text);
 }
 
+void Project::saveTilesets(Tileset *primaryTileset, Tileset *secondaryTileset) {
+    saveTilesetMetatileAttributes(primaryTileset);
+    saveTilesetMetatileAttributes(secondaryTileset);
+    saveTilesetMetatiles(primaryTileset);
+    saveTilesetMetatiles(secondaryTileset);
+    saveTilesetTilesImage(primaryTileset);
+    saveTilesetTilesImage(secondaryTileset);
+    saveTilesetPalettes(primaryTileset, true);
+    saveTilesetPalettes(secondaryTileset, false);
+}
+
+void Project::saveTilesetMetatileAttributes(Tileset *tileset) {
+    QFile attrs_file(tileset->metatile_attrs_path);
+    if (attrs_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        QByteArray data;
+        for (Metatile *metatile : *tileset->metatiles) {
+            data.append(static_cast<char>(metatile->behavior));
+            data.append(static_cast<char>((metatile->layerType << 4) & 0xF0));
+        }
+        attrs_file.write(data);
+    } else {
+        qDebug() << QString("Could not save tileset metatile attributes file '%1'").arg(tileset->metatile_attrs_path);
+    }
+}
+
+void Project::saveTilesetMetatiles(Tileset *tileset) {
+    QFile metatiles_file(tileset->metatiles_path);
+    if (metatiles_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        QByteArray data;
+        for (Metatile *metatile : *tileset->metatiles) {
+            for (int i = 0; i < 8; i++) {
+                Tile tile = metatile->tiles->at(i);
+                uint16_t value = static_cast<uint16_t>((tile.tile & 0x3ff)
+                                                    | ((tile.xflip & 1) << 10)
+                                                    | ((tile.yflip & 1) << 11)
+                                                    | ((tile.palette & 0xf) << 12));
+                data.append(static_cast<char>(value & 0xff));
+                data.append(static_cast<char>((value >> 8) & 0xff));
+            }
+        }
+        metatiles_file.write(data);
+    } else {
+        tileset->metatiles = new QList<Metatile*>;
+        qDebug() << QString("Could not open tileset metatiles file '%1'").arg(tileset->metatiles_path);
+    }
+}
+
+void Project::saveTilesetTilesImage(Tileset *tileset) {
+    tileset->tilesImage.save(tileset->tilesImagePath);
+}
+
+void Project::saveTilesetPalettes(Tileset *tileset, bool primary) {
+    int startPaletteId = primary ? 0 : Project::getNumPalettesPrimary();
+    int endPaletteId = primary ? Project::getNumPalettesPrimary() : Project::getNumPalettesTotal();
+    for (int i = startPaletteId; i < endPaletteId; i++) {
+        QString filepath = tileset->palettePaths.at(i);
+        QString content = "JASC-PAL\r\n";
+        content += "0100\r\n";
+        content += "16\r\n";
+        for (int j = 0; j < 16; j++) {
+            QRgb color = tileset->palettes->at(i).at(j);
+            content += QString("%1 %2 %3\r\n")
+                    .arg(qRed(color))
+                    .arg(qGreen(color))
+                    .arg(qBlue(color));
+        }
+
+        saveTextFile(filepath, content);
+    }
+}
+
 void Project::loadMapTilesets(Map* map) {
     if (map->layout->has_unsaved_changes) {
         return;
@@ -585,12 +656,14 @@ void Project::loadMapTilesets(Map* map) {
     map->layout->tileset_secondary = getTileset(map->layout->tileset_secondary_label);
 }
 
-Tileset* Project::loadTileset(QString label) {
+Tileset* Project::loadTileset(QString label, Tileset *tileset) {
     ParseUtil *parser = new ParseUtil;
 
     QString headers_text = readTextFile(root + "/data/tilesets/headers.inc");
     QStringList *values = getLabelValues(parser->parseAsm(headers_text), label);
-    Tileset *tileset = new Tileset;
+    if (tileset == nullptr) {
+        tileset = new Tileset;
+    }
     tileset->name = label;
     tileset->is_compressed = values->value(0);
     tileset->is_secondary = values->value(1);
@@ -750,7 +823,8 @@ void Project::loadTilesetAssets(Tileset* tileset) {
     if (tileset->name.isNull()) {
         return;
     }
-    QString dir_path = root + "/data/tilesets/" + category + "/" + tileset->name.replace("gTileset_", "").toLower();
+    QString tilesetName = tileset->name;
+    QString dir_path = root + "/data/tilesets/" + category + "/" + tilesetName.replace("gTileset_", "").toLower();
 
     QString graphics_text = readTextFile(root + "/data/tilesets/graphics.inc");
     QList<QStringList> *graphics = parser->parseAsm(graphics_text);
@@ -767,53 +841,94 @@ void Project::loadTilesetAssets(Tileset* tileset) {
         }
     }
 
-    QStringList *palette_paths = new QStringList;
     if (!palettes_values->isEmpty()) {
         for (int i = 0; i < palettes_values->length(); i++) {
             QString value = palettes_values->value(i);
-            palette_paths->append(root + "/" + value.section('"', 1, 1));
+            tileset->palettePaths.append(this->fixPalettePath(root + "/" + value.section('"', 1, 1)));
         }
     } else {
         QString palettes_dir_path = dir_path + "/palettes";
         for (int i = 0; i < 16; i++) {
-            palette_paths->append(palettes_dir_path + "/" + QString("%1").arg(i, 2, 10, QLatin1Char('0')) + ".gbapal");
+            tileset->palettePaths.append(palettes_dir_path + "/" + QString("%1").arg(i, 2, 10, QLatin1Char('0')) + ".pal");
         }
     }
 
-    QString metatiles_path;
-    QString metatile_attrs_path;
     QString metatiles_text = readTextFile(root + "/data/tilesets/metatiles.inc");
     QList<QStringList> *metatiles_macros = parser->parseAsm(metatiles_text);
     QStringList *metatiles_values = getLabelValues(metatiles_macros, tileset->metatiles_label);
     if (!metatiles_values->isEmpty()) {
-        metatiles_path = root + "/" + metatiles_values->value(0).section('"', 1, 1);
+        tileset->metatiles_path = root + "/" + metatiles_values->value(0).section('"', 1, 1);
     } else {
-        metatiles_path = dir_path + "/metatiles.bin";
+        tileset->metatiles_path = dir_path + "/metatiles.bin";
     }
     QStringList *metatile_attrs_values = getLabelValues(metatiles_macros, tileset->metatile_attrs_label);
     if (!metatile_attrs_values->isEmpty()) {
-        metatile_attrs_path = root + "/" + metatile_attrs_values->value(0).section('"', 1, 1);
+        tileset->metatile_attrs_path = root + "/" + metatile_attrs_values->value(0).section('"', 1, 1);
     } else {
-        metatile_attrs_path = dir_path + "/metatile_attributes.bin";
+        tileset->metatile_attrs_path = dir_path + "/metatile_attributes.bin";
     }
 
-    // tiles
     tiles_path = fixGraphicPath(tiles_path);
-    QImage *image = new QImage(tiles_path);
-    //image->setColor(0, qRgb(0xff, 0, 0)); // debug
+    tileset->tilesImagePath = tiles_path;
+    QImage image = QImage(tileset->tilesImagePath);
+    this->loadTilesetTiles(tileset, image);
+    this->loadTilesetMetatiles(tileset);
 
+    // palettes
+    QList<QList<QRgb>> *palettes = new QList<QList<QRgb>>;
+    for (int i = 0; i < tileset->palettePaths.length(); i++) {
+        QList<QRgb> palette;
+        QString path = tileset->palettePaths.value(i);
+        QString text = readTextFile(path);
+        if (!text.isNull()) {
+            QStringList lines = text.split(QRegExp("[\r\n]"),QString::SkipEmptyParts);
+            if (lines.length() == 19 && lines[0] == "JASC-PAL" && lines[1] == "0100" && lines[2] == "16") {
+                for (int j = 0; j < 16; j++) {
+                    QStringList rgb = lines[j + 3].split(QRegExp(" "), QString::SkipEmptyParts);
+                    if (rgb.length() != 3) {
+                        qDebug() << QString("Invalid tileset palette RGB value: '%1'").arg(lines[j + 3]);
+                        palette.append(qRgb((j - 3) * 16, (j - 3) * 16, (j - 3) * 16));
+                    } else {
+                        int red = rgb[0].toInt();
+                        int green = rgb[1].toInt();
+                        int blue = rgb[2].toInt();
+                        QRgb color = qRgb(red, green, blue);
+                        palette.append(color);
+                    }
+                }
+            } else {
+                qDebug() << QString("Invalid JASC-PAL palette file for tileset.");
+                for (int j = 0; j < 16; j++) {
+                    palette.append(qRgb(j * 16, j * 16, j * 16));
+                }
+            }
+        } else {
+            for (int j = 0; j < 16; j++) {
+                palette.append(qRgb(j * 16, j * 16, j * 16));
+            }
+            qDebug() << QString("Could not open palette path '%1'").arg(path);
+        }
+
+        palettes->append(palette);
+    }
+    tileset->palettes = palettes;
+}
+
+void Project::loadTilesetTiles(Tileset *tileset, QImage image) {
     QList<QImage> *tiles = new QList<QImage>;
     int w = 8;
     int h = 8;
-    for (int y = 0; y < image->height(); y += h)
-    for (int x = 0; x < image->width(); x += w) {
-        QImage tile = image->copy(x, y, w, h);
+    for (int y = 0; y < image.height(); y += h)
+    for (int x = 0; x < image.width(); x += w) {
+        QImage tile = image.copy(x, y, w, h);
         tiles->append(tile);
     }
+    tileset->tilesImage = image;
     tileset->tiles = tiles;
+}
 
-    // metatiles
-    QFile metatiles_file(metatiles_path);
+void Project::loadTilesetMetatiles(Tileset* tileset) {
+    QFile metatiles_file(tileset->metatiles_path);
     if (metatiles_file.open(QIODevice::ReadOnly)) {
         QByteArray data = metatiles_file.readAll();
         int num_metatiles = data.length() / 16;
@@ -837,11 +952,10 @@ void Project::loadTilesetAssets(Tileset* tileset) {
         tileset->metatiles = metatiles;
     } else {
         tileset->metatiles = new QList<Metatile*>;
-        qDebug() << QString("Could not open '%1'").arg(metatiles_path);
+        qDebug() << QString("Could not open tileset metatiles file '%1'").arg(tileset->metatiles_path);
     }
 
-    QFile attrs_file(metatile_attrs_path);
-    //qDebug() << metatile_attrs_path;
+    QFile attrs_file(tileset->metatile_attrs_path);
     if (attrs_file.open(QIODevice::ReadOnly)) {
         QByteArray data = attrs_file.readAll();
         int num_metatiles = tileset->metatiles->count();
@@ -851,41 +965,14 @@ void Project::loadTilesetAssets(Tileset* tileset) {
             if (num_metatiles > num_metatileAttrs)
                 num_metatiles = num_metatileAttrs;
         }
-    } else {
-        qDebug() << QString("Could not open '%1'").arg(metatile_attrs_path);
-    }
-
-    // palettes
-    QList<QList<QRgb>> *palettes = new QList<QList<QRgb>>;
-    for (int i = 0; i < palette_paths->length(); i++) {
-        QString path = palette_paths->value(i);
-        // the palettes are not compressed. this should never happen. it's only a precaution.
-        path = path.replace(QRegExp("\\.lz$"), "");
-        // TODO default to .pal (JASC-PAL)
-        // just use .gbapal for now
-        QFile file(path);
-        QList<QRgb> palette;
-        if (file.open(QIODevice::ReadOnly)) {
-            QByteArray data = file.readAll();
-            for (int j = 0; j < 16; j++) {
-                uint16_t word = data[j*2] & 0xff;
-                word += (data[j*2 + 1] & 0xff) << 8;
-                int red = word & 0x1f;
-                int green = (word >> 5) & 0x1f;
-                int blue = (word >> 10) & 0x1f;
-                QRgb color = qRgb(red * 8, green * 8, blue * 8);
-                palette.append(color);
-            }
-        } else {
-            for (int j = 0; j < 16; j++) {
-                palette.append(qRgb(j * 16, j * 16, j * 16));
-            }
-            qDebug() << QString("Could not open palette path '%1'").arg(path);
+        for (int i = 0; i < num_metatileAttrs; i++) {
+            int value = (static_cast<unsigned char>(data.at(i * 2 + 1)) << 8) | static_cast<unsigned char>(data.at(i * 2));
+            tileset->metatiles->at(i)->behavior = value & 0xFF;
+            tileset->metatiles->at(i)->layerType = (value & 0xF000) >> 12;
         }
-
-        palettes->append(palette);
+    } else {
+        qDebug() << QString("Could not open tileset metatile attributes file '%1'").arg(tileset->metatile_attrs_path);
     }
-    tileset->palettes = palettes;
 }
 
 Blockdata* Project::readBlockdata(QString path) {
@@ -913,11 +1000,16 @@ Map* Project::getMap(QString map_name) {
     }
 }
 
-Tileset* Project::getTileset(QString label) {
+Tileset* Project::getTileset(QString label, bool forceLoad) {
+    Tileset *existingTileset = nullptr;
     if (tileset_cache->contains(label)) {
+        existingTileset = tileset_cache->value(label);
+    }
+
+    if (existingTileset && !forceLoad) {
         return tileset_cache->value(label);
     } else {
-        Tileset *tileset = loadTileset(label);
+        Tileset *tileset = loadTileset(label, existingTileset);
         return tileset;
     }
 }
@@ -1249,6 +1341,22 @@ void Project::readBgEventFacingDirections() {
     readCDefinesSorted(filepath, prefixes, bgEventFacingDirections);
 }
 
+void Project::readMetatileBehaviors() {
+    this->metatileBehaviorMap.clear();
+    this->metatileBehaviorMapInverse.clear();
+    QString filepath = root + "/include/constants/metatile_behaviors.h";
+    QString text = readTextFile(filepath);
+    if (!text.isNull()) {
+        QStringList prefixes = (QStringList() << "MB_");
+        this->metatileBehaviorMap = readCDefines(text, prefixes);
+        for (QString defineName : this->metatileBehaviorMap.keys()) {
+            this->metatileBehaviorMapInverse.insert(this->metatileBehaviorMap[defineName], defineName);
+        }
+    } else {
+        qDebug() << "Failed to read C defines file: " << filepath;
+    }
+}
+
 void Project::readCDefinesSorted(QString filepath, QStringList prefixes, QStringList* definesToSet) {
     QString text = readTextFile(filepath);
     if (!text.isNull()) {
@@ -1322,6 +1430,11 @@ QMap<QString, int> Project::getEventObjGfxConstants() {
         constants = readCDefines(text, eventObjGfxPrefixes);
     }
     return constants;
+}
+
+QString Project::fixPalettePath(QString path) {
+    path = path.replace(QRegExp("\\.gbapal$"), ".pal");
+    return path;
 }
 
 QString Project::fixGraphicPath(QString path) {
