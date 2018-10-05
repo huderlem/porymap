@@ -991,9 +991,9 @@ void Project::loadTilesetMetatiles(Tileset* tileset) {
         int num_metatiles = tileset->metatiles->count();
         int num_metatileAttrs = data.length() / 2;
         if (num_metatiles != num_metatileAttrs) {
-            qDebug() << QString("Metatile count %1 does not match metatile attribute count %2").arg(num_metatiles).arg(num_metatileAttrs);
-            if (num_metatiles > num_metatileAttrs)
-                num_metatiles = num_metatileAttrs;
+            qDebug() << QString("Metatile count %1 does not match metatile attribute count %2 in %3").arg(num_metatiles).arg(num_metatileAttrs).arg(tileset->name);
+            if (num_metatileAttrs > num_metatiles)
+                num_metatileAttrs = num_metatiles;
         }
         for (int i = 0; i < num_metatileAttrs; i++) {
             int value = (static_cast<unsigned char>(data.at(i * 2 + 1)) << 8) | static_cast<unsigned char>(data.at(i * 2));
