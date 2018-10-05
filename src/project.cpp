@@ -189,6 +189,36 @@ void Project::readMapHeader(Map* map) {
     map->battle_scene = header->value(12);
 }
 
+QString Project::readMapLayoutId(QString map_name) {
+    if (map_cache->contains(map_name)) {
+        return map_cache->value(map_name)->layout_id;
+    }
+
+    ParseUtil *parser = new ParseUtil;
+
+    QString header_text = readTextFile(root + "/data/maps/" + map_name + "/header.inc");
+    if (header_text.isNull()) {
+        return QString::null;
+    }
+    QStringList *header = getLabelValues(parser->parseAsm(header_text), map_name);
+    return header->value(5);
+}
+
+QString Project::readMapLocation(QString map_name) {
+    if (map_cache->contains(map_name)) {
+        return map_cache->value(map_name)->location;
+    }
+
+    ParseUtil *parser = new ParseUtil;
+
+    QString header_text = readTextFile(root + "/data/maps/" + map_name + "/header.inc");
+    if (header_text.isNull()) {
+        return QString::null;
+    }
+    QStringList *header = getLabelValues(parser->parseAsm(header_text), map_name);
+    return header->value(6);
+}
+
 void Project::setNewMapHeader(Map* map, int mapIndex) {
     map->layout_label = QString("%1_Layout").arg(map->name);
     map->events_label = QString("%1_MapEvents").arg(map->name);;
@@ -961,9 +991,9 @@ void Project::loadTilesetMetatiles(Tileset* tileset) {
         int num_metatiles = tileset->metatiles->count();
         int num_metatileAttrs = data.length() / 2;
         if (num_metatiles != num_metatileAttrs) {
-            qDebug() << QString("Metatile count %1 does not match metatile attribute count %2").arg(num_metatiles).arg(num_metatileAttrs);
-            if (num_metatiles > num_metatileAttrs)
-                num_metatiles = num_metatileAttrs;
+            qDebug() << QString("Metatile count %1 does not match metatile attribute count %2 in %3").arg(num_metatiles).arg(num_metatileAttrs).arg(tileset->name);
+            if (num_metatileAttrs > num_metatiles)
+                num_metatileAttrs = num_metatiles;
         }
         for (int i = 0; i < num_metatileAttrs; i++) {
             int value = (static_cast<unsigned char>(data.at(i * 2 + 1)) << 8) | static_cast<unsigned char>(data.at(i * 2));

@@ -64,6 +64,9 @@ public:
     QString getNewMapName();
     QString getProjectTitle();
 
+    QString readMapLayoutId(QString map_name);
+    QString readMapLocation(QString map_name);
+
     QList<QStringList>* getLabelMacros(QList<QStringList>*, QString);
     QStringList* getLabelValues(QList<QStringList>*, QString);
     void readMapHeader(Map*);
