@@ -6,10 +6,19 @@
 #include <QFrame>
 #include <QLabel>
 #include "project.h"
+#include "history.h"
 
 namespace Ui {
 class PaletteEditor;
 }
+
+class PaletteHistoryItem {
+public:
+    QList<QRgb> colors;
+    PaletteHistoryItem(QList<QRgb> colors) {
+        this->colors = colors;
+    }
+};
 
 class PaletteEditor :  public QMainWindow {
     Q_OBJECT
@@ -26,6 +35,7 @@ private:
     QList<QLabel*> rgbLabels;
     Tileset *primaryTileset;
     Tileset *secondaryTileset;
+    QList<History<PaletteHistoryItem*>> palettesHistory;
     void disableSliderSignals();
     void enableSliderSignals();
     void initColorSliders();
@@ -33,6 +43,8 @@ private:
     void refreshColors();
     void refreshColor(int);
     void setColor(int);
+    void commitEditHistory();
+    void setColorsFromHistory(PaletteHistoryItem*, int);
 
 signals:
     void closed();
@@ -40,6 +52,8 @@ signals:
     void changedPalette(int);
 private slots:
     void on_spinBox_PaletteId_valueChanged(int arg1);
+    void on_actionUndo_triggered();
+    void on_actionRedo_triggered();
 };
 
 #endif // PALETTEEDITOR_H
