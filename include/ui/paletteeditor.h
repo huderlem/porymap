@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QSlider>
 #include <QFrame>
+#include <QLabel>
 #include "project.h"
 
 namespace Ui {
@@ -22,6 +23,7 @@ private:
     Project *project = nullptr;
     QList<QList<QSlider*>> sliders;
     QList<QFrame*> frames;
+    QList<QLabel*> rgbLabels;
     Tileset *primaryTileset;
     Tileset *secondaryTileset;
     void disableSliderSignals();

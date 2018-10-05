@@ -82,6 +82,24 @@ PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset 
     this->frames.append(this->ui->frame_15);
     this->frames.append(this->ui->frame_16);
 
+    this->rgbLabels.clear();
+    this->rgbLabels.append(this->ui->label_rgb0);
+    this->rgbLabels.append(this->ui->label_rgb1);
+    this->rgbLabels.append(this->ui->label_rgb2);
+    this->rgbLabels.append(this->ui->label_rgb3);
+    this->rgbLabels.append(this->ui->label_rgb4);
+    this->rgbLabels.append(this->ui->label_rgb5);
+    this->rgbLabels.append(this->ui->label_rgb6);
+    this->rgbLabels.append(this->ui->label_rgb7);
+    this->rgbLabels.append(this->ui->label_rgb8);
+    this->rgbLabels.append(this->ui->label_rgb9);
+    this->rgbLabels.append(this->ui->label_rgb10);
+    this->rgbLabels.append(this->ui->label_rgb11);
+    this->rgbLabels.append(this->ui->label_rgb12);
+    this->rgbLabels.append(this->ui->label_rgb13);
+    this->rgbLabels.append(this->ui->label_rgb14);
+    this->rgbLabels.append(this->ui->label_rgb15);
+
     this->initColorSliders();
     this->refreshColorSliders();
     this->refreshColors();
@@ -141,11 +159,15 @@ void PaletteEditor::refreshColors() {
 }
 
 void PaletteEditor::refreshColor(int colorIndex) {
+    int red = this->sliders[colorIndex][0]->value() * 8;
+    int green = this->sliders[colorIndex][1]->value() * 8;
+    int blue = this->sliders[colorIndex][2]->value() * 8;
     QString stylesheet = QString("background-color: rgb(%1, %2, %3);")
-            .arg(this->sliders[colorIndex][0]->value() * 8)
-            .arg(this->sliders[colorIndex][1]->value() * 8)
-            .arg(this->sliders[colorIndex][2]->value() * 8);
+            .arg(red)
+            .arg(green)
+            .arg(blue);
     this->frames[colorIndex]->setStyleSheet(stylesheet);
+    this->rgbLabels[colorIndex]->setText(QString("RGB(%1, %2, %3)").arg(red).arg(green).arg(blue));
 }
 
 void PaletteEditor::setPaletteId(int paletteId) {
