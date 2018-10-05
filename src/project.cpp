@@ -189,6 +189,36 @@ void Project::readMapHeader(Map* map) {
     map->battle_scene = header->value(12);
 }
 
+QString Project::readMapLayoutId(QString map_name) {
+    if (map_cache->contains(map_name)) {
+        return map_cache->value(map_name)->layout_id;
+    }
+
+    ParseUtil *parser = new ParseUtil;
+
+    QString header_text = readTextFile(root + "/data/maps/" + map_name + "/header.inc");
+    if (header_text.isNull()) {
+        return QString::null;
+    }
+    QStringList *header = getLabelValues(parser->parseAsm(header_text), map_name);
+    return header->value(5);
+}
+
+QString Project::readMapLocation(QString map_name) {
+    if (map_cache->contains(map_name)) {
+        return map_cache->value(map_name)->location;
+    }
+
+    ParseUtil *parser = new ParseUtil;
+
+    QString header_text = readTextFile(root + "/data/maps/" + map_name + "/header.inc");
+    if (header_text.isNull()) {
+        return QString::null;
+    }
+    QStringList *header = getLabelValues(parser->parseAsm(header_text), map_name);
+    return header->value(6);
+}
+
 void Project::setNewMapHeader(Map* map, int mapIndex) {
     map->layout_label = QString("%1_Layout").arg(map->name);
     map->events_label = QString("%1_MapEvents").arg(map->name);;
