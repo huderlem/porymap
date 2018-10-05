@@ -263,15 +263,18 @@ void MainWindow::setMap(QString map_name, bool scrollTreeView) {
     if (editor->map != nullptr && !editor->map->name.isNull()) {
         ui->mapList->setExpanded(mapListProxyModel->mapFromSource(mapListIndexes.value(editor->map->name)), false);
     }
-    ui->mapList->setExpanded(mapListProxyModel->mapFromSource(mapListIndexes.value(map_name)), true);
     editor->setMap(map_name);
     redrawMapScene();
     displayMapProperties();
 
     if (scrollTreeView) {
+        // Make sure we clear the filter first so we actually have a scroll target
+        mapListProxyModel->setFilterRegExp(QString::null);
         ui->mapList->setCurrentIndex(mapListProxyModel->mapFromSource(mapListIndexes.value(map_name)));
         ui->mapList->scrollTo(ui->mapList->currentIndex(), QAbstractItemView::PositionAtCenter);
     }
+
+    ui->mapList->setExpanded(mapListProxyModel->mapFromSource(mapListIndexes.value(map_name)), true);
 
     setWindowTitle(map_name + " - " + editor->project->getProjectTitle());
 
@@ -338,7 +341,6 @@ void MainWindow::openWarpMap(QString map_name, QString warp_num) {
     }
 
     // Open the destination map, and select the target warp event.
-    mapListProxyModel->setFilterRegExp(QString::null);
     setMap(map_name, true);
     QList<Event*> warp_events = editor->map->events["warp_event_group"];
     if (warp_events.length() > warpNum) {
