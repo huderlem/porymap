@@ -17,7 +17,6 @@ ICON = resources/icons/porymap-icon-1.ico
 SOURCES += src/core/block.cpp \
     src/core/blockdata.cpp \
     src/core/event.cpp \
-    src/core/filterchildrenproxymodel.cpp \
     src/core/heallocation.cpp \
     src/core/historyitem.cpp \
     src/core/map.cpp \
@@ -31,6 +30,7 @@ SOURCES += src/core/block.cpp \
     src/ui/connectionpixmapitem.cpp \
     src/ui/currentselectedmetatilespixmapitem.cpp \
     src/ui/eventpropertiesframe.cpp \
+    src/ui/filterchildrenproxymodel.cpp \
     src/ui/graphicsview.cpp \
     src/ui/imageproviders.cpp \
     src/ui/mappixmapitem.cpp \
@@ -55,7 +55,6 @@ SOURCES += src/core/block.cpp \
 HEADERS  += include/core/block.h \
     include/core/blockdata.h \
     include/core/event.h \
-    include/core/filterchildrenproxymodel.h \
     include/core/heallocation.h \
     include/core/history.h \
     include/core/historyitem.h \
@@ -71,6 +70,7 @@ HEADERS  += include/core/block.h \
     include/ui/connectionpixmapitem.h \
     include/ui/currentselectedmetatilespixmapitem.h \
     include/ui/eventpropertiesframe.h \
+    include/ui/filterchildrenproxymodel.h \
     include/ui/graphicsview.h \
     include/ui/imageproviders.h \
     include/ui/mappixmapitem.h \

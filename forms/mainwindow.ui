@@ -2373,7 +2373,7 @@
     <string>Tileset Editor</string>
    </property>
   </action>
-  <action name="actionSort_by_Name">
+  <action name="actionSort_by_Area">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -2382,7 +2382,7 @@
      <normaloff>:/icons/sort_alphabet.ico</normaloff>:/icons/sort_alphabet.ico</iconset>
    </property>
    <property name="text">
-    <string>Sort by &amp;Name</string>
+    <string>Sort by &amp;Area</string>
    </property>
   </action>
   <action name="actionSort_by_Group">

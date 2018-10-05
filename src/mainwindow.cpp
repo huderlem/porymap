@@ -36,6 +36,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QApplication::setWindowIcon(QIcon(":/icons/porymap-icon-1.ico"));
 
     ui->setupUi(this);
+    this->initCustomUI();
     this->initExtraSignals();
     this->initExtraShortcuts();
     this->initEditor();
@@ -55,6 +56,13 @@ void MainWindow::initExtraShortcuts() {
     new QShortcut(QKeySequence("Ctrl+Shift+Z"), this, SLOT(redo()));
     new QShortcut(QKeySequence("Ctrl+0"), this, SLOT(resetMapViewScale()));
     ui->actionZoom_In->setShortcuts({QKeySequence("Ctrl++"), QKeySequence("Ctrl+=")});
+}
+
+void MainWindow::initCustomUI() {
+    // Right-clicking on items in the map list tree view brings up a context menu.
+    ui->mapList->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->mapList, SIGNAL(customContextMenuRequested(const QPoint &)),
+            this, SLOT(onOpenMapListContextMenu(const QPoint &)));
 }
 
 void MainWindow::initExtraSignals() {
@@ -96,12 +104,12 @@ void MainWindow::initMapSortOrder() {
     QActionGroup *mapSortOrderActionGroup = new QActionGroup(ui->toolButton_MapSortOrder);
 
     mapSortOrderMenu->addAction(ui->actionSort_by_Group);
-    mapSortOrderMenu->addAction(ui->actionSort_by_Name);
+    mapSortOrderMenu->addAction(ui->actionSort_by_Area);
     mapSortOrderMenu->addAction(ui->actionSort_by_Layout);
     ui->toolButton_MapSortOrder->setMenu(mapSortOrderMenu);
 
     mapSortOrderActionGroup->addAction(ui->actionSort_by_Group);
-    mapSortOrderActionGroup->addAction(ui->actionSort_by_Name);
+    mapSortOrderActionGroup->addAction(ui->actionSort_by_Area);
     mapSortOrderActionGroup->addAction(ui->actionSort_by_Layout);
 
     connect(ui->toolButton_MapSortOrder, &QToolButton::triggered, this, &MainWindow::mapSortOrder_changed);
@@ -119,7 +127,7 @@ void MainWindow::mapSortOrder_changed(QAction *action)
     int i = 0;
     for (; i < items.count(); i++)
     {
-        if(items[i] == action)
+        if (items[i] == action)
         {
             break;
         }
@@ -602,11 +610,6 @@ void MainWindow::sortMapList() {
         }
     }
 
-    // Right-clicking on items in the map list tree view brings up a context menu.
-    ui->mapList->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->mapList, SIGNAL(customContextMenuRequested(const QPoint &)),
-            this, SLOT(onOpenMapListContextMenu(const QPoint &)));
-
     ui->mapList->setUpdatesEnabled(true);
     ui->mapList->expandToDepth(0);
     ui->mapList->repaint();
@@ -639,7 +642,7 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point)
     if (itemType == "map_group") {
         QString groupName = selectedItem->data(Qt::UserRole).toString();
         int groupNum = selectedItem->data(MapListUserRoles::GroupRole).toInt();
-        QMenu* menu = new QMenu();
+        QMenu* menu = new QMenu(this);
         QActionGroup* actions = new QActionGroup(menu);
         actions->addAction(menu->addAction("Add New Map to Group"))->setData(groupNum);
         connect(actions, SIGNAL(triggered(QAction*)), this, SLOT(onAddNewMapToGroupClick(QAction*)));

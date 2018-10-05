@@ -168,6 +168,7 @@ private:
     void displayMapProperties();
     void checkToolButtons();
 
+    void initCustomUI();
     void initExtraShortcuts();
     void initExtraSignals();
     void initEditor();
