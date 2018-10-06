@@ -108,6 +108,7 @@ PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset 
     this->initColorSliders();
     this->refreshColorSliders();
     this->refreshColors();
+    this->commitEditHistory();
 }
 
 PaletteEditor::~PaletteEditor()

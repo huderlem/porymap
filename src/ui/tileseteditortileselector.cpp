@@ -3,6 +3,14 @@
 #include "project.h"
 #include <QPainter>
 
+QPoint TilesetEditorTileSelector::getSelectionDimensions() {
+    if (this->externalSelection) {
+        return QPoint(this->externalSelectionWidth, this->externalSelectionHeight);
+    } else {
+        return SelectablePixmapItem::getSelectionDimensions();
+    }
+}
+
 void TilesetEditorTileSelector::draw() {
     if (!this->primaryTileset || !this->primaryTileset->tiles
      || !this->secondaryTileset || !this->secondaryTileset->tiles) {
@@ -40,10 +48,14 @@ void TilesetEditorTileSelector::draw() {
 
     painter.end();
     this->setPixmap(QPixmap::fromImage(image));
-    this->drawSelection();
+
+    if (!this->externalSelection) {
+        this->drawSelection();
+    }
 }
 
 void TilesetEditorTileSelector::select(uint16_t tile) {
+    this->externalSelection = false;
     QPoint coords = this->getTileCoords(tile);
     SelectablePixmapItem::select(coords.x(), coords.y(), 0, 0);
     this->updateSelectedTiles();
@@ -68,6 +80,7 @@ void TilesetEditorTileSelector::setTileFlips(bool xFlip, bool yFlip) {
 }
 
 void TilesetEditorTileSelector::updateSelectedTiles() {
+    this->externalSelection = false;
     this->selectedTiles.clear();
     QPoint origin = this->getSelectionStart();
     QPoint dimensions = this->getSelectionDimensions();
@@ -79,8 +92,29 @@ void TilesetEditorTileSelector::updateSelectedTiles() {
     }
 }
 
-QList<uint16_t> TilesetEditorTileSelector::getSelectedTiles() {
-    return this->selectedTiles;
+QList<Tile> TilesetEditorTileSelector::getSelectedTiles() {
+    if (this->externalSelection) {
+        return this->externalSelectedTiles;
+    } else {
+        QList<Tile> tiles;
+        for (uint16_t tile : this->selectedTiles) {
+            tiles.append(Tile(tile, this->xFlip, this->yFlip, this->paletteId));
+        }
+        return tiles;
+    }
+}
+
+void TilesetEditorTileSelector::setExternalSelection(int width, int height, QList<Tile> tiles) {
+    this->externalSelection = true;
+    this->externalSelectionWidth = width;
+    this->externalSelectionHeight = height;
+    this->externalSelectedTiles.clear();
+    for (int i = 0; i < tiles.length(); i++) {
+        this->externalSelectedTiles.append(tiles.at(i));
+    }
+
+    this->draw();
+    emit selectedTilesChanged();
 }
 
 uint16_t TilesetEditorTileSelector::getTileId(int x, int y) {

@@ -125,15 +125,15 @@ void TilesetEditor::drawSelectedTiles() {
     }
 
     this->selectedTileScene->clear();
-    QList<uint16_t> tiles = this->tileSelector->getSelectedTiles();
+    QList<Tile> tiles = this->tileSelector->getSelectedTiles();
     QPoint dimensions = this->tileSelector->getSelectionDimensions();
     QImage selectionImage(16 * dimensions.x(), 16 * dimensions.y(), QImage::Format_RGBA8888);
     QPainter painter(&selectionImage);
     int tileIndex = 0;
     for (int j = 0; j < dimensions.y(); j++) {
         for (int i = 0; i < dimensions.x(); i++) {
-            QImage tileImage = getColoredTileImage(tiles.at(tileIndex), this->primaryTileset, this->secondaryTileset, this->paletteId)
-                    .mirrored(this->tileXFlip, this->tileYFlip)
+            QImage tileImage = getColoredTileImage(tiles.at(tileIndex).tile, this->primaryTileset, this->secondaryTileset, tiles.at(tileIndex).palette)
+                    .mirrored(tiles.at(tileIndex).xflip, tiles.at(tileIndex).yflip)
                     .scaled(16, 16);
             tileIndex++;
             painter.drawImage(i * 16, j * 16, tileImage);
@@ -150,6 +150,8 @@ void TilesetEditor::initMetatileLayersItem() {
     this->metatileLayersItem = new MetatileLayersItem(metatile, this->primaryTileset, this->secondaryTileset);
     connect(this->metatileLayersItem, SIGNAL(tileChanged(int, int)),
             this, SLOT(onMetatileLayerTileChanged(int, int)));
+    connect(this->metatileLayersItem, SIGNAL(selectedTilesChanged(QPoint, int, int)),
+            this, SLOT(onMetatileLayerSelectionChanged(QPoint, int, int)));
 
     this->metatileLayersScene = new QGraphicsScene;
     this->metatileLayersScene->addItem(this->metatileLayersItem);
@@ -191,17 +193,17 @@ void TilesetEditor::onSelectedTilesChanged() {
 void TilesetEditor::onMetatileLayerTileChanged(int x, int y) {
     int maxTileIndex = x < 2 ? 3 : 7;
     QPoint dimensions = this->tileSelector->getSelectionDimensions();
-    QList<uint16_t> tiles = this->tileSelector->getSelectedTiles();
+    QList<Tile> tiles = this->tileSelector->getSelectedTiles();
     int selectedTileIndex = 0;
     for (int j = 0; j < dimensions.y(); j++) {
         for (int i = 0; i < dimensions.x(); i++) {
             int tileIndex = ((x + i) / 2 * 4) + ((y + j) * 2) + ((x + i) % 2);
             if (tileIndex <= maxTileIndex) {
                 Tile tile = this->metatile->tiles->at(tileIndex);
-                tile.tile = tiles.at(selectedTileIndex);
-                tile.xflip = this->tileXFlip;
-                tile.yflip = this->tileYFlip;
-                tile.palette = this->paletteId;
+                tile.tile = tiles.at(selectedTileIndex).tile;
+                tile.xflip = tiles.at(selectedTileIndex).xflip;
+                tile.yflip = tiles.at(selectedTileIndex).yflip;
+                tile.palette = tiles.at(selectedTileIndex).palette;
                 (*this->metatile->tiles)[tileIndex] = tile;
             }
             selectedTileIndex++;
@@ -211,6 +213,21 @@ void TilesetEditor::onMetatileLayerTileChanged(int x, int y) {
     this->metatileSelector->draw();
     this->metatileLayersItem->draw();
     this->hasUnsavedChanges = true;
+}
+
+void TilesetEditor::onMetatileLayerSelectionChanged(QPoint selectionOrigin, int width, int height) {
+    QList<Tile> tiles;
+    int x = selectionOrigin.x();
+    int y = selectionOrigin.y();
+    for (int j = 0; j < height; j++) {
+        for (int i = 0; i < width; i++) {
+            int tileIndex = ((x + i) / 2 * 4) + ((y + j) * 2) + ((x + i) % 2);
+            if (tileIndex < 8) {
+                tiles.append(this->metatile->tiles->at(tileIndex));
+            }
+        }
+    }
+    this->tileSelector->setExternalSelection(width, height, tiles);
 }
 
 void TilesetEditor::on_spinBox_paletteSelector_valueChanged(int paletteId)
@@ -391,8 +408,8 @@ void TilesetEditor::on_actionChange_Metatiles_Count_triggered()
             Tile tile;
             tile.palette = 0;
             tile.tile = 0;
-            tile.xflip = 0;
-            tile.yflip = 0;
+            tile.xflip = false;
+            tile.yflip = false;
             Metatile *metatile = new Metatile;
             metatile->behavior = 0;
             metatile->layerType = 0;
