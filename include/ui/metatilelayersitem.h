@@ -13,14 +13,18 @@ public:
         this->metatile = metatile;
         this->primaryTileset = primaryTileset;
         this->secondaryTileset = secondaryTileset;
+        this->clearLastModifiedCoords();
     }
     void draw();
     void setTilesets(Tileset*, Tileset*);
     void setMetatile(Metatile*);
+    void clearLastModifiedCoords();
 private:
     Metatile* metatile;
     Tileset *primaryTileset;
     Tileset *secondaryTileset;
+    QPoint prevChangedTile;
+    void getBoundedCoords(QPointF, int*, int*);
 signals:
     void tileChanged(int, int);
     void selectedTilesChanged(QPoint, int, int);

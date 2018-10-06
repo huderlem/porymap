@@ -18,6 +18,14 @@ Metatile* Metatile::copy() {
     return copy;
 }
 
+void Metatile::copyInPlace(Metatile *other) {
+    this->behavior = other->behavior;
+    this->layerType = other->layerType;
+    for (int i = 0; i < this->tiles->length(); i++) {
+        (*this->tiles)[i] = other->tiles->at(i);
+    }
+}
+
 int Metatile::getBlockIndex(int index) {
     if (index < Project::getNumMetatilesPrimary()) {
         return index;
