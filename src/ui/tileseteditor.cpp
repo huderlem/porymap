@@ -75,7 +75,7 @@ void TilesetEditor::refresh() {
     this->ui->graphicsView_Tiles->setFixedSize(this->tileSelector->pixmap().width() + 2, this->tileSelector->pixmap().height() + 2);
     this->ui->graphicsView_Metatiles->setSceneRect(0, 0, this->metatileSelector->pixmap().width() + 2, this->metatileSelector->pixmap().height() + 2);
     this->ui->graphicsView_Metatiles->setFixedSize(this->metatileSelector->pixmap().width() + 2, this->metatileSelector->pixmap().height() + 2);
-    this->ui->graphicsView_selectedTile->setFixedSize(this->selectedTilePixmapItem->pixmap().width(), this->selectedTilePixmapItem->pixmap().height());
+    this->ui->graphicsView_selectedTile->setFixedSize(this->selectedTilePixmapItem->pixmap().width() + 2, this->selectedTilePixmapItem->pixmap().height() + 2);
 }
 
 void TilesetEditor::initMetatileSelector()
@@ -119,7 +119,7 @@ void TilesetEditor::initSelectedTileItem() {
     this->selectedTileScene = new QGraphicsScene;
     this->drawSelectedTiles();
     this->ui->graphicsView_selectedTile->setScene(this->selectedTileScene);
-    this->ui->graphicsView_selectedTile->setFixedSize(this->selectedTilePixmapItem->pixmap().width(), this->selectedTilePixmapItem->pixmap().height());
+    this->ui->graphicsView_selectedTile->setFixedSize(this->selectedTilePixmapItem->pixmap().width() + 2, this->selectedTilePixmapItem->pixmap().height() + 2);
 }
 
 void TilesetEditor::drawSelectedTiles() {
@@ -145,7 +145,7 @@ void TilesetEditor::drawSelectedTiles() {
 
     this->selectedTilePixmapItem = new QGraphicsPixmapItem(QPixmap::fromImage(selectionImage));
     this->selectedTileScene->addItem(this->selectedTilePixmapItem);
-    this->ui->graphicsView_selectedTile->setFixedSize(this->selectedTilePixmapItem->pixmap().width(), this->selectedTilePixmapItem->pixmap().height());
+    this->ui->graphicsView_selectedTile->setFixedSize(this->selectedTilePixmapItem->pixmap().width() + 2, this->selectedTilePixmapItem->pixmap().height() + 2);
 }
 
 void TilesetEditor::initMetatileLayersItem() {
@@ -234,7 +234,17 @@ void TilesetEditor::onMetatileLayerSelectionChanged(QPoint selectionOrigin, int 
             }
         }
     }
-    this->tileSelector->setExternalSelection(width, height, tiles);
+
+    if (width == 1 && height == 1) {
+        this->tileSelector->select(static_cast<uint16_t>(tiles[0].tile));
+        ui->spinBox_paletteSelector->setValue(tiles[0].palette);
+        QPoint pos = tileSelector->getTileCoordsOnWidget(static_cast<uint16_t>(tiles[0].tile));
+        ui->scrollArea_Tiles->ensureVisible(pos.x(), pos.y());
+    }
+    else {
+        this->tileSelector->setExternalSelection(width, height, tiles);
+    }
+
     this->metatileLayersItem->clearLastModifiedCoords();
 }
 

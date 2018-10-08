@@ -26,7 +26,7 @@
          <x>0</x>
          <y>0</y>
          <width>386</width>
-         <height>539</height>
+         <height>538</height>
         </rect>
        </property>
        <layout class="QGridLayout" name="gridLayout">
@@ -205,14 +205,14 @@
               <widget class="QGraphicsView" name="graphicsView_selectedTile">
                <property name="minimumSize">
                 <size>
-                 <width>16</width>
-                 <height>16</height>
+                 <width>18</width>
+                 <height>18</height>
                 </size>
                </property>
                <property name="maximumSize">
                 <size>
-                 <width>32</width>
-                 <height>32</height>
+                 <width>34</width>
+                 <height>34</height>
                 </size>
                </property>
                <property name="frameShape">
@@ -252,14 +252,14 @@
               <widget class="QGraphicsView" name="graphicsView_metatileLayers">
                <property name="minimumSize">
                 <size>
-                 <width>64</width>
-                 <height>32</height>
+                 <width>66</width>
+                 <height>34</height>
                 </size>
                </property>
                <property name="maximumSize">
                 <size>
-                 <width>64</width>
-                 <height>32</height>
+                 <width>66</width>
+                 <height>34</height>
                 </size>
                </property>
                <property name="verticalScrollBarPolicy">
@@ -307,7 +307,7 @@
             <x>0</x>
             <y>0</y>
             <width>386</width>
-            <height>359</height>
+            <height>344</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_2">
@@ -388,7 +388,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>21</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

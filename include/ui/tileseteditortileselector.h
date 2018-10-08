@@ -24,6 +24,7 @@ public:
     void setTileFlips(bool, bool);
     QList<Tile> getSelectedTiles();
     void setExternalSelection(int, int, QList<Tile>);
+    QPoint getTileCoordsOnWidget(uint16_t);
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent*);

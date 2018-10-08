@@ -683,6 +683,12 @@ void MainWindow::currentMetatilesSelectionChanged()
 {
     ui->graphicsView_currentMetatileSelection->setFixedSize(editor->scene_current_metatile_selection_item->pixmap().width() + 2, editor->scene_current_metatile_selection_item->pixmap().height() + 2);
     ui->graphicsView_currentMetatileSelection->setSceneRect(0, 0, editor->scene_current_metatile_selection_item->pixmap().width(), editor->scene_current_metatile_selection_item->pixmap().height());
+
+    QPoint size = editor->metatile_selector_item->getSelectionDimensions();
+    if (size.x() == 1 && size.y() == 1) {
+        QPoint pos = editor->metatile_selector_item->getMetatileIdCoordsOnWidget(editor->metatile_selector_item->getSelectedMetatiles()->at(0));
+        ui->scrollArea_2->ensureVisible(pos.x(), pos.y());
+    }
 }
 
 void MainWindow::on_mapList_activated(const QModelIndex &index)

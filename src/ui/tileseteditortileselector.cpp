@@ -162,3 +162,10 @@ QPoint TilesetEditorTileSelector::getTileCoords(uint16_t tile) {
 
     return QPoint(tile % this->numTilesWide, tile / this->numTilesWide);
 }
+
+QPoint TilesetEditorTileSelector::getTileCoordsOnWidget(uint16_t tile) {
+    QPoint pos = getTileCoords(tile);
+    pos.rx() = (pos.x() * this->cellWidth) + (this->cellWidth / 2);
+    pos.ry() = (pos.y() * this->cellHeight) + (this->cellHeight / 2);
+    return pos;
+}
