@@ -195,21 +195,17 @@ void TilesetEditor::onSelectedTilesChanged() {
 
 void TilesetEditor::onMetatileLayerTileChanged(int x, int y) {
     Metatile *prevMetatile = this->metatile->copy();
-    int maxTileIndex = x < 2 ? 3 : 7;
     QPoint dimensions = this->tileSelector->getSelectionDimensions();
     QList<Tile> tiles = this->tileSelector->getSelectedTiles();
     int selectedTileIndex = 0;
     for (int j = 0; j < dimensions.y(); j++) {
         for (int i = 0; i < dimensions.x(); i++) {
             int tileIndex = ((x + i) / 2 * 4) + ((y + j) * 2) + ((x + i) % 2);
-            if (tileIndex <= maxTileIndex) {
-                Tile tile = this->metatile->tiles->at(tileIndex);
-                tile.tile = tiles.at(selectedTileIndex).tile;
-                tile.xflip = tiles.at(selectedTileIndex).xflip;
-                tile.yflip = tiles.at(selectedTileIndex).yflip;
-                tile.palette = tiles.at(selectedTileIndex).palette;
-                (*this->metatile->tiles)[tileIndex] = tile;
-            }
+            Tile *tile = &(*this->metatile->tiles)[tileIndex];
+            tile->tile = tiles.at(selectedTileIndex).tile;
+            tile->xflip = tiles.at(selectedTileIndex).xflip;
+            tile->yflip = tiles.at(selectedTileIndex).yflip;
+            tile->palette = tiles.at(selectedTileIndex).palette;
             selectedTileIndex++;
         }
     }

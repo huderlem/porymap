@@ -9,7 +9,7 @@
 class MetatileLayersItem: public SelectablePixmapItem {
     Q_OBJECT
 public:
-    MetatileLayersItem(Metatile *metatile, Tileset *primaryTileset, Tileset *secondaryTileset): SelectablePixmapItem(16, 16, 2, 2) {
+    MetatileLayersItem(Metatile *metatile, Tileset *primaryTileset, Tileset *secondaryTileset): SelectablePixmapItem(16, 16, 4, 2) {
         this->metatile = metatile;
         this->primaryTileset = primaryTileset;
         this->secondaryTileset = secondaryTileset;
