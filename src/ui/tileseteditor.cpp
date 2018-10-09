@@ -201,11 +201,13 @@ void TilesetEditor::onMetatileLayerTileChanged(int x, int y) {
     for (int j = 0; j < dimensions.y(); j++) {
         for (int i = 0; i < dimensions.x(); i++) {
             int tileIndex = ((x + i) / 2 * 4) + ((y + j) * 2) + ((x + i) % 2);
-            Tile *tile = &(*this->metatile->tiles)[tileIndex];
-            tile->tile = tiles.at(selectedTileIndex).tile;
-            tile->xflip = tiles.at(selectedTileIndex).xflip;
-            tile->yflip = tiles.at(selectedTileIndex).yflip;
-            tile->palette = tiles.at(selectedTileIndex).palette;
+            if (tileIndex < 8) {
+                Tile *tile = &(*this->metatile->tiles)[tileIndex];
+                tile->tile = tiles.at(selectedTileIndex).tile;
+                tile->xflip = tiles.at(selectedTileIndex).xflip;
+                tile->yflip = tiles.at(selectedTileIndex).yflip;
+                tile->palette = tiles.at(selectedTileIndex).palette;
+            }
             selectedTileIndex++;
         }
     }
