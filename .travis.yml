@@ -51,6 +51,7 @@ matrix:
       compiler: clang
       install:
         - brew update
+        - ls
         - brew install qt
       script:
         - qmake
