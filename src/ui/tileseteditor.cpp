@@ -375,7 +375,6 @@ void TilesetEditor::importTilesetTiles(Tileset *tileset, bool primary) {
     }
 
     this->project->loadTilesetTiles(tileset, image);
-    this->project->loadTilesetMetatiles(tileset);
     this->refresh();
     this->hasUnsavedChanges = true;
 }
