@@ -1,5 +1,7 @@
 #include "connectionpixmapitem.h"
 
+#include <cmath>
+
 void ConnectionPixmapItem::render(qreal opacity) {
     QPixmap newPixmap = this->basePixmap.copy(0, 0, this->basePixmap.width(), this->basePixmap.height());
     if (opacity < 1) {
