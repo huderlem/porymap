@@ -35,7 +35,7 @@ matrix:
         - /usr/local/opt/qt/bin/qmake -config release
         - make -j2
         - ls -a
-        - /usr/local/opt/qt/bin/macdeployqt pretmap -dmg
+        - /usr/local/opt/qt/bin/macdeployqt porymap.app -dmg
       before_deploy:
         - git config --local user.name $(git log -1 $TRAVIS_COMMIT --pretty="%aN")
         - git config --local user.email $(git log -1 $TRAVIS_COMMIT --pretty="%cE")
