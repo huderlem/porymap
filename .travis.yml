@@ -10,8 +10,8 @@ script:
   - make -j2
 
 before_deploy:
-  - git config --local user.name garakmon
-  - git config --local user.email garakmon@gmail.com
+  - git config --local user.name $(git log -1 $TRAVIS_COMMIT --pretty="%aN")
+  - git config --local user.email $(git log -1 $TRAVIS_COMMIT --pretty="%cE")
   - git tag "$(date +'%Y%m%d%H%M%S')-$(git log --format=%h -1)"
 
 deploy:
