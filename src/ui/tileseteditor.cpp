@@ -382,20 +382,27 @@ void TilesetEditor::importTilesetTiles(Tileset *tileset, bool primary) {
 
 void TilesetEditor::closeEvent(QCloseEvent *event)
 {
-    bool close = true;
     if (this->hasUnsavedChanges) {
-        QMessageBox::StandardButton result = QMessageBox::question(this, "porymap",
-                                                                    "Discard unsaved Tileset changes?",
-                                                                    QMessageBox::No | QMessageBox::Yes,
-                                                                    QMessageBox::Yes);
-        close = result == QMessageBox::Yes;
-    }
+        QMessageBox::StandardButton result = QMessageBox::question(
+            this,
+            "porymap",
+            "Tileset has been modified, save changes?",
+            QMessageBox::No | QMessageBox::Yes | QMessageBox::Cancel,
+            QMessageBox::Yes);
 
-    if (close) {
+        if (result == QMessageBox::Yes) {
+            this->on_actionSave_Tileset_triggered();
+            event->accept();
+            emit closed();
+        } else if (result == QMessageBox::No) {
+            event->accept();
+            emit closed();
+        } else if (result == QMessageBox::Cancel) {
+            event->ignore();
+        }
+    } else {
         event->accept();
         emit closed();
-    } else {
-        event->ignore();
     }
 }
 
