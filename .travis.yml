@@ -7,5 +7,5 @@ install:
   - sudo apt-get install -y qt5-default qttools5-dev-tools #install necessary Qt files
 
 script:
-  - qmake -config release
+  - qmake # -config release
   - make
