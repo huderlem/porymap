@@ -53,8 +53,8 @@ matrix:
         - brew update
         - brew install qt
       script:
-        - /usr/local/opt/qt/bin/qmake
-        - make -j2 -config release
+        - /usr/local/opt/qt/bin/qmake -config release
+        - make -j2
         - /usr/local/opt/qt/bin/macdeployqt pretmap.app -dmg
       before_deploy:
         - git config --local user.name $(git log -1 $TRAVIS_COMMIT --pretty="%aN")
