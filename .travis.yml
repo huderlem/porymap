@@ -1,5 +1,5 @@
 language: cpp
-compiler: clang
+#compiler: clang
 sudo: required
 dist: trusty
 
@@ -22,7 +22,8 @@ deploy:
   file: porymap
   skip_cleanup: true
   on:
+    repo: garakmon/porymap
     branches:
-      - master
-      - travis-ci
+      only:
+        - travis-ci
   #  tags: true
