@@ -1,27 +1,25 @@
 language: cpp
-#compiler: clang
 sudo: required
 dist: trusty
 
 install:
-  - sudo apt-get install -y qt5-default qttools5-dev-tools #install necessary Qt files
+  - sudo apt-get install -y qt5-default qttools5-dev-tools
 
 script:
-  - qmake # -config release
+  - qmake
   - make -j2
 
 before_deploy:
-# Set up git user name and tag this commit
   - git config --local user.name garakmon
   - git config --local user.email garakmon@gmail.com
   - git tag "$(date +'%Y%m%d%H%M%S')-$(git log --format=%h -1)"
 
 deploy:
   provider: releases
-  api_key: $GITHUB_OAUTH_TOKEN
-  file: porymap
   skip_cleanup: true
+  api_key:
+    secure: TPpi+XTjjNEjq5d1dotxzc+Fk1pY1h1ZEd6UD/XENe1s/rqKioDT0MAs++H7j0VQm67h+eXGheLHARL4i5f6HLWooVO6e6iPhu5OcVgAZnXmJRG1x9+csRAzJw4bp/5wMejgKh4qyYhH0zQ3EKhluuBm2M9GWQt/C3EbvNzC/qHH9hz+uKJNmKy4C20NGMk6SbKAJJu8c7YXYdlSP8fvDEVX9zg8INIpMeMt9dDHyk6m9eyMMRt1x2EZH0wVwov1sUHRb4GStYFMemCPFlZC8/mNJOGlybSeHslnxRUOcaxFe9fBTZrDU6XlBZig6VgUy/4KqUDiv/elI2VWE0Und+psDbFQA5RtfjCHWTUaL8gsIMjNkWofVVODMf9eumPsZ8d3avnTMznZWS6AYl7I6ldqu+0LRiVQNaFEWk+Y3REJEeW+ChNluts1aAlIvPx6TIjoiYK22c9IIwDN3Qqnguz1GWIuDoLETMvMD94uIw6kgLujYntNqIenMOTitIyJBRLegprsu/BAjsmjUqh7ThfPn+0OyPST5Ad7F3QXpXsKll3dtVqIb5dPNvdB2B3semFXVAlBxJ6M54WE6GTvE3OGlW/PWNR4fac22GJJeTgRFvGAX7H4sveQHgkAVnJxcAOuu7jGPNL4TuT8VnTQH51G9gb/oVpiKeaE6w3bD14=
+  file: porymap
   on:
     repo: garakmon/porymap
     all_branches: true
-  #  tags: true
