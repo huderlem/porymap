@@ -22,4 +22,7 @@ deploy:
   file: porymap
   skip_cleanup: true
   on:
-    tags: true
+    branches:
+      - master
+      - travis-ci
+  #  tags: true
