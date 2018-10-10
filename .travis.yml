@@ -9,3 +9,11 @@ install:
 script:
   - qmake # -config release
   - make
+
+deploy:
+  provider: releases
+  api_key: $GITHUB_OAUTH_TOKEN
+  file: porymap
+  skip_cleanup: true
+  on:
+    tags: true
