@@ -77,7 +77,7 @@ QList<HealLocation>* ParseUtil::parseHealLocs(QString text) {
     int i = 1;
     for (auto line : lines){
         if (line.contains("MAP_GROUP")){
-            QList<QString> li = line.replace(" ","").chopped(2).remove('{').split(',');
+            QList<QString> li = line.remove(QRegExp("[{|} ]")).split(",");
             HealLocation hloc = HealLocation(li[1].remove("MAP_NUM(").remove(")"), i, li[2].toUShort(), li[3].toUShort());
             parsed->append(hloc);
             i++;

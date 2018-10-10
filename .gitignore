@@ -5,6 +5,9 @@ porymap.pro.user
 moc_*
 qrc_*
 porymap.app*
+porymap
 Makefile
-ui_mainwindow.h
-ui_objectpropertiesframe.h
+
+# Generated UI header
+ui_*.h
+

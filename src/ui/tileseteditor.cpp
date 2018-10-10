@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <QMessageBox>
 #include <QDialogButtonBox>
+#include <QCloseEvent>
 
 TilesetEditor::TilesetEditor(Project *project, QString primaryTilesetLabel, QString secondaryTilesetLabel, QWidget *parent) :
     QMainWindow(parent),
