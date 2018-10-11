@@ -14,7 +14,7 @@ deploy:
   repository: garakmon/porymap
   auth_token:
     secure: MLSwoIXXuZaI9iKbxUSX7ErtiRW8Q9MSuPOqS8EYJj68f4sx8eERXWBLX7MpmmEb
-  artifact: /.*\.exe/ #release #porymap.pro #/.*\.nupkg/            # upload all NuGet packages to release assets
+  artifact: C:/projects/porymap/release/porymap.exe #release #porymap.pro #/.*\.nupkg/            # upload all NuGet packages to release assets
   draft: false
   prerelease: true
   on:
