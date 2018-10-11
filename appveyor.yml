@@ -5,3 +5,16 @@ install:
 build_script:
   - qmake porymap.pro
   - mingw32-make
+
+deploy:
+  #release: myproduct-v$(appveyor_build_version)
+  #description: 'Release description'
+  provider: GitHub
+  auth_token:
+    secure: TPpi+XTjjNEjq5d1dotxzc+Fk1pY1h1ZEd6UD/XENe1s/rqKioDT0MAs++H7j0VQm67h+eXGheLHARL4i5f6HLWooVO6e6iPhu5OcVgAZnXmJRG1x9+csRAzJw4bp/5wMejgKh4qyYhH0zQ3EKhluuBm2M9GWQt/C3EbvNzC/qHH9hz+uKJNmKy4C20NGMk6SbKAJJu8c7YXYdlSP8fvDEVX9zg8INIpMeMt9dDHyk6m9eyMMRt1x2EZH0wVwov1sUHRb4GStYFMemCPFlZC8/mNJOGlybSeHslnxRUOcaxFe9fBTZrDU6XlBZig6VgUy/4KqUDiv/elI2VWE0Und+psDbFQA5RtfjCHWTUaL8gsIMjNkWofVVODMf9eumPsZ8d3avnTMznZWS6AYl7I6ldqu+0LRiVQNaFEWk+Y3REJEeW+ChNluts1aAlIvPx6TIjoiYK22c9IIwDN3Qqnguz1GWIuDoLETMvMD94uIw6kgLujYntNqIenMOTitIyJBRLegprsu/BAjsmjUqh7ThfPn+0OyPST5Ad7F3QXpXsKll3dtVqIb5dPNvdB2B3semFXVAlBxJ6M54WE6GTvE3OGlW/PWNR4fac22GJJeTgRFvGAX7H4sveQHgkAVnJxcAOuu7jGPNL4TuT8VnTQH51G9gb/oVpiKeaE6w3bD14=
+  artifact: porymap.exe #/.*\.nupkg/            # upload all NuGet packages to release assets
+  draft: false
+  prerelease: false
+  on:
+    all_branches: true #branch: master                 # release from master branch only
+    appveyor_repo_tag: false        # deploy on tag push only
