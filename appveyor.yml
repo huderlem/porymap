@@ -18,4 +18,4 @@ deploy:
   on:
     #all_branches: true #
     branch: travis-ci                 # release from master branch only
-    appveyor_repo_tag: true        # deploy on tag push only
+    #appveyor_repo_tag: true        # deploy on tag push only
