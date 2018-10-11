@@ -7,15 +7,19 @@ build_script:
   - mingw32-make -j2
   - windeployqt release/porymap.exe
 
-before_deploy:
-  - pwd
-  - ls
-  - ls release
-  - ls -R
+#before_deploy:
+#  - pwd
+#  - ls
+#  - ls release
+#  - ls -R
 #  - find . -type f -name "*.exe"
 #        - git config --local user.name $(git log -1 $TRAVIS_COMMIT --pretty="%aN")
 #        - git config --local user.email $(git log -1 $TRAVIS_COMMIT --pretty="%cE")
 #        - git tag "$(git log --format=%h -1)-mac"
+
+artifacts:
+  - path: release/*.exe
+    name: porymap-win32
 
 deploy:
   #release: myproduct-v$(appveyor_build_version)
@@ -25,7 +29,7 @@ deploy:
   skip_cleanup: true
   auth_token:
     secure: MLSwoIXXuZaI9iKbxUSX7ErtiRW8Q9MSuPOqS8EYJj68f4sx8eERXWBLX7MpmmEb
-  artifact: C:\projects\porymap\release\porymap.exe #release #porymap.pro #/.*\.nupkg/            # upload all NuGet packages to release assets
+  artifacts: porymap-win32 #C:\projects\porymap\release\porymap.exe #release #porymap.pro #/.*\.nupkg/            # upload all NuGet packages to release assets
   draft: false
   prerelease: false
   on:
