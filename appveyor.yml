@@ -7,7 +7,10 @@ build_script:
   - mingw32-make -j2
   - windeployqt release/porymap.exe
 
-#before_deploy:
+before_deploy:
+  - pwd
+  - ls
+  - find . -type f -name "*.exe"
 #        - git config --local user.name $(git log -1 $TRAVIS_COMMIT --pretty="%aN")
 #        - git config --local user.email $(git log -1 $TRAVIS_COMMIT --pretty="%cE")
 #        - git tag "$(git log --format=%h -1)-mac"
@@ -17,9 +20,10 @@ deploy:
   description: 'Built by AppVeyor'
   provider: GitHub
   repository: garakmon/porymap
+  skip_cleanup: true
   auth_token:
     secure: MLSwoIXXuZaI9iKbxUSX7ErtiRW8Q9MSuPOqS8EYJj68f4sx8eERXWBLX7MpmmEb
-  artifact: release\porymap.exe #release #porymap.pro #/.*\.nupkg/            # upload all NuGet packages to release assets
+  artifact: C:\projects\porymap\release\porymap.exe #release #porymap.pro #/.*\.nupkg/            # upload all NuGet packages to release assets
   draft: false
   prerelease: false
   on:
