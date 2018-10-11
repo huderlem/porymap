@@ -6,8 +6,6 @@ build_script:
   - qmake porymap.pro -config release
   - mingw32-make -j2
   - windeployqt release/porymap.exe
-  - ls -a
-  - ls release
 
 deploy:
   #release: myproduct-v$(appveyor_build_version)
@@ -15,7 +13,7 @@ deploy:
   provider: GitHub
   auth_token:
     secure: MLSwoIXXuZaI9iKbxUSX7ErtiRW8Q9MSuPOqS8EYJj68f4sx8eERXWBLX7MpmmEb
-  artifact: porymap.exe #/.*\.nupkg/            # upload all NuGet packages to release assets
+  artifact: porymap.pro #/.*\.nupkg/            # upload all NuGet packages to release assets
   draft: false
   prerelease: true
   on:
