@@ -43,6 +43,7 @@ MainWindow::MainWindow(QWidget *parent) :
     this->initMiscHeapObjects();
     this->initMapSortOrder();
     this->openRecentProject();
+    this->restoreWindowState();
 
     on_toolButton_Paint_clicked();
 }
@@ -165,6 +166,18 @@ void MainWindow::loadUserSettings() {
         settings.setValue("map_sort_order", 0);
     }
     mapSortOrder = static_cast<MapSortOrder>(settings.value("map_sort_order").toInt());
+}
+
+void MainWindow::restoreWindowState() {
+    QSettings settings;
+    
+    if (settings.contains("saved_widget_geometry")) {
+        this->restoreGeometry(settings.value("window_geometry").toByteArray());
+        this->restoreState(settings.value("window_state").toByteArray());
+        this->ui->splitter_map->restoreState(settings.value("map_splitter_state").toByteArray());
+        this->ui->splitter_events->restoreState(settings.value("events_splitter_state").toByteArray());
+        this->ui->splitter_main->restoreState(settings.value("main_splitter_state").toByteArray());
+    }
 }
 
 void MainWindow::openRecentProject() {
@@ -1404,6 +1417,17 @@ void MainWindow::on_actionTileset_Editor_triggered()
     } else {
         this->tilesetEditor->activateWindow();
     }
+}
+
+void MainWindow::closeEvent(QCloseEvent *event) {
+    QSettings settings;
+    settings.setValue("saved_widget_geometry", "true");
+    settings.setValue("window_geometry", this->saveGeometry());
+    settings.setValue("window_state", this->saveState());
+    settings.setValue("map_splitter_state", this->ui->splitter_map->saveState());
+    settings.setValue("events_splitter_state", this->ui->splitter_events->saveState());
+    settings.setValue("main_splitter_state", this->ui->splitter_main->saveState());
+    QMainWindow::closeEvent(event);
 }
 
 void MainWindow::onTilesetEditorClosed() {

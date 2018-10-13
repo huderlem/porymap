@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
-     <widget class="QSplitter" name="splitter">
+     <widget class="QSplitter" name="splitter_main">
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
@@ -197,7 +197,7 @@
           <number>6</number>
          </property>
          <item row="0" column="0">
-          <widget class="QSplitter" name="splitter_2">
+          <widget class="QSplitter" name="splitter_map">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
            </property>
@@ -482,8 +482,8 @@
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>481</width>
-                     <height>606</height>
+                     <width>545</width>
+                     <height>587</height>
                     </rect>
                    </property>
                    <layout class="QGridLayout" name="gridLayout_8">
@@ -797,8 +797,8 @@
                            <rect>
                             <x>0</x>
                             <y>0</y>
-                            <width>300</width>
-                            <height>70</height>
+                            <width>256</width>
+                            <height>74</height>
                            </rect>
                           </property>
                           <layout class="QHBoxLayout" name="horizontalLayout_7">
@@ -909,8 +909,8 @@
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>304</width>
-                      <height>372</height>
+                      <width>222</width>
+                      <height>353</height>
                      </rect>
                     </property>
                     <property name="sizePolicy">
@@ -1201,7 +1201,7 @@
           <number>0</number>
          </property>
          <item row="0" column="0">
-          <widget class="QSplitter" name="splitter_3">
+          <widget class="QSplitter" name="splitter_events">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
              <horstretch>0</horstretch>
@@ -1226,8 +1226,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>385</width>
-               <height>655</height>
+               <width>371</width>
+               <height>643</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_7">
@@ -1405,7 +1405,7 @@
                         <x>0</x>
                         <y>0</y>
                         <width>428</width>
-                        <height>586</height>
+                        <height>578</height>
                        </rect>
                       </property>
                       <property name="sizePolicy">
@@ -2024,8 +2024,8 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>829</width>
-                    <height>552</height>
+                    <width>818</width>
+                    <height>539</height>
                    </rect>
                   </property>
                   <layout class="QGridLayout" name="gridLayout_14">
@@ -2197,7 +2197,7 @@
      <x>0</x>
      <y>0</y>
      <width>1117</width>
-     <height>20</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

@@ -8,6 +8,7 @@
 #include <QGraphicsPixmapItem>
 #include <QGraphicsItemGroup>
 #include <QGraphicsSceneMouseEvent>
+#include <QCloseEvent>
 #include <QAbstractItemModel>
 #include "project.h"
 #include "map.h"
@@ -133,6 +134,8 @@ private slots:
 
     void on_lineEdit_filterBox_textChanged(const QString &arg1);
 
+    void closeEvent(QCloseEvent *);
+
 private:
     Ui::MainWindow *ui;
     TilesetEditor *tilesetEditor = nullptr;
@@ -175,6 +178,7 @@ private:
     void initMiscHeapObjects();
     void initMapSortOrder();
     void loadUserSettings();
+    void restoreWindowState();
     void openRecentProject();
     void updateTilesetEditor();
 
