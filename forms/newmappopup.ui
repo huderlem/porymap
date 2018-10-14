@@ -46,7 +46,7 @@
        <item row="1" column="1">
         <widget class="QComboBox" name="comboBox_NewMap_Group">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The default background music for this map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;New map group.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="editable">
           <bool>true</bool>
@@ -62,6 +62,9 @@
        </item>
        <item row="2" column="1">
         <widget class="QSpinBox" name="spinBox_NewMap_Width">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Width (in blocks) of the new map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="maximum">
           <number>200</number>
          </property>
@@ -76,6 +79,9 @@
        </item>
        <item row="3" column="1">
         <widget class="QSpinBox" name="spinBox_NewMap_Height">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Height (in blocks) of the new map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="maximum">
           <number>200</number>
          </property>
@@ -91,7 +97,7 @@
        <item row="4" column="1">
         <widget class="NoScrollComboBox" name="comboBox_NewMap_Primary_Tileset">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The section of the region map which the map is grouped under. This also determines the name of the map that is display when the player enters it.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The primary tileset for the new map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="editable">
           <bool>true</bool>
@@ -108,7 +114,7 @@
        <item row="5" column="1">
         <widget class="NoScrollComboBox" name="comboBox_NewMap_Secondary_Tileset">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The default weather for this map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The secondary tileset for the new map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="editable">
           <bool>true</bool>
@@ -142,7 +148,7 @@
        <item row="7" column="1">
         <widget class="QComboBox" name="comboBox_NewMap_Location">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Determines the type of battle scene graphics to use.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The section of the region map which the map is grouped under. This also determines the name of the map that is displayed when the player enters it.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="editable">
           <bool>true</bool>
@@ -158,6 +164,9 @@
        </item>
        <item row="8" column="1">
         <widget class="QCheckBox" name="checkBox_NewMap_Flyable">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Whether to add a heal location to the new map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
           <string/>
          </property>
@@ -171,7 +180,11 @@
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QLineEdit" name="lineEdit_NewMap_Name"/>
+        <widget class="QLineEdit" name="lineEdit_NewMap_Name">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The name of the new map. If the name is invalid (red), it will be replaced with the default name of a new map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
