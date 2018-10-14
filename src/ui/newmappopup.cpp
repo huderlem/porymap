@@ -63,7 +63,7 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
 
     // If map name is not unique, use default value. Also replace spaces with underscores.
     QString newMapName = this->ui->lineEdit_NewMap_Name->text().replace(" ","_");
-    if (project->mapNames->contains(newMapName)) {
+    if (project->mapNames->contains(newMapName) || newMapName.isEmpty()) {
         newMapName = project->getNewMapName();
     }
     newMap->name = newMapName;
