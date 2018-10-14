@@ -680,7 +680,7 @@ void MainWindow::onNewMapCreated() {
     editor->project->saveMap(newMap);
     editor->project->saveAllDataStructures();
 
-    QStandardItem* groupItem = mapGroupsModel->at(newMapGroup);
+    QStandardItem* groupItem = mapGroupItemsList->at(newMapGroup);
     int numMapsInGroup = groupItem->rowCount();
 
     QStandardItem *newMapItem = createMapItem(newMapName, newMapGroup, numMapsInGroup);
