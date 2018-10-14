@@ -1209,7 +1209,7 @@ Map* Project::addNewMapToGroup(QString mapName, int groupNum, Map *newMap) {
     loadMapTilesets(map);
     setNewMapBlockdata(map);
     setNewMapBorder(map);
-    //setNewMapEvents(map);
+    setNewMapEvents(map);
     setNewMapConnections(map);
     map->commit();
     map->metatileHistory.save();

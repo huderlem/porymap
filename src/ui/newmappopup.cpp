@@ -82,13 +82,8 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
     layout->blockdata_label = QString("%1_MapBlockdata").arg(newMap->name);
     layout->blockdata_path = QString("data/layouts/%1/map.bin").arg(newMap->name);
 
-    // EMERGENCY (MUST FIX):causes a segfault...
-    // how do I add new event to newMap without behavior being undefined???
     if (this->ui->checkBox_NewMap_Flyable->isChecked()) {
-        Event *healSpot = new Event;
-        healSpot = Event::createNewEvent("event_heal_location", newMapName);
-        healSpot->put("map_name", newMapName);
-        newMap->addEvent(healSpot);
+        newMap->isFlyable = "TRUE";
     }
 
     newMap->layout = layout;

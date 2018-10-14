@@ -673,6 +673,7 @@ void MainWindow::onNewMapCreated() {
     QString newMapName = this->newmapprompt->map->name;
     int newMapGroup = this->newmapprompt->group;
     Map *newMap_ = this->newmapprompt->map;
+
     Map *newMap = editor->project->addNewMapToGroup(newMapName, newMapGroup, newMap_);
 
     qDebug() << "Created a new map named" << newMapName;
@@ -688,6 +689,11 @@ void MainWindow::onNewMapCreated() {
     mapListIndexes.insert(newMapName, newMapItem->index());
 
     setMap(newMapName, true);
+
+    if (newMap->isFlyable == "TRUE") {
+        addNewEvent("event_heal_location");
+        editor->project->saveHealLocationStruct(newMap);
+    }
 
     disconnect(this->newmapprompt, SIGNAL(applied()), this, SLOT(onNewMapCreated()));
 }
