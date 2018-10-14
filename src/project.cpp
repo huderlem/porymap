@@ -1181,6 +1181,43 @@ Map* Project::addNewMapToGroup(QString mapName, int groupNum) {
     return map;
 }
 
+Map* Project::addNewMapToGroup(QString mapName, int groupNum, Map *newMap) {
+    mapNames->append(mapName);
+    map_groups->insert(mapName, groupNum);
+    groupedMapNames[groupNum].append(mapName);
+
+    Map *map = new Map;
+    map = newMap;
+
+    map->isPersistedToFile = false;
+    map->setName(mapName);
+    mapConstantsToMapNames->insert(map->constantName, map->name);
+    mapNamesToMapConstants->insert(map->name, map->constantName);
+    map->layout_label = QString("%1_Layout").arg(map->name);
+    map->events_label = QString("%1_MapEvents").arg(map->name);;
+    map->scripts_label = QString("%1_MapScripts").arg(map->name);;
+    map->connections_label = "0x0";
+    map->song = "MUS_DAN02";
+    map->layout_id = QString("%1").arg(mapLayoutsTable.size() + 1);
+    map->requiresFlash = "FALSE";
+    map->weather = "WEATHER_SUNNY";
+    map->unknown = "0";
+    map->show_location = "TRUE";
+    map->battle_scene = "MAP_BATTLE_SCENE_NORMAL";
+    mapLayouts.insert(map->layout->label, map->layout);
+    mapLayoutsTable.append(map->layout->label);
+    loadMapTilesets(map);
+    setNewMapBlockdata(map);
+    setNewMapBorder(map);
+    //setNewMapEvents(map);
+    setNewMapConnections(map);
+    map->commit();
+    map->metatileHistory.save();
+    map_cache->insert(mapName, map);
+
+    return map;
+}
+
 QString Project::getNewMapName() {
     // Ensure default name doesn't already exist.
     int i = 0;

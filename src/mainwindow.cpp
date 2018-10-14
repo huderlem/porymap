@@ -170,7 +170,7 @@ void MainWindow::loadUserSettings() {
 
 void MainWindow::restoreWindowState() {
     QSettings settings;
-    
+
     if (settings.contains("saved_widget_geometry")) {
         this->restoreGeometry(settings.value("window_geometry").toByteArray());
         this->restoreState(settings.value("window_state").toByteArray());
@@ -666,19 +666,47 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point)
 void MainWindow::onAddNewMapToGroupClick(QAction* triggeredAction)
 {
     int groupNum = triggeredAction->data().toInt();
-    QStandardItem* groupItem = mapGroupItemsList->at(groupNum);
+    openNewMapPopupWindow(groupNum);
+}
 
-    QString newMapName = editor->project->getNewMapName();
-    Map* newMap = editor->project->addNewMapToGroup(newMapName, groupNum);
+void MainWindow::onNewMapCreated() {
+    QString newMapName = this->newmapprompt->map->name;
+    int newMapGroup = this->newmapprompt->group;
+    Map *newMap_ = this->newmapprompt->map;
+    Map *newMap = editor->project->addNewMapToGroup(newMapName, newMapGroup, newMap_);
+
+    qDebug() << "Created a new map named" << newMapName;
+
     editor->project->saveMap(newMap);
     editor->project->saveAllDataStructures();
 
+    QStandardItem* groupItem = mapGroupsModel->at(newMapGroup);
     int numMapsInGroup = groupItem->rowCount();
-    QStandardItem *newMapItem = createMapItem(newMapName, groupNum, numMapsInGroup);
+
+    QStandardItem *newMapItem = createMapItem(newMapName, newMapGroup, numMapsInGroup);
     groupItem->appendRow(newMapItem);
     mapListIndexes.insert(newMapName, newMapItem->index());
 
-    setMap(newMapName);
+    setMap(newMapName, true);
+
+    disconnect(this->newmapprompt, SIGNAL(applied()), this, SLOT(onNewMapCreated()));
+}
+
+void MainWindow::openNewMapPopupWindow(int groupNum) {
+    if (!this->newmapprompt) {
+        this->newmapprompt = new NewMapPopup(this, this->editor->project);
+    }
+    if (!this->newmapprompt->isVisible()) {
+        this->newmapprompt->show();
+    } else {
+        this->newmapprompt->activateWindow();
+    }
+    this->newmapprompt->init(groupNum);
+    connect(this->newmapprompt, SIGNAL(applied()), this, SLOT(onNewMapCreated()));
+}
+
+void MainWindow::on_action_NewMap_triggered() {
+    openNewMapPopupWindow(0);
 }
 
 void MainWindow::onTilesetChanged(QString mapName)

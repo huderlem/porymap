@@ -2205,6 +2205,7 @@
      <string>File</string>
     </property>
     <addaction name="action_Open_Project"/>
+    <addaction name="action_NewMap"/>
     <addaction name="action_Save"/>
     <addaction name="action_Save_Project"/>
     <addaction name="separator"/>
@@ -2422,6 +2423,12 @@
    </property>
    <property name="text">
     <string>Sort by &amp;Layout</string>
+  <action name="action_NewMap">
+   <property name="text">
+    <string>New Map</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
    </property>
   </action>
  </widget>
