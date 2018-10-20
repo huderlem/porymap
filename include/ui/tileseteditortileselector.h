@@ -7,7 +7,7 @@
 class TilesetEditorTileSelector: public SelectablePixmapItem {
     Q_OBJECT
 public:
-    TilesetEditorTileSelector(Tileset *primaryTileset, Tileset *secondaryTileset): SelectablePixmapItem(16, 16, 2, 2) {
+    TilesetEditorTileSelector(Tileset *primaryTileset, Tileset *secondaryTileset): SelectablePixmapItem(16, 16, 4, 2) {
         this->primaryTileset = primaryTileset;
         this->secondaryTileset = secondaryTileset;
         this->numTilesWide = 16;
@@ -16,12 +16,15 @@ public:
         this->yFlip = false;
         setAcceptHoverEvents(true);
     }
+    QPoint getSelectionDimensions();
     void draw();
     void select(uint16_t metatileId);
     void setTilesets(Tileset*, Tileset*);
     void setPaletteId(int);
     void setTileFlips(bool, bool);
-    QList<uint16_t> getSelectedTiles();
+    QList<Tile> getSelectedTiles();
+    void setExternalSelection(int, int, QList<Tile>);
+    QPoint getTileCoordsOnWidget(uint16_t);
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent*);
@@ -31,6 +34,11 @@ protected:
     void hoverLeaveEvent(QGraphicsSceneHoverEvent*);
 
 private:
+    bool externalSelection;
+    int externalSelectionWidth;
+    int externalSelectionHeight;
+    QList<Tile> externalSelectedTiles;
+
     Tileset *primaryTileset;
     Tileset *secondaryTileset;
     QList<uint16_t> selectedTiles;

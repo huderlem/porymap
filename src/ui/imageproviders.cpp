@@ -64,7 +64,7 @@ QImage getMetatileImage(uint16_t tile, Tileset *primaryTileset, Tileset *seconda
         }
 
         QPoint origin = QPoint(x*8, y*8);
-        metatile_painter.drawImage(origin, tile_image.mirrored(tile_.xflip == 1, tile_.yflip == 1));
+        metatile_painter.drawImage(origin, tile_image.mirrored(tile_.xflip, tile_.yflip));
     }
     metatile_painter.end();
 

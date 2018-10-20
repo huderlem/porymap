@@ -12,7 +12,7 @@ TARGET = porymap
 TEMPLATE = app
 RC_ICONS = resources/icons/porymap-icon-1.ico
 ICON = resources/icons/porymap-icon-1.ico
-
+QMAKE_CXXFLAGS += -std=c++11
 
 SOURCES += src/core/block.cpp \
     src/core/blockdata.cpp \
@@ -30,6 +30,7 @@ SOURCES += src/core/block.cpp \
     src/ui/connectionpixmapitem.cpp \
     src/ui/currentselectedmetatilespixmapitem.cpp \
     src/ui/eventpropertiesframe.cpp \
+    src/ui/filterchildrenproxymodel.cpp \
     src/ui/graphicsview.cpp \
     src/ui/imageproviders.cpp \
     src/ui/mappixmapitem.cpp \
@@ -69,6 +70,7 @@ HEADERS  += include/core/block.h \
     include/ui/connectionpixmapitem.h \
     include/ui/currentselectedmetatilespixmapitem.h \
     include/ui/eventpropertiesframe.h \
+    include/ui/filterchildrenproxymodel.h \
     include/ui/graphicsview.h \
     include/ui/imageproviders.h \
     include/ui/mappixmapitem.h \

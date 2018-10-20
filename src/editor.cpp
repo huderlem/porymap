@@ -317,6 +317,7 @@ void Editor::onConnectionDirectionChanged(QString newDirection) {
 
 void Editor::onBorderMetatilesChanged() {
     displayMapBorder();
+    setBorderItemsVisible(ui->checkBox_ToggleBorder->isChecked());
 }
 
 void Editor::onHoveredMovementPermissionChanged(uint16_t collision, uint16_t elevation) {

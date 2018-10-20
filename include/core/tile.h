@@ -5,11 +5,12 @@
 class Tile
 {
 public:
-    Tile();
+    Tile() {}
+    Tile(int tile, bool xflip, bool yflip, int palette);
 public:
     int tile;
-    int xflip;
-    int yflip;
+    bool xflip;
+    bool yflip;
     int palette;
 };
 

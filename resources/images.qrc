@@ -3,9 +3,7 @@
         <file>icons/folder.ico</file>
         <file>icons/folder_closed.ico</file>
         <file>icons/folder_closed_map.ico</file>
-        <file>icons/folder_image.ico</file>
         <file>icons/folder_map.ico</file>
-        <file>icons/image.ico</file>
         <file>icons/map.ico</file>
         <file>icons/cursor.ico</file>
         <file>icons/fill_color.ico</file>
@@ -23,5 +21,12 @@
         <file>icons/shift.ico</file>
         <file>icons/shift_cursor.ico</file>
         <file>icons/porymap-icon-1.ico</file>
+        <file>icons/folder_map_edited.ico</file>
+        <file>icons/folder_map_opened.ico</file>
+        <file>icons/map_edited.ico</file>
+        <file>icons/map_opened.ico</file>
+        <file>icons/sort_alphabet.ico</file>
+        <file>icons/sort_map.ico</file>
+        <file>icons/sort_number.ico</file>
     </qresource>
 </RCC>

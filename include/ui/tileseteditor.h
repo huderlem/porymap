@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "project.h"
+#include "history.h"
 #include "paletteeditor.h"
 #include "tileseteditormetatileselector.h"
 #include "tileseteditortileselector.h"
@@ -11,6 +12,22 @@
 namespace Ui {
 class TilesetEditor;
 }
+
+class MetatileHistoryItem {
+public:
+    MetatileHistoryItem(uint16_t metatileId, Metatile *prevMetatile, Metatile *newMetatile) {
+        this->metatileId = metatileId;
+        this->prevMetatile = prevMetatile;
+        this->newMetatile = newMetatile;
+    }
+    ~MetatileHistoryItem() {
+        delete this->prevMetatile;
+        delete this->newMetatile;
+    }
+    uint16_t metatileId;
+    Metatile *prevMetatile;
+    Metatile *newMetatile;
+};
 
 class TilesetEditor : public QMainWindow
 {
@@ -30,6 +47,7 @@ private slots:
     void onHoveredTileCleared();
     void onSelectedTilesChanged();
     void onMetatileLayerTileChanged(int, int);
+    void onMetatileLayerSelectionChanged(QPoint, int, int);
     void onPaletteEditorClosed();
     void onPaletteEditorChangedPaletteColor();
     void onPaletteEditorChangedPalette(int);
@@ -39,10 +57,6 @@ private slots:
     void on_checkBox_xFlip_stateChanged(int arg1);
 
     void on_checkBox_yFlip_stateChanged(int arg1);
-
-    void on_comboBox_metatileBehaviors_currentIndexChanged(const QString &arg1);
-
-    void on_comboBox_layerType_currentIndexChanged(int index);
 
     void on_actionSave_Tileset_triggered();
 
@@ -54,6 +68,14 @@ private slots:
 
     void on_actionChange_Palettes_triggered();
 
+    void on_actionUndo_triggered();
+
+    void on_actionRedo_triggered();
+
+    void on_comboBox_metatileBehaviors_activated(const QString &arg1);
+
+    void on_comboBox_layerType_activated(int arg1);
+
 private:
     void closeEvent(QCloseEvent*);
     void initMetatileSelector();
@@ -64,6 +86,7 @@ private:
     void importTilesetTiles(Tileset*, bool);
     void refresh();
     Ui::TilesetEditor *ui;
+    History<MetatileHistoryItem*> metatileHistory;
     TilesetEditorMetatileSelector *metatileSelector = nullptr;
     TilesetEditorTileSelector *tileSelector = nullptr;
     MetatileLayersItem *metatileLayersItem = nullptr;

@@ -22,6 +22,7 @@ public:
     void setTilesets(Tileset*, Tileset*);
     QList<uint16_t>* getSelectedMetatiles();
     void setExternalSelection(int, int, QList<uint16_t>*);
+    QPoint getMetatileIdCoordsOnWidget(uint16_t);
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent*);
     void mouseMoveEvent(QGraphicsSceneMouseEvent*);

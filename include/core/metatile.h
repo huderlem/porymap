@@ -14,6 +14,7 @@ public:
     uint8_t layerType;
 
     Metatile *copy();
+    void copyInPlace(Metatile*);
     static int getBlockIndex(int);
 };
 

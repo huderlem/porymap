@@ -13,6 +13,7 @@
 #include "map.h"
 #include "editor.h"
 #include "tileseteditor.h"
+#include "filterchildrenproxymodel.h"
 
 namespace Ui {
 class MainWindow;
@@ -128,18 +129,32 @@ private slots:
 
     void on_actionTileset_Editor_triggered();
 
+    void mapSortOrder_changed(QAction *action);
+
+    void on_lineEdit_filterBox_textChanged(const QString &arg1);
+
 private:
     Ui::MainWindow *ui;
     TilesetEditor *tilesetEditor = nullptr;
+    FilterChildrenProxyModel *mapListProxyModel;
     QStandardItemModel *mapListModel;
-    QList<QStandardItem*> *mapGroupsModel;
+    QList<QStandardItem*> *mapGroupItemsList;
     QMap<QString, QModelIndex> mapListIndexes;
     Editor *editor = nullptr;
     QIcon* mapIcon;
+    QIcon* mapEditedIcon;
+
+    enum MapSortOrder {
+        Group   =  0,
+        Name    =  1,
+        Layout  =  2,
+    } mapSortOrder;
+
     void setMap(QString, bool scrollTreeView = false);
     void redrawMapScene();
     void loadDataStructures();
     void populateMapList();
+    void sortMapList();
     QString getExistingDirectory(QString);
     void openProject(QString dir);
     QString getDefaultMap();
@@ -153,17 +168,22 @@ private:
     void displayMapProperties();
     void checkToolButtons();
 
+    void initCustomUI();
     void initExtraShortcuts();
     void initExtraSignals();
     void initEditor();
+    void initMiscHeapObjects();
+    void initMapSortOrder();
     void loadUserSettings();
     void openRecentProject();
     void updateTilesetEditor();
+
+    bool isProjectOpen();
 };
 
 enum MapListUserRoles {
     GroupRole = Qt::UserRole + 1, // Used to hold the map group number.
-    TypeRole = Qt::UserRole + 2,  // Used to differentiate between the different layers of the map list tree view.
+    TypeRole,  // Used to differentiate between the different layers of the map list tree view.
 };
 
 #endif // MAINWINDOW_H
