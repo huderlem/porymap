@@ -892,6 +892,7 @@ void MainWindow::updateSelectedObjects() {
             editor->selected_events->append(selectedEvent);
             editor->redrawObject(selectedEvent);
             events->append(selectedEvent);
+
         }
     }
 
@@ -938,7 +939,7 @@ void MainWindow::updateSelectedObjects() {
         frame->ui->label_spritePixmap->setPixmap(item->event->pixmap);
         connect(item, SIGNAL(spriteChanged(QPixmap)), frame->ui->label_spritePixmap, SLOT(setPixmap(QPixmap)));
 
-        frame->ui->sprite->setVisible(false);
+        /*frame->ui->sprite->setVisible(false);
 
         QMap<QString, QString> field_labels;
         field_labels["script_label"] = "Script";
@@ -960,32 +961,45 @@ void MainWindow::updateSelectedObjects() {
         field_labels["flag"] = "Flag";
         field_labels["secret_base_id"] = "Secret Base Id";
 
-        QStringList fields;
+        QStringList fields;*/
+
+        for (QWidget *widget : frame->findChildren<QWidget *>(QString(), Qt::FindDirectChildrenOnly))
+        {
+            widget->hide();
+        }
 
         if (event_type == EventType::Object) {
 
-            frame->ui->sprite->setVisible(true);
+            frame->ui->object->setVisible(true);
             frame->ui->comboBox_sprite->addItems(event_obj_gfx_constants.keys());
             frame->ui->comboBox_sprite->setCurrentText(item->event->get("sprite"));
             connect(frame->ui->comboBox_sprite, SIGNAL(activated(QString)), item, SLOT(set_sprite(QString)));
 
-            /*
-            frame->ui->script->setVisible(true);
-            frame->ui->comboBox_script->addItem(item->event->get("script_label"));
+            frame->ui->comboBox_movement->setCurrentText(item->event->get("movement_type"));
+            item->bind(frame->ui->comboBox_movement, "movement_type");
+
+            frame->ui->comboBox_movementRadiusX->setCurrentText(item->event->get("radius_x"));
+            item->bind(frame->ui->comboBox_movementRadiusX, "radius_x");
+
+            frame->ui->comboBox_movementRadiusY->setCurrentText(item->event->get("radius_y"));
+            item->bind(frame->ui->comboBox_movementRadiusY, "radius_y");
+
+            //frame->ui->script->setVisible(true);
+            //frame->ui->comboBox_script->addItem(item->event->get("script_label"));
             frame->ui->comboBox_script->setCurrentText(item->event->get("script_label"));
             //item->bind(frame->ui->comboBox_script, "script_label");
-            connect(frame->ui->comboBox_script, SIGNAL(activated(QString)), item, SLOT(set_script(QString)));
+            //connect(frame->ui->comboBox_script, SIGNAL(activated(QString)), item, SLOT(set_script(QString)));
             //connect(frame->ui->comboBox_script, static_cast<void (QComboBox::*)(const QString&)>(&QComboBox::activated), item, [item](QString script_label){ item->event->put("script_label", script_label); });
             //connect(item, SIGNAL(scriptChanged(QString)), frame->ui->comboBox_script, SLOT(setValue(QString)));
-            */
+            item->bind(frame->ui->comboBox_script, "script_label");
 
-            fields << "movement_type";
+            /*fields << "movement_type";
             fields << "radius_x";
             fields << "radius_y";
             fields << "script_label";
             fields << "event_flag";
             fields << "is_trainer";
-            fields << "sight_radius_tree_id";
+            fields << "sight_radius_tree_id";*/
         }
         else if (event_type == EventType::Warp) {
             fields << "destination_map_name";
@@ -1116,26 +1130,69 @@ void MainWindow::updateSelectedObjects() {
 
     //int scroll = ui->scrollArea_4->verticalScrollBar()->value();
 
-    QWidget *target = ui->scrollAreaWidgetContents;
+    QWidget *target = ui->eventsMultiple_ScrollAreaContents;
 
-    if (target->children().length()) {
-        qDeleteAll(target->children());
+    if (events->length() == 1)
+    {
+        QString event_type = (*events)[0]->event->get("event_type");
+
+        if (event_type == EventType::Object) {
+            target = ui->eventsObjects_ScrollAreaContents;
+            ui->tabWidget_EventType->setCurrentIndex(0);
+        }
+        else if (event_type == EventType::Warp) {
+            target = ui->eventsWarps_ScrollAreaContents;
+            ui->tabWidget_EventType->setCurrentIndex(1);
+        }
+        else if (event_type == EventType::CoordScript || event_type == EventType::CoordWeather) {
+            target = ui->eventsTriggers_ScrollAreaContents;
+            ui->tabWidget_EventType->setCurrentIndex(2);
+        }
+        else if (event_type == EventType::Sign || event_type == EventType::HiddenItem || event_type == EventType::SecretBase) {
+            target = ui->eventsBGs_ScrollAreaContents;
+            ui->tabWidget_EventType->setCurrentIndex(3);
+        }
+        ui->tabWidget_EventType->removeTab(ui->tabWidget_EventType->indexOf(ui->tab_Multiple));
+
+        if (target->children().length()) {
+            qDeleteAll(target->children());
+        }
+    }
+    else if (events->length() > 1)
+    {
+        ui->tabWidget_EventType->addTab(ui->tab_Multiple, "Multiple");
+        ui->tabWidget_EventType->setCurrentWidget(ui->tab_Multiple);
     }
 
-    QVBoxLayout *layout = new QVBoxLayout(target);
-    target->setLayout(layout);
-    ui->scrollArea_4->setWidgetResizable(true);
-    ui->scrollArea_4->setWidget(target);
+    if (events->length() != 0)
+    {
+        if (target->children().length()) {
+            qDeleteAll(target->children());
+        }
 
-    for (EventPropertiesFrame *frame : frames) {
-        layout->addWidget(frame);
+        QVBoxLayout *layout = new QVBoxLayout(target);
+        target->setLayout(layout);
+        //ui->scrollArea_4->setWidgetResizable(true);
+        //ui->scrollArea_4->setWidget(target);
+
+        for (EventPropertiesFrame *frame : frames) {
+            layout->addWidget(frame);
+        }
+
+        layout->addStretch(1);
+
+        // doesn't work
+        //QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+        //ui->scrollArea_4->ensureVisible(0, scroll);
+
+        ui->label_NoEvents->hide();
+        ui->tabWidget_EventType->show();
     }
-
-    layout->addStretch(1);
-
-    // doesn't work
-    //QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
-    //ui->scrollArea_4->ensureVisible(0, scroll);
+    else
+    {
+        ui->tabWidget_EventType->hide();
+        ui->label_NoEvents->show();
+    }
 }
 
 void MainWindow::on_toolButton_deleteObject_clicked()
