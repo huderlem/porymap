@@ -1224,13 +1224,13 @@ QMap<QString, QStringList> Project::getTilesets() {
             // Advance to command specifying whether or not it is a secondary tileset
             i += 2;
             if (commands->at(i).at(0) != ".byte") {
-                qDebug() << "Unexpected command found for secondary tileset flag in tileset" << tilesetLabel << ". Expected '.byte', but found: " << commands->at(i).at(0);
+                qDebug().nospace() << "Unexpected command found for secondary tileset flag in tileset" << tilesetLabel << ". Expected '.byte', but found: " << commands->at(i).at(0);
                 continue;
             }
 
             QString secondaryTilesetValue = commands->at(i).at(1);
             if (secondaryTilesetValue != "TRUE" && secondaryTilesetValue != "FALSE" && secondaryTilesetValue != "0" && secondaryTilesetValue != "1") {
-                qDebug() << "Unexpected secondary tileset flag found. Expected \"TRUE\", \"FALSE\", \"0\", or \"1\", but found: " << secondaryTilesetValue;
+                qDebug().nospace() << "Unexpected secondary tileset flag found. Expected \"TRUE\", \"FALSE\", \"0\", or \"1\", but found: " << secondaryTilesetValue;
                 continue;
             }
 
@@ -1852,6 +1852,7 @@ QString Project::readCIncbin(QString text, QString label) {
 
 QMap<QString, int> Project::readCDefines(QString text, QStringList prefixes) {
     ParseUtil parser;
+    text.replace(QRegularExpression("//.*"), "");
     QMap<QString, int> allDefines;
     QMap<QString, int> filteredDefines;
     QRegularExpression re("#define\\s+(?<defineName>\\w+)[^\\S\\n]+(?<defineValue>.+)");
@@ -1860,7 +1861,7 @@ QMap<QString, int> Project::readCDefines(QString text, QStringList prefixes) {
         QRegularExpressionMatch match = iter.next();
         QString name = match.captured("defineName");
         QString expression = match.captured("defineValue");
-        expression.replace(QRegularExpression("//.*"), "");
+        if (expression == " ") continue;
         int value = parser.evaluateDefine(expression, &allDefines);
         allDefines.insert(name, value);
         for (QString prefix : prefixes) {
