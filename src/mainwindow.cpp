@@ -51,6 +51,7 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
+    delete newmapprompt;
 }
 
 void MainWindow::initExtraShortcuts() {
@@ -705,6 +706,7 @@ void MainWindow::openNewMapPopupWindow(int groupNum) {
     if (!this->newmapprompt->isVisible()) {
         this->newmapprompt->show();
     } else {
+        this->newmapprompt->raise();
         this->newmapprompt->activateWindow();
     }
     this->newmapprompt->init(groupNum);
