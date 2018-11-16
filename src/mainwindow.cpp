@@ -78,8 +78,6 @@ void MainWindow::initEditor() {
     connect(this->editor, SIGNAL(warpEventDoubleClicked(QString,QString)), this, SLOT(openWarpMap(QString,QString)));
     connect(this->editor, SIGNAL(currentMetatilesSelectionChanged()), this, SLOT(currentMetatilesSelectionChanged()));
     connect(this->editor, &Editor::wheelZoom, this, &MainWindow::scaleMapView);
-
-    this->loadUserSettings();
 }
 
 void MainWindow::initMiscHeapObjects() {
@@ -121,8 +119,6 @@ void MainWindow::initMapSortOrder() {
 
 void MainWindow::mapSortOrder_changed(QAction *action)
 {
-    QSettings settings;
-
     QList<QAction*> items = ui->toolButton_MapSortOrder->menu()->actions();
     int i = 0;
     for (; i < items.count(); i++)
@@ -137,7 +133,7 @@ void MainWindow::mapSortOrder_changed(QAction *action)
     {
         ui->toolButton_MapSortOrder->setIcon(action->icon());
         mapSortOrder = static_cast<MapSortOrder>(i);
-        settings.setValue("map_sort_order", i);
+        editor->settings->setValue("map_sort_order", i);
 
         if (isProjectOpen())
         {
@@ -154,24 +150,23 @@ void MainWindow::on_lineEdit_filterBox_textChanged(const QString &arg1)
 }
 
 void MainWindow::loadUserSettings() {
-    QSettings settings;
+    editor->settings->load(editor->project->root + "/porymap.yml");// TODO: move this?
 
-    bool betterCursors = settings.contains("cursor_mode") && settings.value("cursor_mode") != "0";
+    bool betterCursors = editor->settings->contains("cursor_mode") && editor->settings->value("cursor_mode") != "false";
     ui->actionBetter_Cursors->setChecked(betterCursors);
     this->editor->settings->betterCursors = betterCursors;
 
-    if (!settings.contains("map_sort_order"))
+    if (!editor->settings->contains("map_sort_order"))
     {
-        settings.setValue("map_sort_order", 0);
+        editor->settings->setValue("map_sort_order", 0);
     }
-    mapSortOrder = static_cast<MapSortOrder>(settings.value("map_sort_order").toInt());
+    mapSortOrder = static_cast<MapSortOrder>(editor->settings->value("map_sort_order").toInt());
 }
 
 void MainWindow::openRecentProject() {
-    QSettings settings;
-    QString key = "recent_projects";
-    if (settings.contains(key)) {
-        QString default_dir = settings.value(key).toStringList().last();
+    QString key = "recent_project";
+    if (editor->settings->contains(key)) {
+        QString default_dir = editor->settings->value(key).toString();
         if (!default_dir.isNull()) {
             qDebug() << QString("default_dir: '%1'").arg(default_dir);
             openProject(default_dir);
@@ -201,6 +196,7 @@ void MainWindow::openProject(QString dir) {
     }
 
     this->statusBar()->showMessage(QString("Opened project %1").arg(dir));
+    this->loadUserSettings();// where to put? depends on location of config file
 }
 
 bool MainWindow::isProjectOpen() {
@@ -212,16 +208,11 @@ QString MainWindow::getDefaultMap() {
     if (editor && editor->project) {
         QList<QStringList> names = editor->project->groupedMapNames;
         if (!names.isEmpty()) {
-            QSettings settings;
-            QString key = "project:" + editor->project->root;
-            if (settings.contains(key)) {
-                QMap<QString, QVariant> qmap = settings.value(key).toMap();
-                if (qmap.contains("recent_map")) {
-                    QString map_name = qmap.value("recent_map").toString();
-                    for (int i = 0; i < names.length(); i++) {
-                        if (names.value(i).contains(map_name)) {
-                            return map_name;
-                        }
+            if (editor->settings->contains("recent_map")) {
+                QString map_name = editor->settings->value("recent_map").toString();
+                for (int i = 0; i < names.length(); i++) {
+                    if (names.value(i).contains(map_name)) {
+                        return map_name;
                     }
                 }
             }
@@ -243,21 +234,21 @@ QString MainWindow::getExistingDirectory(QString dir) {
 
 void MainWindow::on_action_Open_Project_triggered()
 {
-    QSettings settings;
-    QString key = "recent_projects";
+    QString key = "recent_project";
     QString recent = ".";
-    if (settings.contains(key)) {
-        recent = settings.value(key).toStringList().last();
+    if (editor->settings->contains(key)) {
+        recent = editor->settings->value(key).toString();//.toStringList().last();
     }
     QString dir = getExistingDirectory(recent);
     if (!dir.isEmpty()) {
-        QStringList recents;
-        if (settings.contains(key)) {
-            recents = settings.value(key).toStringList();
-        }
-        recents.removeAll(dir);
-        recents.append(dir);
-        settings.setValue(key, recents);
+        //QStringList recents;
+        //if (editor->settings->contains(key)) {
+        //    recents = editor->settings->value(key).toStringList();
+        //}
+        //recents.removeAll(dir);
+        //recents.append(dir);
+        qDebug() << "dir: " << dir;
+        editor->settings->setValue(key, dir);
 
         openProject(dir);
     }
@@ -367,14 +358,7 @@ void MainWindow::openWarpMap(QString map_name, QString warp_num) {
 }
 
 void MainWindow::setRecentMap(QString map_name) {
-    QSettings settings;
-    QString key = "project:" + editor->project->root;
-    QMap<QString, QVariant> qmap;
-    if (settings.contains(key)) {
-        qmap = settings.value(key).toMap();
-    }
-    qmap.insert("recent_map", map_name);
-    settings.setValue(key, qmap);
+    editor->settings->setValue("recent_map", map_name);
 }
 
 void MainWindow::displayMapProperties() {
@@ -802,9 +786,7 @@ void MainWindow::on_actionZoom_Out_triggered() {
 }
 
 void MainWindow::on_actionBetter_Cursors_triggered() {
-    QSettings settings;
-    settings.setValue("cursor_mode", QString::number(ui->actionBetter_Cursors->isChecked()));
-    this->editor->settings->betterCursors = ui->actionBetter_Cursors->isChecked();
+    editor->settings->setValue("cursor_mode", ui->actionBetter_Cursors->isChecked()); //QString::number(ui->actionBetter_Cursors->isChecked()));
 }
 
 void MainWindow::on_actionPencil_triggered()
@@ -1411,4 +1393,9 @@ void MainWindow::onTilesetEditorClosed() {
         delete this->tilesetEditor;
         this->tilesetEditor = nullptr;
     }
+}
+
+void MainWindow::closeEvent(QCloseEvent *event) {
+    editor->settings->save();
+    QMainWindow::closeEvent(event);
 }

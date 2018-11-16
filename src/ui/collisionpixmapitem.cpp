@@ -4,8 +4,8 @@ void CollisionPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
     int x = static_cast<int>(event->pos().x()) / 16;
     int y = static_cast<int>(event->pos().y()) / 16;
     emit this->hoveredMapMovementPermissionChanged(x, y);
-    if (this->settings->betterCursors){
-        setCursor(this->settings->mapCursor);
+    if ((*settings)["cursor_mode"] == "true"){
+        setCursor(this->settings->mapCursor);// TODO: change this
     }
 }
 void CollisionPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {

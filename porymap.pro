@@ -23,6 +23,7 @@ SOURCES += src/core/block.cpp \
     src/core/maplayout.cpp \
     src/core/metatile.cpp \
     src/core/parseutil.cpp \
+    src/core/settings.cpp \
     src/core/tile.cpp \
     src/core/tileset.cpp \
     src/ui/bordermetatilespixmapitem.cpp \
@@ -50,7 +51,6 @@ SOURCES += src/core/block.cpp \
     src/main.cpp \
     src/mainwindow.cpp \
     src/project.cpp \
-    src/settings.cpp
 
 HEADERS  += include/core/block.h \
     include/core/blockdata.h \
@@ -63,6 +63,7 @@ HEADERS  += include/core/block.h \
     include/core/maplayout.h \
     include/core/metatile.h \
     include/core/parseutil.h \
+    include/core/settings.h \
     include/core/tile.h \
     include/core/tileset.h \
     include/ui/bordermetatilespixmapitem.h \
@@ -89,7 +90,6 @@ HEADERS  += include/core/block.h \
     include/editor.h \
     include/mainwindow.h \
     include/project.h \
-    include/settings.h
 
 FORMS    += forms/mainwindow.ui \
     forms/eventpropertiesframe.ui \

@@ -9,6 +9,7 @@
 #include <QGraphicsItemGroup>
 #include <QGraphicsSceneMouseEvent>
 #include <QAbstractItemModel>
+#include <QCloseEvent>
 #include "project.h"
 #include "map.h"
 #include "editor.h"
@@ -128,6 +129,8 @@ private slots:
     void resetMapViewScale();
 
     void on_actionTileset_Editor_triggered();
+
+    void closeEvent(QCloseEvent *);
 
     void mapSortOrder_changed(QAction *action);
 
