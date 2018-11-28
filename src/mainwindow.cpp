@@ -28,7 +28,13 @@
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow)
+    ui(new Ui::MainWindow),
+    selectedObject(nullptr),
+    selectedWarp(nullptr),
+    selectedTrigger(nullptr),
+    selectedBG(nullptr),
+    selectedHealspot(nullptr),
+    isProgrammaticEventTabChange(false)
 {
     QCoreApplication::setOrganizationName("pret");
     QCoreApplication::setApplicationName("porymap");
@@ -67,11 +73,12 @@ void MainWindow::initCustomUI() {
 
 void MainWindow::initExtraSignals() {
     connect(ui->newEventToolButton, SIGNAL(newEventAdded(QString)), this, SLOT(addNewEvent(QString)));
+    connect(ui->tabWidget_EventType, &QTabWidget::currentChanged, this, &MainWindow::eventTabChanged);
 }
 
 void MainWindow::initEditor() {
     this->editor = new Editor(ui);
-    connect(this->editor, SIGNAL(objectsChanged()), this, SLOT(updateSelectedObjects()));
+    connect(this->editor, SIGNAL(objectsChanged()), this, SLOT(updateObjects()));
     connect(this->editor, SIGNAL(selectedObjectsChanged()), this, SLOT(updateSelectedObjects()));
     connect(this->editor, SIGNAL(loadMapRequested(QString, QString)), this, SLOT(onLoadMapRequested(QString, QString)));
     connect(this->editor, SIGNAL(tilesetChanged(QString)), this, SLOT(onTilesetChanged(QString)));
@@ -97,6 +104,14 @@ void MainWindow::initMiscHeapObjects() {
 
     mapListProxyModel->setSourceModel(mapListModel);
     ui->mapList->setModel(mapListProxyModel);
+
+    eventTabObjectWidget = ui->tab_Objects;
+    eventTabWarpWidget = ui->tab_Warps;
+    eventTabTriggerWidget = ui->tab_Triggers;
+    eventTabBGWidget = ui->tab_BGs;
+    eventTabHealspotWidget = ui->tab_Healspots;
+    eventTabMultipleWidget = ui->tab_Multiple;
+    ui->tabWidget_EventType->clear();
 }
 
 void MainWindow::initMapSortOrder() {
@@ -874,8 +889,71 @@ void MainWindow::addNewEvent(QString event_type)
         if (object) {
             editor->selectMapEvent(object, false);
         }
-        updateSelectedObjects();
+        updateObjects();
     }
+}
+
+void MainWindow::updateObjects() {
+    ui->tabWidget_EventType->clear();
+    selectedObject = nullptr;
+    selectedWarp = nullptr;
+    selectedTrigger = nullptr;
+    selectedBG = nullptr;
+    selectedHealspot = nullptr;
+
+    bool hasObjects = false;
+    bool hasWarps = false;
+    bool hasTriggers = false;
+    bool hasBGs = false;
+    bool hasHealspots = false;
+
+    for (DraggablePixmapItem *item : *editor->getObjects())
+    {
+        QString event_type = item->event->get("event_type");
+
+        if (event_type == EventType::Object) {
+            hasObjects = true;
+        }
+        else if (event_type == EventType::Warp) {
+            hasWarps = true;
+        }
+        else if (event_type == EventType::CoordScript || event_type == EventType::CoordWeather) {
+            hasTriggers = true;
+        }
+        else if (event_type == EventType::Sign || event_type == EventType::HiddenItem || event_type == EventType::SecretBase) {
+            hasBGs = true;
+        }
+        else if (event_type == EventType::HealLocation) {
+            hasHealspots = true;
+        }
+    }
+
+    if (hasObjects)
+    {
+        ui->tabWidget_EventType->addTab(eventTabObjectWidget, "Objects");
+    }
+
+    if (hasWarps)
+    {
+        ui->tabWidget_EventType->addTab(eventTabWarpWidget, "Warps");
+    }
+
+    if (hasTriggers)
+    {
+        ui->tabWidget_EventType->addTab(eventTabTriggerWidget, "Triggers");
+    }
+
+    if (hasBGs)
+    {
+        ui->tabWidget_EventType->addTab(eventTabBGWidget, "BGs");
+    }
+
+    if (hasHealspots)
+    {
+        ui->tabWidget_EventType->addTab(eventTabHealspotWidget, "Healspots");
+    }
+
+    updateSelectedObjects();
 }
 
 // Should probably just pass layout and let the editor work it out
@@ -1116,33 +1194,37 @@ void MainWindow::updateSelectedObjects() {
 
     //int scroll = ui->scrollArea_4->verticalScrollBar()->value();
 
-    QWidget *target = ui->eventsMultiple_ScrollAreaContents;
+    QWidget *target = ui->scrollAreaWidgetContents_Multiple;
 
     if (events->length() == 1)
     {
         QString event_type = (*events)[0]->event->get("event_type");
 
+        isProgrammaticEventTabChange = true;
+
         if (event_type == EventType::Object) {
-            target = ui->eventsObjects_ScrollAreaContents;
+            target = ui->scrollAreaWidgetContents_Objects;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Objects);
         }
         else if (event_type == EventType::Warp) {
-            target = ui->eventsWarps_ScrollAreaContents;
+            target = ui->scrollAreaWidgetContents_Warps;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Warps);
         }
         else if (event_type == EventType::CoordScript || event_type == EventType::CoordWeather) {
-            target = ui->eventsTriggers_ScrollAreaContents;
+            target = ui->scrollAreaWidgetContents_Triggers;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Triggers);
         }
         else if (event_type == EventType::Sign || event_type == EventType::HiddenItem || event_type == EventType::SecretBase) {
-            target = ui->eventsBGs_ScrollAreaContents;
+            target = ui->scrollAreaWidgetContents_BGs;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_BGs);
+        }
+        else if (event_type == EventType::HealLocation) {
+            target = ui->scrollAreaWidgetContents_Healspots;
+            ui->tabWidget_EventType->setCurrentWidget(ui->tab_Healspots);
         }
         ui->tabWidget_EventType->removeTab(ui->tabWidget_EventType->indexOf(ui->tab_Multiple));
 
-        if (target->children().length()) {
-            qDeleteAll(target->children());
-        }
+        isProgrammaticEventTabChange = false;
     }
     else if (events->length() > 1)
     {
@@ -1181,6 +1263,106 @@ void MainWindow::updateSelectedObjects() {
     }
 }
 
+void MainWindow::eventTabChanged(int index)
+{
+    if (!isProgrammaticEventTabChange && editor->map != nullptr)
+    {
+        QWidget *tab = ui->tabWidget_EventType->widget(index);
+        DraggablePixmapItem *selectedEvent = nullptr;
+
+        if (tab == eventTabObjectWidget)
+        {
+            if (selectedObject == nullptr)
+            {
+                for (DraggablePixmapItem *item : *editor->getObjects())
+                {
+                    QString event_type = item->event->get("event_type");
+                    if (event_type == EventType::Object)
+                    {
+                        selectedObject = item;
+                        break;
+                    }
+                }
+            }
+
+            selectedEvent = selectedObject;
+        }
+        else if (tab == eventTabWarpWidget)
+        {
+            if (selectedWarp == nullptr)
+            {
+                for (DraggablePixmapItem *item : *editor->getObjects())
+                {
+                    QString event_type = item->event->get("event_type");
+                    if (event_type == EventType::Warp)
+                    {
+                        selectedWarp = item;
+                        break;
+                    }
+                }
+            }
+
+            selectedEvent = selectedWarp;
+        }
+        else if (tab == eventTabTriggerWidget)
+        {
+            if (selectedTrigger == nullptr)
+            {
+                for (DraggablePixmapItem *item : *editor->getObjects())
+                {
+                    QString event_type = item->event->get("event_type");
+                    if (event_type == EventType::CoordScript || event_type == EventType::CoordWeather)
+                    {
+                        selectedTrigger = item;
+                        break;
+                    }
+                }
+            }
+
+            selectedEvent = selectedTrigger;
+        }
+        else if (tab == eventTabBGWidget)
+        {
+            if (selectedBG == nullptr)
+            {
+                for (DraggablePixmapItem *item : *editor->getObjects())
+                {
+                    QString event_type = item->event->get("event_type");
+                    if (event_type == EventType::Sign || event_type == EventType::HiddenItem || event_type == EventType::SecretBase)
+                    {
+                        selectedBG = item;
+                        break;
+                    }
+                }
+            }
+
+            selectedEvent = selectedBG;
+        }
+        else if (tab == eventTabHealspotWidget)
+        {
+            if (selectedHealspot == nullptr)
+            {
+                for (DraggablePixmapItem *item : *editor->getObjects())
+                {
+                    QString event_type = item->event->get("event_type");
+                    if (event_type == EventType::HealLocation)
+                    {
+                        selectedHealspot = item;
+                        break;
+                    }
+                }
+            }
+
+            selectedEvent = selectedHealspot;
+        }
+
+        if (selectedObject != nullptr)
+            editor->selectMapEvent(selectedEvent);
+    }
+
+    isProgrammaticEventTabChange = false;
+}
+
 void MainWindow::on_toolButton_deleteObject_clicked()
 {
     if (editor && editor->selected_events) {
@@ -1197,7 +1379,7 @@ void MainWindow::on_toolButton_deleteObject_clicked()
                     qDebug() << "Cannot delete event of type " << item->event->get("event_type");
                 }
             }
-            updateSelectedObjects();
+            updateObjects();
         }
     }
 }

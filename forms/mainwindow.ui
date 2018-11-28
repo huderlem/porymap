@@ -1340,6 +1340,16 @@
              <property name="bottomMargin">
               <number>3</number>
              </property>
+             <item row="1" column="0">
+              <widget class="QLabel" name="label_NoEvents">
+               <property name="text">
+                <string>There are no events on the current map.</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+              </widget>
+             </item>
              <item row="0" column="0">
               <widget class="QFrame" name="frame_4">
                <property name="maximumSize">
@@ -1457,13 +1467,13 @@
              <item row="2" column="0">
               <widget class="QTabWidget" name="tabWidget_EventType">
                <property name="currentIndex">
-                <number>4</number>
+                <number>0</number>
                </property>
                <widget class="QWidget" name="tab_Objects">
                 <attribute name="title">
                  <string>Objects</string>
                 </attribute>
-                <layout class="QGridLayout" name="gridLayout_21">
+                <layout class="QVBoxLayout" name="verticalLayout_2">
                  <property name="leftMargin">
                   <number>0</number>
                  </property>
@@ -1476,40 +1486,19 @@
                  <property name="bottomMargin">
                   <number>0</number>
                  </property>
-                 <property name="spacing">
-                  <number>0</number>
-                 </property>
-                 <item row="0" column="0">
-                  <widget class="QScrollArea" name="scrollArea_10">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="sizeAdjustPolicy">
-                    <enum>QAbstractScrollArea::AdjustIgnored</enum>
-                   </property>
+                 <item>
+                  <widget class="QScrollArea" name="scrollArea_Objects">
                    <property name="widgetResizable">
                     <bool>true</bool>
                    </property>
-                   <property name="alignment">
-                    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-                   </property>
-                   <widget class="QWidget" name="eventsObjects_ScrollAreaContents">
+                   <widget class="QWidget" name="scrollAreaWidgetContents_Objects">
                     <property name="geometry">
                      <rect>
                       <x>0</x>
                       <y>0</y>
                       <width>432</width>
-                      <height>584</height>
+                      <height>565</height>
                      </rect>
-                    </property>
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
                     </property>
                    </widget>
                   </widget>
@@ -1520,7 +1509,7 @@
                 <attribute name="title">
                  <string>Warps</string>
                 </attribute>
-                <layout class="QGridLayout" name="gridLayout_20">
+                <layout class="QVBoxLayout" name="verticalLayout_4">
                  <property name="leftMargin">
                   <number>0</number>
                  </property>
@@ -1533,40 +1522,19 @@
                  <property name="bottomMargin">
                   <number>0</number>
                  </property>
-                 <property name="spacing">
-                  <number>0</number>
-                 </property>
-                 <item row="0" column="0">
-                  <widget class="QScrollArea" name="scrollArea_9">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="sizeAdjustPolicy">
-                    <enum>QAbstractScrollArea::AdjustIgnored</enum>
-                   </property>
+                 <item>
+                  <widget class="QScrollArea" name="scrollArea_Warps">
                    <property name="widgetResizable">
                     <bool>true</bool>
                    </property>
-                   <property name="alignment">
-                    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-                   </property>
-                   <widget class="QWidget" name="eventsWarps_ScrollAreaContents">
+                   <widget class="QWidget" name="scrollAreaWidgetContents_Warps">
                     <property name="geometry">
                      <rect>
                       <x>0</x>
                       <y>0</y>
                       <width>432</width>
-                      <height>584</height>
+                      <height>565</height>
                      </rect>
-                    </property>
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
                     </property>
                    </widget>
                   </widget>
@@ -1577,7 +1545,7 @@
                 <attribute name="title">
                  <string>Triggers</string>
                 </attribute>
-                <layout class="QGridLayout" name="gridLayout_19">
+                <layout class="QVBoxLayout" name="verticalLayout_5">
                  <property name="leftMargin">
                   <number>0</number>
                  </property>
@@ -1590,40 +1558,19 @@
                  <property name="bottomMargin">
                   <number>0</number>
                  </property>
-                 <property name="spacing">
-                  <number>0</number>
-                 </property>
-                 <item row="0" column="0">
-                  <widget class="QScrollArea" name="scrollArea_8">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="sizeAdjustPolicy">
-                    <enum>QAbstractScrollArea::AdjustIgnored</enum>
-                   </property>
+                 <item>
+                  <widget class="QScrollArea" name="scrollArea_Triggers">
                    <property name="widgetResizable">
                     <bool>true</bool>
                    </property>
-                   <property name="alignment">
-                    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-                   </property>
-                   <widget class="QWidget" name="eventsTriggers_ScrollAreaContents">
+                   <widget class="QWidget" name="scrollAreaWidgetContents_Triggers">
                     <property name="geometry">
                      <rect>
                       <x>0</x>
                       <y>0</y>
                       <width>432</width>
-                      <height>584</height>
+                      <height>565</height>
                      </rect>
-                    </property>
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
                     </property>
                    </widget>
                   </widget>
@@ -1634,7 +1581,7 @@
                 <attribute name="title">
                  <string>BGs</string>
                 </attribute>
-                <layout class="QGridLayout" name="gridLayout_18">
+                <layout class="QVBoxLayout" name="verticalLayout_7">
                  <property name="leftMargin">
                   <number>0</number>
                  </property>
@@ -1647,40 +1594,55 @@
                  <property name="bottomMargin">
                   <number>0</number>
                  </property>
-                 <property name="spacing">
-                  <number>0</number>
-                 </property>
-                 <item row="0" column="0">
-                  <widget class="QScrollArea" name="scrollArea_7">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="sizeAdjustPolicy">
-                    <enum>QAbstractScrollArea::AdjustIgnored</enum>
-                   </property>
+                 <item>
+                  <widget class="QScrollArea" name="scrollArea_BGs">
                    <property name="widgetResizable">
                     <bool>true</bool>
                    </property>
-                   <property name="alignment">
-                    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-                   </property>
-                   <widget class="QWidget" name="eventsBGs_ScrollAreaContents">
+                   <widget class="QWidget" name="scrollAreaWidgetContents_BGs">
                     <property name="geometry">
                      <rect>
                       <x>0</x>
                       <y>0</y>
                       <width>432</width>
-                      <height>584</height>
+                      <height>565</height>
                      </rect>
                     </property>
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
+                   </widget>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+               <widget class="QWidget" name="tab_Healspots">
+                <attribute name="title">
+                 <string>Healspots</string>
+                </attribute>
+                <layout class="QVBoxLayout" name="verticalLayout_9">
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <widget class="QScrollArea" name="scrollArea_Healspots">
+                   <property name="widgetResizable">
+                    <bool>true</bool>
+                   </property>
+                   <widget class="QWidget" name="scrollAreaWidgetContents_Healspots">
+                    <property name="geometry">
+                     <rect>
+                      <x>0</x>
+                      <y>0</y>
+                      <width>432</width>
+                      <height>565</height>
+                     </rect>
                     </property>
                    </widget>
                   </widget>
@@ -1691,7 +1653,7 @@
                 <attribute name="title">
                  <string>Multiple</string>
                 </attribute>
-                <layout class="QGridLayout" name="gridLayout_15">
+                <layout class="QVBoxLayout" name="verticalLayout_8">
                  <property name="leftMargin">
                   <number>0</number>
                  </property>
@@ -1704,27 +1666,12 @@
                  <property name="bottomMargin">
                   <number>0</number>
                  </property>
-                 <property name="spacing">
-                  <number>0</number>
-                 </property>
-                 <item row="0" column="0">
-                  <widget class="QScrollArea" name="scrollArea_4">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="sizeAdjustPolicy">
-                    <enum>QAbstractScrollArea::AdjustIgnored</enum>
-                   </property>
+                 <item>
+                  <widget class="QScrollArea" name="scrollArea_Multiple">
                    <property name="widgetResizable">
                     <bool>true</bool>
                    </property>
-                   <property name="alignment">
-                    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-                   </property>
-                   <widget class="QWidget" name="eventsMultiple_ScrollAreaContents">
+                   <widget class="QWidget" name="scrollAreaWidgetContents_Multiple">
                     <property name="geometry">
                      <rect>
                       <x>0</x>
@@ -1733,27 +1680,11 @@
                       <height>565</height>
                      </rect>
                     </property>
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
-                    </property>
                    </widget>
                   </widget>
                  </item>
                 </layout>
                </widget>
-              </widget>
-             </item>
-             <item row="1" column="0">
-              <widget class="QLabel" name="label_NoEvents">
-               <property name="text">
-                <string>There are no events on the current map.</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignCenter</set>
-               </property>
               </widget>
              </item>
             </layout>
@@ -2647,6 +2578,11 @@
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
+   <class>NoScrollComboBox</class>
+   <extends>QComboBox</extends>
+   <header>noscrollcombobox.h</header>
+  </customwidget>
+  <customwidget>
    <class>GraphicsView</class>
    <extends>QGraphicsView</extends>
    <header>graphicsview.h</header>
@@ -2655,11 +2591,6 @@
    <class>NewEventToolButton</class>
    <extends>QToolButton</extends>
    <header>neweventtoolbutton.h</header>
-  </customwidget>
-  <customwidget>
-   <class>NoScrollComboBox</class>
-   <extends>QComboBox</extends>
-   <header>noscrollcombobox.h</header>
   </customwidget>
  </customwidgets>
  <resources>
