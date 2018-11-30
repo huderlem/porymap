@@ -1007,11 +1007,15 @@ void MainWindow::updateSelectedObjects() {
         if (event_type == "event_warp") { event_offs = 0; }
         else { event_offs = 1; }
         frame->ui->label_name->setText(
-            QString("%1: %2 %3")
-                .arg(editor->project->getMap(map_name)->events.value(event_group_type).indexOf(item->event) + event_offs)
+            QString("%1 %2")
                 .arg(map_name)
                 .arg(event_type)
         );
+
+        frame->ui->spinBox_index->setValue(editor->project->getMap(map_name)->events.value(event_group_type).indexOf(item->event) + event_offs);
+        frame->ui->spinBox_index->setMinimum(event_offs);
+        frame->ui->spinBox_index->setMaximum(editor->project->getMap(map_name)->events.value(event_group_type).length() + event_offs - 1);
+        connect(frame->ui->spinBox_index, QOverload<int>::of(&QSpinBox::valueChanged), this, &MainWindow::selectedEventIndexChanged);
 
         frame->ui->label_spritePixmap->setPixmap(item->event->pixmap);
         connect(item, SIGNAL(spriteChanged(QPixmap)), frame->ui->label_spritePixmap, SLOT(setPixmap(QPixmap)));
@@ -1194,37 +1198,41 @@ void MainWindow::updateSelectedObjects() {
 
     //int scroll = ui->scrollArea_4->verticalScrollBar()->value();
 
+    QScrollArea *scrollTarget = ui->scrollArea_Multiple;
     QWidget *target = ui->scrollAreaWidgetContents_Multiple;
+
+    isProgrammaticEventTabChange = true;
 
     if (events->length() == 1)
     {
-        QString event_type = (*events)[0]->event->get("event_type");
+        QString event_group_type = (*events)[0]->event->get("event_group_type");
 
-        isProgrammaticEventTabChange = true;
-
-        if (event_type == EventType::Object) {
+        if (event_group_type == "object_event_group") {
+            scrollTarget = ui->scrollArea_Objects;
             target = ui->scrollAreaWidgetContents_Objects;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Objects);
         }
-        else if (event_type == EventType::Warp) {
+        else if (event_group_type == "warp_event_group") {
+            scrollTarget = ui->scrollArea_Warps;
             target = ui->scrollAreaWidgetContents_Warps;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Warps);
         }
-        else if (event_type == EventType::CoordScript || event_type == EventType::CoordWeather) {
+        else if (event_group_type == "coord_event_group") {
+            scrollTarget = ui->scrollArea_Triggers;
             target = ui->scrollAreaWidgetContents_Triggers;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Triggers);
         }
-        else if (event_type == EventType::Sign || event_type == EventType::HiddenItem || event_type == EventType::SecretBase) {
+        else if (event_group_type == "bg_event_group") {
+            scrollTarget = ui->scrollArea_BGs;
             target = ui->scrollAreaWidgetContents_BGs;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_BGs);
         }
-        else if (event_type == EventType::HealLocation) {
+        else if (event_group_type == "heal_event_group") {
+            scrollTarget = ui->scrollArea_Healspots;
             target = ui->scrollAreaWidgetContents_Healspots;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Healspots);
         }
         ui->tabWidget_EventType->removeTab(ui->tabWidget_EventType->indexOf(ui->tab_Multiple));
-
-        isProgrammaticEventTabChange = false;
     }
     else if (events->length() > 1)
     {
@@ -1232,16 +1240,24 @@ void MainWindow::updateSelectedObjects() {
         ui->tabWidget_EventType->setCurrentWidget(ui->tab_Multiple);
     }
 
+    isProgrammaticEventTabChange = false;
+
     if (events->length() != 0)
     {
-        if (target->children().length()) {
-            qDeleteAll(target->children());
+        if (target->children().length())
+        {
+            for (QObject *obj : target->children())
+            {
+                obj->deleteLater();
+            }
+
+            delete target->layout();
         }
 
         QVBoxLayout *layout = new QVBoxLayout(target);
         target->setLayout(layout);
-        //ui->scrollArea_4->setWidgetResizable(true);
-        //ui->scrollArea_4->setWidget(target);
+        scrollTarget->setWidgetResizable(true);
+        scrollTarget->setWidget(target);
 
         for (EventPropertiesFrame *frame : frames) {
             layout->addWidget(frame);
@@ -1263,22 +1279,47 @@ void MainWindow::updateSelectedObjects() {
     }
 }
 
+QString MainWindow::getEventGroupFromTabWidget(QWidget *tab)
+{
+    QString ret = "";
+    if (tab == eventTabObjectWidget)
+    {
+        ret = "object_event_group";
+    }
+    else if (tab == eventTabWarpWidget)
+    {
+        ret = "warp_event_group";
+    }
+    else if (tab == eventTabTriggerWidget)
+    {
+        ret = "coord_event_group";
+    }
+    else if (tab == eventTabBGWidget)
+    {
+        ret = "bg_event_group";
+    }
+    else if (tab == eventTabHealspotWidget)
+    {
+        ret = "heal_event_group";
+    }
+    return ret;
+}
+
 void MainWindow::eventTabChanged(int index)
 {
     if (!isProgrammaticEventTabChange && editor->map != nullptr)
     {
-        QWidget *tab = ui->tabWidget_EventType->widget(index);
+        QString group = getEventGroupFromTabWidget(ui->tabWidget_EventType->widget(index));
         DraggablePixmapItem *selectedEvent = nullptr;
 
-        if (tab == eventTabObjectWidget)
+        if (group == "object_event_group")
         {
             if (selectedObject == nullptr)
             {
-                for (DraggablePixmapItem *item : *editor->getObjects())
-                {
-                    QString event_type = item->event->get("event_type");
-                    if (event_type == EventType::Object)
-                    {
+                Event *event = editor->map->events.value(group).at(0);
+                for (QGraphicsItem *child : editor->events_group->childItems()) {
+                    DraggablePixmapItem *item = static_cast<DraggablePixmapItem *>(child);
+                    if (item->event == event) {
                         selectedObject = item;
                         break;
                     }
@@ -1287,15 +1328,14 @@ void MainWindow::eventTabChanged(int index)
 
             selectedEvent = selectedObject;
         }
-        else if (tab == eventTabWarpWidget)
+        else if (group == "warp_event_group")
         {
             if (selectedWarp == nullptr)
             {
-                for (DraggablePixmapItem *item : *editor->getObjects())
-                {
-                    QString event_type = item->event->get("event_type");
-                    if (event_type == EventType::Warp)
-                    {
+                Event *event = editor->map->events.value(group).at(0);
+                for (QGraphicsItem *child : editor->events_group->childItems()) {
+                    DraggablePixmapItem *item = static_cast<DraggablePixmapItem *>(child);
+                    if (item->event == event) {
                         selectedWarp = item;
                         break;
                     }
@@ -1304,15 +1344,14 @@ void MainWindow::eventTabChanged(int index)
 
             selectedEvent = selectedWarp;
         }
-        else if (tab == eventTabTriggerWidget)
+        else if (group == "coord_event_group")
         {
             if (selectedTrigger == nullptr)
             {
-                for (DraggablePixmapItem *item : *editor->getObjects())
-                {
-                    QString event_type = item->event->get("event_type");
-                    if (event_type == EventType::CoordScript || event_type == EventType::CoordWeather)
-                    {
+                Event *event = editor->map->events.value(group).at(0);
+                for (QGraphicsItem *child : editor->events_group->childItems()) {
+                    DraggablePixmapItem *item = static_cast<DraggablePixmapItem *>(child);
+                    if (item->event == event) {
                         selectedTrigger = item;
                         break;
                     }
@@ -1321,15 +1360,14 @@ void MainWindow::eventTabChanged(int index)
 
             selectedEvent = selectedTrigger;
         }
-        else if (tab == eventTabBGWidget)
+        else if (group == "bg_event_group")
         {
             if (selectedBG == nullptr)
             {
-                for (DraggablePixmapItem *item : *editor->getObjects())
-                {
-                    QString event_type = item->event->get("event_type");
-                    if (event_type == EventType::Sign || event_type == EventType::HiddenItem || event_type == EventType::SecretBase)
-                    {
+                Event *event = editor->map->events.value(group).at(0);
+                for (QGraphicsItem *child : editor->events_group->childItems()) {
+                    DraggablePixmapItem *item = static_cast<DraggablePixmapItem *>(child);
+                    if (item->event == event) {
                         selectedBG = item;
                         break;
                     }
@@ -1338,15 +1376,14 @@ void MainWindow::eventTabChanged(int index)
 
             selectedEvent = selectedBG;
         }
-        else if (tab == eventTabHealspotWidget)
+        else if (group == "heal_event_group")
         {
             if (selectedHealspot == nullptr)
             {
-                for (DraggablePixmapItem *item : *editor->getObjects())
-                {
-                    QString event_type = item->event->get("event_type");
-                    if (event_type == EventType::HealLocation)
-                    {
+                Event *event = editor->map->events.value(group).at(0);
+                for (QGraphicsItem *child : editor->events_group->childItems()) {
+                    DraggablePixmapItem *item = static_cast<DraggablePixmapItem *>(child);
+                    if (item->event == event) {
                         selectedHealspot = item;
                         break;
                     }
@@ -1356,11 +1393,31 @@ void MainWindow::eventTabChanged(int index)
             selectedEvent = selectedHealspot;
         }
 
-        if (selectedObject != nullptr)
+        if (selectedEvent != nullptr)
             editor->selectMapEvent(selectedEvent);
     }
 
     isProgrammaticEventTabChange = false;
+}
+
+void MainWindow::selectedEventIndexChanged(int index)
+{
+    QString group = getEventGroupFromTabWidget(ui->tabWidget_EventType->currentWidget());
+    int event_offs;
+    if (group == "warp_event_group") { event_offs = 0; }
+    else { event_offs = 1; }
+    Event *event = editor->map->events.value(group).at(index - event_offs);
+    DraggablePixmapItem *selectedEvent = nullptr;
+    for (QGraphicsItem *child : editor->events_group->childItems()) {
+        DraggablePixmapItem *item = static_cast<DraggablePixmapItem *>(child);
+        if (item->event == event) {
+            selectedEvent = item;
+            break;
+        }
+    }
+
+    if (selectedEvent != nullptr)
+        editor->selectMapEvent(selectedEvent);
 }
 
 void MainWindow::on_toolButton_deleteObject_clicked()
@@ -1368,7 +1425,7 @@ void MainWindow::on_toolButton_deleteObject_clicked()
     if (editor && editor->selected_events) {
         if (editor->selected_events->length()) {
             for (DraggablePixmapItem *item : *editor->selected_events) {
-                if (item->event->get("event_type") != EventType::HealLocation) {
+                if (item->event->get("event_group_type") != "heal_event_group") {
                     editor->deleteEvent(item->event);
                     if (editor->scene->items().contains(item)) {
                         editor->scene->removeItem(item);

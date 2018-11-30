@@ -136,6 +136,8 @@ private slots:
 
     void eventTabChanged(int index);
 
+    void selectedEventIndexChanged(int index);
+
 private:
     Ui::MainWindow *ui;
     TilesetEditor *tilesetEditor = nullptr;
@@ -195,6 +197,7 @@ private:
     void loadUserSettings();
     void openRecentProject();
     void updateTilesetEditor();
+    QString getEventGroupFromTabWidget(QWidget *tab);
 
     bool isProjectOpen();
 };

@@ -1467,7 +1467,7 @@
              <item row="2" column="0">
               <widget class="QTabWidget" name="tabWidget_EventType">
                <property name="currentIndex">
-                <number>0</number>
+                <number>5</number>
                </property>
                <widget class="QWidget" name="tab_Objects">
                 <attribute name="title">
@@ -1668,6 +1668,12 @@
                  </property>
                  <item>
                   <widget class="QScrollArea" name="scrollArea_Multiple">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
                    <property name="widgetResizable">
                     <bool>true</bool>
                    </property>
