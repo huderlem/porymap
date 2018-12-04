@@ -158,7 +158,7 @@
         </sizepolicy>
        </property>
        <property name="currentIndex">
-        <number>1</number>
+        <number>0</number>
        </property>
        <property name="tabsClosable">
         <bool>false</bool>
@@ -1467,7 +1467,7 @@
              <item row="2" column="0">
               <widget class="QTabWidget" name="tabWidget_EventType">
                <property name="currentIndex">
-                <number>5</number>
+                <number>0</number>
                </property>
                <widget class="QWidget" name="tab_Objects">
                 <attribute name="title">
@@ -1491,14 +1491,23 @@
                    <property name="widgetResizable">
                     <bool>true</bool>
                    </property>
+                   <property name="alignment">
+                    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                   </property>
                    <widget class="QWidget" name="scrollAreaWidgetContents_Objects">
                     <property name="geometry">
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>98</width>
-                      <height>28</height>
+                      <width>432</width>
+                      <height>565</height>
                      </rect>
+                    </property>
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
                     </property>
                    </widget>
                   </widget>
@@ -1527,14 +1536,23 @@
                    <property name="widgetResizable">
                     <bool>true</bool>
                    </property>
+                   <property name="alignment">
+                    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                   </property>
                    <widget class="QWidget" name="scrollAreaWidgetContents_Warps">
                     <property name="geometry">
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>98</width>
-                      <height>28</height>
+                      <width>432</width>
+                      <height>565</height>
                      </rect>
+                    </property>
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
                     </property>
                    </widget>
                   </widget>
@@ -1563,14 +1581,23 @@
                    <property name="widgetResizable">
                     <bool>true</bool>
                    </property>
+                   <property name="alignment">
+                    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                   </property>
                    <widget class="QWidget" name="scrollAreaWidgetContents_Triggers">
                     <property name="geometry">
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>98</width>
-                      <height>28</height>
+                      <width>432</width>
+                      <height>565</height>
                      </rect>
+                    </property>
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
                     </property>
                    </widget>
                   </widget>
@@ -1599,14 +1626,23 @@
                    <property name="widgetResizable">
                     <bool>true</bool>
                    </property>
+                   <property name="alignment">
+                    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                   </property>
                    <widget class="QWidget" name="scrollAreaWidgetContents_BGs">
                     <property name="geometry">
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>98</width>
-                      <height>28</height>
+                      <width>432</width>
+                      <height>565</height>
                      </rect>
+                    </property>
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
                     </property>
                    </widget>
                   </widget>
@@ -1635,14 +1671,23 @@
                    <property name="widgetResizable">
                     <bool>true</bool>
                    </property>
+                   <property name="alignment">
+                    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                   </property>
                    <widget class="QWidget" name="scrollAreaWidgetContents_Healspots">
                     <property name="geometry">
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>98</width>
-                      <height>28</height>
+                      <width>432</width>
+                      <height>565</height>
                      </rect>
+                    </property>
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
                     </property>
                    </widget>
                   </widget>
@@ -1677,6 +1722,9 @@
                    <property name="widgetResizable">
                     <bool>true</bool>
                    </property>
+                   <property name="alignment">
+                    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                   </property>
                    <widget class="QWidget" name="scrollAreaWidgetContents_Multiple">
                     <property name="geometry">
                      <rect>
@@ -1685,6 +1733,12 @@
                       <width>432</width>
                       <height>565</height>
                      </rect>
+                    </property>
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
                     </property>
                    </widget>
                   </widget>
