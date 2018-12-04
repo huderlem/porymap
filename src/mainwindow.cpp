@@ -1321,7 +1321,7 @@ void MainWindow::eventTabChanged(int index)
 
         if (group == "object_event_group")
         {
-            if (selectedObject == nullptr)
+            if (selectedObject == nullptr && editor->map->events.value(group).count())
             {
                 Event *event = editor->map->events.value(group).at(0);
                 for (QGraphicsItem *child : editor->events_group->childItems()) {
@@ -1337,7 +1337,7 @@ void MainWindow::eventTabChanged(int index)
         }
         else if (group == "warp_event_group")
         {
-            if (selectedWarp == nullptr)
+            if (selectedWarp == nullptr && editor->map->events.value(group).count())
             {
                 Event *event = editor->map->events.value(group).at(0);
                 for (QGraphicsItem *child : editor->events_group->childItems()) {
@@ -1353,7 +1353,7 @@ void MainWindow::eventTabChanged(int index)
         }
         else if (group == "coord_event_group")
         {
-            if (selectedTrigger == nullptr)
+            if (selectedTrigger == nullptr && editor->map->events.value(group).count())
             {
                 Event *event = editor->map->events.value(group).at(0);
                 for (QGraphicsItem *child : editor->events_group->childItems()) {
@@ -1369,7 +1369,7 @@ void MainWindow::eventTabChanged(int index)
         }
         else if (group == "bg_event_group")
         {
-            if (selectedBG == nullptr)
+            if (selectedBG == nullptr && editor->map->events.value(group).count())
             {
                 Event *event = editor->map->events.value(group).at(0);
                 for (QGraphicsItem *child : editor->events_group->childItems()) {
@@ -1385,7 +1385,7 @@ void MainWindow::eventTabChanged(int index)
         }
         else if (group == "heal_event_group")
         {
-            if (selectedHealspot == nullptr)
+            if (selectedHealspot == nullptr && editor->map->events.value(group).count())
             {
                 Event *event = editor->map->events.value(group).at(0);
                 for (QGraphicsItem *child : editor->events_group->childItems()) {
