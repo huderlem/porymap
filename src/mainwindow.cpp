@@ -1012,10 +1012,17 @@ void MainWindow::updateSelectedObjects() {
                 .arg(event_type)
         );
 
-        frame->ui->spinBox_index->setValue(editor->project->getMap(map_name)->events.value(event_group_type).indexOf(item->event) + event_offs);
-        frame->ui->spinBox_index->setMinimum(event_offs);
-        frame->ui->spinBox_index->setMaximum(editor->project->getMap(map_name)->events.value(event_group_type).length() + event_offs - 1);
-        connect(frame->ui->spinBox_index, QOverload<int>::of(&QSpinBox::valueChanged), this, &MainWindow::selectedEventIndexChanged);
+        if (events->count() == 1)
+        {
+            frame->ui->spinBox_index->setValue(editor->project->getMap(map_name)->events.value(event_group_type).indexOf(item->event) + event_offs);
+            frame->ui->spinBox_index->setMinimum(event_offs);
+            frame->ui->spinBox_index->setMaximum(editor->project->getMap(map_name)->events.value(event_group_type).length() + event_offs - 1);
+            connect(frame->ui->spinBox_index, QOverload<int>::of(&QSpinBox::valueChanged), this, &MainWindow::selectedEventIndexChanged);
+        }
+        else
+        {
+            frame->ui->spinBox_index->setVisible(false);
+        }
 
         frame->ui->label_spritePixmap->setPixmap(item->event->pixmap);
         connect(item, SIGNAL(spriteChanged(QPixmap)), frame->ui->label_spritePixmap, SLOT(setPixmap(QPixmap)));
