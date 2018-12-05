@@ -894,12 +894,12 @@ void MainWindow::addNewEvent(QString event_type)
 }
 
 void MainWindow::updateObjects() {
-    ui->tabWidget_EventType->clear();
     selectedObject = nullptr;
     selectedWarp = nullptr;
     selectedTrigger = nullptr;
     selectedBG = nullptr;
     selectedHealspot = nullptr;
+    ui->tabWidget_EventType->clear();
 
     bool hasObjects = false;
     bool hasWarps = false;
