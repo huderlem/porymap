@@ -912,10 +912,10 @@ void MainWindow::addNewEvent(QString event_type)
 {
     if (editor) {
         DraggablePixmapItem *object = editor->addNewEvent(event_type);
+        updateObjects();
         if (object) {
             editor->selectMapEvent(object, false);
         }
-        updateObjects();
     }
 }
 
