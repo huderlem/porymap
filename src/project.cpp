@@ -1856,6 +1856,7 @@ QString Project::readCIncbin(QString text, QString label) {
 
 QMap<QString, int> Project::readCDefines(QString text, QStringList prefixes) {
     ParseUtil parser;
+    text.replace(QRegularExpression("//.*"), "");
     QMap<QString, int> allDefines;
     QMap<QString, int> filteredDefines;
     QRegularExpression re("#define\\s+(?<defineName>\\w+)[^\\S\\n]+(?<defineValue>.+)");
@@ -1864,7 +1865,7 @@ QMap<QString, int> Project::readCDefines(QString text, QStringList prefixes) {
         QRegularExpressionMatch match = iter.next();
         QString name = match.captured("defineName");
         QString expression = match.captured("defineValue");
-        expression.replace(QRegularExpression("//.*"), "");
+        if (expression == " ") continue;
         int value = parser.evaluateDefine(expression, &allDefines);
         allDefines.insert(name, value);
         for (QString prefix : prefixes) {
