@@ -1,4 +1,5 @@
 #include "mappixmapitem.h"
+#include "log.h"
 
 #define SWAP(a, b) do { if (a != b) { a ^= b; b ^= a; a ^= b; } } while (0)
 
@@ -436,7 +437,7 @@ void MapPixmapItem::select(QGraphicsSceneMouseEvent *event) {
                     selection.append(QPoint(x, y));
                 }
             }
-            qDebug() << QString("selected (%1, %2) -> (%3, %4)").arg(x1).arg(y1).arg(x2).arg(y2);
+            logInfo(QString("selected (%1, %2) -> (%3, %4)").arg(x1).arg(y1).arg(x2).arg(y2));
         }
     }
 }

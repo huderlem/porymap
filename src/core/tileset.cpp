@@ -4,7 +4,6 @@
 
 #include <QPainter>
 #include <QImage>
-#include <QDebug>
 
 Tileset::Tileset()
 {

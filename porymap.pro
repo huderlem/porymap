@@ -50,7 +50,8 @@ SOURCES += src/core/block.cpp \
     src/main.cpp \
     src/mainwindow.cpp \
     src/project.cpp \
-    src/settings.cpp
+    src/settings.cpp \
+    src/log.cpp
 
 HEADERS  += include/core/block.h \
     include/core/blockdata.h \
@@ -89,7 +90,8 @@ HEADERS  += include/core/block.h \
     include/editor.h \
     include/mainwindow.h \
     include/project.h \
-    include/settings.h
+    include/settings.h \
+    include/log.h
 
 FORMS    += forms/mainwindow.ui \
     forms/eventpropertiesframe.ui \

@@ -1,12 +1,12 @@
 #include "project.h"
 #include "history.h"
 #include "historyitem.h"
+#include "log.h"
 #include "parseutil.h"
 #include "tile.h"
 #include "tileset.h"
 #include "event.h"
 
-#include <QDebug>
 #include <QDir>
 #include <QFile>
 #include <QTextStream>
@@ -64,13 +64,14 @@ Map* Project::loadMap(QString map_name) {
         map->setName(map_name);
     }
 
-    readMapHeader(map);
+    if (!readMapHeader(map))
+        return nullptr;
+
     readMapLayout(map);
     readMapEvents(map);
     loadMapConnections(map);
     map->commit();
     map->metatileHistory.save();
-
     map_cache->insert(map_name, map);
     return map;
 }
@@ -104,7 +105,7 @@ void Project::loadMapConnections(Map *map) {
                         connection->map_name = mapConstantsToMapNames->value(mapConstant);
                         map->connections.append(connection);
                     } else {
-                        qDebug() << QString("Failed to find connected map for map constant '%1'").arg(mapConstant);
+                        logError(QString("Failed to find connected map for map constant '%1'").arg(mapConstant));
                     }
                 }
             }
@@ -161,9 +162,9 @@ QStringList* Project::getLabelValues(QList<QStringList> *list, QString label) {
     return values;
 }
 
-void Project::readMapHeader(Map* map) {
+bool Project::readMapHeader(Map* map) {
     if (!map->isPersistedToFile) {
-        return;
+        return true;
     }
 
     QString label = map->name;
@@ -171,7 +172,7 @@ void Project::readMapHeader(Map* map) {
 
     QString header_text = readTextFile(root + "/data/maps/" + label + "/header.inc");
     if (header_text.isNull()) {
-        return;
+        return false;
     }
     QStringList *header = getLabelValues(parser->parseAsm(header_text), label);
     map->layout_label = header->value(0);
@@ -187,6 +188,7 @@ void Project::readMapHeader(Map* map) {
     map->unknown = header->value(10);
     map->show_location = header->value(11);
     map->battle_scene = header->value(12);
+    return true;
 }
 
 QString Project::readMapLayoutId(QString map_name) {
@@ -278,7 +280,7 @@ void Project::saveMapConnections(Map *map) {
                         .arg(mapNamesToMapConstants->value(connection->map_name));
                 numValidConnections++;
             } else {
-                qDebug() << QString("Failed to write map connection. %1 not a valid map name").arg(connection->map_name);
+                logError(QString("Failed to write map connection. '%1' is not a valid map name").arg(connection->map_name));
             }
         }
         text += QString("\n");
@@ -363,7 +365,7 @@ QStringList* Project::readLayoutValues(QString layoutLabel) {
     layoutValues->append(blockdataPath);
 
     if (layoutValues->size() != 8) {
-        qDebug() << "Error: Unexpected number of properties in layout '" << layoutLabel << "'";
+        logError(QString("Error: Unexpected number of properties in layout '%1'").arg(layoutLabel));
         return nullptr;
     }
 
@@ -627,7 +629,7 @@ void Project::saveTilesetMetatileAttributes(Tileset *tileset) {
         }
         attrs_file.write(data);
     } else {
-        qDebug() << QString("Could not save tileset metatile attributes file '%1'").arg(tileset->metatile_attrs_path);
+        logError(QString("Could not save tileset metatile attributes file '%1'").arg(tileset->metatile_attrs_path));
     }
 }
 
@@ -649,7 +651,7 @@ void Project::saveTilesetMetatiles(Tileset *tileset) {
         metatiles_file.write(data);
     } else {
         tileset->metatiles = new QList<Metatile*>;
-        qDebug() << QString("Could not open tileset metatiles file '%1'").arg(tileset->metatiles_path);
+        logError(QString("Could not open tileset metatiles file '%1'").arg(tileset->metatiles_path));
     }
 }
 
@@ -690,6 +692,9 @@ Tileset* Project::loadTileset(QString label, Tileset *tileset) {
     ParseUtil *parser = new ParseUtil;
 
     QString headers_text = readTextFile(root + "/data/tilesets/headers.inc");
+    if (headers_text.isNull()) {
+        return nullptr;
+    }
     QStringList *values = getLabelValues(parser->parseAsm(headers_text), label);
     if (tileset == nullptr) {
         tileset = new Tileset;
@@ -762,7 +767,7 @@ void Project::writeBlockdata(QString path, Blockdata *blockdata) {
         QByteArray data = blockdata->serialize();
         file.write(data);
     } else {
-        qDebug() << "Failed to open blockdata file for writing: '" << path << "'";
+        logError(QString("Failed to open blockdata file for writing: '%1'").arg(path));
     }
 }
 
@@ -780,12 +785,12 @@ void Project::saveMap(Map *map) {
     if (!map->isPersistedToFile) {
         QString newMapDataDir = QString(root + "/data/maps/%1").arg(map->name);
         if (!QDir::root().mkdir(newMapDataDir)) {
-            qDebug() << "Error: failed to create directory for new map. " << newMapDataDir;
+            logError(QString("Error: failed to create directory for new map: '%1'").arg(newMapDataDir));
         }
 
         QString newLayoutDir = QString(root + "/data/layouts/%1").arg(map->name);
         if (!QDir::root().mkdir(newLayoutDir)) {
-            qDebug() << "Error: failed to create directory for new layout. " << newLayoutDir;
+            logError(QString("Error: failed to create directory for new layout: '%1'").arg(newLayoutDir));
         }
 
         // TODO: In the future, these files needs more structure to allow for proper parsing/saving.
@@ -916,7 +921,7 @@ void Project::loadTilesetAssets(Tileset* tileset) {
                 for (int j = 0; j < 16; j++) {
                     QStringList rgb = lines[j + 3].split(QRegExp(" "), QString::SkipEmptyParts);
                     if (rgb.length() != 3) {
-                        qDebug() << QString("Invalid tileset palette RGB value: '%1'").arg(lines[j + 3]);
+                        logWarn(QString("Invalid tileset palette RGB value: '%1'").arg(lines[j + 3]));
                         palette.append(qRgb((j - 3) * 16, (j - 3) * 16, (j - 3) * 16));
                     } else {
                         int red = rgb[0].toInt();
@@ -927,7 +932,7 @@ void Project::loadTilesetAssets(Tileset* tileset) {
                     }
                 }
             } else {
-                qDebug() << QString("Invalid JASC-PAL palette file for tileset.");
+                logError(QString("Invalid JASC-PAL palette file for tileset: '%1'").arg(path));
                 for (int j = 0; j < 16; j++) {
                     palette.append(qRgb(j * 16, j * 16, j * 16));
                 }
@@ -936,7 +941,7 @@ void Project::loadTilesetAssets(Tileset* tileset) {
             for (int j = 0; j < 16; j++) {
                 palette.append(qRgb(j * 16, j * 16, j * 16));
             }
-            qDebug() << QString("Could not open palette path '%1'").arg(path);
+            logError(QString("Could not open tileset palette path '%1'").arg(path));
         }
 
         palettes->append(palette);
@@ -982,7 +987,7 @@ void Project::loadTilesetMetatiles(Tileset* tileset) {
         tileset->metatiles = metatiles;
     } else {
         tileset->metatiles = new QList<Metatile*>;
-        qDebug() << QString("Could not open tileset metatiles file '%1'").arg(tileset->metatiles_path);
+        logError(QString("Could not open tileset metatiles file '%1'").arg(tileset->metatiles_path));
     }
 
     QFile attrs_file(tileset->metatile_attrs_path);
@@ -991,7 +996,7 @@ void Project::loadTilesetMetatiles(Tileset* tileset) {
         int num_metatiles = tileset->metatiles->count();
         int num_metatileAttrs = data.length() / 2;
         if (num_metatiles != num_metatileAttrs) {
-            qDebug() << QString("Metatile count %1 does not match metatile attribute count %2 in %3").arg(num_metatiles).arg(num_metatileAttrs).arg(tileset->name);
+            logWarn(QString("Metatile count %1 does not match metatile attribute count %2 in %3").arg(num_metatiles).arg(num_metatileAttrs).arg(tileset->name));
             if (num_metatileAttrs > num_metatiles)
                 num_metatileAttrs = num_metatiles;
         }
@@ -1001,7 +1006,7 @@ void Project::loadTilesetMetatiles(Tileset* tileset) {
             tileset->metatiles->at(i)->layerType = (value & 0xF000) >> 12;
         }
     } else {
-        qDebug() << QString("Could not open tileset metatile attributes file '%1'").arg(tileset->metatile_attrs_path);
+        logError(QString("Could not open tileset metatile attributes file '%1'").arg(tileset->metatile_attrs_path));
     }
 }
 
@@ -1015,7 +1020,7 @@ Blockdata* Project::readBlockdata(QString path) {
             blockdata->addBlock(word);
         }
     } else {
-        qDebug() << "Failed to open blockdata path '" << path << "'";
+        logError(QString("Failed to open blockdata path '%1'").arg(path));
     }
 
     return blockdata;
@@ -1047,8 +1052,7 @@ Tileset* Project::getTileset(QString label, bool forceLoad) {
 QString Project::readTextFile(QString path) {
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly)) {
-        //QMessageBox::information(0, "Error", QString("Could not open '%1': ").arg(path) + file.errorString());
-        qDebug() << QString("Could not open '%1': ").arg(path) + file.errorString();
+        logError(QString("Could not open '%1': ").arg(path) + file.errorString());
         return QString();
     }
     QTextStream in(&file);
@@ -1064,7 +1068,7 @@ void Project::saveTextFile(QString path, QString text) {
     if (file.open(QIODevice::WriteOnly)) {
         file.write(text.toUtf8());
     } else {
-        qDebug() << QString("Could not open '%1' for writing: ").arg(path) + file.errorString();
+        logError(QString("Could not open '%1' for writing: ").arg(path) + file.errorString());
     }
 }
 
@@ -1073,14 +1077,14 @@ void Project::appendTextFile(QString path, QString text) {
     if (file.open(QIODevice::Append)) {
         file.write(text.toUtf8());
     } else {
-        qDebug() << QString("Could not open '%1' for appending: ").arg(path) + file.errorString();
+        logError(QString("Could not open '%1' for appending: ").arg(path) + file.errorString());
     }
 }
 
 void Project::deleteFile(QString path) {
     QFile file(path);
     if (file.exists() && !file.remove()) {
-        qDebug() << QString("Could not delete file '%1': ").arg(path) + file.errorString();
+        logError(QString("Could not delete file '%1': ").arg(path) + file.errorString());
     }
 }
 
@@ -1224,13 +1228,13 @@ QMap<QString, QStringList> Project::getTilesets() {
             // Advance to command specifying whether or not it is a secondary tileset
             i += 2;
             if (commands->at(i).at(0) != ".byte") {
-                qDebug() << "Unexpected command found for secondary tileset flag in tileset" << tilesetLabel << ". Expected '.byte', but found: " << commands->at(i).at(0);
+                logWarn(QString("Unexpected command found for secondary tileset flag in tileset '%1'. Expected '.byte', but found: '%2'").arg(tilesetLabel).arg(commands->at(i).at(0)));
                 continue;
             }
 
             QString secondaryTilesetValue = commands->at(i).at(1);
             if (secondaryTilesetValue != "TRUE" && secondaryTilesetValue != "FALSE" && secondaryTilesetValue != "0" && secondaryTilesetValue != "1") {
-                qDebug() << "Unexpected secondary tileset flag found. Expected \"TRUE\", \"FALSE\", \"0\", or \"1\", but found: " << secondaryTilesetValue;
+                logWarn(QString("Unexpected secondary tileset flag found. Expected \"TRUE\", \"FALSE\", \"0\", or \"1\", but found: '%1'").arg(secondaryTilesetValue));
                 continue;
             }
 
@@ -1300,7 +1304,7 @@ void Project::readTilesetProperties() {
 
         if (error)
         {
-            qDebug() << "Some global tileset values could not be loaded. Using default values";
+            logError("Some global tileset values could not be loaded. Using default values instead.");
         }
     }
 }
@@ -1383,7 +1387,7 @@ void Project::readMetatileBehaviors() {
             this->metatileBehaviorMapInverse.insert(this->metatileBehaviorMap[defineName], defineName);
         }
     } else {
-        qDebug() << "Failed to read C defines file: " << filepath;
+        logError(QString("Failed to read C defines file: '%1'").arg(filepath));
     }
 }
 
@@ -1400,7 +1404,7 @@ void Project::readCDefinesSorted(QString filepath, QStringList prefixes, QString
         }
         *definesToSet = definesInverse.values();
     } else {
-        qDebug() << "Failed to read C defines file: " << filepath;
+        logError(QString("Failed to read C defines file: '%1'").arg(filepath));
     }
 }
 
@@ -1433,7 +1437,7 @@ void Project::saveMapsWithConnections() {
         if (mapNamesToMapConstants->contains(mapName)) {
             text += QString("\t.include \"data/maps/%1/connections.inc\"\n").arg(mapName);
         } else {
-            qDebug() << QString("Failed to write connection include. %1 not a valid map name").arg(mapName);
+            logError(QString("Failed to write connection include. %1 not a valid map name").arg(mapName));
         }
     }
     saveTextFile(path, text);
@@ -1694,7 +1698,7 @@ void Project::readMapEvents(Map *map) {
                 warp->put("event_type", EventType::Warp);
                 map->events["warp_event_group"].append(warp);
             } else {
-                qDebug() << QString("Destination map constant '%1' is invalid for warp").arg(mapConstant);
+                logError(QString("Destination map constant '%1' is invalid for warp").arg(mapConstant));
             }
         }
     }

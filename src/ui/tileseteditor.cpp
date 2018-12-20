@@ -1,8 +1,8 @@
 #include "tileseteditor.h"
 #include "ui_tileseteditor.h"
+#include "log.h"
 #include "imageproviders.h"
 #include <QFileDialog>
-#include <QDebug>
 #include <QMessageBox>
 #include <QDialogButtonBox>
 #include <QCloseEvent>
@@ -328,7 +328,7 @@ void TilesetEditor::importTilesetTiles(Tileset *tileset, bool primary) {
         return;
     }
 
-    qDebug() << QString("Importing %1 tileset tiles '%2'").arg(descriptor).arg(filepath);
+    logInfo(QString("Importing %1 tileset tiles '%2'").arg(descriptor).arg(filepath));
 
     // Validate image dimensions.
     QImage image = QImage(filepath);

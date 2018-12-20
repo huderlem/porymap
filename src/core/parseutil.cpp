@@ -1,6 +1,6 @@
+#include "log.h"
 #include "parseutil.h"
 
-#include <QDebug>
 #include <QRegularExpression>
 #include <QStack>
 
@@ -96,7 +96,7 @@ QList<Token> ParseUtil::tokenizeExpression(QString expression, QMap<QString, int
     while (!expression.isEmpty()) {
         QRegularExpressionMatch match = re.match(expression);
         if (!match.hasMatch()) {
-            qDebug() << "Failed to tokenize expression: " << expression;
+            logWarn(QString("Failed to tokenize expression: '%1'").arg(expression));
             break;
         }
         for (QString tokenType : tokenTypes) {
@@ -109,7 +109,7 @@ QList<Token> ParseUtil::tokenizeExpression(QString expression, QMap<QString, int
                         token = actualToken;
                         tokenType = "decimal";
                     } else {
-                        qDebug() << "Unknown identifier found in expression: " << token;
+                        logError(QString("Unknown identifier found in expression: '%1'").arg(token));
                     }
                 }
 
@@ -153,7 +153,7 @@ QList<Token> ParseUtil::generatePostfix(QList<Token> tokens) {
                 // pop the left parenthesis token
                 operatorStack.pop();
             } else {
-                qDebug() << "Mismatched parentheses detected in expression!";
+                logError("Mismatched parentheses detected in expression!");
             }
         } else {
             // token is an operator
@@ -168,7 +168,7 @@ QList<Token> ParseUtil::generatePostfix(QList<Token> tokens) {
 
     while (!operatorStack.isEmpty()) {
         if (operatorStack.top().value == "(" || operatorStack.top().value == ")") {
-            qDebug() << "Mismatched parentheses detected in expression!";
+            logError("Mismatched parentheses detected in expression!");
         } else {
             output.append(operatorStack.pop());
         }
@@ -205,7 +205,7 @@ int ParseUtil::evaluatePostfix(QList<Token> postfix) {
             } else if (token.value == "|") {
                 result = op1 | op2;
             } else {
-                qDebug() << "Unsupported postfix operator: " << token.value;
+                logError(QString("Unsupported postfix operator: '%1'").arg(token.value));
             }
             stack.push(Token(QString("%1").arg(result), "decimal"));
         } else {

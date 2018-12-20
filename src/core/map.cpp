@@ -5,7 +5,6 @@
 #include "imageproviders.h"
 
 #include <QTime>
-#include <QDebug>
 #include <QPainter>
 #include <QImage>
 #include <QRegularExpression>
@@ -379,6 +378,10 @@ void Map::redo() {
 }
 
 void Map::commit() {
+    if (!layout) {
+        return;
+    }
+
     if (layout->blockdata) {
         HistoryItem *item = metatileHistory.current();
         bool atCurrentHistory = item

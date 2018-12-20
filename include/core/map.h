@@ -11,7 +11,6 @@
 
 #include <QPixmap>
 #include <QObject>
-#include <QDebug>
 #include <QGraphicsPixmapItem>
 #include <math.h>
 

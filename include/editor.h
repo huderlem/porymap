@@ -39,7 +39,8 @@ public:
     void save();
     void undo();
     void redo();
-    void setMap(QString map_name);
+    void closeProject();
+    bool setMap(QString map_name);
     void displayMap();
     void displayMetatileSelector();
     void displayMapMetatiles();

@@ -1,13 +1,13 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "project.h"
+#include "log.h"
 #include "editor.h"
 #include "eventpropertiesframe.h"
 #include "ui_eventpropertiesframe.h"
 #include "bordermetatilespixmapitem.h"
 #include "currentselectedmetatilespixmapitem.h"
 
-#include <QDebug>
 #include <QFileDialog>
 #include <QStandardItemModel>
 #include <QShortcut>
@@ -34,15 +34,13 @@ MainWindow::MainWindow(QWidget *parent) :
     QCoreApplication::setApplicationName("porymap");
     QApplication::setApplicationDisplayName("porymap");
     QApplication::setWindowIcon(QIcon(":/icons/porymap-icon-1.ico"));
-
     ui->setupUi(this);
-    this->initCustomUI();
-    this->initExtraSignals();
-    this->initExtraShortcuts();
-    this->initEditor();
-    this->initMiscHeapObjects();
-    this->initMapSortOrder();
-    this->openRecentProject();
+
+    this->initWindow();
+    if (!this->openRecentProject()) {
+        // Re-initialize everything to a blank slate if opening the recent project failed.
+        this->initWindow();
+    }
 
     on_toolButton_Paint_clicked();
 }
@@ -50,6 +48,15 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::initWindow() {
+    this->initCustomUI();
+    this->initExtraSignals();
+    this->initExtraShortcuts();
+    this->initEditor();
+    this->initMiscHeapObjects();
+    this->initMapSortOrder();
 }
 
 void MainWindow::initExtraShortcuts() {
@@ -167,25 +174,28 @@ void MainWindow::loadUserSettings() {
     mapSortOrder = static_cast<MapSortOrder>(settings.value("map_sort_order").toInt());
 }
 
-void MainWindow::openRecentProject() {
+bool MainWindow::openRecentProject() {
     QSettings settings;
     QString key = "recent_projects";
     if (settings.contains(key)) {
         QString default_dir = settings.value(key).toStringList().last();
         if (!default_dir.isNull()) {
-            qDebug() << QString("default_dir: '%1'").arg(default_dir);
-            openProject(default_dir);
+            logInfo(QString("Opening recent project: '%1'").arg(default_dir));
+            return openProject(default_dir);
         }
     }
+
+    return true;
 }
 
-void MainWindow::openProject(QString dir) {
+bool MainWindow::openProject(QString dir) {
     if (dir.isNull()) {
-        return;
+        return false;
     }
 
     this->statusBar()->showMessage(QString("Opening project %1").arg(dir));
 
+    bool success = true;
     bool already_open = isProjectOpen() && (editor->project->root == dir);
     if (!already_open) {
         editor->project = new Project;
@@ -193,14 +203,20 @@ void MainWindow::openProject(QString dir) {
         setWindowTitle(editor->project->getProjectTitle());
         loadDataStructures();
         populateMapList();
-        setMap(getDefaultMap(), true);
+        success = setMap(getDefaultMap(), true);
     } else {
         setWindowTitle(editor->project->getProjectTitle());
         loadDataStructures();
         populateMapList();
     }
 
-    this->statusBar()->showMessage(QString("Opened project %1").arg(dir));
+    if (success) {
+        this->statusBar()->showMessage(QString("Opened project %1").arg(dir));
+    } else {
+        this->statusBar()->showMessage(QString("Failed to open project %1").arg(dir));
+    }
+
+    return success;
 }
 
 bool MainWindow::isProjectOpen() {
@@ -263,15 +279,21 @@ void MainWindow::on_action_Open_Project_triggered()
     }
 }
 
-void MainWindow::setMap(QString map_name, bool scrollTreeView) {
-    qDebug() << QString("setMap(%1)").arg(map_name);
+bool MainWindow::setMap(QString map_name, bool scrollTreeView) {
+    logInfo(QString("Setting map to '%1'").arg(map_name));
     if (map_name.isNull()) {
-        return;
+        return false;
     }
+
+    if (!editor->setMap(map_name)) {
+        logError(QString("Failed to set map to '%1'").arg(map_name));
+        return false;
+    }
+
     if (editor->map != nullptr && !editor->map->name.isNull()) {
         ui->mapList->setExpanded(mapListProxyModel->mapFromSource(mapListIndexes.value(editor->map->name)), false);
     }
-    editor->setMap(map_name);
+
     redrawMapScene();
     displayMapProperties();
 
@@ -292,6 +314,7 @@ void MainWindow::setMap(QString map_name, bool scrollTreeView) {
     setRecentMap(map_name);
     updateMapList();
     updateTilesetEditor();
+    return true;
 }
 
 void MainWindow::redrawMapScene()
@@ -336,7 +359,7 @@ void MainWindow::redrawMapScene()
 void MainWindow::openWarpMap(QString map_name, QString warp_num) {
     // Ensure valid destination map name.
     if (!editor->project->mapNames->contains(map_name)) {
-        qDebug() << QString("Invalid warp destination map name '%1'").arg(map_name);
+        logError(QString("Invalid warp destination map name '%1'").arg(map_name));
         return;
     }
 
@@ -344,12 +367,15 @@ void MainWindow::openWarpMap(QString map_name, QString warp_num) {
     bool ok;
     int warpNum = warp_num.toInt(&ok, 0);
     if (!ok) {
-        qDebug() << QString("Invalid warp number '%1' for destination map '%2'").arg(warp_num).arg(map_name);
+        logError(QString("Invalid warp number '%1' for destination map '%2'").arg(warp_num).arg(map_name));
         return;
     }
 
     // Open the destination map, and select the target warp event.
-    setMap(map_name, true);
+    if (!setMap(map_name, true)) {
+        return;
+    }
+
     QList<Event*> warp_events = editor->map->events["warp_event_group"];
     if (warp_events.length() > warpNum) {
         Event *warp_event = warp_events.at(warpNum);
@@ -1151,7 +1177,7 @@ void MainWindow::on_toolButton_deleteObject_clicked()
                     editor->selected_events->removeOne(item);
                 }
                 else { // don't allow deletion of heal locations
-                    qDebug() << "Cannot delete event of type " << item->event->get("event_type");
+                    logWarn(QString("Cannot delete event of type '%1'").arg(item->event->get("event_type")));
                 }
             }
             updateSelectedObjects();
@@ -1246,7 +1272,9 @@ void MainWindow::checkToolButtons() {
 }
 
 void MainWindow::onLoadMapRequested(QString mapName, QString fromMapName) {
-    setMap(mapName, true);
+    if (!setMap(mapName, true)) {
+        return;
+    }
     editor->setSelectedConnectionFromMap(fromMapName);
 }
 

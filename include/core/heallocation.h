@@ -13,7 +13,6 @@ public:
     friend QDebug operator<<(QDebug debug, const HealLocation &hl);
 
 public:
-    //QString group;
     QString name;
     int     index;
     uint16_t  x;

@@ -150,13 +150,13 @@ private:
         Layout  =  2,
     } mapSortOrder;
 
-    void setMap(QString, bool scrollTreeView = false);
+    bool setMap(QString, bool scrollTreeView = false);
     void redrawMapScene();
     void loadDataStructures();
     void populateMapList();
     void sortMapList();
     QString getExistingDirectory(QString);
-    void openProject(QString dir);
+    bool openProject(QString dir);
     QString getDefaultMap();
     void setRecentMap(QString map_name);
     QStandardItem* createMapItem(QString mapName, int groupNum, int inGroupNum);
@@ -168,6 +168,7 @@ private:
     void displayMapProperties();
     void checkToolButtons();
 
+    void initWindow();
     void initCustomUI();
     void initExtraShortcuts();
     void initExtraSignals();
@@ -175,7 +176,7 @@ private:
     void initMiscHeapObjects();
     void initMapSortOrder();
     void loadUserSettings();
-    void openRecentProject();
+    bool openRecentProject();
     void updateTilesetEditor();
 
     bool isProjectOpen();

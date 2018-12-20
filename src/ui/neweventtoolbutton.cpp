@@ -1,6 +1,5 @@
 #include "neweventtoolbutton.h"
 #include <QMenu>
-#include <QDebug>
 
 // Custom QToolButton which has a context menu that expands to allow
 // selection of different types of map events.

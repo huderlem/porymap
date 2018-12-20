@@ -1,6 +1,6 @@
 #include "imageproviders.h"
+#include "log.h"
 #include <QPainter>
-#include <QDebug>
 
 QImage getCollisionMetatileImage(Block block) {
     return getCollisionMetatileImage(block.collision, block.elevation);
@@ -53,7 +53,7 @@ QImage getMetatileImage(uint16_t tile, Tileset *primaryTileset, Tileset *seconda
                 tile_image.setColor(j, palette.value(j));
             }
         } else {
-            qDebug() << "Tile is referring to invalid palette number: " << tile_.palette;
+            logWarn(QString("Tile '%1' is referring to invalid palette number: '%2'").arg(tile_.tile).arg(tile_.palette));
         }
 
         // The top layer of the metatile has its first color displayed at transparent.
