@@ -1015,7 +1015,7 @@ void DraggablePixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *mouse) {
     last_x = static_cast<int>(mouse->pos().x() + this->pos().x()) / 16;
     last_y = static_cast<int>(mouse->pos().y() + this->pos().y()) / 16;
     this->editor->selectMapEvent(this, mouse->modifiers() & Qt::ControlModifier);
-    this->editor->updateSelectedEvents();
+    //this->editor->updateSelectedEvents();
     selectingEvent = true;
 }
 

@@ -78,6 +78,7 @@ private slots:
 
     void addNewEvent(QString);
     void updateSelectedObjects();
+    void updateObjects();
 
     void on_toolButton_Paint_clicked();
 
@@ -133,6 +134,10 @@ private slots:
 
     void on_lineEdit_filterBox_textChanged(const QString &arg1);
 
+    void eventTabChanged(int index);
+
+    void selectedEventIndexChanged(int index);
+
 private:
     Ui::MainWindow *ui;
     TilesetEditor *tilesetEditor = nullptr;
@@ -143,6 +148,21 @@ private:
     Editor *editor = nullptr;
     QIcon* mapIcon;
     QIcon* mapEditedIcon;
+
+    QWidget *eventTabObjectWidget;
+    QWidget *eventTabWarpWidget;
+    QWidget *eventTabTriggerWidget;
+    QWidget *eventTabBGWidget;
+    QWidget *eventTabHealspotWidget;
+    QWidget *eventTabMultipleWidget;
+
+    DraggablePixmapItem *selectedObject;
+    DraggablePixmapItem *selectedWarp;
+    DraggablePixmapItem *selectedTrigger;
+    DraggablePixmapItem *selectedBG;
+    DraggablePixmapItem *selectedHealspot;
+
+    bool isProgrammaticEventTabChange;
 
     enum MapSortOrder {
         Group   =  0,
@@ -178,6 +198,7 @@ private:
     void loadUserSettings();
     bool openRecentProject();
     void updateTilesetEditor();
+    QString getEventGroupFromTabWidget(QWidget *tab);
 
     bool isProjectOpen();
 };
