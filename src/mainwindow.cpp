@@ -11,7 +11,6 @@
 #include <QFileDialog>
 #include <QStandardItemModel>
 #include <QShortcut>
-#include <QSettings>
 #include <QSpinBox>
 #include <QTextEdit>
 #include <QSpacerItem>
@@ -57,6 +56,7 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::initWindow() {
+    Config::load();
     this->initCustomUI();
     this->initExtraSignals();
     this->initExtraShortcuts();
@@ -143,8 +143,6 @@ void MainWindow::initMapSortOrder() {
 
 void MainWindow::mapSortOrder_changed(QAction *action)
 {
-    QSettings settings;
-
     QList<QAction*> items = ui->toolButton_MapSortOrder->menu()->actions();
     int i = 0;
     for (; i < items.count(); i++)
@@ -159,8 +157,7 @@ void MainWindow::mapSortOrder_changed(QAction *action)
     {
         ui->toolButton_MapSortOrder->setIcon(action->icon());
         mapSortOrder = static_cast<MapSortOrder>(i);
-        settings.setValue("map_sort_order", i);
-
+        Config::setMapSortOrder(mapSortOrder);
         if (isProjectOpen())
         {
             sortMapList();
@@ -176,28 +173,16 @@ void MainWindow::on_lineEdit_filterBox_textChanged(const QString &arg1)
 }
 
 void MainWindow::loadUserSettings() {
-    QSettings settings;
-
-    bool betterCursors = settings.contains("cursor_mode") && settings.value("cursor_mode") != "0";
-    ui->actionBetter_Cursors->setChecked(betterCursors);
-    this->editor->settings->betterCursors = betterCursors;
-
-    if (!settings.contains("map_sort_order"))
-    {
-        settings.setValue("map_sort_order", 0);
-    }
-    mapSortOrder = static_cast<MapSortOrder>(settings.value("map_sort_order").toInt());
+    ui->actionBetter_Cursors->setChecked(Config::getPrettyCursors());
+    this->editor->settings->betterCursors = Config::getPrettyCursors();
+    mapSortOrder = Config::getMapSortOrder();
 }
 
 bool MainWindow::openRecentProject() {
-    QSettings settings;
-    QString key = "recent_projects";
-    if (settings.contains(key)) {
-        QString default_dir = settings.value(key).toStringList().last();
-        if (!default_dir.isNull()) {
-            logInfo(QString("Opening recent project: '%1'").arg(default_dir));
-            return openProject(default_dir);
-        }
+    QString default_dir = Config::getRecentProject();
+    if (!default_dir.isNull() && default_dir.length() > 0) {
+        logInfo(QString("Opening recent project: '%1'").arg(default_dir));
+        return openProject(default_dir);
     }
 
     return true;
@@ -243,16 +228,11 @@ QString MainWindow::getDefaultMap() {
     if (editor && editor->project) {
         QList<QStringList> names = editor->project->groupedMapNames;
         if (!names.isEmpty()) {
-            QSettings settings;
-            QString key = "project:" + editor->project->root;
-            if (settings.contains(key)) {
-                QMap<QString, QVariant> qmap = settings.value(key).toMap();
-                if (qmap.contains("recent_map")) {
-                    QString map_name = qmap.value("recent_map").toString();
-                    for (int i = 0; i < names.length(); i++) {
-                        if (names.value(i).contains(map_name)) {
-                            return map_name;
-                        }
+            QString recentMap = Config::getRecentMap();
+            if (!recentMap.isNull() && recentMap.length() > 0) {
+                for (int i = 0; i < names.length(); i++) {
+                    if (names.value(i).contains(recentMap)) {
+                        return recentMap;
                     }
                 }
             }
@@ -274,22 +254,13 @@ QString MainWindow::getExistingDirectory(QString dir) {
 
 void MainWindow::on_action_Open_Project_triggered()
 {
-    QSettings settings;
-    QString key = "recent_projects";
     QString recent = ".";
-    if (settings.contains(key)) {
-        recent = settings.value(key).toStringList().last();
+    if (!Config::getRecentMap().isNull() && Config::getRecentMap().length() > 0) {
+        recent = Config::getRecentMap();
     }
     QString dir = getExistingDirectory(recent);
     if (!dir.isEmpty()) {
-        QStringList recents;
-        if (settings.contains(key)) {
-            recents = settings.value(key).toStringList();
-        }
-        recents.removeAll(dir);
-        recents.append(dir);
-        settings.setValue(key, recents);
-
+        Config::setRecentProject(dir);
         openProject(dir);
     }
 }
@@ -407,15 +378,8 @@ void MainWindow::openWarpMap(QString map_name, QString warp_num) {
     }
 }
 
-void MainWindow::setRecentMap(QString map_name) {
-    QSettings settings;
-    QString key = "project:" + editor->project->root;
-    QMap<QString, QVariant> qmap;
-    if (settings.contains(key)) {
-        qmap = settings.value(key).toMap();
-    }
-    qmap.insert("recent_map", map_name);
-    settings.setValue(key, qmap);
+void MainWindow::setRecentMap(QString mapName) {
+    Config::setRecentMap(mapName);
 }
 
 void MainWindow::displayMapProperties() {
@@ -591,7 +555,7 @@ void MainWindow::sortMapList() {
                 }
             }
             break;
-        case MapSortOrder::Name:
+        case MapSortOrder::Area:
         {
             QMap<QString, int> mapsecToGroupNum;
             for (int i = 0; i < project->regionMapSections->length(); i++) {
@@ -843,8 +807,7 @@ void MainWindow::on_actionZoom_Out_triggered() {
 }
 
 void MainWindow::on_actionBetter_Cursors_triggered() {
-    QSettings settings;
-    settings.setValue("cursor_mode", QString::number(ui->actionBetter_Cursors->isChecked()));
+    Config::setPrettyCursors(ui->actionBetter_Cursors->isChecked());
     this->editor->settings->betterCursors = ui->actionBetter_Cursors->isChecked();
 }
 

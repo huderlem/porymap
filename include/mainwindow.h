@@ -10,6 +10,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QAbstractItemModel>
 #include "project.h"
+#include "config.h"
 #include "map.h"
 #include "editor.h"
 #include "tileseteditor.h"
@@ -164,11 +165,7 @@ private:
 
     bool isProgrammaticEventTabChange;
 
-    enum MapSortOrder {
-        Group   =  0,
-        Name    =  1,
-        Layout  =  2,
-    } mapSortOrder;
+    MapSortOrder mapSortOrder;
 
     bool setMap(QString, bool scrollTreeView = false);
     void redrawMapScene();
