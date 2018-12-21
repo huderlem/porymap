@@ -20,6 +20,9 @@ void MetatileSelector::draw() {
     int primaryLength = this->primaryTileset->metatiles->length();
     int length_ = primaryLength + this->secondaryTileset->metatiles->length();
     int height_ = length_ / this->numMetatilesWide;
+    if (length_ % this->numMetatilesWide != 0) {
+        height_++;
+    }
     QImage image(this->numMetatilesWide * 16, height_ * 16, QImage::Format_RGBA8888);
     QPainter painter(&image);
     for (int i = 0; i < length_; i++) {

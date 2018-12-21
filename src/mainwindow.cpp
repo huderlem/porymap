@@ -728,7 +728,7 @@ void MainWindow::currentMetatilesSelectionChanged()
     QPoint size = editor->metatile_selector_item->getSelectionDimensions();
     if (size.x() == 1 && size.y() == 1) {
         QPoint pos = editor->metatile_selector_item->getMetatileIdCoordsOnWidget(editor->metatile_selector_item->getSelectedMetatiles()->at(0));
-        ui->scrollArea_2->ensureVisible(pos.x(), pos.y());
+        ui->scrollArea_2->ensureVisible(pos.x(), pos.y(), 8, 8);
     }
 }
 
