@@ -532,7 +532,7 @@ void Project::saveMapConstantsHeader() {
         groupNum++;
     }
 
-    text += QString("\n");
+    text += QString("#define MAP_GROUPS_COUNT %1\n\n").arg(groupNum);
     text += QString("#define MAP_NONE (0x7F | (0x7F << 8))\n");
     text += QString("#define MAP_UNDEFINED (0xFF | (0xFF << 8))\n\n\n");
     text += QString("#define MAP_GROUP(map) (MAP_##map >> 8)\n");
