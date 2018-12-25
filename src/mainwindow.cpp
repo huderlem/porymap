@@ -196,6 +196,9 @@ bool MainWindow::openProject(QString dir) {
     this->statusBar()->showMessage(QString("Opening project %1").arg(dir));
 
     bool success = true;
+    projectConfig.setProjectDir(dir);
+    projectConfig.load();
+
     bool already_open = isProjectOpen() && (editor->project->root == dir);
     if (!already_open) {
         editor->project = new Project;
