@@ -308,6 +308,8 @@ void Project::updateMapsWithConnections(Map *map) {
 }
 
 void Project::readMapLayoutsTable() {
+    mapLayoutsTable.clear();
+
     QString layoutsText = readTextFile(getMapLayoutsTableFilepath());
     QList<QStringList>* values = parseAsm(layoutsText);
     bool inLayoutPointers = false;
