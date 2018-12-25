@@ -56,7 +56,7 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::initWindow() {
-    Config::load();
+    porymapConfig.load();
     this->initCustomUI();
     this->initExtraSignals();
     this->initExtraShortcuts();
@@ -157,7 +157,7 @@ void MainWindow::mapSortOrder_changed(QAction *action)
     {
         ui->toolButton_MapSortOrder->setIcon(action->icon());
         mapSortOrder = static_cast<MapSortOrder>(i);
-        Config::setMapSortOrder(mapSortOrder);
+        porymapConfig.setMapSortOrder(mapSortOrder);
         if (isProjectOpen())
         {
             sortMapList();
@@ -173,13 +173,13 @@ void MainWindow::on_lineEdit_filterBox_textChanged(const QString &arg1)
 }
 
 void MainWindow::loadUserSettings() {
-    ui->actionBetter_Cursors->setChecked(Config::getPrettyCursors());
-    this->editor->settings->betterCursors = Config::getPrettyCursors();
-    mapSortOrder = Config::getMapSortOrder();
+    ui->actionBetter_Cursors->setChecked(porymapConfig.getPrettyCursors());
+    this->editor->settings->betterCursors = porymapConfig.getPrettyCursors();
+    mapSortOrder = porymapConfig.getMapSortOrder();
 }
 
 bool MainWindow::openRecentProject() {
-    QString default_dir = Config::getRecentProject();
+    QString default_dir = porymapConfig.getRecentProject();
     if (!default_dir.isNull() && default_dir.length() > 0) {
         logInfo(QString("Opening recent project: '%1'").arg(default_dir));
         return openProject(default_dir);
@@ -228,7 +228,7 @@ QString MainWindow::getDefaultMap() {
     if (editor && editor->project) {
         QList<QStringList> names = editor->project->groupedMapNames;
         if (!names.isEmpty()) {
-            QString recentMap = Config::getRecentMap();
+            QString recentMap = porymapConfig.getRecentMap();
             if (!recentMap.isNull() && recentMap.length() > 0) {
                 for (int i = 0; i < names.length(); i++) {
                     if (names.value(i).contains(recentMap)) {
@@ -255,12 +255,12 @@ QString MainWindow::getExistingDirectory(QString dir) {
 void MainWindow::on_action_Open_Project_triggered()
 {
     QString recent = ".";
-    if (!Config::getRecentMap().isNull() && Config::getRecentMap().length() > 0) {
-        recent = Config::getRecentMap();
+    if (!porymapConfig.getRecentMap().isNull() && porymapConfig.getRecentMap().length() > 0) {
+        recent = porymapConfig.getRecentMap();
     }
     QString dir = getExistingDirectory(recent);
     if (!dir.isEmpty()) {
-        Config::setRecentProject(dir);
+        porymapConfig.setRecentProject(dir);
         openProject(dir);
     }
 }
@@ -379,7 +379,7 @@ void MainWindow::openWarpMap(QString map_name, QString warp_num) {
 }
 
 void MainWindow::setRecentMap(QString mapName) {
-    Config::setRecentMap(mapName);
+    porymapConfig.setRecentMap(mapName);
 }
 
 void MainWindow::displayMapProperties() {
@@ -807,7 +807,7 @@ void MainWindow::on_actionZoom_Out_triggered() {
 }
 
 void MainWindow::on_actionBetter_Cursors_triggered() {
-    Config::setPrettyCursors(ui->actionBetter_Cursors->isChecked());
+    porymapConfig.setPrettyCursors(ui->actionBetter_Cursors->isChecked());
     this->editor->settings->betterCursors = ui->actionBetter_Cursors->isChecked();
 }
 

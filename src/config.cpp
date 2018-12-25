@@ -6,37 +6,22 @@
 #include <QTextStream>
 #include <QRegularExpression>
 
-const QString configFilename = "porymap.cfg";
+KeyValueConfigBase::~KeyValueConfigBase() {
 
-QString Config::recentProject = "";
-QString Config::recentMap = "";
-MapSortOrder Config::mapSortOrder = MapSortOrder::Group;
-bool Config::prettyCursors = true;
+}
 
-const QMap<MapSortOrder, QString> mapSortOrderMap = {
-    {MapSortOrder::Group, "group"},
-    {MapSortOrder::Layout, "layout"},
-    {MapSortOrder::Area, "area"},
-};
-
-const QMap<QString, MapSortOrder> mapSortOrderReverseMap = {
-    {"group", MapSortOrder::Group},
-    {"layout", MapSortOrder::Layout},
-    {"area", MapSortOrder::Area},
-};
-
-void Config::load() {
-    QFile file(configFilename);
+void KeyValueConfigBase::load() {
+    QFile file(this->configFilename);
     if (!file.exists()) {
         if (!file.open(QIODevice::WriteOnly)) {
-            logError(QString("Could not create config file '%1'").arg(configFilename));
+            logError(QString("Could not create config file '%1'").arg(this->configFilename));
         } else {
             file.close();
         }
     }
 
     if (!file.open(QIODevice::ReadOnly)) {
-        logError(QString("Could not open config file '%1': ").arg(configFilename) + file.errorString());
+        logError(QString("Could not open config file '%1': ").arg(this->configFilename) + file.errorString());
     }
 
     QTextStream in(&file);
@@ -55,88 +40,111 @@ void Config::load() {
 
         QRegularExpressionMatch match = re.match(line);
         if (!match.hasMatch()) {
-            logWarn(QString("Invalid config line in %1: '%2'").arg(configFilename).arg(line));
+            logWarn(QString("Invalid config line in %1: '%2'").arg(this->configFilename).arg(line));
             continue;
         }
 
-        parseConfigKeyValue(match.captured("key").toLower(), match.captured("value"));
+        this->parseConfigKeyValue(match.captured("key").toLower(), match.captured("value"));
     }
 
     file.close();
 }
 
-void Config::parseConfigKeyValue(QString key, QString value) {
+void KeyValueConfigBase::save() {
+    QString text = "";
+    QMap<QString, QString> map = this->getKeyValueMap();
+    for (QMap<QString, QString>::iterator it = map.begin(); it != map.end(); it++) {
+        text += QString("%1=%2\n").arg(it.key()).arg(it.value());
+    }
+
+    QFile file(this->configFilename);
+    if (file.open(QIODevice::WriteOnly)) {
+        file.write(text.toUtf8());
+        file.close();
+    } else {
+        logError(QString("Could not open config file '%1' for writing: ").arg(this->configFilename) + file.errorString());
+    }
+}
+
+const QMap<MapSortOrder, QString> mapSortOrderMap = {
+    {MapSortOrder::Group, "group"},
+    {MapSortOrder::Layout, "layout"},
+    {MapSortOrder::Area, "area"},
+};
+
+const QMap<QString, MapSortOrder> mapSortOrderReverseMap = {
+    {"group", MapSortOrder::Group},
+    {"layout", MapSortOrder::Layout},
+    {"area", MapSortOrder::Area},
+};
+
+PorymapConfig porymapConfig;
+
+void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
     if (key == "recent_project") {
-        Config::recentProject = value;
+        this->recentProject = value;
     } else if (key == "recent_map") {
-        Config::recentMap = value;
+        this->recentMap = value;
     } else if (key == "pretty_cursors") {
         bool ok;
-        Config::prettyCursors = value.toInt(&ok);
+        this->prettyCursors = value.toInt(&ok);
         if (!ok) {
             logWarn(QString("Invalid config value for pretty_cursors: '%1'. Must be 0 or 1.").arg(value));
         }
     } else if (key == "map_sort_order") {
         QString sortOrder = value.toLower();
         if (mapSortOrderReverseMap.contains(sortOrder)) {
-            Config::mapSortOrder = mapSortOrderReverseMap.value(sortOrder);
+            this->mapSortOrder = mapSortOrderReverseMap.value(sortOrder);
         } else {
-            Config::mapSortOrder = MapSortOrder::Group;
+            this->mapSortOrder = MapSortOrder::Group;
             logWarn(QString("Invalid config value for map_sort_order: '%1'. Must be 'group', 'area', or 'layout'."));
         }
     } else {
-        logWarn(QString("Invalid config key found in config file %1: '%2'").arg(configFilename).arg(key));
+        logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->configFilename).arg(key));
     }
 }
 
-void Config::save() {
-    QString text = "";
-    text += QString("recent_project=%1\n").arg(Config::recentProject);
-    text += QString("recent_map=%1\n").arg(Config::recentMap);
-    text += QString("pretty_cursors=%1\n").arg(Config::prettyCursors ? "1" : "0");
-    text += QString("map_sort_order=%1\n").arg(mapSortOrderMap.value(Config::mapSortOrder));
-
-    QFile file(configFilename);
-    if (file.open(QIODevice::WriteOnly)) {
-        file.write(text.toUtf8());
-        file.close();
-    } else {
-        logError(QString("Could not open config file '%1' for writing: ").arg(configFilename) + file.errorString());
-    }
+QMap<QString, QString> PorymapConfig::getKeyValueMap() {
+    QMap<QString, QString> map;
+    map.insert("recent_project", this->recentProject);
+    map.insert("recent_map", this->recentMap);
+    map.insert("pretty_cursors", this->prettyCursors ? "1" : "0");
+    map.insert("map_sort_order", mapSortOrderMap.value(this->mapSortOrder));
+    return map;
 }
 
-void Config::setRecentProject(QString project) {
-    Config::recentProject = project;
-    Config::save();
+void PorymapConfig::setRecentProject(QString project) {
+    this->recentProject = project;
+    this->save();
 }
 
-void Config::setRecentMap(QString map) {
-    Config::recentMap = map;
-    Config::save();
+void PorymapConfig::setRecentMap(QString map) {
+    this->recentMap = map;
+    this->save();
 }
 
-void Config::setMapSortOrder(MapSortOrder order) {
-    Config::mapSortOrder = order;
-    Config::save();
+void PorymapConfig::setMapSortOrder(MapSortOrder order) {
+    this->mapSortOrder = order;
+    this->save();
 }
 
-void Config::setPrettyCursors(bool enabled) {
-    Config::prettyCursors = enabled;
-    Config::save();
+void PorymapConfig::setPrettyCursors(bool enabled) {
+    this->prettyCursors = enabled;
+    this->save();
 }
 
-QString Config::getRecentProject() {
-    return Config::recentProject;
+QString PorymapConfig::getRecentProject() {
+    return this->recentProject;
 }
 
-QString Config::getRecentMap() {
-    return Config::recentMap;
+QString PorymapConfig::getRecentMap() {
+    return this->recentMap;
 }
 
-MapSortOrder Config::getMapSortOrder() {
-    return Config::mapSortOrder;
+MapSortOrder PorymapConfig::getMapSortOrder() {
+    return this->mapSortOrder;
 }
 
-bool Config::getPrettyCursors() {
-    return Config::prettyCursors;
+bool PorymapConfig::getPrettyCursors() {
+    return this->prettyCursors;
 }

@@ -9,25 +9,46 @@ enum MapSortOrder {
     Layout  =  2,
 };
 
-class Config
+class KeyValueConfigBase
 {
 public:
-    static void save();
-    static void load();
-    static void setRecentProject(QString project);
-    static void setRecentMap(QString map);
-    static void setMapSortOrder(MapSortOrder order);
-    static void setPrettyCursors(bool enabled);
-    static QString getRecentProject();
-    static QString getRecentMap();
-    static MapSortOrder getMapSortOrder();
-    static bool getPrettyCursors();
-private:
-    static void parseConfigKeyValue(QString key, QString value);
-    static QString recentProject;
-    static QString recentMap;
-    static MapSortOrder mapSortOrder;
-    static bool prettyCursors;
+    void save();
+    void load();
+    virtual ~KeyValueConfigBase();
+protected:
+    QString configFilename;
+    virtual void parseConfigKeyValue(QString key, QString value) = 0;
+    virtual QMap<QString, QString> getKeyValueMap() = 0;
 };
+
+class PorymapConfig: public KeyValueConfigBase
+{
+public:
+    PorymapConfig() {
+        this->configFilename = "porymap.cfg";
+        this->recentProject = "";
+        this->recentMap = "";
+        this->mapSortOrder = MapSortOrder::Group;
+        this->prettyCursors = true;
+    }
+    void setRecentProject(QString project);
+    void setRecentMap(QString map);
+    void setMapSortOrder(MapSortOrder order);
+    void setPrettyCursors(bool enabled);
+    QString getRecentProject();
+    QString getRecentMap();
+    MapSortOrder getMapSortOrder();
+    bool getPrettyCursors();
+protected:
+    void parseConfigKeyValue(QString key, QString value);
+    QMap<QString, QString> getKeyValueMap();
+private:
+    QString recentProject;
+    QString recentMap;
+    MapSortOrder mapSortOrder;
+    bool prettyCursors;
+};
+
+extern PorymapConfig porymapConfig;
 
 #endif // CONFIG_H
