@@ -107,7 +107,6 @@ private:
 
 signals:
     void tilesetsSaved(QString, QString);
-    void closed();
 };
 
 #endif // TILESETEDITOR_H
