@@ -137,8 +137,8 @@ private:
     Event* createNewObjectEvent();
     Event* createNewWarpEvent();
     Event* createNewHealLocationEvent();
-    Event* createNewCoordScriptEvent();
-    Event* createNewCoordWeatherEvent();
+    Event* createNewTriggerEvent();
+    Event* createNewWeatherTriggerEvent();
     Event* createNewSignEvent();
     Event* createNewHiddenItemEvent();
     Event* createNewSecretBaseEvent();

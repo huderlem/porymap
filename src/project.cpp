@@ -267,7 +267,15 @@ void Project::setNewMapHeader(Map* map, int mapIndex) {
     map->weather = "WEATHER_SUNNY";
     map->type = "MAP_TYPE_TOWN";
     map->unknown = "0";
-    map->show_location = "TRUE";
+    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeruby) {
+        map->show_location = "TRUE";
+    } else if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeemerald) {
+        map->allowBiking = "1";
+        map->allowEscapeRope = "0";
+        map->allowRunning = "1";
+        map->show_location = "1";
+    }
+
     map->battle_scene = "MAP_BATTLE_SCENE_NORMAL";
 }
 
@@ -1555,7 +1563,7 @@ void Project::loadEventPixmaps(QList<Event*> objects) {
             object->pixmap = QPixmap(":/images/Entities_16x16.png").copy(0, 0, 16, 16);
         } else if (event_type == EventType::Warp) {
             object->pixmap = QPixmap(":/images/Entities_16x16.png").copy(16, 0, 16, 16);
-        } else if (event_type == EventType::CoordScript || event_type == EventType::CoordWeather) {
+        } else if (event_type == EventType::Trigger || event_type == EventType::WeatherTrigger) {
             object->pixmap = QPixmap(":/images/Entities_16x16.png").copy(32, 0, 16, 16);
         } else if (event_type == EventType::Sign || event_type == EventType::HiddenItem || event_type == EventType::SecretBase) {
             object->pixmap = QPixmap(":/images/Entities_16x16.png").copy(48, 0, 16, 16);
@@ -1630,10 +1638,10 @@ void Project::saveMapEvents(Map *map) {
         text += QString("%1::\n").arg(coordEventsLabel);
         for (Event *event : map->events["coord_event_group"]) {
             QString event_type = event->get("event_type");
-            if (event_type == EventType::CoordScript) {
-                text += event->buildCoordScriptEventMacro();
-            } else if (event_type == EventType::CoordWeather) {
-                text += event->buildCoordWeatherEventMacro();
+            if (event_type == EventType::Trigger) {
+                text += event->buildTriggerEventMacro();
+            } else if (event_type == EventType::WeatherTrigger) {
+                text += event->buildWeatherTriggerEventMacro();
             }
         }
         text += "\n";
@@ -1785,7 +1793,7 @@ void Project::readMapEvents(Map *map) {
             coord->put("script_var_value", command.value(i++));
             coord->put("script_label", command.value(i++));
             coord->put("event_group_type", "coord_event_group");
-            coord->put("event_type", EventType::CoordScript);
+            coord->put("event_type", EventType::Trigger);
             map->events["coord_event_group"].append(coord);
         } else if (command.value(0) == "coord_weather_event") {
             Event *coord = new Event;
@@ -1796,7 +1804,7 @@ void Project::readMapEvents(Map *map) {
             coord->put("elevation", command.value(i++));
             coord->put("weather", command.value(i++));
             coord->put("event_group_type", "coord_event_group");
-            coord->put("event_type", EventType::CoordWeather);
+            coord->put("event_type", EventType::WeatherTrigger);
             map->events["coord_event_group"].append(coord);
         }
     }

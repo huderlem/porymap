@@ -973,7 +973,7 @@ void MainWindow::updateObjects() {
         else if (event_type == EventType::Warp) {
             hasWarps = true;
         }
-        else if (event_type == EventType::CoordScript || event_type == EventType::CoordWeather) {
+        else if (event_type == EventType::Trigger || event_type == EventType::WeatherTrigger) {
             hasTriggers = true;
         }
         else if (event_type == EventType::Sign || event_type == EventType::HiddenItem || event_type == EventType::SecretBase) {
@@ -1053,20 +1053,13 @@ void MainWindow::updateSelectedObjects() {
         connect(z, SIGNAL(valueChanged(QString)), item, SLOT(set_elevation(QString)));
         connect(item, SIGNAL(elevationChanged(int)), z, SLOT(setValue(int)));
 
-        QFont font;
-        font.setCapitalization(QFont::Capitalize);
-        frame->ui->label_name->setFont(font);
         QString event_type = item->event->get("event_type");
         QString event_group_type = item->event->get("event_group_type");
         QString map_name = item->event->get("map_name");
         int event_offs;
         if (event_type == "event_warp") { event_offs = 0; }
         else { event_offs = 1; }
-        frame->ui->label_name->setText(
-            QString("%1 %2")
-                .arg(map_name)
-                .arg(event_type)
-        );
+        frame->ui->label_name->setText(QString("%1 Id").arg(event_type));
 
         if (events->count() == 1)
         {
@@ -1136,12 +1129,12 @@ void MainWindow::updateSelectedObjects() {
             fields << "destination_map_name";
             fields << "destination_warp";
         }
-        else if (event_type == EventType::CoordScript) {
+        else if (event_type == EventType::Trigger) {
             fields << "script_label";
             fields << "script_var";
             fields << "script_var_value";
         }
-        else if (event_type == EventType::CoordWeather) {
+        else if (event_type == EventType::WeatherTrigger) {
             fields << "weather";
         }
         else if (event_type == EventType::Sign) {
@@ -1161,6 +1154,7 @@ void MainWindow::updateSelectedObjects() {
             QWidget *widget = new QWidget(frame);
             QFormLayout *fl = new QFormLayout(widget);
             fl->setContentsMargins(9, 0, 9, 0);
+            fl->setRowWrapPolicy(QFormLayout::WrapLongRows);
 
             // is_trainer is the only non-combobox item.
             if (key == "is_trainer") {
