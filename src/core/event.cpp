@@ -115,7 +115,7 @@ Event* Event::createNewHiddenItemEvent()
     event->put("event_group_type", "bg_event_group");
     event->put("event_type", EventType::HiddenItem);
     event->put("item", "ITEM_POTION");
-    event->put("flag", "FLAG_HIDDEN_ITEM_0");
+    event->put("flag", "FLAG_TEMP_1");
     return event;
 }
 
