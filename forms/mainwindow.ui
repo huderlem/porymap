@@ -158,7 +158,7 @@
         </sizepolicy>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>2</number>
        </property>
        <property name="tabsClosable">
         <bool>false</bool>
@@ -482,8 +482,8 @@
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>481</width>
-                     <height>606</height>
+                     <width>469</width>
+                     <height>608</height>
                     </rect>
                    </property>
                    <layout class="QGridLayout" name="gridLayout_8">
@@ -797,8 +797,8 @@
                            <rect>
                             <x>0</x>
                             <y>0</y>
-                            <width>300</width>
-                            <height>70</height>
+                            <width>324</width>
+                            <height>77</height>
                            </rect>
                           </property>
                           <layout class="QHBoxLayout" name="horizontalLayout_7">
@@ -909,8 +909,8 @@
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>304</width>
-                      <height>372</height>
+                      <width>307</width>
+                      <height>387</height>
                      </rect>
                     </property>
                     <property name="sizePolicy">
@@ -1226,8 +1226,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>385</width>
-               <height>655</height>
+               <width>381</width>
+               <height>657</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_7">
@@ -1499,8 +1499,8 @@
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>432</width>
-                      <height>565</height>
+                      <width>430</width>
+                      <height>568</height>
                      </rect>
                     </property>
                     <property name="sizePolicy">
@@ -1544,8 +1544,8 @@
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>432</width>
-                      <height>565</height>
+                      <width>98</width>
+                      <height>28</height>
                      </rect>
                     </property>
                     <property name="sizePolicy">
@@ -1589,8 +1589,8 @@
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>432</width>
-                      <height>565</height>
+                      <width>98</width>
+                      <height>28</height>
                      </rect>
                     </property>
                     <property name="sizePolicy">
@@ -1634,8 +1634,8 @@
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>432</width>
-                      <height>565</height>
+                      <width>98</width>
+                      <height>28</height>
                      </rect>
                     </property>
                     <property name="sizePolicy">
@@ -1679,8 +1679,8 @@
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>432</width>
-                      <height>565</height>
+                      <width>98</width>
+                      <height>28</height>
                      </rect>
                     </property>
                     <property name="sizePolicy">
@@ -1730,8 +1730,8 @@
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>432</width>
-                      <height>565</height>
+                      <width>98</width>
+                      <height>28</height>
                      </rect>
                     </property>
                     <property name="sizePolicy">
@@ -1826,6 +1826,16 @@
             </property>
            </widget>
           </item>
+          <item row="2" column="1">
+           <widget class="QCheckBox" name="checkBox_Visibility">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Whether or not the map is dark and requires Flash to illuminate.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
           <item row="3" column="0">
            <widget class="QLabel" name="label_6">
             <property name="text">
@@ -1860,23 +1870,6 @@
             </property>
            </widget>
           </item>
-          <item row="5" column="0">
-           <widget class="QLabel" name="label_8">
-            <property name="text">
-             <string>Show Location Name</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="1">
-           <widget class="QCheckBox" name="checkBox_ShowLocation">
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Whether or not to display the location name when the player enters the map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
           <item row="6" column="0">
            <widget class="QLabel" name="label_9">
             <property name="text">
@@ -1894,10 +1887,68 @@
             </property>
            </widget>
           </item>
-          <item row="2" column="1">
-           <widget class="QCheckBox" name="checkBox_Visibility">
+          <item row="7" column="0">
+           <widget class="QLabel" name="label_8">
+            <property name="text">
+             <string>Show Location Name</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="1">
+           <widget class="QCheckBox" name="checkBox_ShowLocation">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Whether or not the map is dark and requires Flash to illuminate.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Whether or not to display the location name when the player enters the map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="0">
+           <widget class="QLabel" name="label_AllowRunning">
+            <property name="text">
+             <string>Allow Running</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="1">
+           <widget class="QCheckBox" name="checkBox_AllowRunning">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Allows the player to use Running Shoes&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="0">
+           <widget class="QLabel" name="label_AllowBiking">
+            <property name="text">
+             <string>Allow Biking</string>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="1">
+           <widget class="QCheckBox" name="checkBox_AllowBiking">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Allows the player to use a Bike&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="0">
+           <widget class="QLabel" name="label_AllowEscapeRope">
+            <property name="text">
+             <string>Allow Dig &amp; Escape Rope</string>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="1">
+           <widget class="QCheckBox" name="checkBox_AllowEscapeRope">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Allows the player to use Dig or Escape Rope&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
              <string/>
@@ -2234,8 +2285,8 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>829</width>
-                    <height>552</height>
+                    <width>826</width>
+                    <height>557</height>
                    </rect>
                   </property>
                   <layout class="QGridLayout" name="gridLayout_14">
@@ -2407,7 +2458,7 @@
      <x>0</x>
      <y>0</y>
      <width>1117</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

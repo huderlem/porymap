@@ -57,6 +57,9 @@ private slots:
     void on_comboBox_Type_activated(const QString &arg1);
     void on_comboBox_BattleScene_activated(const QString &arg1);
     void on_checkBox_ShowLocation_clicked(bool checked);
+    void on_checkBox_AllowRunning_clicked(bool checked);
+    void on_checkBox_AllowBiking_clicked(bool checked);
+    void on_checkBox_AllowEscapeRope_clicked(bool checked);
 
     void on_tabWidget_currentChanged(int index);
 
@@ -192,6 +195,7 @@ private:
     void initEditor();
     void initMiscHeapObjects();
     void initMapSortOrder();
+    void setProjectSpecificUIVisibility();
     void loadUserSettings();
     bool openRecentProject();
     void updateTilesetEditor();

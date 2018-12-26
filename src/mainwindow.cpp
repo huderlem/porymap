@@ -141,6 +141,29 @@ void MainWindow::initMapSortOrder() {
     sortOrder->setChecked(true);
 }
 
+void MainWindow::setProjectSpecificUIVisibility()
+{
+    switch (projectConfig.getBaseGameVersion())
+    {
+    case BaseGameVersion::pokeruby:
+        ui->checkBox_AllowRunning->setVisible(false);
+        ui->checkBox_AllowBiking->setVisible(false);
+        ui->checkBox_AllowEscapeRope->setVisible(false);
+        ui->label_AllowRunning->setVisible(false);
+        ui->label_AllowBiking->setVisible(false);
+        ui->label_AllowEscapeRope->setVisible(false);
+        break;
+    case BaseGameVersion::pokeemerald:
+        ui->checkBox_AllowRunning->setVisible(true);
+        ui->checkBox_AllowBiking->setVisible(true);
+        ui->checkBox_AllowEscapeRope->setVisible(true);
+        ui->label_AllowRunning->setVisible(true);
+        ui->label_AllowBiking->setVisible(true);
+        ui->label_AllowEscapeRope->setVisible(true);
+        break;
+    }
+}
+
 void MainWindow::mapSortOrder_changed(QAction *action)
 {
     QList<QAction*> items = ui->toolButton_MapSortOrder->menu()->actions();
@@ -198,6 +221,8 @@ bool MainWindow::openProject(QString dir) {
     bool success = true;
     projectConfig.setProjectDir(dir);
     projectConfig.load();
+
+    this->setProjectSpecificUIVisibility();
 
     bool already_open = isProjectOpen() && (editor->project->root == dir);
     if (!already_open) {
@@ -395,6 +420,9 @@ void MainWindow::displayMapProperties() {
     ui->comboBox_PrimaryTileset->clear();
     ui->comboBox_SecondaryTileset->clear();
     ui->checkBox_ShowLocation->setChecked(false);
+    ui->checkBox_AllowRunning->setChecked(false);
+    ui->checkBox_AllowBiking->setChecked(false);
+    ui->checkBox_AllowEscapeRope->setChecked(false);
     if (!editor || !editor->map || !editor->project) {
         ui->frame_3->setEnabled(false);
         return;
@@ -428,6 +456,9 @@ void MainWindow::displayMapProperties() {
     ui->comboBox_BattleScene->setCurrentText(map->battle_scene);
 
     ui->checkBox_ShowLocation->setChecked(map->show_location.toInt() > 0 || map->show_location == "TRUE");
+    ui->checkBox_AllowRunning->setChecked(map->allowRunning.toInt() > 0 || map->allowRunning == "TRUE");
+    ui->checkBox_AllowBiking->setChecked(map->allowBiking.toInt() > 0 || map->allowBiking == "TRUE");
+    ui->checkBox_AllowEscapeRope->setChecked(map->allowEscapeRope.toInt() > 0 || map->allowEscapeRope == "TRUE");
 }
 
 void MainWindow::on_comboBox_Song_activated(const QString &song)
@@ -490,6 +521,39 @@ void MainWindow::on_checkBox_ShowLocation_clicked(bool checked)
             editor->map->show_location = "TRUE";
         } else {
             editor->map->show_location = "FALSE";
+        }
+    }
+}
+
+void MainWindow::on_checkBox_AllowRunning_clicked(bool checked)
+{
+    if (editor && editor->map) {
+        if (checked) {
+            editor->map->allowRunning = "1";
+        } else {
+            editor->map->allowRunning = "0";
+        }
+    }
+}
+
+void MainWindow::on_checkBox_AllowBiking_clicked(bool checked)
+{
+    if (editor && editor->map) {
+        if (checked) {
+            editor->map->allowBiking = "1";
+        } else {
+            editor->map->allowBiking = "0";
+        }
+    }
+}
+
+void MainWindow::on_checkBox_AllowEscapeRope_clicked(bool checked)
+{
+    if (editor && editor->map) {
+        if (checked) {
+            editor->map->allowEscapeRope = "1";
+        } else {
+            editor->map->allowEscapeRope = "0";
         }
     }
 }

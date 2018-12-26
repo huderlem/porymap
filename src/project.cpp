@@ -1,4 +1,5 @@
 #include "project.h"
+#include "config.h"
 #include "history.h"
 #include "historyitem.h"
 #include "log.h"
@@ -186,8 +187,41 @@ bool Project::readMapHeader(Map* map) {
     map->weather = header->value(8);
     map->type = header->value(9);
     map->unknown = header->value(10);
-    map->show_location = header->value(11);
-    map->battle_scene = header->value(12);
+    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeruby) {
+        map->show_location = header->value(11);
+        map->battle_scene = header->value(12);
+    } else if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeemerald) {
+        QString allow_bike = header->value(11);
+        if (allow_bike.startsWith("allow_bike")) {
+            map->allowBiking = allow_bike.split("=").last();
+        } else {
+            logError(QString("Expected 'allow_bike', but encountered '%1' in '%2' header").arg(allow_bike).arg(map->name));
+        }
+
+        QString allow_escape_rope = header->value(12);
+        if (allow_escape_rope.startsWith("allow_escape_rope")) {
+            map->allowEscapeRope = allow_escape_rope.split("=").last();
+        } else {
+            logError(QString("Expected 'allow_escape_rope', but encountered '%1' in '%2' header").arg(allow_escape_rope).arg(map->name));
+        }
+
+        QString allow_run = header->value(13);
+        if (allow_run.startsWith("allow_run")) {
+            map->allowRunning = allow_run.split("=").last();
+        } else {
+            logError(QString("Expected 'allow_run', but encountered '%1' in '%2' header").arg(allow_run).arg(map->name));
+        }
+
+        QString show_map_name = header->value(14);
+        if (show_map_name.startsWith("show_map_name")) {
+            map->show_location = show_map_name.split("=").last();
+        } else {
+            logError(QString("Expected 'show_map_name', but encountered '%1' in '%2' header").arg(show_map_name).arg(map->name));
+        }
+
+        map->battle_scene = header->value(15);
+    }
+
     return true;
 }
 
@@ -260,7 +294,16 @@ void Project::saveMapHeader(Map *map) {
     text += QString("\t.byte %1\n").arg(map->weather);
     text += QString("\t.byte %1\n").arg(map->type);
     text += QString("\t.2byte %1\n").arg(map->unknown);
-    text += QString("\t.byte %1\n").arg(map->show_location);
+    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeruby) {
+        text += QString("\t.byte %1\n").arg(map->show_location);
+    } else if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeemerald) {
+        text += QString("\tmap_header_flags allow_bike=%1, allow_escape_rope=%2, allow_run=%3, show_map_name=%4\n")
+                .arg(map->allowBiking)
+                .arg(map->allowEscapeRope)
+                .arg(map->allowRunning)
+                .arg(map->show_location);
+    }
+
     text += QString("\t.byte %1\n").arg(map->battle_scene);
     saveTextFile(header_path, text);
 }
