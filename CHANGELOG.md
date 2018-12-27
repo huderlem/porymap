@@ -7,6 +7,9 @@ and this project does **not** adhere to any strict versioning scheme, such as [S
 The **"Breaking Changes"** listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. If porymap is used on a project that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.
 
 ## [Unreleased]
+- Nothing
+
+## [1.1.0] - 2018-12-27
 ### Breaking Changes
 - New map header format in pokeemerald from commit [a1ea3b5e394bc115ba9b86348c161094a00dcca7](https://github.com/pret/pokeemerald/commit/a1ea3b5e394bc115ba9b86348c161094a00dcca7).
 
@@ -33,5 +36,6 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ## [1.0.0] - 2018-10-26
 This was the initial release.
 
-[Unreleased]: https://github.com/huderlem/porymap/compare/1.0.0...HEAD
+[Unreleased]: https://github.com/huderlem/porymap/compare/1.1.0...HEAD
+[1.1.0]: https://github.com/huderlem/porymap/compare/1.0.0...1.1.0
 [1.0.0]: https://github.com/huderlem/porymap/tree/1.0.0
