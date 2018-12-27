@@ -11,7 +11,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = porymap
 TEMPLATE = app
 RC_ICONS = resources/icons/porymap-icon-1.ico
-ICON = resources/icons/porymap-icon-1.ico
+ICON = resources/icons/porymap.icns
 QMAKE_CXXFLAGS += -std=c++11
 
 SOURCES += src/core/block.cpp \
