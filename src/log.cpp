@@ -1,5 +1,7 @@
 #include "log.h"
 #include <QDateTime>
+#include <QDir>
+#include <QStandardPaths>
 
 void logInfo(QString message) {
     log(message, LogType::LOG_INFO);
@@ -30,8 +32,16 @@ void log(QString message, LogType type) {
     }
 
     message = QString("%1 %2 %3").arg(now).arg(typeString).arg(message);
+
+    QString settingsPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    QDir dir(settingsPath);
+    if (!dir.exists())
+        dir.mkpath(settingsPath);
+
+    QString logPath = dir.absoluteFilePath("porymap.log");
+
     qDebug() << message;
-    QFile outFile("porymap.log");
+    QFile outFile(logPath);
     outFile.open(QIODevice::WriteOnly | QIODevice::Append);
     QTextStream ts(&outFile);
     ts << message << endl;

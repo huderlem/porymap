@@ -10,6 +10,7 @@
 #include <QLabel>
 #include <QTextStream>
 #include <QRegularExpression>
+#include <QStandardPaths>
 
 KeyValueConfigBase::~KeyValueConfigBase() {
 
@@ -89,7 +90,14 @@ PorymapConfig porymapConfig;
 
 QString PorymapConfig::getConfigFilepath() {
     // porymap config file is in the same directory as porymap itself.
-    return "porymap.cfg";
+    QString settingsPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    QDir dir(settingsPath);
+    if (!dir.exists())
+        dir.mkpath(settingsPath);
+
+    QString configPath = dir.absoluteFilePath("porymap.cfg");
+
+    return configPath;
 }
 
 void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
