@@ -2,12 +2,14 @@ porymap.pro.user
 *.autosave
 *.stash
 *.o
-moc_*
-qrc_*
 porymap.app*
 porymap
+porymap.cfg
+porymap.log
 Makefile
 
-# Generated UI header
+# Qt generated files
 ui_*.h
-
+moc_*.h
+moc_*.cpp
+qrc_*.cpp

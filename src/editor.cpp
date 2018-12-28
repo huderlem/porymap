@@ -19,12 +19,16 @@ Editor::Editor(Ui::MainWindow* ui)
     this->settings = new Settings();
     this->playerViewRect = new MovableRect(&this->settings->playerViewRectEnabled, 30 * 8, 20 * 8, qRgb(255, 255, 255));
     this->cursorMapTileRect = new CursorTileRect(&this->settings->cursorTileRectEnabled, qRgb(255, 255, 255));
+    this->region_map = new RegionMap;// TODO: why is this here?
 }
 
 void Editor::saveProject() {
     if (project) {
         project->saveAllMaps();
         project->saveAllDataStructures();
+        if (region_map) {
+            region_map->save();
+        }
     }
 }
 
@@ -32,6 +36,9 @@ void Editor::save() {
     if (project && map) {
         project->saveMap(map);
         project->saveAllDataStructures();
+    }
+    if (project && region_map) {
+        region_map->save();
     }
 }
 
@@ -599,6 +606,9 @@ void Editor::displayMap() {
     this->cursorMapTileRect->setZValue(1001);
     scene->addItem(this->playerViewRect);
     scene->addItem(this->cursorMapTileRect);
+
+    displayRegionMapTileSelector();//?
+    displayRegionMap();
 
     if (map_item) {
         map_item->setVisible(false);
@@ -1261,6 +1271,93 @@ void Editor::deleteEvent(Event *event) {
     //updateSelectedObjects();
 }
 
+void Editor::loadRegionMapData() {
+    //
+    region_map->init(project);
+}
+
+// TODO: get this to display on a decent scale
+void Editor::displayRegionMapTileSelector() {
+    //
+    this->mapsquare_selector_item = new TilemapTileSelector(QPixmap(this->region_map->region_map_png_path));
+    this->mapsquare_selector_item->draw();
+
+    this->scene_region_map_tiles = new QGraphicsScene;
+    this->scene_region_map_tiles->addItem(this->mapsquare_selector_item);
+
+    connect(this->mapsquare_selector_item, &TilemapTileSelector::selectedTileChanged,
+            this, &Editor::onRegionMapTileSelectorSelectedTileChanged);// TODO: remove this?
+    connect(this->mapsquare_selector_item, &TilemapTileSelector::hoveredTileChanged,
+            this, &Editor::onRegionMapTileSelectorHoveredTileChanged);
+    connect(this->mapsquare_selector_item, &TilemapTileSelector::hoveredTileCleared,
+            this, &Editor::onRegionMapTileSelectorHoveredTileCleared);
+
+    this->ui->graphicsView_RegionMap_Tiles->setScene(this->scene_region_map_tiles);
+    this->ui->graphicsView_RegionMap_Tiles->setFixedSize(this->mapsquare_selector_item->pixelWidth + 2,
+                                                         this->mapsquare_selector_item->pixelHeight + 2);
+}
+
+// TODO: change the signal slot to new syntax
+void Editor::displayRegionMap() {
+    //
+    this->region_map_item = new RegionMapPixmapItem(this->region_map, this->mapsquare_selector_item);
+    connect(region_map_item, SIGNAL(mouseEvent(QGraphicsSceneMouseEvent*, RegionMapPixmapItem*)),
+            this, SLOT(mouseEvent_region_map(QGraphicsSceneMouseEvent*, RegionMapPixmapItem*)));
+    connect(region_map_item, SIGNAL(hoveredRegionMapTileChanged(int, int)),
+            this, SLOT(onHoveredRegionMapTileChanged(int, int)));
+    connect(region_map_item, SIGNAL(hoveredRegionMapTileCleared()),
+            this, SLOT(onHoveredRegionMapTileCleared()));
+    this->region_map_item->draw();
+
+    this->scene_region_map_image = new QGraphicsScene;
+    this->scene_region_map_image->addItem(this->region_map_item);
+    this->scene_region_map_image->setSceneRect(this->scene_region_map_image->sceneRect());
+
+    //this->scene_region_map_image->scale(2, 2);
+    this->ui->graphicsView_Region_Map_BkgImg->setScene(this->scene_region_map_image);
+    this->ui->graphicsView_Region_Map_BkgImg->setFixedSize(this->region_map->imgSize());
+    //this->ui->graphicsView_Region_Map_BkgImg->scale(2.0, 2.0);
+}
+
+void Editor::onRegionMapTileSelectorSelectedTileChanged() {
+    //
+}
+
+void Editor::onRegionMapTileSelectorHoveredTileChanged(unsigned tileId) {
+    QString message = QString("Tile: 0x") + QString("%1").arg(tileId, 4, 16, QChar('0')).toUpper();
+    this->ui->statusBar->showMessage(message);
+}
+
+void Editor::onRegionMapTileSelectorHoveredTileCleared() {
+    //
+    QString message = QString("Selected Tile: 0x") + QString("%1").arg(this->mapsquare_selector_item->selectedTile, 4, 16, QChar('0')).toUpper();
+    this->ui->statusBar->showMessage(message);
+}
+
+void Editor::onHoveredRegionMapTileChanged(int x, int y) {
+    //
+    regionMapTabStatusbarMessage = QString("x: %1, y: %2   Tile: 0x").arg(x).arg(y) + QString("%1").arg(this->region_map->getTileId(x, y), 4, 16, QChar('0')).toUpper();
+    this->ui->statusBar->showMessage(regionMapTabStatusbarMessage);
+}
+
+void Editor::onHoveredRegionMapTileCleared() {
+    //
+    this->ui->statusBar->clearMessage();
+}
+
+void Editor::mouseEvent_region_map(QGraphicsSceneMouseEvent *event, RegionMapPixmapItem *item) {
+    //
+    if (event->buttons() & Qt::RightButton) {
+        //
+        item->select(event);
+    } else if (event->buttons() & Qt::MiddleButton) {
+        // TODO: add functionality here? replace or?
+    } else {
+        //
+        item->paint(event);
+    }
+}
+
 // It doesn't seem to be possible to prevent the mousePress event
 // from triggering both event's DraggablePixmapItem and the background mousePress.
 // Since the DraggablePixmapItem's event fires first, we can set a temp
@@ -1274,6 +1371,5 @@ void Editor::objectsView_onMousePress(QMouseEvent *event) {
         selected_events->append(first);
         updateSelectedEvents();
     }
-
     selectingEvent = false;
 }

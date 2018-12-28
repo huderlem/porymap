@@ -263,11 +263,13 @@ bool MainWindow::openProject(QString dir) {
         setWindowTitle(editor->project->getProjectTitle());
         loadDataStructures();
         populateMapList();
+        editor->loadRegionMapData();
         success = setMap(getDefaultMap(), true);
     } else {
         setWindowTitle(editor->project->getProjectTitle());
         loadDataStructures();
         populateMapList();
+        editor->loadRegionMapData();
     }
 
     if (success) {
@@ -594,6 +596,11 @@ void MainWindow::on_checkBox_AllowEscapeRope_clicked(bool checked)
             editor->map->allowEscapeRope = "0";
         }
     }
+}
+
+void MainWindow::on_tabWidget_Region_Map_currentChanged(int index) {
+    //
+    ui->stackedWidget_RM_Options->setCurrentIndex(index);
 }
 
 void MainWindow::loadDataStructures() {

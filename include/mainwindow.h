@@ -65,6 +65,8 @@ private slots:
     void on_checkBox_AllowBiking_clicked(bool checked);
     void on_checkBox_AllowEscapeRope_clicked(bool checked);
 
+    void on_tabWidget_Region_Map_currentChanged(int);
+
     void on_tabWidget_currentChanged(int index);
 
     void on_actionUndo_triggered();
