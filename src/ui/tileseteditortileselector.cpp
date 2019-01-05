@@ -2,6 +2,7 @@
 #include "imageproviders.h"
 #include "project.h"
 #include <QPainter>
+#include <QVector>
 
 QPoint TilesetEditorTileSelector::getSelectionDimensions() {
     if (this->externalSelection) {
@@ -168,4 +169,71 @@ QPoint TilesetEditorTileSelector::getTileCoordsOnWidget(uint16_t tile) {
     pos.rx() = (pos.x() * this->cellWidth) + (this->cellWidth / 2);
     pos.ry() = (pos.y() * this->cellHeight) + (this->cellHeight / 2);
     return pos;
+}
+
+QImage TilesetEditorTileSelector::buildPrimaryTilesIndexedImage() {
+    if (!this->primaryTileset || !this->primaryTileset->tiles
+     || !this->secondaryTileset || !this->secondaryTileset->tiles) {
+        return QImage();
+    }
+
+    int primaryLength = this->primaryTileset->tiles->length();
+    int height = primaryLength / this->numTilesWide;
+    QList<QRgb> palette = Tileset::getPalette(this->paletteId, this->primaryTileset, this->secondaryTileset);
+    QImage image(this->numTilesWide * 8, height * 8, QImage::Format_RGBA8888);
+
+    QPainter painter(&image);
+    for (uint16_t tile = 0; tile < primaryLength; tile++) {
+        QImage tileImage;
+        if (tile < primaryLength) {
+            tileImage = getColoredTileImage(tile, this->primaryTileset, this->secondaryTileset, this->paletteId);
+        } else {
+            tileImage = QImage(8, 8, QImage::Format_RGBA8888);
+            tileImage.fill(palette.at(0));
+        }
+
+        int y = tile / this->numTilesWide;
+        int x = tile % this->numTilesWide;
+        QPoint origin = QPoint(x * 8, y * 8);
+        painter.drawImage(origin, tileImage.mirrored(this->xFlip, this->yFlip));
+    }
+
+    painter.end();
+
+    QVector<QRgb> colorTable = palette.toVector();
+    return image.convertToFormat(QImage::Format::Format_Indexed8, colorTable);
+}
+
+QImage TilesetEditorTileSelector::buildSecondaryTilesIndexedImage() {
+    if (!this->primaryTileset || !this->primaryTileset->tiles
+     || !this->secondaryTileset || !this->secondaryTileset->tiles) {
+        return QImage();
+    }
+
+    int secondaryLength = this->secondaryTileset->tiles->length();
+    int height = secondaryLength / this->numTilesWide;
+    QList<QRgb> palette = Tileset::getPalette(this->paletteId, this->primaryTileset, this->secondaryTileset);
+    QImage image(this->numTilesWide * 8, height * 8, QImage::Format_RGBA8888);
+
+    QPainter painter(&image);
+    uint16_t primaryLength = static_cast<uint16_t>(Project::getNumTilesPrimary());
+    for (uint16_t tile = 0; tile < secondaryLength; tile++) {
+        QImage tileImage;
+        if (tile < secondaryLength) {
+            tileImage = getColoredTileImage(tile + primaryLength, this->primaryTileset, this->secondaryTileset, this->paletteId);
+        } else {
+            tileImage = QImage(8, 8, QImage::Format_RGBA8888);
+            tileImage.fill(palette.at(0));
+        }
+
+        int y = tile / this->numTilesWide;
+        int x = tile % this->numTilesWide;
+        QPoint origin = QPoint(x * 8, y * 8);
+        painter.drawImage(origin, tileImage.mirrored(this->xFlip, this->yFlip));
+    }
+
+    painter.end();
+
+    QVector<QRgb> colorTable = palette.toVector();
+    return image.convertToFormat(QImage::Format::Format_Indexed8, colorTable);
 }

@@ -25,6 +25,8 @@ public:
     QList<Tile> getSelectedTiles();
     void setExternalSelection(int, int, QList<Tile>);
     QPoint getTileCoordsOnWidget(uint16_t);
+    QImage buildPrimaryTilesIndexedImage();
+    QImage buildSecondaryTilesIndexedImage();
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent*);

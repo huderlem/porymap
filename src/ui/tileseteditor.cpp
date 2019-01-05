@@ -369,8 +369,8 @@ void TilesetEditor::importTilesetTiles(Tileset *tileset, bool primary) {
     }
 
     // Validate total number of tiles in image.
-    int numTilesWide = image.width() / 16;
-    int numTilesHigh = image.height() / 16;
+    int numTilesWide = image.width() / 8;
+    int numTilesHigh = image.height() / 8;
     int totalTiles = numTilesHigh * numTilesWide;
     int maxAllowedTiles = primary ? Project::getNumTilesPrimary() : Project::getNumTilesTotal() - Project::getNumTilesPrimary();
     if (totalTiles > maxAllowedTiles) {
@@ -551,5 +551,27 @@ void TilesetEditor::on_actionRedo_triggered()
         this->metatileSelector->draw();
         this->metatileLayersItem->draw();
         this->metatileLayersItem->clearLastModifiedCoords();
+    }
+}
+
+void TilesetEditor::on_actionExport_Primary_Tiles_Image_triggered()
+{
+    QString defaultName = QString("%1_Tiles_Pal%2").arg(this->primaryTileset->name).arg(this->paletteId);
+    QString defaultFilepath = QString("%1/%2.png").arg(this->project->root).arg(defaultName);
+    QString filepath = QFileDialog::getSaveFileName(this, "Export Primary Tiles Image", defaultFilepath, "Image Files (*.png)");
+    if (!filepath.isEmpty()) {
+        QImage image = this->tileSelector->buildPrimaryTilesIndexedImage();
+        image.save(filepath);
+    }
+}
+
+void TilesetEditor::on_actionExport_Secondary_Tiles_Image_triggered()
+{
+    QString defaultName = QString("%1_Tiles_Pal%2").arg(this->secondaryTileset->name).arg(this->paletteId);
+    QString defaultFilepath = QString("%1/%2.png").arg(this->project->root).arg(defaultName);
+    QString filepath = QFileDialog::getSaveFileName(this, "Export Secondary Tiles Image", defaultFilepath, "Image Files (*.png)");
+    if (!filepath.isEmpty()) {
+        QImage image = this->tileSelector->buildSecondaryTilesIndexedImage();
+        image.save(filepath);
     }
 }

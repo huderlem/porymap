@@ -479,6 +479,9 @@
     <addaction name="actionImport_Secondary_Tiles"/>
     <addaction name="actionChange_Metatiles_Count"/>
     <addaction name="actionChange_Palettes"/>
+    <addaction name="separator"/>
+    <addaction name="actionExport_Primary_Tiles_Image"/>
+    <addaction name="actionExport_Secondary_Tiles_Image"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -502,22 +505,22 @@
   </action>
   <action name="actionImport_Primary_Tiles">
    <property name="text">
-    <string>Import Primary Tiles</string>
+    <string>Import Primary Tiles...</string>
    </property>
   </action>
   <action name="actionImport_Secondary_Tiles">
    <property name="text">
-    <string>Import Secondary Tiles</string>
+    <string>Import Secondary Tiles...</string>
    </property>
   </action>
   <action name="actionChange_Metatiles_Count">
    <property name="text">
-    <string>Change Number of Metatiles</string>
+    <string>Change Number of Metatiles...</string>
    </property>
   </action>
   <action name="actionChange_Palettes">
    <property name="text">
-    <string>Change Palettes</string>
+    <string>Palette Editor</string>
    </property>
   </action>
   <action name="actionUndo">
@@ -534,6 +537,16 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Y</string>
+   </property>
+  </action>
+  <action name="actionExport_Primary_Tiles_Image">
+   <property name="text">
+    <string>Export Primary Tiles Image...</string>
+   </property>
+  </action>
+  <action name="actionExport_Secondary_Tiles_Image">
+   <property name="text">
+    <string>Export Secondary Tiles Image...</string>
    </property>
   </action>
  </widget>
