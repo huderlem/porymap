@@ -68,6 +68,7 @@ public:
     void _setBlock(int x, int y, Block block);
     void floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
     void _floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
+    void magicFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
     void undo();
     void redo();
     void commit();
