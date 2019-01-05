@@ -9,6 +9,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ## [Unreleased]
 ### Added
 - Add "magic fill" mode to fill tool (hold down CTRL key). This fills all matching metatiles on the map, rather than only the contiguous region.
+- Add ability to import tileset palettes (JASC, .pal, .tpl, .gpl, .act).
 
 ## [1.1.0] - 2018-12-27
 ### Breaking Changes
