@@ -47,6 +47,9 @@ public:
     Map* loadMap(QString);
     Map* getMap(QString);
 
+    // other options include: InGameName, PopUpName, ????
+    QMap<QString, QString> *mapSecToMapHoverName;// {"MAPSEC_LITTLEROOT_TOWN" : "LITTLEROOT{NAME_END} TOWN"}
+
     QMap<QString, Tileset*> *tileset_cache = nullptr;
     Tileset* loadTileset(QString, Tileset *tileset = nullptr);
     Tileset* getTileset(QString, bool forceLoad = false);

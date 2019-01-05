@@ -83,8 +83,10 @@ QMap<QString, QList<struct CityMapPosition>> RegionMap::ruby_city_maps_ = QMap<Q
     }},
 });
 
+// TODO: add version arg to this from Editor Setings
 void RegionMap::init(Project *pro) {
     QString path = pro->root;
+    this->project = pro;
     //
     // TODO: in the future, allow these to be adjustable (and save values)
     // possibly use a config file?
@@ -99,20 +101,24 @@ void RegionMap::init(Project *pro) {
     region_map_bin_path = path + "/graphics/pokenav/region_map_map.bin";
     region_map_png_path = path + "/graphics/pokenav/region_map.png";
     region_map_layout_path = path + "/src/data/region_map_layout.h";
+    region_map_entries_path = path + "/src/data/region_map/region_map_entries.h";
+    region_map_layout_bin_path = path + "/graphics/pokenav/region_map_section_layout.bin";
+    region_map_city_map_tiles_path = path + "/graphics/pokenav/zoom_tiles.png";// TODO: rename png to map_squares in pokeemerald
 
     readBkgImgBin();
-    readLayout(pro->mapConstantsToMapNames);
+    readLayout();
     readCityMaps();
 
     //tryGetMap();
 
     //saveBkgImgBin();
     //saveLayout();
-    test(pro->mapConstantsToMapNames);
+
+    //test();
 }
 
 // as of now, this needs to be called first because it initializes all the
-// RegionMapSquare s in the list
+// `RegionMapSquare`s in the list
 // TODO: if the tileId is not valid for the provided image, make sure it does not crash
 void RegionMap::readBkgImgBin() {
     QFile binFile(region_map_bin_path);
@@ -121,7 +127,7 @@ void RegionMap::readBkgImgBin() {
     QByteArray mapBinData = binFile.readAll();
     binFile.close();
 
-    // the two is because lines are skipped for some reason
+    // the two multiplier is because lines are skipped for some reason
     // (maybe that is because there could be multiple layers?)
     // background image is also 32x20
     for (int m = 0; m < img_height_; m++) {
@@ -148,113 +154,123 @@ void RegionMap::saveBkgImgBin() {
     file.close();
 }
 
-// done
-void RegionMap::readLayout(QMap<QString, QString> *qmap) {
-    QFile file(region_map_layout_path);
+// TODO: reorganize this into project? the i/o stuff. use regionMapSections
+void RegionMap::readLayout() {
+    //
+    QFile file(region_map_entries_path);
     if (!file.open(QIODevice::ReadOnly)) return;
 
-    QMap<QString, QString> * abbr = new QMap<QString, QString>;
+    QString line;
+    // TODO: put these in Project, and keep in order
+    //QMap<QString, QString> sMapNames;// {"sMapName_LittlerootTown" : "LITTLEROOT{NAME_END} TOWN"}
+    //QMap<QString, QString> mapSecToMapName;// {"MAPSEC_LITTLEROOT_TOWN" : "LITTLEROOT{NAME_END} TOWN"}
+    //QList<> mapSecToMapEntry;// {"MAPSEC_LITTLEROOT_TOWN" : }
 
-    QString line, text;
-    QStringList *captured = new QStringList;
+    // new map ffor mapSecToMapHoverName
+    QMap<QString, QString> *qmap = new QMap<QString, QString>;
 
     QTextStream in(&file);
     while (!in.atEnd()) {
         line = in.readLine();
-        if (line.startsWith("#define")) {
-            QStringList split = line.split(QRegularExpression("\\s+"));
-            abbr->insert(split[2].replace("MAPSEC_",""), split[1]);
-        } else {
-            text += line.remove(" ");
+        if (line.startsWith("static const u8")) {
+            QRegularExpression reBefore("sMapName_(.*)\\[");
+            QRegularExpression reAfter("_\\(\"(.*)\"");
+            QString const_name = reBefore.match(line).captured(1);
+            QString full_name = reAfter.match(line).captured(1);
+            sMapNames.insert(const_name, full_name);
+        } else if (line.contains("MAPSEC")) {
+            QRegularExpression reBefore("\\[(.*)\\]");
+            QRegularExpression reAfter("{(.*)}");
+            QStringList entry =  reAfter.match(line).captured(1).remove(" ").split(",");
+            QString mapsec = reBefore.match(line).captured(1);
+            QString insertion = entry[4].remove("sMapName_");
+            qmap->insert(mapsec, sMapNames[insertion]);
+            // can make this a map, the order doesn't really matter
+            mapSecToMapEntry[mapsec] = 
+            //   x                 y                 width             height            name
+                {entry[0].toInt(), entry[1].toInt(), entry[2].toInt(), entry[3].toInt(), insertion}
+            ;
+            // ^ when loading this info to city maps, loop over mapSecToMapEntry and
+            // add x and y map sqyare when width or height >1
+            // indexOf because mapsecs is just a qstringlist
+            //text += line.remove(" ");
         }
     }
-    QRegularExpression re("{(.*?)}");
-    *captured = re.match(text).captured(1).split(",");
-    captured->removeAll({});
+    file.close();
 
-    // replace abbreviations with names
-    for (int i = 0; i < captured->length(); i++) {
-        QString value = (*captured)[i];
-        if (value.startsWith("R(")) {// routes are different
-            captured->replace(i, QString("ROUTE_%1").arg(value.mid(2,3)));
-        } else {
-            captured->replace(i, abbr->key(value));
-        }
-    }
+    project->mapSecToMapHoverName = qmap;
+
+    QFile binFile(region_map_layout_bin_path);
+    if (!binFile.open(QIODevice::ReadOnly)) return;
+    QByteArray mapBinData = binFile.readAll();
+    binFile.close();
 
     // TODO: improve this?
-    for (int m = 0, i = 0; m < layout_height_; m++) {
+    for (int m = 0; m < layout_height_; m++) {
         for (int n = 0; n < layout_width_; n++) {
-            i = img_index_(n,m);
-            QString secname = (*captured)[layout_index_(n,m)];
-            if (secname != "NOTHING") map_squares[i].has_map = true;
-            map_squares[i].map_name = qmap->value(mapSecToMapConstant(secname));
+            int i = img_index_(n,m);
+            map_squares[i].secid = static_cast<uint8_t>(mapBinData.at(layout_index_(n,m)));
+            QString secname = (*(project->regionMapSections))[static_cast<uint8_t>(mapBinData.at(layout_index_(n,m)))];
+            //qDebug() << i << map_squares[i].secid << secname;
+            if (secname != "MAPSEC_NONE") map_squares[i].has_map = true;
+            map_squares[i].mapsec = secname;
+            map_squares[i].map_name = sMapNames.value(mapSecToMapEntry.value(secname).name);//[mapSecToMapEntry[secname].name];
             map_squares[i].x = n;
             map_squares[i].y = m;
         }
     }
-    mapname_abbr = abbr;
-    layout_map_names = captured;
-    file.close();
 }
 
-// does it matter that it doesn't save in order?
-// do i need to use a QList<Pair> ??
+/// saves:
+// region_map_entries_path
+// region_map_layout_bin_path (layout as tilemap instead of how it is in ruby)
+// done
+// TODO: consider keeping QMaps in order
 void RegionMap::saveLayout() {
-    //
-    QString layout_text = "";
-    QString mapsec      = "MAPSEC_";
-    QString define      = "#define ";
-    QString array_start = "static const u8 sRegionMapLayout[] =\n{";
-    QString array_close = "\n};\n";
-    QString tab         = "    ";
+    QString entries_text;
+    QString layout_text;
 
-    for (QString key : mapname_abbr->keys()) {
-        layout_text += define + mapname_abbr->value(key) + tab + mapsec + key + "\n";
+    entries_text += "#ifndef GUARD_DATA_REGION_MAP_REGION_MAP_ENTRIES_H\n";
+    entries_text += "#define GUARD_DATA_REGION_MAP_REGION_MAP_ENTRIES_H\n\n";
+
+    // note: this doesn't necessarily keep order because it is a QMap
+    for (auto it : this->project->mapSecToMapHoverName->keys()) {
+        entries_text += "static const u8 sMapName_" + fix_case(it) + "[] = _(\"" + this->project->mapSecToMapHoverName->value(it) + "\");\n";
     }
 
-    layout_text += "\n" + array_start;// +  + array_close;//oops
+    entries_text += "\nconst struct RegionMapLocation gRegionMapEntries[] = {\n";
 
-    //qDebug() << *layout_map_names;
-    int cnt = 0;
-    for (QString s : *layout_map_names) {
-        //
-        if (!(cnt % layout_width_)) {
-            layout_text += "\n" + tab;
-        }
-        if (s.startsWith("ROUTE_")) {
-            layout_text += QString("R(%1)").arg(s.replace("ROUTE_","")) + ", ";
-        } else {
-            layout_text += mapname_abbr->value(s) + ", ";
-        }
-        cnt++;
+    for (auto sec : mapSecToMapEntry.keys()) {
+        struct RegionMapEntry entry = mapSecToMapEntry.value(sec);
+        entries_text += "    [" + sec + "] = {" + QString::number(entry.x) + ", " + QString::number(entry.y) + ", " 
+            +  QString::number(entry.width) + ", " + QString::number(entry.height) + ", sMapName_" + fix_case(sec) + "},\n";//entry.name
     }
+    entries_text += "};\n\n#endif // GUARD_DATA_REGION_MAP_REGION_MAP_ENTRIES_H\n";
 
-    //layout_text.
-    layout_text += array_close;
-    
-    QFile file(region_map_layout_path);
-    if (!file.open(QIODevice::WriteOnly)) return;
-    file.write(layout_text.toUtf8());
-    file.close();
+    project->saveTextFile(region_map_entries_path, entries_text);
+
+    QByteArray data;
+    for (int m = 0; m < layout_height_; m++) {
+        for (int n = 0; n < layout_width_; n++) {
+            int i = img_index_(n,m);
+            data.append(map_squares[i].secid);
+        }
+    }
+    QFile bfile(region_map_layout_bin_path);
+    if (!bfile.open(QIODevice::WriteOnly)) return;
+    bfile.write(data);
+    bfile.close();
 }
 
+// beyond broken
 void RegionMap::readCityMaps() {
     //
-    //for (int m = 0; m < layout_height_; m++) {
-    //    QString tester;
-    //    for (int n = 0; n < layout_width_; n++) {
-    //        tester += (QString::number(img_index_(n,m)).rightJustified(3, '.') + " ");
-    //    }
-    //    qDebug() << tester;
-    //}
-    //for (auto map : map_squares) {
     for (int map = 0; map < map_squares.size(); map++) {
         //
         if (map_squares[map].has_map) {
             //
             if (ruby_city_maps_.contains(map_squares[map].map_name)) {
-                map_squares[map].has_city_map = true;
+                //map_squares[map].has_city_map = true;
                 //map_squares[map].city_map_name = ruby_city_maps_.value(map_squares[map].map_name)[0].tilemap;
                 QList<struct CityMapPosition> city_maps = ruby_city_maps_.value(map_squares[map].map_name);
                 for (auto city_map : city_maps) {
@@ -262,32 +278,12 @@ void RegionMap::readCityMaps() {
                     if (city_map.x == map_squares[map].x
                      && city_map.y == map_squares[map].y)
                         //
+                        map_squares[map].has_city_map = true;
                         map_squares[map].city_map_name = city_map.tilemap;
                 }
             }
         }
     }
-}
-
-//done
-QString RegionMap::newAbbr(QString mapname) {
-    QString abbr;
-    QStringList words = mapname.split("_");
-
-    if (words.length() == 1) {
-        abbr = (words[0] + "_____X").left(6);
-    } else {
-        abbr = (words.front() + "___X").left(4) + "_" + words.back().at(0);
-    }
-
-    // to guarantee unique abbreviations (up to 14)
-    QString extra_chars = "23456789BCDEF";
-    int count = 0;
-    while ((*mapname_abbr).values().contains(abbr)) {
-        abbr.replace(5,1,extra_chars[count]);
-        count++;
-    }
-    return abbr;
 }
 
 // layout coords to image index
@@ -300,10 +296,7 @@ int RegionMap::layout_index_(int x, int y) {
     return (x + y * layout_width_);
 }
 
-// img coords to layout index?
-// img coords to img index?
-
-void RegionMap::test(QMap<QString, QString>* qmap) {
+void RegionMap::test() {
     //
     bool debug_rmap = false;
 
@@ -316,17 +309,11 @@ void RegionMap::test(QMap<QString, QString>* qmap) {
                      << square.has_city_map
                      << square.city_map_name
                      ;
-            //if (qmap->contains(mapSecToMapConstant(square.map_name)))
-            //    extras += qmap->value(mapSecToMapConstant(square.map_name)) + " ";
-            //else
-            //    extras += "nothing ";
         }
 
         QPixmap png(region_map_png_path);
-        //png.load(region_map_png_path);
         qDebug() << "png num 8x8 tiles" << QString("0x%1").arg((png.width()/8) * (png.height() / 8), 2, 16, QChar('0'));
     }
-
 }
 
 int RegionMap::width() {
@@ -346,28 +333,58 @@ QSize RegionMap::imgSize() {
 unsigned RegionMap::getTileId(int x, int y) {
     //
     return map_squares[x + y * img_width_].tile_img_id;
-    //qDebug() << x << y;
-    //return 0;
 }
-
-// sidenote: opening the map from MAPSEC_x will not always be right
-// there needs to be a mapsections to mapname QMap
-// otherwie, look for the first map with right substring
-// mapConstantsToMapNames [MAP_ROUTE106] = "Route106"
-// eg. SOUTHERN_ISLAND -> MAP_SOUTHERN_ISLAND -> SouthernIsland(n) -> SouthernIsland_Exterior
-//     MT_CHIMNEY      -> MAP_MT_CHIMNEY      -> MtChimney(y)
-//     ROUTE_101       -> MAP_ROUTE101        -> Route101(y)
-// (or synchronize these for consistency in the repos :: underscore / no underscore)
 
 // TODO: change debugs to logs
 void RegionMap::save() {
     // 
     qDebug() << "saving region map image tilemap at" << region_map_bin_path << "\n"
-             ;//<< "saving region map layout at" << region_map_layout_path << "\n";
+             << "saving region map layout at" << region_map_layout_path << "\n"
+            ;
 
     saveBkgImgBin();
+    saveLayout();
 }
 
+// save Options (temp)
+void RegionMap::saveOptions(int index, QString sec, QString name, int x, int y) {
+    //
+    // TODO:req need to reindex in city_maps if changing x and y
+    // TODO: save [sec] sMapName_ properly
+    // so instead of taking index, maybe go by img_index_(x,y)
+    this->project->mapSecToMapHoverName->insert(sec, name);
+    this->map_squares[index].mapsec = sec;
+    this->map_squares[index].map_name = name;// TODO: display in editor with this map & remove this field
+    this->map_squares[index].x = x;
+    this->map_squares[index].y = y;
+}
+
+// from x, y of image
+// TODO: make sure this returns a valid index
+int RegionMap::getMapSquareIndex(int x, int y) {
+    //
+    int index = (x + y * img_width_);
+    return index < map_squares.length() - 1 ? index : 0;
+}
+
+// For turning a MAPSEC_NAME into a unique identifier sMapName-style variable.
+QString RegionMap::fix_case(QString caps) {
+    bool big = true;
+    QString camel;
+
+    for (auto ch : caps.remove(QRegularExpression("({.*})")).remove("MAPSEC")) {
+        if (ch == '_' || ch == ' ') {
+            big = true;
+            continue;
+        }
+        if (big) {
+            camel += ch.toUpper();
+            big = false;
+        }
+        else camel += ch.toLower();
+    }
+    return camel;
+}
 
 
 

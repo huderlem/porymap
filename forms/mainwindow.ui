@@ -237,7 +237,7 @@
         </sizepolicy>
        </property>
        <property name="currentIndex">
-        <number>4</number>
+        <number>0</number>
        </property>
        <property name="tabsClosable">
         <bool>false</bool>
@@ -2778,7 +2778,7 @@
             </spacer>
            </item>
            <item row="0" column="1">
-            <widget class="QGraphicsView" name="graphicsView_City_Map_Metatiles">
+            <widget class="QGraphicsView" name="graphicsView_City_Map_Tiles">
              <property name="enabled">
               <bool>true</bool>
              </property>
@@ -2847,10 +2847,10 @@
           <widget class="QScrollArea" name="scrollArea_RM_BkgImg">
            <property name="geometry">
             <rect>
-             <x>30</x>
-             <y>20</y>
-             <width>321</width>
-             <height>211</height>
+             <x>0</x>
+             <y>0</y>
+             <width>371</width>
+             <height>261</height>
             </rect>
            </property>
            <property name="sizePolicy">
@@ -2867,8 +2867,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>319</width>
-              <height>209</height>
+              <width>369</width>
+              <height>259</height>
              </rect>
             </property>
             <layout class="QGridLayout" name="gridLayout_18">
@@ -2972,10 +2972,10 @@
           <widget class="QScrollArea" name="scrollArea_RM_Layout">
            <property name="geometry">
             <rect>
-             <x>20</x>
-             <y>20</y>
-             <width>321</width>
-             <height>211</height>
+             <x>0</x>
+             <y>0</y>
+             <width>371</width>
+             <height>261</height>
             </rect>
            </property>
            <property name="sizePolicy">
@@ -2992,8 +2992,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>319</width>
-              <height>209</height>
+              <width>369</width>
+              <height>259</height>
              </rect>
             </property>
             <layout class="QGridLayout" name="gridLayout_19">
@@ -3357,20 +3357,20 @@
           </widget>
          </widget>
          <widget class="QWidget" name="page_RM_Layout_Options">
-          <widget class="QFrame" name="frame_10">
+          <widget class="QFrame" name="frame_RM_Options">
            <property name="enabled">
             <bool>false</bool>
            </property>
            <property name="geometry">
             <rect>
-             <x>50</x>
-             <y>40</y>
-             <width>261</width>
-             <height>170</height>
+             <x>10</x>
+             <y>30</y>
+             <width>331</width>
+             <height>211</height>
             </rect>
            </property>
            <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
@@ -3381,93 +3381,107 @@
            <property name="frameShadow">
             <enum>QFrame::Raised</enum>
            </property>
-           <layout class="QFormLayout" name="formLayout_3">
-            <item row="0" column="0">
-             <widget class="QLabel" name="label_16">
-              <property name="text">
-               <string>Connected Map</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QComboBox" name="comboBox_RM_Connected_Map">
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The section of the region map which the map is grouped under. This also determines the name of the map that is display when the player enters it.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="editable">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="label_18">
-              <property name="text">
-               <string>Weather</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QComboBox" name="comboBox_Weather_2">
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The default weather for this map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="editable">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="label_19">
-              <property name="text">
-               <string>Type</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <widget class="QComboBox" name="comboBox_Type_2">
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The map type is a general attribute, which is used for many different things. For example. it determines whether biking or running is allowed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="editable">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0">
-             <widget class="QLabel" name="label_20">
-              <property name="text">
-               <string>Show Location Name</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="1">
-             <widget class="QCheckBox" name="checkBox_ShowLocation_2">
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Whether or not to display the location name when the player enters the map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="0">
-             <widget class="QLabel" name="label_21">
-              <property name="text">
-               <string>Battle scene</string>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="1">
-             <widget class="QComboBox" name="comboBox_BattleScene_2">
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Determines the type of battle scene graphics to use.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="editable">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-           </layout>
+           <widget class="QPushButton" name="pushButton_RM_Options_save">
+            <property name="geometry">
+             <rect>
+              <x>210</x>
+              <y>170</y>
+              <width>107</width>
+              <height>32</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Set Values</string>
+            </property>
+           </widget>
+           <widget class="QWidget" name="">
+            <property name="geometry">
+             <rect>
+              <x>13</x>
+              <y>11</y>
+              <width>301</width>
+              <height>111</height>
+             </rect>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_22">
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_RM_MapSection">
+               <property name="text">
+                <string>Map Section</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QComboBox" name="comboBox_RM_ConnectedMap">
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The section of the region map which the map is grouped under. This also determines the name of the map that is display when the player enters it.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="editable">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="label_RM_MapName">
+               <property name="text">
+                <string>Map Name</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QLineEdit" name="lineEdit_RM_MapName"/>
+             </item>
+             <item row="2" column="0">
+              <widget class="QLabel" name="label_RM_CityMap">
+               <property name="text">
+                <string>City Map</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1">
+              <widget class="QComboBox" name="comboBox_RM_CityMap">
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The map type is a general attribute, which is used for many different things. For example. it determines whether biking or running is allowed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="editable">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="">
+            <property name="geometry">
+             <rect>
+              <x>20</x>
+              <y>130</y>
+              <width>121</width>
+              <height>26</height>
+             </rect>
+            </property>
+            <layout class="QHBoxLayout" name="horizontalLayout_RM_Options_xy">
+             <item>
+              <widget class="QLabel" name="label_RM_Options_x">
+               <property name="text">
+                <string>x</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="spinBox_RM_Options_x"/>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_RM_Options_y">
+               <property name="text">
+                <string>y</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="spinBox_RM_Options_y"/>
+             </item>
+            </layout>
+           </widget>
           </widget>
          </widget>
         </widget>

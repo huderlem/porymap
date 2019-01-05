@@ -68,6 +68,7 @@ private slots:
     void on_tabWidget_Region_Map_currentChanged(int);
 
     void on_tabWidget_currentChanged(int index);
+    void on_pushButton_RM_Options_save_clicked();
 
     void on_actionUndo_triggered();
 

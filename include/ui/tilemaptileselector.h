@@ -8,7 +8,7 @@ class TilemapTileSelector: public SelectablePixmapItem {
 public:
     TilemapTileSelector(QPixmap pixmap): SelectablePixmapItem(8, 8, 1, 1) {
         this->pixmap = pixmap;
-        this->numTilesWide = 16;
+        this->numTilesWide = pixmap.width() / 8;
         this->selectedTile = 0x00;
         setAcceptHoverEvents(true);
     }

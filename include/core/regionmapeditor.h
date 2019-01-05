@@ -4,7 +4,6 @@
 #include "project.h"
 #include "map.h"
 #include "tilemaptileselector.h"
-//#include "block.h"
 
 #include <QStringList>
 #include <QString>
@@ -13,46 +12,26 @@
 #include <QGraphicsScene>
 #include <QGraphicsView>
 
-// if editing map bins, will need to remake the graphics when editing
-// are the scenes set in the editor / project / mainwindow files?
 
-/*
- *   - display the region map background image
- *   - edit the region_map_layout.h layout
- *   - edit city maps metatile layout and JUST save the mapname_num.bin
- *   - edit 
- *   who edits pokenav_city_maps 1 and 2?
- *   users can: - add the incbins probably themselves
- *              - add
- *              - edit region map background image
- * 
- * 
- * 
- * 
- *    Editor:
- *        - void displayCityMapMetatileSelector
- *        - void displayRegionMapTileSelector
- *        - void selectRegionMapTile(QString mapname)
- *        - QGraphicsScene *scene_city_map_metatiles
- *        - TilemapTileSelector *city_map_metatile_selector_item
- *        - Tileset *city_map_squares (or tileset_city_map?)
- *        - Tileset *tileset_region_map
- * 
- *    MainWindow:
- * 
- * 
- *    Project:
- *    
- */
 
-// rename this struct
+// rename this struct?
 struct CityMapPosition
 {
     //
-    //QString filename; // eg. dewford_0
+    //QString filename; // eg. dewford_0 ?
     QString tilemap;// eg. "dewford_0"
     int x;
     int y;
+};
+
+struct RegionMapEntry
+{
+    //
+    int x;
+    int y;
+    int width;
+    int height;
+    QString name;// mapsection
 };
 
 // class that holds data for each square in this project
@@ -62,17 +41,14 @@ class RegionMapSquare
 {
 public:
     //
-    // are positions layout positions? (yes) so out of bounds are all (-1, -1) <-- how it's used in code
-    // (GetRegionMapLocationPosition)
-    // or image positions
     int x = -1;// x position, 0-indexed from top left
     int y = -1;// y position, 0-indexed from top left
     uint8_t tile_img_id;// tilemap ids for the background image
     bool has_map = false;// whether this square is linked to a map or is empty
-    QString map_name;// name of the map associated with this square (if has_map is true): eg. "MAUVILLE_CITY"
-    // ^ use project mapsec to names table
-    bool has_city_map;// whether there is a city map on this grid
-    //QList<struct CityMapPosition> city_maps;
+    QString map_name;// name of the map associated with this square (if has_map is true): eg. "MAUVILLE_CITY" (TODO: REMOVE)
+    QString mapsec;
+    uint8_t secid;
+    bool has_city_map = false;// whether there is a city map on this grid
     QString city_map_name;// filename of the city_map tilemap
     //bool is_flyable;//? needed ?
     friend class RegionMap;// not necessary if instance? what
@@ -87,16 +63,12 @@ class RegionMap : public QObject
 public:
     RegionMap() = default;
 
-    ~RegionMap() {
-        delete mapname_abbr;
-        delete layout_map_names;
-        //delete background_image_tiles;
-        //delete map_squares;
-        //delete background_image_selector_item;
-    };
+    ~RegionMap() {};
 
     static QMap<QString, QList<struct CityMapPosition>> ruby_city_maps_;
     static QString mapSecToMapConstant(QString);
+
+    Project *project;
 
     //RegionMapSquare *map_squares = nullptr;// array of RegionMapSquares
     QList<RegionMapSquare> map_squares;
@@ -107,16 +79,16 @@ public:
     QString region_map_bin_path;// = QString::null;
     QString city_map_header_path;//dafuq is this?
     QString region_map_layout_path;
+    QString region_map_entries_path;
+    QString region_map_layout_bin_path;
+    QString region_map_city_map_tiles_path;
 
-    //QMap<QString, somthing> something;// name of map : info about city map, position in layoit, etc.
-    //QMap<QString, TilemapTile*> regionMapLayoutTng; // mapName : tilemaptileselector
-    // maybe position data to select correct square when changing map on side but only if map is a valid
-    //QList<uint8_t>         *background_image_tiles;// the visible ones anyways // using list because replace
-    //TilemapTileSelector    *background_image_selector_item;// ?
-    QMap<QString, QString> *mapname_abbr;// layout shortcuts mapname:region_map_layout defines (both ways)
-    // make this a QHash?? <-- no because something
-    QStringList            *layout_map_names;
-    // uint8_t border_tile;
+    QByteArray mapBinData;
+
+    QMap<QString, QString> sMapNames;// {"{/sMapName_/}LittlerootTown" : "LITTLEROOT{NAME_END} TOWN"}
+    QMap<QString, QString> mapSecToMapName;// {"MAPSEC_LITTLEROOT_TOWN" : "LITTLEROOT{NAME_END} TOWN"}
+    //QList<QPair<QString, struct RegionMapEntry>> mapSecToMapEntry;
+    QMap<QString, struct RegionMapEntry> mapSecToMapEntry;// TODO: add to this on creation of new map
 
     bool hasUnsavedChanges();
 
@@ -125,7 +97,7 @@ public:
     // parseutil.cpp ?
     void readBkgImgBin();
     void readCityMaps();// more complicated
-    void readLayout(QMap<QString, QString>*);
+    void readLayout();
 
     QString newAbbr(QString);// makes a *unique* 5 character abbreviation from mapname to add to mapname_abbr
 
@@ -140,6 +112,7 @@ public:
     void save();
     void saveBkgImgBin();
     void saveLayout();
+    void saveOptions(int, QString, QString, int, int);
     void saveCityMaps();
 
     void update();// update the view in case something is broken?
@@ -150,12 +123,13 @@ public:
     int  height();
     QSize imgSize();
     unsigned getTileId(int, int);
+    int getMapSquareIndex(int, int);
 
     // implement these here?
     void undo();
     void redo();
 
-    void test(QMap<QString, QString>*);// remove when done testing obvi
+    void test();// remove when done testing obvi
 
 // TODO: move read / write functions to private (and others)
 private:
@@ -166,6 +140,8 @@ private:
     int img_height_;
     int img_index_(int, int);// returns index int at x,y args (x + y * width_ * 2) // 2 because 
     int layout_index_(int, int);
+    void fillMapSquaresFromLayout();
+    QString fix_case(QString);// CAPS_WITH_UNDERSCORE to CamelCase
 
 //protected:
     //

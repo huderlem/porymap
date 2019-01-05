@@ -20,6 +20,7 @@
 #include "collisionpixmapitem.h"
 #include "mappixmapitem.h"
 #include "regionmappixmapitem.h"
+#include "regionmaplayoutpixmapitem.h"
 #include "regionmapeditor.h"
 #include "settings.h"
 #include "movablerect.h"
@@ -79,23 +80,34 @@ public:
     void updateCustomMapHeaderValues(QTableWidget *);
     Tileset *getCurrentMapPrimaryTileset();
 
-//
+// TODO: move these to appropriate place
     RegionMap *region_map;
     void loadRegionMapData();
 
     QGraphicsScene *scene_region_map_image = nullptr;
-    QGraphicsScene *scene_region_map_layout = nullptr;//?
+    QGraphicsScene *scene_region_map_layout = nullptr;
     QGraphicsScene *scene_region_map_tiles = nullptr;
+    QGraphicsScene *scene_city_map_tiles = nullptr;
     TilemapTileSelector *mapsquare_selector_item = nullptr;
+    TilemapTileSelector *city_map_selector_item = nullptr;
     RegionMapPixmapItem *region_map_item = nullptr;
+    RegionMapLayoutPixmapItem *region_map_layout_item = nullptr;
 
     void displayRegionMap();
+    void displayRegionMapImage();
+    void displayRegionMapLayout();
+    void displayRegionMapLayoutOptions();
+    void updateRegionMapLayoutOptions(int);
     void displayRegionMapTileSelector();
+    void displayCityMapTileSelector();
 
-    // selectedTileChanged, hoveredTileChanged, hoveredTileCleared
     void onRegionMapTileSelectorSelectedTileChanged();
     void onRegionMapTileSelectorHoveredTileChanged(unsigned);
     void onRegionMapTileSelectorHoveredTileCleared();
+
+    void onRegionMapLayoutSelectedTileChanged(int);
+    void onRegionMapLayoutHoveredTileChanged(int);
+    void onRegionMapLayoutHoveredTileCleared();
 
 private slots:
     void onHoveredRegionMapTileChanged(int, int);
@@ -103,7 +115,7 @@ private slots:
     void mouseEvent_region_map(QGraphicsSceneMouseEvent *, RegionMapPixmapItem *);
 
 public:
-    QString regionMapTabStatusbarMessage;// TODO: make this name not terrible
+    QString rmStatusbarMessage;
 //
 
     DraggablePixmapItem *addMapEvent(Event *event);

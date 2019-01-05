@@ -1986,6 +1986,19 @@ void MainWindow::on_horizontalSlider_MetatileZoom_valueChanged(int value) {
     ui->graphicsView_Metatiles->setFixedSize(size.width() + 2, size.height() + 2);
 }
 
+void MainWindow::on_pushButton_RM_Options_save_clicked() {
+    //
+    this->editor->region_map->saveOptions(
+        //
+        this->editor->region_map_layout_item->selectedTile,
+        this->ui->comboBox_RM_ConnectedMap->currentText(),
+        this->ui->lineEdit_RM_MapName->text(),
+        this->ui->spinBox_RM_Options_x->value(),
+        this->ui->spinBox_RM_Options_y->value()
+    );
+    this->editor->region_map_layout_item->draw();
+}
+
 void MainWindow::closeEvent(QCloseEvent *event) {
     porymapConfig.setGeometry(
         this->saveGeometry(),

@@ -34,6 +34,7 @@ SOURCES += src/core/block.cpp \
     src/ui/collisionpixmapitem.cpp \
     src/ui/connectionpixmapitem.cpp \
     src/ui/currentselectedmetatilespixmapitem.cpp \
+    src/ui/regionmaplayoutpixmapitem.cpp \
     src/ui/cursortilerect.cpp \
     src/ui/customattributestable.cpp \
     src/ui/eventpropertiesframe.cpp \
@@ -87,6 +88,7 @@ HEADERS  += include/core/block.h \
     include/ui/collisionpixmapitem.h \
     include/ui/connectionpixmapitem.h \
     include/ui/currentselectedmetatilespixmapitem.h \
+    include/ui/regionmaplayoutpixmapitem.h \
     include/ui/cursortilerect.h \
     include/ui/customattributestable.h \
     include/ui/eventpropertiesframe.h \
