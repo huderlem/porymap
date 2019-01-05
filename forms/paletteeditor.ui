@@ -40,7 +40,7 @@
        <item row="0" column="1">
         <widget class="QSpinBox" name="spinBox_PaletteId">
          <property name="focusPolicy">
-          <enum>Qt::NoFocus</enum>
+          <enum>Qt::StrongFocus</enum>
          </property>
         </widget>
        </item>
