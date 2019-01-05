@@ -257,28 +257,25 @@ void MapPixmapItem::magicFill(QGraphicsSceneMouseEvent *event) {
             map->commit();
         } else {
             QPointF pos = event->pos();
-            int x = static_cast<int>(pos.x()) / 16;
-            int y = static_cast<int>(pos.y()) / 16;
-            Block *block = map->getBlock(x, y);
+            int initialX = static_cast<int>(pos.x()) / 16;
+            int initialY = static_cast<int>(pos.y()) / 16;
+            Block *block = map->getBlock(initialX, initialY);
             QList<uint16_t> *selectedMetatiles = this->metatileSelector->getSelectedMetatiles();
             QPoint selectionDimensions = this->metatileSelector->getSelectionDimensions();
             uint16_t tile = block->tile;
-            for (int curY = 0; curY < map->getWidth(); curY++) {
-                for (int curX = 0; curX < map->getWidth(); curX++) {
-                    Block *block = map->getBlock(curX, curY);
-                    if (!block) {
-                        continue;
-                    }
 
-                    int xDiff = curX - x;
-                    int yDiff = curY - y;
-                    int i = xDiff % selectionDimensions.x();
-                    int j = yDiff % selectionDimensions.y();
-                    if (i < 0) i = selectionDimensions.x() + i;
-                    if (j < 0) j = selectionDimensions.y() + j;
-                    if (block->tile == tile) {
+            for (int y = 0; y < map->getWidth(); y++) {
+                for (int x = 0; x < map->getWidth(); x++) {
+                    Block *block = map->getBlock(x, y);
+                    if (block && block->tile == tile) {
+                        int xDiff = x - initialX;
+                        int yDiff = y - initialY;
+                        int i = xDiff % selectionDimensions.x();
+                        int j = yDiff % selectionDimensions.y();
+                        if (i < 0) i = selectionDimensions.x() + i;
+                        if (j < 0) j = selectionDimensions.y() + j;
                         block->tile = selectedMetatiles->at(j * selectionDimensions.x() + i);
-                        map->_setBlock(curX, curY, *block);
+                        map->_setBlock(x, y, *block);
                     }
                 }
             }
@@ -292,12 +289,18 @@ void MapPixmapItem::_floodFill(int initialX, int initialY) {
     QPoint selectionDimensions = this->metatileSelector->getSelectionDimensions();
     QList<uint16_t> *selectedMetatiles = this->metatileSelector->getSelectedMetatiles();
 
+    int numMetatiles = map->getWidth() * map->getHeight();
+    bool *visited = new bool[numMetatiles];
+    for (int i = 0; i < numMetatiles; i++)
+        visited[i] = false;
+
     QList<QPoint> todo;
     todo.append(QPoint(initialX, initialY));
     while (todo.length()) {
         QPoint point = todo.takeAt(0);
         int x = point.x();
         int y = point.y();
+        visited[x + y * map->getWidth()] = true;
 
         Block *block = map->getBlock(x, y);
         if (!block) {
@@ -316,19 +319,25 @@ void MapPixmapItem::_floodFill(int initialX, int initialY) {
             block->tile = tile;
             map->_setBlock(x, y, *block);
         }
-        if ((block = map->getBlock(x + 1, y)) && block->tile == old_tile) {
+        if (!visited[x + 1 + y * map->getWidth()] && (block = map->getBlock(x + 1, y)) && block->tile == old_tile) {
             todo.append(QPoint(x + 1, y));
+            visited[x + 1 + y * map->getWidth()] = true;
         }
-        if ((block = map->getBlock(x - 1, y)) && block->tile == old_tile) {
+        if (!visited[x - 1 + y * map->getWidth()] && (block = map->getBlock(x - 1, y)) && block->tile == old_tile) {
             todo.append(QPoint(x - 1, y));
+            visited[x - 1 + y * map->getWidth()] = true;
         }
-        if ((block = map->getBlock(x, y + 1)) && block->tile == old_tile) {
+        if (!visited[x + (y + 1) * map->getWidth()] && (block = map->getBlock(x, y + 1)) && block->tile == old_tile) {
             todo.append(QPoint(x, y + 1));
+            visited[x + (y + 1) * map->getWidth()] = true;
         }
-        if ((block = map->getBlock(x, y - 1)) && block->tile == old_tile) {
+        if (!visited[x + (y - 1) * map->getWidth()] && (block = map->getBlock(x, y - 1)) && block->tile == old_tile) {
             todo.append(QPoint(x, y - 1));
+            visited[x + (y - 1) * map->getWidth()] = true;
         }
     }
+
+    delete[] visited;
 }
 
 void MapPixmapItem::_floodFillSmartPath(int initialX, int initialY) {
