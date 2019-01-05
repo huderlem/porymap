@@ -18,6 +18,7 @@ public:
     void updateMovementPermissionSelection(QGraphicsSceneMouseEvent *event);
     virtual void paint(QGraphicsSceneMouseEvent*);
     virtual void floodFill(QGraphicsSceneMouseEvent*);
+    virtual void magicFill(QGraphicsSceneMouseEvent*);
     virtual void pick(QGraphicsSceneMouseEvent*);
     virtual void draw(bool ignoreCache = false);
 

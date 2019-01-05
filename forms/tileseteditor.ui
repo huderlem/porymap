@@ -10,6 +10,9 @@
     <height>600</height>
    </rect>
   </property>
+  <property name="focusPolicy">
+   <enum>Qt::ClickFocus</enum>
+  </property>
   <property name="windowTitle">
    <string>Tileset Editor</string>
   </property>
@@ -44,7 +47,7 @@
          <x>0</x>
          <y>0</y>
          <width>272</width>
-         <height>538</height>
+         <height>539</height>
         </rect>
        </property>
        <layout class="QGridLayout" name="gridLayout">
@@ -365,7 +368,7 @@
             <x>0</x>
             <y>0</y>
             <width>400</width>
-            <height>366</height>
+            <height>367</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_2">
@@ -458,7 +461,7 @@
      <x>0</x>
      <y>0</y>
      <width>700</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

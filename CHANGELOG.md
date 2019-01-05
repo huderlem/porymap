@@ -7,7 +7,9 @@ and this project does **not** adhere to any strict versioning scheme, such as [S
 The **"Breaking Changes"** listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. If porymap is used on a project that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.
 
 ## [Unreleased]
-- Nothing
+### Added
+- Add "magic fill" mode to fill tool (hold down CTRL key). This fills all matching metatiles on the map, rather than only the contiguous region.
+- Add ability to import tileset palettes (JASC, .pal, .tpl, .gpl, .act).
 
 ## [1.1.0] - 2018-12-27
 ### Breaking Changes
