@@ -134,6 +134,9 @@ private slots:
 
     void on_pushButton_clicked();
 
+    void on_pushButton_CityMap_save_clicked();
+    void on_comboBox_CityMap_picker_currentTextChanged(const QString &);
+
     void on_checkBox_smartPaths_stateChanged(int selected);
 
     void on_checkBox_Visibility_clicked(bool checked);

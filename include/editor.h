@@ -20,6 +20,7 @@
 #include "collisionpixmapitem.h"
 #include "mappixmapitem.h"
 #include "regionmappixmapitem.h"
+#include "citymappixmapitem.h"
 #include "regionmaplayoutpixmapitem.h"
 #include "regionmapeditor.h"
 #include "settings.h"
@@ -85,12 +86,14 @@ public:
     void loadRegionMapData();
 
     QGraphicsScene *scene_region_map_image = nullptr;
+    QGraphicsScene *scene_city_map_image = nullptr;
     QGraphicsScene *scene_region_map_layout = nullptr;
     QGraphicsScene *scene_region_map_tiles = nullptr;
     QGraphicsScene *scene_city_map_tiles = nullptr;
     TilemapTileSelector *mapsquare_selector_item = nullptr;
     TilemapTileSelector *city_map_selector_item = nullptr;
     RegionMapPixmapItem *region_map_item = nullptr;
+    CityMapPixmapItem *city_map_item = nullptr;
     RegionMapLayoutPixmapItem *region_map_layout_item = nullptr;
 
     void displayRegionMap();
@@ -100,6 +103,8 @@ public:
     void updateRegionMapLayoutOptions(int);
     void displayRegionMapTileSelector();
     void displayCityMapTileSelector();
+    void displayCityMap(QString);
+    void loadCityMaps();
 
     void onRegionMapTileSelectorSelectedTileChanged();
     void onRegionMapTileSelectorHoveredTileChanged(unsigned);
@@ -113,6 +118,7 @@ private slots:
     void onHoveredRegionMapTileChanged(int, int);
     void onHoveredRegionMapTileCleared();
     void mouseEvent_region_map(QGraphicsSceneMouseEvent *, RegionMapPixmapItem *);
+    void mouseEvent_city_map(QGraphicsSceneMouseEvent *, CityMapPixmapItem *);
 
 public:
     QString rmStatusbarMessage;

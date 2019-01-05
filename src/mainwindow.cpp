@@ -264,6 +264,7 @@ bool MainWindow::openProject(QString dir) {
         loadDataStructures();
         populateMapList();
         editor->loadRegionMapData();
+        editor->loadCityMaps();
         success = setMap(getDefaultMap(), true);
     } else {
         setWindowTitle(editor->project->getProjectTitle());
@@ -1997,6 +1998,14 @@ void MainWindow::on_pushButton_RM_Options_save_clicked() {
         this->ui->spinBox_RM_Options_y->value()
     );
     this->editor->region_map_layout_item->draw();
+}
+
+void MainWindow::on_pushButton_CityMap_save_clicked() {
+    this->editor->city_map_item->save();
+}
+
+void MainWindow::on_comboBox_CityMap_picker_currentTextChanged(const QString &file) {
+    this->editor->displayCityMap(file);
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {

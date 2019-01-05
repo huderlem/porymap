@@ -8,6 +8,7 @@
 #include <QCheckBox>
 #include <QPainter>
 #include <QMouseEvent>
+#include <QDir>
 #include <math.h>
 
 static bool selectingEvent = false;
@@ -1295,6 +1296,17 @@ void Editor::deleteEvent(Event *event) {
     //updateSelectedObjects();
 }
 
+void Editor::loadCityMaps() {
+    //
+    QDir directory(project->root + "/graphics/pokenav/city_maps");
+    QStringList files = directory.entryList(QStringList() << "*.bin", QDir::Files);
+    QStringList without_bin;
+    for (QString file : files) {
+        without_bin.append(file.remove(".bin"));
+    }
+    this->ui->comboBox_CityMap_picker->addItems(without_bin);
+}
+
 void Editor::loadRegionMapData() {
     //
     this->region_map->init(project);
@@ -1363,6 +1375,46 @@ void Editor::displayRegionMapImage() {
     this->ui->graphicsView_Region_Map_BkgImg->setFixedSize(this->region_map->imgSize());
 }
 
+/*
+if (!scene) {
+        scene = new QGraphicsScene;
+        MapSceneEventFilter *filter = new MapSceneEventFilter();
+        scene->installEventFilter(filter);
+        connect(filter, &MapSceneEventFilter::wheelZoom, this, &Editor::wheelZoom);
+    }
+
+    if (map_item && scene) {
+        scene->removeItem(map_item);
+        delete map_item;
+    }
+*/
+void Editor::displayCityMap(QString f) {
+    //
+    QString file = this->project->root + "/graphics/pokenav/city_maps/" + f + ".bin";
+
+    if (!scene_city_map_image) {
+        scene_city_map_image = new QGraphicsScene;
+    }
+    if (city_map_item && scene_city_map_image) {
+        scene_city_map_image->removeItem(city_map_item);
+        delete city_map_item;
+    }
+
+    city_map_item = new CityMapPixmapItem(file, this->city_map_selector_item);
+    city_map_item->draw();
+
+    connect(city_map_item, SIGNAL(mouseEvent(QGraphicsSceneMouseEvent*, CityMapPixmapItem*)),
+            this, SLOT(mouseEvent_city_map(QGraphicsSceneMouseEvent*, CityMapPixmapItem*)));
+
+    scene_city_map_image->addItem(city_map_item);
+    scene_city_map_image->setSceneRect(this->scene_city_map_image->sceneRect());
+
+    this->ui->graphicsView_City_Map->setScene(scene_city_map_image);
+    this->ui->graphicsView_City_Map->setFixedSize(QSize(82,82));
+    // set fixed size?
+}
+
+// TODO: add if (item) and if(scene) checks because called more than once per instance
 void Editor::displayRegionMapLayout() {
     //
     this->region_map_layout_item = new RegionMapLayoutPixmapItem(this->region_map, this->mapsquare_selector_item);
@@ -1481,6 +1533,19 @@ void Editor::mouseEvent_region_map(QGraphicsSceneMouseEvent *event, RegionMapPix
     if (event->buttons() & Qt::RightButton) {
         //
         item->select(event);
+    } else if (event->buttons() & Qt::MiddleButton) {
+        // TODO: add functionality here? replace or?
+    } else {
+        //
+        item->paint(event);
+    }
+}
+
+void Editor::mouseEvent_city_map(QGraphicsSceneMouseEvent *event, CityMapPixmapItem *item) {
+    //
+    if (event->buttons() & Qt::RightButton) {
+        //
+        //item->select(event);
     } else if (event->buttons() & Qt::MiddleButton) {
         // TODO: add functionality here? replace or?
     } else {

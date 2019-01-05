@@ -3091,126 +3091,6 @@
           </widget>
          </widget>
         </widget>
-        <widget class="QScrollArea" name="scrollArea_City_Map">
-         <property name="geometry">
-          <rect>
-           <x>80</x>
-           <y>380</y>
-           <width>261</width>
-           <height>251</height>
-          </rect>
-         </property>
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-           <horstretch>1</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="widgetResizable">
-          <bool>true</bool>
-         </property>
-         <widget class="QWidget" name="scrollAreaWidgetContents_City_Map">
-          <property name="geometry">
-           <rect>
-            <x>0</x>
-            <y>0</y>
-            <width>259</width>
-            <height>249</height>
-           </rect>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_20">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
-            <number>0</number>
-           </property>
-           <property name="spacing">
-            <number>0</number>
-           </property>
-           <item row="1" column="1">
-            <widget class="QGraphicsView" name="graphicsView_City_Map">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="mouseTracking">
-              <bool>false</bool>
-             </property>
-             <property name="autoFillBackground">
-              <bool>false</bool>
-             </property>
-             <property name="sizeAdjustPolicy">
-              <enum>QAbstractScrollArea::AdjustIgnored</enum>
-             </property>
-             <property name="dragMode">
-              <enum>QGraphicsView::NoDrag</enum>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <spacer name="horizontalSpacer_CM_West">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>166</width>
-               <height>16</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item row="2" column="1">
-            <spacer name="verticalSpacer_CM_South">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>16</width>
-               <height>166</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item row="1" column="2">
-            <spacer name="horizontalSpacer_CM_East">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>166</width>
-               <height>16</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item row="0" column="1">
-            <spacer name="verticalSpacer_CM_North">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>16</width>
-               <height>166</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
-         </widget>
-        </widget>
         <widget class="QStackedWidget" name="stackedWidget_RM_Options">
          <property name="geometry">
           <rect>
@@ -3484,6 +3364,166 @@
            </widget>
           </widget>
          </widget>
+        </widget>
+        <widget class="QWidget" name="">
+         <property name="geometry">
+          <rect>
+           <x>40</x>
+           <y>350</y>
+           <width>341</width>
+           <height>281</height>
+          </rect>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_8">
+            <item>
+             <widget class="QLabel" name="label">
+              <property name="text">
+               <string>City Map:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="comboBox_CityMap_picker"/>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_2">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_CityMap_save">
+              <property name="text">
+               <string>save</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QScrollArea" name="scrollArea_City_Map">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>1</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="widgetResizable">
+             <bool>true</bool>
+            </property>
+            <widget class="QWidget" name="scrollAreaWidgetContents_City_Map">
+             <property name="geometry">
+              <rect>
+               <x>0</x>
+               <y>0</y>
+               <width>337</width>
+               <height>235</height>
+              </rect>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_20">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
+              <property name="spacing">
+               <number>0</number>
+              </property>
+              <item row="1" column="1">
+               <widget class="QGraphicsView" name="graphicsView_City_Map">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="mouseTracking">
+                 <bool>false</bool>
+                </property>
+                <property name="autoFillBackground">
+                 <bool>false</bool>
+                </property>
+                <property name="sizeAdjustPolicy">
+                 <enum>QAbstractScrollArea::AdjustIgnored</enum>
+                </property>
+                <property name="dragMode">
+                 <enum>QGraphicsView::NoDrag</enum>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <spacer name="horizontalSpacer_CM_West">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>166</width>
+                  <height>16</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item row="2" column="1">
+               <spacer name="verticalSpacer_CM_South">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>16</width>
+                  <height>166</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item row="1" column="2">
+               <spacer name="horizontalSpacer_CM_East">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>166</width>
+                  <height>16</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item row="0" column="1">
+               <spacer name="verticalSpacer_CM_North">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>16</width>
+                  <height>166</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </widget>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </widget>
       </widget>
