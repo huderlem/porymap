@@ -266,7 +266,7 @@ void MapPixmapItem::magicFill(QGraphicsSceneMouseEvent *event) {
 
             for (int y = 0; y < map->getHeight(); y++) {
                 for (int x = 0; x < map->getWidth(); x++) {
-                    Block *block = map->getBlock(x, y);
+                    block = map->getBlock(x, y);
                     if (block && block->tile == tile) {
                         int xDiff = x - initialX;
                         int yDiff = y - initialY;
