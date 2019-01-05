@@ -211,10 +211,9 @@ void RegionMap::readLayout() {
             int i = img_index_(n,m);
             map_squares[i].secid = static_cast<uint8_t>(mapBinData.at(layout_index_(n,m)));
             QString secname = (*(project->regionMapSections))[static_cast<uint8_t>(mapBinData.at(layout_index_(n,m)))];
-            //qDebug() << i << map_squares[i].secid << secname;
             if (secname != "MAPSEC_NONE") map_squares[i].has_map = true;
             map_squares[i].mapsec = secname;
-            map_squares[i].map_name = sMapNames.value(mapSecToMapEntry.value(secname).name);//[mapSecToMapEntry[secname].name];
+            map_squares[i].map_name = sMapNames.value(mapSecToMapEntry.value(secname).name);
             map_squares[i].x = n;
             map_squares[i].y = m;
         }
@@ -352,9 +351,15 @@ void RegionMap::saveOptions(int index, QString sec, QString name, int x, int y) 
     // TODO:req need to reindex in city_maps if changing x and y
     // TODO: save [sec] sMapName_ properly
     // so instead of taking index, maybe go by img_index_(x,y)
-    this->project->mapSecToMapHoverName->insert(sec, name);
+    if (!sec.isEmpty()) {
+        this->map_squares[index].has_map = true;
+        this->map_squares[index].secid = static_cast<uint8_t>(project->regionMapSections->indexOf(sec));
+    }
     this->map_squares[index].mapsec = sec;
-    this->map_squares[index].map_name = name;// TODO: display in editor with this map & remove this field
+    if (!name.isEmpty()) {
+        this->map_squares[index].map_name = name;// TODO: display in editor with this map & remove this field
+        this->project->mapSecToMapHoverName->insert(sec, name);
+    }
     this->map_squares[index].x = x;
     this->map_squares[index].y = y;
 }

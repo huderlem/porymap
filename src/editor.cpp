@@ -28,6 +28,7 @@ void Editor::saveProject() {
         project->saveAllDataStructures();
         if (region_map) {
             region_map->save();
+            displayRegionMap();
         }
     }
 }
@@ -39,6 +40,7 @@ void Editor::save() {
     }
     if (project && region_map) {
         region_map->save();
+        displayRegionMap();
     }
 }
 
