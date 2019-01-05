@@ -10,6 +10,13 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ### Added
 - Add "magic fill" mode to fill tool (hold down CTRL key). This fills all matching metatiles on the map, rather than only the contiguous region.
 - Add ability to import tileset palettes (JASC, .pal, .tpl, .gpl, .act).
+- Add ability to export tileset tiles as indexed .png images. The currently-selected palette is used.
+
+### Changed
+- Collapse the map list by default.
+
+### Fixed
+- Fix bug where smart paths could bes auto-enabled, despite the checkbox being disabled.
 
 ## [1.1.0] - 2018-12-27
 ### Breaking Changes
