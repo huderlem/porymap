@@ -264,7 +264,7 @@ void MapPixmapItem::magicFill(QGraphicsSceneMouseEvent *event) {
             QPoint selectionDimensions = this->metatileSelector->getSelectionDimensions();
             uint16_t tile = block->tile;
 
-            for (int y = 0; y < map->getWidth(); y++) {
+            for (int y = 0; y < map->getHeight(); y++) {
                 for (int x = 0; x < map->getWidth(); x++) {
                     Block *block = map->getBlock(x, y);
                     if (block && block->tile == tile) {
