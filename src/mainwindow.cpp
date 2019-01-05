@@ -191,8 +191,13 @@ void MainWindow::mapSortOrder_changed(QAction *action)
 void MainWindow::on_lineEdit_filterBox_textChanged(const QString &arg1)
 {
     mapListProxyModel->setFilterRegExp(QRegExp(arg1, Qt::CaseInsensitive, QRegExp::FixedString));
-    ui->mapList->expandToDepth(0);
+    if (arg1.isEmpty()) {
+        ui->mapList->collapseAll();
+    } else {
+        ui->mapList->expandToDepth(0);
+    }
     ui->mapList->setExpanded(mapListProxyModel->mapFromSource(mapListIndexes.value(editor->map->name)), true);
+    ui->mapList->scrollTo(mapListProxyModel->mapFromSource(mapListIndexes.value(editor->map->name)), QAbstractItemView::PositionAtCenter);
 }
 
 void MainWindow::loadUserSettings() {
@@ -216,7 +221,9 @@ bool MainWindow::openProject(QString dir) {
         return false;
     }
 
-    this->statusBar()->showMessage(QString("Opening project %1").arg(dir));
+    QString nativeDir = QDir::toNativeSeparators(dir);
+
+    this->statusBar()->showMessage(QString("Opening project %1").arg(nativeDir));
 
     bool success = true;
     projectConfig.setProjectDir(dir);
@@ -239,9 +246,9 @@ bool MainWindow::openProject(QString dir) {
     }
 
     if (success) {
-        this->statusBar()->showMessage(QString("Opened project %1").arg(dir));
+        this->statusBar()->showMessage(QString("Opened project %1").arg(nativeDir));
     } else {
-        this->statusBar()->showMessage(QString("Failed to open project %1").arg(dir));
+        this->statusBar()->showMessage(QString("Failed to open project %1").arg(nativeDir));
     }
 
     return success;
@@ -683,7 +690,6 @@ void MainWindow::sortMapList() {
     }
 
     ui->mapList->setUpdatesEnabled(true);
-    ui->mapList->expandToDepth(0);
     ui->mapList->repaint();
 }
 
