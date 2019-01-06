@@ -26,6 +26,7 @@ public:
     explicit PaletteEditor(Project*, Tileset*, Tileset*, QWidget *parent = nullptr);
     ~PaletteEditor();
     void setPaletteId(int);
+    void setTilesets(Tileset*, Tileset*);
 
 private:
     Ui::PaletteEditor *ui;

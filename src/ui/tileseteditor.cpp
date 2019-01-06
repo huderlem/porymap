@@ -313,6 +313,7 @@ void TilesetEditor::on_actionSave_Tileset_triggered()
 {
     this->project->saveTilesets(this->primaryTileset, this->secondaryTileset);
     emit this->tilesetsSaved(this->primaryTileset->name, this->secondaryTileset->name);
+    this->paletteEditor->setTilesets(this->primaryTileset, this->secondaryTileset);
     this->ui->statusbar->showMessage(QString("Saved primary and secondary Tilesets!"), 5000);
     this->hasUnsavedChanges = false;
 }
@@ -483,18 +484,10 @@ void TilesetEditor::on_actionChange_Metatiles_Count_triggered()
     }
 }
 
-void TilesetEditor::onPaletteEditorClosed() {
-    if (this->paletteEditor) {
-        delete this->paletteEditor;
-        this->paletteEditor = nullptr;
-    }
-}
-
 void TilesetEditor::on_actionChange_Palettes_triggered()
 {
     if (!this->paletteEditor) {
         this->paletteEditor = new PaletteEditor(this->project, this->primaryTileset, this->secondaryTileset, this);
-        connect(this->paletteEditor, SIGNAL(closed()), this, SLOT(onPaletteEditorClosed()));
         connect(this->paletteEditor, SIGNAL(changedPaletteColor()), this, SLOT(onPaletteEditorChangedPaletteColor()));
         connect(this->paletteEditor, SIGNAL(changedPalette(int)), this, SLOT(onPaletteEditorChangedPalette(int)));
     }
