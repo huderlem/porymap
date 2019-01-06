@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>410</width>
-    <height>424</height>
+    <height>508</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -33,9 +33,26 @@
        <enum>QFrame::Raised</enum>
       </property>
       <layout class="QFormLayout" name="formLayout_2">
+       <property name="sizeConstraint">
+        <enum>QLayout::SetFixedSize</enum>
+       </property>
        <property name="verticalSpacing">
         <number>12</number>
        </property>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_newMap_Name">
+         <property name="text">
+          <string>Name</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="lineEdit_NewMap_Name">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The name of the new map. If the name is invalid (red), it will be replaced with the default name of a new map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+        </widget>
+       </item>
        <item row="1" column="0">
         <widget class="QLabel" name="label_NewMap_Group">
          <property name="text">
@@ -172,17 +189,45 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_newMap_Name">
+       <item row="9" column="0">
+        <widget class="QLabel" name="label_NewMap_Allow_Running">
          <property name="text">
-          <string>Name</string>
+          <string>Allow Running</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
-        <widget class="QLineEdit" name="lineEdit_NewMap_Name">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The name of the new map. If the name is invalid (red), it will be replaced with the default name of a new map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <item row="10" column="0">
+        <widget class="QLabel" name="label_NewMap_Allow_Biking">
+         <property name="text">
+          <string>Allow Biking</string>
+         </property>
+        </widget>
+       </item>
+       <item row="11" column="0">
+        <widget class="QLabel" name="label_NewMap_Allow_Escape_Rope">
+         <property name="text">
+          <string>Allow Escape Rope</string>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="1">
+        <widget class="QCheckBox" name="checkBox_NewMap_Allow_Running">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="10" column="1">
+        <widget class="QCheckBox" name="checkBox_NewMap_Allow_Biking">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="11" column="1">
+        <widget class="QCheckBox" name="checkBox_NewMap_Allow_Escape_Rope">
+         <property name="text">
+          <string/>
          </property>
         </widget>
        </item>

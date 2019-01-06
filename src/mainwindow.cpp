@@ -736,21 +736,48 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point)
         actions->addAction(menu->addAction("Add New Map to Group"))->setData(groupNum);
         connect(actions, SIGNAL(triggered(QAction*)), this, SLOT(onAddNewMapToGroupClick(QAction*)));
         menu->exec(QCursor::pos());
+    } else if (itemType == "map_sec") {
+        QString secName = selectedItem->data(Qt::UserRole).toString();
+        QMenu* menu = new QMenu(this);
+        QActionGroup* actions = new QActionGroup(menu);
+        actions->addAction(menu->addAction("Add New Map to Area"))->setData(secName);
+        connect(actions, SIGNAL(triggered(QAction*)), this, SLOT(onAddNewMapToAreaClick(QAction*)));
+        menu->exec(QCursor::pos());
+    } else if (itemType == "map_layout") {
+        QString layoutName = selectedItem->data(Qt::UserRole).toString();
+        QMenu* menu = new QMenu(this);
+        QActionGroup* actions = new QActionGroup(menu);
+        actions->addAction(menu->addAction("Add New Map with Layout"))->setData(layoutName);
+        connect(actions, SIGNAL(triggered(QAction*)), this, SLOT(onAddNewMapToLayoutClick(QAction*)));
+        menu->exec(QCursor::pos());
     }
 }
 
 void MainWindow::onAddNewMapToGroupClick(QAction* triggeredAction)
 {
     int groupNum = triggeredAction->data().toInt();
-    openNewMapPopupWindow(groupNum);
+    openNewMapPopupWindow(MapSortOrder::Group, groupNum);
+}
+
+void MainWindow::onAddNewMapToAreaClick(QAction* triggeredAction)
+{
+    QString secName = triggeredAction->data().toString();
+    openNewMapPopupWindow(MapSortOrder::Area, secName);
+}
+
+void MainWindow::onAddNewMapToLayoutClick(QAction* triggeredAction)
+{
+    QString layoutName = triggeredAction->data().toString();
+    openNewMapPopupWindow(MapSortOrder::Layout, layoutName);
 }
 
 void MainWindow::onNewMapCreated() {
     QString newMapName = this->newmapprompt->map->name;
     int newMapGroup = this->newmapprompt->group;
     Map *newMap_ = this->newmapprompt->map;
+    bool updateLayout = this->newmapprompt->changeLayout;
 
-    Map *newMap = editor->project->addNewMapToGroup(newMapName, newMapGroup, newMap_);
+    Map *newMap = editor->project->addNewMapToGroup(newMapName, newMapGroup, newMap_, updateLayout);
 
     logInfo(QString("Created a new map named %1.").arg(newMapName));
 
@@ -774,7 +801,7 @@ void MainWindow::onNewMapCreated() {
     disconnect(this->newmapprompt, SIGNAL(applied()), this, SLOT(onNewMapCreated()));
 }
 
-void MainWindow::openNewMapPopupWindow(int groupNum) {
+void MainWindow::openNewMapPopupWindow(int type, QVariant data) {
     if (!this->newmapprompt) {
         this->newmapprompt = new NewMapPopup(this, this->editor->project);
     }
@@ -784,14 +811,25 @@ void MainWindow::openNewMapPopupWindow(int groupNum) {
         this->newmapprompt->raise();
         this->newmapprompt->activateWindow();
     }
-    this->newmapprompt->init(groupNum);
+    switch (type)
+    {
+        case MapSortOrder::Group:
+            this->newmapprompt->init(type, data.toInt(), QString(), QString());
+            break;
+        case MapSortOrder::Area:
+            this->newmapprompt->init(type, 0, data.toString(), QString());
+            break;
+        case MapSortOrder::Layout:
+            this->newmapprompt->init(type, 0, QString(), data.toString());
+            break;
+    }
     connect(this->newmapprompt, SIGNAL(applied()), this, SLOT(onNewMapCreated()));
     connect(this->newmapprompt, &QObject::destroyed, [=](QObject *) { this->newmapprompt = nullptr; });
             this->newmapprompt->setAttribute(Qt::WA_DeleteOnClose);
 }
 
 void MainWindow::on_action_NewMap_triggered() {
-    openNewMapPopupWindow(0);
+    openNewMapPopupWindow(MapSortOrder::Group, 0);
 }
 
 void MainWindow::onTilesetChanged(QString mapName)

@@ -19,7 +19,10 @@ public:
     ~NewMapPopup();
     Map *map;
     int group;
-    void init(int);
+    bool changeLayout;
+    QString layoutName;
+    void init(int, int, QString, QString);
+    void useLayout(QString);
 
 signals:
     void applied();
@@ -27,7 +30,7 @@ signals:
 private:
     Ui::NewMapPopup *ui;
     Project *project;
-    void setDefaultValues(int);
+    void setDefaultValues(int, QString);
 
 private slots:
     void on_pushButton_NewMap_Accept_clicked();

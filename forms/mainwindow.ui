@@ -482,8 +482,8 @@
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>469</width>
-                     <height>608</height>
+                     <width>545</width>
+                     <height>587</height>
                     </rect>
                    </property>
                    <layout class="QGridLayout" name="gridLayout_8">
@@ -797,8 +797,8 @@
                            <rect>
                             <x>0</x>
                             <y>0</y>
-                            <width>324</width>
-                            <height>77</height>
+                            <width>256</width>
+                            <height>74</height>
                            </rect>
                           </property>
                           <layout class="QHBoxLayout" name="horizontalLayout_7">
@@ -907,10 +907,10 @@
                     </property>
                     <property name="geometry">
                      <rect>
-                      <x>0</x>
+                      <x>8</x>
                       <y>0</y>
-                      <width>307</width>
-                      <height>387</height>
+                      <width>222</width>
+                      <height>353</height>
                      </rect>
                     </property>
                     <property name="sizePolicy">
@@ -1226,8 +1226,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>381</width>
-               <height>657</height>
+               <width>371</width>
+               <height>643</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_7">
@@ -1500,7 +1500,7 @@
                       <x>0</x>
                       <y>0</y>
                       <width>430</width>
-                      <height>568</height>
+                      <height>534</height>
                      </rect>
                     </property>
                     <property name="sizePolicy">
@@ -2285,8 +2285,8 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>826</width>
-                    <height>557</height>
+                    <width>818</width>
+                    <height>539</height>
                    </rect>
                   </property>
                   <layout class="QGridLayout" name="gridLayout_14">
@@ -2458,7 +2458,7 @@
      <x>0</x>
      <y>0</y>
      <width>1117</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -2466,7 +2466,6 @@
      <string>File</string>
     </property>
     <addaction name="action_Open_Project"/>
-    <addaction name="action_NewMap"/>
     <addaction name="action_Save"/>
     <addaction name="action_Save_Project"/>
     <addaction name="separator"/>
@@ -2500,6 +2499,7 @@
     <addaction name="actionMove"/>
     <addaction name="actionMap_Shift"/>
     <addaction name="separator"/>
+    <addaction name="action_NewMap"/>
     <addaction name="actionTileset_Editor"/>
    </widget>
    <addaction name="menuFile"/>

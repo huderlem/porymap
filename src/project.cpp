@@ -1238,7 +1238,7 @@ Map* Project::addNewMapToGroup(QString mapName, int groupNum) {
     return map;
 }
 
-Map* Project::addNewMapToGroup(QString mapName, int groupNum, Map *newMap) {
+Map* Project::addNewMapToGroup(QString mapName, int groupNum, Map *newMap, bool updateLayout) {
     mapNames->append(mapName);
     map_groups->insert(mapName, groupNum);
     groupedMapNames[groupNum].append(mapName);
@@ -1264,8 +1264,10 @@ Map* Project::addNewMapToGroup(QString mapName, int groupNum, Map *newMap) {
     mapLayouts.insert(map->layout->label, map->layout);
     mapLayoutsTable.append(map->layout->label);
     loadMapTilesets(map);
-    setNewMapBlockdata(map);
-    setNewMapBorder(map);
+    if (!updateLayout) {
+        setNewMapBlockdata(map);
+        setNewMapBorder(map);
+    }
     setNewMapEvents(map);
     setNewMapConnections(map);
     map->commit();

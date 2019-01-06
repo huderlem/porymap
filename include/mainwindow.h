@@ -48,7 +48,7 @@ private slots:
     void onMapChanged(Map *map);
     void onMapNeedsRedrawing();
     void onTilesetsSaved(QString, QString);
-    void openNewMapPopupWindow(int);
+    void openNewMapPopupWindow(int, QVariant);
     void onNewMapCreated();
 
     void on_action_NewMap_triggered();
@@ -103,6 +103,8 @@ private slots:
 
     void onOpenMapListContextMenu(const QPoint &point);
     void onAddNewMapToGroupClick(QAction* triggeredAction);
+    void onAddNewMapToAreaClick(QAction* triggeredAction);
+    void onAddNewMapToLayoutClick(QAction* triggeredAction);
     void onTilesetChanged(QString);
     void currentMetatilesSelectionChanged();
 
