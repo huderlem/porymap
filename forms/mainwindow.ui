@@ -2279,6 +2279,14 @@
     <string>Ctrl+S</string>
    </property>
   </action>
+  <action name="action_NewMap">
+   <property name="text">
+    <string>New Map</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
+  </action>
   <action name="actionUndo">
    <property name="text">
     <string>Undo</string>
@@ -2423,12 +2431,6 @@
    </property>
    <property name="text">
     <string>Sort by &amp;Layout</string>
-  <action name="action_NewMap">
-   <property name="text">
-    <string>New Map</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+N</string>
    </property>
   </action>
  </widget>
