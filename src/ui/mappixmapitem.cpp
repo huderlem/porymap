@@ -260,22 +260,25 @@ void MapPixmapItem::magicFill(QGraphicsSceneMouseEvent *event) {
             int initialX = static_cast<int>(pos.x()) / 16;
             int initialY = static_cast<int>(pos.y()) / 16;
             Block *block = map->getBlock(initialX, initialY);
-            QList<uint16_t> *selectedMetatiles = this->metatileSelector->getSelectedMetatiles();
-            QPoint selectionDimensions = this->metatileSelector->getSelectionDimensions();
-            uint16_t tile = block->tile;
 
-            for (int y = 0; y < map->getHeight(); y++) {
-                for (int x = 0; x < map->getWidth(); x++) {
-                    block = map->getBlock(x, y);
-                    if (block && block->tile == tile) {
-                        int xDiff = x - initialX;
-                        int yDiff = y - initialY;
-                        int i = xDiff % selectionDimensions.x();
-                        int j = yDiff % selectionDimensions.y();
-                        if (i < 0) i = selectionDimensions.x() + i;
-                        if (j < 0) j = selectionDimensions.y() + j;
-                        block->tile = selectedMetatiles->at(j * selectionDimensions.x() + i);
-                        map->_setBlock(x, y, *block);
+            if (block) {
+                QList<uint16_t> *selectedMetatiles = this->metatileSelector->getSelectedMetatiles();
+                QPoint selectionDimensions = this->metatileSelector->getSelectionDimensions();
+                uint16_t tile = block->tile;
+
+                for (int y = 0; y < map->getHeight(); y++) {
+                    for (int x = 0; x < map->getWidth(); x++) {
+                        block = map->getBlock(x, y);
+                        if (block && block->tile == tile) {
+                            int xDiff = x - initialX;
+                            int yDiff = y - initialY;
+                            int i = xDiff % selectionDimensions.x();
+                            int j = yDiff % selectionDimensions.y();
+                            if (i < 0) i = selectionDimensions.x() + i;
+                            if (j < 0) j = selectionDimensions.y() + j;
+                            block->tile = selectedMetatiles->at(j * selectionDimensions.x() + i);
+                            map->_setBlock(x, y, *block);
+                        }
                     }
                 }
             }
