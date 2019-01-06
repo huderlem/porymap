@@ -10,17 +10,19 @@
 class CollisionPixmapItem : public MapPixmapItem {
     Q_OBJECT
 public:
-    CollisionPixmapItem(Map *map, MovementPermissionsSelector *movementPermissionsSelector, MetatileSelector *metatileSelector, Settings *settings)
+    CollisionPixmapItem(Map *map, MovementPermissionsSelector *movementPermissionsSelector, MetatileSelector *metatileSelector, Settings *settings, qreal *opacity)
         : MapPixmapItem(map, metatileSelector, settings){
         this->movementPermissionsSelector = movementPermissionsSelector;
+        this->opacity = opacity;
     }
     MovementPermissionsSelector *movementPermissionsSelector;
+    qreal *opacity;
     void updateMovementPermissionSelection(QGraphicsSceneMouseEvent *event);
     virtual void paint(QGraphicsSceneMouseEvent*);
     virtual void floodFill(QGraphicsSceneMouseEvent*);
     virtual void magicFill(QGraphicsSceneMouseEvent*);
     virtual void pick(QGraphicsSceneMouseEvent*);
-    virtual void draw(bool ignoreCache = false);
+    void draw(bool ignoreCache = false);
 
 signals:
     void mouseEvent(QGraphicsSceneMouseEvent *, CollisionPixmapItem *);

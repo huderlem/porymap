@@ -119,6 +119,13 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
             this->mapSortOrder = MapSortOrder::Group;
             logWarn(QString("Invalid config value for map_sort_order: '%1'. Must be 'group', 'area', or 'layout'.").arg(value));
         }
+    } else if (key == "collision_opacity") {
+        bool ok;
+        this->collisionOpacity = qMax(0, qMin(100, value.toInt(&ok)));
+        if (!ok) {
+            logWarn(QString("Invalid config value for collision_opacity: '%1'. Must be an integer.").arg(value));
+            this->collisionOpacity = 50;
+        }
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -130,6 +137,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("recent_map", this->recentMap);
     map.insert("pretty_cursors", this->prettyCursors ? "1" : "0");
     map.insert("map_sort_order", mapSortOrderMap.value(this->mapSortOrder));
+    map.insert("collision_opacity", QString("%1").arg(this->collisionOpacity));
     return map;
 }
 
@@ -153,6 +161,11 @@ void PorymapConfig::setPrettyCursors(bool enabled) {
     this->save();
 }
 
+void PorymapConfig::setCollisionOpacity(int opacity) {
+    this->collisionOpacity = opacity;
+    // don't auto-save here because this can be called very frequently.
+}
+
 QString PorymapConfig::getRecentProject() {
     return this->recentProject;
 }
@@ -167,6 +180,10 @@ MapSortOrder PorymapConfig::getMapSortOrder() {
 
 bool PorymapConfig::getPrettyCursors() {
     return this->prettyCursors;
+}
+
+int PorymapConfig::getCollisionOpacity() {
+    return this->collisionOpacity;
 }
 
 const QMap<BaseGameVersion, QString> baseGameVersionMap = {
