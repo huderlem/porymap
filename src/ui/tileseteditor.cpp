@@ -79,9 +79,9 @@ void TilesetEditor::setTilesets(QString primaryTilesetLabel, QString secondaryTi
 
 void TilesetEditor::refresh() {
     this->metatileSelector->setTilesets(this->primaryTileset, this->secondaryTileset);
+    this->metatileSelector->select(this->metatileSelector->getSelectedMetatile());
     this->tileSelector->setTilesets(this->primaryTileset, this->secondaryTileset);
     this->metatileLayersItem->setTilesets(this->primaryTileset, this->secondaryTileset);
-    this->metatileSelector->select(this->metatileSelector->getSelectedMetatile());
     this->drawSelectedTiles();
 
     this->ui->graphicsView_Tiles->setSceneRect(0, 0, this->tileSelector->pixmap().width() + 2, this->tileSelector->pixmap().height() + 2);
