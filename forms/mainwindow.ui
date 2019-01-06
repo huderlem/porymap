@@ -369,7 +369,7 @@
                 <item>
                  <widget class="QToolButton" name="toolButton_Shift">
                   <property name="toolTip">
-                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Map Shift&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Click and drag&lt;/span&gt; on the map to shift the positions all metatiles at once. This is useful after resizing a map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Map Shift&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Click and drag&lt;/span&gt; on the map to shift the positions of all metatiles at once. This is useful after resizing a map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                   </property>
                   <property name="text">
                    <string>Shift</string>
