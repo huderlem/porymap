@@ -17,6 +17,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 
 ### Fixed
 - Fix bug where smart paths could bes auto-enabled, despite the checkbox being disabled.
+- Fix crash that could occur when changing the palette id in the tileset palette editor.
 
 ## [1.1.0] - 2018-12-27
 ### Breaking Changes
