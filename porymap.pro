@@ -11,7 +11,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = porymap
 TEMPLATE = app
 RC_ICONS = resources/icons/porymap-icon-1.ico
-ICON = resources/icons/porymap-icon-1.ico
+ICON = resources/icons/porymap.icns
 QMAKE_CXXFLAGS += -std=c++11
 
 SOURCES += src/core/block.cpp \
@@ -22,6 +22,7 @@ SOURCES += src/core/block.cpp \
     src/core/map.cpp \
     src/core/maplayout.cpp \
     src/core/metatile.cpp \
+    src/core/paletteparser.cpp \
     src/core/parseutil.cpp \
     src/core/tile.cpp \
     src/core/tileset.cpp \
@@ -47,11 +48,13 @@ SOURCES += src/core/block.cpp \
     src/ui/tileseteditormetatileselector.cpp \
     src/ui/tileseteditortileselector.cpp \
     src/ui/newmappopup.cpp \
+    src/config.cpp \
     src/editor.cpp \
     src/main.cpp \
     src/mainwindow.cpp \
     src/project.cpp \
-    src/settings.cpp
+    src/settings.cpp \
+    src/log.cpp
 
 HEADERS  += include/core/block.h \
     include/core/blockdata.h \
@@ -63,6 +66,7 @@ HEADERS  += include/core/block.h \
     include/core/mapconnection.h \
     include/core/maplayout.h \
     include/core/metatile.h \
+    include/core/paletteparser.h \
     include/core/parseutil.h \
     include/core/tile.h \
     include/core/tileset.h \
@@ -88,10 +92,12 @@ HEADERS  += include/core/block.h \
     include/ui/tileseteditormetatileselector.h \
     include/ui/tileseteditortileselector.h \
     include/ui/newmappopup.h \
+    include/config.h \
     include/editor.h \
     include/mainwindow.h \
     include/project.h \
-    include/settings.h
+    include/settings.h \
+    include/log.h
 
 FORMS    += forms/mainwindow.ui \
     forms/eventpropertiesframe.ui \

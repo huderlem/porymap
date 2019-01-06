@@ -1,4 +1,5 @@
 #include "connectionpixmapitem.h"
+#include <cmath>
 
 #include <math.h>
 

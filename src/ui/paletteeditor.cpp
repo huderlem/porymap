@@ -1,5 +1,9 @@
 #include "paletteeditor.h"
 #include "ui_paletteeditor.h"
+#include "paletteparser.h"
+#include <QFileDialog>
+#include <QMessageBox>
+#include "log.h"
 
 PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset *secondaryTileset, QWidget *parent) :
     QMainWindow(parent),
@@ -108,7 +112,7 @@ PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset 
     this->initColorSliders();
     this->refreshColorSliders();
     this->refreshColors();
-    this->commitEditHistory();
+    this->commitEditHistory(this->ui->spinBox_PaletteId->value());
 }
 
 PaletteEditor::~PaletteEditor()
@@ -194,18 +198,20 @@ void PaletteEditor::setColor(int colorIndex) {
             : this->secondaryTileset;
     (*tileset->palettes)[paletteNum][colorIndex] = qRgb(red, green, blue);
     this->refreshColor(colorIndex);
-    this->commitEditHistory();
+    this->commitEditHistory(paletteNum);
     emit this->changedPaletteColor();
 }
 
 void PaletteEditor::on_spinBox_PaletteId_valueChanged(int paletteId) {
     this->refreshColorSliders();
     this->refreshColors();
+    if (!this->palettesHistory[paletteId].current()) {
+        this->commitEditHistory(paletteId);
+    }
     emit this->changedPalette(paletteId);
 }
 
-void PaletteEditor::commitEditHistory() {
-    int paletteId = this->ui->spinBox_PaletteId->value();
+void PaletteEditor::commitEditHistory(int paletteId) {
     QList<QRgb> colors;
     for (int i = 0; i < 16; i++) {
         colors.append(qRgb(this->sliders[i][0]->value() * 8, this->sliders[i][1]->value() * 8, this->sliders[i][2]->value() * 8));
@@ -241,5 +247,56 @@ void PaletteEditor::setColorsFromHistory(PaletteHistoryItem *history, int palett
 
     this->refreshColorSliders();
     this->refreshColors();
+    emit this->changedPaletteColor();
+}
+
+void PaletteEditor::on_actionImport_Palette_triggered()
+{
+    QString filepath = QFileDialog::getOpenFileName(
+                this,
+                QString("Import Tileset Palette"),
+                this->project->root,
+                "Palette Files (*.pal *.act *tpl *gpl)");
+    if (filepath.isEmpty()) {
+        return;
+    }
+
+    PaletteParser parser;
+    bool error = false;
+    QList<QRgb> palette = parser.parse(filepath, &error);
+    if (error) {
+        QMessageBox msgBox(this);
+        msgBox.setText("Failed to import palette.");
+        QString message = QString("The palette file could not be processed. View porymap.log for specific errors.");
+        msgBox.setInformativeText(message);
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        msgBox.setIcon(QMessageBox::Icon::Critical);
+        msgBox.exec();
+        return;
+    }
+
+    if (palette.length() < 16) {
+        QMessageBox msgBox(this);
+        msgBox.setText("Failed to import palette.");
+        QString message = QString("The palette file has %1 colors, but it must have 16 colors.").arg(palette.length());
+        msgBox.setInformativeText(message);
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        msgBox.setIcon(QMessageBox::Icon::Critical);
+        msgBox.exec();
+        return;
+    }
+
+    int paletteId = this->ui->spinBox_PaletteId->value();
+    for (int i = 0; i < 16; i++) {
+        if (paletteId < Project::getNumPalettesPrimary()) {
+            (*this->primaryTileset->palettes)[paletteId][i] = palette.at(i);
+        } else {
+            (*this->secondaryTileset->palettes)[paletteId][i] = palette.at(i);
+        }
+    }
+
+    this->refreshColorSliders();
+    this->refreshColors();
+    this->commitEditHistory(paletteId);
     emit this->changedPaletteColor();
 }

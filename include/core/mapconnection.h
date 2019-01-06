@@ -2,7 +2,6 @@
 #define MAPCONNECTION_H
 
 #include <QString>
-#include <QDebug>
 
 class MapConnection {
 public:

@@ -10,6 +10,9 @@
     <height>600</height>
    </rect>
   </property>
+  <property name="focusPolicy">
+   <enum>Qt::ClickFocus</enum>
+  </property>
   <property name="windowTitle">
    <string>Tileset Editor</string>
   </property>
@@ -44,7 +47,7 @@
          <x>0</x>
          <y>0</y>
          <width>272</width>
-         <height>538</height>
+         <height>539</height>
         </rect>
        </property>
        <layout class="QGridLayout" name="gridLayout">
@@ -365,7 +368,7 @@
             <x>0</x>
             <y>0</y>
             <width>400</width>
-            <height>366</height>
+            <height>367</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_2">
@@ -458,7 +461,7 @@
      <x>0</x>
      <y>0</y>
      <width>700</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -476,6 +479,9 @@
     <addaction name="actionImport_Secondary_Tiles"/>
     <addaction name="actionChange_Metatiles_Count"/>
     <addaction name="actionChange_Palettes"/>
+    <addaction name="separator"/>
+    <addaction name="actionExport_Primary_Tiles_Image"/>
+    <addaction name="actionExport_Secondary_Tiles_Image"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -499,22 +505,22 @@
   </action>
   <action name="actionImport_Primary_Tiles">
    <property name="text">
-    <string>Import Primary Tiles</string>
+    <string>Import Primary Tiles...</string>
    </property>
   </action>
   <action name="actionImport_Secondary_Tiles">
    <property name="text">
-    <string>Import Secondary Tiles</string>
+    <string>Import Secondary Tiles...</string>
    </property>
   </action>
   <action name="actionChange_Metatiles_Count">
    <property name="text">
-    <string>Change Number of Metatiles</string>
+    <string>Change Number of Metatiles...</string>
    </property>
   </action>
   <action name="actionChange_Palettes">
    <property name="text">
-    <string>Change Palettes</string>
+    <string>Palette Editor</string>
    </property>
   </action>
   <action name="actionUndo">
@@ -531,6 +537,16 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Y</string>
+   </property>
+  </action>
+  <action name="actionExport_Primary_Tiles_Image">
+   <property name="text">
+    <string>Export Primary Tiles Image...</string>
+   </property>
+  </action>
+  <action name="actionExport_Secondary_Tiles_Image">
+   <property name="text">
+    <string>Export Secondary Tiles Image...</string>
    </property>
   </action>
  </widget>

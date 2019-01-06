@@ -5,7 +5,6 @@
 #include "imageproviders.h"
 
 #include <QTime>
-#include <QDebug>
 #include <QPainter>
 #include <QImage>
 #include <QRegularExpression>
@@ -379,6 +378,10 @@ void Map::redo() {
 }
 
 void Map::commit() {
+    if (!layout) {
+        return;
+    }
+
     if (layout->blockdata) {
         HistoryItem *item = metatileHistory.current();
         bool atCurrentHistory = item
@@ -405,6 +408,26 @@ void Map::floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t
     Block *block = getBlock(x, y);
     if (block && (block->collision != collision || block->elevation != elevation)) {
         _floodFillCollisionElevation(x, y, collision, elevation);
+        commit();
+    }
+}
+
+void Map::magicFillCollisionElevation(int initialX, int initialY, uint16_t collision, uint16_t elevation) {
+    Block *block = getBlock(initialX, initialY);
+    if (block && (block->collision != collision || block->elevation != elevation)) {
+        uint old_coll = block->collision;
+        uint old_elev = block->elevation;
+
+        for (int y = 0; y < getHeight(); y++) {
+            for (int x = 0; x < getWidth(); x++) {
+                block = getBlock(x, y);
+                if (block && block->collision == old_coll && block->elevation == old_elev) {
+                    block->collision = collision;
+                    block->elevation = elevation;
+                    _setBlock(x, y, *block);
+                }
+            }
+        }
         commit();
     }
 }

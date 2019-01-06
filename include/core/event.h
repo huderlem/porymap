@@ -4,15 +4,14 @@
 #include <QString>
 #include <QPixmap>
 #include <QMap>
-#include <QDebug>
 
 class EventType
 {
 public:
     static QString Object;
     static QString Warp;
-    static QString CoordScript;
-    static QString CoordWeather;
+    static QString Trigger;
+    static QString WeatherTrigger;
     static QString Sign;
     static QString HiddenItem;
     static QString SecretBase;
@@ -59,16 +58,16 @@ public:
     static Event* createNewObjectEvent();
     static Event* createNewWarpEvent(QString);
     static Event* createNewHealLocationEvent(QString);
-    static Event* createNewCoordScriptEvent();
-    static Event* createNewCoordWeatherEvent();
+    static Event* createNewTriggerEvent();
+    static Event* createNewWeatherTriggerEvent();
     static Event* createNewSignEvent();
     static Event* createNewHiddenItemEvent();
     static Event* createNewSecretBaseEvent();
 
     QString buildObjectEventMacro(int);
     QString buildWarpEventMacro(QMap<QString, QString>*);
-    QString buildCoordScriptEventMacro();
-    QString buildCoordWeatherEventMacro();
+    QString buildTriggerEventMacro();
+    QString buildWeatherTriggerEventMacro();
     QString buildSignEventMacro();
     QString buildHiddenItemEventMacro();
     QString buildSecretBaseEventMacro();

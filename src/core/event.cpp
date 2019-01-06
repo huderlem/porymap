@@ -3,8 +3,8 @@
 
 QString EventType::Object = "event_object";
 QString EventType::Warp = "event_warp";
-QString EventType::CoordScript = "event_trap";
-QString EventType::CoordWeather = "event_trap_weather";
+QString EventType::Trigger = "event_trigger";
+QString EventType::WeatherTrigger = "event_weather_trigger";
 QString EventType::Sign = "event_sign";
 QString EventType::HiddenItem = "event_hidden_item";
 QString EventType::SecretBase = "event_secret_base";
@@ -25,10 +25,10 @@ Event* Event::createNewEvent(QString event_type, QString map_name)
         event = createNewWarpEvent(map_name);
     } else if (event_type == EventType::HealLocation) {
         event = createNewHealLocationEvent(map_name);
-    } else if (event_type == EventType::CoordScript) {
-        event = createNewCoordScriptEvent();
-    } else if (event_type == EventType::CoordWeather) {
-        event = createNewCoordWeatherEvent();
+    } else if (event_type == EventType::Trigger) {
+        event = createNewTriggerEvent();
+    } else if (event_type == EventType::WeatherTrigger) {
+        event = createNewWeatherTriggerEvent();
     } else if (event_type == EventType::Sign) {
         event = createNewSignEvent();
     } else if (event_type == EventType::HiddenItem) {
@@ -79,22 +79,22 @@ Event* Event::createNewHealLocationEvent(QString map_name)
     return event;
 }
 
-Event* Event::createNewCoordScriptEvent()
+Event* Event::createNewTriggerEvent()
 {
     Event *event = new Event;
     event->put("event_group_type", "coord_event_group");
-    event->put("event_type", EventType::CoordScript);
+    event->put("event_type", EventType::Trigger);
     event->put("script_label", "NULL");
     event->put("script_var", "VAR_TEMP_0");
     event->put("script_var_value", "0");
     return event;
 }
 
-Event* Event::createNewCoordWeatherEvent()
+Event* Event::createNewWeatherTriggerEvent()
 {
     Event *event = new Event;
     event->put("event_group_type", "coord_event_group");
-    event->put("event_type", EventType::CoordWeather);
+    event->put("event_type", EventType::WeatherTrigger);
     event->put("weather", "COORD_EVENT_WEATHER_SUNNY");
     return event;
 }
@@ -115,7 +115,7 @@ Event* Event::createNewHiddenItemEvent()
     event->put("event_group_type", "bg_event_group");
     event->put("event_type", EventType::HiddenItem);
     event->put("item", "ITEM_POTION");
-    event->put("flag", "FLAG_HIDDEN_ITEM_0");
+    event->put("flag", "FLAG_TEMP_1");
     return event;
 }
 
@@ -175,7 +175,7 @@ QString Event::buildWarpEventMacro(QMap<QString, QString> *mapNamesToMapConstant
     return text;
 }
 
-QString Event::buildCoordScriptEventMacro()
+QString Event::buildTriggerEventMacro()
 {
     QString text = "";
     text += QString("\tcoord_event %1").arg(this->get("x"));
@@ -188,7 +188,7 @@ QString Event::buildCoordScriptEventMacro()
     return text;
 }
 
-QString Event::buildCoordWeatherEventMacro()
+QString Event::buildWeatherTriggerEventMacro()
 {
     QString text = "";
     text += QString("\tcoord_weather_event %1").arg(this->get("x"));

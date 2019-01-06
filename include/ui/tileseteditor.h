@@ -76,6 +76,10 @@ private slots:
 
     void on_comboBox_layerType_activated(int arg1);
 
+    void on_actionExport_Primary_Tiles_Image_triggered();
+
+    void on_actionExport_Secondary_Tiles_Image_triggered();
+
 private:
     void closeEvent(QCloseEvent*);
     void initMetatileSelector();
@@ -107,7 +111,6 @@ private:
 
 signals:
     void tilesetsSaved(QString, QString);
-    void closed();
 };
 
 #endif // TILESETEDITOR_H

@@ -11,6 +11,7 @@
 #include <QCloseEvent>
 #include <QAbstractItemModel>
 #include "project.h"
+#include "config.h"
 #include "map.h"
 #include "editor.h"
 #include "tileseteditor.h"
@@ -61,6 +62,9 @@ private slots:
     void on_comboBox_Type_activated(const QString &arg1);
     void on_comboBox_BattleScene_activated(const QString &arg1);
     void on_checkBox_ShowLocation_clicked(bool checked);
+    void on_checkBox_AllowRunning_clicked(bool checked);
+    void on_checkBox_AllowBiking_clicked(bool checked);
+    void on_checkBox_AllowEscapeRope_clicked(bool checked);
 
     void on_tabWidget_currentChanged(int index);
 
@@ -83,6 +87,7 @@ private slots:
 
     void addNewEvent(QString);
     void updateSelectedObjects();
+    void updateObjects();
 
     void on_toolButton_Paint_clicked();
 
@@ -100,7 +105,6 @@ private slots:
     void onAddNewMapToGroupClick(QAction* triggeredAction);
     void onTilesetChanged(QString);
     void currentMetatilesSelectionChanged();
-    void onTilesetEditorClosed();
 
     void on_action_Export_Map_Image_triggered();
 
@@ -140,6 +144,10 @@ private slots:
 
     void closeEvent(QCloseEvent *);
 
+    void eventTabChanged(int index);
+
+    void selectedEventIndexChanged(int index);
+
 private:
     Ui::MainWindow *ui;
     TilesetEditor *tilesetEditor = nullptr;
@@ -152,19 +160,30 @@ private:
     QIcon* mapIcon;
     QIcon* mapEditedIcon;
 
-    enum MapSortOrder {
-        Group   =  0,
-        Name    =  1,
-        Layout  =  2,
-    } mapSortOrder;
+    QWidget *eventTabObjectWidget;
+    QWidget *eventTabWarpWidget;
+    QWidget *eventTabTriggerWidget;
+    QWidget *eventTabBGWidget;
+    QWidget *eventTabHealspotWidget;
+    QWidget *eventTabMultipleWidget;
 
-    void setMap(QString, bool scrollTreeView = false);
+    DraggablePixmapItem *selectedObject;
+    DraggablePixmapItem *selectedWarp;
+    DraggablePixmapItem *selectedTrigger;
+    DraggablePixmapItem *selectedBG;
+    DraggablePixmapItem *selectedHealspot;
+
+    bool isProgrammaticEventTabChange;
+
+    MapSortOrder mapSortOrder;
+
+    bool setMap(QString, bool scrollTreeView = false);
     void redrawMapScene();
     void loadDataStructures();
     void populateMapList();
     void sortMapList();
     QString getExistingDirectory(QString);
-    void openProject(QString dir);
+    bool openProject(QString dir);
     QString getDefaultMap();
     void setRecentMap(QString map_name);
     QStandardItem* createMapItem(QString mapName, int groupNum, int inGroupNum);
@@ -176,16 +195,20 @@ private:
     void displayMapProperties();
     void checkToolButtons();
 
+    void initWindow();
     void initCustomUI();
     void initExtraShortcuts();
     void initExtraSignals();
     void initEditor();
     void initMiscHeapObjects();
     void initMapSortOrder();
+    void setProjectSpecificUIVisibility();
     void loadUserSettings();
     void restoreWindowState();
     void openRecentProject();
+    bool openRecentProject();
     void updateTilesetEditor();
+    QString getEventGroupFromTabWidget(QWidget *tab);
 
     bool isProjectOpen();
 };

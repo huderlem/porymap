@@ -60,6 +60,18 @@ void CollisionPixmapItem::floodFill(QGraphicsSceneMouseEvent *event) {
     }
 }
 
+void CollisionPixmapItem::magicFill(QGraphicsSceneMouseEvent *event) {
+    if (map) {
+        QPointF pos = event->pos();
+        int x = static_cast<int>(pos.x()) / 16;
+        int y = static_cast<int>(pos.y()) / 16;
+        uint16_t collision = this->movementPermissionsSelector->getSelectedCollision();
+        uint16_t elevation = this->movementPermissionsSelector->getSelectedElevation();
+        map->magicFillCollisionElevation(x, y, collision, elevation);
+        draw();
+    }
+}
+
 void CollisionPixmapItem::pick(QGraphicsSceneMouseEvent *event) {
     QPointF pos = event->pos();
     int x = static_cast<int>(pos.x()) / 16;

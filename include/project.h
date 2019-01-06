@@ -70,7 +70,7 @@ public:
 
     QList<QStringList>* getLabelMacros(QList<QStringList>*, QString);
     QStringList* getLabelValues(QList<QStringList>*, QString);
-    void readMapHeader(Map*);
+    bool readMapHeader(Map*);
     void readMapLayoutsTable();
     void readAllMapLayouts();
     QStringList* readLayoutValues(QString layoutName);

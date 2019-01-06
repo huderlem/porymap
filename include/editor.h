@@ -39,7 +39,8 @@ public:
     void save();
     void undo();
     void redo();
-    void setMap(QString map_name);
+    void closeProject();
+    bool setMap(QString map_name);
     void displayMap();
     void displayMetatileSelector();
     void displayMapMetatiles();
@@ -136,8 +137,8 @@ private:
     Event* createNewObjectEvent();
     Event* createNewWarpEvent();
     Event* createNewHealLocationEvent();
-    Event* createNewCoordScriptEvent();
-    Event* createNewCoordWeatherEvent();
+    Event* createNewTriggerEvent();
+    Event* createNewWeatherTriggerEvent();
     Event* createNewSignEvent();
     Event* createNewHiddenItemEvent();
     Event* createNewSecretBaseEvent();

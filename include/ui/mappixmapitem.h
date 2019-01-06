@@ -26,6 +26,7 @@ public:
     QList<QPoint> selection;
     virtual void paint(QGraphicsSceneMouseEvent*);
     virtual void floodFill(QGraphicsSceneMouseEvent*);
+    virtual void magicFill(QGraphicsSceneMouseEvent*);
     void _floodFill(int x, int y);
     void _floodFillSmartPath(int initialX, int initialY);
     virtual void pick(QGraphicsSceneMouseEvent*);

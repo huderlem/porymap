@@ -14,8 +14,8 @@ public slots:
     void newObject();
     void newWarp();
     void newHealLocation();
-    void newCoordScript();
-    void newCoordWeather();
+    void newTrigger();
+    void newWeatherTrigger();
     void newSign();
     void newHiddenItem();
     void newSecretBase();
@@ -26,8 +26,8 @@ private:
     QAction *newObjectAction;
     QAction *newWarpAction;
     QAction *newHealLocationAction;
-    QAction *newCoordScriptAction;
-    QAction *newCoordWeatherAction;
+    QAction *newTriggerAction;
+    QAction *newWeatherTriggerAction;
     QAction *newSignAction;
     QAction *newHiddenItemAction;
     QAction *newSecretBaseAction;

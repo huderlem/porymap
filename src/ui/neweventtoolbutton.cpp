@@ -1,6 +1,5 @@
 #include "neweventtoolbutton.h"
 #include <QMenu>
-#include <QDebug>
 
 // Custom QToolButton which has a context menu that expands to allow
 // selection of different types of map events.
@@ -30,13 +29,13 @@ void NewEventToolButton::init()
     connect(this->newHealLocationAction, SIGNAL(triggered(bool)), this, SLOT(newHealLocation()));
     */
 
-    this->newCoordScriptAction = new QAction("New Coord Script", this);
-    this->newCoordScriptAction->setIcon(QIcon(":/icons/add.ico"));
-    connect(this->newCoordScriptAction, SIGNAL(triggered(bool)), this, SLOT(newCoordScript()));
+    this->newTriggerAction = new QAction("New Trigger", this);
+    this->newTriggerAction->setIcon(QIcon(":/icons/add.ico"));
+    connect(this->newTriggerAction, SIGNAL(triggered(bool)), this, SLOT(newTrigger()));
 
-    this->newCoordWeatherAction = new QAction("New Coord Weather", this);
-    this->newCoordWeatherAction->setIcon(QIcon(":/icons/add.ico"));
-    connect(this->newCoordWeatherAction, SIGNAL(triggered(bool)), this, SLOT(newCoordWeather()));
+    this->newWeatherTriggerAction = new QAction("New Weather Trigger", this);
+    this->newWeatherTriggerAction->setIcon(QIcon(":/icons/add.ico"));
+    connect(this->newWeatherTriggerAction, SIGNAL(triggered(bool)), this, SLOT(newWeatherTrigger()));
 
     this->newSignAction = new QAction("New Sign", this);
     this->newSignAction->setIcon(QIcon(":/icons/add.ico"));
@@ -54,8 +53,8 @@ void NewEventToolButton::init()
     alignMenu->addAction(this->newObjectAction);
     alignMenu->addAction(this->newWarpAction);
     //alignMenu->addAction(this->newHealLocationAction);
-    alignMenu->addAction(this->newCoordScriptAction);
-    alignMenu->addAction(this->newCoordWeatherAction);
+    alignMenu->addAction(this->newTriggerAction);
+    alignMenu->addAction(this->newWeatherTriggerAction);
     alignMenu->addAction(this->newSignAction);
     alignMenu->addAction(this->newHiddenItemAction);
     alignMenu->addAction(this->newSecretBaseAction);
@@ -86,15 +85,15 @@ void NewEventToolButton::newHealLocation()
     emit newEventAdded(this->selectedEventType);
 }
 
-void NewEventToolButton::newCoordScript()
+void NewEventToolButton::newTrigger()
 {
-    this->selectedEventType = EventType::CoordScript;
+    this->selectedEventType = EventType::Trigger;
     emit newEventAdded(this->selectedEventType);
 }
 
-void NewEventToolButton::newCoordWeather()
+void NewEventToolButton::newWeatherTrigger()
 {
-    this->selectedEventType = EventType::CoordWeather;
+    this->selectedEventType = EventType::WeatherTrigger;
     emit newEventAdded(this->selectedEventType);
 }
 

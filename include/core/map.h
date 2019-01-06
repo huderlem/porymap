@@ -11,7 +11,6 @@
 
 #include <QPixmap>
 #include <QObject>
-#include <QDebug>
 #include <QGraphicsPixmapItem>
 #include <math.h>
 
@@ -38,6 +37,9 @@ public:
     QString type;
     QString unknown;
     QString show_location;
+    QString allowRunning;
+    QString allowBiking;
+    QString allowEscapeRope;
     QString battle_scene;
     MapLayout *layout;
     bool isPersistedToFile = true;
@@ -66,6 +68,7 @@ public:
     void _setBlock(int x, int y, Block block);
     void floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
     void _floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
+    void magicFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
     void undo();
     void redo();
     void commit();

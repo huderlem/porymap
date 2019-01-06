@@ -1,6 +1,7 @@
 #include "editor.h"
 #include "event.h"
 #include "imageproviders.h"
+#include "log.h"
 #include "mapconnection.h"
 #include "currentselectedmetatilespixmapitem.h"
 #include "mapsceneeventfilter.h"
@@ -45,6 +46,13 @@ void Editor::redo() {
         map->redo();
         map_item->draw();
         collision_item->draw();
+    }
+}
+
+void Editor::closeProject() {
+    if (this->project) {
+        delete this->project;
+        this->project = nullptr;
     }
 }
 
@@ -398,16 +406,24 @@ void Editor::setConnectionsVisibility(bool visible) {
     }
 }
 
-void Editor::setMap(QString map_name) {
+bool Editor::setMap(QString map_name) {
     if (map_name.isNull()) {
-        return;
+        return false;
     }
+
     if (project) {
-        map = project->loadMap(map_name);
+        Map *loadedMap = project->loadMap(map_name);
+        if (!loadedMap) {
+            return false;
+        }
+
+        map = loadedMap;
         selected_events->clear();
         displayMap();
         updateSelectedEvents();
     }
+
+    return true;
 }
 
 void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item) {
@@ -415,7 +431,11 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item
         if (event->buttons() & Qt::RightButton) {
             item->updateMetatileSelection(event);
         } else if (event->buttons() & Qt::MiddleButton) {
-            item->floodFill(event);
+            if (event->modifiers() & Qt::ControlModifier) {
+                item->magicFill(event);
+            } else {
+                item->floodFill(event);
+            }
         } else {
             item->paint(event);
         }
@@ -424,6 +444,8 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item
     } else if (map_edit_mode == "fill") {
         if (event->buttons() & Qt::RightButton) {
             item->updateMetatileSelection(event);
+        } else if (event->modifiers() & Qt::ControlModifier) {
+            item->magicFill(event);
         } else {
             item->floodFill(event);
         }
@@ -443,7 +465,11 @@ void Editor::mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixm
         if (event->buttons() & Qt::RightButton) {
             item->updateMovementPermissionSelection(event);
         } else if (event->buttons() & Qt::MiddleButton) {
-            item->floodFill(event);
+            if (event->modifiers() & Qt::ControlModifier) {
+                item->magicFill(event);
+            } else {
+                item->floodFill(event);
+            }
         } else {
             item->paint(event);
         }
@@ -452,6 +478,8 @@ void Editor::mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixm
     } else if (map_edit_mode == "fill") {
         if (event->buttons() & Qt::RightButton) {
             item->pick(event);
+        } else if (event->modifiers() & Qt::ControlModifier) {
+            item->magicFill(event);
         } else {
             item->floodFill(event);
         }
@@ -783,7 +811,7 @@ void Editor::updateConnectionOffset(int offset) {
 
 void Editor::setConnectionMap(QString mapName) {
     if (!mapName.isEmpty() && !project->mapNames->contains(mapName)) {
-        qDebug() << "Invalid map name " << mapName << " specified for connection.";
+        logError(QString("Invalid map name '%1' specified for connection.").arg(mapName));
         return;
     }
     if (!selected_connection_item)
@@ -926,7 +954,7 @@ void Editor::updateEmergeMap(QString mapName) {
 
 void Editor::updateDiveEmergeMap(QString mapName, QString direction) {
     if (!mapName.isEmpty() && !project->mapNamesToMapConstants->contains(mapName)) {
-        qDebug() << "Invalid " << direction << " map connection: " << mapName;
+        logError(QString("Invalid %1 connection map name: '%2'").arg(direction).arg(mapName));
         return;
     }
 
@@ -999,9 +1027,8 @@ void DraggablePixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *mouse) {
     last_x = static_cast<int>(mouse->pos().x() + this->pos().x()) / 16;
     last_y = static_cast<int>(mouse->pos().y() + this->pos().y()) / 16;
     this->editor->selectMapEvent(this, mouse->modifiers() & Qt::ControlModifier);
-    this->editor->updateSelectedEvents();
+    //this->editor->updateSelectedEvents();
     selectingEvent = true;
-    //qDebug() << QString("(%1, %2)").arg(event->get("x")).arg(event->get("y"));
 }
 
 void DraggablePixmapItem::move(int x, int y) {
@@ -1025,7 +1052,6 @@ void DraggablePixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *mouse) {
             }
             last_x = x;
             last_y = y;
-            //qDebug() << QString("(%1, %2)").arg(event->get("x")).arg(event->get("x"));
         }
     }
 }

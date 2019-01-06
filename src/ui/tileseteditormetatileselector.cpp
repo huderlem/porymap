@@ -12,6 +12,9 @@ void TilesetEditorMetatileSelector::draw() {
     int primaryLength = this->primaryTileset->metatiles->length();
     int length_ = primaryLength + this->secondaryTileset->metatiles->length();
     int height_ = length_ / this->numMetatilesWide;
+    if (length_ % this->numMetatilesWide != 0) {
+        height_++;
+    }
     QImage image(this->numMetatilesWide * 32, height_ * 32, QImage::Format_RGBA8888);
     QPainter painter(&image);
     for (int i = 0; i < length_; i++) {
@@ -47,7 +50,7 @@ void TilesetEditorMetatileSelector::setTilesets(Tileset *primaryTileset, Tileset
 
 void TilesetEditorMetatileSelector::updateSelectedMetatile() {
     QPoint origin = this->getSelectionStart();
-    this->selectedMetatile = this->getMetatileId(origin.x(), origin.y());
+    this->selectedMetatile = this->getValidMetatileId(this->getMetatileId(origin.x(), origin.y()));
 }
 
 uint16_t TilesetEditorMetatileSelector::getSelectedMetatile() {
@@ -72,11 +75,8 @@ void TilesetEditorMetatileSelector::mousePressEvent(QGraphicsSceneMouseEvent *ev
 void TilesetEditorMetatileSelector::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     SelectablePixmapItem::mouseMoveEvent(event);
     this->updateSelectedMetatile();
-
-    QPoint pos = this->getCellPos(event->pos());
-    uint16_t metatileId = this->getMetatileId(pos.x(), pos.y());
-    emit hoveredMetatileChanged(metatileId);
-    emit selectedMetatileChanged(metatileId);
+    emit hoveredMetatileChanged(this->selectedMetatile);
+    emit selectedMetatileChanged(this->selectedMetatile);
 }
 
 void TilesetEditorMetatileSelector::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
