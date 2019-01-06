@@ -119,12 +119,6 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
             this->mapSortOrder = MapSortOrder::Group;
             logWarn(QString("Invalid config value for map_sort_order: '%1'. Must be 'group', 'area', or 'layout'.").arg(value));
         }
-    } else if (key == "restore_geometry") {
-        bool ok;
-        this->restoreGeometry = value.toInt(&ok);
-        if (!ok) {
-            logWarn(QString("Invalid config value for restore_geometry: '%1'. Must be 0 or 1.").arg(value));
-        }
     } else if (key == "window_geometry") {
         this->windowGeometry = bytesFromString(value);
     } else if (key == "window_state") {
@@ -146,16 +140,15 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("recent_map", this->recentMap);
     map.insert("pretty_cursors", this->prettyCursors ? "1" : "0");
     map.insert("map_sort_order", mapSortOrderMap.value(this->mapSortOrder));
-    map.insert("restore_geometry", this->restoreGeometry ? "1" : "0");
-    map.insert("window_geometry", unicodeByteArray(this->windowGeometry));
-    map.insert("window_state", unicodeByteArray(this->windowState));
-    map.insert("map_splitter_state", unicodeByteArray(this->mapSplitterState));
-    map.insert("events_splitter_state", unicodeByteArray(this->eventsSlpitterState));
-    map.insert("main_splitter_state", unicodeByteArray(this->mainSplitterState));
+    map.insert("window_geometry", stringFromByteArray(this->windowGeometry));
+    map.insert("window_state", stringFromByteArray(this->windowState));
+    map.insert("map_splitter_state", stringFromByteArray(this->mapSplitterState));
+    map.insert("events_splitter_state", stringFromByteArray(this->eventsSlpitterState));
+    map.insert("main_splitter_state", stringFromByteArray(this->mainSplitterState));
     return map;
 }
 
-QString PorymapConfig::unicodeByteArray(QByteArray bytearray) {
+QString PorymapConfig::stringFromByteArray(QByteArray bytearray) {
     QString ret;
     for (auto ch : bytearray) {
         ret += QString::number(static_cast<int>(ch)) + ":";
@@ -192,13 +185,13 @@ void PorymapConfig::setPrettyCursors(bool enabled) {
     this->save();
 }
 
-void PorymapConfig::setGeometry(QByteArrayList geometry) {
-    this->restoreGeometry = true;
-    this->windowGeometry = geometry[0];
-    this->windowState = geometry[1];
-    this->mapSplitterState = geometry[2];
-    this->eventsSlpitterState = geometry[3];
-    this->mainSplitterState = geometry[4];
+void PorymapConfig::setGeometry(QByteArray windowGeometry_, QByteArray windowState_, QByteArray mapSplitterState_, 
+                                QByteArray eventsSlpitterState_, QByteArray mainSplitterState_) {
+    this->windowGeometry = windowGeometry_;
+    this->windowState = windowState_;
+    this->mapSplitterState = mapSplitterState_;
+    this->eventsSlpitterState = eventsSlpitterState_;
+    this->mainSplitterState = mainSplitterState_;
     this->save();
 }
 
@@ -218,18 +211,14 @@ bool PorymapConfig::getPrettyCursors() {
     return this->prettyCursors;
 }
 
-bool PorymapConfig::getRestoreWindowGeometry() {
-    return this->restoreGeometry;
-}
+QMap<QString, QByteArray> PorymapConfig::getGeometry() {
+    QMap<QString, QByteArray> geometry;
 
-QByteArrayList PorymapConfig::getGeometry() {
-    QByteArrayList geometry;
-
-    geometry.append(this->windowGeometry);
-    geometry.append(this->windowState);
-    geometry.append(this->mapSplitterState);
-    geometry.append(this->eventsSlpitterState);
-    geometry.append(this->mainSplitterState);
+    geometry.insert("window_geometry", this->windowGeometry);
+    geometry.insert("window_state", this->windowState);
+    geometry.insert("map_splitter_state", this->mapSplitterState);
+    geometry.insert("events_splitter_state", this->eventsSlpitterState);
+    geometry.insert("main_splitter_state", this->mainSplitterState);
 
     return geometry;
 }

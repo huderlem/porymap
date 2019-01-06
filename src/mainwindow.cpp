@@ -208,14 +208,13 @@ void MainWindow::loadUserSettings() {
 }
 
 void MainWindow::restoreWindowState() {
-    if (porymapConfig.getRestoreWindowGeometry()) {
-        logInfo("Restoring window geometry from previous session.");
-        this->restoreGeometry(porymapConfig.getGeometry()[0]);
-        this->restoreState(porymapConfig.getGeometry()[1]);
-        this->ui->splitter_map->restoreState(porymapConfig.getGeometry()[2]);
-        this->ui->splitter_events->restoreState(porymapConfig.getGeometry()[3]);
-        this->ui->splitter_main->restoreState(porymapConfig.getGeometry()[4]);
-    }
+    logInfo("Restoring window geometry from previous session.");
+    QMap<QString, QByteArray> geometry = porymapConfig.getGeometry();
+    this->restoreGeometry(geometry.value("window_geometry"));
+    this->restoreState(geometry.value("window_state"));
+    this->ui->splitter_map->restoreState(geometry.value("map_splitter_state"));
+    this->ui->splitter_events->restoreState(geometry.value("events_splitter_state"));
+    this->ui->splitter_main->restoreState(geometry.value("main_splitter_state"));
 }
 
 bool MainWindow::openRecentProject() {
@@ -753,7 +752,7 @@ void MainWindow::onNewMapCreated() {
 
     Map *newMap = editor->project->addNewMapToGroup(newMapName, newMapGroup, newMap_);
 
-    qDebug() << "Created a new map named" << newMapName;
+    logInfo(QString("Created a new map named %1.").arg(newMapName));
 
     editor->project->saveMap(newMap);
     editor->project->saveAllDataStructures();
@@ -1804,15 +1803,13 @@ void MainWindow::on_actionTileset_Editor_triggered()
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
-    QByteArrayList geometry;
-
-    geometry.append(this->saveGeometry());
-    geometry.append(this->saveState());
-    geometry.append(this->ui->splitter_map->saveState());
-    geometry.append(this->ui->splitter_events->saveState());
-    geometry.append(this->ui->splitter_main->saveState());
-
-    porymapConfig.setGeometry(geometry);
+    porymapConfig.setGeometry(
+        this->saveGeometry(),
+        this->saveState(),
+        this->ui->splitter_map->saveState(),
+        this->ui->splitter_events->saveState(),
+        this->ui->splitter_main->saveState()
+    );
 
     QMainWindow::closeEvent(event);
 }

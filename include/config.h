@@ -32,19 +32,17 @@ public:
         this->recentMap = "";
         this->mapSortOrder = MapSortOrder::Group;
         this->prettyCursors = true;
-        this->restoreGeometry = false;
     }
     void setRecentProject(QString project);
     void setRecentMap(QString map);
     void setMapSortOrder(MapSortOrder order);
     void setPrettyCursors(bool enabled);
-    void setGeometry(QByteArrayList);//
+    void setGeometry(QByteArray, QByteArray, QByteArray, QByteArray, QByteArray);
     QString getRecentProject();
     QString getRecentMap();
     MapSortOrder getMapSortOrder();
     bool getPrettyCursors();
-    bool getRestoreWindowGeometry();
-    QByteArrayList getGeometry();
+    QMap<QString, QByteArray> getGeometry();
 protected:
     QString getConfigFilepath();
     void parseConfigKeyValue(QString key, QString value);
@@ -53,12 +51,10 @@ protected:
 private:
     QString recentProject;
     QString recentMap;
-    QString unicodeByteArray(QByteArray);
+    QString stringFromByteArray(QByteArray);
     QByteArray bytesFromString(QString);
     MapSortOrder mapSortOrder;
     bool prettyCursors;
-    //
-    bool restoreGeometry;
     QByteArray windowGeometry;
     QByteArray windowState;
     QByteArray mapSplitterState;
