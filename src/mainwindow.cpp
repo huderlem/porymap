@@ -53,7 +53,6 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
-    delete newmapprompt;
 }
 
 void MainWindow::initWindow() {
@@ -64,6 +63,7 @@ void MainWindow::initWindow() {
     this->initEditor();
     this->initMiscHeapObjects();
     this->initMapSortOrder();
+    this->restoreWindowState();
 }
 
 void MainWindow::initExtraShortcuts() {
@@ -208,14 +208,13 @@ void MainWindow::loadUserSettings() {
 }
 
 void MainWindow::restoreWindowState() {
-    QSettings settings;
-
-    if (settings.contains("saved_widget_geometry")) {
-        this->restoreGeometry(settings.value("window_geometry").toByteArray());
-        this->restoreState(settings.value("window_state").toByteArray());
-        this->ui->splitter_map->restoreState(settings.value("map_splitter_state").toByteArray());
-        this->ui->splitter_events->restoreState(settings.value("events_splitter_state").toByteArray());
-        this->ui->splitter_main->restoreState(settings.value("main_splitter_state").toByteArray());
+    if (porymapConfig.getRestoreWindowGeometry()) {
+        logInfo("Restoring window geometry from previous session.");
+        this->restoreGeometry(porymapConfig.getGeometry()[0]);
+        this->restoreState(porymapConfig.getGeometry()[1]);
+        this->ui->splitter_map->restoreState(porymapConfig.getGeometry()[2]);
+        this->ui->splitter_events->restoreState(porymapConfig.getGeometry()[3]);
+        this->ui->splitter_main->restoreState(porymapConfig.getGeometry()[4]);
     }
 }
 
@@ -788,6 +787,8 @@ void MainWindow::openNewMapPopupWindow(int groupNum) {
     }
     this->newmapprompt->init(groupNum);
     connect(this->newmapprompt, SIGNAL(applied()), this, SLOT(onNewMapCreated()));
+    connect(this->newmapprompt, &QObject::destroyed, [=](QObject *) { this->newmapprompt = nullptr; });
+            this->newmapprompt->setAttribute(Qt::WA_DeleteOnClose);
 }
 
 void MainWindow::on_action_NewMap_triggered() {
@@ -1803,12 +1804,15 @@ void MainWindow::on_actionTileset_Editor_triggered()
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
-    QSettings settings;
-    settings.setValue("saved_widget_geometry", "true");
-    settings.setValue("window_geometry", this->saveGeometry());
-    settings.setValue("window_state", this->saveState());
-    settings.setValue("map_splitter_state", this->ui->splitter_map->saveState());
-    settings.setValue("events_splitter_state", this->ui->splitter_events->saveState());
-    settings.setValue("main_splitter_state", this->ui->splitter_main->saveState());
+    QByteArrayList geometry;
+
+    geometry.append(this->saveGeometry());
+    geometry.append(this->saveState());
+    geometry.append(this->ui->splitter_map->saveState());
+    geometry.append(this->ui->splitter_events->saveState());
+    geometry.append(this->ui->splitter_main->saveState());
+
+    porymapConfig.setGeometry(geometry);
+
     QMainWindow::closeEvent(event);
 }

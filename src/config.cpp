@@ -119,6 +119,22 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
             this->mapSortOrder = MapSortOrder::Group;
             logWarn(QString("Invalid config value for map_sort_order: '%1'. Must be 'group', 'area', or 'layout'.").arg(value));
         }
+    } else if (key == "restore_geometry") {
+        bool ok;
+        this->restoreGeometry = value.toInt(&ok);
+        if (!ok) {
+            logWarn(QString("Invalid config value for restore_geometry: '%1'. Must be 0 or 1.").arg(value));
+        }
+    } else if (key == "window_geometry") {
+        this->windowGeometry = bytesFromString(value);
+    } else if (key == "window_state") {
+        this->windowState = bytesFromString(value);
+    } else if (key == "map_splitter_state") {
+        this->mapSplitterState = bytesFromString(value);
+    } else if (key == "events_splitter_state") {
+        this->eventsSlpitterState = bytesFromString(value);
+    } else if (key == "main_splitter_state") {
+        this->mainSplitterState = bytesFromString(value);
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -130,7 +146,30 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("recent_map", this->recentMap);
     map.insert("pretty_cursors", this->prettyCursors ? "1" : "0");
     map.insert("map_sort_order", mapSortOrderMap.value(this->mapSortOrder));
+    map.insert("restore_geometry", this->restoreGeometry ? "1" : "0");
+    map.insert("window_geometry", unicodeByteArray(this->windowGeometry));
+    map.insert("window_state", unicodeByteArray(this->windowState));
+    map.insert("map_splitter_state", unicodeByteArray(this->mapSplitterState));
+    map.insert("events_splitter_state", unicodeByteArray(this->eventsSlpitterState));
+    map.insert("main_splitter_state", unicodeByteArray(this->mainSplitterState));
     return map;
+}
+
+QString PorymapConfig::unicodeByteArray(QByteArray bytearray) {
+    QString ret;
+    for (auto ch : bytearray) {
+        ret += QString::number(static_cast<int>(ch)) + ":";
+    }
+    return ret;
+}
+
+QByteArray PorymapConfig::bytesFromString(QString in) {
+    QByteArray ba;
+    QStringList split = in.split(":");
+    for (auto ch : split) {
+        ba.append(static_cast<char>(ch.toInt()));
+    }
+    return ba;
 }
 
 void PorymapConfig::setRecentProject(QString project) {
@@ -153,6 +192,16 @@ void PorymapConfig::setPrettyCursors(bool enabled) {
     this->save();
 }
 
+void PorymapConfig::setGeometry(QByteArrayList geometry) {
+    this->restoreGeometry = true;
+    this->windowGeometry = geometry[0];
+    this->windowState = geometry[1];
+    this->mapSplitterState = geometry[2];
+    this->eventsSlpitterState = geometry[3];
+    this->mainSplitterState = geometry[4];
+    this->save();
+}
+
 QString PorymapConfig::getRecentProject() {
     return this->recentProject;
 }
@@ -167,6 +216,22 @@ MapSortOrder PorymapConfig::getMapSortOrder() {
 
 bool PorymapConfig::getPrettyCursors() {
     return this->prettyCursors;
+}
+
+bool PorymapConfig::getRestoreWindowGeometry() {
+    return this->restoreGeometry;
+}
+
+QByteArrayList PorymapConfig::getGeometry() {
+    QByteArrayList geometry;
+
+    geometry.append(this->windowGeometry);
+    geometry.append(this->windowState);
+    geometry.append(this->mapSplitterState);
+    geometry.append(this->eventsSlpitterState);
+    geometry.append(this->mainSplitterState);
+
+    return geometry;
 }
 
 const QMap<BaseGameVersion, QString> baseGameVersionMap = {

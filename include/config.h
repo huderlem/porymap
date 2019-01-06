@@ -3,6 +3,7 @@
 
 #include <QString>
 #include <QObject>
+#include <QByteArrayList>
 
 enum MapSortOrder {
     Group   =  0,
@@ -31,15 +32,19 @@ public:
         this->recentMap = "";
         this->mapSortOrder = MapSortOrder::Group;
         this->prettyCursors = true;
+        this->restoreGeometry = false;
     }
     void setRecentProject(QString project);
     void setRecentMap(QString map);
     void setMapSortOrder(MapSortOrder order);
     void setPrettyCursors(bool enabled);
+    void setGeometry(QByteArrayList);//
     QString getRecentProject();
     QString getRecentMap();
     MapSortOrder getMapSortOrder();
     bool getPrettyCursors();
+    bool getRestoreWindowGeometry();
+    QByteArrayList getGeometry();
 protected:
     QString getConfigFilepath();
     void parseConfigKeyValue(QString key, QString value);
@@ -48,8 +53,17 @@ protected:
 private:
     QString recentProject;
     QString recentMap;
+    QString unicodeByteArray(QByteArray);
+    QByteArray bytesFromString(QString);
     MapSortOrder mapSortOrder;
     bool prettyCursors;
+    //
+    bool restoreGeometry;
+    QByteArray windowGeometry;
+    QByteArray windowState;
+    QByteArray mapSplitterState;
+    QByteArray eventsSlpitterState;
+    QByteArray mainSplitterState;
 };
 
 extern PorymapConfig porymapConfig;
