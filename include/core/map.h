@@ -59,7 +59,7 @@ public:
     int getWidth();
     int getHeight();
     QPixmap render(bool ignoreCache);
-    QPixmap renderCollision(bool ignoreCache);
+    QPixmap renderCollision(qreal opacity, bool ignoreCache);
     bool blockChanged(int, Blockdata*);
     void cacheBlockdata();
     void cacheCollision();

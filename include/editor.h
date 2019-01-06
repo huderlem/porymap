@@ -114,6 +114,7 @@ public:
     
     int scale_exp = 0;
     double scale_base = sqrt(2); // adjust scale factor with this
+    qreal collisionOpacity = 0.5;
 
     void objectsView_onMousePress(QMouseEvent *event);
     void objectsView_onMouseMove(QMouseEvent *event);

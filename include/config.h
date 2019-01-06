@@ -32,17 +32,20 @@ public:
         this->recentMap = "";
         this->mapSortOrder = MapSortOrder::Group;
         this->prettyCursors = true;
+        this->collisionOpacity = 50;
     }
     void setRecentProject(QString project);
     void setRecentMap(QString map);
     void setMapSortOrder(MapSortOrder order);
     void setPrettyCursors(bool enabled);
     void setGeometry(QByteArray, QByteArray, QByteArray, QByteArray, QByteArray);
+    void setCollisionOpacity(int opacity);
     QString getRecentProject();
     QString getRecentMap();
     MapSortOrder getMapSortOrder();
     bool getPrettyCursors();
     QMap<QString, QByteArray> getGeometry();
+    int getCollisionOpacity();
 protected:
     QString getConfigFilepath();
     void parseConfigKeyValue(QString key, QString value);
@@ -60,6 +63,7 @@ private:
     QByteArray mapSplitterState;
     QByteArray eventsSlpitterState;
     QByteArray mainSplitterState;
+    int collisionOpacity;
 };
 
 extern PorymapConfig porymapConfig;

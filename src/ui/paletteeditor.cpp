@@ -188,6 +188,13 @@ void PaletteEditor::setPaletteId(int paletteId) {
     this->ui->spinBox_PaletteId->blockSignals(false);
 }
 
+void PaletteEditor::setTilesets(Tileset *primaryTileset, Tileset *secondaryTileset) {
+    this->primaryTileset = primaryTileset;
+    this->secondaryTileset = secondaryTileset;
+    this->refreshColorSliders();
+    this->refreshColors();
+}
+
 void PaletteEditor::setColor(int colorIndex) {
     int paletteNum = this->ui->spinBox_PaletteId->value();
     int red = this->sliders[colorIndex][0]->value() * 8;

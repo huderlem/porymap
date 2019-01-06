@@ -129,6 +129,13 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->eventsSlpitterState = bytesFromString(value);
     } else if (key == "main_splitter_state") {
         this->mainSplitterState = bytesFromString(value);
+    } else if (key == "collision_opacity") {
+        bool ok;
+        this->collisionOpacity = qMax(0, qMin(100, value.toInt(&ok)));
+        if (!ok) {
+            logWarn(QString("Invalid config value for collision_opacity: '%1'. Must be an integer.").arg(value));
+            this->collisionOpacity = 50;
+        }
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -145,6 +152,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("map_splitter_state", stringFromByteArray(this->mapSplitterState));
     map.insert("events_splitter_state", stringFromByteArray(this->eventsSlpitterState));
     map.insert("main_splitter_state", stringFromByteArray(this->mainSplitterState));
+    map.insert("collision_opacity", QString("%1").arg(this->collisionOpacity));
     return map;
 }
 
@@ -195,6 +203,11 @@ void PorymapConfig::setGeometry(QByteArray windowGeometry_, QByteArray windowSta
     this->save();
 }
 
+void PorymapConfig::setCollisionOpacity(int opacity) {
+    this->collisionOpacity = opacity;
+    // don't auto-save here because this can be called very frequently.
+}
+
 QString PorymapConfig::getRecentProject() {
     return this->recentProject;
 }
@@ -221,6 +234,10 @@ QMap<QString, QByteArray> PorymapConfig::getGeometry() {
     geometry.insert("main_splitter_state", this->mainSplitterState);
 
     return geometry;
+}
+
+int PorymapConfig::getCollisionOpacity() {
+    return this->collisionOpacity;
 }
 
 const QMap<BaseGameVersion, QString> baseGameVersionMap = {

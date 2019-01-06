@@ -110,7 +110,7 @@ void Map::cacheCollision() {
     }
 }
 
-QPixmap Map::renderCollision(bool ignoreCache) {
+QPixmap Map::renderCollision(qreal opacity, bool ignoreCache) {
     bool changed_any = false;
     int width_ = getWidth();
     int height_ = getHeight();
@@ -141,7 +141,7 @@ QPixmap Map::renderCollision(bool ignoreCache) {
         painter.setOpacity(1);
         painter.drawImage(metatile_origin, metatile_image);
         painter.save();
-        painter.setOpacity(0.55);
+        painter.setOpacity(opacity);
         painter.drawImage(metatile_origin, collision_metatile_image);
         painter.restore();
     }

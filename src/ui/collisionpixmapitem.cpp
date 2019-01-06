@@ -26,7 +26,7 @@ void CollisionPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
 
 void CollisionPixmapItem::draw(bool ignoreCache) {
     if (map) {
-        setPixmap(map->renderCollision(ignoreCache));
+        setPixmap(map->renderCollision(*this->opacity, ignoreCache));
     }
 }
 

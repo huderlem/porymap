@@ -205,6 +205,10 @@ void MainWindow::loadUserSettings() {
     ui->actionBetter_Cursors->setChecked(porymapConfig.getPrettyCursors());
     this->editor->settings->betterCursors = porymapConfig.getPrettyCursors();
     mapSortOrder = porymapConfig.getMapSortOrder();
+    ui->horizontalSlider_CollisionTransparency->blockSignals(true);
+    this->editor->collisionOpacity = static_cast<qreal>(porymapConfig.getCollisionOpacity()) / 100;
+    ui->horizontalSlider_CollisionTransparency->setValue(porymapConfig.getCollisionOpacity());
+    ui->horizontalSlider_CollisionTransparency->blockSignals(false);
 }
 
 void MainWindow::restoreWindowState() {
@@ -490,13 +494,6 @@ void MainWindow::on_comboBox_Location_activated(const QString &location)
 {
     if (editor && editor->map) {
         editor->map->location = location;
-    }
-}
-
-void MainWindow::on_comboBox_Visibility_activated(const QString &requiresFlash)
-{
-    if (editor && editor->map) {
-        editor->map->requiresFlash = requiresFlash;
     }
 }
 
@@ -1569,6 +1566,12 @@ void MainWindow::selectedEventIndexChanged(int index)
         editor->selectMapEvent(selectedEvent);
 }
 
+void MainWindow::on_horizontalSlider_CollisionTransparency_valueChanged(int value) {
+    this->editor->collisionOpacity = static_cast<qreal>(value) / 100;
+    porymapConfig.setCollisionOpacity(value);
+    this->editor->collision_item->draw(true);
+}
+
 void MainWindow::on_toolButton_deleteObject_clicked()
 {
     if (editor && editor->selected_events) {
@@ -1848,6 +1851,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
         this->ui->splitter_events->saveState(),
         this->ui->splitter_main->saveState()
     );
+    porymapConfig.save();
 
     QMainWindow::closeEvent(event);
 }

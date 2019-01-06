@@ -57,7 +57,6 @@ private slots:
     void on_action_Exit_triggered();
     void on_comboBox_Song_activated(const QString &arg1);
     void on_comboBox_Location_activated(const QString &arg1);
-    void on_comboBox_Visibility_activated(const QString &arg1);
     void on_comboBox_Weather_activated(const QString &arg1);
     void on_comboBox_Type_activated(const QString &arg1);
     void on_comboBox_BattleScene_activated(const QString &arg1);
@@ -149,6 +148,8 @@ private slots:
     void eventTabChanged(int index);
 
     void selectedEventIndexChanged(int index);
+
+    void on_horizontalSlider_CollisionTransparency_valueChanged(int value);
 
 private:
     Ui::MainWindow *ui;

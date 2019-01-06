@@ -48,7 +48,6 @@ private slots:
     void onSelectedTilesChanged();
     void onMetatileLayerTileChanged(int, int);
     void onMetatileLayerSelectionChanged(QPoint, int, int);
-    void onPaletteEditorClosed();
     void onPaletteEditorChangedPaletteColor();
     void onPaletteEditorChangedPalette(int);
 
