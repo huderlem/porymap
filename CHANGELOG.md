@@ -14,6 +14,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 
 ### Changed
 - Collapse the map list by default.
+- Collision view now has a transparency slider to help make it easier to view the underlying metatiles.
 
 ### Fixed
 - Fix bug where smart paths could bes auto-enabled, despite the checkbox being disabled.
