@@ -11,11 +11,14 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Add "magic fill" mode to fill tool (hold down CTRL key). This fills all matching metatiles on the map, rather than only the contiguous region.
 - Add ability to import tileset palettes (JASC, .pal, .tpl, .gpl, .act).
 - Add ability to export tileset tiles as indexed .png images. The currently-selected palette is used.
+- Restore window sizes the next time the application is opened.
 
 ### Changed
 - Collapse the map list by default.
 - Collision view now has a transparency slider to help make it easier to view the underlying metatiles.
 - When importing tileset tiles from an image that is not indexed, the user can also provide a palette for the image. This is for the scenario where the user exports tiles and a palette from Advance Map.
+- When creating a new map, the user specifies all of the map properties in a new window prompt.
+- New maps can be created using existing layouts by right-clicking on oan existing layout folder in the map list panel when sorted by "Layout".
 
 ### Fixed
 - Fix bug where smart paths could bes auto-enabled, despite the checkbox being disabled.
