@@ -43,12 +43,8 @@ void NewMapPopup::init(int type, int group, QString sec, QString layout) {
 void NewMapPopup::useLayout(QString mapName) {
     this->changeLayout = true;
     this->layoutName = mapName;
-    qDebug() << "will use layout of map" << layoutName;
 }
 
-// check for null QStrings
-// TODO: if layout, set height and width then dont allow editing
-// project->map_cache->mapname? ->layouot->{width, height, }
 void NewMapPopup::setDefaultValues(int groupNum, QString mapSec) {
     ui->lineEdit_NewMap_Name->setText(project->getNewMapName());
 
@@ -130,16 +126,21 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
     layout->height = QString::number(this->ui->spinBox_NewMap_Height->value());
     layout->tileset_primary_label = this->ui->comboBox_NewMap_Primary_Tileset->currentText();
     layout->tileset_secondary_label = this->ui->comboBox_NewMap_Secondary_Tileset->currentText();
-    layout->label = QString("%1_Layout").arg(newMap->name);
-    layout->name = MapLayout::getNameFromLabel(layout->label);
     layout->border_label = QString("%1_MapBorder").arg(newMap->name);
     layout->border_path = QString("data/layouts/%1/border.bin").arg(newMap->name);
     layout->blockdata_label = QString("%1_MapBlockdata").arg(newMap->name);
     layout->blockdata_path = QString("data/layouts/%1/map.bin").arg(newMap->name);
 
     if (changeLayout) {
-        layout->blockdata = project->mapLayouts.value(layoutName)->blockdata;
-        layout->border = project->mapLayouts.value(layoutName)->border;
+        layout->label = layoutName;
+        layout->name = MapLayout::getNameFromLabel(layout->label);
+        QString block_path = QString("%1/data/layout/%2/map.bin").arg(project->root).arg(MapLayout::getNameFromLabel(layoutName));
+        QString border_path = QString("%1/data/layout/%2/border.bin").arg(project->root).arg(MapLayout::getNameFromLabel(layoutName));
+        layout->blockdata = project->readBlockdata(block_path);
+        layout->border = project->readBlockdata(border_path);
+    } else {
+        layout->label = QString("%1_Layout").arg(newMap->name);
+        layout->name = MapLayout::getNameFromLabel(layout->label);
     }
 
     if (this->ui->checkBox_NewMap_Flyable->isChecked()) {
@@ -152,11 +153,13 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
         newMap->allowEscapeRope = this->ui->checkBox_NewMap_Allow_Escape_Rope->isChecked() ? "1" : "0";
     }
 
+    group = this->ui->comboBox_NewMap_Group->currentText().remove("gMapGroup").toInt();
+
     newMap->layout = layout;
     newMap->layout_label = layout->label;
+    newMap->group_num = QString::number(group);
 
     map = newMap;
-    group = this->ui->comboBox_NewMap_Group->currentText().remove("gMapGroup").toInt();
 
     emit applied();
 

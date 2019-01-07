@@ -788,11 +788,13 @@ void MainWindow::onNewMapCreated() {
     groupItem->appendRow(newMapItem);
     mapListIndexes.insert(newMapName, newMapItem->index());
 
+    sortMapList();
     setMap(newMapName, true);
 
     if (newMap->isFlyable == "TRUE") {
         addNewEvent("event_heal_location");
         editor->project->saveHealLocationStruct(newMap);
+        editor->save();// required
     }
 
     disconnect(this->newmapprompt, SIGNAL(applied()), this, SLOT(onNewMapCreated()));
