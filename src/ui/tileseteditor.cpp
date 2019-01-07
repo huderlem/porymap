@@ -2,6 +2,7 @@
 #include "ui_tileseteditor.h"
 #include "log.h"
 #include "imageproviders.h"
+#include "paletteparser.h"
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QDialogButtonBox>
@@ -78,10 +79,10 @@ void TilesetEditor::setTilesets(QString primaryTilesetLabel, QString secondaryTi
 }
 
 void TilesetEditor::refresh() {
+    this->metatileLayersItem->setTilesets(this->primaryTileset, this->secondaryTileset);
+    this->tileSelector->setTilesets(this->primaryTileset, this->secondaryTileset);
     this->metatileSelector->setTilesets(this->primaryTileset, this->secondaryTileset);
     this->metatileSelector->select(this->metatileSelector->getSelectedMetatile());
-    this->tileSelector->setTilesets(this->primaryTileset, this->secondaryTileset);
-    this->metatileLayersItem->setTilesets(this->primaryTileset, this->secondaryTileset);
     this->drawSelectedTiles();
 
     this->ui->graphicsView_Tiles->setSceneRect(0, 0, this->tileSelector->pixmap().width() + 2, this->tileSelector->pixmap().height() + 2);
@@ -313,7 +314,9 @@ void TilesetEditor::on_actionSave_Tileset_triggered()
 {
     this->project->saveTilesets(this->primaryTileset, this->secondaryTileset);
     emit this->tilesetsSaved(this->primaryTileset->name, this->secondaryTileset->name);
-    this->paletteEditor->setTilesets(this->primaryTileset, this->secondaryTileset);
+    if (this->paletteEditor) {
+        this->paletteEditor->setTilesets(this->primaryTileset, this->secondaryTileset);
+    }
     this->ui->statusbar->showMessage(QString("Saved primary and secondary Tilesets!"), 5000);
     this->hasUnsavedChanges = false;
 }
@@ -336,7 +339,7 @@ void TilesetEditor::importTilesetTiles(Tileset *tileset, bool primary) {
                 this,
                 QString("Import %1 Tileset Tiles Image").arg(descriptorCaps),
                 this->project->root,
-                "Image Files (*.png)");
+                "Image Files (*.png *.bmp *.jpg *.dib)");
     if (filepath.isEmpty()) {
         return;
     }
@@ -357,18 +360,6 @@ void TilesetEditor::importTilesetTiles(Tileset *tileset, bool primary) {
         return;
     }
 
-    // Validate image is properly indexed to 16 colors.
-    if (image.colorCount() != 16) {
-        QMessageBox msgBox(this);
-        msgBox.setText("Failed to import tiles.");
-        msgBox.setInformativeText(QString("The image must be indexed and contain 16 total colors. The provided image has %1 indexed colors.")
-                                  .arg(image.colorCount()));
-        msgBox.setDefaultButton(QMessageBox::Ok);
-        msgBox.setIcon(QMessageBox::Icon::Critical);
-        msgBox.exec();
-        return;
-    }
-
     // Validate total number of tiles in image.
     int numTilesWide = image.width() / 8;
     int numTilesHigh = image.height() / 8;
@@ -381,6 +372,64 @@ void TilesetEditor::importTilesetTiles(Tileset *tileset, bool primary) {
                                   .arg(descriptor)
                                   .arg(maxAllowedTiles)
                                   .arg(totalTiles));
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        msgBox.setIcon(QMessageBox::Icon::Critical);
+        msgBox.exec();
+        return;
+    }
+
+    // Ask user to provide a palette for the un-indexed image.
+    if (image.colorCount() == 0) {
+        QMessageBox msgBox(this);
+        msgBox.setText("Select Palette for Tiles");
+        msgBox.setInformativeText(QString("The provided image is not indexed. Please select a palette file to for the image. An indexed image will be generated using the provided image and palette.")
+                                  .arg(image.colorCount()));
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        msgBox.setIcon(QMessageBox::Icon::Warning);
+        msgBox.exec();
+
+        QString filepath = QFileDialog::getOpenFileName(
+            this,
+            QString("Select Palette for Tiles Image").arg(descriptorCaps),
+            this->project->root,
+            "Palette Files (*.pal *.act *tpl *gpl)");
+        if (filepath.isEmpty()) {
+            return;
+        }
+
+        PaletteParser parser;
+        bool error = false;
+        QList<QRgb> palette = parser.parse(filepath, &error);
+        if (error) {
+            QMessageBox msgBox(this);
+            msgBox.setText("Failed to import palette.");
+            QString message = QString("The palette file could not be processed. View porymap.log for specific errors.");
+            msgBox.setInformativeText(message);
+            msgBox.setDefaultButton(QMessageBox::Ok);
+            msgBox.setIcon(QMessageBox::Icon::Critical);
+            msgBox.exec();
+            return;
+        } else if (palette.length() != 16) {
+            QMessageBox msgBox(this);
+            msgBox.setText("Failed to import palette.");
+            QString message = QString("The palette must have exactly 16 colors, but it has %1.").arg(palette.length());
+            msgBox.setInformativeText(message);
+            msgBox.setDefaultButton(QMessageBox::Ok);
+            msgBox.setIcon(QMessageBox::Icon::Critical);
+            msgBox.exec();
+            return;
+        }
+
+        QVector<QRgb> colorTable = palette.toVector();
+        image = image.convertToFormat(QImage::Format::Format_Indexed8, colorTable);
+    }
+
+    // Validate image is properly indexed to 16 colors.
+    if (image.colorCount() != 16) {
+        QMessageBox msgBox(this);
+        msgBox.setText("Failed to import tiles.");
+        msgBox.setInformativeText(QString("The image must be indexed and contain 16 total colors, or it must be un-indexed. The provided image has %1 indexed colors.")
+                                  .arg(image.colorCount()));
         msgBox.setDefaultButton(QMessageBox::Ok);
         msgBox.setIcon(QMessageBox::Icon::Critical);
         msgBox.exec();
