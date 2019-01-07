@@ -1,6 +1,6 @@
 #include "block.h"
 
-Block::Block() {
+Block::Block() : tile(0), collision(0), elevation(0) {
 }
 
 Block::Block(uint16_t word)

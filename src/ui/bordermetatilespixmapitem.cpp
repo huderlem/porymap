@@ -24,7 +24,7 @@ void BorderMetatilesPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 void BorderMetatilesPixmapItem::draw() {
     QImage image(32, 32, QImage::Format_RGBA8888);
     QPainter painter(&image);
-    QList<Block> *blocks = map->layout->border->blocks;
+    QVector<Block> *blocks = map->layout->border->blocks;
 
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 2; j++) {

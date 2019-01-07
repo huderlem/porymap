@@ -775,6 +775,15 @@ void Project::loadBlockdata(Map* map) {
 
     QString path = QString("%1/%2").arg(root).arg(map->layout->blockdata_path);
     map->layout->blockdata = readBlockdata(path);
+
+    if (map->layout->blockdata->blocks->count() != map->getWidth() * map->getHeight()) {
+        logWarn(QString("Layout blockdata length %1 does not match dimensions %2x%3 (should be %4). Resizing blockdata.")
+                .arg(map->layout->blockdata->blocks->count())
+                .arg(map->getWidth())
+                .arg(map->getHeight())
+                .arg(map->getWidth() * map->getHeight()));
+        map->layout->blockdata->blocks->resize(map->getWidth() * map->getHeight());
+    }
 }
 
 void Project::setNewMapBlockdata(Map* map) {
