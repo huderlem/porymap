@@ -1,4 +1,4 @@
-#include "regionmapeditor.h"
+#include "regionmap.h"
 
 #include <QByteArray>
 #include <QFile>
@@ -108,13 +108,6 @@ void RegionMap::init(Project *pro) {
     readBkgImgBin();
     readLayout();
     readCityMaps();
-
-    //tryGetMap();
-
-    //saveBkgImgBin();
-    //saveLayout();
-
-    //test();
 }
 
 // as of now, this needs to be called first because it initializes all the

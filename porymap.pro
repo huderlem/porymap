@@ -29,6 +29,7 @@ SOURCES += src/core/block.cpp \
     src/core/tile.cpp \
     src/core/tileset.cpp \
     src/core/regionmapeditor.cpp \
+    src/core/regionmap.cpp \
     src/ui/aboutporymap.cpp \
     src/ui/bordermetatilespixmapitem.cpp \
     src/ui/collisionpixmapitem.cpp \
@@ -58,6 +59,7 @@ SOURCES += src/core/block.cpp \
     src/ui/tileseteditormetatileselector.cpp \
     src/ui/tileseteditortileselector.cpp \
     src/ui/tilemaptileselector.cpp \
+    src/ui/regionmapeditor.cpp \
     src/ui/newmappopup.cpp \
     src/config.cpp \
     src/editor.cpp \
@@ -84,7 +86,8 @@ HEADERS  += include/core/block.h \
     include/core/tile.h \
     include/core/tileset.h \
     include/core/regionmapeditor.h \
-    include/ui/aboutporymap.h \
+    include/core/regionmap.h \
+    include/ui/aboutporymap.h \    
     include/ui/bordermetatilespixmapitem.h \
     include/ui/collisionpixmapitem.h \
     include/ui/connectionpixmapitem.h \
@@ -113,6 +116,7 @@ HEADERS  += include/core/block.h \
     include/ui/tileseteditormetatileselector.h \
     include/ui/tileseteditortileselector.h \
     include/ui/tilemaptileselector.h \
+    include/ui/regionmapeditor.h \
     include/ui/newmappopup.h \
     include/config.h \
     include/editor.h \
@@ -125,6 +129,7 @@ FORMS    += forms/mainwindow.ui \
     forms/eventpropertiesframe.ui \
     forms/tileseteditor.ui \
     forms/paletteeditor.ui \
+    forms/regionmapeditor.ui \
     forms/newmappopup.ui \
     forms/aboutporymap.ui
 

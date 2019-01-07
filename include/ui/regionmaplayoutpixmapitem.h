@@ -2,8 +2,7 @@
 #define REGIONMAPLAYOUTPIXMAPITEM_H
 
 #include "tilemaptileselector.h"
-//#include "regionmappixmapitem.h"
-#include "regionmapeditor.h"
+#include "regionmap.h"
 
 class RegionMapLayoutPixmapItem : public SelectablePixmapItem {
     Q_OBJECT

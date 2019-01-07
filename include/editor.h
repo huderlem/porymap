@@ -19,10 +19,6 @@
 #include "currentselectedmetatilespixmapitem.h"
 #include "collisionpixmapitem.h"
 #include "mappixmapitem.h"
-#include "regionmappixmapitem.h"
-#include "citymappixmapitem.h"
-#include "regionmaplayoutpixmapitem.h"
-#include "regionmapeditor.h"
 #include "settings.h"
 #include "movablerect.h"
 #include "cursortilerect.h"
@@ -81,49 +77,6 @@ public:
     void updateCustomMapHeaderValues(QTableWidget *);
     Tileset *getCurrentMapPrimaryTileset();
 
-// TODO: move these to appropriate place
-    RegionMap *region_map;
-    void loadRegionMapData();
-
-    QGraphicsScene *scene_region_map_image = nullptr;
-    QGraphicsScene *scene_city_map_image = nullptr;
-    QGraphicsScene *scene_region_map_layout = nullptr;
-    QGraphicsScene *scene_region_map_tiles = nullptr;
-    QGraphicsScene *scene_city_map_tiles = nullptr;
-    TilemapTileSelector *mapsquare_selector_item = nullptr;
-    TilemapTileSelector *city_map_selector_item = nullptr;
-    RegionMapPixmapItem *region_map_item = nullptr;
-    CityMapPixmapItem *city_map_item = nullptr;
-    RegionMapLayoutPixmapItem *region_map_layout_item = nullptr;
-
-    void displayRegionMap();
-    void displayRegionMapImage();
-    void displayRegionMapLayout();
-    void displayRegionMapLayoutOptions();
-    void updateRegionMapLayoutOptions(int);
-    void displayRegionMapTileSelector();
-    void displayCityMapTileSelector();
-    void displayCityMap(QString);
-    void loadCityMaps();
-
-    void onRegionMapTileSelectorSelectedTileChanged();
-    void onRegionMapTileSelectorHoveredTileChanged(unsigned);
-    void onRegionMapTileSelectorHoveredTileCleared();
-
-    void onRegionMapLayoutSelectedTileChanged(int);
-    void onRegionMapLayoutHoveredTileChanged(int);
-    void onRegionMapLayoutHoveredTileCleared();
-
-private slots:
-    void onHoveredRegionMapTileChanged(int, int);
-    void onHoveredRegionMapTileCleared();
-    void mouseEvent_region_map(QGraphicsSceneMouseEvent *, RegionMapPixmapItem *);
-    void mouseEvent_city_map(QGraphicsSceneMouseEvent *, CityMapPixmapItem *);
-
-public:
-    QString rmStatusbarMessage;
-//
-
     DraggablePixmapItem *addMapEvent(Event *event);
     void selectMapEvent(DraggablePixmapItem *object);
     void selectMapEvent(DraggablePixmapItem *object, bool toggle);
@@ -152,7 +105,6 @@ public:
     QGraphicsScene *scene_selected_border_metatiles = nullptr;
     QGraphicsScene *scene_collision_metatiles = nullptr;
     QGraphicsScene *scene_elevation_metatiles = nullptr;
-    
     MetatileSelector *metatile_selector_item = nullptr;
 
     BorderMetatilesPixmapItem *selected_border_metatiles_item = nullptr;
@@ -164,7 +116,7 @@ public:
 
     QString map_edit_mode;
     QString prev_edit_mode;
-    
+
     int scale_exp = 0;
     double scale_base = sqrt(2); // adjust scale factor with this
     qreal collisionOpacity = 0.5;

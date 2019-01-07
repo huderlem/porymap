@@ -1,7 +1,7 @@
 #ifndef REGIONMAPPIXMAPITEM_H
 #define REGIONMAPPIXMAPITEM_H
 
-#include "regionmapeditor.h"
+#include "regionmap.h"
 #include "tilemaptileselector.h"
 #include <QGraphicsPixmapItem>
 

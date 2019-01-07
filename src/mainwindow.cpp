@@ -263,14 +263,11 @@ bool MainWindow::openProject(QString dir) {
         setWindowTitle(editor->project->getProjectTitle());
         loadDataStructures();
         populateMapList();
-        editor->loadRegionMapData();
-        editor->loadCityMaps();
         success = setMap(getDefaultMap(), true);
     } else {
         setWindowTitle(editor->project->getProjectTitle());
         loadDataStructures();
         populateMapList();
-        editor->loadRegionMapData();
     }
 
     if (success) {
@@ -597,11 +594,6 @@ void MainWindow::on_checkBox_AllowEscapeRope_clicked(bool checked)
             editor->map->allowEscapeRope = "0";
         }
     }
-}
-
-void MainWindow::on_tabWidget_Region_Map_currentChanged(int index) {
-    //
-    ui->stackedWidget_RM_Options->setCurrentIndex(index);
 }
 
 void MainWindow::loadDataStructures() {
@@ -2004,8 +1996,22 @@ void MainWindow::on_pushButton_CityMap_save_clicked() {
     this->editor->city_map_item->save();
 }
 
-void MainWindow::on_comboBox_CityMap_picker_currentTextChanged(const QString &file) {
-    this->editor->displayCityMap(file);
+void MainWindow::on_actionRegion_Map_Editor_triggered() {
+    if (!this->regionMapEditor) {
+        this->regionMapEditor = new RegionMapEditor(this, this->editor->project);
+        this->regionMapEditor->loadRegionMapData();
+        this->regionMapEditor->loadCityMaps();
+        connect(this->regionMapEditor, &QObject::destroyed, [=](QObject *) { this->regionMapEditor = nullptr; });
+        this->regionMapEditor->setAttribute(Qt::WA_DeleteOnClose);
+    }
+
+    if (!this->regionMapEditor->isVisible()) {
+        this->regionMapEditor->show();
+    } else if (this->regionMapEditor->isMinimized()) {
+        this->regionMapEditor->showNormal();
+    } else {
+        this->regionMapEditor->activateWindow();
+    }
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
