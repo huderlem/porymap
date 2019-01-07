@@ -7,6 +7,7 @@
 #include <QMessageBox>
 #include <QDialogButtonBox>
 #include <QCloseEvent>
+#include <QImageReader>
 
 TilesetEditor::TilesetEditor(Project *project, QString primaryTilesetLabel, QString secondaryTilesetLabel, QWidget *parent) :
     QMainWindow(parent),
@@ -346,8 +347,16 @@ void TilesetEditor::importTilesetTiles(Tileset *tileset, bool primary) {
 
     logInfo(QString("Importing %1 tileset tiles '%2'").arg(descriptor).arg(filepath));
 
-    // Validate image dimensions.
-    QImage image = QImage(filepath);
+    // Read image data from buffer so that the built-in QImage doesn't try to detect file format
+    // purely from the extension name. Advance Map exports ".png" files that are actually BMP format, for example.
+    QFile file(filepath);
+    QImage image;
+    if (file.open(QIODevice::ReadOnly)) {
+        QByteArray imageData = file.readAll();
+        image = QImage::fromData(imageData);
+    } else {
+        logError(QString("Failed to open image file: '%1'").arg(filepath));
+    }
     if (image.width() == 0 || image.height() == 0 || image.width() % 8 != 0 || image.height() % 8 != 0) {
         QMessageBox msgBox(this);
         msgBox.setText("Failed to import tiles.");
