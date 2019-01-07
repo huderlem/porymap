@@ -127,9 +127,7 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
     layout->tileset_primary_label = this->ui->comboBox_NewMap_Primary_Tileset->currentText();
     layout->tileset_secondary_label = this->ui->comboBox_NewMap_Secondary_Tileset->currentText();
     layout->border_label = QString("%1_MapBorder").arg(newMap->name);
-    layout->border_path = QString("data/layouts/%1/border.bin").arg(newMap->name);
     layout->blockdata_label = QString("%1_MapBlockdata").arg(newMap->name);
-    layout->blockdata_path = QString("data/layouts/%1/map.bin").arg(newMap->name);
 
     if (changeLayout) {
         layout->label = layoutName;
@@ -138,7 +136,10 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
         QString border_path = QString("%1/data/layout/%2/border.bin").arg(project->root).arg(MapLayout::getNameFromLabel(layoutName));
         layout->blockdata = project->readBlockdata(block_path);
         layout->border = project->readBlockdata(border_path);
+        newMap->needsLayoutDir = false;
     } else {
+        layout->border_path = QString("data/layouts/%1/border.bin").arg(newMap->name);
+        layout->blockdata_path = QString("data/layouts/%1/map.bin").arg(newMap->name);
         layout->label = QString("%1_Layout").arg(newMap->name);
         layout->name = MapLayout::getNameFromLabel(layout->label);
     }

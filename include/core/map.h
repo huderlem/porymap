@@ -43,6 +43,7 @@ public:
     QString battle_scene;
     MapLayout *layout;
     bool isPersistedToFile = true;
+    bool needsLayoutDir = true;
     QImage collision_image;
     QPixmap collision_pixmap;
     QImage image;

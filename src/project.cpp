@@ -841,9 +841,14 @@ void Project::saveMap(Map *map) {
             logError(QString("Error: failed to create directory for new map: '%1'").arg(newMapDataDir));
         }
 
-        QString newLayoutDir = QString(root + "/data/layouts/%1").arg(map->name);
-        if (!QDir::root().mkdir(newLayoutDir)) {
-            logError(QString("Error: failed to create directory for new layout: '%1'").arg(newLayoutDir));
+        if (map->needsLayoutDir) {
+            QString newLayoutDir = QString(root + "/data/layouts/%1").arg(map->name);
+            if (!QDir::root().mkdir(newLayoutDir)) {
+                logError(QString("Error: failed to create directory for new layout: '%1'").arg(newLayoutDir));
+            }
+            // Simply append to data/layouts.inc.
+            QString layout_text = QString("\t.include \"data/layouts/%1/layout.inc\"\n").arg(map->layout->name);
+            appendTextFile(root + "/data/layouts.inc", layout_text);
         }
 
         // TODO: In the future, these files needs more structure to allow for proper parsing/saving.
@@ -866,10 +871,6 @@ void Project::saveMap(Map *map) {
         // Simply append to data/maps/headers.inc.
         text = QString("\t.include \"data/maps/%1/header.inc\"\n").arg(map->name);
         appendTextFile(root + "/data/maps/headers.inc", text);
-
-        // Simply append to data/layouts.inc.
-        text = QString("\t.include \"data/layouts/%1/layout.inc\"\n").arg(map->layout->name);
-        appendTextFile(root + "/data/layouts.inc", text);
     }
 
     saveMapBorder(map);
