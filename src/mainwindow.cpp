@@ -63,6 +63,7 @@ void MainWindow::initWindow() {
     this->initEditor();
     this->initMiscHeapObjects();
     this->initMapSortOrder();
+    this->restoreWindowState();
 }
 
 void MainWindow::initExtraShortcuts() {
@@ -208,6 +209,16 @@ void MainWindow::loadUserSettings() {
     this->editor->collisionOpacity = static_cast<qreal>(porymapConfig.getCollisionOpacity()) / 100;
     ui->horizontalSlider_CollisionTransparency->setValue(porymapConfig.getCollisionOpacity());
     ui->horizontalSlider_CollisionTransparency->blockSignals(false);
+}
+
+void MainWindow::restoreWindowState() {
+    logInfo("Restoring window geometry from previous session.");
+    QMap<QString, QByteArray> geometry = porymapConfig.getGeometry();
+    this->restoreGeometry(geometry.value("window_geometry"));
+    this->restoreState(geometry.value("window_state"));
+    this->ui->splitter_map->restoreState(geometry.value("map_splitter_state"));
+    this->ui->splitter_events->restoreState(geometry.value("events_splitter_state"));
+    this->ui->splitter_main->restoreState(geometry.value("main_splitter_state"));
 }
 
 bool MainWindow::openRecentProject() {
@@ -722,25 +733,102 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point)
         actions->addAction(menu->addAction("Add New Map to Group"))->setData(groupNum);
         connect(actions, SIGNAL(triggered(QAction*)), this, SLOT(onAddNewMapToGroupClick(QAction*)));
         menu->exec(QCursor::pos());
+    } else if (itemType == "map_sec") {
+        QString secName = selectedItem->data(Qt::UserRole).toString();
+        QMenu* menu = new QMenu(this);
+        QActionGroup* actions = new QActionGroup(menu);
+        actions->addAction(menu->addAction("Add New Map to Area"))->setData(secName);
+        connect(actions, SIGNAL(triggered(QAction*)), this, SLOT(onAddNewMapToAreaClick(QAction*)));
+        menu->exec(QCursor::pos());
+    } else if (itemType == "map_layout") {
+        QString layoutName = selectedItem->data(Qt::UserRole).toString();
+        QMenu* menu = new QMenu(this);
+        QActionGroup* actions = new QActionGroup(menu);
+        actions->addAction(menu->addAction("Add New Map with Layout"))->setData(layoutName);
+        connect(actions, SIGNAL(triggered(QAction*)), this, SLOT(onAddNewMapToLayoutClick(QAction*)));
+        menu->exec(QCursor::pos());
     }
 }
 
 void MainWindow::onAddNewMapToGroupClick(QAction* triggeredAction)
 {
     int groupNum = triggeredAction->data().toInt();
-    QStandardItem* groupItem = mapGroupItemsList->at(groupNum);
+    openNewMapPopupWindow(MapSortOrder::Group, groupNum);
+}
 
-    QString newMapName = editor->project->getNewMapName();
-    Map* newMap = editor->project->addNewMapToGroup(newMapName, groupNum);
+void MainWindow::onAddNewMapToAreaClick(QAction* triggeredAction)
+{
+    QString secName = triggeredAction->data().toString();
+    openNewMapPopupWindow(MapSortOrder::Area, secName);
+}
+
+void MainWindow::onAddNewMapToLayoutClick(QAction* triggeredAction)
+{
+    QString layoutName = triggeredAction->data().toString();
+    openNewMapPopupWindow(MapSortOrder::Layout, layoutName);
+}
+
+void MainWindow::onNewMapCreated() {
+    QString newMapName = this->newmapprompt->map->name;
+    int newMapGroup = this->newmapprompt->group;
+    Map *newMap_ = this->newmapprompt->map;
+    bool updateLayout = this->newmapprompt->changeLayout;
+
+    Map *newMap = editor->project->addNewMapToGroup(newMapName, newMapGroup, newMap_, updateLayout);
+
+    logInfo(QString("Created a new map named %1.").arg(newMapName));
+
     editor->project->saveMap(newMap);
     editor->project->saveAllDataStructures();
 
+    QStandardItem* groupItem = mapGroupItemsList->at(newMapGroup);
     int numMapsInGroup = groupItem->rowCount();
-    QStandardItem *newMapItem = createMapItem(newMapName, groupNum, numMapsInGroup);
+
+    QStandardItem *newMapItem = createMapItem(newMapName, newMapGroup, numMapsInGroup);
     groupItem->appendRow(newMapItem);
     mapListIndexes.insert(newMapName, newMapItem->index());
 
-    setMap(newMapName);
+    sortMapList();
+    setMap(newMapName, true);
+
+    if (newMap->isFlyable == "TRUE") {
+        addNewEvent("event_heal_location");
+        editor->project->saveHealLocationStruct(newMap);
+        editor->save();// required
+    }
+
+    disconnect(this->newmapprompt, SIGNAL(applied()), this, SLOT(onNewMapCreated()));
+}
+
+void MainWindow::openNewMapPopupWindow(int type, QVariant data) {
+    if (!this->newmapprompt) {
+        this->newmapprompt = new NewMapPopup(this, this->editor->project);
+    }
+    if (!this->newmapprompt->isVisible()) {
+        this->newmapprompt->show();
+    } else {
+        this->newmapprompt->raise();
+        this->newmapprompt->activateWindow();
+    }
+    switch (type)
+    {
+        case MapSortOrder::Group:
+            this->newmapprompt->init(type, data.toInt(), QString(), QString());
+            break;
+        case MapSortOrder::Area:
+            this->newmapprompt->init(type, 0, data.toString(), QString());
+            break;
+        case MapSortOrder::Layout:
+            this->newmapprompt->init(type, 0, QString(), data.toString());
+            break;
+    }
+    connect(this->newmapprompt, SIGNAL(applied()), this, SLOT(onNewMapCreated()));
+    connect(this->newmapprompt, &QObject::destroyed, [=](QObject *) { this->newmapprompt = nullptr; });
+            this->newmapprompt->setAttribute(Qt::WA_DeleteOnClose);
+}
+
+void MainWindow::on_action_NewMap_triggered() {
+    openNewMapPopupWindow(MapSortOrder::Group, 0);
 }
 
 void MainWindow::onTilesetChanged(QString mapName)
@@ -1758,6 +1846,13 @@ void MainWindow::on_actionTileset_Editor_triggered()
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
+    porymapConfig.setGeometry(
+        this->saveGeometry(),
+        this->saveState(),
+        this->ui->splitter_map->saveState(),
+        this->ui->splitter_events->saveState(),
+        this->ui->splitter_main->saveState()
+    );
     porymapConfig.save();
 
     QMainWindow::closeEvent(event);

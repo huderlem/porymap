@@ -3,6 +3,7 @@
 
 #include <QString>
 #include <QObject>
+#include <QByteArrayList>
 
 enum MapSortOrder {
     Group   =  0,
@@ -37,11 +38,13 @@ public:
     void setRecentMap(QString map);
     void setMapSortOrder(MapSortOrder order);
     void setPrettyCursors(bool enabled);
+    void setGeometry(QByteArray, QByteArray, QByteArray, QByteArray, QByteArray);
     void setCollisionOpacity(int opacity);
     QString getRecentProject();
     QString getRecentMap();
     MapSortOrder getMapSortOrder();
     bool getPrettyCursors();
+    QMap<QString, QByteArray> getGeometry();
     int getCollisionOpacity();
 protected:
     QString getConfigFilepath();
@@ -51,8 +54,15 @@ protected:
 private:
     QString recentProject;
     QString recentMap;
+    QString stringFromByteArray(QByteArray);
+    QByteArray bytesFromString(QString);
     MapSortOrder mapSortOrder;
     bool prettyCursors;
+    QByteArray windowGeometry;
+    QByteArray windowState;
+    QByteArray mapSplitterState;
+    QByteArray eventsSlpitterState;
+    QByteArray mainSplitterState;
     int collisionOpacity;
 };
 

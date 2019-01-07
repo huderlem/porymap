@@ -1129,6 +1129,9 @@ DraggablePixmapItem* Editor::addNewEvent(QString event_type) {
     if (project && map) {
         Event *event = Event::createNewEvent(event_type, map->name);
         event->put("map_name", map->name);
+        if (event_type == "event_heal_location") {
+            event->put("index", project->flyableMaps.length());
+        }
         map->addEvent(event);
         project->loadEventPixmaps(map->getAllEvents());
         DraggablePixmapItem *object = addMapEvent(event);

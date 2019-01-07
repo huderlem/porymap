@@ -16,6 +16,7 @@
 #include "editor.h"
 #include "tileseteditor.h"
 #include "filterchildrenproxymodel.h"
+#include "newmappopup.h"
 
 namespace Ui {
 class MainWindow;
@@ -47,7 +48,10 @@ private slots:
     void onMapChanged(Map *map);
     void onMapNeedsRedrawing();
     void onTilesetsSaved(QString, QString);
+    void openNewMapPopupWindow(int, QVariant);
+    void onNewMapCreated();
 
+    void on_action_NewMap_triggered();
     void on_action_Save_triggered();
     void on_tabWidget_2_currentChanged(int index);
     void on_action_Exit_triggered();
@@ -98,6 +102,8 @@ private slots:
 
     void onOpenMapListContextMenu(const QPoint &point);
     void onAddNewMapToGroupClick(QAction* triggeredAction);
+    void onAddNewMapToAreaClick(QAction* triggeredAction);
+    void onAddNewMapToLayoutClick(QAction* triggeredAction);
     void onTilesetChanged(QString);
     void currentMetatilesSelectionChanged();
 
@@ -149,6 +155,7 @@ private:
     Ui::MainWindow *ui;
     TilesetEditor *tilesetEditor = nullptr;
     FilterChildrenProxyModel *mapListProxyModel;
+    NewMapPopup *newmapprompt = nullptr;
     QStandardItemModel *mapListModel;
     QList<QStandardItem*> *mapGroupItemsList;
     QMap<QString, QModelIndex> mapListIndexes;
@@ -200,6 +207,7 @@ private:
     void initMapSortOrder();
     void setProjectSpecificUIVisibility();
     void loadUserSettings();
+    void restoreWindowState();
     bool openRecentProject();
     void updateTilesetEditor();
     QString getEventGroupFromTabWidget(QWidget *tab);

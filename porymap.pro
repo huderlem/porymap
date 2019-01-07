@@ -47,6 +47,7 @@ SOURCES += src/core/block.cpp \
     src/ui/tileseteditor.cpp \
     src/ui/tileseteditormetatileselector.cpp \
     src/ui/tileseteditortileselector.cpp \
+    src/ui/newmappopup.cpp \
     src/config.cpp \
     src/editor.cpp \
     src/main.cpp \
@@ -90,6 +91,7 @@ HEADERS  += include/core/block.h \
     include/ui/tileseteditor.h \
     include/ui/tileseteditormetatileselector.h \
     include/ui/tileseteditortileselector.h \
+    include/ui/newmappopup.h \
     include/config.h \
     include/editor.h \
     include/mainwindow.h \
@@ -100,7 +102,8 @@ HEADERS  += include/core/block.h \
 FORMS    += forms/mainwindow.ui \
     forms/eventpropertiesframe.ui \
     forms/tileseteditor.ui \
-    forms/paletteeditor.ui
+    forms/paletteeditor.ui \
+    forms/newmappopup.ui
 
 RESOURCES += \
     resources/images.qrc

@@ -850,9 +850,14 @@ void Project::saveMap(Map *map) {
             logError(QString("Error: failed to create directory for new map: '%1'").arg(newMapDataDir));
         }
 
-        QString newLayoutDir = QString(root + "/data/layouts/%1").arg(map->name);
-        if (!QDir::root().mkdir(newLayoutDir)) {
-            logError(QString("Error: failed to create directory for new layout: '%1'").arg(newLayoutDir));
+        if (map->needsLayoutDir) {
+            QString newLayoutDir = QString(root + "/data/layouts/%1").arg(map->name);
+            if (!QDir::root().mkdir(newLayoutDir)) {
+                logError(QString("Error: failed to create directory for new layout: '%1'").arg(newLayoutDir));
+            }
+            // Simply append to data/layouts.inc.
+            QString layout_text = QString("\t.include \"data/layouts/%1/layout.inc\"\n").arg(map->layout->name);
+            appendTextFile(root + "/data/layouts.inc", layout_text);
         }
 
         // TODO: In the future, these files needs more structure to allow for proper parsing/saving.
@@ -875,10 +880,6 @@ void Project::saveMap(Map *map) {
         // Simply append to data/maps/headers.inc.
         text = QString("\t.include \"data/maps/%1/header.inc\"\n").arg(map->name);
         appendTextFile(root + "/data/maps/headers.inc", text);
-
-        // Simply append to data/layouts.inc.
-        text = QString("\t.include \"data/layouts/%1/layout.inc\"\n").arg(map->layout->name);
-        appendTextFile(root + "/data/layouts.inc", text);
     }
 
     saveMapBorder(map);
@@ -1243,6 +1244,50 @@ Map* Project::addNewMapToGroup(QString mapName, int groupNum) {
     map->commit();
     map->metatileHistory.save();
     map_cache->insert(mapName, map);
+
+    return map;
+}
+
+Map* Project::addNewMapToGroup(QString mapName, int groupNum, Map *newMap, bool updateLayout) {
+    mapNames->append(mapName);
+    map_groups->insert(mapName, groupNum);
+    groupedMapNames[groupNum].append(mapName);
+
+    Map *map = new Map;
+    map = newMap;
+
+    map->isPersistedToFile = false;
+    map->setName(mapName);
+
+    mapConstantsToMapNames->insert(map->constantName, map->name);
+    mapNamesToMapConstants->insert(map->name, map->constantName);
+
+    map->events_label = QString("%1_MapEvents").arg(map->name);;
+    map->scripts_label = QString("%1_MapScripts").arg(map->name);;
+    map->connections_label = "0x0";
+    map->song = "MUS_DAN02";
+    map->requiresFlash = "FALSE";
+    map->weather = "WEATHER_SUNNY";
+    map->unknown = "0";
+    map->show_location = "TRUE";
+    map->battle_scene = "MAP_BATTLE_SCENE_NORMAL";
+
+    if (!updateLayout) {
+        map->layout_id = QString("%1").arg(mapLayoutsTable.size() + 1);
+        mapLayouts.insert(map->layout->label, map->layout);
+        mapLayoutsTable.append(map->layout->label);
+        setNewMapBlockdata(map);
+        setNewMapBorder(map);
+    } else {
+        map->layout_id = QString("%1").arg(mapLayoutsTable.indexOf(map->layout->label) + 1);
+    }
+
+    loadMapTilesets(map);
+    setNewMapEvents(map);
+    setNewMapConnections(map);
+
+    map->commit();
+    map->metatileHistory.save();
 
     return map;
 }

@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
-     <widget class="QSplitter" name="splitter">
+     <widget class="QSplitter" name="splitter_main">
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
@@ -197,7 +197,7 @@
           <number>6</number>
          </property>
          <item row="0" column="0">
-          <widget class="QSplitter" name="splitter_2">
+          <widget class="QSplitter" name="splitter_map">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
            </property>
@@ -482,8 +482,8 @@
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>469</width>
-                     <height>608</height>
+                     <width>545</width>
+                     <height>587</height>
                     </rect>
                    </property>
                    <layout class="QGridLayout" name="gridLayout_8">
@@ -797,8 +797,8 @@
                            <rect>
                             <x>0</x>
                             <y>0</y>
-                            <width>324</width>
-                            <height>77</height>
+                            <width>256</width>
+                            <height>74</height>
                            </rect>
                           </property>
                           <layout class="QHBoxLayout" name="horizontalLayout_7">
@@ -907,10 +907,10 @@
                     </property>
                     <property name="geometry">
                      <rect>
-                      <x>0</x>
+                      <x>8</x>
                       <y>0</y>
-                      <width>307</width>
-                      <height>387</height>
+                      <width>222</width>
+                      <height>353</height>
                      </rect>
                     </property>
                     <property name="sizePolicy">
@@ -1224,7 +1224,7 @@
           <number>0</number>
          </property>
          <item row="0" column="0">
-          <widget class="QSplitter" name="splitter_3">
+          <widget class="QSplitter" name="splitter_events">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
              <horstretch>0</horstretch>
@@ -1249,8 +1249,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>381</width>
-               <height>657</height>
+               <width>371</width>
+               <height>643</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_7">
@@ -1523,7 +1523,7 @@
                       <x>0</x>
                       <y>0</y>
                       <width>430</width>
-                      <height>568</height>
+                      <height>534</height>
                      </rect>
                     </property>
                     <property name="sizePolicy">
@@ -2308,8 +2308,8 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>826</width>
-                    <height>557</height>
+                    <width>818</width>
+                    <height>539</height>
                    </rect>
                   </property>
                   <layout class="QGridLayout" name="gridLayout_14">
@@ -2481,7 +2481,7 @@
      <x>0</x>
      <y>0</y>
      <width>1117</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -2522,6 +2522,7 @@
     <addaction name="actionMove"/>
     <addaction name="actionMap_Shift"/>
     <addaction name="separator"/>
+    <addaction name="action_NewMap"/>
     <addaction name="actionTileset_Editor"/>
    </widget>
    <addaction name="menuFile"/>
@@ -2560,6 +2561,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="action_NewMap">
+   <property name="text">
+    <string>New Map</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
    </property>
   </action>
   <action name="actionUndo">

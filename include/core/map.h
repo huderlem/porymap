@@ -32,7 +32,7 @@ public:
     QString layout_id;
     QString location;
     QString requiresFlash;
-    QString isFlyable; // TODO: implement this
+    QString isFlyable;
     QString weather;
     QString type;
     QString unknown;
@@ -43,6 +43,7 @@ public:
     QString battle_scene;
     MapLayout *layout;
     bool isPersistedToFile = true;
+    bool needsLayoutDir = true;
     QImage collision_image;
     QPixmap collision_pixmap;
     QImage image;

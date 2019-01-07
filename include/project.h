@@ -61,6 +61,7 @@ public:
 
     void readMapGroups();
     Map* addNewMapToGroup(QString mapName, int groupNum);
+    Map* addNewMapToGroup(QString, int, Map*, bool);
     QString getNewMapName();
     QString getProjectTitle();
 
