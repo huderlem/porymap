@@ -15,11 +15,13 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ### Changed
 - Collapse the map list by default.
 - Collision view now has a transparency slider to help make it easier to view the underlying metatiles.
+- When importing tileset tiles from an image that is not indexed, the user can also provide a palette for the image. This is for the scenario where the user exports tiles and a palette from Advance Map.
 
 ### Fixed
 - Fix bug where smart paths could bes auto-enabled, despite the checkbox being disabled.
 - Fix crash that could occur when changing the palette id in the tileset palette editor.
 - Fix crash that could occur when shrinking the number of metatiles in a tileset.
+- Fix bug where exported tile images from Advance Map were not handled correctly due to Advance Map using incorrect file extensions.
 
 ## [1.1.0] - 2018-12-27
 ### Breaking Changes
