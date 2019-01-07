@@ -5,6 +5,7 @@
 
 #include <QObject>
 #include <QByteArray>
+#include <QVector>
 
 class Blockdata : public QObject
 {
@@ -16,7 +17,7 @@ public:
     }
 
 public:
-    QList<Block> *blocks = nullptr;
+    QVector<Block> *blocks = nullptr;
     void addBlock(uint16_t);
     void addBlock(Block);
     QByteArray serialize();

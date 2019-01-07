@@ -2,7 +2,7 @@
 
 Blockdata::Blockdata(QObject *parent) : QObject(parent)
 {
-    blocks = new QList<Block>;
+    blocks = new QVector<Block>;
 }
 
 void Blockdata::addBlock(uint16_t word) {
