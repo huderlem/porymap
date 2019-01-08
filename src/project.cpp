@@ -865,12 +865,16 @@ void Project::saveMap(Map *map) {
         QString text = QString("%1_MapScripts::\n\t.byte 0\n").arg(map->name);
         saveTextFile(root + "/data/maps/" + map->name + "/scripts.inc", text);
 
-        // Create file data/maps/<map_name>/text.inc
-        saveTextFile(root + "/data/maps/" + map->name + "/text.inc", "\n");
+        if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeruby) {
+            // Create file data/maps/<map_name>/text.inc
+            saveTextFile(root + "/data/maps/" + map->name + "/text.inc", "\n");
+        }
 
         // Simply append to data/event_scripts.s.
         text = QString("\n\t.include \"data/maps/%1/scripts.inc\"\n").arg(map->name);
-        text += QString("\t.include \"data/maps/%1/text.inc\"\n").arg(map->name);
+        if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeruby) {
+            text += QString("\t.include \"data/maps/%1/text.inc\"\n").arg(map->name);
+        }
         appendTextFile(root + "/data/event_scripts.s", text);
 
         // Simply append to data/map_events.s.
