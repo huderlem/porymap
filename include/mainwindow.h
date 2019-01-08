@@ -155,6 +155,8 @@ private slots:
 
     void on_toolButton_CollapseAll_clicked();
 
+    void on_actionAbout_Porymap_triggered();
+
 private:
     Ui::MainWindow *ui;
     TilesetEditor *tilesetEditor = nullptr;

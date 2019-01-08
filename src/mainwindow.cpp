@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "aboutporymap.h"
 #include "project.h"
 #include "log.h"
 #include "editor.h"
@@ -1857,6 +1858,13 @@ void MainWindow::on_toolButton_CollapseAll_clicked()
     if (ui->mapList) {
         ui->mapList->collapseAll();
     }
+}
+
+void MainWindow::on_actionAbout_Porymap_triggered()
+{
+    AboutPorymap *window = new AboutPorymap(this);
+    window->setAttribute(Qt::WA_DeleteOnClose);
+    window->show();
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
