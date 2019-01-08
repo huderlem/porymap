@@ -151,6 +151,10 @@ private slots:
 
     void on_horizontalSlider_CollisionTransparency_valueChanged(int value);
 
+    void on_toolButton_ExpandAll_clicked();
+
+    void on_toolButton_CollapseAll_clicked();
+
 private:
     Ui::MainWindow *ui;
     TilesetEditor *tilesetEditor = nullptr;

@@ -1845,6 +1845,20 @@ void MainWindow::on_actionTileset_Editor_triggered()
     }
 }
 
+void MainWindow::on_toolButton_ExpandAll_clicked()
+{
+    if (ui->mapList) {
+        ui->mapList->expandToDepth(0);
+    }
+}
+
+void MainWindow::on_toolButton_CollapseAll_clicked()
+{
+    if (ui->mapList) {
+        ui->mapList->collapseAll();
+    }
+}
+
 void MainWindow::closeEvent(QCloseEvent *event) {
     porymapConfig.setGeometry(
         this->saveGeometry(),

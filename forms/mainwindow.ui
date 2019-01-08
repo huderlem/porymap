@@ -65,6 +65,9 @@
             <property name="enabled">
              <bool>true</bool>
             </property>
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sort map list&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
             <property name="icon">
              <iconset resource="../resources/images.qrc">
               <normaloff>:/icons/sort_alphabet.ico</normaloff>:/icons/sort_alphabet.ico</iconset>
@@ -86,6 +89,82 @@
             </property>
             <property name="arrowType">
              <enum>Qt::NoArrow</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QToolButton" name="toolButton_ExpandAll">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Expand all map folders&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="../resources/images.qrc">
+              <normaloff>:/icons/expand_all.ico</normaloff>:/icons/expand_all.ico</iconset>
+            </property>
+            <property name="popupMode">
+             <enum>QToolButton::InstantPopup</enum>
+            </property>
+            <property name="autoRaise">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QToolButton" name="toolButton_CollapseAll">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>23</width>
+              <height>22</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>23</width>
+              <height>22</height>
+             </size>
+            </property>
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Collapse all map list folders&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="../resources/images.qrc">
+              <normaloff>:/icons/collapse_all.ico</normaloff>:/icons/collapse_all.ico</iconset>
+            </property>
+            <property name="popupMode">
+             <enum>QToolButton::InstantPopup</enum>
+            </property>
+            <property name="autoRaise">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -482,8 +561,8 @@
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>545</width>
-                     <height>587</height>
+                     <width>469</width>
+                     <height>608</height>
                     </rect>
                    </property>
                    <layout class="QGridLayout" name="gridLayout_8">
@@ -797,8 +876,8 @@
                            <rect>
                             <x>0</x>
                             <y>0</y>
-                            <width>256</width>
-                            <height>74</height>
+                            <width>324</width>
+                            <height>77</height>
                            </rect>
                           </property>
                           <layout class="QHBoxLayout" name="horizontalLayout_7">
@@ -907,10 +986,10 @@
                     </property>
                     <property name="geometry">
                      <rect>
-                      <x>8</x>
+                      <x>0</x>
                       <y>0</y>
-                      <width>222</width>
-                      <height>353</height>
+                      <width>307</width>
+                      <height>387</height>
                      </rect>
                     </property>
                     <property name="sizePolicy">
@@ -1249,8 +1328,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>371</width>
-               <height>643</height>
+               <width>381</width>
+               <height>657</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_7">
@@ -1523,7 +1602,7 @@
                       <x>0</x>
                       <y>0</y>
                       <width>430</width>
-                      <height>534</height>
+                      <height>568</height>
                      </rect>
                     </property>
                     <property name="sizePolicy">
@@ -2308,8 +2387,8 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>818</width>
-                    <height>539</height>
+                    <width>826</width>
+                    <height>557</height>
                    </rect>
                   </property>
                   <layout class="QGridLayout" name="gridLayout_14">
@@ -2481,7 +2560,7 @@
      <x>0</x>
      <y>0</y>
      <width>1117</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
