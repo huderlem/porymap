@@ -205,6 +205,10 @@ void MainWindow::on_lineEdit_filterBox_textChanged(const QString &arg1)
 void MainWindow::loadUserSettings() {
     ui->actionBetter_Cursors->setChecked(porymapConfig.getPrettyCursors());
     this->editor->settings->betterCursors = porymapConfig.getPrettyCursors();
+    ui->actionPlayer_View_Rectangle->setChecked(porymapConfig.getShowPlayerView());
+    this->editor->settings->playerViewRectEnabled = porymapConfig.getShowPlayerView();
+    ui->actionCursor_Tile_Outline->setChecked(porymapConfig.getShowCursorTile());
+    this->editor->settings->cursorTileRectEnabled = porymapConfig.getShowCursorTile();
     mapSortOrder = porymapConfig.getMapSortOrder();
     ui->horizontalSlider_CollisionTransparency->blockSignals(true);
     this->editor->collisionOpacity = static_cast<qreal>(porymapConfig.getCollisionOpacity()) / 100;
@@ -972,7 +976,16 @@ void MainWindow::on_actionBetter_Cursors_triggered() {
 
 void MainWindow::on_actionPlayer_View_Rectangle_triggered()
 {
-    this->editor->settings->playerViewRectEnabled = ui->actionPlayer_View_Rectangle->isChecked();
+    bool enabled = ui->actionPlayer_View_Rectangle->isChecked();
+    porymapConfig.setShowPlayerView(enabled);
+    this->editor->settings->playerViewRectEnabled = enabled;
+}
+
+void MainWindow::on_actionCursor_Tile_Outline_triggered()
+{
+    bool enabled = ui->actionCursor_Tile_Outline->isChecked();
+    porymapConfig.setShowCursorTile(enabled);
+    this->editor->settings->cursorTileRectEnabled = enabled;
 }
 
 void MainWindow::on_actionPencil_triggered()

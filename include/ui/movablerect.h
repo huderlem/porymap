@@ -1,13 +1,14 @@
-#ifndef PLAYERVIEWRECT_H
-#define PLAYERVIEWRECT_H
+#ifndef MOVABLERECT_H
+#define MOVABLERECT_H
 
 #include <QGraphicsItem>
 #include <QPainter>
+#include <QRgb>
 
-class PlayerViewRect : public QGraphicsItem
+class MovableRect : public QGraphicsItem
 {
 public:
-    PlayerViewRect(bool *enabled);
+    MovableRect(bool *enabled, int width, int height, QRgb color);
     QRectF boundingRect() const override
     {
         qreal penWidth = 4;
@@ -20,16 +21,18 @@ public:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget) override
     {
-        int width = 30 * 8;
-        int height = 20 * 8;
-        painter->setPen(QColor(0xff, 0xff, 0xff));
-        painter->drawRect(-2, -2, width + 3, height + 3);
+        painter->setPen(this->color);
+        painter->drawRect(-2, -2, this->width + 3, this->height + 3);
         painter->setPen(QColor(0, 0, 0));
-        painter->drawRect(-3, -3, width + 5, height + 5);
-        painter->drawRect(-1, -1, width + 1, height + 1);
+        painter->drawRect(-3, -3, this->width + 5, this->height + 5);
+        painter->drawRect(-1, -1, this->width + 1, this->height + 1);
     }
     void updateLocation(int x, int y);
     bool *enabled;
+private:
+    int width;
+    int height;
+    QRgb color;
 };
 
-#endif // PLAYERVIEWRECT_H
+#endif // MOVABLERECT_H

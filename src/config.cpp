@@ -136,6 +136,18 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
             logWarn(QString("Invalid config value for collision_opacity: '%1'. Must be an integer.").arg(value));
             this->collisionOpacity = 50;
         }
+    } else if (key == "show_player_view") {
+        bool ok;
+        this->showPlayerView = value.toInt(&ok);
+        if (!ok) {
+            logWarn(QString("Invalid config value for show_player_view: '%1'. Must be 0 or 1.").arg(value));
+        }
+    } else if (key == "show_cursor_tile") {
+        bool ok;
+        this->showCursorTile = value.toInt(&ok);
+        if (!ok) {
+            logWarn(QString("Invalid config value for show_cursor_tile: '%1'. Must be 0 or 1.").arg(value));
+        }
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -153,6 +165,8 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("events_splitter_state", stringFromByteArray(this->eventsSlpitterState));
     map.insert("main_splitter_state", stringFromByteArray(this->mainSplitterState));
     map.insert("collision_opacity", QString("%1").arg(this->collisionOpacity));
+    map.insert("show_player_view", this->showPlayerView ? "1" : "0");
+    map.insert("show_cursor_tile", this->showCursorTile ? "1" : "0");
     return map;
 }
 
@@ -208,6 +222,16 @@ void PorymapConfig::setCollisionOpacity(int opacity) {
     // don't auto-save here because this can be called very frequently.
 }
 
+void PorymapConfig::setShowPlayerView(bool enabled) {
+    this->showPlayerView = enabled;
+    this->save();
+}
+
+void PorymapConfig::setShowCursorTile(bool enabled) {
+    this->showCursorTile = enabled;
+    this->save();
+}
+
 QString PorymapConfig::getRecentProject() {
     return this->recentProject;
 }
@@ -238,6 +262,14 @@ QMap<QString, QByteArray> PorymapConfig::getGeometry() {
 
 int PorymapConfig::getCollisionOpacity() {
     return this->collisionOpacity;
+}
+
+bool PorymapConfig::getShowPlayerView() {
+    return this->showPlayerView;
+}
+
+bool PorymapConfig::getShowCursorTile() {
+    return this->showCursorTile;
 }
 
 const QMap<BaseGameVersion, QString> baseGameVersionMap = {

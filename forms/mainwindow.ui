@@ -2588,8 +2588,9 @@
     </property>
     <addaction name="actionZoom_In"/>
     <addaction name="actionZoom_Out"/>
-    <addaction name="actionBetter_Cursors"/>
+    <addaction name="actionCursor_Tile_Outline"/>
     <addaction name="actionPlayer_View_Rectangle"/>
+    <addaction name="actionBetter_Cursors"/>
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
@@ -2818,6 +2819,17 @@
    </property>
    <property name="toolTip">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show the player's view rectangle on the map based on the cursor's position.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </action>
+  <action name="actionCursor_Tile_Outline">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Cursor Tile Outline</string>
    </property>
   </action>
  </widget>

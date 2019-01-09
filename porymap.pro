@@ -40,12 +40,12 @@ SOURCES += src/core/block.cpp \
     src/ui/mapsceneeventfilter.cpp \
     src/ui/metatilelayersitem.cpp \
     src/ui/metatileselector.cpp \
+    src/ui/movablerect.cpp \
     src/ui/movementpermissionsselector.cpp \
     src/ui/neweventtoolbutton.cpp \
     src/ui/noscrollcombobox.cpp \
     src/ui/noscrollspinbox.cpp \
     src/ui/paletteeditor.cpp \
-    src/ui/playerviewrect.cpp \
     src/ui/selectablepixmapitem.cpp \
     src/ui/tileseteditor.cpp \
     src/ui/tileseteditormetatileselector.cpp \
@@ -87,12 +87,12 @@ HEADERS  += include/core/block.h \
     include/ui/mapsceneeventfilter.h \
     include/ui/metatilelayersitem.h \
     include/ui/metatileselector.h \
+    include/ui/movablerect.h \
     include/ui/movementpermissionsselector.h \
     include/ui/neweventtoolbutton.h \
     include/ui/noscrollcombobox.h \
     include/ui/noscrollspinbox.h \
     include/ui/paletteeditor.h \
-    include/ui/playerviewrect.h \
     include/ui/selectablepixmapitem.h \
     include/ui/tileseteditor.h \
     include/ui/tileseteditormetatileselector.h \

@@ -17,7 +17,8 @@ Editor::Editor(Ui::MainWindow* ui)
     this->ui = ui;
     this->selected_events = new QList<DraggablePixmapItem*>;
     this->settings = new Settings();
-    this->playerViewRect = new PlayerViewRect(&this->settings->playerViewRectEnabled);
+    this->playerViewRect = new MovableRect(&this->settings->playerViewRectEnabled, 30 * 8, 20 * 8, qRgb(255, 255, 255));
+    this->cursorMapTileRect = new MovableRect(&this->settings->cursorTileRectEnabled, 16, 16, qRgb(255, 255, 255));
 }
 
 void Editor::saveProject() {
@@ -354,6 +355,7 @@ void Editor::onSelectedMetatilesChanged() {
 
 void Editor::onHoveredMapMetatileChanged(int x, int y) {
     this->playerViewRect->updateLocation(x, y);
+    this->cursorMapTileRect->updateLocation(x, y);
     if (map_item->paintingEnabled && x >= 0 && x < map->getWidth() && y >= 0 && y < map->getHeight()) {
         int blockIndex = y * map->getWidth() + x;
         int tile = map->layout->blockdata->blocks->at(blockIndex).tile;
@@ -367,6 +369,7 @@ void Editor::onHoveredMapMetatileChanged(int x, int y) {
 
 void Editor::onHoveredMapMetatileCleared() {
     this->playerViewRect->setVisible(false);
+    this->cursorMapTileRect->setVisible(false);
     if (map_item->paintingEnabled) {
         this->ui->statusBar->clearMessage();
     }
@@ -374,6 +377,7 @@ void Editor::onHoveredMapMetatileCleared() {
 
 void Editor::onHoveredMapMovementPermissionChanged(int x, int y) {
     this->playerViewRect->updateLocation(x, y);
+    this->cursorMapTileRect->updateLocation(x, y);
     if (map_item->paintingEnabled && x >= 0 && x < map->getWidth() && y >= 0 && y < map->getHeight()) {
         int blockIndex = y * map->getWidth() + x;
         uint16_t collision = map->layout->blockdata->blocks->at(blockIndex).collision;
@@ -388,6 +392,7 @@ void Editor::onHoveredMapMovementPermissionChanged(int x, int y) {
 
 void Editor::onHoveredMapMovementPermissionCleared() {
     this->playerViewRect->setVisible(false);
+    this->cursorMapTileRect->setVisible(false);
     if (map_item->paintingEnabled) {
         this->ui->statusBar->clearMessage();
     }
@@ -445,6 +450,7 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item
     int x = static_cast<int>(pos.x()) / 16;
     int y = static_cast<int>(pos.y()) / 16;
     this->playerViewRect->updateLocation(x, y);
+    this->cursorMapTileRect->updateLocation(x, y);
     if (map_edit_mode == "paint") {
         if (event->buttons() & Qt::RightButton) {
             item->updateMetatileSelection(event);
@@ -487,6 +493,7 @@ void Editor::mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixm
     int x = static_cast<int>(pos.x()) / 16;
     int y = static_cast<int>(pos.y()) / 16;
     this->playerViewRect->updateLocation(x, y);
+    this->cursorMapTileRect->updateLocation(x, y);
     if (map_edit_mode == "paint") {
         if (event->buttons() & Qt::RightButton) {
             item->updateMovementPermissionSelection(event);
@@ -527,6 +534,8 @@ void Editor::displayMap() {
     if (map_item && scene) {
         scene->removeItem(map_item);
         delete map_item;
+        scene->removeItem(this->playerViewRect);
+        scene->removeItem(this->cursorMapTileRect);
     }
 
     displayMetatileSelector();
@@ -539,8 +548,11 @@ void Editor::displayMap() {
     displayMapConnections();
     displayMapBorder();
     displayMapGrid();
+
     this->playerViewRect->setZValue(1000);
+    this->cursorMapTileRect->setZValue(1001);
     scene->addItem(this->playerViewRect);
+    scene->addItem(this->cursorMapTileRect);
 
     if (map_item) {
         map_item->setVisible(false);
@@ -1071,6 +1083,7 @@ void DraggablePixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *mouse) {
         int x = static_cast<int>(mouse->pos().x() + this->pos().x()) / 16;
         int y = static_cast<int>(mouse->pos().y() + this->pos().y()) / 16;
         this->editor->playerViewRect->updateLocation(x, y);
+        this->editor->cursorMapTileRect->updateLocation(x, y);
         if (x != last_x || y != last_y) {
             if (editor->selected_events->contains(this)) {
                 for (DraggablePixmapItem *item : *editor->selected_events) {
