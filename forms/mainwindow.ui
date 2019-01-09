@@ -2589,6 +2589,7 @@
     <addaction name="actionZoom_In"/>
     <addaction name="actionZoom_Out"/>
     <addaction name="actionBetter_Cursors"/>
+    <addaction name="actionPlayer_View_Rectangle"/>
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
@@ -2806,6 +2807,17 @@
   <action name="actionAbout_Porymap">
    <property name="text">
     <string>About Porymap...</string>
+   </property>
+  </action>
+  <action name="actionPlayer_View_Rectangle">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Player View Rectangle</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show the player's view rectangle on the map based on the cursor's position.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
  </widget>

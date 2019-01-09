@@ -10,6 +10,7 @@ public:
     bool smartPathsEnabled;
     bool betterCursors;
     QCursor mapCursor;
+    bool playerViewRectEnabled;
 };
 
 #endif // SETTINGS_H

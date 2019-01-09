@@ -20,6 +20,7 @@
 #include "collisionpixmapitem.h"
 #include "mappixmapitem.h"
 #include "settings.h"
+#include "playerviewrect.h"
 
 class DraggablePixmapItem;
 class MetatilesPixmapItem;
@@ -94,6 +95,7 @@ public:
     QGraphicsItemGroup *events_group = nullptr;
     QList<QGraphicsPixmapItem*> borderItems;
     QList<QGraphicsLineItem*> gridLines;
+    PlayerViewRect *playerViewRect = nullptr;
 
     QGraphicsScene *scene_metatiles = nullptr;
     QGraphicsScene *scene_current_metatile_selection = nullptr;

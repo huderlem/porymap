@@ -970,6 +970,11 @@ void MainWindow::on_actionBetter_Cursors_triggered() {
     this->editor->settings->betterCursors = ui->actionBetter_Cursors->isChecked();
 }
 
+void MainWindow::on_actionPlayer_View_Rectangle_triggered()
+{
+    this->editor->settings->playerViewRectEnabled = ui->actionPlayer_View_Rectangle->isChecked();
+}
+
 void MainWindow::on_actionPencil_triggered()
 {
     on_toolButton_Paint_clicked();

@@ -13,8 +13,10 @@ public:
         this->map = map_;
         this->metatileSelector = metatileSelector;
         this->settings = settings;
+        this->paintingEnabled = true;
         setAcceptHoverEvents(true);
     }
+    bool paintingEnabled;
     Map *map;
     MetatileSelector *metatileSelector;
     Settings *settings;
