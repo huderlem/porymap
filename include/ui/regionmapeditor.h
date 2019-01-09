@@ -5,6 +5,8 @@
 #include "citymappixmapitem.h"
 #include "regionmaplayoutpixmapitem.h"
 #include "regionmap.h"
+#include "history.h"
+#include "historyitem.h"
 
 #include <QMainWindow>
 #include <QGraphicsSceneMouseEvent>
@@ -55,17 +57,45 @@ public:
     void onRegionMapLayoutHoveredTileChanged(int);
     void onRegionMapLayoutHoveredTileCleared();
 
+    void undo();
+    void redo();
+
 private:
     Ui::RegionMapEditor *ui;
     Project *project;
 
     QString rmStatusbarMessage;
+    History<RegionMapHistoryItem*> history;
+
+    double scaleUpFactor = 2.0;
+    double scaleDownFactor = 1.0 / scaleUpFactor;
+
+    double scaleRegionMapTiles = 1.0;
+    double scaleRegionMapImage = 1.0;
+    double scaleCityMapTiles = 1.0;
+    double scaleCityMapImage = 1.0;
+
+    void scaleUp(QGraphicsView *, qreal factor, qreal width, qreal height);
+
+    bool createCityMap(QString);
 
 private slots:
     void on_action_RegionMap_Save_triggered();
+    void on_action_RegionMap_Undo_triggered();
+    void on_action_RegionMap_Redo_triggered();
     void on_tabWidget_Region_Map_currentChanged(int);
     void on_pushButton_RM_Options_save_clicked();
+    void on_pushButton_RM_Options_delete_clicked();
     void on_pushButton_CityMap_save_clicked();
+    void on_pushButton_CityMap_add_clicked();//
+    void on_pushButton_Zoom_In_Image_Tiles_clicked();
+    void on_pushButton_Zoom_Out_Image_Tiles_clicked();
+    void on_pushButton_Zoom_In_City_Tiles_clicked();
+    void on_pushButton_Zoom_Out_City_Tiles_clicked();
+    void on_pushButton_Zoom_In_City_Map_clicked();//
+    void on_pushButton_Zoom_Out_City_Map_clicked();
+    void on_pushButton_Zoom_In_Map_Image_clicked();
+    void on_pushButton_Zoom_Out_Map_Image_clicked();//
     void on_comboBox_CityMap_picker_currentTextChanged(const QString &);
     void onHoveredRegionMapTileChanged(int, int);
     void onHoveredRegionMapTileCleared();

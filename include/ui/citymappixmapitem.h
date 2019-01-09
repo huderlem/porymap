@@ -18,6 +18,7 @@ public:
 
     QString file;
 
+    // TODO: make private and use access functions
     int width;
     int height;
 
@@ -28,6 +29,11 @@ public:
     void create(QString);
     virtual void paint(QGraphicsSceneMouseEvent*);
     virtual void draw();
+    int getIndexAt(int, int);
+
+//private:
+//    int width;
+//    int height;
 
 signals:
     void mouseEvent(QGraphicsSceneMouseEvent *, CityMapPixmapItem *);

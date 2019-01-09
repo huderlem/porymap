@@ -37,7 +37,7 @@ void CityMapPixmapItem::draw() {
 }
 
 void CityMapPixmapItem::save() {
-    //
+    // TODO: logError / logWarn if fail
     QFile binFile(file);
     if (!binFile.open(QIODevice::WriteOnly)) return;
     binFile.write(data);
@@ -49,7 +49,7 @@ void CityMapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
     QPointF pos = event->pos();
     int x = static_cast<int>(pos.x()) / 8;
     int y = static_cast<int>(pos.y()) / 8;
-    int index = 2 * (x + y * width);
+    int index = getIndexAt(x, y);
     data[index] = static_cast<uint8_t>(this->tile_selector->selectedTile);
 
     draw();
@@ -60,4 +60,9 @@ void CityMapPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     int x = static_cast<int>(pos.x()) / 8;
     int y = static_cast<int>(pos.y()) / 8;
     emit mouseEvent(event, this);
+}
+
+int CityMapPixmapItem::getIndexAt(int x, int y) {
+    //
+    return 2 * (x + y * width);
 }

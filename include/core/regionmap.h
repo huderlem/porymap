@@ -4,6 +4,8 @@
 #include "project.h"
 #include "map.h"
 #include "tilemaptileselector.h"
+#include "history.h"
+#include "historyitem.h"
 
 #include <QStringList>
 #include <QString>
@@ -73,6 +75,8 @@ public:
     //RegionMapSquare *map_squares = nullptr;// array of RegionMapSquares
     QList<RegionMapSquare> map_squares;
 
+    History<RegionMapHistoryItem*> history;
+
     QString temp_path;// delete this
     QString city_map_squares_path;
     QString region_map_png_path;
@@ -125,6 +129,8 @@ public:
     unsigned getTileId(int, int);
     int getMapSquareIndex(int, int);
 
+    void deleteLayoutSquare(int);
+
     // implement these here?
     void undo();
     void redo();
@@ -134,6 +140,7 @@ public:
 // TODO: move read / write functions to private (and others)
 private:
     //
+    //History<QPair<int, uint8_t>> *history;// (index, tile)
     int layout_width_;
     int layout_height_;
     int img_width_;

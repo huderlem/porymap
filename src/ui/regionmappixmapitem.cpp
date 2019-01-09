@@ -6,6 +6,7 @@
 // the function that draws the map on the scene
 // (qnqlogous to Map::render)
 // TODO: figure out why this is being called twice!!
+// (this also affects the history)
 void RegionMapPixmapItem::draw() {
     if (!region_map) return;
 
@@ -31,7 +32,8 @@ void RegionMapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
             QPointF pos = event->pos();
             int x = static_cast<int>(pos.x()) / 8;
             int y = static_cast<int>(pos.y()) / 8;
-            this->region_map->map_squares[x + y * region_map->width()].tile_img_id = this->tile_selector->selectedTile;
+            int index = x + y * region_map->width();
+            this->region_map->map_squares[index].tile_img_id = this->tile_selector->selectedTile;
         }
         draw();
     }

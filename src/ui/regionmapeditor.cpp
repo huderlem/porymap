@@ -2,14 +2,21 @@
 #include "ui_regionmapeditor.h"
 
 #include <QDir>
+#include <QDialog>
+#include <QDialogButtonBox>
+#include <QFormLayout>
+#include <QLineEdit>
+#include <QColor>
+#include <QTimer>
 
 RegionMapEditor::RegionMapEditor(QWidget *parent, Project *pro) :
     QMainWindow(parent),
     ui(new Ui::RegionMapEditor)
 {
-    ui->setupUi(this);
+    this->ui->setupUi(this);
     this->project = pro;
     this->region_map = new RegionMap;
+    this->setFixedSize(this->size());//statusbar->setSizeGripEnabled(false);
 }
 
 RegionMapEditor::~RegionMapEditor()
@@ -157,7 +164,8 @@ void RegionMapEditor::displayCityMapTileSelector() {
 
     this->ui->graphicsView_City_Map_Tiles->setScene(this->scene_city_map_tiles);
     this->ui->graphicsView_City_Map_Tiles->setFixedSize(this->city_map_selector_item->pixelWidth + 2,
-                                                         this->city_map_selector_item->pixelHeight + 2);
+                                                        this->city_map_selector_item->pixelHeight + 2);
+    //this->ui->graphicsView_City_Map_Tiles->scale(2,2);
 }
 
 void RegionMapEditor::displayCityMap(QString f) {
@@ -182,10 +190,39 @@ void RegionMapEditor::displayCityMap(QString f) {
     scene_city_map_image->setSceneRect(this->scene_city_map_image->sceneRect());
 
     this->ui->graphicsView_City_Map->setScene(scene_city_map_image);
-    this->ui->graphicsView_City_Map->setFixedSize(QSize(82,82));
-    // set fixed size?
+    this->ui->graphicsView_City_Map->setFixedSize(QSize(8 * city_map_item->width + 2, 8 * city_map_item->height + 2));
 }
 
+bool RegionMapEditor::createCityMap(QString name) {
+    //
+    bool errored = false;
+
+    QString file = this->project->root + "/graphics/pokenav/city_maps/" + name + ".bin";
+
+    uint8_t filler = 0x30;
+    uint8_t border = 0x7;
+    uint8_t blank  = 0x1;
+    QByteArray new_data(400, filler);
+    for (int i = 0; i < new_data.size(); i++) {
+        if (i % 2) continue;
+        int x = i % 20;
+        int y = i / 20;
+        if (y <= 1 || y >= 8 || x <= 3 || x >= 16)
+            new_data[i] = border;
+        else
+            new_data[i] = blank;
+    }
+
+    QFile binFile(file);
+    if (!binFile.open(QIODevice::WriteOnly)) errored = true;
+    binFile.write(new_data);
+    binFile.close();
+
+    loadCityMaps();
+    this->ui->comboBox_CityMap_picker->setCurrentText(name);
+
+    return !errored;
+}
 
 
 
@@ -211,7 +248,7 @@ void RegionMapEditor::onRegionMapLayoutSelectedTileChanged(int index) {
     QString message = QString();
     if (this->region_map->map_squares[index].has_map) {
         //
-        message = QString("Map: %1").arg(this->project->mapSecToMapHoverName->value(
+        message = QString("\t %1").arg(this->project->mapSecToMapHoverName->value(
                       this->region_map->map_squares[index].mapsec)).remove("{NAME_END}");//.remove("{NAME_END}")
     }
     this->ui->statusbar->showMessage(message);
@@ -228,7 +265,7 @@ void RegionMapEditor::onRegionMapLayoutHoveredTileChanged(int index) {
         message = QString("(%1, %2)").arg(x).arg(y);
         if (this->region_map->map_squares[index].has_map) {
         //
-            message += QString("Map: %1").arg(this->project->mapSecToMapHoverName->value(
+            message += QString("\t %1").arg(this->project->mapSecToMapHoverName->value(
                       this->region_map->map_squares[index].mapsec)).remove("{NAME_END}");
         }
     }
@@ -245,7 +282,7 @@ void RegionMapEditor::onRegionMapLayoutHoveredTileCleared() {
         message = QString("(%1, %2)").arg(x).arg(y);
         if (this->region_map->map_squares[index].has_map) {
         //
-            message += QString("Map: %1").arg(this->project->mapSecToMapHoverName->value(
+            message += QString("\t %1").arg(this->project->mapSecToMapHoverName->value(
                       this->region_map->map_squares[index].mapsec)).remove("{NAME_END}");
         }
     }
@@ -270,6 +307,13 @@ void RegionMapEditor::mouseEvent_region_map(QGraphicsSceneMouseEvent *event, Reg
         // TODO: add functionality here? replace or?
     } else {
         //
+        QPointF pos = event->pos();
+        int x = static_cast<int>(pos.x()) / 8;
+        int y = static_cast<int>(pos.y()) / 8;
+        int index = this->region_map->getMapSquareIndex(x, y);
+        RegionMapHistoryItem *commit = new RegionMapHistoryItem(RegionMapEditorBox::BackgroundImage, index, 
+            this->region_map->map_squares[index].tile_img_id, this->mapsquare_selector_item->getSelectedTile());
+        history.push(commit);
         item->paint(event);
     }
 }
@@ -283,6 +327,13 @@ void RegionMapEditor::mouseEvent_city_map(QGraphicsSceneMouseEvent *event, CityM
         // TODO: add functionality here? replace or?
     } else {
         //
+        QPointF pos = event->pos();
+        int x = static_cast<int>(pos.x()) / 8;
+        int y = static_cast<int>(pos.y()) / 8;
+        int index = this->city_map_item->getIndexAt(x, y);
+        RegionMapHistoryItem *commit = new RegionMapHistoryItem(RegionMapEditorBox::CityMapImage, index, 
+            this->city_map_item->data[index], this->city_map_selector_item->getSelectedTile());
+        history.push(commit);
         item->paint(event);
     }
 }
@@ -318,19 +369,151 @@ void RegionMapEditor::on_pushButton_CityMap_save_clicked() {
     this->city_map_item->save();
 }
 
+void RegionMapEditor::on_pushButton_RM_Options_delete_clicked() {
+    qDebug() << "delete it fat";
+}
+
+void RegionMapEditor::on_pushButton_CityMap_add_clicked() {
+    QDialog popup(this, Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
+    popup.setWindowTitle("New City Map");
+    popup.setWindowModality(Qt::NonModal);
+
+    QFormLayout form(&popup);
+
+    QLineEdit *input = new QLineEdit();
+    form.addRow(new QLabel("Name:"), input);
+
+    QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &popup);
+
+    QString name;
+
+    form.addRow(&buttonBox);
+    connect(&buttonBox, SIGNAL(rejected()), &popup, SLOT(reject()));
+    connect(&buttonBox, &QDialogButtonBox::accepted, [&popup, &input, &name](){
+        name = input->text().remove(QRegularExpression("[^a-zA-Z0-9_]+"));
+        if (!name.isEmpty())
+            popup.accept();
+    });
+
+    if (popup.exec() == QDialog::Accepted) {
+        createCityMap(name);
+    }
+}
+
+void RegionMapEditor::on_action_RegionMap_Undo_triggered() {
+    RegionMapHistoryItem *commit = history.current();
+    if (!commit) return;
+
+    uint8_t tile = static_cast<uint8_t>(commit->prev);
+
+    history.back();
+
+    switch (commit->which)
+    {
+        case RegionMapEditorBox::BackgroundImage:
+            history.back();// TODO: why do I need to do this?
+            this->region_map->map_squares[commit->index].tile_img_id = tile;
+            this->region_map_item->draw();
+            break;
+        case RegionMapEditorBox::CityMapImage:
+            this->city_map_item->data[commit->index] = tile;
+            this->city_map_item->draw();
+            break;
+    }
+}
+
+void RegionMapEditor::on_action_RegionMap_Redo_triggered() {
+    RegionMapHistoryItem *commit = history.next();
+    if (!commit) return;
+
+    uint8_t tile = static_cast<uint8_t>(commit->tile);
+
+    switch (commit->which)
+    {
+        case RegionMapEditorBox::BackgroundImage:
+            history.next();// TODO: why do I need to do this?
+            this->region_map->map_squares[commit->index].tile_img_id = tile;
+            this->region_map_item->draw();
+            break;
+        case RegionMapEditorBox::CityMapImage:
+            this->city_map_item->data[commit->index] = tile;
+            this->city_map_item->draw();
+            break;
+    }
+}
+
 void RegionMapEditor::on_comboBox_CityMap_picker_currentTextChanged(const QString &file) {
     this->displayCityMap(file);
 }
 
 
 
+// TODO: prevent huge images with limits on zoom
+void RegionMapEditor::on_pushButton_Zoom_In_Image_Tiles_clicked() {
+    //
+    scaleRegionMapTiles *= 2.0;
+    this->ui->graphicsView_RegionMap_Tiles->setFixedSize(this->mapsquare_selector_item->pixelWidth * scaleRegionMapTiles + 2,
+                                                         this->mapsquare_selector_item->pixelHeight * scaleRegionMapTiles + 2);
+    this->ui->graphicsView_RegionMap_Tiles->scale(2.0, 2.0);
+}
 
+void RegionMapEditor::on_pushButton_Zoom_Out_Image_Tiles_clicked() {
+    //
+    scaleRegionMapTiles /= 2.0;
+    this->ui->graphicsView_RegionMap_Tiles->setFixedSize(this->mapsquare_selector_item->pixelWidth * scaleRegionMapTiles + 2,
+                                                         this->mapsquare_selector_item->pixelHeight * scaleRegionMapTiles + 2);
+    this->ui->graphicsView_RegionMap_Tiles->scale(0.5, 0.5);
+}
 
+void RegionMapEditor::on_pushButton_Zoom_In_City_Tiles_clicked() {
+    //
+    scaleCityMapTiles *= 2.0;
+    this->ui->graphicsView_City_Map_Tiles->setFixedSize(this->city_map_selector_item->pixelWidth * scaleCityMapTiles + 2,
+                                                        this->city_map_selector_item->pixelHeight * scaleCityMapTiles + 2);
+    this->ui->graphicsView_City_Map_Tiles->scale(2.0,2.0);
+}
 
+void RegionMapEditor::on_pushButton_Zoom_Out_City_Tiles_clicked() {
+    //
+    scaleCityMapTiles /= 2.0;
+    this->ui->graphicsView_City_Map_Tiles->setFixedSize(this->city_map_selector_item->pixelWidth * scaleCityMapTiles + 2,
+                                                        this->city_map_selector_item->pixelHeight * scaleCityMapTiles + 2);
+    this->ui->graphicsView_City_Map_Tiles->scale(0.5,0.5);
+}
 
+void RegionMapEditor::on_pushButton_Zoom_In_City_Map_clicked() {
+    //
+    scaleCityMapImage *= 2.0;
+    this->ui->graphicsView_City_Map->setFixedSize(QSize(8 * city_map_item->width * scaleCityMapImage + 2, 8 * city_map_item->height * scaleCityMapImage + 2));
+    this->ui->graphicsView_City_Map->scale(2.0,2.0);
+}
 
+void RegionMapEditor::on_pushButton_Zoom_Out_City_Map_clicked() {
+    //
+    scaleCityMapImage /= 2.0;
+    this->ui->graphicsView_City_Map->setFixedSize(QSize(8 * city_map_item->width * scaleCityMapImage + 2, 8 * city_map_item->height * scaleCityMapImage + 2));
+    this->ui->graphicsView_City_Map->scale(0.5,0.5);
+}
 
+void RegionMapEditor::on_pushButton_Zoom_In_Map_Image_clicked() {
+    //
+    //qDebug() << "scale:" << scaleRegionMapImage;
+    scaleRegionMapImage *= 2.0;
+    this->ui->graphicsView_Region_Map_BkgImg->setFixedSize(this->region_map->imgSize() * scaleRegionMapImage);
+    this->ui->graphicsView_Region_Map_Layout->setFixedSize(this->region_map->imgSize() * scaleRegionMapImage);
+    this->ui->graphicsView_Region_Map_BkgImg->scale(2.0,2.0);
+    this->ui->graphicsView_Region_Map_Layout->scale(2.0,2.0);
+}
 
+void RegionMapEditor::on_pushButton_Zoom_Out_Map_Image_clicked() {
+    //
+    if (scaleRegionMapImage <= 1.0) return;
+    scaleRegionMapImage /= 2.0;
+    this->ui->graphicsView_Region_Map_BkgImg->setFixedSize(this->region_map->imgSize() * scaleRegionMapImage);
+    this->ui->graphicsView_Region_Map_Layout->setFixedSize(this->region_map->imgSize() * scaleRegionMapImage);
+    this->ui->graphicsView_Region_Map_BkgImg->scale(0.5,0.5);
+    this->ui->graphicsView_Region_Map_Layout->scale(0.5,0.5);
+}
 
 
 
