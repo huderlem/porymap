@@ -79,6 +79,10 @@ private slots:
 
     void on_actionExport_Secondary_Tiles_Image_triggered();
 
+    void on_actionImport_Primary_Metatiles_triggered();
+
+    void on_actionImport_Secondary_Metatiles_triggered();
+
 private:
     void closeEvent(QCloseEvent*);
     void initMetatileSelector();
@@ -87,6 +91,7 @@ private:
     void initMetatileLayersItem();
     void drawSelectedTiles();
     void importTilesetTiles(Tileset*, bool);
+    void importTilesetMetatiles(Tileset*, bool);
     void refresh();
     Ui::TilesetEditor *ui;
     History<MetatileHistoryItem*> metatileHistory;

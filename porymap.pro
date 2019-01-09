@@ -22,6 +22,7 @@ SOURCES += src/core/block.cpp \
     src/core/map.cpp \
     src/core/maplayout.cpp \
     src/core/metatile.cpp \
+    src/core/metatileparser.cpp \
     src/core/paletteparser.cpp \
     src/core/parseutil.cpp \
     src/core/tile.cpp \
@@ -67,6 +68,7 @@ HEADERS  += include/core/block.h \
     include/core/mapconnection.h \
     include/core/maplayout.h \
     include/core/metatile.h \
+    include/core/metatileparser.h \
     include/core/paletteparser.h \
     include/core/parseutil.h \
     include/core/tile.h \

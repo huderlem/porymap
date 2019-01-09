@@ -2,6 +2,7 @@
 #include "ui_tileseteditor.h"
 #include "log.h"
 #include "imageproviders.h"
+#include "metatileparser.h"
 #include "paletteparser.h"
 #include <QFileDialog>
 #include <QMessageBox>
@@ -625,4 +626,60 @@ void TilesetEditor::on_actionExport_Secondary_Tiles_Image_triggered()
         QImage image = this->tileSelector->buildSecondaryTilesIndexedImage();
         image.save(filepath);
     }
+}
+
+void TilesetEditor::on_actionImport_Primary_Metatiles_triggered()
+{
+    this->importTilesetMetatiles(this->primaryTileset, true);
+}
+
+void TilesetEditor::on_actionImport_Secondary_Metatiles_triggered()
+{
+    this->importTilesetMetatiles(this->secondaryTileset, false);
+}
+
+void TilesetEditor::importTilesetMetatiles(Tileset *tileset, bool primary)
+{
+    QString descriptor = primary ? "primary" : "secondary";
+    QString descriptorCaps = primary ? "Primary" : "Secondary";
+
+    QString filepath = QFileDialog::getOpenFileName(
+                this,
+                QString("Import %1 Tileset Metatiles from Advance Map 1.92").arg(descriptorCaps),
+                this->project->root,
+                "Advance Map 1.92 Metatile Files (*.bvd)");
+    if (filepath.isEmpty()) {
+        return;
+    }
+
+    MetatileParser parser;
+    bool error = false;
+    QList<Metatile*> *metatiles = parser.parse(filepath, &error, primary);
+    if (error) {
+        QMessageBox msgBox(this);
+        msgBox.setText("Failed to import metatiles from Advance Map 1.92 .bvd file.");
+        QString message = QString("The .bvd file could not be processed. View porymap.log for specific errors.");
+        msgBox.setInformativeText(message);
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        msgBox.setIcon(QMessageBox::Icon::Critical);
+        msgBox.exec();
+        return;
+    }
+\
+    // TODO: This is crude because it makes a history entry for every newly-imported metatile.
+    //       Revisit this when tiles and num metatiles are added to tileset editory history.
+    int metatileIdBase = primary ? 0 : Project::getNumMetatilesPrimary();
+    for (int i = 0; i < metatiles->length(); i++) {
+        if (i >= tileset->metatiles->length()) {
+            break;
+        }
+
+        Metatile *prevMetatile = tileset->metatiles->at(i)->copy();
+        MetatileHistoryItem *commit = new MetatileHistoryItem(static_cast<uint16_t>(metatileIdBase + i), prevMetatile, metatiles->at(i)->copy());
+        metatileHistory.push(commit);
+    }
+
+    tileset->metatiles = metatiles;
+    this->refresh();
+    this->hasUnsavedChanges = true;
 }

@@ -124,7 +124,7 @@ QList<QRgb> PaletteParser::parseAdvanceMapPal(QString filepath, bool *error) {
     QFile file(filepath);
     if (!file.open(QIODevice::ReadOnly)) {
         *error = true;
-        logError(QString("Could not open Advance Map palette file '%1': ").arg(filepath) + file.errorString());
+        logError(QString("Could not open Advance Map 1.92 palette file '%1': ").arg(filepath) + file.errorString());
         return QList<QRgb>();
     }
 
@@ -133,16 +133,16 @@ QList<QRgb> PaletteParser::parseAdvanceMapPal(QString filepath, bool *error) {
 
     if (in.length() % 4 != 0) {
         *error = true;
-        logError(QString("Advance Map palette file '%1' had an unexpected format. File's length must be a multiple of 4, but the length is %2.").arg(filepath).arg(in.length()));
+        logError(QString("Advance Map 1.92 palette file '%1' had an unexpected format. File's length must be a multiple of 4, but the length is %2.").arg(filepath).arg(in.length()));
         return QList<QRgb>();
     }
 
     QList<QRgb> palette;
     int i = 0;
     while (i < in.length()) {
-        unsigned char blue = static_cast<unsigned char>(in.at(i));
+        unsigned char red = static_cast<unsigned char>(in.at(i));
         unsigned char green = static_cast<unsigned char>(in.at(i + 1));
-        unsigned char red = static_cast<unsigned char>(in.at(i + 2));
+        unsigned char blue = static_cast<unsigned char>(in.at(i + 2));
         palette.append(qRgb(this->clampColorValue(red),
                             this->clampColorValue(green),
                             this->clampColorValue(blue)));

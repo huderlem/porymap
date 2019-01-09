@@ -70,6 +70,7 @@ extern PorymapConfig porymapConfig;
 
 enum BaseGameVersion {
     pokeruby,
+    pokefirered,
     pokeemerald,
 };
 

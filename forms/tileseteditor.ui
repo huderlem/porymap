@@ -477,6 +477,8 @@
     </property>
     <addaction name="actionImport_Primary_Tiles"/>
     <addaction name="actionImport_Secondary_Tiles"/>
+    <addaction name="actionImport_Primary_Metatiles"/>
+    <addaction name="actionImport_Secondary_Metatiles"/>
     <addaction name="actionChange_Metatiles_Count"/>
     <addaction name="actionChange_Palettes"/>
     <addaction name="separator"/>
@@ -505,12 +507,12 @@
   </action>
   <action name="actionImport_Primary_Tiles">
    <property name="text">
-    <string>Import Primary Tiles...</string>
+    <string>Import Primary Tiles Image...</string>
    </property>
   </action>
   <action name="actionImport_Secondary_Tiles">
    <property name="text">
-    <string>Import Secondary Tiles...</string>
+    <string>Import Secondary Tiles Image...</string>
    </property>
   </action>
   <action name="actionChange_Metatiles_Count">
@@ -547,6 +549,16 @@
   <action name="actionExport_Secondary_Tiles_Image">
    <property name="text">
     <string>Export Secondary Tiles Image...</string>
+   </property>
+  </action>
+  <action name="actionImport_Primary_Metatiles">
+   <property name="text">
+    <string>Import Primary Metatiles from Advance Map 1.92...</string>
+   </property>
+  </action>
+  <action name="actionImport_Secondary_Metatiles">
+   <property name="text">
+    <string>Import Secondary Metatiles from Advance Map 1.92...</string>
    </property>
   </action>
  </widget>
