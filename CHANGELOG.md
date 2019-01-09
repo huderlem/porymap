@@ -15,6 +15,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Add ability to import metatiles from Advance Map 1.92 (.bvd files).
 - Add About window that contains porymap information and changelog. (Found in file menu `Help > About Porymap`)
 - Add option to show player's in-game view when hovering the mouse on the map.
+- Add option to show an outline around the currently-hovered map tile.
 
 ### Changed
 - Collapse the map list by default.
