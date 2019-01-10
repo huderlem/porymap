@@ -711,7 +711,7 @@ void Editor::displayMapEvents() {
 
 DraggablePixmapItem *Editor::addMapEvent(Event *event) {
     DraggablePixmapItem *object = new DraggablePixmapItem(event, this);
-    if (event->get("event_type") != EventType::Object) {
+    if (!event->usingSprite) {
         object->setOpacity(0.7);
     }
     events_group->addToGroup(object);

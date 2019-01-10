@@ -79,6 +79,7 @@ public:
     QPixmap pixmap;
     int spriteWidth;
     int spriteHeight;
+    bool usingSprite;
 };
 
 #endif // EVENT_H

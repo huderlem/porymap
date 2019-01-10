@@ -14,6 +14,7 @@ Event::Event()
 {
     this->spriteWidth = 16;
     this->spriteHeight = 16;
+    this->usingSprite = false;
 }
 
 Event* Event::createNewEvent(QString event_type, QString map_name)
@@ -242,4 +243,5 @@ void Event::setPixmapFromSpritesheet(QImage spritesheet, int spriteWidth, int sp
     pixmap = QPixmap::fromImage(img);
     this->spriteWidth = spriteWidth;
     this->spriteHeight = spriteHeight;
+    this->usingSprite = true;
 }
