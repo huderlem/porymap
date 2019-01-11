@@ -515,6 +515,7 @@ void MapPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     int y = static_cast<int>(pos.y()) / 16;
     this->paint_tile_initial_x = x;
     this->paint_tile_initial_y = y;
+    emit startPaint(event, this);
     emit mouseEvent(event, this);
 }
 void MapPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
@@ -524,5 +525,6 @@ void MapPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     emit mouseEvent(event, this);
 }
 void MapPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
+    emit endPaint(event, this);
     emit mouseEvent(event, this);
 }

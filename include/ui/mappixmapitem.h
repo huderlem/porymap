@@ -43,6 +43,8 @@ private:
     static QList<int> smartPathTable;
 
 signals:
+    void startPaint(QGraphicsSceneMouseEvent *, MapPixmapItem *);
+    void endPaint(QGraphicsSceneMouseEvent *, MapPixmapItem *);
     void mouseEvent(QGraphicsSceneMouseEvent *, MapPixmapItem *);
     void hoveredMapMetatileChanged(int x, int y);
     void hoveredMapMetatileCleared();

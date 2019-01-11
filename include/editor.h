@@ -21,6 +21,7 @@
 #include "mappixmapitem.h"
 #include "settings.h"
 #include "movablerect.h"
+#include "cursortilerect.h"
 
 class DraggablePixmapItem;
 class MetatilesPixmapItem;
@@ -96,7 +97,7 @@ public:
     QList<QGraphicsPixmapItem*> borderItems;
     QList<QGraphicsLineItem*> gridLines;
     MovableRect *playerViewRect = nullptr;
-    MovableRect *cursorMapTileRect = nullptr;
+    CursorTileRect *cursorMapTileRect = nullptr;
 
     QGraphicsScene *scene_metatiles = nullptr;
     QGraphicsScene *scene_current_metatile_selection = nullptr;
@@ -149,6 +150,9 @@ private:
     QString getMovementPermissionText(uint16_t collision, uint16_t elevation);
 
 private slots:
+    void onMapStartPaint(QGraphicsSceneMouseEvent *event, MapPixmapItem *item);
+    void onMapEndPaint(QGraphicsSceneMouseEvent *event, MapPixmapItem *item);
+    void setSmartPathCursorMode(QGraphicsSceneMouseEvent *event);
     void mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item);
     void mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixmapItem *item);
     void onConnectionMoved(MapConnection*);
