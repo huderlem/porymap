@@ -4,6 +4,7 @@
 #include "imageproviders.h"
 #include "metatileparser.h"
 #include "paletteparser.h"
+#include "imageexport.h"
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QDialogButtonBox>
@@ -613,7 +614,7 @@ void TilesetEditor::on_actionExport_Primary_Tiles_Image_triggered()
     QString filepath = QFileDialog::getSaveFileName(this, "Export Primary Tiles Image", defaultFilepath, "Image Files (*.png)");
     if (!filepath.isEmpty()) {
         QImage image = this->tileSelector->buildPrimaryTilesIndexedImage();
-        image.save(filepath);
+        exportIndexed4BPPPng(image, filepath);
     }
 }
 
@@ -624,7 +625,7 @@ void TilesetEditor::on_actionExport_Secondary_Tiles_Image_triggered()
     QString filepath = QFileDialog::getSaveFileName(this, "Export Secondary Tiles Image", defaultFilepath, "Image Files (*.png)");
     if (!filepath.isEmpty()) {
         QImage image = this->tileSelector->buildSecondaryTilesIndexedImage();
-        image.save(filepath);
+        exportIndexed4BPPPng(image, filepath);
     }
 }
 
