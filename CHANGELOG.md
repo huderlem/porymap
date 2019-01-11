@@ -15,7 +15,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Add ability to import metatiles from Advance Map 1.92 (.bvd files).
 - Add About window that contains porymap information and changelog. (Found in file menu `Help > About Porymap`)
 - Add option to show player's in-game view when hovering the mouse on the map.
-- Add option to show an outline around the currently-hovered map tile.
+- Add option to show an outline around the currently-hovered map tile. Its size depends on the size of the current metatile selection.
 
 ### Changed
 - Collapse the map list by default.
@@ -24,6 +24,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - When creating a new map, the user specifies all of the map properties in a new window prompt.
 - New maps can be created using existing layouts by right-clicking on an existing layout folder in the map list panel when sorted by "Layout".
 - The map list panel now has "expand-all" and "collapse-all" buttons.
+- Events without sprites are now partially transparent so the underlying metatile can be seen. (Warps, signs, etc.)
 
 ### Fixed
 - Fix bug where smart paths could be auto-enabled, despite the checkbox being disabled.
