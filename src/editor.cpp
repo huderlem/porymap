@@ -76,6 +76,7 @@ void Editor::setEditingMap() {
     setBorderItemsVisible(ui->checkBox_ToggleBorder->isChecked());
     setConnectionItemsVisible(false);
     this->cursorMapTileRect->stopSingleTileMode();
+    this->cursorMapTileRect->setVisibility(true);
 }
 
 void Editor::setEditingCollision() {
@@ -96,6 +97,7 @@ void Editor::setEditingCollision() {
     setBorderItemsVisible(ui->checkBox_ToggleBorder->isChecked());
     setConnectionItemsVisible(false);
     this->cursorMapTileRect->setSingleTileMode();
+    this->cursorMapTileRect->setVisibility(true);
 }
 
 void Editor::setEditingObjects() {
@@ -114,6 +116,7 @@ void Editor::setEditingObjects() {
     setBorderItemsVisible(ui->checkBox_ToggleBorder->isChecked());
     setConnectionItemsVisible(false);
     this->cursorMapTileRect->setSingleTileMode();
+    this->cursorMapTileRect->setVisibility(false);
 }
 
 void Editor::setEditingConnections() {
@@ -143,6 +146,7 @@ void Editor::setEditingConnections() {
     setBorderItemsVisible(true, 0.4);
     setConnectionItemsVisible(true);
     this->cursorMapTileRect->setSingleTileMode();
+    this->cursorMapTileRect->setVisibility(false);
 }
 
 void Editor::setDiveEmergeControls() {

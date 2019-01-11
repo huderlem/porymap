@@ -57,8 +57,10 @@ public:
     void setNormalPathMode();
     void updateLocation(int x, int y);
     void updateSelectionSize(int width, int height);
+    void setVisibility(bool visible);
     bool *enabled;
 private:
+    bool visible;
     int width;
     int height;
     bool anchored;

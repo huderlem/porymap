@@ -4,6 +4,7 @@
 CursorTileRect::CursorTileRect(bool *enabled, QRgb color)
 {
     this->enabled = enabled;
+    this->visible = true;
     this->color = color;
     this->width = 16;
     this->height = 16;
@@ -15,6 +16,11 @@ CursorTileRect::CursorTileRect(bool *enabled, QRgb color)
     this->anchorCoordY = 0;
     this->selectionWidth = 1;
     this->selectionHeight = 1;
+}
+
+void CursorTileRect::setVisibility(bool visible)
+{
+    this->visible = visible;
 }
 
 void CursorTileRect::initAnchor(int coordX, int coordY)
@@ -96,5 +102,5 @@ void CursorTileRect::updateLocation(int coordX, int coordY)
 
     this->setX(coordX * 16);
     this->setY(coordY * 16);
-    this->setVisible(*this->enabled);
+    this->setVisible(*this->enabled && this->visible);
 }
