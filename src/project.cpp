@@ -1616,6 +1616,7 @@ void Project::loadEventPixmaps(QList<Event*> objects) {
 
         object->spriteWidth = 16;
         object->spriteHeight = 16;
+        object->usingSprite = false;
         QString event_type = object->get("event_type");
         if (event_type == EventType::Object) {
             object->pixmap = QPixmap(":/images/Entities_16x16.png").copy(0, 0, 16, 16);
