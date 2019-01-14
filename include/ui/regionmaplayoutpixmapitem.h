@@ -8,22 +8,22 @@ class RegionMapLayoutPixmapItem : public SelectablePixmapItem {
     Q_OBJECT
 public:
     RegionMapLayoutPixmapItem(RegionMap *rmap, TilemapTileSelector *ts) : SelectablePixmapItem(8, 8, 1, 1) {
-            //
             this->region_map = rmap;
             this->tile_selector = ts;
             setAcceptHoverEvents(true);
     }
-    RegionMap *region_map;// inherited from RegionMapPixmapItem?
+    RegionMap *region_map;
     TilemapTileSelector *tile_selector;
-    int selectedTile;// index in map_squares
+    int selectedTile;
+    int highlightedTile;
     void draw();
     void select(int, int);
-    void setDefaultSelection();
+    void select(int);
+    void highlight(int, int, int);
 
 private:
     void updateSelectedTile();
 
-// can I implement these if they are virtual?
 signals:
     void mouseEvent(QGraphicsSceneMouseEvent *, RegionMapLayoutPixmapItem *);
     void hoveredTileChanged(int);

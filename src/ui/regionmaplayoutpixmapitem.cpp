@@ -2,8 +2,6 @@
 
 
 
-// TODO: make this connected (by duplicating scene rect maybe?) to background image tab
-//
 void RegionMapLayoutPixmapItem::draw() {
     if (!region_map) return;
 
@@ -14,7 +12,11 @@ void RegionMapLayoutPixmapItem::draw() {
         QImage bottom_img = this->tile_selector->tileImg(region_map->map_squares[i].tile_img_id);
         QImage top_img(8, 8, QImage::Format_RGBA8888);
         if (region_map->map_squares[i].has_map) {
-            top_img.fill(Qt::gray);
+            if (i == highlightedTile) {
+                top_img.fill(Qt::red);
+            } else {
+                top_img.fill(Qt::gray);
+            }
         } else {
             top_img.fill(Qt::black);
         }
@@ -34,10 +36,6 @@ void RegionMapLayoutPixmapItem::draw() {
     this->drawSelection();
 }
 
-void RegionMapLayoutPixmapItem::setDefaultSelection() {
-    this->select(1,2);
-}
-
 void RegionMapLayoutPixmapItem::select(int x, int y) {
     int index = this->region_map->getMapSquareIndex(x, y);
     SelectablePixmapItem::select(x, y, 0, 0);
@@ -47,11 +45,30 @@ void RegionMapLayoutPixmapItem::select(int x, int y) {
     emit selectedTileChanged(index);
 }
 
+void RegionMapLayoutPixmapItem::select(int index) {
+    int x = index % this->region_map->width();
+    int y = index / this->region_map->width();
+    SelectablePixmapItem::select(x, y, 0, 0);
+    this->selectedTile = index;
+    this->updateSelectedTile();
+
+    emit selectedTileChanged(index);
+}
+
+void RegionMapLayoutPixmapItem::highlight(int x, int y, int red) {
+    // TODO: check if out of bounds and return
+    // if it is not empty, color it red
+    this->highlightedTile = red;
+    draw();
+    SelectablePixmapItem::select(x + 1, y + 2, 0, 0);
+}
+
 void RegionMapLayoutPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     QPoint pos = this->getCellPos(event->pos());
     int index = this->region_map->getMapSquareIndex(pos.x(), pos.y());
     if (this->region_map->map_squares[index].x >= 0
      && this->region_map->map_squares[index].y >= 0) {
+    //if (index > this->region_map->width() * 2) {
         SelectablePixmapItem::mousePressEvent(event);
         this->updateSelectedTile();
         emit selectedTileChanged(this->selectedTile);

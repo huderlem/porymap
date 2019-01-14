@@ -17,7 +17,7 @@
    <widget class="QPushButton" name="pushButton_Zoom_In_Map_Image">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>30</x>
       <y>250</y>
       <width>20</width>
       <height>20</height>
@@ -30,7 +30,7 @@
    <widget class="QPushButton" name="pushButton_Zoom_Out_Map_Image">
     <property name="geometry">
      <rect>
-      <x>30</x>
+      <x>10</x>
       <y>250</y>
       <width>20</width>
       <height>20</height>
@@ -358,7 +358,7 @@
    <widget class="QPushButton" name="pushButton_Zoom_In_City_Map">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>30</x>
       <y>550</y>
       <width>20</width>
       <height>20</height>
@@ -377,7 +377,7 @@
    <widget class="QPushButton" name="pushButton_Zoom_Out_City_Map">
     <property name="geometry">
      <rect>
-      <x>30</x>
+      <x>10</x>
       <y>550</y>
       <width>20</width>
       <height>20</height>
@@ -396,7 +396,7 @@
    <widget class="QPushButton" name="pushButton_Zoom_Out_City_Tiles">
     <property name="geometry">
      <rect>
-      <x>681</x>
+      <x>661</x>
       <y>550</y>
       <width>20</width>
       <height>20</height>
@@ -415,7 +415,7 @@
    <widget class="QPushButton" name="pushButton_Zoom_In_City_Tiles">
     <property name="geometry">
      <rect>
-      <x>661</x>
+      <x>681</x>
       <y>550</y>
       <width>20</width>
       <height>20</height>
@@ -434,7 +434,7 @@
    <widget class="QPushButton" name="pushButton_Zoom_In_Image_Tiles">
     <property name="geometry">
      <rect>
-      <x>661</x>
+      <x>681</x>
       <y>250</y>
       <width>20</width>
       <height>20</height>
@@ -447,7 +447,7 @@
    <widget class="QPushButton" name="pushButton_Zoom_Out_Image_Tiles">
     <property name="geometry">
      <rect>
-      <x>681</x>
+      <x>661</x>
       <y>250</y>
       <width>20</width>
       <height>20</height>
@@ -457,7 +457,7 @@
      <string>-</string>
     </property>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -727,7 +727,7 @@
      <item>
       <widget class="QStackedWidget" name="stackedWidget_RM_Options">
        <property name="currentIndex">
-        <number>1</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="page_RM_BkgImg_Options">
         <widget class="QScrollArea" name="scrollArea_RM_Metatiles">
@@ -1029,6 +1029,7 @@
     </property>
     <addaction name="action_RegionMap_Undo"/>
     <addaction name="action_RegionMap_Redo"/>
+    <addaction name="action_RegionMap_Resize"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -1056,6 +1057,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Y</string>
+   </property>
+  </action>
+  <action name="action_RegionMap_Resize">
+   <property name="text">
+    <string>Resize</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
    </property>
   </action>
  </widget>
