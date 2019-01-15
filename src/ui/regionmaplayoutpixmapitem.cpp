@@ -56,11 +56,9 @@ void RegionMapLayoutPixmapItem::select(int index) {
 }
 
 void RegionMapLayoutPixmapItem::highlight(int x, int y, int red) {
-    // TODO: check if out of bounds and return
-    // if it is not empty, color it red
     this->highlightedTile = red;
     draw();
-    SelectablePixmapItem::select(x + 1, y + 2, 0, 0);
+    SelectablePixmapItem::select(x + this->region_map->padLeft, y + this->region_map->padTop, 0, 0);
 }
 
 void RegionMapLayoutPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
@@ -68,7 +66,6 @@ void RegionMapLayoutPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
     int index = this->region_map->getMapSquareIndex(pos.x(), pos.y());
     if (this->region_map->map_squares[index].x >= 0
      && this->region_map->map_squares[index].y >= 0) {
-    //if (index > this->region_map->width() * 2) {
         SelectablePixmapItem::mousePressEvent(event);
         this->updateSelectedTile();
         emit selectedTileChanged(this->selectedTile);
@@ -99,4 +96,6 @@ void RegionMapLayoutPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent* event)
 void RegionMapLayoutPixmapItem::updateSelectedTile() {
     QPoint origin = this->getSelectionStart();
     this->selectedTile = this->region_map->getMapSquareIndex(origin.x(), origin.y());
+    this->highlightedTile = -1;
+    draw();
 }

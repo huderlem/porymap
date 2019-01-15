@@ -29,6 +29,8 @@ public:
     void loadRegionMapData();
     void loadCityMaps();
 
+    void onRegionMapTileSelectorSelectedTileChanged(unsigned);
+    void onCityMapTileSelectorSelectedTileChanged(unsigned);
     void onRegionMapTileSelectorHoveredTileChanged(unsigned);
     void onRegionMapTileSelectorHoveredTileCleared();
 
@@ -47,9 +49,11 @@ private:
 
     History<RegionMapHistoryItem*> history;
 
-    int currIndex = 65;// TODO: automatic this from width * 2 + 1
+    int currIndex;
+    unsigned selectedCityTile;
+    unsigned selectedImageTile;
 
-    double scaleUpFactor = 2.0;// TODO
+    double scaleUpFactor = 2.0;
     double scaleDownFactor = 1.0 / scaleUpFactor;
 
     double scaleRegionMapTiles = 1.0;
@@ -86,6 +90,7 @@ private slots:
     void on_action_RegionMap_Undo_triggered();
     void on_action_RegionMap_Redo_triggered();
     void on_action_RegionMap_Resize_triggered();
+    void on_action_RegionMap_Generate_triggered();
     void on_tabWidget_Region_Map_currentChanged(int);
     void on_pushButton_RM_Options_save_clicked();
     void on_pushButton_RM_Options_delete_clicked();

@@ -3,10 +3,6 @@
 
 
 
-// the function that draws the map on the scene
-// (qnqlogous to Map::render)
-// TODO: figure out why this is being called twice!!
-// (this also affects the history)
 void RegionMapPixmapItem::draw() {
     if (!region_map) return;
 

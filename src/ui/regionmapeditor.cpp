@@ -1,5 +1,7 @@
 #include "regionmapeditor.h"
 #include "ui_regionmapeditor.h"
+#include "regionmapgenerator.h"
+#include "config.h"
 
 #include <QDir>
 #include <QDialog>
@@ -43,7 +45,7 @@ void RegionMapEditor::on_action_RegionMap_Save_triggered() {
 
 void RegionMapEditor::loadRegionMapData() {
     this->region_map->init(project);
-    this->currIndex = this->region_map->width() * 2 + 1;
+    this->currIndex = this->region_map->width() * this->region_map->padTop + this->region_map->padLeft;
     displayRegionMap();
 }
 
@@ -85,7 +87,7 @@ void RegionMapEditor::displayRegionMapImage() {
             this, &RegionMapEditor::onHoveredRegionMapTileCleared);
 
     this->scene_region_map_image->addItem(this->region_map_item);
-    //this->scene_region_map_image->setSceneRect(this->scene_region_map_image->sceneRect());
+    this->scene_region_map_image->setSceneRect(this->scene_region_map_image->itemsBoundingRect());
 
     this->ui->graphicsView_Region_Map_BkgImg->setScene(this->scene_region_map_image);
     this->ui->graphicsView_Region_Map_BkgImg->setFixedSize(this->region_map->imgSize() * scaleRegionMapImage);
@@ -113,20 +115,24 @@ void RegionMapEditor::displayRegionMapLayout() {
     this->region_map_layout_item->select(this->currIndex);
 
     this->scene_region_map_layout->addItem(region_map_layout_item);
-    //this->scene_region_map_layout->setSceneRect(this->scene_region_map_layout->sceneRect());
+    this->scene_region_map_layout->setSceneRect(this->scene_region_map_layout->itemsBoundingRect());
 
     this->ui->graphicsView_Region_Map_Layout->setScene(this->scene_region_map_layout);
     this->ui->graphicsView_Region_Map_Layout->setFixedSize(this->region_map->imgSize() * scaleRegionMapImage);
 }
 
 void RegionMapEditor::displayRegionMapLayoutOptions() {
+    this->ui->comboBox_RM_ConnectedMap->clear();
     this->ui->comboBox_RM_ConnectedMap->addItems(*(this->project->regionMapSections));
 
     this->ui->frame_RM_Options->setEnabled(true);
 
-    // TODO: change these values to variables
-    this->ui->spinBox_RM_Options_x->setMaximum(this->region_map->width() - 5);
-    this->ui->spinBox_RM_Options_y->setMaximum(this->region_map->height() - 4);
+    this->ui->spinBox_RM_Options_x->setMaximum(
+        this->region_map->width() - this->region_map->padLeft - this->region_map->padRight - 1
+    );
+    this->ui->spinBox_RM_Options_y->setMaximum(
+        this->region_map->height() - this->region_map->padTop - this->region_map->padBottom - 1
+    );
 
     updateRegionMapLayoutOptions(currIndex);
 }
@@ -134,7 +140,7 @@ void RegionMapEditor::displayRegionMapLayoutOptions() {
 void RegionMapEditor::updateRegionMapLayoutOptions(int index) {
     this->ui->spinBox_RM_Options_x->blockSignals(true);
     this->ui->spinBox_RM_Options_y->blockSignals(true);
-    this->ui->lineEdit_RM_MapName->setText(this->project->mapSecToMapHoverName->value(this->region_map->map_squares[index].mapsec));//this->region_map->map_squares[index].map_name);
+    this->ui->lineEdit_RM_MapName->setText(this->project->mapSecToMapHoverName->value(this->region_map->map_squares[index].mapsec));
     this->ui->comboBox_RM_ConnectedMap->setCurrentText(this->region_map->map_squares[index].mapsec);
     this->ui->spinBox_RM_Options_x->setValue(this->region_map->map_squares[index].x);
     this->ui->spinBox_RM_Options_y->setValue(this->region_map->map_squares[index].y);
@@ -156,6 +162,8 @@ void RegionMapEditor::displayRegionMapTileSelector() {
 
     this->scene_region_map_tiles->addItem(this->mapsquare_selector_item);
 
+    connect(this->mapsquare_selector_item, &TilemapTileSelector::selectedTileChanged,
+            this, &RegionMapEditor::onRegionMapTileSelectorSelectedTileChanged);
     connect(this->mapsquare_selector_item, &TilemapTileSelector::hoveredTileChanged,
             this, &RegionMapEditor::onRegionMapTileSelectorHoveredTileChanged);
     connect(this->mapsquare_selector_item, &TilemapTileSelector::hoveredTileCleared,
@@ -164,6 +172,8 @@ void RegionMapEditor::displayRegionMapTileSelector() {
     this->ui->graphicsView_RegionMap_Tiles->setScene(this->scene_region_map_tiles);
     this->ui->graphicsView_RegionMap_Tiles->setFixedSize(this->mapsquare_selector_item->pixelWidth * scaleRegionMapTiles + 2,
                                                          this->mapsquare_selector_item->pixelHeight * scaleRegionMapTiles + 2);
+
+    this->mapsquare_selector_item->select(this->selectedImageTile);
 }
 
 void RegionMapEditor::displayCityMapTileSelector() {
@@ -179,17 +189,15 @@ void RegionMapEditor::displayCityMapTileSelector() {
     this->city_map_selector_item->draw();
 
     this->scene_city_map_tiles->addItem(this->city_map_selector_item);
-    this->scene_city_map_tiles->setSceneRect(this->scene_city_map_tiles->sceneRect());// ?
 
-    // TODO:
-    /*connect(this->city_map_selector_item, &TilemapTileSelector::hoveredTileChanged,
-            this, &RegionMapEditor::onRegionMapTileSelectorHoveredTileChanged);
-    connect(this->city_map_selector_item, &TilemapTileSelector::hoveredTileCleared,
-            this, &RegionMapEditor::onRegionMapTileSelectorHoveredTileCleared);*/
+    connect(this->city_map_selector_item, &TilemapTileSelector::selectedTileChanged,
+            this, &RegionMapEditor::onCityMapTileSelectorSelectedTileChanged);
 
     this->ui->graphicsView_City_Map_Tiles->setScene(this->scene_city_map_tiles);
     this->ui->graphicsView_City_Map_Tiles->setFixedSize(this->city_map_selector_item->pixelWidth * scaleCityMapTiles + 2,
                                                         this->city_map_selector_item->pixelHeight * scaleCityMapTiles + 2);
+
+    this->city_map_selector_item->select(this->selectedCityTile);
 }
 
 void RegionMapEditor::displayCityMap(QString f) {
@@ -213,8 +221,8 @@ void RegionMapEditor::displayCityMap(QString f) {
     scene_city_map_image->setSceneRect(this->scene_city_map_image->sceneRect());
 
     this->ui->graphicsView_City_Map->setScene(scene_city_map_image);
-    this->ui->graphicsView_City_Map->setFixedSize(8 * city_map_item->width * scaleCityMapImage + 2,
-                                                  8 * city_map_item->height * scaleCityMapImage + 2);
+    this->ui->graphicsView_City_Map->setFixedSize(8 * city_map_item->width() * scaleCityMapImage + 2,
+                                                  8 * city_map_item->height() * scaleCityMapImage + 2);
 }
 
 bool RegionMapEditor::createCityMap(QString name) {
@@ -222,7 +230,6 @@ bool RegionMapEditor::createCityMap(QString name) {
 
     QString file = this->project->root + "/graphics/pokenav/city_maps/" + name + ".bin";
 
-    // TODO: use project config for these values?
     uint8_t filler = 0x30;
     uint8_t border = 0x7;
     uint8_t blank  = 0x1;
@@ -248,6 +255,14 @@ bool RegionMapEditor::createCityMap(QString name) {
     return !errored;
 }
 
+void RegionMapEditor::onRegionMapTileSelectorSelectedTileChanged(unsigned id) {
+    this->selectedImageTile = id;
+}
+
+void RegionMapEditor::onCityMapTileSelectorSelectedTileChanged(unsigned id) {
+    this->selectedCityTile = id;
+}
+
 void RegionMapEditor::onRegionMapTileSelectorHoveredTileChanged(unsigned tileId) {
     QString message = QString("Tile: 0x") + QString("%1").arg(tileId, 4, 16, QChar('0')).toUpper();
     this->ui->statusbar->showMessage(message);
@@ -270,7 +285,6 @@ void RegionMapEditor::onRegionMapLayoutSelectedTileChanged(int index) {
 }
 
 void RegionMapEditor::onRegionMapLayoutHoveredTileChanged(int index) {
-    // TODO: change to x, y coords not index
     QString message = QString();
     int x = this->region_map->map_squares[index].x;
     int y = this->region_map->map_squares[index].y;
@@ -289,7 +303,8 @@ void RegionMapEditor::onRegionMapLayoutHoveredTileCleared() {
 }
 
 void RegionMapEditor::onHoveredRegionMapTileChanged(int x, int y) {
-    QString message = QString("x: %1, y: %2   Tile: 0x").arg(x).arg(y) + QString("%1").arg(this->region_map->getTileId(x, y), 4, 16, QChar('0')).toUpper();
+    QString message = QString("x: %1, y: %2   Tile: 0x").arg(x).arg(y) 
+        + QString("%1").arg(this->region_map->getTileId(x, y), 4, 16, QChar('0')).toUpper();
     this->ui->statusbar->showMessage(message);
 }
 
@@ -300,7 +315,7 @@ void RegionMapEditor::onHoveredRegionMapTileCleared() {
 void RegionMapEditor::mouseEvent_region_map(QGraphicsSceneMouseEvent *event, RegionMapPixmapItem *item) {
     if (event->buttons() & Qt::RightButton) {
         item->select(event);
-    } else if (event->buttons() & Qt::MiddleButton) {// TODO
+    //} else if (event->buttons() & Qt::MiddleButton) {// TODO
     } else {
         QPointF pos = event->pos();
         int x = static_cast<int>(pos.x()) / 8;
@@ -310,14 +325,14 @@ void RegionMapEditor::mouseEvent_region_map(QGraphicsSceneMouseEvent *event, Reg
         RegionMapHistoryItem *commit = new RegionMapHistoryItem(RegionMapEditorBox::BackgroundImage, index, 
             this->region_map->map_squares[index].tile_img_id, this->mapsquare_selector_item->getSelectedTile());
         history.push(commit);
-        item->paint(event);//*/
+        item->paint(event);
     }
 }
 
 void RegionMapEditor::mouseEvent_city_map(QGraphicsSceneMouseEvent *event, CityMapPixmapItem *item) {
     //
     if (event->buttons() & Qt::RightButton) {// TODO
-    } else if (event->buttons() & Qt::MiddleButton) {// TODO
+    //} else if (event->buttons() & Qt::MiddleButton) {// TODO
     } else {
         QPointF pos = event->pos();
         int x = static_cast<int>(pos.x()) / 8;
@@ -332,23 +347,34 @@ void RegionMapEditor::mouseEvent_city_map(QGraphicsSceneMouseEvent *event, CityM
 
 void RegionMapEditor::on_tabWidget_Region_Map_currentChanged(int index) {
     this->ui->stackedWidget_RM_Options->setCurrentIndex(index);
+    switch (index)
+    {
+        case 0:
+            this->ui->pushButton_Zoom_In_Image_Tiles->setVisible(true);
+            this->ui->pushButton_Zoom_Out_Image_Tiles->setVisible(true);
+            break;
+        case 1:
+            this->ui->pushButton_Zoom_In_Image_Tiles->setVisible(false);
+            this->ui->pushButton_Zoom_Out_Image_Tiles->setVisible(false);
+            break;
+    }
 }
 
 void RegionMapEditor::on_spinBox_RM_Options_x_valueChanged(int x) {
     int y = this->ui->spinBox_RM_Options_y->value();
-    int red = this->region_map->getMapSquareIndex(x + 1, y + 2);
+    int red = this->region_map->getMapSquareIndex(x + this->region_map->padLeft, y + this->region_map->padTop);
     this->region_map_layout_item->highlight(x, y, red);
 }
 
 void RegionMapEditor::on_spinBox_RM_Options_y_valueChanged(int y) {
     int x = this->ui->spinBox_RM_Options_x->value();
-    int red = this->region_map->getMapSquareIndex(x + 1, y + 2);
+    int red = this->region_map->getMapSquareIndex(x + this->region_map->padLeft, y + this->region_map->padTop);
     this->region_map_layout_item->highlight(x, y, red);
 }
 
 void RegionMapEditor::on_pushButton_RM_Options_save_clicked() {
     this->region_map->saveOptions(
-        this->region_map_layout_item->selectedTile,// TODO: remove
+        this->region_map_layout_item->selectedTile,
         this->ui->comboBox_RM_ConnectedMap->currentText(),
         this->ui->lineEdit_RM_MapName->text(),
         this->ui->spinBox_RM_Options_x->value(),
@@ -356,7 +382,6 @@ void RegionMapEditor::on_pushButton_RM_Options_save_clicked() {
     );
     this->region_map_layout_item->highlightedTile = -1;
     this->region_map_layout_item->draw();
-    // TODO: update selected tile index
 }
 
 void RegionMapEditor::on_pushButton_CityMap_save_clicked() {
@@ -407,7 +432,7 @@ void RegionMapEditor::on_action_RegionMap_Resize_triggered() {
     QSpinBox *heightSpinBox = new QSpinBox();
     widthSpinBox->setMinimum(32);
     heightSpinBox->setMinimum(20);
-    widthSpinBox->setMaximum(64);// TODO: come up with real (meaningful) limits?
+    widthSpinBox->setMaximum(60);// w * h * 2 <= 4960
     heightSpinBox->setMaximum(40);
     widthSpinBox->setValue(this->region_map->width());
     heightSpinBox->setValue(this->region_map->height());
@@ -520,22 +545,20 @@ void RegionMapEditor::on_pushButton_Zoom_Out_City_Tiles_clicked() {
 void RegionMapEditor::on_pushButton_Zoom_In_City_Map_clicked() {
     if (scaleCityMapImage >= 8.0) return;
     scaleCityMapImage *= 2.0;
-    this->ui->graphicsView_City_Map->setFixedSize(8 * city_map_item->width * scaleCityMapImage + 2, 
-                                                  8 * city_map_item->height * scaleCityMapImage + 2);
+    this->ui->graphicsView_City_Map->setFixedSize(8 * city_map_item->width() * scaleCityMapImage + 2, 
+                                                  8 * city_map_item->height() * scaleCityMapImage + 2);
     this->ui->graphicsView_City_Map->scale(2.0,2.0);
 }
 
 void RegionMapEditor::on_pushButton_Zoom_Out_City_Map_clicked() {
     if (scaleCityMapImage <= 1.0) return;
     scaleCityMapImage /= 2.0;
-    this->ui->graphicsView_City_Map->setFixedSize(8 * city_map_item->width * scaleCityMapImage + 2,
-                                                  8 * city_map_item->height * scaleCityMapImage + 2);
+    this->ui->graphicsView_City_Map->setFixedSize(8 * city_map_item->width() * scaleCityMapImage + 2,
+                                                  8 * city_map_item->height() * scaleCityMapImage + 2);
     this->ui->graphicsView_City_Map->scale(0.5,0.5);
 }
 
 void RegionMapEditor::on_pushButton_Zoom_In_Map_Image_clicked() {
-    resize(40,30);// test
-    return;
     if (scaleRegionMapImage >= 8.0) return;
     scaleRegionMapImage *= 2.0;
     this->ui->graphicsView_Region_Map_BkgImg->setFixedSize(this->region_map->imgSize() * scaleRegionMapImage);
@@ -551,4 +574,10 @@ void RegionMapEditor::on_pushButton_Zoom_Out_Map_Image_clicked() {
     this->ui->graphicsView_Region_Map_Layout->setFixedSize(this->region_map->imgSize() * scaleRegionMapImage);
     this->ui->graphicsView_Region_Map_BkgImg->scale(0.5,0.5);
     this->ui->graphicsView_Region_Map_Layout->scale(0.5,0.5);
+}
+
+void RegionMapEditor::on_action_RegionMap_Generate_triggered() {
+    //
+    RegionMapGenerator generator(this->project);
+    generator.generate("LittlerootTown");
 }

@@ -1,5 +1,6 @@
 #include "regionmap.h"
 #include "log.h"
+#include "config.h"
 
 #include <QByteArray>
 #include <QFile>
@@ -9,31 +10,26 @@
 
 
 
-// TODO: add version arg to this from Editor Setings
 void RegionMap::init(Project *pro) {
     QString path = pro->root;
     this->project = pro;
 
-    // TODO: in the future, allow these to be adjustable (and save values)
-    // possibly use a config file? save to include/constants/region_map.h?
-    layout_width_ = 36;//28;
-    layout_height_ = 25;//15;
+    QSize dimensions = porymapConfig.getRegionMapDimensions();
+    img_width_ = dimensions.width();
+    img_height_ = dimensions.height();
 
-    img_width_ = layout_width_ + 4;
-    img_height_ = layout_height_ + 5;
+    layout_width_  = img_width_  - this->padLeft - this->padRight;
+    layout_height_ = img_height_ - this->padTop  - this->padBottom;
 
     region_map_bin_path        = path + "/graphics/pokenav/region_map_map.bin";
     region_map_png_path        = path + "/graphics/pokenav/region_map.png";
     region_map_entries_path    = path + "/src/data/region_map/region_map_entries.h";
     region_map_layout_bin_path = path + "/graphics/pokenav/region_map_section_layout.bin";
     city_map_tiles_path        = path + "/graphics/pokenav/zoom_tiles.png";
-    // TODO: rename png to map_squares in pokeemerald
 
     readBkgImgBin();
     readLayout();
     readCityMaps();
-
-    //resize(40,30);
 }
 
 // TODO: if the tileId is not valid for the provided image, make sure it does not crash
@@ -58,7 +54,7 @@ void RegionMap::readBkgImgBin() {
 }
 
 void RegionMap::saveBkgImgBin() {
-    QByteArray data(4096,0);// use a constant here?  maybe read the original size?
+    QByteArray data(4096,0);// use a constant here? maybe read the original size?
 
     for (int m = 0; m < img_height_; m++) {
         for (int n = 0; n < img_width_; n++) {
@@ -79,12 +75,7 @@ void RegionMap::readLayout() {
     if (!file.open(QIODevice::ReadOnly)) return;
 
     QString line;
-    // TODO: put these in Project, and keep in order
-    //QMap<QString, QString> sMapNamesMap;// {"sMapName_LittlerootTown" : "LITTLEROOT{NAME_END} TOWN"}
-    //QMap<QString, QString> mapSecToMapName;// {"MAPSEC_LITTLEROOT_TOWN" : "LITTLEROOT{NAME_END} TOWN"}
-    //QList<> mapSecToMapEntry;// {"MAPSEC_LITTLEROOT_TOWN" : }
 
-    // new map ffor mapSecToMapHoverName
     QMap<QString, QString> *qmap = new QMap<QString, QString>;
 
     QTextStream in(&file);
@@ -103,23 +94,16 @@ void RegionMap::readLayout() {
             QStringList entry =  reAfter.match(line).captured(1).remove(" ").split(",");
             QString mapsec = reBefore.match(line).captured(1);
             QString insertion = entry[4].remove("sMapName_");
-            qmap->insert(mapsec, sMapNamesMap[insertion]);
-            // can make this a map, the order doesn't really matter
-            mapSecToMapEntry[mapsec] = 
-            //   x                 y                 width             height            name
-                {entry[0].toInt(), entry[1].toInt(), entry[2].toInt(), entry[3].toInt(), insertion}
-            ;
-            // ^ when loading this info to city maps, loop over mapSecToMapEntry and
-            // add x and y map sqyare when width or height >1
-            // indexOf because mapsecs is just a qstringlist
-            //text += line.remove(" ");
+            qmap->insert(mapsec, sMapNamesMap.value(insertion));
+            mapSecToMapEntry[mapsec] = {
+            //  x                 y                 width             height            name
+                entry[0].toInt(), entry[1].toInt(), entry[2].toInt(), entry[3].toInt(), insertion
+            };
         }
     }
     file.close();
 
-    //qDebug() << "sMapNames" << sMapNames;
-
-    project->mapSecToMapHoverName = qmap;// TODO: is this map necessary?
+    project->mapSecToMapHoverName = qmap;
 
     QFile binFile(region_map_layout_bin_path);
     if (!binFile.open(QIODevice::ReadOnly)) return;
@@ -154,7 +138,8 @@ void RegionMap::saveLayout() {
 
     entries_text += "\nconst struct RegionMapLocation gRegionMapEntries[] = {\n";
 
-    for (auto sec : mapSecToMapEntry.keys()) {
+    for (auto sec : *(project->regionMapSections)) {
+        if (!mapSecToMapEntry.contains(sec)) continue;
         struct RegionMapEntry entry = mapSecToMapEntry.value(sec);
         entries_text += "    [" + sec + "] = {" + QString::number(entry.x) + ", " + QString::number(entry.y) + ", " 
             +  QString::number(entry.width) + ", " + QString::number(entry.height) + ", sMapName_" + entry.name + "},\n";
@@ -180,32 +165,12 @@ void RegionMap::readCityMaps() {}
 
 // layout coords to image index
 int RegionMap::img_index_(int x, int y) {
-    return ((x + 1) + (y + 2) * img_width_);
+    return ((x + this->padLeft) + (y + this->padTop) * img_width_);
 }
 
 // layout coords to layout index
 int RegionMap::layout_index_(int x, int y) {
     return (x + y * layout_width_);
-}
-
-void RegionMap::test() {
-    //
-    bool debug_rmap = false;
-
-    if (debug_rmap) {
-        for (auto square : map_squares) {
-            qDebug() << "(" << square.x << "," << square.y << ")"
-                     << square.tile_img_id
-                     << square.has_map
-                     << square.map_name
-                     << square.has_city_map
-                     << square.city_map_name
-                     ;
-        }
-
-        QPixmap png(region_map_png_path);
-        qDebug() << "png num 8x8 tiles" << QString("0x%1").arg((png.width()/8) * (png.height() / 8), 2, 16, QChar('0'));
-    }
 }
 
 int RegionMap::width() {
@@ -229,12 +194,12 @@ void RegionMap::save() {
     logInfo("Saving region map info.");
     saveBkgImgBin();
     saveLayout();
-    // TODO: re-select proper tile
-    // TODO: add region map dimensions to config
+    porymapConfig.setRegionMapDimensions(this->img_width_, this->img_height_);
 }
 
 void RegionMap::saveOptions(int id, QString sec, QString name, int x, int y) {
-    int index = getMapSquareIndex(x + 1, y + 2);
+    resetSquare(id);
+    int index = getMapSquareIndex(x + this->padLeft, y + this->padTop);
     if (!sec.isEmpty()) {
         this->map_squares[index].has_map = true;
         this->map_squares[index].secid = static_cast<uint8_t>(project->regionMapSections->indexOf(sec));
@@ -254,14 +219,12 @@ void RegionMap::saveOptions(int id, QString sec, QString name, int x, int y) {
         this->map_squares[index].y = y;
         this->map_squares[index].duplicated = false;
     }
-    resetSquare(id);
+    //resetSquare(id);
 }
 
 // from x, y of image
 int RegionMap::getMapSquareIndex(int x, int y) {
-    //
     int index = (x + y * img_width_);
-    //qDebug() << "index:" << index;
     return index < map_squares.length() ? index : 0;
 }
 
@@ -304,7 +267,7 @@ void RegionMap::resize(int newWidth, int newHeight) {
             RegionMapSquare square;
             if (x < img_width_ && y < img_height_) {
                 square = map_squares[getMapSquareIndex(x, y)];
-            } else if (x < newWidth - 3 && y < newHeight - 3) {
+            } else if (x < newWidth - this->padRight && y < newHeight - this->padBottom) {
                 square.tile_img_id = 0;
                 square.x = x;
                 square.y = y;
@@ -319,34 +282,6 @@ void RegionMap::resize(int newWidth, int newHeight) {
     this->map_squares = new_squares;
     this->img_width_ = newWidth;
     this->img_height_ = newHeight;
-    this->layout_width_ = newWidth - 4;
-    this->layout_height_ = newHeight - 5;
+    this->layout_width_ = newWidth - this->padLeft - this->padRight;
+    this->layout_height_ = newHeight - this->padTop - this->padBottom;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -61,8 +61,12 @@ public:
 
     Project *project;
 
-    //QList<RegionMapSquare> map_squares;
     QVector<RegionMapSquare> map_squares;
+
+    const int padLeft   = 1;
+    const int padRight  = 3;
+    const int padTop    = 2;
+    const int padBottom = 3;
 
     History<RegionMapHistoryItem*> history;
 
@@ -114,8 +118,6 @@ public:
     int getMapSquareIndex(int, int);
 
     void resetSquare(int);
-
-    void test();// remove
 
 // TODO: move read / write functions to private (and others)
 private:

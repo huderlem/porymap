@@ -4,6 +4,7 @@
 #include <QString>
 #include <QObject>
 #include <QByteArrayList>
+#include <QSize>
 
 enum MapSortOrder {
     Group   =  0,
@@ -36,6 +37,7 @@ public:
         this->metatilesZoom = 30;
         this->showPlayerView = false;
         this->showCursorTile = true;
+        this->regionMapDimensions = QSize(32, 20);
     }
     void setRecentProject(QString project);
     void setRecentMap(QString map);
@@ -46,6 +48,7 @@ public:
     void setMetatilesZoom(int zoom);
     void setShowPlayerView(bool enabled);
     void setShowCursorTile(bool enabled);
+    void setRegionMapDimensions(int width, int height);
     QString getRecentProject();
     QString getRecentMap();
     MapSortOrder getMapSortOrder();
@@ -55,6 +58,7 @@ public:
     int getMetatilesZoom();
     bool getShowPlayerView();
     bool getShowCursorTile();
+    QSize getRegionMapDimensions();
 protected:
     QString getConfigFilepath();
     void parseConfigKeyValue(QString key, QString value);
@@ -76,6 +80,7 @@ private:
     int metatilesZoom;
     bool showPlayerView;
     bool showCursorTile;
+    QSize regionMapDimensions;
 };
 
 extern PorymapConfig porymapConfig;

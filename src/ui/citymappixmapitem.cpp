@@ -1,5 +1,6 @@
 #include "citymappixmapitem.h"
 #include "imageproviders.h"
+#include "log.h"
 
 #include <QFile>
 #include <QPainter>
@@ -7,11 +8,9 @@
 
 
 
-// read to byte array from filename
 void CityMapPixmapItem::init() {
-    // TODO: are they always 10x10 squares?
-    width = 10;
-    height = 10;
+    width_ = 10;
+    height_ = 10;
 
     QFile binFile(file);
     if (!binFile.open(QIODevice::ReadOnly)) return;
@@ -21,13 +20,13 @@ void CityMapPixmapItem::init() {
 }
 
 void CityMapPixmapItem::draw() {
-    QImage image(width * 8, height * 8, QImage::Format_RGBA8888);
+    QImage image(width_ * 8, height_ * 8, QImage::Format_RGBA8888);
 
     QPainter painter(&image);
     for (int i = 0; i < data.size() / 2; i++) {
         QImage img = this->tile_selector->tileImg(data[i * 2]);// need to skip every other tile
-        int x = i % width;
-        int y = i / width;
+        int x = i % width_;
+        int y = i / width_;
         QPoint pos = QPoint(x * 8, y * 8);
         painter.drawImage(pos, img);
     }
@@ -37,15 +36,16 @@ void CityMapPixmapItem::draw() {
 }
 
 void CityMapPixmapItem::save() {
-    // TODO: logError / logWarn if fail
     QFile binFile(file);
-    if (!binFile.open(QIODevice::WriteOnly)) return;
+    if (!binFile.open(QIODevice::WriteOnly)) {
+        logError(QString("Cannot save city map tilemap to %1.").arg(file));
+        return;
+    }
     binFile.write(data);
     binFile.close();
 }
 
 void CityMapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
-    //
     QPointF pos = event->pos();
     int x = static_cast<int>(pos.x()) / 8;
     int y = static_cast<int>(pos.y()) / 8;
@@ -63,6 +63,13 @@ void CityMapPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 }
 
 int CityMapPixmapItem::getIndexAt(int x, int y) {
-    //
-    return 2 * (x + y * width);
+    return 2 * (x + y * this->width_);
+}
+
+int CityMapPixmapItem::width() {
+    return this->width_;
+}
+
+int CityMapPixmapItem::height() {
+    return this->height_;
 }

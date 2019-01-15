@@ -2,6 +2,7 @@
 #define CITYMAPPIXMAPITEM_H
 
 #include "tilemaptileselector.h"
+
 #include <QGraphicsPixmapItem>
 #include <QByteArray>
 
@@ -18,10 +19,6 @@ public:
 
     QString file;
 
-    // TODO: make private and use access functions
-    int width;
-    int height;
-
     QByteArray data;
     
     void init();
@@ -30,10 +27,12 @@ public:
     virtual void paint(QGraphicsSceneMouseEvent*);
     virtual void draw();
     int getIndexAt(int, int);
+    int width();
+    int height();
 
-//private:
-//    int width;
-//    int height;
+private:
+    int width_;
+    int height_;
 
 signals:
     void mouseEvent(QGraphicsSceneMouseEvent *, CityMapPixmapItem *);

@@ -30,6 +30,7 @@ SOURCES += src/core/block.cpp \
     src/core/tileset.cpp \
     src/core/regionmapeditor.cpp \
     src/core/regionmap.cpp \
+    src/core/regionmapgenerator.cpp \
     src/ui/aboutporymap.cpp \
     src/ui/bordermetatilespixmapitem.cpp \
     src/ui/collisionpixmapitem.cpp \
@@ -87,6 +88,7 @@ HEADERS  += include/core/block.h \
     include/core/tileset.h \
     include/core/regionmapeditor.h \
     include/core/regionmap.h \
+    include/core/regionmapgenerator.h \
     include/ui/aboutporymap.h \    
     include/ui/bordermetatilespixmapitem.h \
     include/ui/collisionpixmapitem.h \
