@@ -1968,7 +1968,7 @@ QString Project::readCIncbin(QString text, QString label) {
 
 QMap<QString, int> Project::readCDefines(QString text, QStringList prefixes) {
     ParseUtil parser;
-    text.replace(QRegularExpression("//.*"), "");
+    text.replace(QRegularExpression("(//.*)|(\\/+\\*+[^*]*\\*+\\/+)"), "");
     QMap<QString, int> allDefines;
     QMap<QString, int> filteredDefines;
     QRegularExpression re("#define\\s+(?<defineName>\\w+)[^\\S\\n]+(?<defineValue>.+)");
