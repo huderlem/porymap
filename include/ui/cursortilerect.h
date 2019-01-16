@@ -30,6 +30,7 @@ public:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget) override
     {
+        if (!(*enabled)) return;
         int width = this->width;
         int height = this->height;
         if (this->singleTileMode) {
