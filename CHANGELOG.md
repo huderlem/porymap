@@ -25,6 +25,8 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - New maps can be created using existing layouts by right-clicking on an existing layout folder in the map list panel when sorted by "Layout".
 - The map list panel now has "expand-all" and "collapse-all" buttons.
 - Events without sprites are now partially transparent so the underlying metatile can be seen. (Warps, signs, etc.)
+- Changed the Trainer checkbox to a combobox, since there are actually 3 valid values for the trainer type.
+- Multiline comments are now respected when parsing C defines.
 
 ### Fixed
 - Fix bug where smart paths could be auto-enabled, despite the checkbox being disabled.
