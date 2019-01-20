@@ -1194,7 +1194,7 @@ void MainWindow::updateSelectedObjects() {
         field_labels["movement_type"] = "Movement";
         field_labels["radius_x"] = "Movement Radius X";
         field_labels["radius_y"] = "Movement Radius Y";
-        field_labels["is_trainer"] = "Trainer";
+        field_labels["trainer_type"] = "Trainer Type";
         field_labels["sight_radius_tree_id"] = "Sight Radius / Berry Tree ID";
         field_labels["destination_warp"] = "Destination Warp";
         field_labels["destination_map_name"] = "Destination Map";
@@ -1232,7 +1232,7 @@ void MainWindow::updateSelectedObjects() {
             fields << "radius_y";
             fields << "script_label";
             fields << "event_flag";
-            fields << "is_trainer";
+            fields << "trainer_type";
             fields << "sight_radius_tree_id";
         }
         else if (event_type == EventType::Warp) {
@@ -1266,24 +1266,28 @@ void MainWindow::updateSelectedObjects() {
             fl->setContentsMargins(9, 0, 9, 0);
             fl->setRowWrapPolicy(QFormLayout::WrapLongRows);
 
-            // is_trainer is the only non-combobox item.
-            if (key == "is_trainer") {
-                QCheckBox *checkbox = new QCheckBox(widget);
-                checkbox->setEnabled(true);
-                checkbox->setChecked(value.toInt() != 0 && value != "FALSE");
-                checkbox->setToolTip("Whether or not this object is trainer.");
-                fl->addRow(new QLabel(field_labels[key], widget), checkbox);
-                widget->setLayout(fl);
-                frame->layout()->addWidget(widget);
-                connect(checkbox, &QCheckBox::stateChanged, [=](int state) {
-                    QString isTrainer = state == Qt::Checked ? "TRUE" : "FALSE";
-                    item->event->put("is_trainer", isTrainer);
-                });
-                continue;
-            }
-
             NoScrollComboBox *combo = new NoScrollComboBox(widget);
             combo->setEditable(true);
+
+            // trainer_type has custom values, so it has special signal logic.
+            if (key == "trainer_type") {
+                combo->setEditable(false);
+                combo->addItem("NONE", "0");
+                combo->addItem("NORMAL", "1");
+                combo->addItem("SEE ALL DIRECTIONS", "3");
+                combo->setToolTip("The trainer type of this event object. If it is not a trainer, use NONE. SEE ALL DIRECTIONS should only be used with a sight radius of 1.");
+
+                int index = combo->findData(value);
+                if (index != -1) {
+                    combo->setCurrentIndex(index);
+                }
+
+                fl->addRow(new QLabel(field_labels[key], widget), combo);
+                widget->setLayout(fl);
+                frame->layout()->addWidget(widget);
+                item->bindToUserData(combo, key);
+                continue;
+            }
 
             if (key == "destination_map_name") {
                 if (!editor->project->mapNames->contains(value)) {

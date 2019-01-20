@@ -56,7 +56,7 @@ Event* Event::createNewObjectEvent()
     event->put("script_label", "NULL");
     event->put("event_flag", "0");
     event->put("replacement", "0");
-    event->put("is_trainer", "FALSE");
+    event->put("trainer_type", "0");
     event->put("sight_radius_tree_id", 0);
     return event;
 }
@@ -156,7 +156,7 @@ QString Event::buildObjectEventMacro(int item_index)
     text += QString(", %1").arg(this->get("movement_type"));
     text += QString(", %1").arg(radius_x);
     text += QString(", %1").arg(radius_y);
-    text += QString(", %1").arg(this->get("is_trainer"));
+    text += QString(", %1").arg(this->get("trainer_type"));
     text += QString(", %1").arg(this->get("sight_radius_tree_id"));
     text += QString(", %1").arg(this->get("script_label"));
     text += QString(", %1").arg(this->get("event_flag"));

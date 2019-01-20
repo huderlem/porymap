@@ -1775,7 +1775,7 @@ void Project::readMapEvents(Map *map) {
             object->put("movement_type", command.value(i++));
             object->put("radius_x", command.value(i++).toInt(nullptr, 0));
             object->put("radius_y", command.value(i++).toInt(nullptr, 0));
-            object->put("is_trainer", command.value(i++));
+            object->put("trainer_type", command.value(i++));
             object->put("sight_radius_tree_id", command.value(i++));
             object->put("script_label", command.value(i++));
             object->put("event_flag", command.value(i++));

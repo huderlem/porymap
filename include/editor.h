@@ -233,6 +233,12 @@ public:
             }
         });
     }
+    void bindToUserData(QComboBox *combo, QString key) {
+        connect(combo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+                this, [this, combo, key](int index) {
+            this->event->put(key, combo->itemData(index).toString());
+        });
+    }
 
 signals:
     void positionChanged(Event *event);
