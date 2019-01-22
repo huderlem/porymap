@@ -60,10 +60,14 @@ void RegionMapPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 }
 
 void RegionMapPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
-    int x = static_cast<int>(event->pos().x()) / 8;
-    int y = static_cast<int>(event->pos().y()) / 8;
-    emit this->hoveredRegionMapTileChanged(x, y);
-    emit mouseEvent(event, this);
+    QPointF pos = event->pos();
+    int x = static_cast<int>(pos.x()) / 8;
+    int y = static_cast<int>(pos.y()) / 8;
+    if (x < this->region_map->width()  && x >= 0 
+     && y < this->region_map->height() && y >= 0) {
+        emit this->hoveredRegionMapTileChanged(x, y);
+        emit mouseEvent(event, this);
+    }
 }
 
 void RegionMapPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {

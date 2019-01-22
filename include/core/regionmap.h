@@ -1,8 +1,8 @@
 #ifndef REGIONMAP_H
 #define REGIONMAP_H
 
-#include "project.h"
 #include "map.h"
+#include "project.h"
 #include "tilemaptileselector.h"
 #include "history.h"
 #include "historyitem.h"
@@ -94,6 +94,7 @@ public:
 
     QString newAbbr(QString);// makes a *unique* 5 character abbreviation from mapname to add to mapname_abbr
 
+    // TODO: did I use these like, at all?
     // editing functions
     // if they are booleans, returns true if successful?
     bool placeTile(char, int, int);// place tile at x, y
@@ -111,11 +112,15 @@ public:
     void resize(int, int);
     void setWidth(int);
     void setHeight(int);
+    void setBackgroundImageData(QVector<uint8_t> *);
     int  width();
     int  height();
     QSize imgSize();
     unsigned getTileId(int, int);
     int getMapSquareIndex(int, int);
+
+    QVector<uint8_t> getTiles();
+    void setTiles(QVector<uint8_t>);
 
     void resetSquare(int);
 

@@ -10,11 +10,22 @@ HistoryItem::~HistoryItem() {
     if (this->metatiles) delete this->metatiles;
 }
 
-RegionMapHistoryItem::RegionMapHistoryItem(int which_, int index_, unsigned prev_, unsigned tile_) {
-    this->which = which_;
-    this->index = index_;
-    this->prev  = prev_;
-    this->tile  = tile_;
+RegionMapHistoryItem::RegionMapHistoryItem(int which, QVector<uint8_t> tiles) {
+    this->which = which;
+    this->tiles = tiles;
+}
+
+RegionMapHistoryItem::RegionMapHistoryItem(int which, QVector<uint8_t> tiles, QString cityMap) {
+    this->which = which;
+    this->tiles = tiles;
+    this->cityMap = cityMap;
+}
+
+RegionMapHistoryItem::RegionMapHistoryItem(int which, QVector<uint8_t> tiles, int width, int height) {
+    this->which = which;
+    this->tiles = tiles;
+    this->mapWidth = width;
+    this->mapHeight = height;
 }
 
 RegionMapHistoryItem::~RegionMapHistoryItem() {}

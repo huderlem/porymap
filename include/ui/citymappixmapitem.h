@@ -5,6 +5,7 @@
 
 #include <QGraphicsPixmapItem>
 #include <QByteArray>
+#include <QVector>
 
 class CityMapPixmapItem : public QObject, public QGraphicsPixmapItem {
     Q_OBJECT
@@ -30,6 +31,9 @@ public:
     int width();
     int height();
 
+    QVector<uint8_t> getTiles();
+    void setTiles(QVector<uint8_t>);
+
 private:
     int width_;
     int height_;
@@ -41,6 +45,8 @@ signals:
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent*);
+    void mouseMoveEvent(QGraphicsSceneMouseEvent*);
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent*);
 };
 
 #endif // CITYMAPPIXMAPITEM_H

@@ -19,7 +19,7 @@ public:
     int pixelWidth;
     int pixelHeight;
 
-    unsigned selectedTile;
+    unsigned selectedTile = 0;
 
     // TODO: which of these need to be made public?
     // call this tilemap? or is tilemap the binary file?

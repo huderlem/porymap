@@ -79,6 +79,7 @@ void RegionMap::readLayout() {
     QMap<QString, QString> *qmap = new QMap<QString, QString>;
 
     QTextStream in(&file);
+    in.setCodec("UTF-8");
     while (!in.atEnd()) {
         line = in.readLine();
         if (line.startsWith("static const u8")) {
@@ -182,7 +183,29 @@ int RegionMap::height() {
 }
 
 QSize RegionMap::imgSize() {
-    return QSize(img_width_ * 8 + 2, img_height_ * 8 + 2);
+    return QSize(img_width_ * 8, img_height_ * 8);
+}
+
+QVector<uint8_t> RegionMap::getTiles() {
+    //
+    QVector<uint8_t> tileIds;
+    for (auto square : map_squares) {
+        tileIds.append(square.tile_img_id);
+    }
+    return tileIds;
+}
+
+void RegionMap::setTiles(QVector<uint8_t> tileIds) {
+    //
+    if (tileIds.size() != map_squares.size()) {
+        qDebug() << "YOU SHOULD RESIZE";
+        return;
+    }
+    int i = 0;
+    for (uint8_t tileId : tileIds) {
+        map_squares[i].tile_img_id = tileId;
+        i++;
+    }
 }
 
 // TODO: rename to getTileIdAt()?

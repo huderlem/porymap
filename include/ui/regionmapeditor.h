@@ -11,6 +11,7 @@
 #include <QMainWindow>
 #include <QGraphicsSceneMouseEvent>
 #include <QCloseEvent>
+#include <QResizeEvent>
 
 namespace Ui {
 class RegionMapEditor;
@@ -53,13 +54,15 @@ private:
     unsigned selectedCityTile;
     unsigned selectedImageTile;
 
+    bool hasUnsavedChanges = false;
+
     double scaleUpFactor = 2.0;
     double scaleDownFactor = 1.0 / scaleUpFactor;
 
-    double scaleRegionMapTiles = 1.0;
-    double scaleRegionMapImage = 1.0;
-    double scaleCityMapTiles = 1.0;
-    double scaleCityMapImage = 1.0;
+    int scaleRegionMapTiles = 1;
+    int scaleRegionMapImage = 1;
+    int scaleCityMapTiles = 1;
+    int scaleCityMapImage = 1;
 
     QGraphicsScene *scene_region_map_image  = nullptr;
     QGraphicsScene *scene_city_map_image    = nullptr;
@@ -85,6 +88,8 @@ private:
 
     bool createCityMap(QString);
 
+    void closeEvent(QCloseEvent*);
+
 private slots:
     void on_action_RegionMap_Save_triggered();
     void on_action_RegionMap_Undo_triggered();
@@ -92,21 +97,17 @@ private slots:
     void on_action_RegionMap_Resize_triggered();
     void on_action_RegionMap_Generate_triggered();
     void on_tabWidget_Region_Map_currentChanged(int);
-    void on_pushButton_RM_Options_save_clicked();
     void on_pushButton_RM_Options_delete_clicked();
-    void on_pushButton_CityMap_save_clicked();
+    void on_comboBox_RM_ConnectedMap_activated(const QString &);
     void on_pushButton_CityMap_add_clicked();
-    void on_pushButton_Zoom_In_Image_Tiles_clicked();
-    void on_pushButton_Zoom_Out_Image_Tiles_clicked();
-    void on_pushButton_Zoom_In_City_Tiles_clicked();
-    void on_pushButton_Zoom_Out_City_Tiles_clicked();
-    void on_pushButton_Zoom_In_City_Map_clicked();
-    void on_pushButton_Zoom_Out_City_Map_clicked();
-    void on_pushButton_Zoom_In_Map_Image_clicked();
-    void on_pushButton_Zoom_Out_Map_Image_clicked();
+    void on_verticalSlider_Zoom_Map_Image_valueChanged(int);
+    void on_verticalSlider_Zoom_Image_Tiles_valueChanged(int);
+    void on_verticalSlider_Zoom_City_Map_valueChanged(int);
+    void on_verticalSlider_Zoom_City_Tiles_valueChanged(int);
     void on_comboBox_CityMap_picker_currentTextChanged(const QString &);
     void on_spinBox_RM_Options_x_valueChanged(int);
     void on_spinBox_RM_Options_y_valueChanged(int);
+    void on_lineEdit_RM_MapName_textEdited(const QString &);
     void onHoveredRegionMapTileChanged(int, int);
     void onHoveredRegionMapTileCleared();
     void mouseEvent_region_map(QGraphicsSceneMouseEvent *, RegionMapPixmapItem *);

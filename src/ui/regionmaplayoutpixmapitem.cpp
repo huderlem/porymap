@@ -73,10 +73,7 @@ void RegionMapLayoutPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 }
 
 void RegionMapLayoutPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
-    SelectablePixmapItem::mouseMoveEvent(event);
-    this->updateSelectedTile();
-    emit hoveredTileChanged(this->selectedTile);
-    emit selectedTileChanged(this->selectedTile);
+    mousePressEvent(event);
 }
 
 void RegionMapLayoutPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {

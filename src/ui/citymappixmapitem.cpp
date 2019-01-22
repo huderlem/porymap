@@ -62,6 +62,39 @@ void CityMapPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     emit mouseEvent(event, this);
 }
 
+void CityMapPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
+    QPointF pos = event->pos();
+    int x = static_cast<int>(pos.x()) / 8;
+    int y = static_cast<int>(pos.y()) / 8;
+    if (x < width_  && x >= 0
+     && y < height_ && y >= 0) {
+        emit this->hoveredRegionMapTileChanged(x, y);
+        emit mouseEvent(event, this);
+    }
+}
+
+void CityMapPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
+    emit mouseEvent(event, this);
+}
+
+QVector<uint8_t> CityMapPixmapItem::getTiles() {
+    //
+    QVector<uint8_t> tiles;
+    for (auto tile : data) {
+        tiles.append(tile);
+    }
+    return tiles;
+}
+
+void CityMapPixmapItem::setTiles(QVector<uint8_t> tiles) {
+    //
+    QByteArray newData;
+    for (auto tile : tiles) {
+        newData.append(tile);
+    }
+    this->data = newData;
+}
+
 int CityMapPixmapItem::getIndexAt(int x, int y) {
     return 2 * (x + y * this->width_);
 }
