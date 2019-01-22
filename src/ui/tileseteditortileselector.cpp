@@ -44,7 +44,7 @@ void TilesetEditorTileSelector::draw() {
         int y = tile / this->numTilesWide;
         int x = tile % this->numTilesWide;
         QPoint origin = QPoint(x * 16, y * 16);
-        painter.drawImage(origin, tileImage.mirrored(this->xFlip, this->yFlip));
+        painter.drawImage(origin, tileImage);
     }
 
     painter.end();
