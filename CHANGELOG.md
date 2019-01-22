@@ -27,6 +27,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Events without sprites are now partially transparent so the underlying metatile can be seen. (Warps, signs, etc.)
 - Changed the Trainer checkbox to a combobox, since there are actually 3 valid values for the trainer type.
 - Multiline comments are now respected when parsing C defines.
+- The tiles image in the tileset editor will no longer flip according to the x/y flip checkboxes. The individual tile selection still flips, though.
 
 ### Fixed
 - Fix bug where smart paths could be auto-enabled, despite the checkbox being disabled.
