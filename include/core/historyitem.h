@@ -2,7 +2,6 @@
 #define HISTORYITEM_H
 
 #include "blockdata.h"
-//#include "regionmap.h"
 
 class HistoryItem {
 public:
@@ -16,17 +15,15 @@ public:
 enum RegionMapEditorBox {
     BackgroundImage = 1,
     CityMapImage    = 2,
-    BackroundResize = 3,
 };
 
 class RegionMapHistoryItem {
 public:
     int which;
-    int mapWidth;
-    int mapHeight;
+    int mapWidth = 0;
+    int mapHeight = 0;
     QVector<uint8_t> tiles;
     QString cityMap;
-    RegionMapHistoryItem(int type, QVector<uint8_t> tiles);
     RegionMapHistoryItem(int type, QVector<uint8_t> tiles, QString cityMap);
     RegionMapHistoryItem(int type, QVector<uint8_t> tiles, int width, int height);
     ~RegionMapHistoryItem();

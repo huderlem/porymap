@@ -6,9 +6,10 @@
 class TilemapTileSelector: public SelectablePixmapItem {
     Q_OBJECT
 public:
-    TilemapTileSelector(QPixmap pixmap): SelectablePixmapItem(8, 8, 1, 1) {
-        this->pixmap = pixmap;
-        this->numTilesWide = pixmap.width() / 8;
+    TilemapTileSelector(QPixmap pixmap_): SelectablePixmapItem(8, 8, 1, 1) {
+        this->tilemap = pixmap_;
+        this->setPixmap(this->tilemap);
+        this->numTilesWide = tilemap.width() / 8;
         this->selectedTile = 0x00;
         setAcceptHoverEvents(true);
     }
@@ -21,10 +22,7 @@ public:
 
     unsigned selectedTile = 0;
 
-    // TODO: which of these need to be made public?
-    // call this tilemap? or is tilemap the binary file?
-    QPixmap pixmap;// pointer?
-    QImage currTile;// image of just the currently selected tile to draw onto graphicsview
+    QPixmap tilemap;
     QImage tileImg(unsigned tileId);
 
 protected:
@@ -40,7 +38,6 @@ private:
     void updateSelectedTile();
     unsigned getTileId(int x, int y);
     QPoint getTileIdCoords(unsigned);
-    unsigned getValidTileId(unsigned);// TODO: implement this to prevent segfaults
 
 signals:
     void hoveredTileChanged(unsigned);

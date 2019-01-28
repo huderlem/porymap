@@ -1512,7 +1512,6 @@ void Project::readRegionMapSections() {
     QString filepath = root + "/include/constants/region_map_sections.h";
     QStringList prefixes = (QStringList() << "MAPSEC_");
     readCDefinesSorted(filepath, prefixes, regionMapSections);
-    regionMapSections->removeAll("MAPSEC_SUBTRACT_KANTO");// TODO: fix this (in repos?)
 }
 
 void Project::readItemNames() {

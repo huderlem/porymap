@@ -1,7 +1,4 @@
 #include "regionmappixmapitem.h"
-#include "imageproviders.h"
-
-
 
 void RegionMapPixmapItem::draw() {
     if (!region_map) return;

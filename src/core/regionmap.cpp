@@ -7,8 +7,7 @@
 #include <QDebug>
 #include <QRegularExpression>
 #include <QImage>
-
-
+#include <math.h>
 
 void RegionMap::init(Project *pro) {
     QString path = pro->root;
@@ -29,10 +28,15 @@ void RegionMap::init(Project *pro) {
 
     readBkgImgBin();
     readLayout();
-    readCityMaps();
 }
 
-// TODO: if the tileId is not valid for the provided image, make sure it does not crash
+void RegionMap::save() {
+    logInfo("Saving region map data.");
+    saveBkgImgBin();
+    saveLayout();
+    porymapConfig.setRegionMapDimensions(this->img_width_, this->img_height_);
+}
+
 void RegionMap::readBkgImgBin() {
     QFile binFile(region_map_bin_path);
     if (!binFile.open(QIODevice::ReadOnly)) return;
@@ -54,7 +58,7 @@ void RegionMap::readBkgImgBin() {
 }
 
 void RegionMap::saveBkgImgBin() {
-    QByteArray data(4096,0);// use a constant here? maybe read the original size?
+    QByteArray data(pow(img_width_ * 2, 2),0);
 
     for (int m = 0; m < img_height_; m++) {
         for (int n = 0; n < img_width_; n++) {
@@ -68,9 +72,7 @@ void RegionMap::saveBkgImgBin() {
     file.close();
 }
 
-// TODO: reorganize this into project? the i/o stuff. use regionMapSections
 void RegionMap::readLayout() {
-    //
     QFile file(region_map_entries_path);
     if (!file.open(QIODevice::ReadOnly)) return;
 
@@ -111,17 +113,16 @@ void RegionMap::readLayout() {
     QByteArray mapBinData = binFile.readAll();
     binFile.close();
 
-    // TODO: improve this?
-    for (int m = 0; m < layout_height_; m++) {
-        for (int n = 0; n < layout_width_; n++) {
-            int i = img_index_(n,m);
-            map_squares[i].secid = static_cast<uint8_t>(mapBinData.at(layout_index_(n,m)));
-            QString secname = (*(project->regionMapSections))[static_cast<uint8_t>(mapBinData.at(layout_index_(n,m)))];
+    for (int y = 0; y < layout_height_; y++) {
+        for (int x = 0; x < layout_width_; x++) {
+            int i = img_index_(x,y);
+            map_squares[i].secid = static_cast<uint8_t>(mapBinData.at(layout_index_(x,y)));
+            QString secname = (*(project->regionMapSections))[static_cast<uint8_t>(mapBinData.at(layout_index_(x,y)))];
             if (secname != "MAPSEC_NONE") map_squares[i].has_map = true;
             map_squares[i].mapsec = secname;
-            map_squares[i].map_name = sMapNamesMap.value(mapSecToMapEntry.value(secname).name);// TODO: this is atrocious
-            map_squares[i].x = n;
-            map_squares[i].y = m;
+            map_squares[i].map_name = sMapNamesMap.value(mapSecToMapEntry.value(secname).name);
+            map_squares[i].x = x;
+            map_squares[i].y = y;
         }
     }
 }
@@ -162,69 +163,11 @@ void RegionMap::saveLayout() {
     bfile.close();
 }
 
-void RegionMap::readCityMaps() {}
-
-// layout coords to image index
-int RegionMap::img_index_(int x, int y) {
-    return ((x + this->padLeft) + (y + this->padTop) * img_width_);
-}
-
-// layout coords to layout index
-int RegionMap::layout_index_(int x, int y) {
-    return (x + y * layout_width_);
-}
-
-int RegionMap::width() {
-    return this->img_width_;
-}
-
-int RegionMap::height() {
-    return this->img_height_;
-}
-
-QSize RegionMap::imgSize() {
-    return QSize(img_width_ * 8, img_height_ * 8);
-}
-
-QVector<uint8_t> RegionMap::getTiles() {
-    //
-    QVector<uint8_t> tileIds;
-    for (auto square : map_squares) {
-        tileIds.append(square.tile_img_id);
-    }
-    return tileIds;
-}
-
-void RegionMap::setTiles(QVector<uint8_t> tileIds) {
-    //
-    if (tileIds.size() != map_squares.size()) {
-        qDebug() << "YOU SHOULD RESIZE";
-        return;
-    }
-    int i = 0;
-    for (uint8_t tileId : tileIds) {
-        map_squares[i].tile_img_id = tileId;
-        i++;
-    }
-}
-
-// TODO: rename to getTileIdAt()?
-unsigned RegionMap::getTileId(int x, int y) {
-    return map_squares[x + y * img_width_].tile_img_id;
-}
-
-void RegionMap::save() {
-    logInfo("Saving region map info.");
-    saveBkgImgBin();
-    saveLayout();
-    porymapConfig.setRegionMapDimensions(this->img_width_, this->img_height_);
-}
-
 void RegionMap::saveOptions(int id, QString sec, QString name, int x, int y) {
     resetSquare(id);
     int index = getMapSquareIndex(x + this->padLeft, y + this->padTop);
     if (!sec.isEmpty()) {
-        this->map_squares[index].has_map = true;
+        this->map_squares[index].has_map = sec == "MAPSEC_NONE" ? false : true;
         this->map_squares[index].secid = static_cast<uint8_t>(project->regionMapSections->indexOf(sec));
         this->map_squares[index].mapsec = sec;
         if (!name.isEmpty()) {
@@ -234,7 +177,7 @@ void RegionMap::saveOptions(int id, QString sec, QString name, int x, int y) {
                 QString sName = fix_case(sec);
                 sMapNames.append(sName);
                 sMapNamesMap.insert(sName, name);
-                struct RegionMapEntry entry = {x, y, 1, 1, sName};// TODO: change width, height?
+                struct RegionMapEntry entry = {x, y, 1, 1, sName};
                 mapSecToMapEntry.insert(sec, entry);
             }
         }
@@ -242,32 +185,6 @@ void RegionMap::saveOptions(int id, QString sec, QString name, int x, int y) {
         this->map_squares[index].y = y;
         this->map_squares[index].duplicated = false;
     }
-    //resetSquare(id);
-}
-
-// from x, y of image
-int RegionMap::getMapSquareIndex(int x, int y) {
-    int index = (x + y * img_width_);
-    return index < map_squares.length() ? index : 0;
-}
-
-// For turning a MAPSEC_NAME into a unique identifier sMapName-style variable.
-QString RegionMap::fix_case(QString caps) {
-    bool big = true;
-    QString camel;
-
-    for (auto ch : caps.remove(QRegularExpression("({.*})")).remove("MAPSEC")) {
-        if (ch == '_' || ch == ' ') {
-            big = true;
-            continue;
-        }
-        if (big) {
-            camel += ch.toUpper();
-            big = false;
-        }
-        else camel += ch.toLower();
-    }
-    return camel;
 }
 
 void RegionMap::resetSquare(int index) {
@@ -282,7 +199,6 @@ void RegionMap::resetSquare(int index) {
 }
 
 void RegionMap::resize(int newWidth, int newHeight) {
-    //
     QVector<RegionMapSquare> new_squares;
 
     for (int y = 0; y < newHeight; y++) {
@@ -301,10 +217,87 @@ void RegionMap::resize(int newWidth, int newHeight) {
             new_squares.append(square);
         }
     }
-
     this->map_squares = new_squares;
     this->img_width_ = newWidth;
     this->img_height_ = newHeight;
     this->layout_width_ = newWidth - this->padLeft - this->padRight;
     this->layout_height_ = newHeight - this->padTop - this->padBottom;
+}
+
+QVector<uint8_t> RegionMap::getTiles() {
+    QVector<uint8_t> tileIds;
+    for (auto square : map_squares) {
+        tileIds.append(square.tile_img_id);
+    }
+    return tileIds;
+}
+
+void RegionMap::setTiles(QVector<uint8_t> tileIds) {
+    if (tileIds.size() != map_squares.size()) return;
+
+    int i = 0;
+    for (uint8_t tileId : tileIds) {
+        map_squares[i].tile_img_id = tileId;
+        i++;
+    }
+}
+
+// Layout coords to image index.
+int RegionMap::img_index_(int x, int y) {
+    return ((x + this->padLeft) + (y + this->padTop) * img_width_);
+}
+
+// Layout coords to layout index.
+int RegionMap::layout_index_(int x, int y) {
+    return (x + y * layout_width_);
+}
+
+int RegionMap::width() {
+    return this->img_width_;
+}
+
+int RegionMap::height() {
+    return this->img_height_;
+}
+
+QSize RegionMap::imgSize() {
+    return QSize(img_width_ * 8, img_height_ * 8);
+}
+
+unsigned RegionMap::getTileId(int x, int y) {
+    return map_squares.at(x + y * img_width_).tile_img_id;
+}
+
+QString RegionMap::pngPath() {
+    return this->region_map_png_path;
+}
+
+QString RegionMap::cityTilesPath() {
+    return this->city_map_tiles_path;
+}
+
+// From x, y of image.
+int RegionMap::getMapSquareIndex(int x, int y) {
+    int index = (x + y * img_width_);
+    return index < map_squares.length() ? index : 0;
+}
+
+// For turning a MAPSEC_NAME into a unique identifier sMapName-style variable.
+// CAPS_WITH_UNDERSCORE to CamelCase
+QString RegionMap::fix_case(QString caps) {
+    bool big = true;
+    QString camel;
+
+    for (auto ch : caps.remove(QRegularExpression("({.*})")).remove("MAPSEC")) {
+        if (ch == '_' || ch == ' ') {
+            big = true;
+            continue;
+        }
+        if (big) {
+            camel += ch.toUpper();
+            big = false;
+        }
+        else camel += ch.toLower();
+    }
+    return camel;
 }

@@ -19,6 +19,7 @@ RegionMapEditor::RegionMapEditor(QWidget *parent, Project *project_) :
     this->ui->setupUi(this);
     this->project = project_;
     this->region_map = new RegionMap;
+    this->ui->action_RegionMap_Generate->setVisible(false);
 }
 
 RegionMapEditor::~RegionMapEditor()
@@ -48,6 +49,7 @@ void RegionMapEditor::on_action_RegionMap_Save_triggered() {
             this->ui->spinBox_RM_Options_x->value(),
             this->ui->spinBox_RM_Options_y->value()
         );
+        this->currIndex = this->region_map_layout_item->highlightedTile;
         this->region_map_layout_item->highlightedTile = -1;
         displayRegionMap();
     }
@@ -104,8 +106,13 @@ void RegionMapEditor::displayRegionMapImage() {
     this->ui->graphicsView_Region_Map_BkgImg->setFixedSize(this->region_map->imgSize().width() * scaleRegionMapImage + 2,
                                                            this->region_map->imgSize().height() * scaleRegionMapImage + 2);
 
-    RegionMapHistoryItem *commit = new RegionMapHistoryItem(RegionMapEditorBox::BackgroundImage, this->region_map->getTiles());
-    history.push(commit);
+    if (regionMapFirstDraw) {
+        RegionMapHistoryItem *commit = new RegionMapHistoryItem(
+            RegionMapEditorBox::BackgroundImage, this->region_map->getTiles(), this->region_map->width(), this->region_map->height()
+        );
+        history.push(commit);
+        regionMapFirstDraw = false;
+    }
 }
 
 void RegionMapEditor::displayRegionMapLayout() {
@@ -179,7 +186,7 @@ void RegionMapEditor::displayRegionMapTileSelector() {
         delete mapsquare_selector_item;
     }
 
-    this->mapsquare_selector_item = new TilemapTileSelector(QPixmap(this->region_map->region_map_png_path));
+    this->mapsquare_selector_item = new TilemapTileSelector(QPixmap(this->region_map->pngPath()));
     this->mapsquare_selector_item->draw();
 
     this->scene_region_map_tiles->addItem(this->mapsquare_selector_item);
@@ -207,7 +214,7 @@ void RegionMapEditor::displayCityMapTileSelector() {
         delete city_map_selector_item;
     }
 
-    this->city_map_selector_item = new TilemapTileSelector(QPixmap(this->region_map->city_map_tiles_path));
+    this->city_map_selector_item = new TilemapTileSelector(QPixmap(this->region_map->cityTilesPath()));
     this->city_map_selector_item->draw();
 
     this->scene_city_map_tiles->addItem(this->city_map_selector_item);
@@ -245,11 +252,6 @@ void RegionMapEditor::displayCityMap(QString f) {
     this->ui->graphicsView_City_Map->setScene(scene_city_map_image);
     this->ui->graphicsView_City_Map->setFixedSize(8 * city_map_item->width() * scaleCityMapImage + 2,
                                                   8 * city_map_item->height() * scaleCityMapImage + 2);
-
-    RegionMapHistoryItem *commit = new RegionMapHistoryItem(
-        RegionMapEditorBox::CityMapImage, this->city_map_item->getTiles(), this->city_map_item->file
-    );
-    history.push(commit);
 }
 
 bool RegionMapEditor::createCityMap(QString name) {
@@ -302,9 +304,10 @@ void RegionMapEditor::onRegionMapTileSelectorHoveredTileCleared() {
 void RegionMapEditor::onRegionMapLayoutSelectedTileChanged(int index) {
     QString message = QString();
     this->currIndex = index;
+    this->region_map_layout_item->highlightedTile = index;
     if (this->region_map->map_squares[index].has_map) {
         message = QString("\t %1").arg(this->project->mapSecToMapHoverName->value(
-                      this->region_map->map_squares[index].mapsec)).remove("{NAME_END}");// ruby-specific
+                      this->region_map->map_squares[index].mapsec)).remove("{NAME_END}");
     }
     this->ui->statusbar->showMessage(message);
 
@@ -319,7 +322,7 @@ void RegionMapEditor::onRegionMapLayoutHoveredTileChanged(int index) {
         message = QString("(%1, %2)").arg(x).arg(y);
         if (this->region_map->map_squares[index].has_map) {
             message += QString("\t %1").arg(this->project->mapSecToMapHoverName->value(
-                      this->region_map->map_squares[index].mapsec)).remove("{NAME_END}");
+                           this->region_map->map_squares[index].mapsec)).remove("{NAME_END}");
         }
     }
     this->ui->statusbar->showMessage(message);
@@ -330,7 +333,7 @@ void RegionMapEditor::onRegionMapLayoutHoveredTileCleared() {
 }
 
 void RegionMapEditor::onHoveredRegionMapTileChanged(int x, int y) {
-    QString message = QString("x: %1, y: %2   Tile: 0x").arg(x).arg(y) 
+    QString message = QString("x: %1, y: %2    Tile: 0x").arg(x).arg(y) 
         + QString("%1").arg(this->region_map->getTileId(x, y), 4, 16, QChar('0')).toUpper();
     this->ui->statusbar->showMessage(message);
 }
@@ -357,7 +360,7 @@ void RegionMapEditor::mouseEvent_region_map(QGraphicsSceneMouseEvent *event, Reg
             bool addToHistory = !(current && current->tiles == this->region_map->getTiles());
             if (addToHistory) {
                 RegionMapHistoryItem *commit = new RegionMapHistoryItem(
-                    RegionMapEditorBox::BackgroundImage, this->region_map->getTiles()
+                    RegionMapEditorBox::BackgroundImage, this->region_map->getTiles(), this->region_map->width(), this->region_map->height()
                 );
                 history.push(commit);
             }
@@ -366,11 +369,18 @@ void RegionMapEditor::mouseEvent_region_map(QGraphicsSceneMouseEvent *event, Reg
 }
 
 void RegionMapEditor::mouseEvent_city_map(QGraphicsSceneMouseEvent *event, CityMapPixmapItem *item) {
-    //
     QPointF pos = event->pos();
     int x = static_cast<int>(pos.x()) / 8;
     int y = static_cast<int>(pos.y()) / 8;
     int index = this->city_map_item->getIndexAt(x, y);
+
+    if (cityMapFirstDraw) {
+        RegionMapHistoryItem *commit = new RegionMapHistoryItem(
+            RegionMapEditorBox::CityMapImage, this->city_map_item->getTiles(), this->city_map_item->file
+        );
+        history.push(commit);
+        cityMapFirstDraw = false;
+    }
 
     if (event->buttons() & Qt::RightButton) {// TODO
     //} else if (event->buttons() & Qt::MiddleButton) {// TODO
@@ -473,7 +483,7 @@ void RegionMapEditor::on_action_RegionMap_Resize_triggered() {
     QSpinBox *heightSpinBox = new QSpinBox();
     widthSpinBox->setMinimum(32);
     heightSpinBox->setMinimum(20);
-    widthSpinBox->setMaximum(60);// w * h * 2 <= 4960
+    widthSpinBox->setMaximum(60);// TODO: find real limits
     heightSpinBox->setMaximum(40);
     widthSpinBox->setValue(this->region_map->width());
     heightSpinBox->setValue(this->region_map->height());
@@ -488,6 +498,10 @@ void RegionMapEditor::on_action_RegionMap_Resize_triggered() {
 
     if (popup.exec() == QDialog::Accepted) {
         resize(widthSpinBox->value(), heightSpinBox->value());
+        RegionMapHistoryItem *commit = new RegionMapHistoryItem(
+            RegionMapEditorBox::BackgroundImage, this->region_map->getTiles(), widthSpinBox->value(), heightSpinBox->value()
+        );
+        history.push(commit);
     }
 
     this->hasUnsavedChanges = true;
@@ -498,7 +512,6 @@ void RegionMapEditor::on_action_RegionMap_Undo_triggered() {
     this->hasUnsavedChanges = true;
 }
 
-// TODO: add resizing
 void RegionMapEditor::undo() {
     RegionMapHistoryItem *commit = history.back();
     if (!commit) return;
@@ -506,6 +519,8 @@ void RegionMapEditor::undo() {
     switch (commit->which)
     {
         case RegionMapEditorBox::BackgroundImage:
+            if (commit->mapWidth != this->region_map->width() || commit->mapHeight != this->region_map->height())
+                this->resize(commit->mapWidth, commit->mapHeight);
             this->region_map->setTiles(commit->tiles);
             this->region_map_item->draw();
             break;
@@ -513,10 +528,6 @@ void RegionMapEditor::undo() {
             if (commit->cityMap == this->city_map_item->file)
                 this->city_map_item->setTiles(commit->tiles);
             this->city_map_item->draw();
-            break;
-        case RegionMapEditorBox::BackroundResize:
-            this->region_map->resize(commit->mapWidth, commit->mapHeight);
-            displayRegionMap();
             break;
     }
 }
@@ -533,6 +544,8 @@ void RegionMapEditor::redo() {
     switch (commit->which)
     {
         case RegionMapEditorBox::BackgroundImage:
+            if (commit->mapWidth != this->region_map->width() || commit->mapHeight != this->region_map->height())
+                this->resize(commit->mapWidth, commit->mapHeight);
             this->region_map->setTiles(commit->tiles);
             this->region_map_item->draw();
             break;
@@ -540,31 +553,20 @@ void RegionMapEditor::redo() {
             this->city_map_item->setTiles(commit->tiles);
             this->city_map_item->draw();
             break;
-        case RegionMapEditorBox::BackroundResize:
-            this->region_map->resize(commit->mapWidth, commit->mapHeight);
-            displayRegionMap();
-            break;
     }
 }
 
 void RegionMapEditor::resize(int w, int h) {
-    RegionMapHistoryItem *commitOld = new RegionMapHistoryItem(
-        RegionMapEditorBox::BackroundResize, this->region_map->getTiles(), this->region_map->width(), this->region_map->height()
-    );
-    RegionMapHistoryItem *commitNew = new RegionMapHistoryItem(
-        RegionMapEditorBox::BackroundResize, this->region_map->getTiles(), w, h
-    );
-    history.push(commitOld);
-    history.push(commitNew);
-    history.back();
-
     this->region_map->resize(w, h);
-    this->currIndex = 2 * w + 1;
-    displayRegionMap();
+    this->currIndex = this->region_map->padLeft * w + this->region_map->padTop;
+    displayRegionMapImage();
+    displayRegionMapLayout();
+    displayRegionMapLayoutOptions();
 }
 
 void RegionMapEditor::on_comboBox_CityMap_picker_currentTextChanged(const QString &file) {
     this->displayCityMap(file);
+    this->cityMapFirstDraw = true;
 }
 
 void RegionMapEditor::closeEvent(QCloseEvent *event)
@@ -652,7 +654,6 @@ void RegionMapEditor::on_verticalSlider_Zoom_City_Tiles_valueChanged(int val) {
 }
 
 void RegionMapEditor::on_action_RegionMap_Generate_triggered() {
-    //
     RegionMapGenerator generator(this->project);
     generator.generate("LittlerootTown");
     this->hasUnsavedChanges = true;

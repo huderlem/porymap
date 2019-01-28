@@ -6,8 +6,6 @@
 #include <QPainter>
 #include <QDebug>
 
-
-
 void CityMapPixmapItem::init() {
     width_ = 10;
     height_ = 10;
@@ -78,7 +76,6 @@ void CityMapPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
 }
 
 QVector<uint8_t> CityMapPixmapItem::getTiles() {
-    //
     QVector<uint8_t> tiles;
     for (auto tile : data) {
         tiles.append(tile);
@@ -87,7 +84,6 @@ QVector<uint8_t> CityMapPixmapItem::getTiles() {
 }
 
 void CityMapPixmapItem::setTiles(QVector<uint8_t> tiles) {
-    //
     QByteArray newData;
     for (auto tile : tiles) {
         newData.append(tile);

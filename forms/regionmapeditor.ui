@@ -61,8 +61,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>345</width>
-               <height>188</height>
+               <width>348</width>
+               <height>225</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_18">
@@ -182,8 +182,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>345</width>
-               <height>188</height>
+               <width>348</width>
+               <height>225</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_19">
@@ -332,8 +332,8 @@
               <rect>
                <x>8</x>
                <y>0</y>
-               <width>281</width>
-               <height>225</height>
+               <width>278</width>
+               <height>262</height>
               </rect>
              </property>
              <property name="sizePolicy">
@@ -652,7 +652,7 @@
               <x>0</x>
               <y>0</y>
               <width>440</width>
-              <height>267</height>
+              <height>230</height>
              </rect>
             </property>
             <layout class="QGridLayout" name="gridLayout_20">
@@ -788,7 +788,7 @@
            <x>8</x>
            <y>0</y>
            <width>254</width>
-           <height>311</height>
+           <height>274</height>
           </rect>
          </property>
          <property name="sizePolicy">
@@ -902,6 +902,9 @@
           <height>160</height>
          </size>
         </property>
+        <property name="focusPolicy">
+         <enum>Qt::StrongFocus</enum>
+        </property>
         <property name="minimum">
          <number>1</number>
         </property>
@@ -946,6 +949,9 @@
           <height>160</height>
          </size>
         </property>
+        <property name="focusPolicy">
+         <enum>Qt::StrongFocus</enum>
+        </property>
         <property name="minimum">
          <number>1</number>
         </property>
@@ -980,6 +986,9 @@
           <width>30</width>
           <height>160</height>
          </size>
+        </property>
+        <property name="focusPolicy">
+         <enum>Qt::StrongFocus</enum>
         </property>
         <property name="minimum">
          <number>1</number>
@@ -1024,6 +1033,9 @@
           <width>30</width>
           <height>160</height>
          </size>
+        </property>
+        <property name="focusPolicy">
+         <enum>Qt::StrongFocus</enum>
         </property>
         <property name="minimum">
          <number>1</number>

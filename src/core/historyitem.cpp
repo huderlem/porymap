@@ -10,11 +10,6 @@ HistoryItem::~HistoryItem() {
     if (this->metatiles) delete this->metatiles;
 }
 
-RegionMapHistoryItem::RegionMapHistoryItem(int which, QVector<uint8_t> tiles) {
-    this->which = which;
-    this->tiles = tiles;
-}
-
 RegionMapHistoryItem::RegionMapHistoryItem(int which, QVector<uint8_t> tiles, QString cityMap) {
     this->which = which;
     this->tiles = tiles;

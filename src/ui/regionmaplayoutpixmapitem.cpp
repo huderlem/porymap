@@ -1,7 +1,5 @@
 #include "regionmaplayoutpixmapitem.h"
 
-
-
 void RegionMapLayoutPixmapItem::draw() {
     if (!region_map) return;
 
@@ -76,9 +74,7 @@ void RegionMapLayoutPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) 
     mousePressEvent(event);
 }
 
-void RegionMapLayoutPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
-    //
-}
+void RegionMapLayoutPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {}
 
 void RegionMapLayoutPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
     QPoint pos = this->getCellPos(event->pos());

@@ -28,7 +28,6 @@ SOURCES += src/core/block.cpp \
     src/core/parseutil.cpp \
     src/core/tile.cpp \
     src/core/tileset.cpp \
-    src/core/regionmapeditor.cpp \
     src/core/regionmap.cpp \
     src/core/regionmapgenerator.cpp \
     src/ui/aboutporymap.cpp \
@@ -86,7 +85,6 @@ HEADERS  += include/core/block.h \
     include/core/parseutil.h \
     include/core/tile.h \
     include/core/tileset.h \
-    include/core/regionmapeditor.h \
     include/core/regionmap.h \
     include/core/regionmapgenerator.h \
     include/ui/aboutporymap.h \    

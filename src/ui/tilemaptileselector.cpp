@@ -3,16 +3,15 @@
 #include <QDebug>
 
 void TilemapTileSelector::draw() {
-    size_t width_  = this->pixmap.width();
+    size_t width_  = this->tilemap.width();
     this->pixelWidth = width_;
-    size_t height_ = this->pixmap.height();
+    size_t height_ = this->tilemap.height();
     this->pixelHeight = height_;
     size_t ntiles_ = (width_/8) * (height_/8);
 
     this->numTilesWide = width_ / 8;
     this->numTiles     = ntiles_;
 
-    this->setPixmap(this->pixmap);
     this->drawSelection();
 }
 
@@ -35,6 +34,16 @@ unsigned TilemapTileSelector::getSelectedTile() {
 unsigned TilemapTileSelector::getTileId(int x, int y) {
     int index = y * this->numTilesWide + x;
     return index < this->numTiles ? index : this->numTiles % index;
+}
+
+QPoint TilemapTileSelector::getTileIdCoords(unsigned tileId) {
+    int index = tileId < this->numTiles ? tileId : this->numTiles % tileId;
+    return QPoint(index % this->numTilesWide, index / this->numTilesWide);
+}
+
+QImage TilemapTileSelector::tileImg(unsigned tileId) {
+    QPoint pos = getTileIdCoords(tileId);
+    return this->tilemap.copy(pos.x() * 8, pos.y() * 8, 8, 8).toImage();
 }
 
 void TilemapTileSelector::mousePressEvent(QGraphicsSceneMouseEvent *event) {
@@ -64,15 +73,4 @@ void TilemapTileSelector::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
 
 void TilemapTileSelector::hoverLeaveEvent(QGraphicsSceneHoverEvent* event) {
     emit this->hoveredTileCleared();
-}
-
-QPoint TilemapTileSelector::getTileIdCoords(unsigned tileId) {
-    int index = tileId < this->numTiles ? tileId : this->numTiles % tileId;
-    return QPoint(index % this->numTilesWide, index / this->numTilesWide);
-}
-
-QImage TilemapTileSelector::tileImg(unsigned tileId) {
-    //
-    QPoint pos = getTileIdCoords(tileId);
-    return pixmap.copy(pos.x() * 8, pos.y() * 8, 8, 8).toImage();
 }

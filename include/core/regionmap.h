@@ -15,15 +15,6 @@
 #include <QGraphicsScene>
 #include <QGraphicsView>
 
-
-
-struct CityMapPosition
-{
-    QString tilemap;
-    int x;
-    int y;
-};
-
 struct RegionMapEntry
 {
     int x;
@@ -38,14 +29,14 @@ class RegionMapSquare
 public:
     int x = -1;
     int y = -1;
-    uint8_t tile_img_id;
+    uint8_t tile_img_id = 0x00;
+    uint8_t secid = 0x00;
     bool has_map = false;
+    bool has_city_map = false;
+    bool duplicated = false;
     QString map_name;
     QString mapsec;
-    uint8_t secid;
-    bool has_city_map = false;
     QString city_map_name;
-    bool duplicated = false;
 };
 
 class RegionMap : public QObject
@@ -57,18 +48,45 @@ public:
 
     ~RegionMap() {};
 
-    static QString mapSecToMapConstant(QString);
-
     Project *project;
 
     QVector<RegionMapSquare> map_squares;
+    History<RegionMapHistoryItem*> history;
 
     const int padLeft   = 1;
     const int padRight  = 3;
     const int padTop    = 2;
     const int padBottom = 3;
 
-    History<RegionMapHistoryItem*> history;
+    void init(Project*);
+
+    void readBkgImgBin();
+    void readLayout();
+
+    void save();
+    void saveBkgImgBin();
+    void saveLayout();
+    void saveOptions(int id, QString sec, QString name, int x, int y);
+
+    void resize(int width, int height);
+    void resetSquare(int index);
+
+    int  width();
+    int  height();
+    QSize imgSize();
+    unsigned getTileId(int x, int y);
+    int getMapSquareIndex(int x, int y);
+    QString pngPath();
+    QString cityTilesPath();
+
+    QVector<uint8_t> getTiles();
+    void setTiles(QVector<uint8_t> tileIds);
+
+private:
+    int layout_width_;
+    int layout_height_;
+    int img_width_;
+    int img_height_;
 
     QString region_map_png_path;
     QString region_map_bin_path;
@@ -76,65 +94,14 @@ public:
     QString region_map_layout_bin_path;
     QString city_map_tiles_path;
 
-    QByteArray mapBinData;
-
-    QMap<QString, QString> sMapNamesMap;// {"{/sMapName_/}LittlerootTown" : "LITTLEROOT{NAME_END} TOWN"}
-    QMap<QString, QString> mapSecToMapName;// {"MAPSEC_LITTLEROOT_TOWN" : "LITTLEROOT{NAME_END} TOWN"}
-    QMap<QString, struct RegionMapEntry> mapSecToMapEntry;// TODO: add to this on creation of new map
-
+    QMap<QString, QString> sMapNamesMap;
+    QMap<QString, struct RegionMapEntry> mapSecToMapEntry;
     QVector<QString> sMapNames;
 
-    bool hasUnsavedChanges();
+    int img_index_(int x, int y);
+    int layout_index_(int x, int y);
 
-    void init(Project*);
-
-    void readBkgImgBin();
-    void readCityMaps();
-    void readLayout();
-
-    QString newAbbr(QString);// makes a *unique* 5 character abbreviation from mapname to add to mapname_abbr
-
-    // TODO: did I use these like, at all?
-    // editing functions
-    // if they are booleans, returns true if successful?
-    bool placeTile(char, int, int);// place tile at x, y
-    bool removeTile(char, int, int);// replaces with 0x00 byte at x,y
-    bool placeMap(QString, int, int);
-    bool removeMap(QString, int, int);
-    bool removeMap(QString);// remove all instances of map
-
-    void save();
-    void saveBkgImgBin();
-    void saveLayout();
-    void saveOptions(int, QString, QString, int, int);
-    void saveCityMaps();
-
-    void resize(int, int);
-    void setWidth(int);
-    void setHeight(int);
-    void setBackgroundImageData(QVector<uint8_t> *);
-    int  width();
-    int  height();
-    QSize imgSize();
-    unsigned getTileId(int, int);
-    int getMapSquareIndex(int, int);
-
-    QVector<uint8_t> getTiles();
-    void setTiles(QVector<uint8_t>);
-
-    void resetSquare(int);
-
-// TODO: move read / write functions to private (and others)
-private:
-    int layout_width_;
-    int layout_height_;
-    int img_width_;
-    int img_height_;
-    int img_index_(int, int);// returns index int at x,y args (x + y * width_ * 2) // 2 because 
-    int layout_index_(int, int);
-    void fillMapSquaresFromLayout();
-    QString fix_case(QString);// CAPS_WITH_UNDERSCORE to CamelCase
-
+    QString fix_case(QString);
 };
 
 #endif // REGIONMAP_H
