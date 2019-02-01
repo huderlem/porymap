@@ -9,6 +9,10 @@
 #include "event.h"
 
 #include <QDir>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonValue>
 #include <QFile>
 #include <QTextStream>
 #include <QStandardItem>
@@ -65,53 +69,14 @@ Map* Project::loadMap(QString map_name) {
         map->setName(map_name);
     }
 
-    if (!readMapHeader(map))
+    if (!loadMapData(map))
         return nullptr;
 
-    readMapLayout(map);
-    readMapEvents(map);
-    loadMapConnections(map);
+    loadMapLayout(map);
     map->commit();
     map->metatileHistory.save();
     map_cache->insert(map_name, map);
     return map;
-}
-
-void Project::loadMapConnections(Map *map) {
-    if (!map->isPersistedToFile) {
-        return;
-    }
-
-    map->connections.clear();
-    if (!map->connections_label.isNull()) {
-        QString path = root + QString("/data/maps/%1/connections.inc").arg(map->name);
-        QString text = readTextFile(path);
-        if (!text.isNull()) {
-            QList<QStringList> *commands = parseAsm(text);
-            QStringList *list = getLabelValues(commands, map->connections_label);
-
-            //// Avoid using this value. It ought to be generated instead.
-            //int num_connections = list->value(0).toInt(nullptr, 0);
-
-            QString connections_list_label = list->value(1);
-            QList<QStringList> *connections = getLabelMacros(commands, connections_list_label);
-            for (QStringList command : *connections) {
-                QString macro = command.value(0);
-                if (macro == "connection") {
-                    MapConnection *connection = new MapConnection;
-                    connection->direction = command.value(1);
-                    connection->offset = command.value(2);
-                    QString mapConstant = command.value(3);
-                    if (mapConstantsToMapNames->contains(mapConstant)) {
-                        connection->map_name = mapConstantsToMapNames->value(mapConstant);
-                        map->connections.append(connection);
-                    } else {
-                        logError(QString("Failed to find connected map for map constant '%1'").arg(mapConstant));
-                    }
-                }
-            }
-        }
-    }
 }
 
 void Project::setNewMapConnections(Map *map) {
@@ -163,63 +128,196 @@ QStringList* Project::getLabelValues(QList<QStringList> *list, QString label) {
     return values;
 }
 
-bool Project::readMapHeader(Map* map) {
+bool Project::loadMapData(Map* map) {
     if (!map->isPersistedToFile) {
         return true;
     }
 
-    QString label = map->name;
-    ParseUtil *parser = new ParseUtil;
-
-    QString header_text = readTextFile(root + "/data/maps/" + label + "/header.inc");
-    if (header_text.isNull()) {
+    QString mapFilepath = QString("%1/data/maps/%2/map.json").arg(root).arg(map->name);
+    QFile mapFile(mapFilepath);
+    if (!mapFile.open(QIODevice::ReadOnly)) {
+        logError(QString("Error: Could not open %1 for reading").arg(mapFilepath));
         return false;
     }
-    QStringList *header = getLabelValues(parser->parseAsm(header_text), label);
-    map->layout_label = header->value(0);
-    map->events_label = header->value(1);
-    map->scripts_label = header->value(2);
-    map->connections_label = header->value(3);
-    map->song = header->value(4);
-    map->layout_id = header->value(5);
-    map->location = header->value(6);
-    map->requiresFlash = header->value(7);
-    map->weather = header->value(8);
-    map->type = header->value(9);
-    map->unknown = header->value(10);
-    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeruby) {
-        map->show_location = header->value(11);
-        map->battle_scene = header->value(12);
-    } else if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeemerald) {
-        QString allow_bike = header->value(11);
-        if (allow_bike.startsWith("allow_bike")) {
-            map->allowBiking = allow_bike.split("=").last();
+
+    QByteArray mapData = mapFile.readAll();
+    QJsonDocument mapDoc = QJsonDocument::fromJson(mapData);
+    QJsonObject mapObj = mapDoc.object();
+
+    map->song = mapObj["music"].toString();
+    map->layoutId = mapObj["layout"].toString();
+    map->location = mapObj["region_map_section"].toString();
+    map->requiresFlash = QString::number(mapObj["requires_flash"].toBool());
+    map->weather = mapObj["weather"].toString();
+    map->type = mapObj["map_type"].toString();
+    map->requiresFlash = QString::number(mapObj["requires_flash"].toBool());
+    map->show_location = QString::number(mapObj["show_map_name"].toBool());
+    map->battle_scene = mapObj["battle_scene"].toString();
+    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeemerald) {
+        map->allowBiking = QString::number(mapObj["allow_bike"].toBool());
+        map->allowEscapeRope = QString::number(mapObj["allow_escape_rope"].toBool());
+        map->allowRunning = QString::number(mapObj["allow_running"].toBool());
+    }
+
+    // Events
+    map->events["object_event_group"].clear();
+    QJsonArray objectEventsArr = mapObj["object_events"].toArray();
+    for (int i = 0; i < objectEventsArr.size(); i++) {
+        QJsonObject event = objectEventsArr[i].toObject();
+        Event *object = new Event;
+        object->put("map_name", map->name);
+        object->put("sprite", event["graphics_id"].toString());
+        object->put("x", QString::number(event["x"].toInt()));
+        object->put("y", QString::number(event["y"].toInt()));
+        object->put("elevation", QString::number(event["elevation"].toInt()));
+        object->put("movement_type", event["movement_type"].toString());
+        object->put("radius_x", QString::number(event["movement_range_x"].toInt()));
+        object->put("radius_y", QString::number(event["movement_range_y"].toInt()));
+        object->put("trainer_type", QString::number(event["trainer_type"].toInt()));
+        object->put("sight_radius_tree_id", QString::number(event["trainer_sight_or_berry_tree_id"].toInt()));
+        object->put("script_label", event["script"].toString());
+        object->put("event_flag", event["flag"].toString());
+        object->put("event_group_type", "object_event_group");
+        object->put("event_type", EventType::Object);
+        map->events["object_event_group"].append(object);
+    }
+
+    map->events["warp_event_group"].clear();
+    QJsonArray warpEventsArr = mapObj["warp_events"].toArray();
+    for (int i = 0; i < warpEventsArr.size(); i++) {
+        QJsonObject event = warpEventsArr[i].toObject();
+        Event *warp = new Event;
+        warp->put("map_name", map->name);
+        warp->put("x", QString::number(event["x"].toInt()));
+        warp->put("y", QString::number(event["y"].toInt()));
+        warp->put("elevation", QString::number(event["elevation"].toInt()));
+        warp->put("destination_warp", QString::number(event["dest_warp_id"].toInt()));
+
+        // Ensure the warp destination map constant is valid before adding it to the warps.
+        QString mapConstant = event["dest_map"].toString();
+        if (mapConstantsToMapNames->contains(mapConstant)) {
+            warp->put("destination_map_name", mapConstantsToMapNames->value(mapConstant));
+            warp->put("event_group_type", "warp_event_group");
+            warp->put("event_type", EventType::Warp);
+            map->events["warp_event_group"].append(warp);
+        } else if (mapConstant == NONE_MAP_CONSTANT) {
+            warp->put("destination_map_name", NONE_MAP_NAME);
+            warp->put("event_group_type", "warp_event_group");
+            warp->put("event_type", EventType::Warp);
+            map->events["warp_event_group"].append(warp);
         } else {
-            logError(QString("Expected 'allow_bike', but encountered '%1' in '%2' header").arg(allow_bike).arg(map->name));
+            logError(QString("Destination map constant '%1' is invalid for warp").arg(mapConstant));
+        }
+    }
+
+    map->events["heal_event_group"].clear();
+    for (auto it = flyableMaps.begin(); it != flyableMaps.end(); it++) {
+
+        HealLocation loc = *it;
+
+        //if TRUE map is flyable / has healing location
+        if (loc.name == QString(mapNamesToMapConstants->value(map->name)).remove(0,4)) {
+            Event *heal = new Event;
+            heal->put("map_name", map->name);
+            heal->put("x", loc.x);
+            heal->put("y", loc.y);
+            heal->put("loc_name", loc.name);
+            heal->put("index", loc.index);
+            heal->put("elevation", 3); // TODO: change this?
+            heal->put("destination_map_name", mapConstantsToMapNames->value(map->name));
+            heal->put("event_group_type", "heal_event_group");
+            heal->put("event_type", EventType::HealLocation);
+            map->events["heal_event_group"].append(heal);
         }
 
-        QString allow_escape_rope = header->value(12);
-        if (allow_escape_rope.startsWith("allow_escape_rope")) {
-            map->allowEscapeRope = allow_escape_rope.split("=").last();
-        } else {
-            logError(QString("Expected 'allow_escape_rope', but encountered '%1' in '%2' header").arg(allow_escape_rope).arg(map->name));
-        }
+    }
 
-        QString allow_run = header->value(13);
-        if (allow_run.startsWith("allow_run")) {
-            map->allowRunning = allow_run.split("=").last();
-        } else {
-            logError(QString("Expected 'allow_run', but encountered '%1' in '%2' header").arg(allow_run).arg(map->name));
+    map->events["coord_event_group"].clear();
+    QJsonArray coordEventsArr = mapObj["coord_events"].toArray();
+    for (int i = 0; i < coordEventsArr.size(); i++) {
+        QJsonObject event = coordEventsArr[i].toObject();
+        QString type = event["type"].toString();
+        if (type == "trigger") {
+            Event *coord = new Event;
+            coord->put("map_name", map->name);
+            coord->put("x", QString::number(event["x"].toInt()));
+            coord->put("y", QString::number(event["y"].toInt()));
+            coord->put("elevation", QString::number(event["elevation"].toInt()));
+            coord->put("script_var", event["var"].toString());
+            coord->put("script_var_value", QString::number(event["var_value"].toInt()));
+            coord->put("script_label", event["script"].toString());
+            coord->put("event_group_type", "coord_event_group");
+            coord->put("event_type", EventType::Trigger);
+            map->events["coord_event_group"].append(coord);
+        } else if (type == "weather") {
+            Event *coord = new Event;
+            coord->put("map_name", map->name);
+            coord->put("x", QString::number(event["x"].toInt()));
+            coord->put("y", QString::number(event["y"].toInt()));
+            coord->put("elevation", QString::number(event["elevation"].toInt()));
+            coord->put("weather", event["weather"].toString());
+            coord->put("event_group_type", "coord_event_group");
+            coord->put("event_type", EventType::WeatherTrigger);
+            map->events["coord_event_group"].append(coord);
         }
+    }
 
-        QString show_map_name = header->value(14);
-        if (show_map_name.startsWith("show_map_name")) {
-            map->show_location = show_map_name.split("=").last();
-        } else {
-            logError(QString("Expected 'show_map_name', but encountered '%1' in '%2' header").arg(show_map_name).arg(map->name));
+    map->events["bg_event_group"].clear();
+    QJsonArray bgEventsArr = mapObj["bg_events"].toArray();
+    for (int i = 0; i < bgEventsArr.size(); i++) {
+        QJsonObject event = bgEventsArr[i].toObject();
+        QString type = event["type"].toString();
+        if (type == "sign") {
+            Event *bg = new Event;
+            bg->put("map_name", map->name);
+            bg->put("x", QString::number(event["x"].toInt()));
+            bg->put("y", QString::number(event["y"].toInt()));
+            bg->put("elevation", QString::number(event["elevation"].toInt()));
+            bg->put("player_facing_direction", event["player_facing_dir"].toString());
+            bg->put("script_label", event["script"].toString());
+            bg->put("event_group_type", "bg_event_group");
+            bg->put("event_type", EventType::Sign);
+            map->events["bg_event_group"].append(bg);
+        } else if (type == "hidden_item") {
+            Event *bg = new Event;
+            bg->put("map_name", map->name);
+            bg->put("x", QString::number(event["x"].toInt()));
+            bg->put("y", QString::number(event["y"].toInt()));
+            bg->put("elevation", QString::number(event["elevation"].toInt()));
+            bg->put("item", event["item"].toString());
+            bg->put("flag", event["flag"].toString());
+            bg->put("event_group_type", "bg_event_group");
+            bg->put("event_type", EventType::HiddenItem);
+            map->events["bg_event_group"].append(bg);
+        } else if (type == "secret_base") {
+            Event *bg = new Event;
+            bg->put("map_name", map->name);
+            bg->put("x", QString::number(event["x"].toInt()));
+            bg->put("y", QString::number(event["y"].toInt()));
+            bg->put("elevation", QString::number(event["elevation"].toInt()));
+            bg->put("secret_base_id", event["secret_base_id"].toString());
+            bg->put("event_group_type", "bg_event_group");
+            bg->put("event_type", EventType::SecretBase);
+            map->events["bg_event_group"].append(bg);
         }
+    }
 
-        map->battle_scene = header->value(15);
+    map->connections.clear();
+    QJsonArray connectionsArr = mapObj["connections"].toArray();
+    if (!connectionsArr.isEmpty()) {
+        for (int i = 0; i < connectionsArr.size(); i++) {
+            QJsonObject connectionObj = connectionsArr[i].toObject();
+            MapConnection *connection = new MapConnection;
+            connection->direction = connectionObj["direction"].toString();
+            connection->offset = QString::number(connectionObj["offset"].toInt());
+            QString mapConstant = connectionObj["map"].toString();
+            if (mapConstantsToMapNames->contains(mapConstant)) {
+                connection->map_name = mapConstantsToMapNames->value(mapConstant);
+                map->connections.append(connection);
+            } else {
+                logError(QString("Failed to find connected map for map constant '%1'").arg(mapConstant));
+            }
+        }
     }
 
     return true;
@@ -227,17 +325,20 @@ bool Project::readMapHeader(Map* map) {
 
 QString Project::readMapLayoutId(QString map_name) {
     if (map_cache->contains(map_name)) {
-        return map_cache->value(map_name)->layout_id;
+        return map_cache->value(map_name)->layoutId;
     }
 
-    ParseUtil *parser = new ParseUtil;
-
-    QString header_text = readTextFile(root + "/data/maps/" + map_name + "/header.inc");
-    if (header_text.isNull()) {
+    QString mapFilepath = QString("%1/data/maps/%2/map.json").arg(root).arg(map_name);
+    QFile mapFile(mapFilepath);
+    if (!mapFile.open(QIODevice::ReadOnly)) {
+        logError(QString("Error: Could not open %1 for reading").arg(mapFilepath));
         return QString::null;
     }
-    QStringList *header = getLabelValues(parser->parseAsm(header_text), map_name);
-    return header->value(5);
+
+    QByteArray mapData = mapFile.readAll();
+    QJsonDocument mapDoc = QJsonDocument::fromJson(mapData);
+    QJsonObject mapObj = mapDoc.object();
+    return mapObj["layout"].toString();
 }
 
 QString Project::readMapLocation(QString map_name) {
@@ -245,28 +346,26 @@ QString Project::readMapLocation(QString map_name) {
         return map_cache->value(map_name)->location;
     }
 
-    ParseUtil *parser = new ParseUtil;
-
-    QString header_text = readTextFile(root + "/data/maps/" + map_name + "/header.inc");
-    if (header_text.isNull()) {
+    QString mapFilepath = QString("%1/data/maps/%2/map.json").arg(root).arg(map_name);
+    QFile mapFile(mapFilepath);
+    if (!mapFile.open(QIODevice::ReadOnly)) {
+        logError(QString("Error: Could not open %1 for reading").arg(mapFilepath));
         return QString::null;
     }
-    QStringList *header = getLabelValues(parser->parseAsm(header_text), map_name);
-    return header->value(6);
+
+    QByteArray mapData = mapFile.readAll();
+    QJsonDocument mapDoc = QJsonDocument::fromJson(mapData);
+    QJsonObject mapObj = mapDoc.object();
+    return mapObj["region_map_section"].toString();
 }
 
 void Project::setNewMapHeader(Map* map, int mapIndex) {
-    map->layout_label = QString("%1_Layout").arg(map->name);
-    map->events_label = QString("%1_MapEvents").arg(map->name);;
-    map->scripts_label = QString("%1_MapScripts").arg(map->name);;
-    map->connections_label = "0x0";
     map->song = "MUS_DAN02";
-    map->layout_id = QString("%1").arg(mapIndex);
+    map->layoutId = QString("%1").arg(mapIndex);
     map->location = "MAPSEC_LITTLEROOT_TOWN";
     map->requiresFlash = "FALSE";
     map->weather = "WEATHER_SUNNY";
     map->type = "MAP_TYPE_TOWN";
-    map->unknown = "0";
     if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeruby) {
         map->show_location = "TRUE";
     } else if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeemerald) {
@@ -279,179 +378,16 @@ void Project::setNewMapHeader(Map* map, int mapIndex) {
     map->battle_scene = "MAP_BATTLE_SCENE_NORMAL";
 }
 
-void Project::saveMapHeader(Map *map) {
-    QString label = map->name;
-    QString header_path = root + "/data/maps/" + label + "/header.inc";
-    QString text = "";
-    text += QString("%1::\n").arg(label);
-    text += QString("\t.4byte %1\n").arg(map->layout_label);
-    text += QString("\t.4byte %1\n").arg(map->events_label);
-    text += QString("\t.4byte %1\n").arg(map->scripts_label);
-
-    if (map->connections.length() == 0) {
-        map->connections_label = "0x0";
-    } else {
-        map->connections_label = QString("%1_MapConnections").arg(map->name);
-    }
-    text += QString("\t.4byte %1\n").arg(map->connections_label);
-
-    text += QString("\t.2byte %1\n").arg(map->song);
-    text += QString("\t.2byte %1\n").arg(map->layout_id);
-    text += QString("\t.byte %1\n").arg(map->location);
-    text += QString("\t.byte %1\n").arg(map->requiresFlash);
-    text += QString("\t.byte %1\n").arg(map->weather);
-    text += QString("\t.byte %1\n").arg(map->type);
-    text += QString("\t.2byte %1\n").arg(map->unknown);
-    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeruby) {
-        text += QString("\t.byte %1\n").arg(map->show_location);
-    } else if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeemerald) {
-        text += QString("\tmap_header_flags allow_bike=%1, allow_escape_rope=%2, allow_run=%3, show_map_name=%4\n")
-                .arg(map->allowBiking)
-                .arg(map->allowEscapeRope)
-                .arg(map->allowRunning)
-                .arg(map->show_location);
-    }
-
-    text += QString("\t.byte %1\n").arg(map->battle_scene);
-    saveTextFile(header_path, text);
-}
-
-void Project::saveMapConnections(Map *map) {
-    QString path = root + "/data/maps/" + map->name + "/connections.inc";
-    if (map->connections.length() > 0) {
-        QString text = "";
-        QString connectionsListLabel = QString("%1_MapConnectionsList").arg(map->name);
-        int numValidConnections = 0;
-        text += QString("%1::\n").arg(connectionsListLabel);
-        for (MapConnection* connection : map->connections) {
-            if (mapNamesToMapConstants->contains(connection->map_name)) {
-                text += QString("\tconnection %1, %2, %3\n")
-                        .arg(connection->direction)
-                        .arg(connection->offset)
-                        .arg(mapNamesToMapConstants->value(connection->map_name));
-                numValidConnections++;
-            } else {
-                logError(QString("Failed to write map connection. '%1' is not a valid map name").arg(connection->map_name));
-            }
-        }
-        text += QString("\n");
-        text += QString("%1::\n").arg(map->connections_label);
-        text += QString("\t.4byte %1\n").arg(numValidConnections);
-        text += QString("\t.4byte %1\n").arg(connectionsListLabel);
-        saveTextFile(path, text);
-    } else {
-        deleteFile(path);
-    }
-
-    updateMapsWithConnections(map);
-}
-
-void Project::updateMapsWithConnections(Map *map) {
-    if (map->connections.length() > 0) {
-        if (!mapsWithConnections.contains(map->name)) {
-            mapsWithConnections.append(map->name);
-        }
-    } else {
-        if (mapsWithConnections.contains(map->name)) {
-            mapsWithConnections.removeOne(map->name);
-        }
-    }
-}
-
-void Project::readMapLayoutsTable() {
-    mapLayoutsTable.clear();
-
-    QString layoutsText = readTextFile(getMapLayoutsTableFilepath());
-    QList<QStringList>* values = parseAsm(layoutsText);
-    bool inLayoutPointers = false;
-    for (int i = 0; i < values->length(); i++) {
-        QStringList params = values->value(i);
-        QString macro = params.value(0);
-        if (macro == ".label") {
-            if (inLayoutPointers) {
-                break;
-            }
-            if (params.value(1) == "gMapLayouts") {
-                inLayoutPointers = true;
-            }
-        } else if (macro == ".4byte" && inLayoutPointers) {
-            QString layoutName = params.value(1);
-            mapLayoutsTable.append(layoutName);
-        }
-    }
-
-    // Deep copy
-    mapLayoutsTableMaster = mapLayoutsTable;
-    mapLayoutsTableMaster.detach();
-}
-
-void Project::saveMapLayoutsTable() {
-    QString text = "";
-    text += QString("\t.align 2\n");
-    text += QString("gMapLayouts::\n");
-    for (QString layoutName : mapLayoutsTableMaster) {
-        text += QString("\t.4byte %1\n").arg(layoutName);
-    }
-    saveTextFile(getMapLayoutsTableFilepath(), text);
-}
-
-QString Project::getMapLayoutsTableFilepath() {
-    return QString("%1/data/layouts_table.inc").arg(root);
-}
-
-QStringList* Project::readLayoutValues(QString layoutLabel) {
-    ParseUtil *parser = new ParseUtil;
-
-    QString layoutText = readTextFile(getMapLayoutFilepath(layoutLabel));
-    if (layoutText.isNull()) {
-        return nullptr;
-    }
-
-    QStringList *layoutValues = getLabelValues(parser->parseAsm(layoutText), layoutLabel);
-    QString borderLabel = layoutValues->value(2);
-    QString blockdataLabel = layoutValues->value(3);
-    QStringList *borderValues = getLabelValues(parser->parseAsm(layoutText), borderLabel);
-    QString borderPath = borderValues->value(0).replace("\"", "");
-    layoutValues->append(borderPath);
-    QStringList *blockdataValues = getLabelValues(parser->parseAsm(layoutText), blockdataLabel);
-    QString blockdataPath = blockdataValues->value(0).replace("\"", "");
-    layoutValues->append(blockdataPath);
-
-    if (layoutValues->size() != 8) {
-        logError(QString("Error: Unexpected number of properties in layout '%1'").arg(layoutLabel));
-        return nullptr;
-    }
-
-    return layoutValues;
-}
-
-void Project::readMapLayout(Map* map) {
+void Project::loadMapLayout(Map* map) {
     if (!map->isPersistedToFile) {
         return;
     }
 
-    MapLayout *layout;
-    if (!mapLayouts.contains(map->layout_label)) {
-        QStringList *layoutValues = readLayoutValues(map->layout->label);
-        if (!layoutValues) {
-            return;
-        }
-
-        layout = new MapLayout();
-        mapLayouts.insert(map->layout_label, layout);
-        layout->name = MapLayout::getNameFromLabel(map->layout_label);
-        layout->label = map->layout_label;
-        layout->width = layoutValues->value(0);
-        layout->height = layoutValues->value(1);
-        layout->border_label = layoutValues->value(2);
-        layout->blockdata_label = layoutValues->value(3);
-        layout->tileset_primary_label = layoutValues->value(4);
-        layout->tileset_secondary_label = layoutValues->value(5);
-        layout->border_path = layoutValues->value(6);
-        layout->blockdata_path = layoutValues->value(7);
-        map->layout = layout;
+    if (!mapLayouts.contains(map->layoutId)) {
+        logError(QString("Error: Map '%1' has an unknown layout '%2'").arg(map->name).arg(map->layoutId));
+        return;
     } else {
-        map->layout = mapLayouts[map->layout_label];
+        map->layout = mapLayouts[map->layoutId];
     }
 
     loadMapTilesets(map);
@@ -459,107 +395,128 @@ void Project::readMapLayout(Map* map) {
     loadMapBorder(map);
 }
 
-void Project::readAllMapLayouts() {
+void Project::readMapLayouts() {
     mapLayouts.clear();
+    mapLayoutsTable.clear();
 
-    for (int i = 0; i < mapLayoutsTable.size(); i++) {
-        QString layoutLabel = mapLayoutsTable[i];
-        QStringList *layoutValues = readLayoutValues(layoutLabel);
-        if (!layoutValues) {
-            return;
-        }
+    QString layoutsFilepath = QString("%1/data/layouts/layouts.json").arg(root);
+    QFile layoutsFile(layoutsFilepath);
+    if (!layoutsFile.open(QIODevice::ReadOnly)) {
+        logError(QString("Error: Could not open %1 for reading").arg(layoutsFilepath));
+        return;
+    }
 
+    QByteArray layoutsData = layoutsFile.readAll();
+    QJsonDocument layoutsDoc = QJsonDocument::fromJson(layoutsData);
+    QJsonObject layoutsObj = layoutsDoc.object();
+    layoutsLabel = layoutsObj["layouts_table_label"].toString();
+
+    QJsonArray layouts = layoutsObj["layouts"].toArray();
+    for (int i = 0; i < layouts.size(); i++) {
+        QJsonObject layoutObj = layouts[i].toObject();
         MapLayout *layout = new MapLayout();
-        layout->name = MapLayout::getNameFromLabel(layoutLabel);
-        layout->label = layoutLabel;
-        layout->index = i;
-        layout->width = layoutValues->value(0);
-        layout->height = layoutValues->value(1);
-        layout->border_label = layoutValues->value(2);
-        layout->blockdata_label = layoutValues->value(3);
-        layout->tileset_primary_label = layoutValues->value(4);
-        layout->tileset_secondary_label = layoutValues->value(5);
-        layout->border_path = layoutValues->value(6);
-        layout->blockdata_path = layoutValues->value(7);
-        mapLayouts.insert(layoutLabel, layout);
+        layout->id = layoutObj["id"].toString();
+        layout->name = layoutObj["name"].toString();
+        layout->width = QString::number(layoutObj["width"].toInt());
+        layout->height = QString::number(layoutObj["height"].toInt());
+        layout->tileset_primary_label = layoutObj["primary_tileset"].toString();
+        layout->tileset_secondary_label = layoutObj["secondary_tileset"].toString();
+        layout->border_path = layoutObj["border_filepath"].toString();
+        layout->blockdata_path = layoutObj["blockdata_filepath"].toString();
+        mapLayouts.insert(layout->id, layout);
+        mapLayoutsTable.append(layout->id);
     }
 
     // Deep copy
     mapLayoutsMaster = mapLayouts;
     mapLayoutsMaster.detach();
+    mapLayoutsTableMaster = mapLayoutsTable;
+    mapLayoutsTableMaster.detach();
 }
 
-void Project::saveAllMapLayouts() {
-    for (QString layoutName : mapLayoutsTableMaster) {
-        MapLayout *layout = mapLayouts.value(layoutName);
-        QString text = QString("%1::\n").arg(layout->border_label);
-        text += QString("\t.incbin \"%1\"\n").arg(layout->border_path);
-        text += QString("\n");
-        text += QString("%1::\n").arg(layout->blockdata_label);
-        text += QString("\t.incbin \"%1\"\n").arg(layout->blockdata_path);
-        text += QString("\n");
-        text += QString("\t.align 2\n");
-        text += QString("%1::\n").arg(layoutName);
-        text += QString("\t.4byte %1\n").arg(layout->width);
-        text += QString("\t.4byte %1\n").arg(layout->height);
-        text += QString("\t.4byte %1\n").arg(layout->border_label);
-        text += QString("\t.4byte %1\n").arg(layout->blockdata_label);
-        text += QString("\t.4byte %1\n").arg(layout->tileset_primary_label);
-        text += QString("\t.4byte %1\n").arg(layout->tileset_secondary_label);
-        text += QString("\n");
-        saveTextFile(getMapLayoutFilepath(layout->label), text);
+void Project::saveMapLayouts() {
+    QString layoutsFilepath = QString("%1/data/layouts/layouts.json").arg(root);
+    QFile layoutsFile(layoutsFilepath);
+    if (!layoutsFile.open(QIODevice::WriteOnly)) {
+        logError(QString("Error: Could not open %1 for writing").arg(layoutsFilepath));
+        return;
     }
-}
 
-QString Project::getMapLayoutFilepath(QString layoutLabel) {
-    return QString("%1/data/layouts/%2/layout.inc").arg(root).arg(MapLayout::getNameFromLabel(layoutLabel));
+    QJsonObject layoutsObj;
+    layoutsObj["layouts_table_label"] = layoutsLabel;
+
+    QJsonArray layoutsArr;
+    for (QString layoutId : mapLayoutsTableMaster) {
+        MapLayout *layout = mapLayouts.value(layoutId);
+        QJsonObject layoutObj;
+        layoutObj["id"] = layout->id;
+        layoutObj["name"] = layout->name;
+        layoutObj["width"] = layout->width.toInt(nullptr, 0);
+        layoutObj["height"] = layout->height.toInt(nullptr, 0);
+        layoutObj["primary_tileset"] = layout->tileset_primary_label;
+        layoutObj["secondary_tileset"] = layout->tileset_secondary_label;
+        layoutObj["border_filepath"] = layout->border_path;
+        layoutObj["blockdata_filepath"] = layout->blockdata_path;
+        layoutsArr.append(layoutObj);
+    }
+
+    layoutsObj["layouts"] = layoutsArr;
+    QJsonDocument layoutsDoc(layoutsObj);
+    layoutsFile.write(layoutsDoc.toJson());
 }
 
 void Project::setNewMapLayout(Map* map) {
     MapLayout *layout = new MapLayout();
-    layout->label = QString("%1_Layout").arg(map->name);
-    layout->name = MapLayout::getNameFromLabel(layout->label);
+    layout->id = MapLayout::layoutConstantFromName(map->name);
+    layout->name = QString("%1_Layout").arg(map->name);
     layout->width = "20";
     layout->height = "20";
-    layout->border_label = QString("%1_MapBorder").arg(map->name);
     layout->border_path = QString("data/layouts/%1/border.bin").arg(map->name);
-    layout->blockdata_label = QString("%1_MapBlockdata").arg(map->name);
     layout->blockdata_path = QString("data/layouts/%1/map.bin").arg(map->name);
     layout->tileset_primary_label = "gTileset_General";
     layout->tileset_secondary_label = "gTileset_Petalburg";
     map->layout = layout;
-    map->layout_label = layout->label;
+    map->layoutId = layout->id;
 
     // Insert new entry into the global map layouts.
-    mapLayouts.insert(layout->label, layout);
-    mapLayoutsTable.append(layout->label);
+    mapLayouts.insert(layout->id, layout);
+    mapLayoutsTable.append(layout->id);
 }
 
-void Project::saveMapGroupsTable() {
-    QString text = "";
+void Project::saveMapGroups() {
+    QString mapGroupsFilepath = QString("%1/data/maps/map_groups.json").arg(root);
+    QFile mapGroupsFile(mapGroupsFilepath);
+    if (!mapGroupsFile.open(QIODevice::WriteOnly)) {
+        logError(QString("Error: Could not open %1 for writing").arg(mapGroupsFilepath));
+        return;
+    }
+
+    QJsonObject mapGroupsObj;
+    mapGroupsObj["layouts_table_label"] = layoutsLabel;
+
+    QJsonArray groupNamesArr;
+    for (QString groupName : *this->groupNames) {
+        groupNamesArr.append(groupName);
+    }
+    mapGroupsObj["group_order"] = groupNamesArr;
+
     int groupNum = 0;
     for (QStringList mapNames : groupedMapNames) {
-        text += QString("\t.align 2\n");
-        text += QString("gMapGroup%1::\n").arg(groupNum);
+        QJsonArray groupArr;
         for (QString mapName : mapNames) {
-            text += QString("\t.4byte %1\n").arg(mapName);
+            groupArr.append(mapName);
         }
-        text += QString("\n");
+        mapGroupsObj[this->groupNames->at(groupNum)] = groupArr;
         groupNum++;
     }
 
-    text += QString("\t.align 2\n");
-    text += QString("gMapGroups::\n");
-    for (int i = 0; i < groupNum; i++) {
-        text += QString("\t.4byte gMapGroup%1\n").arg(i);
-    }
-
-    saveTextFile(root + "/data/maps/groups.inc", text);
+    QJsonDocument mapGroupsDoc(mapGroupsObj);
+    mapGroupsFile.write(mapGroupsDoc.toJson());
 }
 
 void Project::saveMapConstantsHeader() {
-    QString text = QString("#ifndef GUARD_CONSTANTS_MAPS_H\n");
-    text += QString("#define GUARD_CONSTANTS_MAPS_H\n");
+    QString text = QString("#ifndef GUARD_CONSTANTS_MAP_GROUPS_H\n");
+    text += QString("#define GUARD_CONSTANTS_MAP_GROUPS_H\n");
     text += QString("\n");
 
     int groupNum = 0;
@@ -586,12 +543,8 @@ void Project::saveMapConstantsHeader() {
     }
 
     text += QString("#define MAP_GROUPS_COUNT %1\n\n").arg(groupNum);
-    text += QString("#define MAP_NONE (0x7F | (0x7F << 8))\n");
-    text += QString("#define MAP_UNDEFINED (0xFF | (0xFF << 8))\n\n\n");
-    text += QString("#define MAP_GROUP(map) (MAP_##map >> 8)\n");
-    text += QString("#define MAP_NUM(map) (MAP_##map & 0xFF)\n\n");
-    text += QString("#endif  // GUARD_CONSTANTS_MAPS_H\n");
-    saveTextFile(root + "/include/constants/maps.h", text);
+    text += QString("#endif  // GUARD_CONSTANTS_MAP_GROUPS_H\n");
+    saveTextFile(root + "/include/constants/map_groups.h", text);
 }
 
 // saves heal location coords in root + /src/data/heal_locations.h
@@ -812,12 +765,12 @@ void Project::setNewMapBorder(Map *map) {
     map->layout->border = blockdata;
 }
 
-void Project::saveMapBorder(Map *map) {
+void Project::saveLayoutBorder(Map *map) {
     QString path = QString("%1/%2").arg(root).arg(map->layout->border_path);
     writeBlockdata(path, map->layout->border);
 }
 
-void Project::saveBlockdata(Map* map) {
+void Project::saveLayoutBlockdata(Map* map) {
     QString path = QString("%1/%2").arg(root).arg(map->layout->blockdata_path);
     writeBlockdata(path, map->layout->blockdata);
     map->metatileHistory.save();
@@ -844,23 +797,12 @@ void Project::saveAllMaps() {
 
 void Project::saveMap(Map *map) {
     // Create/Modify a few collateral files for brand new maps.
+    QString mapDataDir = QString(root + "/data/maps/%1").arg(map->name);
     if (!map->isPersistedToFile) {
-        QString newMapDataDir = QString(root + "/data/maps/%1").arg(map->name);
-        if (!QDir::root().mkdir(newMapDataDir)) {
-            logError(QString("Error: failed to create directory for new map: '%1'").arg(newMapDataDir));
+        if (!QDir::root().mkdir(mapDataDir)) {
+            logError(QString("Error: failed to create directory for new map: '%1'").arg(mapDataDir));
         }
 
-        if (map->needsLayoutDir) {
-            QString newLayoutDir = QString(root + "/data/layouts/%1").arg(map->name);
-            if (!QDir::root().mkdir(newLayoutDir)) {
-                logError(QString("Error: failed to create directory for new layout: '%1'").arg(newLayoutDir));
-            }
-            // Simply append to data/layouts.inc.
-            QString layout_text = QString("\t.include \"data/layouts/%1/layout.inc\"\n").arg(map->layout->name);
-            appendTextFile(root + "/data/layouts.inc", layout_text);
-        }
-
-        // TODO: In the future, these files needs more structure to allow for proper parsing/saving.
         // Create file data/maps/<map_name>/scripts.inc
         QString text = QString("%1_MapScripts::\n\t.byte 0\n").arg(map->name);
         saveTextFile(root + "/data/maps/" + map->name + "/scripts.inc", text);
@@ -877,20 +819,137 @@ void Project::saveMap(Map *map) {
         }
         appendTextFile(root + "/data/event_scripts.s", text);
 
-        // Simply append to data/map_events.s.
-        text = QString("\n\t.include \"data/maps/%1/events.inc\"\n").arg(map->name);
-        appendTextFile(root + "/data/map_events.s", text);
-
-        // Simply append to data/maps/headers.inc.
-        text = QString("\t.include \"data/maps/%1/header.inc\"\n").arg(map->name);
-        appendTextFile(root + "/data/maps/headers.inc", text);
+        if (map->needsLayoutDir) {
+            QString newLayoutDir = QString(root + "/data/layouts/%1").arg(map->name);
+            if (!QDir::root().mkdir(newLayoutDir)) {
+                logError(QString("Error: failed to create directory for new layout: '%1'").arg(newLayoutDir));
+            }
+        }
     }
 
-    saveMapBorder(map);
-    saveMapHeader(map);
-    saveMapConnections(map);
-    saveBlockdata(map);
-    saveMapEvents(map);
+    // Append to "layouts" array in data/layouts/layouts.json.
+    QString layoutsFilepath = QString("%1/data/layouts/layouts.json").arg(root);
+    QFile layoutsFile(layoutsFilepath);
+    if (!layoutsFile.open(QIODevice::ReadWrite)) {
+        logError(QString("Error: Could not open %1 for read/write").arg(layoutsFilepath));
+        return;
+    }
+    QByteArray layoutsData = layoutsFile.readAll();
+    QJsonDocument layoutsDoc = QJsonDocument::fromJson(layoutsData);
+    QJsonObject layoutsObj = layoutsDoc.object();
+    QJsonArray layoutsArr = layoutsObj["layouts"].toArray();
+    QJsonObject newLayoutObj;
+    newLayoutObj["id"] = map->layout->id;
+    newLayoutObj["name"] = map->layout->name;
+    newLayoutObj["width"] = map->layout->width.toInt();
+    newLayoutObj["height"] = map->layout->height.toInt();
+    newLayoutObj["primary_tileset"] = map->layout->tileset_primary_label;
+    newLayoutObj["secondary_tileset"] = map->layout->tileset_secondary_label;
+    newLayoutObj["border_filepath"] = map->layout->border_path;
+    newLayoutObj["blockdata_filepath"] = map->layout->blockdata_path;
+    layoutsArr.append(newLayoutObj);
+    layoutsFile.write(layoutsDoc.toJson());
+
+    // Create map.json for map data.
+    QString mapFilepath = QString("%1/map.json").arg(mapDataDir);
+    QFile mapFile(mapFilepath);
+    if (!mapFile.open(QIODevice::WriteOnly)) {
+        logError(QString("Error: Could not open %1 for writing").arg(mapFilepath));
+        return;
+    }
+
+    QJsonObject mapObj;
+    // Header values.
+    mapObj["id"] = map->constantName;
+    mapObj["name"] = map->name;
+    mapObj["layout"] = map->layout->id;
+    mapObj["music"] = map->song;
+    mapObj["region_map_section"] = map->location;
+    mapObj["requires_flash"] = map->requiresFlash.toInt() > 0 || map->requiresFlash == "TRUE";
+    mapObj["weather"] = map->weather;
+    mapObj["map_type"] = map->type;
+    mapObj["allow_bike"] = map->allowBiking.toInt() > 0 || map->allowBiking == "TRUE";
+    mapObj["allow_escape_rope"] = map->allowEscapeRope.toInt() > 0 || map->allowEscapeRope == "TRUE";
+    mapObj["allow_running"] = map->allowRunning.toInt() > 0 || map->allowRunning == "TRUE";
+    mapObj["show_map_name"] = map->show_location.toInt() > 0 || map->show_location == "TRUE";
+    mapObj["battle_scene"] = map->battle_scene;
+
+    // Connections
+    if (map->connections.length() > 0) {
+        QJsonArray connectionsArr;
+        for (MapConnection* connection : map->connections) {
+            if (mapNamesToMapConstants->contains(connection->map_name)) {
+                QJsonObject connectionObj;
+                connectionObj["direction"] = connection->direction;
+                connectionObj["offset"] = connection->offset.toInt();
+                connectionObj["map"] = this->mapNamesToMapConstants->value(connection->map_name);
+                connectionsArr.append(connectionObj);
+            } else {
+                logError(QString("Failed to write map connection. '%1' is not a valid map name").arg(connection->map_name));
+            }
+        }
+        mapObj["connections"] = connectionsArr;
+    } else {
+        mapObj["connections"] = QJsonValue::Null;
+    }
+
+    // Object events
+    QJsonArray objectEventsArr;
+    for (int i = 0; i < map->events["object_event_group"].length(); i++) {
+        Event *object_event = map->events["object_event_group"].value(i);
+        QJsonObject eventObj = object_event->buildObjectEventJSON();
+        objectEventsArr.append(eventObj);
+    }
+    mapObj["object_events"] = objectEventsArr;
+
+    // Warp events
+    QJsonArray warpEventsArr;
+    for (int i = 0; i < map->events["warp_event_group"].length(); i++) {
+        Event *warp_event = map->events["warp_event_group"].value(i);
+        QJsonObject warpObj = warp_event->buildWarpEventJSON(mapNamesToMapConstants);
+        warpEventsArr.append(warpObj);
+    }
+    mapObj["warp_events"] = warpEventsArr;
+
+    // Coord events
+    QJsonArray coordEventsArr;
+    for (int i = 0; i < map->events["coord_event_group"].length(); i++) {
+        Event *event = map->events["coord_event_group"].value(i);
+        QString event_type = event->get("event_type");
+        if (event_type == EventType::Trigger) {
+            QJsonObject triggerObj = event->buildTriggerEventJSON();
+            coordEventsArr.append(triggerObj);
+        } else if (event_type == EventType::WeatherTrigger) {
+            QJsonObject weatherObj = event->buildWeatherTriggerEventJSON();
+            coordEventsArr.append(weatherObj);
+        }
+    }
+    mapObj["coord_events"] = coordEventsArr;
+
+    // Bg Events
+    QJsonArray bgEventsArr;
+    for (int i = 0; i < map->events["bg_event_group"].length(); i++) {
+        Event *event = map->events["bg_event_group"].value(i);
+        QString event_type = event->get("event_type");
+        if (event_type == EventType::Sign) {
+            QJsonObject signObj = event->buildSignEventJSON();
+            bgEventsArr.append(signObj);
+        } else if (event_type == EventType::HiddenItem) {
+            QJsonObject hiddenItemObj = event->buildHiddenItemEventJSON();
+            bgEventsArr.append(hiddenItemObj);
+        } else if (event_type == EventType::SecretBase) {
+            QJsonObject secretBaseObj = event->buildSecretBaseEventJSON();
+            bgEventsArr.append(secretBaseObj);
+        }
+    }
+    mapObj["bg_events"] = bgEventsArr;
+
+    QJsonDocument mapDoc(mapObj);
+    mapFile.write(mapDoc.toJson());
+
+    saveLayoutBorder(map);
+    saveLayoutBlockdata(map);
+    saveMapHealEvents(map);
 
     // Update global data structures with current map data.
     updateMapLayout(map);
@@ -900,23 +959,21 @@ void Project::saveMap(Map *map) {
 }
 
 void Project::updateMapLayout(Map* map) {
-    if (!mapLayoutsTableMaster.contains(map->layout_label)) {
-        mapLayoutsTableMaster.append(map->layout_label);
+    if (!mapLayoutsTableMaster.contains(map->layoutId)) {
+        mapLayoutsTableMaster.append(map->layoutId);
     }
 
     // Deep copy
-    MapLayout *layout = mapLayouts.value(map->layout_label);
+    MapLayout *layout = mapLayouts.value(map->layoutId);
     MapLayout *newLayout = new MapLayout();
     *newLayout = *layout;
-    mapLayoutsMaster.insert(map->layout_label, newLayout);
+    mapLayoutsMaster.insert(map->layoutId, newLayout);
 }
 
 void Project::saveAllDataStructures() {
-    saveMapLayoutsTable();
-    saveAllMapLayouts();
-    saveMapGroupsTable();
+    saveMapLayouts();
+    saveMapGroups();
     saveMapConstantsHeader();
-    saveMapsWithConnections();
 }
 
 void Project::loadTilesetAssets(Tileset* tileset) {
@@ -1156,60 +1213,36 @@ void Project::deleteFile(QString path) {
 }
 
 void Project::readMapGroups() {
-    QString text = readTextFile(root + "/data/maps/groups.inc");
-    if (text.isNull()) {
+    QString mapGroupsFilepath = QString("%1/data/maps/map_groups.json").arg(root);
+    QFile mapGroupsFile(mapGroupsFilepath);
+    if (!mapGroupsFile.open(QIODevice::ReadOnly)) {
+        logError(QString("Error: Could not open %1 for reading").arg(mapGroupsFilepath));
         return;
     }
-    ParseUtil *parser = new ParseUtil;
-    QList<QStringList> *commands = parser->parseAsm(text);
 
-    bool in_group_pointers = false;
-    QStringList *groups = new QStringList;
-    for (int i = 0; i < commands->length(); i++) {
-        QStringList params = commands->value(i);
-        QString macro = params.value(0);
-        if (macro == ".label") {
-            if (in_group_pointers) {
-                break;
-            }
-            if (params.value(1) == "gMapGroups") {
-                in_group_pointers = true;
-            }
-        } else if (macro == ".4byte") {
-            if (in_group_pointers) {
-                for (int j = 1; j < params.length(); j++) {
-                    groups->append(params.value(j));
-                }
-            }
-        }
-    }
+    QByteArray mapGroupsData = mapGroupsFile.readAll();
+    QJsonDocument mapGroupsDoc = QJsonDocument::fromJson(mapGroupsData);
+    QJsonObject mapGroupsObj = mapGroupsDoc.object();
+    QJsonArray mapGroupOrder = mapGroupsObj["group_order"].toArray();
 
     QList<QStringList> groupedMaps;
-    for (int i = 0; i < groups->length(); i++) {
-        groupedMaps.append(QStringList());
-    }
-
     QStringList *maps = new QStringList;
-    int group = -1;
-    for (int i = 0; i < commands->length(); i++) {
-        QStringList params = commands->value(i);
-        QString macro = params.value(0);
-        if (macro == ".label") {
-            group = groups->indexOf(params.value(1));
-        } else if (macro == ".4byte") {
-            if (group != -1) {
-                for (int j = 1; j < params.length(); j++) {
-                    QString mapName = params.value(j);
-                    groupedMaps[group].append(mapName);
-                    maps->append(mapName);
-                    map_groups->insert(mapName, group);
+    QStringList *groups = new QStringList;
+    for (int groupIndex = 0; groupIndex < mapGroupOrder.size(); groupIndex++) {
+        QString groupName = mapGroupOrder.at(groupIndex).toString();
+        QJsonArray mapNames = mapGroupsObj.value(groupName).toArray();
+        groupedMaps.append(QStringList());
+        groups->append(groupName);
+        for (int j = 0; j < mapNames.size(); j++) {
+            QString mapName = mapNames.at(j).toString();
+            map_groups->insert(mapName, groupIndex);
+            groupedMaps[groupIndex].append(mapName);
+            maps->append(mapName);
 
-                    // Build the mapping and reverse mapping between map constants and map names.
-                    QString mapConstant = Map::mapConstantFromName(mapName);
-                    mapConstantsToMapNames->insert(mapConstant, mapName);
-                    mapNamesToMapConstants->insert(mapName, mapConstant);
-                }
-            }
+            // Build the mapping and reverse mapping between map constants and map names.
+            QString mapConstant = Map::mapConstantFromName(mapName);
+            mapConstantsToMapNames->insert(mapConstant, mapName);
+            mapNamesToMapConstants->insert(mapName, mapConstant);
         }
     }
 
@@ -1222,7 +1255,7 @@ void Project::readMapGroups() {
     mapNames = maps;
 
     QString hltext = readTextFile(root + QString("/src/data/heal_locations.h"));
-    QList<HealLocation>* hl = parser->parseHealLocs(hltext);
+    QList<HealLocation>* hl = ParseUtil().parseHealLocs(hltext);
     flyableMaps = *hl;
     delete hl;
 }
@@ -1252,7 +1285,7 @@ Map* Project::addNewMapToGroup(QString mapName, int groupNum) {
     return map;
 }
 
-Map* Project::addNewMapToGroup(QString mapName, int groupNum, Map *newMap, bool updateLayout) {
+Map* Project::addNewMapToGroup(QString mapName, int groupNum, Map *newMap, bool existingLayout) {
     mapNames->append(mapName);
     map_groups->insert(mapName, groupNum);
     groupedMapNames[groupNum].append(mapName);
@@ -1265,25 +1298,11 @@ Map* Project::addNewMapToGroup(QString mapName, int groupNum, Map *newMap, bool 
 
     mapConstantsToMapNames->insert(map->constantName, map->name);
     mapNamesToMapConstants->insert(map->name, map->constantName);
-
-    map->events_label = QString("%1_MapEvents").arg(map->name);;
-    map->scripts_label = QString("%1_MapScripts").arg(map->name);;
-    map->connections_label = "0x0";
-    map->song = "MUS_DAN02";
-    map->requiresFlash = "FALSE";
-    map->weather = "WEATHER_SUNNY";
-    map->unknown = "0";
-    map->show_location = "TRUE";
-    map->battle_scene = "MAP_BATTLE_SCENE_NORMAL";
-
-    if (!updateLayout) {
-        map->layout_id = QString("%1").arg(mapLayoutsTable.size() + 1);
-        mapLayouts.insert(map->layout->label, map->layout);
-        mapLayoutsTable.append(map->layout->label);
+    if (!existingLayout) {
+        mapLayouts.insert(map->layoutId, map->layout);
+        mapLayoutsTable.append(map->layoutId);
         setNewMapBlockdata(map);
         setNewMapBorder(map);
-    } else {
-        map->layout_id = QString("%1").arg(mapLayoutsTable.indexOf(map->layout->label) + 1);
     }
 
     loadMapTilesets(map);
@@ -1519,41 +1538,6 @@ void Project::readCDefinesSorted(QString filepath, QStringList prefixes, QString
     }
 }
 
-void Project::readMapsWithConnections() {
-    QString path = root + "/data/maps/connections.inc";
-    QString text = readTextFile(path);
-    if (text.isNull()) {
-        return;
-    }
-
-    mapsWithConnections.clear();
-    QRegularExpression re("data\\/maps\\/(?<mapName>\\w+)\\/connections.inc");
-    QList<QStringList>* includes = parseAsm(text);
-    for (QStringList values : *includes) {
-        if (values.length() != 2)
-            continue;
-
-        QRegularExpressionMatch match = re.match(values.value(1));
-        if (match.hasMatch()) {
-            QString mapName = match.captured("mapName");
-            mapsWithConnections.append(mapName);
-        }
-    }
-}
-
-void Project::saveMapsWithConnections() {
-    QString path = root + "/data/maps/connections.inc";
-    QString text = "";
-    for (QString mapName : mapsWithConnections) {
-        if (mapNamesToMapConstants->contains(mapName)) {
-            text += QString("\t.include \"data/maps/%1/connections.inc\"\n").arg(mapName);
-        } else {
-            logError(QString("Failed to write connection include. %1 not a valid map name").arg(mapName));
-        }
-    }
-    saveTextFile(path, text);
-}
-
 QStringList Project::getSongNames() {
     QStringList names;
     QString text = readTextFile(root + "/include/constants/songs.h");
@@ -1665,73 +1649,7 @@ void Project::loadEventPixmaps(QList<Event*> objects) {
     }
 }
 
-void Project::saveMapEvents(Map *map) {
-    QString path = root + QString("/data/maps/%1/events.inc").arg(map->name);
-    QString text = "";
-    QString objectEventsLabel = "0x0";
-    QString warpEventsLabel = "0x0";
-    QString coordEventsLabel = "0x0";
-    QString bgEventsLabel = "0x0";
-
-    if (map->events["object_event_group"].length() > 0) {
-        objectEventsLabel = Map::objectEventsLabelFromName(map->name);
-        text += QString("%1::\n").arg(objectEventsLabel);
-        for (int i = 0; i < map->events["object_event_group"].length(); i++) {
-            Event *object_event = map->events["object_event_group"].value(i);
-            text += object_event->buildObjectEventMacro(i);
-        }
-        text += "\n";
-    }
-
-    if (map->events["warp_event_group"].length() > 0) {
-        warpEventsLabel = Map::warpEventsLabelFromName(map->name);
-        text += QString("%1::\n").arg(warpEventsLabel);
-        for (Event *warp : map->events["warp_event_group"]) {
-            text += warp->buildWarpEventMacro(mapNamesToMapConstants);
-        }
-        text += "\n";
-    }
-
-    if (map->events["coord_event_group"].length() > 0) {
-        coordEventsLabel = Map::coordEventsLabelFromName(map->name);
-        text += QString("%1::\n").arg(coordEventsLabel);
-        for (Event *event : map->events["coord_event_group"]) {
-            QString event_type = event->get("event_type");
-            if (event_type == EventType::Trigger) {
-                text += event->buildTriggerEventMacro();
-            } else if (event_type == EventType::WeatherTrigger) {
-                text += event->buildWeatherTriggerEventMacro();
-            }
-        }
-        text += "\n";
-    }
-
-    if (map->events["bg_event_group"].length() > 0)
-    {
-        bgEventsLabel = Map::bgEventsLabelFromName(map->name);
-        text += QString("%1::\n").arg(bgEventsLabel);
-        for (Event *event : map->events["bg_event_group"]) {
-            QString event_type = event->get("event_type");
-            if (event_type == EventType::Sign) {
-                text += event->buildSignEventMacro();
-            } else if (event_type == EventType::HiddenItem) {
-                text += event->buildHiddenItemEventMacro();
-            } else if (event_type == EventType::SecretBase) {
-                text += event->buildSecretBaseEventMacro();
-            }
-        }
-        text += "\n";
-    }
-
-    text += QString("%1::\n").arg(map->events_label);
-    text += QString("\tmap_events %1, %2, %3, %4\n")
-            .arg(objectEventsLabel)
-            .arg(warpEventsLabel)
-            .arg(coordEventsLabel)
-            .arg(bgEventsLabel);
-
-    saveTextFile(path, text);
-
+void Project::saveMapHealEvents(Map *map) {
     // save heal event changes
     if (map->events["heal_event_group"].length() > 0) {
         for (Event *healEvent : map->events["heal_event_group"]) {
@@ -1740,175 +1658,6 @@ void Project::saveMapEvents(Map *map) {
         }
     }
     saveHealLocationStruct(map);
-}
-
-void Project::readMapEvents(Map *map) {
-    if (!map->isPersistedToFile) {
-        return;
-    }
-
-    // lazy
-    QString path = root + QString("/data/maps/%1/events.inc").arg(map->name);
-    QString text = readTextFile(path);
-    if (text.isNull()) {
-        return;
-    }
-
-    QStringList *labels = getLabelValues(parseAsm(text), map->events_label);
-    QString objectEventsLabel = labels->value(0);
-    QString warpEventsLabel = labels->value(1);
-    QString coordEventsLabel = labels->value(2);
-    QString bgEventsLabel = labels->value(3);
-
-    QList<QStringList> *object_events = getLabelMacros(parseAsm(text), objectEventsLabel);
-    map->events["object_event_group"].clear();
-    for (QStringList command : *object_events) {
-        if (command.value(0) == "object_event") {
-            Event *object = new Event;
-            object->put("map_name", map->name);
-            int i = 2;
-            object->put("sprite", command.value(i++));
-            object->put("replacement", command.value(i++));
-            object->put("x", command.value(i++).toInt(nullptr, 0));
-            object->put("y", command.value(i++).toInt(nullptr, 0));
-            object->put("elevation", command.value(i++));
-            object->put("movement_type", command.value(i++));
-            object->put("radius_x", command.value(i++).toInt(nullptr, 0));
-            object->put("radius_y", command.value(i++).toInt(nullptr, 0));
-            object->put("trainer_type", command.value(i++));
-            object->put("sight_radius_tree_id", command.value(i++));
-            object->put("script_label", command.value(i++));
-            object->put("event_flag", command.value(i++));
-            object->put("event_group_type", "object_event_group");
-            object->put("event_type", EventType::Object);
-            map->events["object_event_group"].append(object);
-        }
-    }
-
-    QList<QStringList> *warps = getLabelMacros(parseAsm(text), warpEventsLabel);
-    map->events["warp_event_group"].clear();
-    for (QStringList command : *warps) {
-        if (command.value(0) == "warp_def") {
-            Event *warp = new Event;
-            warp->put("map_name", map->name);
-            int i = 1;
-            warp->put("x", command.value(i++));
-            warp->put("y", command.value(i++));
-            warp->put("elevation", command.value(i++));
-            warp->put("destination_warp", command.value(i++));
-
-            // Ensure the warp destination map constant is valid before adding it to the warps.
-            QString mapConstant = command.value(i++);
-            if (mapConstantsToMapNames->contains(mapConstant)) {
-                warp->put("destination_map_name", mapConstantsToMapNames->value(mapConstant));
-                warp->put("event_group_type", "warp_event_group");
-                warp->put("event_type", EventType::Warp);
-                map->events["warp_event_group"].append(warp);
-            } else if (mapConstant == NONE_MAP_CONSTANT) {
-                warp->put("destination_map_name", NONE_MAP_NAME);
-                warp->put("event_group_type", "warp_event_group");
-                warp->put("event_type", EventType::Warp);
-                map->events["warp_event_group"].append(warp);
-            } else {
-                logError(QString("Destination map constant '%1' is invalid for warp").arg(mapConstant));
-            }
-        }
-    }
-
-    map->events["heal_event_group"].clear();
-
-    for (auto it = flyableMaps.begin(); it != flyableMaps.end(); it++) {
-
-        HealLocation loc = *it;
-
-        //if TRUE map is flyable / has healing location
-        if (loc.name == QString(mapNamesToMapConstants->value(map->name)).remove(0,4)) {
-            Event *heal = new Event;
-            heal->put("map_name", map->name);
-            heal->put("x", loc.x);
-            heal->put("y", loc.y);
-            heal->put("loc_name", loc.name);
-            heal->put("index", loc.index);
-            heal->put("elevation", 3); // TODO: change this?
-            heal->put("destination_map_name", mapConstantsToMapNames->value(map->name));
-            heal->put("event_group_type", "heal_event_group");
-            heal->put("event_type", EventType::HealLocation);
-            map->events["heal_event_group"].append(heal);
-        }
-
-    }
-
-    QList<QStringList> *coords = getLabelMacros(parseAsm(text), coordEventsLabel);
-    map->events["coord_event_group"].clear();
-    for (QStringList command : *coords) {
-        if (command.value(0) == "coord_event") {
-            Event *coord = new Event;
-            coord->put("map_name", map->name);
-            int i = 1;
-            coord->put("x", command.value(i++));
-            coord->put("y", command.value(i++));
-            coord->put("elevation", command.value(i++));
-            coord->put("script_var", command.value(i++));
-            coord->put("script_var_value", command.value(i++));
-            coord->put("script_label", command.value(i++));
-            coord->put("event_group_type", "coord_event_group");
-            coord->put("event_type", EventType::Trigger);
-            map->events["coord_event_group"].append(coord);
-        } else if (command.value(0) == "coord_weather_event") {
-            Event *coord = new Event;
-            coord->put("map_name", map->name);
-            int i = 1;
-            coord->put("x", command.value(i++));
-            coord->put("y", command.value(i++));
-            coord->put("elevation", command.value(i++));
-            coord->put("weather", command.value(i++));
-            coord->put("event_group_type", "coord_event_group");
-            coord->put("event_type", EventType::WeatherTrigger);
-            map->events["coord_event_group"].append(coord);
-        }
-    }
-
-    QList<QStringList> *bgs = getLabelMacros(parseAsm(text), bgEventsLabel);
-    map->events["bg_event_group"].clear();
-    for (QStringList command : *bgs) {
-        if (command.value(0) == "bg_event") {
-            Event *bg = new Event;
-            bg->put("map_name", map->name);
-            int i = 1;
-            bg->put("x", command.value(i++));
-            bg->put("y", command.value(i++));
-            bg->put("elevation", command.value(i++));
-            bg->put("player_facing_direction", command.value(i++));
-            bg->put("script_label", command.value(i++));
-            //sign_unknown7
-            bg->put("event_group_type", "bg_event_group");
-            bg->put("event_type", EventType::Sign);
-            map->events["bg_event_group"].append(bg);
-        } else if (command.value(0) == "bg_hidden_item_event") {
-            Event *bg = new Event;
-            bg->put("map_name", map->name);
-            int i = 1;
-            bg->put("x", command.value(i++));
-            bg->put("y", command.value(i++));
-            bg->put("elevation", command.value(i++));
-            bg->put("item", command.value(i++));
-            bg->put("flag", command.value(i++));
-            bg->put("event_group_type", "bg_event_group");
-            bg->put("event_type", EventType::HiddenItem);
-            map->events["bg_event_group"].append(bg);
-        } else if (command.value(0) == "bg_secret_base_event") {
-            Event *bg = new Event;
-            bg->put("map_name", map->name);
-            int i = 1;
-            bg->put("x", command.value(i++));
-            bg->put("y", command.value(i++));
-            bg->put("elevation", command.value(i++));
-            bg->put("secret_base_id", command.value(i++));
-            bg->put("event_group_type", "bg_event_group");
-            bg->put("event_type", EventType::SecretBase);
-            map->events["bg_event_group"].append(bg);
-        }
-    }
 }
 
 void Project::setNewMapEvents(Map *map) {

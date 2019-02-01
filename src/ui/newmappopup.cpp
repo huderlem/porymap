@@ -16,7 +16,7 @@ NewMapPopup::NewMapPopup(QWidget *parent, Project *project) :
 {
     ui->setupUi(this);
     this->project = project;
-    this->changeLayout = false;
+    this->existingLayout = false;
 }
 
 NewMapPopup::~NewMapPopup()
@@ -24,7 +24,7 @@ NewMapPopup::~NewMapPopup()
     delete ui;
 }
 
-void NewMapPopup::init(int type, int group, QString sec, QString layout) {
+void NewMapPopup::init(int type, int group, QString sec, QString layoutId) {
     switch (type)
     {
         case MapSortOrder::Group:
@@ -34,15 +34,15 @@ void NewMapPopup::init(int type, int group, QString sec, QString layout) {
             setDefaultValues(group, sec);
             break;
         case MapSortOrder::Layout:
-            useLayout(layout);
+            useLayout(layoutId);
             setDefaultValues(group, QString());
             break;
     }
 }
 
-void NewMapPopup::useLayout(QString mapName) {
-    this->changeLayout = true;
-    this->layoutName = mapName;
+void NewMapPopup::useLayout(QString layoutId) {
+    this->existingLayout = true;
+    this->layoutId = layoutId;
 }
 
 void NewMapPopup::setDefaultValues(int groupNum, QString mapSec) {
@@ -55,11 +55,11 @@ void NewMapPopup::setDefaultValues(int groupNum, QString mapSec) {
     ui->comboBox_NewMap_Group->addItems(*project->groupNames);
     ui->comboBox_NewMap_Group->setCurrentText("gMapGroup" + QString::number(groupNum));
 
-    if (changeLayout) {
-        ui->spinBox_NewMap_Width->setValue(project->mapLayouts.value(layoutName)->width.toInt(nullptr, 0));
-        ui->spinBox_NewMap_Height->setValue(project->mapLayouts.value(layoutName)->height.toInt(nullptr, 0));
-        ui->comboBox_NewMap_Primary_Tileset->setCurrentText(project->mapLayouts.value(layoutName)->tileset_primary_label);
-        ui->comboBox_NewMap_Secondary_Tileset->setCurrentText(project->mapLayouts.value(layoutName)->tileset_secondary_label);
+    if (existingLayout) {
+        ui->spinBox_NewMap_Width->setValue(project->mapLayouts.value(layoutId)->width.toInt(nullptr, 0));
+        ui->spinBox_NewMap_Height->setValue(project->mapLayouts.value(layoutId)->height.toInt(nullptr, 0));
+        ui->comboBox_NewMap_Primary_Tileset->setCurrentText(project->mapLayouts.value(layoutId)->tileset_primary_label);
+        ui->comboBox_NewMap_Secondary_Tileset->setCurrentText(project->mapLayouts.value(layoutId)->tileset_secondary_label);
         ui->spinBox_NewMap_Width->setDisabled(true);
         ui->spinBox_NewMap_Height->setDisabled(true);
         ui->comboBox_NewMap_Primary_Tileset->setDisabled(true);
@@ -110,38 +110,35 @@ void NewMapPopup::on_lineEdit_NewMap_Name_textChanged(const QString &text) {
 
 void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
     Map *newMap = new Map;
-    MapLayout *layout = new MapLayout;
+    MapLayout *layout;
 
     // If map name is not unique, use default value. Also use only valid characters.
     QString newMapName = this->ui->lineEdit_NewMap_Name->text().remove(QRegularExpression("[^a-zA-Z0-9_]+"));
     if (project->mapNames->contains(newMapName) || newMapName.isEmpty()) {
         newMapName = project->getNewMapName();
     }
-    newMap->name = newMapName;
 
+    newMap->name = newMapName;
     newMap->type = this->ui->comboBox_NewMap_Type->currentText();
     newMap->location = this->ui->comboBox_NewMap_Location->currentText();
+    newMap->song = "MUS_DAN02";
+    newMap->requiresFlash = "0";
+    newMap->weather = "WEATHER_SUNNY";
+    newMap->show_location = "1";
+    newMap->battle_scene = "MAP_BATTLE_SCENE_NORMAL";
 
-    layout->width = QString::number(this->ui->spinBox_NewMap_Width->value());
-    layout->height = QString::number(this->ui->spinBox_NewMap_Height->value());
-    layout->tileset_primary_label = this->ui->comboBox_NewMap_Primary_Tileset->currentText();
-    layout->tileset_secondary_label = this->ui->comboBox_NewMap_Secondary_Tileset->currentText();
-    layout->border_label = QString("%1_MapBorder").arg(newMap->name);
-    layout->blockdata_label = QString("%1_MapBlockdata").arg(newMap->name);
-
-    if (changeLayout) {
-        layout->label = layoutName;
-        layout->name = MapLayout::getNameFromLabel(layout->label);
-        QString block_path = QString("%1/data/layout/%2/map.bin").arg(project->root).arg(MapLayout::getNameFromLabel(layoutName));
-        QString border_path = QString("%1/data/layout/%2/border.bin").arg(project->root).arg(MapLayout::getNameFromLabel(layoutName));
-        layout->blockdata = project->readBlockdata(block_path);
-        layout->border = project->readBlockdata(border_path);
-        newMap->needsLayoutDir = false;
+    if (this->existingLayout) {
+        layout = this->project->mapLayouts.value(this->layoutId);
     } else {
-        layout->border_path = QString("data/layouts/%1/border.bin").arg(newMap->name);
-        layout->blockdata_path = QString("data/layouts/%1/map.bin").arg(newMap->name);
-        layout->label = QString("%1_Layout").arg(newMap->name);
-        layout->name = MapLayout::getNameFromLabel(layout->label);
+        layout = new MapLayout;
+        layout->id = MapLayout::layoutConstantFromName(newMapName);
+        layout->name = QString("%1_Layout").arg(newMap->name);
+        layout->width = QString::number(this->ui->spinBox_NewMap_Width->value());
+        layout->height = QString::number(this->ui->spinBox_NewMap_Height->value());
+        layout->tileset_primary_label = this->ui->comboBox_NewMap_Primary_Tileset->currentText();
+        layout->tileset_secondary_label = this->ui->comboBox_NewMap_Secondary_Tileset->currentText();
+        layout->border_path = QString("data/layouts/%1/border.bin").arg(newMapName);
+        layout->blockdata_path = QString("data/layouts/%1/map.bin").arg(newMapName);
     }
 
     if (this->ui->checkBox_NewMap_Flyable->isChecked()) {
@@ -155,14 +152,10 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
     }
 
     group = this->ui->comboBox_NewMap_Group->currentText().remove("gMapGroup").toInt();
-
     newMap->layout = layout;
-    newMap->layout_label = layout->label;
+    newMap->layoutId = layout->id;
     newMap->group_num = QString::number(group);
-
     map = newMap;
-
     emit applied();
-
     this->close();
 }
