@@ -580,8 +580,7 @@ void MainWindow::on_checkBox_AllowEscapeRope_clicked(bool checked)
 
 void MainWindow::loadDataStructures() {
     Project *project = editor->project;
-    project->readMapLayoutsTable();
-    project->readAllMapLayouts();
+    project->readMapLayouts();
     project->readRegionMapSections();
     project->readItemNames();
     project->readFlagNames();
@@ -593,7 +592,6 @@ void MainWindow::loadDataStructures() {
     project->readCoordEventWeatherNames();
     project->readSecretBaseIds();
     project->readBgEventFacingDirections();
-    project->readMapsWithConnections();
     project->readMetatileBehaviors();
     project->readTilesetProperties();
 }
@@ -674,17 +672,21 @@ void MainWindow::sortMapList() {
         }
         case MapSortOrder::Layout:
         {
+            QMap<QString, int> layoutIndices;
             for (int i = 0; i < project->mapLayoutsTable.length(); i++) {
-                QString layoutName = project->mapLayoutsTable.value(i);
-                QStandardItem *layout = new QStandardItem;
-                layout->setText(layoutName);
-                layout->setIcon(folderIcon);
-                layout->setEditable(false);
-                layout->setData(layoutName, Qt::UserRole);
-                layout->setData("map_layout", MapListUserRoles::TypeRole);
-                layout->setData(i, MapListUserRoles::GroupRole);
-                root->appendRow(layout);
-                mapGroupItemsList->append(layout);
+                QString layoutId = project->mapLayoutsTable.value(i);
+                MapLayout *layout = project->mapLayouts.value(layoutId);
+                QStandardItem *layoutItem = new QStandardItem;
+                layoutItem->setText(layout->name);
+                layoutItem->setIcon(folderIcon);
+                layoutItem->setEditable(false);
+                layoutItem->setData(layout->name, Qt::UserRole);
+                layoutItem->setData("map_layout", MapListUserRoles::TypeRole);
+                layoutItem->setData(layout->id, MapListUserRoles::TypeRole2);
+                layoutItem->setData(i, MapListUserRoles::GroupRole);
+                root->appendRow(layoutItem);
+                mapGroupItemsList->append(layoutItem);
+                layoutIndices[layoutId] = i;
             }
             for (int i = 0; i < project->groupNames->length(); i++) {
                 QStringList names = project->groupedMapNames.value(i);
@@ -692,7 +694,7 @@ void MainWindow::sortMapList() {
                     QString map_name = names.value(j);
                     QStandardItem *map = createMapItem(map_name, i, j);
                     QString layoutId = project->readMapLayoutId(map_name);
-                    QStandardItem *layoutItem = mapGroupItemsList->at(layoutId.toInt() - 1);
+                    QStandardItem *layoutItem = mapGroupItemsList->at(layoutIndices.value(layoutId));
                     layoutItem->setIcon(mapFolderIcon);
                     layoutItem->appendRow(map);
                     mapListIndexes.insert(map_name, map->index());
@@ -746,10 +748,10 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point)
         connect(actions, SIGNAL(triggered(QAction*)), this, SLOT(onAddNewMapToAreaClick(QAction*)));
         menu->exec(QCursor::pos());
     } else if (itemType == "map_layout") {
-        QString layoutName = selectedItem->data(Qt::UserRole).toString();
+        QString layoutId = selectedItem->data(MapListUserRoles::TypeRole2).toString();
         QMenu* menu = new QMenu(this);
         QActionGroup* actions = new QActionGroup(menu);
-        actions->addAction(menu->addAction("Add New Map with Layout"))->setData(layoutName);
+        actions->addAction(menu->addAction("Add New Map with Layout"))->setData(layoutId);
         connect(actions, SIGNAL(triggered(QAction*)), this, SLOT(onAddNewMapToLayoutClick(QAction*)));
         menu->exec(QCursor::pos());
     }
@@ -769,17 +771,17 @@ void MainWindow::onAddNewMapToAreaClick(QAction* triggeredAction)
 
 void MainWindow::onAddNewMapToLayoutClick(QAction* triggeredAction)
 {
-    QString layoutName = triggeredAction->data().toString();
-    openNewMapPopupWindow(MapSortOrder::Layout, layoutName);
+    QString layoutId = triggeredAction->data().toString();
+    openNewMapPopupWindow(MapSortOrder::Layout, layoutId);
 }
 
 void MainWindow::onNewMapCreated() {
     QString newMapName = this->newmapprompt->map->name;
     int newMapGroup = this->newmapprompt->group;
     Map *newMap_ = this->newmapprompt->map;
-    bool updateLayout = this->newmapprompt->changeLayout;
+    bool existingLayout = this->newmapprompt->existingLayout;
 
-    Map *newMap = editor->project->addNewMapToGroup(newMapName, newMapGroup, newMap_, updateLayout);
+    Map *newMap = editor->project->addNewMapToGroup(newMapName, newMapGroup, newMap_, existingLayout);
 
     logInfo(QString("Created a new map named %1.").arg(newMapName));
 

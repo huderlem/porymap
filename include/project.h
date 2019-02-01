@@ -26,6 +26,7 @@ public:
     QMap<QString, QString>* mapNamesToMapConstants;
     QList<QString> mapLayoutsTable;
     QList<QString> mapLayoutsTableMaster;
+    QString layoutsLabel;
     QMap<QString, MapLayout*> mapLayouts;
     QMap<QString, MapLayout*> mapLayoutsMaster;
     QStringList *regionMapSections = nullptr;
@@ -39,7 +40,6 @@ public:
     QStringList *coordEventWeatherNames = nullptr;
     QStringList *secretBaseIds = nullptr;
     QStringList *bgEventFacingDirections = nullptr;
-    QStringList mapsWithConnections;
     QMap<QString, int> metatileBehaviorMap;
     QMap<int, QString> metatileBehaviorMapInverse;
 
@@ -70,25 +70,22 @@ public:
 
     QList<QStringList>* getLabelMacros(QList<QStringList>*, QString);
     QStringList* getLabelValues(QList<QStringList>*, QString);
-    bool readMapHeader(Map*);
-    void readMapLayoutsTable();
-    void readAllMapLayouts();
-    QStringList* readLayoutValues(QString layoutName);
-    void readMapLayout(Map*);
-    void readMapsWithConnections();
+    bool loadMapData(Map*);
+    void readMapLayouts();
+    void loadMapLayout(Map*);
     void loadMapTilesets(Map*);
     void loadTilesetAssets(Tileset*);
     void loadTilesetTiles(Tileset*, QImage);
     void loadTilesetMetatiles(Tileset*);
 
-    void saveBlockdata(Map*);
-    void saveMapBorder(Map*);
+    void saveLayoutBlockdata(Map*);
+    void saveLayoutBorder(Map*);
     void writeBlockdata(QString, Blockdata*);
     void saveAllMaps();
     void saveMap(Map*);
     void saveAllDataStructures();
-    void saveAllMapLayouts();
-    void saveMapGroupsTable();
+    void saveMapLayouts();
+    void saveMapGroups();
     void saveMapConstantsHeader();
     void saveHealLocationStruct(Map*);
     void saveTilesets(Tileset*, Tileset*);
@@ -116,12 +113,9 @@ public:
     QString fixPalettePath(QString path);
     QString fixGraphicPath(QString path);
 
-    void readMapEvents(Map *map);
-    void loadMapConnections(Map *map);
-
     void loadMapBorder(Map *map);
 
-    void saveMapEvents(Map *map);
+    void saveMapHealEvents(Map *map);
 
     QStringList readCArray(QString text, QString label);
     QString readCIncbin(QString text, QString label);
@@ -134,17 +128,10 @@ public:
     static int getNumPalettesPrimary();
     static int getNumPalettesTotal();
 private:
-    QString getMapLayoutsTableFilepath();
-    QString getMapLayoutFilepath(QString);
-    void saveMapHeader(Map*);
-    void saveMapConnections(Map*);
     void saveTilesetMetatileAttributes(Tileset*);
     void saveTilesetMetatiles(Tileset*);
     void saveTilesetTilesImage(Tileset*);
     void saveTilesetPalettes(Tileset*, bool);
-    void updateMapsWithConnections(Map*);
-    void saveMapsWithConnections();
-    void saveMapLayoutsTable();
     void updateMapLayout(Map*);
     void readCDefinesSorted(QString, QStringList, QStringList*);
     void readCDefinesSorted(QString, QStringList, QStringList*, QString, int);

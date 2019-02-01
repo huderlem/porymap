@@ -19,8 +19,8 @@ public:
     ~NewMapPopup();
     Map *map;
     int group;
-    bool changeLayout;
-    QString layoutName;
+    bool existingLayout;
+    QString layoutId;
     void init(int, int, QString, QString);
     void useLayout(QString);
 
