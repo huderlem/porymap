@@ -158,6 +158,8 @@ bool Project::loadMapData(Map* map) {
         map->allowEscapeRope = QString::number(mapObj["allow_escape_rope"].toBool());
         map->allowRunning = QString::number(mapObj["allow_running"].toBool());
     }
+    map->sharedEventsMap = mapObj["shared_events_map"].toString();
+    map->sharedScriptsMap = mapObj["shared_scripts_map"].toString();
 
     // Events
     map->events["object_event_group"].clear();
@@ -893,56 +895,64 @@ void Project::saveMap(Map *map) {
         mapObj["connections"] = QJsonValue::Null;
     }
 
-    // Object events
-    QJsonArray objectEventsArr;
-    for (int i = 0; i < map->events["object_event_group"].length(); i++) {
-        Event *object_event = map->events["object_event_group"].value(i);
-        QJsonObject eventObj = object_event->buildObjectEventJSON();
-        objectEventsArr.append(eventObj);
-    }
-    mapObj["object_events"] = objectEventsArr;
-
-    // Warp events
-    QJsonArray warpEventsArr;
-    for (int i = 0; i < map->events["warp_event_group"].length(); i++) {
-        Event *warp_event = map->events["warp_event_group"].value(i);
-        QJsonObject warpObj = warp_event->buildWarpEventJSON(mapNamesToMapConstants);
-        warpEventsArr.append(warpObj);
-    }
-    mapObj["warp_events"] = warpEventsArr;
-
-    // Coord events
-    QJsonArray coordEventsArr;
-    for (int i = 0; i < map->events["coord_event_group"].length(); i++) {
-        Event *event = map->events["coord_event_group"].value(i);
-        QString event_type = event->get("event_type");
-        if (event_type == EventType::Trigger) {
-            QJsonObject triggerObj = event->buildTriggerEventJSON();
-            coordEventsArr.append(triggerObj);
-        } else if (event_type == EventType::WeatherTrigger) {
-            QJsonObject weatherObj = event->buildWeatherTriggerEventJSON();
-            coordEventsArr.append(weatherObj);
+    if (map->sharedEventsMap.isEmpty()) {
+        // Object events
+        QJsonArray objectEventsArr;
+        for (int i = 0; i < map->events["object_event_group"].length(); i++) {
+            Event *object_event = map->events["object_event_group"].value(i);
+            QJsonObject eventObj = object_event->buildObjectEventJSON();
+            objectEventsArr.append(eventObj);
         }
-    }
-    mapObj["coord_events"] = coordEventsArr;
+        mapObj["object_events"] = objectEventsArr;
 
-    // Bg Events
-    QJsonArray bgEventsArr;
-    for (int i = 0; i < map->events["bg_event_group"].length(); i++) {
-        Event *event = map->events["bg_event_group"].value(i);
-        QString event_type = event->get("event_type");
-        if (event_type == EventType::Sign) {
-            QJsonObject signObj = event->buildSignEventJSON();
-            bgEventsArr.append(signObj);
-        } else if (event_type == EventType::HiddenItem) {
-            QJsonObject hiddenItemObj = event->buildHiddenItemEventJSON();
-            bgEventsArr.append(hiddenItemObj);
-        } else if (event_type == EventType::SecretBase) {
-            QJsonObject secretBaseObj = event->buildSecretBaseEventJSON();
-            bgEventsArr.append(secretBaseObj);
+        // Warp events
+        QJsonArray warpEventsArr;
+        for (int i = 0; i < map->events["warp_event_group"].length(); i++) {
+            Event *warp_event = map->events["warp_event_group"].value(i);
+            QJsonObject warpObj = warp_event->buildWarpEventJSON(mapNamesToMapConstants);
+            warpEventsArr.append(warpObj);
         }
+        mapObj["warp_events"] = warpEventsArr;
+
+        // Coord events
+        QJsonArray coordEventsArr;
+        for (int i = 0; i < map->events["coord_event_group"].length(); i++) {
+            Event *event = map->events["coord_event_group"].value(i);
+            QString event_type = event->get("event_type");
+            if (event_type == EventType::Trigger) {
+                QJsonObject triggerObj = event->buildTriggerEventJSON();
+                coordEventsArr.append(triggerObj);
+            } else if (event_type == EventType::WeatherTrigger) {
+                QJsonObject weatherObj = event->buildWeatherTriggerEventJSON();
+                coordEventsArr.append(weatherObj);
+            }
+        }
+        mapObj["coord_events"] = coordEventsArr;
+
+        // Bg Events
+        QJsonArray bgEventsArr;
+        for (int i = 0; i < map->events["bg_event_group"].length(); i++) {
+            Event *event = map->events["bg_event_group"].value(i);
+            QString event_type = event->get("event_type");
+            if (event_type == EventType::Sign) {
+                QJsonObject signObj = event->buildSignEventJSON();
+                bgEventsArr.append(signObj);
+            } else if (event_type == EventType::HiddenItem) {
+                QJsonObject hiddenItemObj = event->buildHiddenItemEventJSON();
+                bgEventsArr.append(hiddenItemObj);
+            } else if (event_type == EventType::SecretBase) {
+                QJsonObject secretBaseObj = event->buildSecretBaseEventJSON();
+                bgEventsArr.append(secretBaseObj);
+            }
+        }
+        mapObj["bg_events"] = bgEventsArr;
+    } else {
+        mapObj["shared_events_map"] = map->sharedEventsMap;
     }
-    mapObj["bg_events"] = bgEventsArr;
+
+    if (!map->sharedScriptsMap.isEmpty()) {
+        mapObj["shared_scripts_map"] = map->sharedScriptsMap;
+    }
 
     QJsonDocument mapDoc(mapObj);
     mapFile.write(mapDoc.toJson());
