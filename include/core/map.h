@@ -36,6 +36,8 @@ public:
     QString allowBiking;
     QString allowEscapeRope;
     QString battle_scene;
+    QString sharedEventsMap = "";
+    QString sharedScriptsMap = "";
     MapLayout *layout;
     bool isPersistedToFile = true;
     bool needsLayoutDir = true;
