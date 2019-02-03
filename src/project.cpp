@@ -128,6 +128,58 @@ QStringList* Project::getLabelValues(QList<QStringList> *list, QString label) {
     return values;
 }
 
+QMap<QString, bool> Project::getTopLevelMapFields() {
+    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeemerald) {
+        return QMap<QString, bool>
+        {
+            {"id", true},
+            {"name", true},
+            {"layout", true},
+            {"music", true},
+            {"region_map_section", true},
+            {"requires_flash", true},
+            {"weather", true},
+            {"map_type", true},
+            {"allow_bike", true},
+            {"allow_escape_rope", true},
+            {"allow_running", true},
+            {"show_map_name", true},
+            {"battle_scene", true},
+            {"connections", true},
+            {"object_events", true},
+            {"warp_events", true},
+            {"coord_events", true},
+            {"bg_events", true},
+            {"shared_events_map", true},
+            {"shared_scripts_map", true},
+        };
+    } else if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeruby) {
+        return QMap<QString, bool>
+        {
+            {"id", true},
+            {"name", true},
+            {"layout", true},
+            {"music", true},
+            {"region_map_section", true},
+            {"requires_flash", true},
+            {"weather", true},
+            {"map_type", true},
+            {"show_map_name", true},
+            {"battle_scene", true},
+            {"connections", true},
+            {"object_events", true},
+            {"warp_events", true},
+            {"coord_events", true},
+            {"bg_events", true},
+            {"shared_events_map", true},
+            {"shared_scripts_map", true},
+        };
+    } else {
+        logError("Invalid game version");
+        return QMap<QString, bool>();
+    }
+}
+
 bool Project::loadMapData(Map* map) {
     if (!map->isPersistedToFile) {
         return true;
@@ -319,6 +371,14 @@ bool Project::loadMapData(Map* map) {
             } else {
                 logError(QString("Failed to find connected map for map constant '%1'").arg(mapConstant));
             }
+        }
+    }
+
+    // Check for custom fields
+    QMap<QString, bool> baseFields = this->getTopLevelMapFields();
+    for (QString key : mapObj.keys()) {
+        if (!baseFields.contains(key)) {
+            map->customHeaders.insert(key, mapObj[key].toString());
         }
     }
 
@@ -952,6 +1012,11 @@ void Project::saveMap(Map *map) {
 
     if (!map->sharedScriptsMap.isEmpty()) {
         mapObj["shared_scripts_map"] = map->sharedScriptsMap;
+    }
+
+    // Custom header fields.
+    for (QString key : map->customHeaders.keys()) {
+        mapObj[key] = map->customHeaders[key];
     }
 
     QJsonDocument mapDoc(mapObj);

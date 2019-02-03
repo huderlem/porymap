@@ -70,6 +70,7 @@ public:
 
     QList<QStringList>* getLabelMacros(QList<QStringList>*, QString);
     QStringList* getLabelValues(QList<QStringList>*, QString);
+    QMap<QString, bool> getTopLevelMapFields();
     bool loadMapData(Map*);
     void readMapLayouts();
     void loadMapLayout(Map*);
