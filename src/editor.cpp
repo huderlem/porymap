@@ -1109,6 +1109,21 @@ void Editor::toggleBorderVisibility(bool visible)
     this->setConnectionsVisibility(visible);
 }
 
+void Editor::updateCustomMapHeaderValues(QTableWidget *table)
+{
+    QMap<QString, QString> fields;
+    for (int row = 0; row < table->rowCount(); row++) {
+        QString keyStr = "";
+        QString valueStr = "";
+        QTableWidgetItem *key = table->item(row, 0);
+        QTableWidgetItem *value = table->item(row, 1);
+        if (key) keyStr = key->text();
+        if (value) valueStr = value->text();
+        fields[keyStr] = valueStr;
+    }
+    map->customHeaders = fields;
+}
+
 Tileset* Editor::getCurrentMapPrimaryTileset()
 {
     QString tilesetLabel = map->layout->tileset_primary_label;

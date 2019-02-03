@@ -74,6 +74,7 @@ public:
     void updatePrimaryTileset(QString tilesetLabel, bool forceLoad = false);
     void updateSecondaryTileset(QString tilesetLabel, bool forceLoad = false);
     void toggleBorderVisibility(bool visible);
+    void updateCustomMapHeaderValues(QTableWidget *);
     Tileset *getCurrentMapPrimaryTileset();
 
     DraggablePixmapItem *addMapEvent(Event *event);

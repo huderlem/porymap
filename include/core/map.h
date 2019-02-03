@@ -38,6 +38,7 @@ public:
     QString battle_scene;
     QString sharedEventsMap = "";
     QString sharedScriptsMap = "";
+    QMap<QString, QString> customHeaders;
     MapLayout *layout;
     bool isPersistedToFile = true;
     bool needsLayoutDir = true;

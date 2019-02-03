@@ -486,6 +486,17 @@ void MainWindow::displayMapProperties() {
     ui->checkBox_AllowRunning->setChecked(map->allowRunning.toInt() > 0 || map->allowRunning == "TRUE");
     ui->checkBox_AllowBiking->setChecked(map->allowBiking.toInt() > 0 || map->allowBiking == "TRUE");
     ui->checkBox_AllowEscapeRope->setChecked(map->allowEscapeRope.toInt() > 0 || map->allowEscapeRope == "TRUE");
+
+    // Custom fields table.
+    ui->tableWidget_CustomHeaderFields->blockSignals(true);
+    ui->tableWidget_CustomHeaderFields->setRowCount(0);
+    for (auto it = map->customHeaders.begin(); it != map->customHeaders.end(); it++) {
+        int rowIndex = ui->tableWidget_CustomHeaderFields->rowCount();
+        ui->tableWidget_CustomHeaderFields->insertRow(rowIndex);
+        ui->tableWidget_CustomHeaderFields->setItem(rowIndex, 0, new QTableWidgetItem(it.key()));
+        ui->tableWidget_CustomHeaderFields->setItem(rowIndex, 1, new QTableWidgetItem(it.value()));
+    }
+    ui->tableWidget_CustomHeaderFields->blockSignals(false);
 }
 
 void MainWindow::on_comboBox_Song_activated(const QString &song)
@@ -1901,6 +1912,42 @@ void MainWindow::on_actionAbout_Porymap_triggered()
     AboutPorymap *window = new AboutPorymap(this);
     window->setAttribute(Qt::WA_DeleteOnClose);
     window->show();
+}
+
+void MainWindow::on_pushButton_AddCustomHeaderField_clicked()
+{
+    int rowIndex = this->ui->tableWidget_CustomHeaderFields->rowCount();
+    this->ui->tableWidget_CustomHeaderFields->insertRow(rowIndex);
+    this->ui->tableWidget_CustomHeaderFields->selectRow(rowIndex);
+    this->editor->updateCustomMapHeaderValues(this->ui->tableWidget_CustomHeaderFields);
+}
+
+void MainWindow::on_pushButton_DeleteCustomHeaderField_clicked()
+{
+    int rowCount = this->ui->tableWidget_CustomHeaderFields->rowCount();
+    if (rowCount > 0) {
+        QModelIndexList indexList = ui->tableWidget_CustomHeaderFields->selectionModel()->selectedIndexes();
+        QList<QPersistentModelIndex> persistentIndexes;
+        for (QModelIndex index : indexList) {
+            QPersistentModelIndex persistentIndex(index);
+            persistentIndexes.append(persistentIndex);
+        }
+
+        for (QPersistentModelIndex index : persistentIndexes) {
+            this->ui->tableWidget_CustomHeaderFields->removeRow(index.row());
+        }
+
+        if (this->ui->tableWidget_CustomHeaderFields->rowCount() > 0) {
+            this->ui->tableWidget_CustomHeaderFields->selectRow(0);
+        }
+
+        this->editor->updateCustomMapHeaderValues(this->ui->tableWidget_CustomHeaderFields);
+    }
+}
+
+void MainWindow::on_tableWidget_CustomHeaderFields_cellChanged(int row, int column)
+{
+    this->editor->updateCustomMapHeaderValues(this->ui->tableWidget_CustomHeaderFields);
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
