@@ -1378,8 +1378,10 @@ void MainWindow::updateSelectedObjects() {
         }
 
         // Custom fields table.
-        CustomAttributesTable *customAttributes = new CustomAttributesTable(item->event, frame);
-        frame->layout()->addWidget(customAttributes);
+        if (event_type != EventType::HealLocation) {
+            CustomAttributesTable *customAttributes = new CustomAttributesTable(item->event, frame);
+            frame->layout()->addWidget(customAttributes);
+        }
 
         frames.append(frame);
     }
