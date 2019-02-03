@@ -34,6 +34,7 @@ SOURCES += src/core/block.cpp \
     src/ui/connectionpixmapitem.cpp \
     src/ui/currentselectedmetatilespixmapitem.cpp \
     src/ui/cursortilerect.cpp \
+    src/ui/customattributestable.cpp \
     src/ui/eventpropertiesframe.cpp \
     src/ui/filterchildrenproxymodel.cpp \
     src/ui/graphicsview.cpp \
@@ -83,6 +84,7 @@ HEADERS  += include/core/block.h \
     include/ui/connectionpixmapitem.h \
     include/ui/currentselectedmetatilespixmapitem.h \
     include/ui/cursortilerect.h \
+    include/ui/customattributestable.h \
     include/ui/eventpropertiesframe.h \
     include/ui/filterchildrenproxymodel.h \
     include/ui/graphicsview.h \

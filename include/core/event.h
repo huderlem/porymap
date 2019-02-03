@@ -23,6 +23,7 @@ class Event
 {
 public:
     Event();
+    Event(QJsonObject, QString);
 public:
     int x() {
         return getInt("x");
@@ -75,8 +76,12 @@ public:
     void setPixmapFromSpritesheet(QImage, int, int);
     int getPixelX();
     int getPixelY();
+    QMap<QString, bool> getExpectedFields();
+    void readCustomValues(QJsonObject values);
+    void addCustomValuesTo(QJsonObject *obj);
 
     QMap<QString, QString> values;
+    QMap<QString, QString> customValues;
     QPixmap pixmap;
     int spriteWidth;
     int spriteHeight;

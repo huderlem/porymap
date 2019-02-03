@@ -218,7 +218,7 @@ bool Project::loadMapData(Map* map) {
     QJsonArray objectEventsArr = mapObj["object_events"].toArray();
     for (int i = 0; i < objectEventsArr.size(); i++) {
         QJsonObject event = objectEventsArr[i].toObject();
-        Event *object = new Event;
+        Event *object = new Event(event, EventType::Object);
         object->put("map_name", map->name);
         object->put("sprite", event["graphics_id"].toString());
         object->put("x", QString::number(event["x"].toInt()));
@@ -232,7 +232,6 @@ bool Project::loadMapData(Map* map) {
         object->put("script_label", event["script"].toString());
         object->put("event_flag", event["flag"].toString());
         object->put("event_group_type", "object_event_group");
-        object->put("event_type", EventType::Object);
         map->events["object_event_group"].append(object);
     }
 
@@ -240,7 +239,7 @@ bool Project::loadMapData(Map* map) {
     QJsonArray warpEventsArr = mapObj["warp_events"].toArray();
     for (int i = 0; i < warpEventsArr.size(); i++) {
         QJsonObject event = warpEventsArr[i].toObject();
-        Event *warp = new Event;
+        Event *warp = new Event(event, EventType::Warp);
         warp->put("map_name", map->name);
         warp->put("x", QString::number(event["x"].toInt()));
         warp->put("y", QString::number(event["y"].toInt()));
@@ -252,12 +251,10 @@ bool Project::loadMapData(Map* map) {
         if (mapConstantsToMapNames->contains(mapConstant)) {
             warp->put("destination_map_name", mapConstantsToMapNames->value(mapConstant));
             warp->put("event_group_type", "warp_event_group");
-            warp->put("event_type", EventType::Warp);
             map->events["warp_event_group"].append(warp);
         } else if (mapConstant == NONE_MAP_CONSTANT) {
             warp->put("destination_map_name", NONE_MAP_NAME);
             warp->put("event_group_type", "warp_event_group");
-            warp->put("event_type", EventType::Warp);
             map->events["warp_event_group"].append(warp);
         } else {
             logError(QString("Destination map constant '%1' is invalid for warp").arg(mapConstant));
@@ -292,7 +289,7 @@ bool Project::loadMapData(Map* map) {
         QJsonObject event = coordEventsArr[i].toObject();
         QString type = event["type"].toString();
         if (type == "trigger") {
-            Event *coord = new Event;
+            Event *coord = new Event(event, EventType::Trigger);
             coord->put("map_name", map->name);
             coord->put("x", QString::number(event["x"].toInt()));
             coord->put("y", QString::number(event["y"].toInt()));
@@ -301,10 +298,9 @@ bool Project::loadMapData(Map* map) {
             coord->put("script_var_value", QString::number(event["var_value"].toInt()));
             coord->put("script_label", event["script"].toString());
             coord->put("event_group_type", "coord_event_group");
-            coord->put("event_type", EventType::Trigger);
             map->events["coord_event_group"].append(coord);
         } else if (type == "weather") {
-            Event *coord = new Event;
+            Event *coord = new Event(event, EventType::WeatherTrigger);
             coord->put("map_name", map->name);
             coord->put("x", QString::number(event["x"].toInt()));
             coord->put("y", QString::number(event["y"].toInt()));
@@ -322,7 +318,7 @@ bool Project::loadMapData(Map* map) {
         QJsonObject event = bgEventsArr[i].toObject();
         QString type = event["type"].toString();
         if (type == "sign") {
-            Event *bg = new Event;
+            Event *bg = new Event(event, EventType::Sign);
             bg->put("map_name", map->name);
             bg->put("x", QString::number(event["x"].toInt()));
             bg->put("y", QString::number(event["y"].toInt()));
@@ -330,10 +326,9 @@ bool Project::loadMapData(Map* map) {
             bg->put("player_facing_direction", event["player_facing_dir"].toString());
             bg->put("script_label", event["script"].toString());
             bg->put("event_group_type", "bg_event_group");
-            bg->put("event_type", EventType::Sign);
             map->events["bg_event_group"].append(bg);
         } else if (type == "hidden_item") {
-            Event *bg = new Event;
+            Event *bg = new Event(event, EventType::HiddenItem);
             bg->put("map_name", map->name);
             bg->put("x", QString::number(event["x"].toInt()));
             bg->put("y", QString::number(event["y"].toInt()));
@@ -341,17 +336,15 @@ bool Project::loadMapData(Map* map) {
             bg->put("item", event["item"].toString());
             bg->put("flag", event["flag"].toString());
             bg->put("event_group_type", "bg_event_group");
-            bg->put("event_type", EventType::HiddenItem);
             map->events["bg_event_group"].append(bg);
         } else if (type == "secret_base") {
-            Event *bg = new Event;
+            Event *bg = new Event(event, EventType::SecretBase);
             bg->put("map_name", map->name);
             bg->put("x", QString::number(event["x"].toInt()));
             bg->put("y", QString::number(event["y"].toInt()));
             bg->put("elevation", QString::number(event["elevation"].toInt()));
             bg->put("secret_base_id", event["secret_base_id"].toString());
             bg->put("event_group_type", "bg_event_group");
-            bg->put("event_type", EventType::SecretBase);
             map->events["bg_event_group"].append(bg);
         }
     }

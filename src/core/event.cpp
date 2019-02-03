@@ -17,6 +17,13 @@ Event::Event()
     this->usingSprite = false;
 }
 
+Event::Event(QJsonObject obj, QString type)
+{
+    Event();
+    this->put("event_type", type);
+    this->readCustomValues(obj);
+}
+
 Event* Event::createNewEvent(QString event_type, QString map_name)
 {
     Event *event = new Event;
@@ -139,6 +146,100 @@ int Event::getPixelY()
     return (this->y() * 16) - qMax(0, this->spriteHeight - 16);
 }
 
+QMap<QString, bool> Event::getExpectedFields()
+{
+    QString type = this->get("event_type");
+    if (type == EventType::Object) {
+        return QMap<QString, bool> {
+            {"graphics_id", true},
+            {"x", true},
+            {"y", true},
+            {"elevation", true},
+            {"movement_type", true},
+            {"movement_range_x", true},
+            {"movement_range_y", true},
+            {"trainer_type", true},
+            {"trainer_sight_or_berry_tree_id", true},
+            {"script", true},
+            {"flag", true},
+        };
+    } else if (type == EventType::Warp) {
+        return QMap<QString, bool> {
+            {"x", true},
+            {"y", true},
+            {"elevation", true},
+            {"dest_map", true},
+            {"dest_warp_id", true},
+        };
+    } else if (type == EventType::Trigger) {
+        return QMap<QString, bool> {
+            {"type", true},
+            {"x", true},
+            {"y", true},
+            {"elevation", true},
+            {"var", true},
+            {"var_value", true},
+            {"script", true},
+        };
+    } else if (type == EventType::WeatherTrigger) {
+        return QMap<QString, bool> {
+            {"type", true},
+            {"x", true},
+            {"y", true},
+            {"elevation", true},
+            {"weather", true},
+        };
+    } else if (type == EventType::Sign) {
+        return QMap<QString, bool> {
+            {"type", true},
+            {"x", true},
+            {"y", true},
+            {"elevation", true},
+            {"player_facing_dir", true},
+            {"script", true},
+        };
+    } else if (type == EventType::HiddenItem) {
+        return QMap<QString, bool> {
+            {"type", true},
+            {"x", true},
+            {"y", true},
+            {"elevation", true},
+            {"item", true},
+            {"flag", true},
+        };
+    } else if (type == EventType::SecretBase) {
+        return QMap<QString, bool> {
+            {"type", true},
+            {"x", true},
+            {"y", true},
+            {"elevation", true},
+            {"secret_base_id", true},
+        };
+    } else {
+        return QMap<QString, bool>();
+    }
+};
+
+void Event::readCustomValues(QJsonObject values)
+{
+    this->customValues.clear();
+    QMap<QString, bool> expectedValues = this->getExpectedFields();
+    for (QString key : values.keys()) {
+        if (!expectedValues.contains(key)) {
+            this->customValues[key] = values[key].toString();
+        }
+    }
+}
+
+void Event::addCustomValuesTo(QJsonObject *obj)
+{
+    for (QString key : this->customValues.keys()) {
+        if (!obj->contains(key)) {
+            (*obj)[key] = this->customValues[key];
+        }
+    }
+}
+
 QJsonObject Event::buildObjectEventJSON()
 {
     QJsonObject eventObj;
@@ -153,6 +254,7 @@ QJsonObject Event::buildObjectEventJSON()
     eventObj["trainer_sight_or_berry_tree_id"] = this->get("sight_radius_tree_id");
     eventObj["script"] = this->get("script_label");
     eventObj["flag"] = this->get("event_flag");
+    this->addCustomValuesTo(&eventObj);
 
     return eventObj;
 }
@@ -165,6 +267,7 @@ QJsonObject Event::buildWarpEventJSON(QMap<QString, QString> *mapNamesToMapConst
     warpObj["elevation"] = this->getInt("elevation");
     warpObj["dest_map"] = mapNamesToMapConstants->value(this->get("destination_map_name"));
     warpObj["dest_warp_id"] = this->getInt("destination_warp");
+    this->addCustomValuesTo(&warpObj);
 
     return warpObj;
 }
@@ -179,6 +282,7 @@ QJsonObject Event::buildTriggerEventJSON()
     triggerObj["var"] = this->get("script_var");
     triggerObj["var_value"] = this->get("script_var_value");
     triggerObj["script"] = this->get("script_label");
+    this->addCustomValuesTo(&triggerObj);
 
     return triggerObj;
 }
@@ -191,6 +295,7 @@ QJsonObject Event::buildWeatherTriggerEventJSON()
     weatherObj["y"] = this->getU16("y");
     weatherObj["elevation"] = this->getInt("elevation");
     weatherObj["weather"] = this->get("weather");
+    this->addCustomValuesTo(&weatherObj);
 
     return weatherObj;
 }
@@ -204,6 +309,7 @@ QJsonObject Event::buildSignEventJSON()
     signObj["elevation"] = this->getInt("elevation");
     signObj["player_facing_dir"] = this->get("player_facing_direction");
     signObj["script"] = this->get("script_label");
+    this->addCustomValuesTo(&signObj);
 
     return signObj;
 }
@@ -217,6 +323,7 @@ QJsonObject Event::buildHiddenItemEventJSON()
     hiddenItemObj["elevation"] = this->getInt("elevation");
     hiddenItemObj["item"] = this->get("item");
     hiddenItemObj["flag"] = this->get("flag");
+    this->addCustomValuesTo(&hiddenItemObj);
 
     return hiddenItemObj;
 }
@@ -229,6 +336,7 @@ QJsonObject Event::buildSecretBaseEventJSON()
     secretBaseObj["y"] = this->getU16("y");
     secretBaseObj["elevation"] = this->getInt("elevation");
     secretBaseObj["secret_base_id"] = this->get("secret_base_id");
+    this->addCustomValuesTo(&secretBaseObj);
 
     return secretBaseObj;
 }
