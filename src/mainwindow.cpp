@@ -8,6 +8,7 @@
 #include "ui_eventpropertiesframe.h"
 #include "bordermetatilespixmapitem.h"
 #include "currentselectedmetatilespixmapitem.h"
+#include "customattributestable.h"
 
 #include <QFileDialog>
 #include <QStandardItemModel>
@@ -1376,8 +1377,11 @@ void MainWindow::updateSelectedObjects() {
             item->bind(combo, key);
         }
 
-        frames.append(frame);
+        // Custom fields table.
+        CustomAttributesTable *customAttributes = new CustomAttributesTable(item->event, frame);
+        frame->layout()->addWidget(customAttributes);
 
+        frames.append(frame);
     }
 
     //int scroll = ui->scrollArea_4->verticalScrollBar()->value();
