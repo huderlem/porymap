@@ -7,6 +7,9 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 The **"Breaking Changes"** listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. If porymap is used on a project that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.
 
 ## [Unreleased]
+- Nothing
+
+## [1.2.0] - 2019-02-04
 ### Breaking Changes
 - New JSON map data format in pokeemerald and pokeruby from commits  [82abc164dc9f6a74fdf0c535cc1621b7ed05318b](https://github.com/pret/pokeemerald/commit/82abc164dc9f6a74fdf0c535cc1621b7ed05318b) and [a0ba1b7c6353f7e4f3066025514c05b323a0123d](https://github.com/pret/pokeruby/commit/a0ba1b7c6353f7e4f3066025514c05b323a0123d).
 
@@ -66,6 +69,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ## [1.0.0] - 2018-10-26
 This was the initial release.
 
-[Unreleased]: https://github.com/huderlem/porymap/compare/1.1.0...HEAD
+[Unreleased]: https://github.com/huderlem/porymap/compare/1.2.0...HEAD
+[1.2.0]: https://github.com/huderlem/porymap/compare/1.1.0...1.2.0
 [1.1.0]: https://github.com/huderlem/porymap/compare/1.0.0...1.1.0
 [1.0.0]: https://github.com/huderlem/porymap/tree/1.0.0
