@@ -2,11 +2,14 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project does **not** adhere to any strict versioning scheme, such as [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+and this project somewhat adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).  The MINOR version number is bumped when there are breaking changes in the pret projects.
 
 The **"Breaking Changes"** listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. If porymap is used on a project that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.
 
 ## [Unreleased]
+### Breaking Changes
+- New JSON map data format in pokeemerald and pokeruby from commits  [82abc164dc9f6a74fdf0c535cc1621b7ed05318b](https://github.com/pret/pokeemerald/commit/82abc164dc9f6a74fdf0c535cc1621b7ed05318b) and [a0ba1b7c6353f7e4f3066025514c05b323a0123d](https://github.com/pret/pokeruby/commit/a0ba1b7c6353f7e4f3066025514c05b323a0123d).
+
 ### Added
 - Add "magic fill" mode to fill tool (hold down CTRL key). This fills all matching metatiles on the map, rather than only the contiguous region.
 - Add ability to import tileset palettes (JASC, .pal, .tpl, .gpl, .act).
@@ -16,6 +19,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Add About window that contains porymap information and changelog. (Found in file menu `Help > About Porymap`)
 - Add option to show player's in-game view when hovering the mouse on the map.
 - Add option to show an outline around the currently-hovered map tile. Its size depends on the size of the current metatile selection.
+- Add ability to define custom fields for map header and all events.
 
 ### Changed
 - Collapse the map list by default.
