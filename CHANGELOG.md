@@ -7,7 +7,8 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 The **"Breaking Changes"** listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. If porymap is used on a project that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.
 
 ## [Unreleased]
-- Nothing
+### Fixed
+- Fix crash when creating a new map from a layout that has no pre-existing maps that use it.
 
 ## [1.2.0] - 2019-02-04
 ### Breaking Changes
