@@ -1248,6 +1248,7 @@ QString Project::readTextFile(QString path) {
         return QString();
     }
     QTextStream in(&file);
+    in.setCodec("UTF-8");
     QString text = "";
     while (!in.atEnd()) {
         text += in.readLine() + "\n";
