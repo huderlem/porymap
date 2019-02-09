@@ -33,6 +33,7 @@ void KeyValueConfigBase::load() {
     }
 
     QTextStream in(&file);
+    in.setCodec("UTF-8");
     QList<QString> configLines;
     QRegularExpression re("^(?<key>.+)=(?<value>.+)$");
     while (!in.atEnd()) {
