@@ -158,6 +158,7 @@ private slots:
     void on_pushButton_AddCustomHeaderField_clicked();
     void on_pushButton_DeleteCustomHeaderField_clicked();
     void on_tableWidget_CustomHeaderFields_cellChanged(int row, int column);
+    void on_horizontalSlider_MetatileZoom_valueChanged(int value);
 
 private:
     Ui::MainWindow *ui;

@@ -561,8 +561,8 @@
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>469</width>
-                     <height>608</height>
+                     <width>545</width>
+                     <height>587</height>
                     </rect>
                    </property>
                    <layout class="QGridLayout" name="gridLayout_8">
@@ -876,8 +876,8 @@
                            <rect>
                             <x>0</x>
                             <y>0</y>
-                            <width>324</width>
-                            <height>77</height>
+                            <width>256</width>
+                            <height>74</height>
                            </rect>
                           </property>
                           <layout class="QHBoxLayout" name="horizontalLayout_7">
@@ -957,6 +957,84 @@
                    </layout>
                   </widget>
                  </item>
+                 <item row="1" column="0">
+                  <widget class="QGroupBox" name="groupBox">
+                   <property name="title">
+                    <string>Border</string>
+                   </property>
+                   <layout class="QGridLayout" name="gridLayout_16">
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="spacing">
+                     <number>0</number>
+                    </property>
+                    <item row="0" column="1">
+                     <widget class="QGraphicsView" name="graphicsView_BorderMetatile">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
+                      <property name="maximumSize">
+                       <size>
+                        <width>16777215</width>
+                        <height>48</height>
+                       </size>
+                      </property>
+                      <property name="toolTip">
+                       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The border is a 2x2 metatile which is repeated outside of the map layout's boundary. Draw on this border area to modify it.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                      </property>
+                      <property name="frameShape">
+                       <enum>QFrame::StyledPanel</enum>
+                      </property>
+                      <property name="frameShadow">
+                       <enum>QFrame::Sunken</enum>
+                      </property>
+                      <property name="verticalScrollBarPolicy">
+                       <enum>Qt::ScrollBarAsNeeded</enum>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="0" column="0">
+                     <spacer name="horizontalSpacer_12">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>40</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item row="0" column="2">
+                     <spacer name="horizontalSpacer_13">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>40</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                   </layout>
+                  </widget>
+                 </item>
                  <item row="3" column="0">
                   <widget class="QScrollArea" name="scrollArea_2">
                    <property name="sizePolicy">
@@ -986,10 +1064,10 @@
                     </property>
                     <property name="geometry">
                      <rect>
-                      <x>0</x>
+                      <x>8</x>
                       <y>0</y>
-                      <width>307</width>
-                      <height>387</height>
+                      <width>221</width>
+                      <height>328</height>
                      </rect>
                     </property>
                     <property name="sizePolicy">
@@ -1082,82 +1160,20 @@
                    </widget>
                   </widget>
                  </item>
-                 <item row="1" column="0">
-                  <widget class="QGroupBox" name="groupBox">
-                   <property name="title">
-                    <string>Border</string>
+                 <item row="4" column="0">
+                  <widget class="QSlider" name="horizontalSlider_MetatileZoom">
+                   <property name="minimum">
+                    <number>10</number>
                    </property>
-                   <layout class="QGridLayout" name="gridLayout_16">
-                    <property name="leftMargin">
-                     <number>0</number>
-                    </property>
-                    <property name="topMargin">
-                     <number>0</number>
-                    </property>
-                    <property name="rightMargin">
-                     <number>0</number>
-                    </property>
-                    <property name="bottomMargin">
-                     <number>0</number>
-                    </property>
-                    <property name="spacing">
-                     <number>0</number>
-                    </property>
-                    <item row="0" column="1">
-                     <widget class="QGraphicsView" name="graphicsView_BorderMetatile">
-                      <property name="sizePolicy">
-                       <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                        <horstretch>0</horstretch>
-                        <verstretch>0</verstretch>
-                       </sizepolicy>
-                      </property>
-                      <property name="maximumSize">
-                       <size>
-                        <width>16777215</width>
-                        <height>48</height>
-                       </size>
-                      </property>
-                      <property name="toolTip">
-                       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The border is a 2x2 metatile which is repeated outside of the map layout's boundary. Draw on this border area to modify it.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                      </property>
-                      <property name="frameShape">
-                       <enum>QFrame::StyledPanel</enum>
-                      </property>
-                      <property name="frameShadow">
-                       <enum>QFrame::Sunken</enum>
-                      </property>
-                      <property name="verticalScrollBarPolicy">
-                       <enum>Qt::ScrollBarAsNeeded</enum>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="0" column="0">
-                     <spacer name="horizontalSpacer_12">
-                      <property name="orientation">
-                       <enum>Qt::Horizontal</enum>
-                      </property>
-                      <property name="sizeHint" stdset="0">
-                       <size>
-                        <width>40</width>
-                        <height>20</height>
-                       </size>
-                      </property>
-                     </spacer>
-                    </item>
-                    <item row="0" column="2">
-                     <spacer name="horizontalSpacer_13">
-                      <property name="orientation">
-                       <enum>Qt::Horizontal</enum>
-                      </property>
-                      <property name="sizeHint" stdset="0">
-                       <size>
-                        <width>40</width>
-                        <height>20</height>
-                       </size>
-                      </property>
-                     </spacer>
-                    </item>
-                   </layout>
+                   <property name="maximum">
+                    <number>100</number>
+                   </property>
+                   <property name="value">
+                    <number>30</number>
+                   </property>
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
                   </widget>
                  </item>
                 </layout>
@@ -1328,8 +1344,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>381</width>
-               <height>657</height>
+               <width>371</width>
+               <height>643</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_7">
@@ -1602,7 +1618,7 @@
                       <x>0</x>
                       <y>0</y>
                       <width>430</width>
-                      <height>568</height>
+                      <height>534</height>
                      </rect>
                     </property>
                     <property name="sizePolicy">
@@ -2154,7 +2170,7 @@
                <string>Custom fields will be added to the map.json file for the current map.</string>
               </property>
               <attribute name="horizontalHeaderVisible">
-               <bool>true</bool>
+               <bool>false</bool>
               </attribute>
               <attribute name="horizontalHeaderCascadingSectionResizes">
                <bool>false</bool>
@@ -2515,8 +2531,8 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>826</width>
-                    <height>557</height>
+                    <width>818</width>
+                    <height>539</height>
                    </rect>
                   </property>
                   <layout class="QGridLayout" name="gridLayout_14">
@@ -2688,7 +2704,7 @@
      <x>0</x>
      <y>0</y>
      <width>1117</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
