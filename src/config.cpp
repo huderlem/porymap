@@ -136,6 +136,13 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
             logWarn(QString("Invalid config value for collision_opacity: '%1'. Must be an integer.").arg(value));
             this->collisionOpacity = 50;
         }
+    } else if (key == "metatiles_zoom") {
+        bool ok;
+        this->metatilesZoom = qMax(10, qMin(100, value.toInt(&ok)));
+        if (!ok) {
+            logWarn(QString("Invalid config value for metatiles_zoom: '%1'. Must be an integer.").arg(value));
+            this->metatilesZoom = 30;
+        }
     } else if (key == "show_player_view") {
         bool ok;
         this->showPlayerView = value.toInt(&ok);
@@ -165,6 +172,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("events_splitter_state", stringFromByteArray(this->eventsSlpitterState));
     map.insert("main_splitter_state", stringFromByteArray(this->mainSplitterState));
     map.insert("collision_opacity", QString("%1").arg(this->collisionOpacity));
+    map.insert("metatiles_zoom", QString("%1").arg(this->metatilesZoom));
     map.insert("show_player_view", this->showPlayerView ? "1" : "0");
     map.insert("show_cursor_tile", this->showCursorTile ? "1" : "0");
     return map;
@@ -222,6 +230,11 @@ void PorymapConfig::setCollisionOpacity(int opacity) {
     // don't auto-save here because this can be called very frequently.
 }
 
+void PorymapConfig::setMetatilesZoom(int zoom) {
+    this->metatilesZoom = zoom;
+    // don't auto-save here because this can be called very frequently.
+}
+
 void PorymapConfig::setShowPlayerView(bool enabled) {
     this->showPlayerView = enabled;
     this->save();
@@ -262,6 +275,10 @@ QMap<QString, QByteArray> PorymapConfig::getGeometry() {
 
 int PorymapConfig::getCollisionOpacity() {
     return this->collisionOpacity;
+}
+
+int PorymapConfig::getMetatilesZoom() {
+    return this->metatilesZoom;
 }
 
 bool PorymapConfig::getShowPlayerView() {
