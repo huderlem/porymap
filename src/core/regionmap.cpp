@@ -198,6 +198,19 @@ void RegionMap::resetSquare(int index) {
     logInfo(QString("Reset map square at (%1, %2).").arg(this->map_squares[index].x).arg(this->map_squares[index].y));
 }
 
+void RegionMap::replaceSectionId(unsigned oldId, unsigned newId) {
+    for (auto &square : map_squares) {
+        if (square.secid == oldId) {
+            square.has_map = false;
+            square.secid = newId;
+            QString secname = (*(project->regionMapSections))[newId];
+            if (secname != "MAPSEC_NONE") square.has_map = true;
+            square.mapsec = secname;
+            square.map_name = sMapNamesMap.value(mapSecToMapEntry.value(secname).name);
+        }
+    }
+}
+
 void RegionMap::resize(int newWidth, int newHeight) {
     QVector<RegionMapSquare> new_squares;
 

@@ -61,7 +61,7 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>348</width>
+               <width>350</width>
                <height>225</height>
               </rect>
              </property>
@@ -182,7 +182,7 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>348</width>
+               <width>350</width>
                <height>225</height>
               </rect>
              </property>
@@ -651,7 +651,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>440</width>
+              <width>441</width>
               <height>230</height>
              </rect>
             </property>
@@ -787,7 +787,7 @@
           <rect>
            <x>8</x>
            <y>0</y>
-           <width>254</width>
+           <width>255</width>
            <height>274</height>
           </rect>
          </property>
@@ -906,16 +906,19 @@
          <enum>Qt::StrongFocus</enum>
         </property>
         <property name="minimum">
-         <number>1</number>
+         <number>10</number>
         </property>
         <property name="maximum">
-         <number>4</number>
+         <number>100</number>
+        </property>
+        <property name="value">
+         <number>30</number>
         </property>
         <property name="orientation">
          <enum>Qt::Vertical</enum>
         </property>
         <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
+         <enum>QSlider::NoTicks</enum>
         </property>
         <property name="tickInterval">
          <number>1</number>
@@ -953,16 +956,19 @@
          <enum>Qt::StrongFocus</enum>
         </property>
         <property name="minimum">
-         <number>1</number>
+         <number>10</number>
         </property>
         <property name="maximum">
-         <number>4</number>
+         <number>100</number>
+        </property>
+        <property name="value">
+         <number>30</number>
         </property>
         <property name="orientation">
          <enum>Qt::Vertical</enum>
         </property>
         <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
+         <enum>QSlider::NoTicks</enum>
         </property>
         <property name="tickInterval">
          <number>1</number>
@@ -991,16 +997,19 @@
          <enum>Qt::StrongFocus</enum>
         </property>
         <property name="minimum">
-         <number>1</number>
+         <number>10</number>
         </property>
         <property name="maximum">
-         <number>4</number>
+         <number>100</number>
+        </property>
+        <property name="value">
+         <number>30</number>
         </property>
         <property name="orientation">
          <enum>Qt::Vertical</enum>
         </property>
         <property name="tickPosition">
-         <enum>QSlider::TicksBelow</enum>
+         <enum>QSlider::NoTicks</enum>
         </property>
         <property name="tickInterval">
          <number>1</number>
@@ -1038,16 +1047,19 @@
          <enum>Qt::StrongFocus</enum>
         </property>
         <property name="minimum">
-         <number>1</number>
+         <number>10</number>
         </property>
         <property name="maximum">
-         <number>4</number>
+         <number>100</number>
+        </property>
+        <property name="value">
+         <number>30</number>
         </property>
         <property name="orientation">
          <enum>Qt::Vertical</enum>
         </property>
         <property name="tickPosition">
-         <enum>QSlider::TicksBelow</enum>
+         <enum>QSlider::NoTicks</enum>
         </property>
         <property name="tickInterval">
          <number>1</number>
@@ -1080,6 +1092,7 @@
     <addaction name="action_RegionMap_Undo"/>
     <addaction name="action_RegionMap_Redo"/>
     <addaction name="action_RegionMap_Resize"/>
+    <addaction name="action_Swap"/>
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
@@ -1127,6 +1140,11 @@
   <action name="action_RegionMap_Generate">
    <property name="text">
     <string>Generate...</string>
+   </property>
+  </action>
+  <action name="action_Swap">
+   <property name="text">
+    <string>Swap...</string>
    </property>
   </action>
  </widget>

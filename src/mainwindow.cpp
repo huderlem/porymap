@@ -1980,9 +1980,7 @@ void MainWindow::on_horizontalSlider_MetatileZoom_valueChanged(int value) {
 }
 
 void MainWindow::on_pushButton_RM_Options_save_clicked() {
-    //
     this->editor->region_map->saveOptions(
-        //
         this->editor->region_map_layout_item->selectedTile,
         this->ui->comboBox_RM_ConnectedMap->currentText(),
         this->ui->lineEdit_RM_MapName->text(),

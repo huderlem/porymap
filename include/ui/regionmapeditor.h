@@ -59,12 +59,7 @@ private:
     bool regionMapFirstDraw = true;
 
     double scaleUpFactor = 2.0;
-    double scaleDownFactor = 1.0 / scaleUpFactor;
-
-    int scaleRegionMapTiles = 1;
-    int scaleRegionMapImage = 1;
-    int scaleCityMapTiles = 1;
-    int scaleCityMapImage = 1;
+    double initialScale = 30.0;
 
     QGraphicsScene *scene_region_map_image  = nullptr;
     QGraphicsScene *scene_city_map_image    = nullptr;
@@ -97,6 +92,7 @@ private slots:
     void on_action_RegionMap_Undo_triggered();
     void on_action_RegionMap_Redo_triggered();
     void on_action_RegionMap_Resize_triggered();
+    void on_action_Swap_triggered();
     void on_action_RegionMap_Generate_triggered();
     void on_tabWidget_Region_Map_currentChanged(int);
     void on_pushButton_RM_Options_delete_clicked();

@@ -48,7 +48,7 @@ public:
 
     ~RegionMap() {};
 
-    Project *project;
+    Project *project = nullptr;
 
     QVector<RegionMapSquare> map_squares;
     History<RegionMapHistoryItem*> history;
@@ -70,6 +70,7 @@ public:
 
     void resize(int width, int height);
     void resetSquare(int index);
+    void replaceSectionId(unsigned oldId, unsigned newId);
 
     int  width();
     int  height();

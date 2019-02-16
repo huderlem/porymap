@@ -11,6 +11,7 @@
 #include <QColor>
 #include <QMessageBox>
 #include <QDialogButtonBox>
+#include <math.h>
 
 RegionMapEditor::RegionMapEditor(QWidget *parent, Project *project_) :
     QMainWindow(parent),
@@ -103,10 +104,9 @@ void RegionMapEditor::displayRegionMapImage() {
     this->scene_region_map_image->setSceneRect(this->scene_region_map_image->itemsBoundingRect());
 
     this->ui->graphicsView_Region_Map_BkgImg->setScene(this->scene_region_map_image);
-    this->ui->graphicsView_Region_Map_BkgImg->setFixedSize(this->region_map->imgSize().width() * scaleRegionMapImage + 2,
-                                                           this->region_map->imgSize().height() * scaleRegionMapImage + 2);
 
     if (regionMapFirstDraw) {
+        on_verticalSlider_Zoom_Map_Image_valueChanged(initialScale);
         RegionMapHistoryItem *commit = new RegionMapHistoryItem(
             RegionMapEditorBox::BackgroundImage, this->region_map->getTiles(), this->region_map->width(), this->region_map->height()
         );
@@ -140,8 +140,6 @@ void RegionMapEditor::displayRegionMapLayout() {
     this->scene_region_map_layout->setSceneRect(this->scene_region_map_layout->itemsBoundingRect());
 
     this->ui->graphicsView_Region_Map_Layout->setScene(this->scene_region_map_layout);
-    this->ui->graphicsView_Region_Map_Layout->setFixedSize(this->region_map->imgSize().width() * scaleRegionMapImage + 2,
-                                                           this->region_map->imgSize().height() * scaleRegionMapImage + 2);
 }
 
 void RegionMapEditor::displayRegionMapLayoutOptions() {
@@ -199,8 +197,7 @@ void RegionMapEditor::displayRegionMapTileSelector() {
             this, &RegionMapEditor::onRegionMapTileSelectorHoveredTileCleared);
 
     this->ui->graphicsView_RegionMap_Tiles->setScene(this->scene_region_map_tiles);
-    this->ui->graphicsView_RegionMap_Tiles->setFixedSize(this->mapsquare_selector_item->pixelWidth * scaleRegionMapTiles + 2,
-                                                         this->mapsquare_selector_item->pixelHeight * scaleRegionMapTiles + 2);
+    on_verticalSlider_Zoom_Image_Tiles_valueChanged(initialScale);
 
     this->mapsquare_selector_item->select(this->selectedImageTile);
 }
@@ -223,8 +220,7 @@ void RegionMapEditor::displayCityMapTileSelector() {
             this, &RegionMapEditor::onCityMapTileSelectorSelectedTileChanged);
 
     this->ui->graphicsView_City_Map_Tiles->setScene(this->scene_city_map_tiles);
-    this->ui->graphicsView_City_Map_Tiles->setFixedSize(this->city_map_selector_item->pixelWidth * scaleCityMapTiles + 2,
-                                                        this->city_map_selector_item->pixelHeight * scaleCityMapTiles + 2);
+    on_verticalSlider_Zoom_City_Tiles_valueChanged(initialScale);
 
     this->city_map_selector_item->select(this->selectedCityTile);
 }
@@ -250,8 +246,7 @@ void RegionMapEditor::displayCityMap(QString f) {
     scene_city_map_image->setSceneRect(this->scene_city_map_image->sceneRect());
 
     this->ui->graphicsView_City_Map->setScene(scene_city_map_image);
-    this->ui->graphicsView_City_Map->setFixedSize(8 * city_map_item->width() * scaleCityMapImage + 2,
-                                                  8 * city_map_item->height() * scaleCityMapImage + 2);
+    on_verticalSlider_Zoom_City_Map_valueChanged(initialScale);
 }
 
 bool RegionMapEditor::createCityMap(QString name) {
@@ -564,6 +559,45 @@ void RegionMapEditor::resize(int w, int h) {
     displayRegionMapLayoutOptions();
 }
 
+void RegionMapEditor::on_action_Swap_triggered() {
+    QDialog popup(this, Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
+    popup.setWindowTitle("New City Map");
+    popup.setWindowModality(Qt::NonModal);
+
+    QFormLayout form(&popup);
+
+    QComboBox *oldSecBox = new QComboBox();
+    oldSecBox->addItems(*(this->project->regionMapSections));
+    form.addRow(new QLabel("Old Map Section:"), oldSecBox);
+    QComboBox *newSecBox = new QComboBox();
+    newSecBox->addItems(*(this->project->regionMapSections));
+    form.addRow(new QLabel("New Map Section:"), newSecBox);
+
+    QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &popup);
+    form.addRow(&buttonBox);
+
+    QString beforeSection, afterSection;
+    uint8_t oldId, newId; 
+    connect(&buttonBox, SIGNAL(rejected()), &popup, SLOT(reject()));
+    connect(&buttonBox, &QDialogButtonBox::accepted, [this, &popup, &oldSecBox, &newSecBox, 
+                                                      &beforeSection, &afterSection, &oldId, &newId](){
+        beforeSection = oldSecBox->currentText();
+        afterSection = newSecBox->currentText();
+        if (!beforeSection.isEmpty() && !afterSection.isEmpty()) {
+            oldId = static_cast<uint8_t>(project->regionMapSections->indexOf(beforeSection));
+            newId = static_cast<uint8_t>(project->regionMapSections->indexOf(afterSection));
+            popup.accept();
+        }
+    });
+
+    if (popup.exec() == QDialog::Accepted) {
+        this->region_map->replaceSectionId(oldId, newId);
+        this->region_map_layout_item->draw();
+        this->region_map_layout_item->select(this->region_map_layout_item->selectedTile);
+        this->hasUnsavedChanges = true;
+    }
+}
+
 void RegionMapEditor::on_comboBox_CityMap_picker_currentTextChanged(const QString &file) {
     this->displayCityMap(file);
     this->cityMapFirstDraw = true;
@@ -593,64 +627,58 @@ void RegionMapEditor::closeEvent(QCloseEvent *event)
 }
 
 void RegionMapEditor::on_verticalSlider_Zoom_Map_Image_valueChanged(int val) {
-    bool zoom_in = val > scaleRegionMapImage ? true : false;
-    scaleRegionMapImage = val;
+    double scale = pow(scaleUpFactor, static_cast<double>(val - initialScale) / initialScale);
 
-    this->ui->graphicsView_Region_Map_BkgImg->setFixedSize(this->region_map->imgSize().width() * pow(scaleUpFactor, scaleRegionMapImage - 1) + 2,
-                                                           this->region_map->imgSize().height() * pow(scaleUpFactor, scaleRegionMapImage - 1) + 2);
-    this->ui->graphicsView_Region_Map_Layout->setFixedSize(this->region_map->imgSize().width() * pow(scaleUpFactor, scaleRegionMapImage - 1) + 2,
-                                                           this->region_map->imgSize().height() * pow(scaleUpFactor, scaleRegionMapImage - 1) + 2);
+    QMatrix matrix;
+    matrix.scale(scale, scale);
+    int width = ceil(static_cast<double>(this->region_map->imgSize().width()) * scale);
+    int height = ceil(static_cast<double>(this->region_map->imgSize().height()) * scale);
 
-    if (zoom_in) {
-        this->ui->graphicsView_Region_Map_BkgImg->scale(scaleUpFactor, scaleUpFactor);
-        this->ui->graphicsView_Region_Map_Layout->scale(scaleUpFactor, scaleUpFactor);
-    } else {
-        //
-        this->ui->graphicsView_Region_Map_BkgImg->scale(scaleDownFactor, scaleDownFactor);
-        this->ui->graphicsView_Region_Map_Layout->scale(scaleDownFactor, scaleDownFactor);
-    }
+    ui->graphicsView_Region_Map_BkgImg->setResizeAnchor(QGraphicsView::NoAnchor);
+    ui->graphicsView_Region_Map_BkgImg->setMatrix(matrix);
+    ui->graphicsView_Region_Map_BkgImg->setFixedSize(width + 2, height + 2);
+    ui->graphicsView_Region_Map_Layout->setResizeAnchor(QGraphicsView::NoAnchor);
+    ui->graphicsView_Region_Map_Layout->setMatrix(matrix);
+    ui->graphicsView_Region_Map_Layout->setFixedSize(width + 2, height + 2);
 }
 
 void RegionMapEditor::on_verticalSlider_Zoom_Image_Tiles_valueChanged(int val) {
-    bool zoom_in = val > scaleRegionMapTiles ? true : false;
-    scaleRegionMapTiles = val;
+    double scale = pow(scaleUpFactor, static_cast<double>(val - initialScale) / initialScale);
 
-    this->ui->graphicsView_RegionMap_Tiles->setFixedSize(this->mapsquare_selector_item->pixelWidth * pow(scaleUpFactor, scaleRegionMapTiles - 1) + 2,
-                                                         this->mapsquare_selector_item->pixelHeight * pow(scaleUpFactor, scaleRegionMapTiles - 1) + 2);
-    
-    if (zoom_in) {
-        this->ui->graphicsView_RegionMap_Tiles->scale(scaleUpFactor, scaleUpFactor);
-    } else {
-        this->ui->graphicsView_RegionMap_Tiles->scale(scaleDownFactor, scaleDownFactor);
-    }
+    QMatrix matrix;
+    matrix.scale(scale, scale);
+    int width = ceil(static_cast<double>(this->mapsquare_selector_item->pixelWidth) * scale);
+    int height = ceil(static_cast<double>(this->mapsquare_selector_item->pixelHeight) * scale);
+
+    ui->graphicsView_RegionMap_Tiles->setResizeAnchor(QGraphicsView::NoAnchor);
+    ui->graphicsView_RegionMap_Tiles->setMatrix(matrix);
+    ui->graphicsView_RegionMap_Tiles->setFixedSize(width + 2, height + 2);
 }
 
 void RegionMapEditor::on_verticalSlider_Zoom_City_Map_valueChanged(int val) {
-    bool zoom_in = val > scaleCityMapImage ? true : false;
-    scaleCityMapImage = val;
+    double scale = pow(scaleUpFactor, static_cast<double>(val - initialScale) / initialScale);
 
-    this->ui->graphicsView_City_Map->setFixedSize(8 * city_map_item->width() * pow(scaleUpFactor, scaleCityMapImage - 1) + 2, 
-                                                  8 * city_map_item->height() * pow(scaleUpFactor, scaleCityMapImage - 1) + 2);
+    QMatrix matrix;
+    matrix.scale(scale, scale);
+    int width = ceil(static_cast<double>(8 * city_map_item->width()) * scale);
+    int height = ceil(static_cast<double>(8 * city_map_item->height()) * scale);
 
-    if (zoom_in) {
-        this->ui->graphicsView_City_Map->scale(scaleUpFactor, scaleUpFactor);
-    } else {
-        this->ui->graphicsView_City_Map->scale(scaleDownFactor, scaleDownFactor);
-    }
+    ui->graphicsView_City_Map->setResizeAnchor(QGraphicsView::NoAnchor);
+    ui->graphicsView_City_Map->setMatrix(matrix);
+    ui->graphicsView_City_Map->setFixedSize(width + 2, height + 2);
 }
 
 void RegionMapEditor::on_verticalSlider_Zoom_City_Tiles_valueChanged(int val) {
-    bool zoom_in = val > scaleCityMapTiles ? true : false;
-    scaleCityMapTiles = val;
+    double scale = pow(scaleUpFactor, static_cast<double>(val - initialScale) / initialScale);
 
-    this->ui->graphicsView_City_Map_Tiles->setFixedSize(this->city_map_selector_item->pixelWidth * pow(scaleUpFactor, scaleCityMapTiles - 1) + 2,
-                                                        this->city_map_selector_item->pixelHeight * pow(scaleUpFactor, scaleCityMapTiles - 1) + 2);
+    QMatrix matrix;
+    matrix.scale(scale, scale);
+    int width = ceil(static_cast<double>(this->city_map_selector_item->pixelWidth) * scale);
+    int height = ceil(static_cast<double>(this->city_map_selector_item->pixelHeight) * scale);
 
-    if (zoom_in) {
-        this->ui->graphicsView_City_Map_Tiles->scale(scaleUpFactor, scaleUpFactor);
-    } else {
-        this->ui->graphicsView_City_Map_Tiles->scale(scaleDownFactor, scaleDownFactor);
-    }
+    ui->graphicsView_City_Map_Tiles->setResizeAnchor(QGraphicsView::NoAnchor);
+    ui->graphicsView_City_Map_Tiles->setMatrix(matrix);
+    ui->graphicsView_City_Map_Tiles->setFixedSize(width + 2, height + 2);
 }
 
 void RegionMapEditor::on_action_RegionMap_Generate_triggered() {

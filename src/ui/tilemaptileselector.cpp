@@ -12,6 +12,7 @@ void TilemapTileSelector::draw() {
     this->numTilesWide = width_ / 8;
     this->numTiles     = ntiles_;
 
+    this->setPixmap(tilemap);
     this->drawSelection();
 }
 
