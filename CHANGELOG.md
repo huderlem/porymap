@@ -12,7 +12,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 
 ### Fixed
 - Fix crash when creating a new map from a layout that has no pre-existing maps that use it.
-- Fix bug where `var_value` JSON fields were being interpreted as integers.
+- Fix bug where `var_value`, `trainer_type` and `trainer_sight_or_berry_tree_id` JSON fields were being interpreted as integers.
 
 ## [1.2.0] - 2019-02-04
 ### Breaking Changes
