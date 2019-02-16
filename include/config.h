@@ -33,6 +33,7 @@ public:
         this->mapSortOrder = MapSortOrder::Group;
         this->prettyCursors = true;
         this->collisionOpacity = 50;
+        this->metatilesZoom = 30;
         this->showPlayerView = false;
         this->showCursorTile = true;
     }
@@ -42,6 +43,7 @@ public:
     void setPrettyCursors(bool enabled);
     void setGeometry(QByteArray, QByteArray, QByteArray, QByteArray, QByteArray);
     void setCollisionOpacity(int opacity);
+    void setMetatilesZoom(int zoom);
     void setShowPlayerView(bool enabled);
     void setShowCursorTile(bool enabled);
     QString getRecentProject();
@@ -50,6 +52,7 @@ public:
     bool getPrettyCursors();
     QMap<QString, QByteArray> getGeometry();
     int getCollisionOpacity();
+    int getMetatilesZoom();
     bool getShowPlayerView();
     bool getShowCursorTile();
 protected:
@@ -70,6 +73,7 @@ private:
     QByteArray eventsSlpitterState;
     QByteArray mainSplitterState;
     int collisionOpacity;
+    int metatilesZoom;
     bool showPlayerView;
     bool showCursorTile;
 };

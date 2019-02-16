@@ -216,6 +216,9 @@ void MainWindow::loadUserSettings() {
     this->editor->collisionOpacity = static_cast<qreal>(porymapConfig.getCollisionOpacity()) / 100;
     ui->horizontalSlider_CollisionTransparency->setValue(porymapConfig.getCollisionOpacity());
     ui->horizontalSlider_CollisionTransparency->blockSignals(false);
+    ui->horizontalSlider_MetatileZoom->blockSignals(true);
+    ui->horizontalSlider_MetatileZoom->setValue(porymapConfig.getMetatilesZoom());
+    ui->horizontalSlider_MetatileZoom->blockSignals(false);
 }
 
 void MainWindow::restoreWindowState() {
@@ -397,6 +400,8 @@ void MainWindow::redrawMapScene()
     ui->graphicsView_Collision->setScene(editor->scene_collision_metatiles);
     //ui->graphicsView_Collision->setSceneRect(editor->scene_collision_metatiles->sceneRect());
     ui->graphicsView_Collision->setFixedSize(editor->movement_permissions_selector_item->pixmap().width() + 2, editor->movement_permissions_selector_item->pixmap().height() + 2);
+
+    on_horizontalSlider_MetatileZoom_valueChanged(ui->horizontalSlider_MetatileZoom->value());
 }
 
 void MainWindow::openWarpMap(QString map_name, QString warp_num) {
@@ -1960,6 +1965,7 @@ void MainWindow::on_tableWidget_CustomHeaderFields_cellChanged(int row, int colu
 }
 
 void MainWindow::on_horizontalSlider_MetatileZoom_valueChanged(int value) {
+    porymapConfig.setMetatilesZoom(value);
     double scale = pow(3.0, static_cast<double>(value - 30) / 30.0);
 
     QMatrix matrix;
