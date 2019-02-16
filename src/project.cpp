@@ -295,7 +295,7 @@ bool Project::loadMapData(Map* map) {
             coord->put("y", QString::number(event["y"].toInt()));
             coord->put("elevation", QString::number(event["elevation"].toInt()));
             coord->put("script_var", event["var"].toString());
-            coord->put("script_var_value", QString::number(event["var_value"].toInt()));
+            coord->put("script_var_value", event["var_value"].toString());
             coord->put("script_label", event["script"].toString());
             coord->put("event_group_type", "coord_event_group");
             map->events["coord_event_group"].append(coord);
