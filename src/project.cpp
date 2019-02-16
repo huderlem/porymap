@@ -598,7 +598,7 @@ void Project::saveMapConstantsHeader() {
     }
 
     text += QString("#define MAP_GROUPS_COUNT %1\n\n").arg(groupNum);
-    text += QString("#endif  // GUARD_CONSTANTS_MAP_GROUPS_H\n");
+    text += QString("#endif // GUARD_CONSTANTS_MAP_GROUPS_H\n");
     saveTextFile(root + "/include/constants/map_groups.h", text);
 }
 

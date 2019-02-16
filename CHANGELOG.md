@@ -7,6 +7,9 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 The **"Breaking Changes"** listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. If porymap is used on a project that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.
 
 ## [Unreleased]
+- None
+
+## [1.2.1] - 2019-02-16
 ### Added
 - Add ability to zoom in and out the map metatile selector via a slider at the bottom of the metatile selector window.
 
@@ -75,6 +78,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 This was the initial release.
 
 [Unreleased]: https://github.com/huderlem/porymap/compare/1.2.0...HEAD
+[1.2.1]: https://github.com/huderlem/porymap/compare/1.2.0...1.2.1
 [1.2.0]: https://github.com/huderlem/porymap/compare/1.1.0...1.2.0
 [1.1.0]: https://github.com/huderlem/porymap/compare/1.0.0...1.1.0
 [1.0.0]: https://github.com/huderlem/porymap/tree/1.0.0
