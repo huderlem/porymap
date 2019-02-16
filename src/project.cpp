@@ -227,8 +227,8 @@ bool Project::loadMapData(Map* map) {
         object->put("movement_type", event["movement_type"].toString());
         object->put("radius_x", QString::number(event["movement_range_x"].toInt()));
         object->put("radius_y", QString::number(event["movement_range_y"].toInt()));
-        object->put("trainer_type", QString::number(event["trainer_type"].toInt()));
-        object->put("sight_radius_tree_id", QString::number(event["trainer_sight_or_berry_tree_id"].toInt()));
+        object->put("trainer_type", event["trainer_type"].toString());
+        object->put("sight_radius_tree_id", event["trainer_sight_or_berry_tree_id"].toString());
         object->put("script_label", event["script"].toString());
         object->put("event_flag", event["flag"].toString());
         object->put("event_group_type", "object_event_group");
