@@ -29,7 +29,9 @@ public:
     QString layoutsLabel;
     QMap<QString, MapLayout*> mapLayouts;
     QMap<QString, MapLayout*> mapLayoutsMaster;
-    QStringList *regionMapSections = nullptr;
+    QMap<QString, QString> *mapSecToMapHoverName;
+    QMap<QString, int> mapSectionNameToValue;
+    QMap<int, QString> mapSectionValueToName;
     QStringList *itemNames = nullptr;
     QStringList *flagNames = nullptr;
     QStringList *varNames = nullptr;
@@ -46,8 +48,6 @@ public:
     QMap<QString, Map*> *map_cache;
     Map* loadMap(QString);
     Map* getMap(QString);
-
-    QMap<QString, QString> *mapSecToMapHoverName;
 
     QMap<QString, Tileset*> *tileset_cache = nullptr;
     Tileset* loadTileset(QString, Tileset *tileset = nullptr);

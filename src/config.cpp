@@ -260,7 +260,7 @@ void PorymapConfig::setShowCursorTile(bool enabled) {
 }
 
 void PorymapConfig::setRegionMapDimensions(int width, int height) {
-    this->regionMapDimensions = QSize(width, height);//QString("%1x%2").arg(width).arg(height);
+    this->regionMapDimensions = QSize(width, height);
 }
 
 QString PorymapConfig::getRecentProject() {

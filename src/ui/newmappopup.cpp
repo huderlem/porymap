@@ -70,7 +70,7 @@ void NewMapPopup::setDefaultValues(int groupNum, QString mapSec) {
     }
 
     ui->comboBox_NewMap_Type->addItems(*project->mapTypes);
-    ui->comboBox_NewMap_Location->addItems(*project->regionMapSections);
+    ui->comboBox_NewMap_Location->addItems(project->mapSectionValueToName.values());
     if (!mapSec.isEmpty()) ui->comboBox_NewMap_Location->setCurrentText(mapSec);
 
     ui->frame_NewMap_Options->setEnabled(true);

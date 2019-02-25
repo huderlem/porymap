@@ -1092,7 +1092,10 @@
     <addaction name="action_RegionMap_Undo"/>
     <addaction name="action_RegionMap_Redo"/>
     <addaction name="action_RegionMap_Resize"/>
+    <addaction name="separator"/>
     <addaction name="action_Swap"/>
+    <addaction name="action_RegionMap_ResetImage"/>
+    <addaction name="action_RegionMap_ResetLayout"/>
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
@@ -1145,6 +1148,16 @@
   <action name="action_Swap">
    <property name="text">
     <string>Swap...</string>
+   </property>
+  </action>
+  <action name="action_RegionMap_ResetImage">
+   <property name="text">
+    <string>Reset Image</string>
+   </property>
+  </action>
+  <action name="action_RegionMap_ResetLayout">
+   <property name="text">
+    <string>Reset Layout</string>
    </property>
   </action>
  </widget>

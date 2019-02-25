@@ -469,7 +469,7 @@ void MainWindow::displayMapProperties() {
     ui->comboBox_Song->addItems(songs);
     ui->comboBox_Song->setCurrentText(map->song);
 
-    ui->comboBox_Location->addItems(*project->regionMapSections);
+    ui->comboBox_Location->addItems(project->mapSectionValueToName.values());
     ui->comboBox_Location->setCurrentText(map->location);
 
     QMap<QString, QStringList> tilesets = project->getTilesets();
@@ -661,8 +661,8 @@ void MainWindow::sortMapList() {
         case MapSortOrder::Area:
         {
             QMap<QString, int> mapsecToGroupNum;
-            for (int i = 0; i < project->regionMapSections->length(); i++) {
-                QString mapsec_name = project->regionMapSections->value(i);
+            for (int i = 0; i < project->mapSectionNameToValue.size(); i++) {
+                QString mapsec_name = project->mapSectionValueToName.value(i);
                 QStandardItem *mapsec = new QStandardItem;
                 mapsec->setText(mapsec_name);
                 mapsec->setIcon(folderIcon);
@@ -1977,21 +1977,6 @@ void MainWindow::on_horizontalSlider_MetatileZoom_valueChanged(int value) {
     ui->graphicsView_Metatiles->setResizeAnchor(QGraphicsView::NoAnchor);
     ui->graphicsView_Metatiles->setMatrix(matrix);
     ui->graphicsView_Metatiles->setFixedSize(size.width() + 2, size.height() + 2);
-}
-
-void MainWindow::on_pushButton_RM_Options_save_clicked() {
-    this->editor->region_map->saveOptions(
-        this->editor->region_map_layout_item->selectedTile,
-        this->ui->comboBox_RM_ConnectedMap->currentText(),
-        this->ui->lineEdit_RM_MapName->text(),
-        this->ui->spinBox_RM_Options_x->value(),
-        this->ui->spinBox_RM_Options_y->value()
-    );
-    this->editor->region_map_layout_item->draw();
-}
-
-void MainWindow::on_pushButton_CityMap_save_clicked() {
-    this->editor->city_map_item->save();
 }
 
 void MainWindow::on_actionRegion_Map_Editor_triggered() {

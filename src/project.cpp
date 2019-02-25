@@ -31,7 +31,6 @@ Project::Project()
     groupNames = new QStringList;
     map_groups = new QMap<QString, int>;
     mapNames = new QStringList;
-    regionMapSections = new QStringList;
     itemNames = new QStringList;
     flagNames = new QStringList;
     varNames = new QStringList;
@@ -1510,8 +1509,18 @@ void Project::readTilesetProperties() {
 
 void Project::readRegionMapSections() {
     QString filepath = root + "/include/constants/region_map_sections.h";
-    QStringList prefixes = (QStringList() << "MAPSEC_");
-    readCDefinesSorted(filepath, prefixes, regionMapSections);
+    this->mapSectionNameToValue.clear();
+    this->mapSectionValueToName.clear();
+    QString text = readTextFile(filepath);
+    if (!text.isNull()) {
+        QStringList prefixes = (QStringList() << "MAPSEC_");
+        this->mapSectionNameToValue = readCDefines(text, prefixes);
+        for (QString defineName : this->mapSectionNameToValue.keys()) {
+            this->mapSectionValueToName.insert(this->mapSectionNameToValue[defineName], defineName);
+        }
+    } else {
+        logError(QString("Failed to read C defines file: '%1'").arg(filepath));
+    }
 }
 
 void Project::readItemNames() {

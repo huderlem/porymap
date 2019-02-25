@@ -70,6 +70,8 @@ public:
 
     void resize(int width, int height);
     void resetSquare(int index);
+    void resetLayout();
+    void resetImage();
     void replaceSectionId(unsigned oldId, unsigned newId);
 
     int  width();

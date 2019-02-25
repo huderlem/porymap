@@ -54,9 +54,6 @@ void CityMapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
 }
 
 void CityMapPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
-    QPointF pos = event->pos();
-    int x = static_cast<int>(pos.x()) / 8;
-    int y = static_cast<int>(pos.y()) / 8;
     emit mouseEvent(event, this);
 }
 

@@ -116,8 +116,9 @@ void RegionMap::readLayout() {
     for (int y = 0; y < layout_height_; y++) {
         for (int x = 0; x < layout_width_; x++) {
             int i = img_index_(x,y);
-            map_squares[i].secid = static_cast<uint8_t>(mapBinData.at(layout_index_(x,y)));
-            QString secname = (*(project->regionMapSections))[static_cast<uint8_t>(mapBinData.at(layout_index_(x,y)))];
+            uint8_t id = static_cast<uint8_t>(mapBinData.at(layout_index_(x,y)));
+            map_squares[i].secid = id;
+            QString secname = project->mapSectionValueToName.value(id);
             if (secname != "MAPSEC_NONE") map_squares[i].has_map = true;
             map_squares[i].mapsec = secname;
             map_squares[i].map_name = sMapNamesMap.value(mapSecToMapEntry.value(secname).name);
@@ -140,7 +141,7 @@ void RegionMap::saveLayout() {
 
     entries_text += "\nconst struct RegionMapLocation gRegionMapEntries[] = {\n";
 
-    for (auto sec : *(project->regionMapSections)) {
+    for (auto sec : project->mapSectionNameToValue.keys()) {
         if (!mapSecToMapEntry.contains(sec)) continue;
         struct RegionMapEntry entry = mapSecToMapEntry.value(sec);
         entries_text += "    [" + sec + "] = {" + QString::number(entry.x) + ", " + QString::number(entry.y) + ", " 
@@ -168,7 +169,7 @@ void RegionMap::saveOptions(int id, QString sec, QString name, int x, int y) {
     int index = getMapSquareIndex(x + this->padLeft, y + this->padTop);
     if (!sec.isEmpty()) {
         this->map_squares[index].has_map = sec == "MAPSEC_NONE" ? false : true;
-        this->map_squares[index].secid = static_cast<uint8_t>(project->regionMapSections->indexOf(sec));
+        this->map_squares[index].secid = static_cast<uint8_t>(project->mapSectionNameToValue.value(sec));
         this->map_squares[index].mapsec = sec;
         if (!name.isEmpty()) {
             this->map_squares[index].map_name = name;
@@ -191,11 +192,20 @@ void RegionMap::resetSquare(int index) {
     this->map_squares[index].mapsec = "MAPSEC_NONE";
     this->map_squares[index].map_name = QString();
     this->map_squares[index].has_map = false;
-    this->map_squares[index].secid = static_cast<uint8_t>(project->regionMapSections->indexOf("MAPSEC_NONE"));
+    this->map_squares[index].secid = static_cast<uint8_t>(project->mapSectionNameToValue.value("MAPSEC_NONE"));
     this->map_squares[index].has_city_map = false;
     this->map_squares[index].city_map_name = QString();
     this->map_squares[index].duplicated = false;
-    logInfo(QString("Reset map square at (%1, %2).").arg(this->map_squares[index].x).arg(this->map_squares[index].y));
+}
+
+void RegionMap::resetLayout() {
+    for (int i = 0; i < map_squares.size(); i++)
+        resetSquare(i);
+}
+
+void RegionMap::resetImage() {
+    for (int i = 0; i < map_squares.size(); i++)
+        this->map_squares[i].tile_img_id = 0x00;
 }
 
 void RegionMap::replaceSectionId(unsigned oldId, unsigned newId) {
@@ -203,7 +213,7 @@ void RegionMap::replaceSectionId(unsigned oldId, unsigned newId) {
         if (square.secid == oldId) {
             square.has_map = false;
             square.secid = newId;
-            QString secname = (*(project->regionMapSections))[newId];
+            QString secname = project->mapSectionValueToName.value(newId);
             if (secname != "MAPSEC_NONE") square.has_map = true;
             square.mapsec = secname;
             square.map_name = sMapNamesMap.value(mapSecToMapEntry.value(secname).name);

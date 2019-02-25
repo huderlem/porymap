@@ -10,7 +10,6 @@
 #include <QLineEdit>
 #include <QColor>
 #include <QMessageBox>
-#include <QDialogButtonBox>
 #include <math.h>
 
 RegionMapEditor::RegionMapEditor(QWidget *parent, Project *project_) :
@@ -41,8 +40,6 @@ RegionMapEditor::~RegionMapEditor()
 
 void RegionMapEditor::on_action_RegionMap_Save_triggered() {
     if (project && region_map) {
-        region_map->save();
-        this->city_map_item->save();
         this->region_map->saveOptions(
             this->region_map_layout_item->selectedTile,
             this->ui->comboBox_RM_ConnectedMap->currentText(),
@@ -50,6 +47,8 @@ void RegionMapEditor::on_action_RegionMap_Save_triggered() {
             this->ui->spinBox_RM_Options_x->value(),
             this->ui->spinBox_RM_Options_y->value()
         );
+        this->region_map->save();
+        this->city_map_item->save();
         this->currIndex = this->region_map_layout_item->highlightedTile;
         this->region_map_layout_item->highlightedTile = -1;
         displayRegionMap();
@@ -144,7 +143,7 @@ void RegionMapEditor::displayRegionMapLayout() {
 
 void RegionMapEditor::displayRegionMapLayoutOptions() {
     this->ui->comboBox_RM_ConnectedMap->clear();
-    this->ui->comboBox_RM_ConnectedMap->addItems(*(this->project->regionMapSections));
+    this->ui->comboBox_RM_ConnectedMap->addItems(this->project->mapSectionValueToName.values());
 
     this->ui->frame_RM_Options->setEnabled(true);
 
@@ -567,10 +566,10 @@ void RegionMapEditor::on_action_Swap_triggered() {
     QFormLayout form(&popup);
 
     QComboBox *oldSecBox = new QComboBox();
-    oldSecBox->addItems(*(this->project->regionMapSections));
+    oldSecBox->addItems(this->project->mapSectionValueToName.values());
     form.addRow(new QLabel("Old Map Section:"), oldSecBox);
     QComboBox *newSecBox = new QComboBox();
-    newSecBox->addItems(*(this->project->regionMapSections));
+    newSecBox->addItems(this->project->mapSectionValueToName.values());
     form.addRow(new QLabel("New Map Section:"), newSecBox);
 
     QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &popup);
@@ -584,8 +583,8 @@ void RegionMapEditor::on_action_Swap_triggered() {
         beforeSection = oldSecBox->currentText();
         afterSection = newSecBox->currentText();
         if (!beforeSection.isEmpty() && !afterSection.isEmpty()) {
-            oldId = static_cast<uint8_t>(project->regionMapSections->indexOf(beforeSection));
-            newId = static_cast<uint8_t>(project->regionMapSections->indexOf(afterSection));
+            oldId = static_cast<uint8_t>(this->project->mapSectionNameToValue.value(beforeSection));
+            newId = static_cast<uint8_t>(this->project->mapSectionNameToValue.value(afterSection));
             popup.accept();
         }
     });
@@ -595,6 +594,41 @@ void RegionMapEditor::on_action_Swap_triggered() {
         this->region_map_layout_item->draw();
         this->region_map_layout_item->select(this->region_map_layout_item->selectedTile);
         this->hasUnsavedChanges = true;
+    }
+}
+
+void RegionMapEditor::on_action_RegionMap_ResetImage_triggered() {
+    QMessageBox::StandardButton result = QMessageBox::question(
+        this,
+        "WARNING",
+        "This action will reset the entire map image to metatile 0x00, continue?",
+        QMessageBox::Yes | QMessageBox::Cancel,
+        QMessageBox::Yes
+    );
+
+    if (result == QMessageBox::Yes) {
+        this->region_map->resetImage();
+        displayRegionMapImage();
+        displayRegionMapLayout();
+    } else {
+        return;
+    }
+}
+
+void RegionMapEditor::on_action_RegionMap_ResetLayout_triggered() {
+    QMessageBox::StandardButton result = QMessageBox::question(
+        this,
+        "WARNING",
+        "This action will reset the entire map layout to MAPSEC_NONE, continue?",
+        QMessageBox::Yes | QMessageBox::Cancel,
+        QMessageBox::Yes
+    );
+
+    if (result == QMessageBox::Yes) {
+        this->region_map->resetLayout();
+        displayRegionMapLayout();
+    } else {
+        return;
     }
 }
 
