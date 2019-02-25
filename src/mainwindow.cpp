@@ -875,7 +875,9 @@ void MainWindow::currentMetatilesSelectionChanged()
     QPoint size = editor->metatile_selector_item->getSelectionDimensions();
     if (size.x() == 1 && size.y() == 1) {
         QPoint pos = editor->metatile_selector_item->getMetatileIdCoordsOnWidget(editor->metatile_selector_item->getSelectedMetatiles()->at(0));
-        ui->scrollArea_2->ensureVisible(pos.x(), pos.y(), 8, 8);
+        double scale = pow(3.0, static_cast<double>(porymapConfig.getMetatilesZoom() - 30) / 30.0);
+        pos *= scale;
+        ui->scrollArea_2->ensureVisible(pos.x(), pos.y(), 8 * scale, 8 * scale);
     }
 }
 
