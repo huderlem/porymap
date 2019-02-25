@@ -869,13 +869,13 @@ void MainWindow::updateTilesetEditor() {
 
 void MainWindow::currentMetatilesSelectionChanged()
 {
-    ui->graphicsView_currentMetatileSelection->setFixedSize(editor->scene_current_metatile_selection_item->pixmap().width() + 2, editor->scene_current_metatile_selection_item->pixmap().height() + 2);
-    ui->graphicsView_currentMetatileSelection->setSceneRect(0, 0, editor->scene_current_metatile_selection_item->pixmap().width(), editor->scene_current_metatile_selection_item->pixmap().height());
+    double scale = pow(3.0, static_cast<double>(porymapConfig.getMetatilesZoom() - 30) / 30.0);
+    ui->graphicsView_currentMetatileSelection->setFixedSize(editor->scene_current_metatile_selection_item->pixmap().width() * scale + 2, editor->scene_current_metatile_selection_item->pixmap().height() * scale + 2);
+    ui->graphicsView_currentMetatileSelection->setSceneRect(0, 0, editor->scene_current_metatile_selection_item->pixmap().width() * scale, editor->scene_current_metatile_selection_item->pixmap().height() * scale);
 
     QPoint size = editor->metatile_selector_item->getSelectionDimensions();
     if (size.x() == 1 && size.y() == 1) {
         QPoint pos = editor->metatile_selector_item->getMetatileIdCoordsOnWidget(editor->metatile_selector_item->getSelectedMetatiles()->at(0));
-        double scale = pow(3.0, static_cast<double>(porymapConfig.getMetatilesZoom() - 30) / 30.0);
         pos *= scale;
         ui->scrollArea_2->ensureVisible(pos.x(), pos.y(), 8 * scale, 8 * scale);
     }
@@ -1979,6 +1979,13 @@ void MainWindow::on_horizontalSlider_MetatileZoom_valueChanged(int value) {
     ui->graphicsView_Metatiles->setResizeAnchor(QGraphicsView::NoAnchor);
     ui->graphicsView_Metatiles->setMatrix(matrix);
     ui->graphicsView_Metatiles->setFixedSize(size.width() + 2, size.height() + 2);
+
+    ui->graphicsView_BorderMetatile->setMatrix(matrix);
+    ui->graphicsView_BorderMetatile->setFixedSize(ceil(static_cast<double>(editor->selected_border_metatiles_item->pixmap().width()) * scale) + 2,
+                                                  ceil(static_cast<double>(editor->selected_border_metatiles_item->pixmap().height()) * scale) + 2);
+
+    ui->graphicsView_currentMetatileSelection->setMatrix(matrix);
+    currentMetatilesSelectionChanged();
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
