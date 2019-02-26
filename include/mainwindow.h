@@ -171,6 +171,7 @@ private:
     Editor *editor = nullptr;
     QIcon* mapIcon;
     QIcon* mapEditedIcon;
+    QIcon* mapOpenedIcon;
 
     QWidget *eventTabObjectWidget;
     QWidget *eventTabWarpWidget;
@@ -200,8 +201,7 @@ private:
     void setRecentMap(QString map_name);
     QStandardItem* createMapItem(QString mapName, int groupNum, int inGroupNum);
 
-    void markAllEdited(QAbstractItemModel *model);
-    void markEdited(QModelIndex index);
+    void drawMapListIcons(QAbstractItemModel *model);
     void updateMapList();
 
     void displayMapProperties();

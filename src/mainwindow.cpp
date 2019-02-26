@@ -101,13 +101,9 @@ void MainWindow::initEditor() {
 }
 
 void MainWindow::initMiscHeapObjects() {
-    mapIcon = new QIcon;
-    mapIcon->addFile(QStringLiteral(":/icons/map.ico"), QSize(), QIcon::Normal, QIcon::Off);
-    mapIcon->addFile(QStringLiteral(":/icons/map_opened.ico"), QSize(), QIcon::Normal, QIcon::On);
-
-    mapEditedIcon = new QIcon;
-    mapEditedIcon->addFile(QStringLiteral(":/icons/map_edited.ico"), QSize(), QIcon::Normal, QIcon::Off);
-    mapEditedIcon->addFile(QStringLiteral(":/icons/map_opened.ico"), QSize(), QIcon::Normal , QIcon::On);
+    mapIcon = new QIcon(QStringLiteral(":/icons/map.ico"));
+    mapEditedIcon = new QIcon(QStringLiteral(":/icons/map_edited.ico"));
+    mapOpenedIcon = new QIcon(QStringLiteral(":/icons/map_opened.ico"));
 
     mapListModel = new QStandardItemModel;
     mapGroupItemsList = new QList<QStandardItem*>;
@@ -889,7 +885,7 @@ void MainWindow::on_mapList_activated(const QModelIndex &index)
     }
 }
 
-void MainWindow::markAllEdited(QAbstractItemModel *model) {
+void MainWindow::drawMapListIcons(QAbstractItemModel *model) {
     QList<QModelIndex> list;
     list.append(QModelIndex());
     while (list.length()) {
@@ -899,19 +895,18 @@ void MainWindow::markAllEdited(QAbstractItemModel *model) {
             if (model->hasChildren(index)) {
                 list.append(index);
             }
-            markEdited(index);
-        }
-    }
-}
-
-void MainWindow::markEdited(QModelIndex index) {
-    QVariant data = index.data(Qt::UserRole);
-    if (!data.isNull()) {
-        QString map_name = data.toString();
-        if (editor->project) {
-            if (editor->project->map_cache->contains(map_name)) {
-                if (editor->project->map_cache->value(map_name)->hasUnsavedChanges()) {
-                    mapListModel->itemFromIndex(mapListIndexes.value(map_name))->setIcon(*mapEditedIcon);
+            QVariant data = index.data(Qt::UserRole);
+            if (!data.isNull()) {
+                QString map_name = data.toString();
+                if (editor->project && editor->project->map_cache->contains(map_name)) {
+                    QStandardItem *map = mapListModel->itemFromIndex(mapListIndexes.value(map_name));
+                    map->setIcon(*mapIcon);
+                    if (editor->project->map_cache->value(map_name)->hasUnsavedChanges()) {
+                        map->setIcon(*mapEditedIcon);
+                    }
+                    if (editor->map->name == map_name) {
+                        map->setIcon(*mapOpenedIcon);
+                    }
                 }
             }
         }
@@ -920,7 +915,7 @@ void MainWindow::markEdited(QModelIndex index) {
 
 void MainWindow::updateMapList() {
     QAbstractItemModel *model = ui->mapList->model();
-    markAllEdited(model);
+    drawMapListIcons(model);
 }
 
 void MainWindow::on_action_Save_Project_triggered()
