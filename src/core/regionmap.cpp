@@ -198,12 +198,12 @@ void RegionMap::resetSquare(int index) {
     this->map_squares[index].duplicated = false;
 }
 
-void RegionMap::resetLayout() {
+void RegionMap::clearLayout() {
     for (int i = 0; i < map_squares.size(); i++)
         resetSquare(i);
 }
 
-void RegionMap::resetImage() {
+void RegionMap::clearImage() {
     for (int i = 0; i < map_squares.size(); i++)
         this->map_squares[i].tile_img_id = 0x00;
 }

@@ -597,25 +597,18 @@ void RegionMapEditor::on_action_Swap_triggered() {
     }
 }
 
-void RegionMapEditor::on_action_RegionMap_ResetImage_triggered() {
-    QMessageBox::StandardButton result = QMessageBox::question(
-        this,
-        "WARNING",
-        "This action will reset the entire map image to metatile 0x00, continue?",
-        QMessageBox::Yes | QMessageBox::Cancel,
-        QMessageBox::Yes
+void RegionMapEditor::on_action_RegionMap_ClearImage_triggered() {
+    this->region_map->clearImage();
+    RegionMapHistoryItem *commit = new RegionMapHistoryItem(
+        RegionMapEditorBox::BackgroundImage, this->region_map->getTiles(), this->region_map->width(), this->region_map->height()
     );
+    history.push(commit);
 
-    if (result == QMessageBox::Yes) {
-        this->region_map->resetImage();
-        displayRegionMapImage();
-        displayRegionMapLayout();
-    } else {
-        return;
-    }
+    displayRegionMapImage();
+    displayRegionMapLayout();
 }
 
-void RegionMapEditor::on_action_RegionMap_ResetLayout_triggered() {
+void RegionMapEditor::on_action_RegionMap_ClearLayout_triggered() {
     QMessageBox::StandardButton result = QMessageBox::question(
         this,
         "WARNING",
@@ -625,7 +618,7 @@ void RegionMapEditor::on_action_RegionMap_ResetLayout_triggered() {
     );
 
     if (result == QMessageBox::Yes) {
-        this->region_map->resetLayout();
+        this->region_map->clearLayout();
         displayRegionMapLayout();
     } else {
         return;

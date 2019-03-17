@@ -61,8 +61,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>350</width>
-               <height>225</height>
+               <width>384</width>
+               <height>249</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_18">
@@ -182,8 +182,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>350</width>
-               <height>225</height>
+               <width>384</width>
+               <height>249</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_19">
@@ -330,10 +330,10 @@
              </property>
              <property name="geometry">
               <rect>
-               <x>8</x>
+               <x>0</x>
                <y>0</y>
-               <width>278</width>
-               <height>262</height>
+               <width>283</width>
+               <height>275</height>
               </rect>
              </property>
              <property name="sizePolicy">
@@ -651,8 +651,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>441</width>
-              <height>230</height>
+              <width>412</width>
+              <height>249</height>
              </rect>
             </property>
             <layout class="QGridLayout" name="gridLayout_20">
@@ -785,10 +785,10 @@
          </property>
          <property name="geometry">
           <rect>
-           <x>8</x>
+           <x>0</x>
            <y>0</y>
-           <width>255</width>
-           <height>274</height>
+           <width>295</width>
+           <height>283</height>
           </rect>
          </property>
          <property name="sizePolicy">
@@ -1076,7 +1076,7 @@
      <x>0</x>
      <y>0</y>
      <width>829</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -1094,8 +1094,8 @@
     <addaction name="action_RegionMap_Resize"/>
     <addaction name="separator"/>
     <addaction name="action_Swap"/>
-    <addaction name="action_RegionMap_ResetImage"/>
-    <addaction name="action_RegionMap_ResetLayout"/>
+    <addaction name="action_RegionMap_ClearImage"/>
+    <addaction name="action_RegionMap_ClearLayout"/>
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
@@ -1150,14 +1150,14 @@
     <string>Swap...</string>
    </property>
   </action>
-  <action name="action_RegionMap_ResetImage">
+  <action name="action_RegionMap_ClearImage">
    <property name="text">
-    <string>Reset Image</string>
+    <string>Clear Background Image</string>
    </property>
   </action>
-  <action name="action_RegionMap_ResetLayout">
+  <action name="action_RegionMap_ClearLayout">
    <property name="text">
-    <string>Reset Layout</string>
+    <string>Clear Map Layout</string>
    </property>
   </action>
  </widget>
