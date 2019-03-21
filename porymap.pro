@@ -60,7 +60,8 @@ SOURCES += src/core/block.cpp \
     src/mainwindow.cpp \
     src/project.cpp \
     src/settings.cpp \
-    src/log.cpp
+    src/log.cpp \
+    src/ui/newtilesetdialog.cpp
 
 HEADERS  += include/core/block.h \
     include/core/blockdata.h \
@@ -109,14 +110,16 @@ HEADERS  += include/core/block.h \
     include/mainwindow.h \
     include/project.h \
     include/settings.h \
-    include/log.h
+    include/log.h \
+    include/ui/newtilesetdialog.h
 
 FORMS    += forms/mainwindow.ui \
     forms/eventpropertiesframe.ui \
     forms/tileseteditor.ui \
     forms/paletteeditor.ui \
     forms/newmappopup.ui \
-    forms/aboutporymap.ui
+    forms/aboutporymap.ui \
+    forms/newtilesetdialog.ui
 
 RESOURCES += \
     resources/images.qrc

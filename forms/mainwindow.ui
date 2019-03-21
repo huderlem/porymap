@@ -561,8 +561,8 @@
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>545</width>
-                     <height>587</height>
+                     <width>522</width>
+                     <height>601</height>
                     </rect>
                    </property>
                    <layout class="QGridLayout" name="gridLayout_8">
@@ -876,8 +876,8 @@
                            <rect>
                             <x>0</x>
                             <y>0</y>
-                            <width>256</width>
-                            <height>74</height>
+                            <width>259</width>
+                            <height>70</height>
                            </rect>
                           </property>
                           <layout class="QHBoxLayout" name="horizontalLayout_7">
@@ -1064,10 +1064,10 @@
                     </property>
                     <property name="geometry">
                      <rect>
-                      <x>8</x>
+                      <x>0</x>
                       <y>0</y>
-                      <width>221</width>
-                      <height>328</height>
+                      <width>263</width>
+                      <height>338</height>
                      </rect>
                     </property>
                     <property name="sizePolicy">
@@ -1344,8 +1344,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>371</width>
-               <height>643</height>
+               <width>385</width>
+               <height>652</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_7">
@@ -1617,8 +1617,8 @@
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>430</width>
-                      <height>534</height>
+                      <width>432</width>
+                      <height>554</height>
                      </rect>
                     </property>
                     <property name="sizePolicy">
@@ -2531,8 +2531,8 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>818</width>
-                    <height>539</height>
+                    <width>829</width>
+                    <height>543</height>
                    </rect>
                   </property>
                   <layout class="QGridLayout" name="gridLayout_14">
@@ -2748,6 +2748,7 @@
     <addaction name="actionMap_Shift"/>
     <addaction name="separator"/>
     <addaction name="action_NewMap"/>
+    <addaction name="actionNew_Tileset"/>
     <addaction name="actionTileset_Editor"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
@@ -2974,6 +2975,11 @@
    </property>
    <property name="text">
     <string>Cursor Tile Outline</string>
+   </property>
+  </action>
+  <action name="actionNew_Tileset">
+   <property name="text">
+    <string>New Tileset</string>
    </property>
   </action>
  </widget>
