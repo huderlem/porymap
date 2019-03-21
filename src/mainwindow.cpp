@@ -10,6 +10,7 @@
 #include "currentselectedmetatilespixmapitem.h"
 #include "customattributestable.h"
 
+
 #include <QFileDialog>
 #include <QStandardItemModel>
 #include <QShortcut>
@@ -850,6 +851,97 @@ void MainWindow::openNewMapPopupWindow(int type, QVariant data) {
 
 void MainWindow::on_action_NewMap_triggered() {
     openNewMapPopupWindow(MapSortOrder::Group, 0);
+}
+
+void MainWindow::on_actionNew_Tileset_triggered() {
+    NewTilesetDialog *createTilesetDialog = new NewTilesetDialog(editor->project, this);
+    if(createTilesetDialog->exec() == QDialog::Accepted){
+        if(createTilesetDialog->friendlyName.isEmpty()) {
+            logError(QString("Tried to create a directory with an empty name."));
+            QMessageBox msgBox(this);
+            msgBox.setText("Failed to add new tileset.");
+            QString message = QString("The given name was empty.");
+            msgBox.setInformativeText(message);
+            msgBox.setDefaultButton(QMessageBox::Ok);
+            msgBox.setIcon(QMessageBox::Icon::Critical);
+            msgBox.exec();
+            return;
+        }
+        QString fullDirectoryPath = editor->project->root + createTilesetDialog->path;
+        QDir directory;
+        if(directory.exists(fullDirectoryPath)) {
+            logError(QString("Could not create tileset, could not create directory \"%1\", it already exists.").arg(fullDirectoryPath));
+            QMessageBox msgBox(this);
+            msgBox.setText("Failed to add new tileset.");
+            QString message = QString("The tileset already exists, view porymap.log for a complete description of the error.");
+            msgBox.setInformativeText(message);
+            msgBox.setDefaultButton(QMessageBox::Ok);
+            msgBox.setIcon(QMessageBox::Icon::Critical);
+            msgBox.exec();
+            return;
+        }
+        directory.mkdir(fullDirectoryPath);
+        directory.mkdir(fullDirectoryPath + "/palettes");
+        Tileset *newSet = new Tileset();
+        newSet->name = createTilesetDialog->fullSymbolName;
+        newSet->tilesImagePath = fullDirectoryPath + "/tiles.png";
+        newSet->metatiles_path = fullDirectoryPath + "/metatiles.bin";
+        newSet->metatile_attrs_path = fullDirectoryPath + "/metatile_attributes.bin";
+        newSet->is_secondary = createTilesetDialog->isSecondary ? "TRUE" : "FALSE";
+        int numMetaTiles = createTilesetDialog->isSecondary ? (Project::getNumTilesTotal() - Project::getNumTilesPrimary()) : Project::getNumTilesPrimary();
+        QImage *tilesImage = new QImage(":/images/blank_tileset.png");
+        editor->project->loadTilesetTiles(newSet, *tilesImage);
+        newSet->metatiles = new QList<Metatile*>();
+        for(int i = 0; i < numMetaTiles; ++i) {
+            Metatile *mt = new Metatile();
+            for(int j = 0; j < 8; ++j){
+                Tile *tile = new Tile();
+                //Create a checkerboard-style dummy tileset
+                if(((i / 8) % 2) == 0)
+                    tile->tile = ((i % 2) == 0) ? 1 : 2;
+                else
+                    tile->tile = ((i % 2) == 1) ? 1 : 2;
+                tile->xflip = false;
+                tile->yflip = false;
+                tile->palette = 0;
+                mt->tiles->append(*tile);
+            }
+            mt->behavior = 0;
+            mt->layerType = 0;
+
+            newSet->metatiles->append(mt);
+        }
+        newSet->palettes = new QList<QList<QRgb>>();
+        newSet->palettePaths = *new QList<QString>();
+        for(int i = 0; i < 16; ++i) {
+            QList<QRgb> *currentPal = new QList<QRgb>();
+            for(int i = 0; i < 16;++i) {
+                currentPal->append(qRgb(0,0,0));
+            }
+            newSet->palettes->append(*currentPal);
+            QString fileName;
+            fileName.sprintf("%02d.pal", i);
+            newSet->palettePaths.append(fullDirectoryPath+"/palettes/" + fileName);
+        }
+        (*newSet->palettes)[0][1] = qRgb(255,0,255);
+        newSet->is_compressed = "TRUE";
+        newSet->padding = "0";
+        editor->project->saveTilesetTilesImage(newSet);
+        editor->project->saveTilesetMetatiles(newSet);
+        editor->project->saveTilesetMetatileAttributes(newSet);
+        editor->project->saveTilesetPalettes(newSet, !createTilesetDialog->isSecondary);
+
+        //append to tileset specific files
+
+        newSet->appendToHeaders(editor->project->root + "/data/tilesets/headers.inc", createTilesetDialog->friendlyName);
+        newSet->appendToGraphics(editor->project->root + "/data/tilesets/graphics.inc", createTilesetDialog->friendlyName, !createTilesetDialog->isSecondary);
+        newSet->appendToMetatiles(editor->project->root + "/data/tilesets/metatiles.inc", createTilesetDialog->friendlyName, !createTilesetDialog->isSecondary);
+        if(!createTilesetDialog->isSecondary) {
+            this->ui->comboBox_PrimaryTileset->addItem(createTilesetDialog->fullSymbolName);
+        } else {
+            this->ui->comboBox_SecondaryTileset->addItem(createTilesetDialog->fullSymbolName);
+        }
+    }
 }
 
 void MainWindow::onTilesetChanged(QString mapName)

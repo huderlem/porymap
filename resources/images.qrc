@@ -30,5 +30,6 @@
         <file>icons/sort_number.ico</file>
         <file>icons/collapse_all.ico</file>
         <file>icons/expand_all.ico</file>
+        <file>images/blank_tileset.png</file>
     </qresource>
 </RCC>
