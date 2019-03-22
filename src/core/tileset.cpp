@@ -94,16 +94,16 @@ bool Tileset::appendToHeaders(QString headerFile, QString friendlyName){
         logError(QString("Could not write to file \"%1\"").arg(headerFile));
         return false;
     }
-    QString dataString = "\r\n\t.align 2\r\n";
-    dataString.append(QString("%1::\r\n").arg(this->name));
-    dataString.append(QString("\t.byte %1 @ is compressed\r\n").arg(this->is_compressed));
-    dataString.append(QString("\t.byte %1 @ is secondary\r\n").arg(this->is_secondary));
-    dataString.append(QString("\t.byte %1\r\n").arg(this->padding));
-    dataString.append(QString("\t.4byte gTilesetTiles_%1\r\n").arg(friendlyName));
-    dataString.append(QString("\t.4byte gTilesetPalettes_%1\r\n").arg(friendlyName));
-    dataString.append(QString("\t.4byte gMetatiles_%1\r\n").arg(friendlyName));
-    dataString.append(QString("\t.4byte gMetatileAttributes_%1\r\n").arg(friendlyName));
-    dataString.append("\t.4byte NULL\r\n");
+    QString dataString = "\n\t.align 2\n";
+    dataString.append(QString("%1::\n").arg(this->name));
+    dataString.append(QString("\t.byte %1 @ is compressed\n").arg(this->is_compressed));
+    dataString.append(QString("\t.byte %1 @ is secondary\n").arg(this->is_secondary));
+    dataString.append(QString("\t.byte %1\n").arg(this->padding));
+    dataString.append(QString("\t.4byte gTilesetTiles_%1\n").arg(friendlyName));
+    dataString.append(QString("\t.4byte gTilesetPalettes_%1\n").arg(friendlyName));
+    dataString.append(QString("\t.4byte gMetatiles_%1\n").arg(friendlyName));
+    dataString.append(QString("\t.4byte gMetatileAttributes_%1\n").arg(friendlyName));
+    dataString.append("\t.4byte NULL\n");
     file.write(dataString.toUtf8());
     file.flush();
     file.close();
@@ -117,17 +117,17 @@ bool Tileset::appendToGraphics(QString graphicsFile, QString friendlyName, bool 
         logError(QString("Could not write to file \"%1\"").arg(graphicsFile));
         return false;
     }
-    QString dataString = "\r\n\t.align 2\r\n";
-    dataString.append(QString("gTilesetPalettes_%1::\r\n").arg(friendlyName));
+    QString dataString = "\n\t.align 2\n";
+    dataString.append(QString("gTilesetPalettes_%1::\n").arg(friendlyName));
     for(int i = 0; i < Project::getNumPalettesTotal(); ++i) {
         QString paletteString;
         paletteString.sprintf("%02d.gbapal", i);
-        dataString.append(QString("\t.incbin \"data/tilesets/%1/%2/palettes/%3\"\r\n").arg(primaryString, friendlyName.toLower(), paletteString));
+        dataString.append(QString("\t.incbin \"data/tilesets/%1/%2/palettes/%3\"\n").arg(primaryString, friendlyName.toLower(), paletteString));
 
     }
-    dataString.append("\r\n\t.align 2\r\n");
-    dataString.append(QString("gTilesetTiles_%1::\r\n").arg(friendlyName));
-    dataString.append(QString("\t.incbin \"data/tilesets/%1/%2/tiles.4bpp.lz\"\r\n").arg(primaryString, friendlyName.toLower()));
+    dataString.append("\n\t.align 2\n");
+    dataString.append(QString("gTilesetTiles_%1::\n").arg(friendlyName));
+    dataString.append(QString("\t.incbin \"data/tilesets/%1/%2/tiles.4bpp.lz\"\n").arg(primaryString, friendlyName.toLower()));
     file.write(dataString.toUtf8());
     file.flush();
     file.close();
@@ -141,11 +141,11 @@ bool Tileset::appendToMetatiles(QString metatileFile, QString friendlyName, bool
         logError(QString("Could not write to file \"%1\"").arg(metatileFile));
         return false;
     }
-    QString dataString = "\r\n\t.align 1\r\n";
-    dataString.append(QString("gMetatiles_%1::\r\n").arg(friendlyName));
-    dataString.append(QString("\t.incbin \"data/tilesets/%1/%2/metatiles.bin\"\r\n").arg(primaryString, friendlyName.toLower()));
-    dataString.append(QString("\r\n\t.align 1\r\n"));
-    dataString.append(QString("gMetatileAttributes_%1::\r\n").arg(friendlyName));
+    QString dataString = "\n\t.align 1\n";
+    dataString.append(QString("gMetatiles_%1::\n").arg(friendlyName));
+    dataString.append(QString("\t.incbin \"data/tilesets/%1/%2/metatiles.bin\"\n").arg(primaryString, friendlyName.toLower()));
+    dataString.append(QString("\n\t.align 1\n"));
+    dataString.append(QString("gMetatileAttributes_%1::\n").arg(friendlyName));
     dataString.append(QString("\t.incbin \"data/tilesets/%1/%2/metatile_attributes.bin\"").arg(primaryString, friendlyName.toLower()));
     file.write(dataString.toUtf8());
     file.flush();
