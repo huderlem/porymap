@@ -721,9 +721,7 @@ void Project::saveTilesetTilesImage(Tileset *tileset) {
 }
 
 void Project::saveTilesetPalettes(Tileset *tileset, bool primary) {
-    int startPaletteId = primary ? 0 : Project::getNumPalettesPrimary();
-    int endPaletteId = primary ? Project::getNumPalettesPrimary() : Project::getNumPalettesTotal();
-    for (int i = startPaletteId; i < endPaletteId; i++) {
+    for (int i = 0; i < Project::getNumPalettesTotal(); i++) {
         QString filepath = tileset->palettePaths.at(i);
         QString content = "JASC-PAL\r\n";
         content += "0100\r\n";

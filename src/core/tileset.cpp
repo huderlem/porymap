@@ -111,8 +111,6 @@ bool Tileset::appendToHeaders(QString headerFile, QString friendlyName){
 }
 
 bool Tileset::appendToGraphics(QString graphicsFile, QString friendlyName, bool primary) {
-    int startPaletteId = primary ? 0 : Project::getNumPalettesPrimary();
-    int endPaletteId = primary ? Project::getNumPalettesPrimary() : Project::getNumPalettesTotal();
     QString primaryString = primary ? "primary" : "secondary";
     QFile file(graphicsFile);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Append)) {
@@ -121,7 +119,7 @@ bool Tileset::appendToGraphics(QString graphicsFile, QString friendlyName, bool 
     }
     QString dataString = "\r\n\t.align 2\r\n";
     dataString.append(QString("gTilesetPalettes_%1::\r\n").arg(friendlyName));
-    for(int i = startPaletteId; i < endPaletteId; ++i) {
+    for(int i = 0; i < Project::getNumPalettesTotal(); ++i) {
         QString paletteString;
         paletteString.sprintf("%02d.gbapal", i);
         dataString.append(QString("\t.incbin \"data/tilesets/%1/%2/palettes/%3\"\r\n").arg(primaryString, friendlyName.toLower(), paletteString));
