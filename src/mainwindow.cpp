@@ -942,6 +942,13 @@ void MainWindow::on_actionNew_Tileset_triggered() {
         } else {
             this->ui->comboBox_SecondaryTileset->addItem(createTilesetDialog->fullSymbolName);
         }
+        QMessageBox msgBox(this);
+        msgBox.setText("Successfully created tileset.");
+        QString message = QString("Tileset \"%1\" was created successfully.").arg(createTilesetDialog->friendlyName);
+        msgBox.setInformativeText(message);
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        msgBox.setIcon(QMessageBox::Icon::Information);
+        msgBox.exec();
     }
 }
 
