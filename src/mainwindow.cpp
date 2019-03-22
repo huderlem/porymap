@@ -868,12 +868,13 @@ void MainWindow::on_actionNew_Tileset_triggered() {
             return;
         }
         QString fullDirectoryPath = editor->project->root + createTilesetDialog->path;
+        QString auxilaryPath = editor->project->root + "/data/tilesets/" + (createTilesetDialog->isSecondary ? "primary/" : "secondary/") + createTilesetDialog->friendlyName.toLower();
         QDir directory;
-        if(directory.exists(fullDirectoryPath)) {
-            logError(QString("Could not create tileset, could not create directory \"%1\", it already exists.").arg(fullDirectoryPath));
+        if(directory.exists(fullDirectoryPath) || directory.exists(auxilaryPath)) {
+            logError(QString("Could not create tileset \"%1\", it already exists.").arg(createTilesetDialog->friendlyName));
             QMessageBox msgBox(this);
             msgBox.setText("Failed to add new tileset.");
-            QString message = QString("The tileset already exists, view porymap.log for a complete description of the error.");
+            QString message = QString("The tileset \"%1\" already exists.").arg(createTilesetDialog->friendlyName);
             msgBox.setInformativeText(message);
             msgBox.setDefaultButton(QMessageBox::Ok);
             msgBox.setIcon(QMessageBox::Icon::Critical);
