@@ -2798,7 +2798,7 @@
   </action>
   <action name="action_NewMap">
    <property name="text">
-    <string>New Map</string>
+    <string>New Map...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+N</string>
@@ -2979,7 +2979,7 @@
   </action>
   <action name="actionNew_Tileset">
    <property name="text">
-    <string>New Tileset</string>
+    <string>New Tileset...</string>
    </property>
   </action>
  </widget>
