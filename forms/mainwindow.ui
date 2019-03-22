@@ -2981,6 +2981,9 @@
    <property name="text">
     <string>New Tileset...</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+N</string>
+   </property>
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
