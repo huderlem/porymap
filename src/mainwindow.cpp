@@ -469,7 +469,7 @@ void MainWindow::displayMapProperties() {
     ui->comboBox_Location->addItems(*project->regionMapSections);
     ui->comboBox_Location->setCurrentText(map->location);
 
-    QMap<QString, QStringList> tilesets = project->getTilesets();
+    QMap<QString, QStringList> tilesets = project->getTilesetLabels();
     ui->comboBox_PrimaryTileset->addItems(tilesets.value("primary"));
     ui->comboBox_PrimaryTileset->setCurrentText(map->layout->tileset_primary_label);
     ui->comboBox_SecondaryTileset->addItems(tilesets.value("secondary"));
@@ -880,7 +880,7 @@ void MainWindow::on_actionNew_Tileset_triggered() {
             msgBox.exec();
             return;
         }
-        QMap<QString, QStringList> tilesets = this->editor->project->getTilesets();
+        QMap<QString, QStringList> tilesets = this->editor->project->getTilesetLabels();
         if(tilesets.value("primary").contains(createTilesetDialog->fullSymbolName) || tilesets.value("secondary").contains(createTilesetDialog->fullSymbolName)) {
             logError(QString("Could not create tileset \"%1\", the symbol \"%2\" already exists.").arg(createTilesetDialog->friendlyName, createTilesetDialog->fullSymbolName));
             QMessageBox msgBox(this);

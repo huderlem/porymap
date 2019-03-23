@@ -1407,7 +1407,7 @@ QStringList Project::getVisibilities() {
     return names;
 }
 
-QMap<QString, QStringList> Project::getTilesets() {
+QMap<QString, QStringList> Project::getTilesetLabels() {
     QMap<QString, QStringList> allTilesets;
     QStringList primaryTilesets;
     QStringList secondaryTilesets;
