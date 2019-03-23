@@ -868,13 +868,24 @@ void MainWindow::on_actionNew_Tileset_triggered() {
             return;
         }
         QString fullDirectoryPath = editor->project->root + createTilesetDialog->path;
-        QString auxilaryPath = editor->project->root + "/data/tilesets/" + (createTilesetDialog->isSecondary ? "primary/" : "secondary/") + createTilesetDialog->friendlyName.toLower();
         QDir directory;
-        if(directory.exists(fullDirectoryPath) || directory.exists(auxilaryPath)) {
-            logError(QString("Could not create tileset \"%1\", it already exists.").arg(createTilesetDialog->friendlyName));
+        if(directory.exists(fullDirectoryPath)) {
+            logError(QString("Could not create tileset \"%1\", the folder \"%2\" already exists.").arg(createTilesetDialog->friendlyName, fullDirectoryPath));
             QMessageBox msgBox(this);
             msgBox.setText("Failed to add new tileset.");
-            QString message = QString("The tileset \"%1\" already exists.").arg(createTilesetDialog->friendlyName);
+            QString message = QString("The folder for tileset \"%1\" already exists. View porymap.log for specific errors.").arg(createTilesetDialog->friendlyName);
+            msgBox.setInformativeText(message);
+            msgBox.setDefaultButton(QMessageBox::Ok);
+            msgBox.setIcon(QMessageBox::Icon::Critical);
+            msgBox.exec();
+            return;
+        }
+        QMap<QString, QStringList> tilesets = this->editor->project->getTilesets();
+        if(tilesets.value("primary").contains(createTilesetDialog->fullSymbolName) || tilesets.value("secondary").contains(createTilesetDialog->fullSymbolName)) {
+            logError(QString("Could not create tileset \"%1\", the symbol \"%2\" already exists.").arg(createTilesetDialog->friendlyName, createTilesetDialog->fullSymbolName));
+            QMessageBox msgBox(this);
+            msgBox.setText("Failed to add new tileset.");
+            QString message = QString("The symbol for tileset \"%1\" (\"%2\") already exists.").arg(createTilesetDialog->friendlyName, createTilesetDialog->fullSymbolName);
             msgBox.setInformativeText(message);
             msgBox.setDefaultButton(QMessageBox::Ok);
             msgBox.setIcon(QMessageBox::Icon::Critical);
