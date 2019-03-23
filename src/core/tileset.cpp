@@ -98,7 +98,7 @@ bool Tileset::appendToHeaders(QString headerFile, QString friendlyName){
     dataString.append(QString("%1::\n").arg(this->name));
     dataString.append(QString("\t.byte %1 @ is compressed\n").arg(this->is_compressed));
     dataString.append(QString("\t.byte %1 @ is secondary\n").arg(this->is_secondary));
-    dataString.append(QString("\t.byte %1\n").arg(this->padding));
+    dataString.append(QString("\t.2byte %1\n").arg(this->padding));
     dataString.append(QString("\t.4byte gTilesetTiles_%1\n").arg(friendlyName));
     dataString.append(QString("\t.4byte gTilesetPalettes_%1\n").arg(friendlyName));
     dataString.append(QString("\t.4byte gMetatiles_%1\n").arg(friendlyName));
