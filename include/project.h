@@ -98,7 +98,7 @@ public:
     QList<QStringList>* parseAsm(QString text);
     QStringList getSongNames();
     QStringList getVisibilities();
-    QMap<QString, QStringList> getTilesets();
+    QMap<QString, QStringList> getTilesetLabels();
     void readTilesetProperties();
     void readRegionMapSections();
     void readItemNames();
