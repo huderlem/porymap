@@ -174,10 +174,10 @@ void RegionMap::saveOptions(int id, QString sec, QString name, int x, int y) {
         if (!name.isEmpty()) {
             this->map_squares[index].map_name = name;
             this->project->mapSecToMapHoverName->insert(sec, name);
+            QString sName = fix_case(sec);
+            sMapNamesMap.insert(sName, name);
             if (!mapSecToMapEntry.keys().contains(sec)) {
-                QString sName = fix_case(sec);
                 sMapNames.append(sName);
-                sMapNamesMap.insert(sName, name);
                 struct RegionMapEntry entry = {x, y, 1, 1, sName};
                 mapSecToMapEntry.insert(sec, entry);
             }

@@ -39,14 +39,8 @@ RegionMapEditor::~RegionMapEditor()
 }
 
 void RegionMapEditor::on_action_RegionMap_Save_triggered() {
+    setCurrentSquareOptions();
     if (project && region_map) {
-        this->region_map->saveOptions(
-            this->region_map_layout_item->selectedTile,
-            this->ui->comboBox_RM_ConnectedMap->currentText(),
-            this->ui->lineEdit_RM_MapName->text(),
-            this->ui->spinBox_RM_Options_x->value(),
-            this->ui->spinBox_RM_Options_y->value()
-        );
         this->region_map->save();
         this->city_map_item->save();
         this->currIndex = this->region_map_layout_item->highlightedTile;
@@ -54,6 +48,18 @@ void RegionMapEditor::on_action_RegionMap_Save_triggered() {
         displayRegionMap();
     }
     this->hasUnsavedChanges = false;
+}
+
+void RegionMapEditor::setCurrentSquareOptions() {
+    if (project && region_map) {
+        this->region_map->saveOptions(
+            this->currIndex,
+            this->ui->comboBox_RM_ConnectedMap->currentText(),
+            this->ui->lineEdit_RM_MapName->text(),
+            this->ui->spinBox_RM_Options_x->value(),
+            this->ui->spinBox_RM_Options_y->value()
+        );
+    }
 }
 
 void RegionMapEditor::loadRegionMapData() {
@@ -154,7 +160,7 @@ void RegionMapEditor::displayRegionMapLayoutOptions() {
         this->region_map->height() - this->region_map->padTop - this->region_map->padBottom - 1
     );
 
-    updateRegionMapLayoutOptions(currIndex);
+    updateRegionMapLayoutOptions(this->currIndex);
 
     // TODO: implement when the code is decompiled
     this->ui->label_RM_CityMap->setVisible(false);
@@ -296,6 +302,7 @@ void RegionMapEditor::onRegionMapTileSelectorHoveredTileCleared() {
 }
 
 void RegionMapEditor::onRegionMapLayoutSelectedTileChanged(int index) {
+    setCurrentSquareOptions();
     QString message = QString();
     this->currIndex = index;
     this->region_map_layout_item->highlightedTile = index;
@@ -306,6 +313,7 @@ void RegionMapEditor::onRegionMapLayoutSelectedTileChanged(int index) {
     this->ui->statusbar->showMessage(message);
 
     updateRegionMapLayoutOptions(index);
+    this->region_map_layout_item->draw();
 }
 
 void RegionMapEditor::onRegionMapLayoutHoveredTileChanged(int index) {
@@ -348,6 +356,7 @@ void RegionMapEditor::mouseEvent_region_map(QGraphicsSceneMouseEvent *event, Reg
     //} else if (event->buttons() & Qt::MiddleButton) {// TODO
     } else {
         item->paint(event);
+        this->region_map_layout_item->draw();
         this->hasUnsavedChanges = true;
         if (event->type() == QEvent::GraphicsSceneMouseRelease) {
             RegionMapHistoryItem *current = history.current();

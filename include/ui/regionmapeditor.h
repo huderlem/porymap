@@ -29,6 +29,7 @@ public:
 
     void loadRegionMapData();
     void loadCityMaps();
+    void setCurrentSquareOptions();
 
     void onRegionMapTileSelectorSelectedTileChanged(unsigned id);
     void onCityMapTileSelectorSelectedTileChanged(unsigned id);

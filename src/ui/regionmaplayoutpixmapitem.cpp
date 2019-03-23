@@ -10,11 +10,7 @@ void RegionMapLayoutPixmapItem::draw() {
         QImage bottom_img = this->tile_selector->tileImg(region_map->map_squares[i].tile_img_id);
         QImage top_img(8, 8, QImage::Format_RGBA8888);
         if (region_map->map_squares[i].has_map) {
-            if (i == highlightedTile) {
-                top_img.fill(Qt::red);
-            } else {
-                top_img.fill(Qt::gray);
-            }
+            top_img.fill(Qt::gray);
         } else {
             top_img.fill(Qt::black);
         }
@@ -55,8 +51,8 @@ void RegionMapLayoutPixmapItem::select(int index) {
 
 void RegionMapLayoutPixmapItem::highlight(int x, int y, int red) {
     this->highlightedTile = red;
-    draw();
     SelectablePixmapItem::select(x + this->region_map->padLeft, y + this->region_map->padTop, 0, 0);
+    draw();
 }
 
 void RegionMapLayoutPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
