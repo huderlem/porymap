@@ -83,6 +83,7 @@ private:
     void displayRegionMapTileSelector();
     void displayCityMapTileSelector();
     void displayCityMap(QString name);
+    void importTileImage(bool city = false);//QString path);// what is this path tho?
 
     bool createCityMap(QString name);
 
@@ -96,7 +97,8 @@ private slots:
     void on_action_RegionMap_ClearImage_triggered();
     void on_action_RegionMap_ClearLayout_triggered();
     void on_action_Swap_triggered();
-    void on_action_RegionMap_Generate_triggered();
+    void on_action_Import_RegionMap_ImageTiles_triggered();
+    void on_action_Import_CityMap_ImageTiles_triggered();
     void on_tabWidget_Region_Map_currentChanged(int);
     void on_pushButton_RM_Options_delete_clicked();
     void on_comboBox_RM_ConnectedMap_activated(const QString &text);
@@ -106,8 +108,6 @@ private slots:
     void on_verticalSlider_Zoom_City_Map_valueChanged(int);
     void on_verticalSlider_Zoom_City_Tiles_valueChanged(int);
     void on_comboBox_CityMap_picker_currentTextChanged(const QString &text);
-    void on_spinBox_RM_Options_x_valueChanged(int val);
-    void on_spinBox_RM_Options_y_valueChanged(int val);
     void on_lineEdit_RM_MapName_textEdited(const QString &text);
     void onHoveredRegionMapTileChanged(int x, int y);
     void onHoveredRegionMapTileCleared();

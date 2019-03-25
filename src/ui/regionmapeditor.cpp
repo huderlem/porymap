@@ -1,13 +1,16 @@
 #include "regionmapeditor.h"
 #include "ui_regionmapeditor.h"
-#include "regionmapgenerator.h"
+#include "imageexport.h"
 #include "config.h"
+#include "log.h"
 
 #include <QDir>
 #include <QDialog>
 #include <QDialogButtonBox>
+#include <QFileDialog>
 #include <QFormLayout>
 #include <QLineEdit>
+#include <QSpinBox>
 #include <QColor>
 #include <QMessageBox>
 #include <math.h>
@@ -19,7 +22,7 @@ RegionMapEditor::RegionMapEditor(QWidget *parent, Project *project_) :
     this->ui->setupUi(this);
     this->project = project_;
     this->region_map = new RegionMap;
-    this->ui->action_RegionMap_Generate->setVisible(false);
+    this->ui->action_RegionMap_Resize->setVisible(false);
 }
 
 RegionMapEditor::~RegionMapEditor()
@@ -56,8 +59,8 @@ void RegionMapEditor::setCurrentSquareOptions() {
             this->currIndex,
             this->ui->comboBox_RM_ConnectedMap->currentText(),
             this->ui->lineEdit_RM_MapName->text(),
-            this->ui->spinBox_RM_Options_x->value(),
-            this->ui->spinBox_RM_Options_y->value()
+            this->region_map->map_squares[this->currIndex].x,
+            this->region_map->map_squares[this->currIndex].y
         );
     }
 }
@@ -153,13 +156,6 @@ void RegionMapEditor::displayRegionMapLayoutOptions() {
 
     this->ui->frame_RM_Options->setEnabled(true);
 
-    this->ui->spinBox_RM_Options_x->setMaximum(
-        this->region_map->width() - this->region_map->padLeft - this->region_map->padRight - 1
-    );
-    this->ui->spinBox_RM_Options_y->setMaximum(
-        this->region_map->height() - this->region_map->padTop - this->region_map->padBottom - 1
-    );
-
     updateRegionMapLayoutOptions(this->currIndex);
 
     // TODO: implement when the code is decompiled
@@ -168,15 +164,9 @@ void RegionMapEditor::displayRegionMapLayoutOptions() {
 }
 
 void RegionMapEditor::updateRegionMapLayoutOptions(int index) {
-    this->ui->spinBox_RM_Options_x->blockSignals(true);
-    this->ui->spinBox_RM_Options_y->blockSignals(true);
     this->ui->comboBox_RM_ConnectedMap->blockSignals(true);
     this->ui->lineEdit_RM_MapName->setText(this->project->mapSecToMapHoverName->value(this->region_map->map_squares[index].mapsec));
     this->ui->comboBox_RM_ConnectedMap->setCurrentText(this->region_map->map_squares[index].mapsec);
-    this->ui->spinBox_RM_Options_x->setValue(this->region_map->map_squares[index].x);
-    this->ui->spinBox_RM_Options_y->setValue(this->region_map->map_squares[index].y);
-    this->ui->spinBox_RM_Options_x->blockSignals(false);
-    this->ui->spinBox_RM_Options_y->blockSignals(false);
     this->ui->comboBox_RM_ConnectedMap->blockSignals(false);
 }
 
@@ -355,9 +345,6 @@ void RegionMapEditor::mouseEvent_region_map(QGraphicsSceneMouseEvent *event, Reg
         item->select(event);
     //} else if (event->buttons() & Qt::MiddleButton) {// TODO
     } else {
-        item->paint(event);
-        this->region_map_layout_item->draw();
-        this->hasUnsavedChanges = true;
         if (event->type() == QEvent::GraphicsSceneMouseRelease) {
             RegionMapHistoryItem *current = history.current();
             bool addToHistory = !(current && current->tiles == this->region_map->getTiles());
@@ -367,6 +354,10 @@ void RegionMapEditor::mouseEvent_region_map(QGraphicsSceneMouseEvent *event, Reg
                 );
                 history.push(commit);
             }
+        } else {
+            item->paint(event);
+            this->region_map_layout_item->draw();
+            this->hasUnsavedChanges = true;
         }
     }
 }
@@ -388,8 +379,6 @@ void RegionMapEditor::mouseEvent_city_map(QGraphicsSceneMouseEvent *event, CityM
     if (event->buttons() & Qt::RightButton) {// TODO
     //} else if (event->buttons() & Qt::MiddleButton) {// TODO
     } else {
-        item->paint(event);
-        this->hasUnsavedChanges = true;
         if (event->type() == QEvent::GraphicsSceneMouseRelease) {
             RegionMapHistoryItem *current = history.current();
             bool addToHistory = !(current && current->tiles == this->city_map_item->getTiles());
@@ -399,6 +388,9 @@ void RegionMapEditor::mouseEvent_city_map(QGraphicsSceneMouseEvent *event, CityM
                 );
                 history.push(commit);
             }
+        } else {
+            item->paint(event);
+            this->hasUnsavedChanges = true;
         }
     }
 }
@@ -416,23 +408,9 @@ void RegionMapEditor::on_tabWidget_Region_Map_currentChanged(int index) {
     }
 }
 
-void RegionMapEditor::on_spinBox_RM_Options_x_valueChanged(int x) {
-    int y = this->ui->spinBox_RM_Options_y->value();
-    int red = this->region_map->getMapSquareIndex(x + this->region_map->padLeft, y + this->region_map->padTop);
-    this->region_map_layout_item->highlight(x, y, red);
-    this->hasUnsavedChanges = true;
-}
-
-void RegionMapEditor::on_spinBox_RM_Options_y_valueChanged(int y) {
-    int x = this->ui->spinBox_RM_Options_x->value();
-    int red = this->region_map->getMapSquareIndex(x + this->region_map->padLeft, y + this->region_map->padTop);
-    this->region_map_layout_item->highlight(x, y, red);
-    this->hasUnsavedChanges = true;
-}
-
 void RegionMapEditor::on_comboBox_RM_ConnectedMap_activated(const QString &mapsec) {
     this->ui->lineEdit_RM_MapName->setText(this->project->mapSecToMapHoverName->value(mapsec));
-    //this->hasUnsavedChanges = true;// sometimes this is called for unknown reasons
+    this->hasUnsavedChanges = true;// sometimes this is called for unknown reasons
 }
 
 void RegionMapEditor::on_lineEdit_RM_MapName_textEdited(const QString &text) {
@@ -441,6 +419,7 @@ void RegionMapEditor::on_lineEdit_RM_MapName_textEdited(const QString &text) {
 
 void RegionMapEditor::on_pushButton_RM_Options_delete_clicked() {
     this->region_map->resetSquare(this->region_map_layout_item->selectedTile);
+    updateRegionMapLayoutOptions(this->region_map_layout_item->selectedTile);
     this->region_map_layout_item->draw();
     this->region_map_layout_item->select(this->region_map_layout_item->selectedTile);
     this->hasUnsavedChanges = true;
@@ -526,6 +505,7 @@ void RegionMapEditor::undo() {
                 this->resize(commit->mapWidth, commit->mapHeight);
             this->region_map->setTiles(commit->tiles);
             this->region_map_item->draw();
+            this->region_map_layout_item->draw();
             break;
         case RegionMapEditorBox::CityMapImage:
             if (commit->cityMap == this->city_map_item->file)
@@ -551,6 +531,7 @@ void RegionMapEditor::redo() {
                 this->resize(commit->mapWidth, commit->mapHeight);
             this->region_map->setTiles(commit->tiles);
             this->region_map_item->draw();
+            this->region_map_layout_item->draw();
             break;
         case RegionMapEditorBox::CityMapImage:
             this->city_map_item->setTiles(commit->tiles);
@@ -634,6 +615,114 @@ void RegionMapEditor::on_action_RegionMap_ClearLayout_triggered() {
     }
 }
 
+void RegionMapEditor::on_action_Import_RegionMap_ImageTiles_triggered() {
+    importTileImage(false);
+}
+
+void RegionMapEditor::on_action_Import_CityMap_ImageTiles_triggered() {
+    importTileImage(true);
+}
+
+void RegionMapEditor::importTileImage(bool city) {
+    QString descriptor = city ? "City Map" : "Region Map";
+
+    QString infilepath = QFileDialog::getOpenFileName(this, QString("Import %1 Tiles Image").arg(descriptor),
+                                                    this->project->root, "Image Files (*.png *.bmp *.jpg *.dib)");
+    if (infilepath.isEmpty()) {
+        return;
+    }
+
+    logInfo(QString("Importing %1 Tiles from '%2'").arg(descriptor).arg(infilepath));
+
+    // Read image data from buffer so that the built-in QImage doesn't try to detect file format
+    // purely from the extension name.
+    QFile file(infilepath);
+    QImage image;
+    if (file.open(QIODevice::ReadOnly)) {
+        QByteArray imageData = file.readAll();
+        image = QImage::fromData(imageData);
+    } else {
+        QString errorMessage = QString("Failed to open image file: '%1'").arg(infilepath);
+        logError(errorMessage);
+        QMessageBox msgBox(this);
+        msgBox.setText("Failed to import tiles.");
+        msgBox.setInformativeText(errorMessage);
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        msgBox.setIcon(QMessageBox::Icon::Critical);
+        msgBox.exec();
+        return;
+    }
+    if (image.width() == 0 || image.height() == 0 || image.width() % 8 != 0 || image.height() % 8 != 0) {
+        QString errorMessage = QString("The image dimensions (%1 x %2) are invalid. Width and height must be multiples of 8 pixels.")
+                                      .arg(image.width())
+                                      .arg(image.height());
+        logError(errorMessage);
+        QMessageBox msgBox(this);
+        msgBox.setText("Failed to import tiles.");
+        msgBox.setInformativeText(errorMessage);
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        msgBox.setIcon(QMessageBox::Icon::Critical);
+        msgBox.exec();
+        return;
+    }
+
+    // Validate total number of tiles in image.
+    int numTilesWide = image.width() / 8;
+    int numTilesHigh = image.height() / 8;
+    int totalTiles = numTilesHigh * numTilesWide;
+    int maxAllowedTiles = 0x100;
+    if (totalTiles > maxAllowedTiles) {
+        QString errorMessage = QString("The total number of tiles in the provided image (%1) is greater than the allowed number (%2).")
+                                      .arg(maxAllowedTiles)
+                                      .arg(totalTiles);
+        logError(errorMessage);
+        QMessageBox msgBox(this);
+        msgBox.setText("Failed to import tiles.");
+        msgBox.setInformativeText(errorMessage);
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        msgBox.setIcon(QMessageBox::Icon::Critical);
+        msgBox.exec();
+        return;
+    }
+
+    // Validate the image's palette.
+    QString palMessage = QString();
+    bool palError = false;
+    if (image.colorCount() == 0) {
+        palMessage = QString("The provided image is not indexed.");
+        palError = true;
+    } else if (!city && image.colorCount() != 256) {
+        palMessage = QString("The provided image has a palette with %1 colors. You must provide an indexed imaged with a 256 color palette.").arg(image.colorCount());
+        palError = true;
+    } else if (city && image.colorCount() != 16) {
+        palMessage = QString("The provided image has a palette with %1 colors. You must provide an indexed imaged with a 16 color palette.").arg(image.colorCount());
+        palError = true;
+    }
+
+    if (palError) {
+        logError(palMessage);
+        QMessageBox msgBox(this);
+        msgBox.setText("Failed to import tiles.");
+        msgBox.setInformativeText(palMessage);
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        msgBox.setIcon(QMessageBox::Icon::Critical);
+        msgBox.exec();
+        return;
+    }
+
+    // Use the image from the correct path.
+    if (city) {
+        this->region_map->setTemporaryCityTilesPath(infilepath);
+    } else {
+        this->region_map->setTemporaryPngPath(infilepath);
+    }
+    this->hasUnsavedChanges = true;
+
+    // Redload and redraw images.
+    displayRegionMap();
+    displayCityMap(this->ui->comboBox_CityMap_picker->currentText());
+}
+
 void RegionMapEditor::on_comboBox_CityMap_picker_currentTextChanged(const QString &file) {
     this->displayCityMap(file);
     this->cityMapFirstDraw = true;
@@ -715,10 +804,4 @@ void RegionMapEditor::on_verticalSlider_Zoom_City_Tiles_valueChanged(int val) {
     ui->graphicsView_City_Map_Tiles->setResizeAnchor(QGraphicsView::NoAnchor);
     ui->graphicsView_City_Map_Tiles->setMatrix(matrix);
     ui->graphicsView_City_Map_Tiles->setFixedSize(width + 2, height + 2);
-}
-
-void RegionMapEditor::on_action_RegionMap_Generate_triggered() {
-    RegionMapGenerator generator(this->project);
-    generator.generate("LittlerootTown");
-    this->hasUnsavedChanges = true;
 }

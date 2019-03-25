@@ -32,9 +32,27 @@ void RegionMap::init(Project *pro) {
 
 void RegionMap::save() {
     logInfo("Saving region map data.");
+    saveTileImages();
     saveBkgImgBin();
     saveLayout();
     porymapConfig.setRegionMapDimensions(this->img_width_, this->img_height_);
+}
+
+void RegionMap::saveTileImages() {
+    QFile backgroundTileFile(pngPath());
+    if (backgroundTileFile.open(QIODevice::ReadOnly)) {
+        QByteArray imageData = backgroundTileFile.readAll();
+        QImage pngImage = QImage::fromData(imageData);
+        this->region_map_png_path = project->root + "/graphics/pokenav/region_map.png";
+        pngImage.save(pngPath());
+    }
+    QFile cityTileFile(cityTilesPath());
+    if (cityTileFile.open(QIODevice::ReadOnly)) {
+        QByteArray imageData = cityTileFile.readAll();
+        QImage cityTilesImage = QImage::fromData(imageData);
+        this->city_map_tiles_path = project->root + "/graphics/pokenav/zoom_tiles.png";
+        cityTilesImage.save(cityTilesPath());
+    }
 }
 
 void RegionMap::readBkgImgBin() {
@@ -168,6 +186,11 @@ void RegionMap::saveOptions(int id, QString sec, QString name, int x, int y) {
     resetSquare(id);
     int index = getMapSquareIndex(x + this->padLeft, y + this->padTop);
     if (!sec.isEmpty()) {
+        // Validate the input section name.
+        if (!project->mapSectionNameToValue.contains(sec)) {
+            sec = "MAPSEC_NONE";
+            name = QString();
+        }
         this->map_squares[index].has_map = sec == "MAPSEC_NONE" ? false : true;
         this->map_squares[index].secid = static_cast<uint8_t>(project->mapSectionNameToValue.value(sec));
         this->map_squares[index].mapsec = sec;
@@ -295,8 +318,16 @@ QString RegionMap::pngPath() {
     return this->region_map_png_path;
 }
 
+void RegionMap::setTemporaryPngPath(QString path) {
+    this->region_map_png_path = path;
+}
+
 QString RegionMap::cityTilesPath() {
     return this->city_map_tiles_path;
+}
+
+void RegionMap::setTemporaryCityTilesPath(QString path) {
+    this->city_map_tiles_path = path;
 }
 
 // From x, y of image.

@@ -64,6 +64,7 @@ public:
     void readLayout();
 
     void save();
+    void saveTileImages();
     void saveBkgImgBin();
     void saveLayout();
     void saveOptions(int id, QString sec, QString name, int x, int y);
@@ -80,7 +81,9 @@ public:
     unsigned getTileId(int x, int y);
     int getMapSquareIndex(int x, int y);
     QString pngPath();
+    void setTemporaryPngPath(QString);
     QString cityTilesPath();
+    void setTemporaryCityTilesPath(QString);
 
     QVector<uint8_t> getTiles();
     void setTiles(QVector<uint8_t> tileIds);

@@ -20,14 +20,11 @@ void RegionMapPixmapItem::draw() {
 
 void RegionMapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
     if (region_map) {
-        if (event->type() == QEvent::GraphicsSceneMousePress) {
-        } else {
-            QPointF pos = event->pos();
-            int x = static_cast<int>(pos.x()) / 8;
-            int y = static_cast<int>(pos.y()) / 8;
-            int index = x + y * region_map->width();
-            this->region_map->map_squares[index].tile_img_id = this->tile_selector->selectedTile;
-        }
+        QPointF pos = event->pos();
+        int x = static_cast<int>(pos.x()) / 8;
+        int y = static_cast<int>(pos.y()) / 8;
+        int index = x + y * region_map->width();
+        this->region_map->map_squares[index].tile_img_id = this->tile_selector->selectedTile;
         draw();
     }
 }
