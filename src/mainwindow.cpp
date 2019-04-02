@@ -600,6 +600,7 @@ void MainWindow::loadDataStructures() {
     project->readFlagNames();
     project->readVarNames();
     project->readMovementTypes();
+    project->readInitialFacingDirections();
     project->readMapTypes();
     project->readMapBattleScenes();
     project->readWeatherNames();
@@ -1452,6 +1453,11 @@ void MainWindow::updateSelectedObjects() {
                 if (!editor->project->movementTypes->contains(value)) {
                     combo->addItem(value);
                 }
+                connect(combo, static_cast<void (QComboBox::*)(const QString &)>(&QComboBox::currentTextChanged),
+                        this, [this, item, frame](QString value){
+                            item->event->setFrameFromMovement(editor->project->facingDirections.value(value));
+                            item->updatePixmap();
+                });
                 combo->addItems(*editor->project->movementTypes);
                 combo->setToolTip("The object's natural movement behavior when the player is not interacting with it.");
             } else if (key == "weather") {

@@ -74,18 +74,21 @@ public:
     QJsonObject buildSignEventJSON();
     QJsonObject buildHiddenItemEventJSON();
     QJsonObject buildSecretBaseEventJSON();
-    void setPixmapFromSpritesheet(QImage, int, int);
+    void setPixmapFromSpritesheet(QImage, int, int, int, bool);
     int getPixelX();
     int getPixelY();
     QMap<QString, bool> getExpectedFields();
     void readCustomValues(QJsonObject values);
     void addCustomValuesTo(QJsonObject *obj);
+    void setFrameFromMovement(QString);
 
     QMap<QString, QString> values;
     QMap<QString, QString> customValues;
     QPixmap pixmap;
     int spriteWidth;
     int spriteHeight;
+    int frame = 0;
+    bool hFlip = false;
     bool usingSprite;
 };
 
