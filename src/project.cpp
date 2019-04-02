@@ -1536,6 +1536,11 @@ void Project::readMovementTypes() {
     readCDefinesSorted(filepath, prefixes, movementTypes);
 }
 
+void Project::readInitialFacingDirections() {
+    QString text = readTextFile(root + "/src/event_object_movement.c");
+    facingDirections = readNamedIndexCArray(text, "gInitialMovementTypeFacingDirections");
+}
+
 void Project::readMapTypes() {
     QString filepath = root + "/include/constants/map_types.h";
     QStringList prefixes = (QStringList() << "MAP_TYPE_");
@@ -1709,7 +1714,7 @@ void Project::loadEventPixmaps(QList<Event*> objects) {
                             spriteHeight = dimensionMatch.captured(2).toInt();
                         }
                     }
-                    object->setPixmapFromSpritesheet(spritesheet, spriteWidth, spriteHeight);
+                    object->setPixmapFromSpritesheet(spritesheet, spriteWidth, spriteHeight, object->frame, object->hFlip);
                 }
             }
         }
@@ -1759,6 +1764,25 @@ QStringList Project::readCArray(QString text, QString label) {
     }
 
     return list;
+}
+
+QMap<QString, QString> Project::readNamedIndexCArray(QString text, QString label) {
+    QMap<QString, QString> map;
+
+    QRegularExpression re_text(QString("\\b%1\\b\\s*\\[?\\s*\\]?\\s*=\\s*\\{([^\\}]*)\\}").arg(label));
+    text = re_text.match(text).captured(1).replace(QRegularExpression("\\s*"), "");
+    
+    QRegularExpression re("\\[(?<index>[A-Za-z1-9_]*)\\]=(?<value>[A-Za-z1-9_]*)");
+    QRegularExpressionMatchIterator iter = re.globalMatch(text);
+
+    while (iter.hasNext()) {
+        QRegularExpressionMatch match = iter.next();
+        QString key = match.captured("index");
+        QString value = match.captured("value");
+        map.insert(key, value);
+    }
+
+    return map;
 }
 
 QString Project::readCIncbin(QString text, QString label) {

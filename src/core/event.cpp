@@ -341,13 +341,35 @@ QJsonObject Event::buildSecretBaseEventJSON()
     return secretBaseObj;
 }
 
-void Event::setPixmapFromSpritesheet(QImage spritesheet, int spriteWidth, int spriteHeight)
+void Event::setPixmapFromSpritesheet(QImage spritesheet, int spriteWidth, int spriteHeight, int frame, bool hFlip)
 {
     // Set first palette color fully transparent.
-    QImage img = spritesheet.copy(0, 0, spriteWidth, spriteHeight);
+    QImage img = spritesheet.copy(frame * spriteWidth % spritesheet.width(), 0, spriteWidth, spriteHeight);
+    if (hFlip) {
+        img = img.transformed(QTransform().scale(-1, 1));
+    }
     img.setColor(0, qRgba(0, 0, 0, 0));
     pixmap = QPixmap::fromImage(img);
     this->spriteWidth = spriteWidth;
     this->spriteHeight = spriteHeight;
     this->usingSprite = true;
+}
+
+void Event::setFrameFromMovement(QString facingDir) {
+    // defaults
+    this->frame = 0;
+    this->hFlip = false;
+    if (facingDir == "DIR_NORTH") {
+        this->frame = 1;
+        this->hFlip = false;
+    } else if (facingDir == "DIR_SOUTH") {
+        this->frame = 0;
+        this->hFlip = false;
+    } else if (facingDir == "DIR_WEST") {
+        this->frame = 2;
+        this->hFlip = false;
+    } else if (facingDir == "DIR_EAST") {
+        this->frame = 2;
+        this->hFlip = true;
+    }
 }

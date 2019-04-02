@@ -42,6 +42,7 @@ public:
     QStringList *bgEventFacingDirections = nullptr;
     QMap<QString, int> metatileBehaviorMap;
     QMap<int, QString> metatileBehaviorMapInverse;
+    QMap<QString, QString> facingDirections;
 
     QMap<QString, Map*> *map_cache;
     Map* loadMap(QString);
@@ -105,6 +106,7 @@ public:
     void readFlagNames();
     void readVarNames();
     void readMovementTypes();
+    void readInitialFacingDirections();
     void readMapTypes();
     void readMapBattleScenes();
     void readWeatherNames();
@@ -125,6 +127,7 @@ public:
     QStringList readCArray(QString text, QString label);
     QString readCIncbin(QString text, QString label);
     QMap<QString, int> readCDefines(QString text, QStringList prefixes);
+    QMap<QString, QString> readNamedIndexCArray(QString text, QString label);
 
     static int getNumTilesPrimary();
     static int getNumTilesTotal();
