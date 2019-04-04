@@ -670,6 +670,7 @@ void Project::saveHealLocationStruct(Map *map) {
 }
 
 void Project::saveTilesets(Tileset *primaryTileset, Tileset *secondaryTileset) {
+    saveTilesetMetatileLabels(primaryTileset, secondaryTileset);
     saveTilesetMetatileAttributes(primaryTileset);
     saveTilesetMetatileAttributes(secondaryTileset);
     saveTilesetMetatiles(primaryTileset);
@@ -678,6 +679,77 @@ void Project::saveTilesets(Tileset *primaryTileset, Tileset *secondaryTileset) {
     saveTilesetTilesImage(secondaryTileset);
     saveTilesetPalettes(primaryTileset, true);
     saveTilesetPalettes(secondaryTileset, false);
+}
+
+void Project::saveTilesetMetatileLabels(Tileset *primaryTileset, Tileset *secondaryTileset) {
+    QString filepath = root + "/include/constants/metatile_labels.h";
+    QString originalText = readTextFile(filepath);
+
+    QString primaryPrefix = QString("METATILE_%1_").arg(QString(primaryTileset->name).replace("gTileset_", ""));
+    QString secondaryPrefix = QString("METATILE_%1_").arg(QString(secondaryTileset->name).replace("gTileset_", ""));
+
+    QMap<QString, int> defines;
+    bool definesFileModified = false;
+    if (!originalText.isNull()) {
+        defines = readCDefines(originalText, (QStringList() << "METATILE_"));
+
+        // Purge old entries from the file.
+        QStringList definesToRemove;
+        for (QString defineName : defines.keys()) {
+            if (defineName.startsWith(primaryPrefix) || defineName.startsWith(secondaryPrefix)) {
+                definesToRemove << defineName;
+            }
+        }
+        for (QString defineName : definesToRemove) {
+            defines.remove(defineName);
+            definesFileModified = true;
+        }
+    }
+
+    // Add the new labels.
+    for (int i = 0; i < primaryTileset->metatiles->size(); i++) {
+        Metatile *metatile = primaryTileset->metatiles->at(i);
+        if (metatile->label.size() != 0) {
+            QString defineName = QString("%1%2").arg(primaryPrefix, metatile->label);
+            defines.insert(defineName, i);
+            definesFileModified = true;
+        }
+    }
+    for (int i = 0; i < secondaryTileset->metatiles->size(); i++) {
+        Metatile *metatile = secondaryTileset->metatiles->at(i);
+        if (metatile->label.size() != 0) {
+            QString defineName = QString("%1%2").arg(secondaryPrefix, metatile->label);
+            defines.insert(defineName, i);
+            definesFileModified = true;
+        }
+    }
+
+    if (!definesFileModified) {
+        return;
+    }
+
+    // Setup pretty formatting.
+    int longestDefineNameLength = 0;
+    for (QString defineName : defines.keys()) {
+        if (defineName.size() > longestDefineNameLength) {
+            longestDefineNameLength = defineName.size();
+        }
+    }
+
+    // Write the file.
+    QString outputText = "#ifndef GUARD_METATILE_LABELS_H\n";
+    outputText += "#define GUARD_METATILE_LABELS_H\n\n";
+
+    for (QString defineName : defines.keys()) {
+        int value = defines[defineName];
+        QString line = QString("#define %1  0x%2\n")
+            .arg(defineName, -1 * longestDefineNameLength)
+            .arg(QString("%1").arg(value, 3, 16, QChar('0')).toUpper());
+        outputText += line;
+    }
+
+    outputText += "\n#endif // GUARD_METATILE_LABELS_H\n";
+    saveTextFile(filepath, outputText);
 }
 
 void Project::saveTilesetMetatileAttributes(Tileset *tileset) {
@@ -1098,6 +1170,7 @@ void Project::loadTilesetAssets(Tileset* tileset) {
     QImage image = QImage(tileset->tilesImagePath);
     this->loadTilesetTiles(tileset, image);
     this->loadTilesetMetatiles(tileset);
+    this->loadTilesetMetatileLabels(tileset);
 
     // palettes
     QList<QList<QRgb>> *palettes = new QList<QList<QRgb>>;
@@ -1197,6 +1270,29 @@ void Project::loadTilesetMetatiles(Tileset* tileset) {
         }
     } else {
         logError(QString("Could not open tileset metatile attributes file '%1'").arg(tileset->metatile_attrs_path));
+    }
+}
+
+void Project::loadTilesetMetatileLabels(Tileset* tileset) {
+    QString filepath = root + "/include/constants/metatile_labels.h";
+    QString text = readTextFile(filepath);
+
+    if (!text.isNull()) {
+        QString tilesetPrefix = QString("METATILE_%1_").arg(QString(tileset->name).replace("gTileset_", ""));
+        QMap<QString, int> labels = readCDefines(text, QStringList() << tilesetPrefix);
+
+        for (QString labelName : labels.keys()) {
+            int metatileId = labels[labelName];
+            Metatile *metatile = Tileset::getMetatile(metatileId, tileset, nullptr);
+            if (metatile) {
+                metatile->label = labelName.replace(tilesetPrefix, "");
+            } else {
+                QString hexString = QString("%1").arg(metatileId, 3, 16, QChar('0')).toUpper();
+                logError(QString("Metatile 0x%1 cannot be found in tileset '%2'").arg(hexString, tileset->name));
+            }
+        }
+    } else {
+        logError(QString("Failed to read C defines file: '%1'").arg(filepath));
     }
 }
 

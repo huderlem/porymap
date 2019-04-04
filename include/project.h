@@ -78,6 +78,7 @@ public:
     void loadTilesetAssets(Tileset*);
     void loadTilesetTiles(Tileset*, QImage);
     void loadTilesetMetatiles(Tileset*);
+    void loadTilesetMetatileLabels(Tileset*);
 
     void saveLayoutBlockdata(Map*);
     void saveLayoutBorder(Map*);
@@ -90,6 +91,7 @@ public:
     void saveMapConstantsHeader();
     void saveHealLocationStruct(Map*);
     void saveTilesets(Tileset*, Tileset*);
+    void saveTilesetMetatileLabels(Tileset*, Tileset*);
     void saveTilesetMetatileAttributes(Tileset*);
     void saveTilesetMetatiles(Tileset*);
     void saveTilesetTilesImage(Tileset*);

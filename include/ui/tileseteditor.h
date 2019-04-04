@@ -73,6 +73,8 @@ private slots:
 
     void on_comboBox_metatileBehaviors_activated(const QString &arg1);
 
+    void on_lineEdit_metatileLabel_editingFinished();
+
     void on_comboBox_layerType_activated(int arg1);
 
     void on_actionExport_Primary_Tiles_Image_triggered();
