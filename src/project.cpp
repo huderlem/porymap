@@ -6,7 +6,6 @@
 #include "parseutil.h"
 #include "tile.h"
 #include "tileset.h"
-#include "event.h"
 
 #include <QDir>
 #include <QJsonArray>

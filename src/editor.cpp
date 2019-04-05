@@ -1237,7 +1237,7 @@ void Editor::selectMapEvent(DraggablePixmapItem *object, bool toggle) {
 
 DraggablePixmapItem* Editor::addNewEvent(QString event_type) {
     if (project && map) {
-        Event *event = Event::createNewEvent(event_type, map->name);
+        Event *event = Event::createNewEvent(event_type, map->name, project);
         event->put("map_name", map->name);
         if (event_type == "event_heal_location") {
             HealLocation hl = HealLocation::fromEvent(event);
