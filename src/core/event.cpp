@@ -1,5 +1,6 @@
 #include "event.h"
 #include "map.h"
+#include "project.h"
 
 QString EventType::Object = "event_object";
 QString EventType::Warp = "event_warp";
@@ -24,25 +25,25 @@ Event::Event(QJsonObject obj, QString type)
     this->readCustomValues(obj);
 }
 
-Event* Event::createNewEvent(QString event_type, QString map_name)
+Event* Event::createNewEvent(QString event_type, QString map_name, Project *project)
 {
     Event *event = new Event;
     if (event_type == EventType::Object) {
-        event = createNewObjectEvent();
+        event = createNewObjectEvent(project);
     } else if (event_type == EventType::Warp) {
         event = createNewWarpEvent(map_name);
     } else if (event_type == EventType::HealLocation) {
         event = createNewHealLocationEvent(map_name);
     } else if (event_type == EventType::Trigger) {
-        event = createNewTriggerEvent();
+        event = createNewTriggerEvent(project);
     } else if (event_type == EventType::WeatherTrigger) {
-        event = createNewWeatherTriggerEvent();
+        event = createNewWeatherTriggerEvent(project);
     } else if (event_type == EventType::Sign) {
-        event = createNewSignEvent();
+        event = createNewSignEvent(project);
     } else if (event_type == EventType::HiddenItem) {
-        event = createNewHiddenItemEvent();
+        event = createNewHiddenItemEvent(project);
     } else if (event_type == EventType::SecretBase) {
-        event = createNewSecretBaseEvent();
+        event = createNewSecretBaseEvent(project);
     }
 
     event->setX(0);
@@ -51,13 +52,13 @@ Event* Event::createNewEvent(QString event_type, QString map_name)
     return event;
 }
 
-Event* Event::createNewObjectEvent()
+Event* Event::createNewObjectEvent(Project *project)
 {
     Event *event = new Event;
     event->put("event_group_type", "object_event_group");
     event->put("event_type", EventType::Object);
-    event->put("sprite", "EVENT_OBJ_GFX_BOY_1");
-    event->put("movement_type", "MOVEMENT_TYPE_LOOK_AROUND");
+    event->put("sprite", project->getEventObjGfxConstants().keys().first());
+    event->put("movement_type", project->movementTypes->first());
     event->put("radius_x", 0);
     event->put("radius_y", 0);
     event->put("script_label", "NULL");
@@ -87,52 +88,52 @@ Event* Event::createNewHealLocationEvent(QString map_name)
     return event;
 }
 
-Event* Event::createNewTriggerEvent()
+Event* Event::createNewTriggerEvent(Project *project)
 {
     Event *event = new Event;
     event->put("event_group_type", "coord_event_group");
     event->put("event_type", EventType::Trigger);
     event->put("script_label", "NULL");
-    event->put("script_var", "VAR_TEMP_0");
+    event->put("script_var", project->varNames->first());
     event->put("script_var_value", "0");
     return event;
 }
 
-Event* Event::createNewWeatherTriggerEvent()
+Event* Event::createNewWeatherTriggerEvent(Project *project)
 {
     Event *event = new Event;
     event->put("event_group_type", "coord_event_group");
     event->put("event_type", EventType::WeatherTrigger);
-    event->put("weather", "COORD_EVENT_WEATHER_SUNNY");
+    event->put("weather", project->coordEventWeatherNames->first());
     return event;
 }
 
-Event* Event::createNewSignEvent()
+Event* Event::createNewSignEvent(Project *project)
 {
     Event *event = new Event;
     event->put("event_group_type", "bg_event_group");
     event->put("event_type", EventType::Sign);
-    event->put("player_facing_direction", "BG_EVENT_PLAYER_FACING_ANY");
+    event->put("player_facing_direction", project->bgEventFacingDirections->first());
     event->put("script_label", "NULL");
     return event;
 }
 
-Event* Event::createNewHiddenItemEvent()
+Event* Event::createNewHiddenItemEvent(Project *project)
 {
     Event *event = new Event;
     event->put("event_group_type", "bg_event_group");
     event->put("event_type", EventType::HiddenItem);
-    event->put("item", "ITEM_POTION");
-    event->put("flag", "FLAG_TEMP_1");
+    event->put("item", project->itemNames->first());
+    event->put("flag", project->flagNames->first());
     return event;
 }
 
-Event* Event::createNewSecretBaseEvent()
+Event* Event::createNewSecretBaseEvent(Project *project)
 {
     Event *event = new Event;
     event->put("event_group_type", "bg_event_group");
     event->put("event_type", EventType::SecretBase);
-    event->put("secret_base_id", "SECRET_BASE_RED_CAVE2_1");
+    event->put("secret_base_id", project->secretBaseIds->first());
     return event;
 }
 

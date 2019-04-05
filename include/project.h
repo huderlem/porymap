@@ -4,6 +4,7 @@
 #include "map.h"
 #include "blockdata.h"
 #include "heallocation.h"
+#include "event.h"
 
 #include <QStringList>
 #include <QList>
