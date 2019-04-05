@@ -1707,9 +1707,7 @@ void MainWindow::eventTabChanged(int index)
 void MainWindow::selectedEventIndexChanged(int index)
 {
     QString group = getEventGroupFromTabWidget(ui->tabWidget_EventType->currentWidget());
-    int event_offs;
-    if (group == "warp_event_group") { event_offs = 0; }
-    else { event_offs = 1; }
+    int event_offs = group == "warp_event_group" ? 0 : 1;
     Event *event = editor->map->events.value(group).at(index - event_offs);
     DraggablePixmapItem *selectedEvent = nullptr;
     for (QGraphicsItem *child : editor->events_group->childItems()) {
@@ -1730,12 +1728,28 @@ void MainWindow::on_horizontalSlider_CollisionTransparency_valueChanged(int valu
     this->editor->collision_item->draw(true);
 }
 
+// TODO: connect this to the DEL key when undo/redo history is extended to events
 void MainWindow::on_toolButton_deleteObject_clicked()
 {
     if (editor && editor->selected_events) {
         if (editor->selected_events->length()) {
+            DraggablePixmapItem *next_selected_event = nullptr;
             for (DraggablePixmapItem *item : *editor->selected_events) {
-                if (item->event->get("event_group_type") != "heal_event_group") {
+                QString event_group = item->event->get("event_group_type");
+                int index = editor->map->events.value(event_group).indexOf(item->event);
+                if (index != editor->map->events.value(event_group).size() - 1)
+                    index++;
+                else
+                    index--;
+                Event *event = editor->map->events.value(event_group).at(index);
+                if (event_group != "heal_event_group") {
+                    for (QGraphicsItem *child : editor->events_group->childItems()) {
+                        DraggablePixmapItem *event_item = static_cast<DraggablePixmapItem *>(child);
+                        if (event_item->event == event) {
+                            next_selected_event = event_item;
+                            break;
+                        }
+                    }
                     editor->deleteEvent(item->event);
                     if (editor->scene->items().contains(item)) {
                         editor->scene->removeItem(item);
@@ -1746,7 +1760,12 @@ void MainWindow::on_toolButton_deleteObject_clicked()
                     logWarn(QString("Cannot delete event of type '%1'").arg(item->event->get("event_type")));
                 }
             }
-            updateObjects();
+            if (next_selected_event) {
+                editor->selectMapEvent(next_selected_event);
+            }
+            else {
+                updateObjects();
+            }
         }
     }
 }

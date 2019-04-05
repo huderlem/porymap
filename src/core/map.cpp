@@ -1,7 +1,6 @@
 #include "history.h"
 #include "historyitem.h"
 #include "map.h"
-//#include "project.h"
 #include "imageproviders.h"
 
 #include <QTime>
