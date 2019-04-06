@@ -10,7 +10,6 @@
 #include "currentselectedmetatilespixmapitem.h"
 #include "customattributestable.h"
 
-
 #include <QFileDialog>
 #include <QStandardItemModel>
 #include <QShortcut>
@@ -1061,6 +1060,8 @@ void MainWindow::on_tabWidget_2_currentChanged(int index)
     } else if (index == 1) {
         editor->setEditingCollision();
     }
+    editor->playerViewRect->setVisible(false);
+    editor->cursorMapTileRect->setVisible(false);
 }
 
 void MainWindow::on_action_Exit_triggered()
@@ -1760,7 +1761,10 @@ void MainWindow::on_toolButton_Paint_clicked()
 {
     editor->map_edit_mode = "paint";
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/pencil_cursor.ico"), 10, 10);
-    editor->cursorMapTileRect->stopSingleTileMode();
+
+    // do not stop single tile mode when editing collision
+    if (ui->tabWidget_2->currentIndex() == 0)
+        editor->cursorMapTileRect->stopSingleTileMode();
 
     ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
