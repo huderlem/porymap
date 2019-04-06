@@ -10,6 +10,7 @@
 #include "currentselectedmetatilespixmapitem.h"
 #include "customattributestable.h"
 
+
 #include <QFileDialog>
 #include <QStandardItemModel>
 #include <QShortcut>
@@ -101,13 +102,9 @@ void MainWindow::initEditor() {
 }
 
 void MainWindow::initMiscHeapObjects() {
-    mapIcon = new QIcon;
-    mapIcon->addFile(QStringLiteral(":/icons/map.ico"), QSize(), QIcon::Normal, QIcon::Off);
-    mapIcon->addFile(QStringLiteral(":/icons/map_opened.ico"), QSize(), QIcon::Normal, QIcon::On);
-
-    mapEditedIcon = new QIcon;
-    mapEditedIcon->addFile(QStringLiteral(":/icons/map_edited.ico"), QSize(), QIcon::Normal, QIcon::Off);
-    mapEditedIcon->addFile(QStringLiteral(":/icons/map_opened.ico"), QSize(), QIcon::Normal , QIcon::On);
+    mapIcon = new QIcon(QStringLiteral(":/icons/map.ico"));
+    mapEditedIcon = new QIcon(QStringLiteral(":/icons/map_edited.ico"));
+    mapOpenedIcon = new QIcon(QStringLiteral(":/icons/map_opened.ico"));
 
     mapListModel = new QStandardItemModel;
     mapGroupItemsList = new QList<QStandardItem*>;
@@ -472,7 +469,7 @@ void MainWindow::displayMapProperties() {
     ui->comboBox_Location->addItems(project->mapSectionValueToName.values());
     ui->comboBox_Location->setCurrentText(map->location);
 
-    QMap<QString, QStringList> tilesets = project->getTilesets();
+    QMap<QString, QStringList> tilesets = project->getTilesetLabels();
     ui->comboBox_PrimaryTileset->addItems(tilesets.value("primary"));
     ui->comboBox_PrimaryTileset->setCurrentText(map->layout->tileset_primary_label);
     ui->comboBox_SecondaryTileset->addItems(tilesets.value("secondary"));
@@ -856,6 +853,116 @@ void MainWindow::on_action_NewMap_triggered() {
     openNewMapPopupWindow(MapSortOrder::Group, 0);
 }
 
+void MainWindow::on_actionNew_Tileset_triggered() {
+    NewTilesetDialog *createTilesetDialog = new NewTilesetDialog(editor->project, this);
+    if(createTilesetDialog->exec() == QDialog::Accepted){
+        if(createTilesetDialog->friendlyName.isEmpty()) {
+            logError(QString("Tried to create a directory with an empty name."));
+            QMessageBox msgBox(this);
+            msgBox.setText("Failed to add new tileset.");
+            QString message = QString("The given name was empty.");
+            msgBox.setInformativeText(message);
+            msgBox.setDefaultButton(QMessageBox::Ok);
+            msgBox.setIcon(QMessageBox::Icon::Critical);
+            msgBox.exec();
+            return;
+        }
+        QString fullDirectoryPath = editor->project->root + createTilesetDialog->path;
+        QDir directory;
+        if(directory.exists(fullDirectoryPath)) {
+            logError(QString("Could not create tileset \"%1\", the folder \"%2\" already exists.").arg(createTilesetDialog->friendlyName, fullDirectoryPath));
+            QMessageBox msgBox(this);
+            msgBox.setText("Failed to add new tileset.");
+            QString message = QString("The folder for tileset \"%1\" already exists. View porymap.log for specific errors.").arg(createTilesetDialog->friendlyName);
+            msgBox.setInformativeText(message);
+            msgBox.setDefaultButton(QMessageBox::Ok);
+            msgBox.setIcon(QMessageBox::Icon::Critical);
+            msgBox.exec();
+            return;
+        }
+        QMap<QString, QStringList> tilesets = this->editor->project->getTilesetLabels();
+        if(tilesets.value("primary").contains(createTilesetDialog->fullSymbolName) || tilesets.value("secondary").contains(createTilesetDialog->fullSymbolName)) {
+            logError(QString("Could not create tileset \"%1\", the symbol \"%2\" already exists.").arg(createTilesetDialog->friendlyName, createTilesetDialog->fullSymbolName));
+            QMessageBox msgBox(this);
+            msgBox.setText("Failed to add new tileset.");
+            QString message = QString("The symbol for tileset \"%1\" (\"%2\") already exists.").arg(createTilesetDialog->friendlyName, createTilesetDialog->fullSymbolName);
+            msgBox.setInformativeText(message);
+            msgBox.setDefaultButton(QMessageBox::Ok);
+            msgBox.setIcon(QMessageBox::Icon::Critical);
+            msgBox.exec();
+            return;
+        }
+        directory.mkdir(fullDirectoryPath);
+        directory.mkdir(fullDirectoryPath + "/palettes");
+        Tileset *newSet = new Tileset();
+        newSet->name = createTilesetDialog->fullSymbolName;
+        newSet->tilesImagePath = fullDirectoryPath + "/tiles.png";
+        newSet->metatiles_path = fullDirectoryPath + "/metatiles.bin";
+        newSet->metatile_attrs_path = fullDirectoryPath + "/metatile_attributes.bin";
+        newSet->is_secondary = createTilesetDialog->isSecondary ? "TRUE" : "FALSE";
+        int numMetaTiles = createTilesetDialog->isSecondary ? (Project::getNumTilesTotal() - Project::getNumTilesPrimary()) : Project::getNumTilesPrimary();
+        QImage *tilesImage = new QImage(":/images/blank_tileset.png");
+        editor->project->loadTilesetTiles(newSet, *tilesImage);
+        newSet->metatiles = new QList<Metatile*>();
+        for(int i = 0; i < numMetaTiles; ++i) {
+            Metatile *mt = new Metatile();
+            for(int j = 0; j < 8; ++j){
+                Tile *tile = new Tile();
+                //Create a checkerboard-style dummy tileset
+                if(((i / 8) % 2) == 0)
+                    tile->tile = ((i % 2) == 0) ? 1 : 2;
+                else
+                    tile->tile = ((i % 2) == 1) ? 1 : 2;
+                tile->xflip = false;
+                tile->yflip = false;
+                tile->palette = 0;
+                mt->tiles->append(*tile);
+            }
+            mt->behavior = 0;
+            mt->layerType = 0;
+
+            newSet->metatiles->append(mt);
+        }
+        newSet->palettes = new QList<QList<QRgb>>();
+        newSet->palettePaths = *new QList<QString>();
+        for(int i = 0; i < 16; ++i) {
+            QList<QRgb> *currentPal = new QList<QRgb>();
+            for(int i = 0; i < 16;++i) {
+                currentPal->append(qRgb(0,0,0));
+            }
+            newSet->palettes->append(*currentPal);
+            QString fileName;
+            fileName.sprintf("%02d.pal", i);
+            newSet->palettePaths.append(fullDirectoryPath+"/palettes/" + fileName);
+        }
+        (*newSet->palettes)[0][1] = qRgb(255,0,255);
+        newSet->is_compressed = "TRUE";
+        newSet->padding = "0";
+        editor->project->saveTilesetTilesImage(newSet);
+        editor->project->saveTilesetMetatiles(newSet);
+        editor->project->saveTilesetMetatileAttributes(newSet);
+        editor->project->saveTilesetPalettes(newSet, !createTilesetDialog->isSecondary);
+
+        //append to tileset specific files
+
+        newSet->appendToHeaders(editor->project->root + "/data/tilesets/headers.inc", createTilesetDialog->friendlyName);
+        newSet->appendToGraphics(editor->project->root + "/data/tilesets/graphics.inc", createTilesetDialog->friendlyName, !createTilesetDialog->isSecondary);
+        newSet->appendToMetatiles(editor->project->root + "/data/tilesets/metatiles.inc", createTilesetDialog->friendlyName, !createTilesetDialog->isSecondary);
+        if(!createTilesetDialog->isSecondary) {
+            this->ui->comboBox_PrimaryTileset->addItem(createTilesetDialog->fullSymbolName);
+        } else {
+            this->ui->comboBox_SecondaryTileset->addItem(createTilesetDialog->fullSymbolName);
+        }
+        QMessageBox msgBox(this);
+        msgBox.setText("Successfully created tileset.");
+        QString message = QString("Tileset \"%1\" was created successfully.").arg(createTilesetDialog->friendlyName);
+        msgBox.setInformativeText(message);
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        msgBox.setIcon(QMessageBox::Icon::Information);
+        msgBox.exec();
+    }
+}
+
 void MainWindow::onTilesetChanged(QString mapName)
 {
     setMap(mapName);
@@ -869,13 +976,15 @@ void MainWindow::updateTilesetEditor() {
 
 void MainWindow::currentMetatilesSelectionChanged()
 {
-    ui->graphicsView_currentMetatileSelection->setFixedSize(editor->scene_current_metatile_selection_item->pixmap().width() + 2, editor->scene_current_metatile_selection_item->pixmap().height() + 2);
-    ui->graphicsView_currentMetatileSelection->setSceneRect(0, 0, editor->scene_current_metatile_selection_item->pixmap().width(), editor->scene_current_metatile_selection_item->pixmap().height());
+    double scale = pow(3.0, static_cast<double>(porymapConfig.getMetatilesZoom() - 30) / 30.0);
+    ui->graphicsView_currentMetatileSelection->setFixedSize(editor->scene_current_metatile_selection_item->pixmap().width() * scale + 2, editor->scene_current_metatile_selection_item->pixmap().height() * scale + 2);
+    ui->graphicsView_currentMetatileSelection->setSceneRect(0, 0, editor->scene_current_metatile_selection_item->pixmap().width() * scale, editor->scene_current_metatile_selection_item->pixmap().height() * scale);
 
     QPoint size = editor->metatile_selector_item->getSelectionDimensions();
     if (size.x() == 1 && size.y() == 1) {
         QPoint pos = editor->metatile_selector_item->getMetatileIdCoordsOnWidget(editor->metatile_selector_item->getSelectedMetatiles()->at(0));
-        ui->scrollArea_2->ensureVisible(pos.x(), pos.y(), 8, 8);
+        pos *= scale;
+        ui->scrollArea_2->ensureVisible(pos.x(), pos.y(), 8 * scale, 8 * scale);
     }
 }
 
@@ -887,7 +996,7 @@ void MainWindow::on_mapList_activated(const QModelIndex &index)
     }
 }
 
-void MainWindow::markAllEdited(QAbstractItemModel *model) {
+void MainWindow::drawMapListIcons(QAbstractItemModel *model) {
     QList<QModelIndex> list;
     list.append(QModelIndex());
     while (list.length()) {
@@ -897,19 +1006,18 @@ void MainWindow::markAllEdited(QAbstractItemModel *model) {
             if (model->hasChildren(index)) {
                 list.append(index);
             }
-            markEdited(index);
-        }
-    }
-}
-
-void MainWindow::markEdited(QModelIndex index) {
-    QVariant data = index.data(Qt::UserRole);
-    if (!data.isNull()) {
-        QString map_name = data.toString();
-        if (editor->project) {
-            if (editor->project->map_cache->contains(map_name)) {
-                if (editor->project->map_cache->value(map_name)->hasUnsavedChanges()) {
-                    mapListModel->itemFromIndex(mapListIndexes.value(map_name))->setIcon(*mapEditedIcon);
+            QVariant data = index.data(Qt::UserRole);
+            if (!data.isNull()) {
+                QString map_name = data.toString();
+                if (editor->project && editor->project->map_cache->contains(map_name)) {
+                    QStandardItem *map = mapListModel->itemFromIndex(mapListIndexes.value(map_name));
+                    map->setIcon(*mapIcon);
+                    if (editor->project->map_cache->value(map_name)->hasUnsavedChanges()) {
+                        map->setIcon(*mapEditedIcon);
+                    }
+                    if (editor->map->name == map_name) {
+                        map->setIcon(*mapOpenedIcon);
+                    }
                 }
             }
         }
@@ -918,7 +1026,7 @@ void MainWindow::markEdited(QModelIndex index) {
 
 void MainWindow::updateMapList() {
     QAbstractItemModel *model = ui->mapList->model();
-    markAllEdited(model);
+    drawMapListIcons(model);
 }
 
 void MainWindow::on_action_Save_Project_triggered()
@@ -1977,6 +2085,13 @@ void MainWindow::on_horizontalSlider_MetatileZoom_valueChanged(int value) {
     ui->graphicsView_Metatiles->setResizeAnchor(QGraphicsView::NoAnchor);
     ui->graphicsView_Metatiles->setMatrix(matrix);
     ui->graphicsView_Metatiles->setFixedSize(size.width() + 2, size.height() + 2);
+
+    ui->graphicsView_BorderMetatile->setMatrix(matrix);
+    ui->graphicsView_BorderMetatile->setFixedSize(ceil(static_cast<double>(editor->selected_border_metatiles_item->pixmap().width()) * scale) + 2,
+                                                  ceil(static_cast<double>(editor->selected_border_metatiles_item->pixmap().height()) * scale) + 2);
+
+    ui->graphicsView_currentMetatileSelection->setMatrix(matrix);
+    currentMetatilesSelectionChanged();
 }
 
 void MainWindow::on_actionRegion_Map_Editor_triggered() {

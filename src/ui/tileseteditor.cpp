@@ -253,6 +253,8 @@ void TilesetEditor::onMetatileLayerSelectionChanged(QPoint selectionOrigin, int 
     if (width == 1 && height == 1) {
         this->tileSelector->select(static_cast<uint16_t>(tiles[0].tile));
         ui->spinBox_paletteSelector->setValue(tiles[0].palette);
+        ui->checkBox_xFlip->setChecked(tiles[0].xflip);
+        ui->checkBox_yFlip->setChecked(tiles[0].yflip);
         QPoint pos = tileSelector->getTileCoordsOnWidget(static_cast<uint16_t>(tiles[0].tile));
         ui->scrollArea_Tiles->ensureVisible(pos.x(), pos.y());
     }

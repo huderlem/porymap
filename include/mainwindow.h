@@ -18,6 +18,7 @@
 #include "regionmapeditor.h"
 #include "filterchildrenproxymodel.h"
 #include "newmappopup.h"
+#include "newtilesetdialog.h"
 
 namespace Ui {
 class MainWindow;
@@ -53,6 +54,7 @@ private slots:
     void onNewMapCreated();
 
     void on_action_NewMap_triggered();
+    void on_actionNew_Tileset_triggered();
     void on_action_Save_triggered();
     void on_tabWidget_2_currentChanged(int index);
     void on_action_Exit_triggered();
@@ -175,6 +177,7 @@ private:
     Editor *editor = nullptr;
     QIcon* mapIcon;
     QIcon* mapEditedIcon;
+    QIcon* mapOpenedIcon;
 
     QWidget *eventTabObjectWidget;
     QWidget *eventTabWarpWidget;
@@ -204,8 +207,7 @@ private:
     void setRecentMap(QString map_name);
     QStandardItem* createMapItem(QString mapName, int groupNum, int inGroupNum);
 
-    void markAllEdited(QAbstractItemModel *model);
-    void markEdited(QModelIndex index);
+    void drawMapListIcons(QAbstractItemModel *model);
     void updateMapList();
 
     void displayMapProperties();
