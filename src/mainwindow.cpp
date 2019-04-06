@@ -720,6 +720,7 @@ void MainWindow::sortMapList() {
 
     ui->mapList->setUpdatesEnabled(true);
     ui->mapList->repaint();
+    updateMapList();
 }
 
 QStandardItem* MainWindow::createMapItem(QString mapName, int groupNum, int inGroupNum) {
