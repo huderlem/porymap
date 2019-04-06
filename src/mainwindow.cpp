@@ -1025,8 +1025,7 @@ void MainWindow::drawMapListIcons(QAbstractItemModel *model) {
 }
 
 void MainWindow::updateMapList() {
-    QAbstractItemModel *model = ui->mapList->model();
-    drawMapListIcons(model);
+    drawMapListIcons(mapListModel);
 }
 
 void MainWindow::on_action_Save_Project_triggered()
