@@ -92,11 +92,15 @@ public:
     void saveMapConstantsHeader();
     void saveHealLocationStruct(Map*);
     void saveTilesets(Tileset*, Tileset*);
+    void saveTilesetMetatileAttributes(Tileset*);
+    void saveTilesetMetatiles(Tileset*);
+    void saveTilesetTilesImage(Tileset*);
+    void saveTilesetPalettes(Tileset*, bool);
 
     QList<QStringList>* parseAsm(QString text);
     QStringList getSongNames();
     QStringList getVisibilities();
-    QMap<QString, QStringList> getTilesets();
+    QMap<QString, QStringList> getTilesetLabels();
     void readTilesetProperties();
     void readRegionMapSections();
     void readItemNames();
@@ -131,10 +135,6 @@ public:
     static int getNumPalettesPrimary();
     static int getNumPalettesTotal();
 private:
-    void saveTilesetMetatileAttributes(Tileset*);
-    void saveTilesetMetatiles(Tileset*);
-    void saveTilesetTilesImage(Tileset*);
-    void saveTilesetPalettes(Tileset*, bool);
     void updateMapLayout(Map*);
     void readCDefinesSorted(QString, QStringList, QStringList*);
     void readCDefinesSorted(QString, QStringList, QStringList*, QString, int);
