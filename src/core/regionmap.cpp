@@ -1,4 +1,5 @@
 #include "regionmap.h"
+#include "paletteutil.h"
 #include "log.h"
 #include "config.h"
 
@@ -45,6 +46,9 @@ void RegionMap::saveTileImages() {
         QImage pngImage = QImage::fromData(imageData);
         this->region_map_png_path = project->root + "/graphics/pokenav/region_map.png";
         pngImage.save(pngPath());
+
+        PaletteUtil parser;
+        parser.writeJASC(project->root + "/graphics/pokenav/region_map.pal", pngImage.colorTable(), 0x70, 0x20);
     }
     QFile cityTileFile(cityTilesPath());
     if (cityTileFile.open(QIODevice::ReadOnly)) {

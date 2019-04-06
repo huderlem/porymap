@@ -21,7 +21,7 @@ public:
     QString file;
 
     QByteArray data;
-    
+
     void init();
     void save();
     void create(QString);

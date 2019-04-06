@@ -24,7 +24,7 @@ SOURCES += src/core/block.cpp \
     src/core/maplayout.cpp \
     src/core/metatile.cpp \
     src/core/metatileparser.cpp \
-    src/core/paletteparser.cpp \
+    src/core/paletteutil.cpp \
     src/core/parseutil.cpp \
     src/core/tile.cpp \
     src/core/tileset.cpp \
@@ -80,7 +80,7 @@ HEADERS  += include/core/block.h \
     include/core/maplayout.h \
     include/core/metatile.h \
     include/core/metatileparser.h \
-    include/core/paletteparser.h \
+    include/core/paletteutil.h \
     include/core/parseutil.h \
     include/core/tile.h \
     include/core/tileset.h \

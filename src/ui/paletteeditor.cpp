@@ -1,6 +1,6 @@
 #include "paletteeditor.h"
 #include "ui_paletteeditor.h"
-#include "paletteparser.h"
+#include "paletteutil.h"
 #include <QFileDialog>
 #include <QMessageBox>
 #include "log.h"
@@ -268,7 +268,7 @@ void PaletteEditor::on_actionImport_Palette_triggered()
         return;
     }
 
-    PaletteParser parser;
+    PaletteUtil parser;
     bool error = false;
     QList<QRgb> palette = parser.parse(filepath, &error);
     if (error) {

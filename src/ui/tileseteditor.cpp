@@ -3,7 +3,7 @@
 #include "log.h"
 #include "imageproviders.h"
 #include "metatileparser.h"
-#include "paletteparser.h"
+#include "paletteutil.h"
 #include "imageexport.h"
 #include <QFileDialog>
 #include <QMessageBox>
@@ -408,7 +408,7 @@ void TilesetEditor::importTilesetTiles(Tileset *tileset, bool primary) {
             return;
         }
 
-        PaletteParser parser;
+        PaletteUtil parser;
         bool error = false;
         QList<QRgb> palette = parser.parse(filepath, &error);
         if (error) {

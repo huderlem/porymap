@@ -1,5 +1,6 @@
 #include "citymappixmapitem.h"
 #include "imageproviders.h"
+#include "config.h"
 #include "log.h"
 
 #include <QFile>
@@ -14,6 +15,11 @@ void CityMapPixmapItem::init() {
     if (!binFile.open(QIODevice::ReadOnly)) return;
 
     data = binFile.readAll();
+    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeruby) {
+        for (int i = 0; i < data.size(); i++)
+            data[i] = data[i] ^ 0x80;
+    }
+
     binFile.close();
 }
 
@@ -38,6 +44,10 @@ void CityMapPixmapItem::save() {
     if (!binFile.open(QIODevice::WriteOnly)) {
         logError(QString("Cannot save city map tilemap to %1.").arg(file));
         return;
+    }
+    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeruby) {
+        for (int i = 0; i < data.size(); i++)
+            data[i] = data[i] ^ 0x80;
     }
     binFile.write(data);
     binFile.close();
