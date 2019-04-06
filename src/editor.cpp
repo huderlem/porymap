@@ -1177,6 +1177,13 @@ void DraggablePixmapItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *) {
             emit editor->warpEventDoubleClicked(this->event->get("destination_map_name"), this->event->get("destination_warp"));
         }
     }
+    else if (this->event->get("event_type") == EventType::SecretBase) {
+        QString baseId = this->event->get("secret_base_id");
+        QString destMap = editor->project->mapConstantsToMapNames->value("MAP_" + baseId.left(baseId.lastIndexOf("_")));
+        if (destMap != NONE_MAP_NAME) {
+            emit editor->warpEventDoubleClicked(destMap, "0");
+        }
+    }
 }
 
 QList<DraggablePixmapItem *> *Editor::getObjects() {
