@@ -116,7 +116,7 @@ public:
 
     QString map_edit_mode;
     QString prev_edit_mode;
-    
+
     int scale_exp = 0;
     double scale_base = sqrt(2); // adjust scale factor with this
     qreal collisionOpacity = 0.5;

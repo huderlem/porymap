@@ -15,6 +15,7 @@
 #include "map.h"
 #include "editor.h"
 #include "tileseteditor.h"
+#include "regionmapeditor.h"
 #include "filterchildrenproxymodel.h"
 #include "newmappopup.h"
 #include "newtilesetdialog.h"
@@ -162,9 +163,12 @@ private slots:
     void on_tableWidget_CustomHeaderFields_cellChanged(int row, int column);
     void on_horizontalSlider_MetatileZoom_valueChanged(int value);
 
+    void on_actionRegion_Map_Editor_triggered();
+
 private:
     Ui::MainWindow *ui;
     TilesetEditor *tilesetEditor = nullptr;
+    RegionMapEditor *regionMapEditor = nullptr;
     FilterChildrenProxyModel *mapListProxyModel;
     NewMapPopup *newmapprompt = nullptr;
     QStandardItemModel *mapListModel;

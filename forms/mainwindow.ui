@@ -2750,6 +2750,7 @@
     <addaction name="action_NewMap"/>
     <addaction name="actionNew_Tileset"/>
     <addaction name="actionTileset_Editor"/>
+    <addaction name="actionRegion_Map_Editor"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -2975,6 +2976,11 @@
    </property>
    <property name="text">
     <string>Cursor Tile Outline</string>
+   </property>
+  </action>
+  <action name="actionRegion_Map_Editor">
+   <property name="text">
+    <string>Region Map Editor</string>
    </property>
   </action>
   <action name="actionNew_Tileset">

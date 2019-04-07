@@ -465,7 +465,7 @@ void MainWindow::displayMapProperties() {
     ui->comboBox_Song->addItems(songs);
     ui->comboBox_Song->setCurrentText(map->song);
 
-    ui->comboBox_Location->addItems(*project->regionMapSections);
+    ui->comboBox_Location->addItems(project->mapSectionValueToName.values());
     ui->comboBox_Location->setCurrentText(map->location);
 
     QMap<QString, QStringList> tilesets = project->getTilesetLabels();
@@ -658,8 +658,8 @@ void MainWindow::sortMapList() {
         case MapSortOrder::Area:
         {
             QMap<QString, int> mapsecToGroupNum;
-            for (int i = 0; i < project->regionMapSections->length(); i++) {
-                QString mapsec_name = project->regionMapSections->value(i);
+            for (int i = 0; i < project->mapSectionNameToValue.size(); i++) {
+                QString mapsec_name = project->mapSectionValueToName.value(i);
                 QStandardItem *mapsec = new QStandardItem;
                 mapsec->setText(mapsec_name);
                 mapsec->setIcon(folderIcon);
@@ -2121,6 +2121,24 @@ void MainWindow::on_horizontalSlider_MetatileZoom_valueChanged(int value) {
 
     ui->graphicsView_currentMetatileSelection->setMatrix(matrix);
     currentMetatilesSelectionChanged();
+}
+
+void MainWindow::on_actionRegion_Map_Editor_triggered() {
+    if (!this->regionMapEditor) {
+        this->regionMapEditor = new RegionMapEditor(this, this->editor->project);
+        this->regionMapEditor->loadRegionMapData();
+        this->regionMapEditor->loadCityMaps();
+        connect(this->regionMapEditor, &QObject::destroyed, [=](QObject *) { this->regionMapEditor = nullptr; });
+        this->regionMapEditor->setAttribute(Qt::WA_DeleteOnClose);
+    }
+
+    if (!this->regionMapEditor->isVisible()) {
+        this->regionMapEditor->show();
+    } else if (this->regionMapEditor->isMinimized()) {
+        this->regionMapEditor->showNormal();
+    } else {
+        this->regionMapEditor->activateWindow();
+    }
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {

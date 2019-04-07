@@ -341,7 +341,6 @@ void Map::_floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_
     }
 }
 
-
 void Map::undo() {
     HistoryItem *commit = metatileHistory.back();
     if (!commit)

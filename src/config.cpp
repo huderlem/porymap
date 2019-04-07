@@ -156,6 +156,17 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         if (!ok) {
             logWarn(QString("Invalid config value for show_cursor_tile: '%1'. Must be 0 or 1.").arg(value));
         }
+    } else if (key == "region_map_dimensions") {
+        bool ok1, ok2;
+        QStringList dims = value.split("x");
+        int w = dims[0].toInt(&ok1);
+        int h = dims[1].toInt(&ok2);
+        if (!ok1 || !ok2) {
+            logWarn("Cannot parse region map dimensions. Using default values instead.");
+            this->regionMapDimensions = QSize(32, 20);
+        } else {
+            this->regionMapDimensions = QSize(w, h);
+        }
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -176,6 +187,8 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("metatiles_zoom", QString("%1").arg(this->metatilesZoom));
     map.insert("show_player_view", this->showPlayerView ? "1" : "0");
     map.insert("show_cursor_tile", this->showCursorTile ? "1" : "0");
+    map.insert("region_map_dimensions", QString("%1x%2").arg(this->regionMapDimensions.width())
+                                                        .arg(this->regionMapDimensions.height()));
     return map;
 }
 
@@ -246,6 +259,10 @@ void PorymapConfig::setShowCursorTile(bool enabled) {
     this->save();
 }
 
+void PorymapConfig::setRegionMapDimensions(int width, int height) {
+    this->regionMapDimensions = QSize(width, height);
+}
+
 QString PorymapConfig::getRecentProject() {
     return this->recentProject;
 }
@@ -288,6 +305,10 @@ bool PorymapConfig::getShowPlayerView() {
 
 bool PorymapConfig::getShowCursorTile() {
     return this->showCursorTile;
+}
+
+QSize PorymapConfig::getRegionMapDimensions() {
+    return this->regionMapDimensions;
 }
 
 const QMap<BaseGameVersion, QString> baseGameVersionMap = {

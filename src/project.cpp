@@ -4,6 +4,7 @@
 #include "historyitem.h"
 #include "log.h"
 #include "parseutil.h"
+#include "paletteutil.h"
 #include "tile.h"
 #include "tileset.h"
 
@@ -30,7 +31,6 @@ Project::Project()
     groupNames = new QStringList;
     map_groups = new QMap<QString, int>;
     mapNames = new QStringList;
-    regionMapSections = new QStringList;
     itemNames = new QStringList;
     flagNames = new QStringList;
     varNames = new QStringList;
@@ -720,20 +720,10 @@ void Project::saveTilesetTilesImage(Tileset *tileset) {
 }
 
 void Project::saveTilesetPalettes(Tileset *tileset, bool primary) {
+    PaletteUtil parser;
     for (int i = 0; i < Project::getNumPalettesTotal(); i++) {
         QString filepath = tileset->palettePaths.at(i);
-        QString content = "JASC-PAL\r\n";
-        content += "0100\r\n";
-        content += "16\r\n";
-        for (int j = 0; j < 16; j++) {
-            QRgb color = tileset->palettes->at(i).at(j);
-            content += QString("%1 %2 %3\r\n")
-                    .arg(qRed(color))
-                    .arg(qGreen(color))
-                    .arg(qBlue(color));
-        }
-
-        saveTextFile(filepath, content);
+        parser.writeJASC(filepath, tileset->palettes->at(i).toVector(), 0, 16);
     }
 }
 
@@ -1507,8 +1497,18 @@ void Project::readTilesetProperties() {
 
 void Project::readRegionMapSections() {
     QString filepath = root + "/include/constants/region_map_sections.h";
-    QStringList prefixes = (QStringList() << "MAPSEC_");
-    readCDefinesSorted(filepath, prefixes, regionMapSections);
+    this->mapSectionNameToValue.clear();
+    this->mapSectionValueToName.clear();
+    QString text = readTextFile(filepath);
+    if (!text.isNull()) {
+        QStringList prefixes = (QStringList() << "MAPSEC_");
+        this->mapSectionNameToValue = readCDefines(text, prefixes);
+        for (QString defineName : this->mapSectionNameToValue.keys()) {
+            this->mapSectionValueToName.insert(this->mapSectionNameToValue[defineName], defineName);
+        }
+    } else {
+        logError(QString("Failed to read C defines file: '%1'").arg(filepath));
+    }
 }
 
 void Project::readItemNames() {

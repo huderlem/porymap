@@ -8,6 +8,7 @@
 #include <QCheckBox>
 #include <QPainter>
 #include <QMouseEvent>
+#include <QDir>
 #include <math.h>
 
 static bool selectingEvent = false;
@@ -1283,6 +1284,5 @@ void Editor::objectsView_onMousePress(QMouseEvent *event) {
         selected_events->append(first);
         updateSelectedEvents();
     }
-
     selectingEvent = false;
 }
