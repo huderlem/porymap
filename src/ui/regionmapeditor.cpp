@@ -114,7 +114,7 @@ void RegionMapEditor::displayRegionMapImage() {
     this->ui->graphicsView_Region_Map_BkgImg->setScene(this->scene_region_map_image);
 
     if (regionMapFirstDraw) {
-        on_verticalSlider_Zoom_Map_Image_valueChanged(initialScale);
+        on_verticalSlider_Zoom_Map_Image_valueChanged(this->ui->verticalSlider_Zoom_Map_Image->value());
         RegionMapHistoryItem *commit = new RegionMapHistoryItem(
             RegionMapEditorBox::BackgroundImage, this->region_map->getTiles(), this->region_map->width(), this->region_map->height()
         );
@@ -141,6 +141,7 @@ void RegionMapEditor::displayRegionMapLayout() {
     connect(this->region_map_layout_item, &RegionMapLayoutPixmapItem::hoveredTileCleared,
             this, &RegionMapEditor::onRegionMapLayoutHoveredTileCleared);
 
+    updateRegionMapLayoutOptions(this->currIndex);
     this->region_map_layout_item->draw();
     this->region_map_layout_item->select(this->currIndex);
 
@@ -192,7 +193,7 @@ void RegionMapEditor::displayRegionMapTileSelector() {
             this, &RegionMapEditor::onRegionMapTileSelectorHoveredTileCleared);
 
     this->ui->graphicsView_RegionMap_Tiles->setScene(this->scene_region_map_tiles);
-    on_verticalSlider_Zoom_Image_Tiles_valueChanged(initialScale);
+    on_verticalSlider_Zoom_Image_Tiles_valueChanged(this->ui->verticalSlider_Zoom_Image_Tiles->value());
 
     this->mapsquare_selector_item->select(this->selectedImageTile);
 }
@@ -215,7 +216,7 @@ void RegionMapEditor::displayCityMapTileSelector() {
             this, &RegionMapEditor::onCityMapTileSelectorSelectedTileChanged);
 
     this->ui->graphicsView_City_Map_Tiles->setScene(this->scene_city_map_tiles);
-    on_verticalSlider_Zoom_City_Tiles_valueChanged(initialScale);
+    on_verticalSlider_Zoom_City_Tiles_valueChanged(this->ui->verticalSlider_Zoom_City_Tiles->value());
 
     this->city_map_selector_item->select(this->selectedCityTile);
 }
@@ -241,7 +242,7 @@ void RegionMapEditor::displayCityMap(QString f) {
     scene_city_map_image->setSceneRect(this->scene_city_map_image->sceneRect());
 
     this->ui->graphicsView_City_Map->setScene(scene_city_map_image);
-    on_verticalSlider_Zoom_City_Map_valueChanged(initialScale);
+    on_verticalSlider_Zoom_City_Map_valueChanged(this->ui->verticalSlider_Zoom_City_Map->value());
 }
 
 bool RegionMapEditor::createCityMap(QString name) {
@@ -581,7 +582,7 @@ void RegionMapEditor::on_action_Swap_triggered() {
 
     if (popup.exec() == QDialog::Accepted) {
         this->region_map->replaceSectionId(oldId, newId);
-        this->region_map_layout_item->draw();
+        displayRegionMapLayout();
         this->region_map_layout_item->select(this->region_map_layout_item->selectedTile);
         this->hasUnsavedChanges = true;
     }

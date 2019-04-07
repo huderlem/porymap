@@ -456,84 +456,88 @@
             <property name="lineWidth">
              <number>1</number>
             </property>
-            <widget class="QWidget" name="layoutWidget_4">
-             <property name="geometry">
-              <rect>
-               <x>13</x>
-               <y>11</y>
-               <width>281</width>
-               <height>91</height>
-              </rect>
-             </property>
-             <layout class="QGridLayout" name="gridLayout_22">
-              <item row="0" column="0">
-               <widget class="QLabel" name="label_RM_MapSection">
-                <property name="text">
-                 <string>Map Section</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="QComboBox" name="comboBox_RM_ConnectedMap">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The section of the region map which the map is grouped under. This also determines the name of the map that is display when the player enters it.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
-                <property name="editable">
-                 <bool>true</bool>
-                </property>
-                <property name="insertPolicy">
-                 <enum>QComboBox::NoInsert</enum>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="label_RM_MapName">
-                <property name="text">
-                 <string>Map Name</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="1">
-               <widget class="QLineEdit" name="lineEdit_RM_MapName"/>
-              </item>
-              <item row="2" column="0">
-               <widget class="QLabel" name="label_RM_CityMap">
-                <property name="text">
-                 <string>City Map</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="1">
-               <widget class="QComboBox" name="comboBox_RM_CityMap">
-                <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The map type is a general attribute, which is used for many different things. For example. it determines whether biking or running is allowed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
-                <property name="editable">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-            <widget class="QPushButton" name="pushButton_RM_Options_delete">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>100</y>
-               <width>113</width>
-               <height>32</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>Delete Square</string>
-             </property>
-            </widget>
+            <layout class="QVBoxLayout" name="verticalLayout">
+             <item>
+              <layout class="QGridLayout" name="gridLayout_22">
+               <property name="sizeConstraint">
+                <enum>QLayout::SetNoConstraint</enum>
+               </property>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_RM_MapSection">
+                 <property name="text">
+                  <string>Map Section</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QComboBox" name="comboBox_RM_ConnectedMap">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The section of the region map which the map is grouped under. This also determines the name of the map that is display when the player enters it.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="editable">
+                  <bool>true</bool>
+                 </property>
+                 <property name="insertPolicy">
+                  <enum>QComboBox::NoInsert</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_RM_MapName">
+                 <property name="text">
+                  <string>Map Name</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QLineEdit" name="lineEdit_RM_MapName"/>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="label_RM_CityMap">
+                 <property name="text">
+                  <string>City Map</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="QComboBox" name="comboBox_RM_CityMap">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The map type is a general attribute, which is used for many different things. For example. it determines whether biking or running is allowed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="editable">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pushButton_RM_Options_delete">
+               <property name="text">
+                <string>Delete Square</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="verticalSpacer">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
            </widget>
           </item>
          </layout>
