@@ -4,6 +4,7 @@
 #include "historyitem.h"
 #include "log.h"
 #include "parseutil.h"
+#include "paletteutil.h"
 #include "tile.h"
 #include "tileset.h"
 #include "event.h"
@@ -720,20 +721,10 @@ void Project::saveTilesetTilesImage(Tileset *tileset) {
 }
 
 void Project::saveTilesetPalettes(Tileset *tileset, bool primary) {
+    PaletteUtil parser;
     for (int i = 0; i < Project::getNumPalettesTotal(); i++) {
         QString filepath = tileset->palettePaths.at(i);
-        QString content = "JASC-PAL\r\n";
-        content += "0100\r\n";
-        content += "16\r\n";
-        for (int j = 0; j < 16; j++) {
-            QRgb color = tileset->palettes->at(i).at(j);
-            content += QString("%1 %2 %3\r\n")
-                    .arg(qRed(color))
-                    .arg(qGreen(color))
-                    .arg(qBlue(color));
-        }
-
-        saveTextFile(filepath, content);
+        parser.writeJASC(filepath, tileset->palettes->at(i).toVector(), 0, 16);
     }
 }
 

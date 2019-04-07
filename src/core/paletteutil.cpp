@@ -277,14 +277,14 @@ void PaletteUtil::writeJASC(QString filepath, QVector<QRgb> palette, int offset,
         return;
     }
 
-    QString text = "JASC-PAL\n0100\n";
-    text += QString::number(nColors) + "\n";
+    QString text = "JASC-PAL\r\n0100\r\n";
+    text += QString::number(nColors) + "\r\n";
 
     for (int i = offset; i < offset + nColors; i++) {
         QRgb color = palette.at(i);
         text += QString::number(qRed(color)) + " "
               + QString::number(qGreen(color)) + " "
-              + QString::number(qBlue(color)) + "\n";
+              + QString::number(qBlue(color)) + "\r\n";
     }
 
     QFile file(filepath);
