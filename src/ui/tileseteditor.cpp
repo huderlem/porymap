@@ -324,7 +324,8 @@ void TilesetEditor::on_lineEdit_metatileLabel_editingFinished()
 
 void TilesetEditor::saveMetatileLabel()
 {
-    if (this->metatile) {
+    // Only commit if the field has changed.
+    if (this->metatile && this->metatile->label != this->ui->lineEdit_metatileLabel->text()) {
         Metatile *prevMetatile = this->metatile->copy();
         this->metatile->label = this->ui->lineEdit_metatileLabel->text();
         MetatileHistoryItem *commit = new MetatileHistoryItem(metatileSelector->getSelectedMetatile(), prevMetatile, this->metatile->copy());
@@ -344,11 +345,7 @@ void TilesetEditor::on_comboBox_layerType_activated(int layerType)
 
 void TilesetEditor::on_actionSave_Tileset_triggered()
 {
-    if (this->metatile) {
-        if (this->metatile->label != this->ui->lineEdit_metatileLabel->text()) {
-            saveMetatileLabel();
-        }
-    }
+    saveMetatileLabel();
 
     this->project->saveTilesets(this->primaryTileset, this->secondaryTileset);
     emit this->tilesetsSaved(this->primaryTileset->name, this->secondaryTileset->name);
