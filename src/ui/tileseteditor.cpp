@@ -62,7 +62,7 @@ void TilesetEditor::init(Project *project, QString primaryTilesetLabel, QString 
     this->ui->spinBox_paletteSelector->setMaximum(Project::getNumPalettesTotal() - 1);
 
     //only allow characters valid for a symbol
-    QRegExp expression("[-_.A-Za-z0-9]+$");
+    QRegExp expression("[_A-Za-z0-9]*$");
     QRegExpValidator *validator = new QRegExpValidator(expression);
     this->ui->lineEdit_metatileLabel->setValidator(validator);
 
