@@ -319,6 +319,11 @@ void TilesetEditor::on_comboBox_metatileBehaviors_activated(const QString &metat
 
 void TilesetEditor::on_lineEdit_metatileLabel_editingFinished()
 {
+    saveMetatileLabel();
+}
+
+void TilesetEditor::saveMetatileLabel()
+{
     if (this->metatile) {
         Metatile *prevMetatile = this->metatile->copy();
         this->metatile->label = this->ui->lineEdit_metatileLabel->text();
@@ -339,6 +344,12 @@ void TilesetEditor::on_comboBox_layerType_activated(int layerType)
 
 void TilesetEditor::on_actionSave_Tileset_triggered()
 {
+    if (this->metatile) {
+        if (this->metatile->label != this->ui->lineEdit_metatileLabel->text()) {
+            saveMetatileLabel();
+        }
+    }
+
     this->project->saveTilesets(this->primaryTileset, this->secondaryTileset);
     emit this->tilesetsSaved(this->primaryTileset->name, this->secondaryTileset->name);
     if (this->paletteEditor) {
