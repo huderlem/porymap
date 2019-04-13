@@ -16,10 +16,12 @@ public:
     QString currentSection = QString();
     int selectedTile;
     int highlightedTile;
+    int pressedX;
+    int pressedY;
     void draw();
     void select(int, int);
     void select(int);
-    void highlight(int, int, int);
+    bool draggingEntry = false;
 
 private:
     void updateSelectedTile();
@@ -29,6 +31,7 @@ signals:
     void hoveredTileChanged(int);
     void hoveredTileCleared();
     void selectedTileChanged(QString);
+    void entryPositionChanged(int, int);
 
 protected:
     void hoverMoveEvent(QGraphicsSceneHoverEvent*);

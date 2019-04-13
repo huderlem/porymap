@@ -181,6 +181,9 @@ void RegionMapEditor::displayRegionMapEntriesImage() {
 
     this->region_map_entries_item = new RegionMapEntriesPixmapItem(this->region_map, this->mapsquare_selector_item);
 
+    connect(this->region_map_entries_item, &RegionMapEntriesPixmapItem::entryPositionChanged,
+            this, &RegionMapEditor::onRegionMapEntryDragged);
+
     if (entriesFirstDraw) {
         QString first = this->project->mapSectionValueToName.first();
         this->region_map_entries_item->currentSection = first;
@@ -220,8 +223,6 @@ void RegionMapEditor::updateRegionMapEntryOptions(QString section) {
     this->ui->spinBox_RM_Entry_y->setEnabled(enabled);
     this->ui->spinBox_RM_Entry_width->setEnabled(enabled);
     this->ui->spinBox_RM_Entry_height->setEnabled(enabled);
-
-    // if the key is not in the entries map, add it
 
     this->ui->comboBox_RM_Entry_MapSection->setCurrentText(section);
     this->activeEntry = section;
@@ -363,6 +364,12 @@ void RegionMapEditor::onRegionMapTileSelectorHoveredTileChanged(unsigned tileId)
 
 void RegionMapEditor::onRegionMapTileSelectorHoveredTileCleared() {
     this->ui->statusbar->clearMessage();
+}
+
+void RegionMapEditor::onRegionMapEntryDragged(int new_x, int new_y) {
+    on_spinBox_RM_Entry_x_valueChanged(new_x);
+    on_spinBox_RM_Entry_y_valueChanged(new_y);
+    updateRegionMapEntryOptions(activeEntry);
 }
 
 void RegionMapEditor::onRegionMapLayoutSelectedTileChanged(int index) {

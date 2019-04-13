@@ -76,22 +76,47 @@ void RegionMapEntriesPixmapItem::select(int index) {
     emit selectedTileChanged(this->region_map->map_squares[index].mapsec);
 }
 
-void RegionMapEntriesPixmapItem::highlight(int x, int y, int red) {
-    this->highlightedTile = red;
-    SelectablePixmapItem::select(x + this->region_map->padLeft, y + this->region_map->padTop, 0, 0);
-    draw();
-}
-
 void RegionMapEntriesPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
-    event->ignore();
+    QPoint pos = this->getCellPos(event->pos());
+    int x = pos.x() - this->region_map->padLeft;
+    int y = pos.y() - this->region_map->padTop;
+
+    RegionMapEntry entry = this->region_map->mapSecToMapEntry.value(currentSection);
+    pressedX = x - entry.x;
+    pressedY = y - entry.y;
+    if (entry.x == x && entry.y == y) {
+        this->draggingEntry = true;
+    }
+    else if (pressedX < entry.width && x >= entry.x && pressedY < entry.height && y >= entry.y) {
+        this->draggingEntry = true;
+    }
 }
 
 void RegionMapEntriesPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
-    event->ignore();
+    if (!draggingEntry) {
+        event->ignore();
+        return;
+    }
+
+    QPoint pos = this->getCellPos(event->pos());
+    int new_x = pos.x() - this->region_map->padLeft - pressedX;
+    int new_y = pos.y() - this->region_map->padTop - pressedY;
+
+    RegionMapEntry entry = this->region_map->mapSecToMapEntry.value(currentSection);
+
+    // check to make sure not moving out of bounds
+    if (new_x + entry.width > this->region_map->width() - this->region_map->padLeft - this->region_map->padRight
+     || new_y + entry.height > this->region_map->height() - this->region_map->padTop - this->region_map->padBottom
+     || new_x < 0 || new_y < 0)
+        return;
+
+    if (new_x != entry.x || new_y != entry.y) {
+        emit entryPositionChanged(new_x, new_y);
+    }
 }
 
 void RegionMapEntriesPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
-    event->ignore();
+    this->draggingEntry = false;
 }
 
 void RegionMapEntriesPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
