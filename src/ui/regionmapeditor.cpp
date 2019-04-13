@@ -214,6 +214,15 @@ void RegionMapEditor::displayRegionMapEntryOptions() {
 }
 
 void RegionMapEditor::updateRegionMapEntryOptions(QString section) {
+    bool enabled = section == "MAPSEC_NONE" ? false : true;
+
+    this->ui->spinBox_RM_Entry_x->setEnabled(enabled);
+    this->ui->spinBox_RM_Entry_y->setEnabled(enabled);
+    this->ui->spinBox_RM_Entry_width->setEnabled(enabled);
+    this->ui->spinBox_RM_Entry_height->setEnabled(enabled);
+
+    // if the key is not in the entries map, add it
+
     this->ui->comboBox_RM_Entry_MapSection->setCurrentText(section);
     this->activeEntry = section;
     this->region_map_entries_item->currentSection = section;
@@ -326,6 +335,17 @@ bool RegionMapEditor::createCityMap(QString name) {
     this->ui->comboBox_CityMap_picker->setCurrentText(name);
 
     return !errored;
+}
+
+bool RegionMapEditor::tryInsertNewMapEntry(QString mapsec) {
+    if (!this->region_map->mapSecToMapEntry.keys().contains(mapsec) && mapsec != "MAPSEC_NONE") {
+        RegionMapEntry entry(0, 0, 1, 1, region_map->fixCase(mapsec));
+        this->region_map->sMapNamesMap.insert(region_map->fixCase(mapsec), QString());
+        this->region_map->mapSecToMapEntry.insert(mapsec, entry);
+        this->region_map->sMapNames.append(region_map->fixCase(mapsec));
+        return true;
+    }
+    return false;
 }
 
 void RegionMapEditor::onRegionMapTileSelectorSelectedTileChanged(unsigned id) {
@@ -485,6 +505,7 @@ void RegionMapEditor::on_comboBox_RM_Entry_MapSection_activated(const QString &t
 }
 
 void RegionMapEditor::on_spinBox_RM_Entry_x_valueChanged(int x) {
+    tryInsertNewMapEntry(activeEntry);
     this->region_map->mapSecToMapEntry[activeEntry].setX(x);
     int idx = this->region_map->getMapSquareIndex(this->region_map->mapSecToMapEntry.value(activeEntry).x + this->region_map->padLeft,
                                                   this->region_map->mapSecToMapEntry.value(activeEntry).y + this->region_map->padTop);
@@ -494,6 +515,7 @@ void RegionMapEditor::on_spinBox_RM_Entry_x_valueChanged(int x) {
 }
 
 void RegionMapEditor::on_spinBox_RM_Entry_y_valueChanged(int y) {
+    tryInsertNewMapEntry(activeEntry);
     this->region_map->mapSecToMapEntry[activeEntry].setY(y);
     int idx = this->region_map->getMapSquareIndex(this->region_map->mapSecToMapEntry.value(activeEntry).x + this->region_map->padLeft,
                                                   this->region_map->mapSecToMapEntry.value(activeEntry).y + this->region_map->padTop);
@@ -503,12 +525,14 @@ void RegionMapEditor::on_spinBox_RM_Entry_y_valueChanged(int y) {
 }
 
 void RegionMapEditor::on_spinBox_RM_Entry_width_valueChanged(int width) {
+    tryInsertNewMapEntry(activeEntry);
     this->region_map->mapSecToMapEntry[activeEntry].setWidth(width);
     this->region_map_entries_item->draw();
     this->hasUnsavedChanges = true;
 }
 
 void RegionMapEditor::on_spinBox_RM_Entry_height_valueChanged(int height) {
+    tryInsertNewMapEntry(activeEntry);
     this->region_map->mapSecToMapEntry[activeEntry].setHeight(height);
     this->region_map_entries_item->draw();
     this->hasUnsavedChanges = true;

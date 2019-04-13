@@ -92,11 +92,11 @@ private:
     void displayCityMapTileSelector();
     void displayCityMap(QString name);
     void displayRegionMapEntryOptions();
-    void uodateRegionMapEntryOptions(int);//
-    void updateRegionMapEntryOptions(QString);//
+    void updateRegionMapEntryOptions(QString);
     void importTileImage(bool city = false);
 
     bool createCityMap(QString name);
+    bool tryInsertNewMapEntry(QString);
 
     void closeEvent(QCloseEvent* event);
 
