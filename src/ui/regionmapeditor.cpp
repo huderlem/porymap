@@ -46,9 +46,6 @@ void RegionMapEditor::on_action_RegionMap_Save_triggered() {
     if (project && region_map) {
         this->region_map->save();
         this->city_map_item->save();
-        this->currIndex = this->region_map_layout_item->highlightedTile;
-        this->region_map_layout_item->highlightedTile = -1;
-        displayRegionMap();
     }
     this->hasUnsavedChanges = false;
 }
@@ -87,6 +84,8 @@ void RegionMapEditor::displayRegionMap() {
     displayRegionMapImage();
     displayRegionMapLayout();
     displayRegionMapLayoutOptions();
+    displayRegionMapEntriesImage();
+    displayRegionMapEntryOptions();
 }
 
 void RegionMapEditor::displayRegionMapImage() {
@@ -169,6 +168,60 @@ void RegionMapEditor::updateRegionMapLayoutOptions(int index) {
     this->ui->lineEdit_RM_MapName->setText(this->project->mapSecToMapHoverName->value(this->region_map->map_squares[index].mapsec));
     this->ui->comboBox_RM_ConnectedMap->setCurrentText(this->region_map->map_squares[index].mapsec);
     this->ui->comboBox_RM_ConnectedMap->blockSignals(false);
+}
+
+void RegionMapEditor::displayRegionMapEntriesImage() {
+    if (!scene_region_map_entries) {
+        this->scene_region_map_entries = new QGraphicsScene;
+    }
+    if (region_map_entries_item && scene_region_map_entries) {
+        this->scene_region_map_entries->removeItem(region_map_entries_item);
+        delete region_map_entries_item;
+    }
+
+    this->region_map_entries_item = new RegionMapEntriesPixmapItem(this->region_map, this->mapsquare_selector_item);
+
+    if (entriesFirstDraw) {
+        QString first = this->project->mapSectionValueToName.first();
+        this->region_map_entries_item->currentSection = first;
+        this->activeEntry = first;
+        updateRegionMapEntryOptions(first);
+        entriesFirstDraw = false;
+    }
+
+    this->region_map_entries_item->draw();
+
+    int idx = this->region_map->getMapSquareIndex(this->region_map->mapSecToMapEntry.value(activeEntry).x + this->region_map->padLeft,
+                                                  this->region_map->mapSecToMapEntry.value(activeEntry).y + this->region_map->padTop);
+    this->region_map_entries_item->select(idx);
+
+    this->scene_region_map_entries->addItem(region_map_entries_item);
+    this->scene_region_map_entries->setSceneRect(this->scene_region_map_entries->itemsBoundingRect());
+
+    this->ui->graphicsView_Region_Map_Entries->setScene(this->scene_region_map_entries);
+}
+
+void RegionMapEditor::displayRegionMapEntryOptions() {
+    this->ui->comboBox_RM_Entry_MapSection->addItems(this->project->mapSectionValueToName.values());
+    int width = this->region_map->width() - this->region_map->padLeft - this->region_map->padRight;
+    int height = this->region_map->height() - this->region_map->padTop - this->region_map->padBottom;
+    this->ui->spinBox_RM_Entry_x->setMaximum(width - 1);
+    this->ui->spinBox_RM_Entry_y->setMaximum(height - 1);
+    this->ui->spinBox_RM_Entry_width->setMinimum(1);
+    this->ui->spinBox_RM_Entry_height->setMinimum(1);
+    this->ui->spinBox_RM_Entry_width->setMaximum(width);
+    this->ui->spinBox_RM_Entry_height->setMaximum(height);
+}
+
+void RegionMapEditor::updateRegionMapEntryOptions(QString section) {
+    this->ui->comboBox_RM_Entry_MapSection->setCurrentText(section);
+    this->activeEntry = section;
+    this->region_map_entries_item->currentSection = section;
+    RegionMapEntry entry = this->region_map->mapSecToMapEntry.value(section);
+    this->ui->spinBox_RM_Entry_x->setValue(entry.x);
+    this->ui->spinBox_RM_Entry_y->setValue(entry.y);
+    this->ui->spinBox_RM_Entry_width->setValue(entry.width);
+    this->ui->spinBox_RM_Entry_height->setValue(entry.height);
 }
 
 void RegionMapEditor::displayRegionMapTileSelector() {
@@ -402,9 +455,15 @@ void RegionMapEditor::on_tabWidget_Region_Map_currentChanged(int index) {
     {
         case 0:
             this->ui->verticalSlider_Zoom_Image_Tiles->setVisible(true);
+            this->region_map_item->draw();
             break;
         case 1:
             this->ui->verticalSlider_Zoom_Image_Tiles->setVisible(false);
+            this->region_map_layout_item->draw();
+            break;
+        case 2:
+            this->ui->verticalSlider_Zoom_Image_Tiles->setVisible(false);
+            this->region_map_entries_item->draw();
             break;
     }
 }
@@ -412,6 +471,47 @@ void RegionMapEditor::on_tabWidget_Region_Map_currentChanged(int index) {
 void RegionMapEditor::on_comboBox_RM_ConnectedMap_activated(const QString &mapsec) {
     this->ui->lineEdit_RM_MapName->setText(this->project->mapSecToMapHoverName->value(mapsec));
     this->hasUnsavedChanges = true;// sometimes this is called for unknown reasons
+}
+
+void RegionMapEditor::on_comboBox_RM_Entry_MapSection_activated(const QString &text) {
+    this->activeEntry = text;
+    this->region_map_entries_item->currentSection = activeEntry;
+    updateRegionMapEntryOptions(activeEntry);
+
+    int idx = this->region_map->getMapSquareIndex(this->region_map->mapSecToMapEntry.value(activeEntry).x + this->region_map->padLeft,
+                                                  this->region_map->mapSecToMapEntry.value(activeEntry).y + this->region_map->padTop);
+    this->region_map_entries_item->select(idx);
+    this->region_map_entries_item->draw();
+}
+
+void RegionMapEditor::on_spinBox_RM_Entry_x_valueChanged(int x) {
+    this->region_map->mapSecToMapEntry[activeEntry].setX(x);
+    int idx = this->region_map->getMapSquareIndex(this->region_map->mapSecToMapEntry.value(activeEntry).x + this->region_map->padLeft,
+                                                  this->region_map->mapSecToMapEntry.value(activeEntry).y + this->region_map->padTop);
+    this->region_map_entries_item->select(idx);
+    this->region_map_entries_item->draw();
+    this->hasUnsavedChanges = true;
+}
+
+void RegionMapEditor::on_spinBox_RM_Entry_y_valueChanged(int y) {
+    this->region_map->mapSecToMapEntry[activeEntry].setY(y);
+    int idx = this->region_map->getMapSquareIndex(this->region_map->mapSecToMapEntry.value(activeEntry).x + this->region_map->padLeft,
+                                                  this->region_map->mapSecToMapEntry.value(activeEntry).y + this->region_map->padTop);
+    this->region_map_entries_item->select(idx);
+    this->region_map_entries_item->draw();
+    this->hasUnsavedChanges = true;
+}
+
+void RegionMapEditor::on_spinBox_RM_Entry_width_valueChanged(int width) {
+    this->region_map->mapSecToMapEntry[activeEntry].setWidth(width);
+    this->region_map_entries_item->draw();
+    this->hasUnsavedChanges = true;
+}
+
+void RegionMapEditor::on_spinBox_RM_Entry_height_valueChanged(int height) {
+    this->region_map->mapSecToMapEntry[activeEntry].setHeight(height);
+    this->region_map_entries_item->draw();
+    this->hasUnsavedChanges = true;
 }
 
 void RegionMapEditor::on_lineEdit_RM_MapName_textEdited(const QString &text) {
@@ -507,6 +607,7 @@ void RegionMapEditor::undo() {
             this->region_map->setTiles(commit->tiles);
             this->region_map_item->draw();
             this->region_map_layout_item->draw();
+            this->region_map_entries_item->draw();
             break;
         case RegionMapEditorBox::CityMapImage:
             if (commit->cityMap == this->city_map_item->file)
@@ -533,6 +634,7 @@ void RegionMapEditor::redo() {
             this->region_map->setTiles(commit->tiles);
             this->region_map_item->draw();
             this->region_map_layout_item->draw();
+            this->region_map_entries_item->draw();
             break;
         case RegionMapEditorBox::CityMapImage:
             this->city_map_item->setTiles(commit->tiles);
@@ -766,6 +868,9 @@ void RegionMapEditor::on_verticalSlider_Zoom_Map_Image_valueChanged(int val) {
     ui->graphicsView_Region_Map_Layout->setResizeAnchor(QGraphicsView::NoAnchor);
     ui->graphicsView_Region_Map_Layout->setMatrix(matrix);
     ui->graphicsView_Region_Map_Layout->setFixedSize(width + 2, height + 2);
+    ui->graphicsView_Region_Map_Entries->setResizeAnchor(QGraphicsView::NoAnchor);
+    ui->graphicsView_Region_Map_Entries->setMatrix(matrix);
+    ui->graphicsView_Region_Map_Entries->setFixedSize(width + 2, height + 2);
 }
 
 void RegionMapEditor::on_verticalSlider_Zoom_Image_Tiles_valueChanged(int val) {

@@ -4,6 +4,7 @@
 #include "regionmappixmapitem.h"
 #include "citymappixmapitem.h"
 #include "regionmaplayoutpixmapitem.h"
+#include "regionmapentriespixmapitem.h"
 #include "regionmap.h"
 #include "history.h"
 #include "historyitem.h"
@@ -40,6 +41,8 @@ public:
     void onRegionMapLayoutHoveredTileChanged(int index);
     void onRegionMapLayoutHoveredTileCleared();
 
+    void onRegionMapEntriesSelectedTileChanged(QString) {};
+
     void undo();
     void redo();
 
@@ -54,23 +57,27 @@ private:
     int currIndex;
     unsigned selectedCityTile;
     unsigned selectedImageTile;
+    QString activeEntry;
 
     bool hasUnsavedChanges = false;
     bool cityMapFirstDraw = true;
     bool regionMapFirstDraw = true;
+    bool entriesFirstDraw = true;
 
     double scaleUpFactor = 2.0;
     double initialScale = 30.0;
 
-    QGraphicsScene *scene_region_map_image  = nullptr;
-    QGraphicsScene *scene_city_map_image    = nullptr;
-    QGraphicsScene *scene_region_map_layout = nullptr;
-    QGraphicsScene *scene_region_map_tiles  = nullptr;
-    QGraphicsScene *scene_city_map_tiles    = nullptr;
+    QGraphicsScene *scene_region_map_image   = nullptr;
+    QGraphicsScene *scene_city_map_image     = nullptr;
+    QGraphicsScene *scene_region_map_layout  = nullptr;
+    QGraphicsScene *scene_region_map_entries = nullptr;
+    QGraphicsScene *scene_region_map_tiles   = nullptr;
+    QGraphicsScene *scene_city_map_tiles     = nullptr;
 
     TilemapTileSelector *mapsquare_selector_item = nullptr;
     TilemapTileSelector *city_map_selector_item  = nullptr;
 
+    RegionMapEntriesPixmapItem *region_map_entries_item = nullptr;
     RegionMapLayoutPixmapItem *region_map_layout_item = nullptr;
     RegionMapPixmapItem *region_map_item = nullptr;
     CityMapPixmapItem *city_map_item = nullptr;
@@ -78,12 +85,16 @@ private:
     void displayRegionMap();
     void displayRegionMapImage();
     void displayRegionMapLayout();
+    void displayRegionMapEntriesImage();
     void displayRegionMapLayoutOptions();
     void updateRegionMapLayoutOptions(int index);
     void displayRegionMapTileSelector();
     void displayCityMapTileSelector();
     void displayCityMap(QString name);
-    void importTileImage(bool city = false);//QString path);// what is this path tho?
+    void displayRegionMapEntryOptions();
+    void uodateRegionMapEntryOptions(int);//
+    void updateRegionMapEntryOptions(QString);//
+    void importTileImage(bool city = false);
 
     bool createCityMap(QString name);
 
@@ -101,14 +112,19 @@ private slots:
     void on_action_Import_CityMap_ImageTiles_triggered();
     void on_tabWidget_Region_Map_currentChanged(int);
     void on_pushButton_RM_Options_delete_clicked();
-    void on_comboBox_RM_ConnectedMap_activated(const QString &text);
+    void on_comboBox_RM_ConnectedMap_activated(const QString &);
+    void on_comboBox_RM_Entry_MapSection_activated(const QString &);
+    void on_spinBox_RM_Entry_x_valueChanged(int);
+    void on_spinBox_RM_Entry_y_valueChanged(int);
+    void on_spinBox_RM_Entry_width_valueChanged(int);
+    void on_spinBox_RM_Entry_height_valueChanged(int);
     void on_pushButton_CityMap_add_clicked();
     void on_verticalSlider_Zoom_Map_Image_valueChanged(int);
     void on_verticalSlider_Zoom_Image_Tiles_valueChanged(int);
     void on_verticalSlider_Zoom_City_Map_valueChanged(int);
     void on_verticalSlider_Zoom_City_Tiles_valueChanged(int);
-    void on_comboBox_CityMap_picker_currentTextChanged(const QString &text);
-    void on_lineEdit_RM_MapName_textEdited(const QString &text);
+    void on_comboBox_CityMap_picker_currentTextChanged(const QString &);
+    void on_lineEdit_RM_MapName_textEdited(const QString &);
     void onHoveredRegionMapTileChanged(int x, int y);
     void onHoveredRegionMapTileCleared();
     void mouseEvent_region_map(QGraphicsSceneMouseEvent *event, RegionMapPixmapItem *item);
