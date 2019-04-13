@@ -42,6 +42,7 @@ public:
     void onRegionMapLayoutHoveredTileCleared();
 
     void onRegionMapEntriesSelectedTileChanged(QString) {};
+    void onRegionMapEntryDragged(int, int);
 
     void undo();
     void redo();
