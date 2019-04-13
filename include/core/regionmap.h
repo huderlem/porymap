@@ -18,6 +18,14 @@
 class RegionMapEntry
 {
 public:
+    RegionMapEntry()=default;
+    RegionMapEntry(int x_, int y_, int width_, int height_, QString name_) {
+        this-> x = x_;
+        this-> y = y_;
+        this-> width = width_;
+        this-> height = height_;
+        this-> name = name_;
+    }
     int x;
     int y;
     int width;
@@ -98,6 +106,8 @@ public:
     QVector<uint8_t> getTiles();
     void setTiles(QVector<uint8_t> tileIds);
 
+    QString fixCase(QString);
+
 private:
     int layout_width_;
     int layout_height_;
@@ -112,8 +122,6 @@ private:
 
     int img_index_(int x, int y);
     int layout_index_(int x, int y);
-
-    QString fix_case(QString);
 };
 
 #endif // REGIONMAP_H

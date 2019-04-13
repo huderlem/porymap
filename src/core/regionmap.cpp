@@ -163,11 +163,17 @@ void RegionMap::saveLayout() {
 
     entries_text += "\nconst struct RegionMapLocation gRegionMapEntries[] = {\n";
 
+    int longest = 1;
+    for (auto sec : project->mapSectionNameToValue.keys()) {
+        if (sec.length() > longest) longest = sec.length();
+    }
+
     for (auto sec : project->mapSectionNameToValue.keys()) {
         if (!mapSecToMapEntry.contains(sec)) continue;
         RegionMapEntry entry = mapSecToMapEntry.value(sec);
-        entries_text += "    [" + sec + "] = {" + QString::number(entry.x) + ", " + QString::number(entry.y) + ", " 
-            +  QString::number(entry.width) + ", " + QString::number(entry.height) + ", sMapName_" + entry.name + "},\n";
+        entries_text += "    [" + sec + QString("]%1= {").arg(QString(" ").repeated(1 + longest - sec.length()))
+            + QString::number(entry.x) + ", " + QString::number(entry.y) + ", " 
+            + QString::number(entry.width) + ", " + QString::number(entry.height) + ", sMapName_" + entry.name + "},\n";
     }
     entries_text += "};\n\n#endif // GUARD_DATA_REGION_MAP_REGION_MAP_ENTRIES_H\n";
 
@@ -201,11 +207,11 @@ void RegionMap::saveOptions(int id, QString sec, QString name, int x, int y) {
         if (!name.isEmpty()) {
             this->map_squares[index].map_name = name;
             this->project->mapSecToMapHoverName->insert(sec, name);
-            QString sName = fix_case(sec);
+            QString sName = fixCase(sec);
             sMapNamesMap.insert(sName, name);
             if (!mapSecToMapEntry.keys().contains(sec)) {
                 sMapNames.append(sName);
-                RegionMapEntry entry = {x, y, 1, 1, sName};
+                RegionMapEntry entry(x, y, 1, 1, sName);
                 mapSecToMapEntry.insert(sec, entry);
             }
         }
@@ -342,7 +348,7 @@ int RegionMap::getMapSquareIndex(int x, int y) {
 
 // For turning a MAPSEC_NAME into a unique identifier sMapName-style variable.
 // CAPS_WITH_UNDERSCORE to CamelCase
-QString RegionMap::fix_case(QString caps) {
+QString RegionMap::fixCase(QString caps) {
     bool big = true;
     QString camel;
 
