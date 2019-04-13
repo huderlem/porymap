@@ -165,7 +165,7 @@ void RegionMap::saveLayout() {
 
     for (auto sec : project->mapSectionNameToValue.keys()) {
         if (!mapSecToMapEntry.contains(sec)) continue;
-        struct RegionMapEntry entry = mapSecToMapEntry.value(sec);
+        RegionMapEntry entry = mapSecToMapEntry.value(sec);
         entries_text += "    [" + sec + "] = {" + QString::number(entry.x) + ", " + QString::number(entry.y) + ", " 
             +  QString::number(entry.width) + ", " + QString::number(entry.height) + ", sMapName_" + entry.name + "},\n";
     }
@@ -205,7 +205,7 @@ void RegionMap::saveOptions(int id, QString sec, QString name, int x, int y) {
             sMapNamesMap.insert(sName, name);
             if (!mapSecToMapEntry.keys().contains(sec)) {
                 sMapNames.append(sName);
-                struct RegionMapEntry entry = {x, y, 1, 1, sName};
+                RegionMapEntry entry = {x, y, 1, 1, sName};
                 mapSecToMapEntry.insert(sec, entry);
             }
         }
@@ -358,4 +358,20 @@ QString RegionMap::fix_case(QString caps) {
         else camel += ch.toLower();
     }
     return camel;
+}
+
+void RegionMapEntry::setX(const int val) {
+    this->x = val;
+}
+
+void RegionMapEntry::setY(int val) {
+    this->y = val;
+}
+
+void RegionMapEntry::setWidth(int val) {
+    this->width = val;
+}
+
+void RegionMapEntry::setHeight(int val) {
+    this->height = val;
 }

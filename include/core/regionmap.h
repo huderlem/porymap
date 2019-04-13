@@ -15,13 +15,19 @@
 #include <QGraphicsScene>
 #include <QGraphicsView>
 
-struct RegionMapEntry
+class RegionMapEntry
 {
+public:
     int x;
     int y;
     int width;
     int height;
     QString name;
+
+    void setX(int);
+    void setY(int);
+    void setWidth(int);
+    void setHeight(int);
 };
 
 class RegionMapSquare
@@ -52,6 +58,10 @@ public:
 
     QVector<RegionMapSquare> map_squares;
     History<RegionMapHistoryItem*> history;
+
+    QMap<QString, QString> sMapNamesMap;
+    QMap<QString, RegionMapEntry> mapSecToMapEntry;
+    QVector<QString> sMapNames;
 
     const int padLeft   = 1;
     const int padRight  = 3;
@@ -99,10 +109,6 @@ private:
     QString region_map_entries_path;
     QString region_map_layout_bin_path;
     QString city_map_tiles_path;
-
-    QMap<QString, QString> sMapNamesMap;
-    QMap<QString, struct RegionMapEntry> mapSecToMapEntry;
-    QVector<QString> sMapNames;
 
     int img_index_(int x, int y);
     int layout_index_(int x, int y);
