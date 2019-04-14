@@ -106,8 +106,8 @@ void RegionMap::readLayout() {
     in.setCodec("UTF-8");
     while (!in.atEnd()) {
         line = in.readLine();
-        if (line.startsWith("static const u8")) {
-            QRegularExpression reBefore("sMapName_(.*)\\[");
+        if (line.startsWith("const u8")) {
+            QRegularExpression reBefore("gMapName_(.*)\\[");
             QRegularExpression reAfter("_\\(\"(.*)\"");
             QString const_name = reBefore.match(line).captured(1);
             QString full_name = reAfter.match(line).captured(1);
@@ -118,7 +118,7 @@ void RegionMap::readLayout() {
             QRegularExpression reAfter("{(.*)}");
             QStringList entry =  reAfter.match(line).captured(1).remove(" ").split(",");
             QString mapsec = reBefore.match(line).captured(1);
-            QString insertion = entry[4].remove("sMapName_");
+            QString insertion = entry[4].remove("gMapName_");
             qmap->insert(mapsec, sMapNamesMap.value(insertion));
             mapSecToMapEntry[mapsec] = {
             //  x                 y                 width             height            name
@@ -158,7 +158,7 @@ void RegionMap::saveLayout() {
     entries_text += "#define GUARD_DATA_REGION_MAP_REGION_MAP_ENTRIES_H\n\n";
 
     for (auto sName : sMapNames) {
-        entries_text += "static const u8 sMapName_" + sName + "[] = _(\"" + sMapNamesMap.value(sName) + "\");\n";
+        entries_text += "const u8 gMapName_" + sName + "[] = _(\"" + sMapNamesMap.value(sName) + "\");\n";
     }
 
     entries_text += "\nconst struct RegionMapLocation gRegionMapEntries[] = {\n";
@@ -173,7 +173,7 @@ void RegionMap::saveLayout() {
         RegionMapEntry entry = mapSecToMapEntry.value(sec);
         entries_text += "    [" + sec + QString("]%1= {").arg(QString(" ").repeated(1 + longest - sec.length()))
             + QString::number(entry.x) + ", " + QString::number(entry.y) + ", " 
-            + QString::number(entry.width) + ", " + QString::number(entry.height) + ", sMapName_" + entry.name + "},\n";
+            + QString::number(entry.width) + ", " + QString::number(entry.height) + ", gMapName_" + entry.name + "},\n";
     }
     entries_text += "};\n\n#endif // GUARD_DATA_REGION_MAP_REGION_MAP_ENTRIES_H\n";
 

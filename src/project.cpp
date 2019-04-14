@@ -606,7 +606,7 @@ void Project::saveMapConstantsHeader() {
 void Project::saveHealLocationStruct(Map *map) {
     QString tab = QString("    ");
 
-    QString data_text = QString("static const struct HealLocation sHealLocations[] =\n{\n");
+    QString data_text = QString("const struct HealLocation gHealLocations[] =\n{\n");
 
     QString constants_text = QString("#ifndef GUARD_CONSTANTS_HEAL_LOCATIONS_H\n");
     constants_text += QString("#define GUARD_CONSTANTS_HEAL_LOCATIONS_H\n\n");
