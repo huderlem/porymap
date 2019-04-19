@@ -6,7 +6,6 @@ porymap.app*
 porymap
 porymap.cfg
 porymap.log
-Makefile
 
 # Qt generated files
 ui_*.h

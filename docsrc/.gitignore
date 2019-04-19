@@ -1,0 +1,4 @@
+# Sphinx docs build artifacts
+_build
+_static
+_templates
