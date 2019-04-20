@@ -185,14 +185,12 @@ bool Project::loadMapData(Map* map) {
     }
 
     QString mapFilepath = QString("%1/data/maps/%2/map.json").arg(root).arg(map->name);
-    QFile mapFile(mapFilepath);
-    if (!mapFile.open(QIODevice::ReadOnly)) {
-        logError(QString("Error: Could not open %1 for reading").arg(mapFilepath));
+    QJsonDocument mapDoc;
+    if (!tryParseJsonFile(&mapDoc, mapFilepath)) {
+        logError(QString("Failed to read map data from %1").arg(mapFilepath));
         return false;
     }
 
-    QByteArray mapData = mapFile.readAll();
-    QJsonDocument mapDoc = QJsonDocument::fromJson(mapData);
     QJsonObject mapObj = mapDoc.object();
 
     map->song = mapObj["music"].toString();
@@ -383,14 +381,12 @@ QString Project::readMapLayoutId(QString map_name) {
     }
 
     QString mapFilepath = QString("%1/data/maps/%2/map.json").arg(root).arg(map_name);
-    QFile mapFile(mapFilepath);
-    if (!mapFile.open(QIODevice::ReadOnly)) {
-        logError(QString("Error: Could not open %1 for reading").arg(mapFilepath));
+    QJsonDocument mapDoc;
+    if (!tryParseJsonFile(&mapDoc, mapFilepath)) {
+        logError(QString("Failed to read map layout id from %1").arg(mapFilepath));
         return QString::null;
     }
 
-    QByteArray mapData = mapFile.readAll();
-    QJsonDocument mapDoc = QJsonDocument::fromJson(mapData);
     QJsonObject mapObj = mapDoc.object();
     return mapObj["layout"].toString();
 }
@@ -401,14 +397,12 @@ QString Project::readMapLocation(QString map_name) {
     }
 
     QString mapFilepath = QString("%1/data/maps/%2/map.json").arg(root).arg(map_name);
-    QFile mapFile(mapFilepath);
-    if (!mapFile.open(QIODevice::ReadOnly)) {
-        logError(QString("Error: Could not open %1 for reading").arg(mapFilepath));
+    QJsonDocument mapDoc;
+    if (!tryParseJsonFile(&mapDoc, mapFilepath)) {
+        logError(QString("Failed to read map's region map section from %1").arg(mapFilepath));
         return QString::null;
     }
 
-    QByteArray mapData = mapFile.readAll();
-    QJsonDocument mapDoc = QJsonDocument::fromJson(mapData);
     QJsonObject mapObj = mapDoc.object();
     return mapObj["region_map_section"].toString();
 }
@@ -454,14 +448,12 @@ void Project::readMapLayouts() {
     mapLayoutsTable.clear();
 
     QString layoutsFilepath = QString("%1/data/layouts/layouts.json").arg(root);
-    QFile layoutsFile(layoutsFilepath);
-    if (!layoutsFile.open(QIODevice::ReadOnly)) {
-        logError(QString("Error: Could not open %1 for reading").arg(layoutsFilepath));
+    QJsonDocument layoutsDoc;
+    if (!tryParseJsonFile(&layoutsDoc, layoutsFilepath)) {
+        logError(QString("Failed to read map layouts from %1").arg(layoutsFilepath));
         return;
     }
 
-    QByteArray layoutsData = layoutsFile.readAll();
-    QJsonDocument layoutsDoc = QJsonDocument::fromJson(layoutsData);
     QJsonObject layoutsObj = layoutsDoc.object();
     layoutsLabel = layoutsObj["layouts_table_label"].toString();
 
@@ -869,15 +861,20 @@ void Project::saveMap(Map *map) {
         }
     }
 
-    // Append to "layouts" array in data/layouts/layouts.json.
     QString layoutsFilepath = QString("%1/data/layouts/layouts.json").arg(root);
+    QJsonDocument layoutsDoc;
+    if (!tryParseJsonFile(&layoutsDoc, layoutsFilepath)) {
+        logError(QString("Failed to read map layouts from %1").arg(layoutsFilepath));
+        return;
+    }
+
     QFile layoutsFile(layoutsFilepath);
     if (!layoutsFile.open(QIODevice::ReadWrite)) {
         logError(QString("Error: Could not open %1 for read/write").arg(layoutsFilepath));
         return;
     }
-    QByteArray layoutsData = layoutsFile.readAll();
-    QJsonDocument layoutsDoc = QJsonDocument::fromJson(layoutsData);
+
+    // Append to "layouts" array in data/layouts/layouts.json.
     QJsonObject layoutsObj = layoutsDoc.object();
     QJsonArray layoutsArr = layoutsObj["layouts"].toArray();
     QJsonObject newLayoutObj;
@@ -891,6 +888,7 @@ void Project::saveMap(Map *map) {
     newLayoutObj["blockdata_filepath"] = map->layout->blockdata_path;
     layoutsArr.append(newLayoutObj);
     layoutsFile.write(layoutsDoc.toJson());
+    layoutsFile.close();
 
     // Create map.json for map data.
     QString mapFilepath = QString("%1/map.json").arg(mapDataDir);
@@ -1001,6 +999,7 @@ void Project::saveMap(Map *map) {
 
     QJsonDocument mapDoc(mapObj);
     mapFile.write(mapDoc.toJson());
+    mapFile.close();
 
     saveLayoutBorder(map);
     saveLayoutBlockdata(map);
@@ -1270,14 +1269,12 @@ void Project::deleteFile(QString path) {
 
 void Project::readMapGroups() {
     QString mapGroupsFilepath = QString("%1/data/maps/map_groups.json").arg(root);
-    QFile mapGroupsFile(mapGroupsFilepath);
-    if (!mapGroupsFile.open(QIODevice::ReadOnly)) {
-        logError(QString("Error: Could not open %1 for reading").arg(mapGroupsFilepath));
+    QJsonDocument mapGroupsDoc;
+    if (!tryParseJsonFile(&mapGroupsDoc, mapGroupsFilepath)) {
+        logError(QString("Failed to read map groups from %1").arg(mapGroupsFilepath));
         return;
     }
 
-    QByteArray mapGroupsData = mapGroupsFile.readAll();
-    QJsonDocument mapGroupsDoc = QJsonDocument::fromJson(mapGroupsData);
     QJsonObject mapGroupsObj = mapGroupsDoc.object();
     QJsonArray mapGroupOrder = mapGroupsObj["group_order"].toArray();
 
@@ -1856,4 +1853,24 @@ int Project::getNumPalettesPrimary()
 int Project::getNumPalettesTotal()
 {
     return Project::num_pals_total;
+}
+
+bool Project::tryParseJsonFile(QJsonDocument *out, QString filepath)
+{
+    QFile file(filepath);
+    if (!file.open(QIODevice::ReadOnly)) {
+        logError(QString("Error: Could not open %1 for reading").arg(filepath));
+        return false;
+    }
+
+    QByteArray data = file.readAll();
+    QJsonParseError parseError;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &parseError);
+    file.close();
+    if (parseError.error != QJsonParseError::NoError) {
+        logError(QString("Error: Failed to parse json file %1: %2").arg(filepath).arg(parseError.errorString()));
+        return false;
+    }
+
+    *out = jsonDoc;
 }

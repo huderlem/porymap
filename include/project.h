@@ -138,6 +138,7 @@ public:
     static int getNumMetatilesTotal();
     static int getNumPalettesPrimary();
     static int getNumPalettesTotal();
+    static bool tryParseJsonFile(QJsonDocument *out, QString filepath);
 private:
     void updateMapLayout(Map*);
     void readCDefinesSorted(QString, QStringList, QStringList*);
