@@ -1,20 +1,21 @@
-.. porymap documentation master file, created by
-   sphinx-quickstart on Thu Apr 18 19:27:04 2019.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
-Welcome to porymap's documentation!
+Porymap Documentation
 ===================================
 
+.. note::
+    If you can't find what you're looking for, or you feel something is missing, please reach out on GitHub: https://github.com/huderlem/porymap
+
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+    :maxdepth: 2
+    :caption: User Manual
 
+    manual/introduction
+    manual/navigation
+    manual/editing-map-tiles
+    manual/editing-map-events
 
+.. toctree::
+    :maxdepth: 2
+    :caption: Reference
 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+    reference/changelog
+    reference/related-projects
