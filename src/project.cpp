@@ -1873,4 +1873,5 @@ bool Project::tryParseJsonFile(QJsonDocument *out, QString filepath)
     }
 
     *out = jsonDoc;
+    return true;
 }
