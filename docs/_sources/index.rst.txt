@@ -11,6 +11,7 @@ Porymap Documentation
     manual/introduction
     manual/navigation
     manual/editing-map-tiles
+    manual/editing-map-collisions
     manual/editing-map-events
 
 .. toctree::

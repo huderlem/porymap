@@ -150,4 +150,9 @@ Every map uses exactly two Tilesets--primary and secondary.  These can be change
 .. figure:: images/editing-map-tiles/tileset-pickers.png
     :alt: Tileset Pickers
 
-    Tileset Pickers
+    Tileset Pickerss
+
+Undo & Redo
+-----------
+
+When painting metatiles, you can undo and redo actions you take.  This makes it very easy to fix mistakes or go back in time.  Undo can be performed with ``Ctrl+Z`` or *Edit -> Undo*.  Redo can be performed with ``Ctrl+Y`` or *Edit -> Redo*.

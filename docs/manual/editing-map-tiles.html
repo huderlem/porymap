@@ -36,7 +36,7 @@
   <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Editing Map Events" href="editing-map-events.html" />
+    <link rel="next" title="Editing Map Collisions" href="editing-map-collisions.html" />
     <link rel="prev" title="Navigation" href="navigation.html" /> 
 </head>
 
@@ -105,6 +105,13 @@
 <li class="toctree-l2"><a class="reference internal" href="#smart-paths">Smart Paths</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#change-map-border">Change Map Border</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#change-map-tilesets">Change Map Tilesets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#undo-redo">Undo &amp; Redo</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="editing-map-collisions.html">Editing Map Collisions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-collisions.html#selecting-collision-types">Selecting Collision Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-collisions.html#painting-collisions">Painting Collisions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-collisions.html#collision-types">Collision Types</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="editing-map-events.html">Editing Map Events</a></li>
@@ -192,7 +199,9 @@
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../_sources/manual/editing-map-tiles.rst.txt" rel="nofollow"> View page source</a>
+            
+              <a href="https://github.com/huderlem/porymap/blob/master/docsrc/manual/editing-map-tiles.rst" class="fa fa-github"> Edit on GitHub</a>
+            
           
         
       </li>
@@ -306,8 +315,12 @@
 <p>Every map uses exactly two Tilesets–primary and secondary.  These can be changed by choosing a different value from the two Tileset dropdowns.</p>
 <div class="figure" id="id14">
 <img alt="Tileset Pickers" src="../_images/tileset-pickers.png" />
-<p class="caption"><span class="caption-text">Tileset Pickers</span></p>
+<p class="caption"><span class="caption-text">Tileset Pickerss</span></p>
 </div>
+</div>
+<div class="section" id="undo-redo">
+<h2>Undo &amp; Redo<a class="headerlink" href="#undo-redo" title="Permalink to this headline">¶</a></h2>
+<p>When painting metatiles, you can undo and redo actions you take.  This makes it very easy to fix mistakes or go back in time.  Undo can be performed with <code class="docutils literal notranslate"><span class="pre">Ctrl+Z</span></code> or <em>Edit -&gt; Undo</em>.  Redo can be performed with <code class="docutils literal notranslate"><span class="pre">Ctrl+Y</span></code> or <em>Edit -&gt; Redo</em>.</p>
 </div>
 </div>
 
@@ -319,7 +332,7 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="editing-map-events.html" class="btn btn-neutral float-right" title="Editing Map Events" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="editing-map-collisions.html" class="btn btn-neutral float-right" title="Editing Map Collisions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="navigation.html" class="btn btn-neutral float-left" title="Navigation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

@@ -65,7 +65,7 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = [u'_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = [u'_build', 'Thumbs.db', '.DS_Store', 'README.md']
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = None
@@ -88,6 +88,14 @@ html_theme_options = {
     'style_nav_header_background': 'linear-gradient(180deg, #08ACD5 50%, #FF6262 0%);',
     'logo_only': False,
     'collapse_navigation': False,
+}
+
+html_context = {
+    'display_github': True,
+    'github_user': 'huderlem',
+    'github_repo': 'porymap',
+    'github_version': 'master',
+    'conf_py_path': '/docsrc/',
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
