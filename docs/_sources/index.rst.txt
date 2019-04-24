@@ -17,5 +17,5 @@ Porymap Documentation
     :maxdepth: 2
     :caption: Reference
 
-    reference/changelog
+    reference/CHANGELOG
     reference/related-projects

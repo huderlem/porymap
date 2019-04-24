@@ -3,7 +3,7 @@
 
 # You can set these variables from the command line.
 SPHINXOPTS    =
-SPHINXBUILD   = sphinx-build
+SPHINXBUILD   = python -msphinx
 SOURCEDIR     = .
 BUILDDIR      = _build
 
@@ -12,10 +12,12 @@ help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
 github:
+	@cp ../CHANGELOG.md reference/
 	@make html
 	rm -rf ../docs
 	@cp -a $(BUILDDIR)/html/. ../docs
 	touch ../docs/.nojekyll
+	@rm reference/CHANGELOG.md
 
 .PHONY: help Makefile
 
