@@ -23,6 +23,8 @@ Painting Collisions
 
 The painting process for collisions is nearly identical to painting metatiles. You can use the same paint tools and shortcuts, with the exception of Smart Paths.  Undo/redo history includes collision modifications, too.
 
+.. _collision-types:
+
 Collision Types
 ---------------
 
