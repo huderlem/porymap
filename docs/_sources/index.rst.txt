@@ -13,10 +13,11 @@ Porymap Documentation
     manual/editing-map-tiles
     manual/editing-map-collisions
     manual/editing-map-events
+    manual/editing-map-header
 
 .. toctree::
     :maxdepth: 2
     :caption: Reference
 
-    reference/CHANGELOG
+    reference/changelog
     reference/related-projects

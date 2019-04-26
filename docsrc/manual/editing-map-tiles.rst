@@ -99,6 +99,8 @@ The Bucket Fill Tool |bucket-fill-tool| (*Tools -> Bucket Fill*, or ``B``) works
 .. |bucket-fill-tool|
    image:: images/editing-map-tiles/bucket-fill-tool.png
 
+Holding down the ``Ctrl`` key while using the Bucket Fill Tool will fill *all* matching metatiles on the map, rather that just the contiguous region.
+
 Map Shift Tool
 --------------
 

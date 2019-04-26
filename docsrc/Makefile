@@ -12,12 +12,12 @@ help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
 github:
-	@cp ../CHANGELOG.md reference/
+	@cp ../CHANGELOG.md reference/changelog.md
 	@make html
 	rm -rf ../docs
 	@cp -a $(BUILDDIR)/html/. ../docs
 	touch ../docs/.nojekyll
-	@rm reference/CHANGELOG.md
+	@rm reference/changelog.md
 
 .PHONY: help Makefile
 
