@@ -128,6 +128,12 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="editing-map-header.html">Editing Map Headers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="editing-map-connections.html">Editing Map Connections</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-connections.html#dive-emerge-warps">Dive &amp; Emerge Warps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-connections.html#mirror-connections">Mirror Connections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-connections.html#follow-connections">Follow Connections</a></li>
+</ul>
+</li>
 </ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
 <ul>
@@ -230,12 +236,12 @@
   <div class="section" id="editing-map-events">
 <h1>Editing Map Events<a class="headerlink" href="#editing-map-events" title="Permalink to this headline">¶</a></h1>
 <p>Events are what bring your maps to life.  They include NPCs, signposts, warps, scripts, and more.  Open the <em>Events</em> tab above the map area, and let’s dissect what’s going on.</p>
-<div class="figure" id="id1">
+<div class="figure" id="id2">
 <img alt="Map Events View" src="../_images/map-events.png" />
 <p class="caption"><span class="caption-text">Map Events View</span></p>
 </div>
 <p>All of the events are visible on the map.  The Event Details window on the right displays the properties of the currently-selected event.  If you look closely, you’ll see that the woman NPC near the Pokémon Center has a pink border around it because it’s selected.  To select a different event, simple click on an event in the map area.  Alternatively, you can use the spinner at the top of the event properties window.  Multiple events can be selected at the same time by holding <code class="docutils literal notranslate"><span class="pre">Ctrl</span></code> and clicking another event.</p>
-<div class="figure" id="id2">
+<div class="figure" id="id3">
 <img alt="Event Id Spinner" src="../_images/event-id-spinner.png" />
 <p class="caption"><span class="caption-text">Event Id Spinner</span></p>
 </div>
@@ -246,7 +252,7 @@
 <div class="section" id="events-positions">
 <h2>Events Positions<a class="headerlink" href="#events-positions" title="Permalink to this headline">¶</a></h2>
 <p>All events have X/Y coordinates.  To move an Event, click and drag it to a new position on the map.  Alternatively, you can use the X and Y spinners in the event properties.</p>
-<div class="figure" id="id3">
+<div class="figure" id="id4">
 <img alt="Event Coordinates Spinners" src="../_images/event-coords-spinners.png" />
 <p class="caption"><span class="caption-text">Event Coordinates Spinners</span></p>
 </div>
@@ -256,7 +262,7 @@
 <div class="section" id="event-objects">
 <h2>Event Objects<a class="headerlink" href="#event-objects" title="Permalink to this headline">¶</a></h2>
 <p>Event objects are typically used for NPCs (non-player-characters).  More technically, it’s any event that has a sprite and the ability to move around.  Event objects are displayed using their assigned sprite, except for special cases.  Any event object that uses a dynamic sprite will be displayed as a blue square with an <cite>N</cite> <img alt="dynamic-sprite" src="../_images/dynamic-sprite.png" />.  Some examples of dynamic sprites are the player’s rival and berry trees.</p>
-<div class="figure" id="id4">
+<div class="figure" id="id5">
 <img alt="Event Object Properties" src="../_images/event-object.png" />
 <p class="caption"><span class="caption-text">Event Object Properties</span></p>
 </div>
@@ -280,9 +286,9 @@
 </dl>
 </div>
 <div class="section" id="event-warps">
-<h2>Event Warps<a class="headerlink" href="#event-warps" title="Permalink to this headline">¶</a></h2>
+<span id="id1"></span><h2>Event Warps<a class="headerlink" href="#event-warps" title="Permalink to this headline">¶</a></h2>
 <p>Event warps are how the player is able to warp to other maps, such as entering a building.  Double-clicking on a warp will automatically open the destination map and select the destination warp.  This makes it very easy to navigate around in Porymap.</p>
-<div class="figure" id="id5">
+<div class="figure" id="id6">
 <img alt="Event Warp Properties" src="../_images/event-warp.png" />
 <p class="caption"><span class="caption-text">Event Warp Properties</span></p>
 </div>
@@ -298,7 +304,7 @@
 <div class="section" id="event-triggers">
 <h2>Event Triggers<a class="headerlink" href="#event-triggers" title="Permalink to this headline">¶</a></h2>
 <p>Event triggers are scripts that execute when the player walks over them.  However, they only execute when a variable is equal some value.  Typically, they execute once, set the variable’s value to something else, and then never execute again because the variable’s value no longer matches.</p>
-<div class="figure" id="id6">
+<div class="figure" id="id7">
 <img alt="Event Trigger Properties" src="../_images/event-trigger.png" />
 <p class="caption"><span class="caption-text">Event Trigger Properties</span></p>
 </div>
@@ -316,7 +322,7 @@
 <div class="section" id="event-weather-triggers">
 <h2>Event Weather Triggers<a class="headerlink" href="#event-weather-triggers" title="Permalink to this headline">¶</a></h2>
 <p>Event weather triggers are a very specific type of trigger.  When the player walks over a weather trigger, the overworld’s weather will transition to the specified weather type.</p>
-<div class="figure" id="id7">
+<div class="figure" id="id8">
 <img alt="Event Weather Trigger Properties" src="../_images/event-weather-trigger.png" />
 <p class="caption"><span class="caption-text">Event Weather Trigger Properties</span></p>
 </div>
@@ -330,7 +336,7 @@
 <div class="section" id="event-signs">
 <h2>Event Signs<a class="headerlink" href="#event-signs" title="Permalink to this headline">¶</a></h2>
 <p>Event signs, or signposts, are simple interactable scripts.  They are typically used for things like signs in front of buildings.  The player’s facing direction can be required to be a certain direction in order to interact with the sign.  Signs are the first of three “BG” event types.</p>
-<div class="figure" id="id8">
+<div class="figure" id="id9">
 <img alt="Event Sign Properties" src="../_images/event-sign.png" />
 <p class="caption"><span class="caption-text">Event Sign Properties</span></p>
 </div>
@@ -346,7 +352,7 @@
 <div class="section" id="event-hidden-item">
 <h2>Event Hidden Item<a class="headerlink" href="#event-hidden-item" title="Permalink to this headline">¶</a></h2>
 <p>Hidden items are invisible items that can be picked up by the player. They each use a flag to ensure the item can only be picked up once.</p>
-<div class="figure" id="id9">
+<div class="figure" id="id10">
 <img alt="Event Hidden Item Properties" src="../_images/event-hidden-item.png" />
 <p class="caption"><span class="caption-text">Event Hidden Item Properties</span></p>
 </div>
@@ -362,7 +368,7 @@
 <div class="section" id="event-secret-base">
 <h2>Event Secret Base<a class="headerlink" href="#event-secret-base" title="Permalink to this headline">¶</a></h2>
 <p>This is the event used to mark entrances to secret bases.  This event will only be functional on certain metatiles.  Unfortunately, they are hardcoded into the game’s engine (see <code class="docutils literal notranslate"><span class="pre">sSecretBaseEntranceMetatiles</span></code> in <code class="docutils literal notranslate"><span class="pre">src/secret_base.c</span></code>).</p>
-<div class="figure" id="id10">
+<div class="figure" id="id11">
 <img alt="Event Secret Base Properties" src="../_images/event-secret-base.png" />
 <p class="caption"><span class="caption-text">Event Secret Base Properties</span></p>
 </div>

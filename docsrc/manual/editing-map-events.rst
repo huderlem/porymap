@@ -70,6 +70,8 @@ Trainer Type
 Sight Radius or Berry Tree ID
     If the object is a trainer, this property control how many tiles the trainer can see to spot the player for battle.  If the object is a berry tree, this specifies the global id of the berry tree.  Each berry tree in the game has a unique berry tree id.
 
+.. _event-warps:
+
 Event Warps
 -----------
 

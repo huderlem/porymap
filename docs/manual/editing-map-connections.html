@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Editing Map Collisions &mdash; porymap  documentation</title>
+  <title>Editing Map Connections &mdash; porymap  documentation</title>
   
 
   
@@ -36,8 +36,8 @@
   <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Editing Map Events" href="editing-map-events.html" />
-    <link rel="prev" title="Editing Map Tiles" href="editing-map-tiles.html" /> 
+    <link rel="next" title="Changelog" href="../reference/changelog.html" />
+    <link rel="prev" title="Editing Map Headers" href="editing-map-header.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -108,10 +108,10 @@
 <li class="toctree-l2"><a class="reference internal" href="editing-map-tiles.html#undo-redo">Undo &amp; Redo</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Editing Map Collisions</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#selecting-collision-types">Selecting Collision Types</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#painting-collisions">Painting Collisions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#collision-types">Collision Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="editing-map-collisions.html">Editing Map Collisions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-collisions.html#selecting-collision-types">Selecting Collision Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-collisions.html#painting-collisions">Painting Collisions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-collisions.html#collision-types">Collision Types</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="editing-map-events.html">Editing Map Events</a><ul>
@@ -128,10 +128,10 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="editing-map-header.html">Editing Map Headers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="editing-map-connections.html">Editing Map Connections</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-connections.html#dive-emerge-warps">Dive &amp; Emerge Warps</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-connections.html#mirror-connections">Mirror Connections</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-connections.html#follow-connections">Follow Connections</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Editing Map Connections</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dive-emerge-warps">Dive &amp; Emerge Warps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mirror-connections">Mirror Connections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#follow-connections">Follow Connections</a></li>
 </ul>
 </li>
 </ul>
@@ -212,14 +212,14 @@
     
       <li><a href="../index.html">Docs</a> &raquo;</li>
         
-      <li>Editing Map Collisions</li>
+      <li>Editing Map Connections</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
             
-              <a href="https://github.com/huderlem/porymap/blob/master/docsrc/manual/editing-map-collisions.rst" class="fa fa-github"> Edit on GitHub</a>
+              <a href="https://github.com/huderlem/porymap/blob/master/docsrc/manual/editing-map-connections.rst" class="fa fa-github"> Edit on GitHub</a>
             
           
         
@@ -233,52 +233,26 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="editing-map-collisions">
-<h1>Editing Map Collisions<a class="headerlink" href="#editing-map-collisions" title="Permalink to this headline">¶</a></h1>
-<p>The second half of editing a map’s metatiles is their collision properties.  This is what determines if the player can walk or surf on each metatile during gameplay.  Whenever editing a map’s metatiles, you need to update the collision properties appropriately.  Typically, a user will first map the visual metatiles and fill in the collision properties after that is finished.  The editing flow for collisions is very similar to editing map tiles.  First, you select a collision type.  Then, you paint it onto the map.</p>
-<div class="section" id="selecting-collision-types">
-<h2>Selecting Collision Types<a class="headerlink" href="#selecting-collision-types" title="Permalink to this headline">¶</a></h2>
-<p>The Collision Type Selector is a tab next to the Metatile Selector.  It features 32 total different collision types.  The left column is for collision types that allow the player to walk through the tiles.  These are denoted by white text.  The right column is for collision types that are impassable by the player.  These are denoted by red text.</p>
-<p>The transparency slider above the collision types controls the transparency of the collision properties on the map view.</p>
-<div class="figure" id="id2">
-<img alt="Map Collisions View" src="../_images/map-collisions.png" />
-<p class="caption"><span class="caption-text">Map Collisions View</span></p>
+  <div class="section" id="editing-map-connections">
+<h1>Editing Map Connections<a class="headerlink" href="#editing-map-connections" title="Permalink to this headline">¶</a></h1>
+<p>Maps can be connected together so that the player can seamlessly walk between them.  These connections can be edited in the Connections tab.</p>
+<div class="figure" id="id1">
+<img alt="Map Connections View" src="../_images/map-connections.png" />
+<p class="caption"><span class="caption-text">Map Connections View</span></p>
 </div>
-<p>Unlike metatiles, only one collision type can be selected at a time.  A collision type can be selected either by clicking in the Collision Type Selector.  You can also right-click on a metatile from the map area, just like you would when editing metatiles.</p>
+<p>A connection has a direction, offset, and destination map.  To add new connection, press the plus button <img alt="add-connection-button" src="../_images/add-connection-button.png" />.  To delete a connection, select it and press the delete button <img alt="remove-connection-button" src="../_images/remove-connection-button.png" />.</p>
+<p>To change the connection’s vertical or horizontal offset, it’s easiest to click and drag the connection to the desired offset.</p>
+<div class="section" id="dive-emerge-warps">
+<h2>Dive &amp; Emerge Warps<a class="headerlink" href="#dive-emerge-warps" title="Permalink to this headline">¶</a></h2>
+<p>Dive &amp; emerge warps are used for the HM move Dive. They don’t have offsets or directions–only a destination map.  To add a dive or emerge warp, simply add a value in the Dive Map and/or Emerge Map dropdown menus.</p>
 </div>
-<div class="section" id="painting-collisions">
-<h2>Painting Collisions<a class="headerlink" href="#painting-collisions" title="Permalink to this headline">¶</a></h2>
-<p>The painting process for collisions is nearly identical to painting metatiles. You can use the same paint tools and shortcuts, with the exception of Smart Paths.  Undo/redo history includes collision modifications, too.</p>
+<div class="section" id="mirror-connections">
+<h2>Mirror Connections<a class="headerlink" href="#mirror-connections" title="Permalink to this headline">¶</a></h2>
+<p>An extremely useful feature is the <em>Mirror to Connecting Maps</em> checkbox in the top-right corner.  Connections are one-way, which means that you must keep the two connections in sync between the two maps.  For example, Petalburg City has a west connection to Route 104, and Route 104 has an east connection to Petalburg City.  If <em>Mirror to Connecting Maps</em> is enabled, then Porymap will automatically update both sides of the connection.  Be sure to <em>File -&gt; Save All</em> (<code class="docutils literal notranslate"><span class="pre">Ctrl+Shift+S</span></code>) when saving, since you will need to save both maps’ connections.</p>
 </div>
-<div class="section" id="collision-types">
-<span id="id1"></span><h2>Collision Types<a class="headerlink" href="#collision-types" title="Permalink to this headline">¶</a></h2>
-<p>Now we’ll go over the different types of collisions, along with some important concepts.  Each row in the Collision Type Selector represents a different <em>elevation</em>, which is why most rows have hexadecimal numbers in them (2, 3, 4, …, D, E).  Rows 0, 1, and F have special purposes.</p>
-<p>Elevation is how the game determines whether or not an object is on the same level as something else.  For example, it’s commonly used to make sure the player can’t walk off the top side of a mountain.  If the player’s current elevation is 4, but the player is trying to walk onto a metatile with elevation 3, then the game won’t let the player walk in that direction.  In the example below from Route 114, the player would be unable to walk north from the mountain onto the grass.  This is because 3 and 4 are different elevations.</p>
-<div class="figure" id="id3">
-<img alt="Different Elevations on a Cliff" src="../_images/collision-cliff.png" />
-<p class="caption"><span class="caption-text">Different Elevations on a Cliff</span></p>
-</div>
-<p>Now that you undertand the basics of elevation, let’s explore the special collision types, which have no elevation associated with them.</p>
-<dl class="docutils">
-<dt>Transition Collision Type <img alt="transition-collision-type" src="../_images/transition-collision-type.png" /></dt>
-<dd>The Transition collision type allows the player to move between different elevations.  The most common use case is for stairs.  The player will always be allowed to walk onto this collision type. Then, the player will be able to walk onto any elevation.</dd>
-</dl>
-<dl class="docutils">
-<dt>Impassable Collision Type <img alt="impassable-collision-type" src="../_images/impassable-collision-type.png" /></dt>
-<dd>The Impassable collision type blocks the player from moving.  What makes it special is that it doesn’t count as any particular elevation.  This means that, for example, a signpost would be interactable from all elevations if it uses this collision type.  This is the most common impassable collision type used in the game, and it should generally be used for impassable tiles.</dd>
-</dl>
-<dl class="docutils">
-<dt>Surf Collision Type <img alt="surf-collision-type-1" src="../_images/surf-collision-type-1.png" /> <img alt="surf-collision-type-2" src="../_images/surf-collision-type-2.png" /></dt>
-<dd>The Surf collision type allow the player to surf.  The red version is just the impassable version.  <strong>The player will only be able to start surfing from elevation 3.  The same is true when hopping off onto land.</strong></dd>
-</dl>
-<dl class="docutils">
-<dt>Multi-Level Collision Type <img alt="multi-level-collision-type-1" src="../_images/multi-level-collision-type-1.png" /> <img alt="multi-level-collision-type-2" src="../_images/multi-level-collision-type-2.png" /></dt>
-<dd>The Multi-Level collision type is used for bridges.  The red version is just the impassable version, and it doesn’t have any special use.  Multi-level collision type remembers the player’s previous elevation and maintains that elevation as long as the player continues to walk on multi-level collision.  The player will only be able to leave multi-level collision if he walks onto a new tile that has the same elevation as before the multi-level collision was entered.  Here is an example of a bridge from Route 119 that illustrates the ability to surf north/south under the bridge, while also being able to walk east/west.</dd>
-</dl>
-<div class="figure" id="id4">
-<img alt="Multi-Level Collision Type on a Bridge" src="../_images/multi-level-bridge.png" />
-<p class="caption"><span class="caption-text">Multi-Level Collision Type on a Bridge</span></p>
-</div>
+<div class="section" id="follow-connections">
+<h2>Follow Connections<a class="headerlink" href="#follow-connections" title="Permalink to this headline">¶</a></h2>
+<p>Double-clicking on a connection will open the destination map.  This is very useful for navigating through your maps, similar to double-clicking on  <a class="reference internal" href="editing-map-events.html#event-warps"><span class="std std-ref">Event Warps</span></a>.</p>
 </div>
 </div>
 
@@ -290,10 +264,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="editing-map-events.html" class="btn btn-neutral float-right" title="Editing Map Events" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="../reference/changelog.html" class="btn btn-neutral float-right" title="Changelog" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="editing-map-tiles.html" class="btn btn-neutral float-left" title="Editing Map Tiles" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="editing-map-header.html" class="btn btn-neutral float-left" title="Editing Map Headers" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
