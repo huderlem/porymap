@@ -117,6 +117,7 @@ public:
     void readSecretBaseIds();
     void readBgEventFacingDirections();
     void readMetatileBehaviors();
+    void readHealLocations();
 
     void loadEventPixmaps(QList<Event*> objects);
     QMap<QString, int> getEventObjGfxConstants();

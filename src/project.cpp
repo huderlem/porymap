@@ -1306,11 +1306,6 @@ void Project::readMapGroups() {
     groupNames = groups;
     groupedMapNames = groupedMaps;
     mapNames = maps;
-
-    QString hltext = readTextFile(root + QString("/src/data/heal_locations.h"));
-    QList<HealLocation>* hl = ParseUtil().parseHealLocs(hltext);
-    flyableMaps = *hl;
-    delete hl;
 }
 
 Map* Project::addNewMapToGroup(QString mapName, int groupNum) {
@@ -1505,6 +1500,22 @@ void Project::readRegionMapSections() {
         }
     } else {
         logError(QString("Failed to read C defines file: '%1'").arg(filepath));
+    }
+}
+
+void Project::readHealLocations() {
+    QString text = readTextFile(root + "/src/data/heal_locations.h");
+    text.replace(QRegularExpression("//.*?(\r\n?|\n)|/\\*.*?\\*/", QRegularExpression::DotMatchesEverythingOption), "");
+
+    QRegularExpression regex("MAP_GROUP\\((?<map>[A-Za-z0-9_]*)\\),\\s+MAP_NUM\\((\\1)\\),\\s+(?<x>[0-9A-Fa-fx]*),\\s+(?<y>[0-9A-Fa-fx]*)");
+    QRegularExpressionMatchIterator iter = regex.globalMatch(text);
+
+    for (int i = 1; iter.hasNext(); i++) {
+        QRegularExpressionMatch match = iter.next();
+        QString mapName = match.captured("map");
+        unsigned x = match.captured("x").toUShort();
+        unsigned y = match.captured("y").toUShort();
+        flyableMaps.append(HealLocation(mapName, i, x, y));
     }
 }
 

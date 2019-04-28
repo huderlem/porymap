@@ -13,3 +13,9 @@ void NoScrollComboBox::wheelEvent(QWheelEvent *event)
     if (hasFocus())
         QComboBox::wheelEvent(event);
 }
+
+void NoScrollComboBox::hideArrow()
+{
+    this->setStyleSheet("QComboBox {border: 0 black;}"
+                        "QComboBox::drop-down {border: 0px;}");
+}

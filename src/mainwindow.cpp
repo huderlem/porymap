@@ -80,6 +80,8 @@ void MainWindow::initCustomUI() {
     ui->mapList->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->mapList, SIGNAL(customContextMenuRequested(const QPoint &)),
             this, SLOT(onOpenMapListContextMenu(const QPoint &)));
+
+    // temporary
 }
 
 void MainWindow::initExtraSignals() {
@@ -609,6 +611,7 @@ void MainWindow::loadDataStructures() {
     project->readBgEventFacingDirections();
     project->readMetatileBehaviors();
     project->readTilesetProperties();
+    project->readHealLocations();
 }
 
 void MainWindow::populateMapList() {
@@ -1405,7 +1408,9 @@ void MainWindow::updateSelectedObjects() {
                 combo->addItem("NONE", "0");
                 combo->addItem("NORMAL", "1");
                 combo->addItem("SEE ALL DIRECTIONS", "3");
-                combo->setToolTip("The trainer type of this event object. If it is not a trainer, use NONE. SEE ALL DIRECTIONS should only be used with a sight radius of 1.");
+                combo->setToolTip("The trainer type of this event object.\n"
+                                  "If it is not a trainer, use NONE. SEE ALL DIRECTIONS\n"
+                                  "should only be used with a sight radius of 1.");
 
                 int index = combo->findData(value);
                 if (index != -1) {
@@ -1426,6 +1431,7 @@ void MainWindow::updateSelectedObjects() {
                 combo->addItems(*editor->project->mapNames);
                 combo->setToolTip("The destination map name of the warp.");
             } else if (key == "destination_warp") {
+                combo->hideArrow();
                 combo->setToolTip("The warp id on the destination map.");
             } else if (key == "item") {
                 if (!editor->project->itemNames->contains(value)) {
@@ -1446,8 +1452,10 @@ void MainWindow::updateSelectedObjects() {
                     combo->addItem(value);
                 }
                 combo->addItems(*editor->project->varNames);
-                combo->setToolTip("The variable by which the script is triggered. The script is triggered when this variable's value matches 'Var Value'.");
-            } else if (key == "script_var_value")  {
+                combo->setToolTip("The variable by which the script is triggered.\n"
+                                  "The script is triggered when this variable's value matches 'Var Value'.");
+            } else if (key == "script_var_value") {
+                combo->hideArrow();
                 combo->setToolTip("The variable's value which triggers the script.");
             } else if (key == "movement_type") {
                 if (!editor->project->movementTypes->contains(value)) {
@@ -1459,7 +1467,8 @@ void MainWindow::updateSelectedObjects() {
                             item->updatePixmap();
                 });
                 combo->addItems(*editor->project->movementTypes);
-                combo->setToolTip("The object's natural movement behavior when the player is not interacting with it.");
+                combo->setToolTip("The object's natural movement behavior when\n"
+                                  "the player is not interacting with it.");
             } else if (key == "weather") {
                 if (!editor->project->coordEventWeatherNames->contains(value)) {
                     combo->addItem(value);
@@ -1471,21 +1480,33 @@ void MainWindow::updateSelectedObjects() {
                     combo->addItem(value);
                 }
                 combo->addItems(*editor->project->secretBaseIds);
-                combo->setToolTip("The secret base id which is inside this secret base entrance. Secret base ids are meant to be unique to each and every secret base entrance.");
+                combo->setToolTip("The secret base id which is inside this secret\n"
+                                  "base entrance. Secret base ids are meant to be\n"
+                                  "unique to each and every secret base entrance.");
             } else if (key == "player_facing_direction") {
                 if (!editor->project->bgEventFacingDirections->contains(value)) {
                     combo->addItem(value);
                 }
                 combo->addItems(*editor->project->bgEventFacingDirections);
-                combo->setToolTip("The direction which the player must be facing to be able to interact with this event.");
+                combo->setToolTip("The direction which the player must be facing\n"
+                                  "to be able to interact with this event.");
             } else if (key == "radius_x") {
-                combo->setToolTip("The maximum number of metatiles this object is allowed to move left or right during its normal movement behavior actions.");
+                combo->hideArrow();
+                combo->setToolTip("The maximum number of metatiles this object\n"
+                                  "is allowed to move left or right during its\n"
+                                  "normal movement behavior actions.");
             } else if (key == "radius_y") {
-                combo->setToolTip("The maximum number of metatiles this object is allowed to move up or down during its normal movement behavior actions.");
+                combo->hideArrow();
+                combo->setToolTip("The maximum number of metatiles this object\n"
+                                  "is allowed to move up or down during its\n"
+                                  "normal movement behavior actions.");
             } else if (key == "script_label") {
+                combo->hideArrow();
                 combo->setToolTip("The script which is executed with this event.");
             } else if (key == "sight_radius_tree_id") {
-                combo->setToolTip("The maximum sight range of a trainer, OR the unique id of the berry tree.");
+                combo->hideArrow();
+                combo->setToolTip("The maximum sight range of a trainer,\n"
+                                  "OR the unique id of the berry tree.");
             } else {
                 combo->addItem(value);
             }

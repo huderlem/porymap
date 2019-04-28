@@ -37,7 +37,6 @@ public:
     void strip_comment(QString*);
     QList<QStringList>* parseAsm(QString);
     int evaluateDefine(QString, QMap<QString, int>*);
-    QList<HealLocation>* parseHealLocs(QString);
 private:
     QList<Token> tokenizeExpression(QString expression, QMap<QString, int>* knownIdentifiers);
     QList<Token> generatePostfix(QList<Token> tokens);
