@@ -102,17 +102,23 @@ void RegionMap::readLayout() {
 
     QMap<QString, QString> *qmap = new QMap<QString, QString>;
 
+    bool mapNamesQualified = false, mapEntriesQualified = false;
+
     QTextStream in(&file);
     in.setCodec("UTF-8");
     while (!in.atEnd()) {
         line = in.readLine();
-        if (line.startsWith("static const u8")) {
+        if (line.contains(QRegularExpression(".*sMapName.*="))) {
             QRegularExpression reBefore("sMapName_(.*)\\[");
             QRegularExpression reAfter("_\\(\"(.*)\"");
             QString const_name = reBefore.match(line).captured(1);
             QString full_name = reAfter.match(line).captured(1);
             sMapNames.append(const_name);
             sMapNamesMap.insert(const_name, full_name);
+            if (!mapNamesQualified) {
+                project->dataQualifiers.insert("region_map_entries_names", project->getDataQualifiers(line, "sMapName_" + const_name));
+                mapNamesQualified = true;
+            }
         } else if (line.contains("MAPSEC")) {
             QRegularExpression reBefore("\\[(.*)\\]");
             QRegularExpression reAfter("{(.*)}");
@@ -124,6 +130,11 @@ void RegionMap::readLayout() {
             //  x                 y                 width             height            name
                 entry[0].toInt(), entry[1].toInt(), entry[2].toInt(), entry[3].toInt(), insertion
             };
+        } else if (line.contains("gRegionMapEntries")) {
+            if (!mapEntriesQualified) {
+                project->dataQualifiers.insert("region_map_entries", project->getDataQualifiers(line, "gRegionMapEntries"));
+                mapEntriesQualified = true;
+            }
         }
     }
     file.close();
@@ -158,10 +169,15 @@ void RegionMap::saveLayout() {
     entries_text += "#define GUARD_DATA_REGION_MAP_REGION_MAP_ENTRIES_H\n\n";
 
     for (auto sName : sMapNames) {
-        entries_text += "static const u8 sMapName_" + sName + "[] = _(\"" + sMapNamesMap.value(sName) + "\");\n";
+        entries_text += QString("%1%2u8 sMapName_")
+                        .arg(project->dataQualifiers.value("region_map_entries_names").isStatic ? "static " : "")
+                        .arg(project->dataQualifiers.value("region_map_entries_names").isConst ? "const " : "")
+                      + sName + "[] = _(\"" + sMapNamesMap.value(sName) + "\");\n";
     }
 
-    entries_text += "\nconst struct RegionMapLocation gRegionMapEntries[] = {\n";
+    entries_text += QString("\n%1%2struct RegionMapLocation gRegionMapEntries[] = {\n")
+                    .arg(project->dataQualifiers.value("region_map_entries").isStatic ? "static " : "")
+                    .arg(project->dataQualifiers.value("region_map_entries").isConst ? "const " : "");
 
     int longest = 1;
     for (auto sec : project->mapSectionNameToValue.keys()) {

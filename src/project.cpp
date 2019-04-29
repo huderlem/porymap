@@ -596,9 +596,9 @@ void Project::saveMapConstantsHeader() {
 // saves heal location coords in root + /src/data/heal_locations.h
 // and indexes as defines in root + /include/constants/heal_locations.h
 void Project::saveHealLocationStruct(Map *map) {
-    QString tab = QString("    ");
-
-    QString data_text = QString("static const struct HealLocation sHealLocations[] =\n{\n");
+    QString data_text = QString("%1%2struct HealLocation sHealLocations[] =\n{\n")
+        .arg(dataQualifiers.value("heal_locations").isStatic ? "static " : "")
+        .arg(dataQualifiers.value("heal_locations").isConst ? "const " : "");
 
     QString constants_text = QString("#ifndef GUARD_CONSTANTS_HEAL_LOCATIONS_H\n");
     constants_text += QString("#define GUARD_CONSTANTS_HEAL_LOCATIONS_H\n\n");
@@ -1388,6 +1388,18 @@ QStringList Project::getVisibilities() {
     return names;
 }
 
+Project::DataQualifiers Project::getDataQualifiers(QString text, QString label) {
+    Project::DataQualifiers qualifiers;
+
+    QRegularExpression regex(QString("\\s*(?<static>static\\s*)?(?<const>const\\s*)?[A-Za-z0-9_\\s]*\\b%1\\b").arg(label));
+    QRegularExpressionMatch match = regex.match(text);
+
+    qualifiers.isStatic = match.captured("static").isNull() ? false : true;
+    qualifiers.isConst = match.captured("const").isNull() ? false : true;
+
+    return qualifiers;
+}
+
 QMap<QString, QStringList> Project::getTilesetLabels() {
     QMap<QString, QStringList> allTilesets;
     QStringList primaryTilesets;
@@ -1506,6 +1518,8 @@ void Project::readRegionMapSections() {
 void Project::readHealLocations() {
     QString text = readTextFile(root + "/src/data/heal_locations.h");
     text.replace(QRegularExpression("//.*?(\r\n?|\n)|/\\*.*?\\*/", QRegularExpression::DotMatchesEverythingOption), "");
+
+    dataQualifiers.insert("heal_locations", getDataQualifiers(text, "sHealLocations"));
 
     QRegularExpression regex("MAP_GROUP\\((?<map>[A-Za-z0-9_]*)\\),\\s+MAP_NUM\\((\\1)\\),\\s+(?<x>[0-9A-Fa-fx]*),\\s+(?<y>[0-9A-Fa-fx]*)");
     QRegularExpressionMatchIterator iter = regex.globalMatch(text);
