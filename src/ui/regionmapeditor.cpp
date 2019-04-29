@@ -86,6 +86,7 @@ void RegionMapEditor::displayRegionMap() {
     displayRegionMapLayoutOptions();
     displayRegionMapEntriesImage();
     displayRegionMapEntryOptions();
+    this->hasUnsavedChanges = false;
 }
 
 void RegionMapEditor::displayRegionMapImage() {
@@ -497,7 +498,7 @@ void RegionMapEditor::on_tabWidget_Region_Map_currentChanged(int index) {
 
 void RegionMapEditor::on_comboBox_RM_ConnectedMap_activated(const QString &mapsec) {
     this->ui->lineEdit_RM_MapName->setText(this->project->mapSecToMapHoverName->value(mapsec));
-    this->hasUnsavedChanges = true;// sometimes this is called for unknown reasons
+    //this->hasUnsavedChanges = true;// sometimes this is called for unknown reasons
 }
 
 void RegionMapEditor::on_comboBox_RM_Entry_MapSection_activated(const QString &text) {
@@ -684,7 +685,7 @@ void RegionMapEditor::resize(int w, int h) {
 
 void RegionMapEditor::on_action_Swap_triggered() {
     QDialog popup(this, Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
-    popup.setWindowTitle("New City Map");
+    popup.setWindowTitle("Swap Map Sections");
     popup.setWindowModality(Qt::NonModal);
 
     QFormLayout form(&popup);

@@ -10,7 +10,6 @@ class NoScrollComboBox : public QComboBox
 public:
     explicit NoScrollComboBox(QWidget *parent = nullptr);
     void wheelEvent(QWheelEvent *event);
-    void hideArrow();
 
 private:
 };
