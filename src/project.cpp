@@ -1588,7 +1588,7 @@ void Project::readCoordEventWeatherNames() {
 
 void Project::readSecretBaseIds() {
     QString filepath = root + "/include/constants/secret_bases.h";
-    QStringList prefixes = (QStringList() << "SECRET_BASE_");
+    QStringList prefixes = (QStringList() << "SECRET_BASE_[A-Za-z0-9_]*_[0-9]+");
     readCDefinesSorted(filepath, prefixes, secretBaseIds);
 }
 
@@ -1842,7 +1842,7 @@ QMap<QString, int> Project::readCDefines(QString text, QStringList prefixes) {
         int value = parser.evaluateDefine(expression, &allDefines);
         allDefines.insert(name, value);
         for (QString prefix : prefixes) {
-            if (name.startsWith(prefix)) {
+            if (name.startsWith(prefix) || QRegularExpression(prefix).match(name).hasMatch()) {
                 filteredDefines.insert(name, value);
             }
         }
