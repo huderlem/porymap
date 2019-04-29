@@ -1429,7 +1429,6 @@ void MainWindow::updateSelectedObjects() {
                 combo->addItems(*editor->project->mapNames);
                 combo->setToolTip("The destination map name of the warp.");
             } else if (key == "destination_warp") {
-                combo->hideArrow();
                 combo->setToolTip("The warp id on the destination map.");
             } else if (key == "item") {
                 if (!editor->project->itemNames->contains(value)) {
@@ -1453,7 +1452,6 @@ void MainWindow::updateSelectedObjects() {
                 combo->setToolTip("The variable by which the script is triggered.\n"
                                   "The script is triggered when this variable's value matches 'Var Value'.");
             } else if (key == "script_var_value") {
-                combo->hideArrow();
                 combo->setToolTip("The variable's value which triggers the script.");
             } else if (key == "movement_type") {
                 if (!editor->project->movementTypes->contains(value)) {
@@ -1489,20 +1487,16 @@ void MainWindow::updateSelectedObjects() {
                 combo->setToolTip("The direction which the player must be facing\n"
                                   "to be able to interact with this event.");
             } else if (key == "radius_x") {
-                combo->hideArrow();
                 combo->setToolTip("The maximum number of metatiles this object\n"
                                   "is allowed to move left or right during its\n"
                                   "normal movement behavior actions.");
             } else if (key == "radius_y") {
-                combo->hideArrow();
                 combo->setToolTip("The maximum number of metatiles this object\n"
                                   "is allowed to move up or down during its\n"
                                   "normal movement behavior actions.");
             } else if (key == "script_label") {
-                combo->hideArrow();
                 combo->setToolTip("The script which is executed with this event.");
             } else if (key == "sight_radius_tree_id") {
-                combo->hideArrow();
                 combo->setToolTip("The maximum sight range of a trainer,\n"
                                   "OR the unique id of the berry tree.");
             } else {
