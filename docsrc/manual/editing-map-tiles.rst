@@ -152,7 +152,7 @@ Every map uses exactly two Tilesets--primary and secondary.  These can be change
 .. figure:: images/editing-map-tiles/tileset-pickers.png
     :alt: Tileset Pickers
 
-    Tileset Pickerss
+    Tileset Pickers
 
 Undo & Redo
 -----------

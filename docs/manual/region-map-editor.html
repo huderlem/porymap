@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Editing Map Headers &mdash; porymap  documentation</title>
+  <title>The Region Map Editor &mdash; porymap  documentation</title>
   
 
   
@@ -36,8 +36,8 @@
   <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Editing Map Connections" href="editing-map-connections.html" />
-    <link rel="prev" title="Editing Map Events" href="editing-map-events.html" /> 
+    <link rel="next" title="Changelog" href="../reference/changelog.html" />
+    <link rel="prev" title="Editing Map Connections" href="editing-map-connections.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -127,18 +127,18 @@
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#open-map-scripts">Open Map Scripts</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Editing Map Headers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="editing-map-header.html">Editing Map Headers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="editing-map-connections.html">Editing Map Connections</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-connections.html#dive-emerge-warps">Dive &amp; Emerge Warps</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-connections.html#mirror-connections">Mirror Connections</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-connections.html#follow-connections">Follow Connections</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="region-map-editor.html">The Region Map Editor</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="region-map-editor.html#background-image-tab">Background Image Tab</a></li>
-<li class="toctree-l2"><a class="reference internal" href="region-map-editor.html#map-layout-tab">Map Layout Tab</a></li>
-<li class="toctree-l2"><a class="reference internal" href="region-map-editor.html#map-entries-tab">Map Entries Tab</a></li>
-<li class="toctree-l2"><a class="reference internal" href="region-map-editor.html#city-maps">City Maps</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">The Region Map Editor</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#background-image-tab">Background Image Tab</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#map-layout-tab">Map Layout Tab</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#map-entries-tab">Map Entries Tab</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#city-maps">City Maps</a></li>
 </ul>
 </li>
 </ul>
@@ -219,14 +219,14 @@
     
       <li><a href="../index.html">Docs</a> &raquo;</li>
         
-      <li>Editing Map Headers</li>
+      <li>The Region Map Editor</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
             
-              <a href="https://github.com/huderlem/porymap/blob/master/docsrc/manual/editing-map-header.rst" class="fa fa-github"> Edit on GitHub</a>
+              <a href="https://github.com/huderlem/porymap/blob/master/docsrc/manual/region-map-editor.rst" class="fa fa-github"> Edit on GitHub</a>
             
           
         
@@ -240,37 +240,88 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="editing-map-headers">
-<h1>Editing Map Headers<a class="headerlink" href="#editing-map-headers" title="Permalink to this headline">¶</a></h1>
-<p>The map header is a collection of miscellaneous properties that belong to a map.  They are mostly self-explanatory, but we’ll go over each of them.</p>
-<div class="figure" id="id1">
-<img alt="Map Header View" src="../_images/map-header.png" />
-<p class="caption"><span class="caption-text">Map Header View</span></p>
+  <div class="section" id="the-region-map-editor">
+<h1>The Region Map Editor<a class="headerlink" href="#the-region-map-editor" title="Permalink to this headline">¶</a></h1>
+<p>This is where you edit the region map for your game.  To open the region map
+editor, navigate to <em>Tools -&gt; Region Map Editor</em> from porymap’s main window.</p>
+<p>When you first open the region map editor, your window will look like this:</p>
+<div class="figure align-center" id="id4">
+<a class="reference internal image-reference" href="../_images/rme-new-window.png"><img alt="RME Window" src="../_images/rme-new-window.png" style="width: 621.75px; height: 499.5px;" /></a>
+<p class="caption"><span class="caption-text">Region Map Editor Window</span></p>
 </div>
-<dl class="docutils">
-<dt>Song</dt>
-<dd>The background music that is automatically played when entering the map.</dd>
-<dt>Location</dt>
-<dd>The region map section to which the map belongs.</dd>
-<dt>Requires Flash</dt>
-<dd>Whether or not the map has limited vision which the HM move Flash can expand.</dd>
-<dt>Weather</dt>
-<dd>The weather that is running when entering the map.</dd>
-<dt>Type</dt>
-<dd>The type of map. This value is used by various things in the game engine.  For example, in Ruby Version, running shoes can only be used when the map type is <code class="docutils literal notranslate"><span class="pre">MAP_TYPE_INDOOR</span></code>.</dd>
-<dt>Battle Scene</dt>
-<dd>Controls what graphics are used in battles.</dd>
-<dt>Show Location Name</dt>
-<dd>Shows or hides the map name popup window when entering the map.</dd>
-<dt>Allow Running</dt>
-<dd>Controls whether or not running shoes can be used.</dd>
-<dt>Allow Biking</dt>
-<dd>Controls whether or not a bike can be used.</dd>
-<dt>Allow Dig &amp; Escape Rop</dt>
-<dd>Controls whether the Dig field move or the Escape Rope item can be used.</dd>
-<dt>Custom Fields</dt>
-<dd>You can enter custom fields if you need support for additional fields in your project.  They can also be useful for keeping notes.</dd>
-</dl>
+<p>This window is split vertically–the region map editing is done at the top,
+while the zoomed-in city maps are edited at the bottom.  You can use the
+sliders to zoom in and out on each of the view panes.  You will notice
+that there are three different tabs above the image of the region map
+(<a class="reference internal" href="#background-image-tab"><span class="std std-ref">Background Image</span></a>,
+<a class="reference internal" href="#map-layout-tab"><span class="std std-ref">Map Layout</span></a>,
+<a class="reference internal" href="#map-entries-tab"><span class="std std-ref">Map Entries</span></a>).  Let’s take a look at each tab’s
+functionality in more detail…</p>
+<div class="section" id="background-image-tab">
+<span id="id1"></span><h2>Background Image Tab<a class="headerlink" href="#background-image-tab" title="Permalink to this headline">¶</a></h2>
+<p>When this tab is selected, you can draw on the region map.  Select tiles from
+the tile selector on the right.  You can single-click or drag your mouse around
+to paint the selected tile onto the region map image.  If you make a mistake, or
+are unhappy with what you have done, you can undo (<code class="docutils literal notranslate"><span class="pre">Ctrl+Z</span></code> or <em>Edit -&gt; Undo</em>)
+and redo (<code class="docutils literal notranslate"><span class="pre">Ctrl+Y</span></code> or <em>Edit -&gt; Redo</em>) your changes.  Right-clicking on the map
+image will select the tile under your mouse from the tile selector.  If you want
+to clear the background image, <em>Edit -&gt; Clear Background Image</em> will set all
+tiles to the first tile in the tile selector.</p>
+<div class="figure align-center" id="id5">
+<a class="reference internal image-reference" href="../_images/rme-painting-image.gif"><img alt="RME Paint" src="../_images/rme-painting-image.gif" style="width: 730.5px; height: 424.5px;" /></a>
+<p class="caption"><span class="caption-text">Drawing on the Region Map Image</span></p>
+</div>
+<p>It is likely that you will want to use your own tiles for your region map.  You
+can import a tile image by navigating to <em>Tools -&gt; Import Region Map Image Tiles</em>.
+There are strict requirements for your region map tile image.  It must (1) be
+indexed with a 256 color palette*, (2) composed of 8x8 pixel tiles, (3) have 256
+or fewer tiles.</p>
+<p>* while the region map tile image requires a 256-color palette, the image only
+uses the 32 colors beginning at index 112 in the palette</p>
+</div>
+<div class="section" id="map-layout-tab">
+<span id="id2"></span><h2>Map Layout Tab<a class="headerlink" href="#map-layout-tab" title="Permalink to this headline">¶</a></h2>
+<p>The layout tab is where map sections are placed on the region map.  When the
+player looks at the region map, the layout determines the map under the cursor.</p>
+<div class="figure align-center" id="id6">
+<a class="reference internal image-reference" href="../_images/rme-layout-tab.png"><img alt="RME Layout" src="../_images/rme-layout-tab.png" style="width: 734.25px; height: 429.75px;" /></a>
+<p class="caption"><span class="caption-text">RME Layout Tab</span></p>
+</div>
+<p>To modify the region map layout, select a position by clicking on the map image
+and higlighting a single square.  The “Map Section” combobox will be populated
+with all of the map sections defined in <cite>include/constants/region_map_sections.h</cite>.
+Select the map section you want to associate with the selected position on the
+region map.  To change the popup name of the map section when you enter the map,
+type it into the “Map Name” box.  The popup name is tied to the map section, so
+each layout square with the same map section will share a name.</p>
+<p><em>Edit -&gt; Clear Map Layout</em></p>
+<p>When you add new region map sections.
+<em>Edit -&gt; Swap</em></p>
+<div class="figure align-center" id="id7">
+<a class="reference internal image-reference" href="../_images/rme-layout-swap.gif"><img alt="RME Swap" src="../_images/rme-layout-swap.gif" style="width: 744.0px; height: 439.5px;" /></a>
+<p class="caption"><span class="caption-text">Swapping Map Sections</span></p>
+</div>
+<p>.</p>
+</div>
+<div class="section" id="map-entries-tab">
+<span id="id3"></span><h2>Map Entries Tab<a class="headerlink" href="#map-entries-tab" title="Permalink to this headline">¶</a></h2>
+<p>The other thing</p>
+<div class="figure align-center" id="id8">
+<a class="reference internal image-reference" href="../_images/rme-entries-tab.png"><img alt="RME Entries" src="../_images/rme-entries-tab.png" style="width: 734.25px; height: 429.75px;" /></a>
+<p class="caption"><span class="caption-text">RME Entries Tab</span></p>
+</div>
+<p>.</p>
+</div>
+<div class="section" id="city-maps">
+<h2>City Maps<a class="headerlink" href="#city-maps" title="Permalink to this headline">¶</a></h2>
+<p>city maps</p>
+<div class="figure align-center" id="id9">
+<a class="reference internal image-reference" href="../_images/rme-painting-city.gif"><img alt="City Paint" src="../_images/rme-painting-city.gif" style="width: 482.4px; height: 408.0px;" /></a>
+<p class="caption"><span class="caption-text">Drawing on the City Map</span></p>
+</div>
+<p><em>Tools -&gt; Import City Map Image Tiles</em></p>
+<p>You can add a new city map by pressing the <img alt="new-city-map-button" src="../_images/rme-new-city-map-button.png" /> button.</p>
+</div>
 </div>
 
 
@@ -281,10 +332,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="editing-map-connections.html" class="btn btn-neutral float-right" title="Editing Map Connections" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="../reference/changelog.html" class="btn btn-neutral float-right" title="Changelog" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="editing-map-events.html" class="btn btn-neutral float-left" title="Editing Map Events" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="editing-map-connections.html" class="btn btn-neutral float-left" title="Editing Map Connections" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
