@@ -1215,6 +1215,7 @@ void Editor::redrawObject(DraggablePixmapItem *item) {
             painter.end();
             item->setPixmap(QPixmap::fromImage(image));
         }
+        item->updatePosition();
     }
 }
 
@@ -1242,6 +1243,7 @@ void Editor::selectMapEvent(DraggablePixmapItem *object, bool toggle) {
             selected_events->append(object);
         }
         updateSelectedEvents();
+        object->setZValue(object->y() + 1);
     }
 }
 
