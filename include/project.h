@@ -47,6 +47,14 @@ public:
     QMap<int, QString> metatileBehaviorMapInverse;
     QMap<QString, QString> facingDirections;
 
+    struct DataQualifiers
+    {
+        bool isStatic;
+        bool isConst;
+    };
+    DataQualifiers getDataQualifiers(QString, QString);
+    QMap<QString, DataQualifiers> dataQualifiers;
+
     QMap<QString, Map*> *map_cache;
     Map* loadMap(QString);
     Map* getMap(QString);
