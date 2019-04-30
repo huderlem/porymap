@@ -498,7 +498,7 @@ void RegionMapEditor::on_tabWidget_Region_Map_currentChanged(int index) {
 
 void RegionMapEditor::on_comboBox_RM_ConnectedMap_activated(const QString &mapsec) {
     this->ui->lineEdit_RM_MapName->setText(this->project->mapSecToMapHoverName->value(mapsec));
-    //this->hasUnsavedChanges = true;// sometimes this is called for unknown reasons
+    this->hasUnsavedChanges = true;// sometimes this is called for unknown reasons
 }
 
 void RegionMapEditor::on_comboBox_RM_Entry_MapSection_activated(const QString &text) {
@@ -519,6 +519,7 @@ void RegionMapEditor::on_spinBox_RM_Entry_x_valueChanged(int x) {
                                                   this->region_map->mapSecToMapEntry.value(activeEntry).y + this->region_map->padTop);
     this->region_map_entries_item->select(idx);
     this->region_map_entries_item->draw();
+    this->ui->spinBox_RM_Entry_width->setMaximum(this->region_map->width() - this->region_map->padLeft - this->region_map->padRight - x);
     this->hasUnsavedChanges = true;
 }
 
@@ -529,6 +530,7 @@ void RegionMapEditor::on_spinBox_RM_Entry_y_valueChanged(int y) {
                                                   this->region_map->mapSecToMapEntry.value(activeEntry).y + this->region_map->padTop);
     this->region_map_entries_item->select(idx);
     this->region_map_entries_item->draw();
+    this->ui->spinBox_RM_Entry_height->setMaximum(this->region_map->height() - this->region_map->padTop - this->region_map->padBottom - y);
     this->hasUnsavedChanges = true;
 }
 
