@@ -197,7 +197,7 @@
           <item>
            <layout class="QHBoxLayout" name="z">
             <item>
-             <widget class="QLabel" name="label">
+             <widget class="QLabel" name="label_z">
               <property name="text">
                <string>Z</string>
               </property>
