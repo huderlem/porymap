@@ -48,7 +48,6 @@ Event* Event::createNewEvent(QString event_type, QString map_name, Project *proj
 
     event->setX(0);
     event->setY(0);
-    event->put("elevation", 3);
     return event;
 }
 
@@ -66,6 +65,7 @@ Event* Event::createNewObjectEvent(Project *project)
     event->put("replacement", "0");
     event->put("trainer_type", "0");
     event->put("sight_radius_tree_id", 0);
+    event->put("elevation", 3);
     return event;
 }
 
@@ -76,6 +76,7 @@ Event* Event::createNewWarpEvent(QString map_name)
     event->put("event_type", EventType::Warp);
     event->put("destination_warp", 0);
     event->put("destination_map_name", map_name);
+    event->put("elevation", 0);
     return event;
 }
 
@@ -85,6 +86,7 @@ Event* Event::createNewHealLocationEvent(QString map_name)
     event->put("event_group_type", "heal_event_group");
     event->put("event_type", EventType::HealLocation);
     event->put("loc_name", QString(Map::mapConstantFromName(map_name)).remove(0,4));
+    event->put("elevation", 3);
     return event;
 }
 
@@ -96,6 +98,7 @@ Event* Event::createNewTriggerEvent(Project *project)
     event->put("script_label", "NULL");
     event->put("script_var", project->varNames->first());
     event->put("script_var_value", "0");
+    event->put("elevation", 0);
     return event;
 }
 
@@ -105,6 +108,7 @@ Event* Event::createNewWeatherTriggerEvent(Project *project)
     event->put("event_group_type", "coord_event_group");
     event->put("event_type", EventType::WeatherTrigger);
     event->put("weather", project->coordEventWeatherNames->first());
+    event->put("elevation", 0);
     return event;
 }
 
@@ -115,6 +119,7 @@ Event* Event::createNewSignEvent(Project *project)
     event->put("event_type", EventType::Sign);
     event->put("player_facing_direction", project->bgEventFacingDirections->first());
     event->put("script_label", "NULL");
+    event->put("elevation", 0);
     return event;
 }
 
@@ -125,6 +130,7 @@ Event* Event::createNewHiddenItemEvent(Project *project)
     event->put("event_type", EventType::HiddenItem);
     event->put("item", project->itemNames->first());
     event->put("flag", project->flagNames->first());
+    event->put("elevation", 3);
     return event;
 }
 
@@ -134,6 +140,7 @@ Event* Event::createNewSecretBaseEvent(Project *project)
     event->put("event_group_type", "bg_event_group");
     event->put("event_type", EventType::SecretBase);
     event->put("secret_base_id", project->secretBaseIds->first());
+    event->put("elevation", 0);
     return event;
 }
 
