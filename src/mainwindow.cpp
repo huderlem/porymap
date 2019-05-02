@@ -1391,7 +1391,7 @@ void MainWindow::updateSelectedObjects() {
         }
         else if (event_type == EventType::HealLocation) {
             // Hide elevation so users don't get impression that editing it is meaningful.
-            frame->ui->spinbox_z->setVisible(false);
+            frame->ui->spinBox_z->setVisible(false);
             frame->ui->label_z->setVisible(false);
         }
 
