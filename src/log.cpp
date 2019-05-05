@@ -2,6 +2,21 @@
 #include <QDateTime>
 #include <QDir>
 #include <QStandardPaths>
+#include <QSysInfo>
+
+// Enabling this does not seem to be simple to color console output
+// on Windows for all CLIs without external libraries or extreme bloat.
+#ifdef Q_OS_WIN
+    #define ERROR_COLOR   ""
+    #define WARNING_COLOR ""
+    #define INFO_COLOR    ""
+    #define CLEAR_COLOR   ""
+#else
+    #define ERROR_COLOR   "\033[31;1m"
+    #define WARNING_COLOR "\033[1;33m"
+    #define INFO_COLOR    "\033[32m"
+    #define CLEAR_COLOR   "\033[0m"
+#endif
 
 void logInfo(QString message) {
     log(message, LogType::LOG_INFO);
@@ -13,6 +28,23 @@ void logWarn(QString message) {
 
 void logError(QString message) {
     log(message, LogType::LOG_ERROR);
+}
+
+QString colorizeMessage(QString message, LogType type) {
+    QString colorized = message;
+    switch (type)
+    {
+    case LogType::LOG_INFO:
+        colorized = colorized.replace("INFO", INFO_COLOR "INFO" CLEAR_COLOR);
+        break;
+    case LogType::LOG_WARN:
+        colorized = colorized.replace("WARN", WARNING_COLOR "WARN" CLEAR_COLOR);
+        break;
+    case LogType::LOG_ERROR:
+        colorized = colorized.replace("ERROR", ERROR_COLOR "ERROR" CLEAR_COLOR);
+        break;
+    }
+    return colorized;
 }
 
 void log(QString message, LogType type) {
@@ -40,7 +72,7 @@ void log(QString message, LogType type) {
 
     QString logPath = dir.absoluteFilePath("porymap.log");
 
-    qDebug() << message;
+    qDebug().noquote() << colorizeMessage(message, type);
     QFile outFile(logPath);
     outFile.open(QIODevice::WriteOnly | QIODevice::Append);
     QTextStream ts(&outFile);

@@ -4,8 +4,10 @@
 #include <QRegularExpression>
 #include <QStack>
 
-ParseUtil::ParseUtil()
+ParseUtil::ParseUtil(QString filename, QString text)
 {
+    QStringList lines = text.split(QRegularExpression("[\r\n]"));
+    debug = new DebugInfo(filename, lines);
 }
 
 void ParseUtil::strip_comment(QString *line) {
@@ -91,7 +93,8 @@ QList<Token> ParseUtil::tokenizeExpression(QString expression, QMap<QString, int
                         token = actualToken;
                         tokenType = "decimal";
                     } else {
-                        logError(QString("Unknown identifier found in expression: '%1'").arg(token));
+                        tokenType = "error";
+                        debug->error(expression, token);
                     }
                 }
 
@@ -190,9 +193,9 @@ int ParseUtil::evaluatePostfix(QList<Token> postfix) {
                 logError(QString("Unsupported postfix operator: '%1'").arg(token.value));
             }
             stack.push(Token(QString("%1").arg(result), "decimal"));
-        } else {
+        } else if (token.type != TokenType::Error) {
             stack.push(token);
-        }
+        } // else ignore errored tokens, we have already warned the user.
     }
 
     return stack.pop().value.toInt(nullptr, 0);

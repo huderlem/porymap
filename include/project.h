@@ -138,7 +138,7 @@ public:
 
     QStringList readCArray(QString text, QString label);
     QString readCIncbin(QString text, QString label);
-    QMap<QString, int> readCDefines(QString text, QStringList prefixes);
+    QMap<QString, int> readCDefines(QString filename, QStringList prefixes);
     QMap<QString, QString> readNamedIndexCArray(QString text, QString label);
 
     static int getNumTilesPrimary();
