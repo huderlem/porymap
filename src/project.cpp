@@ -1407,35 +1407,27 @@ QMap<QString, QStringList> Project::getTilesetLabels() {
     allTilesets.insert("primary", primaryTilesets);
     allTilesets.insert("secondary", secondaryTilesets);
     QString headers_text = readTextFile(root + "/data/tilesets/headers.inc");
-    QList<QStringList>* commands = parseAsm(headers_text);
-    int i = 0;
-    while (i < commands->length()) {
-        if (commands->at(i).length() != 2)
+
+    QRegularExpression re("(?<label>[A-Za-z0-9_]*):{1,2}[A-Za-z0-9_@ ]*\\s+.+\\s+\\.byte\\s+(?<isSecondary>[A-Za-z0-9_]+)");
+    QRegularExpressionMatchIterator iter = re.globalMatch(headers_text);
+
+    while (iter.hasNext()) {
+        QRegularExpressionMatch match = iter.next();
+        QString tilesetLabel = match.captured("label");
+        QString secondaryTilesetValue = match.captured("isSecondary");
+
+        if (secondaryTilesetValue != "1" && secondaryTilesetValue != "TRUE" 
+         && secondaryTilesetValue != "0" && secondaryTilesetValue != "FALSE") {
+            logWarn(QString("Unexpected secondary tileset flag found."
+                "Expected \"TRUE\", \"FALSE\", \"0\", or \"1\", but found: '%1'").arg(secondaryTilesetValue));
             continue;
-
-        if (commands->at(i).at(0) == ".label") {
-            QString tilesetLabel = commands->at(i).at(1);
-            // Advance to command specifying whether or not it is a secondary tileset
-            i += 2;
-            if (commands->at(i).at(0) != ".byte") {
-                logWarn(QString("Unexpected command found for secondary tileset flag in tileset '%1'. Expected '.byte', but found: '%2'").arg(tilesetLabel).arg(commands->at(i).at(0)));
-                continue;
-            }
-
-            QString secondaryTilesetValue = commands->at(i).at(1);
-            if (secondaryTilesetValue != "TRUE" && secondaryTilesetValue != "FALSE" && secondaryTilesetValue != "0" && secondaryTilesetValue != "1") {
-                logWarn(QString("Unexpected secondary tileset flag found. Expected \"TRUE\", \"FALSE\", \"0\", or \"1\", but found: '%1'").arg(secondaryTilesetValue));
-                continue;
-            }
-
-            bool isSecondaryTileset = (secondaryTilesetValue == "TRUE" || secondaryTilesetValue == "1");
-            if (isSecondaryTileset)
-                allTilesets["secondary"].append(tilesetLabel);
-            else
-                allTilesets["primary"].append(tilesetLabel);
         }
 
-        i++;
+        bool isSecondaryTileset = (secondaryTilesetValue == "TRUE" || secondaryTilesetValue == "1");
+        if (isSecondaryTileset)
+            allTilesets["secondary"].append(tilesetLabel);
+        else
+            allTilesets["primary"].append(tilesetLabel);
     }
 
     return allTilesets;
