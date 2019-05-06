@@ -255,7 +255,7 @@ bool MainWindow::openProject(QString dir) {
     bool already_open = isProjectOpen() && (editor->project->root == dir);
     if (!already_open) {
         editor->project = new Project;
-        editor->project->root = dir;
+        editor->project->set_root(dir);
         setWindowTitle(editor->project->getProjectTitle());
         loadDataStructures();
         populateMapList();
