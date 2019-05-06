@@ -5,6 +5,7 @@
 #include "blockdata.h"
 #include "heallocation.h"
 #include "event.h"
+#include "parseutil.h"
 
 #include <QStringList>
 #include <QList>
@@ -46,6 +47,9 @@ public:
     QMap<QString, int> metatileBehaviorMap;
     QMap<int, QString> metatileBehaviorMapInverse;
     QMap<QString, QString> facingDirections;
+    ParseUtil parser;
+
+    void set_root(QString);
 
     struct DataQualifiers
     {
@@ -66,7 +70,6 @@ public:
     Blockdata* readBlockdata(QString);
     void loadBlockdata(Map*);
 
-    QString readTextFile(QString path);
     void saveTextFile(QString path, QString text);
     void appendTextFile(QString path, QString text);
     void deleteFile(QString path);
@@ -80,8 +83,6 @@ public:
     QString readMapLayoutId(QString map_name);
     QString readMapLocation(QString map_name);
 
-    QList<QStringList>* getLabelMacros(QList<QStringList>*, QString);
-    QStringList* getLabelValues(QList<QStringList>*, QString);
     QMap<QString, bool> getTopLevelMapFields();
     bool loadMapData(Map*);
     void readMapLayouts();
@@ -107,7 +108,6 @@ public:
     void saveTilesetTilesImage(Tileset*);
     void saveTilesetPalettes(Tileset*, bool);
 
-    QList<QStringList>* parseAsm(QString text);
     QStringList getSongNames();
     QStringList getVisibilities();
     QMap<QString, QStringList> getTilesetLabels();
@@ -136,22 +136,15 @@ public:
 
     void saveMapHealEvents(Map *map);
 
-    QStringList readCArray(QString text, QString label);
-    QString readCIncbin(QString text, QString label);
-    QMap<QString, int> readCDefines(QString filename, QStringList prefixes);
-    QMap<QString, QString> readNamedIndexCArray(QString text, QString label);
-
     static int getNumTilesPrimary();
     static int getNumTilesTotal();
     static int getNumMetatilesPrimary();
     static int getNumMetatilesTotal();
     static int getNumPalettesPrimary();
     static int getNumPalettesTotal();
-    static bool tryParseJsonFile(QJsonDocument *out, QString filepath);
+
 private:
     void updateMapLayout(Map*);
-    void readCDefinesSorted(QString, QStringList, QStringList*);
-    void readCDefinesSorted(QString, QStringList, QStringList*, QString, int);
 
     void setNewMapHeader(Map* map, int mapIndex);
     void setNewMapLayout(Map* map);

@@ -7,34 +7,12 @@
 #include <QString>
 #include <QList>
 #include <QMap>
+#include <QRegularExpression>
 
 enum TokenType {
     Number,
     Operator,
     Error,
-};
-
-class DebugInfo {
-public:
-    DebugInfo(QString file, QStringList lines) {
-        this->file = file;
-        this->lines = lines;
-    };
-    QString file;
-    int     line;
-    bool    err;
-    QStringList lines;
-    void error(QString expression, QString token) {
-        int lineNo = 0;
-        for (QString line_ : lines) {
-            lineNo++;
-            if (line_.contains(expression)) {
-                this->line = lineNo;
-                break;
-            }
-        }
-        logError(QString("%1:%2: unknown identifier found in expression: '%3'.").arg(file).arg(line).arg(token));
-    }
 };
 
 class Token {
@@ -60,15 +38,29 @@ public:
 class ParseUtil
 {
 public:
-    ParseUtil(QString, QString);
+    ParseUtil();
+    void set_root(QString);
+    QString readTextFile(QString);
     void strip_comment(QString*);
     QList<QStringList>* parseAsm(QString);
     int evaluateDefine(QString, QMap<QString, int>*);
-    DebugInfo *debug;
+    QStringList readCArray(QString text, QString label);
+    QMap<QString, QString> readNamedIndexCArray(QString text, QString label);
+    QString readCIncbin(QString text, QString label);
+    QMap<QString, int> readCDefines(QString filename, QStringList prefixes);
+    void readCDefinesSorted(QString, QStringList, QStringList*);
+    QList<QStringList>* getLabelMacros(QList<QStringList>*, QString);
+    QStringList* getLabelValues(QList<QStringList>*, QString);
+    bool tryParseJsonFile(QJsonDocument *out, QString filepath);
+
 private:
+    QString root;
+    QString text;
+    QString file;
     QList<Token> tokenizeExpression(QString expression, QMap<QString, int>* knownIdentifiers);
     QList<Token> generatePostfix(QList<Token> tokens);
     int evaluatePostfix(QList<Token> postfix);
+    void error(QString message, QString expression);
 };
 
 #endif // PARSEUTIL_H

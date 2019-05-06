@@ -2,12 +2,27 @@
 #include "parseutil.h"
 
 #include <QRegularExpression>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QStack>
 
-ParseUtil::ParseUtil(QString filename, QString text)
+ParseUtil::ParseUtil()
 {
+}
+
+void ParseUtil::set_root(QString dir) {
+    this->root = dir;
+}
+
+void ParseUtil::error(QString message, QString expression) {
     QStringList lines = text.split(QRegularExpression("[\r\n]"));
-    debug = new DebugInfo(filename, lines);
+    int lineNum = 0, colNum = 0;
+    for (QString line : lines) {
+        lineNum++;
+        colNum = line.indexOf(expression) + 1;
+        if (colNum) break;
+    }
+    logError(QString("%1:%2:%3: %4").arg(file).arg(lineNum).arg(colNum).arg(message));
 }
 
 void ParseUtil::strip_comment(QString *line) {
@@ -24,13 +39,28 @@ void ParseUtil::strip_comment(QString *line) {
     }
 }
 
-QList<QStringList>* ParseUtil::parseAsm(QString text) {
+QString ParseUtil::readTextFile(QString path) {
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly)) {
+        logError(QString("Could not open '%1': ").arg(path) + file.errorString());
+        return QString();
+    }
+    QTextStream in(&file);
+    in.setCodec("UTF-8");
+    QString text = "";
+    while (!in.atEnd()) {
+        text += in.readLine() + "\n";
+    }
+    return text;
+}
+
+QList<QStringList>* ParseUtil::parseAsm(QString filename) {
     QList<QStringList> *parsed = new QList<QStringList>;
+
+    text = readTextFile(root + "/" + filename);
     QStringList lines = text.split('\n');
     for (QString line : lines) {
         QString label;
-        //QString macro;
-        //QStringList *params;
         strip_comment(&line);
         if (line.trimmed().isEmpty()) {
         } else if (line.contains(':')) {
@@ -52,14 +82,6 @@ QList<QStringList>* ParseUtil::parseAsm(QString text) {
             params.prepend(macro);
             parsed->append(params);
         }
-        //if (macro != NULL) {
-        //    if (macros->contains(macro)) {
-        //        void* function = macros->value(macro);
-        //        if (function != NULL) {
-        //            std::function function(params);
-        //        }
-        //    }
-        //}
     }
     return parsed;
 }
@@ -94,7 +116,16 @@ QList<Token> ParseUtil::tokenizeExpression(QString expression, QMap<QString, int
                         tokenType = "decimal";
                     } else {
                         tokenType = "error";
-                        debug->error(expression, token);
+                        QString message = QString("unknown token '%1' found in expression '%2'")
+                                          .arg(token).arg(expression);
+                        error(message, expression);
+                    }
+                }
+                else if (tokenType == "operator") {
+                    if (!Token::precedenceMap.contains(token)) {
+                        QString message = QString("unsupported postfix operator: '%1'")
+                                          .arg(token);
+                        error(message, expression);
                     }
                 }
 
@@ -167,7 +198,7 @@ QList<Token> ParseUtil::generatePostfix(QList<Token> tokens) {
 int ParseUtil::evaluatePostfix(QList<Token> postfix) {
     QStack<Token> stack;
     for (Token token : postfix) {
-        if (token.type == TokenType::Operator) {
+        if (token.type == TokenType::Operator && stack.size() > 1) {
             int op2 = stack.pop().value.toInt(nullptr, 0);
             int op1 = stack.pop().value.toInt(nullptr, 0);
             int result = 0;
@@ -189,8 +220,6 @@ int ParseUtil::evaluatePostfix(QList<Token> postfix) {
                 result = op1 ^ op2;
             } else if (token.value == "|") {
                 result = op1 | op2;
-            } else {
-                logError(QString("Unsupported postfix operator: '%1'").arg(token.value));
             }
             stack.push(Token(QString("%1").arg(result), "decimal"));
         } else if (token.type != TokenType::Error) {
@@ -199,4 +228,184 @@ int ParseUtil::evaluatePostfix(QList<Token> postfix) {
     }
 
     return stack.pop().value.toInt(nullptr, 0);
+}
+
+QString ParseUtil::readCIncbin(QString filename, QString label) {
+    QString path;
+
+    if (label.isNull()) {
+        return path;
+    }
+
+    text = readTextFile(root + "/" + filename);
+
+    QRegExp *re = new QRegExp(QString(
+        "\\b%1\\b"
+        "\\s*\\[?\\s*\\]?\\s*=\\s*"
+        "INCBIN_[US][0-9][0-9]?"
+        "\\(\"([^\"]*)\"\\)").arg(label));
+
+    int pos = re->indexIn(text);
+    if (pos != -1) {
+        path = re->cap(1);
+    }
+
+    return path;
+}
+
+QMap<QString, int> ParseUtil::readCDefines(QString filename, QStringList prefixes) {
+    QMap<QString, int> allDefines;
+    QMap<QString, int> filteredDefines;
+
+    file = filename;
+
+    if (file.isEmpty()) {
+        return filteredDefines;
+    }
+
+    QString filepath = root + "/" + file;
+    text = readTextFile(filepath);
+
+    if (text.isNull()) {
+        logError(QString("Failed to read C defines file: '%1'").arg(filepath));
+        return filteredDefines;
+    }
+
+    text.replace(QRegularExpression("(//.*)|(\\/+\\*+[^*]*\\*+\\/+)"), "");
+
+    QRegularExpression re("#define\\s+(?<defineName>\\w+)[^\\S\\n]+(?<defineValue>.+)");
+    QRegularExpressionMatchIterator iter = re.globalMatch(text);
+    while (iter.hasNext()) {
+        QRegularExpressionMatch match = iter.next();
+        QString name = match.captured("defineName");
+        QString expression = match.captured("defineValue");
+        if (expression == " ") continue;
+        int value = evaluateDefine(expression, &allDefines);
+        allDefines.insert(name, value);
+        for (QString prefix : prefixes) {
+            if (name.startsWith(prefix) || QRegularExpression(prefix).match(name).hasMatch()) {
+                filteredDefines.insert(name, value);
+            }
+        }
+    }
+    return filteredDefines;
+}
+
+void ParseUtil::readCDefinesSorted(QString filename, QStringList prefixes, QStringList* definesToSet) {    
+    QMap<QString, int> defines = readCDefines(filename, prefixes);
+
+    // The defines should to be sorted by their underlying value, not alphabetically.
+    // Reverse the map and read out the resulting keys in order.
+    QMultiMap<int, QString> definesInverse;
+    for (QString defineName : defines.keys()) {
+        definesInverse.insert(defines[defineName], defineName);
+    }
+    *definesToSet = definesInverse.values();
+}
+
+QStringList ParseUtil::readCArray(QString filename, QString label) {
+    QStringList list;
+
+    if (label.isNull()) {
+        return list;
+    }
+
+    file = filename;
+    text = readTextFile(root + "/" + filename);
+
+    QRegularExpression re(QString("\\b%1\\b\\s*\\[?\\s*\\]?\\s*=\\s*\\{([^\\}]*)\\}").arg(label));
+    QRegularExpressionMatch match = re.match(text);
+
+    if (match.hasMatch()) {
+        QString body = match.captured(1);
+        QStringList split = body.split(',');
+        for (QString item : split) {
+            item = item.trimmed();
+            if (!item.contains(QRegularExpression("[^A-Za-z0-9_&()]"))) list.append(item);
+            // do not print error info here because this is called dozens of times
+        }
+    }
+
+    return list;
+}
+
+QMap<QString, QString> ParseUtil::readNamedIndexCArray(QString filename, QString label) {
+    text = readTextFile(root + "/" + filename);
+    QMap<QString, QString> map;
+
+    QRegularExpression re_text(QString("\\b%1\\b\\s*\\[?\\s*\\]?\\s*=\\s*\\{([^\\}]*)\\}").arg(label));
+    QString body = re_text.match(text).captured(1).replace(QRegularExpression("\\s*"), "");
+    
+    QRegularExpression re("\\[(?<index>[A-Za-z1-9_]*)\\]=(?<value>[A-Za-z1-9_]*)");
+    QRegularExpressionMatchIterator iter = re.globalMatch(body);
+
+    while (iter.hasNext()) {
+        QRegularExpressionMatch match = iter.next();
+        QString key = match.captured("index");
+        QString value = match.captured("value");
+        map.insert(key, value);
+    }
+
+    return map;
+}
+
+QList<QStringList>* ParseUtil::getLabelMacros(QList<QStringList> *list, QString label) {
+    bool in_label = false;
+    QList<QStringList> *new_list = new QList<QStringList>;
+    for (int i = 0; i < list->length(); i++) {
+        QStringList params = list->value(i);
+        QString macro = params.value(0);
+        if (macro == ".label") {
+            if (params.value(1) == label) {
+                in_label = true;
+            } else if (in_label) {
+                // If nothing has been read yet, assume the label
+                // we're looking for is in a stack of labels.
+                if (new_list->length() > 0) {
+                    break;
+                }
+            }
+        } else if (in_label) {
+            new_list->append(params);
+        }
+    }
+    return new_list;
+}
+
+// For if you don't care about filtering by macro,
+// and just want all values associated with some label.
+QStringList* ParseUtil::getLabelValues(QList<QStringList> *list, QString label) {
+    list = getLabelMacros(list, label);
+    QStringList *values = new QStringList;
+    for (int i = 0; i < list->length(); i++) {
+        QStringList params = list->value(i);
+        QString macro = params.value(0);
+        if (macro == ".align" || macro == ".ifdef" || macro == ".ifndef") {
+            continue;
+        }
+        for (int j = 1; j < params.length(); j++) {
+            values->append(params.value(j));
+        }
+    }
+    return values;
+}
+
+bool ParseUtil::tryParseJsonFile(QJsonDocument *out, QString filepath) {
+    QFile file(filepath);
+    if (!file.open(QIODevice::ReadOnly)) {
+        logError(QString("Error: Could not open %1 for reading").arg(filepath));
+        return false;
+    }
+
+    QByteArray data = file.readAll();
+    QJsonParseError parseError;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &parseError);
+    file.close();
+    if (parseError.error != QJsonParseError::NoError) {
+        logError(QString("Error: Failed to parse json file %1: %2").arg(filepath).arg(parseError.errorString()));
+        return false;
+    }
+
+    *out = jsonDoc;
+    return true;
 }
