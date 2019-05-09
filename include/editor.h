@@ -204,7 +204,11 @@ public:
         int y = event->getPixelY();
         setX(x);
         setY(y);
-        setZValue(event->y());
+        if (editor->selected_events && editor->selected_events->contains(this)) {
+            setZValue(event->y() + 1);
+        } else {
+            setZValue(event->y());
+        }
     }
     void move(int x, int y);
     void emitPositionChanged() {
