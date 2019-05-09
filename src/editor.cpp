@@ -1243,7 +1243,6 @@ void Editor::selectMapEvent(DraggablePixmapItem *object, bool toggle) {
             selected_events->append(object);
         }
         updateSelectedEvents();
-        object->setZValue(object->y() + 1);
     }
 }
 
