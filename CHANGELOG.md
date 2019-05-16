@@ -10,17 +10,21 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ### Added
 - Add region map editor
 - Add ability to add new tilesets
+- Add official Porymap documentation website: https://huderlem.github.io/porymap/
 
 ### Changed
 - Event sprites now display as facing the direction of their movement type.
 - Default values for newly-created events now use valid values from the project, rather than hardcoded values.
 - Deleting events will stay in the same events tab for easier bulk deletions.
 - Double-clicking on a secret base event will open the corresponding secret base map.
+- Selected events are now rendered above other events.
+- Default values for new events are now more sensible and guaranteed to be valid.
 
 ### Fixed
 - Fix bug in zoomed metatile selector where a large selection rectangle was being rendered.
 - Fix bug where edited map icons were not rendered properly.
 - Fix bug where right-click copying a tile from the tileset editor's metatile layers wouldn't copy the x/y flip status.
+- Parsing project data is now more resilient to crashing, and it reports more informative errors.
 
 
 ## [1.2.1] - 2019-02-16
