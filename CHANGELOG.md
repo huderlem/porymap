@@ -6,7 +6,7 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 
 The **"Breaking Changes"** listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. If porymap is used on a project that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.
 
-## [Unreleased]
+## [1.2.2] - 2019-05-16
 ### Added
 - Add region map editor
 - Add ability to add new tilesets
@@ -95,7 +95,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ## [1.0.0] - 2018-10-26
 This was the initial release.
 
-[Unreleased]: https://github.com/huderlem/porymap/compare/1.2.1...HEAD
+[1.2.2]: https://github.com/huderlem/porymap/compare/1.2.1...1.2.2
 [1.2.1]: https://github.com/huderlem/porymap/compare/1.2.0...1.2.1
 [1.2.0]: https://github.com/huderlem/porymap/compare/1.1.0...1.2.0
 [1.1.0]: https://github.com/huderlem/porymap/compare/1.0.0...1.1.0
