@@ -1913,10 +1913,18 @@ void MainWindow::onTilesetsSaved(QString primaryTilesetLabel, QString secondaryT
 
 void MainWindow::on_action_Export_Map_Image_triggered()
 {
-    QString defaultFilepath = QString("%1/%2.png").arg(editor->project->root).arg(editor->map->name);
-    QString filepath = QFileDialog::getSaveFileName(this, "Export Map Image", defaultFilepath, "Image Files (*.png *.jpg *.bmp)");
-    if (!filepath.isEmpty()) {
-        editor->map_item->pixmap().save(filepath);
+    if (!this->mapImageExporter) {
+        this->mapImageExporter = new MapImageExporter(this, this->editor);
+        connect(this->mapImageExporter, &QObject::destroyed, [=](QObject *) { this->mapImageExporter = nullptr; });
+        this->mapImageExporter->setAttribute(Qt::WA_DeleteOnClose);
+    }
+
+    if (!this->mapImageExporter->isVisible()) {
+        this->mapImageExporter->show();
+    } else if (this->mapImageExporter->isMinimized()) {
+        this->mapImageExporter->showNormal();
+    } else {
+        this->mapImageExporter->activateWindow();
     }
 }
 
