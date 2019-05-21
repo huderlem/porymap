@@ -61,6 +61,7 @@ SOURCES += src/core/block.cpp \
     src/ui/tilemaptileselector.cpp \
     src/ui/regionmapeditor.cpp \
     src/ui/newmappopup.cpp \
+    src/ui/mapimageexporter.cpp \
     src/config.cpp \
     src/editor.cpp \
     src/main.cpp \
@@ -119,6 +120,7 @@ HEADERS  += include/core/block.h \
     include/ui/tilemaptileselector.h \
     include/ui/regionmapeditor.h \
     include/ui/newmappopup.h \
+    include/ui/mapimageexporter.h \
     include/config.h \
     include/editor.h \
     include/mainwindow.h \
@@ -134,7 +136,8 @@ FORMS    += forms/mainwindow.ui \
     forms/regionmapeditor.ui \
     forms/newmappopup.ui \
     forms/aboutporymap.ui \
-    forms/newtilesetdialog.ui
+    forms/newtilesetdialog.ui \
+    forms/mapimageexporter.ui
 
 RESOURCES += \
     resources/images.qrc

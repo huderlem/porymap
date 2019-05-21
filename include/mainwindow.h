@@ -16,6 +16,7 @@
 #include "editor.h"
 #include "tileseteditor.h"
 #include "regionmapeditor.h"
+#include "mapimageexporter.h"
 #include "filterchildrenproxymodel.h"
 #include "newmappopup.h"
 #include "newtilesetdialog.h"
@@ -71,7 +72,6 @@ private slots:
     void on_tabWidget_currentChanged(int index);
 
     void on_actionUndo_triggered();
-
     void on_actionRedo_triggered();
 
     void on_actionZoom_In_triggered();
@@ -94,15 +94,10 @@ private slots:
     void updateObjects();
 
     void on_toolButton_Paint_clicked();
-
     void on_toolButton_Select_clicked();
-
     void on_toolButton_Fill_clicked();
-
     void on_toolButton_Dropper_clicked();
-
     void on_toolButton_Move_clicked();
-
     void on_toolButton_Shift_clicked();
 
     void onOpenMapListContextMenu(const QPoint &point);
@@ -115,29 +110,17 @@ private slots:
     void on_action_Export_Map_Image_triggered();
 
     void on_comboBox_ConnectionDirection_currentIndexChanged(const QString &arg1);
-
     void on_spinBox_ConnectionOffset_valueChanged(int offset);
-
     void on_comboBox_ConnectedMap_currentTextChanged(const QString &mapName);
-
     void on_pushButton_AddConnection_clicked();
-
     void on_pushButton_RemoveConnection_clicked();
-
     void on_comboBox_DiveMap_currentTextChanged(const QString &mapName);
-
     void on_comboBox_EmergeMap_currentTextChanged(const QString &mapName);
-
     void on_comboBox_PrimaryTileset_activated(const QString &arg1);
-
     void on_comboBox_SecondaryTileset_activated(const QString &arg1);
-
     void on_pushButton_clicked();
-
     void on_checkBox_smartPaths_stateChanged(int selected);
-
     void on_checkBox_Visibility_clicked(bool checked);
-
     void on_checkBox_ToggleBorder_stateChanged(int arg1);
 
     void resetMapViewScale();
@@ -169,6 +152,7 @@ private:
     Ui::MainWindow *ui;
     TilesetEditor *tilesetEditor = nullptr;
     RegionMapEditor *regionMapEditor = nullptr;
+    MapImageExporter *mapImageExporter = nullptr;
     FilterChildrenProxyModel *mapListProxyModel;
     NewMapPopup *newmapprompt = nullptr;
     QStandardItemModel *mapListModel;
