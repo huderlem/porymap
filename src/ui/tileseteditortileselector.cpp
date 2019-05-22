@@ -98,8 +98,30 @@ QList<Tile> TilesetEditorTileSelector::getSelectedTiles() {
         return this->externalSelectedTiles;
     } else {
         QList<Tile> tiles;
-        for (uint16_t tile : this->selectedTiles) {
-            tiles.append(Tile(tile, this->xFlip, this->yFlip, this->paletteId));
+        QList<QList<Tile>> tileMatrix;
+        QList<uint16_t> selected = this->selectedTiles;
+        QPoint dimensions = this->getSelectionDimensions();
+        int width = dimensions.x();
+        int height = dimensions.y();
+        for (int j = 0; j < height; j++) {
+            QList<Tile> row;
+            for (int i = 0; i < width; i++) {
+                int index = i + j * width;
+                uint16_t tile = selected.at(index);
+                if (this->xFlip)
+                    row.prepend(Tile(tile, this->xFlip, this->yFlip, this->paletteId));
+                else
+                    row.append(Tile(tile, this->xFlip, this->yFlip, this->paletteId));
+            }
+            if (this->yFlip)
+                tileMatrix.prepend(row);
+            else
+                tileMatrix.append(row);
+        }
+        for (int j = 0; j < height; j++) {
+            for (int i = 0; i < width; i++) {
+                tiles.append(tileMatrix.at(j).at(i));
+            }
         }
         return tiles;
     }
