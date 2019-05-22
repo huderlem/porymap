@@ -23,6 +23,7 @@ MapImageExporter::MapImageExporter(QWidget *parent_, Editor *editor_) :
 }
 
 MapImageExporter::~MapImageExporter() {
+    delete scene;
     delete ui;
 }
 
@@ -31,7 +32,7 @@ void MapImageExporter::saveImage() {
     QString filepath = QFileDialog::getSaveFileName(this, "Export Map Image", defaultFilepath,
                                                     "Image Files (*.png *.jpg *.bmp)");
     if (!filepath.isEmpty()) {
-        this->ui->graphicsView_Preview->grab(this->ui->graphicsView_Preview->sceneRect().toRect()).save(filepath);
+        this->preview.save(filepath);
         this->close();
     }
 }
@@ -67,8 +68,8 @@ void MapImageExporter::updatePreview() {
     // draw map border
     // note: this will break when allowing map to be selected from drop down maybe
     int borderHeight = 0, borderWidth = 0;
-    if (showUpConnections || showDownConnections || showLeftConnections || showRightConnections) showBorder = true;
-    if (showBorder) {
+    bool forceDrawBorder = showUpConnections || showDownConnections || showLeftConnections || showRightConnections;
+    if (showBorder || forceDrawBorder) {
         borderHeight = 32 * 3, borderWidth = 32 * 3;
         QPixmap newPreview = QPixmap(map->pixmap.width() + borderWidth * 2, map->pixmap.height() + borderHeight * 2);
         QPainter borderPainter(&newPreview);
