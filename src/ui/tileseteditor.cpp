@@ -211,6 +211,16 @@ void TilesetEditor::onSelectedTilesChanged() {
 }
 
 void TilesetEditor::onMetatileLayerTileChanged(int x, int y) {
+    const QList<QPoint> tileCoords = QList<QPoint>{
+        QPoint(0, 0),
+        QPoint(1, 0),
+        QPoint(0, 1),
+        QPoint(1, 1),
+        QPoint(2, 0),
+        QPoint(3, 0),
+        QPoint(2, 1),
+        QPoint(3, 1)
+    };
     Metatile *prevMetatile = this->metatile->copy();
     QPoint dimensions = this->tileSelector->getSelectionDimensions();
     QList<Tile> tiles = this->tileSelector->getSelectedTiles();
@@ -218,7 +228,9 @@ void TilesetEditor::onMetatileLayerTileChanged(int x, int y) {
     for (int j = 0; j < dimensions.y(); j++) {
         for (int i = 0; i < dimensions.x(); i++) {
             int tileIndex = ((x + i) / 2 * 4) + ((y + j) * 2) + ((x + i) % 2);
-            if (tileIndex < 8) {
+            if (tileIndex < 8
+             && tileCoords.at(tileIndex).x() >= x
+             && tileCoords.at(tileIndex).y() >= y){
                 Tile *tile = &(*this->metatile->tiles)[tileIndex];
                 tile->tile = tiles.at(selectedTileIndex).tile;
                 tile->xflip = tiles.at(selectedTileIndex).xflip;
