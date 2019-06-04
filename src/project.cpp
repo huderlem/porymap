@@ -1432,7 +1432,6 @@ void Project::readRegionMapSections() {
     for (QString defineName : this->mapSectionNameToValue.keys()) {
         this->mapSectionValueToName.insert(this->mapSectionNameToValue[defineName], defineName);
     }
-
 }
 
 void Project::readHealLocations() {
@@ -1444,6 +1443,7 @@ void Project::readHealLocations() {
     QRegularExpression regex("MAP_GROUP\\((?<map>[A-Za-z0-9_]*)\\),\\s+MAP_NUM\\((\\1)\\),\\s+(?<x>[0-9A-Fa-fx]*),\\s+(?<y>[0-9A-Fa-fx]*)");
     QRegularExpressionMatchIterator iter = regex.globalMatch(text);
 
+    flyableMaps.clear();
     for (int i = 1; iter.hasNext(); i++) {
         QRegularExpressionMatch match = iter.next();
         QString mapName = match.captured("map");

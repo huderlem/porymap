@@ -272,6 +272,7 @@ QMap<QString, int> ParseUtil::readCDefines(QString filename, QStringList prefixe
     }
 
     text.replace(QRegularExpression("(//.*)|(\\/+\\*+[^*]*\\*+\\/+)"), "");
+    text.replace(QRegularExpression("(\\\\\\s+)"), "");
 
     QRegularExpression re("#define\\s+(?<defineName>\\w+)[^\\S\\n]+(?<defineValue>.+)");
     QRegularExpressionMatchIterator iter = re.globalMatch(text);
