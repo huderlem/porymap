@@ -243,7 +243,7 @@ QString ParseUtil::readCIncbin(QString filename, QString label) {
         "\\b%1\\b"
         "\\s*\\[?\\s*\\]?\\s*=\\s*"
         "INCBIN_[US][0-9][0-9]?"
-        "\\(\"([^\"]*)\"\\)").arg(label));
+        "\\(\\s*\"([^\"]*)\"\\s*\\)").arg(label));
 
     int pos = re->indexIn(text);
     if (pos != -1) {
@@ -322,7 +322,7 @@ QStringList ParseUtil::readCArray(QString filename, QString label) {
         QStringList split = body.split(',');
         for (QString item : split) {
             item = item.trimmed();
-            if (!item.contains(QRegularExpression("[^A-Za-z0-9_&()]"))) list.append(item);
+            if (!item.contains(QRegularExpression("[^A-Za-z0-9_&()\\s]"))) list.append(item);
             // do not print error info here because this is called dozens of times
         }
     }
