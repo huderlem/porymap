@@ -14,6 +14,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ### Fixed
 - Fix bug where map group names were hardcoded when creating a new map.
 - Fix bug in Tileset Editor where multi-tile selections weren't properly painted when clicking on the bottom row of the metatile layers.
+- Fix bug where line breaks in C headers were not parsed properly.
 
 
 ## [1.2.2] - 2019-05-16
