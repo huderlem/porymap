@@ -1561,8 +1561,9 @@ void Project::loadEventPixmaps(QList<Event*> objects) {
 
     QMap<QString, int> constants = getEventObjGfxConstants();
 
-    QStringList pointers = parser.readCArray("src/data/field_event_obj/event_object_graphics_info_pointers.h", "gEventObjectGraphicsInfoPointers");
-
+    // QStringList pointers = parser.readCArray("src/data/field_event_obj/event_object_graphics_info_pointers.h", "gEventObjectGraphicsInfoPointers");
+    QMap<QString, QString> pointerHash = parser.readNamedIndexCArray("src/data/field_event_obj/event_object_graphics_info_pointers.h", "gEventObjectGraphicsInfoPointers");
+    
     for (Event *object : objects) {
         if (!object->pixmap.isNull()) {
             continue;
@@ -1585,9 +1586,10 @@ void Project::loadEventPixmaps(QList<Event*> objects) {
         }
 
         if (event_type == EventType::Object) {
-            int sprite_id = constants.value(object->get("sprite"));
-
-            QString info_label = pointers.value(sprite_id).replace("&", "");
+            // int sprite_id = constants.value(object->get("sprite"));
+            // QString info_label = pointers.value(sprite_id).replace("&", "");
+            
+            QString info_label = pointerHash[object->get("sprite")].replace("&", "");
             QStringList gfx_info = parser.readCArray("src/data/field_event_obj/event_object_graphics_info.h", info_label);
             QString pic_label = gfx_info.value(14);
             QString dimensions_label = gfx_info.value(11);
