@@ -337,7 +337,7 @@ QMap<QString, QString> ParseUtil::readNamedIndexCArray(QString filename, QString
     QRegularExpression re_text(QString("\\b%1\\b\\s*\\[?\\s*\\]?\\s*=\\s*\\{([^\\}]*)\\}").arg(label));
     QString body = re_text.match(text).captured(1).replace(QRegularExpression("\\s*"), "");
     
-    QRegularExpression re("\\[(?<index>[A-Za-z1-9_]*)\\]=(?<value>[A-Za-z1-9_]*)");
+    QRegularExpression re("\\[(?<index>[A-Za-z1-9_]*)\\]=(?<value>&?[A-Za-z1-9_]*)");
     QRegularExpressionMatchIterator iter = re.globalMatch(body);
 
     while (iter.hasNext()) {
