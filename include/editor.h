@@ -61,6 +61,8 @@ public:
     void setEditingCollision();
     void setEditingObjects();
     void setEditingConnections();
+    void setEditingWildMons();
+    void clearWildMonTabWidgets();
     void setCurrentConnectionDirection(QString curDirection);
     void updateCurrentConnectionDirection(QString curDirection);
     void setConnectionsVisibility(bool visible);

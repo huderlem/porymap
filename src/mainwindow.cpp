@@ -612,6 +612,8 @@ void MainWindow::loadDataStructures() {
     project->readMetatileBehaviors();
     project->readTilesetProperties();
     project->readHealLocations();
+    project->readSpeciesIconPaths();
+    project->readWildMonData();
 }
 
 void MainWindow::populateMapList() {
@@ -1083,6 +1085,8 @@ void MainWindow::on_tabWidget_currentChanged(int index)
         editor->setEditingObjects();
     } else if (index == 3) {
         editor->setEditingConnections();
+    } else if (index == 4) {
+        editor->setEditingWildMons();
     }
 }
 

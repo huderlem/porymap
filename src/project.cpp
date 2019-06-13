@@ -1305,6 +1305,84 @@ void Project::deleteFile(QString path) {
     }
 }
 
+void Project::readWildMonData() {
+    //
+    QString wildMonJsonFilepath = QString("%1/src/data/wild_encounters.json").arg(root);
+    QJsonDocument wildMonsJsonDoc;
+    if (!parser.tryParseJsonFile(&wildMonsJsonDoc, wildMonJsonFilepath)) {
+        logError(QString("Failed to read wild encounters from %1").arg(wildMonJsonFilepath));
+        return;
+    }
+
+    QJsonObject wildMonObj = wildMonsJsonDoc.object();
+
+    for (auto subObjectRef : wildMonObj["wild_encounter_groups"].toArray()) {
+        QJsonObject subObject = subObjectRef.toObject();
+        if (!subObject["for_maps"].toBool()) continue;
+
+        //qDebug() << subObject["label"].toString();
+        QJsonArray encounters = subObject["encounters"].toArray();
+        for (QJsonValue encounter : encounters) {
+            //
+            //qDebug() << encounter["map"].toString();
+            QString mapConstant = encounter["map"].toString();
+            //QString mapName = mapConstantsToMapNames->value(mapConstant);
+
+            WildPokemonHeader header;
+
+            // land_mons, water_mons, rock_smash_mons, fishing_mons
+            if (encounter["land_mons"] != QJsonValue::Undefined) {
+                header.landMons.active = true;
+                header.landMons.encounterRate = encounter["land_mons"]["encounter_rate"].toInt();
+                for (QJsonValue mon : encounter["land_mons"]["mons"].toArray()) {
+                    header.landMons.wildPokemon.append({
+                        mon["min_level"].toInt(),
+                        mon["max_level"].toInt(),
+                        mon["species"].toString()
+                    });
+                }
+            }
+            if (encounter["water_mons"] != QJsonValue::Undefined) {
+                header.waterMons.active = true;
+                header.waterMons.encounterRate = encounter["water_mons"]["encounter_rate"].toInt();
+                for (QJsonValue mon : encounter["water_mons"]["mons"].toArray()) {
+                    header.waterMons.wildPokemon.append({
+                        mon["min_level"].toInt(),
+                        mon["max_level"].toInt(),
+                        mon["species"].toString()
+                    });
+                }
+            }
+            if (encounter["rock_smash_mons"] != QJsonValue::Undefined) {
+                header.rockSmashMons.active = true;
+                header.rockSmashMons.encounterRate = encounter["rock_smash_mons"]["encounter_rate"].toInt();
+                for (QJsonValue mon : encounter["rock_smash_mons"]["mons"].toArray()) {
+                    header.rockSmashMons.wildPokemon.append({
+                        mon["min_level"].toInt(),
+                        mon["max_level"].toInt(),
+                        mon["species"].toString()
+                    });
+                }
+            }
+            if (encounter["fishing_mons"] != QJsonValue::Undefined) {
+                header.fishingMons.active = true;
+                header.fishingMons.encounterRate = encounter["fishing_mons"]["encounter_rate"].toInt();
+                for (QJsonValue mon : encounter["fishing_mons"]["mons"].toArray()) {
+                    header.fishingMons.wildPokemon.append({
+                        mon["min_level"].toInt(),
+                        mon["max_level"].toInt(),
+                        mon["species"].toString()
+                    });
+                }
+            }
+
+            wildMonData.insert(mapConstant, header);
+        }
+    }
+
+    //
+}
+
 void Project::readMapGroups() {
     QString mapGroupsFilepath = QString("%1/data/maps/map_groups.json").arg(root);
     QJsonDocument mapGroupsDoc;
@@ -1713,6 +1791,14 @@ void Project::loadEventPixmaps(QList<Event*> objects) {
                 }
             }
         }
+    }
+}
+
+void Project::readSpeciesIconPaths() {
+    QMap<QString, QString> monIconNames = parser.readNamedIndexCArray("src/pokemon_icon.c", "gMonIconTable");
+    for (QString species : monIconNames.keys()) {
+        QString path = parser.readCIncbin("src/data/graphics/pokemon.h", monIconNames.value(species));
+        speciesToIconPath.insert(species, root + "/" + path.replace("4bpp", "png"));
     }
 }
 

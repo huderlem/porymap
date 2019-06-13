@@ -150,6 +150,57 @@ void Editor::setEditingConnections() {
     this->cursorMapTileRect->setVisibility(false);
 }
 
+void Editor::setEditingWildMons() {
+    // clear the current layout
+    //
+    // move to loadMap? no because loadMap calls this anyways if it's open
+
+    if (!project->wildMonData.contains(map->constantName)) return;
+
+    //return;// TODO: REMOVE!
+
+    //QFrame *landMonFrame = ui->frame_LandMonInfo;
+
+    QLayout *landMonTab = ui->tab_LandMons->layout();
+
+    QTableWidget *landMonTable = new QTableWidget;//ui->tableWidget_RockSmashMonInfo;
+    
+    clearTabWidget(landMonTab);
+
+    //QGridLayout *gridLayout = new QGridLayout(landMonFrame);
+    landMonTab->addWidget(landMonTable);
+
+    //if (!landMonTable) 
+
+    //for (auto mon : project->wildMonData.value(map->constantName))
+    WildPokemonHeader header = project->wildMonData.value(map->constantName);
+
+    if (header.landMons.active) { // else, 
+        int i = 1;
+
+        landMonTable->setRowCount(header.landMons.wildPokemon.size());
+        landMonTable->setColumnCount(5);// + 1 for last column stretch
+
+        QStringList landMonTableHeaders;
+        landMonTableHeaders << "Index" << "Species" << "Min Level" << "Max Level" << "Catch Percentage";
+        landMonTable->setHorizontalHeaderLabels(landMonTableHeaders);
+        landMonTable->verticalHeader()->hide();
+        landMonTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+        landMonTable->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+        landMonTable->setShowGrid(false);
+
+        for (WildPokemon mon : header.landMons.wildPokemon) {
+            createSpeciesTableRow(project, landMonTable, mon, i);
+            i++;
+        }
+    }
+}
+
+void Editor::clearWildMonTabWidgets() {
+    //
+}
+
 void Editor::setDiveEmergeControls() {
     ui->comboBox_DiveMap->blockSignals(true);
     ui->comboBox_EmergeMap->blockSignals(true);

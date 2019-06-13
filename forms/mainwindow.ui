@@ -237,7 +237,7 @@
         </sizepolicy>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>4</number>
        </property>
        <property name="tabsClosable">
         <bool>false</bool>
@@ -561,8 +561,8 @@
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>522</width>
-                     <height>601</height>
+                     <width>545</width>
+                     <height>587</height>
                     </rect>
                    </property>
                    <layout class="QGridLayout" name="gridLayout_8">
@@ -876,8 +876,8 @@
                            <rect>
                             <x>0</x>
                             <y>0</y>
-                            <width>259</width>
-                            <height>70</height>
+                            <width>256</width>
+                            <height>74</height>
                            </rect>
                           </property>
                           <layout class="QHBoxLayout" name="horizontalLayout_7">
@@ -1064,10 +1064,10 @@
                     </property>
                     <property name="geometry">
                      <rect>
-                      <x>0</x>
+                      <x>8</x>
                       <y>0</y>
-                      <width>263</width>
-                      <height>338</height>
+                      <width>221</width>
+                      <height>328</height>
                      </rect>
                     </property>
                     <property name="sizePolicy">
@@ -1344,8 +1344,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>385</width>
-               <height>652</height>
+               <width>371</width>
+               <height>643</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_7">
@@ -1617,8 +1617,8 @@
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>432</width>
-                      <height>554</height>
+                      <width>430</width>
+                      <height>534</height>
                      </rect>
                     </property>
                     <property name="sizePolicy">
@@ -2531,8 +2531,8 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>829</width>
-                    <height>543</height>
+                    <width>818</width>
+                    <height>539</height>
                    </rect>
                   </property>
                   <layout class="QGridLayout" name="gridLayout_14">
@@ -2686,6 +2686,38 @@
                 </widget>
                </item>
               </layout>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="tab_WildMons">
+        <attribute name="title">
+         <string>Wild Pokemon</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_11">
+         <item>
+          <widget class="QFrame" name="frame_WildMonInfo">
+           <property name="frameShape">
+            <enum>QFrame::StyledPanel</enum>
+           </property>
+           <property name="frameShadow">
+            <enum>QFrame::Raised</enum>
+           </property>
+           <layout class="QGridLayout" name="gridLayout">
+            <item row="0" column="0">
+             <widget class="QTabWidget" name="tabWidget_WildMons">
+              <property name="currentIndex">
+               <number>0</number>
+              </property>
+              <widget class="QWidget" name="tab_LandMons">
+               <attribute name="title">
+                <string>Land Mons</string>
+               </attribute>
+               <layout class="QGridLayout" name="gridLayout_15"/>
+              </widget>
              </widget>
             </item>
            </layout>

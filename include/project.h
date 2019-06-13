@@ -5,6 +5,7 @@
 #include "blockdata.h"
 #include "heallocation.h"
 #include "event.h"
+#include "wildmoninfo.h"
 #include "parseutil.h"
 
 #include <QStringList>
@@ -82,6 +83,12 @@ public:
 
     QString readMapLayoutId(QString map_name);
     QString readMapLocation(QString map_name);
+
+    void readWildMonData();
+    QMap<QString, WildPokemonHeader> wildMonData;// "MAP_CONSTANT": wild_encounter_json
+    // when saving, preserve the extra fields for gBattlePyramidWildMonHeaders, gBattlePikeWildMonHeaders
+    void readSpeciesIconPaths();
+    QMap<QString, QString> speciesToIconPath;
 
     QMap<QString, bool> getTopLevelMapFields();
     bool loadMapData(Map*);
