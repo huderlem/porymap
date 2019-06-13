@@ -1320,6 +1320,11 @@ void Project::readWildMonData() {
         QJsonObject subObject = subObjectRef.toObject();
         if (!subObject["for_maps"].toBool()) continue;
 
+        // fill wildMonFields
+        for (auto field : subObject["fields"].toArray()) {
+            wildMonFields.append(field.toString());
+        }
+
         //qDebug() << subObject["label"].toString();
         QJsonArray encounters = subObject["encounters"].toArray();
         for (QJsonValue encounter : encounters) {
@@ -1330,6 +1335,22 @@ void Project::readWildMonData() {
 
             WildPokemonHeader header;
 
+            for (QString field : wildMonFields) {
+                //
+                if (encounter[field] != QJsonValue::Undefined) {
+                    header.wildMons[field].active = true;
+                    header.wildMons[field].encounterRate = encounter[field]["encounter_rate"].toInt();
+                    for (QJsonValue mon : encounter[field]["mons"].toArray()) {
+                        header.wildMons[field].wildPokemon.append({
+                            mon["min_level"].toInt(),
+                            mon["max_level"].toInt(),
+                            mon["species"].toString()
+                        });
+                    }
+                }
+            }
+
+            /*
             // land_mons, water_mons, rock_smash_mons, fishing_mons
             if (encounter["land_mons"] != QJsonValue::Undefined) {
                 header.landMons.active = true;
@@ -1375,6 +1396,7 @@ void Project::readWildMonData() {
                     });
                 }
             }
+            */
 
             wildMonData.insert(mapConstant, header);
         }

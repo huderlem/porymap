@@ -261,11 +261,13 @@ bool MainWindow::openProject(QString dir) {
         setWindowTitle(editor->project->getProjectTitle());
         loadDataStructures();
         populateMapList();
+        populateWildMonTabWidget(ui->tabWidget_WildMons, editor->project->wildMonFields);
         success = setMap(getDefaultMap(), true);
     } else {
         setWindowTitle(editor->project->getProjectTitle());
         loadDataStructures();
         populateMapList();
+        populateWildMonTabWidget(ui->tabWidget_WildMons, editor->project->wildMonFields);
     }
 
     if (success) {
@@ -1086,7 +1088,7 @@ void MainWindow::on_tabWidget_currentChanged(int index)
     } else if (index == 3) {
         editor->setEditingConnections();
     } else if (index == 4) {
-        editor->setEditingWildMons();
+        //editor->setEditingWildMons();
     }
 }
 

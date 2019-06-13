@@ -56,6 +56,7 @@ public:
     void displayMapConnections();
     void displayMapBorder();
     void displayMapGrid();
+    void displayWildMonTables();
 
     void setEditingMap();
     void setEditingCollision();

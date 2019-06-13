@@ -151,6 +151,10 @@ void Editor::setEditingConnections() {
 }
 
 void Editor::setEditingWildMons() {
+    // nothing for now
+}
+
+void Editor::displayWildMonTables() {
     // clear the current layout
     //
     // move to loadMap? no because loadMap calls this anyways if it's open
@@ -161,39 +165,61 @@ void Editor::setEditingWildMons() {
 
     //QFrame *landMonFrame = ui->frame_LandMonInfo;
 
-    QLayout *landMonTab = ui->tab_LandMons->layout();
+    //QTabWidget *tabWidgetWildMons = ui->tabWidget_WildMons;
 
-    QTableWidget *landMonTable = new QTableWidget;//ui->tableWidget_RockSmashMonInfo;
+    //QLayout *landMonTab = ui->tabWidget_WildMons->widget(0)->layout();//new QGridLayout(ui->tabWidget_WildMons->findChild<QTabWidget *>("land_mons"));
+    //ui->tabWidget_WildMons->widget(0)->layout();
+    //findChild<QTabWidget *>("land_mons")->layout();
+    //tabWidgetWildMons->widget(0)->layout();
+    //ui->tab_LandMons->layout();
+
+    //if (!landMonTab) qDebug() << "landMonTab is nullptr!";
+
+    //return;
+
+    //QTableWidget *landMonTable = static_cast<QTableWidget *>(ui->tabWidget_WildMons->widget(0));//landMonTab->findChild<QTableWidget *>();//ui->tabWidget_WildMons->findChild<QTabWidget *>("land_mons");
+    //new QTableWidget;//ui->tableWidget_RockSmashMonInfo;
+
+    //return;
     
-    clearTabWidget(landMonTab);
+    //clearTabWidget(landMonTab);
+    //clearTable(landMonTable);
 
     //QGridLayout *gridLayout = new QGridLayout(landMonFrame);
-    landMonTab->addWidget(landMonTable);
+    //landMonTab->addWidget(landMonTable);
 
     //if (!landMonTable) 
 
     //for (auto mon : project->wildMonData.value(map->constantName))
     WildPokemonHeader header = project->wildMonData.value(map->constantName);
 
-    if (header.landMons.active) { // else, 
-        int i = 1;
+    //QString field = "land_mons";
 
-        landMonTable->setRowCount(header.landMons.wildPokemon.size());
-        landMonTable->setColumnCount(5);// + 1 for last column stretch
+    int tabIndex = 0;
+    for (QString field : project->wildMonFields) {
+        QTableWidget *speciesTable = static_cast<QTableWidget *>(ui->tabWidget_WildMons->widget(tabIndex));
+        clearTable(speciesTable);
+        if (header.wildMons[field].active) {//header.landMons.active) { // else, 
+            int i = 1;
 
-        QStringList landMonTableHeaders;
-        landMonTableHeaders << "Index" << "Species" << "Min Level" << "Max Level" << "Catch Percentage";
-        landMonTable->setHorizontalHeaderLabels(landMonTableHeaders);
-        landMonTable->verticalHeader()->hide();
-        landMonTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-        landMonTable->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+            speciesTable->setRowCount(header.wildMons[field].wildPokemon.size());
+            speciesTable->setColumnCount(5);// + 1 for last column stretch
 
-        landMonTable->setShowGrid(false);
+            QStringList landMonTableHeaders;
+            landMonTableHeaders << "Index" << "Species" << "Min Level" << "Max Level" << "Catch Percentage";
+            speciesTable->setHorizontalHeaderLabels(landMonTableHeaders);
+            speciesTable->verticalHeader()->hide();
+            speciesTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+            speciesTable->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
-        for (WildPokemon mon : header.landMons.wildPokemon) {
-            createSpeciesTableRow(project, landMonTable, mon, i);
-            i++;
+            speciesTable->setShowGrid(false);
+
+            for (WildPokemon mon : header.wildMons[field].wildPokemon) {
+                createSpeciesTableRow(project, speciesTable, mon, i);
+                i++;
+            }
         }
+        tabIndex++;
     }
 }
 
@@ -652,6 +678,7 @@ void Editor::displayMap() {
     displayMapConnections();
     displayMapBorder();
     displayMapGrid();
+    displayWildMonTables();
 
     this->playerViewRect->setZValue(1000);
     this->cursorMapTileRect->setZValue(1001);

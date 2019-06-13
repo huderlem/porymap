@@ -2710,14 +2710,8 @@
             <item row="0" column="0">
              <widget class="QTabWidget" name="tabWidget_WildMons">
               <property name="currentIndex">
-               <number>0</number>
+               <number>-1</number>
               </property>
-              <widget class="QWidget" name="tab_LandMons">
-               <attribute name="title">
-                <string>Land Mons</string>
-               </attribute>
-               <layout class="QGridLayout" name="gridLayout_15"/>
-              </widget>
              </widget>
             </item>
            </layout>

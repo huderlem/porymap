@@ -18,6 +18,11 @@ void clearTabWidget(QLayout *tab) {
     if (item) tab->removeItem(item);
 }
 
+void clearTable(QTableWidget *table) {
+    //
+    if (table) table->clear();
+}
+
 void createSpeciesTableRow(Project *project, QTableWidget *table, WildPokemon mon, int index) {
     //
     
@@ -70,57 +75,64 @@ void createSpeciesTableRow(Project *project, QTableWidget *table, WildPokemon mo
     table->setCellWidget(index - 1, 4, percentLabel);
 }
 
-
-//
-QWidget *newSpeciesTableEntry(Project *project, WildPokemon mon, int index) {
-
-    QMap<int, QString> landPercentages = QMap<int, QString>({
-        {1, "20"}, {2, "20"},
-        {3, "10"}, {4, "10"}, {5, "10"}, {6, "10"},
-        {7, "5"}, {8, "5"},
-        {9, "4"}, {10, "4"},
-        {11, "1"}, {12, "1"}
-    });
-
+// tabWidget_WildMons
+void populateWildMonTabWidget(QTabWidget *tabWidget, QVector<QString> fields) {
     //
-    QHBoxLayout *speciesHBox = new QHBoxLayout;
-    QTableWidgetItem *monItem = new QTableWidgetItem();
-            
-    QPixmap monIcon = QPixmap(project->speciesToIconPath.value(mon.species)).copy(0, 0, 32, 32);
-
-    QLabel *monNum = new QLabel(QString("%1.").arg(QString::number(index)));
-
-    QLabel *monLabel = new QLabel();
-    monLabel->setPixmap(monIcon);
-
-    QComboBox *monSelector = new QComboBox;
-    monSelector->addItems(project->speciesToIconPath.keys());
-    monSelector->setCurrentText(mon.species);
-    monSelector->setEditable(true);
-
-    QObject::connect(monSelector, &QComboBox::currentTextChanged, [=](QString newSpecies){
-        QPixmap monIcon = QPixmap(project->speciesToIconPath.value(newSpecies)).copy(0, 0, 32, 32);
-        monLabel->setPixmap(monIcon);
+    QPushButton *newTabButton = new QPushButton("New Field");
+    QObject::connect(newTabButton, &QPushButton::clicked, [=](){
+        qDebug() << "new field pressed";
     });
+    tabWidget->setCornerWidget(newTabButton);
 
-    QSpinBox *minLevel = new QSpinBox;
-    QSpinBox *maxLevel = new QSpinBox;
-    minLevel->setMinimum(1);
-    minLevel->setMaximum(100);
-    maxLevel->setMinimum(1);
-    maxLevel->setMaximum(100);
-    minLevel->setValue(mon.minLevel);
-    maxLevel->setValue(mon.maxLevel);
-
-    // percentage
-    QLabel *percentLabel = new QLabel(landPercentages[index]);
-
-    speciesHBox->addWidget(monNum);
-    speciesHBox->addWidget(monLabel);
-    speciesHBox->addWidget(monSelector);
-    speciesHBox->addWidget(minLevel);
-    speciesHBox->addWidget(maxLevel);
-    speciesHBox->addWidget(percentLabel);
-
-    return (QWidget *)speciesHBox;
+    // change this to for each entry in header
+    //if (true) {//header.landMons.active) {
+    for (QString field : fields) {
+        //
+        tabWidget->addTab(new QTableWidget(), field);
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

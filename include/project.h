@@ -89,6 +89,7 @@ public:
     // when saving, preserve the extra fields for gBattlePyramidWildMonHeaders, gBattlePikeWildMonHeaders
     void readSpeciesIconPaths();
     QMap<QString, QString> speciesToIconPath;
+    QVector<QString> wildMonFields;
 
     QMap<QString, bool> getTopLevelMapFields();
     bool loadMapData(Map*);
