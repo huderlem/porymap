@@ -155,59 +155,34 @@ void Editor::setEditingWildMons() {
 }
 
 void Editor::displayWildMonTables() {
-    // clear the current layout
-    //
-    // move to loadMap? no because loadMap calls this anyways if it's open
+    // clear tables
+    //int tabIndex = 0;
+    //for (; tabIndex < project->wildMonFields.size(); tabIndex++) {
+    //    QTableWidget *speciesTable = static_cast<QTableWidget *>(ui->tabWidget_WildMons->widget(tabIndex));
+    //    clearTable(speciesTable);
+    //}
 
     if (!project->wildMonData.contains(map->constantName)) return;
 
-    //return;// TODO: REMOVE!
-
-    //QFrame *landMonFrame = ui->frame_LandMonInfo;
-
-    //QTabWidget *tabWidgetWildMons = ui->tabWidget_WildMons;
-
-    //QLayout *landMonTab = ui->tabWidget_WildMons->widget(0)->layout();//new QGridLayout(ui->tabWidget_WildMons->findChild<QTabWidget *>("land_mons"));
-    //ui->tabWidget_WildMons->widget(0)->layout();
-    //findChild<QTabWidget *>("land_mons")->layout();
-    //tabWidgetWildMons->widget(0)->layout();
-    //ui->tab_LandMons->layout();
-
-    //if (!landMonTab) qDebug() << "landMonTab is nullptr!";
-
-    //return;
-
-    //QTableWidget *landMonTable = static_cast<QTableWidget *>(ui->tabWidget_WildMons->widget(0));//landMonTab->findChild<QTableWidget *>();//ui->tabWidget_WildMons->findChild<QTabWidget *>("land_mons");
-    //new QTableWidget;//ui->tableWidget_RockSmashMonInfo;
-
-    //return;
-    
-    //clearTabWidget(landMonTab);
-    //clearTable(landMonTable);
-
-    //QGridLayout *gridLayout = new QGridLayout(landMonFrame);
-    //landMonTab->addWidget(landMonTable);
-
-    //if (!landMonTable) 
-
-    //for (auto mon : project->wildMonData.value(map->constantName))
     WildPokemonHeader header = project->wildMonData.value(map->constantName);
-
-    //QString field = "land_mons";
 
     int tabIndex = 0;
     for (QString field : project->wildMonFields) {
-        QTableWidget *speciesTable = static_cast<QTableWidget *>(ui->tabWidget_WildMons->widget(tabIndex));
+        QTableWidget *speciesTable = static_cast<QTableWidget *>(ui->tabWidget_WildMons->widget(tabIndex++));
         clearTable(speciesTable);
-        if (header.wildMons[field].active) {//header.landMons.active) { // else, 
+        //speciesTable->setFocusPolicy(Qt::NoFocus);
+        if (!project->wildMonData.contains(map->constantName)) continue;
+
+        if (header.wildMons[field].active) {//else, 
             int i = 1;
 
             speciesTable->setRowCount(header.wildMons[field].wildPokemon.size());
-            speciesTable->setColumnCount(5);// + 1 for last column stretch
+            speciesTable->setColumnCount(5);// + 1 for last column stretch?
 
             QStringList landMonTableHeaders;
             landMonTableHeaders << "Index" << "Species" << "Min Level" << "Max Level" << "Catch Percentage";
             speciesTable->setHorizontalHeaderLabels(landMonTableHeaders);
+            speciesTable->horizontalHeader()->show();
             speciesTable->verticalHeader()->hide();
             speciesTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
             speciesTable->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
@@ -218,8 +193,10 @@ void Editor::displayWildMonTables() {
                 createSpeciesTableRow(project, speciesTable, mon, i);
                 i++;
             }
+        } else {
+            speciesTable->horizontalHeader()->hide();
+            // create button to add this field to this map
         }
-        tabIndex++;
     }
 }
 
