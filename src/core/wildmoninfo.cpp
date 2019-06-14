@@ -21,7 +21,10 @@ void clearTabWidget(QLayout *tab) {
 
 void clearTable(QTableWidget *table) {
     //
-    if (table) table->clear();
+    if (table) {
+        table->clear();
+        table->horizontalHeader()->hide();
+    }
 }
 
 void createSpeciesTableRow(Project *project, QTableWidget *table, WildPokemon mon, int index) {
@@ -94,6 +97,7 @@ void populateWildMonTabWidget(QTabWidget *tabWidget, QVector<QString> fields) {
         table->setEditTriggers(QAbstractItemView::NoEditTriggers);
         table->setFocusPolicy(Qt::NoFocus);
         table->setSelectionMode(QAbstractItemView::NoSelection);
+        table->clearFocus();
         tabWidget->addTab(table, field);
     }
 }

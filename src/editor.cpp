@@ -155,32 +155,22 @@ void Editor::setEditingWildMons() {
 }
 
 void Editor::displayWildMonTables() {
-    // clear tables
-    //int tabIndex = 0;
-    //for (; tabIndex < project->wildMonFields.size(); tabIndex++) {
-    //    QTableWidget *speciesTable = static_cast<QTableWidget *>(ui->tabWidget_WildMons->widget(tabIndex));
-    //    clearTable(speciesTable);
-    //}
-
-    if (!project->wildMonData.contains(map->constantName)) return;
-
     WildPokemonHeader header = project->wildMonData.value(map->constantName);
 
     int tabIndex = 0;
     for (QString field : project->wildMonFields) {
         QTableWidget *speciesTable = static_cast<QTableWidget *>(ui->tabWidget_WildMons->widget(tabIndex++));
         clearTable(speciesTable);
-        //speciesTable->setFocusPolicy(Qt::NoFocus);
-        if (!project->wildMonData.contains(map->constantName)) continue;
+        //speciesTable->horizontalHeader()->hide();
 
-        if (header.wildMons[field].active) {//else, 
+        if (project->wildMonData.contains(map->constantName) && header.wildMons[field].active) {
             int i = 1;
 
             speciesTable->setRowCount(header.wildMons[field].wildPokemon.size());
-            speciesTable->setColumnCount(5);// + 1 for last column stretch?
+            speciesTable->setColumnCount(6);// TODO: stretch last column?
 
             QStringList landMonTableHeaders;
-            landMonTableHeaders << "Index" << "Species" << "Min Level" << "Max Level" << "Catch Percentage";
+            landMonTableHeaders << "Index" << "Species" << "Min Level" << "Max Level" << "Catch Percentage" << "Encounter Rate";
             speciesTable->setHorizontalHeaderLabels(landMonTableHeaders);
             speciesTable->horizontalHeader()->show();
             speciesTable->verticalHeader()->hide();
@@ -189,12 +179,33 @@ void Editor::displayWildMonTables() {
 
             speciesTable->setShowGrid(false);
 
+            // set encounter rate slider
+            // don't forget to add number label next to it
+            QFrame *encounterFrame = new QFrame;
+            QHBoxLayout *encounterLayout = new QHBoxLayout;
+
+            QSlider *encounterRate = new QSlider(Qt::Horizontal);
+            encounterRate->setMinimum(1);
+            encounterRate->setMaximum(100);
+
+            QLabel *encounterLabel = new QLabel;
+            connect(encounterRate, &QSlider::valueChanged, [=](int value){
+                encounterLabel->setText(QString::number(value));
+            });
+            encounterRate->setValue(header.wildMons[field].encounterRate);
+
+            encounterLayout->addWidget(encounterLabel);
+            encounterLayout->addWidget(encounterRate);
+
+            encounterFrame->setLayout(encounterLayout);
+
+            speciesTable->setCellWidget(0, 5, encounterFrame);
+
             for (WildPokemon mon : header.wildMons[field].wildPokemon) {
                 createSpeciesTableRow(project, speciesTable, mon, i);
                 i++;
             }
         } else {
-            speciesTable->horizontalHeader()->hide();
             // create button to add this field to this map
         }
     }
