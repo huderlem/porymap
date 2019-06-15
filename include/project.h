@@ -10,6 +10,8 @@
 
 #include <QStringList>
 #include <QList>
+#include <QVector>
+#include <QPair>
 #include <QStandardItem>
 
 static QString NONE_MAP_CONSTANT = "MAP_NONE";
@@ -86,10 +88,14 @@ public:
 
     void readWildMonData();
     QMap<QString, WildPokemonHeader> wildMonData;// "MAP_CONSTANT": wild_encounter_json
+    QMap<QString, QString> encounterMapToBaseLabel;
     // when saving, preserve the extra fields for gBattlePyramidWildMonHeaders, gBattlePikeWildMonHeaders
     void readSpeciesIconPaths();
     QMap<QString, QString> speciesToIconPath;
-    QVector<QString> wildMonFields;
+    //QVector<QString> wildMonFields;
+    QVector<QPair<QString, QVector<int>>> wildMonFields;
+    // temporary?
+    QMap<QString, QJsonObject> extraEncounterGroups;
 
     QMap<QString, bool> getTopLevelMapFields();
     bool loadMapData(Map*);
@@ -109,6 +115,7 @@ public:
     void saveAllDataStructures();
     void saveMapLayouts();
     void saveMapGroups();
+    void saveWildMonData();
     void saveMapConstantsHeader();
     void saveHealLocationStruct(Map*);
     void saveTilesets(Tileset*, Tileset*);

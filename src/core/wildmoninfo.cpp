@@ -20,14 +20,13 @@ void clearTabWidget(QLayout *tab) {
 }
 
 void clearTable(QTableWidget *table) {
-    //
     if (table) {
         table->clear();
         table->horizontalHeader()->hide();
     }
 }
 
-void createSpeciesTableRow(Project *project, QTableWidget *table, WildPokemon mon, int index) {
+void createSpeciesTableRow(Project *project, QTableWidget *table, WildPokemon mon, int index, QString fieldName) {
     //
     QPixmap monIcon = QPixmap(project->speciesToIconPath.value(mon.species)).copy(0, 0, 32, 32);
 
@@ -57,8 +56,14 @@ void createSpeciesTableRow(Project *project, QTableWidget *table, WildPokemon mo
     minLevel->setValue(mon.minLevel);
     maxLevel->setValue(mon.maxLevel);
 
-    // percentage -- add to json settings
-    QLabel *percentLabel = new QLabel(landPercentages[index]);
+    int fieldIndex = 0;
+    for (auto field : project->wildMonFields) {
+        if (field.first == fieldName) break;
+        fieldIndex++;
+    }
+    QLabel *percentLabel = new QLabel(QString("%1%").arg(
+        QString::number(project->wildMonFields[fieldIndex].second[index - 1]
+    )));
 
     QFrame *speciesSelector = new QFrame;
     QHBoxLayout *speciesSelectorLayout = new QHBoxLayout;
@@ -84,7 +89,7 @@ void createSpeciesTableRow(Project *project, QTableWidget *table, WildPokemon mo
     table->setCellWidget(index - 1, 4, percentLabel);
 }
 
-void populateWildMonTabWidget(QTabWidget *tabWidget, QVector<QString> fields) {
+void populateWildMonTabWidget(QTabWidget *tabWidget, QVector<QPair<QString, QVector<int>>> fields) {
     QPushButton *newTabButton = new QPushButton("Configure JSON...");
     QObject::connect(newTabButton, &QPushButton::clicked, [=](){
         // TODO
@@ -92,12 +97,12 @@ void populateWildMonTabWidget(QTabWidget *tabWidget, QVector<QString> fields) {
     });
     tabWidget->setCornerWidget(newTabButton);
 
-    for (QString field : fields) {
+    for (QPair<QString, QVector<int>> field : fields) {
         QTableWidget *table = new QTableWidget;
         table->setEditTriggers(QAbstractItemView::NoEditTriggers);
         table->setFocusPolicy(Qt::NoFocus);
         table->setSelectionMode(QAbstractItemView::NoSelection);
         table->clearFocus();
-        tabWidget->addTab(table, field);
+        tabWidget->addTab(table, field.first);
     }
 }

@@ -158,7 +158,8 @@ void Editor::displayWildMonTables() {
     WildPokemonHeader header = project->wildMonData.value(map->constantName);
 
     int tabIndex = 0;
-    for (QString field : project->wildMonFields) {
+    for (QPair<QString, QVector<int>> monField : project->wildMonFields) {
+        QString field = monField.first;
         QTableWidget *speciesTable = static_cast<QTableWidget *>(ui->tabWidget_WildMons->widget(tabIndex++));
         clearTable(speciesTable);
         //speciesTable->horizontalHeader()->hide();
@@ -170,7 +171,7 @@ void Editor::displayWildMonTables() {
             speciesTable->setColumnCount(6);// TODO: stretch last column?
 
             QStringList landMonTableHeaders;
-            landMonTableHeaders << "Index" << "Species" << "Min Level" << "Max Level" << "Catch Percentage" << "Encounter Rate";
+            landMonTableHeaders << "Index" << "Species" << "Min Level" << "Max Level" << "Index Percentage" << "Encounter Rate";
             speciesTable->setHorizontalHeaderLabels(landMonTableHeaders);
             speciesTable->horizontalHeader()->show();
             speciesTable->verticalHeader()->hide();
@@ -202,7 +203,7 @@ void Editor::displayWildMonTables() {
             speciesTable->setCellWidget(0, 5, encounterFrame);
 
             for (WildPokemon mon : header.wildMons[field].wildPokemon) {
-                createSpeciesTableRow(project, speciesTable, mon, i);
+                createSpeciesTableRow(project, speciesTable, mon, i, field);
                 i++;
             }
         } else {

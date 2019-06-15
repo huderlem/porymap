@@ -520,6 +520,48 @@ void Project::saveMapGroups() {
     mapGroupsFile.write(mapGroupsDoc.toJson());
 }
 
+void Project::saveWildMonData() {
+    //
+    //QString wildEncountersJsonFilepath = QString("%1/src/data/wild_encounters.json").arg(root);
+    QString wildEncountersJsonFilepath = QString("%1/src/data/wild_encounters_test.json").arg(root);
+    QFile wildEncountersFile(wildEncountersJsonFilepath);
+    if (!wildEncountersFile.open(QIODevice::WriteOnly)) {
+        logError(QString("Error: Could not open %1 for writing").arg(wildEncountersJsonFilepath));
+        return;
+    }
+
+    QJsonObject wildEncountersObject;
+    QJsonArray wildEncounterGroups = QJsonArray();
+
+    // gWildMonHeaders
+    QJsonObject monHeadersObject;
+    monHeadersObject["label"] = "gWildMonHeaders";
+    monHeadersObject["for_maps"] = true;
+    QJsonArray encountersArray = QJsonArray();
+    for (QString key : wildMonData.keys()) {
+        QJsonObject encounterObject;
+        encounterObject["map"] = key;
+        encounterObject["base_label"] = encounterMapToBaseLabel[key];
+        //
+        //text += key + "\n";
+        // ["base_label"] = encounterMapToBaseLabel[mapConstant]
+        encountersArray.append(encounterObject);
+    }
+    monHeadersObject["encounters"] = encountersArray;
+    wildEncounterGroups.append(monHeadersObject);
+
+    // add extra Json objects that are not associated with maps to the file
+    for (QString label : extraEncounterGroups.keys()) {
+        qDebug() << "extra label:" << label;
+        wildEncounterGroups.append(extraEncounterGroups[label]);
+    }
+
+    wildEncountersObject["wild_encounter_groups"] = wildEncounterGroups;
+    QJsonDocument wildEncountersDoc(wildEncountersObject);
+    wildEncountersFile.write(wildEncountersDoc.toJson());
+    wildEncountersFile.close();
+}
+
 void Project::saveMapConstantsHeader() {
     QString text = QString("#ifndef GUARD_CONSTANTS_MAP_GROUPS_H\n");
     text += QString("#define GUARD_CONSTANTS_MAP_GROUPS_H\n");
@@ -1066,6 +1108,7 @@ void Project::saveAllDataStructures() {
     saveMapLayouts();
     saveMapGroups();
     saveMapConstantsHeader();
+    saveWildMonData();
 }
 
 void Project::loadTilesetAssets(Tileset* tileset) {
@@ -1306,7 +1349,6 @@ void Project::deleteFile(QString path) {
 }
 
 void Project::readWildMonData() {
-    qDebug() << "Project::readWildMonData";// speed testing
     //
     QString wildMonJsonFilepath = QString("%1/src/data/wild_encounters.json").arg(root);
     QJsonDocument wildMonsJsonDoc;
@@ -1319,24 +1361,30 @@ void Project::readWildMonData() {
 
     for (auto subObjectRef : wildMonObj["wild_encounter_groups"].toArray()) {
         QJsonObject subObject = subObjectRef.toObject();
-        if (!subObject["for_maps"].toBool()) continue;
+        if (!subObject["for_maps"].toBool()) {
+            extraEncounterGroups.insert(subObject["label"].toString(), subObject);
+            continue;
+        }
 
-        // fill wildMonFields
         for (auto field : subObject["fields"].toArray()) {
-            wildMonFields.append(field.toString());
+            QPair<QString, QVector<int>> encounterField;
+            encounterField.first = field.toObject()["type"].toString();
+            for (auto val : field.toObject()["encounter_rates"].toArray())
+                encounterField.second.append(val.toInt());
+            wildMonFields.append(encounterField);
         }
 
         QJsonArray encounters = subObject["encounters"].toArray();
         for (QJsonValue encounter : encounters) {
-            //
-            //qDebug() << encounter["map"].toString();
             QString mapConstant = encounter["map"].toString();
-            //QString mapName = mapConstantsToMapNames->value(mapConstant);
+
+            encounterMapToBaseLabel.insert(mapConstant, encounter["base_label"].toString());
 
             WildPokemonHeader header;
 
-            for (QString field : wildMonFields) {
+            for (QPair<QString, QVector<int>> monField : wildMonFields) {
                 //
+                QString field = monField.first;
                 if (encounter[field] != QJsonValue::Undefined) {
                     header.wildMons[field].active = true;
                     header.wildMons[field].encounterRate = encounter[field]["encounter_rate"].toInt();

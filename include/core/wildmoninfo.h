@@ -29,9 +29,9 @@ struct WildPokemonHeader {
 
 class Project;
 QWidget *newSpeciesTableEntry(Project *project, WildPokemon mon, int index);
-void createSpeciesTableRow(Project *, QTableWidget *, WildPokemon, int);
+void createSpeciesTableRow(Project *, QTableWidget *, WildPokemon, int, QString);
 void clearTabWidget(QLayout *tab);
 void clearTable(QTableWidget *table);
-void populateWildMonTabWidget(QTabWidget *tabWidget, QVector<QString> fields);
+void populateWildMonTabWidget(QTabWidget *tabWidget, QVector<QPair<QString, QVector<int>>> fields);
 
 #endif // GUARD_WILDMONINFO_H
