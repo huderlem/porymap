@@ -80,8 +80,7 @@ QImage getTileImage(uint16_t tile, Tileset *primaryTileset, Tileset *secondaryTi
     return tileset->tiles->value(local_index, QImage());
 }
 
-QImage getColoredTileImage(uint16_t tile, Tileset *primaryTileset, Tileset *secondaryTileset, int paletteId) {
-    QList<QRgb> palette = Tileset::getPalette(paletteId, primaryTileset, secondaryTileset);
+QImage getColoredTileImage(uint16_t tile, Tileset *primaryTileset, Tileset *secondaryTileset, QList<QRgb> palette) {
     QImage tileImage = getTileImage(tile, primaryTileset, secondaryTileset);
     if (tileImage.isNull()) {
         tileImage = QImage(16, 16, QImage::Format_RGBA8888);
@@ -94,4 +93,13 @@ QImage getColoredTileImage(uint16_t tile, Tileset *primaryTileset, Tileset *seco
     }
 
     return tileImage;
+}
+
+QImage getPalettedTileImage(uint16_t tile, Tileset *primaryTileset, Tileset *secondaryTileset, int paletteId) {
+    QList<QRgb> palette = Tileset::getPalette(paletteId, primaryTileset, secondaryTileset);
+    return getColoredTileImage(tile, primaryTileset, secondaryTileset, palette);
+}
+
+QImage getGreyscaleTileImage(uint16_t tile, Tileset *primaryTileset, Tileset *secondaryTileset) {
+    return getColoredTileImage(tile, primaryTileset, secondaryTileset, greyscalePalette);
 }
