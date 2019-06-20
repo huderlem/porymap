@@ -87,15 +87,19 @@ void createSpeciesTableRow(Project *project, QTableWidget *table, WildPokemon mo
     table->setCellWidget(index - 1, 2, minLevelFrame);
     table->setCellWidget(index - 1, 3, maxLevelFrame);
     table->setCellWidget(index - 1, 4, percentLabel);
+
+    // TODO: lock max spinbox to min spinbox
 }
 
 void populateWildMonTabWidget(QTabWidget *tabWidget, QVector<QPair<QString, QVector<int>>> fields) {
-    QPushButton *newTabButton = new QPushButton("Configure JSON...");
-    QObject::connect(newTabButton, &QPushButton::clicked, [=](){
-        // TODO
-        qDebug() << "configure json pressed";
-    });
-    tabWidget->setCornerWidget(newTabButton);
+    //QPushButton *newTabButton = new QPushButton("Configure JSON...");
+    //QObject::connect(newTabButton, &QPushButton::clicked, [=](){
+    //    // TODO
+    //    qDebug() << "configure json pressed";
+    //});
+    //tabWidget->setCornerWidget(newTabButton);
+
+    // delete everything in the tab widget here? no
 
     for (QPair<QString, QVector<int>> field : fields) {
         QTableWidget *table = new QTableWidget;

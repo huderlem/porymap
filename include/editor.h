@@ -43,6 +43,8 @@ public:
     void redo();
     void closeProject();
     bool setMap(QString map_name);
+    void saveUiFields();
+    void saveEncounterTabData();
     void displayMap();
     void displayMetatileSelector();
     void displayMapMetatiles();
@@ -71,6 +73,7 @@ public:
     void setConnectionMap(QString mapName);
     void addNewConnection();
     void removeCurrentConnection();
+    void addNewWildMonGroup();
     void updateDiveMap(QString mapName);
     void updateEmergeMap(QString mapName);
     void setSelectedConnectionFromMap(QString mapName);
@@ -78,6 +81,7 @@ public:
     void updateSecondaryTileset(QString tilesetLabel, bool forceLoad = false);
     void toggleBorderVisibility(bool visible);
     void updateCustomMapHeaderValues(QTableWidget *);
+    void configureEncounterJSON();
     Tileset *getCurrentMapPrimaryTileset();
 
     DraggablePixmapItem *addMapEvent(Event *event);

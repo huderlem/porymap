@@ -522,8 +522,8 @@ void Project::saveMapGroups() {
 
 void Project::saveWildMonData() {
     //
-    //QString wildEncountersJsonFilepath = QString("%1/src/data/wild_encounters.json").arg(root);
-    QString wildEncountersJsonFilepath = QString("%1/src/data/wild_encounters_test.json").arg(root);
+    QString wildEncountersJsonFilepath = QString("%1/src/data/wild_encounters.json").arg(root);
+    //QString wildEncountersJsonFilepath = QString("%1/src/data/wild_encounters_test.json").arg(root);
     QFile wildEncountersFile(wildEncountersJsonFilepath);
     if (!wildEncountersFile.open(QIODevice::WriteOnly)) {
         logError(QString("Error: Could not open %1 for writing").arg(wildEncountersJsonFilepath));
@@ -537,15 +537,60 @@ void Project::saveWildMonData() {
     QJsonObject monHeadersObject;
     monHeadersObject["label"] = "gWildMonHeaders";
     monHeadersObject["for_maps"] = true;
+
+    QJsonArray fieldsInfoArray;
+    for (QPair<QString, QVector<int>> fieldInfo : wildMonFields) {
+        QJsonObject fieldObject;
+        QJsonArray rateArray;
+
+        for (int rate : fieldInfo.second)
+            rateArray.append(rate);
+
+        fieldObject["type"] = fieldInfo.first;
+        fieldObject["encounter_rates"] = rateArray;
+
+        fieldsInfoArray.append(fieldObject);
+    }
+    monHeadersObject["fields"] = fieldsInfoArray;
+
     QJsonArray encountersArray = QJsonArray();
     for (QString key : wildMonData.keys()) {
-        QJsonObject encounterObject;
-        encounterObject["map"] = key;
-        encounterObject["base_label"] = encounterMapToBaseLabel[key];
-        //
-        //text += key + "\n";
-        // ["base_label"] = encounterMapToBaseLabel[mapConstant]
-        encountersArray.append(encounterObject);
+        for (QString groupLabel : wildMonData.value(key).keys()) {
+            QJsonObject encounterObject;
+            encounterObject["map"] = key;
+            encounterObject["base_label"] = groupLabel;//encounterMapToBaseLabel[key];
+            //
+
+            WildPokemonHeader encounterHeader = wildMonData.value(key).value(groupLabel);
+            for (QString fieldName : encounterHeader.wildMons.keys()) {
+                //
+                QJsonObject fieldObject;
+                WildMonInfo monInfo = encounterHeader.wildMons.value(fieldName);
+                fieldObject["encounter_rate"] = monInfo.encounterRate;
+                QJsonArray monArray;
+                for (WildPokemon wildMon : monInfo.wildPokemon) {
+                    //
+                    QJsonObject monEntry;
+                    monEntry["min_level"] = wildMon.minLevel;
+                    monEntry["max_level"] = wildMon.maxLevel;
+                    monEntry["species"] = wildMon.species;
+                    monArray.append(monEntry);
+                }
+                fieldObject["mons"] = monArray;//fieldObject;
+                encounterObject[fieldName] = fieldObject;
+            }
+            //encounterObject[];
+            // QMap<QString, WildMonInfo> wildMons;
+
+            //QJsonArray
+            //for (auto fieldItem : wildMonFields) {
+            //    QString fieldLabel = fieldItem.first;
+            //    encounterObject[fieldLabel] = ;
+            //}
+
+            encountersArray.append(encounterObject);
+        }
+        // TODO: save fields json data
     }
     monHeadersObject["encounters"] = encountersArray;
     wildEncounterGroups.append(monHeadersObject);
@@ -1397,7 +1442,10 @@ void Project::readWildMonData() {
                     }
                 }
             }
-            wildMonData.insert(mapConstant, header);
+            //if (!wildMonData.contains(mapConstant))
+            //    wildMonData.insert(mapConstant, header);
+            //else
+            wildMonData[mapConstant].insert(encounter["base_label"].toString(), header);
         }
     }
 
