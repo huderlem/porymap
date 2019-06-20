@@ -303,6 +303,10 @@ void Editor::saveEncounterTabData() {
         //}
         int fieldIndex = 0;
         for (QPair<QString, QVector<int>> monField : project->wildMonFields) {
+            QString fieldName = monField.first;
+            if (!encounterHeader.wildMons.contains(fieldName)
+             || encounterHeader.wildMons[fieldName].wildPokemon.empty()
+             || !encounterHeader.wildMons[fieldName].active) continue;
             // project->wildMonData
             //qDebug() << monField.first << "mons";
             QTableWidget *monTable = static_cast<QTableWidget *>(tabWidget->widget(fieldIndex++));
@@ -318,8 +322,9 @@ void Editor::saveEncounterTabData() {
                 newWildMon.maxLevel = monTable->cellWidget(row, 3)->findChild<QSpinBox *>()->value();//static_cast<QSpinBox *>(monTable->cellWidget(row, 3))->value();
                 newWildMons.append(newWildMon);//(speciesCombo->currentText());
             }
-            encounterHeader.wildMons[monField.first].wildPokemon = newWildMons;
-            encounterHeader.wildMons[monField.first].encounterRate = monTable->findChild<QSlider *>()->value();
+            // Brackets because need a reference to this object. A safety check is done at the top.
+            encounterHeader.wildMons[fieldName].wildPokemon = newWildMons;
+            encounterHeader.wildMons[fieldName].encounterRate = monTable->findChild<QSlider *>()->value();
             //fieldIndex++;
         }
     }
