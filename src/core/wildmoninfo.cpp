@@ -1,6 +1,7 @@
 //
 
 #include "wildmoninfo.h"
+#include "montabwidget.h"
 #include "project.h"
 
 
@@ -19,94 +20,15 @@ void clearTabWidget(QLayout *tab) {
     if (item) tab->removeItem(item);
 }
 
-void clearTable(QTableWidget *table) {
-    if (table) {
-        table->clear();
-        table->horizontalHeader()->hide();
-    }
+WildMonInfo getDefaultMonInfo(Field field) {
+    WildMonInfo newInfo;
+    newInfo.active = true;
+    newInfo.encounterRate = 0;
+
+    for (int row : field.second)
+        newInfo.wildPokemon.append({5, 5, "SPECIES_NONE"});
+
+    return newInfo;
 }
 
-void createSpeciesTableRow(Project *project, QTableWidget *table, WildPokemon mon, int index, QString fieldName) {
-    //
-    QPixmap monIcon = QPixmap(project->speciesToIconPath.value(mon.species)).copy(0, 0, 32, 32);
 
-    QLabel *monNum = new QLabel(QString("%1.").arg(QString::number(index)));
-
-    QLabel *monLabel = new QLabel();
-    monLabel->setPixmap(monIcon);
-
-    QComboBox *monSelector = new QComboBox;
-    monSelector->setMinimumContentsLength(20);
-    monSelector->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLength);
-    monSelector->addItems(project->speciesToIconPath.keys());
-    monSelector->setCurrentText(mon.species);
-    monSelector->setEditable(true);
-
-    QObject::connect(monSelector, &QComboBox::currentTextChanged, [=](QString newSpecies){
-        QPixmap monIcon = QPixmap(project->speciesToIconPath.value(newSpecies)).copy(0, 0, 32, 32);
-        monLabel->setPixmap(monIcon);
-    });
-
-    QSpinBox *minLevel = new QSpinBox;
-    QSpinBox *maxLevel = new QSpinBox;
-    minLevel->setMinimum(1);
-    minLevel->setMaximum(100);
-    maxLevel->setMinimum(1);
-    maxLevel->setMaximum(100);
-    minLevel->setValue(mon.minLevel);
-    maxLevel->setValue(mon.maxLevel);
-
-    int fieldIndex = 0;
-    for (auto field : project->wildMonFields) {
-        if (field.first == fieldName) break;
-        fieldIndex++;
-    }
-    QLabel *percentLabel = new QLabel(QString("%1%").arg(
-        QString::number(project->wildMonFields[fieldIndex].second[index - 1]
-    )));
-
-    QFrame *speciesSelector = new QFrame;
-    QHBoxLayout *speciesSelectorLayout = new QHBoxLayout;
-    speciesSelectorLayout->addWidget(monLabel);
-    speciesSelectorLayout->addWidget(monSelector);
-    speciesSelector->setLayout(speciesSelectorLayout);
-
-    // prevent the spinboxes from being stupidly tall
-    QFrame *minLevelFrame = new QFrame;
-    QVBoxLayout *minLevelSpinboxLayout = new QVBoxLayout;
-    minLevelSpinboxLayout->addWidget(minLevel);
-    minLevelFrame->setLayout(minLevelSpinboxLayout);
-    QFrame *maxLevelFrame = new QFrame;
-    QVBoxLayout *maxLevelSpinboxLayout = new QVBoxLayout;
-    maxLevelSpinboxLayout->addWidget(maxLevel);
-    maxLevelFrame->setLayout(maxLevelSpinboxLayout);
-
-    // add widgets to the table
-    table->setCellWidget(index - 1, 0, monNum);
-    table->setCellWidget(index - 1, 1, speciesSelector);
-    table->setCellWidget(index - 1, 2, minLevelFrame);
-    table->setCellWidget(index - 1, 3, maxLevelFrame);
-    table->setCellWidget(index - 1, 4, percentLabel);
-
-    // TODO: lock max spinbox to min spinbox
-}
-
-void populateWildMonTabWidget(QTabWidget *tabWidget, QVector<QPair<QString, QVector<int>>> fields) {
-    //QPushButton *newTabButton = new QPushButton("Configure JSON...");
-    //QObject::connect(newTabButton, &QPushButton::clicked, [=](){
-    //    // TODO
-    //    qDebug() << "configure json pressed";
-    //});
-    //tabWidget->setCornerWidget(newTabButton);
-
-    // delete everything in the tab widget here? no
-
-    for (QPair<QString, QVector<int>> field : fields) {
-        QTableWidget *table = new QTableWidget;
-        table->setEditTriggers(QAbstractItemView::NoEditTriggers);
-        table->setFocusPolicy(Qt::NoFocus);
-        table->setSelectionMode(QAbstractItemView::NoSelection);
-        table->clearFocus();
-        tabWidget->addTab(table, field.first);
-    }
-}

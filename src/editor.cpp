@@ -5,6 +5,7 @@
 #include "mapconnection.h"
 #include "currentselectedmetatilespixmapitem.h"
 #include "mapsceneeventfilter.h"
+#include "montabwidget.h"
 #include <QCheckBox>
 #include <QPainter>
 #include <QMouseEvent>
@@ -196,71 +197,43 @@ void Editor::displayWildMonTables() {
 
         WildPokemonHeader header = project->wildMonData.value(map->constantName).value(label);
 
-        //QTableWidget *speciesTable = new QTableWidget;
-        //clearTable(speciesTable);
-        QTabWidget *tabWidget = new QTabWidget;
+        //QTabWidget *tabWidget = new QTabWidget;
+        MonTabWidget *tabWidget = new MonTabWidget(project);
         stack->insertWidget(labelIndex, tabWidget);
-        populateWildMonTabWidget(tabWidget, project->wildMonFields);
+        //populateWildMonTabWidget(tabWidget, project->wildMonFields);
         //stack->setCurrentWidget(tabWidget);
+
+        //QVector<int> unusedIndices;
 
         int tabIndex = 0;
         for (QPair<QString, QVector<int>> monField : project->wildMonFields) {
-            QString field = monField.first;
+            QString fieldName = monField.first;
 
             // tabWidget_WildMons
-            QTableWidget *speciesTable = static_cast<QTableWidget *>(tabWidget->widget(tabIndex++));//static_cast<QTableWidget *>(ui->tabWidget_WildMons->widget(tabIndex++));
-            clearTable(speciesTable);
+            //QTableWidget *speciesTable = tabWidget->tableAt(tabIndex);
+            //clearTable(speciesTable);
+            tabWidget->clearTableAt(tabIndex);
             //speciesTable->horizontalHeader()->hide();
 
-            if (project->wildMonData.contains(map->constantName) && header.wildMons[field].active) {
-                int i = 1;
-
-                //ui->stackedWidget_WildMons->insertWidget(0, speciesTable);
-                //return;
-
-                speciesTable->setRowCount(header.wildMons[field].wildPokemon.size());
-                speciesTable->setColumnCount(6);// TODO: stretch last column?
-
-                QStringList landMonTableHeaders;
-                landMonTableHeaders << "Index" << "Species" << "Min Level" << "Max Level" << "Index Percentage" << "Encounter Rate";
-                speciesTable->setHorizontalHeaderLabels(landMonTableHeaders);
-                speciesTable->horizontalHeader()->show();
-                speciesTable->verticalHeader()->hide();
-                speciesTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-                speciesTable->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-
-                speciesTable->setShowGrid(false);
-
-                // set encounter rate slider
-                // don't forget to add number label next to it
-                QFrame *encounterFrame = new QFrame;
-                QHBoxLayout *encounterLayout = new QHBoxLayout;
-
-                QSlider *encounterRate = new QSlider(Qt::Horizontal);
-                encounterRate->setMinimum(1);
-                encounterRate->setMaximum(100);
-
-                QLabel *encounterLabel = new QLabel;
-                connect(encounterRate, &QSlider::valueChanged, [=](int value){
-                    encounterLabel->setText(QString::number(value));
-                });
-                encounterRate->setValue(header.wildMons[field].encounterRate);
-
-                encounterLayout->addWidget(encounterLabel);
-                encounterLayout->addWidget(encounterRate);
-
-                encounterFrame->setLayout(encounterLayout);
-
-                speciesTable->setCellWidget(0, 5, encounterFrame);
-
-                for (WildPokemon mon : header.wildMons[field].wildPokemon) {
-                    createSpeciesTableRow(project, speciesTable, mon, i, field);
-                    i++;
-                }
+            if (project->wildMonData.contains(map->constantName) && header.wildMons[fieldName].active) {
+                tabWidget->populateTab(tabIndex, header.wildMons[fieldName], fieldName);
             } else {
-                // create button to add this field to this map
+                //unusedIndices.append
+                tabWidget->setTabActive(tabIndex, false);
+                //tabWidget
             }
+            tabIndex++;
         }
+        //connect(tabWidget, &QTabWidget::tabBarDoubleClicked, [=](int clickedTab) {
+        //    if (!unusedIndices.contains(clickedTab)) return;
+
+            // project->wildMonData.value(map->constantName).value(label).active = true
+            // header.wildMons[field].wildPokemon = QVector<WildPokemon>...
+
+        //    qDebug() << "double clicked tab" << clickedTab;
+
+            //displayWildMonTables();
+        //});
     }
     stack->setCurrentIndex(0);
 }
@@ -291,7 +264,7 @@ void Editor::saveEncounterTabData() {
 
     for (int groupIndex = 0; groupIndex < encounterMap.keys().size(); groupIndex++) {
         //
-        QTabWidget *tabWidget = static_cast<QTabWidget *>(stack->widget(groupIndex));
+        MonTabWidget *tabWidget = static_cast<MonTabWidget *>(stack->widget(groupIndex));
 
         // TODO: verify this exists before so no segfault
         WildPokemonHeader &encounterHeader = encounterMap[labelCombo->itemText(groupIndex)];
@@ -304,12 +277,13 @@ void Editor::saveEncounterTabData() {
         int fieldIndex = 0;
         for (QPair<QString, QVector<int>> monField : project->wildMonFields) {
             QString fieldName = monField.first;
-            if (!encounterHeader.wildMons.contains(fieldName)
-             || encounterHeader.wildMons[fieldName].wildPokemon.empty()
-             || !encounterHeader.wildMons[fieldName].active) continue;
+            //if (!encounterHeader.wildMons.contains(fieldName)
+            // || encounterHeader.wildMons[fieldName].wildPokemon.empty()
+            // || !encounterHeader.wildMons[fieldName].active) continue;
+            if (!tabWidget->isTabEnabled(fieldIndex++)) continue;
             // project->wildMonData
             //qDebug() << monField.first << "mons";
-            QTableWidget *monTable = static_cast<QTableWidget *>(tabWidget->widget(fieldIndex++));
+            QTableWidget *monTable = static_cast<QTableWidget *>(tabWidget->widget(fieldIndex - 1));
 
             QVector<WildPokemon> newWildMons;
 
@@ -323,6 +297,7 @@ void Editor::saveEncounterTabData() {
                 newWildMons.append(newWildMon);//(speciesCombo->currentText());
             }
             // Brackets because need a reference to this object. A safety check is done at the top.
+            encounterHeader.wildMons[fieldName].active = true;
             encounterHeader.wildMons[fieldName].wildPokemon = newWildMons;
             encounterHeader.wildMons[fieldName].encounterRate = monTable->findChild<QSlider *>()->value();
             //fieldIndex++;

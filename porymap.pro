@@ -54,6 +54,7 @@ SOURCES += src/core/block.cpp \
     src/ui/neweventtoolbutton.cpp \
     src/ui/noscrollcombobox.cpp \
     src/ui/noscrollspinbox.cpp \
+    src/ui/montabwidget.cpp \
     src/ui/paletteeditor.cpp \
     src/ui/selectablepixmapitem.cpp \
     src/ui/tileseteditor.cpp \
@@ -114,6 +115,7 @@ HEADERS  += include/core/block.h \
     include/ui/neweventtoolbutton.h \
     include/ui/noscrollcombobox.h \
     include/ui/noscrollspinbox.h \
+    include/ui/montabwidget.h \
     include/ui/paletteeditor.h \
     include/ui/selectablepixmapitem.h \
     include/ui/tileseteditor.h \
