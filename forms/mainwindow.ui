@@ -237,7 +237,7 @@
         </sizepolicy>
        </property>
        <property name="currentIndex">
-        <number>4</number>
+        <number>0</number>
        </property>
        <property name="tabsClosable">
         <bool>false</bool>
@@ -2694,6 +2694,10 @@
         </layout>
        </widget>
        <widget class="QWidget" name="tab_WildMons">
+        <attribute name="icon">
+         <iconset resource="../resources/images.qrc">
+          <normaloff>:/icons/tall_grass.ico</normaloff>:/icons/tall_grass.ico</iconset>
+        </attribute>
         <attribute name="title">
          <string>Wild Pokemon</string>
         </attribute>
