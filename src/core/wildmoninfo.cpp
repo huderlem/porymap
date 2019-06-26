@@ -31,4 +31,21 @@ WildMonInfo getDefaultMonInfo(Field field) {
     return newInfo;
 }
 
+WildMonInfo copyMonInfoFromTab(QTableWidget *monTable, Field field) {
+    WildMonInfo newInfo;
+    QVector<WildPokemon> newWildMons;
+
+    for (int row = 0; row < monTable->rowCount(); row++) {
+        WildPokemon newWildMon;
+        newWildMon.species = monTable->cellWidget(row, 1)->findChild<QComboBox *>()->currentText();
+        newWildMon.minLevel = monTable->cellWidget(row, 2)->findChild<QSpinBox *>()->value();
+        newWildMon.maxLevel = monTable->cellWidget(row, 3)->findChild<QSpinBox *>()->value();
+        newWildMons.append(newWildMon);
+    }
+    newInfo.active = true;
+    newInfo.wildPokemon = newWildMons;
+    newInfo.encounterRate = monTable->findChild<QSlider *>()->value();
+
+    return newInfo;
+}
 

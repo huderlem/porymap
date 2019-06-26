@@ -251,6 +251,8 @@ void Editor::addNewWildMonGroup() {
     QStackedWidget *stack = ui->stackedWidget_WildMons;
     QComboBox *labelCombo = ui->comboBox_EncounterGroupLabel;
 
+    int stackIndex = stack->currentIndex();
+
     QDialog dialog(nullptr, Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
     dialog.setWindowTitle("New Wild Encounter Group Label");
     dialog.setWindowModality(Qt::NonModal);
@@ -309,6 +311,13 @@ void Editor::addNewWildMonGroup() {
             MonTabWidget *monWidget = static_cast<MonTabWidget *>(stack->widget(stack->currentIndex()));
             for (Field monField : project->wildMonFields) {
                 fieldCheckboxes[fieldIndex]->setChecked(monWidget->isTabEnabled(fieldIndex));//header.wildMons.value(monField.first).active);
+                fieldCheckboxes[fieldIndex]->setEnabled(false);
+                fieldIndex++;
+            }
+        } else if (state == Qt::Unchecked) {
+            int fieldIndex = 0;
+            for (Field monField : project->wildMonFields) {
+                fieldCheckboxes[fieldIndex]->setEnabled(true);
                 fieldIndex++;
             }
         }
@@ -355,7 +364,16 @@ void Editor::addNewWildMonGroup() {
             tabWidget->clearTableAt(tabIndex);
             if (fieldCheckboxes[tabIndex]->isChecked()) {//(header.wildMons[fieldName].active) {
                 qDebug() << "checked" << fieldName;
-                header.wildMons.insert(fieldName, getDefaultMonInfo(monField));
+                if (copyCheckbox->isChecked()) {
+                    qDebug() << "copying mons from current group";
+                    MonTabWidget *copyFrom = static_cast<MonTabWidget *>(stack->widget(stackIndex));
+                    if (copyFrom->isTabEnabled(tabIndex))
+                        header.wildMons.insert(fieldName, copyMonInfoFromTab(copyFrom->tableAt(tabIndex), monField));
+                    else
+                        header.wildMons.insert(fieldName, getDefaultMonInfo(monField));
+                } else {
+                    header.wildMons.insert(fieldName, getDefaultMonInfo(monField));
+                }
                 tabWidget->populateTab(tabIndex, header.wildMons[fieldName], fieldName);
             } else {
                 tabWidget->setTabActive(tabIndex, false);
@@ -413,7 +431,10 @@ void Editor::saveEncounterTabData() {
 
             QVector<WildPokemon> newWildMons;
 
+            encounterHeader.wildMons[fieldName] = copyMonInfoFromTab(monTable, monField);
+
             //for (auto *speciesCombo : monTable->findChildren<QComboBox *>()) {
+            /*
             for (int row = 0; row < monTable->rowCount(); row++) {
                 // cellWidget(row, column)
                 WildPokemon newWildMon;
@@ -427,6 +448,7 @@ void Editor::saveEncounterTabData() {
             encounterHeader.wildMons[fieldName].wildPokemon = newWildMons;
             encounterHeader.wildMons[fieldName].encounterRate = monTable->findChild<QSlider *>()->value();
             //fieldIndex++;
+            */
         }
     }
 }

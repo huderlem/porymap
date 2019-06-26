@@ -34,5 +34,6 @@ void clearTabWidget(QLayout *tab);
 //void populateWildMonTabWidget(MonTabWidget *tabWidget, Fields /* QVector<QPair<QString, QVector<int>>> */ fields);
 
 WildMonInfo getDefaultMonInfo(Field field);
+WildMonInfo copyMonInfoFromTab(QTableWidget *table, Field field);
 
 #endif // GUARD_WILDMONINFO_H
