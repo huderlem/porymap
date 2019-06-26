@@ -89,6 +89,7 @@ public:
     void readWildMonData();
     QMap<QString, QMap<QString, WildPokemonHeader>> wildMonData;// "MAP_CONSTANT": {base_label: wild_encounter_json
     QMap<QString, QString> encounterMapToBaseLabel;// delete this?
+    QVector<QString> encounterGroupLabels;
     // when saving, preserve the extra fields for gBattlePyramidWildMonHeaders, gBattlePikeWildMonHeaders
     void readSpeciesIconPaths();
     QMap<QString, QString> speciesToIconPath;

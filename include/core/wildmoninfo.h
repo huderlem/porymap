@@ -12,7 +12,7 @@ struct WildPokemon {
 struct WildMonInfo {
     //
     bool active = false;
-    int encounterRate;
+    int encounterRate = 0;
     QVector<WildPokemon> wildPokemon;
 };
 

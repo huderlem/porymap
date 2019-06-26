@@ -80,6 +80,12 @@ void MainWindow::initCustomUI() {
     ui->mapList->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->mapList, SIGNAL(customContextMenuRequested(const QPoint &)),
             this, SLOT(onOpenMapListContextMenu(const QPoint &)));
+
+    QStackedWidget *stack = ui->stackedWidget_WildMons;
+    QComboBox *labelCombo = ui->comboBox_EncounterGroupLabel;
+    connect(labelCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index){
+        stack->setCurrentIndex(index);
+    });
 }
 
 void MainWindow::initExtraSignals() {

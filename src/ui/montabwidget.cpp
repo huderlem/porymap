@@ -159,6 +159,11 @@ void MonTabWidget::createSpeciesTableRow(QTableWidget *table, WildPokemon mon, i
     minLevel->setValue(mon.minLevel);
     maxLevel->setValue(mon.maxLevel);
 
+    // connect level spinboxes so max is never less than min
+    connect(minLevel, QOverload<int>::of(&QSpinBox::valueChanged), [maxLevel](int min){
+        maxLevel->setMinimum(min);
+    });
+
     int fieldIndex = 0;
     for (auto field : project->wildMonFields) {
         if (field.first == fieldName) break;

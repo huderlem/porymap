@@ -184,9 +184,9 @@ void Editor::displayWildMonTables() {
     }
 
     // do I have to disconnect this signal? or set it up only once?
-    connect(labelCombo, QOverload<int>::of(&QComboBox::activated), [=](int index){
-        stack->setCurrentIndex(index);//setCurrentWidget(tabWidget);
-    });
+    //connect(labelCombo, QOverload<int>::of(&QComboBox::activated), [=](int index){
+    //    stack->setCurrentIndex(index);//setCurrentWidget(tabWidget);
+    //});
     labelCombo->addItems(project->wildMonData[map->constantName].keys());
     labelCombo->setCurrentText(project->wildMonData[map->constantName].firstKey());
 
@@ -206,7 +206,7 @@ void Editor::displayWildMonTables() {
         //QVector<int> unusedIndices;
 
         int tabIndex = 0;
-        for (QPair<QString, QVector<int>> monField : project->wildMonFields) {
+        for (Field monField : project->wildMonFields) {
             QString fieldName = monField.first;
 
             // tabWidget_WildMons
@@ -238,10 +238,133 @@ void Editor::displayWildMonTables() {
     stack->setCurrentIndex(0);
 }
 
-// TODO: move this funciton
+// TODO: move this funciton?
 void Editor::addNewWildMonGroup() {
-    //
+    // copy the currently displayed group?
     qDebug() << "new wild encounter group to map" << map->name;
+
+    static bool earlyExit = false;
+
+    if (earlyExit) return;
+
+    // QStackedWidget *stack = ui->stackedWidget_WildMons
+    QStackedWidget *stack = ui->stackedWidget_WildMons;
+    QComboBox *labelCombo = ui->comboBox_EncounterGroupLabel;
+
+    QDialog dialog(nullptr, Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
+    dialog.setWindowTitle("New Wild Encounter Group Label");
+    dialog.setWindowModality(Qt::NonModal);
+
+    QFormLayout form(&dialog);
+
+    QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
+
+    QLineEdit *lineEdit = new QLineEdit();
+    form.addRow(new QLabel("Group Base Label:"), lineEdit);
+    QRegularExpressionValidator *validator = new QRegularExpressionValidator(QRegularExpression("[_A-Za-z0-9]*"));
+    lineEdit->setValidator(validator);
+    connect(lineEdit, &QLineEdit::textChanged, [this, &lineEdit, &buttonBox](QString text){
+        if (this->project->encounterGroupLabels.contains(text)) {
+            QPalette palette = lineEdit->palette();
+            QColor color = Qt::red;
+            color.setAlpha(25);
+            palette.setColor(QPalette::Base, color);
+            lineEdit->setPalette(palette);
+            buttonBox.button(QDialogButtonBox::Ok)->setDisabled(true);
+        } else {
+            lineEdit->setPalette(QPalette());
+            buttonBox.button(QDialogButtonBox::Ok)->setEnabled(true);
+        }
+    });
+    // give a default value to the label
+    lineEdit->setText(QString("g%1%2").arg(map->name).arg(project->wildMonData.value(map->constantName).size()));
+
+    //WildPokemonHeader header;
+    //QString label;
+    //if (project->wildMonData.contains(map->constantName)) {
+    //    label = project->wildMonData.value(map->constantName).keys().at(0);// copy the first one
+    //}
+    //if (!label.isEmpty()) {
+    //    header = project->wildMonData.value(map->constantName).value(label);
+    //} else {
+        // TODO: change this to default or null
+        //WildPokemonHeader header;// = project->wildMonData.value(map->constantName).value(label);
+    //}
+    // Fields [x] copy from existing
+    QLabel *fieldsLabel = new QLabel("Fields:");
+    form.addRow(fieldsLabel);
+    QCheckBox *copyCheckbox = new QCheckBox;
+    copyCheckbox->setEnabled(stack->count());//project->wildMonData.contains(map->constantName));// disable if there are no
+    form.addRow(new QLabel("Copy from current group"), copyCheckbox);
+    QVector<QCheckBox *> fieldCheckboxes;
+    for (Field monField : project->wildMonFields) {
+        QCheckBox *fieldCheckbox = new QCheckBox;
+        fieldCheckboxes.append(fieldCheckbox);
+        form.addRow(new QLabel(monField.first), fieldCheckbox);
+    }
+    // TODO: fix this
+    connect(copyCheckbox, &QCheckBox::stateChanged, [=](int state){
+        if (state == Qt::Checked) {
+            int fieldIndex = 0;
+            MonTabWidget *monWidget = static_cast<MonTabWidget *>(stack->widget(stack->currentIndex()));
+            for (Field monField : project->wildMonFields) {
+                fieldCheckboxes[fieldIndex]->setChecked(monWidget->isTabEnabled(fieldIndex));//header.wildMons.value(monField.first).active);
+                fieldIndex++;
+            }
+        }
+    });
+
+    connect(&buttonBox, &QDialogButtonBox::accepted, [&dialog, &lineEdit, this](){
+        QString newLabel = lineEdit->text();
+        if (!newLabel.isEmpty()) {
+            qDebug() << "new label:" << newLabel;
+            this->project->encounterGroupLabels.append(newLabel);
+            dialog.accept();
+        }
+    });
+    connect(&buttonBox, SIGNAL(rejected()), &dialog, SLOT(reject()));
+    form.addRow(&buttonBox);
+
+    if (dialog.exec() == QDialog::Accepted) {
+        qDebug() << "new encounter group dialog accepted";
+
+        WildPokemonHeader header;
+        for (Field monField : project->wildMonFields) {
+            //
+            QString fieldName = monField.first;
+            header.wildMons[fieldName].active = false;
+            header.wildMons[fieldName].encounterRate = 0;
+        }
+
+        // TODO: check for this signal, or set it up somewhere else
+        //connect(labelCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index){
+        //    stack->setCurrentIndex(index);//setCurrentWidget(tabWidget);
+        //});
+
+        MonTabWidget *tabWidget = new MonTabWidget(project);
+        stack->insertWidget(stack->count(), tabWidget);//project->wildMonData[map->constantName].keys().size(), tabWidget);
+
+        labelCombo->addItem(lineEdit->text());
+        labelCombo->setCurrentIndex(labelCombo->count() - 1);
+
+        // populate it -- check for copyFrom checked
+        int tabIndex = 0;
+        for (Field monField : project->wildMonFields) {
+            QString fieldName = monField.first;
+            //header.wildMons[fieldName].active = fieldCheckboxes[tabIndex]->isChecked();
+            tabWidget->clearTableAt(tabIndex);
+            if (fieldCheckboxes[tabIndex]->isChecked()) {//(header.wildMons[fieldName].active) {
+                qDebug() << "checked" << fieldName;
+                header.wildMons.insert(fieldName, getDefaultMonInfo(monField));
+                tabWidget->populateTab(tabIndex, header.wildMons[fieldName], fieldName);
+            } else {
+                tabWidget->setTabActive(tabIndex, false);
+            }
+            tabIndex++;
+        }
+    }
+
+    //earlyExit = true;
 }
 
 void Editor::configureEncounterJSON() {
@@ -251,22 +374,25 @@ void Editor::configureEncounterJSON() {
 
 // TODO: move this?
 void Editor::saveEncounterTabData() {
-    if (!project->wildMonData.contains(map->constantName)) {
-        qDebug() << "don't save encounters for this map";
-        return;
-    }
+    //if (!project->wildMonData.contains(map->constantName)) {
+    //    qDebug() << "don't save encounters for this map";
+    //    return;
+    //}
     //
     QStackedWidget *stack = ui->stackedWidget_WildMons;
     QComboBox *labelCombo = ui->comboBox_EncounterGroupLabel;
 
+    if (!stack->count()) return;
+
     // TODO: verify that this exists before accsessing so no seg fault
     QMap<QString, WildPokemonHeader> &encounterMap = project->wildMonData[map->constantName];
 
-    for (int groupIndex = 0; groupIndex < encounterMap.keys().size(); groupIndex++) {
+    //for (int groupIndex = 0; groupIndex < encounterMap.keys().size(); groupIndex++) {
+    for (int groupIndex = 0; groupIndex < stack->count(); groupIndex++) {
         //
         MonTabWidget *tabWidget = static_cast<MonTabWidget *>(stack->widget(groupIndex));
 
-        // TODO: verify this exists before so no segfault
+        // TODO: verify this exists before so no segfault actually no
         WildPokemonHeader &encounterHeader = encounterMap[labelCombo->itemText(groupIndex)];
 
         //qDebug() << encounterHeader.wildMons.keys();
@@ -275,7 +401,7 @@ void Editor::saveEncounterTabData() {
         //    QTableWidget *monTable = 
         //}
         int fieldIndex = 0;
-        for (QPair<QString, QVector<int>> monField : project->wildMonFields) {
+        for (Field monField : project->wildMonFields) {
             QString fieldName = monField.first;
             //if (!encounterHeader.wildMons.contains(fieldName)
             // || encounterHeader.wildMons[fieldName].wildPokemon.empty()
