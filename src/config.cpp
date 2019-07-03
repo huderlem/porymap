@@ -337,6 +337,12 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
             this->baseGameVersion = BaseGameVersion::pokeemerald;
             logWarn(QString("Invalid config value for base_game_version: '%1'. Must be 'pokeruby' or 'pokeemerald'.").arg(value));
         }
+    } else if (key == "use_encounter_json") {
+        bool ok;
+        this->useEncounterJson = value.toInt(&ok);
+        if (!ok) {
+            logWarn(QString("Invalid config value for use_encounter_json: '%1'. Must be 0 or 1.").arg(value));
+        }
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -345,6 +351,7 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
 QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     QMap<QString, QString> map;
     map.insert("base_game_version", baseGameVersionMap.value(this->baseGameVersion));
+    map.insert("use_encounter_json", QString::number(this->useEncounterJson));
     return map;
 }
 
@@ -373,6 +380,7 @@ void ProjectConfig::onNewConfigFileCreated() {
             this->baseGameVersion = static_cast<BaseGameVersion>(baseGameVersionComboBox->currentData().toInt());
         }
     }
+    this->useEncounterJson = true;
 }
 
 void ProjectConfig::setProjectDir(QString projectDir) {
@@ -386,4 +394,13 @@ void ProjectConfig::setBaseGameVersion(BaseGameVersion baseGameVersion) {
 
 BaseGameVersion ProjectConfig::getBaseGameVersion() {
     return this->baseGameVersion;
+}
+
+void ProjectConfig::setEncounterJsonActive(bool active) {
+    this->useEncounterJson = active;
+    this->save();
+}
+
+bool ProjectConfig::getEncounterJsonActive() {
+    return this->useEncounterJson;
 }

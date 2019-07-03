@@ -521,6 +521,8 @@ void Project::saveMapGroups() {
 }
 
 void Project::saveWildMonData() {
+    if (!projectConfig.getEncounterJsonActive()) return;
+
     QString wildEncountersJsonFilepath = QString("%1/src/data/wild_encounters.json").arg(root);
     QFile wildEncountersFile(wildEncountersJsonFilepath);
     if (!wildEncountersFile.open(QIODevice::WriteOnly)) {
@@ -1378,6 +1380,8 @@ void Project::deleteFile(QString path) {
 }
 
 void Project::readWildMonData() {
+    if (!projectConfig.getEncounterJsonActive()) return;
+
     QString wildMonJsonFilepath = QString("%1/src/data/wild_encounters.json").arg(root);
     QJsonDocument wildMonsJsonDoc;
     if (!parser.tryParseJsonFile(&wildMonsJsonDoc, wildMonJsonFilepath)) {

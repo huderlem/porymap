@@ -149,6 +149,9 @@ void MainWindow::initMapSortOrder() {
 
 void MainWindow::setProjectSpecificUIVisibility()
 {
+    if (!projectConfig.getEncounterJsonActive())
+        ui->tabWidget->removeTab(4);
+
     switch (projectConfig.getBaseGameVersion())
     {
     case BaseGameVersion::pokeruby:
@@ -2216,6 +2219,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
         this->ui->splitter_main->saveState()
     );
     porymapConfig.save();
+    projectConfig.save();
 
     QMainWindow::closeEvent(event);
 }

@@ -96,9 +96,12 @@ class ProjectConfig: public KeyValueConfigBase
 public:
     ProjectConfig() {
         this->baseGameVersion = BaseGameVersion::pokeemerald;
+        this->useEncounterJson = true;
     }
     void setBaseGameVersion(BaseGameVersion baseGameVersion);
     BaseGameVersion getBaseGameVersion();
+    void setEncounterJsonActive(bool active);
+    bool getEncounterJsonActive();
     void setProjectDir(QString projectDir);
 protected:
     QString getConfigFilepath();
@@ -108,6 +111,7 @@ protected:
 private:
     BaseGameVersion baseGameVersion;
     QString projectDir;
+    bool useEncounterJson;
 };
 
 extern ProjectConfig projectConfig;
