@@ -1758,6 +1758,12 @@ QMap<QString, int> Project::getEventObjGfxConstants() {
     return constants;
 }
 
+void Project::readMiscellaneousConstants() {
+    QMap<QString, int> pokemonDefines = parser.readCDefines("include/pokemon.h", QStringList() << "MIN_" << "MAX_");
+    miscConstants.insert("max_level_define", pokemonDefines.value("MAX_LEVEL"));
+    miscConstants.insert("min_level_define", pokemonDefines.value("MIN_LEVEL"));
+}
+
 QString Project::fixPalettePath(QString path) {
     path = path.replace(QRegExp("\\.gbapal$"), ".pal");
     return path;

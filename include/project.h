@@ -13,6 +13,7 @@
 #include <QVector>
 #include <QPair>
 #include <QStandardItem>
+#include <QVariant>
 
 static QString NONE_MAP_CONSTANT = "MAP_NONE";
 static QString NONE_MAP_NAME = "None";
@@ -26,6 +27,7 @@ public:
     QMap<QString, int> *map_groups;
     QList<QStringList> groupedMapNames;
     QStringList *mapNames = nullptr;
+    QMap<QString, QVariant> miscConstants;
     QList<HealLocation> flyableMaps;
     QMap<QString, QString>* mapConstantsToMapNames;
     QMap<QString, QString>* mapNamesToMapConstants;
@@ -141,6 +143,7 @@ public:
     void readBgEventFacingDirections();
     void readMetatileBehaviors();
     void readHealLocations();
+    void readMiscellaneousConstants();
 
     void loadEventPixmaps(QList<Event*> objects);
     QMap<QString, int> getEventObjGfxConstants();

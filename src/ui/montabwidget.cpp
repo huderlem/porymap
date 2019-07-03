@@ -68,7 +68,7 @@ void MonTabWidget::populateTab(int tabIndex, WildMonInfo monInfo, QString fieldN
     speciesTable->setColumnCount(6);
 
     QStringList landMonTableHeaders;
-    landMonTableHeaders << "Index" << "Species" << "Min Level" << "Max Level" << "Index Percentage" << "Encounter Rate";
+    landMonTableHeaders << "Index" << "Species" << "Min Level" << "Max Level" << "Index Ratio" << "Encounter Rate";
     speciesTable->setHorizontalHeaderLabels(landMonTableHeaders);
     speciesTable->horizontalHeader()->show();
     speciesTable->verticalHeader()->hide();
@@ -126,10 +126,10 @@ void MonTabWidget::createSpeciesTableRow(QTableWidget *table, WildPokemon mon, i
 
     QSpinBox *minLevel = new QSpinBox;
     QSpinBox *maxLevel = new QSpinBox;
-    minLevel->setMinimum(1);
-    minLevel->setMaximum(100);
-    maxLevel->setMinimum(1);
-    maxLevel->setMaximum(100);
+    minLevel->setMinimum(project->miscConstants.value("min_level_define").toInt());
+    minLevel->setMaximum(project->miscConstants.value("max_level_define").toInt());
+    maxLevel->setMinimum(project->miscConstants.value("min_level_define").toInt());
+    maxLevel->setMaximum(project->miscConstants.value("max_level_define").toInt());
     minLevel->setValue(mon.minLevel);
     maxLevel->setValue(mon.maxLevel);
 
@@ -143,7 +143,7 @@ void MonTabWidget::createSpeciesTableRow(QTableWidget *table, WildPokemon mon, i
         if (field.first == fieldName) break;
         fieldIndex++;
     }
-    QLabel *percentLabel = new QLabel(QString("%1%").arg(
+    QLabel *percentLabel = new QLabel(QString("%1").arg(
         QString::number(project->wildMonFields[fieldIndex].second[index - 1]
     )));
 
