@@ -279,7 +279,7 @@ void Editor::addNewWildMonGroup() {
         }
     });
     // give a default value to the label
-    lineEdit->setText(QString("g%1%2").arg(map->name).arg(project->wildMonData.value(map->constantName).size()));
+    lineEdit->setText(QString("g%1%2").arg(map->name).arg(stack->count()));//project->wildMonData.value(map->constantName).size()));
 
     //WildPokemonHeader header;
     //QString label;
@@ -388,6 +388,180 @@ void Editor::addNewWildMonGroup() {
 void Editor::configureEncounterJSON() {
     //
     qDebug() << "configure wild encounter json";
+
+    QVector<QWidget *> fieldSlots;
+
+    Fields tempFields = project->wildMonFields;
+
+    QLabel *totalLabel = new QLabel;
+
+    auto updateTotal = [&fieldSlots, &tempFields, totalLabel](Field &currentField) {
+        //
+        int total = 0, spinnerIndex = 0;
+        for (auto slot : fieldSlots) {
+            QSpinBox *spinner = slot->findChild<QSpinBox *>();
+            int val = spinner->value();
+            currentField.second[spinnerIndex++] = spinner->value();
+            total += val;
+        }
+        totalLabel->setText(QString("Total: %1").arg(QString::number(total)));
+    };
+
+    auto createNewSlot = [&fieldSlots, &updateTotal](int index, Field &currentField) {
+        QLabel *indexLabel = new QLabel(QString("Index: %1").arg(QString::number(index)));
+        QSpinBox *chanceSpinner = new QSpinBox;
+        int chance = currentField.second.at(index);
+        chanceSpinner->setValue(chance);
+        chanceSpinner->setMinimum(0);
+        chanceSpinner->setMaximum(9999);
+        connect(chanceSpinner, QOverload<int>::of(&QSpinBox::valueChanged), [&chanceSpinner, &updateTotal, &currentField](int val) {
+            updateTotal(currentField);
+        });
+
+        QFrame *slot = new QFrame;
+        QHBoxLayout *slotLayout = new QHBoxLayout;
+        slotLayout->addStretch();
+        slotLayout->addWidget(indexLabel);
+        slotLayout->addWidget(chanceSpinner);
+        slot->setLayout(slotLayout);
+
+        fieldSlots.append(slot);
+
+        return slot;
+    };
+
+    //
+    QDialog dialog(nullptr, Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
+    dialog.setWindowTitle("Configure Wild Encounter Fields");
+    dialog.setWindowModality(Qt::NonModal);
+
+    QGridLayout grid;//(&dialog);
+
+    QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
+
+    connect(&buttonBox, SIGNAL(accepted()), &dialog, SLOT(accept()));
+    connect(&buttonBox, SIGNAL(rejected()), &dialog, SLOT(reject()));
+
+    auto getFieldNames = [&tempFields]() {
+        QStringList fieldNames;
+        for (Field field : tempFields)
+            fieldNames.append(field.first);
+        return fieldNames;
+    };
+    auto drawSlotWidgets = [this, &grid, &createNewSlot, &fieldSlots, &updateTotal, &tempFields](int index) {
+        // clear them first
+        //for (auto slot : slots) {//grid.findChildren<QFrame *>()) {
+        while (!fieldSlots.isEmpty()) {
+            auto slot = fieldSlots.takeFirst();
+            grid.removeWidget(slot);
+            delete slot;
+        }
+
+        Field &currentField = tempFields[index];
+        for (int i = 0; i < currentField.second.size(); i++) {
+            grid.addWidget(createNewSlot(i, currentField), i / 4 + 1, i % 4);
+        }
+
+        updateTotal(currentField);
+    };
+    QComboBox *fieldChoices = new QComboBox;
+    connect(fieldChoices, QOverload<int>::of(&QComboBox::currentIndexChanged), drawSlotWidgets);
+    fieldChoices->addItems(getFieldNames());
+
+    QLabel *fieldChoiceLabel = new QLabel("Field");
+
+    // Button to create new fields in the JSON.
+    QPushButton *addFieldButton = new QPushButton("Add New Field...");
+    connect(addFieldButton, &QPushButton::clicked, [fieldChoices, &tempFields]() {
+        // fieldChoices
+        qDebug() << "add new field pressed";
+
+        QDialog newNameDialog(nullptr, Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
+        newNameDialog.setWindowModality(Qt::NonModal);
+
+        QDialogButtonBox newFieldButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &newNameDialog);
+
+        connect(&newFieldButtonBox, SIGNAL(accepted()), &newNameDialog, SLOT(accept()));
+        connect(&newFieldButtonBox, SIGNAL(rejected()), &newNameDialog, SLOT(reject()));
+
+        QLineEdit *newNameEdit = new QLineEdit;
+
+        QFormLayout newFieldForm(&newNameDialog);
+
+        newFieldForm.addRow("Field Name", newNameEdit);
+        newFieldForm.addRow(&newFieldButtonBox);
+
+        if (newNameDialog.exec() == QDialog::Accepted) {
+            //
+            QString newFieldName = newNameEdit->text();
+            QVector<int> newFieldRates(1, 100);
+            tempFields.append({newFieldName, newFieldRates});
+            fieldChoices->addItem(newFieldName);
+            fieldChoices->setCurrentIndex(fieldChoices->count() - 1);
+        }
+        //QString newFieldName = 
+        //tempFields.append();
+    });
+
+    // buttons + / - with icons and flat frame
+    QPushButton *addSlotButton = new QPushButton(QIcon(":/icons/add.ico"), "");
+    addSlotButton->setFlat(true);
+    connect(addSlotButton, &QPushButton::clicked, [this, &fieldChoices, &drawSlotWidgets, &tempFields]() {
+        //
+        Field &field = tempFields[fieldChoices->currentIndex()];
+        field.second.append(1);
+        drawSlotWidgets(fieldChoices->currentIndex());
+    });
+    QPushButton *removeSlotButton = new QPushButton(QIcon(":/icons/delete.ico"), "");
+    removeSlotButton->setFlat(true);
+    connect(removeSlotButton, &QPushButton::clicked, [this, &fieldChoices, &drawSlotWidgets, &tempFields]() {
+        //
+        Field &field = tempFields[fieldChoices->currentIndex()];
+        if (field.second.size() > 1)
+            field.second.removeLast();
+        drawSlotWidgets(fieldChoices->currentIndex());
+    });
+
+
+    QFrame firstRow;
+    QHBoxLayout firstRowLayout;
+    firstRowLayout.addWidget(fieldChoiceLabel);
+    firstRowLayout.addWidget(fieldChoices);
+    firstRowLayout.addWidget(addFieldButton);
+    firstRowLayout.addWidget(removeSlotButton);
+    firstRowLayout.addWidget(addSlotButton);
+    firstRow.setLayout(&firstRowLayout);
+    grid.addWidget(&firstRow, 0, 0, 1, 4, Qt::AlignLeft);
+
+    QHBoxLayout lastRow;
+    lastRow.addWidget(totalLabel);
+    lastRow.addWidget(&buttonBox);
+
+    // To keep the total and button box at the bottom of the window.
+    QVBoxLayout layout(&dialog);
+    QFrame *frameTop = new QFrame;
+    frameTop->setLayout(&grid);
+    layout.addWidget(frameTop);
+    QFrame *frameBottom = new QFrame;
+    frameBottom->setLayout(&lastRow);
+    layout.addWidget(frameBottom);
+
+    // TODO: add create new field name
+
+    if (dialog.exec() == QDialog::Accepted) {
+        qDebug() << "configure json dialog accepted";
+        // re-load the wild encounters tab ui
+
+        // Copy the temporary modified field info to project.
+        Fields &newFields = project->wildMonFields;
+        newFields = tempFields;
+
+        // re-draw the tab accordingly
+        displayWildMonTables();
+
+        // TODO: update values for every single wild encounter entry? like
+        //       if there are deleted fields, remove them?
+    }
 }
 
 // TODO: move this?
