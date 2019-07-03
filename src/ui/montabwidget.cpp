@@ -60,8 +60,6 @@ void MonTabWidget::clearTableAt(int tabIndex) {
 }
 
 void MonTabWidget::populateTab(int tabIndex, WildMonInfo monInfo, QString fieldName) {
-    int i = 1;
-
     QTableWidget *speciesTable = tableAt(tabIndex);
 
     speciesTable->setRowCount(monInfo.wildPokemon.size());
@@ -97,9 +95,9 @@ void MonTabWidget::populateTab(int tabIndex, WildMonInfo monInfo, QString fieldN
 
     speciesTable->setCellWidget(0, 5, encounterFrame);
 
+    int i = 0;
     for (WildPokemon mon : monInfo.wildPokemon) {
-        createSpeciesTableRow(speciesTable, mon, i, fieldName);
-        i++;
+        createSpeciesTableRow(speciesTable, mon, i++, fieldName);
     }
     this->setTabActive(tabIndex, true);
 }
@@ -144,7 +142,7 @@ void MonTabWidget::createSpeciesTableRow(QTableWidget *table, WildPokemon mon, i
         fieldIndex++;
     }
     QLabel *percentLabel = new QLabel(QString("%1").arg(
-        QString::number(project->wildMonFields[fieldIndex].second[index - 1]
+        QString::number(project->wildMonFields[fieldIndex].second[index]
     )));
 
     QFrame *speciesSelector = new QFrame;
@@ -163,11 +161,11 @@ void MonTabWidget::createSpeciesTableRow(QTableWidget *table, WildPokemon mon, i
     maxLevelSpinboxLayout->addWidget(maxLevel);
     maxLevelFrame->setLayout(maxLevelSpinboxLayout);
 
-    table->setCellWidget(index - 1, 0, monNum);
-    table->setCellWidget(index - 1, 1, speciesSelector);
-    table->setCellWidget(index - 1, 2, minLevelFrame);
-    table->setCellWidget(index - 1, 3, maxLevelFrame);
-    table->setCellWidget(index - 1, 4, percentLabel);
+    table->setCellWidget(index, 0, monNum);
+    table->setCellWidget(index, 1, speciesSelector);
+    table->setCellWidget(index, 2, minLevelFrame);
+    table->setCellWidget(index, 3, maxLevelFrame);
+    table->setCellWidget(index, 4, percentLabel);
 }
 
 QTableWidget *MonTabWidget::tableAt(int tabIndex) {
