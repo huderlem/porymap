@@ -1,5 +1,3 @@
-// montablewidget.h
-
 #ifndef MONTABWIDGET_H
 #define MONTABWIDGET_H
 
@@ -8,7 +6,6 @@
 #include <QtWidgets>
 #include <QVector>
 
-//
 class Project;
 
 class MonTabWidget : public QTabWidget {
@@ -28,7 +25,6 @@ public:
     void clearTableAt(int index);
 
     QTableWidget *tableAt(int tabIndex);
-    //void setupTableAt(int tabIndex);
 
 public slots:
     void setTabActive(int index, bool active = true);
@@ -40,12 +36,6 @@ private:
     QVector<bool> activeTabs;
 
     Project *project;
-
-private slots:
-    //
-
-signals:
-    // right click
 };
 
 #endif // MONTABWIDGET_H

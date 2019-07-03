@@ -521,9 +521,7 @@ void Project::saveMapGroups() {
 }
 
 void Project::saveWildMonData() {
-    //
     QString wildEncountersJsonFilepath = QString("%1/src/data/wild_encounters.json").arg(root);
-    //QString wildEncountersJsonFilepath = QString("%1/src/data/wild_encounters_test.json").arg(root);
     QFile wildEncountersFile(wildEncountersJsonFilepath);
     if (!wildEncountersFile.open(QIODevice::WriteOnly)) {
         logError(QString("Error: Could not open %1 for writing").arg(wildEncountersJsonFilepath));
@@ -533,7 +531,7 @@ void Project::saveWildMonData() {
     QJsonObject wildEncountersObject;
     QJsonArray wildEncounterGroups = QJsonArray();
 
-    // gWildMonHeaders
+    // gWildMonHeaders label is not mutable
     QJsonObject monHeadersObject;
     monHeadersObject["label"] = "gWildMonHeaders";
     monHeadersObject["for_maps"] = true;
@@ -558,46 +556,32 @@ void Project::saveWildMonData() {
         for (QString groupLabel : wildMonData.value(key).keys()) {
             QJsonObject encounterObject;
             encounterObject["map"] = key;
-            encounterObject["base_label"] = groupLabel;//encounterMapToBaseLabel[key];
-            //
+            encounterObject["base_label"] = groupLabel;
 
             WildPokemonHeader encounterHeader = wildMonData.value(key).value(groupLabel);
             for (QString fieldName : encounterHeader.wildMons.keys()) {
-                //
                 QJsonObject fieldObject;
                 WildMonInfo monInfo = encounterHeader.wildMons.value(fieldName);
                 fieldObject["encounter_rate"] = monInfo.encounterRate;
                 QJsonArray monArray;
                 for (WildPokemon wildMon : monInfo.wildPokemon) {
-                    //
                     QJsonObject monEntry;
                     monEntry["min_level"] = wildMon.minLevel;
                     monEntry["max_level"] = wildMon.maxLevel;
                     monEntry["species"] = wildMon.species;
                     monArray.append(monEntry);
                 }
-                fieldObject["mons"] = monArray;//fieldObject;
+                fieldObject["mons"] = monArray;
                 encounterObject[fieldName] = fieldObject;
             }
-            //encounterObject[];
-            // QMap<QString, WildMonInfo> wildMons;
-
-            //QJsonArray
-            //for (auto fieldItem : wildMonFields) {
-            //    QString fieldLabel = fieldItem.first;
-            //    encounterObject[fieldLabel] = ;
-            //}
-
             encountersArray.append(encounterObject);
         }
-        // TODO: save fields json data
     }
     monHeadersObject["encounters"] = encountersArray;
     wildEncounterGroups.append(monHeadersObject);
 
     // add extra Json objects that are not associated with maps to the file
     for (QString label : extraEncounterGroups.keys()) {
-        qDebug() << "extra label:" << label;
         wildEncounterGroups.append(extraEncounterGroups[label]);
     }
 
@@ -1394,7 +1378,6 @@ void Project::deleteFile(QString path) {
 }
 
 void Project::readWildMonData() {
-    //
     QString wildMonJsonFilepath = QString("%1/src/data/wild_encounters.json").arg(root);
     QJsonDocument wildMonsJsonDoc;
     if (!parser.tryParseJsonFile(&wildMonsJsonDoc, wildMonJsonFilepath)) {
@@ -1423,12 +1406,9 @@ void Project::readWildMonData() {
         for (QJsonValue encounter : encounters) {
             QString mapConstant = encounter["map"].toString();
 
-            encounterMapToBaseLabel.insert(mapConstant, encounter["base_label"].toString());
-
             WildPokemonHeader header;
 
             for (QPair<QString, QVector<int>> monField : wildMonFields) {
-                //
                 QString field = monField.first;
                 if (encounter[field] != QJsonValue::Undefined) {
                     header.wildMons[field].active = true;
@@ -1442,15 +1422,10 @@ void Project::readWildMonData() {
                     }
                 }
             }
-            //if (!wildMonData.contains(mapConstant))
-            //    wildMonData.insert(mapConstant, header);
-            //else
             wildMonData[mapConstant].insert(encounter["base_label"].toString(), header);
             encounterGroupLabels.append(encounter["base_label"].toString());
         }
     }
-
-    //
 }
 
 void Project::readMapGroups() {

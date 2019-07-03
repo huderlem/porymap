@@ -4,39 +4,24 @@
 #include "project.h"
 
 MonTabWidget::MonTabWidget(Project *project, QWidget *parent) : QTabWidget(parent) {
-    //
     this->project = project;
     populate();
     installEventFilter(this);
 }
 
 bool MonTabWidget::eventFilter(QObject *object, QEvent *event) {
-    //
-    // press right mouse button
+    // Press right mouse button to activate tab.
     if (event->type() == QEvent::MouseButtonPress
      && static_cast<QMouseEvent *>(event)->button() == Qt::RightButton) {
-        //
         QPoint eventPos = static_cast<QMouseEvent *>(event)->pos();
         int tabIndex = tabBar()->tabAt(eventPos);
         if (tabIndex > -1) {
             askActivateTab(tabIndex, eventPos);
         }
-        //
-    } else {
-        //
     }
 }
 
 void MonTabWidget::populate() {
-    //QPushButton *newTabButton = new QPushButton("Configure JSON...");
-    //QObject::connect(newTabButton, &QPushButton::clicked, [=](){
-    //    // TODO
-    //    qDebug() << "configure json pressed";
-    //});
-    //tabWidget->setCornerWidget(newTabButton);
-
-    // delete everything in the tab widget here? no
-
     Fields fields = project->wildMonFields;
     activeTabs = QVector<bool>(fields.size(), false);
 
@@ -58,14 +43,11 @@ void MonTabWidget::askActivateTab(int tabIndex, QPoint menuPos) {
     QString tabText = tabBar()->tabText(tabIndex);
     QAction actionActivateTab(QString("Add %1 data for this map...").arg(tabText), this);
     connect(&actionActivateTab, &QAction::triggered, [=](){
-        //
-        //qDebug() << "activate tab" << tabIndex;
         clearTableAt(tabIndex);
         populateTab(tabIndex, getDefaultMonInfo(project->wildMonFields.at(tabIndex)), tabText);
         setCurrentIndex(tabIndex);
-    });//SIGNAL(triggered()), this, SLOT(removeDataPoint()));
+    });
     contextMenu.addAction(&actionActivateTab);
-
     contextMenu.exec(mapToGlobal(menuPos));
 }
 
@@ -78,16 +60,12 @@ void MonTabWidget::clearTableAt(int tabIndex) {
 }
 
 void MonTabWidget::populateTab(int tabIndex, WildMonInfo monInfo, QString fieldName) {
-    //
     int i = 1;
-
-    //ui->stackedWidget_WildMons->insertWidget(0, speciesTable);
-    //return;
 
     QTableWidget *speciesTable = tableAt(tabIndex);
 
     speciesTable->setRowCount(monInfo.wildPokemon.size());
-    speciesTable->setColumnCount(6);// TODO: stretch last column?
+    speciesTable->setColumnCount(6);
 
     QStringList landMonTableHeaders;
     landMonTableHeaders << "Index" << "Species" << "Min Level" << "Max Level" << "Index Percentage" << "Encounter Rate";
@@ -99,8 +77,6 @@ void MonTabWidget::populateTab(int tabIndex, WildMonInfo monInfo, QString fieldN
 
     speciesTable->setShowGrid(false);
 
-    // set encounter rate slider
-    // don't forget to add number label next to it
     QFrame *encounterFrame = new QFrame;
     QHBoxLayout *encounterLayout = new QHBoxLayout;
 
@@ -128,9 +104,7 @@ void MonTabWidget::populateTab(int tabIndex, WildMonInfo monInfo, QString fieldN
     this->setTabActive(tabIndex, true);
 }
 
-// TODO: just move these funcs to editor.cpp
 void MonTabWidget::createSpeciesTableRow(QTableWidget *table, WildPokemon mon, int index, QString fieldName) {
-    //
     QPixmap monIcon = QPixmap(project->speciesToIconPath.value(mon.species)).copy(0, 0, 32, 32);
 
     QLabel *monNum = new QLabel(QString("%1.").arg(QString::number(index)));
@@ -159,7 +133,7 @@ void MonTabWidget::createSpeciesTableRow(QTableWidget *table, WildPokemon mon, i
     minLevel->setValue(mon.minLevel);
     maxLevel->setValue(mon.maxLevel);
 
-    // connect level spinboxes so max is never less than min
+    // Connect level spinboxes so max is never less than min.
     connect(minLevel, QOverload<int>::of(&QSpinBox::valueChanged), [maxLevel](int min){
         maxLevel->setMinimum(min);
     });
@@ -179,7 +153,7 @@ void MonTabWidget::createSpeciesTableRow(QTableWidget *table, WildPokemon mon, i
     speciesSelectorLayout->addWidget(monSelector);
     speciesSelector->setLayout(speciesSelectorLayout);
 
-    // prevent the spinboxes from being stupidly tall
+    // Prevent the spinboxes from being stupidly tall.
     QFrame *minLevelFrame = new QFrame;
     QVBoxLayout *minLevelSpinboxLayout = new QVBoxLayout;
     minLevelSpinboxLayout->addWidget(minLevel);
@@ -189,25 +163,17 @@ void MonTabWidget::createSpeciesTableRow(QTableWidget *table, WildPokemon mon, i
     maxLevelSpinboxLayout->addWidget(maxLevel);
     maxLevelFrame->setLayout(maxLevelSpinboxLayout);
 
-    // add widgets to the table
     table->setCellWidget(index - 1, 0, monNum);
     table->setCellWidget(index - 1, 1, speciesSelector);
     table->setCellWidget(index - 1, 2, minLevelFrame);
     table->setCellWidget(index - 1, 3, maxLevelFrame);
     table->setCellWidget(index - 1, 4, percentLabel);
-
-    // TODO: lock max spinbox to min spinbox
 }
 
 QTableWidget *MonTabWidget::tableAt(int tabIndex) {
     return static_cast<QTableWidget *>(this->widget(tabIndex));
 }
 
-
-
-
-
-//
 void MonTabWidget::setTabActive(int index, bool active) {
     activeTabs[index] = active;
     setTabEnabled(index, active);
