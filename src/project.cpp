@@ -719,7 +719,7 @@ void Project::saveTilesetMetatileLabels(Tileset *primaryTileset, Tileset *second
         Metatile *metatile = secondaryTileset->metatiles->at(i);
         if (metatile->label.size() != 0) {
             QString defineName = QString("%1%2").arg(secondaryPrefix, metatile->label);
-            defines.insert(defineName, i);
+            defines.insert(defineName, i + Project::num_tiles_primary);
             definesFileModified = true;
         }
     }
@@ -728,24 +728,37 @@ void Project::saveTilesetMetatileLabels(Tileset *primaryTileset, Tileset *second
         return;
     }
 
-    // Setup pretty formatting.
-    int longestDefineNameLength = 0;
-    for (QString defineName : defines.keys()) {
-        if (defineName.size() > longestDefineNameLength) {
-            longestDefineNameLength = defineName.size();
-        }
-    }
+    auto getTilesetFromLabel = [](QString labelName) {
+        return QRegularExpression("METATILE_(?<tileset>[A-Za-z0-9]+)_").match(labelName).captured("tileset");
+    };
 
-    // Write the file.
     QString outputText = "#ifndef GUARD_METATILE_LABELS_H\n";
-    outputText += "#define GUARD_METATILE_LABELS_H\n\n";
+    outputText += "#define GUARD_METATILE_LABELS_H\n";
 
-    for (QString defineName : defines.keys()) {
-        int value = defines[defineName];
-        QString line = QString("#define %1  0x%2\n")
-            .arg(defineName, -1 * longestDefineNameLength)
-            .arg(QString("%1").arg(value, 3, 16, QChar('0')).toUpper());
-        outputText += line;
+    for (int i = 0; i < defines.size();) {
+        QString defineName = defines.keys()[i];
+        QString currentTileset = getTilesetFromLabel(defineName);
+        outputText += QString("\n// gTileset_%1\n").arg(currentTileset);
+
+        int j = 0, longestLength = 0;
+        QMap<QString, int> definesOut;
+
+        // Setup for pretty formatting.
+        while (i + j < defines.size() && getTilesetFromLabel(defines.keys()[i + j]) == currentTileset) {
+            defineName = defines.keys()[i + j];
+            if (defineName.size() > longestLength)
+                longestLength = defineName.size();
+            definesOut.insert(defineName, defines[defineName]);
+            j++;
+        }
+        for (QString defineName : definesOut.keys()) {
+            int value = defines[defineName];
+            QString line = QString("#define %1  0x%2\n")
+                .arg(defineName, -1 * longestLength)
+                .arg(QString("%1").arg(value, 3, 16, QChar('0')).toUpper());
+            outputText += line;
+        }
+        i += j;
     }
 
     outputText += "\n#endif // GUARD_METATILE_LABELS_H\n";
@@ -1283,7 +1296,8 @@ void Project::loadTilesetMetatileLabels(Tileset* tileset) {
 
         for (QString labelName : labels.keys()) {
             int metatileId = labels[labelName];
-            Metatile *metatile = Tileset::getMetatile(metatileId, tileset, nullptr);
+            // subtract Project::num_tiles_primary from secondary metatiles
+            Metatile *metatile = Tileset::getMetatile(metatileId - (tileset->is_secondary == "TRUE" ? Project::num_tiles_primary : 0), tileset, nullptr);
             if (metatile) {
                 metatile->label = labelName.replace(tilesetPrefix, "");
             } else {
