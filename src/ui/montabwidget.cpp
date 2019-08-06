@@ -1,5 +1,3 @@
-// montablewidget.cpp
-
 #include "montabwidget.h"
 #include "project.h"
 
@@ -66,7 +64,7 @@ void MonTabWidget::populateTab(int tabIndex, WildMonInfo monInfo, QString fieldN
     speciesTable->setColumnCount(6);
 
     QStringList landMonTableHeaders;
-    landMonTableHeaders << "Index" << "Species" << "Min Level" << "Max Level" << "Index Ratio" << "Encounter Rate";
+    landMonTableHeaders << "Slot" << "Species" << "Min Level" << "Max Level" << "Slot Ratio" << "Encounter Rate";
     speciesTable->setHorizontalHeaderLabels(landMonTableHeaders);
     speciesTable->horizontalHeader()->show();
     speciesTable->verticalHeader()->hide();
@@ -79,14 +77,16 @@ void MonTabWidget::populateTab(int tabIndex, WildMonInfo monInfo, QString fieldN
     QHBoxLayout *encounterLayout = new QHBoxLayout;
 
     QSlider *encounterRate = new QSlider(Qt::Horizontal);
-    encounterRate->setMinimum(1);
+    encounterRate->setMinimum(0);
     encounterRate->setMaximum(100);
 
     QLabel *encounterLabel = new QLabel;
     connect(encounterRate, &QSlider::valueChanged, [=](int value){
-        encounterLabel->setText(QString::number(value));
+        encounterLabel->setText(QString("%1%").arg(QString::number(value)));
     });
     encounterRate->setValue(monInfo.encounterRate);
+    // for some reason the signal is not being emitted above
+    encounterLabel->setText(QString("%1%").arg(QString::number(monInfo.encounterRate)));
 
     encounterLayout->addWidget(encounterLabel);
     encounterLayout->addWidget(encounterRate);
@@ -175,4 +175,9 @@ QTableWidget *MonTabWidget::tableAt(int tabIndex) {
 void MonTabWidget::setTabActive(int index, bool active) {
     activeTabs[index] = active;
     setTabEnabled(index, active);
+    if (!active) {
+        setTabToolTip(index, "Right-click an inactive tab to add new fields.");
+    } else {
+        setTabToolTip(index, QString());
+    }
 }
