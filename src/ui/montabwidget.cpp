@@ -1,4 +1,5 @@
 #include "montabwidget.h"
+#include "noscrollcombobox.h"
 #include "project.h"
 
 MonTabWidget::MonTabWidget(Project *project, QWidget *parent) : QTabWidget(parent) {
@@ -110,9 +111,7 @@ void MonTabWidget::createSpeciesTableRow(QTableWidget *table, WildPokemon mon, i
     QLabel *monLabel = new QLabel();
     monLabel->setPixmap(monIcon);
 
-    QComboBox *monSelector = new QComboBox;
-    monSelector->setMinimumContentsLength(20);
-    monSelector->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLength);
+    NoScrollComboBox *monSelector = new NoScrollComboBox;
     monSelector->addItems(project->speciesToIconPath.keys());
     monSelector->setCurrentText(mon.species);
     monSelector->setEditable(true);
