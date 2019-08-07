@@ -8,7 +8,7 @@ MonTabWidget::MonTabWidget(Project *project, QWidget *parent) : QTabWidget(paren
     installEventFilter(this);
 }
 
-bool MonTabWidget::eventFilter(QObject *object, QEvent *event) {
+bool MonTabWidget::eventFilter(QObject *, QEvent *event) {
     // Press right mouse button to activate tab.
     if (event->type() == QEvent::MouseButtonPress
      && static_cast<QMouseEvent *>(event)->button() == Qt::RightButton) {
@@ -18,6 +18,7 @@ bool MonTabWidget::eventFilter(QObject *object, QEvent *event) {
             askActivateTab(tabIndex, eventPos);
         }
     }
+    return false;
 }
 
 void MonTabWidget::populate() {
