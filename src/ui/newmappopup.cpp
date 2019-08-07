@@ -131,6 +131,7 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
 
     if (this->existingLayout) {
         layout = this->project->mapLayouts.value(this->layoutId);
+        newMap->needsLayoutDir = false;
     } else {
         layout = new MapLayout;
         layout->id = MapLayout::layoutConstantFromName(newMapName);
@@ -156,7 +157,7 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
     group = project->groupNames->indexOf(this->ui->comboBox_NewMap_Group->currentText());
     newMap->layout = layout;
     newMap->layoutId = layout->id;
-    project->loadMapLayout(newMap);
+    if (this->existingLayout) project->loadMapLayout(newMap);
     newMap->group_num = QString::number(group);
     map = newMap;
     emit applied();
