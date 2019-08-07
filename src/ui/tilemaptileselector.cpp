@@ -33,7 +33,7 @@ unsigned TilemapTileSelector::getSelectedTile() {
 }
 
 unsigned TilemapTileSelector::getTileId(int x, int y) {
-    int index = y * this->numTilesWide + x;
+    unsigned index = y * this->numTilesWide + x;
     return index < this->numTiles ? index : this->numTiles % index;
 }
 
@@ -72,6 +72,6 @@ void TilemapTileSelector::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
     emit this->hoveredTileChanged(tileId);
 }
 
-void TilemapTileSelector::hoverLeaveEvent(QGraphicsSceneHoverEvent* event) {
+void TilemapTileSelector::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
     emit this->hoveredTileCleared();
 }

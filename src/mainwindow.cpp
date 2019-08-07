@@ -161,6 +161,8 @@ void MainWindow::setProjectSpecificUIVisibility()
         ui->label_AllowBiking->setVisible(true);
         ui->label_AllowEscapeRope->setVisible(true);
         break;
+    case BaseGameVersion::pokefirered:
+        break;
     }
 }
 
@@ -2122,7 +2124,7 @@ void MainWindow::on_pushButton_DeleteCustomHeaderField_clicked()
     }
 }
 
-void MainWindow::on_tableWidget_CustomHeaderFields_cellChanged(int row, int column)
+void MainWindow::on_tableWidget_CustomHeaderFields_cellChanged(int, int)
 {
     this->editor->updateCustomMapHeaderValues(this->ui->tableWidget_CustomHeaderFields);
 }

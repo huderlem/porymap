@@ -35,6 +35,9 @@ protected:
     void mousePressEvent(QGraphicsSceneMouseEvent*);
     void mouseMoveEvent(QGraphicsSceneMouseEvent*);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent*);
+
+//private:
+//    using MapPixmapItem::paint;
 };
 
 #endif // COLLISIONPIXMAPITEM_H

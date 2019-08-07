@@ -93,6 +93,8 @@ void NewMapPopup::setDefaultValues(int groupNum, QString mapSec) {
         ui->label_NewMap_Allow_Biking->setVisible(true);
         ui->label_NewMap_Allow_Escape_Rope->setVisible(true);
         break;
+    case BaseGameVersion::pokefirered:
+        break;
     }
 }
 

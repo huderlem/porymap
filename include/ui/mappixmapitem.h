@@ -8,6 +8,10 @@
 
 class MapPixmapItem : public QObject, public QGraphicsPixmapItem {
     Q_OBJECT
+
+private:
+    using QGraphicsPixmapItem::paint;
+
 public:
     MapPixmapItem(Map *map_, MetatileSelector *metatileSelector, Settings *settings) {
         this->map = map_;

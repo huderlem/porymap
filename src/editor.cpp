@@ -467,7 +467,7 @@ void Editor::onMapStartPaint(QGraphicsSceneMouseEvent *event, MapPixmapItem *ite
     }
 }
 
-void Editor::onMapEndPaint(QGraphicsSceneMouseEvent *event, MapPixmapItem *item) {
+void Editor::onMapEndPaint(QGraphicsSceneMouseEvent *, MapPixmapItem *item) {
     if (!item->paintingEnabled) {
         return;
     }

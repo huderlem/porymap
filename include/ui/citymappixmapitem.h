@@ -9,6 +9,10 @@
 
 class CityMapPixmapItem : public QObject, public QGraphicsPixmapItem {
     Q_OBJECT
+
+private:
+    using QGraphicsPixmapItem::paint;
+
 public:
     CityMapPixmapItem(QString fname, TilemapTileSelector *tile_selector) {
         this->file = fname;
@@ -25,7 +29,7 @@ public:
     void init();
     void save();
     void create(QString);
-    virtual void paint(QGraphicsSceneMouseEvent*);
+    virtual void paint(QGraphicsSceneMouseEvent *);
     virtual void draw();
     int getIndexAt(int, int);
     int width();

@@ -115,7 +115,7 @@ void RegionMapEntriesPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     }
 }
 
-void RegionMapEntriesPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
+void RegionMapEntriesPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *) {
     this->draggingEntry = false;
 }
 
@@ -123,7 +123,7 @@ void RegionMapEntriesPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
     event->ignore();
 }
 
-void RegionMapEntriesPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent* event) {
+void RegionMapEntriesPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event) {
     event->ignore();
 }
 

@@ -70,7 +70,7 @@ void RegionMapLayoutPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) 
     mousePressEvent(event);
 }
 
-void RegionMapLayoutPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {}
+void RegionMapLayoutPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *) {}
 
 void RegionMapLayoutPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
     QPoint pos = this->getCellPos(event->pos());
@@ -78,7 +78,7 @@ void RegionMapLayoutPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) 
     emit this->hoveredTileChanged(tileId);
 }
 
-void RegionMapLayoutPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent* event) {
+void RegionMapLayoutPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
     emit this->hoveredTileCleared();
 }
 
