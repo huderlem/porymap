@@ -177,6 +177,7 @@ private:
     DraggablePixmapItem *selectedHealspot;
 
     bool isProgrammaticEventTabChange;
+    bool projectHasUnsavedChanges;
 
     MapSortOrder mapSortOrder;
 

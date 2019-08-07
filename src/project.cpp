@@ -671,7 +671,7 @@ void Project::saveTilesetTilesImage(Tileset *tileset) {
     tileset->tilesImage.save(tileset->tilesImagePath);
 }
 
-void Project::saveTilesetPalettes(Tileset *tileset, bool primary) {
+void Project::saveTilesetPalettes(Tileset *tileset, bool /*primary*/) {
     PaletteUtil paletteParser;
     for (int i = 0; i < Project::getNumPalettesTotal(); i++) {
         QString filepath = tileset->palettePaths.at(i);

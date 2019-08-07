@@ -34,7 +34,7 @@ protected:
 
 private:
     int numTilesWide;
-    int numTiles;
+    size_t numTiles;
     void updateSelectedTile();
     unsigned getTileId(int x, int y);
     QPoint getTileIdCoords(unsigned);

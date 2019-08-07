@@ -18,8 +18,7 @@ public:
                       20 * 8 + penWidth * 2);
     }
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
-               QWidget *widget) override
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override
     {
         painter->setPen(this->color);
         painter->drawRect(-2, -2, this->width + 3, this->height + 3);

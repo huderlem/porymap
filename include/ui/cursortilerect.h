@@ -27,8 +27,7 @@ public:
                       height + penWidth * 2);
     }
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
-               QWidget *widget) override
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override
     {
         if (!(*enabled)) return;
         int width = this->width;

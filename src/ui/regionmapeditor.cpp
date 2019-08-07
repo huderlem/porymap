@@ -445,11 +445,6 @@ void RegionMapEditor::mouseEvent_region_map(QGraphicsSceneMouseEvent *event, Reg
 }
 
 void RegionMapEditor::mouseEvent_city_map(QGraphicsSceneMouseEvent *event, CityMapPixmapItem *item) {
-    QPointF pos = event->pos();
-    int x = static_cast<int>(pos.x()) / 8;
-    int y = static_cast<int>(pos.y()) / 8;
-    int index = this->city_map_item->getIndexAt(x, y);
-
     if (cityMapFirstDraw) {
         RegionMapHistoryItem *commit = new RegionMapHistoryItem(
             RegionMapEditorBox::CityMapImage, this->city_map_item->getTiles(), this->city_map_item->file
@@ -548,7 +543,7 @@ void RegionMapEditor::on_spinBox_RM_Entry_height_valueChanged(int height) {
     this->hasUnsavedChanges = true;
 }
 
-void RegionMapEditor::on_lineEdit_RM_MapName_textEdited(const QString &text) {
+void RegionMapEditor::on_lineEdit_RM_MapName_textEdited(const QString &) {
     this->hasUnsavedChanges = true;
 }
 
