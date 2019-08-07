@@ -1001,6 +1001,7 @@ void MainWindow::on_mapList_activated(const QModelIndex &index)
 }
 
 void MainWindow::drawMapListIcons(QAbstractItemModel *model) {
+    projectHasUnsavedChanges = false;
     QList<QModelIndex> list;
     list.append(QModelIndex());
     while (list.length()) {
@@ -1018,6 +1019,7 @@ void MainWindow::drawMapListIcons(QAbstractItemModel *model) {
                     map->setIcon(*mapIcon);
                     if (editor->project->map_cache->value(map_name)->hasUnsavedChanges()) {
                         map->setIcon(*mapEditedIcon);
+                        projectHasUnsavedChanges = true;
                     }
                     if (editor->map->name == map_name) {
                         map->setIcon(*mapOpenedIcon);
@@ -2170,6 +2172,21 @@ void MainWindow::on_actionRegion_Map_Editor_triggered() {
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
+    if (projectHasUnsavedChanges || editor->map->hasUnsavedChanges()) {
+        QMessageBox::StandardButton result = QMessageBox::question(
+            this, "porymap", "The project has been modified, save changes?",
+            QMessageBox::No | QMessageBox::Yes | QMessageBox::Cancel, QMessageBox::Yes);
+
+        if (result == QMessageBox::Yes) {
+            editor->saveProject();
+        } else if (result == QMessageBox::No) {
+            logWarn("Closing porymap with unsaved changes.");
+        } else if (result == QMessageBox::Cancel) {
+            event->ignore();
+            return;
+        }
+    }
+
     porymapConfig.setGeometry(
         this->saveGeometry(),
         this->saveState(),
