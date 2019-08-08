@@ -7,15 +7,20 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 The **"Breaking Changes"** listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. If porymap is used on a project that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.
 
 ## [Unreleased]
+### Added
+- Add warning when closing porymap with unsaved changes.
+
 ### Changed
 - Exporting map images is now more configurable. Events, connections, collision, etc. can be toggled on and off before exporting the image.
 - The entire Tileset Editor selection is now conveniently flipped when selecting x-flip or y-flip.
+- Autocomplete for porymap's comboboxes are no longer requires typing the full string prefix.
 
 ### Fixed
 - Fix bug where map group names were hardcoded when creating a new map.
 - Fix bug in Tileset Editor where multi-tile selections weren't properly painted when clicking on the bottom row of the metatile layers.
 - Fix bug where line breaks in C headers were not parsed properly.
 - Fix bug when exporting tileset images using palettes with duplicate colors.
+- Fix bug where creating new maps from existing layouts created an empty layout folder.
 
 
 ## [1.2.2] - 2019-05-16
