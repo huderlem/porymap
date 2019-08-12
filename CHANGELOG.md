@@ -13,7 +13,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ### Changed
 - Exporting map images is now more configurable. Events, connections, collision, etc. can be toggled on and off before exporting the image.
 - The entire Tileset Editor selection is now conveniently flipped when selecting x-flip or y-flip.
-- Autocomplete for porymap's comboboxes are no longer requires typing the full string prefix.
+- Autocomplete for porymap's comboboxes no longer require typing the full string prefix.
 
 ### Fixed
 - Fix bug where map group names were hardcoded when creating a new map.
