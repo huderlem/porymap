@@ -1,0 +1,95 @@
+/* DARK theme for porymap */
+
+/* General Widgets */
+
+QWidget {
+    background: #31332b;
+    color: #F8F8F2;
+}
+
+QWidget::item:selected {
+    background: #49483E;
+}
+
+QWidget::item:focus {
+    background: #49483E;
+    border: none;
+}
+
+/* Combo Boxes */
+
+QComboBox {
+    background: #272822;
+    color: #F8F8F2;
+}
+
+QComboBox QAbstractItemView {
+    background: #31332b;
+    color: #75715E;
+    selection-background-color: #49483E;
+}
+
+/* Spin Boxes */
+
+QSpinBox {
+    background: #272822;
+    color: #F8F8F2;
+}
+
+/* Line Edits */
+
+QLineEdit {
+    background: #272822;
+    color: #F8F8F2;
+}
+
+/* Frames, Labels */
+
+#label_spritePixmap {
+    background: #272822;
+    color: #F8F8F2;
+}
+
+/* Checkboxes */
+
+QCheckBox, QRadioButton {
+    border: none;
+}
+
+QRadioButton::indicator::unchecked, QCheckBox::indicator::unchecked {
+    border: 1px solid #49483E;
+    background: none;
+}
+
+QRadioButton::indicator:unchecked:hover, QCheckBox::indicator:unchecked:hover {
+    border: 1px solid #F8F8F2;
+}
+
+QRadioButton::indicator::checked, QCheckBox::indicator::checked {
+    border: 1px solid #49483E;
+    background: #49483E;
+}
+
+QRadioButton::indicator:checked:hover, QCheckBox::indicator:checked:hover {
+    border: 1px solid #F8F8F2;
+    background: #F8F8F2;
+}
+
+/* Map List View */
+
+QTreeView {
+    background: #272822;
+}
+
+QTreeView::item:hover {
+    background: #49483E;
+}
+
+QTreeView::item:selected {
+    background: #49483E;
+    color: #F8F8F2;
+}
+
+QTreeView::branch {
+    background: #272822;
+}

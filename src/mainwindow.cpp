@@ -11,6 +11,7 @@
 #include "customattributestable.h"
 
 #include <QFileDialog>
+#include <QDirIterator>
 #include <QStandardItemModel>
 #include <QShortcut>
 #include <QSpinBox>
@@ -2117,6 +2118,45 @@ void MainWindow::on_actionAbout_Porymap_triggered()
     AboutPorymap *window = new AboutPorymap(this);
     window->setAttribute(Qt::WA_DeleteOnClose);
     window->show();
+}
+
+void MainWindow::on_actionThemes_triggered()
+{
+    QStringList themes;
+    QRegularExpression re(":/themes/([A-z0-9_]+).qss");
+    themes.append("default");
+    QDirIterator it(":/themes", QDirIterator::Subdirectories);
+    while (it.hasNext()) {
+        QString themeName = re.match(it.next()).captured(1);
+        themes.append(themeName);
+    }
+
+    QDialog themeSelectorWindow(this);
+    QFormLayout form(&themeSelectorWindow);
+
+    NoScrollComboBox *themeSelector = new NoScrollComboBox();
+    themeSelector->addItems(themes);
+    form.addRow(new QLabel("Themes"), themeSelector);
+
+    QDialogButtonBox buttonBox(QDialogButtonBox::Apply | QDialogButtonBox::Close, Qt::Horizontal, &themeSelectorWindow);
+    form.addRow(&buttonBox);
+    connect(&buttonBox, &QDialogButtonBox::clicked, [&themeSelectorWindow, &buttonBox, themeSelector, this](QAbstractButton *button){
+        if (button == buttonBox.button(QDialogButtonBox::Apply)) {
+            QString theme = themeSelector->currentText();
+            if (theme == "default") {
+                setStyleSheet("");
+                return;
+            }
+
+            QFile File(QString(":/themes/%1.qss").arg(theme));
+            File.open(QFile::ReadOnly);
+            QString stylesheet = QLatin1String(File.readAll());
+            setStyleSheet(stylesheet);
+        }
+    });
+    connect(&buttonBox, SIGNAL(rejected()), &themeSelectorWindow, SLOT(reject()));
+
+    themeSelectorWindow.exec();
 }
 
 void MainWindow::on_pushButton_AddCustomHeaderField_clicked()

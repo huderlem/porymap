@@ -1281,7 +1281,7 @@
                  <item row="0" column="1">
                   <widget class="QLabel" name="label">
                    <property name="text">
-                    <string>Transparency</string>
+                    <string>Opacity</string>
                    </property>
                   </widget>
                  </item>
@@ -2827,6 +2827,8 @@
     <addaction name="actionCursor_Tile_Outline"/>
     <addaction name="actionPlayer_View_Rectangle"/>
     <addaction name="actionBetter_Cursors"/>
+    <addaction name="separator"/>
+    <addaction name="actionThemes"/>
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
@@ -3081,6 +3083,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+N</string>
+   </property>
+  </action>
+  <action name="actionThemes">
+   <property name="text">
+    <string>Themes...</string>
    </property>
   </action>
  </widget>
