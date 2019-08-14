@@ -21,6 +21,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix bug where line breaks in C headers were not parsed properly.
 - Fix bug when exporting tileset images using palettes with duplicate colors.
 - Fix bug where creating new maps from existing layouts created an empty layout folder.
+- Fix bug where exported tile images did not contain the last row of tiles.
 
 
 ## [1.2.2] - 2019-05-16
