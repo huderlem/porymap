@@ -227,6 +227,7 @@ void MainWindow::loadUserSettings() {
     ui->horizontalSlider_MetatileZoom->blockSignals(true);
     ui->horizontalSlider_MetatileZoom->setValue(porymapConfig.getMetatilesZoom());
     ui->horizontalSlider_MetatileZoom->blockSignals(false);
+    setTheme(porymapConfig.getTheme());
 }
 
 void MainWindow::restoreWindowState() {
@@ -237,6 +238,17 @@ void MainWindow::restoreWindowState() {
     this->ui->splitter_map->restoreState(geometry.value("map_splitter_state"));
     this->ui->splitter_events->restoreState(geometry.value("events_splitter_state"));
     this->ui->splitter_main->restoreState(geometry.value("main_splitter_state"));
+}
+
+void MainWindow::setTheme(QString theme) {
+    if (theme == "default") {
+        setStyleSheet("");
+    } else {
+        QFile File(QString(":/themes/%1.qss").arg(theme));
+        File.open(QFile::ReadOnly);
+        QString stylesheet = QLatin1String(File.readAll());
+        setStyleSheet(stylesheet);
+    }
 }
 
 bool MainWindow::openRecentProject() {
@@ -2136,6 +2148,7 @@ void MainWindow::on_actionThemes_triggered()
 
     NoScrollComboBox *themeSelector = new NoScrollComboBox();
     themeSelector->addItems(themes);
+    themeSelector->setCurrentText(porymapConfig.getTheme());
     form.addRow(new QLabel("Themes"), themeSelector);
 
     QDialogButtonBox buttonBox(QDialogButtonBox::Apply | QDialogButtonBox::Close, Qt::Horizontal, &themeSelectorWindow);
@@ -2143,15 +2156,8 @@ void MainWindow::on_actionThemes_triggered()
     connect(&buttonBox, &QDialogButtonBox::clicked, [&themeSelectorWindow, &buttonBox, themeSelector, this](QAbstractButton *button){
         if (button == buttonBox.button(QDialogButtonBox::Apply)) {
             QString theme = themeSelector->currentText();
-            if (theme == "default") {
-                setStyleSheet("");
-                return;
-            }
-
-            QFile File(QString(":/themes/%1.qss").arg(theme));
-            File.open(QFile::ReadOnly);
-            QString stylesheet = QLatin1String(File.readAll());
-            setStyleSheet(stylesheet);
+            porymapConfig.setTheme(theme);
+            this->setTheme(theme);
         }
     });
     connect(&buttonBox, SIGNAL(rejected()), &themeSelectorWindow, SLOT(reject()));

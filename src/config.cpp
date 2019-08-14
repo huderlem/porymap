@@ -167,6 +167,8 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         } else {
             this->regionMapDimensions = QSize(w, h);
         }
+    } else if (key == "theme") {
+        this->theme = value;
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -189,6 +191,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("show_cursor_tile", this->showCursorTile ? "1" : "0");
     map.insert("region_map_dimensions", QString("%1x%2").arg(this->regionMapDimensions.width())
                                                         .arg(this->regionMapDimensions.height()));
+    map.insert("theme", this->theme);
     return map;
 }
 
@@ -263,6 +266,10 @@ void PorymapConfig::setRegionMapDimensions(int width, int height) {
     this->regionMapDimensions = QSize(width, height);
 }
 
+void PorymapConfig::setTheme(QString theme) {
+    this->theme = theme;
+}
+
 QString PorymapConfig::getRecentProject() {
     return this->recentProject;
 }
@@ -309,6 +316,10 @@ bool PorymapConfig::getShowCursorTile() {
 
 QSize PorymapConfig::getRegionMapDimensions() {
     return this->regionMapDimensions;
+}
+
+QString PorymapConfig::getTheme() {
+    return this->theme;
 }
 
 const QMap<BaseGameVersion, QString> baseGameVersionMap = {
