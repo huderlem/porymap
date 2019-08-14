@@ -62,6 +62,12 @@ unsigned long crc(QByteArray buf, int len)
 // images in porymap, we can effectively avoid that issue.
 void exportIndexed4BPPPng(QImage image, QString filepath)
 {
+    // Verify that the image is not empty
+    if (image.isNull()) {
+        logError(QString("Failed to export %1: the image is null.").arg(filepath));
+        return;
+    }
+
     // Header
     QByteArray pngHeader;
     pngHeader.append(static_cast<char>(0x89));
