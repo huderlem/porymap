@@ -144,7 +144,8 @@ FORMS    += forms/mainwindow.ui \
     forms/mapimageexporter.ui
 
 RESOURCES += \
-    resources/images.qrc
+    resources/images.qrc \
+    resources/themes.qrc
 
 INCLUDEPATH += include
 INCLUDEPATH += include/core
