@@ -211,6 +211,7 @@ private:
     void setProjectSpecificUIVisibility();
     void loadUserSettings();
     void restoreWindowState();
+    void setTheme(QString);
     bool openRecentProject();
     void updateTilesetEditor();
     QString getEventGroupFromTabWidget(QWidget *tab);

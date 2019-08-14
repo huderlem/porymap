@@ -38,6 +38,7 @@ public:
         this->showPlayerView = false;
         this->showCursorTile = true;
         this->regionMapDimensions = QSize(32, 20);
+        this->theme = "default";
     }
     void setRecentProject(QString project);
     void setRecentMap(QString map);
@@ -49,6 +50,7 @@ public:
     void setShowPlayerView(bool enabled);
     void setShowCursorTile(bool enabled);
     void setRegionMapDimensions(int width, int height);
+    void setTheme(QString theme);
     QString getRecentProject();
     QString getRecentMap();
     MapSortOrder getMapSortOrder();
@@ -59,6 +61,7 @@ public:
     bool getShowPlayerView();
     bool getShowCursorTile();
     QSize getRegionMapDimensions();
+    QString getTheme();
 protected:
     QString getConfigFilepath();
     void parseConfigKeyValue(QString key, QString value);
@@ -81,6 +84,7 @@ private:
     bool showPlayerView;
     bool showCursorTile;
     QSize regionMapDimensions;
+    QString theme;
 };
 
 extern PorymapConfig porymapConfig;
