@@ -1942,7 +1942,7 @@ void MainWindow::on_spinBox_ConnectionOffset_valueChanged(int offset)
     editor->updateConnectionOffset(offset);
 }
 
-void MainWindow::on_comboBox_ConnectedMap_currentTextChanged(const QString &mapName)
+void MainWindow::on_comboBox_ConnectedMap_activated(const QString &mapName)
 {
     editor->setConnectionMap(mapName);
 }
@@ -1957,12 +1957,12 @@ void MainWindow::on_pushButton_RemoveConnection_clicked()
     editor->removeCurrentConnection();
 }
 
-void MainWindow::on_comboBox_DiveMap_currentTextChanged(const QString &mapName)
+void MainWindow::on_comboBox_DiveMap_activated(const QString &mapName)
 {
     editor->updateDiveMap(mapName);
 }
 
-void MainWindow::on_comboBox_EmergeMap_currentTextChanged(const QString &mapName)
+void MainWindow::on_comboBox_EmergeMap_activated(const QString &mapName)
 {
     editor->updateEmergeMap(mapName);
 }

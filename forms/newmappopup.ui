@@ -61,7 +61,7 @@
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QComboBox" name="comboBox_NewMap_Group">
+        <widget class="NoScrollComboBox" name="comboBox_NewMap_Group">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;New map group.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -146,7 +146,7 @@
         </widget>
        </item>
        <item row="6" column="1">
-        <widget class="QComboBox" name="comboBox_NewMap_Type">
+        <widget class="NoScrollComboBox" name="comboBox_NewMap_Type">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The map type is a general attribute, which is used for many different things. For example. it determines whether biking or running is allowed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -163,7 +163,7 @@
         </widget>
        </item>
        <item row="7" column="1">
-        <widget class="QComboBox" name="comboBox_NewMap_Location">
+        <widget class="NoScrollComboBox" name="comboBox_NewMap_Location">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The section of the region map which the map is grouped under. This also determines the name of the map that is displayed when the player enters it.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
