@@ -773,7 +773,7 @@
                 </widget>
                </item>
                <item row="0" column="1">
-                <widget class="QComboBox" name="comboBox_RM_ConnectedMap">
+                <widget class="NoScrollComboBox" name="comboBox_RM_ConnectedMap">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -809,7 +809,7 @@
                 </widget>
                </item>
                <item row="2" column="1">
-                <widget class="QComboBox" name="comboBox_RM_CityMap">
+                <widget class="NoScrollComboBox" name="comboBox_RM_CityMap">
                  <property name="toolTip">
                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The map type is a general attribute, which is used for many different things. For example. it determines whether biking or running is allowed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
@@ -887,7 +887,7 @@
                 </widget>
                </item>
                <item row="0" column="1">
-                <widget class="QComboBox" name="comboBox_RM_Entry_MapSection">
+                <widget class="NoScrollComboBox" name="comboBox_RM_Entry_MapSection">
                  <property name="enabled">
                   <bool>true</bool>
                  </property>
@@ -1030,7 +1030,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QComboBox" name="comboBox_CityMap_picker"/>
+            <widget class="NoScrollComboBox" name="comboBox_CityMap_picker"/>
            </item>
            <item>
             <widget class="QPushButton" name="pushButton_CityMap_add">
