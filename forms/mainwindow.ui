@@ -499,7 +499,7 @@
                  </widget>
                 </item>
                 <item>
-                 <spacer name="horizontalSpacer">
+                 <spacer name="horizontalSpacer1">
                   <property name="orientation">
                    <enum>Qt::Horizontal</enum>
                   </property>
@@ -2376,7 +2376,7 @@
              </widget>
             </item>
             <item row="2" column="0">
-             <widget class="QFrame" name="horizontalFrame">
+             <widget class="QFrame" name="horizontalFrame2">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -2492,7 +2492,7 @@
              </widget>
             </item>
             <item row="3" column="0">
-             <widget class="QFrame" name="gridFrame">
+             <widget class="QFrame" name="gridFrame1">
               <property name="frameShape">
                <enum>QFrame::StyledPanel</enum>
               </property>
@@ -2606,7 +2606,7 @@
                 </widget>
                </item>
                <item row="0" column="0">
-                <widget class="QFrame" name="horizontalFrame">
+                <widget class="QFrame" name="horizontalFrame3">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
                    <horstretch>0</horstretch>
