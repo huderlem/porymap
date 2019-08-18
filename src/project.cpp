@@ -1440,7 +1440,7 @@ void Project::readHealLocations() {
 
     dataQualifiers.insert("heal_locations", getDataQualifiers(text, "sHealLocations"));
 
-    QRegularExpression regex("MAP_GROUP\\((?<map>[A-Za-z0-9_]*)\\),\\s+MAP_NUM\\((\\1)\\),\\s+(?<x>[0-9A-Fa-fx]*),\\s+(?<y>[0-9A-Fa-fx]*)");
+    QRegularExpression regex("MAP_GROUP[\\(\\s]+(?<map>[A-Za-z0-9_]+)[\\s\\)]+,\\s*MAP_NUM[\\(\\s]+(\\1)[\\s\\)]+,\\s*(?<x>[0-9A-Fa-fx]+),\\s*(?<y>[0-9A-Fa-fx]+)");
     QRegularExpressionMatchIterator iter = regex.globalMatch(text);
 
     flyableMaps.clear();
