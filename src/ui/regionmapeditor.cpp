@@ -225,6 +225,11 @@ void RegionMapEditor::updateRegionMapEntryOptions(QString section) {
     this->ui->spinBox_RM_Entry_width->setEnabled(enabled);
     this->ui->spinBox_RM_Entry_height->setEnabled(enabled);
 
+    this->ui->spinBox_RM_Entry_x->blockSignals(true);
+    this->ui->spinBox_RM_Entry_y->blockSignals(true);
+    this->ui->spinBox_RM_Entry_width->blockSignals(true);
+    this->ui->spinBox_RM_Entry_height->blockSignals(true);
+
     this->ui->comboBox_RM_Entry_MapSection->setCurrentText(section);
     this->activeEntry = section;
     this->region_map_entries_item->currentSection = section;
@@ -233,6 +238,11 @@ void RegionMapEditor::updateRegionMapEntryOptions(QString section) {
     this->ui->spinBox_RM_Entry_y->setValue(entry.y);
     this->ui->spinBox_RM_Entry_width->setValue(entry.width);
     this->ui->spinBox_RM_Entry_height->setValue(entry.height);
+
+    this->ui->spinBox_RM_Entry_x->blockSignals(false);
+    this->ui->spinBox_RM_Entry_y->blockSignals(false);
+    this->ui->spinBox_RM_Entry_width->blockSignals(false);
+    this->ui->spinBox_RM_Entry_height->blockSignals(false);
 }
 
 void RegionMapEditor::displayRegionMapTileSelector() {

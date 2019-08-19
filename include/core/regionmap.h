@@ -120,6 +120,9 @@ private:
     QString region_map_layout_bin_path;
     QString city_map_tiles_path;
 
+    bool region_map_png_needs_saving = false;
+    bool city_map_png_needs_saving = false;
+
     int img_index_(int x, int y);
     int layout_index_(int x, int y);
 };
