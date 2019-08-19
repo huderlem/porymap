@@ -9,7 +9,7 @@ NoScrollComboBox::NoScrollComboBox(QWidget *parent)
     setFocusPolicy(Qt::StrongFocus);
 
     // Make speed a priority when loading comboboxes.
-    setMinimumContentsLength(20);// an arbitrary limit
+    setMinimumContentsLength(24);// an arbitrary limit
     setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLength);
 
     // Allow items to be searched by any part of the word, displaying all matches.
