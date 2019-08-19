@@ -493,6 +493,7 @@ void RegionMapEditor::on_tabWidget_Region_Map_currentChanged(int index) {
 
 void RegionMapEditor::on_comboBox_RM_ConnectedMap_activated(const QString &mapsec) {
     this->ui->lineEdit_RM_MapName->setText(this->project->mapSecToMapHoverName->value(mapsec));
+    onRegionMapLayoutSelectedTileChanged(this->currIndex);// re-draw layout image
     this->hasUnsavedChanges = true;// sometimes this is called for unknown reasons
 }
 
