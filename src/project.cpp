@@ -1488,7 +1488,7 @@ void Project::readMapBattleScenes() {
 }
 
 void Project::readWeatherNames() {
-    QStringList prefixes = (QStringList() << "WEATHER_");
+    QStringList prefixes = (QStringList() << "\\bWEATHER_");
     parser.readCDefinesSorted("include/constants/weather.h", prefixes, weatherNames);
 }
 
