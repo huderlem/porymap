@@ -1418,6 +1418,7 @@ void MainWindow::updateSelectedObjects() {
                 combo->setToolTip("The trainer type of this event object.\n"
                                   "If it is not a trainer, use NONE. SEE ALL DIRECTIONS\n"
                                   "should only be used with a sight radius of 1.");
+                combo->setMinimumContentsLength(10);
 
                 int index = combo->findData(value);
                 if (index != -1) {
@@ -1499,15 +1500,18 @@ void MainWindow::updateSelectedObjects() {
                 combo->setToolTip("The maximum number of metatiles this object\n"
                                   "is allowed to move left or right during its\n"
                                   "normal movement behavior actions.");
+                combo->setMinimumContentsLength(4);
             } else if (key == "radius_y") {
                 combo->setToolTip("The maximum number of metatiles this object\n"
                                   "is allowed to move up or down during its\n"
                                   "normal movement behavior actions.");
+                combo->setMinimumContentsLength(4);
             } else if (key == "script_label") {
                 combo->setToolTip("The script which is executed with this event.");
             } else if (key == "sight_radius_tree_id") {
                 combo->setToolTip("The maximum sight range of a trainer,\n"
                                   "OR the unique id of the berry tree.");
+                combo->setMinimumContentsLength(4);
             } else {
                 combo->addItem(value);
             }

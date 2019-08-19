@@ -185,7 +185,7 @@ void RegionMap::saveLayout() {
     }
 
     for (auto sec : project->mapSectionNameToValue.keys()) {
-        if (!mapSecToMapEntry.contains(sec)) continue;
+        if (!mapSecToMapEntry.contains(sec) || sec == "MAPSEC_NONE") continue;
         RegionMapEntry entry = mapSecToMapEntry.value(sec);
         entries_text += "    [" + sec + QString("]%1= {").arg(QString(" ").repeated(1 + longest - sec.length()))
             + QString::number(entry.x) + ", " + QString::number(entry.y) + ", " 
