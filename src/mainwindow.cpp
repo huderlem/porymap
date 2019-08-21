@@ -2135,7 +2135,7 @@ void MainWindow::on_actionAbout_Porymap_triggered()
 void MainWindow::on_actionThemes_triggered()
 {
     QStringList themes;
-    QRegularExpression re(":/themes/([A-z0-9_]+).qss");
+    QRegularExpression re(":/themes/([A-z0-9_-]+).qss");
     themes.append("default");
     QDirIterator it(":/themes", QDirIterator::Subdirectories);
     while (it.hasNext()) {

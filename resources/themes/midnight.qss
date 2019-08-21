@@ -1,68 +1,67 @@
-/* DARK theme for porymap */
+/* MIDNIGHT theme for porymap */
 
 /*
 
-    Background #232629
-    Font       #EFF0F1
-    Highlight  #18465D
-    Accent     #19232D
-    Disabled   #505F69
+    Background #31332b
+    Font       #F8F8F2
+    Highlight  #49483E
+    Accent     #272822
 
 */
 
 /* General Widgets */
 
 QWidget {
-    background: #19232D;
-    color: #EFF0F1;
+    background: #31332b;
+    color: #F8F8F2;
 }
 
 QWidget::disabled {
-    background: #19232D;
-    color: #787878;
+    background: #272822;
+    color: #75715E;
 }
 
 QWidget::item:selected {
-    background: #18465D;
+    background: #49483E;
 }
 
 QWidget::item:focus {
-    background: #18465D;
+    background: #49483E;
     border: none;
 }
 
 /* Combo Boxes */
 
 QComboBox {
-    background: #19232D;
-    color: #EFF0F1;
+    background: #272822;
+    color: #F8F8F2;
 }
 
 QComboBox QAbstractItemView {
-    background: #232629;
-    color: #505F69;
-    selection-background-color: #18465D;
+    background: #31332b;
+    color: #75715E;
+    selection-background-color: #49483E;
 }
 
 /* Spin Boxes */
 
 QSpinBox {
-    background: #19232D;
-    color: #EFF0F1;
+    background: #272822;
+    color: #F8F8F2;
 }
 
 /* Line Edits */
 
 QLineEdit {
-    background: #19232D;
-    color: #EFF0F1;
+    background: #272822;
+    color: #F8F8F2;
 }
 
 /* Frames, Labels */
 
 #label_spritePixmap {
-    background: #19232D;
-    color: #EFF0F1;
+    background: #272822;
+    color: #F8F8F2;
 }
 
 /* Checkboxes */
@@ -72,61 +71,61 @@ QCheckBox, QRadioButton {
 }
 
 QRadioButton::indicator::unchecked, QCheckBox::indicator::unchecked {
-    border: 1px solid #18465D;
+    border: 1px solid #49483E;
     background: none;
 }
 
 QRadioButton::indicator:unchecked:hover, QCheckBox::indicator:unchecked:hover {
-    border: 1px solid #EFF0F1;
+    border: 1px solid #F8F8F2;
 }
 
 QRadioButton::indicator::checked, QCheckBox::indicator::checked {
-    border: 1px solid #18465D;
-    background: #18465D;
+    border: 1px solid #49483E;
+    background: #49483E;
 }
 
 QRadioButton::indicator:checked:hover, QCheckBox::indicator:checked:hover {
-    border: 1px solid #EFF0F1;
-    background: #EFF0F1;
+    border: 1px solid #F8F8F2;
+    background: #F8F8F2;
 }
 
 /* Map List View */
 
 QTreeView {
-    background: #19232D;
+    background: #272822;
 }
 
 QTreeView::item:hover {
-    background: #18465D;
+    background: #49483E;
 }
 
 QTreeView::item:selected {
-    background: #18465D;
-    color: #EFF0F1;
+    background: #49483E;
+    color: #F8F8F2;
 }
 
 QTreeView::branch {
-    background: #19232D;
+    background: #272822;
 }
 
 /* Scroll Bar */
 
 QScrollBar::vertical {
-    background-color: #19232D;
+    background-color: #31332b;
 }
 
 QScrollBar::horizontal {
-    background-color: #19232D;
+    background-color: #31332b;
 }
 
 QScrollBar::handle:horizontal {
-    background-color: #787878;
-    border: 1px solid #232629;
+    background-color: #272822;
+    border: 1px solid #31332b;
 }
 
 QScrollBar::handle:vertical {
-    background-color: #787878;
-    border: 1px solid #232629;
+    background-color: #272822;
+    border: 1px solid #31332b;
 }
 
 QScrollBar::add-line:horizontal {
