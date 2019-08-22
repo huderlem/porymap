@@ -31,6 +31,46 @@ QWidget::item:focus {
     border: none;
 }
 
+/* Menus */
+
+QMenu::indicator {
+    width: 12px;
+    height: 12px;
+    padding-left: 6px;
+}
+
+QMenu::indicator:non-exclusive:unchecked {
+    image: url(":/icons/ui/dark_checkbox_unchecked.png");
+}
+
+QMenu::indicator:non-exclusive:unchecked:selected {
+    image: url(":/icons/ui/dark_checkbox_unchecked_disabled.png");
+}
+
+QMenu::indicator:non-exclusive:checked {
+    image: url(":/icons/ui/dark_checkbox_checked.png");
+}
+
+QMenu::indicator:non-exclusive:checked:selected {
+    image: url(":/icons/ui/dark_checkbox_checked_disabled.png");
+}
+
+QMenu::indicator:exclusive:unchecked {
+    image: url(":/icons/ui/dark_checkbox_unchecked.png");
+}
+
+QMenu::indicator:exclusive:unchecked:selected {
+    image: url(":/icons/ui/dark_checkbox_unchecked_disabled.png");
+}
+
+QMenu::indicator:exclusive:checked {
+    image: url(":/icons/ui/dark_checkbox_checked.png");
+}
+
+QMenu::indicator:exclusive:checked:selected {
+    image: url(":/icons/ui/dark_checkbox_checked_disabled.png");
+}
+
 /* Combo Boxes */
 
 QComboBox {
@@ -40,8 +80,15 @@ QComboBox {
 
 QComboBox QAbstractItemView {
     background: #232629;
-    color: #505F69;
+    color: #EFF0F1;
     selection-background-color: #18465D;
+}
+
+QComboBox::indicator {
+    background-color: transparent;
+    selection-background-color: transparent;
+    color: transparent;
+    selection-color: transparent;
 }
 
 /* Spin Boxes */
@@ -67,27 +114,52 @@ QLineEdit {
 
 /* Checkboxes */
 
-QCheckBox, QRadioButton {
+QCheckBox {
+    background-color: #19232D;
+    color: #F0F0F0;
+    spacing: 4px;
+    outline: none;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+QCheckBox:focus {
     border: none;
 }
 
+QCheckBox QWidget:disabled {
+    background-color: #19232D;
+    color: #787878;
+}
+
+QCheckBox::indicator {
+    margin-left: 4px;
+    height: 16px;
+    width: 16px;
+}
+
 QRadioButton::indicator::unchecked, QCheckBox::indicator::unchecked {
-    border: 1px solid #18465D;
-    background: none;
+    image: url(:/icons/ui/dark_checkbox_unchecked.png)
 }
 
 QRadioButton::indicator:unchecked:hover, QCheckBox::indicator:unchecked:hover {
-    border: 1px solid #EFF0F1;
+
+}
+
+QCheckBox::indicator:unchecked:disabled {
+    image: url(":/icons/ui/dark_checkbox_unchecked_disabled.png");
 }
 
 QRadioButton::indicator::checked, QCheckBox::indicator::checked {
-    border: 1px solid #18465D;
-    background: #18465D;
+    image: url(":/icons/ui/dark_checkbox_checked.png");
 }
 
 QRadioButton::indicator:checked:hover, QCheckBox::indicator:checked:hover {
-    border: 1px solid #EFF0F1;
-    background: #EFF0F1;
+
+}
+
+QCheckBox::indicator:checked:disabled {
+    image: url(":/icons/ui/dark_checkbox_checked_disabled.png");
 }
 
 /* Map List View */
