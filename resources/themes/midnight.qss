@@ -79,7 +79,7 @@ QComboBox {
 
 QComboBox QAbstractItemView {
     background: #31332b;
-    color: #75715E;
+    color: #BAB8AE;
     selection-background-color: #49483E;
 }
 
@@ -110,33 +110,6 @@ QLineEdit {
     background: #272822;
     color: #F8F8F2;
 }
-
-/* Checkboxes */
-/*
-QCheckBox, QRadioButton {
-    border: none;
-}
-
-QRadioButton::indicator::unchecked, QCheckBox::indicator::unchecked {
-    border: 1px solid #49483E;
-    background: none;
-}
-
-QRadioButton::indicator:unchecked:hover, QCheckBox::indicator:unchecked:hover {
-    border: 1px solid #F8F8F2;
-}
-
-QRadioButton::indicator::checked, QCheckBox::indicator::checked {
-    border: 1px solid #49483E;
-    background: #49483E;
-}
-
-QRadioButton::indicator:checked:hover, QCheckBox::indicator:checked:hover {
-    border: 1px solid #F8F8F2;
-    background: #F8F8F2;
-}
-*/
-/* *********** */
 
 QCheckBox {
     background-color: #31332b;
