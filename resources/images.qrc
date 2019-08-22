@@ -32,5 +32,13 @@
         <file>icons/collapse_all.ico</file>
         <file>icons/expand_all.ico</file>
         <file>images/blank_tileset.png</file>
+        <file>icons/ui/dark_checkbox_checked_disabled.png</file>
+        <file>icons/ui/dark_checkbox_checked.png</file>
+        <file>icons/ui/dark_checkbox_unchecked_disabled.png</file>
+        <file>icons/ui/dark_checkbox_unchecked.png</file>
+        <file>icons/ui/midnight_checkbox_checked_disabled.png</file>
+        <file>icons/ui/midnight_checkbox_checked.png</file>
+        <file>icons/ui/midnight_checkbox_unchecked_disabled.png</file>
+        <file>icons/ui/midnight_checkbox_unchecked.png</file>
     </qresource>
 </RCC>
