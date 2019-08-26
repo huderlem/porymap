@@ -33,10 +33,74 @@ QWidget::item:focus {
 
 /* Menus */
 
+QMenuBar {
+    background-color: #32414B;
+    padding: 2px;
+    border: 1px solid #19232D;
+    color: #F0F0F0;
+}
+
+QMenuBar:focus {
+    border: 1px solid #232629;
+}
+
+QMenuBar::item {
+    background: transparent;
+    padding: 4px;
+}
+
+QMenuBar::item:selected {
+    padding: 4px;
+    background-color: #232629;
+    border: 0px solid #32414B;
+}
+
+QMenuBar::item:!selected {
+    padding: 4px;
+    background-color: #32414B;
+    border: 0px solid #32414B;
+}
+
+QMenuBar::item:pressed {
+    padding: 4px;
+    border: 0px solid #32414B;
+    background-color: #232629;
+    color: #F0F0F0;
+    margin-bottom: 0px;
+    padding-bottom: 0px;
+}
+
+QMenu {
+    border: 0px solid #32414B;
+    color: #F0F0F0;
+    margin: 0px;
+}
+
+QMenu::separator {
+    height: 1px;
+    background-color: #505F69;
+    color: #F0F0F0;
+}
+
+QMenu::icon {
+    margin: 0px;
+    padding-left: 4px;
+}
+
+QMenu::item {
+    background-color: #232629;
+    padding: 4px 24px 4px 24px;
+    border: 1px transparent #32414B;
+}
+
 QMenu::indicator {
     width: 12px;
     height: 12px;
     padding-left: 6px;
+}
+
+QMenu::indicator {
+    image: url(":/icons/ui/dark_checkbox_unchecked.png");
 }
 
 QMenu::indicator:non-exclusive:unchecked {
@@ -44,7 +108,7 @@ QMenu::indicator:non-exclusive:unchecked {
 }
 
 QMenu::indicator:non-exclusive:unchecked:selected {
-    image: url(":/icons/ui/dark_checkbox_unchecked_disabled.png");
+    image: url(":/icons/ui/dark_checkbox_unchecked.png");
 }
 
 QMenu::indicator:non-exclusive:checked {
@@ -52,7 +116,7 @@ QMenu::indicator:non-exclusive:checked {
 }
 
 QMenu::indicator:non-exclusive:checked:selected {
-    image: url(":/icons/ui/dark_checkbox_checked_disabled.png");
+    image: url(":/icons/ui/dark_checkbox_checked.png");
 }
 
 QMenu::indicator:exclusive:unchecked {
@@ -60,7 +124,7 @@ QMenu::indicator:exclusive:unchecked {
 }
 
 QMenu::indicator:exclusive:unchecked:selected {
-    image: url(":/icons/ui/dark_checkbox_unchecked_disabled.png");
+    image: url(":/icons/ui/dark_checkbox_unchecked.png");
 }
 
 QMenu::indicator:exclusive:checked {
@@ -68,8 +132,9 @@ QMenu::indicator:exclusive:checked {
 }
 
 QMenu::indicator:exclusive:checked:selected {
-    image: url(":/icons/ui/dark_checkbox_checked_disabled.png");
+    image: url(":/icons/ui/dark_checkbox_checked.png");
 }
+
 
 /* Combo Boxes */
 
@@ -226,17 +291,17 @@ QScrollBar::sub-line:vertical {
 }
 
 QScrollBar::up-arrow:horizontal, QScrollBar::down-arrow:horizontal {
-  background: none;
+    background: none;
 }
 
 QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical {
-  background: none;
+    background: none;
 }
 
 QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
-  background: none;
+    background: none;
 }
 
 QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
-  background: none;
+    background: none;
 }
