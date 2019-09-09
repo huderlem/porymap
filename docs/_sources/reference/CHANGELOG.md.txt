@@ -7,30 +7,26 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 The **"Breaking Changes"** listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. If porymap is used on a project that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.
 
 ## [Unreleased]
-<<<<<<< 92cf37cff99088605032dedf0be919d08d2e2fad
+### Breaking Changes
+- Accomodate event object graphics pointer table being explicitly indexed. From changes introduced in commits [cdae0c1444bed98e652c87dc3e3edcecacfef8be](https://github.com/pret/pokeemerald/commit/cdae0c1444bed98e652c87dc3e3edcecacfef8be) and [0e8ccfc4fd3544001f4c25fafd401f7558bdefba](https://github.com/pret/pokeruby/commit/0e8ccfc4fd3544001f4c25fafd401f7558bdefba).
+
 ### Added
 - Add warning when closing porymap with unsaved changes.
+- Support metatile labels file introduced in pokeruby and pokeemerald commits [ad365a35c1536740cbcbc10bee66e5dd908c39e7](https://github.com/pret/pokeruby/commit/ad365a35c1536740cbcbc10bee66e5dd908c39e7) and [c68ba9f4e8e260f2e3389eccd15f6ee5f4bdcd3e](https://github.com/pret/pokeemerald/commit/c68ba9f4e8e260f2e3389eccd15f6ee5f4bdcd3e).
 
-### Changed
-- Exporting map images is now more configurable. Events, connections, collision, etc. can be toggled on and off before exporting the image.
-- The entire Tileset Editor selection is now conveniently flipped when selecting x-flip or y-flip.
-- Autocomplete for porymap's comboboxes are no longer requires typing the full string prefix.
-=======
 ### Changed
 - Add wild encounter table editor.
 - Exporting map images is now more configurable. Events, connections, collision, etc. can be toggled on and off before exporting the image.
 - The entire Tileset Editor selection is now conveniently flipped when selecting x-flip or y-flip.
->>>>>>> add wild encounter documentation
+- Autocomplete for porymap's comboboxes no longer require typing the full string prefix.
 
 ### Fixed
 - Fix bug where map group names were hardcoded when creating a new map.
 - Fix bug in Tileset Editor where multi-tile selections weren't properly painted when clicking on the bottom row of the metatile layers.
 - Fix bug where line breaks in C headers were not parsed properly.
-<<<<<<< 92cf37cff99088605032dedf0be919d08d2e2fad
 - Fix bug when exporting tileset images using palettes with duplicate colors.
 - Fix bug where creating new maps from existing layouts created an empty layout folder.
-=======
->>>>>>> add wild encounter documentation
+- Fix bug where exported tile images did not contain the last row of tiles.
 
 
 ## [1.2.2] - 2019-05-16
