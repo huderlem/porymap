@@ -12,6 +12,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 
 ### Added
 - Add warning when closing porymap with unsaved changes.
+- Support metatile labels file introduced in pokeruby and pokeemerald commits [ad365a35c1536740cbcbc10bee66e5dd908c39e7](https://github.com/pret/pokeruby/commit/ad365a35c1536740cbcbc10bee66e5dd908c39e7) and [c68ba9f4e8e260f2e3389eccd15f6ee5f4bdcd3e](https://github.com/pret/pokeemerald/commit/c68ba9f4e8e260f2e3389eccd15f6ee5f4bdcd3e).
 
 ### Changed
 - Exporting map images is now more configurable. Events, connections, collision, etc. can be toggled on and off before exporting the image.
