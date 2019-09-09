@@ -816,8 +816,8 @@ void RegionMapEditor::importTileImage(bool city) {
     int maxAllowedTiles = 0x100;
     if (totalTiles > maxAllowedTiles) {
         QString errorMessage = QString("The total number of tiles in the provided image (%1) is greater than the allowed number (%2).")
-                                      .arg(maxAllowedTiles)
-                                      .arg(totalTiles);
+                                      .arg(totalTiles)
+                                      .arg(maxAllowedTiles);
         logError(errorMessage);
         QMessageBox msgBox(this);
         msgBox.setText("Failed to import tiles.");
