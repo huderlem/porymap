@@ -343,7 +343,7 @@ bool MainWindow::setMap(QString map_name, bool scrollTreeView) {
 
     if (scrollTreeView) {
         // Make sure we clear the filter first so we actually have a scroll target
-        mapListProxyModel->setFilterRegExp(QString::null);
+        mapListProxyModel->setFilterRegExp(QString());
         ui->mapList->setCurrentIndex(mapListProxyModel->mapFromSource(mapListIndexes.value(map_name)));
         ui->mapList->scrollTo(ui->mapList->currentIndex(), QAbstractItemView::PositionAtCenter);
     }
