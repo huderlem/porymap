@@ -23,6 +23,6 @@ typedef QVector<QPair<QString, QVector<int>>> Fields;
 typedef QPair<QString, QVector<int>> Field;
 
 WildMonInfo getDefaultMonInfo(Field field);
-WildMonInfo copyMonInfoFromTab(QTableWidget *table, Field field);
+WildMonInfo copyMonInfoFromTab(QTableWidget *table);
 
 #endif // GUARD_WILDMONINFO_H

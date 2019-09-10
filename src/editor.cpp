@@ -301,7 +301,7 @@ void Editor::addNewWildMonGroup() {
                 if (copyCheckbox->isChecked()) {
                     MonTabWidget *copyFrom = static_cast<MonTabWidget *>(stack->widget(stackIndex));
                     if (copyFrom->isTabEnabled(tabIndex))
-                        header.wildMons.insert(fieldName, copyMonInfoFromTab(copyFrom->tableAt(tabIndex), monField));
+                        header.wildMons.insert(fieldName, copyMonInfoFromTab(copyFrom->tableAt(tabIndex)));
                     else
                         header.wildMons.insert(fieldName, getDefaultMonInfo(monField));
                 } else {
@@ -341,7 +341,7 @@ void Editor::configureEncounterJSON() {
         chanceSpinner->setValue(chance);
         chanceSpinner->setMinimum(0);
         chanceSpinner->setMaximum(9999);
-        connect(chanceSpinner, QOverload<int>::of(&QSpinBox::valueChanged), [&chanceSpinner, &updateTotal, &currentField](int val) {
+        connect(chanceSpinner, QOverload<int>::of(&QSpinBox::valueChanged), [&chanceSpinner, &updateTotal, &currentField](int) {
             updateTotal(currentField);
         });
 
@@ -492,7 +492,7 @@ void Editor::saveEncounterTabData() {
 
             QTableWidget *monTable = static_cast<QTableWidget *>(tabWidget->widget(fieldIndex - 1));
             QVector<WildPokemon> newWildMons;
-            encounterHeader.wildMons[fieldName] = copyMonInfoFromTab(monTable, monField);
+            encounterHeader.wildMons[fieldName] = copyMonInfoFromTab(monTable);
         }
     }
 }

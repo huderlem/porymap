@@ -15,7 +15,7 @@ WildMonInfo getDefaultMonInfo(Field field) {
     return newInfo;
 }
 
-WildMonInfo copyMonInfoFromTab(QTableWidget *monTable, Field field) {
+WildMonInfo copyMonInfoFromTab(QTableWidget *monTable) {
     WildMonInfo newInfo;
     QVector<WildPokemon> newWildMons;
 
@@ -28,7 +28,7 @@ WildMonInfo copyMonInfoFromTab(QTableWidget *monTable, Field field) {
     }
     newInfo.active = true;
     newInfo.wildPokemon = newWildMons;
-    newInfo.encounterRate = monTable->findChild<QSlider *>()->value();
+    newInfo.encounterRate = monTable->findChild<QSpinBox *>()->value();
 
     return newInfo;
 }

@@ -78,23 +78,12 @@ void MonTabWidget::populateTab(int tabIndex, WildMonInfo monInfo, QString fieldN
     QFrame *encounterFrame = new QFrame;
     QHBoxLayout *encounterLayout = new QHBoxLayout;
 
-    QSlider *encounterRate = new QSlider(Qt::Horizontal);
+    QSpinBox *encounterRate = new QSpinBox;
     encounterRate->setMinimum(0);
-    encounterRate->setMaximum(100);
-
-    QLabel *encounterLabel = new QLabel;
-    connect(encounterRate, &QSlider::valueChanged, [=](int value){
-        encounterLabel->setText(QString("%1%").arg(QString::number(value)));
-    });
+    encounterRate->setMaximum(180);
     encounterRate->setValue(monInfo.encounterRate);
-    // for some reason the signal is not being emitted above
-    encounterLabel->setText(QString("%1%").arg(QString::number(monInfo.encounterRate)));
-
-    encounterLayout->addWidget(encounterLabel);
     encounterLayout->addWidget(encounterRate);
-
     encounterFrame->setLayout(encounterLayout);
-
     speciesTable->setCellWidget(0, 5, encounterFrame);
 
     int i = 0;
