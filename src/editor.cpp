@@ -204,13 +204,13 @@ void Editor::displayWildMonTables() {
     stack->setCurrentIndex(0);
 }
 
-void Editor::addNewWildMonGroup() {
+void Editor::addNewWildMonGroup(QWidget *window) {
     QStackedWidget *stack = ui->stackedWidget_WildMons;
     QComboBox *labelCombo = ui->comboBox_EncounterGroupLabel;
 
     int stackIndex = stack->currentIndex();
 
-    QDialog dialog(nullptr, Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
+    QDialog dialog(window, Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
     dialog.setWindowTitle("New Wild Encounter Group Label");
     dialog.setWindowModality(Qt::NonModal);
 
@@ -316,7 +316,7 @@ void Editor::addNewWildMonGroup() {
     }
 }
 
-void Editor::configureEncounterJSON() {
+void Editor::configureEncounterJSON(QWidget *window) {
     QVector<QWidget *> fieldSlots;
 
     Fields tempFields = project->wildMonFields;
@@ -357,7 +357,7 @@ void Editor::configureEncounterJSON() {
         return slot;
     };
 
-    QDialog dialog(nullptr, Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
+    QDialog dialog(window, Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
     dialog.setWindowTitle("Configure Wild Encounter Fields");
     dialog.setWindowModality(Qt::NonModal);
 

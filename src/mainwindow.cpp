@@ -129,7 +129,7 @@ void MainWindow::initMiscHeapObjects() {
 }
 
 void MainWindow::initMapSortOrder() {
-    QMenu *mapSortOrderMenu = new QMenu();
+    QMenu *mapSortOrderMenu = new QMenu(this);
     QActionGroup *mapSortOrderActionGroup = new QActionGroup(ui->toolButton_MapSortOrder);
 
     mapSortOrderMenu->addAction(ui->actionSort_by_Group);
@@ -1987,11 +1987,11 @@ void MainWindow::on_pushButton_RemoveConnection_clicked()
 }
 
 void MainWindow::on_pushButton_NewWildMonGroup_clicked() {
-    editor->addNewWildMonGroup();
+    editor->addNewWildMonGroup(this);
 }
 
 void MainWindow::on_pushButton_ConfigureEncountersJSON_clicked() {
-    editor->configureEncounterJSON();
+    editor->configureEncounterJSON(this);
 }
 
 void MainWindow::on_comboBox_DiveMap_activated(const QString &mapName)
