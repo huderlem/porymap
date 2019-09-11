@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Navigation &mdash; porymap  documentation</title>
+  <title>Editing Wild Encounters &mdash; porymap  documentation</title>
   
 
   
@@ -36,8 +36,8 @@
   <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Editing Map Tiles" href="editing-map-tiles.html" />
-    <link rel="prev" title="Introduction" href="introduction.html" /> 
+    <link rel="next" title="The Region Map Editor" href="region-map-editor.html" />
+    <link rel="prev" title="Editing Map Connections" href="editing-map-connections.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -88,11 +88,11 @@
 <li class="toctree-l2"><a class="reference internal" href="introduction.html#getting-started">Getting Started</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Navigation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#map-list">Map List</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#main-window">Main Window</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#tileset-editor">Tileset Editor</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#region-map-editor">Region Map Editor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="navigation.html">Navigation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="navigation.html#map-list">Map List</a></li>
+<li class="toctree-l2"><a class="reference internal" href="navigation.html#main-window">Main Window</a></li>
+<li class="toctree-l2"><a class="reference internal" href="navigation.html#tileset-editor">Tileset Editor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="navigation.html#region-map-editor">Region Map Editor</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="editing-map-tiles.html">Editing Map Tiles</a><ul>
@@ -134,9 +134,9 @@
 <li class="toctree-l2"><a class="reference internal" href="editing-map-connections.html#follow-connections">Follow Connections</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="editing-wild-encounters.html">Editing Wild Encounters</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="editing-wild-encounters.html#adding-new-encounter-groups">Adding New Encounter Groups</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-wild-encounters.html#configuring-the-wild-encounter-fields">Configuring the Wild Encounter Fields</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Editing Wild Encounters</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#adding-new-encounter-groups">Adding New Encounter Groups</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#configuring-the-wild-encounter-fields">Configuring the Wild Encounter Fields</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="region-map-editor.html">The Region Map Editor</a><ul>
@@ -231,14 +231,14 @@
     
       <li><a href="../index.html">Docs</a> &raquo;</li>
         
-      <li>Navigation</li>
+      <li>Editing Wild Encounters</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
             
-              <a href="https://github.com/huderlem/porymap/blob/master/docsrc/manual/navigation.rst" class="fa fa-github"> Edit on GitHub</a>
+              <a href="https://github.com/huderlem/porymap/blob/master/docsrc/manual/editing-wild-encounters.rst" class="fa fa-github"> Edit on GitHub</a>
             
           
         
@@ -252,66 +252,87 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="navigation">
-<h1>Navigation<a class="headerlink" href="#navigation" title="Permalink to this headline">¶</a></h1>
-<p>Porymap can seem daunting at first because it has many buttons, tabs, panes, and windows.  Let’s briefly go over the different parts of the application.</p>
-<div class="section" id="map-list">
-<h2>Map List<a class="headerlink" href="#map-list" title="Permalink to this headline">¶</a></h2>
-<p>The map list contains a hierarchical view of all of the maps in your project.  It is situated on the left side of Porymap’s main window.  To switch to a different map, simply double-click or press <code class="docutils literal notranslate"><span class="pre">Enter</span></code> on the desired map’s name.  Larger maps can take a few seconds to load the first time, so be patient.</p>
+  <div class="section" id="editing-wild-encounters">
+<h1>Editing Wild Encounters<a class="headerlink" href="#editing-wild-encounters" title="Permalink to this headline">¶</a></h1>
+<p>porymap provides a tab for editing the wild pokemon encounter JSON data.
+Navigate to the “Wild Pokemon” tab in porymap’s main window.</p>
+<p>If you open the tab and there are no wild encounters for the current map, you
+will see an empty screen (pictured below). Adding wild pokemon data is as
+simple as <a class="reference internal" href="#add-encounter-groups"><span class="std std-ref">adding new encounter groups</span></a>.</p>
 <div class="figure" id="id1">
-<img alt="Map List Pane" src="../_images/map-list-pane.png" />
-<p class="caption"><span class="caption-text">Map List Pane</span></p>
+<img alt="Empty Encounter Tab" src="../_images/no-encounters.png" />
+<p class="caption"><span class="caption-text">Empty Encounter Tab</span></p>
 </div>
-<p>By default, the maps are organized by their map groups.  The <em>Sort Map List</em> <img alt="sort-map-list-button" src="../_images/sort-map-list-button.png" /> button gives you some other options to organize the maps:</p>
-<dl class="docutils">
-<dt>Sort by Group</dt>
-<dd>Organizes by map groups.</dd>
-<dt>Sort by Area</dt>
-<dd>Organizes by region map section.</dd>
-<dt>Sort by Layout</dt>
-<dd>Organizes by map layouts. Most layouts are only used by a single map, but layouts like the Pokemon Center are used by many maps.</dd>
-</dl>
-<p>The <em>Expand All</em> <img alt="expand-all-button" src="../_images/expand-all-button.png" /> and <em>Collapse All</em> <img alt="collapse-all-button" src="../_images/collapse-all-button.png" /> buttons will expand or collapse all of the map folders.</p>
-<p>Type in the filter to show maps that contain the filter text.</p>
+<p>Otherwise, you should see something similar to this:</p>
 <div class="figure" id="id2">
-<img alt="Filter Map List" src="../_images/filter-map-list.png" />
-<p class="caption"><span class="caption-text">Filter Map List</span></p>
+<img alt="Populated Encounter Tab" src="../_images/populated-encounter-tab.png" />
+<p class="caption"><span class="caption-text">Populated Encounter Tab</span></p>
 </div>
-</div>
-<div class="section" id="main-window">
-<h2>Main Window<a class="headerlink" href="#main-window" title="Permalink to this headline">¶</a></h2>
-<p>Most of the work you do in Porymap is in the center Main Window.  It features 4 tabbed views which each have different purposes, but they all operate within the context of the currently-opened map in the Map List.  Let’s quickly summarize what each of these tabs is used for.</p>
+<p>The tab for each field is active or disabled based on the encounter data for a
+given map.  If a tab is disabled, you can activate it, and therefore activate
+a new encounter field for the map.  To activate a field, right-click on the
+tab name for the field you want to add.</p>
 <div class="figure" id="id3">
-<img alt="Main Window Tabs" src="../_images/main-window-tabs.png" />
-<p class="caption"><span class="caption-text">Main Window Tabs</span></p>
+<img alt="Activate Encounter Field" src="../_images/activate-tab.png" />
+<p class="caption"><span class="caption-text">Activate Encounter Field</span></p>
 </div>
-<dl class="docutils">
-<dt>Map Tab</dt>
-<dd>Paint metatiles and their collision properties to change the appearance of the map and how the player can walk around the map.  When the Map Tab is selected, the pane on the right side of the map will have two tabs: Metatiles and Collision.  You can switch between these to paint either metatiles or collision properties onto the map.</dd>
-<dt>Events Tab</dt>
-<dd>Edit the interactable events on the map.  This includes things like objects, warps, script triggers, and more.</dd>
-<dt>Header Tab</dt>
-<dd>Choose various gameplay properties to set for the map. This includes things like background music and weather.</dd>
-<dt>Connections Tab</dt>
-<dd>Change how the map connects with surrounding maps when the player walks from one to another.</dd>
-</dl>
-</div>
-<div class="section" id="tileset-editor">
-<h2>Tileset Editor<a class="headerlink" href="#tileset-editor" title="Permalink to this headline">¶</a></h2>
-<p>The Tileset Editor can be opened with <em>File -&gt; Tileset Editor</em>.  When the Tileset Editor is opened, it is opened in the context of the currently-opened map.  Every map has a primary and secondary tileset, so you will work with a combination of the two whenever you use the Tileset Editor.  The left-side pane shows the primary and secondary tilesets’ metatiles.  The right-side panes allow you to modify the currently-selected metatile.</p>
+<p>Editing the wild encounters is otherwise pretty straightforward.  You can
+adjust the minimum and maximum levels, the encounter rate, and species with the
+ui.</p>
+<div class="section" id="adding-new-encounter-groups">
+<span id="add-encounter-groups"></span><h2>Adding New Encounter Groups<a class="headerlink" href="#adding-new-encounter-groups" title="Permalink to this headline">¶</a></h2>
+<p>An encounter group is just another set of wild encounters that are available
+for a single map.  In the vanilla games, only Altering Cave uses multiple
+encounter groups, but there are several reasons you might want them.</p>
+<p>In order to create a new encounter group, click the green (+) button next to
+the Group drop-down.  It will bring up this menu:</p>
 <div class="figure" id="id4">
-<img alt="Tileset Editor" src="../_images/tileset-editor.png" />
-<p class="caption"><span class="caption-text">Tileset Editor</span></p>
+<img alt="New Encounter Group Window" src="../_images/new-group-window.png" />
+<p class="caption"><span class="caption-text">New Encounter Group Window</span></p>
 </div>
-</div>
-<div class="section" id="region-map-editor">
-<h2>Region Map Editor<a class="headerlink" href="#region-map-editor" title="Permalink to this headline">¶</a></h2>
-<p>The Region Map Editor can be opened with <em>File -&gt; Region Map Editor</em>. This window will allow you to modify the look and layout of maps on the game’s region map.  You can also modify the city map images using the bottom two panes.</p>
+<p>You can give your new encounter group a name (this must be uniqe, which is
+enforced), and you can choose which fields to activate for the group.  Checking
+the “copy from current group” box will copy not only the active fields but also
+the wild pokemon data for each field from the currently displayed group.</p>
+<p>One possible use for having multiple encounter groups for a single map is to
+implement time of day encounters.</p>
 <div class="figure" id="id5">
-<img alt="Region Map Editor" src="../_images/region-map-editor.png" />
-<p class="caption"><span class="caption-text">Region Map Editor</span></p>
+<img alt="Time of Day Encounter Groups" src="../_images/time-of-day-encounter-group.gif" />
+<p class="caption"><span class="caption-text">Time of Day Encounter Groups</span></p>
 </div>
-<p>We covered all of the basic views and windows of Porymap above.  Next, let’s learn how to use Porymap’s features to the fullest when editing map tiles.</p>
+</div>
+<div class="section" id="configuring-the-wild-encounter-fields">
+<span id="configure-encounter-json"></span><h2>Configuring the Wild Encounter Fields<a class="headerlink" href="#configuring-the-wild-encounter-fields" title="Permalink to this headline">¶</a></h2>
+<p>An encounter field describes a group of wild encounters.  This includes the name
+of the field, a default number of pokemon in that field, and the encounter
+ratio for each index in that field.  These are all things you may want to
+change.  Click on the <em>Configure JSON…</em> button to bring up this window:</p>
+<div class="figure" id="id6">
+<img alt="Configure JSON Window" src="../_images/configure-json.png" />
+<p class="caption"><span class="caption-text">Configure JSON Window</span></p>
+</div>
+<p>The Field drop-down will allow you select which field you want to manipulate.
+You can add a new one with the <em>Add New Field…</em> button.  The green (+) and
+red (-) buttons add and take away encounter slots for the field.  For each slot
+you will see an adjustible number.  This represents the encounter chance for a
+pokemon at this index out of the total.</p>
+<p>Let’s add a <code class="docutils literal notranslate"><span class="pre">headbutt_mons</span></code> field to our wild encounters…</p>
+<p>First, we’ll add a new field and name it <code class="docutils literal notranslate"><span class="pre">headbutt_mons</span></code>.</p>
+<div class="figure" id="id7">
+<img alt="New Field Name" src="../_images/configure-json-new-field.png" />
+<p class="caption"><span class="caption-text">New Field Name</span></p>
+</div>
+<p>Then, we want four slots in this field, and we set encounter ratios for each
+slot.</p>
+<div class="figure">
+<img alt="../_images/headbutt-mon-field.png" src="../_images/headbutt-mon-field.png" />
+</div>
+<p>If we accept the changes, we can now assign pokemon to each slots, and adjust
+the levels.</p>
+<div class="figure">
+<img alt="../_images/headbutt-mons.png" src="../_images/headbutt-mons.png" />
+</div>
+<p>Changes made to the wild encounters are not saved to disk until you save the map.</p>
 </div>
 </div>
 
@@ -323,10 +344,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="editing-map-tiles.html" class="btn btn-neutral float-right" title="Editing Map Tiles" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="region-map-editor.html" class="btn btn-neutral float-right" title="The Region Map Editor" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="introduction.html" class="btn btn-neutral float-left" title="Introduction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="editing-map-connections.html" class="btn btn-neutral float-left" title="Editing Map Connections" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

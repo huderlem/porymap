@@ -80,6 +80,12 @@ void MainWindow::initCustomUI() {
     ui->mapList->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->mapList, SIGNAL(customContextMenuRequested(const QPoint &)),
             this, SLOT(onOpenMapListContextMenu(const QPoint &)));
+
+    QStackedWidget *stack = ui->stackedWidget_WildMons;
+    QComboBox *labelCombo = ui->comboBox_EncounterGroupLabel;
+    connect(labelCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index){
+        stack->setCurrentIndex(index);
+    });
 }
 
 void MainWindow::initExtraSignals() {
@@ -143,6 +149,9 @@ void MainWindow::initMapSortOrder() {
 
 void MainWindow::setProjectSpecificUIVisibility()
 {
+    if (!projectConfig.getEncounterJsonActive())
+        ui->tabWidget->removeTab(4);
+
     switch (projectConfig.getBaseGameVersion())
     {
     case BaseGameVersion::pokeruby:
@@ -612,6 +621,9 @@ void MainWindow::loadDataStructures() {
     project->readMetatileBehaviors();
     project->readTilesetProperties();
     project->readHealLocations();
+    project->readMiscellaneousConstants();
+    project->readSpeciesIconPaths();
+    project->readWildMonData();
 }
 
 void MainWindow::populateMapList() {
@@ -1961,6 +1973,14 @@ void MainWindow::on_pushButton_RemoveConnection_clicked()
     editor->removeCurrentConnection();
 }
 
+void MainWindow::on_pushButton_NewWildMonGroup_clicked() {
+    editor->addNewWildMonGroup();
+}
+
+void MainWindow::on_pushButton_ConfigureEncountersJSON_clicked() {
+    editor->configureEncounterJSON();
+}
+
 void MainWindow::on_comboBox_DiveMap_activated(const QString &mapName)
 {
     editor->updateDiveMap(mapName);
@@ -2199,6 +2219,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
         this->ui->splitter_main->saveState()
     );
     porymapConfig.save();
+    projectConfig.save();
 
     QMainWindow::closeEvent(event);
 }

@@ -15,6 +15,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Support metatile labels file introduced in pokeruby and pokeemerald commits [ad365a35c1536740cbcbc10bee66e5dd908c39e7](https://github.com/pret/pokeruby/commit/ad365a35c1536740cbcbc10bee66e5dd908c39e7) and [c68ba9f4e8e260f2e3389eccd15f6ee5f4bdcd3e](https://github.com/pret/pokeemerald/commit/c68ba9f4e8e260f2e3389eccd15f6ee5f4bdcd3e).
 
 ### Changed
+- Add wild encounter table editor.
 - Exporting map images is now more configurable. Events, connections, collision, etc. can be toggled on and off before exporting the image.
 - The entire Tileset Editor selection is now conveniently flipped when selecting x-flip or y-flip.
 - Autocomplete for porymap's comboboxes no longer require typing the full string prefix.

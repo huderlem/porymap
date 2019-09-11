@@ -5,11 +5,15 @@
 #include "blockdata.h"
 #include "heallocation.h"
 #include "event.h"
+#include "wildmoninfo.h"
 #include "parseutil.h"
 
 #include <QStringList>
 #include <QList>
+#include <QVector>
+#include <QPair>
 #include <QStandardItem>
+#include <QVariant>
 
 static QString NONE_MAP_CONSTANT = "MAP_NONE";
 static QString NONE_MAP_NAME = "None";
@@ -23,6 +27,7 @@ public:
     QMap<QString, int> *map_groups;
     QList<QStringList> groupedMapNames;
     QStringList *mapNames = nullptr;
+    QMap<QString, QVariant> miscConstants;
     QList<HealLocation> flyableMaps;
     QMap<QString, QString>* mapConstantsToMapNames;
     QMap<QString, QString>* mapNamesToMapConstants;
@@ -83,6 +88,15 @@ public:
     QString readMapLayoutId(QString map_name);
     QString readMapLocation(QString map_name);
 
+    void readWildMonData();
+    QMap<QString, QMap<QString, WildPokemonHeader>> wildMonData;
+    QVector<QPair<QString, QVector<int>>> wildMonFields;
+    QVector<QString> encounterGroupLabels;
+    QMap<QString, QJsonObject> extraEncounterGroups;
+
+    void readSpeciesIconPaths();
+    QMap<QString, QString> speciesToIconPath;
+
     QMap<QString, bool> getTopLevelMapFields();
     bool loadMapData(Map*);
     void readMapLayouts();
@@ -101,6 +115,7 @@ public:
     void saveAllDataStructures();
     void saveMapLayouts();
     void saveMapGroups();
+    void saveWildMonData();
     void saveMapConstantsHeader();
     void saveHealLocationStruct(Map*);
     void saveTilesets(Tileset*, Tileset*);
@@ -128,6 +143,7 @@ public:
     void readBgEventFacingDirections();
     void readMetatileBehaviors();
     void readHealLocations();
+    void readMiscellaneousConstants();
 
     void loadEventPixmaps(QList<Event*> objects);
     QMap<QString, int> getEventObjGfxConstants();
