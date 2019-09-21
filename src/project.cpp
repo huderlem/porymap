@@ -1408,26 +1408,26 @@ void Project::readWildMonData() {
 
         QJsonArray encounters = subObject["encounters"].toArray();
         for (QJsonValue encounter : encounters) {
-            QString mapConstant = encounter["map"].toString();
+            QString mapConstant = encounter.toObject().value("map").toString();
 
             WildPokemonHeader header;
 
             for (QPair<QString, QVector<int>> monField : wildMonFields) {
                 QString field = monField.first;
-                if (encounter[field] != QJsonValue::Undefined) {
+                if (encounter.toObject().value(field) != QJsonValue::Undefined) {
                     header.wildMons[field].active = true;
-                    header.wildMons[field].encounterRate = encounter[field]["encounter_rate"].toInt();
-                    for (QJsonValue mon : encounter[field]["mons"].toArray()) {
+                    header.wildMons[field].encounterRate = encounter.toObject().value(field).toObject().value("encounter_rate").toInt();
+                    for (QJsonValue mon : encounter.toObject().value(field).toObject().value("mons").toArray()) {
                         header.wildMons[field].wildPokemon.append({
-                            mon["min_level"].toInt(),
-                            mon["max_level"].toInt(),
-                            mon["species"].toString()
+                            mon.toObject().value("min_level").toInt(),
+                            mon.toObject().value("max_level").toInt(),
+                            mon.toObject().value("species").toString()
                         });
                     }
                 }
             }
-            wildMonData[mapConstant].insert(encounter["base_label"].toString(), header);
-            encounterGroupLabels.append(encounter["base_label"].toString());
+            wildMonData[mapConstant].insert(encounter.toObject().value("base_label").toString(), header);
+            encounterGroupLabels.append(encounter.toObject().value("base_label").toString());
         }
     }
 }
