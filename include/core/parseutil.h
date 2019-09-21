@@ -9,7 +9,7 @@
 #include <QMap>
 #include <QRegularExpression>
 
-enum TokenType {
+enum TokenClass {
     Number,
     Operator,
     Error,
@@ -19,19 +19,19 @@ class Token {
 public:
     Token(QString value = "", QString type = "") {
         this->value = value;
-        this->type = TokenType::Operator;
+        this->type = TokenClass::Operator;
         if (type == "decimal" || type == "hex") {
-            this->type = TokenType::Number;
+            this->type = TokenClass::Number;
             this->operatorPrecedence = -1;
         } else if (type == "operator") {
             this->operatorPrecedence = precedenceMap[value];
         } else if (type == "error") {
-            this->type = TokenType::Error;
+            this->type = TokenClass::Error;
         }
     }
     static QMap<QString, int> precedenceMap;
     QString value;
-    TokenType type;
+    TokenClass type;
     int operatorPrecedence; // only relevant for operator tokens
 };
 
