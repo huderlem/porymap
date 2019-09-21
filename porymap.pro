@@ -12,7 +12,13 @@ TARGET = porymap
 TEMPLATE = app
 RC_ICONS = resources/icons/porymap-icon-1.ico
 ICON = resources/icons/porymap.icns
-QMAKE_CXXFLAGS += -std=c++11 -Wall
+QMAKE_CXXFLAGS += -std=c++11
+
+OBJECTS_DIR = build
+MOC_DIR = build/moc
+UI_DIR = build/ui
+RCC_DIR = build/rcc
+DESTDIR = .
 
 SOURCES += src/core/block.cpp \
     src/core/blockdata.cpp \
