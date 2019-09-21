@@ -157,7 +157,7 @@ QList<Token> ParseUtil::generatePostfix(QList<Token> tokens) {
     QList<Token> output;
     QStack<Token> operatorStack;
     for (Token token : tokens) {
-        if (token.type == TokenType::Number) {
+        if (token.type == TokenClass::Number) {
             output.append(token);
         } else if (token.value == "(") {
             operatorStack.push(token);
@@ -198,7 +198,7 @@ QList<Token> ParseUtil::generatePostfix(QList<Token> tokens) {
 int ParseUtil::evaluatePostfix(QList<Token> postfix) {
     QStack<Token> stack;
     for (Token token : postfix) {
-        if (token.type == TokenType::Operator && stack.size() > 1) {
+        if (token.type == TokenClass::Operator && stack.size() > 1) {
             int op2 = stack.pop().value.toInt(nullptr, 0);
             int op1 = stack.pop().value.toInt(nullptr, 0);
             int result = 0;
@@ -222,7 +222,7 @@ int ParseUtil::evaluatePostfix(QList<Token> postfix) {
                 result = op1 | op2;
             }
             stack.push(Token(QString("%1").arg(result), "decimal"));
-        } else if (token.type != TokenType::Error) {
+        } else if (token.type != TokenClass::Error) {
             stack.push(token);
         } // else ignore errored tokens, we have already warned the user.
     }
