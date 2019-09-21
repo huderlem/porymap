@@ -338,7 +338,7 @@ void Editor::configureEncounterJSON(QWidget *window) {
         QLabel *indexLabel = new QLabel(QString("Index: %1").arg(QString::number(index)));
         QSpinBox *chanceSpinner = new QSpinBox;
         int chance = currentField.second.at(index);
-        chanceSpinner->setMinimum(0);
+        chanceSpinner->setMinimum(1);
         chanceSpinner->setMaximum(9999);
         chanceSpinner->setValue(chance);
         connect(chanceSpinner, QOverload<int>::of(&QSpinBox::valueChanged), [&chanceSpinner, &updateTotal, &currentField](int) {
