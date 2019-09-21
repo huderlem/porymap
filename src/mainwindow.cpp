@@ -465,14 +465,7 @@ void MainWindow::setRecentMap(QString mapName) {
 }
 
 void MainWindow::displayMapProperties() {
-    ui->comboBox_Song->clear();
-    ui->comboBox_Location->clear();
     ui->checkBox_Visibility->setChecked(false);
-    ui->comboBox_Weather->clear();
-    ui->comboBox_Type->clear();
-    ui->comboBox_BattleScene->clear();
-    ui->comboBox_PrimaryTileset->clear();
-    ui->comboBox_SecondaryTileset->clear();
     ui->checkBox_ShowLocation->setChecked(false);
     ui->checkBox_AllowRunning->setChecked(false);
     ui->checkBox_AllowBiking->setChecked(false);
@@ -483,32 +476,15 @@ void MainWindow::displayMapProperties() {
     }
     ui->frame_3->setEnabled(true);
     Map *map = editor->map;
-    Project *project = editor->project;
 
-    QStringList songs = project->getSongNames();
-    ui->comboBox_Song->addItems(songs);
     ui->comboBox_Song->setCurrentText(map->song);
-
-    ui->comboBox_Location->addItems(project->mapSectionValueToName.values());
     ui->comboBox_Location->setCurrentText(map->location);
-
-    QMap<QString, QStringList> tilesets = project->getTilesetLabels();
-    ui->comboBox_PrimaryTileset->addItems(tilesets.value("primary"));
     ui->comboBox_PrimaryTileset->setCurrentText(map->layout->tileset_primary_label);
-    ui->comboBox_SecondaryTileset->addItems(tilesets.value("secondary"));
     ui->comboBox_SecondaryTileset->setCurrentText(map->layout->tileset_secondary_label);
-
     ui->checkBox_Visibility->setChecked(map->requiresFlash.toInt() > 0 || map->requiresFlash == "TRUE");
-
-    ui->comboBox_Weather->addItems(*project->weatherNames);
     ui->comboBox_Weather->setCurrentText(map->weather);
-
-    ui->comboBox_Type->addItems(*project->mapTypes);
     ui->comboBox_Type->setCurrentText(map->type);
-
-    ui->comboBox_BattleScene->addItems(*project->mapBattleScenes);
     ui->comboBox_BattleScene->setCurrentText(map->battle_scene);
-
     ui->checkBox_ShowLocation->setChecked(map->show_location.toInt() > 0 || map->show_location == "TRUE");
     ui->checkBox_AllowRunning->setChecked(map->allowRunning.toInt() > 0 || map->allowRunning == "TRUE");
     ui->checkBox_AllowBiking->setChecked(map->allowBiking.toInt() > 0 || map->allowBiking == "TRUE");
@@ -526,35 +502,35 @@ void MainWindow::displayMapProperties() {
     ui->tableWidget_CustomHeaderFields->blockSignals(false);
 }
 
-void MainWindow::on_comboBox_Song_activated(const QString &song)
+void MainWindow::on_comboBox_Song_currentTextChanged(const QString &song)
 {
     if (editor && editor->map) {
         editor->map->song = song;
     }
 }
 
-void MainWindow::on_comboBox_Location_activated(const QString &location)
+void MainWindow::on_comboBox_Location_currentTextChanged(const QString &location)
 {
     if (editor && editor->map) {
         editor->map->location = location;
     }
 }
 
-void MainWindow::on_comboBox_Weather_activated(const QString &weather)
+void MainWindow::on_comboBox_Weather_currentTextChanged(const QString &weather)
 {
     if (editor && editor->map) {
         editor->map->weather = weather;
     }
 }
 
-void MainWindow::on_comboBox_Type_activated(const QString &type)
+void MainWindow::on_comboBox_Type_currentTextChanged(const QString &type)
 {
     if (editor && editor->map) {
         editor->map->type = type;
     }
 }
 
-void MainWindow::on_comboBox_BattleScene_activated(const QString &battle_scene)
+void MainWindow::on_comboBox_BattleScene_currentTextChanged(const QString &battle_scene)
 {
     if (editor && editor->map) {
         editor->map->battle_scene = battle_scene;
@@ -637,6 +613,17 @@ void MainWindow::loadDataStructures() {
     project->readMiscellaneousConstants();
     project->readSpeciesIconPaths();
     project->readWildMonData();
+
+    // set up project ui comboboxes
+    QStringList songs = project->getSongNames();
+    ui->comboBox_Song->addItems(songs);
+    ui->comboBox_Location->addItems(project->mapSectionValueToName.values());
+    QMap<QString, QStringList> tilesets = project->getTilesetLabels();
+    ui->comboBox_PrimaryTileset->addItems(tilesets.value("primary"));
+    ui->comboBox_SecondaryTileset->addItems(tilesets.value("secondary"));
+    ui->comboBox_Weather->addItems(*project->weatherNames);
+    ui->comboBox_BattleScene->addItems(*project->mapBattleScenes);
+    ui->comboBox_Type->addItems(*project->mapTypes);
 }
 
 void MainWindow::populateMapList() {
@@ -1971,9 +1958,10 @@ void MainWindow::on_spinBox_ConnectionOffset_valueChanged(int offset)
     editor->updateConnectionOffset(offset);
 }
 
-void MainWindow::on_comboBox_ConnectedMap_activated(const QString &mapName)
+void MainWindow::on_comboBox_ConnectedMap_currentTextChanged(const QString &mapName)
 {
-    editor->setConnectionMap(mapName);
+    if (editor->project->mapNames->contains(mapName))
+        editor->setConnectionMap(mapName);
 }
 
 void MainWindow::on_pushButton_AddConnection_clicked()
@@ -1994,26 +1982,32 @@ void MainWindow::on_pushButton_ConfigureEncountersJSON_clicked() {
     editor->configureEncounterJSON(this);
 }
 
-void MainWindow::on_comboBox_DiveMap_activated(const QString &mapName)
+void MainWindow::on_comboBox_DiveMap_currentTextChanged(const QString &mapName)
 {
-    editor->updateDiveMap(mapName);
+    if (editor->project->mapNames->contains(mapName))
+        editor->updateDiveMap(mapName);
 }
 
-void MainWindow::on_comboBox_EmergeMap_activated(const QString &mapName)
+void MainWindow::on_comboBox_EmergeMap_currentTextChanged(const QString &mapName)
 {
-    editor->updateEmergeMap(mapName);
+    if (editor->project->mapNames->contains(mapName))
+        editor->updateEmergeMap(mapName);
 }
 
-void MainWindow::on_comboBox_PrimaryTileset_activated(const QString &tilesetLabel)
+void MainWindow::on_comboBox_PrimaryTileset_currentTextChanged(const QString &tilesetLabel)
 {
-    editor->updatePrimaryTileset(tilesetLabel);
-    on_horizontalSlider_MetatileZoom_valueChanged(ui->horizontalSlider_MetatileZoom->value());
+    if (editor->project->tilesetLabels["primary"].contains(tilesetLabel) && editor->map) {
+        editor->updatePrimaryTileset(tilesetLabel);
+        on_horizontalSlider_MetatileZoom_valueChanged(ui->horizontalSlider_MetatileZoom->value());
+    }
 }
 
-void MainWindow::on_comboBox_SecondaryTileset_activated(const QString &tilesetLabel)
+void MainWindow::on_comboBox_SecondaryTileset_currentTextChanged(const QString &tilesetLabel)
 {
-    editor->updateSecondaryTileset(tilesetLabel);
-    on_horizontalSlider_MetatileZoom_valueChanged(ui->horizontalSlider_MetatileZoom->value());
+    if (editor->project->tilesetLabels["secondary"].contains(tilesetLabel) && editor->map) {
+        editor->updateSecondaryTileset(tilesetLabel);
+        on_horizontalSlider_MetatileZoom_valueChanged(ui->horizontalSlider_MetatileZoom->value());
+    }
 }
 
 void MainWindow::on_pushButton_clicked()

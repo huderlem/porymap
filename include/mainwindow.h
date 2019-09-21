@@ -59,11 +59,11 @@ private slots:
     void on_action_Save_triggered();
     void on_tabWidget_2_currentChanged(int index);
     void on_action_Exit_triggered();
-    void on_comboBox_Song_activated(const QString &arg1);
-    void on_comboBox_Location_activated(const QString &arg1);
-    void on_comboBox_Weather_activated(const QString &arg1);
-    void on_comboBox_Type_activated(const QString &arg1);
-    void on_comboBox_BattleScene_activated(const QString &arg1);
+    void on_comboBox_Song_currentTextChanged(const QString &arg1);
+    void on_comboBox_Location_currentTextChanged(const QString &arg1);
+    void on_comboBox_Weather_currentTextChanged(const QString &arg1);
+    void on_comboBox_Type_currentTextChanged(const QString &arg1);
+    void on_comboBox_BattleScene_currentTextChanged(const QString &arg1);
     void on_checkBox_ShowLocation_clicked(bool checked);
     void on_checkBox_AllowRunning_clicked(bool checked);
     void on_checkBox_AllowBiking_clicked(bool checked);
@@ -111,13 +111,13 @@ private slots:
 
     void on_comboBox_ConnectionDirection_currentIndexChanged(const QString &arg1);
     void on_spinBox_ConnectionOffset_valueChanged(int offset);
-    void on_comboBox_ConnectedMap_activated(const QString &mapName);
+    void on_comboBox_ConnectedMap_currentTextChanged(const QString &mapName);
     void on_pushButton_AddConnection_clicked();
     void on_pushButton_RemoveConnection_clicked();
-    void on_comboBox_DiveMap_activated(const QString &mapName);
-    void on_comboBox_EmergeMap_activated(const QString &mapName);
-    void on_comboBox_PrimaryTileset_activated(const QString &arg1);
-    void on_comboBox_SecondaryTileset_activated(const QString &arg1);
+    void on_comboBox_DiveMap_currentTextChanged(const QString &mapName);
+    void on_comboBox_EmergeMap_currentTextChanged(const QString &mapName);
+    void on_comboBox_PrimaryTileset_currentTextChanged(const QString &arg1);
+    void on_comboBox_SecondaryTileset_currentTextChanged(const QString &arg1);
     void on_pushButton_clicked();
     void on_checkBox_smartPaths_stateChanged(int selected);
     void on_checkBox_Visibility_clicked(bool checked);

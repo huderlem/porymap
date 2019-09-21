@@ -1590,7 +1590,7 @@ QMap<QString, QStringList> Project::getTilesetLabels() {
         else
             allTilesets["primary"].append(tilesetLabel);
     }
-
+    this->tilesetLabels = allTilesets;
     return allTilesets;
 }
 
