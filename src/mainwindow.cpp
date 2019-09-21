@@ -1362,7 +1362,7 @@ void MainWindow::updateSelectedObjects() {
             frame->ui->sprite->setVisible(true);
             frame->ui->comboBox_sprite->addItems(event_obj_gfx_constants.keys());
             frame->ui->comboBox_sprite->setCurrentText(item->event->get("sprite"));
-            connect(frame->ui->comboBox_sprite, SIGNAL(activated(QString)), item, SLOT(set_sprite(QString)));
+            connect(frame->ui->comboBox_sprite, &QComboBox::currentTextChanged, item, &DraggablePixmapItem::set_sprite);
 
             /*
             frame->ui->script->setVisible(true);
