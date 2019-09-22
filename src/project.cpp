@@ -1418,11 +1418,11 @@ void Project::readWildMonData() {
                     header.wildMons[field].active = true;
                     header.wildMons[field].encounterRate = encounter.toObject().value(field).toObject().value("encounter_rate").toInt();
                     for (QJsonValue mon : encounter.toObject().value(field).toObject().value("mons").toArray()) {
-                        header.wildMons[field].wildPokemon.append({
-                            mon.toObject().value("min_level").toInt(),
-                            mon.toObject().value("max_level").toInt(),
-                            mon.toObject().value("species").toString()
-                        });
+                        WildPokemon newMon;
+                        newMon.minLevel = mon.toObject().value("min_level").toInt();
+                        newMon.maxLevel = mon.toObject().value("max_level").toInt();
+                        newMon.species = mon.toObject().value("species").toString();
+                        header.wildMons[field].wildPokemon.append(newMon);
                     }
                 }
             }

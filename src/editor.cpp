@@ -419,6 +419,14 @@ void Editor::configureEncounterJSON(QWidget *window) {
             fieldChoices->setCurrentIndex(fieldChoices->count() - 1);
         }
     });
+    QPushButton *deleteFieldButton = new QPushButton("Delete Field");
+    connect(deleteFieldButton, &QPushButton::clicked, [drawSlotWidgets, fieldChoices, &tempFields]() {
+        if (tempFields.size() < 2) return;// don't delete last
+        int index = fieldChoices->currentIndex();
+        fieldChoices->removeItem(index);
+        tempFields.remove(index);
+        drawSlotWidgets(index);
+    });
 
     QPushButton *addSlotButton = new QPushButton(QIcon(":/icons/add.ico"), "");
     addSlotButton->setFlat(true);
@@ -440,6 +448,7 @@ void Editor::configureEncounterJSON(QWidget *window) {
     QHBoxLayout firstRowLayout;
     firstRowLayout.addWidget(fieldChoiceLabel);
     firstRowLayout.addWidget(fieldChoices);
+    firstRowLayout.addWidget(deleteFieldButton);
     firstRowLayout.addWidget(addFieldButton);
     firstRowLayout.addWidget(removeSlotButton);
     firstRowLayout.addWidget(addSlotButton);
@@ -460,14 +469,10 @@ void Editor::configureEncounterJSON(QWidget *window) {
     layout.addWidget(frameBottom);
 
     if (dialog.exec() == QDialog::Accepted) {
-        // Copy the temporary modified field info to project.
-        Fields &newFields = project->wildMonFields;
-        newFields = tempFields;
+        updateEncounterFields(tempFields);
 
         // Re-draw the tab accordingly.
         displayWildMonTables();
-
-        // TODO: Update values for every single wild encounter entry?
     }
 }
 
@@ -495,6 +500,50 @@ void Editor::saveEncounterTabData() {
             encounterHeader.wildMons[fieldName] = copyMonInfoFromTab(monTable);
         }
     }
+}
+
+// Update encounters for every map based on the new encounter JSON field data.
+void Editor::updateEncounterFields(Fields newFields) {
+    Fields oldFields = project->wildMonFields;
+    // Go through fields and determine whether we need to update a field.
+    // If the field is new, do nothing.
+    // If the field is deleted, remove from all maps.
+    // If the field is changed, change all maps accordingly.
+    for (Field oldField : oldFields) {
+        QString oldFieldName = oldField.first;
+        bool fieldDeleted = true;
+        for (Field newField : newFields) {
+            QString newFieldName = newField.first;
+            if (oldFieldName == newFieldName) {
+                fieldDeleted = false;
+                if (oldField.second.size() != newField.second.size()) {
+                    for (QString map : project->wildMonData.keys()) {
+                        for (QString groupName : project->wildMonData.value(map).keys()) {
+                            WildPokemonHeader &monHeader = project->wildMonData[map][groupName];
+                            for (QString fieldName : monHeader.wildMons.keys()) {
+                                if (fieldName == oldFieldName) {
+                                    monHeader.wildMons[fieldName].wildPokemon.resize(newField.second.size());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (fieldDeleted) {
+            for (QString map : project->wildMonData.keys()) {
+                for (QString groupName : project->wildMonData.value(map).keys()) {
+                    WildPokemonHeader &monHeader = project->wildMonData[map][groupName];
+                    for (QString fieldName : monHeader.wildMons.keys()) {
+                        if (fieldName == oldFieldName) {
+                            monHeader.wildMons.remove(fieldName);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    project->wildMonFields = newFields;
 }
 
 void Editor::setDiveEmergeControls() {
