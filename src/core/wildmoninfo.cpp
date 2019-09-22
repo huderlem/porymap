@@ -10,7 +10,7 @@ WildMonInfo getDefaultMonInfo(Field field) {
     newInfo.encounterRate = 0;
 
     for (int row : field.second)
-        newInfo.wildPokemon.append({5, 5, "SPECIES_NONE"});
+        newInfo.wildPokemon.append(WildPokemon());
 
     return newInfo;
 }

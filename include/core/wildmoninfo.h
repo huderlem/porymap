@@ -4,9 +4,9 @@
 #include <QtWidgets>
 
 struct WildPokemon {
-    int minLevel;
-    int maxLevel;
-    QString species;
+    int minLevel = 5;
+    int maxLevel = 5;
+    QString species = "SPECIES_NONE";
 };
 
 struct WildMonInfo {

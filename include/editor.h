@@ -146,6 +146,7 @@ private:
     void updateMirroredConnectionDirection(MapConnection*, QString);
     void updateMirroredConnectionMap(MapConnection*, QString);
     void updateMirroredConnection(MapConnection*, QString, QString, bool isDelete = false);
+    void updateEncounterFields(Fields newFields);
     Event* createNewObjectEvent();
     Event* createNewWarpEvent();
     Event* createNewHealLocationEvent();
