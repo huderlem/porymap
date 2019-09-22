@@ -63,10 +63,11 @@ void MonTabWidget::populateTab(int tabIndex, WildMonInfo monInfo, QString fieldN
     QTableWidget *speciesTable = tableAt(tabIndex);
 
     speciesTable->setRowCount(monInfo.wildPokemon.size());
-    speciesTable->setColumnCount(6);
+    speciesTable->setColumnCount(7);
 
     QStringList landMonTableHeaders;
-    landMonTableHeaders << "Slot" << "Species" << "Min Level" << "Max Level" << "Slot Ratio" << "Encounter Rate";
+    landMonTableHeaders << "Slot" << "Species" << "Min Level" << "Max Level" 
+                        << "Encounter Chance" << "Slot Ratio" << "Encounter Rate";
     speciesTable->setHorizontalHeaderLabels(landMonTableHeaders);
     speciesTable->horizontalHeader()->show();
     speciesTable->verticalHeader()->hide();
@@ -84,7 +85,7 @@ void MonTabWidget::populateTab(int tabIndex, WildMonInfo monInfo, QString fieldN
     encounterRate->setValue(monInfo.encounterRate);
     encounterLayout->addWidget(encounterRate);
     encounterFrame->setLayout(encounterLayout);
-    speciesTable->setCellWidget(0, 5, encounterFrame);
+    speciesTable->setCellWidget(0, 6, encounterFrame);
 
     int i = 0;
     for (WildPokemon mon : monInfo.wildPokemon) {
@@ -130,7 +131,14 @@ void MonTabWidget::createSpeciesTableRow(QTableWidget *table, WildPokemon mon, i
         if (field.first == fieldName) break;
         fieldIndex++;
     }
-    QLabel *percentLabel = new QLabel(QString("%1").arg(
+    double slotChanceTotal = 0;
+    for (auto chance : project->wildMonFields[fieldIndex].second) {
+        slotChanceTotal += static_cast<double>(chance);
+    }
+    QLabel *percentLabel = new QLabel(QString("%1%").arg(
+        QString::number(project->wildMonFields[fieldIndex].second[index] / slotChanceTotal * 100.0, 'f', 2)
+    ));
+    QLabel *ratioLabel = new QLabel(QString("%1").arg(
         QString::number(project->wildMonFields[fieldIndex].second[index]
     )));
 
@@ -155,6 +163,7 @@ void MonTabWidget::createSpeciesTableRow(QTableWidget *table, WildPokemon mon, i
     table->setCellWidget(index, 2, minLevelFrame);
     table->setCellWidget(index, 3, maxLevelFrame);
     table->setCellWidget(index, 4, percentLabel);
+    table->setCellWidget(index, 5, ratioLabel);
 }
 
 QTableWidget *MonTabWidget::tableAt(int tabIndex) {
