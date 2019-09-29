@@ -19,10 +19,15 @@ struct WildPokemonHeader {
     QMap<QString, WildMonInfo> wildMons;
 };
 
-typedef QVector<QPair<QString, QVector<int>>> Fields;
-typedef QPair<QString, QVector<int>> Field;
+struct EncounterField {
+    QString name;
+    QVector<int> encounterRates;
+    QMap<QString, QVector<int>> groups;
+};
 
-WildMonInfo getDefaultMonInfo(Field field);
-WildMonInfo copyMonInfoFromTab(QTableWidget *table);
+typedef QVector<EncounterField> EncounterFields;
+
+WildMonInfo getDefaultMonInfo(EncounterField field);
+WildMonInfo copyMonInfoFromTab(QTableWidget *table, EncounterField monField);
 
 #endif // GUARD_WILDMONINFO_H

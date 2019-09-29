@@ -188,8 +188,8 @@ void Editor::displayWildMonTables() {
         stack->insertWidget(labelIndex, tabWidget);
 
         int tabIndex = 0;
-        for (Field monField : project->wildMonFields) {
-            QString fieldName = monField.first;
+        for (EncounterField monField : project->wildMonFields) {
+            QString fieldName = monField.name;
 
             tabWidget->clearTableAt(tabIndex);
 
@@ -245,24 +245,24 @@ void Editor::addNewWildMonGroup(QWidget *window) {
     copyCheckbox->setEnabled(stack->count());
     form.addRow(new QLabel("Copy from current group"), copyCheckbox);
     QVector<QCheckBox *> fieldCheckboxes;
-    for (Field monField : project->wildMonFields) {
+    for (EncounterField monField : project->wildMonFields) {
         QCheckBox *fieldCheckbox = new QCheckBox;
         fieldCheckboxes.append(fieldCheckbox);
-        form.addRow(new QLabel(monField.first), fieldCheckbox);
+        form.addRow(new QLabel(monField.name), fieldCheckbox);
     }
     // Reading from ui here so not saving to disk before user.
     connect(copyCheckbox, &QCheckBox::stateChanged, [=](int state){
         if (state == Qt::Checked) {
             int fieldIndex = 0;
             MonTabWidget *monWidget = static_cast<MonTabWidget *>(stack->widget(stack->currentIndex()));
-            for (Field monField : project->wildMonFields) {
+            for (EncounterField monField : project->wildMonFields) {
                 fieldCheckboxes[fieldIndex]->setChecked(monWidget->isTabEnabled(fieldIndex));
                 fieldCheckboxes[fieldIndex]->setEnabled(false);
                 fieldIndex++;
             }
         } else if (state == Qt::Unchecked) {
             int fieldIndex = 0;
-            for (Field monField : project->wildMonFields) {
+            for (EncounterField monField : project->wildMonFields) {
                 fieldCheckboxes[fieldIndex]->setEnabled(true);
                 fieldIndex++;
             }
@@ -281,8 +281,8 @@ void Editor::addNewWildMonGroup(QWidget *window) {
 
     if (dialog.exec() == QDialog::Accepted) {
         WildPokemonHeader header;
-        for (Field monField : project->wildMonFields) {
-            QString fieldName = monField.first;
+        for (EncounterField monField : project->wildMonFields) {
+            QString fieldName = monField.name;
             header.wildMons[fieldName].active = false;
             header.wildMons[fieldName].encounterRate = 0;
         }
@@ -294,14 +294,14 @@ void Editor::addNewWildMonGroup(QWidget *window) {
         labelCombo->setCurrentIndex(labelCombo->count() - 1);
 
         int tabIndex = 0;
-        for (Field monField : project->wildMonFields) {
-            QString fieldName = monField.first;
+        for (EncounterField monField : project->wildMonFields) {
+            QString fieldName = monField.name;
             tabWidget->clearTableAt(tabIndex);
             if (fieldCheckboxes[tabIndex]->isChecked()) {
                 if (copyCheckbox->isChecked()) {
                     MonTabWidget *copyFrom = static_cast<MonTabWidget *>(stack->widget(stackIndex));
                     if (copyFrom->isTabEnabled(tabIndex))
-                        header.wildMons.insert(fieldName, copyMonInfoFromTab(copyFrom->tableAt(tabIndex)));
+                        header.wildMons.insert(fieldName, copyMonInfoFromTab(copyFrom->tableAt(tabIndex), monField));
                     else
                         header.wildMons.insert(fieldName, getDefaultMonInfo(monField));
                 } else {
@@ -319,25 +319,52 @@ void Editor::addNewWildMonGroup(QWidget *window) {
 void Editor::configureEncounterJSON(QWidget *window) {
     QVector<QWidget *> fieldSlots;
 
-    Fields tempFields = project->wildMonFields;
+    EncounterFields tempFields = project->wildMonFields;
 
     QLabel *totalLabel = new QLabel;
 
-    auto updateTotal = [&fieldSlots, totalLabel](Field &currentField) {
+    // lambda: Update the total displayed at the bottom of the Configure JSON
+    //         window. Take groups into account when applicable.
+    auto updateTotal = [&fieldSlots, totalLabel](EncounterField &currentField) {
         int total = 0, spinnerIndex = 0;
+        QString groupTotalMessage;
+        QMap<QString, int> groupTotals;
+        for (QString key : currentField.groups.keys())
+            groupTotals.insert(key, 0);// add to group map and initialize total to zero
         for (auto slot : fieldSlots) {
             QSpinBox *spinner = slot->findChild<QSpinBox *>();
             int val = spinner->value();
-            currentField.second[spinnerIndex++] = spinner->value();
-            total += val;
+            currentField.encounterRates[spinnerIndex] = val;
+            if (!currentField.groups.isEmpty()) {
+                for (QString key : currentField.groups.keys()) {
+                    if (currentField.groups[key].contains(spinnerIndex)) {
+                        groupTotals[key] += val;
+                        break;
+                    }
+                }
+            } else {
+                total += val;
+            }
+            spinnerIndex++;
         }
-        totalLabel->setText(QString("Total: %1").arg(QString::number(total)));
+        if (!currentField.groups.isEmpty()) {
+            groupTotalMessage += "Totals: ";
+            for (QString key : currentField.groups.keys()) {
+                groupTotalMessage += QString("%1 (%2),\t").arg(groupTotals[key]).arg(key);
+            }
+            groupTotalMessage.chop(2);
+            totalLabel->setText(groupTotalMessage);
+        } else {
+            totalLabel->setText(QString("Total: %1").arg(QString::number(total)));
+        }
     };
 
-    auto createNewSlot = [&fieldSlots, &updateTotal](int index, Field &currentField) {
+    // lambda: Create a new "slot", which is the widget containing a spinner and an index label. 
+    //         Add the slot to a list of fieldSlots, which exists to keep track of them for memory management.
+    auto createNewSlot = [&fieldSlots, &tempFields, &updateTotal](int index, EncounterField &currentField) {
         QLabel *indexLabel = new QLabel(QString("Index: %1").arg(QString::number(index)));
         QSpinBox *chanceSpinner = new QSpinBox;
-        int chance = currentField.second.at(index);
+        int chance = currentField.encounterRates.at(index);
         chanceSpinner->setMinimum(1);
         chanceSpinner->setMaximum(9999);
         chanceSpinner->setValue(chance);
@@ -345,11 +372,46 @@ void Editor::configureEncounterJSON(QWidget *window) {
             updateTotal(currentField);
         });
 
+        bool useGroups = !currentField.groups.isEmpty();
+
+        QFrame *slotChoiceFrame = new QFrame;
+        QVBoxLayout *slotChoiceLayout = new QVBoxLayout;
+        if (useGroups) {
+            QComboBox *groupCombo = new QComboBox;
+            connect(groupCombo, QOverload<const QString &>::of(&QComboBox::activated), [&tempFields, &currentField, index](QString newGroupName) {
+                for (EncounterField &field : tempFields) {
+                    if (field.name == currentField.name) {
+                        for (QString groupName : field.groups.keys()) {
+                            if (field.groups[groupName].contains(index)) {
+                                field.groups[groupName].removeAll(index);
+                                break;
+                            }
+                        }
+                        for (QString groupName : field.groups.keys()) {
+                            if (groupName == newGroupName) field.groups[newGroupName].append(index);
+                        }
+                        break;
+                    }
+                }
+            });
+            groupCombo->addItems(currentField.groups.keys());
+            QString currentGroupName;
+            for (QString groupName : currentField.groups.keys()) {
+                if (currentField.groups[groupName].contains(index)) {
+                    currentGroupName = groupName;
+                    break;
+                }
+            }
+            groupCombo->setCurrentText(currentGroupName);
+            slotChoiceLayout->addWidget(groupCombo);
+        }
+        slotChoiceLayout->addWidget(chanceSpinner);
+        slotChoiceFrame->setLayout(slotChoiceLayout);
+
         QFrame *slot = new QFrame;
         QHBoxLayout *slotLayout = new QHBoxLayout;
-        slotLayout->addStretch();
         slotLayout->addWidget(indexLabel);
-        slotLayout->addWidget(chanceSpinner);
+        slotLayout->addWidget(slotChoiceFrame);
         slot->setLayout(slotLayout);
 
         fieldSlots.append(slot);
@@ -368,13 +430,16 @@ void Editor::configureEncounterJSON(QWidget *window) {
     connect(&buttonBox, SIGNAL(accepted()), &dialog, SLOT(accept()));
     connect(&buttonBox, SIGNAL(rejected()), &dialog, SLOT(reject()));
 
+    // lambda: Get a QStringList of the existing field names.
     auto getFieldNames = [&tempFields]() {
         QStringList fieldNames;
-        for (Field field : tempFields)
-            fieldNames.append(field.first);
+        for (EncounterField field : tempFields)
+            fieldNames.append(field.name);
         return fieldNames;
     };
-    auto drawSlotWidgets = [this, &grid, &createNewSlot, &fieldSlots, &updateTotal, &tempFields](int index) {
+
+    // lambda: Draws the slot widgets onto a grid (4 wide) on the dialog window.
+    auto drawSlotWidgets = [this, &dialog, &grid, &createNewSlot, &fieldSlots, &updateTotal, &tempFields](int index) {
         // Clear them first.
         while (!fieldSlots.isEmpty()) {
             auto slot = fieldSlots.takeFirst();
@@ -382,12 +447,14 @@ void Editor::configureEncounterJSON(QWidget *window) {
             delete slot;
         }
 
-        Field &currentField = tempFields[index];
-        for (int i = 0; i < currentField.second.size(); i++) {
+        EncounterField &currentField = tempFields[index];
+        for (int i = 0; i < currentField.encounterRates.size(); i++) {
             grid.addWidget(createNewSlot(i, currentField), i / 4 + 1, i % 4);
         }
 
         updateTotal(currentField);
+
+        dialog.adjustSize();// TODO: why is this updating only on second call? reproduce: land->fishing->rock_smash->water
     };
     QComboBox *fieldChoices = new QComboBox;
     connect(fieldChoices, QOverload<int>::of(&QComboBox::currentIndexChanged), drawSlotWidgets);
@@ -414,7 +481,7 @@ void Editor::configureEncounterJSON(QWidget *window) {
         if (newNameDialog.exec() == QDialog::Accepted) {
             QString newFieldName = newNameEdit->text();
             QVector<int> newFieldRates(1, 100);
-            tempFields.append({newFieldName, newFieldRates});
+            tempFields.append({newFieldName, newFieldRates, {}});
             fieldChoices->addItem(newFieldName);
             fieldChoices->setCurrentIndex(fieldChoices->count() - 1);
         }
@@ -431,16 +498,16 @@ void Editor::configureEncounterJSON(QWidget *window) {
     QPushButton *addSlotButton = new QPushButton(QIcon(":/icons/add.ico"), "");
     addSlotButton->setFlat(true);
     connect(addSlotButton, &QPushButton::clicked, [this, &fieldChoices, &drawSlotWidgets, &tempFields]() {
-        Field &field = tempFields[fieldChoices->currentIndex()];
-        field.second.append(1);
+        EncounterField &field = tempFields[fieldChoices->currentIndex()];
+        field.encounterRates.append(1);
         drawSlotWidgets(fieldChoices->currentIndex());
     });
     QPushButton *removeSlotButton = new QPushButton(QIcon(":/icons/delete.ico"), "");
     removeSlotButton->setFlat(true);
     connect(removeSlotButton, &QPushButton::clicked, [this, &fieldChoices, &drawSlotWidgets, &tempFields]() {
-        Field &field = tempFields[fieldChoices->currentIndex()];
-        if (field.second.size() > 1)
-            field.second.removeLast();
+        EncounterField &field = tempFields[fieldChoices->currentIndex()];
+        if (field.encounterRates.size() > 1)
+            field.encounterRates.removeLast();
         drawSlotWidgets(fieldChoices->currentIndex());
     });
 
@@ -490,39 +557,39 @@ void Editor::saveEncounterTabData() {
         WildPokemonHeader &encounterHeader = encounterMap[labelCombo->itemText(groupIndex)];
 
         int fieldIndex = 0;
-        for (Field monField : project->wildMonFields) {
-            QString fieldName = monField.first;
+        for (EncounterField monField : project->wildMonFields) {
+            QString fieldName = monField.name;
 
             if (!tabWidget->isTabEnabled(fieldIndex++)) continue;
 
             QTableWidget *monTable = static_cast<QTableWidget *>(tabWidget->widget(fieldIndex - 1));
             QVector<WildPokemon> newWildMons;
-            encounterHeader.wildMons[fieldName] = copyMonInfoFromTab(monTable);
+            encounterHeader.wildMons[fieldName] = copyMonInfoFromTab(monTable, monField);
         }
     }
 }
 
 // Update encounters for every map based on the new encounter JSON field data.
-void Editor::updateEncounterFields(Fields newFields) {
-    Fields oldFields = project->wildMonFields;
+void Editor::updateEncounterFields(EncounterFields newFields) {
+    EncounterFields oldFields = project->wildMonFields;
     // Go through fields and determine whether we need to update a field.
     // If the field is new, do nothing.
     // If the field is deleted, remove from all maps.
     // If the field is changed, change all maps accordingly.
-    for (Field oldField : oldFields) {
-        QString oldFieldName = oldField.first;
+    for (EncounterField oldField : oldFields) {
+        QString oldFieldName = oldField.name;
         bool fieldDeleted = true;
-        for (Field newField : newFields) {
-            QString newFieldName = newField.first;
+        for (EncounterField newField : newFields) {
+            QString newFieldName = newField.name;
             if (oldFieldName == newFieldName) {
                 fieldDeleted = false;
-                if (oldField.second.size() != newField.second.size()) {
+                if (oldField.encounterRates.size() != newField.encounterRates.size()) {
                     for (QString map : project->wildMonData.keys()) {
                         for (QString groupName : project->wildMonData.value(map).keys()) {
                             WildPokemonHeader &monHeader = project->wildMonData[map][groupName];
                             for (QString fieldName : monHeader.wildMons.keys()) {
                                 if (fieldName == oldFieldName) {
-                                    monHeader.wildMons[fieldName].wildPokemon.resize(newField.second.size());
+                                    monHeader.wildMons[fieldName].wildPokemon.resize(newField.encounterRates.size());
                                 }
                             }
                         }

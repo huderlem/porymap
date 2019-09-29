@@ -91,7 +91,7 @@ public:
 
     void readWildMonData();
     QMap<QString, QMap<QString, WildPokemonHeader>> wildMonData;
-    QVector<QPair<QString, QVector<int>>> wildMonFields;
+    QVector<EncounterField> wildMonFields;
     QVector<QString> encounterGroupLabels;
     QMap<QString, QJsonObject> extraEncounterGroups;
 

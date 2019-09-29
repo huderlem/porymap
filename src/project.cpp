@@ -539,15 +539,26 @@ void Project::saveWildMonData() {
     monHeadersObject["for_maps"] = true;
 
     QJsonArray fieldsInfoArray;
-    for (QPair<QString, QVector<int>> fieldInfo : wildMonFields) {
+    for (EncounterField fieldInfo : wildMonFields) {
         QJsonObject fieldObject;
         QJsonArray rateArray;
 
-        for (int rate : fieldInfo.second)
+        for (int rate : fieldInfo.encounterRates) {
             rateArray.append(rate);
+        }
 
-        fieldObject["type"] = fieldInfo.first;
+        fieldObject["type"] = fieldInfo.name;
         fieldObject["encounter_rates"] = rateArray;
+
+        QJsonObject groupsObject;
+        for (QString groupName : fieldInfo.groups.keys()) {
+            QJsonArray subGroupIndices;
+            for (int slotIndex : fieldInfo.groups[groupName]) {
+                subGroupIndices.append(slotIndex);
+            }
+            groupsObject[groupName] = subGroupIndices;
+        }
+        fieldObject["groups"] = groupsObject;
 
         fieldsInfoArray.append(fieldObject);
     }
@@ -1399,10 +1410,16 @@ void Project::readWildMonData() {
         }
 
         for (auto field : subObject["fields"].toArray()) {
-            QPair<QString, QVector<int>> encounterField;
-            encounterField.first = field.toObject()["type"].toString();
-            for (auto val : field.toObject()["encounter_rates"].toArray())
-                encounterField.second.append(val.toInt());
+            EncounterField encounterField;
+            encounterField.name = field.toObject()["type"].toString();
+            for (auto val : field.toObject()["encounter_rates"].toArray()) {
+                encounterField.encounterRates.append(val.toInt());
+            }
+            for (QString group : field.toObject()["groups"].toObject().keys()) {
+                for (auto slotNum : field.toObject()["groups"].toObject()[group].toArray()) {
+                    encounterField.groups[group].append(slotNum.toInt());
+                }
+            }
             wildMonFields.append(encounterField);
         }
 
@@ -1412,8 +1429,8 @@ void Project::readWildMonData() {
 
             WildPokemonHeader header;
 
-            for (QPair<QString, QVector<int>> monField : wildMonFields) {
-                QString field = monField.first;
+            for (EncounterField monField : wildMonFields) {
+                QString field = monField.name;
                 if (encounter.toObject().value(field) != QJsonValue::Undefined) {
                     header.wildMons[field].active = true;
                     header.wildMons[field].encounterRate = encounter.toObject().value(field).toObject().value("encounter_rate").toInt();

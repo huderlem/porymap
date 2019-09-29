@@ -4,26 +4,28 @@
 
 
 
-WildMonInfo getDefaultMonInfo(Field field) {
+WildMonInfo getDefaultMonInfo(EncounterField field) {
     WildMonInfo newInfo;
     newInfo.active = true;
     newInfo.encounterRate = 0;
 
-    for (int row : field.second)
+    int size = field.encounterRates.size();
+    while (size--)
         newInfo.wildPokemon.append(WildPokemon());
 
     return newInfo;
 }
 
-WildMonInfo copyMonInfoFromTab(QTableWidget *monTable) {
+WildMonInfo copyMonInfoFromTab(QTableWidget *monTable, EncounterField monField) {
     WildMonInfo newInfo;
     QVector<WildPokemon> newWildMons;
 
+    bool extraColumn = !monField.groups.isEmpty();
     for (int row = 0; row < monTable->rowCount(); row++) {
         WildPokemon newWildMon;
-        newWildMon.species = monTable->cellWidget(row, 1)->findChild<QComboBox *>()->currentText();
-        newWildMon.minLevel = monTable->cellWidget(row, 2)->findChild<QSpinBox *>()->value();
-        newWildMon.maxLevel = monTable->cellWidget(row, 3)->findChild<QSpinBox *>()->value();
+        newWildMon.species = monTable->cellWidget(row, extraColumn ? 2 : 1)->findChild<QComboBox *>()->currentText();
+        newWildMon.minLevel = monTable->cellWidget(row, extraColumn ? 3 : 2)->findChild<QSpinBox *>()->value();
+        newWildMon.maxLevel = monTable->cellWidget(row, extraColumn ? 4 : 3)->findChild<QSpinBox *>()->value();
         newWildMons.append(newWildMon);
     }
     newInfo.active = true;
