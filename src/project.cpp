@@ -18,6 +18,7 @@
 #include <QStandardItem>
 #include <QMessageBox>
 #include <QRegularExpression>
+#include <algorithm>
 
 int Project::num_tiles_primary = 512;
 int Project::num_tiles_total = 1024;
@@ -553,6 +554,7 @@ void Project::saveWildMonData() {
         QJsonObject groupsObject;
         for (QString groupName : fieldInfo.groups.keys()) {
             QJsonArray subGroupIndices;
+            std::sort(fieldInfo.groups[groupName].begin(), fieldInfo.groups[groupName].end());
             for (int slotIndex : fieldInfo.groups[groupName]) {
                 subGroupIndices.append(slotIndex);
             }
@@ -1780,9 +1782,9 @@ QMap<QString, int> Project::getEventObjGfxConstants() {
 }
 
 void Project::readMiscellaneousConstants() {
-    QMap<QString, int> pokemonDefines = parser.readCDefines("include/pokemon.h", QStringList() << "MIN_" << "MAX_");
-    miscConstants.insert("max_level_define", pokemonDefines.value("MAX_LEVEL"));
-    miscConstants.insert("min_level_define", pokemonDefines.value("MIN_LEVEL"));
+    QMap<QString, int> pokemonDefines = parser.readCDefines("include/constants/pokemon.h", QStringList() << "MIN_" << "MAX_");
+    miscConstants.insert("max_level_define", pokemonDefines.value("MAX_LEVEL") > pokemonDefines.value("MIN_LEVEL") ? pokemonDefines.value("MAX_LEVEL") : 100);
+    miscConstants.insert("min_level_define", pokemonDefines.value("MIN_LEVEL") < pokemonDefines.value("MAX_LEVEL") ? pokemonDefines.value("MIN_LEVEL") : 1);
 }
 
 QString Project::fixPalettePath(QString path) {
