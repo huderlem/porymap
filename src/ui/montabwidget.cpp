@@ -1,9 +1,9 @@
 #include "montabwidget.h"
 #include "noscrollcombobox.h"
-#include "project.h"
+#include "editor.h"
 
-MonTabWidget::MonTabWidget(Project *project, QWidget *parent) : QTabWidget(parent) {
-    this->project = project;
+MonTabWidget::MonTabWidget(Editor *editor, QWidget *parent) : QTabWidget(parent) {
+    this->editor = editor;
     populate();
     installEventFilter(this);
 }
@@ -22,7 +22,7 @@ bool MonTabWidget::eventFilter(QObject *, QEvent *event) {
 }
 
 void MonTabWidget::populate() {
-    EncounterFields fields = project->wildMonFields;
+    EncounterFields fields = editor->project->wildMonFields;
     activeTabs = QVector<bool>(fields.size(), false);
 
     for (EncounterField field : fields) {
@@ -44,7 +44,8 @@ void MonTabWidget::askActivateTab(int tabIndex, QPoint menuPos) {
     QAction actionActivateTab(QString("Add %1 data for this map...").arg(tabText), this);
     connect(&actionActivateTab, &QAction::triggered, [=](){
         clearTableAt(tabIndex);
-        populateTab(tabIndex, getDefaultMonInfo(project->wildMonFields.at(tabIndex)), tabText);
+        populateTab(tabIndex, getDefaultMonInfo(editor->project->wildMonFields.at(tabIndex)), tabText);
+        editor->saveEncounterTabData();
         setCurrentIndex(tabIndex);
     });
     contextMenu.addAction(&actionActivateTab);
@@ -63,12 +64,12 @@ void MonTabWidget::populateTab(int tabIndex, WildMonInfo monInfo, QString fieldN
     QTableWidget *speciesTable = tableAt(tabIndex);
 
     int fieldIndex = 0;
-    for (EncounterField field : project->wildMonFields) {
+    for (EncounterField field : editor->project->wildMonFields) {
         if (field.name == fieldName) break;
         fieldIndex++;
     }
     bool insertGroupLabel = false;
-    if (!project->wildMonFields[fieldIndex].groups.isEmpty()) insertGroupLabel = true;
+    if (!editor->project->wildMonFields[fieldIndex].groups.isEmpty()) insertGroupLabel = true;
 
     speciesTable->setRowCount(monInfo.wildPokemon.size());
     speciesTable->setColumnCount(insertGroupLabel ? 8 : 7);
@@ -93,6 +94,9 @@ void MonTabWidget::populateTab(int tabIndex, WildMonInfo monInfo, QString fieldN
     encounterRate->setMinimum(0);
     encounterRate->setMaximum(180);
     encounterRate->setValue(monInfo.encounterRate);
+    connect(encounterRate, QOverload<int>::of(&QSpinBox::valueChanged), [this](int) {
+        editor->saveEncounterTabData();
+    });
     encounterLayout->addWidget(encounterRate);
     encounterFrame->setLayout(encounterLayout);
     speciesTable->setCellWidget(0, insertGroupLabel? 7 : 6, encounterFrame);
@@ -105,7 +109,7 @@ void MonTabWidget::populateTab(int tabIndex, WildMonInfo monInfo, QString fieldN
 }
 
 void MonTabWidget::createSpeciesTableRow(QTableWidget *table, WildPokemon mon, int index, QString fieldName) {
-    QPixmap monIcon = QPixmap(project->speciesToIconPath.value(mon.species)).copy(0, 0, 32, 32);
+    QPixmap monIcon = QPixmap(editor->project->speciesToIconPath.value(mon.species)).copy(0, 0, 32, 32);
 
     QLabel *monNum = new QLabel(QString("%1.").arg(QString::number(index)));
 
@@ -113,56 +117,62 @@ void MonTabWidget::createSpeciesTableRow(QTableWidget *table, WildPokemon mon, i
     monLabel->setPixmap(monIcon);
 
     NoScrollComboBox *monSelector = new NoScrollComboBox;
-    monSelector->addItems(project->speciesToIconPath.keys());
+    monSelector->addItems(editor->project->speciesToIconPath.keys());
     monSelector->setCurrentText(mon.species);
     monSelector->setEditable(true);
 
-    QObject::connect(monSelector, &QComboBox::currentTextChanged, [=](QString newSpecies){
-        QPixmap monIcon = QPixmap(project->speciesToIconPath.value(newSpecies)).copy(0, 0, 32, 32);
+    QObject::connect(monSelector, &QComboBox::currentTextChanged, [=](QString newSpecies) {
+        QPixmap monIcon = QPixmap(editor->project->speciesToIconPath.value(newSpecies)).copy(0, 0, 32, 32);
         monLabel->setPixmap(monIcon);
+        if (!monIcon.isNull()) editor->saveEncounterTabData();
     });
 
     QSpinBox *minLevel = new QSpinBox;
     QSpinBox *maxLevel = new QSpinBox;
-    minLevel->setMinimum(project->miscConstants.value("min_level_define").toInt());
-    minLevel->setMaximum(project->miscConstants.value("max_level_define").toInt());
-    maxLevel->setMinimum(project->miscConstants.value("min_level_define").toInt());
-    maxLevel->setMaximum(project->miscConstants.value("max_level_define").toInt());
+    minLevel->setMinimum(editor->project->miscConstants.value("min_level_define").toInt());
+    minLevel->setMaximum(editor->project->miscConstants.value("max_level_define").toInt());
+    maxLevel->setMinimum(editor->project->miscConstants.value("min_level_define").toInt());
+    maxLevel->setMaximum(editor->project->miscConstants.value("max_level_define").toInt());
     minLevel->setValue(mon.minLevel);
     maxLevel->setValue(mon.maxLevel);
 
     // Connect level spinboxes so max is never less than min.
-    connect(minLevel, QOverload<int>::of(&QSpinBox::valueChanged), [maxLevel](int min){
+    connect(minLevel, QOverload<int>::of(&QSpinBox::valueChanged), [maxLevel, this](int min) {
         maxLevel->setMinimum(min);
+        editor->saveEncounterTabData();
+    });
+
+    connect(maxLevel, QOverload<int>::of(&QSpinBox::valueChanged), [maxLevel, this](int) {
+        editor->saveEncounterTabData();
     });
 
     int fieldIndex = 0;
-    for (EncounterField field : project->wildMonFields) {
+    for (EncounterField field : editor->project->wildMonFields) {
         if (field.name == fieldName) break;
         fieldIndex++;
     }
 
     double slotChanceTotal = 0.0;
-    if (!project->wildMonFields[fieldIndex].groups.isEmpty()) {
-        for (QString groupKey : project->wildMonFields[fieldIndex].groups.keys()) {
-            if (project->wildMonFields[fieldIndex].groups[groupKey].contains(index)) {
-                for (int chanceIndex : project->wildMonFields[fieldIndex].groups[groupKey]) {
-                    slotChanceTotal += static_cast<double>(project->wildMonFields[fieldIndex].encounterRates[chanceIndex]);
+    if (!editor->project->wildMonFields[fieldIndex].groups.isEmpty()) {
+        for (QString groupKey : editor->project->wildMonFields[fieldIndex].groups.keys()) {
+            if (editor->project->wildMonFields[fieldIndex].groups[groupKey].contains(index)) {
+                for (int chanceIndex : editor->project->wildMonFields[fieldIndex].groups[groupKey]) {
+                    slotChanceTotal += static_cast<double>(editor->project->wildMonFields[fieldIndex].encounterRates[chanceIndex]);
                 }
                 break;
             }
         }
     } else {
-        for (auto chance : project->wildMonFields[fieldIndex].encounterRates) {
+        for (auto chance : editor->project->wildMonFields[fieldIndex].encounterRates) {
             slotChanceTotal += static_cast<double>(chance);
         }
     }
     
     QLabel *percentLabel = new QLabel(QString("%1%").arg(
-        QString::number(project->wildMonFields[fieldIndex].encounterRates[index] / slotChanceTotal * 100.0, 'f', 2)
+        QString::number(editor->project->wildMonFields[fieldIndex].encounterRates[index] / slotChanceTotal * 100.0, 'f', 2)
     ));
     QLabel *ratioLabel = new QLabel(QString("%1").arg(
-        QString::number(project->wildMonFields[fieldIndex].encounterRates[index]
+        QString::number(editor->project->wildMonFields[fieldIndex].encounterRates[index]
     )));
 
     QFrame *speciesSelector = new QFrame;
@@ -182,12 +192,12 @@ void MonTabWidget::createSpeciesTableRow(QTableWidget *table, WildPokemon mon, i
     maxLevelFrame->setLayout(maxLevelSpinboxLayout);
 
     bool insertGroupLabel = false;
-    if (!project->wildMonFields[fieldIndex].groups.isEmpty()) insertGroupLabel = true;
+    if (!editor->project->wildMonFields[fieldIndex].groups.isEmpty()) insertGroupLabel = true;
     table->setCellWidget(index, 0, monNum);
     if (insertGroupLabel) {
         QString groupName = QString();
-        for (QString groupKey : project->wildMonFields[fieldIndex].groups.keys()) {
-            if (project->wildMonFields[fieldIndex].groups[groupKey].contains(index)) {
+        for (QString groupKey : editor->project->wildMonFields[fieldIndex].groups.keys()) {
+            if (editor->project->wildMonFields[fieldIndex].groups[groupKey].contains(index)) {
                 groupName = groupKey;
                 break;
             }

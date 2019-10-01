@@ -184,7 +184,7 @@ void Editor::displayWildMonTables() {
 
         WildPokemonHeader header = project->wildMonData.value(map->constantName).value(label);
 
-        MonTabWidget *tabWidget = new MonTabWidget(project);
+        MonTabWidget *tabWidget = new MonTabWidget(this);
         stack->insertWidget(labelIndex, tabWidget);
 
         int tabIndex = 0;
@@ -281,20 +281,20 @@ void Editor::addNewWildMonGroup(QWidget *window) {
 
     if (dialog.exec() == QDialog::Accepted) {
         WildPokemonHeader header;
-        for (EncounterField monField : project->wildMonFields) {
+        for (EncounterField& monField : project->wildMonFields) {
             QString fieldName = monField.name;
             header.wildMons[fieldName].active = false;
             header.wildMons[fieldName].encounterRate = 0;
         }
 
-        MonTabWidget *tabWidget = new MonTabWidget(project);
+        MonTabWidget *tabWidget = new MonTabWidget(this);
         stack->insertWidget(stack->count(), tabWidget);
 
         labelCombo->addItem(lineEdit->text());
         labelCombo->setCurrentIndex(labelCombo->count() - 1);
 
         int tabIndex = 0;
-        for (EncounterField monField : project->wildMonFields) {
+        for (EncounterField &monField : project->wildMonFields) {
             QString fieldName = monField.name;
             tabWidget->clearTableAt(tabIndex);
             if (fieldCheckboxes[tabIndex]->isChecked()) {
@@ -313,6 +313,7 @@ void Editor::addNewWildMonGroup(QWidget *window) {
             }
             tabIndex++;
         }
+        saveEncounterTabData();
     }
 }
 
@@ -544,6 +545,7 @@ void Editor::configureEncounterJSON(QWidget *window) {
 }
 
 void Editor::saveEncounterTabData() {
+    // This function does not save to disk so it is safe to use before user clicks Save.
     QStackedWidget *stack = ui->stackedWidget_WildMons;
     QComboBox *labelCombo = ui->comboBox_EncounterGroupLabel;
 
