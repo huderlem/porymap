@@ -6,14 +6,14 @@
 #include <QtWidgets>
 #include <QVector>
 
-class Project;
+class Editor;
 
 class MonTabWidget : public QTabWidget {
 
     Q_OBJECT
 
 public:
-    explicit MonTabWidget(Project *project = nullptr, QWidget *parent = nullptr);
+    explicit MonTabWidget(Editor *editor = nullptr, QWidget *parent = nullptr);
     ~MonTabWidget(){};
 
     void populate();
@@ -35,7 +35,7 @@ private:
 
     QVector<bool> activeTabs;
 
-    Project *project;
+    Editor *editor;
 };
 
 #endif // MONTABWIDGET_H

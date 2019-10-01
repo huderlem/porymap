@@ -1096,6 +1096,9 @@ void MainWindow::on_tabWidget_currentChanged(int index)
     } else if (index == 3) {
         editor->setEditingConnections();
     }
+    if (index != 4) {
+        editor->saveEncounterTabData();
+    }
 }
 
 void MainWindow::on_actionUndo_triggered()
