@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Editing Map Headers &mdash; porymap  documentation</title>
+  <title>Project Files &mdash; porymap  documentation</title>
   
 
   
@@ -36,8 +36,8 @@
   <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Editing Map Connections" href="editing-map-connections.html" />
-    <link rel="prev" title="Editing Map Events" href="editing-map-events.html" /> 
+    <link rel="next" title="Changelog" href="../reference/changelog.html" />
+    <link rel="prev" title="The Region Map Editor" href="region-map-editor.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -127,7 +127,7 @@
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#open-map-scripts">Open Map Scripts</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Editing Map Headers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="editing-map-header.html">Editing Map Headers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="editing-map-connections.html">Editing Map Connections</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-connections.html#dive-emerge-warps">Dive &amp; Emerge Warps</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-connections.html#mirror-connections">Mirror Connections</a></li>
@@ -146,7 +146,7 @@
 <li class="toctree-l2"><a class="reference internal" href="region-map-editor.html#city-maps">City Maps</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="project-files.html">Project Files</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Project Files</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
 <ul>
@@ -232,14 +232,14 @@
     
       <li><a href="../index.html">Docs</a> &raquo;</li>
         
-      <li>Editing Map Headers</li>
+      <li>Project Files</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
             
-              <a href="https://github.com/huderlem/porymap/blob/master/docsrc/manual/editing-map-header.rst" class="fa fa-github"> Edit on GitHub</a>
+              <a href="https://github.com/huderlem/porymap/blob/master/docsrc/manual/project-files.rst" class="fa fa-github"> Edit on GitHub</a>
             
           
         
@@ -253,37 +253,183 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="editing-map-headers">
-<h1>Editing Map Headers<a class="headerlink" href="#editing-map-headers" title="Permalink to this headline">¶</a></h1>
-<p>The map header is a collection of miscellaneous properties that belong to a map.  They are mostly self-explanatory, but we’ll go over each of them.</p>
-<div class="figure" id="id1">
-<img alt="Map Header View" src="../_images/map-header.png" />
-<p class="caption"><span class="caption-text">Map Header View</span></p>
-</div>
-<dl class="docutils">
-<dt>Song</dt>
-<dd>The background music that is automatically played when entering the map.</dd>
-<dt>Location</dt>
-<dd>The region map section to which the map belongs.</dd>
-<dt>Requires Flash</dt>
-<dd>Whether or not the map has limited vision which the HM move Flash can expand.</dd>
-<dt>Weather</dt>
-<dd>The weather that is running when entering the map.</dd>
-<dt>Type</dt>
-<dd>The type of map. This value is used by various things in the game engine.  For example, in Ruby Version, running shoes can only be used when the map type is <code class="docutils literal notranslate"><span class="pre">MAP_TYPE_INDOOR</span></code>.</dd>
-<dt>Battle Scene</dt>
-<dd>Controls what graphics are used in battles.</dd>
-<dt>Show Location Name</dt>
-<dd>Shows or hides the map name popup window when entering the map.</dd>
-<dt>Allow Running</dt>
-<dd>Controls whether or not running shoes can be used.</dd>
-<dt>Allow Biking</dt>
-<dd>Controls whether or not a bike can be used.</dd>
-<dt>Allow Dig &amp; Escape Rop</dt>
-<dd>Controls whether the Dig field move or the Escape Rope item can be used.</dd>
-<dt>Custom Fields</dt>
-<dd>You can enter custom fields if you need support for additional fields in your project.  They can also be useful for keeping notes.</dd>
-</dl>
+  <div class="section" id="project-files">
+<h1>Project Files<a class="headerlink" href="#project-files" title="Permalink to this headline">¶</a></h1>
+<p>Porymap relies on the user maintaining a certain level of integrity with their project files.
+This is a list of files that porymap reads from and writes to. Generally, if porymap writes to a file, it
+probably is not a good idea to edit yourself unless otherwise noted.</p>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="33%" />
+<col width="8%" />
+<col width="8%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">File Name</th>
+<th class="head">Read</th>
+<th class="head">Write</th>
+<th class="head">Notes</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>data/maps/*/map.json</td>
+<td>yes</td>
+<td>yes</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>data/event_scripts.s</td>
+<td>no</td>
+<td>yes</td>
+<td>only appends new script files to end of file</td>
+</tr>
+<tr class="row-even"><td>data/maps/map_groups.json</td>
+<td>yes</td>
+<td>yes</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>data/layouts/layouts.json</td>
+<td>yes</td>
+<td>yes</td>
+<td>also reads border and blockdata files listed in this file</td>
+</tr>
+<tr class="row-even"><td>data/tilesets/headers.inc</td>
+<td>yes</td>
+<td>yes</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>data/tilesets/graphics.inc</td>
+<td>yes</td>
+<td>yes</td>
+<td>also edits palette and tile image files listed in this file</td>
+</tr>
+<tr class="row-even"><td>data/tilesets/metatiles.inc</td>
+<td>yes</td>
+<td>yes</td>
+<td>also edits metatile files listed in this file</td>
+</tr>
+<tr class="row-odd"><td>src/data/wild_encounters.json</td>
+<td>yes</td>
+<td>yes</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>src/data/field_event_obj/event_object_graphics_info_pointers.h</td>
+<td>yes</td>
+<td>no</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>src/data/field_event_obj/event_object_graphics_info.h</td>
+<td>yes</td>
+<td>no</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>src/data/field_event_obj/event_object_pic_tables.h</td>
+<td>yes</td>
+<td>no</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>src/data/field_event_obj/event_object_graphics.h</td>
+<td>yes</td>
+<td>no</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>src/data/graphics/pokemon.h</td>
+<td>yes</td>
+<td>no</td>
+<td>for pokemon sprite icons</td>
+</tr>
+<tr class="row-odd"><td>src/data/heal_locations.h</td>
+<td>yes</td>
+<td>yes</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>src/data/region_map/region_map_entries.h</td>
+<td>yes</td>
+<td>yes</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>include/constants/map_groups.h</td>
+<td>no</td>
+<td>yes</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>include/constants/items.h</td>
+<td>yes</td>
+<td>no</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>include/constants/flags.h</td>
+<td>yes</td>
+<td>no</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>include/constants/vars.h</td>
+<td>yes</td>
+<td>no</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>include/constants/weather.h</td>
+<td>yes</td>
+<td>no</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>include/constants/heal_locations.h</td>
+<td>no</td>
+<td>yes</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>include/constants/pokemon.h</td>
+<td>yes</td>
+<td>no</td>
+<td>reads min and max level constants</td>
+</tr>
+<tr class="row-even"><td>include/constants/map_types.h</td>
+<td>yes</td>
+<td>no</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>include/constants/secret_bases.h</td>
+<td>yes</td>
+<td>no</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>include/constants/event_object_movement_constants.h</td>
+<td>yes</td>
+<td>no</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>include/constants/bg_event_constants.h</td>
+<td>yes</td>
+<td>no</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>include/constants/region_map_sections.h</td>
+<td>yes</td>
+<td>no</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>include/constants/metatile_labels.h</td>
+<td>yes</td>
+<td>yes</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>include/constants/metatile_behaviors.h</td>
+<td>yes</td>
+<td>no</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>include/constants/bg_event_constants.h</td>
+<td>yes</td>
+<td>no</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>include/fieldmap.h</td>
+<td>yes</td>
+<td>no</td>
+<td>reads tileset related constants</td>
+</tr>
+</tbody>
+</table>
 </div>
 
 
@@ -294,10 +440,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="editing-map-connections.html" class="btn btn-neutral float-right" title="Editing Map Connections" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="../reference/changelog.html" class="btn btn-neutral float-right" title="Changelog" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="editing-map-events.html" class="btn btn-neutral float-left" title="Editing Map Events" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="region-map-editor.html" class="btn btn-neutral float-left" title="The Region Map Editor" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
