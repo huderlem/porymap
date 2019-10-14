@@ -560,7 +560,7 @@ void Project::saveWildMonData() {
             }
             groupsObject[groupName] = subGroupIndices;
         }
-        fieldObject["groups"] = groupsObject;
+        if (!groupsObject.isEmpty()) fieldObject["groups"] = groupsObject;
 
         fieldsInfoArray.append(fieldObject);
     }
