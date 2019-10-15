@@ -354,10 +354,14 @@ void Editor::configureEncounterJSON(QWidget *window) {
                 groupTotalMessage += QString("%1 (%2),\t").arg(groupTotals[key]).arg(key);
             }
             groupTotalMessage.chop(2);
-            totalLabel->setText(groupTotalMessage);
         } else {
-            totalLabel->setText(QString("Total: %1").arg(QString::number(total)));
+            groupTotalMessage = QString("Total: %1").arg(QString::number(total));
         }
+        if (total > 0xFF) {
+            totalLabel->setTextFormat(Qt::RichText);
+            groupTotalMessage += QString("<font color=\"red\">\tWARNING: value exceeds the limit for a u8 variable.</font>");
+        }
+        totalLabel->setText(groupTotalMessage);
     };
 
     // lambda: Create a new "slot", which is the widget containing a spinner and an index label. 
