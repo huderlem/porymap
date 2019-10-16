@@ -26,7 +26,7 @@ void MonTabWidget::populate() {
     activeTabs = QVector<bool>(fields.size(), false);
 
     for (EncounterField field : fields) {
-        QTableWidget *table = new QTableWidget;
+        QTableWidget *table = new QTableWidget(this);
         table->setEditTriggers(QAbstractItemView::NoEditTriggers);
         table->setFocusPolicy(Qt::NoFocus);
         table->setSelectionMode(QAbstractItemView::NoSelection);

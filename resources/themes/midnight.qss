@@ -304,3 +304,11 @@ QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
 QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
     background: none;
 }
+
+/* Table Headers */
+
+QHeaderView {
+  padding: 0px;
+  margin: 0px;
+  font: 12px;
+}
