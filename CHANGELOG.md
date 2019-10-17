@@ -9,9 +9,11 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ## [Unreleased]
 ### Breaking Changes
 - Accomodate event object graphics pointer table being explicitly indexed. From changes introduced in commits [cdae0c1444bed98e652c87dc3e3edcecacfef8be](https://github.com/pret/pokeemerald/commit/cdae0c1444bed98e652c87dc3e3edcecacfef8be) and [0e8ccfc4fd3544001f4c25fafd401f7558bdefba](https://github.com/pret/pokeruby/commit/0e8ccfc4fd3544001f4c25fafd401f7558bdefba).
+- 
 
 ### Added
 - Add wild encounter table editor.
+- Add dark themes.
 - Support metatile labels file introduced in pokeruby and pokeemerald commits [ad365a35c1536740cbcbc10bee66e5dd908c39e7](https://github.com/pret/pokeruby/commit/ad365a35c1536740cbcbc10bee66e5dd908c39e7) and [c68ba9f4e8e260f2e3389eccd15f6ee5f4bdcd3e](https://github.com/pret/pokeemerald/commit/c68ba9f4e8e260f2e3389eccd15f6ee5f4bdcd3e).
 - Add warning when closing porymap with unsaved changes.
 
