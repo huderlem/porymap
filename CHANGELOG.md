@@ -6,7 +6,10 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 
 The **"Breaking Changes"** listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. If porymap is used on a project that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.
 
-## [Unreleased]
+## Unreleased
+Nothing, yet.
+
+## [2.0.0] - 2019-10-16
 ### Breaking Changes
 - Accomodate event object graphics pointer table being explicitly indexed. From changes introduced in commits [cdae0c1444bed98e652c87dc3e3edcecacfef8be](https://github.com/pret/pokeemerald/commit/cdae0c1444bed98e652c87dc3e3edcecacfef8be) and [0e8ccfc4fd3544001f4c25fafd401f7558bdefba](https://github.com/pret/pokeruby/commit/0e8ccfc4fd3544001f4c25fafd401f7558bdefba).
 - New "field" key in wild encounter JSON data from pokeemerald and pokeruby commits [adb0a444577b59eb02788c782a3d04bc285be0ba](https://github.com/pret/pokeemerald/commit/adb0a444577b59eb02788c782a3d04bc285be0ba) and [https://github.com/pret/pokeruby/commit/c73de8bed752ca538d90cfc93c4a9e8c7965f8c9](c73de8bed752ca538d90cfc93c4a9e8c7965f8c9).
@@ -121,7 +124,8 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ## [1.0.0] - 2018-10-26
 This was the initial release.
 
-[Unreleased]: https://github.com/huderlem/porymap/compare/1.2.2...HEAD
+[Unreleased]: https://github.com/huderlem/porymap/compare/2.0.0...HEAD
+[2.0.0]: https://github.com/huderlem/porymap/compare/1.2.2...2.0.0
 [1.2.2]: https://github.com/huderlem/porymap/compare/1.2.1...1.2.2
 [1.2.1]: https://github.com/huderlem/porymap/compare/1.2.0...1.2.1
 [1.2.0]: https://github.com/huderlem/porymap/compare/1.1.0...1.2.0
