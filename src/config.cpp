@@ -354,6 +354,12 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         if (!ok) {
             logWarn(QString("Invalid config value for use_encounter_json: '%1'. Must be 0 or 1.").arg(value));
         }
+    } else if(key == "use_poryscript") {
+        bool ok;
+        this->usePoryScript = value.toInt(&ok);
+        if(!ok) {
+            logWarn(QString("Invalid config value for use_poryscript: '%1'. Must be 0 or 1.").arg(value));
+        }
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -363,6 +369,7 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     QMap<QString, QString> map;
     map.insert("base_game_version", baseGameVersionMap.value(this->baseGameVersion));
     map.insert("use_encounter_json", QString::number(this->useEncounterJson));
+    map.insert("use_poryscript", QString::number(this->usePoryScript));
     return map;
 }
 
@@ -392,6 +399,7 @@ void ProjectConfig::onNewConfigFileCreated() {
         }
     }
     this->useEncounterJson = true;
+    this->usePoryScript = false;
 }
 
 void ProjectConfig::setProjectDir(QString projectDir) {
@@ -414,4 +422,13 @@ void ProjectConfig::setEncounterJsonActive(bool active) {
 
 bool ProjectConfig::getEncounterJsonActive() {
     return this->useEncounterJson;
+}
+
+void ProjectConfig::setUsePoryScript(bool usePoryScript) {
+    this->usePoryScript = usePoryScript;
+    this->save();
+}
+
+bool ProjectConfig::getUsePoryScript() {
+    return this->usePoryScript;
 }

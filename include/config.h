@@ -106,6 +106,8 @@ public:
     BaseGameVersion getBaseGameVersion();
     void setEncounterJsonActive(bool active);
     bool getEncounterJsonActive();
+    void setUsePoryScript(bool usePoryScript);
+    bool getUsePoryScript();
     void setProjectDir(QString projectDir);
 protected:
     QString getConfigFilepath();
@@ -116,6 +118,7 @@ private:
     BaseGameVersion baseGameVersion;
     QString projectDir;
     bool useEncounterJson;
+    bool usePoryScript;
 };
 
 extern ProjectConfig projectConfig;

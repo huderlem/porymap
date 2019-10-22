@@ -151,6 +151,9 @@ public:
     QString fixPalettePath(QString path);
     QString fixGraphicPath(QString path);
 
+    QString getScriptFileExtension(bool usePoryScript);
+    QString getScriptDefaultString(bool usePoryScript, QString mapName);
+
     void loadMapBorder(Map *map);
 
     void saveMapHealEvents(Map *map);

@@ -962,12 +962,12 @@ void Project::saveMap(Map *map) {
         }
 
         // Create file data/maps/<map_name>/scripts.inc
-        QString text = QString("%1_MapScripts::\n\t.byte 0\n").arg(map->name);
-        saveTextFile(root + "/data/maps/" + map->name + "/scripts.inc", text);
+        QString text = this->getScriptDefaultString(projectConfig.getUsePoryScript(), map->name);
+        saveTextFile(root + "/data/maps/" + map->name + "/scripts" + this->getScriptFileExtension(projectConfig.getUsePoryScript()), text);
 
         if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeruby) {
             // Create file data/maps/<map_name>/text.inc
-            saveTextFile(root + "/data/maps/" + map->name + "/text.inc", "\n");
+            saveTextFile(root + "/data/maps/" + map->name + "/text" + this->getScriptFileExtension(projectConfig.getUsePoryScript()), "\n");
         }
 
         // Simply append to data/event_scripts.s.
@@ -1796,6 +1796,21 @@ QString Project::fixGraphicPath(QString path) {
     path = path.replace(QRegExp("\\.lz$"), "");
     path = path.replace(QRegExp("\\.[1248]bpp$"), ".png");
     return path;
+}
+
+QString Project::getScriptFileExtension(bool usePoryScript) {
+    if(usePoryScript) {
+        return ".pory";
+    } else {
+        return ".inc";
+    }
+}
+
+QString Project::getScriptDefaultString(bool usePoryScript, QString mapName) {
+    if(usePoryScript)
+        return QString("mapscripts %1_MapScripts {}").arg(mapName);
+    else
+        return QString("%1_MapScripts::\n\t.byte 0\n").arg(mapName);
 }
 
 void Project::loadEventPixmaps(QList<Event*> objects) {
