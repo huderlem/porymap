@@ -78,7 +78,7 @@ private slots:
     void on_actionMonitor_Project_Files_triggered(bool checked);
     void on_actionUse_Poryscript_triggered(bool checked);
 
-    void on_tabWidget_currentChanged(int index);
+    void on_mainTabBar_tabBarClicked(int index);
 
     void on_actionUndo_triggered();
     void on_actionRedo_triggered();
