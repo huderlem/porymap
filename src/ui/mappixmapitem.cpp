@@ -558,13 +558,13 @@ void MapPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
     int x = static_cast<int>(event->pos().x()) / 16;
     int y = static_cast<int>(event->pos().y()) / 16;
     emit this->hoveredMapMetatileChanged(x, y);
-    if (this->settings->betterCursors/* && this->paintingEnabled*/) {
+    if (this->settings->betterCursors && this->paintingMode != MapPixmapItem::PaintMode::Disabled) {
         setCursor(this->settings->mapCursor);
     }
 }
 void MapPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
     emit this->hoveredMapMetatileCleared();
-    if (this->settings->betterCursors/* && this->paintingEnabled*/) {
+    if (this->settings->betterCursors && this->paintingMode != MapPixmapItem::PaintMode::Disabled) {
         unsetCursor();
     }
 }

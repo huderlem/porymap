@@ -70,7 +70,7 @@ public:
     void setEditingCollision();
     void setEditingObjects();
     void setEditingConnections();
-    void setMapEditingButtonsVisibile(bool visible);
+    void setMapEditingButtonsEnabled(bool enabled);
     void clearWildMonTabWidgets();
     void setCurrentConnectionDirection(QString curDirection);
     void updateCurrentConnectionDirection(QString curDirection);
