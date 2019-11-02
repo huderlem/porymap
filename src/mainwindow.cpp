@@ -1896,7 +1896,7 @@ void MainWindow::on_toolButton_Paint_clicked()
 void MainWindow::on_toolButton_Select_clicked()
 {
     editor->map_edit_mode = "select";
-    editor->settings->mapCursor = QCursor(QPixmap(":/icons/cursor.ico"), 0, 0);
+    editor->settings->mapCursor = QCursor();//QPixmap(":/icons/cursor.ico"), 0, 0);
     editor->cursorMapTileRect->setSingleTileMode();
 
     ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);

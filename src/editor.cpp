@@ -85,6 +85,8 @@ void Editor::setEditingMap() {
     setConnectionItemsVisible(false);
     this->cursorMapTileRect->stopSingleTileMode();
     this->cursorMapTileRect->setVisibility(true);
+
+    setMapEditingButtonsVisibile(true);
 }
 
 void Editor::setEditingCollision() {
@@ -106,6 +108,8 @@ void Editor::setEditingCollision() {
     setConnectionItemsVisible(false);
     this->cursorMapTileRect->setSingleTileMode();
     this->cursorMapTileRect->setVisibility(true);
+
+    setMapEditingButtonsVisibile(true);
 }
 
 void Editor::setEditingObjects() {
@@ -125,6 +129,22 @@ void Editor::setEditingObjects() {
     setConnectionItemsVisible(false);
     this->cursorMapTileRect->setSingleTileMode();
     this->cursorMapTileRect->setVisibility(false);
+
+    setMapEditingButtonsVisibile(false);
+}
+
+void Editor::setMapEditingButtonsVisibile(bool visible) {
+    this->ui->toolButton_Fill->setEnabled(visible);
+    // If the fill button is pressed, unpress it and select the pointer.
+    if (!visible && this->ui->toolButton_Fill->isChecked()) {
+        qDebug() << "deselect flood fill button";
+        this->map_edit_mode = "select";
+        this->settings->mapCursor = QCursor();
+        this->cursorMapTileRect->setSingleTileMode();
+        this->ui->toolButton_Fill->setChecked(false);
+        this->ui->toolButton_Select->setChecked(true);
+    }
+    this->ui->checkBox_smartPaths->setEnabled(visible);
 }
 
 void Editor::setEditingConnections() {
@@ -966,6 +986,7 @@ void Editor::setSmartPathCursorMode(QGraphicsSceneMouseEvent *event)
 }
 
 void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item) {
+    // TODO: add event tab object painting tool buttons stuff here
     if (!item->paintingEnabled) {
         return;
     }
