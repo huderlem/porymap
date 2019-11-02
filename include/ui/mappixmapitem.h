@@ -13,14 +13,19 @@ private:
     using QGraphicsPixmapItem::paint;
 
 public:
+    enum class PaintMode {
+        Disabled,
+        Metatiles,
+        EventObjects
+    };
     MapPixmapItem(Map *map_, MetatileSelector *metatileSelector, Settings *settings) {
         this->map = map_;
         this->metatileSelector = metatileSelector;
         this->settings = settings;
-        this->paintingEnabled = true;
+        this->paintingMode = PaintMode::Metatiles;
         setAcceptHoverEvents(true);
     }
-    bool paintingEnabled;
+    MapPixmapItem::PaintMode paintingMode;
     Map *map;
     MetatileSelector *metatileSelector;
     Settings *settings;
@@ -45,6 +50,8 @@ private:
     void paintNormal(int x, int y);
     void paintSmartPath(int x, int y);
     static QList<int> smartPathTable;
+
+    void paint_object(QGraphicsSceneMouseEvent*);// ?
 
 signals:
     void startPaint(QGraphicsSceneMouseEvent *, MapPixmapItem *);

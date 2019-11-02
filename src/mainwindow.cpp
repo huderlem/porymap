@@ -2073,7 +2073,7 @@ void MainWindow::on_comboBox_SecondaryTileset_currentTextChanged(const QString &
     }
 }
 
-void MainWindow::on_pushButton_clicked()
+void MainWindow::on_pushButton_ChangeDimensions_clicked()
 {
     QDialog dialog(this, Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
     dialog.setWindowTitle("Change Map Dimensions");
