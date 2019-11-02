@@ -126,8 +126,6 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->windowState = bytesFromString(value);
     } else if (key == "map_splitter_state") {
         this->mapSplitterState = bytesFromString(value);
-    } else if (key == "events_splitter_state") {
-        this->eventsSlpitterState = bytesFromString(value);
     } else if (key == "main_splitter_state") {
         this->mainSplitterState = bytesFromString(value);
     } else if (key == "collision_opacity") {
@@ -183,7 +181,6 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("window_geometry", stringFromByteArray(this->windowGeometry));
     map.insert("window_state", stringFromByteArray(this->windowState));
     map.insert("map_splitter_state", stringFromByteArray(this->mapSplitterState));
-    map.insert("events_splitter_state", stringFromByteArray(this->eventsSlpitterState));
     map.insert("main_splitter_state", stringFromByteArray(this->mainSplitterState));
     map.insert("collision_opacity", QString("%1").arg(this->collisionOpacity));
     map.insert("metatiles_zoom", QString("%1").arg(this->metatilesZoom));
@@ -232,12 +229,11 @@ void PorymapConfig::setPrettyCursors(bool enabled) {
     this->save();
 }
 
-void PorymapConfig::setGeometry(QByteArray windowGeometry_, QByteArray windowState_, QByteArray mapSplitterState_, 
-                                QByteArray eventsSlpitterState_, QByteArray mainSplitterState_) {
+void PorymapConfig::setGeometry(QByteArray windowGeometry_, QByteArray windowState_,
+                                QByteArray mapSplitterState_, QByteArray mainSplitterState_) {
     this->windowGeometry = windowGeometry_;
     this->windowState = windowState_;
     this->mapSplitterState = mapSplitterState_;
-    this->eventsSlpitterState = eventsSlpitterState_;
     this->mainSplitterState = mainSplitterState_;
     this->save();
 }
@@ -292,7 +288,6 @@ QMap<QString, QByteArray> PorymapConfig::getGeometry() {
     geometry.insert("window_geometry", this->windowGeometry);
     geometry.insert("window_state", this->windowState);
     geometry.insert("map_splitter_state", this->mapSplitterState);
-    geometry.insert("events_splitter_state", this->eventsSlpitterState);
     geometry.insert("main_splitter_state", this->mainSplitterState);
 
     return geometry;
