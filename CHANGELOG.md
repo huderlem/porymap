@@ -10,6 +10,10 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ### Added
 - Add optional support for Poryscript script files via the `use_poryscript` config option.
 
+### Fixed
+- Fix index-out-of-bounds crash when deleting the last event in an event type group.
+
+
 ## [2.0.0] - 2019-10-16
 ### Breaking Changes
 - Accomodate event object graphics pointer table being explicitly indexed. From changes introduced in commits [cdae0c1444bed98e652c87dc3e3edcecacfef8be](https://github.com/pret/pokeemerald/commit/cdae0c1444bed98e652c87dc3e3edcecacfef8be) and [0e8ccfc4fd3544001f4c25fafd401f7558bdefba](https://github.com/pret/pokeruby/commit/0e8ccfc4fd3544001f4c25fafd401f7558bdefba).
