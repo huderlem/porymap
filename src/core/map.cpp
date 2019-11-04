@@ -152,7 +152,7 @@ QPixmap Map::renderCollision(qreal opacity, bool ignoreCache) {
     return collision_pixmap;
 }
 
-QPixmap Map::render(bool ignoreCache = false) {
+QPixmap Map::render(bool ignoreCache = false, MapLayout * fromLayout) {
     bool changed_any = false;
     int width_ = getWidth();
     int height_ = getHeight();
@@ -176,7 +176,11 @@ QPixmap Map::render(bool ignoreCache = false) {
         }
         changed_any = true;
         Block block = layout->blockdata->blocks->value(i);
-        QImage metatile_image = getMetatileImage(block.tile, layout->tileset_primary, layout->tileset_secondary);
+        QImage metatile_image = getMetatileImage(
+            block.tile,
+            fromLayout ? fromLayout->tileset_primary   : layout->tileset_primary,
+            fromLayout ? fromLayout->tileset_secondary : layout->tileset_secondary
+        );
         int map_y = width_ ? i / width_ : 0;
         int map_x = width_ ? i % width_ : 0;
         QPoint metatile_origin = QPoint(map_x * 16, map_y * 16);
@@ -223,8 +227,8 @@ QPixmap Map::renderBorder() {
     return layout->border_pixmap;
 }
 
-QPixmap Map::renderConnection(MapConnection connection) {
-    render(true);
+QPixmap Map::renderConnection(MapConnection connection, MapLayout * fromLayout) {
+    render(true, fromLayout);
     int x, y, w, h;
     if (connection.direction == "up") {
         x = 0;
