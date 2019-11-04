@@ -10,6 +10,9 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ### Added
 - Add optional support for Poryscript script files via the `use_poryscript` config option.
 
+### Changed
+- Draw map connections with the current map's tilesets to more accurately mimic their appearance in-game.
+
 ### Fixed
 - Fix index-out-of-bounds crash when deleting the last event in an event type group.
 
