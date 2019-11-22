@@ -1471,7 +1471,7 @@ void MainWindow::updateSelectedObjects() {
                 combo->addItem("NONE", "0");
                 combo->addItem("NORMAL", "1");
                 combo->addItem("SEE ALL DIRECTIONS", "3");
-                combo->setToolTip("The trainer type of this event object.\n"
+                combo->setToolTip("The trainer type of this object event.\n"
                                   "If it is not a trainer, use NONE. SEE ALL DIRECTIONS\n"
                                   "should only be used with a sight radius of 1.");
                 combo->setMinimumContentsLength(10);
