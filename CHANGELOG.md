@@ -15,6 +15,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 
 ### Fixed
 - Fix index-out-of-bounds crash when deleting the last event in an event type group.
+- Fix bug where exporting tileset images could add an extra row of junk at the end.
 
 
 ## [2.0.0] - 2019-10-16
