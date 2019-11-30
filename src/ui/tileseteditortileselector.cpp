@@ -200,7 +200,7 @@ QImage TilesetEditorTileSelector::buildPrimaryTilesIndexedImage() {
     }
 
     int primaryLength = this->primaryTileset->tiles->length();
-    int height = primaryLength / this->numTilesWide + 1;
+    int height = qCeil(primaryLength / static_cast<double>(this->numTilesWide));
     QImage image(this->numTilesWide * 8, height * 8, QImage::Format_RGBA8888);
 
     QPainter painter(&image);
@@ -236,7 +236,7 @@ QImage TilesetEditorTileSelector::buildSecondaryTilesIndexedImage() {
     }
 
     int secondaryLength = this->secondaryTileset->tiles->length();
-    int height = secondaryLength / this->numTilesWide + 1;
+    int height = qCeil(secondaryLength / static_cast<double>(this->numTilesWide));
     QImage image(this->numTilesWide * 8, height * 8, QImage::Format_RGBA8888);
 
     QPainter painter(&image);
