@@ -8,7 +8,6 @@
 #include "ui_eventpropertiesframe.h"
 #include "bordermetatilespixmapitem.h"
 #include "currentselectedmetatilespixmapitem.h"
-#include "customattributestable.h"
 
 #include <QFileDialog>
 #include <QDirIterator>
@@ -405,7 +404,7 @@ void MainWindow::redrawMapScene()
     if (!editor->displayMap())
         return;
 
-    on_mainTabBar_tabBarClicked(ui->mainStackedWidget->currentIndex());
+    on_mainTabBar_tabBarClicked(ui->mainTabBar->currentIndex());
 
     double base = editor->scale_base;
     double exp  = editor->scale_exp;
@@ -1344,7 +1343,7 @@ void MainWindow::updateSelectedObjects() {
     QList<EventPropertiesFrame *> frames;
 
     for (DraggablePixmapItem *item : *events) {
-        EventPropertiesFrame *frame = new EventPropertiesFrame;
+        EventPropertiesFrame *frame = new EventPropertiesFrame(item->event);
 //        frame->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
         QSpinBox *x = frame->ui->spinBox_x;
@@ -1588,13 +1587,6 @@ void MainWindow::updateSelectedObjects() {
 
             item->bind(combo, key);
         }
-
-        // Custom fields table.
-        if (event_type != EventType::HealLocation) {
-            CustomAttributesTable *customAttributes = new CustomAttributesTable(item->event, frame);
-            frame->layout()->addWidget(customAttributes);
-        }
-
         frames.append(frame);
     }
 
