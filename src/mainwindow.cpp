@@ -8,7 +8,6 @@
 #include "ui_eventpropertiesframe.h"
 #include "bordermetatilespixmapitem.h"
 #include "currentselectedmetatilespixmapitem.h"
-#include "customattributestable.h"
 
 #include <QFileDialog>
 #include <QDirIterator>
@@ -80,12 +79,12 @@ void MainWindow::initExtraShortcuts() {
 
 void MainWindow::initCustomUI() {
     // Set up the tab bar
-    ui->mainTabBar->addTab("Map"); // add the icon
+    ui->mainTabBar->addTab("Map");
     ui->mainTabBar->setTabIcon(0, QIcon(QStringLiteral(":/icons/map.ico")));
     ui->mainTabBar->addTab("Events");
     ui->mainTabBar->addTab("Header");
     ui->mainTabBar->addTab("Connections");
-    ui->mainTabBar->addTab("Wild Pokemon"); // add the icon
+    ui->mainTabBar->addTab("Wild Pokemon");
     ui->mainTabBar->setTabIcon(4, QIcon(QStringLiteral(":/icons/tall_grass.ico")));
 
     // Right-clicking on items in the map list tree view brings up a context menu.
@@ -455,7 +454,7 @@ void MainWindow::redrawMapScene()
     if (!editor->displayMap())
         return;
 
-    on_mainTabBar_tabBarClicked(ui->mainStackedWidget->currentIndex());
+    on_mainTabBar_tabBarClicked(ui->mainTabBar->currentIndex());
 
     double base = editor->scale_base;
     double exp  = editor->scale_exp;
@@ -1440,7 +1439,7 @@ void MainWindow::updateSelectedObjects() {
 
     bool pokefirered = projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered;
     for (DraggablePixmapItem *item : *events) {
-        EventPropertiesFrame *frame = new EventPropertiesFrame;
+        EventPropertiesFrame *frame = new EventPropertiesFrame(item->event);
 //        frame->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
         QSpinBox *x = frame->ui->spinBox_x;
@@ -1746,13 +1745,6 @@ void MainWindow::updateSelectedObjects() {
                 item->bind(combo, key);
             }
         }
-
-        // Custom fields table.
-        if (event_type != EventType::HealLocation) {
-            CustomAttributesTable *customAttributes = new CustomAttributesTable(item->event, frame);
-            frame->layout()->addWidget(customAttributes);
-        }
-
         frames.append(frame);
     }
 
@@ -2054,7 +2046,7 @@ void MainWindow::on_toolButton_Paint_clicked()
 void MainWindow::on_toolButton_Select_clicked()
 {
     editor->map_edit_mode = "select";
-    editor->settings->mapCursor = QCursor();//QPixmap(":/icons/cursor.ico"), 0, 0);
+    editor->settings->mapCursor = QCursor();
     editor->cursorMapTileRect->setSingleTileMode();
 
     ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);

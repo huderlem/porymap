@@ -51,8 +51,6 @@ private:
     void paintSmartPath(int x, int y);
     static QList<int> smartPathTable;
 
-    void paint_object(QGraphicsSceneMouseEvent*);// ?
-
 signals:
     void startPaint(QGraphicsSceneMouseEvent *, MapPixmapItem *);
     void endPaint(QGraphicsSceneMouseEvent *, MapPixmapItem *);
