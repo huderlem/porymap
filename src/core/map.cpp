@@ -8,9 +8,16 @@
 #include <QImage>
 #include <QRegularExpression>
 
+#include <QDebug>
+
 
 Map::Map(QObject *parent) : QObject(parent)
 {
+    this->editHistory = new CommandStack();
+}
+
+Map::~Map() {
+    if (editHistory) delete editHistory;
 }
 
 void Map::setName(QString mapName) {
@@ -346,6 +353,10 @@ void Map::_floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_
 }
 
 void Map::undo() {
+    qDebug() << "Map::undo";
+    //
+    editHistory->undo();
+    /*
     HistoryItem *commit = metatileHistory.back();
     if (!commit)
         return;
@@ -360,9 +371,13 @@ void Map::undo() {
 
         emit mapChanged(this);
     }
+    */
 }
 
 void Map::redo() {
+    qDebug() << "Map::redo";
+    editHistory->redo();
+    /*
     HistoryItem *commit = metatileHistory.next();
     if (!commit)
         return;
@@ -377,9 +392,31 @@ void Map::redo() {
 
         emit mapChanged(this);
     }
+    */
 }
 
-void Map::commit() {
+// for events, do I need to copy the draggablepixmapitem list `*events`
+// from the editor? and not copy the events from the map?
+void Map::commit(EditMap::EditType type, QString message) {
+    qDebug() << "Map::commit";
+
+    switch (type) {
+        // 
+        // is there a point in doing this in a switch?
+        // 
+        case EditMap::EditType::Metatiles:
+            editHistory->commit(new EditMap(this, type, message));
+            break;
+        case EditMap::EditType::Events:
+        case EditMap::EditType::EventCreate:
+        case EditMap::EditType::EventDelete:
+        case EditMap::EditType::EventMove:
+            editHistory->commit(new EditMap(this, type, message));
+            break;
+    }
+    //emit mapChanged(this);// ?
+
+    /*
     if (!layout) {
         return;
     }
@@ -396,13 +433,14 @@ void Map::commit() {
             emit mapChanged(this);
         }
     }
+    */
 }
 
 void Map::setBlock(int x, int y, Block block) {
     Block *old_block = getBlock(x, y);
     if (old_block && (*old_block) != block) {
         _setBlock(x, y, block);
-        commit();
+        commit(EditMap::EditType::Metatiles, QString("Edit %1 Metatiles").arg(this->name));
     }
 }
 
@@ -410,7 +448,7 @@ void Map::floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t
     Block *block = getBlock(x, y);
     if (block && (block->collision != collision || block->elevation != elevation)) {
         _floodFillCollisionElevation(x, y, collision, elevation);
-        commit();
+        commit(EditMap::EditType::Metatiles, QString("Edit %1 Collision").arg(this->name));
     }
 }
 
@@ -430,7 +468,7 @@ void Map::magicFillCollisionElevation(int initialX, int initialY, uint16_t colli
                 }
             }
         }
-        commit();
+        commit(EditMap::EditType::Metatiles, QString("Edit %1 Collision").arg(this->name));
     }
 }
 
@@ -450,6 +488,44 @@ void Map::removeEvent(Event *event) {
 
 void Map::addEvent(Event *event) {
     events[event->get("event_group_type")].append(event);
+}
+
+QMap<QString, QList<Event*>> Map::copyEvents() {
+    QMap<QString, QList<Event*>> newEvents;// return newEvents;
+    for (QString key : events.keys()) {
+        newEvents.insert(key, QList<Event *>());
+        for (Event *event : events[key]) {
+            newEvents[key].append(new Event(*event));
+        }
+    }
+    return newEvents;
+}
+
+void Map::setEvents(QMap<QString, QList<Event*>> fromEvents) {
+    //qDebug() << "Map::setEvents";
+    //return;
+    clearAllEvents();
+    //events = fromEvents;
+    //events.insert(fromEvents.keys().first(), new Event);
+    //*
+    for (QString key : fromEvents.keys()) {
+        events.insert(key, QList<Event *>());
+        for (Event *event : fromEvents[key]) {
+            events[key].append(new Event(*event));
+        }
+    }
+    //*/
+    emit mapChanged(this);
+}
+
+void Map::clearAllEvents() {
+    for (QList<Event*> eventList : events.values()) {
+        while (!eventList.isEmpty()) {
+            Event *last = eventList.takeLast();
+            if (last) delete last;
+        }
+    }
+    events.clear();
 }
 
 bool Map::hasUnsavedChanges() {

@@ -4,6 +4,7 @@
 #include "blockdata.h"
 #include "history.h"
 #include "historyitem.h"
+#include "historycommands.h"
 #include "mapconnection.h"
 #include "maplayout.h"
 #include "tileset.h"
@@ -19,6 +20,7 @@ class Map : public QObject
     Q_OBJECT
 public:
     explicit Map(QObject *parent = nullptr);
+    ~Map();
 
 public:
     QString name;
@@ -42,12 +44,16 @@ public:
     MapLayout *layout;
     bool isPersistedToFile = true;
     bool needsLayoutDir = true;
+    CommandStack *editHistory;
     QImage collision_image;
     QPixmap collision_pixmap;
     QImage image;
     QPixmap pixmap;
     History<HistoryItem*> metatileHistory;
     QMap<QString, QList<Event*>> events;
+    QMap<QString, QList<Event*>> copyEvents();
+    void setEvents(QMap<QString, QList<Event*>>);
+    void clearAllEvents();
     QList<MapConnection*> connections;
     void setName(QString mapName);
     static QString mapConstantFromName(QString mapName);
@@ -70,7 +76,7 @@ public:
     void magicFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
     void undo();
     void redo();
-    void commit();
+    void commit(EditMap::EditType, QString message = QString());
     QList<Event*> getAllEvents();
     void removeEvent(Event*);
     void addEvent(Event*);

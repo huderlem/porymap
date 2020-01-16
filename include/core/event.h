@@ -24,6 +24,7 @@ class Event
 {
 public:
     Event();
+    Event(const Event &other);
     Event(QJsonObject, QString);
 public:
     int x() {

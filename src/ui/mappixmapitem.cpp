@@ -6,7 +6,7 @@
 void MapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
     if (map) {
         if (event->type() == QEvent::GraphicsSceneMouseRelease) {
-            map->commit();
+            map->commit(EditMap::EditType::Metatiles, QString("Paint %1 Metatiles").arg(map->name));
         } else {
             QPointF pos = event->pos();
             int x = static_cast<int>(pos.x()) / 16;
@@ -29,7 +29,7 @@ void MapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
 void MapPixmapItem::shift(QGraphicsSceneMouseEvent *event) {
     if (map) {
         if (event->type() == QEvent::GraphicsSceneMouseRelease) {
-            map->commit();
+            map->commit(EditMap::EditType::Metatiles, QString("Shift %1 Metatiles").arg(map->name));
         } else {
             QPointF pos = event->pos();
             int x = static_cast<int>(pos.x()) / 16;
@@ -257,7 +257,7 @@ void MapPixmapItem::updateMetatileSelection(QGraphicsSceneMouseEvent *event) {
 void MapPixmapItem::floodFill(QGraphicsSceneMouseEvent *event) {
     if (map) {
         if (event->type() == QEvent::GraphicsSceneMouseRelease) {
-            map->commit();
+            map->commit(EditMap::EditType::Metatiles, QString("Flood Fill %1 Metatiles").arg(map->name));
         } else {
             QPointF pos = event->pos();
             int x = static_cast<int>(pos.x()) / 16;
@@ -282,7 +282,7 @@ void MapPixmapItem::floodFill(QGraphicsSceneMouseEvent *event) {
 void MapPixmapItem::magicFill(QGraphicsSceneMouseEvent *event) {
     if (map) {
         if (event->type() == QEvent::GraphicsSceneMouseRelease) {
-            map->commit();
+            map->commit(EditMap::EditType::Metatiles, QString("Magic Fill %1 Metatiles").arg(map->name));
         } else {
             QPointF pos = event->pos();
             int initialX = static_cast<int>(pos.x()) / 16;

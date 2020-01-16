@@ -78,8 +78,8 @@ Map* Project::loadMap(QString map_name) {
     if (!(loadMapData(map) && loadMapLayout(map)))
         return nullptr;
 
-    map->commit();
-    map->metatileHistory.save();
+    map->commit(EditMap::EditType::Metatiles, QString("Load Map %1").arg(map_name));
+    //map->metatileHistory.save();
     map_cache->insert(map_name, map);
     return map;
 }
@@ -1610,8 +1610,8 @@ Map* Project::addNewMapToGroup(QString mapName, int groupNum) {
     setNewMapBorder(map);
     setNewMapEvents(map);
     setNewMapConnections(map);
-    map->commit();
-    map->metatileHistory.save();
+    map->commit(EditMap::EditType::Metatiles, QString("Create New Map %1").arg(mapName));
+    //map->metatileHistory.save();
     map_cache->insert(mapName, map);
 
     return map;
@@ -1641,8 +1641,8 @@ Map* Project::addNewMapToGroup(QString mapName, int groupNum, Map *newMap, bool 
     setNewMapEvents(map);
     setNewMapConnections(map);
 
-    map->commit();
-    map->metatileHistory.save();
+    map->commit(EditMap::EditType::Metatiles, QString("Create New Map %1").arg(mapName));
+    //map->metatileHistory.save();
 
     return map;
 }

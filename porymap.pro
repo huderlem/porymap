@@ -18,7 +18,9 @@ SOURCES += src/core/block.cpp \
     src/core/blockdata.cpp \
     src/core/event.cpp \
     src/core/heallocation.cpp \
+    src/core/history.cpp \
     src/core/historyitem.cpp \
+    src/core/historycommands.cpp \
     src/core/imageexport.cpp \
     src/core/map.cpp \
     src/core/maplayout.cpp \
@@ -79,6 +81,7 @@ HEADERS  += include/core/block.h \
     include/core/heallocation.h \
     include/core/history.h \
     include/core/historyitem.h \
+    include/core/historycommands.h \
     include/core/imageexport.h \
     include/core/map.h \
     include/core/mapconnection.h \

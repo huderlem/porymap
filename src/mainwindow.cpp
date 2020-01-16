@@ -3,6 +3,7 @@
 #include "aboutporymap.h"
 #include "project.h"
 #include "log.h"
+#include "historycommands.h"
 #include "editor.h"
 #include "eventpropertiesframe.h"
 #include "ui_eventpropertiesframe.h"
@@ -1975,6 +1976,7 @@ void MainWindow::onLoadMapRequested(QString mapName, QString fromMapName) {
 void MainWindow::onMapChanged(Map *map) {
     map->layout->has_unsaved_changes = true;
     updateMapList();
+    editor->displayMapEvents();
 }
 
 void MainWindow::onMapNeedsRedrawing() {
@@ -2120,7 +2122,7 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked()
 
     if (dialog.exec() == QDialog::Accepted) {
         editor->map->setDimensions(widthSpinBox->value(), heightSpinBox->value());
-        editor->map->commit();
+        editor->map->commit(EditMap::EditType::Metatiles, QString("Change %1 Dimensions").arg(editor->map->name));
         onMapNeedsRedrawing();
     }
 }

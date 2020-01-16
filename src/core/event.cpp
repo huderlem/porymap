@@ -25,6 +25,17 @@ Event::Event(QJsonObject obj, QString type)
     this->readCustomValues(obj);
 }
 
+Event::Event(const Event &other) {
+    values = other.values;
+    customValues = other.customValues;
+    pixmap = other.pixmap;
+    spriteWidth = other.spriteWidth;
+    spriteHeight = other.spriteHeight;
+    frame = other.frame;
+    hFlip = other.hFlip;
+    usingSprite = other.usingSprite;
+}
+
 Event* Event::createNewEvent(QString event_type, QString map_name, Project *project)
 {
     Event *event = new Event;

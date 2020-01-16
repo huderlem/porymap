@@ -44,7 +44,8 @@ void Editor::saveUiFields() {
 }
 
 void Editor::undo() {
-    if (current_view && map_item->paintingMode == MapPixmapItem::PaintMode::Metatiles) {
+    if (current_view && map_item->paintingMode != MapPixmapItem::PaintMode::Disabled) {
+        qDebug() << "Editor::undo";
         map->undo();
         map_item->draw();
         collision_item->draw();
@@ -52,7 +53,8 @@ void Editor::undo() {
 }
 
 void Editor::redo() {
-    if (current_view && map_item->paintingMode == MapPixmapItem::PaintMode::Metatiles) {
+    if (current_view && map_item->paintingMode != MapPixmapItem::PaintMode::Disabled) {
+        qDebug() << "Editor::redo";
         map->redo();
         map_item->draw();
         collision_item->draw();
@@ -1305,6 +1307,10 @@ void Editor::displayMapEvents() {
     //objects_group->setFiltersChildEvents(false);
     events_group->setHandlesChildEvents(false);
 
+    if (map_item->paintingMode != MapPixmapItem::PaintMode::EventObjects) {
+        events_group->setVisible(false);
+    }
+
     emit objectsChanged();
 }
 
@@ -1725,6 +1731,10 @@ void DraggablePixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *mouse) {
 
 void DraggablePixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *) {
     active = false;
+    // TODO / HERE
+    // this is going to commit every click isn't it ......
+    // do something to a single event for testing purposes?
+    editor->map->commit(EditMap::EditType::Events, QString("Edit %1 Events").arg(editor->map->name));
 }
 
 void DraggablePixmapItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *) {

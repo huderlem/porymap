@@ -42,7 +42,7 @@ void CollisionPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
             map->_setBlock(x, y, *block);
         }
         if (event->type() == QEvent::GraphicsSceneMouseRelease) {
-            map->commit();
+            map->commit(EditMap::EditType::Metatiles, QString("Edit %1 Collision").arg(map->name));
         }
         draw();
     }
