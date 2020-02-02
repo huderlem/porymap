@@ -9,6 +9,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ## [Unreleased]
 ### Added
 - Add optional support for Poryscript script files via the `use_poryscript` config option.
+- Selecting a group of metatiles from the map area now also copies the collision properties, too.
 
 ### Changed
 - Draw map connections with the current map's tilesets to more accurately mimic their appearance in-game.
