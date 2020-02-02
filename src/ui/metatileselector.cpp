@@ -53,6 +53,11 @@ void MetatileSelector::select(uint16_t metatileId) {
     emit selectedMetatilesChanged();
 }
 
+void MetatileSelector::selectFromMap(uint16_t metatileId, uint16_t collision, uint16_t elevation) {
+    this->select(metatileId);
+    this->selectedCollisions->append(QPair<uint16_t, uint16_t>(collision, elevation));
+}
+
 void MetatileSelector::setTilesets(Tileset *primaryTileset, Tileset *secondaryTileset) {
     this->primaryTileset = primaryTileset;
     this->secondaryTileset = secondaryTileset;
@@ -67,13 +72,19 @@ QList<uint16_t>* MetatileSelector::getSelectedMetatiles() {
     }
 }
 
-void MetatileSelector::setExternalSelection(int width, int height, QList<uint16_t> *metatiles) {
+QList<QPair<uint16_t, uint16_t>>* MetatileSelector::getSelectedCollisions() {
+    return this->selectedCollisions;
+}
+
+void MetatileSelector::setExternalSelection(int width, int height, QList<uint16_t> metatiles, QList<QPair<uint16_t, uint16_t>> collisions) {
     this->externalSelection = true;
     this->externalSelectionWidth = width;
     this->externalSelectionHeight = height;
     this->externalSelectedMetatiles->clear();
-    for (int i = 0; i < metatiles->length(); i++) {
-        this->externalSelectedMetatiles->append(metatiles->at(i));
+    this->selectedCollisions->clear();
+    for (int i = 0; i < metatiles.length(); i++) {
+        this->externalSelectedMetatiles->append(metatiles.at(i));
+        this->selectedCollisions->append(collisions.at(i));
     }
 
     this->draw();
@@ -115,6 +126,7 @@ void MetatileSelector::hoverLeaveEvent(QGraphicsSceneHoverEvent*) {
 void MetatileSelector::updateSelectedMetatiles() {
     this->externalSelection = false;
     this->selectedMetatiles->clear();
+    this->selectedCollisions->clear();
     QPoint origin = this->getSelectionStart();
     QPoint dimensions = this->getSelectionDimensions();
     for (int j = 0; j < dimensions.y(); j++) {
