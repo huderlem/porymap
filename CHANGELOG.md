@@ -7,9 +7,15 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 The **"Breaking Changes"** listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. If porymap is used on a project that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.
 
 ## [Unreleased]
+### Breaking Changes
+- pokeemerald and pokeruby both underwent a naming consistency update with respect to "object events". As such, these naming changes break old versions of Porymap.
+  - pokeemerald object event PR: https://github.com/pret/pokeemerald/pull/910
+  - pokeruby object event PR: https://github.com/pret/pokeruby/pull/768
+
 ### Added
 - Add optional support for Poryscript script files via the `use_poryscript` config option.
 - Selecting a group of metatiles from the map area now also copies the collision properties, too.
+- Add keyboard shortcut `Ctrl + G` for toggling the map grid.
 
 ### Changed
 - Draw map connections with the current map's tilesets to more accurately mimic their appearance in-game.
