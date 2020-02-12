@@ -598,37 +598,48 @@ void MainWindow::on_checkBox_AllowEscapeRope_clicked(bool checked)
 bool MainWindow::loadDataStructures() {
     Project *project = editor->project;
     bool success = project->readMapLayouts()
-                && project->readRegionMapSections();
+                && project->readRegionMapSections()
+                && project->readItemNames()
+                && project->readFlagNames()
+                && project->readVarNames()
+                && project->readMovementTypes()
+                && project->readInitialFacingDirections()
+                && project->readMapTypes()
+                && project->readMapBattleScenes()
+                && project->readWeatherNames()
+                && project->readCoordEventWeatherNames()
+                && project->readSecretBaseIds()
+                && project->readBgEventFacingDirections()
+                && project->readMetatileBehaviors()
+                && project->readTilesetProperties()
+                && project->readHealLocations()
+                && project->readMiscellaneousConstants()
+                && project->readSpeciesIconPaths()
+                && project->readWildMonData();
     if (!success) {
         return false;
     }
-    project->readItemNames();
-    project->readFlagNames();
-    project->readVarNames();
-    project->readMovementTypes();
-    project->readInitialFacingDirections();
-    project->readMapTypes();
-    project->readMapBattleScenes();
-    project->readWeatherNames();
-    project->readCoordEventWeatherNames();
-    project->readSecretBaseIds();
-    project->readBgEventFacingDirections();
-    project->readMetatileBehaviors();
-    project->readTilesetProperties();
-    project->readHealLocations();
-    project->readMiscellaneousConstants();
-    project->readSpeciesIconPaths();
-    project->readWildMonData();
 
     // set up project ui comboboxes
     QStringList songs = project->getSongNames();
+    ui->comboBox_Song->clear();
     ui->comboBox_Song->addItems(songs);
+    ui->comboBox_Location->clear();
     ui->comboBox_Location->addItems(project->mapSectionValueToName.values());
+
     QMap<QString, QStringList> tilesets = project->getTilesetLabels();
+    if (tilesets.isEmpty()) {
+        return false;
+    }
+    ui->comboBox_PrimaryTileset->clear();
     ui->comboBox_PrimaryTileset->addItems(tilesets.value("primary"));
+    ui->comboBox_SecondaryTileset->clear();
     ui->comboBox_SecondaryTileset->addItems(tilesets.value("secondary"));
+    ui->comboBox_Weather->clear();
     ui->comboBox_Weather->addItems(*project->weatherNames);
+    ui->comboBox_BattleScene->clear();
     ui->comboBox_BattleScene->addItems(*project->mapBattleScenes);
+    ui->comboBox_Type->clear();
     ui->comboBox_Type->addItems(*project->mapTypes);
     return true;
 }

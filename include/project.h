@@ -89,13 +89,13 @@ public:
     QString readMapLayoutId(QString map_name);
     QString readMapLocation(QString map_name);
 
-    void readWildMonData();
+    bool readWildMonData();
     QMap<QString, QMap<QString, WildPokemonHeader>> wildMonData;
     QVector<EncounterField> wildMonFields;
     QVector<QString> encounterGroupLabels;
     QMap<QString, QJsonObject> extraEncounterGroups;
 
-    void readSpeciesIconPaths();
+    bool readSpeciesIconPaths();
     QMap<QString, QString> speciesToIconPath;
 
     QMap<QString, bool> getTopLevelMapFields();
@@ -129,22 +129,22 @@ public:
     QStringList getSongNames();
     QStringList getVisibilities();
     QMap<QString, QStringList> getTilesetLabels();
-    void readTilesetProperties();
+    bool readTilesetProperties();
     bool readRegionMapSections();
-    void readItemNames();
-    void readFlagNames();
-    void readVarNames();
-    void readMovementTypes();
-    void readInitialFacingDirections();
-    void readMapTypes();
-    void readMapBattleScenes();
-    void readWeatherNames();
-    void readCoordEventWeatherNames();
-    void readSecretBaseIds();
-    void readBgEventFacingDirections();
-    void readMetatileBehaviors();
-    void readHealLocations();
-    void readMiscellaneousConstants();
+    bool readItemNames();
+    bool readFlagNames();
+    bool readVarNames();
+    bool readMovementTypes();
+    bool readInitialFacingDirections();
+    bool readMapTypes();
+    bool readMapBattleScenes();
+    bool readWeatherNames();
+    bool readCoordEventWeatherNames();
+    bool readSecretBaseIds();
+    bool readBgEventFacingDirections();
+    bool readMetatileBehaviors();
+    bool readHealLocations();
+    bool readMiscellaneousConstants();
 
     void loadEventPixmaps(QList<Event*> objects);
     QMap<QString, int> getEventObjGfxConstants();
