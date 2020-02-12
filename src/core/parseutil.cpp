@@ -314,11 +314,11 @@ QStringList ParseUtil::readCArray(QString filename, QString label) {
     file = filename;
     text = readTextFile(root + "/" + filename);
 
-    QRegularExpression re(QString("\\b%1\\b\\s*\\[?\\s*\\]?\\s*=\\s*\\{([^\\}]*)\\}").arg(label));
+    QRegularExpression re(QString(R"(\b%1\b\s*(\[?[^\]]*\])?\s*=\s*\{([^\}]*)\})").arg(label));
     QRegularExpressionMatch match = re.match(text);
 
     if (match.hasMatch()) {
-        QString body = match.captured(1);
+        QString body = match.captured(2);
         QStringList split = body.split(',');
         for (QString item : split) {
             item = item.trimmed();
@@ -334,8 +334,8 @@ QMap<QString, QString> ParseUtil::readNamedIndexCArray(QString filename, QString
     text = readTextFile(root + "/" + filename);
     QMap<QString, QString> map;
 
-    QRegularExpression re_text(QString("\\b%1\\b\\s*\\[?\\s*\\]?\\s*=\\s*\\{([^\\}]*)\\}").arg(label));
-    QString body = re_text.match(text).captured(1).replace(QRegularExpression("\\s*"), "");
+    QRegularExpression re_text(QString(R"(\b%1\b\s*(\[?[^\]]*\])?\s*=\s*\{([^\}]*)\})").arg(label));
+    QString body = re_text.match(text).captured(2).replace(QRegularExpression("\\s*"), "");
     
     QRegularExpression re("\\[(?<index>[A-Za-z1-9_]*)\\]=(?<value>&?[A-Za-z1-9_]*)");
     QRegularExpressionMatchIterator iter = re.globalMatch(body);
