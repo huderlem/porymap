@@ -1728,15 +1728,22 @@ void Project::readTilesetProperties() {
     }
 }
 
-void Project::readRegionMapSections() {
+bool Project::readRegionMapSections() {
     this->mapSectionNameToValue.clear();
     this->mapSectionValueToName.clear();
 
     QStringList prefixes = (QStringList() << "MAPSEC_");
-    this->mapSectionNameToValue = parser.readCDefines("include/constants/region_map_sections.h", prefixes);
+    QString filename = "include/constants/region_map_sections.h";
+    this->mapSectionNameToValue = parser.readCDefines(filename, prefixes);
+    if (this->mapSectionNameToValue.isEmpty()) {
+        logError(QString("Failed to read region map sections from %1.").arg(filename));
+        return false;
+    }
+
     for (QString defineName : this->mapSectionNameToValue.keys()) {
         this->mapSectionValueToName.insert(this->mapSectionNameToValue[defineName], defineName);
     }
+    return true;
 }
 
 void Project::readHealLocations() {

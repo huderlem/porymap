@@ -130,7 +130,7 @@ public:
     QStringList getVisibilities();
     QMap<QString, QStringList> getTilesetLabels();
     void readTilesetProperties();
-    void readRegionMapSections();
+    bool readRegionMapSections();
     void readItemNames();
     void readFlagNames();
     void readVarNames();

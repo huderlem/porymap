@@ -597,11 +597,11 @@ void MainWindow::on_checkBox_AllowEscapeRope_clicked(bool checked)
 
 bool MainWindow::loadDataStructures() {
     Project *project = editor->project;
-    bool success = project->readMapLayouts();
+    bool success = project->readMapLayouts()
+                && project->readRegionMapSections();
     if (!success) {
         return false;
     }
-    project->readRegionMapSections();
     project->readItemNames();
     project->readFlagNames();
     project->readVarNames();
