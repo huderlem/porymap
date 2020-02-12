@@ -266,6 +266,8 @@ bool Project::loadMapData(Map* map) {
             coord->put("event_group_type", "coord_event_group");
             coord->put("event_type", EventType::WeatherTrigger);
             map->events["coord_event_group"].append(coord);
+        } else {
+            logError(QString("Map %1 coord_event %2 has invalid type '%3'. Must be 'trigger' or 'weather'.").arg(map->name).arg(i).arg(type));
         }
     }
 
@@ -303,6 +305,8 @@ bool Project::loadMapData(Map* map) {
             bg->put("secret_base_id", event["secret_base_id"].toString());
             bg->put("event_group_type", "bg_event_group");
             map->events["bg_event_group"].append(bg);
+        } else {
+            logError(QString("Map %1 bg_event %2 has invalid type '%3'. Must be 'sign', 'hidden_item', or 'secret_base'.").arg(map->name).arg(i).arg(type));
         }
     }
 
