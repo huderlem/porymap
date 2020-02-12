@@ -62,13 +62,17 @@ void RegionMapEditor::setCurrentSquareOptions() {
     }
 }
 
-void RegionMapEditor::loadRegionMapData() {
-    this->region_map->init(project);
+bool RegionMapEditor::loadRegionMapData() {
+    if (!this->region_map->init(project)) {
+        return false;
+    }
+
     this->currIndex = this->region_map->width() * this->region_map->padTop + this->region_map->padLeft;
     displayRegionMap();
+    return true;
 }
 
-void RegionMapEditor::loadCityMaps() {
+bool RegionMapEditor::loadCityMaps() {
     QDir directory(project->root + "/graphics/pokenav/city_maps");
     QStringList files = directory.entryList(QStringList() << "*.bin", QDir::Files);
     QStringList without_bin;
@@ -76,6 +80,7 @@ void RegionMapEditor::loadCityMaps() {
         without_bin.append(file.remove(".bin"));
     }
     this->ui->comboBox_CityMap_picker->addItems(without_bin);
+    return true;
 }
 
 void RegionMapEditor::displayRegionMap() {

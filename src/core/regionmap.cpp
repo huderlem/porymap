@@ -10,7 +10,15 @@
 #include <QImage>
 #include <math.h>
 
-void RegionMap::init(Project *pro) {
+static bool ensureRegionMapFileExists(QString filepath) {
+    if (!QFile::exists(filepath)) {
+        logError(QString("Region map file does not exist: %1").arg(filepath));
+        return false;
+    }
+    return true;
+}
+
+bool RegionMap::init(Project *pro) {
     QString path = pro->root;
     this->project = pro;
 
@@ -26,9 +34,15 @@ void RegionMap::init(Project *pro) {
     region_map_entries_path    = path + "/src/data/region_map/region_map_entries.h";
     region_map_layout_bin_path = path + "/graphics/pokenav/region_map_section_layout.bin";
     city_map_tiles_path        = path + "/graphics/pokenav/zoom_tiles.png";
+    bool allFilesExist = ensureRegionMapFileExists(region_map_bin_path)
+                      && ensureRegionMapFileExists(region_map_png_path)
+                      && ensureRegionMapFileExists(region_map_entries_path)
+                      && ensureRegionMapFileExists(region_map_layout_bin_path)
+                      && ensureRegionMapFileExists(city_map_tiles_path);
 
-    readBkgImgBin();
-    readLayout();
+    return allFilesExist
+        && readBkgImgBin()
+        && readLayout();
 }
 
 void RegionMap::save() {
@@ -65,16 +79,20 @@ void RegionMap::saveTileImages() {
     }
 }
 
-void RegionMap::readBkgImgBin() {
+bool RegionMap::readBkgImgBin() {
+    map_squares.clear();
     QFile binFile(region_map_bin_path);
-    if (!binFile.open(QIODevice::ReadOnly)) return;
+    if (!binFile.open(QIODevice::ReadOnly)) {
+        logError(QString("Failed to open region map map file %1.").arg(region_map_bin_path));
+        return false;
+    }
 
     QByteArray mapBinData = binFile.readAll();
     binFile.close();
 
     if (mapBinData.size() < img_height_ * img_width_) {
         logError(QString("The region map tilemap at %1 is too small.").arg(region_map_bin_path));
-        return;
+        return false;
     }
     for (int m = 0; m < img_height_; m++) {
         for (int n = 0; n < img_width_; n++) {
@@ -83,6 +101,7 @@ void RegionMap::readBkgImgBin() {
             map_squares.append(square);
         }
     }
+    return true;
 }
 
 void RegionMap::saveBkgImgBin() {
@@ -100,11 +119,15 @@ void RegionMap::saveBkgImgBin() {
     file.close();
 }
 
-void RegionMap::readLayout() {
+bool RegionMap::readLayout() {
+    sMapNames.clear();
+    sMapNamesMap.clear();
+    mapSecToMapEntry.clear();
     QFile file(region_map_entries_path);
-    if (!file.open(QIODevice::ReadOnly)) return;
-
-    QString line;
+    if (!file.open(QIODevice::ReadOnly)) {
+        logError(QString("Failed to read region map entries file %1").arg(region_map_entries_path));
+        return false;
+    }
 
     QMap<QString, QString> *qmap = new QMap<QString, QString>;
 
@@ -113,7 +136,7 @@ void RegionMap::readLayout() {
     QTextStream in(&file);
     in.setCodec("UTF-8");
     while (!in.atEnd()) {
-        line = in.readLine();
+        QString line = in.readLine();
         if (line.contains(QRegularExpression(".*sMapName.*="))) {
             QRegularExpression reBefore("sMapName_(.*)\\[");
             QRegularExpression reAfter("_\\(\"(.*)\"");
@@ -148,23 +171,43 @@ void RegionMap::readLayout() {
     project->mapSecToMapHoverName = qmap;
 
     QFile binFile(region_map_layout_bin_path);
-    if (!binFile.open(QIODevice::ReadOnly)) return;
+    if (!binFile.open(QIODevice::ReadOnly)) {
+        logError(QString("Failed to read region map layout file %1").arg(region_map_layout_bin_path));
+        return false;
+    }
     QByteArray mapBinData = binFile.readAll();
     binFile.close();
 
     for (int y = 0; y < layout_height_; y++) {
         for (int x = 0; x < layout_width_; x++) {
             int i = img_index_(x,y);
-            uint8_t id = static_cast<uint8_t>(mapBinData.at(layout_index_(x,y)));
+            if (i >= map_squares.size()) {
+                continue;
+            }
+            int layoutIndex = layout_index_(x,y);
+            if (layoutIndex >= mapBinData.size()) {
+                continue;
+            }
+            uint8_t id = static_cast<uint8_t>(mapBinData.at(layoutIndex));
             map_squares[i].secid = id;
             QString secname = project->mapSectionValueToName.value(id);
-            if (secname != "MAPSEC_NONE") map_squares[i].has_map = true;
+            if (secname != "MAPSEC_NONE") {
+                map_squares[i].has_map = true;
+            }
             map_squares[i].mapsec = secname;
-            map_squares[i].map_name = sMapNamesMap.value(mapSecToMapEntry.value(secname).name);
+            if (!mapSecToMapEntry.contains(secname)) {
+                continue;
+            }
+            QString name = mapSecToMapEntry.value(secname).name;
+            if (!sMapNamesMap.contains(name)) {
+                continue;
+            }
+            map_squares[i].map_name = sMapNamesMap.value(name);
             map_squares[i].x = x;
             map_squares[i].y = y;
         }
     }
+    return true;
 }
 
 void RegionMap::saveLayout() {

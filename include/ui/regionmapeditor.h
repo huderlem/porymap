@@ -28,8 +28,8 @@ public:
 
     RegionMap *region_map;
 
-    void loadRegionMapData();
-    void loadCityMaps();
+    bool loadRegionMapData();
+    bool loadCityMaps();
     void setCurrentSquareOptions();
 
     void onRegionMapTileSelectorSelectedTileChanged(unsigned id);

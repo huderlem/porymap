@@ -76,10 +76,10 @@ public:
     const int padTop    = 2;
     const int padBottom = 3;
 
-    void init(Project*);
+    bool init(Project*);
 
-    void readBkgImgBin();
-    void readLayout();
+    bool readBkgImgBin();
+    bool readLayout();
 
     void save();
     void saveTileImages();
