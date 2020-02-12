@@ -18,5 +18,7 @@ void logInfo(QString message);
 void logWarn(QString message);
 void logError(QString message);
 void log(QString message, LogType type);
+QString getLogPath();
+QString getMostRecentError();
 
 #endif // LOG_H

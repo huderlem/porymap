@@ -26,7 +26,10 @@ void logWarn(QString message) {
     log(message, LogType::LOG_WARN);
 }
 
+static QString mostRecentError;
+
 void logError(QString message) {
+    mostRecentError = message;
     log(message, LogType::LOG_ERROR);
 }
 
@@ -65,16 +68,21 @@ void log(QString message, LogType type) {
 
     message = QString("%1 %2 %3").arg(now).arg(typeString).arg(message);
 
+    qDebug().noquote() << colorizeMessage(message, type);
+    QFile outFile(getLogPath());
+    outFile.open(QIODevice::WriteOnly | QIODevice::Append);
+    QTextStream ts(&outFile);
+    ts << message << endl;
+}
+
+QString getLogPath() {
     QString settingsPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     QDir dir(settingsPath);
     if (!dir.exists())
         dir.mkpath(settingsPath);
+    return dir.absoluteFilePath("porymap.log");
+}
 
-    QString logPath = dir.absoluteFilePath("porymap.log");
-
-    qDebug().noquote() << colorizeMessage(message, type);
-    QFile outFile(logPath);
-    outFile.open(QIODevice::WriteOnly | QIODevice::Append);
-    QTextStream ts(&outFile);
-    ts << message << endl;
+QString getMostRecentError() {
+    return mostRecentError;
 }

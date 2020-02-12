@@ -293,6 +293,13 @@ bool MainWindow::openProject(QString dir) {
         this->statusBar()->showMessage(QString("Opened project %1").arg(nativeDir));
     } else {
         this->statusBar()->showMessage(QString("Failed to open project %1").arg(nativeDir));
+        QMessageBox msgBox(this);
+        QString errorMsg = QString("There was an error opening the project %1. Please see %2 for full error details.\n%3")
+                .arg(dir)
+                .arg(getLogPath())
+                .arg(getMostRecentError());
+        msgBox.critical(nullptr, "Error Opening Project", errorMsg);
+
     }
 
     return success;
@@ -339,7 +346,9 @@ void MainWindow::on_action_Open_Project_triggered()
     QString dir = getExistingDirectory(recent);
     if (!dir.isEmpty()) {
         porymapConfig.setRecentProject(dir);
-        openProject(dir);
+        if (!openProject(dir)) {
+            this->initWindow();
+        }
     }
 }
 
@@ -350,7 +359,7 @@ bool MainWindow::setMap(QString map_name, bool scrollTreeView) {
     }
 
     if (!editor->setMap(map_name)) {
-        logError(QString("Failed to set map to '%1'").arg(map_name));
+        logWarn(QString("Failed to set map to '%1'").arg(map_name));
         return false;
     }
 
@@ -441,6 +450,12 @@ void MainWindow::openWarpMap(QString map_name, QString warp_num) {
 
     // Open the destination map, and select the target warp event.
     if (!setMap(map_name, true)) {
+        QMessageBox msgBox(this);
+        QString errorMsg = QString("There was an error opening map %1. Please see %2 for full error details.\n%3")
+                .arg(map_name)
+                .arg(getLogPath())
+                .arg(getMostRecentError());
+        msgBox.critical(nullptr, "Error Opening Map", errorMsg);
         return;
     }
 
@@ -1026,7 +1041,15 @@ void MainWindow::on_mapList_activated(const QModelIndex &index)
 {
     QVariant data = index.data(Qt::UserRole);
     if (index.data(MapListUserRoles::TypeRole) == "map_name" && !data.isNull()) {
-        setMap(data.toString());
+        QString mapName = data.toString();
+        if (!setMap(mapName)) {
+            QMessageBox msgBox(this);
+            QString errorMsg = QString("There was an error opening map %1. Please see %2 for full error details.\n%3")
+                    .arg(mapName)
+                    .arg(getLogPath())
+                    .arg(getMostRecentError());
+            msgBox.critical(nullptr, "Error Opening Map", errorMsg);
+        }
     }
 }
 
@@ -1937,6 +1960,12 @@ void MainWindow::checkToolButtons() {
 
 void MainWindow::onLoadMapRequested(QString mapName, QString fromMapName) {
     if (!setMap(mapName, true)) {
+        QMessageBox msgBox(this);
+        QString errorMsg = QString("There was an error opening map %1. Please see %2 for full error details.\n%3")
+                .arg(mapName)
+                .arg(getLogPath())
+                .arg(getMostRecentError());
+        msgBox.critical(nullptr, "Error Opening Map", errorMsg);
         return;
     }
     editor->setSelectedConnectionFromMap(fromMapName);
