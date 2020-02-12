@@ -410,3 +410,13 @@ bool ParseUtil::tryParseJsonFile(QJsonDocument *out, QString filepath) {
     *out = jsonDoc;
     return true;
 }
+
+bool ParseUtil::ensureFieldsExist(QJsonObject obj, QList<QString> fields) {
+    for (QString field : fields) {
+        if (!obj.contains(field)) {
+            logError(QString("JSON object is missing field '%1'.").arg(field));
+            return false;
+        }
+    }
+    return true;
+}

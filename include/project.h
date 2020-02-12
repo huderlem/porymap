@@ -100,7 +100,7 @@ public:
 
     QMap<QString, bool> getTopLevelMapFields();
     bool loadMapData(Map*);
-    void readMapLayouts();
+    bool readMapLayouts();
     void loadMapLayout(Map*);
     void loadMapTilesets(Map*);
     void loadTilesetAssets(Tileset*);

@@ -281,17 +281,20 @@ bool MainWindow::openProject(QString dir) {
     if (!already_open) {
         editor->project = new Project;
         editor->project->set_root(dir);
-        setWindowTitle(editor->project->getProjectTitle());
-        loadDataStructures();
-        populateMapList();
-        success = setMap(getDefaultMap(), true);
+        success = loadDataStructures();
+        if (success) {
+            populateMapList();
+            success = setMap(getDefaultMap(), true);
+        }
     } else {
-        setWindowTitle(editor->project->getProjectTitle());
-        loadDataStructures();
-        populateMapList();
+        success = loadDataStructures();
+        if (success) {
+            populateMapList();
+        }
     }
 
     if (success) {
+        setWindowTitle(editor->project->getProjectTitle());
         this->statusBar()->showMessage(QString("Opened project %1").arg(nativeDir));
     } else {
         this->statusBar()->showMessage(QString("Failed to open project %1").arg(nativeDir));
@@ -301,8 +304,7 @@ bool MainWindow::openProject(QString dir) {
 }
 
 bool MainWindow::isProjectOpen() {
-    return (editor && editor != nullptr)
-        && (editor->project && editor->project != nullptr);
+    return editor != nullptr && editor->project != nullptr;
 }
 
 QString MainWindow::getDefaultMap() {
@@ -593,9 +595,12 @@ void MainWindow::on_checkBox_AllowEscapeRope_clicked(bool checked)
     }
 }
 
-void MainWindow::loadDataStructures() {
+bool MainWindow::loadDataStructures() {
     Project *project = editor->project;
-    project->readMapLayouts();
+    bool success = project->readMapLayouts();
+    if (!success) {
+        return false;
+    }
     project->readRegionMapSections();
     project->readItemNames();
     project->readFlagNames();
@@ -625,6 +630,7 @@ void MainWindow::loadDataStructures() {
     ui->comboBox_Weather->addItems(*project->weatherNames);
     ui->comboBox_BattleScene->addItems(*project->mapBattleScenes);
     ui->comboBox_Type->addItems(*project->mapTypes);
+    return true;
 }
 
 void MainWindow::populateMapList() {

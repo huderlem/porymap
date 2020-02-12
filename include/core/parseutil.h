@@ -52,6 +52,7 @@ public:
     QList<QStringList>* getLabelMacros(QList<QStringList>*, QString);
     QStringList* getLabelValues(QList<QStringList>*, QString);
     bool tryParseJsonFile(QJsonDocument *out, QString filepath);
+    bool ensureFieldsExist(QJsonObject obj, QList<QString> fields);
 
 private:
     QString root;

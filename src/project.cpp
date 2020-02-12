@@ -404,7 +404,7 @@ void Project::loadMapLayout(Map* map) {
     loadMapBorder(map);
 }
 
-void Project::readMapLayouts() {
+bool Project::readMapLayouts() {
     mapLayouts.clear();
     mapLayoutsTable.clear();
 
@@ -412,24 +412,83 @@ void Project::readMapLayouts() {
     QJsonDocument layoutsDoc;
     if (!parser.tryParseJsonFile(&layoutsDoc, layoutsFilepath)) {
         logError(QString("Failed to read map layouts from %1").arg(layoutsFilepath));
-        return;
+        return false;
     }
 
     QJsonObject layoutsObj = layoutsDoc.object();
-    layoutsLabel = layoutsObj["layouts_table_label"].toString();
-
     QJsonArray layouts = layoutsObj["layouts"].toArray();
+    if (layouts.size() == 0) {
+        logError(QString("'layouts' array is missing from %1.").arg(layoutsFilepath));
+        return false;
+    }
+
+    layoutsLabel = layoutsObj["layouts_table_label"].toString();
+    if (layoutsLabel.isNull()) {
+        layoutsLabel = "gMapLayouts";
+        logWarn(QString("'layouts_table_label' value is missing from %1. Defaulting to %2")
+                 .arg(layoutsFilepath)
+                 .arg(layoutsLabel));
+    }
+
+    QList<QString> requiredFields = QList<QString>{
+        "id",
+        "name",
+        "width",
+        "height",
+        "primary_tileset",
+        "secondary_tileset",
+        "border_filepath",
+        "blockdata_filepath",
+    };
     for (int i = 0; i < layouts.size(); i++) {
         QJsonObject layoutObj = layouts[i].toObject();
+        if (!parser.ensureFieldsExist(layoutObj, requiredFields)) {
+            logError(QString("Layout %1 is missing field(s) in %2.").arg(i).arg(layoutsFilepath));
+            return false;
+        }
         MapLayout *layout = new MapLayout();
         layout->id = layoutObj["id"].toString();
+        if (layout->id.isEmpty()) {
+            logError(QString("Missing 'id' value on layout %1 in %2").arg(i).arg(layoutsFilepath));
+            return false;
+        }
         layout->name = layoutObj["name"].toString();
-        layout->width = QString::number(layoutObj["width"].toInt());
-        layout->height = QString::number(layoutObj["height"].toInt());
+        if (layout->name.isEmpty()) {
+            logError(QString("Missing 'name' value on layout %1 in %2").arg(i).arg(layoutsFilepath));
+            return false;
+        }
+        int lwidth = layoutObj["width"].toInt();
+        if (lwidth <= 0) {
+            logError(QString("Invalid layout 'width' value '%1' on layout %2 in %3. Must be greater than 0.").arg(lwidth).arg(i).arg(layoutsFilepath));
+            return false;
+        }
+        layout->width = QString::number(lwidth);
+        int lheight = layoutObj["height"].toInt();
+        if (lheight <= 0) {
+            logError(QString("Invalid layout 'height' value '%1' on layout %2 in %3. Must be greater than 0.").arg(lheight).arg(i).arg(layoutsFilepath));
+            return false;
+        }
+        layout->height = QString::number(lheight);
         layout->tileset_primary_label = layoutObj["primary_tileset"].toString();
+        if (layout->tileset_primary_label.isEmpty()) {
+            logError(QString("Missing 'primary_tileset' value on layout %1 in %2").arg(i).arg(layoutsFilepath));
+            return false;
+        }
         layout->tileset_secondary_label = layoutObj["secondary_tileset"].toString();
+        if (layout->tileset_secondary_label.isEmpty()) {
+            logError(QString("Missing 'secondary_tileset' value on layout %1 in %2").arg(i).arg(layoutsFilepath));
+            return false;
+        }
         layout->border_path = layoutObj["border_filepath"].toString();
+        if (layout->border_path.isEmpty()) {
+            logError(QString("Missing 'border_filepath' value on layout %1 in %2").arg(i).arg(layoutsFilepath));
+            return false;
+        }
         layout->blockdata_path = layoutObj["blockdata_filepath"].toString();
+        if (layout->border_path.isEmpty()) {
+            logError(QString("Missing 'blockdata_filepath' value on layout %1 in %2").arg(i).arg(layoutsFilepath));
+            return false;
+        }
         mapLayouts.insert(layout->id, layout);
         mapLayoutsTable.append(layout->id);
     }
@@ -439,6 +498,7 @@ void Project::readMapLayouts() {
     mapLayoutsMaster.detach();
     mapLayoutsTableMaster = mapLayoutsTable;
     mapLayoutsTableMaster.detach();
+    return true;
 }
 
 void Project::saveMapLayouts() {

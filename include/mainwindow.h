@@ -186,7 +186,7 @@ private:
 
     bool setMap(QString, bool scrollTreeView = false);
     void redrawMapScene();
-    void loadDataStructures();
+    bool loadDataStructures();
     void populateMapList();
     void sortMapList();
     QString getExistingDirectory(QString);
