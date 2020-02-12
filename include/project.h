@@ -74,13 +74,13 @@ public:
     QMap<QString, QStringList> tilesetLabels;
 
     Blockdata* readBlockdata(QString);
-    void loadBlockdata(Map*);
+    bool loadBlockdata(Map*);
 
     void saveTextFile(QString path, QString text);
     void appendTextFile(QString path, QString text);
     void deleteFile(QString path);
 
-    void readMapGroups();
+    bool readMapGroups();
     Map* addNewMapToGroup(QString mapName, int groupNum);
     Map* addNewMapToGroup(QString, int, Map*, bool);
     QString getNewMapName();
@@ -101,8 +101,8 @@ public:
     QMap<QString, bool> getTopLevelMapFields();
     bool loadMapData(Map*);
     bool readMapLayouts();
-    void loadMapLayout(Map*);
-    void loadMapTilesets(Map*);
+    bool loadMapLayout(Map*);
+    bool loadMapTilesets(Map*);
     void loadTilesetAssets(Tileset*);
     void loadTilesetTiles(Tileset*, QImage);
     void loadTilesetMetatiles(Tileset*);
@@ -154,7 +154,7 @@ public:
     QString getScriptFileExtension(bool usePoryScript);
     QString getScriptDefaultString(bool usePoryScript, QString mapName);
 
-    void loadMapBorder(Map *map);
+    bool loadMapBorder(Map *map);
 
     void saveMapHealEvents(Map *map);
 

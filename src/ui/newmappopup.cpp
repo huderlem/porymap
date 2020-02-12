@@ -157,7 +157,9 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
     group = project->groupNames->indexOf(this->ui->comboBox_NewMap_Group->currentText());
     newMap->layout = layout;
     newMap->layoutId = layout->id;
-    if (this->existingLayout) project->loadMapLayout(newMap);
+    if (this->existingLayout) {
+        project->loadMapLayout(newMap);
+    }
     newMap->group_num = QString::number(group);
     map = newMap;
     emit applied();

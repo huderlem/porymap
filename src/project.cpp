@@ -74,10 +74,9 @@ Map* Project::loadMap(QString map_name) {
         map->setName(map_name);
     }
 
-    if (!loadMapData(map))
+    if (!(loadMapData(map) && loadMapLayout(map)))
         return nullptr;
 
-    loadMapLayout(map);
     map->commit();
     map->metatileHistory.save();
     map_cache->insert(map_name, map);
@@ -387,21 +386,21 @@ void Project::setNewMapHeader(Map* map, int mapIndex) {
     map->battle_scene = "MAP_BATTLE_SCENE_NORMAL";
 }
 
-void Project::loadMapLayout(Map* map) {
+bool Project::loadMapLayout(Map* map) {
     if (!map->isPersistedToFile) {
-        return;
+        return true;
     }
 
-    if (!mapLayouts.contains(map->layoutId)) {
-        logError(QString("Error: Map '%1' has an unknown layout '%2'").arg(map->name).arg(map->layoutId));
-        return;
-    } else {
+    if (mapLayouts.contains(map->layoutId)) {
         map->layout = mapLayouts[map->layoutId];
+    } else {
+        logError(QString("Error: Map '%1' has an unknown layout '%2'").arg(map->name).arg(map->layoutId));
+        return false;
     }
 
-    loadMapTilesets(map);
-    loadBlockdata(map);
-    loadMapBorder(map);
+    return loadMapTilesets(map)
+        && loadBlockdata(map)
+        && loadMapBorder(map);
 }
 
 bool Project::readMapLayouts() {
@@ -906,13 +905,23 @@ void Project::saveTilesetPalettes(Tileset *tileset, bool /*primary*/) {
     }
 }
 
-void Project::loadMapTilesets(Map* map) {
+bool Project::loadMapTilesets(Map* map) {
     if (map->layout->has_unsaved_changes) {
-        return;
+        return true;
     }
 
     map->layout->tileset_primary = getTileset(map->layout->tileset_primary_label);
+    if (!map->layout->tileset_primary) {
+        logError(QString("Map layout %1 has invalid primary tileset '%2'").arg(map->layout->id).arg(map->layout->tileset_primary_label));
+        return false;
+    }
+
     map->layout->tileset_secondary = getTileset(map->layout->tileset_secondary_label);
+    if (!map->layout->tileset_secondary) {
+        logError(QString("Map layout %1 has invalid secondary tileset '%2'").arg(map->layout->id).arg(map->layout->tileset_secondary_label));
+        return false;
+    }
+    return true;
 }
 
 Tileset* Project::loadTileset(QString label, Tileset *tileset) {
@@ -939,9 +948,9 @@ Tileset* Project::loadTileset(QString label, Tileset *tileset) {
     return tileset;
 }
 
-void Project::loadBlockdata(Map* map) {
+bool Project::loadBlockdata(Map* map) {
     if (!map->isPersistedToFile || map->layout->has_unsaved_changes) {
-        return;
+        return true;
     }
 
     QString path = QString("%1/%2").arg(root).arg(map->layout->blockdata_path);
@@ -955,6 +964,7 @@ void Project::loadBlockdata(Map* map) {
                 .arg(map->getWidth() * map->getHeight()));
         map->layout->blockdata->blocks->resize(map->getWidth() * map->getHeight());
     }
+    return true;
 }
 
 void Project::setNewMapBlockdata(Map* map) {
@@ -965,13 +975,21 @@ void Project::setNewMapBlockdata(Map* map) {
     map->layout->blockdata = blockdata;
 }
 
-void Project::loadMapBorder(Map *map) {
+bool Project::loadMapBorder(Map *map) {
     if (!map->isPersistedToFile || map->layout->has_unsaved_changes) {
-        return;
+        return true;
     }
 
     QString path = QString("%1/%2").arg(root).arg(map->layout->border_path);
     map->layout->border = readBlockdata(path);
+    int borderLength = 4;
+    if (map->layout->border->blocks->count() != borderLength) {
+        logWarn(QString("Layout border blockdata length %1 must be %2. Resizing border blockdata.")
+                .arg(map->layout->border->blocks->count())
+                .arg(borderLength));
+        map->layout->border->blocks->resize(borderLength);
+    }
+    return true;
 }
 
 void Project::setNewMapBorder(Map *map) {
@@ -1265,7 +1283,12 @@ void Project::loadTilesetAssets(Tileset* tileset) {
 
     tiles_path = fixGraphicPath(tiles_path);
     tileset->tilesImagePath = tiles_path;
-    QImage image = QImage(tileset->tilesImagePath);
+    QImage image;
+    if (QFile::exists(tileset->tilesImagePath)) {
+        image = QImage(tileset->tilesImagePath);
+    } else {
+        image = QImage(8, 8, QImage::Format_Indexed8);
+    }
     this->loadTilesetTiles(tileset, image);
     this->loadTilesetMetatiles(tileset);
     this->loadTilesetMetatileLabels(tileset);
@@ -1518,12 +1541,16 @@ bool Project::readWildMonData() {
     return true;
 }
 
-void Project::readMapGroups() {
+bool Project::readMapGroups() {
+    mapConstantsToMapNames->clear();
+    mapNamesToMapConstants->clear();
+    map_groups->clear();
+
     QString mapGroupsFilepath = QString("%1/data/maps/map_groups.json").arg(root);
     QJsonDocument mapGroupsDoc;
     if (!parser.tryParseJsonFile(&mapGroupsDoc, mapGroupsFilepath)) {
         logError(QString("Failed to read map groups from %1").arg(mapGroupsFilepath));
-        return;
+        return false;
     }
 
     QJsonObject mapGroupsObj = mapGroupsDoc.object();
@@ -1557,6 +1584,7 @@ void Project::readMapGroups() {
     groupNames = groups;
     groupedMapNames = groupedMaps;
     mapNames = maps;
+    return true;
 }
 
 Map* Project::addNewMapToGroup(QString mapName, int groupNum) {

@@ -281,16 +281,11 @@ bool MainWindow::openProject(QString dir) {
     if (!already_open) {
         editor->project = new Project;
         editor->project->set_root(dir);
-        success = loadDataStructures();
-        if (success) {
-            populateMapList();
-            success = setMap(getDefaultMap(), true);
-        }
+        success = loadDataStructures()
+               && populateMapList()
+               && setMap(getDefaultMap(), true);
     } else {
-        success = loadDataStructures();
-        if (success) {
-            populateMapList();
-        }
+        success = loadDataStructures() && populateMapList();
     }
 
     if (success) {
@@ -350,7 +345,7 @@ void MainWindow::on_action_Open_Project_triggered()
 
 bool MainWindow::setMap(QString map_name, bool scrollTreeView) {
     logInfo(QString("Setting map to '%1'").arg(map_name));
-    if (map_name.isNull()) {
+    if (map_name.isEmpty()) {
         return false;
     }
 
@@ -388,7 +383,9 @@ bool MainWindow::setMap(QString map_name, bool scrollTreeView) {
 
 void MainWindow::redrawMapScene()
 {
-    editor->displayMap();
+    if (!editor->displayMap())
+        return;
+
     on_tabWidget_currentChanged(ui->tabWidget->currentIndex());
 
     double base = editor->scale_base;
@@ -644,9 +641,12 @@ bool MainWindow::loadDataStructures() {
     return true;
 }
 
-void MainWindow::populateMapList() {
-    editor->project->readMapGroups();
-    sortMapList();
+bool MainWindow::populateMapList() {
+    bool success = editor->project->readMapGroups();
+    if (success) {
+        sortMapList();
+    }
+    return success;
 }
 
 void MainWindow::sortMapList() {

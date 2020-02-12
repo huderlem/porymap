@@ -45,7 +45,7 @@ public:
     bool setMap(QString map_name);
     void saveUiFields();
     void saveEncounterTabData();
-    void displayMap();
+    bool displayMap();
     void displayMetatileSelector();
     void displayMapMetatiles();
     void displayMapMovementPermissions();

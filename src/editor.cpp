@@ -908,7 +908,7 @@ void Editor::setConnectionsVisibility(bool visible) {
 }
 
 bool Editor::setMap(QString map_name) {
-    if (map_name.isNull()) {
+    if (map_name.isEmpty()) {
         return false;
     }
 
@@ -920,7 +920,9 @@ bool Editor::setMap(QString map_name) {
 
         map = loadedMap;
         selected_events->clear();
-        displayMap();
+        if (!displayMap()) {
+            return false;
+        }
         updateSelectedEvents();
     }
 
@@ -1045,7 +1047,7 @@ void Editor::mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixm
     }
 }
 
-void Editor::displayMap() {
+bool Editor::displayMap() {
     if (!scene) {
         scene = new QGraphicsScene;
         MapSceneEventFilter *filter = new MapSceneEventFilter();
@@ -1086,6 +1088,7 @@ void Editor::displayMap() {
     if (events_group) {
         events_group->setVisible(false);
     }
+    return true;
 }
 
 void Editor::displayMetatileSelector() {
