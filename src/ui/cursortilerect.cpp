@@ -100,6 +100,8 @@ void CursorTileRect::updateLocation(int coordX, int coordY)
         }
     }
 
+    coordX = qMax(coordX, 0);
+    coordY = qMax(coordY, 0);
     this->setX(coordX * 16);
     this->setY(coordY * 16);
     this->setVisible(*this->enabled && this->visible);

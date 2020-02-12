@@ -226,11 +226,10 @@ void MapPixmapItem::updateMetatileSelection(QGraphicsSceneMouseEvent *event) {
         Block *block = map->getBlock(x, y);
         this->metatileSelector->selectFromMap(block->tile, block->collision, block->elevation);
     } else if (event->type() == QEvent::GraphicsSceneMouseMove) {
-        QPoint pos = QPoint(x, y);
         int x1 = selection_origin.x();
         int y1 = selection_origin.y();
-        int x2 = pos.x();
-        int y2 = pos.y();
+        int x2 = x;
+        int y2 = y;
         if (x1 > x2) SWAP(x1, x2);
         if (y1 > y2) SWAP(y1, y2);
         selection.clear();
