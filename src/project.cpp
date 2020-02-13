@@ -2029,7 +2029,7 @@ void Project::loadEventPixmaps(QList<Event*> objects) {
 
     QMap<QString, int> constants = getEventObjGfxConstants();
 
-    QMap<QString, QString> pointerHash = parser.readNamedIndexCArray("src/data/object_event/event_object_graphics_info_pointers.h", "gObjectEventGraphicsInfoPointers");
+    QMap<QString, QString> pointerHash = parser.readNamedIndexCArray("src/data/object_events/object_event_graphics_info_pointers.h", "gObjectEventGraphicsInfoPointers");
 
     for (Event *object : objects) {
         if (!object->pixmap.isNull()) {
@@ -2054,13 +2054,13 @@ void Project::loadEventPixmaps(QList<Event*> objects) {
 
         if (event_type == EventType::Object) {
             QString info_label = pointerHash[object->get("sprite")].replace("&", "");
-            QStringList gfx_info = parser.readCArray("src/data/object_event/event_object_graphics_info.h", info_label);
+            QStringList gfx_info = parser.readCArray("src/data/object_events/object_event_graphics_info.h", info_label);
             QString pic_label = gfx_info.value(14);
             QString dimensions_label = gfx_info.value(11);
             QString subsprites_label = gfx_info.value(12);
-            QString gfx_label = parser.readCArray("src/data/object_event/event_object_pic_tables.h", pic_label).value(0);
+            QString gfx_label = parser.readCArray("src/data/object_events/object_event_pic_tables.h", pic_label).value(0);
             gfx_label = gfx_label.section(QRegExp("[\\(\\)]"), 1, 1);
-            QString path = parser.readCIncbin("src/data/object_event/event_object_graphics.h", gfx_label);
+            QString path = parser.readCIncbin("src/data/object_events/object_event_graphics.h", gfx_label);
 
             if (!path.isNull()) {
                 path = fixGraphicPath(path);

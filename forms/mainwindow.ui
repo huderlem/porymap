@@ -478,7 +478,7 @@
                 <item>
                  <widget class="QCheckBox" name="checkBox_ToggleGrid">
                   <property name="toolTip">
-                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Toggles a grid over the map's metatile boundaries.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Toggles a grid over the map's metatile boundaries.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Ctrl + G&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                   </property>
                   <property name="styleSheet">
                    <string notr="true"/>
@@ -561,8 +561,8 @@
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>545</width>
-                     <height>587</height>
+                     <width>469</width>
+                     <height>608</height>
                     </rect>
                    </property>
                    <layout class="QGridLayout" name="gridLayout_8">
@@ -876,8 +876,8 @@
                            <rect>
                             <x>0</x>
                             <y>0</y>
-                            <width>256</width>
-                            <height>74</height>
+                            <width>324</width>
+                            <height>77</height>
                            </rect>
                           </property>
                           <layout class="QHBoxLayout" name="horizontalLayout_7">
@@ -1064,10 +1064,10 @@
                     </property>
                     <property name="geometry">
                      <rect>
-                      <x>8</x>
+                      <x>0</x>
                       <y>0</y>
-                      <width>221</width>
-                      <height>328</height>
+                      <width>307</width>
+                      <height>362</height>
                      </rect>
                     </property>
                     <property name="sizePolicy">
@@ -1344,8 +1344,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>371</width>
-               <height>643</height>
+               <width>381</width>
+               <height>657</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_7">
@@ -1618,7 +1618,7 @@
                       <x>0</x>
                       <y>0</y>
                       <width>430</width>
-                      <height>534</height>
+                      <height>568</height>
                      </rect>
                     </property>
                     <property name="sizePolicy">
@@ -2531,8 +2531,8 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>818</width>
-                    <height>539</height>
+                    <width>826</width>
+                    <height>557</height>
                    </rect>
                   </property>
                   <layout class="QGridLayout" name="gridLayout_14">
@@ -2796,7 +2796,7 @@
      <x>0</x>
      <y>0</y>
      <width>1117</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
