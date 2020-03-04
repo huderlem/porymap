@@ -21,10 +21,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
-        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
@@ -115,14 +115,14 @@
 </ul>
 </li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Editing Map Events</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#events-positions">Events Positions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#event-objects">Event Objects</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#event-warps">Event Warps</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#event-triggers">Event Triggers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#event-weather-triggers">Event Weather Triggers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#event-signs">Event Signs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#event-hidden-item">Event Hidden Item</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#event-secret-base">Event Secret Base</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#event-positions">Event Positions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#object-events">Object Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#warp-events">Warp Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#trigger-events">Trigger Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#weather-trigger-events">Weather Trigger Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sign-event">Sign Event</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hidden-item-event">Hidden Item Event</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#secret-base-event">Secret Base Event</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#adding-deleting-events">Adding &amp; Deleting Events</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#open-map-scripts">Open Map Scripts</a></li>
 </ul>
@@ -151,39 +151,51 @@
 <p class="caption"><span class="caption-text">Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../reference/changelog.html">Changelog</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#unreleased">Unreleased</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#breaking-changes">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#added">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#unreleased">Unreleased</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id1">3.0.1 - 2020-03-04</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#fixed">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id1">1.2.2 - 2019-05-16</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id2">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id3">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id4">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id2">3.0.0 - 2020-03-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#breaking-changes">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#added">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#changed">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id3">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id5">1.2.1 - 2019-02-16</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id4">2.0.0 - 2019-10-16</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id5">Breaking Changes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id6">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id7">Fixed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id7">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id8">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id8">1.2.0 - 2019-02-04</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id9">Breaking Changes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id9">1.2.2 - 2019-05-16</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id10">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id11">Changed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id12">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id13">1.1.0 - 2018-12-27</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id14">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id15">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id16">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id17">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id13">1.2.1 - 2019-02-16</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id14">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id15">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id18">1.0.0 - 2018-10-26</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id16">1.2.0 - 2019-02-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id17">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id18">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id19">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id20">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id21">1.1.0 - 2018-12-27</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id22">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id23">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id24">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id25">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id26">1.0.0 - 2018-10-26</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/related-projects.html">Related Projects</a></li>
@@ -256,147 +268,147 @@
   <div class="section" id="editing-map-events">
 <h1>Editing Map Events<a class="headerlink" href="#editing-map-events" title="Permalink to this headline">¶</a></h1>
 <p>Events are what bring your maps to life.  They include NPCs, signposts, warps, scripts, and more.  Open the <em>Events</em> tab above the map area, and let’s dissect what’s going on.</p>
-<div class="figure" id="id2">
+<div class="figure align-default" id="id1">
 <img alt="Map Events View" src="../_images/map-events.png" />
-<p class="caption"><span class="caption-text">Map Events View</span></p>
+<p class="caption"><span class="caption-text">Map Events View</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
 </div>
 <p>All of the events are visible on the map.  The Event Details window on the right displays the properties of the currently-selected event.  If you look closely, you’ll see that the woman NPC near the Pokémon Center has a pink border around it because it’s selected.  To select a different event, simple click on an event in the map area.  Alternatively, you can use the spinner at the top of the event properties window.  Multiple events can be selected at the same time by holding <code class="docutils literal notranslate"><span class="pre">Ctrl</span></code> and clicking another event.</p>
-<div class="figure" id="id3">
+<div class="figure align-default" id="id2">
 <img alt="Event Id Spinner" src="../_images/event-id-spinner.png" />
-<p class="caption"><span class="caption-text">Event Id Spinner</span></p>
+<p class="caption"><span class="caption-text">Event Id Spinner</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
 </div>
 <div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">There is currently no undo/redo functionality when editing events!  Use Git version control!</p>
+<p class="admonition-title">Warning</p>
+<p>There is currently no undo/redo functionality when editing events!  Use Git version control!</p>
 </div>
-<div class="section" id="events-positions">
-<h2>Events Positions<a class="headerlink" href="#events-positions" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="event-positions">
+<h2>Event Positions<a class="headerlink" href="#event-positions" title="Permalink to this headline">¶</a></h2>
 <p>All events have X/Y coordinates.  To move an Event, click and drag it to a new position on the map.  Alternatively, you can use the X and Y spinners in the event properties.</p>
-<div class="figure" id="id4">
+<div class="figure align-default" id="id3">
 <img alt="Event Coordinates Spinners" src="../_images/event-coords-spinners.png" />
-<p class="caption"><span class="caption-text">Event Coordinates Spinners</span></p>
+<p class="caption"><span class="caption-text">Event Coordinates Spinners</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
 </div>
 <p>Events also have an elevation, also known as Z coordinates (see image above).  Elevations are explained in detail in the <a class="reference internal" href="editing-map-collisions.html#collision-types"><span class="std std-ref">Collision Types</span></a> section.</p>
 <p>Next, we’ll cover each type of event in detail.</p>
 </div>
-<div class="section" id="event-objects">
-<h2>Event Objects<a class="headerlink" href="#event-objects" title="Permalink to this headline">¶</a></h2>
-<p>Event objects are typically used for NPCs (non-player-characters).  More technically, it’s any event that has a sprite and the ability to move around.  Event objects are displayed using their assigned sprite, except for special cases.  Any event object that uses a dynamic sprite will be displayed as a blue square with an <cite>N</cite> <img alt="dynamic-sprite" src="../_images/dynamic-sprite.png" />.  Some examples of dynamic sprites are the player’s rival and berry trees.</p>
-<div class="figure" id="id5">
-<img alt="Event Object Properties" src="../_images/event-object.png" />
-<p class="caption"><span class="caption-text">Event Object Properties</span></p>
+<div class="section" id="object-events">
+<h2>Object Events<a class="headerlink" href="#object-events" title="Permalink to this headline">¶</a></h2>
+<p>Object events are typically used for NPCs (non-player-characters).  More technically, it’s any event that has a sprite and the ability to move around.  Object events are displayed using their assigned sprite, except for special cases.  Any object event that uses a dynamic sprite will be displayed as a blue square with an <cite>N</cite> <img alt="dynamic-sprite" src="../_images/dynamic-sprite.png" />.  Some examples of dynamic sprites are the player’s rival and berry trees.</p>
+<div class="figure align-default" id="id4">
+<img alt="Object Event Properties" src="../_images/event-object.png" />
+<p class="caption"><span class="caption-text">Object Event Properties</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
 </div>
-<dl class="docutils">
-<dt>Id</dt>
-<dd>This is the local id of the object in the map.  Some script values use this local id to specify object when using scripting commands such as <cite>applymovement</cite>.</dd>
-<dt>Sprite</dt>
-<dd>The sprite that is used by the object.</dd>
-<dt>Movement</dt>
-<dd>The movement type used by the object during normal gameplay.</dd>
-<dt>Movement Radius X/Y</dt>
-<dd>Movement types that involves walking or moving around the map can be bounded by a radius.  The ensures that the object is always within the specified range from its original position.</dd>
-<dt>Script</dt>
-<dd>The script that executes when the player interacts with the object.</dd>
-<dt>Event Flag</dt>
-<dd>The flag value that controls if the object is visible.  If the flag is set (equal to 1), then the object will be invisible.  If the Event Flag is set to <cite>0</cite>, then the object will always be visible because <cite>0</cite> means “no flag”.</dd>
-<dt>Trainer Type</dt>
-<dd><cite>NONE</cite>, <cite>NORMAL</cite>, or <cite>SEE ALL DIRECTIONS</cite>. If the object is a trainer, <cite>NORMAL</cite> means that the trainer will spot the player in the object’s line-of-sight.</dd>
-<dt>Sight Radius or Berry Tree ID</dt>
-<dd>If the object is a trainer, this property control how many tiles the trainer can see to spot the player for battle.  If the object is a berry tree, this specifies the global id of the berry tree.  Each berry tree in the game has a unique berry tree id.</dd>
+<dl class="simple">
+<dt>Id</dt><dd><p>This is the local id of the object in the map.  Some script values use this local id to specify object when using scripting commands such as <cite>applymovement</cite>.</p>
+</dd>
+<dt>Sprite</dt><dd><p>The sprite that is used by the object.</p>
+</dd>
+<dt>Movement</dt><dd><p>The movement type used by the object during normal gameplay.</p>
+</dd>
+<dt>Movement Radius X/Y</dt><dd><p>Movement types that involves walking or moving around the map can be bounded by a radius.  The ensures that the object is always within the specified range from its original position.</p>
+</dd>
+<dt>Script</dt><dd><p>The script that executes when the player interacts with the object.</p>
+</dd>
+<dt>Event Flag</dt><dd><p>The flag value that controls if the object is visible.  If the flag is set (equal to 1), then the object will be invisible.  If the Event Flag is set to <cite>0</cite>, then the object will always be visible because <cite>0</cite> means “no flag”.</p>
+</dd>
+<dt>Trainer Type</dt><dd><p><cite>NONE</cite>, <cite>NORMAL</cite>, or <cite>SEE ALL DIRECTIONS</cite>. If the object is a trainer, <cite>NORMAL</cite> means that the trainer will spot the player in the object’s line-of-sight.</p>
+</dd>
+<dt>Sight Radius or Berry Tree ID</dt><dd><p>If the object is a trainer, this property control how many tiles the trainer can see to spot the player for battle.  If the object is a berry tree, this specifies the global id of the berry tree.  Each berry tree in the game has a unique berry tree id.</p>
+</dd>
 </dl>
 </div>
-<div class="section" id="event-warps">
-<span id="id1"></span><h2>Event Warps<a class="headerlink" href="#event-warps" title="Permalink to this headline">¶</a></h2>
-<p>Event warps are how the player is able to warp to other maps, such as entering a building.  Double-clicking on a warp will automatically open the destination map and select the destination warp.  This makes it very easy to navigate around in Porymap.</p>
-<div class="figure" id="id6">
-<img alt="Event Warp Properties" src="../_images/event-warp.png" />
-<p class="caption"><span class="caption-text">Event Warp Properties</span></p>
+<div class="section" id="warp-events">
+<span id="event-warps"></span><h2>Warp Events<a class="headerlink" href="#warp-events" title="Permalink to this headline">¶</a></h2>
+<p>Warp events are how the player is able to warp to other maps, such as entering a building.  Double-clicking on a warp will automatically open the destination map and select the destination warp.  This makes it very easy to navigate around in Porymap.</p>
+<div class="figure align-default" id="id5">
+<img alt="Warp Event Properties" src="../_images/event-warp.png" />
+<p class="caption"><span class="caption-text">Warp Event Properties</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
 </div>
-<dl class="docutils">
-<dt>Id</dt>
-<dd>This is the local id of the warp in the map.  This is used when setting the Destination Warp property for another warp.</dd>
-<dt>Destination Map</dt>
-<dd>The destination map name.</dd>
-<dt>Destination Warp</dt>
-<dd>The Id of the warp in the destination map.</dd>
+<dl class="simple">
+<dt>Id</dt><dd><p>This is the local id of the warp in the map.  This is used when setting the Destination Warp property for another warp.</p>
+</dd>
+<dt>Destination Map</dt><dd><p>The destination map name.</p>
+</dd>
+<dt>Destination Warp</dt><dd><p>The Id of the warp in the destination map.</p>
+</dd>
 </dl>
 </div>
-<div class="section" id="event-triggers">
-<h2>Event Triggers<a class="headerlink" href="#event-triggers" title="Permalink to this headline">¶</a></h2>
-<p>Event triggers are scripts that execute when the player walks over them.  However, they only execute when a variable is equal some value.  Typically, they execute once, set the variable’s value to something else, and then never execute again because the variable’s value no longer matches.</p>
-<div class="figure" id="id7">
-<img alt="Event Trigger Properties" src="../_images/event-trigger.png" />
-<p class="caption"><span class="caption-text">Event Trigger Properties</span></p>
+<div class="section" id="trigger-events">
+<h2>Trigger Events<a class="headerlink" href="#trigger-events" title="Permalink to this headline">¶</a></h2>
+<p>Trigger events are scripts that execute when the player walks over them.  However, they only execute when a variable is equal some value.  Typically, they execute once, set the variable’s value to something else, and then never execute again because the variable’s value no longer matches.</p>
+<div class="figure align-default" id="id6">
+<img alt="Trigger Event Properties" src="../_images/event-trigger.png" />
+<p class="caption"><span class="caption-text">Trigger Event Properties</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
 </div>
-<dl class="docutils">
-<dt>Id</dt>
-<dd>The local id of the trigger in the map.  This value is not used for anything.</dd>
-<dt>Script</dt>
-<dd>The script that executes when the player walks over the trigger AND when the <cite>Var</cite> equals the <cite>Var Value</cite>.</dd>
-<dt>Var</dt>
-<dd>The variable used to determine if the trigger’s Script should execute.</dd>
-<dt>Var Value</dt>
-<dd>The value that the Var must equal for the trigger’s Script to execute.</dd>
+<dl class="simple">
+<dt>Id</dt><dd><p>The local id of the trigger in the map.  This value is not used for anything.</p>
+</dd>
+<dt>Script</dt><dd><p>The script that executes when the player walks over the trigger AND when the <cite>Var</cite> equals the <cite>Var Value</cite>.</p>
+</dd>
+<dt>Var</dt><dd><p>The variable used to determine if the trigger’s Script should execute.</p>
+</dd>
+<dt>Var Value</dt><dd><p>The value that the Var must equal for the trigger’s Script to execute.</p>
+</dd>
 </dl>
 </div>
-<div class="section" id="event-weather-triggers">
-<h2>Event Weather Triggers<a class="headerlink" href="#event-weather-triggers" title="Permalink to this headline">¶</a></h2>
-<p>Event weather triggers are a very specific type of trigger.  When the player walks over a weather trigger, the overworld’s weather will transition to the specified weather type.</p>
-<div class="figure" id="id8">
-<img alt="Event Weather Trigger Properties" src="../_images/event-weather-trigger.png" />
-<p class="caption"><span class="caption-text">Event Weather Trigger Properties</span></p>
+<div class="section" id="weather-trigger-events">
+<h2>Weather Trigger Events<a class="headerlink" href="#weather-trigger-events" title="Permalink to this headline">¶</a></h2>
+<p>Weather trigger events are a very specific type of trigger.  When the player walks over a weather trigger, the overworld’s weather will transition to the specified weather type.</p>
+<div class="figure align-default" id="id7">
+<img alt="Weather Trigger Event Properties" src="../_images/event-weather-trigger.png" />
+<p class="caption"><span class="caption-text">Weather Trigger Event Properties</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
 </div>
-<dl class="docutils">
-<dt>Id</dt>
-<dd>The local id of the trigger in the map.  This value is not used for anything.</dd>
-<dt>Weather</dt>
-<dd>The type of weather to transition to.</dd>
+<dl class="simple">
+<dt>Id</dt><dd><p>The local id of the trigger in the map.  This value is not used for anything.</p>
+</dd>
+<dt>Weather</dt><dd><p>The type of weather to transition to.</p>
+</dd>
 </dl>
 </div>
-<div class="section" id="event-signs">
-<h2>Event Signs<a class="headerlink" href="#event-signs" title="Permalink to this headline">¶</a></h2>
-<p>Event signs, or signposts, are simple interactable scripts.  They are typically used for things like signs in front of buildings.  The player’s facing direction can be required to be a certain direction in order to interact with the sign.  Signs are the first of three “BG” event types.</p>
-<div class="figure" id="id9">
-<img alt="Event Sign Properties" src="../_images/event-sign.png" />
-<p class="caption"><span class="caption-text">Event Sign Properties</span></p>
+<div class="section" id="sign-event">
+<h2>Sign Event<a class="headerlink" href="#sign-event" title="Permalink to this headline">¶</a></h2>
+<p>Sign events, or signposts, are simple interactable scripts.  They are typically used for things like signs in front of buildings.  The player’s facing direction can be required to be a certain direction in order to interact with the sign.  Signs are the first of three “BG” event types.</p>
+<div class="figure align-default" id="id8">
+<img alt="Sign Event Properties" src="../_images/event-sign.png" />
+<p class="caption"><span class="caption-text">Sign Event Properties</span><a class="headerlink" href="#id8" title="Permalink to this image">¶</a></p>
 </div>
-<dl class="docutils">
-<dt>Id</dt>
-<dd>The local id of the BG event in the map.  This value is not used for anything.</dd>
-<dt>Player Facing Direction</dt>
-<dd>The direction the player must be facing in order to execute the sign’s script.</dd>
-<dt>Script</dt>
-<dd>The script that executes when the player interacts with the sign.</dd>
+<dl class="simple">
+<dt>Id</dt><dd><p>The local id of the BG event in the map.  This value is not used for anything.</p>
+</dd>
+<dt>Player Facing Direction</dt><dd><p>The direction the player must be facing in order to execute the sign’s script.</p>
+</dd>
+<dt>Script</dt><dd><p>The script that executes when the player interacts with the sign.</p>
+</dd>
 </dl>
 </div>
-<div class="section" id="event-hidden-item">
-<h2>Event Hidden Item<a class="headerlink" href="#event-hidden-item" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="hidden-item-event">
+<h2>Hidden Item Event<a class="headerlink" href="#hidden-item-event" title="Permalink to this headline">¶</a></h2>
 <p>Hidden items are invisible items that can be picked up by the player. They each use a flag to ensure the item can only be picked up once.</p>
-<div class="figure" id="id10">
-<img alt="Event Hidden Item Properties" src="../_images/event-hidden-item.png" />
-<p class="caption"><span class="caption-text">Event Hidden Item Properties</span></p>
+<div class="figure align-default" id="id9">
+<img alt="Hidden Item Event Properties" src="../_images/event-hidden-item.png" />
+<p class="caption"><span class="caption-text">Hidden Item Event Properties</span><a class="headerlink" href="#id9" title="Permalink to this image">¶</a></p>
 </div>
-<dl class="docutils">
-<dt>Id</dt>
-<dd>The local id of the BG event in the map.  This value is not used for anything.</dd>
-<dt>Item</dt>
-<dd>The item the player will receive when interacting with this hidden item.</dd>
-<dt>Flag</dt>
-<dd>This flag is set when the player receives the hidden item.</dd>
+<dl class="simple">
+<dt>Id</dt><dd><p>The local id of the BG event in the map.  This value is not used for anything.</p>
+</dd>
+<dt>Item</dt><dd><p>The item the player will receive when interacting with this hidden item.</p>
+</dd>
+<dt>Flag</dt><dd><p>This flag is set when the player receives the hidden item.</p>
+</dd>
 </dl>
 </div>
-<div class="section" id="event-secret-base">
-<h2>Event Secret Base<a class="headerlink" href="#event-secret-base" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="secret-base-event">
+<h2>Secret Base Event<a class="headerlink" href="#secret-base-event" title="Permalink to this headline">¶</a></h2>
 <p>This is the event used to mark entrances to secret bases.  This event will only be functional on certain metatiles.  Unfortunately, they are hardcoded into the game’s engine (see <code class="docutils literal notranslate"><span class="pre">sSecretBaseEntranceMetatiles</span></code> in <code class="docutils literal notranslate"><span class="pre">src/secret_base.c</span></code>).</p>
-<div class="figure" id="id11">
-<img alt="Event Secret Base Properties" src="../_images/event-secret-base.png" />
-<p class="caption"><span class="caption-text">Event Secret Base Properties</span></p>
+<div class="figure align-default" id="id10">
+<img alt="Secret Base Event Properties" src="../_images/event-secret-base.png" />
+<p class="caption"><span class="caption-text">Secret Base Event Properties</span><a class="headerlink" href="#id10" title="Permalink to this image">¶</a></p>
 </div>
-<dl class="docutils">
-<dt>Id</dt>
-<dd>The local id of the BG event in the map.  This value is not used for anything.</dd>
-<dt>Secret Base Id</dt>
-<dd>The id of the destination secret base.</dd>
+<dl class="simple">
+<dt>Id</dt><dd><p>The local id of the BG event in the map.  This value is not used for anything.</p>
+</dd>
+<dt>Secret Base Id</dt><dd><p>The id of the destination secret base.</p>
+</dd>
 </dl>
 </div>
 <div class="section" id="adding-deleting-events">

@@ -21,10 +21,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
-        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
@@ -115,14 +115,14 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="editing-map-events.html">Editing Map Events</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#events-positions">Events Positions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-objects">Event Objects</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-warps">Event Warps</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-triggers">Event Triggers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-weather-triggers">Event Weather Triggers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-signs">Event Signs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-hidden-item">Event Hidden Item</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-secret-base">Event Secret Base</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-positions">Event Positions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#object-events">Object Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#warp-events">Warp Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#trigger-events">Trigger Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#weather-trigger-events">Weather Trigger Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#sign-event">Sign Event</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#hidden-item-event">Hidden Item Event</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#secret-base-event">Secret Base Event</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#adding-deleting-events">Adding &amp; Deleting Events</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#open-map-scripts">Open Map Scripts</a></li>
 </ul>
@@ -151,39 +151,51 @@
 <p class="caption"><span class="caption-text">Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../reference/changelog.html">Changelog</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#unreleased">Unreleased</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#breaking-changes">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#added">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#unreleased">Unreleased</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id1">3.0.1 - 2020-03-04</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#fixed">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id1">1.2.2 - 2019-05-16</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id2">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id3">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id4">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id2">3.0.0 - 2020-03-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#breaking-changes">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#added">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#changed">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id3">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id5">1.2.1 - 2019-02-16</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id4">2.0.0 - 2019-10-16</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id5">Breaking Changes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id6">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id7">Fixed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id7">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id8">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id8">1.2.0 - 2019-02-04</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id9">Breaking Changes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id9">1.2.2 - 2019-05-16</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id10">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id11">Changed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id12">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id13">1.1.0 - 2018-12-27</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id14">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id15">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id16">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id17">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id13">1.2.1 - 2019-02-16</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id14">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id15">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id18">1.0.0 - 2018-10-26</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id16">1.2.0 - 2019-02-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id17">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id18">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id19">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id20">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id21">1.1.0 - 2018-12-27</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id22">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id23">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id24">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id25">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id26">1.0.0 - 2018-10-26</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/related-projects.html">Related Projects</a></li>
@@ -256,33 +268,33 @@
   <div class="section" id="editing-map-headers">
 <h1>Editing Map Headers<a class="headerlink" href="#editing-map-headers" title="Permalink to this headline">¶</a></h1>
 <p>The map header is a collection of miscellaneous properties that belong to a map.  They are mostly self-explanatory, but we’ll go over each of them.</p>
-<div class="figure" id="id1">
+<div class="figure align-default" id="id1">
 <img alt="Map Header View" src="../_images/map-header.png" />
-<p class="caption"><span class="caption-text">Map Header View</span></p>
+<p class="caption"><span class="caption-text">Map Header View</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
 </div>
-<dl class="docutils">
-<dt>Song</dt>
-<dd>The background music that is automatically played when entering the map.</dd>
-<dt>Location</dt>
-<dd>The region map section to which the map belongs.</dd>
-<dt>Requires Flash</dt>
-<dd>Whether or not the map has limited vision which the HM move Flash can expand.</dd>
-<dt>Weather</dt>
-<dd>The weather that is running when entering the map.</dd>
-<dt>Type</dt>
-<dd>The type of map. This value is used by various things in the game engine.  For example, in Ruby Version, running shoes can only be used when the map type is <code class="docutils literal notranslate"><span class="pre">MAP_TYPE_INDOOR</span></code>.</dd>
-<dt>Battle Scene</dt>
-<dd>Controls what graphics are used in battles.</dd>
-<dt>Show Location Name</dt>
-<dd>Shows or hides the map name popup window when entering the map.</dd>
-<dt>Allow Running</dt>
-<dd>Controls whether or not running shoes can be used.</dd>
-<dt>Allow Biking</dt>
-<dd>Controls whether or not a bike can be used.</dd>
-<dt>Allow Dig &amp; Escape Rop</dt>
-<dd>Controls whether the Dig field move or the Escape Rope item can be used.</dd>
-<dt>Custom Fields</dt>
-<dd>You can enter custom fields if you need support for additional fields in your project.  They can also be useful for keeping notes.</dd>
+<dl class="simple">
+<dt>Song</dt><dd><p>The background music that is automatically played when entering the map.</p>
+</dd>
+<dt>Location</dt><dd><p>The region map section to which the map belongs.</p>
+</dd>
+<dt>Requires Flash</dt><dd><p>Whether or not the map has limited vision which the HM move Flash can expand.</p>
+</dd>
+<dt>Weather</dt><dd><p>The weather that is running when entering the map.</p>
+</dd>
+<dt>Type</dt><dd><p>The type of map. This value is used by various things in the game engine.  For example, in Ruby Version, running shoes can only be used when the map type is <code class="docutils literal notranslate"><span class="pre">MAP_TYPE_INDOOR</span></code>.</p>
+</dd>
+<dt>Battle Scene</dt><dd><p>Controls what graphics are used in battles.</p>
+</dd>
+<dt>Show Location Name</dt><dd><p>Shows or hides the map name popup window when entering the map.</p>
+</dd>
+<dt>Allow Running</dt><dd><p>Controls whether or not running shoes can be used.</p>
+</dd>
+<dt>Allow Biking</dt><dd><p>Controls whether or not a bike can be used.</p>
+</dd>
+<dt>Allow Dig &amp; Escape Rop</dt><dd><p>Controls whether the Dig field move or the Escape Rope item can be used.</p>
+</dd>
+<dt>Custom Fields</dt><dd><p>You can enter custom fields if you need support for additional fields in your project.  They can also be useful for keeping notes.</p>
+</dd>
 </dl>
 </div>
 

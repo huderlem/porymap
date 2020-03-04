@@ -21,10 +21,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
-        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
@@ -115,14 +115,14 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="editing-map-events.html">Editing Map Events</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#events-positions">Events Positions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-objects">Event Objects</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-warps">Event Warps</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-triggers">Event Triggers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-weather-triggers">Event Weather Triggers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-signs">Event Signs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-hidden-item">Event Hidden Item</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-secret-base">Event Secret Base</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-positions">Event Positions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#object-events">Object Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#warp-events">Warp Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#trigger-events">Trigger Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#weather-trigger-events">Weather Trigger Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#sign-event">Sign Event</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#hidden-item-event">Hidden Item Event</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#secret-base-event">Secret Base Event</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#adding-deleting-events">Adding &amp; Deleting Events</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#open-map-scripts">Open Map Scripts</a></li>
 </ul>
@@ -151,39 +151,51 @@
 <p class="caption"><span class="caption-text">Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../reference/changelog.html">Changelog</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#unreleased">Unreleased</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#breaking-changes">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#added">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#unreleased">Unreleased</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id1">3.0.1 - 2020-03-04</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#fixed">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id1">1.2.2 - 2019-05-16</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id2">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id3">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id4">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id2">3.0.0 - 2020-03-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#breaking-changes">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#added">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#changed">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id3">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id5">1.2.1 - 2019-02-16</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id4">2.0.0 - 2019-10-16</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id5">Breaking Changes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id6">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id7">Fixed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id7">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id8">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id8">1.2.0 - 2019-02-04</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id9">Breaking Changes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id9">1.2.2 - 2019-05-16</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id10">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id11">Changed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id12">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id13">1.1.0 - 2018-12-27</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id14">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id15">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id16">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id17">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id13">1.2.1 - 2019-02-16</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id14">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id15">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id18">1.0.0 - 2018-10-26</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id16">1.2.0 - 2019-02-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id17">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id18">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id19">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id20">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id21">1.1.0 - 2018-12-27</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id22">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id23">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id24">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id25">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id26">1.0.0 - 2018-10-26</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/related-projects.html">Related Projects</a></li>
@@ -258,50 +270,50 @@
 <div class="section" id="about-porymap">
 <h2>About Porymap<a class="headerlink" href="#about-porymap" title="Permalink to this headline">¶</a></h2>
 <p><strong>Porymap is a cross-platform map editor for the Gen 3 pret decompilation projects.  Its primary functions are to allow editing map tiles, collision, events, connections, and properties.  Porymap provides additional functionality, such as tileset editing and region map editing.  Downloadable releases are available for Windows and Mac, and Linux users can build it from source.</strong></p>
-<p>Those familiar with traditional Gen 3 binary ROM hacking can think of it as the Advance Map equivalent for the decompilation projects.  Porymap supports the same features as Advance Map, except for Wild Pokemon editing, so Advance Map users shouldn’t have much difficulty learning how to use Porymap.  There are many usability improvements in Porymap.  The most notable is undo/redo when painting map tiles.</p>
+<p>Those familiar with traditional Gen 3 binary ROM hacking can think of it as the Advance Map equivalent for the decompilation projects.  Porymap supports the same features as Advance Map, so Advance Map users shouldn’t have much difficulty learning how to use Porymap.  There are many usability improvements in Porymap.  The most notable is undo/redo when painting map tiles.</p>
 <p>Porymap reads and writes files in the decompilation projects.  It <strong>does not</strong> read or write ROM files.  <strong>Therefore, it is highly recommended to use Git for version control when working with Porymap.</strong></p>
 </div>
 <div class="section" id="getting-started">
 <h2>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
 <p>Before using Porymap, you must have your decompilation project setup.  Porymap currently supports <a class="reference external" href="https://github.com/pret/pokeemerald">pokeemerald</a> and <a class="reference external" href="https://github.com/pret/pokeruby">pokeruby</a>.  See their respective <code class="docutils literal notranslate"><span class="pre">INSTALL.md</span></code> files to get setup, and make sure you can successfully compile the ROM.</p>
 <p>When launching Porymap for the first time, you will be greeted with the following empty window:</p>
-<div class="figure" id="id1">
+<div class="figure align-default" id="id1">
 <img alt="Porymap Empty Window" src="../_images/porymap-empty-window.png" />
-<p class="caption"><span class="caption-text">Porymap Empty Window</span></p>
+<p class="caption"><span class="caption-text">Porymap Empty Window</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
 </div>
 <p>The first thing we’ll do is open a Gen 3 decompilation project with <em>File -&gt; Open Project…</em> (<code class="docutils literal notranslate"><span class="pre">Ctrl+O</span></code>).  A folder selection dialog will pop up.  Choose the location of your existing decompilation project.  After doing so, Porymap will take a few seconds to load the project, and the main window should now be displaying the first map. (In <code class="docutils literal notranslate"><span class="pre">pokeemerald</span></code>, it’s Petalburg City.)</p>
-<div class="figure" id="id2">
+<div class="figure align-default" id="id2">
 <img alt="Porymap Main Window" src="../_images/porymap-loaded-project.png" />
-<p class="caption"><span class="caption-text">Porymap Main Window</span></p>
+<p class="caption"><span class="caption-text">Porymap Main Window</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
 </div>
 <p>Now, let’s make our first basic edit using Porymap. We’ll use the Pencil Tool to draw some more flowers on the grass in Petalburg City.  First, make sure the Pencil Tool is selected.  You can click the Pencil Tool button, press the <code class="docutils literal notranslate"><span class="pre">N</span></code> shortcut, or select <em>Tools -&gt; Pencil</em>.  The various painting Tool buttons are found on the left side of the toolbar above the map area.</p>
-<div class="figure" id="id3">
+<div class="figure align-default" id="id3">
 <img alt="Tool Buttons" src="../_images/tool-buttons.png" />
-<p class="caption"><span class="caption-text">Tool Buttons</span></p>
+<p class="caption"><span class="caption-text">Tool Buttons</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
 </div>
 <p>Next, select the flower metatile from the Metatile Selection panel by left-clicking on it.  The flower is metatile 0x4 in the General tileset.</p>
-<div class="figure" id="id4">
+<div class="figure align-default" id="id4">
 <img alt="Metatile Selection Panel" src="../_images/metatile-selection-panel.png" />
-<p class="caption"><span class="caption-text">Metatile Selection Panel</span></p>
+<p class="caption"><span class="caption-text">Metatile Selection Panel</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
 </div>
 <p>Porymap shows the current metatile selection in the Selection panel.</p>
-<div class="figure" id="id5">
+<div class="figure align-default" id="id5">
 <img alt="Current Metatile Selection" src="../_images/metatile-current-selection.png" />
-<p class="caption"><span class="caption-text">Current Metatile Selection</span></p>
+<p class="caption"><span class="caption-text">Current Metatile Selection</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
 </div>
 <p>Place some flowers in Petalburg City by left-clicking to paint on the map area.</p>
-<div class="figure" id="id6">
+<div class="figure align-default" id="id6">
 <img alt="Flowery Petalburg City" src="../_images/flowers-painted.png" />
-<p class="caption"><span class="caption-text">Flowery Petalburg City</span></p>
+<p class="caption"><span class="caption-text">Flowery Petalburg City</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
 </div>
 <p>That looks great!  Save your changes with <em>File -&gt; Save</em> (<code class="docutils literal notranslate"><span class="pre">Ctrl+S</span></code>).  Finally, compile the ROM and see the results in-game.</p>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">When re-compiling your ROM, it is not recommended to use <code class="docutils literal notranslate"><span class="pre">NODEP=1</span></code>, since that can result in data changes being ignored.</p>
+<p class="admonition-title">Note</p>
+<p>When re-compiling your ROM, it is not recommended to use <code class="docutils literal notranslate"><span class="pre">NODEP=1</span></code>, since that can result in data changes being ignored.</p>
 </div>
-<div class="figure" id="id7">
+<div class="figure align-default" id="id7">
 <img alt="Petalburg City In-Game Changes" src="../_images/flower-petalburg-ingame.png" />
-<p class="caption"><span class="caption-text">Petalburg City In-Game Changes</span></p>
+<p class="caption"><span class="caption-text">Petalburg City In-Game Changes</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
 </div>
 <p>Now that you have the basic workflow down, it’s time to learn how to navigate the various windows and screens of Porymap.</p>
 </div>

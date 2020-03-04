@@ -7,7 +7,7 @@ About Porymap
 
 **Porymap is a cross-platform map editor for the Gen 3 pret decompilation projects.  Its primary functions are to allow editing map tiles, collision, events, connections, and properties.  Porymap provides additional functionality, such as tileset editing and region map editing.  Downloadable releases are available for Windows and Mac, and Linux users can build it from source.**
 
-Those familiar with traditional Gen 3 binary ROM hacking can think of it as the Advance Map equivalent for the decompilation projects.  Porymap supports the same features as Advance Map, except for Wild Pokemon editing, so Advance Map users shouldn't have much difficulty learning how to use Porymap.  There are many usability improvements in Porymap.  The most notable is undo/redo when painting map tiles.
+Those familiar with traditional Gen 3 binary ROM hacking can think of it as the Advance Map equivalent for the decompilation projects.  Porymap supports the same features as Advance Map, so Advance Map users shouldn't have much difficulty learning how to use Porymap.  There are many usability improvements in Porymap.  The most notable is undo/redo when painting map tiles.
 
 Porymap reads and writes files in the decompilation projects.  It **does not** read or write ROM files.  **Therefore, it is highly recommended to use Git for version control when working with Porymap.**
 

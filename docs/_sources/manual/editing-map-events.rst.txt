@@ -19,7 +19,7 @@ All of the events are visible on the map.  The Event Details window on the right
 .. warning::
     There is currently no undo/redo functionality when editing events!  Use Git version control!
 
-Events Positions
+Event Positions
 ----------------
 
 All events have X/Y coordinates.  To move an Event, click and drag it to a new position on the map.  Alternatively, you can use the X and Y spinners in the event properties.
@@ -33,18 +33,18 @@ Events also have an elevation, also known as Z coordinates (see image above).  E
 
 Next, we'll cover each type of event in detail.
 
-Event Objects
+Object Events
 -------------
 
-Event objects are typically used for NPCs (non-player-characters).  More technically, it's any event that has a sprite and the ability to move around.  Event objects are displayed using their assigned sprite, except for special cases.  Any event object that uses a dynamic sprite will be displayed as a blue square with an `N` |dynamic-sprite|.  Some examples of dynamic sprites are the player's rival and berry trees.
+Object events are typically used for NPCs (non-player-characters).  More technically, it's any event that has a sprite and the ability to move around.  Object events are displayed using their assigned sprite, except for special cases.  Any object event that uses a dynamic sprite will be displayed as a blue square with an `N` |dynamic-sprite|.  Some examples of dynamic sprites are the player's rival and berry trees.
 
 .. |dynamic-sprite|
    image:: images/editing-map-events/dynamic-sprite.png
 
 .. figure:: images/editing-map-events/event-object.png
-    :alt: Event Object Properties
+    :alt: Object Event Properties
 
-    Event Object Properties
+    Object Event Properties
 
 Id
     This is the local id of the object in the map.  Some script values use this local id to specify object when using scripting commands such as `applymovement`.
@@ -72,15 +72,15 @@ Sight Radius or Berry Tree ID
 
 .. _event-warps:
 
-Event Warps
+Warp Events
 -----------
 
-Event warps are how the player is able to warp to other maps, such as entering a building.  Double-clicking on a warp will automatically open the destination map and select the destination warp.  This makes it very easy to navigate around in Porymap.
+Warp events are how the player is able to warp to other maps, such as entering a building.  Double-clicking on a warp will automatically open the destination map and select the destination warp.  This makes it very easy to navigate around in Porymap.
 
 .. figure:: images/editing-map-events/event-warp.png
-    :alt: Event Warp Properties
+    :alt: Warp Event Properties
 
-    Event Warp Properties
+    Warp Event Properties
 
 Id
     This is the local id of the warp in the map.  This is used when setting the Destination Warp property for another warp.
@@ -91,15 +91,15 @@ Destination Map
 Destination Warp
     The Id of the warp in the destination map.
 
-Event Triggers
+Trigger Events
 --------------
 
-Event triggers are scripts that execute when the player walks over them.  However, they only execute when a variable is equal some value.  Typically, they execute once, set the variable's value to something else, and then never execute again because the variable's value no longer matches.
+Trigger events are scripts that execute when the player walks over them.  However, they only execute when a variable is equal some value.  Typically, they execute once, set the variable's value to something else, and then never execute again because the variable's value no longer matches.
 
 .. figure:: images/editing-map-events/event-trigger.png
-    :alt: Event Trigger Properties
+    :alt: Trigger Event Properties
 
-    Event Trigger Properties
+    Trigger Event Properties
 
 Id
     The local id of the trigger in the map.  This value is not used for anything.
@@ -113,15 +113,15 @@ Var
 Var Value
     The value that the Var must equal for the trigger's Script to execute.
 
-Event Weather Triggers
+Weather Trigger Events
 ----------------------
 
-Event weather triggers are a very specific type of trigger.  When the player walks over a weather trigger, the overworld's weather will transition to the specified weather type.
+Weather trigger events are a very specific type of trigger.  When the player walks over a weather trigger, the overworld's weather will transition to the specified weather type.
 
 .. figure:: images/editing-map-events/event-weather-trigger.png
-    :alt: Event Weather Trigger Properties
+    :alt: Weather Trigger Event Properties
 
-    Event Weather Trigger Properties
+    Weather Trigger Event Properties
 
 Id
     The local id of the trigger in the map.  This value is not used for anything.
@@ -129,15 +129,15 @@ Id
 Weather
     The type of weather to transition to.
 
-Event Signs
+Sign Event
 -----------
 
-Event signs, or signposts, are simple interactable scripts.  They are typically used for things like signs in front of buildings.  The player's facing direction can be required to be a certain direction in order to interact with the sign.  Signs are the first of three "BG" event types.
+Sign events, or signposts, are simple interactable scripts.  They are typically used for things like signs in front of buildings.  The player's facing direction can be required to be a certain direction in order to interact with the sign.  Signs are the first of three "BG" event types.
 
 .. figure:: images/editing-map-events/event-sign.png
-    :alt: Event Sign Properties
+    :alt: Sign Event Properties
 
-    Event Sign Properties
+    Sign Event Properties
 
 Id
     The local id of the BG event in the map.  This value is not used for anything.
@@ -148,15 +148,15 @@ Player Facing Direction
 Script
     The script that executes when the player interacts with the sign.
 
-Event Hidden Item
+Hidden Item Event
 -----------------
 
 Hidden items are invisible items that can be picked up by the player. They each use a flag to ensure the item can only be picked up once.
 
 .. figure:: images/editing-map-events/event-hidden-item.png
-    :alt: Event Hidden Item Properties
+    :alt: Hidden Item Event Properties
 
-    Event Hidden Item Properties
+    Hidden Item Event Properties
 
 Id
     The local id of the BG event in the map.  This value is not used for anything.
@@ -167,15 +167,15 @@ Item
 Flag
     This flag is set when the player receives the hidden item.
 
-Event Secret Base
+Secret Base Event
 -----------------
 
 This is the event used to mark entrances to secret bases.  This event will only be functional on certain metatiles.  Unfortunately, they are hardcoded into the game's engine (see ``sSecretBaseEntranceMetatiles`` in ``src/secret_base.c``).
 
 .. figure:: images/editing-map-events/event-secret-base.png
-    :alt: Event Secret Base Properties
+    :alt: Secret Base Event Properties
 
-    Event Secret Base Properties
+    Secret Base Event Properties
 
 Id
     The local id of the BG event in the map.  This value is not used for anything.

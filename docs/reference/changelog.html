@@ -21,10 +21,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
-        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
@@ -115,14 +115,14 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../manual/editing-map-events.html">Editing Map Events</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../manual/editing-map-events.html#events-positions">Events Positions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../manual/editing-map-events.html#event-objects">Event Objects</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../manual/editing-map-events.html#event-warps">Event Warps</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../manual/editing-map-events.html#event-triggers">Event Triggers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../manual/editing-map-events.html#event-weather-triggers">Event Weather Triggers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../manual/editing-map-events.html#event-signs">Event Signs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../manual/editing-map-events.html#event-hidden-item">Event Hidden Item</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../manual/editing-map-events.html#event-secret-base">Event Secret Base</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../manual/editing-map-events.html#event-positions">Event Positions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../manual/editing-map-events.html#object-events">Object Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../manual/editing-map-events.html#warp-events">Warp Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../manual/editing-map-events.html#trigger-events">Trigger Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../manual/editing-map-events.html#weather-trigger-events">Weather Trigger Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../manual/editing-map-events.html#sign-event">Sign Event</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../manual/editing-map-events.html#hidden-item-event">Hidden Item Event</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../manual/editing-map-events.html#secret-base-event">Secret Base Event</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../manual/editing-map-events.html#adding-deleting-events">Adding &amp; Deleting Events</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../manual/editing-map-events.html#open-map-scripts">Open Map Scripts</a></li>
 </ul>
@@ -151,39 +151,51 @@
 <p class="caption"><span class="caption-text">Reference</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Changelog</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#unreleased">Unreleased</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#breaking-changes">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#added">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#unreleased">Unreleased</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id1">3.0.1 - 2020-03-04</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#fixed">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id1">1.2.2 - 2019-05-16</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id2">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id3">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id4">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id2">3.0.0 - 2020-03-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#breaking-changes">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#added">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#changed">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id3">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id5">1.2.1 - 2019-02-16</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id4">2.0.0 - 2019-10-16</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id5">Breaking Changes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id6">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id7">Fixed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id7">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id8">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id8">1.2.0 - 2019-02-04</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id9">Breaking Changes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id9">1.2.2 - 2019-05-16</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#id10">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id11">Changed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id12">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id13">1.1.0 - 2018-12-27</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id14">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id15">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id16">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id17">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id13">1.2.1 - 2019-02-16</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id14">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id15">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id18">1.0.0 - 2018-10-26</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id16">1.2.0 - 2019-02-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id17">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id18">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id19">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id20">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#id21">1.1.0 - 2018-12-27</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id22">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id23">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id24">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id25">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#id26">1.0.0 - 2018-10-26</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="related-projects.html">Related Projects</a></li>
@@ -260,175 +272,228 @@
 and this project somewhat adheres to <a class="reference external" href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.  The MINOR version number is bumped when there are breaking changes in the pret projects.</p>
 <p>The <strong>“Breaking Changes”</strong> listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. If porymap is used on a project that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.</p>
 <div class="section" id="unreleased">
-<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/1.2.2...HEAD">Unreleased</a><a class="headerlink" href="#unreleased" title="Permalink to this headline">¶</a></h2>
+<h2>Unreleased<a class="headerlink" href="#unreleased" title="Permalink to this headline">¶</a></h2>
+<p>Nothing, yet.</p>
+</div>
+<div class="section" id="id1">
+<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/3.0.0...3.0.1">3.0.1</a> - 2020-03-04<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="fixed">
+<h3>Fixed<a class="headerlink" href="#fixed" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Fix bug on Mac where tileset images were corrupted when saving.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id2">
+<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/2.0.0...3.0.0">3.0.0</a> - 2020-03-04<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="breaking-changes">
 <h3>Breaking Changes<a class="headerlink" href="#breaking-changes" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li>Accomodate event object graphics pointer table being explicitly indexed. From changes introduced in commits <a class="reference external" href="https://github.com/pret/pokeemerald/commit/cdae0c1444bed98e652c87dc3e3edcecacfef8be">cdae0c1444bed98e652c87dc3e3edcecacfef8be</a> and <a class="reference external" href="https://github.com/pret/pokeruby/commit/0e8ccfc4fd3544001f4c25fafd401f7558bdefba">0e8ccfc4fd3544001f4c25fafd401f7558bdefba</a>.</li>
+<li><p>pokeemerald and pokeruby both underwent a naming consistency update with respect to “object events”. As such, these naming changes break old versions of Porymap.</p>
+<ul>
+<li><p>pokeemerald object event PR: https://github.com/pret/pokeemerald/pull/910</p></li>
+<li><p>pokeruby object event PR: https://github.com/pret/pokeruby/pull/768</p></li>
+</ul>
+</li>
 </ul>
 </div>
 <div class="section" id="added">
 <h3>Added<a class="headerlink" href="#added" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li>Add warning when closing porymap with unsaved changes.</li>
-<li>Support metatile labels file introduced in pokeruby and pokeemerald commits <a class="reference external" href="https://github.com/pret/pokeruby/commit/ad365a35c1536740cbcbc10bee66e5dd908c39e7">ad365a35c1536740cbcbc10bee66e5dd908c39e7</a> and <a class="reference external" href="https://github.com/pret/pokeemerald/commit/c68ba9f4e8e260f2e3389eccd15f6ee5f4bdcd3e">c68ba9f4e8e260f2e3389eccd15f6ee5f4bdcd3e</a>.</li>
+<li><p>Add optional support for Poryscript script files via the <code class="docutils literal notranslate"><span class="pre">use_poryscript</span></code> config option.</p></li>
+<li><p>Selecting a group of metatiles from the map area now also copies the collision properties, too.</p></li>
+<li><p>Add keyboard shortcut <code class="docutils literal notranslate"><span class="pre">Ctrl</span> <span class="pre">+</span> <span class="pre">G</span></code> for toggling the map grid.</p></li>
 </ul>
 </div>
 <div class="section" id="changed">
 <h3>Changed<a class="headerlink" href="#changed" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li>Add wild encounter table editor.</li>
-<li>Exporting map images is now more configurable. Events, connections, collision, etc. can be toggled on and off before exporting the image.</li>
-<li>The entire Tileset Editor selection is now conveniently flipped when selecting x-flip or y-flip.</li>
-<li>Autocomplete for porymap’s comboboxes no longer require typing the full string prefix.</li>
-</ul>
-</div>
-<div class="section" id="fixed">
-<h3>Fixed<a class="headerlink" href="#fixed" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li>Fix bug where map group names were hardcoded when creating a new map.</li>
-<li>Fix bug in Tileset Editor where multi-tile selections weren’t properly painted when clicking on the bottom row of the metatile layers.</li>
-<li>Fix bug where line breaks in C headers were not parsed properly.</li>
-<li>Fix bug when exporting tileset images using palettes with duplicate colors.</li>
-<li>Fix bug where creating new maps from existing layouts created an empty layout folder.</li>
-<li>Fix bug where exported tile images did not contain the last row of tiles.</li>
-</ul>
-</div>
-</div>
-<div class="section" id="id1">
-<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/1.2.1...1.2.2">1.2.2</a> - 2019-05-16<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id2">
-<h3>Added<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li>Add region map editor</li>
-<li>Add ability to add new tilesets</li>
-<li>Add official Porymap documentation website: https://huderlem.github.io/porymap/</li>
+<li><p>Draw map connections with the current map’s tilesets to more accurately mimic their appearance in-game.</p></li>
 </ul>
 </div>
 <div class="section" id="id3">
-<h3>Changed<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<h3>Fixed<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li>Event sprites now display as facing the direction of their movement type.</li>
-<li>Default values for newly-created events now use valid values from the project, rather than hardcoded values.</li>
-<li>Deleting events will stay in the same events tab for easier bulk deletions.</li>
-<li>Double-clicking on a secret base event will open the corresponding secret base map.</li>
-<li>Selected events are now rendered above other events.</li>
-<li>Default values for new events are now more sensible and guaranteed to be valid.</li>
+<li><p>Fix index-out-of-bounds crash when deleting the last event in an event type group.</p></li>
+<li><p>Fix bug where exporting tileset images could add an extra row of junk at the end.</p></li>
+<li><p>Fix crashes when encountering an error opening a project or map.</p></li>
+<li><p>Fix bug where comboboxes and wild pokemon data could grow large when opening projects multiple times during the same porymap session.</p></li>
+<li><p>Fix bug where dragging the metatile selector would visually extend beyond map boundary.</p></li>
 </ul>
+</div>
 </div>
 <div class="section" id="id4">
-<h3>Fixed<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/1.2.2...2.0.0">2.0.0</a> - 2019-10-16<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id5">
+<h3>Breaking Changes<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li>Fix bug in zoomed metatile selector where a large selection rectangle was being rendered.</li>
-<li>Fix bug where edited map icons were not rendered properly.</li>
-<li>Fix bug where right-click copying a tile from the tileset editor’s metatile layers wouldn’t copy the x/y flip status.</li>
-<li>Parsing project data is now more resilient to crashing, and it reports more informative errors.</li>
+<li><p>Accomodate event object graphics pointer table being explicitly indexed. From changes introduced in commits <a class="reference external" href="https://github.com/pret/pokeemerald/commit/cdae0c1444bed98e652c87dc3e3edcecacfef8be">cdae0c1444bed98e652c87dc3e3edcecacfef8be</a> and <a class="reference external" href="https://github.com/pret/pokeruby/commit/0e8ccfc4fd3544001f4c25fafd401f7558bdefba">0e8ccfc4fd3544001f4c25fafd401f7558bdefba</a>.</p></li>
+<li><p>New “field” key in wild encounter JSON data from pokeemerald and pokeruby commits <a class="reference external" href="https://github.com/pret/pokeemerald/commit/adb0a444577b59eb02788c782a3d04bc285be0ba">adb0a444577b59eb02788c782a3d04bc285be0ba</a> and <a class="reference external" href="c73de8bed752ca538d90cfc93c4a9e8c7965f8c9">https://github.com/pret/pokeruby/commit/c73de8bed752ca538d90cfc93c4a9e8c7965f8c9</a>.</p></li>
 </ul>
 </div>
-</div>
-<div class="section" id="id5">
-<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/1.2.0...1.2.1">1.2.1</a> - 2019-02-16<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="id6">
 <h3>Added<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li>Add ability to zoom in and out the map metatile selector via a slider at the bottom of the metatile selector window.</li>
+<li><p>Add wild encounter table editor.</p></li>
+<li><p>Add dark themes.</p></li>
+<li><p>Support metatile labels file introduced in pokeruby and pokeemerald commits <a class="reference external" href="https://github.com/pret/pokeruby/commit/ad365a35c1536740cbcbc10bee66e5dd908c39e7">ad365a35c1536740cbcbc10bee66e5dd908c39e7</a> and <a class="reference external" href="https://github.com/pret/pokeemerald/commit/c68ba9f4e8e260f2e3389eccd15f6ee5f4bdcd3e">c68ba9f4e8e260f2e3389eccd15f6ee5f4bdcd3e</a>.</p></li>
+<li><p>Add warning when closing porymap with unsaved changes.</p></li>
 </ul>
 </div>
 <div class="section" id="id7">
-<h3>Fixed<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<h3>Changed<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li>Fix crash when creating a new map from a layout that has no pre-existing maps that use it.</li>
-<li>Fix bug where <code class="docutils literal notranslate"><span class="pre">var_value</span></code>, <code class="docutils literal notranslate"><span class="pre">trainer_type</span></code> and <code class="docutils literal notranslate"><span class="pre">trainer_sight_or_berry_tree_id</span></code> JSON fields were being interpreted as integers.</li>
+<li><p>Exporting map images is now more configurable. Events, connections, collision, etc. can be toggled on and off before exporting the image.</p></li>
+<li><p>The entire Tileset Editor selection is now conveniently flipped when selecting x-flip or y-flip.</p></li>
+<li><p>Autocomplete for porymap’s comboboxes no longer require typing the full string prefix.</p></li>
 </ul>
-</div>
 </div>
 <div class="section" id="id8">
-<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/1.1.0...1.2.0">1.2.0</a> - 2019-02-04<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id9">
-<h3>Breaking Changes<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
+<h3>Fixed<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li>New JSON map data format in pokeemerald and pokeruby from commits  <a class="reference external" href="https://github.com/pret/pokeemerald/commit/82abc164dc9f6a74fdf0c535cc1621b7ed05318b">82abc164dc9f6a74fdf0c535cc1621b7ed05318b</a> and <a class="reference external" href="https://github.com/pret/pokeruby/commit/a0ba1b7c6353f7e4f3066025514c05b323a0123d">a0ba1b7c6353f7e4f3066025514c05b323a0123d</a>.</li>
+<li><p>Fix bug where map group names were hardcoded when creating a new map.</p></li>
+<li><p>Fix bug in Tileset Editor where multi-tile selections weren’t properly painted when clicking on the bottom row of the metatile layers.</p></li>
+<li><p>Fix bug where line breaks in C headers were not parsed properly.</p></li>
+<li><p>Fix bug when exporting tileset images using palettes with duplicate colors.</p></li>
+<li><p>Fix bug where creating new maps from existing layouts created an empty layout folder.</p></li>
+<li><p>Fix bug where exported tile images did not contain the last row of tiles.</p></li>
 </ul>
 </div>
+</div>
+<div class="section" id="id9">
+<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/1.2.1...1.2.2">1.2.2</a> - 2019-05-16<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="id10">
 <h3>Added<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li>Add “magic fill” mode to fill tool (hold down CTRL key). This fills all matching metatiles on the map, rather than only the contiguous region.</li>
-<li>Add ability to import tileset palettes (JASC, .pal, .tpl, .gpl, .act).</li>
-<li>Add ability to export tileset tiles as indexed .png images. The currently-selected palette is used.</li>
-<li>Restore window sizes the next time the application is opened.</li>
-<li>Add ability to import metatiles from Advance Map 1.92 (.bvd files).</li>
-<li>Add About window that contains porymap information and changelog. (Found in file menu <code class="docutils literal notranslate"><span class="pre">Help</span> <span class="pre">&gt;</span> <span class="pre">About</span> <span class="pre">Porymap</span></code>)</li>
-<li>Add option to show player’s in-game view when hovering the mouse on the map.</li>
-<li>Add option to show an outline around the currently-hovered map tile. Its size depends on the size of the current metatile selection.</li>
-<li>Add ability to define custom fields for map header and all events.</li>
+<li><p>Add region map editor</p></li>
+<li><p>Add ability to add new tilesets</p></li>
+<li><p>Add official Porymap documentation website: https://huderlem.github.io/porymap/</p></li>
 </ul>
 </div>
 <div class="section" id="id11">
 <h3>Changed<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li>Collapse the map list by default.</li>
-<li>Collision view now has a transparency slider to help make it easier to view the underlying metatiles.</li>
-<li>When importing tileset tiles from an image that is not indexed, the user can also provide a palette for the image. This is for the scenario where the user exports tiles and a palette from Advance Map.</li>
-<li>When creating a new map, the user specifies all of the map properties in a new window prompt.</li>
-<li>New maps can be created using existing layouts by right-clicking on an existing layout folder in the map list panel when sorted by “Layout”.</li>
-<li>The map list panel now has “expand-all” and “collapse-all” buttons.</li>
-<li>Events without sprites are now partially transparent so the underlying metatile can be seen. (Warps, signs, etc.)</li>
-<li>Changed the Trainer checkbox to a combobox, since there are actually 3 valid values for the trainer type.</li>
-<li>Multiline comments are now respected when parsing C defines.</li>
-<li>The tiles image in the tileset editor will no longer flip according to the x/y flip checkboxes. The individual tile selection still flips, though.</li>
+<li><p>Event sprites now display as facing the direction of their movement type.</p></li>
+<li><p>Default values for newly-created events now use valid values from the project, rather than hardcoded values.</p></li>
+<li><p>Deleting events will stay in the same events tab for easier bulk deletions.</p></li>
+<li><p>Double-clicking on a secret base event will open the corresponding secret base map.</p></li>
+<li><p>Selected events are now rendered above other events.</p></li>
+<li><p>Default values for new events are now more sensible and guaranteed to be valid.</p></li>
 </ul>
 </div>
 <div class="section" id="id12">
 <h3>Fixed<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li>Fix bug where smart paths could be auto-enabled, despite the checkbox being disabled.</li>
-<li>Fix crash that could occur when changing the palette id in the tileset palette editor.</li>
-<li>Fix crash that could occur when shrinking the number of metatiles in a tileset.</li>
-<li>Fix bug where exported tile images from Advance Map were not handled correctly due to Advance Map using incorrect file extensions.</li>
+<li><p>Fix bug in zoomed metatile selector where a large selection rectangle was being rendered.</p></li>
+<li><p>Fix bug where edited map icons were not rendered properly.</p></li>
+<li><p>Fix bug where right-click copying a tile from the tileset editor’s metatile layers wouldn’t copy the x/y flip status.</p></li>
+<li><p>Parsing project data is now more resilient to crashing, and it reports more informative errors.</p></li>
 </ul>
 </div>
 </div>
 <div class="section" id="id13">
-<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/1.0.0...1.1.0">1.1.0</a> - 2018-12-27<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h2>
+<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/1.2.0...1.2.1">1.2.1</a> - 2019-02-16<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="id14">
-<h3>Breaking Changes<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
+<h3>Added<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li>New map header format in pokeemerald from commit <a class="reference external" href="https://github.com/pret/pokeemerald/commit/a1ea3b5e394bc115ba9b86348c161094a00dcca7">a1ea3b5e394bc115ba9b86348c161094a00dcca7</a>.</li>
+<li><p>Add ability to zoom in and out the map metatile selector via a slider at the bottom of the metatile selector window.</p></li>
 </ul>
 </div>
 <div class="section" id="id15">
-<h3>Added<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h3>
+<h3>Fixed<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li>Add <code class="docutils literal notranslate"><span class="pre">porymap.project.cfg</span></code> config file to project repos, in order to house project-specific settings, such as <code class="docutils literal notranslate"><span class="pre">base_game_version=pokeemerald</span></code>.</li>
-<li>Write all logs to <code class="docutils literal notranslate"><span class="pre">porymap.log</span></code> file, so users can view any errors that porymap hits.</li>
-<li>Changelog</li>
+<li><p>Fix crash when creating a new map from a layout that has no pre-existing maps that use it.</p></li>
+<li><p>Fix bug where <code class="docutils literal notranslate"><span class="pre">var_value</span></code>, <code class="docutils literal notranslate"><span class="pre">trainer_type</span></code> and <code class="docutils literal notranslate"><span class="pre">trainer_sight_or_berry_tree_id</span></code> JSON fields were being interpreted as integers.</p></li>
 </ul>
+</div>
 </div>
 <div class="section" id="id16">
-<h3>Changed<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li>Add <code class="docutils literal notranslate"><span class="pre">porymap.cfg</span></code> base config file, rather than using built-in system settings (e.g. registry on Windows).</li>
-<li>Properly read/write map headers for <code class="docutils literal notranslate"><span class="pre">pokeemerald</span></code>.</li>
-<li>Overhauled event editing pane, which now contains tabs for each different event. Events of the same type can be iterated through using the spinner at the top of the tab. This makes it possible to edit events that are outside the viewing window.</li>
-</ul>
-</div>
+<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/1.1.0...1.2.0">1.2.0</a> - 2019-02-04<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="id17">
-<h3>Fixed<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h3>
+<h3>Breaking Changes<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li>Creating new hidden-item events now uses a valid default flag value.</li>
-<li>Fix bug where tilesets were sometimes not displaying their bottom row of metatiles.</li>
-<li>Fix bug where porymap crashes on startup due to missing map headers.</li>
-<li>Fix tileset editor crash that only happened on macOS.</li>
-<li>Fix minor bug when parsing C defines.</li>
-<li>Write <code class="docutils literal notranslate"><span class="pre">MAP_GROUPS_COUNT</span></code> define to <code class="docutils literal notranslate"><span class="pre">maps.h</span></code>.</li>
-<li>Fix bug where opening multiple projects and saving would cause junk to be written to <code class="docutils literal notranslate"><span class="pre">layouts_table.inc</span></code>.</li>
-<li>Fix porymap icon on macOS.</li>
+<li><p>New JSON map data format in pokeemerald and pokeruby from commits  <a class="reference external" href="https://github.com/pret/pokeemerald/commit/82abc164dc9f6a74fdf0c535cc1621b7ed05318b">82abc164dc9f6a74fdf0c535cc1621b7ed05318b</a> and <a class="reference external" href="https://github.com/pret/pokeruby/commit/a0ba1b7c6353f7e4f3066025514c05b323a0123d">a0ba1b7c6353f7e4f3066025514c05b323a0123d</a>.</p></li>
 </ul>
-</div>
 </div>
 <div class="section" id="id18">
-<h2><a class="reference external" href="https://github.com/huderlem/porymap/tree/1.0.0">1.0.0</a> - 2018-10-26<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h2>
+<h3>Added<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Add “magic fill” mode to fill tool (hold down CTRL key). This fills all matching metatiles on the map, rather than only the contiguous region.</p></li>
+<li><p>Add ability to import tileset palettes (JASC, .pal, .tpl, .gpl, .act).</p></li>
+<li><p>Add ability to export tileset tiles as indexed .png images. The currently-selected palette is used.</p></li>
+<li><p>Restore window sizes the next time the application is opened.</p></li>
+<li><p>Add ability to import metatiles from Advance Map 1.92 (.bvd files).</p></li>
+<li><p>Add About window that contains porymap information and changelog. (Found in file menu <code class="docutils literal notranslate"><span class="pre">Help</span> <span class="pre">&gt;</span> <span class="pre">About</span> <span class="pre">Porymap</span></code>)</p></li>
+<li><p>Add option to show player’s in-game view when hovering the mouse on the map.</p></li>
+<li><p>Add option to show an outline around the currently-hovered map tile. Its size depends on the size of the current metatile selection.</p></li>
+<li><p>Add ability to define custom fields for map header and all events.</p></li>
+</ul>
+</div>
+<div class="section" id="id19">
+<h3>Changed<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Collapse the map list by default.</p></li>
+<li><p>Collision view now has a transparency slider to help make it easier to view the underlying metatiles.</p></li>
+<li><p>When importing tileset tiles from an image that is not indexed, the user can also provide a palette for the image. This is for the scenario where the user exports tiles and a palette from Advance Map.</p></li>
+<li><p>When creating a new map, the user specifies all of the map properties in a new window prompt.</p></li>
+<li><p>New maps can be created using existing layouts by right-clicking on an existing layout folder in the map list panel when sorted by “Layout”.</p></li>
+<li><p>The map list panel now has “expand-all” and “collapse-all” buttons.</p></li>
+<li><p>Events without sprites are now partially transparent so the underlying metatile can be seen. (Warps, signs, etc.)</p></li>
+<li><p>Changed the Trainer checkbox to a combobox, since there are actually 3 valid values for the trainer type.</p></li>
+<li><p>Multiline comments are now respected when parsing C defines.</p></li>
+<li><p>The tiles image in the tileset editor will no longer flip according to the x/y flip checkboxes. The individual tile selection still flips, though.</p></li>
+</ul>
+</div>
+<div class="section" id="id20">
+<h3>Fixed<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Fix bug where smart paths could be auto-enabled, despite the checkbox being disabled.</p></li>
+<li><p>Fix crash that could occur when changing the palette id in the tileset palette editor.</p></li>
+<li><p>Fix crash that could occur when shrinking the number of metatiles in a tileset.</p></li>
+<li><p>Fix bug where exported tile images from Advance Map were not handled correctly due to Advance Map using incorrect file extensions.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id21">
+<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/1.0.0...1.1.0">1.1.0</a> - 2018-12-27<a class="headerlink" href="#id21" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id22">
+<h3>Breaking Changes<a class="headerlink" href="#id22" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>New map header format in pokeemerald from commit <a class="reference external" href="https://github.com/pret/pokeemerald/commit/a1ea3b5e394bc115ba9b86348c161094a00dcca7">a1ea3b5e394bc115ba9b86348c161094a00dcca7</a>.</p></li>
+</ul>
+</div>
+<div class="section" id="id23">
+<h3>Added<a class="headerlink" href="#id23" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">porymap.project.cfg</span></code> config file to project repos, in order to house project-specific settings, such as <code class="docutils literal notranslate"><span class="pre">base_game_version=pokeemerald</span></code>.</p></li>
+<li><p>Write all logs to <code class="docutils literal notranslate"><span class="pre">porymap.log</span></code> file, so users can view any errors that porymap hits.</p></li>
+<li><p>Changelog</p></li>
+</ul>
+</div>
+<div class="section" id="id24">
+<h3>Changed<a class="headerlink" href="#id24" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">porymap.cfg</span></code> base config file, rather than using built-in system settings (e.g. registry on Windows).</p></li>
+<li><p>Properly read/write map headers for <code class="docutils literal notranslate"><span class="pre">pokeemerald</span></code>.</p></li>
+<li><p>Overhauled event editing pane, which now contains tabs for each different event. Events of the same type can be iterated through using the spinner at the top of the tab. This makes it possible to edit events that are outside the viewing window.</p></li>
+</ul>
+</div>
+<div class="section" id="id25">
+<h3>Fixed<a class="headerlink" href="#id25" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Creating new hidden-item events now uses a valid default flag value.</p></li>
+<li><p>Fix bug where tilesets were sometimes not displaying their bottom row of metatiles.</p></li>
+<li><p>Fix bug where porymap crashes on startup due to missing map headers.</p></li>
+<li><p>Fix tileset editor crash that only happened on macOS.</p></li>
+<li><p>Fix minor bug when parsing C defines.</p></li>
+<li><p>Write <code class="docutils literal notranslate"><span class="pre">MAP_GROUPS_COUNT</span></code> define to <code class="docutils literal notranslate"><span class="pre">maps.h</span></code>.</p></li>
+<li><p>Fix bug where opening multiple projects and saving would cause junk to be written to <code class="docutils literal notranslate"><span class="pre">layouts_table.inc</span></code>.</p></li>
+<li><p>Fix porymap icon on macOS.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id26">
+<h2><a class="reference external" href="https://github.com/huderlem/porymap/tree/1.0.0">1.0.0</a> - 2018-10-26<a class="headerlink" href="#id26" title="Permalink to this headline">¶</a></h2>
 <p>This was the initial release.</p>
 </div>
 </div>

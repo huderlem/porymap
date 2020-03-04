@@ -3,8 +3,8 @@ Project Files
 *************
 
 Porymap relies on the user maintaining a certain level of integrity with their project files.
-This is a list of files that porymap reads from and writes to. Generally, if porymap writes to a file, it
-probably is not a good idea to edit yourself unless otherwise noted.
+This is a list of files that porymap reads from and writes to. Generally, if porymap writes 
+to a file, it probably is not a good idea to edit yourself unless otherwise noted.
 
 
 .. csv-table::

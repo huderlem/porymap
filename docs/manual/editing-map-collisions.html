@@ -21,10 +21,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
-        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
@@ -115,14 +115,14 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="editing-map-events.html">Editing Map Events</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#events-positions">Events Positions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-objects">Event Objects</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-warps">Event Warps</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-triggers">Event Triggers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-weather-triggers">Event Weather Triggers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-signs">Event Signs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-hidden-item">Event Hidden Item</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-secret-base">Event Secret Base</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-positions">Event Positions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#object-events">Object Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#warp-events">Warp Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#trigger-events">Trigger Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#weather-trigger-events">Weather Trigger Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#sign-event">Sign Event</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#hidden-item-event">Hidden Item Event</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#secret-base-event">Secret Base Event</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#adding-deleting-events">Adding &amp; Deleting Events</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#open-map-scripts">Open Map Scripts</a></li>
 </ul>
@@ -151,39 +151,51 @@
 <p class="caption"><span class="caption-text">Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../reference/changelog.html">Changelog</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#unreleased">Unreleased</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#breaking-changes">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#added">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#unreleased">Unreleased</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id1">3.0.1 - 2020-03-04</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#fixed">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id1">1.2.2 - 2019-05-16</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id2">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id3">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id4">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id2">3.0.0 - 2020-03-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#breaking-changes">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#added">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#changed">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id3">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id5">1.2.1 - 2019-02-16</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id4">2.0.0 - 2019-10-16</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id5">Breaking Changes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id6">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id7">Fixed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id7">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id8">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id8">1.2.0 - 2019-02-04</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id9">Breaking Changes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id9">1.2.2 - 2019-05-16</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id10">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id11">Changed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id12">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id13">1.1.0 - 2018-12-27</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id14">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id15">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id16">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id17">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id13">1.2.1 - 2019-02-16</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id14">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id15">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id18">1.0.0 - 2018-10-26</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id16">1.2.0 - 2019-02-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id17">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id18">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id19">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id20">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id21">1.1.0 - 2018-12-27</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id22">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id23">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id24">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id25">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id26">1.0.0 - 2018-10-26</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/related-projects.html">Related Projects</a></li>
@@ -260,9 +272,9 @@
 <h2>Selecting Collision Types<a class="headerlink" href="#selecting-collision-types" title="Permalink to this headline">¶</a></h2>
 <p>The Collision Type Selector is a tab next to the Metatile Selector.  It features 32 total different collision types.  The left column is for collision types that allow the player to walk through the tiles.  These are denoted by white text.  The right column is for collision types that are impassable by the player.  These are denoted by red text.</p>
 <p>The transparency slider above the collision types controls the transparency of the collision properties on the map view.</p>
-<div class="figure" id="id2">
+<div class="figure align-default" id="id2">
 <img alt="Map Collisions View" src="../_images/map-collisions.png" />
-<p class="caption"><span class="caption-text">Map Collisions View</span></p>
+<p class="caption"><span class="caption-text">Map Collisions View</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
 </div>
 <p>Unlike metatiles, only one collision type can be selected at a time.  A collision type can be selected either by clicking in the Collision Type Selector.  You can also right-click on a metatile from the map area, just like you would when editing metatiles.</p>
 </div>
@@ -274,30 +286,30 @@
 <span id="id1"></span><h2>Collision Types<a class="headerlink" href="#collision-types" title="Permalink to this headline">¶</a></h2>
 <p>Now we’ll go over the different types of collisions, along with some important concepts.  Each row in the Collision Type Selector represents a different <em>elevation</em>, which is why most rows have hexadecimal numbers in them (2, 3, 4, …, D, E).  Rows 0, 1, and F have special purposes.</p>
 <p>Elevation is how the game determines whether or not an object is on the same level as something else.  For example, it’s commonly used to make sure the player can’t walk off the top side of a mountain.  If the player’s current elevation is 4, but the player is trying to walk onto a metatile with elevation 3, then the game won’t let the player walk in that direction.  In the example below from Route 114, the player would be unable to walk north from the mountain onto the grass.  This is because 3 and 4 are different elevations.</p>
-<div class="figure" id="id3">
+<div class="figure align-default" id="id3">
 <img alt="Different Elevations on a Cliff" src="../_images/collision-cliff.png" />
-<p class="caption"><span class="caption-text">Different Elevations on a Cliff</span></p>
+<p class="caption"><span class="caption-text">Different Elevations on a Cliff</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
 </div>
 <p>Now that you undertand the basics of elevation, let’s explore the special collision types, which have no elevation associated with them.</p>
-<dl class="docutils">
-<dt>Transition Collision Type <img alt="transition-collision-type" src="../_images/transition-collision-type.png" /></dt>
-<dd>The Transition collision type allows the player to move between different elevations.  The most common use case is for stairs.  The player will always be allowed to walk onto this collision type. Then, the player will be able to walk onto any elevation.</dd>
+<dl class="simple">
+<dt>Transition Collision Type <img alt="transition-collision-type" src="../_images/transition-collision-type.png" /></dt><dd><p>The Transition collision type allows the player to move between different elevations.  The most common use case is for stairs.  The player will always be allowed to walk onto this collision type. Then, the player will be able to walk onto any elevation.</p>
+</dd>
 </dl>
-<dl class="docutils">
-<dt>Impassable Collision Type <img alt="impassable-collision-type" src="../_images/impassable-collision-type.png" /></dt>
-<dd>The Impassable collision type blocks the player from moving.  What makes it special is that it doesn’t count as any particular elevation.  This means that, for example, a signpost would be interactable from all elevations if it uses this collision type.  This is the most common impassable collision type used in the game, and it should generally be used for impassable tiles.</dd>
+<dl class="simple">
+<dt>Impassable Collision Type <img alt="impassable-collision-type" src="../_images/impassable-collision-type.png" /></dt><dd><p>The Impassable collision type blocks the player from moving.  What makes it special is that it doesn’t count as any particular elevation.  This means that, for example, a signpost would be interactable from all elevations if it uses this collision type.  This is the most common impassable collision type used in the game, and it should generally be used for impassable tiles.</p>
+</dd>
 </dl>
-<dl class="docutils">
-<dt>Surf Collision Type <img alt="surf-collision-type-1" src="../_images/surf-collision-type-1.png" /> <img alt="surf-collision-type-2" src="../_images/surf-collision-type-2.png" /></dt>
-<dd>The Surf collision type allow the player to surf.  The red version is just the impassable version.  <strong>The player will only be able to start surfing from elevation 3.  The same is true when hopping off onto land.</strong></dd>
+<dl class="simple">
+<dt>Surf Collision Type <img alt="surf-collision-type-1" src="../_images/surf-collision-type-1.png" /> <img alt="surf-collision-type-2" src="../_images/surf-collision-type-2.png" /></dt><dd><p>The Surf collision type allow the player to surf.  The red version is just the impassable version.  <strong>The player will only be able to start surfing from elevation 3.  The same is true when hopping off onto land.</strong></p>
+</dd>
 </dl>
-<dl class="docutils">
-<dt>Multi-Level Collision Type <img alt="multi-level-collision-type-1" src="../_images/multi-level-collision-type-1.png" /> <img alt="multi-level-collision-type-2" src="../_images/multi-level-collision-type-2.png" /></dt>
-<dd>The Multi-Level collision type is used for bridges.  The red version is just the impassable version, and it doesn’t have any special use.  Multi-level collision type remembers the player’s previous elevation and maintains that elevation as long as the player continues to walk on multi-level collision.  The player will only be able to leave multi-level collision if he walks onto a new tile that has the same elevation as before the multi-level collision was entered.  Here is an example of a bridge from Route 119 that illustrates the ability to surf north/south under the bridge, while also being able to walk east/west.</dd>
+<dl class="simple">
+<dt>Multi-Level Collision Type <img alt="multi-level-collision-type-1" src="../_images/multi-level-collision-type-1.png" /> <img alt="multi-level-collision-type-2" src="../_images/multi-level-collision-type-2.png" /></dt><dd><p>The Multi-Level collision type is used for bridges.  The red version is just the impassable version, and it doesn’t have any special use.  Multi-level collision type remembers the player’s previous elevation and maintains that elevation as long as the player continues to walk on multi-level collision.  The player will only be able to leave multi-level collision if he walks onto a new tile that has the same elevation as before the multi-level collision was entered.  Here is an example of a bridge from Route 119 that illustrates the ability to surf north/south under the bridge, while also being able to walk east/west.</p>
+</dd>
 </dl>
-<div class="figure" id="id4">
+<div class="figure align-default" id="id4">
 <img alt="Multi-Level Collision Type on a Bridge" src="../_images/multi-level-bridge.png" />
-<p class="caption"><span class="caption-text">Multi-Level Collision Type on a Bridge</span></p>
+<p class="caption"><span class="caption-text">Multi-Level Collision Type on a Bridge</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 </div>

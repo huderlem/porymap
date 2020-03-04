@@ -6,16 +6,48 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 
 The **"Breaking Changes"** listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. If porymap is used on a project that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.
 
-## [Unreleased]
+## Unreleased
+Nothing, yet.
+
+## [3.0.1] - 2020-03-04
+### Fixed
+- Fix bug on Mac where tileset images were corrupted when saving.
+
+## [3.0.0] - 2020-03-04
 ### Breaking Changes
-- Accomodate event object graphics pointer table being explicitly indexed. From changes introduced in commits [cdae0c1444bed98e652c87dc3e3edcecacfef8be](https://github.com/pret/pokeemerald/commit/cdae0c1444bed98e652c87dc3e3edcecacfef8be) and [0e8ccfc4fd3544001f4c25fafd401f7558bdefba](https://github.com/pret/pokeruby/commit/0e8ccfc4fd3544001f4c25fafd401f7558bdefba).
+- pokeemerald and pokeruby both underwent a naming consistency update with respect to "object events". As such, these naming changes break old versions of Porymap.
+  - pokeemerald object event PR: https://github.com/pret/pokeemerald/pull/910
+  - pokeruby object event PR: https://github.com/pret/pokeruby/pull/768
 
 ### Added
-- Add warning when closing porymap with unsaved changes.
-- Support metatile labels file introduced in pokeruby and pokeemerald commits [ad365a35c1536740cbcbc10bee66e5dd908c39e7](https://github.com/pret/pokeruby/commit/ad365a35c1536740cbcbc10bee66e5dd908c39e7) and [c68ba9f4e8e260f2e3389eccd15f6ee5f4bdcd3e](https://github.com/pret/pokeemerald/commit/c68ba9f4e8e260f2e3389eccd15f6ee5f4bdcd3e).
+- Add optional support for Poryscript script files via the `use_poryscript` config option.
+- Selecting a group of metatiles from the map area now also copies the collision properties, too.
+- Add keyboard shortcut `Ctrl + G` for toggling the map grid.
 
 ### Changed
+- Draw map connections with the current map's tilesets to more accurately mimic their appearance in-game.
+
+### Fixed
+- Fix index-out-of-bounds crash when deleting the last event in an event type group.
+- Fix bug where exporting tileset images could add an extra row of junk at the end.
+- Fix crashes when encountering an error opening a project or map.
+- Fix bug where comboboxes and wild pokemon data could grow large when opening projects multiple times during the same porymap session.
+- Fix bug where dragging the metatile selector would visually extend beyond map boundary.
+
+
+## [2.0.0] - 2019-10-16
+### Breaking Changes
+- Accomodate event object graphics pointer table being explicitly indexed. From changes introduced in commits [cdae0c1444bed98e652c87dc3e3edcecacfef8be](https://github.com/pret/pokeemerald/commit/cdae0c1444bed98e652c87dc3e3edcecacfef8be) and [0e8ccfc4fd3544001f4c25fafd401f7558bdefba](https://github.com/pret/pokeruby/commit/0e8ccfc4fd3544001f4c25fafd401f7558bdefba).
+- New "field" key in wild encounter JSON data from pokeemerald and pokeruby commits [adb0a444577b59eb02788c782a3d04bc285be0ba](https://github.com/pret/pokeemerald/commit/adb0a444577b59eb02788c782a3d04bc285be0ba) and [https://github.com/pret/pokeruby/commit/c73de8bed752ca538d90cfc93c4a9e8c7965f8c9](c73de8bed752ca538d90cfc93c4a9e8c7965f8c9).
+
+
+### Added
 - Add wild encounter table editor.
+- Add dark themes.
+- Support metatile labels file introduced in pokeruby and pokeemerald commits [ad365a35c1536740cbcbc10bee66e5dd908c39e7](https://github.com/pret/pokeruby/commit/ad365a35c1536740cbcbc10bee66e5dd908c39e7) and [c68ba9f4e8e260f2e3389eccd15f6ee5f4bdcd3e](https://github.com/pret/pokeemerald/commit/c68ba9f4e8e260f2e3389eccd15f6ee5f4bdcd3e).
+- Add warning when closing porymap with unsaved changes.
+
+### Changed
 - Exporting map images is now more configurable. Events, connections, collision, etc. can be toggled on and off before exporting the image.
 - The entire Tileset Editor selection is now conveniently flipped when selecting x-flip or y-flip.
 - Autocomplete for porymap's comboboxes no longer require typing the full string prefix.
@@ -118,7 +150,10 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ## [1.0.0] - 2018-10-26
 This was the initial release.
 
-[Unreleased]: https://github.com/huderlem/porymap/compare/1.2.2...HEAD
+[Unreleased]: https://github.com/huderlem/porymap/compare/3.0.1...HEAD
+[3.0.1]: https://github.com/huderlem/porymap/compare/3.0.0...3.0.1
+[3.0.0]: https://github.com/huderlem/porymap/compare/2.0.0...3.0.0
+[2.0.0]: https://github.com/huderlem/porymap/compare/1.2.2...2.0.0
 [1.2.2]: https://github.com/huderlem/porymap/compare/1.2.1...1.2.2
 [1.2.1]: https://github.com/huderlem/porymap/compare/1.2.0...1.2.1
 [1.2.0]: https://github.com/huderlem/porymap/compare/1.1.0...1.2.0

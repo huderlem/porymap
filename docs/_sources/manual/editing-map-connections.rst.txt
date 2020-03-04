@@ -33,4 +33,4 @@ An extremely useful feature is the *Mirror to Connecting Maps* checkbox in the t
 Follow Connections
 ------------------
 
-Double-clicking on a connection will open the destination map.  This is very useful for navigating through your maps, similar to double-clicking on  :ref:`Event Warps <event-warps>`.
+Double-clicking on a connection will open the destination map.  This is very useful for navigating through your maps, similar to double-clicking on  :ref:`Warp Events <event-warps>`.

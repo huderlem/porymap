@@ -65,6 +65,9 @@ Header Tab
 Connections Tab
     Change how the map connects with surrounding maps when the player walks from one to another.
 
+Wild Pokémon Tab
+    Edit the wild Pokémon available in the map.
+
 Tileset Editor
 --------------
 

@@ -21,10 +21,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
-        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
@@ -115,14 +115,14 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="editing-map-events.html">Editing Map Events</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#events-positions">Events Positions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-objects">Event Objects</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-warps">Event Warps</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-triggers">Event Triggers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-weather-triggers">Event Weather Triggers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-signs">Event Signs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-hidden-item">Event Hidden Item</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-secret-base">Event Secret Base</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-positions">Event Positions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#object-events">Object Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#warp-events">Warp Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#trigger-events">Trigger Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#weather-trigger-events">Weather Trigger Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#sign-event">Sign Event</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#hidden-item-event">Hidden Item Event</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#secret-base-event">Secret Base Event</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#adding-deleting-events">Adding &amp; Deleting Events</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#open-map-scripts">Open Map Scripts</a></li>
 </ul>
@@ -151,39 +151,51 @@
 <p class="caption"><span class="caption-text">Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../reference/changelog.html">Changelog</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#unreleased">Unreleased</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#breaking-changes">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#added">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#unreleased">Unreleased</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id1">3.0.1 - 2020-03-04</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#fixed">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id1">1.2.2 - 2019-05-16</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id2">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id3">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id4">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id2">3.0.0 - 2020-03-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#breaking-changes">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#added">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#changed">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id3">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id5">1.2.1 - 2019-02-16</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id4">2.0.0 - 2019-10-16</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id5">Breaking Changes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id6">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id7">Fixed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id7">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id8">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id8">1.2.0 - 2019-02-04</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id9">Breaking Changes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id9">1.2.2 - 2019-05-16</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id10">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id11">Changed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id12">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id13">1.1.0 - 2018-12-27</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id14">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id15">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id16">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id17">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id13">1.2.1 - 2019-02-16</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id14">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id15">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id18">1.0.0 - 2018-10-26</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id16">1.2.0 - 2019-02-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id17">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id18">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id19">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id20">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id21">1.1.0 - 2018-12-27</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id22">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id23">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id24">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id25">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id26">1.0.0 - 2018-10-26</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/related-projects.html">Related Projects</a></li>
@@ -260,22 +272,22 @@ Navigate to the “Wild Pokemon” tab in porymap’s main window.</p>
 <p>If you open the tab and there are no wild encounters for the current map, you
 will see an empty screen (pictured below). Adding wild pokemon data is as
 simple as <a class="reference internal" href="#add-encounter-groups"><span class="std std-ref">adding new encounter groups</span></a>.</p>
-<div class="figure" id="id1">
+<div class="figure align-default" id="id1">
 <img alt="Empty Encounter Tab" src="../_images/no-encounters.png" />
-<p class="caption"><span class="caption-text">Empty Encounter Tab</span></p>
+<p class="caption"><span class="caption-text">Empty Encounter Tab</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
 </div>
 <p>Otherwise, you should see something similar to this:</p>
-<div class="figure" id="id2">
+<div class="figure align-default" id="id2">
 <img alt="Populated Encounter Tab" src="../_images/populated-encounter-tab.png" />
-<p class="caption"><span class="caption-text">Populated Encounter Tab</span></p>
+<p class="caption"><span class="caption-text">Populated Encounter Tab</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
 </div>
 <p>The tab for each field is active or disabled based on the encounter data for a
 given map.  If a tab is disabled, you can activate it, and therefore activate
 a new encounter field for the map.  To activate a field, right-click on the
 tab name for the field you want to add.</p>
-<div class="figure" id="id3">
+<div class="figure align-default" id="id3">
 <img alt="Activate Encounter Field" src="../_images/activate-tab.png" />
-<p class="caption"><span class="caption-text">Activate Encounter Field</span></p>
+<p class="caption"><span class="caption-text">Activate Encounter Field</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
 </div>
 <p>Editing the wild encounters is otherwise pretty straightforward.  You can
 adjust the minimum and maximum levels, the encounter rate, and species with the
@@ -287,9 +299,9 @@ for a single map.  In the vanilla games, only Altering Cave uses multiple
 encounter groups, but there are several reasons you might want them.</p>
 <p>In order to create a new encounter group, click the green (+) button next to
 the Group drop-down.  It will bring up this menu:</p>
-<div class="figure" id="id4">
+<div class="figure align-default" id="id4">
 <img alt="New Encounter Group Window" src="../_images/new-group-window.png" />
-<p class="caption"><span class="caption-text">New Encounter Group Window</span></p>
+<p class="caption"><span class="caption-text">New Encounter Group Window</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
 </div>
 <p>You can give your new encounter group a name (this must be uniqe, which is
 enforced), and you can choose which fields to activate for the group.  Checking
@@ -297,9 +309,9 @@ the “copy from current group” box will copy not only the active fields but a
 the wild pokemon data for each field from the currently displayed group.</p>
 <p>One possible use for having multiple encounter groups for a single map is to
 implement time of day encounters.</p>
-<div class="figure" id="id5">
+<div class="figure align-default" id="id5">
 <img alt="Time of Day Encounter Groups" src="../_images/time-of-day-encounter-group.gif" />
-<p class="caption"><span class="caption-text">Time of Day Encounter Groups</span></p>
+<p class="caption"><span class="caption-text">Time of Day Encounter Groups</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 <div class="section" id="configuring-the-wild-encounter-fields">
@@ -308,9 +320,9 @@ implement time of day encounters.</p>
 of the field, a default number of pokemon in that field, and the encounter
 ratio for each index in that field.  These are all things you may want to
 change.  Click on the <em>Configure JSON…</em> button to bring up this window:</p>
-<div class="figure" id="id6">
+<div class="figure align-default" id="id6">
 <img alt="Configure JSON Window" src="../_images/configure-json.png" />
-<p class="caption"><span class="caption-text">Configure JSON Window</span></p>
+<p class="caption"><span class="caption-text">Configure JSON Window</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
 </div>
 <p>The Field drop-down will allow you select which field you want to manipulate.
 You can add a new one with the <em>Add New Field…</em> button.  The green (+) and
@@ -319,18 +331,18 @@ you will see an adjustible number.  This represents the encounter chance for a
 pokemon at this index out of the total.</p>
 <p>Let’s add a <code class="docutils literal notranslate"><span class="pre">headbutt_mons</span></code> field to our wild encounters…</p>
 <p>First, we’ll add a new field and name it <code class="docutils literal notranslate"><span class="pre">headbutt_mons</span></code>.</p>
-<div class="figure" id="id7">
+<div class="figure align-default" id="id7">
 <img alt="New Field Name" src="../_images/configure-json-new-field.png" />
-<p class="caption"><span class="caption-text">New Field Name</span></p>
+<p class="caption"><span class="caption-text">New Field Name</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
 </div>
 <p>Then, we want four slots in this field, and we set encounter ratios for each
 slot.</p>
-<div class="figure">
+<div class="figure align-default">
 <img alt="../_images/headbutt-mon-field.png" src="../_images/headbutt-mon-field.png" />
 </div>
 <p>If we accept the changes, we can now assign pokemon to each slots, and adjust
 the levels.</p>
-<div class="figure">
+<div class="figure align-default">
 <img alt="../_images/headbutt-mons.png" src="../_images/headbutt-mons.png" />
 </div>
 <p>Changes made to the wild encounters are not saved to disk until you save the map.</p>

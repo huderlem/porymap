@@ -21,10 +21,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
-        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
@@ -115,14 +115,14 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="editing-map-events.html">Editing Map Events</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#events-positions">Events Positions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-objects">Event Objects</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-warps">Event Warps</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-triggers">Event Triggers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-weather-triggers">Event Weather Triggers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-signs">Event Signs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-hidden-item">Event Hidden Item</a></li>
-<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-secret-base">Event Secret Base</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-positions">Event Positions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#object-events">Object Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#warp-events">Warp Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#trigger-events">Trigger Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#weather-trigger-events">Weather Trigger Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#sign-event">Sign Event</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#hidden-item-event">Hidden Item Event</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#secret-base-event">Secret Base Event</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#adding-deleting-events">Adding &amp; Deleting Events</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#open-map-scripts">Open Map Scripts</a></li>
 </ul>
@@ -151,39 +151,51 @@
 <p class="caption"><span class="caption-text">Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../reference/changelog.html">Changelog</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#unreleased">Unreleased</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#breaking-changes">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#added">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#unreleased">Unreleased</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id1">3.0.1 - 2020-03-04</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#fixed">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id1">1.2.2 - 2019-05-16</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id2">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id3">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id4">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id2">3.0.0 - 2020-03-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#breaking-changes">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#added">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#changed">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id3">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id5">1.2.1 - 2019-02-16</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id4">2.0.0 - 2019-10-16</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id5">Breaking Changes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id6">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id7">Fixed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id7">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id8">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id8">1.2.0 - 2019-02-04</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id9">Breaking Changes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id9">1.2.2 - 2019-05-16</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id10">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id11">Changed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id12">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id13">1.1.0 - 2018-12-27</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id14">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id15">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id16">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id17">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id13">1.2.1 - 2019-02-16</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id14">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id15">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id18">1.0.0 - 2018-10-26</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id16">1.2.0 - 2019-02-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id17">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id18">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id19">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id20">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id21">1.1.0 - 2018-12-27</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id22">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id23">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id24">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id25">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id26">1.0.0 - 2018-10-26</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/related-projects.html">Related Projects</a></li>
@@ -260,49 +272,49 @@
 <h2>Visual Options<a class="headerlink" href="#visual-options" title="Permalink to this headline">¶</a></h2>
 <p>Before getting into the details of editing map tiles, you should be aware of some settings that make your life easier.</p>
 <p>A grid can be displayed over the editable map area by using the <code class="docutils literal notranslate"><span class="pre">Grid</span></code> checkbox, which is located in the toolbar above the map area.</p>
-<div class="figure" id="id1">
+<div class="figure align-default" id="id1">
 <img alt="Map Grid" src="../_images/map-grid.png" />
-<p class="caption"><span class="caption-text">Map Grid</span></p>
+<p class="caption"><span class="caption-text">Map Grid</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
 </div>
 <p>The border’s visibility, including the surrounding map connections, can be toggled with the <code class="docutils literal notranslate"><span class="pre">Border</span></code> checkbox, which is located in the toolbar above the map area.</p>
-<div class="figure" id="id2">
+<div class="figure align-default" id="id2">
 <img alt="Map Border Toggled Off" src="../_images/map-border-off.png" />
-<p class="caption"><span class="caption-text">Map Border Toggled Off</span></p>
+<p class="caption"><span class="caption-text">Map Border Toggled Off</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
 </div>
 <p>You can zoom in and out on the map with <em>View -&gt; Zoom In</em> (<code class="docutils literal notranslate"><span class="pre">Ctrl++</span></code> or <code class="docutils literal notranslate"><span class="pre">Ctrl+Mouse</span> <span class="pre">Wheel</span> <span class="pre">Scroll</span> <span class="pre">Up</span></code>) and <em>View -&gt; Zoom Out</em> (<code class="docutils literal notranslate"><span class="pre">Ctrl+-</span></code> or <code class="docutils literal notranslate"><span class="pre">Ctrl+Mouse</span> <span class="pre">Wheel</span> <span class="pre">Scroll</span> <span class="pre">Down</span></code>).</p>
 <p>By default, the mouse cursor will show a white indicator outline of the currently-hovered tile(s) of what will be painted.  You can disable this outline with <em>View -&gt; Cursor Tile Outline</em>.  Additionally, the cursor changes its appearance depending on which tool you currently have selected in the toolbar.  You can disable this with <em>View -&gt; Cursor Icons</em>.</p>
 <p>An indicator outline for the player’s in-game view radius can be toggled with <em>View -&gt; Player View Rectangle</em>.</p>
 <p>The Metatile Selection Pane can be zoomed in or out using the slider on the bottom.</p>
-<div class="figure" id="id3">
+<div class="figure align-default" id="id3">
 <img alt="Metatile Selection Zoom Slider" src="../_images/metatile-selection-slider.png" />
-<p class="caption"><span class="caption-text">Metatile Selection Zoom Slider</span></p>
+<p class="caption"><span class="caption-text">Metatile Selection Zoom Slider</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 <div class="section" id="selecting-metatiles">
 <h2>Selecting Metatiles<a class="headerlink" href="#selecting-metatiles" title="Permalink to this headline">¶</a></h2>
 <p>Before you paint onto the map, you need to select which metatiles you will be painting.  The primary way to do this is to click on a metatile from the Metatile Selection Pane.  Whenever you change your selection, the selection preview will update so you can see exactly what you have selected at all times.</p>
-<div class="figure" id="id4">
+<div class="figure align-default" id="id4">
 <img alt="Basic Metatile Selection" src="../_images/single-metatile-selection.gif" />
-<p class="caption"><span class="caption-text">Basic Metatile Selection</span></p>
+<p class="caption"><span class="caption-text">Basic Metatile Selection</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
 </div>
 <p>You can select more than one tile at a time by clicking and dragging the desired region.  For example, it’s convenient to select the entire Pokémon Center at once.</p>
-<div class="figure" id="id5">
+<div class="figure align-default" id="id5">
 <img alt="Multiple Metatile Selection" src="../_images/multiple-metatile-selection.gif" />
-<p class="caption"><span class="caption-text">Multiple Metatile Selection</span></p>
+<p class="caption"><span class="caption-text">Multiple Metatile Selection</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
 </div>
 <p>Metatiles can also be selected from existing metatiles on the map area.  Use the Eyedropper Tool with <em>Tools -&gt; Eyedropper</em> (<code class="docutils literal notranslate"><span class="pre">E</span></code>), or simply click the Eyedropper button <img alt="eyedropper-tool" src="../_images/eyedropper-tool.png" /> in the toolbar above the map area.  A more powerful way to do this is to right-click on the map when using the Pencil Tool or Bucket Fill Tool.  You can even right-click and drag to copy a region from the map.  In this example GIF, we demonstrate how quick and easy it is to use the right-click method to copy and paint metatiles.</p>
-<div class="figure" id="id6">
+<div class="figure align-default" id="id6">
 <img alt="Right-Click Metatile Selection" src="../_images/right-click-metatile-selection.gif" />
-<p class="caption"><span class="caption-text">Right-Click Metatile Selection</span></p>
+<p class="caption"><span class="caption-text">Right-Click Metatile Selection</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
 </div>
 <p>Now, let’s learn how to use the various tools to paint your metatile selection onto the map.</p>
 </div>
 <div class="section" id="pencil-tool">
 <h2>Pencil Tool<a class="headerlink" href="#pencil-tool" title="Permalink to this headline">¶</a></h2>
 <p>The Pencil Tool <img alt="pencil-tool" src="../_images/pencil-tool.png" /> (<em>Tools -&gt; Pencil</em>, or <code class="docutils literal notranslate"><span class="pre">N</span></code>) is your bread and butter when editing maps.  Simply left-click to paint your current metatile selection onto the map.  You can click and drag to paint a bigger portion of the map.  When clicking and dragging, the metatiles will be painted as if they are snapping to a grid.  This simplifies things like painting large areas of trees.</p>
-<div class="figure" id="id7">
+<div class="figure align-default" id="id7">
 <img alt="Painting a Large Metatile Selection" src="../_images/snapping-painting.gif" />
-<p class="caption"><span class="caption-text">Painting a Large Metatile Selection</span></p>
+<p class="caption"><span class="caption-text">Painting a Large Metatile Selection</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 <div class="section" id="pointer-tool">
@@ -312,50 +324,50 @@
 <div class="section" id="bucket-fill-tool">
 <h2>Bucket Fill Tool<a class="headerlink" href="#bucket-fill-tool" title="Permalink to this headline">¶</a></h2>
 <p>The Bucket Fill Tool <img alt="bucket-fill-tool" src="../_images/bucket-fill-tool.png" /> (<em>Tools -&gt; Bucket Fill</em>, or <code class="docutils literal notranslate"><span class="pre">B</span></code>) works just like you think it does.  It fills a contiguous region of identical metatiles.  If you have a large metatile selection, it will fill the region with that pattern.  A useful shortcut for the Bucket Fill Tool is to middle-click when using the Pencil Tool.</p>
-<div class="figure" id="id8">
+<div class="figure align-default" id="id8">
 <img alt="Painting with Bucket Fill Tool" src="../_images/bucket-fill-painting.gif" />
-<p class="caption"><span class="caption-text">Painting with Bucket Fill Tool</span></p>
+<p class="caption"><span class="caption-text">Painting with Bucket Fill Tool</span><a class="headerlink" href="#id8" title="Permalink to this image">¶</a></p>
 </div>
 <p>Holding down the <code class="docutils literal notranslate"><span class="pre">Ctrl</span></code> key while using the Bucket Fill Tool will fill <em>all</em> matching metatiles on the map, rather that just the contiguous region.</p>
 </div>
 <div class="section" id="map-shift-tool">
 <h2>Map Shift Tool<a class="headerlink" href="#map-shift-tool" title="Permalink to this headline">¶</a></h2>
 <p>The Map Shift Tool <img alt="map-shift-tool" src="../_images/map-shift-tool.png" /> (<em>Tools -&gt; Map Shift</em>, or <code class="docutils literal notranslate"><span class="pre">S</span></code>) lets you shift the metatile positions of the entire map at the same time.  This is useful after resizing a map.  (Though, simply right-click copying the entire map is another way of accomplishing the same thing.)  Metatiles are wrapped around to the other side of the map when using the Map Shift Tool.  Simply click and drag on the map to perform the map shift.</p>
-<div class="figure" id="id9">
+<div class="figure align-default" id="id9">
 <img alt="Map Shift Tool" src="../_images/map-shift-painting.gif" />
-<p class="caption"><span class="caption-text">Map Shift Tool</span></p>
+<p class="caption"><span class="caption-text">Map Shift Tool</span><a class="headerlink" href="#id9" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 <div class="section" id="smart-paths">
 <h2>Smart Paths<a class="headerlink" href="#smart-paths" title="Permalink to this headline">¶</a></h2>
 <p>Smart Paths provide an easy way to paint pathways, ponds, and mountains.  If there is any formation of metatiles that have a basic outline and a “middle” tile, then smart paths can help save you time when painting.  <strong>Smart Paths can only be used when you have a 3x3 metatile selection.</strong>  Smart Paths is only available when using the Pencil Tool or the Bucket Fill Tool.  To enable Smart Paths, you must either check the Smart Paths checkbox above the map area, or you can hold down the <code class="docutils literal notranslate"><span class="pre">Shift</span></code> key.  Below are a few examples that illustrate the power of Smart Paths.</p>
-<div class="figure" id="id10">
+<div class="figure align-default" id="id10">
 <img alt="Regular vs. Smart Paths" src="../_images/smart-paths-1-painting.gif" />
-<p class="caption"><span class="caption-text">Regular vs. Smart Paths</span></p>
+<p class="caption"><span class="caption-text">Regular vs. Smart Paths</span><a class="headerlink" href="#id10" title="Permalink to this image">¶</a></p>
 </div>
-<div class="figure" id="id11">
+<div class="figure align-default" id="id11">
 <img alt="Bucket Fill with Smart Paths" src="../_images/smart-paths-2-painting.gif" />
-<p class="caption"><span class="caption-text">Bucket Fill with Smart Paths</span></p>
+<p class="caption"><span class="caption-text">Bucket Fill with Smart Paths</span><a class="headerlink" href="#id11" title="Permalink to this image">¶</a></p>
 </div>
-<div class="figure" id="id12">
+<div class="figure align-default" id="id12">
 <img alt="Smart Paths from Right-Click Selection" src="../_images/smart-paths-3-painting.gif" />
-<p class="caption"><span class="caption-text">Smart Paths from Right-Click Selection</span></p>
+<p class="caption"><span class="caption-text">Smart Paths from Right-Click Selection</span><a class="headerlink" href="#id12" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 <div class="section" id="change-map-border">
 <h2>Change Map Border<a class="headerlink" href="#change-map-border" title="Permalink to this headline">¶</a></h2>
 <p>The map’s border can be modified by painting on the Border image, which is located above the metatile selection pane.</p>
-<div class="figure" id="id13">
+<div class="figure align-default" id="id13">
 <img alt="Change Map Border" src="../_images/map-border.png" />
-<p class="caption"><span class="caption-text">Change Map Border</span></p>
+<p class="caption"><span class="caption-text">Change Map Border</span><a class="headerlink" href="#id13" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 <div class="section" id="change-map-tilesets">
 <h2>Change Map Tilesets<a class="headerlink" href="#change-map-tilesets" title="Permalink to this headline">¶</a></h2>
 <p>Every map uses exactly two Tilesets–primary and secondary.  These can be changed by choosing a different value from the two Tileset dropdowns.</p>
-<div class="figure" id="id14">
+<div class="figure align-default" id="id14">
 <img alt="Tileset Pickers" src="../_images/tileset-pickers.png" />
-<p class="caption"><span class="caption-text">Tileset Pickers</span></p>
+<p class="caption"><span class="caption-text">Tileset Pickers</span><a class="headerlink" href="#id14" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 <div class="section" id="undo-redo">
