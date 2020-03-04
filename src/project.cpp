@@ -7,6 +7,7 @@
 #include "paletteutil.h"
 #include "tile.h"
 #include "tileset.h"
+#include "imageexport.h"
 
 #include <QDir>
 #include <QJsonArray>
@@ -898,7 +899,7 @@ void Project::saveTilesetMetatiles(Tileset *tileset) {
 }
 
 void Project::saveTilesetTilesImage(Tileset *tileset) {
-    tileset->tilesImage.save(tileset->tilesImagePath);
+    exportIndexed4BPPPng(tileset->tilesImage, tileset->tilesImagePath);
 }
 
 void Project::saveTilesetPalettes(Tileset *tileset, bool /*primary*/) {
