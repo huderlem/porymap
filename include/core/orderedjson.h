@@ -55,7 +55,8 @@
 #pragma once
 
 #include <QString>
-#include <vector>
+#include <QVector>
+
 #include <map>
 #include <memory>
 #include <initializer_list>
@@ -88,7 +89,7 @@ public:
     };
 
     // Array and object typedefs
-    typedef std::vector<Json> array;
+    typedef QVector<Json> array;
     typedef std::map<QString, Json> object;
 
     // Constructors for the various types of JSON value.
@@ -152,7 +153,7 @@ public:
     const object &object_items() const;
 
     // Return a reference to arr[i] if this is an array, Json() otherwise.
-    const Json & operator[](unsigned i) const;
+    const Json & operator[](int i) const;
     // Return a reference to obj[key] if this is an object, Json() otherwise.
     const Json & operator[](const QString &key) const;
 
@@ -213,7 +214,7 @@ protected:
     virtual bool bool_value() const;
     virtual const QString &string_value() const;
     virtual const Json::array &array_items() const;
-    virtual const Json &operator[](unsigned i) const;
+    virtual const Json &operator[](int i) const;
     virtual const Json::object &object_items() const;
     virtual const Json &operator[](const QString &key) const;
     virtual ~JsonValue() {}
