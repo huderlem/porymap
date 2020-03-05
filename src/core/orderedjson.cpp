@@ -20,7 +20,6 @@
  */
 
 #include "orderedjson.h"
-#include <QString>
 #include <cassert>
 #include <cmath>
 #include <cstdlib>
@@ -31,8 +30,6 @@ namespace poryjson {
 
 static const int max_depth = 200;
 
-using string = QString;
-using std::vector;
 using std::map;
 using std::make_shared;
 using std::initializer_list;
@@ -51,11 +48,11 @@ struct NullStruct {
  * Serialization
  */
 
-static void dump(NullStruct, string &out) {
+static void dump(NullStruct, QString &out) {
     out += "null";
 }
 
-static void dump(double value, string &out) {
+static void dump(double value, QString &out) {
     if (std::isfinite(value)) {
         char buf[32];
         snprintf(buf, sizeof buf, "%.17g", value);
@@ -65,17 +62,17 @@ static void dump(double value, string &out) {
     }
 }
 
-static void dump(int value, string &out) {
+static void dump(int value, QString &out) {
     char buf[32];
     snprintf(buf, sizeof buf, "%d", value);
     out += buf;
 }
 
-static void dump(bool value, string &out) {
+static void dump(bool value, QString &out) {
     out += value ? "true" : "false";
 }
 
-static void dump(const string &value, string &out) {
+static void dump(const QString &value, QString &out) {
     out += '"';
     for (int i = 0; i < value.length(); i++) {
         const char ch = value[i].unicode();
@@ -112,7 +109,7 @@ static void dump(const string &value, string &out) {
     out += '"';
 }
 
-static void dump(const Json::array &values, string &out) {
+static void dump(const Json::array &values, QString &out) {
     bool first = true;
     out += "[";
     for (const auto &value : values) {
@@ -124,7 +121,7 @@ static void dump(const Json::array &values, string &out) {
     out += "]";
 }
 
-static void dump(const Json::object &values, string &out) {
+static void dump(const Json::object &values, QString &out) {
     bool first = true;
     out += "{";
     for (const auto &kv : values) {
@@ -138,7 +135,7 @@ static void dump(const Json::object &values, string &out) {
     out += "}";
 }
 
-void Json::dump(string &out) const {
+void Json::dump(QString &out) const {
     m_ptr->dump(out);
 }
 
@@ -168,7 +165,7 @@ protected:
     }
 
     const T m_value;
-    void dump(string &out) const override { poryjson::dump(m_value, out); }
+    void dump(QString &out) const override { poryjson::dump(m_value, out); }
 };
 
 class JsonDouble final : public Value<Json::NUMBER, double> {
@@ -195,16 +192,16 @@ public:
     explicit JsonBoolean(bool value) : Value(value) {}
 };
 
-class JsonString final : public Value<Json::STRING, string> {
-    const string &string_value() const override { return m_value; }
+class JsonString final : public Value<Json::STRING, QString> {
+    const QString &string_value() const override { return m_value; }
 public:
-    explicit JsonString(const string &value) : Value(value) {}
-    explicit JsonString(string &&value)      : Value(move(value)) {}
+    explicit JsonString(const QString &value) : Value(value) {}
+    explicit JsonString(QString &&value)      : Value(move(value)) {}
 };
 
 class JsonArray final : public Value<Json::ARRAY, Json::array> {
     const Json::array &array_items() const override { return m_value; }
-    const Json & operator[](unsigned i) const override;
+    const Json & operator[](int i) const override;
 public:
     explicit JsonArray(const Json::array &value) : Value(value) {}
     explicit JsonArray(Json::array &&value)      : Value(move(value)) {}
@@ -212,7 +209,7 @@ public:
 
 class JsonObject final : public Value<Json::OBJECT, Json::object> {
     const Json::object &object_items() const override { return m_value; }
-    const Json & operator[](const string &key) const override;
+    const Json & operator[](const QString &key) const override;
 public:
     explicit JsonObject(const Json::object &value) : Value(value) {}
     explicit JsonObject(Json::object &&value)      : Value(move(value)) {}
@@ -230,9 +227,9 @@ struct Statics {
     const std::shared_ptr<JsonValue> null = make_shared<JsonNull>();
     const std::shared_ptr<JsonValue> t = make_shared<JsonBoolean>(true);
     const std::shared_ptr<JsonValue> f = make_shared<JsonBoolean>(false);
-    const string empty_string;
-    const vector<Json> empty_vector;
-    const map<string, Json> empty_map;
+    const QString empty_string;
+    const QVector<Json> empty_vector;
+    const map<QString, Json> empty_map;
     Statics() {}
 };
 
@@ -256,8 +253,8 @@ Json::Json(std::nullptr_t) noexcept    : m_ptr(statics().null) {}
 Json::Json(double value)               : m_ptr(make_shared<JsonDouble>(value)) {}
 Json::Json(int value)                  : m_ptr(make_shared<JsonInt>(value)) {}
 Json::Json(bool value)                 : m_ptr(value ? statics().t : statics().f) {}
-Json::Json(const string &value)        : m_ptr(make_shared<JsonString>(value)) {}
-Json::Json(string &&value)             : m_ptr(make_shared<JsonString>(move(value))) {}
+Json::Json(const QString &value)        : m_ptr(make_shared<JsonString>(value)) {}
+Json::Json(QString &&value)             : m_ptr(make_shared<JsonString>(move(value))) {}
 Json::Json(const char * value)         : m_ptr(make_shared<JsonString>(value)) {}
 Json::Json(const Json::array &values)  : m_ptr(make_shared<JsonArray>(values)) {}
 Json::Json(Json::array &&values)       : m_ptr(make_shared<JsonArray>(move(values))) {}
@@ -272,26 +269,26 @@ Json::Type Json::type()                           const { return m_ptr->type(); 
 double Json::number_value()                       const { return m_ptr->number_value(); }
 int Json::int_value()                             const { return m_ptr->int_value();    }
 bool Json::bool_value()                           const { return m_ptr->bool_value();   }
-const string & Json::string_value()               const { return m_ptr->string_value(); }
-const vector<Json> & Json::array_items()          const { return m_ptr->array_items();  }
-const map<string, Json> & Json::object_items()    const { return m_ptr->object_items(); }
-const Json & Json::operator[] (unsigned i)          const { return (*m_ptr)[i];           }
-const Json & Json::operator[] (const string &key) const { return (*m_ptr)[key];         }
+const QString & Json::string_value()               const { return m_ptr->string_value(); }
+const QVector<Json> & Json::array_items()          const { return m_ptr->array_items();  }
+const map<QString, Json> & Json::object_items()    const { return m_ptr->object_items(); }
+const Json & Json::operator[] (int i)          const { return (*m_ptr)[i];           }
+const Json & Json::operator[] (const QString &key) const { return (*m_ptr)[key];         }
 
 double                    JsonValue::number_value()              const { return 0; }
 int                       JsonValue::int_value()                 const { return 0; }
 bool                      JsonValue::bool_value()                const { return false; }
-const string &            JsonValue::string_value()              const { return statics().empty_string; }
-const vector<Json> &      JsonValue::array_items()               const { return statics().empty_vector; }
-const map<string, Json> & JsonValue::object_items()              const { return statics().empty_map; }
-const Json &              JsonValue::operator[] (unsigned)         const { return static_null(); }
-const Json &              JsonValue::operator[] (const string &) const { return static_null(); }
+const QString &            JsonValue::string_value()              const { return statics().empty_string; }
+const QVector<Json> &      JsonValue::array_items()               const { return statics().empty_vector; }
+const map<QString, Json> & JsonValue::object_items()              const { return statics().empty_map; }
+const Json &              JsonValue::operator[] (int)         const { return static_null(); }
+const Json &              JsonValue::operator[] (const QString &) const { return static_null(); }
 
-const Json & JsonObject::operator[] (const string &key) const {
+const Json & JsonObject::operator[] (const QString &key) const {
     auto iter = m_value.find(key);
     return (iter == m_value.end()) ? static_null() : iter->second;
 }
-const Json & JsonArray::operator[] (unsigned i) const {
+const Json & JsonArray::operator[] (int i) const {
     if (i >= m_value.size()) return static_null();
     else return m_value[i];
 }
@@ -326,14 +323,14 @@ bool Json::operator< (const Json &other) const {
  *
  * Format char c suitable for printing in an error message.
  */
-static inline string esc(char c) {
+static inline QString esc(char c) {
     char buf[12];
     if (static_cast<uint8_t>(c) >= 0x20 && static_cast<uint8_t>(c) <= 0x7f) {
         snprintf(buf, sizeof buf, "'%c' (%d)", c, c);
     } else {
         snprintf(buf, sizeof buf, "(%d)", c);
     }
-    return string(buf);
+    return QString(buf);
 }
 
 static inline bool in_range(long x, long lower, long upper) {
@@ -349,9 +346,9 @@ struct JsonParser final {
 
     /* State
      */
-    const string &str;
+    const QString &str;
     int i;
-    string &err;
+    QString &err;
     bool failed;
     const JsonParse strategy;
 
@@ -359,12 +356,12 @@ struct JsonParser final {
      *
      * Mark this parse as failed.
      */
-    Json fail(string &&msg) {
+    Json fail(QString &&msg) {
         return fail(move(msg), Json());
     }
 
     template <typename T>
-    T fail(string &&msg, const T err_ret) {
+    T fail(QString &&msg, const T err_ret) {
         if (!failed)
             err = std::move(msg);
         failed = true;
@@ -453,7 +450,7 @@ struct JsonParser final {
      *
      * Encode pt as UTF-8 and add it to out.
      */
-    void encode_utf8(long pt, string & out) {
+    void encode_utf8(long pt, QString & out) {
         if (pt < 0)
             return;
 
@@ -476,14 +473,14 @@ struct JsonParser final {
 
     /* parse_string()
      *
-     * Parse a string, starting at the current position.
+     * Parse a QString, starting at the current position.
      */
-    string parse_string() {
-        string out;
+    QString parse_string() {
+        QString out;
         long last_escaped_codepoint = -1;
         while (true) {
             if (i == str.size())
-                return fail("unexpected end of input in string", "");
+                return fail("unexpected end of input in QString", "");
 
             char ch = str[i++].unicode();
 
@@ -493,7 +490,7 @@ struct JsonParser final {
             }
 
             if (in_range(ch, 0, 0x1f))
-                return fail(QString("unescaped " + esc(ch) + " in string"), QString());
+                return fail(QString("unescaped " + esc(ch) + " in QString"), QString());
 
             // The usual case: non-escaped characters
             if (ch != '\\') {
@@ -505,15 +502,15 @@ struct JsonParser final {
 
             // Handle escapes
             if (i == str.size())
-                return fail("unexpected end of input in string", "");
+                return fail("unexpected end of input in QString", "");
 
             ch = str[i++].unicode();
 
             if (ch == 'u') {
                 // Extract 4-byte escape sequence
-                string esc = str.right(i).left(4);
+                QString esc = str.right(i).left(4);
                 // Explicitly check length of the substring. The following loop
-                // relies on std::string returning the terminating NUL when
+                // relies on std::QString returning the terminating NUL when
                 // accessing str[length]. Checking here reduces brittleness.
                 if (esc.length() < 4) {
                     return fail(QString("bad \\u escape: " + esc), "");
@@ -627,7 +624,7 @@ struct JsonParser final {
      * Expect that 'str' starts at the character that was just read. If it does, advance
      * the input and return res. If not, flag an error.
      */
-    Json expect(const string &expected, Json res) {
+    Json expect(const QString &expected, Json res) {
         assert(i != 0);
         i--;
         if (str == expected) {
@@ -669,7 +666,7 @@ struct JsonParser final {
             return parse_string();
 
         if (ch == '{') {
-            map<string, Json> data;
+            map<QString, Json> data;
             ch = get_next_token();
             if (ch == '}')
                 return data;
@@ -678,7 +675,7 @@ struct JsonParser final {
                 if (ch != '"')
                     return fail(QString("expected '\"' in object, got " + esc(ch)));
 
-                string key = parse_string();
+                QString key = parse_string();
                 if (failed)
                     return Json();
 
@@ -702,7 +699,7 @@ struct JsonParser final {
         }
 
         if (ch == '[') {
-            vector<Json> data;
+            QVector<Json> data;
             ch = get_next_token();
             if (ch == ']')
                 return data;
@@ -730,7 +727,7 @@ struct JsonParser final {
 };
 }//namespace {
 
-Json Json::parse(const string &in, string &err, JsonParse strategy) {
+Json Json::parse(const QString &in, QString &err, JsonParse strategy) {
     JsonParser parser { in, 0, err, false, strategy };
     Json result = parser.parse_json(0);
 
@@ -748,7 +745,7 @@ Json Json::parse(const string &in, string &err, JsonParse strategy) {
  * Shape-checking
  */
 
-bool Json::has_shape(const shape & types, string & err) const {
+bool Json::has_shape(const shape & types, QString & err) const {
     if (!is_object()) {
         err = "expected JSON object, got " + dump();
         return false;
