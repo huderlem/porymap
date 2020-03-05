@@ -30,6 +30,7 @@ SOURCES += src/core/block.cpp \
     src/core/tileset.cpp \
     src/core/regionmap.cpp \
     src/core/wildmoninfo.cpp \
+    src/core/orderedjson.cpp \
     src/ui/aboutporymap.cpp \
     src/ui/bordermetatilespixmapitem.cpp \
     src/ui/collisionpixmapitem.cpp \
@@ -91,6 +92,7 @@ HEADERS  += include/core/block.h \
     include/core/tileset.h \
     include/core/regionmap.h \
     include/core/wildmoninfo.h \
+    include/core/orderedjson.h \
     include/ui/aboutporymap.h \    
     include/ui/bordermetatilespixmapitem.h \
     include/ui/collisionpixmapitem.h \
