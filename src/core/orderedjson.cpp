@@ -26,6 +26,8 @@
 #include <cstdio>
 #include <limits>
 
+#include <QDebug>
+
 namespace poryjson {
 
 static const int max_depth = 200;
@@ -48,11 +50,11 @@ struct NullStruct {
  * Serialization
  */
 
-static void dump(NullStruct, QString &out) {
+static void dump(NullStruct, QString &out, int *) {
     out += "null";
 }
 
-static void dump(double value, QString &out) {
+static void dump(double value, QString &out, int *) {
     if (std::isfinite(value)) {
         char buf[32];
         snprintf(buf, sizeof buf, "%.17g", value);
@@ -62,17 +64,17 @@ static void dump(double value, QString &out) {
     }
 }
 
-static void dump(int value, QString &out) {
+static void dump(int value, QString &out, int *) {
     char buf[32];
     snprintf(buf, sizeof buf, "%d", value);
     out += buf;
 }
 
-static void dump(bool value, QString &out) {
+static void dump(bool value, QString &out, int *) {
     out += value ? "true" : "false";
 }
 
-static void dump(const QString &value, QString &out) {
+static void dump(const QString &value, QString &out, int *) {
     out += '"';
     for (int i = 0; i < value.length(); i++) {
         const char ch = value[i].unicode();
@@ -109,34 +111,44 @@ static void dump(const QString &value, QString &out) {
     out += '"';
 }
 
-static void dump(const Json::array &values, QString &out) {
+static void dump(const Json::array &values, QString &out, int *indent) {
     bool first = true;
-    out += "[";
+    if (!out.endsWith(": ")) out += QString(*indent * 2, ' ');
+    out += "[\n";
+    *indent += 1;
     for (const auto &value : values) {
-        if (!first)
-            out += ", ";
-        value.dump(out);
+        if (!first) {
+            out += ",\n";
+        }
+        value.dump(out, indent);
         first = false;
     }
-    out += "]";
+    *indent -= 1;
+    out += "\n" + QString(*indent * 2, ' ') + "]";
 }
 
-static void dump(const Json::object &values, QString &out) {
+static void dump(const Json::object &values, QString &out, int *indent) {
     bool first = true;
-    out += "{";
+    if (!out.endsWith(": ")) out += QString(*indent * 2, ' ');
+    out += "{\n";
+    *indent += 1;
     for (const auto &kv : values) {
-        if (!first)
-            out += ", ";
-        dump(kv.first, out);
+        if (!first) {
+            out += ",\n";
+        }
+        out += QString(*indent * 2, ' ');
+        dump(kv.first, out, indent);
         out += ": ";
-        kv.second.dump(out);
+        kv.second.dump(out, indent);
         first = false;
     }
-    out += "}";
+    *indent -= 1;
+    out += "\n" + QString(*indent * 2, ' ') + "}";
 }
 
-void Json::dump(QString &out) const {
-    m_ptr->dump(out);
+
+void Json::dump(QString &out, int *indent) const {
+    m_ptr->dump(out, indent);
 }
 
 /* * * * * * * * * * * * * * * * * * * *
@@ -165,7 +177,7 @@ protected:
     }
 
     const T m_value;
-    void dump(QString &out) const override { poryjson::dump(m_value, out); }
+    void dump(QString &out, int *indent) const override { poryjson::dump(m_value, out, indent); }
 };
 
 class JsonDouble final : public Value<Json::NUMBER, double> {

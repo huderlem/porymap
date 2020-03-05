@@ -56,10 +56,15 @@
 
 #include <QString>
 #include <QVector>
+#include <QFile>
+#include <QTextStream>
 
 #include <map>
 #include <memory>
 #include <initializer_list>
+
+// temp
+#include <iostream>
 
 #ifdef _MSC_VER
     #if _MSC_VER <= 1800 // VS 2013
@@ -158,10 +163,14 @@ public:
     const Json & operator[](const QString &key) const;
 
     // Serialize.
-    void dump(QString &out) const;
-    QString dump() const {
+    void dump(QString &out, int *) const;
+    QString dump(int *indent = nullptr) const {
         QString out;
-        dump(out);
+        if (!indent) {
+            int temp = 0;
+            indent = &temp;
+        }
+        dump(out, indent);
         return out;
     }
 
@@ -199,6 +208,24 @@ private:
     std::shared_ptr<JsonValue> m_ptr;
 };
 
+class JsonDoc {
+public:
+    JsonDoc(Json *object) {
+        this->m_obj = object;
+        this->m_indent = 0;
+    };
+
+    void dump(QFile *file) {
+        QTextStream fileStream(file);
+        fileStream << m_obj->dump(&m_indent);
+        fileStream << "\n"; // pad file with newline
+    }
+
+private:
+    Json *m_obj;
+    int m_indent;
+};
+
 // Internal class hierarchy - JsonValue objects are not exposed to users of this API.
 class JsonValue {
 protected:
@@ -208,7 +235,7 @@ protected:
     virtual Json::Type type() const = 0;
     virtual bool equals(const JsonValue * other) const = 0;
     virtual bool less(const JsonValue * other) const = 0;
-    virtual void dump(QString &out) const = 0;
+    virtual void dump(QString &out, int *indent) const = 0;
     virtual double number_value() const;
     virtual int int_value() const;
     virtual bool bool_value() const;
