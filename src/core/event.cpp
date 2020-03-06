@@ -239,7 +239,7 @@ void Event::readCustomValues(QJsonObject values)
     }
 }
 
-void Event::addCustomValuesTo(QJsonObject *obj)
+void Event::addCustomValuesTo(OrderedJson::object *obj)
 {
     for (QString key : this->customValues.keys()) {
         if (!obj->contains(key)) {
@@ -248,9 +248,9 @@ void Event::addCustomValuesTo(QJsonObject *obj)
     }
 }
 
-QJsonObject Event::buildObjectEventJSON()
+OrderedJson::object Event::buildObjectEventJSON()
 {
-    QJsonObject eventObj;
+    OrderedJson::object eventObj;
     eventObj["graphics_id"] = this->get("sprite");
     eventObj["x"] = this->getU16("x");
     eventObj["y"] = this->getU16("y");
@@ -267,9 +267,9 @@ QJsonObject Event::buildObjectEventJSON()
     return eventObj;
 }
 
-QJsonObject Event::buildWarpEventJSON(QMap<QString, QString> *mapNamesToMapConstants)
+OrderedJson::object Event::buildWarpEventJSON(QMap<QString, QString> *mapNamesToMapConstants)
 {
-    QJsonObject warpObj;
+    OrderedJson::object warpObj;
     warpObj["x"] = this->getU16("x");
     warpObj["y"] = this->getU16("y");
     warpObj["elevation"] = this->getInt("elevation");
@@ -280,9 +280,9 @@ QJsonObject Event::buildWarpEventJSON(QMap<QString, QString> *mapNamesToMapConst
     return warpObj;
 }
 
-QJsonObject Event::buildTriggerEventJSON()
+OrderedJson::object Event::buildTriggerEventJSON()
 {
-    QJsonObject triggerObj;
+    OrderedJson::object triggerObj;
     triggerObj["type"] = "trigger";
     triggerObj["x"] = this->getU16("x");
     triggerObj["y"] = this->getU16("y");
@@ -295,9 +295,9 @@ QJsonObject Event::buildTriggerEventJSON()
     return triggerObj;
 }
 
-QJsonObject Event::buildWeatherTriggerEventJSON()
+OrderedJson::object Event::buildWeatherTriggerEventJSON()
 {
-    QJsonObject weatherObj;
+    OrderedJson::object weatherObj;
     weatherObj["type"] = "weather";
     weatherObj["x"] = this->getU16("x");
     weatherObj["y"] = this->getU16("y");
@@ -308,9 +308,9 @@ QJsonObject Event::buildWeatherTriggerEventJSON()
     return weatherObj;
 }
 
-QJsonObject Event::buildSignEventJSON()
+OrderedJson::object Event::buildSignEventJSON()
 {
-    QJsonObject signObj;
+    OrderedJson::object signObj;
     signObj["type"] = "sign";
     signObj["x"] = this->getU16("x");
     signObj["y"] = this->getU16("y");
@@ -322,9 +322,9 @@ QJsonObject Event::buildSignEventJSON()
     return signObj;
 }
 
-QJsonObject Event::buildHiddenItemEventJSON()
+OrderedJson::object Event::buildHiddenItemEventJSON()
 {
-    QJsonObject hiddenItemObj;
+    OrderedJson::object hiddenItemObj;
     hiddenItemObj["type"] = "hidden_item";
     hiddenItemObj["x"] = this->getU16("x");
     hiddenItemObj["y"] = this->getU16("y");
@@ -336,9 +336,9 @@ QJsonObject Event::buildHiddenItemEventJSON()
     return hiddenItemObj;
 }
 
-QJsonObject Event::buildSecretBaseEventJSON()
+OrderedJson::object Event::buildSecretBaseEventJSON()
 {
-    QJsonObject secretBaseObj;
+    OrderedJson::object secretBaseObj;
     secretBaseObj["type"] = "secret_base";
     secretBaseObj["x"] = this->getU16("x");
     secretBaseObj["y"] = this->getU16("y");

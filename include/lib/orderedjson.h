@@ -1,4 +1,3 @@
-/// Wrappings around QJsonObjects that preserves order
 /* poryjson
  *
  * poryjson is a modified version of json11, which adds support to preserve the key order
@@ -56,15 +55,14 @@
 
 #include <QString>
 #include <QVector>
+#include <QPair>
 #include <QFile>
 #include <QTextStream>
 
-#include <map>
 #include <memory>
 #include <initializer_list>
 
-// temp
-#include <iostream>
+#include "orderedmap.h"
 
 #ifdef _MSC_VER
     #if _MSC_VER <= 1800 // VS 2013
@@ -95,7 +93,7 @@ public:
 
     // Array and object typedefs
     typedef QVector<Json> array;
-    typedef std::map<QString, Json> object;
+    typedef tsl::ordered_map<QString, Json> object;
 
     // Constructors for the various types of JSON value.
     Json() noexcept;                // NUL
@@ -195,14 +193,6 @@ public:
     bool operator<= (const Json &rhs) const { return !(rhs < *this); }
     bool operator>  (const Json &rhs) const { return  (rhs < *this); }
     bool operator>= (const Json &rhs) const { return !(*this < rhs); }
-
-    /* has_shape(types, err)
-     *
-     * Return true if this is a JSON object and, for each item in types, has a field of
-     * the given type. If not, return false and set err to a descriptive message.
-     */
-    typedef std::initializer_list<std::pair<QString, Type>> shape;
-    bool has_shape(const shape & types, QString & err) const;
 
 private:
     std::shared_ptr<JsonValue> m_ptr;

@@ -4,7 +4,10 @@
 #include <QString>
 #include <QPixmap>
 #include <QMap>
-#include <QJsonObject>
+
+#include "orderedjson.h"
+
+using OrderedJson = poryjson::Json;
 
 class EventType
 {
@@ -67,19 +70,19 @@ public:
     static Event* createNewHiddenItemEvent(Project*);
     static Event* createNewSecretBaseEvent(Project*);
 
-    QJsonObject buildObjectEventJSON();
-    QJsonObject buildWarpEventJSON(QMap<QString, QString>*);
-    QJsonObject buildTriggerEventJSON();
-    QJsonObject buildWeatherTriggerEventJSON();
-    QJsonObject buildSignEventJSON();
-    QJsonObject buildHiddenItemEventJSON();
-    QJsonObject buildSecretBaseEventJSON();
+    OrderedJson::object buildObjectEventJSON();
+    OrderedJson::object buildWarpEventJSON(QMap<QString, QString>*);
+    OrderedJson::object buildTriggerEventJSON();
+    OrderedJson::object buildWeatherTriggerEventJSON();
+    OrderedJson::object buildSignEventJSON();
+    OrderedJson::object buildHiddenItemEventJSON();
+    OrderedJson::object buildSecretBaseEventJSON();
     void setPixmapFromSpritesheet(QImage, int, int, int, bool);
     int getPixelX();
     int getPixelY();
     QMap<QString, bool> getExpectedFields();
     void readCustomValues(QJsonObject values);
-    void addCustomValuesTo(QJsonObject *obj);
+    void addCustomValuesTo(OrderedJson::object *obj);
     void setFrameFromMovement(QString);
 
     QMap<QString, QString> values;
