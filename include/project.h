@@ -7,6 +7,7 @@
 #include "event.h"
 #include "wildmoninfo.h"
 #include "parseutil.h"
+#include "orderedjson.h"
 
 #include <QStringList>
 #include <QList>
@@ -93,7 +94,7 @@ public:
     QMap<QString, QMap<QString, WildPokemonHeader>> wildMonData;
     QVector<EncounterField> wildMonFields;
     QVector<QString> encounterGroupLabels;
-    QMap<QString, QJsonObject> extraEncounterGroups;
+    QVector<poryjson::Json::object> extraEncounterGroups;
 
     bool readSpeciesIconPaths();
     QMap<QString, QString> speciesToIconPath;

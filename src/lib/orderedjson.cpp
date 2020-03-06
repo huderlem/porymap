@@ -26,8 +26,6 @@
 #include <cstdio>
 #include <limits>
 
-#include <QDebug>
-
 namespace poryjson {
 
 static const int max_depth = 200;
@@ -50,11 +48,13 @@ struct NullStruct {
  * Serialization
  */
 
-static void dump(NullStruct, QString &out, int *) {
+static void dump(NullStruct, QString &out, int *indent) {
+    if (!out.endsWith(": ")) out += QString(*indent * 2, ' ');
     out += "null";
 }
 
-static void dump(double value, QString &out, int *) {
+static void dump(double value, QString &out, int *indent) {
+    if (!out.endsWith(": ")) out += QString(*indent * 2, ' ');
     if (std::isfinite(value)) {
         char buf[32];
         snprintf(buf, sizeof buf, "%.17g", value);
@@ -64,17 +64,20 @@ static void dump(double value, QString &out, int *) {
     }
 }
 
-static void dump(int value, QString &out, int *) {
+static void dump(int value, QString &out, int *indent) {
+    if (!out.endsWith(": ")) out += QString(*indent * 2, ' ');
     char buf[32];
     snprintf(buf, sizeof buf, "%d", value);
     out += buf;
 }
 
-static void dump(bool value, QString &out, int *) {
+static void dump(bool value, QString &out, int *indent) {
+    if (!out.endsWith(": ")) out += QString(*indent * 2, ' ');
     out += value ? "true" : "false";
 }
 
-static void dump(const QString &value, QString &out, int *) {
+static void dump(const QString &value, QString &out, int *indent, bool isKey = false) {
+    if (!isKey && !out.endsWith(": ")) out += QString(*indent * 2, ' ');
     out += '"';
     for (int i = 0; i < value.length(); i++) {
         const char ch = value[i].unicode();
@@ -132,12 +135,12 @@ static void dump(const Json::object &values, QString &out, int *indent) {
     if (!out.endsWith(": ")) out += QString(*indent * 2, ' ');
     out += "{\n";
     *indent += 1;
-    for (const auto &kv : values) {
+    for (auto kv : values) {
         if (!first) {
             out += ",\n";
         }
         out += QString(*indent * 2, ' ');
-        dump(kv.first, out, indent);
+        dump(kv.first, out, indent, true);
         out += ": ";
         kv.second.dump(out, indent);
         first = false;
@@ -241,7 +244,7 @@ struct Statics {
     const std::shared_ptr<JsonValue> f = make_shared<JsonBoolean>(false);
     const QString empty_string;
     const QVector<Json> empty_vector;
-    const map<QString, Json> empty_map;
+    const Json::object empty_map;
     Statics() {}
 };
 
@@ -283,7 +286,7 @@ int Json::int_value()                             const { return m_ptr->int_valu
 bool Json::bool_value()                           const { return m_ptr->bool_value();   }
 const QString & Json::string_value()               const { return m_ptr->string_value(); }
 const QVector<Json> & Json::array_items()          const { return m_ptr->array_items();  }
-const map<QString, Json> & Json::object_items()    const { return m_ptr->object_items(); }
+const Json::object & Json::object_items()    const { return m_ptr->object_items(); }
 const Json & Json::operator[] (int i)          const { return (*m_ptr)[i];           }
 const Json & Json::operator[] (const QString &key) const { return (*m_ptr)[key];         }
 
@@ -292,13 +295,13 @@ int                       JsonValue::int_value()                 const { return 
 bool                      JsonValue::bool_value()                const { return false; }
 const QString &            JsonValue::string_value()              const { return statics().empty_string; }
 const QVector<Json> &      JsonValue::array_items()               const { return statics().empty_vector; }
-const map<QString, Json> & JsonValue::object_items()              const { return statics().empty_map; }
+const Json::object & JsonValue::object_items()              const { return statics().empty_map; }
 const Json &              JsonValue::operator[] (int)         const { return static_null(); }
 const Json &              JsonValue::operator[] (const QString &) const { return static_null(); }
 
 const Json & JsonObject::operator[] (const QString &key) const {
-    auto iter = m_value.find(key);
-    return (iter == m_value.end()) ? static_null() : iter->second;
+    static auto iter = m_value.find(key);
+    return (iter == m_value.end()) ? static_null() : (*iter).second;
 }
 const Json & JsonArray::operator[] (int i) const {
     if (i >= m_value.size()) return static_null();
@@ -385,7 +388,7 @@ struct JsonParser final {
      * Advance until the current character is non-whitespace.
      */
     void consume_whitespace() {
-        while (str[i] == ' ' || str[i] == '\r' || str[i] == '\n' || str[i] == '\t')
+        while (i < str.length() && (str[i] == ' ' || str[i] == '\r' || str[i] == '\n' || str[i] == '\t'))
             i++;
     }
 
@@ -639,7 +642,8 @@ struct JsonParser final {
     Json expect(const QString &expected, Json res) {
         assert(i != 0);
         i--;
-        if (str == expected) {
+        QString result = str.right(str.size() - i).left(expected.length());
+        if (result == expected) {
             i += expected.length();
             return res;
         } else {
@@ -678,7 +682,7 @@ struct JsonParser final {
             return parse_string();
 
         if (ch == '{') {
-            map<QString, Json> data;
+            Json::object data;
             ch = get_next_token();
             if (ch == '}')
                 return data;
@@ -751,28 +755,6 @@ Json Json::parse(const QString &in, QString &err, JsonParse strategy) {
         return parser.fail(QString("unexpected trailing " + esc(in[parser.i].unicode())));
 
     return result;
-}
-
-/* * * * * * * * * * * * * * * * * * * *
- * Shape-checking
- */
-
-bool Json::has_shape(const shape & types, QString & err) const {
-    if (!is_object()) {
-        err = "expected JSON object, got " + dump();
-        return false;
-    }
-
-    const auto& obj_items = object_items();
-    for (auto & item : types) {
-        const auto it = obj_items.find(item.first);
-        if (it == obj_items.cend() || it->second.type() != item.second) {
-            err = "bad type for " + item.first + " in " + dump();
-            return false;
-        }
-    }
-
-    return true;
 }
 
 } // namespace poryjson
