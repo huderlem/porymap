@@ -100,10 +100,35 @@ QMap<QString, bool> Project::getTopLevelMapFields() {
             {"requires_flash", true},
             {"weather", true},
             {"map_type", true},
-            {"allow_bike", true},
-            {"allow_escape_rope", true},
+            {"allow_cycling", true},
+            {"allow_escaping", true},
             {"allow_running", true},
             {"show_map_name", true},
+            {"battle_scene", true},
+            {"connections", true},
+            {"object_events", true},
+            {"warp_events", true},
+            {"coord_events", true},
+            {"bg_events", true},
+            {"shared_events_map", true},
+            {"shared_scripts_map", true},
+        };
+    } else if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+        return QMap<QString, bool>
+        {
+            {"id", true},
+            {"name", true},
+            {"layout", true},
+            {"music", true},
+            {"region_map_section", true},
+            {"requires_flash", true},
+            {"weather", true},
+            {"map_type", true},
+            {"allow_cycling", true},
+            {"allow_escaping", true},
+            {"allow_running", true},
+            {"show_map_name", true},
+            {"floor_number", true},
             {"battle_scene", true},
             {"connections", true},
             {"object_events", true},
@@ -164,9 +189,14 @@ bool Project::loadMapData(Map* map) {
     map->show_location = QString::number(mapObj["show_map_name"].toBool());
     map->battle_scene = mapObj["battle_scene"].toString();
     if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeemerald) {
-        map->allowBiking = QString::number(mapObj["allow_bike"].toBool());
-        map->allowEscapeRope = QString::number(mapObj["allow_escape_rope"].toBool());
+        map->allowBiking = QString::number(mapObj["allow_cycling"].toBool());
+        map->allowEscapeRope = QString::number(mapObj["allow_escaping"].toBool());
         map->allowRunning = QString::number(mapObj["allow_running"].toBool());
+    } else if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+        map->allowBiking = QString::number(mapObj["allow_cycling"].toBool());
+        map->allowEscapeRope = QString::number(mapObj["allow_escaping"].toBool());
+        map->allowRunning = QString::number(mapObj["allow_running"].toBool());
+        map->floorNumber = mapObj["floor_number"].toInt();
     }
     map->sharedEventsMap = mapObj["shared_events_map"].toString();
     map->sharedScriptsMap = mapObj["shared_scripts_map"].toString();
@@ -386,6 +416,12 @@ void Project::setNewMapHeader(Map* map, int mapIndex) {
         map->allowEscapeRope = "0";
         map->allowRunning = "1";
         map->show_location = "1";
+    }  else if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+        map->allowBiking = "1";
+        map->allowEscapeRope = "0";
+        map->allowRunning = "1";
+        map->show_location = "1";
+        map->floorNumber = 0;
     }
 
     map->battle_scene = "MAP_BATTLE_SCENE_NORMAL";
@@ -446,6 +482,8 @@ bool Project::readMapLayouts() {
     };
     for (int i = 0; i < layouts.size(); i++) {
         QJsonObject layoutObj = layouts[i].toObject();
+        if (layoutObj.isEmpty())
+            continue;
         if (!parser.ensureFieldsExist(layoutObj, requiredFields)) {
             logError(QString("Layout %1 is missing field(s) in %2.").arg(i).arg(layoutsFilepath));
             return false;
@@ -1048,14 +1086,14 @@ void Project::saveMap(Map *map) {
         QString text = this->getScriptDefaultString(projectConfig.getUsePoryScript(), map->name);
         saveTextFile(root + "/data/maps/" + map->name + "/scripts" + this->getScriptFileExtension(projectConfig.getUsePoryScript()), text);
 
-        if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeruby) {
+        if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeruby || projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
             // Create file data/maps/<map_name>/text.inc
             saveTextFile(root + "/data/maps/" + map->name + "/text" + this->getScriptFileExtension(projectConfig.getUsePoryScript()), "\n");
         }
 
         // Simply append to data/event_scripts.s.
         text = QString("\n\t.include \"data/maps/%1/scripts.inc\"\n").arg(map->name);
-        if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeruby) {
+        if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeruby || projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
             text += QString("\t.include \"data/maps/%1/text.inc\"\n").arg(map->name);
         }
         appendTextFile(root + "/data/event_scripts.s", text);
@@ -1115,10 +1153,11 @@ void Project::saveMap(Map *map) {
     mapObj["requires_flash"] = map->requiresFlash.toInt() > 0 || map->requiresFlash == "TRUE";
     mapObj["weather"] = map->weather;
     mapObj["map_type"] = map->type;
-    mapObj["allow_bike"] = map->allowBiking.toInt() > 0 || map->allowBiking == "TRUE";
-    mapObj["allow_escape_rope"] = map->allowEscapeRope.toInt() > 0 || map->allowEscapeRope == "TRUE";
+    mapObj["allow_cycling"] = map->allowBiking.toInt() > 0 || map->allowBiking == "TRUE";
+    mapObj["allow_escaping"] = map->allowEscapeRope.toInt() > 0 || map->allowEscapeRope == "TRUE";
     mapObj["allow_running"] = map->allowRunning.toInt() > 0 || map->allowRunning == "TRUE";
     mapObj["show_map_name"] = map->show_location.toInt() > 0 || map->show_location == "TRUE";
+    mapObj["floor_number"] = map->floorNumber;
     mapObj["battle_scene"] = map->battle_scene;
 
     // Connections
@@ -1863,6 +1902,9 @@ bool Project::readMovementTypes() {
 }
 
 bool Project::readInitialFacingDirections() {
+    // TODO: This file is not yet decompiled in pokefirered. Remove once resolved
+    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered)
+        return true;
     QString filename = "src/event_object_movement.c";
     facingDirections = parser.readNamedIndexCArray(filename, "gInitialMovementTypeFacingDirections");
     if (facingDirections.isEmpty()) {
@@ -1909,6 +1951,8 @@ bool Project::readWeatherNames() {
 }
 
 bool Project::readCoordEventWeatherNames() {
+    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered)
+        return true;
     coordEventWeatherNames->clear();
     QStringList prefixes = (QStringList() << "COORD_EVENT_WEATHER_");
     QString filename = "include/constants/weather.h";

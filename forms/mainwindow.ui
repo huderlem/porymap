@@ -2094,6 +2094,23 @@
               </property>
              </widget>
             </item>
+            <item row="11" column="0">
+              <widget class="QLabel" name="label_FloorNumber">
+               <property name="text">
+                <string>Floor Number</string>
+               </property>
+              </widget>
+             </item>
+             <item row="11" column="1">
+              <widget class="QSpinBox" name="spinBox_FloorNumber">
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Floor number to be used for maps with elevators.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="maximum">
+                <number>127</number>
+               </property>
+              </widget>
+            </item>
            </layout>
           </widget>
          </item>

@@ -160,19 +160,31 @@ void MainWindow::setProjectSpecificUIVisibility()
         ui->checkBox_AllowRunning->setVisible(false);
         ui->checkBox_AllowBiking->setVisible(false);
         ui->checkBox_AllowEscapeRope->setVisible(false);
+        ui->spinBox_FloorNumber->setVisible(false);
         ui->label_AllowRunning->setVisible(false);
         ui->label_AllowBiking->setVisible(false);
         ui->label_AllowEscapeRope->setVisible(false);
+        ui->label_FloorNumber->setVisible(false);
         break;
     case BaseGameVersion::pokeemerald:
         ui->checkBox_AllowRunning->setVisible(true);
         ui->checkBox_AllowBiking->setVisible(true);
         ui->checkBox_AllowEscapeRope->setVisible(true);
+        ui->spinBox_FloorNumber->setVisible(false);
         ui->label_AllowRunning->setVisible(true);
         ui->label_AllowBiking->setVisible(true);
         ui->label_AllowEscapeRope->setVisible(true);
+        ui->label_FloorNumber->setVisible(false);
         break;
     case BaseGameVersion::pokefirered:
+        ui->checkBox_AllowRunning->setVisible(true);
+        ui->checkBox_AllowBiking->setVisible(true);
+        ui->checkBox_AllowEscapeRope->setVisible(true);
+        ui->spinBox_FloorNumber->setVisible(true);
+        ui->label_AllowRunning->setVisible(true);
+        ui->label_AllowBiking->setVisible(true);
+        ui->label_AllowEscapeRope->setVisible(true);
+        ui->label_FloorNumber->setVisible(true);
         break;
     }
 }
@@ -504,6 +516,7 @@ void MainWindow::displayMapProperties() {
     ui->checkBox_AllowRunning->setChecked(map->allowRunning.toInt() > 0 || map->allowRunning == "TRUE");
     ui->checkBox_AllowBiking->setChecked(map->allowBiking.toInt() > 0 || map->allowBiking == "TRUE");
     ui->checkBox_AllowEscapeRope->setChecked(map->allowEscapeRope.toInt() > 0 || map->allowEscapeRope == "TRUE");
+    ui->spinBox_FloorNumber->setValue(map->floorNumber);
 
     // Custom fields table.
     ui->tableWidget_CustomHeaderFields->blockSignals(true);
@@ -620,7 +633,6 @@ bool MainWindow::loadDataStructures() {
                 && project->readMapBattleScenes()
                 && project->readWeatherNames()
                 && project->readCoordEventWeatherNames()
-                && project->readSecretBaseIds()
                 && project->readBgEventFacingDirections()
                 && project->readMetatileBehaviors()
                 && project->readTilesetProperties()
@@ -628,6 +640,8 @@ bool MainWindow::loadDataStructures() {
                 && project->readMiscellaneousConstants()
                 && project->readSpeciesIconPaths()
                 && project->readWildMonData();
+    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeemerald || projectConfig.getBaseGameVersion() == BaseGameVersion::pokeruby)
+        success = success && project->readSecretBaseIds();
     if (!success) {
         return false;
     }

@@ -324,11 +324,13 @@ QString PorymapConfig::getTheme() {
 
 const QMap<BaseGameVersion, QString> baseGameVersionMap = {
     {BaseGameVersion::pokeruby, "pokeruby"},
+    {BaseGameVersion::pokefirered, "pokefirered"},
     {BaseGameVersion::pokeemerald, "pokeemerald"},
 };
 
 const QMap<QString, BaseGameVersion> baseGameVersionReverseMap = {
     {"pokeruby", BaseGameVersion::pokeruby},
+    {"pokefirered", BaseGameVersion::pokefirered},
     {"pokeemerald", BaseGameVersion::pokeemerald},
 };
 
@@ -346,7 +348,7 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
             this->baseGameVersion = baseGameVersionReverseMap.value(baseGameVersion);
         } else {
             this->baseGameVersion = BaseGameVersion::pokeemerald;
-            logWarn(QString("Invalid config value for base_game_version: '%1'. Must be 'pokeruby' or 'pokeemerald'.").arg(value));
+            logWarn(QString("Invalid config value for base_game_version: '%1'. Must be 'pokeruby', 'pokefirered' or 'pokeemerald'.").arg(value));
         }
     } else if (key == "use_encounter_json") {
         bool ok;
@@ -387,6 +389,7 @@ void ProjectConfig::onNewConfigFileCreated() {
 
         QComboBox *baseGameVersionComboBox = new QComboBox();
         baseGameVersionComboBox->addItem("pokeruby", BaseGameVersion::pokeruby);
+        baseGameVersionComboBox->addItem("pokefirered", BaseGameVersion::pokefirered);
         baseGameVersionComboBox->addItem("pokeemerald", BaseGameVersion::pokeemerald);
         form.addRow(new QLabel("Game Version"), baseGameVersionComboBox);
 
