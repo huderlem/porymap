@@ -1291,8 +1291,9 @@ void Project::loadTilesetAssets(Tileset* tileset) {
     if (tileset->name.isNull()) {
         return;
     }
+    QRegularExpression re("([a-z])([A-Z])");
     QString tilesetName = tileset->name;
-    QString dir_path = root + "/data/tilesets/" + category + "/" + tilesetName.replace("gTileset_", "").toLower();
+    QString dir_path = root + "/data/tilesets/" + category + "/" + tilesetName.replace("gTileset_", "").replace(re, "\\1_\\2").toLower();
 
     QList<QStringList> *graphics = parser.parseAsm("data/tilesets/graphics.inc");
     QStringList *tiles_values = parser.getLabelValues(graphics, tileset->tiles_label);
