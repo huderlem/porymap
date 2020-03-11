@@ -209,6 +209,9 @@ bool Project::loadMapData(Map* map) {
         Event *object = new Event(event, EventType::Object);
         object->put("map_name", map->name);
         object->put("sprite", event["graphics_id"].toString());
+        if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+            object->put("in_connection", event["in_connection"].toBool());
+        }
         object->put("x", QString::number(event["x"].toInt()));
         object->put("y", QString::number(event["y"].toInt()));
         object->put("elevation", QString::number(event["elevation"].toInt()));

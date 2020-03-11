@@ -1401,6 +1401,7 @@ void MainWindow::updateSelectedObjects() {
         field_labels["radius_y"] = "Movement Radius Y";
         field_labels["trainer_type"] = "Trainer Type";
         field_labels["sight_radius_tree_id"] = "Sight Radius / Berry Tree ID";
+        field_labels["in_connection"] = "In Connection";
         field_labels["destination_warp"] = "Destination Warp";
         field_labels["destination_map_name"] = "Destination Map";
         field_labels["script_var"] = "Var";
@@ -1439,6 +1440,9 @@ void MainWindow::updateSelectedObjects() {
             fields << "event_flag";
             fields << "trainer_type";
             fields << "sight_radius_tree_id";
+            if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+                fields << "in_connection";
+            }
         }
         else if (event_type == EventType::Warp) {
             fields << "destination_map_name";
@@ -1487,7 +1491,7 @@ void MainWindow::updateSelectedObjects() {
             // Some keys shouldn't use a combobox. This isn't very scalable
             if (key == "quantity") {
                 spin = new NoScrollSpinBox(widget);
-            } else if (key == "underfoot") {
+            } else if (key == "underfoot" || key == "in_connection") {
                 check = new QCheckBox(widget);
             } else {
                 combo = new NoScrollComboBox(widget);
@@ -1533,22 +1537,8 @@ void MainWindow::updateSelectedObjects() {
             } else if (key == "quantity") {
                 spin->setToolTip("The number of items received when the hidden item is picked up.");
                 spin->setMaximum(127);
-                connect(spin, QOverload<int>::of(&NoScrollSpinBox::valueChanged), [item, key](int value) {
-                    item->event->put(key, value);
-                });
             } else if (key == "underfoot") {
                 check->setToolTip("If checked, hidden item can only be picked up using the Itemfinder");
-                connect(check, &QCheckBox::stateChanged, [item, key](int state) {
-                    switch (state)
-                    {
-                        case Qt::Checked:
-                            item->event->put(key, true);
-                            break;
-                        case Qt::Unchecked:
-                            item->event->put(key, false);
-                            break;
-                    }
-                });
             } else if (key == "flag" || key == "event_flag") {
                 if (!editor->project->flagNames->contains(value)) {
                     combo->addItem(value);
@@ -1616,6 +1606,8 @@ void MainWindow::updateSelectedObjects() {
                 combo->setToolTip("The maximum sight range of a trainer,\n"
                                   "OR the unique id of the berry tree.");
                 combo->setMinimumContentsLength(4);
+            } else if (key == "in_connection") {
+                check->setToolTip("Check if object is positioned in the connection to another map.");
             } else {
                 combo->addItem(value);
             }
@@ -1626,12 +1618,29 @@ void MainWindow::updateSelectedObjects() {
                 fl->addRow(new QLabel(field_labels[key], widget), spin);
                 widget->setLayout(fl);
                 frame->layout()->addWidget(widget);
-            } else if (key == "underfoot") {
+
+                connect(spin, QOverload<int>::of(&NoScrollSpinBox::valueChanged), [item, key](int value) {
+                    item->event->put(key, value);
+                });
+
+            } else if (key == "underfoot" || key == "in_connection") {
                 check->setChecked(value.toInt());
 
                 fl->addRow(new QLabel(field_labels[key], widget), check);
                 widget->setLayout(fl);
                 frame->layout()->addWidget(widget);
+
+                connect(check, &QCheckBox::stateChanged, [item, key](int state) {
+                    switch (state)
+                    {
+                        case Qt::Checked:
+                            item->event->put(key, true);
+                            break;
+                        case Qt::Unchecked:
+                            item->event->put(key, false);
+                            break;
+                    }
+                });
             } else {
                 combo->setCurrentText(value);
 

@@ -59,6 +59,9 @@ Event* Event::createNewObjectEvent(Project *project)
     event->put("event_type", EventType::Object);
     event->put("sprite", project->getEventObjGfxConstants().keys().first());
     event->put("movement_type", project->movementTypes->first());
+    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+        event->put("in_connection", false);
+    }
     event->put("radius_x", 0);
     event->put("radius_y", 0);
     event->put("script_label", "NULL");
@@ -163,19 +166,36 @@ QMap<QString, bool> Event::getExpectedFields()
 {
     QString type = this->get("event_type");
     if (type == EventType::Object) {
-        return QMap<QString, bool> {
-            {"graphics_id", true},
-            {"x", true},
-            {"y", true},
-            {"elevation", true},
-            {"movement_type", true},
-            {"movement_range_x", true},
-            {"movement_range_y", true},
-            {"trainer_type", true},
-            {"trainer_sight_or_berry_tree_id", true},
-            {"script", true},
-            {"flag", true},
-        };
+        if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+            return QMap<QString, bool> {
+                {"graphics_id", true},
+                {"in_connection", true},
+                {"x", true},
+                {"y", true},
+                {"elevation", true},
+                {"movement_type", true},
+                {"movement_range_x", true},
+                {"movement_range_y", true},
+                {"trainer_type", true},
+                {"trainer_sight_or_berry_tree_id", true},
+                {"script", true},
+                {"flag", true},
+            };
+        } else {
+            return QMap<QString, bool> {
+                {"graphics_id", true},
+                {"x", true},
+                {"y", true},
+                {"elevation", true},
+                {"movement_type", true},
+                {"movement_range_x", true},
+                {"movement_range_y", true},
+                {"trainer_type", true},
+                {"trainer_sight_or_berry_tree_id", true},
+                {"script", true},
+                {"flag", true},
+            };
+        }
     } else if (type == EventType::Warp) {
         return QMap<QString, bool> {
             {"x", true},
@@ -270,6 +290,9 @@ QJsonObject Event::buildObjectEventJSON()
 {
     QJsonObject eventObj;
     eventObj["graphics_id"] = this->get("sprite");
+    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+        eventObj["in_connection"] = this->getInt("in_connection") > 0 || this->get("in_connection") == "TRUE";
+    }
     eventObj["x"] = this->getU16("x");
     eventObj["y"] = this->getU16("y");
     eventObj["elevation"] = this->getInt("elevation");
