@@ -1,6 +1,7 @@
 #include "event.h"
 #include "map.h"
 #include "project.h"
+#include "config.h"
 
 QString EventType::Object = "event_object";
 QString EventType::Warp = "event_warp";
@@ -131,6 +132,10 @@ Event* Event::createNewHiddenItemEvent(Project *project)
     event->put("item", project->itemNames->first());
     event->put("flag", project->flagNames->first());
     event->put("elevation", 3);
+    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+        event->put("quantity", 1);
+        event->put("underfoot", false);
+    }
     return event;
 }
 
@@ -207,14 +212,27 @@ QMap<QString, bool> Event::getExpectedFields()
             {"script", true},
         };
     } else if (type == EventType::HiddenItem) {
-        return QMap<QString, bool> {
-            {"type", true},
-            {"x", true},
-            {"y", true},
-            {"elevation", true},
-            {"item", true},
-            {"flag", true},
-        };
+        if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+            return QMap<QString, bool> {
+                {"type", true},
+                {"x", true},
+                {"y", true},
+                {"elevation", true},
+                {"item", true},
+                {"flag", true},
+                {"quantity", true},
+                {"underfoot", true},
+            };
+        } else {
+            return QMap<QString, bool> {
+                {"type", true},
+                {"x", true},
+                {"y", true},
+                {"elevation", true},
+                {"item", true},
+                {"flag", true},
+            };
+        }
     } else if (type == EventType::SecretBase) {
         return QMap<QString, bool> {
             {"type", true},
@@ -331,6 +349,10 @@ QJsonObject Event::buildHiddenItemEventJSON()
     hiddenItemObj["elevation"] = this->getInt("elevation");
     hiddenItemObj["item"] = this->get("item");
     hiddenItemObj["flag"] = this->get("flag");
+    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+        hiddenItemObj["quantity"] = this->getInt("quantity");
+        hiddenItemObj["underfoot"] = this->getInt("underfoot") > 0 || this->get("underfoot") == "TRUE";
+    }
     this->addCustomValuesTo(&hiddenItemObj);
 
     return hiddenItemObj;

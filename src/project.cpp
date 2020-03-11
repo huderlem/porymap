@@ -325,6 +325,10 @@ bool Project::loadMapData(Map* map) {
             bg->put("elevation", QString::number(event["elevation"].toInt()));
             bg->put("item", event["item"].toString());
             bg->put("flag", event["flag"].toString());
+            if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+                bg->put("quantity", event["quantity"].toInt());
+                bg->put("underfoot", event["underfoot"].toBool());
+            }
             bg->put("event_group_type", "bg_event_group");
             map->events["bg_event_group"].append(bg);
         } else if (type == "secret_base") {

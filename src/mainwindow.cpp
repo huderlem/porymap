@@ -1407,8 +1407,8 @@ void MainWindow::updateSelectedObjects() {
         field_labels["script_var_value"] = "Var Value";
         field_labels["player_facing_direction"] = "Player Facing Direction";
         field_labels["item"] = "Item";
-        field_labels["item_unknown5"] = "Unknown 5";
-        field_labels["item_unknown6"] = "Unknown 6";
+        field_labels["quantity"] = "Quantity";
+        field_labels["underfoot"] = "Requires Itemfinder";
         field_labels["weather"] = "Weather";
         field_labels["flag"] = "Flag";
         field_labels["secret_base_id"] = "Secret Base Id";
@@ -1459,6 +1459,10 @@ void MainWindow::updateSelectedObjects() {
         else if (event_type == EventType::HiddenItem) {
             fields << "item";
             fields << "flag";
+            if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+                fields << "quantity";
+                fields << "underfoot";
+            }
         }
         else if (event_type == EventType::SecretBase) {
             fields << "secret_base_id";
@@ -1476,8 +1480,19 @@ void MainWindow::updateSelectedObjects() {
             fl->setContentsMargins(9, 0, 9, 0);
             fl->setRowWrapPolicy(QFormLayout::WrapLongRows);
 
-            NoScrollComboBox *combo = new NoScrollComboBox(widget);
-            combo->setEditable(true);
+            NoScrollSpinBox *spin;
+            NoScrollComboBox *combo;
+            QCheckBox *check;
+
+            // Some keys shouldn't use a combobox. This isn't very scalable
+            if (key == "quantity") {
+                spin = new NoScrollSpinBox(widget);
+            } else if (key == "underfoot") {
+                check = new QCheckBox(widget);
+            } else {
+                combo = new NoScrollComboBox(widget);
+                combo->setEditable(true);
+            }
 
             // trainer_type has custom values, so it has special signal logic.
             if (key == "trainer_type") {
@@ -1515,6 +1530,25 @@ void MainWindow::updateSelectedObjects() {
                     combo->addItem(value);
                 }
                 combo->addItems(*editor->project->itemNames);
+            } else if (key == "quantity") {
+                spin->setToolTip("The number of items received when the hidden item is picked up.");
+                spin->setMaximum(127);
+                connect(spin, QOverload<int>::of(&NoScrollSpinBox::valueChanged), [item, key](int value) {
+                    item->event->put(key, value);
+                });
+            } else if (key == "underfoot") {
+                check->setToolTip("If checked, hidden item can only be picked up using the Itemfinder");
+                connect(check, &QCheckBox::stateChanged, [item, key](int state) {
+                    switch (state)
+                    {
+                        case Qt::Checked:
+                            item->event->put(key, true);
+                            break;
+                        case Qt::Unchecked:
+                            item->event->put(key, false);
+                            break;
+                    }
+                });
             } else if (key == "flag" || key == "event_flag") {
                 if (!editor->project->flagNames->contains(value)) {
                     combo->addItem(value);
@@ -1585,13 +1619,28 @@ void MainWindow::updateSelectedObjects() {
             } else {
                 combo->addItem(value);
             }
-            combo->setCurrentText(value);
 
-            fl->addRow(new QLabel(field_labels[key], widget), combo);
-            widget->setLayout(fl);
-            frame->layout()->addWidget(widget);
+            if (key == "quantity") {
+                spin->setValue(value.toInt());
 
-            item->bind(combo, key);
+                fl->addRow(new QLabel(field_labels[key], widget), spin);
+                widget->setLayout(fl);
+                frame->layout()->addWidget(widget);
+            } else if (key == "underfoot") {
+                check->setChecked(value.toInt());
+
+                fl->addRow(new QLabel(field_labels[key], widget), check);
+                widget->setLayout(fl);
+                frame->layout()->addWidget(widget);
+            } else {
+                combo->setCurrentText(value);
+
+                fl->addRow(new QLabel(field_labels[key], widget), combo);
+                widget->setLayout(fl);
+                frame->layout()->addWidget(widget);
+
+                item->bind(combo, key);
+            }
         }
 
         // Custom fields table.
