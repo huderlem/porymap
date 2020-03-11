@@ -620,6 +620,13 @@ void MainWindow::on_checkBox_AllowEscapeRope_clicked(bool checked)
     }
 }
 
+void MainWindow::on_spinBox_FloorNumber_valueChanged(int offset)
+{
+    if (editor && editor->map) {
+        editor->map->floorNumber = offset;
+    }
+}
+
 bool MainWindow::loadDataStructures() {
     Project *project = editor->project;
     bool success = project->readMapLayouts()
@@ -1612,6 +1619,7 @@ void MainWindow::updateSelectedObjects() {
                 combo->addItem(value);
             }
 
+            // Keys using spin boxes
             if (key == "quantity") {
                 spin->setValue(value.toInt());
 
@@ -1622,7 +1630,7 @@ void MainWindow::updateSelectedObjects() {
                 connect(spin, QOverload<int>::of(&NoScrollSpinBox::valueChanged), [item, key](int value) {
                     item->event->put(key, value);
                 });
-
+            // Keys using check boxes
             } else if (key == "underfoot" || key == "in_connection") {
                 check->setChecked(value.toInt());
 
@@ -1641,6 +1649,7 @@ void MainWindow::updateSelectedObjects() {
                             break;
                     }
                 });
+            // Keys using combo boxes
             } else {
                 combo->setCurrentText(value);
 
