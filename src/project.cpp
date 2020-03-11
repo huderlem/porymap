@@ -403,20 +403,22 @@ QString Project::readMapLocation(QString map_name) {
 }
 
 void Project::setNewMapHeader(Map* map, int mapIndex) {
-    map->song = "MUS_DAN02";
     map->layoutId = QString("%1").arg(mapIndex);
     map->location = "MAPSEC_LITTLEROOT_TOWN";
     map->requiresFlash = "FALSE";
     map->weather = "WEATHER_SUNNY";
     map->type = "MAP_TYPE_TOWN";
     if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeruby) {
+        map->song = "MUS_DAN02";
         map->show_location = "TRUE";
     } else if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeemerald) {
+        map->song = "MUS_DAN02";
         map->allowBiking = "1";
         map->allowEscapeRope = "0";
         map->allowRunning = "1";
         map->show_location = "1";
     }  else if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+        map->song = "MUS_MASARA";
         map->allowBiking = "1";
         map->allowEscapeRope = "0";
         map->allowRunning = "1";

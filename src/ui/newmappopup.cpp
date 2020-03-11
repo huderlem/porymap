@@ -135,7 +135,11 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
     newMap->name = newMapName;
     newMap->type = this->ui->comboBox_NewMap_Type->currentText();
     newMap->location = this->ui->comboBox_NewMap_Location->currentText();
-    newMap->song = "MUS_DAN02";
+    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+        newMap->song = "MUS_MASARA";
+    } else {
+        newMap->song = "MUS_DAN02";
+    }
     newMap->requiresFlash = "0";
     newMap->weather = "WEATHER_SUNNY";
     newMap->show_location = "1";
