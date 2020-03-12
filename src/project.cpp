@@ -1961,8 +1961,6 @@ bool Project::readWeatherNames() {
 }
 
 bool Project::readCoordEventWeatherNames() {
-    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered)
-        return true;
     coordEventWeatherNames->clear();
     QStringList prefixes = (QStringList() << "COORD_EVENT_WEATHER_");
     QString filename = "include/constants/weather.h";

@@ -50,7 +50,6 @@ MainWindow::MainWindow(QWidget *parent) :
         // Re-initialize everything to a blank slate if opening the recent project failed.
         this->initWindow();
     }
-
     on_toolButton_Paint_clicked();
 }
 
@@ -185,6 +184,11 @@ void MainWindow::setProjectSpecificUIVisibility()
         ui->label_AllowBiking->setVisible(true);
         ui->label_AllowEscapeRope->setVisible(true);
         ui->label_FloorNumber->setVisible(true);
+        ui->newEventToolButton->newWeatherTriggerAction->setVisible(false);
+        ui->newEventToolButton->newSecretBaseAction->setVisible(false);
+        // TODO: pokefirered is not set up for the Region Map Editor and vice versa. 
+        //       porymap will crash on attempt. Remove below once resolved
+        ui->actionRegion_Map_Editor->setVisible(false);
         break;
     }
 }
@@ -639,7 +643,6 @@ bool MainWindow::loadDataStructures() {
                 && project->readMapTypes()
                 && project->readMapBattleScenes()
                 && project->readWeatherNames()
-                && project->readCoordEventWeatherNames()
                 && project->readBgEventFacingDirections()
                 && project->readMetatileBehaviors()
                 && project->readTilesetProperties()
@@ -648,7 +651,9 @@ bool MainWindow::loadDataStructures() {
                 && project->readSpeciesIconPaths()
                 && project->readWildMonData();
     if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeemerald || projectConfig.getBaseGameVersion() == BaseGameVersion::pokeruby)
-        success = success && project->readSecretBaseIds();
+        success = success 
+               && project->readSecretBaseIds() 
+               && project->readCoordEventWeatherNames();
     if (!success) {
         return false;
     }
