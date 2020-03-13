@@ -59,7 +59,7 @@ int Map::getHeight() {
     return layout->height.toInt(nullptr, 0);
 }
 
-bool Map::blockChanged(int i, Blockdata *cache) {
+bool Map::mapBlockChanged(int i, Blockdata * cache) {
     if (!cache)
         return true;
     if (!layout->blockdata)
@@ -74,6 +74,23 @@ bool Map::blockChanged(int i, Blockdata *cache) {
         return true;
 
     return layout->blockdata->blocks->value(i) != cache->blocks->value(i);
+}
+
+bool Map::borderBlockChanged(int i, Blockdata * cache) {
+    if (!cache)
+        return true;
+    if (!layout->border)
+        return true;
+    if (!cache->blocks)
+        return true;
+    if (!layout->border->blocks)
+        return true;
+    if (cache->blocks->length() <= i)
+        return true;
+    if (layout->border->blocks->length() <= i)
+        return true;
+
+    return layout->border->blocks->value(i) != cache->blocks->value(i);
 }
 
 void Map::cacheBorder() {
@@ -127,7 +144,7 @@ QPixmap Map::renderCollision(qreal opacity, bool ignoreCache) {
     }
     QPainter painter(&collision_image);
     for (int i = 0; i < layout->blockdata->blocks->length(); i++) {
-        if (!ignoreCache && layout->cached_collision && !blockChanged(i, layout->cached_collision)) {
+        if (!ignoreCache && layout->cached_collision && !mapBlockChanged(i, layout->cached_collision)) {
             continue;
         }
         changed_any = true;
@@ -171,7 +188,7 @@ QPixmap Map::render(bool ignoreCache = false, MapLayout * fromLayout) {
 
     QPainter painter(&image);
     for (int i = 0; i < layout->blockdata->blocks->length(); i++) {
-        if (!ignoreCache && !blockChanged(i, layout->cached_blockdata)) {
+        if (!ignoreCache && !mapBlockChanged(i, layout->cached_blockdata)) {
             continue;
         }
         changed_any = true;
@@ -209,7 +226,7 @@ QPixmap Map::renderBorder() {
     }
     QPainter painter(&layout->border_image);
     for (int i = 0; i < layout->border->blocks->length(); i++) {
-        if (!blockChanged(i, layout->cached_border)) {
+        if (!borderBlockChanged(i, layout->cached_border)) {
             continue;
         }
         changed_any = true;

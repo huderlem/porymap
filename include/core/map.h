@@ -59,7 +59,8 @@ public:
     int getHeight();
     QPixmap render(bool ignoreCache, MapLayout * fromLayout = nullptr);
     QPixmap renderCollision(qreal opacity, bool ignoreCache);
-    bool blockChanged(int, Blockdata*);
+    bool mapBlockChanged(int i, Blockdata * cache);
+    bool borderBlockChanged(int i, Blockdata * cache);
     void cacheBlockdata();
     void cacheCollision();
     Block *getBlock(int x, int y);
