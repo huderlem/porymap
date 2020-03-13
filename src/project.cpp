@@ -489,7 +489,7 @@ bool Project::readMapLayouts() {
             return false;
         }
         layout->blockdata_path = layoutObj["blockdata_filepath"].toString();
-        if (layout->border_path.isEmpty()) {
+        if (layout->blockdata_path.isEmpty()) {
             logError(QString("Missing 'blockdata_filepath' value on layout %1 in %2").arg(i).arg(layoutsFilepath));
             return false;
         }
