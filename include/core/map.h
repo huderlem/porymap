@@ -14,6 +14,9 @@
 #include <QGraphicsPixmapItem>
 #include <math.h>
 
+#define DEFAULT_BORDER_WIDTH 2
+#define DEFAULT_BORDER_HEIGHT 2
+
 class Map : public QObject
 {
     Q_OBJECT
@@ -58,6 +61,8 @@ public:
     static QString bgEventsLabelFromName(QString mapName);
     int getWidth();
     int getHeight();
+    int getBorderWidth();
+    int getBorderHeight();
     QPixmap render(bool ignoreCache, MapLayout * fromLayout = nullptr);
     QPixmap renderCollision(qreal opacity, bool ignoreCache);
     bool blockChanged(int, Blockdata*);

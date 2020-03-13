@@ -8,6 +8,7 @@
 #include "tile.h"
 #include "tileset.h"
 #include "imageexport.h"
+#include "map.h"
 
 #include <QDir>
 #include <QJsonArray>
@@ -489,6 +490,11 @@ bool Project::readMapLayouts() {
         "border_filepath",
         "blockdata_filepath",
     };
+    bool useCustomBorderSize = projectConfig.getUseCustomBorderSize();
+    if (useCustomBorderSize) {
+        requiredFields.append("border_width");
+        requiredFields.append("border_height");
+    }
     for (int i = 0; i < layouts.size(); i++) {
         QJsonObject layoutObj = layouts[i].toObject();
         if (layoutObj.isEmpty())
@@ -520,6 +526,23 @@ bool Project::readMapLayouts() {
             return false;
         }
         layout->height = QString::number(lheight);
+        if (useCustomBorderSize) {
+            int bwidth = layoutObj["border_width"].toInt();
+            if (bwidth <= 0) {  // 0 is an expected border width/height that should be handled, GF used it for the RS layouts in FRLG
+                logWarn(QString("Invalid layout 'border_width' value '%1' on layout %2 in %3. Must be greater than 0. Using default (%4) instead.").arg(bwidth).arg(i).arg(layoutsFilepath).arg(DEFAULT_BORDER_WIDTH));
+                bwidth = DEFAULT_BORDER_WIDTH;
+            }
+            layout->border_width = QString::number(bwidth);
+            int bheight = layoutObj["border_height"].toInt();
+            if (bheight <= 0) {
+                logWarn(QString("Invalid layout 'border_height value '%1' on layout %2 in %3. Must be greater than 0. Using default (%4) instead.").arg(bheight).arg(i).arg(layoutsFilepath).arg(DEFAULT_BORDER_HEIGHT));
+                bheight = DEFAULT_BORDER_HEIGHT;
+            }
+            layout->border_height = QString::number(bheight);
+        } else {
+            layout->border_width = QString::number(DEFAULT_BORDER_WIDTH);
+            layout->border_height = QString::number(DEFAULT_BORDER_HEIGHT);
+        }
         layout->tileset_primary_label = layoutObj["primary_tileset"].toString();
         if (layout->tileset_primary_label.isEmpty()) {
             logError(QString("Missing 'primary_tileset' value on layout %1 in %2").arg(i).arg(layoutsFilepath));
@@ -536,7 +559,7 @@ bool Project::readMapLayouts() {
             return false;
         }
         layout->blockdata_path = layoutObj["blockdata_filepath"].toString();
-        if (layout->border_path.isEmpty()) {
+        if (layout->blockdata_path.isEmpty()) {
             logError(QString("Missing 'blockdata_filepath' value on layout %1 in %2").arg(i).arg(layoutsFilepath));
             return false;
         }
@@ -563,6 +586,7 @@ void Project::saveMapLayouts() {
     QJsonObject layoutsObj;
     layoutsObj["layouts_table_label"] = layoutsLabel;
 
+    bool useCustomBorderSize = projectConfig.getUseCustomBorderSize();
     QJsonArray layoutsArr;
     for (QString layoutId : mapLayoutsTableMaster) {
         MapLayout *layout = mapLayouts.value(layoutId);
@@ -571,6 +595,10 @@ void Project::saveMapLayouts() {
         layoutObj["name"] = layout->name;
         layoutObj["width"] = layout->width.toInt(nullptr, 0);
         layoutObj["height"] = layout->height.toInt(nullptr, 0);
+        if (useCustomBorderSize) {
+            layoutObj["border_width"] = layout->border_width.toInt(nullptr, 0);
+            layoutObj["border_height"] = layout->border_height.toInt(nullptr, 0);
+        }
         layoutObj["primary_tileset"] = layout->tileset_primary_label;
         layoutObj["secondary_tileset"] = layout->tileset_secondary_label;
         layoutObj["border_filepath"] = layout->border_path;
@@ -1034,7 +1062,7 @@ bool Project::loadMapBorder(Map *map) {
 
     QString path = QString("%1/%2").arg(root).arg(map->layout->border_path);
     map->layout->border = readBlockdata(path);
-    int borderLength = 4;
+    int borderLength = map->getBorderWidth() * map->getBorderHeight();
     if (map->layout->border->blocks->count() != borderLength) {
         logWarn(QString("Layout border blockdata length %1 must be %2. Resizing border blockdata.")
                 .arg(map->layout->border->blocks->count())
@@ -1046,10 +1074,17 @@ bool Project::loadMapBorder(Map *map) {
 
 void Project::setNewMapBorder(Map *map) {
     Blockdata *blockdata = new Blockdata;
-    blockdata->addBlock(qint16(0x01D4));
-    blockdata->addBlock(qint16(0x01D5));
-    blockdata->addBlock(qint16(0x01DC));
-    blockdata->addBlock(qint16(0x01DD));
+    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+        blockdata->addBlock(qint16(0x0014));
+        blockdata->addBlock(qint16(0x0015));
+        blockdata->addBlock(qint16(0x001C));
+        blockdata->addBlock(qint16(0x001D));
+    } else {
+        blockdata->addBlock(qint16(0x01D4));
+        blockdata->addBlock(qint16(0x01D5));
+        blockdata->addBlock(qint16(0x01DC));
+        blockdata->addBlock(qint16(0x01DD));
+    }
     map->layout->border = blockdata;
 }
 
@@ -1136,6 +1171,10 @@ void Project::saveMap(Map *map) {
     newLayoutObj["name"] = map->layout->name;
     newLayoutObj["width"] = map->layout->width.toInt();
     newLayoutObj["height"] = map->layout->height.toInt();
+    if (projectConfig.getUseCustomBorderSize()) {
+        newLayoutObj["border_width"] = map->layout->border_width.toInt();
+        newLayoutObj["border_height"] = map->layout->border_height.toInt();
+    }
     newLayoutObj["primary_tileset"] = map->layout->tileset_primary_label;
     newLayoutObj["secondary_tileset"] = map->layout->tileset_secondary_label;
     newLayoutObj["border_filepath"] = map->layout->border_path;

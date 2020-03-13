@@ -1335,8 +1335,8 @@ void Editor::displayMapBorder() {
     borderItems.clear();
 
     QPixmap pixmap = map->renderBorder();
-    for (int y = -6; y < map->getHeight() + 6; y += 2)
-    for (int x = -6; x < map->getWidth() + 6; x += 2) {
+    for (int y = -6; y < map->getHeight() + 6; y += map->getBorderHeight())
+    for (int x = -6; x < map->getWidth() + 6; x += map->getBorderWidth()) {
         QGraphicsPixmapItem *item = new QGraphicsPixmapItem(pixmap);
         item->setX(x * 16);
         item->setY(y * 16);

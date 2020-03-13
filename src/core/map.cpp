@@ -59,6 +59,14 @@ int Map::getHeight() {
     return layout->height.toInt(nullptr, 0);
 }
 
+int Map::getBorderWidth() {
+    return layout->border_width.toInt(nullptr, 0);
+}
+
+int Map::getBorderHeight() {
+    return layout->border_height.toInt(nullptr, 0);
+}
+
 bool Map::blockChanged(int i, Blockdata *cache) {
     if (!cache)
         return true;
@@ -197,8 +205,8 @@ QPixmap Map::render(bool ignoreCache = false, MapLayout * fromLayout) {
 
 QPixmap Map::renderBorder() {
     bool changed_any = false;
-    int width_ = 2;
-    int height_ = 2;
+    int width_ = getBorderWidth();
+    int height_ = getBorderHeight();
     if (layout->border_image.isNull()) {
         layout->border_image = QImage(width_ * 16, height_ * 16, QImage::Format_RGBA8888);
         changed_any = true;

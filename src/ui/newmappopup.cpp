@@ -154,6 +154,8 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
         layout->name = QString("%1_Layout").arg(newMap->name);
         layout->width = QString::number(this->ui->spinBox_NewMap_Width->value());
         layout->height = QString::number(this->ui->spinBox_NewMap_Height->value());
+        layout->border_width = QString::number(DEFAULT_BORDER_WIDTH);
+        layout->border_height = QString::number(DEFAULT_BORDER_HEIGHT);
         layout->tileset_primary_label = this->ui->comboBox_NewMap_Primary_Tileset->currentText();
         layout->tileset_secondary_label = this->ui->comboBox_NewMap_Secondary_Tileset->currentText();
         layout->border_path = QString("data/layouts/%1/border.bin").arg(newMapName);
