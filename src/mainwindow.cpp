@@ -2150,7 +2150,7 @@ void MainWindow::on_comboBox_SecondaryTileset_currentTextChanged(const QString &
     }
 }
 
-void MainWindow::on_pushButton_clicked()
+void MainWindow::on_pushButton_ChangeDimensions_clicked()
 {
     QDialog dialog(this, Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
     dialog.setWindowTitle("Change Map Dimensions");
@@ -2160,15 +2160,31 @@ void MainWindow::on_pushButton_clicked()
 
     QSpinBox *widthSpinBox = new QSpinBox();
     QSpinBox *heightSpinBox = new QSpinBox();
+    QSpinBox *bwidthSpinBox = new QSpinBox();
+    QSpinBox *bheightSpinBox = new QSpinBox();
     widthSpinBox->setMinimum(1);
     heightSpinBox->setMinimum(1);
+    bwidthSpinBox->setMinimum(1);
+    bheightSpinBox->setMinimum(1);
     // See below for explanation of maximum map dimensions
     widthSpinBox->setMaximum(0x1E7);
     heightSpinBox->setMaximum(0x1D1);
+    // Maximum based only on data type (u8) of map border width/height
+    bwidthSpinBox->setMaximum(255);
+    bheightSpinBox->setMaximum(255);
     widthSpinBox->setValue(editor->map->getWidth());
     heightSpinBox->setValue(editor->map->getHeight());
-    form.addRow(new QLabel("Width"), widthSpinBox);
-    form.addRow(new QLabel("Height"), heightSpinBox);
+    bwidthSpinBox->setValue(editor->map->getBorderWidth());
+    bheightSpinBox->setValue(editor->map->getBorderHeight());
+    if (projectConfig.getUseCustomBorderSize()) {
+        form.addRow(new QLabel("Map Width"), widthSpinBox);
+        form.addRow(new QLabel("Map Height"), heightSpinBox);
+        form.addRow(new QLabel("Border Width"), bwidthSpinBox);
+        form.addRow(new QLabel("Border Height"), bheightSpinBox);
+    } else {
+        form.addRow(new QLabel("Width"), widthSpinBox);
+        form.addRow(new QLabel("Height"), heightSpinBox);
+    }
 
     QLabel *errorLabel = new QLabel();
     QPalette errorPalette;
@@ -2178,7 +2194,7 @@ void MainWindow::on_pushButton_clicked()
 
     QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
     form.addRow(&buttonBox);
-    connect(&buttonBox, &QDialogButtonBox::accepted, [&dialog, &widthSpinBox, &heightSpinBox, &errorLabel](){
+    connect(&buttonBox, &QDialogButtonBox::accepted, [&dialog, &widthSpinBox, &heightSpinBox, &bwidthSpinBox, &bheightSpinBox, &errorLabel](){
         // Ensure width and height are an acceptable size.
         // The maximum number of metatiles in a map is the following:
         //    max = (width + 15) * (height + 14)
@@ -2190,8 +2206,8 @@ void MainWindow::on_pushButton_clicked()
             dialog.accept();
         } else {
             QString errorText = QString("Error: The specified width and height are too large.\n"
-                    "The maximum width and height is the following: (width + 15) * (height + 14) <= 10240\n"
-                    "The specified width and height was: (%1 + 15) * (%2 + 14) = %3")
+                    "The maximum map width and height is the following: (width + 15) * (height + 14) <= 10240\n"
+                    "The specified map width and height was: (%1 + 15) * (%2 + 14) = %3")
                         .arg(widthSpinBox->value())
                         .arg(heightSpinBox->value())
                         .arg(numMetatiles);
@@ -2205,6 +2221,7 @@ void MainWindow::on_pushButton_clicked()
 
     if (dialog.exec() == QDialog::Accepted) {
         editor->map->setDimensions(widthSpinBox->value(), heightSpinBox->value());
+        editor->map->setBorderDimensions(bwidthSpinBox->value(), bheightSpinBox->value());
         editor->map->commit();
         onMapNeedsRedrawing();
     }

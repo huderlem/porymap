@@ -1136,10 +1136,10 @@ void Editor::displayMapMetatiles() {
     int tw = 16;
     int th = 16;
     scene->setSceneRect(
-        -6 * tw,
-        -6 * th,
-        map_item->pixmap().width() + 12 * tw,
-        map_item->pixmap().height() + 12 * th
+        -BORDER_DISTANCE * tw,
+        -BORDER_DISTANCE * th,
+        map_item->pixmap().width() + (BORDER_DISTANCE * 2) * tw,
+        map_item->pixmap().height() + (BORDER_DISTANCE * 2) * th
     );
 }
 
@@ -1335,8 +1335,8 @@ void Editor::displayMapBorder() {
     borderItems.clear();
 
     QPixmap pixmap = map->renderBorder();
-    for (int y = -6; y < map->getHeight() + 6; y += map->getBorderHeight())
-    for (int x = -6; x < map->getWidth() + 6; x += map->getBorderWidth()) {
+    for (int y = -BORDER_DISTANCE; y < map->getHeight() + BORDER_DISTANCE; y += map->getBorderHeight())
+    for (int x = -BORDER_DISTANCE; x < map->getWidth() + BORDER_DISTANCE; x += map->getBorderWidth()) {
         QGraphicsPixmapItem *item = new QGraphicsPixmapItem(pixmap);
         item->setX(x * 16);
         item->setY(y * 16);

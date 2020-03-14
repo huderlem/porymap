@@ -62,11 +62,15 @@ void NewMapPopup::setDefaultValues(int groupNum, QString mapSec) {
         ui->comboBox_NewMap_Secondary_Tileset->setCurrentText(project->mapLayouts.value(layoutId)->tileset_secondary_label);
         ui->spinBox_NewMap_Width->setDisabled(true);
         ui->spinBox_NewMap_Height->setDisabled(true);
+        ui->spinBox_NewMap_BorderWidth->setDisabled(true);
+        ui->spinBox_NewMap_BorderHeight->setDisabled(true);
         ui->comboBox_NewMap_Primary_Tileset->setDisabled(true);
         ui->comboBox_NewMap_Secondary_Tileset->setDisabled(true);
     } else {
         ui->spinBox_NewMap_Width->setValue(20);
         ui->spinBox_NewMap_Height->setValue(20);
+        ui->spinBox_NewMap_BorderWidth->setValue(DEFAULT_BORDER_WIDTH);
+        ui->spinBox_NewMap_BorderHeight->setValue(DEFAULT_BORDER_HEIGHT);
     }
 
     ui->comboBox_NewMap_Type->addItems(*project->mapTypes);
@@ -107,6 +111,17 @@ void NewMapPopup::setDefaultValues(int groupNum, QString mapSec) {
         ui->label_NewMap_Allow_Escape_Rope->setVisible(true);
         ui->label_NewMap_Floor_Number->setVisible(true);
         break;
+    }
+    if (projectConfig.getUseCustomBorderSize()) {
+        ui->spinBox_NewMap_BorderWidth->setVisible(true);
+        ui->spinBox_NewMap_BorderHeight->setVisible(true);
+        ui->label_NewMap_BorderWidth->setVisible(true);
+        ui->label_NewMap_BorderHeight->setVisible(true);
+    } else {
+        ui->spinBox_NewMap_BorderWidth->setVisible(false);
+        ui->spinBox_NewMap_BorderHeight->setVisible(false);
+        ui->label_NewMap_BorderWidth->setVisible(false);
+        ui->label_NewMap_BorderHeight->setVisible(false);
     }
 }
 
@@ -154,8 +169,13 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
         layout->name = QString("%1_Layout").arg(newMap->name);
         layout->width = QString::number(this->ui->spinBox_NewMap_Width->value());
         layout->height = QString::number(this->ui->spinBox_NewMap_Height->value());
-        layout->border_width = QString::number(DEFAULT_BORDER_WIDTH);
-        layout->border_height = QString::number(DEFAULT_BORDER_HEIGHT);
+        if (projectConfig.getUseCustomBorderSize()) {
+            layout->border_width = QString::number(this->ui->spinBox_NewMap_BorderWidth->value());
+            layout->border_height = QString::number(this->ui->spinBox_NewMap_BorderHeight->value());
+        } else {
+            layout->border_width = QString::number(DEFAULT_BORDER_WIDTH);
+            layout->border_height = QString::number(DEFAULT_BORDER_HEIGHT);
+        }
         layout->tileset_primary_label = this->ui->comboBox_NewMap_Primary_Tileset->currentText();
         layout->tileset_secondary_label = this->ui->comboBox_NewMap_Secondary_Tileset->currentText();
         layout->border_path = QString("data/layouts/%1/border.bin").arg(newMapName);

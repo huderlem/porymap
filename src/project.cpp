@@ -617,6 +617,8 @@ void Project::setNewMapLayout(Map* map) {
     layout->name = QString("%1_Layout").arg(map->name);
     layout->width = "20";
     layout->height = "20";
+    layout->border_width = DEFAULT_BORDER_WIDTH;
+    layout->border_height = DEFAULT_BORDER_HEIGHT;
     layout->border_path = QString("data/layouts/%1/border.bin").arg(map->name);
     layout->blockdata_path = QString("data/layouts/%1/map.bin").arg(map->name);
     layout->tileset_primary_label = "gTileset_General";
@@ -1074,7 +1076,11 @@ bool Project::loadMapBorder(Map *map) {
 
 void Project::setNewMapBorder(Map *map) {
     Blockdata *blockdata = new Blockdata;
-    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+    if (map->getBorderWidth() != DEFAULT_BORDER_WIDTH || map->getBorderHeight() != DEFAULT_BORDER_HEIGHT) {
+        for (int i = 0; i < map->getBorderWidth() * map->getBorderHeight(); i++) {
+            blockdata->addBlock(0);
+        }
+    } else if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
         blockdata->addBlock(qint16(0x0014));
         blockdata->addBlock(qint16(0x0015));
         blockdata->addBlock(qint16(0x001C));
