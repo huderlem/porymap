@@ -1477,16 +1477,35 @@ void Project::loadTilesetMetatiles(Tileset* tileset) {
     if (attrs_file.open(QIODevice::ReadOnly)) {
         QByteArray data = attrs_file.readAll();
         int num_metatiles = tileset->metatiles->count();
-        int num_metatileAttrs = data.length() / 2;
-        if (num_metatiles != num_metatileAttrs) {
-            logWarn(QString("Metatile count %1 does not match metatile attribute count %2 in %3").arg(num_metatiles).arg(num_metatileAttrs).arg(tileset->name));
-            if (num_metatileAttrs > num_metatiles)
-                num_metatileAttrs = num_metatiles;
-        }
-        for (int i = 0; i < num_metatileAttrs; i++) {
-            int value = (static_cast<unsigned char>(data.at(i * 2 + 1)) << 8) | static_cast<unsigned char>(data.at(i * 2));
-            tileset->metatiles->at(i)->behavior = value & 0xFF;
-            tileset->metatiles->at(i)->layerType = (value & 0xF000) >> 12;
+
+        if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+            int num_metatileAttrs = data.length() / 4;
+            if (num_metatiles != num_metatileAttrs) {
+                logWarn(QString("Metatile count %1 does not match metatile attribute count %2 in %3").arg(num_metatiles).arg(num_metatileAttrs).arg(tileset->name));
+                if (num_metatileAttrs > num_metatiles)
+                    num_metatileAttrs = num_metatiles;
+            }
+            for (int i = 0; i < num_metatileAttrs; i++) {
+                int value = (static_cast<unsigned char>(data.at(i * 4 + 3)) << 24) | 
+                            (static_cast<unsigned char>(data.at(i * 4 + 2)) << 16) | 
+                            (static_cast<unsigned char>(data.at(i * 4 + 1)) << 8) | 
+                            (static_cast<unsigned char>(data.at(i * 4 + 0)));
+
+                tileset->metatiles->at(i)->behavior = value & 0x1FF;
+                tileset->metatiles->at(i)->layerType = (value & 0x60000000) >> 29;
+            }
+        } else {
+            int num_metatileAttrs = data.length() / 2;
+            if (num_metatiles != num_metatileAttrs) {
+                logWarn(QString("Metatile count %1 does not match metatile attribute count %2 in %3").arg(num_metatiles).arg(num_metatileAttrs).arg(tileset->name));
+                if (num_metatileAttrs > num_metatiles)
+                    num_metatileAttrs = num_metatiles;
+            }
+            for (int i = 0; i < num_metatileAttrs; i++) {
+                int value = (static_cast<unsigned char>(data.at(i * 2 + 1)) << 8) | static_cast<unsigned char>(data.at(i * 2));
+                tileset->metatiles->at(i)->behavior = value & 0xFF;
+                tileset->metatiles->at(i)->layerType = (value & 0xF000) >> 12;
+            }
         }
     } else {
         logError(QString("Could not open tileset metatile attributes file '%1'").arg(tileset->metatile_attrs_path));
