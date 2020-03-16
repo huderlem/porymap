@@ -126,6 +126,7 @@ public:
     void saveTilesetTilesImage(Tileset*);
     void saveTilesetPalettes(Tileset*, bool);
 
+    QString defaultSong;
     QStringList getSongNames();
     QStringList getVisibilities();
     QMap<QString, QStringList> getTilesetLabels();

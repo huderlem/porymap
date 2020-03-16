@@ -150,15 +150,11 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
     newMap->name = newMapName;
     newMap->type = this->ui->comboBox_NewMap_Type->currentText();
     newMap->location = this->ui->comboBox_NewMap_Location->currentText();
-    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
-        newMap->song = "MUS_MASARA";
-    } else {
-        newMap->song = "MUS_DAN02";
-    }
+    newMap->song = this->project->defaultSong;
     newMap->requiresFlash = "0";
-    newMap->weather = "WEATHER_SUNNY";
+    newMap->weather = this->project->weatherNames->at(0);
     newMap->show_location = "1";
-    newMap->battle_scene = "MAP_BATTLE_SCENE_NORMAL";
+    newMap->battle_scene = this->project->mapBattleScenes->at(0);
 
     if (this->existingLayout) {
         layout = this->project->mapLayouts.value(this->layoutId);

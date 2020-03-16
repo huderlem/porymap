@@ -412,21 +412,19 @@ QString Project::readMapLocation(QString map_name) {
 
 void Project::setNewMapHeader(Map* map, int mapIndex) {
     map->layoutId = QString("%1").arg(mapIndex);
-    map->location = "MAPSEC_LITTLEROOT_TOWN";
+    map->location = mapSectionValueToName.value(0);
     map->requiresFlash = "FALSE";
-    map->weather = "WEATHER_SUNNY";
-    map->type = "MAP_TYPE_TOWN";
+    map->weather = weatherNames->at(0);
+    map->type = mapTypes->at(0);
+    map->song = defaultSong;
     if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeruby) {
-        map->song = "MUS_DAN02";
         map->show_location = "TRUE";
     } else if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeemerald) {
-        map->song = "MUS_DAN02";
         map->allowBiking = "1";
         map->allowEscapeRope = "0";
         map->allowRunning = "1";
         map->show_location = "1";
     }  else if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
-        map->song = "MUS_MASARA";
         map->allowBiking = "1";
         map->allowEscapeRope = "0";
         map->allowRunning = "1";
@@ -434,7 +432,7 @@ void Project::setNewMapHeader(Map* map, int mapIndex) {
         map->floorNumber = 0;
     }
 
-    map->battle_scene = "MAP_BATTLE_SCENE_NORMAL";
+    map->battle_scene = mapBattleScenes->at(0);
 }
 
 bool Project::loadMapLayout(Map* map) {
@@ -2083,6 +2081,7 @@ QStringList Project::getSongNames() {
     songDefinePrefixes << "SE_" << "MUS_";
     QMap<QString, int> songDefines = parser.readCDefines("include/constants/songs.h", songDefinePrefixes);
     QStringList names = songDefines.keys();
+    this->defaultSong = names.at(0);
 
     return names;
 }
