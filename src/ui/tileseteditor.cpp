@@ -5,6 +5,7 @@
 #include "metatileparser.h"
 #include "paletteutil.h"
 #include "imageexport.h"
+#include "config.h"
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QDialogButtonBox>
@@ -60,6 +61,25 @@ void TilesetEditor::init(Project *project, QString primaryTilesetLabel, QString 
     this->ui->comboBox_layerType->addItem("Split - Bottom/Top", 2);
     this->ui->spinBox_paletteSelector->setMinimum(0);
     this->ui->spinBox_paletteSelector->setMaximum(Project::getNumPalettesTotal() - 1);
+
+    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+        this->ui->comboBox_encounterType->setVisible(true);
+        this->ui->label_encounterType->setVisible(true);
+        this->ui->comboBox_encounterType->addItem("None", 0);
+        this->ui->comboBox_encounterType->addItem("Grass", 1);
+        this->ui->comboBox_encounterType->addItem("Surf", 2);
+        this->ui->comboBox_terrainType->setVisible(true);
+        this->ui->label_terrainType->setVisible(true);
+        this->ui->comboBox_terrainType->addItem("Normal", 0);
+        this->ui->comboBox_terrainType->addItem("Grass", 1);
+        this->ui->comboBox_terrainType->addItem("Water", 2);
+        this->ui->comboBox_terrainType->addItem("Waterfall", 3);
+    } else {
+        this->ui->comboBox_encounterType->setVisible(false);
+        this->ui->label_encounterType->setVisible(false);
+        this->ui->comboBox_terrainType->setVisible(false);
+        this->ui->label_terrainType->setVisible(false);
+    }
 
     //only allow characters valid for a symbol
     QRegExp expression("[_A-Za-z0-9]*$");
@@ -206,6 +226,10 @@ void TilesetEditor::onSelectedMetatileChanged(uint16_t metatileId) {
     this->ui->comboBox_metatileBehaviors->setCurrentIndex(this->ui->comboBox_metatileBehaviors->findData(this->metatile->behavior));
     this->ui->lineEdit_metatileLabel->setText(this->metatile->label);
     this->ui->comboBox_layerType->setCurrentIndex(this->ui->comboBox_layerType->findData(this->metatile->layerType));
+    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+        this->ui->comboBox_encounterType->setCurrentIndex(this->ui->comboBox_encounterType->findData(this->metatile->encounterType));
+        this->ui->comboBox_terrainType->setCurrentIndex(this->ui->comboBox_terrainType->findData(this->metatile->terrainType));
+    }
 }
 
 void TilesetEditor::onHoveredTileChanged(uint16_t tile) {
@@ -350,6 +374,26 @@ void TilesetEditor::on_comboBox_layerType_activated(int layerType)
     if (this->metatile) {
         Metatile *prevMetatile = this->metatile->copy();
         this->metatile->layerType = static_cast<uint8_t>(layerType);
+        MetatileHistoryItem *commit = new MetatileHistoryItem(metatileSelector->getSelectedMetatile(), prevMetatile, this->metatile->copy());
+        metatileHistory.push(commit);
+    }
+}
+
+void TilesetEditor::on_comboBox_encounterType_activated(int encounterType)
+{
+    if (this->metatile) {
+        Metatile *prevMetatile = this->metatile->copy();
+        this->metatile->encounterType = static_cast<uint8_t>(encounterType);
+        MetatileHistoryItem *commit = new MetatileHistoryItem(metatileSelector->getSelectedMetatile(), prevMetatile, this->metatile->copy());
+        metatileHistory.push(commit);
+    }
+}
+
+void TilesetEditor::on_comboBox_terrainType_activated(int terrainType)
+{
+    if (this->metatile) {
+        Metatile *prevMetatile = this->metatile->copy();
+        this->metatile->terrainType = static_cast<uint8_t>(terrainType);
         MetatileHistoryItem *commit = new MetatileHistoryItem(metatileSelector->getSelectedMetatile(), prevMetatile, this->metatile->copy());
         metatileHistory.push(commit);
     }
@@ -559,6 +603,8 @@ void TilesetEditor::on_actionChange_Metatiles_Count_triggered()
             Metatile *metatile = new Metatile;
             metatile->behavior = 0;
             metatile->layerType = 0;
+            metatile->encounterType = 0;
+            metatile->terrainType = 0;
             for (int i = 0; i < 8; i++) {
                 metatile->tiles->append(tile);
             }
@@ -577,6 +623,8 @@ void TilesetEditor::on_actionChange_Metatiles_Count_triggered()
             Metatile *metatile = new Metatile;
             metatile->behavior = 0;
             metatile->layerType = 0;
+            metatile->encounterType = 0;
+            metatile->terrainType = 0;
             for (int i = 0; i < 8; i++) {
                 metatile->tiles->append(tile);
             }

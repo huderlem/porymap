@@ -941,9 +941,21 @@ void Project::saveTilesetMetatileAttributes(Tileset *tileset) {
     QFile attrs_file(tileset->metatile_attrs_path);
     if (attrs_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
         QByteArray data;
-        for (Metatile *metatile : *tileset->metatiles) {
-            data.append(static_cast<char>(metatile->behavior));
-            data.append(static_cast<char>((metatile->layerType << 4) & 0xF0));
+
+        if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+            for (Metatile *metatile : *tileset->metatiles) {
+                data.append(static_cast<char>(metatile->behavior));
+                data.append(static_cast<char>(metatile->behavior >> 8) |
+                            static_cast<char>(metatile->terrainType << 1));
+                data.append(static_cast<char>(0));
+                data.append(static_cast<char>(metatile->encounterType) | 
+                            static_cast<char>(metatile->layerType << 5));
+            }
+        } else {
+            for (Metatile *metatile : *tileset->metatiles) {
+                data.append(static_cast<char>(metatile->behavior));
+                data.append(static_cast<char>((metatile->layerType << 4) & 0xF0));
+            }
         }
         attrs_file.write(data);
     } else {
@@ -1483,15 +1495,22 @@ void Project::loadTilesetMetatiles(Tileset* tileset) {
                 if (num_metatileAttrs > num_metatiles)
                     num_metatileAttrs = num_metatiles;
             }
+            bool unusedAttribute = false;
             for (int i = 0; i < num_metatileAttrs; i++) {
                 int value = (static_cast<unsigned char>(data.at(i * 4 + 3)) << 24) | 
                             (static_cast<unsigned char>(data.at(i * 4 + 2)) << 16) | 
                             (static_cast<unsigned char>(data.at(i * 4 + 1)) << 8) | 
                             (static_cast<unsigned char>(data.at(i * 4 + 0)));
-
                 tileset->metatiles->at(i)->behavior = value & 0x1FF;
+                tileset->metatiles->at(i)->terrainType = (value & 0x3E00) >> 9;
+                tileset->metatiles->at(i)->encounterType = (value & 0x7000000) >> 24;
                 tileset->metatiles->at(i)->layerType = (value & 0x60000000) >> 29;
+                if (value & ~(0x67003FFF))
+                    unusedAttribute = true;
+                logInfo(QString("").arg(tileset->metatiles->at(i)->terrainType));
             }
+            if (unusedAttribute)
+                logWarn(QString("Unrecognized metatile attributes in %1 will not be saved.").arg(tileset->metatile_attrs_path));
         } else {
             int num_metatileAttrs = data.length() / 2;
             if (num_metatiles != num_metatileAttrs) {
@@ -1503,6 +1522,8 @@ void Project::loadTilesetMetatiles(Tileset* tileset) {
                 int value = (static_cast<unsigned char>(data.at(i * 2 + 1)) << 8) | static_cast<unsigned char>(data.at(i * 2));
                 tileset->metatiles->at(i)->behavior = value & 0xFF;
                 tileset->metatiles->at(i)->layerType = (value & 0xF000) >> 12;
+                tileset->metatiles->at(i)->encounterType = 0;
+                tileset->metatiles->at(i)->terrainType = 0;
             }
         }
     } else {
@@ -1974,7 +1995,7 @@ bool Project::readMovementTypes() {
 }
 
 bool Project::readInitialFacingDirections() {
-    // TODO: This file is not yet decompiled in pokefirered. Remove once resolved
+    // TODO: This array is not yet decompiled in pokefirered. Remove once resolved
     if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered)
         return true;
     QString filename = "src/event_object_movement.c";

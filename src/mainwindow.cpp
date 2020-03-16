@@ -995,6 +995,8 @@ void MainWindow::on_actionNew_Tileset_triggered() {
             }
             mt->behavior = 0;
             mt->layerType = 0;
+            mt->encounterType = 0;
+            mt->terrainType = 0;
 
             newSet->metatiles->append(mt);
         }

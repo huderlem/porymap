@@ -412,7 +412,6 @@ void Map::undo() {
     if (!commit)
         return;
 
-
     if (layout->blockdata) {
         layout->blockdata->copyFrom(commit->metatiles);
         if (commit->layoutWidth != this->getWidth() || commit->layoutHeight != this->getHeight()) {
