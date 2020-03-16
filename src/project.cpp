@@ -1507,7 +1507,6 @@ void Project::loadTilesetMetatiles(Tileset* tileset) {
                 tileset->metatiles->at(i)->layerType = (value & 0x60000000) >> 29;
                 if (value & ~(0x67003FFF))
                     unusedAttribute = true;
-                logInfo(QString("").arg(tileset->metatiles->at(i)->terrainType));
             }
             if (unusedAttribute)
                 logWarn(QString("Unrecognized metatile attributes in %1 will not be saved.").arg(tileset->metatile_attrs_path));
