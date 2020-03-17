@@ -1346,7 +1346,7 @@ void Project::loadTilesetAssets(Tileset* tileset) {
     if (tileset->name.isNull()) {
         return;
     }
-    QRegularExpression re("([a-z])([A-Z])");
+    QRegularExpression re("([a-z])([A-Z0-9])");
     QString tilesetName = tileset->name;
     QString dir_path = root + "/data/tilesets/" + category + "/" + tilesetName.replace("gTileset_", "").replace(re, "\\1_\\2").toLower();
 
