@@ -164,6 +164,7 @@ void MainWindow::setProjectSpecificUIVisibility()
         ui->label_AllowBiking->setVisible(false);
         ui->label_AllowEscapeRope->setVisible(false);
         ui->label_FloorNumber->setVisible(false);
+        ui->actionRegion_Map_Editor->setVisible(true);
         break;
     case BaseGameVersion::pokeemerald:
         ui->checkBox_AllowRunning->setVisible(true);
@@ -174,6 +175,7 @@ void MainWindow::setProjectSpecificUIVisibility()
         ui->label_AllowBiking->setVisible(true);
         ui->label_AllowEscapeRope->setVisible(true);
         ui->label_FloorNumber->setVisible(false);
+        ui->actionRegion_Map_Editor->setVisible(true);
         break;
     case BaseGameVersion::pokefirered:
         ui->checkBox_AllowRunning->setVisible(true);
