@@ -259,17 +259,22 @@ bool Project::loadMapData(Map* map) {
         HealLocation loc = *it;
 
         //if TRUE map is flyable / has healing location
-        if (loc.name == QString(mapNamesToMapConstants->value(map->name)).remove(0,4)) {
+        if (loc.mapName == QString(mapNamesToMapConstants->value(map->name)).remove(0,4)) {
             Event *heal = new Event;
             heal->put("map_name", map->name);
             heal->put("x", loc.x);
             heal->put("y", loc.y);
-            heal->put("loc_name", loc.name);
+            heal->put("loc_name", loc.mapName);
+            heal->put("id_name", loc.idName);
             heal->put("index", loc.index);
             heal->put("elevation", 3); // TODO: change this?
             heal->put("destination_map_name", mapConstantsToMapNames->value(map->name));
             heal->put("event_group_type", "heal_event_group");
             heal->put("event_type", EventType::HealLocation);
+            if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+                heal->put("respawn_map", loc.respawnMap);
+                heal->put("respawn_npc", loc.respawnNPC);
+            }
             map->events["heal_event_group"].append(heal);
         }
 
@@ -781,9 +786,19 @@ void Project::saveMapConstantsHeader() {
 // saves heal location coords in root + /src/data/heal_locations.h
 // and indexes as defines in root + /include/constants/heal_locations.h
 void Project::saveHealLocationStruct(Map *map) {
-    QString data_text = QString("%1%2struct HealLocation sHealLocations[] =\n{\n")
+    QString constantPrefix, arrayName;
+    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+        constantPrefix = "SPAWN_";
+        arrayName = "sSpawnPoints";
+    } else {
+        constantPrefix = "HEAL_LOCATION_";
+        arrayName = "sHealLocations";
+    }
+
+    QString data_text = QString("%1%2struct HealLocation %3[] =\n{\n")
         .arg(dataQualifiers.value("heal_locations").isStatic ? "static " : "")
-        .arg(dataQualifiers.value("heal_locations").isConst ? "const " : "");
+        .arg(dataQualifiers.value("heal_locations").isConst ? "const " : "")
+        .arg(arrayName);
 
     QString constants_text = QString("#ifndef GUARD_CONSTANTS_HEAL_LOCATIONS_H\n");
     constants_text += QString("#define GUARD_CONSTANTS_HEAL_LOCATIONS_H\n\n");
@@ -794,7 +809,7 @@ void Project::saveHealLocationStruct(Map *map) {
     // set flyableMapsDupes and flyableMapsUnique
     for (auto it = flyableMaps.begin(); it != flyableMaps.end(); it++) {
         HealLocation loc = *it;
-        QString xname = loc.name;
+        QString xname = loc.idName;
         if (flyableMapsUnique.contains(xname)) {
             flyableMapsDupes[xname] = 1;
         }
@@ -810,32 +825,57 @@ void Project::saveHealLocationStruct(Map *map) {
     }
 
     int i = 1;
-
     for (auto map_in : flyableMaps) {
-        data_text += QString("    {MAP_GROUP(%1), MAP_NUM(%1), %2, %3},\n")
-                     .arg(map_in.name)
+        // add numbered suffix for duplicate constants
+        if (flyableMapsDupes.keys().contains(map_in.idName)) {
+            map_in.idName += QString("_%1").arg(flyableMapsDupes[map_in.idName]);
+            flyableMapsDupes[map_in.idName]++;
+        }
+
+        // Save first array (heal location coords), only data array in RSE
+        data_text += QString("    [%1%2 - 1] = {MAP_GROUP(%3), MAP_NUM(%3), %4, %5},\n")
+                     .arg(constantPrefix)
+                     .arg(map_in.idName)
+                     .arg(map_in.mapName)
                      .arg(map_in.x)
                      .arg(map_in.y);
 
-        QString ending = QString("");
-
-        // must add _1 / _2 for maps that have duplicates
-        if (flyableMapsDupes.keys().contains(map_in.name)) {
-            // map contains multiple heal locations
-            ending += QString("_%1").arg(flyableMapsDupes[map_in.name]);
-            flyableMapsDupes[map_in.name]++;
-        }
+        // Save constants
         if (map_in.index != 0) {
-            constants_text += QString("#define HEAL_LOCATION_%1 %2\n")
-                              .arg(map_in.name + ending)
+            constants_text += QString("#define %1%2 %3\n")
+                              .arg(constantPrefix)
+                              .arg(map_in.idName)
                               .arg(map_in.index);
-        }
-        else {
-            constants_text += QString("#define HEAL_LOCATION_%1 %2\n")
-                              .arg(map_in.name + ending)
+        } else {
+            constants_text += QString("#define %1%2 %3\n")
+                              .arg(constantPrefix)
+                              .arg(map_in.idName)
                               .arg(i);
         }
         i++;
+    }
+    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+        // Save second array (map where player respawns for each heal location)
+        data_text += QString("};\n\n%1%2u16 sWhiteoutRespawnHealCenterMapIdxs[][2] =\n{\n")
+                        .arg(dataQualifiers.value("heal_locations").isStatic ? "static " : "")
+                        .arg(dataQualifiers.value("heal_locations").isConst ? "const " : "");
+        for (auto map_in : flyableMaps) {
+            data_text += QString("    [%1%2 - 1] = {MAP_GROUP(%3), MAP_NUM(%3)},\n")
+                         .arg(constantPrefix)
+                         .arg(map_in.idName)
+                         .arg(map_in.respawnMap);
+        }
+
+        // Save third array (object id of NPC player speaks to upon respawning for each heal location)
+        data_text += QString("};\n\n%1%2u8 sWhiteoutRespawnHealerNpcIds[] =\n{\n")
+                        .arg(dataQualifiers.value("heal_locations").isStatic ? "static " : "")
+                        .arg(dataQualifiers.value("heal_locations").isConst ? "const " : "");
+        for (auto map_in : flyableMaps) {
+            data_text += QString("    [%1%2 - 1] = %3,\n")
+                         .arg(constantPrefix)
+                         .arg(map_in.idName)
+                         .arg(map_in.respawnNPC);
+        }
     }
 
     data_text += QString("};\n");
@@ -1928,21 +1968,46 @@ bool Project::readRegionMapSections() {
 bool Project::readHealLocations() {
     dataQualifiers.clear();
     flyableMaps.clear();
-
     QString filename = "src/data/heal_locations.h";
     QString text = parser.readTextFile(root + "/" + filename);
     text.replace(QRegularExpression("//.*?(\r\n?|\n)|/\\*.*?\\*/", QRegularExpression::DotMatchesEverythingOption), "");
 
-    dataQualifiers.insert("heal_locations", getDataQualifiers(text, "sHealLocations"));
+    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+        dataQualifiers.insert("heal_locations", getDataQualifiers(text, "sSpawnPoints"));
+        QRegularExpression spawnRegex("SPAWN_(?<id>[A-Za-z0-9_]+)\\s*- 1\\]\\s* = \\{MAP_GROUP[\\(\\s]+(?<map>[A-Za-z0-9_]+)[\\s\\)]+,\\s*MAP_NUM[\\(\\s]+(\\2)[\\s\\)]+,\\s*(?<x>[0-9A-Fa-fx]+),\\s*(?<y>[0-9A-Fa-fx]+)");
+        QRegularExpression respawnMapRegex("SPAWN_(?<id>[A-Za-z0-9_]+)\\s*- 1\\]\\s* = \\{MAP_GROUP[\\(\\s]+(?<map>[A-Za-z0-9_]+)[\\s\\)]+,\\s*MAP_NUM[\\(\\s]+(\\2)[\\s\\)]+}");
+        QRegularExpression respawnNPCRegex("SPAWN_(?<id>[A-Za-z0-9_]+)\\s*- 1\\]\\s* = (?<npc>[0-9]+)");
+        QRegularExpressionMatchIterator spawns = spawnRegex.globalMatch(text);
+        QRegularExpressionMatchIterator respawnMaps = respawnMapRegex.globalMatch(text);
+        QRegularExpressionMatchIterator respawnNPCs = respawnNPCRegex.globalMatch(text);
 
-    QRegularExpression regex("MAP_GROUP[\\(\\s]+(?<map>[A-Za-z0-9_]+)[\\s\\)]+,\\s*MAP_NUM[\\(\\s]+(\\1)[\\s\\)]+,\\s*(?<x>[0-9A-Fa-fx]+),\\s*(?<y>[0-9A-Fa-fx]+)");
-    QRegularExpressionMatchIterator iter = regex.globalMatch(text);
-    for (int i = 1; iter.hasNext(); i++) {
-        QRegularExpressionMatch match = iter.next();
-        QString mapName = match.captured("map");
-        unsigned x = match.captured("x").toUShort();
-        unsigned y = match.captured("y").toUShort();
-        flyableMaps.append(HealLocation(mapName, i, x, y));
+        // This would be better if idName was used to look up data from the other two arrays
+        // As it is, element total and order needs to be the same in the 3 arrays to work. This should always be true though
+        for (int i = 1; spawns.hasNext(); i++) {
+            QRegularExpressionMatch spawn = spawns.next();
+            QRegularExpressionMatch respawnMap = respawnMaps.next();
+            QRegularExpressionMatch respawnNPC = respawnNPCs.next();
+            QString idName = spawn.captured("id");
+            QString mapName = spawn.captured("map");
+            QString respawnMapName = respawnMap.captured("map");
+            unsigned x = spawn.captured("x").toUShort();
+            unsigned y = spawn.captured("y").toUShort();
+            unsigned npc = respawnNPC.captured("npc").toUShort();
+            flyableMaps.append(HealLocation(idName, mapName, i, x, y, respawnMapName, npc));
+        }
+    } else {
+        dataQualifiers.insert("heal_locations", getDataQualifiers(text, "sHealLocations"));
+
+        QRegularExpression regex("HEAL_LOCATION_(?<id>[A-Za-z0-9_]+)\\s*- 1\\]\\s* = \\{MAP_GROUP[\\(\\s]+(?<map>[A-Za-z0-9_]+)[\\s\\)]+,\\s*MAP_NUM[\\(\\s]+(\\2)[\\s\\)]+,\\s*(?<x>[0-9A-Fa-fx]+),\\s*(?<y>[0-9A-Fa-fx]+)");
+        QRegularExpressionMatchIterator iter = regex.globalMatch(text);
+        for (int i = 1; iter.hasNext(); i++) {
+            QRegularExpressionMatch match = iter.next();
+            QString idName = match.captured("id");
+            QString mapName = match.captured("map");
+            unsigned x = match.captured("x").toUShort();
+            unsigned y = match.captured("y").toUShort();
+            flyableMaps.append(HealLocation(idName, mapName, i, x, y));
+        }
     }
     return true;
 }
