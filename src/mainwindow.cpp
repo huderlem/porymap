@@ -1493,8 +1493,10 @@ void MainWindow::updateSelectedObjects() {
             // Hide elevation so users don't get impression that editing it is meaningful.
             frame->ui->spinBox_z->setVisible(false);
             frame->ui->label_z->setVisible(false);
-            fields << "respawn_map";
-            fields << "respawn_npc";
+            if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+                fields << "respawn_map";
+                fields << "respawn_npc";
+            }
         }
 
         // Some keys shouldn't use a combobox
