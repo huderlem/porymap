@@ -272,7 +272,7 @@ bool Project::loadMapData(Map* map) {
             heal->put("event_group_type", "heal_event_group");
             heal->put("event_type", EventType::HealLocation);
             if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
-                heal->put("respawn_map", loc.respawnMap);
+                heal->put("respawn_map", mapConstantsToMapNames->value(QString("MAP_" + loc.respawnMap)));
                 heal->put("respawn_npc", loc.respawnNPC);
             }
             map->events["heal_event_group"].append(heal);

@@ -1429,6 +1429,8 @@ void MainWindow::updateSelectedObjects() {
         field_labels["weather"] = "Weather";
         field_labels["flag"] = "Flag";
         field_labels["secret_base_id"] = "Secret Base Id";
+        field_labels["respawn_map"] = "Respawn Map";
+        field_labels["respawn_npc"] = "Respawn NPC";
 
         QStringList fields;
 
@@ -1491,8 +1493,13 @@ void MainWindow::updateSelectedObjects() {
             // Hide elevation so users don't get impression that editing it is meaningful.
             frame->ui->spinBox_z->setVisible(false);
             frame->ui->label_z->setVisible(false);
+            fields << "respawn_map";
+            fields << "respawn_npc";
         }
 
+        // Some keys shouldn't use a combobox
+        QStringList spinKeys = {"quantity", "respawn_npc"};
+        QStringList checkKeys = {"underfoot", "in_connection"};
         for (QString key : fields) {
             QString value = item->event->get(key);
             QWidget *widget = new QWidget(frame);
@@ -1504,10 +1511,9 @@ void MainWindow::updateSelectedObjects() {
             NoScrollComboBox *combo;
             QCheckBox *check;
 
-            // Some keys shouldn't use a combobox. This isn't very scalable
-            if (key == "quantity") {
+            if (spinKeys.contains(key)) {
                 spin = new NoScrollSpinBox(widget);
-            } else if (key == "underfoot" || key == "in_connection") {
+            } else if (checkKeys.contains(key)) {
                 check = new QCheckBox(widget);
             } else {
                 combo = new NoScrollComboBox(widget);
@@ -1552,6 +1558,7 @@ void MainWindow::updateSelectedObjects() {
                 combo->addItems(*editor->project->itemNames);
             } else if (key == "quantity") {
                 spin->setToolTip("The number of items received when the hidden item is picked up.");
+                // Min 1 not needed. 0 is treated as a valid quantity and works as expected in-game.
                 spin->setMaximum(127);
             } else if (key == "underfoot") {
                 check->setToolTip("If checked, hidden item can only be picked up using the Itemfinder");
@@ -1624,12 +1631,22 @@ void MainWindow::updateSelectedObjects() {
                 combo->setMinimumContentsLength(4);
             } else if (key == "in_connection") {
                 check->setToolTip("Check if object is positioned in the connection to another map.");
+            } else if (key == "respawn_map") {
+                if (!editor->project->mapNames->contains(value)) {
+                    combo->addItem(value);
+                }
+                combo->addItems(*editor->project->mapNames);
+                combo->setToolTip("The map where the player will respawn after whiteout.");
+            } else if (key == "respawn_npc") {
+                spin->setToolTip("event_object ID of the NPC the player interacts with upon respawning after whiteout.");
+                spin->setMinimum(1);
+                spin->setMaximum(126);
             } else {
                 combo->addItem(value);
             }
 
             // Keys using spin boxes
-            if (key == "quantity") {
+            if (spinKeys.contains(key)) {
                 spin->setValue(value.toInt());
 
                 fl->addRow(new QLabel(field_labels[key], widget), spin);
@@ -1640,7 +1657,7 @@ void MainWindow::updateSelectedObjects() {
                     item->event->put(key, value);
                 });
             // Keys using check boxes
-            } else if (key == "underfoot" || key == "in_connection") {
+            } else if (checkKeys.contains(key)) {
                 check->setChecked(value.toInt());
 
                 fl->addRow(new QLabel(field_labels[key], widget), check);

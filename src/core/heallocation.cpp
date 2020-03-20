@@ -1,5 +1,6 @@
 #include "heallocation.h"
 #include "config.h"
+#include "map.h"
 
 HealLocation::HealLocation(QString id, QString map, int i, uint16_t x, uint16_t y)
 {
@@ -38,7 +39,7 @@ HealLocation HealLocation::fromEvent(Event *event)
     hl.y     = event->getU16("y");
     if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
         hl.respawnNPC = event->getU16("respawn_npc");
-        hl.respawnMap = event->get("respawn_map");
+        hl.respawnMap = Map::mapConstantFromName(event->get("respawn_map")).remove(0,4);
     }
     return hl;
 }

@@ -87,14 +87,13 @@ Event* Event::createNewWarpEvent(QString map_name)
 Event* Event::createNewHealLocationEvent(QString map_name)
 {
     Event *event = new Event;
-    QString mapConstant = QString(Map::mapConstantFromName(map_name)).remove(0,4);
     event->put("event_group_type", "heal_event_group");
     event->put("event_type", EventType::HealLocation);
-    event->put("loc_name", mapConstant);
+    event->put("loc_name", QString(Map::mapConstantFromName(map_name)).remove(0,4));
     event->put("id_name", map_name.replace(QRegularExpression("([a-z])([A-Z])"), "\\1_\\2").toUpper());
     event->put("elevation", 3);
     if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
-        event->put("respawn_map", mapConstant);
+        event->put("respawn_map", map_name);
         event->put("respawn_npc", 1);
     }
     return event;
