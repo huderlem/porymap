@@ -591,7 +591,7 @@ void TilesetEditor::on_actionChange_Metatiles_Count_triggered()
 void TilesetEditor::on_actionChange_Palettes_triggered()
 {
     if (!this->paletteEditor) {
-        this->paletteEditor = new PaletteEditor(this->project, this->primaryTileset, this->secondaryTileset, this);
+        this->paletteEditor = new PaletteEditor(this->project, this->primaryTileset, this->secondaryTileset, this->paletteId, this);
         connect(this->paletteEditor, SIGNAL(changedPaletteColor()), this, SLOT(onPaletteEditorChangedPaletteColor()));
         connect(this->paletteEditor, SIGNAL(changedPalette(int)), this, SLOT(onPaletteEditorChangedPalette(int)));
     }
