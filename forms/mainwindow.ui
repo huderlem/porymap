@@ -2168,6 +2168,9 @@
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Floor number to be used for maps with elevators.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
+              <property name="minimum">
+               <number>-128</number>
+              </property>
               <property name="maximum">
                <number>127</number>
               </property>
