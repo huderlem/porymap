@@ -66,8 +66,8 @@ void TilesetEditor::init(Project *project, QString primaryTilesetLabel, QString 
         this->ui->comboBox_encounterType->setVisible(true);
         this->ui->label_encounterType->setVisible(true);
         this->ui->comboBox_encounterType->addItem("None", 0);
-        this->ui->comboBox_encounterType->addItem("Grass", 1);
-        this->ui->comboBox_encounterType->addItem("Surf", 2);
+        this->ui->comboBox_encounterType->addItem("Land", 1);
+        this->ui->comboBox_encounterType->addItem("Water", 2);
         this->ui->comboBox_terrainType->setVisible(true);
         this->ui->label_terrainType->setVisible(true);
         this->ui->comboBox_terrainType->addItem("Normal", 0);

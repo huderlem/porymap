@@ -1364,6 +1364,7 @@ void MainWindow::updateSelectedObjects() {
 
     QList<EventPropertiesFrame *> frames;
 
+    bool pokefirered = projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered;
     for (DraggablePixmapItem *item : *events) {
         EventPropertiesFrame *frame = new EventPropertiesFrame;
 //        frame->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
@@ -1458,7 +1459,7 @@ void MainWindow::updateSelectedObjects() {
             fields << "event_flag";
             fields << "trainer_type";
             fields << "sight_radius_tree_id";
-            if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+            if (pokefirered) {
                 fields << "in_connection";
             }
         }
@@ -1481,7 +1482,7 @@ void MainWindow::updateSelectedObjects() {
         else if (event_type == EventType::HiddenItem) {
             fields << "item";
             fields << "flag";
-            if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+            if (pokefirered) {
                 fields << "quantity";
                 fields << "underfoot";
             }
@@ -1493,7 +1494,7 @@ void MainWindow::updateSelectedObjects() {
             // Hide elevation so users don't get impression that editing it is meaningful.
             frame->ui->spinBox_z->setVisible(false);
             frame->ui->label_z->setVisible(false);
-            if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+            if (pokefirered) {
                 fields << "respawn_map";
                 fields << "respawn_npc";
             }
@@ -1521,10 +1522,8 @@ void MainWindow::updateSelectedObjects() {
                 combo = new NoScrollComboBox(widget);
                 combo->setEditable(true);
             }
-
             // trainer_type has custom values, so it has special signal logic.
             if (key == "trainer_type") {
-                combo->setEditable(false);
                 combo->addItem("NONE", "0");
                 combo->addItem("NORMAL", "1");
                 combo->addItem("SEE ALL DIRECTIONS", "3");
@@ -1536,6 +1535,8 @@ void MainWindow::updateSelectedObjects() {
                 int index = combo->findData(value);
                 if (index != -1) {
                     combo->setCurrentIndex(index);
+                } else {
+                    combo->setCurrentText(value);
                 }
 
                 fl->addRow(new QLabel(field_labels[key], widget), combo);
@@ -1640,7 +1641,8 @@ void MainWindow::updateSelectedObjects() {
                 combo->addItems(*editor->project->mapNames);
                 combo->setToolTip("The map where the player will respawn after whiteout.");
             } else if (key == "respawn_npc") {
-                spin->setToolTip("event_object ID of the NPC the player interacts with upon respawning after whiteout.");
+                spin->setToolTip("event_object ID of the NPC the player interacts with\n" 
+                                 "upon respawning after whiteout.");
                 spin->setMinimum(1);
                 spin->setMaximum(126);
             } else {
@@ -1669,12 +1671,12 @@ void MainWindow::updateSelectedObjects() {
                 connect(check, &QCheckBox::stateChanged, [item, key](int state) {
                     switch (state)
                     {
-                        case Qt::Checked:
-                            item->event->put(key, true);
-                            break;
-                        case Qt::Unchecked:
-                            item->event->put(key, false);
-                            break;
+                    case Qt::Checked:
+                        item->event->put(key, true);
+                        break;
+                    case Qt::Unchecked:
+                        item->event->put(key, false);
+                        break;
                     }
                 });
             // Keys using combo boxes
