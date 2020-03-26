@@ -2061,9 +2061,6 @@ bool Project::readMovementTypes() {
 }
 
 bool Project::readInitialFacingDirections() {
-    // TODO: This array is not yet decompiled in pokefirered. Remove once resolved
-    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered)
-        return true;
     QString filename = "src/event_object_movement.c";
     facingDirections = parser.readNamedIndexCArray(filename, "gInitialMovementTypeFacingDirections");
     if (facingDirections.isEmpty()) {
