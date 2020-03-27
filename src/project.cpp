@@ -2267,16 +2267,19 @@ void Project::loadEventPixmaps(QList<Event*> objects) {
                 QImage spritesheet(root + "/" + path);
                 if (!spritesheet.isNull()) {
                     // Infer the sprite dimensions from the OAM labels.
-                    int spriteWidth = spritesheet.width();
-                    int spriteHeight = spritesheet.height();
+                    int spriteWidth, spriteHeight;
                     QRegularExpression re("\\S+_(\\d+)x(\\d+)");
                     QRegularExpressionMatch dimensionMatch = re.match(dimensions_label);
-                    if (dimensionMatch.hasMatch()) {
-                        QRegularExpressionMatch oamTablesMatch = re.match(subsprites_label);
-                        if (oamTablesMatch.hasMatch()) {
-                            spriteWidth = dimensionMatch.captured(1).toInt();
-                            spriteHeight = dimensionMatch.captured(2).toInt();
-                        }
+                    QRegularExpressionMatch oamTablesMatch = re.match(subsprites_label);
+                    if (oamTablesMatch.hasMatch()) {
+                        spriteWidth = oamTablesMatch.captured(1).toInt();
+                        spriteHeight = oamTablesMatch.captured(2).toInt();
+                    } else if (dimensionMatch.hasMatch()) {
+                        spriteWidth = dimensionMatch.captured(1).toInt();
+                        spriteHeight = dimensionMatch.captured(2).toInt();
+                    } else {
+                        spriteWidth = spritesheet.width();
+                        spriteHeight = spritesheet.height();
                     }
                     object->setPixmapFromSpritesheet(spritesheet, spriteWidth, spriteHeight, object->frame, object->hFlip);
                 }
