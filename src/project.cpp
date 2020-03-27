@@ -44,6 +44,7 @@ Project::Project()
     coordEventWeatherNames = new QStringList;
     secretBaseIds = new QStringList;
     bgEventFacingDirections = new QStringList;
+    trainerTypes = new QStringList;
     map_cache = new QMap<QString, Map*>;
     mapConstantsToMapNames = new QMap<QString, QString>;
     mapNamesToMapConstants = new QMap<QString, QString>;
@@ -2142,6 +2143,18 @@ bool Project::readBgEventFacingDirections() {
     return true;
 }
 
+bool Project::readTrainerTypes() {
+    trainerTypes->clear();
+    QStringList prefixes = (QStringList() << "TRAINER_TYPE_");
+    QString filename = "include/constants/trainer_types.h";
+    parser.readCDefinesSorted(filename, prefixes, trainerTypes);
+    if (trainerTypes->isEmpty()) {
+        logError(QString("Failed to read trainer type constants from %1").arg(filename));
+        return false;
+    }
+    return true;
+}
+
 bool Project::readMetatileBehaviors() {
     this->metatileBehaviorMap.clear();
     this->metatileBehaviorMapInverse.clear();
@@ -2150,7 +2163,7 @@ bool Project::readMetatileBehaviors() {
     QString filename = "include/constants/metatile_behaviors.h";
     this->metatileBehaviorMap = parser.readCDefines(filename, prefixes);
     if (this->metatileBehaviorMap.isEmpty()) {
-        logError(QString("Failed to metatile behaviors from %1.").arg(filename));
+        logError(QString("Failed to read metatile behaviors from %1.").arg(filename));
         return false;
     }
 

@@ -49,6 +49,7 @@ public:
     QStringList *coordEventWeatherNames = nullptr;
     QStringList *secretBaseIds = nullptr;
     QStringList *bgEventFacingDirections = nullptr;
+    QStringList *trainerTypes = nullptr;
     QMap<QString, int> metatileBehaviorMap;
     QMap<int, QString> metatileBehaviorMapInverse;
     QMap<QString, QString> facingDirections;
@@ -143,6 +144,7 @@ public:
     bool readCoordEventWeatherNames();
     bool readSecretBaseIds();
     bool readBgEventFacingDirections();
+    bool readTrainerTypes();
     bool readMetatileBehaviors();
     bool readHealLocations();
     bool readMiscellaneousConstants();

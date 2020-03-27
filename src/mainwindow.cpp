@@ -646,6 +646,7 @@ bool MainWindow::loadDataStructures() {
                 && project->readMapBattleScenes()
                 && project->readWeatherNames()
                 && project->readBgEventFacingDirections()
+                && project->readTrainerTypes()
                 && project->readMetatileBehaviors()
                 && project->readTilesetProperties()
                 && project->readHealLocations()
@@ -1522,29 +1523,6 @@ void MainWindow::updateSelectedObjects() {
                 combo = new NoScrollComboBox(widget);
                 combo->setEditable(true);
             }
-            // trainer_type has custom values, so it has special signal logic.
-            if (key == "trainer_type") {
-                combo->addItem("NONE", "0");
-                combo->addItem("NORMAL", "1");
-                combo->addItem("SEE ALL DIRECTIONS", "3");
-                combo->setToolTip("The trainer type of this object event.\n"
-                                  "If it is not a trainer, use NONE. SEE ALL DIRECTIONS\n"
-                                  "should only be used with a sight radius of 1.");
-                combo->setMinimumContentsLength(10);
-
-                int index = combo->findData(value);
-                if (index != -1) {
-                    combo->setCurrentIndex(index);
-                } else {
-                    combo->setCurrentText(value);
-                }
-
-                fl->addRow(new QLabel(field_labels[key], widget), combo);
-                widget->setLayout(fl);
-                frame->layout()->addWidget(widget);
-                item->bindToUserData(combo, key);
-                continue;
-            }
 
             if (key == "destination_map_name") {
                 if (!editor->project->mapNames->contains(value)) {
@@ -1628,6 +1606,11 @@ void MainWindow::updateSelectedObjects() {
                 combo->setMinimumContentsLength(4);
             } else if (key == "script_label") {
                 combo->setToolTip("The script which is executed with this event.");
+            } else if (key == "trainer_type") {
+                combo->addItems(*editor->project->trainerTypes);
+                combo->setToolTip("The trainer type of this object event.\n"
+                                  "If it is not a trainer, use NONE. SEE ALL DIRECTIONS\n"
+                                  "should only be used with a sight radius of 1.");
             } else if (key == "sight_radius_tree_id") {
                 combo->setToolTip("The maximum sight range of a trainer,\n"
                                   "OR the unique id of the berry tree.");
