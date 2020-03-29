@@ -23,7 +23,7 @@ public:
 class PaletteEditor :  public QMainWindow {
     Q_OBJECT
 public:
-    explicit PaletteEditor(Project*, Tileset*, Tileset*, QWidget *parent = nullptr);
+    explicit PaletteEditor(Project*, Tileset*, Tileset*, int paletteId, QWidget *parent = nullptr);
     ~PaletteEditor();
     void setPaletteId(int);
     void setTilesets(Tileset*, Tileset*);

@@ -5,7 +5,7 @@
 #include <QMessageBox>
 #include "log.h"
 
-PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset *secondaryTileset, QWidget *parent) :
+PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset *secondaryTileset, int paletteId, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::PaletteEditor)
 {
@@ -110,8 +110,7 @@ PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset 
     }
 
     this->initColorSliders();
-    this->refreshColorSliders();
-    this->refreshColors();
+    this->setPaletteId(paletteId);
     this->commitEditHistory(this->ui->spinBox_PaletteId->value());
 }
 
