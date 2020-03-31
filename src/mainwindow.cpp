@@ -293,6 +293,7 @@ bool MainWindow::openProject(QString dir) {
     projectConfig.setProjectDir(dir);
     projectConfig.load();
 
+    this->closeSupplementaryWindows();
     this->setProjectSpecificUIVisibility();
 
     bool already_open = isProjectOpen() && (editor->project->root == dir);
@@ -2408,6 +2409,17 @@ void MainWindow::on_actionRegion_Map_Editor_triggered() {
     } else {
         this->regionMapEditor->activateWindow();
     }
+}
+
+void MainWindow::closeSupplementaryWindows() {
+    if (this->tilesetEditor)
+        delete this->tilesetEditor;
+    if (this->regionMapEditor)
+        delete this->regionMapEditor;
+    if (this->mapImageExporter)
+        delete this->mapImageExporter;
+    if (this->newmapprompt)
+        delete this->newmapprompt;
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {

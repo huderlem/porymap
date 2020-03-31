@@ -216,6 +216,7 @@ private:
     bool openRecentProject();
     void updateTilesetEditor();
     QString getEventGroupFromTabWidget(QWidget *tab);
+    void closeSupplementaryWindows();
 
     bool isProjectOpen();
 };
