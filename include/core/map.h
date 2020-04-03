@@ -17,9 +17,9 @@
 #define DEFAULT_BORDER_WIDTH 2
 #define DEFAULT_BORDER_HEIGHT 2
 
-// Number of metatiles to draw out from edge of map. Could allow modification of this in the future.
+// Number of border blocks to draw out from edge of map. Could allow modification of this in the future.
 // porymap will reflect changes to it, but the value is hard-coded in the projects at the moment
-#define BORDER_DISTANCE 6
+#define NUM_BORDER_BLOCKS 3
 
 class Map : public QObject
 {
