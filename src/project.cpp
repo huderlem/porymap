@@ -453,9 +453,14 @@ bool Project::loadMapLayout(Map* map) {
         return false;
     }
 
-    return loadMapTilesets(map)
-        && loadBlockdata(map)
-        && loadMapBorder(map);
+    // Force these to run even if one fails
+    bool loadedTilesets = loadMapTilesets(map);
+    bool loadedBlockdata = loadBlockdata(map);
+    bool loadedBorder = loadMapBorder(map);
+
+    return loadedTilesets 
+        && loadedBlockdata 
+        && loadedBorder;
 }
 
 bool Project::readMapLayouts() {
@@ -625,8 +630,8 @@ void Project::setNewMapLayout(Map* map) {
     layout->border_height = DEFAULT_BORDER_HEIGHT;
     layout->border_path = QString("data/layouts/%1/border.bin").arg(map->name);
     layout->blockdata_path = QString("data/layouts/%1/map.bin").arg(map->name);
-    layout->tileset_primary_label = "gTileset_General";
-    layout->tileset_secondary_label = "gTileset_Petalburg";
+    layout->tileset_primary_label = tilesetLabels["primary"].at(0);
+    layout->tileset_secondary_label = tilesetLabels["secondary"].at(0);
     map->layout = layout;
     map->layoutId = layout->id;
 
@@ -1045,14 +1050,24 @@ bool Project::loadMapTilesets(Map* map) {
 
     map->layout->tileset_primary = getTileset(map->layout->tileset_primary_label);
     if (!map->layout->tileset_primary) {
-        logError(QString("Map layout %1 has invalid primary tileset '%2'").arg(map->layout->id).arg(map->layout->tileset_primary_label));
-        return false;
+        logWarn(QString("Map layout %1 has invalid primary tileset '%2'. Using default '%3'").arg(map->layout->id).arg(map->layout->tileset_primary_label).arg(tilesetLabels["primary"].at(0)));
+        map->layout->tileset_primary_label = tilesetLabels["primary"].at(0);
+        map->layout->tileset_primary = getTileset(map->layout->tileset_primary_label);
+        if (!map->layout->tileset_primary) {
+            logError(QString("Failed to set default primary tileset."));
+            return false;
+        }
     }
 
     map->layout->tileset_secondary = getTileset(map->layout->tileset_secondary_label);
     if (!map->layout->tileset_secondary) {
-        logError(QString("Map layout %1 has invalid secondary tileset '%2'").arg(map->layout->id).arg(map->layout->tileset_secondary_label));
-        return false;
+        logWarn(QString("Map layout %1 has invalid secondary tileset '%2'. Using default '%3'").arg(map->layout->id).arg(map->layout->tileset_secondary_label).arg(tilesetLabels["secondary"].at(0)));
+        map->layout->tileset_secondary_label = tilesetLabels["secondary"].at(0);
+        map->layout->tileset_secondary = getTileset(map->layout->tileset_secondary_label);
+        if (!map->layout->tileset_secondary) {
+            logError(QString("Failed to set default secondary tileset."));
+            return false;
+        }
     }
     return true;
 }
