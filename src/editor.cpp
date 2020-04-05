@@ -1118,8 +1118,6 @@ void Editor::displayMetatileSelector() {
 }
 
 void Editor::displayMapMetatiles() {
-    int borderHorzDist = map->getBorderWidth() * NUM_BORDER_BLOCKS * 16;
-    int borderVertDist = map->getBorderHeight() * NUM_BORDER_BLOCKS * 16;
     map_item = new MapPixmapItem(map, this->metatile_selector_item, this->settings);
     connect(map_item, SIGNAL(mouseEvent(QGraphicsSceneMouseEvent*,MapPixmapItem*)),
             this, SLOT(mouseEvent_map(QGraphicsSceneMouseEvent*,MapPixmapItem*)));
@@ -1136,10 +1134,10 @@ void Editor::displayMapMetatiles() {
     scene->addItem(map_item);
 
     scene->setSceneRect(
-        -borderHorzDist,
-        -borderVertDist,
-        map_item->pixmap().width() + borderHorzDist * 2,
-        map_item->pixmap().height() + borderVertDist * 2
+        -BORDER_DISTANCE * 16,
+        -BORDER_DISTANCE * 16,
+        map_item->pixmap().width() + (BORDER_DISTANCE * 16) * 2,
+        map_item->pixmap().height() + (BORDER_DISTANCE * 16) * 2
     );
 }
 
@@ -1336,8 +1334,8 @@ void Editor::displayMapBorder() {
 
     int borderWidth = map->getBorderWidth();
     int borderHeight = map->getBorderHeight();
-    int borderHorzDist = borderWidth * NUM_BORDER_BLOCKS;
-    int borderVertDist = borderHeight * NUM_BORDER_BLOCKS;
+    int borderHorzDist = getBorderDrawDistance(borderWidth);
+    int borderVertDist = getBorderDrawDistance(borderHeight);
     QPixmap pixmap = map->renderBorder();
     for (int y = -borderVertDist; y < map->getHeight() + borderVertDist; y += borderHeight)
     for (int x = -borderHorzDist; x < map->getWidth() + borderHorzDist; x += borderWidth) {
@@ -1347,6 +1345,17 @@ void Editor::displayMapBorder() {
         item->setZValue(-2);
         scene->addItem(item);
         borderItems.append(item);
+    }
+}
+
+int Editor::getBorderDrawDistance(int dimension) {
+    // Draw sufficient border blocks to fill the player's view (BORDER_DISTANCE)
+    if (dimension >= BORDER_DISTANCE) {
+        return dimension;
+    } else if (dimension) {
+        return dimension * (BORDER_DISTANCE / dimension + (BORDER_DISTANCE % dimension ? 1 : 0));
+    } else {
+        return BORDER_DISTANCE;
     }
 }
 

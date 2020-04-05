@@ -70,7 +70,7 @@ void MapImageExporter::updatePreview() {
     int borderHeight = 0, borderWidth = 0;
     bool forceDrawBorder = showUpConnections || showDownConnections || showLeftConnections || showRightConnections;
     if (showBorder || forceDrawBorder) {
-        borderHeight = 32 * 3, borderWidth = 32 * 3;
+        borderHeight = BORDER_DISTANCE * 16, borderWidth = BORDER_DISTANCE * 16;
         QPixmap newPreview = QPixmap(map->pixmap.width() + borderWidth * 2, map->pixmap.height() + borderHeight * 2);
         QPainter borderPainter(&newPreview);
         for (auto borderItem : editor->borderItems) {

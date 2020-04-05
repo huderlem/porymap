@@ -263,23 +263,23 @@ QPixmap Map::renderConnection(MapConnection connection, MapLayout * fromLayout) 
     int x, y, w, h;
     if (connection.direction == "up") {
         x = 0;
-        y = getHeight() - (getBorderHeight() * NUM_BORDER_BLOCKS);
+        y = getHeight() - BORDER_DISTANCE;
         w = getWidth();
-        h = getBorderHeight() * NUM_BORDER_BLOCKS;
+        h = BORDER_DISTANCE;
     } else if (connection.direction == "down") {
         x = 0;
         y = 0;
         w = getWidth();
-        h = getBorderHeight() * NUM_BORDER_BLOCKS;
+        h = BORDER_DISTANCE;
     } else if (connection.direction == "left") {
-        x = getWidth() - (getBorderWidth() * NUM_BORDER_BLOCKS);
+        x = getWidth() - BORDER_DISTANCE;
         y = 0;
-        w = getBorderWidth() * NUM_BORDER_BLOCKS;
+        w = BORDER_DISTANCE;
         h = getHeight();
     } else if (connection.direction == "right") {
         x = 0;
         y = 0;
-        w = getBorderWidth() * NUM_BORDER_BLOCKS;
+        w = BORDER_DISTANCE;
         h = getHeight();
     } else {
         // this should not happen
