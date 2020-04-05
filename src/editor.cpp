@@ -48,6 +48,8 @@ void Editor::undo() {
         map->undo();
         map_item->draw();
         collision_item->draw();
+        selected_border_metatiles_item->draw();
+        displayMapBorder();
     }
 }
 
@@ -56,6 +58,8 @@ void Editor::redo() {
         map->redo();
         map_item->draw();
         collision_item->draw();
+        selected_border_metatiles_item->draw();
+        displayMapBorder();
     }
 }
 
