@@ -1137,11 +1137,13 @@ void Editor::displayMapMetatiles() {
     map_item->draw(true);
     scene->addItem(map_item);
 
+    int tw = 16;
+    int th = 16;
     scene->setSceneRect(
-        -BORDER_DISTANCE * 16,
-        -BORDER_DISTANCE * 16,
-        map_item->pixmap().width() + (BORDER_DISTANCE * 16) * 2,
-        map_item->pixmap().height() + (BORDER_DISTANCE * 16) * 2
+        -BORDER_DISTANCE * tw,
+        -BORDER_DISTANCE * th,
+        map_item->pixmap().width() + BORDER_DISTANCE * 2 * tw,
+        map_item->pixmap().height() + BORDER_DISTANCE * 2 * th
     );
 }
 

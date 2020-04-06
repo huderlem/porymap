@@ -2203,7 +2203,7 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked()
 
     QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
     form.addRow(&buttonBox);
-    connect(&buttonBox, &QDialogButtonBox::accepted, [&dialog, &widthSpinBox, &heightSpinBox, &bwidthSpinBox, &bheightSpinBox, &errorLabel](){
+    connect(&buttonBox, &QDialogButtonBox::accepted, [&dialog, &widthSpinBox, &heightSpinBox, &errorLabel](){
         // Ensure width and height are an acceptable size.
         // The maximum number of metatiles in a map is the following:
         //    max = (width + 15) * (height + 14)
