@@ -29,6 +29,8 @@ Editor::~Editor()
     delete this->settings;
     delete this->playerViewRect;
     delete this->cursorMapTileRect;
+
+    closeProject();
 }
 
 void Editor::saveProject() {
