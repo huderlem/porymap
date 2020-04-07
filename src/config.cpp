@@ -17,6 +17,7 @@ KeyValueConfigBase::~KeyValueConfigBase() {
 }
 
 void KeyValueConfigBase::load() {
+    reset();
     QFile file(this->getConfigFilepath());
     if (!file.exists()) {
         if (!file.open(QIODevice::WriteOnly)) {

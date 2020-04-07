@@ -18,6 +18,7 @@ public:
     void save();
     void load();
     virtual ~KeyValueConfigBase();
+    virtual void reset() = 0;
 protected:
     virtual QString getConfigFilepath() = 0;
     virtual void parseConfigKeyValue(QString key, QString value) = 0;
@@ -29,6 +30,9 @@ class PorymapConfig: public KeyValueConfigBase
 {
 public:
     PorymapConfig() {
+        reset();
+    }
+    virtual void reset() override {
         this->recentProject = "";
         this->recentMap = "";
         this->mapSortOrder = MapSortOrder::Group;
@@ -63,10 +67,10 @@ public:
     QSize getRegionMapDimensions();
     QString getTheme();
 protected:
-    QString getConfigFilepath();
-    void parseConfigKeyValue(QString key, QString value);
-    QMap<QString, QString> getKeyValueMap();
-    void onNewConfigFileCreated() {}
+    virtual QString getConfigFilepath() override;
+    virtual void parseConfigKeyValue(QString key, QString value) override;
+    virtual QMap<QString, QString> getKeyValueMap() override;
+    virtual void onNewConfigFileCreated() override {}
 private:
     QString recentProject;
     QString recentMap;
@@ -99,8 +103,12 @@ class ProjectConfig: public KeyValueConfigBase
 {
 public:
     ProjectConfig() {
+        reset();
+    }
+    virtual void reset() override {
         this->baseGameVersion = BaseGameVersion::pokeemerald;
         this->useEncounterJson = true;
+        this->useCustomBorderSize = false;
     }
     void setBaseGameVersion(BaseGameVersion baseGameVersion);
     BaseGameVersion getBaseGameVersion();
@@ -112,10 +120,10 @@ public:
     void setUseCustomBorderSize(bool enable);
     bool getUseCustomBorderSize();
 protected:
-    QString getConfigFilepath();
-    void parseConfigKeyValue(QString key, QString value);
-    QMap<QString, QString> getKeyValueMap();
-    void onNewConfigFileCreated();
+    virtual QString getConfigFilepath() override;
+    virtual void parseConfigKeyValue(QString key, QString value) override;
+    virtual QMap<QString, QString> getKeyValueMap() override;
+    virtual void onNewConfigFileCreated() override;
 private:
     BaseGameVersion baseGameVersion;
     QString projectDir;
