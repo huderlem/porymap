@@ -23,6 +23,14 @@ Editor::Editor(Ui::MainWindow* ui)
     this->cursorMapTileRect = new CursorTileRect(&this->settings->cursorTileRectEnabled, qRgb(255, 255, 255));
 }
 
+Editor::~Editor()
+{
+    delete this->selected_events;
+    delete this->settings;
+    delete this->playerViewRect;
+    delete this->cursorMapTileRect;
+}
+
 void Editor::saveProject() {
     if (project) {
         saveUiFields();

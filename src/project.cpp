@@ -37,7 +37,7 @@ int Project::num_pals_total = 13;
 Project::Project()
 {
     groupNames = new QStringList;
-    map_groups = new QMap<QString, int>;
+    mapGroups = new QMap<QString, int>;
     mapNames = new QStringList;
     itemNames = new QStringList;
     flagNames = new QStringList;
@@ -50,10 +50,35 @@ Project::Project()
     secretBaseIds = new QStringList;
     bgEventFacingDirections = new QStringList;
     trainerTypes = new QStringList;
-    map_cache = new QMap<QString, Map*>;
+    mapCache = new QMap<QString, Map*>;
     mapConstantsToMapNames = new QMap<QString, QString>;
     mapNamesToMapConstants = new QMap<QString, QString>;
-    tileset_cache = new QMap<QString, Tileset*>;
+    tilesetCache = new QMap<QString, Tileset*>;
+}
+
+Project::~Project()
+{
+    delete this->groupNames;
+    delete this->mapGroups;
+    delete this->mapNames;
+    delete this->itemNames;
+    delete this->flagNames;
+    delete this->varNames;
+    delete this->weatherNames;
+    delete this->coordEventWeatherNames;
+
+    delete this->secretBaseIds;
+    delete this->movementTypes;
+    delete this->bgEventFacingDirections;
+    delete this->mapBattleScenes;
+    delete this->trainerTypes;
+    delete this->mapTypes;
+
+    delete this->mapConstantsToMapNames;
+    delete this->mapNamesToMapConstants;
+    
+    delete this->mapCache;
+    delete this->tilesetCache;
 }
 
 void Project::set_root(QString dir) {
@@ -71,8 +96,8 @@ QString Project::getProjectTitle() {
 
 Map* Project::loadMap(QString map_name) {
     Map *map;
-    if (map_cache->contains(map_name)) {
-        map = map_cache->value(map_name);
+    if (mapCache->contains(map_name)) {
+        map = mapCache->value(map_name);
         // TODO: uncomment when undo/redo history is fully implemented for all actions.
         if (true/*map->hasUnsavedChanges()*/) {
             return map;
@@ -87,7 +112,7 @@ Map* Project::loadMap(QString map_name) {
 
     map->commit();
     map->metatileHistory.save();
-    map_cache->insert(map_name, map);
+    mapCache->insert(map_name, map);
     return map;
 }
 
@@ -390,8 +415,8 @@ bool Project::loadMapData(Map* map) {
 }
 
 QString Project::readMapLayoutId(QString map_name) {
-    if (map_cache->contains(map_name)) {
-        return map_cache->value(map_name)->layoutId;
+    if (mapCache->contains(map_name)) {
+        return mapCache->value(map_name)->layoutId;
     }
 
     QString mapFilepath = QString("%1/data/maps/%2/map.json").arg(root).arg(map_name);
@@ -406,8 +431,8 @@ QString Project::readMapLayoutId(QString map_name) {
 }
 
 QString Project::readMapLocation(QString map_name) {
-    if (map_cache->contains(map_name)) {
-        return map_cache->value(map_name)->location;
+    if (mapCache->contains(map_name)) {
+        return mapCache->value(map_name)->location;
     }
 
     QString mapFilepath = QString("%1/data/maps/%2/map.json").arg(root).arg(map_name);
@@ -1109,7 +1134,7 @@ Tileset* Project::loadTileset(QString label, Tileset *tileset) {
 
     loadTilesetAssets(tileset);
 
-    tileset_cache->insert(label, tileset);
+    tilesetCache->insert(label, tileset);
     return tileset;
 }
 
@@ -1199,10 +1224,10 @@ void Project::writeBlockdata(QString path, Blockdata *blockdata) {
 }
 
 void Project::saveAllMaps() {
-    QList<QString> keys = map_cache->keys();
+    QList<QString> keys = mapCache->keys();
     for (int i = 0; i < keys.length(); i++) {
         QString key = keys.value(i);
-        Map* map = map_cache->value(key);
+        Map* map = mapCache->value(key);
         saveMap(map);
     }
 }
@@ -1640,8 +1665,8 @@ Blockdata* Project::readBlockdata(QString path) {
 }
 
 Map* Project::getMap(QString map_name) {
-    if (map_cache->contains(map_name)) {
-        return map_cache->value(map_name);
+    if (mapCache->contains(map_name)) {
+        return mapCache->value(map_name);
     } else {
         Map *map = loadMap(map_name);
         return map;
@@ -1650,12 +1675,12 @@ Map* Project::getMap(QString map_name) {
 
 Tileset* Project::getTileset(QString label, bool forceLoad) {
     Tileset *existingTileset = nullptr;
-    if (tileset_cache->contains(label)) {
-        existingTileset = tileset_cache->value(label);
+    if (tilesetCache->contains(label)) {
+        existingTileset = tilesetCache->value(label);
     }
 
     if (existingTileset && !forceLoad) {
-        return tileset_cache->value(label);
+        return tilesetCache->value(label);
     } else {
         Tileset *tileset = loadTileset(label, existingTileset);
         return tileset;
@@ -1762,7 +1787,7 @@ bool Project::readWildMonData() {
 bool Project::readMapGroups() {
     mapConstantsToMapNames->clear();
     mapNamesToMapConstants->clear();
-    map_groups->clear();
+    mapGroups->clear();
 
     QString mapGroupsFilepath = QString("%1/data/maps/map_groups.json").arg(root);
     QJsonDocument mapGroupsDoc;
@@ -1784,7 +1809,7 @@ bool Project::readMapGroups() {
         groups->append(groupName);
         for (int j = 0; j < mapNames.size(); j++) {
             QString mapName = mapNames.at(j).toString();
-            map_groups->insert(mapName, groupIndex);
+            mapGroups->insert(mapName, groupIndex);
             groupedMaps[groupIndex].append(mapName);
             maps->append(mapName);
 
@@ -1808,7 +1833,7 @@ bool Project::readMapGroups() {
 Map* Project::addNewMapToGroup(QString mapName, int groupNum) {
     // Setup new map in memory, but don't write to file until map is actually saved later.
     mapNames->append(mapName);
-    map_groups->insert(mapName, groupNum);
+    mapGroups->insert(mapName, groupNum);
     groupedMapNames[groupNum].append(mapName);
 
     Map *map = new Map;
@@ -1825,14 +1850,14 @@ Map* Project::addNewMapToGroup(QString mapName, int groupNum) {
     setNewMapConnections(map);
     map->commit();
     map->metatileHistory.save();
-    map_cache->insert(mapName, map);
+    mapCache->insert(mapName, map);
 
     return map;
 }
 
 Map* Project::addNewMapToGroup(QString mapName, int groupNum, Map *newMap, bool existingLayout) {
     mapNames->append(mapName);
-    map_groups->insert(mapName, groupNum);
+    mapGroups->insert(mapName, groupNum);
     groupedMapNames[groupNum].append(mapName);
 
     Map *map = new Map;

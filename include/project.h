@@ -23,9 +23,15 @@ class Project
 {
 public:
     Project();
+    ~Project();
+
+    Project(const Project &) = delete;
+    Project & operator = (const Project &) = delete;
+
+public:
     QString root;
     QStringList *groupNames = nullptr;
-    QMap<QString, int> *map_groups;
+    QMap<QString, int> *mapGroups;
     QList<QStringList> groupedMapNames;
     QStringList *mapNames = nullptr;
     QMap<QString, QVariant> miscConstants;
@@ -66,11 +72,11 @@ public:
     DataQualifiers getDataQualifiers(QString, QString);
     QMap<QString, DataQualifiers> dataQualifiers;
 
-    QMap<QString, Map*> *map_cache;
+    QMap<QString, Map*> *mapCache;
     Map* loadMap(QString);
     Map* getMap(QString);
 
-    QMap<QString, Tileset*> *tileset_cache = nullptr;
+    QMap<QString, Tileset*> *tilesetCache = nullptr;
     Tileset* loadTileset(QString, Tileset *tileset = nullptr);
     Tileset* getTileset(QString, bool forceLoad = false);
     QMap<QString, QStringList> tilesetLabels;

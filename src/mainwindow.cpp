@@ -28,6 +28,7 @@
 #include <QSysInfo>
 #include <QDesktopServices>
 #include <QMatrix>
+#include <QSignalBlocker>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -298,13 +299,14 @@ bool MainWindow::openProject(QString dir) {
 
     bool already_open = isProjectOpen() && (editor->project->root == dir);
     if (!already_open) {
+        editor->closeProject();
         editor->project = new Project;
         editor->project->set_root(dir);
         success = loadDataStructures()
                && populateMapList()
                && setMap(getDefaultMap(), true);
     } else {
-        success = loadDataStructures() && populateMapList();
+        success = loadDataStructures() && populateMapList() && setMap(editor->map->name, true);
     }
 
     if (success) {
@@ -658,14 +660,25 @@ bool MainWindow::loadDataStructures() {
         success = success 
                && project->readSecretBaseIds() 
                && project->readCoordEventWeatherNames();
-    if (!success) {
-        return false;
-    }
+    
+    return success && loadProjectCombos();
+}
 
+bool MainWindow::loadProjectCombos() {
     // set up project ui comboboxes
-    QStringList songs = project->getSongNames();
+    Project *project = editor->project;
+
+    // Block signals to the comboboxes while they are being modified
+    const QSignalBlocker blocker1(ui->comboBox_Song);
+    const QSignalBlocker blocker2(ui->comboBox_Location);
+    const QSignalBlocker blocker3(ui->comboBox_PrimaryTileset);
+    const QSignalBlocker blocker4(ui->comboBox_SecondaryTileset);
+    const QSignalBlocker blocker5(ui->comboBox_Weather);
+    const QSignalBlocker blocker6(ui->comboBox_BattleScene);
+    const QSignalBlocker blocker7(ui->comboBox_Type);
+
     ui->comboBox_Song->clear();
-    ui->comboBox_Song->addItems(songs);
+    ui->comboBox_Song->addItems(project->getSongNames());
     ui->comboBox_Location->clear();
     ui->comboBox_Location->addItems(project->mapSectionValueToName.values());
 
@@ -673,6 +686,7 @@ bool MainWindow::loadDataStructures() {
     if (tilesets.isEmpty()) {
         return false;
     }
+
     ui->comboBox_PrimaryTileset->clear();
     ui->comboBox_PrimaryTileset->addItems(tilesets.value("primary"));
     ui->comboBox_SecondaryTileset->clear();
@@ -683,6 +697,7 @@ bool MainWindow::loadDataStructures() {
     ui->comboBox_BattleScene->addItems(*project->mapBattleScenes);
     ui->comboBox_Type->clear();
     ui->comboBox_Type->addItems(*project->mapTypes);
+
     return true;
 }
 
@@ -1099,10 +1114,10 @@ void MainWindow::drawMapListIcons(QAbstractItemModel *model) {
             QVariant data = index.data(Qt::UserRole);
             if (!data.isNull()) {
                 QString map_name = data.toString();
-                if (editor->project && editor->project->map_cache->contains(map_name)) {
+                if (editor->project && editor->project->mapCache->contains(map_name)) {
                     QStandardItem *map = mapListModel->itemFromIndex(mapListIndexes.value(map_name));
                     map->setIcon(*mapIcon);
-                    if (editor->project->map_cache->value(map_name)->hasUnsavedChanges()) {
+                    if (editor->project->mapCache->value(map_name)->hasUnsavedChanges()) {
                         map->setIcon(*mapEditedIcon);
                         projectHasUnsavedChanges = true;
                     }

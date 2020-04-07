@@ -31,6 +31,12 @@ class Editor : public QObject
     Q_OBJECT
 public:
     Editor(Ui::MainWindow* ui);
+    ~Editor();
+
+    Editor() = delete;
+    Editor(const Editor &) = delete;
+    Editor & operator = (const Editor &) = delete;
+
 public:
     Ui::MainWindow* ui;
     QObject *parent = nullptr;

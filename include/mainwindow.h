@@ -30,8 +30,12 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = nullptr);
+    explicit MainWindow(QWidget *parent);
     ~MainWindow();
+
+    MainWindow() = delete;
+    MainWindow(const MainWindow &) = delete;
+    MainWindow & operator = (const MainWindow &) = delete;
 
 public slots:
     void scaleMapView(int);
@@ -188,6 +192,7 @@ private:
     bool setMap(QString, bool scrollTreeView = false);
     void redrawMapScene();
     bool loadDataStructures();
+    bool loadProjectCombos();
     bool populateMapList();
     void sortMapList();
     QString getExistingDirectory(QString);
