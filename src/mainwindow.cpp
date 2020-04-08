@@ -301,6 +301,27 @@ bool MainWindow::openProject(QString dir) {
     if (!already_open) {
         editor->closeProject();
         editor->project = new Project;
+        QObject::connect(&editor->project->fileWatcher, &QFileSystemWatcher::fileChanged, [this](QString changed){
+            QMessageBox notice(this);
+            notice.setText("File Changed");
+            notice.setInformativeText(QString("The file %1 has changed on disk. Would you like to reload the project?")
+                                      .arg(changed.remove(editor->project->root + "/")));
+            notice.setStandardButtons(QMessageBox::No | QMessageBox::Yes);
+            notice.setIcon(QMessageBox::Question);
+
+            QCheckBox showAgainCheck("Do not ask again.");
+            notice.setCheckBox(&showAgainCheck);
+
+            int choice = notice.exec();
+            if (choice == QMessageBox::Yes) {
+                on_action_Reload_Project_triggered();
+            } else if (choice == QMessageBox::No) {
+                if (showAgainCheck.isChecked()) {
+                    porymapConfig.setMonitorFiles(false);
+                    this->editor->project->fileWatcher.blockSignals(true);
+                }
+            }
+        });
         editor->project->set_root(dir);
         success = loadDataStructures()
                && populateMapList()

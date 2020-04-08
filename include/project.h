@@ -15,6 +15,7 @@
 #include <QPair>
 #include <QStandardItem>
 #include <QVariant>
+#include <QFileSystemWatcher>
 
 static QString NONE_MAP_CONSTANT = "MAP_NONE";
 static QString NONE_MAP_NAME = "None";
@@ -61,6 +62,7 @@ public:
     QMap<int, QString> metatileBehaviorMapInverse;
     QMap<QString, QString> facingDirections;
     ParseUtil parser;
+    QFileSystemWatcher fileWatcher;
 
     void set_root(QString);
 
