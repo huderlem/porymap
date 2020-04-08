@@ -306,7 +306,10 @@ bool MainWindow::openProject(QString dir) {
                && populateMapList()
                && setMap(getDefaultMap(), true);
     } else {
-        success = loadDataStructures() && populateMapList() && setMap(editor->map->name, true);
+        QString open_map = editor->map->name;
+        editor->project->clearMapCache();
+        editor->project->clearTilesetCache();
+        success = loadDataStructures() && populateMapList() && setMap(open_map, true);
     }
 
     if (success) {
@@ -370,6 +373,19 @@ void MainWindow::on_action_Open_Project_triggered()
         if (!openProject(dir)) {
             this->initWindow();
         }
+    }
+}
+
+void MainWindow::on_action_Reload_Project_triggered() {
+    // TODO: when undo history is complete show only if has unsaved changes
+    QMessageBox warning(this);
+    warning.setText("WARNING");
+    warning.setInformativeText("Reloading this project will discard any unsaved changes.");
+    warning.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+    warning.setIcon(QMessageBox::Warning);
+
+    if (warning.exec() == QMessageBox::Ok) {
+        openProject(editor->project->root);
     }
 }
 

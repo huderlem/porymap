@@ -64,6 +64,9 @@ public:
 
     void set_root(QString);
 
+    void clearMapCache();
+    void clearTilesetCache();
+
     struct DataQualifiers
     {
         bool isStatic;

@@ -77,7 +77,9 @@ Project::~Project()
     delete this->mapConstantsToMapNames;
     delete this->mapNamesToMapConstants;
     
+    clearMapCache();
     delete this->mapCache;
+    clearTilesetCache();
     delete this->tilesetCache;
 }
 
@@ -91,6 +93,20 @@ QString Project::getProjectTitle() {
         return root.section('/', -1);
     } else {
         return QString();
+    }
+}
+
+void Project::clearMapCache() {
+    for (QString mapName : mapCache->keys()) {
+        Map *map = mapCache->take(mapName);
+        if (map) delete map;
+    }
+}
+
+void Project::clearTilesetCache() {
+    for (QString tilesetName : tilesetCache->keys()) {
+        Tileset *tileset = tilesetCache->take(tilesetName);
+        if (tileset) delete tileset;
     }
 }
 
