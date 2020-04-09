@@ -24,6 +24,7 @@ void MetatileSelector::draw() {
         height_++;
     }
     QImage image(this->numMetatilesWide * 16, height_ * 16, QImage::Format_RGBA8888);
+    image.fill(Qt::magenta);
     QPainter painter(&image);
     for (int i = 0; i < length_; i++) {
         int tile = i;
@@ -91,13 +92,20 @@ void MetatileSelector::setExternalSelection(int width, int height, QList<uint16_
     emit selectedMetatilesChanged();
 }
 
+bool MetatileSelector::shouldAcceptEvent(QGraphicsSceneMouseEvent *event) {
+    QPoint pos = this->getCellPos(event->pos());
+    return Tileset::metatileIsValid(getMetatileId(pos.x(), pos.y()), this->primaryTileset, this->secondaryTileset);
+}
+
 void MetatileSelector::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+    if (!shouldAcceptEvent(event)) return;
     SelectablePixmapItem::mousePressEvent(event);
     this->updateSelectedMetatiles();
     emit selectedMetatilesChanged();
 }
 
 void MetatileSelector::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
+    if (!shouldAcceptEvent(event)) return;
     SelectablePixmapItem::mouseMoveEvent(event);
     this->updateSelectedMetatiles();
 
@@ -108,6 +116,7 @@ void MetatileSelector::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
 }
 
 void MetatileSelector::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
+    if (!shouldAcceptEvent(event)) return;
     SelectablePixmapItem::mouseReleaseEvent(event);
     this->updateSelectedMetatiles();
     emit selectedMetatilesChanged();
@@ -147,9 +156,7 @@ uint16_t MetatileSelector::getMetatileId(int x, int y) {
 }
 
 QPoint MetatileSelector::getMetatileIdCoords(uint16_t metatileId) {
-    if (metatileId >= Project::getNumMetatilesTotal()
-       || (metatileId < Project::getNumMetatilesPrimary() && metatileId >= this->primaryTileset->metatiles->length())
-       || (metatileId < Project::getNumMetatilesTotal() && metatileId >= Project::getNumMetatilesPrimary() + this->secondaryTileset->metatiles->length()))
+    if (!Tileset::metatileIsValid(metatileId, this->primaryTileset, this->secondaryTileset))
     {
         // Invalid metatile id.
         return QPoint(0, 0);

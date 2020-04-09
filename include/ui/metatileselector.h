@@ -48,6 +48,7 @@ private:
     void updateSelectedMetatiles();
     uint16_t getMetatileId(int x, int y);
     QPoint getMetatileIdCoords(uint16_t);
+    bool shouldAcceptEvent(QGraphicsSceneMouseEvent*);
 
 signals:
     void hoveredMetatileSelectionChanged(uint16_t);

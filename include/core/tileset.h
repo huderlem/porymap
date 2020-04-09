@@ -35,6 +35,7 @@ public:
     static Metatile* getMetatile(int, Tileset*, Tileset*);
     static QList<QList<QRgb>> getBlockPalettes(Tileset*, Tileset*);
     static QList<QRgb> getPalette(int, Tileset*, Tileset*);
+    static bool metatileIsValid(uint16_t metatileId, Tileset *, Tileset *);
 
     bool appendToHeaders(QString headerFile, QString friendlyName);
     bool appendToGraphics(QString graphicsFile, QString friendlyName, bool primary);
