@@ -18,13 +18,13 @@ QImage getMetatileImage(uint16_t tile, Tileset *primaryTileset, Tileset *seconda
 
     Metatile* metatile = Tileset::getMetatile(tile, primaryTileset, secondaryTileset);
     if (!metatile || !metatile->tiles) {
-        metatile_image.fill(0xffffffff);
+        metatile_image.fill(Qt::magenta);
         return metatile_image;
     }
 
     Tileset* blockTileset = Tileset::getBlockTileset(tile, primaryTileset, secondaryTileset);
     if (!blockTileset) {
-        metatile_image.fill(0xffffffff);
+        metatile_image.fill(Qt::magenta);
         return metatile_image;
     }
     QList<QList<QRgb>> palettes = Tileset::getBlockPalettes(primaryTileset, secondaryTileset);

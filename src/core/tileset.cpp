@@ -66,6 +66,19 @@ Metatile* Tileset::getMetatile(int index, Tileset *primaryTileset, Tileset *seco
     return metatile;
 }
 
+bool Tileset::metatileIsValid(uint16_t metatileId, Tileset *primaryTileset, Tileset *secondaryTileset) {
+    if (metatileId >= Project::getNumMetatilesTotal())
+        return false;
+
+    if (metatileId < Project::getNumMetatilesPrimary() && metatileId >= primaryTileset->metatiles->length())
+        return false;
+
+    if (metatileId < Project::getNumMetatilesTotal() && metatileId >= Project::getNumMetatilesPrimary() + secondaryTileset->metatiles->length())
+        return false;
+
+    return true;
+}
+
 QList<QList<QRgb>> Tileset::getBlockPalettes(Tileset *primaryTileset, Tileset *secondaryTileset) {
     QList<QList<QRgb>> palettes;
     for (int i = 0; i < Project::getNumPalettesPrimary(); i++) {
