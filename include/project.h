@@ -20,10 +20,11 @@
 static QString NONE_MAP_CONSTANT = "MAP_NONE";
 static QString NONE_MAP_NAME = "None";
 
-class Project
+class Project : public QObject
 {
+    Q_OBJECT
 public:
-    Project();
+    Project(QWidget *parent = nullptr);
     ~Project();
 
     Project(const Project &) = delete;
@@ -65,6 +66,8 @@ public:
     QFileSystemWatcher fileWatcher;
 
     void set_root(QString);
+
+    void initSignals();
 
     void clearMapCache();
     void clearTilesetCache();
@@ -196,6 +199,11 @@ private:
     static int num_metatiles_total;
     static int num_pals_primary;
     static int num_pals_total;
+
+    QWidget *parent;
+
+signals:
+    void reloadProject();
 };
 
 #endif // PROJECT_H
