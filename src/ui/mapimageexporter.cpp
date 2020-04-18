@@ -66,7 +66,7 @@ struct StitchedMap {
 };
 
 QPixmap MapImageExporter::getStitchedImage(QProgressDialog *progress, bool includeBorder) {
-    // Do a bread-first search to gather a collection of
+    // Do a breadth-first search to gather a collection of
     // all reachable maps with their relative offsets.
     QSet<QString> visited;
     QList<StitchedMap> stitchedMaps;
