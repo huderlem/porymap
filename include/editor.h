@@ -131,6 +131,8 @@ public:
     void objectsView_onMouseMove(QMouseEvent *event);
     void objectsView_onMouseRelease(QMouseEvent *event);
 
+    int getBorderDrawDistance(int dimension);
+
 private:
     void setConnectionItemsVisible(bool);
     void setBorderItemsVisible(bool, qreal = 1);
@@ -147,7 +149,6 @@ private:
     void updateMirroredConnectionMap(MapConnection*, QString);
     void updateMirroredConnection(MapConnection*, QString, QString, bool isDelete = false);
     void updateEncounterFields(EncounterFields newFields);
-    int getBorderDrawDistance(int dimension);
     Event* createNewObjectEvent();
     Event* createNewWarpEvent();
     Event* createNewHealLocationEvent();

@@ -134,7 +134,8 @@ HEADERS  += include/core/block.h \
     include/project.h \
     include/settings.h \
     include/log.h \
-    include/ui/newtilesetdialog.h
+    include/ui/newtilesetdialog.h \
+    include/lib/qstringhash.h
 
 FORMS    += forms/mainwindow.ui \
     forms/eventpropertiesframe.ui \
