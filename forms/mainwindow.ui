@@ -2890,6 +2890,7 @@
     <addaction name="action_Save_Project"/>
     <addaction name="separator"/>
     <addaction name="action_Export_Map_Image"/>
+    <addaction name="actionExport_Stitched_Map_Image"/>
     <addaction name="separator"/>
     <addaction name="action_Exit"/>
    </widget>
@@ -3170,6 +3171,11 @@
   <action name="actionThemes">
    <property name="text">
     <string>Themes...</string>
+   </property>
+  </action>
+  <action name="actionExport_Stitched_Map_Image">
+   <property name="text">
+    <string>Export Map Stitch Image...</string>
    </property>
   </action>
  </widget>

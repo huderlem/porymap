@@ -62,6 +62,10 @@
 #include <memory>
 #include <initializer_list>
 
+#include <QtGlobal>
+#if QT_VERSION < QT_VERSION_CHECK(5, 14, 1)
+    #include "qstringhash.h"
+#endif
 #include "orderedmap.h"
 
 #ifdef _MSC_VER

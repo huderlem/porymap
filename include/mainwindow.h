@@ -109,6 +109,7 @@ private slots:
     void currentMetatilesSelectionChanged();
 
     void on_action_Export_Map_Image_triggered();
+    void on_actionExport_Stitched_Map_Image_triggered();
 
     void on_comboBox_ConnectionDirection_currentIndexChanged(const QString &arg1);
     void on_spinBox_ConnectionOffset_valueChanged(int offset);
@@ -219,6 +220,7 @@ private:
     void closeSupplementaryWindows();
 
     bool isProjectOpen();
+    void showExportMapImageWindow(bool stitchMode);
 };
 
 enum MapListUserRoles {

@@ -12,6 +12,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 
 ### Added
 - Support for [pokefirered](https://github.com/pret/pokefirered). Kanto fans rejoice! At long last porymap supports the FRLG decompilation project.
+- Add ability to export map stitches with `File -> Export Map Stitch Image...`.
 
 ### Changed
 - Porymap now saves map and encounter json data in an order consistent with the upstream repos. This will provide more comprehensible diffs, among other things.
@@ -19,6 +20,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ### Fixed
 - Fix bug where pressing TAB key did not navigate through widgets in the wild encounter tables.
 - Fix bug that allowed selecting an invalid metatile in the metatile selector.
+
 
 ## [3.0.1] - 2020-03-04
 ### Fixed
