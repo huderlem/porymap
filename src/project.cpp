@@ -10,6 +10,8 @@
 #include "imageexport.h"
 #include "map.h"
 
+#include "orderedjson.h"
+
 #include <QDir>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -21,6 +23,9 @@
 #include <QMessageBox>
 #include <QRegularExpression>
 #include <algorithm>
+
+using OrderedJson = poryjson::Json;
+using OrderedJsonDoc = poryjson::JsonDoc;
 
 int Project::num_tiles_primary = 512;
 int Project::num_tiles_total = 1024;
@@ -592,14 +597,14 @@ void Project::saveMapLayouts() {
         return;
     }
 
-    QJsonObject layoutsObj;
+    OrderedJson::object layoutsObj;
     layoutsObj["layouts_table_label"] = layoutsLabel;
 
     bool useCustomBorderSize = projectConfig.getUseCustomBorderSize();
-    QJsonArray layoutsArr;
+    OrderedJson::array layoutsArr;
     for (QString layoutId : mapLayoutsTableMaster) {
         MapLayout *layout = mapLayouts.value(layoutId);
-        QJsonObject layoutObj;
+        OrderedJson::object layoutObj;
         layoutObj["id"] = layout->id;
         layoutObj["name"] = layout->name;
         layoutObj["width"] = layout->width.toInt(nullptr, 0);
@@ -612,12 +617,14 @@ void Project::saveMapLayouts() {
         layoutObj["secondary_tileset"] = layout->tileset_secondary_label;
         layoutObj["border_filepath"] = layout->border_path;
         layoutObj["blockdata_filepath"] = layout->blockdata_path;
-        layoutsArr.append(layoutObj);
+        layoutsArr.push_back(layoutObj);
     }
 
     layoutsObj["layouts"] = layoutsArr;
-    QJsonDocument layoutsDoc(layoutsObj);
-    layoutsFile.write(layoutsDoc.toJson());
+    OrderedJson layoutJson(layoutsObj);
+    OrderedJsonDoc jsonDoc(&layoutJson);
+    jsonDoc.dump(&layoutsFile);
+    layoutsFile.close();
 }
 
 void Project::setNewMapLayout(Map* map) {
@@ -648,27 +655,29 @@ void Project::saveMapGroups() {
         return;
     }
 
-    QJsonObject mapGroupsObj;
+    OrderedJson::object mapGroupsObj;
     mapGroupsObj["layouts_table_label"] = layoutsLabel;
 
-    QJsonArray groupNamesArr;
+    OrderedJson::array groupNamesArr;
     for (QString groupName : *this->groupNames) {
-        groupNamesArr.append(groupName);
+        groupNamesArr.push_back(groupName);
     }
     mapGroupsObj["group_order"] = groupNamesArr;
 
     int groupNum = 0;
     for (QStringList mapNames : groupedMapNames) {
-        QJsonArray groupArr;
+        OrderedJson::array groupArr;
         for (QString mapName : mapNames) {
-            groupArr.append(mapName);
+            groupArr.push_back(mapName);
         }
         mapGroupsObj[this->groupNames->at(groupNum)] = groupArr;
         groupNum++;
     }
 
-    QJsonDocument mapGroupsDoc(mapGroupsObj);
-    mapGroupsFile.write(mapGroupsDoc.toJson());
+    OrderedJson mapGroupJson(mapGroupsObj);
+    OrderedJsonDoc jsonDoc(&mapGroupJson);
+    jsonDoc.dump(&mapGroupsFile);
+    mapGroupsFile.close();
 }
 
 void Project::saveWildMonData() {
@@ -681,78 +690,79 @@ void Project::saveWildMonData() {
         return;
     }
 
-    QJsonObject wildEncountersObject;
-    QJsonArray wildEncounterGroups = QJsonArray();
+    OrderedJson::object wildEncountersObject;
+    OrderedJson::array wildEncounterGroups;
 
     // gWildMonHeaders label is not mutable
-    QJsonObject monHeadersObject;
+    OrderedJson::object monHeadersObject;
     monHeadersObject["label"] = "gWildMonHeaders";
     monHeadersObject["for_maps"] = true;
 
-    QJsonArray fieldsInfoArray;
+    OrderedJson::array fieldsInfoArray;
     for (EncounterField fieldInfo : wildMonFields) {
-        QJsonObject fieldObject;
-        QJsonArray rateArray;
+        OrderedJson::object fieldObject;
+        OrderedJson::array rateArray;
 
         for (int rate : fieldInfo.encounterRates) {
-            rateArray.append(rate);
+            rateArray.push_back(rate);
         }
 
         fieldObject["type"] = fieldInfo.name;
         fieldObject["encounter_rates"] = rateArray;
 
-        QJsonObject groupsObject;
+        OrderedJson::object groupsObject;
         for (QString groupName : fieldInfo.groups.keys()) {
-            QJsonArray subGroupIndices;
+            OrderedJson::array subGroupIndices;
             std::sort(fieldInfo.groups[groupName].begin(), fieldInfo.groups[groupName].end());
             for (int slotIndex : fieldInfo.groups[groupName]) {
-                subGroupIndices.append(slotIndex);
+                subGroupIndices.push_back(slotIndex);
             }
             groupsObject[groupName] = subGroupIndices;
         }
-        if (!groupsObject.isEmpty()) fieldObject["groups"] = groupsObject;
+        if (!groupsObject.empty()) fieldObject["groups"] = groupsObject;
 
         fieldsInfoArray.append(fieldObject);
     }
     monHeadersObject["fields"] = fieldsInfoArray;
 
-    QJsonArray encountersArray = QJsonArray();
+    OrderedJson::array encountersArray;
     for (QString key : wildMonData.keys()) {
         for (QString groupLabel : wildMonData.value(key).keys()) {
-            QJsonObject encounterObject;
+            OrderedJson::object encounterObject;
             encounterObject["map"] = key;
             encounterObject["base_label"] = groupLabel;
 
             WildPokemonHeader encounterHeader = wildMonData.value(key).value(groupLabel);
             for (QString fieldName : encounterHeader.wildMons.keys()) {
-                QJsonObject fieldObject;
+                OrderedJson::object fieldObject;
                 WildMonInfo monInfo = encounterHeader.wildMons.value(fieldName);
                 fieldObject["encounter_rate"] = monInfo.encounterRate;
-                QJsonArray monArray;
+                OrderedJson::array monArray;
                 for (WildPokemon wildMon : monInfo.wildPokemon) {
-                    QJsonObject monEntry;
+                    OrderedJson::object monEntry;
                     monEntry["min_level"] = wildMon.minLevel;
                     monEntry["max_level"] = wildMon.maxLevel;
                     monEntry["species"] = wildMon.species;
-                    monArray.append(monEntry);
+                    monArray.push_back(monEntry);
                 }
                 fieldObject["mons"] = monArray;
                 encounterObject[fieldName] = fieldObject;
             }
-            encountersArray.append(encounterObject);
+            encountersArray.push_back(encounterObject);
         }
     }
     monHeadersObject["encounters"] = encountersArray;
-    wildEncounterGroups.append(monHeadersObject);
+    wildEncounterGroups.push_back(monHeadersObject);
 
     // add extra Json objects that are not associated with maps to the file
-    for (QString label : extraEncounterGroups.keys()) {
-        wildEncounterGroups.append(extraEncounterGroups[label]);
+    for (auto extraObject : extraEncounterGroups) {
+        wildEncounterGroups.push_back(extraObject);
     }
 
     wildEncountersObject["wild_encounter_groups"] = wildEncounterGroups;
-    QJsonDocument wildEncountersDoc(wildEncountersObject);
-    wildEncountersFile.write(wildEncountersDoc.toJson());
+    OrderedJson encounterJson(wildEncountersObject);
+    OrderedJsonDoc jsonDoc(&encounterJson);
+    jsonDoc.dump(&wildEncountersFile);
     wildEncountersFile.close();
 }
 
@@ -1263,7 +1273,7 @@ void Project::saveMap(Map *map) {
         return;
     }
 
-    QJsonObject mapObj;
+    OrderedJson::object mapObj;
     // Header values.
     mapObj["id"] = map->constantName;
     mapObj["name"] = map->name;
@@ -1284,10 +1294,10 @@ void Project::saveMap(Map *map) {
 
     // Connections
     if (map->connections.length() > 0) {
-        QJsonArray connectionsArr;
+        OrderedJson::array connectionsArr;
         for (MapConnection* connection : map->connections) {
             if (mapNamesToMapConstants->contains(connection->map_name)) {
-                QJsonObject connectionObj;
+                OrderedJson::object connectionObj;
                 connectionObj["direction"] = connection->direction;
                 connectionObj["offset"] = connection->offset.toInt();
                 connectionObj["map"] = this->mapNamesToMapConstants->value(connection->map_name);
@@ -1303,51 +1313,51 @@ void Project::saveMap(Map *map) {
 
     if (map->sharedEventsMap.isEmpty()) {
         // Object events
-        QJsonArray objectEventsArr;
+        OrderedJson::array objectEventsArr;
         for (int i = 0; i < map->events["object_event_group"].length(); i++) {
             Event *object_event = map->events["object_event_group"].value(i);
-            QJsonObject eventObj = object_event->buildObjectEventJSON();
-            objectEventsArr.append(eventObj);
+            OrderedJson::object eventObj = object_event->buildObjectEventJSON();
+            objectEventsArr.push_back(eventObj);
         }
         mapObj["object_events"] = objectEventsArr;
 
         // Warp events
-        QJsonArray warpEventsArr;
+        OrderedJson::array warpEventsArr;
         for (int i = 0; i < map->events["warp_event_group"].length(); i++) {
             Event *warp_event = map->events["warp_event_group"].value(i);
-            QJsonObject warpObj = warp_event->buildWarpEventJSON(mapNamesToMapConstants);
+            OrderedJson::object warpObj = warp_event->buildWarpEventJSON(mapNamesToMapConstants);
             warpEventsArr.append(warpObj);
         }
         mapObj["warp_events"] = warpEventsArr;
 
         // Coord events
-        QJsonArray coordEventsArr;
+        OrderedJson::array coordEventsArr;
         for (int i = 0; i < map->events["coord_event_group"].length(); i++) {
             Event *event = map->events["coord_event_group"].value(i);
             QString event_type = event->get("event_type");
             if (event_type == EventType::Trigger) {
-                QJsonObject triggerObj = event->buildTriggerEventJSON();
+                OrderedJson::object triggerObj = event->buildTriggerEventJSON();
                 coordEventsArr.append(triggerObj);
             } else if (event_type == EventType::WeatherTrigger) {
-                QJsonObject weatherObj = event->buildWeatherTriggerEventJSON();
+                OrderedJson::object weatherObj = event->buildWeatherTriggerEventJSON();
                 coordEventsArr.append(weatherObj);
             }
         }
         mapObj["coord_events"] = coordEventsArr;
 
         // Bg Events
-        QJsonArray bgEventsArr;
+        OrderedJson::array bgEventsArr;
         for (int i = 0; i < map->events["bg_event_group"].length(); i++) {
             Event *event = map->events["bg_event_group"].value(i);
             QString event_type = event->get("event_type");
             if (event_type == EventType::Sign) {
-                QJsonObject signObj = event->buildSignEventJSON();
+                OrderedJson::object signObj = event->buildSignEventJSON();
                 bgEventsArr.append(signObj);
             } else if (event_type == EventType::HiddenItem) {
-                QJsonObject hiddenItemObj = event->buildHiddenItemEventJSON();
+                OrderedJson::object hiddenItemObj = event->buildHiddenItemEventJSON();
                 bgEventsArr.append(hiddenItemObj);
             } else if (event_type == EventType::SecretBase) {
-                QJsonObject secretBaseObj = event->buildSecretBaseEventJSON();
+                OrderedJson::object secretBaseObj = event->buildSecretBaseEventJSON();
                 bgEventsArr.append(secretBaseObj);
             }
         }
@@ -1365,8 +1375,9 @@ void Project::saveMap(Map *map) {
         mapObj[key] = map->customHeaders[key];
     }
 
-    QJsonDocument mapDoc(mapObj);
-    mapFile.write(mapDoc.toJson());
+    OrderedJson mapJson(mapObj);
+    OrderedJsonDoc jsonDoc(&mapJson);
+    jsonDoc.dump(&mapFile);
     mapFile.close();
 
     saveLayoutBorder(map);
@@ -1690,7 +1701,13 @@ bool Project::readWildMonData() {
     for (auto subObjectRef : wildMonObj["wild_encounter_groups"].toArray()) {
         QJsonObject subObject = subObjectRef.toObject();
         if (!subObject["for_maps"].toBool()) {
-            extraEncounterGroups.insert(subObject["label"].toString(), subObject);
+            QString err;
+            QString subObjson = QJsonDocument(subObject).toJson();
+            OrderedJson::object orderedSubObject = OrderedJson::parse(subObjson, err).object_items();
+            extraEncounterGroups.push_back(orderedSubObject);
+            if (!err.isEmpty()) {
+                logWarn(QString("Encountered a problem while parsing extra encounter groups: %1").arg(err));
+            }
             continue;
         }
 

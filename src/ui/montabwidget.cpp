@@ -30,6 +30,7 @@ void MonTabWidget::populate() {
         table->setEditTriggers(QAbstractItemView::NoEditTriggers);
         table->setFocusPolicy(Qt::NoFocus);
         table->setSelectionMode(QAbstractItemView::NoSelection);
+        table->setTabKeyNavigation(false);
         table->clearFocus();
         addTab(table, field.name);
     }
