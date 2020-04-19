@@ -1099,8 +1099,12 @@ Tileset* Project::loadTileset(QString label, Tileset *tileset) {
     tileset->tiles_label = values->value(3);
     tileset->palettes_label = values->value(4);
     tileset->metatiles_label = values->value(5);
-    tileset->metatile_attrs_label = values->value(6);
-    tileset->callback_label = values->value(7);
+    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+        tileset->metatile_attrs_label = values->value(7);
+    } else {
+        tileset->metatile_attrs_label = values->value(6);
+        tileset->callback_label = values->value(7);
+    }
 
     loadTilesetAssets(tileset);
 
