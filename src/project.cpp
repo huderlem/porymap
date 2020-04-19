@@ -425,8 +425,8 @@ void Project::setNewMapHeader(Map* map, int mapIndex) {
     map->layoutId = QString("%1").arg(mapIndex);
     map->location = mapSectionValueToName.value(0);
     map->requiresFlash = "FALSE";
-    map->weather = weatherNames->at(0);
-    map->type = mapTypes->at(0);
+    map->weather = weatherNames->value(0, "WEATHER_NONE");
+    map->type = mapTypes->value(0, "MAP_TYPE_NONE");
     map->song = defaultSong;
     if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeruby) {
         map->show_location = "TRUE";
@@ -443,7 +443,7 @@ void Project::setNewMapHeader(Map* map, int mapIndex) {
         map->floorNumber = 0;
     }
 
-    map->battle_scene = mapBattleScenes->at(0);
+    map->battle_scene = mapBattleScenes->value(0, "MAP_BATTLE_SCENE_NORMAL");
 }
 
 bool Project::loadMapLayout(Map* map) {
@@ -637,8 +637,8 @@ void Project::setNewMapLayout(Map* map) {
     layout->border_height = DEFAULT_BORDER_HEIGHT;
     layout->border_path = QString("data/layouts/%1/border.bin").arg(map->name);
     layout->blockdata_path = QString("data/layouts/%1/map.bin").arg(map->name);
-    layout->tileset_primary_label = tilesetLabels["primary"].at(0);
-    layout->tileset_secondary_label = tilesetLabels["secondary"].at(0);
+    layout->tileset_primary_label = tilesetLabels["primary"].value(0, "gTileset_General");
+    layout->tileset_secondary_label = tilesetLabels["secondary"].value(0, projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered ? "gTileset_PalletTown" : "gTileset_Petalburg");
     map->layout = layout;
     map->layoutId = layout->id;
 
@@ -1060,8 +1060,9 @@ bool Project::loadMapTilesets(Map* map) {
 
     map->layout->tileset_primary = getTileset(map->layout->tileset_primary_label);
     if (!map->layout->tileset_primary) {
-        logWarn(QString("Map layout %1 has invalid primary tileset '%2'. Using default '%3'").arg(map->layout->id).arg(map->layout->tileset_primary_label).arg(tilesetLabels["primary"].at(0)));
-        map->layout->tileset_primary_label = tilesetLabels["primary"].at(0);
+        QString defaultTileset = tilesetLabels["primary"].value(0, "gTileset_General");
+        logWarn(QString("Map layout %1 has invalid primary tileset '%2'. Using default '%3'").arg(map->layout->id).arg(map->layout->tileset_primary_label).arg(defaultTileset));
+        map->layout->tileset_primary_label = defaultTileset;
         map->layout->tileset_primary = getTileset(map->layout->tileset_primary_label);
         if (!map->layout->tileset_primary) {
             logError(QString("Failed to set default primary tileset."));
@@ -1071,8 +1072,9 @@ bool Project::loadMapTilesets(Map* map) {
 
     map->layout->tileset_secondary = getTileset(map->layout->tileset_secondary_label);
     if (!map->layout->tileset_secondary) {
-        logWarn(QString("Map layout %1 has invalid secondary tileset '%2'. Using default '%3'").arg(map->layout->id).arg(map->layout->tileset_secondary_label).arg(tilesetLabels["secondary"].at(0)));
-        map->layout->tileset_secondary_label = tilesetLabels["secondary"].at(0);
+        QString defaultTileset = tilesetLabels["secondary"].value(0, projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered ? "gTileset_PalletTown" : "gTileset_Petalburg");
+        logWarn(QString("Map layout %1 has invalid secondary tileset '%2'. Using default '%3'").arg(map->layout->id).arg(map->layout->tileset_secondary_label).arg(defaultTileset));
+        map->layout->tileset_secondary_label = defaultTileset;
         map->layout->tileset_secondary = getTileset(map->layout->tileset_secondary_label);
         if (!map->layout->tileset_secondary) {
             logError(QString("Failed to set default secondary tileset."));
@@ -2210,7 +2212,7 @@ QStringList Project::getSongNames() {
     songDefinePrefixes << "SE_" << "MUS_";
     QMap<QString, int> songDefines = parser.readCDefines("include/constants/songs.h", songDefinePrefixes);
     QStringList names = songDefines.keys();
-    this->defaultSong = names.at(0);
+    this->defaultSong = names.value(0, "MUS_DUMMY");
 
     return names;
 }
