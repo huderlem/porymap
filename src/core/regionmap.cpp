@@ -195,14 +195,7 @@ bool RegionMap::readLayout() {
                 map_squares[i].has_map = true;
             }
             map_squares[i].mapsec = secname;
-            if (!mapSecToMapEntry.contains(secname)) {
-                continue;
-            }
-            QString name = mapSecToMapEntry.value(secname).name;
-            if (!sMapNamesMap.contains(name)) {
-                continue;
-            }
-            map_squares[i].map_name = sMapNamesMap.value(name);
+            map_squares[i].map_name = sMapNamesMap.value(mapSecToMapEntry.value(secname).name);
             map_squares[i].x = x;
             map_squares[i].y = y;
         }
