@@ -11,7 +11,7 @@ NewTilesetDialog::NewTilesetDialog(Project* project, QWidget *parent) :
     this->setFixedSize(this->width(), this->height());
     this->project = project;
     //only allow characters valid for a symbol
-    QRegExp expression("[-_.A-Za-z0-9]+$");
+    QRegExp expression("[_A-Za-z0-9]+$");
     QRegExpValidator *validator = new QRegExpValidator(expression);
     this->ui->nameLineEdit->setValidator(validator);
 
