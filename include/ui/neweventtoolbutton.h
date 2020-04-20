@@ -10,6 +10,14 @@ class NewEventToolButton : public QToolButton
 public:
     explicit NewEventToolButton(QWidget *parent = nullptr);
     QString getSelectedEventType();
+    QAction *newObjectAction;
+    QAction *newWarpAction;
+    QAction *newHealLocationAction;
+    QAction *newTriggerAction;
+    QAction *newWeatherTriggerAction;
+    QAction *newSignAction;
+    QAction *newHiddenItemAction;
+    QAction *newSecretBaseAction;
 public slots:
     void newObject();
     void newWarp();
@@ -23,14 +31,6 @@ signals:
     void newEventAdded(QString);
 private:
     QString selectedEventType;
-    QAction *newObjectAction;
-    QAction *newWarpAction;
-    QAction *newHealLocationAction;
-    QAction *newTriggerAction;
-    QAction *newWeatherTriggerAction;
-    QAction *newSignAction;
-    QAction *newHiddenItemAction;
-    QAction *newSecretBaseAction;
     void init();
 };
 

@@ -6,9 +6,12 @@
 class HistoryItem {
 public:
     Blockdata *metatiles;
+    Blockdata *border;
     int layoutWidth;
     int layoutHeight;
-    HistoryItem(Blockdata *metatiles, int layoutWidth, int layoutHeight);
+    int borderWidth;
+    int borderHeight;
+    HistoryItem(Blockdata *metatiles, Blockdata *border, int layoutWidth, int layoutHeight, int borderWidth, int borderHeight);
     ~HistoryItem();
 };
 

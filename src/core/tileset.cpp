@@ -2,6 +2,7 @@
 #include "metatile.h"
 #include "project.h"
 #include "log.h"
+#include "config.h"
 
 #include <QPainter>
 #include <QImage>
@@ -115,8 +116,13 @@ bool Tileset::appendToHeaders(QString headerFile, QString friendlyName){
     dataString.append(QString("\t.4byte gTilesetTiles_%1\n").arg(friendlyName));
     dataString.append(QString("\t.4byte gTilesetPalettes_%1\n").arg(friendlyName));
     dataString.append(QString("\t.4byte gMetatiles_%1\n").arg(friendlyName));
-    dataString.append(QString("\t.4byte gMetatileAttributes_%1\n").arg(friendlyName));
-    dataString.append("\t.4byte NULL\n");
+    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+        dataString.append("\t.4byte NULL\n");
+        dataString.append(QString("\t.4byte gMetatileAttributes_%1\n").arg(friendlyName));
+    } else {
+        dataString.append(QString("\t.4byte gMetatileAttributes_%1\n").arg(friendlyName));
+        dataString.append("\t.4byte NULL\n");
+    }
     file.write(dataString.toUtf8());
     file.flush();
     file.close();

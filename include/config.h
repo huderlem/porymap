@@ -109,6 +109,8 @@ public:
     void setUsePoryScript(bool usePoryScript);
     bool getUsePoryScript();
     void setProjectDir(QString projectDir);
+    void setUseCustomBorderSize(bool enable);
+    bool getUseCustomBorderSize();
 protected:
     QString getConfigFilepath();
     void parseConfigKeyValue(QString key, QString value);
@@ -119,6 +121,7 @@ private:
     QString projectDir;
     bool useEncounterJson;
     bool usePoryScript;
+    bool useCustomBorderSize;
 };
 
 extern ProjectConfig projectConfig;

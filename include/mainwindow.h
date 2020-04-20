@@ -68,6 +68,7 @@ private slots:
     void on_checkBox_AllowRunning_clicked(bool checked);
     void on_checkBox_AllowBiking_clicked(bool checked);
     void on_checkBox_AllowEscapeRope_clicked(bool checked);
+    void on_spinBox_FloorNumber_valueChanged(int offset);
 
     void on_tabWidget_currentChanged(int index);
 
@@ -118,7 +119,7 @@ private slots:
     void on_comboBox_EmergeMap_currentTextChanged(const QString &mapName);
     void on_comboBox_PrimaryTileset_currentTextChanged(const QString &arg1);
     void on_comboBox_SecondaryTileset_currentTextChanged(const QString &arg1);
-    void on_pushButton_clicked();
+    void on_pushButton_ChangeDimensions_clicked();
     void on_checkBox_smartPaths_stateChanged(int selected);
     void on_checkBox_Visibility_clicked(bool checked);
     void on_checkBox_ToggleBorder_stateChanged(int arg1);
@@ -215,6 +216,7 @@ private:
     bool openRecentProject();
     void updateTilesetEditor();
     QString getEventGroupFromTabWidget(QWidget *tab);
+    void closeSupplementaryWindows();
 
     bool isProjectOpen();
 };

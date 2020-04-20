@@ -84,6 +84,8 @@ QList<Metatile*> *MetatileParser::parse(QString filepath, bool *error, bool prim
                     (static_cast<unsigned char>(in.at(attrOffset + 1)) << 8);
         metatile->behavior = value & 0xFF;
         metatile->layerType = (value & 0xF000) >> 12;
+        metatile->encounterType = 0;
+        metatile->terrainType = 0;
         metatile->tiles = tiles;
         metatiles->append(metatile);
     }

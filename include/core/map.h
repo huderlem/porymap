@@ -14,6 +14,13 @@
 #include <QGraphicsPixmapItem>
 #include <math.h>
 
+#define DEFAULT_BORDER_WIDTH 2
+#define DEFAULT_BORDER_HEIGHT 2
+
+// Number of metatiles to draw out from edge of map. Could allow modification of this in the future.
+// porymap will reflect changes to it, but the value is hard-coded in the projects at the moment
+#define BORDER_DISTANCE 7
+
 class Map : public QObject
 {
     Q_OBJECT
@@ -35,6 +42,7 @@ public:
     QString allowRunning;
     QString allowBiking;
     QString allowEscapeRope;
+    int floorNumber;
     QString battle_scene;
     QString sharedEventsMap = "";
     QString sharedScriptsMap = "";
@@ -57,6 +65,8 @@ public:
     static QString bgEventsLabelFromName(QString mapName);
     int getWidth();
     int getHeight();
+    int getBorderWidth();
+    int getBorderHeight();
     QPixmap render(bool ignoreCache, MapLayout * fromLayout = nullptr);
     QPixmap renderCollision(qreal opacity, bool ignoreCache);
     bool mapBlockChanged(int i, Blockdata * cache);
@@ -77,12 +87,14 @@ public:
     void addEvent(Event*);
     QPixmap renderConnection(MapConnection, MapLayout *);
     QPixmap renderBorder();
-    void setDimensions(int newWidth, int newHeight, bool setNewBlockData = true);
+    void setDimensions(int newWidth, int newHeight, bool setNewBlockdata = true);
+    void setBorderDimensions(int newWidth, int newHeight, bool setNewBlockdata = true);
     void cacheBorder();
     bool hasUnsavedChanges();
 
 private:
     void setNewDimensionsBlockdata(int newWidth, int newHeight);
+    void setNewBorderDimensionsBlockdata(int newWidth, int newHeight);
 
 signals:
     void mapChanged(Map *map);

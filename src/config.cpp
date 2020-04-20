@@ -324,11 +324,13 @@ QString PorymapConfig::getTheme() {
 
 const QMap<BaseGameVersion, QString> baseGameVersionMap = {
     {BaseGameVersion::pokeruby, "pokeruby"},
+    {BaseGameVersion::pokefirered, "pokefirered"},
     {BaseGameVersion::pokeemerald, "pokeemerald"},
 };
 
 const QMap<QString, BaseGameVersion> baseGameVersionReverseMap = {
     {"pokeruby", BaseGameVersion::pokeruby},
+    {"pokefirered", BaseGameVersion::pokefirered},
     {"pokeemerald", BaseGameVersion::pokeemerald},
 };
 
@@ -346,7 +348,7 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
             this->baseGameVersion = baseGameVersionReverseMap.value(baseGameVersion);
         } else {
             this->baseGameVersion = BaseGameVersion::pokeemerald;
-            logWarn(QString("Invalid config value for base_game_version: '%1'. Must be 'pokeruby' or 'pokeemerald'.").arg(value));
+            logWarn(QString("Invalid config value for base_game_version: '%1'. Must be 'pokeruby', 'pokefirered' or 'pokeemerald'.").arg(value));
         }
     } else if (key == "use_encounter_json") {
         bool ok;
@@ -354,11 +356,17 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         if (!ok) {
             logWarn(QString("Invalid config value for use_encounter_json: '%1'. Must be 0 or 1.").arg(value));
         }
-    } else if(key == "use_poryscript") {
+    } else if (key == "use_poryscript") {
         bool ok;
         this->usePoryScript = value.toInt(&ok);
-        if(!ok) {
+        if (!ok) {
             logWarn(QString("Invalid config value for use_poryscript: '%1'. Must be 0 or 1.").arg(value));
+        }
+    } else if (key == "use_custom_border_size") {
+        bool ok;
+        this->useCustomBorderSize = value.toInt(&ok);
+        if (!ok) {
+            logWarn(QString("Invalid config value for use_custom_border_size: '%1'. Must be 0 or 1.").arg(value));
         }
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
@@ -370,6 +378,7 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("base_game_version", baseGameVersionMap.value(this->baseGameVersion));
     map.insert("use_encounter_json", QString::number(this->useEncounterJson));
     map.insert("use_poryscript", QString::number(this->usePoryScript));
+    map.insert("use_custom_border_size", QString::number(this->useCustomBorderSize));
     return map;
 }
 
@@ -387,6 +396,7 @@ void ProjectConfig::onNewConfigFileCreated() {
 
         QComboBox *baseGameVersionComboBox = new QComboBox();
         baseGameVersionComboBox->addItem("pokeruby", BaseGameVersion::pokeruby);
+        baseGameVersionComboBox->addItem("pokefirered", BaseGameVersion::pokefirered);
         baseGameVersionComboBox->addItem("pokeemerald", BaseGameVersion::pokeemerald);
         form.addRow(new QLabel("Game Version"), baseGameVersionComboBox);
 
@@ -398,6 +408,7 @@ void ProjectConfig::onNewConfigFileCreated() {
             this->baseGameVersion = static_cast<BaseGameVersion>(baseGameVersionComboBox->currentData().toInt());
         }
     }
+    this->useCustomBorderSize = this->baseGameVersion == BaseGameVersion::pokefirered;
     this->useEncounterJson = true;
     this->usePoryScript = false;
 }
@@ -431,4 +442,13 @@ void ProjectConfig::setUsePoryScript(bool usePoryScript) {
 
 bool ProjectConfig::getUsePoryScript() {
     return this->usePoryScript;
+}
+
+void ProjectConfig::setUseCustomBorderSize(bool enable) {
+    this->useCustomBorderSize = enable;
+    this->save();
+}
+
+bool ProjectConfig::getUseCustomBorderSize() {
+    return this->useCustomBorderSize;
 }

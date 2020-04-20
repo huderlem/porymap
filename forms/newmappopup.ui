@@ -73,7 +73,7 @@
        <item row="2" column="0">
         <widget class="QLabel" name="label_NewMap_Width">
          <property name="text">
-          <string>Width</string>
+          <string>Map Width</string>
          </property>
         </widget>
        </item>
@@ -90,7 +90,7 @@
        <item row="3" column="0">
         <widget class="QLabel" name="label_NewMap_Height">
          <property name="text">
-          <string>Height</string>
+          <string>Map Height</string>
          </property>
         </widget>
        </item>
@@ -105,13 +105,47 @@
         </widget>
        </item>
        <item row="4" column="0">
+        <widget class="QLabel" name="label_NewMap_BorderWidth">
+         <property name="text">
+          <string>Border Width</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QSpinBox" name="spinBox_NewMap_BorderWidth">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Width (in blocks) of the new map's border.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="maximum">
+          <number>255</number>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="label_NewMap_BorderHeight">
+         <property name="text">
+          <string>Border Height</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <widget class="QSpinBox" name="spinBox_NewMap_BorderHeight">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Height (in blocks) of the new map's border.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="maximum">
+          <number>255</number>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="0">
         <widget class="QLabel" name="label_NewMap_Primary_Tileset">
          <property name="text">
           <string>Primary Tileset</string>
          </property>
         </widget>
        </item>
-       <item row="4" column="1">
+       <item row="6" column="1">
         <widget class="NoScrollComboBox" name="comboBox_NewMap_Primary_Tileset">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The primary tileset for the new map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -121,14 +155,14 @@
          </property>
         </widget>
        </item>
-       <item row="5" column="0">
+       <item row="7" column="0">
         <widget class="QLabel" name="label_NewMap_Secondary_Tileset">
          <property name="text">
           <string>Secondary Tileset</string>
          </property>
         </widget>
        </item>
-       <item row="5" column="1">
+       <item row="7" column="1">
         <widget class="NoScrollComboBox" name="comboBox_NewMap_Secondary_Tileset">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The secondary tileset for the new map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -138,14 +172,14 @@
          </property>
         </widget>
        </item>
-       <item row="6" column="0">
+       <item row="8" column="0">
         <widget class="QLabel" name="label_NewMap_Type">
          <property name="text">
           <string>Type</string>
          </property>
         </widget>
        </item>
-       <item row="6" column="1">
+       <item row="8" column="1">
         <widget class="NoScrollComboBox" name="comboBox_NewMap_Type">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The map type is a general attribute, which is used for many different things. For example. it determines whether biking or running is allowed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -155,14 +189,14 @@
          </property>
         </widget>
        </item>
-       <item row="7" column="0">
+       <item row="9" column="0">
         <widget class="QLabel" name="label_NewMap_Location">
          <property name="text">
           <string>Location</string>
          </property>
         </widget>
        </item>
-       <item row="7" column="1">
+       <item row="9" column="1">
         <widget class="NoScrollComboBox" name="comboBox_NewMap_Location">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The section of the region map which the map is grouped under. This also determines the name of the map that is displayed when the player enters it.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -172,14 +206,14 @@
          </property>
         </widget>
        </item>
-       <item row="8" column="0">
+       <item row="10" column="0">
         <widget class="QLabel" name="label_NewMap_Flyable">
          <property name="text">
           <string>Can Fly To</string>
          </property>
         </widget>
        </item>
-       <item row="8" column="1">
+       <item row="10" column="1">
         <widget class="QCheckBox" name="checkBox_NewMap_Flyable">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Whether to add a heal location to the new map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -189,45 +223,62 @@
          </property>
         </widget>
        </item>
-       <item row="9" column="0">
+       <item row="11" column="0">
         <widget class="QLabel" name="label_NewMap_Allow_Running">
          <property name="text">
           <string>Allow Running</string>
          </property>
         </widget>
        </item>
-       <item row="10" column="0">
+       <item row="12" column="0">
         <widget class="QLabel" name="label_NewMap_Allow_Biking">
          <property name="text">
           <string>Allow Biking</string>
          </property>
         </widget>
        </item>
-       <item row="11" column="0">
+       <item row="13" column="0">
         <widget class="QLabel" name="label_NewMap_Allow_Escape_Rope">
          <property name="text">
           <string>Allow Escape Rope</string>
          </property>
         </widget>
        </item>
-       <item row="9" column="1">
+       <item row="11" column="1">
         <widget class="QCheckBox" name="checkBox_NewMap_Allow_Running">
          <property name="text">
           <string/>
          </property>
         </widget>
        </item>
-       <item row="10" column="1">
+       <item row="12" column="1">
         <widget class="QCheckBox" name="checkBox_NewMap_Allow_Biking">
          <property name="text">
           <string/>
          </property>
         </widget>
        </item>
-       <item row="11" column="1">
+       <item row="13" column="1">
         <widget class="QCheckBox" name="checkBox_NewMap_Allow_Escape_Rope">
          <property name="text">
           <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="14" column="0">
+        <widget class="QLabel" name="label_NewMap_Floor_Number">
+         <property name="text">
+          <string>Floor Number</string>
+         </property>
+        </widget>
+       </item>
+       <item row="14" column="1">
+        <widget class="QSpinBox" name="spinBox_NewMap_Floor_Number">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Floor number to be used for maps with elevators.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="maximum">
+          <number>127</number>
          </property>
         </widget>
        </item>

@@ -15,6 +15,8 @@ public:
     QString name;
     QString width;
     QString height;
+    QString border_width;
+    QString border_height;
     QString border_path;
     QString blockdata_path;
     QString tileset_primary_label;

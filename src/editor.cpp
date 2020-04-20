@@ -48,6 +48,8 @@ void Editor::undo() {
         map->undo();
         map_item->draw();
         collision_item->draw();
+        selected_border_metatiles_item->draw();
+        displayMapBorder();
     }
 }
 
@@ -56,6 +58,8 @@ void Editor::redo() {
         map->redo();
         map_item->draw();
         collision_item->draw();
+        selected_border_metatiles_item->draw();
+        displayMapBorder();
     }
 }
 
@@ -1136,10 +1140,10 @@ void Editor::displayMapMetatiles() {
     int tw = 16;
     int th = 16;
     scene->setSceneRect(
-        -6 * tw,
-        -6 * th,
-        map_item->pixmap().width() + 12 * tw,
-        map_item->pixmap().height() + 12 * th
+        -BORDER_DISTANCE * tw,
+        -BORDER_DISTANCE * th,
+        map_item->pixmap().width() + BORDER_DISTANCE * 2 * tw,
+        map_item->pixmap().height() + BORDER_DISTANCE * 2 * th
     );
 }
 
@@ -1334,15 +1338,30 @@ void Editor::displayMapBorder() {
     }
     borderItems.clear();
 
+    int borderWidth = map->getBorderWidth();
+    int borderHeight = map->getBorderHeight();
+    int borderHorzDist = getBorderDrawDistance(borderWidth);
+    int borderVertDist = getBorderDrawDistance(borderHeight);
     QPixmap pixmap = map->renderBorder();
-    for (int y = -6; y < map->getHeight() + 6; y += 2)
-    for (int x = -6; x < map->getWidth() + 6; x += 2) {
+    for (int y = -borderVertDist; y < map->getHeight() + borderVertDist; y += borderHeight)
+    for (int x = -borderHorzDist; x < map->getWidth() + borderHorzDist; x += borderWidth) {
         QGraphicsPixmapItem *item = new QGraphicsPixmapItem(pixmap);
         item->setX(x * 16);
         item->setY(y * 16);
         item->setZValue(-2);
         scene->addItem(item);
         borderItems.append(item);
+    }
+}
+
+int Editor::getBorderDrawDistance(int dimension) {
+    // Draw sufficient border blocks to fill the player's view (BORDER_DISTANCE)
+    if (dimension >= BORDER_DISTANCE) {
+        return dimension;
+    } else if (dimension) {
+        return dimension * (BORDER_DISTANCE / dimension + (BORDER_DISTANCE % dimension ? 1 : 0));
+    } else {
+        return BORDER_DISTANCE;
     }
 }
 

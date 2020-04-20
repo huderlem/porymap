@@ -50,7 +50,6 @@ MainWindow::MainWindow(QWidget *parent) :
         // Re-initialize everything to a blank slate if opening the recent project failed.
         this->initWindow();
     }
-
     on_toolButton_Paint_clicked();
 }
 
@@ -160,19 +159,38 @@ void MainWindow::setProjectSpecificUIVisibility()
         ui->checkBox_AllowRunning->setVisible(false);
         ui->checkBox_AllowBiking->setVisible(false);
         ui->checkBox_AllowEscapeRope->setVisible(false);
+        ui->spinBox_FloorNumber->setVisible(false);
         ui->label_AllowRunning->setVisible(false);
         ui->label_AllowBiking->setVisible(false);
         ui->label_AllowEscapeRope->setVisible(false);
+        ui->label_FloorNumber->setVisible(false);
+        ui->actionRegion_Map_Editor->setVisible(true);
         break;
     case BaseGameVersion::pokeemerald:
         ui->checkBox_AllowRunning->setVisible(true);
         ui->checkBox_AllowBiking->setVisible(true);
         ui->checkBox_AllowEscapeRope->setVisible(true);
+        ui->spinBox_FloorNumber->setVisible(false);
         ui->label_AllowRunning->setVisible(true);
         ui->label_AllowBiking->setVisible(true);
         ui->label_AllowEscapeRope->setVisible(true);
+        ui->label_FloorNumber->setVisible(false);
+        ui->actionRegion_Map_Editor->setVisible(true);
         break;
     case BaseGameVersion::pokefirered:
+        ui->checkBox_AllowRunning->setVisible(true);
+        ui->checkBox_AllowBiking->setVisible(true);
+        ui->checkBox_AllowEscapeRope->setVisible(true);
+        ui->spinBox_FloorNumber->setVisible(true);
+        ui->label_AllowRunning->setVisible(true);
+        ui->label_AllowBiking->setVisible(true);
+        ui->label_AllowEscapeRope->setVisible(true);
+        ui->label_FloorNumber->setVisible(true);
+        ui->newEventToolButton->newWeatherTriggerAction->setVisible(false);
+        ui->newEventToolButton->newSecretBaseAction->setVisible(false);
+        // TODO: pokefirered is not set up for the Region Map Editor and vice versa. 
+        //       porymap will crash on attempt. Remove below once resolved
+        ui->actionRegion_Map_Editor->setVisible(false);
         break;
     }
 }
@@ -275,6 +293,7 @@ bool MainWindow::openProject(QString dir) {
     projectConfig.setProjectDir(dir);
     projectConfig.load();
 
+    this->closeSupplementaryWindows();
     this->setProjectSpecificUIVisibility();
 
     bool already_open = isProjectOpen() && (editor->project->root == dir);
@@ -504,6 +523,7 @@ void MainWindow::displayMapProperties() {
     ui->checkBox_AllowRunning->setChecked(map->allowRunning.toInt() > 0 || map->allowRunning == "TRUE");
     ui->checkBox_AllowBiking->setChecked(map->allowBiking.toInt() > 0 || map->allowBiking == "TRUE");
     ui->checkBox_AllowEscapeRope->setChecked(map->allowEscapeRope.toInt() > 0 || map->allowEscapeRope == "TRUE");
+    ui->spinBox_FloorNumber->setValue(map->floorNumber);
 
     // Custom fields table.
     ui->tableWidget_CustomHeaderFields->blockSignals(true);
@@ -607,6 +627,13 @@ void MainWindow::on_checkBox_AllowEscapeRope_clicked(bool checked)
     }
 }
 
+void MainWindow::on_spinBox_FloorNumber_valueChanged(int offset)
+{
+    if (editor && editor->map) {
+        editor->map->floorNumber = offset;
+    }
+}
+
 bool MainWindow::loadDataStructures() {
     Project *project = editor->project;
     bool success = project->readMapLayouts()
@@ -619,15 +646,18 @@ bool MainWindow::loadDataStructures() {
                 && project->readMapTypes()
                 && project->readMapBattleScenes()
                 && project->readWeatherNames()
-                && project->readCoordEventWeatherNames()
-                && project->readSecretBaseIds()
                 && project->readBgEventFacingDirections()
+                && project->readTrainerTypes()
                 && project->readMetatileBehaviors()
                 && project->readTilesetProperties()
                 && project->readHealLocations()
                 && project->readMiscellaneousConstants()
                 && project->readSpeciesIconPaths()
                 && project->readWildMonData();
+    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeemerald || projectConfig.getBaseGameVersion() == BaseGameVersion::pokeruby)
+        success = success 
+               && project->readSecretBaseIds() 
+               && project->readCoordEventWeatherNames();
     if (!success) {
         return false;
     }
@@ -969,6 +999,8 @@ void MainWindow::on_actionNew_Tileset_triggered() {
             }
             mt->behavior = 0;
             mt->layerType = 0;
+            mt->encounterType = 0;
+            mt->terrainType = 0;
 
             newSet->metatiles->append(mt);
         }
@@ -1334,6 +1366,7 @@ void MainWindow::updateSelectedObjects() {
 
     QList<EventPropertiesFrame *> frames;
 
+    bool pokefirered = projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered;
     for (DraggablePixmapItem *item : *events) {
         EventPropertiesFrame *frame = new EventPropertiesFrame;
 //        frame->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
@@ -1387,17 +1420,20 @@ void MainWindow::updateSelectedObjects() {
         field_labels["radius_y"] = "Movement Radius Y";
         field_labels["trainer_type"] = "Trainer Type";
         field_labels["sight_radius_tree_id"] = "Sight Radius / Berry Tree ID";
+        field_labels["in_connection"] = "In Connection";
         field_labels["destination_warp"] = "Destination Warp";
         field_labels["destination_map_name"] = "Destination Map";
         field_labels["script_var"] = "Var";
         field_labels["script_var_value"] = "Var Value";
         field_labels["player_facing_direction"] = "Player Facing Direction";
         field_labels["item"] = "Item";
-        field_labels["item_unknown5"] = "Unknown 5";
-        field_labels["item_unknown6"] = "Unknown 6";
+        field_labels["quantity"] = "Quantity";
+        field_labels["underfoot"] = "Requires Itemfinder";
         field_labels["weather"] = "Weather";
         field_labels["flag"] = "Flag";
         field_labels["secret_base_id"] = "Secret Base Id";
+        field_labels["respawn_map"] = "Respawn Map";
+        field_labels["respawn_npc"] = "Respawn NPC";
 
         QStringList fields;
 
@@ -1425,6 +1461,9 @@ void MainWindow::updateSelectedObjects() {
             fields << "event_flag";
             fields << "trainer_type";
             fields << "sight_radius_tree_id";
+            if (pokefirered) {
+                fields << "in_connection";
+            }
         }
         else if (event_type == EventType::Warp) {
             fields << "destination_map_name";
@@ -1445,6 +1484,10 @@ void MainWindow::updateSelectedObjects() {
         else if (event_type == EventType::HiddenItem) {
             fields << "item";
             fields << "flag";
+            if (pokefirered) {
+                fields << "quantity";
+                fields << "underfoot";
+            }
         }
         else if (event_type == EventType::SecretBase) {
             fields << "secret_base_id";
@@ -1453,8 +1496,15 @@ void MainWindow::updateSelectedObjects() {
             // Hide elevation so users don't get impression that editing it is meaningful.
             frame->ui->spinBox_z->setVisible(false);
             frame->ui->label_z->setVisible(false);
+            if (pokefirered) {
+                fields << "respawn_map";
+                fields << "respawn_npc";
+            }
         }
 
+        // Some keys shouldn't use a combobox
+        QStringList spinKeys = {"quantity", "respawn_npc"};
+        QStringList checkKeys = {"underfoot", "in_connection"};
         for (QString key : fields) {
             QString value = item->event->get(key);
             QWidget *widget = new QWidget(frame);
@@ -1462,30 +1512,17 @@ void MainWindow::updateSelectedObjects() {
             fl->setContentsMargins(9, 0, 9, 0);
             fl->setRowWrapPolicy(QFormLayout::WrapLongRows);
 
-            NoScrollComboBox *combo = new NoScrollComboBox(widget);
-            combo->setEditable(true);
+            NoScrollSpinBox *spin;
+            NoScrollComboBox *combo;
+            QCheckBox *check;
 
-            // trainer_type has custom values, so it has special signal logic.
-            if (key == "trainer_type") {
-                combo->setEditable(false);
-                combo->addItem("NONE", "0");
-                combo->addItem("NORMAL", "1");
-                combo->addItem("SEE ALL DIRECTIONS", "3");
-                combo->setToolTip("The trainer type of this object event.\n"
-                                  "If it is not a trainer, use NONE. SEE ALL DIRECTIONS\n"
-                                  "should only be used with a sight radius of 1.");
-                combo->setMinimumContentsLength(10);
-
-                int index = combo->findData(value);
-                if (index != -1) {
-                    combo->setCurrentIndex(index);
-                }
-
-                fl->addRow(new QLabel(field_labels[key], widget), combo);
-                widget->setLayout(fl);
-                frame->layout()->addWidget(widget);
-                item->bindToUserData(combo, key);
-                continue;
+            if (spinKeys.contains(key)) {
+                spin = new NoScrollSpinBox(widget);
+            } else if (checkKeys.contains(key)) {
+                check = new QCheckBox(widget);
+            } else {
+                combo = new NoScrollComboBox(widget);
+                combo->setEditable(true);
             }
 
             if (key == "destination_map_name") {
@@ -1501,6 +1538,12 @@ void MainWindow::updateSelectedObjects() {
                     combo->addItem(value);
                 }
                 combo->addItems(*editor->project->itemNames);
+            } else if (key == "quantity") {
+                spin->setToolTip("The number of items received when the hidden item is picked up.");
+                // Min 1 not needed. 0 is treated as a valid quantity and works as expected in-game.
+                spin->setMaximum(127);
+            } else if (key == "underfoot") {
+                check->setToolTip("If checked, hidden item can only be picked up using the Itemfinder");
             } else if (key == "flag" || key == "event_flag") {
                 if (!editor->project->flagNames->contains(value)) {
                     combo->addItem(value);
@@ -1564,20 +1607,72 @@ void MainWindow::updateSelectedObjects() {
                 combo->setMinimumContentsLength(4);
             } else if (key == "script_label") {
                 combo->setToolTip("The script which is executed with this event.");
+            } else if (key == "trainer_type") {
+                combo->addItems(*editor->project->trainerTypes);
+                combo->setToolTip("The trainer type of this object event.\n"
+                                  "If it is not a trainer, use NONE. SEE ALL DIRECTIONS\n"
+                                  "should only be used with a sight radius of 1.");
             } else if (key == "sight_radius_tree_id") {
                 combo->setToolTip("The maximum sight range of a trainer,\n"
                                   "OR the unique id of the berry tree.");
                 combo->setMinimumContentsLength(4);
+            } else if (key == "in_connection") {
+                check->setToolTip("Check if object is positioned in the connection to another map.");
+            } else if (key == "respawn_map") {
+                if (!editor->project->mapNames->contains(value)) {
+                    combo->addItem(value);
+                }
+                combo->addItems(*editor->project->mapNames);
+                combo->setToolTip("The map where the player will respawn after whiteout.");
+            } else if (key == "respawn_npc") {
+                spin->setToolTip("event_object ID of the NPC the player interacts with\n" 
+                                 "upon respawning after whiteout.");
+                spin->setMinimum(1);
+                spin->setMaximum(126);
             } else {
                 combo->addItem(value);
             }
-            combo->setCurrentText(value);
 
-            fl->addRow(new QLabel(field_labels[key], widget), combo);
-            widget->setLayout(fl);
-            frame->layout()->addWidget(widget);
+            // Keys using spin boxes
+            if (spinKeys.contains(key)) {
+                spin->setValue(value.toInt());
 
-            item->bind(combo, key);
+                fl->addRow(new QLabel(field_labels[key], widget), spin);
+                widget->setLayout(fl);
+                frame->layout()->addWidget(widget);
+
+                connect(spin, QOverload<int>::of(&NoScrollSpinBox::valueChanged), [item, key](int value) {
+                    item->event->put(key, value);
+                });
+            // Keys using check boxes
+            } else if (checkKeys.contains(key)) {
+                check->setChecked(value.toInt());
+
+                fl->addRow(new QLabel(field_labels[key], widget), check);
+                widget->setLayout(fl);
+                frame->layout()->addWidget(widget);
+
+                connect(check, &QCheckBox::stateChanged, [item, key](int state) {
+                    switch (state)
+                    {
+                    case Qt::Checked:
+                        item->event->put(key, true);
+                        break;
+                    case Qt::Unchecked:
+                        item->event->put(key, false);
+                        break;
+                    }
+                });
+            // Keys using combo boxes
+            } else {
+                combo->setCurrentText(value);
+
+                fl->addRow(new QLabel(field_labels[key], widget), combo);
+                widget->setLayout(fl);
+                frame->layout()->addWidget(widget);
+
+                item->bind(combo, key);
+            }
         }
 
         // Custom fields table.
@@ -2064,7 +2159,7 @@ void MainWindow::on_comboBox_SecondaryTileset_currentTextChanged(const QString &
     }
 }
 
-void MainWindow::on_pushButton_clicked()
+void MainWindow::on_pushButton_ChangeDimensions_clicked()
 {
     QDialog dialog(this, Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
     dialog.setWindowTitle("Change Map Dimensions");
@@ -2074,15 +2169,31 @@ void MainWindow::on_pushButton_clicked()
 
     QSpinBox *widthSpinBox = new QSpinBox();
     QSpinBox *heightSpinBox = new QSpinBox();
+    QSpinBox *bwidthSpinBox = new QSpinBox();
+    QSpinBox *bheightSpinBox = new QSpinBox();
     widthSpinBox->setMinimum(1);
     heightSpinBox->setMinimum(1);
+    bwidthSpinBox->setMinimum(1);
+    bheightSpinBox->setMinimum(1);
     // See below for explanation of maximum map dimensions
     widthSpinBox->setMaximum(0x1E7);
     heightSpinBox->setMaximum(0x1D1);
+    // Maximum based only on data type (u8) of map border width/height
+    bwidthSpinBox->setMaximum(255);
+    bheightSpinBox->setMaximum(255);
     widthSpinBox->setValue(editor->map->getWidth());
     heightSpinBox->setValue(editor->map->getHeight());
-    form.addRow(new QLabel("Width"), widthSpinBox);
-    form.addRow(new QLabel("Height"), heightSpinBox);
+    bwidthSpinBox->setValue(editor->map->getBorderWidth());
+    bheightSpinBox->setValue(editor->map->getBorderHeight());
+    if (projectConfig.getUseCustomBorderSize()) {
+        form.addRow(new QLabel("Map Width"), widthSpinBox);
+        form.addRow(new QLabel("Map Height"), heightSpinBox);
+        form.addRow(new QLabel("Border Width"), bwidthSpinBox);
+        form.addRow(new QLabel("Border Height"), bheightSpinBox);
+    } else {
+        form.addRow(new QLabel("Width"), widthSpinBox);
+        form.addRow(new QLabel("Height"), heightSpinBox);
+    }
 
     QLabel *errorLabel = new QLabel();
     QPalette errorPalette;
@@ -2104,8 +2215,8 @@ void MainWindow::on_pushButton_clicked()
             dialog.accept();
         } else {
             QString errorText = QString("Error: The specified width and height are too large.\n"
-                    "The maximum width and height is the following: (width + 15) * (height + 14) <= 10240\n"
-                    "The specified width and height was: (%1 + 15) * (%2 + 14) = %3")
+                    "The maximum map width and height is the following: (width + 15) * (height + 14) <= 10240\n"
+                    "The specified map width and height was: (%1 + 15) * (%2 + 14) = %3")
                         .arg(widthSpinBox->value())
                         .arg(heightSpinBox->value())
                         .arg(numMetatiles);
@@ -2119,6 +2230,7 @@ void MainWindow::on_pushButton_clicked()
 
     if (dialog.exec() == QDialog::Accepted) {
         editor->map->setDimensions(widthSpinBox->value(), heightSpinBox->value());
+        editor->map->setBorderDimensions(bwidthSpinBox->value(), bheightSpinBox->value());
         editor->map->commit();
         onMapNeedsRedrawing();
     }
@@ -2297,6 +2409,17 @@ void MainWindow::on_actionRegion_Map_Editor_triggered() {
     } else {
         this->regionMapEditor->activateWindow();
     }
+}
+
+void MainWindow::closeSupplementaryWindows() {
+    if (this->tilesetEditor)
+        delete this->tilesetEditor;
+    if (this->regionMapEditor)
+        delete this->regionMapEditor;
+    if (this->mapImageExporter)
+        delete this->mapImageExporter;
+    if (this->newmapprompt)
+        delete this->newmapprompt;
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
