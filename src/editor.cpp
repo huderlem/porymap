@@ -175,17 +175,20 @@ void Editor::displayWildMonTables() {
         return;
     }
 
-    labelCombo->addItems(project->wildMonData[map->constantName].keys());
-    labelCombo->setCurrentText(project->wildMonData[map->constantName].firstKey());
+    for (auto groupPair : project->wildMonData[map->constantName])
+        labelCombo->addItem(groupPair.first);
 
-    for (int labelIndex = 0; labelIndex < project->wildMonData[map->constantName].keys().size(); labelIndex++) {
+    labelCombo->setCurrentText(labelCombo->itemText(0));
 
-        QString label = project->wildMonData.value(map->constantName).keys().at(labelIndex);
+    int labelIndex = 0;
+    for (auto labelPair : project->wildMonData[map->constantName]) {
 
-        WildPokemonHeader header = project->wildMonData.value(map->constantName).value(label);
+        QString label = labelPair.first;
+
+        WildPokemonHeader header = project->wildMonData[map->constantName][label];
 
         MonTabWidget *tabWidget = new MonTabWidget(this);
-        stack->insertWidget(labelIndex, tabWidget);
+        stack->insertWidget(labelIndex++, tabWidget);
 
         int tabIndex = 0;
         for (EncounterField monField : project->wildMonFields) {
@@ -555,7 +558,7 @@ void Editor::saveEncounterTabData() {
 
     if (!stack->count()) return;
 
-    QMap<QString, WildPokemonHeader> &encounterMap = project->wildMonData[map->constantName];
+    tsl::ordered_map<QString, WildPokemonHeader> &encounterMap = project->wildMonData[map->constantName];
 
     for (int groupIndex = 0; groupIndex < stack->count(); groupIndex++) {
         MonTabWidget *tabWidget = static_cast<MonTabWidget *>(stack->widget(groupIndex));
@@ -590,8 +593,10 @@ void Editor::updateEncounterFields(EncounterFields newFields) {
             if (oldFieldName == newFieldName) {
                 fieldDeleted = false;
                 if (oldField.encounterRates.size() != newField.encounterRates.size()) {
-                    for (QString map : project->wildMonData.keys()) {
-                        for (QString groupName : project->wildMonData.value(map).keys()) {
+                    for (auto mapPair : project->wildMonData) {
+                        QString map = mapPair.first;
+                        for (auto groupNamePair : project->wildMonData[map]) {
+                            QString groupName = groupNamePair.first;
                             WildPokemonHeader &monHeader = project->wildMonData[map][groupName];
                             for (QString fieldName : monHeader.wildMons.keys()) {
                                 if (fieldName == oldFieldName) {
@@ -604,8 +609,10 @@ void Editor::updateEncounterFields(EncounterFields newFields) {
             }
         }
         if (fieldDeleted) {
-            for (QString map : project->wildMonData.keys()) {
-                for (QString groupName : project->wildMonData.value(map).keys()) {
+            for (auto mapPair : project->wildMonData) {
+                QString map = mapPair.first;
+                for (auto groupNamePair : project->wildMonData[map]) {
+                    QString groupName = groupNamePair.first;
                     WildPokemonHeader &monHeader = project->wildMonData[map][groupName];
                     for (QString fieldName : monHeader.wildMons.keys()) {
                         if (fieldName == oldFieldName) {

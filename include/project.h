@@ -91,7 +91,8 @@ public:
     QString readMapLocation(QString map_name);
 
     bool readWildMonData();
-    QMap<QString, QMap<QString, WildPokemonHeader>> wildMonData;
+    tsl::ordered_map<QString, tsl::ordered_map<QString, WildPokemonHeader>> wildMonData;
+
     QVector<EncounterField> wildMonFields;
     QVector<QString> encounterGroupLabels;
     QVector<poryjson::Json::object> extraEncounterGroups;
