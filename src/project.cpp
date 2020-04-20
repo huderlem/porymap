@@ -726,13 +726,15 @@ void Project::saveWildMonData() {
     monHeadersObject["fields"] = fieldsInfoArray;
 
     OrderedJson::array encountersArray;
-    for (QString key : wildMonData.keys()) {
-        for (QString groupLabel : wildMonData.value(key).keys()) {
+    for (auto keyPair : wildMonData) {
+        QString key = keyPair.first;
+        for (auto grouplLabelPair : wildMonData[key]) {
+            QString groupLabel = grouplLabelPair.first;
             OrderedJson::object encounterObject;
             encounterObject["map"] = key;
             encounterObject["base_label"] = groupLabel;
 
-            WildPokemonHeader encounterHeader = wildMonData.value(key).value(groupLabel);
+            WildPokemonHeader encounterHeader = wildMonData[key][groupLabel];
             for (QString fieldName : encounterHeader.wildMons.keys()) {
                 OrderedJson::object fieldObject;
                 WildMonInfo monInfo = encounterHeader.wildMons.value(fieldName);
@@ -1752,7 +1754,7 @@ bool Project::readWildMonData() {
                     }
                 }
             }
-            wildMonData[mapConstant].insert(encounter.toObject().value("base_label").toString(), header);
+            wildMonData[mapConstant].insert({encounter.toObject().value("base_label").toString(), header});
             encounterGroupLabels.append(encounter.toObject().value("base_label").toString());
         }
     }
