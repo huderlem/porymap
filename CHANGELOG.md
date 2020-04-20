@@ -7,7 +7,18 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 The **"Breaking Changes"** listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. If porymap is used on a project that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.
 
 ## Unreleased
-Nothing, yet.
+### Breaking Changes
+- If you are using pokeemerald or pokeruby, there were changes made in [pokeemerald/#1010](https://github.com/pret/pokeemerald/pull/1010) and [pokeruby/#776](https://github.com/pret/pokeruby/pull/776) that you will need to integrate in order to use this version of porymap.
+
+### Added
+- Support for [pokefirered](https://github.com/pret/pokefirered). Kanto fans rejoice! At long last porymap supports the FRLG decompilation project.
+
+### Changed
+- Porymap now saves map and encounter json data in an order consistent with the upstream repos. This will provide more comprehensible diffs, among other things.
+
+### Fixed
+- Fix bug where pressing TAB key did not navigate through widgets in the wild encounter tables.
+- Fix bug that allowed selecting an invalid metatile in the metatile selector.
 
 ## [3.0.1] - 2020-03-04
 ### Fixed
