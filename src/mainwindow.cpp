@@ -29,6 +29,7 @@
 #include <QDesktopServices>
 #include <QMatrix>
 #include <QSignalBlocker>
+#include <QSet>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -2137,13 +2138,21 @@ void MainWindow::onTilesetsSaved(QString primaryTilesetLabel, QString secondaryT
     this->editor->updateSecondaryTileset(secondaryTilesetLabel, true);
 }
 
-void MainWindow::on_action_Export_Map_Image_triggered()
-{
-    if (!this->mapImageExporter) {
-        this->mapImageExporter = new MapImageExporter(this, this->editor);
-        connect(this->mapImageExporter, &QObject::destroyed, [=](QObject *) { this->mapImageExporter = nullptr; });
-        this->mapImageExporter->setAttribute(Qt::WA_DeleteOnClose);
-    }
+void MainWindow::on_action_Export_Map_Image_triggered() {
+    showExportMapImageWindow(false);
+}
+
+void MainWindow::on_actionExport_Stitched_Map_Image_triggered() {
+   showExportMapImageWindow(true);
+}
+
+void MainWindow::showExportMapImageWindow(bool stitchMode) {
+    if (this->mapImageExporter)
+        delete this->mapImageExporter;
+
+    this->mapImageExporter = new MapImageExporter(this, this->editor, stitchMode);
+    connect(this->mapImageExporter, &QObject::destroyed, [=](QObject *) { this->mapImageExporter = nullptr; });
+    this->mapImageExporter->setAttribute(Qt::WA_DeleteOnClose);
 
     if (!this->mapImageExporter->isVisible()) {
         this->mapImageExporter->show();

@@ -15,7 +15,7 @@ class MapImageExporter : public QDialog
     Q_OBJECT
 
 public:
-    explicit MapImageExporter(QWidget *parent, Editor *editor);
+    explicit MapImageExporter(QWidget *parent, Editor *editor, bool stitchMode);
     ~MapImageExporter();
 
 private:
@@ -39,9 +39,12 @@ private:
     bool showGrid = false;
     bool showBorder = false;
     bool showCollision = false;
+    bool stitchMode = false;
 
     void updatePreview();
     void saveImage();
+    QPixmap getStitchedImage(QProgressDialog *progress, bool includeBorder);
+    QPixmap getFormattedMapPixmap(Map *map, bool ignoreBorder);
 
 private slots:
     void on_checkBox_Objects_stateChanged(int state);

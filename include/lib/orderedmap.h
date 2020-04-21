@@ -1640,7 +1640,7 @@ private:
  *                            the erased element and all the ones after the erased element (including end()). 
  *                            Otherwise all the iterators are invalidated if an erase occurs.
  */
-template<class Key, 
+template<class Key,
          class T, 
          class Hash = std::hash<Key>,
          class KeyEqual = std::equal_to<Key>,
@@ -2031,7 +2031,7 @@ public:
     
     
     
-    T& operator[](const Key& key) { return m_ht[key]; }    
+    T& operator[](const Key& key) { return m_ht[key]; }
     T& operator[](Key&& key) { return m_ht[std::move(key)]; }
     
     
@@ -2042,7 +2042,7 @@ public:
      * Use the hash value 'precalculated_hash' instead of hashing the key. The hash value should be the same
      * as hash_function()(key). Usefull to speed-up the lookup if you already have the hash.
      */
-    size_type count(const Key& key, std::size_t precalculated_hash) const { 
+    size_type count(const Key& key, std::size_t precalculated_hash) const {
         return m_ht.count(key, precalculated_hash); 
     }
     
@@ -2079,7 +2079,7 @@ public:
     /**
      * @copydoc find(const Key& key, std::size_t precalculated_hash)
      */
-    const_iterator find(const Key& key, std::size_t precalculated_hash) const { 
+    const_iterator find(const Key& key, std::size_t precalculated_hash) const {
         return m_ht.find(key, precalculated_hash);
     }
     
@@ -2124,7 +2124,7 @@ public:
      * Use the hash value 'precalculated_hash' instead of hashing the key. The hash value should be the same
      * as hash_function()(key). Usefull to speed-up the lookup if you already have the hash.
      */
-    std::pair<iterator, iterator> equal_range(const Key& key, std::size_t precalculated_hash) { 
+    std::pair<iterator, iterator> equal_range(const Key& key, std::size_t precalculated_hash) {
         return m_ht.equal_range(key, precalculated_hash); 
     }
     
@@ -2133,7 +2133,7 @@ public:
     /**
      * @copydoc equal_range(const Key& key, std::size_t precalculated_hash)
      */
-    std::pair<const_iterator, const_iterator> equal_range(const Key& key, std::size_t precalculated_hash) const { 
+    std::pair<const_iterator, const_iterator> equal_range(const Key& key, std::size_t precalculated_hash) const {
         return m_ht.equal_range(key, precalculated_hash); 
     }
 

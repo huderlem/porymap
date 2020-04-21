@@ -10,7 +10,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = porymap
 TEMPLATE = app
-RC_ICONS = resources/icons/porymap-icon-1.ico
+RC_ICONS = resources/icons/porymap-icon-2.ico
 ICON = resources/icons/porymap.icns
 QMAKE_CXXFLAGS += -std=c++11 -Wall
 
@@ -134,7 +134,8 @@ HEADERS  += include/core/block.h \
     include/project.h \
     include/settings.h \
     include/log.h \
-    include/ui/newtilesetdialog.h
+    include/ui/newtilesetdialog.h \
+    include/lib/qstringhash.h
 
 FORMS    += forms/mainwindow.ui \
     forms/eventpropertiesframe.ui \
