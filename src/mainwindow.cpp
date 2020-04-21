@@ -165,6 +165,8 @@ void MainWindow::setProjectSpecificUIVisibility()
         ui->label_AllowBiking->setVisible(false);
         ui->label_AllowEscapeRope->setVisible(false);
         ui->label_FloorNumber->setVisible(false);
+        ui->newEventToolButton->newWeatherTriggerAction->setVisible(true);
+        ui->newEventToolButton->newSecretBaseAction->setVisible(true);
         ui->actionRegion_Map_Editor->setVisible(true);
         break;
     case BaseGameVersion::pokeemerald:
@@ -176,6 +178,8 @@ void MainWindow::setProjectSpecificUIVisibility()
         ui->label_AllowBiking->setVisible(true);
         ui->label_AllowEscapeRope->setVisible(true);
         ui->label_FloorNumber->setVisible(false);
+        ui->newEventToolButton->newWeatherTriggerAction->setVisible(true);
+        ui->newEventToolButton->newSecretBaseAction->setVisible(true);
         ui->actionRegion_Map_Editor->setVisible(true);
         break;
     case BaseGameVersion::pokefirered:
