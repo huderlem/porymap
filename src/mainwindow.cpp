@@ -1208,6 +1208,8 @@ void MainWindow::on_action_Exit_triggered()
 
 void MainWindow::on_mainTabBar_tabBarClicked(int index)
 {
+    ui->mainTabBar->setCurrentIndex(index);
+
     int tabIndexToStackIndex[5] = {0, 0, 1, 2, 3};
     ui->mainStackedWidget->setCurrentIndex(tabIndexToStackIndex[index]);
 
