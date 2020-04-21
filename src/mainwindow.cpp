@@ -306,6 +306,7 @@ bool MainWindow::openProject(QString dir) {
         editor->project = new Project(this);
         QObject::connect(editor->project, SIGNAL(reloadProject()), this, SLOT(on_action_Reload_Project_triggered()));
         QObject::connect(editor->project, &Project::uncheckMonitorFilesAction, [this] () { ui->actionMonitor_Project_Files->setChecked(false); });
+        on_actionMonitor_Project_Files_triggered(porymapConfig.getMonitorFiles());
         editor->project->set_root(dir);
         success = loadDataStructures()
                && populateMapList()

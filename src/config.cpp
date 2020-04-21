@@ -159,7 +159,7 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         }
     } else if (key == "monitor_files") {
         bool ok;
-        this->showCursorTile = value.toInt(&ok);
+        this->monitorFiles = value.toInt(&ok);
         if (!ok) {
             logWarn(QString("Invalid config value for monitor_files: '%1'. Must be 0 or 1.").arg(value));
         }

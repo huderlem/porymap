@@ -88,6 +88,9 @@ Project::~Project()
 void Project::initSignals() {
     // detect changes to specific filepaths being monitored
     QObject::connect(&fileWatcher, &QFileSystemWatcher::fileChanged, [this](QString changed){
+        static bool showing = false;
+        if (showing) return;
+
         QMessageBox notice(this->parent);
         notice.setText("File Changed");
         notice.setInformativeText(QString("The file %1 has changed on disk. Would you like to reload the project?")
@@ -98,6 +101,7 @@ void Project::initSignals() {
         QCheckBox showAgainCheck("Do not ask again.");
         notice.setCheckBox(&showAgainCheck);
 
+        showing = true;
         int choice = notice.exec();
         if (choice == QMessageBox::Yes) {
             emit reloadProject();
@@ -108,6 +112,7 @@ void Project::initSignals() {
                 emit uncheckMonitorFilesAction();
             }
         }
+        showing = false;
     });
 }
 
