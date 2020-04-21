@@ -211,6 +211,7 @@ private:
 
     void displayMapProperties();
     void checkToolButtons();
+    void clickToolButtonFromEditMode(QString editMode);
 
     void initWindow();
     void initCustomUI();

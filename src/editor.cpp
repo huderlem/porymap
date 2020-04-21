@@ -1868,6 +1868,10 @@ void Editor::deleteEvent(Event *event) {
 // variable "selectingEvent" so that we can detect whether or not the user
 // is clicking on the background instead of an event.
 void Editor::objectsView_onMousePress(QMouseEvent *event) {
+    // make sure we are in object editing mode
+    if (map_item && map_item->paintingMode != MapPixmapItem::PaintMode::EventObjects) {
+        return;
+    }
     if (this->map_edit_mode == "paint" && event->buttons() & Qt::RightButton) {
         this->map_edit_mode = "select";
         this->settings->mapCursor = QCursor();

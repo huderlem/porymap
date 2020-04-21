@@ -1214,9 +1214,12 @@ void MainWindow::on_mainTabBar_tabBarClicked(int index)
     if (index == 0) {
         ui->stackedWidget_MapEvents->setCurrentIndex(0);
         on_tabWidget_2_currentChanged(ui->tabWidget_2->currentIndex());
+        clickToolButtonFromEditMode(editor->prev_edit_mode);
     } else if (index == 1) {
         ui->stackedWidget_MapEvents->setCurrentIndex(1);
+        editor->prev_edit_mode = editor->map_edit_mode;
         editor->setEditingObjects();
+        clickToolButtonFromEditMode("select");
     } else if (index == 3) {
         editor->setEditingConnections();
     }
@@ -2113,6 +2116,22 @@ void MainWindow::checkToolButtons() {
     ui->toolButton_Dropper->setChecked(editor->map_edit_mode == "pick");
     ui->toolButton_Move->setChecked(editor->map_edit_mode == "move");
     ui->toolButton_Shift->setChecked(editor->map_edit_mode == "shift");
+}
+
+void MainWindow::clickToolButtonFromEditMode(QString editMode) {
+    if (editMode == "paint") {
+        on_toolButton_Paint_clicked();
+    } else if (editMode == "select") {
+        on_toolButton_Select_clicked();
+    } else if (editMode == "fill") {
+        on_toolButton_Fill_clicked();
+    } else if (editMode == "pick") {
+        on_toolButton_Dropper_clicked();
+    } else if (editMode == "move") {
+        on_toolButton_Move_clicked();
+    } else if (editMode == "shift") {
+        on_toolButton_Shift_clicked();
+    }
 }
 
 void MainWindow::onLoadMapRequested(QString mapName, QString fromMapName) {
