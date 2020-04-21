@@ -3211,6 +3211,7 @@
    <property name="text">
     <string>Use PoryScript</string>
    </property>
+  </action>
   <action name="actionExport_Stitched_Map_Image">
    <property name="text">
     <string>Export Map Stitch Image...</string>
