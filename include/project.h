@@ -204,6 +204,7 @@ private:
 
 signals:
     void reloadProject();
+    void uncheckMonitorFilesAction();
 };
 
 #endif // PROJECT_H

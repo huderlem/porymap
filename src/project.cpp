@@ -105,6 +105,7 @@ void Project::initSignals() {
             if (showAgainCheck.isChecked()) {
                 porymapConfig.setMonitorFiles(false);
                 this->fileWatcher.blockSignals(true);
+                emit uncheckMonitorFilesAction();
             }
         }
     });

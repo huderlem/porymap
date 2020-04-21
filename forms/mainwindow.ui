@@ -2872,6 +2872,7 @@
     </item>
    </layout>
   </widget>
+  <widget class="QStatusBar" name="statusBar"/>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
@@ -2935,13 +2936,21 @@
     </property>
     <addaction name="actionAbout_Porymap"/>
    </widget>
+   <widget class="QMenu" name="menuOptions">
+    <property name="title">
+     <string>Options</string>
+    </property>
+    <addaction name="actionUse_Encounter_Json"/>
+    <addaction name="actionMonitor_Project_Files"/>
+    <addaction name="actionUse_Poryscript"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
    <addaction name="menuView"/>
    <addaction name="menuTools"/>
+   <addaction name="menuOptions"/>
    <addaction name="menuHelp"/>
   </widget>
-  <widget class="QStatusBar" name="statusBar"/>
   <action name="action_Save_Project">
    <property name="text">
     <string>Save All</string>
@@ -3176,6 +3185,30 @@
   <action name="action_Reload_Project">
    <property name="text">
     <string>Reload Project</string>
+   </property>
+  </action>
+  <action name="actionUse_Encounter_Json">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Wild Encounter Tables</string>
+   </property>
+  </action>
+  <action name="actionMonitor_Project_Files">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Monitor Project Files</string>
+   </property>
+  </action>
+  <action name="actionUse_Poryscript">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Use PoryScript</string>
    </property>
   </action>
  </widget>

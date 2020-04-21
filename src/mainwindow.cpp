@@ -43,7 +43,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QCoreApplication::setOrganizationName("pret");
     QCoreApplication::setApplicationName("porymap");
     QApplication::setApplicationDisplayName("porymap");
-    QApplication::setWindowIcon(QIcon(":/icons/porymap-icon-1.ico"));
+    QApplication::setWindowIcon(QIcon(":/icons/porymap-icon-2.ico"));
     ui->setupUi(this);
 
     this->initWindow();
@@ -151,8 +151,10 @@ void MainWindow::initMapSortOrder() {
 
 void MainWindow::setProjectSpecificUIVisibility()
 {
-    if (!projectConfig.getEncounterJsonActive())
-        ui->tabWidget->removeTab(4);
+    ui->tabWidget->setTabEnabled(4, projectConfig.getEncounterJsonActive());
+
+    ui->actionUse_Encounter_Json->setChecked(projectConfig.getEncounterJsonActive());
+    ui->actionUse_Poryscript->setChecked(projectConfig.getUsePoryScript());
 
     switch (projectConfig.getBaseGameVersion())
     {
@@ -247,6 +249,7 @@ void MainWindow::loadUserSettings() {
     ui->horizontalSlider_MetatileZoom->blockSignals(true);
     ui->horizontalSlider_MetatileZoom->setValue(porymapConfig.getMetatilesZoom());
     ui->horizontalSlider_MetatileZoom->blockSignals(false);
+    ui->actionMonitor_Project_Files->setChecked(porymapConfig.getMonitorFiles());
     setTheme(porymapConfig.getTheme());
 }
 
@@ -301,7 +304,8 @@ bool MainWindow::openProject(QString dir) {
     if (!already_open) {
         editor->closeProject();
         editor->project = new Project(this);
-        QObject::connect(editor->project, SIGNAL(reloadProject), this, SLOT(on_action_Reload_Project_triggered));
+        QObject::connect(editor->project, SIGNAL(reloadProject()), this, SLOT(on_action_Reload_Project_triggered()));
+        QObject::connect(editor->project, &Project::uncheckMonitorFilesAction, [this] () { ui->actionMonitor_Project_Files->setChecked(false); });
         editor->project->set_root(dir);
         success = loadDataStructures()
                && populateMapList()
@@ -1241,6 +1245,26 @@ void MainWindow::on_actionCursor_Tile_Outline_triggered()
     bool enabled = ui->actionCursor_Tile_Outline->isChecked();
     porymapConfig.setShowCursorTile(enabled);
     this->editor->settings->cursorTileRectEnabled = enabled;
+}
+
+void MainWindow::on_actionUse_Encounter_Json_triggered(bool checked)
+{
+    QMessageBox warning(this);
+    warning.setText("You must reload the project for this setting to take effect.");
+    warning.setIcon(QMessageBox::Information);
+    warning.exec();
+    projectConfig.setEncounterJsonActive(checked);
+}
+
+void MainWindow::on_actionMonitor_Project_Files_triggered(bool checked)
+{
+    editor->project->fileWatcher.blockSignals(!checked);
+    porymapConfig.setMonitorFiles(checked);
+}
+
+void MainWindow::on_actionUse_Poryscript_triggered(bool checked)
+{
+    projectConfig.setUsePoryScript(checked);
 }
 
 void MainWindow::on_actionPencil_triggered()
