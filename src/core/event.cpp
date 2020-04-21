@@ -67,7 +67,7 @@ Event* Event::createNewObjectEvent(Project *project)
     event->put("script_label", "NULL");
     event->put("event_flag", "0");
     event->put("replacement", "0");
-    event->put("trainer_type", "0");
+    event->put("trainer_type", project->trainerTypes->value(0, "0"));
     event->put("sight_radius_tree_id", 0);
     event->put("elevation", 3);
     return event;
