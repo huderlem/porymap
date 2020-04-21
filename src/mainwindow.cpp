@@ -163,10 +163,7 @@ void MainWindow::setProjectSpecificUIVisibility()
     ui->actionUse_Encounter_Json->setChecked(projectConfig.getEncounterJsonActive());
     ui->actionUse_Poryscript->setChecked(projectConfig.getUsePoryScript());
 
-    if (!projectConfig.getEncounterJsonActive()) {
-        ui->mainTabBar->removeTab(4);
-        ui->mainStackedWidget->removeWidget(ui->mainStackedWidget->widget(4));
-    }
+    ui->mainTabBar->setTabEnabled(4, projectConfig.getEncounterJsonActive());
 
     switch (projectConfig.getBaseGameVersion())
     {
@@ -1224,7 +1221,8 @@ void MainWindow::on_mainTabBar_tabBarClicked(int index)
         editor->setEditingConnections();
     }
     if (index != 4) {
-        editor->saveEncounterTabData();
+        if (projectConfig.getEncounterJsonActive())
+            editor->saveEncounterTabData();
     }
 }
 
