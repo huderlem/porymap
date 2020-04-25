@@ -49,7 +49,7 @@ void Editor::undo() {
         map_item->draw();
         collision_item->draw();
         selected_border_metatiles_item->draw();
-        displayMapBorder();
+        onBorderMetatilesChanged();
     }
 }
 
@@ -59,7 +59,7 @@ void Editor::redo() {
         map_item->draw();
         collision_item->draw();
         selected_border_metatiles_item->draw();
-        displayMapBorder();
+        onBorderMetatilesChanged();
     }
 }
 
