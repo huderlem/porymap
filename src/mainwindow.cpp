@@ -314,6 +314,7 @@ bool MainWindow::openProject(QString dir) {
                && setMap(getDefaultMap(), true);
     } else {
         QString open_map = editor->map->name;
+        editor->project->fileWatcher.removePaths(editor->project->fileWatcher.files());
         editor->project->clearMapCache();
         editor->project->clearTilesetCache();
         success = loadDataStructures() && populateMapList() && setMap(open_map, true);
@@ -1260,7 +1261,6 @@ void MainWindow::on_actionUse_Encounter_Json_triggered(bool checked)
 
 void MainWindow::on_actionMonitor_Project_Files_triggered(bool checked)
 {
-    editor->project->fileWatcher.blockSignals(!checked);
     porymapConfig.setMonitorFiles(checked);
 }
 

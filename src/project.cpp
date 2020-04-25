@@ -88,6 +88,14 @@ Project::~Project()
 void Project::initSignals() {
     // detect changes to specific filepaths being monitored
     QObject::connect(&fileWatcher, &QFileSystemWatcher::fileChanged, [this](QString changed){
+        if (!porymapConfig.getMonitorFiles()) return;
+        if (modifiedFileTimestamps.contains(changed)) {
+            if (QDateTime::currentMSecsSinceEpoch() < modifiedFileTimestamps[changed]) {
+                return;
+            }
+            modifiedFileTimestamps.remove(changed);
+        }
+
         static bool showing = false;
         if (showing) return;
 
@@ -108,7 +116,6 @@ void Project::initSignals() {
         } else if (choice == QMessageBox::No) {
             if (showAgainCheck.isChecked()) {
                 porymapConfig.setMonitorFiles(false);
-                this->fileWatcher.blockSignals(true);
                 emit uncheckMonitorFilesAction();
             }
         }
@@ -666,7 +673,6 @@ bool Project::readMapLayouts() {
 
 void Project::saveMapLayouts() {
     QString layoutsFilepath = QString("%1/data/layouts/layouts.json").arg(root);
-    fileWatcher.removePath(layoutsFilepath);
     QFile layoutsFile(layoutsFilepath);
     if (!layoutsFile.open(QIODevice::WriteOnly)) {
         logError(QString("Error: Could not open %1 for writing").arg(layoutsFilepath));
@@ -696,12 +702,18 @@ void Project::saveMapLayouts() {
         layoutsArr.push_back(layoutObj);
     }
 
+    ignoreWatchedFileTemporarily(layoutsFilepath);
+
     layoutsObj["layouts"] = layoutsArr;
     OrderedJson layoutJson(layoutsObj);
     OrderedJsonDoc jsonDoc(&layoutJson);
     jsonDoc.dump(&layoutsFile);
     layoutsFile.close();
-    fileWatcher.addPath(layoutsFilepath);
+}
+
+void Project::ignoreWatchedFileTemporarily(QString filepath) {
+    // Ignore any file-change events for this filepath for the next 5 seconds.
+    modifiedFileTimestamps.insert(filepath, QDateTime::currentMSecsSinceEpoch() + 5000);
 }
 
 void Project::setNewMapLayout(Map* map) {
@@ -726,7 +738,6 @@ void Project::setNewMapLayout(Map* map) {
 
 void Project::saveMapGroups() {
     QString mapGroupsFilepath = QString("%1/data/maps/map_groups.json").arg(root);
-    fileWatcher.removePath(mapGroupsFilepath);
     QFile mapGroupsFile(mapGroupsFilepath);
     if (!mapGroupsFile.open(QIODevice::WriteOnly)) {
         logError(QString("Error: Could not open %1 for writing").arg(mapGroupsFilepath));
@@ -752,18 +763,18 @@ void Project::saveMapGroups() {
         groupNum++;
     }
 
+    ignoreWatchedFileTemporarily(mapGroupsFilepath);
+
     OrderedJson mapGroupJson(mapGroupsObj);
     OrderedJsonDoc jsonDoc(&mapGroupJson);
     jsonDoc.dump(&mapGroupsFile);
     mapGroupsFile.close();
-    fileWatcher.addPath(mapGroupsFilepath);
 }
 
 void Project::saveWildMonData() {
     if (!projectConfig.getEncounterJsonActive()) return;
 
     QString wildEncountersJsonFilepath = QString("%1/src/data/wild_encounters.json").arg(root);
-    fileWatcher.removePath(wildEncountersJsonFilepath);
     QFile wildEncountersFile(wildEncountersJsonFilepath);
     if (!wildEncountersFile.open(QIODevice::WriteOnly)) {
         logError(QString("Error: Could not open %1 for writing").arg(wildEncountersJsonFilepath));
@@ -842,11 +853,12 @@ void Project::saveWildMonData() {
     }
 
     wildEncountersObject["wild_encounter_groups"] = wildEncounterGroups;
+
+    ignoreWatchedFileTemporarily(wildEncountersJsonFilepath);
     OrderedJson encounterJson(wildEncountersObject);
     OrderedJsonDoc jsonDoc(&encounterJson);
     jsonDoc.dump(&wildEncountersFile);
     wildEncountersFile.close();
-    fileWatcher.addPath(wildEncountersJsonFilepath);
 }
 
 void Project::saveMapConstantsHeader() {
@@ -879,7 +891,10 @@ void Project::saveMapConstantsHeader() {
 
     text += QString("#define MAP_GROUPS_COUNT %1\n\n").arg(groupNum);
     text += QString("#endif // GUARD_CONSTANTS_MAP_GROUPS_H\n");
-    saveTextFile(root + "/include/constants/map_groups.h", text);
+
+    QString mapGroupFilepath = root + "/include/constants/map_groups.h";
+    ignoreWatchedFileTemporarily(mapGroupFilepath);
+    saveTextFile(mapGroupFilepath, text);
 }
 
 // saves heal location coords in root + /src/data/heal_locations.h
@@ -981,14 +996,12 @@ void Project::saveHealLocationStruct(Map *map) {
     constants_text += QString("\n#endif // GUARD_CONSTANTS_HEAL_LOCATIONS_H\n");
 
     QString healLocationFilepath = root + "/src/data/heal_locations.h";
-    fileWatcher.removePath(healLocationFilepath);
+    ignoreWatchedFileTemporarily(healLocationFilepath);
     saveTextFile(healLocationFilepath, data_text);
-    fileWatcher.addPath(healLocationFilepath);
 
     QString healLocationConstantsFilepath = root + "/include/constants/heal_locations.h";
-    fileWatcher.removePath(healLocationConstantsFilepath);
+    ignoreWatchedFileTemporarily(healLocationConstantsFilepath);
     saveTextFile(healLocationConstantsFilepath, constants_text);
-    fileWatcher.addPath(healLocationConstantsFilepath);
 }
 
 void Project::saveTilesets(Tileset *primaryTileset, Tileset *secondaryTileset) {

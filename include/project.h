@@ -64,6 +64,7 @@ public:
     QMap<QString, QString> facingDirections;
     ParseUtil parser;
     QFileSystemWatcher fileWatcher;
+    QMap<QString, qint64> modifiedFileTimestamps;
 
     void set_root(QString);
 
@@ -193,6 +194,8 @@ private:
     void setNewMapBorder(Map *map);
     void setNewMapEvents(Map *map);
     void setNewMapConnections(Map *map);
+
+    void ignoreWatchedFileTemporarily(QString filepath);
 
     static int num_tiles_primary;
     static int num_tiles_total;
