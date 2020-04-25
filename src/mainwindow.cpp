@@ -28,6 +28,7 @@
 #include <QSysInfo>
 #include <QDesktopServices>
 #include <QMatrix>
+#include <QSignalBlocker>
 #include <QSet>
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -43,7 +44,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QCoreApplication::setOrganizationName("pret");
     QCoreApplication::setApplicationName("porymap");
     QApplication::setApplicationDisplayName("porymap");
-    QApplication::setWindowIcon(QIcon(":/icons/porymap-icon-1.ico"));
+    QApplication::setWindowIcon(QIcon(":/icons/porymap-icon-2.ico"));
     ui->setupUi(this);
 
     this->initWindow();
@@ -151,8 +152,10 @@ void MainWindow::initMapSortOrder() {
 
 void MainWindow::setProjectSpecificUIVisibility()
 {
-    if (!projectConfig.getEncounterJsonActive())
-        ui->tabWidget->removeTab(4);
+    ui->tabWidget->setTabEnabled(4, projectConfig.getEncounterJsonActive());
+
+    ui->actionUse_Encounter_Json->setChecked(projectConfig.getEncounterJsonActive());
+    ui->actionUse_Poryscript->setChecked(projectConfig.getUsePoryScript());
 
     switch (projectConfig.getBaseGameVersion())
     {
@@ -251,6 +254,7 @@ void MainWindow::loadUserSettings() {
     ui->horizontalSlider_MetatileZoom->blockSignals(true);
     ui->horizontalSlider_MetatileZoom->setValue(porymapConfig.getMetatilesZoom());
     ui->horizontalSlider_MetatileZoom->blockSignals(false);
+    ui->actionMonitor_Project_Files->setChecked(porymapConfig.getMonitorFiles());
     setTheme(porymapConfig.getTheme());
 }
 
@@ -303,13 +307,21 @@ bool MainWindow::openProject(QString dir) {
 
     bool already_open = isProjectOpen() && (editor->project->root == dir);
     if (!already_open) {
-        editor->project = new Project;
+        editor->closeProject();
+        editor->project = new Project(this);
+        QObject::connect(editor->project, SIGNAL(reloadProject()), this, SLOT(on_action_Reload_Project_triggered()));
+        QObject::connect(editor->project, &Project::uncheckMonitorFilesAction, [this] () { ui->actionMonitor_Project_Files->setChecked(false); });
+        on_actionMonitor_Project_Files_triggered(porymapConfig.getMonitorFiles());
         editor->project->set_root(dir);
         success = loadDataStructures()
                && populateMapList()
                && setMap(getDefaultMap(), true);
     } else {
-        success = loadDataStructures() && populateMapList();
+        QString open_map = editor->map->name;
+        editor->project->fileWatcher.removePaths(editor->project->fileWatcher.files());
+        editor->project->clearMapCache();
+        editor->project->clearTilesetCache();
+        success = loadDataStructures() && populateMapList() && setMap(open_map, true);
     }
 
     if (success) {
@@ -373,6 +385,19 @@ void MainWindow::on_action_Open_Project_triggered()
         if (!openProject(dir)) {
             this->initWindow();
         }
+    }
+}
+
+void MainWindow::on_action_Reload_Project_triggered() {
+    // TODO: when undo history is complete show only if has unsaved changes
+    QMessageBox warning(this);
+    warning.setText("WARNING");
+    warning.setInformativeText("Reloading this project will discard any unsaved changes.");
+    warning.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+    warning.setIcon(QMessageBox::Warning);
+
+    if (warning.exec() == QMessageBox::Ok) {
+        openProject(editor->project->root);
     }
 }
 
@@ -663,14 +688,25 @@ bool MainWindow::loadDataStructures() {
         success = success 
                && project->readSecretBaseIds() 
                && project->readCoordEventWeatherNames();
-    if (!success) {
-        return false;
-    }
+    
+    return success && loadProjectCombos();
+}
 
+bool MainWindow::loadProjectCombos() {
     // set up project ui comboboxes
-    QStringList songs = project->getSongNames();
+    Project *project = editor->project;
+
+    // Block signals to the comboboxes while they are being modified
+    const QSignalBlocker blocker1(ui->comboBox_Song);
+    const QSignalBlocker blocker2(ui->comboBox_Location);
+    const QSignalBlocker blocker3(ui->comboBox_PrimaryTileset);
+    const QSignalBlocker blocker4(ui->comboBox_SecondaryTileset);
+    const QSignalBlocker blocker5(ui->comboBox_Weather);
+    const QSignalBlocker blocker6(ui->comboBox_BattleScene);
+    const QSignalBlocker blocker7(ui->comboBox_Type);
+
     ui->comboBox_Song->clear();
-    ui->comboBox_Song->addItems(songs);
+    ui->comboBox_Song->addItems(project->getSongNames());
     ui->comboBox_Location->clear();
     ui->comboBox_Location->addItems(project->mapSectionValueToName.values());
 
@@ -678,6 +714,7 @@ bool MainWindow::loadDataStructures() {
     if (tilesets.isEmpty()) {
         return false;
     }
+
     ui->comboBox_PrimaryTileset->clear();
     ui->comboBox_PrimaryTileset->addItems(tilesets.value("primary"));
     ui->comboBox_SecondaryTileset->clear();
@@ -688,6 +725,7 @@ bool MainWindow::loadDataStructures() {
     ui->comboBox_BattleScene->addItems(*project->mapBattleScenes);
     ui->comboBox_Type->clear();
     ui->comboBox_Type->addItems(*project->mapTypes);
+
     return true;
 }
 
@@ -1104,10 +1142,10 @@ void MainWindow::drawMapListIcons(QAbstractItemModel *model) {
             QVariant data = index.data(Qt::UserRole);
             if (!data.isNull()) {
                 QString map_name = data.toString();
-                if (editor->project && editor->project->map_cache->contains(map_name)) {
+                if (editor->project && editor->project->mapCache->contains(map_name)) {
                     QStandardItem *map = mapListModel->itemFromIndex(mapListIndexes.value(map_name));
                     map->setIcon(*mapIcon);
-                    if (editor->project->map_cache->value(map_name)->hasUnsavedChanges()) {
+                    if (editor->project->mapCache->value(map_name)->hasUnsavedChanges()) {
                         map->setIcon(*mapEditedIcon);
                         projectHasUnsavedChanges = true;
                     }
@@ -1214,6 +1252,25 @@ void MainWindow::on_actionCursor_Tile_Outline_triggered()
     bool enabled = ui->actionCursor_Tile_Outline->isChecked();
     porymapConfig.setShowCursorTile(enabled);
     this->editor->settings->cursorTileRectEnabled = enabled;
+}
+
+void MainWindow::on_actionUse_Encounter_Json_triggered(bool checked)
+{
+    QMessageBox warning(this);
+    warning.setText("You must reload the project for this setting to take effect.");
+    warning.setIcon(QMessageBox::Information);
+    warning.exec();
+    projectConfig.setEncounterJsonActive(checked);
+}
+
+void MainWindow::on_actionMonitor_Project_Files_triggered(bool checked)
+{
+    porymapConfig.setMonitorFiles(checked);
+}
+
+void MainWindow::on_actionUse_Poryscript_triggered(bool checked)
+{
+    projectConfig.setUsePoryScript(checked);
 }
 
 void MainWindow::on_actionPencil_triggered()

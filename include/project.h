@@ -15,17 +15,25 @@
 #include <QPair>
 #include <QStandardItem>
 #include <QVariant>
+#include <QFileSystemWatcher>
 
 static QString NONE_MAP_CONSTANT = "MAP_NONE";
 static QString NONE_MAP_NAME = "None";
 
-class Project
+class Project : public QObject
 {
+    Q_OBJECT
 public:
-    Project();
+    Project(QWidget *parent = nullptr);
+    ~Project();
+
+    Project(const Project &) = delete;
+    Project & operator = (const Project &) = delete;
+
+public:
     QString root;
     QStringList *groupNames = nullptr;
-    QMap<QString, int> *map_groups;
+    QMap<QString, int> *mapGroups;
     QList<QStringList> groupedMapNames;
     QStringList *mapNames = nullptr;
     QMap<QString, QVariant> miscConstants;
@@ -55,8 +63,15 @@ public:
     QMap<int, QString> metatileBehaviorMapInverse;
     QMap<QString, QString> facingDirections;
     ParseUtil parser;
+    QFileSystemWatcher fileWatcher;
+    QMap<QString, qint64> modifiedFileTimestamps;
 
     void set_root(QString);
+
+    void initSignals();
+
+    void clearMapCache();
+    void clearTilesetCache();
 
     struct DataQualifiers
     {
@@ -66,11 +81,11 @@ public:
     DataQualifiers getDataQualifiers(QString, QString);
     QMap<QString, DataQualifiers> dataQualifiers;
 
-    QMap<QString, Map*> *map_cache;
+    QMap<QString, Map*> *mapCache;
     Map* loadMap(QString);
     Map* getMap(QString);
 
-    QMap<QString, Tileset*> *tileset_cache = nullptr;
+    QMap<QString, Tileset*> *tilesetCache = nullptr;
     Tileset* loadTileset(QString, Tileset *tileset = nullptr);
     Tileset* getTileset(QString, bool forceLoad = false);
     QMap<QString, QStringList> tilesetLabels;
@@ -180,12 +195,20 @@ private:
     void setNewMapEvents(Map *map);
     void setNewMapConnections(Map *map);
 
+    void ignoreWatchedFileTemporarily(QString filepath);
+
     static int num_tiles_primary;
     static int num_tiles_total;
     static int num_metatiles_primary;
     static int num_metatiles_total;
     static int num_pals_primary;
     static int num_pals_total;
+
+    QWidget *parent;
+
+signals:
+    void reloadProject();
+    void uncheckMonitorFilesAction();
 };
 
 #endif // PROJECT_H

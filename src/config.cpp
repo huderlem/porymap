@@ -17,6 +17,7 @@ KeyValueConfigBase::~KeyValueConfigBase() {
 }
 
 void KeyValueConfigBase::load() {
+    reset();
     QFile file(this->getConfigFilepath());
     if (!file.exists()) {
         if (!file.open(QIODevice::WriteOnly)) {
@@ -156,6 +157,12 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         if (!ok) {
             logWarn(QString("Invalid config value for show_cursor_tile: '%1'. Must be 0 or 1.").arg(value));
         }
+    } else if (key == "monitor_files") {
+        bool ok;
+        this->monitorFiles = value.toInt(&ok);
+        if (!ok) {
+            logWarn(QString("Invalid config value for monitor_files: '%1'. Must be 0 or 1.").arg(value));
+        }
     } else if (key == "region_map_dimensions") {
         bool ok1, ok2;
         QStringList dims = value.split("x");
@@ -189,6 +196,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("metatiles_zoom", QString("%1").arg(this->metatilesZoom));
     map.insert("show_player_view", this->showPlayerView ? "1" : "0");
     map.insert("show_cursor_tile", this->showCursorTile ? "1" : "0");
+    map.insert("monitor_files", this->monitorFiles ? "1" : "0");
     map.insert("region_map_dimensions", QString("%1x%2").arg(this->regionMapDimensions.width())
                                                         .arg(this->regionMapDimensions.height()));
     map.insert("theme", this->theme);
@@ -229,6 +237,11 @@ void PorymapConfig::setMapSortOrder(MapSortOrder order) {
 
 void PorymapConfig::setPrettyCursors(bool enabled) {
     this->prettyCursors = enabled;
+    this->save();
+}
+
+void PorymapConfig::setMonitorFiles(bool monitor) {
+    this->monitorFiles = monitor;
     this->save();
 }
 
@@ -312,6 +325,10 @@ bool PorymapConfig::getShowPlayerView() {
 
 bool PorymapConfig::getShowCursorTile() {
     return this->showCursorTile;
+}
+
+bool PorymapConfig::getMonitorFiles() {
+    return this->monitorFiles;
 }
 
 QSize PorymapConfig::getRegionMapDimensions() {

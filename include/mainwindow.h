@@ -30,14 +30,19 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = nullptr);
+    explicit MainWindow(QWidget *parent);
     ~MainWindow();
+
+    MainWindow() = delete;
+    MainWindow(const MainWindow &) = delete;
+    MainWindow & operator = (const MainWindow &) = delete;
 
 public slots:
     void scaleMapView(int);
 
 private slots:
     void on_action_Open_Project_triggered();
+    void on_action_Reload_Project_triggered();
     void on_mapList_activated(const QModelIndex &index);
     void on_action_Save_Project_triggered();
     void openWarpMap(QString map_name, QString warp_num);
@@ -69,6 +74,9 @@ private slots:
     void on_checkBox_AllowBiking_clicked(bool checked);
     void on_checkBox_AllowEscapeRope_clicked(bool checked);
     void on_spinBox_FloorNumber_valueChanged(int offset);
+    void on_actionUse_Encounter_Json_triggered(bool checked);
+    void on_actionMonitor_Project_Files_triggered(bool checked);
+    void on_actionUse_Poryscript_triggered(bool checked);
 
     void on_tabWidget_currentChanged(int index);
 
@@ -189,6 +197,7 @@ private:
     bool setMap(QString, bool scrollTreeView = false);
     void redrawMapScene();
     bool loadDataStructures();
+    bool loadProjectCombos();
     bool populateMapList();
     void sortMapList();
     QString getExistingDirectory(QString);
