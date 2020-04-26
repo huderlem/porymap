@@ -133,6 +133,8 @@ void Editor::setEditingObjects() {
     }
     if (map_item) {
         map_item->paintingMode = MapPixmapItem::PaintMode::EventObjects;
+        displayMapConnections();
+        map_item->draw();
         map_item->setVisible(true);
         setConnectionsVisibility(ui->checkBox_ToggleBorder->isChecked());
     }

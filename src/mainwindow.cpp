@@ -1216,12 +1216,12 @@ void MainWindow::on_mainTabBar_tabBarClicked(int index)
     if (index == 0) {
         ui->stackedWidget_MapEvents->setCurrentIndex(0);
         on_tabWidget_2_currentChanged(ui->tabWidget_2->currentIndex());
-        clickToolButtonFromEditMode(editor->prev_edit_mode);
     } else if (index == 1) {
         ui->stackedWidget_MapEvents->setCurrentIndex(1);
-        editor->prev_edit_mode = editor->map_edit_mode;
         editor->setEditingObjects();
-        clickToolButtonFromEditMode("select");
+        QStringList validOptions = {"select", "move", "paint", "shift"};
+        QString newEditMode = validOptions.contains(editor->map_edit_mode) ? editor->map_edit_mode : "select";
+        clickToolButtonFromEditMode(newEditMode);
     } else if (index == 3) {
         editor->setEditingConnections();
     }
