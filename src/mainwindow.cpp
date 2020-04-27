@@ -8,6 +8,8 @@
 #include "ui_eventpropertiesframe.h"
 #include "bordermetatilespixmapitem.h"
 #include "currentselectedmetatilespixmapitem.h"
+#include "customattributestable.h"
+#include "scripting.h"
 
 #include <QFileDialog>
 #include <QDirIterator>
@@ -44,6 +46,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QCoreApplication::setApplicationName("porymap");
     QApplication::setApplicationDisplayName("porymap");
     QApplication::setWindowIcon(QIcon(":/icons/porymap-icon-2.ico"));
+    Scripting::init(this);
     ui->setupUi(this);
 
     this->initWindow();
@@ -2539,4 +2542,8 @@ void MainWindow::closeEvent(QCloseEvent *event) {
     projectConfig.save();
 
     QMainWindow::closeEvent(event);
+}
+
+void MainWindow::scriptapi_setBlock(int x, int y, int tile, int collision, int elevation) {
+    this->editor->map->setBlock(x, y, Block(tile, collision, elevation));
 }

@@ -37,6 +37,8 @@ public:
     MainWindow(const MainWindow &) = delete;
     MainWindow & operator = (const MainWindow &) = delete;
 
+    Q_INVOKABLE void scriptapi_setBlock(int x, int y, int tile, int collision, int elevation);
+
 public slots:
     void scaleMapView(int);
 

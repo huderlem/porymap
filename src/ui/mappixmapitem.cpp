@@ -56,7 +56,7 @@ void MapPixmapItem::shift(QGraphicsSceneMouseEvent *event) {
 
                         int blockIndex = j * map->getWidth() + i;
                         Block srcBlock = backupBlockdata->blocks->at(blockIndex);
-                        map->_setBlock(destX, destY, srcBlock);
+                        map->setBlock(destX, destY, srcBlock);
                     }
 
                     delete backupBlockdata;
@@ -96,7 +96,7 @@ void MapPixmapItem::paintNormal(int x, int y) {
                 block->collision = selectedCollisions->at(index).first;
                 block->elevation = selectedCollisions->at(index).second;
             }
-            map->_setBlock(actualX, actualY, *block);
+            map->setBlock(actualX, actualY, *block, true);
         }
     }
 }
@@ -159,7 +159,7 @@ void MapPixmapItem::paintSmartPath(int x, int y) {
                 block->collision = openTileCollision;
                 block->elevation = openTileElevation;
             }
-            map->_setBlock(actualX, actualY, *block);
+            map->setBlock(actualX, actualY, *block);
         }
     }
 
@@ -203,7 +203,7 @@ void MapPixmapItem::paintSmartPath(int x, int y) {
             block->collision = selectedCollisions->at(smartPathTable[id]).first;
             block->elevation = selectedCollisions->at(smartPathTable[id]).second;
         }
-        map->_setBlock(actualX, actualY, *block);
+        map->setBlock(actualX, actualY, *block);
     }
 }
 
@@ -312,7 +312,7 @@ void MapPixmapItem::magicFill(QGraphicsSceneMouseEvent *event) {
                                 block->collision = selectedCollisions->at(index).first;
                                 block->elevation = selectedCollisions->at(index).second;
                             }
-                            map->_setBlock(x, y, *block);
+                            map->setBlock(x, y, *block);
                         }
                     }
                 }
@@ -362,7 +362,7 @@ void MapPixmapItem::_floodFill(int initialX, int initialY) {
                 block->collision = selectedCollisions->at(index).first;
                 block->elevation = selectedCollisions->at(index).second;
             }
-            map->_setBlock(x, y, *block);
+            map->setBlock(x, y, *block);
         }
         if (!visited[x + 1 + y * map->getWidth()] && (block = map->getBlock(x + 1, y)) && block->tile == old_tile) {
             todo.append(QPoint(x + 1, y));
@@ -427,7 +427,7 @@ void MapPixmapItem::_floodFillSmartPath(int initialX, int initialY) {
             block->collision = openTileCollision;
             block->elevation = openTileElevation;
         }
-        map->_setBlock(x, y, *block);
+        map->setBlock(x, y, *block);
         if ((block = map->getBlock(x + 1, y)) && block->tile == old_tile) {
             todo.append(QPoint(x + 1, y));
         }
@@ -482,7 +482,7 @@ void MapPixmapItem::_floodFillSmartPath(int initialX, int initialY) {
             block->collision = selectedCollisions->at(smartPathTable[id]).first;
             block->elevation = selectedCollisions->at(smartPathTable[id]).second;
         }
-        map->_setBlock(x, y, *block);
+        map->setBlock(x, y, *block);
 
         // Visit neighbors if they are smart-path tiles, and don't revisit any.
         if (!visited[x + 1 + y * map->getWidth()] && (block = map->getBlock(x + 1, y)) && IS_SMART_PATH_TILE(block)) {
