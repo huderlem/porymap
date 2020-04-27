@@ -1070,6 +1070,7 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item
                 DraggablePixmapItem * newEvent = addNewEvent(this->selected_events->first()->event->get("event_type"));
                 if (newEvent) {
                     newEvent->move(x, y);
+                    selectMapEvent(newEvent, false);
                 }
             }
         } else if (map_edit_mode == "select") {
