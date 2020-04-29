@@ -7,6 +7,9 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 The **"Breaking Changes"** listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. If porymap is used on a project that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.
 
 ## [Unreleased]
+Nothing, yet.
+
+## [4.0.0] - 2020-04-28
 ### Breaking Changes
 - If you are using pokeemerald or pokeruby, there were changes made in [pokeemerald/#1010](https://github.com/pret/pokeemerald/pull/1010) and [pokeruby/#776](https://github.com/pret/pokeruby/pull/776) that you will need to integrate in order to use this version of porymap.
 
@@ -172,7 +175,8 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ## [1.0.0] - 2018-10-26
 This was the initial release.
 
-[Unreleased]: https://github.com/huderlem/porymap/compare/3.0.1...HEAD
+[Unreleased]: https://github.com/huderlem/porymap/compare/4.0.0...HEAD
+[4.0.0]: https://github.com/huderlem/porymap/compare/3.0.1...4.0.0
 [3.0.1]: https://github.com/huderlem/porymap/compare/3.0.0...3.0.1
 [3.0.0]: https://github.com/huderlem/porymap/compare/2.0.0...3.0.0
 [2.0.0]: https://github.com/huderlem/porymap/compare/1.2.2...2.0.0
