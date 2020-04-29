@@ -13,14 +13,19 @@ private:
     using QGraphicsPixmapItem::paint;
 
 public:
+    enum class PaintMode {
+        Disabled,
+        Metatiles,
+        EventObjects
+    };
     MapPixmapItem(Map *map_, MetatileSelector *metatileSelector, Settings *settings) {
         this->map = map_;
         this->metatileSelector = metatileSelector;
         this->settings = settings;
-        this->paintingEnabled = true;
+        this->paintingMode = PaintMode::Metatiles;
         setAcceptHoverEvents(true);
     }
-    bool paintingEnabled;
+    MapPixmapItem::PaintMode paintingMode;
     Map *map;
     MetatileSelector *metatileSelector;
     Settings *settings;

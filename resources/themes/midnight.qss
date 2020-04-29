@@ -17,7 +17,7 @@ QWidget {
 }
 
 QWidget::disabled {
-    background: #272822;
+    background: #31332b;
     color: #75715E;
 }
 

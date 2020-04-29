@@ -8,7 +8,6 @@
 #include "ui_eventpropertiesframe.h"
 #include "bordermetatilespixmapitem.h"
 #include "currentselectedmetatilespixmapitem.h"
-#include "customattributestable.h"
 
 #include <QFileDialog>
 #include <QDirIterator>
@@ -79,6 +78,15 @@ void MainWindow::initExtraShortcuts() {
 }
 
 void MainWindow::initCustomUI() {
+    // Set up the tab bar
+    ui->mainTabBar->addTab("Map");
+    ui->mainTabBar->setTabIcon(0, QIcon(QStringLiteral(":/icons/map.ico")));
+    ui->mainTabBar->addTab("Events");
+    ui->mainTabBar->addTab("Header");
+    ui->mainTabBar->addTab("Connections");
+    ui->mainTabBar->addTab("Wild Pokemon");
+    ui->mainTabBar->setTabIcon(4, QIcon(QStringLiteral(":/icons/tall_grass.ico")));
+
     // Right-clicking on items in the map list tree view brings up a context menu.
     ui->mapList->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->mapList, SIGNAL(customContextMenuRequested(const QPoint &)),
@@ -152,10 +160,10 @@ void MainWindow::initMapSortOrder() {
 
 void MainWindow::setProjectSpecificUIVisibility()
 {
-    ui->tabWidget->setTabEnabled(4, projectConfig.getEncounterJsonActive());
-
     ui->actionUse_Encounter_Json->setChecked(projectConfig.getEncounterJsonActive());
     ui->actionUse_Poryscript->setChecked(projectConfig.getUsePoryScript());
+
+    ui->mainTabBar->setTabEnabled(4, projectConfig.getEncounterJsonActive());
 
     switch (projectConfig.getBaseGameVersion())
     {
@@ -264,7 +272,6 @@ void MainWindow::restoreWindowState() {
     this->restoreGeometry(geometry.value("window_geometry"));
     this->restoreState(geometry.value("window_state"));
     this->ui->splitter_map->restoreState(geometry.value("map_splitter_state"));
-    this->ui->splitter_events->restoreState(geometry.value("events_splitter_state"));
     this->ui->splitter_main->restoreState(geometry.value("main_splitter_state"));
 }
 
@@ -444,7 +451,7 @@ void MainWindow::redrawMapScene()
     if (!editor->displayMap())
         return;
 
-    on_tabWidget_currentChanged(ui->tabWidget->currentIndex());
+    on_mainTabBar_tabBarClicked(ui->mainTabBar->currentIndex());
 
     double base = editor->scale_base;
     double exp  = editor->scale_exp;
@@ -455,11 +462,7 @@ void MainWindow::redrawMapScene()
     ui->graphicsView_Map->setScene(editor->scene);
     ui->graphicsView_Map->setSceneRect(editor->scene->sceneRect());
     ui->graphicsView_Map->setFixedSize(width, height);
-
-    ui->graphicsView_Objects_Map->setScene(editor->scene);
-    ui->graphicsView_Objects_Map->setSceneRect(editor->scene->sceneRect());
-    ui->graphicsView_Objects_Map->setFixedSize(width, height);
-    ui->graphicsView_Objects_Map->editor = editor;
+    ui->graphicsView_Map->editor = editor;
 
     ui->graphicsView_Connections->setScene(editor->scene);
     ui->graphicsView_Connections->setSceneRect(editor->scene->sceneRect());
@@ -1203,17 +1206,28 @@ void MainWindow::on_action_Exit_triggered()
     QApplication::quit();
 }
 
-void MainWindow::on_tabWidget_currentChanged(int index)
+void MainWindow::on_mainTabBar_tabBarClicked(int index)
 {
+    ui->mainTabBar->setCurrentIndex(index);
+
+    int tabIndexToStackIndex[5] = {0, 0, 1, 2, 3};
+    ui->mainStackedWidget->setCurrentIndex(tabIndexToStackIndex[index]);
+
     if (index == 0) {
+        ui->stackedWidget_MapEvents->setCurrentIndex(0);
         on_tabWidget_2_currentChanged(ui->tabWidget_2->currentIndex());
     } else if (index == 1) {
+        ui->stackedWidget_MapEvents->setCurrentIndex(1);
         editor->setEditingObjects();
+        QStringList validOptions = {"select", "move", "paint", "shift"};
+        QString newEditMode = validOptions.contains(editor->map_edit_mode) ? editor->map_edit_mode : "select";
+        clickToolButtonFromEditMode(newEditMode);
     } else if (index == 3) {
         editor->setEditingConnections();
     }
     if (index != 4) {
-        editor->saveEncounterTabData();
+        if (projectConfig.getEncounterJsonActive())
+            editor->saveEncounterTabData();
     }
 }
 
@@ -1318,13 +1332,11 @@ void MainWindow::scaleMapView(int s) {
         double sfactor = pow(base,s);
 
         ui->graphicsView_Map->scale(sfactor,sfactor);
-        ui->graphicsView_Objects_Map->scale(sfactor,sfactor);
         ui->graphicsView_Connections->scale(sfactor,sfactor);
 
         int width = static_cast<int>(ceil((editor->scene->width()) * pow(base,exp))) + 2;
         int height = static_cast<int>(ceil((editor->scene->height()) * pow(base,exp))) + 2;
         ui->graphicsView_Map->setFixedSize(width, height);
-        ui->graphicsView_Objects_Map->setFixedSize(width, height);
         ui->graphicsView_Connections->setFixedSize(width, height);
     }
 }
@@ -1430,7 +1442,7 @@ void MainWindow::updateSelectedObjects() {
 
     bool pokefirered = projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered;
     for (DraggablePixmapItem *item : *events) {
-        EventPropertiesFrame *frame = new EventPropertiesFrame;
+        EventPropertiesFrame *frame = new EventPropertiesFrame(item->event);
 //        frame->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
         QSpinBox *x = frame->ui->spinBox_x;
@@ -1736,13 +1748,6 @@ void MainWindow::updateSelectedObjects() {
                 item->bind(combo, key);
             }
         }
-
-        // Custom fields table.
-        if (event_type != EventType::HealLocation) {
-            CustomAttributesTable *customAttributes = new CustomAttributesTable(item->event, frame);
-            frame->layout()->addWidget(customAttributes);
-        }
-
         frames.append(frame);
     }
 
@@ -2044,7 +2049,7 @@ void MainWindow::on_toolButton_Paint_clicked()
 void MainWindow::on_toolButton_Select_clicked()
 {
     editor->map_edit_mode = "select";
-    editor->settings->mapCursor = QCursor(QPixmap(":/icons/cursor.ico"), 0, 0);
+    editor->settings->mapCursor = QCursor();
     editor->cursorMapTileRect->setSingleTileMode();
 
     ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -2113,6 +2118,22 @@ void MainWindow::checkToolButtons() {
     ui->toolButton_Dropper->setChecked(editor->map_edit_mode == "pick");
     ui->toolButton_Move->setChecked(editor->map_edit_mode == "move");
     ui->toolButton_Shift->setChecked(editor->map_edit_mode == "shift");
+}
+
+void MainWindow::clickToolButtonFromEditMode(QString editMode) {
+    if (editMode == "paint") {
+        on_toolButton_Paint_clicked();
+    } else if (editMode == "select") {
+        on_toolButton_Select_clicked();
+    } else if (editMode == "fill") {
+        on_toolButton_Fill_clicked();
+    } else if (editMode == "pick") {
+        on_toolButton_Dropper_clicked();
+    } else if (editMode == "move") {
+        on_toolButton_Move_clicked();
+    } else if (editMode == "shift") {
+        on_toolButton_Shift_clicked();
+    }
 }
 
 void MainWindow::onLoadMapRequested(QString mapName, QString fromMapName) {
@@ -2512,7 +2533,6 @@ void MainWindow::closeEvent(QCloseEvent *event) {
         this->saveGeometry(),
         this->saveState(),
         this->ui->splitter_map->saveState(),
-        this->ui->splitter_events->saveState(),
         this->ui->splitter_main->saveState()
     );
     porymapConfig.save();

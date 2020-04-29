@@ -49,7 +49,7 @@ public:
     void setRecentMap(QString map);
     void setMapSortOrder(MapSortOrder order);
     void setPrettyCursors(bool enabled);
-    void setGeometry(QByteArray, QByteArray, QByteArray, QByteArray, QByteArray);
+    void setGeometry(QByteArray, QByteArray, QByteArray, QByteArray);
     void setCollisionOpacity(int opacity);
     void setMetatilesZoom(int zoom);
     void setShowPlayerView(bool enabled);
