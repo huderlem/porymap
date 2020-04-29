@@ -29,6 +29,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix bug where pressing TAB key did not navigate through widgets in the wild encounter tables.
 - Fix bug that allowed selecting an invalid metatile in the metatile selector.
 - Don't allow `.` or `-` characters in new tileset names.
+- Fix regression that prevented selecting empty region map squares
 
 ## [3.0.1] - 2020-03-04
 ### Fixed
