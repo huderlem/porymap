@@ -228,6 +228,9 @@
       </widget>
       <widget class="QFrame" name="frame_Main">
        <layout class="QVBoxLayout" name="verticalLayout_13">
+        <property name="spacing">
+         <number>0</number>
+        </property>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_10">
            <item>
