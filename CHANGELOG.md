@@ -6,21 +6,28 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 
 The **"Breaking Changes"** listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. If porymap is used on a project that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.
 
-## Unreleased
+## [Unreleased]
 ### Breaking Changes
 - If you are using pokeemerald or pokeruby, there were changes made in [pokeemerald/#1010](https://github.com/pret/pokeemerald/pull/1010) and [pokeruby/#776](https://github.com/pret/pokeruby/pull/776) that you will need to integrate in order to use this version of porymap.
 
 ### Added
 - Support for [pokefirered](https://github.com/pret/pokefirered). Kanto fans rejoice! At long last porymap supports the FRLG decompilation project.
 - Add ability to export map stitches with `File -> Export Map Stitch Image...`.
+- Add new project config option `use_custom_border_size`.
+- Add ability to toggle project settings in `Options` menu.
+- Add file monitoring, so Porymap will prompt the user to reload the project if certain project files are modified outside of Porymap.
+- Add ability to reload project.
+- Add `Pencil`, `Move`, and `Map Shift` tools to the Events tab.
 
 ### Changed
-- Porymap now saves map and encounter json data in an order consistent with the upstream repos. This will provide more comprehensible diffs, among other things.
+- Porymap now saves map and encounter json data in an order consistent with the upstream repos. This will provide more comprehensible diffs when files are saved.
+- Update Porymap icon.
+- The "Map" and "Events" tabs now render using the same view, so jumping between them is smooth.
 
 ### Fixed
 - Fix bug where pressing TAB key did not navigate through widgets in the wild encounter tables.
 - Fix bug that allowed selecting an invalid metatile in the metatile selector.
-
+- Don't allow `.` or `-` characters in new tileset names.
 
 ## [3.0.1] - 2020-03-04
 ### Fixed
