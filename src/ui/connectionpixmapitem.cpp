@@ -15,16 +15,16 @@ void ConnectionPixmapItem::render(qreal opacity) {
 
 int ConnectionPixmapItem::getMinOffset() {
     if (this->connection->direction == "up" || this->connection->direction == "down")
-        return 1 - (this->pixmap().width() / 16);
+        return -(this->pixmap().width() / 16) - 6;
     else
-        return 1 - (this->pixmap().height() / 16);
+        return -(this->pixmap().height() / 16) - 6;
 }
 
 int ConnectionPixmapItem::getMaxOffset() {
     if (this->connection->direction == "up" || this->connection->direction == "down")
-        return this->baseMapWidth - 1;
+        return this->baseMapWidth + 6;
     else
-        return this->baseMapHeight - 1;
+        return this->baseMapHeight + 6;
 }
 
 QVariant ConnectionPixmapItem::itemChange(GraphicsItemChange change, const QVariant &value)

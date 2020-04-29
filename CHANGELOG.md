@@ -23,6 +23,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Porymap now saves map and encounter json data in an order consistent with the upstream repos. This will provide more comprehensible diffs when files are saved.
 - Update Porymap icon.
 - The "Map" and "Events" tabs now render using the same view, so jumping between them is smooth.
+- Extend connection min and max offsets to player's view boundary, rather than the map's boundary.
 
 ### Fixed
 - Fix bug where pressing TAB key did not navigate through widgets in the wild encounter tables.
