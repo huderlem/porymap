@@ -341,7 +341,7 @@ bool Project::loadMapData(Map* map) {
     }
 
     map->events["heal_event_group"].clear();
-    for (auto it = flyableMaps.begin(); it != flyableMaps.end(); it++) {
+    for (auto it = healLocations.begin(); it != healLocations.end(); it++) {
 
         HealLocation loc = *it;
 
@@ -917,33 +917,34 @@ void Project::saveHealLocationStruct(Map *map) {
     QString constants_text = QString("#ifndef GUARD_CONSTANTS_HEAL_LOCATIONS_H\n");
     constants_text += QString("#define GUARD_CONSTANTS_HEAL_LOCATIONS_H\n\n");
 
-    QMap<QString, int> flyableMapsDupes;
-    QSet<QString> flyableMapsUnique;
+    QMap<QString, int> healLocationsDupes;
+    QSet<QString> healLocationsUnique;
 
-    // set flyableMapsDupes and flyableMapsUnique
-    for (auto it = flyableMaps.begin(); it != flyableMaps.end(); it++) {
+    // set healLocationsDupes and healLocationsUnique
+    for (auto it = healLocations.begin(); it != healLocations.end(); it++) {
         HealLocation loc = *it;
         QString xname = loc.idName;
-        if (flyableMapsUnique.contains(xname)) {
-            flyableMapsDupes[xname] = 1;
+        if (healLocationsUnique.contains(xname)) {
+            healLocationsDupes[xname] = 1;
         }
-        flyableMapsUnique.insert(xname);
+        healLocationsUnique.insert(xname);
     }
 
-    // set new location in flyableMapsList
+    // set new location in healLocations list
     if (map->events["heal_event_group"].length() > 0) {
         for (Event *healEvent : map->events["heal_event_group"]) {
             HealLocation hl = HealLocation::fromEvent(healEvent);
-            flyableMaps[hl.index - 1] = hl;
+            healLocations[hl.index - 1] = hl;
         }
     }
 
     int i = 1;
-    for (auto map_in : flyableMaps) {
+    for (auto map_in : healLocations) {
         // add numbered suffix for duplicate constants
-        if (flyableMapsDupes.keys().contains(map_in.idName)) {
-            map_in.idName += QString("_%1").arg(flyableMapsDupes[map_in.idName]);
-            flyableMapsDupes[map_in.idName]++;
+        if (healLocationsDupes.keys().contains(map_in.idName)) {
+            QString duplicateName = map_in.idName;
+            map_in.idName += QString("_%1").arg(healLocationsDupes[duplicateName]);
+            healLocationsDupes[duplicateName]++;
         }
 
         // Save first array (heal location coords), only data array in RSE
@@ -973,7 +974,7 @@ void Project::saveHealLocationStruct(Map *map) {
         data_text += QString("};\n\n%1%2u16 sWhiteoutRespawnHealCenterMapIdxs[][2] =\n{\n")
                         .arg(dataQualifiers.value("heal_locations").isStatic ? "static " : "")
                         .arg(dataQualifiers.value("heal_locations").isConst ? "const " : "");
-        for (auto map_in : flyableMaps) {
+        for (auto map_in : healLocations) {
             data_text += QString("    [%1%2 - 1] = {MAP_GROUP(%3), MAP_NUM(%3)},\n")
                          .arg(constantPrefix)
                          .arg(map_in.idName)
@@ -984,7 +985,7 @@ void Project::saveHealLocationStruct(Map *map) {
         data_text += QString("};\n\n%1%2u8 sWhiteoutRespawnHealerNpcIds[] =\n{\n")
                         .arg(dataQualifiers.value("heal_locations").isStatic ? "static " : "")
                         .arg(dataQualifiers.value("heal_locations").isConst ? "const " : "");
-        for (auto map_in : flyableMaps) {
+        for (auto map_in : healLocations) {
             data_text += QString("    [%1%2 - 1] = %3,\n")
                          .arg(constantPrefix)
                          .arg(map_in.idName)
@@ -2117,7 +2118,7 @@ bool Project::readRegionMapSections() {
 
 bool Project::readHealLocations() {
     dataQualifiers.clear();
-    flyableMaps.clear();
+    healLocations.clear();
     QString filename = "src/data/heal_locations.h";
     fileWatcher.addPath(root + "/" + filename);
     QString text = parser.readTextFile(root + "/" + filename);
@@ -2144,7 +2145,7 @@ bool Project::readHealLocations() {
             unsigned x = spawn.captured("x").toUShort();
             unsigned y = spawn.captured("y").toUShort();
             unsigned npc = respawnNPC.captured("npc").toUShort();
-            flyableMaps.append(HealLocation(idName, mapName, i, x, y, respawnMapName, npc));
+            healLocations.append(HealLocation(idName, mapName, i, x, y, respawnMapName, npc));
         }
     } else {
         dataQualifiers.insert("heal_locations", getDataQualifiers(text, "sHealLocations"));
@@ -2157,7 +2158,7 @@ bool Project::readHealLocations() {
             QString mapName = match.captured("map");
             unsigned x = match.captured("x").toUShort();
             unsigned y = match.captured("y").toUShort();
-            flyableMaps.append(HealLocation(idName, mapName, i, x, y));
+            healLocations.append(HealLocation(idName, mapName, i, x, y));
         }
     }
     return true;
@@ -2494,7 +2495,7 @@ void Project::saveMapHealEvents(Map *map) {
     if (map->events["heal_event_group"].length() > 0) {
         for (Event *healEvent : map->events["heal_event_group"]) {
             HealLocation hl = HealLocation::fromEvent(healEvent);
-            flyableMaps[hl.index - 1] = hl;
+            healLocations[hl.index - 1] = hl;
         }
     }
     saveHealLocationStruct(map);
