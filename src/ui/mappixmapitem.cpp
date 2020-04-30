@@ -69,20 +69,22 @@ void MapPixmapItem::shift(QGraphicsSceneMouseEvent *event) {
     }
 }
 
-void MapPixmapItem::paintNormal(int x, int y) {
+void MapPixmapItem::paintNormal(int x, int y, bool fromScriptCallback) {
     QPoint selectionDimensions = this->metatileSelector->getSelectionDimensions();
     QList<uint16_t> *selectedMetatiles = this->metatileSelector->getSelectedMetatiles();
     QList<QPair<uint16_t, uint16_t>> *selectedCollisions = this->metatileSelector->getSelectedCollisions();
+    int initialX = fromScriptCallback ? x : this->paint_tile_initial_x;
+    int initialY = fromScriptCallback ? y : this->paint_tile_initial_y;
 
     // Snap the selected position to the top-left of the block boundary.
     // This allows painting via dragging the mouse to tile the painted region.
-    int xDiff = x - this->paint_tile_initial_x;
-    int yDiff = y - this->paint_tile_initial_y;
+    int xDiff = x - initialX;
+    int yDiff = y - initialY;
     if (xDiff < 0 && xDiff % selectionDimensions.x() != 0) xDiff -= selectionDimensions.x();
     if (yDiff < 0 && yDiff % selectionDimensions.y() != 0) yDiff -= selectionDimensions.y();
 
-    x = this->paint_tile_initial_x + (xDiff / selectionDimensions.x()) * selectionDimensions.x();
-    y = this->paint_tile_initial_y + (yDiff / selectionDimensions.y()) * selectionDimensions.y();
+    x = initialX + (xDiff / selectionDimensions.x()) * selectionDimensions.x();
+    y = initialY + (yDiff / selectionDimensions.y()) * selectionDimensions.y();
 
     for (int i = 0; i < selectionDimensions.x() && i + x < map->getWidth(); i++)
     for (int j = 0; j < selectionDimensions.y() && j + y < map->getHeight(); j++) {
@@ -96,7 +98,7 @@ void MapPixmapItem::paintNormal(int x, int y) {
                 block->collision = selectedCollisions->at(index).first;
                 block->elevation = selectedCollisions->at(index).second;
             }
-            map->setBlock(actualX, actualY, *block, true);
+            map->setBlock(actualX, actualY, *block, !fromScriptCallback);
         }
     }
 }

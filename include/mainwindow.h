@@ -10,6 +10,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QCloseEvent>
 #include <QAbstractItemModel>
+#include <QJSValue>
 #include "project.h"
 #include "config.h"
 #include "map.h"
@@ -37,7 +38,9 @@ public:
     MainWindow(const MainWindow &) = delete;
     MainWindow & operator = (const MainWindow &) = delete;
 
-    Q_INVOKABLE void scriptapi_setBlock(int x, int y, int tile, int collision, int elevation);
+    Q_INVOKABLE QJSValue getBlock(int x, int y);
+    Q_INVOKABLE void setBlock(int x, int y, int tile, int collision, int elevation);
+    Q_INVOKABLE void setBlocksFromSelection(int x, int y);
 
 public slots:
     void scaleMapView(int);

@@ -45,9 +45,9 @@ public:
     virtual void shift(QGraphicsSceneMouseEvent*);
     virtual void draw(bool ignoreCache = false);
     void updateMetatileSelection(QGraphicsSceneMouseEvent *event);
+    void paintNormal(int x, int y, bool fromScriptCallback = false);
 
 private:
-    void paintNormal(int x, int y);
     void paintSmartPath(int x, int y);
     static QList<int> smartPathTable;
 

@@ -2544,6 +2544,25 @@ void MainWindow::closeEvent(QCloseEvent *event) {
     QMainWindow::closeEvent(event);
 }
 
-void MainWindow::scriptapi_setBlock(int x, int y, int tile, int collision, int elevation) {
+QJSValue MainWindow::getBlock(int x, int y) {
+    if (!this->editor || !this->editor->map)
+        return QJSValue();
+    Block *block = this->editor->map->getBlock(x, y);
+    if (!block) {
+        return Scripting::fromBlock(Block());
+    }
+    return Scripting::fromBlock(*block);
+}
+
+void MainWindow::setBlock(int x, int y, int tile, int collision, int elevation) {
+    if (!this->editor || !this->editor->map)
+        return;
     this->editor->map->setBlock(x, y, Block(tile, collision, elevation));
 }
+
+void MainWindow::setBlocksFromSelection(int x, int y) {
+    if (this->editor && this->editor->map_item) {
+        this->editor->map_item->paintNormal(x, y, true);
+    }
+}
+

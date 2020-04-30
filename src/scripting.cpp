@@ -14,7 +14,7 @@ void Scripting::init(MainWindow *mainWindow) {
 Scripting::Scripting(MainWindow *mainWindow) {
     this->engine = new QJSEngine(mainWindow);
     this->engine->installExtensions(QJSEngine::ConsoleExtension);
-    this->engine->globalObject().setProperty("api", this->engine->newQObject(mainWindow));
+    this->engine->globalObject().setProperty("map", this->engine->newQObject(mainWindow));
     this->filepaths.append("D:\\devkitProOld\\msys\\home\\huder\\pretmap\\test_script.js");
     this->loadModules(this->filepaths);
 }
@@ -23,7 +23,13 @@ void Scripting::loadModules(QStringList moduleFiles) {
     for (QString filepath : moduleFiles) {
         QJSValue module = this->engine->importModule(filepath);
         if (module.isError()) {
-            logError(QString("Failed to load custom script file '%1'").arg(filepath));
+            logError(QString("Failed to load custom script file '%1'\nName: %2\nMessage: %3\nFile: %4\nLine Number: %5\nStack: %6")
+                     .arg(filepath)
+                     .arg(module.property("name").toString())
+                     .arg(module.property("message").toString())
+                     .arg(module.property("fileName").toString())
+                     .arg(module.property("lineNumber").toString())
+                     .arg(module.property("stack").toString()));
             continue;
         }
 
@@ -53,14 +59,14 @@ void Scripting::cb_MetatileChanged(int x, int y, Block prevBlock, Block newBlock
     QJSValueList args {
         x,
         y,
-        instance->newBlockObject(prevBlock),
-        instance->newBlockObject(newBlock),
+        instance->fromBlock(prevBlock),
+        instance->fromBlock(newBlock),
     };
     instance->invokeCallback(OnBlockChanged, args);
 }
 
-QJSValue Scripting::newBlockObject(Block block) {
-    QJSValue obj = this->engine->newObject();
+QJSValue Scripting::fromBlock(Block block) {
+    QJSValue obj = instance->engine->newObject();
     obj.setProperty("tile", block.tile);
     obj.setProperty("collision", block.collision);
     obj.setProperty("elevation", block.elevation);

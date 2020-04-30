@@ -15,7 +15,7 @@ class Scripting
 {
 public:
     Scripting(MainWindow *mainWindow);
-    QJSValue newBlockObject(Block block);
+    static QJSValue fromBlock(Block block);
     static void init(MainWindow *mainWindow);
     static void cb_MetatileChanged(int x, int y, Block prevBlock, Block newBlock);
 

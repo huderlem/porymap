@@ -364,12 +364,12 @@ Block* Map::getBlock(int x, int y) {
     return nullptr;
 }
 
-void Map::setBlock(int x, int y, Block block, bool invokeCallback) {
+void Map::setBlock(int x, int y, Block block, bool enableScriptCallback) {
     int i = y * getWidth() + x;
     if (layout->blockdata && layout->blockdata->blocks && i < layout->blockdata->blocks->size()) {
         Block prevBlock = layout->blockdata->blocks->value(i);
         layout->blockdata->blocks->replace(i, block);
-        if (invokeCallback) {
+        if (enableScriptCallback) {
             Scripting::cb_MetatileChanged(x, y, prevBlock, block);
         }
     }
