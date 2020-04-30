@@ -9,11 +9,11 @@ const grassTiles = [0x8, 0x9, 0x10, 0x11];
 // Porymap callback when a block is painted.
 export function on_block_changed(x, y, prevBlock, newBlock) {
     try {
-        if (grassTiles.indexOf(newBlock.tile) != -1) {
-            const i = randInt(0, grassTiles.length);
-            map.setBlock(x, y, grassTiles[i], newBlock.collision, newBlock.elevation);
-        }
-        map.setBlocksFromSelection(1, 1)
+        // if (grassTiles.indexOf(newBlock.tile) != -1) {
+        //     const i = randInt(0, grassTiles.length);
+        //     map.setBlock(x, y, grassTiles[i], newBlock.collision, newBlock.elevation);
+        // }
+        console.log("ran", map.getWidth(), map.getHeight());
     } catch(err) {
         console.log(err);
     }

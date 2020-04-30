@@ -41,6 +41,23 @@ public:
     Q_INVOKABLE QJSValue getBlock(int x, int y);
     Q_INVOKABLE void setBlock(int x, int y, int tile, int collision, int elevation);
     Q_INVOKABLE void setBlocksFromSelection(int x, int y);
+    Q_INVOKABLE int getMetatileId(int x, int y);
+    Q_INVOKABLE void setMetatileId(int x, int y, int metatileId);
+    Q_INVOKABLE int getCollision(int x, int y);
+    Q_INVOKABLE void setCollision(int x, int y, int collision);
+    Q_INVOKABLE int getElevation(int x, int y);
+    Q_INVOKABLE void setElevation(int x, int y, int elevation);
+    Q_INVOKABLE void bucketFill(int x, int y, int metatileId);
+    Q_INVOKABLE void bucketFillFromSelection(int x, int y);
+    Q_INVOKABLE void magicFill(int x, int y, int metatileId);
+    Q_INVOKABLE void magicFillFromSelection(int x, int y);
+    Q_INVOKABLE void shift(int xDelta, int yDelta);
+    Q_INVOKABLE QJSValue getDimensions();
+    Q_INVOKABLE int getWidth();
+    Q_INVOKABLE int getHeight();
+    Q_INVOKABLE void setDimensions(int width, int height);
+    Q_INVOKABLE void setWidth(int width);
+    Q_INVOKABLE void setHeight(int height);
 
 public slots:
     void scaleMapView(int);
@@ -210,6 +227,7 @@ private:
     QString getDefaultMap();
     void setRecentMap(QString map_name);
     QStandardItem* createMapItem(QString mapName, int groupNum, int inGroupNum);
+    static bool mapDimensionsValid(int width, int height);
 
     void drawMapListIcons(QAbstractItemModel *model);
     void updateMapList();

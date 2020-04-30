@@ -73,3 +73,10 @@ QJSValue Scripting::fromBlock(Block block) {
     obj.setProperty("rawValue", block.rawValue());
     return obj;
 }
+
+QJSValue Scripting::dimensions(int width, int height) {
+    QJSValue obj = instance->engine->newObject();
+    obj.setProperty("width", width);
+    obj.setProperty("height", height);
+    return obj;
+}

@@ -2305,7 +2305,7 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked()
         int realWidth = widthSpinBox->value() + 15;
         int realHeight = heightSpinBox->value() + 14;
         int numMetatiles = realWidth * realHeight;
-        if (numMetatiles <= 0x2800) {
+        if (MainWindow::mapDimensionsValid(widthSpinBox->value(), heightSpinBox->value())) {
             dialog.accept();
         } else {
             QString errorText = QString("Error: The specified width and height are too large.\n"
@@ -2328,6 +2328,17 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked()
         editor->map->commit();
         onMapNeedsRedrawing();
     }
+}
+
+bool MainWindow::mapDimensionsValid(int width, int height) {
+    // Ensure width and height are an acceptable size.
+    // The maximum number of metatiles in a map is the following:
+    //    max = (width + 15) * (height + 14)
+    // This limit can be found in fieldmap.c in pokeruby/pokeemerald.
+    int realWidth = width + 15;
+    int realHeight = height + 14;
+    int numMetatiles = realWidth * realHeight;
+    return numMetatiles <= 0x2800;
 }
 
 void MainWindow::on_checkBox_smartPaths_stateChanged(int selected)
@@ -2566,3 +2577,140 @@ void MainWindow::setBlocksFromSelection(int x, int y) {
     }
 }
 
+int MainWindow::getMetatileId(int x, int y) {
+    if (!this->editor || !this->editor->map)
+        return 0;
+    Block *block = this->editor->map->getBlock(x, y);
+    if (!block) {
+        return 0;
+    }
+    return block->tile;
+}
+
+void MainWindow::setMetatileId(int x, int y, int metatileId) {
+    if (!this->editor || !this->editor->map)
+        return;
+    Block *block = this->editor->map->getBlock(x, y);
+    if (!block) {
+        return;
+    }
+    this->editor->map->setBlock(x, y, Block(metatileId, block->collision, block->elevation));
+}
+
+int MainWindow::getCollision(int x, int y) {
+    if (!this->editor || !this->editor->map)
+        return 0;
+    Block *block = this->editor->map->getBlock(x, y);
+    if (!block) {
+        return 0;
+    }
+    return block->collision;
+}
+
+void MainWindow::setCollision(int x, int y, int collision) {
+    if (!this->editor || !this->editor->map)
+        return;
+    Block *block = this->editor->map->getBlock(x, y);
+    if (!block) {
+        return;
+    }
+    this->editor->map->setBlock(x, y, Block(block->tile, collision, block->elevation));
+}
+
+int MainWindow::getElevation(int x, int y) {
+    if (!this->editor || !this->editor->map)
+        return 0;
+    Block *block = this->editor->map->getBlock(x, y);
+    if (!block) {
+        return 0;
+    }
+    return block->elevation;
+}
+
+void MainWindow::setElevation(int x, int y, int elevation) {
+    if (!this->editor || !this->editor->map)
+        return;
+    Block *block = this->editor->map->getBlock(x, y);
+    if (!block) {
+        return;
+    }
+    this->editor->map->setBlock(x, y, Block(block->tile, block->collision, elevation));
+}
+
+void MainWindow::bucketFill(int x, int y, int metatileId) {
+    if (!this->editor || !this->editor->map)
+        return;
+    this->editor->map_item->floodFill(x, y, metatileId, true);
+}
+
+void MainWindow::bucketFillFromSelection(int x, int y) {
+    if (!this->editor || !this->editor->map)
+        return;
+    this->editor->map_item->floodFill(x, y, true);
+}
+
+void MainWindow::magicFill(int x, int y, int metatileId) {
+    if (!this->editor || !this->editor->map)
+        return;
+    this->editor->map_item->magicFill(x, y, metatileId, true);
+}
+
+void MainWindow::magicFillFromSelection(int x, int y) {
+    if (!this->editor || !this->editor->map)
+        return;
+    this->editor->map_item->magicFill(x, y, true);
+}
+
+void MainWindow::shift(int xDelta, int yDelta) {
+    if (!this->editor || !this->editor->map)
+        return;
+    this->editor->map_item->shift(xDelta, yDelta);
+}
+
+QJSValue MainWindow::getDimensions() {
+    if (!this->editor || !this->editor->map)
+        return QJSValue();
+    return Scripting::dimensions(this->editor->map->getWidth(), this->editor->map->getHeight());
+}
+
+int MainWindow::getWidth() {
+    if (!this->editor || !this->editor->map)
+        return 0;
+    return this->editor->map->getWidth();
+}
+
+int MainWindow::getHeight() {
+    if (!this->editor || !this->editor->map)
+        return 0;
+    return this->editor->map->getHeight();
+}
+
+void MainWindow::setDimensions(int width, int height) {
+    if (!this->editor || !this->editor->map)
+        return;
+    if (!MainWindow::mapDimensionsValid(width, height))
+        return;
+    this->editor->map->setDimensions(width, height);
+    this->editor->map->commit();
+    this->onMapNeedsRedrawing();
+}
+
+void MainWindow::setWidth(int width) {
+    if (!this->editor || !this->editor->map)
+        return;
+    if (!MainWindow::mapDimensionsValid(width, this->editor->map->getHeight()))
+        return;
+    this->editor->map->setDimensions(width, this->editor->map->getHeight());
+    this->editor->map->commit();
+    this->onMapNeedsRedrawing();
+}
+
+void MainWindow::setHeight(int height) {
+    if (!this->editor || !this->editor->map)
+        return;
+    if (!MainWindow::mapDimensionsValid(this->editor->map->getWidth(), height))
+        return;
+    this->editor->map->setDimensions(this->editor->map->getWidth(), height);
+    this->editor->map->commit();
+    this->onMapNeedsRedrawing();
+}
