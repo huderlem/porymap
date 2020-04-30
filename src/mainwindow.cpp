@@ -8,6 +8,7 @@
 #include "ui_eventpropertiesframe.h"
 #include "bordermetatilespixmapitem.h"
 #include "currentselectedmetatilespixmapitem.h"
+#include "adjustingstackedwidget.h"
 
 #include <QFileDialog>
 #include <QDirIterator>
