@@ -119,6 +119,7 @@ HEADERS  += include/core/block.h \
     include/ui/noscrollcombobox.h \
     include/ui/noscrollspinbox.h \
     include/ui/montabwidget.h \
+    include/ui/adjustingstackedwidget.h \
     include/ui/paletteeditor.h \
     include/ui/selectablepixmapitem.h \
     include/ui/tileseteditor.h \
