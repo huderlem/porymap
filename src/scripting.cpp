@@ -3,6 +3,7 @@
 
 QMap<CallbackType, QString> callbackFunctions = {
     {OnBlockChanged, "on_block_changed"},
+    {OnMapOpened, "on_map_opened"},
 };
 
 Scripting *instance = nullptr;
@@ -65,9 +66,18 @@ void Scripting::cb_MetatileChanged(int x, int y, Block prevBlock, Block newBlock
     instance->invokeCallback(OnBlockChanged, args);
 }
 
+void Scripting::cb_MapOpened(QString mapName) {
+    if (!instance) return;
+
+    QJSValueList args {
+        mapName,
+    };
+    instance->invokeCallback(OnMapOpened, args);
+}
+
 QJSValue Scripting::fromBlock(Block block) {
     QJSValue obj = instance->engine->newObject();
-    obj.setProperty("tile", block.tile);
+    obj.setProperty("metatileId", block.tile);
     obj.setProperty("collision", block.collision);
     obj.setProperty("elevation", block.elevation);
     obj.setProperty("rawValue", block.rawValue());

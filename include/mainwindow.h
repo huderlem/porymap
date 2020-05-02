@@ -58,6 +58,12 @@ public:
     Q_INVOKABLE void setDimensions(int width, int height);
     Q_INVOKABLE void setWidth(int width);
     Q_INVOKABLE void setHeight(int height);
+    Q_INVOKABLE void clearOverlay();
+    Q_INVOKABLE void addText(QString text, int x, int y, QString color = "#000000", int fontSize = 12);
+    Q_INVOKABLE void addRect(int x, int y, int width, int height, QString color = "#000000");
+    Q_INVOKABLE void addFilledRect(int x, int y, int width, int height, QString color = "#000000");
+    Q_INVOKABLE void addImage(int x, int y, QString filepath);
+
 
 public slots:
     void scaleMapView(int);

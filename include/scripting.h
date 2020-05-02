@@ -9,6 +9,7 @@
 
 enum CallbackType {
     OnBlockChanged,
+    OnMapOpened,
 };
 
 class Scripting
@@ -19,6 +20,7 @@ public:
     static QJSValue dimensions(int width, int height);
     static void init(MainWindow *mainWindow);
     static void cb_MetatileChanged(int x, int y, Block prevBlock, Block newBlock);
+    static void cb_MapOpened(QString mapName);
 
 private:
     QJSEngine *engine;

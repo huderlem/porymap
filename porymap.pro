@@ -36,6 +36,7 @@ SOURCES += src/core/block.cpp \
     src/ui/collisionpixmapitem.cpp \
     src/ui/connectionpixmapitem.cpp \
     src/ui/currentselectedmetatilespixmapitem.cpp \
+    src/ui/overlay.cpp \
     src/ui/regionmaplayoutpixmapitem.cpp \
     src/ui/regionmapentriespixmapitem.cpp \
     src/ui/cursortilerect.cpp \
@@ -136,7 +137,8 @@ HEADERS  += include/core/block.h \
     include/scripting.h \
     include/settings.h \
     include/log.h \
-    include/ui/newtilesetdialog.h
+    include/ui/newtilesetdialog.h \
+    include/ui/overlay.h
 
 FORMS    += forms/mainwindow.ui \
     forms/eventpropertiesframe.ui \

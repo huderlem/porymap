@@ -446,6 +446,8 @@ bool MainWindow::setMap(QString map_name, bool scrollTreeView) {
     setRecentMap(map_name);
     updateMapList();
     updateTilesetEditor();
+
+    Scripting::cb_MapOpened(map_name);
     return true;
 }
 
@@ -2713,4 +2715,34 @@ void MainWindow::setHeight(int height) {
     this->editor->map->setDimensions(this->editor->map->getWidth(), height);
     this->editor->map->commit();
     this->onMapNeedsRedrawing();
+}
+
+void MainWindow::clearOverlay() {
+    if (!this->ui || !this->ui->graphicsView_Map)
+        return;
+    this->ui->graphicsView_Map->overlay.clearItems();
+}
+
+void MainWindow::addText(QString text, int x, int y, QString color, int fontSize) {
+    if (!this->ui || !this->ui->graphicsView_Map)
+        return;
+    this->ui->graphicsView_Map->overlay.addText(text, x, y, color, fontSize);
+}
+
+void MainWindow::addRect(int x, int y, int width, int height, QString color) {
+    if (!this->ui || !this->ui->graphicsView_Map)
+        return;
+    this->ui->graphicsView_Map->overlay.addRect(x, y, width, height, color, false);
+}
+
+void MainWindow::addFilledRect(int x, int y, int width, int height, QString color) {
+    if (!this->ui || !this->ui->graphicsView_Map)
+        return;
+    this->ui->graphicsView_Map->overlay.addRect(x, y, width, height, color, true);
+}
+
+void MainWindow::addImage(int x, int y, QString filepath) {
+    if (!this->ui || !this->ui->graphicsView_Map)
+        return;
+    this->ui->graphicsView_Map->overlay.addImage(x, y, filepath);
 }
