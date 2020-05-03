@@ -1,3 +1,4 @@
+const morningTint = [0.8, 0.7, 0.9];
 const nightTint = [0.6, 0.55, 1.0];
 
 function applyTint(palette, tint) {
@@ -14,11 +15,11 @@ export function on_map_opened(mapName) {
     try {
         for (let i = 0; i < 13; i++) {
             const primaryPalette = map.getPrimaryTilesetPalette(i)
-            applyTint(primaryPalette, nightTint)
-            map.setPrimaryTilesetPalette(i, primaryPalette)
+            applyTint(primaryPalette, morningTint)
+            map.setPrimaryTilesetPalettePreview(i, primaryPalette)
             const secondaryPalette = map.getSecondaryTilesetPalette(i)
-            applyTint(secondaryPalette, nightTint)
-            map.setSecondaryTilesetPalette(i, secondaryPalette)
+            applyTint(secondaryPalette, morningTint)
+            map.setSecondaryTilesetPalettePreview(i, secondaryPalette)
         }
     } catch (err) {
         console.log(err)

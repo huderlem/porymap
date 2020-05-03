@@ -13,7 +13,7 @@ QImage getCollisionMetatileImage(int collision, int elevation) {
     return collisionImage.toImage();
 }
 
-QImage getMetatileImage(uint16_t tile, Tileset *primaryTileset, Tileset *secondaryTileset) {
+QImage getMetatileImage(uint16_t tile, Tileset *primaryTileset, Tileset *secondaryTileset, bool useTruePalettes) {
     QImage metatile_image(16, 16, QImage::Format_RGBA8888);
 
     Metatile* metatile = Tileset::getMetatile(tile, primaryTileset, secondaryTileset);
@@ -27,7 +27,7 @@ QImage getMetatileImage(uint16_t tile, Tileset *primaryTileset, Tileset *seconda
         metatile_image.fill(Qt::magenta);
         return metatile_image;
     }
-    QList<QList<QRgb>> palettes = Tileset::getBlockPalettes(primaryTileset, secondaryTileset);
+    QList<QList<QRgb>> palettes = Tileset::getBlockPalettes(primaryTileset, secondaryTileset, useTruePalettes);
 
     QPainter metatile_painter(&metatile_image);
     for (int layer = 0; layer < 2; layer++)
@@ -95,8 +95,8 @@ QImage getColoredTileImage(uint16_t tile, Tileset *primaryTileset, Tileset *seco
     return tileImage;
 }
 
-QImage getPalettedTileImage(uint16_t tile, Tileset *primaryTileset, Tileset *secondaryTileset, int paletteId) {
-    QList<QRgb> palette = Tileset::getPalette(paletteId, primaryTileset, secondaryTileset);
+QImage getPalettedTileImage(uint16_t tile, Tileset *primaryTileset, Tileset *secondaryTileset, int paletteId, bool useTruePalettes) {
+    QList<QRgb> palette = Tileset::getPalette(paletteId, primaryTileset, secondaryTileset, useTruePalettes);
     return getColoredTileImage(tile, primaryTileset, secondaryTileset, palette);
 }
 

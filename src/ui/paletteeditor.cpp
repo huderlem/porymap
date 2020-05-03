@@ -203,6 +203,7 @@ void PaletteEditor::setColor(int colorIndex) {
             ? this->primaryTileset
             : this->secondaryTileset;
     (*tileset->palettes)[paletteNum][colorIndex] = qRgb(red, green, blue);
+    (*tileset->palettePreviews)[paletteNum][colorIndex] = qRgb(red, green, blue);
     this->refreshColor(colorIndex);
     this->commitEditHistory(paletteNum);
     emit this->changedPaletteColor();
@@ -246,8 +247,10 @@ void PaletteEditor::setColorsFromHistory(PaletteHistoryItem *history, int palett
     for (int i = 0; i < 16; i++) {
         if (paletteId < Project::getNumPalettesPrimary()) {
             (*this->primaryTileset->palettes)[paletteId][i] = history->colors.at(i);
+            (*this->primaryTileset->palettePreviews)[paletteId][i] = history->colors.at(i);
         } else {
             (*this->secondaryTileset->palettes)[paletteId][i] = history->colors.at(i);
+            (*this->secondaryTileset->palettePreviews)[paletteId][i] = history->colors.at(i);
         }
     }
 
@@ -296,8 +299,10 @@ void PaletteEditor::on_actionImport_Palette_triggered()
     for (int i = 0; i < 16; i++) {
         if (paletteId < Project::getNumPalettesPrimary()) {
             (*this->primaryTileset->palettes)[paletteId][i] = palette.at(i);
+            (*this->primaryTileset->palettePreviews)[paletteId][i] = palette.at(i);
         } else {
             (*this->secondaryTileset->palettes)[paletteId][i] = palette.at(i);
+            (*this->secondaryTileset->palettePreviews)[paletteId][i] = palette.at(i);
         }
     }
 

@@ -1585,6 +1585,7 @@ void Project::loadTilesetAssets(Tileset* tileset) {
 
     // palettes
     QList<QList<QRgb>> *palettes = new QList<QList<QRgb>>;
+    QList<QList<QRgb>> *palettePreviews = new QList<QList<QRgb>>;
     for (int i = 0; i < tileset->palettePaths.length(); i++) {
         QList<QRgb> palette;
         QString path = tileset->palettePaths.value(i);
@@ -1619,8 +1620,10 @@ void Project::loadTilesetAssets(Tileset* tileset) {
         }
 
         palettes->append(palette);
+        palettePreviews->append(palette);
     }
     tileset->palettes = palettes;
+    tileset->palettePreviews = palettePreviews;
 }
 
 void Project::loadTilesetTiles(Tileset *tileset, QImage image) {

@@ -69,6 +69,9 @@ public:
     QJSValue getTilesetPalette(Tileset *tileset, int paletteIndex);
     Q_INVOKABLE QJSValue getPrimaryTilesetPalette(int paletteIndex);
     Q_INVOKABLE QJSValue getSecondaryTilesetPalette(int paletteIndex);
+    void setTilesetPalettePreview(Tileset *tileset, int paletteIndex, QList<QList<int>> colors);
+    Q_INVOKABLE void setPrimaryTilesetPalettePreview(int paletteIndex, QList<QList<int>> colors);
+    Q_INVOKABLE void setSecondaryTilesetPalettePreview(int paletteIndex, QList<QList<int>> colors);
 
 
 public slots:

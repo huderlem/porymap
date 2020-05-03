@@ -22,7 +22,7 @@ void TilesetEditorMetatileSelector::draw() {
         if (i >= primaryLength) {
             tile += Project::getNumMetatilesPrimary() - primaryLength;
         }
-        QImage metatile_image = getMetatileImage(tile, this->primaryTileset, this->secondaryTileset).scaled(32, 32);
+        QImage metatile_image = getMetatileImage(tile, this->primaryTileset, this->secondaryTileset, true).scaled(32, 32);
         int map_y = i / this->numMetatilesWide;
         int map_x = i % this->numMetatilesWide;
         QPoint metatile_origin = QPoint(map_x * 32, map_y * 32);
