@@ -348,6 +348,10 @@ bool MainWindow::openProject(QString dir) {
 
     }
 
+    if (success) {
+        Scripting::cb_ProjectOpened(dir);
+    }
+
     return success;
 }
 
@@ -2843,4 +2847,17 @@ void MainWindow::setSecondaryTilesetPalettePreview(int paletteIndex, QList<QList
     if (!this->editor || !this->editor->map || !this->editor->map->layout || !this->editor->map->layout->tileset_secondary)
         return;
     this->setTilesetPalettePreview(this->editor->map->layout->tileset_secondary, paletteIndex, colors);
+}
+
+void MainWindow::registerAction(QString functionName, QString actionName) {
+    if (!this->ui || !this->ui->menuTools)
+        return;
+
+    Scripting::registerAction(functionName, actionName);
+    if (Scripting::numRegisteredActions() == 1) {
+        this->ui->menuTools->addSeparator();
+    }
+    this->ui->menuTools->addAction(actionName, [actionName](){
+       Scripting::invokeAction(actionName);
+    });
 }

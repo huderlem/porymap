@@ -8,6 +8,7 @@
 #include <QJSEngine>
 
 enum CallbackType {
+    OnProjectOpened,
     OnBlockChanged,
     OnMapOpened,
 };
@@ -20,6 +21,10 @@ public:
     static QJSValue dimensions(int width, int height);
     static QJSEngine *getEngine();
     static void init(MainWindow *mainWindow);
+    static void registerAction(QString functionName, QString actionName);
+    static int numRegisteredActions();
+    static void invokeAction(QString actionName);
+    static void cb_ProjectOpened(QString projectPath);
     static void cb_MetatileChanged(int x, int y, Block prevBlock, Block newBlock);
     static void cb_MapOpened(QString mapName);
 
@@ -27,6 +32,7 @@ private:
     QJSEngine *engine;
     QStringList filepaths;
     QList<QJSValue> modules;
+    QMap<QString, QString> registeredActions;
 
     void loadModules(QStringList moduleFiles);
     void invokeCallback(CallbackType type, QJSValueList args);

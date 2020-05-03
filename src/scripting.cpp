@@ -2,6 +2,7 @@
 #include "log.h"
 
 QMap<CallbackType, QString> callbackFunctions = {
+    {OnProjectOpened, "on_project_opened"},
     {OnBlockChanged, "on_block_changed"},
     {OnMapOpened, "on_map_opened"},
 };
@@ -52,6 +53,44 @@ void Scripting::invokeCallback(CallbackType type, QJSValueList args) {
             continue;
         }
     }
+}
+
+void Scripting::registerAction(QString functionName, QString actionName) {
+    if (!instance) return;
+    instance->registeredActions.insert(actionName, functionName);
+}
+
+int Scripting::numRegisteredActions() {
+    if (!instance) return 0;
+    return instance->registeredActions.size();
+}
+
+void Scripting::invokeAction(QString actionName) {
+    if (!instance) return;
+    if (!instance->registeredActions.contains(actionName)) return;
+
+    QString functionName = instance->registeredActions.value(actionName);
+    for (QJSValue module : instance->modules) {
+        QJSValue callbackFunction = module.property(functionName);
+        if (callbackFunction.isError()) {
+            continue;
+        }
+
+        QJSValue result = callbackFunction.call(QJSValueList());
+        if (result.isError()) {
+            logError(QString("Module %1 encountered an error when calling '%2'").arg(module.toString()).arg(functionName));
+            continue;
+        }
+    }
+}
+
+void Scripting::cb_ProjectOpened(QString projectPath) {
+    if (!instance) return;
+
+    QJSValueList args {
+        projectPath,
+    };
+    instance->invokeCallback(OnProjectOpened, args);
 }
 
 void Scripting::cb_MetatileChanged(int x, int y, Block prevBlock, Block newBlock) {

@@ -72,6 +72,7 @@ public:
     void setTilesetPalettePreview(Tileset *tileset, int paletteIndex, QList<QList<int>> colors);
     Q_INVOKABLE void setPrimaryTilesetPalettePreview(int paletteIndex, QList<QList<int>> colors);
     Q_INVOKABLE void setSecondaryTilesetPalettePreview(int paletteIndex, QList<QList<int>> colors);
+    Q_INVOKABLE void registerAction(QString functionName, QString actionName);
 
 
 public slots:
