@@ -63,6 +63,12 @@ public:
     Q_INVOKABLE void addRect(int x, int y, int width, int height, QString color = "#000000");
     Q_INVOKABLE void addFilledRect(int x, int y, int width, int height, QString color = "#000000");
     Q_INVOKABLE void addImage(int x, int y, QString filepath);
+    void setTilesetPalette(Tileset *tileset, int paletteIndex, QList<QList<int>> colors);
+    Q_INVOKABLE void setPrimaryTilesetPalette(int paletteIndex, QList<QList<int>> colors);
+    Q_INVOKABLE void setSecondaryTilesetPalette(int paletteIndex, QList<QList<int>> colors);
+    QJSValue getTilesetPalette(Tileset *tileset, int paletteIndex);
+    Q_INVOKABLE QJSValue getPrimaryTilesetPalette(int paletteIndex);
+    Q_INVOKABLE QJSValue getSecondaryTilesetPalette(int paletteIndex);
 
 
 public slots:

@@ -221,7 +221,7 @@ QPixmap Map::render(bool ignoreCache = false, MapLayout * fromLayout) {
     return pixmap;
 }
 
-QPixmap Map::renderBorder() {
+QPixmap Map::renderBorder(bool ignoreCache) {
     bool changed_any = false, border_resized = false;
     int width_ = getBorderWidth();
     int height_ = getBorderHeight();
@@ -239,7 +239,7 @@ QPixmap Map::renderBorder() {
     }
     QPainter painter(&layout->border_image);
     for (int i = 0; i < layout->border->blocks->length(); i++) {
-        if (!border_resized && !borderBlockChanged(i, layout->cached_border)) {
+        if (!ignoreCache && (!border_resized && !borderBlockChanged(i, layout->cached_border))) {
             continue;
         }
 

@@ -1440,6 +1440,29 @@ void Editor::displayMapBorder() {
     }
 }
 
+void Editor::updateMapBorder() {
+    QPixmap pixmap = this->map->renderBorder(true);
+    for (auto item : this->borderItems) {
+        item->setPixmap(pixmap);
+    }
+}
+
+void Editor::updateMapConnections() {
+    if (connection_items.size() != connection_edit_items.size())
+        return;
+
+    for (int i = 0; i < connection_items.size(); i++) {
+        Map *connected_map = project->getMap(connection_edit_items[i]->connection->map_name);
+        if (!connected_map)
+            continue;
+
+        QPixmap pixmap = connected_map->renderConnection(*(connection_edit_items[i]->connection), map->layout);
+        connection_items[i]->setPixmap(pixmap);
+        connection_edit_items[i]->basePixmap = pixmap;
+        connection_edit_items[i]->setPixmap(pixmap);
+    }
+}
+
 int Editor::getBorderDrawDistance(int dimension) {
     // Draw sufficient border blocks to fill the player's view (BORDER_DISTANCE)
     if (dimension >= BORDER_DISTANCE) {

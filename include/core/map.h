@@ -85,7 +85,7 @@ public:
     void removeEvent(Event*);
     void addEvent(Event*);
     QPixmap renderConnection(MapConnection, MapLayout *);
-    QPixmap renderBorder();
+    QPixmap renderBorder(bool ignoreCache = false);
     void setDimensions(int newWidth, int newHeight, bool setNewBlockdata = true);
     void setBorderDimensions(int newWidth, int newHeight, bool setNewBlockdata = true);
     void cacheBorder();

@@ -1073,7 +1073,7 @@ void MainWindow::on_actionNew_Tileset_triggered() {
         editor->project->saveTilesetTilesImage(newSet);
         editor->project->saveTilesetMetatiles(newSet);
         editor->project->saveTilesetMetatileAttributes(newSet);
-        editor->project->saveTilesetPalettes(newSet, !createTilesetDialog->isSecondary);
+        editor->project->saveTilesetPalettes(newSet);
 
         //append to tileset specific files
 
@@ -2745,4 +2745,65 @@ void MainWindow::addImage(int x, int y, QString filepath) {
     if (!this->ui || !this->ui->graphicsView_Map)
         return;
     this->ui->graphicsView_Map->overlay.addImage(x, y, filepath);
+}
+
+void MainWindow::setTilesetPalette(Tileset *tileset, int paletteIndex, QList<QList<int>> colors) {
+    if (!this->editor || !this->editor->map || !this->editor->map->layout)
+        return;
+    if (paletteIndex >= tileset->palettes->size())
+        return;
+    if (colors.size() != 16)
+        return;
+
+    for (int i = 0; i < 16; i++) {
+        if (colors[i].size() != 3)
+            continue;
+        auto palettes = tileset->palettes;
+        (*palettes)[paletteIndex][i] = qRgb(colors[i][0], colors[i][1], colors[i][2]);
+    }
+
+    if (this->tilesetEditor) {
+        this->tilesetEditor->setTilesets(this->editor->map->layout->tileset_primary_label, this->editor->map->layout->tileset_secondary_label);
+    }
+    this->editor->metatile_selector_item->draw();
+    this->editor->selected_border_metatiles_item->draw();
+    this->editor->map_item->draw(true);
+    this->editor->updateMapBorder();
+    this->editor->updateMapConnections();
+    this->editor->project->saveTilesetPalettes(tileset);
+}
+
+void MainWindow::setPrimaryTilesetPalette(int paletteIndex, QList<QList<int>> colors) {
+    if (!this->editor || !this->editor->map || !this->editor->map->layout || !this->editor->map->layout->tileset_primary)
+        return;
+    this->setTilesetPalette(this->editor->map->layout->tileset_primary, paletteIndex, colors);
+}
+
+void MainWindow::setSecondaryTilesetPalette(int paletteIndex, QList<QList<int>> colors) {
+    if (!this->editor || !this->editor->map || !this->editor->map->layout || !this->editor->map->layout->tileset_secondary)
+        return;
+    this->setTilesetPalette(this->editor->map->layout->tileset_secondary, paletteIndex, colors);
+}
+
+QJSValue MainWindow::getTilesetPalette(Tileset *tileset, int paletteIndex) {
+    if (paletteIndex >= tileset->palettes->size())
+        return QJSValue();
+
+    QList<QList<int>> palette;
+    for (auto color : tileset->palettes->value(paletteIndex)) {
+        palette.append(QList<int>({qRed(color), qGreen(color), qBlue(color)}));
+    }
+    return Scripting::getEngine()->toScriptValue(palette);
+}
+
+QJSValue MainWindow::getPrimaryTilesetPalette(int paletteIndex) {
+    if (!this->editor || !this->editor->map || !this->editor->map->layout || !this->editor->map->layout->tileset_primary)
+        return QJSValue();
+    return this->getTilesetPalette(this->editor->map->layout->tileset_primary, paletteIndex);
+}
+
+QJSValue MainWindow::getSecondaryTilesetPalette(int paletteIndex) {
+    if (!this->editor || !this->editor->map || !this->editor->map->layout || !this->editor->map->layout->tileset_secondary)
+        return QJSValue();
+    return this->getTilesetPalette(this->editor->map->layout->tileset_secondary, paletteIndex);
 }

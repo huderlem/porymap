@@ -90,3 +90,7 @@ QJSValue Scripting::dimensions(int width, int height) {
     obj.setProperty("height", height);
     return obj;
 }
+
+QJSEngine *Scripting::getEngine() {
+    return instance->engine;
+}

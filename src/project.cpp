@@ -1012,8 +1012,8 @@ void Project::saveTilesets(Tileset *primaryTileset, Tileset *secondaryTileset) {
     saveTilesetMetatiles(secondaryTileset);
     saveTilesetTilesImage(primaryTileset);
     saveTilesetTilesImage(secondaryTileset);
-    saveTilesetPalettes(primaryTileset, true);
-    saveTilesetPalettes(secondaryTileset, false);
+    saveTilesetPalettes(primaryTileset);
+    saveTilesetPalettes(secondaryTileset);
 }
 
 void Project::saveTilesetMetatileLabels(Tileset *primaryTileset, Tileset *secondaryTileset) {
@@ -1150,7 +1150,7 @@ void Project::saveTilesetTilesImage(Tileset *tileset) {
     exportIndexed4BPPPng(tileset->tilesImage, tileset->tilesImagePath);
 }
 
-void Project::saveTilesetPalettes(Tileset *tileset, bool /*primary*/) {
+void Project::saveTilesetPalettes(Tileset *tileset) {
     PaletteUtil paletteParser;
     for (int i = 0; i < Project::getNumPalettesTotal(); i++) {
         QString filepath = tileset->palettePaths.at(i);
