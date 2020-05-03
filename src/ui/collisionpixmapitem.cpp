@@ -39,7 +39,7 @@ void CollisionPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
         if (block) {
             block->collision = this->movementPermissionsSelector->getSelectedCollision();
             block->elevation = this->movementPermissionsSelector->getSelectedElevation();
-            map->setBlock(x, y, *block);
+            map->setBlock(x, y, *block, true);
         }
         if (event->type() == QEvent::GraphicsSceneMouseRelease) {
             map->commit();

@@ -131,7 +131,7 @@ QList<int> MapPixmapItem::smartPathTable = QList<int>({
 
 #define IS_SMART_PATH_TILE(block) (selectedMetatiles->contains(block->tile))
 
-void MapPixmapItem::paintSmartPath(int x, int y) {
+void MapPixmapItem::paintSmartPath(int x, int y, bool fromScriptCall) {
     QPoint selectionDimensions = this->metatileSelector->getSelectionDimensions();
     QList<uint16_t> *selectedMetatiles = this->metatileSelector->getSelectedMetatiles();
     QList<QPair<uint16_t, uint16_t>> *selectedCollisions = this->metatileSelector->getSelectedCollisions();
@@ -165,7 +165,7 @@ void MapPixmapItem::paintSmartPath(int x, int y) {
                 block->collision = openTileCollision;
                 block->elevation = openTileElevation;
             }
-            map->setBlock(actualX, actualY, *block);
+            map->setBlock(actualX, actualY, *block, !fromScriptCall);
         }
     }
 
@@ -209,7 +209,7 @@ void MapPixmapItem::paintSmartPath(int x, int y) {
             block->collision = selectedCollisions->at(smartPathTable[id]).first;
             block->elevation = selectedCollisions->at(smartPathTable[id]).second;
         }
-        map->setBlock(actualX, actualY, *block);
+        map->setBlock(actualX, actualY, *block, !fromScriptCall);
     }
 }
 
@@ -425,7 +425,7 @@ void MapPixmapItem::floodFill(
     delete[] visited;
 }
 
-void MapPixmapItem::floodFillSmartPath(int initialX, int initialY) {
+void MapPixmapItem::floodFillSmartPath(int initialX, int initialY, bool fromScriptCall) {
     QPoint selectionDimensions = this->metatileSelector->getSelectionDimensions();
     QList<uint16_t> *selectedMetatiles = this->metatileSelector->getSelectedMetatiles();
     QList<QPair<uint16_t, uint16_t>> *selectedCollisions = this->metatileSelector->getSelectedCollisions();
@@ -467,7 +467,7 @@ void MapPixmapItem::floodFillSmartPath(int initialX, int initialY) {
             block->collision = openTileCollision;
             block->elevation = openTileElevation;
         }
-        map->setBlock(x, y, *block);
+        map->setBlock(x, y, *block, !fromScriptCall);
         if ((block = map->getBlock(x + 1, y)) && block->tile == old_tile) {
             todo.append(QPoint(x + 1, y));
         }
@@ -522,7 +522,7 @@ void MapPixmapItem::floodFillSmartPath(int initialX, int initialY) {
             block->collision = selectedCollisions->at(smartPathTable[id]).first;
             block->elevation = selectedCollisions->at(smartPathTable[id]).second;
         }
-        map->setBlock(x, y, *block);
+        map->setBlock(x, y, *block, !fromScriptCall);
 
         // Visit neighbors if they are smart-path tiles, and don't revisit any.
         if (!visited[x + 1 + y * map->getWidth()] && (block = map->getBlock(x + 1, y)) && IS_SMART_PATH_TILE(block)) {

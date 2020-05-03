@@ -395,7 +395,7 @@ void Map::_floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_
 
             block->collision = collision;
             block->elevation = elevation;
-            setBlock(x, y, *block);
+            setBlock(x, y, *block, true);
             if ((block = getBlock(x + 1, y)) && block->collision == old_coll && block->elevation == old_elev) {
                 todo.append(QPoint(x + 1, y));
             }
@@ -520,7 +520,7 @@ void Map::magicFillCollisionElevation(int initialX, int initialY, uint16_t colli
                 if (block && block->collision == old_coll && block->elevation == old_elev) {
                     block->collision = collision;
                     block->elevation = elevation;
-                    setBlock(x, y, *block);
+                    setBlock(x, y, *block, true);
                 }
             }
         }

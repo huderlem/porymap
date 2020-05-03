@@ -55,7 +55,7 @@ public:
                    QList<uint16_t> *selectedMetatiles,
                    QList<QPair<uint16_t, uint16_t>> *selectedCollisions,
                    bool fromScriptCall = false);
-    void floodFillSmartPath(int initialX, int initialY);
+    void floodFillSmartPath(int initialX, int initialY, bool fromScriptCall = false);
     virtual void pick(QGraphicsSceneMouseEvent*);
     virtual void select(QGraphicsSceneMouseEvent*);
     virtual void shift(QGraphicsSceneMouseEvent*);
@@ -65,7 +65,7 @@ public:
     void paintNormal(int x, int y, bool fromScriptCall = false);
 
 private:
-    void paintSmartPath(int x, int y);
+    void paintSmartPath(int x, int y, bool fromScriptCall = false);
     static QList<int> smartPathTable;
 
 signals:
