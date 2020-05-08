@@ -89,6 +89,12 @@ public:
     Q_INVOKABLE QString getSecondaryTileset();
     Q_INVOKABLE void setPrimaryTileset(QString tileset);
     Q_INVOKABLE void setSecondaryTileset(QString tileset);
+    Q_INVOKABLE void setGridVisibility(bool visible);
+    Q_INVOKABLE bool getGridVisibility();
+    Q_INVOKABLE void setBorderVisibility(bool visible);
+    Q_INVOKABLE bool getBorderVisibility();
+    Q_INVOKABLE void setSmartPathsEnabled(bool visible);
+    Q_INVOKABLE bool getSmartPathsEnabled();
     Q_INVOKABLE void registerAction(QString functionName, QString actionName);
 
 

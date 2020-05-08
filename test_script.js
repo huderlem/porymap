@@ -11,6 +11,8 @@ function applyTint(palette, tint) {
     }
 }
 
+let visible = true;
+
 function applyTintToPalettes(tint) {
     try {
         // const primaryPalettes = map.getPrimaryTilesetPalettes()
@@ -23,7 +25,8 @@ function applyTintToPalettes(tint) {
 
         // map.setPrimaryTilesetPalettesPreview(primaryPalettes)
         // map.setSecondaryTilesetPalettesPreview(secondaryPalettes)
-        map.setSecondaryTileset("gTileset_Rustboro")
+        console.log(map.setSmartPathsEnabled(visible))
+        visible = !visible
     } catch(err) {
         console.log(err)
     }

@@ -2961,6 +2961,30 @@ void MainWindow::setSecondaryTileset(QString tileset) {
     this->on_comboBox_SecondaryTileset_currentTextChanged(tileset);
 }
 
+void MainWindow::setGridVisibility(bool visible) {
+    this->ui->checkBox_ToggleGrid->setChecked(visible);
+}
+
+bool MainWindow::getGridVisibility() {
+    return this->ui->checkBox_ToggleGrid->isChecked();
+}
+
+void MainWindow::setBorderVisibility(bool visible) {
+    this->editor->toggleBorderVisibility(visible);
+}
+
+bool MainWindow::getBorderVisibility() {
+    return this->ui->checkBox_ToggleBorder->isChecked();
+}
+
+void MainWindow::setSmartPathsEnabled(bool visible) {
+    this->ui->checkBox_smartPaths->setChecked(visible);
+}
+
+bool MainWindow::getSmartPathsEnabled() {
+    return this->ui->checkBox_smartPaths->isChecked();
+}
+
 void MainWindow::registerAction(QString functionName, QString actionName) {
     if (!this->ui || !this->ui->menuTools)
         return;
