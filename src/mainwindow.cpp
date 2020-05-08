@@ -2985,7 +2985,7 @@ bool MainWindow::getSmartPathsEnabled() {
     return this->ui->checkBox_smartPaths->isChecked();
 }
 
-void MainWindow::registerAction(QString functionName, QString actionName) {
+void MainWindow::registerAction(QString functionName, QString actionName, QString shortcut) {
     if (!this->ui || !this->ui->menuTools)
         return;
 
@@ -2993,7 +2993,10 @@ void MainWindow::registerAction(QString functionName, QString actionName) {
     if (Scripting::numRegisteredActions() == 1) {
         this->ui->menuTools->addSection("Custom Actions");
     }
-    this->ui->menuTools->addAction(actionName, [actionName](){
+    QAction *action = this->ui->menuTools->addAction(actionName, [actionName](){
        Scripting::invokeAction(actionName);
     });
+    if (!shortcut.isEmpty()) {
+        action->setShortcut(QKeySequence(shortcut));
+    }
 }

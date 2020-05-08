@@ -11,22 +11,18 @@ function applyTint(palette, tint) {
     }
 }
 
-let visible = true;
-
 function applyTintToPalettes(tint) {
     try {
-        // const primaryPalettes = map.getPrimaryTilesetPalettes()
-        // for (let i = 0; i < primaryPalettes.length; i++)
-        //     applyTint(primaryPalettes[i], tint)
+        const primaryPalettes = map.getPrimaryTilesetPalettes()
+        for (let i = 0; i < primaryPalettes.length; i++)
+            applyTint(primaryPalettes[i], tint)
 
-        // const secondaryPalettes = map.getSecondaryTilesetPalettes()
-        // for (let i = 0; i < secondaryPalettes.length; i++)
-        //     applyTint(secondaryPalettes[i], tint)
+        const secondaryPalettes = map.getSecondaryTilesetPalettes()
+        for (let i = 0; i < secondaryPalettes.length; i++)
+            applyTint(secondaryPalettes[i], tint)
 
-        // map.setPrimaryTilesetPalettesPreview(primaryPalettes)
-        // map.setSecondaryTilesetPalettesPreview(secondaryPalettes)
-        console.log(map.setSmartPathsEnabled(visible))
-        visible = !visible
+        map.setPrimaryTilesetPalettesPreview(primaryPalettes)
+        map.setSecondaryTilesetPalettesPreview(secondaryPalettes)
     } catch(err) {
         console.log(err)
     }
@@ -36,9 +32,9 @@ function applyTintToPalettes(tint) {
 export function on_project_opened(projectPath) {
     try {
         console.log(`opened ${projectPath}`)
-        map.registerAction("resetTint", "View Day Tint")
-        map.registerAction("applyMorningTint", "View Morning Tint")
-        map.registerAction("applyNightTint", "View Night Tint")
+        map.registerAction("resetTint", "View Day Tint", "K")
+        map.registerAction("applyMorningTint", "View Morning Tint", "N")
+        map.registerAction("applyNightTint", "View Night Tint", "Ctrl+J")
     } catch(err) {
         console.log(err)
     }
