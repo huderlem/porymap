@@ -99,6 +99,7 @@ public:
     Q_INVOKABLE void registerAction(QString functionName, QString actionName, QString shortcut = "");
     Q_INVOKABLE void setTimeout(QJSValue callback, int milliseconds);
     void invokeCallback(QJSValue callback);
+    Q_INVOKABLE void log(QString message);
 
 
 public slots:
