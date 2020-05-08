@@ -10,6 +10,7 @@
 #include "currentselectedmetatilespixmapitem.h"
 #include "customattributestable.h"
 #include "scripting.h"
+#include "adjustingstackedwidget.h"
 
 #include <QFileDialog>
 #include <QDirIterator>

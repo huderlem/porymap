@@ -37,7 +37,7 @@ public:
     QList<QStringList> groupedMapNames;
     QStringList *mapNames = nullptr;
     QMap<QString, QVariant> miscConstants;
-    QList<HealLocation> flyableMaps;
+    QList<HealLocation> healLocations;
     QMap<QString, QString>* mapConstantsToMapNames;
     QMap<QString, QString>* mapNamesToMapConstants;
     QList<QString> mapLayoutsTable;

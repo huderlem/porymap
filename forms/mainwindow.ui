@@ -677,7 +677,7 @@
                 </item>
                </layout>
               </widget>
-              <widget class="QStackedWidget" name="stackedWidget_MapEvents">
+              <widget class="AdjustingStackedWidget" name="stackedWidget_MapEvents">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
                  <horstretch>0</horstretch>
@@ -3035,6 +3035,11 @@
    <class>NoScrollComboBox</class>
    <extends>QComboBox</extends>
    <header>noscrollcombobox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>AdjustingStackedWidget</class>
+   <extends>QStackedWidget</extends>
+   <header>adjustingstackedwidget.h</header>
   </customwidget>
   <customwidget>
    <class>GraphicsView</class>
