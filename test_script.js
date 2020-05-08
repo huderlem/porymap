@@ -28,18 +28,6 @@ function applyTintToPalettes(tint) {
     }
 }
 
-// Porymap callback when project is opened.
-export function on_project_opened(projectPath) {
-    try {
-        console.log(`opened ${projectPath}`)
-        map.registerAction("resetTint", "View Day Tint", "K")
-        map.registerAction("applyMorningTint", "View Morning Tint", "N")
-        map.registerAction("applyNightTint", "View Night Tint", "Ctrl+J")
-    } catch(err) {
-        console.log(err)
-    }
-}
-
 export function resetTint() {
     applyTintToPalettes(normalTint)
 }
@@ -50,4 +38,40 @@ export function applyMorningTint() {
 
 export function applyNightTint() {
     applyTintToPalettes(nightTint)
+}
+
+let curTint = 0
+
+function nextTint() {
+    map.clearOverlay()
+    map.addRect(curTint * 40, 40, 40, 40, "#FFFF0000")
+    curTint = (curTint + 1) % 4
+    map.setTimeout(nextTint, 100)
+}
+
+export function animated() {
+    try {
+        map.setTimeout(nextTint, 1000)
+    } catch(err) {
+        console.log(err)
+    }
+}
+
+let registered = false
+
+// Porymap callback when project is opened.
+export function on_project_opened(projectPath) {
+    if (registered) {
+        return;
+    }
+
+    try {
+        // map.registerAction("resetTint", "View Day Tint", "K")
+        // map.registerAction("applyMorningTint", "View Morning Tint", "N")
+        // map.registerAction("applyNightTint", "View Night Tint", "Ctrl+J")
+        map.registerAction("animated", "Animate")
+        registered = true;
+    } catch(err) {
+        console.log(err)
+    }
 }

@@ -2728,30 +2728,35 @@ void MainWindow::clearOverlay() {
     if (!this->ui || !this->ui->graphicsView_Map)
         return;
     this->ui->graphicsView_Map->overlay.clearItems();
+    this->ui->graphicsView_Map->scene()->update();
 }
 
 void MainWindow::addText(QString text, int x, int y, QString color, int fontSize) {
     if (!this->ui || !this->ui->graphicsView_Map)
         return;
     this->ui->graphicsView_Map->overlay.addText(text, x, y, color, fontSize);
+    this->ui->graphicsView_Map->scene()->update();
 }
 
 void MainWindow::addRect(int x, int y, int width, int height, QString color) {
     if (!this->ui || !this->ui->graphicsView_Map)
         return;
     this->ui->graphicsView_Map->overlay.addRect(x, y, width, height, color, false);
+    this->ui->graphicsView_Map->scene()->update();
 }
 
 void MainWindow::addFilledRect(int x, int y, int width, int height, QString color) {
     if (!this->ui || !this->ui->graphicsView_Map)
         return;
     this->ui->graphicsView_Map->overlay.addRect(x, y, width, height, color, true);
+    this->ui->graphicsView_Map->scene()->update();
 }
 
 void MainWindow::addImage(int x, int y, QString filepath) {
     if (!this->ui || !this->ui->graphicsView_Map)
         return;
     this->ui->graphicsView_Map->overlay.addImage(x, y, filepath);
+    this->ui->graphicsView_Map->scene()->update();
 }
 
 void MainWindow::refreshAfterPaletteChange(Tileset *tileset) {
@@ -2999,4 +3004,21 @@ void MainWindow::registerAction(QString functionName, QString actionName, QStrin
     if (!shortcut.isEmpty()) {
         action->setShortcut(QKeySequence(shortcut));
     }
+}
+
+void MainWindow::setTimeout(QJSValue callback, int milliseconds) {
+  if (!callback.isCallable() || milliseconds < 0)
+      return;
+
+    QTimer *timer = new QTimer(0);
+    connect(timer, &QTimer::timeout, [=](){
+        this->invokeCallback(callback);
+    });
+    connect(timer, SIGNAL(timeout()), timer, SLOT(deleteLater()));
+    timer->setSingleShot(true);
+    timer->start(milliseconds);
+}
+
+void MainWindow::invokeCallback(QJSValue callback) {
+    callback.call();
 }

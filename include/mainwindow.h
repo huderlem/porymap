@@ -96,6 +96,8 @@ public:
     Q_INVOKABLE void setSmartPathsEnabled(bool visible);
     Q_INVOKABLE bool getSmartPathsEnabled();
     Q_INVOKABLE void registerAction(QString functionName, QString actionName, QString shortcut = "");
+    Q_INVOKABLE void setTimeout(QJSValue callback, int milliseconds);
+    void invokeCallback(QJSValue callback);
 
 
 public slots:

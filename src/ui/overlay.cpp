@@ -43,4 +43,3 @@ void Overlay::addRect(int x, int y, int width, int height, QString color, bool f
 void Overlay::addImage(int x, int y, QString filepath) {
     this->items.append(new OverlayImage(x, y, QImage(filepath)));
 }
-
