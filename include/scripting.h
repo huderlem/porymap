@@ -9,6 +9,7 @@
 
 enum CallbackType {
     OnProjectOpened,
+    OnProjectClosed,
     OnBlockChanged,
     OnMapOpened,
 };
@@ -25,6 +26,7 @@ public:
     static int numRegisteredActions();
     static void invokeAction(QString actionName);
     static void cb_ProjectOpened(QString projectPath);
+    static void cb_ProjectClosed(QString projectPath);
     static void cb_MetatileChanged(int x, int y, Block prevBlock, Block newBlock);
     static void cb_MapOpened(QString mapName);
 

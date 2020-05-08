@@ -253,6 +253,8 @@ private:
     DraggablePixmapItem *selectedBG;
     DraggablePixmapItem *selectedHealspot;
 
+    QList<QAction *> registeredActions;
+
     bool isProgrammaticEventTabChange;
     bool projectHasUnsavedChanges;
 

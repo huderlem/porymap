@@ -2,14 +2,19 @@
 #include "log.h"
 
 QMap<CallbackType, QString> callbackFunctions = {
-    {OnProjectOpened, "on_project_opened"},
-    {OnBlockChanged, "on_block_changed"},
-    {OnMapOpened, "on_map_opened"},
+    {OnProjectOpened, "onProjectOpened"},
+    {OnProjectClosed, "onProjectClosed"},
+    {OnBlockChanged, "onBlockChanged"},
+    {OnMapOpened, "onMapOpened"},
 };
 
 Scripting *instance = nullptr;
 
 void Scripting::init(MainWindow *mainWindow) {
+    if (instance) {
+        instance->engine->setInterrupted(true);
+        delete instance;
+    }
     instance = new Scripting(mainWindow);
 }
 
@@ -17,7 +22,9 @@ Scripting::Scripting(MainWindow *mainWindow) {
     this->engine = new QJSEngine(mainWindow);
     this->engine->installExtensions(QJSEngine::ConsoleExtension);
     this->engine->globalObject().setProperty("map", this->engine->newQObject(mainWindow));
-    this->filepaths.append("D:\\devkitProOld\\msys\\home\\huder\\pretmap\\test_script.js");
+    for (QString script : projectConfig.getCustomScripts()) {
+        this->filepaths.append(script);
+    }
     this->loadModules(this->filepaths);
 }
 
@@ -25,16 +32,21 @@ void Scripting::loadModules(QStringList moduleFiles) {
     for (QString filepath : moduleFiles) {
         QJSValue module = this->engine->importModule(filepath);
         if (module.isError()) {
-            logError(QString("Failed to load custom script file '%1'\nName: %2\nMessage: %3\nFile: %4\nLine Number: %5\nStack: %6")
-                     .arg(filepath)
-                     .arg(module.property("name").toString())
-                     .arg(module.property("message").toString())
-                     .arg(module.property("fileName").toString())
-                     .arg(module.property("lineNumber").toString())
-                     .arg(module.property("stack").toString()));
-            continue;
+            QString relativePath = QDir::cleanPath(projectConfig.getProjectDir() + QDir::separator() + filepath);
+            module = this->engine->importModule(relativePath);
+            if (module.isError()) {
+                logError(QString("Failed to load custom script file '%1'\nName: %2\nMessage: %3\nFile: %4\nLine Number: %5\nStack: %6")
+                         .arg(filepath)
+                         .arg(module.property("name").toString())
+                         .arg(module.property("message").toString())
+                         .arg(module.property("fileName").toString())
+                         .arg(module.property("lineNumber").toString())
+                         .arg(module.property("stack").toString()));
+                continue;
+            }
         }
 
+        logInfo(QString("Successfully loaded custom script file '%1'").arg(filepath));
         this->modules.append(module);
     }
 }
@@ -91,6 +103,15 @@ void Scripting::cb_ProjectOpened(QString projectPath) {
         projectPath,
     };
     instance->invokeCallback(OnProjectOpened, args);
+}
+
+void Scripting::cb_ProjectClosed(QString projectPath) {
+    if (!instance) return;
+
+    QJSValueList args {
+        projectPath,
+    };
+    instance->invokeCallback(OnProjectClosed, args);
 }
 
 void Scripting::cb_MetatileChanged(int x, int y, Block prevBlock, Block newBlock) {

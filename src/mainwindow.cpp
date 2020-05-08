@@ -46,7 +46,6 @@ MainWindow::MainWindow(QWidget *parent) :
     QCoreApplication::setApplicationName("porymap");
     QApplication::setApplicationDisplayName("porymap");
     QApplication::setWindowIcon(QIcon(":/icons/porymap-icon-2.ico"));
-    Scripting::init(this);
     ui->setupUi(this);
 
     this->initWindow();
@@ -349,6 +348,10 @@ bool MainWindow::openProject(QString dir) {
     }
 
     if (success) {
+        for (auto action : this->registeredActions) {
+            this->ui->menuTools->removeAction(action);
+        }
+        Scripting::init(this);
         Scripting::cb_ProjectOpened(dir);
     }
 
@@ -395,6 +398,7 @@ void MainWindow::on_action_Open_Project_triggered()
     }
     QString dir = getExistingDirectory(recent);
     if (!dir.isEmpty()) {
+        Scripting::cb_ProjectClosed(this->editor->project->root);
         porymapConfig.setRecentProject(dir);
         if (!openProject(dir)) {
             this->initWindow();

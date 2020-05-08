@@ -434,7 +434,8 @@ void MainWindow::registerAction(QString functionName, QString actionName, QStrin
 
     Scripting::registerAction(functionName, actionName);
     if (Scripting::numRegisteredActions() == 1) {
-        this->ui->menuTools->addSection("Custom Actions");
+        QAction *section = this->ui->menuTools->addSection("Custom Actions");
+        this->registeredActions.append(section);
     }
     QAction *action = this->ui->menuTools->addAction(actionName, [actionName](){
        Scripting::invokeAction(actionName);
@@ -442,6 +443,7 @@ void MainWindow::registerAction(QString functionName, QString actionName, QStrin
     if (!shortcut.isEmpty()) {
         action->setShortcut(QKeySequence(shortcut));
     }
+    this->registeredActions.append(action);
 }
 
 void MainWindow::setTimeout(QJSValue callback, int milliseconds) {
