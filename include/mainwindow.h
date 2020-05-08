@@ -63,15 +63,32 @@ public:
     Q_INVOKABLE void addRect(int x, int y, int width, int height, QString color = "#000000");
     Q_INVOKABLE void addFilledRect(int x, int y, int width, int height, QString color = "#000000");
     Q_INVOKABLE void addImage(int x, int y, QString filepath);
+    void refreshAfterPaletteChange(Tileset *tileset);
     void setTilesetPalette(Tileset *tileset, int paletteIndex, QList<QList<int>> colors);
     Q_INVOKABLE void setPrimaryTilesetPalette(int paletteIndex, QList<QList<int>> colors);
+    Q_INVOKABLE void setPrimaryTilesetPalettes(QList<QList<QList<int>>> palettes);
     Q_INVOKABLE void setSecondaryTilesetPalette(int paletteIndex, QList<QList<int>> colors);
-    QJSValue getTilesetPalette(Tileset *tileset, int paletteIndex);
+    Q_INVOKABLE void setSecondaryTilesetPalettes(QList<QList<QList<int>>> palettes);
+    QJSValue getTilesetPalette(QList<QList<QRgb>> *palettes, int paletteIndex);
+    QJSValue getTilesetPalettes(QList<QList<QRgb>> *palettes);
     Q_INVOKABLE QJSValue getPrimaryTilesetPalette(int paletteIndex);
+    Q_INVOKABLE QJSValue getPrimaryTilesetPalettes();
     Q_INVOKABLE QJSValue getSecondaryTilesetPalette(int paletteIndex);
+    Q_INVOKABLE QJSValue getSecondaryTilesetPalettes();
+    void refreshAfterPalettePreviewChange();
     void setTilesetPalettePreview(Tileset *tileset, int paletteIndex, QList<QList<int>> colors);
     Q_INVOKABLE void setPrimaryTilesetPalettePreview(int paletteIndex, QList<QList<int>> colors);
+    Q_INVOKABLE void setPrimaryTilesetPalettesPreview(QList<QList<QList<int>>> palettes);
     Q_INVOKABLE void setSecondaryTilesetPalettePreview(int paletteIndex, QList<QList<int>> colors);
+    Q_INVOKABLE void setSecondaryTilesetPalettesPreview(QList<QList<QList<int>>> palettes);
+    Q_INVOKABLE QJSValue getPrimaryTilesetPalettePreview(int paletteIndex);
+    Q_INVOKABLE QJSValue getPrimaryTilesetPalettesPreview();
+    Q_INVOKABLE QJSValue getSecondaryTilesetPalettePreview(int paletteIndex);
+    Q_INVOKABLE QJSValue getSecondaryTilesetPalettesPreview();
+    Q_INVOKABLE QString getPrimaryTileset();
+    Q_INVOKABLE QString getSecondaryTileset();
+    Q_INVOKABLE void setPrimaryTileset(QString tileset);
+    Q_INVOKABLE void setSecondaryTileset(QString tileset);
     Q_INVOKABLE void registerAction(QString functionName, QString actionName);
 
 

@@ -13,14 +13,17 @@ function applyTint(palette, tint) {
 
 function applyTintToPalettes(tint) {
     try {
-        for (let i = 0; i < 13; i++) {
-            const primaryPalette = map.getPrimaryTilesetPalette(i)
-            applyTint(primaryPalette, tint)
-            map.setPrimaryTilesetPalettePreview(i, primaryPalette)
-            const secondaryPalette = map.getSecondaryTilesetPalette(i)
-            applyTint(secondaryPalette, tint)
-            map.setSecondaryTilesetPalettePreview(i, secondaryPalette)
-        }
+        // const primaryPalettes = map.getPrimaryTilesetPalettes()
+        // for (let i = 0; i < primaryPalettes.length; i++)
+        //     applyTint(primaryPalettes[i], tint)
+
+        // const secondaryPalettes = map.getSecondaryTilesetPalettes()
+        // for (let i = 0; i < secondaryPalettes.length; i++)
+        //     applyTint(secondaryPalettes[i], tint)
+
+        // map.setPrimaryTilesetPalettesPreview(primaryPalettes)
+        // map.setSecondaryTilesetPalettesPreview(secondaryPalettes)
+        map.setSecondaryTileset("gTileset_Rustboro")
     } catch(err) {
         console.log(err)
     }
