@@ -31,6 +31,7 @@ SOURCES += src/core/block.cpp \
     src/core/regionmap.cpp \
     src/core/wildmoninfo.cpp \
     src/lib/orderedjson.cpp \
+    src/mainwindow_scriptapi.cpp \
     src/ui/aboutporymap.cpp \
     src/ui/bordermetatilespixmapitem.cpp \
     src/ui/collisionpixmapitem.cpp \
