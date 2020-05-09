@@ -12,15 +12,32 @@ QJSValue MainWindow::getBlock(int x, int y) {
     return Scripting::fromBlock(*block);
 }
 
-void MainWindow::setBlock(int x, int y, int tile, int collision, int elevation) {
+void MainWindow::tryRedrawMapArea(bool forceRedraw) {
+    if (forceRedraw) {
+        this->editor->map_item->draw();
+        this->editor->collision_item->draw();
+    }
+}
+
+void MainWindow::tryCommitMapChanges(bool commitChanges) {
+    if (commitChanges) {
+        this->editor->map->commit();
+    }
+}
+
+void MainWindow::setBlock(int x, int y, int tile, int collision, int elevation, bool forceRedraw, bool commitChanges) {
     if (!this->editor || !this->editor->map)
         return;
     this->editor->map->setBlock(x, y, Block(tile, collision, elevation));
+    this->tryCommitMapChanges(commitChanges);
+    this->tryRedrawMapArea(forceRedraw);
 }
 
-void MainWindow::setBlocksFromSelection(int x, int y) {
+void MainWindow::setBlocksFromSelection(int x, int y, bool forceRedraw, bool commitChanges) {
     if (this->editor && this->editor->map_item) {
         this->editor->map_item->paintNormal(x, y, true);
+        this->tryCommitMapChanges(commitChanges);
+        this->tryRedrawMapArea(forceRedraw);
     }
 }
 
@@ -34,7 +51,7 @@ int MainWindow::getMetatileId(int x, int y) {
     return block->tile;
 }
 
-void MainWindow::setMetatileId(int x, int y, int metatileId) {
+void MainWindow::setMetatileId(int x, int y, int metatileId, bool forceRedraw, bool commitChanges) {
     if (!this->editor || !this->editor->map)
         return;
     Block *block = this->editor->map->getBlock(x, y);
@@ -42,6 +59,8 @@ void MainWindow::setMetatileId(int x, int y, int metatileId) {
         return;
     }
     this->editor->map->setBlock(x, y, Block(metatileId, block->collision, block->elevation));
+    this->tryCommitMapChanges(commitChanges);
+    this->tryRedrawMapArea(forceRedraw);
 }
 
 int MainWindow::getCollision(int x, int y) {
@@ -54,7 +73,7 @@ int MainWindow::getCollision(int x, int y) {
     return block->collision;
 }
 
-void MainWindow::setCollision(int x, int y, int collision) {
+void MainWindow::setCollision(int x, int y, int collision, bool forceRedraw, bool commitChanges) {
     if (!this->editor || !this->editor->map)
         return;
     Block *block = this->editor->map->getBlock(x, y);
@@ -62,6 +81,8 @@ void MainWindow::setCollision(int x, int y, int collision) {
         return;
     }
     this->editor->map->setBlock(x, y, Block(block->tile, collision, block->elevation));
+    this->tryCommitMapChanges(commitChanges);
+    this->tryRedrawMapArea(forceRedraw);
 }
 
 int MainWindow::getElevation(int x, int y) {
@@ -74,7 +95,7 @@ int MainWindow::getElevation(int x, int y) {
     return block->elevation;
 }
 
-void MainWindow::setElevation(int x, int y, int elevation) {
+void MainWindow::setElevation(int x, int y, int elevation, bool forceRedraw, bool commitChanges) {
     if (!this->editor || !this->editor->map)
         return;
     Block *block = this->editor->map->getBlock(x, y);
@@ -82,36 +103,56 @@ void MainWindow::setElevation(int x, int y, int elevation) {
         return;
     }
     this->editor->map->setBlock(x, y, Block(block->tile, block->collision, elevation));
+    this->tryCommitMapChanges(commitChanges);
+    this->tryRedrawMapArea(forceRedraw);
 }
 
-void MainWindow::bucketFill(int x, int y, int metatileId) {
+void MainWindow::bucketFill(int x, int y, int metatileId, bool forceRedraw, bool commitChanges) {
     if (!this->editor || !this->editor->map)
         return;
     this->editor->map_item->floodFill(x, y, metatileId, true);
+    this->tryCommitMapChanges(commitChanges);
+    this->tryRedrawMapArea(forceRedraw);
 }
 
-void MainWindow::bucketFillFromSelection(int x, int y) {
+void MainWindow::bucketFillFromSelection(int x, int y, bool forceRedraw, bool commitChanges) {
     if (!this->editor || !this->editor->map)
         return;
     this->editor->map_item->floodFill(x, y, true);
+    this->tryCommitMapChanges(commitChanges);
+    this->tryRedrawMapArea(forceRedraw);
 }
 
-void MainWindow::magicFill(int x, int y, int metatileId) {
+void MainWindow::magicFill(int x, int y, int metatileId, bool forceRedraw, bool commitChanges) {
     if (!this->editor || !this->editor->map)
         return;
     this->editor->map_item->magicFill(x, y, metatileId, true);
+    this->tryCommitMapChanges(commitChanges);
+    this->tryRedrawMapArea(forceRedraw);
 }
 
-void MainWindow::magicFillFromSelection(int x, int y) {
+void MainWindow::magicFillFromSelection(int x, int y, bool forceRedraw, bool commitChanges) {
     if (!this->editor || !this->editor->map)
         return;
     this->editor->map_item->magicFill(x, y, true);
+    this->tryCommitMapChanges(commitChanges);
+    this->tryRedrawMapArea(forceRedraw);
 }
 
-void MainWindow::shift(int xDelta, int yDelta) {
+void MainWindow::shift(int xDelta, int yDelta, bool forceRedraw, bool commitChanges) {
     if (!this->editor || !this->editor->map)
         return;
     this->editor->map_item->shift(xDelta, yDelta);
+    this->tryCommitMapChanges(commitChanges);
+    this->tryRedrawMapArea(forceRedraw);
+}
+
+void MainWindow::redraw() {
+    this->tryRedrawMapArea(true);
+}
+
+void MainWindow::commit() {
+    this->tryCommitMapChanges(true);
 }
 
 QJSValue MainWindow::getDimensions() {

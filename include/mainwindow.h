@@ -40,19 +40,23 @@ public:
 
     // Scripting API
     Q_INVOKABLE QJSValue getBlock(int x, int y);
-    Q_INVOKABLE void setBlock(int x, int y, int tile, int collision, int elevation);
-    Q_INVOKABLE void setBlocksFromSelection(int x, int y);
+    void tryRedrawMapArea(bool forceRedraw);
+    void tryCommitMapChanges(bool commitChanges);
+    Q_INVOKABLE void setBlock(int x, int y, int tile, int collision, int elevation, bool forceRedraw = true, bool commitChanges = true);
+    Q_INVOKABLE void setBlocksFromSelection(int x, int y, bool forceRedraw = true, bool commitChanges = true);
     Q_INVOKABLE int getMetatileId(int x, int y);
-    Q_INVOKABLE void setMetatileId(int x, int y, int metatileId);
+    Q_INVOKABLE void setMetatileId(int x, int y, int metatileId, bool forceRedraw = true, bool commitChanges = true);
     Q_INVOKABLE int getCollision(int x, int y);
-    Q_INVOKABLE void setCollision(int x, int y, int collision);
+    Q_INVOKABLE void setCollision(int x, int y, int collision, bool forceRedraw = true, bool commitChanges = true);
     Q_INVOKABLE int getElevation(int x, int y);
-    Q_INVOKABLE void setElevation(int x, int y, int elevation);
-    Q_INVOKABLE void bucketFill(int x, int y, int metatileId);
-    Q_INVOKABLE void bucketFillFromSelection(int x, int y);
-    Q_INVOKABLE void magicFill(int x, int y, int metatileId);
-    Q_INVOKABLE void magicFillFromSelection(int x, int y);
-    Q_INVOKABLE void shift(int xDelta, int yDelta);
+    Q_INVOKABLE void setElevation(int x, int y, int elevation, bool forceRedraw = true, bool commitChanges = true);
+    Q_INVOKABLE void bucketFill(int x, int y, int metatileId, bool forceRedraw = true, bool commitChanges = true);
+    Q_INVOKABLE void bucketFillFromSelection(int x, int y, bool forceRedraw = true, bool commitChanges = true);
+    Q_INVOKABLE void magicFill(int x, int y, int metatileId, bool forceRedraw = true, bool commitChanges = true);
+    Q_INVOKABLE void magicFillFromSelection(int x, int y, bool forceRedraw = true, bool commitChanges = true);
+    Q_INVOKABLE void shift(int xDelta, int yDelta, bool forceRedraw = true, bool commitChanges = true);
+    Q_INVOKABLE void redraw();
+    Q_INVOKABLE void commit();
     Q_INVOKABLE QJSValue getDimensions();
     Q_INVOKABLE int getWidth();
     Q_INVOKABLE int getHeight();
