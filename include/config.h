@@ -113,6 +113,7 @@ public:
         this->baseGameVersion = BaseGameVersion::pokeemerald;
         this->useEncounterJson = true;
         this->useCustomBorderSize = false;
+        this->customScripts.clear();
     }
     void setBaseGameVersion(BaseGameVersion baseGameVersion);
     BaseGameVersion getBaseGameVersion();
@@ -121,8 +122,11 @@ public:
     void setUsePoryScript(bool usePoryScript);
     bool getUsePoryScript();
     void setProjectDir(QString projectDir);
+    QString getProjectDir();
     void setUseCustomBorderSize(bool enable);
     bool getUseCustomBorderSize();
+    void setCustomScripts(QList<QString> scripts);
+    QList<QString> getCustomScripts();
 protected:
     virtual QString getConfigFilepath() override;
     virtual void parseConfigKeyValue(QString key, QString value) override;
@@ -134,6 +138,7 @@ private:
     bool useEncounterJson;
     bool usePoryScript;
     bool useCustomBorderSize;
+    QList<QString> customScripts;
 };
 
 extern ProjectConfig projectConfig;

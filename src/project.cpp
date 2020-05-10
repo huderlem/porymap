@@ -1013,8 +1013,8 @@ void Project::saveTilesets(Tileset *primaryTileset, Tileset *secondaryTileset) {
     saveTilesetMetatiles(secondaryTileset);
     saveTilesetTilesImage(primaryTileset);
     saveTilesetTilesImage(secondaryTileset);
-    saveTilesetPalettes(primaryTileset, true);
-    saveTilesetPalettes(secondaryTileset, false);
+    saveTilesetPalettes(primaryTileset);
+    saveTilesetPalettes(secondaryTileset);
 }
 
 void Project::saveTilesetMetatileLabels(Tileset *primaryTileset, Tileset *secondaryTileset) {
@@ -1151,7 +1151,7 @@ void Project::saveTilesetTilesImage(Tileset *tileset) {
     exportIndexed4BPPPng(tileset->tilesImage, tileset->tilesImagePath);
 }
 
-void Project::saveTilesetPalettes(Tileset *tileset, bool /*primary*/) {
+void Project::saveTilesetPalettes(Tileset *tileset) {
     PaletteUtil paletteParser;
     for (int i = 0; i < Project::getNumPalettesTotal(); i++) {
         QString filepath = tileset->palettePaths.at(i);
@@ -1586,6 +1586,7 @@ void Project::loadTilesetAssets(Tileset* tileset) {
 
     // palettes
     QList<QList<QRgb>> *palettes = new QList<QList<QRgb>>;
+    QList<QList<QRgb>> *palettePreviews = new QList<QList<QRgb>>;
     for (int i = 0; i < tileset->palettePaths.length(); i++) {
         QList<QRgb> palette;
         QString path = tileset->palettePaths.value(i);
@@ -1620,8 +1621,10 @@ void Project::loadTilesetAssets(Tileset* tileset) {
         }
 
         palettes->append(palette);
+        palettePreviews->append(palette);
     }
     tileset->palettes = palettes;
+    tileset->palettePreviews = palettePreviews;
 }
 
 void Project::loadTilesetTiles(Tileset *tileset, QImage image) {

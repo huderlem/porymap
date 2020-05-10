@@ -66,6 +66,9 @@ public:
     void displayMapGrid();
     void displayWildMonTables();
 
+    void updateMapBorder();
+    void updateMapConnections();
+
     void setEditingMap();
     void setEditingCollision();
     void setEditingObjects();

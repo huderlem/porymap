@@ -3,6 +3,12 @@
 Block::Block() : tile(0), collision(0), elevation(0) {
 }
 
+Block::Block(uint16_t tile, uint16_t collision, uint16_t elevation) {
+    this->tile = tile;
+    this->collision = collision;
+    this->elevation = elevation;
+}
+
 Block::Block(uint16_t word)
 {
     tile = word & 0x3ff;

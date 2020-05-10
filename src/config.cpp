@@ -36,7 +36,7 @@ void KeyValueConfigBase::load() {
     QTextStream in(&file);
     in.setCodec("UTF-8");
     QList<QString> configLines;
-    QRegularExpression re("^(?<key>.+)=(?<value>.+)$");
+    QRegularExpression re("^(?<key>.+)=(?<value>.*)$");
     while (!in.atEnd()) {
         QString line = in.readLine().trimmed();
         int commentIndex = line.indexOf("#");
@@ -380,6 +380,15 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         if (!ok) {
             logWarn(QString("Invalid config value for use_custom_border_size: '%1'. Must be 0 or 1.").arg(value));
         }
+    } else if (key == "custom_scripts") {
+        this->customScripts.clear();
+        QList<QString> paths = value.split(",");
+        paths.removeDuplicates();
+        for (QString script : paths) {
+            if (!script.isEmpty()) {
+                this->customScripts.append(script);
+            }
+        }
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -391,6 +400,7 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("use_encounter_json", QString::number(this->useEncounterJson));
     map.insert("use_poryscript", QString::number(this->usePoryScript));
     map.insert("use_custom_border_size", QString::number(this->useCustomBorderSize));
+    map.insert("custom_scripts", this->customScripts.join(","));
     return map;
 }
 
@@ -423,10 +433,15 @@ void ProjectConfig::onNewConfigFileCreated() {
     this->useCustomBorderSize = this->baseGameVersion == BaseGameVersion::pokefirered;
     this->useEncounterJson = true;
     this->usePoryScript = false;
+    this->customScripts.clear();
 }
 
 void ProjectConfig::setProjectDir(QString projectDir) {
     this->projectDir = projectDir;
+}
+
+QString ProjectConfig::getProjectDir() {
+    return this->projectDir;
 }
 
 void ProjectConfig::setBaseGameVersion(BaseGameVersion baseGameVersion) {
@@ -463,4 +478,13 @@ void ProjectConfig::setUseCustomBorderSize(bool enable) {
 
 bool ProjectConfig::getUseCustomBorderSize() {
     return this->useCustomBorderSize;
+}
+
+void ProjectConfig::setCustomScripts(QList<QString> scripts) {
+    this->customScripts = scripts;
+    this->save();
+}
+
+QList<QString> ProjectConfig::getCustomScripts() {
+    return this->customScripts;
 }

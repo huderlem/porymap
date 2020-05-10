@@ -46,6 +46,14 @@ Tileset* Tileset::copy() {
         }
         copy->palettes->append(copyPalette);
     }
+    copy->palettePreviews = new QList<QList<QRgb>>;
+    for (QList<QRgb> palette : *this->palettePreviews) {
+        QList<QRgb> copyPalette;
+        for (QRgb color : palette) {
+            copyPalette.append(color);
+        }
+        copy->palettePreviews->append(copyPalette);
+    }
     return copy;
 }
 
@@ -80,24 +88,27 @@ bool Tileset::metatileIsValid(uint16_t metatileId, Tileset *primaryTileset, Tile
     return true;
 }
 
-QList<QList<QRgb>> Tileset::getBlockPalettes(Tileset *primaryTileset, Tileset *secondaryTileset) {
+QList<QList<QRgb>> Tileset::getBlockPalettes(Tileset *primaryTileset, Tileset *secondaryTileset, bool useTruePalettes) {
     QList<QList<QRgb>> palettes;
+    auto primaryPalettes = useTruePalettes ? primaryTileset->palettes : primaryTileset->palettePreviews;
     for (int i = 0; i < Project::getNumPalettesPrimary(); i++) {
-        palettes.append(primaryTileset->palettes->at(i));
+        palettes.append(primaryPalettes->at(i));
     }
+    auto secondaryPalettes = useTruePalettes ? secondaryTileset->palettes : secondaryTileset->palettePreviews;
     for (int i = Project::getNumPalettesPrimary(); i < Project::getNumPalettesTotal(); i++) {
-        palettes.append(secondaryTileset->palettes->at(i));
+        palettes.append(secondaryPalettes->at(i));
     }
     return palettes;
 }
 
-QList<QRgb> Tileset::getPalette(int paletteId, Tileset *primaryTileset, Tileset *secondaryTileset) {
+QList<QRgb> Tileset::getPalette(int paletteId, Tileset *primaryTileset, Tileset *secondaryTileset, bool useTruePalettes) {
     QList<QRgb> paletteTable;
     Tileset *tileset = paletteId < Project::getNumPalettesPrimary()
             ? primaryTileset
             : secondaryTileset;
-    for (int i = 0; i < tileset->palettes->at(paletteId).length(); i++) {
-        paletteTable.append(tileset->palettes->at(paletteId).at(i));
+    auto palettes = useTruePalettes ? tileset->palettes : tileset->palettePreviews;
+    for (int i = 0; i < palettes->at(paletteId).length(); i++) {
+        paletteTable.append(palettes->at(paletteId).at(i));
     }
     return paletteTable;
 }

@@ -142,7 +142,7 @@ public:
     void saveTilesetMetatileAttributes(Tileset*);
     void saveTilesetMetatiles(Tileset*);
     void saveTilesetTilesImage(Tileset*);
-    void saveTilesetPalettes(Tileset*, bool);
+    void saveTilesetPalettes(Tileset*);
 
     QString defaultSong;
     QStringList getSongNames();

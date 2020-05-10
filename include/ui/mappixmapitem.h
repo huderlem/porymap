@@ -38,17 +38,34 @@ public:
     virtual void paint(QGraphicsSceneMouseEvent*);
     virtual void floodFill(QGraphicsSceneMouseEvent*);
     virtual void magicFill(QGraphicsSceneMouseEvent*);
-    void _floodFill(int x, int y);
-    void _floodFillSmartPath(int initialX, int initialY);
+    void magicFill(int x, int y, uint16_t metatileId, bool fromScriptCall = false);
+    void magicFill(int x, int y, bool fromScriptCall = false);
+    void magicFill(
+            int initialX,
+            int initialY,
+            QPoint selectionDimensions,
+            QList<uint16_t> *selectedMetatiles,
+            QList<QPair<uint16_t, uint16_t>> *selectedCollisions,
+            bool fromScriptCall = false);
+    void floodFill(int x, int y, bool fromScriptCall = false);
+    void floodFill(int x, int y, uint16_t metatileId, bool fromScriptCall = false);
+    void floodFill(int initialX,
+                   int initialY,
+                   QPoint selectionDimensions,
+                   QList<uint16_t> *selectedMetatiles,
+                   QList<QPair<uint16_t, uint16_t>> *selectedCollisions,
+                   bool fromScriptCall = false);
+    void floodFillSmartPath(int initialX, int initialY, bool fromScriptCall = false);
     virtual void pick(QGraphicsSceneMouseEvent*);
     virtual void select(QGraphicsSceneMouseEvent*);
     virtual void shift(QGraphicsSceneMouseEvent*);
+    void shift(int xDelta, int yDelta);
     virtual void draw(bool ignoreCache = false);
     void updateMetatileSelection(QGraphicsSceneMouseEvent *event);
+    void paintNormal(int x, int y, bool fromScriptCall = false);
 
 private:
-    void paintNormal(int x, int y);
-    void paintSmartPath(int x, int y);
+    void paintSmartPath(int x, int y, bool fromScriptCall = false);
     static QList<int> smartPathTable;
 
 signals:

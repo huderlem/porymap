@@ -8,9 +8,9 @@
 
 QImage getCollisionMetatileImage(Block);
 QImage getCollisionMetatileImage(int, int);
-QImage getMetatileImage(uint16_t, Tileset*, Tileset*);
+QImage getMetatileImage(uint16_t, Tileset*, Tileset*, bool useTruePalettes = false);
 QImage getTileImage(uint16_t, Tileset*, Tileset*);
-QImage getPalettedTileImage(uint16_t, Tileset*, Tileset*, int);
+QImage getPalettedTileImage(uint16_t, Tileset*, Tileset*, int, bool useTruePalettes = false);
 QImage getGreyscaleTileImage(uint16_t tile, Tileset *primaryTileset, Tileset *secondaryTileset);
 
 static QList<QRgb> greyscalePalette({

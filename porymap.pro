@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui qml
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -31,11 +31,13 @@ SOURCES += src/core/block.cpp \
     src/core/regionmap.cpp \
     src/core/wildmoninfo.cpp \
     src/lib/orderedjson.cpp \
+    src/mainwindow_scriptapi.cpp \
     src/ui/aboutporymap.cpp \
     src/ui/bordermetatilespixmapitem.cpp \
     src/ui/collisionpixmapitem.cpp \
     src/ui/connectionpixmapitem.cpp \
     src/ui/currentselectedmetatilespixmapitem.cpp \
+    src/ui/overlay.cpp \
     src/ui/regionmaplayoutpixmapitem.cpp \
     src/ui/regionmapentriespixmapitem.cpp \
     src/ui/cursortilerect.cpp \
@@ -70,6 +72,7 @@ SOURCES += src/core/block.cpp \
     src/main.cpp \
     src/mainwindow.cpp \
     src/project.cpp \
+    src/scripting.cpp \
     src/settings.cpp \
     src/log.cpp \
     src/ui/newtilesetdialog.cpp
@@ -94,7 +97,7 @@ HEADERS  += include/core/block.h \
     include/core/wildmoninfo.h \
     include/lib/orderedmap.h \
     include/lib/orderedjson.h \
-    include/ui/aboutporymap.h \    
+    include/ui/aboutporymap.h \
     include/ui/bordermetatilespixmapitem.h \
     include/ui/collisionpixmapitem.h \
     include/ui/connectionpixmapitem.h \
@@ -133,9 +136,11 @@ HEADERS  += include/core/block.h \
     include/editor.h \
     include/mainwindow.h \
     include/project.h \
+    include/scripting.h \
     include/settings.h \
     include/log.h \
-    include/ui/newtilesetdialog.h
+    include/ui/newtilesetdialog.h \
+    include/ui/overlay.h
 
 FORMS    += forms/mainwindow.ui \
     forms/eventpropertiesframe.ui \

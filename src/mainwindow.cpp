@@ -8,6 +8,8 @@
 #include "ui_eventpropertiesframe.h"
 #include "bordermetatilespixmapitem.h"
 #include "currentselectedmetatilespixmapitem.h"
+#include "customattributestable.h"
+#include "scripting.h"
 #include "adjustingstackedwidget.h"
 
 #include <QFileDialog>
@@ -346,6 +348,14 @@ bool MainWindow::openProject(QString dir) {
 
     }
 
+    if (success) {
+        for (auto action : this->registeredActions) {
+            this->ui->menuTools->removeAction(action);
+        }
+        Scripting::init(this);
+        Scripting::cb_ProjectOpened(dir);
+    }
+
     return success;
 }
 
@@ -389,6 +399,7 @@ void MainWindow::on_action_Open_Project_triggered()
     }
     QString dir = getExistingDirectory(recent);
     if (!dir.isEmpty()) {
+        Scripting::cb_ProjectClosed(this->editor->project->root);
         porymapConfig.setRecentProject(dir);
         if (!openProject(dir)) {
             this->initWindow();
@@ -444,6 +455,8 @@ bool MainWindow::setMap(QString map_name, bool scrollTreeView) {
     setRecentMap(map_name);
     updateMapList();
     updateTilesetEditor();
+
+    Scripting::cb_MapOpened(map_name);
     return true;
 }
 
@@ -1052,6 +1065,7 @@ void MainWindow::on_actionNew_Tileset_triggered() {
             newSet->metatiles->append(mt);
         }
         newSet->palettes = new QList<QList<QRgb>>();
+        newSet->palettePreviews = new QList<QList<QRgb>>();
         newSet->palettePaths = *new QList<QString>();
         for(int i = 0; i < 16; ++i) {
             QList<QRgb> *currentPal = new QList<QRgb>();
@@ -1059,17 +1073,19 @@ void MainWindow::on_actionNew_Tileset_triggered() {
                 currentPal->append(qRgb(0,0,0));
             }
             newSet->palettes->append(*currentPal);
+            newSet->palettePreviews->append(*currentPal);
             QString fileName;
             fileName.sprintf("%02d.pal", i);
             newSet->palettePaths.append(fullDirectoryPath+"/palettes/" + fileName);
         }
         (*newSet->palettes)[0][1] = qRgb(255,0,255);
+        (*newSet->palettePreviews)[0][1] = qRgb(255,0,255);
         newSet->is_compressed = "TRUE";
         newSet->padding = "0";
         editor->project->saveTilesetTilesImage(newSet);
         editor->project->saveTilesetMetatiles(newSet);
         editor->project->saveTilesetMetatileAttributes(newSet);
-        editor->project->saveTilesetPalettes(newSet, !createTilesetDialog->isSecondary);
+        editor->project->saveTilesetPalettes(newSet);
 
         //append to tileset specific files
 
@@ -2303,7 +2319,7 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked()
         int realWidth = widthSpinBox->value() + 15;
         int realHeight = heightSpinBox->value() + 14;
         int numMetatiles = realWidth * realHeight;
-        if (numMetatiles <= 0x2800) {
+        if (MainWindow::mapDimensionsValid(widthSpinBox->value(), heightSpinBox->value())) {
             dialog.accept();
         } else {
             QString errorText = QString("Error: The specified width and height are too large.\n"
@@ -2326,6 +2342,17 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked()
         editor->map->commit();
         onMapNeedsRedrawing();
     }
+}
+
+bool MainWindow::mapDimensionsValid(int width, int height) {
+    // Ensure width and height are an acceptable size.
+    // The maximum number of metatiles in a map is the following:
+    //    max = (width + 15) * (height + 14)
+    // This limit can be found in fieldmap.c in pokeruby/pokeemerald.
+    int realWidth = width + 15;
+    int realHeight = height + 14;
+    int numMetatiles = realWidth * realHeight;
+    return numMetatiles <= 0x2800;
 }
 
 void MainWindow::on_checkBox_smartPaths_stateChanged(int selected)

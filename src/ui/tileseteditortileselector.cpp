@@ -22,19 +22,19 @@ void TilesetEditorTileSelector::draw() {
     int primaryLength = this->primaryTileset->tiles->length();
     int secondaryLength = this->secondaryTileset->tiles->length();
     int height = totalTiles / this->numTilesWide;
-    QList<QRgb> palette = Tileset::getPalette(this->paletteId, this->primaryTileset, this->secondaryTileset);
+    QList<QRgb> palette = Tileset::getPalette(this->paletteId, this->primaryTileset, this->secondaryTileset, true);
     QImage image(this->numTilesWide * 16, height * 16, QImage::Format_RGBA8888);
 
     QPainter painter(&image);
     for (uint16_t tile = 0; tile < totalTiles; tile++) {
         QImage tileImage;
         if (tile < primaryLength) {
-            tileImage = getPalettedTileImage(tile, this->primaryTileset, this->secondaryTileset, this->paletteId).scaled(16, 16);
+            tileImage = getPalettedTileImage(tile, this->primaryTileset, this->secondaryTileset, this->paletteId, true).scaled(16, 16);
         } else if (tile < Project::getNumTilesPrimary()) {
             tileImage = QImage(16, 16, QImage::Format_RGBA8888);
             tileImage.fill(palette.at(0));
         } else if (tile < Project::getNumTilesPrimary() + secondaryLength) {
-            tileImage = getPalettedTileImage(tile, this->primaryTileset, this->secondaryTileset, this->paletteId).scaled(16, 16);
+            tileImage = getPalettedTileImage(tile, this->primaryTileset, this->secondaryTileset, this->paletteId, true).scaled(16, 16);
         } else {
             tileImage = QImage(16, 16, QImage::Format_RGBA8888);
             QPainter painter(&tileImage);
@@ -224,7 +224,7 @@ QImage TilesetEditorTileSelector::buildPrimaryTilesIndexedImage() {
     // Image is first converted using greyscale so that palettes with duplicate colors
     // are properly represented in the final image.
     QImage indexedImage = image.convertToFormat(QImage::Format::Format_Indexed8, greyscalePalette.toVector());
-    QList<QRgb> palette = Tileset::getPalette(this->paletteId, this->primaryTileset, this->secondaryTileset);
+    QList<QRgb> palette = Tileset::getPalette(this->paletteId, this->primaryTileset, this->secondaryTileset, true);
     indexedImage.setColorTable(palette.toVector());
     return indexedImage;
 }
@@ -261,7 +261,7 @@ QImage TilesetEditorTileSelector::buildSecondaryTilesIndexedImage() {
     // Image is first converted using greyscale so that palettes with duplicate colors
     // are properly represented in the final image.
     QImage indexedImage = image.convertToFormat(QImage::Format::Format_Indexed8, greyscalePalette.toVector());
-    QList<QRgb> palette = Tileset::getPalette(this->paletteId, this->primaryTileset, this->secondaryTileset);
+    QList<QRgb> palette = Tileset::getPalette(this->paletteId, this->primaryTileset, this->secondaryTileset, true);
     indexedImage.setColorTable(palette.toVector());
     return indexedImage;
 }

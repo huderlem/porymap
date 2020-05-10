@@ -18,7 +18,7 @@ void MetatileLayersItem::draw() {
     QPainter painter(&pixmap);
     for (int i = 0; i < 8; i++) {
         Tile tile = this->metatile->tiles->at(i);
-        QImage tileImage = getPalettedTileImage(tile.tile, this->primaryTileset, this->secondaryTileset, tile.palette)
+        QImage tileImage = getPalettedTileImage(tile.tile, this->primaryTileset, this->secondaryTileset, tile.palette, true)
                 .mirrored(tile.xflip, tile.yflip)
                 .scaled(16, 16);
         painter.drawImage(tileCoords.at(i), tileImage);

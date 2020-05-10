@@ -28,13 +28,14 @@ public:
     QList<QImage> *tiles = nullptr;
     QList<Metatile*> *metatiles = nullptr;
     QList<QList<QRgb>> *palettes = nullptr;
+    QList<QList<QRgb>> *palettePreviews = nullptr;
 
     Tileset* copy();
 
     static Tileset* getBlockTileset(int, Tileset*, Tileset*);
     static Metatile* getMetatile(int, Tileset*, Tileset*);
-    static QList<QList<QRgb>> getBlockPalettes(Tileset*, Tileset*);
-    static QList<QRgb> getPalette(int, Tileset*, Tileset*);
+    static QList<QList<QRgb>> getBlockPalettes(Tileset*, Tileset*, bool useTruePalettes = false);
+    static QList<QRgb> getPalette(int, Tileset*, Tileset*, bool useTruePalettes = false);
     static bool metatileIsValid(uint16_t metatileId, Tileset *, Tileset *);
 
     bool appendToHeaders(QString headerFile, QString friendlyName);

@@ -74,8 +74,7 @@ public:
     void cacheBlockdata();
     void cacheCollision();
     Block *getBlock(int x, int y);
-    void setBlock(int x, int y, Block block);
-    void _setBlock(int x, int y, Block block);
+    void setBlock(int x, int y, Block block, bool enableScriptCallback = false);
     void floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
     void _floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
     void magicFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
@@ -86,7 +85,7 @@ public:
     void removeEvent(Event*);
     void addEvent(Event*);
     QPixmap renderConnection(MapConnection, MapLayout *);
-    QPixmap renderBorder();
+    QPixmap renderBorder(bool ignoreCache = false);
     void setDimensions(int newWidth, int newHeight, bool setNewBlockdata = true);
     void setBorderDimensions(int newWidth, int newHeight, bool setNewBlockdata = true);
     void cacheBorder();
