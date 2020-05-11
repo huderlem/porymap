@@ -399,7 +399,9 @@ void MainWindow::on_action_Open_Project_triggered()
     }
     QString dir = getExistingDirectory(recent);
     if (!dir.isEmpty()) {
-        Scripting::cb_ProjectClosed(this->editor->project->root);
+        if (this->editor && this->editor->project) {
+            Scripting::cb_ProjectClosed(this->editor->project->root);
+        }
         porymapConfig.setRecentProject(dir);
         if (!openProject(dir)) {
             this->initWindow();
