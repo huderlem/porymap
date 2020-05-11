@@ -125,6 +125,7 @@ private slots:
     void onMapChanged(Map *map);
     void onMapNeedsRedrawing();
     void onTilesetsSaved(QString, QString);
+    void onWildMonDataChanged();
     void openNewMapPopupWindow(int, QVariant);
     void onNewMapCreated();
 

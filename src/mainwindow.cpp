@@ -115,6 +115,7 @@ void MainWindow::initEditor() {
     connect(this->editor, SIGNAL(tilesetChanged(QString)), this, SLOT(onTilesetChanged(QString)));
     connect(this->editor, SIGNAL(warpEventDoubleClicked(QString,QString)), this, SLOT(openWarpMap(QString,QString)));
     connect(this->editor, SIGNAL(currentMetatilesSelectionChanged()), this, SLOT(currentMetatilesSelectionChanged()));
+    connect(this->editor, SIGNAL(wildMonDataChanged()), this, SLOT(onWildMonDataChanged()));
     connect(this->editor, &Editor::wheelZoom, this, &MainWindow::scaleMapView);
 
     this->loadUserSettings();
@@ -2180,6 +2181,10 @@ void MainWindow::onMapNeedsRedrawing() {
 void MainWindow::onTilesetsSaved(QString primaryTilesetLabel, QString secondaryTilesetLabel) {
     this->editor->updatePrimaryTileset(primaryTilesetLabel, true);
     this->editor->updateSecondaryTileset(secondaryTilesetLabel, true);
+}
+
+void MainWindow::onWildMonDataChanged() {
+    projectHasUnsavedChanges = true;
 }
 
 void MainWindow::on_action_Export_Map_Image_triggered() {
