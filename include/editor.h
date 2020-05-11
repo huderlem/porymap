@@ -194,6 +194,7 @@ signals:
     void selectedObjectsChanged();
     void loadMapRequested(QString, QString);
     void tilesetChanged(QString);
+    void wildMonDataChanged();
     void warpEventDoubleClicked(QString mapName, QString warpNum);
     void currentMetatilesSelectionChanged();
     void wheelZoom(int delta);

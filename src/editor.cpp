@@ -355,6 +355,7 @@ void Editor::addNewWildMonGroup(QWidget *window) {
             tabIndex++;
         }
         saveEncounterTabData();
+        emit wildMonDataChanged();
     }
 }
 
@@ -586,6 +587,7 @@ void Editor::configureEncounterJSON(QWidget *window) {
 
         // Re-draw the tab accordingly.
         displayWildMonTables();
+        emit wildMonDataChanged();
     }
 }
 
