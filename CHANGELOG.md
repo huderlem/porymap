@@ -9,6 +9,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ## [Unreleased]
 ### Added
 - Add scripting capabilities, which allows the user to add custom behavior to Porymap using JavaScript scripts.
+- Add ability to import FRLG tileset .bvd files from Advance Map 1.92.
 
 ### Fixed
 - Disallow drawing new heal locations in the events tab.
