@@ -53,6 +53,9 @@ public:
     uint16_t getU16(QString key) {
         return values.value(key).toUShort(nullptr, 0);
     }
+    int16_t getS16(QString key) {
+        return values.value(key).toShort(nullptr, 0);
+    }
     void put(QString key, int value) {
         put(key, QString("%1").arg(value));
     }

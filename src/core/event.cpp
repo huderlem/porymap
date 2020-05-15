@@ -298,8 +298,8 @@ OrderedJson::object Event::buildObjectEventJSON()
     if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
         eventObj["in_connection"] = this->getInt("in_connection") > 0 || this->get("in_connection") == "TRUE";
     }
-    eventObj["x"] = this->getU16("x");
-    eventObj["y"] = this->getU16("y");
+    eventObj["x"] = this->getS16("x");
+    eventObj["y"] = this->getS16("y");
     eventObj["elevation"] = this->getInt("elevation");
     eventObj["movement_type"] = this->get("movement_type");
     eventObj["movement_range_x"] = this->getInt("radius_x");
