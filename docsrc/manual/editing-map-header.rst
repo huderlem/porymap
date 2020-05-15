@@ -22,7 +22,7 @@ Weather
     The weather that is running when entering the map.
 
 Type
-    The type of map. This value is used by various things in the game engine.  For example, in Ruby Version, running shoes can only be used when the map type is ``MAP_TYPE_INDOOR``.
+    The type of map. This value is used by various things in the game engine.  For example, in Ruby Version, running shoes cannot be used when the map type is ``MAP_TYPE_INDOOR``.
 
 Battle Scene
     Controls what graphics are used in battles.
@@ -36,8 +36,11 @@ Allow Running
 Allow Biking
     Controls whether or not a bike can be used.
 
-Allow Dig & Escape Rop
+Allow Dig & Escape Rope
     Controls whether the Dig field move or the Escape Rope item can be used.
+
+Floor Number
+    Exclusive to pokefirered. Used to append a number to the map name popup. Negative values are prefixed with "B" for basement, and floor 127 is "Rooftop".
 
 Custom Fields
     You can enter custom fields if you need support for additional fields in your project.  They can also be useful for keeping notes.

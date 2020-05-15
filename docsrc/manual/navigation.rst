@@ -81,7 +81,7 @@ The Tileset Editor can be opened with *File -> Tileset Editor*.  When the Tilese
 Region Map Editor
 -----------------
 
-The Region Map Editor can be opened with *File -> Region Map Editor*. This window will allow you to modify the look and layout of maps on the game's region map.  You can also modify the city map images using the bottom two panes.
+The Region Map Editor can be opened with *File -> Region Map Editor*. This window will allow you to modify the look and layout of maps on the game's region map.  You can also modify the city map images using the bottom two panes. Currently the Region Map Editor is only available for pokeemerald and pokeruby projects.
 
 .. figure:: images/navigation/region-map-editor.png
     :alt: Region Map Editor
