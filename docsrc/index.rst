@@ -17,6 +17,7 @@ Porymap Documentation
     manual/editing-map-connections
     manual/editing-wild-encounters
     manual/region-map-editor
+    manual/scripting-capabilities
     manual/project-files
 
 .. toctree::

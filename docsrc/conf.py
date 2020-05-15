@@ -18,7 +18,7 @@
 # -- Project information -----------------------------------------------------
 
 project = u'porymap'
-copyright = u'2019, huderlem'
+copyright = u'2020, huderlem'
 author = u'huderlem'
 
 # The short X.Y version
