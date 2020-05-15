@@ -14,7 +14,7 @@ Porymap reads and writes files in the decompilation projects.  It **does not** r
 Getting Started
 ---------------
 
-Before using Porymap, you must have your decompilation project setup.  Porymap currently supports `pokeemerald <https://github.com/pret/pokeemerald>`_ and `pokeruby <https://github.com/pret/pokeruby>`_.  See their respective ``INSTALL.md`` files to get setup, and make sure you can successfully compile the ROM.
+Before using Porymap, you must have your decompilation project setup.  Porymap supports the `pokeemerald <https://github.com/pret/pokeemerald>`_, `pokeruby <https://github.com/pret/pokeruby>`_, and `pokefirered <https://github.com/pret/pokefirered>`_ decompilation projects.  See their respective ``INSTALL.md`` files to get setup, and make sure you can successfully compile the ROM.
 
 When launching Porymap for the first time, you will be greeted with the following empty window:
 
