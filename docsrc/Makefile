@@ -16,7 +16,6 @@ github:
 	@make html
 	rm -rf ../docs
 	@cp -a $(BUILDDIR)/html/. ../docs
-	touch ../docs/.nojekyll
 	@rm reference/changelog.md
 
 .PHONY: help Makefile
