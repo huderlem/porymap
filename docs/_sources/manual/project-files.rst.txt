@@ -19,10 +19,10 @@ to a file, it probably is not a good idea to edit yourself unless otherwise note
    data/tilesets/graphics.inc, yes, yes, also edits palette and tile image files listed in this file
    data/tilesets/metatiles.inc, yes, yes, also edits metatile files listed in this file
    src/data/wild_encounters.json, yes, yes, 
-   src/data/field_event_obj/event_object_graphics_info_pointers.h, yes, no, 
-   src/data/field_event_obj/event_object_graphics_info.h, yes, no, 
-   src/data/field_event_obj/event_object_pic_tables.h, yes, no, 
-   src/data/field_event_obj/event_object_graphics.h, yes, no, 
+   src/data/object_events/object_event_graphics_info_pointers.h, yes, no, 
+   src/data/object_events/object_event_graphics_info.h, yes, no, 
+   src/data/object_events/object_event_pic_tables.h, yes, no, 
+   src/data/object_events/object_event_graphics.h, yes, no, 
    src/data/graphics/pokemon.h, yes, no, for pokemon sprite icons
    src/data/heal_locations.h, yes, yes, 
    src/data/region_map/region_map_entries.h, yes, yes, 
@@ -34,13 +34,13 @@ to a file, it probably is not a good idea to edit yourself unless otherwise note
    include/constants/heal_locations.h, no, yes, 
    include/constants/pokemon.h, yes, no, reads min and max level constants
    include/constants/map_types.h, yes, no, 
-   include/constants/secret_bases.h, yes, no, 
-   include/constants/event_object_movement_constants.h, yes, no, 
-   include/constants/bg_event_constants.h, yes, no, 
+   include/constants/trainer_types.h, yes, no, 
+   include/constants/secret_bases.h, yes, no, pokeemerald and pokeruby only
+   include/constants/event_object_movement.h, yes, no, 
+   include/constants/event_bg.h, yes, no, 
    include/constants/region_map_sections.h, yes, no, 
    include/constants/metatile_labels.h, yes, yes, 
    include/constants/metatile_behaviors.h, yes, no, 
-   include/constants/bg_event_constants.h, yes, no, 
    include/fieldmap.h, yes, no, reads tileset related constants
 
 

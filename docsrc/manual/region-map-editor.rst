@@ -5,6 +5,9 @@ The Region Map Editor
 This is where you edit the region map for your game.  To open the region map 
 editor, navigate to *Tools -> Region Map Editor* from porymap's main window.
 
+.. note::
+    The region map editor is currently only available for pokeemerald and pokeruby.
+
 When you first open the region map editor, your window will look like this:
 
 .. figure:: images/region-map-editor/rme-new-window.png

@@ -123,6 +123,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#sign-event">Sign Event</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#hidden-item-event">Hidden Item Event</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#secret-base-event">Secret Base Event</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#heal-location-healspots">Heal Location / Healspots</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#adding-deleting-events">Adding &amp; Deleting Events</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#open-map-scripts">Open Map Scripts</a></li>
 </ul>
@@ -139,6 +140,10 @@
 <li class="toctree-l2"><a class="reference internal" href="editing-wild-encounters.html#configuring-the-wild-encounter-fields">Configuring the Wild Encounter Fields</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="creating-new-maps.html">Creating New Maps</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="creating-new-maps.html#new-map-options">New Map Options</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="region-map-editor.html">The Region Map Editor</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="region-map-editor.html#background-image-tab">Background Image Tab</a></li>
 <li class="toctree-l2"><a class="reference internal" href="region-map-editor.html#map-layout-tab">Map Layout Tab</a></li>
@@ -146,56 +151,84 @@
 <li class="toctree-l2"><a class="reference internal" href="region-map-editor.html#city-maps">City Maps</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="scripting-capabilities.html">Scripting Capabilities</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="scripting-capabilities.html#writing-a-custom-script">Writing a Custom Script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scripting-capabilities.html#registering-script-actions">Registering Script Actions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scripting-capabilities.html#scripting-api">Scripting API</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="scripting-capabilities.html#callbacks">Callbacks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="scripting-capabilities.html#functions">Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#map-editing-functions">Map Editing Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#map-overlay-functions">Map Overlay Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#tileset-functions">Tileset Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#settings-functions">Settings Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#utility-functions">Utility Functions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="project-files.html">Project Files</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../reference/changelog.html">Changelog</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#unreleased">Unreleased</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id1">3.0.1 - 2020-03-04</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#unreleased">Unreleased</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#added">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#fixed">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id2">3.0.0 - 2020-03-04</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id1">4.0.0 - 2020-04-28</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#breaking-changes">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#added">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id2">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#changed">Changed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id3">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id4">2.0.0 - 2019-10-16</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id5">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id6">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id7">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id8">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id4">3.0.1 - 2020-03-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id5">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id9">1.2.2 - 2019-05-16</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id10">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id11">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id12">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id6">3.0.0 - 2020-03-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id7">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id8">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id9">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id10">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id13">1.2.1 - 2019-02-16</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id14">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id11">2.0.0 - 2019-10-16</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id12">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id13">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id14">Changed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id15">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id16">1.2.0 - 2019-02-04</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id17">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id18">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id19">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id20">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id16">1.2.2 - 2019-05-16</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id17">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id18">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id19">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id21">1.1.0 - 2018-12-27</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id22">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id23">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id24">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id25">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id20">1.2.1 - 2019-02-16</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id21">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id22">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id26">1.0.0 - 2018-10-26</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id23">1.2.0 - 2019-02-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id24">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id25">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id26">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id27">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id28">1.1.0 - 2018-12-27</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id29">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id30">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id31">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id32">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id33">1.0.0 - 2018-10-26</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/related-projects.html">Related Projects</a></li>
@@ -272,7 +305,7 @@
 <img alt="Map Events View" src="../_images/map-events.png" />
 <p class="caption"><span class="caption-text">Map Events View</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
 </div>
-<p>All of the events are visible on the map.  The Event Details window on the right displays the properties of the currently-selected event.  If you look closely, you’ll see that the woman NPC near the Pokémon Center has a pink border around it because it’s selected.  To select a different event, simple click on an event in the map area.  Alternatively, you can use the spinner at the top of the event properties window.  Multiple events can be selected at the same time by holding <code class="docutils literal notranslate"><span class="pre">Ctrl</span></code> and clicking another event.</p>
+<p>All of the events are visible on the map.  The Event Details window on the right displays the properties of the currently-selected event.  If you look closely, you’ll see that the woman NPC near the Pokémon Center has a pink border around it because it’s selected.  To select a different event, simply click on an event in the map area.  Alternatively, you can use the spinner at the top of the event properties window.  Multiple events can be selected at the same time by holding <code class="docutils literal notranslate"><span class="pre">Ctrl</span></code> and clicking another event.</p>
 <div class="figure align-default" id="id2">
 <img alt="Event Id Spinner" src="../_images/event-id-spinner.png" />
 <p class="caption"><span class="caption-text">Event Id Spinner</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
@@ -311,9 +344,11 @@
 </dd>
 <dt>Event Flag</dt><dd><p>The flag value that controls if the object is visible.  If the flag is set (equal to 1), then the object will be invisible.  If the Event Flag is set to <cite>0</cite>, then the object will always be visible because <cite>0</cite> means “no flag”.</p>
 </dd>
-<dt>Trainer Type</dt><dd><p><cite>NONE</cite>, <cite>NORMAL</cite>, or <cite>SEE ALL DIRECTIONS</cite>. If the object is a trainer, <cite>NORMAL</cite> means that the trainer will spot the player in the object’s line-of-sight.</p>
+<dt>Trainer Type</dt><dd><p>The trainer type used by the object. If the object is a trainer, <cite>TRAINER_TYPE_NORMAL</cite> means that the trainer will spot the player in the object’s line-of-sight.</p>
 </dd>
 <dt>Sight Radius or Berry Tree ID</dt><dd><p>If the object is a trainer, this property control how many tiles the trainer can see to spot the player for battle.  If the object is a berry tree, this specifies the global id of the berry tree.  Each berry tree in the game has a unique berry tree id.</p>
+</dd>
+<dt>In Connection</dt><dd><p>Exclusive to pokefirered. Used to replace objects that are visible in a map’s connection with their corresponding object on the connecting map. When checked, these objects will make odd use of other fields; its trainer type value will be the connecting map number, its Sight Radius / Berry Tree Id will be the connecting map group, and its z coordinate will be the object’s local id on the connecting map.</p>
 </dd>
 </dl>
 </div>
@@ -353,7 +388,7 @@
 </div>
 <div class="section" id="weather-trigger-events">
 <h2>Weather Trigger Events<a class="headerlink" href="#weather-trigger-events" title="Permalink to this headline">¶</a></h2>
-<p>Weather trigger events are a very specific type of trigger.  When the player walks over a weather trigger, the overworld’s weather will transition to the specified weather type.</p>
+<p>Weather trigger events are a very specific type of trigger.  When the player walks over a weather trigger, the overworld’s weather will transition to the specified weather type. This event type is unavailable for pokefirered projects; the functions to trigger weather changes were dummied out.</p>
 <div class="figure align-default" id="id7">
 <img alt="Weather Trigger Event Properties" src="../_images/event-weather-trigger.png" />
 <p class="caption"><span class="caption-text">Weather Trigger Event Properties</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
@@ -395,11 +430,16 @@
 </dd>
 <dt>Flag</dt><dd><p>This flag is set when the player receives the hidden item.</p>
 </dd>
+<dt>Quantity</dt><dd><p>Exclusive to pokefirered. The number of items received when the item is picked up.</p>
+</dd>
+<dt>Requires Itemfinder</dt><dd><p>Exclusive to pokefirered. When checked, the hidden item can only be received by standing on it and using the Itemfinder.</p>
+</dd>
 </dl>
 </div>
 <div class="section" id="secret-base-event">
 <h2>Secret Base Event<a class="headerlink" href="#secret-base-event" title="Permalink to this headline">¶</a></h2>
-<p>This is the event used to mark entrances to secret bases.  This event will only be functional on certain metatiles.  Unfortunately, they are hardcoded into the game’s engine (see <code class="docutils literal notranslate"><span class="pre">sSecretBaseEntranceMetatiles</span></code> in <code class="docutils literal notranslate"><span class="pre">src/secret_base.c</span></code>).</p>
+<p>This is the event used to mark entrances to secret bases.  This event will only be functional on certain metatiles.  Unfortunately, they are hardcoded into the game’s engine (see <code class="docutils literal notranslate"><span class="pre">sSecretBaseEntranceMetatiles</span></code> in <code class="docutils literal notranslate"><span class="pre">src/secret_base.c</span></code>).
+This event type is unavailable for pokefirered projects; secret bases do not exist there.</p>
 <div class="figure align-default" id="id10">
 <img alt="Secret Base Event Properties" src="../_images/event-secret-base.png" />
 <p class="caption"><span class="caption-text">Secret Base Event Properties</span><a class="headerlink" href="#id10" title="Permalink to this image">¶</a></p>
@@ -408,6 +448,20 @@
 <dt>Id</dt><dd><p>The local id of the BG event in the map.  This value is not used for anything.</p>
 </dd>
 <dt>Secret Base Id</dt><dd><p>The id of the destination secret base.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="heal-location-healspots">
+<h2>Heal Location / Healspots<a class="headerlink" href="#heal-location-healspots" title="Permalink to this headline">¶</a></h2>
+<p>This event is used to control where a player will arrive when they white out or fly to the map. The white out functions a little differently between game versions. For pokeemerald and pokeruby players will arrive at the event’s coordinates after a white out, while in pokefirered they will arrive on the map set in <code class="docutils literal notranslate"><span class="pre">Respawn</span> <span class="pre">Map</span></code> and at hardcoded coordinates (see <code class="docutils literal notranslate"><span class="pre">SetWhiteoutRespawnWarpAndHealerNpc</span></code> in <code class="docutils literal notranslate"><span class="pre">src/heal_location.c</span></code>).</p>
+<div class="figure align-default" id="id11">
+<img alt="Heal Location Properties" src="../_images/event-heal-location.png" />
+<p class="caption"><span class="caption-text">Heal Location Properties</span><a class="headerlink" href="#id11" title="Permalink to this image">¶</a></p>
+</div>
+<dl class="simple">
+<dt>Respawn Map</dt><dd><p>Exclusive to pokefirered. The map where the player will arrive when they white out (e.g. inside the PokéCenter that the heal location is in front of).</p>
+</dd>
+<dt>Respawn NPC</dt><dd><p>Exclusive to pokefirered. The local id of the NPC the player will interact with when they white out.</p>
 </dd>
 </dl>
 </div>
@@ -442,7 +496,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2019, huderlem
+        &copy; Copyright 2020, huderlem
 
     </p>
   </div>

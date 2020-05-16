@@ -2,12 +2,43 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project somewhat adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).  The MINOR version number is bumped when there are breaking changes in the pret projects.
+and this project somewhat adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).  The MAJOR version number is bumped when there are breaking changes in the pret projects.
 
 The **"Breaking Changes"** listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. If porymap is used on a project that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.
 
-## Unreleased
-Nothing, yet.
+## [Unreleased]
+### Added
+- Add scripting capabilities, which allows the user to add custom behavior to Porymap using JavaScript scripts.
+- Add ability to import FRLG tileset .bvd files from Advance Map 1.92.
+
+### Fixed
+- Disallow drawing new heal locations in the events tab.
+- Fix issue where the metatile selection window was not resizable.
+
+## [4.0.0] - 2020-04-28
+### Breaking Changes
+- If you are using pokeemerald or pokeruby, there were changes made in [pokeemerald/#1010](https://github.com/pret/pokeemerald/pull/1010) and [pokeruby/#776](https://github.com/pret/pokeruby/pull/776) that you will need to integrate in order to use this version of porymap.
+
+### Added
+- Support for [pokefirered](https://github.com/pret/pokefirered). Kanto fans rejoice! At long last porymap supports the FRLG decompilation project.
+- Add ability to export map stitches with `File -> Export Map Stitch Image...`.
+- Add new project config option `use_custom_border_size`.
+- Add ability to toggle project settings in `Options` menu.
+- Add file monitoring, so Porymap will prompt the user to reload the project if certain project files are modified outside of Porymap.
+- Add ability to reload project.
+- Add `Pencil`, `Move`, and `Map Shift` tools to the Events tab.
+
+### Changed
+- Porymap now saves map and encounter json data in an order consistent with the upstream repos. This will provide more comprehensible diffs when files are saved.
+- Update Porymap icon.
+- The "Map" and "Events" tabs now render using the same view, so jumping between them is smooth.
+- Extend connection min and max offsets to player's view boundary, rather than the map's boundary.
+
+### Fixed
+- Fix bug where pressing TAB key did not navigate through widgets in the wild encounter tables.
+- Fix bug that allowed selecting an invalid metatile in the metatile selector.
+- Don't allow `.` or `-` characters in new tileset names.
+- Fix regression that prevented selecting empty region map squares
 
 ## [3.0.1] - 2020-03-04
 ### Fixed
@@ -150,7 +181,8 @@ Nothing, yet.
 ## [1.0.0] - 2018-10-26
 This was the initial release.
 
-[Unreleased]: https://github.com/huderlem/porymap/compare/3.0.1...HEAD
+[Unreleased]: https://github.com/huderlem/porymap/compare/4.0.0...HEAD
+[4.0.0]: https://github.com/huderlem/porymap/compare/3.0.1...4.0.0
 [3.0.1]: https://github.com/huderlem/porymap/compare/3.0.0...3.0.1
 [3.0.0]: https://github.com/huderlem/porymap/compare/2.0.0...3.0.0
 [2.0.0]: https://github.com/huderlem/porymap/compare/1.2.2...2.0.0

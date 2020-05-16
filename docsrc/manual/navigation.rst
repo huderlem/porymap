@@ -25,6 +25,8 @@ Sort by Area
 Sort by Layout
     Organizes by map layouts. Most layouts are only used by a single map, but layouts like the Pokemon Center are used by many maps.
 
+Right-clicking on the folder name in any of the sort modes will bring up a dialog to create a new map in that folder. For more details, see: :ref:`Creating New Maps <creating-new-maps>`.
+
 The *Expand All* |expand-all-button| and *Collapse All* |collapse-all-button| buttons will expand or collapse all of the map folders.
 
 Type in the filter to show maps that contain the filter text.
@@ -81,7 +83,7 @@ The Tileset Editor can be opened with *File -> Tileset Editor*.  When the Tilese
 Region Map Editor
 -----------------
 
-The Region Map Editor can be opened with *File -> Region Map Editor*. This window will allow you to modify the look and layout of maps on the game's region map.  You can also modify the city map images using the bottom two panes.
+The Region Map Editor can be opened with *File -> Region Map Editor*. This window will allow you to modify the look and layout of maps on the game's region map.  You can also modify the city map images using the bottom two panes. Currently the Region Map Editor is only available for pokeemerald and pokeruby projects.
 
 .. figure:: images/navigation/region-map-editor.png
     :alt: Region Map Editor

@@ -144,6 +144,8 @@ The map's border can be modified by painting on the Border image, which is locat
 
     Change Map Border
 
+The dimensions of the map's border can also be adjusted for pokefirered projects via the ``Change Dimensions`` button. If you have modified your pokeemerald or pokeruby project to support custom border sizes you can enable this option with the ``use_custom_border_size`` field in your project's ``porymap.project.cfg`` file.
+
 Change Map Tilesets
 -------------------
 
