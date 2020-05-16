@@ -123,6 +123,7 @@
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#sign-event">Sign Event</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#hidden-item-event">Hidden Item Event</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#secret-base-event">Secret Base Event</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#heal-location-healspots">Heal Location / Healspots</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#adding-deleting-events">Adding &amp; Deleting Events</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#open-map-scripts">Open Map Scripts</a></li>
 </ul>
@@ -137,6 +138,10 @@
 <li class="toctree-l1"><a class="reference internal" href="editing-wild-encounters.html">Editing Wild Encounters</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="editing-wild-encounters.html#adding-new-encounter-groups">Adding New Encounter Groups</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-wild-encounters.html#configuring-the-wild-encounter-fields">Configuring the Wild Encounter Fields</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="creating-new-maps.html">Creating New Maps</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="creating-new-maps.html#new-map-options">New Map Options</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="region-map-editor.html">The Region Map Editor</a><ul>
@@ -309,7 +314,7 @@
 </dd>
 <dt>Weather</dt><dd><p>The weather that is running when entering the map.</p>
 </dd>
-<dt>Type</dt><dd><p>The type of map. This value is used by various things in the game engine.  For example, in Ruby Version, running shoes can only be used when the map type is <code class="docutils literal notranslate"><span class="pre">MAP_TYPE_INDOOR</span></code>.</p>
+<dt>Type</dt><dd><p>The type of map. This value is used by various things in the game engine.  For example, in Ruby Version, running shoes cannot be used when the map type is <code class="docutils literal notranslate"><span class="pre">MAP_TYPE_INDOOR</span></code>.</p>
 </dd>
 <dt>Battle Scene</dt><dd><p>Controls what graphics are used in battles.</p>
 </dd>
@@ -319,7 +324,9 @@
 </dd>
 <dt>Allow Biking</dt><dd><p>Controls whether or not a bike can be used.</p>
 </dd>
-<dt>Allow Dig &amp; Escape Rop</dt><dd><p>Controls whether the Dig field move or the Escape Rope item can be used.</p>
+<dt>Allow Dig &amp; Escape Rope</dt><dd><p>Controls whether the Dig field move or the Escape Rope item can be used.</p>
+</dd>
+<dt>Floor Number</dt><dd><p>Exclusive to pokefirered. Used to append a number to the map name popup. Negative values are prefixed with “B” for basement, and floor 127 is “Rooftop”.</p>
 </dd>
 <dt>Custom Fields</dt><dd><p>You can enter custom fields if you need support for additional fields in your project.  They can also be useful for keeping notes.</p>
 </dd>

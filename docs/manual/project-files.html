@@ -123,6 +123,7 @@
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#sign-event">Sign Event</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#hidden-item-event">Hidden Item Event</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#secret-base-event">Secret Base Event</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#heal-location-healspots">Heal Location / Healspots</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#adding-deleting-events">Adding &amp; Deleting Events</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#open-map-scripts">Open Map Scripts</a></li>
 </ul>
@@ -137,6 +138,10 @@
 <li class="toctree-l1"><a class="reference internal" href="editing-wild-encounters.html">Editing Wild Encounters</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="editing-wild-encounters.html#adding-new-encounter-groups">Adding New Encounter Groups</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-wild-encounters.html#configuring-the-wild-encounter-fields">Configuring the Wild Encounter Fields</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="creating-new-maps.html">Creating New Maps</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="creating-new-maps.html#new-map-options">New Map Options</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="region-map-editor.html">The Region Map Editor</a><ul>
@@ -353,22 +358,22 @@ to a file, it probably is not a good idea to edit yourself unless otherwise note
 <td><p>yes</p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p>src/data/field_event_obj/event_object_graphics_info_pointers.h</p></td>
+<tr class="row-even"><td><p>src/data/object_events/object_event_graphics_info_pointers.h</p></td>
 <td><p>yes</p></td>
 <td><p>no</p></td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><p>src/data/field_event_obj/event_object_graphics_info.h</p></td>
+<tr class="row-odd"><td><p>src/data/object_events/object_event_graphics_info.h</p></td>
 <td><p>yes</p></td>
 <td><p>no</p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p>src/data/field_event_obj/event_object_pic_tables.h</p></td>
+<tr class="row-even"><td><p>src/data/object_events/object_event_pic_tables.h</p></td>
 <td><p>yes</p></td>
 <td><p>no</p></td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><p>src/data/field_event_obj/event_object_graphics.h</p></td>
+<tr class="row-odd"><td><p>src/data/object_events/object_event_graphics.h</p></td>
 <td><p>yes</p></td>
 <td><p>no</p></td>
 <td></td>
@@ -428,37 +433,37 @@ to a file, it probably is not a good idea to edit yourself unless otherwise note
 <td><p>no</p></td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><p>include/constants/secret_bases.h</p></td>
+<tr class="row-odd"><td><p>include/constants/trainer_types.h</p></td>
 <td><p>yes</p></td>
 <td><p>no</p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p>include/constants/event_object_movement_constants.h</p></td>
+<tr class="row-even"><td><p>include/constants/secret_bases.h</p></td>
+<td><p>yes</p></td>
+<td><p>no</p></td>
+<td><p>pokeemerald and pokeruby only</p></td>
+</tr>
+<tr class="row-odd"><td><p>include/constants/event_object_movement.h</p></td>
 <td><p>yes</p></td>
 <td><p>no</p></td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><p>include/constants/bg_event_constants.h</p></td>
+<tr class="row-even"><td><p>include/constants/event_bg.h</p></td>
 <td><p>yes</p></td>
 <td><p>no</p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p>include/constants/region_map_sections.h</p></td>
+<tr class="row-odd"><td><p>include/constants/region_map_sections.h</p></td>
 <td><p>yes</p></td>
 <td><p>no</p></td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><p>include/constants/metatile_labels.h</p></td>
+<tr class="row-even"><td><p>include/constants/metatile_labels.h</p></td>
 <td><p>yes</p></td>
 <td><p>yes</p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p>include/constants/metatile_behaviors.h</p></td>
-<td><p>yes</p></td>
-<td><p>no</p></td>
-<td></td>
-</tr>
-<tr class="row-odd"><td><p>include/constants/bg_event_constants.h</p></td>
+<tr class="row-odd"><td><p>include/constants/metatile_behaviors.h</p></td>
 <td><p>yes</p></td>
 <td><p>no</p></td>
 <td></td>

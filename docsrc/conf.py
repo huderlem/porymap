@@ -45,8 +45,11 @@ templates_path = ['_templates']
 # You can specify multiple suffix as a list of string:
 #
 
-from recommonmark.parser import CommonMarkParser
+# sphinx >= 1.4
+extensions = ['recommonmark']
 
+# sphinx <= 1.3
+from recommonmark.parser import CommonMarkParser
 source_suffix = ['.rst', '.md']
 source_parsers = {
     '.md': CommonMarkParser,

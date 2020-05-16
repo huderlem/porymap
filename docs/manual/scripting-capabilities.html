@@ -123,6 +123,7 @@
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#sign-event">Sign Event</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#hidden-item-event">Hidden Item Event</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#secret-base-event">Secret Base Event</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#heal-location-healspots">Heal Location / Healspots</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#adding-deleting-events">Adding &amp; Deleting Events</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#open-map-scripts">Open Map Scripts</a></li>
 </ul>
@@ -137,6 +138,10 @@
 <li class="toctree-l1"><a class="reference internal" href="editing-wild-encounters.html">Editing Wild Encounters</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="editing-wild-encounters.html#adding-new-encounter-groups">Adding New Encounter Groups</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-wild-encounters.html#configuring-the-wild-encounter-fields">Configuring the Wild Encounter Fields</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="creating-new-maps.html">Creating New Maps</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="creating-new-maps.html#new-map-options">New Map Options</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="region-map-editor.html">The Region Map Editor</a><ul>
@@ -367,7 +372,7 @@
 <h2>Scripting API<a class="headerlink" href="#scripting-api" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="callbacks">
 <h3>Callbacks<a class="headerlink" href="#callbacks" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
+<dl class="js function">
 <dt id="onProjectOpened">
 <code class="sig-name descname">onProjectOpened</code><span class="sig-paren">(</span><em class="sig-param">projectPath</em><span class="sig-paren">)</span><a class="headerlink" href="#onProjectOpened" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called when Porymap successfully opens a project.</p>
@@ -380,7 +385,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="onProjectClosed">
 <code class="sig-name descname">onProjectClosed</code><span class="sig-paren">(</span><em class="sig-param">projectPath</em><span class="sig-paren">)</span><a class="headerlink" href="#onProjectClosed" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called when Porymap closes a project. For example, this is called when opening a different project.</p>
@@ -393,7 +398,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="onMapOpened">
 <code class="sig-name descname">onMapOpened</code><span class="sig-paren">(</span><em class="sig-param">mapName</em><span class="sig-paren">)</span><a class="headerlink" href="#onMapOpened" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called when a map is opened.</p>
@@ -406,7 +411,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="onBlockChanged">
 <code class="sig-name descname">onBlockChanged</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">prevBlock</em>, <em class="sig-param">newBlock</em><span class="sig-paren">)</span><a class="headerlink" href="#onBlockChanged" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called when a block is changed on the map. For example, this is called when a user paints a new tile or changes the collision property of a block.</p>
@@ -429,7 +434,7 @@
 <div class="section" id="map-editing-functions">
 <h4>Map Editing Functions<a class="headerlink" href="#map-editing-functions" title="Permalink to this headline">¶</a></h4>
 <p>The following functions are related to editing the map’s blocks or retrieving information about them.</p>
-<dl class="function">
+<dl class="js function">
 <dt id="map.getBlock">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">getBlock</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em><span class="sig-paren">)</span><a class="headerlink" href="#map.getBlock" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets a block in the currently-opened map.</p>
@@ -446,7 +451,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.setBlock">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">setBlock</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">metatileId</em>, <em class="sig-param">collision</em>, <em class="sig-param">elevation</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setBlock" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets a block in the currently-opened map.</p>
@@ -463,7 +468,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.getMetatileId">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">getMetatileId</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em><span class="sig-paren">)</span><a class="headerlink" href="#map.getMetatileId" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets the metatile id of a block in the currently-opened map.</p>
@@ -480,7 +485,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.setMetatileId">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">setMetatileId</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">metatileId</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setMetatileId" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the metatile id of a block in the currently-opened map.</p>
@@ -495,7 +500,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.getCollision">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">getCollision</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em><span class="sig-paren">)</span><a class="headerlink" href="#map.getCollision" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets the collision of a block in the currently-opened map. (<code class="docutils literal notranslate"><span class="pre">0</span></code> = passable, <code class="docutils literal notranslate"><span class="pre">1</span></code> = impassable)</p>
@@ -512,7 +517,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.setCollision">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">setCollision</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">collision</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setCollision" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the collision of a block in the currently-opened map. (<code class="docutils literal notranslate"><span class="pre">0</span></code> = passable, <code class="docutils literal notranslate"><span class="pre">1</span></code> = impassable)</p>
@@ -527,7 +532,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.getElevation">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">getElevation</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em><span class="sig-paren">)</span><a class="headerlink" href="#map.getElevation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets the elevation of a block in the currently-opened map.</p>
@@ -544,7 +549,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.setElevation">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">setElevation</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">elevation</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setElevation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the elevation of a block in the currently-opened map.</p>
@@ -559,7 +564,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.setBlocksFromSelection">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">setBlocksFromSelection</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setBlocksFromSelection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets blocks on the map using the user’s current metatile selection.</p>
@@ -573,7 +578,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.bucketFill">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">bucketFill</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">metatileId</em><span class="sig-paren">)</span><a class="headerlink" href="#map.bucketFill" title="Permalink to this definition">¶</a></dt>
 <dd><p>Performs a bucket fill of a metatile id, starting at the given coordinates.</p>
@@ -588,7 +593,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.bucketFillFromSelection">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">bucketFillFromSelection</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em><span class="sig-paren">)</span><a class="headerlink" href="#map.bucketFillFromSelection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Performs a bucket fill using the user’s current metatile selection, starting at the given coordinates.</p>
@@ -602,7 +607,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.magicFill">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">magicFill</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">metatileId</em><span class="sig-paren">)</span><a class="headerlink" href="#map.magicFill" title="Permalink to this definition">¶</a></dt>
 <dd><p>Performs a magic fill of a metatile id, starting at the given coordinates.</p>
@@ -617,7 +622,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.magicFillFromSelection">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">magicFillFromSelection</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em><span class="sig-paren">)</span><a class="headerlink" href="#map.magicFillFromSelection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Performs a magic fill using the user’s current metatile selection, starting at the given coordinates.</p>
@@ -631,7 +636,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.shift">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">shift</code><span class="sig-paren">(</span><em class="sig-param">xDelta</em>, <em class="sig-param">yDelta</em><span class="sig-paren">)</span><a class="headerlink" href="#map.shift" title="Permalink to this definition">¶</a></dt>
 <dd><p>Performs a shift on the map’s blocks.</p>
@@ -645,7 +650,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.getDimensions">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">getDimensions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#map.getDimensions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets the dimensions of the currently-opened map.</p>
@@ -656,7 +661,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.getWidth">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">getWidth</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#map.getWidth" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets the width of the currently-opened map.</p>
@@ -667,7 +672,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.getHeight">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">getHeight</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#map.getHeight" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets the height of the currently-opened map.</p>
@@ -678,7 +683,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.setDimensions">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">setDimensions</code><span class="sig-paren">(</span><em class="sig-param">width</em>, <em class="sig-param">height</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setDimensions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the dimensions of the currently-opened map.</p>
@@ -692,7 +697,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.setWidth">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">setWidth</code><span class="sig-paren">(</span><em class="sig-param">width</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setWidth" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the width of the currently-opened map.</p>
@@ -705,7 +710,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.setHeight">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">setHeight</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#map.setHeight" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the height of the currently-opened map.</p>
@@ -722,13 +727,13 @@
 <div class="section" id="map-overlay-functions">
 <h4>Map Overlay Functions<a class="headerlink" href="#map-overlay-functions" title="Permalink to this headline">¶</a></h4>
 <p>The following functions are related to an overlay that is drawn on top of the map area. Text, images, and shapes can be drawn using these functions.</p>
-<dl class="function">
+<dl class="js function">
 <dt id="map.clearOverlay">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">clearOverlay</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#map.clearOverlay" title="Permalink to this definition">¶</a></dt>
 <dd><p>Clears and erases all overlay items that were previously-added to the map.</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.addText">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">addText</code><span class="sig-paren">(</span><em class="sig-param">text</em>, <em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">color = &quot;#000000&quot;</em>, <em class="sig-param">size = 12</em><span class="sig-paren">)</span><a class="headerlink" href="#map.addText" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adds a text item to the overlay.</p>
@@ -745,7 +750,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.addRect">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">addRect</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">width</em>, <em class="sig-param">height</em>, <em class="sig-param">color = &quot;#000000&quot;</em><span class="sig-paren">)</span><a class="headerlink" href="#map.addRect" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adds a rectangle outline item to the overlay.</p>
@@ -762,7 +767,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.addFilledRect">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">addFilledRect</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">width</em>, <em class="sig-param">height</em>, <em class="sig-param">color = &quot;#000000&quot;</em><span class="sig-paren">)</span><a class="headerlink" href="#map.addFilledRect" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adds a filled rectangle item to the overlay.</p>
@@ -779,7 +784,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.addImage">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">addImage</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">filepath</em><span class="sig-paren">)</span><a class="headerlink" href="#map.addImage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adds an image item to the overlay.</p>
@@ -798,7 +803,7 @@
 <div class="section" id="tileset-functions">
 <h4>Tileset Functions<a class="headerlink" href="#tileset-functions" title="Permalink to this headline">¶</a></h4>
 <p>The following functions are related to tilesets and their palettes. The functions with “preview” in their name operate on a “fake” version of the palette colors. This means that changing these “preview” colors won’t affect the actual tileset colors in the project. A good use of the “preview” palettes would be Day/Night tints, for example.</p>
-<dl class="function">
+<dl class="js function">
 <dt id="map.getPrimaryTilesetPalettePreview">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">getPrimaryTilesetPalettePreview</code><span class="sig-paren">(</span><em class="sig-param">paletteIndex</em><span class="sig-paren">)</span><a class="headerlink" href="#map.getPrimaryTilesetPalettePreview" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets a palette from the primary tileset of the currently-opened map.</p>
@@ -814,7 +819,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.setPrimaryTilesetPalettePreview">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">setPrimaryTilesetPalettePreview</code><span class="sig-paren">(</span><em class="sig-param">paletteIndex</em>, <em class="sig-param">colors</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setPrimaryTilesetPalettePreview" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets a palette in the primary tileset of the currently-opened map. This will NOT affect the true underlying colors–it only displays these colors in the map-editing area of Porymap.</p>
@@ -828,7 +833,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.getPrimaryTilesetPalettesPreview">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">getPrimaryTilesetPalettesPreview</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#map.getPrimaryTilesetPalettesPreview" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets all of the palettes from the primary tileset of the currently-opened map.</p>
@@ -839,7 +844,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.setPrimaryTilesetPalettesPreview">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">setPrimaryTilesetPalettesPreview</code><span class="sig-paren">(</span><em class="sig-param">palettes</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setPrimaryTilesetPalettesPreview" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets all of the palettes in the primary tileset of the currently-opened map. This will NOT affect the true underlying colors–it only displays these colors in the map-editing area of Porymap.</p>
@@ -852,7 +857,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.getSecondaryTilesetPalettePreview">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">getSecondaryTilesetPalettePreview</code><span class="sig-paren">(</span><em class="sig-param">paletteIndex</em><span class="sig-paren">)</span><a class="headerlink" href="#map.getSecondaryTilesetPalettePreview" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets a palette from the secondary tileset of the currently-opened map.</p>
@@ -868,7 +873,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.setSecondaryTilesetPalettePreview">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">setSecondaryTilesetPalettePreview</code><span class="sig-paren">(</span><em class="sig-param">paletteIndex</em>, <em class="sig-param">colors</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setSecondaryTilesetPalettePreview" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets a palette in the secondary tileset of the currently-opened map. This will NOT affect the true underlying colors–it only displays these colors in the map-editing area of Porymap.</p>
@@ -882,7 +887,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.getSecondaryTilesetPalettesPreview">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">getSecondaryTilesetPalettesPreview</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#map.getSecondaryTilesetPalettesPreview" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets all of the palettes from the secondary tileset of the currently-opened map.</p>
@@ -893,7 +898,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.setSecondaryTilesetPalettesPreview">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">setSecondaryTilesetPalettesPreview</code><span class="sig-paren">(</span><em class="sig-param">palettes</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setSecondaryTilesetPalettesPreview" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets all of the palettes in the secondary tileset of the currently-opened map. This will NOT affect the true underlying colors–it only displays these colors in the map-editing area of Porymap.</p>
@@ -906,7 +911,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.getPrimaryTilesetPalette">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">getPrimaryTilesetPalette</code><span class="sig-paren">(</span><em class="sig-param">paletteIndex</em><span class="sig-paren">)</span><a class="headerlink" href="#map.getPrimaryTilesetPalette" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets a palette from the primary tileset of the currently-opened map.</p>
@@ -922,7 +927,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.setPrimaryTilesetPalette">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">setPrimaryTilesetPalette</code><span class="sig-paren">(</span><em class="sig-param">paletteIndex</em>, <em class="sig-param">colors</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setPrimaryTilesetPalette" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets a palette in the primary tileset of the currently-opened map. This will permanently affect the palette and save the palette to disk.</p>
@@ -936,7 +941,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.getPrimaryTilesetPalettes">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">getPrimaryTilesetPalettes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#map.getPrimaryTilesetPalettes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets all of the palettes from the primary tileset of the currently-opened map.</p>
@@ -947,7 +952,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.setPrimaryTilesetPalettes">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">setPrimaryTilesetPalettes</code><span class="sig-paren">(</span><em class="sig-param">palettes</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setPrimaryTilesetPalettes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets all of the palettes in the primary tileset of the currently-opened map. This will permanently affect the palettes and save the palettes to disk.</p>
@@ -960,7 +965,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.getSecondaryTilesetPalette">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">getSecondaryTilesetPalette</code><span class="sig-paren">(</span><em class="sig-param">paletteIndex</em><span class="sig-paren">)</span><a class="headerlink" href="#map.getSecondaryTilesetPalette" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets a palette from the secondary tileset of the currently-opened map.</p>
@@ -976,7 +981,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.setSecondaryTilesetPalette">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">setSecondaryTilesetPalette</code><span class="sig-paren">(</span><em class="sig-param">paletteIndex</em>, <em class="sig-param">colors</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setSecondaryTilesetPalette" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets a palette in the secondary tileset of the currently-opened map. This will permanently affect the palette and save the palette to disk.</p>
@@ -990,7 +995,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.getSecondaryTilesetPalettes">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">getSecondaryTilesetPalettes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#map.getSecondaryTilesetPalettes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets all of the palettes from the secondary tileset of the currently-opened map.</p>
@@ -1001,7 +1006,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.setSecondaryTilesetPalettes">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">setSecondaryTilesetPalettes</code><span class="sig-paren">(</span><em class="sig-param">palettes</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setSecondaryTilesetPalettes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets all of the palettes in the secondary tileset of the currently-opened map. This will permanently affect the palettes and save the palettes to disk.</p>
@@ -1014,7 +1019,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.getPrimaryTileset">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">getPrimaryTileset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#map.getPrimaryTileset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets the name of the primary tileset for the currently-opened map.</p>
@@ -1025,7 +1030,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.setPrimaryTileset">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">setPrimaryTileset</code><span class="sig-paren">(</span><em class="sig-param">tileset</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setPrimaryTileset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the primary tileset for the currently-opened map.</p>
@@ -1038,7 +1043,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.getSecondaryTileset">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">getSecondaryTileset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#map.getSecondaryTileset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets the name of the secondary tileset for the currently-opened map.</p>
@@ -1049,7 +1054,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.setSecondaryTileset">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">setSecondaryTileset</code><span class="sig-paren">(</span><em class="sig-param">tileset</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setSecondaryTileset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the secondary tileset for the currently-opened map.</p>
@@ -1066,7 +1071,7 @@
 <div class="section" id="settings-functions">
 <h4>Settings Functions<a class="headerlink" href="#settings-functions" title="Permalink to this headline">¶</a></h4>
 <p>The following functions are related to settings.</p>
-<dl class="function">
+<dl class="js function">
 <dt id="map.getGridVisibility">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">getGridVisibility</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#map.getGridVisibility" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets the visibility of the map grid overlay.</p>
@@ -1077,7 +1082,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.setGridVisibility">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">setGridVisibility</code><span class="sig-paren">(</span><em class="sig-param">visible</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setGridVisibility" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the visibility of the map grid overlay.</p>
@@ -1090,7 +1095,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.getBorderVisibility">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">getBorderVisibility</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#map.getBorderVisibility" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets the visibility of the map’s border.</p>
@@ -1101,7 +1106,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.setBorderVisibility">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">setBorderVisibility</code><span class="sig-paren">(</span><em class="sig-param">visible</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setBorderVisibility" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the visibility of the map’s border.</p>
@@ -1114,7 +1119,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.getSmartPathsEnabled">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">getSmartPathsEnabled</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#map.getSmartPathsEnabled" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets the toggle state of smart paths.</p>
@@ -1125,7 +1130,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.setSmartPathsEnabled">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">setSmartPathsEnabled</code><span class="sig-paren">(</span><em class="sig-param">enabled</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setSmartPathsEnabled" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the toggle state of smart paths.</p>
@@ -1142,7 +1147,7 @@
 <div class="section" id="utility-functions">
 <h4>Utility Functions<a class="headerlink" href="#utility-functions" title="Permalink to this headline">¶</a></h4>
 <p>These are some miscellaneous functions that can be very useful when building custom scripts.</p>
-<dl class="function">
+<dl class="js function">
 <dt id="map.registerAction">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">registerAction</code><span class="sig-paren">(</span><em class="sig-param">functionName</em>, <em class="sig-param">actionName</em>, <em class="sig-param">shortcut = &quot;&quot;</em><span class="sig-paren">)</span><a class="headerlink" href="#map.registerAction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Registers a JavaScript function to an action that can be manually triggered in Porymap’s <code class="docutils literal notranslate"><span class="pre">Tools</span></code> menu. Optionally, a keyboard shortcut (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;Ctrl+P&quot;</span></code>) can also be specified, assuming it doesn’t collide with any existing shortcuts used by Porymap.</p>
@@ -1157,7 +1162,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.setTimeout">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">setTimeout</code><span class="sig-paren">(</span><em class="sig-param">func</em>, <em class="sig-param">delayMs</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setTimeout" title="Permalink to this definition">¶</a></dt>
 <dd><p>This behaves essentially the same as JavaScript’s <code class="docutils literal notranslate"><span class="pre">setTimeout()</span></code> that is used in web browsers or NodeJS. The <code class="docutils literal notranslate"><span class="pre">func</span></code> argument is a JavaScript function (NOT the name of a function) which will be executed after a delay. This is useful for creating animations or refreshing the overlay at constant intervals.</p>
@@ -1171,7 +1176,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="js function">
 <dt id="map.log">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">log</code><span class="sig-paren">(</span><em class="sig-param">message</em><span class="sig-paren">)</span><a class="headerlink" href="#map.log" title="Permalink to this definition">¶</a></dt>
 <dd><p>Logs a message to the Porymap log file. This is useful for debugging custom scripts.</p>
