@@ -1,3 +1,5 @@
+.. _editing-map-tiles:
+
 *****************
 Editing Map Tiles
 *****************
