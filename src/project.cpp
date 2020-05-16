@@ -2609,7 +2609,7 @@ bool Project::calculateDefaultMapSize(){
         default_map_size = 20;
     } else if (max >= getMapDataSize(1, 1)) {
         // Below equation derived from max >= (x + 15) * (x + 14)
-        // x^2 + 29x + (10 - max), then complete the square and simplify
+        // x^2 + 29x + (210 - max), then complete the square and simplify
         default_map_size = qFloor((qSqrt(4 * getMaxMapDataSize() + 1) - 29) / 2);
     } else {
         logError(QString("'MAX_MAP_DATA_SIZE' of %1 is too small to support a 1x1 map. Must be at least %2.")
