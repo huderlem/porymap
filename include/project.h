@@ -184,6 +184,13 @@ public:
     static int getNumMetatilesTotal();
     static int getNumPalettesPrimary();
     static int getNumPalettesTotal();
+    static int getMaxMapDataSize();
+    static int getDefaultMapSize();
+    static int getMaxMapWidth();
+    static int getMaxMapHeight();
+
+    int getMapDataSize(int width, int height);
+    bool calculateDefaultMapSize();
 
 private:
     void updateMapLayout(Map*);
@@ -203,6 +210,8 @@ private:
     static int num_metatiles_total;
     static int num_pals_primary;
     static int num_pals_total;
+    static int max_map_data_size;
+    static int default_map_size;
 
     QWidget *parent;
 

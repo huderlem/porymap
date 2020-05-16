@@ -2291,9 +2291,8 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked()
     heightSpinBox->setMinimum(1);
     bwidthSpinBox->setMinimum(1);
     bheightSpinBox->setMinimum(1);
-    // See below for explanation of maximum map dimensions
-    widthSpinBox->setMaximum(0x1E7);
-    heightSpinBox->setMaximum(0x1D1);
+    widthSpinBox->setMaximum(editor->project->getMaxMapWidth());
+    heightSpinBox->setMaximum(editor->project->getMaxMapHeight());
     // Maximum based only on data type (u8) of map border width/height
     bwidthSpinBox->setMaximum(255);
     bheightSpinBox->setMaximum(255);
@@ -2319,20 +2318,20 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked()
 
     QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
     form.addRow(&buttonBox);
-    connect(&buttonBox, &QDialogButtonBox::accepted, [&dialog, &widthSpinBox, &heightSpinBox, &errorLabel](){
+    connect(&buttonBox, &QDialogButtonBox::accepted, [&dialog, &widthSpinBox, &heightSpinBox, &errorLabel, this](){
         // Ensure width and height are an acceptable size.
         // The maximum number of metatiles in a map is the following:
         //    max = (width + 15) * (height + 14)
-        // This limit can be found in fieldmap.c in pokeruby/pokeemerald.
-        int realWidth = widthSpinBox->value() + 15;
-        int realHeight = heightSpinBox->value() + 14;
-        int numMetatiles = realWidth * realHeight;
-        if (MainWindow::mapDimensionsValid(widthSpinBox->value(), heightSpinBox->value())) {
+        // This limit can be found in fieldmap.c in pokeruby/pokeemerald/pokefirered.
+        int numMetatiles = editor->project->getMapDataSize(widthSpinBox->value(), heightSpinBox->value());
+        int maxMetatiles = editor->project->getMaxMapDataSize();
+        if (numMetatiles <= maxMetatiles) {
             dialog.accept();
         } else {
             QString errorText = QString("Error: The specified width and height are too large.\n"
-                    "The maximum map width and height is the following: (width + 15) * (height + 14) <= 10240\n"
-                    "The specified map width and height was: (%1 + 15) * (%2 + 14) = %3")
+                    "The maximum map width and height is the following: (width + 15) * (height + 14) <= %1\n"
+                    "The specified map width and height was: (%2 + 15) * (%3 + 14) = %4")
+                        .arg(maxMetatiles)
                         .arg(widthSpinBox->value())
                         .arg(heightSpinBox->value())
                         .arg(numMetatiles);
@@ -2353,14 +2352,7 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked()
 }
 
 bool MainWindow::mapDimensionsValid(int width, int height) {
-    // Ensure width and height are an acceptable size.
-    // The maximum number of metatiles in a map is the following:
-    //    max = (width + 15) * (height + 14)
-    // This limit can be found in fieldmap.c in pokeruby/pokeemerald.
-    int realWidth = width + 15;
-    int realHeight = height + 14;
-    int numMetatiles = realWidth * realHeight;
-    return numMetatiles <= 0x2800;
+    return editor->project->getMapDataSize(width, height) <= editor->project->getMaxMapDataSize();
 }
 
 void MainWindow::on_checkBox_smartPaths_stateChanged(int selected)

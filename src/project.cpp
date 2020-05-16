@@ -33,6 +33,8 @@ int Project::num_metatiles_primary = 512;
 int Project::num_metatiles_total = 1024;
 int Project::num_pals_primary = 6;
 int Project::num_pals_total = 13;
+int Project::max_map_data_size = 10240; // 0x2800
+int Project::default_map_size = 20;
 
 Project::Project(QWidget *parent) : parent(parent)
 {
@@ -720,8 +722,8 @@ void Project::setNewMapLayout(Map* map) {
     MapLayout *layout = new MapLayout();
     layout->id = MapLayout::layoutConstantFromName(map->name);
     layout->name = QString("%1_Layout").arg(map->name);
-    layout->width = "20";
-    layout->height = "20";
+    layout->width = QString::number(getDefaultMapSize());
+    layout->height = QString::number(getDefaultMapSize());
     layout->border_width = DEFAULT_BORDER_WIDTH;
     layout->border_height = DEFAULT_BORDER_HEIGHT;
     layout->border_path = QString("data/layouts/%1/border.bin").arg(map->name);
@@ -2044,7 +2046,7 @@ QMap<QString, QStringList> Project::getTilesetLabels() {
 
 bool Project::readTilesetProperties() {
     QStringList definePrefixes;
-    definePrefixes << "NUM_";
+    definePrefixes << "NUM_" << "MAX_";
     QString filename = "include/fieldmap.h";
     fileWatcher.addPath(root + "/" + filename);
     QMap<QString, int> defines = parser.readCDefines(filename, definePrefixes);
@@ -2096,6 +2098,24 @@ bool Project::readTilesetProperties() {
     else {
         logWarn(QString("Value for tileset property 'NUM_PALS_TOTAL' not found. Using default (%1) instead.")
                 .arg(Project::num_pals_total));
+    }
+    it = defines.find("MAX_MAP_DATA_SIZE");
+    if (it != defines.end()) {
+        int min = getMapDataSize(1, 1);
+        if (it.value() >= min) {
+            Project::max_map_data_size = it.value();
+            calculateDefaultMapSize();
+        } else {
+            // must be large enough to support a 1x1 map
+            logWarn(QString("Value for map property 'MAX_MAP_DATA_SIZE' is %1, must be at least %2. Using default (%3) instead.")
+                    .arg(it.value())
+                    .arg(min)
+                    .arg(Project::max_map_data_size));
+        }
+    }
+    else {
+        logWarn(QString("Value for map property 'MAX_MAP_DATA_SIZE' not found. Using default (%1) instead.")
+                .arg(Project::max_map_data_size));
     }
     return true;
 }
@@ -2540,4 +2560,49 @@ int Project::getNumPalettesPrimary()
 int Project::getNumPalettesTotal()
 {
     return Project::num_pals_total;
+}
+
+int Project::getMaxMapDataSize()
+{
+    return Project::max_map_data_size;
+}
+
+int Project::getMapDataSize(int width, int height)
+{
+    // + 15 and + 14 come from fieldmap.c in pokeruby/pokeemerald/pokefirered.
+    return (width + 15) * (height + 14);
+}
+
+int Project::getDefaultMapSize()
+{
+    return Project::default_map_size;
+}
+
+int Project::getMaxMapWidth()
+{
+    return (getMaxMapDataSize() / (1 + 14)) - 15;
+}
+
+int Project::getMaxMapHeight()
+{
+    return (getMaxMapDataSize() / (1 + 15)) - 14;
+}
+
+// Get largest possible square dimensions for a map up to maximum of 20x20 (arbitrary)
+bool Project::calculateDefaultMapSize(){
+    int max = getMaxMapDataSize();
+
+    if (max >= getMapDataSize(20, 20)) {
+        default_map_size = 20;
+    } else if (max >= getMapDataSize(1, 1)) {
+        // Below equation derived from max >= (x + 15) * (x + 14)
+        // x^2 + 29x + (10 - max), then complete the square and simplify
+        default_map_size = qFloor((qSqrt(4 * getMaxMapDataSize() + 1) - 29) / 2);
+    } else {
+        logError(QString("'MAX_MAP_DATA_SIZE' of %1 is too small to support a 1x1 map. Must be at least %2.")
+                    .arg(max)
+                    .arg(getMapDataSize(1, 1)));
+        return false;
+    }
+    return true;
 }

@@ -67,8 +67,8 @@ void NewMapPopup::setDefaultValues(int groupNum, QString mapSec) {
         ui->comboBox_NewMap_Primary_Tileset->setDisabled(true);
         ui->comboBox_NewMap_Secondary_Tileset->setDisabled(true);
     } else {
-        ui->spinBox_NewMap_Width->setValue(20);
-        ui->spinBox_NewMap_Height->setValue(20);
+        ui->spinBox_NewMap_Width->setValue(project->getDefaultMapSize());
+        ui->spinBox_NewMap_Height->setValue(project->getDefaultMapSize());
         ui->spinBox_NewMap_BorderWidth->setValue(DEFAULT_BORDER_WIDTH);
         ui->spinBox_NewMap_BorderHeight->setValue(DEFAULT_BORDER_HEIGHT);
     }
