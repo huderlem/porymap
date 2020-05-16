@@ -68,12 +68,12 @@ Let's test the script out by re-launching Porymap. If we try to paint grass on t
 Registering Script Actions
 --------------------------
 
-The grass-randomizer script above happens implicitly when the user paints on the map. However, other times we probably want to call the custom script on demand. One of the API function Porymap provides is the ability to trigger scripting functions from the ``Tools`` menu, or a keyboard shortcut. To do this, we will usually want to register the action when the project loads. Here is an example script where a couple custom actions are registered.
+The grass-randomizer script above happens implicitly when the user paints on the map. However, other times we probably want to call the custom script on demand. One of the API functions Porymap provides is the ability to trigger scripting functions from the ``Tools`` menu, or a keyboard shortcut. To do this, we will usually want to register the action when the project loads. Here is an example script where some custom actions are registered.
 
 .. code-block:: js
 
 	function applyNightTint() {
-		// Apply night palette tinting...
+	    // Apply night palette tinting...
 	}
 
 	// Porymap callback when project is opened.
@@ -136,7 +136,7 @@ The following functions are related to editing the map's blocks or retrieving in
    :param number y: y coordinate of the block
    :returns {metatileId, collision, elevation, rawValue}: the block object
 
-.. js:function:: map.setBlock(x, y, metatileId, collision, elevation)
+.. js:function:: map.setBlock(x, y, metatileId, collision, elevation, forceRedraw = true, commitChanges = true)
 
    Sets a block in the currently-opened map.
 
@@ -145,6 +145,8 @@ The following functions are related to editing the map's blocks or retrieving in
    :param number metatileId: the metatile id of the block
    :param number collision: the collision of the block (``0`` = passable, ``1`` = impassable)
    :param number elevation: the elevation of the block
+   :param boolean forceRedraw: Force the map view to refresh. Defaults to ``true``. Redrawing the map view is expensive, so set to ``false`` when making many consecutive map edits, and then redraw the map once using ``map.redraw()``.
+   :param boolean commitChanges: Commit the changes to the map's edit/undo history. Defaults to ``true``. When making many related map edits, it can be useful to set this to ``false``, and then commit all of them together with ``map.commit()``.
 
 .. js:function:: map.getMetatileId(x, y)
 
@@ -154,13 +156,15 @@ The following functions are related to editing the map's blocks or retrieving in
    :param number y: y coordinate of the block
    :returns number: the metatile id of the block
 
-.. js:function:: map.setMetatileId(x, y, metatileId)
+.. js:function:: map.setMetatileId(x, y, metatileId, forceRedraw = true, commitChanges = true)
 
    Sets the metatile id of a block in the currently-opened map.
 
    :param number x: x coordinate of the block
    :param number y: y coordinate of the block
    :param number metatileId: the metatile id of the block
+   :param boolean forceRedraw: Force the map view to refresh. Defaults to ``true``. Redrawing the map view is expensive, so set to ``false`` when making many consecutive map edits, and then redraw the map once using ``map.redraw()``.
+   :param boolean commitChanges: Commit the changes to the map's edit/undo history. Defaults to ``true``. When making many related map edits, it can be useful to set this to ``false``, and then commit all of them together with ``map.commit()``.
 
 .. js:function:: map.getCollision(x, y)
 
@@ -170,13 +174,15 @@ The following functions are related to editing the map's blocks or retrieving in
    :param number y: y coordinate of the block
    :returns number: the collision of the block
 
-.. js:function:: map.setCollision(x, y, collision)
+.. js:function:: map.setCollision(x, y, collision, forceRedraw = true, commitChanges = true)
 
    Sets the collision of a block in the currently-opened map. (``0`` = passable, ``1`` = impassable)
 
    :param number x: x coordinate of the block
    :param number y: y coordinate of the block
    :param number collision: the collision of the block
+   :param boolean forceRedraw: Force the map view to refresh. Defaults to ``true``. Redrawing the map view is expensive, so set to ``false`` when making many consecutive map edits, and then redraw the map once using ``map.redraw()``.
+   :param boolean commitChanges: Commit the changes to the map's edit/undo history. Defaults to ``true``. When making many related map edits, it can be useful to set this to ``false``, and then commit all of them together with ``map.commit()``.
 
 .. js:function:: map.getElevation(x, y)
 
@@ -186,57 +192,71 @@ The following functions are related to editing the map's blocks or retrieving in
    :param number y: y coordinate of the block
    :returns number: the elevation of the block
 
-.. js:function:: map.setElevation(x, y, elevation)
+.. js:function:: map.setElevation(x, y, elevation, forceRedraw = true, commitChanges = true)
 
    Sets the elevation of a block in the currently-opened map.
 
    :param number x: x coordinate of the block
    :param number y: y coordinate of the block
    :param number elevation: the elevation of the block
+   :param boolean forceRedraw: Force the map view to refresh. Defaults to ``true``. Redrawing the map view is expensive, so set to ``false`` when making many consecutive map edits, and then redraw the map once using ``map.redraw()``.
+   :param boolean commitChanges: Commit the changes to the map's edit/undo history. Defaults to ``true``. When making many related map edits, it can be useful to set this to ``false``, and then commit all of them together with ``map.commit()``.
 
-.. js:function:: map.setBlocksFromSelection(x, y)
+.. js:function:: map.setBlocksFromSelection(x, y, forceRedraw = true, commitChanges = true)
 
    Sets blocks on the map using the user's current metatile selection.
 
    :param number x: initial x coordinate
    :param number y: initial y coordinate
+   :param boolean forceRedraw: Force the map view to refresh. Defaults to ``true``. Redrawing the map view is expensive, so set to ``false`` when making many consecutive map edits, and then redraw the map once using ``map.redraw()``.
+   :param boolean commitChanges: Commit the changes to the map's edit/undo history. Defaults to ``true``. When making many related map edits, it can be useful to set this to ``false``, and then commit all of them together with ``map.commit()``.
 
-.. js:function:: map.bucketFill(x, y, metatileId)
+.. js:function:: map.bucketFill(x, y, metatileId, forceRedraw = true, commitChanges = true)
 
    Performs a bucket fill of a metatile id, starting at the given coordinates.
 
    :param number x: initial x coordinate
    :param number y: initial y coordinate
    :param number metatileId: metatile id to fill
+   :param boolean forceRedraw: Force the map view to refresh. Defaults to ``true``. Redrawing the map view is expensive, so set to ``false`` when making many consecutive map edits, and then redraw the map once using ``map.redraw()``.
+   :param boolean commitChanges: Commit the changes to the map's edit/undo history. Defaults to ``true``. When making many related map edits, it can be useful to set this to ``false``, and then commit all of them together with ``map.commit()``.
 
-.. js:function:: map.bucketFillFromSelection(x, y)
+.. js:function:: map.bucketFillFromSelection(x, y, forceRedraw = true, commitChanges = true)
 
    Performs a bucket fill using the user's current metatile selection, starting at the given coordinates.
 
    :param number x: initial x coordinate
    :param number y: initial y coordinate
+   :param boolean forceRedraw: Force the map view to refresh. Defaults to ``true``. Redrawing the map view is expensive, so set to ``false`` when making many consecutive map edits, and then redraw the map once using ``map.redraw()``.
+   :param boolean commitChanges: Commit the changes to the map's edit/undo history. Defaults to ``true``. When making many related map edits, it can be useful to set this to ``false``, and then commit all of them together with ``map.commit()``.
 
-.. js:function:: map.magicFill(x, y, metatileId)
+.. js:function:: map.magicFill(x, y, metatileId, forceRedraw = true, commitChanges = true)
 
    Performs a magic fill of a metatile id, starting at the given coordinates.
 
    :param number x: initial x coordinate
    :param number y: initial y coordinate
    :param number metatileId: metatile id to magic fill
+   :param boolean forceRedraw: Force the map view to refresh. Defaults to ``true``. Redrawing the map view is expensive, so set to ``false`` when making many consecutive map edits, and then redraw the map once using ``map.redraw()``.
+   :param boolean commitChanges: Commit the changes to the map's edit/undo history. Defaults to ``true``. When making many related map edits, it can be useful to set this to ``false``, and then commit all of them together with ``map.commit()``.
 
-.. js:function:: map.magicFillFromSelection(x, y)
+.. js:function:: map.magicFillFromSelection(x, y, forceRedraw = true, commitChanges = true)
 
    Performs a magic fill using the user's current metatile selection, starting at the given coordinates.
 
    :param number x: initial x coordinate
    :param number y: initial y coordinate
+   :param boolean forceRedraw: Force the map view to refresh. Defaults to ``true``. Redrawing the map view is expensive, so set to ``false`` when making many consecutive map edits, and then redraw the map once using ``map.redraw()``.
+   :param boolean commitChanges: Commit the changes to the map's edit/undo history. Defaults to ``true``. When making many related map edits, it can be useful to set this to ``false``, and then commit all of them together with ``map.commit()``.
 
-.. js:function:: map.shift(xDelta, yDelta)
+.. js:function:: map.shift(xDelta, yDelta, forceRedraw = true, commitChanges = true)
 
    Performs a shift on the map's blocks.
 
    :param number xDelta: number of blocks to shift horizontally
    :param number yDelta: number of blocks to shift vertically
+   :param boolean forceRedraw: Force the map view to refresh. Defaults to ``true``. Redrawing the map view is expensive, so set to ``false`` when making many consecutive map edits, and then redraw the map once using ``map.redraw()``.
+   :param boolean commitChanges: Commit the changes to the map's edit/undo history. Defaults to ``true``. When making many related map edits, it can be useful to set this to ``false``, and then commit all of them together with ``map.commit()``.
 
 .. js:function:: map.getDimensions()
 
@@ -274,6 +294,14 @@ The following functions are related to editing the map's blocks or retrieving in
    Sets the height of the currently-opened map.
 
    :param number height: height in blocks
+
+.. js:function:: map.redraw()
+
+   Redraws the entire map area. Useful when delaying map redraws using ``forceRedraw = false`` in certain map editing functions.
+
+.. js:function:: map.commit()
+
+   Commits any uncommitted changes to the map's edit/undo history. Useful when delaying commits using ``commitChanges = false`` in certain map editing functions.
 
 Map Overlay Functions
 ^^^^^^^^^^^^^^^^^^^^^

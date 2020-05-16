@@ -354,9 +354,9 @@
 </div>
 <div class="section" id="registering-script-actions">
 <h2>Registering Script Actions<a class="headerlink" href="#registering-script-actions" title="Permalink to this headline">¶</a></h2>
-<p>The grass-randomizer script above happens implicitly when the user paints on the map. However, other times we probably want to call the custom script on demand. One of the API function Porymap provides is the ability to trigger scripting functions from the <code class="docutils literal notranslate"><span class="pre">Tools</span></code> menu, or a keyboard shortcut. To do this, we will usually want to register the action when the project loads. Here is an example script where a couple custom actions are registered.</p>
+<p>The grass-randomizer script above happens implicitly when the user paints on the map. However, other times we probably want to call the custom script on demand. One of the API functions Porymap provides is the ability to trigger scripting functions from the <code class="docutils literal notranslate"><span class="pre">Tools</span></code> menu, or a keyboard shortcut. To do this, we will usually want to register the action when the project loads. Here is an example script where some custom actions are registered.</p>
 <div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kd">function</span> <span class="nx">applyNightTint</span><span class="p">()</span> <span class="p">{</span>
-        <span class="c1">// Apply night palette tinting...</span>
+    <span class="c1">// Apply night palette tinting...</span>
 <span class="p">}</span>
 
 <span class="c1">// Porymap callback when project is opened.</span>
@@ -453,7 +453,7 @@
 
 <dl class="js function">
 <dt id="map.setBlock">
-<code class="sig-prename descclassname">map.</code><code class="sig-name descname">setBlock</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">metatileId</em>, <em class="sig-param">collision</em>, <em class="sig-param">elevation</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setBlock" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">setBlock</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">metatileId</em>, <em class="sig-param">collision</em>, <em class="sig-param">elevation</em>, <em class="sig-param">forceRedraw = true</em>, <em class="sig-param">commitChanges = true</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setBlock" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets a block in the currently-opened map.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Arguments</dt>
@@ -463,6 +463,8 @@
 <li><p><strong>metatileId</strong> (<em>number</em>) – the metatile id of the block</p></li>
 <li><p><strong>collision</strong> (<em>number</em>) – the collision of the block (<code class="docutils literal notranslate"><span class="pre">0</span></code> = passable, <code class="docutils literal notranslate"><span class="pre">1</span></code> = impassable)</p></li>
 <li><p><strong>elevation</strong> (<em>number</em>) – the elevation of the block</p></li>
+<li><p><strong>forceRedraw</strong> (<em>boolean</em>) – Force the map view to refresh. Defaults to <code class="docutils literal notranslate"><span class="pre">true</span></code>. Redrawing the map view is expensive, so set to <code class="docutils literal notranslate"><span class="pre">false</span></code> when making many consecutive map edits, and then redraw the map once using <code class="docutils literal notranslate"><span class="pre">map.redraw()</span></code>.</p></li>
+<li><p><strong>commitChanges</strong> (<em>boolean</em>) – Commit the changes to the map’s edit/undo history. Defaults to <code class="docutils literal notranslate"><span class="pre">true</span></code>. When making many related map edits, it can be useful to set this to <code class="docutils literal notranslate"><span class="pre">false</span></code>, and then commit all of them together with <code class="docutils literal notranslate"><span class="pre">map.commit()</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -487,7 +489,7 @@
 
 <dl class="js function">
 <dt id="map.setMetatileId">
-<code class="sig-prename descclassname">map.</code><code class="sig-name descname">setMetatileId</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">metatileId</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setMetatileId" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">setMetatileId</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">metatileId</em>, <em class="sig-param">forceRedraw = true</em>, <em class="sig-param">commitChanges = true</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setMetatileId" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the metatile id of a block in the currently-opened map.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Arguments</dt>
@@ -495,6 +497,8 @@
 <li><p><strong>x</strong> (<em>number</em>) – x coordinate of the block</p></li>
 <li><p><strong>y</strong> (<em>number</em>) – y coordinate of the block</p></li>
 <li><p><strong>metatileId</strong> (<em>number</em>) – the metatile id of the block</p></li>
+<li><p><strong>forceRedraw</strong> (<em>boolean</em>) – Force the map view to refresh. Defaults to <code class="docutils literal notranslate"><span class="pre">true</span></code>. Redrawing the map view is expensive, so set to <code class="docutils literal notranslate"><span class="pre">false</span></code> when making many consecutive map edits, and then redraw the map once using <code class="docutils literal notranslate"><span class="pre">map.redraw()</span></code>.</p></li>
+<li><p><strong>commitChanges</strong> (<em>boolean</em>) – Commit the changes to the map’s edit/undo history. Defaults to <code class="docutils literal notranslate"><span class="pre">true</span></code>. When making many related map edits, it can be useful to set this to <code class="docutils literal notranslate"><span class="pre">false</span></code>, and then commit all of them together with <code class="docutils literal notranslate"><span class="pre">map.commit()</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -519,7 +523,7 @@
 
 <dl class="js function">
 <dt id="map.setCollision">
-<code class="sig-prename descclassname">map.</code><code class="sig-name descname">setCollision</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">collision</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setCollision" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">setCollision</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">collision</em>, <em class="sig-param">forceRedraw = true</em>, <em class="sig-param">commitChanges = true</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setCollision" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the collision of a block in the currently-opened map. (<code class="docutils literal notranslate"><span class="pre">0</span></code> = passable, <code class="docutils literal notranslate"><span class="pre">1</span></code> = impassable)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Arguments</dt>
@@ -527,6 +531,8 @@
 <li><p><strong>x</strong> (<em>number</em>) – x coordinate of the block</p></li>
 <li><p><strong>y</strong> (<em>number</em>) – y coordinate of the block</p></li>
 <li><p><strong>collision</strong> (<em>number</em>) – the collision of the block</p></li>
+<li><p><strong>forceRedraw</strong> (<em>boolean</em>) – Force the map view to refresh. Defaults to <code class="docutils literal notranslate"><span class="pre">true</span></code>. Redrawing the map view is expensive, so set to <code class="docutils literal notranslate"><span class="pre">false</span></code> when making many consecutive map edits, and then redraw the map once using <code class="docutils literal notranslate"><span class="pre">map.redraw()</span></code>.</p></li>
+<li><p><strong>commitChanges</strong> (<em>boolean</em>) – Commit the changes to the map’s edit/undo history. Defaults to <code class="docutils literal notranslate"><span class="pre">true</span></code>. When making many related map edits, it can be useful to set this to <code class="docutils literal notranslate"><span class="pre">false</span></code>, and then commit all of them together with <code class="docutils literal notranslate"><span class="pre">map.commit()</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -551,7 +557,7 @@
 
 <dl class="js function">
 <dt id="map.setElevation">
-<code class="sig-prename descclassname">map.</code><code class="sig-name descname">setElevation</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">elevation</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setElevation" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">setElevation</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">elevation</em>, <em class="sig-param">forceRedraw = true</em>, <em class="sig-param">commitChanges = true</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setElevation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the elevation of a block in the currently-opened map.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Arguments</dt>
@@ -559,6 +565,8 @@
 <li><p><strong>x</strong> (<em>number</em>) – x coordinate of the block</p></li>
 <li><p><strong>y</strong> (<em>number</em>) – y coordinate of the block</p></li>
 <li><p><strong>elevation</strong> (<em>number</em>) – the elevation of the block</p></li>
+<li><p><strong>forceRedraw</strong> (<em>boolean</em>) – Force the map view to refresh. Defaults to <code class="docutils literal notranslate"><span class="pre">true</span></code>. Redrawing the map view is expensive, so set to <code class="docutils literal notranslate"><span class="pre">false</span></code> when making many consecutive map edits, and then redraw the map once using <code class="docutils literal notranslate"><span class="pre">map.redraw()</span></code>.</p></li>
+<li><p><strong>commitChanges</strong> (<em>boolean</em>) – Commit the changes to the map’s edit/undo history. Defaults to <code class="docutils literal notranslate"><span class="pre">true</span></code>. When making many related map edits, it can be useful to set this to <code class="docutils literal notranslate"><span class="pre">false</span></code>, and then commit all of them together with <code class="docutils literal notranslate"><span class="pre">map.commit()</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -566,13 +574,15 @@
 
 <dl class="js function">
 <dt id="map.setBlocksFromSelection">
-<code class="sig-prename descclassname">map.</code><code class="sig-name descname">setBlocksFromSelection</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setBlocksFromSelection" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">setBlocksFromSelection</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">forceRedraw = true</em>, <em class="sig-param">commitChanges = true</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setBlocksFromSelection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets blocks on the map using the user’s current metatile selection.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Arguments</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> (<em>number</em>) – initial x coordinate</p></li>
 <li><p><strong>y</strong> (<em>number</em>) – initial y coordinate</p></li>
+<li><p><strong>forceRedraw</strong> (<em>boolean</em>) – Force the map view to refresh. Defaults to <code class="docutils literal notranslate"><span class="pre">true</span></code>. Redrawing the map view is expensive, so set to <code class="docutils literal notranslate"><span class="pre">false</span></code> when making many consecutive map edits, and then redraw the map once using <code class="docutils literal notranslate"><span class="pre">map.redraw()</span></code>.</p></li>
+<li><p><strong>commitChanges</strong> (<em>boolean</em>) – Commit the changes to the map’s edit/undo history. Defaults to <code class="docutils literal notranslate"><span class="pre">true</span></code>. When making many related map edits, it can be useful to set this to <code class="docutils literal notranslate"><span class="pre">false</span></code>, and then commit all of them together with <code class="docutils literal notranslate"><span class="pre">map.commit()</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -580,7 +590,7 @@
 
 <dl class="js function">
 <dt id="map.bucketFill">
-<code class="sig-prename descclassname">map.</code><code class="sig-name descname">bucketFill</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">metatileId</em><span class="sig-paren">)</span><a class="headerlink" href="#map.bucketFill" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">bucketFill</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">metatileId</em>, <em class="sig-param">forceRedraw = true</em>, <em class="sig-param">commitChanges = true</em><span class="sig-paren">)</span><a class="headerlink" href="#map.bucketFill" title="Permalink to this definition">¶</a></dt>
 <dd><p>Performs a bucket fill of a metatile id, starting at the given coordinates.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Arguments</dt>
@@ -588,6 +598,8 @@
 <li><p><strong>x</strong> (<em>number</em>) – initial x coordinate</p></li>
 <li><p><strong>y</strong> (<em>number</em>) – initial y coordinate</p></li>
 <li><p><strong>metatileId</strong> (<em>number</em>) – metatile id to fill</p></li>
+<li><p><strong>forceRedraw</strong> (<em>boolean</em>) – Force the map view to refresh. Defaults to <code class="docutils literal notranslate"><span class="pre">true</span></code>. Redrawing the map view is expensive, so set to <code class="docutils literal notranslate"><span class="pre">false</span></code> when making many consecutive map edits, and then redraw the map once using <code class="docutils literal notranslate"><span class="pre">map.redraw()</span></code>.</p></li>
+<li><p><strong>commitChanges</strong> (<em>boolean</em>) – Commit the changes to the map’s edit/undo history. Defaults to <code class="docutils literal notranslate"><span class="pre">true</span></code>. When making many related map edits, it can be useful to set this to <code class="docutils literal notranslate"><span class="pre">false</span></code>, and then commit all of them together with <code class="docutils literal notranslate"><span class="pre">map.commit()</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -595,13 +607,15 @@
 
 <dl class="js function">
 <dt id="map.bucketFillFromSelection">
-<code class="sig-prename descclassname">map.</code><code class="sig-name descname">bucketFillFromSelection</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em><span class="sig-paren">)</span><a class="headerlink" href="#map.bucketFillFromSelection" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">bucketFillFromSelection</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">forceRedraw = true</em>, <em class="sig-param">commitChanges = true</em><span class="sig-paren">)</span><a class="headerlink" href="#map.bucketFillFromSelection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Performs a bucket fill using the user’s current metatile selection, starting at the given coordinates.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Arguments</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> (<em>number</em>) – initial x coordinate</p></li>
 <li><p><strong>y</strong> (<em>number</em>) – initial y coordinate</p></li>
+<li><p><strong>forceRedraw</strong> (<em>boolean</em>) – Force the map view to refresh. Defaults to <code class="docutils literal notranslate"><span class="pre">true</span></code>. Redrawing the map view is expensive, so set to <code class="docutils literal notranslate"><span class="pre">false</span></code> when making many consecutive map edits, and then redraw the map once using <code class="docutils literal notranslate"><span class="pre">map.redraw()</span></code>.</p></li>
+<li><p><strong>commitChanges</strong> (<em>boolean</em>) – Commit the changes to the map’s edit/undo history. Defaults to <code class="docutils literal notranslate"><span class="pre">true</span></code>. When making many related map edits, it can be useful to set this to <code class="docutils literal notranslate"><span class="pre">false</span></code>, and then commit all of them together with <code class="docutils literal notranslate"><span class="pre">map.commit()</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -609,7 +623,7 @@
 
 <dl class="js function">
 <dt id="map.magicFill">
-<code class="sig-prename descclassname">map.</code><code class="sig-name descname">magicFill</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">metatileId</em><span class="sig-paren">)</span><a class="headerlink" href="#map.magicFill" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">magicFill</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">metatileId</em>, <em class="sig-param">forceRedraw = true</em>, <em class="sig-param">commitChanges = true</em><span class="sig-paren">)</span><a class="headerlink" href="#map.magicFill" title="Permalink to this definition">¶</a></dt>
 <dd><p>Performs a magic fill of a metatile id, starting at the given coordinates.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Arguments</dt>
@@ -617,6 +631,8 @@
 <li><p><strong>x</strong> (<em>number</em>) – initial x coordinate</p></li>
 <li><p><strong>y</strong> (<em>number</em>) – initial y coordinate</p></li>
 <li><p><strong>metatileId</strong> (<em>number</em>) – metatile id to magic fill</p></li>
+<li><p><strong>forceRedraw</strong> (<em>boolean</em>) – Force the map view to refresh. Defaults to <code class="docutils literal notranslate"><span class="pre">true</span></code>. Redrawing the map view is expensive, so set to <code class="docutils literal notranslate"><span class="pre">false</span></code> when making many consecutive map edits, and then redraw the map once using <code class="docutils literal notranslate"><span class="pre">map.redraw()</span></code>.</p></li>
+<li><p><strong>commitChanges</strong> (<em>boolean</em>) – Commit the changes to the map’s edit/undo history. Defaults to <code class="docutils literal notranslate"><span class="pre">true</span></code>. When making many related map edits, it can be useful to set this to <code class="docutils literal notranslate"><span class="pre">false</span></code>, and then commit all of them together with <code class="docutils literal notranslate"><span class="pre">map.commit()</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -624,13 +640,15 @@
 
 <dl class="js function">
 <dt id="map.magicFillFromSelection">
-<code class="sig-prename descclassname">map.</code><code class="sig-name descname">magicFillFromSelection</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em><span class="sig-paren">)</span><a class="headerlink" href="#map.magicFillFromSelection" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">magicFillFromSelection</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">forceRedraw = true</em>, <em class="sig-param">commitChanges = true</em><span class="sig-paren">)</span><a class="headerlink" href="#map.magicFillFromSelection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Performs a magic fill using the user’s current metatile selection, starting at the given coordinates.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Arguments</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> (<em>number</em>) – initial x coordinate</p></li>
 <li><p><strong>y</strong> (<em>number</em>) – initial y coordinate</p></li>
+<li><p><strong>forceRedraw</strong> (<em>boolean</em>) – Force the map view to refresh. Defaults to <code class="docutils literal notranslate"><span class="pre">true</span></code>. Redrawing the map view is expensive, so set to <code class="docutils literal notranslate"><span class="pre">false</span></code> when making many consecutive map edits, and then redraw the map once using <code class="docutils literal notranslate"><span class="pre">map.redraw()</span></code>.</p></li>
+<li><p><strong>commitChanges</strong> (<em>boolean</em>) – Commit the changes to the map’s edit/undo history. Defaults to <code class="docutils literal notranslate"><span class="pre">true</span></code>. When making many related map edits, it can be useful to set this to <code class="docutils literal notranslate"><span class="pre">false</span></code>, and then commit all of them together with <code class="docutils literal notranslate"><span class="pre">map.commit()</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -638,13 +656,15 @@
 
 <dl class="js function">
 <dt id="map.shift">
-<code class="sig-prename descclassname">map.</code><code class="sig-name descname">shift</code><span class="sig-paren">(</span><em class="sig-param">xDelta</em>, <em class="sig-param">yDelta</em><span class="sig-paren">)</span><a class="headerlink" href="#map.shift" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">shift</code><span class="sig-paren">(</span><em class="sig-param">xDelta</em>, <em class="sig-param">yDelta</em>, <em class="sig-param">forceRedraw = true</em>, <em class="sig-param">commitChanges = true</em><span class="sig-paren">)</span><a class="headerlink" href="#map.shift" title="Permalink to this definition">¶</a></dt>
 <dd><p>Performs a shift on the map’s blocks.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Arguments</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>xDelta</strong> (<em>number</em>) – number of blocks to shift horizontally</p></li>
 <li><p><strong>yDelta</strong> (<em>number</em>) – number of blocks to shift vertically</p></li>
+<li><p><strong>forceRedraw</strong> (<em>boolean</em>) – Force the map view to refresh. Defaults to <code class="docutils literal notranslate"><span class="pre">true</span></code>. Redrawing the map view is expensive, so set to <code class="docutils literal notranslate"><span class="pre">false</span></code> when making many consecutive map edits, and then redraw the map once using <code class="docutils literal notranslate"><span class="pre">map.redraw()</span></code>.</p></li>
+<li><p><strong>commitChanges</strong> (<em>boolean</em>) – Commit the changes to the map’s edit/undo history. Defaults to <code class="docutils literal notranslate"><span class="pre">true</span></code>. When making many related map edits, it can be useful to set this to <code class="docutils literal notranslate"><span class="pre">false</span></code>, and then commit all of them together with <code class="docutils literal notranslate"><span class="pre">map.commit()</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -721,6 +741,18 @@
 </ul>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.redraw">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">redraw</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#map.redraw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Redraws the entire map area. Useful when delaying map redraws using <code class="docutils literal notranslate"><span class="pre">forceRedraw</span> <span class="pre">=</span> <span class="pre">false</span></code> in certain map editing functions.</p>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.commit">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">commit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#map.commit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Commits any uncommitted changes to the map’s edit/undo history. Useful when delaying commits using <code class="docutils literal notranslate"><span class="pre">commitChanges</span> <span class="pre">=</span> <span class="pre">false</span></code> in certain map editing functions.</p>
 </dd></dl>
 
 </div>
