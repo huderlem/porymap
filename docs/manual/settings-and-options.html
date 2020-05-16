@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Navigation &mdash; porymap  documentation</title>
+  <title>Porymap Settings &mdash; porymap  documentation</title>
   
 
   
@@ -36,8 +36,8 @@
   <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Editing Map Tiles" href="editing-map-tiles.html" />
-    <link rel="prev" title="Introduction" href="introduction.html" /> 
+    <link rel="next" title="Changelog" href="../reference/changelog.html" />
+    <link rel="prev" title="Project Files" href="project-files.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -88,11 +88,11 @@
 <li class="toctree-l2"><a class="reference internal" href="introduction.html#getting-started">Getting Started</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Navigation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#map-list">Map List</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#main-window">Main Window</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#tileset-editor">Tileset Editor</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#region-map-editor">Region Map Editor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="navigation.html">Navigation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="navigation.html#map-list">Map List</a></li>
+<li class="toctree-l2"><a class="reference internal" href="navigation.html#main-window">Main Window</a></li>
+<li class="toctree-l2"><a class="reference internal" href="navigation.html#tileset-editor">Tileset Editor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="navigation.html#region-map-editor">Region Map Editor</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="editing-map-tiles.html">Editing Map Tiles</a><ul>
@@ -170,7 +170,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="project-files.html">Project Files</a></li>
-<li class="toctree-l1"><a class="reference internal" href="settings-and-options.html">Porymap Settings</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Porymap Settings</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reference</span></p>
 <ul>
@@ -279,14 +279,14 @@
     
       <li><a href="../index.html">Docs</a> &raquo;</li>
         
-      <li>Navigation</li>
+      <li>Porymap Settings</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
             
-              <a href="https://github.com/huderlem/porymap/blob/master/docsrc/manual/navigation.rst" class="fa fa-github"> Edit on GitHub</a>
+              <a href="https://github.com/huderlem/porymap/blob/master/docsrc/manual/settings-and-options.rst" class="fa fa-github"> Edit on GitHub</a>
             
           
         
@@ -300,70 +300,154 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="navigation">
-<h1>Navigation<a class="headerlink" href="#navigation" title="Permalink to this headline">¶</a></h1>
-<p>Porymap can seem daunting at first because it has many buttons, tabs, panes, and windows.  Let’s briefly go over the different parts of the application.</p>
-<div class="section" id="map-list">
-<h2>Map List<a class="headerlink" href="#map-list" title="Permalink to this headline">¶</a></h2>
-<p>The map list contains a hierarchical view of all of the maps in your project.  It is situated on the left side of Porymap’s main window.  To switch to a different map, simply double-click or press <code class="docutils literal notranslate"><span class="pre">Enter</span></code> on the desired map’s name.  Larger maps can take a few seconds to load the first time, so be patient.</p>
-<div class="figure align-default" id="id1">
-<img alt="Map List Pane" src="../_images/map-list-pane.png" />
-<p class="caption"><span class="caption-text">Map List Pane</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
-</div>
-<p>By default, the maps are organized by their map groups.  The <em>Sort Map List</em> <img alt="sort-map-list-button" src="../_images/sort-map-list-button.png" /> button gives you some other options to organize the maps:</p>
-<dl class="simple">
-<dt>Sort by Group</dt><dd><p>Organizes by map groups.</p>
-</dd>
-<dt>Sort by Area</dt><dd><p>Organizes by region map section.</p>
-</dd>
-<dt>Sort by Layout</dt><dd><p>Organizes by map layouts. Most layouts are only used by a single map, but layouts like the Pokemon Center are used by many maps.</p>
-</dd>
-</dl>
-<p>Right-clicking on the folder name in any of the sort modes will bring up a dialog to create a new map in that folder. For more details, see: <a class="reference internal" href="creating-new-maps.html#creating-new-maps"><span class="std std-ref">Creating New Maps</span></a>.</p>
-<p>The <em>Expand All</em> <img alt="expand-all-button" src="../_images/expand-all-button.png" /> and <em>Collapse All</em> <img alt="collapse-all-button" src="../_images/collapse-all-button.png" /> buttons will expand or collapse all of the map folders.</p>
-<p>Type in the filter to show maps that contain the filter text.</p>
-<div class="figure align-default" id="id2">
-<img alt="Filter Map List" src="../_images/filter-map-list.png" />
-<p class="caption"><span class="caption-text">Filter Map List</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
-</div>
-</div>
-<div class="section" id="main-window">
-<h2>Main Window<a class="headerlink" href="#main-window" title="Permalink to this headline">¶</a></h2>
-<p>Most of the work you do in Porymap is in the center Main Window.  It features 4 tabbed views which each have different purposes, but they all operate within the context of the currently-opened map in the Map List.  Let’s quickly summarize what each of these tabs is used for.</p>
-<div class="figure align-default" id="id3">
-<img alt="Main Window Tabs" src="../_images/main-window-tabs.png" />
-<p class="caption"><span class="caption-text">Main Window Tabs</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
-</div>
-<dl class="simple">
-<dt>Map Tab</dt><dd><p>Paint metatiles and their collision properties to change the appearance of the map and how the player can walk around the map.  When the Map Tab is selected, the pane on the right side of the map will have two tabs: Metatiles and Collision.  You can switch between these to paint either metatiles or collision properties onto the map.</p>
-</dd>
-<dt>Events Tab</dt><dd><p>Edit the interactable events on the map.  This includes things like objects, warps, script triggers, and more.</p>
-</dd>
-<dt>Header Tab</dt><dd><p>Choose various gameplay properties to set for the map. This includes things like background music and weather.</p>
-</dd>
-<dt>Connections Tab</dt><dd><p>Change how the map connects with surrounding maps when the player walks from one to another.</p>
-</dd>
-<dt>Wild Pokémon Tab</dt><dd><p>Edit the wild Pokémon available in the map.</p>
-</dd>
-</dl>
-</div>
-<div class="section" id="tileset-editor">
-<h2>Tileset Editor<a class="headerlink" href="#tileset-editor" title="Permalink to this headline">¶</a></h2>
-<p>The Tileset Editor can be opened with <em>File -&gt; Tileset Editor</em>.  When the Tileset Editor is opened, it is opened in the context of the currently-opened map.  Every map has a primary and secondary tileset, so you will work with a combination of the two whenever you use the Tileset Editor.  The left-side pane shows the primary and secondary tilesets’ metatiles.  The right-side panes allow you to modify the currently-selected metatile.</p>
-<div class="figure align-default" id="id4">
-<img alt="Tileset Editor" src="../_images/tileset-editor.png" />
-<p class="caption"><span class="caption-text">Tileset Editor</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
-</div>
-</div>
-<div class="section" id="region-map-editor">
-<h2>Region Map Editor<a class="headerlink" href="#region-map-editor" title="Permalink to this headline">¶</a></h2>
-<p>The Region Map Editor can be opened with <em>File -&gt; Region Map Editor</em>. This window will allow you to modify the look and layout of maps on the game’s region map.  You can also modify the city map images using the bottom two panes. Currently the Region Map Editor is only available for pokeemerald and pokeruby projects.</p>
-<div class="figure align-default" id="id5">
-<img alt="Region Map Editor" src="../_images/region-map-editor.png" />
-<p class="caption"><span class="caption-text">Region Map Editor</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
-</div>
-<p>We covered all of the basic views and windows of Porymap above.  Next, let’s learn how to use Porymap’s features to the fullest when editing map tiles.</p>
-</div>
+  <div class="section" id="porymap-settings">
+<span id="settings-and-options"></span><h1>Porymap Settings<a class="headerlink" href="#porymap-settings" title="Permalink to this headline">¶</a></h1>
+<p>Porymap uses config files to read and store user and project settings.
+A global settings file is stored in a platform-dependent location for app configuration files
+(<code class="docutils literal notranslate"><span class="pre">%Appdata%\pret\porymap\porymap.cfg</span></code> on Windows, <code class="docutils literal notranslate"><span class="pre">~/Library/Application\</span> <span class="pre">Support/pret/porymap/porymap.cfg</span></code> on macOS).</p>
+<p>A config file is also created when opening a project in porymap for the first time. It is stored in
+your project root as <code class="docutils literal notranslate"><span class="pre">porymap.project.cfg</span></code>. There are several project-specific settings that are
+determined by this file.</p>
+<table class="colwidths-given docutils align-default">
+<colgroup>
+<col style="width: 23%" />
+<col style="width: 7%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Setting</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Location</p></th>
+<th class="head"><p>Can Edit?</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">recent_project</span></code></p></td>
+<td></td>
+<td><p>global</p></td>
+<td><p>yes</p></td>
+<td><p>The project that will be opened on launch</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">recent_map</span></code></p></td>
+<td></td>
+<td><p>global</p></td>
+<td><p>yes</p></td>
+<td><p>The map that will be opened on launch</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">pretty_cursors</span></code></p></td>
+<td><p>1</p></td>
+<td><p>global</p></td>
+<td><p>yes</p></td>
+<td><p>Whether to use custom crosshair cursors</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">map_sort_order</span></code></p></td>
+<td><p>group</p></td>
+<td><p>global</p></td>
+<td><p>yes</p></td>
+<td><p>The order map list is sorted in</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">window_geometry</span></code></p></td>
+<td></td>
+<td><p>global</p></td>
+<td><p>no</p></td>
+<td><p>For restoring window sizes</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">window_state</span></code></p></td>
+<td></td>
+<td><p>global</p></td>
+<td><p>no</p></td>
+<td><p>For restoring window sizes</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">map_splitter_state</span></code></p></td>
+<td></td>
+<td><p>global</p></td>
+<td><p>no</p></td>
+<td><p>For restoring window sizes</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">main_splitter_state</span></code></p></td>
+<td></td>
+<td><p>global</p></td>
+<td><p>no</p></td>
+<td><p>For restoring window sizes</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">collision_opacity</span></code></p></td>
+<td><p>50</p></td>
+<td><p>global</p></td>
+<td><p>yes</p></td>
+<td><p>Opacity of collision overlay</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">metatiles_zoom</span></code></p></td>
+<td><p>30</p></td>
+<td><p>global</p></td>
+<td><p>yes</p></td>
+<td><p>Scale of map metatiles</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">show_player_view</span></code></p></td>
+<td><p>0</p></td>
+<td><p>global</p></td>
+<td><p>yes</p></td>
+<td><p>Display a rectangle for the GBA screen radius</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">show_cursor_tile</span></code></p></td>
+<td><p>0</p></td>
+<td><p>global</p></td>
+<td><p>yes</p></td>
+<td><p>Display a rectangle around the hovered metatile(s)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">monitor_files</span></code></p></td>
+<td><p>1</p></td>
+<td><p>global</p></td>
+<td><p>yes</p></td>
+<td><p>Whether porymap will monitor changes to project files</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">region_map_dimensions</span></code></p></td>
+<td><p>32x20</p></td>
+<td><p>global</p></td>
+<td><p>yes</p></td>
+<td><p>The dimensions of the region map tilemap</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">theme</span></code></p></td>
+<td><p>default</p></td>
+<td><p>global</p></td>
+<td><p>yes</p></td>
+<td><p>The color theme for porymap windows and widgets</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">base_game_version</span></code></p></td>
+<td></td>
+<td><p>project</p></td>
+<td><p>no</p></td>
+<td><p>The base pret repo for this project</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">use_encounter_json</span></code></p></td>
+<td><p>1</p></td>
+<td><p>project</p></td>
+<td><p>yes</p></td>
+<td><p>Enables wild encounter table editing</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">use_poryscript</span></code></p></td>
+<td><p>0</p></td>
+<td><p>project</p></td>
+<td><p>yes</p></td>
+<td><p>Whether to open .pory files for scripts</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">use_custom_border_size</span></code></p></td>
+<td><p>0</p></td>
+<td><p>project</p></td>
+<td><p>yes</p></td>
+<td><p>Whether to allow variable border sizes</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">custom_scripts</span></code></p></td>
+<td></td>
+<td><p>project</p></td>
+<td><p>yes</p></td>
+<td><p>A list of script files to load into the scripting engine</p></td>
+</tr>
+</tbody>
+</table>
+<p>Some of these settings can be toggled manually in porymap via the <em>Options</em> menu.</p>
 </div>
 
 
@@ -374,10 +458,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="editing-map-tiles.html" class="btn btn-neutral float-right" title="Editing Map Tiles" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="../reference/changelog.html" class="btn btn-neutral float-right" title="Changelog" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="introduction.html" class="btn btn-neutral float-left" title="Introduction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="project-files.html" class="btn btn-neutral float-left" title="Project Files" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
