@@ -14,6 +14,8 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ### Fixed
 - Disallow drawing new heal locations in the events tab.
 - Fix issue where the metatile selection window was not resizable.
+- Show warning when closing project with unsaved wild Pokémon changes.
+- Fix bug where negative object event coordinates were saved as "0".
 
 ## [4.0.0] - 2020-04-28
 ### Breaking Changes
