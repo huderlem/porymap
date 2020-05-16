@@ -701,6 +701,7 @@ bool MainWindow::loadDataStructures() {
                 && project->readTrainerTypes()
                 && project->readMetatileBehaviors()
                 && project->readTilesetProperties()
+                && project->readMaxMapDataSize()
                 && project->readHealLocations()
                 && project->readMiscellaneousConstants()
                 && project->readSpeciesIconPaths()
@@ -2349,10 +2350,6 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked()
         editor->map->commit();
         onMapNeedsRedrawing();
     }
-}
-
-bool MainWindow::mapDimensionsValid(int width, int height) {
-    return editor->project->getMapDataSize(width, height) <= editor->project->getMaxMapDataSize();
 }
 
 void MainWindow::on_checkBox_smartPaths_stateChanged(int selected)

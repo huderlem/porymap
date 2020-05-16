@@ -149,6 +149,7 @@ public:
     QStringList getVisibilities();
     QMap<QString, QStringList> getTilesetLabels();
     bool readTilesetProperties();
+    bool readMaxMapDataSize();
     bool readRegionMapSections();
     bool readItemNames();
     bool readFlagNames();
@@ -188,8 +189,8 @@ public:
     static int getDefaultMapSize();
     static int getMaxMapWidth();
     static int getMaxMapHeight();
-
-    int getMapDataSize(int width, int height);
+    static int getMapDataSize(int width, int height);
+    static bool mapDimensionsValid(int width, int height);
     bool calculateDefaultMapSize();
 
 private:

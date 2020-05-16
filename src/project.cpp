@@ -2046,7 +2046,7 @@ QMap<QString, QStringList> Project::getTilesetLabels() {
 
 bool Project::readTilesetProperties() {
     QStringList definePrefixes;
-    definePrefixes << "NUM_" << "MAX_";
+    definePrefixes << "NUM_";
     QString filename = "include/fieldmap.h";
     fileWatcher.addPath(root + "/" + filename);
     QMap<QString, int> defines = parser.readCDefines(filename, definePrefixes);
@@ -2099,7 +2099,16 @@ bool Project::readTilesetProperties() {
         logWarn(QString("Value for tileset property 'NUM_PALS_TOTAL' not found. Using default (%1) instead.")
                 .arg(Project::num_pals_total));
     }
-    it = defines.find("MAX_MAP_DATA_SIZE");
+    return true;
+}
+
+bool Project::readMaxMapDataSize() {
+    QStringList definePrefixes;
+    definePrefixes << "MAX_";
+    QString filename = "include/fieldmap.h"; // already in fileWatcher from readTilesetProperties
+    QMap<QString, int> defines = parser.readCDefines(filename, definePrefixes);
+
+    auto it = defines.find("MAX_MAP_DATA_SIZE");
     if (it != defines.end()) {
         int min = getMapDataSize(1, 1);
         if (it.value() >= min) {
@@ -2586,6 +2595,10 @@ int Project::getMaxMapWidth()
 int Project::getMaxMapHeight()
 {
     return (getMaxMapDataSize() / (1 + 15)) - 14;
+}
+
+bool Project::mapDimensionsValid(int width, int height) {
+    return getMapDataSize(width, height) <= getMaxMapDataSize();
 }
 
 // Get largest possible square dimensions for a map up to maximum of 20x20 (arbitrary)

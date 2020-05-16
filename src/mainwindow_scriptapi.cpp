@@ -176,7 +176,7 @@ int MainWindow::getHeight() {
 void MainWindow::setDimensions(int width, int height) {
     if (!this->editor || !this->editor->map)
         return;
-    if (!MainWindow::mapDimensionsValid(width, height))
+    if (!Project::mapDimensionsValid(width, height))
         return;
     this->editor->map->setDimensions(width, height);
     this->editor->map->commit();
@@ -186,7 +186,7 @@ void MainWindow::setDimensions(int width, int height) {
 void MainWindow::setWidth(int width) {
     if (!this->editor || !this->editor->map)
         return;
-    if (!MainWindow::mapDimensionsValid(width, this->editor->map->getHeight()))
+    if (!Project::mapDimensionsValid(width, this->editor->map->getHeight()))
         return;
     this->editor->map->setDimensions(width, this->editor->map->getHeight());
     this->editor->map->commit();
@@ -196,7 +196,7 @@ void MainWindow::setWidth(int width) {
 void MainWindow::setHeight(int height) {
     if (!this->editor || !this->editor->map)
         return;
-    if (!MainWindow::mapDimensionsValid(this->editor->map->getWidth(), height))
+    if (!Project::mapDimensionsValid(this->editor->map->getWidth(), height))
         return;
     this->editor->map->setDimensions(this->editor->map->getWidth(), height);
     this->editor->map->commit();

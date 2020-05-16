@@ -277,7 +277,6 @@ private:
     QString getDefaultMap();
     void setRecentMap(QString map_name);
     QStandardItem* createMapItem(QString mapName, int groupNum, int inGroupNum);
-    bool mapDimensionsValid(int width, int height);
 
     void drawMapListIcons(QAbstractItemModel *model);
     void updateMapList();
