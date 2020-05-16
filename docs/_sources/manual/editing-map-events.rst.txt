@@ -229,3 +229,25 @@ Clicking the ``Open Map Scripts`` button |open-map-scripts-button| will open the
 
 .. |open-map-scripts-button|
    image:: images/editing-map-events/open-map-scripts-button.png
+
+Tool Buttons
+------------
+
+The event editing tab also extends functionality to a few of the tool buttons described in :ref:`Editing Map Tiles <editing-map-tiles>`.
+A brief description and animation is listed for each of the available tools below:
+
+Pencil
+    When clicking on an existing event, the pencil tool will behave normally (as the standard cursor). It can also be used to "draw" events in a certain location. The event created will be a default-valued event of the same type as the currently selected event.
+
+.. figure:: images/editing-map-events/event-tool-pencil.gif
+    :alt: Drawing Object Events with the Pencil Tool
+
+    Drawing Object Events with the Pencil Tool
+
+Shift
+    You can use the shift tool to move any number of events together. When a selected event is dragged, all other selected events will move with it. When a tile with no event is clicked, all events on the map can be dragged.
+
+.. figure:: images/editing-map-events/event-tool-shift.gif
+    :alt: Moving Events with the Shift Tool
+
+    Moving Events with the Shift Tool
