@@ -23,6 +23,7 @@ public:
     QString layoutId;
     void init(int, int, QString, QString);
     void useLayout(QString);
+    void connectSignals();
 
 signals:
     void applied();
@@ -31,6 +32,7 @@ private:
     Ui::NewMapPopup *ui;
     Project *project;
     void setDefaultValues(int, QString);
+    bool checkNewMapDimensions();
 
 private slots:
     void on_pushButton_NewMap_Accept_clicked();

@@ -38,6 +38,34 @@ void NewMapPopup::init(int type, int group, QString sec, QString layoutId) {
             setDefaultValues(group, QString());
             break;
     }
+    connectSignals();
+}
+
+bool NewMapPopup::checkNewMapDimensions() {
+    int numMetatiles = project->getMapDataSize(ui->spinBox_NewMap_Width->value(), ui->spinBox_NewMap_Height->value());
+    int maxMetatiles = project->getMaxMapDataSize();
+
+    if (numMetatiles > maxMetatiles) {
+        ui->frame_NewMap_Warning->setVisible(true);
+        ui->label_NewMap_WarningMessage->setText("WARNING: The specified map dimensions are too large.");
+        return false;
+    }
+    else {
+        ui->frame_NewMap_Warning->setVisible(false);
+        ui->label_NewMap_WarningMessage->clear();
+        return true;
+    }
+};
+
+void NewMapPopup::connectSignals() {
+    ui->spinBox_NewMap_Width->setMinimum(1);
+    ui->spinBox_NewMap_Height->setMinimum(1);
+    ui->spinBox_NewMap_Width->setMaximum(project->getMaxMapWidth());
+    ui->spinBox_NewMap_Height->setMaximum(project->getMaxMapHeight());
+    
+    //ui->icon_NewMap_WarningIcon->setPixmap();
+    connect(ui->spinBox_NewMap_Width, QOverload<int>::of(&QSpinBox::valueChanged), [=](int){checkNewMapDimensions();});
+    connect(ui->spinBox_NewMap_Height, QOverload<int>::of(&QSpinBox::valueChanged), [=](int){checkNewMapDimensions();});
 }
 
 void NewMapPopup::useLayout(QString layoutId) {
@@ -138,6 +166,10 @@ void NewMapPopup::on_lineEdit_NewMap_Name_textChanged(const QString &text) {
 }
 
 void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
+    if (!checkNewMapDimensions()) {
+        // ignore when map dimensions are invalid
+        return;
+    }
     Map *newMap = new Map;
     MapLayout *layout;
 
