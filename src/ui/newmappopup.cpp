@@ -71,8 +71,6 @@ void NewMapPopup::connectSignals() {
     ui->spinBox_NewMap_Height->setMinimum(1);
     ui->spinBox_NewMap_Width->setMaximum(project->getMaxMapWidth());
     ui->spinBox_NewMap_Height->setMaximum(project->getMaxMapHeight());
-
-    ui->toolButton_NewMap_DimensionWarning->setIcon();
     
     //ui->icon_NewMap_WarningIcon->setPixmap();
     connect(ui->spinBox_NewMap_Width, QOverload<int>::of(&QSpinBox::valueChanged), [=](int){checkNewMapDimensions();});

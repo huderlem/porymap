@@ -1238,12 +1238,11 @@ void MainWindow::on_mainTabBar_tabBarClicked(int index)
     if (index == 0) {
         ui->stackedWidget_MapEvents->setCurrentIndex(0);
         on_tabWidget_2_currentChanged(ui->tabWidget_2->currentIndex());
+        clickToolButtonFromEditMode(editor->map_edit_mode);
     } else if (index == 1) {
         ui->stackedWidget_MapEvents->setCurrentIndex(1);
         editor->setEditingObjects();
-        QStringList validOptions = {"select", "move", "paint", "shift"};
-        QString newEditMode = validOptions.contains(editor->map_edit_mode) ? editor->map_edit_mode : "select";
-        clickToolButtonFromEditMode(newEditMode);
+        clickToolButtonFromEditMode(editor->obj_edit_mode);
     } else if (index == 3) {
         editor->setEditingConnections();
     }
@@ -2054,7 +2053,11 @@ void MainWindow::on_toolButton_Open_Scripts_clicked()
 
 void MainWindow::on_toolButton_Paint_clicked()
 {
-    editor->map_edit_mode = "paint";
+    if (ui->mainTabBar->currentIndex() == 0)
+        editor->map_edit_mode = "paint";
+    else
+        editor->obj_edit_mode = "paint";
+
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/pencil_cursor.ico"), 10, 10);
 
     // do not stop single tile mode when editing collision
@@ -2070,7 +2073,11 @@ void MainWindow::on_toolButton_Paint_clicked()
 
 void MainWindow::on_toolButton_Select_clicked()
 {
-    editor->map_edit_mode = "select";
+    if (ui->mainTabBar->currentIndex() == 0)
+        editor->map_edit_mode = "select";
+    else
+        editor->obj_edit_mode = "select";
+
     editor->settings->mapCursor = QCursor();
     editor->cursorMapTileRect->setSingleTileMode();
 
@@ -2083,7 +2090,11 @@ void MainWindow::on_toolButton_Select_clicked()
 
 void MainWindow::on_toolButton_Fill_clicked()
 {
-    editor->map_edit_mode = "fill";
+    if (ui->mainTabBar->currentIndex() == 0)
+        editor->map_edit_mode = "fill";
+    else
+        editor->obj_edit_mode = "fill";
+
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/fill_color_cursor.ico"), 10, 10);
     editor->cursorMapTileRect->setSingleTileMode();
 
@@ -2096,7 +2107,11 @@ void MainWindow::on_toolButton_Fill_clicked()
 
 void MainWindow::on_toolButton_Dropper_clicked()
 {
-    editor->map_edit_mode = "pick";
+    if (ui->mainTabBar->currentIndex() == 0)
+        editor->map_edit_mode = "pick";
+    else
+        editor->obj_edit_mode = "pick";
+
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/pipette_cursor.ico"), 10, 10);
     editor->cursorMapTileRect->setSingleTileMode();
 
@@ -2109,7 +2124,11 @@ void MainWindow::on_toolButton_Dropper_clicked()
 
 void MainWindow::on_toolButton_Move_clicked()
 {
-    editor->map_edit_mode = "move";
+    if (ui->mainTabBar->currentIndex() == 0)
+        editor->map_edit_mode = "move";
+    else
+        editor->obj_edit_mode = "move";
+
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/move.ico"), 7, 7);
     editor->cursorMapTileRect->setSingleTileMode();
 
@@ -2122,7 +2141,11 @@ void MainWindow::on_toolButton_Move_clicked()
 
 void MainWindow::on_toolButton_Shift_clicked()
 {
-    editor->map_edit_mode = "shift";
+    if (ui->mainTabBar->currentIndex() == 0)
+        editor->map_edit_mode = "shift";
+    else
+        editor->obj_edit_mode = "shift";
+
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/shift_cursor.ico"), 10, 10);
     editor->cursorMapTileRect->setSingleTileMode();
 
@@ -2134,12 +2157,18 @@ void MainWindow::on_toolButton_Shift_clicked()
 }
 
 void MainWindow::checkToolButtons() {
-    ui->toolButton_Paint->setChecked(editor->map_edit_mode == "paint");
-    ui->toolButton_Select->setChecked(editor->map_edit_mode == "select");
-    ui->toolButton_Fill->setChecked(editor->map_edit_mode == "fill");
-    ui->toolButton_Dropper->setChecked(editor->map_edit_mode == "pick");
-    ui->toolButton_Move->setChecked(editor->map_edit_mode == "move");
-    ui->toolButton_Shift->setChecked(editor->map_edit_mode == "shift");
+    QString edit_mode;
+    if (ui->mainTabBar->currentIndex() == 0)
+        edit_mode = editor->map_edit_mode;
+    else
+        edit_mode = editor->obj_edit_mode;
+
+    ui->toolButton_Paint->setChecked(edit_mode == "paint");
+    ui->toolButton_Select->setChecked(edit_mode == "select");
+    ui->toolButton_Fill->setChecked(edit_mode == "fill");
+    ui->toolButton_Dropper->setChecked(edit_mode == "pick");
+    ui->toolButton_Move->setChecked(edit_mode == "move");
+    ui->toolButton_Shift->setChecked(edit_mode == "shift");
 }
 
 void MainWindow::clickToolButtonFromEditMode(QString editMode) {
