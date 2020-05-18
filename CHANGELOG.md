@@ -11,11 +11,16 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Add scripting capabilities, which allows the user to add custom behavior to Porymap using JavaScript scripts.
 - Add ability to import FRLG tileset .bvd files from Advance Map 1.92.
 
+### Changed
+- Edit modes are no longer shared between the Map and Events tabs. Pencil is default for Map tab, and Pointer is default for Events tab.
+
 ### Fixed
 - Disallow drawing new heal locations in the events tab.
 - Fix issue where the metatile selection window was not resizable.
 - Show warning when closing project with unsaved wild Pokémon changes.
 - Fix bug where negative object event coordinates were saved as "0".
+- Fix maximum map dimension limits.
+- Fix crash when using the Pencil tool to create an event on a map with no existing events.
 
 ## [4.0.0] - 2020-04-28
 ### Breaking Changes
