@@ -1058,10 +1058,10 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item
             item->shift(event);
         }
     } else if (item->paintingMode == MapPixmapItem::PaintMode::EventObjects) {
-        if (map_edit_mode == "paint" && event->type() == QEvent::GraphicsSceneMousePress) {
+        if (obj_edit_mode == "paint" && event->type() == QEvent::GraphicsSceneMousePress) {
             // Right-clicking while in paint mode will change mode to select.
             if (event->buttons() & Qt::RightButton) {
-                this->map_edit_mode = "select";
+                this->obj_edit_mode = "select";
                 this->settings->mapCursor = QCursor();
                 this->cursorMapTileRect->setSingleTileMode();
                 this->ui->toolButton_Paint->setChecked(false);
@@ -1079,9 +1079,9 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item
                     }
                 }
             }
-        } else if (map_edit_mode == "select") {
+        } else if (obj_edit_mode == "select") {
             // do nothing here, at least for now
-        } else if (map_edit_mode == "shift" && item->map) {
+        } else if (obj_edit_mode == "shift" && item->map) {
             static QPoint selection_origin;
 
             if (event->type() == QEvent::GraphicsSceneMouseRelease) {

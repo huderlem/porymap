@@ -130,7 +130,8 @@ public:
     QList<DraggablePixmapItem*> *events = nullptr;
     QList<DraggablePixmapItem*> *selected_events = nullptr;
 
-    QString map_edit_mode;
+    QString map_edit_mode = "paint";
+    QString obj_edit_mode = "select";
 
     int scale_exp = 0;
     double scale_base = sqrt(2); // adjust scale factor with this
