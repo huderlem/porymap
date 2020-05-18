@@ -7,13 +7,23 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 The **"Breaking Changes"** listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. If porymap is used on a project that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.
 
 ## [Unreleased]
+Nothing, yet.
+
+## [4.1.0] - 2020-05-18
 ### Added
 - Add scripting capabilities, which allows the user to add custom behavior to Porymap using JavaScript scripts.
 - Add ability to import FRLG tileset .bvd files from Advance Map 1.92.
 
+### Changed
+- Edit modes are no longer shared between the Map and Events tabs. Pencil is default for Map tab, and Pointer is default for Events tab.
+
 ### Fixed
 - Disallow drawing new heal locations in the events tab.
 - Fix issue where the metatile selection window was not resizable.
+- Show warning when closing project with unsaved wild Pokémon changes.
+- Fix bug where negative object event coordinates were saved as "0".
+- Fix maximum map dimension limits.
+- Fix crash when using the Pencil tool to create an event on a map with no existing events.
 
 ## [4.0.0] - 2020-04-28
 ### Breaking Changes
@@ -181,7 +191,8 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ## [1.0.0] - 2018-10-26
 This was the initial release.
 
-[Unreleased]: https://github.com/huderlem/porymap/compare/4.0.0...HEAD
+[Unreleased]: https://github.com/huderlem/porymap/compare/4.1.0...HEAD
+[4.1.0]: https://github.com/huderlem/porymap/compare/4.0.0...4.1.0
 [4.0.0]: https://github.com/huderlem/porymap/compare/3.0.1...4.0.0
 [3.0.1]: https://github.com/huderlem/porymap/compare/3.0.0...3.0.1
 [3.0.0]: https://github.com/huderlem/porymap/compare/2.0.0...3.0.0
