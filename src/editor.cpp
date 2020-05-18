@@ -1070,11 +1070,15 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item
                 // Left-clicking while in paint mode will add a new event of the
                 // type of the first currently selected events.
                 // Disallow adding heal locations, deleting them is not possible yet
-                QString eventType = this->selected_events->first()->event->get("event_type");
-                if (eventType != "event_heal_location") {
+                QString eventType = EventType::Object;
+                if (this->selected_events->size() > 0)
+                    eventType = this->selected_events->first()->event->get("event_type");
+
+                if (eventType != EventType::HealLocation) {
                     DraggablePixmapItem * newEvent = addNewEvent(eventType);
                     if (newEvent) {
                         newEvent->move(x, y);
+                        emit objectsChanged();
                         selectMapEvent(newEvent, false);
                     }
                 }
@@ -1872,7 +1876,7 @@ DraggablePixmapItem* Editor::addNewEvent(QString event_type) {
     if (project && map && !event_type.isEmpty()) {
         Event *event = Event::createNewEvent(event_type, map->name, project);
         event->put("map_name", map->name);
-        if (event_type == "event_heal_location") {
+        if (event_type == EventType::HealLocation) {
             HealLocation hl = HealLocation::fromEvent(event);
             project->healLocations.append(hl);
             event->put("index", project->healLocations.length());
