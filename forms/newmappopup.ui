@@ -314,7 +314,7 @@
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
-        <widget class="QToolButton" name="toolButton">
+        <widget class="QToolButton" name="toolButton_NewMap_DimensionWarning">
          <property name="enabled">
           <bool>false</bool>
          </property>

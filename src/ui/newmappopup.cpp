@@ -47,7 +47,16 @@ bool NewMapPopup::checkNewMapDimensions() {
 
     if (numMetatiles > maxMetatiles) {
         ui->frame_NewMap_Warning->setVisible(true);
-        ui->label_NewMap_WarningMessage->setText("WARNING: The specified map dimensions are too large.");
+        //ui->label_NewMap_WarningMessage->setText("WARNING: The specified map dimensions are too large.");
+        QString errorText = QString("Error: The specified width and height are too large.\n"
+                    "The maximum map width and height is the following: (width + 15) * (height + 14) <= %1\n"
+                    "The specified map width and height was: (%2 + 15) * (%3 + 14) = %4")
+                        .arg(maxMetatiles)
+                        .arg(ui->spinBox_NewMap_Width->value())
+                        .arg(ui->spinBox_NewMap_Height->value())
+                        .arg(numMetatiles);
+        ui->label_NewMap_WarningMessage->setText(errorText);
+        ui->label_NewMap_WarningMessage->setWordWrap(true);
         return false;
     }
     else {
@@ -62,6 +71,8 @@ void NewMapPopup::connectSignals() {
     ui->spinBox_NewMap_Height->setMinimum(1);
     ui->spinBox_NewMap_Width->setMaximum(project->getMaxMapWidth());
     ui->spinBox_NewMap_Height->setMaximum(project->getMaxMapHeight());
+
+    ui->toolButton_NewMap_DimensionWarning->setIcon();
     
     //ui->icon_NewMap_WarningIcon->setPixmap();
     connect(ui->spinBox_NewMap_Width, QOverload<int>::of(&QSpinBox::valueChanged), [=](int){checkNewMapDimensions();});
