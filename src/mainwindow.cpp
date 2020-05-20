@@ -439,7 +439,7 @@ bool MainWindow::setMap(QString map_name, bool scrollTreeView) {
         ui->mapList->setExpanded(mapListProxyModel->mapFromSource(mapListIndexes.value(editor->map->name)), false);
     }
 
-    redrawMapScene();
+    refreshMapScene();
     displayMapProperties();
 
     if (scrollTreeView) {
@@ -469,6 +469,11 @@ void MainWindow::redrawMapScene()
     if (!editor->displayMap())
         return;
 
+    this->refreshMapScene();
+}
+
+void MainWindow::refreshMapScene()
+{
     on_mainTabBar_tabBarClicked(ui->mainTabBar->currentIndex());
 
     double base = editor->scale_base;

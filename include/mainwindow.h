@@ -268,6 +268,7 @@ private:
 
     bool setMap(QString, bool scrollTreeView = false);
     void redrawMapScene();
+    void refreshMapScene();
     bool loadDataStructures();
     bool loadProjectCombos();
     bool populateMapList();
