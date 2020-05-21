@@ -112,7 +112,6 @@ void MainWindow::initEditor() {
     connect(this->editor, SIGNAL(objectsChanged()), this, SLOT(updateObjects()));
     connect(this->editor, SIGNAL(selectedObjectsChanged()), this, SLOT(updateSelectedObjects()));
     connect(this->editor, SIGNAL(loadMapRequested(QString, QString)), this, SLOT(onLoadMapRequested(QString, QString)));
-    connect(this->editor, SIGNAL(tilesetChanged(QString)), this, SLOT(onTilesetChanged(QString)));
     connect(this->editor, SIGNAL(warpEventDoubleClicked(QString,QString)), this, SLOT(openWarpMap(QString,QString)));
     connect(this->editor, SIGNAL(currentMetatilesSelectionChanged()), this, SLOT(currentMetatilesSelectionChanged()));
     connect(this->editor, SIGNAL(wildMonDataChanged()), this, SLOT(onWildMonDataChanged()));
@@ -564,13 +563,19 @@ void MainWindow::displayMapProperties() {
         ui->frame_3->setEnabled(false);
         return;
     }
+
     ui->frame_3->setEnabled(true);
     Map *map = editor->map;
 
-    ui->comboBox_Song->setCurrentText(map->song);
-    ui->comboBox_Location->setCurrentText(map->location);
+    ui->comboBox_PrimaryTileset->blockSignals(true);
+    ui->comboBox_SecondaryTileset->blockSignals(true);
     ui->comboBox_PrimaryTileset->setCurrentText(map->layout->tileset_primary_label);
     ui->comboBox_SecondaryTileset->setCurrentText(map->layout->tileset_secondary_label);
+    ui->comboBox_PrimaryTileset->blockSignals(false);
+    ui->comboBox_SecondaryTileset->blockSignals(false);
+
+    ui->comboBox_Song->setCurrentText(map->song);
+    ui->comboBox_Location->setCurrentText(map->location);
     ui->checkBox_Visibility->setChecked(map->requiresFlash.toInt() > 0 || map->requiresFlash == "TRUE");
     ui->comboBox_Weather->setCurrentText(map->weather);
     ui->comboBox_Type->setCurrentText(map->type);
@@ -1115,11 +1120,6 @@ void MainWindow::on_actionNew_Tileset_triggered() {
         msgBox.setIcon(QMessageBox::Icon::Information);
         msgBox.exec();
     }
-}
-
-void MainWindow::onTilesetChanged(QString mapName)
-{
-    setMap(mapName);
 }
 
 void MainWindow::updateTilesetEditor() {
@@ -2217,6 +2217,7 @@ void MainWindow::onMapNeedsRedrawing() {
 void MainWindow::onTilesetsSaved(QString primaryTilesetLabel, QString secondaryTilesetLabel) {
     this->editor->updatePrimaryTileset(primaryTilesetLabel, true);
     this->editor->updateSecondaryTileset(secondaryTilesetLabel, true);
+    redrawMapScene();
 }
 
 void MainWindow::onWildMonDataChanged() {
@@ -2298,6 +2299,7 @@ void MainWindow::on_comboBox_PrimaryTileset_currentTextChanged(const QString &ti
 {
     if (editor->project->tilesetLabels["primary"].contains(tilesetLabel) && editor->map) {
         editor->updatePrimaryTileset(tilesetLabel);
+        redrawMapScene();
         on_horizontalSlider_MetatileZoom_valueChanged(ui->horizontalSlider_MetatileZoom->value());
     }
 }
@@ -2306,6 +2308,7 @@ void MainWindow::on_comboBox_SecondaryTileset_currentTextChanged(const QString &
 {
     if (editor->project->tilesetLabels["secondary"].contains(tilesetLabel) && editor->map) {
         editor->updateSecondaryTileset(tilesetLabel);
+        redrawMapScene();
         on_horizontalSlider_MetatileZoom_valueChanged(ui->horizontalSlider_MetatileZoom->value());
     }
 }

@@ -183,7 +183,6 @@ private slots:
     void onAddNewMapToGroupClick(QAction* triggeredAction);
     void onAddNewMapToAreaClick(QAction* triggeredAction);
     void onAddNewMapToLayoutClick(QAction* triggeredAction);
-    void onTilesetChanged(QString);
     void currentMetatilesSelectionChanged();
 
     void on_action_Export_Map_Image_triggered();
