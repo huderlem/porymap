@@ -174,43 +174,49 @@ void MainWindow::setProjectSpecificUIVisibility()
         ui->checkBox_AllowRunning->setVisible(false);
         ui->checkBox_AllowBiking->setVisible(false);
         ui->checkBox_AllowEscapeRope->setVisible(false);
-        ui->spinBox_FloorNumber->setVisible(false);
         ui->label_AllowRunning->setVisible(false);
         ui->label_AllowBiking->setVisible(false);
         ui->label_AllowEscapeRope->setVisible(false);
-        ui->label_FloorNumber->setVisible(false);
-        ui->newEventToolButton->newWeatherTriggerAction->setVisible(true);
-        ui->newEventToolButton->newSecretBaseAction->setVisible(true);
         ui->actionRegion_Map_Editor->setVisible(true);
         break;
     case BaseGameVersion::pokeemerald:
         ui->checkBox_AllowRunning->setVisible(true);
         ui->checkBox_AllowBiking->setVisible(true);
         ui->checkBox_AllowEscapeRope->setVisible(true);
-        ui->spinBox_FloorNumber->setVisible(false);
         ui->label_AllowRunning->setVisible(true);
         ui->label_AllowBiking->setVisible(true);
         ui->label_AllowEscapeRope->setVisible(true);
-        ui->label_FloorNumber->setVisible(false);
-        ui->newEventToolButton->newWeatherTriggerAction->setVisible(true);
-        ui->newEventToolButton->newSecretBaseAction->setVisible(true);
         ui->actionRegion_Map_Editor->setVisible(true);
         break;
     case BaseGameVersion::pokefirered:
         ui->checkBox_AllowRunning->setVisible(true);
         ui->checkBox_AllowBiking->setVisible(true);
         ui->checkBox_AllowEscapeRope->setVisible(true);
-        ui->spinBox_FloorNumber->setVisible(true);
         ui->label_AllowRunning->setVisible(true);
         ui->label_AllowBiking->setVisible(true);
         ui->label_AllowEscapeRope->setVisible(true);
-        ui->label_FloorNumber->setVisible(true);
-        ui->newEventToolButton->newWeatherTriggerAction->setVisible(false);
-        ui->newEventToolButton->newSecretBaseAction->setVisible(false);
         // TODO: pokefirered is not set up for the Region Map Editor and vice versa. 
         //       porymap will crash on attempt. Remove below once resolved
         ui->actionRegion_Map_Editor->setVisible(false);
         break;
+    }
+
+    if (projectConfig.getEventWeatherTriggerEnabled()) {
+        ui->newEventToolButton->newWeatherTriggerAction->setVisible(true);
+    } else {
+        ui->newEventToolButton->newWeatherTriggerAction->setVisible(false);
+    }
+    if (projectConfig.getEventSecretBaseEnabled()) {
+        ui->newEventToolButton->newSecretBaseAction->setVisible(true);
+    } else {
+        ui->newEventToolButton->newSecretBaseAction->setVisible(false);
+    }
+    if (projectConfig.getFloorNumberEnabled()) {
+        ui->spinBox_FloorNumber->setVisible(true);
+        ui->label_FloorNumber->setVisible(true);
+    } else {
+        ui->spinBox_FloorNumber->setVisible(false);
+        ui->label_FloorNumber->setVisible(false);
     }
 }
 
@@ -707,6 +713,8 @@ bool MainWindow::loadDataStructures() {
                 && project->readMapTypes()
                 && project->readMapBattleScenes()
                 && project->readWeatherNames()
+                && project->readCoordEventWeatherNames()
+                && project->readSecretBaseIds() 
                 && project->readBgEventFacingDirections()
                 && project->readTrainerTypes()
                 && project->readMetatileBehaviors()
@@ -716,10 +724,6 @@ bool MainWindow::loadDataStructures() {
                 && project->readMiscellaneousConstants()
                 && project->readSpeciesIconPaths()
                 && project->readWildMonData();
-    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeemerald || projectConfig.getBaseGameVersion() == BaseGameVersion::pokeruby)
-        success = success 
-               && project->readSecretBaseIds() 
-               && project->readCoordEventWeatherNames();
     
     return success && loadProjectCombos();
 }
@@ -1466,7 +1470,10 @@ void MainWindow::updateSelectedObjects() {
 
     QList<EventPropertiesFrame *> frames;
 
-    bool pokefirered = projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered;
+    bool inConnectionEnabled = projectConfig.getObjectEventInConnectionEnabled();
+    bool quantityEnabled = projectConfig.getHiddenItemQuantityEnabled();
+    bool underfootEnabled = projectConfig.getHiddenItemRequiresItemfinderEnabled();
+    bool respawnDataEnabled = projectConfig.getHealLocationRespawnDataEnabled();
     for (DraggablePixmapItem *item : *events) {
         EventPropertiesFrame *frame = new EventPropertiesFrame(item->event);
 //        frame->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
@@ -1561,9 +1568,7 @@ void MainWindow::updateSelectedObjects() {
             fields << "event_flag";
             fields << "trainer_type";
             fields << "sight_radius_tree_id";
-            if (pokefirered) {
-                fields << "in_connection";
-            }
+            if (inConnectionEnabled) fields << "in_connection";
         }
         else if (event_type == EventType::Warp) {
             fields << "destination_map_name";
@@ -1584,10 +1589,8 @@ void MainWindow::updateSelectedObjects() {
         else if (event_type == EventType::HiddenItem) {
             fields << "item";
             fields << "flag";
-            if (pokefirered) {
-                fields << "quantity";
-                fields << "underfoot";
-            }
+            if (quantityEnabled) fields << "quantity";
+            if (underfootEnabled) fields << "underfoot";
         }
         else if (event_type == EventType::SecretBase) {
             fields << "secret_base_id";
@@ -1596,7 +1599,7 @@ void MainWindow::updateSelectedObjects() {
             // Hide elevation so users don't get impression that editing it is meaningful.
             frame->ui->spinBox_z->setVisible(false);
             frame->ui->label_z->setVisible(false);
-            if (pokefirered) {
+            if (respawnDataEnabled) {
                 fields << "respawn_map";
                 fields << "respawn_npc";
             }

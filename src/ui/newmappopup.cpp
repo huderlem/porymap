@@ -122,31 +122,25 @@ void NewMapPopup::setDefaultValues(int groupNum, QString mapSec) {
         ui->checkBox_NewMap_Allow_Running->setVisible(false);
         ui->checkBox_NewMap_Allow_Biking->setVisible(false);
         ui->checkBox_NewMap_Allow_Escape_Rope->setVisible(false);
-        ui->spinBox_NewMap_Floor_Number->setVisible(false);
         ui->label_NewMap_Allow_Running->setVisible(false);
         ui->label_NewMap_Allow_Biking->setVisible(false);
         ui->label_NewMap_Allow_Escape_Rope->setVisible(false);
-        ui->label_NewMap_Floor_Number->setVisible(false);
         break;
     case BaseGameVersion::pokeemerald:
         ui->checkBox_NewMap_Allow_Running->setVisible(true);
         ui->checkBox_NewMap_Allow_Biking->setVisible(true);
         ui->checkBox_NewMap_Allow_Escape_Rope->setVisible(true);
-        ui->spinBox_NewMap_Floor_Number->setVisible(false);
         ui->label_NewMap_Allow_Running->setVisible(true);
         ui->label_NewMap_Allow_Biking->setVisible(true);
         ui->label_NewMap_Allow_Escape_Rope->setVisible(true);
-        ui->label_NewMap_Floor_Number->setVisible(false);
         break;
     case BaseGameVersion::pokefirered:
         ui->checkBox_NewMap_Allow_Running->setVisible(true);
         ui->checkBox_NewMap_Allow_Biking->setVisible(true);
         ui->checkBox_NewMap_Allow_Escape_Rope->setVisible(true);
-        ui->spinBox_NewMap_Floor_Number->setVisible(true);
         ui->label_NewMap_Allow_Running->setVisible(true);
         ui->label_NewMap_Allow_Biking->setVisible(true);
         ui->label_NewMap_Allow_Escape_Rope->setVisible(true);
-        ui->label_NewMap_Floor_Number->setVisible(true);
         break;
     }
     if (projectConfig.getUseCustomBorderSize()) {
@@ -159,6 +153,13 @@ void NewMapPopup::setDefaultValues(int groupNum, QString mapSec) {
         ui->spinBox_NewMap_BorderHeight->setVisible(false);
         ui->label_NewMap_BorderWidth->setVisible(false);
         ui->label_NewMap_BorderHeight->setVisible(false);
+    }
+    if (projectConfig.getFloorNumberEnabled()) {
+        ui->spinBox_NewMap_Floor_Number->setVisible(true);
+        ui->label_NewMap_Floor_Number->setVisible(true);
+    } else {
+        ui->spinBox_NewMap_Floor_Number->setVisible(false);
+        ui->label_NewMap_Floor_Number->setVisible(false);
     }
 }
 
@@ -223,14 +224,12 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
         newMap->isFlyable = "TRUE";
     }
 
-    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeemerald) {
+    if (projectConfig.getBaseGameVersion() != BaseGameVersion::pokeruby) {
         newMap->allowRunning = this->ui->checkBox_NewMap_Allow_Running->isChecked() ? "1" : "0";
         newMap->allowBiking = this->ui->checkBox_NewMap_Allow_Biking->isChecked() ? "1" : "0";
         newMap->allowEscapeRope = this->ui->checkBox_NewMap_Allow_Escape_Rope->isChecked() ? "1" : "0";
-    } else if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
-        newMap->allowRunning = this->ui->checkBox_NewMap_Allow_Running->isChecked() ? "1" : "0";
-        newMap->allowBiking = this->ui->checkBox_NewMap_Allow_Biking->isChecked() ? "1" : "0";
-        newMap->allowEscapeRope = this->ui->checkBox_NewMap_Allow_Escape_Rope->isChecked() ? "1" : "0";
+    }
+    if (projectConfig.getFloorNumberEnabled()) {
         newMap->floorNumber = this->ui->spinBox_NewMap_Floor_Number->value();
     }
 
