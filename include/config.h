@@ -113,6 +113,13 @@ public:
         this->baseGameVersion = BaseGameVersion::pokeemerald;
         this->useEncounterJson = true;
         this->useCustomBorderSize = false;
+        this->enableEventWeatherTrigger = true;
+        this->enableEventSecretBase = true;
+        this->enableHiddenItemQuantity = false;
+        this->enableHiddenItemRequiresItemfinder = false;
+        this->enableHealLocationRespawnData = false;
+        this->enableObjectEventInConnection = false;
+        this->enableFloorNumber = false;
         this->customScripts.clear();
     }
     void setBaseGameVersion(BaseGameVersion baseGameVersion);
@@ -125,6 +132,20 @@ public:
     QString getProjectDir();
     void setUseCustomBorderSize(bool enable);
     bool getUseCustomBorderSize();
+    void setEventWeatherTriggerEnabled(bool enable);
+    bool getEventWeatherTriggerEnabled();
+    void setEventSecretBaseEnabled(bool enable);
+    bool getEventSecretBaseEnabled();
+    void setHiddenItemQuantityEnabled(bool enable);
+    bool getHiddenItemQuantityEnabled();
+    void setHiddenItemRequiresItemfinderEnabled(bool enable);
+    bool getHiddenItemRequiresItemfinderEnabled();
+    void setHealLocationRespawnDataEnabled(bool enable);
+    bool getHealLocationRespawnDataEnabled();
+    void setObjectEventInConnectionEnabled(bool enable);
+    bool getObjectEventInConnectionEnabled();
+    void setFloorNumberEnabled(bool enable);
+    bool getFloorNumberEnabled();
     void setCustomScripts(QList<QString> scripts);
     QList<QString> getCustomScripts();
 protected:
@@ -138,6 +159,13 @@ private:
     bool useEncounterJson;
     bool usePoryScript;
     bool useCustomBorderSize;
+    bool enableEventWeatherTrigger;
+    bool enableEventSecretBase;
+    bool enableHiddenItemQuantity;
+    bool enableHiddenItemRequiresItemfinder;
+    bool enableHealLocationRespawnData;
+    bool enableObjectEventInConnection;
+    bool enableFloorNumber;
     QList<QString> customScripts;
 };
 

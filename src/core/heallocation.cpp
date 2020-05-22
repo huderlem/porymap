@@ -26,7 +26,7 @@ HealLocation HealLocation::fromEvent(Event *event)
     }
     hl.x     = event->getU16("x");
     hl.y     = event->getU16("y");
-    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+    if (projectConfig.getHealLocationRespawnDataEnabled()) {
         hl.respawnNPC = event->getU16("respawn_npc");
         hl.respawnMap = Map::mapConstantFromName(event->get("respawn_map")).remove(0,4);
     }

@@ -60,7 +60,7 @@ Event* Event::createNewObjectEvent(Project *project)
     event->put("event_type", EventType::Object);
     event->put("sprite", project->getEventObjGfxConstants().keys().first());
     event->put("movement_type", project->movementTypes->first());
-    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+    if (projectConfig.getObjectEventInConnectionEnabled()) {
         event->put("in_connection", false);
     }
     event->put("radius_x", 0);
@@ -93,7 +93,7 @@ Event* Event::createNewHealLocationEvent(QString map_name)
     event->put("loc_name", QString(Map::mapConstantFromName(map_name)).remove(0,4));
     event->put("id_name", map_name.replace(QRegularExpression("([a-z])([A-Z])"), "\\1_\\2").toUpper());
     event->put("elevation", 3);
-    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+    if (projectConfig.getHealLocationRespawnDataEnabled()) {
         event->put("respawn_map", map_name);
         event->put("respawn_npc", 1);
     }
@@ -141,8 +141,10 @@ Event* Event::createNewHiddenItemEvent(Project *project)
     event->put("item", project->itemNames->first());
     event->put("flag", project->flagNames->first());
     event->put("elevation", 3);
-    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+    if (projectConfig.getHiddenItemQuantityEnabled()) {
         event->put("quantity", 1);
+    }
+    if (projectConfig.getHiddenItemRequiresItemfinderEnabled()) {
         event->put("underfoot", false);
     }
     return event;
@@ -168,108 +170,101 @@ int Event::getPixelY()
     return (this->y() * 16) - qMax(0, this->spriteHeight - 16);
 }
 
+static QMap<QString, bool> expectedObjectFields {
+    {"graphics_id", true},
+    {"x", true},
+    {"y", true},
+    {"elevation", true},
+    {"movement_type", true},
+    {"movement_range_x", true},
+    {"movement_range_y", true},
+    {"trainer_type", true},
+    {"trainer_sight_or_berry_tree_id", true},
+    {"script", true},
+    {"flag", true},
+};
+
+static QMap<QString, bool> expectedWarpFields {
+    {"x", true},
+    {"y", true},
+    {"elevation", true},
+    {"dest_map", true},
+    {"dest_warp_id", true},
+};
+
+static QMap<QString, bool> expectedTriggerFields {
+    {"type", true},
+    {"x", true},
+    {"y", true},
+    {"elevation", true},
+    {"var", true},
+    {"var_value", true},
+    {"script", true},
+};
+
+static QMap<QString, bool> expectedWeatherTriggerFields {
+    {"type", true},
+    {"x", true},
+    {"y", true},
+    {"elevation", true},
+    {"weather", true},
+};
+
+static QMap<QString, bool> expectedSignFields {
+    {"type", true},
+    {"x", true},
+    {"y", true},
+    {"elevation", true},
+    {"player_facing_dir", true},
+    {"script", true},
+};
+
+static QMap<QString, bool> expectedHiddenItemFields {
+    {"type", true},
+    {"x", true},
+    {"y", true},
+    {"elevation", true},
+    {"item", true},
+    {"flag", true},
+};
+
+static QMap<QString, bool> expectedSecretBaseFields {
+    {"type", true},
+    {"x", true},
+    {"y", true},
+    {"elevation", true},
+    {"secret_base_id", true},
+};
+
 QMap<QString, bool> Event::getExpectedFields()
 {
     QString type = this->get("event_type");
+    QMap<QString, bool> expectedFields = QMap<QString, bool>();
     if (type == EventType::Object) {
-        if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
-            return QMap<QString, bool> {
-                {"graphics_id", true},
-                {"in_connection", true},
-                {"x", true},
-                {"y", true},
-                {"elevation", true},
-                {"movement_type", true},
-                {"movement_range_x", true},
-                {"movement_range_y", true},
-                {"trainer_type", true},
-                {"trainer_sight_or_berry_tree_id", true},
-                {"script", true},
-                {"flag", true},
-            };
-        } else {
-            return QMap<QString, bool> {
-                {"graphics_id", true},
-                {"x", true},
-                {"y", true},
-                {"elevation", true},
-                {"movement_type", true},
-                {"movement_range_x", true},
-                {"movement_range_y", true},
-                {"trainer_type", true},
-                {"trainer_sight_or_berry_tree_id", true},
-                {"script", true},
-                {"flag", true},
-            };
+        expectedFields = expectedObjectFields;
+        if (projectConfig.getObjectEventInConnectionEnabled()) {
+            expectedFields.insert("in_connection", true);
         }
     } else if (type == EventType::Warp) {
-        return QMap<QString, bool> {
-            {"x", true},
-            {"y", true},
-            {"elevation", true},
-            {"dest_map", true},
-            {"dest_warp_id", true},
-        };
+        expectedFields = expectedWarpFields;
     } else if (type == EventType::Trigger) {
-        return QMap<QString, bool> {
-            {"type", true},
-            {"x", true},
-            {"y", true},
-            {"elevation", true},
-            {"var", true},
-            {"var_value", true},
-            {"script", true},
-        };
+        expectedFields = expectedTriggerFields; 
     } else if (type == EventType::WeatherTrigger) {
-        return QMap<QString, bool> {
-            {"type", true},
-            {"x", true},
-            {"y", true},
-            {"elevation", true},
-            {"weather", true},
-        };
+        expectedFields = expectedWeatherTriggerFields;
     } else if (type == EventType::Sign) {
-        return QMap<QString, bool> {
-            {"type", true},
-            {"x", true},
-            {"y", true},
-            {"elevation", true},
-            {"player_facing_dir", true},
-            {"script", true},
-        };
+        expectedFields = expectedSignFields;
     } else if (type == EventType::HiddenItem) {
-        if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
-            return QMap<QString, bool> {
-                {"type", true},
-                {"x", true},
-                {"y", true},
-                {"elevation", true},
-                {"item", true},
-                {"flag", true},
-                {"quantity", true},
-                {"underfoot", true},
-            };
-        } else {
-            return QMap<QString, bool> {
-                {"type", true},
-                {"x", true},
-                {"y", true},
-                {"elevation", true},
-                {"item", true},
-                {"flag", true},
-            };
+        expectedFields = expectedHiddenItemFields;
+        if (projectConfig.getHiddenItemQuantityEnabled()) {
+            expectedFields.insert("quantity", true);
+        }
+        if (projectConfig.getHiddenItemRequiresItemfinderEnabled()) {
+            expectedFields.insert("underfoot", true);
         }
     } else if (type == EventType::SecretBase) {
-        return QMap<QString, bool> {
-            {"type", true},
-            {"x", true},
-            {"y", true},
-            {"elevation", true},
-            {"secret_base_id", true},
-        };
-    } else {
-        return QMap<QString, bool>();
+        expectedFields = expectedSecretBaseFields;
     }
+    return expectedFields;
 };
 
 void Event::readCustomValues(QJsonObject values)
@@ -296,7 +291,7 @@ OrderedJson::object Event::buildObjectEventJSON()
 {
     OrderedJson::object eventObj;
     eventObj["graphics_id"] = this->get("sprite");
-    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+    if (projectConfig.getObjectEventInConnectionEnabled()) {
         eventObj["in_connection"] = this->getInt("in_connection") > 0 || this->get("in_connection") == "TRUE";
     }
     eventObj["x"] = this->getS16("x");
@@ -378,8 +373,10 @@ OrderedJson::object Event::buildHiddenItemEventJSON()
     hiddenItemObj["elevation"] = this->getInt("elevation");
     hiddenItemObj["item"] = this->get("item");
     hiddenItemObj["flag"] = this->get("flag");
-    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+    if (projectConfig.getHiddenItemQuantityEnabled()) {
         hiddenItemObj["quantity"] = this->getInt("quantity");
+    }
+    if (projectConfig.getHiddenItemRequiresItemfinderEnabled()) {
         hiddenItemObj["underfoot"] = this->getInt("underfoot") > 0 || this->get("underfoot") == "TRUE";
     }
     this->addCustomValuesTo(&hiddenItemObj);
