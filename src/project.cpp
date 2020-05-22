@@ -1026,7 +1026,8 @@ void Project::saveTilesetMetatileLabels(Tileset *primaryTileset, Tileset *second
     QMap<QString, int> defines;
     bool definesFileModified = false;
 
-    defines = parser.readCDefines("include/constants/metatile_labels.h", (QStringList() << "METATILE_"));
+    QString metatileLabelsFilename = "include/constants/metatile_labels.h";
+    defines = parser.readCDefines(metatileLabelsFilename, (QStringList() << "METATILE_"));
 
     // Purge old entries from the file.
     QStringList definesToRemove;
@@ -1097,8 +1098,8 @@ void Project::saveTilesetMetatileLabels(Tileset *primaryTileset, Tileset *second
 
     outputText += "\n#endif // GUARD_METATILE_LABELS_H\n";
 
-
-    saveTextFile(root + "/include/constants/metatile_labels.h", outputText);
+    ignoreWatchedFileTemporarily(root + "/" + metatileLabelsFilename);
+    saveTextFile(root + "/" + metatileLabelsFilename, outputText);
 }
 
 void Project::saveTilesetMetatileAttributes(Tileset *tileset) {
@@ -1719,7 +1720,9 @@ void Project::loadTilesetMetatiles(Tileset* tileset) {
 
 void Project::loadTilesetMetatileLabels(Tileset* tileset) {
     QString tilesetPrefix = QString("METATILE_%1_").arg(QString(tileset->name).replace("gTileset_", ""));
-    QMap<QString, int> labels = parser.readCDefines("include/constants/metatile_labels.h", QStringList() << tilesetPrefix);
+    QString metatileLabelsFilename = "include/constants/metatile_labels.h";
+    fileWatcher.addPath(root + "/" + metatileLabelsFilename);
+    QMap<QString, int> labels = parser.readCDefines(metatileLabelsFilename, QStringList() << tilesetPrefix);
 
     for (QString labelName : labels.keys()) {
         int metatileId = labels[labelName];
