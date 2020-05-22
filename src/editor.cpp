@@ -1332,6 +1332,9 @@ void Editor::displayMapEvents() {
     scene->addItem(events_group);
 
     QList<Event *> events = map->getAllEvents();
+    for (Event *event : events) {
+        event->setFrameFromMovement(project->facingDirections.value(event->get("movement_type")));
+    }
     project->loadEventPixmaps(events);
     for (Event *event : events) {
         addMapEvent(event);
@@ -1344,8 +1347,7 @@ void Editor::displayMapEvents() {
 
 DraggablePixmapItem *Editor::addMapEvent(Event *event) {
     DraggablePixmapItem *object = new DraggablePixmapItem(event, this);
-    event->setFrameFromMovement(project->facingDirections.value(event->get("movement_type")));
-    object->updatePixmap();
+    this->redrawObject(object);
     if (!event->usingSprite) {
         object->setOpacity(0.7);
     }
