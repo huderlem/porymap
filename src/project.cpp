@@ -1719,7 +1719,9 @@ void Project::loadTilesetMetatiles(Tileset* tileset) {
 
 void Project::loadTilesetMetatileLabels(Tileset* tileset) {
     QString tilesetPrefix = QString("METATILE_%1_").arg(QString(tileset->name).replace("gTileset_", ""));
-    QMap<QString, int> labels = parser.readCDefines("include/constants/metatile_labels.h", QStringList() << tilesetPrefix);
+    QString metatileLabelsFilename = "include/constants/metatile_labels.h";
+    fileWatcher.addPath(root + "/" + metatileLabelsFilename);
+    QMap<QString, int> labels = parser.readCDefines(metatileLabelsFilename, QStringList() << tilesetPrefix);
 
     for (QString labelName : labels.keys()) {
         int metatileId = labels[labelName];
