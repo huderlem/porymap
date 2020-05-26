@@ -56,6 +56,7 @@ void KeyValueConfigBase::load() {
 
         this->parseConfigKeyValue(match.captured("key").toLower(), match.captured("value"));
     }
+    this->setUnreadKeys();
 
     file.close();
 }
@@ -434,6 +435,20 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
+    readKeys.append(key);
+}
+
+void ProjectConfig::setUnreadKeys() {
+    // Set game-version specific defaults for any config field that wasn't read
+    bool isPokefirered = this->baseGameVersion == BaseGameVersion::pokefirered;
+    if (!readKeys.contains("use_custom_border_size")) this->useCustomBorderSize = isPokefirered;
+    if (!readKeys.contains("enable_event_weather_trigger")) this->enableEventWeatherTrigger = !isPokefirered;
+    if (!readKeys.contains("enable_event_secret_base")) this->enableEventSecretBase = !isPokefirered;
+    if (!readKeys.contains("enable_hidden_item_quantity")) this->enableHiddenItemQuantity = isPokefirered;
+    if (!readKeys.contains("enable_hidden_item_requires_itemfinder")) this->enableHiddenItemRequiresItemfinder = isPokefirered;
+    if (!readKeys.contains("enable_heal_location_respawn_data")) this->enableHealLocationRespawnData = isPokefirered;
+    if (!readKeys.contains("enable_object_event_in_connection")) this->enableObjectEventInConnection = isPokefirered;
+    if (!readKeys.contains("enable_floor_number")) this->enableFloorNumber = isPokefirered;
 }
 
 QMap<QString, QString> ProjectConfig::getKeyValueMap() {

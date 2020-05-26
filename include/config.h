@@ -24,6 +24,7 @@ protected:
     virtual void parseConfigKeyValue(QString key, QString value) = 0;
     virtual QMap<QString, QString> getKeyValueMap() = 0;
     virtual void onNewConfigFileCreated() = 0;
+    virtual void setUnreadKeys() = 0;
 };
 
 class PorymapConfig: public KeyValueConfigBase
@@ -73,7 +74,8 @@ protected:
     virtual QString getConfigFilepath() override;
     virtual void parseConfigKeyValue(QString key, QString value) override;
     virtual QMap<QString, QString> getKeyValueMap() override;
-    virtual void onNewConfigFileCreated() override {}
+    virtual void onNewConfigFileCreated() override {};
+    virtual void setUnreadKeys() override {};
 private:
     QString recentProject;
     QString recentMap;
@@ -121,6 +123,7 @@ public:
         this->enableObjectEventInConnection = false;
         this->enableFloorNumber = false;
         this->customScripts.clear();
+        this->readKeys.clear();
     }
     void setBaseGameVersion(BaseGameVersion baseGameVersion);
     BaseGameVersion getBaseGameVersion();
@@ -153,6 +156,7 @@ protected:
     virtual void parseConfigKeyValue(QString key, QString value) override;
     virtual QMap<QString, QString> getKeyValueMap() override;
     virtual void onNewConfigFileCreated() override;
+    virtual void setUnreadKeys() override;
 private:
     BaseGameVersion baseGameVersion;
     QString projectDir;
@@ -167,6 +171,7 @@ private:
     bool enableObjectEventInConnection;
     bool enableFloorNumber;
     QList<QString> customScripts;
+    QStringList readKeys;
 };
 
 extern ProjectConfig projectConfig;
