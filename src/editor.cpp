@@ -867,7 +867,7 @@ void Editor::onHoveredMovementPermissionCleared() {
     this->ui->statusBar->clearMessage();
 }
 
-void Editor::onHoveredMetatileSelectionChanged(uint16_t metatileId) {
+QString Editor::getMetatileDisplayMessage(uint16_t metatileId) {
     Metatile *metatile = Tileset::getMetatile(metatileId, map->layout->tileset_primary, map->layout->tileset_secondary);
     QString message;
     QString hexString = QString("%1").arg(metatileId, 3, 16, QChar('0')).toUpper();
@@ -876,7 +876,11 @@ void Editor::onHoveredMetatileSelectionChanged(uint16_t metatileId) {
     } else {
         message = QString("Metatile: 0x%1").arg(hexString);
     }
-    this->ui->statusBar->showMessage(message);
+    return message;
+}
+
+void Editor::onHoveredMetatileSelectionChanged(uint16_t metatileId) {
+    this->ui->statusBar->showMessage(getMetatileDisplayMessage(metatileId));
 }
 
 void Editor::onHoveredMetatileSelectionCleared() {
@@ -895,11 +899,11 @@ void Editor::onHoveredMapMetatileChanged(int x, int y) {
     if (map_item->paintingMode == MapPixmapItem::PaintMode::Metatiles
      && x >= 0 && x < map->getWidth() && y >= 0 && y < map->getHeight()) {
         int blockIndex = y * map->getWidth() + x;
-        int tile = map->layout->blockdata->blocks->at(blockIndex).tile;
-        this->ui->statusBar->showMessage(QString("X: %1, Y: %2, Metatile: 0x%3, Scale = %4x")
+        int metatileId = map->layout->blockdata->blocks->at(blockIndex).tile;
+        this->ui->statusBar->showMessage(QString("X: %1, Y: %2, %3, Scale = %4x")
                               .arg(x)
                               .arg(y)
-                              .arg(QString("%1").arg(tile, 3, 16, QChar('0')).toUpper())
+                              .arg(getMetatileDisplayMessage(metatileId))
                               .arg(QString::number(pow(scale_base, scale_exp), 'g', 2)));
     }
 }
