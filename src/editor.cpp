@@ -905,13 +905,19 @@ void Editor::onHoveredMapMetatileChanged(int x, int y) {
                               .arg(y)
                               .arg(getMetatileDisplayMessage(metatileId))
                               .arg(QString::number(pow(scale_base, scale_exp), 'g', 2)));
+    } else if (map_item->paintingMode == MapPixmapItem::PaintMode::EventObjects
+        && x >= 0 && x < map->getWidth() && y >= 0 && y < map->getHeight()) {
+        this->ui->statusBar->showMessage(QString("X: %1, Y: %2")
+                              .arg(x)
+                              .arg(y));
     }
 }
 
 void Editor::onHoveredMapMetatileCleared() {
     this->playerViewRect->setVisible(false);
     this->cursorMapTileRect->setVisible(false);
-    if (map_item->paintingMode == MapPixmapItem::PaintMode::Metatiles) {
+    if (map_item->paintingMode == MapPixmapItem::PaintMode::Metatiles
+     || map_item->paintingMode == MapPixmapItem::PaintMode::EventObjects) {
         this->ui->statusBar->clearMessage();
     }
 }
