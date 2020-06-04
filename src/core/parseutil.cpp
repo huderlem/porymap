@@ -226,8 +226,7 @@ int ParseUtil::evaluatePostfix(QList<Token> postfix) {
             stack.push(token);
         } // else ignore errored tokens, we have already warned the user.
     }
-
-    return stack.pop().value.toInt(nullptr, 0);
+    return stack.size() ? stack.pop().value.toInt(nullptr, 0) : 0;
 }
 
 QString ParseUtil::readCIncbin(QString filename, QString label) {
@@ -273,6 +272,8 @@ QMap<QString, int> ParseUtil::readCDefines(QString filename, QStringList prefixe
 
     text.replace(QRegularExpression("(//.*)|(\\/+\\*+[^*]*\\*+\\/+)"), "");
     text.replace(QRegularExpression("(\\\\\\s+)"), "");
+    allDefines.insert("FALSE", 0);
+    allDefines.insert("TRUE", 1);
 
     QRegularExpression re("#define\\s+(?<defineName>\\w+)[^\\S\\n]+(?<defineValue>.+)");
     QRegularExpressionMatchIterator iter = re.globalMatch(text);
