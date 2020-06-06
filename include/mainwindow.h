@@ -128,6 +128,7 @@ private slots:
     void onWildMonDataChanged();
     void openNewMapPopupWindow(int, QVariant);
     void onNewMapCreated();
+    void onMapCacheCleared();
 
     void on_action_NewMap_triggered();
     void on_actionNew_Tileset_triggered();
