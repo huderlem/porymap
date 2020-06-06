@@ -35,6 +35,13 @@ determined by this file.
    ``use_encounter_json``, 1, project, yes, Enables wild encounter table editing
    ``use_poryscript``, 0, project, yes, Whether to open .pory files for scripts
    ``use_custom_border_size``, 0, project, yes, Whether to allow variable border sizes
+   ``enable_event_weather_trigger``, 1 if not ``pokefirered``, project, yes, Allows adding Weather Trigger events
+   ``enable_event_secret_base``, 1 if not ``pokefirered``, project, yes, Allows adding Secret Base events
+   ``enable_hidden_item_quantity``, 1 if ``pokefirered``, project, yes, Adds ``Quantity`` to Hidden Item events
+   ``enable_hidden_item_requires_itemfinder``, 1 if ``pokefirered``, project, yes, Adds ``Requires Itemfinder`` to Hidden Item events
+   ``enable_heal_location_respawn_data``, 1 if ``pokefirered``, project, yes, Adds ``Respawn Map`` and ``Respawn NPC`` to Heal Location events
+   ``enable_object_event_in_connection``, 1 if ``pokefirered``, project, yes, Adds ``In Connection`` to Object events
+   ``enable_floor_number``, 1 if ``pokefirered``, project, yes, Adds ``Floor Number`` to map headers
    ``custom_scripts``, , project, yes, A list of script files to load into the scripting engine
 
 Some of these settings can be toggled manually in porymap via the *Options* menu.
