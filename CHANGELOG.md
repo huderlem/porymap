@@ -9,12 +9,15 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ## [Unreleased]
 ### Added
 - Add more project-specific configs to better support porting features from different projects.
+- Add metatile label names to the status bar when hovering over metatiles in the map editor tab.
+- Add mouse coordinates to the status bar when hovering in the events tab.
 
 ### Changed
 - `metatile_labels.h` is now watched for changes.
 
 ### Fixed
 - Reduce time it takes to load maps and save in the tileset editor.
+- Fix crash that could occur when parsing unknown symbols when evaluating `define` expressions.
 
 ## [4.1.0] - 2020-05-18
 ### Added
