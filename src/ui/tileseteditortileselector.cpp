@@ -216,7 +216,7 @@ QImage TilesetEditorTileSelector::buildPrimaryTilesIndexedImage() {
         int y = tile / this->numTilesWide;
         int x = tile % this->numTilesWide;
         QPoint origin = QPoint(x * 8, y * 8);
-        painter.drawImage(origin, tileImage.mirrored(this->xFlip, this->yFlip));
+        painter.drawImage(origin, tileImage);
     }
 
     painter.end();
@@ -253,7 +253,7 @@ QImage TilesetEditorTileSelector::buildSecondaryTilesIndexedImage() {
         int y = tile / this->numTilesWide;
         int x = tile % this->numTilesWide;
         QPoint origin = QPoint(x * 8, y * 8);
-        painter.drawImage(origin, tileImage.mirrored(this->xFlip, this->yFlip));
+        painter.drawImage(origin, tileImage);
     }
 
     painter.end();
