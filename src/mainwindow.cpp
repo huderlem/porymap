@@ -240,14 +240,20 @@ void MainWindow::mapSortOrder_changed(QAction *action)
         if (isProjectOpen())
         {
             sortMapList();
+            applyMapListFilter(ui->lineEdit_filterBox->text());
         }
     }
 }
 
 void MainWindow::on_lineEdit_filterBox_textChanged(const QString &arg1)
 {
-    mapListProxyModel->setFilterRegExp(QRegExp(arg1, Qt::CaseInsensitive, QRegExp::FixedString));
-    if (arg1.isEmpty()) {
+    this->applyMapListFilter(arg1);
+}
+
+void MainWindow::applyMapListFilter(QString filterText)
+{
+    mapListProxyModel->setFilterRegExp(QRegExp(filterText, Qt::CaseInsensitive, QRegExp::FixedString));
+    if (filterText.isEmpty()) {
         ui->mapList->collapseAll();
     } else {
         ui->mapList->expandToDepth(0);
