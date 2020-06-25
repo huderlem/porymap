@@ -122,6 +122,7 @@ public:
         this->enableHealLocationRespawnData = false;
         this->enableObjectEventInConnection = false;
         this->enableFloorNumber = false;
+        this->enableTripleLayerMetatiles = false;
         this->customScripts.clear();
         this->readKeys.clear();
     }
@@ -149,6 +150,8 @@ public:
     bool getObjectEventInConnectionEnabled();
     void setFloorNumberEnabled(bool enable);
     bool getFloorNumberEnabled();
+    void setTripleLayerMetatilesEnabled(bool enable);
+    bool getTripleLayerMetatilesEnabled();
     void setCustomScripts(QList<QString> scripts);
     QList<QString> getCustomScripts();
 protected:
@@ -170,6 +173,7 @@ private:
     bool enableHealLocationRespawnData;
     bool enableObjectEventInConnection;
     bool enableFloorNumber;
+    bool enableTripleLayerMetatiles;
     QList<QString> customScripts;
     QStringList readKeys;
 };

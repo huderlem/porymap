@@ -1,3 +1,4 @@
+#include "config.h"
 #include "imageproviders.h"
 #include "log.h"
 #include <QPainter>
@@ -30,7 +31,9 @@ QImage getMetatileImage(uint16_t tile, Tileset *primaryTileset, Tileset *seconda
     QList<QList<QRgb>> palettes = Tileset::getBlockPalettes(primaryTileset, secondaryTileset, useTruePalettes);
 
     QPainter metatile_painter(&metatile_image);
-    for (int layer = 0; layer < 2; layer++)
+    bool isTripleLayerMetatile = projectConfig.getTripleLayerMetatilesEnabled();
+    int numLayers = isTripleLayerMetatile ? 3: 2;
+    for (int layer = 0; layer < numLayers; layer++)
     for (int y = 0; y < 2; y++)
     for (int x = 0; x < 2; x++) {
         Tile tile_ = metatile->tiles->value((y * 2) + x + (layer * 4));

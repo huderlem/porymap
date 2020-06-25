@@ -223,6 +223,7 @@ void TilesetEditor::onSelectedMetatileChanged(uint16_t metatileId) {
     this->metatile = Tileset::getMetatile(metatileId, this->primaryTileset, this->secondaryTileset);
     this->metatileLayersItem->setMetatile(metatile);
     this->metatileLayersItem->draw();
+    this->ui->graphicsView_metatileLayers->setFixedSize(this->metatileLayersItem->pixmap().width() + 2, this->metatileLayersItem->pixmap().height() + 2);
     this->ui->comboBox_metatileBehaviors->setCurrentIndex(this->ui->comboBox_metatileBehaviors->findData(this->metatile->behavior));
     this->ui->lineEdit_metatileLabel->setText(this->metatile->label);
     this->ui->comboBox_layerType->setCurrentIndex(this->ui->comboBox_layerType->findData(this->metatile->layerType));
@@ -255,16 +256,22 @@ void TilesetEditor::onMetatileLayerTileChanged(int x, int y) {
         QPoint(2, 0),
         QPoint(3, 0),
         QPoint(2, 1),
-        QPoint(3, 1)
+        QPoint(3, 1),
+        QPoint(4, 0),
+        QPoint(5, 0),
+        QPoint(4, 1),
+        QPoint(5, 1),
     };
     Metatile *prevMetatile = this->metatile->copy();
     QPoint dimensions = this->tileSelector->getSelectionDimensions();
     QList<Tile> tiles = this->tileSelector->getSelectedTiles();
     int selectedTileIndex = 0;
+    bool isTripleLayerMetatile = projectConfig.getTripleLayerMetatilesEnabled();
+    int maxTileIndex = isTripleLayerMetatile ? 12: 8;
     for (int j = 0; j < dimensions.y(); j++) {
         for (int i = 0; i < dimensions.x(); i++) {
             int tileIndex = ((x + i) / 2 * 4) + ((y + j) * 2) + ((x + i) % 2);
-            if (tileIndex < 8
+            if (tileIndex < maxTileIndex
              && tileCoords.at(tileIndex).x() >= x
              && tileCoords.at(tileIndex).y() >= y){
                 Tile *tile = &(*this->metatile->tiles)[tileIndex];
@@ -289,10 +296,12 @@ void TilesetEditor::onMetatileLayerSelectionChanged(QPoint selectionOrigin, int 
     QList<Tile> tiles;
     int x = selectionOrigin.x();
     int y = selectionOrigin.y();
+    bool isTripleLayerMetatile = projectConfig.getTripleLayerMetatilesEnabled();
+    int maxTileIndex = isTripleLayerMetatile ? 12: 8;
     for (int j = 0; j < height; j++) {
         for (int i = 0; i < width; i++) {
             int tileIndex = ((x + i) / 2 * 4) + ((y + j) * 2) + ((x + i) % 2);
-            if (tileIndex < 8) {
+            if (tileIndex < maxTileIndex) {
                 tiles.append(this->metatile->tiles->at(tileIndex));
             }
         }

@@ -1,3 +1,4 @@
+#include "config.h"
 #include "metatilelayersitem.h"
 #include "imageproviders.h"
 #include <QPainter>
@@ -12,11 +13,18 @@ void MetatileLayersItem::draw() {
         QPoint(48, 0),
         QPoint(32, 16),
         QPoint(48, 16),
+        QPoint(64, 0),
+        QPoint(80, 0),
+        QPoint(64, 16),
+        QPoint(80, 16),
     };
 
-    QPixmap pixmap(64, 32);
+    bool isTripleLayerMetatile = projectConfig.getTripleLayerMetatilesEnabled();
+    int width = isTripleLayerMetatile ? 96 : 64;
+    QPixmap pixmap(width, 32);
     QPainter painter(&pixmap);
-    for (int i = 0; i < 8; i++) {
+    int numTiles = isTripleLayerMetatile ? 12 : 8;
+    for (int i = 0; i < numTiles; i++) {
         Tile tile = this->metatile->tiles->at(i);
         QImage tileImage = getPalettedTileImage(tile.tile, this->primaryTileset, this->secondaryTileset, tile.palette, true)
                 .mirrored(tile.xflip, tile.yflip)
@@ -92,10 +100,12 @@ void MetatileLayersItem::clearLastModifiedCoords() {
 }
 
 void MetatileLayersItem::getBoundedCoords(QPointF pos, int *x, int *y) {
+    bool isTripleLayerMetatile = projectConfig.getTripleLayerMetatilesEnabled();
+    int maxX = isTripleLayerMetatile ? 5 : 3;
     *x = static_cast<int>(pos.x()) / 16;
     *y = static_cast<int>(pos.y()) / 16;
     if (*x < 0) *x = 0;
     if (*y < 0) *y = 0;
-    if (*x > 3) *x = 3;
+    if (*x > maxX) *x = maxX;
     if (*y > 1) *y = 1;
 }
