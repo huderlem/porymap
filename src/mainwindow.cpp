@@ -165,7 +165,6 @@ void MainWindow::setProjectSpecificUIVisibility()
 {
     ui->actionUse_Encounter_Json->setChecked(projectConfig.getEncounterJsonActive());
     ui->actionUse_Poryscript->setChecked(projectConfig.getUsePoryScript());
-    ui->actionUse_Triple_Layer_Metatiles->setChecked(projectConfig.getTripleLayerMetatilesEnabled());
 
     ui->mainTabBar->setTabEnabled(4, projectConfig.getEncounterJsonActive());
 
@@ -1321,15 +1320,6 @@ void MainWindow::on_actionMonitor_Project_Files_triggered(bool checked)
 void MainWindow::on_actionUse_Poryscript_triggered(bool checked)
 {
     projectConfig.setUsePoryScript(checked);
-}
-
-void MainWindow::on_actionUse_Triple_Layer_Metatiles_triggered(bool checked)
-{
-    QMessageBox warning(this);
-    warning.setText("You must reload the project for this setting to take effect.");
-    warning.setIcon(QMessageBox::Information);
-    warning.exec();
-    projectConfig.setTripleLayerMetatilesEnabled(checked);
 }
 
 void MainWindow::on_actionPencil_triggered()
