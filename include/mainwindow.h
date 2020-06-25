@@ -148,7 +148,6 @@ private slots:
     void on_actionUse_Encounter_Json_triggered(bool checked);
     void on_actionMonitor_Project_Files_triggered(bool checked);
     void on_actionUse_Poryscript_triggered(bool checked);
-    void on_actionUse_Triple_Layer_Metatiles_triggered(bool checked);
 
     void on_mainTabBar_tabBarClicked(int index);
 

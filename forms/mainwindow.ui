@@ -263,7 +263,7 @@
            </sizepolicy>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
           <property name="movable" stdset="0">
            <bool>false</bool>
@@ -2755,7 +2755,6 @@
     <addaction name="actionUse_Encounter_Json"/>
     <addaction name="actionMonitor_Project_Files"/>
     <addaction name="actionUse_Poryscript"/>
-    <addaction name="actionUse_Triple_Layer_Metatiles"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -3027,14 +3026,6 @@
   <action name="actionExport_Stitched_Map_Image">
    <property name="text">
     <string>Export Map Stitch Image...</string>
-   </property>
-  </action>
-  <action name="actionUse_Triple_Layer_Metatiles">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Use Triple Layer Metatiles</string>
    </property>
   </action>
  </widget>
