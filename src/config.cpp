@@ -423,6 +423,12 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         if (!ok) {
             logWarn(QString("Invalid config value for enable_floor_number: '%1'. Must be 0 or 1.").arg(value));
         }
+    } else if (key == "enable_triple_layer_metatiles") {
+        bool ok;
+        this->enableTripleLayerMetatiles = value.toInt(&ok);
+        if (!ok) {
+            logWarn(QString("Invalid config value for enable_triple_layer_metatiles: '%1'. Must be 0 or 1.").arg(value));
+        }
     } else if (key == "custom_scripts") {
         this->customScripts.clear();
         QList<QString> paths = value.split(",");
@@ -464,6 +470,7 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("enable_heal_location_respawn_data", QString::number(this->enableHealLocationRespawnData));
     map.insert("enable_object_event_in_connection", QString::number(this->enableObjectEventInConnection));
     map.insert("enable_floor_number", QString::number(this->enableFloorNumber));
+    map.insert("enable_triple_layer_metatiles", QString::number(this->enableTripleLayerMetatiles));
     map.insert("custom_scripts", this->customScripts.join(","));
     return map;
 }
@@ -505,6 +512,7 @@ void ProjectConfig::onNewConfigFileCreated() {
     this->enableFloorNumber = isPokefirered;
     this->useEncounterJson = true;
     this->usePoryScript = false;
+    this->enableTripleLayerMetatiles = false;
     this->customScripts.clear();
 }
 
@@ -613,6 +621,15 @@ void ProjectConfig::setFloorNumberEnabled(bool enable) {
 
 bool ProjectConfig::getFloorNumberEnabled() {
     return this->enableFloorNumber;
+}
+
+void ProjectConfig::setTripleLayerMetatilesEnabled(bool enable) {
+    this->enableTripleLayerMetatiles = enable;
+    this->save();
+}
+
+bool ProjectConfig::getTripleLayerMetatilesEnabled() {
+    return this->enableTripleLayerMetatiles;
 }
 
 void ProjectConfig::setCustomScripts(QList<QString> scripts) {
