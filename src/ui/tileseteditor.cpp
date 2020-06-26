@@ -64,6 +64,7 @@ void TilesetEditor::init(Project *project, QString primaryTilesetLabel, QString 
     } else {
         this->ui->comboBox_layerType->setVisible(false);
         this->ui->label_layerType->setVisible(false);
+        this->ui->label_BottomTop->setText("Bottom/Middle/Top");
     }
 
     this->ui->spinBox_paletteSelector->setMinimum(0);
