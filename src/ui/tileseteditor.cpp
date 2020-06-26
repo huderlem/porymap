@@ -56,9 +56,16 @@ void TilesetEditor::init(Project *project, QString primaryTilesetLabel, QString 
     for (int num : project->metatileBehaviorMapInverse.keys()) {
         this->ui->comboBox_metatileBehaviors->addItem(project->metatileBehaviorMapInverse[num], num);
     }
-    this->ui->comboBox_layerType->addItem("Normal - Middle/Top", 0);
-    this->ui->comboBox_layerType->addItem("Covered - Bottom/Middle", 1);
-    this->ui->comboBox_layerType->addItem("Split - Bottom/Top", 2);
+
+    if (!projectConfig.getTripleLayerMetatilesEnabled()) {
+        this->ui->comboBox_layerType->addItem("Normal - Middle/Top", 0);
+        this->ui->comboBox_layerType->addItem("Covered - Bottom/Middle", 1);
+        this->ui->comboBox_layerType->addItem("Split - Bottom/Top", 2);
+    } else {
+        this->ui->comboBox_layerType->setVisible(false);
+        this->ui->label_layerType->setVisible(false);
+    }
+
     this->ui->spinBox_paletteSelector->setMinimum(0);
     this->ui->spinBox_paletteSelector->setMaximum(Project::getNumPalettesTotal() - 1);
 
@@ -226,7 +233,9 @@ void TilesetEditor::onSelectedMetatileChanged(uint16_t metatileId) {
     this->ui->graphicsView_metatileLayers->setFixedSize(this->metatileLayersItem->pixmap().width() + 2, this->metatileLayersItem->pixmap().height() + 2);
     this->ui->comboBox_metatileBehaviors->setCurrentIndex(this->ui->comboBox_metatileBehaviors->findData(this->metatile->behavior));
     this->ui->lineEdit_metatileLabel->setText(this->metatile->label);
-    this->ui->comboBox_layerType->setCurrentIndex(this->ui->comboBox_layerType->findData(this->metatile->layerType));
+    if (!projectConfig.getTripleLayerMetatilesEnabled()) {
+        this->ui->comboBox_layerType->setCurrentIndex(this->ui->comboBox_layerType->findData(this->metatile->layerType));
+    }
     if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
         this->ui->comboBox_encounterType->setCurrentIndex(this->ui->comboBox_encounterType->findData(this->metatile->encounterType));
         this->ui->comboBox_terrainType->setCurrentIndex(this->ui->comboBox_terrainType->findData(this->metatile->terrainType));
