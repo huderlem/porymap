@@ -322,6 +322,11 @@ void MapPixmapItem::magicFill(
         bool fromScriptCall) {
     Block *block = map->getBlock(initialX, initialY);
     if (block) {
+        if (selectedMetatiles->length() == 1 && selectedMetatiles->value(0) == block->tile) {
+            logInfo("early exit");
+            return;
+        }
+
         bool setCollisions = selectedCollisions && selectedCollisions->length() == selectedMetatiles->length();
         uint16_t tile = block->tile;
         for (int y = 0; y < map->getHeight(); y++) {
