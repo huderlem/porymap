@@ -115,7 +115,7 @@ void MainWindow::initEditor() {
     connect(this->editor, SIGNAL(warpEventDoubleClicked(QString,QString)), this, SLOT(openWarpMap(QString,QString)));
     connect(this->editor, SIGNAL(currentMetatilesSelectionChanged()), this, SLOT(currentMetatilesSelectionChanged()));
     connect(this->editor, SIGNAL(wildMonDataChanged()), this, SLOT(onWildMonDataChanged()));
-    connect(this->editor, &Editor::wheelZoom, this, &MainWindow::scaleMapView);
+    connect(this->editor, &Editor::wheelZoom, this, &MainWindow::onWheelZoom);
 
     this->loadUserSettings();
 }
@@ -1356,6 +1356,13 @@ void MainWindow::on_actionMove_triggered()
 void MainWindow::on_actionMap_Shift_triggered()
 {
     on_toolButton_Shift_clicked();
+}
+
+void MainWindow::onWheelZoom(int s) {
+    // Don't zoom the map when the user accidentally scrolls while performing a magic fill. (ctrl + middle button click)
+    if (!(QApplication::mouseButtons() & Qt::MiddleButton)) {
+        scaleMapView(s);
+    }
 }
 
 void MainWindow::scaleMapView(int s) {

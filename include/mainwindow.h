@@ -108,6 +108,7 @@ public:
 
 public slots:
     void scaleMapView(int);
+    void onWheelZoom(int);
 
 private slots:
     void on_action_Open_Project_triggered();
