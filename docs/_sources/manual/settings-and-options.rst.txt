@@ -42,6 +42,7 @@ determined by this file.
    ``enable_heal_location_respawn_data``, 1 if ``pokefirered``, project, yes, Adds ``Respawn Map`` and ``Respawn NPC`` to Heal Location events
    ``enable_object_event_in_connection``, 1 if ``pokefirered``, project, yes, Adds ``In Connection`` to Object events
    ``enable_floor_number``, 1 if ``pokefirered``, project, yes, Adds ``Floor Number`` to map headers
+   ``enable_triple_layer_metatiles``, 0, project, yes, Enables triple-layer metatiles (See https://github.com/pret/pokeemerald/wiki/Triple-layer-metatiles)
    ``custom_scripts``, , project, yes, A list of script files to load into the scripting engine
 
 Some of these settings can be toggled manually in porymap via the *Options* menu.

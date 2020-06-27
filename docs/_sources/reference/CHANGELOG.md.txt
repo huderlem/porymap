@@ -9,6 +9,18 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ## [Unreleased]
 Nothing, yet.
 
+## [4.3.0] - 2020-06-27
+### Added
+- Add triple-layer metatiles support.
+
+### Changed
+- The "Open Scripts" button will fall back to `scripts.inc` if `scripts.pory` doesn't exist. 
+
+### Fixed
+- Fix bug where exported tileset images could be horizontally or vertically flipped.
+- Fix bug where the map list wasn't filtered properly after switching filter types.
+- Don't zoom in map when mouse middle button is pressed.
+
 ## [4.2.0] - 2020-06-06
 ### Added
 - Add more project-specific configs to better support porting features from different projects.
@@ -204,7 +216,8 @@ Nothing, yet.
 ## [1.0.0] - 2018-10-26
 This was the initial release.
 
-[Unreleased]: https://github.com/huderlem/porymap/compare/4.2.0...HEAD
+[Unreleased]: https://github.com/huderlem/porymap/compare/4.3.0...HEAD
+[4.3.0]: https://github.com/huderlem/porymap/compare/4.2.0...4.3.0
 [4.2.0]: https://github.com/huderlem/porymap/compare/4.1.0...4.2.0
 [4.1.0]: https://github.com/huderlem/porymap/compare/4.0.0...4.1.0
 [4.0.0]: https://github.com/huderlem/porymap/compare/3.0.1...4.0.0
