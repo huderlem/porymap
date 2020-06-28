@@ -57,11 +57,9 @@ void MetatileLayersItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     } else {
         int x, y;
         this->getBoundedCoords(event->pos(), &x, &y);
-        if (prevChangedTile.x() != x || prevChangedTile.y() != y) {
-            this->prevChangedTile.setX(x);
-            this->prevChangedTile.setY(y);
-            emit this->tileChanged(x, y);
-        }
+        this->prevChangedTile.setX(x);
+        this->prevChangedTile.setY(y);
+        emit this->tileChanged(x, y);
     }
 }
 
