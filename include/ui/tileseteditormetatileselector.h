@@ -33,7 +33,7 @@ private:
     void updateSelectedMetatile();
     uint16_t getMetatileId(int x, int y);
     QPoint getMetatileIdCoords(uint16_t);
-    uint16_t getValidMetatileId(uint16_t);
+    bool shouldAcceptEvent(QGraphicsSceneMouseEvent*);
 
 signals:
     void hoveredMetatileChanged(uint16_t);
