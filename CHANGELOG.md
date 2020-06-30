@@ -7,7 +7,8 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 The **"Breaking Changes"** listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. If porymap is used on a project that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.
 
 ## [Unreleased]
-Nothing, yet.
+### Fixed
+- Fix a crash that occured when creating a new tileset using triple layer mode
 
 ## [4.3.0] - 2020-06-27
 ### Added
