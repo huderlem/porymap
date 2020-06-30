@@ -54,6 +54,9 @@ void TilesetEditorMetatileSelector::updateSelectedMetatile() {
     uint16_t metatileId = this->getMetatileId(origin.x(), origin.y());
     if (Tileset::metatileIsValid(metatileId, this->primaryTileset, this->secondaryTileset))
         this->selectedMetatile = metatileId;
+    else
+        this->selectedMetatile = 0;
+    emit selectedMetatileChanged(this->selectedMetatile);
 }
 
 uint16_t TilesetEditorMetatileSelector::getSelectedMetatile() {
@@ -78,7 +81,6 @@ void TilesetEditorMetatileSelector::mousePressEvent(QGraphicsSceneMouseEvent *ev
     if (!shouldAcceptEvent(event)) return;
     SelectablePixmapItem::mousePressEvent(event);
     this->updateSelectedMetatile();
-    emit selectedMetatileChanged(this->selectedMetatile);
 }
 
 void TilesetEditorMetatileSelector::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
@@ -86,14 +88,12 @@ void TilesetEditorMetatileSelector::mouseMoveEvent(QGraphicsSceneMouseEvent *eve
     SelectablePixmapItem::mouseMoveEvent(event);
     this->updateSelectedMetatile();
     emit hoveredMetatileChanged(this->selectedMetatile);
-    emit selectedMetatileChanged(this->selectedMetatile);
 }
 
 void TilesetEditorMetatileSelector::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
     if (!shouldAcceptEvent(event)) return;
     SelectablePixmapItem::mouseReleaseEvent(event);
     this->updateSelectedMetatile();
-    emit selectedMetatileChanged(this->selectedMetatile);
 }
 
 void TilesetEditorMetatileSelector::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {

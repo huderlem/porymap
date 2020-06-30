@@ -650,6 +650,7 @@ void TilesetEditor::on_actionChange_Metatiles_Count_triggered()
             this->secondaryTileset->metatiles->append(metatile);
         }
 
+        this->metatileSelector->updateSelectedMetatile();
         this->refresh();
         this->hasUnsavedChanges = true;
     }
