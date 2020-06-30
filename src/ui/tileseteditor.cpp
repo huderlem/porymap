@@ -17,6 +17,7 @@ TilesetEditor::TilesetEditor(Project *project, QString primaryTilesetLabel, QStr
     ui(new Ui::TilesetEditor)
 {
     this->init(project, primaryTilesetLabel, secondaryTilesetLabel);
+    new QShortcut(QKeySequence("Ctrl+Shift+Z"), this, SLOT(on_actionRedo_triggered()));
 }
 
 TilesetEditor::~TilesetEditor()
