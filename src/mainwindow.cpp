@@ -1124,6 +1124,10 @@ void MainWindow::on_actionNew_Tileset_triggered() {
         } else {
             this->ui->comboBox_SecondaryTileset->addItem(createTilesetDialog->fullSymbolName);
         }
+
+        // hydrate tileset labels.
+        this->editor->project->getTilesetLabels();
+
         QMessageBox msgBox(this);
         msgBox.setText("Successfully created tileset.");
         QString message = QString("Tileset \"%1\" was created successfully.").arg(createTilesetDialog->friendlyName);
