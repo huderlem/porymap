@@ -1358,9 +1358,6 @@ void Editor::displayMapEvents() {
 DraggablePixmapItem *Editor::addMapEvent(Event *event) {
     DraggablePixmapItem *object = new DraggablePixmapItem(event, this);
     this->redrawObject(object);
-    if (!event->usingSprite) {
-        object->setOpacity(0.7);
-    }
     events_group->addToGroup(object);
     return object;
 }
@@ -1841,6 +1838,8 @@ QList<DraggablePixmapItem *> *Editor::getObjects() {
 
 void Editor::redrawObject(DraggablePixmapItem *item) {
     if (item) {
+        qreal opacity = item->event->usingSprite ? 1.0 : 0.7;
+        item->setOpacity(opacity);
         item->setPixmap(item->event->pixmap.copy(item->event->frame * item->event->spriteWidth % item->event->pixmap.width(), 0, item->event->spriteWidth, item->event->spriteHeight));
         item->setShapeMode(QGraphicsPixmapItem::BoundingRectShape);
         if (selected_events && selected_events->contains(item)) {
