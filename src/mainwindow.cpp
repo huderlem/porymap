@@ -1157,6 +1157,8 @@ void MainWindow::currentMetatilesSelectionChanged()
         pos *= scale;
         ui->scrollArea_2->ensureVisible(pos.x(), pos.y(), 8 * scale, 8 * scale);
     }
+    if (this->tilesetEditor)
+        this->tilesetEditor->selectMetatile(editor->metatile_selector_item->getSelectedMetatiles()->at(0));
 }
 
 void MainWindow::on_mapList_activated(const QModelIndex &index)
