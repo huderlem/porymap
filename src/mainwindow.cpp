@@ -2333,6 +2333,7 @@ void MainWindow::on_comboBox_PrimaryTileset_currentTextChanged(const QString &ti
         editor->updatePrimaryTileset(tilesetLabel);
         redrawMapScene();
         on_horizontalSlider_MetatileZoom_valueChanged(ui->horizontalSlider_MetatileZoom->value());
+        updateTilesetEditor();
     }
 }
 
@@ -2342,6 +2343,7 @@ void MainWindow::on_comboBox_SecondaryTileset_currentTextChanged(const QString &
         editor->updateSecondaryTileset(tilesetLabel);
         redrawMapScene();
         on_horizontalSlider_MetatileZoom_valueChanged(ui->horizontalSlider_MetatileZoom->value());
+        updateTilesetEditor();
     }
 }
 
