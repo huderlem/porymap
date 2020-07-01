@@ -117,3 +117,10 @@ QPoint TilesetEditorMetatileSelector::getMetatileIdCoords(uint16_t metatileId) {
                 : metatileId - Project::getNumMetatilesPrimary() + this->primaryTileset->metatiles->length();
     return QPoint(index % this->numMetatilesWide, index / this->numMetatilesWide);
 }
+
+QPoint TilesetEditorMetatileSelector::getMetatileIdCoordsOnWidget(uint16_t metatileId) {
+    QPoint pos = getMetatileIdCoords(metatileId);
+    pos.rx() = (pos.x() * this->cellWidth) + (this->cellWidth / 2);
+    pos.ry() = (pos.y() * this->cellHeight) + (this->cellHeight / 2);
+    return pos;
+}

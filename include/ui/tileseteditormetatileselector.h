@@ -18,6 +18,7 @@ public:
     void setTilesets(Tileset*, Tileset*);
     uint16_t getSelectedMetatile();
     void updateSelectedMetatile();
+    QPoint getMetatileIdCoordsOnWidget(uint16_t metatileId);
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent*);

@@ -105,6 +105,12 @@ void TilesetEditor::init(Project *project, QString primaryTilesetLabel, QString 
     metatileHistory.push(commit);
 }
 
+void TilesetEditor::selectMetatile(uint16_t metatileId) {
+    this->metatileSelector->select(metatileId);
+    QPoint pos = this->metatileSelector->getMetatileIdCoordsOnWidget(metatileId);
+    this->ui->scrollArea_Metatiles->ensureVisible(pos.x(), pos.y());
+}
+
 void TilesetEditor::setTilesets(QString primaryTilesetLabel, QString secondaryTilesetLabel) {
     delete this->primaryTileset;
     delete this->secondaryTileset;
