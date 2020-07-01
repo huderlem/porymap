@@ -2452,6 +2452,7 @@ void MainWindow::on_actionTileset_Editor_triggered()
     } else {
         this->tilesetEditor->activateWindow();
     }
+    this->tilesetEditor->selectMetatile(this->editor->metatile_selector_item->getSelectedMetatiles()->at(0));
 }
 
 void MainWindow::on_toolButton_ExpandAll_clicked()

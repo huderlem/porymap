@@ -38,6 +38,7 @@ public:
     ~TilesetEditor();
     void setTilesets(QString, QString);
     void init(Project*, QString, QString);
+    void selectMetatile(uint16_t metatileId);
 
 private slots:
     void onHoveredMetatileChanged(uint16_t);
