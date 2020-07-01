@@ -376,6 +376,7 @@ void TilesetEditor::on_comboBox_metatileBehaviors_activated(const QString &metat
         this->metatile->behavior = static_cast<uint8_t>(project->metatileBehaviorMap[metatileBehavior]);
         MetatileHistoryItem *commit = new MetatileHistoryItem(metatileSelector->getSelectedMetatile(), prevMetatile, this->metatile->copy());
         metatileHistory.push(commit);
+        this->hasUnsavedChanges = true;
     }
 }
 
@@ -392,6 +393,7 @@ void TilesetEditor::saveMetatileLabel()
         this->metatile->label = this->ui->lineEdit_metatileLabel->text();
         MetatileHistoryItem *commit = new MetatileHistoryItem(metatileSelector->getSelectedMetatile(), prevMetatile, this->metatile->copy());
         metatileHistory.push(commit);
+        this->hasUnsavedChanges = true;
     }
 }
 
@@ -402,6 +404,7 @@ void TilesetEditor::on_comboBox_layerType_activated(int layerType)
         this->metatile->layerType = static_cast<uint8_t>(layerType);
         MetatileHistoryItem *commit = new MetatileHistoryItem(metatileSelector->getSelectedMetatile(), prevMetatile, this->metatile->copy());
         metatileHistory.push(commit);
+        this->hasUnsavedChanges = true;
     }
 }
 
@@ -412,6 +415,7 @@ void TilesetEditor::on_comboBox_encounterType_activated(int encounterType)
         this->metatile->encounterType = static_cast<uint8_t>(encounterType);
         MetatileHistoryItem *commit = new MetatileHistoryItem(metatileSelector->getSelectedMetatile(), prevMetatile, this->metatile->copy());
         metatileHistory.push(commit);
+        this->hasUnsavedChanges = true;
     }
 }
 
@@ -422,6 +426,7 @@ void TilesetEditor::on_comboBox_terrainType_activated(int terrainType)
         this->metatile->terrainType = static_cast<uint8_t>(terrainType);
         MetatileHistoryItem *commit = new MetatileHistoryItem(metatileSelector->getSelectedMetatile(), prevMetatile, this->metatile->copy());
         metatileHistory.push(commit);
+        this->hasUnsavedChanges = true;
     }
 }
 
