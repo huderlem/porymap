@@ -53,7 +53,6 @@ QImage getMetatileImage(
             // being drawn unless they're on the bottom layer, in which case we need
             // a placeholder because garbage will be drawn otherwise.
             if (l == 0) {
-                metatile_painter.setOpacity(1.0);
                 metatile_painter.fillRect(x * 8, y * 8, 8, 8, palettes.value(0).value(0));
             }
             continue;
@@ -69,6 +68,17 @@ QImage getMetatileImage(
             logWarn(QString("Tile '%1' is referring to invalid palette number: '%2'").arg(tile_.tile).arg(tile_.palette));
         }
 
+        QPoint origin = QPoint(x*8, y*8);
+        float opacity = layerOpacity.size() >= numLayers ? layerOpacity[l] : 1.0;
+        if (opacity < 1.0) {
+            int alpha = 255 * opacity;
+            for (int c = 0; c < tile_image.colorCount(); c++) {
+                QColor color(tile_image.color(c));
+                color.setAlpha(alpha);
+                tile_image.setColor(c, color.rgba());
+            }
+        }
+
         // The top layer of the metatile has its first color displayed at transparent.
         if (l > 0) {
             QColor color(tile_image.color(0));
@@ -76,9 +86,6 @@ QImage getMetatileImage(
             tile_image.setColor(0, color.rgba());
         }
 
-        QPoint origin = QPoint(x*8, y*8);
-        float opacity = layerOpacity.size() >= numLayers ? layerOpacity[layer] : 1.0;
-        metatile_painter.setOpacity(opacity);
         metatile_painter.drawImage(origin, tile_image.mirrored(tile_.xflip, tile_.yflip));
     }
     metatile_painter.end();
