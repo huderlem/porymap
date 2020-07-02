@@ -1212,7 +1212,7 @@ void Editor::displayMetatileSelector() {
 
     scene_metatiles = new QGraphicsScene;
     if (!metatile_selector_item) {
-        metatile_selector_item = new MetatileSelector(8, map->layout->tileset_primary, map->layout->tileset_secondary);
+        metatile_selector_item = new MetatileSelector(8, map);
         connect(metatile_selector_item, SIGNAL(hoveredMetatileSelectionChanged(uint16_t)),
                 this, SLOT(onHoveredMetatileSelectionChanged(uint16_t)));
         connect(metatile_selector_item, SIGNAL(hoveredMetatileSelectionCleared()),

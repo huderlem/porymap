@@ -14,7 +14,18 @@ QImage getCollisionMetatileImage(int collision, int elevation) {
     return collisionImage.toImage();
 }
 
+static QList<int> defaultLayerOrder = QList<int>({0, 1, 2});
+
 QImage getMetatileImage(uint16_t tile, Tileset *primaryTileset, Tileset *secondaryTileset, bool useTruePalettes) {
+    return getMetatileImage(
+                tile,
+                primaryTileset,
+                secondaryTileset,
+                defaultLayerOrder,
+                useTruePalettes);
+}
+
+QImage getMetatileImage(uint16_t tile, Tileset *primaryTileset, Tileset *secondaryTileset, QList<int> layerOrder, bool useTruePalettes) {
     QImage metatile_image(16, 16, QImage::Format_RGBA8888);
 
     Metatile* metatile = Tileset::getMetatile(tile, primaryTileset, secondaryTileset);
@@ -36,14 +47,15 @@ QImage getMetatileImage(uint16_t tile, Tileset *primaryTileset, Tileset *seconda
     for (int layer = 0; layer < numLayers; layer++)
     for (int y = 0; y < 2; y++)
     for (int x = 0; x < 2; x++) {
-        Tile tile_ = metatile->tiles->value((y * 2) + x + (layer * 4));
+        int l = layerOrder.size() >= numLayers ? layerOrder[layer] : layer;
+        Tile tile_ = metatile->tiles->value((y * 2) + x + (l * 4));
         QImage tile_image = getTileImage(tile_.tile, primaryTileset, secondaryTileset);
         if (tile_image.isNull()) {
             // Some metatiles specify tiles that are outside the valid range.
             // These are treated as completely transparent, so they can be skipped without
             // being drawn unless they're on the bottom layer, in which case we need
             // a placeholder because garbage will be drawn otherwise.
-            if (layer == 0) {
+            if (l == 0) {
                 metatile_painter.fillRect(x * 8, y * 8, 8, 8, palettes.value(0).value(0));
             }
             continue;
@@ -60,7 +72,7 @@ QImage getMetatileImage(uint16_t tile, Tileset *primaryTileset, Tileset *seconda
         }
 
         // The top layer of the metatile has its first color displayed at transparent.
-        if (layer > 0) {
+        if (l > 0) {
             QColor color(tile_image.color(0));
             color.setAlpha(0);
             tile_image.setColor(0, color.rgba());

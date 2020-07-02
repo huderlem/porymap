@@ -31,7 +31,7 @@ void MetatileSelector::draw() {
         if (i >= primaryLength) {
             tile += Project::getNumMetatilesPrimary() - primaryLength;
         }
-        QImage metatile_image = getMetatileImage(tile, this->primaryTileset, this->secondaryTileset);
+        QImage metatile_image = getMetatileImage(tile, this->primaryTileset, this->secondaryTileset, map->metatileLayerOrder);
         int map_y = i / this->numMetatilesWide;
         int map_x = i % this->numMetatilesWide;
         QPoint metatile_origin = QPoint(map_x * 16, map_y * 16);

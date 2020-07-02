@@ -3,17 +3,19 @@
 
 #include <QPair>
 #include "selectablepixmapitem.h"
+#include "map.h"
 #include "tileset.h"
 #include "maplayout.h"
 
 class MetatileSelector: public SelectablePixmapItem {
     Q_OBJECT
 public:
-    MetatileSelector(int numMetatilesWide, Tileset *primaryTileset, Tileset *secondaryTileset): SelectablePixmapItem(16, 16) {
+    MetatileSelector(int numMetatilesWide, Map *map): SelectablePixmapItem(16, 16) {
         this->externalSelection = false;
         this->numMetatilesWide = numMetatilesWide;
-        this->primaryTileset = primaryTileset;
-        this->secondaryTileset = secondaryTileset;
+        this->map = map;
+        this->primaryTileset = map->layout->tileset_primary;
+        this->secondaryTileset = map->layout->tileset_secondary;
         this->selectedMetatiles = new QList<uint16_t>();
         this->selectedCollisions = new QList<QPair<uint16_t, uint16_t>>();
         this->externalSelectedMetatiles = new QList<uint16_t>();
@@ -37,6 +39,7 @@ protected:
 private:
     bool externalSelection;
     int numMetatilesWide;
+    Map *map;
     Tileset *primaryTileset;
     Tileset *secondaryTileset;
     QList<uint16_t> *selectedMetatiles;

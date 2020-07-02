@@ -327,6 +327,7 @@ bool MainWindow::openProject(QString dir) {
     this->closeSupplementaryWindows();
     this->setProjectSpecificUIVisibility();
 
+    Scripting::init(this);
     bool already_open = isProjectOpen() && (editor->project->root == dir);
     if (!already_open) {
         editor->closeProject();
@@ -365,7 +366,6 @@ bool MainWindow::openProject(QString dir) {
         for (auto action : this->registeredActions) {
             this->ui->menuTools->removeAction(action);
         }
-        Scripting::init(this);
         Scripting::cb_ProjectOpened(dir);
     }
 
@@ -470,9 +470,9 @@ bool MainWindow::setMap(QString map_name, bool scrollTreeView) {
 
     setRecentMap(map_name);
     updateMapList();
-    updateTilesetEditor();
 
     Scripting::cb_MapOpened(map_name);
+    updateTilesetEditor();
     return true;
 }
 
@@ -1140,6 +1140,7 @@ void MainWindow::on_actionNew_Tileset_triggered() {
 
 void MainWindow::updateTilesetEditor() {
     if (this->tilesetEditor) {
+        this->tilesetEditor->setMap(this->editor->map);
         this->tilesetEditor->setTilesets(editor->ui->comboBox_PrimaryTileset->currentText(), editor->ui->comboBox_SecondaryTileset->currentText());
     }
 }
@@ -1693,7 +1694,7 @@ void MainWindow::updateSelectedObjects() {
                     combo->addItem(value);
                 }
                 connect(combo, static_cast<void (QComboBox::*)(const QString &)>(&QComboBox::currentTextChanged),
-                        this, [this, item, frame](QString value){
+                        this, [this, item](QString value){
                             item->event->setFrameFromMovement(editor->project->facingDirections.value(value));
                             item->updatePixmap();
                 });
@@ -2439,7 +2440,8 @@ void MainWindow::on_checkBox_ToggleBorder_stateChanged(int selected)
 void MainWindow::on_actionTileset_Editor_triggered()
 {
     if (!this->tilesetEditor) {
-        this->tilesetEditor = new TilesetEditor(this->editor->project, this->editor->map->layout->tileset_primary_label, this->editor->map->layout->tileset_secondary_label, this);
+        logInfo("new one");
+        this->tilesetEditor = new TilesetEditor(this->editor->project, this->editor->map, this);
         connect(this->tilesetEditor, SIGNAL(tilesetsSaved(QString, QString)), this, SLOT(onTilesetsSaved(QString, QString)));
         connect(this->tilesetEditor, &QObject::destroyed, [=](QObject *) { this->tilesetEditor = nullptr; });
         this->tilesetEditor->setAttribute(Qt::WA_DeleteOnClose);

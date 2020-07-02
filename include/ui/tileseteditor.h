@@ -8,6 +8,7 @@
 #include "tileseteditormetatileselector.h"
 #include "tileseteditortileselector.h"
 #include "metatilelayersitem.h"
+#include "map.h"
 
 namespace Ui {
 class TilesetEditor;
@@ -34,10 +35,10 @@ class TilesetEditor : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit TilesetEditor(Project*, QString, QString, QWidget *parent = nullptr);
+    explicit TilesetEditor(Project*, Map*, QWidget *parent = nullptr);
     ~TilesetEditor();
+    void setMap(Map*);
     void setTilesets(QString, QString);
-    void init(Project*, QString, QString);
     void selectMetatile(uint16_t metatileId);
 
 private slots:
@@ -91,8 +92,9 @@ private slots:
     void on_actionImport_Secondary_Metatiles_triggered();
 
 private:
+    void init(Project*, Map*);
     void closeEvent(QCloseEvent*);
-    void initMetatileSelector();
+    void initMetatileSelector(Map*);
     void initTileSelector();
     void initSelectedTileItem();
     void initMetatileLayersItem();

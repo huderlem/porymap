@@ -507,3 +507,16 @@ void MainWindow::invokeCallback(QJSValue callback) {
 void MainWindow::log(QString message) {
     logInfo(message);
 }
+
+QList<int> MainWindow::getMetatileLayerOrder() {
+    if (!this->editor || !this->editor->map)
+        return QList<int>();
+    return this->editor->map->metatileLayerOrder;
+}
+
+void MainWindow::setMetatileLayerOrder(QList<int> order) {
+    if (!this->editor || !this->editor->map)
+        return;
+    this->editor->map->metatileLayerOrder = order;
+    this->refreshAfterPalettePreviewChange();
+}

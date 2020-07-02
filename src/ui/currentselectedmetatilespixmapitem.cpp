@@ -15,7 +15,11 @@ void CurrentSelectedMetatilesPixmapItem::draw() {
             int x = i * 16;
             int y = j * 16;
             int index = j * selectionDimensions.x() + i;
-            QImage metatile_image = getMetatileImage(selectedMetatiles->at(index), map->layout->tileset_primary, map->layout->tileset_secondary);
+            QImage metatile_image = getMetatileImage(
+                        selectedMetatiles->at(index),
+                        map->layout->tileset_primary,
+                        map->layout->tileset_secondary,
+                        map->metatileLayerOrder);
             QPoint metatile_origin = QPoint(x, y);
             painter.drawImage(metatile_origin, metatile_image);
         }
