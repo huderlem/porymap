@@ -19,7 +19,8 @@ void CurrentSelectedMetatilesPixmapItem::draw() {
                         selectedMetatiles->at(index),
                         map->layout->tileset_primary,
                         map->layout->tileset_secondary,
-                        map->metatileLayerOrder);
+                        map->metatileLayerOrder,
+                        map->metatileLayerOpacity);
             QPoint metatile_origin = QPoint(x, y);
             painter.drawImage(metatile_origin, metatile_image);
         }

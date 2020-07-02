@@ -158,7 +158,7 @@ QPixmap Map::renderCollision(qreal opacity, bool ignoreCache) {
         }
         changed_any = true;
         Block block = layout->blockdata->blocks->value(i);
-        QImage metatile_image = getMetatileImage(block.tile, layout->tileset_primary, layout->tileset_secondary, metatileLayerOrder);
+        QImage metatile_image = getMetatileImage(block.tile, layout->tileset_primary, layout->tileset_secondary, metatileLayerOrder, metatileLayerOpacity);
         QImage collision_metatile_image = getCollisionMetatileImage(block);
         int map_y = width_ ? i / width_ : 0;
         int map_x = width_ ? i % width_ : 0;
@@ -206,7 +206,8 @@ QPixmap Map::render(bool ignoreCache = false, MapLayout * fromLayout) {
             block.tile,
             fromLayout ? fromLayout->tileset_primary   : layout->tileset_primary,
             fromLayout ? fromLayout->tileset_secondary : layout->tileset_secondary,
-            metatileLayerOrder
+            metatileLayerOrder,
+            metatileLayerOpacity
         );
         int map_y = width_ ? i / width_ : 0;
         int map_x = width_ ? i % width_ : 0;
@@ -247,7 +248,7 @@ QPixmap Map::renderBorder(bool ignoreCache) {
         changed_any = true;
         Block block = layout->border->blocks->value(i);
         uint16_t tile = block.tile;
-        QImage metatile_image = getMetatileImage(tile, layout->tileset_primary, layout->tileset_secondary, metatileLayerOrder);
+        QImage metatile_image = getMetatileImage(tile, layout->tileset_primary, layout->tileset_secondary, metatileLayerOrder, metatileLayerOpacity);
         int map_y = width_ ? i / width_ : 0;
         int map_x = width_ ? i % width_ : 0;
         painter.drawImage(QPoint(map_x * 16, map_y * 16), metatile_image);

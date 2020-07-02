@@ -520,3 +520,16 @@ void MainWindow::setMetatileLayerOrder(QList<int> order) {
     this->editor->map->metatileLayerOrder = order;
     this->refreshAfterPalettePreviewChange();
 }
+
+QList<float> MainWindow::getMetatileLayerOpacity() {
+    if (!this->editor || !this->editor->map)
+        return QList<float>();
+    return this->editor->map->metatileLayerOpacity;
+}
+
+void MainWindow::setMetatileLayerOpacity(QList<float> order) {
+    if (!this->editor || !this->editor->map)
+        return;
+    this->editor->map->metatileLayerOpacity = order;
+    this->refreshAfterPalettePreviewChange();
+}

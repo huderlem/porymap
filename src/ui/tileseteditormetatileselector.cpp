@@ -28,6 +28,7 @@ void TilesetEditorMetatileSelector::draw() {
                     this->primaryTileset,
                     this->secondaryTileset,
                     map->metatileLayerOrder,
+                    map->metatileLayerOpacity,
                     true)
                 .scaled(32, 32);
         int map_y = i / this->numMetatilesWide;

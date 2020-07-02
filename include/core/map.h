@@ -58,6 +58,7 @@ public:
     QMap<QString, QList<Event*>> events;
     QList<MapConnection*> connections;
     QList<int> metatileLayerOrder;
+    QList<float> metatileLayerOpacity;
     void setName(QString mapName);
     static QString mapConstantFromName(QString mapName);
     static QString objectEventsLabelFromName(QString mapName);
