@@ -45,6 +45,7 @@ QImage getMetatileImage(
     for (int y = 0; y < 2; y++)
     for (int x = 0; x < 2; x++) {
         int l = layerOrder.size() >= numLayers ? layerOrder[layer] : layer;
+        int bottomLayer = layerOrder.size() >= numLayers ? layerOrder[0] : 0;
         Tile tile_ = metatile->tiles->value((y * 2) + x + (l * 4));
         QImage tile_image = getTileImage(tile_.tile, primaryTileset, secondaryTileset);
         if (tile_image.isNull()) {
@@ -52,7 +53,7 @@ QImage getMetatileImage(
             // These are treated as completely transparent, so they can be skipped without
             // being drawn unless they're on the bottom layer, in which case we need
             // a placeholder because garbage will be drawn otherwise.
-            if (l == 0) {
+            if (l == bottomLayer) {
                 metatile_painter.fillRect(x * 8, y * 8, 8, 8, palettes.value(0).value(0));
             }
             continue;
@@ -80,7 +81,7 @@ QImage getMetatileImage(
         }
 
         // The top layer of the metatile has its first color displayed at transparent.
-        if (l > 0) {
+        if (l != bottomLayer) {
             QColor color(tile_image.color(0));
             color.setAlpha(0);
             tile_image.setColor(0, color.rgba());
