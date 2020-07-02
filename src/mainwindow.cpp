@@ -2440,7 +2440,6 @@ void MainWindow::on_checkBox_ToggleBorder_stateChanged(int selected)
 void MainWindow::on_actionTileset_Editor_triggered()
 {
     if (!this->tilesetEditor) {
-        logInfo("new one");
         this->tilesetEditor = new TilesetEditor(this->editor->project, this->editor->map, this);
         connect(this->tilesetEditor, SIGNAL(tilesetsSaved(QString, QString)), this, SLOT(onTilesetsSaved(QString, QString)));
         connect(this->tilesetEditor, &QObject::destroyed, [=](QObject *) { this->tilesetEditor = nullptr; });
