@@ -116,6 +116,17 @@ void TilesetEditor::setMap(Map *map) {
 }
 
 void TilesetEditor::setTilesets(QString primaryTilesetLabel, QString secondaryTilesetLabel) {
+    if (this->hasUnsavedChanges) {
+        QMessageBox::StandardButton result = QMessageBox::question(
+            this,
+            "porymap",
+            "Tileset has been modified, save changes?",
+            QMessageBox::No | QMessageBox::Yes,
+            QMessageBox::Yes);
+        if (result == QMessageBox::Yes)
+            this->on_actionSave_Tileset_triggered();
+    }
+    this->hasUnsavedChanges = false;
     delete this->primaryTileset;
     delete this->secondaryTileset;
     Tileset *primaryTileset = project->getTileset(primaryTilesetLabel);

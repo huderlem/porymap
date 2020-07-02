@@ -2248,9 +2248,23 @@ void MainWindow::onMapCacheCleared() {
 }
 
 void MainWindow::onTilesetsSaved(QString primaryTilesetLabel, QString secondaryTilesetLabel) {
-    this->editor->updatePrimaryTileset(primaryTilesetLabel, true);
-    this->editor->updateSecondaryTileset(secondaryTilesetLabel, true);
-    redrawMapScene();
+    // If saved tilesets are currently in-use, update them and redraw
+    // Otherwise overwrite the cache for the saved tileset
+    bool updated = false;
+    if (primaryTilesetLabel == this->editor->map->layout->tileset_primary_label) {
+        this->editor->updatePrimaryTileset(primaryTilesetLabel, true);
+        updated = true;
+    } else {
+        this->editor->project->getTileset(primaryTilesetLabel, true);
+    }
+    if (secondaryTilesetLabel == this->editor->map->layout->tileset_secondary_label)  {
+        this->editor->updateSecondaryTileset(secondaryTilesetLabel, true);
+        updated = true;
+    } else {
+        this->editor->project->getTileset(secondaryTilesetLabel, true);
+    }
+    if (updated)
+        redrawMapScene();
 }
 
 void MainWindow::onWildMonDataChanged() {
