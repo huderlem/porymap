@@ -51,7 +51,6 @@ void MetatileSelector::select(uint16_t metatileId) {
     QPoint coords = this->getMetatileIdCoords(metatileId);
     SelectablePixmapItem::select(coords.x(), coords.y(), 0, 0);
     this->updateSelectedMetatiles();
-    emit selectedMetatilesChanged();
 }
 
 void MetatileSelector::selectFromMap(uint16_t metatileId, uint16_t collision, uint16_t elevation) {
@@ -62,6 +61,8 @@ void MetatileSelector::selectFromMap(uint16_t metatileId, uint16_t collision, ui
 void MetatileSelector::setTilesets(Tileset *primaryTileset, Tileset *secondaryTileset) {
     this->primaryTileset = primaryTileset;
     this->secondaryTileset = secondaryTileset;
+    if (!this->selectionIsValid())
+        this->select(Project::getNumMetatilesPrimary() + this->secondaryTileset->metatiles->length() - 1);
     this->draw();
 }
 
@@ -101,7 +102,6 @@ void MetatileSelector::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     if (!shouldAcceptEvent(event)) return;
     SelectablePixmapItem::mousePressEvent(event);
     this->updateSelectedMetatiles();
-    emit selectedMetatilesChanged();
 }
 
 void MetatileSelector::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
@@ -112,14 +112,12 @@ void MetatileSelector::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     QPoint pos = this->getCellPos(event->pos());
     uint16_t metatileId = this->getMetatileId(pos.x(), pos.y());
     emit this->hoveredMetatileSelectionChanged(metatileId);
-    emit selectedMetatilesChanged();
 }
 
 void MetatileSelector::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
     if (!shouldAcceptEvent(event)) return;
     SelectablePixmapItem::mouseReleaseEvent(event);
     this->updateSelectedMetatiles();
-    emit selectedMetatilesChanged();
 }
 
 void MetatileSelector::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
@@ -144,6 +142,19 @@ void MetatileSelector::updateSelectedMetatiles() {
             this->selectedMetatiles->append(metatileId);
         }
     }
+    emit selectedMetatilesChanged();
+}
+
+bool MetatileSelector::selectionIsValid() {
+    QPoint origin = this->getSelectionStart();
+    QPoint dimensions = this->getSelectionDimensions();
+    for (int j = 0; j < dimensions.y(); j++) {
+        for (int i = 0; i < dimensions.x(); i++) {
+            if (!Tileset::metatileIsValid(this->getMetatileId(origin.x() + i, origin.y() + j), this->primaryTileset, this->secondaryTileset))
+                return false;
+        }
+    }
+    return true;
 }
 
 uint16_t MetatileSelector::getMetatileId(int x, int y) {
