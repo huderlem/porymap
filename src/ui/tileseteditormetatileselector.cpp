@@ -62,7 +62,7 @@ void TilesetEditorMetatileSelector::updateSelectedMetatile() {
     if (Tileset::metatileIsValid(metatileId, this->primaryTileset, this->secondaryTileset))
         this->selectedMetatile = metatileId;
     else
-        this->selectedMetatile = 0;
+        this->selectedMetatile = Project::getNumMetatilesPrimary() + this->secondaryTileset->metatiles->length() - 1;
     emit selectedMetatileChanged(this->selectedMetatile);
 }
 
