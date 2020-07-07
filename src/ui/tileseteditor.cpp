@@ -106,9 +106,11 @@ void TilesetEditor::init(Project *project, Map *map) {
 }
 
 void TilesetEditor::selectMetatile(uint16_t metatileId) {
-    this->metatileSelector->select(metatileId);
-    QPoint pos = this->metatileSelector->getMetatileIdCoordsOnWidget(metatileId);
-    this->ui->scrollArea_Metatiles->ensureVisible(pos.x(), pos.y());
+    if (Tileset::metatileIsValid(metatileId, this->primaryTileset, this->secondaryTileset)) {
+        this->metatileSelector->select(metatileId);
+        QPoint pos = this->metatileSelector->getMetatileIdCoordsOnWidget(metatileId);
+        this->ui->scrollArea_Metatiles->ensureVisible(pos.x(), pos.y());
+    }
 }
 
 void TilesetEditor::setMap(Map *map) {
