@@ -82,7 +82,7 @@ bool Tileset::metatileIsValid(uint16_t metatileId, Tileset *primaryTileset, Tile
     if (metatileId < Project::getNumMetatilesPrimary() && metatileId >= primaryTileset->metatiles->length())
         return false;
 
-    if (metatileId < Project::getNumMetatilesTotal() && metatileId >= Project::getNumMetatilesPrimary() + secondaryTileset->metatiles->length())
+    if (metatileId >= Project::getNumMetatilesPrimary() + secondaryTileset->metatiles->length())
         return false;
 
     return true;
