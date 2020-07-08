@@ -46,16 +46,20 @@ void MetatileSelector::draw() {
     }
 }
 
-void MetatileSelector::select(uint16_t metatileId) {
+bool MetatileSelector::select(uint16_t metatileId) {
+    if (!Tileset::metatileIsValid(metatileId, this->primaryTileset, this->secondaryTileset)) return false;
     this->externalSelection = false;
     QPoint coords = this->getMetatileIdCoords(metatileId);
     SelectablePixmapItem::select(coords.x(), coords.y(), 0, 0);
     this->updateSelectedMetatiles();
+    return true;
 }
 
-void MetatileSelector::selectFromMap(uint16_t metatileId, uint16_t collision, uint16_t elevation) {
+bool MetatileSelector::selectFromMap(uint16_t metatileId, uint16_t collision, uint16_t elevation) {
+    if (!Tileset::metatileIsValid(metatileId, this->primaryTileset, this->secondaryTileset)) return false;
     this->select(metatileId);
     this->selectedCollisions->append(QPair<uint16_t, uint16_t>(collision, elevation));
+    return true;
 }
 
 void MetatileSelector::setTilesets(Tileset *primaryTileset, Tileset *secondaryTileset) {

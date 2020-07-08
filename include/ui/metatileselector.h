@@ -23,8 +23,8 @@ public:
     }
     QPoint getSelectionDimensions();
     void draw();
-    void select(uint16_t metatile);
-    void selectFromMap(uint16_t metatileId, uint16_t collision, uint16_t elevation);
+    bool select(uint16_t metatile);
+    bool selectFromMap(uint16_t metatileId, uint16_t collision, uint16_t elevation);
     void setTilesets(Tileset*, Tileset*);
     QList<uint16_t>* getSelectedMetatiles();
     QList<QPair<uint16_t, uint16_t>>* getSelectedCollisions();
