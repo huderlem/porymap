@@ -39,7 +39,7 @@ public:
     ~TilesetEditor();
     void setMap(Map*);
     void setTilesets(QString, QString);
-    void selectMetatile(uint16_t metatileId);
+    bool selectMetatile(uint16_t metatileId);
 
 private slots:
     void onHoveredMetatileChanged(uint16_t);

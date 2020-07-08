@@ -105,12 +105,12 @@ void TilesetEditor::init(Project *project, Map *map) {
     metatileHistory.push(commit);
 }
 
-void TilesetEditor::selectMetatile(uint16_t metatileId) {
-    if (Tileset::metatileIsValid(metatileId, this->primaryTileset, this->secondaryTileset)) {
-        this->metatileSelector->select(metatileId);
-        QPoint pos = this->metatileSelector->getMetatileIdCoordsOnWidget(metatileId);
-        this->ui->scrollArea_Metatiles->ensureVisible(pos.x(), pos.y());
-    }
+bool TilesetEditor::selectMetatile(uint16_t metatileId) {
+    if (!Tileset::metatileIsValid(metatileId, this->primaryTileset, this->secondaryTileset)) return false;
+    this->metatileSelector->select(metatileId);
+    QPoint pos = this->metatileSelector->getMetatileIdCoordsOnWidget(metatileId);
+    this->ui->scrollArea_Metatiles->ensureVisible(pos.x(), pos.y());
+    return true;
 }
 
 void TilesetEditor::setMap(Map *map) {

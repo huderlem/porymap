@@ -42,12 +42,13 @@ void TilesetEditorMetatileSelector::draw() {
     this->drawSelection();
 }
 
-void TilesetEditorMetatileSelector::select(uint16_t metatileId) {
-    if (!Tileset::metatileIsValid(metatileId, this->primaryTileset, this->secondaryTileset)) return;
+bool TilesetEditorMetatileSelector::select(uint16_t metatileId) {
+    if (!Tileset::metatileIsValid(metatileId, this->primaryTileset, this->secondaryTileset)) return false;
     QPoint coords = this->getMetatileIdCoords(metatileId);
     SelectablePixmapItem::select(coords.x(), coords.y(), 0, 0);
     this->selectedMetatile = metatileId;
     emit selectedMetatileChanged(metatileId);
+    return true;
 }
 
 void TilesetEditorMetatileSelector::setTilesets(Tileset *primaryTileset, Tileset *secondaryTileset) {

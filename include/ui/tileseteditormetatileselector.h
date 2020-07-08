@@ -17,7 +17,7 @@ public:
     }
     Map *map = nullptr;
     void draw();
-    void select(uint16_t metatileId);
+    bool select(uint16_t metatileId);
     void setTilesets(Tileset*, Tileset*);
     uint16_t getSelectedMetatile();
     void updateSelectedMetatile();
