@@ -7,8 +7,17 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 The **"Breaking Changes"** listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. If porymap is used on a project that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.
 
 ## [Unreleased]
+### Added
+- Add keyboard shortcut `Ctrl + D` for duplicating map events.
+
+### Changed
+- The tileset editor now syncs its metatile selection with the map's metatile selector.
+
 ### Fixed
-- Fix a crash that occured when creating a new tileset using triple layer mode
+- Fix a crash that occured when creating a new tileset using triple layer mode.
+- Fix crash when reducing number of metatiles past current selection.
+- Fix various methods of selecting invalid metatiles.
+- Fix sprite transparency not updating when changing object event graphics.
 
 ## [4.3.0] - 2020-06-27
 ### Added
