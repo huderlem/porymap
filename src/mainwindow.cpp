@@ -1579,7 +1579,7 @@ void MainWindow::updateSelectedObjects() {
 
             frame->ui->sprite->setVisible(true);
             frame->ui->comboBox_sprite->addItems(event_obj_gfx_constants.keys());
-            frame->ui->comboBox_sprite->setCurrentText(item->event->get("sprite"));
+            frame->ui->comboBox_sprite->setCurrentIndex(frame->ui->comboBox_sprite->findText(item->event->get("sprite")));
             connect(frame->ui->comboBox_sprite, &QComboBox::currentTextChanged, item, &DraggablePixmapItem::set_sprite);
 
             /*
@@ -1664,6 +1664,7 @@ void MainWindow::updateSelectedObjects() {
                     combo->addItem(value);
                 }
                 combo->addItems(*editor->project->mapNames);
+                combo->setCurrentIndex(combo->findText(value));
                 combo->setToolTip("The destination map name of the warp.");
             } else if (key == "destination_warp") {
                 combo->setToolTip("The warp id on the destination map.");
@@ -1672,6 +1673,7 @@ void MainWindow::updateSelectedObjects() {
                     combo->addItem(value);
                 }
                 combo->addItems(*editor->project->itemNames);
+                combo->setCurrentIndex(combo->findText(value));
             } else if (key == "quantity") {
                 spin->setToolTip("The number of items received when the hidden item is picked up.");
                 // Min 1 not needed. 0 is treated as a valid quantity and works as expected in-game.
@@ -1683,6 +1685,7 @@ void MainWindow::updateSelectedObjects() {
                     combo->addItem(value);
                 }
                 combo->addItems(*editor->project->flagNames);
+                combo->setCurrentIndex(combo->findText(value));
                 if (key == "flag")
                     combo->setToolTip("The flag which is set when the hidden item is picked up.");
                 else if (key == "event_flag")
@@ -1692,6 +1695,7 @@ void MainWindow::updateSelectedObjects() {
                     combo->addItem(value);
                 }
                 combo->addItems(*editor->project->varNames);
+                combo->setCurrentIndex(combo->findText(value));
                 combo->setToolTip("The variable by which the script is triggered.\n"
                                   "The script is triggered when this variable's value matches 'Var Value'.");
             } else if (key == "script_var_value") {
@@ -1706,6 +1710,7 @@ void MainWindow::updateSelectedObjects() {
                             item->updatePixmap();
                 });
                 combo->addItems(*editor->project->movementTypes);
+                combo->setCurrentIndex(combo->findText(value));
                 combo->setToolTip("The object's natural movement behavior when\n"
                                   "the player is not interacting with it.");
             } else if (key == "weather") {
@@ -1713,12 +1718,14 @@ void MainWindow::updateSelectedObjects() {
                     combo->addItem(value);
                 }
                 combo->addItems(*editor->project->coordEventWeatherNames);
+                combo->setCurrentIndex(combo->findText(value));
                 combo->setToolTip("The weather that starts when the player steps on this spot.");
             } else if (key == "secret_base_id") {
                 if (!editor->project->secretBaseIds->contains(value)) {
                     combo->addItem(value);
                 }
                 combo->addItems(*editor->project->secretBaseIds);
+                combo->setCurrentIndex(combo->findText(value));
                 combo->setToolTip("The secret base id which is inside this secret\n"
                                   "base entrance. Secret base ids are meant to be\n"
                                   "unique to each and every secret base entrance.");
@@ -1727,6 +1734,7 @@ void MainWindow::updateSelectedObjects() {
                     combo->addItem(value);
                 }
                 combo->addItems(*editor->project->bgEventFacingDirections);
+                combo->setCurrentIndex(combo->findText(value));
                 combo->setToolTip("The direction which the player must be facing\n"
                                   "to be able to interact with this event.");
             } else if (key == "radius_x") {
@@ -1743,6 +1751,7 @@ void MainWindow::updateSelectedObjects() {
                 combo->setToolTip("The script which is executed with this event.");
             } else if (key == "trainer_type") {
                 combo->addItems(*editor->project->trainerTypes);
+                combo->setCurrentIndex(combo->findText(value));
                 combo->setToolTip("The trainer type of this object event.\n"
                                   "If it is not a trainer, use NONE. SEE ALL DIRECTIONS\n"
                                   "should only be used with a sight radius of 1.");
