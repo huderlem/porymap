@@ -77,6 +77,7 @@ void MainWindow::initExtraShortcuts() {
     new QShortcut(QKeySequence("Ctrl+Shift+Z"), this, SLOT(redo()));
     new QShortcut(QKeySequence("Ctrl+0"), this, SLOT(resetMapViewScale()));
     new QShortcut(QKeySequence("Ctrl+G"), ui->checkBox_ToggleGrid, SLOT(toggle()));
+    new QShortcut(QKeySequence("Ctrl+D"), this, SLOT(duplicate()));
     ui->actionZoom_In->setShortcuts({QKeySequence("Ctrl++"), QKeySequence("Ctrl+=")});
 }
 
@@ -1228,6 +1229,10 @@ void MainWindow::undo() {
 
 void MainWindow::redo() {
     editor->redo();
+}
+
+void MainWindow::duplicate() {
+    editor->duplicateSelectedEvents();
 }
 
 // Open current map scripts in system default editor for .inc files
