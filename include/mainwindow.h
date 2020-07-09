@@ -123,6 +123,7 @@ private slots:
 
     void undo();
     void redo();
+    void duplicate();
 
     void openInTextEditor();
 

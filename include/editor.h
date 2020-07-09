@@ -100,6 +100,7 @@ public:
     Event* createNewEvent(QString event_type);
     void deleteEvent(Event *);
     void updateSelectedEvents();
+    void duplicateSelectedEvents();
     void redrawObject(DraggablePixmapItem *item);
     QList<DraggablePixmapItem *> *getObjects();
 

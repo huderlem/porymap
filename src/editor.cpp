@@ -1881,6 +1881,22 @@ void Editor::selectMapEvent(DraggablePixmapItem *object, bool toggle) {
     }
 }
 
+void Editor::duplicateSelectedEvents() {
+    if (!selected_events || !selected_events->length() || !map || !current_view || map_item->paintingMode != MapPixmapItem::PaintMode::EventObjects)
+        return;
+
+    QList<DraggablePixmapItem*> *duplicates = new QList<DraggablePixmapItem*>;
+    for (int i = 0; i < selected_events->length(); i++) {
+        Event *duplicate = new Event(*selected_events->at(i)->event);
+        map->addEvent(duplicate);
+        DraggablePixmapItem *object = addMapEvent(duplicate);
+        duplicates->append(object);
+    }
+    selected_events->clear();
+    selected_events = duplicates;
+    updateSelectedEvents();
+}
+
 DraggablePixmapItem* Editor::addNewEvent(QString event_type) {
     if (project && map && !event_type.isEmpty()) {
         Event *event = Event::createNewEvent(event_type, map->name, project);

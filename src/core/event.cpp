@@ -19,6 +19,19 @@ Event::Event()
     this->usingSprite = false;
 }
 
+Event::Event(const Event& toCopy)
+{
+    Event();
+    this->values = toCopy.values;
+    this->customValues = toCopy.customValues;
+    this->pixmap = toCopy.pixmap;
+    this->spriteWidth = toCopy.spriteWidth;
+    this->spriteHeight = toCopy.spriteHeight;
+    this->frame = toCopy.frame;
+    this->hFlip = toCopy.hFlip;
+    this->usingSprite = toCopy.usingSprite;
+}
+
 Event::Event(QJsonObject obj, QString type)
 {
     Event();
