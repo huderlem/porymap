@@ -980,7 +980,7 @@ void MainWindow::onNewMapCreated() {
     setMap(newMapName, true);
 
     if (newMap->isFlyable == "TRUE") {
-        addNewEvent("event_heal_location");
+        addNewEvent(EventType::HealLocation);
         editor->project->saveHealLocationStruct(newMap);
         editor->save();// required
     }
@@ -1413,11 +1413,22 @@ void MainWindow::resetMapViewScale() {
 
 void MainWindow::addNewEvent(QString event_type)
 {
-    if (editor) {
+    if (editor && editor->project) {
         DraggablePixmapItem *object = editor->addNewEvent(event_type);
-        updateObjects();
         if (object) {
+            updateObjects();
             editor->selectMapEvent(object, false);
+        } else {
+            QMessageBox msgBox(this);
+            msgBox.setText("Failed to add new event");
+            if (event_type == EventType::Object) {
+                msgBox.setInformativeText(QString("The limit for object events (%1) has been reached.\n\n"
+                                                  "This limit can be adjusted with OBJECT_EVENT_TEMPLATES_COUNT in 'include/constants/global.h'.")
+                                          .arg(editor->project->getMaxObjectEvents()));
+            }
+            msgBox.setDefaultButton(QMessageBox::Ok);
+            msgBox.setIcon(QMessageBox::Icon::Warning);
+            msgBox.exec();
         }
     }
 }
@@ -1534,7 +1545,7 @@ void MainWindow::updateSelectedObjects() {
         QString event_group_type = item->event->get("event_group_type");
         QString map_name = item->event->get("map_name");
         int event_offs;
-        if (event_type == "event_warp") { event_offs = 0; }
+        if (event_type == EventType::Warp) { event_offs = 0; }
         else { event_offs = 1; }
         frame->ui->label_name->setText(QString("%1 Id").arg(event_type));
 
