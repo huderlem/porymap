@@ -1887,18 +1887,26 @@ void Editor::duplicateSelectedEvents() {
 
     QList<DraggablePixmapItem*> *duplicates = new QList<DraggablePixmapItem*>;
     for (int i = 0; i < selected_events->length(); i++) {
-        Event *duplicate = new Event(*selected_events->at(i)->event);
+        Event *original = selected_events->at(i)->event;
+        QString eventType = original->get("event_type");
+        if (eventLimitReached(map, eventType)) {
+            logWarn(QString("Skipping duplication, the map limit for events of type '%1' has been reached.").arg(eventType));
+            continue;
+        }
+        Event *duplicate = new Event(*original);
         map->addEvent(duplicate);
         DraggablePixmapItem *object = addMapEvent(duplicate);
         duplicates->append(object);
     }
-    selected_events->clear();
-    selected_events = duplicates;
-    updateSelectedEvents();
+    if (duplicates->length()) {
+        selected_events->clear();
+        selected_events = duplicates;
+        updateSelectedEvents();
+    }
 }
 
 DraggablePixmapItem* Editor::addNewEvent(QString event_type) {
-    if (project && map && !event_type.isEmpty()) {
+    if (project && map && !event_type.isEmpty() && !eventLimitReached(map, event_type)) {
         Event *event = Event::createNewEvent(event_type, map->name, project);
         event->put("map_name", map->name);
         if (event_type == EventType::HealLocation) {
@@ -1912,6 +1920,16 @@ DraggablePixmapItem* Editor::addNewEvent(QString event_type) {
         return object;
     }
     return nullptr;
+}
+
+// Currently only object events have an explicit limit
+bool Editor::eventLimitReached(Map *map, QString event_type)
+{
+    if (project && map && !event_type.isEmpty()) {
+        if (event_type == EventType::Object)
+            return map->events.value("object_event_group").length() >= project->getMaxObjectEvents();
+    }
+    return false;
 }
 
 void Editor::deleteEvent(Event *event) {

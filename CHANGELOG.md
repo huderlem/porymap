@@ -12,6 +12,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 
 ### Changed
 - The tileset editor now syncs its metatile selection with the map's metatile selector.
+- The number of object events per map is now limited to OBJECT_EVENT_TEMPLATES_COUNT
 
 ### Fixed
 - Fix a crash that occured when creating a new tileset using triple layer mode.

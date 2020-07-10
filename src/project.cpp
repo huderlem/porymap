@@ -35,6 +35,7 @@ int Project::num_pals_primary = 6;
 int Project::num_pals_total = 13;
 int Project::max_map_data_size = 10240; // 0x2800
 int Project::default_map_size = 20;
+int Project::max_object_events = 64;
 
 Project::Project(QWidget *parent) : parent(parent)
 {
@@ -2365,6 +2366,28 @@ bool Project::readMiscellaneousConstants() {
         miscConstants.insert("max_level_define", pokemonDefines.value("MAX_LEVEL") > pokemonDefines.value("MIN_LEVEL") ? pokemonDefines.value("MAX_LEVEL") : 100);
         miscConstants.insert("min_level_define", pokemonDefines.value("MIN_LEVEL") < pokemonDefines.value("MAX_LEVEL") ? pokemonDefines.value("MIN_LEVEL") : 1);
     }
+
+    QString filename = "include/constants/global.h";
+    fileWatcher.addPath(root + "/" + filename);
+    QStringList definePrefixes;
+    definePrefixes << "OBJECT_";
+    QMap<QString, int> defines = parser.readCDefines(filename, definePrefixes);
+
+    auto it = defines.find("OBJECT_EVENT_TEMPLATES_COUNT");
+    if (it != defines.end()) {
+        if (it.value() > 0) {
+            Project::max_object_events = it.value();
+        } else {
+            logWarn(QString("Value for 'OBJECT_EVENT_TEMPLATES_COUNT' is %1, must be greater than 0. Using default (%2) instead.")
+                    .arg(it.value())
+                    .arg(Project::max_object_events));
+        }
+    }
+    else {
+        logWarn(QString("Value for 'OBJECT_EVENT_TEMPLATES_COUNT' not found. Using default (%1) instead.")
+                .arg(Project::max_object_events));
+    }
+
     return true;
 }
 
@@ -2582,4 +2605,9 @@ bool Project::calculateDefaultMapSize(){
         return false;
     }
     return true;
+}
+
+int Project::getMaxObjectEvents()
+{
+    return Project::max_object_events;
 }
