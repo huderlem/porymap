@@ -41,7 +41,7 @@ void MetatileSelector::draw() {
     painter.end();
     this->setPixmap(QPixmap::fromImage(image));
 
-    if (!this->externalSelection) {
+    if (!this->externalSelection || (this->externalSelectionWidth == 1 && this->externalSelectionHeight == 1)) {
         this->drawSelection();
     }
 }
