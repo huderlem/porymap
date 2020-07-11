@@ -1893,6 +1893,7 @@ void Editor::duplicateSelectedEvents() {
             logWarn(QString("Skipping duplication, the map limit for events of type '%1' has been reached.").arg(eventType));
             continue;
         }
+        if (eventType == EventType::HealLocation) continue;
         Event *duplicate = new Event(*original);
         map->addEvent(duplicate);
         DraggablePixmapItem *object = addMapEvent(duplicate);
