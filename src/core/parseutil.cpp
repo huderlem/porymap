@@ -252,8 +252,7 @@ QString ParseUtil::readCIncbin(QString filename, QString label) {
     return path;
 }
 
-QMap<QString, int> ParseUtil::readCDefines(QString filename, QStringList prefixes) {
-    QMap<QString, int> allDefines;
+QMap<QString, int> ParseUtil::readCDefines(QString filename, QStringList prefixes, QMap<QString, int> allDefines) {
     QMap<QString, int> filteredDefines;
 
     file = filename;
@@ -293,8 +292,8 @@ QMap<QString, int> ParseUtil::readCDefines(QString filename, QStringList prefixe
     return filteredDefines;
 }
 
-void ParseUtil::readCDefinesSorted(QString filename, QStringList prefixes, QStringList* definesToSet) {    
-    QMap<QString, int> defines = readCDefines(filename, prefixes);
+void ParseUtil::readCDefinesSorted(QString filename, QStringList prefixes, QStringList* definesToSet, QMap<QString, int> knownDefines) {
+    QMap<QString, int> defines = readCDefines(filename, prefixes, knownDefines);
 
     // The defines should to be sorted by their underlying value, not alphabetically.
     // Reverse the map and read out the resulting keys in order.

@@ -2170,13 +2170,19 @@ bool Project::readItemNames() {
 }
 
 bool Project::readFlagNames() {
+    // First read MAX_TRAINERS_COUNT, used to skip over trainer flags
+    // If this fails flags may simply be out of order, no need to check for success
+    QString opponentsFilename = "include/constants/opponents.h";
+    fileWatcher.addPath(root + "/" + opponentsFilename);
+    QMap<QString, int> maxTrainers = parser.readCDefines(opponentsFilename, QStringList() << "MAX_");
+    // Parse flags
     flagNames->clear();
     QStringList prefixes = (QStringList() << "FLAG_");
-    QString filename = "include/constants/flags.h";
-    fileWatcher.addPath(root + "/" + filename);
-    parser.readCDefinesSorted(filename, prefixes, flagNames);
+    QString flagsFilename = "include/constants/flags.h";
+    fileWatcher.addPath(root + "/" + flagsFilename);
+    parser.readCDefinesSorted(flagsFilename, prefixes, flagNames, maxTrainers);
     if (flagNames->isEmpty()) {
-        logError(QString("Failed to read flag constants from %1").arg(filename));
+        logError(QString("Failed to read flag constants from %1").arg(flagsFilename));
         return false;
     }
     return true;
