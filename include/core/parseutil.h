@@ -47,8 +47,8 @@ public:
     QStringList readCArray(QString text, QString label);
     QMap<QString, QString> readNamedIndexCArray(QString text, QString label);
     QString readCIncbin(QString text, QString label);
-    QMap<QString, int> readCDefines(QString filename, QStringList prefixes);
-    void readCDefinesSorted(QString, QStringList, QStringList*);
+    QMap<QString, int> readCDefines(QString filename, QStringList prefixes, QMap<QString, int> = QMap<QString, int>());
+    void readCDefinesSorted(QString, QStringList, QStringList*, QMap<QString, int> = QMap<QString, int>());
     QList<QStringList>* getLabelMacros(QList<QStringList>*, QString);
     QStringList* getLabelValues(QList<QStringList>*, QString);
     bool tryParseJsonFile(QJsonDocument *out, QString filepath);
