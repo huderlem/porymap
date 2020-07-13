@@ -98,22 +98,30 @@ QList<Tile> TilesetEditorTileSelector::getSelectedTiles() {
         return buildSelectedTiles(this->externalSelectionWidth, this->externalSelectionHeight, this->externalSelectedTiles);
     } else {
         QPoint dimensions = this->getSelectionDimensions();
-        return buildSelectedTiles(dimensions.x(), dimensions.y(), this->selectedTiles);
+        QList<Tile> tiles;
+        for (int i = 0; i < this->selectedTiles.length(); i++) {
+            uint16_t tile = this->selectedTiles.at(i);
+            tiles.append(Tile(tile, false, false, this->paletteId));
+        }
+        return buildSelectedTiles(dimensions.x(), dimensions.y(), tiles);
     }
 }
 
-QList<Tile> TilesetEditorTileSelector::buildSelectedTiles(int width, int height, QList<uint16_t> selected) {
+QList<Tile> TilesetEditorTileSelector::buildSelectedTiles(int width, int height, QList<Tile> selected) {
     QList<Tile> tiles;
     QList<QList<Tile>> tileMatrix;
     for (int j = 0; j < height; j++) {
         QList<Tile> row;
         for (int i = 0; i < width; i++) {
             int index = i + j * width;
-            uint16_t tile = selected.at(index);
+            Tile tile = selected.at(index);
+            tile.xflip ^= this->xFlip;
+            tile.yflip ^= this->yFlip;
+            tile.palette = this->paletteId;
             if (this->xFlip)
-                row.prepend(Tile(tile, this->xFlip, this->yFlip, this->paletteId));
+                row.prepend(tile);
             else
-                row.append(Tile(tile, this->xFlip, this->yFlip, this->paletteId));
+                row.append(tile);
         }
         if (this->yFlip)
             tileMatrix.prepend(row);
@@ -134,7 +142,7 @@ void TilesetEditorTileSelector::setExternalSelection(int width, int height, QLis
     this->externalSelectionHeight = height;
     this->externalSelectedTiles.clear();
     for (int i = 0; i < tiles.length(); i++) {
-        this->externalSelectedTiles.append(tiles.at(i).tile);
+        this->externalSelectedTiles.append(tiles.at(i));
     }
 
     this->draw();
