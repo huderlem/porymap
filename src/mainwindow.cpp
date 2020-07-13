@@ -2072,22 +2072,25 @@ void MainWindow::on_toolButton_deleteObject_clicked()
             DraggablePixmapItem *next_selected_event = nullptr;
             for (DraggablePixmapItem *item : *editor->selected_events) {
                 QString event_group = item->event->get("event_group_type");
-                int index = editor->map->events.value(event_group).indexOf(item->event);
-                // Get the index for the event that should be selected after this event has been deleted.
-                // If it's at the end of the list, select the previous event, otherwise select the next one.
-                if (index != editor->map->events.value(event_group).size() - 1)
-                    index++;
-                else
-                    index--;
-                Event *event = nullptr;
-                if (index >= 0)
-                    event = editor->map->events.value(event_group).at(index);
                 if (event_group != "heal_event_group") {
-                    for (QGraphicsItem *child : editor->events_group->childItems()) {
-                        DraggablePixmapItem *event_item = static_cast<DraggablePixmapItem *>(child);
-                        if (event_item->event == event) {
-                            next_selected_event = event_item;
-                            break;
+                    // Get the index for the event that should be selected after this event has been deleted.
+                    // If it's at the end of the list, select the previous event, otherwise select the next one.
+                    // Don't bother getting the event to select if there are still more events to delete
+                    if (editor->selected_events->length() == 1) {
+                        int index = editor->map->events.value(event_group).indexOf(item->event);
+                        if (index != editor->map->events.value(event_group).size() - 1)
+                            index++;
+                        else
+                            index--;
+                        Event *event = nullptr;
+                        if (index >= 0)
+                            event = editor->map->events.value(event_group).at(index);
+                        for (QGraphicsItem *child : editor->events_group->childItems()) {
+                            DraggablePixmapItem *event_item = static_cast<DraggablePixmapItem *>(child);
+                            if (event_item->event == event) {
+                                next_selected_event = event_item;
+                                break;
+                            }
                         }
                     }
                     editor->deleteEvent(item->event);
