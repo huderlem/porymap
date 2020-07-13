@@ -95,36 +95,37 @@ void TilesetEditorTileSelector::updateSelectedTiles() {
 
 QList<Tile> TilesetEditorTileSelector::getSelectedTiles() {
     if (this->externalSelection) {
-        return this->externalSelectedTiles;
+        return buildSelectedTiles(this->externalSelectionWidth, this->externalSelectionHeight, this->externalSelectedTiles);
     } else {
-        QList<Tile> tiles;
-        QList<QList<Tile>> tileMatrix;
-        QList<uint16_t> selected = this->selectedTiles;
         QPoint dimensions = this->getSelectionDimensions();
-        int width = dimensions.x();
-        int height = dimensions.y();
-        for (int j = 0; j < height; j++) {
-            QList<Tile> row;
-            for (int i = 0; i < width; i++) {
-                int index = i + j * width;
-                uint16_t tile = selected.at(index);
-                if (this->xFlip)
-                    row.prepend(Tile(tile, this->xFlip, this->yFlip, this->paletteId));
-                else
-                    row.append(Tile(tile, this->xFlip, this->yFlip, this->paletteId));
-            }
-            if (this->yFlip)
-                tileMatrix.prepend(row);
-            else
-                tileMatrix.append(row);
-        }
-        for (int j = 0; j < height; j++) {
-            for (int i = 0; i < width; i++) {
-                tiles.append(tileMatrix.at(j).at(i));
-            }
-        }
-        return tiles;
+        return buildSelectedTiles(dimensions.x(), dimensions.y(), this->selectedTiles);
     }
+}
+
+QList<Tile> TilesetEditorTileSelector::buildSelectedTiles(int width, int height, QList<uint16_t> selected) {
+    QList<Tile> tiles;
+    QList<QList<Tile>> tileMatrix;
+    for (int j = 0; j < height; j++) {
+        QList<Tile> row;
+        for (int i = 0; i < width; i++) {
+            int index = i + j * width;
+            uint16_t tile = selected.at(index);
+            if (this->xFlip)
+                row.prepend(Tile(tile, this->xFlip, this->yFlip, this->paletteId));
+            else
+                row.append(Tile(tile, this->xFlip, this->yFlip, this->paletteId));
+        }
+        if (this->yFlip)
+            tileMatrix.prepend(row);
+        else
+            tileMatrix.append(row);
+    }
+    for (int j = 0; j < height; j++) {
+        for (int i = 0; i < width; i++) {
+            tiles.append(tileMatrix.at(j).at(i));
+        }
+    }
+    return tiles;
 }
 
 void TilesetEditorTileSelector::setExternalSelection(int width, int height, QList<Tile> tiles) {
@@ -133,7 +134,7 @@ void TilesetEditorTileSelector::setExternalSelection(int width, int height, QLis
     this->externalSelectionHeight = height;
     this->externalSelectedTiles.clear();
     for (int i = 0; i < tiles.length(); i++) {
-        this->externalSelectedTiles.append(tiles.at(i));
+        this->externalSelectedTiles.append(tiles.at(i).tile);
     }
 
     this->draw();
