@@ -39,7 +39,7 @@ private:
     bool externalSelection;
     int externalSelectionWidth;
     int externalSelectionHeight;
-    QList<Tile> externalSelectedTiles;
+    QList<uint16_t> externalSelectedTiles;
 
     Tileset *primaryTileset;
     Tileset *secondaryTileset;
@@ -52,6 +52,7 @@ private:
     uint16_t getTileId(int x, int y);
     QPoint getTileCoords(uint16_t);
     QList<QRgb> getCurPaletteTable();
+    QList<Tile> buildSelectedTiles(int, int, QList<uint16_t>);
 
 signals:
     void hoveredTileChanged(uint16_t);
