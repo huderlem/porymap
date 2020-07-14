@@ -128,7 +128,8 @@ QList<Tile> TilesetEditorTileSelector::buildSelectedTiles(int width, int height,
 
             // If we've completed a layer row, or its the last tile of an incompletely
             // selected layer, then append the layer row to the full row
-            if (layerRow.length() == 2 || (width % 2 && i == width - 1)) {
+            // If not an external selection, treat the whole row as 1 "layer"
+            if (i == width - 1 || (this->externalSelection && (this->externalSelectedPos.at(index) % 4) & 1)) {
                 row.append(layerRow);
                 layerRow.clear();
             }
@@ -146,16 +147,15 @@ QList<Tile> TilesetEditorTileSelector::buildSelectedTiles(int width, int height,
     return tiles;
 }
 
-void TilesetEditorTileSelector::setExternalSelection(int width, int height, QList<Tile> tiles) {
+void TilesetEditorTileSelector::setExternalSelection(int width, int height, QList<Tile> tiles, QList<int> tileIdxs) {
     this->externalSelection = true;
     this->paletteChanged = false;
     this->externalSelectionWidth = width;
     this->externalSelectionHeight = height;
     this->externalSelectedTiles.clear();
-    for (int i = 0; i < tiles.length(); i++) {
-        this->externalSelectedTiles.append(tiles.at(i));
-    }
-
+    this->externalSelectedTiles.append(tiles);
+    this->externalSelectedPos.clear();
+    this->externalSelectedPos.append(tileIdxs);
     this->draw();
     emit selectedTilesChanged();
 }

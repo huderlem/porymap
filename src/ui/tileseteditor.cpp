@@ -328,6 +328,7 @@ void TilesetEditor::onMetatileLayerTileChanged(int x, int y) {
 
 void TilesetEditor::onMetatileLayerSelectionChanged(QPoint selectionOrigin, int width, int height) {
     QList<Tile> tiles;
+    QList<int> tileIdxs;
     int x = selectionOrigin.x();
     int y = selectionOrigin.y();
     bool isTripleLayerMetatile = projectConfig.getTripleLayerMetatilesEnabled();
@@ -337,13 +338,14 @@ void TilesetEditor::onMetatileLayerSelectionChanged(QPoint selectionOrigin, int 
             int tileIndex = ((x + i) / 2 * 4) + ((y + j) * 2) + ((x + i) % 2);
             if (tileIndex < maxTileIndex) {
                 tiles.append(this->metatile->tiles->at(tileIndex));
+                tileIdxs.append(tileIndex);
             }
         }
     }
 
     if (width == 1 && height == 1)
         ui->spinBox_paletteSelector->setValue(tiles[0].palette);
-    this->tileSelector->setExternalSelection(width, height, tiles);
+    this->tileSelector->setExternalSelection(width, height, tiles, tileIdxs);
     this->metatileLayersItem->clearLastModifiedCoords();
 }
 

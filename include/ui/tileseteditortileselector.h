@@ -24,7 +24,7 @@ public:
     void setPaletteId(int);
     void setTileFlips(bool, bool);
     QList<Tile> getSelectedTiles();
-    void setExternalSelection(int, int, QList<Tile>);
+    void setExternalSelection(int, int, QList<Tile>, QList<int>);
     QPoint getTileCoordsOnWidget(uint16_t);
     QImage buildPrimaryTilesIndexedImage();
     QImage buildSecondaryTilesIndexedImage();
@@ -41,6 +41,7 @@ private:
     int externalSelectionWidth;
     int externalSelectionHeight;
     QList<Tile> externalSelectedTiles;
+    QList<int> externalSelectedPos;
 
     Tileset *primaryTileset;
     Tileset *secondaryTileset;
