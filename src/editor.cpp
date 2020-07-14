@@ -1221,6 +1221,7 @@ void Editor::displayMetatileSelector() {
                 this, SLOT(onSelectedMetatilesChanged()));
         metatile_selector_item->select(0);
     } else {
+        metatile_selector_item->setMap(map);
         metatile_selector_item->setTilesets(map->layout->tileset_primary, map->layout->tileset_secondary);
     }
 

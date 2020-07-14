@@ -30,6 +30,7 @@ public:
     QList<QPair<uint16_t, uint16_t>>* getSelectedCollisions();
     void setExternalSelection(int, int, QList<uint16_t>, QList<QPair<uint16_t, uint16_t>>);
     QPoint getMetatileIdCoordsOnWidget(uint16_t);
+    void setMap(Map*);
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent*);
     void mouseMoveEvent(QGraphicsSceneMouseEvent*);

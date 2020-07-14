@@ -189,3 +189,7 @@ QPoint MetatileSelector::getMetatileIdCoordsOnWidget(uint16_t metatileId) {
     pos.ry() = (pos.y() * this->cellHeight) + (this->cellHeight / 2);
     return pos;
 }
+
+void MetatileSelector::setMap(Map *map) {
+    this->map = map;
+}
