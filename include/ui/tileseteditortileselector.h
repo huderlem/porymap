@@ -14,6 +14,7 @@ public:
         this->paletteId = 0;
         this->xFlip = false;
         this->yFlip = false;
+        this->paletteChanged = false;
         setAcceptHoverEvents(true);
     }
     QPoint getSelectionDimensions();
@@ -48,6 +49,7 @@ private:
     int paletteId;
     bool xFlip;
     bool yFlip;
+    bool paletteChanged;
     void updateSelectedTiles();
     uint16_t getTileId(int x, int y);
     QPoint getTileCoords(uint16_t);
