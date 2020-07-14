@@ -71,6 +71,7 @@ void TilesetEditorTileSelector::setTilesets(Tileset *primaryTileset, Tileset *se
 
 void TilesetEditorTileSelector::setPaletteId(int paletteId) {
     this->paletteId = paletteId;
+    this->paletteChanged = true;
     this->draw();
 }
 
@@ -118,6 +119,8 @@ QList<Tile> TilesetEditorTileSelector::buildSelectedTiles(int width, int height,
             Tile tile = selected.at(index);
             tile.xflip ^= this->xFlip;
             tile.yflip ^= this->yFlip;
+            if (this->paletteChanged)
+                tile.palette = this->paletteId;
             if (this->xFlip)
                 layerRow.prepend(tile);
             else
@@ -145,6 +148,7 @@ QList<Tile> TilesetEditorTileSelector::buildSelectedTiles(int width, int height,
 
 void TilesetEditorTileSelector::setExternalSelection(int width, int height, QList<Tile> tiles) {
     this->externalSelection = true;
+    this->paletteChanged = false;
     this->externalSelectionWidth = width;
     this->externalSelectionHeight = height;
     this->externalSelectedTiles.clear();
