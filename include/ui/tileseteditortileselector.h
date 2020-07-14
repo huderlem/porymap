@@ -7,7 +7,8 @@
 class TilesetEditorTileSelector: public SelectablePixmapItem {
     Q_OBJECT
 public:
-    TilesetEditorTileSelector(Tileset *primaryTileset, Tileset *secondaryTileset): SelectablePixmapItem(16, 16, 4, 2) {
+    TilesetEditorTileSelector(Tileset *primaryTileset, Tileset *secondaryTileset, bool isTripleLayer)
+        : SelectablePixmapItem(16, 16, isTripleLayer ? 6 : 4, 2) {
         this->primaryTileset = primaryTileset;
         this->secondaryTileset = secondaryTileset;
         this->numTilesWide = 16;

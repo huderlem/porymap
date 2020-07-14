@@ -172,7 +172,7 @@ void TilesetEditor::initMetatileSelector(Map *map)
 
 void TilesetEditor::initTileSelector()
 {
-    this->tileSelector = new TilesetEditorTileSelector(this->primaryTileset, this->secondaryTileset);
+    this->tileSelector = new TilesetEditorTileSelector(this->primaryTileset, this->secondaryTileset, projectConfig.getTripleLayerMetatilesEnabled());
     connect(this->tileSelector, SIGNAL(hoveredTileChanged(uint16_t)),
             this, SLOT(onHoveredTileChanged(uint16_t)));
     connect(this->tileSelector, SIGNAL(hoveredTileCleared()),
