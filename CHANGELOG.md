@@ -9,16 +9,21 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ## [Unreleased]
 ### Added
 - Add keyboard shortcut `Ctrl + D` for duplicating map events.
+- Add keyboard shortcut `Ctrl + Shift + Z` for "redo" in the tileset editor.
+- Add scripting api to reorder metatile layers and draw them with opacity.
 
 ### Changed
 - The tileset editor now syncs its metatile selection with the map's metatile selector.
 - The number of object events per map is now limited to OBJECT_EVENT_TEMPLATES_COUNT
+- The tileset editor can now flip selections that were taken from an existing metatile.
 
 ### Fixed
+- Fix bug where editing a metatile layer would have no effect.
 - Fix a crash that occured when creating a new tileset using triple layer mode.
 - Fix crash when reducing number of metatiles past current selection.
 - Fix various methods of selecting invalid metatiles.
 - Fix sprite transparency not updating when changing object event graphics.
+- Fix dropdown menu item selection when using the arrow keys.
 
 ## [4.3.0] - 2020-06-27
 ### Added
