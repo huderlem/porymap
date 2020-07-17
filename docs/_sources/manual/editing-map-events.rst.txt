@@ -19,6 +19,19 @@ All of the events are visible on the map.  The Event Details window on the right
 .. warning::
     There is currently no undo/redo functionality when editing events!  Use Git version control!
 
+Adding & Deleting Events
+------------------------
+
+To add a new event, press the green plus button. |add-event-button|  You can choose between the different types of events by clicking the small arrow on the right. You can also duplicate any currently selected events with ``Ctrl+D``.
+
+.. |add-event-button|
+   image:: images/editing-map-events/add-event-button.png
+
+To delete the selected event, press the delete button. |delete-event-button|
+
+.. |delete-event-button|
+   image:: images/editing-map-events/delete-event-button.png
+
 Event Positions
 ----------------
 
@@ -208,19 +221,6 @@ Respawn Map
 
 Respawn NPC
     Exclusive to pokefirered. The local id of the NPC the player will interact with when they white out.
-
-Adding & Deleting Events
-------------------------
-
-To add a new event, press the green plus button. |add-event-button|  You can choose between the different types of events by clicking the small arrow on the right.
-
-.. |add-event-button|
-   image:: images/editing-map-events/add-event-button.png
-
-To delete the selected event, press the delete button. |delete-event-button|
-
-.. |delete-event-button|
-   image:: images/editing-map-events/delete-event-button.png
 
 Open Map Scripts
 ----------------

@@ -353,7 +353,7 @@ The following functions are related to an overlay that is drawn on top of the ma
 Tileset Functions
 ^^^^^^^^^^^^^^^^^
 
-The following functions are related to tilesets and their palettes. The functions with "preview" in their name operate on a "fake" version of the palette colors. This means that changing these "preview" colors won't affect the actual tileset colors in the project. A good use of the "preview" palettes would be Day/Night tints, for example.
+The following functions are related to tilesets and how they are rendered. The functions with "preview" in their name operate on a "fake" version of the palette colors. This means that changing these "preview" colors won't affect the actual tileset colors in the project. A good use of the "preview" palettes would be Day/Night tints, for example.
 
 .. js:function:: map.getPrimaryTilesetPalettePreview(paletteIndex)
 
@@ -482,6 +482,31 @@ The following functions are related to tilesets and their palettes. The function
    Sets the secondary tileset for the currently-opened map.
 
    :param string tileset: the tileset name
+
+.. js:function:: map.getMetatileLayerOrder()
+
+   Gets the order that metatile layers are rendered.
+
+   :return array: array of layers. The bottom layer is represented as 0.
+
+.. js:function:: map.setMetatileLayerOrder(order)
+
+   Sets the order that metatile layers are rendered.
+
+   :param array: array of layers. The bottom layer is represented as 0.
+
+.. js:function:: map.getMetatileLayerOpacity()
+
+   Gets the opacities that metatile layers are rendered with.
+
+   :return array: array of opacities for each layer. The bottom layer is the first element.
+
+.. js:function:: map.setMetatileLayerOpacity(opacities)
+
+   Sets the opacities that metatile layers are rendered with.
+
+   :param array: array of opacities for each layer. The bottom layer is the first element.
+
 
 Settings Functions
 ^^^^^^^^^^^^^^^^^^
