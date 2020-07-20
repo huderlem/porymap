@@ -343,8 +343,12 @@ void TilesetEditor::onMetatileLayerSelectionChanged(QPoint selectionOrigin, int 
         }
     }
 
-    if (width == 1 && height == 1)
+    if (width == 1 && height == 1) {
+        this->tileSelector->highlight(static_cast<uint16_t>(tiles[0].tile));
         ui->spinBox_paletteSelector->setValue(tiles[0].palette);
+        QPoint pos = tileSelector->getTileCoordsOnWidget(static_cast<uint16_t>(tiles[0].tile));
+        ui->scrollArea_Tiles->ensureVisible(pos.x(), pos.y());
+    }
     this->tileSelector->setExternalSelection(width, height, tiles, tileIdxs);
     this->metatileLayersItem->clearLastModifiedCoords();
 }

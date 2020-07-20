@@ -21,6 +21,7 @@ public:
     QPoint getSelectionDimensions();
     void draw();
     void select(uint16_t metatileId);
+    void highlight(uint16_t metatileId);
     void setTilesets(Tileset*, Tileset*);
     void setPaletteId(int);
     void setTileFlips(bool, bool);
