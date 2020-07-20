@@ -50,17 +50,21 @@ void TilesetEditorTileSelector::draw() {
     painter.end();
     this->setPixmap(QPixmap::fromImage(image));
 
-    if (!this->externalSelection) {
+    if (!this->externalSelection || (this->externalSelectionWidth == 1 && this->externalSelectionHeight == 1)) {
         this->drawSelection();
     }
 }
 
 void TilesetEditorTileSelector::select(uint16_t tile) {
     this->externalSelection = false;
-    QPoint coords = this->getTileCoords(tile);
-    SelectablePixmapItem::select(coords.x(), coords.y(), 0, 0);
+    this->highlight(tile);
     this->updateSelectedTiles();
     emit selectedTilesChanged();
+}
+
+void TilesetEditorTileSelector::highlight(uint16_t tile) {
+    QPoint coords = this->getTileCoords(tile);
+    SelectablePixmapItem::select(coords.x(), coords.y(), 0, 0);
 }
 
 void TilesetEditorTileSelector::setTilesets(Tileset *primaryTileset, Tileset *secondaryTileset) {
