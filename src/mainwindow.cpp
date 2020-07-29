@@ -11,6 +11,7 @@
 #include "customattributestable.h"
 #include "scripting.h"
 #include "adjustingstackedwidget.h"
+#include "editcommands.h"
 
 #include <QFileDialog>
 #include <QDirIterator>
@@ -146,6 +147,21 @@ void MainWindow::initEditor() {
     connect(this->editor, &Editor::wheelZoom, this, &MainWindow::onWheelZoom);
 
     this->loadUserSettings();
+
+    undoAction = editor->editGroup.createUndoAction(this, tr("&Undo"));
+    undoAction->setShortcut(QKeySequence("Ctrl+Z"));
+
+    redoAction = editor->editGroup.createRedoAction(this, tr("&Redo"));
+    redoAction->setShortcut(QKeySequence("Ctrl+Y"));
+
+    ui->menuEdit->addAction(undoAction);
+    ui->menuEdit->addAction(redoAction);
+
+    // TODO: show history UndoView here
+    QUndoView *undoView = new QUndoView(&editor->editGroup);
+    undoView->setWindowTitle(tr("Edit History"));
+    undoView->show();
+    undoView->setAttribute(Qt::WA_QuitOnClose, false);
 }
 
 void MainWindow::initMiscHeapObjects() {
@@ -1255,14 +1271,6 @@ void MainWindow::on_action_Save_Project_triggered()
     updateMapList();
 }
 
-void MainWindow::undo() {
-    editor->undo();
-}
-
-void MainWindow::redo() {
-    editor->redo();
-}
-
 void MainWindow::duplicate() {
     editor->duplicateSelectedEvents();
 }
@@ -1320,16 +1328,6 @@ void MainWindow::on_mainTabBar_tabBarClicked(int index)
         if (projectConfig.getEncounterJsonActive())
             editor->saveEncounterTabData();
     }
-}
-
-void MainWindow::on_actionUndo_triggered()
-{
-    undo();
-}
-
-void MainWindow::on_actionRedo_triggered()
-{
-    redo();
 }
 
 void MainWindow::on_actionZoom_In_triggered() {
@@ -2498,10 +2496,23 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked()
     form.addRow(errorLabel);
 
     if (dialog.exec() == QDialog::Accepted) {
-        editor->map->setDimensions(widthSpinBox->value(), heightSpinBox->value());
-        editor->map->setBorderDimensions(bwidthSpinBox->value(), bheightSpinBox->value());
-        editor->map->commit();
-        onMapNeedsRedrawing();
+        Map *map = editor->map;
+        Blockdata *oldMetatiles = map->layout->blockdata->copy();
+        Blockdata *oldBorder = map->layout->border->copy();
+        QSize oldMapDimensions(map->getWidth(), map->getHeight());
+        QSize oldBorderDimensions(map->getBorderWidth(), map->getBorderHeight());
+        QSize newMapDimensions(widthSpinBox->value(), heightSpinBox->value());
+        QSize newBorderDimensions(bwidthSpinBox->value(), bheightSpinBox->value());
+        if (oldMapDimensions != newMapDimensions || oldBorderDimensions != newBorderDimensions) {
+            editor->map->setDimensions(newMapDimensions.width(), newMapDimensions.height());
+            editor->map->setBorderDimensions(newBorderDimensions.width(), newBorderDimensions.height());
+            editor->map->editHistory.push(new ResizeMap(map, 
+                oldMapDimensions, newMapDimensions,
+                oldMetatiles, map->layout->blockdata->copy(),
+                oldBorderDimensions, newBorderDimensions,
+                oldBorder, map->layout->border->copy()
+            ));
+        }
     }
 }
 

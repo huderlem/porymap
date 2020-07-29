@@ -23,7 +23,7 @@ public:
     QString tileset_secondary_label;
     Tileset *tileset_primary = nullptr;
     Tileset *tileset_secondary = nullptr;
-    Blockdata* blockdata = nullptr;
+    Blockdata *blockdata = nullptr;
     QImage border_image;
     QPixmap border_pixmap;
     Blockdata *border = nullptr;

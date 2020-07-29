@@ -8,6 +8,7 @@
 #include <QComboBox>
 #include <QCheckBox>
 #include <QCursor>
+#include <QUndoGroup>
 
 #include "mapconnection.h"
 #include "metatileselector.h"
@@ -45,8 +46,6 @@ public:
     Settings *settings;
     void saveProject();
     void save();
-    void undo();
-    void redo();
     void closeProject();
     bool setMap(QString map_name);
     void saveUiFields();
@@ -143,6 +142,8 @@ public:
     void objectsView_onMouseRelease(QMouseEvent *event);
 
     int getBorderDrawDistance(int dimension);
+
+    QUndoGroup editGroup; // Manages the undo history for each map
 
 private:
     void setConnectionItemsVisible(bool);

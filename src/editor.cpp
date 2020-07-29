@@ -53,26 +53,6 @@ void Editor::saveUiFields() {
     saveEncounterTabData();
 }
 
-void Editor::undo() {
-    if (current_view && map_item->paintingMode == MapPixmapItem::PaintMode::Metatiles) {
-        map->undo();
-        map_item->draw();
-        collision_item->draw();
-        selected_border_metatiles_item->draw();
-        onBorderMetatilesChanged();
-    }
-}
-
-void Editor::redo() {
-    if (current_view && map_item->paintingMode == MapPixmapItem::PaintMode::Metatiles) {
-        map->redo();
-        map_item->draw();
-        collision_item->draw();
-        selected_border_metatiles_item->draw();
-        onBorderMetatilesChanged();
-    }
-}
-
 void Editor::closeProject() {
     if (this->project) {
         delete this->project;
@@ -981,6 +961,9 @@ bool Editor::setMap(QString map_name) {
         }
 
         map = loadedMap;
+
+        editGroup.addStack(&map->editHistory);
+        editGroup.setActiveStack(&map->editHistory);
         selected_events->clear();
         if (!displayMap()) {
             return false;

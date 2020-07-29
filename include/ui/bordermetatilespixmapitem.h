@@ -10,11 +10,12 @@ class BorderMetatilesPixmapItem : public QObject, public QGraphicsPixmapItem {
 public:
     BorderMetatilesPixmapItem(Map *map_, MetatileSelector *metatileSelector) {
         this->map = map_;
+        this->map->setBorderItem(this);
         this->metatileSelector = metatileSelector;
         setAcceptHoverEvents(true);
     }
     MetatileSelector *metatileSelector;
-    Map* map;
+    Map *map;
     void draw();
 signals:
     void borderMetatilesChanged();

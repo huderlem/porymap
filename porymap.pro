@@ -30,6 +30,7 @@ SOURCES += src/core/block.cpp \
     src/core/tileset.cpp \
     src/core/regionmap.cpp \
     src/core/wildmoninfo.cpp \
+    src/core/editcommands.cpp \
     src/lib/orderedjson.cpp \
     src/mainwindow_scriptapi.cpp \
     src/ui/aboutporymap.cpp \
@@ -95,6 +96,7 @@ HEADERS  += include/core/block.h \
     include/core/tileset.h \
     include/core/regionmap.h \
     include/core/wildmoninfo.h \
+    include/core/editcommands.h \
     include/lib/orderedmap.h \
     include/lib/orderedjson.h \
     include/ui/aboutporymap.h \

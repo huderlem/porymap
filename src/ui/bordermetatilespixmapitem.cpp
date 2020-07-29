@@ -1,5 +1,6 @@
 #include "bordermetatilespixmapitem.h"
 #include "imageproviders.h"
+#include "editcommands.h"
 #include <QPainter>
 
 void BorderMetatilesPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
@@ -11,6 +12,8 @@ void BorderMetatilesPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
     int width = map->getBorderWidth();
     int height = map->getBorderHeight();
 
+    Blockdata *oldBorder = map->layout->border->copy();
+
     for (int i = 0; i < selectionDimensions.x() && (i + x) < width; i++) {
         for (int j = 0; j < selectionDimensions.y() && (j + y) < height; j++) {
             int blockIndex = (j + y) * width + (i + x);
@@ -19,11 +22,15 @@ void BorderMetatilesPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
         }
     }
 
-    draw();
+    Blockdata *newBorder = map->layout->border->copy();
+    map->editHistory.push(new PaintBorder(map, oldBorder, newBorder, 0));
+
     emit borderMetatilesChanged();
 }
 
 void BorderMetatilesPixmapItem::draw() {
+    map->setBorderItem(this);
+
     int width = map->getBorderWidth();
     int height = map->getBorderHeight();
     QImage image(16 * width, 16 * height, QImage::Format_RGBA8888);
@@ -49,4 +56,6 @@ void BorderMetatilesPixmapItem::draw() {
     painter.end();
     map->commit();
     this->setPixmap(QPixmap::fromImage(image));
+
+    emit borderMetatilesChanged();
 }
