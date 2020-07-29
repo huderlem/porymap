@@ -16,7 +16,7 @@ struct WildMonInfo {
 };
 
 struct WildPokemonHeader {
-    QMap<QString, WildMonInfo> wildMons;
+    QHash<QString, WildMonInfo> wildMons;
 };
 
 struct EncounterField {

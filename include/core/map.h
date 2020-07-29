@@ -9,6 +9,7 @@
 #include "tileset.h"
 #include "event.h"
 
+#include <QUndoStack>
 #include <QPixmap>
 #include <QObject>
 #include <QGraphicsPixmapItem>
@@ -20,6 +21,9 @@
 // Number of metatiles to draw out from edge of map. Could allow modification of this in the future.
 // porymap will reflect changes to it, but the value is hard-coded in the projects at the moment
 #define BORDER_DISTANCE 7
+
+class MapPixmapItem;
+class BorderMetatilesPixmapItem;
 
 class Map : public QObject
 {
@@ -80,9 +84,6 @@ public:
     void floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
     void _floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
     void magicFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
-    void undo();
-    void redo();
-    void commit();
     QList<Event*> getAllEvents();
     void removeEvent(Event*);
     void addEvent(Event*);
@@ -92,6 +93,16 @@ public:
     void setBorderDimensions(int newWidth, int newHeight, bool setNewBlockdata = true);
     void cacheBorder();
     bool hasUnsavedChanges();
+
+    MapPixmapItem *mapItem = nullptr;
+    void setMapItem(MapPixmapItem *item) { mapItem = item; }
+
+    BorderMetatilesPixmapItem *borderItem = nullptr;
+    void setBorderItem(BorderMetatilesPixmapItem *item) { borderItem = item; }
+
+    void commit(); // TODO: delete this
+
+    QUndoStack editHistory;
 
 private:
     void setNewDimensionsBlockdata(int newWidth, int newHeight);

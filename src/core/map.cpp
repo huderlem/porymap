@@ -4,6 +4,8 @@
 #include "imageproviders.h"
 #include "scripting.h"
 
+#include "editcommands.h"
+
 #include <QTime>
 #include <QPainter>
 #include <QImage>
@@ -343,6 +345,7 @@ void Map::setDimensions(int newWidth, int newHeight, bool setNewBlockdata) {
     layout->height = QString::number(newHeight);
 
     emit mapChanged(this);
+    emit mapNeedsRedrawing();
 }
 
 void Map::setBorderDimensions(int newWidth, int newHeight, bool setNewBlockdata) {
@@ -354,6 +357,7 @@ void Map::setBorderDimensions(int newWidth, int newHeight, bool setNewBlockdata)
     layout->border_height = QString::number(newHeight);
 
     emit mapChanged(this);
+    emit mapNeedsRedrawing();
 }
 
 Block* Map::getBlock(int x, int y) {
@@ -413,93 +417,8 @@ void Map::_floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_
     }
 }
 
-void Map::undo() {
-    bool redraw = false, changed = false;
-    HistoryItem *commit = metatileHistory.back();
-    if (!commit)
-        return;
-
-    if (layout->blockdata) {
-        layout->blockdata->copyFrom(commit->metatiles);
-        if (commit->layoutWidth != this->getWidth() || commit->layoutHeight != this->getHeight()) {
-            this->setDimensions(commit->layoutWidth, commit->layoutHeight, false);
-            redraw = true;
-        }
-        changed = true;
-    }
-    if (layout->border) {
-        layout->border->copyFrom(commit->border);
-        if (commit->borderWidth != this->getBorderWidth() || commit->borderHeight != this->getBorderHeight()) {
-            this->setBorderDimensions(commit->borderWidth, commit->borderHeight, false);
-            redraw = true;
-        }
-        changed = true;
-    }
-
-    if (redraw) {
-        emit mapNeedsRedrawing();
-    }
-    if (changed) {
-        emit mapChanged(this);
-    }
-}
-
-void Map::redo() {
-    bool redraw = false, changed = false;
-    HistoryItem *commit = metatileHistory.next();
-    if (!commit)
-        return;
-
-    if (layout->blockdata) {
-        layout->blockdata->copyFrom(commit->metatiles);
-        if (commit->layoutWidth != this->getWidth() || commit->layoutHeight != this->getHeight()) {
-            this->setDimensions(commit->layoutWidth, commit->layoutHeight, false);
-            redraw = true;
-        }
-        changed = true;
-    }
-    if (layout->border) {
-        layout->border->copyFrom(commit->border);
-        if (commit->borderWidth != this->getBorderWidth() || commit->borderHeight != this->getBorderHeight()) {
-            this->setBorderDimensions(commit->borderWidth, commit->borderHeight, false);
-            redraw = true;
-        }
-        changed = true;
-    }
-
-    if (redraw) {
-        emit mapNeedsRedrawing();
-    }
-    if (changed) {
-        emit mapChanged(this);
-    }
-}
-
 void Map::commit() {
-    if (!layout) {
-        return;
-    }
-
-    int layoutWidth = this->getWidth();
-    int layoutHeight = this->getHeight();
-    int borderWidth = this->getBorderWidth();
-    int borderHeight = this->getBorderHeight();
-
-    if (layout->blockdata) {
-        HistoryItem *item = metatileHistory.current();
-        bool atCurrentHistory = item
-                && layout->blockdata->equals(item->metatiles)
-                && layout->border->equals(item->border)
-                && layoutWidth == item->layoutWidth
-                && layoutHeight == item->layoutHeight
-                && borderWidth == item->borderWidth 
-                && borderHeight == item->borderHeight;
-        if (!atCurrentHistory) {
-            HistoryItem *commit = new HistoryItem(layout->blockdata->copy(), layout->border->copy(), layoutWidth, layoutHeight, borderWidth, borderHeight);
-            metatileHistory.push(commit);
-            emit mapChanged(this);
-        }
-    }
+    return;
 }
 
 void Map::floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation) {
