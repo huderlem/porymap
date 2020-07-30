@@ -22,6 +22,7 @@ public:
     static QString HealLocation;
 };
 
+class DraggablePixmapItem;
 class Project;
 class Event
 {
@@ -97,6 +98,9 @@ public:
     int frame = 0;
     bool hFlip = false;
     bool usingSprite;
+
+    DraggablePixmapItem *pixmapItem = nullptr;
+    void setPixmapItem(DraggablePixmapItem *item) { pixmapItem = item; }
 };
 
 #endif // EVENT_H

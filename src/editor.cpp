@@ -1,4 +1,5 @@
 #include "editor.h"
+#include "draggablepixmapitem.h"
 #include "event.h"
 #include "imageproviders.h"
 #include "log.h"
@@ -1751,62 +1752,6 @@ Tileset* Editor::getCurrentMapPrimaryTileset()
     return project->getTileset(tilesetLabel);
 }
 
-void DraggablePixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *mouse) {
-    active = true;
-    last_x = static_cast<int>(mouse->pos().x() + this->pos().x()) / 16;
-    last_y = static_cast<int>(mouse->pos().y() + this->pos().y()) / 16;
-    this->editor->selectMapEvent(this, mouse->modifiers() & Qt::ControlModifier);
-    //this->editor->updateSelectedEvents();
-    selectingEvent = true;
-}
-
-void DraggablePixmapItem::move(int x, int y) {
-    event->setX(event->x() + x);
-    event->setY(event->y() + y);
-    updatePosition();
-    emitPositionChanged();
-}
-
-void DraggablePixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *mouse) {
-    if (active) {
-        int x = static_cast<int>(mouse->pos().x() + this->pos().x()) / 16;
-        int y = static_cast<int>(mouse->pos().y() + this->pos().y()) / 16;
-        this->editor->playerViewRect->updateLocation(x, y);
-        this->editor->cursorMapTileRect->updateLocation(x, y);
-        if (x != last_x || y != last_y) {
-            if (editor->selected_events->contains(this)) {
-                for (DraggablePixmapItem *item : *editor->selected_events) {
-                    item->move(x - last_x, y - last_y);
-                }
-            } else {
-                move(x - last_x, y - last_y);
-            }
-            last_x = x;
-            last_y = y;
-        }
-    }
-}
-
-void DraggablePixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *) {
-    active = false;
-}
-
-void DraggablePixmapItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *) {
-    if (this->event->get("event_type") == EventType::Warp) {
-        QString destMap = this->event->get("destination_map_name");
-        if (destMap != NONE_MAP_NAME) {
-            emit editor->warpEventDoubleClicked(this->event->get("destination_map_name"), this->event->get("destination_warp"));
-        }
-    }
-    else if (this->event->get("event_type") == EventType::SecretBase) {
-        QString baseId = this->event->get("secret_base_id");
-        QString destMap = editor->project->mapConstantsToMapNames->value("MAP_" + baseId.left(baseId.lastIndexOf("_")));
-        if (destMap != NONE_MAP_NAME) {
-            emit editor->warpEventDoubleClicked(destMap, "0");
-        }
-    }
-}
-
 QList<DraggablePixmapItem *> *Editor::getObjects() {
     QList<DraggablePixmapItem *> *list = new QList<DraggablePixmapItem *>;
     for (Event *event : map->getAllEvents()) {
@@ -1944,6 +1889,7 @@ void Editor::objectsView_onMousePress(QMouseEvent *event) {
         this->ui->toolButton_Paint->setChecked(false);
         this->ui->toolButton_Select->setChecked(true);
     }
+
     bool multiSelect = event->modifiers() & Qt::ControlModifier;
     if (!selectingEvent && !multiSelect && selected_events->length() > 1) {
         DraggablePixmapItem *first = selected_events->first();

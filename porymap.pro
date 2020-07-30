@@ -34,6 +34,7 @@ SOURCES += src/core/block.cpp \
     src/lib/orderedjson.cpp \
     src/mainwindow_scriptapi.cpp \
     src/ui/aboutporymap.cpp \
+    src/ui/draggablepixmapitem.cpp \
     src/ui/bordermetatilespixmapitem.cpp \
     src/ui/collisionpixmapitem.cpp \
     src/ui/connectionpixmapitem.cpp \
@@ -100,6 +101,7 @@ HEADERS  += include/core/block.h \
     include/lib/orderedmap.h \
     include/lib/orderedjson.h \
     include/ui/aboutporymap.h \
+    include/ui/draggablepixmapitem.h \
     include/ui/bordermetatilespixmapitem.h \
     include/ui/collisionpixmapitem.h \
     include/ui/connectionpixmapitem.h \

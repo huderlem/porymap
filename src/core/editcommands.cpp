@@ -1,5 +1,6 @@
 #include "editcommands.h"
 #include "mappixmapitem.h"
+#include "draggablepixmapitem.h"
 #include "bordermetatilespixmapitem.h"
 
 #include <QDebug>
@@ -247,6 +248,8 @@ void ResizeMap::redo() {
         map->layout->border->copyFrom(newBorder);
         map->setBorderDimensions(newBorderWidth, newBorderHeight, false);
     }
+
+    map->mapNeedsRedrawing();
 }
 
 void ResizeMap::undo() {
@@ -262,7 +265,60 @@ void ResizeMap::undo() {
         map->setBorderDimensions(oldBorderWidth, oldBorderHeight, false);
     }
 
+    map->mapNeedsRedrawing();
+
     QUndoCommand::undo();
 }
+
+/******************************************************************************
+    ************************************************************************
+ ******************************************************************************/
+
+EventMove::EventMove(QList<Event *> events,
+    int deltaX, int deltaY, unsigned actionId,
+    QUndoCommand *parent) : QUndoCommand(parent) {
+    setText("Move Event");
+
+    this->events = events;
+
+    this->deltaX = deltaX;
+    this->deltaY = deltaY;
+
+    this->actionId = actionId;
+}
+
+EventMove::~EventMove() {}
+
+void EventMove::redo() {
+    QUndoCommand::redo();
+
+    for (Event *event : events) {
+        event->pixmapItem->move(deltaX, deltaY);
+    }
+}
+
+void EventMove::undo() {
+    for (Event *event : events) {
+        event->pixmapItem->move(-deltaX, -deltaY);
+    }
+
+    QUndoCommand::undo();
+}
+
+bool EventMove::mergeWith(const QUndoCommand *command) {
+    const EventMove *other = static_cast<const EventMove *>(command);
+
+    if (actionId != other->actionId)
+        return false;
+
+    this->deltaX += other->deltaX;
+    this->deltaY += other->deltaY;
+
+    return true;
+}
+
+/******************************************************************************
+    ************************************************************************
+ ******************************************************************************/
 
 
