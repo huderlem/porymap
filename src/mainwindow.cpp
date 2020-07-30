@@ -11,6 +11,7 @@
 #include "customattributestable.h"
 #include "scripting.h"
 #include "adjustingstackedwidget.h"
+#include "draggablepixmapitem.h"
 #include "editcommands.h"
 
 #include <QFileDialog>

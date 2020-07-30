@@ -345,7 +345,6 @@ void Map::setDimensions(int newWidth, int newHeight, bool setNewBlockdata) {
     layout->height = QString::number(newHeight);
 
     emit mapChanged(this);
-    emit mapNeedsRedrawing();
 }
 
 void Map::setBorderDimensions(int newWidth, int newHeight, bool setNewBlockdata) {
@@ -357,7 +356,6 @@ void Map::setBorderDimensions(int newWidth, int newHeight, bool setNewBlockdata)
     layout->border_height = QString::number(newHeight);
 
     emit mapChanged(this);
-    emit mapNeedsRedrawing();
 }
 
 Block* Map::getBlock(int x, int y) {

@@ -2,10 +2,13 @@
 #define EDITCOMMANDS_H
 
 #include <QUndoCommand>
+#include <QList>
 
 class MapPixmapItem;
 class Map;
 class Blockdata;
+class Event;
+class DraggablePixmapItem;
 
 enum CommandId {
     ID_PaintMetatile,       // - done
@@ -14,10 +17,11 @@ enum CommandId {
     ID_ShiftMetatiles,      // - done
     ID_ResizeMap,           // - done
     ID_PaintBorder,         // - done
-    ID_EventMove,           // - 
+    ID_EventMove,           // - done
+    ID_EventShift,          // - 
     ID_EventCreate,         // - 
     ID_EventDelete,         // - 
-    ID_EventSetData,        // - 
+    ID_EventSetData,        // - ?
     // Tileset editor history commands
     // Region map editor history commands
 };
@@ -163,6 +167,30 @@ private:
 
     Blockdata *newBorder;
     Blockdata *oldBorder;
+};
+
+
+
+///
+class EventMove : public QUndoCommand {
+public:
+    EventMove(QList<Event *> events,
+        int deltaX, int deltaY, unsigned actionId,
+        QUndoCommand *parent = nullptr);
+    ~EventMove();
+
+    void undo() override;
+    void redo() override;
+
+    bool mergeWith(const QUndoCommand *command) override;
+    int id() const override { return CommandId::ID_EventMove; }
+
+private:
+    QList<Event *> events;
+    int deltaX;
+    int deltaY;
+
+    unsigned actionId;
 };
 
 #endif // EDITCOMMANDS_H
