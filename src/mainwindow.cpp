@@ -2097,7 +2097,7 @@ void MainWindow::on_toolButton_deleteObject_clicked() {
     }
     if (editor && editor->selected_events) {
         if (editor->selected_events->length()) {
-            DraggablePixmapItem *next_selected_event = nullptr;
+            DraggablePixmapItem *nextSelectedEvent = nullptr;
             QList<Event *> selectedEvents;
             for (DraggablePixmapItem *item : *editor->selected_events) {
                 QString event_group = item->event->get("event_group_type");
@@ -2117,7 +2117,7 @@ void MainWindow::on_toolButton_deleteObject_clicked() {
                         for (QGraphicsItem *child : editor->events_group->childItems()) {
                             DraggablePixmapItem *event_item = static_cast<DraggablePixmapItem *>(child);
                             if (event_item->event == event) {
-                                next_selected_event = event_item;
+                                nextSelectedEvent = event_item;
                                 break;
                             }
                         }
@@ -2129,13 +2129,7 @@ void MainWindow::on_toolButton_deleteObject_clicked() {
                     logWarn(QString("Cannot delete event of type '%1'").arg(item->event->get("event_type")));
                 }
             }
-            editor->map->editHistory.push(new EventDelete(editor, editor->map, selectedEvents));
-            if (next_selected_event) {
-                editor->selectMapEvent(next_selected_event);
-            }
-            else {
-                updateObjects();
-            }
+            editor->map->editHistory.push(new EventDelete(editor, editor->map, selectedEvents, nextSelectedEvent->event));
         }
     }
 }

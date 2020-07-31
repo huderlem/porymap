@@ -1098,7 +1098,6 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item
                         QList<Event *> selectedEvents;
 
                         for (DraggablePixmapItem *item : *(getObjects())) {
-                            //item->move(xDelta, yDelta);
                             selectedEvents.append(item->event);
                         }
                         selection_origin = QPoint(x, y);
@@ -1350,6 +1349,7 @@ void Editor::displayMapEvents() {
 
 DraggablePixmapItem *Editor::addMapEvent(Event *event) {
     DraggablePixmapItem *object = new DraggablePixmapItem(event, this);
+    event->setPixmapItem(object);
     this->redrawObject(object);
     events_group->addToGroup(object);
     return object;
@@ -1822,7 +1822,7 @@ void Editor::duplicateSelectedEvents() {
     if (!selected_events || !selected_events->length() || !map || !current_view || map_item->paintingMode != MapPixmapItem::PaintMode::EventObjects)
         return;
 
-    QList<DraggablePixmapItem*> *duplicates = new QList<DraggablePixmapItem*>;
+    QList<Event *> selectedEvents;
     for (int i = 0; i < selected_events->length(); i++) {
         Event *original = selected_events->at(i)->event;
         QString eventType = original->get("event_type");
@@ -1832,15 +1832,11 @@ void Editor::duplicateSelectedEvents() {
         }
         if (eventType == EventType::HealLocation) continue;
         Event *duplicate = new Event(*original);
-        map->addEvent(duplicate);
-        DraggablePixmapItem *object = addMapEvent(duplicate);
-        duplicates->append(object);
+        duplicate->setX(duplicate->x() + 1);
+        duplicate->setY(duplicate->y() + 1);
+        selectedEvents.append(duplicate);
     }
-    if (duplicates->length()) {
-        selected_events->clear();
-        selected_events = duplicates;
-        updateSelectedEvents();
-    }
+    map->editHistory.push(new EventDuplicate(this, map, selectedEvents));
 }
 
 DraggablePixmapItem* Editor::addNewEvent(QString event_type) {
