@@ -1,5 +1,7 @@
 #include "noscrollspinbox.h"
 
+unsigned actionId = 0xffff;
+
 NoScrollSpinBox::NoScrollSpinBox(QWidget *parent)
     : QSpinBox(parent)
 {
@@ -14,3 +16,11 @@ void NoScrollSpinBox::wheelEvent(QWheelEvent *event)
         QSpinBox::wheelEvent(event);
 }
 
+void NoScrollSpinBox::focusOutEvent(QFocusEvent *event) {
+    actionId++;
+    QSpinBox::focusOutEvent(event);
+}
+
+unsigned NoScrollSpinBox::getActionId() {
+    return actionId;
+}

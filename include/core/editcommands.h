@@ -23,13 +23,12 @@ enum CommandId {
     ID_EventCreate,         // - done
     ID_EventDelete,         // - done
     ID_EventSetData,        // - ?
-    // Tileset editor history commands
     // Region map editor history commands
 };
 
 
 
-/// TODO
+/// 
 class PaintMetatile : public QUndoCommand {
 public:
     PaintMetatile(Map *map,
@@ -233,7 +232,7 @@ private:
 ///
 class EventDelete : public QUndoCommand {
 public:
-    EventDelete(Editor *editor, Map *map, Event *event,
+    EventDelete(Editor *editor, Map *map, QList<Event *> selectedEvents,
         QUndoCommand *parent = nullptr);
     ~EventDelete();
 
@@ -245,7 +244,7 @@ public:
 
 private:
     Map *map;
-    Event *event;
+    QList<Event *> selectedEvents; // allow multiple deletion of events
     Editor *editor;
 };
 

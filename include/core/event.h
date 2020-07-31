@@ -99,15 +99,8 @@ public:
     bool hFlip = false;
     bool usingSprite;
 
-    void activate() { active = true; }
-    void deactivate() { active = false; }
-    bool isActive() { return active; }
-
     DraggablePixmapItem *pixmapItem = nullptr;
     void setPixmapItem(DraggablePixmapItem *item) { pixmapItem = item; }
-
-private:
-    bool active = true;
 };
 
 #endif // EVENT_H

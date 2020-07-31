@@ -50,7 +50,6 @@ void PaintMetatile::undo() {
 }
 
 bool PaintMetatile::mergeWith(const QUndoCommand *command) {
-    // does an up merge
     const PaintMetatile *other = static_cast<const PaintMetatile *>(command);
 
     if (this->map != other->map)
@@ -312,6 +311,8 @@ bool EventMove::mergeWith(const QUndoCommand *command) {
     if (actionId != other->actionId)
         return false;
 
+    // TODO: check that same events as well?
+
     this->deltaX += other->deltaX;
     this->deltaY += other->deltaY;
 
@@ -360,13 +361,14 @@ void EventCreate::redo() {
 }
 
 void EventCreate::undo() {
-    //
     map->removeEvent(event);
 
     if (editor->scene->items().contains(event->pixmapItem)) {
         editor->scene->removeItem(event->pixmapItem);
     }
     editor->selected_events->removeOne(event->pixmapItem);
+
+    editor->updateSelectedEvents();
 
     map->objectsChanged();
 
@@ -377,15 +379,18 @@ void EventCreate::undo() {
     ************************************************************************
  ******************************************************************************/
 
-EventDelete::EventDelete(Editor *editor, Map *map, Event *event,
+EventDelete::EventDelete(Editor *editor, Map *map, QList<Event *> selectedEvents,
     QUndoCommand *parent) : QUndoCommand(parent) {
-    //
-    setText("Delete Event");
+    if (selectedEvents.size() > 1) {
+        setText("Delete Events");
+    } else {
+        setText("Delete Event");
+    }
 
     this->editor = editor;
 
     this->map = map;
-    this->event = event;
+    this->selectedEvents = selectedEvents;
 }
 
 EventDelete::~EventDelete() {}
@@ -393,22 +398,25 @@ EventDelete::~EventDelete() {}
 void EventDelete::redo() {
     QUndoCommand::redo();
 
-    map->removeEvent(event);
+    for (Event *event : selectedEvents) {
+        map->removeEvent(event);
 
-    if (editor->scene->items().contains(event->pixmapItem)) {
-        editor->scene->removeItem(event->pixmapItem);
+        if (editor->scene->items().contains(event->pixmapItem)) {
+            editor->scene->removeItem(event->pixmapItem);
+        }
+        editor->selected_events->removeOne(event->pixmapItem);
     }
-    editor->selected_events->removeOne(event->pixmapItem);
 
     map->objectsChanged();
 }
 
 void EventDelete::undo() {
-    //
-    map->addEvent(event);
+    for (Event *event : selectedEvents) {
+        map->addEvent(event);
     
-    editor->project->loadEventPixmaps(map->getAllEvents());
-    editor->addMapEvent(event);
+        editor->project->loadEventPixmaps(map->getAllEvents());
+        editor->addMapEvent(event);
+    }
 
     map->objectsChanged();
 

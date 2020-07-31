@@ -10,6 +10,9 @@ class NoScrollSpinBox : public QSpinBox
 public:
     explicit NoScrollSpinBox(QWidget *parent = nullptr);
     void wheelEvent(QWheelEvent *event);
+    void focusOutEvent(QFocusEvent *event) override;
+
+    unsigned getActionId();
 
 private:
 };

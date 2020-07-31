@@ -163,6 +163,11 @@ void MainWindow::initEditor() {
     undoView->setWindowTitle(tr("Edit History"));
     undoView->show();
     undoView->setAttribute(Qt::WA_QuitOnClose, false);
+
+    //ui->comboBox_History->setMinimumContentsLength(20);
+    //ui->comboBox_History->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLength);
+    //ui->comboBox_History->setModel(undoView->model());
+    //ui->comboBox_History->setView(undoView);
 }
 
 void MainWindow::initMiscHeapObjects() {
@@ -1448,7 +1453,6 @@ void MainWindow::addNewEvent(QString event_type)
     if (editor && editor->project) {
         DraggablePixmapItem *object = editor->addNewEvent(event_type);
         if (object) {
-            updateObjects();
             editor->selectMapEvent(object, false);
         } else {
             QMessageBox msgBox(this);
@@ -1557,16 +1561,24 @@ void MainWindow::updateSelectedObjects() {
         EventPropertiesFrame *frame = new EventPropertiesFrame(item->event);
 //        frame->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
-        QSpinBox *x = frame->ui->spinBox_x;
-        QSpinBox *y = frame->ui->spinBox_y;
-        QSpinBox *z = frame->ui->spinBox_z;
+        NoScrollSpinBox *x = frame->ui->spinBox_x;
+        NoScrollSpinBox *y = frame->ui->spinBox_y;
+        NoScrollSpinBox *z = frame->ui->spinBox_z;
 
         x->setValue(item->event->x());
-        connect(x, SIGNAL(valueChanged(QString)), item, SLOT(set_x(QString)));
+        connect(x, QOverload<int>::of(&QSpinBox::valueChanged), [this, item, x](int value) {
+            int delta = value - item->event->x();
+            if (delta)
+                editor->map->editHistory.push(new EventMove(QList<Event *>() << item->event, delta, 0, x->getActionId()));
+        });
         connect(item, SIGNAL(xChanged(int)), x, SLOT(setValue(int)));
 
         y->setValue(item->event->y());
-        connect(y, SIGNAL(valueChanged(QString)), item, SLOT(set_y(QString)));
+        connect(y, QOverload<int>::of(&QSpinBox::valueChanged), [this, item, y](int value) {
+            int delta = value - item->event->y();
+            if (delta)
+                editor->map->editHistory.push(new EventMove(QList<Event *>() << item->event, 0, delta, y->getActionId()));
+        });
         connect(item, SIGNAL(yChanged(int)), y, SLOT(setValue(int)));
 
         z->setValue(item->event->elevation());
@@ -2102,6 +2114,7 @@ void MainWindow::on_toolButton_deleteObject_clicked()
     if (editor && editor->selected_events) {
         if (editor->selected_events->length()) {
             DraggablePixmapItem *next_selected_event = nullptr;
+            QList<Event *> selectedEvents;
             for (DraggablePixmapItem *item : *editor->selected_events) {
                 QString event_group = item->event->get("event_group_type");
                 if (event_group != "heal_event_group") {
@@ -2125,12 +2138,14 @@ void MainWindow::on_toolButton_deleteObject_clicked()
                             }
                         }
                     }
-                    editor->map->editHistory.push(new EventDelete(editor, editor->map, item->event));
+                    item->event->setPixmapItem(item);
+                    selectedEvents.append(item->event);
                 }
                 else { // don't allow deletion of heal locations
                     logWarn(QString("Cannot delete event of type '%1'").arg(item->event->get("event_type")));
                 }
             }
+            editor->map->editHistory.push(new EventDelete(editor, editor->map, selectedEvents));
             if (next_selected_event) {
                 editor->selectMapEvent(next_selected_event);
             }
