@@ -9,6 +9,7 @@ class Map;
 class Blockdata;
 class Event;
 class DraggablePixmapItem;
+class Editor;
 
 enum CommandId {
     ID_PaintMetatile,       // - done
@@ -18,9 +19,9 @@ enum CommandId {
     ID_ResizeMap,           // - done
     ID_PaintBorder,         // - done
     ID_EventMove,           // - done
-    ID_EventShift,          // - 
-    ID_EventCreate,         // - 
-    ID_EventDelete,         // - 
+    ID_EventShift,          // - done
+    ID_EventCreate,         // - done
+    ID_EventDelete,         // - done
     ID_EventSetData,        // - ?
     // Tileset editor history commands
     // Region map editor history commands
@@ -191,6 +192,61 @@ private:
     int deltaY;
 
     unsigned actionId;
+};
+
+
+
+///
+class EventShift : public EventMove {
+public:
+    EventShift(QList<Event *> events,
+        int deltaX, int deltaY, unsigned actionId,
+        QUndoCommand *parent = nullptr);
+    ~EventShift();
+
+    int id() const override { return CommandId::ID_EventShift; }
+};
+
+
+
+///
+class EventCreate : public QUndoCommand {
+public:
+    EventCreate(Editor *editor, Map *map, Event *event,
+        QUndoCommand *parent = nullptr);
+    ~EventCreate();
+
+    void undo() override;
+    void redo() override;
+
+    bool mergeWith(const QUndoCommand *command) override { return false; }
+    int id() const override { return CommandId::ID_EventCreate; }
+
+private:
+    Map *map;
+    Event *event;
+    Editor *editor;
+};
+
+
+
+///
+class EventDelete : public QUndoCommand {
+public:
+    EventDelete(Editor *editor, Map *map, Event *event,
+        QUndoCommand *parent = nullptr);
+    ~EventDelete();
+
+    void undo() override;
+    void redo() override;
+
+    bool mergeWith(const QUndoCommand *command) override { return false; }
+    int id() const override { return CommandId::ID_EventDelete; }
+
+private:
+    Map *map;
+    Event *event;
+    Editor *editor;
 };
 
 #endif // EDITCOMMANDS_H

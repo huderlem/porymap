@@ -111,6 +111,7 @@ private:
 signals:
     void mapChanged(Map *map);
     void mapNeedsRedrawing();
+    void objectsChanged();
 };
 
 #endif // MAP_H

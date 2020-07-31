@@ -7,6 +7,7 @@
 #include "currentselectedmetatilespixmapitem.h"
 #include "mapsceneeventfilter.h"
 #include "montabwidget.h"
+#include "editcommands.h"
 #include <QCheckBox>
 #include <QPainter>
 #include <QMouseEvent>
@@ -1081,9 +1082,11 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item
             // do nothing here, at least for now
         } else if (obj_edit_mode == "shift" && item->map) {
             static QPoint selection_origin;
+            static unsigned actionId = 0;
 
             if (event->type() == QEvent::GraphicsSceneMouseRelease) {
                 // TODO: commit / update history here
+                actionId++;
             } else {
                 if (event->type() == QEvent::GraphicsSceneMousePress) {
                     selection_origin = QPoint(x, y);
@@ -1092,10 +1095,15 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item
                         int xDelta = x - selection_origin.x();
                         int yDelta = y - selection_origin.y();
 
+                        QList<Event *> selectedEvents;
+
                         for (DraggablePixmapItem *item : *(getObjects())) {
-                            item->move(xDelta, yDelta);
+                            //item->move(xDelta, yDelta);
+                            selectedEvents.append(item->event);
                         }
                         selection_origin = QPoint(x, y);
+
+                        map->editHistory.push(new EventShift(selectedEvents, xDelta, yDelta, actionId));
                     }
                 }
             }
@@ -1844,10 +1852,9 @@ DraggablePixmapItem* Editor::addNewEvent(QString event_type) {
             project->healLocations.append(hl);
             event->put("index", project->healLocations.length());
         }
-        map->addEvent(event);
-        project->loadEventPixmaps(map->getAllEvents());
-        DraggablePixmapItem *object = addMapEvent(event);
-        return object;
+        map->editHistory.push(new EventCreate(this, map, event));
+        
+        return event->pixmapItem;
     }
     return nullptr;
 }

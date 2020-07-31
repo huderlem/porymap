@@ -485,6 +485,7 @@ bool MainWindow::setMap(QString map_name, bool scrollTreeView) {
 
     connect(editor->map, SIGNAL(mapChanged(Map*)), this, SLOT(onMapChanged(Map *)));
     connect(editor->map, SIGNAL(mapNeedsRedrawing()), this, SLOT(onMapNeedsRedrawing()));
+    connect(editor->map, SIGNAL(objectsChanged()), this, SLOT(updateObjects()));
 
     setRecentMap(map_name);
     updateMapList();
@@ -2092,11 +2093,7 @@ void MainWindow::on_toolButton_deleteObject_clicked()
                             }
                         }
                     }
-                    editor->deleteEvent(item->event);
-                    if (editor->scene->items().contains(item)) {
-                        editor->scene->removeItem(item);
-                    }
-                    editor->selected_events->removeOne(item);
+                    editor->map->editHistory.push(new EventDelete(editor, editor->map, item->event));
                 }
                 else { // don't allow deletion of heal locations
                     logWarn(QString("Cannot delete event of type '%1'").arg(item->event->get("event_type")));
