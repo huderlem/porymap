@@ -1120,7 +1120,7 @@ void Project::saveTilesetPalettes(Tileset *tileset) {
 }
 
 bool Project::loadMapTilesets(Map* map) {
-    if (map->layout->has_unsaved_changes) {
+    if (map->hasUnsavedChanges()) {
         return true;
     }
 
@@ -1179,8 +1179,8 @@ Tileset* Project::loadTileset(QString label, Tileset *tileset) {
     return tileset;
 }
 
-bool Project::loadBlockdata(Map* map) {
-    if (!map->isPersistedToFile || map->layout->has_unsaved_changes) {
+bool Project::loadBlockdata(Map *map) {
+    if (map->hasUnsavedChanges()) {
         return true;
     }
 
@@ -1198,7 +1198,7 @@ bool Project::loadBlockdata(Map* map) {
     return true;
 }
 
-void Project::setNewMapBlockdata(Map* map) {
+void Project::setNewMapBlockdata(Map *map) {
     Blockdata *blockdata = new Blockdata;
     for (int i = 0; i < map->getWidth() * map->getHeight(); i++) {
         blockdata->addBlock(qint16(0x3001));
@@ -1207,7 +1207,7 @@ void Project::setNewMapBlockdata(Map* map) {
 }
 
 bool Project::loadMapBorder(Map *map) {
-    if (!map->isPersistedToFile || map->layout->has_unsaved_changes) {
+    if (map->hasUnsavedChanges()) {
         return true;
     }
 
@@ -1461,7 +1461,7 @@ void Project::saveMap(Map *map) {
     updateMapLayout(map);
 
     map->isPersistedToFile = true;
-    map->layout->has_unsaved_changes = false;
+    map->editHistory.setClean();
 }
 
 void Project::updateMapLayout(Map* map) {

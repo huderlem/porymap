@@ -14,6 +14,7 @@
 
 Map::Map(QObject *parent) : QObject(parent)
 {
+    editHistory.setClean();
 }
 
 void Map::setName(QString mapName) {
@@ -466,5 +467,5 @@ void Map::addEvent(Event *event) {
 }
 
 bool Map::hasUnsavedChanges() {
-    return !metatileHistory.isSaved() || !isPersistedToFile || layout->has_unsaved_changes;
+    return !editHistory.isClean() || !isPersistedToFile;
 }

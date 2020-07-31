@@ -30,7 +30,6 @@ public:
     Blockdata *cached_blockdata = nullptr;
     Blockdata *cached_collision = nullptr;
     Blockdata *cached_border = nullptr;
-    bool has_unsaved_changes = false;
 };
 
 #endif // MAPLAYOUT_H
