@@ -290,6 +290,8 @@ private:
     void checkToolButtons();
     void clickToolButtonFromEditMode(QString editMode);
 
+    void showWindowTitle();
+
     void initWindow();
     void initCustomUI();
     void initExtraShortcuts();

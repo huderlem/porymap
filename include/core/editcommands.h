@@ -28,7 +28,8 @@ enum CommandId {
 
 
 
-/// 
+/// Implements a command to commit metatile paint actions
+/// onto the map using the pencil tool.
 class PaintMetatile : public QUndoCommand {
 public:
     PaintMetatile(Map *map,
@@ -53,7 +54,7 @@ private:
 
 
 
-/// 
+/// Implements a command to commit paint actions on the map border.
 class PaintBorder : public QUndoCommand {
 public:
     PaintBorder(Map *map,
@@ -78,7 +79,8 @@ private:
 
 
 
-///
+/// Implements a command to commit flood fill metatile actions
+/// with the bucket tool onto the map.
 class BucketFillMetatile : public PaintMetatile {
 public:
     BucketFillMetatile(Map *map,
@@ -92,7 +94,8 @@ public:
 
 
 
-///
+/// Implements a command to commit magic fill metatile actions
+/// with the bucket or paint tool onto the map.
 class MagicFillMetatile : public PaintMetatile {
 public:
     MagicFillMetatile(Map *map,
@@ -107,7 +110,7 @@ public:
 
 
 
-///
+/// Implements a command to commit metatile shift actions.
 class ShiftMetatiles : public QUndoCommand {
 public:
     ShiftMetatiles(Map *map,
@@ -133,7 +136,7 @@ private:
 
 
 
-///
+/// Implements a command to commit a map or border resize action.
 class ResizeMap : public QUndoCommand {
 public:
     ResizeMap(Map *map, QSize oldMapDimensions, QSize newMapDimensions,
@@ -171,7 +174,8 @@ private:
 
 
 
-///
+/// Implements a command to commit a single- or multi-Event move action.
+/// Actions are merged into one until the mouse is released.
 class EventMove : public QUndoCommand {
 public:
     EventMove(QList<Event *> events,
@@ -195,7 +199,7 @@ private:
 
 
 
-///
+/// Implements a command to commit Event shift actions.
 class EventShift : public EventMove {
 public:
     EventShift(QList<Event *> events,
@@ -208,7 +212,8 @@ public:
 
 
 
-///
+/// Implements a command to commit Event create actions.
+/// Works for a single Event only.
 class EventCreate : public QUndoCommand {
 public:
     EventCreate(Editor *editor, Map *map, Event *event,
@@ -229,7 +234,8 @@ private:
 
 
 
-///
+/// Implements a command to commit Event deletions.
+/// Applies to every currently selected Event.
 class EventDelete : public QUndoCommand {
 public:
     EventDelete(Editor *editor, Map *map, QList<Event *> selectedEvents,

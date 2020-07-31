@@ -80,6 +80,7 @@ void MainWindow::initExtraShortcuts() {
     new QShortcut(QKeySequence("Ctrl+0"), this, SLOT(resetMapViewScale()));
     new QShortcut(QKeySequence("Ctrl+G"), ui->checkBox_ToggleGrid, SLOT(toggle()));
     new QShortcut(QKeySequence("Ctrl+D"), this, SLOT(duplicate()));
+    new QShortcut(QKeySequence::Delete, this, SLOT(on_toolButton_deleteObject_clicked()));
     ui->actionZoom_In->setShortcuts({QKeySequence("Ctrl++"), QKeySequence("Ctrl+=")});
 }
 
@@ -141,6 +142,9 @@ void MainWindow::initEditor() {
     //ui->comboBox_History->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLength);
     //ui->comboBox_History->setModel(undoView->model());
     //ui->comboBox_History->setView(undoView);
+
+    // Toggle an asterisk in the window title when the undo state is changed
+    connect(&editor->editGroup, &QUndoGroup::cleanChanged, this, &MainWindow::showWindowTitle);
 }
 
 void MainWindow::initMiscHeapObjects() {
@@ -182,6 +186,16 @@ void MainWindow::initMapSortOrder() {
     QAction* sortOrder = ui->toolButton_MapSortOrder->menu()->actions()[mapSortOrder];
     ui->toolButton_MapSortOrder->setIcon(sortOrder->icon());
     sortOrder->setChecked(true);
+}
+
+void MainWindow::showWindowTitle() {
+    if (editor->map) {
+        setWindowTitle(QString("%1%2 - %3")
+            .arg(editor->map->hasUnsavedChanges() ? "* " : "")
+            .arg(editor->map->name)
+            .arg(editor->project->getProjectTitle())
+        );
+    }
 }
 
 void MainWindow::setProjectSpecificUIVisibility()
@@ -372,7 +386,7 @@ bool MainWindow::openProject(QString dir) {
     }
 
     if (success) {
-        setWindowTitle(editor->project->getProjectTitle());
+        showWindowTitle();
         this->statusBar()->showMessage(QString("Opened project %1").arg(nativeDir));
     } else {
         this->statusBar()->showMessage(QString("Failed to open project %1").arg(nativeDir));
@@ -486,7 +500,7 @@ bool MainWindow::setMap(QString map_name, bool scrollTreeView) {
 
     ui->mapList->setExpanded(mapListProxyModel->mapFromSource(mapListIndexes.value(map_name)), true);
 
-    setWindowTitle(map_name + " - " + editor->project->getProjectTitle());
+    showWindowTitle();
 
     connect(editor->map, SIGNAL(mapChanged(Map*)), this, SLOT(onMapChanged(Map *)));
     connect(editor->map, SIGNAL(mapNeedsRedrawing()), this, SLOT(onMapNeedsRedrawing()));
@@ -2076,9 +2090,11 @@ void MainWindow::on_horizontalSlider_CollisionTransparency_valueChanged(int valu
     this->editor->collision_item->draw(true);
 }
 
-// TODO: connect this to the DEL key when undo/redo history is extended to events
-void MainWindow::on_toolButton_deleteObject_clicked()
-{
+void MainWindow::on_toolButton_deleteObject_clicked() {
+    if (ui->mainTabBar->currentIndex() != 1) {
+        // do not delete an event when not on event tab
+        return;
+    }
     if (editor && editor->selected_events) {
         if (editor->selected_events->length()) {
             DraggablePixmapItem *next_selected_event = nullptr;
@@ -2279,7 +2295,6 @@ void MainWindow::onLoadMapRequested(QString mapName, QString fromMapName) {
 }
 
 void MainWindow::onMapChanged(Map *map) {
-    map->layout->has_unsaved_changes = true;
     updateMapList();
 }
 
