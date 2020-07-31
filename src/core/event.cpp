@@ -41,7 +41,7 @@ Event::Event(QJsonObject obj, QString type)
 
 Event* Event::createNewEvent(QString event_type, QString map_name, Project *project)
 {
-    Event *event = new Event;
+    Event *event = nullptr;
     if (event_type == EventType::Object) {
         event = createNewObjectEvent(project);
         event->setFrameFromMovement(event->get("movement_type"));
@@ -59,6 +59,9 @@ Event* Event::createNewEvent(QString event_type, QString map_name, Project *proj
         event = createNewHiddenItemEvent(project);
     } else if (event_type == EventType::SecretBase) {
         event = createNewSecretBaseEvent(project);
+    } else {
+        // should never be reached but just in case
+        event = new Event;
     }
 
     event->setX(0);

@@ -2,6 +2,7 @@
 #include "mappixmapitem.h"
 #include "draggablepixmapitem.h"
 #include "bordermetatilespixmapitem.h"
+#include "editor.h"
 
 #include <QDebug>
 
@@ -321,4 +322,95 @@ bool EventMove::mergeWith(const QUndoCommand *command) {
     ************************************************************************
  ******************************************************************************/
 
+EventShift::EventShift(QList<Event *> events,
+    int deltaX, int deltaY, unsigned actionId,
+    QUndoCommand *parent) 
+  : EventMove(events, deltaX, deltaY, actionId, parent) {
+    setText("Shift Events");
+}
 
+EventShift::~EventShift() {}
+
+/******************************************************************************
+    ************************************************************************
+ ******************************************************************************/
+
+EventCreate::EventCreate(Editor *editor, Map *map, Event *event,
+    QUndoCommand *parent) : QUndoCommand(parent) {
+    //
+    setText("Create Event");
+
+    this->editor = editor;
+
+    this->map = map;
+    this->event = event;
+}
+
+EventCreate::~EventCreate() {}
+
+void EventCreate::redo() {
+    QUndoCommand::redo();
+
+    map->addEvent(event);
+    
+    editor->project->loadEventPixmaps(map->getAllEvents());
+    editor->addMapEvent(event);
+
+    map->objectsChanged();
+}
+
+void EventCreate::undo() {
+    //
+    map->removeEvent(event);
+
+    if (editor->scene->items().contains(event->pixmapItem)) {
+        editor->scene->removeItem(event->pixmapItem);
+    }
+    editor->selected_events->removeOne(event->pixmapItem);
+
+    map->objectsChanged();
+
+    QUndoCommand::undo();
+}
+
+/******************************************************************************
+    ************************************************************************
+ ******************************************************************************/
+
+EventDelete::EventDelete(Editor *editor, Map *map, Event *event,
+    QUndoCommand *parent) : QUndoCommand(parent) {
+    //
+    setText("Delete Event");
+
+    this->editor = editor;
+
+    this->map = map;
+    this->event = event;
+}
+
+EventDelete::~EventDelete() {}
+
+void EventDelete::redo() {
+    QUndoCommand::redo();
+
+    map->removeEvent(event);
+
+    if (editor->scene->items().contains(event->pixmapItem)) {
+        editor->scene->removeItem(event->pixmapItem);
+    }
+    editor->selected_events->removeOne(event->pixmapItem);
+
+    map->objectsChanged();
+}
+
+void EventDelete::undo() {
+    //
+    map->addEvent(event);
+    
+    editor->project->loadEventPixmaps(map->getAllEvents());
+    editor->addMapEvent(event);
+
+    map->objectsChanged();
+
+    QUndoCommand::undo();
+}
