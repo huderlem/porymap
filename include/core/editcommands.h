@@ -16,12 +16,16 @@ enum CommandId {
     ID_BucketFillMetatile,  // - done
     ID_MagicFillMetatile,   // - done
     ID_ShiftMetatiles,      // - done
+    ID_PaintCollision,      // - 
+    ID_BucketFillCollision, // - 
+    ID_MagicFillCollision,  // - 
     ID_ResizeMap,           // - done
     ID_PaintBorder,         // - done
     ID_EventMove,           // - done
     ID_EventShift,          // - done
     ID_EventCreate,         // - done
     ID_EventDelete,         // - done
+    ID_EventDuplicate,      // - 
     ID_EventSetData,        // - ?
     // Region map editor history commands
 };
@@ -238,7 +242,8 @@ private:
 /// Applies to every currently selected Event.
 class EventDelete : public QUndoCommand {
 public:
-    EventDelete(Editor *editor, Map *map, QList<Event *> selectedEvents,
+    EventDelete(Editor *editor, Map *map,
+        QList<Event *> selectedEvents, Event *nextSelectedEvent,
         QUndoCommand *parent = nullptr);
     ~EventDelete();
 
@@ -247,6 +252,28 @@ public:
 
     bool mergeWith(const QUndoCommand *command) override { return false; }
     int id() const override { return CommandId::ID_EventDelete; }
+
+private:
+    Editor *editor;
+    Map *map;
+    QList<Event *> selectedEvents; // allow multiple deletion of events
+    Event *nextSelectedEvent;
+};
+
+
+
+/// Implements a command to commit Event duplications.
+class EventDuplicate : public QUndoCommand {
+public:
+    EventDuplicate(Editor *editor, Map *map, QList<Event *> selectedEvents,
+        QUndoCommand *parent = nullptr);
+    ~EventDuplicate();
+
+    void undo() override;
+    void redo() override;
+
+    bool mergeWith(const QUndoCommand *command) override { return false; }
+    int id() const override { return CommandId::ID_EventDuplicate; }
 
 private:
     Map *map;
