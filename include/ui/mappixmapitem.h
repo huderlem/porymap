@@ -69,7 +69,7 @@ private:
     void paintSmartPath(int x, int y, bool fromScriptCall = false);
     static QList<int> smartPathTable;
 
-    unsigned eventId_ = 0;
+    unsigned actionId_ = 0;
 
 signals:
     void startPaint(QGraphicsSceneMouseEvent *, MapPixmapItem *);

@@ -8,16 +8,20 @@
 
 
 
+void renderMapBlocks(Map *map, bool ignoreCache = false) {
+    map->mapItem->draw(ignoreCache);
+    map->collisionItem->draw(ignoreCache);
+}
 PaintMetatile::PaintMetatile(Map *map,
     Blockdata *oldMetatiles, Blockdata *newMetatiles,
-    unsigned eventId, QUndoCommand *parent) : QUndoCommand(parent) {
+    unsigned actionId, QUndoCommand *parent) : QUndoCommand(parent) {
     setText("Paint Metatiles");
 
     this->map = map;
     this->oldMetatiles = oldMetatiles;
     this->newMetatiles = newMetatiles;
 
-    this->eventId = eventId;
+    this->actionId = actionId;
 }
 
 PaintMetatile::~PaintMetatile() {
@@ -34,7 +38,7 @@ void PaintMetatile::redo() {
         map->layout->blockdata->copyFrom(newMetatiles);
     }
 
-    map->mapItem->draw();
+    renderMapBlocks(map);
 }
 
 void PaintMetatile::undo() {
@@ -44,7 +48,7 @@ void PaintMetatile::undo() {
         map->layout->blockdata->copyFrom(oldMetatiles);
     }
 
-    map->mapItem->draw();
+    renderMapBlocks(map);
 
     QUndoCommand::undo();
 }
@@ -55,7 +59,7 @@ bool PaintMetatile::mergeWith(const QUndoCommand *command) {
     if (this->map != other->map)
         return false;
 
-    if (eventId != other->eventId)
+    if (actionId != other->actionId)
         return false;
 
     this->newMetatiles->copyFrom(other->newMetatiles);
@@ -69,14 +73,14 @@ bool PaintMetatile::mergeWith(const QUndoCommand *command) {
 
 PaintBorder::PaintBorder(Map *map,
     Blockdata *oldBorder, Blockdata *newBorder,
-    unsigned eventId, QUndoCommand *parent) : QUndoCommand(parent) {
+    unsigned actionId, QUndoCommand *parent) : QUndoCommand(parent) {
     setText("Paint Border");
 
     this->map = map;
     this->oldBorder = oldBorder;
     this->newBorder = newBorder;
 
-    this->eventId = eventId;
+    this->actionId = actionId;
 }
 
 PaintBorder::~PaintBorder() {
@@ -114,8 +118,8 @@ void PaintBorder::undo() {
 
 BucketFillMetatile::BucketFillMetatile(Map *map,
     Blockdata *oldMetatiles, Blockdata *newMetatiles,
-    unsigned eventId, QUndoCommand *parent)
-        : PaintMetatile(map, oldMetatiles, newMetatiles, eventId, parent) {
+    unsigned actionId, QUndoCommand *parent)
+        : PaintMetatile(map, oldMetatiles, newMetatiles, actionId, parent) {
     setText("Bucket Fill Metatiles");
 }
 
@@ -129,8 +133,8 @@ BucketFillMetatile::~BucketFillMetatile() {
 
 MagicFillMetatile::MagicFillMetatile(Map *map,
     Blockdata *oldMetatiles, Blockdata *newMetatiles,
-    unsigned eventId, QUndoCommand *parent)
-        : PaintMetatile(map, oldMetatiles, newMetatiles, eventId, parent) {
+    unsigned actionId, QUndoCommand *parent)
+        : PaintMetatile(map, oldMetatiles, newMetatiles, actionId, parent) {
     setText("Magic Fill Metatiles");
 }
 
@@ -144,14 +148,14 @@ MagicFillMetatile::~MagicFillMetatile() {
 
 ShiftMetatiles::ShiftMetatiles(Map *map,
     Blockdata *oldMetatiles, Blockdata *newMetatiles,
-    unsigned eventId, QUndoCommand *parent) : QUndoCommand(parent) {
+    unsigned actionId, QUndoCommand *parent) : QUndoCommand(parent) {
     setText("Shift Metatiles");
 
     this->map = map;
     this->oldMetatiles = oldMetatiles;
     this->newMetatiles = newMetatiles;
 
-    this->eventId = eventId;
+    this->actionId = actionId;
 }
 
 ShiftMetatiles::~ShiftMetatiles() {
@@ -168,7 +172,7 @@ void ShiftMetatiles::redo() {
         map->layout->blockdata->copyFrom(newMetatiles);
     }
 
-    map->mapItem->draw(true);
+    renderMapBlocks(map, true);
 }
 
 void ShiftMetatiles::undo() {
@@ -178,7 +182,7 @@ void ShiftMetatiles::undo() {
         map->layout->blockdata->copyFrom(oldMetatiles);
     }
 
-    map->mapItem->draw(true);
+    renderMapBlocks(map, true);
 
     QUndoCommand::undo();
 }
@@ -189,7 +193,7 @@ bool ShiftMetatiles::mergeWith(const QUndoCommand *command) {
     if (this->map != other->map)
         return false;
 
-    if (eventId != other->eventId)
+    if (actionId != other->actionId)
         return false;
 
     this->newMetatiles->copyFrom(other->newMetatiles);

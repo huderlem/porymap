@@ -25,7 +25,7 @@ enum CommandId {
     ID_EventShift,          // - done
     ID_EventCreate,         // - done
     ID_EventDelete,         // - done
-    ID_EventDuplicate,      // - 
+    ID_EventDuplicate,      // - done
     ID_EventSetData,        // - ?
     // Region map editor history commands
 };
@@ -38,8 +38,8 @@ class PaintMetatile : public QUndoCommand {
 public:
     PaintMetatile(Map *map,
         Blockdata *oldMetatiles, Blockdata *newMetatiles,
-        unsigned eventId, QUndoCommand *parent = nullptr);
-    ~PaintMetatile();
+        unsigned actionId, QUndoCommand *parent = nullptr);
+    virtual ~PaintMetatile();
 
     void undo() override;
     void redo() override;
@@ -53,7 +53,23 @@ private:
     Blockdata *newMetatiles;
     Blockdata *oldMetatiles;
 
-    unsigned eventId;
+    unsigned actionId;
+};
+
+
+
+/// Implements a command to commit paint actions
+/// on the metatile collision and elevation.
+class PaintCollision : public PaintMetatile {
+public:
+    PaintCollision(Map *map,
+        Blockdata *oldCollision, Blockdata *newCollision,
+        unsigned actionId, QUndoCommand *parent = nullptr)
+    : PaintMetatile(map, oldCollision, newCollision, actionId, parent) {
+        setText("Paint Collision");
+    }
+
+    int id() const override { return CommandId::ID_PaintCollision; }
 };
 
 
@@ -63,7 +79,7 @@ class PaintBorder : public QUndoCommand {
 public:
     PaintBorder(Map *map,
         Blockdata *oldBorder, Blockdata *newBorder,
-        unsigned eventId, QUndoCommand *parent = nullptr);
+        unsigned actionId, QUndoCommand *parent = nullptr);
     ~PaintBorder();
 
     void undo() override;
@@ -78,7 +94,7 @@ private:
     Blockdata *newBorder;
     Blockdata *oldBorder;
 
-    unsigned eventId;
+    unsigned actionId;
 };
 
 
@@ -89,11 +105,28 @@ class BucketFillMetatile : public PaintMetatile {
 public:
     BucketFillMetatile(Map *map,
         Blockdata *oldMetatiles, Blockdata *newMetatiles,
-        unsigned eventId, QUndoCommand *parent = nullptr);
+        unsigned actionId, QUndoCommand *parent = nullptr);
     ~BucketFillMetatile();
 
     bool mergeWith(const QUndoCommand *command) override { return false; }
     int id() const override { return CommandId::ID_BucketFillMetatile; }
+};
+
+
+
+/// Implements a command to commit flood fill actions
+/// on the metatile collision and elevation.
+class BucketFillCollision : public PaintCollision {
+public:
+    BucketFillCollision(Map *map,
+        Blockdata *oldCollision, Blockdata *newCollision,
+        QUndoCommand *parent = nullptr)
+    : PaintCollision(map, oldCollision, newCollision, -1, parent) {
+        setText("Flood Fill Collision");
+    }
+
+    bool mergeWith(const QUndoCommand *command) override { return false; }
+    int id() const override { return CommandId::ID_BucketFillCollision; }
 };
 
 
@@ -104,7 +137,7 @@ class MagicFillMetatile : public PaintMetatile {
 public:
     MagicFillMetatile(Map *map,
         Blockdata *oldMetatiles, Blockdata *newMetatiles,
-        unsigned eventId, QUndoCommand *parent = nullptr);
+        unsigned actionId, QUndoCommand *parent = nullptr);
     ~MagicFillMetatile();
 
     bool mergeWith(const QUndoCommand *command) override { return false; }
@@ -113,13 +146,28 @@ public:
 
 
 
+/// Implements a command to commit magic fill collision actions.
+class MagicFillCollision : public PaintCollision {
+public:
+    MagicFillCollision(Map *map,
+        Blockdata *oldCollision, Blockdata *newCollision,
+        QUndoCommand *parent = nullptr)
+    : PaintCollision(map, oldCollision, newCollision, -1, parent) {
+        setText("Magic Fill Collision");
+    }
+
+    bool mergeWith(const QUndoCommand *command) override { return false; }
+    int id() const override { return CommandId::ID_MagicFillCollision; }
+};
+
+
 
 /// Implements a command to commit metatile shift actions.
 class ShiftMetatiles : public QUndoCommand {
 public:
     ShiftMetatiles(Map *map,
         Blockdata *oldMetatiles, Blockdata *newMetatiles,
-        unsigned eventId, QUndoCommand *parent = nullptr);
+        unsigned actionId, QUndoCommand *parent = nullptr);
     ~ShiftMetatiles();
 
     void undo() override;
@@ -134,8 +182,7 @@ private:
     Blockdata *newMetatiles;
     Blockdata *oldMetatiles;
 
-    unsigned eventId;
-    bool mergeable = false;
+    unsigned actionId;
 };
 
 
