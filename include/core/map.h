@@ -23,6 +23,7 @@
 #define BORDER_DISTANCE 7
 
 class MapPixmapItem;
+class CollisionPixmapItem;
 class BorderMetatilesPixmapItem;
 
 class Map : public QObject
@@ -96,6 +97,9 @@ public:
 
     MapPixmapItem *mapItem = nullptr;
     void setMapItem(MapPixmapItem *item) { mapItem = item; }
+
+    CollisionPixmapItem *collisionItem = nullptr;
+    void setCollisionItem(CollisionPixmapItem *item) { collisionItem = item; }
 
     BorderMetatilesPixmapItem *borderItem = nullptr;
     void setBorderItem(BorderMetatilesPixmapItem *item) { borderItem = item; }

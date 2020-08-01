@@ -14,6 +14,7 @@ public:
         : MapPixmapItem(map, metatileSelector, settings){
         this->movementPermissionsSelector = movementPermissionsSelector;
         this->opacity = opacity;
+        map->setCollisionItem(this);
     }
     MovementPermissionsSelector *movementPermissionsSelector;
     qreal *opacity;
@@ -23,6 +24,9 @@ public:
     virtual void magicFill(QGraphicsSceneMouseEvent*);
     virtual void pick(QGraphicsSceneMouseEvent*);
     void draw(bool ignoreCache = false);
+
+private:
+    unsigned actionId_ = 0;
 
 signals:
     void mouseEvent(QGraphicsSceneMouseEvent *, CollisionPixmapItem *);

@@ -8,7 +8,7 @@
 void MapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
     if (map) {
         if (event->type() == QEvent::GraphicsSceneMouseRelease) {
-            eventId_++;
+            actionId_++;
         } else {
             QPointF pos = event->pos();
             int x = static_cast<int>(pos.x()) / 16;
@@ -29,7 +29,7 @@ void MapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
 void MapPixmapItem::shift(QGraphicsSceneMouseEvent *event) {
     if (map) {
         if (event->type() == QEvent::GraphicsSceneMouseRelease) {
-            eventId_++;
+            actionId_++;
         } else {
             QPointF pos = event->pos();
             int x = static_cast<int>(pos.x()) / 16;
@@ -71,7 +71,7 @@ void MapPixmapItem::shift(int xDelta, int yDelta) {
     }
 
     Blockdata *newMetatiles = map->layout->blockdata->copy();
-    ShiftMetatiles *paintEvent = new ShiftMetatiles(map, backupBlockdata, newMetatiles, eventId_);
+    ShiftMetatiles *paintEvent = new ShiftMetatiles(map, backupBlockdata, newMetatiles, actionId_);
     map->editHistory.push(paintEvent);
 }
 
@@ -112,7 +112,7 @@ void MapPixmapItem::paintNormal(int x, int y, bool fromScriptCall) {
     }
 
     Blockdata *newMetatiles = map->layout->blockdata->copy();
-    PaintMetatile *paintEvent = new PaintMetatile(map, oldMetatiles, newMetatiles, eventId_);
+    PaintMetatile *paintEvent = new PaintMetatile(map, oldMetatiles, newMetatiles, actionId_);
     map->editHistory.push(paintEvent);
 }
 
@@ -225,7 +225,7 @@ void MapPixmapItem::paintSmartPath(int x, int y, bool fromScriptCall) {
     }
 
     Blockdata *newMetatiles = map->layout->blockdata->copy();
-    PaintMetatile *paintEvent = new PaintMetatile(map, oldMetatiles, newMetatiles, eventId_);
+    PaintMetatile *paintEvent = new PaintMetatile(map, oldMetatiles, newMetatiles, actionId_);
     map->editHistory.push(paintEvent);
 }
 
@@ -279,7 +279,7 @@ void MapPixmapItem::updateMetatileSelection(QGraphicsSceneMouseEvent *event) {
 void MapPixmapItem::floodFill(QGraphicsSceneMouseEvent *event) {
     if (map) {
         if (event->type() == QEvent::GraphicsSceneMouseRelease) {
-            eventId_++;
+            actionId_++;
         } else {
             QPointF pos = event->pos();
             int x = static_cast<int>(pos.x()) / 16;
@@ -302,7 +302,7 @@ void MapPixmapItem::floodFill(QGraphicsSceneMouseEvent *event) {
 void MapPixmapItem::magicFill(QGraphicsSceneMouseEvent *event) {
     if (map) {
         if (event->type() == QEvent::GraphicsSceneMouseRelease) {
-            eventId_++;
+            actionId_++;
         } else {
             QPointF pos = event->pos();
             int initialX = static_cast<int>(pos.x()) / 16;
@@ -365,7 +365,7 @@ void MapPixmapItem::magicFill(
         }
 
         Blockdata *newMetatiles = map->layout->blockdata->copy();
-        MagicFillMetatile *paintEvent = new MagicFillMetatile(map, oldMetatiles, newMetatiles, eventId_);
+        MagicFillMetatile *paintEvent = new MagicFillMetatile(map, oldMetatiles, newMetatiles, actionId_);
         map->editHistory.push(paintEvent);
     }
 }
@@ -448,7 +448,7 @@ void MapPixmapItem::floodFill(
     }
 
     Blockdata *newMetatiles = map->layout->blockdata->copy();
-    BucketFillMetatile *paintEvent = new BucketFillMetatile(map, oldMetatiles, newMetatiles, eventId_);
+    BucketFillMetatile *paintEvent = new BucketFillMetatile(map, oldMetatiles, newMetatiles, actionId_);
     map->editHistory.push(paintEvent);
 
     delete[] visited;
@@ -575,7 +575,7 @@ void MapPixmapItem::floodFillSmartPath(int initialX, int initialY, bool fromScri
     }
 
     Blockdata *newMetatiles = map->layout->blockdata->copy();
-    BucketFillMetatile *paintEvent = new BucketFillMetatile(map, oldMetatiles, newMetatiles, eventId_);
+    BucketFillMetatile *paintEvent = new BucketFillMetatile(map, oldMetatiles, newMetatiles, actionId_);
     map->editHistory.push(paintEvent);
 
     delete[] visited;
