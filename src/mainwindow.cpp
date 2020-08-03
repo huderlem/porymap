@@ -71,6 +71,9 @@ void MainWindow::initWindow() {
     this->initMiscHeapObjects();
     this->initMapSortOrder();
     this->restoreWindowState();
+
+    setDisabled(true);
+    ui->menuFile->setDisabled(false);
 }
 
 void MainWindow::initExtraShortcuts() {
@@ -369,6 +372,8 @@ bool MainWindow::openProject(QString dir) {
         }
         Scripting::cb_ProjectOpened(dir);
     }
+
+    setDisabled(false);
 
     return success;
 }
