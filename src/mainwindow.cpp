@@ -62,6 +62,21 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::setWindowDisabled(bool disabled) {
+    for (auto *child : findChildren<QWidget *>(QString(), Qt::FindDirectChildrenOnly)) {
+        bool disableThis = disabled;
+        if (child->objectName() == "menuBar") {
+            // disable all but the menuFile
+            for (auto *menu : child->findChildren<QWidget *>(QString(), Qt::FindDirectChildrenOnly)) {
+                menu->setDisabled(disabled);
+            }
+            child->findChild<QWidget *>("menuFile")->setDisabled(false);
+            disableThis = false;
+        }
+        child->setDisabled(disableThis);
+    }
+}
+
 void MainWindow::initWindow() {
     porymapConfig.load();
     this->initCustomUI();
@@ -2314,10 +2329,12 @@ void MainWindow::on_action_Export_Map_Image_triggered() {
 }
 
 void MainWindow::on_actionExport_Stitched_Map_Image_triggered() {
-   showExportMapImageWindow(true);
+    showExportMapImageWindow(true);
 }
 
 void MainWindow::showExportMapImageWindow(bool stitchMode) {
+    if (!editor->project) return;
+
     if (this->mapImageExporter)
         delete this->mapImageExporter;
 
@@ -2664,7 +2681,7 @@ void MainWindow::closeSupplementaryWindows() {
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
-    if (projectHasUnsavedChanges || editor->map->hasUnsavedChanges()) {
+    if (projectHasUnsavedChanges || (editor->map && editor->map->hasUnsavedChanges())) {
         QMessageBox::StandardButton result = QMessageBox::question(
             this, "porymap", "The project has been modified, save changes?",
             QMessageBox::No | QMessageBox::Yes | QMessageBox::Cancel, QMessageBox::Yes);

@@ -308,6 +308,7 @@ private:
     void updateTilesetEditor();
     QString getEventGroupFromTabWidget(QWidget *tab);
     void closeSupplementaryWindows();
+    void setWindowDisabled(bool);
 
     bool isProjectOpen();
     void showExportMapImageWindow(bool stitchMode);
