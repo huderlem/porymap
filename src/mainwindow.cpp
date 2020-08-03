@@ -87,8 +87,7 @@ void MainWindow::initWindow() {
     this->initMapSortOrder();
     this->restoreWindowState();
 
-    setDisabled(true);
-    ui->menuFile->setDisabled(false);
+    setWindowDisabled(true);
 }
 
 void MainWindow::initExtraShortcuts() {
@@ -388,7 +387,7 @@ bool MainWindow::openProject(QString dir) {
         Scripting::cb_ProjectOpened(dir);
     }
 
-    setDisabled(false);
+    setWindowDisabled(false);
 
     return success;
 }
