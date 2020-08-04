@@ -498,10 +498,10 @@ ScriptEditMap::ScriptEditMap(Map *map,
     this->newMetatiles = newMetatiles;
     this->oldMetatiles = oldMetatiles;
 
-    this->oldMapWidth = oldMapWidth;
-    this->oldMapHeight = oldMapHeight;
-    this->newMapWidth = newMapWidth;
-    this->newMapHeight = newMapHeight;
+    this->oldMapWidth = oldMapDimensions.width();
+    this->oldMapHeight = oldMapDimensions.height();
+    this->newMapWidth = newMapDimensions.width();
+    this->newMapHeight = newMapDimensions.height();
 }
 
 ScriptEditMap::~ScriptEditMap() {
@@ -517,7 +517,7 @@ void ScriptEditMap::redo() {
     if (map->layout->blockdata) {
         map->layout->blockdata->copyFrom(newMetatiles);
         if (newMapWidth != map->getWidth() || newMapHeight != map->getHeight()) {
-            map->setDimensions(newMapWidth, newMapHeight);
+            map->setDimensions(newMapWidth, newMapHeight, false);
         }
     }
 
@@ -533,7 +533,7 @@ void ScriptEditMap::undo() {
     if (map->layout->blockdata) {
         map->layout->blockdata->copyFrom(oldMetatiles);
         if (oldMapWidth != map->getWidth() || oldMapHeight != map->getHeight()) {
-            map->setDimensions(oldMapWidth, oldMapHeight);
+            map->setDimensions(oldMapWidth, oldMapHeight, false);
         }
     }
 
