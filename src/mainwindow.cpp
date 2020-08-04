@@ -76,7 +76,6 @@ void MainWindow::initWindow() {
 }
 
 void MainWindow::initExtraShortcuts() {
-    new QShortcut(QKeySequence("Ctrl+Shift+Z"), this, SLOT(redo()));
     new QShortcut(QKeySequence("Ctrl+0"), this, SLOT(resetMapViewScale()));
     new QShortcut(QKeySequence("Ctrl+G"), ui->checkBox_ToggleGrid, SLOT(toggle()));
     new QShortcut(QKeySequence("Ctrl+D"), this, SLOT(duplicate()));
@@ -128,21 +127,21 @@ void MainWindow::initEditor() {
     undoAction->setShortcut(QKeySequence("Ctrl+Z"));
 
     redoAction = editor->editGroup.createRedoAction(this, tr("&Redo"));
-    redoAction->setShortcut(QKeySequence("Ctrl+Y"));
+    redoAction->setShortcuts({QKeySequence("Ctrl+Y"), QKeySequence("Ctrl+Shift+Z")});
 
     ui->menuEdit->addAction(undoAction);
     ui->menuEdit->addAction(redoAction);
 
-    // TODO: show history UndoView here
     QUndoView *undoView = new QUndoView(&editor->editGroup);
     undoView->setWindowTitle(tr("Edit History"));
-    undoView->show();
     undoView->setAttribute(Qt::WA_QuitOnClose, false);
 
-    //ui->comboBox_History->setMinimumContentsLength(20);
-    //ui->comboBox_History->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLength);
-    //ui->comboBox_History->setModel(undoView->model());
-    //ui->comboBox_History->setView(undoView);
+    // Show the EditHistory dialog with Ctrl+E
+    QAction *showHistory = new QAction("Show Edit History...");
+    showHistory->setShortcut(QKeySequence("Ctrl+E"));
+    connect(showHistory, &QAction::triggered, [undoView](){ undoView->show(); });
+
+    ui->menuEdit->addAction(showHistory);
 
     // Toggle an asterisk in the window title when the undo state is changed
     connect(&editor->editGroup, &QUndoGroup::cleanChanged, this, &MainWindow::showWindowTitle);
