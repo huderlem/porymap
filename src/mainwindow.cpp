@@ -66,11 +66,21 @@ void MainWindow::setWindowDisabled(bool disabled) {
     for (auto *child : findChildren<QWidget *>(QString(), Qt::FindDirectChildrenOnly)) {
         bool disableThis = disabled;
         if (child->objectName() == "menuBar") {
-            // disable all but the menuFile
+            // disable all but the menuFile and menuHelp
             for (auto *menu : child->findChildren<QWidget *>(QString(), Qt::FindDirectChildrenOnly)) {
-                menu->setDisabled(disabled);
+                disableThis = disabled;
+                if (menu->objectName() == "menuFile") {
+                    // disable all but the action_Open_Project and action_Exit
+                    for (auto *action : menu->actions()) {
+                        action->setDisabled(disabled);
+                    }
+                    ui->action_Open_Project->setDisabled(false);
+                    ui->action_Exit->setDisabled(false);
+                    disableThis = false;
+                }
+                menu->setDisabled(disableThis);
             }
-            child->findChild<QWidget *>("menuFile")->setDisabled(false);
+            child->findChild<QWidget *>("menuHelp")->setDisabled(false);
             disableThis = false;
         }
         child->setDisabled(disableThis);
