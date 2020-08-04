@@ -105,10 +105,11 @@ class BucketFillMetatile : public PaintMetatile {
 public:
     BucketFillMetatile(Map *map,
         Blockdata *oldMetatiles, Blockdata *newMetatiles,
-        unsigned actionId, QUndoCommand *parent = nullptr);
-    ~BucketFillMetatile();
+        unsigned actionId, QUndoCommand *parent = nullptr)
+      : PaintMetatile(map, oldMetatiles, newMetatiles, actionId, parent) {
+        setText("Bucket Fill Metatiles");
+    }
 
-    bool mergeWith(const QUndoCommand *) override { return false; }
     int id() const override { return CommandId::ID_BucketFillMetatile; }
 };
 
@@ -121,7 +122,7 @@ public:
     BucketFillCollision(Map *map,
         Blockdata *oldCollision, Blockdata *newCollision,
         QUndoCommand *parent = nullptr)
-    : PaintCollision(map, oldCollision, newCollision, -1, parent) {
+      : PaintCollision(map, oldCollision, newCollision, -1, parent) {
         setText("Flood Fill Collision");
     }
 
@@ -137,11 +138,12 @@ class MagicFillMetatile : public PaintMetatile {
 public:
     MagicFillMetatile(Map *map,
         Blockdata *oldMetatiles, Blockdata *newMetatiles,
-        unsigned actionId, QUndoCommand *parent = nullptr);
-    ~MagicFillMetatile();
+        unsigned actionId, QUndoCommand *parent = nullptr)
+      : PaintMetatile(map, oldMetatiles, newMetatiles, actionId, parent) {
+        setText("Magic Fill Metatiles");
+    }
 
-    bool mergeWith(const QUndoCommand *) override { return false; }
-    int id() const override { return CommandId::ID_BucketFillMetatile; }
+    int id() const override { return CommandId::ID_MagicFillMetatile; }
 };
 
 

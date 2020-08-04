@@ -120,36 +120,6 @@ void PaintBorder::undo() {
     ************************************************************************
  ******************************************************************************/
 
-BucketFillMetatile::BucketFillMetatile(Map *map,
-    Blockdata *oldMetatiles, Blockdata *newMetatiles,
-    unsigned actionId, QUndoCommand *parent)
-        : PaintMetatile(map, oldMetatiles, newMetatiles, actionId, parent) {
-    setText("Bucket Fill Metatiles");
-}
-
-BucketFillMetatile::~BucketFillMetatile() {
-    PaintMetatile::~PaintMetatile();
-}
-
-/******************************************************************************
-    ************************************************************************
- ******************************************************************************/
-
-MagicFillMetatile::MagicFillMetatile(Map *map,
-    Blockdata *oldMetatiles, Blockdata *newMetatiles,
-    unsigned actionId, QUndoCommand *parent)
-        : PaintMetatile(map, oldMetatiles, newMetatiles, actionId, parent) {
-    setText("Magic Fill Metatiles");
-}
-
-MagicFillMetatile::~MagicFillMetatile() {
-    PaintMetatile::~PaintMetatile();
-}
-
-/******************************************************************************
-    ************************************************************************
- ******************************************************************************/
-
 ShiftMetatiles::ShiftMetatiles(Map *map,
     Blockdata *oldMetatiles, Blockdata *newMetatiles,
     unsigned actionId, QUndoCommand *parent) : QUndoCommand(parent) {
