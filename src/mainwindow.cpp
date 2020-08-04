@@ -108,6 +108,7 @@ void MainWindow::initExtraShortcuts() {
     new QShortcut(QKeySequence("Ctrl+G"), ui->checkBox_ToggleGrid, SLOT(toggle()));
     new QShortcut(QKeySequence("Ctrl+D"), this, SLOT(duplicate()));
     new QShortcut(QKeySequence::Delete, this, SLOT(on_toolButton_deleteObject_clicked()));
+    new QShortcut(QKeySequence("Backspace"), this, SLOT(on_toolButton_deleteObject_clicked()));
     ui->actionZoom_In->setShortcuts({QKeySequence("Ctrl++"), QKeySequence("Ctrl+=")});
 }
 
@@ -2131,13 +2132,15 @@ void MainWindow::on_toolButton_deleteObject_clicked() {
         if (editor->selected_events->length()) {
             DraggablePixmapItem *nextSelectedEvent = nullptr;
             QList<Event *> selectedEvents;
+            int numEvents = editor->selected_events->length();
+            int numDeleted = 0;
             for (DraggablePixmapItem *item : *editor->selected_events) {
                 QString event_group = item->event->get("event_group_type");
                 if (event_group != "heal_event_group") {
                     // Get the index for the event that should be selected after this event has been deleted.
                     // If it's at the end of the list, select the previous event, otherwise select the next one.
                     // Don't bother getting the event to select if there are still more events to delete
-                    if (editor->selected_events->length() == 1) {
+                    if (++numDeleted == numEvents) {
                         int index = editor->map->events.value(event_group).indexOf(item->event);
                         if (index != editor->map->events.value(event_group).size() - 1)
                             index++;
@@ -2161,7 +2164,7 @@ void MainWindow::on_toolButton_deleteObject_clicked() {
                     logWarn(QString("Cannot delete event of type '%1'").arg(item->event->get("event_type")));
                 }
             }
-            editor->map->editHistory.push(new EventDelete(editor, editor->map, selectedEvents, nextSelectedEvent->event));
+            editor->map->editHistory.push(new EventDelete(editor, editor->map, selectedEvents, nextSelectedEvent ? nextSelectedEvent->event : nullptr));
         }
     }
 }

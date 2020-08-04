@@ -1,4 +1,5 @@
 #include "regionmap.h"
+#include "regionmapeditor.h"
 #include "paletteutil.h"
 #include "log.h"
 #include "config.h"

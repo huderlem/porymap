@@ -1,7 +1,6 @@
 #include "project.h"
 #include "config.h"
 #include "history.h"
-#include "historyitem.h"
 #include "log.h"
 #include "parseutil.h"
 #include "paletteutil.h"
@@ -170,8 +169,6 @@ Map* Project::loadMap(QString map_name) {
     if (!(loadMapData(map) && loadMapLayout(map)))
         return nullptr;
 
-    map->commit();
-    map->metatileHistory.save();
     mapCache->insert(map_name, map);
     return map;
 }
@@ -1186,6 +1183,12 @@ bool Project::loadBlockdata(Map *map) {
 
     QString path = QString("%1/%2").arg(root).arg(map->layout->blockdata_path);
     map->layout->blockdata = readBlockdata(path);
+    if (map->layout->lastCommitMapBlocks.blocks) {
+        delete map->layout->lastCommitMapBlocks.blocks;
+    }
+    map->layout->lastCommitMapBlocks.blocks = new Blockdata;
+    map->layout->lastCommitMapBlocks.blocks->copyFrom(map->layout->blockdata);
+    map->layout->lastCommitMapBlocks.dimensions = QSize(map->getWidth(), map->getHeight());
 
     if (map->layout->blockdata->blocks->count() != map->getWidth() * map->getHeight()) {
         logWarn(QString("Layout blockdata length %1 does not match dimensions %2x%3 (should be %4). Resizing blockdata.")
@@ -1204,6 +1207,8 @@ void Project::setNewMapBlockdata(Map *map) {
         blockdata->addBlock(qint16(0x3001));
     }
     map->layout->blockdata = blockdata;
+    map->layout->lastCommitMapBlocks.blocks->copyFrom(map->layout->blockdata);
+    map->layout->lastCommitMapBlocks.dimensions = QSize(map->getWidth(), map->getHeight());
 }
 
 bool Project::loadMapBorder(Map *map) {
@@ -1251,7 +1256,6 @@ void Project::saveLayoutBorder(Map *map) {
 void Project::saveLayoutBlockdata(Map* map) {
     QString path = QString("%1/%2").arg(root).arg(map->layout->blockdata_path);
     writeBlockdata(path, map->layout->blockdata);
-    map->metatileHistory.save();
 }
 
 void Project::writeBlockdata(QString path, Blockdata *blockdata) {
@@ -1897,8 +1901,6 @@ Map* Project::addNewMapToGroup(QString mapName, int groupNum) {
     setNewMapBorder(map);
     setNewMapEvents(map);
     setNewMapConnections(map);
-    map->commit();
-    map->metatileHistory.save();
     mapCache->insert(mapName, map);
 
     return map;
@@ -1927,9 +1929,6 @@ Map* Project::addNewMapToGroup(QString mapName, int groupNum, Map *newMap, bool 
     loadMapTilesets(map);
     setNewMapEvents(map);
     setNewMapConnections(map);
-
-    map->commit();
-    map->metatileHistory.save();
 
     return map;
 }

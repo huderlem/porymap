@@ -12,22 +12,22 @@ class DraggablePixmapItem;
 class Editor;
 
 enum CommandId {
-    ID_PaintMetatile,       // - done
-    ID_BucketFillMetatile,  // - done
-    ID_MagicFillMetatile,   // - done
-    ID_ShiftMetatiles,      // - done
-    ID_PaintCollision,      // - 
-    ID_BucketFillCollision, // - 
-    ID_MagicFillCollision,  // - 
-    ID_ResizeMap,           // - done
-    ID_PaintBorder,         // - done
-    ID_EventMove,           // - done
-    ID_EventShift,          // - done
-    ID_EventCreate,         // - done
-    ID_EventDelete,         // - done
-    ID_EventDuplicate,      // - done
-    ID_EventSetData,        // - ?
-    // Region map editor history commands
+    ID_PaintMetatile,
+    ID_BucketFillMetatile,
+    ID_MagicFillMetatile,
+    ID_ShiftMetatiles,
+    ID_PaintCollision,
+    ID_BucketFillCollision,
+    ID_MagicFillCollision,
+    ID_ResizeMap,
+    ID_PaintBorder,
+    ID_EventMove,
+    ID_EventShift,
+    ID_EventCreate,
+    ID_EventDelete,
+    ID_EventDuplicate,
+    ID_EventSetData,
+    ID_ScriptEditMap,
 };
 
 
@@ -85,7 +85,7 @@ public:
     void undo() override;
     void redo() override;
 
-    bool mergeWith(const QUndoCommand *command) override { return false; };
+    bool mergeWith(const QUndoCommand *) override { return false; };
     int id() const override { return CommandId::ID_PaintBorder; }
 
 private:
@@ -108,7 +108,7 @@ public:
         unsigned actionId, QUndoCommand *parent = nullptr);
     ~BucketFillMetatile();
 
-    bool mergeWith(const QUndoCommand *command) override { return false; }
+    bool mergeWith(const QUndoCommand *) override { return false; }
     int id() const override { return CommandId::ID_BucketFillMetatile; }
 };
 
@@ -125,7 +125,7 @@ public:
         setText("Flood Fill Collision");
     }
 
-    bool mergeWith(const QUndoCommand *command) override { return false; }
+    bool mergeWith(const QUndoCommand *) override { return false; }
     int id() const override { return CommandId::ID_BucketFillCollision; }
 };
 
@@ -140,7 +140,7 @@ public:
         unsigned actionId, QUndoCommand *parent = nullptr);
     ~MagicFillMetatile();
 
-    bool mergeWith(const QUndoCommand *command) override { return false; }
+    bool mergeWith(const QUndoCommand *) override { return false; }
     int id() const override { return CommandId::ID_BucketFillMetatile; }
 };
 
@@ -156,7 +156,7 @@ public:
         setText("Magic Fill Collision");
     }
 
-    bool mergeWith(const QUndoCommand *command) override { return false; }
+    bool mergeWith(const QUndoCommand *) override { return false; }
     int id() const override { return CommandId::ID_MagicFillCollision; }
 };
 
@@ -200,7 +200,7 @@ public:
     void undo() override;
     void redo() override;
 
-    bool mergeWith(const QUndoCommand *command) override { return false; }
+    bool mergeWith(const QUndoCommand *) override { return false; }
     int id() const override { return CommandId::ID_ResizeMap; }
 
 private:
@@ -274,7 +274,7 @@ public:
     void undo() override;
     void redo() override;
 
-    bool mergeWith(const QUndoCommand *command) override { return false; }
+    bool mergeWith(const QUndoCommand *) override { return false; }
     int id() const override { return CommandId::ID_EventCreate; }
 
 private:
@@ -297,7 +297,7 @@ public:
     void undo() override;
     void redo() override;
 
-    bool mergeWith(const QUndoCommand *command) override { return false; }
+    bool mergeWith(const QUndoCommand *) override { return false; }
     int id() const override { return CommandId::ID_EventDelete; }
 
 private:
@@ -319,13 +319,43 @@ public:
     void undo() override;
     void redo() override;
 
-    bool mergeWith(const QUndoCommand *command) override { return false; }
+    bool mergeWith(const QUndoCommand *) override { return false; }
     int id() const override { return CommandId::ID_EventDuplicate; }
 
 private:
     Map *map;
     QList<Event *> selectedEvents; // allow multiple deletion of events
     Editor *editor;
+};
+
+
+
+/// Implements a command to commit map edits from the scripting API.
+/// The scripting api can edit metatiles and map dimensions.
+class ScriptEditMap : public QUndoCommand {
+public:
+    ScriptEditMap(Map *map,
+        QSize oldMapDimensions, QSize newMapDimensions,
+        Blockdata *oldMetatiles, Blockdata *newMetatiles,
+        QUndoCommand *parent = nullptr);
+    ~ScriptEditMap();
+
+    void undo() override;
+    void redo() override;
+
+    bool mergeWith(const QUndoCommand *) override { return false; };
+    int id() const override { return CommandId::ID_ScriptEditMap; }
+
+private:
+    Map *map;
+
+    Blockdata *newMetatiles;
+    Blockdata *oldMetatiles;
+
+    int oldMapWidth;
+    int oldMapHeight;
+    int newMapWidth;
+    int newMapHeight;
 };
 
 #endif // EDITCOMMANDS_H

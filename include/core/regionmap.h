@@ -5,7 +5,6 @@
 #include "project.h"
 #include "tilemaptileselector.h"
 #include "history.h"
-#include "historyitem.h"
 
 #include <QStringList>
 #include <QString>
@@ -14,6 +13,32 @@
 #include <QMap>
 #include <QGraphicsScene>
 #include <QGraphicsView>
+
+enum RegionMapEditorBox {
+    BackgroundImage = 1,
+    CityMapImage    = 2,
+};
+
+class RegionMapHistoryItem {
+public:
+    int which;
+    int mapWidth = 0;
+    int mapHeight = 0;
+    QVector<uint8_t> tiles;
+    QString cityMap;
+    RegionMapHistoryItem(int type, QVector<uint8_t> tiles, QString cityMap) {
+        this->which = which;
+        this->tiles = tiles;
+        this->cityMap = cityMap;
+    }
+    RegionMapHistoryItem(int type, QVector<uint8_t> tiles, int width, int height) {
+        this->which = which;
+        this->tiles = tiles;
+        this->mapWidth = width;
+        this->mapHeight = height;
+    }
+    ~RegionMapHistoryItem() {}
+};
 
 class RegionMapEntry
 {

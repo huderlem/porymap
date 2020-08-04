@@ -1,6 +1,9 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "scripting.h"
+#include "editcommands.h"
+
+static Blockdata *oldBlockdata;
 
 QJSValue MainWindow::getBlock(int x, int y) {
     if (!this->editor || !this->editor->map)
@@ -21,7 +24,13 @@ void MainWindow::tryRedrawMapArea(bool forceRedraw) {
 
 void MainWindow::tryCommitMapChanges(bool commitChanges) {
     if (commitChanges) {
-        this->editor->map->commit();
+        Map *map = this->editor->map;
+        if (map) {
+            map->editHistory.push(new ScriptEditMap(map,
+                map->layout->lastCommitMapBlocks.dimensions, QSize(map->getWidth(), map->getHeight()),
+                map->layout->lastCommitMapBlocks.blocks->copy(), map->layout->blockdata->copy()
+            ));
+        }
     }
 }
 
@@ -179,7 +188,7 @@ void MainWindow::setDimensions(int width, int height) {
     if (!Project::mapDimensionsValid(width, height))
         return;
     this->editor->map->setDimensions(width, height);
-    this->editor->map->commit();
+    this->tryCommitMapChanges(true);
     this->onMapNeedsRedrawing();
 }
 
@@ -189,7 +198,7 @@ void MainWindow::setWidth(int width) {
     if (!Project::mapDimensionsValid(width, this->editor->map->getHeight()))
         return;
     this->editor->map->setDimensions(width, this->editor->map->getHeight());
-    this->editor->map->commit();
+    this->tryCommitMapChanges(true);
     this->onMapNeedsRedrawing();
 }
 
@@ -199,7 +208,7 @@ void MainWindow::setHeight(int height) {
     if (!Project::mapDimensionsValid(this->editor->map->getWidth(), height))
         return;
     this->editor->map->setDimensions(this->editor->map->getWidth(), height);
-    this->editor->map->commit();
+    this->tryCommitMapChanges(true);
     this->onMapNeedsRedrawing();
 }
 

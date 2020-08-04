@@ -6,8 +6,6 @@
 #include "regionmaplayoutpixmapitem.h"
 #include "regionmapentriespixmapitem.h"
 #include "regionmap.h"
-#include "history.h"
-#include "historyitem.h"
 
 #include <QMainWindow>
 #include <QGraphicsSceneMouseEvent>
