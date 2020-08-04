@@ -2163,7 +2163,9 @@ void MainWindow::on_toolButton_deleteObject_clicked() {
                     logWarn(QString("Cannot delete event of type '%1'").arg(item->event->get("event_type")));
                 }
             }
-            editor->map->editHistory.push(new EventDelete(editor, editor->map, selectedEvents, nextSelectedEvent ? nextSelectedEvent->event : nullptr));
+            if (numDeleted) {
+                editor->map->editHistory.push(new EventDelete(editor, editor->map, selectedEvents, nextSelectedEvent ? nextSelectedEvent->event : nullptr));
+            }
         }
     }
 }
