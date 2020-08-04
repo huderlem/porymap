@@ -345,7 +345,7 @@ public:
     void undo() override;
     void redo() override;
 
-    bool mergeWith(const QUndoCommand *) override { return false; };
+    bool mergeWith(const QUndoCommand *) override { return false; }
     int id() const override { return CommandId::ID_ScriptEditMap; }
 
 private:
