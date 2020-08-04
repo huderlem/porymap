@@ -23,7 +23,12 @@ void BorderMetatilesPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
     }
 
     Blockdata *newBorder = map->layout->border->copy();
-    map->editHistory.push(new PaintBorder(map, oldBorder, newBorder, 0));
+    if (newBorder->equals(oldBorder)) {
+        delete newBorder;
+        delete oldBorder;
+    } else {
+        map->editHistory.push(new PaintBorder(map, oldBorder, newBorder, 0));
+    }
 
     emit borderMetatilesChanged();
 }
