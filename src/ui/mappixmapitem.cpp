@@ -52,7 +52,7 @@ void MapPixmapItem::shift(QGraphicsSceneMouseEvent *event) {
     }
 }
 
-void MapPixmapItem::shift(int xDelta, int yDelta) {
+void MapPixmapItem::shift(int xDelta, int yDelta, bool fromScriptCall) {
     Blockdata *backupBlockdata = map->layout->blockdata->copy();
     for (int i = 0; i < map->getWidth(); i++)
     for (int j = 0; j < map->getHeight(); j++) {
@@ -70,9 +70,11 @@ void MapPixmapItem::shift(int xDelta, int yDelta) {
         map->setBlock(destX, destY, srcBlock);
     }
 
-    Blockdata *newMetatiles = map->layout->blockdata->copy();
-    ShiftMetatiles *paintEvent = new ShiftMetatiles(map, backupBlockdata, newMetatiles, actionId_);
-    map->editHistory.push(paintEvent);
+    if (!fromScriptCall) {
+        map->editHistory.push(new ShiftMetatiles(map, backupBlockdata, map->layout->blockdata->copy(), actionId_));
+    } else {
+        delete backupBlockdata;
+    }
 }
 
 void MapPixmapItem::paintNormal(int x, int y, bool fromScriptCall) {
@@ -93,7 +95,8 @@ void MapPixmapItem::paintNormal(int x, int y, bool fromScriptCall) {
     y = initialY + (yDiff / selectionDimensions.y()) * selectionDimensions.y();
 
     // for edit history
-    Blockdata *oldMetatiles = map->layout->blockdata->copy();
+    Blockdata *oldMetatiles;
+    if (!fromScriptCall) oldMetatiles = map->layout->blockdata->copy();
 
     for (int i = 0; i < selectionDimensions.x() && i + x < map->getWidth(); i++)
     for (int j = 0; j < selectionDimensions.y() && j + y < map->getHeight(); j++) {
@@ -111,9 +114,9 @@ void MapPixmapItem::paintNormal(int x, int y, bool fromScriptCall) {
         }
     }
 
-    Blockdata *newMetatiles = map->layout->blockdata->copy();
-    PaintMetatile *paintEvent = new PaintMetatile(map, oldMetatiles, newMetatiles, actionId_);
-    map->editHistory.push(paintEvent);
+    if (!fromScriptCall) {
+        map->editHistory.push(new PaintMetatile(map, oldMetatiles, map->layout->blockdata->copy(), actionId_));
+    }
 }
 
 // These are tile offsets from the top-left tile in the 3x3 smart path selection.
@@ -339,7 +342,8 @@ void MapPixmapItem::magicFill(
             return;
         }
 
-        Blockdata *oldMetatiles = map->layout->blockdata->copy();
+        Blockdata *oldMetatiles;
+        if (!fromScriptCall) oldMetatiles = map->layout->blockdata->copy();
 
         bool setCollisions = selectedCollisions && selectedCollisions->length() == selectedMetatiles->length();
         uint16_t tile = block->tile;
@@ -364,9 +368,9 @@ void MapPixmapItem::magicFill(
             }
         }
 
-        Blockdata *newMetatiles = map->layout->blockdata->copy();
-        MagicFillMetatile *paintEvent = new MagicFillMetatile(map, oldMetatiles, newMetatiles, actionId_);
-        map->editHistory.push(paintEvent);
+        if (!fromScriptCall) {
+            map->editHistory.push(new MagicFillMetatile(map, oldMetatiles, map->layout->blockdata->copy(), actionId_));
+        }
     }
 }
 
@@ -397,7 +401,8 @@ void MapPixmapItem::floodFill(
     for (int i = 0; i < numMetatiles; i++)
         visited[i] = false;
 
-    Blockdata *oldMetatiles = map->layout->blockdata->copy();
+    Blockdata *oldMetatiles;
+    if (!fromScriptCall) oldMetatiles = map->layout->blockdata->copy();
 
     QList<QPoint> todo;
     todo.append(QPoint(initialX, initialY));
@@ -447,9 +452,9 @@ void MapPixmapItem::floodFill(
         }
     }
 
-    Blockdata *newMetatiles = map->layout->blockdata->copy();
-    BucketFillMetatile *paintEvent = new BucketFillMetatile(map, oldMetatiles, newMetatiles, actionId_);
-    map->editHistory.push(paintEvent);
+    if (!fromScriptCall) {
+        map->editHistory.push(new BucketFillMetatile(map, oldMetatiles, map->layout->blockdata->copy(), actionId_));
+    }
 
     delete[] visited;
 }

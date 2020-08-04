@@ -2,8 +2,6 @@
 #define MAP_H
 
 #include "blockdata.h"
-#include "history.h"
-#include "historyitem.h"
 #include "mapconnection.h"
 #include "maplayout.h"
 #include "tileset.h"
@@ -59,7 +57,6 @@ public:
     QPixmap collision_pixmap;
     QImage image;
     QPixmap pixmap;
-    History<HistoryItem*> metatileHistory;
     QMap<QString, QList<Event*>> events;
     QList<MapConnection*> connections;
     QList<int> metatileLayerOrder;
@@ -103,8 +100,6 @@ public:
 
     BorderMetatilesPixmapItem *borderItem = nullptr;
     void setBorderItem(BorderMetatilesPixmapItem *item) { borderItem = item; }
-
-    void commit(); // TODO: delete this
 
     QUndoStack editHistory;
 

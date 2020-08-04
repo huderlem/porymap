@@ -38,6 +38,8 @@ void PaintMetatile::redo() {
         map->layout->blockdata->copyFrom(newMetatiles);
     }
 
+    map->layout->lastCommitMapBlocks.blocks->copyFrom(map->layout->blockdata);
+
     renderMapBlocks(map);
 }
 
@@ -47,6 +49,8 @@ void PaintMetatile::undo() {
     if (map->layout->blockdata) {
         map->layout->blockdata->copyFrom(oldMetatiles);
     }
+
+    map->layout->lastCommitMapBlocks.blocks->copyFrom(map->layout->blockdata);
 
     renderMapBlocks(map);
 
@@ -172,6 +176,8 @@ void ShiftMetatiles::redo() {
         map->layout->blockdata->copyFrom(newMetatiles);
     }
 
+    map->layout->lastCommitMapBlocks.blocks->copyFrom(map->layout->blockdata);
+
     renderMapBlocks(map, true);
 }
 
@@ -181,6 +187,8 @@ void ShiftMetatiles::undo() {
     if (map->layout->blockdata) {
         map->layout->blockdata->copyFrom(oldMetatiles);
     }
+
+    map->layout->lastCommitMapBlocks.blocks->copyFrom(map->layout->blockdata);
 
     renderMapBlocks(map, true);
 
@@ -253,6 +261,8 @@ void ResizeMap::redo() {
         map->setBorderDimensions(newBorderWidth, newBorderHeight, false);
     }
 
+    map->layout->lastCommitMapBlocks.dimensions = QSize(map->getWidth(), map->getHeight());
+
     map->mapNeedsRedrawing();
 }
 
@@ -268,6 +278,8 @@ void ResizeMap::undo() {
         map->layout->border->copyFrom(oldBorder);
         map->setBorderDimensions(oldBorderWidth, oldBorderHeight, false);
     }
+
+    map->layout->lastCommitMapBlocks.dimensions = QSize(map->getWidth(), map->getHeight());
 
     map->mapNeedsRedrawing();
 
@@ -420,7 +432,8 @@ void EventDelete::redo() {
     map->objectsChanged();
 
     editor->selected_events->clear();
-    editor->selected_events->append(nextSelectedEvent->pixmapItem);
+    if (nextSelectedEvent)
+        editor->selected_events->append(nextSelectedEvent->pixmapItem);
     editor->updateSelectedEvents();
 }
 
@@ -496,6 +509,68 @@ void EventDuplicate::undo() {
     }
 
     map->objectsChanged();
+
+    QUndoCommand::undo();
+}
+
+/******************************************************************************
+    ************************************************************************
+ ******************************************************************************/
+
+ScriptEditMap::ScriptEditMap(Map *map,
+        QSize oldMapDimensions, QSize newMapDimensions,
+        Blockdata *oldMetatiles, Blockdata *newMetatiles,
+        QUndoCommand *parent) : QUndoCommand(parent) {
+    setText("Script Edit Map");
+
+    this->map = map;
+
+    this->newMetatiles = newMetatiles;
+    this->oldMetatiles = oldMetatiles;
+
+    this->oldMapWidth = oldMapWidth;
+    this->oldMapHeight = oldMapHeight;
+    this->newMapWidth = newMapWidth;
+    this->newMapHeight = newMapHeight;
+}
+
+ScriptEditMap::~ScriptEditMap() {
+    if (newMetatiles) delete newMetatiles;
+    if (oldMetatiles) delete oldMetatiles;
+}
+
+void ScriptEditMap::redo() {
+    QUndoCommand::redo();
+
+    if (!map) return;
+
+    if (map->layout->blockdata) {
+        map->layout->blockdata->copyFrom(newMetatiles);
+        if (newMapWidth != map->getWidth() || newMapHeight != map->getHeight()) {
+            map->setDimensions(newMapWidth, newMapHeight);
+        }
+    }
+
+    map->layout->lastCommitMapBlocks.blocks->copyFrom(newMetatiles);
+    map->layout->lastCommitMapBlocks.dimensions = QSize(newMapWidth, newMapHeight);
+
+    renderMapBlocks(map);
+}
+
+void ScriptEditMap::undo() {
+    if (!map) return;
+
+    if (map->layout->blockdata) {
+        map->layout->blockdata->copyFrom(oldMetatiles);
+        if (oldMapWidth != map->getWidth() || oldMapHeight != map->getHeight()) {
+            map->setDimensions(oldMapWidth, oldMapHeight);
+        }
+    }
+
+    map->layout->lastCommitMapBlocks.blocks->copyFrom(oldMetatiles);
+    map->layout->lastCommitMapBlocks.dimensions = QSize(oldMapWidth, oldMapHeight);
+
+    renderMapBlocks(map);
 
     QUndoCommand::undo();
 }

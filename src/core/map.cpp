@@ -1,5 +1,4 @@
 #include "history.h"
-#include "historyitem.h"
 #include "map.h"
 #include "imageproviders.h"
 #include "scripting.h"
@@ -416,15 +415,10 @@ void Map::_floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_
     }
 }
 
-void Map::commit() {
-    return;
-}
-
 void Map::floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation) {
     Block *block = getBlock(x, y);
     if (block && (block->collision != collision || block->elevation != elevation)) {
         _floodFillCollisionElevation(x, y, collision, elevation);
-        commit();
     }
 }
 
@@ -444,7 +438,6 @@ void Map::magicFillCollisionElevation(int initialX, int initialY, uint16_t colli
                 }
             }
         }
-        commit();
     }
 }
 

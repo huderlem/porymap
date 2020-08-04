@@ -30,6 +30,10 @@ public:
     Blockdata *cached_blockdata = nullptr;
     Blockdata *cached_collision = nullptr;
     Blockdata *cached_border = nullptr;
+    struct {
+        Blockdata *blocks = nullptr;
+        QSize dimensions;
+    } lastCommitMapBlocks; // to track map changes
 };
 
 #endif // MAPLAYOUT_H

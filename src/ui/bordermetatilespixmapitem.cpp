@@ -54,7 +54,6 @@ void BorderMetatilesPixmapItem::draw() {
     }
 
     painter.end();
-    map->commit();
     this->setPixmap(QPixmap::fromImage(image));
 
     emit borderMetatilesChanged();

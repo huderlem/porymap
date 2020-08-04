@@ -60,7 +60,7 @@ public:
     virtual void pick(QGraphicsSceneMouseEvent*);
     virtual void select(QGraphicsSceneMouseEvent*);
     virtual void shift(QGraphicsSceneMouseEvent*);
-    void shift(int xDelta, int yDelta);
+    void shift(int xDelta, int yDelta, bool fromScriptCall = false);
     virtual void draw(bool ignoreCache = false);
     void updateMetatileSelection(QGraphicsSceneMouseEvent *event);
     void paintNormal(int x, int y, bool fromScriptCall = false);
