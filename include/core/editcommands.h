@@ -21,13 +21,12 @@ enum CommandId {
     ID_MagicFillCollision,
     ID_ResizeMap,
     ID_PaintBorder,
+    ID_ScriptEditMap,
     ID_EventMove,
     ID_EventShift,
     ID_EventCreate,
     ID_EventDelete,
     ID_EventDuplicate,
-    ID_EventSetData,
-    ID_ScriptEditMap,
 };
 
 

@@ -14,7 +14,7 @@
 #include <QDir>
 #include <math.h>
 
-static bool selectingEvent = false;
+static bool selectNewEvents = false;
 
 Editor::Editor(Ui::MainWindow* ui)
 {
@@ -23,6 +23,16 @@ Editor::Editor(Ui::MainWindow* ui)
     this->settings = new Settings();
     this->playerViewRect = new MovableRect(&this->settings->playerViewRectEnabled, 30 * 8, 20 * 8, qRgb(255, 255, 255));
     this->cursorMapTileRect = new CursorTileRect(&this->settings->cursorTileRectEnabled, qRgb(255, 255, 255));
+
+    /// Instead of updating the selected events after every single undo action
+    /// (eg when the user rolls back several at once), only reselect events when
+    /// the index is changed.
+    connect(&editGroup, &QUndoGroup::indexChanged, [this](int) {
+        if (selectNewEvents) {
+            updateSelectedEvents();
+            selectNewEvents = false;
+        }
+    });
 }
 
 Editor::~Editor()
@@ -1097,7 +1107,7 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item
 
                         QList<Event *> selectedEvents;
 
-                        for (DraggablePixmapItem *item : *(getObjects())) {
+                        for (DraggablePixmapItem *item : getObjects()) {
                             selectedEvents.append(item->event);
                         }
                         selection_origin = QPoint(x, y);
@@ -1760,16 +1770,10 @@ Tileset* Editor::getCurrentMapPrimaryTileset()
     return project->getTileset(tilesetLabel);
 }
 
-QList<DraggablePixmapItem *> *Editor::getObjects() {
-    QList<DraggablePixmapItem *> *list = new QList<DraggablePixmapItem *>;
-    for (Event *event : map->getAllEvents()) {
-        for (QGraphicsItem *child : events_group->childItems()) {
-            DraggablePixmapItem *item = static_cast<DraggablePixmapItem *>(child);
-            if (item->event == event) {
-                list->append(item);
-                break;
-            }
-        }
+QList<DraggablePixmapItem *> Editor::getObjects() {
+    QList<DraggablePixmapItem *> list;
+    for (QGraphicsItem *child : events_group->childItems()) {
+        list.append(static_cast<DraggablePixmapItem *>(child));
     }
     return list;
 }
@@ -1792,10 +1796,15 @@ void Editor::redrawObject(DraggablePixmapItem *item) {
     }
 }
 
+void Editor::shouldReselectEvents() {
+    selectNewEvents = true;
+}
+
 void Editor::updateSelectedEvents() {
-    for (DraggablePixmapItem *item : *(getObjects())) {
+    for (DraggablePixmapItem *item : getObjects()) {
         redrawObject(item);
     }
+
     emit selectedObjectsChanged();
 }
 
@@ -1870,6 +1879,11 @@ void Editor::deleteEvent(Event *event) {
     Map *map = project->getMap(event->get("map_name"));
     if (map) {
         map->removeEvent(event);
+        if (event->pixmapItem) {
+            events_group->removeFromGroup(event->pixmapItem);
+            delete event->pixmapItem;
+            event->pixmapItem = nullptr;
+        }
     }
     //selected_events->removeAll(event);
     //updateSelectedObjects();
