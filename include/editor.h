@@ -101,7 +101,7 @@ public:
     void updateSelectedEvents();
     void duplicateSelectedEvents();
     void redrawObject(DraggablePixmapItem *item);
-    QList<DraggablePixmapItem *> *getObjects();
+    QList<DraggablePixmapItem *> getObjects();
 
     QGraphicsScene *scene = nullptr;
     QGraphicsPixmapItem *current_view = nullptr;
@@ -146,6 +146,8 @@ public:
     QUndoGroup editGroup; // Manages the undo history for each map
 
     bool selectingEvent = false;
+
+    void shouldReselectEvents();
 
 private:
     void setConnectionItemsVisible(bool);

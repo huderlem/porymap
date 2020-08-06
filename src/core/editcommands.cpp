@@ -343,8 +343,6 @@ void EventCreate::redo() {
     editor->project->loadEventPixmaps(map->getAllEvents());
     editor->addMapEvent(event);
 
-    map->objectsChanged();
-
     // select this event
     editor->selected_events->clear();
     editor->selectMapEvent(event->pixmapItem, false);
@@ -358,9 +356,7 @@ void EventCreate::undo() {
     }
     editor->selected_events->removeOne(event->pixmapItem);
 
-    editor->updateSelectedEvents();
-
-    map->objectsChanged();
+    editor->shouldReselectEvents();
 
     QUndoCommand::undo();
 }
@@ -399,12 +395,10 @@ void EventDelete::redo() {
         editor->selected_events->removeOne(event->pixmapItem);
     }
 
-    map->objectsChanged();
-
     editor->selected_events->clear();
     if (nextSelectedEvent)
         editor->selected_events->append(nextSelectedEvent->pixmapItem);
-    editor->updateSelectedEvents();
+    editor->shouldReselectEvents();
 }
 
 void EventDelete::undo() {
@@ -415,14 +409,12 @@ void EventDelete::undo() {
         editor->addMapEvent(event);
     }
 
-    map->objectsChanged();
-
     // select these events
     editor->selected_events->clear();
     for (Event *event : selectedEvents) {
         editor->selected_events->append(event->pixmapItem);
     }
-    editor->updateSelectedEvents();
+    editor->shouldReselectEvents();
 
     QUndoCommand::undo();
 }
@@ -434,7 +426,6 @@ void EventDelete::undo() {
 EventDuplicate::EventDuplicate(Editor *editor, Map *map,
     QList<Event *> selectedEvents,
     QUndoCommand *parent) : QUndoCommand(parent) {
-    //
     setText("Duplicate Event");
 
     this->editor = editor;
@@ -458,14 +449,12 @@ void EventDuplicate::redo() {
         editor->addMapEvent(event);
     }
 
-    map->objectsChanged();
-
     // select these events
     editor->selected_events->clear();
     for (Event *event : selectedEvents) {
         editor->selected_events->append(event->pixmapItem);
     }
-    editor->updateSelectedEvents();
+    editor->shouldReselectEvents();
 }
 
 void EventDuplicate::undo() {
@@ -478,7 +467,7 @@ void EventDuplicate::undo() {
         editor->selected_events->removeOne(event->pixmapItem);
     }
 
-    map->objectsChanged();
+    editor->shouldReselectEvents();
 
     QUndoCommand::undo();
 }

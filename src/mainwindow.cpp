@@ -35,6 +35,8 @@
 #include <QSignalBlocker>
 #include <QSet>
 
+
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
@@ -504,7 +506,6 @@ bool MainWindow::setMap(QString map_name, bool scrollTreeView) {
 
     connect(editor->map, SIGNAL(mapChanged(Map*)), this, SLOT(onMapChanged(Map *)));
     connect(editor->map, SIGNAL(mapNeedsRedrawing()), this, SLOT(onMapNeedsRedrawing()));
-    connect(editor->map, SIGNAL(objectsChanged()), this, SLOT(updateObjects()));
 
     setRecentMap(map_name);
     updateMapList();
@@ -587,16 +588,13 @@ void MainWindow::openWarpMap(QString map_name, QString warp_num) {
     QList<Event*> warp_events = editor->map->events["warp_event_group"];
     if (warp_events.length() > warpNum) {
         Event *warp_event = warp_events.at(warpNum);
-        QList<DraggablePixmapItem *> *all_events = editor->getObjects();
-        for (DraggablePixmapItem *item : *all_events) {
+        for (DraggablePixmapItem *item : editor->getObjects()) {
             if (item->event == warp_event) {
                 editor->selected_events->clear();
                 editor->selected_events->append(item);
                 editor->updateSelectedEvents();
             }
         }
-
-        delete all_events;
     }
 }
 
@@ -1465,7 +1463,7 @@ void MainWindow::updateObjects() {
     bool hasBGs = false;
     bool hasHealspots = false;
 
-    for (DraggablePixmapItem *item : *editor->getObjects())
+    for (DraggablePixmapItem *item : editor->getObjects())
     {
         QString event_type = item->event->get("event_type");
 
@@ -1516,18 +1514,17 @@ void MainWindow::updateObjects() {
 
 // Should probably just pass layout and let the editor work it out
 void MainWindow::updateSelectedObjects() {
-    QList<DraggablePixmapItem *> *all_events = editor->getObjects();
-    QList<DraggablePixmapItem *> *events = nullptr;
+    QList<DraggablePixmapItem *> all_events = editor->getObjects();
+    QList<DraggablePixmapItem *> events;
 
     if (editor->selected_events && editor->selected_events->length()) {
-        events = editor->selected_events;
+        events = *editor->selected_events;
     } else {
-        events = new QList<DraggablePixmapItem*>;
-        if (all_events && all_events->length()) {
-            DraggablePixmapItem *selectedEvent = all_events->first();
+        if (all_events.length()) {
+            DraggablePixmapItem *selectedEvent = all_events.first();
             editor->selected_events->append(selectedEvent);
             editor->redrawObject(selectedEvent);
-            events->append(selectedEvent);
+            events.append(selectedEvent);
         }
     }
 
@@ -1539,7 +1536,7 @@ void MainWindow::updateSelectedObjects() {
     bool quantityEnabled = projectConfig.getHiddenItemQuantityEnabled();
     bool underfootEnabled = projectConfig.getHiddenItemRequiresItemfinderEnabled();
     bool respawnDataEnabled = projectConfig.getHealLocationRespawnDataEnabled();
-    for (DraggablePixmapItem *item : *events) {
+    for (DraggablePixmapItem *item : events) {
         EventPropertiesFrame *frame = new EventPropertiesFrame(item->event);
 //        frame->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
@@ -1575,7 +1572,7 @@ void MainWindow::updateSelectedObjects() {
         else { event_offs = 1; }
         frame->ui->label_name->setText(QString("%1 Id").arg(event_type));
 
-        if (events->count() == 1)
+        if (events.count() == 1)
         {
             frame->ui->spinBox_index->setValue(editor->project->getMap(map_name)->events.value(event_group_type).indexOf(item->event) + event_offs);
             frame->ui->spinBox_index->setMinimum(event_offs);
@@ -1869,9 +1866,9 @@ void MainWindow::updateSelectedObjects() {
 
     isProgrammaticEventTabChange = true;
 
-    if (events->length() == 1)
+    if (events.length() == 1)
     {
-        QString event_group_type = (*events)[0]->event->get("event_group_type");
+        QString event_group_type = events[0]->event->get("event_group_type");
 
         if (event_group_type == "object_event_group") {
             scrollTarget = ui->scrollArea_Objects;
@@ -1900,7 +1897,7 @@ void MainWindow::updateSelectedObjects() {
         }
         ui->tabWidget_EventType->removeTab(ui->tabWidget_EventType->indexOf(ui->tab_Multiple));
     }
-    else if (events->length() > 1)
+    else if (events.length() > 1)
     {
         ui->tabWidget_EventType->addTab(ui->tab_Multiple, "Multiple");
         ui->tabWidget_EventType->setCurrentWidget(ui->tab_Multiple);
@@ -1908,7 +1905,7 @@ void MainWindow::updateSelectedObjects() {
 
     isProgrammaticEventTabChange = false;
 
-    if (events->length() != 0)
+    if (events.length() != 0)
     {
         if (target->children().length())
         {
