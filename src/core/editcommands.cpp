@@ -324,7 +324,6 @@ EventShift::~EventShift() {}
 
 EventCreate::EventCreate(Editor *editor, Map *map, Event *event,
     QUndoCommand *parent) : QUndoCommand(parent) {
-    //
     setText("Create Event");
 
     this->editor = editor;
