@@ -16,6 +16,14 @@ Map::Map(QObject *parent) : QObject(parent)
     editHistory.setClean();
 }
 
+Map::~Map() {
+    // delete all associated events
+    while (!ownedEvents.isEmpty()) {
+        Event *last = ownedEvents.takeLast();
+        if (last) delete last;
+    }
+}
+
 void Map::setName(QString mapName) {
     name = mapName;
     constantName = mapConstantFromName(mapName);
@@ -457,6 +465,7 @@ void Map::removeEvent(Event *event) {
 
 void Map::addEvent(Event *event) {
     events[event->get("event_group_type")].append(event);
+    if (!ownedEvents.contains(event)) ownedEvents.append(event);
 }
 
 bool Map::hasUnsavedChanges() {

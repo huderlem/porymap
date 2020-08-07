@@ -29,6 +29,7 @@ class Map : public QObject
     Q_OBJECT
 public:
     explicit Map(QObject *parent = nullptr);
+    ~Map();
 
 public:
     QString name;
@@ -91,6 +92,9 @@ public:
     void setBorderDimensions(int newWidth, int newHeight, bool setNewBlockdata = true);
     void cacheBorder();
     bool hasUnsavedChanges();
+
+    // for memory management
+    QVector<Event *> ownedEvents;
 
     MapPixmapItem *mapItem = nullptr;
     void setMapItem(MapPixmapItem *item) { mapItem = item; }
