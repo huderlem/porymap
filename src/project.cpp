@@ -1207,6 +1207,7 @@ void Project::setNewMapBlockdata(Map *map) {
         blockdata->addBlock(qint16(0x3001));
     }
     map->layout->blockdata = blockdata;
+    map->layout->lastCommitMapBlocks.blocks = new Blockdata;
     map->layout->lastCommitMapBlocks.blocks->copyFrom(map->layout->blockdata);
     map->layout->lastCommitMapBlocks.dimensions = QSize(map->getWidth(), map->getHeight());
 }
