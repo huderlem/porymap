@@ -29,7 +29,7 @@
 #include <QProcess>
 #include <QSysInfo>
 #include <QDesktopServices>
-#include <QMatrix>
+#include <QTransform>
 #include <QSignalBlocker>
 #include <QSet>
 
@@ -541,7 +541,7 @@ void MainWindow::refreshMapScene()
     ui->graphicsView_BorderMetatile->setFixedSize(editor->selected_border_metatiles_item->pixmap().width() + 2, editor->selected_border_metatiles_item->pixmap().height() + 2);
 
     ui->graphicsView_currentMetatileSelection->setScene(editor->scene_current_metatile_selection);
-    ui->graphicsView_currentMetatileSelection->setFixedSize(editor->scene_current_metatile_selection_item->pixmap().width() + 2, editor->scene_current_metatile_selection_item->pixmap().height() + 2);
+    ui->graphicsView_currentMetatileSelection->setFixedSize(editor->current_metatile_selection_item->pixmap().width() + 2, editor->current_metatile_selection_item->pixmap().height() + 2);
 
     ui->graphicsView_Collision->setScene(editor->scene_collision_metatiles);
     //ui->graphicsView_Collision->setSceneRect(editor->scene_collision_metatiles->sceneRect());
@@ -1178,8 +1178,11 @@ void MainWindow::updateTilesetEditor() {
 void MainWindow::redrawMetatileSelection()
 {
     double scale = pow(3.0, static_cast<double>(porymapConfig.getMetatilesZoom() - 30) / 30.0);
-    ui->graphicsView_currentMetatileSelection->setFixedSize(editor->scene_current_metatile_selection_item->pixmap().width() * scale + 2, editor->scene_current_metatile_selection_item->pixmap().height() * scale + 2);
-    ui->graphicsView_currentMetatileSelection->setSceneRect(0, 0, editor->scene_current_metatile_selection_item->pixmap().width() * scale, editor->scene_current_metatile_selection_item->pixmap().height() * scale);
+    QTransform transform;
+    transform.scale(scale, scale);
+
+    ui->graphicsView_currentMetatileSelection->setTransform(transform);
+    ui->graphicsView_currentMetatileSelection->setFixedSize(editor->current_metatile_selection_item->pixmap().width() * scale + 2, editor->current_metatile_selection_item->pixmap().height() * scale + 2);
 
     QPoint size = editor->metatile_selector_item->getSelectionDimensions();
     if (size.x() == 1 && size.y() == 1) {
@@ -2632,21 +2635,20 @@ void MainWindow::on_horizontalSlider_MetatileZoom_valueChanged(int value) {
     porymapConfig.setMetatilesZoom(value);
     double scale = pow(3.0, static_cast<double>(value - 30) / 30.0);
 
-    QMatrix matrix;
-    matrix.scale(scale, scale);
+    QTransform transform;
+    transform.scale(scale, scale);
     QSize size(editor->metatile_selector_item->pixmap().width(), 
                editor->metatile_selector_item->pixmap().height());
     size *= scale;
 
     ui->graphicsView_Metatiles->setResizeAnchor(QGraphicsView::NoAnchor);
-    ui->graphicsView_Metatiles->setMatrix(matrix);
+    ui->graphicsView_Metatiles->setTransform(transform);
     ui->graphicsView_Metatiles->setFixedSize(size.width() + 2, size.height() + 2);
 
-    ui->graphicsView_BorderMetatile->setMatrix(matrix);
+    ui->graphicsView_BorderMetatile->setTransform(transform);
     ui->graphicsView_BorderMetatile->setFixedSize(ceil(static_cast<double>(editor->selected_border_metatiles_item->pixmap().width()) * scale) + 2,
                                                   ceil(static_cast<double>(editor->selected_border_metatiles_item->pixmap().height()) * scale) + 2);
 
-    ui->graphicsView_currentMetatileSelection->setMatrix(matrix);
     redrawMetatileSelection();
 }
 

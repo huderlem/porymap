@@ -125,7 +125,7 @@ public:
     MetatileSelector *metatile_selector_item = nullptr;
 
     BorderMetatilesPixmapItem *selected_border_metatiles_item = nullptr;
-    CurrentSelectedMetatilesPixmapItem *scene_current_metatile_selection_item = nullptr;
+    CurrentSelectedMetatilesPixmapItem *current_metatile_selection_item = nullptr;
     MovementPermissionsSelector *movement_permissions_selector_item = nullptr;
 
     QList<DraggablePixmapItem*> *events = nullptr;

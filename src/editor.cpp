@@ -1286,20 +1286,20 @@ void Editor::displayBorderMetatiles() {
 }
 
 void Editor::displayCurrentMetatilesSelection() {
-    if (scene_current_metatile_selection_item && scene_current_metatile_selection_item->scene()) {
-        scene_current_metatile_selection_item->scene()->removeItem(scene_current_metatile_selection_item);
-        delete scene_current_metatile_selection_item;
+    if (current_metatile_selection_item && current_metatile_selection_item->scene()) {
+        current_metatile_selection_item->scene()->removeItem(current_metatile_selection_item);
+        delete current_metatile_selection_item;
     }
 
     scene_current_metatile_selection = new QGraphicsScene;
-    scene_current_metatile_selection_item = new CurrentSelectedMetatilesPixmapItem(map, this->metatile_selector_item);
-    scene_current_metatile_selection_item->draw();
-    scene_current_metatile_selection->addItem(scene_current_metatile_selection_item);
+    current_metatile_selection_item = new CurrentSelectedMetatilesPixmapItem(map, this->metatile_selector_item);
+    current_metatile_selection_item->draw();
+    scene_current_metatile_selection->addItem(current_metatile_selection_item);
 }
 
 void Editor::redrawCurrentMetatilesSelection() {
-    if (scene_current_metatile_selection_item) {
-        scene_current_metatile_selection_item->draw();
+    if (current_metatile_selection_item) {
+        current_metatile_selection_item->draw();
         emit currentMetatilesSelectionChanged();
     }
 }
