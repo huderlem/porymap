@@ -1977,96 +1977,45 @@ QString MainWindow::getEventGroupFromTabWidget(QWidget *tab)
     return ret;
 }
 
-void MainWindow::eventTabChanged(int index)
-{
-    if (!isProgrammaticEventTabChange && editor->map != nullptr)
-    {
+void MainWindow::eventTabChanged(int index) {
+    if (editor->map) {
         QString group = getEventGroupFromTabWidget(ui->tabWidget_EventType->widget(index));
         DraggablePixmapItem *selectedEvent = nullptr;
 
-        if (group == "object_event_group")
-        {
-            if (selectedObject == nullptr && editor->map->events.value(group).count())
-            {
-                Event *event = editor->map->events.value(group).at(0);
-                for (QGraphicsItem *child : editor->events_group->childItems()) {
-                    DraggablePixmapItem *item = static_cast<DraggablePixmapItem *>(child);
-                    if (item->event == event) {
-                        selectedObject = item;
-                        break;
-                    }
-                }
-            }
-
+        if (group == "object_event_group") {
             selectedEvent = selectedObject;
+            ui->newEventToolButton->setDefaultAction(ui->newEventToolButton->newObjectAction);
         }
-        else if (group == "warp_event_group")
-        {
-            if (selectedWarp == nullptr && editor->map->events.value(group).count())
-            {
-                Event *event = editor->map->events.value(group).at(0);
-                for (QGraphicsItem *child : editor->events_group->childItems()) {
-                    DraggablePixmapItem *item = static_cast<DraggablePixmapItem *>(child);
-                    if (item->event == event) {
-                        selectedWarp = item;
-                        break;
-                    }
-                }
-            }
-
+        else if (group == "warp_event_group") {
             selectedEvent = selectedWarp;
+            ui->newEventToolButton->setDefaultAction(ui->newEventToolButton->newWarpAction);
         }
-        else if (group == "coord_event_group")
-        {
-            if (selectedTrigger == nullptr && editor->map->events.value(group).count())
-            {
-                Event *event = editor->map->events.value(group).at(0);
-                for (QGraphicsItem *child : editor->events_group->childItems()) {
-                    DraggablePixmapItem *item = static_cast<DraggablePixmapItem *>(child);
-                    if (item->event == event) {
-                        selectedTrigger = item;
-                        break;
-                    }
-                }
-            }
-
+        else if (group == "coord_event_group") {
             selectedEvent = selectedTrigger;
+            ui->newEventToolButton->setDefaultAction(ui->newEventToolButton->newTriggerAction);
         }
-        else if (group == "bg_event_group")
-        {
-            if (selectedBG == nullptr && editor->map->events.value(group).count())
-            {
-                Event *event = editor->map->events.value(group).at(0);
-                for (QGraphicsItem *child : editor->events_group->childItems()) {
-                    DraggablePixmapItem *item = static_cast<DraggablePixmapItem *>(child);
-                    if (item->event == event) {
-                        selectedBG = item;
-                        break;
-                    }
-                }
-            }
-
+        else if (group == "bg_event_group") {
             selectedEvent = selectedBG;
+            ui->newEventToolButton->setDefaultAction(ui->newEventToolButton->newSignAction);
         }
-        else if (group == "heal_event_group")
-        {
-            if (selectedHealspot == nullptr && editor->map->events.value(group).count())
-            {
-                Event *event = editor->map->events.value(group).at(0);
-                for (QGraphicsItem *child : editor->events_group->childItems()) {
-                    DraggablePixmapItem *item = static_cast<DraggablePixmapItem *>(child);
-                    if (item->event == event) {
-                        selectedHealspot = item;
-                        break;
-                    }
-                }
-            }
-
+        else if (group == "heal_event_group") {
             selectedEvent = selectedHealspot;
         }
 
-        if (selectedEvent != nullptr)
-            editor->selectMapEvent(selectedEvent);
+        if (!isProgrammaticEventTabChange) {
+            if (!selectedEvent && editor->map->events.value(group).count()) {
+                Event *event = editor->map->events.value(group).at(0);
+                for (QGraphicsItem *child : editor->events_group->childItems()) {
+                    DraggablePixmapItem *item = static_cast<DraggablePixmapItem *>(child);
+                    if (item->event == event) {
+                        selectedEvent = item;
+                        break;
+                    }
+                }
+            }
+
+            if (selectedEvent) editor->selectMapEvent(selectedEvent);
+        }
     }
 
     isProgrammaticEventTabChange = false;
