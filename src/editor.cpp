@@ -1299,6 +1299,7 @@ void Editor::displayCurrentMetatilesSelection() {
 
 void Editor::redrawCurrentMetatilesSelection() {
     if (current_metatile_selection_item) {
+        current_metatile_selection_item->setMap(map);
         current_metatile_selection_item->draw();
         emit currentMetatilesSelectionChanged();
     }

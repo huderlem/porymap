@@ -15,6 +15,8 @@ public:
     Map* map = nullptr;
     MetatileSelector *metatileSelector;
     void draw();
+
+    void setMap(Map *map) { this->map = map; }
 };
 
 #endif // CURRENTSELECTEDMETATILESPIXMAPITEM_H
