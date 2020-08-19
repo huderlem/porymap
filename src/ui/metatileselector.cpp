@@ -65,8 +65,11 @@ bool MetatileSelector::selectFromMap(uint16_t metatileId, uint16_t collision, ui
 void MetatileSelector::setTilesets(Tileset *primaryTileset, Tileset *secondaryTileset) {
     this->primaryTileset = primaryTileset;
     this->secondaryTileset = secondaryTileset;
-    if (!this->selectionIsValid())
+    if (!this->selectionIsValid()) {
         this->select(Project::getNumMetatilesPrimary() + this->secondaryTileset->metatiles->length() - 1);
+    } else {
+        updateSelectedMetatiles();
+    }
     this->draw();
 }
 
