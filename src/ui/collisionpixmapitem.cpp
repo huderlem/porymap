@@ -59,8 +59,8 @@ void CollisionPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
 }
 
 void CollisionPixmapItem::floodFill(QGraphicsSceneMouseEvent *event) {
-    if (event->type() != QEvent::GraphicsSceneMouseRelease) {
-        // do nothing
+    if (event->type() == QEvent::GraphicsSceneMouseRelease) {
+        this->actionId_++;
     } else if (map) {
         Blockdata *oldCollision = map->layout->blockdata->copy();
 
@@ -82,8 +82,8 @@ void CollisionPixmapItem::floodFill(QGraphicsSceneMouseEvent *event) {
 }
 
 void CollisionPixmapItem::magicFill(QGraphicsSceneMouseEvent *event) {
-    if (event->type() != QEvent::GraphicsSceneMouseRelease) {
-        // do nothing
+    if (event->type() == QEvent::GraphicsSceneMouseRelease) {
+        this->actionId_++;
     } else if (map) {
         Blockdata *oldCollision = map->layout->blockdata->copy();
         QPointF pos = event->pos();
