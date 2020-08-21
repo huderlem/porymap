@@ -201,6 +201,7 @@ private slots:
     void on_comboBox_SecondaryTileset_currentTextChanged(const QString &arg1);
     void on_pushButton_ChangeDimensions_clicked();
     void on_checkBox_smartPaths_stateChanged(int selected);
+    void on_checkBox_straightPaths_stateChanged(int selected);
     void on_checkBox_Visibility_clicked(bool checked);
     void on_checkBox_ToggleBorder_stateChanged(int arg1);
 
