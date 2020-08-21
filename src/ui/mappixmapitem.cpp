@@ -56,6 +56,19 @@ void MapPixmapItem::shift(QGraphicsSceneMouseEvent *event) {
             int x = static_cast<int>(pos.x()) / 16;
             int y = static_cast<int>(pos.y()) / 16;
 
+            // Set straight paths on/off and snap to the dominant axis when on
+            bool straightPathsEnabled = event->modifiers() & Qt::ControlModifier;
+            if (this->settings->straightPathsEnabled || straightPathsEnabled) {
+                this->straightPathMode = true;
+            } else {
+                this->straightPathMode = false;
+            }
+            if (this->straightPathMode) {
+                this->lockNondominantAxis(event);
+                x = this->adjustCoord(x, MapPixmapItem::Axis::X);
+                y = this->adjustCoord(y, MapPixmapItem::Axis::Y);
+            }
+
             if (event->type() == QEvent::GraphicsSceneMousePress) {
                 selection_origin = QPoint(x, y);
                 selection.clear();
