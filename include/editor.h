@@ -181,6 +181,7 @@ private slots:
     void onMapStartPaint(QGraphicsSceneMouseEvent *event, MapPixmapItem *item);
     void onMapEndPaint(QGraphicsSceneMouseEvent *event, MapPixmapItem *item);
     void setSmartPathCursorMode(QGraphicsSceneMouseEvent *event);
+    void setStraightPathCursorMode(QGraphicsSceneMouseEvent *event);
     void mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item);
     void mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixmapItem *item);
     void onConnectionMoved(MapConnection*);

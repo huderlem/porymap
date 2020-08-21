@@ -9,6 +9,7 @@ CursorTileRect::CursorTileRect(bool *enabled, QRgb color)
     this->width = 16;
     this->height = 16;
     this->smartPathMode = false;
+    this->straightPathMode = false;
     this->singleTileMode = false;
     this->anchored = false;
     this->rightClickSelectionAnchored = false;
@@ -62,6 +63,11 @@ void CursorTileRect::setSmartPathMode()
     this->smartPathMode = true;
 }
 
+void CursorTileRect::setStraightPathMode()
+{
+    this->straightPathMode = true;
+}
+
 void CursorTileRect::setSingleTileMode()
 {
     this->singleTileMode = true;
@@ -75,11 +81,17 @@ void CursorTileRect::stopSingleTileMode()
 void CursorTileRect::setNormalPathMode()
 {
     this->smartPathMode = false;
+    this->straightPathMode = false;
 }
 
 bool CursorTileRect::smartPathInEffect()
 {
     return !this->rightClickSelectionAnchored && this->smartPathMode && this->selectionHeight == 3 && this->selectionWidth == 3;
+}
+
+bool CursorTileRect::straightPathInEffect()
+{
+    return !this->rightClickSelectionAnchored && this->straightPathMode;
 }
 
 void CursorTileRect::updateLocation(int coordX, int coordY)

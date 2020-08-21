@@ -938,7 +938,7 @@ void Editor::onHoveredMapMovementPermissionCleared() {
     }
 }
 
-QString Editor::getMovementPermissionText(uint16_t collision, uint16_t elevation){
+QString Editor::getMovementPermissionText(uint16_t collision, uint16_t elevation) {
     QString message;
     if (collision == 0 && elevation == 0) {
         message = "Collision: Transition between elevations";
@@ -1009,21 +1009,28 @@ void Editor::onMapEndPaint(QGraphicsSceneMouseEvent *, MapPixmapItem *item) {
     this->cursorMapTileRect->stopAnchor();
 }
 
-void Editor::setSmartPathCursorMode(QGraphicsSceneMouseEvent *event)
-{
+void Editor::setSmartPathCursorMode(QGraphicsSceneMouseEvent *event) {
     bool shiftPressed = event->modifiers() & Qt::ShiftModifier;
     if (settings->smartPathsEnabled) {
         if (!shiftPressed) {
-            this->cursorMapTileRect->setSmartPathMode();
+            this->cursorMapTileRect->setSmartPathMode(true);
         } else {
-            this->cursorMapTileRect->setNormalPathMode();
+            this->cursorMapTileRect->setSmartPathMode(false);
         }
     } else {
         if (shiftPressed) {
-            this->cursorMapTileRect->setSmartPathMode();
+            this->cursorMapTileRect->setSmartPathMode(true);
         } else {
-            this->cursorMapTileRect->setNormalPathMode();
+            this->cursorMapTileRect->setSmartPathMode(false);
         }
+    }
+}
+
+void Editor::setStraightPathCursorMode(QGraphicsSceneMouseEvent *event) {
+    if (event->modifiers() & Qt::ControlModifier) {
+        this->cursorMapTileRect->setStraightPathMode(true);
+    } else {
+        this->cursorMapTileRect->setStraightPathMode(false);
     }
 }
 
@@ -1048,6 +1055,12 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item
                     item->floodFill(event);
                 }
             } else {
+                this->setStraightPathCursorMode(event);
+                if (this->cursorMapTileRect->getStraightPathMode()) {
+                    item->lockNondominantAxis(event);
+                    x = item->adjustCoord(x, MapPixmapItem::Axis::X);
+                    y = item->adjustCoord(y, MapPixmapItem::Axis::Y);
+                }
                 this->setSmartPathCursorMode(event);
                 item->paint(event);
             }

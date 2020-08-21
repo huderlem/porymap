@@ -24,6 +24,7 @@ public:
         this->metatileSelector = metatileSelector;
         this->settings = settings;
         this->paintingMode = PaintMode::Metatiles;
+        this->lockedAxis = MapPixmapItem::Axis::None;
         setAcceptHoverEvents(true);
     }
     MapPixmapItem::PaintMode paintingMode;
@@ -34,6 +35,13 @@ public:
     bool right_click;
     int paint_tile_initial_x;
     int paint_tile_initial_y;
+    bool straightPathMode;
+    enum Axis {
+        None = 0,
+        X,
+        Y
+    };
+    MapPixmapItem::Axis lockedAxis;
     QPoint selection_origin;
     QList<QPoint> selection;
     virtual void paint(QGraphicsSceneMouseEvent*);
@@ -64,6 +72,8 @@ public:
     virtual void draw(bool ignoreCache = false);
     void updateMetatileSelection(QGraphicsSceneMouseEvent *event);
     void paintNormal(int x, int y, bool fromScriptCall = false);
+    void lockNondominantAxis(QGraphicsSceneMouseEvent *event);
+    int adjustCoord(int coord, MapPixmapItem::Axis axis);
 
 private:
     void paintSmartPath(int x, int y, bool fromScriptCall = false);
