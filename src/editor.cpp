@@ -1151,8 +1151,7 @@ void Editor::mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixm
     QPointF pos = event->pos();
     int x = static_cast<int>(pos.x()) / 16;
     int y = static_cast<int>(pos.y()) / 16;
-    this->playerViewRect->updateLocation(x, y);
-    this->cursorMapTileRect->updateLocation(x, y);
+
     if (map_edit_mode == "paint") {
         if (event->buttons() & Qt::RightButton) {
             item->updateMovementPermissionSelection(event);
@@ -1163,6 +1162,12 @@ void Editor::mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixm
                 item->floodFill(event);
             }
         } else {
+            this->setStraightPathCursorMode(event);
+            if (this->cursorMapTileRect->getStraightPathMode()) {
+                item->lockNondominantAxis(event);
+                x = item->adjustCoord(x, MapPixmapItem::Axis::X);
+                y = item->adjustCoord(y, MapPixmapItem::Axis::Y);
+            }
             item->paint(event);
         }
     } else if (map_edit_mode == "select") {
@@ -1180,6 +1185,8 @@ void Editor::mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixm
     } else if (map_edit_mode == "shift") {
         item->shift(event);
     }
+    this->playerViewRect->updateLocation(x, y);
+    this->cursorMapTileRect->updateLocation(x, y);
 }
 
 bool Editor::displayMap() {
