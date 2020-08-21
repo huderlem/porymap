@@ -1081,6 +1081,12 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item
                 item->pick(event);
             }
         } else if (map_edit_mode == "shift") {
+            this->setStraightPathCursorMode(event);
+            if (this->cursorMapTileRect->getStraightPathMode()) {
+                item->lockNondominantAxis(event);
+                x = item->adjustCoord(x, MapPixmapItem::Axis::X);
+                y = item->adjustCoord(y, MapPixmapItem::Axis::Y);
+            }
             item->shift(event);
         }
     } else if (item->paintingMode == MapPixmapItem::PaintMode::EventObjects) {
@@ -1183,6 +1189,12 @@ void Editor::mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixm
     } else if (map_edit_mode == "pick") {
         item->pick(event);
     } else if (map_edit_mode == "shift") {
+        this->setStraightPathCursorMode(event);
+        if (this->cursorMapTileRect->getStraightPathMode()) {
+            item->lockNondominantAxis(event);
+            x = item->adjustCoord(x, MapPixmapItem::Axis::X);
+            y = item->adjustCoord(y, MapPixmapItem::Axis::Y);
+        }
         item->shift(event);
     }
     this->playerViewRect->updateLocation(x, y);
