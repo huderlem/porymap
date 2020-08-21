@@ -100,6 +100,8 @@ public:
     Q_INVOKABLE bool getBorderVisibility();
     Q_INVOKABLE void setSmartPathsEnabled(bool visible);
     Q_INVOKABLE bool getSmartPathsEnabled();
+    Q_INVOKABLE void setStraightPathsEnabled(bool visible);
+    Q_INVOKABLE bool getStraightPathsEnabled();
     Q_INVOKABLE void registerAction(QString functionName, QString actionName, QString shortcut = "");
     Q_INVOKABLE void setTimeout(QJSValue callback, int milliseconds);
     void invokeCallback(QJSValue callback);

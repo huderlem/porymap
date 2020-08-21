@@ -476,6 +476,14 @@ bool MainWindow::getSmartPathsEnabled() {
     return this->ui->checkBox_smartPaths->isChecked();
 }
 
+void MainWindow::setStraightPathsEnabled(bool visible) {
+    this->ui->checkBox_straightPaths->setChecked(visible);
+}
+
+bool MainWindow::getStraightPathsEnabled() {
+    return this->ui->checkBox_straightPaths->isChecked();
+}
+
 void MainWindow::registerAction(QString functionName, QString actionName, QString shortcut) {
     if (!this->ui || !this->ui->menuTools)
         return;
