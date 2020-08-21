@@ -52,6 +52,8 @@ public:
     void stopRightClickSelectionAnchor();
     void setSmartPathMode();
     bool getSmartPathMode() { return this->smartPathMode; }
+    void setStraightPathMode();
+    bool getStraightPathMode() { return this->straightPathMode; }
     void setSingleTileMode();
     void stopSingleTileMode();
     void setNormalPathMode();
@@ -66,6 +68,7 @@ private:
     bool anchored;
     bool rightClickSelectionAnchored;
     bool smartPathMode;
+    bool straightPathMode;
     bool singleTileMode;
     int anchorCoordX;
     int anchorCoordY;
@@ -73,6 +76,7 @@ private:
     int selectionHeight;
     QRgb color;
     bool smartPathInEffect();
+    bool straightPathInEffect();
 };
 
 

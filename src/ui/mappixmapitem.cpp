@@ -14,6 +14,19 @@ void MapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
             int x = static_cast<int>(pos.x()) / 16;
             int y = static_cast<int>(pos.y()) / 16;
 
+            // Set straight paths on/off and snap to the dominant axis when on
+            bool straightPathsEnabled = event->modifiers() & Qt::ControlModifier;
+            if (this->settings->straightPathsEnabled || straightPathsEnabled) {
+                this->straightPathMode = true;
+            } else {
+                this->straightPathMode = false;
+            }
+            if (this->straightPathMode) {
+                this->lockNondominantAxis(event);
+                x = this->adjustCoord(x, MapPixmapItem::Axis::X);
+                y = this->adjustCoord(y, MapPixmapItem::Axis::Y);
+            }
+
             // Paint onto the map.
             bool shiftPressed = event->modifiers() & Qt::ShiftModifier;
             QPoint selectionDimensions = this->metatileSelector->getSelectionDimensions();
@@ -257,6 +270,32 @@ void MapPixmapItem::paintSmartPath(int x, int y, bool fromScriptCall) {
             map->editHistory.push(new PaintMetatile(map, oldMetatiles, newMetatiles, actionId_));
         }
     }
+}
+
+void MapPixmapItem::lockNondominantAxis(QGraphicsSceneMouseEvent *event) {
+    // Return if an axis is already locked
+    if (this->lockedAxis != MapPixmapItem::Axis::None) return;
+
+    QPointF pos = event->pos();
+    int xDiff = (static_cast<int>(pos.x()) / 16) - this->paint_tile_initial_x;
+    int yDiff = (static_cast<int>(pos.y()) / 16) - this->paint_tile_initial_y;
+
+    // Only lock an axis when the current pos != initial and not after the mouse gets released
+    if ((xDiff || yDiff) && event->type() != QEvent::GraphicsSceneMouseRelease) {
+        if (abs(xDiff) < abs(yDiff))
+            this->lockedAxis = MapPixmapItem::Axis::X;
+        else
+            this->lockedAxis = MapPixmapItem::Axis::Y;
+    }
+}
+
+// Adjust the cooresponding coordinate when it is locked
+int MapPixmapItem::adjustCoord(int coord, MapPixmapItem::Axis axis) {
+    if (axis == MapPixmapItem::Axis::X && this->lockedAxis == MapPixmapItem::Axis::X)
+        coord = this->paint_tile_initial_x;
+    else if (axis == MapPixmapItem::Axis::Y && this->lockedAxis == MapPixmapItem::Axis::Y)
+        coord = this->paint_tile_initial_y;
+    return coord;
 }
 
 void MapPixmapItem::updateMetatileSelection(QGraphicsSceneMouseEvent *event) {
@@ -711,6 +750,7 @@ void MapPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     emit mouseEvent(event, this);
 }
 void MapPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
+    this->lockedAxis = MapPixmapItem::Axis::None;
     emit endPaint(event, this);
     emit mouseEvent(event, this);
 }
