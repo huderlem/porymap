@@ -627,6 +627,22 @@
                     </widget>
                    </item>
                    <item>
+                    <widget class="QCheckBox" name="checkBox_straightPaths">
+                     <property name="layoutDirection">
+                      <enum>Qt::LeftToRight</enum>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">margin-left: 10px</string>
+                     </property>
+                     <property name="text">
+                      <string>Straight Paths</string>
+                     </property>
+                     <property name="tristate">
+                      <bool>false</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
                     <widget class="QCheckBox" name="checkBox_ToggleGrid">
                      <property name="toolTip">
                       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Toggles a grid over the map's metatile boundaries.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Ctrl + G&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
