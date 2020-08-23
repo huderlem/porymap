@@ -17,16 +17,12 @@ void MapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
             // Set straight paths on/off and snap to the dominant axis when on
             bool straightPathsEnabled = event->modifiers() & Qt::ControlModifier;
             if (this->settings->straightPathsEnabled || straightPathsEnabled) {
-                this->straightPathMode = true;
-            } else {
-                this->straightPathMode = false;
-                this->prevStraightPathState = false;
-                this->lockedAxis = MapPixmapItem::Axis::None;
-            }
-            if (this->straightPathMode) {
                 this->lockNondominantAxis(event);
                 x = this->adjustCoord(x, MapPixmapItem::Axis::X);
                 y = this->adjustCoord(y, MapPixmapItem::Axis::Y);
+            } else {
+                this->prevStraightPathState = false;
+                this->lockedAxis = MapPixmapItem::Axis::None;
             }
 
             // Paint onto the map.
@@ -61,14 +57,12 @@ void MapPixmapItem::shift(QGraphicsSceneMouseEvent *event) {
             // Set straight paths on/off and snap to the dominant axis when on
             bool straightPathsEnabled = event->modifiers() & Qt::ControlModifier;
             if (this->settings->straightPathsEnabled || straightPathsEnabled) {
-                this->straightPathMode = true;
-            } else {
-                this->straightPathMode = false;
-            }
-            if (this->straightPathMode) {
                 this->lockNondominantAxis(event);
                 x = this->adjustCoord(x, MapPixmapItem::Axis::X);
                 y = this->adjustCoord(y, MapPixmapItem::Axis::Y);
+            } else {
+                this->prevStraightPathState = false;
+                this->lockedAxis = MapPixmapItem::Axis::None;
             }
 
             if (event->type() == QEvent::GraphicsSceneMousePress) {
