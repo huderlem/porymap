@@ -25,6 +25,7 @@ public:
         this->settings = settings;
         this->paintingMode = PaintMode::Metatiles;
         this->lockedAxis = MapPixmapItem::Axis::None;
+        this->prevStraightPathState = false;
         setAcceptHoverEvents(true);
     }
     MapPixmapItem::PaintMode paintingMode;
@@ -36,6 +37,9 @@ public:
     int paint_tile_initial_x;
     int paint_tile_initial_y;
     bool straightPathMode;
+    bool prevStraightPathState;
+    int straight_path_initial_x;
+    int straight_path_initial_y;
     enum Axis {
         None = 0,
         X,

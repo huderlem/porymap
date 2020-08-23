@@ -20,6 +20,8 @@ void MapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
                 this->straightPathMode = true;
             } else {
                 this->straightPathMode = false;
+                this->prevStraightPathState = false;
+                this->lockedAxis = MapPixmapItem::Axis::None;
             }
             if (this->straightPathMode) {
                 this->lockNondominantAxis(event);
@@ -290,10 +292,21 @@ void MapPixmapItem::lockNondominantAxis(QGraphicsSceneMouseEvent *event) {
     if (this->lockedAxis != MapPixmapItem::Axis::None) return;
 
     QPointF pos = event->pos();
-    int xDiff = (static_cast<int>(pos.x()) / 16) - this->paint_tile_initial_x;
-    int yDiff = (static_cast<int>(pos.y()) / 16) - this->paint_tile_initial_y;
-
+    int x = static_cast<int>(pos.x()) / 16;
+    int y = static_cast<int>(pos.y()) / 16;
+    if (event->modifiers() & Qt::ControlModifier) {
+        if (!this->prevStraightPathState) {
+            this->prevStraightPathState = true;
+            this->straight_path_initial_x = x;
+            this->straight_path_initial_y = y;
+        }
+    } else {
+        this->prevStraightPathState = false;
+    }
+    
     // Only lock an axis when the current pos != initial and not after the mouse gets released
+    int xDiff = x - this->straight_path_initial_x;
+    int yDiff = y - this->straight_path_initial_y;
     if ((xDiff || yDiff) && event->type() != QEvent::GraphicsSceneMouseRelease) {
         if (abs(xDiff) < abs(yDiff))
             this->lockedAxis = MapPixmapItem::Axis::X;
@@ -305,9 +318,9 @@ void MapPixmapItem::lockNondominantAxis(QGraphicsSceneMouseEvent *event) {
 // Adjust the cooresponding coordinate when it is locked
 int MapPixmapItem::adjustCoord(int coord, MapPixmapItem::Axis axis) {
     if (axis == MapPixmapItem::Axis::X && this->lockedAxis == MapPixmapItem::Axis::X)
-        coord = this->paint_tile_initial_x;
+        coord = this->straight_path_initial_x;
     else if (axis == MapPixmapItem::Axis::Y && this->lockedAxis == MapPixmapItem::Axis::Y)
-        coord = this->paint_tile_initial_y;
+        coord = this->straight_path_initial_y;
     return coord;
 }
 
@@ -751,8 +764,8 @@ void MapPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     QPointF pos = event->pos();
     int x = static_cast<int>(pos.x()) / 16;
     int y = static_cast<int>(pos.y()) / 16;
-    this->paint_tile_initial_x = x;
-    this->paint_tile_initial_y = y;
+    this->paint_tile_initial_x = this->straight_path_initial_x = x;
+    this->paint_tile_initial_y = this->straight_path_initial_y = y;
     emit startPaint(event, this);
     emit mouseEvent(event, this);
 }
