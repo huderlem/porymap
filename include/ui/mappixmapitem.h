@@ -36,7 +36,6 @@ public:
     bool right_click;
     int paint_tile_initial_x;
     int paint_tile_initial_y;
-    bool straightPathMode;
     bool prevStraightPathState;
     int straight_path_initial_x;
     int straight_path_initial_y;
