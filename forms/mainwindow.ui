@@ -632,7 +632,7 @@
                       <enum>Qt::LeftToRight</enum>
                      </property>
                      <property name="styleSheet">
-                      <string notr="true">margin-left: 10px</string>
+                      <string notr="true"/>
                      </property>
                      <property name="text">
                       <string>Straight Paths</string>
