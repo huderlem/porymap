@@ -2492,16 +2492,10 @@ void MainWindow::on_checkBox_smartPaths_stateChanged(int selected)
     bool enabled = selected == Qt::Checked;
     editor->settings->smartPathsEnabled = enabled;
     if (enabled) {
-        editor->cursorMapTileRect->setSmartPathMode();
+        editor->cursorMapTileRect->setSmartPathMode(true);
     } else {
-        editor->cursorMapTileRect->setNormalPathMode();
+        editor->cursorMapTileRect->setSmartPathMode(false);
     }
-}
-
-void MainWindow::on_checkBox_straightPaths_stateChanged(int selected)
-{
-    bool enabled = selected == Qt::Checked;
-    editor->settings->straightPathsEnabled = enabled;
 }
 
 void MainWindow::on_checkBox_ToggleBorder_stateChanged(int selected)

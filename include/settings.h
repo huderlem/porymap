@@ -8,7 +8,6 @@ class Settings
 public:
     Settings();
     bool smartPathsEnabled;
-    bool straightPathsEnabled;
     bool betterCursors;
     QCursor mapCursor;
     bool playerViewRectEnabled;

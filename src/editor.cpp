@@ -1009,7 +1009,8 @@ void Editor::onMapEndPaint(QGraphicsSceneMouseEvent *, MapPixmapItem *item) {
     this->cursorMapTileRect->stopAnchor();
 }
 
-void Editor::setSmartPathCursorMode(QGraphicsSceneMouseEvent *event) {
+void Editor::setSmartPathCursorMode(QGraphicsSceneMouseEvent *event)
+{
     bool shiftPressed = event->modifiers() & Qt::ShiftModifier;
     if (settings->smartPathsEnabled) {
         if (!shiftPressed) {
@@ -1055,13 +1056,13 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item
                     item->floodFill(event);
                 }
             } else {
+                this->setSmartPathCursorMode(event);
                 this->setStraightPathCursorMode(event);
                 if (this->cursorMapTileRect->getStraightPathMode()) {
                     item->lockNondominantAxis(event);
                     x = item->adjustCoord(x, MapPixmapItem::Axis::X);
                     y = item->adjustCoord(y, MapPixmapItem::Axis::Y);
                 }
-                this->setSmartPathCursorMode(event);
                 item->paint(event);
             }
         } else if (map_edit_mode == "select") {

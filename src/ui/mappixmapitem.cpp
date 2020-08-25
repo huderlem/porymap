@@ -15,8 +15,7 @@ void MapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
             int y = static_cast<int>(pos.y()) / 16;
 
             // Set straight paths on/off and snap to the dominant axis when on
-            bool straightPathsEnabled = event->modifiers() & Qt::ControlModifier;
-            if (this->settings->straightPathsEnabled || straightPathsEnabled) {
+            if (event->modifiers() & Qt::ControlModifier) {
                 this->lockNondominantAxis(event);
                 x = this->adjustCoord(x, MapPixmapItem::Axis::X);
                 y = this->adjustCoord(y, MapPixmapItem::Axis::Y);
@@ -55,8 +54,7 @@ void MapPixmapItem::shift(QGraphicsSceneMouseEvent *event) {
             int y = static_cast<int>(pos.y()) / 16;
 
             // Set straight paths on/off and snap to the dominant axis when on
-            bool straightPathsEnabled = event->modifiers() & Qt::ControlModifier;
-            if (this->settings->straightPathsEnabled || straightPathsEnabled) {
+            if (event->modifiers() & Qt::ControlModifier) {
                 this->lockNondominantAxis(event);
                 x = this->adjustCoord(x, MapPixmapItem::Axis::X);
                 y = this->adjustCoord(y, MapPixmapItem::Axis::Y);
@@ -302,19 +300,21 @@ void MapPixmapItem::lockNondominantAxis(QGraphicsSceneMouseEvent *event) {
     int xDiff = x - this->straight_path_initial_x;
     int yDiff = y - this->straight_path_initial_y;
     if ((xDiff || yDiff) && event->type() != QEvent::GraphicsSceneMouseRelease) {
-        if (abs(xDiff) < abs(yDiff))
+        if (abs(xDiff) < abs(yDiff)) {
             this->lockedAxis = MapPixmapItem::Axis::X;
-        else
+        } else {
             this->lockedAxis = MapPixmapItem::Axis::Y;
+        }
     }
 }
 
 // Adjust the cooresponding coordinate when it is locked
 int MapPixmapItem::adjustCoord(int coord, MapPixmapItem::Axis axis) {
-    if (axis == MapPixmapItem::Axis::X && this->lockedAxis == MapPixmapItem::Axis::X)
+    if (axis == MapPixmapItem::Axis::X && this->lockedAxis == MapPixmapItem::Axis::X) {
         coord = this->straight_path_initial_x;
-    else if (axis == MapPixmapItem::Axis::Y && this->lockedAxis == MapPixmapItem::Axis::Y)
+    } else if (axis == MapPixmapItem::Axis::Y && this->lockedAxis == MapPixmapItem::Axis::Y) {
         coord = this->straight_path_initial_y;
+    }
     return coord;
 }
 
