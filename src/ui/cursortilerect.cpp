@@ -58,14 +58,14 @@ void CursorTileRect::updateSelectionSize(int width, int height)
     this->update();
 }
 
-void CursorTileRect::setSmartPathMode()
+void CursorTileRect::setSmartPathMode(bool enable)
 {
-    this->smartPathMode = true;
+    this->smartPathMode = enable;
 }
 
-void CursorTileRect::setStraightPathMode()
+void CursorTileRect::setStraightPathMode(bool enable)
 {
-    this->straightPathMode = true;
+    this->straightPathMode = enable;
 }
 
 void CursorTileRect::setSingleTileMode()
@@ -78,20 +78,9 @@ void CursorTileRect::stopSingleTileMode()
     this->singleTileMode = false;
 }
 
-void CursorTileRect::setNormalPathMode()
-{
-    this->smartPathMode = false;
-    this->straightPathMode = false;
-}
-
 bool CursorTileRect::smartPathInEffect()
 {
     return !this->rightClickSelectionAnchored && this->smartPathMode && this->selectionHeight == 3 && this->selectionWidth == 3;
-}
-
-bool CursorTileRect::straightPathInEffect()
-{
-    return !this->rightClickSelectionAnchored && this->straightPathMode;
 }
 
 void CursorTileRect::updateLocation(int coordX, int coordY)
