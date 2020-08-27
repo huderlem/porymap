@@ -7,7 +7,13 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 The **"Breaking Changes"** listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. If porymap is used on a project that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.
 
 ## [Unreleased]
-Nothing, yet.
+### Added
+- Add undoable edit history for Events tab.
+- Add keyboard shortcut for `DEL` key to delete the currently selected event(s).
+- Disable ui while there is no open project to prevent crashing.
+
+### Fixed
+- Fix a bug with the current metatile selection zoom.
 
 ## [4.3.1] - 2020-07-17
 ### Added
