@@ -2917,6 +2917,9 @@
    <property name="text">
     <string>Tileset Editor</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+T</string>
+   </property>
   </action>
   <action name="actionSort_by_Area">
    <property name="checkable">
@@ -2972,6 +2975,9 @@
    <property name="toolTip">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show the player's view rectangle on the map based on the cursor's position.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
+   <property name="shortcut">
+    <string>V</string>
+   </property>
   </action>
   <action name="actionCursor_Tile_Outline">
    <property name="checkable">
@@ -2983,10 +2989,16 @@
    <property name="text">
     <string>Cursor Tile Outline</string>
    </property>
+   <property name="shortcut">
+    <string>C</string>
+   </property>
   </action>
   <action name="actionRegion_Map_Editor">
    <property name="text">
     <string>Region Map Editor</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+M</string>
    </property>
   </action>
   <action name="actionNew_Tileset">
