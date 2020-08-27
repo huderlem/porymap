@@ -16,7 +16,7 @@ void GraphicsView::mouseReleaseEvent(QMouseEvent *event) {
     QGraphicsView::mouseReleaseEvent(event);
 }
 
-void GraphicsView::drawForeground(QPainter *painter, const QRectF &rect) {
+void GraphicsView::drawForeground(QPainter *painter, const QRectF&) {
     for (auto item : this->overlay.getItems()) {
         item->render(painter);
     }

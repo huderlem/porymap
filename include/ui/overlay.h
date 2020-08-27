@@ -10,7 +10,7 @@ class OverlayItem {
 public:
     OverlayItem() {}
     virtual ~OverlayItem() {};
-    virtual void render(QPainter *painter) {};
+    virtual void render(QPainter *) {};
 };
 
 class OverlayText : public OverlayItem {

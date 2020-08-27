@@ -150,8 +150,7 @@ bool Tileset::appendToGraphics(QString graphicsFile, QString friendlyName, bool 
     QString dataString = "\n\t.align 2\n";
     dataString.append(QString("gTilesetPalettes_%1::\n").arg(friendlyName));
     for(int i = 0; i < Project::getNumPalettesTotal(); ++i) {
-        QString paletteString;
-        paletteString.sprintf("%02d.gbapal", i);
+        QString paletteString = QString("%1.gbapal").arg(i, 2, 10, QLatin1Char('0'));
         dataString.append(QString("\t.incbin \"data/tilesets/%1/%2/palettes/%3\"\n").arg(primaryString, friendlyName.toLower(), paletteString));
 
     }

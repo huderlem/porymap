@@ -407,7 +407,7 @@ void Editor::configureEncounterJSON(QWidget *window) {
         chanceSpinner->setMinimum(1);
         chanceSpinner->setMaximum(9999);
         chanceSpinner->setValue(chance);
-        connect(chanceSpinner, QOverload<int>::of(&QSpinBox::valueChanged), [&chanceSpinner, &updateTotal, &currentField](int) {
+        connect(chanceSpinner, QOverload<int>::of(&QSpinBox::valueChanged), [&updateTotal, &currentField](int) {
             updateTotal(currentField);
         });
 
@@ -417,7 +417,7 @@ void Editor::configureEncounterJSON(QWidget *window) {
         QVBoxLayout *slotChoiceLayout = new QVBoxLayout;
         if (useGroups) {
             QComboBox *groupCombo = new QComboBox;
-            connect(groupCombo, QOverload<const QString &>::of(&QComboBox::activated), [&tempFields, &currentField, index](QString newGroupName) {
+            connect(groupCombo, QOverload<const QString &>::of(&QComboBox::textActivated), [&tempFields, &currentField, index](QString newGroupName) {
                 for (EncounterField &field : tempFields) {
                     if (field.name == currentField.name) {
                         for (QString groupName : field.groups.keys()) {
@@ -478,7 +478,7 @@ void Editor::configureEncounterJSON(QWidget *window) {
     };
 
     // lambda: Draws the slot widgets onto a grid (4 wide) on the dialog window.
-    auto drawSlotWidgets = [this, &dialog, &grid, &createNewSlot, &fieldSlots, &updateTotal, &tempFields](int index) {
+    auto drawSlotWidgets = [&dialog, &grid, &createNewSlot, &fieldSlots, &updateTotal, &tempFields](int index) {
         // Clear them first.
         while (!fieldSlots.isEmpty()) {
             auto slot = fieldSlots.takeFirst();
@@ -536,14 +536,14 @@ void Editor::configureEncounterJSON(QWidget *window) {
 
     QPushButton *addSlotButton = new QPushButton(QIcon(":/icons/add.ico"), "");
     addSlotButton->setFlat(true);
-    connect(addSlotButton, &QPushButton::clicked, [this, &fieldChoices, &drawSlotWidgets, &tempFields]() {
+    connect(addSlotButton, &QPushButton::clicked, [&fieldChoices, &drawSlotWidgets, &tempFields]() {
         EncounterField &field = tempFields[fieldChoices->currentIndex()];
         field.encounterRates.append(1);
         drawSlotWidgets(fieldChoices->currentIndex());
     });
     QPushButton *removeSlotButton = new QPushButton(QIcon(":/icons/delete.ico"), "");
     removeSlotButton->setFlat(true);
-    connect(removeSlotButton, &QPushButton::clicked, [this, &fieldChoices, &drawSlotWidgets, &tempFields]() {
+    connect(removeSlotButton, &QPushButton::clicked, [&fieldChoices, &drawSlotWidgets, &tempFields]() {
         EncounterField &field = tempFields[fieldChoices->currentIndex()];
         if (field.encounterRates.size() > 1)
             field.encounterRates.removeLast();

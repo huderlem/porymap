@@ -1166,8 +1166,7 @@ void MainWindow::on_actionNew_Tileset_triggered() {
             }
             newSet->palettes->append(*currentPal);
             newSet->palettePreviews->append(*currentPal);
-            QString fileName;
-            fileName.sprintf("%02d.pal", i);
+            QString fileName = QString("%1.pal").arg(i, 2, 10, QLatin1Char('0'));
             newSet->palettePaths.append(fullDirectoryPath+"/palettes/" + fileName);
         }
         (*newSet->palettes)[0][1] = qRgb(255,0,255);
@@ -2270,7 +2269,7 @@ void MainWindow::onLoadMapRequested(QString mapName, QString fromMapName) {
     editor->setSelectedConnectionFromMap(fromMapName);
 }
 
-void MainWindow::onMapChanged(Map *map) {
+void MainWindow::onMapChanged(Map *) {
     updateMapList();
 }
 
@@ -2566,7 +2565,7 @@ void MainWindow::on_actionThemes_triggered()
 
     QDialogButtonBox buttonBox(QDialogButtonBox::Apply | QDialogButtonBox::Close, Qt::Horizontal, &themeSelectorWindow);
     form.addRow(&buttonBox);
-    connect(&buttonBox, &QDialogButtonBox::clicked, [&themeSelectorWindow, &buttonBox, themeSelector, this](QAbstractButton *button){
+    connect(&buttonBox, &QDialogButtonBox::clicked, [&buttonBox, themeSelector, this](QAbstractButton *button){
         if (button == buttonBox.button(QDialogButtonBox::Apply)) {
             QString theme = themeSelector->currentText();
             porymapConfig.setTheme(theme);

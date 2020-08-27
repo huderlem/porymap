@@ -1557,10 +1557,10 @@ void Project::loadTilesetAssets(Tileset* tileset) {
         QString path = tileset->palettePaths.value(i);
         QString text = parser.readTextFile(path);
         if (!text.isNull()) {
-            QStringList lines = text.split(QRegExp("[\r\n]"),QString::SkipEmptyParts);
+            QStringList lines = text.split(QRegExp("[\r\n]"), Qt::SkipEmptyParts);
             if (lines.length() == 19 && lines[0] == "JASC-PAL" && lines[1] == "0100" && lines[2] == "16") {
                 for (int j = 0; j < 16; j++) {
-                    QStringList rgb = lines[j + 3].split(QRegExp(" "), QString::SkipEmptyParts);
+                    QStringList rgb = lines[j + 3].split(QRegExp(" "), Qt::SkipEmptyParts);
                     if (rgb.length() != 3) {
                         logWarn(QString("Invalid tileset palette RGB value: '%1'").arg(lines[j + 3]));
                         palette.append(qRgb((j - 3) * 16, (j - 3) * 16, (j - 3) * 16));

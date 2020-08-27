@@ -26,12 +26,12 @@ public:
     int mapHeight = 0;
     QVector<uint8_t> tiles;
     QString cityMap;
-    RegionMapHistoryItem(int type, QVector<uint8_t> tiles, QString cityMap) {
+    RegionMapHistoryItem(int which, QVector<uint8_t> tiles, QString cityMap) {
         this->which = which;
         this->tiles = tiles;
         this->cityMap = cityMap;
     }
-    RegionMapHistoryItem(int type, QVector<uint8_t> tiles, int width, int height) {
+    RegionMapHistoryItem(int which, QVector<uint8_t> tiles, int width, int height) {
         this->which = which;
         this->tiles = tiles;
         this->mapWidth = width;

@@ -72,7 +72,7 @@ void log(QString message, LogType type) {
     QFile outFile(getLogPath());
     outFile.open(QIODevice::WriteOnly | QIODevice::Append);
     QTextStream ts(&outFile);
-    ts << message << endl;
+    ts << message << Qt::endl;
 }
 
 QString getLogPath() {

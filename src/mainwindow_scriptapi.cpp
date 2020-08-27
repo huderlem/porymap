@@ -3,8 +3,6 @@
 #include "scripting.h"
 #include "editcommands.h"
 
-static Blockdata *oldBlockdata;
-
 QJSValue MainWindow::getBlock(int x, int y) {
     if (!this->editor || !this->editor->map)
         return QJSValue();
