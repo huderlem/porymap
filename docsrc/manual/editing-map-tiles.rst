@@ -27,9 +27,9 @@ The border's visibility, including the surrounding map connections, can be toggl
 
 You can zoom in and out on the map with *View -> Zoom In* (``Ctrl++`` or ``Ctrl+Mouse Wheel Scroll Up``) and *View -> Zoom Out* (``Ctrl+-`` or ``Ctrl+Mouse Wheel Scroll Down``).
 
-By default, the mouse cursor will show a white indicator outline of the currently-hovered tile(s) of what will be painted.  You can disable this outline with *View -> Cursor Tile Outline*.  Additionally, the cursor changes its appearance depending on which tool you currently have selected in the toolbar.  You can disable this with *View -> Cursor Icons*.
+By default, the mouse cursor will show a white indicator outline of the currently-hovered tile(s) of what will be painted.  You can disable this outline with *View -> Cursor Tile Outline* (``C``).  Additionally, the cursor changes its appearance depending on which tool you currently have selected in the toolbar.  You can disable this with *View -> Cursor Icons*.
 
-An indicator outline for the player's in-game view radius can be toggled with *View -> Player View Rectangle*.
+An indicator outline for the player's in-game view radius can be toggled with *View -> Player View Rectangle* (``V``).
 
 The Metatile Selection Pane can be zoomed in or out using the slider on the bottom.
 
