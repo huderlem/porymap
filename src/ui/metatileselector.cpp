@@ -67,7 +67,7 @@ void MetatileSelector::setTilesets(Tileset *primaryTileset, Tileset *secondaryTi
     this->secondaryTileset = secondaryTileset;
     if (!this->selectionIsValid()) {
         this->select(Project::getNumMetatilesPrimary() + this->secondaryTileset->metatiles->length() - 1);
-    } else {
+    } else if (!this->externalSelection) {
         updateSelectedMetatiles();
     }
     this->draw();
