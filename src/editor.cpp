@@ -1011,11 +1011,19 @@ void Editor::onMapEndPaint(QGraphicsSceneMouseEvent *, MapPixmapItem *item) {
 
 void Editor::setSmartPathCursorMode(QGraphicsSceneMouseEvent *event)
 {
-    bool smartPathsEnabled = event->modifiers() & Qt::ShiftModifier;
-    if (smartPathsEnabled || settings->smartPathsEnabled) {
-        this->cursorMapTileRect->setSmartPathMode();
+    bool shiftPressed = event->modifiers() & Qt::ShiftModifier;
+    if (settings->smartPathsEnabled) {
+        if (!shiftPressed) {
+            this->cursorMapTileRect->setSmartPathMode();
+        } else {
+            this->cursorMapTileRect->setNormalPathMode();
+        }
     } else {
-        this->cursorMapTileRect->setNormalPathMode();
+        if (shiftPressed) {
+            this->cursorMapTileRect->setSmartPathMode();
+        } else {
+            this->cursorMapTileRect->setNormalPathMode();
+        }
     }
 }
 
