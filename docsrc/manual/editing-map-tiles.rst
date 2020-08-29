@@ -119,7 +119,7 @@ The Map Shift Tool |map-shift-tool| (*Tools -> Map Shift*, or ``S``) lets you sh
 Smart Paths
 -----------
 
-Smart Paths provide an easy way to paint pathways, ponds, and mountains.  If there is any formation of metatiles that have a basic outline and a "middle" tile, then smart paths can help save you time when painting.  **Smart Paths can only be used when you have a 3x3 metatile selection.**  Smart Paths is only available when using the Pencil Tool or the Bucket Fill Tool.  To enable Smart Paths, you must either check the Smart Paths checkbox above the map area, or you can hold down the ``Shift`` key.  Below are a few examples that illustrate the power of Smart Paths.
+Smart Paths provide an easy way to paint pathways, ponds, and mountains.  If there is any formation of metatiles that have a basic outline and a "middle" tile, then smart paths can help save you time when painting.  **Smart Paths can only be used when you have a 3x3 metatile selection.**  Smart Paths is only available when using the Pencil Tool or the Bucket Fill Tool.  To enable Smart Paths, you must either check the Smart Paths checkbox above the map area, or you can hold down the ``Shift`` key.  If you have the Smart Paths checkbox checked then you can temporarily disable smart paths by holding down the ``Shift`` key.  Below are a few examples that illustrate the power of Smart Paths.
 
 .. figure:: images/editing-map-tiles/smart-paths-1-painting.gif
     :alt: Regular vs. Smart Paths
