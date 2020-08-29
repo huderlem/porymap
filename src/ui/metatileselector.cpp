@@ -66,8 +66,14 @@ void MetatileSelector::setTilesets(Tileset *primaryTileset, Tileset *secondaryTi
     this->primaryTileset = primaryTileset;
     this->secondaryTileset = secondaryTileset;
     if (!this->selectionIsValid()) {
-        this->select(Project::getNumMetatilesPrimary() + this->secondaryTileset->metatiles->length() - 1);
-    } else if (!this->externalSelection) {
+        if (this->externalSelection) {
+            this->select(0);
+        } else {
+            this->select(Project::getNumMetatilesPrimary() + this->secondaryTileset->metatiles->length() - 1);
+        }
+    } else if (this->externalSelection) {
+        emit selectedMetatilesChanged();
+    } else {
         updateSelectedMetatiles();
     }
     this->draw();
@@ -153,15 +159,24 @@ void MetatileSelector::updateSelectedMetatiles() {
 }
 
 bool MetatileSelector::selectionIsValid() {
-    QPoint origin = this->getSelectionStart();
-    QPoint dimensions = this->getSelectionDimensions();
-    for (int j = 0; j < dimensions.y(); j++) {
-        for (int i = 0; i < dimensions.x(); i++) {
-            if (!Tileset::metatileIsValid(this->getMetatileId(origin.x() + i, origin.y() + j), this->primaryTileset, this->secondaryTileset))
+    if (this->externalSelection) {
+        for (int i = 0; i < this->externalSelectedMetatiles->count(); ++i) {
+            int tileId = this->externalSelectedMetatiles->at(i);
+            if (!Tileset::metatileIsValid(tileId, this->primaryTileset, this->secondaryTileset))
                 return false;
         }
+        return true;
+    } else {
+        QPoint origin = this->getSelectionStart();
+        QPoint dimensions = this->getSelectionDimensions();
+        for (int j = 0; j < dimensions.y(); j++) {
+            for (int i = 0; i < dimensions.x(); i++) {
+                if (!Tileset::metatileIsValid(this->getMetatileId(origin.x() + i, origin.y() + j), this->primaryTileset, this->secondaryTileset))
+                    return false;
+            }
+        }
+        return true;
     }
-    return true;
 }
 
 uint16_t MetatileSelector::getMetatileId(int x, int y) {
