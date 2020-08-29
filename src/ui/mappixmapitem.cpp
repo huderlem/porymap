@@ -15,12 +15,20 @@ void MapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
             int y = static_cast<int>(pos.y()) / 16;
 
             // Paint onto the map.
-            bool smartPathsEnabled = event->modifiers() & Qt::ShiftModifier;
+            bool shiftPressed = event->modifiers() & Qt::ShiftModifier;
             QPoint selectionDimensions = this->metatileSelector->getSelectionDimensions();
-            if ((this->settings->smartPathsEnabled || smartPathsEnabled) && selectionDimensions.x() == 3 && selectionDimensions.y() == 3) {
-                paintSmartPath(x, y);
+            if (settings->smartPathsEnabled) {
+                if (!shiftPressed && selectionDimensions.x() == 3 && selectionDimensions.y() == 3) {
+                    paintSmartPath(x, y);
+                } else {
+                    paintNormal(x, y);
+                }
             } else {
-                paintNormal(x, y);
+                if (shiftPressed && selectionDimensions.x() == 3 && selectionDimensions.y() == 3) {
+                    paintSmartPath(x, y);
+                } else {
+                    paintNormal(x, y);
+                }
             }
         }
     }
