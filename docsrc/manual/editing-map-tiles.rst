@@ -136,6 +136,11 @@ Smart Paths provide an easy way to paint pathways, ponds, and mountains.  If the
 
     Smart Paths from Right-Click Selection
 
+Straight Paths
+--------------
+
+Straight Paths allows for painting tiles in straight lines by snapping the cursor to that line.  Either the X or Y axis will be locked depending on the direction you start painting in.  To enable straight paths simply hold down ``Ctrl`` when painting tiles.  Straight paths works for both metatiles and collision tiles, and works in conjunction with *Smart Paths*.  It also works with the *Map Shift Tool*.  Straight path painting can be chained together with normal painting to allow you, for example, to paint a straight path, then release ``Ctrl`` to continue the path normally, then press ``Ctrl`` again to continue painting a straight path from that position.
+
 Change Map Border
 -----------------
 
