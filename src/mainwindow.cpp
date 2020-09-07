@@ -1366,6 +1366,9 @@ void MainWindow::on_actionPlayer_View_Rectangle_triggered()
     bool enabled = ui->actionPlayer_View_Rectangle->isChecked();
     porymapConfig.setShowPlayerView(enabled);
     this->editor->settings->playerViewRectEnabled = enabled;
+    if (this->editor->map_item->has_mouse) {
+        this->editor->playerViewRect->setVisible(enabled);
+    }
 }
 
 void MainWindow::on_actionCursor_Tile_Outline_triggered()
@@ -1373,6 +1376,9 @@ void MainWindow::on_actionCursor_Tile_Outline_triggered()
     bool enabled = ui->actionCursor_Tile_Outline->isChecked();
     porymapConfig.setShowCursorTile(enabled);
     this->editor->settings->cursorTileRectEnabled = enabled;
+    if (this->editor->map_item->has_mouse) {
+        this->editor->cursorMapTileRect->setVisible(enabled);
+    }
 }
 
 void MainWindow::on_actionUse_Encounter_Json_triggered(bool checked)
