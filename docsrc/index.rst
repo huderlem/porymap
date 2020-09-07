@@ -20,6 +20,7 @@ Porymap Documentation
     manual/region-map-editor
     manual/scripting-capabilities
     manual/project-files
+    manual/shortcuts
     manual/settings-and-options
 
 .. toctree::
