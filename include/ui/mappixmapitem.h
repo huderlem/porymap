@@ -33,6 +33,7 @@ public:
     MetatileSelector *metatileSelector;
     Settings *settings;
     bool active;
+    bool has_mouse = false;
     bool right_click;
     int paint_tile_initial_x;
     int paint_tile_initial_y;
@@ -93,6 +94,7 @@ signals:
 
 protected:
     void hoverMoveEvent(QGraphicsSceneHoverEvent*);
+    void hoverEnterEvent(QGraphicsSceneHoverEvent*);
     void hoverLeaveEvent(QGraphicsSceneHoverEvent*);
     void mousePressEvent(QGraphicsSceneMouseEvent*);
     void mouseMoveEvent(QGraphicsSceneMouseEvent*);

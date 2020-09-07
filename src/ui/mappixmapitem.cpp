@@ -747,11 +747,15 @@ void MapPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
         setCursor(this->settings->mapCursor);
     }
 }
+void MapPixmapItem::hoverEnterEvent(QGraphicsSceneHoverEvent *) {
+    this->has_mouse = true;
+}
 void MapPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
     emit this->hoveredMapMetatileCleared();
     if (this->settings->betterCursors && this->paintingMode != MapPixmapItem::PaintMode::Disabled) {
         unsetCursor();
     }
+    this->has_mouse = false;
 }
 void MapPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     QPointF pos = event->pos();
