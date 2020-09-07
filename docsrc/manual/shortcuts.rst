@@ -41,11 +41,11 @@ Main Window
    Select Tiles From Map, Hold Right-click while dragging
    Bucket Fill Metatiles, Middle-click from "paint" or "fill" mode
    Magic Fill Metatiles, ``Ctrl+`` Middle-click from "paint" or "fill" mode
-   Select Metatile, Rick-click in "paint" or "fill" mode
+   Select Metatile, Right-click in "paint" or "fill" mode
    Zoom In, ``Ctrl++`` `or` ``Ctrl+=``
    Zoom Out, ``Ctrl+-``
    Reset View Scale, ``Ctrl+0``
-   Show Grid, ``Ctrl+G``
+   Toggle Grid, ``Ctrl+G``
    Toggle Cursor Outline, ``C``
    Toggle Player View, ``V``
    Toggle Draw Smart Paths, Hold ``Shift``
