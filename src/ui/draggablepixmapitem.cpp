@@ -75,8 +75,7 @@ void DraggablePixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *mouse) {
     if (active) {
         int x = static_cast<int>(mouse->pos().x() + this->pos().x()) / 16;
         int y = static_cast<int>(mouse->pos().y() + this->pos().y()) / 16;
-        this->editor->playerViewRect->updateLocation(x, y);
-        this->editor->cursorMapTileRect->updateLocation(x, y);
+        emit this->editor->map_item->hoveredMapMetatileChanged(x, y);
         if (x != last_x || y != last_y) {
         	QList <Event *> selectedEvents;
             if (editor->selected_events->contains(this)) {
