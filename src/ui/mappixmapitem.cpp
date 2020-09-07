@@ -280,26 +280,25 @@ void MapPixmapItem::paintSmartPath(int x, int y, bool fromScriptCall) {
 }
 
 void MapPixmapItem::lockNondominantAxis(QGraphicsSceneMouseEvent *event) {
-    // Return if an axis is already locked
-    if (this->lockedAxis != MapPixmapItem::Axis::None) return;
+    /* Return if an axis is already locked, or if the mouse has been released. The mouse release check is necessary
+     * because MapPixmapItem::mouseReleaseEvent seems to get called before this function, which would unlock the axis
+     * and then get immediately re-locked here until the next ctrl-click. */
+    if (this->lockedAxis != MapPixmapItem::Axis::None || event->type() == QEvent::GraphicsSceneMouseRelease)
+        return;
 
     QPointF pos = event->pos();
     int x = static_cast<int>(pos.x()) / 16;
     int y = static_cast<int>(pos.y()) / 16;
-    if (event->modifiers() & Qt::ControlModifier) {
-        if (!this->prevStraightPathState) {
-            this->prevStraightPathState = true;
-            this->straight_path_initial_x = x;
-            this->straight_path_initial_y = y;
-        }
-    } else {
-        this->prevStraightPathState = false;
+    if (!this->prevStraightPathState) {
+        this->prevStraightPathState = true;
+        this->straight_path_initial_x = x;
+        this->straight_path_initial_y = y;
     }
     
-    // Only lock an axis when the current pos != initial and not after the mouse gets released
+    // Only lock an axis when the current position != initial
     int xDiff = x - this->straight_path_initial_x;
     int yDiff = y - this->straight_path_initial_y;
-    if ((xDiff || yDiff) && event->type() != QEvent::GraphicsSceneMouseRelease) {
+    if (xDiff || yDiff) {
         if (abs(xDiff) < abs(yDiff)) {
             this->lockedAxis = MapPixmapItem::Axis::X;
         } else {
