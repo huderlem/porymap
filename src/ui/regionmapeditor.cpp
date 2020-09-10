@@ -580,6 +580,7 @@ void RegionMapEditor::on_pushButton_CityMap_add_clicked() {
     QFormLayout form(&popup);
 
     QLineEdit *input = new QLineEdit();
+    input->setClearButtonEnabled(true);
     form.addRow(new QLabel("Name:"), input);
 
     QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &popup);
