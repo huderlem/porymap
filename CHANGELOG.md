@@ -14,14 +14,15 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Add "Straight Paths" feature for drawing straight lines while holding `Ctrl`.
 - The New Map dialog now gives an option to specify the "Show Location Name" field.
 - Some new shortcuts were added in [porymap/#290](https://github.com/huderlem/porymap/pull/290).
+- All plain text boxes now have a clear button to delete the text.
 
 ### Changed
-- Holding shift now toggles "Smart Path" drawing instead of always enabling it.
+- Holding `shift` now toggles "Smart Path" drawing; when the "Smart Paths" checkbox is checked, holding `shift` will temporarily disable it.
 
 ### Fixed
 - Fix a bug with the current metatile selection zoom.
 - Fix bug preventing the status bar from updating the current position while dragging events.
-- Fix a regression that cleared the metatile selection when switching between maps.
+- Fix porymap icon not showing on window or panel on Linux
 
 ## [4.3.1] - 2020-07-17
 ### Added
