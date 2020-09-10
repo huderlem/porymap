@@ -252,6 +252,7 @@ void Editor::addNewWildMonGroup(QWidget *window) {
     QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
 
     QLineEdit *lineEdit = new QLineEdit();
+    lineEdit->setClearButtonEnabled(true);
     form.addRow(new QLabel("Group Base Label:"), lineEdit);
     QRegularExpressionValidator *validator = new QRegularExpressionValidator(QRegularExpression("[_A-Za-z0-9]*"));
     lineEdit->setValidator(validator);
@@ -511,6 +512,7 @@ void Editor::configureEncounterJSON(QWidget *window) {
         connect(&newFieldButtonBox, SIGNAL(rejected()), &newNameDialog, SLOT(reject()));
 
         QLineEdit *newNameEdit = new QLineEdit;
+        newNameEdit->setClearButtonEnabled(true);
 
         QFormLayout newFieldForm(&newNameDialog);
 
