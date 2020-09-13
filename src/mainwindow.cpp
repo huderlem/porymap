@@ -1454,6 +1454,7 @@ void MainWindow::addNewEvent(QString event_type)
     if (editor && editor->project) {
         DraggablePixmapItem *object = editor->addNewEvent(event_type);
         if (object) {
+            updateObjects();
             editor->selectMapEvent(object, false);
         } else {
             QMessageBox msgBox(this);
