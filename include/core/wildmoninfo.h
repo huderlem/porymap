@@ -1,3 +1,4 @@
+#pragma once
 #ifndef GUARD_WILDMONINFO_H
 #define GUARD_WILDMONINFO_H
 

@@ -1,3 +1,4 @@
+#pragma once
 #ifndef REGIONMAP_H
 #define REGIONMAP_H
 

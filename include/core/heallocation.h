@@ -1,3 +1,4 @@
+#pragma once
 #ifndef HEALLOCATION_H
 #define HEALLOCATION_H
 

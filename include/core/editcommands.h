@@ -1,3 +1,4 @@
+#pragma once
 #ifndef EDITCOMMANDS_H
 #define EDITCOMMANDS_H
 

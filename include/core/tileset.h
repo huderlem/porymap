@@ -1,3 +1,4 @@
+#pragma once
 #ifndef TILESET_H
 #define TILESET_H
 

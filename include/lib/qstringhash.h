@@ -1,3 +1,4 @@
+#pragma once
 #ifndef QSTRINGHASH_H
 #define QSTRINGHASH_H
 

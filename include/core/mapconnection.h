@@ -1,3 +1,4 @@
+#pragma once
 #ifndef MAPCONNECTION_H
 #define MAPCONNECTION_H
 

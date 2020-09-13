@@ -1,3 +1,4 @@
+#pragma once
 #ifndef BLOCKDATA_H
 #define BLOCKDATA_H
 

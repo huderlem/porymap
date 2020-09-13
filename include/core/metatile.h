@@ -1,3 +1,4 @@
+#pragma once
 #ifndef METATILE_H
 #define METATILE_H
 
