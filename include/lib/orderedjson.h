@@ -51,7 +51,8 @@
  * THE SOFTWARE.
  */
 
-#pragma once
+#ifndef ORDERED_JSON_H
+#define ORDERED_JSON_H
 
 #include <QString>
 #include <QVector>
@@ -240,3 +241,4 @@ protected:
 
 } // namespace poryjson
 
+#endif // ORDERED_JSON_H

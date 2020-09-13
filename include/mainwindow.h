@@ -262,6 +262,7 @@ private:
 
     bool isProgrammaticEventTabChange;
     bool projectHasUnsavedChanges;
+    bool projectOpenFailure = false;
 
     MapSortOrder mapSortOrder;
 
