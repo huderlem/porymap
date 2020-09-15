@@ -50,7 +50,8 @@ public:
     void setRecentMap(QString map);
     void setMapSortOrder(MapSortOrder order);
     void setPrettyCursors(bool enabled);
-    void setGeometry(QByteArray, QByteArray, QByteArray, QByteArray);
+    void setMainGeometry(QByteArray, QByteArray, QByteArray, QByteArray);
+    void setTilesetEditorGeometry(QByteArray, QByteArray);
     void setCollisionOpacity(int opacity);
     void setMetatilesZoom(int zoom);
     void setShowPlayerView(bool enabled);
@@ -62,7 +63,8 @@ public:
     QString getRecentMap();
     MapSortOrder getMapSortOrder();
     bool getPrettyCursors();
-    QMap<QString, QByteArray> getGeometry();
+    QMap<QString, QByteArray> getMainGeometry();
+    QMap<QString, QByteArray> getTilesetEditorGeometry();
     int getCollisionOpacity();
     int getMetatilesZoom();
     bool getShowPlayerView();
@@ -83,11 +85,13 @@ private:
     QByteArray bytesFromString(QString);
     MapSortOrder mapSortOrder;
     bool prettyCursors;
-    QByteArray windowGeometry;
-    QByteArray windowState;
+    QByteArray mainWindowGeometry;
+    QByteArray mainWindowState;
     QByteArray mapSplitterState;
     QByteArray eventsSlpitterState;
     QByteArray mainSplitterState;
+    QByteArray tilesetEditorGeometry;
+    QByteArray tilesetEditorState;
     int collisionOpacity;
     int metatilesZoom;
     bool showPlayerView;

@@ -606,6 +606,11 @@ void TilesetEditor::closeEvent(QCloseEvent *event)
     } else {
         event->accept();
     }
+
+    porymapConfig.setTilesetEditorGeometry(
+        this->saveGeometry(),
+        this->saveState()
+    );
 }
 
 void TilesetEditor::on_actionChange_Metatiles_Count_triggered()
