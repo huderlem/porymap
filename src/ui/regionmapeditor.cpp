@@ -899,6 +899,11 @@ void RegionMapEditor::closeEvent(QCloseEvent *event)
     } else {
         event->accept();
     }
+
+    porymapConfig.setRegionMapEditorGeometry(
+        this->saveGeometry(),
+        this->saveState()
+    );
 }
 
 void RegionMapEditor::on_verticalSlider_Zoom_Map_Image_valueChanged(int val) {

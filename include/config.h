@@ -52,6 +52,7 @@ public:
     void setPrettyCursors(bool enabled);
     void setMainGeometry(QByteArray, QByteArray, QByteArray, QByteArray);
     void setTilesetEditorGeometry(QByteArray, QByteArray);
+    void setRegionMapEditorGeometry(QByteArray, QByteArray);
     void setCollisionOpacity(int opacity);
     void setMetatilesZoom(int zoom);
     void setShowPlayerView(bool enabled);
@@ -65,6 +66,7 @@ public:
     bool getPrettyCursors();
     QMap<QString, QByteArray> getMainGeometry();
     QMap<QString, QByteArray> getTilesetEditorGeometry();
+    QMap<QString, QByteArray> getRegionMapEditorGeometry();
     int getCollisionOpacity();
     int getMetatilesZoom();
     bool getShowPlayerView();
@@ -92,6 +94,8 @@ private:
     QByteArray mainSplitterState;
     QByteArray tilesetEditorGeometry;
     QByteArray tilesetEditorState;
+    QByteArray regionMapEditorGeometry;
+    QByteArray regionMapEditorState;
     int collisionOpacity;
     int metatilesZoom;
     bool showPlayerView;
