@@ -1377,7 +1377,7 @@ void MainWindow::on_actionCursor_Tile_Outline_triggered()
     porymapConfig.setShowCursorTile(enabled);
     this->editor->settings->cursorTileRectEnabled = enabled;
     if (this->editor->map_item->has_mouse) {
-        this->editor->cursorMapTileRect->setVisible(enabled);
+        this->editor->cursorMapTileRect->setVisibility(enabled);
     }
 }
 
