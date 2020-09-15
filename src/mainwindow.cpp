@@ -2661,7 +2661,10 @@ void MainWindow::on_actionRegion_Map_Editor_triggered() {
             return;
         }
         connect(this->regionMapEditor, &QObject::destroyed, [=](QObject *) { this->regionMapEditor = nullptr; });
-        this->regionMapEditor->setAttribute(Qt::WA_DeleteOnClose);
+        logInfo("Restoring region map editor geometry from previous session.");
+        QMap<QString, QByteArray> geometry = porymapConfig.getRegionMapEditorGeometry();
+        this->regionMapEditor->restoreGeometry(geometry.value("region_map_editor_geometry"));
+        this->regionMapEditor->restoreState(geometry.value("region_map_editor_state"));
     }
 
     if (!this->regionMapEditor->isVisible()) {

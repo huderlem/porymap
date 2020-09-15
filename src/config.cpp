@@ -141,6 +141,10 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->tilesetEditorGeometry = bytesFromString(value);
     } else if (key == "tileset_editor_state") {
         this->tilesetEditorState = bytesFromString(value);
+    } else if (key == "region_map_editor_geometry") {
+        this->regionMapEditorGeometry = bytesFromString(value);
+    } else if (key == "region_map_editor_state") {
+        this->regionMapEditorState = bytesFromString(value);
     } else if (key == "metatiles_zoom") {
         bool ok;
         this->metatilesZoom = qMax(10, qMin(100, value.toInt(&ok)));
@@ -196,6 +200,8 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("main_splitter_state", stringFromByteArray(this->mainSplitterState));
     map.insert("tileset_editor_geometry", stringFromByteArray(this->tilesetEditorGeometry));
     map.insert("tileset_editor_state", stringFromByteArray(this->tilesetEditorState));
+    map.insert("region_map_editor_geometry", stringFromByteArray(this->regionMapEditorGeometry));
+    map.insert("region_map_editor_state", stringFromByteArray(this->regionMapEditorState));
     map.insert("collision_opacity", QString("%1").arg(this->collisionOpacity));
     map.insert("metatiles_zoom", QString("%1").arg(this->metatilesZoom));
     map.insert("show_player_view", this->showPlayerView ? "1" : "0");
@@ -264,6 +270,12 @@ void PorymapConfig::setTilesetEditorGeometry(QByteArray tilesetEditorGeometry_, 
     this->save();
 }
 
+void PorymapConfig::setRegionMapEditorGeometry(QByteArray regionMapEditorGeometry_, QByteArray regionMapEditorState_) {
+    this->regionMapEditorGeometry = regionMapEditorGeometry_;
+    this->regionMapEditorState = regionMapEditorState_;
+    this->save();
+}
+
 void PorymapConfig::setCollisionOpacity(int opacity) {
     this->collisionOpacity = opacity;
     // don't auto-save here because this can be called very frequently.
@@ -324,6 +336,15 @@ QMap<QString, QByteArray> PorymapConfig::getTilesetEditorGeometry() {
 
     geometry.insert("tileset_editor_geometry", this->tilesetEditorGeometry);
     geometry.insert("tileset_editor_state", this->tilesetEditorState);
+
+    return geometry;
+}
+
+QMap<QString, QByteArray> PorymapConfig::getRegionMapEditorGeometry() {
+    QMap<QString, QByteArray> geometry;
+
+    geometry.insert("region_map_editor_geometry", this->regionMapEditorGeometry);
+    geometry.insert("region_map_editor_state", this->regionMapEditorState);
 
     return geometry;
 }
