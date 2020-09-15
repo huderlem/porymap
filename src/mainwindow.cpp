@@ -350,10 +350,10 @@ void MainWindow::loadUserSettings() {
 }
 
 void MainWindow::restoreWindowState() {
-    logInfo("Restoring window geometry from previous session.");
-    QMap<QString, QByteArray> geometry = porymapConfig.getGeometry();
-    this->restoreGeometry(geometry.value("window_geometry"));
-    this->restoreState(geometry.value("window_state"));
+    logInfo("Restoring main window geometry from previous session.");
+    QMap<QString, QByteArray> geometry = porymapConfig.getMainGeometry();
+    this->restoreGeometry(geometry.value("main_window_geometry"));
+    this->restoreState(geometry.value("main_window_state"));
     this->ui->splitter_map->restoreState(geometry.value("map_splitter_state"));
     this->ui->splitter_main->restoreState(geometry.value("main_splitter_state"));
 }
@@ -2518,7 +2518,10 @@ void MainWindow::on_actionTileset_Editor_triggered()
         this->tilesetEditor = new TilesetEditor(this->editor->project, this->editor->map, this);
         connect(this->tilesetEditor, SIGNAL(tilesetsSaved(QString, QString)), this, SLOT(onTilesetsSaved(QString, QString)));
         connect(this->tilesetEditor, &QObject::destroyed, [=](QObject *) { this->tilesetEditor = nullptr; });
-        this->tilesetEditor->setAttribute(Qt::WA_DeleteOnClose);
+        logInfo("Restoring tileset editor geometry from previous session.");
+        QMap<QString, QByteArray> geometry = porymapConfig.getTilesetEditorGeometry();
+        this->tilesetEditor->restoreGeometry(geometry.value("tileset_editor_geometry"));
+        this->tilesetEditor->restoreState(geometry.value("tileset_editor_state"));
     }
 
     if (!this->tilesetEditor->isVisible()) {
@@ -2697,7 +2700,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
         }
     }
 
-    porymapConfig.setGeometry(
+    porymapConfig.setMainGeometry(
         this->saveGeometry(),
         this->saveState(),
         this->ui->splitter_map->saveState(),

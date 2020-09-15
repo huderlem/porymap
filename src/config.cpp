@@ -122,10 +122,10 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
             this->mapSortOrder = MapSortOrder::Group;
             logWarn(QString("Invalid config value for map_sort_order: '%1'. Must be 'group', 'area', or 'layout'.").arg(value));
         }
-    } else if (key == "window_geometry") {
-        this->windowGeometry = bytesFromString(value);
-    } else if (key == "window_state") {
-        this->windowState = bytesFromString(value);
+    } else if (key == "main_window_geometry") {
+        this->mainWindowGeometry = bytesFromString(value);
+    } else if (key == "main_window_state") {
+        this->mainWindowState = bytesFromString(value);
     } else if (key == "map_splitter_state") {
         this->mapSplitterState = bytesFromString(value);
     } else if (key == "main_splitter_state") {
@@ -137,6 +137,10 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
             logWarn(QString("Invalid config value for collision_opacity: '%1'. Must be an integer.").arg(value));
             this->collisionOpacity = 50;
         }
+    } else if (key == "tileset_editor_geometry") {
+        this->tilesetEditorGeometry = bytesFromString(value);
+    } else if (key == "tileset_editor_state") {
+        this->tilesetEditorState = bytesFromString(value);
     } else if (key == "metatiles_zoom") {
         bool ok;
         this->metatilesZoom = qMax(10, qMin(100, value.toInt(&ok)));
@@ -186,10 +190,12 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("recent_map", this->recentMap);
     map.insert("pretty_cursors", this->prettyCursors ? "1" : "0");
     map.insert("map_sort_order", mapSortOrderMap.value(this->mapSortOrder));
-    map.insert("window_geometry", stringFromByteArray(this->windowGeometry));
-    map.insert("window_state", stringFromByteArray(this->windowState));
+    map.insert("main_window_geometry", stringFromByteArray(this->mainWindowGeometry));
+    map.insert("main_window_state", stringFromByteArray(this->mainWindowState));
     map.insert("map_splitter_state", stringFromByteArray(this->mapSplitterState));
     map.insert("main_splitter_state", stringFromByteArray(this->mainSplitterState));
+    map.insert("tileset_editor_geometry", stringFromByteArray(this->tilesetEditorGeometry));
+    map.insert("tileset_editor_state", stringFromByteArray(this->tilesetEditorState));
     map.insert("collision_opacity", QString("%1").arg(this->collisionOpacity));
     map.insert("metatiles_zoom", QString("%1").arg(this->metatilesZoom));
     map.insert("show_player_view", this->showPlayerView ? "1" : "0");
@@ -243,12 +249,18 @@ void PorymapConfig::setMonitorFiles(bool monitor) {
     this->save();
 }
 
-void PorymapConfig::setGeometry(QByteArray windowGeometry_, QByteArray windowState_,
+void PorymapConfig::setMainGeometry(QByteArray mainWindowGeometry_, QByteArray mainWindowState_,
                                 QByteArray mapSplitterState_, QByteArray mainSplitterState_) {
-    this->windowGeometry = windowGeometry_;
-    this->windowState = windowState_;
+    this->mainWindowGeometry = mainWindowGeometry_;
+    this->mainWindowState = mainWindowState_;
     this->mapSplitterState = mapSplitterState_;
     this->mainSplitterState = mainSplitterState_;
+    this->save();
+}
+
+void PorymapConfig::setTilesetEditorGeometry(QByteArray tilesetEditorGeometry_, QByteArray tilesetEditorState_) {
+    this->tilesetEditorGeometry = tilesetEditorGeometry_;
+    this->tilesetEditorState = tilesetEditorState_;
     this->save();
 }
 
@@ -296,13 +308,22 @@ bool PorymapConfig::getPrettyCursors() {
     return this->prettyCursors;
 }
 
-QMap<QString, QByteArray> PorymapConfig::getGeometry() {
+QMap<QString, QByteArray> PorymapConfig::getMainGeometry() {
     QMap<QString, QByteArray> geometry;
 
-    geometry.insert("window_geometry", this->windowGeometry);
-    geometry.insert("window_state", this->windowState);
+    geometry.insert("main_window_geometry", this->mainWindowGeometry);
+    geometry.insert("main_window_state", this->mainWindowState);
     geometry.insert("map_splitter_state", this->mapSplitterState);
     geometry.insert("main_splitter_state", this->mainSplitterState);
+
+    return geometry;
+}
+
+QMap<QString, QByteArray> PorymapConfig::getTilesetEditorGeometry() {
+    QMap<QString, QByteArray> geometry;
+
+    geometry.insert("tileset_editor_geometry", this->tilesetEditorGeometry);
+    geometry.insert("tileset_editor_state", this->tilesetEditorState);
 
     return geometry;
 }
