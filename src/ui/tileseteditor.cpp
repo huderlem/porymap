@@ -694,6 +694,10 @@ void TilesetEditor::on_actionChange_Palettes_triggered()
         this->paletteEditor = new PaletteEditor(this->project, this->primaryTileset, this->secondaryTileset, this->paletteId, this);
         connect(this->paletteEditor, SIGNAL(changedPaletteColor()), this, SLOT(onPaletteEditorChangedPaletteColor()));
         connect(this->paletteEditor, SIGNAL(changedPalette(int)), this, SLOT(onPaletteEditorChangedPalette(int)));
+        logInfo("Restoring palette editor geometry from previous session.");
+        QMap<QString, QByteArray> geometry = porymapConfig.getPaletteEditorGeometry();
+        this->paletteEditor->restoreGeometry(geometry.value("palette_editor_geometry"));
+        this->paletteEditor->restoreState(geometry.value("palette_editor_state"));
     }
 
     if (!this->paletteEditor->isVisible()) {

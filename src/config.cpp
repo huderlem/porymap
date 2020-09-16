@@ -141,6 +141,10 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->tilesetEditorGeometry = bytesFromString(value);
     } else if (key == "tileset_editor_state") {
         this->tilesetEditorState = bytesFromString(value);
+    } else if (key == "palette_editor_geometry") {
+        this->paletteEditorGeometry = bytesFromString(value);
+    } else if (key == "palette_editor_state") {
+        this->paletteEditorState = bytesFromString(value);
     } else if (key == "region_map_editor_geometry") {
         this->regionMapEditorGeometry = bytesFromString(value);
     } else if (key == "region_map_editor_state") {
@@ -200,6 +204,8 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("main_splitter_state", stringFromByteArray(this->mainSplitterState));
     map.insert("tileset_editor_geometry", stringFromByteArray(this->tilesetEditorGeometry));
     map.insert("tileset_editor_state", stringFromByteArray(this->tilesetEditorState));
+    map.insert("palette_editor_geometry", stringFromByteArray(this->paletteEditorGeometry));
+    map.insert("palette_editor_state", stringFromByteArray(this->paletteEditorState));
     map.insert("region_map_editor_geometry", stringFromByteArray(this->regionMapEditorGeometry));
     map.insert("region_map_editor_state", stringFromByteArray(this->regionMapEditorState));
     map.insert("collision_opacity", QString("%1").arg(this->collisionOpacity));
@@ -270,6 +276,12 @@ void PorymapConfig::setTilesetEditorGeometry(QByteArray tilesetEditorGeometry_, 
     this->save();
 }
 
+void PorymapConfig::setPaletteEditorGeometry(QByteArray paletteEditorGeometry_, QByteArray paletteEditorState_) {
+    this->paletteEditorGeometry = paletteEditorGeometry_;
+    this->paletteEditorState = paletteEditorState_;
+    this->save();
+}
+
 void PorymapConfig::setRegionMapEditorGeometry(QByteArray regionMapEditorGeometry_, QByteArray regionMapEditorState_) {
     this->regionMapEditorGeometry = regionMapEditorGeometry_;
     this->regionMapEditorState = regionMapEditorState_;
@@ -336,6 +348,15 @@ QMap<QString, QByteArray> PorymapConfig::getTilesetEditorGeometry() {
 
     geometry.insert("tileset_editor_geometry", this->tilesetEditorGeometry);
     geometry.insert("tileset_editor_state", this->tilesetEditorState);
+
+    return geometry;
+}
+
+QMap<QString, QByteArray> PorymapConfig::getPaletteEditorGeometry() {
+    QMap<QString, QByteArray> geometry;
+
+    geometry.insert("palette_editor_geometry", this->paletteEditorGeometry);
+    geometry.insert("palette_editor_state", this->paletteEditorState);
 
     return geometry;
 }
