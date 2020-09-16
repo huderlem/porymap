@@ -52,6 +52,7 @@ public:
     void setPrettyCursors(bool enabled);
     void setMainGeometry(QByteArray, QByteArray, QByteArray, QByteArray);
     void setTilesetEditorGeometry(QByteArray, QByteArray);
+    void setPaletteEditorGeometry(QByteArray, QByteArray);
     void setRegionMapEditorGeometry(QByteArray, QByteArray);
     void setCollisionOpacity(int opacity);
     void setMetatilesZoom(int zoom);
@@ -66,6 +67,7 @@ public:
     bool getPrettyCursors();
     QMap<QString, QByteArray> getMainGeometry();
     QMap<QString, QByteArray> getTilesetEditorGeometry();
+    QMap<QString, QByteArray> getPaletteEditorGeometry();
     QMap<QString, QByteArray> getRegionMapEditorGeometry();
     int getCollisionOpacity();
     int getMetatilesZoom();
@@ -94,6 +96,8 @@ private:
     QByteArray mainSplitterState;
     QByteArray tilesetEditorGeometry;
     QByteArray tilesetEditorState;
+    QByteArray paletteEditorGeometry;
+    QByteArray paletteEditorState;
     QByteArray regionMapEditorGeometry;
     QByteArray regionMapEditorState;
     int collisionOpacity;

@@ -1,9 +1,10 @@
 #include "paletteeditor.h"
 #include "ui_paletteeditor.h"
 #include "paletteutil.h"
+#include "config.h"
+#include "log.h"
 #include <QFileDialog>
 #include <QMessageBox>
-#include "log.h"
 
 PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset *secondaryTileset, int paletteId, QWidget *parent) :
     QMainWindow(parent),
@@ -310,4 +311,11 @@ void PaletteEditor::on_actionImport_Palette_triggered()
     this->refreshColors();
     this->commitEditHistory(paletteId);
     emit this->changedPaletteColor();
+}
+
+void PaletteEditor::closeEvent(QCloseEvent*) {
+    porymapConfig.setPaletteEditorGeometry(
+        this->saveGeometry(),
+        this->saveState()
+    );
 }
