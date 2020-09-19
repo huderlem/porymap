@@ -131,8 +131,10 @@ private slots:
     void onTilesetsSaved(QString, QString);
     void onWildMonDataChanged();
     void openNewMapPopupWindow(int, QVariant);
+    void openNewMapPopupWindowImportMap(MapLayout *);
     void onNewMapCreated();
     void onMapCacheCleared();
+    void importMapFromAdvanceMap1_92();
 
     void on_action_NewMap_triggered();
     void on_actionNew_Tileset_triggered();
@@ -189,6 +191,7 @@ private slots:
 
     void on_action_Export_Map_Image_triggered();
     void on_actionExport_Stitched_Map_Image_triggered();
+    void on_actionImport_Map_from_Advance_Map_1_92_triggered();
 
     void on_comboBox_ConnectionDirection_currentIndexChanged(const QString &arg1);
     void on_spinBox_ConnectionOffset_valueChanged(int offset);

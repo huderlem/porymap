@@ -13,6 +13,7 @@
 #include "adjustingstackedwidget.h"
 #include "draggablepixmapitem.h"
 #include "editcommands.h"
+#include "mapparser.h"
 
 #include <QFileDialog>
 #include <QDirIterator>
@@ -1025,8 +1026,9 @@ void MainWindow::onNewMapCreated() {
     int newMapGroup = this->newmapprompt->group;
     Map *newMap_ = this->newmapprompt->map;
     bool existingLayout = this->newmapprompt->existingLayout;
+    bool importedMap = this->newmapprompt->importedMap;
 
-    Map *newMap = editor->project->addNewMapToGroup(newMapName, newMapGroup, newMap_, existingLayout);
+    Map *newMap = editor->project->addNewMapToGroup(newMapName, newMapGroup, newMap_, existingLayout, importedMap);
 
     logInfo(QString("Created a new map named %1.").arg(newMapName));
 
@@ -1074,6 +1076,24 @@ void MainWindow::openNewMapPopupWindow(int type, QVariant data) {
             this->newmapprompt->init(type, 0, QString(), data.toString());
             break;
     }
+    connect(this->newmapprompt, SIGNAL(applied()), this, SLOT(onNewMapCreated()));
+    connect(this->newmapprompt, &QObject::destroyed, [=](QObject *) { this->newmapprompt = nullptr; });
+            this->newmapprompt->setAttribute(Qt::WA_DeleteOnClose);
+}
+
+void MainWindow::openNewMapPopupWindowImportMap(MapLayout *mapLayout) {
+    if (!this->newmapprompt) {
+        this->newmapprompt = new NewMapPopup(this, this->editor->project);
+    }
+    if (!this->newmapprompt->isVisible()) {
+        this->newmapprompt->show();
+    } else {
+        this->newmapprompt->raise();
+        this->newmapprompt->activateWindow();
+    }
+
+    this->newmapprompt->initImportMap(mapLayout);
+
     connect(this->newmapprompt, SIGNAL(applied()), this, SLOT(onNewMapCreated()));
     connect(this->newmapprompt, &QObject::destroyed, [=](QObject *) { this->newmapprompt = nullptr; });
             this->newmapprompt->setAttribute(Qt::WA_DeleteOnClose);
@@ -2317,6 +2337,54 @@ void MainWindow::on_action_Export_Map_Image_triggered() {
 
 void MainWindow::on_actionExport_Stitched_Map_Image_triggered() {
     showExportMapImageWindow(true);
+}
+
+void MainWindow::on_actionImport_Map_from_Advance_Map_1_92_triggered(){
+    importMapFromAdvanceMap1_92();
+}
+
+void MainWindow::importMapFromAdvanceMap1_92()
+{
+    QString filepath = QFileDialog::getOpenFileName(
+                this,
+                QString("Import Map from Advance Map 1.92"),
+                this->editor->project->root,
+                "Advance Map 1.92 Map Files (*.map)");
+    if (filepath.isEmpty()) {
+        return;
+    }
+
+    MapParser parser;
+    bool error = false;
+    MapLayout *mapLayout = parser.parse(filepath, &error, editor->project);
+    if (error) {
+        QMessageBox msgBox(this);
+        msgBox.setText("Failed to import map from Advance Map 1.92 .map file.");
+        QString message = QString("The .map file could not be processed. View porymap.log for specific errors.");
+        msgBox.setInformativeText(message);
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        msgBox.setIcon(QMessageBox::Icon::Critical);
+        msgBox.exec();
+        return;
+    }
+
+    // TODO: This is crude because it makes a history entry for every newly-imported metatile.
+    //       Revisit this when tiles and num metatiles are added to tileset editory history.
+   /* int metatileIdBase = primary ? 0 : Project::getNumMetatilesPrimary();
+    for (int i = 0; i < metatiles->length(); i++) {
+        if (i >= tileset->metatiles->length()) {
+            break;
+        }
+
+        Metatile *prevMetatile = tileset->metatiles->at(i)->copy();
+        MetatileHistoryItem *commit = new MetatileHistoryItem(static_cast<uint16_t>(metatileIdBase + i), prevMetatile, metatiles->at(i)->copy());
+        metatileHistory.push(commit);
+    }*/
+
+    //tileset->metatiles = metatiles;
+    //this->refresh();
+    //this->hasUnsavedChanges = true;
+    openNewMapPopupWindowImportMap(mapLayout);
 }
 
 void MainWindow::showExportMapImageWindow(bool stitchMode) {

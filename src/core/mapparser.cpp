@@ -1,0 +1,93 @@
+#include "mapparser.h"
+#include "config.h"
+#include "log.h"
+#include "project.h"
+
+MapParser::MapParser()
+{
+
+}
+
+MapLayout *MapParser::parse(QString filepath, bool *error, Project *project)
+{
+    QFile file(filepath);
+    if (!file.open(QIODevice::ReadOnly)) {
+        *error = true;
+        logError(QString("Could not open Advance Map 1.92 Map .map file '%1': ").arg(filepath) + file.errorString());
+        return nullptr;
+    }
+
+    QByteArray in = file.readAll();
+    file.close();
+
+    if (in.length() < 20 || in.length() % 2 != 0) {
+        *error = true;
+        logError(QString("Advance Map 1.92 Map .map file '%1' is an unexpected size.").arg(filepath));
+        return nullptr;
+    }
+
+    int mapDataOffset = 20;
+    int mapWidth = static_cast<unsigned char>(in.at(0)) |
+                   (static_cast<unsigned char>(in.at(1)) << 8) |
+                   (static_cast<unsigned char>(in.at(2)) << 16) |
+                   (static_cast<unsigned char>(in.at(3)) << 24);
+    int mapHeight = static_cast<unsigned char>(in.at(4)) |
+                    (static_cast<unsigned char>(in.at(5)) << 8) |
+                    (static_cast<unsigned char>(in.at(6)) << 16) |
+                    (static_cast<unsigned char>(in.at(7)) << 24);
+    int mapPrimaryTilesetNum = static_cast<unsigned char>(in.at(8)) |
+                               (static_cast<unsigned char>(in.at(9)) << 8) |
+                               (static_cast<unsigned char>(in.at(10)) << 16) |
+                               (static_cast<unsigned char>(in.at(11)) << 24);
+    int mapSecondaryTilesetNum = static_cast<unsigned char>(in.at(12)) |
+                                 (static_cast<unsigned char>(in.at(13)) << 8) |
+                                 (static_cast<unsigned char>(in.at(14)) << 16) |
+                                 (static_cast<unsigned char>(in.at(15)) << 24);
+
+    /*int maxMetatiles = primaryTileset ? Project::getNumMetatilesPrimary() : Project::getNumMetatilesTotal() - Project::getNumMetatilesPrimary();
+    int numMetatiles = static_cast<unsigned char>(in.at(0)) |
+                                (static_cast<unsigned char>(in.at(1)) << 8) |
+                                (static_cast<unsigned char>(in.at(2)) << 16) |
+                                (static_cast<unsigned char>(in.at(3)) << 24);
+    if (numMetatiles > maxMetatiles) {
+        *error = true;
+        logError(QString(".bvd file contains data for %1 metatiles, but the maximum number of metatiles is %2.").arg(numMetatiles).arg(maxMetatiles));
+        return nullptr;
+    }
+
+    if (numMetatiles < 1) {
+        *error = true;
+        logError(QString(".bvd file contains no data for metatiles."));
+        return nullptr;
+    }*/
+
+    int numMetatiles = mapWidth * mapHeight;
+    int expectedFileSize = numMetatiles * 2 + 20;
+    if (in.length() != expectedFileSize) {
+        *error = true;
+        logError(QString(".map file is an unexpected size. Expected %1 bytes, but it has %2 bytes.").arg(expectedFileSize).arg(in.length()));
+        return nullptr;
+    }
+
+    Blockdata *blockdata = new Blockdata();
+    for (int i = mapDataOffset; (i + 1) < in.length(); i += 2) {
+        uint16_t word = static_cast<uint16_t>((in[i] & 0xff) + ((in[i + 1] & 0xff) << 8));
+        blockdata->addBlock(word);
+    }
+
+    MapLayout *mapLayout = new MapLayout();
+    mapLayout->width = QString::number(mapWidth);
+    mapLayout->height = QString::number(mapHeight);
+    QList<QString> tilesets = project->tilesetLabelsOrdered;
+    if (mapPrimaryTilesetNum > tilesets.size())
+        mapLayout->tileset_primary_label = tilesets.at(0);
+    else
+        mapLayout->tileset_primary_label = tilesets.at(mapPrimaryTilesetNum);
+
+    if (mapSecondaryTilesetNum > tilesets.size())
+        mapLayout->tileset_secondary_label = tilesets.at(1);
+    else
+        mapLayout->tileset_secondary_label = tilesets.at(mapSecondaryTilesetNum);
+    mapLayout->blockdata = blockdata->copy();
+    return mapLayout;
+}

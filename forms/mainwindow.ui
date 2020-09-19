@@ -236,23 +236,23 @@
         </property>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_10">
-           <item>
-            <widget class="QTabBar" name="mainTabBar" native="true"/>
-           </item>
-           <item>
-            <spacer name="horizontalSpacer_20">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
+          <item>
+           <widget class="QTabBar" name="mainTabBar" native="true"/>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_20">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
         </item>
         <item>
          <widget class="QStackedWidget" name="mainStackedWidget">
@@ -365,8 +365,8 @@
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>543</width>
-                        <height>600</height>
+                        <width>508</width>
+                        <height>665</height>
                        </rect>
                       </property>
                       <layout class="QGridLayout" name="gridLayout_8">
@@ -893,8 +893,8 @@
                                <rect>
                                 <x>0</x>
                                 <y>0</y>
-                                <width>443</width>
-                                <height>74</height>
+                                <width>442</width>
+                                <height>77</height>
                                </rect>
                               </property>
                               <layout class="QHBoxLayout" name="horizontalLayout_7">
@@ -1081,10 +1081,10 @@
                         </property>
                         <property name="geometry">
                          <rect>
-                          <x>8</x>
+                          <x>0</x>
                           <y>0</y>
-                          <width>431</width>
-                          <height>341</height>
+                          <width>425</width>
+                          <height>419</height>
                          </rect>
                         </property>
                         <property name="sizePolicy">
@@ -1499,8 +1499,8 @@
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>430</width>
-                             <height>521</height>
+                             <width>98</width>
+                             <height>28</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -1544,8 +1544,8 @@
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>430</width>
-                             <height>521</height>
+                             <width>98</width>
+                             <height>28</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -1589,8 +1589,8 @@
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>430</width>
-                             <height>521</height>
+                             <width>98</width>
+                             <height>28</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -1634,8 +1634,8 @@
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>430</width>
-                             <height>521</height>
+                             <width>98</width>
+                             <height>28</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -1679,8 +1679,8 @@
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>430</width>
-                             <height>521</height>
+                             <width>98</width>
+                             <height>28</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -1730,8 +1730,8 @@
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>430</width>
-                             <height>521</height>
+                             <width>98</width>
+                             <height>28</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -2431,8 +2431,8 @@
                       <rect>
                        <x>0</x>
                        <y>0</y>
-                       <width>118</width>
-                       <height>118</height>
+                       <width>101</width>
+                       <height>101</height>
                       </rect>
                      </property>
                      <layout class="QGridLayout" name="gridLayout_14">
@@ -2693,7 +2693,7 @@
      <x>0</x>
      <y>0</y>
      <width>1287</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -2742,6 +2742,7 @@
     <addaction name="actionNew_Tileset"/>
     <addaction name="actionTileset_Editor"/>
     <addaction name="actionRegion_Map_Editor"/>
+    <addaction name="actionImport_Map_from_Advance_Map_1_92"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -3022,6 +3023,11 @@
     <string>Export Map Stitch Image...</string>
    </property>
   </action>
+  <action name="actionImport_Map_from_Advance_Map_1_92">
+   <property name="text">
+    <string>Import Map from Advance Map 1.92...</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -3034,6 +3040,7 @@
    <class>AdjustingStackedWidget</class>
    <extends>QStackedWidget</extends>
    <header>adjustingstackedwidget.h</header>
+   <container>1</container>
   </customwidget>
   <customwidget>
    <class>GraphicsView</class>

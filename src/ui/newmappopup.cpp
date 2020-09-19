@@ -17,6 +17,7 @@ NewMapPopup::NewMapPopup(QWidget *parent, Project *project) :
     ui->setupUi(this);
     this->project = project;
     this->existingLayout = false;
+    this->importedMap = false;
 }
 
 NewMapPopup::~NewMapPopup()
@@ -38,6 +39,12 @@ void NewMapPopup::init(int type, int group, QString sec, QString layoutId) {
             setDefaultValues(group, QString());
             break;
     }
+    connectSignals();
+}
+
+void NewMapPopup::initImportMap(MapLayout *mapLayout) {
+    this->importedMap = true;
+    setDefaultValuesImportMap(mapLayout);
     connectSignals();
 }
 
@@ -164,6 +171,81 @@ void NewMapPopup::setDefaultValues(int groupNum, QString mapSec) {
     }
 }
 
+void NewMapPopup::setDefaultValuesImportMap(MapLayout *mapLayout) {
+    ui->lineEdit_NewMap_Name->setText(project->getNewMapName());
+
+    QMap<QString, QStringList> tilesets = project->getTilesetLabels();
+    ui->comboBox_NewMap_Primary_Tileset->addItems(tilesets.value("primary"));
+    ui->comboBox_NewMap_Secondary_Tileset->addItems(tilesets.value("secondary"));
+
+    ui->comboBox_NewMap_Group->addItems(*project->groupNames);
+    ui->comboBox_NewMap_Group->setCurrentText(project->groupNames->at(0));
+
+
+    ui->spinBox_NewMap_Width->setValue(mapLayout->width.toInt(nullptr, 0));
+    ui->spinBox_NewMap_Height->setValue(mapLayout->height.toInt(nullptr, 0));
+    ui->comboBox_NewMap_Primary_Tileset->setCurrentText(mapLayout->tileset_primary_label);
+    ui->comboBox_NewMap_Secondary_Tileset->setCurrentText(mapLayout->tileset_secondary_label);
+    ui->spinBox_NewMap_BorderWidth->setValue(DEFAULT_BORDER_WIDTH);
+    ui->spinBox_NewMap_BorderHeight->setValue(DEFAULT_BORDER_HEIGHT);
+
+    ui->comboBox_NewMap_Type->addItems(*project->mapTypes);
+    ui->comboBox_NewMap_Location->addItems(project->mapSectionValueToName.values());
+    ui->checkBox_NewMap_Show_Location->setChecked(true);
+
+    ui->frame_NewMap_Options->setEnabled(true);
+
+    switch (projectConfig.getBaseGameVersion())
+    {
+    case BaseGameVersion::pokeruby:
+        ui->checkBox_NewMap_Allow_Running->setVisible(false);
+        ui->checkBox_NewMap_Allow_Biking->setVisible(false);
+        ui->checkBox_NewMap_Allow_Escape_Rope->setVisible(false);
+        ui->label_NewMap_Allow_Running->setVisible(false);
+        ui->label_NewMap_Allow_Biking->setVisible(false);
+        ui->label_NewMap_Allow_Escape_Rope->setVisible(false);
+        break;
+    case BaseGameVersion::pokeemerald:
+        ui->checkBox_NewMap_Allow_Running->setVisible(true);
+        ui->checkBox_NewMap_Allow_Biking->setVisible(true);
+        ui->checkBox_NewMap_Allow_Escape_Rope->setVisible(true);
+        ui->label_NewMap_Allow_Running->setVisible(true);
+        ui->label_NewMap_Allow_Biking->setVisible(true);
+        ui->label_NewMap_Allow_Escape_Rope->setVisible(true);
+        break;
+    case BaseGameVersion::pokefirered:
+        ui->checkBox_NewMap_Allow_Running->setVisible(true);
+        ui->checkBox_NewMap_Allow_Biking->setVisible(true);
+        ui->checkBox_NewMap_Allow_Escape_Rope->setVisible(true);
+        ui->label_NewMap_Allow_Running->setVisible(true);
+        ui->label_NewMap_Allow_Biking->setVisible(true);
+        ui->label_NewMap_Allow_Escape_Rope->setVisible(true);
+        break;
+    }
+    if (projectConfig.getUseCustomBorderSize()) {
+        ui->spinBox_NewMap_BorderWidth->setVisible(true);
+        ui->spinBox_NewMap_BorderHeight->setVisible(true);
+        ui->label_NewMap_BorderWidth->setVisible(true);
+        ui->label_NewMap_BorderHeight->setVisible(true);
+    } else {
+        ui->spinBox_NewMap_BorderWidth->setVisible(false);
+        ui->spinBox_NewMap_BorderHeight->setVisible(false);
+        ui->label_NewMap_BorderWidth->setVisible(false);
+        ui->label_NewMap_BorderHeight->setVisible(false);
+    }
+    if (projectConfig.getFloorNumberEnabled()) {
+        ui->spinBox_NewMap_Floor_Number->setVisible(true);
+        ui->label_NewMap_Floor_Number->setVisible(true);
+    } else {
+        ui->spinBox_NewMap_Floor_Number->setVisible(false);
+        ui->label_NewMap_Floor_Number->setVisible(false);
+    }
+
+    map = new Map();
+    map->layout = new MapLayout();
+    map->layout->blockdata = mapLayout->blockdata->copy();
+}
+
 void NewMapPopup::on_lineEdit_NewMap_Name_textChanged(const QString &text) {
     if (project->mapNames->contains(text)) {
         QPalette palette = this->ui->lineEdit_NewMap_Name->palette();
@@ -201,7 +283,7 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
 
     if (this->existingLayout) {
         layout = this->project->mapLayouts.value(this->layoutId);
-        newMap->needsLayoutDir = false;
+        newMap->needsLayoutDir = false;     
     } else {
         layout = new MapLayout;
         layout->id = MapLayout::layoutConstantFromName(newMapName);
@@ -219,6 +301,10 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
         layout->tileset_secondary_label = this->ui->comboBox_NewMap_Secondary_Tileset->currentText();
         layout->border_path = QString("data/layouts/%1/border.bin").arg(newMapName);
         layout->blockdata_path = QString("data/layouts/%1/map.bin").arg(newMapName);
+    }
+
+    if (this->importedMap) {
+        layout->blockdata = map->layout->blockdata->copy();
     }
 
     if (this->ui->checkBox_NewMap_Flyable->isChecked()) {
