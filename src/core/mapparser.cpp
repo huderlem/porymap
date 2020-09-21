@@ -26,7 +26,11 @@ MapLayout *MapParser::parse(QString filepath, bool *error, Project *project)
         return nullptr;
     }
 
-    int mapDataOffset = 20;
+    int borderWidth = static_cast<unsigned char>(in.at(16)); // 0 in RSE .map files
+    int borderHeight = static_cast<unsigned char>(in.at(17)); // 0 in RSE .map files
+    int numBorderTiles = borderWidth * borderHeight; // 0 if RSE
+
+    int mapDataOffset = 20 + (numBorderTiles * 2); // FRLG .map files store border metatile data after the header
     int mapWidth = static_cast<unsigned char>(in.at(0)) |
                    (static_cast<unsigned char>(in.at(1)) << 8) |
                    (static_cast<unsigned char>(in.at(2)) << 16) |
@@ -62,7 +66,7 @@ MapLayout *MapParser::parse(QString filepath, bool *error, Project *project)
     }*/
 
     int numMetatiles = mapWidth * mapHeight;
-    int expectedFileSize = numMetatiles * 2 + 20;
+    int expectedFileSize = 20 + (numBorderTiles * 2) + (numMetatiles * 2);
     if (in.length() != expectedFileSize) {
         *error = true;
         logError(QString(".map file is an unexpected size. Expected %1 bytes, but it has %2 bytes.").arg(expectedFileSize).arg(in.length()));
@@ -75,10 +79,23 @@ MapLayout *MapParser::parse(QString filepath, bool *error, Project *project)
         blockdata->addBlock(word);
     }
 
+    Blockdata *border = nullptr;
+    if (numBorderTiles != 0) {
+        border = new Blockdata();
+        for (int i = 20; (i + 1) < 20 + (numBorderTiles * 2); i += 2) {
+            uint16_t word = static_cast<uint16_t>((in[i] & 0xff) + ((in[i + 1] & 0xff) << 8));
+            border->addBlock(word);
+        }
+    }
+
     MapLayout *mapLayout = new MapLayout();
     mapLayout->width = QString::number(mapWidth);
     mapLayout->height = QString::number(mapHeight);
+    mapLayout->border_width = (borderWidth == 0) ?  QString::number(2) :  QString::number(borderWidth);
+    mapLayout->border_height = (borderHeight == 0) ?  QString::number(2) :  QString::number(borderHeight);
+
     QList<QString> tilesets = project->tilesetLabelsOrdered;
+
     if (mapPrimaryTilesetNum > tilesets.size())
         mapLayout->tileset_primary_label = tilesets.at(0);
     else
@@ -88,6 +105,12 @@ MapLayout *MapParser::parse(QString filepath, bool *error, Project *project)
         mapLayout->tileset_secondary_label = tilesets.at(1);
     else
         mapLayout->tileset_secondary_label = tilesets.at(mapSecondaryTilesetNum);
+
     mapLayout->blockdata = blockdata->copy();
+
+    if (border != nullptr) {
+        mapLayout->border = border->copy();
+    }
+
     return mapLayout;
 }

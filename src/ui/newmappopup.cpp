@@ -181,13 +181,10 @@ void NewMapPopup::setDefaultValuesImportMap(MapLayout *mapLayout) {
     ui->comboBox_NewMap_Group->addItems(*project->groupNames);
     ui->comboBox_NewMap_Group->setCurrentText(project->groupNames->at(0));
 
-
     ui->spinBox_NewMap_Width->setValue(mapLayout->width.toInt(nullptr, 0));
     ui->spinBox_NewMap_Height->setValue(mapLayout->height.toInt(nullptr, 0));
     ui->comboBox_NewMap_Primary_Tileset->setCurrentText(mapLayout->tileset_primary_label);
     ui->comboBox_NewMap_Secondary_Tileset->setCurrentText(mapLayout->tileset_secondary_label);
-    ui->spinBox_NewMap_BorderWidth->setValue(DEFAULT_BORDER_WIDTH);
-    ui->spinBox_NewMap_BorderHeight->setValue(DEFAULT_BORDER_HEIGHT);
 
     ui->comboBox_NewMap_Type->addItems(*project->mapTypes);
     ui->comboBox_NewMap_Location->addItems(project->mapSectionValueToName.values());
@@ -223,11 +220,15 @@ void NewMapPopup::setDefaultValuesImportMap(MapLayout *mapLayout) {
         break;
     }
     if (projectConfig.getUseCustomBorderSize()) {
+        ui->spinBox_NewMap_BorderWidth->setValue(mapLayout->border_width.toInt(nullptr, 0));
+        ui->spinBox_NewMap_BorderHeight->setValue(mapLayout->border_height.toInt(nullptr, 0));
         ui->spinBox_NewMap_BorderWidth->setVisible(true);
         ui->spinBox_NewMap_BorderHeight->setVisible(true);
         ui->label_NewMap_BorderWidth->setVisible(true);
         ui->label_NewMap_BorderHeight->setVisible(true);
     } else {
+        ui->spinBox_NewMap_BorderWidth->setValue(DEFAULT_BORDER_WIDTH);
+        ui->spinBox_NewMap_BorderHeight->setValue(DEFAULT_BORDER_HEIGHT);
         ui->spinBox_NewMap_BorderWidth->setVisible(false);
         ui->spinBox_NewMap_BorderHeight->setVisible(false);
         ui->label_NewMap_BorderWidth->setVisible(false);
@@ -244,6 +245,10 @@ void NewMapPopup::setDefaultValuesImportMap(MapLayout *mapLayout) {
     map = new Map();
     map->layout = new MapLayout();
     map->layout->blockdata = mapLayout->blockdata->copy();
+
+    if (mapLayout->border != nullptr) {
+        map->layout->border = mapLayout->border->copy();
+    }
 }
 
 void NewMapPopup::on_lineEdit_NewMap_Name_textChanged(const QString &text) {
@@ -305,6 +310,8 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
 
     if (this->importedMap) {
         layout->blockdata = map->layout->blockdata->copy();
+        if (map->layout->border != nullptr)
+            layout->border = map->layout->border->copy();
     }
 
     if (this->ui->checkBox_NewMap_Flyable->isChecked()) {

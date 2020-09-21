@@ -1930,7 +1930,9 @@ Map* Project::addNewMapToGroup(QString mapName, int groupNum, Map *newMap, bool 
         } else {
             setNewMapBlockdata(map);
         }
-        setNewMapBorder(map);
+        if (map->layout->border == nullptr) {
+            setNewMapBorder(map);
+        }
     }
 
     loadMapTilesets(map);
