@@ -93,13 +93,17 @@ private slots:
     void on_actionImport_Secondary_Metatiles_triggered();
 
 private:
-    void init(Project*, Map*);
-    void closeEvent(QCloseEvent*);
-    void initMetatileSelector(Map*);
+    void initUi();
+    void setMetatileBehaviors();
+    void setMetatileLayersUi();
+    void setVersionSpecificUi();
+    void setMetatileLabelValidator();
+    void initMetatileSelector();
     void initTileSelector();
     void initSelectedTileItem();
     void initMetatileLayersItem();
     void restoreWindowState();
+    void initMetatileHistory();
     void setTilesets(QString primaryTilesetLabel, QString secondaryTilesetLabel);
     void reset();
     void drawSelectedTiles();
@@ -107,6 +111,7 @@ private:
     void importTilesetMetatiles(Tileset*, bool);
     void refresh();
     void saveMetatileLabel();
+    void closeEvent(QCloseEvent*);
     Ui::TilesetEditor *ui;
     History<MetatileHistoryItem*> metatileHistory;
     TilesetEditorMetatileSelector *metatileSelector = nullptr;
