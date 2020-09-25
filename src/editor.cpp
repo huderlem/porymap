@@ -23,6 +23,7 @@ Editor::Editor(Ui::MainWindow* ui)
     this->settings = new Settings();
     this->playerViewRect = new MovableRect(&this->settings->playerViewRectEnabled, 30 * 8, 20 * 8, qRgb(255, 255, 255));
     this->cursorMapTileRect = new CursorTileRect(&this->settings->cursorTileRectEnabled, qRgb(255, 255, 255));
+    this->map_ruler = new MapRuler();
 
     /// Instead of updating the selected events after every single undo action
     /// (eg when the user rolls back several at once), only reselect events when
@@ -41,6 +42,7 @@ Editor::~Editor()
     delete this->settings;
     delete this->playerViewRect;
     delete this->cursorMapTileRect;
+    delete this->map_ruler;
 
     closeProject();
 }
@@ -1119,7 +1121,14 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item
                 }
             }
         } else if (obj_edit_mode == "select") {
-            // do nothing here, at least for now
+            if (!this->map_ruler->isEnabled() && this->map_ruler->mousePressed(event->buttons())) {
+                this->map_ruler->setAnchor(x, y);
+            } else if (event->type() == QEvent::GraphicsSceneMouseRelease
+                        && !this->map_ruler->mousePressed(event->buttons())) {
+                this->map_ruler->endAnchor();
+            } else if (this->map_ruler->isEnabled()) {
+                this->map_ruler->setEndPos(x, y);
+            }
         } else if (obj_edit_mode == "shift" && item->map) {
             static QPoint selection_origin;
             static unsigned actionId = 0;
@@ -1217,6 +1226,7 @@ bool Editor::displayMap() {
         delete map_item;
         scene->removeItem(this->playerViewRect);
         scene->removeItem(this->cursorMapTileRect);
+        scene->removeItem(this->map_ruler);
     }
 
     displayMetatileSelector();
@@ -1233,8 +1243,10 @@ bool Editor::displayMap() {
 
     this->playerViewRect->setZValue(1000);
     this->cursorMapTileRect->setZValue(1001);
+    this->map_ruler->setZValue(1002);
     scene->addItem(this->playerViewRect);
     scene->addItem(this->cursorMapTileRect);
+    scene->addItem(this->map_ruler);
 
     if (map_item) {
         map_item->setVisible(false);

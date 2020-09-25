@@ -23,6 +23,7 @@
 #include "settings.h"
 #include "movablerect.h"
 #include "cursortilerect.h"
+#include "mapruler.h"
 
 class DraggablePixmapItem;
 class MetatilesPixmapItem;
@@ -115,6 +116,7 @@ public:
     QList<QGraphicsLineItem*> gridLines;
     MovableRect *playerViewRect = nullptr;
     CursorTileRect *cursorMapTileRect = nullptr;
+    MapRuler *map_ruler = nullptr;
 
     QGraphicsScene *scene_metatiles = nullptr;
     QGraphicsScene *scene_current_metatile_selection = nullptr;

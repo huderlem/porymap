@@ -1,8 +1,7 @@
 #include "draggablepixmapitem.h"
-
 #include "editor.h"
-
 #include "editcommands.h"
+#include "mapruler.h"
 
 static unsigned currentActionId = 0;
 
@@ -57,9 +56,15 @@ void DraggablePixmapItem::bindToUserData(QComboBox *combo, QString key) {
 }
 
 void DraggablePixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *mouse) {
+    int x = static_cast<int>(mouse->pos().x() + this->pos().x()) / 16;
+    int y = static_cast<int>(mouse->pos().y() + this->pos().y()) / 16;
+    if (mouse->buttons() & this->editor->map_ruler->acceptedMouseButtons()) {
+        this->editor->map_ruler->setAnchor(x, y);
+        return;
+    }
     active = true;
-    last_x = static_cast<int>(mouse->pos().x() + this->pos().x()) / 16;
-    last_y = static_cast<int>(mouse->pos().y() + this->pos().y()) / 16;
+    last_x = x;
+    last_y = y;
     this->editor->selectMapEvent(this, mouse->modifiers() & Qt::ControlModifier);
     this->editor->selectingEvent = true;
 }
@@ -76,7 +81,9 @@ void DraggablePixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *mouse) {
         int x = static_cast<int>(mouse->pos().x() + this->pos().x()) / 16;
         int y = static_cast<int>(mouse->pos().y() + this->pos().y()) / 16;
         emit this->editor->map_item->hoveredMapMetatileChanged(x, y);
-        if (x != last_x || y != last_y) {
+        if (this->editor->map_ruler->isEnabled()) {
+            this->editor->map_ruler->setEndPos(x, y);
+        } else if (x != last_x || y != last_y) {
         	QList <Event *> selectedEvents;
             if (editor->selected_events->contains(this)) {
                 for (DraggablePixmapItem *item : *editor->selected_events) {
@@ -92,9 +99,14 @@ void DraggablePixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *mouse) {
     }
 }
 
-void DraggablePixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *) {
-    active = false;
-    currentActionId++;
+void DraggablePixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouse) {
+    if (!(mouse->buttons() & this->editor->map_ruler->acceptedMouseButtons())) {
+        this->editor->map_ruler->endAnchor();
+    }
+    if (!this->editor->map_ruler->isEnabled()) {
+        active = false;
+        currentActionId++;
+    }
 }
 
 void DraggablePixmapItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *) {
