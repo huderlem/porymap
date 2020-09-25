@@ -113,6 +113,7 @@ PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset 
     this->initColorSliders();
     this->setPaletteId(paletteId);
     this->commitEditHistory(this->ui->spinBox_PaletteId->value());
+    this->restoreWindowState();
 }
 
 PaletteEditor::~PaletteEditor()
@@ -226,6 +227,13 @@ void PaletteEditor::commitEditHistory(int paletteId) {
     }
     PaletteHistoryItem *commit = new PaletteHistoryItem(colors);
     this->palettesHistory[paletteId].push(commit);
+}
+
+void PaletteEditor::restoreWindowState() {
+    logInfo("Restoring palette editor geometry from previous session.");
+    QMap<QString, QByteArray> geometry = porymapConfig.getPaletteEditorGeometry();
+    this->restoreGeometry(geometry.value("palette_editor_geometry"));
+    this->restoreState(geometry.value("palette_editor_state"));
 }
 
 void PaletteEditor::on_actionUndo_triggered()
