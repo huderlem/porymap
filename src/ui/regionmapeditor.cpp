@@ -24,6 +24,7 @@ RegionMapEditor::RegionMapEditor(QWidget *parent, Project *project_) :
     this->project = project_;
     this->region_map = new RegionMap;
     this->ui->action_RegionMap_Resize->setVisible(false);
+    this->restoreWindowState();
 }
 
 RegionMapEditor::~RegionMapEditor()
@@ -40,6 +41,13 @@ RegionMapEditor::~RegionMapEditor()
     delete scene_city_map_image;
     delete scene_region_map_layout;
     delete scene_region_map_tiles;
+}
+
+void RegionMapEditor::restoreWindowState() {
+    logInfo("Restoring region map editor geometry from previous session.");
+    QMap<QString, QByteArray> geometry = porymapConfig.getRegionMapEditorGeometry();
+    this->restoreGeometry(geometry.value("region_map_editor_geometry"));
+    this->restoreState(geometry.value("region_map_editor_state"));
 }
 
 void RegionMapEditor::on_action_RegionMap_Save_triggered() {

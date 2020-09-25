@@ -100,6 +100,7 @@ void TilesetEditor::init(Project *project, Map *map) {
     this->initTileSelector();
     this->initSelectedTileItem();
     this->metatileSelector->select(0);
+    this->restoreWindowState();
 
     MetatileHistoryItem *commit = new MetatileHistoryItem(0, nullptr, this->metatile->copy());
     metatileHistory.push(commit);
@@ -113,11 +114,17 @@ bool TilesetEditor::selectMetatile(uint16_t metatileId) {
     return true;
 }
 
-void TilesetEditor::setMap(Map *map) {
+void TilesetEditor::update(Map *map, QString primaryTilesetLabel, QString secondaryTilesetLabel) {
+    this->updateMap(map);
+    this->updateTilesets(primaryTilesetLabel, secondaryTilesetLabel);
+}
+
+void TilesetEditor::updateMap(Map *map) {
+    this->map = map;
     this->metatileSelector->map = map;
 }
 
-void TilesetEditor::setTilesets(QString primaryTilesetLabel, QString secondaryTilesetLabel) {
+void TilesetEditor::updateTilesets(QString primaryTilesetLabel, QString secondaryTilesetLabel) {
     if (this->hasUnsavedChanges) {
         QMessageBox::StandardButton result = QMessageBox::question(
             this,
@@ -129,13 +136,17 @@ void TilesetEditor::setTilesets(QString primaryTilesetLabel, QString secondaryTi
             this->on_actionSave_Tileset_triggered();
     }
     this->hasUnsavedChanges = false;
-    delete this->primaryTileset;
-    delete this->secondaryTileset;
+    this->setTilesets(primaryTilesetLabel, secondaryTilesetLabel);
+    this->refresh();
+}
+
+void TilesetEditor::setTilesets(QString primaryTilesetLabel, QString secondaryTilesetLabel) {
     Tileset *primaryTileset = project->getTileset(primaryTilesetLabel);
     Tileset *secondaryTileset = project->getTileset(secondaryTilesetLabel);
+    if (this->primaryTileset) delete this->primaryTileset;
+    if (this->secondaryTileset) delete this->secondaryTileset;
     this->primaryTileset = primaryTileset->copy();
     this->secondaryTileset = secondaryTileset->copy();
-    this->refresh();
 }
 
 void TilesetEditor::refresh() {
@@ -194,6 +205,21 @@ void TilesetEditor::initSelectedTileItem() {
     this->drawSelectedTiles();
     this->ui->graphicsView_selectedTile->setScene(this->selectedTileScene);
     this->ui->graphicsView_selectedTile->setFixedSize(this->selectedTilePixmapItem->pixmap().width() + 2, this->selectedTilePixmapItem->pixmap().height() + 2);
+}
+
+void TilesetEditor::restoreWindowState() {
+    logInfo("Restoring tileset editor geometry from previous session.");
+    QMap<QString, QByteArray> geometry = porymapConfig.getTilesetEditorGeometry();
+    this->restoreGeometry(geometry.value("tileset_editor_geometry"));
+    this->restoreState(geometry.value("tileset_editor_state"));
+}
+
+void TilesetEditor::reset() {
+    this->hasUnsavedChanges = false;
+    this->setTilesets(this->primaryTileset->name, this->secondaryTileset->name);
+    if (this->paletteEditor)
+        this->paletteEditor->setTilesets(this->primaryTileset, this->secondaryTileset);
+    this->refresh();
 }
 
 void TilesetEditor::drawSelectedTiles() {
@@ -599,6 +625,7 @@ void TilesetEditor::closeEvent(QCloseEvent *event)
             this->on_actionSave_Tileset_triggered();
             event->accept();
         } else if (result == QMessageBox::No) {
+            this->reset();
             event->accept();
         } else if (result == QMessageBox::Cancel) {
             event->ignore();
@@ -607,10 +634,13 @@ void TilesetEditor::closeEvent(QCloseEvent *event)
         event->accept();
     }
 
-    porymapConfig.setTilesetEditorGeometry(
-        this->saveGeometry(),
-        this->saveState()
-    );
+    if (event->isAccepted()) {
+        if (this->paletteEditor) this->paletteEditor->close();
+        porymapConfig.setTilesetEditorGeometry(
+            this->saveGeometry(),
+            this->saveState()
+        );
+    }
 }
 
 void TilesetEditor::on_actionChange_Metatiles_Count_triggered()
@@ -694,10 +724,6 @@ void TilesetEditor::on_actionChange_Palettes_triggered()
         this->paletteEditor = new PaletteEditor(this->project, this->primaryTileset, this->secondaryTileset, this->paletteId, this);
         connect(this->paletteEditor, SIGNAL(changedPaletteColor()), this, SLOT(onPaletteEditorChangedPaletteColor()));
         connect(this->paletteEditor, SIGNAL(changedPalette(int)), this, SLOT(onPaletteEditorChangedPalette(int)));
-        logInfo("Restoring palette editor geometry from previous session.");
-        QMap<QString, QByteArray> geometry = porymapConfig.getPaletteEditorGeometry();
-        this->paletteEditor->restoreGeometry(geometry.value("palette_editor_geometry"));
-        this->paletteEditor->restoreState(geometry.value("palette_editor_state"));
     }
 
     if (!this->paletteEditor->isVisible()) {

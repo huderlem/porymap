@@ -1204,8 +1204,11 @@ void MainWindow::on_actionNew_Tileset_triggered() {
 
 void MainWindow::updateTilesetEditor() {
     if (this->tilesetEditor) {
-        this->tilesetEditor->setMap(this->editor->map);
-        this->tilesetEditor->setTilesets(editor->ui->comboBox_PrimaryTileset->currentText(), editor->ui->comboBox_SecondaryTileset->currentText());
+        this->tilesetEditor->update(
+            this->editor->map,
+            editor->ui->comboBox_PrimaryTileset->currentText(),
+            editor->ui->comboBox_SecondaryTileset->currentText()
+        );
     }
 }
 
@@ -2516,10 +2519,6 @@ void MainWindow::on_actionTileset_Editor_triggered()
         this->tilesetEditor = new TilesetEditor(this->editor->project, this->editor->map, this);
         connect(this->tilesetEditor, SIGNAL(tilesetsSaved(QString, QString)), this, SLOT(onTilesetsSaved(QString, QString)));
         connect(this->tilesetEditor, &QObject::destroyed, [=](QObject *) { this->tilesetEditor = nullptr; });
-        logInfo("Restoring tileset editor geometry from previous session.");
-        QMap<QString, QByteArray> geometry = porymapConfig.getTilesetEditorGeometry();
-        this->tilesetEditor->restoreGeometry(geometry.value("tileset_editor_geometry"));
-        this->tilesetEditor->restoreState(geometry.value("tileset_editor_state"));
     }
 
     if (!this->tilesetEditor->isVisible()) {
@@ -2659,10 +2658,6 @@ void MainWindow::on_actionRegion_Map_Editor_triggered() {
             return;
         }
         connect(this->regionMapEditor, &QObject::destroyed, [=](QObject *) { this->regionMapEditor = nullptr; });
-        logInfo("Restoring region map editor geometry from previous session.");
-        QMap<QString, QByteArray> geometry = porymapConfig.getRegionMapEditorGeometry();
-        this->regionMapEditor->restoreGeometry(geometry.value("region_map_editor_geometry"));
-        this->regionMapEditor->restoreState(geometry.value("region_map_editor_state"));
     }
 
     if (!this->regionMapEditor->isVisible()) {
