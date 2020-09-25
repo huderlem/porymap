@@ -57,6 +57,7 @@ public:
 private:
     QRect xRuler;
     QRect yRuler;
+    QLineF cornerTick;
     QRect widthTextBox;
     QRect heightTextBox;
     QColor interiorColor;
