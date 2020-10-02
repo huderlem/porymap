@@ -89,7 +89,7 @@ signals:
     void startPaint(QGraphicsSceneMouseEvent *, MapPixmapItem *);
     void endPaint(QGraphicsSceneMouseEvent *, MapPixmapItem *);
     void mouseEvent(QGraphicsSceneMouseEvent *, MapPixmapItem *);
-    void hoveredMapMetatileChanged(int x, int y);
+    void hoveredMapMetatileChanged(const QPointF &scenePos, const QPoint &screenPos);
     void hoveredMapMetatileCleared();
 
 protected:

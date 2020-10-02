@@ -742,7 +742,7 @@ void MapPixmapItem::draw(bool ignoreCache) {
 void MapPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
     int x = static_cast<int>(event->pos().x()) / 16;
     int y = static_cast<int>(event->pos().y()) / 16;
-    emit this->hoveredMapMetatileChanged(x, y);
+    emit this->hoveredMapMetatileChanged(event->scenePos(), event->screenPos());
     if (this->settings->betterCursors && this->paintingMode != MapPixmapItem::PaintMode::Disabled) {
         setCursor(this->settings->mapCursor);
     }
@@ -769,7 +769,7 @@ void MapPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 void MapPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     int x = static_cast<int>(event->pos().x()) / 16;
     int y = static_cast<int>(event->pos().y()) / 16;
-    emit this->hoveredMapMetatileChanged(x, y);
+    emit this->hoveredMapMetatileChanged(event->scenePos(), event->screenPos());
     emit mouseEvent(event, this);
 }
 void MapPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {

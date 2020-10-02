@@ -1346,6 +1346,9 @@ void MainWindow::on_mainTabBar_tabBarClicked(int index)
         if (projectConfig.getEncounterJsonActive())
             editor->saveEncounterTabData();
     }
+    if (index != 1) {
+        editor->map_ruler->endAnchor();
+    }
 }
 
 void MainWindow::on_actionZoom_In_triggered() {

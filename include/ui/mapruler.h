@@ -9,8 +9,9 @@
 class MapRuler : public QGraphicsItem, private QLine
 {
 public:
-    MapRuler(QColor interior = Qt::yellow, QColor exterior = Qt::black)
-    : interiorColor(interior), exteriorColor(exterior)
+    MapRuler(QColor innerColor = Qt::yellow, QColor borderColor = Qt::black) :
+        innerColor(innerColor),
+        borderColor(borderColor)
     {
         init();
         setAcceptedMouseButtons(Qt::RightButton);
@@ -20,17 +21,13 @@ public:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override;
     QPainterPath shape() const override;
 
-    // Anchor the ruler on metatile 'tilePos' and show the ruler
-    void setAnchor(const QPoint &tilePos);
-    // Anchor the ruler on metatile (tileX,tileY) and show the ruler
-    void setAnchor(int tileX, int tileY) { setAnchor(QPoint(tileX, tileY)); }
-    // Release the ruler anchor and hide the ruler
+    // Anchor the ruler and make it visible
+    void setAnchor(const QPointF &scenePos, const QPoint &screenPos);
+    // Release the anchor and hide the ruler
     void endAnchor();
-    // Set the ruler end point to metatile 'tilePos' and repaint
-    void setEndPos(const QPoint &tilePos);
-    // Set the ruler end point to metatile (tileX, tileY) and repaint
-    void setEndPos(int tileX, int tileY) { setEndPos(QPoint(tileX, tileY)); }
-    
+    // Set the end point and repaint
+    void setEndPos(const QPointF &scenePos, const QPoint &screenPos);
+
     // Ruler start point in metatiles
     QPoint anchor() const { return QLine::p1(); }
     // Ruler end point in metatiles
@@ -52,21 +49,25 @@ public:
     // Ruler height in map pixels
     int pixHeight() const { return height() * 16; }
 
-    bool mousePressed(Qt::MouseButtons buttons) { return buttons & acceptedMouseButtons(); }
+    bool isMousePressed(QGraphicsSceneMouseEvent *event) const;
+    bool isAnchored() const { return anchored; }
+
+    bool locked;
+    QString statusMessage;
 
 private:
+    QColor innerColor;
+    QColor borderColor;
     QRect xRuler;
     QRect yRuler;
     QLineF cornerTick;
-    QRect widthTextBox;
-    QRect heightTextBox;
-    QColor interiorColor;
-    QColor exteriorColor;
+    bool anchored;
 
-    static int padding;
     static int thickness;
     
-    void updateShape();
+    void showDimensions(const QPoint &screenPos);
+    void hideDimensions() const;
+    void updateGeometry();
 };
 
 #endif // MAPRULER_H

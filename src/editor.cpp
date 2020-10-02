@@ -889,23 +889,31 @@ void Editor::onSelectedMetatilesChanged() {
     this->redrawCurrentMetatilesSelection();
 }
 
-void Editor::onHoveredMapMetatileChanged(int x, int y) {
-    this->playerViewRect->updateLocation(x, y);
-    this->cursorMapTileRect->updateLocation(x, y);
+void Editor::onHoveredMapMetatileChanged(const QPointF &scenePos, const QPoint &screenPos) {
+    QPoint pos = Metatile::coordFromPixmapCoord(scenePos);
+    this->playerViewRect->updateLocation(pos.x(), pos.y());
+    this->cursorMapTileRect->updateLocation(pos.x(), pos.y());
+    
     if (map_item->paintingMode == MapPixmapItem::PaintMode::Metatiles
-     && x >= 0 && x < map->getWidth() && y >= 0 && y < map->getHeight()) {
-        int blockIndex = y * map->getWidth() + x;
+     && pos.x() >= 0 && pos.x() < map->getWidth() && pos.y() >= 0 && pos.y() < map->getHeight()) {
+        int blockIndex = pos.y() * map->getWidth() + pos.x();
         int metatileId = map->layout->blockdata->blocks->at(blockIndex).tile;
         this->ui->statusBar->showMessage(QString("X: %1, Y: %2, %3, Scale = %4x")
-                              .arg(x)
-                              .arg(y)
+                              .arg(pos.x())
+                              .arg(pos.y())
                               .arg(getMetatileDisplayMessage(metatileId))
                               .arg(QString::number(pow(scale_base, scale_exp), 'g', 2)));
     } else if (map_item->paintingMode == MapPixmapItem::PaintMode::EventObjects
-        && x >= 0 && x < map->getWidth() && y >= 0 && y < map->getHeight()) {
+        && pos.x() >= 0 && pos.x() < map->getWidth() && pos.y() >= 0 && pos.y() < map->getHeight()) {
         this->ui->statusBar->showMessage(QString("X: %1, Y: %2")
-                              .arg(x)
-                              .arg(y));
+                              .arg(pos.x())
+                              .arg(pos.y()));
+        if (this->map_ruler->isAnchored()) {
+            this->map_ruler->setEndPos(scenePos, screenPos);
+            this->ui->statusBar->showMessage(
+                this->ui->statusBar->currentMessage() + "; " + this->map_ruler->statusMessage
+            );
+        }
     }
 }
 
@@ -915,6 +923,9 @@ void Editor::onHoveredMapMetatileCleared() {
     if (map_item->paintingMode == MapPixmapItem::PaintMode::Metatiles
      || map_item->paintingMode == MapPixmapItem::PaintMode::EventObjects) {
         this->ui->statusBar->clearMessage();
+        if (this->map_ruler->isAnchored()) {
+            this->ui->statusBar->showMessage(this->map_ruler->statusMessage);
+        }
     }
 }
 
@@ -1121,13 +1132,15 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item
                 }
             }
         } else if (obj_edit_mode == "select") {
-            if (!this->map_ruler->isEnabled() && this->map_ruler->mousePressed(event->buttons())) {
-                this->map_ruler->setAnchor(x, y);
-            } else if (event->type() == QEvent::GraphicsSceneMouseRelease
-                        && !this->map_ruler->mousePressed(event->buttons())) {
-                this->map_ruler->endAnchor();
-            } else if (this->map_ruler->isEnabled()) {
-                this->map_ruler->setEndPos(x, y);
+            if (!this->map_ruler->isAnchored() && this->map_ruler->isMousePressed(event)) {
+                this->map_ruler->setAnchor(event->scenePos(), event->screenPos());
+            } else if (this->map_ruler->isAnchored()) {
+                if (event->buttons() & Qt::LeftButton)
+                    this->map_ruler->locked = !this->map_ruler->locked;
+                if (this->map_ruler->isMousePressed(event))
+                    this->map_ruler->endAnchor();
+                else
+                    this->map_ruler->setEndPos(event->scenePos(), event->screenPos());
             }
         } else if (obj_edit_mode == "shift" && item->map) {
             static QPoint selection_origin;
@@ -1292,8 +1305,8 @@ void Editor::displayMapMetatiles() {
             this, SLOT(onMapStartPaint(QGraphicsSceneMouseEvent*,MapPixmapItem*)));
     connect(map_item, SIGNAL(endPaint(QGraphicsSceneMouseEvent*,MapPixmapItem*)),
             this, SLOT(onMapEndPaint(QGraphicsSceneMouseEvent*,MapPixmapItem*)));
-    connect(map_item, SIGNAL(hoveredMapMetatileChanged(int, int)),
-            this, SLOT(onHoveredMapMetatileChanged(int, int)));
+    connect(map_item, SIGNAL(hoveredMapMetatileChanged(const QPointF&, const QPoint&)),
+            this, SLOT(onHoveredMapMetatileChanged(const QPointF&, const QPoint&)));
     connect(map_item, SIGNAL(hoveredMapMetatileCleared()),
             this, SLOT(onHoveredMapMetatileCleared()));
 
