@@ -1,4 +1,5 @@
 #include "mappixmapitem.h"
+#include "metatile.h"
 #include "log.h"
 
 #include "editcommands.h"
@@ -10,15 +11,12 @@ void MapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
         if (event->type() == QEvent::GraphicsSceneMouseRelease) {
             actionId_++;
         } else {
-            QPointF pos = event->pos();
-            int x = static_cast<int>(pos.x()) / 16;
-            int y = static_cast<int>(pos.y()) / 16;
+            QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
 
             // Set straight paths on/off and snap to the dominant axis when on
             if (event->modifiers() & Qt::ControlModifier) {
                 this->lockNondominantAxis(event);
-                x = this->adjustCoord(x, MapPixmapItem::Axis::X);
-                y = this->adjustCoord(y, MapPixmapItem::Axis::Y);
+                pos = this->adjustCoords(pos);
             } else {
                 this->prevStraightPathState = false;
                 this->lockedAxis = MapPixmapItem::Axis::None;
@@ -29,15 +27,15 @@ void MapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
             QPoint selectionDimensions = this->metatileSelector->getSelectionDimensions();
             if (settings->smartPathsEnabled) {
                 if (!shiftPressed && selectionDimensions.x() == 3 && selectionDimensions.y() == 3) {
-                    paintSmartPath(x, y);
+                    paintSmartPath(pos.x(), pos.y());
                 } else {
-                    paintNormal(x, y);
+                    paintNormal(pos.x(), pos.y());
                 }
             } else {
                 if (shiftPressed && selectionDimensions.x() == 3 && selectionDimensions.y() == 3) {
-                    paintSmartPath(x, y);
+                    paintSmartPath(pos.x(), pos.y());
                 } else {
-                    paintNormal(x, y);
+                    paintNormal(pos.x(), pos.y());
                 }
             }
         }
@@ -49,29 +47,26 @@ void MapPixmapItem::shift(QGraphicsSceneMouseEvent *event) {
         if (event->type() == QEvent::GraphicsSceneMouseRelease) {
             actionId_++;
         } else {
-            QPointF pos = event->pos();
-            int x = static_cast<int>(pos.x()) / 16;
-            int y = static_cast<int>(pos.y()) / 16;
+            QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
 
             // Set straight paths on/off and snap to the dominant axis when on
             if (event->modifiers() & Qt::ControlModifier) {
                 this->lockNondominantAxis(event);
-                x = this->adjustCoord(x, MapPixmapItem::Axis::X);
-                y = this->adjustCoord(y, MapPixmapItem::Axis::Y);
+                pos = this->adjustCoords(pos);
             } else {
                 this->prevStraightPathState = false;
                 this->lockedAxis = MapPixmapItem::Axis::None;
             }
 
             if (event->type() == QEvent::GraphicsSceneMousePress) {
-                selection_origin = QPoint(x, y);
+                selection_origin = QPoint(pos.x(), pos.y());
                 selection.clear();
             } else if (event->type() == QEvent::GraphicsSceneMouseMove) {
-                if (x != selection_origin.x() || y != selection_origin.y()) {
-                    int xDelta = x - selection_origin.x();
-                    int yDelta = y - selection_origin.y();
+                if (pos.x() != selection_origin.x() || pos.y() != selection_origin.y()) {
+                    int xDelta = pos.x() - selection_origin.x();
+                    int yDelta = pos.y() - selection_origin.y();
                     this->shift(xDelta, yDelta);
-                    selection_origin = QPoint(x, y);
+                    selection_origin = QPoint(pos.x(), pos.y());
                     selection.clear();
                     draw();
                 }
@@ -286,18 +281,16 @@ void MapPixmapItem::lockNondominantAxis(QGraphicsSceneMouseEvent *event) {
     if (this->lockedAxis != MapPixmapItem::Axis::None || event->type() == QEvent::GraphicsSceneMouseRelease)
         return;
 
-    QPointF pos = event->pos();
-    int x = static_cast<int>(pos.x()) / 16;
-    int y = static_cast<int>(pos.y()) / 16;
+    QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
     if (!this->prevStraightPathState) {
         this->prevStraightPathState = true;
-        this->straight_path_initial_x = x;
-        this->straight_path_initial_y = y;
+        this->straight_path_initial_x = pos.x();
+        this->straight_path_initial_y = pos.y();
     }
     
     // Only lock an axis when the current position != initial
-    int xDiff = x - this->straight_path_initial_x;
-    int yDiff = y - this->straight_path_initial_y;
+    int xDiff = pos.x() - this->straight_path_initial_x;
+    int yDiff = pos.y() - this->straight_path_initial_y;
     if (xDiff || yDiff) {
         if (abs(xDiff) < abs(yDiff)) {
             this->lockedAxis = MapPixmapItem::Axis::X;
@@ -308,38 +301,36 @@ void MapPixmapItem::lockNondominantAxis(QGraphicsSceneMouseEvent *event) {
 }
 
 // Adjust the cooresponding coordinate when it is locked
-int MapPixmapItem::adjustCoord(int coord, MapPixmapItem::Axis axis) {
-    if (axis == MapPixmapItem::Axis::X && this->lockedAxis == MapPixmapItem::Axis::X) {
-        coord = this->straight_path_initial_x;
-    } else if (axis == MapPixmapItem::Axis::Y && this->lockedAxis == MapPixmapItem::Axis::Y) {
-        coord = this->straight_path_initial_y;
+QPoint MapPixmapItem::adjustCoords(QPoint pos) {
+    if (this->lockedAxis == MapPixmapItem::Axis::X) {
+        pos.setX(this->straight_path_initial_x);
+    } else if (this->lockedAxis == MapPixmapItem::Axis::Y) {
+        pos.setY(this->straight_path_initial_y);
     }
-    return coord;
+    return pos;
 }
 
 void MapPixmapItem::updateMetatileSelection(QGraphicsSceneMouseEvent *event) {
-    QPointF pos = event->pos();
-    int x = static_cast<int>(pos.x()) / 16;
-    int y = static_cast<int>(pos.y()) / 16;
+    QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
 
     // Snap point to within map bounds.
-    if (x < 0) x = 0;
-    if (x >= map->getWidth()) x = map->getWidth() - 1;
-    if (y < 0) y = 0;
-    if (y >= map->getHeight()) y = map->getHeight() - 1;
+    if (pos.x() < 0) pos.setX(0);
+    if (pos.x() >= map->getWidth()) pos.setX(map->getWidth() - 1);
+    if (pos.y() < 0) pos.setY(0);
+    if (pos.y() >= map->getHeight()) pos.setY(map->getHeight() - 1);
 
     // Update/apply copied metatiles.
     if (event->type() == QEvent::GraphicsSceneMousePress) {
-        selection_origin = QPoint(x, y);
+        selection_origin = QPoint(pos.x(), pos.y());
         selection.clear();
-        selection.append(QPoint(x, y));
-        Block *block = map->getBlock(x, y);
+        selection.append(QPoint(pos.x(), pos.y()));
+        Block *block = map->getBlock(pos.x(), pos.y());
         this->metatileSelector->selectFromMap(block->tile, block->collision, block->elevation);
     } else if (event->type() == QEvent::GraphicsSceneMouseMove) {
         int x1 = selection_origin.x();
         int y1 = selection_origin.y();
-        int x2 = x;
-        int y2 = y;
+        int x2 = pos.x();
+        int y2 = pos.y();
         if (x1 > x2) SWAP(x1, x2);
         if (y1 > y2) SWAP(y1, y2);
         selection.clear();
@@ -369,19 +360,17 @@ void MapPixmapItem::floodFill(QGraphicsSceneMouseEvent *event) {
         if (event->type() == QEvent::GraphicsSceneMouseRelease) {
             actionId_++;
         } else {
-            QPointF pos = event->pos();
-            int x = static_cast<int>(pos.x()) / 16;
-            int y = static_cast<int>(pos.y()) / 16;
-            Block *block = map->getBlock(x, y);
+            QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
+            Block *block = map->getBlock(pos.x(), pos.y());
             QList<uint16_t> *selectedMetatiles = this->metatileSelector->getSelectedMetatiles();
             QPoint selectionDimensions = this->metatileSelector->getSelectionDimensions();
             int tile = selectedMetatiles->first();
             if (selectedMetatiles->count() > 1 || (block && block->tile != tile)) {
                 bool smartPathsEnabled = event->modifiers() & Qt::ShiftModifier;
                 if ((this->settings->smartPathsEnabled || smartPathsEnabled) && selectionDimensions.x() == 3 && selectionDimensions.y() == 3)
-                    this->floodFillSmartPath(x, y);
+                    this->floodFillSmartPath(pos.x(), pos.y());
                 else
-                    this->floodFill(x, y);
+                    this->floodFill(pos.x(), pos.y());
             }
         }
     }
@@ -392,10 +381,8 @@ void MapPixmapItem::magicFill(QGraphicsSceneMouseEvent *event) {
         if (event->type() == QEvent::GraphicsSceneMouseRelease) {
             actionId_++;
         } else {
-            QPointF pos = event->pos();
-            int initialX = static_cast<int>(pos.x()) / 16;
-            int initialY = static_cast<int>(pos.y()) / 16;
-            this->magicFill(initialX, initialY);
+            QPoint initialPos = Metatile::coordFromPixmapCoord(event->pos());
+            this->magicFill(initialPos.x(), initialPos.y());
         }
     }
 }
@@ -691,26 +678,22 @@ void MapPixmapItem::floodFillSmartPath(int initialX, int initialY, bool fromScri
 }
 
 void MapPixmapItem::pick(QGraphicsSceneMouseEvent *event) {
-    QPointF pos = event->pos();
-    int x = static_cast<int>(pos.x()) / 16;
-    int y = static_cast<int>(pos.y()) / 16;
-    Block *block = map->getBlock(x, y);
+    QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
+    Block *block = map->getBlock(pos.x(), pos.y());
     if (block) {
         this->metatileSelector->selectFromMap(block->tile, block->collision, block->elevation);
     }
 }
 
 void MapPixmapItem::select(QGraphicsSceneMouseEvent *event) {
-    QPointF pos = event->pos();
-    int x = static_cast<int>(pos.x()) / 16;
-    int y = static_cast<int>(pos.y()) / 16;
+    QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
     if (event->type() == QEvent::GraphicsSceneMousePress) {
-        selection_origin = QPoint(x, y);
+        selection_origin = QPoint(pos.x(), pos.y());
         selection.clear();
     } else if (event->type() == QEvent::GraphicsSceneMouseMove) {
         if (event->buttons() & Qt::LeftButton) {
             selection.clear();
-            selection.append(QPoint(x, y));
+            selection.append(QPoint(pos.x(), pos.y()));
         }
     } else if (event->type() == QEvent::GraphicsSceneMouseRelease) {
         if (!selection.isEmpty()) {
@@ -740,8 +723,6 @@ void MapPixmapItem::draw(bool ignoreCache) {
 }
 
 void MapPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
-    int x = static_cast<int>(event->pos().x()) / 16;
-    int y = static_cast<int>(event->pos().y()) / 16;
     emit this->hoveredMapMetatileChanged(event->scenePos(), event->screenPos());
     if (this->settings->betterCursors && this->paintingMode != MapPixmapItem::PaintMode::Disabled) {
         setCursor(this->settings->mapCursor);
@@ -758,17 +739,13 @@ void MapPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
     this->has_mouse = false;
 }
 void MapPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
-    QPointF pos = event->pos();
-    int x = static_cast<int>(pos.x()) / 16;
-    int y = static_cast<int>(pos.y()) / 16;
-    this->paint_tile_initial_x = this->straight_path_initial_x = x;
-    this->paint_tile_initial_y = this->straight_path_initial_y = y;
+    QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
+    this->paint_tile_initial_x = this->straight_path_initial_x = pos.x();
+    this->paint_tile_initial_y = this->straight_path_initial_y = pos.y();
     emit startPaint(event, this);
     emit mouseEvent(event, this);
 }
 void MapPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
-    int x = static_cast<int>(event->pos().x()) / 16;
-    int y = static_cast<int>(event->pos().y()) / 16;
     emit this->hoveredMapMetatileChanged(event->scenePos(), event->screenPos());
     emit mouseEvent(event, this);
 }
