@@ -2241,6 +2241,9 @@ void MainWindow::checkToolButtons() {
     else
         edit_mode = editor->obj_edit_mode;
 
+    if (edit_mode != "select" && editor->map_ruler)
+        editor->map_ruler->endAnchor();
+
     ui->toolButton_Paint->setChecked(edit_mode == "paint");
     ui->toolButton_Select->setChecked(edit_mode == "select");
     ui->toolButton_Fill->setChecked(edit_mode == "fill");

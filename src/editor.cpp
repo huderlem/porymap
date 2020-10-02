@@ -1967,8 +1967,8 @@ void Editor::objectsView_onMousePress(QMouseEvent *event) {
     if (map_item && map_item->paintingMode != MapPixmapItem::PaintMode::EventObjects) {
         return;
     }
-    if (this->map_edit_mode == "paint" && event->buttons() & Qt::RightButton) {
-        this->map_edit_mode = "select";
+    if (this->obj_edit_mode == "paint" && event->buttons() & Qt::RightButton) {
+        this->obj_edit_mode = "select";
         this->settings->mapCursor = QCursor();
         this->cursorMapTileRect->setSingleTileMode();
         this->ui->toolButton_Paint->setChecked(false);
