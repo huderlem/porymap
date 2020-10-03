@@ -63,13 +63,15 @@ void DraggablePixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *mouse) {
     last_y = pos.y();
     this->editor->selectMapEvent(this, mouse->modifiers() & Qt::ControlModifier);
     this->editor->selectingEvent = true;
-    if (!this->editor->map_ruler->isAnchored() && this->editor->map_ruler->isMousePressed(mouse)) {
-        this->editor->map_ruler->setAnchor(mouse->scenePos(), mouse->screenPos());
-    } else if (this->editor->map_ruler->isAnchored()) {
-        if (mouse->buttons() & Qt::LeftButton)
-            this->editor->map_ruler->locked = !this->editor->map_ruler->locked;
-        if (this->editor->map_ruler->isMousePressed(mouse))
-            this->editor->map_ruler->endAnchor();
+    if (this->editor->obj_edit_mode == "select") {
+        if (!this->editor->map_ruler->isAnchored() && this->editor->map_ruler->isMousePressed(mouse)) {
+            this->editor->map_ruler->setAnchor(mouse->scenePos(), mouse->screenPos());
+        } else if (this->editor->map_ruler->isAnchored()) {
+            if (mouse->buttons() & Qt::LeftButton)
+                this->editor->map_ruler->locked = !this->editor->map_ruler->locked;
+            if (this->editor->map_ruler->isMousePressed(mouse))
+                this->editor->map_ruler->endAnchor();
+        }
     }
 }
 
