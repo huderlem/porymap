@@ -237,17 +237,32 @@ The event editing tab also extends functionality to a few of the tool buttons de
 A brief description and animation is listed for each of the available tools below:
 
 Pencil
-    When clicking on an existing event, the pencil tool will behave normally (as the standard cursor). It can also be used to "draw" events in a certain location. The event created will be a default-valued event of the same type as the currently selected event.
+    When clicking on an existing event, the pencil tool will behave normally (as the standard cursor). It can also be used to "draw" events in a certain location. The event created will be a default-valued event of the same type as the currently selected event. Right-clicking with the Pencil Tool will return to the Pointer tool.
 
 .. figure:: images/editing-map-events/event-tool-pencil.gif
     :alt: Drawing Object Events with the Pencil Tool
 
     Drawing Object Events with the Pencil Tool
 
+Pointer
+    The Pointer Tool is the default tool for the event editing tab and allows you to select and move events on the map. The Pointer Tool also gives you access to the :ref:`Ruler Tool <ruler-tool>`.
+
 Shift
-    You can use the shift tool to move any number of events together. When a selected event is dragged, all other selected events will move with it. When a tile with no event is clicked, all events on the map can be dragged.
+    You can use the Shift Tool to move any number of events together. When a selected event is dragged, all other selected events will move with it. When a tile with no event is clicked, all events on the map can be dragged.
 
 .. figure:: images/editing-map-events/event-tool-shift.gif
     :alt: Moving Events with the Shift Tool
 
     Moving Events with the Shift Tool
+
+.. _ruler-tool:
+
+Ruler Tool
+----------
+
+The Ruler Tool provides a convenient way to measure distance on the map. This is particularly useful for scripting object movement. With the Pointer Tool selected you can activate the ruler with a Right-click. With the ruler active you can drag the mouse around to extend the ruler. The ruler can be deactivated with another Right-click, or locked in place with a Left-click (Left-click again to unlock the ruler). The dimensions of the ruler are displayed in a tool-tip and in the status bar in the bottom left corner of the widnow.
+
+.. figure:: images/editing-map-events/event-tool-ruler.gif
+    :alt: Measuring metatile distance with the Ruler Tool
+
+    Measuring metatile distance with the Ruler Tool
