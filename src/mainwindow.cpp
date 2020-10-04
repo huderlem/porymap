@@ -10,6 +10,7 @@
 #include "currentselectedmetatilespixmapitem.h"
 #include "customattributestable.h"
 #include "scripting.h"
+#include "collabsession.h"
 #include "adjustingstackedwidget.h"
 #include "draggablepixmapitem.h"
 #include "editcommands.h"
@@ -394,6 +395,7 @@ bool MainWindow::openProject(QString dir) {
     this->setProjectSpecificUIVisibility();
 
     Scripting::init(this);
+    CollabSession::init(this);
     bool already_open = isProjectOpen() && (editor->project->root == dir);
     if (!already_open) {
         editor->closeProject();
@@ -1428,6 +1430,23 @@ void MainWindow::on_actionMove_triggered()
 void MainWindow::on_actionMap_Shift_triggered()
 {
     on_toolButton_Shift_clicked();
+}
+
+void MainWindow::on_actionConnect_to_Collab_triggered()
+{
+    if (!CollabSession::connect("35.223.92.12", 4000)) {
+        logInfo("Failed to connect to collab session");
+    }
+}
+
+void MainWindow::on_actionCreate_Collab_Session_triggered()
+{
+    CollabSession::createSession("TestSession");
+}
+
+void MainWindow::on_actionJoin_Collab_Session_triggered()
+{
+    CollabSession::joinSession("TestSession");
 }
 
 void MainWindow::onWheelZoom(int s) {

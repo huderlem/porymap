@@ -2,6 +2,7 @@
 #include "map.h"
 #include "imageproviders.h"
 #include "scripting.h"
+#include "collabsession.h"
 
 #include "editcommands.h"
 
@@ -383,6 +384,7 @@ void Map::setBlock(int x, int y, Block block, bool enableScriptCallback) {
         layout->blockdata->blocks->replace(i, block);
         if (enableScriptCallback) {
             Scripting::cb_MetatileChanged(x, y, prevBlock, block);
+            CollabSession::onBlockChanged(x, y, prevBlock, block);
         }
     }
 }

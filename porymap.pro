@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui qml
+QT       += core gui qml network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -15,6 +15,7 @@ ICON = resources/icons/porymap.icns
 QMAKE_CXXFLAGS += -std=c++11 -Wall
 
 SOURCES += src/core/block.cpp \
+    src/collabsession.cpp \
     src/core/blockdata.cpp \
     src/core/event.cpp \
     src/core/heallocation.cpp \
@@ -134,6 +135,7 @@ HEADERS  += include/core/block.h \
     include/ui/regionmapeditor.h \
     include/ui/newmappopup.h \
     include/ui/mapimageexporter.h \
+    include/collabsession.h \
     include/config.h \
     include/editor.h \
     include/mainwindow.h \

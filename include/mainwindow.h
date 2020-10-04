@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QTcpSocket>
 #include <QString>
 #include <QModelIndex>
 #include <QMainWindow>
@@ -231,6 +232,10 @@ private slots:
     void on_pushButton_ConfigureEncountersJSON_clicked();
 
     void on_actionRegion_Map_Editor_triggered();
+
+    void on_actionConnect_to_Collab_triggered();
+    void on_actionCreate_Collab_Session_triggered();
+    void on_actionJoin_Collab_Session_triggered();
 
 private:
     Ui::MainWindow *ui;
