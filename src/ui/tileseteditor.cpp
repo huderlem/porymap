@@ -526,7 +526,7 @@ void TilesetEditor::importTilesetTiles(Tileset *tileset, bool primary) {
     if (image.colorCount() == 0) {
         QMessageBox msgBox(this);
         msgBox.setText("Select Palette for Tiles");
-        msgBox.setInformativeText(QString("The provided image is not indexed. Please select a palette file to for the image. An indexed image will be generated using the provided image and palette.")
+        msgBox.setInformativeText(QString("The provided image is not indexed. Please select a palette file for the image. An indexed image will be generated using the provided image and palette.")
                                   .arg(image.colorCount()));
         msgBox.setDefaultButton(QMessageBox::Ok);
         msgBox.setIcon(QMessageBox::Icon::Warning);
