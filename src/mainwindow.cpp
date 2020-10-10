@@ -53,6 +53,8 @@ MainWindow::MainWindow(QWidget *parent) :
     QApplication::setWindowIcon(QIcon(":/icons/porymap-icon-2.ico"));
     ui->setupUi(this);
 
+    cleanupLargeLog();
+
     this->initWindow();
     if (!this->openRecentProject()) {
         // Re-initialize everything to a blank slate if opening the recent project failed.
