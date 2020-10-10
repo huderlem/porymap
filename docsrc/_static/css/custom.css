@@ -1,0 +1,9 @@
+/* do not limit the width of the page */
+.wy-nav-content {
+    max-width: 75%;
+}
+
+.wy-side-scroll {
+    width: auto;
+    overflow-y: auto;
+}
