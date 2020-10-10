@@ -20,5 +20,6 @@ void logError(QString message);
 void log(QString message, LogType type);
 QString getLogPath();
 QString getMostRecentError();
+bool cleanupLargeLog();
 
 #endif // LOG_H
