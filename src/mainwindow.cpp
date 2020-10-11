@@ -1451,13 +1451,39 @@ void MainWindow::scaleMapView(int s) {
         double exp  = editor->scale_exp;
         double sfactor = pow(base,s);
 
+        ui->graphicsView_Map->setUpdatesEnabled(false);
+
+        const auto mapAnchor = ui->graphicsView_Map->transformationAnchor();
+        const auto connectionsAnchor = ui->graphicsView_Connections->transformationAnchor();
+        ui->graphicsView_Map->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+        ui->graphicsView_Connections->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+
         ui->graphicsView_Map->scale(sfactor,sfactor);
         ui->graphicsView_Connections->scale(sfactor,sfactor);
 
         int width = static_cast<int>(ceil((editor->scene->width()) * pow(base,exp))) + 2;
         int height = static_cast<int>(ceil((editor->scene->height()) * pow(base,exp))) + 2;
-        ui->graphicsView_Map->setFixedSize(width, height);
-        ui->graphicsView_Connections->setFixedSize(width, height);
+        QSize viewSize = ui->scrollAreaWidgetContents_5->size();
+
+        if (width < viewSize.width()) {
+            ui->graphicsView_Map->setFixedWidth(width);
+            ui->graphicsView_Connections->setFixedWidth(width);
+        } else {
+            ui->graphicsView_Map->setFixedWidth(viewSize.width());
+            ui->graphicsView_Connections->setFixedWidth(viewSize.width());
+        }
+        if (height < viewSize.height()) {
+            ui->graphicsView_Map->setFixedHeight(height);
+            ui->graphicsView_Connections->setFixedHeight(height);
+        } else {
+            ui->graphicsView_Map->setFixedHeight(viewSize.height());
+            ui->graphicsView_Connections->setFixedHeight(viewSize.height());
+        }
+
+        ui->graphicsView_Map->setTransformationAnchor(mapAnchor);
+        ui->graphicsView_Connections->setTransformationAnchor(connectionsAnchor);
+
+        ui->graphicsView_Map->setUpdatesEnabled(true);
     }
 }
 
@@ -2139,9 +2165,9 @@ void MainWindow::on_toolButton_Paint_clicked()
     if (ui->tabWidget_2->currentIndex() == 0)
         editor->cursorMapTileRect->stopSingleTileMode();
 
-    ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    QScroller::ungrabGesture(ui->scrollArea);
+    ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    ui->graphicsView_Map->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    QScroller::ungrabGesture(ui->graphicsView_Map);
 
     checkToolButtons();
 }
@@ -2156,9 +2182,9 @@ void MainWindow::on_toolButton_Select_clicked()
     editor->settings->mapCursor = QCursor();
     editor->cursorMapTileRect->setSingleTileMode();
 
-    ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    QScroller::ungrabGesture(ui->scrollArea);
+    ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    ui->graphicsView_Map->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    QScroller::ungrabGesture(ui->graphicsView_Map);
 
     checkToolButtons();
 }
@@ -2173,9 +2199,9 @@ void MainWindow::on_toolButton_Fill_clicked()
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/fill_color_cursor.ico"), 10, 10);
     editor->cursorMapTileRect->setSingleTileMode();
 
-    ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    QScroller::ungrabGesture(ui->scrollArea);
+    ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    ui->graphicsView_Map->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    QScroller::ungrabGesture(ui->graphicsView_Map);
 
     checkToolButtons();
 }
@@ -2190,9 +2216,9 @@ void MainWindow::on_toolButton_Dropper_clicked()
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/pipette_cursor.ico"), 10, 10);
     editor->cursorMapTileRect->setSingleTileMode();
 
-    ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    QScroller::ungrabGesture(ui->scrollArea);
+    ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    ui->graphicsView_Map->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    QScroller::ungrabGesture(ui->graphicsView_Map);
 
     checkToolButtons();
 }
@@ -2207,9 +2233,9 @@ void MainWindow::on_toolButton_Move_clicked()
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/move.ico"), 7, 7);
     editor->cursorMapTileRect->setSingleTileMode();
 
-    ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    QScroller::grabGesture(ui->scrollArea, QScroller::LeftMouseButtonGesture);
+    ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    ui->graphicsView_Map->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    QScroller::grabGesture(ui->graphicsView_Map, QScroller::LeftMouseButtonGesture);
 
     checkToolButtons();
 }
@@ -2224,9 +2250,9 @@ void MainWindow::on_toolButton_Shift_clicked()
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/shift_cursor.ico"), 10, 10);
     editor->cursorMapTileRect->setSingleTileMode();
 
-    ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    QScroller::ungrabGesture(ui->scrollArea);
+    ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    ui->graphicsView_Map->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    QScroller::ungrabGesture(ui->graphicsView_Map);
 
     checkToolButtons();
 }
