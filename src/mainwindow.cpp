@@ -148,7 +148,6 @@ void MainWindow::initEditor() {
     connect(this->editor, SIGNAL(warpEventDoubleClicked(QString,QString)), this, SLOT(openWarpMap(QString,QString)));
     connect(this->editor, SIGNAL(currentMetatilesSelectionChanged()), this, SLOT(currentMetatilesSelectionChanged()));
     connect(this->editor, SIGNAL(wildMonDataChanged()), this, SLOT(onWildMonDataChanged()));
-    connect(this->editor, &Editor::wheelZoom, this, &MainWindow::onWheelZoom);
 
     this->loadUserSettings();
 
@@ -1349,11 +1348,11 @@ void MainWindow::on_mainTabBar_tabBarClicked(int index)
 }
 
 void MainWindow::on_actionZoom_In_triggered() {
-    scaleMapView(1);
+    editor->scaleMapView(1);
 }
 
 void MainWindow::on_actionZoom_Out_triggered() {
-    scaleMapView(-1);
+    editor->scaleMapView(-1);
 }
 
 void MainWindow::on_actionBetter_Cursors_triggered() {
@@ -1430,65 +1429,8 @@ void MainWindow::on_actionMap_Shift_triggered()
     on_toolButton_Shift_clicked();
 }
 
-void MainWindow::onWheelZoom(int s) {
-    // Don't zoom the map when the user accidentally scrolls while performing a magic fill. (ctrl + middle button click)
-    if (!(QApplication::mouseButtons() & Qt::MiddleButton)) {
-        scaleMapView(s);
-    }
-}
-
-void MainWindow::scaleMapView(int s) {
-    if ((editor->scale_exp + s) <= 5 && (editor->scale_exp + s) >= -2)    // sane limits
-    {
-        if (s == 0)
-        {
-            s = -editor->scale_exp;
-        }
-
-        editor->scale_exp += s;
-
-        double base = editor->scale_base;
-        double exp  = editor->scale_exp;
-        double sfactor = pow(base,s);
-
-        ui->graphicsView_Map->setUpdatesEnabled(false);
-
-        const auto mapAnchor = ui->graphicsView_Map->transformationAnchor();
-        const auto connectionsAnchor = ui->graphicsView_Connections->transformationAnchor();
-        ui->graphicsView_Map->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-        ui->graphicsView_Connections->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-
-        ui->graphicsView_Map->scale(sfactor,sfactor);
-        ui->graphicsView_Connections->scale(sfactor,sfactor);
-
-        int width = static_cast<int>(ceil((editor->scene->width()) * pow(base,exp))) + 2;
-        int height = static_cast<int>(ceil((editor->scene->height()) * pow(base,exp))) + 2;
-        QSize viewSize = ui->scrollAreaWidgetContents_5->size();
-
-        if (width < viewSize.width()) {
-            ui->graphicsView_Map->setFixedWidth(width);
-            ui->graphicsView_Connections->setFixedWidth(width);
-        } else {
-            ui->graphicsView_Map->setFixedWidth(viewSize.width());
-            ui->graphicsView_Connections->setFixedWidth(viewSize.width());
-        }
-        if (height < viewSize.height()) {
-            ui->graphicsView_Map->setFixedHeight(height);
-            ui->graphicsView_Connections->setFixedHeight(height);
-        } else {
-            ui->graphicsView_Map->setFixedHeight(viewSize.height());
-            ui->graphicsView_Connections->setFixedHeight(viewSize.height());
-        }
-
-        ui->graphicsView_Map->setTransformationAnchor(mapAnchor);
-        ui->graphicsView_Connections->setTransformationAnchor(connectionsAnchor);
-
-        ui->graphicsView_Map->setUpdatesEnabled(true);
-    }
-}
-
 void MainWindow::resetMapViewScale() {
-    scaleMapView(0);
+    editor->scaleMapView(0);
 }
 
 void MainWindow::addNewEvent(QString event_type)

@@ -887,6 +887,47 @@ void Editor::onSelectedMetatilesChanged() {
     this->redrawCurrentMetatilesSelection();
 }
 
+void Editor::onWheelZoom(int s) {
+    // Don't zoom the map when the user accidentally scrolls while performing a magic fill. (ctrl + middle button click)
+    if (!(QApplication::mouseButtons() & Qt::MiddleButton)) {
+        scaleMapView(s);
+    }
+}
+
+void Editor::scaleMapView(int s) {
+    if ((scale_exp + s) <= 5 && (scale_exp + s) >= -2)    // sane limits
+    {
+        if (s == 0)
+            s = -scale_exp;
+
+        scale_exp += s;
+
+        double base = scale_base;
+        double exp  = scale_exp;
+        double sfactor = pow(base, s);
+
+        const auto mapAnchor = ui->graphicsView_Map->transformationAnchor();
+        const auto connectionsAnchor = ui->graphicsView_Connections->transformationAnchor();
+        ui->graphicsView_Map->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+        ui->graphicsView_Connections->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+
+        ui->graphicsView_Map->scale(sfactor, sfactor);
+        ui->graphicsView_Connections->scale(sfactor, sfactor);
+
+        int width = static_cast<int>(ceil((scene->width()) * pow(base, exp))) + 2;
+        int height = static_cast<int>(ceil((scene->height()) * pow(base, exp))) + 2;
+        QSize viewSize = ui->scrollAreaWidgetContents_5->size();
+        int minWidth = qMin(width, viewSize.width());
+        int minHeight = qMin(height, viewSize.height());
+
+        ui->graphicsView_Map->setFixedSize(minWidth, minHeight);
+        ui->graphicsView_Connections->setFixedSize(minWidth, minHeight);
+
+        ui->graphicsView_Map->setTransformationAnchor(mapAnchor);
+        ui->graphicsView_Connections->setTransformationAnchor(connectionsAnchor);
+    }
+}
+
 void Editor::onHoveredMapMetatileChanged(int x, int y) {
     this->playerViewRect->updateLocation(x, y);
     this->cursorMapTileRect->updateLocation(x, y);
@@ -1209,7 +1250,7 @@ bool Editor::displayMap() {
         scene = new QGraphicsScene;
         MapSceneEventFilter *filter = new MapSceneEventFilter();
         scene->installEventFilter(filter);
-        connect(filter, &MapSceneEventFilter::wheelZoom, this, &Editor::wheelZoom);
+        connect(filter, &MapSceneEventFilter::wheelZoom, this, &Editor::onWheelZoom);
     }
 
     if (map_item && scene) {

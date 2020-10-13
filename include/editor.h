@@ -148,6 +148,7 @@ public:
     bool selectingEvent = false;
 
     void shouldReselectEvents();
+    void scaleMapView(int);
 
 private:
     void setConnectionItemsVisible(bool);
@@ -198,6 +199,7 @@ private slots:
     void onHoveredMapMovementPermissionChanged(int, int);
     void onHoveredMapMovementPermissionCleared();
     void onSelectedMetatilesChanged();
+    void onWheelZoom(int);
 
 signals:
     void objectsChanged();
@@ -206,7 +208,6 @@ signals:
     void wildMonDataChanged();
     void warpEventDoubleClicked(QString mapName, QString warpNum);
     void currentMetatilesSelectionChanged();
-    void wheelZoom(int delta);
 };
 
 #endif // EDITOR_H
