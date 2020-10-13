@@ -555,19 +555,12 @@ void MainWindow::refreshMapScene()
 {
     on_mainTabBar_tabBarClicked(ui->mainTabBar->currentIndex());
 
-    double base = editor->scale_base;
-    double exp  = editor->scale_exp;
-
-    int width = static_cast<int>(ceil((editor->scene->width()) * pow(base,exp))) + 2;
-    int height = static_cast<int>(ceil((editor->scene->height()) * pow(base,exp))) + 2;
-
     ui->graphicsView_Map->setScene(editor->scene);
     ui->graphicsView_Map->setSceneRect(editor->scene->sceneRect());
     ui->graphicsView_Map->editor = editor;
 
     ui->graphicsView_Connections->setScene(editor->scene);
     ui->graphicsView_Connections->setSceneRect(editor->scene->sceneRect());
-    ui->graphicsView_Connections->setFixedSize(width, height);
 
     ui->graphicsView_Metatiles->setScene(editor->scene_metatiles);
     //ui->graphicsView_Metatiles->setSceneRect(editor->scene_metatiles->sceneRect());
