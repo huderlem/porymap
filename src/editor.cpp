@@ -898,33 +898,13 @@ void Editor::scaleMapView(int s) {
     if ((scale_exp + s) <= 5 && (scale_exp + s) >= -2)    // sane limits
     {
         if (s == 0)
-            s = -scale_exp;
+            scale_exp = 0;
+        else
+            scale_exp += s;
 
-        scale_exp += s;
-
-        double base = scale_base;
-        double exp  = scale_exp;
-        double sfactor = pow(base, s);
-
-        const auto mapAnchor = ui->graphicsView_Map->transformationAnchor();
-        const auto connectionsAnchor = ui->graphicsView_Connections->transformationAnchor();
-        ui->graphicsView_Map->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-        ui->graphicsView_Connections->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-
+        double sfactor = pow(scale_base, s);
         ui->graphicsView_Map->scale(sfactor, sfactor);
         ui->graphicsView_Connections->scale(sfactor, sfactor);
-
-        int width = static_cast<int>(ceil((scene->width()) * pow(base, exp))) + 2;
-        int height = static_cast<int>(ceil((scene->height()) * pow(base, exp))) + 2;
-        QSize viewSize = ui->scrollAreaWidgetContents_5->size();
-        int minWidth = qMin(width, viewSize.width());
-        int minHeight = qMin(height, viewSize.height());
-
-        ui->graphicsView_Map->setFixedSize(minWidth, minHeight);
-        ui->graphicsView_Connections->setFixedSize(minWidth, minHeight);
-
-        ui->graphicsView_Map->setTransformationAnchor(mapAnchor);
-        ui->graphicsView_Connections->setTransformationAnchor(connectionsAnchor);
     }
 }
 

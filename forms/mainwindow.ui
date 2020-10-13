@@ -350,129 +350,37 @@
                     <number>0</number>
                    </property>
                    <item row="0" column="0">
-                    <widget class="QScrollArea" name="scrollArea">
+                    <widget class="GraphicsView" name="graphicsView_Map">
                      <property name="sizePolicy">
                       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                       <horstretch>1</horstretch>
+                       <horstretch>0</horstretch>
                        <verstretch>0</verstretch>
                       </sizepolicy>
                      </property>
+                     <property name="mouseTracking">
+                      <bool>false</bool>
+                     </property>
+                     <property name="autoFillBackground">
+                      <bool>false</bool>
+                     </property>
                      <property name="verticalScrollBarPolicy">
-                      <enum>Qt::ScrollBarAlwaysOff</enum>
+                      <enum>Qt::ScrollBarAsNeeded</enum>
                      </property>
                      <property name="horizontalScrollBarPolicy">
-                      <enum>Qt::ScrollBarAlwaysOff</enum>
+                      <enum>Qt::ScrollBarAsNeeded</enum>
                      </property>
-                     <property name="widgetResizable">
-                      <bool>true</bool>
+                     <property name="sizeAdjustPolicy">
+                      <enum>QAbstractScrollArea::AdjustIgnored</enum>
                      </property>
-                     <widget class="QWidget" name="scrollAreaWidgetContents_5">
-                      <property name="geometry">
-                       <rect>
-                        <x>0</x>
-                        <y>0</y>
-                        <width>543</width>
-                        <height>600</height>
-                       </rect>
-                      </property>
-                      <layout class="QGridLayout" name="gridLayout_8">
-                       <property name="leftMargin">
-                        <number>0</number>
-                       </property>
-                       <property name="topMargin">
-                        <number>0</number>
-                       </property>
-                       <property name="rightMargin">
-                        <number>0</number>
-                       </property>
-                       <property name="bottomMargin">
-                        <number>0</number>
-                       </property>
-                       <property name="spacing">
-                        <number>0</number>
-                       </property>
-                       <item row="1" column="2">
-                        <spacer name="horizontalSpacer_5">
-                         <property name="orientation">
-                          <enum>Qt::Horizontal</enum>
-                         </property>
-                         <property name="sizeHint" stdset="0">
-                          <size>
-                           <width>166</width>
-                           <height>16</height>
-                          </size>
-                         </property>
-                        </spacer>
-                       </item>
-                       <item row="1" column="0">
-                        <spacer name="horizontalSpacer_4">
-                         <property name="orientation">
-                          <enum>Qt::Horizontal</enum>
-                         </property>
-                         <property name="sizeHint" stdset="0">
-                          <size>
-                           <width>166</width>
-                           <height>16</height>
-                          </size>
-                         </property>
-                        </spacer>
-                       </item>
-                       <item row="0" column="1">
-                        <spacer name="verticalSpacer_4">
-                         <property name="orientation">
-                          <enum>Qt::Vertical</enum>
-                         </property>
-                         <property name="sizeHint" stdset="0">
-                          <size>
-                           <width>16</width>
-                           <height>166</height>
-                          </size>
-                         </property>
-                        </spacer>
-                       </item>
-                       <item row="1" column="1">
-                        <widget class="GraphicsView" name="graphicsView_Map">
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
-                         <property name="mouseTracking">
-                          <bool>false</bool>
-                         </property>
-                         <property name="autoFillBackground">
-                          <bool>false</bool>
-                         </property>
-                         <property name="verticalScrollBarPolicy">
-                          <enum>Qt::ScrollBarAsNeeded</enum>
-                         </property>
-                         <property name="horizontalScrollBarPolicy">
-                          <enum>Qt::ScrollBarAsNeeded</enum>
-                         </property>
-                         <property name="sizeAdjustPolicy">
-                          <enum>QAbstractScrollArea::AdjustIgnored</enum>
-                         </property>
-                         <property name="dragMode">
-                          <enum>QGraphicsView::NoDrag</enum>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="2" column="1">
-                        <spacer name="verticalSpacer_3">
-                         <property name="orientation">
-                          <enum>Qt::Vertical</enum>
-                         </property>
-                         <property name="sizeHint" stdset="0">
-                          <size>
-                           <width>16</width>
-                           <height>166</height>
-                          </size>
-                         </property>
-                        </spacer>
-                       </item>
-                      </layout>
-                     </widget>
+                     <property name="dragMode">
+                      <enum>QGraphicsView::NoDrag</enum>
+                     </property>
+                     <property name="transformationAnchor">
+                      <enum>QGraphicsView::AnchorUnderMouse</enum>
+                     </property>
+                     <property name="resizeAnchor">
+                      <enum>QGraphicsView::AnchorUnderMouse</enum>
+                     </property>
                     </widget>
                    </item>
                   </layout>

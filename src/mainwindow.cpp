@@ -563,7 +563,6 @@ void MainWindow::refreshMapScene()
 
     ui->graphicsView_Map->setScene(editor->scene);
     ui->graphicsView_Map->setSceneRect(editor->scene->sceneRect());
-    ui->graphicsView_Map->setFixedSize(width, height);
     ui->graphicsView_Map->editor = editor;
 
     ui->graphicsView_Connections->setScene(editor->scene);
