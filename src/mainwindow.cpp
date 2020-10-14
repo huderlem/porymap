@@ -2536,6 +2536,7 @@ void MainWindow::on_actionThemes_triggered()
             QString theme = themeSelector->currentText();
             porymapConfig.setTheme(theme);
             this->setTheme(theme);
+            editor->maskNonVisibleConnectionTiles();
         }
     });
     connect(&buttonBox, SIGNAL(rejected()), &themeSelectorWindow, SLOT(reject()));

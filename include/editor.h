@@ -64,6 +64,7 @@ public:
     void displayMapBorder();
     void displayMapGrid();
     void displayWildMonTables();
+    void maskNonVisibleConnectionTiles();
 
     void updateMapBorder();
     void updateMapConnections();
@@ -109,6 +110,7 @@ public:
     ConnectionPixmapItem* selected_connection_item = nullptr;
     QList<QGraphicsPixmapItem*> connection_items;
     QList<ConnectionPixmapItem*> connection_edit_items;
+    QGraphicsPathItem *connection_mask = nullptr;
     CollisionPixmapItem *collision_item = nullptr;
     QGraphicsItemGroup *events_group = nullptr;
     QList<QGraphicsPixmapItem*> borderItems;
