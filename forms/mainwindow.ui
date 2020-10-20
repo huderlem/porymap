@@ -467,7 +467,7 @@
                  </widget>
                 </item>
                 <item row="0" column="0">
-                 <widget class="QFrame" name="frame_6">
+                 <widget class="QFrame" name="frame_mapTools">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                     <horstretch>0</horstretch>
@@ -488,141 +488,165 @@
                   </property>
                   <layout class="QHBoxLayout" name="horizontalLayout_2">
                    <property name="spacing">
-                    <number>4</number>
+                    <number>3</number>
                    </property>
                    <property name="leftMargin">
-                    <number>4</number>
+                    <number>3</number>
                    </property>
                    <property name="topMargin">
-                    <number>4</number>
+                    <number>3</number>
                    </property>
                    <property name="rightMargin">
-                    <number>4</number>
+                    <number>3</number>
                    </property>
                    <property name="bottomMargin">
-                    <number>4</number>
+                    <number>3</number>
                    </property>
                    <item>
-                    <widget class="QToolButton" name="toolButton_Paint">
-                     <property name="enabled">
-                      <bool>true</bool>
+                    <widget class="QFrame" name="frame_toolButtons">
+                     <property name="frameShape">
+                      <enum>QFrame::NoFrame</enum>
                      </property>
-                     <property name="toolTip">
-                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pencil&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Click&lt;/span&gt; and drag to draw on the map.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Right-click&lt;/span&gt; and drag to select tiles.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                     <property name="frameShadow">
+                      <enum>QFrame::Raised</enum>
                      </property>
-                     <property name="text">
-                      <string>Paint</string>
-                     </property>
-                     <property name="icon">
-                      <iconset resource="../resources/images.qrc">
-                       <normaloff>:/icons/pencil.ico</normaloff>:/icons/pencil.ico</iconset>
-                     </property>
-                     <property name="checkable">
-                      <bool>true</bool>
-                     </property>
-                     <property name="checked">
-                      <bool>true</bool>
-                     </property>
-                     <property name="autoRaise">
-                      <bool>false</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QToolButton" name="toolButton_Select">
-                     <property name="enabled">
-                      <bool>true</bool>
-                     </property>
-                     <property name="toolTip">
-                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pointer&lt;/p&gt;&lt;p&gt;Does nothing&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                     </property>
-                     <property name="text">
-                      <string>Select</string>
-                     </property>
-                     <property name="icon">
-                      <iconset resource="../resources/images.qrc">
-                       <normaloff>:/icons/cursor.ico</normaloff>:/icons/cursor.ico</iconset>
-                     </property>
-                     <property name="checkable">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QToolButton" name="toolButton_Fill">
-                     <property name="toolTip">
-                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Bucket Fill&lt;/p&gt;&lt;p&gt;Fills all similar tiles in a region with the selected metatiles or collision attributes&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                     </property>
-                     <property name="text">
-                      <string>Fill</string>
-                     </property>
-                     <property name="icon">
-                      <iconset resource="../resources/images.qrc">
-                       <normaloff>:/icons/fill_color.ico</normaloff>:/icons/fill_color.ico</iconset>
-                     </property>
-                     <property name="checkable">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QToolButton" name="toolButton_Dropper">
-                     <property name="toolTip">
-                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Eyedropper&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Click&lt;/span&gt; to select a metatile or collision attribute.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                     </property>
-                     <property name="text">
-                      <string>Dropper</string>
-                     </property>
-                     <property name="icon">
-                      <iconset resource="../resources/images.qrc">
-                       <normaloff>:/icons/pipette.ico</normaloff>:/icons/pipette.ico</iconset>
-                     </property>
-                     <property name="checkable">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QToolButton" name="toolButton_Move">
-                     <property name="toolTip">
-                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Move&lt;/p&gt;&lt;p&gt;Click to drag map around.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                     </property>
-                     <property name="text">
-                      <string>...</string>
-                     </property>
-                     <property name="icon">
-                      <iconset resource="../resources/images.qrc">
-                       <normaloff>:/icons/move.ico</normaloff>:/icons/move.ico</iconset>
-                     </property>
-                     <property name="checkable">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QToolButton" name="toolButton_Shift">
-                     <property name="toolTip">
-                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Map Shift&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Click and drag&lt;/span&gt; on the map to shift the positions of all metatiles (Map tab) or events (Events tab) at once. This is useful after resizing a map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                     </property>
-                     <property name="text">
-                      <string>Shift</string>
-                     </property>
-                     <property name="icon">
-                      <iconset resource="../resources/images.qrc">
-                       <normaloff>:/icons/shift.ico</normaloff>:/icons/shift.ico</iconset>
-                     </property>
-                     <property name="checkable">
-                      <bool>true</bool>
-                     </property>
+                     <layout class="QHBoxLayout" name="horizontalLayout_17">
+                      <property name="spacing">
+                       <number>3</number>
+                      </property>
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>9</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <item>
+                       <widget class="QToolButton" name="toolButton_Paint">
+                        <property name="enabled">
+                         <bool>true</bool>
+                        </property>
+                        <property name="toolTip">
+                         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pencil&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Click&lt;/span&gt; and drag to draw on the map.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Right-click&lt;/span&gt; and drag to select tiles.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                        </property>
+                        <property name="text">
+                         <string>Paint</string>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="../resources/images.qrc">
+                          <normaloff>:/icons/pencil.ico</normaloff>:/icons/pencil.ico</iconset>
+                        </property>
+                        <property name="checkable">
+                         <bool>true</bool>
+                        </property>
+                        <property name="checked">
+                         <bool>true</bool>
+                        </property>
+                        <property name="autoRaise">
+                         <bool>false</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QToolButton" name="toolButton_Select">
+                        <property name="enabled">
+                         <bool>true</bool>
+                        </property>
+                        <property name="toolTip">
+                         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pointer&lt;/p&gt;&lt;p&gt;Does nothing&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                        </property>
+                        <property name="text">
+                         <string>Select</string>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="../resources/images.qrc">
+                          <normaloff>:/icons/cursor.ico</normaloff>:/icons/cursor.ico</iconset>
+                        </property>
+                        <property name="checkable">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QToolButton" name="toolButton_Fill">
+                        <property name="toolTip">
+                         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Bucket Fill&lt;/p&gt;&lt;p&gt;Fills all similar tiles in a region with the selected metatiles or collision attributes&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                        </property>
+                        <property name="text">
+                         <string>Fill</string>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="../resources/images.qrc">
+                          <normaloff>:/icons/fill_color.ico</normaloff>:/icons/fill_color.ico</iconset>
+                        </property>
+                        <property name="checkable">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QToolButton" name="toolButton_Dropper">
+                        <property name="toolTip">
+                         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Eyedropper&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Click&lt;/span&gt; to select a metatile or collision attribute.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                        </property>
+                        <property name="text">
+                         <string>Dropper</string>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="../resources/images.qrc">
+                          <normaloff>:/icons/pipette.ico</normaloff>:/icons/pipette.ico</iconset>
+                        </property>
+                        <property name="checkable">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QToolButton" name="toolButton_Move">
+                        <property name="toolTip">
+                         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Move&lt;/p&gt;&lt;p&gt;Click to drag map around.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                        </property>
+                        <property name="text">
+                         <string>...</string>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="../resources/images.qrc">
+                          <normaloff>:/icons/move.ico</normaloff>:/icons/move.ico</iconset>
+                        </property>
+                        <property name="checkable">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QToolButton" name="toolButton_Shift">
+                        <property name="toolTip">
+                         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Map Shift&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Click and drag&lt;/span&gt; on the map to shift the positions of all metatiles (Map tab) or events (Events tab) at once. This is useful after resizing a map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                        </property>
+                        <property name="text">
+                         <string>Shift</string>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="../resources/images.qrc">
+                          <normaloff>:/icons/shift.ico</normaloff>:/icons/shift.ico</iconset>
+                        </property>
+                        <property name="checkable">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
                     </widget>
                    </item>
                    <item>
                     <widget class="QCheckBox" name="checkBox_smartPaths">
                      <property name="toolTip">
                       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Smart-path mode allows easier drawing of paths. If a 3x3 metatile block is selcted in the right panel, then smart path mode will automatically form a pathway using those selected blocks.&lt;/p&gt;&lt;p&gt;When smart-path mode is &lt;span style=&quot; font-weight:600;&quot;&gt;not&lt;/span&gt; enabled, clicking and dragging a selection will tile it in a grid.&lt;/p&gt;&lt;p&gt;Hold down the &lt;span style=&quot; font-weight:600;&quot;&gt;shift&lt;/span&gt; key while editing to quickly enable smart-path mode.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                     </property>
-                     <property name="styleSheet">
-                      <string notr="true">margin-left: 10px</string>
                      </property>
                      <property name="text">
                       <string>Smart Paths</string>
