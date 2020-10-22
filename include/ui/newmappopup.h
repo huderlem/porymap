@@ -20,8 +20,10 @@ public:
     Map *map;
     int group;
     bool existingLayout;
+    bool importedMap;
     QString layoutId;
     void init(int, int, QString, QString);
+    void initImportMap(MapLayout *);
     void useLayout(QString);
     void connectSignals();
 
@@ -32,6 +34,7 @@ private:
     Ui::NewMapPopup *ui;
     Project *project;
     void setDefaultValues(int, QString);
+    void setDefaultValuesImportMap(MapLayout *);
     bool checkNewMapDimensions();
 
 private slots:
