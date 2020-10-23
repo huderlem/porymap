@@ -344,117 +344,37 @@
                     <number>0</number>
                    </property>
                    <item row="0" column="0">
-                    <widget class="QScrollArea" name="scrollArea">
+                    <widget class="GraphicsView" name="graphicsView_Map">
                      <property name="sizePolicy">
                       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                       <horstretch>1</horstretch>
+                       <horstretch>0</horstretch>
                        <verstretch>0</verstretch>
                       </sizepolicy>
                      </property>
-                     <property name="widgetResizable">
-                      <bool>true</bool>
+                     <property name="mouseTracking">
+                      <bool>false</bool>
                      </property>
-                     <widget class="QWidget" name="scrollAreaWidgetContents_5">
-                      <property name="geometry">
-                       <rect>
-                        <x>0</x>
-                        <y>0</y>
-                        <width>543</width>
-                        <height>600</height>
-                       </rect>
-                      </property>
-                      <layout class="QGridLayout" name="gridLayout_8">
-                       <property name="leftMargin">
-                        <number>0</number>
-                       </property>
-                       <property name="topMargin">
-                        <number>0</number>
-                       </property>
-                       <property name="rightMargin">
-                        <number>0</number>
-                       </property>
-                       <property name="bottomMargin">
-                        <number>0</number>
-                       </property>
-                       <property name="spacing">
-                        <number>0</number>
-                       </property>
-                       <item row="1" column="2">
-                        <spacer name="horizontalSpacer_5">
-                         <property name="orientation">
-                          <enum>Qt::Horizontal</enum>
-                         </property>
-                         <property name="sizeHint" stdset="0">
-                          <size>
-                           <width>166</width>
-                           <height>16</height>
-                          </size>
-                         </property>
-                        </spacer>
-                       </item>
-                       <item row="1" column="0">
-                        <spacer name="horizontalSpacer_4">
-                         <property name="orientation">
-                          <enum>Qt::Horizontal</enum>
-                         </property>
-                         <property name="sizeHint" stdset="0">
-                          <size>
-                           <width>166</width>
-                           <height>16</height>
-                          </size>
-                         </property>
-                        </spacer>
-                       </item>
-                       <item row="0" column="1">
-                        <spacer name="verticalSpacer_4">
-                         <property name="orientation">
-                          <enum>Qt::Vertical</enum>
-                         </property>
-                         <property name="sizeHint" stdset="0">
-                          <size>
-                           <width>16</width>
-                           <height>166</height>
-                          </size>
-                         </property>
-                        </spacer>
-                       </item>
-                       <item row="1" column="1">
-                        <widget class="GraphicsView" name="graphicsView_Map">
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
-                         <property name="mouseTracking">
-                          <bool>false</bool>
-                         </property>
-                         <property name="autoFillBackground">
-                          <bool>false</bool>
-                         </property>
-                         <property name="sizeAdjustPolicy">
-                          <enum>QAbstractScrollArea::AdjustIgnored</enum>
-                         </property>
-                         <property name="dragMode">
-                          <enum>QGraphicsView::NoDrag</enum>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="2" column="1">
-                        <spacer name="verticalSpacer_3">
-                         <property name="orientation">
-                          <enum>Qt::Vertical</enum>
-                         </property>
-                         <property name="sizeHint" stdset="0">
-                          <size>
-                           <width>16</width>
-                           <height>166</height>
-                          </size>
-                         </property>
-                        </spacer>
-                       </item>
-                      </layout>
-                     </widget>
+                     <property name="autoFillBackground">
+                      <bool>false</bool>
+                     </property>
+                     <property name="verticalScrollBarPolicy">
+                      <enum>Qt::ScrollBarAsNeeded</enum>
+                     </property>
+                     <property name="horizontalScrollBarPolicy">
+                      <enum>Qt::ScrollBarAsNeeded</enum>
+                     </property>
+                     <property name="sizeAdjustPolicy">
+                      <enum>QAbstractScrollArea::AdjustIgnored</enum>
+                     </property>
+                     <property name="dragMode">
+                      <enum>QGraphicsView::NoDrag</enum>
+                     </property>
+                     <property name="transformationAnchor">
+                      <enum>QGraphicsView::AnchorUnderMouse</enum>
+                     </property>
+                     <property name="resizeAnchor">
+                      <enum>QGraphicsView::AnchorUnderMouse</enum>
+                     </property>
                     </widget>
                    </item>
                   </layout>
@@ -2197,7 +2117,7 @@
                <property name="spacing">
                 <number>0</number>
                </property>
-               <item row="1" column="0">
+               <item row="2" column="0">
                 <widget class="QFrame" name="horizontalFrame">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -2321,7 +2241,41 @@
                  </layout>
                 </widget>
                </item>
-               <item row="2" column="0">
+               <item row="6" column="0">
+                <widget class="QGraphicsView" name="graphicsView_Connections">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="mouseTracking">
+                  <bool>false</bool>
+                 </property>
+                 <property name="autoFillBackground">
+                  <bool>false</bool>
+                 </property>
+                 <property name="verticalScrollBarPolicy">
+                  <enum>Qt::ScrollBarAsNeeded</enum>
+                 </property>
+                 <property name="horizontalScrollBarPolicy">
+                  <enum>Qt::ScrollBarAsNeeded</enum>
+                 </property>
+                 <property name="sizeAdjustPolicy">
+                  <enum>QAbstractScrollArea::AdjustIgnored</enum>
+                 </property>
+                 <property name="dragMode">
+                  <enum>QGraphicsView::NoDrag</enum>
+                 </property>
+                 <property name="transformationAnchor">
+                  <enum>QGraphicsView::AnchorUnderMouse</enum>
+                 </property>
+                 <property name="resizeAnchor">
+                  <enum>QGraphicsView::AnchorUnderMouse</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="0">
                 <widget class="QFrame" name="horizontalFrame2">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -2437,199 +2391,82 @@
                  </layout>
                 </widget>
                </item>
-               <item row="3" column="0">
-                <widget class="QFrame" name="gridFrame1">
+               <item row="5" column="0">
+                <widget class="QFrame" name="horizontalFrame3">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
                  <property name="frameShape">
                   <enum>QFrame::StyledPanel</enum>
                  </property>
                  <property name="frameShadow">
                   <enum>QFrame::Raised</enum>
                  </property>
-                 <layout class="QGridLayout" name="gridLayout_13">
+                 <layout class="QHBoxLayout" name="horizontalLayout_6">
+                  <property name="spacing">
+                   <number>4</number>
+                  </property>
                   <property name="leftMargin">
-                   <number>0</number>
+                   <number>4</number>
                   </property>
                   <property name="topMargin">
-                   <number>0</number>
+                   <number>4</number>
                   </property>
                   <property name="rightMargin">
-                   <number>0</number>
+                   <number>4</number>
                   </property>
                   <property name="bottomMargin">
-                   <number>0</number>
+                   <number>4</number>
                   </property>
-                  <property name="spacing">
-                   <number>0</number>
-                  </property>
-                  <item row="1" column="0">
-                   <widget class="QScrollArea" name="scrollArea_5">
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                      <horstretch>1</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
+                  <item>
+                   <widget class="QLabel" name="label_14">
+                    <property name="text">
+                     <string>Dive Map</string>
                     </property>
-                    <property name="widgetResizable">
-                     <bool>true</bool>
-                    </property>
-                    <widget class="QWidget" name="scrollAreaWidgetContents_3">
-                     <property name="geometry">
-                      <rect>
-                       <x>0</x>
-                       <y>0</y>
-                       <width>118</width>
-                       <height>118</height>
-                      </rect>
-                     </property>
-                     <layout class="QGridLayout" name="gridLayout_14">
-                      <item row="1" column="2">
-                       <spacer name="horizontalSpacer_8">
-                        <property name="orientation">
-                         <enum>Qt::Horizontal</enum>
-                        </property>
-                        <property name="sizeHint" stdset="0">
-                         <size>
-                          <width>40</width>
-                          <height>20</height>
-                         </size>
-                        </property>
-                       </spacer>
-                      </item>
-                      <item row="2" column="1">
-                       <spacer name="verticalSpacer_2">
-                        <property name="orientation">
-                         <enum>Qt::Vertical</enum>
-                        </property>
-                        <property name="sizeHint" stdset="0">
-                         <size>
-                          <width>20</width>
-                          <height>40</height>
-                         </size>
-                        </property>
-                       </spacer>
-                      </item>
-                      <item row="0" column="1">
-                       <spacer name="verticalSpacer">
-                        <property name="orientation">
-                         <enum>Qt::Vertical</enum>
-                        </property>
-                        <property name="sizeHint" stdset="0">
-                         <size>
-                          <width>20</width>
-                          <height>40</height>
-                         </size>
-                        </property>
-                       </spacer>
-                      </item>
-                      <item row="1" column="1">
-                       <widget class="QGraphicsView" name="graphicsView_Connections">
-                        <property name="backgroundBrush">
-                         <brush brushstyle="SolidPattern">
-                          <color alpha="255">
-                           <red>0</red>
-                           <green>0</green>
-                           <blue>0</blue>
-                          </color>
-                         </brush>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="1" column="0">
-                       <spacer name="horizontalSpacer_7">
-                        <property name="orientation">
-                         <enum>Qt::Horizontal</enum>
-                        </property>
-                        <property name="sizeHint" stdset="0">
-                         <size>
-                          <width>40</width>
-                          <height>20</height>
-                         </size>
-                        </property>
-                       </spacer>
-                      </item>
-                     </layout>
-                    </widget>
                    </widget>
                   </item>
-                  <item row="0" column="0">
-                   <widget class="QFrame" name="horizontalFrame3">
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
+                  <item>
+                   <widget class="NoScrollComboBox" name="comboBox_DiveMap">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Destination map name when using &lt;span style=&quot; font-weight:600;&quot;&gt;Dive&lt;/span&gt;. If empty, no such connection will exist.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
-                    <property name="frameShape">
-                     <enum>QFrame::StyledPanel</enum>
+                    <property name="editable">
+                     <bool>true</bool>
                     </property>
-                    <property name="frameShadow">
-                     <enum>QFrame::Raised</enum>
-                    </property>
-                    <layout class="QHBoxLayout" name="horizontalLayout_6">
-                     <property name="spacing">
-                      <number>4</number>
-                     </property>
-                     <property name="leftMargin">
-                      <number>4</number>
-                     </property>
-                     <property name="topMargin">
-                      <number>4</number>
-                     </property>
-                     <property name="rightMargin">
-                      <number>4</number>
-                     </property>
-                     <property name="bottomMargin">
-                      <number>4</number>
-                     </property>
-                     <item>
-                      <widget class="QLabel" name="label_14">
-                       <property name="text">
-                        <string>Dive Map</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="NoScrollComboBox" name="comboBox_DiveMap">
-                       <property name="toolTip">
-                        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Destination map name when using &lt;span style=&quot; font-weight:600;&quot;&gt;Dive&lt;/span&gt;. If empty, no such connection will exist.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                       </property>
-                       <property name="editable">
-                        <bool>true</bool>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="label_15">
-                       <property name="text">
-                        <string>Emerge Map</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="NoScrollComboBox" name="comboBox_EmergeMap">
-                       <property name="toolTip">
-                        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Destination map name when emerging using &lt;span style=&quot; font-weight:600;&quot;&gt;Dive&lt;/span&gt;. If empty, no such connection will exist.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                       </property>
-                       <property name="editable">
-                        <bool>true</bool>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <spacer name="horizontalSpacer_10">
-                       <property name="orientation">
-                        <enum>Qt::Horizontal</enum>
-                       </property>
-                       <property name="sizeHint" stdset="0">
-                        <size>
-                         <width>40</width>
-                         <height>20</height>
-                        </size>
-                       </property>
-                      </spacer>
-                     </item>
-                    </layout>
                    </widget>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="label_15">
+                    <property name="text">
+                     <string>Emerge Map</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="NoScrollComboBox" name="comboBox_EmergeMap">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Destination map name when emerging using &lt;span style=&quot; font-weight:600;&quot;&gt;Dive&lt;/span&gt;. If empty, no such connection will exist.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                    <property name="editable">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="horizontalSpacer_10">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
                   </item>
                  </layout>
                 </widget>

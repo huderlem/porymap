@@ -759,11 +759,13 @@ void Editor::updateCurrentConnectionDirection(QString curDirection) {
     QString originalDirection = selected_connection_item->connection->direction;
     setCurrentConnectionDirection(curDirection);
     updateMirroredConnectionDirection(selected_connection_item->connection, originalDirection);
+    maskNonVisibleConnectionTiles();
 }
 
 void Editor::onConnectionMoved(MapConnection* connection) {
     updateMirroredConnectionOffset(connection);
     onConnectionOffsetChanged(connection->offset.toInt());
+    maskNonVisibleConnectionTiles();
 }
 
 void Editor::onConnectionOffsetChanged(int newOffset) {
@@ -885,6 +887,27 @@ void Editor::onSelectedMetatilesChanged() {
     QPoint size = this->metatile_selector_item->getSelectionDimensions();
     this->cursorMapTileRect->updateSelectionSize(size.x(), size.y());
     this->redrawCurrentMetatilesSelection();
+}
+
+void Editor::onWheelZoom(int s) {
+    // Don't zoom the map when the user accidentally scrolls while performing a magic fill. (ctrl + middle button click)
+    if (!(QApplication::mouseButtons() & Qt::MiddleButton)) {
+        scaleMapView(s);
+    }
+}
+
+void Editor::scaleMapView(int s) {
+    if ((scale_exp + s) <= 5 && (scale_exp + s) >= -2)    // sane limits
+    {
+        if (s == 0)
+            scale_exp = 0;
+        else
+            scale_exp += s;
+
+        double sfactor = pow(scale_base, s);
+        ui->graphicsView_Map->scale(sfactor, sfactor);
+        ui->graphicsView_Connections->scale(sfactor, sfactor);
+    }
 }
 
 void Editor::onHoveredMapMetatileChanged(int x, int y) {
@@ -1209,7 +1232,7 @@ bool Editor::displayMap() {
         scene = new QGraphicsScene;
         MapSceneEventFilter *filter = new MapSceneEventFilter();
         scene->installEventFilter(filter);
-        connect(filter, &MapSceneEventFilter::wheelZoom, this, &Editor::wheelZoom);
+        connect(filter, &MapSceneEventFilter::wheelZoom, this, &Editor::onWheelZoom);
     }
 
     if (map_item && scene) {
@@ -1437,6 +1460,8 @@ void Editor::displayMapConnections() {
     if (!connection_edit_items.empty()) {
         onConnectionItemSelected(connection_edit_items.first());
     }
+
+    maskNonVisibleConnectionTiles();
 }
 
 void Editor::createConnectionItem(MapConnection* connection, bool hide) {
@@ -1479,6 +1504,31 @@ void Editor::createConnectionItem(MapConnection* connection, bool hide) {
     connect(connection_edit_item, SIGNAL(connectionItemSelected(ConnectionPixmapItem*)), this, SLOT(onConnectionItemSelected(ConnectionPixmapItem*)));
     connect(connection_edit_item, SIGNAL(connectionItemDoubleClicked(ConnectionPixmapItem*)), this, SLOT(onConnectionItemDoubleClicked(ConnectionPixmapItem*)));
     connection_edit_items.append(connection_edit_item);
+}
+
+// Hides connected map tiles that cannot be seen from the current map (beyond BORDER_DISTANCE).
+void Editor::maskNonVisibleConnectionTiles() {
+    if (connection_mask) {
+        if (connection_mask->scene()) {
+            connection_mask->scene()->removeItem(connection_mask);
+        }
+        delete connection_mask;
+    }
+
+    QPainterPath mask;
+    mask.addRect(scene->itemsBoundingRect().toRect());
+    mask.addRect(
+        -BORDER_DISTANCE * 16,
+        -BORDER_DISTANCE * 16,
+        (map->getWidth() + BORDER_DISTANCE * 2) * 16,
+        (map->getHeight() + BORDER_DISTANCE * 2) * 16
+    );
+
+    // Mask the tiles with the current theme's background color.
+    QPen pen(ui->graphicsView_Map->palette().color(QPalette::Active, QPalette::Base));
+    QBrush brush(ui->graphicsView_Map->palette().color(QPalette::Active, QPalette::Base));
+
+    connection_mask = scene->addPath(mask, pen, brush);
 }
 
 void Editor::displayMapBorder() {
@@ -1527,6 +1577,8 @@ void Editor::updateMapConnections() {
         connection_edit_items[i]->basePixmap = pixmap;
         connection_edit_items[i]->setPixmap(pixmap);
     }
+
+    maskNonVisibleConnectionTiles();
 }
 
 int Editor::getBorderDrawDistance(int dimension) {
@@ -1583,6 +1635,7 @@ void Editor::updateConnectionOffset(int offset) {
     }
     selected_connection_item->blockSignals(false);
     updateMirroredConnectionOffset(selected_connection_item->connection);
+    maskNonVisibleConnectionTiles();
 }
 
 void Editor::setConnectionMap(QString mapName) {
@@ -1603,6 +1656,7 @@ void Editor::setConnectionMap(QString mapName) {
     selected_connection_item->connection->map_name = mapName;
     setCurrentConnectionDirection(selected_connection_item->connection->direction);
     updateMirroredConnectionMap(selected_connection_item->connection, originalMapName);
+    maskNonVisibleConnectionTiles();
 }
 
 void Editor::addNewConnection() {

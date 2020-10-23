@@ -109,11 +109,6 @@ public:
     Q_INVOKABLE QList<float> getMetatileLayerOpacity();
     Q_INVOKABLE void setMetatileLayerOpacity(QList<float> order);
 
-
-public slots:
-    void scaleMapView(int);
-    void onWheelZoom(int);
-
 private slots:
     void on_action_Open_Project_triggered();
     void on_action_Reload_Project_triggered();
