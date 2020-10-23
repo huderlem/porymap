@@ -1525,8 +1525,8 @@ void Editor::maskNonVisibleConnectionTiles() {
     );
 
     // Mask the tiles with the current theme's background color.
-    QPen pen(ui->graphicsView_Map->palette().color(QPalette::Base));
-    QBrush brush(ui->graphicsView_Map->palette().color(QPalette::Base));
+    QPen pen(ui->graphicsView_Map->palette().color(QPalette::Active, QPalette::Base));
+    QBrush brush(ui->graphicsView_Map->palette().color(QPalette::Active, QPalette::Base));
 
     connection_mask = scene->addPath(mask, pen, brush);
 }
