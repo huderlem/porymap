@@ -68,6 +68,7 @@ SOURCES += src/core/block.cpp \
     src/ui/regionmapeditor.cpp \
     src/ui/newmappopup.cpp \
     src/ui/mapimageexporter.cpp \
+    src/ui/flowlayout.cpp \
     src/config.cpp \
     src/editor.cpp \
     src/main.cpp \
@@ -134,6 +135,7 @@ HEADERS  += include/core/block.h \
     include/ui/regionmapeditor.h \
     include/ui/newmappopup.h \
     include/ui/mapimageexporter.h \
+    include/ui/flowlayout.h \
     include/config.h \
     include/editor.h \
     include/mainwindow.h \

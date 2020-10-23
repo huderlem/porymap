@@ -13,6 +13,7 @@
 #include "adjustingstackedwidget.h"
 #include "draggablepixmapitem.h"
 #include "editcommands.h"
+#include "flowlayout.h"
 
 #include <QFileDialog>
 #include <QDirIterator>
@@ -52,6 +53,8 @@ MainWindow::MainWindow(QWidget *parent) :
     QApplication::setApplicationDisplayName("porymap");
     QApplication::setWindowIcon(QIcon(":/icons/porymap-icon-2.ico"));
     ui->setupUi(this);
+
+    cleanupLargeLog();
 
     this->initWindow();
     if (!this->openRecentProject()) {
@@ -133,6 +136,19 @@ void MainWindow::initCustomUI() {
     connect(labelCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index){
         stack->setCurrentIndex(index);
     });
+
+    // Convert the layout of the map tools' frame into an adjustable FlowLayout
+    FlowLayout *flowLayout = new FlowLayout;
+    flowLayout->setContentsMargins(ui->frame_mapTools->layout()->contentsMargins());
+    flowLayout->setSpacing(ui->frame_mapTools->layout()->spacing());
+    for (auto *child : ui->frame_mapTools->findChildren<QWidget *>(QString(), Qt::FindDirectChildrenOnly)) {
+        flowLayout->addWidget(child);
+        child->setFixedHeight(
+            ui->frame_mapTools->height() - flowLayout->contentsMargins().top() - flowLayout->contentsMargins().bottom()
+        );
+    }
+    delete ui->frame_mapTools->layout();
+    ui->frame_mapTools->setLayout(flowLayout);
 }
 
 void MainWindow::initExtraSignals() {
@@ -347,10 +363,10 @@ void MainWindow::loadUserSettings() {
 }
 
 void MainWindow::restoreWindowState() {
-    logInfo("Restoring window geometry from previous session.");
-    QMap<QString, QByteArray> geometry = porymapConfig.getGeometry();
-    this->restoreGeometry(geometry.value("window_geometry"));
-    this->restoreState(geometry.value("window_state"));
+    logInfo("Restoring main window geometry from previous session.");
+    QMap<QString, QByteArray> geometry = porymapConfig.getMainGeometry();
+    this->restoreGeometry(geometry.value("main_window_geometry"));
+    this->restoreState(geometry.value("main_window_state"));
     this->ui->splitter_map->restoreState(geometry.value("map_splitter_state"));
     this->ui->splitter_main->restoreState(geometry.value("main_splitter_state"));
 }
@@ -1195,8 +1211,11 @@ void MainWindow::on_actionNew_Tileset_triggered() {
 
 void MainWindow::updateTilesetEditor() {
     if (this->tilesetEditor) {
-        this->tilesetEditor->setMap(this->editor->map);
-        this->tilesetEditor->setTilesets(editor->ui->comboBox_PrimaryTileset->currentText(), editor->ui->comboBox_SecondaryTileset->currentText());
+        this->tilesetEditor->update(
+            this->editor->map,
+            editor->ui->comboBox_PrimaryTileset->currentText(),
+            editor->ui->comboBox_SecondaryTileset->currentText()
+        );
     }
 }
 
@@ -2476,7 +2495,6 @@ void MainWindow::on_actionTileset_Editor_triggered()
         this->tilesetEditor = new TilesetEditor(this->editor->project, this->editor->map, this);
         connect(this->tilesetEditor, SIGNAL(tilesetsSaved(QString, QString)), this, SLOT(onTilesetsSaved(QString, QString)));
         connect(this->tilesetEditor, &QObject::destroyed, [=](QObject *) { this->tilesetEditor = nullptr; });
-        this->tilesetEditor->setAttribute(Qt::WA_DeleteOnClose);
     }
 
     if (!this->tilesetEditor->isVisible()) {
@@ -2617,7 +2635,6 @@ void MainWindow::on_actionRegion_Map_Editor_triggered() {
             return;
         }
         connect(this->regionMapEditor, &QObject::destroyed, [=](QObject *) { this->regionMapEditor = nullptr; });
-        this->regionMapEditor->setAttribute(Qt::WA_DeleteOnClose);
     }
 
     if (!this->regionMapEditor->isVisible()) {
@@ -2656,7 +2673,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
         }
     }
 
-    porymapConfig.setGeometry(
+    porymapConfig.setMainGeometry(
         this->saveGeometry(),
         this->saveState(),
         this->ui->splitter_map->saveState(),

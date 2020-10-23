@@ -45,7 +45,9 @@ private:
     void refreshColor(int);
     void setColor(int);
     void commitEditHistory(int paletteid);
+    void restoreWindowState();
     void setColorsFromHistory(PaletteHistoryItem*, int);
+    void closeEvent(QCloseEvent*);
 
 signals:
     void closed();

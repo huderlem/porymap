@@ -15,6 +15,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - The New Map dialog now gives an option to specify the "Show Location Name" field.
 - Some new shortcuts were added in [porymap/#290](https://github.com/huderlem/porymap/pull/290).
 - All plain text boxes now have a clear button to delete the text.
+- The window sizes and positions of the tileset editor, palette editor, and region map editor are now stored in `porymap.cfg`.
 
 ### Changed
 - Holding `shift` now toggles "Smart Path" drawing; when the "Smart Paths" checkbox is checked, holding `shift` will temporarily disable it.
@@ -23,6 +24,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix a bug with the current metatile selection zoom.
 - Fix bug preventing the status bar from updating the current position while dragging events.
 - Fix porymap icon not showing on window or panel on Linux.
+- The main window can now be resized to fit on lower resolution displays.
 - Zooming the map in/out will now focus on the cursor.
 
 ## [4.3.1] - 2020-07-17

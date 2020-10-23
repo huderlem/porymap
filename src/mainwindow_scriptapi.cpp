@@ -247,7 +247,7 @@ void MainWindow::addImage(int x, int y, QString filepath) {
 
 void MainWindow::refreshAfterPaletteChange(Tileset *tileset) {
     if (this->tilesetEditor) {
-        this->tilesetEditor->setTilesets(this->editor->map->layout->tileset_primary_label, this->editor->map->layout->tileset_secondary_label);
+        this->tilesetEditor->updateTilesets(this->editor->map->layout->tileset_primary_label, this->editor->map->layout->tileset_secondary_label);
     }
     this->editor->metatile_selector_item->draw();
     this->editor->selected_border_metatiles_item->draw();

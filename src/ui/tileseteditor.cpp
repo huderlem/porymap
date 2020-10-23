@@ -14,10 +14,14 @@
 
 TilesetEditor::TilesetEditor(Project *project, Map *map, QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::TilesetEditor)
+    ui(new Ui::TilesetEditor),
+    project(project),
+    map(map),
+    hasUnsavedChanges(false)
 {
-    this->init(project, map);
-    new QShortcut(QKeySequence("Ctrl+Shift+Z"), this, SLOT(on_actionRedo_triggered()));
+    this->setTilesets(this->map->layout->tileset_primary_label, this->map->layout->tileset_secondary_label);
+    this->initUi();
+    this->initMetatileHistory();
 }
 
 TilesetEditor::~TilesetEditor()
@@ -37,27 +41,78 @@ TilesetEditor::~TilesetEditor()
     delete metatileLayersScene;
 }
 
-void TilesetEditor::init(Project *project, Map *map) {
-    ui->setupUi(this);
-    this->project = project;
+void TilesetEditor::update(Map *map, QString primaryTilesetLabel, QString secondaryTilesetLabel) {
+    this->updateMap(map);
+    this->updateTilesets(primaryTilesetLabel, secondaryTilesetLabel);
+}
 
+void TilesetEditor::updateMap(Map *map) {
+    this->map = map;
+    this->metatileSelector->map = map;
+}
+
+void TilesetEditor::updateTilesets(QString primaryTilesetLabel, QString secondaryTilesetLabel) {
+    if (this->hasUnsavedChanges) {
+        QMessageBox::StandardButton result = QMessageBox::question(
+            this,
+            "porymap",
+            "Tileset has been modified, save changes?",
+            QMessageBox::No | QMessageBox::Yes,
+            QMessageBox::Yes);
+        if (result == QMessageBox::Yes)
+            this->on_actionSave_Tileset_triggered();
+    }
     this->hasUnsavedChanges = false;
-    this->tileXFlip = ui->checkBox_xFlip->isChecked();
-    this->tileYFlip = ui->checkBox_yFlip->isChecked();
-    this->paletteId = ui->spinBox_paletteSelector->value();
+    this->setTilesets(primaryTilesetLabel, secondaryTilesetLabel);
+    this->refresh();
+}
 
-    Tileset *primaryTileset = project->getTileset(map->layout->tileset_primary_label);
-    Tileset *secondaryTileset = project->getTileset(map->layout->tileset_secondary_label);
+bool TilesetEditor::selectMetatile(uint16_t metatileId) {
+    if (!Tileset::metatileIsValid(metatileId, this->primaryTileset, this->secondaryTileset)) return false;
+    this->metatileSelector->select(metatileId);
+    QPoint pos = this->metatileSelector->getMetatileIdCoordsOnWidget(metatileId);
+    this->ui->scrollArea_Metatiles->ensureVisible(pos.x(), pos.y());
+    return true;
+}
+
+void TilesetEditor::setTilesets(QString primaryTilesetLabel, QString secondaryTilesetLabel) {
+    Tileset *primaryTileset = project->getTileset(primaryTilesetLabel);
+    Tileset *secondaryTileset = project->getTileset(secondaryTilesetLabel);
     if (this->primaryTileset) delete this->primaryTileset;
     if (this->secondaryTileset) delete this->secondaryTileset;
     this->primaryTileset = primaryTileset->copy();
     this->secondaryTileset = secondaryTileset->copy();
+}
 
-    QList<QString> sortedBehaviors;
+void TilesetEditor::initUi() {
+    ui->setupUi(this);
+    new QShortcut(QKeySequence("Ctrl+Shift+Z"), this, SLOT(on_actionRedo_triggered()));
+    this->tileXFlip = ui->checkBox_xFlip->isChecked();
+    this->tileYFlip = ui->checkBox_yFlip->isChecked();
+    this->paletteId = ui->spinBox_paletteSelector->value();
+    this->ui->spinBox_paletteSelector->setMinimum(0);
+    this->ui->spinBox_paletteSelector->setMaximum(Project::getNumPalettesTotal() - 1);
+
+    this->setMetatileBehaviors();
+    this->setMetatileLayersUi();
+    this->setVersionSpecificUi();
+    this->setMetatileLabelValidator();
+
+    this->initMetatileSelector();
+    this->initMetatileLayersItem();
+    this->initTileSelector();
+    this->initSelectedTileItem();
+    this->metatileSelector->select(0);
+    this->restoreWindowState();
+}
+
+void TilesetEditor::setMetatileBehaviors() {
     for (int num : project->metatileBehaviorMapInverse.keys()) {
         this->ui->comboBox_metatileBehaviors->addItem(project->metatileBehaviorMapInverse[num], num);
     }
+}
 
+void TilesetEditor::setMetatileLayersUi() {
     if (!projectConfig.getTripleLayerMetatilesEnabled()) {
         this->ui->comboBox_layerType->addItem("Normal - Middle/Top", 0);
         this->ui->comboBox_layerType->addItem("Covered - Bottom/Middle", 1);
@@ -67,10 +122,9 @@ void TilesetEditor::init(Project *project, Map *map) {
         this->ui->label_layerType->setVisible(false);
         this->ui->label_BottomTop->setText("Bottom/Middle/Top");
     }
+}
 
-    this->ui->spinBox_paletteSelector->setMinimum(0);
-    this->ui->spinBox_paletteSelector->setMaximum(Project::getNumPalettesTotal() - 1);
-
+void TilesetEditor::setVersionSpecificUi() {
     if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
         this->ui->comboBox_encounterType->setVisible(true);
         this->ui->label_encounterType->setVisible(true);
@@ -89,72 +143,18 @@ void TilesetEditor::init(Project *project, Map *map) {
         this->ui->comboBox_terrainType->setVisible(false);
         this->ui->label_terrainType->setVisible(false);
     }
+}
 
+void TilesetEditor::setMetatileLabelValidator() {
     //only allow characters valid for a symbol
     QRegExp expression("[_A-Za-z0-9]*$");
     QRegExpValidator *validator = new QRegExpValidator(expression);
     this->ui->lineEdit_metatileLabel->setValidator(validator);
-
-    this->initMetatileSelector(map);
-    this->initMetatileLayersItem();
-    this->initTileSelector();
-    this->initSelectedTileItem();
-    this->metatileSelector->select(0);
-
-    MetatileHistoryItem *commit = new MetatileHistoryItem(0, nullptr, this->metatile->copy());
-    metatileHistory.push(commit);
 }
 
-bool TilesetEditor::selectMetatile(uint16_t metatileId) {
-    if (!Tileset::metatileIsValid(metatileId, this->primaryTileset, this->secondaryTileset)) return false;
-    this->metatileSelector->select(metatileId);
-    QPoint pos = this->metatileSelector->getMetatileIdCoordsOnWidget(metatileId);
-    this->ui->scrollArea_Metatiles->ensureVisible(pos.x(), pos.y());
-    return true;
-}
-
-void TilesetEditor::setMap(Map *map) {
-    this->metatileSelector->map = map;
-}
-
-void TilesetEditor::setTilesets(QString primaryTilesetLabel, QString secondaryTilesetLabel) {
-    if (this->hasUnsavedChanges) {
-        QMessageBox::StandardButton result = QMessageBox::question(
-            this,
-            "porymap",
-            "Tileset has been modified, save changes?",
-            QMessageBox::No | QMessageBox::Yes,
-            QMessageBox::Yes);
-        if (result == QMessageBox::Yes)
-            this->on_actionSave_Tileset_triggered();
-    }
-    this->hasUnsavedChanges = false;
-    delete this->primaryTileset;
-    delete this->secondaryTileset;
-    Tileset *primaryTileset = project->getTileset(primaryTilesetLabel);
-    Tileset *secondaryTileset = project->getTileset(secondaryTilesetLabel);
-    this->primaryTileset = primaryTileset->copy();
-    this->secondaryTileset = secondaryTileset->copy();
-    this->refresh();
-}
-
-void TilesetEditor::refresh() {
-    this->metatileLayersItem->setTilesets(this->primaryTileset, this->secondaryTileset);
-    this->tileSelector->setTilesets(this->primaryTileset, this->secondaryTileset);
-    this->metatileSelector->setTilesets(this->primaryTileset, this->secondaryTileset);
-    this->metatileSelector->select(this->metatileSelector->getSelectedMetatile());
-    this->drawSelectedTiles();
-
-    this->ui->graphicsView_Tiles->setSceneRect(0, 0, this->tileSelector->pixmap().width() + 2, this->tileSelector->pixmap().height() + 2);
-    this->ui->graphicsView_Tiles->setFixedSize(this->tileSelector->pixmap().width() + 2, this->tileSelector->pixmap().height() + 2);
-    this->ui->graphicsView_Metatiles->setSceneRect(0, 0, this->metatileSelector->pixmap().width() + 2, this->metatileSelector->pixmap().height() + 2);
-    this->ui->graphicsView_Metatiles->setFixedSize(this->metatileSelector->pixmap().width() + 2, this->metatileSelector->pixmap().height() + 2);
-    this->ui->graphicsView_selectedTile->setFixedSize(this->selectedTilePixmapItem->pixmap().width() + 2, this->selectedTilePixmapItem->pixmap().height() + 2);
-}
-
-void TilesetEditor::initMetatileSelector(Map *map)
+void TilesetEditor::initMetatileSelector()
 {
-    this->metatileSelector = new TilesetEditorMetatileSelector(this->primaryTileset, this->secondaryTileset, map);
+    this->metatileSelector = new TilesetEditorMetatileSelector(this->primaryTileset, this->secondaryTileset, this->map);
     connect(this->metatileSelector, SIGNAL(hoveredMetatileChanged(uint16_t)),
             this, SLOT(onHoveredMetatileChanged(uint16_t)));
     connect(this->metatileSelector, SIGNAL(hoveredMetatileCleared()),
@@ -168,6 +168,19 @@ void TilesetEditor::initMetatileSelector(Map *map)
 
     this->ui->graphicsView_Metatiles->setScene(this->metatilesScene);
     this->ui->graphicsView_Metatiles->setFixedSize(this->metatileSelector->pixmap().width() + 2, this->metatileSelector->pixmap().height() + 2);
+}
+
+void TilesetEditor::initMetatileLayersItem() {
+    Metatile *metatile = Tileset::getMetatile(this->metatileSelector->getSelectedMetatile(), this->primaryTileset, this->secondaryTileset);
+    this->metatileLayersItem = new MetatileLayersItem(metatile, this->primaryTileset, this->secondaryTileset);
+    connect(this->metatileLayersItem, SIGNAL(tileChanged(int, int)),
+            this, SLOT(onMetatileLayerTileChanged(int, int)));
+    connect(this->metatileLayersItem, SIGNAL(selectedTilesChanged(QPoint, int, int)),
+            this, SLOT(onMetatileLayerSelectionChanged(QPoint, int, int)));
+
+    this->metatileLayersScene = new QGraphicsScene;
+    this->metatileLayersScene->addItem(this->metatileLayersItem);
+    this->ui->graphicsView_metatileLayers->setScene(this->metatileLayersScene);
 }
 
 void TilesetEditor::initTileSelector()
@@ -196,6 +209,40 @@ void TilesetEditor::initSelectedTileItem() {
     this->ui->graphicsView_selectedTile->setFixedSize(this->selectedTilePixmapItem->pixmap().width() + 2, this->selectedTilePixmapItem->pixmap().height() + 2);
 }
 
+void TilesetEditor::restoreWindowState() {
+    logInfo("Restoring tileset editor geometry from previous session.");
+    QMap<QString, QByteArray> geometry = porymapConfig.getTilesetEditorGeometry();
+    this->restoreGeometry(geometry.value("tileset_editor_geometry"));
+    this->restoreState(geometry.value("tileset_editor_state"));
+}
+
+void TilesetEditor::initMetatileHistory() {
+    MetatileHistoryItem *commit = new MetatileHistoryItem(0, nullptr, this->metatile->copy());
+    metatileHistory.push(commit);
+}
+
+void TilesetEditor::reset() {
+    this->hasUnsavedChanges = false;
+    this->setTilesets(this->primaryTileset->name, this->secondaryTileset->name);
+    if (this->paletteEditor)
+        this->paletteEditor->setTilesets(this->primaryTileset, this->secondaryTileset);
+    this->refresh();
+}
+
+void TilesetEditor::refresh() {
+    this->metatileLayersItem->setTilesets(this->primaryTileset, this->secondaryTileset);
+    this->tileSelector->setTilesets(this->primaryTileset, this->secondaryTileset);
+    this->metatileSelector->setTilesets(this->primaryTileset, this->secondaryTileset);
+    this->metatileSelector->select(this->metatileSelector->getSelectedMetatile());
+    this->drawSelectedTiles();
+
+    this->ui->graphicsView_Tiles->setSceneRect(0, 0, this->tileSelector->pixmap().width() + 2, this->tileSelector->pixmap().height() + 2);
+    this->ui->graphicsView_Tiles->setFixedSize(this->tileSelector->pixmap().width() + 2, this->tileSelector->pixmap().height() + 2);
+    this->ui->graphicsView_Metatiles->setSceneRect(0, 0, this->metatileSelector->pixmap().width() + 2, this->metatileSelector->pixmap().height() + 2);
+    this->ui->graphicsView_Metatiles->setFixedSize(this->metatileSelector->pixmap().width() + 2, this->metatileSelector->pixmap().height() + 2);
+    this->ui->graphicsView_selectedTile->setFixedSize(this->selectedTilePixmapItem->pixmap().width() + 2, this->selectedTilePixmapItem->pixmap().height() + 2);
+}
+
 void TilesetEditor::drawSelectedTiles() {
     if (!this->selectedTileScene) {
         return;
@@ -220,19 +267,6 @@ void TilesetEditor::drawSelectedTiles() {
     this->selectedTilePixmapItem = new QGraphicsPixmapItem(QPixmap::fromImage(selectionImage));
     this->selectedTileScene->addItem(this->selectedTilePixmapItem);
     this->ui->graphicsView_selectedTile->setFixedSize(this->selectedTilePixmapItem->pixmap().width() + 2, this->selectedTilePixmapItem->pixmap().height() + 2);
-}
-
-void TilesetEditor::initMetatileLayersItem() {
-    Metatile *metatile = Tileset::getMetatile(this->metatileSelector->getSelectedMetatile(), this->primaryTileset, this->secondaryTileset);
-    this->metatileLayersItem = new MetatileLayersItem(metatile, this->primaryTileset, this->secondaryTileset);
-    connect(this->metatileLayersItem, SIGNAL(tileChanged(int, int)),
-            this, SLOT(onMetatileLayerTileChanged(int, int)));
-    connect(this->metatileLayersItem, SIGNAL(selectedTilesChanged(QPoint, int, int)),
-            this, SLOT(onMetatileLayerSelectionChanged(QPoint, int, int)));
-
-    this->metatileLayersScene = new QGraphicsScene;
-    this->metatileLayersScene->addItem(this->metatileLayersItem);
-    this->ui->graphicsView_metatileLayers->setScene(this->metatileLayersScene);
 }
 
 void TilesetEditor::onHoveredMetatileChanged(uint16_t metatileId) {
@@ -599,12 +633,21 @@ void TilesetEditor::closeEvent(QCloseEvent *event)
             this->on_actionSave_Tileset_triggered();
             event->accept();
         } else if (result == QMessageBox::No) {
+            this->reset();
             event->accept();
         } else if (result == QMessageBox::Cancel) {
             event->ignore();
         }
     } else {
         event->accept();
+    }
+
+    if (event->isAccepted()) {
+        if (this->paletteEditor) this->paletteEditor->close();
+        porymapConfig.setTilesetEditorGeometry(
+            this->saveGeometry(),
+            this->saveState()
+        );
     }
 }
 

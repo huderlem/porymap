@@ -97,6 +97,7 @@ private:
     bool createCityMap(QString name);
     bool tryInsertNewMapEntry(QString);
 
+    void restoreWindowState();
     void closeEvent(QCloseEvent* event);
 
 private slots:
