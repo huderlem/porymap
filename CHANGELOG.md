@@ -24,6 +24,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix a bug with the current metatile selection zoom.
 - Fix bug preventing the status bar from updating the current position while dragging events.
 - Fix porymap icon not showing on window or panel on Linux.
+- The main window can now be resized to fit on lower resolution displays.
 
 ## [4.3.1] - 2020-07-17
 ### Added

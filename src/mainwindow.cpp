@@ -13,6 +13,7 @@
 #include "adjustingstackedwidget.h"
 #include "draggablepixmapitem.h"
 #include "editcommands.h"
+#include "flowlayout.h"
 
 #include <QFileDialog>
 #include <QDirIterator>
@@ -135,6 +136,19 @@ void MainWindow::initCustomUI() {
     connect(labelCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index){
         stack->setCurrentIndex(index);
     });
+
+    // Convert the layout of the map tools' frame into an adjustable FlowLayout
+    FlowLayout *flowLayout = new FlowLayout;
+    flowLayout->setContentsMargins(ui->frame_mapTools->layout()->contentsMargins());
+    flowLayout->setSpacing(ui->frame_mapTools->layout()->spacing());
+    for (auto *child : ui->frame_mapTools->findChildren<QWidget *>(QString(), Qt::FindDirectChildrenOnly)) {
+        flowLayout->addWidget(child);
+        child->setFixedHeight(
+            ui->frame_mapTools->height() - flowLayout->contentsMargins().top() - flowLayout->contentsMargins().bottom()
+        );
+    }
+    delete ui->frame_mapTools->layout();
+    ui->frame_mapTools->setLayout(flowLayout);
 }
 
 void MainWindow::initExtraSignals() {
