@@ -198,12 +198,13 @@ private slots:
     void onHoveredMovementPermissionCleared();
     void onHoveredMetatileSelectionChanged(uint16_t);
     void onHoveredMetatileSelectionCleared();
-    void onHoveredMapMetatileChanged(const QPointF &scenePos, const QPoint &screenPos);
+    void onHoveredMapMetatileChanged(const QPoint &pos);
     void onHoveredMapMetatileCleared();
     void onHoveredMapMovementPermissionChanged(int, int);
     void onHoveredMapMovementPermissionCleared();
     void onSelectedMetatilesChanged();
     void onWheelZoom(int);
+    void onMapRulerLengthChanged();
 
 signals:
     void objectsChanged();

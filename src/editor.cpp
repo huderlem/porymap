@@ -25,6 +25,8 @@ Editor::Editor(Ui::MainWindow* ui)
     this->playerViewRect = new MovableRect(&this->settings->playerViewRectEnabled, 30 * 8, 20 * 8, qRgb(255, 255, 255));
     this->cursorMapTileRect = new CursorTileRect(&this->settings->cursorTileRectEnabled, qRgb(255, 255, 255));
     this->map_ruler = new MapRuler();
+    connect(this->map_ruler, &MapRuler::lengthChanged, this, &Editor::onMapRulerLengthChanged);
+    connect(this->map_ruler, &MapRuler::deactivated, this, &Editor::onHoveredMapMetatileChanged);
 
     /// Instead of updating the selected events after every single undo action
     /// (eg when the user rolls back several at once), only reselect events when
@@ -913,8 +915,7 @@ void Editor::scaleMapView(int s) {
     }
 }
 
-void Editor::onHoveredMapMetatileChanged(const QPointF &scenePos, const QPoint &screenPos) {
-    QPoint pos = Metatile::coordFromPixmapCoord(scenePos);
+void Editor::onHoveredMapMetatileChanged(const QPoint &pos) {
     this->playerViewRect->updateLocation(pos.x(), pos.y());
     this->cursorMapTileRect->updateLocation(pos.x(), pos.y());
     if (map_item->paintingMode == MapPixmapItem::PaintMode::Metatiles
@@ -928,16 +929,20 @@ void Editor::onHoveredMapMetatileChanged(const QPointF &scenePos, const QPoint &
                               .arg(QString::number(pow(scale_base, scale_exp), 'g', 2)));
     } else if (map_item->paintingMode == MapPixmapItem::PaintMode::EventObjects
         && pos.x() >= 0 && pos.x() < map->getWidth() && pos.y() >= 0 && pos.y() < map->getHeight()) {
-        this->ui->statusBar->showMessage(QString("X: %1, Y: %2")
+        this->ui->statusBar->showMessage(QString("X: %1, Y: %2, Scale = %3x")
                               .arg(pos.x())
-                              .arg(pos.y()));
-        if (this->map_ruler->isAnchored()) {
-            this->map_ruler->setEndPos(scenePos, screenPos);
-            this->ui->statusBar->showMessage(
-                this->ui->statusBar->currentMessage() + "; " + this->map_ruler->statusMessage
-            );
-        }
+                              .arg(pos.y())
+                              .arg(QString::number(pow(scale_base, scale_exp), 'g', 2)));
     }
+}
+
+void Editor::onMapRulerLengthChanged() {
+    const QPoint pos = map_ruler->endPos();
+    ui->statusBar->showMessage(QString("X: %1, Y: %2, Scale = %3x; %4")
+                    .arg(pos.x())
+                    .arg(pos.y())
+                    .arg(QString::number(pow(scale_base, scale_exp), 'g', 2))
+                    .arg(map_ruler->statusMessage));
 }
 
 void Editor::onHoveredMapMetatileCleared() {
@@ -1018,6 +1023,8 @@ bool Editor::setMap(QString map_name) {
         if (!displayMap()) {
             return false;
         }
+        map_ruler->setMapDimensions(QSize(map->getWidth(), map->getHeight()));
+        connect(map, &Map::mapDimensionsChanged, map_ruler, &MapRuler::setMapDimensions);
         updateSelectedEvents();
     }
 
@@ -1149,16 +1156,7 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item
                 }
             }
         } else if (obj_edit_mode == "select") {
-            if (!this->map_ruler->isAnchored() && this->map_ruler->isMousePressed(event)) {
-                this->map_ruler->setAnchor(event->scenePos(), event->screenPos());
-            } else if (this->map_ruler->isAnchored()) {
-                if (event->buttons() & Qt::LeftButton)
-                    this->map_ruler->locked = !this->map_ruler->locked;
-                if (this->map_ruler->isMousePressed(event))
-                    this->map_ruler->endAnchor();
-                else
-                    this->map_ruler->setEndPos(event->scenePos(), event->screenPos());
-            }
+            // do nothing here, at least for now
         } else if (obj_edit_mode == "shift" && item->map) {
             static QPoint selection_origin;
             static unsigned actionId = 0;
@@ -1245,6 +1243,7 @@ bool Editor::displayMap() {
         MapSceneEventFilter *filter = new MapSceneEventFilter();
         scene->installEventFilter(filter);
         connect(filter, &MapSceneEventFilter::wheelZoom, this, &Editor::onWheelZoom);
+        scene->installEventFilter(this->map_ruler);
     }
 
     if (map_item && scene) {
@@ -1318,8 +1317,8 @@ void Editor::displayMapMetatiles() {
             this, SLOT(onMapStartPaint(QGraphicsSceneMouseEvent*,MapPixmapItem*)));
     connect(map_item, SIGNAL(endPaint(QGraphicsSceneMouseEvent*,MapPixmapItem*)),
             this, SLOT(onMapEndPaint(QGraphicsSceneMouseEvent*,MapPixmapItem*)));
-    connect(map_item, SIGNAL(hoveredMapMetatileChanged(const QPointF&, const QPoint&)),
-            this, SLOT(onHoveredMapMetatileChanged(const QPointF&, const QPoint&)));
+    connect(map_item, SIGNAL(hoveredMapMetatileChanged(const QPoint&)),
+            this, SLOT(onHoveredMapMetatileChanged(const QPoint&)));
     connect(map_item, SIGNAL(hoveredMapMetatileCleared()),
             this, SLOT(onHoveredMapMetatileCleared()));
 

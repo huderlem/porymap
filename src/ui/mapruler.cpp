@@ -1,8 +1,8 @@
 #include "mapruler.h"
 #include "metatile.h"
 
-#include <QGraphicsItem>
-#include <QGraphicsSceneMouseEvent>
+#include <QGraphicsObject>
+#include <QGraphicsSceneEvent>
 #include <QPainter>
 #include <QColor>
 #include <QToolTip>
@@ -46,17 +46,71 @@ void MapRuler::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
         painter->drawLine(cornerTick);
 }
 
+bool MapRuler::eventFilter(QObject*, QEvent *event) {
+    if (!isEnabled() || mapSize.isEmpty())
+        return false;
+
+    if (event->type() == QEvent::GraphicsSceneMousePress || event->type() == QEvent::GraphicsSceneMouseMove) {
+        auto mouse_event = static_cast<QGraphicsSceneMouseEvent *>(event);
+        if (mouse_event->button() == Qt::RightButton || anchored) {
+            mouseEvent(mouse_event);
+            event->accept();
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void MapRuler::mouseEvent(QGraphicsSceneMouseEvent *event) {
+    if (!anchored && event->button() == Qt::RightButton) {
+        setAnchor(event->scenePos(), event->screenPos());
+    } else if (anchored) {
+        if (event->button() == Qt::LeftButton)
+            locked = !locked;
+        if (event->button() == Qt::RightButton)
+            endAnchor();
+        else
+            setEndPos(event->scenePos(), event->screenPos());
+    }
+}
+
+void MapRuler::setMapDimensions(const QSize &size) {
+    mapSize = size;
+    init();
+}
+
+void MapRuler::setEnabled(bool enabled) {
+    QGraphicsItem::setEnabled(enabled);
+    if (!enabled && anchored)
+        endAnchor();
+}
+
+QPoint MapRuler::snapToWithinBounds(QPoint pos) const {
+    if (pos.x() < 0)
+        pos.setX(0);
+    if (pos.y() < 0)
+        pos.setY(0);
+    if (pos.x() >= mapSize.width())
+        pos.setX(mapSize.width() - 1);
+    if (pos.y() >= mapSize.height())
+        pos.setY(mapSize.height() - 1);
+    return pos;
+}
+
 void MapRuler::setAnchor(const QPointF &scenePos, const QPoint &screenPos) {
+    QPoint pos = Metatile::coordFromPixmapCoord(scenePos);
+    pos = snapToWithinBounds(pos);
     anchored = true;
     locked = false;
-    QPoint tilePos = Metatile::coordFromPixmapCoord(scenePos);
-    setPoints(tilePos, tilePos);
+    setPoints(pos, pos);
     updateGeometry();
     setVisible(true);
     showDimensions(screenPos);
 }
 
 void MapRuler::endAnchor() {
+    emit deactivated(endPos());
     hideDimensions();
     prepareGeometryChange();
     init();
@@ -66,18 +120,15 @@ void MapRuler::setEndPos(const QPointF &scenePos, const QPoint &screenPos) {
     if (locked)
         return;
     QPoint pos = Metatile::coordFromPixmapCoord(scenePos);
-    QPoint lastEndPos = endPos();
+    pos = snapToWithinBounds(pos);
+    const QPoint lastEndPos = endPos();
     setP2(pos);
     if (pos != lastEndPos)
         updateGeometry();
     showDimensions(screenPos);
 }
 
-bool MapRuler::isMousePressed(QGraphicsSceneMouseEvent *event) const {
-    return event->buttons() & acceptedMouseButtons() && event->type() == QEvent::GraphicsSceneMousePress;
-}
-
-void MapRuler::showDimensions(const QPoint &screenPos) {
+void MapRuler::showDimensions(const QPoint &screenPos) const {
     // This is a hack to make the tool tip follow the cursor since it won't change position if the text is the same.
     QToolTip::showText(screenPos + QPoint(16, -8), statusMessage + ' ');
     QToolTip::showText(screenPos + QPoint(16, -8), statusMessage);
@@ -134,4 +185,5 @@ void MapRuler::updateGeometry() {
             statusMessage += QString("0");
         }
     }
+    emit lengthChanged();
 }

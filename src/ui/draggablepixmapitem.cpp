@@ -63,16 +63,6 @@ void DraggablePixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *mouse) {
     last_y = pos.y();
     this->editor->selectMapEvent(this, mouse->modifiers() & Qt::ControlModifier);
     this->editor->selectingEvent = true;
-    if (this->editor->obj_edit_mode == "select") {
-        if (!this->editor->map_ruler->isAnchored() && this->editor->map_ruler->isMousePressed(mouse)) {
-            this->editor->map_ruler->setAnchor(mouse->scenePos(), mouse->screenPos());
-        } else if (this->editor->map_ruler->isAnchored()) {
-            if (mouse->buttons() & Qt::LeftButton)
-                this->editor->map_ruler->locked = !this->editor->map_ruler->locked;
-            if (this->editor->map_ruler->isMousePressed(mouse))
-                this->editor->map_ruler->endAnchor();
-        }
-    }
 }
 
 void DraggablePixmapItem::move(int x, int y) {
@@ -85,10 +75,8 @@ void DraggablePixmapItem::move(int x, int y) {
 void DraggablePixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *mouse) {
     if (active) {
         QPoint pos = Metatile::coordFromPixmapCoord(mouse->scenePos());
-        emit this->editor->map_item->hoveredMapMetatileChanged(mouse->scenePos(), mouse->screenPos());
-        if (this->editor->map_ruler->isAnchored()) {
-            this->editor->map_ruler->setEndPos(mouse->scenePos(), mouse->screenPos());
-        } else if (pos.x() != last_x || pos.y() != last_y) {
+        emit this->editor->map_item->hoveredMapMetatileChanged(pos);
+        if (pos.x() != last_x || pos.y() != last_y) {
         	QList <Event *> selectedEvents;
             if (editor->selected_events->contains(this)) {
                 for (DraggablePixmapItem *item : *editor->selected_events) {
