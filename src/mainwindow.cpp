@@ -1356,6 +1356,9 @@ void MainWindow::on_mainTabBar_tabBarClicked(int index)
         if (projectConfig.getEncounterJsonActive())
             editor->saveEncounterTabData();
     }
+    if (index != 1) {
+        editor->map_ruler->setEnabled(false);
+    }
 }
 
 void MainWindow::on_actionZoom_In_triggered() {
@@ -2212,10 +2215,15 @@ void MainWindow::on_toolButton_Shift_clicked()
 
 void MainWindow::checkToolButtons() {
     QString edit_mode;
-    if (ui->mainTabBar->currentIndex() == 0)
+    if (ui->mainTabBar->currentIndex() == 0) {
         edit_mode = editor->map_edit_mode;
-    else
+    } else {
         edit_mode = editor->obj_edit_mode;
+        if (edit_mode == "select" && editor->map_ruler)
+            editor->map_ruler->setEnabled(true);
+        else if (editor->map_ruler)
+            editor->map_ruler->setEnabled(false);
+    }
 
     ui->toolButton_Paint->setChecked(edit_mode == "paint");
     ui->toolButton_Select->setChecked(edit_mode == "select");

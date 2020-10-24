@@ -113,6 +113,7 @@ private:
 
 signals:
     void mapChanged(Map *map);
+    void mapDimensionsChanged(const QSize &size);
     void mapNeedsRedrawing();
 };
 

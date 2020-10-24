@@ -68,7 +68,9 @@ SOURCES += src/core/block.cpp \
     src/ui/regionmapeditor.cpp \
     src/ui/newmappopup.cpp \
     src/ui/mapimageexporter.cpp \
+    src/ui/newtilesetdialog.cpp \
     src/ui/flowlayout.cpp \
+    src/ui/mapruler.cpp \
     src/config.cpp \
     src/editor.cpp \
     src/main.cpp \
@@ -76,8 +78,7 @@ SOURCES += src/core/block.cpp \
     src/project.cpp \
     src/scripting.cpp \
     src/settings.cpp \
-    src/log.cpp \
-    src/ui/newtilesetdialog.cpp
+    src/log.cpp
 
 HEADERS  += include/core/block.h \
     include/core/blockdata.h \
@@ -135,16 +136,17 @@ HEADERS  += include/core/block.h \
     include/ui/regionmapeditor.h \
     include/ui/newmappopup.h \
     include/ui/mapimageexporter.h \
+    include/ui/newtilesetdialog.h \
+    include/ui/overlay.h \
     include/ui/flowlayout.h \
+    include/ui/mapruler.h \
     include/config.h \
     include/editor.h \
     include/mainwindow.h \
     include/project.h \
     include/scripting.h \
     include/settings.h \
-    include/log.h \
-    include/ui/newtilesetdialog.h \
-    include/ui/overlay.h
+    include/log.h
 
 FORMS    += forms/mainwindow.ui \
     forms/eventpropertiesframe.ui \

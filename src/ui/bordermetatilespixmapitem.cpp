@@ -1,22 +1,21 @@
 #include "bordermetatilespixmapitem.h"
 #include "imageproviders.h"
+#include "metatile.h"
 #include "editcommands.h"
 #include <QPainter>
 
 void BorderMetatilesPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     QList<uint16_t> *selectedMetatiles = this->metatileSelector->getSelectedMetatiles();
     QPoint selectionDimensions = this->metatileSelector->getSelectionDimensions();
-    QPointF pos = event->pos();
-    int x = static_cast<int>(pos.x()) / 16;
-    int y = static_cast<int>(pos.y()) / 16;
+    QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
     int width = map->getBorderWidth();
     int height = map->getBorderHeight();
 
     Blockdata *oldBorder = map->layout->border->copy();
 
-    for (int i = 0; i < selectionDimensions.x() && (i + x) < width; i++) {
-        for (int j = 0; j < selectionDimensions.y() && (j + y) < height; j++) {
-            int blockIndex = (j + y) * width + (i + x);
+    for (int i = 0; i < selectionDimensions.x() && (i + pos.x()) < width; i++) {
+        for (int j = 0; j < selectionDimensions.y() && (j + pos.y()) < height; j++) {
+            int blockIndex = (j + pos.y()) * width + (i + pos.x());
             uint16_t tile = selectedMetatiles->at(j * selectionDimensions.x() + i);
             (*map->layout->border->blocks)[blockIndex].tile = tile;
         }

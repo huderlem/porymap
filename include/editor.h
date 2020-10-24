@@ -23,6 +23,7 @@
 #include "settings.h"
 #include "movablerect.h"
 #include "cursortilerect.h"
+#include "mapruler.h"
 
 class DraggablePixmapItem;
 class MetatilesPixmapItem;
@@ -117,6 +118,7 @@ public:
     QList<QGraphicsLineItem*> gridLines;
     MovableRect *playerViewRect = nullptr;
     CursorTileRect *cursorMapTileRect = nullptr;
+    MapRuler *map_ruler = nullptr;
 
     QGraphicsScene *scene_metatiles = nullptr;
     QGraphicsScene *scene_current_metatile_selection = nullptr;
@@ -196,12 +198,13 @@ private slots:
     void onHoveredMovementPermissionCleared();
     void onHoveredMetatileSelectionChanged(uint16_t);
     void onHoveredMetatileSelectionCleared();
-    void onHoveredMapMetatileChanged(int, int);
+    void onHoveredMapMetatileChanged(const QPoint &pos);
     void onHoveredMapMetatileCleared();
     void onHoveredMapMovementPermissionChanged(int, int);
     void onHoveredMapMovementPermissionCleared();
     void onSelectedMetatilesChanged();
     void onWheelZoom(int);
+    void onMapRulerLengthChanged();
 
 signals:
     void objectsChanged();

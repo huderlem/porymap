@@ -77,7 +77,7 @@ public:
     void updateMetatileSelection(QGraphicsSceneMouseEvent *event);
     void paintNormal(int x, int y, bool fromScriptCall = false);
     void lockNondominantAxis(QGraphicsSceneMouseEvent *event);
-    int adjustCoord(int coord, MapPixmapItem::Axis axis);
+    QPoint adjustCoords(QPoint pos);
 
 private:
     void paintSmartPath(int x, int y, bool fromScriptCall = false);
@@ -89,7 +89,7 @@ signals:
     void startPaint(QGraphicsSceneMouseEvent *, MapPixmapItem *);
     void endPaint(QGraphicsSceneMouseEvent *, MapPixmapItem *);
     void mouseEvent(QGraphicsSceneMouseEvent *, MapPixmapItem *);
-    void hoveredMapMetatileChanged(int x, int y);
+    void hoveredMapMetatileChanged(const QPoint &pos);
     void hoveredMapMetatileCleared();
 
 protected:

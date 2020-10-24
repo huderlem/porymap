@@ -38,10 +38,10 @@ Main Window
    :header: Map Editing
    :widths: 20, 20
 
-   Select Tiles From Map, Hold Right-click while dragging
+   Select Metatile, Right-click in "paint" or "fill" mode
+   Select Multiple Metatiles, Hold Right-click while dragging
    Bucket Fill Metatiles, Middle-click from "paint" or "fill" mode
    Magic Fill Metatiles, ``Ctrl+`` Middle-click from "paint" or "fill" mode
-   Select Metatile, Right-click in "paint" or "fill" mode
    Zoom In, ``Ctrl++`` `or` ``Ctrl+=``
    Zoom Out, ``Ctrl+-``
    Reset View Scale, ``Ctrl+0``
@@ -52,8 +52,9 @@ Main Window
    Draw Straight Paths, Hold ``Ctrl``
    Duplicate Event(s), ``Ctrl+D`` while selected
    Delete Event(s), ``DEL`` while selected
-   Select Event, Right-click in paint mode
-   Update Event Selection, `Ctrl+` click
+   Pointer, Right-click in "paint" mode
+   Select Event, Left-click in "pointer" mode or Right-click in "paint" mode
+   Select Multiple Events, `Ctrl+` click
 
 
 

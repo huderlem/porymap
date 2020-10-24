@@ -39,3 +39,9 @@ int Metatile::getBlockIndex(int index) {
         return index - Project::getNumMetatilesPrimary();
     }
 }
+
+QPoint Metatile::coordFromPixmapCoord(const QPointF &pixelCoord) {
+    int x = static_cast<int>(pixelCoord.x()) / 16;
+    int y = static_cast<int>(pixelCoord.y()) / 16;
+    return QPoint(x, y);
+}
