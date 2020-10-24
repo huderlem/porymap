@@ -69,6 +69,7 @@ SOURCES += src/core/block.cpp \
     src/ui/newmappopup.cpp \
     src/ui/mapimageexporter.cpp \
     src/ui/newtilesetdialog.cpp \
+    src/ui/flowlayout.cpp \
     src/ui/mapruler.cpp \
     src/config.cpp \
     src/editor.cpp \
@@ -137,6 +138,7 @@ HEADERS  += include/core/block.h \
     include/ui/mapimageexporter.h \
     include/ui/newtilesetdialog.h \
     include/ui/overlay.h \
+    include/ui/flowlayout.h \
     include/ui/mapruler.h \
     include/config.h \
     include/editor.h \

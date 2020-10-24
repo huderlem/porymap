@@ -13,6 +13,7 @@
 #include "adjustingstackedwidget.h"
 #include "draggablepixmapitem.h"
 #include "editcommands.h"
+#include "flowlayout.h"
 
 #include <QFileDialog>
 #include <QDirIterator>
@@ -52,6 +53,8 @@ MainWindow::MainWindow(QWidget *parent) :
     QApplication::setApplicationDisplayName("porymap");
     QApplication::setWindowIcon(QIcon(":/icons/porymap-icon-2.ico"));
     ui->setupUi(this);
+
+    cleanupLargeLog();
 
     this->initWindow();
     if (!this->openRecentProject()) {
@@ -133,6 +136,19 @@ void MainWindow::initCustomUI() {
     connect(labelCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index){
         stack->setCurrentIndex(index);
     });
+
+    // Convert the layout of the map tools' frame into an adjustable FlowLayout
+    FlowLayout *flowLayout = new FlowLayout;
+    flowLayout->setContentsMargins(ui->frame_mapTools->layout()->contentsMargins());
+    flowLayout->setSpacing(ui->frame_mapTools->layout()->spacing());
+    for (auto *child : ui->frame_mapTools->findChildren<QWidget *>(QString(), Qt::FindDirectChildrenOnly)) {
+        flowLayout->addWidget(child);
+        child->setFixedHeight(
+            ui->frame_mapTools->height() - flowLayout->contentsMargins().top() - flowLayout->contentsMargins().bottom()
+        );
+    }
+    delete ui->frame_mapTools->layout();
+    ui->frame_mapTools->setLayout(flowLayout);
 }
 
 void MainWindow::initExtraSignals() {
@@ -148,7 +164,6 @@ void MainWindow::initEditor() {
     connect(this->editor, SIGNAL(warpEventDoubleClicked(QString,QString)), this, SLOT(openWarpMap(QString,QString)));
     connect(this->editor, SIGNAL(currentMetatilesSelectionChanged()), this, SLOT(currentMetatilesSelectionChanged()));
     connect(this->editor, SIGNAL(wildMonDataChanged()), this, SLOT(onWildMonDataChanged()));
-    connect(this->editor, &Editor::wheelZoom, this, &MainWindow::onWheelZoom);
 
     this->loadUserSettings();
 
@@ -348,10 +363,10 @@ void MainWindow::loadUserSettings() {
 }
 
 void MainWindow::restoreWindowState() {
-    logInfo("Restoring window geometry from previous session.");
-    QMap<QString, QByteArray> geometry = porymapConfig.getGeometry();
-    this->restoreGeometry(geometry.value("window_geometry"));
-    this->restoreState(geometry.value("window_state"));
+    logInfo("Restoring main window geometry from previous session.");
+    QMap<QString, QByteArray> geometry = porymapConfig.getMainGeometry();
+    this->restoreGeometry(geometry.value("main_window_geometry"));
+    this->restoreState(geometry.value("main_window_state"));
     this->ui->splitter_map->restoreState(geometry.value("map_splitter_state"));
     this->ui->splitter_main->restoreState(geometry.value("main_splitter_state"));
 }
@@ -556,20 +571,12 @@ void MainWindow::refreshMapScene()
 {
     on_mainTabBar_tabBarClicked(ui->mainTabBar->currentIndex());
 
-    double base = editor->scale_base;
-    double exp  = editor->scale_exp;
-
-    int width = static_cast<int>(ceil((editor->scene->width()) * pow(base,exp))) + 2;
-    int height = static_cast<int>(ceil((editor->scene->height()) * pow(base,exp))) + 2;
-
     ui->graphicsView_Map->setScene(editor->scene);
     ui->graphicsView_Map->setSceneRect(editor->scene->sceneRect());
-    ui->graphicsView_Map->setFixedSize(width, height);
     ui->graphicsView_Map->editor = editor;
 
     ui->graphicsView_Connections->setScene(editor->scene);
     ui->graphicsView_Connections->setSceneRect(editor->scene->sceneRect());
-    ui->graphicsView_Connections->setFixedSize(width, height);
 
     ui->graphicsView_Metatiles->setScene(editor->scene_metatiles);
     //ui->graphicsView_Metatiles->setSceneRect(editor->scene_metatiles->sceneRect());
@@ -1204,8 +1211,11 @@ void MainWindow::on_actionNew_Tileset_triggered() {
 
 void MainWindow::updateTilesetEditor() {
     if (this->tilesetEditor) {
-        this->tilesetEditor->setMap(this->editor->map);
-        this->tilesetEditor->setTilesets(editor->ui->comboBox_PrimaryTileset->currentText(), editor->ui->comboBox_SecondaryTileset->currentText());
+        this->tilesetEditor->update(
+            this->editor->map,
+            editor->ui->comboBox_PrimaryTileset->currentText(),
+            editor->ui->comboBox_SecondaryTileset->currentText()
+        );
     }
 }
 
@@ -1352,11 +1362,11 @@ void MainWindow::on_mainTabBar_tabBarClicked(int index)
 }
 
 void MainWindow::on_actionZoom_In_triggered() {
-    scaleMapView(1);
+    editor->scaleMapView(1);
 }
 
 void MainWindow::on_actionZoom_Out_triggered() {
-    scaleMapView(-1);
+    editor->scaleMapView(-1);
 }
 
 void MainWindow::on_actionBetter_Cursors_triggered() {
@@ -1380,7 +1390,7 @@ void MainWindow::on_actionCursor_Tile_Outline_triggered()
     porymapConfig.setShowCursorTile(enabled);
     this->editor->settings->cursorTileRectEnabled = enabled;
     if (this->editor->map_item->has_mouse) {
-        this->editor->cursorMapTileRect->setVisible(enabled);
+        this->editor->cursorMapTileRect->setVisibility(enabled);
     }
 }
 
@@ -1433,39 +1443,8 @@ void MainWindow::on_actionMap_Shift_triggered()
     on_toolButton_Shift_clicked();
 }
 
-void MainWindow::onWheelZoom(int s) {
-    // Don't zoom the map when the user accidentally scrolls while performing a magic fill. (ctrl + middle button click)
-    if (!(QApplication::mouseButtons() & Qt::MiddleButton)) {
-        scaleMapView(s);
-    }
-}
-
-void MainWindow::scaleMapView(int s) {
-    if ((editor->scale_exp + s) <= 5 && (editor->scale_exp + s) >= -2)    // sane limits
-    {
-        if (s == 0)
-        {
-            s = -editor->scale_exp;
-        }
-
-        editor->scale_exp += s;
-
-        double base = editor->scale_base;
-        double exp  = editor->scale_exp;
-        double sfactor = pow(base,s);
-
-        ui->graphicsView_Map->scale(sfactor,sfactor);
-        ui->graphicsView_Connections->scale(sfactor,sfactor);
-
-        int width = static_cast<int>(ceil((editor->scene->width()) * pow(base,exp))) + 2;
-        int height = static_cast<int>(ceil((editor->scene->height()) * pow(base,exp))) + 2;
-        ui->graphicsView_Map->setFixedSize(width, height);
-        ui->graphicsView_Connections->setFixedSize(width, height);
-    }
-}
-
 void MainWindow::resetMapViewScale() {
-    scaleMapView(0);
+    editor->scaleMapView(0);
 }
 
 void MainWindow::addNewEvent(QString event_type)
@@ -2142,9 +2121,9 @@ void MainWindow::on_toolButton_Paint_clicked()
     if (ui->tabWidget_2->currentIndex() == 0)
         editor->cursorMapTileRect->stopSingleTileMode();
 
-    ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    QScroller::ungrabGesture(ui->scrollArea);
+    ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    ui->graphicsView_Map->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    QScroller::ungrabGesture(ui->graphicsView_Map);
 
     checkToolButtons();
 }
@@ -2159,9 +2138,9 @@ void MainWindow::on_toolButton_Select_clicked()
     editor->settings->mapCursor = QCursor();
     editor->cursorMapTileRect->setSingleTileMode();
 
-    ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    QScroller::ungrabGesture(ui->scrollArea);
+    ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    ui->graphicsView_Map->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    QScroller::ungrabGesture(ui->graphicsView_Map);
 
     checkToolButtons();
 }
@@ -2176,9 +2155,9 @@ void MainWindow::on_toolButton_Fill_clicked()
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/fill_color_cursor.ico"), 10, 10);
     editor->cursorMapTileRect->setSingleTileMode();
 
-    ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    QScroller::ungrabGesture(ui->scrollArea);
+    ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    ui->graphicsView_Map->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    QScroller::ungrabGesture(ui->graphicsView_Map);
 
     checkToolButtons();
 }
@@ -2193,9 +2172,9 @@ void MainWindow::on_toolButton_Dropper_clicked()
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/pipette_cursor.ico"), 10, 10);
     editor->cursorMapTileRect->setSingleTileMode();
 
-    ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    QScroller::ungrabGesture(ui->scrollArea);
+    ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    ui->graphicsView_Map->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    QScroller::ungrabGesture(ui->graphicsView_Map);
 
     checkToolButtons();
 }
@@ -2210,9 +2189,9 @@ void MainWindow::on_toolButton_Move_clicked()
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/move.ico"), 7, 7);
     editor->cursorMapTileRect->setSingleTileMode();
 
-    ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    QScroller::grabGesture(ui->scrollArea, QScroller::LeftMouseButtonGesture);
+    ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    ui->graphicsView_Map->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    QScroller::grabGesture(ui->graphicsView_Map, QScroller::LeftMouseButtonGesture);
 
     checkToolButtons();
 }
@@ -2227,9 +2206,9 @@ void MainWindow::on_toolButton_Shift_clicked()
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/shift_cursor.ico"), 10, 10);
     editor->cursorMapTileRect->setSingleTileMode();
 
-    ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    QScroller::ungrabGesture(ui->scrollArea);
+    ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    ui->graphicsView_Map->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    QScroller::ungrabGesture(ui->graphicsView_Map);
 
     checkToolButtons();
 }
@@ -2522,7 +2501,6 @@ void MainWindow::on_actionTileset_Editor_triggered()
         this->tilesetEditor = new TilesetEditor(this->editor->project, this->editor->map, this);
         connect(this->tilesetEditor, SIGNAL(tilesetsSaved(QString, QString)), this, SLOT(onTilesetsSaved(QString, QString)));
         connect(this->tilesetEditor, &QObject::destroyed, [=](QObject *) { this->tilesetEditor = nullptr; });
-        this->tilesetEditor->setAttribute(Qt::WA_DeleteOnClose);
     }
 
     if (!this->tilesetEditor->isVisible()) {
@@ -2582,6 +2560,7 @@ void MainWindow::on_actionThemes_triggered()
             QString theme = themeSelector->currentText();
             porymapConfig.setTheme(theme);
             this->setTheme(theme);
+            editor->maskNonVisibleConnectionTiles();
         }
     });
     connect(&buttonBox, SIGNAL(rejected()), &themeSelectorWindow, SLOT(reject()));
@@ -2662,7 +2641,6 @@ void MainWindow::on_actionRegion_Map_Editor_triggered() {
             return;
         }
         connect(this->regionMapEditor, &QObject::destroyed, [=](QObject *) { this->regionMapEditor = nullptr; });
-        this->regionMapEditor->setAttribute(Qt::WA_DeleteOnClose);
     }
 
     if (!this->regionMapEditor->isVisible()) {
@@ -2701,7 +2679,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
         }
     }
 
-    porymapConfig.setGeometry(
+    porymapConfig.setMainGeometry(
         this->saveGeometry(),
         this->saveState(),
         this->ui->splitter_map->saveState(),

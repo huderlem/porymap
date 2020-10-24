@@ -65,6 +65,7 @@ public:
     void displayMapBorder();
     void displayMapGrid();
     void displayWildMonTables();
+    void maskNonVisibleConnectionTiles();
 
     void updateMapBorder();
     void updateMapConnections();
@@ -110,6 +111,7 @@ public:
     ConnectionPixmapItem* selected_connection_item = nullptr;
     QList<QGraphicsPixmapItem*> connection_items;
     QList<ConnectionPixmapItem*> connection_edit_items;
+    QGraphicsPathItem *connection_mask = nullptr;
     CollisionPixmapItem *collision_item = nullptr;
     QGraphicsItemGroup *events_group = nullptr;
     QList<QGraphicsPixmapItem*> borderItems;
@@ -150,6 +152,7 @@ public:
     bool selectingEvent = false;
 
     void shouldReselectEvents();
+    void scaleMapView(int);
 
 private:
     void setConnectionItemsVisible(bool);
@@ -200,6 +203,7 @@ private slots:
     void onHoveredMapMovementPermissionChanged(int, int);
     void onHoveredMapMovementPermissionCleared();
     void onSelectedMetatilesChanged();
+    void onWheelZoom(int);
 
 signals:
     void objectsChanged();
@@ -208,7 +212,6 @@ signals:
     void wildMonDataChanged();
     void warpEventDoubleClicked(QString mapName, QString warpNum);
     void currentMetatilesSelectionChanged();
-    void wheelZoom(int delta);
 };
 
 #endif // EDITOR_H

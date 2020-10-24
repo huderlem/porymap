@@ -15,6 +15,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - The New Map dialog now gives an option to specify the "Show Location Name" field.
 - Some new shortcuts were added in [porymap/#290](https://github.com/huderlem/porymap/pull/290).
 - All plain text boxes now have a clear button to delete the text.
+- The window sizes and positions of the tileset editor, palette editor, and region map editor are now stored in `porymap.cfg`.
 - Add ruler tool for measuring metatile distance in events tab (Right-click to turn on/off, left-click to lock in place).
 
 ### Changed
@@ -24,6 +25,8 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix a bug with the current metatile selection zoom.
 - Fix bug preventing the status bar from updating the current position while dragging events.
 - Fix porymap icon not showing on window or panel on Linux.
+- The main window can now be resized to fit on lower resolution displays.
+- Zooming the map in/out will now focus on the cursor.
 
 ## [4.3.1] - 2020-07-17
 ### Added
