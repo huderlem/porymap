@@ -1361,9 +1361,11 @@ void Project::saveMap(Map *map) {
     mapObj["requires_flash"] = map->requiresFlash.toInt() > 0 || map->requiresFlash == "TRUE";
     mapObj["weather"] = map->weather;
     mapObj["map_type"] = map->type;
-    mapObj["allow_cycling"] = map->allowBiking.toInt() > 0 || map->allowBiking == "TRUE";
-    mapObj["allow_escaping"] = map->allowEscapeRope.toInt() > 0 || map->allowEscapeRope == "TRUE";
-    mapObj["allow_running"] = map->allowRunning.toInt() > 0 || map->allowRunning == "TRUE";
+    if (projectConfig.getBaseGameVersion() != BaseGameVersion::pokeruby) {
+        mapObj["allow_cycling"] = map->allowBiking.toInt() > 0 || map->allowBiking == "TRUE";
+        mapObj["allow_escaping"] = map->allowEscapeRope.toInt() > 0 || map->allowEscapeRope == "TRUE";
+        mapObj["allow_running"] = map->allowRunning.toInt() > 0 || map->allowRunning == "TRUE";
+    }
     mapObj["show_map_name"] = map->show_location.toInt() > 0 || map->show_location == "TRUE";
     if (projectConfig.getFloorNumberEnabled()) {
         mapObj["floor_number"] = map->floorNumber;
