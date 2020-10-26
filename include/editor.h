@@ -204,7 +204,6 @@ private slots:
     void onHoveredMapMovementPermissionCleared();
     void onSelectedMetatilesChanged();
     void onWheelZoom(int);
-    void onMapRulerLengthChanged();
 
 signals:
     void objectsChanged();
@@ -213,6 +212,7 @@ signals:
     void wildMonDataChanged();
     void warpEventDoubleClicked(QString mapName, QString warpNum);
     void currentMetatilesSelectionChanged();
+    void mapRulerStatusChanged(const QString &);
 };
 
 #endif // EDITOR_H

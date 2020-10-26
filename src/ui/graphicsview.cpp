@@ -21,3 +21,10 @@ void GraphicsView::drawForeground(QPainter *painter, const QRectF&) {
         item->render(painter);
     }
 }
+
+void GraphicsView::moveEvent(QMoveEvent *event) {
+    QGraphicsView::moveEvent(event);
+    QLabel *label_MapRulerStatus = findChild<QLabel *>("label_MapRulerStatus", Qt::FindDirectChildrenOnly);
+    if (label_MapRulerStatus && label_MapRulerStatus->isVisible())
+        label_MapRulerStatus->move(mapToGlobal(QPoint(6, 6)));
+}
