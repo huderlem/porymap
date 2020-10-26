@@ -22,6 +22,7 @@ protected:
     void mouseMoveEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
     void drawForeground(QPainter *painter, const QRectF &rect);
+    void moveEvent(QMoveEvent *event);
 };
 
 //Q_DECLARE_METATYPE(GraphicsView)

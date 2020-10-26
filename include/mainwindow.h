@@ -128,6 +128,7 @@ private slots:
     void openNewMapPopupWindow(int, QVariant);
     void onNewMapCreated();
     void onMapCacheCleared();
+    void onMapRulerStatusChanged(const QString &);
 
     void on_action_NewMap_triggered();
     void on_actionNew_Tileset_triggered();
@@ -207,6 +208,7 @@ private slots:
 
     void on_lineEdit_filterBox_textChanged(const QString &arg1);
 
+    void moveEvent(QMoveEvent *event);
     void closeEvent(QCloseEvent *);
 
     void eventTabChanged(int index);
@@ -229,6 +231,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+    QLabel *label_MapRulerStatus;
     TilesetEditor *tilesetEditor = nullptr;
     RegionMapEditor *regionMapEditor = nullptr;
     MapImageExporter *mapImageExporter = nullptr;
