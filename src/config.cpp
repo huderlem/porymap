@@ -11,6 +11,7 @@
 #include <QTextStream>
 #include <QRegularExpression>
 #include <QStandardPaths>
+#include <QAction>
 
 KeyValueConfigBase::~KeyValueConfigBase() {
 
@@ -414,7 +415,7 @@ ProjectConfig projectConfig;
 
 QString ProjectConfig::getConfigFilepath() {
     // porymap config file is in the same directory as porymap itself.
-    return QDir(this->projectDir).filePath("porymap.project.cfg");;
+    return QDir(this->projectDir).filePath("porymap.project.cfg");
 }
 
 void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
@@ -702,4 +703,85 @@ void ProjectConfig::setCustomScripts(QList<QString> scripts) {
 
 QList<QString> ProjectConfig::getCustomScripts() {
     return this->customScripts;
+}
+
+ShortcutsConfig shortcutsConfig;
+
+QString ShortcutsConfig::getConfigFilepath() {
+    QString settingsPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    QDir dir(settingsPath);
+    if (!dir.exists())
+        dir.mkpath(settingsPath);
+
+    QString configPath = dir.absoluteFilePath("porymap.shortcuts.cfg");
+
+    return configPath;
+}
+
+void ShortcutsConfig::parseConfigKeyValue(QString key, QString value) {
+    QStringList keySeqs = value.split(' ');
+    if (keySeqs.isEmpty())
+        shortcuts.insert(key, value);
+    else for (auto keySeq : keySeqs)
+        shortcuts.insert(key, keySeq);
+}
+
+QMap<QString, QString> ShortcutsConfig::getKeyValueMap() {
+    QMap<QString, QString> map;
+    for (auto key : shortcuts.uniqueKeys()) {
+        auto keySeqs = shortcuts.values(key);
+        QStringList values;
+        for (auto keySeq : keySeqs)
+            values.append(keySeq.toString());
+        QString value = values.join(' ');
+        map.insert(key, value);
+    }
+    return map;
+}
+
+// Call this before applying user shortcuts to be able to restore default shortcuts.
+void ShortcutsConfig::setDefaultShortcuts(const QList<QAction *> &actions) {
+    defaultShortcuts.clear();
+    for (auto *action : actions) {
+        const QString key = getKey(action);
+        bool addToUserShortcuts = !shortcuts.contains(key);
+        for (auto shortcut : action->shortcuts()) {
+            defaultShortcuts.insert(key, shortcut);
+            if (addToUserShortcuts)
+                shortcuts.insert(key, shortcut);
+        }
+    }
+    save();
+}
+
+QList<QKeySequence> ShortcutsConfig::getDefaultShortcuts(QAction *action) const {
+    return defaultShortcuts.values(getKey(action));
+}
+
+void ShortcutsConfig::setUserShortcuts(const QList<QAction *> &actions) {
+    shortcuts.clear();
+    for (auto *action : actions) {
+        const QString key = getKey(action);
+        if (action->shortcuts().isEmpty())
+            shortcuts.insert(key, QKeySequence());
+        else for (auto shortcut : action->shortcuts())
+            shortcuts.insert(key, shortcut);
+    }
+    save();
+}
+
+QList<QKeySequence> ShortcutsConfig::getUserShortcuts(QAction *action) const {
+    return shortcuts.values(getKey(action));
+}
+
+QString ShortcutsConfig::getKey(QObject *object) const {
+    QString key = object->objectName();
+    QRegularExpression re("[A-Z]");
+    int i = key.indexOf(re);
+    while (i != -1) {
+        if (key.at(i - 1) != '_')
+            key.insert(i++, '_');
+        i = key.indexOf(re, i + 1);
+    }
+    return key.toLower();
 }

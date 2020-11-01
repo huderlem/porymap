@@ -5,6 +5,8 @@
 #include <QObject>
 #include <QByteArrayList>
 #include <QSize>
+#include <QKeySequence>
+#include <QMultiMap>
 
 enum MapSortOrder {
     Group   =  0,
@@ -191,5 +193,38 @@ private:
 };
 
 extern ProjectConfig projectConfig;
+
+class QAction;
+
+class ShortcutsConfig : public KeyValueConfigBase
+{
+public:
+    ShortcutsConfig() :
+        shortcuts(QMultiMap<QString, QKeySequence>()),
+        defaultShortcuts(QMultiMap<QString, QKeySequence>())
+    {
+        reset();
+    }
+    virtual void reset() override { shortcuts.clear(); }
+    void setDefaultShortcuts(const QList<QAction *> &actions);
+    QList<QKeySequence> getDefaultShortcuts(QAction *action) const;
+    void setUserShortcuts(const QList<QAction *> &actions);
+    QList<QKeySequence> getUserShortcuts(QAction *action) const;
+
+protected:
+    virtual QString getConfigFilepath() override;
+    virtual void parseConfigKeyValue(QString key, QString value) override;
+    virtual QMap<QString, QString> getKeyValueMap() override;
+    virtual void onNewConfigFileCreated() override {};
+    virtual void setUnreadKeys() override {};
+
+private:
+    QMultiMap<QString, QKeySequence> shortcuts;
+    QMultiMap<QString, QKeySequence> defaultShortcuts;
+
+    QString getKey(QObject *object) const;
+};
+
+extern ShortcutsConfig shortcutsConfig;
 
 #endif // CONFIG_H

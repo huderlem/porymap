@@ -92,6 +92,7 @@ void MainWindow::initWindow() {
     this->initEditor();
     this->initMiscHeapObjects();
     this->initMapSortOrder();
+    this->initUserShortcuts();
     this->restoreWindowState();
 
     setWindowDisabled(true);
@@ -104,6 +105,13 @@ void MainWindow::initExtraShortcuts() {
     new QShortcut(QKeySequence::Delete, this, SLOT(on_toolButton_deleteObject_clicked()));
     new QShortcut(QKeySequence("Backspace"), this, SLOT(on_toolButton_deleteObject_clicked()));
     ui->actionZoom_In->setShortcuts({QKeySequence("Ctrl++"), QKeySequence("Ctrl+=")});
+}
+
+void MainWindow::initUserShortcuts() {
+    shortcutsConfig.load();
+    shortcutsConfig.setDefaultShortcuts(findChildren<QAction *>());
+    for (auto *action : findChildren<QAction *>())
+        action->setShortcuts(shortcutsConfig.getUserShortcuts(action));
 }
 
 void MainWindow::initCustomUI() {
@@ -158,9 +166,11 @@ void MainWindow::initEditor() {
     this->loadUserSettings();
 
     undoAction = editor->editGroup.createUndoAction(this, tr("&Undo"));
+    undoAction->setObjectName("action_Undo");
     undoAction->setShortcut(QKeySequence("Ctrl+Z"));
 
     redoAction = editor->editGroup.createRedoAction(this, tr("&Redo"));
+    redoAction->setObjectName("action_Redo");
     redoAction->setShortcuts({QKeySequence("Ctrl+Y"), QKeySequence("Ctrl+Shift+Z")});
 
     ui->menuEdit->addAction(undoAction);
@@ -171,7 +181,8 @@ void MainWindow::initEditor() {
     undoView->setAttribute(Qt::WA_QuitOnClose, false);
 
     // Show the EditHistory dialog with Ctrl+E
-    QAction *showHistory = new QAction("Show Edit History...");
+    QAction *showHistory = new QAction("Show Edit History...", this);
+    showHistory->setObjectName("action_ShowEditHistory");
     showHistory->setShortcut(QKeySequence("Ctrl+E"));
     connect(showHistory, &QAction::triggered, [undoView](){ undoView->show(); });
 
@@ -1401,6 +1412,19 @@ void MainWindow::on_actionMonitor_Project_Files_triggered(bool checked)
 void MainWindow::on_actionUse_Poryscript_triggered(bool checked)
 {
     projectConfig.setUsePoryScript(checked);
+}
+
+void MainWindow::on_actionEdit_Shortcuts_triggered()
+{
+    if (!shortcutsEditor)
+        shortcutsEditor = new ShortcutsEditor(this);
+
+    if (shortcutsEditor->isHidden())
+        shortcutsEditor->show();
+    else if (shortcutsEditor->isMinimized())
+        shortcutsEditor->showNormal();
+    else
+        shortcutsEditor->activateWindow();
 }
 
 void MainWindow::on_actionPencil_triggered()
