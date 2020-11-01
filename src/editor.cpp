@@ -905,9 +905,8 @@ void Editor::scaleMapView(int s) {
     if ((scale_exp + s) <= 5 && (scale_exp + s) >= -2)    // sane limits
     {
         if (s == 0)
-            scale_exp = 0;
-        else
-            scale_exp += s;
+            s = -scale_exp;
+        scale_exp += s;
 
         double sfactor = pow(scale_base, s);
         ui->graphicsView_Map->scale(sfactor, sfactor);
