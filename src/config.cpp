@@ -36,7 +36,7 @@ void KeyValueConfigBase::load() {
     QTextStream in(&file);
     in.setCodec("UTF-8");
     QList<QString> configLines;
-    QRegularExpression re("^(?<key>.+)=(?<value>.*)$");
+    QRegularExpression re("^(?<key>[^=]+)=(?<value>.*)$");
     while (!in.atEnd()) {
         QString line = in.readLine().trimmed();
         int commentIndex = line.indexOf("#");
