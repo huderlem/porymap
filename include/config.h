@@ -195,21 +195,29 @@ private:
 extern ProjectConfig projectConfig;
 
 class QAction;
+class Shortcut;
 
 class ShortcutsConfig : public KeyValueConfigBase
 {
 public:
     ShortcutsConfig() :
-        shortcuts(QMultiMap<QString, QKeySequence>()),
+        userShortcuts(QMultiMap<QString, QKeySequence>()),
         defaultShortcuts(QMultiMap<QString, QKeySequence>())
-    {
-        reset();
-    }
-    virtual void reset() override { shortcuts.clear(); }
-    void setDefaultShortcuts(const QList<QAction *> &actions);
+    {  }
+    
+    virtual void reset() override { userShortcuts.clear(); }
+
+    void setDefaultShortcuts(
+            const QList<QAction *> &actions = QList<QAction *>(),
+            const QList<Shortcut *> &shortcuts = QList<Shortcut *>());
     QList<QKeySequence> getDefaultShortcuts(QAction *action) const;
-    void setUserShortcuts(const QList<QAction *> &actions);
+    QList<QKeySequence> getDefaultShortcuts(Shortcut *shortcut) const;
+
+    void setUserShortcuts(
+            const QList<QAction *> &actions = QList<QAction *>(),
+            const QList<Shortcut *> &shortcuts = QList<Shortcut *>());
     QList<QKeySequence> getUserShortcuts(QAction *action) const;
+    QList<QKeySequence> getUserShortcuts(Shortcut *shortcut) const;
 
 protected:
     virtual QString getConfigFilepath() override;
@@ -219,10 +227,10 @@ protected:
     virtual void setUnreadKeys() override {};
 
 private:
-    QMultiMap<QString, QKeySequence> shortcuts;
+    QMultiMap<QString, QKeySequence> userShortcuts;
     QMultiMap<QString, QKeySequence> defaultShortcuts;
 
-    QString getKey(QObject *object) const;
+    QString cfgKey(QObject *object) const;
 };
 
 extern ShortcutsConfig shortcutsConfig;

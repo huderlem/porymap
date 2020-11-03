@@ -86,7 +86,7 @@ void TilesetEditor::setTilesets(QString primaryTilesetLabel, QString secondaryTi
 
 void TilesetEditor::initUi() {
     ui->setupUi(this);
-    new QShortcut(QKeySequence("Ctrl+Shift+Z"), this, SLOT(on_actionRedo_triggered()));
+    ui->actionRedo->setShortcuts({ui->actionRedo->shortcut(), QKeySequence("Ctrl+Shift+Z")});
     this->tileXFlip = ui->checkBox_xFlip->isChecked();
     this->tileYFlip = ui->checkBox_yFlip->isChecked();
     this->paletteId = ui->spinBox_paletteSelector->value();

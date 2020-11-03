@@ -14,11 +14,11 @@
 #include "draggablepixmapitem.h"
 #include "editcommands.h"
 #include "flowlayout.h"
+#include "shortcut.h"
 
 #include <QFileDialog>
 #include <QDirIterator>
 #include <QStandardItemModel>
-#include <QShortcut>
 #include <QSpinBox>
 #include <QTextEdit>
 #include <QSpacerItem>
@@ -99,19 +99,29 @@ void MainWindow::initWindow() {
 }
 
 void MainWindow::initExtraShortcuts() {
-    new QShortcut(QKeySequence("Ctrl+0"), this, SLOT(resetMapViewScale()));
-    new QShortcut(QKeySequence("Ctrl+G"), ui->checkBox_ToggleGrid, SLOT(toggle()));
-    new QShortcut(QKeySequence("Ctrl+D"), this, SLOT(duplicate()));
-    new QShortcut(QKeySequence::Delete, this, SLOT(on_toolButton_deleteObject_clicked()));
-    new QShortcut(QKeySequence("Backspace"), this, SLOT(on_toolButton_deleteObject_clicked()));
-    ui->actionZoom_In->setShortcuts({QKeySequence("Ctrl++"), QKeySequence("Ctrl+=")});
+    auto *shortcutReset_Zoom = new Shortcut(QKeySequence("Ctrl+0"), this, SLOT(resetMapViewScale()));
+    shortcutReset_Zoom->setObjectName("shortcutReset_Zoom");
+
+    auto *shortcutToggle_Grid = new Shortcut(QKeySequence("Ctrl+G"), ui->checkBox_ToggleGrid, SLOT(toggle()));
+    shortcutToggle_Grid->setObjectName("shortcutToggle_Grid");
+
+    auto *shortcutDuplicate_Events = new Shortcut(QKeySequence("Ctrl+D"), this, SLOT(duplicate()));
+    shortcutDuplicate_Events->setObjectName("shortcutDuplicate_Events");
+
+    auto *shortcutDelete_Object = new Shortcut(
+            {QKeySequence("Del"), QKeySequence("Backspace")}, this, SLOT(on_toolButton_deleteObject_clicked()));
+    shortcutDelete_Object->setObjectName("shortcutDelete_Object");
+
+    ui->actionZoom_In->setShortcuts({ui->actionZoom_In->shortcut(), QKeySequence("Ctrl+=")});
 }
 
 void MainWindow::initUserShortcuts() {
     shortcutsConfig.load();
-    shortcutsConfig.setDefaultShortcuts(findChildren<QAction *>());
+    shortcutsConfig.setDefaultShortcuts(findChildren<QAction *>(), findChildren<Shortcut *>());
     for (auto *action : findChildren<QAction *>())
         action->setShortcuts(shortcutsConfig.getUserShortcuts(action));
+    for (auto *shortcut : findChildren<Shortcut *>())
+        shortcut->setKeys(shortcutsConfig.getUserShortcuts(shortcut));
 }
 
 void MainWindow::initCustomUI() {
