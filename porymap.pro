@@ -71,6 +71,7 @@ SOURCES += src/core/block.cpp \
     src/ui/newtilesetdialog.cpp \
     src/ui/flowlayout.cpp \
     src/ui/mapruler.cpp \
+    src/ui/shortcut.cpp \
     src/ui/shortcutseditor.cpp \
     src/config.cpp \
     src/editor.cpp \
@@ -141,6 +142,7 @@ HEADERS  += include/core/block.h \
     include/ui/overlay.h \
     include/ui/flowlayout.h \
     include/ui/mapruler.h \
+    include/ui/shortcut.h \
     include/ui/shortcutseditor.h \
     include/config.h \
     include/editor.h \
