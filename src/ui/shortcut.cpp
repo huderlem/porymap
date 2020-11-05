@@ -128,7 +128,7 @@ int Shortcut::id() const {
 }
 
 QList<int> Shortcut::ids() const {
-    QList<int> id_list({id()});
+    QList<int> id_list;
     for (auto *sc : sc_vec)
         id_list.append(sc->id());
     return id_list;

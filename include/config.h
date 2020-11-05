@@ -207,15 +207,15 @@ public:
     
     virtual void reset() override { userShortcuts.clear(); }
 
-    void setDefaultShortcuts(
-            const QList<QAction *> &actions = QList<QAction *>(),
-            const QList<Shortcut *> &shortcuts = QList<Shortcut *>());
+    void setDefaultShortcuts(const QList<QAction *> &actions);
+    void setDefaultShortcuts(const QList<Shortcut *> &shortcuts);
+    void setDefaultShortcuts(const QList<QAction *> &actions, const QList<Shortcut *> &shortcuts);
     QList<QKeySequence> getDefaultShortcuts(QAction *action) const;
     QList<QKeySequence> getDefaultShortcuts(Shortcut *shortcut) const;
 
-    void setUserShortcuts(
-            const QList<QAction *> &actions = QList<QAction *>(),
-            const QList<Shortcut *> &shortcuts = QList<Shortcut *>());
+    void setUserShortcuts(const QList<QAction *> &actions);
+    void setUserShortcuts(const QList<Shortcut *> &shortcuts);
+    void setUserShortcuts(const QList<QAction *> &actions, const QList<Shortcut *> &shortcuts);
     QList<QKeySequence> getUserShortcuts(QAction *action) const;
     QList<QKeySequence> getUserShortcuts(Shortcut *shortcut) const;
 
@@ -230,6 +230,21 @@ private:
     QMultiMap<QString, QKeySequence> userShortcuts;
     QMultiMap<QString, QKeySequence> defaultShortcuts;
 
+    enum StoreType {
+        User,
+        Default
+    };
+
+    void storeShortcuts(
+            StoreType storeType,
+            const QList<QAction *> &actions);
+    void storeShortcuts(
+            StoreType storeType,
+            const QList<Shortcut *> &shortcuts);
+    void storeShortcut(
+            StoreType storeType,
+            const QString &cfgKey,
+            const QList<QKeySequence> &keySequences);
     QString cfgKey(QObject *object) const;
 };
 
