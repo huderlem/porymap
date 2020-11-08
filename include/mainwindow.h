@@ -129,6 +129,7 @@ private slots:
     void openNewMapPopupWindow(int, QVariant);
     void onNewMapCreated();
     void onMapCacheCleared();
+    void applyUserShortcuts();
 
     void on_action_NewMap_triggered();
     void on_actionNew_Tileset_triggered();
@@ -292,12 +293,12 @@ private:
 
     void initWindow();
     void initCustomUI();
-    void initExtraShortcuts();
     void initExtraSignals();
     void initEditor();
     void initMiscHeapObjects();
     void initMapSortOrder();
-    void initUserShortcuts();
+    void initShortcuts();
+    void initExtraShortcuts();
     void setProjectSpecificUIVisibility();
     void loadUserSettings();
     void applyMapListFilter(QString filterText);
@@ -312,6 +313,8 @@ private:
     bool isProjectOpen();
     void showExportMapImageWindow(bool stitchMode);
     void redrawMetatileSelection();
+
+    QObjectList shortcutableObjects() const;
 };
 
 enum MapListUserRoles {

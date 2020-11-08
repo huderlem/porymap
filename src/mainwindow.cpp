@@ -88,40 +88,63 @@ void MainWindow::initWindow() {
     porymapConfig.load();
     this->initCustomUI();
     this->initExtraSignals();
-    this->initExtraShortcuts();
     this->initEditor();
     this->initMiscHeapObjects();
     this->initMapSortOrder();
-    this->initUserShortcuts();
+    this->initShortcuts();
     this->restoreWindowState();
 
     setWindowDisabled(true);
 }
 
+void MainWindow::initShortcuts() {
+    initExtraShortcuts();
+
+    shortcutsConfig.load();
+    shortcutsConfig.setDefaultShortcuts(shortcutableObjects());
+    applyUserShortcuts();
+}
+
 void MainWindow::initExtraShortcuts() {
     auto *shortcutReset_Zoom = new Shortcut(QKeySequence("Ctrl+0"), this, SLOT(resetMapViewScale()));
-    shortcutReset_Zoom->setObjectName("shortcutReset_Zoom");
+    shortcutReset_Zoom->setObjectName("shortcutZoom_Reset");
+    shortcutReset_Zoom->setWhatsThis("Zoom Reset");
 
     auto *shortcutToggle_Grid = new Shortcut(QKeySequence("Ctrl+G"), ui->checkBox_ToggleGrid, SLOT(toggle()));
     shortcutToggle_Grid->setObjectName("shortcutToggle_Grid");
+    shortcutToggle_Grid->setWhatsThis("Toggle Grid");
 
     auto *shortcutDuplicate_Events = new Shortcut(QKeySequence("Ctrl+D"), this, SLOT(duplicate()));
     shortcutDuplicate_Events->setObjectName("shortcutDuplicate_Events");
+    shortcutDuplicate_Events->setWhatsThis("Duplicate Selected Event(s)");
 
     auto *shortcutDelete_Object = new Shortcut(
             {QKeySequence("Del"), QKeySequence("Backspace")}, this, SLOT(on_toolButton_deleteObject_clicked()));
     shortcutDelete_Object->setObjectName("shortcutDelete_Object");
+    shortcutDelete_Object->setWhatsThis("Delete Selected Event(s)");
 
     ui->actionZoom_In->setShortcuts({ui->actionZoom_In->shortcut(), QKeySequence("Ctrl+=")});
 }
 
-void MainWindow::initUserShortcuts() {
-    shortcutsConfig.load();
-    shortcutsConfig.setDefaultShortcuts(findChildren<QAction *>(), findChildren<Shortcut *>());
+QObjectList MainWindow::shortcutableObjects() const {
+    QObjectList shortcutable_objects;
     for (auto *action : findChildren<QAction *>())
-        action->setShortcuts(shortcutsConfig.getUserShortcuts(action));
+        if (!action->objectName().isEmpty())
+            shortcutable_objects.append(qobject_cast<QObject *>(action));
     for (auto *shortcut : findChildren<Shortcut *>())
-        shortcut->setKeys(shortcutsConfig.getUserShortcuts(shortcut));
+        if (!shortcut->objectName().isEmpty())
+            shortcutable_objects.append(qobject_cast<QObject *>(shortcut));
+    
+    return shortcutable_objects;
+}
+
+void MainWindow::applyUserShortcuts() {
+    for (auto *action : findChildren<QAction *>())
+        if (!action->objectName().isEmpty())
+            action->setShortcuts(shortcutsConfig.userShortcuts(action));
+    for (auto *shortcut : findChildren<Shortcut *>())
+        if (!shortcut->objectName().isEmpty())
+            shortcut->setKeys(shortcutsConfig.userShortcuts(shortcut));
 }
 
 void MainWindow::initCustomUI() {
@@ -1426,8 +1449,12 @@ void MainWindow::on_actionUse_Poryscript_triggered(bool checked)
 
 void MainWindow::on_actionEdit_Shortcuts_triggered()
 {
-    if (!shortcutsEditor)
-        shortcutsEditor = new ShortcutsEditor(this);
+    if (!shortcutsEditor) {
+        shortcutsEditor = new ShortcutsEditor(shortcutableObjects(), this);
+        connect(shortcutsEditor, &QObject::destroyed, [=](QObject *) { shortcutsEditor = nullptr; });
+        connect(shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
+                this, &MainWindow::applyUserShortcuts);
+    }
 
     if (shortcutsEditor->isHidden())
         shortcutsEditor->show();

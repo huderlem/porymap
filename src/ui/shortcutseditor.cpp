@@ -1,26 +1,32 @@
 #include "shortcutseditor.h"
 #include "ui_shortcutseditor.h"
 #include "config.h"
+#include "multikeyedit.h"
 #include "log.h"
 
+#include <QGroupBox>
 #include <QFormLayout>
 #include <QAbstractButton>
 #include <QtEvents>
 #include <QMessageBox>
-#include <QKeySequenceEdit>
-#include <QAction>
+#include <QRegularExpression>
+#include <QLabel>
 
 
-ShortcutsEditor::ShortcutsEditor(QWidget *parent) :
-    QDialog(parent),
+ShortcutsEditor::ShortcutsEditor(const QObjectList &objectList, QWidget *parent) :
+    QMainWindow(parent),
     ui(new Ui::ShortcutsEditor),
-    actions(QMap<QString, QAction *>())
+    main_container(nullptr)
 {
     ui->setupUi(this);
-    ase_container = ui->scrollAreaWidgetContents_Shortcuts;
+    setAttribute(Qt::WA_DeleteOnClose);
+    main_container = ui->scrollAreaWidgetContents_Shortcuts;
+    main_container->setLayout(new QVBoxLayout(main_container));
     connect(ui->buttonBox, &QDialogButtonBox::clicked,
             this, &ShortcutsEditor::dialogButtonClicked);
-    populateShortcuts();
+    
+    parseObjectList(objectList);
+    populateMainContainer();
 }
 
 ShortcutsEditor::~ShortcutsEditor()
@@ -28,207 +34,143 @@ ShortcutsEditor::~ShortcutsEditor()
     delete ui;
 }
 
-void ShortcutsEditor::populateShortcuts() {
-    if (!parent())
-        return;
+void ShortcutsEditor::saveShortcuts() {
+    QMultiMap<const QObject *, QKeySequence> objects_keySequences;
+    for (auto it = multiKeyEdits_objects.cbegin(); it != multiKeyEdits_objects.cend(); ++it)
+        for (auto keySequence : it.key()->keySequences())
+            objects_keySequences.insert(it.value(), keySequence);
 
-    for (auto action : parent()->findChildren<QAction *>())
-        if (!action->text().isEmpty() && !action->objectName().isEmpty())
-            actions.insert(action->text().remove('&'), action);
+    shortcutsConfig.setUserShortcuts(objects_keySequences);
+    emit shortcutsSaved();
+}
 
-    auto *formLayout = new QFormLayout(ase_container);
-    for (auto *action : actions) {
-        auto userShortcuts = shortcutsConfig.getUserShortcuts(action);
-        auto *ase = new ActionShortcutEdit(ase_container, action, 2);
-        connect(ase, &ActionShortcutEdit::editingFinished,
-                this, &ShortcutsEditor::checkForDuplicates);
-        ase->setShortcuts(userShortcuts);
-        formLayout->addRow(action->text(), ase);
+// Restores default shortcuts but doesn't save until Apply or OK is clicked.
+void ShortcutsEditor::resetShortcuts() {
+    for (auto it = multiKeyEdits_objects.begin(); it != multiKeyEdits_objects.end(); ++it) {
+        it.key()->blockSignals(true);
+        const auto defaults = shortcutsConfig.defaultShortcuts(it.value());
+        it.key()->setKeySequences(defaults);
+        it.key()->blockSignals(false);
     }
 }
 
-void ShortcutsEditor::saveShortcuts() {
-    auto ase_children = ase_container->findChildren<ActionShortcutEdit *>(QString(), Qt::FindDirectChildrenOnly);
-    for (auto *ase : ase_children)
-        ase->applyShortcuts();
-    shortcutsConfig.setUserShortcuts(actions.values());
+void ShortcutsEditor::parseObjectList(const QObjectList &objectList) {
+    for (auto *object : objectList) {
+        const auto label = getLabel(object);
+        if (!label.isEmpty() && ShortcutsConfig::objectNameIsValid(object))
+            labels_objects.insert(label, object);
+    }
 }
 
-void ShortcutsEditor::resetShortcuts() {
-    auto ase_children = ase_container->findChildren<ActionShortcutEdit *>(QString(), Qt::FindDirectChildrenOnly);
-    for (auto *ase : ase_children)
-        ase->setShortcuts(shortcutsConfig.getDefaultShortcuts(ase->action));
+QString ShortcutsEditor::getLabel(const QObject *object) const {
+    if (stringPropertyIsNotEmpty(object, "text"))
+        return object->property("text").toString().remove('&');
+    else if (stringPropertyIsNotEmpty(object, "whatsThis"))
+        return object->property("whatsThis").toString().remove('&');
+    else
+        return QString();
 }
 
-void ShortcutsEditor::promptUser(ActionShortcutEdit *current, ActionShortcutEdit *sender) {
-    auto result = QMessageBox::question(
-        this,
-        "porymap",
-        QString("Shortcut \"%1\" is already used by \"%2\", would you like to replace it?")
-            .arg(sender->last().toString()).arg(current->action->text()),
-        QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+bool ShortcutsEditor::stringPropertyIsNotEmpty(const QObject *object, const char *name) const {
+    return object->property(name).isValid() && !object->property(name).toString().isEmpty();
+}
+
+void ShortcutsEditor::populateMainContainer() {
+    for (auto object : labels_objects) {
+        const auto shortcutContext = getShortcutContext(object);
+        if (!contexts_layouts.contains(shortcutContext))
+            addNewContextGroup(shortcutContext);
+
+        addNewMultiKeyEdit(object, shortcutContext);
+    }
+}
+
+// The context for which the object's shortcut is active (Displayed in group box title).
+// Uses the parent window's objectName and adds spaces between words.
+QString ShortcutsEditor::getShortcutContext(const QObject *object) const {
+    auto objectParentWidget = static_cast<QWidget *>(object->parent());
+    auto context = objectParentWidget->window()->objectName();
+    QRegularExpression re("[A-Z]");
+    int i = context.indexOf(re, 1);
+    while (i != -1) {
+        if (context.at(i - 1) != ' ')
+            context.insert(i++, ' ');
+        i = context.indexOf(re, i + 1);
+    }
+    return context;
+}
+
+// Seperate shortcuts into context groups for duplicate checking.
+void ShortcutsEditor::addNewContextGroup(const QString &shortcutContext) {
+    auto *groupBox = new QGroupBox(shortcutContext, main_container);
+    main_container->layout()->addWidget(groupBox);
+    auto *formLayout = new QFormLayout(groupBox);
+    contexts_layouts.insert(shortcutContext, formLayout);
+}
+
+void ShortcutsEditor::addNewMultiKeyEdit(const QObject *object, const QString &shortcutContext) {
+    auto *container = contexts_layouts.value(shortcutContext)->parentWidget();
+    auto *multiKeyEdit = new MultiKeyEdit(container);
+    multiKeyEdit->setKeySequences(shortcutsConfig.userShortcuts(object));
+    connect(multiKeyEdit, &MultiKeyEdit::keySequenceChanged,
+            this, &ShortcutsEditor::checkForDuplicates);
+    contexts_layouts.value(shortcutContext)->addRow(labels_objects.key(object), multiKeyEdit);
+    multiKeyEdits_objects.insert(multiKeyEdit, object);
+}
+
+void ShortcutsEditor::checkForDuplicates(const QKeySequence &keySequence) {
+    if (keySequence.isEmpty())
+        return;
+
+    auto *sender_multiKeyEdit = qobject_cast<MultiKeyEdit *>(sender());
+    if (!sender_multiKeyEdit)
+        return;
+
+    for (auto *sibling_multiKeyEdit : siblings(sender_multiKeyEdit))
+        if (sibling_multiKeyEdit->contains(keySequence))
+            promptUserOnDuplicateFound(sender_multiKeyEdit, sibling_multiKeyEdit);
+}
+
+QList<MultiKeyEdit *> ShortcutsEditor::siblings(MultiKeyEdit *multiKeyEdit) const {
+    auto list = multiKeyEdit->parent()->findChildren<MultiKeyEdit *>(QString(), Qt::FindDirectChildrenOnly);
+    list.removeOne(multiKeyEdit);
+    return list;
+}
+
+void ShortcutsEditor::promptUserOnDuplicateFound(MultiKeyEdit *sender, MultiKeyEdit *sibling) {
+    const auto duplicateKeySequence = sender->keySequences().last();
+    const auto siblingLabel = getLabel(multiKeyEdits_objects.value(sibling));
+    const auto message = QString(
+            "Shortcut '%1' is already used by '%2', would you like to replace it?")
+            .arg(duplicateKeySequence.toString()).arg(siblingLabel);
+
+    const auto result = QMessageBox::question(
+            this, "porymap", message, QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
 
     if (result == QMessageBox::Yes)
-        current->removeOne(sender->last());
-    else if (result == QMessageBox::No)
-        sender->removeOne(sender->last());
+        removeKeySequence(duplicateKeySequence, sibling);
+    else
+        removeKeySequence(duplicateKeySequence, sender);
+    
+    activateWindow();
 }
 
-void ShortcutsEditor::checkForDuplicates() {
-    auto *sender_ase = qobject_cast<ActionShortcutEdit *>(sender());
-    if (!sender_ase)
-        return;
-
-    for (auto *child_kse : findChildren<QKeySequenceEdit *>()) {
-        if (child_kse->keySequence().isEmpty() || child_kse->parent() == sender())
-            continue;
-
-        if (sender_ase->contains(child_kse->keySequence())) {
-            auto *current_ase = qobject_cast<ActionShortcutEdit *>(child_kse->parent());
-            if (!current_ase)
-                continue;
-
-            promptUser(current_ase, sender_ase);
-            activateWindow();
-            return;
-        }
-    }
+void ShortcutsEditor::removeKeySequence(const QKeySequence &keySequence, MultiKeyEdit *multiKeyEdit) {
+    multiKeyEdit->blockSignals(true);
+    multiKeyEdit->removeOne(keySequence);
+    multiKeyEdit->blockSignals(false);
 }
 
 void ShortcutsEditor::dialogButtonClicked(QAbstractButton *button) {
     auto buttonRole = ui->buttonBox->buttonRole(button);
     if (buttonRole == QDialogButtonBox::AcceptRole) {
         saveShortcuts();
-        hide();
+        close();
     } else if (buttonRole == QDialogButtonBox::ApplyRole) {
         saveShortcuts();
     } else if (buttonRole == QDialogButtonBox::RejectRole) {
-        hide();
+        close();
     } else if (buttonRole == QDialogButtonBox::ResetRole) {
         resetShortcuts();
     }
-}
-
-
-ActionShortcutEdit::ActionShortcutEdit(QWidget *parent, QAction *action, int count) :
-    QWidget(parent),
-    action(action),
-    kse_children(QVector<QKeySequenceEdit *>()),
-    ks_list(QList<QKeySequence>())
-{
-    setLayout(new QHBoxLayout(this));
-    layout()->setContentsMargins(0, 0, 0, 0);
-    setCount(count);
-}
-
-bool ActionShortcutEdit::eventFilter(QObject *watched, QEvent *event) {
-    auto *watched_kse = qobject_cast<QKeySequenceEdit *>(watched);
-    if (!watched_kse)
-        return false;
-
-    if (event->type() == QEvent::KeyPress) {
-        auto *keyEvent = static_cast<QKeyEvent *>(event);
-        if (keyEvent->key() == Qt::Key_Escape) {
-            watched_kse->clearFocus();
-            return true;
-        } else if (keyEvent->key() == Qt::Key_Backspace) {
-            removeOne(watched_kse->keySequence());
-            return true;
-        } else {
-            watched_kse->clear();
-        }
-    }
-    return false;
-}
-
-void ActionShortcutEdit::setCount(int count) {
-    if (count < 1)
-        count = 1;
-
-    while (kse_children.count() > count) {
-        layout()->removeWidget(kse_children.last());
-        delete kse_children.last();
-        kse_children.removeLast();
-    }
-
-    while (kse_children.count() < count) {
-        auto *kse = new QKeySequenceEdit(this);
-        connect(kse, &QKeySequenceEdit::editingFinished,
-                this, &ActionShortcutEdit::onEditingFinished);
-        kse->installEventFilter(this);
-        layout()->addWidget(kse);
-        kse_children.append(kse);
-    }
-}
-
-QList<QKeySequence> ActionShortcutEdit::shortcuts() const {
-    QList<QKeySequence> current_ks_list;
-    for (auto *kse : kse_children)
-        if (!kse->keySequence().isEmpty())
-            current_ks_list.append(kse->keySequence());
-    return current_ks_list;
-}
-
-void ActionShortcutEdit::setShortcuts(const QList<QKeySequence> &keySequences) {
-    clear();
-    ks_list = keySequences;
-    int minCount = qMin(kse_children.count(), ks_list.count());
-    for (int i = 0; i < minCount; ++i)
-        kse_children[i]->setKeySequence(ks_list[i]);
-}
-
-void ActionShortcutEdit::applyShortcuts() {
-    action->setShortcuts(shortcuts());
-}
-
-bool ActionShortcutEdit::removeOne(const QKeySequence &keySequence) {
-    for (auto *kse : kse_children) {
-        if (kse->keySequence() == keySequence) {
-            ks_list.removeOne(keySequence);
-            kse->clear();
-            updateShortcuts();
-            return true;
-        }
-    }
-    return false;
-}
-
-bool ActionShortcutEdit::contains(const QKeySequence &keySequence) {
-    for (auto ks : shortcuts())
-        if (ks == keySequence)
-            return true;
-    return false;
-}
-
-bool ActionShortcutEdit::contains(QKeySequenceEdit *keySequenceEdit) {
-    for (auto *kse : kse_children)
-        if (kse == keySequenceEdit)
-            return true;
-    return false;
-}
-
-void ActionShortcutEdit::clear() {
-    for (auto *kse : kse_children)
-        kse->clear();
-}
-
-void ActionShortcutEdit::focusLast() {
-    for (int i = count() - 1; i >= 0; --i) {
-        if (!kse_children[i]->keySequence().isEmpty()) {
-            kse_children[i]->setFocus();
-            return;
-        }
-    }
-}
-
-void ActionShortcutEdit::onEditingFinished() {
-    auto *kse = qobject_cast<QKeySequenceEdit *>(sender());
-    if (!kse)
-        return;
-
-    if (ks_list.contains(kse->keySequence()))
-        removeOne(kse->keySequence());
-    updateShortcuts();
-    focusLast();
-    emit editingFinished();
 }

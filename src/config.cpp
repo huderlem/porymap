@@ -13,6 +13,7 @@
 #include <QRegularExpression>
 #include <QStandardPaths>
 #include <QAction>
+#include <QAbstractButton>
 
 KeyValueConfigBase::~KeyValueConfigBase() {
 
@@ -722,13 +723,13 @@ QString ShortcutsConfig::getConfigFilepath() {
 void ShortcutsConfig::parseConfigKeyValue(QString key, QString value) {
     QStringList keySequences = value.split(' ');
     for (auto keySequence : keySequences)
-        userShortcuts.insert(key, keySequence);
+        user_shortcuts.insert(key, keySequence);
 }
 
 QMap<QString, QString> ShortcutsConfig::getKeyValueMap() {
     QMap<QString, QString> map;
-    for (auto cfg_key : userShortcuts.uniqueKeys()) {
-        auto keySequences = userShortcuts.values(cfg_key);
+    for (auto cfg_key : user_shortcuts.uniqueKeys()) {
+        auto keySequences = user_shortcuts.values(cfg_key);
         QStringList values;
         for (auto keySequence : keySequences)
             values.append(keySequence.toString());
@@ -738,99 +739,77 @@ QMap<QString, QString> ShortcutsConfig::getKeyValueMap() {
     return map;
 }
 
-// Call this before applying user shortcuts to be able to restore default shortcuts.
-void ShortcutsConfig::setDefaultShortcuts(const QList<QAction *> &actions) {
-    storeShortcuts(StoreType::Default, actions);
+void ShortcutsConfig::setDefaultShortcuts(const QObjectList &objects) {
+    storeShortcutsFromList(StoreType::Default, objects);
     save();
 }
 
-// Call this before applying user shortcuts to be able to restore default shortcuts.
-void ShortcutsConfig::setDefaultShortcuts(const QList<Shortcut *> &shortcuts) {
-    storeShortcuts(StoreType::Default, shortcuts);
+void ShortcutsConfig::setDefaultShortcuts(const QMultiMap<const QObject *, QKeySequence> &objects_keySequences) {
+    for (auto *object : objects_keySequences.uniqueKeys())
+        storeShortcuts(StoreType::Default, cfgKey(object), objects_keySequences.values(object));
     save();
 }
 
-// Call this before applying user shortcuts to be able to restore default shortcuts.
-void ShortcutsConfig::setDefaultShortcuts(const QList<QAction *> &actions, const QList<Shortcut *> &shortcuts) {
-    storeShortcuts(StoreType::Default, actions);
-    storeShortcuts(StoreType::Default, shortcuts);
+QList<QKeySequence> ShortcutsConfig::defaultShortcuts(const QObject *object) const {
+    return default_shortcuts.values(cfgKey(object));
+}
+
+void ShortcutsConfig::setUserShortcuts(const QObjectList &objects) {
+    storeShortcutsFromList(StoreType::User, objects);
     save();
 }
 
-QList<QKeySequence> ShortcutsConfig::getDefaultShortcuts(QAction *action) const {
-    return defaultShortcuts.values(cfgKey(action));
-}
-
-QList<QKeySequence> ShortcutsConfig::getDefaultShortcuts(Shortcut *shortcut) const {
-    return defaultShortcuts.values(cfgKey(shortcut));
-}
-
-void ShortcutsConfig::setUserShortcuts(const QList<QAction *> &actions) {
-    storeShortcuts(StoreType::User, actions);
+void ShortcutsConfig::setUserShortcuts(const QMultiMap<const QObject *, QKeySequence> &objects_keySequences) {
+    for (auto *object : objects_keySequences.uniqueKeys())
+        storeShortcuts(StoreType::User, cfgKey(object), objects_keySequences.values(object));
     save();
 }
 
-void ShortcutsConfig::setUserShortcuts(const QList<Shortcut *> &shortcuts) {
-    storeShortcuts(StoreType::User, shortcuts);
-    save();
+QList<QKeySequence> ShortcutsConfig::userShortcuts(const QObject *object) const {
+    return user_shortcuts.values(cfgKey(object));
 }
 
-void ShortcutsConfig::setUserShortcuts(const QList<QAction *> &actions, const QList<Shortcut *> &shortcuts) {
-    storeShortcuts(StoreType::User, actions);
-    storeShortcuts(StoreType::User, shortcuts);
-    save();
+void ShortcutsConfig::storeShortcutsFromList(StoreType storeType, const QObjectList &objects) {
+    for (const auto *object : objects)
+        if (objectNameIsValid(object))
+            storeShortcuts(storeType, cfgKey(object), currentShortcuts(object));
 }
 
-QList<QKeySequence> ShortcutsConfig::getUserShortcuts(QAction *action) const {
-    return userShortcuts.values(cfgKey(action));
-}
-
-QList<QKeySequence> ShortcutsConfig::getUserShortcuts(Shortcut *shortcut) const {
-    return userShortcuts.values(cfgKey(shortcut));
-}
-
-void ShortcutsConfig::storeShortcuts(StoreType storeType, const QList<QAction *> &actions) {
-    for (auto *action : actions)
-        if (!action->text().isEmpty() && !action->objectName().isEmpty())
-            storeShortcut(storeType, cfgKey(action), action->shortcuts());
-}
-
-void ShortcutsConfig::storeShortcuts(StoreType storeType, const QList<Shortcut *> &shortcuts) {
-    for (auto *shortcut : shortcuts)
-        if (!shortcut->whatsThis().isEmpty() && !shortcut->objectName().isEmpty())
-            storeShortcut(storeType, cfgKey(shortcut), shortcut->keys());
-}
-
-void ShortcutsConfig::storeShortcut(
+void ShortcutsConfig::storeShortcuts(
         StoreType storeType,
         const QString &cfgKey,
         const QList<QKeySequence> &keySequences)
 {
-    bool storeUser = (storeType == User) || !userShortcuts.contains(cfgKey);
+    bool storeUser = (storeType == User) || !user_shortcuts.contains(cfgKey);
 
     if (storeType == Default)
-        defaultShortcuts.remove(cfgKey);
+        default_shortcuts.remove(cfgKey);
     if (storeUser)
-        userShortcuts.remove(cfgKey);
+        user_shortcuts.remove(cfgKey);
 
     if (keySequences.isEmpty()) {
         if (storeType == Default)
-            defaultShortcuts.insert(cfgKey, QKeySequence());
+            default_shortcuts.insert(cfgKey, QKeySequence());
         if (storeUser)
-            userShortcuts.insert(cfgKey, QKeySequence());
+            user_shortcuts.insert(cfgKey, QKeySequence());
     } else {
         for (auto keySequence : keySequences) {
             if (storeType == Default)
-                defaultShortcuts.insert(cfgKey, keySequence);
+                default_shortcuts.insert(cfgKey, keySequence);
             if (storeUser)
-                userShortcuts.insert(cfgKey, keySequence);
+                user_shortcuts.insert(cfgKey, keySequence);
         }
     }
 }
 
+bool ShortcutsConfig::objectNameIsValid(const QObject *object) {
+    // Qt internal action names start with "_q_" so we filter those out.
+    return !object->objectName().isEmpty() && !object->objectName().startsWith("_q_");
+}
+
 /* Creates a config key from the object's name prepended with the parent 
  * window's object name, and converts camelCase to snake_case. */
-QString ShortcutsConfig::cfgKey(QObject *object) const {
+QString ShortcutsConfig::cfgKey(const QObject *object) const {
     auto cfg_key = QString();
     auto *parentWidget = static_cast<QWidget *>(object->parent());
     if (parentWidget)
@@ -838,11 +817,31 @@ QString ShortcutsConfig::cfgKey(QObject *object) const {
     cfg_key += object->objectName();
 
     QRegularExpression re("[A-Z]");
-    int i = cfg_key.indexOf(re);
+    int i = cfg_key.indexOf(re, 1);
     while (i != -1) {
-        if (i != 0 && cfg_key.at(i - 1) != '_')
+        if (cfg_key.at(i - 1) != '_')
             cfg_key.insert(i++, '_');
         i = cfg_key.indexOf(re, i + 1);
     }
     return cfg_key.toLower();
+}
+
+QList<QKeySequence> ShortcutsConfig::currentShortcuts(const QObject *object) const {
+    if (object->inherits("QAction")) {
+        const auto *action = qobject_cast<const QAction *>(object);
+        return action->shortcuts();
+    } else if (object->inherits("QAbstractButton")) {
+        const auto *button = qobject_cast<const QAbstractButton *>(object);
+        return { button->shortcut() };
+    } else if (object->inherits("Shortcut")) {
+        const auto *shortcut = qobject_cast<const Shortcut *>(object);
+        return shortcut->keys();
+    } else if (object->inherits("QShortcut")) {
+        const auto *qshortcut = qobject_cast<const QShortcut *>(object);
+        return { qshortcut->key() };
+    } else if (object->property("shortcut").isValid()) {
+        return { object->property("shortcut").value<QKeySequence>() };
+    } else {
+        return { };
+    }
 }

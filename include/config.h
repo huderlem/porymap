@@ -201,53 +201,49 @@ class ShortcutsConfig : public KeyValueConfigBase
 {
 public:
     ShortcutsConfig() :
-        userShortcuts(QMultiMap<QString, QKeySequence>()),
-        defaultShortcuts(QMultiMap<QString, QKeySequence>())
-    {  }
-    
-    virtual void reset() override { userShortcuts.clear(); }
+        user_shortcuts({ }),
+        default_shortcuts({ })
+    { }
 
-    void setDefaultShortcuts(const QList<QAction *> &actions);
-    void setDefaultShortcuts(const QList<Shortcut *> &shortcuts);
-    void setDefaultShortcuts(const QList<QAction *> &actions, const QList<Shortcut *> &shortcuts);
-    QList<QKeySequence> getDefaultShortcuts(QAction *action) const;
-    QList<QKeySequence> getDefaultShortcuts(Shortcut *shortcut) const;
+    virtual void reset() override { user_shortcuts.clear(); }
 
-    void setUserShortcuts(const QList<QAction *> &actions);
-    void setUserShortcuts(const QList<Shortcut *> &shortcuts);
-    void setUserShortcuts(const QList<QAction *> &actions, const QList<Shortcut *> &shortcuts);
-    QList<QKeySequence> getUserShortcuts(QAction *action) const;
-    QList<QKeySequence> getUserShortcuts(Shortcut *shortcut) const;
+    void setDefaultShortcuts(const QObjectList &objects);
+    void setDefaultShortcuts(const QMultiMap<const QObject *, QKeySequence> &objects_keySequences);
+    QList<QKeySequence> defaultShortcuts(const QObject *object) const;
+
+    void setUserShortcuts(const QObjectList &objects);
+    void setUserShortcuts(const QMultiMap<const QObject *, QKeySequence> &objects_keySequences);
+    QList<QKeySequence> userShortcuts(const QObject *object) const;
+
+    static bool objectNameIsValid(const QObject *object);
 
 protected:
     virtual QString getConfigFilepath() override;
     virtual void parseConfigKeyValue(QString key, QString value) override;
     virtual QMap<QString, QString> getKeyValueMap() override;
-    virtual void onNewConfigFileCreated() override {};
-    virtual void setUnreadKeys() override {};
+    virtual void onNewConfigFileCreated() override { };
+    virtual void setUnreadKeys() override { };
 
 private:
-    QMultiMap<QString, QKeySequence> userShortcuts;
-    QMultiMap<QString, QKeySequence> defaultShortcuts;
+    QMultiMap<QString, QKeySequence> user_shortcuts;
+    QMultiMap<QString, QKeySequence> default_shortcuts;
 
     enum StoreType {
         User,
         Default
     };
 
+    QString cfgKey(const QObject *object) const;
+    QList<QKeySequence> currentShortcuts(const QObject *object) const;
+
+    void storeShortcutsFromList(StoreType storeType, const QObjectList &objects);
     void storeShortcuts(
-            StoreType storeType,
-            const QList<QAction *> &actions);
-    void storeShortcuts(
-            StoreType storeType,
-            const QList<Shortcut *> &shortcuts);
-    void storeShortcut(
             StoreType storeType,
             const QString &cfgKey,
             const QList<QKeySequence> &keySequences);
-    QString cfgKey(QObject *object) const;
 };
 
+// Call setDefaultShortcuts() prior to applying user shortcuts.
 extern ShortcutsConfig shortcutsConfig;
 
 #endif // CONFIG_H

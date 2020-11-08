@@ -6,11 +6,17 @@
 #include <QShortcut>
 
 
-// Alternative to QShortcut that adds support for multiple QKeySequences.
+// Alternative to QShortcut that adds support for multiple key sequences.
 // Use this to allow the shortcut to be editable in ShortcutsEditor.
 class Shortcut : public QObject
 {
     Q_OBJECT
+    Q_DECLARE_PRIVATE(QShortcut)
+    Q_PROPERTY(QKeySequence key READ key WRITE setKey)
+    Q_PROPERTY(QString whatsThis READ whatsThis WRITE setWhatsThis)
+    Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled)
+    Q_PROPERTY(bool autoRepeat READ autoRepeat WRITE setAutoRepeat)
+    Q_PROPERTY(Qt::ShortcutContext context READ context WRITE setContext)
 
 public:
     explicit Shortcut(QWidget *parent);
