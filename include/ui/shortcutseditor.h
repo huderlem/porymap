@@ -23,8 +23,11 @@ class ShortcutsEditor : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit ShortcutsEditor(const QObjectList &objectList, QWidget *parent = nullptr);
+    explicit ShortcutsEditor(QWidget *parent = nullptr);
+    explicit ShortcutsEditor(const QObjectList &shortcutableObjects, QWidget *parent = nullptr);
     ~ShortcutsEditor();
+
+    void setShortcutableObjects(const QObjectList &shortcutableObjects);
 
 signals:
     void shortcutsSaved();

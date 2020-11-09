@@ -1,6 +1,7 @@
 #include "regionmapeditor.h"
 #include "ui_regionmapeditor.h"
 #include "imageexport.h"
+#include "shortcut.h"
 #include "config.h"
 #include "log.h"
 
@@ -90,6 +91,33 @@ bool RegionMapEditor::loadCityMaps() {
     }
     this->ui->comboBox_CityMap_picker->addItems(without_bin);
     return true;
+}
+
+void RegionMapEditor::initShortcuts() {
+    shortcutsConfig.load();
+    shortcutsConfig.setDefaultShortcuts(shortcutableObjects());
+    applyUserShortcuts();
+}
+
+QObjectList RegionMapEditor::shortcutableObjects() const {
+    QObjectList shortcutable_objects;
+    for (auto *action : findChildren<QAction *>())
+        if (ShortcutsConfig::objectNameIsValid(action))
+            shortcutable_objects.append(qobject_cast<QObject *>(action));
+    for (auto *shortcut : findChildren<Shortcut *>())
+        if (ShortcutsConfig::objectNameIsValid(shortcut))
+            shortcutable_objects.append(qobject_cast<QObject *>(shortcut));
+    
+    return shortcutable_objects;
+}
+
+void RegionMapEditor::applyUserShortcuts() {
+    for (auto *action : findChildren<QAction *>())
+        if (ShortcutsConfig::objectNameIsValid(action))
+            action->setShortcuts(shortcutsConfig.userShortcuts(action));
+    for (auto *shortcut : findChildren<Shortcut *>())
+        if (ShortcutsConfig::objectNameIsValid(shortcut))
+            shortcut->setKeys(shortcutsConfig.userShortcuts(shortcut));
 }
 
 void RegionMapEditor::displayRegionMap() {

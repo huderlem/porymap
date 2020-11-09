@@ -42,6 +42,11 @@ public:
     void updateTilesets(QString primaryTilsetLabel, QString secondaryTilesetLabel);
     bool selectMetatile(uint16_t metatileId);
 
+    QObjectList shortcutableObjects() const;
+
+public slots:
+    void applyUserShortcuts();
+
 private slots:
     void onHoveredMetatileChanged(uint16_t);
     void onHoveredMetatileCleared();
@@ -102,6 +107,7 @@ private:
     void initTileSelector();
     void initSelectedTileItem();
     void initMetatileLayersItem();
+    void initShortcuts();
     void restoreWindowState();
     void initMetatileHistory();
     void setTilesets(QString primaryTilesetLabel, QString secondaryTilesetLabel);
@@ -112,6 +118,7 @@ private:
     void refresh();
     void saveMetatileLabel();
     void closeEvent(QCloseEvent*);
+
     Ui::TilesetEditor *ui;
     History<MetatileHistoryItem*> metatileHistory;
     TilesetEditorMetatileSelector *metatileSelector = nullptr;

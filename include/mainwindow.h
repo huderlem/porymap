@@ -310,6 +310,11 @@ private:
     void closeSupplementaryWindows();
     void setWindowDisabled(bool);
 
+    void initTilesetEditor();
+    bool initRegionMapEditor();
+    void initShortcutsEditor();
+    void connectSubEditorsToShortcutsEditor();
+
     bool isProjectOpen();
     void showExportMapImageWindow(bool stitchMode);
     void redrawMetatileSelection();

@@ -129,10 +129,10 @@ void MainWindow::initExtraShortcuts() {
 QObjectList MainWindow::shortcutableObjects() const {
     QObjectList shortcutable_objects;
     for (auto *action : findChildren<QAction *>())
-        if (!action->objectName().isEmpty())
+        if (ShortcutsConfig::objectNameIsValid(action))
             shortcutable_objects.append(qobject_cast<QObject *>(action));
     for (auto *shortcut : findChildren<Shortcut *>())
-        if (!shortcut->objectName().isEmpty())
+        if (ShortcutsConfig::objectNameIsValid(shortcut))
             shortcutable_objects.append(qobject_cast<QObject *>(shortcut));
     
     return shortcutable_objects;
@@ -140,10 +140,10 @@ QObjectList MainWindow::shortcutableObjects() const {
 
 void MainWindow::applyUserShortcuts() {
     for (auto *action : findChildren<QAction *>())
-        if (!action->objectName().isEmpty())
+        if (ShortcutsConfig::objectNameIsValid(action))
             action->setShortcuts(shortcutsConfig.userShortcuts(action));
     for (auto *shortcut : findChildren<Shortcut *>())
-        if (!shortcut->objectName().isEmpty())
+        if (ShortcutsConfig::objectNameIsValid(shortcut))
             shortcut->setKeys(shortcutsConfig.userShortcuts(shortcut));
 }
 
@@ -1449,12 +1449,8 @@ void MainWindow::on_actionUse_Poryscript_triggered(bool checked)
 
 void MainWindow::on_actionEdit_Shortcuts_triggered()
 {
-    if (!shortcutsEditor) {
-        shortcutsEditor = new ShortcutsEditor(shortcutableObjects(), this);
-        connect(shortcutsEditor, &QObject::destroyed, [=](QObject *) { shortcutsEditor = nullptr; });
-        connect(shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
-                this, &MainWindow::applyUserShortcuts);
-    }
+    if (!shortcutsEditor)
+        initShortcutsEditor();
 
     if (shortcutsEditor->isHidden())
         shortcutsEditor->show();
@@ -1462,6 +1458,35 @@ void MainWindow::on_actionEdit_Shortcuts_triggered()
         shortcutsEditor->showNormal();
     else
         shortcutsEditor->activateWindow();
+}
+
+void MainWindow::initShortcutsEditor() {
+    shortcutsEditor = new ShortcutsEditor(this);
+    connect(shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
+            this, &MainWindow::applyUserShortcuts);
+    connect(shortcutsEditor, &QObject::destroyed, [=](QObject *) { shortcutsEditor = nullptr; });
+
+    connectSubEditorsToShortcutsEditor();
+
+    shortcutsEditor->setShortcutableObjects(shortcutableObjects());
+}
+
+void MainWindow::connectSubEditorsToShortcutsEditor() {
+    /* Initialize sub-editors so that their children are added to MainWindow's object tree and will
+     * be returned by shortcutableObjects() to be passed to ShortcutsEditor. */
+    if (!tilesetEditor)
+        initTilesetEditor();
+    connect(shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
+            tilesetEditor, &TilesetEditor::applyUserShortcuts);
+
+    // TODO: Remove this check when the region map editor supports pokefirered.
+    if (projectConfig.getBaseGameVersion() != BaseGameVersion::pokefirered) {
+        if (!regionMapEditor)
+            initRegionMapEditor();
+        if (regionMapEditor)
+            connect(shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
+                    regionMapEditor, &RegionMapEditor::applyUserShortcuts);
+    }
 }
 
 void MainWindow::on_actionPencil_triggered()
@@ -2551,9 +2576,7 @@ void MainWindow::on_checkBox_ToggleBorder_stateChanged(int selected)
 void MainWindow::on_actionTileset_Editor_triggered()
 {
     if (!this->tilesetEditor) {
-        this->tilesetEditor = new TilesetEditor(this->editor->project, this->editor->map, this);
-        connect(this->tilesetEditor, SIGNAL(tilesetsSaved(QString, QString)), this, SLOT(onTilesetsSaved(QString, QString)));
-        connect(this->tilesetEditor, &QObject::destroyed, [=](QObject *) { this->tilesetEditor = nullptr; });
+        initTilesetEditor();
     }
 
     if (!this->tilesetEditor->isVisible()) {
@@ -2564,6 +2587,12 @@ void MainWindow::on_actionTileset_Editor_triggered()
         this->tilesetEditor->activateWindow();
     }
     this->tilesetEditor->selectMetatile(this->editor->metatile_selector_item->getSelectedMetatiles()->at(0));
+}
+
+void MainWindow::initTilesetEditor() {
+    this->tilesetEditor = new TilesetEditor(this->editor->project, this->editor->map, this);
+    connect(this->tilesetEditor, SIGNAL(tilesetsSaved(QString, QString)), this, SLOT(onTilesetsSaved(QString, QString)));
+    connect(this->tilesetEditor, &QObject::destroyed, [=](QObject *) { this->tilesetEditor = nullptr; });
 }
 
 void MainWindow::on_toolButton_ExpandAll_clicked()
@@ -2680,20 +2709,9 @@ void MainWindow::on_horizontalSlider_MetatileZoom_valueChanged(int value) {
 
 void MainWindow::on_actionRegion_Map_Editor_triggered() {
     if (!this->regionMapEditor) {
-        this->regionMapEditor = new RegionMapEditor(this, this->editor->project);
-        bool success = this->regionMapEditor->loadRegionMapData()
-                    && this->regionMapEditor->loadCityMaps();
-        if (!success) {
-            delete this->regionMapEditor;
-            this->regionMapEditor = nullptr;
-            QMessageBox msgBox(this);
-            QString errorMsg = QString("There was an error opening the region map data. Please see %1 for full error details.\n\n%3")
-                    .arg(getLogPath())
-                    .arg(getMostRecentError());
-            msgBox.critical(nullptr, "Error Opening Region Map Editor", errorMsg);
+        if (!initRegionMapEditor()) {
             return;
         }
-        connect(this->regionMapEditor, &QObject::destroyed, [=](QObject *) { this->regionMapEditor = nullptr; });
     }
 
     if (!this->regionMapEditor->isVisible()) {
@@ -2705,6 +2723,26 @@ void MainWindow::on_actionRegion_Map_Editor_triggered() {
     }
 }
 
+bool MainWindow::initRegionMapEditor() {
+    this->regionMapEditor = new RegionMapEditor(this, this->editor->project);
+    bool success = this->regionMapEditor->loadRegionMapData()
+                && this->regionMapEditor->loadCityMaps();
+    if (!success) {
+        delete this->regionMapEditor;
+        this->regionMapEditor = nullptr;
+        QMessageBox msgBox(this);
+        QString errorMsg = QString("There was an error opening the region map data. Please see %1 for full error details.\n\n%3")
+                .arg(getLogPath())
+                .arg(getMostRecentError());
+        msgBox.critical(nullptr, "Error Opening Region Map Editor", errorMsg);
+
+        return false;
+    }
+    connect(this->regionMapEditor, &QObject::destroyed, [=](QObject *) { this->regionMapEditor = nullptr; });
+
+    return true;
+}
+
 void MainWindow::closeSupplementaryWindows() {
     if (this->tilesetEditor)
         delete this->tilesetEditor;
@@ -2714,6 +2752,8 @@ void MainWindow::closeSupplementaryWindows() {
         delete this->mapImageExporter;
     if (this->newmapprompt)
         delete this->newmapprompt;
+    if (this->shortcutsEditor)
+        delete this->shortcutsEditor;
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
@@ -2740,6 +2780,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
     );
     porymapConfig.save();
     projectConfig.save();
+    shortcutsConfig.save();
 
     QMainWindow::closeEvent(event);
 }

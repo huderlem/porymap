@@ -13,7 +13,7 @@
 #include <QLabel>
 
 
-ShortcutsEditor::ShortcutsEditor(const QObjectList &objectList, QWidget *parent) :
+ShortcutsEditor::ShortcutsEditor(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::ShortcutsEditor),
     main_container(nullptr)
@@ -21,12 +21,16 @@ ShortcutsEditor::ShortcutsEditor(const QObjectList &objectList, QWidget *parent)
     ui->setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
     main_container = ui->scrollAreaWidgetContents_Shortcuts;
-    main_container->setLayout(new QVBoxLayout(main_container));
+    auto *formLayout = new QVBoxLayout(main_container);
+    formLayout->setSpacing(12);
     connect(ui->buttonBox, &QDialogButtonBox::clicked,
             this, &ShortcutsEditor::dialogButtonClicked);
-    
-    parseObjectList(objectList);
-    populateMainContainer();
+}
+
+ShortcutsEditor::ShortcutsEditor(const QObjectList &shortcutableObjects, QWidget *parent) :
+    ShortcutsEditor(parent)
+{
+    setShortcutableObjects(shortcutableObjects);
 }
 
 ShortcutsEditor::~ShortcutsEditor()
@@ -34,11 +38,19 @@ ShortcutsEditor::~ShortcutsEditor()
     delete ui;
 }
 
+void ShortcutsEditor::setShortcutableObjects(const QObjectList &shortcutableObjects) {
+    parseObjectList(shortcutableObjects);
+    populateMainContainer();
+}
+
 void ShortcutsEditor::saveShortcuts() {
     QMultiMap<const QObject *, QKeySequence> objects_keySequences;
-    for (auto it = multiKeyEdits_objects.cbegin(); it != multiKeyEdits_objects.cend(); ++it)
+    for (auto it = multiKeyEdits_objects.cbegin(); it != multiKeyEdits_objects.cend(); ++it) {
+        if (it.key()->keySequences().isEmpty())
+            objects_keySequences.insert(it.value(), QKeySequence());
         for (auto keySequence : it.key()->keySequences())
             objects_keySequences.insert(it.value(), keySequence);
+    }
 
     shortcutsConfig.setUserShortcuts(objects_keySequences);
     emit shortcutsSaved();

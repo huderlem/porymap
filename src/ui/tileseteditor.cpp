@@ -6,6 +6,7 @@
 #include "paletteutil.h"
 #include "imageexport.h"
 #include "config.h"
+#include "shortcut.h"
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QDialogButtonBox>
@@ -86,7 +87,6 @@ void TilesetEditor::setTilesets(QString primaryTilesetLabel, QString secondaryTi
 
 void TilesetEditor::initUi() {
     ui->setupUi(this);
-    ui->actionRedo->setShortcuts({ui->actionRedo->shortcut(), QKeySequence("Ctrl+Shift+Z")});
     this->tileXFlip = ui->checkBox_xFlip->isChecked();
     this->tileYFlip = ui->checkBox_yFlip->isChecked();
     this->paletteId = ui->spinBox_paletteSelector->value();
@@ -102,6 +102,7 @@ void TilesetEditor::initUi() {
     this->initMetatileLayersItem();
     this->initTileSelector();
     this->initSelectedTileItem();
+    this->initShortcuts();
     this->metatileSelector->select(0);
     this->restoreWindowState();
 }
@@ -207,6 +208,35 @@ void TilesetEditor::initSelectedTileItem() {
     this->drawSelectedTiles();
     this->ui->graphicsView_selectedTile->setScene(this->selectedTileScene);
     this->ui->graphicsView_selectedTile->setFixedSize(this->selectedTilePixmapItem->pixmap().width() + 2, this->selectedTilePixmapItem->pixmap().height() + 2);
+}
+
+void TilesetEditor::initShortcuts() {
+    ui->actionRedo->setShortcuts({ui->actionRedo->shortcut(), QKeySequence("Ctrl+Shift+Z")});
+
+    shortcutsConfig.load();
+    shortcutsConfig.setDefaultShortcuts(shortcutableObjects());
+    applyUserShortcuts();
+}
+
+QObjectList TilesetEditor::shortcutableObjects() const {
+    QObjectList shortcutable_objects;
+    for (auto *action : findChildren<QAction *>())
+        if (ShortcutsConfig::objectNameIsValid(action))
+            shortcutable_objects.append(qobject_cast<QObject *>(action));
+    for (auto *shortcut : findChildren<Shortcut *>())
+        if (ShortcutsConfig::objectNameIsValid(shortcut))
+            shortcutable_objects.append(qobject_cast<QObject *>(shortcut));
+    
+    return shortcutable_objects;
+}
+
+void TilesetEditor::applyUserShortcuts() {
+    for (auto *action : findChildren<QAction *>())
+        if (ShortcutsConfig::objectNameIsValid(action))
+            action->setShortcuts(shortcutsConfig.userShortcuts(action));
+    for (auto *shortcut : findChildren<Shortcut *>())
+        if (ShortcutsConfig::objectNameIsValid(shortcut))
+            shortcut->setKeys(shortcutsConfig.userShortcuts(shortcut));
 }
 
 void TilesetEditor::restoreWindowState() {
