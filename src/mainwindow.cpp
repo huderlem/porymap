@@ -106,6 +106,8 @@ void MainWindow::initShortcuts() {
 }
 
 void MainWindow::initExtraShortcuts() {
+    ui->actionZoom_In->setShortcuts({ui->actionZoom_In->shortcut(), QKeySequence("Ctrl+=")});
+
     auto *shortcutReset_Zoom = new Shortcut(QKeySequence("Ctrl+0"), this, SLOT(resetMapViewScale()));
     shortcutReset_Zoom->setObjectName("shortcutZoom_Reset");
     shortcutReset_Zoom->setWhatsThis("Zoom Reset");
@@ -123,27 +125,46 @@ void MainWindow::initExtraShortcuts() {
     shortcutDelete_Object->setObjectName("shortcutDelete_Object");
     shortcutDelete_Object->setWhatsThis("Delete Selected Event(s)");
 
-    ui->actionZoom_In->setShortcuts({ui->actionZoom_In->shortcut(), QKeySequence("Ctrl+=")});
+    auto *shortcutToggle_Border = new Shortcut(QKeySequence(), ui->checkBox_ToggleBorder, SLOT(toggle()));
+    shortcutToggle_Border->setObjectName("shortcutToggle_Border");
+    shortcutToggle_Border->setWhatsThis("Toggle Border");
+
+    auto *shortcutToggle_Smart_Paths = new Shortcut(QKeySequence(), ui->checkBox_smartPaths, SLOT(toggle()));
+    shortcutToggle_Smart_Paths->setObjectName("shortcutToggle_Smart_Paths");
+    shortcutToggle_Smart_Paths->setWhatsThis("Toggle Smart Paths");
+
+    auto *shortcutExpand_All = new Shortcut(QKeySequence(), this, SLOT(on_toolButton_ExpandAll_clicked()));
+    shortcutExpand_All->setObjectName("shortcutExpand_All");
+    shortcutExpand_All->setWhatsThis("Map List: Expand all folders");
+
+    auto *shortcutCollapse_All = new Shortcut(QKeySequence(), this, SLOT(on_toolButton_CollapseAll_clicked()));
+    shortcutCollapse_All->setObjectName("shortcutCollapse_All");
+    shortcutCollapse_All->setWhatsThis("Map List: Collapse all folders");
+
+    auto *shortcutNew_Event = new Shortcut(QKeySequence(), this, SLOT(on_toolButton_Open_Scripts_clicked()));
+    shortcutNew_Event->setObjectName("shortcut_Open_Scripts");
+    shortcutNew_Event->setWhatsThis("Open Map Scripts");
 }
 
 QObjectList MainWindow::shortcutableObjects() const {
     QObjectList shortcutable_objects;
+
     for (auto *action : findChildren<QAction *>())
-        if (ShortcutsConfig::objectNameIsValid(action))
+        if (!action->objectName().isEmpty())
             shortcutable_objects.append(qobject_cast<QObject *>(action));
     for (auto *shortcut : findChildren<Shortcut *>())
-        if (ShortcutsConfig::objectNameIsValid(shortcut))
+        if (!shortcut->objectName().isEmpty())
             shortcutable_objects.append(qobject_cast<QObject *>(shortcut));
-    
+
     return shortcutable_objects;
 }
 
 void MainWindow::applyUserShortcuts() {
     for (auto *action : findChildren<QAction *>())
-        if (ShortcutsConfig::objectNameIsValid(action))
+        if (!action->objectName().isEmpty())
             action->setShortcuts(shortcutsConfig.userShortcuts(action));
     for (auto *shortcut : findChildren<Shortcut *>())
-        if (ShortcutsConfig::objectNameIsValid(shortcut))
+        if (!shortcut->objectName().isEmpty())
             shortcut->setKeys(shortcutsConfig.userShortcuts(shortcut));
 }
 

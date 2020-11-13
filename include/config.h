@@ -207,15 +207,13 @@ public:
 
     virtual void reset() override { user_shortcuts.clear(); }
 
+    // Call this before applying user shortcuts so that the user can restore defaults.
     void setDefaultShortcuts(const QObjectList &objects);
-    void setDefaultShortcuts(const QMultiMap<const QObject *, QKeySequence> &objects_keySequences);
     QList<QKeySequence> defaultShortcuts(const QObject *object) const;
 
     void setUserShortcuts(const QObjectList &objects);
     void setUserShortcuts(const QMultiMap<const QObject *, QKeySequence> &objects_keySequences);
     QList<QKeySequence> userShortcuts(const QObject *object) const;
-
-    static bool objectNameIsValid(const QObject *object);
 
 protected:
     virtual QString getConfigFilepath() override;
@@ -243,7 +241,6 @@ private:
             const QList<QKeySequence> &keySequences);
 };
 
-// Call setDefaultShortcuts() prior to applying user shortcuts.
 extern ShortcutsConfig shortcutsConfig;
 
 #endif // CONFIG_H

@@ -21,8 +21,8 @@ ShortcutsEditor::ShortcutsEditor(QWidget *parent) :
     ui->setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
     main_container = ui->scrollAreaWidgetContents_Shortcuts;
-    auto *formLayout = new QVBoxLayout(main_container);
-    formLayout->setSpacing(12);
+    auto *main_layout = new QVBoxLayout(main_container);
+    main_layout->setSpacing(12);
     connect(ui->buttonBox, &QDialogButtonBox::clicked,
             this, &ShortcutsEditor::dialogButtonClicked);
 }
@@ -69,7 +69,7 @@ void ShortcutsEditor::resetShortcuts() {
 void ShortcutsEditor::parseObjectList(const QObjectList &objectList) {
     for (auto *object : objectList) {
         const auto label = getLabel(object);
-        if (!label.isEmpty() && ShortcutsConfig::objectNameIsValid(object))
+        if (!label.isEmpty() && !object->objectName().isEmpty() && !object->objectName().startsWith("_q_"))
             labels_objects.insert(label, object);
     }
 }

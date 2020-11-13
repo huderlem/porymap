@@ -211,31 +211,44 @@ void TilesetEditor::initSelectedTileItem() {
 }
 
 void TilesetEditor::initShortcuts() {
-    ui->actionRedo->setShortcuts({ui->actionRedo->shortcut(), QKeySequence("Ctrl+Shift+Z")});
+    initExtraShortcuts();
 
     shortcutsConfig.load();
     shortcutsConfig.setDefaultShortcuts(shortcutableObjects());
     applyUserShortcuts();
 }
 
+void TilesetEditor::initExtraShortcuts() {
+    ui->actionRedo->setShortcuts({ui->actionRedo->shortcut(), QKeySequence("Ctrl+Shift+Z")});
+
+    auto *shortcut_xFlip = new Shortcut(QKeySequence(), ui->checkBox_xFlip, SLOT(toggle()));
+    shortcut_xFlip->setObjectName("shortcut_xFlip");
+    shortcut_xFlip->setWhatsThis("X Flip");
+
+    auto *shortcut_yFlip = new Shortcut(QKeySequence(), ui->checkBox_yFlip, SLOT(toggle()));
+    shortcut_yFlip->setObjectName("shortcut_yFlip");
+    shortcut_yFlip->setWhatsThis("Y Flip");
+}
+
 QObjectList TilesetEditor::shortcutableObjects() const {
     QObjectList shortcutable_objects;
+
     for (auto *action : findChildren<QAction *>())
-        if (ShortcutsConfig::objectNameIsValid(action))
+        if (!action->objectName().isEmpty())
             shortcutable_objects.append(qobject_cast<QObject *>(action));
     for (auto *shortcut : findChildren<Shortcut *>())
-        if (ShortcutsConfig::objectNameIsValid(shortcut))
+        if (!shortcut->objectName().isEmpty())
             shortcutable_objects.append(qobject_cast<QObject *>(shortcut));
-    
+
     return shortcutable_objects;
 }
 
 void TilesetEditor::applyUserShortcuts() {
     for (auto *action : findChildren<QAction *>())
-        if (ShortcutsConfig::objectNameIsValid(action))
+        if (!action->objectName().isEmpty())
             action->setShortcuts(shortcutsConfig.userShortcuts(action));
     for (auto *shortcut : findChildren<Shortcut *>())
-        if (ShortcutsConfig::objectNameIsValid(shortcut))
+        if (!shortcut->objectName().isEmpty())
             shortcut->setKeys(shortcutsConfig.userShortcuts(shortcut));
 }
 
