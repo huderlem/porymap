@@ -23,6 +23,8 @@ public:
     bool removeOne(const QKeySequence &keySequence);
     bool contains(const QKeySequence &keySequence) const;
     void setContextMenuPolicy(Qt::ContextMenuPolicy policy);
+    bool isClearButtonEnabled() const;
+    void setClearButtonEnabled(bool enable);
 
 public slots:
     void clear();

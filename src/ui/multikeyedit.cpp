@@ -98,6 +98,15 @@ void MultiKeyEdit::setContextMenuPolicy(Qt::ContextMenuPolicy policy) {
         lineEdit->setContextMenuPolicy(policy);
 }
 
+bool MultiKeyEdit::isClearButtonEnabled() const {
+    return findChild<QLineEdit *>()->isClearButtonEnabled();
+}
+
+void MultiKeyEdit::setClearButtonEnabled(bool enable) {
+    for (auto *lineEdit : findChildren<QLineEdit *>())
+        lineEdit->setClearButtonEnabled(enable);
+}
+
 void MultiKeyEdit::clear() {
     for (auto *keySequenceEdit : keySequenceEdit_vec)
         keySequenceEdit->clear();
@@ -126,6 +135,7 @@ void MultiKeyEdit::addNewKeySequenceEdit() {
             this, &MultiKeyEdit::keySequenceChanged);
 
     auto *lineEdit = keySequenceEdit->findChild<QLineEdit *>();
+    lineEdit->setClearButtonEnabled(true);
     lineEdit->installEventFilter(this);
     connect(lineEdit, &QLineEdit::customContextMenuRequested,
             this, &MultiKeyEdit::customContextMenuRequested);
