@@ -356,6 +356,35 @@ void Editor::addNewWildMonGroup(QWidget *window) {
     }
 }
 
+void Editor::deleteWildMonGroup() {
+    QComboBox *labelCombo = ui->comboBox_EncounterGroupLabel;
+
+    if (labelCombo->count() < 1) {
+        return;
+    }
+
+    QMessageBox msgBox;
+    msgBox.setText("Confirm Delete");
+    msgBox.setInformativeText("Are you sure you want to delete " + labelCombo->currentText() + "?");
+
+    QPushButton *deleteButton = msgBox.addButton("Delete", QMessageBox::DestructiveRole);
+    msgBox.addButton(QMessageBox::Cancel);
+    msgBox.setDefaultButton(QMessageBox::Cancel);
+    msgBox.exec();
+
+    if (msgBox.clickedButton() == deleteButton) {
+        auto it = project->wildMonData.find(map->constantName);
+        it.value().erase(labelCombo->currentText());
+
+        int i = project->encounterGroupLabels.indexOf(labelCombo->currentText());
+        project->encounterGroupLabels.remove(i);
+
+        displayWildMonTables();
+
+        emit wildMonDataChanged();
+    }
+}
+
 void Editor::configureEncounterJSON(QWidget *window) {
     QVector<QWidget *> fieldSlots;
 

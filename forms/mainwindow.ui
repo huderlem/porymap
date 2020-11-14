@@ -2528,6 +2528,23 @@
                    </widget>
                   </item>
                   <item>
+                   <widget class="QPushButton" name="pushButton_DeleteWildMonGroup">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Delete a group of wild pokemon data on this map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../resources/images.qrc">
+                      <normaloff>:/icons/delete.ico</normaloff>:/icons/delete.ico</iconset>
+                    </property>
+                    <property name="flat">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                   </item>
+                  <item>
                    <spacer name="horizontalSpacer_9">
                     <property name="orientation">
                      <enum>Qt::Horizontal</enum>
