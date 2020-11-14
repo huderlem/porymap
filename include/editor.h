@@ -84,6 +84,7 @@ public:
     void addNewConnection();
     void removeCurrentConnection();
     void addNewWildMonGroup(QWidget *window);
+    void deleteWildMonGroup();
     void updateDiveMap(QString mapName);
     void updateEmergeMap(QString mapName);
     void setSelectedConnectionFromMap(QString mapName);

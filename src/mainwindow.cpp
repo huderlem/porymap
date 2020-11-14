@@ -2345,6 +2345,10 @@ void MainWindow::on_pushButton_NewWildMonGroup_clicked() {
     editor->addNewWildMonGroup(this);
 }
 
+void MainWindow::on_pushButton_DeleteWildMonGroup_clicked() {
+    editor->deleteWildMonGroup();
+}
+
 void MainWindow::on_pushButton_ConfigureEncountersJSON_clicked() {
     editor->configureEncounterJSON(this);
 }
