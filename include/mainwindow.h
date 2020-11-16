@@ -21,6 +21,7 @@
 #include "filterchildrenproxymodel.h"
 #include "newmappopup.h"
 #include "newtilesetdialog.h"
+#include "preferenceeditor.h"
 
 namespace Ui {
 class MainWindow;
@@ -226,6 +227,7 @@ private slots:
     void on_pushButton_ConfigureEncountersJSON_clicked();
 
     void on_actionRegion_Map_Editor_triggered();
+    void on_actionEdit_Preferences_triggered();
 
 private:
     Ui::MainWindow *ui;
@@ -234,6 +236,7 @@ private:
     MapImageExporter *mapImageExporter = nullptr;
     FilterChildrenProxyModel *mapListProxyModel;
     NewMapPopup *newmapprompt = nullptr;
+    PreferenceEditor *preferenceEditor = nullptr;
     QStandardItemModel *mapListModel;
     QList<QStandardItem*> *mapGroupItemsList;
     QMap<QString, QModelIndex> mapListIndexes;

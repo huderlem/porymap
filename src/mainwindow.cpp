@@ -2560,6 +2560,21 @@ void MainWindow::on_actionThemes_triggered()
     themeSelectorWindow.exec();
 }
 
+void MainWindow::on_actionEdit_Preferences_triggered() {
+    if (!preferenceEditor) {
+        preferenceEditor = new PreferenceEditor(this);
+        connect(preferenceEditor, &QObject::destroyed, [=](QObject *) { preferenceEditor = nullptr; });
+    }
+
+    if (!preferenceEditor->isVisible()) {
+        preferenceEditor->show();
+    } else if (preferenceEditor->isMinimized()) {
+        preferenceEditor->showNormal();
+    } else {
+        preferenceEditor->activateWindow();
+    }
+}
+
 void MainWindow::on_pushButton_AddCustomHeaderField_clicked()
 {
     int rowIndex = this->ui->tableWidget_CustomHeaderFields->rowCount();

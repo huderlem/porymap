@@ -2639,6 +2639,8 @@
     <addaction name="actionUse_Encounter_Json"/>
     <addaction name="actionMonitor_Project_Files"/>
     <addaction name="actionUse_Poryscript"/>
+    <addaction name="separator"/>
+    <addaction name="actionEdit_Preferences"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -2903,6 +2905,11 @@
   <action name="actionExport_Stitched_Map_Image">
    <property name="text">
     <string>Export Map Stitch Image...</string>
+   </property>
+  </action>
+  <action name="actionEdit_Preferences">
+   <property name="text">
+    <string>Edit Preferences...</string>
    </property>
   </action>
  </widget>
