@@ -2526,43 +2526,13 @@ void MainWindow::on_actionAbout_Porymap_triggered()
     window->show();
 }
 
-void MainWindow::on_actionThemes_triggered()
-{
-    QStringList themes;
-    QRegularExpression re(":/themes/([A-z0-9_-]+).qss");
-    themes.append("default");
-    QDirIterator it(":/themes", QDirIterator::Subdirectories);
-    while (it.hasNext()) {
-        QString themeName = re.match(it.next()).captured(1);
-        themes.append(themeName);
-    }
-
-    QDialog themeSelectorWindow(this);
-    QFormLayout form(&themeSelectorWindow);
-
-    NoScrollComboBox *themeSelector = new NoScrollComboBox();
-    themeSelector->addItems(themes);
-    themeSelector->setCurrentText(porymapConfig.getTheme());
-    form.addRow(new QLabel("Themes"), themeSelector);
-
-    QDialogButtonBox buttonBox(QDialogButtonBox::Apply | QDialogButtonBox::Close, Qt::Horizontal, &themeSelectorWindow);
-    form.addRow(&buttonBox);
-    connect(&buttonBox, &QDialogButtonBox::clicked, [&buttonBox, themeSelector, this](QAbstractButton *button){
-        if (button == buttonBox.button(QDialogButtonBox::Apply)) {
-            QString theme = themeSelector->currentText();
-            porymapConfig.setTheme(theme);
-            this->setTheme(theme);
-            editor->maskNonVisibleConnectionTiles();
-        }
-    });
-    connect(&buttonBox, SIGNAL(rejected()), &themeSelectorWindow, SLOT(reject()));
-
-    themeSelectorWindow.exec();
-}
-
 void MainWindow::on_actionEdit_Preferences_triggered() {
     if (!preferenceEditor) {
         preferenceEditor = new PreferenceEditor(this);
+        connect(preferenceEditor, &PreferenceEditor::themeChanged,
+                this, &MainWindow::setTheme);
+        connect(preferenceEditor, &PreferenceEditor::themeChanged,
+                editor, &Editor::maskNonVisibleConnectionTiles);
         connect(preferenceEditor, &QObject::destroyed, [=](QObject *) { preferenceEditor = nullptr; });
     }
 

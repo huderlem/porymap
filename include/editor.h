@@ -65,7 +65,6 @@ public:
     void displayMapBorder();
     void displayMapGrid();
     void displayWildMonTables();
-    void maskNonVisibleConnectionTiles();
 
     void updateMapBorder();
     void updateMapConnections();
@@ -153,6 +152,9 @@ public:
 
     void shouldReselectEvents();
     void scaleMapView(int);
+
+public slots:
+    void maskNonVisibleConnectionTiles();
 
 private:
     void setConnectionItemsVisible(bool);

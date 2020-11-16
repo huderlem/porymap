@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 
+class NoScrollComboBox;
 class QAbstractButton;
 
 
@@ -18,8 +19,13 @@ public:
     explicit PreferenceEditor(QWidget *parent = nullptr);
     ~PreferenceEditor();
 
+signals:
+    void preferencesSaved();
+    void themeChanged(const QString &theme);
+
 private:
     Ui::PreferenceEditor *ui;
+    NoScrollComboBox *themeSelector;
 
     void populateFields();
     void saveFields();
