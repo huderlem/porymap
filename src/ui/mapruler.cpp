@@ -8,6 +8,23 @@
 int MapRuler::thickness = 3;
 
 
+MapRuler::MapRuler(QColor innerColor, QColor borderColor) :
+    innerColor(innerColor),
+    borderColor(borderColor),
+    mapSize(QSize()),
+    statusMessage(QString()),
+    xRuler(QRect()),
+    yRuler(QRect()),
+    cornerTick(QLine()),
+    anchored(false),
+    locked(false)
+{
+    connect(this, &QGraphicsObject::enabledChanged, [this]() {
+        if (!isEnabled() && anchored)
+            init();
+    });
+}
+
 QRectF MapRuler::boundingRect() const {
     return QRectF(-thickness, -thickness, pixWidth() + thickness * 2, pixHeight() + thickness * 2);
 }
@@ -18,9 +35,9 @@ QPainterPath MapRuler::shape() const {
     ruler.addRect(xRuler);
     ruler.addRect(yRuler);
     ruler = ruler.simplified();
-    for (int x = 17.5; x < pixWidth(); x += 16)
+    for (int x = 17; x < pixWidth(); x += 16)
         ruler.addRect(x, xRuler.y(), 0, thickness);
-    for (int y = 17.5; y < pixHeight(); y += 16)
+    for (int y = 17; y < pixHeight(); y += 16)
         ruler.addRect(yRuler.x(), y, thickness, 0);
     return ruler;
 }
@@ -63,12 +80,6 @@ void MapRuler::mouseEvent(QGraphicsSceneMouseEvent *event) {
 void MapRuler::setMapDimensions(const QSize &size) {
     mapSize = size;
     init();
-}
-
-void MapRuler::setEnabled(bool enabled) {
-    QGraphicsItem::setEnabled(enabled);
-    if (!enabled && anchored)
-        init();
 }
 
 void MapRuler::init() {
