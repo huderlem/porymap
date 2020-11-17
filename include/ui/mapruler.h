@@ -10,24 +10,13 @@ class MapRuler : public QGraphicsObject, private QLine
     Q_OBJECT
 
 public:
-    MapRuler(QColor innerColor = Qt::yellow, QColor borderColor = Qt::black) :
-        innerColor(innerColor),
-        borderColor(borderColor),
-        mapSize(QSize()),
-        statusMessage(QString()),
-        xRuler(QRect()),
-        yRuler(QRect()),
-        cornerTick(QLine()),
-        anchored(false),
-        locked(false)
-    {  }
+    MapRuler(QColor innerColor = Qt::yellow, QColor borderColor = Qt::black);
 
     QRectF boundingRect() const override;
     QPainterPath shape() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override;
     bool eventFilter(QObject *, QEvent *event) override;
 
-    void setEnabled(bool enabled);
     bool isAnchored() const { return anchored; }
     bool isLocked() const { return locked; }
 
