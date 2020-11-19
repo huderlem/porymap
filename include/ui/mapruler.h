@@ -10,7 +10,8 @@ class MapRuler : public QGraphicsObject, private QLine
     Q_OBJECT
 
 public:
-    MapRuler(QColor innerColor = Qt::yellow, QColor borderColor = Qt::black);
+    // thickness is given in scene pixels
+    MapRuler(int thickness, QColor innerColor = Qt::yellow, QColor borderColor = Qt::black);
 
     QRectF boundingRect() const override;
     QPainterPath shape() const override;
@@ -45,23 +46,23 @@ signals:
     void statusChanged(const QString &statusMessage);
 
 private:
-    QColor innerColor;
-    QColor borderColor;
+    const int thickness;
+    const qreal half_thickness;
+    const QColor innerColor;
+    const QColor borderColor;
     QSize mapSize;
-    QString statusMessage;
-    QRect xRuler;
-    QRect yRuler;
+    QRectF xRuler;
+    QRectF yRuler;
     QLineF cornerTick;
     bool anchored;
     bool locked;
 
-    static int thickness;
-
-    void init();
+    void reset();
     void setAnchor(const QPointF &scenePos);
     void setEndPos(const QPointF &scenePos);
     QPoint snapToWithinBounds(QPoint pos) const;
     void updateGeometry();
+    void updateStatus(Qt::Corner corner);
     int pixWidth() const { return width() * 16; } 
     int pixHeight() const { return height() * 16; }
 };
