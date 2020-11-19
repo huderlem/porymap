@@ -24,7 +24,7 @@ Editor::Editor(Ui::MainWindow* ui)
     this->settings = new Settings();
     this->playerViewRect = new MovableRect(&this->settings->playerViewRectEnabled, 30 * 8, 20 * 8, qRgb(255, 255, 255));
     this->cursorMapTileRect = new CursorTileRect(&this->settings->cursorTileRectEnabled, qRgb(255, 255, 255));
-    this->map_ruler = new MapRuler();
+    this->map_ruler = new MapRuler(4);
     connect(this->map_ruler, &MapRuler::statusChanged, this, &Editor::mapRulerStatusChanged);
 
     /// Instead of updating the selected events after every single undo action
