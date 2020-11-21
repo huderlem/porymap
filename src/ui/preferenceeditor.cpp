@@ -30,7 +30,7 @@ PreferenceEditor::~PreferenceEditor()
 }
 
 void PreferenceEditor::populateFields() {
-    ui->lineEdit_TextEditor->setText(porymapConfig.getTextEditorCommand());
+    ui->lineEdit_TextEditor->setText(porymapConfig.getTextEditorCommandTemplate());
 
     QStringList themes = { "default" };
     QRegularExpression re(":/themes/([A-z0-9_-]+).qss");
@@ -44,7 +44,7 @@ void PreferenceEditor::populateFields() {
 }
 
 void PreferenceEditor::saveFields() {
-    porymapConfig.setTextEditorCommand(ui->lineEdit_TextEditor->text());
+    porymapConfig.setTextEditorCommandTemplate(ui->lineEdit_TextEditor->text());
 
     if (themeSelector->currentText() != porymapConfig.getTheme()) {
         const auto theme = themeSelector->currentText();

@@ -2410,7 +2410,7 @@ QString Project::fixGraphicPath(QString path) {
     return path;
 }
 
-QString Project::getScriptFileExtension(bool usePoryScript) {
+QString Project::getScriptFileExtension(bool usePoryScript) const {
     if(usePoryScript) {
         return ".pory";
     } else {
@@ -2418,11 +2418,21 @@ QString Project::getScriptFileExtension(bool usePoryScript) {
     }
 }
 
-QString Project::getScriptDefaultString(bool usePoryScript, QString mapName) {
+QString Project::getScriptDefaultString(bool usePoryScript, QString mapName) const {
     if(usePoryScript)
         return QString("mapscripts %1_MapScripts {}").arg(mapName);
     else
         return QString("%1_MapScripts::\n\t.byte 0\n").arg(mapName);
+}
+
+QString Project::getMapScriptsFilePath(const QString &mapName) const {
+    const bool usePoryscript = projectConfig.getUsePoryScript();
+    auto path = QDir::cleanPath(root + "/data/maps/" + mapName + "/scripts");
+    auto extension = getScriptFileExtension(usePoryscript);
+    if (usePoryscript && !QFile::exists(path + extension))
+        extension = getScriptFileExtension(false);
+    path += extension;
+    return path;
 }
 
 void Project::loadEventPixmaps(QList<Event*> objects) {

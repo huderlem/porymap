@@ -188,7 +188,7 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
     } else if (key == "theme") {
         this->theme = value;
     } else if (key == "text_editor") {
-        this->textEditorCommand = value;
+        this->textEditorCommandTemplate = value;
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -218,7 +218,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("region_map_dimensions", QString("%1x%2").arg(this->regionMapDimensions.width())
                                                         .arg(this->regionMapDimensions.height()));
     map.insert("theme", this->theme);
-    map.insert("text_editor", this->textEditorCommand);
+    map.insert("text_editor", this->textEditorCommandTemplate);
     return map;
 }
 
@@ -319,8 +319,8 @@ void PorymapConfig::setTheme(QString theme) {
     this->theme = theme;
 }
 
-void PorymapConfig::setTextEditorCommand(const QString &command) {
-    this->textEditorCommand = command;
+void PorymapConfig::setTextEditorCommandTemplate(const QString &commandTemplate) {
+    this->textEditorCommandTemplate = commandTemplate;
     this->save();
 }
 
@@ -406,8 +406,8 @@ QString PorymapConfig::getTheme() {
     return this->theme;
 }
 
-QString PorymapConfig::getTextEditorCommand() {
-    return this->textEditorCommand;
+QString PorymapConfig::getTextEditorCommandTemplate() {
+    return this->textEditorCommandTemplate;
 }
 
 const QMap<BaseGameVersion, QString> baseGameVersionMap = {

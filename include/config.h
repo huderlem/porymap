@@ -61,7 +61,7 @@ public:
     void setMonitorFiles(bool monitor);
     void setRegionMapDimensions(int width, int height);
     void setTheme(QString theme);
-    void setTextEditorCommand(const QString &command);
+    void setTextEditorCommandTemplate(const QString &commandTemplate);
     QString getRecentProject();
     QString getRecentMap();
     MapSortOrder getMapSortOrder();
@@ -77,7 +77,7 @@ public:
     bool getMonitorFiles();
     QSize getRegionMapDimensions();
     QString getTheme();
-    QString getTextEditorCommand();
+    QString getTextEditorCommandTemplate();
 protected:
     virtual QString getConfigFilepath() override;
     virtual void parseConfigKeyValue(QString key, QString value) override;
@@ -109,7 +109,7 @@ private:
     bool monitorFiles;
     QSize regionMapDimensions;
     QString theme;
-    QString textEditorCommand;
+    QString textEditorCommandTemplate;
 };
 
 extern PorymapConfig porymapConfig;
