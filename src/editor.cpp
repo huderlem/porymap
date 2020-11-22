@@ -375,13 +375,13 @@ void Editor::deleteWildMonGroup() {
     if (msgBox.clickedButton() == deleteButton) {
         auto it = project->wildMonData.find(map->constantName);
         if (it == project->wildMonData.end()) {
-          logError(QString("Failed to find data for map %s. Unable to delete").arg(map->constantName));
+          logError(QString("Failed to find data for map %1. Unable to delete").arg(map->constantName));
           return;
         }
 
         int i = project->encounterGroupLabels.indexOf(labelCombo->currentText());
         if (i < 0) {
-          logError(QString("Failed to find selected wild mon group: %s. Unable to delete")
+          logError(QString("Failed to find selected wild mon group: %1. Unable to delete")
                    .arg(labelCombo->currentText()));
           return;
         }
