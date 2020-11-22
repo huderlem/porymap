@@ -154,6 +154,7 @@ void MainWindow::initEditor() {
     connect(this->editor, SIGNAL(warpEventDoubleClicked(QString,QString)), this, SLOT(openWarpMap(QString,QString)));
     connect(this->editor, SIGNAL(currentMetatilesSelectionChanged()), this, SLOT(currentMetatilesSelectionChanged()));
     connect(this->editor, SIGNAL(wildMonDataChanged()), this, SLOT(onWildMonDataChanged()));
+    connect(ui->toolButton_Open_Scripts, &QToolButton::clicked, this->editor, &Editor::openMapScripts);
 
     this->loadUserSettings();
 
@@ -1293,16 +1294,6 @@ void MainWindow::duplicate() {
     editor->duplicateSelectedEvents();
 }
 
-// Open current map scripts in system default editor for .inc files
-void MainWindow::openInTextEditor() {
-    bool usePoryscript = projectConfig.getUsePoryScript();
-    QString path = QDir::cleanPath("file://" + editor->project->root + QDir::separator() + "data/maps/" + editor->map->name + "/scripts");
-
-    // Try opening scripts file, if opening .pory failed try again with .inc
-    if (!QDesktopServices::openUrl(QUrl(path + editor->project->getScriptFileExtension(usePoryscript))) && usePoryscript)
-        QDesktopServices::openUrl(QUrl(path + editor->project->getScriptFileExtension(false)));
-}
-
 void MainWindow::on_action_Save_triggered() {
     editor->save();
     updateMapList();
@@ -2091,11 +2082,6 @@ void MainWindow::on_toolButton_deleteObject_clicked() {
             }
         }
     }
-}
-
-void MainWindow::on_toolButton_Open_Scripts_clicked()
-{
-    openInTextEditor();
 }
 
 void MainWindow::on_toolButton_Paint_clicked()

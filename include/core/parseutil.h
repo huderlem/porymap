@@ -40,8 +40,8 @@ class ParseUtil
 public:
     ParseUtil();
     void set_root(QString);
-    QString readTextFile(QString);
-    void strip_comment(QString*);
+    static QString readTextFile(QString);
+    static void strip_comment(QString*);
     QList<QStringList>* parseAsm(QString);
     int evaluateDefine(QString, QMap<QString, int>*);
     QStringList readCArray(QString text, QString label);
@@ -53,6 +53,10 @@ public:
     QStringList* getLabelValues(QList<QStringList>*, QString);
     bool tryParseJsonFile(QJsonDocument *out, QString filepath);
     bool ensureFieldsExist(QJsonObject obj, QList<QString> fields);
+
+    // Returns the 1-indexed line number for the definition of scriptLabel in the scripts file at filePath.
+    // Returns 0 if a definition for scriptLabel cannot be found.
+    static int getScriptLineNumber(const QString &scriptLabel, const QString &filePath);
 
 private:
     QString root;

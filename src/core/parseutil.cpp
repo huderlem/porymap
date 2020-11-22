@@ -420,3 +420,22 @@ bool ParseUtil::ensureFieldsExist(QJsonObject obj, QList<QString> fields) {
     }
     return true;
 }
+
+int ParseUtil::getScriptLineNumber(const QString &scriptLabel, const QString &filePath) {
+    if (filePath.endsWith(".inc")) {
+        const QString text = readTextFile(filePath);
+        const QStringList lines = text.split('\n');
+        for (int lineNumber = 0; lineNumber < lines.count(); ++lineNumber) {
+            QString line = lines.at(lineNumber);
+            strip_comment(&line);
+            if (line.contains(':')) {
+                const QString parsedLabel = line.left(line.indexOf(':')).trimmed();
+                if (parsedLabel == scriptLabel)
+                    return lineNumber + 1;
+            }
+        }
+    } else if (filePath.endsWith(".pory")) {
+
+    }
+    return 0;
+}

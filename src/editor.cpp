@@ -9,6 +9,7 @@
 #include "metatile.h"
 #include "montabwidget.h"
 #include "editcommands.h"
+#include "config.h"
 #include <QCheckBox>
 #include <QPainter>
 #include <QMouseEvent>
@@ -1997,6 +1998,44 @@ void Editor::deleteEvent(Event *event) {
     }
     //selected_events->removeAll(event);
     //updateSelectedObjects();
+}
+
+void Editor::openMapScripts() const {
+    const QString path = project->getMapScriptsFilePath(map->name);
+    const QString commandTemplate = porymapConfig.getTextEditorCommandTemplate();
+    if (commandTemplate.isEmpty()) {
+        // Open map scripts in the system's default editor.
+        QDesktopServices::openUrl(QUrl::fromLocalFile(path));
+    } else {
+        const QString command = constructTextEditorCommand(commandTemplate, path);
+#ifdef Q_OS_WIN
+        // On Windows, a QProcess command must be wrapped in a cmd.exe command.
+        const QString program = QProcessEnvironment::systemEnvironment().value("COMSPEC");
+        QStringList arguments({ QString("/c"), command });
+#else
+        QStringList arguments = QProcess::splitCommand(command);
+        const QString program = arguments.takeFirst();
+#endif
+        static QProcess proc;
+        proc.setProgram(program);
+        proc.setArguments(arguments);
+        proc.start();
+    }
+}
+
+QString Editor::constructTextEditorCommand(QString commandTemplate, const QString &path) const {
+    if (commandTemplate.contains("%F")) {
+        if (commandTemplate.contains("%L")) {
+            const QString scriptLabel = selected_events->isEmpty() ?
+                                        QString() : selected_events->first()->event->get("script_label");
+            const int lineNum = ParseUtil::getScriptLineNumber(scriptLabel, path);
+            commandTemplate.replace("%L", QString::number(lineNum));
+        }
+        commandTemplate.replace("%F", path);
+    } else {
+        commandTemplate += path;
+    }
+    return commandTemplate;
 }
 
 // It doesn't seem to be possible to prevent the mousePress event
