@@ -2001,13 +2001,13 @@ void Editor::deleteEvent(Event *event) {
 }
 
 void Editor::openMapScripts() const {
-    const QString path = project->getMapScriptsFilePath(map->name);
+    const QString scriptsPath = project->getMapScriptsFilePath(map->name);
     const QString commandTemplate = porymapConfig.getTextEditorCommandTemplate();
     if (commandTemplate.isEmpty()) {
         // Open map scripts in the system's default editor.
-        QDesktopServices::openUrl(QUrl::fromLocalFile(path));
+        QDesktopServices::openUrl(QUrl::fromLocalFile(scriptsPath));
     } else {
-        const QString command = constructTextEditorCommand(commandTemplate, path);
+        const QString command = constructTextEditorCommand(commandTemplate, scriptsPath);
 #ifdef Q_OS_WIN
         // On Windows, a QProcess command must be wrapped in a cmd.exe command.
         const QString program = QProcessEnvironment::systemEnvironment().value("COMSPEC");
@@ -2023,17 +2023,17 @@ void Editor::openMapScripts() const {
     }
 }
 
-QString Editor::constructTextEditorCommand(QString commandTemplate, const QString &path) const {
+QString Editor::constructTextEditorCommand(QString commandTemplate, const QString &filePath) const {
     if (commandTemplate.contains("%F")) {
         if (commandTemplate.contains("%L")) {
             const QString scriptLabel = selected_events->isEmpty() ?
                                         QString() : selected_events->first()->event->get("script_label");
-            const int lineNum = ParseUtil::getScriptLineNumber(scriptLabel, path);
+            const int lineNum = ParseUtil::getScriptLineNumber(filePath, scriptLabel);
             commandTemplate.replace("%L", QString::number(lineNum));
         }
-        commandTemplate.replace("%F", path);
+        commandTemplate.replace("%F", filePath);
     } else {
-        commandTemplate += path;
+        commandTemplate += filePath;
     }
     return commandTemplate;
 }

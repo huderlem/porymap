@@ -41,7 +41,7 @@ public:
     ParseUtil();
     void set_root(QString);
     static QString readTextFile(QString);
-    static void strip_comment(QString*);
+    void strip_comment(QString*);
     QList<QStringList>* parseAsm(QString);
     int evaluateDefine(QString, QMap<QString, int>*);
     QStringList readCArray(QString text, QString label);
@@ -56,7 +56,12 @@ public:
 
     // Returns the 1-indexed line number for the definition of scriptLabel in the scripts file at filePath.
     // Returns 0 if a definition for scriptLabel cannot be found.
-    static int getScriptLineNumber(const QString &scriptLabel, const QString &filePath);
+    static int getScriptLineNumber(const QString &filePath, const QString &scriptLabel);
+    static int getRawScriptLineNumber(QString text, const QString &scriptLabel);
+    static int getPoryScriptLineNumber(QString text, const QString &scriptLabel);
+    static QString &removeStringLiterals(QString &text);
+    static QString &removeLineComments(QString &text, const QString &commentSymbol);
+    static QString &removeLineComments(QString &text, const QStringList &commentSymbols);
 
 private:
     QString root;
