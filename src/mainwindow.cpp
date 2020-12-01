@@ -1789,6 +1789,7 @@ void MainWindow::updateSelectedObjects() {
                                   "normal movement behavior actions.");
                 combo->setMinimumContentsLength(4);
             } else if (key == "script_label") {
+                combo->addItems(editor->map->eventScriptLabels());
                 combo->setToolTip("The script which is executed with this event.");
             } else if (key == "trainer_type") {
                 combo->addItems(*editor->project->trainerTypes);

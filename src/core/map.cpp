@@ -450,12 +450,32 @@ void Map::magicFillCollisionElevation(int initialX, int initialY, uint16_t colli
     }
 }
 
-QList<Event *> Map::getAllEvents() {
-    QList<Event*> all;
-    for (QList<Event*> list : events.values()) {
-        all += list;
+QList<Event *> Map::getAllEvents() const {
+    QList<Event *> all_events;
+    for (const auto &event_list : events) {
+        all_events << event_list;
     }
-    return all;
+    return all_events;
+}
+
+QStringList Map::eventScriptLabels(const QString &event_group_type) const {
+    QStringList scriptLabels;
+    if (event_group_type.isEmpty()) {
+        for (const auto *event : getAllEvents())
+            scriptLabels << event->get("script_label");
+    } else {
+        for (const auto *event : events.value(event_group_type))
+            scriptLabels << event->get("script_label");
+    }
+
+    scriptLabels.removeDuplicates();
+    scriptLabels.removeAll(QString());
+    if (scriptLabels.contains("0x0"))
+        scriptLabels.move(scriptLabels.indexOf("0x0"), scriptLabels.count() - 1);
+    if (scriptLabels.contains("NULL"))
+        scriptLabels.move(scriptLabels.indexOf("NULL"), scriptLabels.count() - 1);
+
+    return scriptLabels;
 }
 
 void Map::removeEvent(Event *event) {
