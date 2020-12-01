@@ -81,6 +81,8 @@ void MainWindow::setWindowDisabled(bool disabled) {
     ui->action_Exit->setDisabled(false);
     ui->menuHelp->setDisabled(false);
     ui->actionAbout_Porymap->setDisabled(false);
+    if (!disabled)
+        togglePreferenceSpecificUi();
 }
 
 void MainWindow::initWindow() {
@@ -2519,6 +2521,8 @@ void MainWindow::on_actionEdit_Preferences_triggered() {
                 this, &MainWindow::setTheme);
         connect(preferenceEditor, &PreferenceEditor::themeChanged,
                 editor, &Editor::maskNonVisibleConnectionTiles);
+        connect(preferenceEditor, &PreferenceEditor::preferencesSaved,
+                this, &MainWindow::togglePreferenceSpecificUi);
         connect(preferenceEditor, &QObject::destroyed, [=](QObject *) { preferenceEditor = nullptr; });
     }
 
@@ -2529,6 +2533,13 @@ void MainWindow::on_actionEdit_Preferences_triggered() {
     } else {
         preferenceEditor->activateWindow();
     }
+}
+
+void MainWindow::togglePreferenceSpecificUi() {
+    if (porymapConfig.getTextEditorOpenFolder().isEmpty())
+        ui->actionOpen_Project_in_Text_Editor->setEnabled(false);
+    else
+        ui->actionOpen_Project_in_Text_Editor->setEnabled(true);
 }
 
 void MainWindow::on_pushButton_AddCustomHeaderField_clicked()

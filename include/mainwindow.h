@@ -224,6 +224,7 @@ private slots:
 
     void on_actionRegion_Map_Editor_triggered();
     void on_actionEdit_Preferences_triggered();
+    void togglePreferenceSpecificUi();
 
 private:
     Ui::MainWindow *ui;
