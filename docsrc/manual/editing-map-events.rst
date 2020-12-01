@@ -225,7 +225,7 @@ Respawn NPC
 Open Map Scripts
 ----------------
 
-Clicking the ``Open Map Scripts`` button |open-map-scripts-button| will open the map's scripts file in your default text editor.  If nothing happens when this button is clicked, you may need to associate a text editor with the `.inc` file extension.
+Clicking the ``Open Map Scripts`` button |open-map-scripts-button| will open the map's scripts file in your default text editor.  If nothing happens when this button is clicked, you may need to associate a text editor with the `.inc` file extension (or `.pory` if you're using Porycript).  `Alternatively`, you may specify a preferred text editor command in *Options -> Edit Preferences*. By specifying a text editor like this you can allow Porymap to open the scripts file directly to the script of the currently selected event.
 
 .. |open-map-scripts-button|
    image:: images/editing-map-events/open-map-scripts-button.png
