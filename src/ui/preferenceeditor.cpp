@@ -30,8 +30,6 @@ PreferenceEditor::~PreferenceEditor()
 }
 
 void PreferenceEditor::populateFields() {
-    ui->lineEdit_TextEditor->setText(porymapConfig.getTextEditorCommandTemplate());
-
     QStringList themes = { "default" };
     QRegularExpression re(":/themes/([A-z0-9_-]+).qss");
     QDirIterator it(":/themes", QDirIterator::Subdirectories);
@@ -41,16 +39,22 @@ void PreferenceEditor::populateFields() {
     }
     themeSelector->addItems(themes);
     themeSelector->setCurrentText(porymapConfig.getTheme());
+
+    ui->lineEdit_TextEditorOpenFolder->setText(porymapConfig.getTextEditorOpenFolder());
+
+    ui->lineEdit_TextEditorGotoLine->setText(porymapConfig.getTextEditorGotoLine());
 }
 
 void PreferenceEditor::saveFields() {
-    porymapConfig.setTextEditorCommandTemplate(ui->lineEdit_TextEditor->text());
-
     if (themeSelector->currentText() != porymapConfig.getTheme()) {
         const auto theme = themeSelector->currentText();
         porymapConfig.setTheme(theme);
         emit themeChanged(theme);
     }
+
+    porymapConfig.setTextEditorOpenFolder(ui->lineEdit_TextEditorOpenFolder->text());
+
+    porymapConfig.setTextEditorGotoLine(ui->lineEdit_TextEditorGotoLine->text());
 
     emit preferencesSaved();
 }

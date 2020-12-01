@@ -155,6 +155,7 @@ public:
 
 public slots:
     void openMapScripts() const;
+    void openProjectInTextEditor() const;
     void maskNonVisibleConnectionTiles();
 
 private:
@@ -184,7 +185,9 @@ private:
     QString getMovementPermissionText(uint16_t collision, uint16_t elevation);
     QString getMetatileDisplayMessage(uint16_t metatileId);
     bool eventLimitReached(Map *, QString);
-    QString constructTextEditorCommand(QString commandTemplate, const QString &path) const;
+    bool startDetachedProcess(const QString &command,
+                              const QString &workingDirectory = QString(),
+                              qint64 *pid = nullptr) const;
 
 private slots:
     void onMapStartPaint(QGraphicsSceneMouseEvent *event, MapPixmapItem *item);

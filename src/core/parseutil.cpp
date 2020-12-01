@@ -434,7 +434,7 @@ int ParseUtil::getRawScriptLineNumber(QString text, const QString &scriptLabel) 
     removeStringLiterals(text);
     removeLineComments(text, "@");
 
-    static const QRegularExpression re_incScriptLabel("(?<label>[a-zA-Z_]+[a-zA-Z0-9_]*):");
+    static const QRegularExpression re_incScriptLabel("(?<label>[\\w_][\\w\\d_]*):");
     QRegularExpressionMatchIterator it = re_incScriptLabel.globalMatch(text);
     while (it.hasNext()) {
         const QRegularExpressionMatch match = it.next();
@@ -449,7 +449,7 @@ int ParseUtil::getPoryScriptLineNumber(QString text, const QString &scriptLabel)
     removeStringLiterals(text);
     removeLineComments(text, {"//", "#"});
 
-    static const QRegularExpression re_poryScriptLabel("\\b(script)\\b[\\s]+(?<label>[a-zA-Z_]+[a-zA-Z0-9_]*)");
+    static const QRegularExpression re_poryScriptLabel("\\b(script)\\b[\\s]+(?<label>[\\w_][\\w\\d_]*)");
     QRegularExpressionMatchIterator it = re_poryScriptLabel.globalMatch(text);
     while (it.hasNext()) {
         const QRegularExpressionMatch match = it.next();
@@ -457,13 +457,13 @@ int ParseUtil::getPoryScriptLineNumber(QString text, const QString &scriptLabel)
             return text.left(match.capturedStart("label")).count('\n') + 1;
     }
 
-    static const QRegularExpression re_poryRawSection("\\b(raw)\\b[\\s]*`(?<script>[^`]*)");
+    static const QRegularExpression re_poryRawSection("\\b(raw)\\b[\\s]*`(?<raw_script>[^`]*)");
     QRegularExpressionMatchIterator raw_it = re_poryRawSection.globalMatch(text);
     while (raw_it.hasNext()) {
         const QRegularExpressionMatch match = raw_it.next();
-        const int relative_lineNum = getRawScriptLineNumber(match.captured("script"), scriptLabel);
-        if (relative_lineNum)
-            return text.left(match.capturedStart("script")).count('\n') + relative_lineNum;
+        const int relativelineNum = getRawScriptLineNumber(match.captured("raw_script"), scriptLabel);
+        if (relativelineNum)
+            return text.left(match.capturedStart("raw_script")).count('\n') + relativelineNum;
     }
 
     return 0;

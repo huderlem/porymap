@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>480</width>
-    <height>320</height>
+    <width>500</width>
+    <height>500</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,51 +15,6 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
-    <item>
-     <widget class="QGroupBox" name="groupBox_TextEditor">
-      <property name="title">
-       <string>Preferred Text Editor</string>
-      </property>
-      <layout class="QGridLayout" name="gridLayout">
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_TextEditor">
-         <property name="text">
-          <string>Command</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QLineEdit" name="lineEdit_TextEditor">
-         <property name="toolTip">
-          <string>The command (including the necessary parameters) to perform the action. See the command parameter legend below for a list of supported parameter variables, which will be substituted when launching the command. When upper-case letters (e.g. %F, $D, %N) are used, the action will be applicable even if more than one item is selected. Esle the action will only be applicable f exactly one item is selected.</string>
-         </property>
-         <property name="placeholderText">
-          <string>e.g. code --goto %F:%L</string>
-         </property>
-         <property name="clearButtonEnabled">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0" colspan="2">
-        <widget class="QLabel" name="label_TextEditorHelp">
-         <property name="text">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The command that will be executed when clicking the &amp;quot;Open Map Scripts&amp;quot; button. You may optionally include '%F' and '%L' in the command. '%F' will be substituted with the scripts file path and '%L' will be substituted with a line number. If '%L' is specified then the scripts file will be opened to map script cooresponding to the currently selected event (If the script can be found). If '%F' is &lt;span style=&quot; font-weight:600;&quot;&gt;not&lt;/span&gt; specified then the map scripts file path will be appended to the end of the command.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="scaledContents">
-          <bool>false</bool>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-         </property>
-         <property name="wordWrap">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </item>
     <item>
      <widget class="QGroupBox" name="groupBox_Themes">
       <property name="sizePolicy">
@@ -71,6 +26,118 @@
       <property name="title">
        <string>Application Theme</string>
       </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QGroupBox" name="groupBox_TextEditor">
+      <property name="title">
+       <string>Preferred Text Editor</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <item row="2" column="0">
+        <widget class="QScrollArea" name="scrollArea_TextEditor">
+         <property name="frameShape">
+          <enum>QFrame::NoFrame</enum>
+         </property>
+         <property name="widgetResizable">
+          <bool>true</bool>
+         </property>
+         <widget class="QWidget" name="scrollAreaWidgetContents_TextEditor">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>482</width>
+            <height>398</height>
+           </rect>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_2">
+           <property name="sizeConstraint">
+            <enum>QLayout::SetMinimumSize</enum>
+           </property>
+           <item row="5" column="0" colspan="2">
+            <widget class="QLabel" name="label_TextEditorGotoLineHelp">
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The command that will be executed when clicking the &lt;span style=&quot; font-weight:600;&quot;&gt;Open Map Scripts&lt;/span&gt; button&lt;span style=&quot; font-weight:600;&quot;&gt;. %F&lt;/span&gt; will be substituted with the scripts file path and &lt;span style=&quot; font-weight:600;&quot;&gt;%L&lt;/span&gt; will be substituted with the line number of the event that is currently selected. &lt;span style=&quot; font-weight:600;&quot;&gt;%F &lt;/span&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;must&lt;/span&gt; be specified if &lt;span style=&quot; font-weight:600;&quot;&gt;%L&lt;/span&gt; is specified. If &lt;span style=&quot; font-weight:600;&quot;&gt;%F&lt;/span&gt; is &lt;span style=&quot; font-style:italic;&quot;&gt;not&lt;/span&gt; specified then the scripts file path will be appended to the end of the command.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1">
+            <widget class="QLineEdit" name="lineEdit_TextEditorGotoLine">
+             <property name="toolTip">
+              <string>The shell command for your preferred text editor to open a file to a specific line number (possibly an absolute path if the program doesn't exist in your PATH).</string>
+             </property>
+             <property name="placeholderText">
+              <string>e.g. code --goto %F:%L</string>
+             </property>
+             <property name="clearButtonEnabled">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0" colspan="2">
+            <widget class="QLabel" name="label_TextEditorOpenFolderHelp">
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The command that will be executed when clicking &lt;span style=&quot; font-weight:600;&quot;&gt;Open Project in Text Editor&lt;/span&gt; in the &lt;span style=&quot; font-weight:600;&quot;&gt;Tools&lt;/span&gt; menu. &lt;span style=&quot; font-weight:600;&quot;&gt;%D&lt;/span&gt; will be substituted with the current project's root directory. If &lt;span style=&quot; font-weight:600;&quot;&gt;%D&lt;/span&gt; is &lt;span style=&quot; font-style:italic;&quot;&gt;not&lt;/span&gt; specified then the project directory will be appended to the end of the command.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_TextEditorOpenFolder">
+             <property name="text">
+              <string>Open Directory Command</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="lineEdit_TextEditorOpenFolder">
+             <property name="toolTip">
+              <string>The shell command for your preferred text editor (possibly an absolute path if the program doesn't exist in your PATH).</string>
+             </property>
+             <property name="placeholderText">
+              <string>e.g. code %D</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QLabel" name="label_TextEditorGotoLine">
+             <property name="text">
+              <string>Goto Line Command</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </item>
     <item>

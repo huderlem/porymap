@@ -29,7 +29,6 @@
 #include <QDialogButtonBox>
 #include <QScroller>
 #include <math.h>
-#include <QProcess>
 #include <QSysInfo>
 #include <QDesktopServices>
 #include <QTransform>
@@ -155,6 +154,7 @@ void MainWindow::initEditor() {
     connect(this->editor, SIGNAL(currentMetatilesSelectionChanged()), this, SLOT(currentMetatilesSelectionChanged()));
     connect(this->editor, SIGNAL(wildMonDataChanged()), this, SLOT(onWildMonDataChanged()));
     connect(ui->toolButton_Open_Scripts, &QToolButton::clicked, this->editor, &Editor::openMapScripts);
+    connect(ui->actionOpen_Project_in_Text_Editor, &QAction::triggered, this->editor, &Editor::openProjectInTextEditor);
 
     this->loadUserSettings();
 

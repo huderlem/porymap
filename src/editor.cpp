@@ -14,6 +14,7 @@
 #include <QPainter>
 #include <QMouseEvent>
 #include <QDir>
+#include <QProcess>
 #include <math.h>
 
 static bool selectNewEvents = false;
@@ -2002,40 +2003,45 @@ void Editor::deleteEvent(Event *event) {
 
 void Editor::openMapScripts() const {
     const QString scriptsPath = project->getMapScriptsFilePath(map->name);
-    const QString commandTemplate = porymapConfig.getTextEditorCommandTemplate();
-    if (commandTemplate.isEmpty()) {
+    QString command = porymapConfig.getTextEditorGotoLine();
+    if (command.isEmpty()) {
         // Open map scripts in the system's default editor.
         QDesktopServices::openUrl(QUrl::fromLocalFile(scriptsPath));
     } else {
-        const QString command = constructTextEditorCommand(commandTemplate, scriptsPath);
-#ifdef Q_OS_WIN
-        // On Windows, a QProcess command must be wrapped in a cmd.exe command.
-        const QString program = QProcessEnvironment::systemEnvironment().value("COMSPEC");
-        QStringList arguments({ QString("/c"), command });
-#else
-        QStringList arguments = QProcess::splitCommand(command);
-        const QString program = arguments.takeFirst();
-#endif
-        static QProcess proc;
-        proc.setProgram(program);
-        proc.setArguments(arguments);
-        proc.start();
+        if (command.contains("%F")) {
+            if (command.contains("%L")) {
+                const QString scriptLabel = selected_events->isEmpty() ?
+                                            QString() : selected_events->first()->event->get("script_label");
+                const int lineNum = ParseUtil::getScriptLineNumber(scriptsPath, scriptLabel);
+                command.replace("%L", QString::number(lineNum));
+            }
+            command.replace("%F", scriptsPath);
+        } else {
+            command += ' ' + scriptsPath;
+        }
+        startDetachedProcess(command);
     }
 }
 
-QString Editor::constructTextEditorCommand(QString commandTemplate, const QString &filePath) const {
-    if (commandTemplate.contains("%F")) {
-        if (commandTemplate.contains("%L")) {
-            const QString scriptLabel = selected_events->isEmpty() ?
-                                        QString() : selected_events->first()->event->get("script_label");
-            const int lineNum = ParseUtil::getScriptLineNumber(filePath, scriptLabel);
-            commandTemplate.replace("%L", QString::number(lineNum));
-        }
-        commandTemplate.replace("%F", filePath);
-    } else {
-        commandTemplate += filePath;
-    }
-    return commandTemplate;
+void Editor::openProjectInTextEditor() const {
+    QString command = porymapConfig.getTextEditorOpenFolder();
+    if (command.contains("%D"))
+        command.replace("%D", project->root);
+    else
+        command += ' ' + project->root;
+    startDetachedProcess(command);
+}
+
+bool Editor::startDetachedProcess(const QString &command, const QString &workingDirectory, qint64 *pid) const {
+#ifdef Q_OS_WIN
+    // On Windows, a QProcess command must be wrapped in a cmd.exe command.
+    const QString program = QProcessEnvironment::systemEnvironment().value("COMSPEC");
+    QStringList arguments({ QString("/c"), command });
+#else
+    QStringList arguments = QProcess::splitCommand(command);
+    const QString program = arguments.takeFirst();
+#endif
+    return QProcess::startDetached(program, arguments, workingDirectory, pid);
 }
 
 // It doesn't seem to be possible to prevent the mousePress event
