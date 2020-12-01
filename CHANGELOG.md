@@ -17,6 +17,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - All plain text boxes now have a clear button to delete the text.
 - The window sizes and positions of the tileset editor, palette editor, and region map editor are now stored in `porymap.cfg`.
 - Add ruler tool for measuring metatile distance in events tab (Right-click to turn on/off, left-click to lock in place).
+- Add delete button to wild pokemon encounters tab.
 
 ### Changed
 - Holding `shift` now toggles "Smart Path" drawing; when the "Smart Paths" checkbox is checked, holding `shift` will temporarily disable it.

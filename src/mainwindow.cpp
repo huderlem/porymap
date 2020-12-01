@@ -40,6 +40,7 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
+    label_MapRulerStatus(nullptr),
     selectedObject(nullptr),
     selectedWarp(nullptr),
     selectedTrigger(nullptr),
@@ -65,6 +66,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+    delete label_MapRulerStatus;
     delete ui;
 }
 
@@ -140,6 +142,17 @@ void MainWindow::initCustomUI() {
     }
     delete ui->frame_mapTools->layout();
     ui->frame_mapTools->setLayout(flowLayout);
+
+    // Floating QLabel tool-window that displays over the map when the ruler is active
+    label_MapRulerStatus = new QLabel(ui->graphicsView_Map);
+    label_MapRulerStatus->setObjectName("label_MapRulerStatus");
+    label_MapRulerStatus->setWindowFlags(Qt::Tool | Qt::CustomizeWindowHint | Qt::FramelessWindowHint);
+    label_MapRulerStatus->setFrameShape(QFrame::Box);
+    label_MapRulerStatus->setMargin(3);
+    label_MapRulerStatus->setPalette(palette());
+    label_MapRulerStatus->setAlignment(Qt::AlignCenter);
+    label_MapRulerStatus->setTextFormat(Qt::PlainText);
+    label_MapRulerStatus->setTextInteractionFlags(Qt::TextSelectableByMouse);
 }
 
 void MainWindow::initExtraSignals() {
@@ -155,6 +168,7 @@ void MainWindow::initEditor() {
     connect(this->editor, SIGNAL(warpEventDoubleClicked(QString,QString)), this, SLOT(openWarpMap(QString,QString)));
     connect(this->editor, SIGNAL(currentMetatilesSelectionChanged()), this, SLOT(currentMetatilesSelectionChanged()));
     connect(this->editor, SIGNAL(wildMonDataChanged()), this, SLOT(onWildMonDataChanged()));
+    connect(this->editor, &Editor::mapRulerStatusChanged, this, &MainWindow::onMapRulerStatusChanged);
     connect(ui->toolButton_Open_Scripts, &QToolButton::clicked, this->editor, &Editor::openMapScripts);
     connect(ui->actionOpen_Project_in_Text_Editor, &QAction::triggered, this->editor, &Editor::openProjectInTextEditor);
 
@@ -2277,6 +2291,23 @@ void MainWindow::onWildMonDataChanged() {
     projectHasUnsavedChanges = true;
 }
 
+void MainWindow::onMapRulerStatusChanged(const QString &status) {
+    if (status.isEmpty()) {
+        label_MapRulerStatus->hide();
+    } else if (label_MapRulerStatus->parentWidget()) {
+        label_MapRulerStatus->setText(status);
+        label_MapRulerStatus->adjustSize();
+        label_MapRulerStatus->show();
+        label_MapRulerStatus->move(label_MapRulerStatus->parentWidget()->mapToGlobal(QPoint(6, 6)));
+    }
+}
+
+void MainWindow::moveEvent(QMoveEvent *event) {
+    QMainWindow::moveEvent(event);
+    if (label_MapRulerStatus->isVisible() && label_MapRulerStatus->parentWidget())
+        label_MapRulerStatus->move(label_MapRulerStatus->parentWidget()->mapToGlobal(QPoint(6, 6)));
+}
+
 void MainWindow::on_action_Export_Map_Image_triggered() {
     showExportMapImageWindow(false);
 }
@@ -2332,6 +2363,10 @@ void MainWindow::on_pushButton_RemoveConnection_clicked()
 
 void MainWindow::on_pushButton_NewWildMonGroup_clicked() {
     editor->addNewWildMonGroup(this);
+}
+
+void MainWindow::on_pushButton_DeleteWildMonGroup_clicked() {
+    editor->deleteWildMonGroup();
 }
 
 void MainWindow::on_pushButton_ConfigureEncountersJSON_clicked() {

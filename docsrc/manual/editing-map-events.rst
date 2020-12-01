@@ -260,7 +260,7 @@ Shift
 Ruler Tool
 ----------
 
-The Ruler Tool provides a convenient way to measure distance on the map. This is particularly useful for scripting object movement. With the Pointer Tool selected you can activate the ruler with a Right-click. With the ruler active you can drag the mouse around to extend the ruler. The ruler can be deactivated with another Right-click, or locked in place with a Left-click (Left-click again to unlock the ruler). The dimensions of the ruler are displayed in a tool-tip and in the status bar in the bottom left corner of the widnow.
+The Ruler Tool provides a convenient way to measure distance on the map. This is particularly useful for scripting object movement. With the Pointer Tool selected you can activate the ruler with a Right-click. With the ruler active you can move the mouse around to extend the ruler. The ruler can be deactivated with another Right-click, or locked in place with a Left-click (Left-click again to unlock the ruler).
 
 .. figure:: images/editing-map-events/event-tool-ruler.gif
     :alt: Measuring metatile distance with the Ruler Tool

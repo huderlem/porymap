@@ -127,6 +127,7 @@ private slots:
     void openNewMapPopupWindow(int, QVariant);
     void onNewMapCreated();
     void onMapCacheCleared();
+    void onMapRulerStatusChanged(const QString &);
 
     void on_action_NewMap_triggered();
     void on_actionNew_Tileset_triggered();
@@ -205,6 +206,7 @@ private slots:
 
     void on_lineEdit_filterBox_textChanged(const QString &arg1);
 
+    void moveEvent(QMoveEvent *event);
     void closeEvent(QCloseEvent *);
 
     void eventTabChanged(int index);
@@ -220,6 +222,7 @@ private slots:
     void on_tableWidget_CustomHeaderFields_cellChanged(int row, int column);
     void on_horizontalSlider_MetatileZoom_valueChanged(int value);
     void on_pushButton_NewWildMonGroup_clicked();
+    void on_pushButton_DeleteWildMonGroup_clicked();
     void on_pushButton_ConfigureEncountersJSON_clicked();
 
     void on_actionRegion_Map_Editor_triggered();
@@ -228,6 +231,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+    QLabel *label_MapRulerStatus;
     TilesetEditor *tilesetEditor = nullptr;
     RegionMapEditor *regionMapEditor = nullptr;
     MapImageExporter *mapImageExporter = nullptr;
