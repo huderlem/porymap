@@ -169,7 +169,7 @@ void MainWindow::initEditor() {
     connect(this->editor, SIGNAL(currentMetatilesSelectionChanged()), this, SLOT(currentMetatilesSelectionChanged()));
     connect(this->editor, SIGNAL(wildMonDataChanged()), this, SLOT(onWildMonDataChanged()));
     connect(this->editor, &Editor::mapRulerStatusChanged, this, &MainWindow::onMapRulerStatusChanged);
-    connect(ui->toolButton_Open_Scripts, &QToolButton::clicked, this->editor, &Editor::openMapScripts);
+    connect(ui->toolButton_Open_Scripts, &QToolButton::pressed, this->editor, QOverload<>::of(&Editor::openMapScripts));
     connect(ui->actionOpen_Project_in_Text_Editor, &QAction::triggered, this->editor, &Editor::openProjectInTextEditor);
 
     this->loadUserSettings();
@@ -1866,7 +1866,22 @@ void MainWindow::updateSelectedObjects() {
             } else {
                 combo->setCurrentText(value);
 
-                fl->addRow(new QLabel(field_labels[key], widget), combo);
+                if (key == "script_label" && !porymapConfig.getTextEditorGotoLine().isEmpty()) {
+                    // Add tool button next to combo to open scripts file to combo's current script label.
+                    auto *hl = new QHBoxLayout();
+                    hl->setSpacing(3);
+                    auto *openScriptButton = new QToolButton(widget);
+                    openScriptButton->setFixedSize(combo->height(), combo->height());
+                    openScriptButton->setIcon(QFileIconProvider().icon(QFileIconProvider::File));
+                    openScriptButton->setToolTip("Go to this script definition in the map's scripts file.");
+                    connect(openScriptButton, &QToolButton::clicked,
+                            [this, combo]() { this->editor->openMapScripts(combo->currentText()); });
+                    hl->addWidget(combo);
+                    hl->addWidget(openScriptButton);
+                    fl->addRow(new QLabel(field_labels[key], widget), hl);
+                } else {
+                    fl->addRow(new QLabel(field_labels[key], widget), combo);
+                }
                 widget->setLayout(fl);
                 frame->layout()->addWidget(widget);
 

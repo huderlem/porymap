@@ -155,7 +155,8 @@ public:
     void scaleMapView(int);
 
 public slots:
-    void openMapScripts() const;
+    void openMapScripts(const QString &scriptLabel) const;
+    void openMapScripts() const { openMapScripts(QString()); }
     void openProjectInTextEditor() const;
     void maskNonVisibleConnectionTiles();
 

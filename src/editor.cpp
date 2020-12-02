@@ -2026,7 +2026,7 @@ void Editor::deleteEvent(Event *event) {
     //updateSelectedObjects();
 }
 
-void Editor::openMapScripts() const {
+void Editor::openMapScripts(const QString &scriptLabel) const {
     const QString scriptsPath = project->getMapScriptsFilePath(map->name);
     QString command = porymapConfig.getTextEditorGotoLine();
     if (command.isEmpty()) {
@@ -2035,8 +2035,6 @@ void Editor::openMapScripts() const {
     } else {
         if (command.contains("%F")) {
             if (command.contains("%L")) {
-                const QString scriptLabel = selected_events->isEmpty() ?
-                                            QString() : selected_events->first()->event->get("script_label");
                 const int lineNum = ParseUtil::getScriptLineNumber(scriptsPath, scriptLabel);
                 command.replace("%L", QString::number(lineNum));
             }

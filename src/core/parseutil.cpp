@@ -422,6 +422,9 @@ bool ParseUtil::ensureFieldsExist(QJsonObject obj, QList<QString> fields) {
 }
 
 int ParseUtil::getScriptLineNumber(const QString &filePath, const QString &scriptLabel) {
+    if (scriptLabel.isEmpty())
+        return 0;
+
     if (filePath.endsWith(".inc"))
         return getRawScriptLineNumber(readTextFile(filePath), scriptLabel);
     else if (filePath.endsWith(".pory"))

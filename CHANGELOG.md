@@ -18,7 +18,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - The window sizes and positions of the tileset editor, palette editor, and region map editor are now stored in `porymap.cfg`.
 - Add ruler tool for measuring metatile distance in events tab (Right-click to turn on/off, left-click to lock in place).
 - Add delete button to wild pokemon encounters tab.
-- Add ability to specify preferred text editor commands in `Options -> Edit Preferences`. These allow `Open Map Scripts` to open directly to the script for the currently selected event, and to open the project root directory in a text editor directly from porymap.
+- Add custom text editor commands in `Options -> Edit Preferences`, a tool-button next to the `Script` combo-box, and `Tools -> Open Project in Text Editor`. The tool-button will open the map's scripts file to the cooresponding script.
 
 ### Changed
 - Holding `shift` now toggles "Smart Path" drawing; when the "Smart Paths" checkbox is checked, holding `shift` will temporarily disable it.
