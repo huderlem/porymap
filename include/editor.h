@@ -155,8 +155,8 @@ public:
     void scaleMapView(int);
 
 public slots:
-    void openMapScripts(const QString &scriptLabel) const;
-    void openMapScripts() const { openMapScripts(QString()); }
+    void openMapScripts() const;
+    void openScript(const QString &scriptLabel) const;
     void openProjectInTextEditor() const;
     void maskNonVisibleConnectionTiles();
 
@@ -187,6 +187,7 @@ private:
     QString getMovementPermissionText(uint16_t collision, uint16_t elevation);
     QString getMetatileDisplayMessage(uint16_t metatileId);
     bool eventLimitReached(Map *, QString);
+    void openInTextEditor(const QString &path, int lineNum = 0) const;
     bool startDetachedProcess(const QString &command,
                               const QString &workingDirectory = QString(),
                               qint64 *pid = nullptr) const;

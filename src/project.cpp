@@ -2435,6 +2435,33 @@ QString Project::getMapScriptsFilePath(const QString &mapName) const {
     return path;
 }
 
+QStringList Project::getEventScriptsFilePaths() const {
+    QStringList filePaths(QDir::cleanPath(root + "/data/event_scripts.s"));
+    const QString scriptsDir = QDir::cleanPath(root + "/data/scripts");
+    const QString mapsDir = QDir::cleanPath(root + "/data/maps");
+    const bool usePoryscript = projectConfig.getUsePoryScript();
+
+    if (usePoryscript) {
+        QDirIterator it_pory_shared(scriptsDir, {"*.pory"}, QDir::Files);
+        while (it_pory_shared.hasNext())
+            filePaths << it_pory_shared.next();
+
+        QDirIterator it_pory_maps(mapsDir, {"scripts.pory"}, QDir::Files, QDirIterator::Subdirectories);
+        while (it_pory_maps.hasNext())
+            filePaths << it_pory_maps.next();
+    }
+
+    QDirIterator it_inc_shared(scriptsDir, {"*.inc"}, QDir::Files);
+    while (it_inc_shared.hasNext())
+        filePaths << it_inc_shared.next();
+
+    QDirIterator it_inc_maps(mapsDir, {"scripts.inc"}, QDir::Files, QDirIterator::Subdirectories);
+    while (it_inc_maps.hasNext())
+        filePaths << it_inc_maps.next();
+
+    return filePaths;
+}
+
 void Project::loadEventPixmaps(QList<Event*> objects) {
     bool needs_update = false;
     for (Event *object : objects) {

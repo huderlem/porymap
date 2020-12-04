@@ -1544,6 +1544,10 @@ void MainWindow::updateSelectedObjects() {
         }
     }
 
+    for (auto *button : openScriptButtons)
+        delete button;
+    openScriptButtons.clear();
+
     QMap<QString, int> event_obj_gfx_constants = editor->project->getEventObjGfxConstants();
 
     QList<EventPropertiesFrame *> frames;
@@ -1866,22 +1870,26 @@ void MainWindow::updateSelectedObjects() {
             } else {
                 combo->setCurrentText(value);
 
-                if (key == "script_label" && !porymapConfig.getTextEditorGotoLine().isEmpty()) {
-                    // Add tool button next to combo to open scripts file to combo's current script label.
+                if (key == "script_label") {
+                    // Add button next to combo which opens combo's current script.
                     auto *hl = new QHBoxLayout();
                     hl->setSpacing(3);
                     auto *openScriptButton = new QToolButton(widget);
+                    openScriptButtons << openScriptButton;
                     openScriptButton->setFixedSize(combo->height(), combo->height());
                     openScriptButton->setIcon(QFileIconProvider().icon(QFileIconProvider::File));
-                    openScriptButton->setToolTip("Go to this script definition in the map's scripts file.");
+                    openScriptButton->setToolTip("Go to this script definition in text editor.");
                     connect(openScriptButton, &QToolButton::clicked,
-                            [this, combo]() { this->editor->openMapScripts(combo->currentText()); });
+                            [this, combo]() { this->editor->openScript(combo->currentText()); });
                     hl->addWidget(combo);
                     hl->addWidget(openScriptButton);
                     fl->addRow(new QLabel(field_labels[key], widget), hl);
+                    if (porymapConfig.getTextEditorGotoLine().isEmpty())
+                        openScriptButton->hide();
                 } else {
                     fl->addRow(new QLabel(field_labels[key], widget), combo);
                 }
+
                 widget->setLayout(fl);
                 frame->layout()->addWidget(widget);
 
@@ -2587,6 +2595,14 @@ void MainWindow::on_actionEdit_Preferences_triggered() {
 }
 
 void MainWindow::togglePreferenceSpecificUi() {
+    if (porymapConfig.getTextEditorGotoLine().isEmpty()) {
+        for (auto *button : openScriptButtons)
+            button->hide();
+    } else {
+        for (auto *button : openScriptButtons)
+            button->show();
+    }
+
     if (porymapConfig.getTextEditorOpenFolder().isEmpty())
         ui->actionOpen_Project_in_Text_Editor->setEnabled(false);
     else

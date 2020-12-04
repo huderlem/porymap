@@ -175,6 +175,7 @@ public:
     QString getScriptFileExtension(bool usePoryScript) const;
     QString getScriptDefaultString(bool usePoryScript, QString mapName) const;
     QString getMapScriptsFilePath(const QString &mapName) const;
+    QStringList getEventScriptsFilePaths() const;
 
     bool loadMapBorder(Map *map);
 

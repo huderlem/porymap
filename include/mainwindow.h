@@ -263,6 +263,7 @@ private:
     DraggablePixmapItem *selectedHealspot;
 
     QList<QAction *> registeredActions;
+    QVector<QToolButton *> openScriptButtons;
 
     bool isProgrammaticEventTabChange;
     bool projectHasUnsavedChanges;

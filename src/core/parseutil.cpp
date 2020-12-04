@@ -425,7 +425,7 @@ int ParseUtil::getScriptLineNumber(const QString &filePath, const QString &scrip
     if (scriptLabel.isEmpty())
         return 0;
 
-    if (filePath.endsWith(".inc"))
+    if (filePath.endsWith(".inc") || filePath.endsWith(".s"))
         return getRawScriptLineNumber(readTextFile(filePath), scriptLabel);
     else if (filePath.endsWith(".pory"))
         return getPoryScriptLineNumber(readTextFile(filePath), scriptLabel);

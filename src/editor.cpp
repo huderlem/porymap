@@ -2026,21 +2026,40 @@ void Editor::deleteEvent(Event *event) {
     //updateSelectedObjects();
 }
 
-void Editor::openMapScripts(const QString &scriptLabel) const {
-    const QString scriptsPath = project->getMapScriptsFilePath(map->name);
+void Editor::openMapScripts() const {
+    const QString scriptPath = project->getMapScriptsFilePath(map->name);
+    openInTextEditor(scriptPath);
+}
+
+void Editor::openScript(const QString &scriptLabel) const {
+    // Find the location of scriptLabel.
+    QStringList scriptPaths(project->getMapScriptsFilePath(map->name));
+    scriptPaths << project->getEventScriptsFilePaths();
+    int lineNum = 0;
+    QString scriptPath = scriptPaths.first();
+    for (const auto &path : scriptPaths) {
+        lineNum = ParseUtil::getScriptLineNumber(path, scriptLabel);
+        if (lineNum != 0) {
+            scriptPath = path;
+            break;
+        }
+    }
+
+    openInTextEditor(scriptPath, lineNum);
+}
+
+void Editor::openInTextEditor(const QString &path, int lineNum) const {
     QString command = porymapConfig.getTextEditorGotoLine();
     if (command.isEmpty()) {
         // Open map scripts in the system's default editor.
-        QDesktopServices::openUrl(QUrl::fromLocalFile(scriptsPath));
+        QDesktopServices::openUrl(QUrl::fromLocalFile(path));
     } else {
         if (command.contains("%F")) {
-            if (command.contains("%L")) {
-                const int lineNum = ParseUtil::getScriptLineNumber(scriptsPath, scriptLabel);
+            if (command.contains("%L"))
                 command.replace("%L", QString::number(lineNum));
-            }
-            command.replace("%F", scriptsPath);
+            command.replace("%F", path);
         } else {
-            command += ' ' + scriptsPath;
+            command += ' ' + path;
         }
         startDetachedProcess(command);
     }
@@ -2056,6 +2075,7 @@ void Editor::openProjectInTextEditor() const {
 }
 
 bool Editor::startDetachedProcess(const QString &command, const QString &workingDirectory, qint64 *pid) const {
+    logInfo("Executing command: " + command);
 #ifdef Q_OS_WIN
     // On Windows, a QProcess command must be wrapped in a cmd.exe command.
     const QString program = QProcessEnvironment::systemEnvironment().value("COMSPEC");
