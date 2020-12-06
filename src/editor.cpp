@@ -24,9 +24,8 @@ Editor::Editor(Ui::MainWindow* ui)
     this->settings = new Settings();
     this->playerViewRect = new MovableRect(&this->settings->playerViewRectEnabled, 30 * 8, 20 * 8, qRgb(255, 255, 255));
     this->cursorMapTileRect = new CursorTileRect(&this->settings->cursorTileRectEnabled, qRgb(255, 255, 255));
-    this->map_ruler = new MapRuler();
-    connect(this->map_ruler, &MapRuler::lengthChanged, this, &Editor::onMapRulerLengthChanged);
-    connect(this->map_ruler, &MapRuler::deactivated, this, &Editor::onHoveredMapMetatileChanged);
+    this->map_ruler = new MapRuler(4);
+    connect(this->map_ruler, &MapRuler::statusChanged, this, &Editor::mapRulerStatusChanged);
 
     /// Instead of updating the selected events after every single undo action
     /// (eg when the user rolls back several at once), only reselect events when
@@ -353,6 +352,44 @@ void Editor::addNewWildMonGroup(QWidget *window) {
             tabIndex++;
         }
         saveEncounterTabData();
+        emit wildMonDataChanged();
+    }
+}
+
+void Editor::deleteWildMonGroup() {
+    QComboBox *labelCombo = ui->comboBox_EncounterGroupLabel;
+
+    if (labelCombo->count() < 1) {
+        return;
+    }
+
+    QMessageBox msgBox;
+    msgBox.setText("Confirm Delete");
+    msgBox.setInformativeText("Are you sure you want to delete " + labelCombo->currentText() + "?");
+
+    QPushButton *deleteButton = msgBox.addButton("Delete", QMessageBox::DestructiveRole);
+    msgBox.addButton(QMessageBox::Cancel);
+    msgBox.setDefaultButton(QMessageBox::Cancel);
+    msgBox.exec();
+
+    if (msgBox.clickedButton() == deleteButton) {
+        auto it = project->wildMonData.find(map->constantName);
+        if (it == project->wildMonData.end()) {
+          logError(QString("Failed to find data for map %1. Unable to delete").arg(map->constantName));
+          return;
+        }
+
+        int i = project->encounterGroupLabels.indexOf(labelCombo->currentText());
+        if (i < 0) {
+          logError(QString("Failed to find selected wild mon group: %1. Unable to delete")
+                   .arg(labelCombo->currentText()));
+          return;
+        }
+
+        it.value().erase(labelCombo->currentText());
+        project->encounterGroupLabels.remove(i);
+
+        displayWildMonTables();
         emit wildMonDataChanged();
     }
 }
@@ -935,24 +972,12 @@ void Editor::onHoveredMapMetatileChanged(const QPoint &pos) {
     }
 }
 
-void Editor::onMapRulerLengthChanged() {
-    const QPoint pos = map_ruler->endPos();
-    ui->statusBar->showMessage(QString("X: %1, Y: %2, Scale = %3x; %4")
-                    .arg(pos.x())
-                    .arg(pos.y())
-                    .arg(QString::number(pow(scale_base, scale_exp), 'g', 2))
-                    .arg(map_ruler->statusMessage));
-}
-
 void Editor::onHoveredMapMetatileCleared() {
     this->playerViewRect->setVisible(false);
     this->cursorMapTileRect->setVisible(false);
     if (map_item->paintingMode == MapPixmapItem::PaintMode::Metatiles
      || map_item->paintingMode == MapPixmapItem::PaintMode::EventObjects) {
         this->ui->statusBar->clearMessage();
-        if (this->map_ruler->isAnchored()) {
-            this->ui->statusBar->showMessage(this->map_ruler->statusMessage);
-        }
     }
 }
 
