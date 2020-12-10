@@ -1,6 +1,7 @@
 #include "regionmapeditor.h"
 #include "ui_regionmapeditor.h"
 #include "imageexport.h"
+#include "shortcut.h"
 #include "config.h"
 #include "log.h"
 
@@ -24,6 +25,7 @@ RegionMapEditor::RegionMapEditor(QWidget *parent, Project *project_) :
     this->project = project_;
     this->region_map = new RegionMap;
     this->ui->action_RegionMap_Resize->setVisible(false);
+    this->initShortcuts();
     this->restoreWindowState();
 }
 
@@ -90,6 +92,39 @@ bool RegionMapEditor::loadCityMaps() {
     }
     this->ui->comboBox_CityMap_picker->addItems(without_bin);
     return true;
+}
+
+void RegionMapEditor::initShortcuts() {
+    auto *shortcut_RM_Options_delete = new Shortcut(
+            {QKeySequence("Del"), QKeySequence("Backspace")}, this, SLOT(on_pushButton_RM_Options_delete_clicked()));
+    shortcut_RM_Options_delete->setObjectName("shortcut_RM_Options_delete");
+    shortcut_RM_Options_delete->setWhatsThis("Map Layout: Delete Square");
+
+    shortcutsConfig.load();
+    shortcutsConfig.setDefaultShortcuts(shortcutableObjects());
+    applyUserShortcuts();
+}
+
+QObjectList RegionMapEditor::shortcutableObjects() const {
+    QObjectList shortcutable_objects;
+
+    for (auto *action : findChildren<QAction *>())
+        if (!action->objectName().isEmpty())
+            shortcutable_objects.append(qobject_cast<QObject *>(action));
+    for (auto *shortcut : findChildren<Shortcut *>())
+        if (!shortcut->objectName().isEmpty())
+            shortcutable_objects.append(qobject_cast<QObject *>(shortcut));
+
+    return shortcutable_objects;
+}
+
+void RegionMapEditor::applyUserShortcuts() {
+    for (auto *action : findChildren<QAction *>())
+        if (!action->objectName().isEmpty())
+            action->setShortcuts(shortcutsConfig.userShortcuts(action));
+    for (auto *shortcut : findChildren<Shortcut *>())
+        if (!shortcut->objectName().isEmpty())
+            shortcut->setKeys(shortcutsConfig.userShortcuts(shortcut));
 }
 
 void RegionMapEditor::displayRegionMap() {

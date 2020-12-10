@@ -6,6 +6,7 @@
 #include "paletteutil.h"
 #include "imageexport.h"
 #include "config.h"
+#include "shortcut.h"
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QDialogButtonBox>
@@ -86,7 +87,6 @@ void TilesetEditor::setTilesets(QString primaryTilesetLabel, QString secondaryTi
 
 void TilesetEditor::initUi() {
     ui->setupUi(this);
-    new QShortcut(QKeySequence("Ctrl+Shift+Z"), this, SLOT(on_actionRedo_triggered()));
     this->tileXFlip = ui->checkBox_xFlip->isChecked();
     this->tileYFlip = ui->checkBox_yFlip->isChecked();
     this->paletteId = ui->spinBox_paletteSelector->value();
@@ -102,6 +102,7 @@ void TilesetEditor::initUi() {
     this->initMetatileLayersItem();
     this->initTileSelector();
     this->initSelectedTileItem();
+    this->initShortcuts();
     this->metatileSelector->select(0);
     this->restoreWindowState();
 }
@@ -207,6 +208,48 @@ void TilesetEditor::initSelectedTileItem() {
     this->drawSelectedTiles();
     this->ui->graphicsView_selectedTile->setScene(this->selectedTileScene);
     this->ui->graphicsView_selectedTile->setFixedSize(this->selectedTilePixmapItem->pixmap().width() + 2, this->selectedTilePixmapItem->pixmap().height() + 2);
+}
+
+void TilesetEditor::initShortcuts() {
+    initExtraShortcuts();
+
+    shortcutsConfig.load();
+    shortcutsConfig.setDefaultShortcuts(shortcutableObjects());
+    applyUserShortcuts();
+}
+
+void TilesetEditor::initExtraShortcuts() {
+    ui->actionRedo->setShortcuts({ui->actionRedo->shortcut(), QKeySequence("Ctrl+Shift+Z")});
+
+    auto *shortcut_xFlip = new Shortcut(QKeySequence(), ui->checkBox_xFlip, SLOT(toggle()));
+    shortcut_xFlip->setObjectName("shortcut_xFlip");
+    shortcut_xFlip->setWhatsThis("X Flip");
+
+    auto *shortcut_yFlip = new Shortcut(QKeySequence(), ui->checkBox_yFlip, SLOT(toggle()));
+    shortcut_yFlip->setObjectName("shortcut_yFlip");
+    shortcut_yFlip->setWhatsThis("Y Flip");
+}
+
+QObjectList TilesetEditor::shortcutableObjects() const {
+    QObjectList shortcutable_objects;
+
+    for (auto *action : findChildren<QAction *>())
+        if (!action->objectName().isEmpty())
+            shortcutable_objects.append(qobject_cast<QObject *>(action));
+    for (auto *shortcut : findChildren<Shortcut *>())
+        if (!shortcut->objectName().isEmpty())
+            shortcutable_objects.append(qobject_cast<QObject *>(shortcut));
+
+    return shortcutable_objects;
+}
+
+void TilesetEditor::applyUserShortcuts() {
+    for (auto *action : findChildren<QAction *>())
+        if (!action->objectName().isEmpty())
+            action->setShortcuts(shortcutsConfig.userShortcuts(action));
+    for (auto *shortcut : findChildren<Shortcut *>())
+        if (!shortcut->objectName().isEmpty())
+            shortcut->setKeys(shortcutsConfig.userShortcuts(shortcut));
 }
 
 void TilesetEditor::restoreWindowState() {
