@@ -54,6 +54,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QApplication::setApplicationDisplayName("porymap");
     QApplication::setWindowIcon(QIcon(":/icons/porymap-icon-2.ico"));
     ui->setupUi(this);
+    asdfasdf
 
     cleanupLargeLog();
 
