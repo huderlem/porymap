@@ -63,6 +63,8 @@ public:
     static QString &removeLineComments(QString &text, const QString &commentSymbol);
     static QString &removeLineComments(QString &text, const QStringList &commentSymbols);
 
+    static QStringList splitShellCommand(QStringView command);
+
 private:
     QString root;
     QString text;

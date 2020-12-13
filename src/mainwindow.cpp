@@ -144,9 +144,9 @@ void MainWindow::initExtraShortcuts() {
     shortcutCollapse_All->setObjectName("shortcutCollapse_All");
     shortcutCollapse_All->setWhatsThis("Map List: Collapse all folders");
 
-    auto *shortcutNew_Event = new Shortcut(QKeySequence(), this, SLOT(on_toolButton_Open_Scripts_clicked()));
-    shortcutNew_Event->setObjectName("shortcut_Open_Scripts");
-    shortcutNew_Event->setWhatsThis("Open Map Scripts");
+    auto *shortcut_Open_Scripts = new Shortcut(QKeySequence(), ui->toolButton_Open_Scripts, SLOT(click()));
+    shortcut_Open_Scripts->setObjectName("shortcut_Open_Scripts");
+    shortcut_Open_Scripts->setWhatsThis("Open Map Scripts");
 }
 
 QObjectList MainWindow::shortcutableObjects() const {
@@ -231,7 +231,7 @@ void MainWindow::initEditor() {
     connect(this->editor, SIGNAL(currentMetatilesSelectionChanged()), this, SLOT(currentMetatilesSelectionChanged()));
     connect(this->editor, SIGNAL(wildMonDataChanged()), this, SLOT(onWildMonDataChanged()));
     connect(this->editor, &Editor::mapRulerStatusChanged, this, &MainWindow::onMapRulerStatusChanged);
-    connect(ui->toolButton_Open_Scripts, &QToolButton::pressed, this->editor, QOverload<>::of(&Editor::openMapScripts));
+    connect(ui->toolButton_Open_Scripts, &QToolButton::pressed, this->editor, &Editor::openMapScripts);
     connect(ui->actionOpen_Project_in_Text_Editor, &QAction::triggered, this->editor, &Editor::openProjectInTextEditor);
 
     this->loadUserSettings();

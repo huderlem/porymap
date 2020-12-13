@@ -165,7 +165,7 @@ FORMS    += forms/mainwindow.ui \
     forms/aboutporymap.ui \
     forms/newtilesetdialog.ui \
     forms/mapimageexporter.ui \
-    forms/shortcutseditor.ui
+    forms/shortcutseditor.ui \
     forms/preferenceeditor.ui
 
 RESOURCES += \

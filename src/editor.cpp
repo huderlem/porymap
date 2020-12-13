@@ -2084,7 +2084,7 @@ bool Editor::startDetachedProcess(const QString &command, const QString &working
     process.setNativeArguments("/c " + command);
     process.setWorkingDirectory(workingDirectory);
 #else
-    QStringList arguments = QProcess::splitCommand(command);
+    QStringList arguments = ParseUtil::splitShellCommand(command);
     process.setProgram(arguments.takeFirst());
     process.setArguments(arguments);
     process.setWorkingDirectory(workingDirectory);

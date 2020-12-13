@@ -487,3 +487,51 @@ QString &ParseUtil::removeLineComments(QString &text, const QStringList &comment
         removeLineComments(text, commentSymbol);
     return text;
 }
+
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
+#include <QProcess>
+
+QStringList ParseUtil::splitShellCommand(QStringView command) {
+    return QProcess::splitCommand(command);
+}
+#else
+// The source for QProcess::splitCommand() as of Qt 5.15.2
+QStringList ParseUtil::splitShellCommand(QStringView command) {
+    QStringList args;
+    QString tmp;
+    int quoteCount = 0;
+    bool inQuote = false;
+
+    // handle quoting. tokens can be surrounded by double quotes
+    // "hello world". three consecutive double quotes represent
+    // the quote character itself.
+    for (int i = 0; i < command.size(); ++i) {
+        if (command.at(i) == QLatin1Char('"')) {
+            ++quoteCount;
+            if (quoteCount == 3) {
+                // third consecutive quote
+                quoteCount = 0;
+                tmp += command.at(i);
+            }
+            continue;
+        }
+        if (quoteCount) {
+            if (quoteCount == 1)
+                inQuote = !inQuote;
+            quoteCount = 0;
+        }
+        if (!inQuote && command.at(i).isSpace()) {
+            if (!tmp.isEmpty()) {
+                args += tmp;
+                tmp.clear();
+            }
+        } else {
+            tmp += command.at(i);
+        }
+    }
+    if (!tmp.isEmpty())
+        args += tmp;
+
+    return args;
+}
+#endif
