@@ -420,3 +420,118 @@ bool ParseUtil::ensureFieldsExist(QJsonObject obj, QList<QString> fields) {
     }
     return true;
 }
+
+int ParseUtil::getScriptLineNumber(const QString &filePath, const QString &scriptLabel) {
+    if (scriptLabel.isEmpty())
+        return 0;
+
+    if (filePath.endsWith(".inc") || filePath.endsWith(".s"))
+        return getRawScriptLineNumber(readTextFile(filePath), scriptLabel);
+    else if (filePath.endsWith(".pory"))
+        return getPoryScriptLineNumber(readTextFile(filePath), scriptLabel);
+
+    return 0;
+}
+
+int ParseUtil::getRawScriptLineNumber(QString text, const QString &scriptLabel) {
+    removeStringLiterals(text);
+    removeLineComments(text, "@");
+
+    static const QRegularExpression re_incScriptLabel("\\b(?<label>[\\w_][\\w\\d_]*):{1,2}");
+    QRegularExpressionMatchIterator it = re_incScriptLabel.globalMatch(text);
+    while (it.hasNext()) {
+        const QRegularExpressionMatch match = it.next();
+        if (match.captured("label") == scriptLabel)
+            return text.left(match.capturedStart("label")).count('\n') + 1;
+    }
+
+    return 0;
+}
+
+int ParseUtil::getPoryScriptLineNumber(QString text, const QString &scriptLabel) {
+    removeStringLiterals(text);
+    removeLineComments(text, {"//", "#"});
+
+    static const QRegularExpression re_poryScriptLabel("\\b(script)(\\((global|local)\\))?\\s*\\b(?<label>[\\w_][\\w\\d_]*)");
+    QRegularExpressionMatchIterator it = re_poryScriptLabel.globalMatch(text);
+    while (it.hasNext()) {
+        const QRegularExpressionMatch match = it.next();
+        if (match.captured("label") == scriptLabel)
+            return text.left(match.capturedStart("label")).count('\n') + 1;
+    }
+
+    static const QRegularExpression re_poryRawSection("\\b(raw)\\s*`(?<raw_script>[^`]*)");
+    QRegularExpressionMatchIterator raw_it = re_poryRawSection.globalMatch(text);
+    while (raw_it.hasNext()) {
+        const QRegularExpressionMatch match = raw_it.next();
+        const int relativelineNum = getRawScriptLineNumber(match.captured("raw_script"), scriptLabel);
+        if (relativelineNum)
+            return text.left(match.capturedStart("raw_script")).count('\n') + relativelineNum;
+    }
+
+    return 0;
+}
+
+QString &ParseUtil::removeStringLiterals(QString &text) {
+    static const QRegularExpression re_string("\".*\"");
+    return text.remove(re_string);
+}
+
+QString &ParseUtil::removeLineComments(QString &text, const QString &commentSymbol) {
+    const QRegularExpression re_lineComment(commentSymbol + "+.*");
+    return text.remove(re_lineComment);
+}
+
+QString &ParseUtil::removeLineComments(QString &text, const QStringList &commentSymbols) {
+    for (const auto &commentSymbol : commentSymbols)
+        removeLineComments(text, commentSymbol);
+    return text;
+}
+
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
+#include <QProcess>
+
+QStringList ParseUtil::splitShellCommand(QStringView command) {
+    return QProcess::splitCommand(command);
+}
+#else
+// The source for QProcess::splitCommand() as of Qt 5.15.2
+QStringList ParseUtil::splitShellCommand(QStringView command) {
+    QStringList args;
+    QString tmp;
+    int quoteCount = 0;
+    bool inQuote = false;
+
+    // handle quoting. tokens can be surrounded by double quotes
+    // "hello world". three consecutive double quotes represent
+    // the quote character itself.
+    for (int i = 0; i < command.size(); ++i) {
+        if (command.at(i) == QLatin1Char('"')) {
+            ++quoteCount;
+            if (quoteCount == 3) {
+                // third consecutive quote
+                quoteCount = 0;
+                tmp += command.at(i);
+            }
+            continue;
+        }
+        if (quoteCount) {
+            if (quoteCount == 1)
+                inQuote = !inQuote;
+            quoteCount = 0;
+        }
+        if (!inQuote && command.at(i).isSpace()) {
+            if (!tmp.isEmpty()) {
+                args += tmp;
+                tmp.clear();
+            }
+        } else {
+            tmp += command.at(i);
+        }
+    }
+    if (!tmp.isEmpty())
+        args += tmp;
+
+    return args;
+}
+#endif

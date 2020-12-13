@@ -2624,8 +2624,6 @@
     <addaction name="actionCursor_Tile_Outline"/>
     <addaction name="actionPlayer_View_Rectangle"/>
     <addaction name="actionBetter_Cursors"/>
-    <addaction name="separator"/>
-    <addaction name="actionThemes"/>
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
@@ -2642,6 +2640,8 @@
     <addaction name="actionNew_Tileset"/>
     <addaction name="actionTileset_Editor"/>
     <addaction name="actionRegion_Map_Editor"/>
+    <addaction name="separator"/>
+    <addaction name="actionOpen_Project_in_Text_Editor"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -2657,6 +2657,7 @@
     <addaction name="actionMonitor_Project_Files"/>
     <addaction name="actionUse_Poryscript"/>
     <addaction name="separator"/>
+    <addaction name="actionEdit_Preferences"/>
     <addaction name="actionEdit_Shortcuts"/>
    </widget>
    <addaction name="menuFile"/>
@@ -2914,14 +2915,22 @@
     <string>Ctrl+Shift+N</string>
    </property>
   </action>
-  <action name="actionThemes">
-   <property name="text">
-    <string>Themes...</string>
-   </property>
-  </action>
   <action name="actionExport_Stitched_Map_Image">
    <property name="text">
     <string>Export Map Stitch Image...</string>
+   </property>
+  </action>
+  <action name="actionEdit_Preferences">
+   <property name="text">
+    <string>Edit Preferences...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+,</string>
+   </property>
+  </action>
+  <action name="actionOpen_Project_in_Text_Editor">
+   <property name="text">
+    <string>Open Project in Text Editor</string>
    </property>
   </action>
   <action name="actionEdit_Shortcuts">

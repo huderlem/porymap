@@ -9,10 +9,12 @@
 #include "metatile.h"
 #include "montabwidget.h"
 #include "editcommands.h"
+#include "config.h"
 #include <QCheckBox>
 #include <QPainter>
 #include <QMouseEvent>
 #include <QDir>
+#include <QProcess>
 #include <math.h>
 
 static bool selectNewEvents = false;
@@ -2022,6 +2024,72 @@ void Editor::deleteEvent(Event *event) {
     }
     //selected_events->removeAll(event);
     //updateSelectedObjects();
+}
+
+void Editor::openMapScripts() const {
+    const QString scriptPath = project->getMapScriptsFilePath(map->name);
+    openInTextEditor(scriptPath);
+}
+
+void Editor::openScript(const QString &scriptLabel) const {
+    // Find the location of scriptLabel.
+    QStringList scriptPaths(project->getMapScriptsFilePath(map->name));
+    scriptPaths << project->getEventScriptsFilePaths();
+    int lineNum = 0;
+    QString scriptPath = scriptPaths.first();
+    for (const auto &path : scriptPaths) {
+        lineNum = ParseUtil::getScriptLineNumber(path, scriptLabel);
+        if (lineNum != 0) {
+            scriptPath = path;
+            break;
+        }
+    }
+
+    openInTextEditor(scriptPath, lineNum);
+}
+
+void Editor::openInTextEditor(const QString &path, int lineNum) const {
+    QString command = porymapConfig.getTextEditorGotoLine();
+    if (command.isEmpty()) {
+        // Open map scripts in the system's default editor.
+        QDesktopServices::openUrl(QUrl::fromLocalFile(path));
+    } else {
+        if (command.contains("%F")) {
+            if (command.contains("%L"))
+                command.replace("%L", QString::number(lineNum));
+            command.replace("%F", path);
+        } else {
+            command += ' ' + path;
+        }
+        startDetachedProcess(command);
+    }
+}
+
+void Editor::openProjectInTextEditor() const {
+    QString command = porymapConfig.getTextEditorOpenFolder();
+    if (command.contains("%D"))
+        command.replace("%D", project->root);
+    else
+        command += ' ' + project->root;
+    startDetachedProcess(command);
+}
+
+bool Editor::startDetachedProcess(const QString &command, const QString &workingDirectory, qint64 *pid) const {
+    static QProcess process;
+    logInfo("Executing command: " + command);
+#ifdef Q_OS_WIN
+    // On Windows, a QProcess command must be wrapped in a cmd.exe command.
+    process.setProcessEnvironment(QProcessEnvironment::systemEnvironment());
+    process.setProgram(process.processEnvironment().value("COMSPEC"));
+    process.setNativeArguments("/c " + command);
+    process.setWorkingDirectory(workingDirectory);
+#else
+    QStringList arguments = ParseUtil::splitShellCommand(command);
+    process.setProgram(arguments.takeFirst());
+    process.setArguments(arguments);
+    process.setWorkingDirectory(workingDirectory);
+#endif
+    return process.startDetached(pid);
 }
 
 // It doesn't seem to be possible to prevent the mousePress event

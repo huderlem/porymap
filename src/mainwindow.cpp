@@ -29,7 +29,6 @@
 #include <QDialogButtonBox>
 #include <QScroller>
 #include <math.h>
-#include <QProcess>
 #include <QSysInfo>
 #include <QDesktopServices>
 #include <QTransform>
@@ -84,6 +83,8 @@ void MainWindow::setWindowDisabled(bool disabled) {
     ui->action_Exit->setDisabled(false);
     ui->menuHelp->setDisabled(false);
     ui->actionAbout_Porymap->setDisabled(false);
+    if (!disabled)
+        togglePreferenceSpecificUi();
 }
 
 void MainWindow::initWindow() {
@@ -143,9 +144,9 @@ void MainWindow::initExtraShortcuts() {
     shortcutCollapse_All->setObjectName("shortcutCollapse_All");
     shortcutCollapse_All->setWhatsThis("Map List: Collapse all folders");
 
-    auto *shortcutNew_Event = new Shortcut(QKeySequence(), this, SLOT(on_toolButton_Open_Scripts_clicked()));
-    shortcutNew_Event->setObjectName("shortcut_Open_Scripts");
-    shortcutNew_Event->setWhatsThis("Open Map Scripts");
+    auto *shortcut_Open_Scripts = new Shortcut(QKeySequence(), ui->toolButton_Open_Scripts, SLOT(click()));
+    shortcut_Open_Scripts->setObjectName("shortcut_Open_Scripts");
+    shortcut_Open_Scripts->setWhatsThis("Open Map Scripts");
 }
 
 QObjectList MainWindow::shortcutableObjects() const {
@@ -230,6 +231,8 @@ void MainWindow::initEditor() {
     connect(this->editor, SIGNAL(currentMetatilesSelectionChanged()), this, SLOT(currentMetatilesSelectionChanged()));
     connect(this->editor, SIGNAL(wildMonDataChanged()), this, SLOT(onWildMonDataChanged()));
     connect(this->editor, &Editor::mapRulerStatusChanged, this, &MainWindow::onMapRulerStatusChanged);
+    connect(ui->toolButton_Open_Scripts, &QToolButton::pressed, this->editor, &Editor::openMapScripts);
+    connect(ui->actionOpen_Project_in_Text_Editor, &QAction::triggered, this->editor, &Editor::openProjectInTextEditor);
 
     this->loadUserSettings();
 
@@ -1372,16 +1375,6 @@ void MainWindow::duplicate() {
     editor->duplicateSelectedEvents();
 }
 
-// Open current map scripts in system default editor for .inc files
-void MainWindow::openInTextEditor() {
-    bool usePoryscript = projectConfig.getUsePoryScript();
-    QString path = QDir::cleanPath("file://" + editor->project->root + QDir::separator() + "data/maps/" + editor->map->name + "/scripts");
-
-    // Try opening scripts file, if opening .pory failed try again with .inc
-    if (!QDesktopServices::openUrl(QUrl(path + editor->project->getScriptFileExtension(usePoryscript))) && usePoryscript)
-        QDesktopServices::openUrl(QUrl(path + editor->project->getScriptFileExtension(false)));
-}
-
 void MainWindow::on_action_Save_triggered() {
     editor->save();
     updateMapList();
@@ -1658,6 +1651,10 @@ void MainWindow::updateSelectedObjects() {
         }
     }
 
+    for (auto *button : openScriptButtons)
+        delete button;
+    openScriptButtons.clear();
+
     QMap<QString, int> event_obj_gfx_constants = editor->project->getEventObjGfxConstants();
 
     QList<EventPropertiesFrame *> frames;
@@ -1917,6 +1914,7 @@ void MainWindow::updateSelectedObjects() {
                                   "normal movement behavior actions.");
                 combo->setMinimumContentsLength(4);
             } else if (key == "script_label") {
+                combo->addItems(editor->map->eventScriptLabels());
                 combo->setToolTip("The script which is executed with this event.");
             } else if (key == "trainer_type") {
                 combo->addItems(*editor->project->trainerTypes);
@@ -1979,7 +1977,26 @@ void MainWindow::updateSelectedObjects() {
             } else {
                 combo->setCurrentText(value);
 
-                fl->addRow(new QLabel(field_labels[key], widget), combo);
+                if (key == "script_label") {
+                    // Add button next to combo which opens combo's current script.
+                    auto *hl = new QHBoxLayout();
+                    hl->setSpacing(3);
+                    auto *openScriptButton = new QToolButton(widget);
+                    openScriptButtons << openScriptButton;
+                    openScriptButton->setFixedSize(combo->height(), combo->height());
+                    openScriptButton->setIcon(QFileIconProvider().icon(QFileIconProvider::File));
+                    openScriptButton->setToolTip("Go to this script definition in text editor.");
+                    connect(openScriptButton, &QToolButton::clicked,
+                            [this, combo]() { this->editor->openScript(combo->currentText()); });
+                    hl->addWidget(combo);
+                    hl->addWidget(openScriptButton);
+                    fl->addRow(new QLabel(field_labels[key], widget), hl);
+                    if (porymapConfig.getTextEditorGotoLine().isEmpty())
+                        openScriptButton->hide();
+                } else {
+                    fl->addRow(new QLabel(field_labels[key], widget), combo);
+                }
+
                 widget->setLayout(fl);
                 frame->layout()->addWidget(widget);
 
@@ -2212,11 +2229,6 @@ void MainWindow::on_toolButton_deleteObject_clicked() {
             }
         }
     }
-}
-
-void MainWindow::on_toolButton_Open_Scripts_clicked()
-{
-    openInTextEditor();
 }
 
 void MainWindow::on_toolButton_Paint_clicked()
@@ -2672,38 +2684,40 @@ void MainWindow::on_actionAbout_Porymap_triggered()
     window->show();
 }
 
-void MainWindow::on_actionThemes_triggered()
-{
-    QStringList themes;
-    QRegularExpression re(":/themes/([A-z0-9_-]+).qss");
-    themes.append("default");
-    QDirIterator it(":/themes", QDirIterator::Subdirectories);
-    while (it.hasNext()) {
-        QString themeName = re.match(it.next()).captured(1);
-        themes.append(themeName);
+void MainWindow::on_actionEdit_Preferences_triggered() {
+    if (!preferenceEditor) {
+        preferenceEditor = new PreferenceEditor(this);
+        connect(preferenceEditor, &PreferenceEditor::themeChanged,
+                this, &MainWindow::setTheme);
+        connect(preferenceEditor, &PreferenceEditor::themeChanged,
+                editor, &Editor::maskNonVisibleConnectionTiles);
+        connect(preferenceEditor, &PreferenceEditor::preferencesSaved,
+                this, &MainWindow::togglePreferenceSpecificUi);
+        connect(preferenceEditor, &QObject::destroyed, [=](QObject *) { preferenceEditor = nullptr; });
     }
 
-    QDialog themeSelectorWindow(this);
-    QFormLayout form(&themeSelectorWindow);
+    if (!preferenceEditor->isVisible()) {
+        preferenceEditor->show();
+    } else if (preferenceEditor->isMinimized()) {
+        preferenceEditor->showNormal();
+    } else {
+        preferenceEditor->activateWindow();
+    }
+}
 
-    NoScrollComboBox *themeSelector = new NoScrollComboBox();
-    themeSelector->addItems(themes);
-    themeSelector->setCurrentText(porymapConfig.getTheme());
-    form.addRow(new QLabel("Themes"), themeSelector);
+void MainWindow::togglePreferenceSpecificUi() {
+    if (porymapConfig.getTextEditorGotoLine().isEmpty()) {
+        for (auto *button : openScriptButtons)
+            button->hide();
+    } else {
+        for (auto *button : openScriptButtons)
+            button->show();
+    }
 
-    QDialogButtonBox buttonBox(QDialogButtonBox::Apply | QDialogButtonBox::Close, Qt::Horizontal, &themeSelectorWindow);
-    form.addRow(&buttonBox);
-    connect(&buttonBox, &QDialogButtonBox::clicked, [&buttonBox, themeSelector, this](QAbstractButton *button){
-        if (button == buttonBox.button(QDialogButtonBox::Apply)) {
-            QString theme = themeSelector->currentText();
-            porymapConfig.setTheme(theme);
-            this->setTheme(theme);
-            editor->maskNonVisibleConnectionTiles();
-        }
-    });
-    connect(&buttonBox, SIGNAL(rejected()), &themeSelectorWindow, SLOT(reject()));
-
-    themeSelectorWindow.exec();
+    if (porymapConfig.getTextEditorOpenFolder().isEmpty())
+        ui->actionOpen_Project_in_Text_Editor->setEnabled(false);
+    else
+        ui->actionOpen_Project_in_Text_Editor->setEnabled(true);
 }
 
 void MainWindow::on_pushButton_AddCustomHeaderField_clicked()

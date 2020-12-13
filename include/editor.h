@@ -65,7 +65,6 @@ public:
     void displayMapBorder();
     void displayMapGrid();
     void displayWildMonTables();
-    void maskNonVisibleConnectionTiles();
 
     void updateMapBorder();
     void updateMapConnections();
@@ -155,6 +154,12 @@ public:
     void shouldReselectEvents();
     void scaleMapView(int);
 
+public slots:
+    void openMapScripts() const;
+    void openScript(const QString &scriptLabel) const;
+    void openProjectInTextEditor() const;
+    void maskNonVisibleConnectionTiles();
+
 private:
     void setConnectionItemsVisible(bool);
     void setBorderItemsVisible(bool, qreal = 1);
@@ -182,6 +187,10 @@ private:
     QString getMovementPermissionText(uint16_t collision, uint16_t elevation);
     QString getMetatileDisplayMessage(uint16_t metatileId);
     bool eventLimitReached(Map *, QString);
+    void openInTextEditor(const QString &path, int lineNum = 0) const;
+    bool startDetachedProcess(const QString &command,
+                              const QString &workingDirectory = QString(),
+                              qint64 *pid = nullptr) const;
 
 private slots:
     void onMapStartPaint(QGraphicsSceneMouseEvent *event, MapPixmapItem *item);

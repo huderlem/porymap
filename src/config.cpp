@@ -190,6 +190,10 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         }
     } else if (key == "theme") {
         this->theme = value;
+    } else if (key == "text_editor_open_directory") {
+        this->textEditorOpenFolder = value;
+    } else if (key == "text_editor_goto_line") {
+        this->textEditorGotoLine = value;
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -219,6 +223,8 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("region_map_dimensions", QString("%1x%2").arg(this->regionMapDimensions.width())
                                                         .arg(this->regionMapDimensions.height()));
     map.insert("theme", this->theme);
+    map.insert("text_editor_open_directory", this->textEditorOpenFolder);
+    map.insert("text_editor_goto_line", this->textEditorGotoLine);
     return map;
 }
 
@@ -319,6 +325,16 @@ void PorymapConfig::setTheme(QString theme) {
     this->theme = theme;
 }
 
+void PorymapConfig::setTextEditorOpenFolder(const QString &command) {
+    this->textEditorOpenFolder = command;
+    this->save();
+}
+
+void PorymapConfig::setTextEditorGotoLine(const QString &command) {
+    this->textEditorGotoLine = command;
+    this->save();
+}
+
 QString PorymapConfig::getRecentProject() {
     return this->recentProject;
 }
@@ -399,6 +415,14 @@ QSize PorymapConfig::getRegionMapDimensions() {
 
 QString PorymapConfig::getTheme() {
     return this->theme;
+}
+
+QString PorymapConfig::getTextEditorOpenFolder() {
+    return this->textEditorOpenFolder;
+}
+
+QString PorymapConfig::getTextEditorGotoLine() {
+    return this->textEditorGotoLine;
 }
 
 const QMap<BaseGameVersion, QString> baseGameVersionMap = {

@@ -22,6 +22,7 @@
 #include "newmappopup.h"
 #include "newtilesetdialog.h"
 #include "shortcutseditor.h"
+#include "preferenceeditor.h"
 
 namespace Ui {
 class MainWindow;
@@ -119,8 +120,6 @@ private slots:
 
     void duplicate();
 
-    void openInTextEditor();
-
     void onLoadMapRequested(QString, QString);
     void onMapChanged(Map *map);
     void onMapNeedsRedrawing();
@@ -167,7 +166,6 @@ private slots:
     void on_actionMap_Shift_triggered();
 
     void on_toolButton_deleteObject_clicked();
-    void on_toolButton_Open_Scripts_clicked();
 
     void addNewEvent(QString);
     void updateSelectedObjects();
@@ -222,7 +220,6 @@ private slots:
     void on_toolButton_ExpandAll_clicked();
     void on_toolButton_CollapseAll_clicked();
     void on_actionAbout_Porymap_triggered();
-    void on_actionThemes_triggered();
     void on_pushButton_AddCustomHeaderField_clicked();
     void on_pushButton_DeleteCustomHeaderField_clicked();
     void on_tableWidget_CustomHeaderFields_cellChanged(int row, int column);
@@ -232,6 +229,8 @@ private slots:
     void on_pushButton_ConfigureEncountersJSON_clicked();
 
     void on_actionRegion_Map_Editor_triggered();
+    void on_actionEdit_Preferences_triggered();
+    void togglePreferenceSpecificUi();
 
 private:
     Ui::MainWindow *ui;
@@ -242,6 +241,7 @@ private:
     MapImageExporter *mapImageExporter = nullptr;
     FilterChildrenProxyModel *mapListProxyModel;
     NewMapPopup *newmapprompt = nullptr;
+    PreferenceEditor *preferenceEditor = nullptr;
     QStandardItemModel *mapListModel;
     QList<QStandardItem*> *mapGroupItemsList;
     QMap<QString, QModelIndex> mapListIndexes;
@@ -267,6 +267,7 @@ private:
     DraggablePixmapItem *selectedHealspot;
 
     QList<QAction *> registeredActions;
+    QVector<QToolButton *> openScriptButtons;
 
     bool isProgrammaticEventTabChange;
     bool projectHasUnsavedChanges;
