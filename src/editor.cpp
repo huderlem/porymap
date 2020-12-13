@@ -2075,16 +2075,21 @@ void Editor::openProjectInTextEditor() const {
 }
 
 bool Editor::startDetachedProcess(const QString &command, const QString &workingDirectory, qint64 *pid) const {
+    static QProcess process;
     logInfo("Executing command: " + command);
 #ifdef Q_OS_WIN
     // On Windows, a QProcess command must be wrapped in a cmd.exe command.
-    const QString program = QProcessEnvironment::systemEnvironment().value("COMSPEC");
-    QStringList arguments({ QString("/c"), command });
+    process.setProcessEnvironment(QProcessEnvironment::systemEnvironment());
+    process.setProgram(process.processEnvironment().value("COMSPEC"));
+    process.setNativeArguments("/c " + command);
+    process.setWorkingDirectory(workingDirectory);
 #else
     QStringList arguments = QProcess::splitCommand(command);
-    const QString program = arguments.takeFirst();
+    process.setProgram(arguments.takeFirst());
+    process.setArguments(arguments);
+    process.setWorkingDirectory(workingDirectory);
 #endif
-    return QProcess::startDetached(program, arguments, workingDirectory, pid);
+    return process.startDetached(pid);
 }
 
 // It doesn't seem to be possible to prevent the mousePress event
