@@ -2658,6 +2658,7 @@
     <addaction name="actionUse_Poryscript"/>
     <addaction name="separator"/>
     <addaction name="actionEdit_Preferences"/>
+    <addaction name="actionEdit_Shortcuts"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -2930,6 +2931,11 @@
   <action name="actionOpen_Project_in_Text_Editor">
    <property name="text">
     <string>Open Project in Text Editor</string>
+   </property>
+  </action>
+  <action name="actionEdit_Shortcuts">
+   <property name="text">
+    <string>Edit Shortcuts...</string>
    </property>
   </action>
  </widget>

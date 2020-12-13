@@ -47,6 +47,11 @@ public:
 
     void resize(int width, int height);
 
+    QObjectList shortcutableObjects() const;
+
+public slots:
+    void applyUserShortcuts();
+
 private:
     Ui::RegionMapEditor *ui;
     Project *project;
@@ -81,6 +86,7 @@ private:
     RegionMapPixmapItem *region_map_item = nullptr;
     CityMapPixmapItem *city_map_item = nullptr;
 
+    void initShortcuts();
     void displayRegionMap();
     void displayRegionMapImage();
     void displayRegionMapLayout();

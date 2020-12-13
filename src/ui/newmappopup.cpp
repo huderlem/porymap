@@ -185,7 +185,9 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
     MapLayout *layout;
 
     // If map name is not unique, use default value. Also use only valid characters.
+    // After stripping invalid characters, strip any leading digits.
     QString newMapName = this->ui->lineEdit_NewMap_Name->text().remove(QRegularExpression("[^a-zA-Z0-9_]+"));
+    newMapName.remove(QRegularExpression("^[0-9]*"));
     if (project->mapNames->contains(newMapName) || newMapName.isEmpty()) {
         newMapName = project->getNewMapName();
     }

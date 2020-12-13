@@ -21,6 +21,7 @@
 #include "filterchildrenproxymodel.h"
 #include "newmappopup.h"
 #include "newtilesetdialog.h"
+#include "shortcutseditor.h"
 #include "preferenceeditor.h"
 
 namespace Ui {
@@ -128,6 +129,7 @@ private slots:
     void onNewMapCreated();
     void onMapCacheCleared();
     void onMapRulerStatusChanged(const QString &);
+    void applyUserShortcuts();
 
     void on_action_NewMap_triggered();
     void on_actionNew_Tileset_triggered();
@@ -147,6 +149,7 @@ private slots:
     void on_actionUse_Encounter_Json_triggered(bool checked);
     void on_actionMonitor_Project_Files_triggered(bool checked);
     void on_actionUse_Poryscript_triggered(bool checked);
+    void on_actionEdit_Shortcuts_triggered();
 
     void on_mainTabBar_tabBarClicked(int index);
 
@@ -234,6 +237,7 @@ private:
     QLabel *label_MapRulerStatus;
     TilesetEditor *tilesetEditor = nullptr;
     RegionMapEditor *regionMapEditor = nullptr;
+    ShortcutsEditor *shortcutsEditor = nullptr;
     MapImageExporter *mapImageExporter = nullptr;
     FilterChildrenProxyModel *mapListProxyModel;
     NewMapPopup *newmapprompt = nullptr;
@@ -294,11 +298,12 @@ private:
 
     void initWindow();
     void initCustomUI();
-    void initExtraShortcuts();
     void initExtraSignals();
     void initEditor();
     void initMiscHeapObjects();
     void initMapSortOrder();
+    void initShortcuts();
+    void initExtraShortcuts();
     void setProjectSpecificUIVisibility();
     void loadUserSettings();
     void applyMapListFilter(QString filterText);
@@ -310,9 +315,16 @@ private:
     void closeSupplementaryWindows();
     void setWindowDisabled(bool);
 
+    void initTilesetEditor();
+    bool initRegionMapEditor();
+    void initShortcutsEditor();
+    void connectSubEditorsToShortcutsEditor();
+
     bool isProjectOpen();
     void showExportMapImageWindow(bool stitchMode);
     void redrawMetatileSelection();
+
+    QObjectList shortcutableObjects() const;
 };
 
 enum MapListUserRoles {

@@ -1,5 +1,7 @@
 # porymap
 
+[![Actions Status](https://github.com/huderlem/porymap/workflows/Build%20Porymap/badge.svg)](https://github.com/huderlem/porymap/actions)
+
 A map editor for the generation 3 decompilation projects using Qt.
 
 Currently supports [pokeruby][pokeruby], [pokeemerald][pokeemerald], and [pokefirered][pokefirered].
