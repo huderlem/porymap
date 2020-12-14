@@ -173,8 +173,10 @@ public:
     QString fixPalettePath(QString path);
     QString fixGraphicPath(QString path);
 
-    QString getScriptFileExtension(bool usePoryScript);
-    QString getScriptDefaultString(bool usePoryScript, QString mapName);
+    QString getScriptFileExtension(bool usePoryScript) const;
+    QString getScriptDefaultString(bool usePoryScript, QString mapName) const;
+    QString getMapScriptsFilePath(const QString &mapName) const;
+    QStringList getEventScriptsFilePaths() const;
 
     bool loadMapBorder(Map *map);
 

@@ -2,8 +2,7 @@
 #define MAPRULER_H
 
 #include <QGraphicsObject>
-#include <QPainter>
-#include <QColor>
+#include <QLine>
 
 
 class MapRuler : public QGraphicsObject, private QLine
@@ -11,20 +10,14 @@ class MapRuler : public QGraphicsObject, private QLine
     Q_OBJECT
 
 public:
-    MapRuler(QColor innerColor = Qt::yellow, QColor borderColor = Qt::black) :
-        innerColor(innerColor),
-        borderColor(borderColor),
-        mapSize(QSize())
-    {
-        init();
-    }
-    void init();
+    // thickness is given in scene pixels
+    MapRuler(int thickness, QColor innerColor = Qt::yellow, QColor borderColor = Qt::black);
+
     QRectF boundingRect() const override;
     QPainterPath shape() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override;
     bool eventFilter(QObject *, QEvent *event) override;
 
-    void setEnabled(bool enabled);
     bool isAnchored() const { return anchored; }
     bool isLocked() const { return locked; }
 
@@ -45,37 +38,33 @@ public:
     // Ruler height in metatiles
     int height() const { return qAbs(deltaY()); }
 
-    QString statusMessage;
-
 public slots:
     void mouseEvent(QGraphicsSceneMouseEvent *event);
     void setMapDimensions(const QSize &size);
 
+signals:
+    void statusChanged(const QString &statusMessage);
+
 private:
-    QColor innerColor;
-    QColor borderColor;
+    const int thickness;
+    const qreal half_thickness;
+    const QColor innerColor;
+    const QColor borderColor;
     QSize mapSize;
-    QRect xRuler;
-    QRect yRuler;
+    QRectF xRuler;
+    QRectF yRuler;
     QLineF cornerTick;
     bool anchored;
     bool locked;
 
-    static int thickness;
-
+    void reset();
+    void setAnchor(const QPointF &scenePos);
+    void setEndPos(const QPointF &scenePos);
     QPoint snapToWithinBounds(QPoint pos) const;
-    void setAnchor(const QPointF &scenePos, const QPoint &screenPos);
-    void endAnchor();
-    void setEndPos(const QPointF &scenePos, const QPoint &screenPos);
-    void showDimensions(const QPoint &screenPos) const;
-    void hideDimensions() const;
     void updateGeometry();
+    void updateStatus(Qt::Corner corner);
     int pixWidth() const { return width() * 16; } 
     int pixHeight() const { return height() * 16; }
-
-signals:
-    void lengthChanged();
-    void deactivated(const QPoint &endPos);
 };
 
 #endif // MAPRULER_H

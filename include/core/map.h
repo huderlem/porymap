@@ -84,7 +84,8 @@ public:
     void floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
     void _floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
     void magicFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
-    QList<Event*> getAllEvents();
+    QList<Event*> getAllEvents() const;
+    QStringList eventScriptLabels(const QString &event_group_type = QString()) const;
     void removeEvent(Event*);
     void addEvent(Event*);
     QPixmap renderConnection(MapConnection, MapLayout *);

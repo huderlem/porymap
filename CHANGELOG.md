@@ -17,6 +17,9 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - All plain text boxes now have a clear button to delete the text.
 - The window sizes and positions of the tileset editor, palette editor, and region map editor are now stored in `porymap.cfg`.
 - Add ruler tool for measuring metatile distance in events tab (Right-click to turn on/off, left-click to lock in place).
+- Add delete button to wild pokemon encounters tab.
+- Add shortcut customization via `Options -> Edit Shortcuts`.
+- Add custom text editor commands in `Options -> Edit Preferences`, a tool-button next to the `Script` combo-box, and `Tools -> Open Project in Text Editor`. The tool-button will open the containing file to the cooresponding script.
 
 ### Changed
 - Holding `shift` now toggles "Smart Path" drawing; when the "Smart Paths" checkbox is checked, holding `shift` will temporarily disable it.
@@ -27,6 +30,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix porymap icon not showing on window or panel on Linux.
 - The main window can now be resized to fit on lower resolution displays.
 - Zooming the map in/out will now focus on the cursor.
+- Fix bug where object event sprites whose name contained a 0 character would display the placeholder "N" picture.
 
 ## [4.3.1] - 2020-07-17
 ### Added

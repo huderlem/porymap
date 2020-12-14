@@ -2,8 +2,16 @@
 Shortcuts
 *********
 
-Porymap has many shortcuts and it can sometimes be hard to keep track of them all. 
-Here is a comprehensive list of the shortcuts provided all in one place for your convenience.
+Porymap has many keyboard shortcuts set by default, and even more that can be customized yourself.  You can view and customize your shortcuts by going to *Options -> Edit Shortcuts*.  Shortcut actions are grouped together by the window that they are used in (Main Window, Tileset Editor...).  You can set up to 2 shortcuts per action, but you cannot have duplicate shortcuts set within the same window.  If you enter a shortcut that is already in use, Porymap will prompt you cancel or overwrite the old shortcut.  You can also restore your shortcuts to the defaults.
+
+.. figure:: images/shortcuts/edit-shortcuts.gif
+    :alt: Edit Shortcuts
+
+    Edit Shortcuts
+
+Your shortcuts are stored at ``%Appdata%\pret\porymap\porymap.shortcuts.cfg`` on Windows and ``~/Library/Application\ Support/pret/porymap/porymap.shortcuts.cfg`` on macOS).
+
+For reference, here is a comprehensive list of the default shortcuts set in Porymap.
 
 Main Window
 -----------
@@ -33,6 +41,7 @@ Main Window
    Open New Tileset Dialog, ``Ctrl+Shift+N``
    Open Tileset Editor, ``Ctrl+T``
    Open Region Map Editor, ``Ctrl+M``
+   Edit Preferences, ``Ctrl+,``
 
 .. csv-table::
    :header: Map Editing

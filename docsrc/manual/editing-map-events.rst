@@ -225,10 +225,16 @@ Respawn NPC
 Open Map Scripts
 ----------------
 
-Clicking the ``Open Map Scripts`` button |open-map-scripts-button| will open the map's scripts file in your default text editor.  If nothing happens when this button is clicked, you may need to associate a text editor with the `.inc` file extension.
+Clicking the ``Open Map Scripts`` button |open-map-scripts-button| will open the map's scripts file in your default text editor.  If nothing happens when this button is clicked, you may need to associate a text editor with the `.inc` file extension (or `.pory` if you're using Porycript).
+
+Additionally, if you specify a ``Goto Line Command`` in *Options -> Edit Preferences* then a tool-button will appear next to the `Script` combo-box in the *Events* tab. Clicking this button will open the file that contains the script directly to the line number of that script. If the script cannot be found in the project then the current map's scripts file is opened.
+|go-to-script-button|
 
 .. |open-map-scripts-button|
    image:: images/editing-map-events/open-map-scripts-button.png
+
+.. |go-to-script-button|
+    image:: images/editing-map-events/go-to-script-button.png
 
 Tool Buttons
 ------------
@@ -260,7 +266,7 @@ Shift
 Ruler Tool
 ----------
 
-The Ruler Tool provides a convenient way to measure distance on the map. This is particularly useful for scripting object movement. With the Pointer Tool selected you can activate the ruler with a Right-click. With the ruler active you can drag the mouse around to extend the ruler. The ruler can be deactivated with another Right-click, or locked in place with a Left-click (Left-click again to unlock the ruler). The dimensions of the ruler are displayed in a tool-tip and in the status bar in the bottom left corner of the widnow.
+The Ruler Tool provides a convenient way to measure distance on the map. This is particularly useful for scripting object movement. With the Pointer Tool selected you can activate the ruler with a Right-click. With the ruler active you can move the mouse around to extend the ruler. The ruler can be deactivated with another Right-click, or locked in place with a Left-click (Left-click again to unlock the ruler).
 
 .. figure:: images/editing-map-events/event-tool-ruler.gif
     :alt: Measuring metatile distance with the Ruler Tool

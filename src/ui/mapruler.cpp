@@ -1,28 +1,34 @@
 #include "mapruler.h"
 #include "metatile.h"
 
-#include <QGraphicsObject>
 #include <QGraphicsSceneEvent>
 #include <QPainter>
 #include <QColor>
-#include <QToolTip>
-
-int MapRuler::thickness = 3;
+#include <QVector>
 
 
-void MapRuler::init() {
-    setVisible(false);
-    setPoints(QPoint(), QPoint());
-    anchored = false;
-    locked = false;
-    statusMessage = QString("Ruler: 0");
-    xRuler = QRect();
-    yRuler = QRect();
-    cornerTick = QLine();
+MapRuler::MapRuler(int thickness, QColor innerColor, QColor borderColor) :
+    /* The logical representation of rectangles are always one less than
+     * the rendered shape, so we subtract 1 from thickness. */
+    thickness(thickness - 1),
+    half_thickness(qreal(thickness - 1) / 2.0),
+    innerColor(innerColor),
+    borderColor(borderColor),
+    mapSize(QSize()),
+    xRuler(QRectF()),
+    yRuler(QRectF()),
+    cornerTick(QLineF()),
+    anchored(false),
+    locked(false)
+{
+    connect(this, &QGraphicsObject::enabledChanged, [this]() {
+        if (!isEnabled() && anchored)
+            reset();
+    });
 }
 
 QRectF MapRuler::boundingRect() const {
-    return QRectF(-thickness, -thickness, pixWidth() + thickness * 2, pixHeight() + thickness * 2);
+    return QRectF(-(half_thickness + 1), -(half_thickness + 1), pixWidth() + thickness + 2, pixHeight() + thickness + 2);
 }
 
 QPainterPath MapRuler::shape() const {
@@ -31,10 +37,12 @@ QPainterPath MapRuler::shape() const {
     ruler.addRect(xRuler);
     ruler.addRect(yRuler);
     ruler = ruler.simplified();
-    for (int x = 17.5; x < pixWidth(); x += 16)
+    for (int x = 16; x < pixWidth(); x += 16)
         ruler.addRect(x, xRuler.y(), 0, thickness);
-    for (int y = 17.5; y < pixHeight(); y += 16)
+    for (int y = 16; y < pixHeight(); y += 16)
         ruler.addRect(yRuler.x(), y, thickness, 0);
+    if (deltaX() && deltaY())
+        ruler.addPolygon(QVector<QPointF>({ cornerTick.p1(), cornerTick.p2() }));
     return ruler;
 }
 
@@ -42,20 +50,16 @@ void MapRuler::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
     painter->setPen(QPen(borderColor));
     painter->setBrush(QBrush(innerColor));
     painter->drawPath(shape());
-    if (deltaX() && deltaY())
-        painter->drawLine(cornerTick);
 }
 
-bool MapRuler::eventFilter(QObject*, QEvent *event) {
+bool MapRuler::eventFilter(QObject *, QEvent *event) {
     if (!isEnabled() || mapSize.isEmpty())
         return false;
 
     if (event->type() == QEvent::GraphicsSceneMousePress || event->type() == QEvent::GraphicsSceneMouseMove) {
-        auto mouse_event = static_cast<QGraphicsSceneMouseEvent *>(event);
+        auto *mouse_event = static_cast<QGraphicsSceneMouseEvent *>(event);
         if (mouse_event->button() == Qt::RightButton || anchored) {
             mouseEvent(mouse_event);
-            event->accept();
-            return true;
         }
     }
 
@@ -64,26 +68,53 @@ bool MapRuler::eventFilter(QObject*, QEvent *event) {
 
 void MapRuler::mouseEvent(QGraphicsSceneMouseEvent *event) {
     if (!anchored && event->button() == Qt::RightButton) {
-        setAnchor(event->scenePos(), event->screenPos());
+        setAnchor(event->scenePos());
     } else if (anchored) {
         if (event->button() == Qt::LeftButton)
             locked = !locked;
         if (event->button() == Qt::RightButton)
-            endAnchor();
+            reset();
         else
-            setEndPos(event->scenePos(), event->screenPos());
+            setEndPos(event->scenePos());
     }
 }
 
 void MapRuler::setMapDimensions(const QSize &size) {
     mapSize = size;
-    init();
+    reset();
 }
 
-void MapRuler::setEnabled(bool enabled) {
-    QGraphicsItem::setEnabled(enabled);
-    if (!enabled && anchored)
-        endAnchor();
+void MapRuler::reset() {
+    prepareGeometryChange();
+    hide();
+    setPoints(QPoint(), QPoint());
+    xRuler = QRectF();
+    yRuler = QRectF();
+    cornerTick = QLineF();
+    anchored = false;
+    locked = false;
+    emit statusChanged(QString());
+}
+
+void MapRuler::setAnchor(const QPointF &scenePos) {
+    QPoint pos = Metatile::coordFromPixmapCoord(scenePos);
+    pos = snapToWithinBounds(pos);
+    anchored = true;
+    locked = false;
+    setPoints(pos, pos);
+    updateGeometry();
+    show();
+}
+
+void MapRuler::setEndPos(const QPointF &scenePos) {
+    if (locked)
+        return;
+    QPoint pos = Metatile::coordFromPixmapCoord(scenePos);
+    pos = snapToWithinBounds(pos);
+    const QPoint lastEndPos = endPos();
+    setP2(pos);
+    if (pos != lastEndPos)
+        updateGeometry();
 }
 
 QPoint MapRuler::snapToWithinBounds(QPoint pos) const {
@@ -98,80 +129,62 @@ QPoint MapRuler::snapToWithinBounds(QPoint pos) const {
     return pos;
 }
 
-void MapRuler::setAnchor(const QPointF &scenePos, const QPoint &screenPos) {
-    QPoint pos = Metatile::coordFromPixmapCoord(scenePos);
-    pos = snapToWithinBounds(pos);
-    anchored = true;
-    locked = false;
-    setPoints(pos, pos);
-    updateGeometry();
-    setVisible(true);
-    showDimensions(screenPos);
-}
-
-void MapRuler::endAnchor() {
-    emit deactivated(endPos());
-    hideDimensions();
-    prepareGeometryChange();
-    init();
-}
-
-void MapRuler::setEndPos(const QPointF &scenePos, const QPoint &screenPos) {
-    if (locked)
-        return;
-    QPoint pos = Metatile::coordFromPixmapCoord(scenePos);
-    pos = snapToWithinBounds(pos);
-    const QPoint lastEndPos = endPos();
-    setP2(pos);
-    if (pos != lastEndPos)
-        updateGeometry();
-    showDimensions(screenPos);
-}
-
-void MapRuler::showDimensions(const QPoint &screenPos) const {
-    // This is a hack to make the tool tip follow the cursor since it won't change position if the text is the same.
-    QToolTip::showText(screenPos + QPoint(16, -8), statusMessage + ' ');
-    QToolTip::showText(screenPos + QPoint(16, -8), statusMessage);
-}
-
-void MapRuler::hideDimensions() const {
-    QToolTip::hideText();
-}
-
 void MapRuler::updateGeometry() {
     prepareGeometryChange();
-    setPos(QPoint(left() * 16 + 7, top() * 16 + 7));
+    setPos(QPoint(left() * 16 + 8, top() * 16 + 8));
     /* Determine what quadrant the end point is in relative to the anchor point. The anchor
-     * point is the top-left corner of the metatile the ruler starts in, so a zero-length(s)
+     * point is the top-left corner of the metatile the ruler starts in, so a zero-length
      * ruler is considered to be in the bottom-right quadrant from the anchor point. */
     if (deltaX() < 0 && deltaY() < 0) {
         // Top-left
-        xRuler = QRect(0, pixHeight(), pixWidth() + thickness, thickness);
-        yRuler = QRect(0, 0, thickness, pixHeight() + thickness);
+        xRuler = QRectF(-half_thickness, pixHeight() - half_thickness, pixWidth() + thickness, thickness);
+        yRuler = QRectF(-half_thickness, -half_thickness, thickness, pixHeight() + thickness);
         cornerTick = QLineF(yRuler.x() + 0.5, xRuler.y() + thickness - 0.5, yRuler.x() + thickness, xRuler.y());
-        statusMessage = QString("Ruler: Left %1, Up %2").arg(width()).arg(height());
+        updateStatus(Qt::TopLeftCorner);
     } else if (deltaX() < 0) {
         // Bottom-left
-        xRuler = QRect(0, 0, pixWidth() + thickness, thickness);
-        yRuler = QRect(0, 0, thickness, pixHeight() + thickness);
+        xRuler = QRectF(-half_thickness, -half_thickness, pixWidth() + thickness, thickness);
+        yRuler = QRectF(-half_thickness, -half_thickness, thickness, pixHeight() + thickness);
         cornerTick = QLineF(xRuler.x() + 0.5, xRuler.y() + 0.5, xRuler.x() + thickness, xRuler.y() + thickness);
+        updateStatus(Qt::BottomLeftCorner);
+    } else if (deltaY() < 0) {
+        // Top-right
+        xRuler = QRectF(-half_thickness, pixHeight() - half_thickness, pixWidth() + thickness, thickness);
+        yRuler = QRectF(pixWidth() - half_thickness, -half_thickness, thickness, pixHeight() + thickness);
+        cornerTick = QLineF(yRuler.x(), xRuler.y(), yRuler.x() + thickness - 0.5, xRuler.y() + thickness - 0.5);
+        updateStatus(Qt::TopRightCorner);
+    } else {
+        // Bottom-right
+        xRuler = QRectF(-half_thickness, -half_thickness, pixWidth() + thickness, thickness);
+        yRuler = QRectF(pixWidth() - half_thickness, -half_thickness, thickness, pixHeight() + thickness);
+        cornerTick = QLineF(yRuler.x(), yRuler.y() + thickness, yRuler.x() + thickness - 0.5, yRuler.y() + 0.5);
+        updateStatus(Qt::BottomRightCorner);
+    }
+}
+
+void MapRuler::updateStatus(Qt::Corner corner) {
+    QString statusMessage;
+    switch (corner)
+    {
+    case Qt::TopLeftCorner:
+        statusMessage = QString("Ruler: Left %1, Up %2\nStart(%3, %4), End(%5, %6)").arg(width()).arg(height())
+                        .arg(anchor().x()).arg(anchor().y()).arg(endPos().x()).arg(endPos().y());
+        break;
+    case Qt::BottomLeftCorner:
         statusMessage = QString("Ruler: Left %1").arg(width());
         if (deltaY())
             statusMessage += QString(", Down %1").arg(height());
-    } else if (deltaY() < 0) {
-        // Top-right
-        xRuler = QRect(0, pixHeight(), pixWidth() + thickness, thickness);
-        yRuler = QRect(pixWidth(), 0, thickness, pixHeight() + thickness);
-        cornerTick = QLineF(yRuler.x(), xRuler.y(), yRuler.x() + thickness - 0.5, xRuler.y() + thickness - 0.5);
+        statusMessage += QString("\nStart(%1, %2), End(%3, %4)")
+                        .arg(anchor().x()).arg(anchor().y()).arg(endPos().x()).arg(endPos().y());
+        break;
+    case Qt::TopRightCorner:
         statusMessage = QString("Ruler: ");
         if (deltaX())
             statusMessage += QString("Right %1, ").arg(width());
-        statusMessage += QString("Up %1").arg(height());
-    } else {
-        // Bottom-right
-        xRuler = QRect(0, 0, pixWidth() + thickness, thickness);
-        yRuler = QRect(pixWidth(), 0, thickness, pixHeight() + thickness);
-        cornerTick = QLineF(yRuler.x(), yRuler.y() + thickness, yRuler.x() + thickness - 0.5, yRuler.y() + 0.5);
+        statusMessage += QString("Up %1\nStart(%2, %3), End(%4, %5)").arg(height())
+                        .arg(anchor().x()).arg(anchor().y()).arg(endPos().x()).arg(endPos().y());
+        break;
+    case Qt::BottomRightCorner:
         statusMessage = QString("Ruler: ");
         if (deltaX() || deltaY()) {
             if (deltaX())
@@ -181,9 +194,13 @@ void MapRuler::updateGeometry() {
                     statusMessage += ", ";
                 statusMessage += QString("Down: %1").arg(height());
             }
+            statusMessage += QString("\nStart(%1, %2), End(%3, %4)")
+                            .arg(anchor().x()).arg(anchor().y()).arg(endPos().x()).arg(endPos().y());
         } else {
-            statusMessage += QString("0");
+            statusMessage += QString("0\nStart(%1, %2)")
+                            .arg(anchor().x()).arg(anchor().y());
         }
+        break;
     }
-    emit lengthChanged();
+    emit statusChanged(statusMessage);
 }

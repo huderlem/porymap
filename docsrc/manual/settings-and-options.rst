@@ -31,6 +31,8 @@ determined by this file.
    ``monitor_files``, 1, global, yes, Whether porymap will monitor changes to project files
    ``region_map_dimensions``, 32x20, global, yes, The dimensions of the region map tilemap
    ``theme``, default, global, yes, The color theme for porymap windows and widgets
+   ``text_editor_goto_line``, , global, yes, The command that will be executed when clicking the button next the ``Script`` combo-box.
+   ``text_editor_open_directory``, , global, yes, The command that will be executed when clicking ``Open Project in Text Editor``.
    ``base_game_version``, , project, no, The base pret repo for this project
    ``use_encounter_json``, 1, project, yes, Enables wild encounter table editing
    ``use_poryscript``, 0, project, yes, Whether to open .pory files for scripts

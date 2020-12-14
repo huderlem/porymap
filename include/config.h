@@ -6,6 +6,8 @@
 #include <QObject>
 #include <QByteArrayList>
 #include <QSize>
+#include <QKeySequence>
+#include <QMultiMap>
 
 enum MapSortOrder {
     Group   =  0,
@@ -46,6 +48,8 @@ public:
         this->monitorFiles = true;
         this->regionMapDimensions = QSize(32, 20);
         this->theme = "default";
+        this->textEditorOpenFolder = "";
+        this->textEditorGotoLine = "";
     }
     void setRecentProject(QString project);
     void setRecentMap(QString map);
@@ -62,6 +66,8 @@ public:
     void setMonitorFiles(bool monitor);
     void setRegionMapDimensions(int width, int height);
     void setTheme(QString theme);
+    void setTextEditorOpenFolder(const QString &command);
+    void setTextEditorGotoLine(const QString &command);
     QString getRecentProject();
     QString getRecentMap();
     MapSortOrder getMapSortOrder();
@@ -77,6 +83,8 @@ public:
     bool getMonitorFiles();
     QSize getRegionMapDimensions();
     QString getTheme();
+    QString getTextEditorOpenFolder();
+    QString getTextEditorGotoLine();
 protected:
     virtual QString getConfigFilepath() override;
     virtual void parseConfigKeyValue(QString key, QString value) override;
@@ -108,6 +116,8 @@ private:
     bool monitorFiles;
     QSize regionMapDimensions;
     QString theme;
+    QString textEditorOpenFolder;
+    QString textEditorGotoLine;
 };
 
 extern PorymapConfig porymapConfig;
@@ -192,5 +202,54 @@ private:
 };
 
 extern ProjectConfig projectConfig;
+
+class QAction;
+class Shortcut;
+
+class ShortcutsConfig : public KeyValueConfigBase
+{
+public:
+    ShortcutsConfig() :
+        user_shortcuts({ }),
+        default_shortcuts({ })
+    { }
+
+    virtual void reset() override { user_shortcuts.clear(); }
+
+    // Call this before applying user shortcuts so that the user can restore defaults.
+    void setDefaultShortcuts(const QObjectList &objects);
+    QList<QKeySequence> defaultShortcuts(const QObject *object) const;
+
+    void setUserShortcuts(const QObjectList &objects);
+    void setUserShortcuts(const QMultiMap<const QObject *, QKeySequence> &objects_keySequences);
+    QList<QKeySequence> userShortcuts(const QObject *object) const;
+
+protected:
+    virtual QString getConfigFilepath() override;
+    virtual void parseConfigKeyValue(QString key, QString value) override;
+    virtual QMap<QString, QString> getKeyValueMap() override;
+    virtual void onNewConfigFileCreated() override { };
+    virtual void setUnreadKeys() override { };
+
+private:
+    QMultiMap<QString, QKeySequence> user_shortcuts;
+    QMultiMap<QString, QKeySequence> default_shortcuts;
+
+    enum StoreType {
+        User,
+        Default
+    };
+
+    QString cfgKey(const QObject *object) const;
+    QList<QKeySequence> currentShortcuts(const QObject *object) const;
+
+    void storeShortcutsFromList(StoreType storeType, const QObjectList &objects);
+    void storeShortcuts(
+            StoreType storeType,
+            const QString &cfgKey,
+            const QList<QKeySequence> &keySequences);
+};
+
+extern ShortcutsConfig shortcutsConfig;
 
 #endif // CONFIG_H

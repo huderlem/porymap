@@ -14,11 +14,11 @@
 #include "draggablepixmapitem.h"
 #include "editcommands.h"
 #include "flowlayout.h"
+#include "shortcut.h"
 
 #include <QFileDialog>
 #include <QDirIterator>
 #include <QStandardItemModel>
-#include <QShortcut>
 #include <QSpinBox>
 #include <QTextEdit>
 #include <QSpacerItem>
@@ -29,7 +29,6 @@
 #include <QDialogButtonBox>
 #include <QScroller>
 #include <math.h>
-#include <QProcess>
 #include <QSysInfo>
 #include <QDesktopServices>
 #include <QTransform>
@@ -41,6 +40,7 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
+    label_MapRulerStatus(nullptr),
     selectedObject(nullptr),
     selectedWarp(nullptr),
     selectedTrigger(nullptr),
@@ -67,54 +67,109 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+    delete label_MapRulerStatus;
     delete ui;
 }
 
 void MainWindow::setWindowDisabled(bool disabled) {
-    for (auto *child : findChildren<QWidget *>(QString(), Qt::FindDirectChildrenOnly)) {
-        bool disableThis = disabled;
-        if (child->objectName() == "menuBar") {
-            // disable all but the menuFile and menuHelp
-            for (auto *menu : child->findChildren<QWidget *>(QString(), Qt::FindDirectChildrenOnly)) {
-                disableThis = disabled;
-                if (menu->objectName() == "menuFile") {
-                    // disable all but the action_Open_Project and action_Exit
-                    for (auto *action : menu->actions()) {
-                        action->setDisabled(disabled);
-                    }
-                    ui->action_Open_Project->setDisabled(false);
-                    ui->action_Exit->setDisabled(false);
-                    disableThis = false;
-                }
-                menu->setDisabled(disableThis);
-            }
-            child->findChild<QWidget *>("menuHelp")->setDisabled(false);
-            disableThis = false;
-        }
-        child->setDisabled(disableThis);
-    }
+    for (auto action : findChildren<QAction *>())
+        action->setDisabled(disabled);
+    for (auto child : findChildren<QWidget *>(QString(), Qt::FindDirectChildrenOnly))
+        child->setDisabled(disabled);
+    for (auto menu : ui->menuBar->findChildren<QMenu *>(QString(), Qt::FindDirectChildrenOnly))
+        menu->setDisabled(disabled);
+    ui->menuBar->setDisabled(false);
+    ui->menuFile->setDisabled(false);
+    ui->action_Open_Project->setDisabled(false);
+    ui->action_Exit->setDisabled(false);
+    ui->menuHelp->setDisabled(false);
+    ui->actionAbout_Porymap->setDisabled(false);
+    if (!disabled)
+        togglePreferenceSpecificUi();
 }
 
 void MainWindow::initWindow() {
     porymapConfig.load();
     this->initCustomUI();
     this->initExtraSignals();
-    this->initExtraShortcuts();
     this->initEditor();
     this->initMiscHeapObjects();
     this->initMapSortOrder();
+    this->initShortcuts();
     this->restoreWindowState();
 
     setWindowDisabled(true);
 }
 
+void MainWindow::initShortcuts() {
+    initExtraShortcuts();
+
+    shortcutsConfig.load();
+    shortcutsConfig.setDefaultShortcuts(shortcutableObjects());
+    applyUserShortcuts();
+}
+
 void MainWindow::initExtraShortcuts() {
-    new QShortcut(QKeySequence("Ctrl+0"), this, SLOT(resetMapViewScale()));
-    new QShortcut(QKeySequence("Ctrl+G"), ui->checkBox_ToggleGrid, SLOT(toggle()));
-    new QShortcut(QKeySequence("Ctrl+D"), this, SLOT(duplicate()));
-    new QShortcut(QKeySequence::Delete, this, SLOT(on_toolButton_deleteObject_clicked()));
-    new QShortcut(QKeySequence("Backspace"), this, SLOT(on_toolButton_deleteObject_clicked()));
-    ui->actionZoom_In->setShortcuts({QKeySequence("Ctrl++"), QKeySequence("Ctrl+=")});
+    ui->actionZoom_In->setShortcuts({ui->actionZoom_In->shortcut(), QKeySequence("Ctrl+=")});
+
+    auto *shortcutReset_Zoom = new Shortcut(QKeySequence("Ctrl+0"), this, SLOT(resetMapViewScale()));
+    shortcutReset_Zoom->setObjectName("shortcutZoom_Reset");
+    shortcutReset_Zoom->setWhatsThis("Zoom Reset");
+
+    auto *shortcutToggle_Grid = new Shortcut(QKeySequence("Ctrl+G"), ui->checkBox_ToggleGrid, SLOT(toggle()));
+    shortcutToggle_Grid->setObjectName("shortcutToggle_Grid");
+    shortcutToggle_Grid->setWhatsThis("Toggle Grid");
+
+    auto *shortcutDuplicate_Events = new Shortcut(QKeySequence("Ctrl+D"), this, SLOT(duplicate()));
+    shortcutDuplicate_Events->setObjectName("shortcutDuplicate_Events");
+    shortcutDuplicate_Events->setWhatsThis("Duplicate Selected Event(s)");
+
+    auto *shortcutDelete_Object = new Shortcut(
+            {QKeySequence("Del"), QKeySequence("Backspace")}, this, SLOT(on_toolButton_deleteObject_clicked()));
+    shortcutDelete_Object->setObjectName("shortcutDelete_Object");
+    shortcutDelete_Object->setWhatsThis("Delete Selected Event(s)");
+
+    auto *shortcutToggle_Border = new Shortcut(QKeySequence(), ui->checkBox_ToggleBorder, SLOT(toggle()));
+    shortcutToggle_Border->setObjectName("shortcutToggle_Border");
+    shortcutToggle_Border->setWhatsThis("Toggle Border");
+
+    auto *shortcutToggle_Smart_Paths = new Shortcut(QKeySequence(), ui->checkBox_smartPaths, SLOT(toggle()));
+    shortcutToggle_Smart_Paths->setObjectName("shortcutToggle_Smart_Paths");
+    shortcutToggle_Smart_Paths->setWhatsThis("Toggle Smart Paths");
+
+    auto *shortcutExpand_All = new Shortcut(QKeySequence(), this, SLOT(on_toolButton_ExpandAll_clicked()));
+    shortcutExpand_All->setObjectName("shortcutExpand_All");
+    shortcutExpand_All->setWhatsThis("Map List: Expand all folders");
+
+    auto *shortcutCollapse_All = new Shortcut(QKeySequence(), this, SLOT(on_toolButton_CollapseAll_clicked()));
+    shortcutCollapse_All->setObjectName("shortcutCollapse_All");
+    shortcutCollapse_All->setWhatsThis("Map List: Collapse all folders");
+
+    auto *shortcut_Open_Scripts = new Shortcut(QKeySequence(), ui->toolButton_Open_Scripts, SLOT(click()));
+    shortcut_Open_Scripts->setObjectName("shortcut_Open_Scripts");
+    shortcut_Open_Scripts->setWhatsThis("Open Map Scripts");
+}
+
+QObjectList MainWindow::shortcutableObjects() const {
+    QObjectList shortcutable_objects;
+
+    for (auto *action : findChildren<QAction *>())
+        if (!action->objectName().isEmpty())
+            shortcutable_objects.append(qobject_cast<QObject *>(action));
+    for (auto *shortcut : findChildren<Shortcut *>())
+        if (!shortcut->objectName().isEmpty())
+            shortcutable_objects.append(qobject_cast<QObject *>(shortcut));
+
+    return shortcutable_objects;
+}
+
+void MainWindow::applyUserShortcuts() {
+    for (auto *action : findChildren<QAction *>())
+        if (!action->objectName().isEmpty())
+            action->setShortcuts(shortcutsConfig.userShortcuts(action));
+    for (auto *shortcut : findChildren<Shortcut *>())
+        if (!shortcut->objectName().isEmpty())
+            shortcut->setKeys(shortcutsConfig.userShortcuts(shortcut));
 }
 
 void MainWindow::initCustomUI() {
@@ -158,6 +213,17 @@ void MainWindow::initExtraSignals() {
     }
     delete ui->frame_mapTools->layout();
     ui->frame_mapTools->setLayout(flowLayout);
+
+    // Floating QLabel tool-window that displays over the map when the ruler is active
+    label_MapRulerStatus = new QLabel(ui->graphicsView_Map);
+    label_MapRulerStatus->setObjectName("label_MapRulerStatus");
+    label_MapRulerStatus->setWindowFlags(Qt::Tool | Qt::CustomizeWindowHint | Qt::FramelessWindowHint);
+    label_MapRulerStatus->setFrameShape(QFrame::Box);
+    label_MapRulerStatus->setMargin(3);
+    label_MapRulerStatus->setPalette(palette());
+    label_MapRulerStatus->setAlignment(Qt::AlignCenter);
+    label_MapRulerStatus->setTextFormat(Qt::PlainText);
+    label_MapRulerStatus->setTextInteractionFlags(Qt::TextSelectableByMouse);
 }
 
 void MainWindow::initEditor() {
@@ -168,13 +234,18 @@ void MainWindow::initEditor() {
     connect(this->editor, SIGNAL(warpEventDoubleClicked(QString,QString)), this, SLOT(openWarpMap(QString,QString)));
     connect(this->editor, SIGNAL(currentMetatilesSelectionChanged()), this, SLOT(currentMetatilesSelectionChanged()));
     connect(this->editor, SIGNAL(wildMonDataChanged()), this, SLOT(onWildMonDataChanged()));
+    connect(this->editor, &Editor::mapRulerStatusChanged, this, &MainWindow::onMapRulerStatusChanged);
+    connect(ui->toolButton_Open_Scripts, &QToolButton::pressed, this->editor, &Editor::openMapScripts);
+    connect(ui->actionOpen_Project_in_Text_Editor, &QAction::triggered, this->editor, &Editor::openProjectInTextEditor);
 
     this->loadUserSettings();
 
     undoAction = editor->editGroup.createUndoAction(this, tr("&Undo"));
+    undoAction->setObjectName("action_Undo");
     undoAction->setShortcut(QKeySequence("Ctrl+Z"));
 
     redoAction = editor->editGroup.createRedoAction(this, tr("&Redo"));
+    redoAction->setObjectName("action_Redo");
     redoAction->setShortcuts({QKeySequence("Ctrl+Y"), QKeySequence("Ctrl+Shift+Z")});
 
     ui->menuEdit->addAction(undoAction);
@@ -185,7 +256,8 @@ void MainWindow::initEditor() {
     undoView->setAttribute(Qt::WA_QuitOnClose, false);
 
     // Show the EditHistory dialog with Ctrl+E
-    QAction *showHistory = new QAction("Show Edit History...");
+    QAction *showHistory = new QAction("Show Edit History...", this);
+    showHistory->setObjectName("action_ShowEditHistory");
     showHistory->setShortcut(QKeySequence("Ctrl+E"));
     connect(showHistory, &QAction::triggered, [undoView](){ undoView->show(); });
 
@@ -229,7 +301,7 @@ void MainWindow::initMapSortOrder() {
     mapSortOrderActionGroup->addAction(ui->actionSort_by_Area);
     mapSortOrderActionGroup->addAction(ui->actionSort_by_Layout);
 
-    connect(ui->toolButton_MapSortOrder, &QToolButton::triggered, this, &MainWindow::mapSortOrder_changed);
+    connect(mapSortOrderActionGroup, &QActionGroup::triggered, this, &MainWindow::mapSortOrder_changed);
 
     QAction* sortOrder = ui->toolButton_MapSortOrder->menu()->actions()[mapSortOrder];
     ui->toolButton_MapSortOrder->setIcon(sortOrder->icon());
@@ -1305,16 +1377,6 @@ void MainWindow::duplicate() {
     editor->duplicateSelectedEvents();
 }
 
-// Open current map scripts in system default editor for .inc files
-void MainWindow::openInTextEditor() {
-    bool usePoryscript = projectConfig.getUsePoryScript();
-    QString path = QDir::cleanPath("file://" + editor->project->root + QDir::separator() + "data/maps/" + editor->map->name + "/scripts");
-
-    // Try opening scripts file, if opening .pory failed try again with .inc
-    if (!QDesktopServices::openUrl(QUrl(path + editor->project->getScriptFileExtension(usePoryscript))) && usePoryscript)
-        QDesktopServices::openUrl(QUrl(path + editor->project->getScriptFileExtension(false)));
-}
-
 void MainWindow::on_action_Save_triggered() {
     editor->save();
     updateMapList();
@@ -1413,6 +1475,48 @@ void MainWindow::on_actionMonitor_Project_Files_triggered(bool checked)
 void MainWindow::on_actionUse_Poryscript_triggered(bool checked)
 {
     projectConfig.setUsePoryScript(checked);
+}
+
+void MainWindow::on_actionEdit_Shortcuts_triggered()
+{
+    if (!shortcutsEditor)
+        initShortcutsEditor();
+
+    if (shortcutsEditor->isHidden())
+        shortcutsEditor->show();
+    else if (shortcutsEditor->isMinimized())
+        shortcutsEditor->showNormal();
+    else
+        shortcutsEditor->activateWindow();
+}
+
+void MainWindow::initShortcutsEditor() {
+    shortcutsEditor = new ShortcutsEditor(this);
+    connect(shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
+            this, &MainWindow::applyUserShortcuts);
+    connect(shortcutsEditor, &QObject::destroyed, [=](QObject *) { shortcutsEditor = nullptr; });
+
+    connectSubEditorsToShortcutsEditor();
+
+    shortcutsEditor->setShortcutableObjects(shortcutableObjects());
+}
+
+void MainWindow::connectSubEditorsToShortcutsEditor() {
+    /* Initialize sub-editors so that their children are added to MainWindow's object tree and will
+     * be returned by shortcutableObjects() to be passed to ShortcutsEditor. */
+    if (!tilesetEditor)
+        initTilesetEditor();
+    connect(shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
+            tilesetEditor, &TilesetEditor::applyUserShortcuts);
+
+    // TODO: Remove this check when the region map editor supports pokefirered.
+    if (projectConfig.getBaseGameVersion() != BaseGameVersion::pokefirered) {
+        if (!regionMapEditor)
+            initRegionMapEditor();
+        if (regionMapEditor)
+            connect(shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
+                    regionMapEditor, &RegionMapEditor::applyUserShortcuts);
+    }
 }
 
 void MainWindow::on_actionPencil_triggered()
@@ -1549,6 +1653,10 @@ void MainWindow::updateSelectedObjects() {
             events.append(selectedEvent);
         }
     }
+
+    for (auto *button : openScriptButtons)
+        delete button;
+    openScriptButtons.clear();
 
     QMap<QString, int> event_obj_gfx_constants = editor->project->getEventObjGfxConstants();
 
@@ -1809,6 +1917,7 @@ void MainWindow::updateSelectedObjects() {
                                   "normal movement behavior actions.");
                 combo->setMinimumContentsLength(4);
             } else if (key == "script_label") {
+                combo->addItems(editor->map->eventScriptLabels());
                 combo->setToolTip("The script which is executed with this event.");
             } else if (key == "trainer_type") {
                 combo->addItems(*editor->project->trainerTypes);
@@ -1871,7 +1980,26 @@ void MainWindow::updateSelectedObjects() {
             } else {
                 combo->setCurrentText(value);
 
-                fl->addRow(new QLabel(field_labels[key], widget), combo);
+                if (key == "script_label") {
+                    // Add button next to combo which opens combo's current script.
+                    auto *hl = new QHBoxLayout();
+                    hl->setSpacing(3);
+                    auto *openScriptButton = new QToolButton(widget);
+                    openScriptButtons << openScriptButton;
+                    openScriptButton->setFixedSize(combo->height(), combo->height());
+                    openScriptButton->setIcon(QFileIconProvider().icon(QFileIconProvider::File));
+                    openScriptButton->setToolTip("Go to this script definition in text editor.");
+                    connect(openScriptButton, &QToolButton::clicked,
+                            [this, combo]() { this->editor->openScript(combo->currentText()); });
+                    hl->addWidget(combo);
+                    hl->addWidget(openScriptButton);
+                    fl->addRow(new QLabel(field_labels[key], widget), hl);
+                    if (porymapConfig.getTextEditorGotoLine().isEmpty())
+                        openScriptButton->hide();
+                } else {
+                    fl->addRow(new QLabel(field_labels[key], widget), combo);
+                }
+
                 widget->setLayout(fl);
                 frame->layout()->addWidget(widget);
 
@@ -2106,11 +2234,6 @@ void MainWindow::on_toolButton_deleteObject_clicked() {
     }
 }
 
-void MainWindow::on_toolButton_Open_Scripts_clicked()
-{
-    openInTextEditor();
-}
-
 void MainWindow::on_toolButton_Paint_clicked()
 {
     if (ui->mainTabBar->currentIndex() == 0)
@@ -2301,6 +2424,23 @@ void MainWindow::onWildMonDataChanged() {
     projectHasUnsavedChanges = true;
 }
 
+void MainWindow::onMapRulerStatusChanged(const QString &status) {
+    if (status.isEmpty()) {
+        label_MapRulerStatus->hide();
+    } else if (label_MapRulerStatus->parentWidget()) {
+        label_MapRulerStatus->setText(status);
+        label_MapRulerStatus->adjustSize();
+        label_MapRulerStatus->show();
+        label_MapRulerStatus->move(label_MapRulerStatus->parentWidget()->mapToGlobal(QPoint(6, 6)));
+    }
+}
+
+void MainWindow::moveEvent(QMoveEvent *event) {
+    QMainWindow::moveEvent(event);
+    if (label_MapRulerStatus->isVisible() && label_MapRulerStatus->parentWidget())
+        label_MapRulerStatus->move(label_MapRulerStatus->parentWidget()->mapToGlobal(QPoint(6, 6)));
+}
+
 void MainWindow::on_action_Export_Map_Image_triggered() {
     showExportMapImageWindow(false);
 }
@@ -2356,6 +2496,10 @@ void MainWindow::on_pushButton_RemoveConnection_clicked()
 
 void MainWindow::on_pushButton_NewWildMonGroup_clicked() {
     editor->addNewWildMonGroup(this);
+}
+
+void MainWindow::on_pushButton_DeleteWildMonGroup_clicked() {
+    editor->deleteWildMonGroup();
 }
 
 void MainWindow::on_pushButton_ConfigureEncountersJSON_clicked() {
@@ -2503,9 +2647,7 @@ void MainWindow::on_checkBox_ToggleBorder_stateChanged(int selected)
 void MainWindow::on_actionTileset_Editor_triggered()
 {
     if (!this->tilesetEditor) {
-        this->tilesetEditor = new TilesetEditor(this->editor->project, this->editor->map, this);
-        connect(this->tilesetEditor, SIGNAL(tilesetsSaved(QString, QString)), this, SLOT(onTilesetsSaved(QString, QString)));
-        connect(this->tilesetEditor, &QObject::destroyed, [=](QObject *) { this->tilesetEditor = nullptr; });
+        initTilesetEditor();
     }
 
     if (!this->tilesetEditor->isVisible()) {
@@ -2516,6 +2658,12 @@ void MainWindow::on_actionTileset_Editor_triggered()
         this->tilesetEditor->activateWindow();
     }
     this->tilesetEditor->selectMetatile(this->editor->metatile_selector_item->getSelectedMetatiles()->at(0));
+}
+
+void MainWindow::initTilesetEditor() {
+    this->tilesetEditor = new TilesetEditor(this->editor->project, this->editor->map, this);
+    connect(this->tilesetEditor, SIGNAL(tilesetsSaved(QString, QString)), this, SLOT(onTilesetsSaved(QString, QString)));
+    connect(this->tilesetEditor, &QObject::destroyed, [=](QObject *) { this->tilesetEditor = nullptr; });
 }
 
 void MainWindow::on_toolButton_ExpandAll_clicked()
@@ -2539,38 +2687,40 @@ void MainWindow::on_actionAbout_Porymap_triggered()
     window->show();
 }
 
-void MainWindow::on_actionThemes_triggered()
-{
-    QStringList themes;
-    QRegularExpression re(":/themes/([A-z0-9_-]+).qss");
-    themes.append("default");
-    QDirIterator it(":/themes", QDirIterator::Subdirectories);
-    while (it.hasNext()) {
-        QString themeName = re.match(it.next()).captured(1);
-        themes.append(themeName);
+void MainWindow::on_actionEdit_Preferences_triggered() {
+    if (!preferenceEditor) {
+        preferenceEditor = new PreferenceEditor(this);
+        connect(preferenceEditor, &PreferenceEditor::themeChanged,
+                this, &MainWindow::setTheme);
+        connect(preferenceEditor, &PreferenceEditor::themeChanged,
+                editor, &Editor::maskNonVisibleConnectionTiles);
+        connect(preferenceEditor, &PreferenceEditor::preferencesSaved,
+                this, &MainWindow::togglePreferenceSpecificUi);
+        connect(preferenceEditor, &QObject::destroyed, [=](QObject *) { preferenceEditor = nullptr; });
     }
 
-    QDialog themeSelectorWindow(this);
-    QFormLayout form(&themeSelectorWindow);
+    if (!preferenceEditor->isVisible()) {
+        preferenceEditor->show();
+    } else if (preferenceEditor->isMinimized()) {
+        preferenceEditor->showNormal();
+    } else {
+        preferenceEditor->activateWindow();
+    }
+}
 
-    NoScrollComboBox *themeSelector = new NoScrollComboBox();
-    themeSelector->addItems(themes);
-    themeSelector->setCurrentText(porymapConfig.getTheme());
-    form.addRow(new QLabel("Themes"), themeSelector);
+void MainWindow::togglePreferenceSpecificUi() {
+    if (porymapConfig.getTextEditorGotoLine().isEmpty()) {
+        for (auto *button : openScriptButtons)
+            button->hide();
+    } else {
+        for (auto *button : openScriptButtons)
+            button->show();
+    }
 
-    QDialogButtonBox buttonBox(QDialogButtonBox::Apply | QDialogButtonBox::Close, Qt::Horizontal, &themeSelectorWindow);
-    form.addRow(&buttonBox);
-    connect(&buttonBox, &QDialogButtonBox::clicked, [&buttonBox, themeSelector, this](QAbstractButton *button){
-        if (button == buttonBox.button(QDialogButtonBox::Apply)) {
-            QString theme = themeSelector->currentText();
-            porymapConfig.setTheme(theme);
-            this->setTheme(theme);
-            editor->maskNonVisibleConnectionTiles();
-        }
-    });
-    connect(&buttonBox, SIGNAL(rejected()), &themeSelectorWindow, SLOT(reject()));
-
-    themeSelectorWindow.exec();
+    if (porymapConfig.getTextEditorOpenFolder().isEmpty())
+        ui->actionOpen_Project_in_Text_Editor->setEnabled(false);
+    else
+        ui->actionOpen_Project_in_Text_Editor->setEnabled(true);
 }
 
 void MainWindow::on_pushButton_AddCustomHeaderField_clicked()
@@ -2632,20 +2782,9 @@ void MainWindow::on_horizontalSlider_MetatileZoom_valueChanged(int value) {
 
 void MainWindow::on_actionRegion_Map_Editor_triggered() {
     if (!this->regionMapEditor) {
-        this->regionMapEditor = new RegionMapEditor(this, this->editor->project);
-        bool success = this->regionMapEditor->loadRegionMapData()
-                    && this->regionMapEditor->loadCityMaps();
-        if (!success) {
-            delete this->regionMapEditor;
-            this->regionMapEditor = nullptr;
-            QMessageBox msgBox(this);
-            QString errorMsg = QString("There was an error opening the region map data. Please see %1 for full error details.\n\n%3")
-                    .arg(getLogPath())
-                    .arg(getMostRecentError());
-            msgBox.critical(nullptr, "Error Opening Region Map Editor", errorMsg);
+        if (!initRegionMapEditor()) {
             return;
         }
-        connect(this->regionMapEditor, &QObject::destroyed, [=](QObject *) { this->regionMapEditor = nullptr; });
     }
 
     if (!this->regionMapEditor->isVisible()) {
@@ -2657,6 +2796,26 @@ void MainWindow::on_actionRegion_Map_Editor_triggered() {
     }
 }
 
+bool MainWindow::initRegionMapEditor() {
+    this->regionMapEditor = new RegionMapEditor(this, this->editor->project);
+    bool success = this->regionMapEditor->loadRegionMapData()
+                && this->regionMapEditor->loadCityMaps();
+    if (!success) {
+        delete this->regionMapEditor;
+        this->regionMapEditor = nullptr;
+        QMessageBox msgBox(this);
+        QString errorMsg = QString("There was an error opening the region map data. Please see %1 for full error details.\n\n%3")
+                .arg(getLogPath())
+                .arg(getMostRecentError());
+        msgBox.critical(nullptr, "Error Opening Region Map Editor", errorMsg);
+
+        return false;
+    }
+    connect(this->regionMapEditor, &QObject::destroyed, [=](QObject *) { this->regionMapEditor = nullptr; });
+
+    return true;
+}
+
 void MainWindow::closeSupplementaryWindows() {
     if (this->tilesetEditor)
         delete this->tilesetEditor;
@@ -2666,6 +2825,8 @@ void MainWindow::closeSupplementaryWindows() {
         delete this->mapImageExporter;
     if (this->newmapprompt)
         delete this->newmapprompt;
+    if (this->shortcutsEditor)
+        delete this->shortcutsEditor;
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
@@ -2694,6 +2855,8 @@ void MainWindow::closeEvent(QCloseEvent *event) {
         this->ui->splitter_main->saveState()
     );
     porymapConfig.save();
+    projectConfig.save();
+    shortcutsConfig.save();
 
     QMainWindow::closeEvent(event);
 }

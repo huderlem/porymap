@@ -32,10 +32,10 @@ public:
     Event(const Event&);
     Event(QJsonObject, QString);
 public:
-    int x() {
+    int x() const {
         return getInt("x");
     }
-    int y() {
+    int y() const {
         return getInt("y");
     }
     int elevation() {
@@ -47,16 +47,16 @@ public:
     void setY(int y) {
         put("y", y);
     }
-    QString get(QString key) {
+    QString get(const QString &key) const {
         return values.value(key);
     }
-    int getInt(QString key) {
+    int getInt(const QString &key) const {
         return values.value(key).toInt(nullptr, 0);
     }
-    uint16_t getU16(QString key) {
+    uint16_t getU16(const QString &key) const {
         return values.value(key).toUShort(nullptr, 0);
     }
-    int16_t getS16(QString key) {
+    int16_t getS16(const QString &key) const {
         return values.value(key).toShort(nullptr, 0);
     }
     void put(QString key, int value) {
