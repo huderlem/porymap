@@ -465,7 +465,7 @@ bool MainWindow::openRecentProject() {
         return openProject(default_dir);
     }
 
-    return true;
+    return false;
 }
 
 bool MainWindow::openProject(QString dir) {
