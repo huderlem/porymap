@@ -1,3 +1,4 @@
+#pragma once
 #ifndef MAPLAYOUT_H
 #define MAPLAYOUT_H
 

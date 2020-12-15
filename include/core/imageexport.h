@@ -1,3 +1,4 @@
+#pragma once
 #ifndef IMAGEEXPORT_H
 #define IMAGEEXPORT_H
 

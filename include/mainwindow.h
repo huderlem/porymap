@@ -1,3 +1,4 @@
+#pragma once
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
@@ -271,6 +272,7 @@ private:
 
     bool isProgrammaticEventTabChange;
     bool projectHasUnsavedChanges;
+    bool projectOpenFailure = false;
 
     MapSortOrder mapSortOrder;
 

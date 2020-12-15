@@ -1,3 +1,4 @@
+#pragma once
 #ifndef METATILEPARSER_H
 #define METATILEPARSER_H
 

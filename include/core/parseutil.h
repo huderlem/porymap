@@ -1,3 +1,4 @@
+#pragma once
 #ifndef PARSEUTIL_H
 #define PARSEUTIL_H
 

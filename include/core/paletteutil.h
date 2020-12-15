@@ -1,3 +1,4 @@
+#pragma once
 #ifndef PALETTEUTIL_H
 #define PALETTEUTIL_H
 

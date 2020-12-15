@@ -58,10 +58,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     this->initWindow();
     if (!this->openRecentProject()) {
-        // Re-initialize everything to a blank slate if opening the recent project failed.
-        this->initWindow();
+        setWindowDisabled(true);
+    } else {
+        setWindowDisabled(false);
+        on_toolButton_Paint_clicked();
     }
-    on_toolButton_Paint_clicked();
 }
 
 MainWindow::~MainWindow()
@@ -173,6 +174,7 @@ void MainWindow::applyUserShortcuts() {
 
 void MainWindow::initCustomUI() {
     // Set up the tab bar
+    while (ui->mainTabBar->count()) ui->mainTabBar->removeTab(0);
     ui->mainTabBar->addTab("Map");
     ui->mainTabBar->setTabIcon(0, QIcon(QStringLiteral(":/icons/map.ico")));
     ui->mainTabBar->addTab("Events");
@@ -180,12 +182,19 @@ void MainWindow::initCustomUI() {
     ui->mainTabBar->addTab("Connections");
     ui->mainTabBar->addTab("Wild Pokemon");
     ui->mainTabBar->setTabIcon(4, QIcon(QStringLiteral(":/icons/tall_grass.ico")));
+}
 
+void MainWindow::initExtraSignals() {
     // Right-clicking on items in the map list tree view brings up a context menu.
     ui->mapList->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->mapList, SIGNAL(customContextMenuRequested(const QPoint &)),
             this, SLOT(onOpenMapListContextMenu(const QPoint &)));
 
+    // other signals
+    connect(ui->newEventToolButton, SIGNAL(newEventAdded(QString)), this, SLOT(addNewEvent(QString)));
+    connect(ui->tabWidget_EventType, &QTabWidget::currentChanged, this, &MainWindow::eventTabChanged);
+
+    // Change pages on wild encounter groups
     QStackedWidget *stack = ui->stackedWidget_WildMons;
     QComboBox *labelCombo = ui->comboBox_EncounterGroupLabel;
     connect(labelCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index){
@@ -215,11 +224,6 @@ void MainWindow::initCustomUI() {
     label_MapRulerStatus->setAlignment(Qt::AlignCenter);
     label_MapRulerStatus->setTextFormat(Qt::PlainText);
     label_MapRulerStatus->setTextInteractionFlags(Qt::TextSelectableByMouse);
-}
-
-void MainWindow::initExtraSignals() {
-    connect(ui->newEventToolButton, SIGNAL(newEventAdded(QString)), this, SLOT(addNewEvent(QString)));
-    connect(ui->tabWidget_EventType, &QTabWidget::currentChanged, this, &MainWindow::eventTabChanged);
 }
 
 void MainWindow::initEditor() {
@@ -461,11 +465,12 @@ bool MainWindow::openRecentProject() {
         return openProject(default_dir);
     }
 
-    return true;
+    return false;
 }
 
 bool MainWindow::openProject(QString dir) {
     if (dir.isNull()) {
+        projectOpenFailure = true;
         return false;
     }
 
@@ -522,13 +527,12 @@ bool MainWindow::openProject(QString dir) {
         Scripting::cb_ProjectOpened(dir);
     }
 
-    setWindowDisabled(false);
-
+    projectOpenFailure = !success;
     return success;
 }
 
 bool MainWindow::isProjectOpen() {
-    return editor != nullptr && editor->project != nullptr;
+    return !projectOpenFailure && editor && editor->project;
 }
 
 QString MainWindow::getDefaultMap() {
@@ -572,9 +576,7 @@ void MainWindow::on_action_Open_Project_triggered()
             this->ui->graphicsView_Map->overlay.clearItems();
         }
         porymapConfig.setRecentProject(dir);
-        if (!openProject(dir)) {
-            this->initWindow();
-        }
+        setWindowDisabled(!openProject(dir));
     }
 }
 
@@ -1556,6 +1558,7 @@ void MainWindow::addNewEvent(QString event_type)
     if (editor && editor->project) {
         DraggablePixmapItem *object = editor->addNewEvent(event_type);
         if (object) {
+            updateObjects();
             editor->selectMapEvent(object, false);
         } else {
             QMessageBox msgBox(this);
@@ -2827,19 +2830,22 @@ void MainWindow::closeSupplementaryWindows() {
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
-    if (projectHasUnsavedChanges || (editor->map && editor->map->hasUnsavedChanges())) {
-        QMessageBox::StandardButton result = QMessageBox::question(
-            this, "porymap", "The project has been modified, save changes?",
-            QMessageBox::No | QMessageBox::Yes | QMessageBox::Cancel, QMessageBox::Yes);
+    if (isProjectOpen()) {
+        if (projectHasUnsavedChanges || (editor->map && editor->map->hasUnsavedChanges())) {
+            QMessageBox::StandardButton result = QMessageBox::question(
+                this, "porymap", "The project has been modified, save changes?",
+                QMessageBox::No | QMessageBox::Yes | QMessageBox::Cancel, QMessageBox::Yes);
 
-        if (result == QMessageBox::Yes) {
-            editor->saveProject();
-        } else if (result == QMessageBox::No) {
-            logWarn("Closing porymap with unsaved changes.");
-        } else if (result == QMessageBox::Cancel) {
-            event->ignore();
-            return;
+            if (result == QMessageBox::Yes) {
+                editor->saveProject();
+            } else if (result == QMessageBox::No) {
+                logWarn("Closing porymap with unsaved changes.");
+            } else if (result == QMessageBox::Cancel) {
+                event->ignore();
+                return;
+            }
         }
+        projectConfig.save();
     }
 
     porymapConfig.setMainGeometry(
