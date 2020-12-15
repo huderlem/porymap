@@ -2855,7 +2855,6 @@ void MainWindow::closeEvent(QCloseEvent *event) {
         this->ui->splitter_main->saveState()
     );
     porymapConfig.save();
-    projectConfig.save();
     shortcutsConfig.save();
 
     QMainWindow::closeEvent(event);
