@@ -27,9 +27,9 @@ The border's visibility, including the surrounding map connections, can be toggl
 
 You can zoom in and out on the map with *View -> Zoom In* (``Ctrl++`` or ``Ctrl+Mouse Wheel Scroll Up``) and *View -> Zoom Out* (``Ctrl+-`` or ``Ctrl+Mouse Wheel Scroll Down``).
 
-By default, the mouse cursor will show a white indicator outline of the currently-hovered tile(s) of what will be painted.  You can disable this outline with *View -> Cursor Tile Outline*.  Additionally, the cursor changes its appearance depending on which tool you currently have selected in the toolbar.  You can disable this with *View -> Cursor Icons*.
+By default, the mouse cursor will show a white indicator outline of the currently-hovered tile(s) of what will be painted.  You can disable this outline with *View -> Cursor Tile Outline* (``C``).  Additionally, the cursor changes its appearance depending on which tool you currently have selected in the toolbar.  You can disable this with *View -> Cursor Icons*.
 
-An indicator outline for the player's in-game view radius can be toggled with *View -> Player View Rectangle*.
+An indicator outline for the player's in-game view radius can be toggled with *View -> Player View Rectangle* (``V``).
 
 The Metatile Selection Pane can be zoomed in or out using the slider on the bottom.
 
@@ -119,7 +119,7 @@ The Map Shift Tool |map-shift-tool| (*Tools -> Map Shift*, or ``S``) lets you sh
 Smart Paths
 -----------
 
-Smart Paths provide an easy way to paint pathways, ponds, and mountains.  If there is any formation of metatiles that have a basic outline and a "middle" tile, then smart paths can help save you time when painting.  **Smart Paths can only be used when you have a 3x3 metatile selection.**  Smart Paths is only available when using the Pencil Tool or the Bucket Fill Tool.  To enable Smart Paths, you must either check the Smart Paths checkbox above the map area, or you can hold down the ``Shift`` key.  Below are a few examples that illustrate the power of Smart Paths.
+Smart Paths provide an easy way to paint pathways, ponds, and mountains.  If there is any formation of metatiles that have a basic outline and a "middle" tile, then smart paths can help save you time when painting.  **Smart Paths can only be used when you have a 3x3 metatile selection.**  Smart Paths is only available when using the Pencil Tool or the Bucket Fill Tool.  To enable Smart Paths, you must either check the Smart Paths checkbox above the map area, or you can hold down the ``Shift`` key.  If you have the Smart Paths checkbox checked then you can temporarily disable smart paths by holding down the ``Shift`` key.  Below are a few examples that illustrate the power of Smart Paths.
 
 .. figure:: images/editing-map-tiles/smart-paths-1-painting.gif
     :alt: Regular vs. Smart Paths
@@ -135,6 +135,11 @@ Smart Paths provide an easy way to paint pathways, ponds, and mountains.  If the
     :alt: Smart Paths from Right-Click Selection
 
     Smart Paths from Right-Click Selection
+
+Straight Paths
+--------------
+
+Straight Paths allows for painting tiles in straight lines by snapping the cursor to that line.  Either the X or Y axis will be locked depending on the direction you start painting in.  To enable straight paths simply hold down ``Ctrl`` when painting tiles.  Straight paths works for both metatiles and collision tiles, and works in conjunction with *Smart Paths*.  It also works with the *Map Shift Tool*.  Straight path painting can be chained together with normal painting to allow you, for example, to paint a straight path, then release ``Ctrl`` to continue the path normally, then press ``Ctrl`` again to continue painting a straight path from that position.
 
 Change Map Border
 -----------------
