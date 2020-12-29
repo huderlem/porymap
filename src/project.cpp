@@ -819,7 +819,7 @@ void Project::saveWildMonData() {
 void Project::saveMapConstantsHeader() {
     QString text = QString("#ifndef GUARD_CONSTANTS_MAP_GROUPS_H\n");
     text += QString("#define GUARD_CONSTANTS_MAP_GROUPS_H\n");
-    text += QString("\n");
+    text += QString("\n//\n// DO NOT MODIFY THIS FILE! It is auto-generated from data/maps/map_groups.json\n//\n\n");
 
     int groupNum = 0;
     for (QStringList mapNames : groupedMapNames) {
