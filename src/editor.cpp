@@ -2057,9 +2057,9 @@ void Editor::openInTextEditor(const QString &path, int lineNum) const {
         if (command.contains("%F")) {
             if (command.contains("%L"))
                 command.replace("%L", QString::number(lineNum));
-            command.replace("%F", path);
+            command.replace("%F", '\"' + path + '\"');
         } else {
-            command += ' ' + path;
+            command += " \"" + path + '\"';
         }
         startDetachedProcess(command);
     }
@@ -2068,27 +2068,38 @@ void Editor::openInTextEditor(const QString &path, int lineNum) const {
 void Editor::openProjectInTextEditor() const {
     QString command = porymapConfig.getTextEditorOpenFolder();
     if (command.contains("%D"))
-        command.replace("%D", project->root);
+        command.replace("%D", '\"' + project->root + '\"');
     else
-        command += ' ' + project->root;
+        command += " \"" + project->root + '\"';
     startDetachedProcess(command);
 }
 
 bool Editor::startDetachedProcess(const QString &command, const QString &workingDirectory, qint64 *pid) const {
-    static QProcess process;
     logInfo("Executing command: " + command);
+    QProcess process;
 #ifdef Q_OS_WIN
-    // On Windows, a QProcess command must be wrapped in a cmd.exe command.
-    process.setProcessEnvironment(QProcessEnvironment::systemEnvironment());
-    process.setProgram(process.processEnvironment().value("COMSPEC"));
-    process.setNativeArguments("/c " + command);
-    process.setWorkingDirectory(workingDirectory);
+    // Windows is WeirdChamp
+    QStringList arguments = ParseUtil::splitShellCommand(command);
+    const QString program = arguments.takeFirst();
+    QFileInfo programFileInfo(program);
+    if (programFileInfo.isExecutable()) {
+        process.setProgram(program);
+        process.setArguments(arguments);
+    } else {
+        // program is a batch script (such as VSCode's 'code' script) and needs to be started by cmd.exe.
+        process.setProgram(QProcessEnvironment::systemEnvironment().value("COMSPEC"));
+        // Windows is finicky with quotes on the command-line. I can't explain why this difference is necessary.
+        if (command.startsWith('"'))
+            process.setNativeArguments("/c \"" + command + '"');
+        else
+            process.setArguments(QStringList() << "/c" << program << arguments);
+    }
 #else
     QStringList arguments = ParseUtil::splitShellCommand(command);
     process.setProgram(arguments.takeFirst());
     process.setArguments(arguments);
-    process.setWorkingDirectory(workingDirectory);
 #endif
+    process.setWorkingDirectory(workingDirectory);
     return process.startDetached(pid);
 }
 
