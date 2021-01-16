@@ -83,6 +83,7 @@ void TilesetEditor::setTilesets(QString primaryTilesetLabel, QString secondaryTi
     if (this->secondaryTileset) delete this->secondaryTileset;
     this->primaryTileset = primaryTileset->copy();
     this->secondaryTileset = secondaryTileset->copy();
+    if (paletteEditor) paletteEditor->setTilesets(this->primaryTileset, this->secondaryTileset);
 }
 
 void TilesetEditor::initUi() {
