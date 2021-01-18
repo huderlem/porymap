@@ -831,8 +831,8 @@
                                <rect>
                                 <x>0</x>
                                 <y>0</y>
-                                <width>443</width>
-                                <height>74</height>
+                                <width>428</width>
+                                <height>77</height>
                                </rect>
                               </property>
                               <layout class="QHBoxLayout" name="horizontalLayout_7">
@@ -1019,10 +1019,10 @@
                         </property>
                         <property name="geometry">
                          <rect>
-                          <x>8</x>
+                          <x>0</x>
                           <y>0</y>
-                          <width>431</width>
-                          <height>341</height>
+                          <width>411</width>
+                          <height>449</height>
                          </rect>
                         </property>
                         <property name="sizePolicy">
@@ -1172,8 +1172,8 @@
                          <rect>
                           <x>0</x>
                           <y>0</y>
-                          <width>434</width>
-                          <height>643</height>
+                          <width>428</width>
+                          <height>704</height>
                          </rect>
                         </property>
                         <layout class="QGridLayout" name="gridLayout_7">
@@ -1471,8 +1471,8 @@
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>430</width>
-                             <height>521</height>
+                             <width>98</width>
+                             <height>28</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -1516,8 +1516,8 @@
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>430</width>
-                             <height>521</height>
+                             <width>98</width>
+                             <height>28</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -1561,8 +1561,8 @@
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>430</width>
-                             <height>521</height>
+                             <width>98</width>
+                             <height>28</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -1606,8 +1606,8 @@
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>430</width>
-                             <height>521</height>
+                             <width>98</width>
+                             <height>28</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -1651,8 +1651,8 @@
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>430</width>
-                             <height>521</height>
+                             <width>98</width>
+                             <height>28</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -1702,8 +1702,8 @@
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>430</width>
-                             <height>521</height>
+                             <width>98</width>
+                             <height>28</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -2543,7 +2543,7 @@
                      <bool>true</bool>
                     </property>
                    </widget>
-                   </item>
+                  </item>
                   <item>
                    <spacer name="horizontalSpacer_9">
                     <property name="orientation">
@@ -2593,7 +2593,7 @@
      <x>0</x>
      <y>0</y>
      <width>1287</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -2607,6 +2607,7 @@
     <addaction name="separator"/>
     <addaction name="action_Export_Map_Image"/>
     <addaction name="actionExport_Stitched_Map_Image"/>
+    <addaction name="actionExport_Map_Timelapse_Image"/>
     <addaction name="separator"/>
     <addaction name="action_Exit"/>
    </widget>
@@ -2938,6 +2939,11 @@
     <string>Edit Shortcuts...</string>
    </property>
   </action>
+  <action name="actionExport_Map_Timelapse_Image">
+   <property name="text">
+    <string>Export Map Timelapse Image...</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -2950,6 +2956,7 @@
    <class>AdjustingStackedWidget</class>
    <extends>QStackedWidget</extends>
    <header>adjustingstackedwidget.h</header>
+   <container>1</container>
   </customwidget>
   <customwidget>
    <class>GraphicsView</class>

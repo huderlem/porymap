@@ -2442,20 +2442,24 @@ void MainWindow::moveEvent(QMoveEvent *event) {
 }
 
 void MainWindow::on_action_Export_Map_Image_triggered() {
-    showExportMapImageWindow(false);
+    showExportMapImageWindow(ImageExporterMode::Normal);
 }
 
 void MainWindow::on_actionExport_Stitched_Map_Image_triggered() {
-    showExportMapImageWindow(true);
+    showExportMapImageWindow(ImageExporterMode::Stitch);
 }
 
-void MainWindow::showExportMapImageWindow(bool stitchMode) {
+void MainWindow::on_actionExport_Map_Timelapse_Image_triggered() {
+    showExportMapImageWindow(ImageExporterMode::Timelapse);
+}
+
+void MainWindow::showExportMapImageWindow(ImageExporterMode mode) {
     if (!editor->project) return;
 
     if (this->mapImageExporter)
         delete this->mapImageExporter;
 
-    this->mapImageExporter = new MapImageExporter(this, this->editor, stitchMode);
+    this->mapImageExporter = new MapImageExporter(this, this->editor, mode);
     connect(this->mapImageExporter, &QObject::destroyed, [=](QObject *) { this->mapImageExporter = nullptr; });
     this->mapImageExporter->setAttribute(Qt::WA_DeleteOnClose);
 

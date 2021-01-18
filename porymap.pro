@@ -176,3 +176,5 @@ INCLUDEPATH += include
 INCLUDEPATH += include/core
 INCLUDEPATH += include/ui
 INCLUDEPATH += include/lib
+
+include(src/vendor/QtGifImage/gifimage/qtgifimage.pri)

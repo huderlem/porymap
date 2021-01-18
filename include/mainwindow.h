@@ -187,6 +187,7 @@ private slots:
 
     void on_action_Export_Map_Image_triggered();
     void on_actionExport_Stitched_Map_Image_triggered();
+    void on_actionExport_Map_Timelapse_Image_triggered();
 
     void on_comboBox_ConnectionDirection_currentIndexChanged(const QString &arg1);
     void on_spinBox_ConnectionOffset_valueChanged(int offset);
@@ -323,7 +324,7 @@ private:
     void connectSubEditorsToShortcutsEditor();
 
     bool isProjectOpen();
-    void showExportMapImageWindow(bool stitchMode);
+    void showExportMapImageWindow(ImageExporterMode mode);
     void redrawMetatileSelection();
 
     QObjectList shortcutableObjects() const;

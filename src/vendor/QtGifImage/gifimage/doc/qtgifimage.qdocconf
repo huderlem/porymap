@@ -1,0 +1,75 @@
+include($QT_INSTALL_DOCS/global/qt-html-templates-offline.qdocconf)
+include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
+
+project                 = QtGifImage
+description             = Qt GifImage Reference Documentation
+url                     = http://qtgifimage.debao.me
+version                 = $QT_VERSION
+
+qhp.projects            = QtGifImage
+
+qhp.QtGifImage.file                = qtgifimage.qhp
+qhp.QtGifImage.namespace           = me.debao.qtgifimage.$QT_VERSION_TAG
+qhp.QtGifImage.virtualFolder       = qtgifimage
+qhp.QtGifImage.indexTitle          = Qt GifImage
+qhp.QtGifImage.indexRoot           =
+
+qhp.QtGifImage.filterAttributes    = qtgifimage $QT_VERSION qtrefdoc
+qhp.QtGifImage.customFilters.Qt.name = QtGifImage $QT_VERSION
+qhp.QtGifImage.customFilters.Qt.filterAttributes = qtgifimage $QT_VERSION
+qhp.QtGifImage.subprojects         = overviews classes qmltypes examples
+qhp.QtGifImage.subprojects.overviews.title = Overview
+qhp.QtGifImage.subprojects.overviews.indexTitle = Qt GifImage
+qhp.QtGifImage.subprojects.overviews.selectors = fake:page,group,module
+qhp.QtGifImage.subprojects.classes.title = C++ Classes
+qhp.QtGifImage.subprojects.classes.indexTitle = Qt GifImage C++ Classes
+qhp.QtGifImage.subprojects.classes.selectors = class fake:headerfile
+qhp.QtGifImage.subprojects.classes.sortPages = true
+qhp.QtGifImage.subprojects.examples.title = Examples
+qhp.QtGifImage.subprojects.examples.indexTitle = Qt GifImage Examples
+qhp.QtGifImage.subprojects.examples.selectors = fake:example
+
+tagfile                 = ../../../doc/qtgifimage/qtgifimage.tags
+
+headerdirs  += .. 
+
+sourcedirs  += .. 
+
+exampledirs += ../../../examples/gifimage \
+               snippets/
+
+# Specify the install path under QT_INSTALL_EXAMPLES
+examplesinstallpath = gifimage
+
+imagedirs   += images
+
+depends += qtcore qtdoc qtgui
+
+HTML.footer = \
+    "        </div>\n" \
+    "       </div>\n" \
+    "   </div>\n" \
+    "   </div>\n" \
+    "</div>\n" \
+    "<div class=\"footer\">\n" \
+    "        <div class=\"qt13a-copyright\" id=\"copyright\">\n" \
+    "            <div class=\"qt13a-container\">\n" \
+    "            <p>\n" \
+    "              <acronym title=\"Copyright\">&copy;</acronym> 2013 Debao Zhang. \n" \
+    "              Documentation contributions included herein are the copyrights of\n" \
+    "              their respective owners.</p>\n" \
+    "            <p>\n" \
+    "              The documentation provided herein is licensed under the terms of the\n" \
+    "              <a href=\"http://www.gnu.org/licenses/fdl.html\">GNU Free Documentation\n" \
+    "              License version 1.3</a> as published by the Free Software Foundation.</p>\n" \
+    "            <p>\n" \
+    "              Documentation sources may be obtained from <a href=\"https://github.com/dbzhang800/QtGifImage\">\n" \
+    "              github.com/dbzhang800</a>.</p>\n" \
+    "            <p>\n" \
+    "              Qt and their respective logos are trademarks of Digia Plc \n" \
+    "              in Finland and/or other countries worldwide. All other trademarks are property\n" \
+    "              of their respective owners. <a title=\"Privacy Policy\"\n" \
+    "              href=\"http://en.gitorious.org/privacy_policy/\">Privacy Policy</a></p>\n" \
+    "            </div>\n" \
+    "        </div>\n" \
+    "</div>\n" \
