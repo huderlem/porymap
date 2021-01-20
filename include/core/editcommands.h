@@ -13,7 +13,7 @@ class DraggablePixmapItem;
 class Editor;
 
 enum CommandId {
-    ID_PaintMetatile,
+    ID_PaintMetatile = 0,
     ID_BucketFillMetatile,
     ID_MagicFillMetatile,
     ID_ShiftMetatiles,
@@ -30,7 +30,11 @@ enum CommandId {
     ID_EventDuplicate,
 };
 
-
+#define IDMask_EventType_Object  (1 << 8)
+#define IDMask_EventType_Warp    (1 << 9)
+#define IDMask_EventType_BG      (1 << 10)
+#define IDMask_EventType_Trigger (1 << 11)
+#define IDMask_EventType_Heal    (1 << 12)
 
 /// Implements a command to commit metatile paint actions
 /// onto the map using the pencil tool.
@@ -240,7 +244,7 @@ public:
     void redo() override;
 
     bool mergeWith(const QUndoCommand *command) override;
-    int id() const override { return CommandId::ID_EventMove; }
+    int id() const override;
 
 private:
     QList<Event *> events;
@@ -259,8 +263,9 @@ public:
         int deltaX, int deltaY, unsigned actionId,
         QUndoCommand *parent = nullptr);
     ~EventShift();
-
-    int id() const override { return CommandId::ID_EventShift; }
+    int id() const override;
+private:
+    QList<Event *> events;
 };
 
 
@@ -277,7 +282,7 @@ public:
     void redo() override;
 
     bool mergeWith(const QUndoCommand *) override { return false; }
-    int id() const override { return CommandId::ID_EventCreate; }
+    int id() const override;
 
 private:
     Map *map;
@@ -300,7 +305,7 @@ public:
     void redo() override;
 
     bool mergeWith(const QUndoCommand *) override { return false; }
-    int id() const override { return CommandId::ID_EventDelete; }
+    int id() const override;
 
 private:
     Editor *editor;
@@ -322,7 +327,7 @@ public:
     void redo() override;
 
     bool mergeWith(const QUndoCommand *) override { return false; }
-    int id() const override { return CommandId::ID_EventDuplicate; }
+    int id() const override;
 
 private:
     Map *map;

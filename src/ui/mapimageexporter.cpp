@@ -1,6 +1,7 @@
 #include "mapimageexporter.h"
 #include "ui_mapimageexporter.h"
 #include "qgifimage.h"
+#include "editcommands.h"
 
 #include <QFileDialog>
 #include <QMatrix>
@@ -99,8 +100,8 @@ void MapImageExporter::saveImage() {
                 int maxWidth = this->map->getWidth() * 16;
                 int maxHeight = this->map->getHeight() * 16;
                 if (showBorder) {
-                    maxWidth += STITCH_MODE_BORDER_DISTANCE * 16;
-                    maxHeight += STITCH_MODE_BORDER_DISTANCE * 16;
+                    maxWidth += 2 * STITCH_MODE_BORDER_DISTANCE * 16;
+                    maxHeight += 2 * STITCH_MODE_BORDER_DISTANCE * 16;
                 }
                 // Rewind to the specified start of the map edit history.
                 int i = 0;
@@ -110,8 +111,8 @@ void MapImageExporter::saveImage() {
                     int width = this->map->getWidth() * 16;
                     int height = this->map->getHeight() * 16;
                     if (showBorder) {
-                        width += STITCH_MODE_BORDER_DISTANCE * 16;
-                        height += STITCH_MODE_BORDER_DISTANCE * 16;
+                        width += 2 * STITCH_MODE_BORDER_DISTANCE * 16;
+                        height += 2 * STITCH_MODE_BORDER_DISTANCE * 16;
                     }
                     if (width > maxWidth) {
                         maxWidth = width;
@@ -136,6 +137,11 @@ void MapImageExporter::saveImage() {
                         }
                         return;
                     }
+                    while (this->map->editHistory.canRedo() &&
+                           !historyItemAppliesToFrame(this->map->editHistory.command(this->map->editHistory.index()))) {
+                        i--;
+                        this->map->editHistory.redo();
+                    }
                     progress.setValue(progress.maximum() - i);
                     QPixmap pixmap = this->getFormattedMapPixmap(this->map, !this->showBorder);
                     if (pixmap.width() < maxWidth || pixmap.height() < maxHeight) {
@@ -151,6 +157,11 @@ void MapImageExporter::saveImage() {
                         if (i > 0) {
                             i--;
                             this->map->editHistory.redo();
+                            while (this->map->editHistory.canRedo() &&
+                                   !historyItemAppliesToFrame(this->map->editHistory.command(this->map->editHistory.index()))) {
+                                i--;
+                                this->map->editHistory.redo();
+                            }
                         }
                     }
                 }
@@ -162,6 +173,39 @@ void MapImageExporter::saveImage() {
                 break;
         }
         this->close();
+    }
+}
+
+bool MapImageExporter::historyItemAppliesToFrame(const QUndoCommand *command) {
+    switch (command->id() & 0xFF) {
+        case CommandId::ID_PaintMetatile:
+        case CommandId::ID_BucketFillMetatile:
+        case CommandId::ID_MagicFillMetatile:
+        case CommandId::ID_ShiftMetatiles:
+        case CommandId::ID_ResizeMap:
+        case CommandId::ID_ScriptEditMap:
+            return true;
+        case CommandId::ID_PaintCollision:
+        case CommandId::ID_BucketFillCollision:
+        case CommandId::ID_MagicFillCollision:
+            return this->showCollision;
+        case CommandId::ID_PaintBorder:
+            return this->showBorder;
+        case CommandId::ID_EventMove:
+        case CommandId::ID_EventShift:
+        case CommandId::ID_EventCreate:
+        case CommandId::ID_EventDelete:
+        case CommandId::ID_EventDuplicate: {
+            bool eventTypeIsApplicable =
+                       (this->showObjects   && (command->id() & IDMask_EventType_Object)  != 0)
+                    || (this->showWarps     && (command->id() & IDMask_EventType_Warp)    != 0)
+                    || (this->showBGs       && (command->id() & IDMask_EventType_BG)      != 0)
+                    || (this->showTriggers  && (command->id() & IDMask_EventType_Trigger) != 0)
+                    || (this->showHealSpots && (command->id() & IDMask_EventType_Heal)    != 0);
+            return eventTypeIsApplicable;
+        }
+        default:
+            return false;
     }
 }
 

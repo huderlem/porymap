@@ -6,7 +6,26 @@
 
 #include <QDebug>
 
-
+int getEventTypeMask(QList<Event *> events) {
+    int eventTypeMask = 0;
+    for (auto event : events) {
+        if (event->get("event_type") == EventType::Object) {
+            eventTypeMask |= IDMask_EventType_Object;
+        } else if (event->get("event_type") == EventType::Warp) {
+            eventTypeMask |= IDMask_EventType_Warp;
+        } else if (event->get("event_type") == EventType::Trigger ||
+                   event->get("event_type") == EventType::WeatherTrigger) {
+            eventTypeMask |= IDMask_EventType_Trigger;
+        } else if (event->get("event_type") == EventType::Sign ||
+                   event->get("event_type") == EventType::HiddenItem ||
+                   event->get("event_type") == EventType::SecretBase) {
+            eventTypeMask |= IDMask_EventType_BG;
+        } else if (event->get("event_type") == EventType::HealLocation) {
+            eventTypeMask |= IDMask_EventType_Heal;
+        }
+    }
+    return eventTypeMask;
+}
 
 void renderMapBlocks(Map *map, bool ignoreCache = false) {
     map->mapItem->draw(ignoreCache);
@@ -305,6 +324,10 @@ bool EventMove::mergeWith(const QUndoCommand *command) {
     return true;
 }
 
+int EventMove::id() const {
+    return CommandId::ID_EventMove | getEventTypeMask(events);
+}
+
 /******************************************************************************
     ************************************************************************
  ******************************************************************************/
@@ -313,10 +336,15 @@ EventShift::EventShift(QList<Event *> events,
     int deltaX, int deltaY, unsigned actionId,
     QUndoCommand *parent) 
   : EventMove(events, deltaX, deltaY, actionId, parent) {
+    this->events = events;
     setText("Shift Events");
 }
 
 EventShift::~EventShift() {}
+
+int EventShift::id() const {
+    return CommandId::ID_EventShift | getEventTypeMask(events);
+}
 
 /******************************************************************************
     ************************************************************************
@@ -358,6 +386,10 @@ void EventCreate::undo() {
     editor->shouldReselectEvents();
 
     QUndoCommand::undo();
+}
+
+int EventCreate::id() const {
+    return CommandId::ID_EventCreate | getEventTypeMask(QList<Event*>({this->event}));
 }
 
 /******************************************************************************
@@ -418,6 +450,10 @@ void EventDelete::undo() {
     QUndoCommand::undo();
 }
 
+int EventDelete::id() const {
+    return CommandId::ID_EventDelete | getEventTypeMask(this->selectedEvents);
+}
+
 /******************************************************************************
     ************************************************************************
  ******************************************************************************/
@@ -469,6 +505,10 @@ void EventDuplicate::undo() {
     editor->shouldReselectEvents();
 
     QUndoCommand::undo();
+}
+
+int EventDuplicate::id() const {
+    return CommandId::ID_EventDuplicate | getEventTypeMask(this->selectedEvents);
 }
 
 /******************************************************************************

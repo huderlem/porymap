@@ -53,6 +53,7 @@ private:
     void saveImage();
     QPixmap getStitchedImage(QProgressDialog *progress, bool includeBorder);
     QPixmap getFormattedMapPixmap(Map *map, bool ignoreBorder);
+    bool historyItemAppliesToFrame(const QUndoCommand *command);
 
 private slots:
     void on_checkBox_Objects_stateChanged(int state);
