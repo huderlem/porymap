@@ -7,7 +7,12 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 The **"Breaking Changes"** listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. If porymap is used on a project that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.
 
 ## [Unreleased]
-Nothing, yet.
+
+### Added
+- Add ability to export map timelapse animated GIFs with `File -> Export Map Timelapse Image...`.
+
+### Fixed
+- Fix tileset palette editor crash that could occur when switching maps or tilesets with it open.
 
 ## [4.4.0] - 2020-12-20
 ### Added
