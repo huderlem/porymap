@@ -6,6 +6,12 @@
 #include <QJsonObject>
 #include <QStack>
 
+const QRegularExpression ParseUtil::re_incScriptLabel("\\b(?<label>[\\w_][\\w\\d_]*):{1,2}");
+const QRegularExpression ParseUtil::re_globalIncScriptLabel("\\b(?<label>[\\w_][\\w\\d_]*)::");
+const QRegularExpression ParseUtil::re_poryScriptLabel("\\b(script)(\\((global|local)\\))?\\s*\\b(?<label>[\\w_][\\w\\d_]*)");
+const QRegularExpression ParseUtil::re_globalPoryScriptLabel("\\b(script)(\\((global)\\))?\\s*\\b(?<label>[\\w_][\\w\\d_]*)");
+const QRegularExpression ParseUtil::re_poryRawSection("\\b(raw)\\s*`(?<raw_script>[^`]*)");
+
 ParseUtil::ParseUtil()
 {
 }
@@ -437,7 +443,6 @@ int ParseUtil::getRawScriptLineNumber(QString text, const QString &scriptLabel) 
     removeStringLiterals(text);
     removeLineComments(text, "@");
 
-    static const QRegularExpression re_incScriptLabel("\\b(?<label>[\\w_][\\w\\d_]*):{1,2}");
     QRegularExpressionMatchIterator it = re_incScriptLabel.globalMatch(text);
     while (it.hasNext()) {
         const QRegularExpressionMatch match = it.next();
@@ -452,7 +457,6 @@ int ParseUtil::getPoryScriptLineNumber(QString text, const QString &scriptLabel)
     removeStringLiterals(text);
     removeLineComments(text, {"//", "#"});
 
-    static const QRegularExpression re_poryScriptLabel("\\b(script)(\\((global|local)\\))?\\s*\\b(?<label>[\\w_][\\w\\d_]*)");
     QRegularExpressionMatchIterator it = re_poryScriptLabel.globalMatch(text);
     while (it.hasNext()) {
         const QRegularExpressionMatch match = it.next();
@@ -460,7 +464,6 @@ int ParseUtil::getPoryScriptLineNumber(QString text, const QString &scriptLabel)
             return text.left(match.capturedStart("label")).count('\n') + 1;
     }
 
-    static const QRegularExpression re_poryRawSection("\\b(raw)\\s*`(?<raw_script>[^`]*)");
     QRegularExpressionMatchIterator raw_it = re_poryRawSection.globalMatch(text);
     while (raw_it.hasNext()) {
         const QRegularExpressionMatch match = raw_it.next();
@@ -470,6 +473,47 @@ int ParseUtil::getPoryScriptLineNumber(QString text, const QString &scriptLabel)
     }
 
     return 0;
+}
+
+QStringList ParseUtil::getGlobalScriptLabels(const QString &filePath) {
+    if (filePath.endsWith(".inc") || filePath.endsWith(".s"))
+        return getGlobalRawScriptLabels(readTextFile(filePath));
+    else if (filePath.endsWith(".pory"))
+        return getGlobalPoryScriptLabels(readTextFile(filePath));
+
+    return { };
+}
+
+QStringList ParseUtil::getGlobalRawScriptLabels(QString text) {
+    removeStringLiterals(text);
+    removeLineComments(text, "@");
+
+    auto rawScriptLabels = QStringList();
+
+    QRegularExpressionMatchIterator it = re_globalIncScriptLabel.globalMatch(text);
+    while (it.hasNext()) {
+        const QRegularExpressionMatch match = it.next();
+        rawScriptLabels << match.captured("label");
+    }
+
+    return rawScriptLabels;
+}
+
+QStringList ParseUtil::getGlobalPoryScriptLabels(QString text) {
+    removeStringLiterals(text);
+    removeLineComments(text, {"//", "#"});
+
+    auto poryScriptLabels = QStringList();
+
+    QRegularExpressionMatchIterator it = re_globalPoryScriptLabel.globalMatch(text);
+    while (it.hasNext())
+        poryScriptLabels << it.next().captured("label");
+
+    QRegularExpressionMatchIterator raw_it = re_poryRawSection.globalMatch(text);
+    while (raw_it.hasNext())
+        poryScriptLabels << getGlobalRawScriptLabels(raw_it.next().captured("raw_script"));
+
+    return poryScriptLabels;
 }
 
 QString &ParseUtil::removeStringLiterals(QString &text) {
