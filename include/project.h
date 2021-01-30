@@ -60,6 +60,7 @@ public:
     QStringList *secretBaseIds = nullptr;
     QStringList *bgEventFacingDirections = nullptr;
     QStringList *trainerTypes = nullptr;
+    QStringList eventScriptLabels;
     QMap<QString, int> metatileBehaviorMap;
     QMap<int, QString> metatileBehaviorMapInverse;
     QMap<QString, QString> facingDirections;
@@ -167,6 +168,7 @@ public:
     bool readMetatileBehaviors();
     bool readHealLocations();
     bool readMiscellaneousConstants();
+    bool readEventScriptLabels();
 
     void loadEventPixmaps(QList<Event*> objects);
     QMap<QString, int> getEventObjGfxConstants();
@@ -177,6 +179,7 @@ public:
     QString getScriptDefaultString(bool usePoryScript, QString mapName) const;
     QString getMapScriptsFilePath(const QString &mapName) const;
     QStringList getEventScriptsFilePaths() const;
+    QCompleter *getEventScriptLabelCompleter(const QStringList &additionalCompletions) const;
 
     bool loadMapBorder(Map *map);
 
@@ -220,6 +223,8 @@ private:
     static int max_object_events;
 
     QWidget *parent;
+    QStringListModel *eventScriptLabelModel = nullptr;
+    QCompleter *eventScriptLabelCompleter = nullptr;
 
 signals:
     void reloadProject();

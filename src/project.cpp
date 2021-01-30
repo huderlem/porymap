@@ -2399,6 +2399,18 @@ bool Project::readMiscellaneousConstants() {
     return true;
 }
 
+bool Project::readEventScriptLabels() {
+    for (const auto &filePath : getEventScriptsFilePaths())
+        eventScriptLabels << ParseUtil::getGlobalScriptLabels(filePath);
+
+    eventScriptLabelModel = new QStringListModel(eventScriptLabels, this);
+    eventScriptLabelCompleter = new QCompleter(eventScriptLabelModel, this);
+    eventScriptLabelCompleter->setCaseSensitivity(Qt::CaseInsensitive);
+    eventScriptLabelCompleter->setFilterMode(Qt::MatchContains);
+
+    return true;
+}
+
 QString Project::fixPalettePath(QString path) {
     path = path.replace(QRegExp("\\.gbapal$"), ".pal");
     return path;
@@ -2460,6 +2472,11 @@ QStringList Project::getEventScriptsFilePaths() const {
         filePaths << it_inc_maps.next();
 
     return filePaths;
+}
+
+QCompleter *Project::getEventScriptLabelCompleter(const QStringList &additionalCompletions) const {
+    eventScriptLabelModel->setStringList(eventScriptLabels + additionalCompletions);
+    return eventScriptLabelCompleter;
 }
 
 void Project::loadEventPixmaps(QList<Event*> objects) {
