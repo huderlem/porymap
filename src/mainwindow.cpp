@@ -2691,6 +2691,12 @@ void MainWindow::on_actionAbout_Porymap_triggered()
     window->show();
 }
 
+void MainWindow::on_actionOpen_Log_File_triggered() {
+    const QString logPath = getLogPath();
+    const int lineCount = ParseUtil::textFileLineCount(logPath);
+    editor->openInTextEditor(logPath, lineCount);
+}
+
 void MainWindow::on_actionEdit_Preferences_triggered() {
     if (!preferenceEditor) {
         preferenceEditor = new PreferenceEditor(this);

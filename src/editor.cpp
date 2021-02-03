@@ -2078,7 +2078,6 @@ bool Editor::startDetachedProcess(const QString &command, const QString &working
     logInfo("Executing command: " + command);
     QProcess process;
 #ifdef Q_OS_WIN
-    // Windows is WeirdChamp
     QStringList arguments = ParseUtil::splitShellCommand(command);
     const QString program = arguments.takeFirst();
     QFileInfo programFileInfo(program);

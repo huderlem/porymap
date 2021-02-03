@@ -42,6 +42,7 @@ public:
     ParseUtil();
     void set_root(QString);
     static QString readTextFile(QString);
+    static int textFileLineCount(const QString &path);
     void strip_comment(QString*);
     QList<QStringList>* parseAsm(QString);
     int evaluateDefine(QString, QMap<QString, int>*);

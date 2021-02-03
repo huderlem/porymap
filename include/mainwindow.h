@@ -222,6 +222,7 @@ private slots:
     void on_toolButton_ExpandAll_clicked();
     void on_toolButton_CollapseAll_clicked();
     void on_actionAbout_Porymap_triggered();
+    void on_actionOpen_Log_File_triggered();
     void on_pushButton_AddCustomHeaderField_clicked();
     void on_pushButton_DeleteCustomHeaderField_clicked();
     void on_tableWidget_CustomHeaderFields_cellChanged(int row, int column);

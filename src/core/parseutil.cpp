@@ -49,9 +49,14 @@ QString ParseUtil::readTextFile(QString path) {
     in.setCodec("UTF-8");
     QString text = "";
     while (!in.atEnd()) {
-        text += in.readLine() + "\n";
+        text += in.readLine() + '\n';
     }
     return text;
+}
+
+int ParseUtil::textFileLineCount(const QString &path) {
+    const QString text = readTextFile(path);
+    return text.split('\n').count() + 1;
 }
 
 QList<QStringList>* ParseUtil::parseAsm(QString filename) {
