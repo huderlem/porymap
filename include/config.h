@@ -38,7 +38,6 @@ public:
     }
     virtual void reset() override {
         this->recentProject = "";
-        this->recentMap = "";
         this->mapSortOrder = MapSortOrder::Group;
         this->prettyCursors = true;
         this->collisionOpacity = 50;
@@ -52,7 +51,6 @@ public:
         this->textEditorGotoLine = "";
     }
     void setRecentProject(QString project);
-    void setRecentMap(QString map);
     void setMapSortOrder(MapSortOrder order);
     void setPrettyCursors(bool enabled);
     void setMainGeometry(QByteArray, QByteArray, QByteArray, QByteArray);
@@ -69,7 +67,6 @@ public:
     void setTextEditorOpenFolder(const QString &command);
     void setTextEditorGotoLine(const QString &command);
     QString getRecentProject();
-    QString getRecentMap();
     MapSortOrder getMapSortOrder();
     bool getPrettyCursors();
     QMap<QString, QByteArray> getMainGeometry();
@@ -93,7 +90,6 @@ protected:
     virtual void setUnreadKeys() override {};
 private:
     QString recentProject;
-    QString recentMap;
     QString stringFromByteArray(QByteArray);
     QByteArray bytesFromString(QString);
     MapSortOrder mapSortOrder;
@@ -136,6 +132,7 @@ public:
     }
     virtual void reset() override {
         this->baseGameVersion = BaseGameVersion::pokeemerald;
+        this->recentMap = QString();
         this->useEncounterJson = true;
         this->useCustomBorderSize = false;
         this->enableEventWeatherTrigger = true;
@@ -151,6 +148,8 @@ public:
     }
     void setBaseGameVersion(BaseGameVersion baseGameVersion);
     BaseGameVersion getBaseGameVersion();
+    void setRecentMap(const QString &map);
+    QString getRecentMap();
     void setEncounterJsonActive(bool active);
     bool getEncounterJsonActive();
     void setUsePoryScript(bool usePoryScript);
@@ -186,6 +185,7 @@ protected:
 private:
     BaseGameVersion baseGameVersion;
     QString projectDir;
+    QString recentMap;
     bool useEncounterJson;
     bool usePoryScript;
     bool useCustomBorderSize;

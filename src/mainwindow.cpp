@@ -541,7 +541,7 @@ QString MainWindow::getDefaultMap() {
     if (editor && editor->project) {
         QList<QStringList> names = editor->project->groupedMapNames;
         if (!names.isEmpty()) {
-            QString recentMap = porymapConfig.getRecentMap();
+            QString recentMap = projectConfig.getRecentMap();
             if (!recentMap.isNull() && recentMap.length() > 0) {
                 for (int i = 0; i < names.length(); i++) {
                     if (names.value(i).contains(recentMap)) {
@@ -568,8 +568,8 @@ QString MainWindow::getExistingDirectory(QString dir) {
 void MainWindow::on_action_Open_Project_triggered()
 {
     QString recent = ".";
-    if (!porymapConfig.getRecentMap().isNull() && porymapConfig.getRecentMap().length() > 0) {
-        recent = porymapConfig.getRecentMap();
+    if (!projectConfig.getRecentMap().isEmpty()) {
+        recent = projectConfig.getRecentMap();
     }
     QString dir = getExistingDirectory(recent);
     if (!dir.isEmpty()) {
@@ -711,7 +711,7 @@ void MainWindow::openWarpMap(QString map_name, QString warp_num) {
 }
 
 void MainWindow::setRecentMap(QString mapName) {
-    porymapConfig.setRecentMap(mapName);
+    projectConfig.setRecentMap(mapName);
 }
 
 void MainWindow::displayMapProperties() {
