@@ -85,6 +85,7 @@ void MainWindow::setWindowDisabled(bool disabled) {
     ui->menuHelp->setDisabled(false);
     ui->actionAbout_Porymap->setDisabled(false);
     ui->actionOpen_Log_File->setDisabled(false);
+    ui->actionOpen_Config_Folder->setDisabled(false);
     if (!disabled)
         togglePreferenceSpecificUi();
 }
@@ -2696,6 +2697,10 @@ void MainWindow::on_actionOpen_Log_File_triggered() {
     const QString logPath = getLogPath();
     const int lineCount = ParseUtil::textFileLineCount(logPath);
     editor->openInTextEditor(logPath, lineCount);
+}
+
+void MainWindow::on_actionOpen_Config_Folder_triggered() {
+    QDesktopServices::openUrl(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
 }
 
 void MainWindow::on_actionEdit_Preferences_triggered() {
