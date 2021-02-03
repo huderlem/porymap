@@ -109,8 +109,6 @@ QString PorymapConfig::getConfigFilepath() {
 void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
     if (key == "recent_project") {
         this->recentProject = value;
-    } else if (key == "recent_map") {
-        this->recentMap = value;
     } else if (key == "pretty_cursors") {
         bool ok;
         this->prettyCursors = value.toInt(&ok);
@@ -202,7 +200,6 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
 QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     QMap<QString, QString> map;
     map.insert("recent_project", this->recentProject);
-    map.insert("recent_map", this->recentMap);
     map.insert("pretty_cursors", this->prettyCursors ? "1" : "0");
     map.insert("map_sort_order", mapSortOrderMap.value(this->mapSortOrder));
     map.insert("main_window_geometry", stringFromByteArray(this->mainWindowGeometry));
@@ -247,11 +244,6 @@ QByteArray PorymapConfig::bytesFromString(QString in) {
 
 void PorymapConfig::setRecentProject(QString project) {
     this->recentProject = project;
-    this->save();
-}
-
-void PorymapConfig::setRecentMap(QString map) {
-    this->recentMap = map;
     this->save();
 }
 
@@ -337,10 +329,6 @@ void PorymapConfig::setTextEditorGotoLine(const QString &command) {
 
 QString PorymapConfig::getRecentProject() {
     return this->recentProject;
-}
-
-QString PorymapConfig::getRecentMap() {
-    return this->recentMap;
 }
 
 MapSortOrder PorymapConfig::getMapSortOrder() {
@@ -453,6 +441,8 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
             this->baseGameVersion = BaseGameVersion::pokeemerald;
             logWarn(QString("Invalid config value for base_game_version: '%1'. Must be 'pokeruby', 'pokefirered' or 'pokeemerald'.").arg(value));
         }
+    } else if (key == "recent_map") {
+        this->recentMap = value;
     } else if (key == "use_encounter_json") {
         bool ok;
         this->useEncounterJson = value.toInt(&ok);
@@ -550,6 +540,7 @@ void ProjectConfig::setUnreadKeys() {
 QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     QMap<QString, QString> map;
     map.insert("base_game_version", baseGameVersionMap.value(this->baseGameVersion));
+    map.insert("recent_map", this->recentMap);
     map.insert("use_encounter_json", QString::number(this->useEncounterJson));
     map.insert("use_poryscript", QString::number(this->usePoryScript));
     map.insert("use_custom_border_size", QString::number(this->useCustomBorderSize));
@@ -621,6 +612,15 @@ void ProjectConfig::setBaseGameVersion(BaseGameVersion baseGameVersion) {
 
 BaseGameVersion ProjectConfig::getBaseGameVersion() {
     return this->baseGameVersion;
+}
+
+void ProjectConfig::setRecentMap(const QString &map) {
+    this->recentMap = map;
+    this->save();
+}
+
+QString ProjectConfig::getRecentMap() {
+    return this->recentMap;
 }
 
 void ProjectConfig::setEncounterJsonActive(bool active) {
