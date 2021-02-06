@@ -24,7 +24,7 @@ CustomAttributesTable::CustomAttributesTable(Event *event, QWidget *parent) :
     buttonsFrame->layout()->addWidget(addButton);
     buttonsFrame->layout()->addWidget(deleteButton);
     buttonsFrame->layout()->addItem(new QSpacerItem(1, 1, QSizePolicy::Expanding, QSizePolicy::Fixed));
-    buttonsFrame->layout()->setMargin(0);
+    buttonsFrame->layout()->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(buttonsFrame);
 
     this->table = new QTableWidget(this);

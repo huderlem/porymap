@@ -194,7 +194,7 @@ private slots:
     void on_actionExport_Stitched_Map_Image_triggered();
     void on_actionExport_Map_Timelapse_Image_triggered();
 
-    void on_comboBox_ConnectionDirection_currentIndexChanged(const QString &arg1);
+    void on_comboBox_ConnectionDirection_currentTextChanged(const QString &arg1);
     void on_spinBox_ConnectionOffset_valueChanged(int offset);
     void on_comboBox_ConnectedMap_currentTextChanged(const QString &mapName);
     void on_pushButton_AddConnection_clicked();

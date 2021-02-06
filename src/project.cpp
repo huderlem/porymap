@@ -642,8 +642,8 @@ void Project::setNewMapLayout(Map* map) {
     layout->name = QString("%1_Layout").arg(map->name);
     layout->width = QString::number(getDefaultMapSize());
     layout->height = QString::number(getDefaultMapSize());
-    layout->border_width = DEFAULT_BORDER_WIDTH;
-    layout->border_height = DEFAULT_BORDER_HEIGHT;
+    layout->border_width = QString::number(DEFAULT_BORDER_WIDTH);
+    layout->border_height = QString::number(DEFAULT_BORDER_HEIGHT);
     layout->border_path = QString("data/layouts/%1/border.bin").arg(map->name);
     layout->blockdata_path = QString("data/layouts/%1/map.bin").arg(map->name);
     layout->tileset_primary_label = tilesetLabels["primary"].value(0, "gTileset_General");
@@ -1512,10 +1512,10 @@ void Project::loadTilesetAssets(Tileset* tileset) {
         QString path = tileset->palettePaths.value(i);
         QString text = parser.readTextFile(path);
         if (!text.isNull()) {
-            QStringList lines = text.split(QRegExp("[\r\n]"), Qt::SkipEmptyParts);
+            QStringList lines = text.split(QRegularExpression("[\r\n]"), Qt::SkipEmptyParts);
             if (lines.length() == 19 && lines[0] == "JASC-PAL" && lines[1] == "0100" && lines[2] == "16") {
                 for (int j = 0; j < 16; j++) {
-                    QStringList rgb = lines[j + 3].split(QRegExp(" "), Qt::SkipEmptyParts);
+                    QStringList rgb = lines[j + 3].split(QRegularExpression(" "), Qt::SkipEmptyParts);
                     if (rgb.length() != 3) {
                         logWarn(QString("Invalid tileset palette RGB value: '%1'").arg(lines[j + 3]));
                         palette.append(qRgb((j - 3) * 16, (j - 3) * 16, (j - 3) * 16));
@@ -2327,13 +2327,13 @@ bool Project::readEventScriptLabels() {
 }
 
 QString Project::fixPalettePath(QString path) {
-    path = path.replace(QRegExp("\\.gbapal$"), ".pal");
+    path = path.replace(QRegularExpression("\\.gbapal$"), ".pal");
     return path;
 }
 
 QString Project::fixGraphicPath(QString path) {
-    path = path.replace(QRegExp("\\.lz$"), "");
-    path = path.replace(QRegExp("\\.[1248]bpp$"), ".png");
+    path = path.replace(QRegularExpression("\\.lz$"), "");
+    path = path.replace(QRegularExpression("\\.[1248]bpp$"), ".png");
     return path;
 }
 
@@ -2445,7 +2445,7 @@ void Project::loadEventPixmaps(QList<Event*> objects) {
             QString dimensions_label = gfx_info.value(11);
             QString subsprites_label = gfx_info.value(12);
             QString gfx_label = parser.readCArray("src/data/object_events/object_event_pic_tables.h", pic_label).value(0);
-            gfx_label = gfx_label.section(QRegExp("[\\(\\)]"), 1, 1);
+            gfx_label = gfx_label.section(QRegularExpression("[\\(\\)]"), 1, 1);
             QString path = parser.readCIncbin("src/data/object_events/object_event_graphics.h", gfx_label);
 
             if (!path.isNull()) {

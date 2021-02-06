@@ -134,7 +134,6 @@ bool RegionMap::readLayout() {
     bool mapNamesQualified = false, mapEntriesQualified = false;
 
     QTextStream in(&file);
-    in.setCodec("UTF-8");
     while (!in.atEnd()) {
         QString line = in.readLine();
         if (line.contains(QRegularExpression(".*sMapName.*="))) {

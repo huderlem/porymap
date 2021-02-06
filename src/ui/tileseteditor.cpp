@@ -149,8 +149,8 @@ void TilesetEditor::setVersionSpecificUi() {
 
 void TilesetEditor::setMetatileLabelValidator() {
     //only allow characters valid for a symbol
-    QRegExp expression("[_A-Za-z0-9]*$");
-    QRegExpValidator *validator = new QRegExpValidator(expression);
+    QRegularExpression expression("[_A-Za-z0-9]*$");
+    QRegularExpressionValidator *validator = new QRegularExpressionValidator(expression);
     this->ui->lineEdit_metatileLabel->setValidator(validator);
 }
 
@@ -463,7 +463,7 @@ void TilesetEditor::on_checkBox_yFlip_stateChanged(int checked)
     this->metatileLayersItem->clearLastModifiedCoords();
 }
 
-void TilesetEditor::on_comboBox_metatileBehaviors_activated(const QString &metatileBehavior)
+void TilesetEditor::on_comboBox_metatileBehaviors_textActivated(const QString &metatileBehavior)
 {
     if (this->metatile) {
         Metatile *prevMetatile = new Metatile(*this->metatile);
