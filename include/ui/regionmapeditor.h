@@ -118,8 +118,8 @@ private slots:
     void on_action_Import_CityMap_ImageTiles_triggered();
     void on_tabWidget_Region_Map_currentChanged(int);
     void on_pushButton_RM_Options_delete_clicked();
-    void on_comboBox_RM_ConnectedMap_activated(const QString &);
-    void on_comboBox_RM_Entry_MapSection_activated(const QString &);
+    void on_comboBox_RM_ConnectedMap_textActivated(const QString &);
+    void on_comboBox_RM_Entry_MapSection_textActivated(const QString &);
     void on_spinBox_RM_Entry_x_valueChanged(int);
     void on_spinBox_RM_Entry_y_valueChanged(int);
     void on_spinBox_RM_Entry_width_valueChanged(int);

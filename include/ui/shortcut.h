@@ -2,6 +2,7 @@
 #define SHORTCUT_H
 
 #include <QObject>
+#include <QWidget>
 #include <QKeySequence>
 #include <QShortcut>
 

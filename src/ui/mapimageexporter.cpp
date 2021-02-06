@@ -4,7 +4,6 @@
 #include "editcommands.h"
 
 #include <QFileDialog>
-#include <QMatrix>
 #include <QImage>
 #include <QPainter>
 #include <QPoint>

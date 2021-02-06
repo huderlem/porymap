@@ -550,13 +550,13 @@ void RegionMapEditor::on_tabWidget_Region_Map_currentChanged(int index) {
     }
 }
 
-void RegionMapEditor::on_comboBox_RM_ConnectedMap_activated(const QString &mapsec) {
-    this->ui->lineEdit_RM_MapName->setText(this->project->mapSecToMapHoverName.value(mapsec));
+void RegionMapEditor::on_comboBox_RM_ConnectedMap_textActivated(const QString &mapsec) {
+    this->ui->lineEdit_RM_MapName->setText(this->project->mapSecToMapHoverName->value(mapsec));
     onRegionMapLayoutSelectedTileChanged(this->currIndex);// re-draw layout image
     this->hasUnsavedChanges = true;// sometimes this is called for unknown reasons
 }
 
-void RegionMapEditor::on_comboBox_RM_Entry_MapSection_activated(const QString &text) {
+void RegionMapEditor::on_comboBox_RM_Entry_MapSection_textActivated(const QString &text) {
     this->activeEntry = text;
     this->region_map_entries_item->currentSection = activeEntry;
     updateRegionMapEntryOptions(activeEntry);
