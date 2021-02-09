@@ -135,8 +135,7 @@ public:
     QString map_edit_mode = "paint";
     QString obj_edit_mode = "select";
 
-    int scale_exp = 0;
-    double scale_base = sqrt(2); // adjust scale factor with this
+    int scaleIndex = 2;
     qreal collisionOpacity = 0.5;
 
     void objectsView_onMousePress(QMouseEvent *event);
