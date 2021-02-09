@@ -940,17 +940,37 @@ void Editor::onWheelZoom(int s) {
     }
 }
 
-void Editor::scaleMapView(int s) {
-    if ((scale_exp + s) <= 5 && (scale_exp + s) >= -2)    // sane limits
-    {
-        if (s == 0)
-            s = -scale_exp;
-        scale_exp += s;
+const QList<double> zoomLevels = QList<double>
+{
+    0.5,
+    0.75,
+    1.0,
+    1.5,
+    2.0,
+    3.0,
+    4.0,
+    6.0,
+};
 
-        double sfactor = pow(scale_base, s);
-        ui->graphicsView_Map->scale(sfactor, sfactor);
-        ui->graphicsView_Connections->scale(sfactor, sfactor);
-    }
+void Editor::scaleMapView(int s) {
+    // Clamp the scale index to a valid value.
+    int nextScaleIndex = this->scaleIndex + s;
+    if (nextScaleIndex < 0)
+        nextScaleIndex = 0;
+    if (nextScaleIndex >= zoomLevels.size())
+        nextScaleIndex = zoomLevels.size() - 1;
+
+    // Early exit if the scale index hasn't changed.
+    if (nextScaleIndex == this->scaleIndex)
+        return;
+
+    // Set the graphics views' scale transformation based
+    // on the new scale amount.
+    this->scaleIndex = nextScaleIndex;
+    double scaleFactor = zoomLevels[nextScaleIndex];
+    QTransform transform = QTransform::fromScale(scaleFactor, scaleFactor);
+    ui->graphicsView_Map->setTransform(transform);
+    ui->graphicsView_Connections->setTransform(transform);
 }
 
 void Editor::onHoveredMapMetatileChanged(const QPoint &pos) {
@@ -964,13 +984,13 @@ void Editor::onHoveredMapMetatileChanged(const QPoint &pos) {
                               .arg(pos.x())
                               .arg(pos.y())
                               .arg(getMetatileDisplayMessage(metatileId))
-                              .arg(QString::number(pow(scale_base, scale_exp), 'g', 2)));
+                              .arg(QString::number(zoomLevels[this->scaleIndex], 'g', 2)));
     } else if (map_item->paintingMode == MapPixmapItem::PaintMode::EventObjects
         && pos.x() >= 0 && pos.x() < map->getWidth() && pos.y() >= 0 && pos.y() < map->getHeight()) {
         this->ui->statusBar->showMessage(QString("X: %1, Y: %2, Scale = %3x")
                               .arg(pos.x())
                               .arg(pos.y())
-                              .arg(QString::number(pow(scale_base, scale_exp), 'g', 2)));
+                              .arg(QString::number(zoomLevels[this->scaleIndex], 'g', 2)));
     }
 }
 
