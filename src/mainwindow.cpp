@@ -2473,6 +2473,7 @@ void MainWindow::on_toolButton_Paint_clicked()
     ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     ui->graphicsView_Map->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     QScroller::ungrabGesture(ui->graphicsView_Map);
+    ui->graphicsView_Map->setViewportUpdateMode(QGraphicsView::ViewportUpdateMode::MinimalViewportUpdate);
 
     checkToolButtons();
 }
@@ -2490,6 +2491,7 @@ void MainWindow::on_toolButton_Select_clicked()
     ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     ui->graphicsView_Map->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     QScroller::ungrabGesture(ui->graphicsView_Map);
+    ui->graphicsView_Map->setViewportUpdateMode(QGraphicsView::ViewportUpdateMode::MinimalViewportUpdate);
 
     checkToolButtons();
 }
@@ -2507,6 +2509,7 @@ void MainWindow::on_toolButton_Fill_clicked()
     ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     ui->graphicsView_Map->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     QScroller::ungrabGesture(ui->graphicsView_Map);
+    ui->graphicsView_Map->setViewportUpdateMode(QGraphicsView::ViewportUpdateMode::MinimalViewportUpdate);
 
     checkToolButtons();
 }
@@ -2524,6 +2527,7 @@ void MainWindow::on_toolButton_Dropper_clicked()
     ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     ui->graphicsView_Map->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     QScroller::ungrabGesture(ui->graphicsView_Map);
+    ui->graphicsView_Map->setViewportUpdateMode(QGraphicsView::ViewportUpdateMode::MinimalViewportUpdate);
 
     checkToolButtons();
 }
@@ -2541,6 +2545,7 @@ void MainWindow::on_toolButton_Move_clicked()
     ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->graphicsView_Map->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     QScroller::grabGesture(ui->graphicsView_Map, QScroller::LeftMouseButtonGesture);
+    ui->graphicsView_Map->setViewportUpdateMode(QGraphicsView::ViewportUpdateMode::FullViewportUpdate);
 
     checkToolButtons();
 }
@@ -2558,6 +2563,7 @@ void MainWindow::on_toolButton_Shift_clicked()
     ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     ui->graphicsView_Map->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     QScroller::ungrabGesture(ui->graphicsView_Map);
+    ui->graphicsView_Map->setViewportUpdateMode(QGraphicsView::ViewportUpdateMode::MinimalViewportUpdate);
 
     checkToolButtons();
 }
