@@ -488,13 +488,12 @@ void MapPixmapItem::floodFill(
         QPoint point = todo.takeAt(0);
         int x = point.x();
         int y = point.y();
-        visited[x + y * map->getWidth()] = true;
-
         Block *block = map->getBlock(x, y);
         if (!block) {
             continue;
         }
 
+        visited[x + y * map->getWidth()] = true;
         int xDiff = x - initialX;
         int yDiff = y - initialY;
         int i = xDiff % selectionDimensions.x();
