@@ -6,11 +6,11 @@
 QJSValue MainWindow::getBlock(int x, int y) {
     if (!this->editor || !this->editor->map)
         return QJSValue();
-    Block *block = this->editor->map->getBlock(x, y);
-    if (!block) {
+    Block block;
+    if (!this->editor->map->getBlock(x, y, &block)) {
         return Scripting::fromBlock(Block());
     }
-    return Scripting::fromBlock(*block);
+    return Scripting::fromBlock(block);
 }
 
 void MainWindow::tryRedrawMapArea(bool forceRedraw) {
@@ -51,21 +51,21 @@ void MainWindow::setBlocksFromSelection(int x, int y, bool forceRedraw, bool com
 int MainWindow::getMetatileId(int x, int y) {
     if (!this->editor || !this->editor->map)
         return 0;
-    Block *block = this->editor->map->getBlock(x, y);
-    if (!block) {
+    Block block;
+    if (!this->editor->map->getBlock(x, y, &block)) {
         return 0;
     }
-    return block->tile;
+    return block.tile;
 }
 
 void MainWindow::setMetatileId(int x, int y, int metatileId, bool forceRedraw, bool commitChanges) {
     if (!this->editor || !this->editor->map)
         return;
-    Block *block = this->editor->map->getBlock(x, y);
-    if (!block) {
+    Block block;
+    if (!this->editor->map->getBlock(x, y, &block)) {
         return;
     }
-    this->editor->map->setBlock(x, y, Block(metatileId, block->collision, block->elevation));
+    this->editor->map->setBlock(x, y, Block(metatileId, block.collision, block.elevation));
     this->tryCommitMapChanges(commitChanges);
     this->tryRedrawMapArea(forceRedraw);
 }
@@ -73,21 +73,21 @@ void MainWindow::setMetatileId(int x, int y, int metatileId, bool forceRedraw, b
 int MainWindow::getCollision(int x, int y) {
     if (!this->editor || !this->editor->map)
         return 0;
-    Block *block = this->editor->map->getBlock(x, y);
-    if (!block) {
+    Block block;
+    if (!this->editor->map->getBlock(x, y, &block)) {
         return 0;
     }
-    return block->collision;
+    return block.collision;
 }
 
 void MainWindow::setCollision(int x, int y, int collision, bool forceRedraw, bool commitChanges) {
     if (!this->editor || !this->editor->map)
         return;
-    Block *block = this->editor->map->getBlock(x, y);
-    if (!block) {
+    Block block;
+    if (!this->editor->map->getBlock(x, y, &block)) {
         return;
     }
-    this->editor->map->setBlock(x, y, Block(block->tile, collision, block->elevation));
+    this->editor->map->setBlock(x, y, Block(block.tile, collision, block.elevation));
     this->tryCommitMapChanges(commitChanges);
     this->tryRedrawMapArea(forceRedraw);
 }
@@ -95,21 +95,21 @@ void MainWindow::setCollision(int x, int y, int collision, bool forceRedraw, boo
 int MainWindow::getElevation(int x, int y) {
     if (!this->editor || !this->editor->map)
         return 0;
-    Block *block = this->editor->map->getBlock(x, y);
-    if (!block) {
+    Block block;
+    if (!this->editor->map->getBlock(x, y, &block)) {
         return 0;
     }
-    return block->elevation;
+    return block.elevation;
 }
 
 void MainWindow::setElevation(int x, int y, int elevation, bool forceRedraw, bool commitChanges) {
     if (!this->editor || !this->editor->map)
         return;
-    Block *block = this->editor->map->getBlock(x, y);
-    if (!block) {
+    Block block;
+    if (!this->editor->map->getBlock(x, y, &block)) {
         return;
     }
-    this->editor->map->setBlock(x, y, Block(block->tile, block->collision, elevation));
+    this->editor->map->setBlock(x, y, Block(block.tile, block.collision, elevation));
     this->tryCommitMapChanges(commitChanges);
     this->tryRedrawMapArea(forceRedraw);
 }

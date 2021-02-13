@@ -79,7 +79,7 @@ public:
     bool borderBlockChanged(int i, Blockdata * cache);
     void cacheBlockdata();
     void cacheCollision();
-    Block *getBlock(int x, int y);
+    bool getBlock(int x, int y, Block *out);
     void setBlock(int x, int y, Block block, bool enableScriptCallback = false);
     void floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
     void _floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);

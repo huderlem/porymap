@@ -58,11 +58,11 @@ void CollisionPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
             this->lockedAxis = MapPixmapItem::Axis::None;
         }
 
-        Block *block = map->getBlock(pos.x(), pos.y());
-        if (block) {
-            block->collision = this->movementPermissionsSelector->getSelectedCollision();
-            block->elevation = this->movementPermissionsSelector->getSelectedElevation();
-            map->setBlock(pos.x(), pos.y(), *block, true);
+        Block block;
+        if (map->getBlock(pos.x(), pos.y(), &block)) {
+            block.collision = this->movementPermissionsSelector->getSelectedCollision();
+            block.elevation = this->movementPermissionsSelector->getSelectedElevation();
+            map->setBlock(pos.x(), pos.y(), block, true);
         }
 
         Blockdata *newCollision = map->layout->blockdata->copy();
@@ -118,9 +118,9 @@ void CollisionPixmapItem::magicFill(QGraphicsSceneMouseEvent *event) {
 
 void CollisionPixmapItem::pick(QGraphicsSceneMouseEvent *event) {
     QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
-    Block *block = map->getBlock(pos.x(), pos.y());
-    if (block) {
-        this->movementPermissionsSelector->select(block->collision, block->elevation);
+    Block block;
+    if (map->getBlock(pos.x(), pos.y(), &block)) {
+        this->movementPermissionsSelector->select(block.collision, block.elevation);
     }
 }
 
@@ -133,6 +133,8 @@ void CollisionPixmapItem::updateMovementPermissionSelection(QGraphicsSceneMouseE
     if (pos.y() < 0) pos.setY(0);
     if (pos.y() >= map->getHeight()) pos.setY(map->getHeight() - 1);
 
-    Block *block = map->getBlock(pos.x(), pos.y());
-    this->movementPermissionsSelector->select(block->collision, block->elevation);
+    Block block;
+    if (map->getBlock(pos.x(), pos.y(), &block)) {
+        this->movementPermissionsSelector->select(block.collision, block.elevation);
+    }
 }

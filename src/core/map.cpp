@@ -367,14 +367,15 @@ void Map::setBorderDimensions(int newWidth, int newHeight, bool setNewBlockdata)
     emit mapChanged(this);
 }
 
-Block* Map::getBlock(int x, int y) {
+bool Map::getBlock(int x, int y, Block *out) {
     if (layout->blockdata && layout->blockdata->blocks) {
         if (x >= 0 && x < getWidth() && y >= 0 && y < getHeight()) {
             int i = y * getWidth() + x;
-            return new Block(layout->blockdata->blocks->value(i));
+            *out = layout->blockdata->blocks->value(i);
+            return true;
         }
     }
-    return nullptr;
+    return false;
 }
 
 void Map::setBlock(int x, int y, Block block, bool enableScriptCallback) {
@@ -395,55 +396,54 @@ void Map::_floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_
             QPoint point = todo.takeAt(0);
             x = point.x();
             y = point.y();
-            Block *block = getBlock(x, y);
-            if (!block) {
+            Block block;
+            if (!getBlock(x, y, &block)) {
                 continue;
             }
 
-            uint old_coll = block->collision;
-            uint old_elev = block->elevation;
+            uint old_coll = block.collision;
+            uint old_elev = block.elevation;
             if (old_coll == collision && old_elev == elevation) {
                 continue;
             }
 
-            block->collision = collision;
-            block->elevation = elevation;
-            setBlock(x, y, *block, true);
-            if ((block = getBlock(x + 1, y)) && block->collision == old_coll && block->elevation == old_elev) {
+            block.collision = collision;
+            block.elevation = elevation;
+            setBlock(x, y, block, true);
+            if (getBlock(x + 1, y, &block) && block.collision == old_coll && block.elevation == old_elev) {
                 todo.append(QPoint(x + 1, y));
             }
-            if ((block = getBlock(x - 1, y)) && block->collision == old_coll && block->elevation == old_elev) {
+            if (getBlock(x - 1, y, &block) && block.collision == old_coll && block.elevation == old_elev) {
                 todo.append(QPoint(x - 1, y));
             }
-            if ((block = getBlock(x, y + 1)) && block->collision == old_coll && block->elevation == old_elev) {
+            if (getBlock(x, y + 1, &block) && block.collision == old_coll && block.elevation == old_elev) {
                 todo.append(QPoint(x, y + 1));
             }
-            if ((block = getBlock(x, y - 1)) && block->collision == old_coll && block->elevation == old_elev) {
+            if (getBlock(x, y - 1, &block) && block.collision == old_coll && block.elevation == old_elev) {
                 todo.append(QPoint(x, y - 1));
             }
     }
 }
 
 void Map::floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation) {
-    Block *block = getBlock(x, y);
-    if (block && (block->collision != collision || block->elevation != elevation)) {
+    Block block;;
+    if (getBlock(x, y, &block) && (block.collision != collision || block.elevation != elevation)) {
         _floodFillCollisionElevation(x, y, collision, elevation);
     }
 }
 
 void Map::magicFillCollisionElevation(int initialX, int initialY, uint16_t collision, uint16_t elevation) {
-    Block *block = getBlock(initialX, initialY);
-    if (block && (block->collision != collision || block->elevation != elevation)) {
-        uint old_coll = block->collision;
-        uint old_elev = block->elevation;
+    Block block;
+    if (getBlock(initialX, initialY, &block) && (block.collision != collision || block.elevation != elevation)) {
+        uint old_coll = block.collision;
+        uint old_elev = block.elevation;
 
         for (int y = 0; y < getHeight(); y++) {
             for (int x = 0; x < getWidth(); x++) {
-                block = getBlock(x, y);
-                if (block && block->collision == old_coll && block->elevation == old_elev) {
-                    block->collision = collision;
-                    block->elevation = elevation;
-                    setBlock(x, y, *block, true);
+                if (getBlock(x, y, &block) && block.collision == old_coll && block.elevation == old_elev) {
+                    block.collision = collision;
+                    block.elevation = elevation;
+                    setBlock(x, y, block, true);
                 }
             }
         }
