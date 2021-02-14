@@ -78,7 +78,7 @@ int Map::getBorderHeight() {
     return layout->border_height.toInt(nullptr, 0);
 }
 
-bool Map::mapBlockChanged(int i, Blockdata cache) {
+bool Map::mapBlockChanged(int i, const Blockdata &cache) {
     if (cache.length() <= i)
         return true;
     if (layout->blockdata.length() <= i)
@@ -87,7 +87,7 @@ bool Map::mapBlockChanged(int i, Blockdata cache) {
     return layout->blockdata.at(i) != cache.at(i);
 }
 
-bool Map::borderBlockChanged(int i, Blockdata cache) {
+bool Map::borderBlockChanged(int i, const Blockdata &cache) {
     if (cache.length() <= i)
         return true;
     if (layout->border.length() <= i)

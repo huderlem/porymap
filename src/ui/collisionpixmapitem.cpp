@@ -65,9 +65,8 @@ void CollisionPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
             map->setBlock(pos.x(), pos.y(), block, true);
         }
 
-        Blockdata newCollision = map->layout->blockdata;
-        if (newCollision != oldCollision) {
-            map->editHistory.push(new PaintCollision(map, oldCollision, newCollision, actionId_));
+        if (map->layout->blockdata != oldCollision) {
+            map->editHistory.push(new PaintCollision(map, oldCollision, map->layout->blockdata, actionId_));
         }
     }
 }
@@ -83,9 +82,8 @@ void CollisionPixmapItem::floodFill(QGraphicsSceneMouseEvent *event) {
         uint16_t elevation = this->movementPermissionsSelector->getSelectedElevation();
         map->floodFillCollisionElevation(pos.x(), pos.y(), collision, elevation);
 
-        Blockdata newCollision = map->layout->blockdata;
-        if (newCollision != oldCollision) {
-            map->editHistory.push(new BucketFillCollision(map, oldCollision, newCollision));
+        if (map->layout->blockdata != oldCollision) {
+            map->editHistory.push(new BucketFillCollision(map, oldCollision, map->layout->blockdata));
         }
     }
 }
@@ -100,9 +98,8 @@ void CollisionPixmapItem::magicFill(QGraphicsSceneMouseEvent *event) {
         uint16_t elevation = this->movementPermissionsSelector->getSelectedElevation();
         map->magicFillCollisionElevation(pos.x(), pos.y(), collision, elevation);
 
-        Blockdata newCollision = map->layout->blockdata;
-        if (newCollision != oldCollision) {
-            map->editHistory.push(new MagicFillCollision(map, oldCollision, newCollision));
+        if (map->layout->blockdata != oldCollision) {
+            map->editHistory.push(new MagicFillCollision(map, oldCollision, map->layout->blockdata));
         }
     }
 }
