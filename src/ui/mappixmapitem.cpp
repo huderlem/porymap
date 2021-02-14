@@ -76,7 +76,8 @@ void MapPixmapItem::shift(QGraphicsSceneMouseEvent *event) {
 }
 
 void MapPixmapItem::shift(int xDelta, int yDelta, bool fromScriptCall) {
-    Blockdata backupBlockdata = map->layout->blockdata;
+    Blockdata oldMetatiles = !fromScriptCall ? map->layout->blockdata : Blockdata();
+
     for (int i = 0; i < map->getWidth(); i++)
     for (int j = 0; j < map->getHeight(); j++) {
         int destX = i + xDelta;
@@ -89,15 +90,12 @@ void MapPixmapItem::shift(int xDelta, int yDelta, bool fromScriptCall) {
         destY %= map->getHeight();
 
         int blockIndex = j * map->getWidth() + i;
-        Block srcBlock = backupBlockdata.at(blockIndex);
+        Block srcBlock = oldMetatiles.at(blockIndex);
         map->setBlock(destX, destY, srcBlock);
     }
 
-    if (!fromScriptCall) {
-        Blockdata newMetatiles = map->layout->blockdata;
-        if (newMetatiles != backupBlockdata) {
-            map->editHistory.push(new ShiftMetatiles(map, backupBlockdata, newMetatiles, actionId_));
-        }
+    if (!fromScriptCall && map->layout->blockdata != oldMetatiles) {
+        map->editHistory.push(new ShiftMetatiles(map, oldMetatiles, map->layout->blockdata, actionId_));
     }
 }
 
@@ -137,11 +135,8 @@ void MapPixmapItem::paintNormal(int x, int y, bool fromScriptCall) {
         }
     }
 
-    if (!fromScriptCall) {
-        Blockdata newMetatiles = map->layout->blockdata;
-        if (newMetatiles != oldMetatiles) {
-            map->editHistory.push(new PaintMetatile(map, oldMetatiles, newMetatiles, actionId_));
-        }
+    if (!fromScriptCall && map->layout->blockdata != oldMetatiles) {
+        map->editHistory.push(new PaintMetatile(map, oldMetatiles, map->layout->blockdata, actionId_));
     }
 }
 
@@ -253,11 +248,8 @@ void MapPixmapItem::paintSmartPath(int x, int y, bool fromScriptCall) {
         map->setBlock(actualX, actualY, block, !fromScriptCall);
     }
 
-    if (!fromScriptCall) {
-        Blockdata newMetatiles = map->layout->blockdata;
-        if (newMetatiles != oldMetatiles) {
-            map->editHistory.push(new PaintMetatile(map, oldMetatiles, newMetatiles, actionId_));
-        }
+    if (!fromScriptCall && map->layout->blockdata != oldMetatiles) {
+        map->editHistory.push(new PaintMetatile(map, oldMetatiles, map->layout->blockdata, actionId_));
     }
 }
 
@@ -432,11 +424,8 @@ void MapPixmapItem::magicFill(
             }
         }
 
-        if (!fromScriptCall) {
-            Blockdata newMetatiles = map->layout->blockdata;
-            if (newMetatiles != oldMetatiles) {
-                map->editHistory.push(new MagicFillMetatile(map, oldMetatiles, newMetatiles, actionId_));
-            }
+        if (!fromScriptCall && map->layout->blockdata != oldMetatiles) {
+            map->editHistory.push(new MagicFillMetatile(map, oldMetatiles, map->layout->blockdata, actionId_));
         }
     }
 }
@@ -513,11 +502,8 @@ void MapPixmapItem::floodFill(
         }
     }
 
-    if (!fromScriptCall) {
-        Blockdata newMetatiles = map->layout->blockdata;
-        if (newMetatiles != oldMetatiles) {
-            map->editHistory.push(new BucketFillMetatile(map, oldMetatiles, newMetatiles, actionId_));
-        }
+    if (!fromScriptCall && map->layout->blockdata != oldMetatiles) {
+        map->editHistory.push(new BucketFillMetatile(map, oldMetatiles, map->layout->blockdata, actionId_));
     }
 }
 
@@ -635,11 +621,8 @@ void MapPixmapItem::floodFillSmartPath(int initialX, int initialY, bool fromScri
         }
     }
 
-    if (!fromScriptCall) {
-        Blockdata newMetatiles = map->layout->blockdata;
-        if (newMetatiles != oldMetatiles) {
-            map->editHistory.push(new BucketFillMetatile(map, oldMetatiles, newMetatiles, actionId_));
-        }
+    if (!fromScriptCall && map->layout->blockdata != oldMetatiles) {
+        map->editHistory.push(new BucketFillMetatile(map, oldMetatiles, map->layout->blockdata, actionId_));
     }
 }
 
