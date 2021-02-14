@@ -2614,8 +2614,8 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked()
 
     if (dialog.exec() == QDialog::Accepted) {
         Map *map = editor->map;
-        Blockdata *oldMetatiles = map->layout->blockdata->copy();
-        Blockdata *oldBorder = map->layout->border->copy();
+        Blockdata *oldMetatiles = new Blockdata(*map->layout->blockdata);
+        Blockdata *oldBorder = new Blockdata(*map->layout->border);
         QSize oldMapDimensions(map->getWidth(), map->getHeight());
         QSize oldBorderDimensions(map->getBorderWidth(), map->getBorderHeight());
         QSize newMapDimensions(widthSpinBox->value(), heightSpinBox->value());
@@ -2625,9 +2625,9 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked()
             editor->map->setBorderDimensions(newBorderDimensions.width(), newBorderDimensions.height());
             editor->map->editHistory.push(new ResizeMap(map, 
                 oldMapDimensions, newMapDimensions,
-                oldMetatiles, map->layout->blockdata->copy(),
+                *oldMetatiles, *map->layout->blockdata,
                 oldBorderDimensions, newBorderDimensions,
-                oldBorder, map->layout->border->copy()
+                *oldBorder, *map->layout->border
             ));
         }
     }

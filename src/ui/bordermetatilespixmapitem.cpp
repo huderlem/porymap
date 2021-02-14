@@ -11,22 +11,22 @@ void BorderMetatilesPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
     int width = map->getBorderWidth();
     int height = map->getBorderHeight();
 
-    Blockdata *oldBorder = map->layout->border->copy();
+    Blockdata *oldBorder = new Blockdata(*map->layout->border);
 
     for (int i = 0; i < selectionDimensions.x() && (i + pos.x()) < width; i++) {
         for (int j = 0; j < selectionDimensions.y() && (j + pos.y()) < height; j++) {
             int blockIndex = (j + pos.y()) * width + (i + pos.x());
             uint16_t tile = selectedMetatiles->at(j * selectionDimensions.x() + i);
-            (*map->layout->border->blocks)[blockIndex].tile = tile;
+            (*map->layout->border)[blockIndex].tile = tile;
         }
     }
 
-    Blockdata *newBorder = map->layout->border->copy();
-    if (newBorder->equals(oldBorder)) {
+    Blockdata *newBorder = new Blockdata(*map->layout->border);
+    if (*newBorder == *oldBorder) {
         delete newBorder;
         delete oldBorder;
     } else {
-        map->editHistory.push(new PaintBorder(map, oldBorder, newBorder, 0));
+        map->editHistory.push(new PaintBorder(map, *oldBorder, *newBorder, 0));
     }
 
     emit borderMetatilesChanged();
@@ -39,7 +39,6 @@ void BorderMetatilesPixmapItem::draw() {
     int height = map->getBorderHeight();
     QImage image(16 * width, 16 * height, QImage::Format_RGBA8888);
     QPainter painter(&image);
-    QVector<Block> *blocks = map->layout->border->blocks;
 
     for (int i = 0; i < width; i++) {
         for (int j = 0; j < height; j++) {
@@ -47,7 +46,7 @@ void BorderMetatilesPixmapItem::draw() {
             int y = j * 16;
             int index = j * width + i;
             QImage metatile_image = getMetatileImage(
-                        blocks->value(index).tile,
+                        map->layout->border->value(index).tile,
                         map->layout->tileset_primary,
                         map->layout->tileset_secondary,
                         map->metatileLayerOrder,
