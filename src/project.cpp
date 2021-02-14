@@ -1183,30 +1183,27 @@ bool Project::loadBlockdata(Map *map) {
 
     QString path = QString("%1/%2").arg(root).arg(map->layout->blockdata_path);
     map->layout->blockdata = readBlockdata(path);
-    if (map->layout->lastCommitMapBlocks.blocks) {
-        delete map->layout->lastCommitMapBlocks.blocks;
-    }
-    *map->layout->lastCommitMapBlocks.blocks = *map->layout->blockdata;
+    map->layout->lastCommitMapBlocks.blocks.clear();
+    map->layout->lastCommitMapBlocks.blocks = map->layout->blockdata;
     map->layout->lastCommitMapBlocks.dimensions = QSize(map->getWidth(), map->getHeight());
 
-    if (map->layout->blockdata->count() != map->getWidth() * map->getHeight()) {
+    if (map->layout->blockdata.count() != map->getWidth() * map->getHeight()) {
         logWarn(QString("Layout blockdata length %1 does not match dimensions %2x%3 (should be %4). Resizing blockdata.")
-                .arg(map->layout->blockdata->count())
+                .arg(map->layout->blockdata.count())
                 .arg(map->getWidth())
                 .arg(map->getHeight())
                 .arg(map->getWidth() * map->getHeight()));
-        map->layout->blockdata->resize(map->getWidth() * map->getHeight());
+        map->layout->blockdata.resize(map->getWidth() * map->getHeight());
     }
     return true;
 }
 
 void Project::setNewMapBlockdata(Map *map) {
-    Blockdata *blockdata = new Blockdata;
+    map->layout->blockdata.clear();
     for (int i = 0; i < map->getWidth() * map->getHeight(); i++) {
-        blockdata->append(qint16(0x3001));
+        map->layout->blockdata.append(qint16(0x3001));
     }
-    map->layout->blockdata = blockdata;
-    *map->layout->lastCommitMapBlocks.blocks = *map->layout->blockdata;
+    map->layout->lastCommitMapBlocks.blocks = map->layout->blockdata;
     map->layout->lastCommitMapBlocks.dimensions = QSize(map->getWidth(), map->getHeight());
 }
 
@@ -1218,33 +1215,32 @@ bool Project::loadMapBorder(Map *map) {
     QString path = QString("%1/%2").arg(root).arg(map->layout->border_path);
     map->layout->border = readBlockdata(path);
     int borderLength = map->getBorderWidth() * map->getBorderHeight();
-    if (map->layout->border->count() != borderLength) {
+    if (map->layout->border.count() != borderLength) {
         logWarn(QString("Layout border blockdata length %1 must be %2. Resizing border blockdata.")
-                .arg(map->layout->border->count())
+                .arg(map->layout->border.count())
                 .arg(borderLength));
-        map->layout->border->resize(borderLength);
+        map->layout->border.resize(borderLength);
     }
     return true;
 }
 
 void Project::setNewMapBorder(Map *map) {
-    Blockdata *blockdata = new Blockdata;
+    map->layout->border.clear();
     if (map->getBorderWidth() != DEFAULT_BORDER_WIDTH || map->getBorderHeight() != DEFAULT_BORDER_HEIGHT) {
         for (int i = 0; i < map->getBorderWidth() * map->getBorderHeight(); i++) {
-            blockdata->append(0);
+            map->layout->border.append(0);
         }
     } else if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
-        blockdata->append(qint16(0x0014));
-        blockdata->append(qint16(0x0015));
-        blockdata->append(qint16(0x001C));
-        blockdata->append(qint16(0x001D));
+        map->layout->border.append(qint16(0x0014));
+        map->layout->border.append(qint16(0x0015));
+        map->layout->border.append(qint16(0x001C));
+        map->layout->border.append(qint16(0x001D));
     } else {
-        blockdata->append(qint16(0x01D4));
-        blockdata->append(qint16(0x01D5));
-        blockdata->append(qint16(0x01DC));
-        blockdata->append(qint16(0x01DD));
+        map->layout->border.append(qint16(0x01D4));
+        map->layout->border.append(qint16(0x01D5));
+        map->layout->border.append(qint16(0x01DC));
+        map->layout->border.append(qint16(0x01DD));
     }
-    map->layout->border = blockdata;
 }
 
 void Project::saveLayoutBorder(Map *map) {
@@ -1257,10 +1253,10 @@ void Project::saveLayoutBlockdata(Map* map) {
     writeBlockdata(path, map->layout->blockdata);
 }
 
-void Project::writeBlockdata(QString path, Blockdata *blockdata) {
+void Project::writeBlockdata(QString path, const Blockdata &blockdata) {
     QFile file(path);
     if (file.open(QIODevice::WriteOnly)) {
-        QByteArray data = blockdata->serialize();
+        QByteArray data = blockdata.serialize();
         file.write(data);
     } else {
         logError(QString("Failed to open blockdata file for writing: '%1'").arg(path));
@@ -1700,14 +1696,14 @@ void Project::loadTilesetMetatileLabels(Tileset* tileset) {
     }
 }
 
-Blockdata* Project::readBlockdata(QString path) {
-    Blockdata *blockdata = new Blockdata;
+Blockdata Project::readBlockdata(QString path) {
+    Blockdata blockdata;
     QFile file(path);
     if (file.open(QIODevice::ReadOnly)) {
         QByteArray data = file.readAll();
         for (int i = 0; (i + 1) < data.length(); i += 2) {
             uint16_t word = static_cast<uint16_t>((data[i] & 0xff) + ((data[i + 1] & 0xff) << 8));
-            blockdata->append(word);
+            blockdata.append(word);
         }
     } else {
         logError(QString("Failed to open blockdata path '%1'").arg(path));

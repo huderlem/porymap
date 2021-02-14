@@ -959,7 +959,7 @@ void Editor::onHoveredMapMetatileChanged(const QPoint &pos) {
     if (map_item->paintingMode == MapPixmapItem::PaintMode::Metatiles
      && pos.x() >= 0 && pos.x() < map->getWidth() && pos.y() >= 0 && pos.y() < map->getHeight()) {
         int blockIndex = pos.y() * map->getWidth() + pos.x();
-        int metatileId = map->layout->blockdata->at(blockIndex).tile;
+        int metatileId = map->layout->blockdata.at(blockIndex).tile;
         this->ui->statusBar->showMessage(QString("X: %1, Y: %2, %3, Scale = %4x")
                               .arg(pos.x())
                               .arg(pos.y())
@@ -989,8 +989,8 @@ void Editor::onHoveredMapMovementPermissionChanged(int x, int y) {
     if (map_item->paintingMode == MapPixmapItem::PaintMode::Metatiles
      && x >= 0 && x < map->getWidth() && y >= 0 && y < map->getHeight()) {
         int blockIndex = y * map->getWidth() + x;
-        uint16_t collision = map->layout->blockdata->at(blockIndex).collision;
-        uint16_t elevation = map->layout->blockdata->at(blockIndex).elevation;
+        uint16_t collision = map->layout->blockdata.at(blockIndex).collision;
+        uint16_t elevation = map->layout->blockdata.at(blockIndex).elevation;
         QString message = QString("X: %1, Y: %2, %3")
                             .arg(x)
                             .arg(y)
