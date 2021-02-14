@@ -157,12 +157,12 @@ void TilesetEditor::setMetatileLabelValidator() {
 void TilesetEditor::initMetatileSelector()
 {
     this->metatileSelector = new TilesetEditorMetatileSelector(this->primaryTileset, this->secondaryTileset, this->map);
-    connect(this->metatileSelector, SIGNAL(hoveredMetatileChanged(uint16_t)),
-            this, SLOT(onHoveredMetatileChanged(uint16_t)));
-    connect(this->metatileSelector, SIGNAL(hoveredMetatileCleared()),
-            this, SLOT(onHoveredMetatileCleared()));
-    connect(this->metatileSelector, SIGNAL(selectedMetatileChanged(uint16_t)),
-            this, SLOT(onSelectedMetatileChanged(uint16_t)));
+    connect(this->metatileSelector, &TilesetEditorMetatileSelector::hoveredMetatileChanged,
+            this, &TilesetEditor::onHoveredMetatileChanged);
+    connect(this->metatileSelector, &TilesetEditorMetatileSelector::hoveredMetatileCleared,
+            this, &TilesetEditor::onHoveredMetatileCleared);
+    connect(this->metatileSelector, &TilesetEditorMetatileSelector::selectedMetatileChanged,
+            this, &TilesetEditor::onSelectedMetatileChanged);
 
     this->metatilesScene = new QGraphicsScene;
     this->metatilesScene->addItem(this->metatileSelector);
@@ -175,10 +175,10 @@ void TilesetEditor::initMetatileSelector()
 void TilesetEditor::initMetatileLayersItem() {
     Metatile *metatile = Tileset::getMetatile(this->metatileSelector->getSelectedMetatile(), this->primaryTileset, this->secondaryTileset);
     this->metatileLayersItem = new MetatileLayersItem(metatile, this->primaryTileset, this->secondaryTileset);
-    connect(this->metatileLayersItem, SIGNAL(tileChanged(int, int)),
-            this, SLOT(onMetatileLayerTileChanged(int, int)));
-    connect(this->metatileLayersItem, SIGNAL(selectedTilesChanged(QPoint, int, int)),
-            this, SLOT(onMetatileLayerSelectionChanged(QPoint, int, int)));
+    connect(this->metatileLayersItem, &MetatileLayersItem::tileChanged,
+            this, &TilesetEditor::onMetatileLayerTileChanged);
+    connect(this->metatileLayersItem, &MetatileLayersItem::selectedTilesChanged,
+            this, &TilesetEditor::onMetatileLayerSelectionChanged);
 
     this->metatileLayersScene = new QGraphicsScene;
     this->metatileLayersScene->addItem(this->metatileLayersItem);
@@ -187,13 +187,14 @@ void TilesetEditor::initMetatileLayersItem() {
 
 void TilesetEditor::initTileSelector()
 {
-    this->tileSelector = new TilesetEditorTileSelector(this->primaryTileset, this->secondaryTileset, projectConfig.getTripleLayerMetatilesEnabled());
-    connect(this->tileSelector, SIGNAL(hoveredTileChanged(uint16_t)),
-            this, SLOT(onHoveredTileChanged(uint16_t)));
-    connect(this->tileSelector, SIGNAL(hoveredTileCleared()),
-            this, SLOT(onHoveredTileCleared()));
-    connect(this->tileSelector, SIGNAL(selectedTilesChanged()),
-            this, SLOT(onSelectedTilesChanged()));
+    this->tileSelector = new TilesetEditorTileSelector(this->primaryTileset, this->secondaryTileset,
+                                                       projectConfig.getTripleLayerMetatilesEnabled());
+    connect(this->tileSelector, &TilesetEditorTileSelector::hoveredTileChanged,
+            this, &TilesetEditor::onHoveredTileChanged);
+    connect(this->tileSelector, &TilesetEditorTileSelector::hoveredTileCleared,
+            this, &TilesetEditor::onHoveredTileCleared);
+    connect(this->tileSelector, &TilesetEditorTileSelector::selectedTilesChanged,
+            this, &TilesetEditor::onSelectedTilesChanged);
 
     this->tilesScene = new QGraphicsScene;
     this->tilesScene->addItem(this->tileSelector);
@@ -715,8 +716,8 @@ void TilesetEditor::on_actionChange_Metatiles_Count_triggered()
     form.addRow(new QLabel("Secondary Tileset"), secondarySpinBox);
 
     QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
-    connect(&buttonBox, SIGNAL(accepted()), &dialog, SLOT(accept()));
-    connect(&buttonBox, SIGNAL(rejected()), &dialog, SLOT(reject()));
+    connect(&buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(&buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
     form.addRow(&buttonBox);
 
     if (dialog.exec() == QDialog::Accepted) {
@@ -773,9 +774,12 @@ void TilesetEditor::on_actionChange_Metatiles_Count_triggered()
 void TilesetEditor::on_actionChange_Palettes_triggered()
 {
     if (!this->paletteEditor) {
-        this->paletteEditor = new PaletteEditor(this->project, this->primaryTileset, this->secondaryTileset, this->paletteId, this);
-        connect(this->paletteEditor, SIGNAL(changedPaletteColor()), this, SLOT(onPaletteEditorChangedPaletteColor()));
-        connect(this->paletteEditor, SIGNAL(changedPalette(int)), this, SLOT(onPaletteEditorChangedPalette(int)));
+        this->paletteEditor = new PaletteEditor(this->project, this->primaryTileset,
+                                                this->secondaryTileset, this->paletteId, this);
+        connect(this->paletteEditor, &PaletteEditor::changedPaletteColor,
+                this, &TilesetEditor::onPaletteEditorChangedPaletteColor);
+        connect(this->paletteEditor, &PaletteEditor::changedPalette,
+                this, &TilesetEditor::onPaletteEditorChangedPalette);
     }
 
     if (!this->paletteEditor->isVisible()) {

@@ -7,8 +7,7 @@ NewEventToolButton::NewEventToolButton(QWidget *parent) :
     QToolButton(parent)
 {
     setPopupMode(QToolButton::MenuButtonPopup);
-    QObject::connect(this, SIGNAL(triggered(QAction*)),
-                     this, SLOT(setDefaultAction(QAction*)));
+    QObject::connect(this, &NewEventToolButton::triggered, this, &NewEventToolButton::setDefaultAction);
     this->init();
 }
 
@@ -17,11 +16,11 @@ void NewEventToolButton::init()
     // Add a context menu to select different types of map events.
     this->newObjectAction = new QAction("New Object", this);
     this->newObjectAction->setIcon(QIcon(":/icons/add.ico"));
-    connect(this->newObjectAction, SIGNAL(triggered(bool)), this, SLOT(newObject()));
+    connect(this->newObjectAction, &QAction::triggered, this, &NewEventToolButton::newObject);
 
     this->newWarpAction = new QAction("New Warp", this);
     this->newWarpAction->setIcon(QIcon(":/icons/add.ico"));
-    connect(this->newWarpAction, SIGNAL(triggered(bool)), this, SLOT(newWarp()));
+    connect(this->newWarpAction, &QAction::triggered, this, &NewEventToolButton::newWarp);
 
     /* // disable this functionality for now
     this->newHealLocationAction = new QAction("New Heal Location", this);
@@ -31,23 +30,23 @@ void NewEventToolButton::init()
 
     this->newTriggerAction = new QAction("New Trigger", this);
     this->newTriggerAction->setIcon(QIcon(":/icons/add.ico"));
-    connect(this->newTriggerAction, SIGNAL(triggered(bool)), this, SLOT(newTrigger()));
+    connect(this->newTriggerAction, &QAction::triggered, this, &NewEventToolButton::newTrigger);
 
     this->newWeatherTriggerAction = new QAction("New Weather Trigger", this);
     this->newWeatherTriggerAction->setIcon(QIcon(":/icons/add.ico"));
-    connect(this->newWeatherTriggerAction, SIGNAL(triggered(bool)), this, SLOT(newWeatherTrigger()));
+    connect(this->newWeatherTriggerAction, &QAction::triggered, this, &NewEventToolButton::newWeatherTrigger);
 
     this->newSignAction = new QAction("New Sign", this);
     this->newSignAction->setIcon(QIcon(":/icons/add.ico"));
-    connect(this->newSignAction, SIGNAL(triggered(bool)), this, SLOT(newSign()));
+    connect(this->newSignAction, &QAction::triggered, this, &NewEventToolButton::newSign);
 
     this->newHiddenItemAction = new QAction("New Hidden Item", this);
     this->newHiddenItemAction->setIcon(QIcon(":/icons/add.ico"));
-    connect(this->newHiddenItemAction, SIGNAL(triggered(bool)), this, SLOT(newHiddenItem()));
+    connect(this->newHiddenItemAction, &QAction::triggered, this, &NewEventToolButton::newHiddenItem);
 
     this->newSecretBaseAction = new QAction("New Secret Base", this);
     this->newSecretBaseAction->setIcon(QIcon(":/icons/add.ico"));
-    connect(this->newSecretBaseAction, SIGNAL(triggered(bool)), this, SLOT(newSecretBase()));
+    connect(this->newSecretBaseAction, &QAction::triggered, this, &NewEventToolButton::newSecretBase);
 
     QMenu *alignMenu = new QMenu();
     alignMenu->addAction(this->newObjectAction);
