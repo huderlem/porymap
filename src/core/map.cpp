@@ -271,34 +271,38 @@ void Map::setNewDimensionsBlockdata(int newWidth, int newHeight) {
     int oldWidth = getWidth();
     int oldHeight = getHeight();
 
-    layout->blockdata.clear();
+    Blockdata newBlockdata;
 
     for (int y = 0; y < newHeight; y++)
     for (int x = 0; x < newWidth; x++) {
         if (x < oldWidth && y < oldHeight) {
             int index = y * oldWidth + x;
-            layout->blockdata.append(layout->blockdata.value(index));
+            newBlockdata.append(layout->blockdata.value(index));
         } else {
-            layout->blockdata.append(0);
+            newBlockdata.append(0);
         }
     }
+
+    layout->blockdata = newBlockdata;
 }
 
 void Map::setNewBorderDimensionsBlockdata(int newWidth, int newHeight) {
     int oldWidth = getBorderWidth();
     int oldHeight = getBorderHeight();
 
-    layout->border.clear();
+    Blockdata newBlockdata;
 
     for (int y = 0; y < newHeight; y++)
     for (int x = 0; x < newWidth; x++) {
         if (x < oldWidth && y < oldHeight) {
             int index = y * oldWidth + x;
-            layout->border.append(layout->border.value(index));
+            newBlockdata.append(layout->border.value(index));
         } else {
-            layout->border.append(0);
+            newBlockdata.append(0);
         }
     }
+
+    layout->border = newBlockdata;
 }
 
 void Map::setDimensions(int newWidth, int newHeight, bool setNewBlockdata) {

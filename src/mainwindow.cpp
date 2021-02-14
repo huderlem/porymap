@@ -2619,7 +2619,7 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked()
         if (oldMapDimensions != newMapDimensions || oldBorderDimensions != newBorderDimensions) {
             editor->map->setDimensions(newMapDimensions.width(), newMapDimensions.height());
             editor->map->setBorderDimensions(newBorderDimensions.width(), newBorderDimensions.height());
-            editor->map->editHistory.push(new ResizeMap(map, 
+            editor->map->editHistory.push(new ResizeMap(map,
                 oldMapDimensions, newMapDimensions,
                 oldMetatiles, map->layout->blockdata,
                 oldBorderDimensions, newBorderDimensions,
