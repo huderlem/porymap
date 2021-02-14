@@ -316,7 +316,7 @@ void Editor::addNewWildMonGroup(QWidget *window) {
             dialog.accept();
         }
     });
-    connect(&buttonBox, SIGNAL(rejected()), &dialog, SLOT(reject()));
+    connect(&buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
     form.addRow(&buttonBox);
 
     if (dialog.exec() == QDialog::Accepted) {
@@ -511,8 +511,8 @@ void Editor::configureEncounterJSON(QWidget *window) {
 
     QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
 
-    connect(&buttonBox, SIGNAL(accepted()), &dialog, SLOT(accept()));
-    connect(&buttonBox, SIGNAL(rejected()), &dialog, SLOT(reject()));
+    connect(&buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(&buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
 
     // lambda: Get a QStringList of the existing field names.
     auto getFieldNames = [&tempFields]() {
@@ -552,8 +552,8 @@ void Editor::configureEncounterJSON(QWidget *window) {
         QDialog newNameDialog(nullptr, Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
         newNameDialog.setWindowModality(Qt::NonModal);
         QDialogButtonBox newFieldButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &newNameDialog);
-        connect(&newFieldButtonBox, SIGNAL(accepted()), &newNameDialog, SLOT(accept()));
-        connect(&newFieldButtonBox, SIGNAL(rejected()), &newNameDialog, SLOT(reject()));
+        connect(&newFieldButtonBox, &QDialogButtonBox::accepted, &newNameDialog, &QDialog::accept);
+        connect(&newFieldButtonBox, &QDialogButtonBox::rejected, &newNameDialog, &QDialog::reject);
 
         QLineEdit *newNameEdit = new QLineEdit;
         newNameEdit->setClearButtonEnabled(true);
@@ -1320,12 +1320,12 @@ void Editor::displayMetatileSelector() {
     scene_metatiles = new QGraphicsScene;
     if (!metatile_selector_item) {
         metatile_selector_item = new MetatileSelector(8, map);
-        connect(metatile_selector_item, SIGNAL(hoveredMetatileSelectionChanged(uint16_t)),
-                this, SLOT(onHoveredMetatileSelectionChanged(uint16_t)));
-        connect(metatile_selector_item, SIGNAL(hoveredMetatileSelectionCleared()),
-                this, SLOT(onHoveredMetatileSelectionCleared()));
-        connect(metatile_selector_item, SIGNAL(selectedMetatilesChanged()),
-                this, SLOT(onSelectedMetatilesChanged()));
+        connect(metatile_selector_item, &MetatileSelector::hoveredMetatileSelectionChanged,
+                this, &Editor::onHoveredMetatileSelectionChanged);
+        connect(metatile_selector_item, &MetatileSelector::hoveredMetatileSelectionCleared,
+                this, &Editor::onHoveredMetatileSelectionCleared);
+        connect(metatile_selector_item, &MetatileSelector::selectedMetatilesChanged,
+                this, &Editor::onSelectedMetatilesChanged);
         metatile_selector_item->select(0);
     } else {
         metatile_selector_item->setMap(map);
@@ -1337,16 +1337,11 @@ void Editor::displayMetatileSelector() {
 
 void Editor::displayMapMetatiles() {
     map_item = new MapPixmapItem(map, this->metatile_selector_item, this->settings);
-    connect(map_item, SIGNAL(mouseEvent(QGraphicsSceneMouseEvent*,MapPixmapItem*)),
-            this, SLOT(mouseEvent_map(QGraphicsSceneMouseEvent*,MapPixmapItem*)));
-    connect(map_item, SIGNAL(startPaint(QGraphicsSceneMouseEvent*,MapPixmapItem*)),
-            this, SLOT(onMapStartPaint(QGraphicsSceneMouseEvent*,MapPixmapItem*)));
-    connect(map_item, SIGNAL(endPaint(QGraphicsSceneMouseEvent*,MapPixmapItem*)),
-            this, SLOT(onMapEndPaint(QGraphicsSceneMouseEvent*,MapPixmapItem*)));
-    connect(map_item, SIGNAL(hoveredMapMetatileChanged(const QPoint&)),
-            this, SLOT(onHoveredMapMetatileChanged(const QPoint&)));
-    connect(map_item, SIGNAL(hoveredMapMetatileCleared()),
-            this, SLOT(onHoveredMapMetatileCleared()));
+    connect(map_item, &MapPixmapItem::mouseEvent, this, &Editor::mouseEvent_map);
+    connect(map_item, &MapPixmapItem::startPaint, this, &Editor::onMapStartPaint);
+    connect(map_item, &MapPixmapItem::endPaint, this, &Editor::onMapEndPaint);
+    connect(map_item, &MapPixmapItem::hoveredMapMetatileChanged, this, &Editor::onHoveredMapMetatileChanged);
+    connect(map_item, &MapPixmapItem::hoveredMapMetatileCleared, this, &Editor::onHoveredMapMetatileCleared);
 
     map_item->draw(true);
     scene->addItem(map_item);
@@ -1366,13 +1361,13 @@ void Editor::displayMapMovementPermissions() {
         scene->removeItem(collision_item);
         delete collision_item;
     }
-    collision_item = new CollisionPixmapItem(map, this->movement_permissions_selector_item, this->metatile_selector_item, this->settings, &this->collisionOpacity);
-    connect(collision_item, SIGNAL(mouseEvent(QGraphicsSceneMouseEvent*,CollisionPixmapItem*)),
-            this, SLOT(mouseEvent_collision(QGraphicsSceneMouseEvent*,CollisionPixmapItem*)));
-    connect(collision_item, SIGNAL(hoveredMapMovementPermissionChanged(int, int)),
-            this, SLOT(onHoveredMapMovementPermissionChanged(int, int)));
-    connect(collision_item, SIGNAL(hoveredMapMovementPermissionCleared()),
-            this, SLOT(onHoveredMapMovementPermissionCleared()));
+    collision_item = new CollisionPixmapItem(map, this->movement_permissions_selector_item,
+                                             this->metatile_selector_item, this->settings, &this->collisionOpacity);
+    connect(collision_item, &CollisionPixmapItem::mouseEvent, this, &Editor::mouseEvent_collision);
+    connect(collision_item, &CollisionPixmapItem::hoveredMapMovementPermissionChanged,
+            this, &Editor::onHoveredMapMovementPermissionChanged);
+    connect(collision_item, &CollisionPixmapItem::hoveredMapMovementPermissionCleared,
+            this, &Editor::onHoveredMapMovementPermissionCleared);
 
     collision_item->draw(true);
     scene->addItem(collision_item);
@@ -1389,7 +1384,8 @@ void Editor::displayBorderMetatiles() {
     selected_border_metatiles_item->draw();
     scene_selected_border_metatiles->addItem(selected_border_metatiles_item);
 
-    connect(selected_border_metatiles_item, SIGNAL(borderMetatilesChanged()), this, SLOT(onBorderMetatilesChanged()));
+    connect(selected_border_metatiles_item, &BorderMetatilesPixmapItem::borderMetatilesChanged,
+            this, &Editor::onBorderMetatilesChanged);
 }
 
 void Editor::displayCurrentMetatilesSelection() {
@@ -1421,10 +1417,10 @@ void Editor::displayMovementPermissionSelector() {
     scene_collision_metatiles = new QGraphicsScene;
     if (!movement_permissions_selector_item) {
         movement_permissions_selector_item = new MovementPermissionsSelector();
-        connect(movement_permissions_selector_item, SIGNAL(hoveredMovementPermissionChanged(uint16_t, uint16_t)),
-                this, SLOT(onHoveredMovementPermissionChanged(uint16_t, uint16_t)));
-        connect(movement_permissions_selector_item, SIGNAL(hoveredMovementPermissionCleared()),
-                this, SLOT(onHoveredMovementPermissionCleared()));
+        connect(movement_permissions_selector_item, &MovementPermissionsSelector::hoveredMovementPermissionChanged,
+                this, &Editor::onHoveredMovementPermissionChanged);
+        connect(movement_permissions_selector_item, &MovementPermissionsSelector::hoveredMovementPermissionCleared,
+                this, &Editor::onHoveredMovementPermissionCleared);
         movement_permissions_selector_item->select(0, 3);
     }
 
@@ -1540,9 +1536,12 @@ void Editor::createConnectionItem(MapConnection* connection, bool hide) {
     connection_edit_item->setY(y);
     connection_edit_item->setZValue(-1);
     scene->addItem(connection_edit_item);
-    connect(connection_edit_item, SIGNAL(connectionMoved(MapConnection*)), this, SLOT(onConnectionMoved(MapConnection*)));
-    connect(connection_edit_item, SIGNAL(connectionItemSelected(ConnectionPixmapItem*)), this, SLOT(onConnectionItemSelected(ConnectionPixmapItem*)));
-    connect(connection_edit_item, SIGNAL(connectionItemDoubleClicked(ConnectionPixmapItem*)), this, SLOT(onConnectionItemDoubleClicked(ConnectionPixmapItem*)));
+    connect(connection_edit_item, &ConnectionPixmapItem::connectionMoved,
+            this, &Editor::onConnectionMoved);
+    connect(connection_edit_item, &ConnectionPixmapItem::connectionItemSelected,
+            this, &Editor::onConnectionItemSelected);
+    connect(connection_edit_item, &ConnectionPixmapItem::connectionItemDoubleClicked,
+            this, &Editor::onConnectionItemDoubleClicked);
     connection_edit_items.append(connection_edit_item);
 }
 
