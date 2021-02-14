@@ -10,7 +10,8 @@ public:
     Block();
     Block(uint16_t);
     Block(uint16_t tile, uint16_t collision, uint16_t elevation);
-    Block(const Block&);
+    Block(const Block &);
+    Block &operator=(const Block &);
     bool operator ==(Block);
     bool operator !=(Block);
     uint16_t tile:10;
