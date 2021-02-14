@@ -502,7 +502,7 @@ void MainWindow::setTimeout(QJSValue callback, int milliseconds) {
     connect(timer, &QTimer::timeout, [=](){
         this->invokeCallback(callback);
     });
-    connect(timer, SIGNAL(timeout()), timer, SLOT(deleteLater()));
+    connect(timer, &QTimer::timeout, timer, &QTimer::deleteLater);
     timer->setSingleShot(true);
     timer->start(milliseconds);
 }
