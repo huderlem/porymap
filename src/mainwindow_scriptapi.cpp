@@ -26,7 +26,7 @@ void MainWindow::tryCommitMapChanges(bool commitChanges) {
         if (map) {
             map->editHistory.push(new ScriptEditMap(map,
                 map->layout->lastCommitMapBlocks.dimensions, QSize(map->getWidth(), map->getHeight()),
-                map->layout->lastCommitMapBlocks.blocks->copy(), map->layout->blockdata->copy()
+                *map->layout->lastCommitMapBlocks.blocks, *map->layout->blockdata
             ));
         }
     }

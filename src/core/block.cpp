@@ -27,17 +27,17 @@ Block &Block::operator=(const Block &other) {
     return *this;
 }
 
-uint16_t Block::rawValue() {
+uint16_t Block::rawValue() const {
     return static_cast<uint16_t>(
                 (tile & 0x3ff) +
                 ((collision & 0x3) << 10) +
                 ((elevation & 0xf) << 12));
 }
 
-bool Block::operator ==(Block other) {
+bool Block::operator ==(Block other) const {
     return (tile == other.tile) && (collision == other.collision) && (elevation == other.elevation);
 }
 
-bool Block::operator !=(Block other) {
+bool Block::operator !=(Block other) const {
     return !(operator ==(other));
 }
