@@ -1,6 +1,6 @@
 #include "blockdata.h"
 
-QByteArray Blockdata::serialize() {
+QByteArray Blockdata::serialize() const {
     QByteArray data;
     for (const auto &block : *this) {
         uint16_t word = block.rawValue();

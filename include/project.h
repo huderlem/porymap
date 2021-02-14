@@ -91,7 +91,7 @@ public:
     Tileset* getTileset(QString, bool forceLoad = false);
     QMap<QString, QStringList> tilesetLabels;
 
-    Blockdata* readBlockdata(QString);
+    Blockdata readBlockdata(QString);
     bool loadBlockdata(Map*);
 
     void saveTextFile(QString path, QString text);
@@ -129,7 +129,7 @@ public:
 
     void saveLayoutBlockdata(Map*);
     void saveLayoutBorder(Map*);
-    void writeBlockdata(QString, Blockdata*);
+    void writeBlockdata(QString, const Blockdata &);
     void saveAllMaps();
     void saveMap(Map*);
     void saveAllDataStructures();

@@ -10,7 +10,7 @@
 class Blockdata : public QVector<Block>
 {
 public:
-    QByteArray serialize();
+    QByteArray serialize() const;
 };
 
 #endif // BLOCKDATA_H
