@@ -575,7 +575,7 @@ void ProjectConfig::onNewConfigFileCreated() {
         form.addRow(new QLabel("Game Version"), baseGameVersionComboBox);
 
         QDialogButtonBox buttonBox(QDialogButtonBox::Ok, Qt::Horizontal, &dialog);
-        connect(&buttonBox, SIGNAL(accepted()), &dialog, SLOT(accept()));
+        connect(&buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
         form.addRow(&buttonBox);
 
         if (dialog.exec() == QDialog::Accepted) {

@@ -631,7 +631,7 @@ void RegionMapEditor::on_pushButton_CityMap_add_clicked() {
     QString name;
 
     form.addRow(&buttonBox);
-    connect(&buttonBox, SIGNAL(rejected()), &popup, SLOT(reject()));
+    connect(&buttonBox, &QDialogButtonBox::rejected, &popup, &QDialog::reject);
     connect(&buttonBox, &QDialogButtonBox::accepted, [&popup, &input, &name](){
         name = input->text().remove(QRegularExpression("[^a-zA-Z0-9_]+"));
         if (!name.isEmpty())
@@ -666,8 +666,8 @@ void RegionMapEditor::on_action_RegionMap_Resize_triggered() {
     QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &popup);
 
     form.addRow(&buttonBox);
-    connect(&buttonBox, SIGNAL(rejected()), &popup, SLOT(reject()));
-    connect(&buttonBox, SIGNAL(accepted()), &popup, SLOT(accept()));
+    connect(&buttonBox, &QDialogButtonBox::rejected, &popup, &QDialog::reject);
+    connect(&buttonBox, &QDialogButtonBox::accepted, &popup, &QDialog::accept);
 
     if (popup.exec() == QDialog::Accepted) {
         resize(widthSpinBox->value(), heightSpinBox->value());
@@ -760,7 +760,7 @@ void RegionMapEditor::on_action_Swap_triggered() {
 
     QString beforeSection, afterSection;
     uint8_t oldId, newId; 
-    connect(&buttonBox, SIGNAL(rejected()), &popup, SLOT(reject()));
+    connect(&buttonBox, &QDialogButtonBox::rejected, &popup, &QDialog::reject);
     connect(&buttonBox, &QDialogButtonBox::accepted, [this, &popup, &oldSecBox, &newSecBox, 
                                                       &beforeSection, &afterSection, &oldId, &newId](){
         beforeSection = oldSecBox->currentText();
