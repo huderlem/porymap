@@ -1183,7 +1183,6 @@ bool Project::loadBlockdata(Map *map) {
 
     QString path = QString("%1/%2").arg(root).arg(map->layout->blockdata_path);
     map->layout->blockdata = readBlockdata(path);
-    map->layout->lastCommitMapBlocks.blocks.clear();
     map->layout->lastCommitMapBlocks.blocks = map->layout->blockdata;
     map->layout->lastCommitMapBlocks.dimensions = QSize(map->getWidth(), map->getHeight());
 
