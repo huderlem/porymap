@@ -31,6 +31,8 @@ public:
     Project(const Project &) = delete;
     Project & operator = (const Project &) = delete;
 
+    inline QWidget *parentWidget() const { return static_cast<QWidget *>(parent()); }
+
 public:
     QString root;
     QStringList groupNames;
@@ -218,8 +220,6 @@ private:
     static int max_map_data_size;
     static int default_map_size;
     static int max_object_events;
-
-    QWidget *parent;
 
 signals:
     void reloadProject();
