@@ -238,14 +238,14 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    QLabel *label_MapRulerStatus;
-    TilesetEditor *tilesetEditor = nullptr;
-    RegionMapEditor *regionMapEditor = nullptr;
-    ShortcutsEditor *shortcutsEditor = nullptr;
-    MapImageExporter *mapImageExporter = nullptr;
+    QLabel *label_MapRulerStatus = nullptr;
+    QPointer<TilesetEditor> tilesetEditor = nullptr;
+    QPointer<RegionMapEditor> regionMapEditor = nullptr;
+    QPointer<ShortcutsEditor> shortcutsEditor = nullptr;
+    QPointer<MapImageExporter> mapImageExporter = nullptr;
+    QPointer<NewMapPopup> newmapprompt = nullptr;
+    QPointer<PreferenceEditor> preferenceEditor = nullptr;
     FilterChildrenProxyModel *mapListProxyModel;
-    NewMapPopup *newmapprompt = nullptr;
-    PreferenceEditor *preferenceEditor = nullptr;
     QStandardItemModel *mapListModel;
     QList<QStandardItem*> *mapGroupItemsList;
     QMap<QString, QModelIndex> mapListIndexes;

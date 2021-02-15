@@ -40,7 +40,6 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    label_MapRulerStatus(nullptr),
     selectedObject(nullptr),
     selectedWarp(nullptr),
     selectedTrigger(nullptr),
@@ -1158,8 +1157,7 @@ void MainWindow::openNewMapPopupWindow(int type, QVariant data) {
             break;
     }
     connect(this->newmapprompt, &NewMapPopup::applied, this, &MainWindow::onNewMapCreated);
-    connect(this->newmapprompt, &QObject::destroyed, [=](QObject *) { this->newmapprompt = nullptr; });
-            this->newmapprompt->setAttribute(Qt::WA_DeleteOnClose);
+    this->newmapprompt->setAttribute(Qt::WA_DeleteOnClose);
 }
 
 void MainWindow::on_action_NewMap_triggered() {
@@ -1496,7 +1494,6 @@ void MainWindow::initShortcutsEditor() {
     shortcutsEditor = new ShortcutsEditor(this);
     connect(shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
             this, &MainWindow::applyUserShortcuts);
-    connect(shortcutsEditor, &QObject::destroyed, [=](QObject *) { shortcutsEditor = nullptr; });
 
     connectSubEditorsToShortcutsEditor();
 
@@ -2462,7 +2459,6 @@ void MainWindow::showExportMapImageWindow(ImageExporterMode mode) {
         delete this->mapImageExporter;
 
     this->mapImageExporter = new MapImageExporter(this, this->editor, mode);
-    connect(this->mapImageExporter, &QObject::destroyed, [=](QObject *) { this->mapImageExporter = nullptr; });
     this->mapImageExporter->setAttribute(Qt::WA_DeleteOnClose);
 
     if (!this->mapImageExporter->isVisible()) {
@@ -2669,7 +2665,6 @@ void MainWindow::on_actionTileset_Editor_triggered()
 void MainWindow::initTilesetEditor() {
     this->tilesetEditor = new TilesetEditor(this->editor->project, this->editor->map, this);
     connect(this->tilesetEditor, &TilesetEditor::tilesetsSaved, this, &MainWindow::onTilesetsSaved);
-    connect(this->tilesetEditor, &QObject::destroyed, [=](QObject *) { this->tilesetEditor = nullptr; });
 }
 
 void MainWindow::on_toolButton_ExpandAll_clicked()
@@ -2712,7 +2707,6 @@ void MainWindow::on_actionEdit_Preferences_triggered() {
                 editor, &Editor::maskNonVisibleConnectionTiles);
         connect(preferenceEditor, &PreferenceEditor::preferencesSaved,
                 this, &MainWindow::togglePreferenceSpecificUi);
-        connect(preferenceEditor, &QObject::destroyed, [=](QObject *) { preferenceEditor = nullptr; });
     }
 
     if (!preferenceEditor->isVisible()) {
@@ -2827,7 +2821,6 @@ bool MainWindow::initRegionMapEditor() {
 
         return false;
     }
-    connect(this->regionMapEditor, &QObject::destroyed, [=](QObject *) { this->regionMapEditor = nullptr; });
 
     return true;
 }
