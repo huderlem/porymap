@@ -726,11 +726,11 @@ void Editor::populateConnectionMapPickers() {
     ui->comboBox_EmergeMap->blockSignals(true);
 
     ui->comboBox_ConnectedMap->clear();
-    ui->comboBox_ConnectedMap->addItems(*project->mapNames);
+    ui->comboBox_ConnectedMap->addItems(project->mapNames);
     ui->comboBox_DiveMap->clear();
-    ui->comboBox_DiveMap->addItems(*project->mapNames);
+    ui->comboBox_DiveMap->addItems(project->mapNames);
     ui->comboBox_EmergeMap->clear();
-    ui->comboBox_EmergeMap->addItems(*project->mapNames);
+    ui->comboBox_EmergeMap->addItems(project->mapNames);
 
     ui->comboBox_ConnectedMap->blockSignals(false);
     ui->comboBox_DiveMap->blockSignals(true);
@@ -1678,7 +1678,7 @@ void Editor::updateConnectionOffset(int offset) {
 }
 
 void Editor::setConnectionMap(QString mapName) {
-    if (!mapName.isEmpty() && !project->mapNames->contains(mapName)) {
+    if (!mapName.isEmpty() && !project->mapNames.contains(mapName)) {
         logError(QString("Invalid map name '%1' specified for connection.").arg(mapName));
         return;
     }
@@ -1714,9 +1714,9 @@ void Editor::addNewConnection() {
     }
 
     // Don't connect the map to itself.
-    QString defaultMapName = project->mapNames->first();
+    QString defaultMapName = project->mapNames.first();
     if (defaultMapName == map->name) {
-        defaultMapName = project->mapNames->value(1);
+        defaultMapName = project->mapNames.value(1);
     }
 
     MapConnection* newConnection = new MapConnection;
@@ -1824,7 +1824,7 @@ void Editor::updateEmergeMap(QString mapName) {
 }
 
 void Editor::updateDiveEmergeMap(QString mapName, QString direction) {
-    if (!mapName.isEmpty() && !project->mapNamesToMapConstants->contains(mapName)) {
+    if (!mapName.isEmpty() && !project->mapNamesToMapConstants.contains(mapName)) {
         logError(QString("Invalid %1 connection map name: '%2'").arg(direction).arg(mapName));
         return;
     }

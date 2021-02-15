@@ -215,7 +215,7 @@ void RegionMapEditor::displayRegionMapLayoutOptions() {
 
 void RegionMapEditor::updateRegionMapLayoutOptions(int index) {
     this->ui->comboBox_RM_ConnectedMap->blockSignals(true);
-    this->ui->lineEdit_RM_MapName->setText(this->project->mapSecToMapHoverName->value(this->region_map->map_squares[index].mapsec));
+    this->ui->lineEdit_RM_MapName->setText(this->project->mapSecToMapHoverName.value(this->region_map->map_squares[index].mapsec));
     this->ui->comboBox_RM_ConnectedMap->setCurrentText(this->region_map->map_squares[index].mapsec);
     this->ui->comboBox_RM_ConnectedMap->blockSignals(false);
 }
@@ -438,7 +438,7 @@ void RegionMapEditor::onRegionMapLayoutSelectedTileChanged(int index) {
     this->currIndex = index;
     this->region_map_layout_item->highlightedTile = index;
     if (this->region_map->map_squares[index].has_map) {
-        message = QString("\t %1").arg(this->project->mapSecToMapHoverName->value(
+        message = QString("\t %1").arg(this->project->mapSecToMapHoverName.value(
                       this->region_map->map_squares[index].mapsec)).remove("{NAME_END}");
     }
     this->ui->statusbar->showMessage(message);
@@ -454,7 +454,7 @@ void RegionMapEditor::onRegionMapLayoutHoveredTileChanged(int index) {
     if (x >= 0 && y >= 0) {
         message = QString("(%1, %2)").arg(x).arg(y);
         if (this->region_map->map_squares[index].has_map) {
-            message += QString("\t %1").arg(this->project->mapSecToMapHoverName->value(
+            message += QString("\t %1").arg(this->project->mapSecToMapHoverName.value(
                            this->region_map->map_squares[index].mapsec)).remove("{NAME_END}");
         }
     }
@@ -551,7 +551,7 @@ void RegionMapEditor::on_tabWidget_Region_Map_currentChanged(int index) {
 }
 
 void RegionMapEditor::on_comboBox_RM_ConnectedMap_activated(const QString &mapsec) {
-    this->ui->lineEdit_RM_MapName->setText(this->project->mapSecToMapHoverName->value(mapsec));
+    this->ui->lineEdit_RM_MapName->setText(this->project->mapSecToMapHoverName.value(mapsec));
     onRegionMapLayoutSelectedTileChanged(this->currIndex);// re-draw layout image
     this->hasUnsavedChanges = true;// sometimes this is called for unknown reasons
 }

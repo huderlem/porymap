@@ -321,13 +321,13 @@ OrderedJson::object Event::buildObjectEventJSON()
     return eventObj;
 }
 
-OrderedJson::object Event::buildWarpEventJSON(QMap<QString, QString> *mapNamesToMapConstants)
+OrderedJson::object Event::buildWarpEventJSON(const QMap<QString, QString> &mapNamesToMapConstants)
 {
     OrderedJson::object warpObj;
     warpObj["x"] = this->getU16("x");
     warpObj["y"] = this->getU16("y");
     warpObj["elevation"] = this->getInt("elevation");
-    warpObj["dest_map"] = mapNamesToMapConstants->value(this->get("destination_map_name"));
+    warpObj["dest_map"] = mapNamesToMapConstants.value(this->get("destination_map_name"));
     warpObj["dest_warp_id"] = this->getInt("destination_warp");
     this->addCustomValuesTo(&warpObj);
 
