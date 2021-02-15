@@ -71,7 +71,7 @@ Event* Event::createNewObjectEvent(Project *project)
     event->put("event_group_type", "object_event_group");
     event->put("event_type", EventType::Object);
     event->put("sprite", project->getEventObjGfxConstants().keys().first());
-    event->put("movement_type", project->movementTypes->first());
+    event->put("movement_type", project->movementTypes.first());
     if (projectConfig.getObjectEventInConnectionEnabled()) {
         event->put("in_connection", false);
     }
@@ -80,7 +80,7 @@ Event* Event::createNewObjectEvent(Project *project)
     event->put("script_label", "NULL");
     event->put("event_flag", "0");
     event->put("replacement", "0");
-    event->put("trainer_type", project->trainerTypes->value(0, "0"));
+    event->put("trainer_type", project->trainerTypes.value(0, "0"));
     event->put("sight_radius_tree_id", 0);
     event->put("elevation", 3);
     return event;
@@ -118,7 +118,7 @@ Event* Event::createNewTriggerEvent(Project *project)
     event->put("event_group_type", "coord_event_group");
     event->put("event_type", EventType::Trigger);
     event->put("script_label", "NULL");
-    event->put("script_var", project->varNames->first());
+    event->put("script_var", project->varNames.first());
     event->put("script_var_value", "0");
     event->put("elevation", 0);
     return event;
@@ -129,7 +129,7 @@ Event* Event::createNewWeatherTriggerEvent(Project *project)
     Event *event = new Event;
     event->put("event_group_type", "coord_event_group");
     event->put("event_type", EventType::WeatherTrigger);
-    event->put("weather", project->coordEventWeatherNames->first());
+    event->put("weather", project->coordEventWeatherNames.first());
     event->put("elevation", 0);
     return event;
 }
@@ -139,7 +139,7 @@ Event* Event::createNewSignEvent(Project *project)
     Event *event = new Event;
     event->put("event_group_type", "bg_event_group");
     event->put("event_type", EventType::Sign);
-    event->put("player_facing_direction", project->bgEventFacingDirections->first());
+    event->put("player_facing_direction", project->bgEventFacingDirections.first());
     event->put("script_label", "NULL");
     event->put("elevation", 0);
     return event;
@@ -150,8 +150,8 @@ Event* Event::createNewHiddenItemEvent(Project *project)
     Event *event = new Event;
     event->put("event_group_type", "bg_event_group");
     event->put("event_type", EventType::HiddenItem);
-    event->put("item", project->itemNames->first());
-    event->put("flag", project->flagNames->first());
+    event->put("item", project->itemNames.first());
+    event->put("flag", project->flagNames.first());
     event->put("elevation", 3);
     if (projectConfig.getHiddenItemQuantityEnabled()) {
         event->put("quantity", 1);
@@ -167,7 +167,7 @@ Event* Event::createNewSecretBaseEvent(Project *project)
     Event *event = new Event;
     event->put("event_group_type", "bg_event_group");
     event->put("event_type", EventType::SecretBase);
-    event->put("secret_base_id", project->secretBaseIds->first());
+    event->put("secret_base_id", project->secretBaseIds.first());
     event->put("elevation", 0);
     return event;
 }
