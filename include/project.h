@@ -49,17 +49,17 @@ public:
     QMap<QString, QString> mapSecToMapHoverName;
     QMap<QString, int> mapSectionNameToValue;
     QMap<int, QString> mapSectionValueToName;
-    QStringList *itemNames = nullptr;
-    QStringList *flagNames = nullptr;
-    QStringList *varNames = nullptr;
-    QStringList *movementTypes = nullptr;
-    QStringList *mapTypes = nullptr;
-    QStringList *mapBattleScenes = nullptr;
-    QStringList *weatherNames = nullptr;
-    QStringList *coordEventWeatherNames = nullptr;
-    QStringList *secretBaseIds = nullptr;
-    QStringList *bgEventFacingDirections = nullptr;
-    QStringList *trainerTypes = nullptr;
+    QStringList itemNames;
+    QStringList flagNames;
+    QStringList varNames;
+    QStringList movementTypes;
+    QStringList mapTypes;
+    QStringList mapBattleScenes;
+    QStringList weatherNames;
+    QStringList coordEventWeatherNames;
+    QStringList secretBaseIds;
+    QStringList bgEventFacingDirections;
+    QStringList trainerTypes;
     QMap<QString, int> metatileBehaviorMap;
     QMap<int, QString> metatileBehaviorMapInverse;
     QMap<QString, QString> facingDirections;
@@ -82,11 +82,11 @@ public:
     DataQualifiers getDataQualifiers(QString, QString);
     QMap<QString, DataQualifiers> dataQualifiers;
 
-    QMap<QString, Map*> *mapCache;
+    QMap<QString, Map*> mapCache;
     Map* loadMap(QString);
     Map* getMap(QString);
 
-    QMap<QString, Tileset*> *tilesetCache = nullptr;
+    QMap<QString, Tileset*> tilesetCache;
     Tileset* loadTileset(QString, Tileset *tileset = nullptr);
     Tileset* getTileset(QString, bool forceLoad = false);
     QMap<QString, QStringList> tilesetLabels;
