@@ -36,7 +36,7 @@ MapImageExporter::MapImageExporter(QWidget *parent_, Editor *editor_, ImageExpor
     this->ui->groupBox_Connections->setVisible(this->mode == ImageExporterMode::Normal);
     this->ui->groupBox_Timelapse->setVisible(this->mode == ImageExporterMode::Timelapse);
 
-    this->ui->comboBox_MapSelection->addItems(*editor->project->mapNames);
+    this->ui->comboBox_MapSelection->addItems(editor->project->mapNames);
     this->ui->comboBox_MapSelection->setCurrentText(map->name);
     this->ui->comboBox_MapSelection->setEnabled(false);// TODO: allow selecting map from drop-down
 

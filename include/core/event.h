@@ -77,7 +77,7 @@ public:
     static Event* createNewSecretBaseEvent(Project*);
 
     OrderedJson::object buildObjectEventJSON();
-    OrderedJson::object buildWarpEventJSON(QMap<QString, QString>*);
+    OrderedJson::object buildWarpEventJSON(const QMap<QString, QString> &);
     OrderedJson::object buildTriggerEventJSON();
     OrderedJson::object buildWeatherTriggerEventJSON();
     OrderedJson::object buildSignEventJSON();

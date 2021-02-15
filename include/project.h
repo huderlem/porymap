@@ -33,20 +33,20 @@ public:
 
 public:
     QString root;
-    QStringList *groupNames = nullptr;
-    QMap<QString, int> *mapGroups;
+    QStringList groupNames;
+    QMap<QString, int> mapGroups;
     QList<QStringList> groupedMapNames;
-    QStringList *mapNames = nullptr;
+    QStringList mapNames;
     QMap<QString, QVariant> miscConstants;
     QList<HealLocation> healLocations;
-    QMap<QString, QString>* mapConstantsToMapNames;
-    QMap<QString, QString>* mapNamesToMapConstants;
-    QList<QString> mapLayoutsTable;
-    QList<QString> mapLayoutsTableMaster;
+    QMap<QString, QString> mapConstantsToMapNames;
+    QMap<QString, QString> mapNamesToMapConstants;
+    QStringList mapLayoutsTable;
+    QStringList mapLayoutsTableMaster;
     QString layoutsLabel;
     QMap<QString, MapLayout*> mapLayouts;
     QMap<QString, MapLayout*> mapLayoutsMaster;
-    QMap<QString, QString> *mapSecToMapHoverName;
+    QMap<QString, QString> mapSecToMapHoverName;
     QMap<QString, int> mapSectionNameToValue;
     QMap<int, QString> mapSectionValueToName;
     QStringList *itemNames = nullptr;

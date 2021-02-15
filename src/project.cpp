@@ -38,9 +38,6 @@ int Project::max_object_events = 64;
 
 Project::Project(QWidget *parent) : parent(parent)
 {
-    groupNames = new QStringList;
-    mapGroups = new QMap<QString, int>;
-    mapNames = new QStringList;
     itemNames = new QStringList;
     flagNames = new QStringList;
     varNames = new QStringList;
@@ -53,8 +50,6 @@ Project::Project(QWidget *parent) : parent(parent)
     bgEventFacingDirections = new QStringList;
     trainerTypes = new QStringList;
     mapCache = new QMap<QString, Map*>;
-    mapConstantsToMapNames = new QMap<QString, QString>;
-    mapNamesToMapConstants = new QMap<QString, QString>;
     tilesetCache = new QMap<QString, Tileset*>;
 
     initSignals();
@@ -62,9 +57,6 @@ Project::Project(QWidget *parent) : parent(parent)
 
 Project::~Project()
 {
-    delete this->groupNames;
-    delete this->mapGroups;
-    delete this->mapNames;
     delete this->itemNames;
     delete this->flagNames;
     delete this->varNames;
@@ -78,9 +70,6 @@ Project::~Project()
     delete this->trainerTypes;
     delete this->mapTypes;
 
-    delete this->mapConstantsToMapNames;
-    delete this->mapNamesToMapConstants;
-    
     clearMapCache();
     delete this->mapCache;
     clearTilesetCache();
@@ -283,8 +272,8 @@ bool Project::loadMapData(Map* map) {
 
         // Ensure the warp destination map constant is valid before adding it to the warps.
         QString mapConstant = event["dest_map"].toString();
-        if (mapConstantsToMapNames->contains(mapConstant)) {
-            warp->put("destination_map_name", mapConstantsToMapNames->value(mapConstant));
+        if (mapConstantsToMapNames.contains(mapConstant)) {
+            warp->put("destination_map_name", mapConstantsToMapNames.value(mapConstant));
             warp->put("event_group_type", "warp_event_group");
             map->events["warp_event_group"].append(warp);
         } else if (mapConstant == NONE_MAP_CONSTANT) {
@@ -302,7 +291,7 @@ bool Project::loadMapData(Map* map) {
         HealLocation loc = *it;
 
         //if TRUE map is flyable / has healing location
-        if (loc.mapName == QString(mapNamesToMapConstants->value(map->name)).remove(0,4)) {
+        if (loc.mapName == QString(mapNamesToMapConstants.value(map->name)).remove(0,4)) {
             Event *heal = new Event;
             heal->put("map_name", map->name);
             heal->put("x", loc.x);
@@ -311,11 +300,11 @@ bool Project::loadMapData(Map* map) {
             heal->put("id_name", loc.idName);
             heal->put("index", loc.index);
             heal->put("elevation", 3); // TODO: change this?
-            heal->put("destination_map_name", mapConstantsToMapNames->value(map->name));
+            heal->put("destination_map_name", mapConstantsToMapNames.value(map->name));
             heal->put("event_group_type", "heal_event_group");
             heal->put("event_type", EventType::HealLocation);
             if (projectConfig.getHealLocationRespawnDataEnabled()) {
-                heal->put("respawn_map", mapConstantsToMapNames->value(QString("MAP_" + loc.respawnMap)));
+                heal->put("respawn_map", mapConstantsToMapNames.value(QString("MAP_" + loc.respawnMap)));
                 heal->put("respawn_npc", loc.respawnNPC);
             }
             map->events["heal_event_group"].append(heal);
@@ -408,8 +397,8 @@ bool Project::loadMapData(Map* map) {
             connection->direction = connectionObj["direction"].toString();
             connection->offset = QString::number(connectionObj["offset"].toInt());
             QString mapConstant = connectionObj["map"].toString();
-            if (mapConstantsToMapNames->contains(mapConstant)) {
-                connection->map_name = mapConstantsToMapNames->value(mapConstant);
+            if (mapConstantsToMapNames.contains(mapConstant)) {
+                connection->map_name = mapConstantsToMapNames.value(mapConstant);
                 map->connections.append(connection);
             } else {
                 logError(QString("Failed to find connected map for map constant '%1'").arg(mapConstant));
@@ -703,7 +692,7 @@ void Project::saveMapGroups() {
     mapGroupsObj["layouts_table_label"] = layoutsLabel;
 
     OrderedJson::array groupNamesArr;
-    for (QString groupName : *this->groupNames) {
+    for (QString groupName : this->groupNames) {
         groupNamesArr.push_back(groupName);
     }
     mapGroupsObj["group_order"] = groupNamesArr;
@@ -714,7 +703,7 @@ void Project::saveMapGroups() {
         for (QString mapName : mapNames) {
             groupArr.push_back(mapName);
         }
-        mapGroupsObj[this->groupNames->at(groupNum)] = groupArr;
+        mapGroupsObj[this->groupNames.at(groupNum)] = groupArr;
         groupNum++;
     }
 
@@ -826,13 +815,13 @@ void Project::saveMapConstantsHeader() {
         text += QString("// Map Group %1\n").arg(groupNum);
         int maxLength = 0;
         for (QString mapName : mapNames) {
-            QString mapConstantName = mapNamesToMapConstants->value(mapName);
+            QString mapConstantName = mapNamesToMapConstants.value(mapName);
             if (mapConstantName.length() > maxLength)
                 maxLength = mapConstantName.length();
         }
         int groupIndex = 0;
         for (QString mapName : mapNames) {
-            QString mapConstantName = mapNamesToMapConstants->value(mapName);
+            QString mapConstantName = mapNamesToMapConstants.value(mapName);
             text += QString("#define %1%2(%3 | (%4 << 8))\n")
                     .arg(mapConstantName)
                     .arg(QString(" ").repeated(maxLength - mapConstantName.length() + 1))
@@ -1376,11 +1365,11 @@ void Project::saveMap(Map *map) {
     if (map->connections.length() > 0) {
         OrderedJson::array connectionsArr;
         for (MapConnection* connection : map->connections) {
-            if (mapNamesToMapConstants->contains(connection->map_name)) {
+            if (mapNamesToMapConstants.contains(connection->map_name)) {
                 OrderedJson::object connectionObj;
                 connectionObj["direction"] = connection->direction;
                 connectionObj["offset"] = connection->offset.toInt();
-                connectionObj["map"] = this->mapNamesToMapConstants->value(connection->map_name);
+                connectionObj["map"] = this->mapNamesToMapConstants.value(connection->map_name);
                 connectionsArr.append(connectionObj);
             } else {
                 logError(QString("Failed to write map connection. '%1' is not a valid map name").arg(connection->map_name));
@@ -1840,9 +1829,9 @@ bool Project::readWildMonData() {
 }
 
 bool Project::readMapGroups() {
-    mapConstantsToMapNames->clear();
-    mapNamesToMapConstants->clear();
-    mapGroups->clear();
+    mapConstantsToMapNames.clear();
+    mapNamesToMapConstants.clear();
+    mapGroups.clear();
 
     QString mapGroupsFilepath = QString("%1/data/maps/map_groups.json").arg(root);
     fileWatcher.addPath(mapGroupsFilepath);
@@ -1856,29 +1845,29 @@ bool Project::readMapGroups() {
     QJsonArray mapGroupOrder = mapGroupsObj["group_order"].toArray();
 
     QList<QStringList> groupedMaps;
-    QStringList *maps = new QStringList;
-    QStringList *groups = new QStringList;
+    QStringList maps;
+    QStringList groups;
     for (int groupIndex = 0; groupIndex < mapGroupOrder.size(); groupIndex++) {
         QString groupName = mapGroupOrder.at(groupIndex).toString();
         QJsonArray mapNames = mapGroupsObj.value(groupName).toArray();
         groupedMaps.append(QStringList());
-        groups->append(groupName);
+        groups.append(groupName);
         for (int j = 0; j < mapNames.size(); j++) {
             QString mapName = mapNames.at(j).toString();
-            mapGroups->insert(mapName, groupIndex);
+            mapGroups.insert(mapName, groupIndex);
             groupedMaps[groupIndex].append(mapName);
-            maps->append(mapName);
+            maps.append(mapName);
 
             // Build the mapping and reverse mapping between map constants and map names.
             QString mapConstant = Map::mapConstantFromName(mapName);
-            mapConstantsToMapNames->insert(mapConstant, mapName);
-            mapNamesToMapConstants->insert(mapName, mapConstant);
+            mapConstantsToMapNames.insert(mapConstant, mapName);
+            mapNamesToMapConstants.insert(mapName, mapConstant);
         }
     }
 
-    mapConstantsToMapNames->insert(NONE_MAP_CONSTANT, NONE_MAP_NAME);
-    mapNamesToMapConstants->insert(NONE_MAP_NAME, NONE_MAP_CONSTANT);
-    maps->append(NONE_MAP_NAME);
+    mapConstantsToMapNames.insert(NONE_MAP_CONSTANT, NONE_MAP_NAME);
+    mapNamesToMapConstants.insert(NONE_MAP_NAME, NONE_MAP_CONSTANT);
+    maps.append(NONE_MAP_NAME);
 
     groupNames = groups;
     groupedMapNames = groupedMaps;
@@ -1888,15 +1877,15 @@ bool Project::readMapGroups() {
 
 Map* Project::addNewMapToGroup(QString mapName, int groupNum) {
     // Setup new map in memory, but don't write to file until map is actually saved later.
-    mapNames->append(mapName);
-    mapGroups->insert(mapName, groupNum);
+    mapNames.append(mapName);
+    mapGroups.insert(mapName, groupNum);
     groupedMapNames[groupNum].append(mapName);
 
     Map *map = new Map;
     map->isPersistedToFile = false;
     map->setName(mapName);
-    mapConstantsToMapNames->insert(map->constantName, map->name);
-    mapNamesToMapConstants->insert(map->name, map->constantName);
+    mapConstantsToMapNames.insert(map->constantName, map->name);
+    mapNamesToMapConstants.insert(map->name, map->constantName);
     setNewMapHeader(map, mapLayoutsTable.size() + 1);
     setNewMapLayout(map);
     loadMapTilesets(map);
@@ -1910,8 +1899,8 @@ Map* Project::addNewMapToGroup(QString mapName, int groupNum) {
 }
 
 Map* Project::addNewMapToGroup(QString mapName, int groupNum, Map *newMap, bool existingLayout) {
-    mapNames->append(mapName);
-    mapGroups->insert(mapName, groupNum);
+    mapNames.append(mapName);
+    mapGroups.insert(mapName, groupNum);
     groupedMapNames[groupNum].append(mapName);
 
     Map *map = new Map;
@@ -1920,8 +1909,8 @@ Map* Project::addNewMapToGroup(QString mapName, int groupNum, Map *newMap, bool 
     map->isPersistedToFile = false;
     map->setName(mapName);
 
-    mapConstantsToMapNames->insert(map->constantName, map->name);
-    mapNamesToMapConstants->insert(map->name, map->constantName);
+    mapConstantsToMapNames.insert(map->constantName, map->name);
+    mapNamesToMapConstants.insert(map->name, map->constantName);
     if (!existingLayout) {
         mapLayouts.insert(map->layoutId, map->layout);
         mapLayoutsTable.append(map->layoutId);
@@ -1942,7 +1931,7 @@ QString Project::getNewMapName() {
     QString newMapName;
     do {
         newMapName = QString("NewMap%1").arg(++i);
-    } while (mapNames->contains(newMapName));
+    } while (mapNames.contains(newMapName));
 
     return newMapName;
 }

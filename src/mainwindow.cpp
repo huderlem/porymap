@@ -673,7 +673,7 @@ void MainWindow::refreshMapScene()
 
 void MainWindow::openWarpMap(QString map_name, QString warp_num) {
     // Ensure valid destination map name.
-    if (!editor->project->mapNames->contains(map_name)) {
+    if (!editor->project->mapNames.contains(map_name)) {
         logError(QString("Invalid warp destination map name '%1'").arg(map_name));
         return;
     }
@@ -947,8 +947,8 @@ void MainWindow::sortMapList() {
     switch (mapSortOrder)
     {
         case MapSortOrder::Group:
-            for (int i = 0; i < project->groupNames->length(); i++) {
-                QString group_name = project->groupNames->value(i);
+            for (int i = 0; i < project->groupNames.length(); i++) {
+                QString group_name = project->groupNames.value(i);
                 QStandardItem *group = new QStandardItem;
                 group->setText(group_name);
                 group->setIcon(mapFolderIcon);
@@ -983,7 +983,7 @@ void MainWindow::sortMapList() {
                 mapGroupItemsList->append(mapsec);
                 mapsecToGroupNum.insert(mapsec_name, i);
             }
-            for (int i = 0; i < project->groupNames->length(); i++) {
+            for (int i = 0; i < project->groupNames.length(); i++) {
                 QStringList names = project->groupedMapNames.value(i);
                 for (int j = 0; j < names.length(); j++) {
                     QString map_name = names.value(j);
@@ -1015,7 +1015,7 @@ void MainWindow::sortMapList() {
                 mapGroupItemsList->append(layoutItem);
                 layoutIndices[layoutId] = i;
             }
-            for (int i = 0; i < project->groupNames->length(); i++) {
+            for (int i = 0; i < project->groupNames.length(); i++) {
                 QStringList names = project->groupedMapNames.value(i);
                 for (int j = 0; j < names.length(); j++) {
                     QString map_name = names.value(j);
@@ -1831,10 +1831,10 @@ void MainWindow::updateSelectedObjects() {
             }
 
             if (key == "destination_map_name") {
-                if (!editor->project->mapNames->contains(value)) {
+                if (!editor->project->mapNames.contains(value)) {
                     combo->addItem(value);
                 }
-                combo->addItems(*editor->project->mapNames);
+                combo->addItems(editor->project->mapNames);
                 combo->setCurrentIndex(combo->findText(value));
                 combo->setToolTip("The destination map name of the warp.");
             } else if (key == "destination_warp") {
@@ -1934,10 +1934,10 @@ void MainWindow::updateSelectedObjects() {
             } else if (key == "in_connection") {
                 check->setToolTip("Check if object is positioned in the connection to another map.");
             } else if (key == "respawn_map") {
-                if (!editor->project->mapNames->contains(value)) {
+                if (!editor->project->mapNames.contains(value)) {
                     combo->addItem(value);
                 }
-                combo->addItems(*editor->project->mapNames);
+                combo->addItems(editor->project->mapNames);
                 combo->setToolTip("The map where the player will respawn after whiteout.");
             } else if (key == "respawn_npc") {
                 spin->setToolTip("event_object ID of the NPC the player interacts with\n" 
@@ -2486,7 +2486,7 @@ void MainWindow::on_spinBox_ConnectionOffset_valueChanged(int offset)
 
 void MainWindow::on_comboBox_ConnectedMap_currentTextChanged(const QString &mapName)
 {
-    if (editor->project->mapNames->contains(mapName))
+    if (editor->project->mapNames.contains(mapName))
         editor->setConnectionMap(mapName);
 }
 
@@ -2514,13 +2514,13 @@ void MainWindow::on_pushButton_ConfigureEncountersJSON_clicked() {
 
 void MainWindow::on_comboBox_DiveMap_currentTextChanged(const QString &mapName)
 {
-    if (editor->project->mapNames->contains(mapName))
+    if (editor->project->mapNames.contains(mapName))
         editor->updateDiveMap(mapName);
 }
 
 void MainWindow::on_comboBox_EmergeMap_currentTextChanged(const QString &mapName)
 {
-    if (editor->project->mapNames->contains(mapName))
+    if (editor->project->mapNames.contains(mapName))
         editor->updateEmergeMap(mapName);
 }
 
