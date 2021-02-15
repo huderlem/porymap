@@ -36,7 +36,7 @@ int Project::max_map_data_size = 10240; // 0x2800
 int Project::default_map_size = 20;
 int Project::max_object_events = 64;
 
-Project::Project(QWidget *parent) : parent(parent)
+Project::Project(QWidget *parent) : QObject(parent)
 {
     initSignals();
 }
@@ -61,7 +61,7 @@ void Project::initSignals() {
         static bool showing = false;
         if (showing) return;
 
-        QMessageBox notice(this->parent);
+        QMessageBox notice(this->parentWidget());
         notice.setText("File Changed");
         notice.setInformativeText(QString("The file %1 has changed on disk. Would you like to reload the project?")
                                   .arg(changed.remove(this->root + "/")));
