@@ -12,29 +12,25 @@ QString EventType::HiddenItem = "event_hidden_item";
 QString EventType::SecretBase = "event_secret_base";
 QString EventType::HealLocation = "event_heal_location";
 
-Event::Event()
-{
-    this->spriteWidth = 16;
-    this->spriteHeight = 16;
-    this->usingSprite = false;
-}
+Event::Event() :
+    spriteWidth(16),
+    spriteHeight(16),
+    usingSprite(false)
+{  }
 
-Event::Event(const Event& toCopy)
-{
-    Event();
-    this->values = toCopy.values;
-    this->customValues = toCopy.customValues;
-    this->pixmap = toCopy.pixmap;
-    this->spriteWidth = toCopy.spriteWidth;
-    this->spriteHeight = toCopy.spriteHeight;
-    this->frame = toCopy.frame;
-    this->hFlip = toCopy.hFlip;
-    this->usingSprite = toCopy.usingSprite;
-}
+Event::Event(const Event& toCopy) :
+    values(toCopy.values),
+    customValues(toCopy.customValues),
+    pixmap(toCopy.pixmap),
+    spriteWidth(toCopy.spriteWidth),
+    spriteHeight(toCopy.spriteHeight),
+    frame(toCopy.frame),
+    hFlip(toCopy.hFlip),
+    usingSprite(toCopy.usingSprite)
+{  }
 
-Event::Event(QJsonObject obj, QString type)
+Event::Event(QJsonObject obj, QString type) : Event()
 {
-    Event();
     this->put("event_type", type);
     this->readCustomValues(obj);
 }
