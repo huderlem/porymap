@@ -65,25 +65,19 @@ QList<QStringList>* ParseUtil::parseAsm(QString filename) {
     text = readTextFile(root + "/" + filename);
     QStringList lines = text.split('\n');
     for (QString line : lines) {
-        QString label;
         strip_comment(&line);
         if (line.trimmed().isEmpty()) {
         } else if (line.contains(':')) {
-            label = line.left(line.indexOf(':'));
-            QStringList *list = new QStringList;
-            list->append(".label"); // This is not a real keyword. It's used only to make the output more regular.
-            list->append(label);
-            parsed->append(*list);
+            QString label = line.left(line.indexOf(':'));
+            QStringList list{ ".label", label }; // .label is not a real keyword. It's used only to make the output more regular.
+            parsed->append(list);
             // There should not be anything else on the line.
             // gas will raise a syntax error if there is.
         } else {
             line = line.trimmed();
-            //parsed->append(line.split(QRegExp("\\s*,\\s*")));
-            QString macro;
-            QStringList params;
             int index = line.indexOf(QRegExp("\\s+"));
-            macro = line.left(index);
-            params = line.right(line.length() - index).trimmed().split(QRegExp("\\s*,\\s*"));
+            QString macro = line.left(index);
+            QStringList params(line.right(line.length() - index).trimmed().split(QRegExp("\\s*,\\s*")));
             params.prepend(macro);
             parsed->append(params);
         }
