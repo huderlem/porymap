@@ -11,7 +11,9 @@ class Metatile
 {
 public:
     Metatile();
-    Metatile(const Metatile &other);
+    Metatile(const Metatile &other) = default;
+    Metatile &operator=(const Metatile &other) = default;
+
 public:
     QList<Tile> tiles;
     uint16_t behavior;     // 8 bits RSE, 9 bits FRLG
@@ -20,8 +22,6 @@ public:
     uint8_t terrainType;   // FRLG only
     QString label;
 
-    Metatile *copy();
-    void copyInPlace(Metatile*);
     static int getBlockIndex(int);
     static QPoint coordFromPixmapCoord(const QPointF &pixelCoord);
 };

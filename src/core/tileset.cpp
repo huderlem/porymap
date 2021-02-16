@@ -36,7 +36,7 @@ Tileset* Tileset::copy() {
     }
     copy->metatiles = new QList<Metatile*>;
     for (Metatile *metatile : *this->metatiles) {
-        copy->metatiles->append(metatile->copy());
+        copy->metatiles->append(new Metatile(*metatile));
     }
     copy->palettes = new QList<QList<QRgb>>;
     for (QList<QRgb> palette : *this->palettes) {
