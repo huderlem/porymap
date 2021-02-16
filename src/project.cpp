@@ -164,7 +164,7 @@ QMap<QString, bool> Project::getTopLevelMapFields() {
         topLevelMapFields.insert("allow_escaping", true);
         topLevelMapFields.insert("allow_running", true);
     }
-    
+
     if (projectConfig.getFloorNumberEnabled()) {
         topLevelMapFields.insert("floor_number", true);
     }
@@ -2119,11 +2119,10 @@ bool Project::readHealLocations() {
 }
 
 bool Project::readItemNames() {
-    itemNames.clear();
     QStringList prefixes("\\bITEM_(?!(B_)?USE_)");  // Exclude ITEM_USE_ and ITEM_B_USE_ constants
     QString filename = "include/constants/items.h";
     fileWatcher.addPath(root + "/" + filename);
-    parser.readCDefinesSorted(filename, prefixes, &itemNames);
+    itemNames = parser.readCDefinesSorted(filename, prefixes);
     if (itemNames.isEmpty()) {
         logError(QString("Failed to read item constants from %1").arg(filename));
         return false;
@@ -2138,11 +2137,10 @@ bool Project::readFlagNames() {
     fileWatcher.addPath(root + "/" + opponentsFilename);
     QMap<QString, int> maxTrainers = parser.readCDefines(opponentsFilename, QStringList() << "\\bMAX_");
     // Parse flags
-    flagNames.clear();
     QStringList prefixes("\\bFLAG_");
     QString flagsFilename = "include/constants/flags.h";
     fileWatcher.addPath(root + "/" + flagsFilename);
-    parser.readCDefinesSorted(flagsFilename, prefixes, &flagNames, maxTrainers);
+    flagNames = parser.readCDefinesSorted(flagsFilename, prefixes, maxTrainers);
     if (flagNames.isEmpty()) {
         logError(QString("Failed to read flag constants from %1").arg(flagsFilename));
         return false;
@@ -2151,11 +2149,10 @@ bool Project::readFlagNames() {
 }
 
 bool Project::readVarNames() {
-    varNames.clear();
     QStringList prefixes("\\bVAR_");
     QString filename = "include/constants/vars.h";
     fileWatcher.addPath(root + "/" + filename);
-    parser.readCDefinesSorted(filename, prefixes, &varNames);
+    varNames = parser.readCDefinesSorted(filename, prefixes);
     if (varNames.isEmpty()) {
         logError(QString("Failed to read var constants from %1").arg(filename));
         return false;
@@ -2164,11 +2161,10 @@ bool Project::readVarNames() {
 }
 
 bool Project::readMovementTypes() {
-    movementTypes.clear();
     QStringList prefixes("\\bMOVEMENT_TYPE_");
     QString filename = "include/constants/event_object_movement.h";
     fileWatcher.addPath(root + "/" + filename);
-    parser.readCDefinesSorted(filename, prefixes, &movementTypes);
+    movementTypes = parser.readCDefinesSorted(filename, prefixes);
     if (movementTypes.isEmpty()) {
         logError(QString("Failed to read movement type constants from %1").arg(filename));
         return false;
@@ -2188,11 +2184,10 @@ bool Project::readInitialFacingDirections() {
 }
 
 bool Project::readMapTypes() {
-    mapTypes.clear();
     QStringList prefixes("\\bMAP_TYPE_");
     QString filename = "include/constants/map_types.h";
     fileWatcher.addPath(root + "/" + filename);
-    parser.readCDefinesSorted(filename, prefixes, &mapTypes);
+    mapTypes = parser.readCDefinesSorted(filename, prefixes);
     if (mapTypes.isEmpty()) {
         logError(QString("Failed to read map type constants from %1").arg(filename));
         return false;
@@ -2201,11 +2196,10 @@ bool Project::readMapTypes() {
 }
 
 bool Project::readMapBattleScenes() {
-    mapBattleScenes.clear();
     QStringList prefixes("\\bMAP_BATTLE_SCENE_");
     QString filename = "include/constants/map_types.h";
     fileWatcher.addPath(root + "/" + filename);
-    parser.readCDefinesSorted("include/constants/map_types.h", prefixes, &mapBattleScenes);
+    mapBattleScenes = parser.readCDefinesSorted("include/constants/map_types.h", prefixes);
     if (mapBattleScenes.isEmpty()) {
         logError(QString("Failed to read map battle scene constants from %1").arg(filename));
         return false;
@@ -2214,11 +2208,10 @@ bool Project::readMapBattleScenes() {
 }
 
 bool Project::readWeatherNames() {
-    weatherNames.clear();
     QStringList prefixes("\\bWEATHER_");
     QString filename = "include/constants/weather.h";
     fileWatcher.addPath(root + "/" + filename);
-    parser.readCDefinesSorted(filename, prefixes, &weatherNames);
+    weatherNames = parser.readCDefinesSorted(filename, prefixes);
     if (weatherNames.isEmpty()) {
         logError(QString("Failed to read weather constants from %1").arg(filename));
         return false;
@@ -2227,13 +2220,13 @@ bool Project::readWeatherNames() {
 }
 
 bool Project::readCoordEventWeatherNames() {
-    if (!projectConfig.getEventWeatherTriggerEnabled()) return true;
+    if (!projectConfig.getEventWeatherTriggerEnabled())
+        return true;
 
-    coordEventWeatherNames.clear();
     QStringList prefixes("\\bCOORD_EVENT_WEATHER_");
     QString filename = "include/constants/weather.h";
     fileWatcher.addPath(root + "/" + filename);
-    parser.readCDefinesSorted(filename, prefixes, &coordEventWeatherNames);
+    coordEventWeatherNames = parser.readCDefinesSorted(filename, prefixes);
     if (coordEventWeatherNames.isEmpty()) {
         logError(QString("Failed to read coord event weather constants from %1").arg(filename));
         return false;
@@ -2242,13 +2235,13 @@ bool Project::readCoordEventWeatherNames() {
 }
 
 bool Project::readSecretBaseIds() {
-    if (!projectConfig.getEventSecretBaseEnabled()) return true;
+    if (!projectConfig.getEventSecretBaseEnabled())
+        return true;
 
-    secretBaseIds.clear();
     QStringList prefixes("\\bSECRET_BASE_[A-Za-z0-9_]*_[0-9]+");
     QString filename = "include/constants/secret_bases.h";
     fileWatcher.addPath(root + "/" + filename);
-    parser.readCDefinesSorted(filename, prefixes, &secretBaseIds);
+    secretBaseIds = parser.readCDefinesSorted(filename, prefixes);
     if (secretBaseIds.isEmpty()) {
         logError(QString("Failed to read secret base id constants from %1").arg(filename));
         return false;
@@ -2257,11 +2250,10 @@ bool Project::readSecretBaseIds() {
 }
 
 bool Project::readBgEventFacingDirections() {
-    bgEventFacingDirections.clear();
     QStringList prefixes("\\bBG_EVENT_PLAYER_FACING_");
     QString filename = "include/constants/event_bg.h";
     fileWatcher.addPath(root + "/" + filename);
-    parser.readCDefinesSorted(filename, prefixes, &bgEventFacingDirections);
+    bgEventFacingDirections = parser.readCDefinesSorted(filename, prefixes);
     if (bgEventFacingDirections.isEmpty()) {
         logError(QString("Failed to read bg event facing direction constants from %1").arg(filename));
         return false;
@@ -2270,11 +2262,10 @@ bool Project::readBgEventFacingDirections() {
 }
 
 bool Project::readTrainerTypes() {
-    trainerTypes.clear();
     QStringList prefixes("\\bTRAINER_TYPE_");
     QString filename = "include/constants/trainer_types.h";
     fileWatcher.addPath(root + "/" + filename);
-    parser.readCDefinesSorted(filename, prefixes, &trainerTypes);
+    trainerTypes = parser.readCDefinesSorted(filename, prefixes);
     if (trainerTypes.isEmpty()) {
         logError(QString("Failed to read trainer type constants from %1").arg(filename));
         return false;

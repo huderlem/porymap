@@ -39,31 +39,30 @@ public:
 class ParseUtil
 {
 public:
-    ParseUtil();
-    void set_root(QString);
-    static QString readTextFile(QString);
+    ParseUtil() { };
+    void set_root(const QString &dir);
+    static QString readTextFile(const QString &path);
     static int textFileLineCount(const QString &path);
-    void strip_comment(QString*);
     QList<QStringList> parseAsm(const QString &filename);
-    int evaluateDefine(QString, QMap<QString, int>*);
-    QStringList readCArray(QString text, QString label);
-    QMap<QString, QString> readNamedIndexCArray(QString text, QString label);
-    QString readCIncbin(QString text, QString label);
-    QMap<QString, int> readCDefines(QString filename, QStringList prefixes, QMap<QString, int> = QMap<QString, int>());
-    void readCDefinesSorted(QString, QStringList, QStringList*, QMap<QString, int> = QMap<QString, int>());
-    QList<QStringList> getLabelMacros(const QList<QStringList> &, const QString &);
-    QStringList getLabelValues(const QList<QStringList> &, const QString &);
-    bool tryParseJsonFile(QJsonDocument *out, QString filepath);
-    bool ensureFieldsExist(QJsonObject obj, QList<QString> fields);
+    int evaluateDefine(const QString&, const QMap<QString, int>&);
+    QStringList readCArray(const QString &text, const QString &label);
+    QMap<QString, QString> readNamedIndexCArray(const QString &text, const QString &label);
+    QString readCIncbin(const QString &text, const QString &label);
+    QMap<QString, int> readCDefines(const QString &filename, const QStringList &prefixes, QMap<QString, int> = { });
+    QStringList readCDefinesSorted(const QString&, const QStringList&, const QMap<QString, int>& = { });
+    QList<QStringList> getLabelMacros(const QList<QStringList>&, const QString&);
+    QStringList getLabelValues(const QList<QStringList>&, const QString&);
+    bool tryParseJsonFile(QJsonDocument *out, const QString &filepath);
+    bool ensureFieldsExist(const QJsonObject &obj, const QList<QString> &fields);
 
     // Returns the 1-indexed line number for the definition of scriptLabel in the scripts file at filePath.
     // Returns 0 if a definition for scriptLabel cannot be found.
     static int getScriptLineNumber(const QString &filePath, const QString &scriptLabel);
     static int getRawScriptLineNumber(QString text, const QString &scriptLabel);
     static int getPoryScriptLineNumber(QString text, const QString &scriptLabel);
-    static QString &removeStringLiterals(QString &text);
-    static QString &removeLineComments(QString &text, const QString &commentSymbol);
-    static QString &removeLineComments(QString &text, const QStringList &commentSymbols);
+    static QString removeStringLiterals(QString text);
+    static QString removeLineComments(QString text, const QString &commentSymbol);
+    static QString removeLineComments(QString text, const QStringList &commentSymbols);
 
     static QStringList splitShellCommand(QStringView command);
 
@@ -71,10 +70,10 @@ private:
     QString root;
     QString text;
     QString file;
-    QList<Token> tokenizeExpression(QString expression, QMap<QString, int>* knownIdentifiers);
-    QList<Token> generatePostfix(QList<Token> tokens);
-    int evaluatePostfix(QList<Token> postfix);
-    void error(QString message, QString expression);
+    QList<Token> tokenizeExpression(QString expression, const QMap<QString, int> &knownIdentifiers);
+    QList<Token> generatePostfix(const QList<Token> &tokens);
+    int evaluatePostfix(const QList<Token> &postfix);
+    void error(const QString &message, const QString &expression);
 };
 
 #endif // PARSEUTIL_H
