@@ -44,15 +44,15 @@ public:
     static QString readTextFile(QString);
     static int textFileLineCount(const QString &path);
     void strip_comment(QString*);
-    QList<QStringList>* parseAsm(QString);
+    QList<QStringList> parseAsm(const QString &filename);
     int evaluateDefine(QString, QMap<QString, int>*);
     QStringList readCArray(QString text, QString label);
     QMap<QString, QString> readNamedIndexCArray(QString text, QString label);
     QString readCIncbin(QString text, QString label);
     QMap<QString, int> readCDefines(QString filename, QStringList prefixes, QMap<QString, int> = QMap<QString, int>());
     void readCDefinesSorted(QString, QStringList, QStringList*, QMap<QString, int> = QMap<QString, int>());
-    QList<QStringList>* getLabelMacros(QList<QStringList>*, QString);
-    QStringList* getLabelValues(QList<QStringList>*, QString);
+    QList<QStringList> getLabelMacros(const QList<QStringList> &, const QString &);
+    QStringList getLabelValues(const QList<QStringList> &, const QString &);
     bool tryParseJsonFile(QJsonDocument *out, QString filepath);
     bool ensureFieldsExist(QJsonObject obj, QList<QString> fields);
 

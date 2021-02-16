@@ -1108,26 +1108,26 @@ bool Project::loadMapTilesets(Map* map) {
 }
 
 Tileset* Project::loadTileset(QString label, Tileset *tileset) {
-    QStringList *values = parser.getLabelValues(parser.parseAsm("data/tilesets/headers.inc"), label);
-    if (values->isEmpty()) {
+    const QStringList values = parser.getLabelValues(parser.parseAsm("data/tilesets/headers.inc"), label);
+    if (values.isEmpty()) {
         return nullptr;
     }
     if (tileset == nullptr) {
         tileset = new Tileset;
     }
     tileset->name = label;
-    tileset->is_compressed = values->value(0);
-    tileset->is_secondary = values->value(1);
-    tileset->padding = values->value(2);
-    tileset->tiles_label = values->value(3);
-    tileset->palettes_label = values->value(4);
-    tileset->metatiles_label = values->value(5);
+    tileset->is_compressed = values.value(0);
+    tileset->is_secondary = values.value(1);
+    tileset->padding = values.value(2);
+    tileset->tiles_label = values.value(3);
+    tileset->palettes_label = values.value(4);
+    tileset->metatiles_label = values.value(5);
     if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
-        tileset->callback_label = values->value(6);
-        tileset->metatile_attrs_label = values->value(7);
+        tileset->callback_label = values.value(6);
+        tileset->metatile_attrs_label = values.value(7);
     } else {
-        tileset->metatile_attrs_label = values->value(6);
-        tileset->callback_label = values->value(7);
+        tileset->metatile_attrs_label = values.value(6);
+        tileset->callback_label = values.value(7);
     }
 
     loadTilesetAssets(tileset);
@@ -1450,15 +1450,15 @@ void Project::loadTilesetAssets(Tileset* tileset) {
     }
     QRegularExpression re("([a-z])([A-Z0-9])");
     QString tilesetName = tileset->name;
-    QString dir_path = root + "/data/tilesets/" + category + "/" + tilesetName.replace("gTileset_", "").replace(re, "\\1_\\2").toLower();
+    QString dir_path = root + "/data/tilesets/" + category + '/' + tilesetName.replace("gTileset_", "").replace(re, "\\1_\\2").toLower();
 
-    QList<QStringList> *graphics = parser.parseAsm("data/tilesets/graphics.inc");
-    QStringList *tiles_values = parser.getLabelValues(graphics, tileset->tiles_label);
-    QStringList *palettes_values = parser.getLabelValues(graphics, tileset->palettes_label);
+    const QList<QStringList> graphics = parser.parseAsm("data/tilesets/graphics.inc");
+    const QStringList tiles_values = parser.getLabelValues(graphics, tileset->tiles_label);
+    const QStringList palettes_values = parser.getLabelValues(graphics, tileset->palettes_label);
 
     QString tiles_path;
-    if (!tiles_values->isEmpty()) {
-        tiles_path = root + "/" + tiles_values->value(0).section('"', 1, 1);
+    if (!tiles_values.isEmpty()) {
+        tiles_path = root + '/' + tiles_values.value(0).section('"', 1, 1);
     } else {
         tiles_path = dir_path + "/tiles.4bpp";
         if (tileset->is_compressed == "TRUE") {
@@ -1466,28 +1466,27 @@ void Project::loadTilesetAssets(Tileset* tileset) {
         }
     }
 
-    if (!palettes_values->isEmpty()) {
-        for (int i = 0; i < palettes_values->length(); i++) {
-            QString value = palettes_values->value(i);
-            tileset->palettePaths.append(this->fixPalettePath(root + "/" + value.section('"', 1, 1)));
+    if (!palettes_values.isEmpty()) {
+        for (const auto &value : palettes_values) {
+            tileset->palettePaths.append(this->fixPalettePath(root + '/' + value.section('"', 1, 1)));
         }
     } else {
         QString palettes_dir_path = dir_path + "/palettes";
         for (int i = 0; i < 16; i++) {
-            tileset->palettePaths.append(palettes_dir_path + "/" + QString("%1").arg(i, 2, 10, QLatin1Char('0')) + ".pal");
+            tileset->palettePaths.append(palettes_dir_path + '/' + QString("%1").arg(i, 2, 10, QLatin1Char('0')) + ".pal");
         }
     }
 
-    QList<QStringList> *metatiles_macros = parser.parseAsm("data/tilesets/metatiles.inc");
-    QStringList *metatiles_values = parser.getLabelValues(metatiles_macros, tileset->metatiles_label);
-    if (!metatiles_values->isEmpty()) {
-        tileset->metatiles_path = root + "/" + metatiles_values->value(0).section('"', 1, 1);
+    const QList<QStringList> metatiles_macros = parser.parseAsm("data/tilesets/metatiles.inc");
+    const QStringList metatiles_values = parser.getLabelValues(metatiles_macros, tileset->metatiles_label);
+    if (!metatiles_values.isEmpty()) {
+        tileset->metatiles_path = root + '/' + metatiles_values.value(0).section('"', 1, 1);
     } else {
         tileset->metatiles_path = dir_path + "/metatiles.bin";
     }
-    QStringList *metatile_attrs_values = parser.getLabelValues(metatiles_macros, tileset->metatile_attrs_label);
-    if (!metatile_attrs_values->isEmpty()) {
-        tileset->metatile_attrs_path = root + "/" + metatile_attrs_values->value(0).section('"', 1, 1);
+    const QStringList metatile_attrs_values = parser.getLabelValues(metatiles_macros, tileset->metatile_attrs_label);
+    if (!metatile_attrs_values.isEmpty()) {
+        tileset->metatile_attrs_path = root + '/' + metatile_attrs_values.value(0).section('"', 1, 1);
     } else {
         tileset->metatile_attrs_path = dir_path + "/metatile_attributes.bin";
     }
