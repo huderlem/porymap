@@ -59,27 +59,27 @@ int ParseUtil::textFileLineCount(const QString &path) {
     return text.split('\n').count() + 1;
 }
 
-QList<QStringList>* ParseUtil::parseAsm(QString filename) {
-    QList<QStringList> *parsed = new QList<QStringList>;
+QList<QStringList> ParseUtil::parseAsm(const QString &filename) {
+    QList<QStringList> parsed;
 
-    text = readTextFile(root + "/" + filename);
-    QStringList lines = text.split('\n');
+    text = readTextFile(root + '/' + filename);
+    const QStringList lines = text.split('\n');
     for (QString line : lines) {
         strip_comment(&line);
         if (line.trimmed().isEmpty()) {
         } else if (line.contains(':')) {
-            QString label = line.left(line.indexOf(':'));
-            QStringList list{ ".label", label }; // .label is not a real keyword. It's used only to make the output more regular.
-            parsed->append(list);
+            const QString label = line.left(line.indexOf(':'));
+            const QStringList list{ ".label", label }; // .label is not a real keyword. It's used only to make the output more regular.
+            parsed.append(list);
             // There should not be anything else on the line.
             // gas will raise a syntax error if there is.
         } else {
             line = line.trimmed();
             int index = line.indexOf(QRegExp("\\s+"));
-            QString macro = line.left(index);
+            const QString macro = line.left(index);
             QStringList params(line.right(line.length() - index).trimmed().split(QRegExp("\\s*,\\s*")));
             params.prepend(macro);
-            parsed->append(params);
+            parsed.append(params);
         }
     }
     return parsed;
@@ -335,7 +335,7 @@ QMap<QString, QString> ParseUtil::readNamedIndexCArray(QString filename, QString
 
     QRegularExpression re_text(QString(R"(\b%1\b\s*(\[?[^\]]*\])?\s*=\s*\{([^\}]*)\})").arg(label));
     QString body = re_text.match(text).captured(2).replace(QRegularExpression("\\s*"), "");
-    
+
     QRegularExpression re("\\[(?<index>[A-Za-z0-9_]*)\\]=(?<value>&?[A-Za-z0-9_]*)");
     QRegularExpressionMatchIterator iter = re.globalMatch(body);
 
@@ -349,24 +349,23 @@ QMap<QString, QString> ParseUtil::readNamedIndexCArray(QString filename, QString
     return map;
 }
 
-QList<QStringList>* ParseUtil::getLabelMacros(QList<QStringList> *list, QString label) {
+QList<QStringList> ParseUtil::getLabelMacros(const QList<QStringList> &list, const QString &label) {
     bool in_label = false;
-    QList<QStringList> *new_list = new QList<QStringList>;
-    for (int i = 0; i < list->length(); i++) {
-        QStringList params = list->value(i);
-        QString macro = params.value(0);
+    QList<QStringList> new_list;
+    for (const auto &params : list) {
+        const QString macro = params.value(0);
         if (macro == ".label") {
             if (params.value(1) == label) {
                 in_label = true;
             } else if (in_label) {
                 // If nothing has been read yet, assume the label
                 // we're looking for is in a stack of labels.
-                if (new_list->length() > 0) {
+                if (new_list.length() > 0) {
                     break;
                 }
             }
         } else if (in_label) {
-            new_list->append(params);
+            new_list.append(params);
         }
     }
     return new_list;
@@ -374,17 +373,16 @@ QList<QStringList>* ParseUtil::getLabelMacros(QList<QStringList> *list, QString 
 
 // For if you don't care about filtering by macro,
 // and just want all values associated with some label.
-QStringList* ParseUtil::getLabelValues(QList<QStringList> *list, QString label) {
-    list = getLabelMacros(list, label);
-    QStringList *values = new QStringList;
-    for (int i = 0; i < list->length(); i++) {
-        QStringList params = list->value(i);
-        QString macro = params.value(0);
+QStringList ParseUtil::getLabelValues(const QList<QStringList> &list, const QString &label) {
+    const QList<QStringList> labelMacros = getLabelMacros(list, label);
+    QStringList values;
+    for (const auto &params : labelMacros) {
+        const QString macro = params.value(0);
         if (macro == ".align" || macro == ".ifdef" || macro == ".ifndef") {
             continue;
         }
-        for (int j = 1; j < params.length(); j++) {
-            values->append(params.value(j));
+        for (int i = 1; i < params.length(); i++) {
+            values.append(params.value(i));
         }
     }
     return values;
