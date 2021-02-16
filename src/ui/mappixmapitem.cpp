@@ -76,7 +76,7 @@ void MapPixmapItem::shift(QGraphicsSceneMouseEvent *event) {
 }
 
 void MapPixmapItem::shift(int xDelta, int yDelta, bool fromScriptCall) {
-    Blockdata oldMetatiles = !fromScriptCall ? map->layout->blockdata : Blockdata();
+    Blockdata oldMetatiles = map->layout->blockdata;
 
     for (int i = 0; i < map->getWidth(); i++)
     for (int j = 0; j < map->getHeight(); j++) {

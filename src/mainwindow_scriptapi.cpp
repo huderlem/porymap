@@ -149,7 +149,7 @@ void MainWindow::magicFillFromSelection(int x, int y, bool forceRedraw, bool com
 void MainWindow::shift(int xDelta, int yDelta, bool forceRedraw, bool commitChanges) {
     if (!this->editor || !this->editor->map)
         return;
-    this->editor->map_item->shift(xDelta, yDelta);
+    this->editor->map_item->shift(xDelta, yDelta, true);
     this->tryCommitMapChanges(commitChanges);
     this->tryRedrawMapArea(forceRedraw);
 }
