@@ -71,8 +71,7 @@ Metatile* Tileset::getMetatile(int index, Tileset *primaryTileset, Tileset *seco
     if (!tileset || !tileset->metatiles) {
         return nullptr;
     }
-    Metatile *metatile = tileset->metatiles->value(local_index, nullptr);
-    return metatile;
+    return tileset->metatiles->value(local_index, nullptr);
 }
 
 bool Tileset::metatileIsValid(uint16_t metatileId, Tileset *primaryTileset, Tileset *secondaryTileset) {

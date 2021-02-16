@@ -2,10 +2,21 @@
 #include "tileset.h"
 #include "project.h"
 
-Metatile::Metatile()
-{
-    tiles = new QList<Tile>;
-}
+Metatile::Metatile() :
+    behavior(0),
+    layerType(0),
+    encounterType(0),
+    terrainType(0)
+{  }
+
+Metatile::Metatile(const Metatile &other) :
+    tiles(other.tiles),
+    behavior(other.behavior),
+    layerType(other.layerType),
+    encounterType(other.encounterType),
+    terrainType(other.terrainType),
+    label(other.label)
+{  }
 
 Metatile* Metatile::copy() {
     Metatile *copy = new Metatile;
@@ -13,10 +24,9 @@ Metatile* Metatile::copy() {
     copy->layerType = this->layerType;
     copy->encounterType = this->encounterType;
     copy->terrainType = this->terrainType;
-    copy->tiles = new QList<Tile>;
     copy->label = this->label;
-    for (Tile tile : *this->tiles) {
-        copy->tiles->append(tile);
+    for (const Tile &tile : this->tiles) {
+        copy->tiles.append(tile);
     }
     return copy;
 }
@@ -27,8 +37,8 @@ void Metatile::copyInPlace(Metatile *other) {
     this->encounterType = other->encounterType;
     this->terrainType = other->terrainType;
     this->label = other->label;
-    for (int i = 0; i < this->tiles->length(); i++) {
-        (*this->tiles)[i] = other->tiles->at(i);
+    for (int i = 0; i < this->tiles.length(); i++) {
+        this->tiles[i] = other->tiles.at(i);
     }
 }
 

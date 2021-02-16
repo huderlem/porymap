@@ -1088,7 +1088,7 @@ void Project::saveTilesetMetatiles(Tileset *tileset) {
         for (Metatile *metatile : *tileset->metatiles) {
             int numTiles = projectConfig.getTripleLayerMetatilesEnabled() ? 12 : 8;
             for (int i = 0; i < numTiles; i++) {
-                Tile tile = metatile->tiles->at(i);
+                Tile tile = metatile->tiles.at(i);
                 uint16_t value = static_cast<uint16_t>((tile.tile & 0x3ff)
                                                     | ((tile.xflip & 1) << 10)
                                                     | ((tile.yflip & 1) << 11)
@@ -1626,7 +1626,7 @@ void Project::loadTilesetMetatiles(Tileset* tileset) {
                 tile.xflip = (word >> 10) & 1;
                 tile.yflip = (word >> 11) & 1;
                 tile.palette = (word >> 12) & 0xf;
-                metatile->tiles->append(tile);
+                metatile->tiles.append(tile);
             }
             metatiles->append(metatile);
         }

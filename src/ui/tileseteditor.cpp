@@ -361,7 +361,7 @@ void TilesetEditor::onSelectedTilesChanged() {
 }
 
 void TilesetEditor::onMetatileLayerTileChanged(int x, int y) {
-    const QList<QPoint> tileCoords = QList<QPoint>{
+    static const QList<QPoint> tileCoords = QList<QPoint>{
         QPoint(0, 0),
         QPoint(1, 0),
         QPoint(0, 1),
@@ -387,11 +387,11 @@ void TilesetEditor::onMetatileLayerTileChanged(int x, int y) {
             if (tileIndex < maxTileIndex
              && tileCoords.at(tileIndex).x() >= x
              && tileCoords.at(tileIndex).y() >= y){
-                Tile *tile = &(*this->metatile->tiles)[tileIndex];
-                tile->tile = tiles.at(selectedTileIndex).tile;
-                tile->xflip = tiles.at(selectedTileIndex).xflip;
-                tile->yflip = tiles.at(selectedTileIndex).yflip;
-                tile->palette = tiles.at(selectedTileIndex).palette;
+                Tile &tile = this->metatile->tiles[tileIndex];
+                tile.tile = tiles.at(selectedTileIndex).tile;
+                tile.xflip = tiles.at(selectedTileIndex).xflip;
+                tile.yflip = tiles.at(selectedTileIndex).yflip;
+                tile.palette = tiles.at(selectedTileIndex).palette;
             }
             selectedTileIndex++;
         }
@@ -416,7 +416,7 @@ void TilesetEditor::onMetatileLayerSelectionChanged(QPoint selectionOrigin, int 
         for (int i = 0; i < width; i++) {
             int tileIndex = ((x + i) / 2 * 4) + ((y + j) * 2) + ((x + i) % 2);
             if (tileIndex < maxTileIndex) {
-                tiles.append(this->metatile->tiles->at(tileIndex));
+                tiles.append(this->metatile->tiles.at(tileIndex));
                 tileIdxs.append(tileIndex);
             }
         }
@@ -740,7 +740,7 @@ void TilesetEditor::on_actionChange_Metatiles_Count_triggered()
             metatile->encounterType = 0;
             metatile->terrainType = 0;
             for (int i = 0; i < numTiles; i++) {
-                metatile->tiles->append(tile);
+                metatile->tiles.append(tile);
             }
             this->primaryTileset->metatiles->append(metatile);
         }
@@ -760,7 +760,7 @@ void TilesetEditor::on_actionChange_Metatiles_Count_triggered()
             metatile->encounterType = 0;
             metatile->terrainType = 0;
             for (int i = 0; i < numTiles; i++) {
-                metatile->tiles->append(tile);
+                metatile->tiles.append(tile);
             }
             this->secondaryTileset->metatiles->append(metatile);
         }

@@ -11,8 +11,9 @@ class Metatile
 {
 public:
     Metatile();
+    Metatile(const Metatile &other);
 public:
-    QList<Tile> *tiles = nullptr;
+    QList<Tile> tiles;
     uint16_t behavior;     // 8 bits RSE, 9 bits FRLG
     uint8_t layerType;
     uint8_t encounterType; // FRLG only

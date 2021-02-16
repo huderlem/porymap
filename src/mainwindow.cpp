@@ -1219,16 +1219,16 @@ void MainWindow::on_actionNew_Tileset_triggered() {
             int tilesPerMetatile = projectConfig.getTripleLayerMetatilesEnabled() ? 12 : 8;
             Metatile *mt = new Metatile();
             for(int j = 0; j < tilesPerMetatile; ++j){
-                Tile *tile = new Tile();
+                Tile tile;
                 //Create a checkerboard-style dummy tileset
                 if(((i / 8) % 2) == 0)
-                    tile->tile = ((i % 2) == 0) ? 1 : 2;
+                    tile.tile = ((i % 2) == 0) ? 1 : 2;
                 else
-                    tile->tile = ((i % 2) == 1) ? 1 : 2;
-                tile->xflip = false;
-                tile->yflip = false;
-                tile->palette = 0;
-                mt->tiles->append(*tile);
+                    tile.tile = ((i % 2) == 1) ? 1 : 2;
+                tile.xflip = false;
+                tile.yflip = false;
+                tile.palette = 0;
+                mt->tiles.append(tile);
             }
             mt->behavior = 0;
             mt->layerType = 0;
@@ -1239,7 +1239,7 @@ void MainWindow::on_actionNew_Tileset_triggered() {
         }
         newSet->palettes = new QList<QList<QRgb>>();
         newSet->palettePreviews = new QList<QList<QRgb>>();
-        newSet->palettePaths = *new QList<QString>();
+        newSet->palettePaths.clear();
         for(int i = 0; i < 16; ++i) {
             QList<QRgb> *currentPal = new QList<QRgb>();
             for(int i = 0; i < 16;++i) {

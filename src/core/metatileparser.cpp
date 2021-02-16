@@ -75,14 +75,14 @@ QList<Metatile*> *MetatileParser::parse(QString filepath, bool *error, bool prim
     QList<Metatile*> *metatiles = new QList<Metatile*>();
     for (int i = 0; i < numMetatiles; i++) {
         Metatile *metatile = new Metatile();
-        QList<Tile> *tiles = new QList<Tile>();
+        QList<Tile> tiles;
         for (int j = 0; j < 8; j++) {
             int metatileOffset = 4 + i * metatileSize + j * 2;
             uint16_t word = static_cast<uint16_t>(
                         static_cast<unsigned char>(in.at(metatileOffset)) |
                         (static_cast<unsigned char>(in.at(metatileOffset + 1)) << 8));
             Tile tile(word & 0x3ff, (word >> 10) & 1, (word >> 11) & 1, (word >> 12) & 0xf);
-            tiles->append(tile);
+            tiles.append(tile);
         }
 
         int attrOffset = 4 + (numMetatiles * metatileSize) + (i * attrSize);
