@@ -26,7 +26,7 @@ QImage getMetatileImage(
     metatile_image.fill(Qt::black);
 
     Metatile* metatile = Tileset::getMetatile(tile, primaryTileset, secondaryTileset);
-    if (!metatile || !metatile->tiles) {
+    if (!metatile) {
         metatile_image.fill(Qt::magenta);
         return metatile_image;
     }
@@ -46,7 +46,7 @@ QImage getMetatileImage(
     for (int x = 0; x < 2; x++) {
         int l = layerOrder.size() >= numLayers ? layerOrder[layer] : layer;
         int bottomLayer = layerOrder.size() >= numLayers ? layerOrder[0] : 0;
-        Tile tile_ = metatile->tiles->value((y * 2) + x + (l * 4));
+        Tile tile_ = metatile->tiles.value((y * 2) + x + (l * 4));
         QImage tile_image = getTileImage(tile_.tile, primaryTileset, secondaryTileset);
         if (tile_image.isNull()) {
             // Some metatiles specify tiles that are outside the valid range.
@@ -97,10 +97,10 @@ QImage getMetatileImage(
 QImage getTileImage(uint16_t tile, Tileset *primaryTileset, Tileset *secondaryTileset) {
     Tileset *tileset = Tileset::getBlockTileset(tile, primaryTileset, secondaryTileset);
     int local_index = Metatile::getBlockIndex(tile);
-    if (!tileset || !tileset->tiles) {
+    if (!tileset) {
         return QImage();
     }
-    return tileset->tiles->value(local_index, QImage());
+    return tileset->tiles.value(local_index, QImage());
 }
 
 QImage getColoredTileImage(uint16_t tile, Tileset *primaryTileset, Tileset *secondaryTileset, QList<QRgb> palette) {

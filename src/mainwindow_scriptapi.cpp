@@ -260,7 +260,7 @@ void MainWindow::refreshAfterPaletteChange(Tileset *tileset) {
 void MainWindow::setTilesetPalette(Tileset *tileset, int paletteIndex, QList<QList<int>> colors) {
     if (!this->editor || !this->editor->map || !this->editor->map->layout)
         return;
-    if (paletteIndex >= tileset->palettes->size())
+    if (paletteIndex >= tileset->palettes.size())
         return;
     if (colors.size() != 16)
         return;
@@ -268,8 +268,8 @@ void MainWindow::setTilesetPalette(Tileset *tileset, int paletteIndex, QList<QLi
     for (int i = 0; i < 16; i++) {
         if (colors[i].size() != 3)
             continue;
-        (*tileset->palettes)[paletteIndex][i] = qRgb(colors[i][0], colors[i][1], colors[i][2]);
-        (*tileset->palettePreviews)[paletteIndex][i] = qRgb(colors[i][0], colors[i][1], colors[i][2]);
+        tileset->palettes[paletteIndex][i] = qRgb(colors[i][0], colors[i][1], colors[i][2]);
+        tileset->palettePreviews[paletteIndex][i] = qRgb(colors[i][0], colors[i][1], colors[i][2]);
     }
 }
 
@@ -305,22 +305,22 @@ void MainWindow::setSecondaryTilesetPalettes(QList<QList<QList<int>>> palettes) 
     this->refreshAfterPaletteChange(this->editor->map->layout->tileset_secondary);
 }
 
-QJSValue MainWindow::getTilesetPalette(QList<QList<QRgb>> *palettes, int paletteIndex) {
-    if (paletteIndex >= palettes->size())
+QJSValue MainWindow::getTilesetPalette(const QList<QList<QRgb>> &palettes, int paletteIndex) {
+    if (paletteIndex >= palettes.size())
         return QJSValue();
 
     QList<QList<int>> palette;
-    for (auto color : palettes->value(paletteIndex)) {
+    for (auto color : palettes.value(paletteIndex)) {
         palette.append(QList<int>({qRed(color), qGreen(color), qBlue(color)}));
     }
     return Scripting::getEngine()->toScriptValue(palette);
 }
 
-QJSValue MainWindow::getTilesetPalettes(QList<QList<QRgb>> *palettes) {
+QJSValue MainWindow::getTilesetPalettes(const QList<QList<QRgb>> &palettes) {
     QList<QList<QList<int>>> outPalettes;
-    for (int i = 0; i < palettes->size(); i++) {
+    for (int i = 0; i < palettes.size(); i++) {
         QList<QList<int>> colors;
-        for (auto color : palettes->value(i)) {
+        for (auto color : palettes.value(i)) {
             colors.append(QList<int>({qRed(color), qGreen(color), qBlue(color)}));
         }
         outPalettes.append(colors);
@@ -363,7 +363,7 @@ void MainWindow::refreshAfterPalettePreviewChange() {
 void MainWindow::setTilesetPalettePreview(Tileset *tileset, int paletteIndex, QList<QList<int>> colors) {
     if (!this->editor || !this->editor->map || !this->editor->map->layout)
         return;
-    if (paletteIndex >= tileset->palettePreviews->size())
+    if (paletteIndex >= tileset->palettePreviews.size())
         return;
     if (colors.size() != 16)
         return;
@@ -371,8 +371,7 @@ void MainWindow::setTilesetPalettePreview(Tileset *tileset, int paletteIndex, QL
     for (int i = 0; i < 16; i++) {
         if (colors[i].size() != 3)
             continue;
-        auto palettes = tileset->palettePreviews;
-        (*palettes)[paletteIndex][i] = qRgb(colors[i][0], colors[i][1], colors[i][2]);
+        tileset->palettePreviews[paletteIndex][i] = qRgb(colors[i][0], colors[i][1], colors[i][2]);
     }
 }
 

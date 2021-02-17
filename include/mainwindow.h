@@ -77,8 +77,8 @@ public:
     Q_INVOKABLE void setPrimaryTilesetPalettes(QList<QList<QList<int>>> palettes);
     Q_INVOKABLE void setSecondaryTilesetPalette(int paletteIndex, QList<QList<int>> colors);
     Q_INVOKABLE void setSecondaryTilesetPalettes(QList<QList<QList<int>>> palettes);
-    QJSValue getTilesetPalette(QList<QList<QRgb>> *palettes, int paletteIndex);
-    QJSValue getTilesetPalettes(QList<QList<QRgb>> *palettes);
+    QJSValue getTilesetPalette(const QList<QList<QRgb>> &palettes, int paletteIndex);
+    QJSValue getTilesetPalettes(const QList<QList<QRgb>> &palettes);
     Q_INVOKABLE QJSValue getPrimaryTilesetPalette(int paletteIndex);
     Q_INVOKABLE QJSValue getPrimaryTilesetPalettes();
     Q_INVOKABLE QJSValue getSecondaryTilesetPalette(int paletteIndex);
