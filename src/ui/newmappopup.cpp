@@ -89,8 +89,8 @@ void NewMapPopup::setDefaultValues(int groupNum, QString mapSec) {
     ui->comboBox_NewMap_Primary_Tileset->addItems(tilesets.value("primary"));
     ui->comboBox_NewMap_Secondary_Tileset->addItems(tilesets.value("secondary"));
 
-    ui->comboBox_NewMap_Group->addItems(*project->groupNames);
-    ui->comboBox_NewMap_Group->setCurrentText(project->groupNames->at(groupNum));
+    ui->comboBox_NewMap_Group->addItems(project->groupNames);
+    ui->comboBox_NewMap_Group->setCurrentText(project->groupNames.at(groupNum));
 
     if (existingLayout) {
         ui->spinBox_NewMap_Width->setValue(project->mapLayouts.value(layoutId)->width.toInt(nullptr, 0));
@@ -110,7 +110,7 @@ void NewMapPopup::setDefaultValues(int groupNum, QString mapSec) {
         ui->spinBox_NewMap_BorderHeight->setValue(DEFAULT_BORDER_HEIGHT);
     }
 
-    ui->comboBox_NewMap_Type->addItems(*project->mapTypes);
+    ui->comboBox_NewMap_Type->addItems(project->mapTypes);
     ui->comboBox_NewMap_Location->addItems(project->mapSectionValueToName.values());
     if (!mapSec.isEmpty()) ui->comboBox_NewMap_Location->setCurrentText(mapSec);
     ui->checkBox_NewMap_Show_Location->setChecked(true);
@@ -165,7 +165,7 @@ void NewMapPopup::setDefaultValues(int groupNum, QString mapSec) {
 }
 
 void NewMapPopup::on_lineEdit_NewMap_Name_textChanged(const QString &text) {
-    if (project->mapNames->contains(text)) {
+    if (project->mapNames.contains(text)) {
         QPalette palette = this->ui->lineEdit_NewMap_Name->palette();
         QColor color = Qt::red;
         color.setAlpha(25);
@@ -188,7 +188,7 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
     // After stripping invalid characters, strip any leading digits.
     QString newMapName = this->ui->lineEdit_NewMap_Name->text().remove(QRegularExpression("[^a-zA-Z0-9_]+"));
     newMapName.remove(QRegularExpression("^[0-9]*"));
-    if (project->mapNames->contains(newMapName) || newMapName.isEmpty()) {
+    if (project->mapNames.contains(newMapName) || newMapName.isEmpty()) {
         newMapName = project->getNewMapName();
     }
 
@@ -197,9 +197,9 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
     newMap->location = this->ui->comboBox_NewMap_Location->currentText();
     newMap->song = this->project->defaultSong;
     newMap->requiresFlash = "0";
-    newMap->weather = this->project->weatherNames->value(0, "WEATHER_NONE");
+    newMap->weather = this->project->weatherNames.value(0, "WEATHER_NONE");
     newMap->show_location = this->ui->checkBox_NewMap_Show_Location->isChecked() ? "1" : "0";
-    newMap->battle_scene = this->project->mapBattleScenes->value(0, "MAP_BATTLE_SCENE_NORMAL");
+    newMap->battle_scene = this->project->mapBattleScenes.value(0, "MAP_BATTLE_SCENE_NORMAL");
 
     if (this->existingLayout) {
         layout = this->project->mapLayouts.value(this->layoutId);
@@ -236,7 +236,7 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
         newMap->floorNumber = this->ui->spinBox_NewMap_Floor_Number->value();
     }
 
-    group = project->groupNames->indexOf(this->ui->comboBox_NewMap_Group->currentText());
+    group = project->groupNames.indexOf(this->ui->comboBox_NewMap_Group->currentText());
     newMap->layout = layout;
     newMap->layoutId = layout->id;
     if (this->existingLayout) {

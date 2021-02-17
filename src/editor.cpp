@@ -726,11 +726,11 @@ void Editor::populateConnectionMapPickers() {
     ui->comboBox_EmergeMap->blockSignals(true);
 
     ui->comboBox_ConnectedMap->clear();
-    ui->comboBox_ConnectedMap->addItems(*project->mapNames);
+    ui->comboBox_ConnectedMap->addItems(project->mapNames);
     ui->comboBox_DiveMap->clear();
-    ui->comboBox_DiveMap->addItems(*project->mapNames);
+    ui->comboBox_DiveMap->addItems(project->mapNames);
     ui->comboBox_EmergeMap->clear();
-    ui->comboBox_EmergeMap->addItems(*project->mapNames);
+    ui->comboBox_EmergeMap->addItems(project->mapNames);
 
     ui->comboBox_ConnectedMap->blockSignals(false);
     ui->comboBox_DiveMap->blockSignals(true);
@@ -959,7 +959,7 @@ void Editor::onHoveredMapMetatileChanged(const QPoint &pos) {
     if (map_item->paintingMode == MapPixmapItem::PaintMode::Metatiles
      && pos.x() >= 0 && pos.x() < map->getWidth() && pos.y() >= 0 && pos.y() < map->getHeight()) {
         int blockIndex = pos.y() * map->getWidth() + pos.x();
-        int metatileId = map->layout->blockdata->blocks->at(blockIndex).tile;
+        int metatileId = map->layout->blockdata.at(blockIndex).tile;
         this->ui->statusBar->showMessage(QString("X: %1, Y: %2, %3, Scale = %4x")
                               .arg(pos.x())
                               .arg(pos.y())
@@ -989,8 +989,8 @@ void Editor::onHoveredMapMovementPermissionChanged(int x, int y) {
     if (map_item->paintingMode == MapPixmapItem::PaintMode::Metatiles
      && x >= 0 && x < map->getWidth() && y >= 0 && y < map->getHeight()) {
         int blockIndex = y * map->getWidth() + x;
-        uint16_t collision = map->layout->blockdata->blocks->at(blockIndex).collision;
-        uint16_t elevation = map->layout->blockdata->blocks->at(blockIndex).elevation;
+        uint16_t collision = map->layout->blockdata.at(blockIndex).collision;
+        uint16_t elevation = map->layout->blockdata.at(blockIndex).elevation;
         QString message = QString("X: %1, Y: %2, %3")
                             .arg(x)
                             .arg(y)
@@ -1678,7 +1678,7 @@ void Editor::updateConnectionOffset(int offset) {
 }
 
 void Editor::setConnectionMap(QString mapName) {
-    if (!mapName.isEmpty() && !project->mapNames->contains(mapName)) {
+    if (!mapName.isEmpty() && !project->mapNames.contains(mapName)) {
         logError(QString("Invalid map name '%1' specified for connection.").arg(mapName));
         return;
     }
@@ -1714,9 +1714,9 @@ void Editor::addNewConnection() {
     }
 
     // Don't connect the map to itself.
-    QString defaultMapName = project->mapNames->first();
+    QString defaultMapName = project->mapNames.first();
     if (defaultMapName == map->name) {
-        defaultMapName = project->mapNames->value(1);
+        defaultMapName = project->mapNames.value(1);
     }
 
     MapConnection* newConnection = new MapConnection;
@@ -1824,7 +1824,7 @@ void Editor::updateEmergeMap(QString mapName) {
 }
 
 void Editor::updateDiveEmergeMap(QString mapName, QString direction) {
-    if (!mapName.isEmpty() && !project->mapNamesToMapConstants->contains(mapName)) {
+    if (!mapName.isEmpty() && !project->mapNamesToMapConstants.contains(mapName)) {
         logError(QString("Invalid %1 connection map name: '%2'").arg(direction).arg(mapName));
         return;
     }

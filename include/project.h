@@ -31,35 +31,37 @@ public:
     Project(const Project &) = delete;
     Project & operator = (const Project &) = delete;
 
+    inline QWidget *parentWidget() const { return static_cast<QWidget *>(parent()); }
+
 public:
     QString root;
-    QStringList *groupNames = nullptr;
-    QMap<QString, int> *mapGroups;
+    QStringList groupNames;
+    QMap<QString, int> mapGroups;
     QList<QStringList> groupedMapNames;
-    QStringList *mapNames = nullptr;
+    QStringList mapNames;
     QMap<QString, QVariant> miscConstants;
     QList<HealLocation> healLocations;
-    QMap<QString, QString>* mapConstantsToMapNames;
-    QMap<QString, QString>* mapNamesToMapConstants;
-    QList<QString> mapLayoutsTable;
-    QList<QString> mapLayoutsTableMaster;
+    QMap<QString, QString> mapConstantsToMapNames;
+    QMap<QString, QString> mapNamesToMapConstants;
+    QStringList mapLayoutsTable;
+    QStringList mapLayoutsTableMaster;
     QString layoutsLabel;
     QMap<QString, MapLayout*> mapLayouts;
     QMap<QString, MapLayout*> mapLayoutsMaster;
-    QMap<QString, QString> *mapSecToMapHoverName;
+    QMap<QString, QString> mapSecToMapHoverName;
     QMap<QString, int> mapSectionNameToValue;
     QMap<int, QString> mapSectionValueToName;
-    QStringList *itemNames = nullptr;
-    QStringList *flagNames = nullptr;
-    QStringList *varNames = nullptr;
-    QStringList *movementTypes = nullptr;
-    QStringList *mapTypes = nullptr;
-    QStringList *mapBattleScenes = nullptr;
-    QStringList *weatherNames = nullptr;
-    QStringList *coordEventWeatherNames = nullptr;
-    QStringList *secretBaseIds = nullptr;
-    QStringList *bgEventFacingDirections = nullptr;
-    QStringList *trainerTypes = nullptr;
+    QStringList itemNames;
+    QStringList flagNames;
+    QStringList varNames;
+    QStringList movementTypes;
+    QStringList mapTypes;
+    QStringList mapBattleScenes;
+    QStringList weatherNames;
+    QStringList coordEventWeatherNames;
+    QStringList secretBaseIds;
+    QStringList bgEventFacingDirections;
+    QStringList trainerTypes;
     QMap<QString, int> metatileBehaviorMap;
     QMap<int, QString> metatileBehaviorMapInverse;
     QMap<QString, QString> facingDirections;
@@ -82,16 +84,16 @@ public:
     DataQualifiers getDataQualifiers(QString, QString);
     QMap<QString, DataQualifiers> dataQualifiers;
 
-    QMap<QString, Map*> *mapCache;
+    QMap<QString, Map*> mapCache;
     Map* loadMap(QString);
     Map* getMap(QString);
 
-    QMap<QString, Tileset*> *tilesetCache = nullptr;
+    QMap<QString, Tileset*> tilesetCache;
     Tileset* loadTileset(QString, Tileset *tileset = nullptr);
     Tileset* getTileset(QString, bool forceLoad = false);
     QMap<QString, QStringList> tilesetLabels;
 
-    Blockdata* readBlockdata(QString);
+    Blockdata readBlockdata(QString);
     bool loadBlockdata(Map*);
 
     void saveTextFile(QString path, QString text);
@@ -129,7 +131,7 @@ public:
 
     void saveLayoutBlockdata(Map*);
     void saveLayoutBorder(Map*);
-    void writeBlockdata(QString, Blockdata*);
+    void writeBlockdata(QString, const Blockdata &);
     void saveAllMaps();
     void saveMap(Map*);
     void saveAllDataStructures();
@@ -218,8 +220,6 @@ private:
     static int max_map_data_size;
     static int default_map_size;
     static int max_object_events;
-
-    QWidget *parent;
 
 signals:
     void reloadProject();

@@ -672,7 +672,7 @@ void MainWindow::refreshMapScene()
 
 void MainWindow::openWarpMap(QString map_name, QString warp_num) {
     // Ensure valid destination map name.
-    if (!editor->project->mapNames->contains(map_name)) {
+    if (!editor->project->mapNames.contains(map_name)) {
         logError(QString("Invalid warp destination map name '%1'").arg(map_name));
         return;
     }
@@ -910,11 +910,11 @@ bool MainWindow::loadProjectCombos() {
     ui->comboBox_SecondaryTileset->clear();
     ui->comboBox_SecondaryTileset->addItems(tilesets.value("secondary"));
     ui->comboBox_Weather->clear();
-    ui->comboBox_Weather->addItems(*project->weatherNames);
+    ui->comboBox_Weather->addItems(project->weatherNames);
     ui->comboBox_BattleScene->clear();
-    ui->comboBox_BattleScene->addItems(*project->mapBattleScenes);
+    ui->comboBox_BattleScene->addItems(project->mapBattleScenes);
     ui->comboBox_Type->clear();
-    ui->comboBox_Type->addItems(*project->mapTypes);
+    ui->comboBox_Type->addItems(project->mapTypes);
 
     return true;
 }
@@ -946,8 +946,8 @@ void MainWindow::sortMapList() {
     switch (mapSortOrder)
     {
         case MapSortOrder::Group:
-            for (int i = 0; i < project->groupNames->length(); i++) {
-                QString group_name = project->groupNames->value(i);
+            for (int i = 0; i < project->groupNames.length(); i++) {
+                QString group_name = project->groupNames.value(i);
                 QStandardItem *group = new QStandardItem;
                 group->setText(group_name);
                 group->setIcon(mapFolderIcon);
@@ -982,7 +982,7 @@ void MainWindow::sortMapList() {
                 mapGroupItemsList->append(mapsec);
                 mapsecToGroupNum.insert(mapsec_name, i);
             }
-            for (int i = 0; i < project->groupNames->length(); i++) {
+            for (int i = 0; i < project->groupNames.length(); i++) {
                 QStringList names = project->groupedMapNames.value(i);
                 for (int j = 0; j < names.length(); j++) {
                     QString map_name = names.value(j);
@@ -1014,7 +1014,7 @@ void MainWindow::sortMapList() {
                 mapGroupItemsList->append(layoutItem);
                 layoutIndices[layoutId] = i;
             }
-            for (int i = 0; i < project->groupNames->length(); i++) {
+            for (int i = 0; i < project->groupNames.length(); i++) {
                 QStringList names = project->groupedMapNames.value(i);
                 for (int j = 0; j < names.length(); j++) {
                     QString map_name = names.value(j);
@@ -1340,10 +1340,10 @@ void MainWindow::drawMapListIcons(QAbstractItemModel *model) {
             QVariant data = index.data(Qt::UserRole);
             if (!data.isNull()) {
                 QString map_name = data.toString();
-                if (editor->project && editor->project->mapCache->contains(map_name)) {
+                if (editor->project && editor->project->mapCache.contains(map_name)) {
                     QStandardItem *map = mapListModel->itemFromIndex(mapListIndexes.value(map_name));
                     map->setIcon(*mapIcon);
-                    if (editor->project->mapCache->value(map_name)->hasUnsavedChanges()) {
+                    if (editor->project->mapCache.value(map_name)->hasUnsavedChanges()) {
                         map->setIcon(*mapEditedIcon);
                         projectHasUnsavedChanges = true;
                     }
@@ -1821,19 +1821,19 @@ void MainWindow::updateSelectedObjects() {
             }
 
             if (key == "destination_map_name") {
-                if (!editor->project->mapNames->contains(value)) {
+                if (!editor->project->mapNames.contains(value)) {
                     combo->addItem(value);
                 }
-                combo->addItems(*editor->project->mapNames);
+                combo->addItems(editor->project->mapNames);
                 combo->setCurrentIndex(combo->findText(value));
                 combo->setToolTip("The destination map name of the warp.");
             } else if (key == "destination_warp") {
                 combo->setToolTip("The warp id on the destination map.");
             } else if (key == "item") {
-                if (!editor->project->itemNames->contains(value)) {
+                if (!editor->project->itemNames.contains(value)) {
                     combo->addItem(value);
                 }
-                combo->addItems(*editor->project->itemNames);
+                combo->addItems(editor->project->itemNames);
                 combo->setCurrentIndex(combo->findText(value));
             } else if (key == "quantity") {
                 spin->setToolTip("The number of items received when the hidden item is picked up.");
@@ -1842,27 +1842,27 @@ void MainWindow::updateSelectedObjects() {
             } else if (key == "underfoot") {
                 check->setToolTip("If checked, hidden item can only be picked up using the Itemfinder");
             } else if (key == "flag" || key == "event_flag") {
-                if (!editor->project->flagNames->contains(value)) {
+                if (!editor->project->flagNames.contains(value)) {
                     combo->addItem(value);
                 }
-                combo->addItems(*editor->project->flagNames);
+                combo->addItems(editor->project->flagNames);
                 combo->setCurrentIndex(combo->findText(value));
                 if (key == "flag")
                     combo->setToolTip("The flag which is set when the hidden item is picked up.");
                 else if (key == "event_flag")
                     combo->setToolTip("The flag which hides the object when set.");
             } else if (key == "script_var") {
-                if (!editor->project->varNames->contains(value)) {
+                if (!editor->project->varNames.contains(value)) {
                     combo->addItem(value);
                 }
-                combo->addItems(*editor->project->varNames);
+                combo->addItems(editor->project->varNames);
                 combo->setCurrentIndex(combo->findText(value));
                 combo->setToolTip("The variable by which the script is triggered.\n"
                                   "The script is triggered when this variable's value matches 'Var Value'.");
             } else if (key == "script_var_value") {
                 combo->setToolTip("The variable's value which triggers the script.");
             } else if (key == "movement_type") {
-                if (!editor->project->movementTypes->contains(value)) {
+                if (!editor->project->movementTypes.contains(value)) {
                     combo->addItem(value);
                 }
                 connect(combo, static_cast<void (QComboBox::*)(const QString &)>(&QComboBox::currentTextChanged),
@@ -1870,31 +1870,31 @@ void MainWindow::updateSelectedObjects() {
                             item->event->setFrameFromMovement(editor->project->facingDirections.value(value));
                             item->updatePixmap();
                 });
-                combo->addItems(*editor->project->movementTypes);
+                combo->addItems(editor->project->movementTypes);
                 combo->setCurrentIndex(combo->findText(value));
                 combo->setToolTip("The object's natural movement behavior when\n"
                                   "the player is not interacting with it.");
             } else if (key == "weather") {
-                if (!editor->project->coordEventWeatherNames->contains(value)) {
+                if (!editor->project->coordEventWeatherNames.contains(value)) {
                     combo->addItem(value);
                 }
-                combo->addItems(*editor->project->coordEventWeatherNames);
+                combo->addItems(editor->project->coordEventWeatherNames);
                 combo->setCurrentIndex(combo->findText(value));
                 combo->setToolTip("The weather that starts when the player steps on this spot.");
             } else if (key == "secret_base_id") {
-                if (!editor->project->secretBaseIds->contains(value)) {
+                if (!editor->project->secretBaseIds.contains(value)) {
                     combo->addItem(value);
                 }
-                combo->addItems(*editor->project->secretBaseIds);
+                combo->addItems(editor->project->secretBaseIds);
                 combo->setCurrentIndex(combo->findText(value));
                 combo->setToolTip("The secret base id which is inside this secret\n"
                                   "base entrance. Secret base ids are meant to be\n"
                                   "unique to each and every secret base entrance.");
             } else if (key == "player_facing_direction") {
-                if (!editor->project->bgEventFacingDirections->contains(value)) {
+                if (!editor->project->bgEventFacingDirections.contains(value)) {
                     combo->addItem(value);
                 }
-                combo->addItems(*editor->project->bgEventFacingDirections);
+                combo->addItems(editor->project->bgEventFacingDirections);
                 combo->setCurrentIndex(combo->findText(value));
                 combo->setToolTip("The direction which the player must be facing\n"
                                   "to be able to interact with this event.");
@@ -1912,7 +1912,7 @@ void MainWindow::updateSelectedObjects() {
                 combo->addItems(editor->map->eventScriptLabels());
                 combo->setToolTip("The script which is executed with this event.");
             } else if (key == "trainer_type") {
-                combo->addItems(*editor->project->trainerTypes);
+                combo->addItems(editor->project->trainerTypes);
                 combo->setCurrentIndex(combo->findText(value));
                 combo->setToolTip("The trainer type of this object event.\n"
                                   "If it is not a trainer, use NONE. SEE ALL DIRECTIONS\n"
@@ -1924,10 +1924,10 @@ void MainWindow::updateSelectedObjects() {
             } else if (key == "in_connection") {
                 check->setToolTip("Check if object is positioned in the connection to another map.");
             } else if (key == "respawn_map") {
-                if (!editor->project->mapNames->contains(value)) {
+                if (!editor->project->mapNames.contains(value)) {
                     combo->addItem(value);
                 }
-                combo->addItems(*editor->project->mapNames);
+                combo->addItems(editor->project->mapNames);
                 combo->setToolTip("The map where the player will respawn after whiteout.");
             } else if (key == "respawn_npc") {
                 spin->setToolTip("event_object ID of the NPC the player interacts with\n" 
@@ -2475,7 +2475,7 @@ void MainWindow::on_spinBox_ConnectionOffset_valueChanged(int offset)
 
 void MainWindow::on_comboBox_ConnectedMap_currentTextChanged(const QString &mapName)
 {
-    if (editor->project->mapNames->contains(mapName))
+    if (editor->project->mapNames.contains(mapName))
         editor->setConnectionMap(mapName);
 }
 
@@ -2503,13 +2503,13 @@ void MainWindow::on_pushButton_ConfigureEncountersJSON_clicked() {
 
 void MainWindow::on_comboBox_DiveMap_currentTextChanged(const QString &mapName)
 {
-    if (editor->project->mapNames->contains(mapName))
+    if (editor->project->mapNames.contains(mapName))
         editor->updateDiveMap(mapName);
 }
 
 void MainWindow::on_comboBox_EmergeMap_currentTextChanged(const QString &mapName)
 {
-    if (editor->project->mapNames->contains(mapName))
+    if (editor->project->mapNames.contains(mapName))
         editor->updateEmergeMap(mapName);
 }
 
@@ -2603,8 +2603,8 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked()
 
     if (dialog.exec() == QDialog::Accepted) {
         Map *map = editor->map;
-        Blockdata *oldMetatiles = map->layout->blockdata->copy();
-        Blockdata *oldBorder = map->layout->border->copy();
+        Blockdata oldMetatiles = map->layout->blockdata;
+        Blockdata oldBorder = map->layout->border;
         QSize oldMapDimensions(map->getWidth(), map->getHeight());
         QSize oldBorderDimensions(map->getBorderWidth(), map->getBorderHeight());
         QSize newMapDimensions(widthSpinBox->value(), heightSpinBox->value());
@@ -2612,11 +2612,11 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked()
         if (oldMapDimensions != newMapDimensions || oldBorderDimensions != newBorderDimensions) {
             editor->map->setDimensions(newMapDimensions.width(), newMapDimensions.height());
             editor->map->setBorderDimensions(newBorderDimensions.width(), newBorderDimensions.height());
-            editor->map->editHistory.push(new ResizeMap(map, 
+            editor->map->editHistory.push(new ResizeMap(map,
                 oldMapDimensions, newMapDimensions,
-                oldMetatiles, map->layout->blockdata->copy(),
+                oldMetatiles, map->layout->blockdata,
                 oldBorderDimensions, newBorderDimensions,
-                oldBorder, map->layout->border->copy()
+                oldBorder, map->layout->border
             ));
         }
     }

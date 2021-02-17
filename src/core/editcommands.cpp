@@ -31,8 +31,9 @@ void renderMapBlocks(Map *map, bool ignoreCache = false) {
     map->mapItem->draw(ignoreCache);
     map->collisionItem->draw(ignoreCache);
 }
+
 PaintMetatile::PaintMetatile(Map *map,
-    Blockdata *oldMetatiles, Blockdata *newMetatiles,
+    const Blockdata &oldMetatiles, const Blockdata &newMetatiles,
     unsigned actionId, QUndoCommand *parent) : QUndoCommand(parent) {
     setText("Paint Metatiles");
 
@@ -43,21 +44,14 @@ PaintMetatile::PaintMetatile(Map *map,
     this->actionId = actionId;
 }
 
-PaintMetatile::~PaintMetatile() {
-    if (newMetatiles) delete newMetatiles;
-    if (oldMetatiles) delete oldMetatiles;
-}
-
 void PaintMetatile::redo() {
     QUndoCommand::redo();
 
     if (!map) return;
 
-    if (map->layout->blockdata) {
-        map->layout->blockdata->copyFrom(newMetatiles);
-    }
+    map->layout->blockdata = newMetatiles;
 
-    map->layout->lastCommitMapBlocks.blocks->copyFrom(map->layout->blockdata);
+    map->layout->lastCommitMapBlocks.blocks = map->layout->blockdata;
 
     renderMapBlocks(map);
 }
@@ -65,11 +59,9 @@ void PaintMetatile::redo() {
 void PaintMetatile::undo() {
     if (!map) return;
 
-    if (map->layout->blockdata) {
-        map->layout->blockdata->copyFrom(oldMetatiles);
-    }
+    map->layout->blockdata = oldMetatiles;
 
-    map->layout->lastCommitMapBlocks.blocks->copyFrom(map->layout->blockdata);
+    map->layout->lastCommitMapBlocks.blocks = map->layout->blockdata;
 
     renderMapBlocks(map);
 
@@ -79,13 +71,13 @@ void PaintMetatile::undo() {
 bool PaintMetatile::mergeWith(const QUndoCommand *command) {
     const PaintMetatile *other = static_cast<const PaintMetatile *>(command);
 
-    if (this->map != other->map)
+    if (map != other->map)
         return false;
 
     if (actionId != other->actionId)
         return false;
 
-    this->newMetatiles->copyFrom(other->newMetatiles);
+    newMetatiles = other->newMetatiles;
 
     return true;
 }
@@ -95,7 +87,7 @@ bool PaintMetatile::mergeWith(const QUndoCommand *command) {
  ******************************************************************************/
 
 PaintBorder::PaintBorder(Map *map,
-    Blockdata *oldBorder, Blockdata *newBorder,
+    const Blockdata &oldBorder, const Blockdata &newBorder,
     unsigned actionId, QUndoCommand *parent) : QUndoCommand(parent) {
     setText("Paint Border");
 
@@ -106,19 +98,12 @@ PaintBorder::PaintBorder(Map *map,
     this->actionId = actionId;
 }
 
-PaintBorder::~PaintBorder() {
-    if (newBorder) delete newBorder;
-    if (oldBorder) delete oldBorder;
-}
-
 void PaintBorder::redo() {
     QUndoCommand::redo();
 
     if (!map) return;
 
-    if (map->layout->border) {
-        map->layout->border->copyFrom(newBorder);
-    }
+    map->layout->border = newBorder;
 
     map->borderItem->draw();
 }
@@ -126,9 +111,7 @@ void PaintBorder::redo() {
 void PaintBorder::undo() {
     if (!map) return;
 
-    if (map->layout->border) {
-        map->layout->border->copyFrom(oldBorder);
-    }
+    map->layout->border = oldBorder;
 
     map->borderItem->draw();
 
@@ -140,7 +123,7 @@ void PaintBorder::undo() {
  ******************************************************************************/
 
 ShiftMetatiles::ShiftMetatiles(Map *map,
-    Blockdata *oldMetatiles, Blockdata *newMetatiles,
+    const Blockdata &oldMetatiles, const Blockdata &newMetatiles,
     unsigned actionId, QUndoCommand *parent) : QUndoCommand(parent) {
     setText("Shift Metatiles");
 
@@ -151,21 +134,14 @@ ShiftMetatiles::ShiftMetatiles(Map *map,
     this->actionId = actionId;
 }
 
-ShiftMetatiles::~ShiftMetatiles() {
-    if (newMetatiles) delete newMetatiles;
-    if (oldMetatiles) delete oldMetatiles;
-}
-
 void ShiftMetatiles::redo() {
     QUndoCommand::redo();
 
     if (!map) return;
 
-    if (map->layout->blockdata) {
-        map->layout->blockdata->copyFrom(newMetatiles);
-    }
+    map->layout->blockdata = newMetatiles;
 
-    map->layout->lastCommitMapBlocks.blocks->copyFrom(map->layout->blockdata);
+    map->layout->lastCommitMapBlocks.blocks = map->layout->blockdata;
 
     renderMapBlocks(map, true);
 }
@@ -173,11 +149,9 @@ void ShiftMetatiles::redo() {
 void ShiftMetatiles::undo() {
     if (!map) return;
 
-    if (map->layout->blockdata) {
-        map->layout->blockdata->copyFrom(oldMetatiles);
-    }
+    map->layout->blockdata = oldMetatiles;
 
-    map->layout->lastCommitMapBlocks.blocks->copyFrom(map->layout->blockdata);
+    map->layout->lastCommitMapBlocks.blocks = map->layout->blockdata;
 
     renderMapBlocks(map, true);
 
@@ -193,7 +167,7 @@ bool ShiftMetatiles::mergeWith(const QUndoCommand *command) {
     if (actionId != other->actionId)
         return false;
 
-    this->newMetatiles->copyFrom(other->newMetatiles);
+    this->newMetatiles = other->newMetatiles;
 
     return true;
 }
@@ -203,9 +177,9 @@ bool ShiftMetatiles::mergeWith(const QUndoCommand *command) {
  ******************************************************************************/
 
 ResizeMap::ResizeMap(Map *map, QSize oldMapDimensions, QSize newMapDimensions,
-    Blockdata *oldMetatiles, Blockdata *newMetatiles,
+    const Blockdata &oldMetatiles, const Blockdata &newMetatiles,
     QSize oldBorderDimensions, QSize newBorderDimensions,
-    Blockdata *oldBorder, Blockdata *newBorder,
+    const Blockdata &oldBorder, const Blockdata &newBorder,
     QUndoCommand *parent) : QUndoCommand(parent) {
     setText("Resize Map");
 
@@ -230,25 +204,16 @@ ResizeMap::ResizeMap(Map *map, QSize oldMapDimensions, QSize newMapDimensions,
     this->newBorder = newBorder;
 }
 
-ResizeMap::~ResizeMap() {
-    if (newMetatiles) delete newMetatiles;
-    if (oldMetatiles) delete oldMetatiles;
-}
-
 void ResizeMap::redo() {
     QUndoCommand::redo();
 
     if (!map) return;
 
-    if (map->layout->blockdata) {
-        map->layout->blockdata->copyFrom(newMetatiles);
-        map->setDimensions(newMapWidth, newMapHeight, false);
-    }
+    map->layout->blockdata = newMetatiles;
+    map->setDimensions(newMapWidth, newMapHeight, false);
 
-    if (map->layout->border) {
-        map->layout->border->copyFrom(newBorder);
-        map->setBorderDimensions(newBorderWidth, newBorderHeight, false);
-    }
+    map->layout->border = newBorder;
+    map->setBorderDimensions(newBorderWidth, newBorderHeight, false);
 
     map->layout->lastCommitMapBlocks.dimensions = QSize(map->getWidth(), map->getHeight());
 
@@ -258,15 +223,11 @@ void ResizeMap::redo() {
 void ResizeMap::undo() {
     if (!map) return;
 
-    if (map->layout->blockdata) {
-        map->layout->blockdata->copyFrom(oldMetatiles);
-        map->setDimensions(oldMapWidth, oldMapHeight, false);
-    }
+    map->layout->blockdata = oldMetatiles;
+    map->setDimensions(oldMapWidth, oldMapHeight, false);
 
-    if (map->layout->border) {
-        map->layout->border->copyFrom(oldBorder);
-        map->setBorderDimensions(oldBorderWidth, oldBorderHeight, false);
-    }
+    map->layout->border = oldBorder;
+    map->setBorderDimensions(oldBorderWidth, oldBorderHeight, false);
 
     map->layout->lastCommitMapBlocks.dimensions = QSize(map->getWidth(), map->getHeight());
 
@@ -291,8 +252,6 @@ EventMove::EventMove(QList<Event *> events,
 
     this->actionId = actionId;
 }
-
-EventMove::~EventMove() {}
 
 void EventMove::redo() {
     QUndoCommand::redo();
@@ -340,8 +299,6 @@ EventShift::EventShift(QList<Event *> events,
     setText("Shift Events");
 }
 
-EventShift::~EventShift() {}
-
 int EventShift::id() const {
     return CommandId::ID_EventShift | getEventTypeMask(events);
 }
@@ -360,13 +317,11 @@ EventCreate::EventCreate(Editor *editor, Map *map, Event *event,
     this->event = event;
 }
 
-EventCreate::~EventCreate() {}
-
 void EventCreate::redo() {
     QUndoCommand::redo();
 
     map->addEvent(event);
-    
+
     editor->project->loadEventPixmaps(map->getAllEvents());
     editor->addMapEvent(event);
 
@@ -412,8 +367,6 @@ EventDelete::EventDelete(Editor *editor, Map *map,
     this->nextSelectedEvent = nextSelectedEvent;
 }
 
-EventDelete::~EventDelete() {}
-
 void EventDelete::redo() {
     QUndoCommand::redo();
 
@@ -435,7 +388,7 @@ void EventDelete::redo() {
 void EventDelete::undo() {
     for (Event *event : selectedEvents) {
         map->addEvent(event);
-    
+
         editor->project->loadEventPixmaps(map->getAllEvents());
         editor->addMapEvent(event);
     }
@@ -468,8 +421,6 @@ EventDuplicate::EventDuplicate(Editor *editor, Map *map,
     this->map = map;
     this->selectedEvents = selectedEvents;
 }
-
-EventDuplicate::~EventDuplicate() {}
 
 void EventDuplicate::redo() {
     QUndoCommand::redo();
@@ -517,7 +468,7 @@ int EventDuplicate::id() const {
 
 ScriptEditMap::ScriptEditMap(Map *map,
         QSize oldMapDimensions, QSize newMapDimensions,
-        Blockdata *oldMetatiles, Blockdata *newMetatiles,
+        const Blockdata &oldMetatiles, const Blockdata &newMetatiles,
         QUndoCommand *parent) : QUndoCommand(parent) {
     setText("Script Edit Map");
 
@@ -532,24 +483,17 @@ ScriptEditMap::ScriptEditMap(Map *map,
     this->newMapHeight = newMapDimensions.height();
 }
 
-ScriptEditMap::~ScriptEditMap() {
-    if (newMetatiles) delete newMetatiles;
-    if (oldMetatiles) delete oldMetatiles;
-}
-
 void ScriptEditMap::redo() {
     QUndoCommand::redo();
 
     if (!map) return;
 
-    if (map->layout->blockdata) {
-        map->layout->blockdata->copyFrom(newMetatiles);
-        if (newMapWidth != map->getWidth() || newMapHeight != map->getHeight()) {
-            map->setDimensions(newMapWidth, newMapHeight, false);
-        }
+    map->layout->blockdata = newMetatiles;
+    if (newMapWidth != map->getWidth() || newMapHeight != map->getHeight()) {
+        map->setDimensions(newMapWidth, newMapHeight, false);
     }
 
-    map->layout->lastCommitMapBlocks.blocks->copyFrom(newMetatiles);
+    map->layout->lastCommitMapBlocks.blocks = newMetatiles;
     map->layout->lastCommitMapBlocks.dimensions = QSize(newMapWidth, newMapHeight);
 
     renderMapBlocks(map);
@@ -558,14 +502,12 @@ void ScriptEditMap::redo() {
 void ScriptEditMap::undo() {
     if (!map) return;
 
-    if (map->layout->blockdata) {
-        map->layout->blockdata->copyFrom(oldMetatiles);
-        if (oldMapWidth != map->getWidth() || oldMapHeight != map->getHeight()) {
-            map->setDimensions(oldMapWidth, oldMapHeight, false);
-        }
+    map->layout->blockdata = oldMetatiles;
+    if (oldMapWidth != map->getWidth() || oldMapHeight != map->getHeight()) {
+        map->setDimensions(oldMapWidth, oldMapHeight, false);
     }
 
-    map->layout->lastCommitMapBlocks.blocks->copyFrom(oldMetatiles);
+    map->layout->lastCommitMapBlocks.blocks = oldMetatiles;
     map->layout->lastCommitMapBlocks.dimensions = QSize(oldMapWidth, oldMapHeight);
 
     renderMapBlocks(map);

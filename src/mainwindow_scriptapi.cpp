@@ -26,7 +26,7 @@ void MainWindow::tryCommitMapChanges(bool commitChanges) {
         if (map) {
             map->editHistory.push(new ScriptEditMap(map,
                 map->layout->lastCommitMapBlocks.dimensions, QSize(map->getWidth(), map->getHeight()),
-                map->layout->lastCommitMapBlocks.blocks->copy(), map->layout->blockdata->copy()
+                map->layout->lastCommitMapBlocks.blocks, map->layout->blockdata
             ));
         }
     }
@@ -149,7 +149,7 @@ void MainWindow::magicFillFromSelection(int x, int y, bool forceRedraw, bool com
 void MainWindow::shift(int xDelta, int yDelta, bool forceRedraw, bool commitChanges) {
     if (!this->editor || !this->editor->map)
         return;
-    this->editor->map_item->shift(xDelta, yDelta);
+    this->editor->map_item->shift(xDelta, yDelta, true);
     this->tryCommitMapChanges(commitChanges);
     this->tryRedrawMapArea(forceRedraw);
 }
