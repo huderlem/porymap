@@ -1212,22 +1212,18 @@ void MainWindow::on_actionNew_Tileset_triggered() {
         newSet->metatile_attrs_path = fullDirectoryPath + "/metatile_attributes.bin";
         newSet->is_secondary = createTilesetDialog->isSecondary ? "TRUE" : "FALSE";
         int numMetaTiles = createTilesetDialog->isSecondary ? (Project::getNumTilesTotal() - Project::getNumTilesPrimary()) : Project::getNumTilesPrimary();
-        QImage *tilesImage = new QImage(":/images/blank_tileset.png");
-        editor->project->loadTilesetTiles(newSet, *tilesImage);
-        newSet->metatiles = new QList<Metatile*>();
+        QImage tilesImage(":/images/blank_tileset.png");
+        editor->project->loadTilesetTiles(newSet, tilesImage);
         for(int i = 0; i < numMetaTiles; ++i) {
             int tilesPerMetatile = projectConfig.getTripleLayerMetatilesEnabled() ? 12 : 8;
             Metatile *mt = new Metatile();
             for(int j = 0; j < tilesPerMetatile; ++j){
-                Tile tile;
+                Tile tile(0, false, false, 0);
                 //Create a checkerboard-style dummy tileset
                 if(((i / 8) % 2) == 0)
                     tile.tile = ((i % 2) == 0) ? 1 : 2;
                 else
                     tile.tile = ((i % 2) == 1) ? 1 : 2;
-                tile.xflip = false;
-                tile.yflip = false;
-                tile.palette = 0;
                 mt->tiles.append(tile);
             }
             mt->behavior = 0;
@@ -1235,23 +1231,20 @@ void MainWindow::on_actionNew_Tileset_triggered() {
             mt->encounterType = 0;
             mt->terrainType = 0;
 
-            newSet->metatiles->append(mt);
+            newSet->metatiles.append(mt);
         }
-        newSet->palettes = new QList<QList<QRgb>>();
-        newSet->palettePreviews = new QList<QList<QRgb>>();
-        newSet->palettePaths.clear();
         for(int i = 0; i < 16; ++i) {
-            QList<QRgb> *currentPal = new QList<QRgb>();
+            QList<QRgb> currentPal;
             for(int i = 0; i < 16;++i) {
-                currentPal->append(qRgb(0,0,0));
+                currentPal.append(qRgb(0,0,0));
             }
-            newSet->palettes->append(*currentPal);
-            newSet->palettePreviews->append(*currentPal);
+            newSet->palettes.append(currentPal);
+            newSet->palettePreviews.append(currentPal);
             QString fileName = QString("%1.pal").arg(i, 2, 10, QLatin1Char('0'));
             newSet->palettePaths.append(fullDirectoryPath+"/palettes/" + fileName);
         }
-        (*newSet->palettes)[0][1] = qRgb(255,0,255);
-        (*newSet->palettePreviews)[0][1] = qRgb(255,0,255);
+        newSet->palettes[0][1] = qRgb(255,0,255);
+        newSet->palettePreviews[0][1] = qRgb(255,0,255);
         newSet->is_compressed = "TRUE";
         newSet->padding = "0";
         editor->project->saveTilesetTilesImage(newSet);

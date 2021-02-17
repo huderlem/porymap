@@ -81,8 +81,8 @@ void TilesetEditor::setTilesets(QString primaryTilesetLabel, QString secondaryTi
     Tileset *secondaryTileset = project->getTileset(secondaryTilesetLabel);
     if (this->primaryTileset) delete this->primaryTileset;
     if (this->secondaryTileset) delete this->secondaryTileset;
-    this->primaryTileset = primaryTileset->copy();
-    this->secondaryTileset = secondaryTileset->copy();
+    this->primaryTileset = new Tileset(*primaryTileset);
+    this->secondaryTileset = new Tileset(*secondaryTileset);
     if (paletteEditor) paletteEditor->setTilesets(this->primaryTileset, this->secondaryTileset);
 }
 
@@ -716,8 +716,8 @@ void TilesetEditor::on_actionChange_Metatiles_Count_triggered()
     secondarySpinBox->setMinimum(1);
     primarySpinBox->setMaximum(Project::getNumMetatilesPrimary());
     secondarySpinBox->setMaximum(Project::getNumMetatilesTotal() - Project::getNumMetatilesPrimary());
-    primarySpinBox->setValue(this->primaryTileset->metatiles->length());
-    secondarySpinBox->setValue(this->secondaryTileset->metatiles->length());
+    primarySpinBox->setValue(this->primaryTileset->metatiles.length());
+    secondarySpinBox->setValue(this->secondaryTileset->metatiles.length());
     form.addRow(new QLabel("Primary Tileset"), primarySpinBox);
     form.addRow(new QLabel("Secondary Tileset"), secondarySpinBox);
 
@@ -730,16 +730,11 @@ void TilesetEditor::on_actionChange_Metatiles_Count_triggered()
         int numPrimaryMetatiles = primarySpinBox->value();
         int numSecondaryMetatiles = secondarySpinBox->value();
         int numTiles = projectConfig.getTripleLayerMetatilesEnabled() ? 12 : 8;
-        while (this->primaryTileset->metatiles->length() > numPrimaryMetatiles) {
-            Metatile *metatile = this->primaryTileset->metatiles->takeLast();
-            delete metatile;
+        while (this->primaryTileset->metatiles.length() > numPrimaryMetatiles) {
+            delete this->primaryTileset->metatiles.takeLast();
         }
-        while (this->primaryTileset->metatiles->length() < numPrimaryMetatiles) {
-            Tile tile;
-            tile.palette = 0;
-            tile.tile = 0;
-            tile.xflip = false;
-            tile.yflip = false;
+        while (this->primaryTileset->metatiles.length() < numPrimaryMetatiles) {
+            Tile tile(0, false, false, 0);
             Metatile *metatile = new Metatile;
             metatile->behavior = 0;
             metatile->layerType = 0;
@@ -748,18 +743,13 @@ void TilesetEditor::on_actionChange_Metatiles_Count_triggered()
             for (int i = 0; i < numTiles; i++) {
                 metatile->tiles.append(tile);
             }
-            this->primaryTileset->metatiles->append(metatile);
+            this->primaryTileset->metatiles.append(metatile);
         }
-        while (this->secondaryTileset->metatiles->length() > numSecondaryMetatiles) {
-            Metatile *metatile = this->secondaryTileset->metatiles->takeLast();
-            delete metatile;
+        while (this->secondaryTileset->metatiles.length() > numSecondaryMetatiles) {
+            delete this->secondaryTileset->metatiles.takeLast();
         }
-        while (this->secondaryTileset->metatiles->length() < numSecondaryMetatiles) {
-            Tile tile;
-            tile.palette = 0;
-            tile.tile = 0;
-            tile.xflip = 0;
-            tile.yflip = 0;
+        while (this->secondaryTileset->metatiles.length() < numSecondaryMetatiles) {
+            Tile tile(0, false, false, 0);
             Metatile *metatile = new Metatile;
             metatile->behavior = 0;
             metatile->layerType = 0;
@@ -768,7 +758,7 @@ void TilesetEditor::on_actionChange_Metatiles_Count_triggered()
             for (int i = 0; i < numTiles; i++) {
                 metatile->tiles.append(tile);
             }
-            this->secondaryTileset->metatiles->append(metatile);
+            this->secondaryTileset->metatiles.append(metatile);
         }
 
         this->metatileSelector->updateSelectedMetatile();
@@ -891,7 +881,7 @@ void TilesetEditor::importTilesetMetatiles(Tileset *tileset, bool primary)
 
     MetatileParser parser;
     bool error = false;
-    QList<Metatile*> *metatiles = parser.parse(filepath, &error, primary);
+    QList<Metatile*> metatiles = parser.parse(filepath, &error, primary);
     if (error) {
         QMessageBox msgBox(this);
         msgBox.setText("Failed to import metatiles from Advance Map 1.92 .bvd file.");
@@ -906,14 +896,14 @@ void TilesetEditor::importTilesetMetatiles(Tileset *tileset, bool primary)
     // TODO: This is crude because it makes a history entry for every newly-imported metatile.
     //       Revisit this when tiles and num metatiles are added to tileset editory history.
     int metatileIdBase = primary ? 0 : Project::getNumMetatilesPrimary();
-    for (int i = 0; i < metatiles->length(); i++) {
-        if (i >= tileset->metatiles->length()) {
+    for (int i = 0; i < metatiles.length(); i++) {
+        if (i >= tileset->metatiles.length()) {
             break;
         }
 
-        Metatile *prevMetatile = new Metatile(*tileset->metatiles->at(i));
+        Metatile *prevMetatile = new Metatile(*tileset->metatiles.at(i));
         MetatileHistoryItem *commit = new MetatileHistoryItem(static_cast<uint16_t>(metatileIdBase + i),
-                                                              prevMetatile, new Metatile(*metatiles->at(i)));
+                                                              prevMetatile, new Metatile(*metatiles.at(i)));
         metatileHistory.push(commit);
     }
 

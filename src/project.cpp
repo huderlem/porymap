@@ -995,16 +995,16 @@ void Project::saveTilesetMetatileLabels(Tileset *primaryTileset, Tileset *second
     }
 
     // Add the new labels.
-    for (int i = 0; i < primaryTileset->metatiles->size(); i++) {
-        Metatile *metatile = primaryTileset->metatiles->at(i);
+    for (int i = 0; i < primaryTileset->metatiles.size(); i++) {
+        Metatile *metatile = primaryTileset->metatiles.at(i);
         if (metatile->label.size() != 0) {
             QString defineName = QString("%1%2").arg(primaryPrefix, metatile->label);
             defines.insert(defineName, i);
             definesFileModified = true;
         }
     }
-    for (int i = 0; i < secondaryTileset->metatiles->size(); i++) {
-        Metatile *metatile = secondaryTileset->metatiles->at(i);
+    for (int i = 0; i < secondaryTileset->metatiles.size(); i++) {
+        Metatile *metatile = secondaryTileset->metatiles.at(i);
         if (metatile->label.size() != 0) {
             QString defineName = QString("%1%2").arg(secondaryPrefix, metatile->label);
             defines.insert(defineName, i + Project::num_tiles_primary);
@@ -1061,7 +1061,7 @@ void Project::saveTilesetMetatileAttributes(Tileset *tileset) {
         QByteArray data;
 
         if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
-            for (Metatile *metatile : *tileset->metatiles) {
+            for (Metatile *metatile : tileset->metatiles) {
                 data.append(static_cast<char>(metatile->behavior));
                 data.append(static_cast<char>(metatile->behavior >> 8) |
                             static_cast<char>(metatile->terrainType << 1));
@@ -1070,7 +1070,7 @@ void Project::saveTilesetMetatileAttributes(Tileset *tileset) {
                             static_cast<char>(metatile->layerType << 5));
             }
         } else {
-            for (Metatile *metatile : *tileset->metatiles) {
+            for (Metatile *metatile : tileset->metatiles) {
                 data.append(static_cast<char>(metatile->behavior));
                 data.append(static_cast<char>((metatile->layerType << 4) & 0xF0));
             }
@@ -1085,7 +1085,7 @@ void Project::saveTilesetMetatiles(Tileset *tileset) {
     QFile metatiles_file(tileset->metatiles_path);
     if (metatiles_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
         QByteArray data;
-        for (Metatile *metatile : *tileset->metatiles) {
+        for (Metatile *metatile : tileset->metatiles) {
             int numTiles = projectConfig.getTripleLayerMetatilesEnabled() ? 12 : 8;
             for (int i = 0; i < numTiles; i++) {
                 Tile tile = metatile->tiles.at(i);
@@ -1099,7 +1099,7 @@ void Project::saveTilesetMetatiles(Tileset *tileset) {
         }
         metatiles_file.write(data);
     } else {
-        tileset->metatiles = new QList<Metatile*>;
+        tileset->metatiles.clear();
         logError(QString("Could not open tileset metatiles file '%1'").arg(tileset->metatiles_path));
     }
 }
@@ -1112,7 +1112,7 @@ void Project::saveTilesetPalettes(Tileset *tileset) {
     PaletteUtil paletteParser;
     for (int i = 0; i < Project::getNumPalettesTotal(); i++) {
         QString filepath = tileset->palettePaths.at(i);
-        paletteParser.writeJASC(filepath, tileset->palettes->at(i).toVector(), 0, 16);
+        paletteParser.writeJASC(filepath, tileset->palettes.at(i).toVector(), 0, 16);
     }
 }
 
@@ -1552,8 +1552,8 @@ void Project::loadTilesetAssets(Tileset* tileset) {
     this->loadTilesetMetatileLabels(tileset);
 
     // palettes
-    QList<QList<QRgb>> *palettes = new QList<QList<QRgb>>;
-    QList<QList<QRgb>> *palettePreviews = new QList<QList<QRgb>>;
+    QList<QList<QRgb>> palettes;
+    QList<QList<QRgb>> palettePreviews;
     for (int i = 0; i < tileset->palettePaths.length(); i++) {
         QList<QRgb> palette;
         QString path = tileset->palettePaths.value(i);
@@ -1587,21 +1587,21 @@ void Project::loadTilesetAssets(Tileset* tileset) {
             logError(QString("Could not open tileset palette path '%1'").arg(path));
         }
 
-        palettes->append(palette);
-        palettePreviews->append(palette);
+        palettes.append(palette);
+        palettePreviews.append(palette);
     }
     tileset->palettes = palettes;
     tileset->palettePreviews = palettePreviews;
 }
 
 void Project::loadTilesetTiles(Tileset *tileset, QImage image) {
-    QList<QImage> *tiles = new QList<QImage>;
+    QList<QImage> tiles;
     int w = 8;
     int h = 8;
     for (int y = 0; y < image.height(); y += h)
     for (int x = 0; x < image.width(); x += w) {
         QImage tile = image.copy(x, y, w, h);
-        tiles->append(tile);
+        tiles.append(tile);
     }
     tileset->tilesImage = image;
     tileset->tiles = tiles;
@@ -1614,7 +1614,7 @@ void Project::loadTilesetMetatiles(Tileset* tileset) {
         int metatile_data_length = projectConfig.getTripleLayerMetatilesEnabled() ? 24 : 16;
         int num_metatiles = data.length() / metatile_data_length;
         int num_layers = projectConfig.getTripleLayerMetatilesEnabled() ? 3 : 2;
-        QList<Metatile*> *metatiles = new QList<Metatile*>;
+        QList<Metatile*> metatiles;
         for (int i = 0; i < num_metatiles; i++) {
             Metatile *metatile = new Metatile;
             int index = i * (2 * 4 * num_layers);
@@ -1628,18 +1628,18 @@ void Project::loadTilesetMetatiles(Tileset* tileset) {
                 tile.palette = (word >> 12) & 0xf;
                 metatile->tiles.append(tile);
             }
-            metatiles->append(metatile);
+            metatiles.append(metatile);
         }
         tileset->metatiles = metatiles;
     } else {
-        tileset->metatiles = new QList<Metatile*>;
+        tileset->metatiles.clear();
         logError(QString("Could not open tileset metatiles file '%1'").arg(tileset->metatiles_path));
     }
 
     QFile attrs_file(tileset->metatile_attrs_path);
     if (attrs_file.open(QIODevice::ReadOnly)) {
         QByteArray data = attrs_file.readAll();
-        int num_metatiles = tileset->metatiles->count();
+        int num_metatiles = tileset->metatiles.count();
 
         if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
             int num_metatileAttrs = data.length() / 4;
@@ -1654,10 +1654,10 @@ void Project::loadTilesetMetatiles(Tileset* tileset) {
                             (static_cast<unsigned char>(data.at(i * 4 + 2)) << 16) | 
                             (static_cast<unsigned char>(data.at(i * 4 + 1)) << 8) | 
                             (static_cast<unsigned char>(data.at(i * 4 + 0)));
-                tileset->metatiles->at(i)->behavior = value & 0x1FF;
-                tileset->metatiles->at(i)->terrainType = (value & 0x3E00) >> 9;
-                tileset->metatiles->at(i)->encounterType = (value & 0x7000000) >> 24;
-                tileset->metatiles->at(i)->layerType = (value & 0x60000000) >> 29;
+                tileset->metatiles.at(i)->behavior = value & 0x1FF;
+                tileset->metatiles.at(i)->terrainType = (value & 0x3E00) >> 9;
+                tileset->metatiles.at(i)->encounterType = (value & 0x7000000) >> 24;
+                tileset->metatiles.at(i)->layerType = (value & 0x60000000) >> 29;
                 if (value & ~(0x67003FFF))
                     unusedAttribute = true;
             }
@@ -1672,10 +1672,10 @@ void Project::loadTilesetMetatiles(Tileset* tileset) {
             }
             for (int i = 0; i < num_metatileAttrs; i++) {
                 int value = (static_cast<unsigned char>(data.at(i * 2 + 1)) << 8) | static_cast<unsigned char>(data.at(i * 2));
-                tileset->metatiles->at(i)->behavior = value & 0xFF;
-                tileset->metatiles->at(i)->layerType = (value & 0xF000) >> 12;
-                tileset->metatiles->at(i)->encounterType = 0;
-                tileset->metatiles->at(i)->terrainType = 0;
+                tileset->metatiles.at(i)->behavior = value & 0xFF;
+                tileset->metatiles.at(i)->layerType = (value & 0xF000) >> 12;
+                tileset->metatiles.at(i)->encounterType = 0;
+                tileset->metatiles.at(i)->terrainType = 0;
             }
         }
     } else {
@@ -1734,7 +1734,7 @@ Tileset* Project::getTileset(QString label, bool forceLoad) {
     }
 
     if (existingTileset && !forceLoad) {
-        return tilesetCache->value(label);
+        return existingTileset;
     } else {
         Tileset *tileset = loadTileset(label, existingTileset);
         return tileset;

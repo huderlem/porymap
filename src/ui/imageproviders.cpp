@@ -97,10 +97,10 @@ QImage getMetatileImage(
 QImage getTileImage(uint16_t tile, Tileset *primaryTileset, Tileset *secondaryTileset) {
     Tileset *tileset = Tileset::getBlockTileset(tile, primaryTileset, secondaryTileset);
     int local_index = Metatile::getBlockIndex(tile);
-    if (!tileset || !tileset->tiles) {
+    if (!tileset) {
         return QImage();
     }
-    return tileset->tiles->value(local_index, QImage());
+    return tileset->tiles.value(local_index, QImage());
 }
 
 QImage getColoredTileImage(uint16_t tile, Tileset *primaryTileset, Tileset *secondaryTileset, QList<QRgb> palette) {
