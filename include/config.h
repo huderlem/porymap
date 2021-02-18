@@ -15,7 +15,7 @@ enum MapSortOrder {
     Layout  =  2,
 };
 
-class KeyValueConfigBase : public QObject
+class KeyValueConfigBase
 {
 public:
     void save();
