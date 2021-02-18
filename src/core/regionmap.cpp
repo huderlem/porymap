@@ -63,8 +63,7 @@ void RegionMap::saveTileImages() {
             this->region_map_png_path = project->root + "/graphics/pokenav/region_map.png";
             pngImage.save(pngPath());
 
-            PaletteUtil parser;
-            parser.writeJASC(project->root + "/graphics/pokenav/region_map.pal", pngImage.colorTable(), 0x70, 0x20);
+            PaletteUtil::writeJASC(project->root + "/graphics/pokenav/region_map.pal", pngImage.colorTable(), 0x70, 0x20);
         }
         region_map_png_needs_saving = false;
     }
