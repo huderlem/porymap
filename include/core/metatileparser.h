@@ -4,13 +4,9 @@
 
 #include "metatile.h"
 #include <QList>
-#include <QString>
 
-class MetatileParser
-{
-public:
-    MetatileParser();
+namespace MetatileParser {
     QList<Metatile*> parse(QString filepath, bool *error, bool primaryTileset);
-};
+}
 
 #endif // METATILEPARSER_H

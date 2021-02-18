@@ -2,11 +2,15 @@
 #include "log.h"
 #include <QFileInfo>
 #include <QRegularExpression>
+#include <QString>
 
-PaletteUtil::PaletteUtil()
-{
-
-}
+QList<QRgb> parsePal(QString filepath, bool *error);
+QList<QRgb> parseJASC(QString filepath, bool *error);
+QList<QRgb> parseAdvanceMapPal(QString filepath, bool *error);
+QList<QRgb> parseAdobeColorTable(QString filepath, bool *error);
+QList<QRgb> parseTileLayerPro(QString filepath, bool *error);
+QList<QRgb> parseAdvancePaletteEditor(QString filepath, bool *error);
+int clampColorValue(int value);
 
 QList<QRgb> PaletteUtil::parse(QString filepath, bool *error) {
     QFileInfo info(filepath);
@@ -34,7 +38,35 @@ QList<QRgb> PaletteUtil::parse(QString filepath, bool *error) {
     return QList<QRgb>();
 }
 
-QList<QRgb> PaletteUtil::parsePal(QString filepath, bool *error) {
+void PaletteUtil::writeJASC(QString filepath, QVector<QRgb> palette, int offset, int nColors) {
+    if (!nColors) {
+        logWarn(QString("Cannot save a palette with no colors."));
+        return;
+    }
+    if (offset > palette.size() || offset + nColors > palette.size()) {
+        logWarn("Palette offset out of range for color table.");
+        return;
+    }
+
+    QString text = "JASC-PAL\r\n0100\r\n";
+    text += QString::number(nColors) + "\r\n";
+
+    for (int i = offset; i < offset + nColors; i++) {
+        QRgb color = palette.at(i);
+        text += QString::number(qRed(color)) + " "
+              + QString::number(qGreen(color)) + " "
+              + QString::number(qBlue(color)) + "\r\n";
+    }
+
+    QFile file(filepath);
+    if (file.open(QIODevice::WriteOnly)) {
+        file.write(text.toUtf8());
+    } else {
+        logWarn(QString("Could not write to file '%1': ").arg(filepath) + file.errorString());
+    }
+}
+
+QList<QRgb> parsePal(QString filepath, bool *error) {
     QFile file(filepath);
     if (!file.open(QIODevice::ReadOnly)) {
         *error = true;
@@ -53,7 +85,7 @@ QList<QRgb> PaletteUtil::parsePal(QString filepath, bool *error) {
     }
 }
 
-QList<QRgb> PaletteUtil::parseJASC(QString filepath, bool *error) {
+QList<QRgb> parseJASC(QString filepath, bool *error) {
     QFile file(filepath);
     if (!file.open(QIODevice::ReadOnly)) {
         *error = true;
@@ -105,9 +137,9 @@ QList<QRgb> PaletteUtil::parseJASC(QString filepath, bool *error) {
                 return QList<QRgb>();
             }
 
-            palette.append(qRgb(this->clampColorValue(red),
-                                this->clampColorValue(green),
-                                this->clampColorValue(blue)));
+            palette.append(qRgb(clampColorValue(red),
+                                clampColorValue(green),
+                                clampColorValue(blue)));
         } else {
             *error = true;
             logError(QString("JASC palette file '%1' had an unexpected format. Invalid color '%2'.").arg(filepath).arg(line));
@@ -120,7 +152,7 @@ QList<QRgb> PaletteUtil::parseJASC(QString filepath, bool *error) {
     return palette;
 }
 
-QList<QRgb> PaletteUtil::parseAdvanceMapPal(QString filepath, bool *error) {
+QList<QRgb> parseAdvanceMapPal(QString filepath, bool *error) {
     QFile file(filepath);
     if (!file.open(QIODevice::ReadOnly)) {
         *error = true;
@@ -143,16 +175,16 @@ QList<QRgb> PaletteUtil::parseAdvanceMapPal(QString filepath, bool *error) {
         unsigned char red = static_cast<unsigned char>(in.at(i));
         unsigned char green = static_cast<unsigned char>(in.at(i + 1));
         unsigned char blue = static_cast<unsigned char>(in.at(i + 2));
-        palette.append(qRgb(this->clampColorValue(red),
-                            this->clampColorValue(green),
-                            this->clampColorValue(blue)));
+        palette.append(qRgb(clampColorValue(red),
+                            clampColorValue(green),
+                            clampColorValue(blue)));
         i += 4;
     }
 
     return palette;
 }
 
-QList<QRgb> PaletteUtil::parseAdobeColorTable(QString filepath, bool *error) {
+QList<QRgb> parseAdobeColorTable(QString filepath, bool *error) {
     QFile file(filepath);
     if (!file.open(QIODevice::ReadOnly)) {
         *error = true;
@@ -175,16 +207,16 @@ QList<QRgb> PaletteUtil::parseAdobeColorTable(QString filepath, bool *error) {
         unsigned char red = static_cast<unsigned char>(in.at(i));
         unsigned char green = static_cast<unsigned char>(in.at(i + 1));
         unsigned char blue = static_cast<unsigned char>(in.at(i + 2));
-        palette.append(qRgb(this->clampColorValue(red),
-                            this->clampColorValue(green),
-                            this->clampColorValue(blue)));
+        palette.append(qRgb(clampColorValue(red),
+                            clampColorValue(green),
+                            clampColorValue(blue)));
         i += 3;
     }
 
     return palette;
 }
 
-QList<QRgb> PaletteUtil::parseTileLayerPro(QString filepath, bool *error) {
+QList<QRgb> parseTileLayerPro(QString filepath, bool *error) {
     QFile file(filepath);
     if (!file.open(QIODevice::ReadOnly)) {
         *error = true;
@@ -213,16 +245,16 @@ QList<QRgb> PaletteUtil::parseTileLayerPro(QString filepath, bool *error) {
         unsigned char red = static_cast<unsigned char>(in.at(i));
         unsigned char green = static_cast<unsigned char>(in.at(i + 1));
         unsigned char blue = static_cast<unsigned char>(in.at(i + 2));
-        palette.append(qRgb(this->clampColorValue(red),
-                            this->clampColorValue(green),
-                            this->clampColorValue(blue)));
+        palette.append(qRgb(clampColorValue(red),
+                            clampColorValue(green),
+                            clampColorValue(blue)));
         i += 3;
     }
 
     return palette;
 }
 
-QList<QRgb> PaletteUtil::parseAdvancePaletteEditor(QString filepath, bool *error) {
+QList<QRgb> parseAdvancePaletteEditor(QString filepath, bool *error) {
     QFile file(filepath);
     if (!file.open(QIODevice::ReadOnly)) {
         *error = true;
@@ -258,44 +290,16 @@ QList<QRgb> PaletteUtil::parseAdvancePaletteEditor(QString filepath, bool *error
         int red = (raw & 0x1F) * 8;
         int green = ((raw >> 5) & 0x1F) * 8;
         int blue = ((raw >> 10) & 0x1F) * 8;
-        palette.append(qRgb(this->clampColorValue(red),
-                            this->clampColorValue(green),
-                            this->clampColorValue(blue)));
+        palette.append(qRgb(clampColorValue(red),
+                            clampColorValue(green),
+                            clampColorValue(blue)));
     }
 
     file.close();
     return palette;
 }
 
-void PaletteUtil::writeJASC(QString filepath, QVector<QRgb> palette, int offset, int nColors) {
-    if (!nColors) {
-        logWarn(QString("Cannot save a palette with no colors."));
-        return;
-    }
-    if (offset > palette.size() || offset + nColors > palette.size()) {
-        logWarn("Palette offset out of range for color table.");
-        return;
-    }
-
-    QString text = "JASC-PAL\r\n0100\r\n";
-    text += QString::number(nColors) + "\r\n";
-
-    for (int i = offset; i < offset + nColors; i++) {
-        QRgb color = palette.at(i);
-        text += QString::number(qRed(color)) + " "
-              + QString::number(qGreen(color)) + " "
-              + QString::number(qBlue(color)) + "\r\n";
-    }
-
-    QFile file(filepath);
-    if (file.open(QIODevice::WriteOnly)) {
-        file.write(text.toUtf8());
-    } else {
-        logWarn(QString("Could not write to file '%1': ").arg(filepath) + file.errorString());
-    }
-}
-
-int PaletteUtil::clampColorValue(int value) {
+int clampColorValue(int value) {
     if (value < 0) {
         value = 0;
     }

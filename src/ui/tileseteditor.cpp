@@ -626,9 +626,8 @@ void TilesetEditor::importTilesetTiles(Tileset *tileset, bool primary) {
             return;
         }
 
-        PaletteUtil parser;
         bool error = false;
-        QList<QRgb> palette = parser.parse(filepath, &error);
+        QList<QRgb> palette = PaletteUtil::parse(filepath, &error);
         if (error) {
             QMessageBox msgBox(this);
             msgBox.setText("Failed to import palette.");
@@ -879,9 +878,8 @@ void TilesetEditor::importTilesetMetatiles(Tileset *tileset, bool primary)
         return;
     }
 
-    MetatileParser parser;
     bool error = false;
-    QList<Metatile*> metatiles = parser.parse(filepath, &error, primary);
+    QList<Metatile*> metatiles = MetatileParser::parse(filepath, &error, primary);
     if (error) {
         QMessageBox msgBox(this);
         msgBox.setText("Failed to import metatiles from Advance Map 1.92 .bvd file.");

@@ -279,9 +279,8 @@ void PaletteEditor::on_actionImport_Palette_triggered()
         return;
     }
 
-    PaletteUtil parser;
     bool error = false;
-    QList<QRgb> palette = parser.parse(filepath, &error);
+    QList<QRgb> palette = PaletteUtil::parse(filepath, &error);
     if (error) {
         QMessageBox msgBox(this);
         msgBox.setText("Failed to import palette.");
