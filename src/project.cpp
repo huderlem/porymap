@@ -99,18 +99,20 @@ QString Project::getProjectTitle() {
 }
 
 void Project::clearMapCache() {
-    for (QString mapName : mapCache.keys()) {
-        Map *map = mapCache.take(mapName);
-        if (map) delete map;
+    for (auto *map : mapCache.values()) {
+        if (map)
+            delete map;
     }
+    mapCache.clear();
     emit mapCacheCleared();
 }
 
 void Project::clearTilesetCache() {
-    for (QString tilesetName : tilesetCache.keys()) {
-        Tileset *tileset = tilesetCache.take(tilesetName);
-        if (tileset) delete tileset;
+    for (auto *tileset : tilesetCache.values()) {
+        if (tileset)
+            delete tileset;
     }
+    tilesetCache.clear();
 }
 
 Map* Project::loadMap(QString map_name) {
@@ -1222,12 +1224,8 @@ void Project::writeBlockdata(QString path, const Blockdata &blockdata) {
 }
 
 void Project::saveAllMaps() {
-    QList<QString> keys = mapCache.keys();
-    for (int i = 0; i < keys.length(); i++) {
-        QString key = keys.value(i);
-        Map* map = mapCache.value(key);
+    for (auto *map : mapCache.values())
         saveMap(map);
-    }
 }
 
 void Project::saveMap(Map *map) {
@@ -1866,26 +1864,24 @@ Map* Project::addNewMapToGroup(QString mapName, int groupNum, Map *newMap, bool 
     mapGroups.insert(mapName, groupNum);
     groupedMapNames[groupNum].append(mapName);
 
-    Map *map = new Map;
-    map = newMap;
+    newMap->isPersistedToFile = false;
+    newMap->setName(mapName);
 
-    map->isPersistedToFile = false;
-    map->setName(mapName);
-
-    mapConstantsToMapNames.insert(map->constantName, map->name);
-    mapNamesToMapConstants.insert(map->name, map->constantName);
+    mapConstantsToMapNames.insert(newMap->constantName, newMap->name);
+    mapNamesToMapConstants.insert(newMap->name, newMap->constantName);
     if (!existingLayout) {
-        mapLayouts.insert(map->layoutId, map->layout);
-        mapLayoutsTable.append(map->layoutId);
-        setNewMapBlockdata(map);
-        setNewMapBorder(map);
+        mapLayouts.insert(newMap->layoutId, newMap->layout);
+        mapLayoutsTable.append(newMap->layoutId);
+        setNewMapBlockdata(newMap);
+        setNewMapBorder(newMap);
     }
 
-    loadMapTilesets(map);
-    setNewMapEvents(map);
-    setNewMapConnections(map);
+    loadMapTilesets(newMap);
+    setNewMapEvents(newMap);
+    setNewMapConnections(newMap);
+    mapCache.insert(mapName, newMap);
 
-    return map;
+    return newMap;
 }
 
 QString Project::getNewMapName() {
