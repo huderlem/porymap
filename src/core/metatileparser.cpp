@@ -2,11 +2,7 @@
 #include "config.h"
 #include "log.h"
 #include "project.h"
-
-MetatileParser::MetatileParser()
-{
-
-}
+#include <QString>
 
 QList<Metatile*> MetatileParser::parse(QString filepath, bool *error, bool primaryTileset)
 {
