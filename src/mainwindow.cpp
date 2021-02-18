@@ -1205,15 +1205,15 @@ void MainWindow::on_actionNew_Tileset_triggered() {
         }
         directory.mkdir(fullDirectoryPath);
         directory.mkdir(fullDirectoryPath + "/palettes");
-        Tileset *newSet = new Tileset();
-        newSet->name = createTilesetDialog->fullSymbolName;
-        newSet->tilesImagePath = fullDirectoryPath + "/tiles.png";
-        newSet->metatiles_path = fullDirectoryPath + "/metatiles.bin";
-        newSet->metatile_attrs_path = fullDirectoryPath + "/metatile_attributes.bin";
-        newSet->is_secondary = createTilesetDialog->isSecondary ? "TRUE" : "FALSE";
+        Tileset newSet;
+        newSet.name = createTilesetDialog->fullSymbolName;
+        newSet.tilesImagePath = fullDirectoryPath + "/tiles.png";
+        newSet.metatiles_path = fullDirectoryPath + "/metatiles.bin";
+        newSet.metatile_attrs_path = fullDirectoryPath + "/metatile_attributes.bin";
+        newSet.is_secondary = createTilesetDialog->isSecondary ? "TRUE" : "FALSE";
         int numMetaTiles = createTilesetDialog->isSecondary ? (Project::getNumTilesTotal() - Project::getNumTilesPrimary()) : Project::getNumTilesPrimary();
         QImage tilesImage(":/images/blank_tileset.png");
-        editor->project->loadTilesetTiles(newSet, tilesImage);
+        editor->project->loadTilesetTiles(&newSet, tilesImage);
         for(int i = 0; i < numMetaTiles; ++i) {
             int tilesPerMetatile = projectConfig.getTripleLayerMetatilesEnabled() ? 12 : 8;
             Metatile *mt = new Metatile();
@@ -1231,32 +1231,32 @@ void MainWindow::on_actionNew_Tileset_triggered() {
             mt->encounterType = 0;
             mt->terrainType = 0;
 
-            newSet->metatiles.append(mt);
+            newSet.metatiles.append(mt);
         }
         for(int i = 0; i < 16; ++i) {
             QList<QRgb> currentPal;
             for(int i = 0; i < 16;++i) {
                 currentPal.append(qRgb(0,0,0));
             }
-            newSet->palettes.append(currentPal);
-            newSet->palettePreviews.append(currentPal);
+            newSet.palettes.append(currentPal);
+            newSet.palettePreviews.append(currentPal);
             QString fileName = QString("%1.pal").arg(i, 2, 10, QLatin1Char('0'));
-            newSet->palettePaths.append(fullDirectoryPath+"/palettes/" + fileName);
+            newSet.palettePaths.append(fullDirectoryPath+"/palettes/" + fileName);
         }
-        newSet->palettes[0][1] = qRgb(255,0,255);
-        newSet->palettePreviews[0][1] = qRgb(255,0,255);
-        newSet->is_compressed = "TRUE";
-        newSet->padding = "0";
-        editor->project->saveTilesetTilesImage(newSet);
-        editor->project->saveTilesetMetatiles(newSet);
-        editor->project->saveTilesetMetatileAttributes(newSet);
-        editor->project->saveTilesetPalettes(newSet);
+        newSet.palettes[0][1] = qRgb(255,0,255);
+        newSet.palettePreviews[0][1] = qRgb(255,0,255);
+        newSet.is_compressed = "TRUE";
+        newSet.padding = "0";
+        editor->project->saveTilesetTilesImage(&newSet);
+        editor->project->saveTilesetMetatiles(&newSet);
+        editor->project->saveTilesetMetatileAttributes(&newSet);
+        editor->project->saveTilesetPalettes(&newSet);
 
         //append to tileset specific files
 
-        newSet->appendToHeaders(editor->project->root + "/data/tilesets/headers.inc", createTilesetDialog->friendlyName);
-        newSet->appendToGraphics(editor->project->root + "/data/tilesets/graphics.inc", createTilesetDialog->friendlyName, !createTilesetDialog->isSecondary);
-        newSet->appendToMetatiles(editor->project->root + "/data/tilesets/metatiles.inc", createTilesetDialog->friendlyName, !createTilesetDialog->isSecondary);
+        newSet.appendToHeaders(editor->project->root + "/data/tilesets/headers.inc", createTilesetDialog->friendlyName);
+        newSet.appendToGraphics(editor->project->root + "/data/tilesets/graphics.inc", createTilesetDialog->friendlyName, !createTilesetDialog->isSecondary);
+        newSet.appendToMetatiles(editor->project->root + "/data/tilesets/metatiles.inc", createTilesetDialog->friendlyName, !createTilesetDialog->isSecondary);
         if(!createTilesetDialog->isSecondary) {
             this->ui->comboBox_PrimaryTileset->addItem(createTilesetDialog->fullSymbolName);
         } else {
