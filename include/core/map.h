@@ -47,7 +47,7 @@ public:
     QString allowRunning;
     QString allowBiking;
     QString allowEscapeRope;
-    int floorNumber;
+    int floorNumber = 0;
     QString battle_scene;
     QString sharedEventsMap = "";
     QString sharedScriptsMap = "";
