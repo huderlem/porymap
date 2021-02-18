@@ -101,7 +101,6 @@ public:
     void deleteFile(QString path);
 
     bool readMapGroups();
-    Map* addNewMapToGroup(QString mapName, int groupNum);
     Map* addNewMapToGroup(QString, int, Map*, bool);
     QString getNewMapName();
     QString getProjectTitle();
