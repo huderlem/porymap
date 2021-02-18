@@ -13,12 +13,8 @@ private:
     using QGraphicsPixmapItem::paint;
 
 public:
-    enum class PaintMode {
-        Disabled,
-        Metatiles,
-        EventObjects
-    };
-    MapPixmapItem(Map *map_, MetatileSelector *metatileSelector, Settings *settings) {
+    enum class PaintMode { Disabled, Metatiles, EventObjects };
+    MapPixmapItem(Map* map_, MetatileSelector* metatileSelector, Settings* settings) {
         this->map = map_;
         this->map->setMapItem(this);
         this->metatileSelector = metatileSelector;
@@ -29,9 +25,9 @@ public:
         setAcceptHoverEvents(true);
     }
     MapPixmapItem::PaintMode paintingMode;
-    Map *map;
-    MetatileSelector *metatileSelector;
-    Settings *settings;
+    Map* map;
+    MetatileSelector* metatileSelector;
+    Settings* settings;
     bool active;
     bool has_mouse = false;
     bool right_click;
@@ -40,11 +36,7 @@ public:
     bool prevStraightPathState;
     int straight_path_initial_x;
     int straight_path_initial_y;
-    enum Axis {
-        None = 0,
-        X,
-        Y
-    };
+    enum Axis { None = 0, X, Y };
     MapPixmapItem::Axis lockedAxis;
     QPoint selection_origin;
     QList<QPoint> selection;
@@ -53,30 +45,21 @@ public:
     virtual void magicFill(QGraphicsSceneMouseEvent*);
     void magicFill(int x, int y, uint16_t metatileId, bool fromScriptCall = false);
     void magicFill(int x, int y, bool fromScriptCall = false);
-    void magicFill(
-            int initialX,
-            int initialY,
-            QPoint selectionDimensions,
-            QList<uint16_t> *selectedMetatiles,
-            QList<QPair<uint16_t, uint16_t>> *selectedCollisions,
-            bool fromScriptCall = false);
+    void magicFill(int initialX, int initialY, QPoint selectionDimensions, QList<uint16_t>* selectedMetatiles,
+        QList<QPair<uint16_t, uint16_t>>* selectedCollisions, bool fromScriptCall = false);
     void floodFill(int x, int y, bool fromScriptCall = false);
     void floodFill(int x, int y, uint16_t metatileId, bool fromScriptCall = false);
-    void floodFill(int initialX,
-                   int initialY,
-                   QPoint selectionDimensions,
-                   QList<uint16_t> *selectedMetatiles,
-                   QList<QPair<uint16_t, uint16_t>> *selectedCollisions,
-                   bool fromScriptCall = false);
+    void floodFill(int initialX, int initialY, QPoint selectionDimensions, QList<uint16_t>* selectedMetatiles,
+        QList<QPair<uint16_t, uint16_t>>* selectedCollisions, bool fromScriptCall = false);
     void floodFillSmartPath(int initialX, int initialY, bool fromScriptCall = false);
     virtual void pick(QGraphicsSceneMouseEvent*);
     virtual void select(QGraphicsSceneMouseEvent*);
     virtual void shift(QGraphicsSceneMouseEvent*);
     void shift(int xDelta, int yDelta, bool fromScriptCall = false);
     virtual void draw(bool ignoreCache = false);
-    void updateMetatileSelection(QGraphicsSceneMouseEvent *event);
+    void updateMetatileSelection(QGraphicsSceneMouseEvent* event);
     void paintNormal(int x, int y, bool fromScriptCall = false);
-    void lockNondominantAxis(QGraphicsSceneMouseEvent *event);
+    void lockNondominantAxis(QGraphicsSceneMouseEvent* event);
     QPoint adjustCoords(QPoint pos);
 
 private:
@@ -86,10 +69,10 @@ private:
     unsigned actionId_ = 0;
 
 signals:
-    void startPaint(QGraphicsSceneMouseEvent *, MapPixmapItem *);
-    void endPaint(QGraphicsSceneMouseEvent *, MapPixmapItem *);
-    void mouseEvent(QGraphicsSceneMouseEvent *, MapPixmapItem *);
-    void hoveredMapMetatileChanged(const QPoint &pos);
+    void startPaint(QGraphicsSceneMouseEvent*, MapPixmapItem*);
+    void endPaint(QGraphicsSceneMouseEvent*, MapPixmapItem*);
+    void mouseEvent(QGraphicsSceneMouseEvent*, MapPixmapItem*);
+    void hoveredMapMetatileChanged(const QPoint& pos);
     void hoveredMapMetatileCleared();
 
 protected:

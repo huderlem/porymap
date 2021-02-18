@@ -46,7 +46,8 @@ void MetatileSelector::draw() {
 }
 
 bool MetatileSelector::select(uint16_t metatileId) {
-    if (!Tileset::metatileIsValid(metatileId, this->primaryTileset, this->secondaryTileset)) return false;
+    if (!Tileset::metatileIsValid(metatileId, this->primaryTileset, this->secondaryTileset))
+        return false;
     this->externalSelection = false;
     QPoint coords = this->getMetatileIdCoords(metatileId);
     SelectablePixmapItem::select(coords.x(), coords.y(), 0, 0);
@@ -55,13 +56,14 @@ bool MetatileSelector::select(uint16_t metatileId) {
 }
 
 bool MetatileSelector::selectFromMap(uint16_t metatileId, uint16_t collision, uint16_t elevation) {
-    if (!Tileset::metatileIsValid(metatileId, this->primaryTileset, this->secondaryTileset)) return false;
+    if (!Tileset::metatileIsValid(metatileId, this->primaryTileset, this->secondaryTileset))
+        return false;
     this->select(metatileId);
     this->selectedCollisions->append(QPair<uint16_t, uint16_t>(collision, elevation));
     return true;
 }
 
-void MetatileSelector::setTilesets(Tileset *primaryTileset, Tileset *secondaryTileset) {
+void MetatileSelector::setTilesets(Tileset* primaryTileset, Tileset* secondaryTileset) {
     this->primaryTileset = primaryTileset;
     this->secondaryTileset = secondaryTileset;
     if (!this->selectionIsValid()) {
@@ -105,19 +107,21 @@ void MetatileSelector::setExternalSelection(int width, int height, QList<uint16_
     emit selectedMetatilesChanged();
 }
 
-bool MetatileSelector::shouldAcceptEvent(QGraphicsSceneMouseEvent *event) {
+bool MetatileSelector::shouldAcceptEvent(QGraphicsSceneMouseEvent* event) {
     QPoint pos = this->getCellPos(event->pos());
     return Tileset::metatileIsValid(getMetatileId(pos.x(), pos.y()), this->primaryTileset, this->secondaryTileset);
 }
 
-void MetatileSelector::mousePressEvent(QGraphicsSceneMouseEvent *event) {
-    if (!shouldAcceptEvent(event)) return;
+void MetatileSelector::mousePressEvent(QGraphicsSceneMouseEvent* event) {
+    if (!shouldAcceptEvent(event))
+        return;
     SelectablePixmapItem::mousePressEvent(event);
     this->updateSelectedMetatiles();
 }
 
-void MetatileSelector::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
-    if (!shouldAcceptEvent(event)) return;
+void MetatileSelector::mouseMoveEvent(QGraphicsSceneMouseEvent* event) {
+    if (!shouldAcceptEvent(event))
+        return;
     SelectablePixmapItem::mouseMoveEvent(event);
     this->updateSelectedMetatiles();
 
@@ -126,13 +130,14 @@ void MetatileSelector::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     emit this->hoveredMetatileSelectionChanged(metatileId);
 }
 
-void MetatileSelector::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
-    if (!shouldAcceptEvent(event)) return;
+void MetatileSelector::mouseReleaseEvent(QGraphicsSceneMouseEvent* event) {
+    if (!shouldAcceptEvent(event))
+        return;
     SelectablePixmapItem::mouseReleaseEvent(event);
     this->updateSelectedMetatiles();
 }
 
-void MetatileSelector::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
+void MetatileSelector::hoverMoveEvent(QGraphicsSceneHoverEvent* event) {
     QPoint pos = this->getCellPos(event->pos());
     uint16_t metatileId = this->getMetatileId(pos.x(), pos.y());
     emit this->hoveredMetatileSelectionChanged(metatileId);
@@ -188,15 +193,13 @@ uint16_t MetatileSelector::getMetatileId(int x, int y) {
 }
 
 QPoint MetatileSelector::getMetatileIdCoords(uint16_t metatileId) {
-    if (!Tileset::metatileIsValid(metatileId, this->primaryTileset, this->secondaryTileset))
-    {
+    if (!Tileset::metatileIsValid(metatileId, this->primaryTileset, this->secondaryTileset)) {
         // Invalid metatile id.
         return QPoint(0, 0);
     }
 
-    int index = metatileId < Project::getNumMetatilesPrimary()
-                ? metatileId
-                : metatileId - Project::getNumMetatilesPrimary() + this->primaryTileset->metatiles.length();
+    int index = metatileId < Project::getNumMetatilesPrimary() ? metatileId
+                                                               : metatileId - Project::getNumMetatilesPrimary() + this->primaryTileset->metatiles.length();
     return QPoint(index % this->numMetatilesWide, index / this->numMetatilesWide);
 }
 
@@ -207,6 +210,6 @@ QPoint MetatileSelector::getMetatileIdCoordsOnWidget(uint16_t metatileId) {
     return pos;
 }
 
-void MetatileSelector::setMap(Map *map) {
+void MetatileSelector::setMap(Map* map) {
     this->map = map;
 }

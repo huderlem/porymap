@@ -68,80 +68,90 @@
 #include "orderedmap.h"
 
 #ifdef _MSC_VER
-    #if _MSC_VER <= 1800 // VS 2013
-        #ifndef noexcept
-            #define noexcept throw()
-        #endif
+#if _MSC_VER <= 1800 // VS 2013
+#ifndef noexcept
+#define noexcept throw()
+#endif
 
-        #ifndef snprintf
-            #define snprintf _snprintf_s
-        #endif
-    #endif
+#ifndef snprintf
+#define snprintf _snprintf_s
+#endif
+#endif
 #endif
 
 namespace poryjson {
 
-enum JsonParse {
-    STANDARD, COMMENTS
-};
+enum JsonParse { STANDARD, COMMENTS };
 
 class JsonValue;
 
 class Json final {
 public:
     // Types
-    enum Type {
-        NUL, NUMBER, BOOL, STRING, ARRAY, OBJECT
-    };
+    enum Type { NUL, NUMBER, BOOL, STRING, ARRAY, OBJECT };
 
     // Array and object typedefs
     typedef QVector<Json> array;
     typedef tsl::ordered_map<QString, Json> object;
 
     // Constructors for the various types of JSON value.
-    Json() noexcept;                // NUL
-    Json(std::nullptr_t) noexcept;  // NUL
-    Json(double value);             // NUMBER
-    Json(int value);                // NUMBER
-    Json(bool value);               // BOOL
-    Json(const QString &value); // STRING
-    Json(QString &&value);      // STRING
-    Json(const char * value);       // STRING
-    Json(const array &values);      // ARRAY
-    Json(array &&values);           // ARRAY
-    Json(const object &values);     // OBJECT
-    Json(object &&values);          // OBJECT
+    Json() noexcept; // NUL
+    Json(std::nullptr_t) noexcept; // NUL
+    Json(double value); // NUMBER
+    Json(int value); // NUMBER
+    Json(bool value); // BOOL
+    Json(const QString& value); // STRING
+    Json(QString&& value); // STRING
+    Json(const char* value); // STRING
+    Json(const array& values); // ARRAY
+    Json(array&& values); // ARRAY
+    Json(const object& values); // OBJECT
+    Json(object&& values); // OBJECT
 
     // Implicit constructor: anything with a to_json() function.
-    template <class T, class = decltype(&T::to_json)>
-    Json(const T & t) : Json(t.to_json()) {}
+    template <class T, class = decltype(&T::to_json)> Json(const T& t) : Json(t.to_json()) {
+    }
 
     // Implicit constructor: map-like objects (std::map, std::unordered_map, etc)
-    template <class M, typename std::enable_if<
-        std::is_constructible<QString, decltype(std::declval<M>().begin()->first)>::value
-        && std::is_constructible<Json, decltype(std::declval<M>().begin()->second)>::value,
-            int>::type = 0>
-    Json(const M & m) : Json(object(m.begin(), m.end())) {}
+    template <class M, typename std::enable_if<std::is_constructible<QString, decltype(std::declval<M>().begin()->first)>::value
+                               && std::is_constructible<Json, decltype(std::declval<M>().begin()->second)>::value,
+                           int>::type
+        = 0>
+    Json(const M& m)
+        : Json(object(m.begin(), m.end())) {
+    }
 
     // Implicit constructor: vector-like objects (std::list, std::vector, std::set, etc)
-    template <class V, typename std::enable_if<
-        std::is_constructible<Json, decltype(*std::declval<V>().begin())>::value,
-            int>::type = 0>
-    Json(const V & v) : Json(array(v.begin(), v.end())) {}
+    template <class V, typename std::enable_if<std::is_constructible<Json, decltype(*std::declval<V>().begin())>::value, int>::type = 0>
+    Json(const V& v)
+        : Json(array(v.begin(), v.end())) {
+    }
 
     // This prevents Json(some_pointer) from accidentally producing a bool. Use
     // Json(bool(some_pointer)) if that behavior is desired.
-    Json(void *) = delete;
+    Json(void*) = delete;
 
     // Accessors
     Type type() const;
 
-    bool is_null()   const { return type() == NUL; }
-    bool is_number() const { return type() == NUMBER; }
-    bool is_bool()   const { return type() == BOOL; }
-    bool is_string() const { return type() == STRING; }
-    bool is_array()  const { return type() == ARRAY; }
-    bool is_object() const { return type() == OBJECT; }
+    bool is_null() const {
+        return type() == NUL;
+    }
+    bool is_number() const {
+        return type() == NUMBER;
+    }
+    bool is_bool() const {
+        return type() == BOOL;
+    }
+    bool is_string() const {
+        return type() == STRING;
+    }
+    bool is_array() const {
+        return type() == ARRAY;
+    }
+    bool is_object() const {
+        return type() == OBJECT;
+    }
 
     // Return the enclosed value if this is a number, 0 otherwise. Note that poryjson does not
     // distinguish between integer and non-integer numbers - number_value() and int_value()
@@ -152,20 +162,20 @@ public:
     // Return the enclosed value if this is a boolean, false otherwise.
     bool bool_value() const;
     // Return the enclosed string if this is a string, "" otherwise.
-    const QString &string_value() const;
+    const QString& string_value() const;
     // Return the enclosed std::vector if this is an array, or an empty vector otherwise.
-    const array &array_items() const;
+    const array& array_items() const;
     // Return the enclosed std::map if this is an object, or an empty map otherwise.
-    const object &object_items() const;
+    const object& object_items() const;
 
     // Return a reference to arr[i] if this is an array, Json() otherwise.
-    const Json & operator[](int i) const;
+    const Json& operator[](int i) const;
     // Return a reference to obj[key] if this is an object, Json() otherwise.
-    const Json & operator[](const QString &key) const;
+    const Json& operator[](const QString& key) const;
 
     // Serialize.
-    void dump(QString &out, int *) const;
-    QString dump(int *indent = nullptr) const {
+    void dump(QString& out, int*) const;
+    QString dump(int* indent = nullptr) const {
         QString out;
         if (!indent) {
             int temp = 0;
@@ -176,12 +186,8 @@ public:
     }
 
     // Parse. If parse fails, return Json() and assign an error message to err.
-    static Json parse(const QString & in,
-                      QString & err,
-                      JsonParse strategy = JsonParse::STANDARD);
-    static Json parse(const char * in,
-                      QString & err,
-                      JsonParse strategy = JsonParse::STANDARD) {
+    static Json parse(const QString& in, QString& err, JsonParse strategy = JsonParse::STANDARD);
+    static Json parse(const char* in, QString& err, JsonParse strategy = JsonParse::STANDARD) {
         if (in) {
             return parse(QString(in), err, strategy);
         } else {
@@ -190,12 +196,20 @@ public:
         }
     }
 
-    bool operator== (const Json &rhs) const;
-    bool operator<  (const Json &rhs) const;
-    bool operator!= (const Json &rhs) const { return !(*this == rhs); }
-    bool operator<= (const Json &rhs) const { return !(rhs < *this); }
-    bool operator>  (const Json &rhs) const { return  (rhs < *this); }
-    bool operator>= (const Json &rhs) const { return !(*this < rhs); }
+    bool operator==(const Json& rhs) const;
+    bool operator<(const Json& rhs) const;
+    bool operator!=(const Json& rhs) const {
+        return !(*this == rhs);
+    }
+    bool operator<=(const Json& rhs) const {
+        return !(rhs < *this);
+    }
+    bool operator>(const Json& rhs) const {
+        return (rhs < *this);
+    }
+    bool operator>=(const Json& rhs) const {
+        return !(*this < rhs);
+    }
 
 private:
     std::shared_ptr<JsonValue> m_ptr;
@@ -203,19 +217,19 @@ private:
 
 class JsonDoc {
 public:
-    JsonDoc(Json *object) {
+    JsonDoc(Json* object) {
         this->m_obj = object;
         this->m_indent = 0;
     };
 
-    void dump(QFile *file) {
+    void dump(QFile* file) {
         QTextStream fileStream(file);
         fileStream << m_obj->dump(&m_indent);
         fileStream << "\n"; // pad file with newline
     }
 
 private:
-    Json *m_obj;
+    Json* m_obj;
     int m_indent;
 };
 
@@ -226,18 +240,19 @@ protected:
     friend class JsonInt;
     friend class JsonDouble;
     virtual Json::Type type() const = 0;
-    virtual bool equals(const JsonValue * other) const = 0;
-    virtual bool less(const JsonValue * other) const = 0;
-    virtual void dump(QString &out, int *indent) const = 0;
+    virtual bool equals(const JsonValue* other) const = 0;
+    virtual bool less(const JsonValue* other) const = 0;
+    virtual void dump(QString& out, int* indent) const = 0;
     virtual double number_value() const;
     virtual int int_value() const;
     virtual bool bool_value() const;
-    virtual const QString &string_value() const;
-    virtual const Json::array &array_items() const;
-    virtual const Json &operator[](int i) const;
-    virtual const Json::object &object_items() const;
-    virtual const Json &operator[](const QString &key) const;
-    virtual ~JsonValue() {}
+    virtual const QString& string_value() const;
+    virtual const Json::array& array_items() const;
+    virtual const Json& operator[](int i) const;
+    virtual const Json::object& object_items() const;
+    virtual const Json& operator[](const QString& key) const;
+    virtual ~JsonValue() {
+    }
 };
 
 } // namespace poryjson

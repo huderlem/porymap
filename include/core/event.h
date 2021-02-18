@@ -10,8 +10,7 @@
 
 using OrderedJson = poryjson::Json;
 
-class EventType
-{
+class EventType {
 public:
     static QString Object;
     static QString Warp;
@@ -25,12 +24,12 @@ public:
 
 class DraggablePixmapItem;
 class Project;
-class Event
-{
+class Event {
 public:
     Event();
     Event(const Event&);
     Event(QJsonObject, QString);
+
 public:
     int x() const {
         return getInt("x");
@@ -47,16 +46,16 @@ public:
     void setY(int y) {
         put("y", y);
     }
-    QString get(const QString &key) const {
+    QString get(const QString& key) const {
         return values.value(key);
     }
-    int getInt(const QString &key) const {
+    int getInt(const QString& key) const {
         return values.value(key).toInt(nullptr, 0);
     }
-    uint16_t getU16(const QString &key) const {
+    uint16_t getU16(const QString& key) const {
         return values.value(key).toUShort(nullptr, 0);
     }
-    int16_t getS16(const QString &key) const {
+    int16_t getS16(const QString& key) const {
         return values.value(key).toShort(nullptr, 0);
     }
     void put(QString key, int value) {
@@ -77,7 +76,7 @@ public:
     static Event* createNewSecretBaseEvent(Project*);
 
     OrderedJson::object buildObjectEventJSON();
-    OrderedJson::object buildWarpEventJSON(const QMap<QString, QString> &);
+    OrderedJson::object buildWarpEventJSON(const QMap<QString, QString>&);
     OrderedJson::object buildTriggerEventJSON();
     OrderedJson::object buildWeatherTriggerEventJSON();
     OrderedJson::object buildSignEventJSON();
@@ -88,7 +87,7 @@ public:
     int getPixelY();
     QMap<QString, bool> getExpectedFields();
     void readCustomValues(QJsonObject values);
-    void addCustomValuesTo(OrderedJson::object *obj);
+    void addCustomValuesTo(OrderedJson::object* obj);
     void setFrameFromMovement(QString);
 
     QMap<QString, QString> values;
@@ -100,8 +99,10 @@ public:
     bool hFlip = false;
     bool usingSprite;
 
-    DraggablePixmapItem *pixmapItem = nullptr;
-    void setPixmapItem(DraggablePixmapItem *item) { pixmapItem = item; }
+    DraggablePixmapItem* pixmapItem = nullptr;
+    void setPixmapItem(DraggablePixmapItem* item) {
+        pixmapItem = item;
+    }
 };
 
 #endif // EVENT_H

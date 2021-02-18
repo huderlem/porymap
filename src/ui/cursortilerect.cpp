@@ -1,8 +1,7 @@
 #include "cursortilerect.h"
 #include "log.h"
 
-CursorTileRect::CursorTileRect(bool *enabled, QRgb color)
-{
+CursorTileRect::CursorTileRect(bool* enabled, QRgb color) {
     this->enabled = enabled;
     this->visible = true;
     this->color = color;
@@ -19,37 +18,31 @@ CursorTileRect::CursorTileRect(bool *enabled, QRgb color)
     this->selectionHeight = 1;
 }
 
-void CursorTileRect::setVisibility(bool visible)
-{
+void CursorTileRect::setVisibility(bool visible) {
     this->visible = visible;
 }
 
-void CursorTileRect::initAnchor(int coordX, int coordY)
-{
+void CursorTileRect::initAnchor(int coordX, int coordY) {
     this->anchorCoordX = coordX;
     this->anchorCoordY = coordY;
     this->anchored = true;
 }
 
-void CursorTileRect::stopAnchor()
-{
+void CursorTileRect::stopAnchor() {
     this->anchored = false;
 }
 
-void CursorTileRect::initRightClickSelectionAnchor(int coordX, int coordY)
-{
+void CursorTileRect::initRightClickSelectionAnchor(int coordX, int coordY) {
     this->anchorCoordX = coordX;
     this->anchorCoordY = coordY;
     this->rightClickSelectionAnchored = true;
 }
 
-void CursorTileRect::stopRightClickSelectionAnchor()
-{
+void CursorTileRect::stopRightClickSelectionAnchor() {
     this->rightClickSelectionAnchored = false;
 }
 
-void CursorTileRect::updateSelectionSize(int width, int height)
-{
+void CursorTileRect::updateSelectionSize(int width, int height) {
     this->selectionWidth = width;
     this->selectionHeight = height;
     this->width = width * 16;
@@ -58,43 +51,38 @@ void CursorTileRect::updateSelectionSize(int width, int height)
     this->update();
 }
 
-void CursorTileRect::setSmartPathMode(bool enable)
-{
+void CursorTileRect::setSmartPathMode(bool enable) {
     this->smartPathMode = enable;
 }
 
-void CursorTileRect::setStraightPathMode(bool enable)
-{
+void CursorTileRect::setStraightPathMode(bool enable) {
     this->straightPathMode = enable;
 }
 
-void CursorTileRect::setSingleTileMode()
-{
+void CursorTileRect::setSingleTileMode() {
     this->singleTileMode = true;
 }
 
-void CursorTileRect::stopSingleTileMode()
-{
+void CursorTileRect::stopSingleTileMode() {
     this->singleTileMode = false;
 }
 
-bool CursorTileRect::smartPathInEffect()
-{
+bool CursorTileRect::smartPathInEffect() {
     return !this->rightClickSelectionAnchored && this->smartPathMode && this->selectionHeight == 3 && this->selectionWidth == 3;
 }
 
-void CursorTileRect::updateLocation(int coordX, int coordY)
-{
+void CursorTileRect::updateLocation(int coordX, int coordY) {
     if (!this->singleTileMode) {
         if (this->rightClickSelectionAnchored) {
             coordX = qMin(coordX, this->anchorCoordX);
             coordY = qMin(coordY, this->anchorCoordY);
-        }
-        else if (this->anchored && !this->smartPathInEffect()) {
+        } else if (this->anchored && !this->smartPathInEffect()) {
             int xDiff = coordX - this->anchorCoordX;
             int yDiff = coordY - this->anchorCoordY;
-            if (xDiff < 0 && xDiff % this->selectionWidth != 0) xDiff -= this->selectionWidth;
-            if (yDiff < 0 && yDiff % this->selectionHeight != 0) yDiff -= this->selectionHeight;
+            if (xDiff < 0 && xDiff % this->selectionWidth != 0)
+                xDiff -= this->selectionWidth;
+            if (yDiff < 0 && yDiff % this->selectionHeight != 0)
+                yDiff -= this->selectionHeight;
 
             coordX = this->anchorCoordX + (xDiff / this->selectionWidth) * this->selectionWidth;
             coordY = this->anchorCoordY + (yDiff / this->selectionHeight) * this->selectionHeight;

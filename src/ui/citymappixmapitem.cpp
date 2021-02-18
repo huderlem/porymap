@@ -12,7 +12,8 @@ void CityMapPixmapItem::init() {
     height_ = 10;
 
     QFile binFile(file);
-    if (!binFile.open(QIODevice::ReadOnly)) return;
+    if (!binFile.open(QIODevice::ReadOnly))
+        return;
 
     data = binFile.readAll();
     if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeruby) {
@@ -28,7 +29,7 @@ void CityMapPixmapItem::draw() {
 
     QPainter painter(&image);
     for (int i = 0; i < data.size() / 2; i++) {
-        QImage img = this->tile_selector->tileImg(data[i * 2]);// need to skip every other tile
+        QImage img = this->tile_selector->tileImg(data[i * 2]); // need to skip every other tile
         int x = i % width_;
         int y = i / width_;
         QPoint pos = QPoint(x * 8, y * 8);
@@ -53,7 +54,7 @@ void CityMapPixmapItem::save() {
     binFile.close();
 }
 
-void CityMapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
+void CityMapPixmapItem::paint(QGraphicsSceneMouseEvent* event) {
     QPointF pos = event->pos();
     int x = static_cast<int>(pos.x()) / 8;
     int y = static_cast<int>(pos.y()) / 8;
@@ -63,22 +64,21 @@ void CityMapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
     draw();
 }
 
-void CityMapPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+void CityMapPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent* event) {
     emit mouseEvent(event, this);
 }
 
-void CityMapPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
+void CityMapPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event) {
     QPointF pos = event->pos();
     int x = static_cast<int>(pos.x()) / 8;
     int y = static_cast<int>(pos.y()) / 8;
-    if (x < width_  && x >= 0
-     && y < height_ && y >= 0) {
+    if (x < width_ && x >= 0 && y < height_ && y >= 0) {
         emit this->hoveredRegionMapTileChanged(x, y);
         emit mouseEvent(event, this);
     }
 }
 
-void CityMapPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
+void CityMapPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event) {
     emit mouseEvent(event, this);
 }
 

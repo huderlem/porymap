@@ -29,17 +29,16 @@ namespace Ui {
 class MainWindow;
 }
 
-class MainWindow : public QMainWindow
-{
+class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent);
+    explicit MainWindow(QWidget* parent);
     ~MainWindow();
 
     MainWindow() = delete;
-    MainWindow(const MainWindow &) = delete;
-    MainWindow & operator = (const MainWindow &) = delete;
+    MainWindow(const MainWindow&) = delete;
+    MainWindow& operator=(const MainWindow&) = delete;
 
     // Scripting API
     Q_INVOKABLE QJSValue getBlock(int x, int y);
@@ -71,20 +70,20 @@ public:
     Q_INVOKABLE void addRect(int x, int y, int width, int height, QString color = "#000000");
     Q_INVOKABLE void addFilledRect(int x, int y, int width, int height, QString color = "#000000");
     Q_INVOKABLE void addImage(int x, int y, QString filepath);
-    void refreshAfterPaletteChange(Tileset *tileset);
-    void setTilesetPalette(Tileset *tileset, int paletteIndex, QList<QList<int>> colors);
+    void refreshAfterPaletteChange(Tileset* tileset);
+    void setTilesetPalette(Tileset* tileset, int paletteIndex, QList<QList<int>> colors);
     Q_INVOKABLE void setPrimaryTilesetPalette(int paletteIndex, QList<QList<int>> colors);
     Q_INVOKABLE void setPrimaryTilesetPalettes(QList<QList<QList<int>>> palettes);
     Q_INVOKABLE void setSecondaryTilesetPalette(int paletteIndex, QList<QList<int>> colors);
     Q_INVOKABLE void setSecondaryTilesetPalettes(QList<QList<QList<int>>> palettes);
-    QJSValue getTilesetPalette(const QList<QList<QRgb>> &palettes, int paletteIndex);
-    QJSValue getTilesetPalettes(const QList<QList<QRgb>> &palettes);
+    QJSValue getTilesetPalette(const QList<QList<QRgb>>& palettes, int paletteIndex);
+    QJSValue getTilesetPalettes(const QList<QList<QRgb>>& palettes);
     Q_INVOKABLE QJSValue getPrimaryTilesetPalette(int paletteIndex);
     Q_INVOKABLE QJSValue getPrimaryTilesetPalettes();
     Q_INVOKABLE QJSValue getSecondaryTilesetPalette(int paletteIndex);
     Q_INVOKABLE QJSValue getSecondaryTilesetPalettes();
     void refreshAfterPalettePreviewChange();
-    void setTilesetPalettePreview(Tileset *tileset, int paletteIndex, QList<QList<int>> colors);
+    void setTilesetPalettePreview(Tileset* tileset, int paletteIndex, QList<QList<int>> colors);
     Q_INVOKABLE void setPrimaryTilesetPalettePreview(int paletteIndex, QList<QList<int>> colors);
     Q_INVOKABLE void setPrimaryTilesetPalettesPreview(QList<QList<QList<int>>> palettes);
     Q_INVOKABLE void setSecondaryTilesetPalettePreview(int paletteIndex, QList<QList<int>> colors);
@@ -115,21 +114,21 @@ public:
 private slots:
     void on_action_Open_Project_triggered();
     void on_action_Reload_Project_triggered();
-    void on_mapList_activated(const QModelIndex &index);
+    void on_mapList_activated(const QModelIndex& index);
     void on_action_Save_Project_triggered();
     void openWarpMap(QString map_name, QString warp_num);
 
     void duplicate();
 
     void onLoadMapRequested(QString, QString);
-    void onMapChanged(Map *map);
+    void onMapChanged(Map* map);
     void onMapNeedsRedrawing();
     void onTilesetsSaved(QString, QString);
     void onWildMonDataChanged();
     void openNewMapPopupWindow(int, QVariant);
     void onNewMapCreated();
     void onMapCacheCleared();
-    void onMapRulerStatusChanged(const QString &);
+    void onMapRulerStatusChanged(const QString&);
     void applyUserShortcuts();
 
     void on_action_NewMap_triggered();
@@ -137,11 +136,11 @@ private slots:
     void on_action_Save_triggered();
     void on_tabWidget_2_currentChanged(int index);
     void on_action_Exit_triggered();
-    void on_comboBox_Song_currentTextChanged(const QString &arg1);
-    void on_comboBox_Location_currentTextChanged(const QString &arg1);
-    void on_comboBox_Weather_currentTextChanged(const QString &arg1);
-    void on_comboBox_Type_currentTextChanged(const QString &arg1);
-    void on_comboBox_BattleScene_currentTextChanged(const QString &arg1);
+    void on_comboBox_Song_currentTextChanged(const QString& arg1);
+    void on_comboBox_Location_currentTextChanged(const QString& arg1);
+    void on_comboBox_Weather_currentTextChanged(const QString& arg1);
+    void on_comboBox_Type_currentTextChanged(const QString& arg1);
+    void on_comboBox_BattleScene_currentTextChanged(const QString& arg1);
     void on_checkBox_ShowLocation_clicked(bool checked);
     void on_checkBox_AllowRunning_clicked(bool checked);
     void on_checkBox_AllowBiking_clicked(bool checked);
@@ -179,7 +178,7 @@ private slots:
     void on_toolButton_Move_clicked();
     void on_toolButton_Shift_clicked();
 
-    void onOpenMapListContextMenu(const QPoint &point);
+    void onOpenMapListContextMenu(const QPoint& point);
     void onAddNewMapToGroupClick(QAction* triggeredAction);
     void onAddNewMapToAreaClick(QAction* triggeredAction);
     void onAddNewMapToLayoutClick(QAction* triggeredAction);
@@ -189,15 +188,15 @@ private slots:
     void on_actionExport_Stitched_Map_Image_triggered();
     void on_actionExport_Map_Timelapse_Image_triggered();
 
-    void on_comboBox_ConnectionDirection_currentIndexChanged(const QString &arg1);
+    void on_comboBox_ConnectionDirection_currentIndexChanged(const QString& arg1);
     void on_spinBox_ConnectionOffset_valueChanged(int offset);
-    void on_comboBox_ConnectedMap_currentTextChanged(const QString &mapName);
+    void on_comboBox_ConnectedMap_currentTextChanged(const QString& mapName);
     void on_pushButton_AddConnection_clicked();
     void on_pushButton_RemoveConnection_clicked();
-    void on_comboBox_DiveMap_currentTextChanged(const QString &mapName);
-    void on_comboBox_EmergeMap_currentTextChanged(const QString &mapName);
-    void on_comboBox_PrimaryTileset_currentTextChanged(const QString &arg1);
-    void on_comboBox_SecondaryTileset_currentTextChanged(const QString &arg1);
+    void on_comboBox_DiveMap_currentTextChanged(const QString& mapName);
+    void on_comboBox_EmergeMap_currentTextChanged(const QString& mapName);
+    void on_comboBox_PrimaryTileset_currentTextChanged(const QString& arg1);
+    void on_comboBox_SecondaryTileset_currentTextChanged(const QString& arg1);
     void on_pushButton_ChangeDimensions_clicked();
     void on_checkBox_smartPaths_stateChanged(int selected);
     void on_checkBox_Visibility_clicked(bool checked);
@@ -207,12 +206,12 @@ private slots:
 
     void on_actionTileset_Editor_triggered();
 
-    void mapSortOrder_changed(QAction *action);
+    void mapSortOrder_changed(QAction* action);
 
-    void on_lineEdit_filterBox_textChanged(const QString &arg1);
+    void on_lineEdit_filterBox_textChanged(const QString& arg1);
 
-    void moveEvent(QMoveEvent *event);
-    void closeEvent(QCloseEvent *);
+    void moveEvent(QMoveEvent* event);
+    void closeEvent(QCloseEvent*);
 
     void eventTabChanged(int index);
 
@@ -237,41 +236,41 @@ private slots:
     void togglePreferenceSpecificUi();
 
 private:
-    Ui::MainWindow *ui;
-    QLabel *label_MapRulerStatus = nullptr;
+    Ui::MainWindow* ui;
+    QLabel* label_MapRulerStatus = nullptr;
     QPointer<TilesetEditor> tilesetEditor = nullptr;
     QPointer<RegionMapEditor> regionMapEditor = nullptr;
     QPointer<ShortcutsEditor> shortcutsEditor = nullptr;
     QPointer<MapImageExporter> mapImageExporter = nullptr;
     QPointer<NewMapPopup> newmapprompt = nullptr;
     QPointer<PreferenceEditor> preferenceEditor = nullptr;
-    FilterChildrenProxyModel *mapListProxyModel;
-    QStandardItemModel *mapListModel;
-    QList<QStandardItem*> *mapGroupItemsList;
+    FilterChildrenProxyModel* mapListProxyModel;
+    QStandardItemModel* mapListModel;
+    QList<QStandardItem*>* mapGroupItemsList;
     QMap<QString, QModelIndex> mapListIndexes;
-    Editor *editor = nullptr;
+    Editor* editor = nullptr;
     QIcon* mapIcon;
     QIcon* mapEditedIcon;
     QIcon* mapOpenedIcon;
 
-    QAction *undoAction;
-    QAction *redoAction;
+    QAction* undoAction;
+    QAction* redoAction;
 
-    QWidget *eventTabObjectWidget;
-    QWidget *eventTabWarpWidget;
-    QWidget *eventTabTriggerWidget;
-    QWidget *eventTabBGWidget;
-    QWidget *eventTabHealspotWidget;
-    QWidget *eventTabMultipleWidget;
+    QWidget* eventTabObjectWidget;
+    QWidget* eventTabWarpWidget;
+    QWidget* eventTabTriggerWidget;
+    QWidget* eventTabBGWidget;
+    QWidget* eventTabHealspotWidget;
+    QWidget* eventTabMultipleWidget;
 
-    DraggablePixmapItem *selectedObject;
-    DraggablePixmapItem *selectedWarp;
-    DraggablePixmapItem *selectedTrigger;
-    DraggablePixmapItem *selectedBG;
-    DraggablePixmapItem *selectedHealspot;
+    DraggablePixmapItem* selectedObject;
+    DraggablePixmapItem* selectedWarp;
+    DraggablePixmapItem* selectedTrigger;
+    DraggablePixmapItem* selectedBG;
+    DraggablePixmapItem* selectedHealspot;
 
-    QList<QAction *> registeredActions;
-    QVector<QToolButton *> openScriptButtons;
+    QList<QAction*> registeredActions;
+    QVector<QToolButton*> openScriptButtons;
 
     bool isProgrammaticEventTabChange;
     bool projectHasUnsavedChanges;
@@ -292,7 +291,7 @@ private:
     void setRecentMap(QString map_name);
     QStandardItem* createMapItem(QString mapName, int groupNum, int inGroupNum);
 
-    void drawMapListIcons(QAbstractItemModel *model);
+    void drawMapListIcons(QAbstractItemModel* model);
     void updateMapList();
 
     void displayMapProperties();
@@ -316,7 +315,7 @@ private:
     void setTheme(QString);
     bool openRecentProject();
     void updateTilesetEditor();
-    QString getEventGroupFromTabWidget(QWidget *tab);
+    QString getEventGroupFromTabWidget(QWidget* tab);
     void closeSupplementaryWindows();
     void setWindowDisabled(bool);
 
@@ -334,7 +333,7 @@ private:
 
 enum MapListUserRoles {
     GroupRole = Qt::UserRole + 1, // Used to hold the map group number.
-    TypeRole,  // Used to differentiate between the different layers of the map list tree view.
+    TypeRole, // Used to differentiate between the different layers of the map list tree view.
     TypeRole2, // Used for various extra data needed.
 };
 

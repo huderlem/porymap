@@ -7,23 +7,22 @@
 #include <QPoint>
 #include <QString>
 
-class Metatile
-{
+class Metatile {
 public:
     Metatile();
-    Metatile(const Metatile &other) = default;
-    Metatile &operator=(const Metatile &other) = default;
+    Metatile(const Metatile& other) = default;
+    Metatile& operator=(const Metatile& other) = default;
 
 public:
     QList<Tile> tiles;
-    uint16_t behavior;     // 8 bits RSE, 9 bits FRLG
+    uint16_t behavior; // 8 bits RSE, 9 bits FRLG
     uint8_t layerType;
     uint8_t encounterType; // FRLG only
-    uint8_t terrainType;   // FRLG only
+    uint8_t terrainType; // FRLG only
     QString label;
 
     static int getBlockIndex(int);
-    static QPoint coordFromPixmapCoord(const QPointF &pixelCoord);
+    static QPoint coordFromPixmapCoord(const QPointF& pixelCoord);
 };
 
 #endif // METATILE_H

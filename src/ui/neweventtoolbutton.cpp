@@ -3,16 +3,13 @@
 
 // Custom QToolButton which has a context menu that expands to allow
 // selection of different types of map events.
-NewEventToolButton::NewEventToolButton(QWidget *parent) :
-    QToolButton(parent)
-{
+NewEventToolButton::NewEventToolButton(QWidget* parent) : QToolButton(parent) {
     setPopupMode(QToolButton::MenuButtonPopup);
     QObject::connect(this, &NewEventToolButton::triggered, this, &NewEventToolButton::setDefaultAction);
     this->init();
 }
 
-void NewEventToolButton::init()
-{
+void NewEventToolButton::init() {
     // Add a context menu to select different types of map events.
     this->newObjectAction = new QAction("New Object", this);
     this->newObjectAction->setIcon(QIcon(":/icons/add.ico"));
@@ -48,10 +45,10 @@ void NewEventToolButton::init()
     this->newSecretBaseAction->setIcon(QIcon(":/icons/add.ico"));
     connect(this->newSecretBaseAction, &QAction::triggered, this, &NewEventToolButton::newSecretBase);
 
-    QMenu *alignMenu = new QMenu();
+    QMenu* alignMenu = new QMenu();
     alignMenu->addAction(this->newObjectAction);
     alignMenu->addAction(this->newWarpAction);
-    //alignMenu->addAction(this->newHealLocationAction);
+    // alignMenu->addAction(this->newHealLocationAction);
     alignMenu->addAction(this->newTriggerAction);
     alignMenu->addAction(this->newWeatherTriggerAction);
     alignMenu->addAction(this->newSignAction);
@@ -61,55 +58,46 @@ void NewEventToolButton::init()
     this->setDefaultAction(this->newObjectAction);
 }
 
-QString NewEventToolButton::getSelectedEventType()
-{
+QString NewEventToolButton::getSelectedEventType() {
     return this->selectedEventType;
 }
 
-void NewEventToolButton::newObject()
-{
+void NewEventToolButton::newObject() {
     this->selectedEventType = EventType::Object;
     emit newEventAdded(this->selectedEventType);
 }
 
-void NewEventToolButton::newWarp()
-{
+void NewEventToolButton::newWarp() {
     this->selectedEventType = EventType::Warp;
     emit newEventAdded(this->selectedEventType);
 }
 
-void NewEventToolButton::newHealLocation()
-{
+void NewEventToolButton::newHealLocation() {
     this->selectedEventType = EventType::HealLocation;
     emit newEventAdded(this->selectedEventType);
 }
 
-void NewEventToolButton::newTrigger()
-{
+void NewEventToolButton::newTrigger() {
     this->selectedEventType = EventType::Trigger;
     emit newEventAdded(this->selectedEventType);
 }
 
-void NewEventToolButton::newWeatherTrigger()
-{
+void NewEventToolButton::newWeatherTrigger() {
     this->selectedEventType = EventType::WeatherTrigger;
     emit newEventAdded(this->selectedEventType);
 }
 
-void NewEventToolButton::newSign()
-{
+void NewEventToolButton::newSign() {
     this->selectedEventType = EventType::Sign;
     emit newEventAdded(this->selectedEventType);
 }
 
-void NewEventToolButton::newHiddenItem()
-{
+void NewEventToolButton::newHiddenItem() {
     this->selectedEventType = EventType::HiddenItem;
     emit newEventAdded(this->selectedEventType);
 }
 
-void NewEventToolButton::newSecretBase()
-{
+void NewEventToolButton::newSecretBase() {
     this->selectedEventType = EventType::SecretBase;
     emit newEventAdded(this->selectedEventType);
 }

@@ -27,8 +27,7 @@ int ConnectionPixmapItem::getMaxOffset() {
         return this->baseMapHeight + 6;
 }
 
-QVariant ConnectionPixmapItem::itemChange(GraphicsItemChange change, const QVariant &value)
-{
+QVariant ConnectionPixmapItem::itemChange(GraphicsItemChange change, const QVariant& value) {
     if (change == ItemPositionChange) {
         QPointF newPos = value.toPointF();
 
@@ -40,8 +39,7 @@ QVariant ConnectionPixmapItem::itemChange(GraphicsItemChange change, const QVari
             newOffset = qMin(newOffset, this->getMaxOffset());
             newOffset = qMax(newOffset, this->getMinOffset());
             x = newOffset * 16;
-        }
-        else {
+        } else {
             x = this->initialX;
         }
 
@@ -51,24 +49,22 @@ QVariant ConnectionPixmapItem::itemChange(GraphicsItemChange change, const QVari
             newOffset = qMin(newOffset, this->getMaxOffset());
             newOffset = qMax(newOffset, this->getMinOffset());
             y = newOffset * 16;
-        }
-        else {
+        } else {
             y = this->initialY;
         }
 
         this->connection->offset = QString::number(newOffset);
         emit connectionMoved(this->connection);
         return QPointF(x, y);
-    }
-    else {
+    } else {
         return QGraphicsItem::itemChange(change, value);
     }
 }
 
-void ConnectionPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *) {
+void ConnectionPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent*) {
     emit connectionItemSelected(this);
 }
 
-void ConnectionPixmapItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *) {
+void ConnectionPixmapItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent*) {
     emit connectionItemDoubleClicked(this);
 }

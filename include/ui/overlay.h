@@ -8,9 +8,10 @@
 
 class OverlayItem {
 public:
-    OverlayItem() {}
-    virtual ~OverlayItem() {};
-    virtual void render(QPainter *) {};
+    OverlayItem() {
+    }
+    virtual ~OverlayItem(){};
+    virtual void render(QPainter*){};
 };
 
 class OverlayText : public OverlayItem {
@@ -22,8 +23,10 @@ public:
         this->color = color;
         this->fontSize = fontSize;
     }
-    ~OverlayText() {}
-    virtual void render(QPainter *painter);
+    ~OverlayText() {
+    }
+    virtual void render(QPainter* painter);
+
 private:
     QString text;
     int x;
@@ -42,8 +45,10 @@ public:
         this->color = color;
         this->filled = filled;
     }
-    ~OverlayRect() {}
-    virtual void render(QPainter *painter);
+    ~OverlayRect() {
+    }
+    virtual void render(QPainter* painter);
+
 private:
     int x;
     int y;
@@ -60,18 +65,20 @@ public:
         this->y = y;
         this->image = image;
     }
-    ~OverlayImage() {}
-    virtual void render(QPainter *painter);
+    ~OverlayImage() {
+    }
+    virtual void render(QPainter* painter);
+
 private:
     int x;
     int y;
     QImage image;
 };
 
-class Overlay
-{
+class Overlay {
 public:
-    Overlay() {}
+    Overlay() {
+    }
     ~Overlay() {
         this->clearItems();
     }
@@ -80,6 +87,7 @@ public:
     void addText(QString text, int x, int y, QString color = "#000000", int fontSize = 12);
     void addRect(int x, int y, int width, int height, QString color = "#000000", bool filled = false);
     void addImage(int x, int y, QString filepath);
+
 private:
     QList<OverlayItem*> items;
 };

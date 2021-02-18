@@ -7,13 +7,13 @@ namespace Ui {
 class AboutPorymap;
 }
 
-class AboutPorymap : public QMainWindow
-{
+class AboutPorymap : public QMainWindow {
 public:
-    explicit AboutPorymap(QWidget *parent = nullptr);
+    explicit AboutPorymap(QWidget* parent = nullptr);
     ~AboutPorymap();
+
 private:
-    Ui::AboutPorymap *ui;
+    Ui::AboutPorymap* ui;
 };
 
 #endif // ABOUTPORYMAP_H

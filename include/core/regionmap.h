@@ -17,7 +17,7 @@
 
 enum RegionMapEditorBox {
     BackgroundImage = 1,
-    CityMapImage    = 2,
+    CityMapImage = 2,
 };
 
 class RegionMapHistoryItem {
@@ -38,19 +38,19 @@ public:
         this->mapWidth = width;
         this->mapHeight = height;
     }
-    ~RegionMapHistoryItem() {}
+    ~RegionMapHistoryItem() {
+    }
 };
 
-class RegionMapEntry
-{
+class RegionMapEntry {
 public:
-    RegionMapEntry()=default;
+    RegionMapEntry() = default;
     RegionMapEntry(int x_, int y_, int width_, int height_, QString name_) {
-        this-> x = x_;
-        this-> y = y_;
-        this-> width = width_;
-        this-> height = height_;
-        this-> name = name_;
+        this->x = x_;
+        this->y = y_;
+        this->width = width_;
+        this->height = height_;
+        this->name = name_;
     }
     int x;
     int y;
@@ -64,8 +64,7 @@ public:
     void setHeight(int);
 };
 
-class RegionMapSquare
-{
+class RegionMapSquare {
 public:
     int x = -1;
     int y = -1;
@@ -79,16 +78,15 @@ public:
     QString city_map_name;
 };
 
-class RegionMap : public QObject
-{
+class RegionMap : public QObject {
     Q_OBJECT
 
 public:
     RegionMap() = default;
 
-    ~RegionMap() {};
+    ~RegionMap(){};
 
-    Project *project = nullptr;
+    Project* project = nullptr;
 
     QVector<RegionMapSquare> map_squares;
     History<RegionMapHistoryItem*> history;
@@ -97,9 +95,9 @@ public:
     QMap<QString, RegionMapEntry> mapSecToMapEntry;
     QVector<QString> sMapNames;
 
-    const int padLeft   = 1;
-    const int padRight  = 3;
-    const int padTop    = 2;
+    const int padLeft = 1;
+    const int padRight = 3;
+    const int padTop = 2;
     const int padBottom = 3;
 
     bool init(Project*);
@@ -119,8 +117,8 @@ public:
     void clearImage();
     void replaceSectionId(unsigned oldId, unsigned newId);
 
-    int  width();
-    int  height();
+    int width();
+    int height();
     QSize imgSize();
     unsigned getTileId(int x, int y);
     int getMapSquareIndex(int x, int y);

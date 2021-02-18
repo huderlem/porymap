@@ -5,18 +5,8 @@
 
 void MetatileLayersItem::draw() {
     const QList<QPoint> tileCoords = QList<QPoint>{
-        QPoint(0, 0),
-        QPoint(16, 0),
-        QPoint(0, 16),
-        QPoint(16, 16),
-        QPoint(32, 0),
-        QPoint(48, 0),
-        QPoint(32, 16),
-        QPoint(48, 16),
-        QPoint(64, 0),
-        QPoint(80, 0),
-        QPoint(64, 16),
-        QPoint(80, 16),
+        QPoint(0, 0), QPoint(16, 0), QPoint(0, 16), QPoint(16, 16), QPoint(32, 0), QPoint(48, 0), QPoint(32, 16), QPoint(48, 16), QPoint(64, 0), QPoint(80, 0),
+        QPoint(64, 16), QPoint(80, 16),
     };
 
     bool isTripleLayerMetatile = projectConfig.getTripleLayerMetatilesEnabled();
@@ -26,28 +16,27 @@ void MetatileLayersItem::draw() {
     int numTiles = isTripleLayerMetatile ? 12 : 8;
     for (int i = 0; i < numTiles; i++) {
         Tile tile = this->metatile->tiles.at(i);
-        QImage tileImage = getPalettedTileImage(tile.tile, this->primaryTileset, this->secondaryTileset, tile.palette, true)
-                .mirrored(tile.xflip, tile.yflip)
-                .scaled(16, 16);
+        QImage tileImage
+            = getPalettedTileImage(tile.tile, this->primaryTileset, this->secondaryTileset, tile.palette, true).mirrored(tile.xflip, tile.yflip).scaled(16, 16);
         painter.drawImage(tileCoords.at(i), tileImage);
     }
 
     this->setPixmap(pixmap);
 }
 
-void MetatileLayersItem::setMetatile(Metatile *metatile) {
+void MetatileLayersItem::setMetatile(Metatile* metatile) {
     this->metatile = metatile;
     this->clearLastModifiedCoords();
 }
 
-void MetatileLayersItem::setTilesets(Tileset *primaryTileset, Tileset *secondaryTileset) {
+void MetatileLayersItem::setTilesets(Tileset* primaryTileset, Tileset* secondaryTileset) {
     this->primaryTileset = primaryTileset;
     this->secondaryTileset = secondaryTileset;
     this->draw();
     this->clearLastModifiedCoords();
 }
 
-void MetatileLayersItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+void MetatileLayersItem::mousePressEvent(QGraphicsSceneMouseEvent* event) {
     if (event->buttons() & Qt::RightButton) {
         SelectablePixmapItem::mousePressEvent(event);
         QPoint selectionOrigin = this->getSelectionStart();
@@ -63,7 +52,7 @@ void MetatileLayersItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     }
 }
 
-void MetatileLayersItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
+void MetatileLayersItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event) {
     if (event->buttons() & Qt::RightButton) {
         SelectablePixmapItem::mouseMoveEvent(event);
         QPoint selectionOrigin = this->getSelectionStart();
@@ -81,7 +70,7 @@ void MetatileLayersItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     }
 }
 
-void MetatileLayersItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
+void MetatileLayersItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event) {
     if (event->buttons() & Qt::RightButton) {
         SelectablePixmapItem::mouseReleaseEvent(event);
         QPoint selectionOrigin = this->getSelectionStart();
@@ -97,13 +86,17 @@ void MetatileLayersItem::clearLastModifiedCoords() {
     this->prevChangedTile.setY(-1);
 }
 
-void MetatileLayersItem::getBoundedCoords(QPointF pos, int *x, int *y) {
+void MetatileLayersItem::getBoundedCoords(QPointF pos, int* x, int* y) {
     bool isTripleLayerMetatile = projectConfig.getTripleLayerMetatilesEnabled();
     int maxX = isTripleLayerMetatile ? 5 : 3;
     *x = static_cast<int>(pos.x()) / 16;
     *y = static_cast<int>(pos.y()) / 16;
-    if (*x < 0) *x = 0;
-    if (*y < 0) *y = 0;
-    if (*x > maxX) *x = maxX;
-    if (*y > 1) *y = 1;
+    if (*x < 0)
+        *x = 0;
+    if (*y < 0)
+        *y = 0;
+    if (*x > maxX)
+        *x = maxX;
+    if (*y > 1)
+        *y = 1;
 }

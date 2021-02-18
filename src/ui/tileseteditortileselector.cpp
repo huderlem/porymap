@@ -66,7 +66,7 @@ void TilesetEditorTileSelector::highlight(uint16_t tile) {
     SelectablePixmapItem::select(coords.x(), coords.y(), 0, 0);
 }
 
-void TilesetEditorTileSelector::setTilesets(Tileset *primaryTileset, Tileset *secondaryTileset) {
+void TilesetEditorTileSelector::setTilesets(Tileset* primaryTileset, Tileset* secondaryTileset) {
     this->primaryTileset = primaryTileset;
     this->secondaryTileset = secondaryTileset;
     this->draw();
@@ -167,13 +167,13 @@ uint16_t TilesetEditorTileSelector::getTileId(int x, int y) {
     return static_cast<uint16_t>(y * this->numTilesWide + x);
 }
 
-void TilesetEditorTileSelector::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+void TilesetEditorTileSelector::mousePressEvent(QGraphicsSceneMouseEvent* event) {
     SelectablePixmapItem::mousePressEvent(event);
     this->updateSelectedTiles();
     emit selectedTilesChanged();
 }
 
-void TilesetEditorTileSelector::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
+void TilesetEditorTileSelector::mouseMoveEvent(QGraphicsSceneMouseEvent* event) {
     SelectablePixmapItem::mouseMoveEvent(event);
     this->updateSelectedTiles();
 
@@ -183,13 +183,13 @@ void TilesetEditorTileSelector::mouseMoveEvent(QGraphicsSceneMouseEvent *event) 
     emit selectedTilesChanged();
 }
 
-void TilesetEditorTileSelector::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
+void TilesetEditorTileSelector::mouseReleaseEvent(QGraphicsSceneMouseEvent* event) {
     SelectablePixmapItem::mouseReleaseEvent(event);
     this->updateSelectedTiles();
     emit selectedTilesChanged();
 }
 
-void TilesetEditorTileSelector::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
+void TilesetEditorTileSelector::hoverMoveEvent(QGraphicsSceneHoverEvent* event) {
     QPoint pos = this->getCellPos(event->pos());
     uint16_t tile = this->getTileId(pos.x(), pos.y());
     emit this->hoveredTileChanged(tile);
@@ -200,8 +200,7 @@ void TilesetEditorTileSelector::hoverLeaveEvent(QGraphicsSceneHoverEvent*) {
 }
 
 QPoint TilesetEditorTileSelector::getTileCoords(uint16_t tile) {
-    if (tile >= Project::getNumTilesTotal())
-    {
+    if (tile >= Project::getNumTilesTotal()) {
         // Invalid tile.
         return QPoint(0, 0);
     }

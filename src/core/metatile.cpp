@@ -2,12 +2,8 @@
 #include "tileset.h"
 #include "project.h"
 
-Metatile::Metatile() :
-    behavior(0),
-    layerType(0),
-    encounterType(0),
-    terrainType(0)
-{  }
+Metatile::Metatile() : behavior(0), layerType(0), encounterType(0), terrainType(0) {
+}
 
 int Metatile::getBlockIndex(int index) {
     if (index < Project::getNumMetatilesPrimary()) {
@@ -17,7 +13,7 @@ int Metatile::getBlockIndex(int index) {
     }
 }
 
-QPoint Metatile::coordFromPixmapCoord(const QPointF &pixelCoord) {
+QPoint Metatile::coordFromPixmapCoord(const QPointF& pixelCoord) {
     int x = static_cast<int>(pixelCoord.x()) / 16;
     int y = static_cast<int>(pixelCoord.y()) / 16;
     return QPoint(x, y);

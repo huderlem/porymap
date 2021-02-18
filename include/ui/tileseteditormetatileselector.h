@@ -5,17 +5,17 @@
 #include "tileset.h"
 #include "map.h"
 
-class TilesetEditorMetatileSelector: public SelectablePixmapItem {
+class TilesetEditorMetatileSelector : public SelectablePixmapItem {
     Q_OBJECT
 public:
-    TilesetEditorMetatileSelector(Tileset *primaryTileset, Tileset *secondaryTileset, Map *map): SelectablePixmapItem(32, 32, 1, 1) {
+    TilesetEditorMetatileSelector(Tileset* primaryTileset, Tileset* secondaryTileset, Map* map) : SelectablePixmapItem(32, 32, 1, 1) {
         this->primaryTileset = primaryTileset;
         this->secondaryTileset = secondaryTileset;
         this->numMetatilesWide = 8;
         this->map = map;
         setAcceptHoverEvents(true);
     }
-    Map *map = nullptr;
+    Map* map = nullptr;
     void draw();
     bool select(uint16_t metatileId);
     void setTilesets(Tileset*, Tileset*);
@@ -31,8 +31,8 @@ protected:
     void hoverLeaveEvent(QGraphicsSceneHoverEvent*);
 
 private:
-    Tileset *primaryTileset = nullptr;
-    Tileset *secondaryTileset = nullptr;
+    Tileset* primaryTileset = nullptr;
+    Tileset* secondaryTileset = nullptr;
     uint16_t selectedMetatile;
     int numMetatilesWide;
     uint16_t getMetatileId(int x, int y);

@@ -2,7 +2,7 @@
 #include "editcommands.h"
 #include "metatile.h"
 
-void CollisionPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
+void CollisionPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent* event) {
     int x = static_cast<int>(event->pos().x()) / 16;
     int y = static_cast<int>(event->pos().y()) / 16;
     emit this->hoveredMapMovementPermissionChanged(x, y);
@@ -11,25 +11,25 @@ void CollisionPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
     }
 }
 
-void CollisionPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
+void CollisionPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent*) {
     emit this->hoveredMapMovementPermissionCleared();
-    if (this->settings->betterCursors && this->paintingMode == MapPixmapItem::PaintMode::Metatiles){
+    if (this->settings->betterCursors && this->paintingMode == MapPixmapItem::PaintMode::Metatiles) {
         unsetCursor();
     }
 }
 
-void CollisionPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+void CollisionPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent* event) {
     QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
     this->paint_tile_initial_x = this->straight_path_initial_x = pos.x();
     this->paint_tile_initial_y = this->straight_path_initial_y = pos.y();
     emit mouseEvent(event, this);
 }
 
-void CollisionPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
+void CollisionPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event) {
     emit mouseEvent(event, this);
 }
 
-void CollisionPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
+void CollisionPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event) {
     this->lockedAxis = CollisionPixmapItem::Axis::None;
     emit mouseEvent(event, this);
 }
@@ -41,7 +41,7 @@ void CollisionPixmapItem::draw(bool ignoreCache) {
     }
 }
 
-void CollisionPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
+void CollisionPixmapItem::paint(QGraphicsSceneMouseEvent* event) {
     if (event->type() == QEvent::GraphicsSceneMouseRelease) {
         actionId_++;
     } else if (map) {
@@ -71,7 +71,7 @@ void CollisionPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
     }
 }
 
-void CollisionPixmapItem::floodFill(QGraphicsSceneMouseEvent *event) {
+void CollisionPixmapItem::floodFill(QGraphicsSceneMouseEvent* event) {
     if (event->type() == QEvent::GraphicsSceneMouseRelease) {
         this->actionId_++;
     } else if (map) {
@@ -88,7 +88,7 @@ void CollisionPixmapItem::floodFill(QGraphicsSceneMouseEvent *event) {
     }
 }
 
-void CollisionPixmapItem::magicFill(QGraphicsSceneMouseEvent *event) {
+void CollisionPixmapItem::magicFill(QGraphicsSceneMouseEvent* event) {
     if (event->type() == QEvent::GraphicsSceneMouseRelease) {
         this->actionId_++;
     } else if (map) {
@@ -104,7 +104,7 @@ void CollisionPixmapItem::magicFill(QGraphicsSceneMouseEvent *event) {
     }
 }
 
-void CollisionPixmapItem::pick(QGraphicsSceneMouseEvent *event) {
+void CollisionPixmapItem::pick(QGraphicsSceneMouseEvent* event) {
     QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
     Block block;
     if (map->getBlock(pos.x(), pos.y(), &block)) {
@@ -112,14 +112,18 @@ void CollisionPixmapItem::pick(QGraphicsSceneMouseEvent *event) {
     }
 }
 
-void CollisionPixmapItem::updateMovementPermissionSelection(QGraphicsSceneMouseEvent *event) {
+void CollisionPixmapItem::updateMovementPermissionSelection(QGraphicsSceneMouseEvent* event) {
     QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
 
     // Snap point to within map bounds.
-    if (pos.x() < 0) pos.setX(0);
-    if (pos.x() >= map->getWidth()) pos.setX(map->getWidth() - 1);
-    if (pos.y() < 0) pos.setY(0);
-    if (pos.y() >= map->getHeight()) pos.setY(map->getHeight() - 1);
+    if (pos.x() < 0)
+        pos.setX(0);
+    if (pos.x() >= map->getWidth())
+        pos.setX(map->getWidth() - 1);
+    if (pos.y() < 0)
+        pos.setY(0);
+    if (pos.y() >= map->getHeight())
+        pos.setY(map->getHeight() - 1);
 
     Block block;
     if (map->getBlock(pos.x(), pos.y(), &block)) {

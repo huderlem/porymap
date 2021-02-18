@@ -21,17 +21,18 @@
 static QString NONE_MAP_CONSTANT = "MAP_NONE";
 static QString NONE_MAP_NAME = "None";
 
-class Project : public QObject
-{
+class Project : public QObject {
     Q_OBJECT
 public:
-    Project(QWidget *parent = nullptr);
+    Project(QWidget* parent = nullptr);
     ~Project();
 
-    Project(const Project &) = delete;
-    Project & operator = (const Project &) = delete;
+    Project(const Project&) = delete;
+    Project& operator=(const Project&) = delete;
 
-    inline QWidget *parentWidget() const { return static_cast<QWidget *>(parent()); }
+    inline QWidget* parentWidget() const {
+        return static_cast<QWidget*>(parent());
+    }
 
 public:
     QString root;
@@ -76,8 +77,7 @@ public:
     void clearMapCache();
     void clearTilesetCache();
 
-    struct DataQualifiers
-    {
+    struct DataQualifiers {
         bool isStatic;
         bool isConst;
     };
@@ -89,7 +89,7 @@ public:
     Map* getMap(QString);
 
     QMap<QString, Tileset*> tilesetCache;
-    Tileset* loadTileset(QString, Tileset *tileset = nullptr);
+    Tileset* loadTileset(QString, Tileset* tileset = nullptr);
     Tileset* getTileset(QString, bool forceLoad = false);
     QMap<QString, QStringList> tilesetLabels;
 
@@ -131,7 +131,7 @@ public:
 
     void saveLayoutBlockdata(Map*);
     void saveLayoutBorder(Map*);
-    void writeBlockdata(QString, const Blockdata &);
+    void writeBlockdata(QString, const Blockdata&);
     void saveAllMaps();
     void saveMap(Map*);
     void saveAllDataStructures();
@@ -177,12 +177,12 @@ public:
 
     QString getScriptFileExtension(bool usePoryScript) const;
     QString getScriptDefaultString(bool usePoryScript, QString mapName) const;
-    QString getMapScriptsFilePath(const QString &mapName) const;
+    QString getMapScriptsFilePath(const QString& mapName) const;
     QStringList getEventScriptsFilePaths() const;
 
-    bool loadMapBorder(Map *map);
+    bool loadMapBorder(Map* map);
 
-    void saveMapHealEvents(Map *map);
+    void saveMapHealEvents(Map* map);
 
     static int getNumTilesPrimary();
     static int getNumTilesTotal();
@@ -205,9 +205,9 @@ private:
     void setNewMapHeader(Map* map, int mapIndex);
     void setNewMapLayout(Map* map);
     void setNewMapBlockdata(Map* map);
-    void setNewMapBorder(Map *map);
-    void setNewMapEvents(Map *map);
-    void setNewMapConnections(Map *map);
+    void setNewMapBorder(Map* map);
+    void setNewMapEvents(Map* map);
+    void setNewMapConnections(Map* map);
 
     void ignoreWatchedFileTemporarily(QString filepath);
 

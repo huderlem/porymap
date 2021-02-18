@@ -6,19 +6,17 @@
 #include <QLabel>
 #include <QScrollBar>
 
-CustomAttributesTable::CustomAttributesTable(Event *event, QWidget *parent) :
-    QFrame(parent)
-{
+CustomAttributesTable::CustomAttributesTable(Event* event, QWidget* parent) : QFrame(parent) {
     this->event = event;
 
-    QVBoxLayout *layout = new QVBoxLayout(this);
-    QLabel *label = new QLabel("Custom Attributes");
+    QVBoxLayout* layout = new QVBoxLayout(this);
+    QLabel* label = new QLabel("Custom Attributes");
     layout->addWidget(label);
 
-    QFrame *buttonsFrame = new QFrame(this);
+    QFrame* buttonsFrame = new QFrame(this);
     buttonsFrame->setLayout(new QHBoxLayout());
-    QPushButton *addButton = new QPushButton(this);
-    QPushButton *deleteButton = new QPushButton(this);
+    QPushButton* addButton = new QPushButton(this);
+    QPushButton* deleteButton = new QPushButton(this);
     addButton->setText("Add");
     deleteButton->setText("Delete");
     buttonsFrame->layout()->addWidget(addButton);
@@ -29,7 +27,7 @@ CustomAttributesTable::CustomAttributesTable(Event *event, QWidget *parent) :
 
     this->table = new QTableWidget(this);
     this->table->setColumnCount(2);
-    this->table->setHorizontalHeaderLabels(QStringList({"Key", "Value"}));
+    this->table->setHorizontalHeaderLabels(QStringList({ "Key", "Value" }));
     this->table->horizontalHeader()->setStretchLastSection(true);
     layout->addWidget(this->table);
 
@@ -71,15 +69,12 @@ CustomAttributesTable::CustomAttributesTable(Event *event, QWidget *parent) :
         }
     });
 
-    connect(this->table, &QTableWidget::cellChanged, [=]() {
-        this->event->customValues = this->getTableFields();
-    });
+    connect(this->table, &QTableWidget::cellChanged, [=]() { this->event->customValues = this->getTableFields(); });
 
     this->resizeVertically();
 }
 
-CustomAttributesTable::~CustomAttributesTable()
-{
+CustomAttributesTable::~CustomAttributesTable() {
 }
 
 QMap<QString, QString> CustomAttributesTable::getTableFields() {
@@ -87,10 +82,12 @@ QMap<QString, QString> CustomAttributesTable::getTableFields() {
     for (int row = 0; row < table->rowCount(); row++) {
         QString keyStr = "";
         QString valueStr = "";
-        QTableWidgetItem *key = table->item(row, 0);
-        QTableWidgetItem *value = table->item(row, 1);
-        if (key) keyStr = key->text();
-        if (value) valueStr = value->text();
+        QTableWidgetItem* key = table->item(row, 0);
+        QTableWidgetItem* value = table->item(row, 1);
+        if (key)
+            keyStr = key->text();
+        if (value)
+            valueStr = value->text();
         fields[keyStr] = valueStr;
     }
     return fields;

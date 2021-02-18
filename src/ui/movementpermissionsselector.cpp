@@ -19,13 +19,13 @@ void MovementPermissionsSelector::select(uint16_t collision, uint16_t elevation)
     SelectablePixmapItem::select(collision, elevation, 0, 0);
 }
 
-void MovementPermissionsSelector::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
+void MovementPermissionsSelector::hoverMoveEvent(QGraphicsSceneHoverEvent* event) {
     QPoint pos = this->getCellPos(event->pos());
     uint16_t collision = static_cast<uint16_t>(pos.x());
     uint16_t elevation = static_cast<uint16_t>(pos.y());
     emit this->hoveredMovementPermissionChanged(collision, elevation);
 }
 
-void MovementPermissionsSelector::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
+void MovementPermissionsSelector::hoverLeaveEvent(QGraphicsSceneHoverEvent*) {
     emit this->hoveredMovementPermissionCleared();
 }

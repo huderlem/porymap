@@ -19,7 +19,7 @@ static bool ensureRegionMapFileExists(QString filepath) {
     return true;
 }
 
-bool RegionMap::init(Project *pro) {
+bool RegionMap::init(Project* pro) {
     QString path = pro->root;
     this->project = pro;
 
@@ -27,23 +27,19 @@ bool RegionMap::init(Project *pro) {
     img_width_ = dimensions.width();
     img_height_ = dimensions.height();
 
-    layout_width_  = img_width_  - this->padLeft - this->padRight;
-    layout_height_ = img_height_ - this->padTop  - this->padBottom;
+    layout_width_ = img_width_ - this->padLeft - this->padRight;
+    layout_height_ = img_height_ - this->padTop - this->padBottom;
 
-    region_map_bin_path        = path + "/graphics/pokenav/region_map_map.bin";
-    region_map_png_path        = path + "/graphics/pokenav/region_map.png";
-    region_map_entries_path    = path + "/src/data/region_map/region_map_entries.h";
+    region_map_bin_path = path + "/graphics/pokenav/region_map_map.bin";
+    region_map_png_path = path + "/graphics/pokenav/region_map.png";
+    region_map_entries_path = path + "/src/data/region_map/region_map_entries.h";
     region_map_layout_bin_path = path + "/graphics/pokenav/region_map_section_layout.bin";
-    city_map_tiles_path        = path + "/graphics/pokenav/zoom_tiles.png";
-    bool allFilesExist = ensureRegionMapFileExists(region_map_bin_path)
-                      && ensureRegionMapFileExists(region_map_png_path)
-                      && ensureRegionMapFileExists(region_map_entries_path)
-                      && ensureRegionMapFileExists(region_map_layout_bin_path)
-                      && ensureRegionMapFileExists(city_map_tiles_path);
+    city_map_tiles_path = path + "/graphics/pokenav/zoom_tiles.png";
+    bool allFilesExist = ensureRegionMapFileExists(region_map_bin_path) && ensureRegionMapFileExists(region_map_png_path)
+        && ensureRegionMapFileExists(region_map_entries_path) && ensureRegionMapFileExists(region_map_layout_bin_path)
+        && ensureRegionMapFileExists(city_map_tiles_path);
 
-    return allFilesExist
-        && readBkgImgBin()
-        && readLayout();
+    return allFilesExist && readBkgImgBin() && readLayout();
 }
 
 void RegionMap::save() {
@@ -106,7 +102,7 @@ bool RegionMap::readBkgImgBin() {
 }
 
 void RegionMap::saveBkgImgBin() {
-    QByteArray data(pow(img_width_ * 2, 2),0);
+    QByteArray data(pow(img_width_ * 2, 2), 0);
 
     for (int m = 0; m < img_height_; m++) {
         for (int n = 0; n < img_width_; n++) {
@@ -115,7 +111,8 @@ void RegionMap::saveBkgImgBin() {
     }
 
     QFile file(region_map_bin_path);
-    if (!file.open(QIODevice::WriteOnly)) return;
+    if (!file.open(QIODevice::WriteOnly))
+        return;
     file.write(data);
     file.close();
 }
@@ -152,12 +149,11 @@ bool RegionMap::readLayout() {
         } else if (line.contains("MAPSEC")) {
             QRegularExpression reBefore("\\[(.*)\\]");
             QRegularExpression reAfter("{(.*)}");
-            QStringList entry =  reAfter.match(line).captured(1).remove(" ").split(",");
+            QStringList entry = reAfter.match(line).captured(1).remove(" ").split(",");
             QString mapsec = reBefore.match(line).captured(1);
             QString insertion = entry[4].remove("sMapName_");
             qmap.insert(mapsec, sMapNamesMap.value(insertion));
-            mapSecToMapEntry[mapsec] = {
-            //  x                 y                 width             height            name
+            mapSecToMapEntry[mapsec] = { //  x                 y                 width             height            name
                 entry[0].toInt(), entry[1].toInt(), entry[2].toInt(), entry[3].toInt(), insertion
             };
         } else if (line.contains("gRegionMapEntries")) {
@@ -181,11 +177,11 @@ bool RegionMap::readLayout() {
 
     for (int y = 0; y < layout_height_; y++) {
         for (int x = 0; x < layout_width_; x++) {
-            int i = img_index_(x,y);
+            int i = img_index_(x, y);
             if (i >= map_squares.size()) {
                 continue;
             }
-            int layoutIndex = layout_index_(x,y);
+            int layoutIndex = layout_index_(x, y);
             if (layoutIndex >= mapBinData.size()) {
                 continue;
             }
@@ -213,26 +209,27 @@ void RegionMap::saveLayout() {
 
     for (auto sName : sMapNames) {
         entries_text += QString("%1%2u8 sMapName_")
-                        .arg(project->dataQualifiers.value("region_map_entries_names").isStatic ? "static " : "")
-                        .arg(project->dataQualifiers.value("region_map_entries_names").isConst ? "const " : "")
-                      + sName + "[] = _(\"" + sMapNamesMap.value(sName) + "\");\n";
+                            .arg(project->dataQualifiers.value("region_map_entries_names").isStatic ? "static " : "")
+                            .arg(project->dataQualifiers.value("region_map_entries_names").isConst ? "const " : "")
+            + sName + "[] = _(\"" + sMapNamesMap.value(sName) + "\");\n";
     }
 
     entries_text += QString("\n%1%2struct RegionMapLocation gRegionMapEntries[] = {\n")
-                    .arg(project->dataQualifiers.value("region_map_entries").isStatic ? "static " : "")
-                    .arg(project->dataQualifiers.value("region_map_entries").isConst ? "const " : "");
+                        .arg(project->dataQualifiers.value("region_map_entries").isStatic ? "static " : "")
+                        .arg(project->dataQualifiers.value("region_map_entries").isConst ? "const " : "");
 
     int longest = 1;
     for (auto sec : project->mapSectionNameToValue.keys()) {
-        if (sec.length() > longest) longest = sec.length();
+        if (sec.length() > longest)
+            longest = sec.length();
     }
 
     for (auto sec : project->mapSectionNameToValue.keys()) {
-        if (!mapSecToMapEntry.contains(sec) || sec == "MAPSEC_NONE") continue;
+        if (!mapSecToMapEntry.contains(sec) || sec == "MAPSEC_NONE")
+            continue;
         RegionMapEntry entry = mapSecToMapEntry.value(sec);
-        entries_text += "    [" + sec + QString("]%1= {").arg(QString(" ").repeated(1 + longest - sec.length()))
-            + QString::number(entry.x) + ", " + QString::number(entry.y) + ", " 
-            + QString::number(entry.width) + ", " + QString::number(entry.height) + ", sMapName_" + entry.name + "},\n";
+        entries_text += "    [" + sec + QString("]%1= {").arg(QString(" ").repeated(1 + longest - sec.length())) + QString::number(entry.x) + ", "
+            + QString::number(entry.y) + ", " + QString::number(entry.width) + ", " + QString::number(entry.height) + ", sMapName_" + entry.name + "},\n";
     }
     entries_text += "};\n\n#endif // GUARD_DATA_REGION_MAP_REGION_MAP_ENTRIES_H\n";
 
@@ -241,12 +238,13 @@ void RegionMap::saveLayout() {
     QByteArray data;
     for (int m = 0; m < layout_height_; m++) {
         for (int n = 0; n < layout_width_; n++) {
-            int i = img_index_(n,m);
+            int i = img_index_(n, m);
             data.append(map_squares[i].secid);
         }
     }
     QFile bfile(region_map_layout_bin_path);
-    if (!bfile.open(QIODevice::WriteOnly)) return;
+    if (!bfile.open(QIODevice::WriteOnly))
+        return;
     bfile.write(data);
     bfile.close();
 }
@@ -301,12 +299,13 @@ void RegionMap::clearImage() {
 }
 
 void RegionMap::replaceSectionId(unsigned oldId, unsigned newId) {
-    for (auto &square : map_squares) {
+    for (auto& square : map_squares) {
         if (square.secid == oldId) {
             square.has_map = false;
             square.secid = newId;
             QString secname = project->mapSectionValueToName.value(newId);
-            if (secname != "MAPSEC_NONE") square.has_map = true;
+            if (secname != "MAPSEC_NONE")
+                square.has_map = true;
             square.mapsec = secname;
             square.map_name = sMapNamesMap.value(mapSecToMapEntry.value(secname).name);
         }
@@ -348,7 +347,8 @@ QVector<uint8_t> RegionMap::getTiles() {
 }
 
 void RegionMap::setTiles(QVector<uint8_t> tileIds) {
-    if (tileIds.size() != map_squares.size()) return;
+    if (tileIds.size() != map_squares.size())
+        return;
 
     int i = 0;
     for (uint8_t tileId : tileIds) {
@@ -421,8 +421,8 @@ QString RegionMap::fixCase(QString caps) {
         if (big) {
             camel += ch.toUpper();
             big = false;
-        }
-        else camel += ch.toLower();
+        } else
+            camel += ch.toLower();
     }
     return camel;
 }

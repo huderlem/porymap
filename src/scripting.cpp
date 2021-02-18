@@ -2,15 +2,12 @@
 #include "log.h"
 
 QMap<CallbackType, QString> callbackFunctions = {
-    {OnProjectOpened, "onProjectOpened"},
-    {OnProjectClosed, "onProjectClosed"},
-    {OnBlockChanged, "onBlockChanged"},
-    {OnMapOpened, "onMapOpened"},
+    { OnProjectOpened, "onProjectOpened" }, { OnProjectClosed, "onProjectClosed" }, { OnBlockChanged, "onBlockChanged" }, { OnMapOpened, "onMapOpened" },
 };
 
-Scripting *instance = nullptr;
+Scripting* instance = nullptr;
 
-void Scripting::init(MainWindow *mainWindow) {
+void Scripting::init(MainWindow* mainWindow) {
     if (instance) {
         instance->engine->setInterrupted(true);
         delete instance;
@@ -18,7 +15,7 @@ void Scripting::init(MainWindow *mainWindow) {
     instance = new Scripting(mainWindow);
 }
 
-Scripting::Scripting(MainWindow *mainWindow) {
+Scripting::Scripting(MainWindow* mainWindow) {
     this->engine = new QJSEngine(mainWindow);
     this->engine->installExtensions(QJSEngine::ConsoleExtension);
     this->engine->globalObject().setProperty("map", this->engine->newQObject(mainWindow));
@@ -36,12 +33,12 @@ void Scripting::loadModules(QStringList moduleFiles) {
             module = this->engine->importModule(relativePath);
             if (module.isError()) {
                 logError(QString("Failed to load custom script file '%1'\nName: %2\nMessage: %3\nFile: %4\nLine Number: %5\nStack: %6")
-                         .arg(filepath)
-                         .arg(module.property("name").toString())
-                         .arg(module.property("message").toString())
-                         .arg(module.property("fileName").toString())
-                         .arg(module.property("lineNumber").toString())
-                         .arg(module.property("stack").toString()));
+                             .arg(filepath)
+                             .arg(module.property("name").toString())
+                             .arg(module.property("message").toString())
+                             .arg(module.property("fileName").toString())
+                             .arg(module.property("lineNumber").toString())
+                             .arg(module.property("stack").toString()));
                 continue;
             }
         }
@@ -68,18 +65,22 @@ void Scripting::invokeCallback(CallbackType type, QJSValueList args) {
 }
 
 void Scripting::registerAction(QString functionName, QString actionName) {
-    if (!instance) return;
+    if (!instance)
+        return;
     instance->registeredActions.insert(actionName, functionName);
 }
 
 int Scripting::numRegisteredActions() {
-    if (!instance) return 0;
+    if (!instance)
+        return 0;
     return instance->registeredActions.size();
 }
 
 void Scripting::invokeAction(QString actionName) {
-    if (!instance) return;
-    if (!instance->registeredActions.contains(actionName)) return;
+    if (!instance)
+        return;
+    if (!instance->registeredActions.contains(actionName))
+        return;
 
     QString functionName = instance->registeredActions.value(actionName);
     for (QJSValue module : instance->modules) {
@@ -97,39 +98,40 @@ void Scripting::invokeAction(QString actionName) {
 }
 
 void Scripting::cb_ProjectOpened(QString projectPath) {
-    if (!instance) return;
+    if (!instance)
+        return;
 
-    QJSValueList args {
+    QJSValueList args{
         projectPath,
     };
     instance->invokeCallback(OnProjectOpened, args);
 }
 
 void Scripting::cb_ProjectClosed(QString projectPath) {
-    if (!instance) return;
+    if (!instance)
+        return;
 
-    QJSValueList args {
+    QJSValueList args{
         projectPath,
     };
     instance->invokeCallback(OnProjectClosed, args);
 }
 
 void Scripting::cb_MetatileChanged(int x, int y, Block prevBlock, Block newBlock) {
-    if (!instance) return;
+    if (!instance)
+        return;
 
-    QJSValueList args {
-        x,
-        y,
-        instance->fromBlock(prevBlock),
-        instance->fromBlock(newBlock),
+    QJSValueList args{
+        x, y, instance->fromBlock(prevBlock), instance->fromBlock(newBlock),
     };
     instance->invokeCallback(OnBlockChanged, args);
 }
 
 void Scripting::cb_MapOpened(QString mapName) {
-    if (!instance) return;
+    if (!instance)
+        return;
 
-    QJSValueList args {
+    QJSValueList args{
         mapName,
     };
     instance->invokeCallback(OnMapOpened, args);
@@ -151,6 +153,6 @@ QJSValue Scripting::dimensions(int width, int height) {
     return obj;
 }
 
-QJSEngine *Scripting::getEngine() {
+QJSEngine* Scripting::getEngine() {
     return instance->engine;
 }

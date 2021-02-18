@@ -10,15 +10,16 @@
 class CollisionPixmapItem : public MapPixmapItem {
     Q_OBJECT
 public:
-    CollisionPixmapItem(Map *map, MovementPermissionsSelector *movementPermissionsSelector, MetatileSelector *metatileSelector, Settings *settings, qreal *opacity)
-        : MapPixmapItem(map, metatileSelector, settings){
+    CollisionPixmapItem(
+        Map* map, MovementPermissionsSelector* movementPermissionsSelector, MetatileSelector* metatileSelector, Settings* settings, qreal* opacity)
+        : MapPixmapItem(map, metatileSelector, settings) {
         this->movementPermissionsSelector = movementPermissionsSelector;
         this->opacity = opacity;
         map->setCollisionItem(this);
     }
-    MovementPermissionsSelector *movementPermissionsSelector;
-    qreal *opacity;
-    void updateMovementPermissionSelection(QGraphicsSceneMouseEvent *event);
+    MovementPermissionsSelector* movementPermissionsSelector;
+    qreal* opacity;
+    void updateMovementPermissionSelection(QGraphicsSceneMouseEvent* event);
     virtual void paint(QGraphicsSceneMouseEvent*);
     virtual void floodFill(QGraphicsSceneMouseEvent*);
     virtual void magicFill(QGraphicsSceneMouseEvent*);
@@ -29,7 +30,7 @@ private:
     unsigned actionId_ = 0;
 
 signals:
-    void mouseEvent(QGraphicsSceneMouseEvent *, CollisionPixmapItem *);
+    void mouseEvent(QGraphicsSceneMouseEvent*, CollisionPixmapItem*);
     void hoveredMapMovementPermissionChanged(int, int);
     void hoveredMapMovementPermissionCleared();
 

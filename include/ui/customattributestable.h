@@ -6,15 +6,14 @@
 #include <QFrame>
 #include <QTableWidget>
 
-class CustomAttributesTable : public QFrame
-{
+class CustomAttributesTable : public QFrame {
 public:
-    explicit CustomAttributesTable(Event *event, QWidget *parent = nullptr);
+    explicit CustomAttributesTable(Event* event, QWidget* parent = nullptr);
     ~CustomAttributesTable();
 
 private:
-    Event *event;
-    QTableWidget *table;
+    Event* event;
+    QTableWidget* table;
     void resizeVertically();
     QMap<QString, QString> getTableFields();
 };

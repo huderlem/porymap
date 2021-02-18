@@ -3,30 +3,26 @@
 #include <QFileDialog>
 #include "project.h"
 
-NewTilesetDialog::NewTilesetDialog(Project* project, QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::NewTilesetDialog)
-{
+NewTilesetDialog::NewTilesetDialog(Project* project, QWidget* parent) : QDialog(parent), ui(new Ui::NewTilesetDialog) {
     ui->setupUi(this);
     this->setFixedSize(this->width(), this->height());
     this->project = project;
-    //only allow characters valid for a symbol
+    // only allow characters valid for a symbol
     QRegExp expression("[_A-Za-z0-9]+$");
-    QRegExpValidator *validator = new QRegExpValidator(expression);
+    QRegExpValidator* validator = new QRegExpValidator(expression);
     this->ui->nameLineEdit->setValidator(validator);
 
     connect(this->ui->nameLineEdit, &QLineEdit::textChanged, this, &NewTilesetDialog::NameOrSecondaryChanged);
     connect(this->ui->typeComboBox, &QComboBox::currentTextChanged, this, &NewTilesetDialog::SecondaryChanged);
-    //connect(this->ui->toolButton, &QToolButton::clicked, this, &NewTilesetDialog::ChangeFilePath);
+    // connect(this->ui->toolButton, &QToolButton::clicked, this, &NewTilesetDialog::ChangeFilePath);
     this->SecondaryChanged();
 }
 
-NewTilesetDialog::~NewTilesetDialog()
-{
+NewTilesetDialog::~NewTilesetDialog() {
     delete ui;
 }
 
-void NewTilesetDialog::SecondaryChanged(){
+void NewTilesetDialog::SecondaryChanged() {
     this->isSecondary = (this->ui->typeComboBox->currentIndex() == 1);
     NameOrSecondaryChanged();
 }

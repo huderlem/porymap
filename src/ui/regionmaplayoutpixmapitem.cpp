@@ -1,7 +1,8 @@
 #include "regionmaplayoutpixmapitem.h"
 
 void RegionMapLayoutPixmapItem::draw() {
-    if (!region_map) return;
+    if (!region_map)
+        return;
 
     QImage image(region_map->width() * 8, region_map->height() * 8, QImage::Format_RGBA8888);
 
@@ -55,30 +56,30 @@ void RegionMapLayoutPixmapItem::highlight(int x, int y, int red) {
     draw();
 }
 
-void RegionMapLayoutPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+void RegionMapLayoutPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent* event) {
     QPoint pos = this->getCellPos(event->pos());
     int index = this->region_map->getMapSquareIndex(pos.x(), pos.y());
-    if (this->region_map->map_squares[index].x >= 0
-     && this->region_map->map_squares[index].y >= 0) {
+    if (this->region_map->map_squares[index].x >= 0 && this->region_map->map_squares[index].y >= 0) {
         SelectablePixmapItem::mousePressEvent(event);
         this->updateSelectedTile();
         emit selectedTileChanged(this->selectedTile);
     }
 }
 
-void RegionMapLayoutPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
+void RegionMapLayoutPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event) {
     mousePressEvent(event);
 }
 
-void RegionMapLayoutPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *) {}
+void RegionMapLayoutPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent*) {
+}
 
-void RegionMapLayoutPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
+void RegionMapLayoutPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent* event) {
     QPoint pos = this->getCellPos(event->pos());
     int tileId = this->region_map->getMapSquareIndex(pos.x(), pos.y());
     emit this->hoveredTileChanged(tileId);
 }
 
-void RegionMapLayoutPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
+void RegionMapLayoutPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent*) {
     emit this->hoveredTileCleared();
 }
 

@@ -7,8 +7,7 @@
 #include <QPainter>
 #include <QImage>
 
-
-Tileset* Tileset::getBlockTileset(int metatile_index, Tileset *primaryTileset, Tileset *secondaryTileset) {
+Tileset* Tileset::getBlockTileset(int metatile_index, Tileset* primaryTileset, Tileset* secondaryTileset) {
     if (metatile_index < Project::getNumMetatilesPrimary()) {
         return primaryTileset;
     } else {
@@ -16,8 +15,8 @@ Tileset* Tileset::getBlockTileset(int metatile_index, Tileset *primaryTileset, T
     }
 }
 
-Metatile* Tileset::getMetatile(int index, Tileset *primaryTileset, Tileset *secondaryTileset) {
-    Tileset *tileset = Tileset::getBlockTileset(index, primaryTileset, secondaryTileset);
+Metatile* Tileset::getMetatile(int index, Tileset* primaryTileset, Tileset* secondaryTileset) {
+    Tileset* tileset = Tileset::getBlockTileset(index, primaryTileset, secondaryTileset);
     int local_index = Metatile::getBlockIndex(index);
     if (!tileset) {
         return nullptr;
@@ -25,7 +24,7 @@ Metatile* Tileset::getMetatile(int index, Tileset *primaryTileset, Tileset *seco
     return tileset->metatiles.value(local_index, nullptr);
 }
 
-bool Tileset::metatileIsValid(uint16_t metatileId, Tileset *primaryTileset, Tileset *secondaryTileset) {
+bool Tileset::metatileIsValid(uint16_t metatileId, Tileset* primaryTileset, Tileset* secondaryTileset) {
     if (metatileId >= Project::getNumMetatilesTotal())
         return false;
 
@@ -38,7 +37,7 @@ bool Tileset::metatileIsValid(uint16_t metatileId, Tileset *primaryTileset, Tile
     return true;
 }
 
-QList<QList<QRgb>> Tileset::getBlockPalettes(Tileset *primaryTileset, Tileset *secondaryTileset, bool useTruePalettes) {
+QList<QList<QRgb>> Tileset::getBlockPalettes(Tileset* primaryTileset, Tileset* secondaryTileset, bool useTruePalettes) {
     QList<QList<QRgb>> palettes;
     auto primaryPalettes = useTruePalettes ? primaryTileset->palettes : primaryTileset->palettePreviews;
     for (int i = 0; i < Project::getNumPalettesPrimary(); i++) {
@@ -51,11 +50,9 @@ QList<QList<QRgb>> Tileset::getBlockPalettes(Tileset *primaryTileset, Tileset *s
     return palettes;
 }
 
-QList<QRgb> Tileset::getPalette(int paletteId, Tileset *primaryTileset, Tileset *secondaryTileset, bool useTruePalettes) {
+QList<QRgb> Tileset::getPalette(int paletteId, Tileset* primaryTileset, Tileset* secondaryTileset, bool useTruePalettes) {
     QList<QRgb> paletteTable;
-    Tileset *tileset = paletteId < Project::getNumPalettesPrimary()
-            ? primaryTileset
-            : secondaryTileset;
+    Tileset* tileset = paletteId < Project::getNumPalettesPrimary() ? primaryTileset : secondaryTileset;
     auto palettes = useTruePalettes ? tileset->palettes : tileset->palettePreviews;
     for (int i = 0; i < palettes.at(paletteId).length(); i++) {
         paletteTable.append(palettes.at(paletteId).at(i));
@@ -63,7 +60,7 @@ QList<QRgb> Tileset::getPalette(int paletteId, Tileset *primaryTileset, Tileset 
     return paletteTable;
 }
 
-bool Tileset::appendToHeaders(QString headerFile, QString friendlyName){
+bool Tileset::appendToHeaders(QString headerFile, QString friendlyName) {
     QFile file(headerFile);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Append)) {
         logError(QString("Could not write to file \"%1\"").arg(headerFile));
@@ -99,10 +96,9 @@ bool Tileset::appendToGraphics(QString graphicsFile, QString friendlyName, bool 
     }
     QString dataString = "\n\t.align 2\n";
     dataString.append(QString("gTilesetPalettes_%1::\n").arg(friendlyName));
-    for(int i = 0; i < Project::getNumPalettesTotal(); ++i) {
+    for (int i = 0; i < Project::getNumPalettesTotal(); ++i) {
         QString paletteString = QString("%1.gbapal").arg(i, 2, 10, QLatin1Char('0'));
         dataString.append(QString("\t.incbin \"data/tilesets/%1/%2/palettes/%3\"\n").arg(primaryString, friendlyName.toLower(), paletteString));
-
     }
     dataString.append("\n\t.align 2\n");
     dataString.append(QString("gTilesetTiles_%1::\n").arg(friendlyName));

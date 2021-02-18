@@ -6,10 +6,10 @@
 #include <QGraphicsPixmapItem>
 #include <QGraphicsSceneMouseEvent>
 
-class MetatileLayersItem: public SelectablePixmapItem {
+class MetatileLayersItem : public SelectablePixmapItem {
     Q_OBJECT
 public:
-    MetatileLayersItem(Metatile *metatile, Tileset *primaryTileset, Tileset *secondaryTileset): SelectablePixmapItem(16, 16, 6, 2) {
+    MetatileLayersItem(Metatile* metatile, Tileset* primaryTileset, Tileset* secondaryTileset) : SelectablePixmapItem(16, 16, 6, 2) {
         this->metatile = metatile;
         this->primaryTileset = primaryTileset;
         this->secondaryTileset = secondaryTileset;
@@ -19,15 +19,17 @@ public:
     void setTilesets(Tileset*, Tileset*);
     void setMetatile(Metatile*);
     void clearLastModifiedCoords();
+
 private:
     Metatile* metatile;
-    Tileset *primaryTileset;
-    Tileset *secondaryTileset;
+    Tileset* primaryTileset;
+    Tileset* secondaryTileset;
     QPoint prevChangedTile;
     void getBoundedCoords(QPointF, int*, int*);
 signals:
     void tileChanged(int, int);
     void selectedTilesChanged(QPoint, int, int);
+
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent*);
     void mouseMoveEvent(QGraphicsSceneMouseEvent*);

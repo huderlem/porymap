@@ -4,8 +4,7 @@
 
 #include <QCursor>
 
-class Settings
-{
+class Settings {
 public:
     Settings();
     bool smartPathsEnabled;

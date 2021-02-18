@@ -6,19 +6,17 @@
 
 #include <QDebug>
 
-int getEventTypeMask(QList<Event *> events) {
+int getEventTypeMask(QList<Event*> events) {
     int eventTypeMask = 0;
     for (auto event : events) {
         if (event->get("event_type") == EventType::Object) {
             eventTypeMask |= IDMask_EventType_Object;
         } else if (event->get("event_type") == EventType::Warp) {
             eventTypeMask |= IDMask_EventType_Warp;
-        } else if (event->get("event_type") == EventType::Trigger ||
-                   event->get("event_type") == EventType::WeatherTrigger) {
+        } else if (event->get("event_type") == EventType::Trigger || event->get("event_type") == EventType::WeatherTrigger) {
             eventTypeMask |= IDMask_EventType_Trigger;
-        } else if (event->get("event_type") == EventType::Sign ||
-                   event->get("event_type") == EventType::HiddenItem ||
-                   event->get("event_type") == EventType::SecretBase) {
+        } else if (event->get("event_type") == EventType::Sign || event->get("event_type") == EventType::HiddenItem
+            || event->get("event_type") == EventType::SecretBase) {
             eventTypeMask |= IDMask_EventType_BG;
         } else if (event->get("event_type") == EventType::HealLocation) {
             eventTypeMask |= IDMask_EventType_Heal;
@@ -27,14 +25,13 @@ int getEventTypeMask(QList<Event *> events) {
     return eventTypeMask;
 }
 
-void renderMapBlocks(Map *map, bool ignoreCache = false) {
+void renderMapBlocks(Map* map, bool ignoreCache = false) {
     map->mapItem->draw(ignoreCache);
     map->collisionItem->draw(ignoreCache);
 }
 
-PaintMetatile::PaintMetatile(Map *map,
-    const Blockdata &oldMetatiles, const Blockdata &newMetatiles,
-    unsigned actionId, QUndoCommand *parent) : QUndoCommand(parent) {
+PaintMetatile::PaintMetatile(Map* map, const Blockdata& oldMetatiles, const Blockdata& newMetatiles, unsigned actionId, QUndoCommand* parent)
+    : QUndoCommand(parent) {
     setText("Paint Metatiles");
 
     this->map = map;
@@ -47,7 +44,8 @@ PaintMetatile::PaintMetatile(Map *map,
 void PaintMetatile::redo() {
     QUndoCommand::redo();
 
-    if (!map) return;
+    if (!map)
+        return;
 
     map->layout->blockdata = newMetatiles;
 
@@ -57,7 +55,8 @@ void PaintMetatile::redo() {
 }
 
 void PaintMetatile::undo() {
-    if (!map) return;
+    if (!map)
+        return;
 
     map->layout->blockdata = oldMetatiles;
 
@@ -68,8 +67,8 @@ void PaintMetatile::undo() {
     QUndoCommand::undo();
 }
 
-bool PaintMetatile::mergeWith(const QUndoCommand *command) {
-    const PaintMetatile *other = static_cast<const PaintMetatile *>(command);
+bool PaintMetatile::mergeWith(const QUndoCommand* command) {
+    const PaintMetatile* other = static_cast<const PaintMetatile*>(command);
 
     if (map != other->map)
         return false;
@@ -86,9 +85,7 @@ bool PaintMetatile::mergeWith(const QUndoCommand *command) {
     ************************************************************************
  ******************************************************************************/
 
-PaintBorder::PaintBorder(Map *map,
-    const Blockdata &oldBorder, const Blockdata &newBorder,
-    unsigned actionId, QUndoCommand *parent) : QUndoCommand(parent) {
+PaintBorder::PaintBorder(Map* map, const Blockdata& oldBorder, const Blockdata& newBorder, unsigned actionId, QUndoCommand* parent) : QUndoCommand(parent) {
     setText("Paint Border");
 
     this->map = map;
@@ -101,7 +98,8 @@ PaintBorder::PaintBorder(Map *map,
 void PaintBorder::redo() {
     QUndoCommand::redo();
 
-    if (!map) return;
+    if (!map)
+        return;
 
     map->layout->border = newBorder;
 
@@ -109,7 +107,8 @@ void PaintBorder::redo() {
 }
 
 void PaintBorder::undo() {
-    if (!map) return;
+    if (!map)
+        return;
 
     map->layout->border = oldBorder;
 
@@ -122,9 +121,8 @@ void PaintBorder::undo() {
     ************************************************************************
  ******************************************************************************/
 
-ShiftMetatiles::ShiftMetatiles(Map *map,
-    const Blockdata &oldMetatiles, const Blockdata &newMetatiles,
-    unsigned actionId, QUndoCommand *parent) : QUndoCommand(parent) {
+ShiftMetatiles::ShiftMetatiles(Map* map, const Blockdata& oldMetatiles, const Blockdata& newMetatiles, unsigned actionId, QUndoCommand* parent)
+    : QUndoCommand(parent) {
     setText("Shift Metatiles");
 
     this->map = map;
@@ -137,7 +135,8 @@ ShiftMetatiles::ShiftMetatiles(Map *map,
 void ShiftMetatiles::redo() {
     QUndoCommand::redo();
 
-    if (!map) return;
+    if (!map)
+        return;
 
     map->layout->blockdata = newMetatiles;
 
@@ -147,7 +146,8 @@ void ShiftMetatiles::redo() {
 }
 
 void ShiftMetatiles::undo() {
-    if (!map) return;
+    if (!map)
+        return;
 
     map->layout->blockdata = oldMetatiles;
 
@@ -158,8 +158,8 @@ void ShiftMetatiles::undo() {
     QUndoCommand::undo();
 }
 
-bool ShiftMetatiles::mergeWith(const QUndoCommand *command) {
-    const ShiftMetatiles *other = static_cast<const ShiftMetatiles *>(command);
+bool ShiftMetatiles::mergeWith(const QUndoCommand* command) {
+    const ShiftMetatiles* other = static_cast<const ShiftMetatiles*>(command);
 
     if (this->map != other->map)
         return false;
@@ -176,11 +176,9 @@ bool ShiftMetatiles::mergeWith(const QUndoCommand *command) {
     ************************************************************************
  ******************************************************************************/
 
-ResizeMap::ResizeMap(Map *map, QSize oldMapDimensions, QSize newMapDimensions,
-    const Blockdata &oldMetatiles, const Blockdata &newMetatiles,
-    QSize oldBorderDimensions, QSize newBorderDimensions,
-    const Blockdata &oldBorder, const Blockdata &newBorder,
-    QUndoCommand *parent) : QUndoCommand(parent) {
+ResizeMap::ResizeMap(Map* map, QSize oldMapDimensions, QSize newMapDimensions, const Blockdata& oldMetatiles, const Blockdata& newMetatiles,
+    QSize oldBorderDimensions, QSize newBorderDimensions, const Blockdata& oldBorder, const Blockdata& newBorder, QUndoCommand* parent)
+    : QUndoCommand(parent) {
     setText("Resize Map");
 
     this->map = map;
@@ -207,7 +205,8 @@ ResizeMap::ResizeMap(Map *map, QSize oldMapDimensions, QSize newMapDimensions,
 void ResizeMap::redo() {
     QUndoCommand::redo();
 
-    if (!map) return;
+    if (!map)
+        return;
 
     map->layout->blockdata = newMetatiles;
     map->setDimensions(newMapWidth, newMapHeight, false);
@@ -221,7 +220,8 @@ void ResizeMap::redo() {
 }
 
 void ResizeMap::undo() {
-    if (!map) return;
+    if (!map)
+        return;
 
     map->layout->blockdata = oldMetatiles;
     map->setDimensions(oldMapWidth, oldMapHeight, false);
@@ -240,9 +240,7 @@ void ResizeMap::undo() {
     ************************************************************************
  ******************************************************************************/
 
-EventMove::EventMove(QList<Event *> events,
-    int deltaX, int deltaY, unsigned actionId,
-    QUndoCommand *parent) : QUndoCommand(parent) {
+EventMove::EventMove(QList<Event*> events, int deltaX, int deltaY, unsigned actionId, QUndoCommand* parent) : QUndoCommand(parent) {
     setText("Move Event");
 
     this->events = events;
@@ -256,21 +254,21 @@ EventMove::EventMove(QList<Event *> events,
 void EventMove::redo() {
     QUndoCommand::redo();
 
-    for (Event *event : events) {
+    for (Event* event : events) {
         event->pixmapItem->move(deltaX, deltaY);
     }
 }
 
 void EventMove::undo() {
-    for (Event *event : events) {
+    for (Event* event : events) {
         event->pixmapItem->move(-deltaX, -deltaY);
     }
 
     QUndoCommand::undo();
 }
 
-bool EventMove::mergeWith(const QUndoCommand *command) {
-    const EventMove *other = static_cast<const EventMove *>(command);
+bool EventMove::mergeWith(const QUndoCommand* command) {
+    const EventMove* other = static_cast<const EventMove*>(command);
 
     if (actionId != other->actionId)
         return false;
@@ -291,10 +289,8 @@ int EventMove::id() const {
     ************************************************************************
  ******************************************************************************/
 
-EventShift::EventShift(QList<Event *> events,
-    int deltaX, int deltaY, unsigned actionId,
-    QUndoCommand *parent) 
-  : EventMove(events, deltaX, deltaY, actionId, parent) {
+EventShift::EventShift(QList<Event*> events, int deltaX, int deltaY, unsigned actionId, QUndoCommand* parent)
+    : EventMove(events, deltaX, deltaY, actionId, parent) {
     this->events = events;
     setText("Shift Events");
 }
@@ -307,8 +303,7 @@ int EventShift::id() const {
     ************************************************************************
  ******************************************************************************/
 
-EventCreate::EventCreate(Editor *editor, Map *map, Event *event,
-    QUndoCommand *parent) : QUndoCommand(parent) {
+EventCreate::EventCreate(Editor* editor, Map* map, Event* event, QUndoCommand* parent) : QUndoCommand(parent) {
     setText("Create Event");
 
     this->editor = editor;
@@ -344,16 +339,14 @@ void EventCreate::undo() {
 }
 
 int EventCreate::id() const {
-    return CommandId::ID_EventCreate | getEventTypeMask(QList<Event*>({this->event}));
+    return CommandId::ID_EventCreate | getEventTypeMask(QList<Event*>({ this->event }));
 }
 
 /******************************************************************************
     ************************************************************************
  ******************************************************************************/
 
-EventDelete::EventDelete(Editor *editor, Map *map,
-    QList<Event *> selectedEvents, Event *nextSelectedEvent,
-    QUndoCommand *parent) : QUndoCommand(parent) {
+EventDelete::EventDelete(Editor* editor, Map* map, QList<Event*> selectedEvents, Event* nextSelectedEvent, QUndoCommand* parent) : QUndoCommand(parent) {
     if (selectedEvents.size() > 1) {
         setText("Delete Events");
     } else {
@@ -370,7 +363,7 @@ EventDelete::EventDelete(Editor *editor, Map *map,
 void EventDelete::redo() {
     QUndoCommand::redo();
 
-    for (Event *event : selectedEvents) {
+    for (Event* event : selectedEvents) {
         map->removeEvent(event);
 
         if (editor->scene->items().contains(event->pixmapItem)) {
@@ -386,7 +379,7 @@ void EventDelete::redo() {
 }
 
 void EventDelete::undo() {
-    for (Event *event : selectedEvents) {
+    for (Event* event : selectedEvents) {
         map->addEvent(event);
 
         editor->project->loadEventPixmaps(map->getAllEvents());
@@ -395,7 +388,7 @@ void EventDelete::undo() {
 
     // select these events
     editor->selected_events->clear();
-    for (Event *event : selectedEvents) {
+    for (Event* event : selectedEvents) {
         editor->selected_events->append(event->pixmapItem);
     }
     editor->shouldReselectEvents();
@@ -411,9 +404,7 @@ int EventDelete::id() const {
     ************************************************************************
  ******************************************************************************/
 
-EventDuplicate::EventDuplicate(Editor *editor, Map *map,
-    QList<Event *> selectedEvents,
-    QUndoCommand *parent) : QUndoCommand(parent) {
+EventDuplicate::EventDuplicate(Editor* editor, Map* map, QList<Event*> selectedEvents, QUndoCommand* parent) : QUndoCommand(parent) {
     setText("Duplicate Event");
 
     this->editor = editor;
@@ -425,26 +416,26 @@ EventDuplicate::EventDuplicate(Editor *editor, Map *map,
 void EventDuplicate::redo() {
     QUndoCommand::redo();
 
-    for (Event *event : selectedEvents) {
+    for (Event* event : selectedEvents) {
         map->addEvent(event);
     }
 
     editor->project->loadEventPixmaps(map->getAllEvents());
 
-    for (Event *event : selectedEvents) {
+    for (Event* event : selectedEvents) {
         editor->addMapEvent(event);
     }
 
     // select these events
     editor->selected_events->clear();
-    for (Event *event : selectedEvents) {
+    for (Event* event : selectedEvents) {
         editor->selected_events->append(event->pixmapItem);
     }
     editor->shouldReselectEvents();
 }
 
 void EventDuplicate::undo() {
-    for (Event *event : selectedEvents) {
+    for (Event* event : selectedEvents) {
         map->removeEvent(event);
 
         if (editor->scene->items().contains(event->pixmapItem)) {
@@ -466,10 +457,9 @@ int EventDuplicate::id() const {
     ************************************************************************
  ******************************************************************************/
 
-ScriptEditMap::ScriptEditMap(Map *map,
-        QSize oldMapDimensions, QSize newMapDimensions,
-        const Blockdata &oldMetatiles, const Blockdata &newMetatiles,
-        QUndoCommand *parent) : QUndoCommand(parent) {
+ScriptEditMap::ScriptEditMap(
+    Map* map, QSize oldMapDimensions, QSize newMapDimensions, const Blockdata& oldMetatiles, const Blockdata& newMetatiles, QUndoCommand* parent)
+    : QUndoCommand(parent) {
     setText("Script Edit Map");
 
     this->map = map;
@@ -486,7 +476,8 @@ ScriptEditMap::ScriptEditMap(Map *map,
 void ScriptEditMap::redo() {
     QUndoCommand::redo();
 
-    if (!map) return;
+    if (!map)
+        return;
 
     map->layout->blockdata = newMetatiles;
     if (newMapWidth != map->getWidth() || newMapHeight != map->getHeight()) {
@@ -500,7 +491,8 @@ void ScriptEditMap::redo() {
 }
 
 void ScriptEditMap::undo() {
-    if (!map) return;
+    if (!map)
+        return;
 
     map->layout->blockdata = oldMetatiles;
     if (oldMapWidth != map->getWidth() || oldMapHeight != map->getHeight()) {

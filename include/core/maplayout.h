@@ -10,7 +10,8 @@
 
 class MapLayout {
 public:
-    MapLayout() {}
+    MapLayout() {
+    }
     static QString layoutConstantFromName(QString mapName);
     QString id;
     QString name;
@@ -22,8 +23,8 @@ public:
     QString blockdata_path;
     QString tileset_primary_label;
     QString tileset_secondary_label;
-    Tileset *tileset_primary = nullptr;
-    Tileset *tileset_secondary = nullptr;
+    Tileset* tileset_primary = nullptr;
+    Tileset* tileset_secondary = nullptr;
     Blockdata blockdata;
     QImage border_image;
     QPixmap border_pixmap;

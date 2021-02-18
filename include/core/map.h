@@ -25,11 +25,10 @@ class MapPixmapItem;
 class CollisionPixmapItem;
 class BorderMetatilesPixmapItem;
 
-class Map : public QObject
-{
+class Map : public QObject {
     Q_OBJECT
 public:
-    explicit Map(QObject *parent = nullptr);
+    explicit Map(QObject* parent = nullptr);
     ~Map();
 
 public:
@@ -52,7 +51,7 @@ public:
     QString sharedEventsMap = "";
     QString sharedScriptsMap = "";
     QMap<QString, QString> customHeaders;
-    MapLayout *layout;
+    MapLayout* layout;
     bool isPersistedToFile = true;
     bool needsLayoutDir = true;
     QImage collision_image;
@@ -73,22 +72,22 @@ public:
     int getHeight();
     int getBorderWidth();
     int getBorderHeight();
-    QPixmap render(bool ignoreCache, MapLayout * fromLayout = nullptr);
+    QPixmap render(bool ignoreCache, MapLayout* fromLayout = nullptr);
     QPixmap renderCollision(qreal opacity, bool ignoreCache);
-    bool mapBlockChanged(int i, const Blockdata &cache);
-    bool borderBlockChanged(int i, const Blockdata &cache);
+    bool mapBlockChanged(int i, const Blockdata& cache);
+    bool borderBlockChanged(int i, const Blockdata& cache);
     void cacheBlockdata();
     void cacheCollision();
-    bool getBlock(int x, int y, Block *out);
+    bool getBlock(int x, int y, Block* out);
     void setBlock(int x, int y, Block block, bool enableScriptCallback = false);
     void floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
     void _floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
     void magicFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
     QList<Event*> getAllEvents() const;
-    QStringList eventScriptLabels(const QString &event_group_type = QString()) const;
+    QStringList eventScriptLabels(const QString& event_group_type = QString()) const;
     void removeEvent(Event*);
     void addEvent(Event*);
-    QPixmap renderConnection(MapConnection, MapLayout *);
+    QPixmap renderConnection(MapConnection, MapLayout*);
     QPixmap renderBorder(bool ignoreCache = false);
     void setDimensions(int newWidth, int newHeight, bool setNewBlockdata = true);
     void setBorderDimensions(int newWidth, int newHeight, bool setNewBlockdata = true);
@@ -96,16 +95,22 @@ public:
     bool hasUnsavedChanges();
 
     // for memory management
-    QVector<Event *> ownedEvents;
+    QVector<Event*> ownedEvents;
 
-    MapPixmapItem *mapItem = nullptr;
-    void setMapItem(MapPixmapItem *item) { mapItem = item; }
+    MapPixmapItem* mapItem = nullptr;
+    void setMapItem(MapPixmapItem* item) {
+        mapItem = item;
+    }
 
-    CollisionPixmapItem *collisionItem = nullptr;
-    void setCollisionItem(CollisionPixmapItem *item) { collisionItem = item; }
+    CollisionPixmapItem* collisionItem = nullptr;
+    void setCollisionItem(CollisionPixmapItem* item) {
+        collisionItem = item;
+    }
 
-    BorderMetatilesPixmapItem *borderItem = nullptr;
-    void setBorderItem(BorderMetatilesPixmapItem *item) { borderItem = item; }
+    BorderMetatilesPixmapItem* borderItem = nullptr;
+    void setBorderItem(BorderMetatilesPixmapItem* item) {
+        borderItem = item;
+    }
 
     QUndoStack editHistory;
 
@@ -114,8 +119,8 @@ private:
     void setNewBorderDimensionsBlockdata(int newWidth, int newHeight);
 
 signals:
-    void mapChanged(Map *map);
-    void mapDimensionsChanged(const QSize &size);
+    void mapChanged(Map* map);
+    void mapDimensionsChanged(const QSize& size);
     void mapNeedsRedrawing();
 };
 

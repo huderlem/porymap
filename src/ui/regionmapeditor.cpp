@@ -17,10 +17,7 @@
 #include <QTransform>
 #include <math.h>
 
-RegionMapEditor::RegionMapEditor(QWidget *parent, Project *project_) :
-    QMainWindow(parent),
-    ui(new Ui::RegionMapEditor)
-{
+RegionMapEditor::RegionMapEditor(QWidget* parent, Project* project_) : QMainWindow(parent), ui(new Ui::RegionMapEditor) {
     this->ui->setupUi(this);
     this->project = project_;
     this->region_map = new RegionMap;
@@ -29,8 +26,7 @@ RegionMapEditor::RegionMapEditor(QWidget *parent, Project *project_) :
     this->restoreWindowState();
 }
 
-RegionMapEditor::~RegionMapEditor()
-{
+RegionMapEditor::~RegionMapEditor() {
     delete ui;
     delete region_map;
     delete region_map_item;
@@ -63,13 +59,8 @@ void RegionMapEditor::on_action_RegionMap_Save_triggered() {
 
 void RegionMapEditor::setCurrentSquareOptions() {
     if (project && region_map) {
-        this->region_map->saveOptions(
-            this->currIndex,
-            this->ui->comboBox_RM_ConnectedMap->currentText(),
-            this->ui->lineEdit_RM_MapName->text(),
-            this->region_map->map_squares[this->currIndex].x,
-            this->region_map->map_squares[this->currIndex].y
-        );
+        this->region_map->saveOptions(this->currIndex, this->ui->comboBox_RM_ConnectedMap->currentText(), this->ui->lineEdit_RM_MapName->text(),
+            this->region_map->map_squares[this->currIndex].x, this->region_map->map_squares[this->currIndex].y);
     }
 }
 
@@ -95,8 +86,7 @@ bool RegionMapEditor::loadCityMaps() {
 }
 
 void RegionMapEditor::initShortcuts() {
-    auto *shortcut_RM_Options_delete = new Shortcut(
-            {QKeySequence("Del"), QKeySequence("Backspace")}, this, SLOT(on_pushButton_RM_Options_delete_clicked()));
+    auto* shortcut_RM_Options_delete = new Shortcut({ QKeySequence("Del"), QKeySequence("Backspace") }, this, SLOT(on_pushButton_RM_Options_delete_clicked()));
     shortcut_RM_Options_delete->setObjectName("shortcut_RM_Options_delete");
     shortcut_RM_Options_delete->setWhatsThis("Map Layout: Delete Square");
 
@@ -108,21 +98,21 @@ void RegionMapEditor::initShortcuts() {
 QObjectList RegionMapEditor::shortcutableObjects() const {
     QObjectList shortcutable_objects;
 
-    for (auto *action : findChildren<QAction *>())
+    for (auto* action : findChildren<QAction*>())
         if (!action->objectName().isEmpty())
-            shortcutable_objects.append(qobject_cast<QObject *>(action));
-    for (auto *shortcut : findChildren<Shortcut *>())
+            shortcutable_objects.append(qobject_cast<QObject*>(action));
+    for (auto* shortcut : findChildren<Shortcut*>())
         if (!shortcut->objectName().isEmpty())
-            shortcutable_objects.append(qobject_cast<QObject *>(shortcut));
+            shortcutable_objects.append(qobject_cast<QObject*>(shortcut));
 
     return shortcutable_objects;
 }
 
 void RegionMapEditor::applyUserShortcuts() {
-    for (auto *action : findChildren<QAction *>())
+    for (auto* action : findChildren<QAction*>())
         if (!action->objectName().isEmpty())
             action->setShortcuts(shortcutsConfig.userShortcuts(action));
-    for (auto *shortcut : findChildren<Shortcut *>())
+    for (auto* shortcut : findChildren<Shortcut*>())
         if (!shortcut->objectName().isEmpty())
             shortcut->setKeys(shortcutsConfig.userShortcuts(shortcut));
 }
@@ -150,12 +140,9 @@ void RegionMapEditor::displayRegionMapImage() {
     this->region_map_item = new RegionMapPixmapItem(this->region_map, this->mapsquare_selector_item);
     this->region_map_item->draw();
 
-    connect(this->region_map_item, &RegionMapPixmapItem::mouseEvent,
-            this, &RegionMapEditor::mouseEvent_region_map);
-    connect(this->region_map_item, &RegionMapPixmapItem::hoveredRegionMapTileChanged,
-            this, &RegionMapEditor::onHoveredRegionMapTileChanged);
-    connect(this->region_map_item, &RegionMapPixmapItem::hoveredRegionMapTileCleared,
-            this, &RegionMapEditor::onHoveredRegionMapTileCleared);
+    connect(this->region_map_item, &RegionMapPixmapItem::mouseEvent, this, &RegionMapEditor::mouseEvent_region_map);
+    connect(this->region_map_item, &RegionMapPixmapItem::hoveredRegionMapTileChanged, this, &RegionMapEditor::onHoveredRegionMapTileChanged);
+    connect(this->region_map_item, &RegionMapPixmapItem::hoveredRegionMapTileCleared, this, &RegionMapEditor::onHoveredRegionMapTileCleared);
 
     this->scene_region_map_image->addItem(this->region_map_item);
     this->scene_region_map_image->setSceneRect(this->scene_region_map_image->itemsBoundingRect());
@@ -164,9 +151,8 @@ void RegionMapEditor::displayRegionMapImage() {
 
     if (regionMapFirstDraw) {
         on_verticalSlider_Zoom_Map_Image_valueChanged(this->ui->verticalSlider_Zoom_Map_Image->value());
-        RegionMapHistoryItem *commit = new RegionMapHistoryItem(
-            RegionMapEditorBox::BackgroundImage, this->region_map->getTiles(), this->region_map->width(), this->region_map->height()
-        );
+        RegionMapHistoryItem* commit = new RegionMapHistoryItem(
+            RegionMapEditorBox::BackgroundImage, this->region_map->getTiles(), this->region_map->width(), this->region_map->height());
         history.push(commit);
         regionMapFirstDraw = false;
     }
@@ -183,12 +169,9 @@ void RegionMapEditor::displayRegionMapLayout() {
 
     this->region_map_layout_item = new RegionMapLayoutPixmapItem(this->region_map, this->mapsquare_selector_item);
 
-    connect(this->region_map_layout_item, &RegionMapLayoutPixmapItem::selectedTileChanged,
-            this, &RegionMapEditor::onRegionMapLayoutSelectedTileChanged);
-    connect(this->region_map_layout_item, &RegionMapLayoutPixmapItem::hoveredTileChanged,
-            this, &RegionMapEditor::onRegionMapLayoutHoveredTileChanged);
-    connect(this->region_map_layout_item, &RegionMapLayoutPixmapItem::hoveredTileCleared,
-            this, &RegionMapEditor::onRegionMapLayoutHoveredTileCleared);
+    connect(this->region_map_layout_item, &RegionMapLayoutPixmapItem::selectedTileChanged, this, &RegionMapEditor::onRegionMapLayoutSelectedTileChanged);
+    connect(this->region_map_layout_item, &RegionMapLayoutPixmapItem::hoveredTileChanged, this, &RegionMapEditor::onRegionMapLayoutHoveredTileChanged);
+    connect(this->region_map_layout_item, &RegionMapLayoutPixmapItem::hoveredTileCleared, this, &RegionMapEditor::onRegionMapLayoutHoveredTileCleared);
 
     updateRegionMapLayoutOptions(this->currIndex);
     this->region_map_layout_item->draw();
@@ -231,8 +214,7 @@ void RegionMapEditor::displayRegionMapEntriesImage() {
 
     this->region_map_entries_item = new RegionMapEntriesPixmapItem(this->region_map, this->mapsquare_selector_item);
 
-    connect(this->region_map_entries_item, &RegionMapEntriesPixmapItem::entryPositionChanged,
-            this, &RegionMapEditor::onRegionMapEntryDragged);
+    connect(this->region_map_entries_item, &RegionMapEntriesPixmapItem::entryPositionChanged, this, &RegionMapEditor::onRegionMapEntryDragged);
 
     if (entriesFirstDraw) {
         QString first = this->project->mapSectionValueToName.first();
@@ -245,7 +227,7 @@ void RegionMapEditor::displayRegionMapEntriesImage() {
     this->region_map_entries_item->draw();
 
     int idx = this->region_map->getMapSquareIndex(this->region_map->mapSecToMapEntry.value(activeEntry).x + this->region_map->padLeft,
-                                                  this->region_map->mapSecToMapEntry.value(activeEntry).y + this->region_map->padTop);
+        this->region_map->mapSecToMapEntry.value(activeEntry).y + this->region_map->padTop);
     this->region_map_entries_item->select(idx);
 
     this->scene_region_map_entries->addItem(region_map_entries_item);
@@ -308,12 +290,9 @@ void RegionMapEditor::displayRegionMapTileSelector() {
 
     this->scene_region_map_tiles->addItem(this->mapsquare_selector_item);
 
-    connect(this->mapsquare_selector_item, &TilemapTileSelector::selectedTileChanged,
-            this, &RegionMapEditor::onRegionMapTileSelectorSelectedTileChanged);
-    connect(this->mapsquare_selector_item, &TilemapTileSelector::hoveredTileChanged,
-            this, &RegionMapEditor::onRegionMapTileSelectorHoveredTileChanged);
-    connect(this->mapsquare_selector_item, &TilemapTileSelector::hoveredTileCleared,
-            this, &RegionMapEditor::onRegionMapTileSelectorHoveredTileCleared);
+    connect(this->mapsquare_selector_item, &TilemapTileSelector::selectedTileChanged, this, &RegionMapEditor::onRegionMapTileSelectorSelectedTileChanged);
+    connect(this->mapsquare_selector_item, &TilemapTileSelector::hoveredTileChanged, this, &RegionMapEditor::onRegionMapTileSelectorHoveredTileChanged);
+    connect(this->mapsquare_selector_item, &TilemapTileSelector::hoveredTileCleared, this, &RegionMapEditor::onRegionMapTileSelectorHoveredTileCleared);
 
     this->ui->graphicsView_RegionMap_Tiles->setScene(this->scene_region_map_tiles);
     on_verticalSlider_Zoom_Image_Tiles_valueChanged(this->ui->verticalSlider_Zoom_Image_Tiles->value());
@@ -335,8 +314,7 @@ void RegionMapEditor::displayCityMapTileSelector() {
 
     this->scene_city_map_tiles->addItem(this->city_map_selector_item);
 
-    connect(this->city_map_selector_item, &TilemapTileSelector::selectedTileChanged,
-            this, &RegionMapEditor::onCityMapTileSelectorSelectedTileChanged);
+    connect(this->city_map_selector_item, &TilemapTileSelector::selectedTileChanged, this, &RegionMapEditor::onCityMapTileSelectorSelectedTileChanged);
 
     this->ui->graphicsView_City_Map_Tiles->setScene(this->scene_city_map_tiles);
     on_verticalSlider_Zoom_City_Tiles_valueChanged(this->ui->verticalSlider_Zoom_City_Tiles->value());
@@ -358,8 +336,7 @@ void RegionMapEditor::displayCityMap(QString f) {
     city_map_item = new CityMapPixmapItem(file, this->city_map_selector_item);
     city_map_item->draw();
 
-    connect(this->city_map_item, &CityMapPixmapItem::mouseEvent,
-            this, &RegionMapEditor::mouseEvent_city_map);
+    connect(this->city_map_item, &CityMapPixmapItem::mouseEvent, this, &RegionMapEditor::mouseEvent_city_map);
 
     scene_city_map_image->addItem(city_map_item);
     scene_city_map_image->setSceneRect(this->scene_city_map_image->sceneRect());
@@ -375,10 +352,11 @@ bool RegionMapEditor::createCityMap(QString name) {
 
     uint8_t filler = 0x30;
     uint8_t border = 0x7;
-    uint8_t blank  = 0x1;
+    uint8_t blank = 0x1;
     QByteArray new_data(400, filler);
     for (int i = 0; i < new_data.size(); i++) {
-        if (i % 2) continue;
+        if (i % 2)
+            continue;
         int x = i % 20;
         int y = i / 20;
         if (y <= 1 || y >= 8 || x <= 3 || x >= 16)
@@ -388,7 +366,8 @@ bool RegionMapEditor::createCityMap(QString name) {
     }
 
     QFile binFile(file);
-    if (!binFile.open(QIODevice::WriteOnly)) errored = true;
+    if (!binFile.open(QIODevice::WriteOnly))
+        errored = true;
     binFile.write(new_data);
     binFile.close();
 
@@ -438,8 +417,7 @@ void RegionMapEditor::onRegionMapLayoutSelectedTileChanged(int index) {
     this->currIndex = index;
     this->region_map_layout_item->highlightedTile = index;
     if (this->region_map->map_squares[index].has_map) {
-        message = QString("\t %1").arg(this->project->mapSecToMapHoverName.value(
-                      this->region_map->map_squares[index].mapsec)).remove("{NAME_END}");
+        message = QString("\t %1").arg(this->project->mapSecToMapHoverName.value(this->region_map->map_squares[index].mapsec)).remove("{NAME_END}");
     }
     this->ui->statusbar->showMessage(message);
 
@@ -454,8 +432,7 @@ void RegionMapEditor::onRegionMapLayoutHoveredTileChanged(int index) {
     if (x >= 0 && y >= 0) {
         message = QString("(%1, %2)").arg(x).arg(y);
         if (this->region_map->map_squares[index].has_map) {
-            message += QString("\t %1").arg(this->project->mapSecToMapHoverName.value(
-                           this->region_map->map_squares[index].mapsec)).remove("{NAME_END}");
+            message += QString("\t %1").arg(this->project->mapSecToMapHoverName.value(this->region_map->map_squares[index].mapsec)).remove("{NAME_END}");
         }
     }
     this->ui->statusbar->showMessage(message);
@@ -466,8 +443,7 @@ void RegionMapEditor::onRegionMapLayoutHoveredTileCleared() {
 }
 
 void RegionMapEditor::onHoveredRegionMapTileChanged(int x, int y) {
-    QString message = QString("x: %1, y: %2    Tile: 0x").arg(x).arg(y) 
-        + QString("%1").arg(this->region_map->getTileId(x, y), 4, 16, QChar('0')).toUpper();
+    QString message = QString("x: %1, y: %2    Tile: 0x").arg(x).arg(y) + QString("%1").arg(this->region_map->getTileId(x, y), 4, 16, QChar('0')).toUpper();
     this->ui->statusbar->showMessage(message);
 }
 
@@ -475,24 +451,24 @@ void RegionMapEditor::onHoveredRegionMapTileCleared() {
     this->ui->statusbar->clearMessage();
 }
 
-void RegionMapEditor::mouseEvent_region_map(QGraphicsSceneMouseEvent *event, RegionMapPixmapItem *item) {
+void RegionMapEditor::mouseEvent_region_map(QGraphicsSceneMouseEvent* event, RegionMapPixmapItem* item) {
     QPointF pos = event->pos();
     int x = static_cast<int>(pos.x()) / 8;
     int y = static_cast<int>(pos.y()) / 8;
     int index = this->region_map->getMapSquareIndex(x, y);
-    if (index > this->region_map->map_squares.size() - 1) return;
+    if (index > this->region_map->map_squares.size() - 1)
+        return;
 
     if (event->buttons() & Qt::RightButton) {
         item->select(event);
-    //} else if (event->buttons() & Qt::MiddleButton) {// TODO
+        //} else if (event->buttons() & Qt::MiddleButton) {// TODO
     } else {
         if (event->type() == QEvent::GraphicsSceneMouseRelease) {
-            RegionMapHistoryItem *current = history.current();
+            RegionMapHistoryItem* current = history.current();
             bool addToHistory = !(current && current->tiles == this->region_map->getTiles());
             if (addToHistory) {
-                RegionMapHistoryItem *commit = new RegionMapHistoryItem(
-                    RegionMapEditorBox::BackgroundImage, this->region_map->getTiles(), this->region_map->width(), this->region_map->height()
-                );
+                RegionMapHistoryItem* commit = new RegionMapHistoryItem(
+                    RegionMapEditorBox::BackgroundImage, this->region_map->getTiles(), this->region_map->width(), this->region_map->height());
                 history.push(commit);
             }
         } else {
@@ -503,25 +479,22 @@ void RegionMapEditor::mouseEvent_region_map(QGraphicsSceneMouseEvent *event, Reg
     }
 }
 
-void RegionMapEditor::mouseEvent_city_map(QGraphicsSceneMouseEvent *event, CityMapPixmapItem *item) {
+void RegionMapEditor::mouseEvent_city_map(QGraphicsSceneMouseEvent* event, CityMapPixmapItem* item) {
     if (cityMapFirstDraw) {
-        RegionMapHistoryItem *commit = new RegionMapHistoryItem(
-            RegionMapEditorBox::CityMapImage, this->city_map_item->getTiles(), this->city_map_item->file
-        );
+        RegionMapHistoryItem* commit = new RegionMapHistoryItem(RegionMapEditorBox::CityMapImage, this->city_map_item->getTiles(), this->city_map_item->file);
         history.push(commit);
         cityMapFirstDraw = false;
     }
 
-    if (event->buttons() & Qt::RightButton) {// TODO
-    //} else if (event->buttons() & Qt::MiddleButton) {// TODO
+    if (event->buttons() & Qt::RightButton) { // TODO
+        //} else if (event->buttons() & Qt::MiddleButton) {// TODO
     } else {
         if (event->type() == QEvent::GraphicsSceneMouseRelease) {
-            RegionMapHistoryItem *current = history.current();
+            RegionMapHistoryItem* current = history.current();
             bool addToHistory = !(current && current->tiles == this->city_map_item->getTiles());
             if (addToHistory) {
-                RegionMapHistoryItem *commit = new RegionMapHistoryItem(
-                    RegionMapEditorBox::CityMapImage, this->city_map_item->getTiles(), this->city_map_item->file
-                );
+                RegionMapHistoryItem* commit
+                    = new RegionMapHistoryItem(RegionMapEditorBox::CityMapImage, this->city_map_item->getTiles(), this->city_map_item->file);
                 history.push(commit);
             }
         } else {
@@ -533,36 +506,35 @@ void RegionMapEditor::mouseEvent_city_map(QGraphicsSceneMouseEvent *event, CityM
 
 void RegionMapEditor::on_tabWidget_Region_Map_currentChanged(int index) {
     this->ui->stackedWidget_RM_Options->setCurrentIndex(index);
-    switch (index)
-    {
-        case 0:
-            this->ui->verticalSlider_Zoom_Image_Tiles->setVisible(true);
-            this->region_map_item->draw();
-            break;
-        case 1:
-            this->ui->verticalSlider_Zoom_Image_Tiles->setVisible(false);
-            this->region_map_layout_item->draw();
-            break;
-        case 2:
-            this->ui->verticalSlider_Zoom_Image_Tiles->setVisible(false);
-            this->region_map_entries_item->draw();
-            break;
+    switch (index) {
+    case 0:
+        this->ui->verticalSlider_Zoom_Image_Tiles->setVisible(true);
+        this->region_map_item->draw();
+        break;
+    case 1:
+        this->ui->verticalSlider_Zoom_Image_Tiles->setVisible(false);
+        this->region_map_layout_item->draw();
+        break;
+    case 2:
+        this->ui->verticalSlider_Zoom_Image_Tiles->setVisible(false);
+        this->region_map_entries_item->draw();
+        break;
     }
 }
 
-void RegionMapEditor::on_comboBox_RM_ConnectedMap_activated(const QString &mapsec) {
+void RegionMapEditor::on_comboBox_RM_ConnectedMap_activated(const QString& mapsec) {
     this->ui->lineEdit_RM_MapName->setText(this->project->mapSecToMapHoverName.value(mapsec));
-    onRegionMapLayoutSelectedTileChanged(this->currIndex);// re-draw layout image
-    this->hasUnsavedChanges = true;// sometimes this is called for unknown reasons
+    onRegionMapLayoutSelectedTileChanged(this->currIndex); // re-draw layout image
+    this->hasUnsavedChanges = true; // sometimes this is called for unknown reasons
 }
 
-void RegionMapEditor::on_comboBox_RM_Entry_MapSection_activated(const QString &text) {
+void RegionMapEditor::on_comboBox_RM_Entry_MapSection_activated(const QString& text) {
     this->activeEntry = text;
     this->region_map_entries_item->currentSection = activeEntry;
     updateRegionMapEntryOptions(activeEntry);
 
     int idx = this->region_map->getMapSquareIndex(this->region_map->mapSecToMapEntry.value(activeEntry).x + this->region_map->padLeft,
-                                                  this->region_map->mapSecToMapEntry.value(activeEntry).y + this->region_map->padTop);
+        this->region_map->mapSecToMapEntry.value(activeEntry).y + this->region_map->padTop);
     this->region_map_entries_item->select(idx);
     this->region_map_entries_item->draw();
 }
@@ -571,7 +543,7 @@ void RegionMapEditor::on_spinBox_RM_Entry_x_valueChanged(int x) {
     tryInsertNewMapEntry(activeEntry);
     this->region_map->mapSecToMapEntry[activeEntry].setX(x);
     int idx = this->region_map->getMapSquareIndex(this->region_map->mapSecToMapEntry.value(activeEntry).x + this->region_map->padLeft,
-                                                  this->region_map->mapSecToMapEntry.value(activeEntry).y + this->region_map->padTop);
+        this->region_map->mapSecToMapEntry.value(activeEntry).y + this->region_map->padTop);
     this->region_map_entries_item->select(idx);
     this->region_map_entries_item->draw();
     this->ui->spinBox_RM_Entry_width->setMaximum(this->region_map->width() - this->region_map->padLeft - this->region_map->padRight - x);
@@ -582,7 +554,7 @@ void RegionMapEditor::on_spinBox_RM_Entry_y_valueChanged(int y) {
     tryInsertNewMapEntry(activeEntry);
     this->region_map->mapSecToMapEntry[activeEntry].setY(y);
     int idx = this->region_map->getMapSquareIndex(this->region_map->mapSecToMapEntry.value(activeEntry).x + this->region_map->padLeft,
-                                                  this->region_map->mapSecToMapEntry.value(activeEntry).y + this->region_map->padTop);
+        this->region_map->mapSecToMapEntry.value(activeEntry).y + this->region_map->padTop);
     this->region_map_entries_item->select(idx);
     this->region_map_entries_item->draw();
     this->ui->spinBox_RM_Entry_height->setMaximum(this->region_map->height() - this->region_map->padTop - this->region_map->padBottom - y);
@@ -603,7 +575,7 @@ void RegionMapEditor::on_spinBox_RM_Entry_height_valueChanged(int height) {
     this->hasUnsavedChanges = true;
 }
 
-void RegionMapEditor::on_lineEdit_RM_MapName_textEdited(const QString &) {
+void RegionMapEditor::on_lineEdit_RM_MapName_textEdited(const QString&) {
     this->hasUnsavedChanges = true;
 }
 
@@ -622,7 +594,7 @@ void RegionMapEditor::on_pushButton_CityMap_add_clicked() {
 
     QFormLayout form(&popup);
 
-    QLineEdit *input = new QLineEdit();
+    QLineEdit* input = new QLineEdit();
     input->setClearButtonEnabled(true);
     form.addRow(new QLabel("Name:"), input);
 
@@ -632,7 +604,7 @@ void RegionMapEditor::on_pushButton_CityMap_add_clicked() {
 
     form.addRow(&buttonBox);
     connect(&buttonBox, &QDialogButtonBox::rejected, &popup, &QDialog::reject);
-    connect(&buttonBox, &QDialogButtonBox::accepted, [&popup, &input, &name](){
+    connect(&buttonBox, &QDialogButtonBox::accepted, [&popup, &input, &name]() {
         name = input->text().remove(QRegularExpression("[^a-zA-Z0-9_]+"));
         if (!name.isEmpty())
             popup.accept();
@@ -652,11 +624,11 @@ void RegionMapEditor::on_action_RegionMap_Resize_triggered() {
 
     QFormLayout form(&popup);
 
-    QSpinBox *widthSpinBox = new QSpinBox();
-    QSpinBox *heightSpinBox = new QSpinBox();
+    QSpinBox* widthSpinBox = new QSpinBox();
+    QSpinBox* heightSpinBox = new QSpinBox();
     widthSpinBox->setMinimum(32);
     heightSpinBox->setMinimum(20);
-    widthSpinBox->setMaximum(60);// TODO: find real limits
+    widthSpinBox->setMaximum(60); // TODO: find real limits
     heightSpinBox->setMaximum(40);
     widthSpinBox->setValue(this->region_map->width());
     heightSpinBox->setValue(this->region_map->height());
@@ -671,9 +643,8 @@ void RegionMapEditor::on_action_RegionMap_Resize_triggered() {
 
     if (popup.exec() == QDialog::Accepted) {
         resize(widthSpinBox->value(), heightSpinBox->value());
-        RegionMapHistoryItem *commit = new RegionMapHistoryItem(
-            RegionMapEditorBox::BackgroundImage, this->region_map->getTiles(), widthSpinBox->value(), heightSpinBox->value()
-        );
+        RegionMapHistoryItem* commit
+            = new RegionMapHistoryItem(RegionMapEditorBox::BackgroundImage, this->region_map->getTiles(), widthSpinBox->value(), heightSpinBox->value());
         history.push(commit);
     }
 
@@ -686,24 +657,24 @@ void RegionMapEditor::on_action_RegionMap_Undo_triggered() {
 }
 
 void RegionMapEditor::undo() {
-    RegionMapHistoryItem *commit = history.back();
-    if (!commit) return;
+    RegionMapHistoryItem* commit = history.back();
+    if (!commit)
+        return;
 
-    switch (commit->which)
-    {
-        case RegionMapEditorBox::BackgroundImage:
-            if (commit->mapWidth != this->region_map->width() || commit->mapHeight != this->region_map->height())
-                this->resize(commit->mapWidth, commit->mapHeight);
-            this->region_map->setTiles(commit->tiles);
-            this->region_map_item->draw();
-            this->region_map_layout_item->draw();
-            this->region_map_entries_item->draw();
-            break;
-        case RegionMapEditorBox::CityMapImage:
-            if (commit->cityMap == this->city_map_item->file)
-                this->city_map_item->setTiles(commit->tiles);
-            this->city_map_item->draw();
-            break;
+    switch (commit->which) {
+    case RegionMapEditorBox::BackgroundImage:
+        if (commit->mapWidth != this->region_map->width() || commit->mapHeight != this->region_map->height())
+            this->resize(commit->mapWidth, commit->mapHeight);
+        this->region_map->setTiles(commit->tiles);
+        this->region_map_item->draw();
+        this->region_map_layout_item->draw();
+        this->region_map_entries_item->draw();
+        break;
+    case RegionMapEditorBox::CityMapImage:
+        if (commit->cityMap == this->city_map_item->file)
+            this->city_map_item->setTiles(commit->tiles);
+        this->city_map_item->draw();
+        break;
     }
 }
 
@@ -713,23 +684,23 @@ void RegionMapEditor::on_action_RegionMap_Redo_triggered() {
 }
 
 void RegionMapEditor::redo() {
-    RegionMapHistoryItem *commit = history.next();
-    if (!commit) return;
+    RegionMapHistoryItem* commit = history.next();
+    if (!commit)
+        return;
 
-    switch (commit->which)
-    {
-        case RegionMapEditorBox::BackgroundImage:
-            if (commit->mapWidth != this->region_map->width() || commit->mapHeight != this->region_map->height())
-                this->resize(commit->mapWidth, commit->mapHeight);
-            this->region_map->setTiles(commit->tiles);
-            this->region_map_item->draw();
-            this->region_map_layout_item->draw();
-            this->region_map_entries_item->draw();
-            break;
-        case RegionMapEditorBox::CityMapImage:
-            this->city_map_item->setTiles(commit->tiles);
-            this->city_map_item->draw();
-            break;
+    switch (commit->which) {
+    case RegionMapEditorBox::BackgroundImage:
+        if (commit->mapWidth != this->region_map->width() || commit->mapHeight != this->region_map->height())
+            this->resize(commit->mapWidth, commit->mapHeight);
+        this->region_map->setTiles(commit->tiles);
+        this->region_map_item->draw();
+        this->region_map_layout_item->draw();
+        this->region_map_entries_item->draw();
+        break;
+    case RegionMapEditorBox::CityMapImage:
+        this->city_map_item->setTiles(commit->tiles);
+        this->city_map_item->draw();
+        break;
     }
 }
 
@@ -748,10 +719,10 @@ void RegionMapEditor::on_action_Swap_triggered() {
 
     QFormLayout form(&popup);
 
-    QComboBox *oldSecBox = new QComboBox();
+    QComboBox* oldSecBox = new QComboBox();
     oldSecBox->addItems(this->project->mapSectionValueToName.values());
     form.addRow(new QLabel("Old Map Section:"), oldSecBox);
-    QComboBox *newSecBox = new QComboBox();
+    QComboBox* newSecBox = new QComboBox();
     newSecBox->addItems(this->project->mapSectionValueToName.values());
     form.addRow(new QLabel("New Map Section:"), newSecBox);
 
@@ -759,10 +730,9 @@ void RegionMapEditor::on_action_Swap_triggered() {
     form.addRow(&buttonBox);
 
     QString beforeSection, afterSection;
-    uint8_t oldId, newId; 
+    uint8_t oldId, newId;
     connect(&buttonBox, &QDialogButtonBox::rejected, &popup, &QDialog::reject);
-    connect(&buttonBox, &QDialogButtonBox::accepted, [this, &popup, &oldSecBox, &newSecBox, 
-                                                      &beforeSection, &afterSection, &oldId, &newId](){
+    connect(&buttonBox, &QDialogButtonBox::accepted, [this, &popup, &oldSecBox, &newSecBox, &beforeSection, &afterSection, &oldId, &newId]() {
         beforeSection = oldSecBox->currentText();
         afterSection = newSecBox->currentText();
         if (!beforeSection.isEmpty() && !afterSection.isEmpty()) {
@@ -782,9 +752,8 @@ void RegionMapEditor::on_action_Swap_triggered() {
 
 void RegionMapEditor::on_action_RegionMap_ClearImage_triggered() {
     this->region_map->clearImage();
-    RegionMapHistoryItem *commit = new RegionMapHistoryItem(
-        RegionMapEditorBox::BackgroundImage, this->region_map->getTiles(), this->region_map->width(), this->region_map->height()
-    );
+    RegionMapHistoryItem* commit
+        = new RegionMapHistoryItem(RegionMapEditorBox::BackgroundImage, this->region_map->getTiles(), this->region_map->width(), this->region_map->height());
     history.push(commit);
 
     displayRegionMapImage();
@@ -793,12 +762,7 @@ void RegionMapEditor::on_action_RegionMap_ClearImage_triggered() {
 
 void RegionMapEditor::on_action_RegionMap_ClearLayout_triggered() {
     QMessageBox::StandardButton result = QMessageBox::question(
-        this,
-        "WARNING",
-        "This action will reset the entire map layout to MAPSEC_NONE, continue?",
-        QMessageBox::Yes | QMessageBox::Cancel,
-        QMessageBox::Yes
-    );
+        this, "WARNING", "This action will reset the entire map layout to MAPSEC_NONE, continue?", QMessageBox::Yes | QMessageBox::Cancel, QMessageBox::Yes);
 
     if (result == QMessageBox::Yes) {
         this->region_map->clearLayout();
@@ -819,8 +783,8 @@ void RegionMapEditor::on_action_Import_CityMap_ImageTiles_triggered() {
 void RegionMapEditor::importTileImage(bool city) {
     QString descriptor = city ? "City Map" : "Region Map";
 
-    QString infilepath = QFileDialog::getOpenFileName(this, QString("Import %1 Tiles Image").arg(descriptor),
-                                                    this->project->root, "Image Files (*.png *.bmp *.jpg *.dib)");
+    QString infilepath
+        = QFileDialog::getOpenFileName(this, QString("Import %1 Tiles Image").arg(descriptor), this->project->root, "Image Files (*.png *.bmp *.jpg *.dib)");
     if (infilepath.isEmpty()) {
         return;
     }
@@ -846,9 +810,8 @@ void RegionMapEditor::importTileImage(bool city) {
         return;
     }
     if (image.width() == 0 || image.height() == 0 || image.width() % 8 != 0 || image.height() % 8 != 0) {
-        QString errorMessage = QString("The image dimensions (%1 x %2) are invalid. Width and height must be multiples of 8 pixels.")
-                                      .arg(image.width())
-                                      .arg(image.height());
+        QString errorMessage
+            = QString("The image dimensions (%1 x %2) are invalid. Width and height must be multiples of 8 pixels.").arg(image.width()).arg(image.height());
         logError(errorMessage);
         QMessageBox msgBox(this);
         msgBox.setText("Failed to import tiles.");
@@ -865,9 +828,8 @@ void RegionMapEditor::importTileImage(bool city) {
     int totalTiles = numTilesHigh * numTilesWide;
     int maxAllowedTiles = 0x100;
     if (totalTiles > maxAllowedTiles) {
-        QString errorMessage = QString("The total number of tiles in the provided image (%1) is greater than the allowed number (%2).")
-                                      .arg(totalTiles)
-                                      .arg(maxAllowedTiles);
+        QString errorMessage
+            = QString("The total number of tiles in the provided image (%1) is greater than the allowed number (%2).").arg(totalTiles).arg(maxAllowedTiles);
         logError(errorMessage);
         QMessageBox msgBox(this);
         msgBox.setText("Failed to import tiles.");
@@ -885,10 +847,12 @@ void RegionMapEditor::importTileImage(bool city) {
         palMessage = QString("The provided image is not indexed.");
         palError = true;
     } else if (!city && image.colorCount() != 256) {
-        palMessage = QString("The provided image has a palette with %1 colors. You must provide an indexed imaged with a 256 color palette.").arg(image.colorCount());
+        palMessage
+            = QString("The provided image has a palette with %1 colors. You must provide an indexed imaged with a 256 color palette.").arg(image.colorCount());
         palError = true;
     } else if (city && image.colorCount() != 16) {
-        palMessage = QString("The provided image has a palette with %1 colors. You must provide an indexed imaged with a 16 color palette.").arg(image.colorCount());
+        palMessage
+            = QString("The provided image has a palette with %1 colors. You must provide an indexed imaged with a 16 color palette.").arg(image.colorCount());
         palError = true;
     }
 
@@ -916,20 +880,15 @@ void RegionMapEditor::importTileImage(bool city) {
     displayCityMap(this->ui->comboBox_CityMap_picker->currentText());
 }
 
-void RegionMapEditor::on_comboBox_CityMap_picker_currentTextChanged(const QString &file) {
+void RegionMapEditor::on_comboBox_CityMap_picker_currentTextChanged(const QString& file) {
     this->displayCityMap(file);
     this->cityMapFirstDraw = true;
 }
 
-void RegionMapEditor::closeEvent(QCloseEvent *event)
-{
+void RegionMapEditor::closeEvent(QCloseEvent* event) {
     if (this->hasUnsavedChanges) {
         QMessageBox::StandardButton result = QMessageBox::question(
-            this,
-            "porymap",
-            "The region map has been modified, save changes?",
-            QMessageBox::No | QMessageBox::Yes | QMessageBox::Cancel,
-            QMessageBox::Yes);
+            this, "porymap", "The region map has been modified, save changes?", QMessageBox::No | QMessageBox::Yes | QMessageBox::Cancel, QMessageBox::Yes);
 
         if (result == QMessageBox::Yes) {
             this->on_action_RegionMap_Save_triggered();
@@ -943,10 +902,7 @@ void RegionMapEditor::closeEvent(QCloseEvent *event)
         event->accept();
     }
 
-    porymapConfig.setRegionMapEditorGeometry(
-        this->saveGeometry(),
-        this->saveState()
-    );
+    porymapConfig.setRegionMapEditorGeometry(this->saveGeometry(), this->saveState());
 }
 
 void RegionMapEditor::on_verticalSlider_Zoom_Map_Image_valueChanged(int val) {

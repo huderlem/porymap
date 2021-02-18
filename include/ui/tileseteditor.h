@@ -16,7 +16,7 @@ class TilesetEditor;
 
 class MetatileHistoryItem {
 public:
-    MetatileHistoryItem(uint16_t metatileId, Metatile *prevMetatile, Metatile *newMetatile) {
+    MetatileHistoryItem(uint16_t metatileId, Metatile* prevMetatile, Metatile* newMetatile) {
         this->metatileId = metatileId;
         this->prevMetatile = prevMetatile;
         this->newMetatile = newMetatile;
@@ -26,19 +26,18 @@ public:
         delete this->newMetatile;
     }
     uint16_t metatileId;
-    Metatile *prevMetatile;
-    Metatile *newMetatile;
+    Metatile* prevMetatile;
+    Metatile* newMetatile;
 };
 
-class TilesetEditor : public QMainWindow
-{
+class TilesetEditor : public QMainWindow {
     Q_OBJECT
 
 public:
-    explicit TilesetEditor(Project*, Map*, QWidget *parent = nullptr);
+    explicit TilesetEditor(Project*, Map*, QWidget* parent = nullptr);
     ~TilesetEditor();
-    void update(Map *map, QString primaryTilsetLabel, QString secondaryTilesetLabel);
-    void updateMap(Map *map);
+    void update(Map* map, QString primaryTilsetLabel, QString secondaryTilesetLabel);
+    void updateMap(Map* map);
     void updateTilesets(QString primaryTilsetLabel, QString secondaryTilesetLabel);
     bool selectMetatile(uint16_t metatileId);
 
@@ -79,7 +78,7 @@ private slots:
 
     void on_actionRedo_triggered();
 
-    void on_comboBox_metatileBehaviors_activated(const QString &arg1);
+    void on_comboBox_metatileBehaviors_activated(const QString& arg1);
 
     void on_lineEdit_metatileLabel_editingFinished();
 
@@ -120,26 +119,26 @@ private:
     void saveMetatileLabel();
     void closeEvent(QCloseEvent*);
 
-    Ui::TilesetEditor *ui;
+    Ui::TilesetEditor* ui;
     History<MetatileHistoryItem*> metatileHistory;
-    TilesetEditorMetatileSelector *metatileSelector = nullptr;
-    TilesetEditorTileSelector *tileSelector = nullptr;
-    MetatileLayersItem *metatileLayersItem = nullptr;
-    PaletteEditor *paletteEditor = nullptr;
-    Project *project = nullptr;
-    Map *map = nullptr;
-    Metatile *metatile = nullptr;
+    TilesetEditorMetatileSelector* metatileSelector = nullptr;
+    TilesetEditorTileSelector* tileSelector = nullptr;
+    MetatileLayersItem* metatileLayersItem = nullptr;
+    PaletteEditor* paletteEditor = nullptr;
+    Project* project = nullptr;
+    Map* map = nullptr;
+    Metatile* metatile = nullptr;
     int paletteId;
     bool tileXFlip;
     bool tileYFlip;
     bool hasUnsavedChanges;
-    Tileset *primaryTileset = nullptr;
-    Tileset *secondaryTileset = nullptr;
-    QGraphicsScene *metatilesScene = nullptr;
-    QGraphicsScene *tilesScene = nullptr;
-    QGraphicsScene *selectedTileScene = nullptr;
-    QGraphicsPixmapItem *selectedTilePixmapItem = nullptr;
-    QGraphicsScene *metatileLayersScene = nullptr;
+    Tileset* primaryTileset = nullptr;
+    Tileset* secondaryTileset = nullptr;
+    QGraphicsScene* metatilesScene = nullptr;
+    QGraphicsScene* tilesScene = nullptr;
+    QGraphicsScene* selectedTileScene = nullptr;
+    QGraphicsPixmapItem* selectedTilePixmapItem = nullptr;
+    QGraphicsScene* metatileLayersScene = nullptr;
 
 signals:
     void tilesetsSaved(QString, QString);

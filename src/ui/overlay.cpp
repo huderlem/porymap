@@ -1,6 +1,6 @@
 #include "overlay.h"
 
-void OverlayText::render(QPainter *painter) {
+void OverlayText::render(QPainter* painter) {
     QFont font = painter->font();
     font.setPixelSize(this->fontSize);
     painter->setFont(font);
@@ -8,7 +8,7 @@ void OverlayText::render(QPainter *painter) {
     painter->drawText(this->x, this->y, this->text);
 }
 
-void OverlayRect::render(QPainter *painter) {
+void OverlayRect::render(QPainter* painter) {
     if (this->filled) {
         painter->fillRect(this->x, this->y, this->width, this->height, this->color);
     } else {
@@ -17,7 +17,7 @@ void OverlayRect::render(QPainter *painter) {
     }
 }
 
-void OverlayImage::render(QPainter *painter) {
+void OverlayImage::render(QPainter* painter) {
     painter->drawImage(this->x, this->y, this->image);
 }
 

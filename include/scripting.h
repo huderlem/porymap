@@ -15,14 +15,13 @@ enum CallbackType {
     OnMapOpened,
 };
 
-class Scripting
-{
+class Scripting {
 public:
-    Scripting(MainWindow *mainWindow);
+    Scripting(MainWindow* mainWindow);
     static QJSValue fromBlock(Block block);
     static QJSValue dimensions(int width, int height);
-    static QJSEngine *getEngine();
-    static void init(MainWindow *mainWindow);
+    static QJSEngine* getEngine();
+    static void init(MainWindow* mainWindow);
     static void registerAction(QString functionName, QString actionName);
     static int numRegisteredActions();
     static void invokeAction(QString actionName);
@@ -32,7 +31,7 @@ public:
     static void cb_MapOpened(QString mapName);
 
 private:
-    QJSEngine *engine;
+    QJSEngine* engine;
     QStringList filepaths;
     QList<QJSValue> modules;
     QMap<QString, QString> registeredActions;

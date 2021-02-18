@@ -10,18 +10,18 @@
 #include <QMultiMap>
 
 enum MapSortOrder {
-    Group   =  0,
-    Area    =  1,
-    Layout  =  2,
+    Group = 0,
+    Area = 1,
+    Layout = 2,
 };
 
-class KeyValueConfigBase : public QObject
-{
+class KeyValueConfigBase : public QObject {
 public:
     void save();
     void load();
     virtual ~KeyValueConfigBase();
     virtual void reset() = 0;
+
 protected:
     virtual QString getConfigFilepath() = 0;
     virtual void parseConfigKeyValue(QString key, QString value) = 0;
@@ -30,8 +30,7 @@ protected:
     virtual void setUnreadKeys() = 0;
 };
 
-class PorymapConfig: public KeyValueConfigBase
-{
+class PorymapConfig : public KeyValueConfigBase {
 public:
     PorymapConfig() {
         reset();
@@ -64,8 +63,8 @@ public:
     void setMonitorFiles(bool monitor);
     void setRegionMapDimensions(int width, int height);
     void setTheme(QString theme);
-    void setTextEditorOpenFolder(const QString &command);
-    void setTextEditorGotoLine(const QString &command);
+    void setTextEditorOpenFolder(const QString& command);
+    void setTextEditorGotoLine(const QString& command);
     QString getRecentProject();
     MapSortOrder getMapSortOrder();
     bool getPrettyCursors();
@@ -82,12 +81,14 @@ public:
     QString getTheme();
     QString getTextEditorOpenFolder();
     QString getTextEditorGotoLine();
+
 protected:
     virtual QString getConfigFilepath() override;
     virtual void parseConfigKeyValue(QString key, QString value) override;
     virtual QMap<QString, QString> getKeyValueMap() override;
-    virtual void onNewConfigFileCreated() override {};
-    virtual void setUnreadKeys() override {};
+    virtual void onNewConfigFileCreated() override{};
+    virtual void setUnreadKeys() override{};
+
 private:
     QString recentProject;
     QString stringFromByteArray(QByteArray);
@@ -124,8 +125,7 @@ enum BaseGameVersion {
     pokeemerald,
 };
 
-class ProjectConfig: public KeyValueConfigBase
-{
+class ProjectConfig : public KeyValueConfigBase {
 public:
     ProjectConfig() {
         reset();
@@ -148,7 +148,7 @@ public:
     }
     void setBaseGameVersion(BaseGameVersion baseGameVersion);
     BaseGameVersion getBaseGameVersion();
-    void setRecentMap(const QString &map);
+    void setRecentMap(const QString& map);
     QString getRecentMap();
     void setEncounterJsonActive(bool active);
     bool getEncounterJsonActive();
@@ -176,12 +176,14 @@ public:
     bool getTripleLayerMetatilesEnabled();
     void setCustomScripts(QList<QString> scripts);
     QList<QString> getCustomScripts();
+
 protected:
     virtual QString getConfigFilepath() override;
     virtual void parseConfigKeyValue(QString key, QString value) override;
     virtual QMap<QString, QString> getKeyValueMap() override;
     virtual void onNewConfigFileCreated() override;
     virtual void setUnreadKeys() override;
+
 private:
     BaseGameVersion baseGameVersion;
     QString projectDir;
@@ -206,48 +208,41 @@ extern ProjectConfig projectConfig;
 class QAction;
 class Shortcut;
 
-class ShortcutsConfig : public KeyValueConfigBase
-{
+class ShortcutsConfig : public KeyValueConfigBase {
 public:
-    ShortcutsConfig() :
-        user_shortcuts({ }),
-        default_shortcuts({ })
-    { }
+    ShortcutsConfig() : user_shortcuts({}), default_shortcuts({}) {
+    }
 
-    virtual void reset() override { user_shortcuts.clear(); }
+    virtual void reset() override {
+        user_shortcuts.clear();
+    }
 
     // Call this before applying user shortcuts so that the user can restore defaults.
-    void setDefaultShortcuts(const QObjectList &objects);
-    QList<QKeySequence> defaultShortcuts(const QObject *object) const;
+    void setDefaultShortcuts(const QObjectList& objects);
+    QList<QKeySequence> defaultShortcuts(const QObject* object) const;
 
-    void setUserShortcuts(const QObjectList &objects);
-    void setUserShortcuts(const QMultiMap<const QObject *, QKeySequence> &objects_keySequences);
-    QList<QKeySequence> userShortcuts(const QObject *object) const;
+    void setUserShortcuts(const QObjectList& objects);
+    void setUserShortcuts(const QMultiMap<const QObject*, QKeySequence>& objects_keySequences);
+    QList<QKeySequence> userShortcuts(const QObject* object) const;
 
 protected:
     virtual QString getConfigFilepath() override;
     virtual void parseConfigKeyValue(QString key, QString value) override;
     virtual QMap<QString, QString> getKeyValueMap() override;
-    virtual void onNewConfigFileCreated() override { };
-    virtual void setUnreadKeys() override { };
+    virtual void onNewConfigFileCreated() override{};
+    virtual void setUnreadKeys() override{};
 
 private:
     QMultiMap<QString, QKeySequence> user_shortcuts;
     QMultiMap<QString, QKeySequence> default_shortcuts;
 
-    enum StoreType {
-        User,
-        Default
-    };
+    enum StoreType { User, Default };
 
-    QString cfgKey(const QObject *object) const;
-    QList<QKeySequence> currentShortcuts(const QObject *object) const;
+    QString cfgKey(const QObject* object) const;
+    QList<QKeySequence> currentShortcuts(const QObject* object) const;
 
-    void storeShortcutsFromList(StoreType storeType, const QObjectList &objects);
-    void storeShortcuts(
-            StoreType storeType,
-            const QString &cfgKey,
-            const QList<QKeySequence> &keySequences);
+    void storeShortcutsFromList(StoreType storeType, const QObjectList& objects);
+    void storeShortcuts(StoreType storeType, const QString& cfgKey, const QList<QKeySequence>& keySequences);
 };
 
 extern ShortcutsConfig shortcutsConfig;

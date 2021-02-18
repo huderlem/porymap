@@ -7,13 +7,13 @@
 class RegionMapLayoutPixmapItem : public SelectablePixmapItem {
     Q_OBJECT
 public:
-    RegionMapLayoutPixmapItem(RegionMap *rmap, TilemapTileSelector *ts) : SelectablePixmapItem(8, 8, 1, 1) {
-            this->region_map = rmap;
-            this->tile_selector = ts;
-            setAcceptHoverEvents(true);
+    RegionMapLayoutPixmapItem(RegionMap* rmap, TilemapTileSelector* ts) : SelectablePixmapItem(8, 8, 1, 1) {
+        this->region_map = rmap;
+        this->tile_selector = ts;
+        setAcceptHoverEvents(true);
     }
-    RegionMap *region_map;
-    TilemapTileSelector *tile_selector;
+    RegionMap* region_map;
+    TilemapTileSelector* tile_selector;
     int selectedTile;
     int highlightedTile;
     void draw();
@@ -25,7 +25,7 @@ private:
     void updateSelectedTile();
 
 signals:
-    void mouseEvent(QGraphicsSceneMouseEvent *, RegionMapLayoutPixmapItem *);
+    void mouseEvent(QGraphicsSceneMouseEvent*, RegionMapLayoutPixmapItem*);
     void hoveredTileChanged(int);
     void hoveredTileCleared();
     void selectedTileChanged(int);

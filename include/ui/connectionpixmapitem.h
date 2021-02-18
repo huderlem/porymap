@@ -8,7 +8,7 @@
 class ConnectionPixmapItem : public QObject, public QGraphicsPixmapItem {
     Q_OBJECT
 public:
-    ConnectionPixmapItem(QPixmap pixmap, MapConnection* connection, int x, int y, int baseMapWidth, int baseMapHeight): QGraphicsPixmapItem(pixmap) {
+    ConnectionPixmapItem(QPixmap pixmap, MapConnection* connection, int x, int y, int baseMapWidth, int baseMapHeight) : QGraphicsPixmapItem(pixmap) {
         this->basePixmap = pixmap;
         this->connection = connection;
         setFlag(ItemIsMovable);
@@ -31,7 +31,7 @@ public:
     int getMaxOffset();
 
 protected:
-    QVariant itemChange(GraphicsItemChange change, const QVariant &value);
+    QVariant itemChange(GraphicsItemChange change, const QVariant& value);
     void mousePressEvent(QGraphicsSceneMouseEvent*);
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent*);
 

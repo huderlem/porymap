@@ -7,15 +7,15 @@
 // Enabling this does not seem to be simple to color console output
 // on Windows for all CLIs without external libraries or extreme bloat.
 #ifdef Q_OS_WIN
-    #define ERROR_COLOR   ""
-    #define WARNING_COLOR ""
-    #define INFO_COLOR    ""
-    #define CLEAR_COLOR   ""
+#define ERROR_COLOR ""
+#define WARNING_COLOR ""
+#define INFO_COLOR ""
+#define CLEAR_COLOR ""
 #else
-    #define ERROR_COLOR   "\033[31;1m"
-    #define WARNING_COLOR "\033[1;33m"
-    #define INFO_COLOR    "\033[32m"
-    #define CLEAR_COLOR   "\033[0m"
+#define ERROR_COLOR "\033[31;1m"
+#define WARNING_COLOR "\033[1;33m"
+#define INFO_COLOR "\033[32m"
+#define CLEAR_COLOR "\033[0m"
 #endif
 
 void logInfo(QString message) {
@@ -35,8 +35,7 @@ void logError(QString message) {
 
 QString colorizeMessage(QString message, LogType type) {
     QString colorized = message;
-    switch (type)
-    {
+    switch (type) {
     case LogType::LOG_INFO:
         colorized = colorized.replace("INFO", INFO_COLOR "INFO" CLEAR_COLOR);
         break;
@@ -53,8 +52,7 @@ QString colorizeMessage(QString message, LogType type) {
 void log(QString message, LogType type) {
     QString now = QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss");
     QString typeString = "";
-    switch (type)
-    {
+    switch (type) {
     case LogType::LOG_INFO:
         typeString = " [INFO]";
         break;

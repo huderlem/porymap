@@ -4,10 +4,10 @@
 
 #include <QList>
 
-template <typename T>
-class History {
+template <typename T> class History {
 public:
-    History() { }
+    History() {
+    }
     T back() {
         if (head > 0) {
             return history.at(--head);

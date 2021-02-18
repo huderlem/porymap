@@ -8,24 +8,17 @@
 #include <QDirIterator>
 #include <QFormLayout>
 
-
-PreferenceEditor::PreferenceEditor(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::PreferenceEditor),
-    themeSelector(nullptr)
-{
+PreferenceEditor::PreferenceEditor(QWidget* parent) : QMainWindow(parent), ui(new Ui::PreferenceEditor), themeSelector(nullptr) {
     ui->setupUi(this);
-    auto *formLayout = new QFormLayout(ui->groupBox_Themes);
+    auto* formLayout = new QFormLayout(ui->groupBox_Themes);
     themeSelector = new NoScrollComboBox(ui->groupBox_Themes);
     formLayout->addRow("Themes", themeSelector);
     setAttribute(Qt::WA_DeleteOnClose);
-    connect(ui->buttonBox, &QDialogButtonBox::clicked,
-            this, &PreferenceEditor::dialogButtonClicked);
+    connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &PreferenceEditor::dialogButtonClicked);
     populateFields();
 }
 
-PreferenceEditor::~PreferenceEditor()
-{
+PreferenceEditor::~PreferenceEditor() {
     delete ui;
 }
 
@@ -59,7 +52,7 @@ void PreferenceEditor::saveFields() {
     emit preferencesSaved();
 }
 
-void PreferenceEditor::dialogButtonClicked(QAbstractButton *button) {
+void PreferenceEditor::dialogButtonClicked(QAbstractButton* button) {
     auto buttonRole = ui->buttonBox->buttonRole(button);
     if (buttonRole == QDialogButtonBox::AcceptRole) {
         saveFields();

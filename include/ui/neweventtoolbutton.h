@@ -4,20 +4,19 @@
 #include "event.h"
 #include <QToolButton>
 
-class NewEventToolButton : public QToolButton
-{
+class NewEventToolButton : public QToolButton {
     Q_OBJECT
 public:
-    explicit NewEventToolButton(QWidget *parent = nullptr);
+    explicit NewEventToolButton(QWidget* parent = nullptr);
     QString getSelectedEventType();
-    QAction *newObjectAction;
-    QAction *newWarpAction;
-    QAction *newHealLocationAction;
-    QAction *newTriggerAction;
-    QAction *newWeatherTriggerAction;
-    QAction *newSignAction;
-    QAction *newHiddenItemAction;
-    QAction *newSecretBaseAction;
+    QAction* newObjectAction;
+    QAction* newWarpAction;
+    QAction* newHealLocationAction;
+    QAction* newTriggerAction;
+    QAction* newWeatherTriggerAction;
+    QAction* newSignAction;
+    QAction* newHiddenItemAction;
+    QAction* newSecretBaseAction;
 public slots:
     void newObject();
     void newWarp();
@@ -29,6 +28,7 @@ public slots:
     void newSecretBase();
 signals:
     void newEventAdded(QString);
+
 private:
     QString selectedEventType;
     void init();

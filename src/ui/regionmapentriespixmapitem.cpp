@@ -1,7 +1,8 @@
 #include "regionmapentriespixmapitem.h"
 
 void RegionMapEntriesPixmapItem::draw() {
-    if (!region_map) return;
+    if (!region_map)
+        return;
 
     RegionMapEntry entry = region_map->mapSecToMapEntry.value(currentSection);
     bool selectingEntry = false;
@@ -30,7 +31,7 @@ void RegionMapEntriesPixmapItem::draw() {
             if (x == entry_x + this->region_map->padLeft && y == entry_y + this->region_map->padTop)
                 insideEntry = true;
             else if (x - this->region_map->padLeft - entry_x < entry_w && x >= entry_x + this->region_map->padLeft
-                  && y - this->region_map->padTop - entry_y < entry_h && y >= entry_y + this->region_map->padTop)
+                && y - this->region_map->padTop - entry_y < entry_h && y >= entry_y + this->region_map->padTop)
                 insideEntry = true;
         }
         if (insideEntry) {
@@ -76,7 +77,7 @@ void RegionMapEntriesPixmapItem::select(int index) {
     emit selectedTileChanged(this->region_map->map_squares[index].mapsec);
 }
 
-void RegionMapEntriesPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+void RegionMapEntriesPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent* event) {
     QPoint pos = this->getCellPos(event->pos());
     int x = pos.x() - this->region_map->padLeft;
     int y = pos.y() - this->region_map->padTop;
@@ -86,13 +87,12 @@ void RegionMapEntriesPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event
     pressedY = y - entry.y;
     if (entry.x == x && entry.y == y) {
         this->draggingEntry = true;
-    }
-    else if (pressedX < entry.width && x >= entry.x && pressedY < entry.height && y >= entry.y) {
+    } else if (pressedX < entry.width && x >= entry.x && pressedY < entry.height && y >= entry.y) {
         this->draggingEntry = true;
     }
 }
 
-void RegionMapEntriesPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
+void RegionMapEntriesPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event) {
     if (!draggingEntry) {
         event->ignore();
         return;
@@ -106,8 +106,7 @@ void RegionMapEntriesPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
     // check to make sure not moving out of bounds
     if (new_x + entry.width > this->region_map->width() - this->region_map->padLeft - this->region_map->padRight
-     || new_y + entry.height > this->region_map->height() - this->region_map->padTop - this->region_map->padBottom
-     || new_x < 0 || new_y < 0)
+        || new_y + entry.height > this->region_map->height() - this->region_map->padTop - this->region_map->padBottom || new_x < 0 || new_y < 0)
         return;
 
     if (new_x != entry.x || new_y != entry.y) {
@@ -115,15 +114,15 @@ void RegionMapEntriesPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     }
 }
 
-void RegionMapEntriesPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *) {
+void RegionMapEntriesPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent*) {
     this->draggingEntry = false;
 }
 
-void RegionMapEntriesPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
+void RegionMapEntriesPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent* event) {
     event->ignore();
 }
 
-void RegionMapEntriesPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event) {
+void RegionMapEntriesPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent* event) {
     event->ignore();
 }
 

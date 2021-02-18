@@ -4,8 +4,8 @@
 #include "editcommands.h"
 #include <QPainter>
 
-void BorderMetatilesPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
-    QList<uint16_t> *selectedMetatiles = this->metatileSelector->getSelectedMetatiles();
+void BorderMetatilesPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent* event) {
+    QList<uint16_t>* selectedMetatiles = this->metatileSelector->getSelectedMetatiles();
     QPoint selectionDimensions = this->metatileSelector->getSelectionDimensions();
     QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
     int width = map->getBorderWidth();
@@ -41,12 +41,8 @@ void BorderMetatilesPixmapItem::draw() {
             int x = i * 16;
             int y = j * 16;
             int index = j * width + i;
-            QImage metatile_image = getMetatileImage(
-                        map->layout->border.value(index).tile,
-                        map->layout->tileset_primary,
-                        map->layout->tileset_secondary,
-                        map->metatileLayerOrder,
-                        map->metatileLayerOpacity);
+            QImage metatile_image = getMetatileImage(map->layout->border.value(index).tile, map->layout->tileset_primary, map->layout->tileset_secondary,
+                map->metatileLayerOrder, map->metatileLayerOpacity);
             QPoint metatile_origin = QPoint(x, y);
             painter.drawImage(metatile_origin, metatile_image);
         }

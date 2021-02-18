@@ -6,21 +6,19 @@
 #include <QColor>
 #include <QVector>
 
-
-MapRuler::MapRuler(int thickness, QColor innerColor, QColor borderColor) :
-    /* The logical representation of rectangles are always one less than
-     * the rendered shape, so we subtract 1 from thickness. */
-    thickness(thickness - 1),
-    half_thickness(qreal(thickness - 1) / 2.0),
-    innerColor(innerColor),
-    borderColor(borderColor),
-    mapSize(QSize()),
-    xRuler(QRectF()),
-    yRuler(QRectF()),
-    cornerTick(QLineF()),
-    anchored(false),
-    locked(false)
-{
+MapRuler::MapRuler(int thickness, QColor innerColor, QColor borderColor)
+    : /* The logical representation of rectangles are always one less than
+       * the rendered shape, so we subtract 1 from thickness. */
+      thickness(thickness - 1),
+      half_thickness(qreal(thickness - 1) / 2.0),
+      innerColor(innerColor),
+      borderColor(borderColor),
+      mapSize(QSize()),
+      xRuler(QRectF()),
+      yRuler(QRectF()),
+      cornerTick(QLineF()),
+      anchored(false),
+      locked(false) {
     connect(this, &QGraphicsObject::enabledChanged, [this]() {
         if (!isEnabled() && anchored)
             reset();
@@ -46,18 +44,18 @@ QPainterPath MapRuler::shape() const {
     return ruler;
 }
 
-void MapRuler::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
+void MapRuler::paint(QPainter* painter, const QStyleOptionGraphicsItem*, QWidget*) {
     painter->setPen(QPen(borderColor));
     painter->setBrush(QBrush(innerColor));
     painter->drawPath(shape());
 }
 
-bool MapRuler::eventFilter(QObject *, QEvent *event) {
+bool MapRuler::eventFilter(QObject*, QEvent* event) {
     if (!isEnabled() || mapSize.isEmpty())
         return false;
 
     if (event->type() == QEvent::GraphicsSceneMousePress || event->type() == QEvent::GraphicsSceneMouseMove) {
-        auto *mouse_event = static_cast<QGraphicsSceneMouseEvent *>(event);
+        auto* mouse_event = static_cast<QGraphicsSceneMouseEvent*>(event);
         if (mouse_event->button() == Qt::RightButton || anchored) {
             mouseEvent(mouse_event);
         }
@@ -66,7 +64,7 @@ bool MapRuler::eventFilter(QObject *, QEvent *event) {
     return false;
 }
 
-void MapRuler::mouseEvent(QGraphicsSceneMouseEvent *event) {
+void MapRuler::mouseEvent(QGraphicsSceneMouseEvent* event) {
     if (!anchored && event->button() == Qt::RightButton) {
         setAnchor(event->scenePos());
     } else if (anchored) {
@@ -79,7 +77,7 @@ void MapRuler::mouseEvent(QGraphicsSceneMouseEvent *event) {
     }
 }
 
-void MapRuler::setMapDimensions(const QSize &size) {
+void MapRuler::setMapDimensions(const QSize& size) {
     mapSize = size;
     reset();
 }
@@ -96,7 +94,7 @@ void MapRuler::reset() {
     emit statusChanged(QString());
 }
 
-void MapRuler::setAnchor(const QPointF &scenePos) {
+void MapRuler::setAnchor(const QPointF& scenePos) {
     QPoint pos = Metatile::coordFromPixmapCoord(scenePos);
     pos = snapToWithinBounds(pos);
     anchored = true;
@@ -106,7 +104,7 @@ void MapRuler::setAnchor(const QPointF &scenePos) {
     show();
 }
 
-void MapRuler::setEndPos(const QPointF &scenePos) {
+void MapRuler::setEndPos(const QPointF& scenePos) {
     if (locked)
         return;
     QPoint pos = Metatile::coordFromPixmapCoord(scenePos);
@@ -164,25 +162,27 @@ void MapRuler::updateGeometry() {
 
 void MapRuler::updateStatus(Qt::Corner corner) {
     QString statusMessage;
-    switch (corner)
-    {
+    switch (corner) {
     case Qt::TopLeftCorner:
-        statusMessage = QString("Ruler: Left %1, Up %2\nStart(%3, %4), End(%5, %6)").arg(width()).arg(height())
-                        .arg(anchor().x()).arg(anchor().y()).arg(endPos().x()).arg(endPos().y());
+        statusMessage = QString("Ruler: Left %1, Up %2\nStart(%3, %4), End(%5, %6)")
+                            .arg(width())
+                            .arg(height())
+                            .arg(anchor().x())
+                            .arg(anchor().y())
+                            .arg(endPos().x())
+                            .arg(endPos().y());
         break;
     case Qt::BottomLeftCorner:
         statusMessage = QString("Ruler: Left %1").arg(width());
         if (deltaY())
             statusMessage += QString(", Down %1").arg(height());
-        statusMessage += QString("\nStart(%1, %2), End(%3, %4)")
-                        .arg(anchor().x()).arg(anchor().y()).arg(endPos().x()).arg(endPos().y());
+        statusMessage += QString("\nStart(%1, %2), End(%3, %4)").arg(anchor().x()).arg(anchor().y()).arg(endPos().x()).arg(endPos().y());
         break;
     case Qt::TopRightCorner:
         statusMessage = QString("Ruler: ");
         if (deltaX())
             statusMessage += QString("Right %1, ").arg(width());
-        statusMessage += QString("Up %1\nStart(%2, %3), End(%4, %5)").arg(height())
-                        .arg(anchor().x()).arg(anchor().y()).arg(endPos().x()).arg(endPos().y());
+        statusMessage += QString("Up %1\nStart(%2, %3), End(%4, %5)").arg(height()).arg(anchor().x()).arg(anchor().y()).arg(endPos().x()).arg(endPos().y());
         break;
     case Qt::BottomRightCorner:
         statusMessage = QString("Ruler: ");
@@ -194,11 +194,9 @@ void MapRuler::updateStatus(Qt::Corner corner) {
                     statusMessage += ", ";
                 statusMessage += QString("Down: %1").arg(height());
             }
-            statusMessage += QString("\nStart(%1, %2), End(%3, %4)")
-                            .arg(anchor().x()).arg(anchor().y()).arg(endPos().x()).arg(endPos().y());
+            statusMessage += QString("\nStart(%1, %2), End(%3, %4)").arg(anchor().x()).arg(anchor().y()).arg(endPos().x()).arg(endPos().y());
         } else {
-            statusMessage += QString("0\nStart(%1, %2)")
-                            .arg(anchor().x()).arg(anchor().y());
+            statusMessage += QString("0\nStart(%1, %2)").arg(anchor().x()).arg(anchor().y());
         }
         break;
     }

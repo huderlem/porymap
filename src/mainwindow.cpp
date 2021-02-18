@@ -35,18 +35,15 @@
 #include <QSignalBlocker>
 #include <QSet>
 
-
-
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow),
-    selectedObject(nullptr),
-    selectedWarp(nullptr),
-    selectedTrigger(nullptr),
-    selectedBG(nullptr),
-    selectedHealspot(nullptr),
-    isProgrammaticEventTabChange(false)
-{
+MainWindow::MainWindow(QWidget* parent)
+    : QMainWindow(parent),
+      ui(new Ui::MainWindow),
+      selectedObject(nullptr),
+      selectedWarp(nullptr),
+      selectedTrigger(nullptr),
+      selectedBG(nullptr),
+      selectedHealspot(nullptr),
+      isProgrammaticEventTabChange(false) {
     QCoreApplication::setOrganizationName("pret");
     QCoreApplication::setApplicationName("porymap");
     QApplication::setApplicationDisplayName("porymap");
@@ -64,18 +61,17 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 }
 
-MainWindow::~MainWindow()
-{
+MainWindow::~MainWindow() {
     delete label_MapRulerStatus;
     delete ui;
 }
 
 void MainWindow::setWindowDisabled(bool disabled) {
-    for (auto action : findChildren<QAction *>())
+    for (auto action : findChildren<QAction*>())
         action->setDisabled(disabled);
-    for (auto child : findChildren<QWidget *>(QString(), Qt::FindDirectChildrenOnly))
+    for (auto child : findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly))
         child->setDisabled(disabled);
-    for (auto menu : ui->menuBar->findChildren<QMenu *>(QString(), Qt::FindDirectChildrenOnly))
+    for (auto menu : ui->menuBar->findChildren<QMenu*>(QString(), Qt::FindDirectChildrenOnly))
         menu->setDisabled(disabled);
     ui->menuBar->setDisabled(false);
     ui->menuFile->setDisabled(false);
@@ -111,42 +107,41 @@ void MainWindow::initShortcuts() {
 }
 
 void MainWindow::initExtraShortcuts() {
-    ui->actionZoom_In->setShortcuts({ui->actionZoom_In->shortcut(), QKeySequence("Ctrl+=")});
+    ui->actionZoom_In->setShortcuts({ ui->actionZoom_In->shortcut(), QKeySequence("Ctrl+=") });
 
-    auto *shortcutReset_Zoom = new Shortcut(QKeySequence("Ctrl+0"), this, SLOT(resetMapViewScale()));
+    auto* shortcutReset_Zoom = new Shortcut(QKeySequence("Ctrl+0"), this, SLOT(resetMapViewScale()));
     shortcutReset_Zoom->setObjectName("shortcutZoom_Reset");
     shortcutReset_Zoom->setWhatsThis("Zoom Reset");
 
-    auto *shortcutToggle_Grid = new Shortcut(QKeySequence("Ctrl+G"), ui->checkBox_ToggleGrid, SLOT(toggle()));
+    auto* shortcutToggle_Grid = new Shortcut(QKeySequence("Ctrl+G"), ui->checkBox_ToggleGrid, SLOT(toggle()));
     shortcutToggle_Grid->setObjectName("shortcutToggle_Grid");
     shortcutToggle_Grid->setWhatsThis("Toggle Grid");
 
-    auto *shortcutDuplicate_Events = new Shortcut(QKeySequence("Ctrl+D"), this, SLOT(duplicate()));
+    auto* shortcutDuplicate_Events = new Shortcut(QKeySequence("Ctrl+D"), this, SLOT(duplicate()));
     shortcutDuplicate_Events->setObjectName("shortcutDuplicate_Events");
     shortcutDuplicate_Events->setWhatsThis("Duplicate Selected Event(s)");
 
-    auto *shortcutDelete_Object = new Shortcut(
-            {QKeySequence("Del"), QKeySequence("Backspace")}, this, SLOT(on_toolButton_deleteObject_clicked()));
+    auto* shortcutDelete_Object = new Shortcut({ QKeySequence("Del"), QKeySequence("Backspace") }, this, SLOT(on_toolButton_deleteObject_clicked()));
     shortcutDelete_Object->setObjectName("shortcutDelete_Object");
     shortcutDelete_Object->setWhatsThis("Delete Selected Event(s)");
 
-    auto *shortcutToggle_Border = new Shortcut(QKeySequence(), ui->checkBox_ToggleBorder, SLOT(toggle()));
+    auto* shortcutToggle_Border = new Shortcut(QKeySequence(), ui->checkBox_ToggleBorder, SLOT(toggle()));
     shortcutToggle_Border->setObjectName("shortcutToggle_Border");
     shortcutToggle_Border->setWhatsThis("Toggle Border");
 
-    auto *shortcutToggle_Smart_Paths = new Shortcut(QKeySequence(), ui->checkBox_smartPaths, SLOT(toggle()));
+    auto* shortcutToggle_Smart_Paths = new Shortcut(QKeySequence(), ui->checkBox_smartPaths, SLOT(toggle()));
     shortcutToggle_Smart_Paths->setObjectName("shortcutToggle_Smart_Paths");
     shortcutToggle_Smart_Paths->setWhatsThis("Toggle Smart Paths");
 
-    auto *shortcutExpand_All = new Shortcut(QKeySequence(), this, SLOT(on_toolButton_ExpandAll_clicked()));
+    auto* shortcutExpand_All = new Shortcut(QKeySequence(), this, SLOT(on_toolButton_ExpandAll_clicked()));
     shortcutExpand_All->setObjectName("shortcutExpand_All");
     shortcutExpand_All->setWhatsThis("Map List: Expand all folders");
 
-    auto *shortcutCollapse_All = new Shortcut(QKeySequence(), this, SLOT(on_toolButton_CollapseAll_clicked()));
+    auto* shortcutCollapse_All = new Shortcut(QKeySequence(), this, SLOT(on_toolButton_CollapseAll_clicked()));
     shortcutCollapse_All->setObjectName("shortcutCollapse_All");
     shortcutCollapse_All->setWhatsThis("Map List: Collapse all folders");
 
-    auto *shortcut_Open_Scripts = new Shortcut(QKeySequence(), ui->toolButton_Open_Scripts, SLOT(click()));
+    auto* shortcut_Open_Scripts = new Shortcut(QKeySequence(), ui->toolButton_Open_Scripts, SLOT(click()));
     shortcut_Open_Scripts->setObjectName("shortcut_Open_Scripts");
     shortcut_Open_Scripts->setWhatsThis("Open Map Scripts");
 }
@@ -154,28 +149,29 @@ void MainWindow::initExtraShortcuts() {
 QObjectList MainWindow::shortcutableObjects() const {
     QObjectList shortcutable_objects;
 
-    for (auto *action : findChildren<QAction *>())
+    for (auto* action : findChildren<QAction*>())
         if (!action->objectName().isEmpty())
-            shortcutable_objects.append(qobject_cast<QObject *>(action));
-    for (auto *shortcut : findChildren<Shortcut *>())
+            shortcutable_objects.append(qobject_cast<QObject*>(action));
+    for (auto* shortcut : findChildren<Shortcut*>())
         if (!shortcut->objectName().isEmpty())
-            shortcutable_objects.append(qobject_cast<QObject *>(shortcut));
+            shortcutable_objects.append(qobject_cast<QObject*>(shortcut));
 
     return shortcutable_objects;
 }
 
 void MainWindow::applyUserShortcuts() {
-    for (auto *action : findChildren<QAction *>())
+    for (auto* action : findChildren<QAction*>())
         if (!action->objectName().isEmpty())
             action->setShortcuts(shortcutsConfig.userShortcuts(action));
-    for (auto *shortcut : findChildren<Shortcut *>())
+    for (auto* shortcut : findChildren<Shortcut*>())
         if (!shortcut->objectName().isEmpty())
             shortcut->setKeys(shortcutsConfig.userShortcuts(shortcut));
 }
 
 void MainWindow::initCustomUI() {
     // Set up the tab bar
-    while (ui->mainTabBar->count()) ui->mainTabBar->removeTab(0);
+    while (ui->mainTabBar->count())
+        ui->mainTabBar->removeTab(0);
     ui->mainTabBar->addTab("Map");
     ui->mainTabBar->setTabIcon(0, QIcon(QStringLiteral(":/icons/map.ico")));
     ui->mainTabBar->addTab("Events");
@@ -188,29 +184,24 @@ void MainWindow::initCustomUI() {
 void MainWindow::initExtraSignals() {
     // Right-clicking on items in the map list tree view brings up a context menu.
     ui->mapList->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->mapList, &QTreeView::customContextMenuRequested,
-            this, &MainWindow::onOpenMapListContextMenu);
+    connect(ui->mapList, &QTreeView::customContextMenuRequested, this, &MainWindow::onOpenMapListContextMenu);
 
     // other signals
     connect(ui->newEventToolButton, &NewEventToolButton::newEventAdded, this, &MainWindow::addNewEvent);
     connect(ui->tabWidget_EventType, &QTabWidget::currentChanged, this, &MainWindow::eventTabChanged);
 
     // Change pages on wild encounter groups
-    QStackedWidget *stack = ui->stackedWidget_WildMons;
-    QComboBox *labelCombo = ui->comboBox_EncounterGroupLabel;
-    connect(labelCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index){
-        stack->setCurrentIndex(index);
-    });
+    QStackedWidget* stack = ui->stackedWidget_WildMons;
+    QComboBox* labelCombo = ui->comboBox_EncounterGroupLabel;
+    connect(labelCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index) { stack->setCurrentIndex(index); });
 
     // Convert the layout of the map tools' frame into an adjustable FlowLayout
-    FlowLayout *flowLayout = new FlowLayout;
+    FlowLayout* flowLayout = new FlowLayout;
     flowLayout->setContentsMargins(ui->frame_mapTools->layout()->contentsMargins());
     flowLayout->setSpacing(ui->frame_mapTools->layout()->spacing());
-    for (auto *child : ui->frame_mapTools->findChildren<QWidget *>(QString(), Qt::FindDirectChildrenOnly)) {
+    for (auto* child : ui->frame_mapTools->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly)) {
         flowLayout->addWidget(child);
-        child->setFixedHeight(
-            ui->frame_mapTools->height() - flowLayout->contentsMargins().top() - flowLayout->contentsMargins().bottom()
-        );
+        child->setFixedHeight(ui->frame_mapTools->height() - flowLayout->contentsMargins().top() - flowLayout->contentsMargins().bottom());
     }
     delete ui->frame_mapTools->layout();
     ui->frame_mapTools->setLayout(flowLayout);
@@ -247,20 +238,20 @@ void MainWindow::initEditor() {
 
     redoAction = editor->editGroup.createRedoAction(this, tr("&Redo"));
     redoAction->setObjectName("action_Redo");
-    redoAction->setShortcuts({QKeySequence("Ctrl+Y"), QKeySequence("Ctrl+Shift+Z")});
+    redoAction->setShortcuts({ QKeySequence("Ctrl+Y"), QKeySequence("Ctrl+Shift+Z") });
 
     ui->menuEdit->addAction(undoAction);
     ui->menuEdit->addAction(redoAction);
 
-    QUndoView *undoView = new QUndoView(&editor->editGroup);
+    QUndoView* undoView = new QUndoView(&editor->editGroup);
     undoView->setWindowTitle(tr("Edit History"));
     undoView->setAttribute(Qt::WA_QuitOnClose, false);
 
     // Show the EditHistory dialog with Ctrl+E
-    QAction *showHistory = new QAction("Show Edit History...", this);
+    QAction* showHistory = new QAction("Show Edit History...", this);
     showHistory->setObjectName("action_ShowEditHistory");
     showHistory->setShortcut(QKeySequence("Ctrl+E"));
-    connect(showHistory, &QAction::triggered, [undoView](){ undoView->show(); });
+    connect(showHistory, &QAction::triggered, [undoView]() { undoView->show(); });
 
     ui->menuEdit->addAction(showHistory);
 
@@ -290,8 +281,8 @@ void MainWindow::initMiscHeapObjects() {
 }
 
 void MainWindow::initMapSortOrder() {
-    QMenu *mapSortOrderMenu = new QMenu(this);
-    QActionGroup *mapSortOrderActionGroup = new QActionGroup(ui->toolButton_MapSortOrder);
+    QMenu* mapSortOrderMenu = new QMenu(this);
+    QActionGroup* mapSortOrderActionGroup = new QActionGroup(ui->toolButton_MapSortOrder);
 
     mapSortOrderMenu->addAction(ui->actionSort_by_Group);
     mapSortOrderMenu->addAction(ui->actionSort_by_Area);
@@ -311,23 +302,17 @@ void MainWindow::initMapSortOrder() {
 
 void MainWindow::showWindowTitle() {
     if (editor->map) {
-        setWindowTitle(QString("%1%2 - %3")
-            .arg(editor->map->hasUnsavedChanges() ? "* " : "")
-            .arg(editor->map->name)
-            .arg(editor->project->getProjectTitle())
-        );
+        setWindowTitle(QString("%1%2 - %3").arg(editor->map->hasUnsavedChanges() ? "* " : "").arg(editor->map->name).arg(editor->project->getProjectTitle()));
     }
 }
 
-void MainWindow::setProjectSpecificUIVisibility()
-{
+void MainWindow::setProjectSpecificUIVisibility() {
     ui->actionUse_Encounter_Json->setChecked(projectConfig.getEncounterJsonActive());
     ui->actionUse_Poryscript->setChecked(projectConfig.getUsePoryScript());
 
     ui->mainTabBar->setTabEnabled(4, projectConfig.getEncounterJsonActive());
 
-    switch (projectConfig.getBaseGameVersion())
-    {
+    switch (projectConfig.getBaseGameVersion()) {
     case BaseGameVersion::pokeruby:
         ui->checkBox_AllowRunning->setVisible(false);
         ui->checkBox_AllowBiking->setVisible(false);
@@ -353,7 +338,7 @@ void MainWindow::setProjectSpecificUIVisibility()
         ui->label_AllowRunning->setVisible(true);
         ui->label_AllowBiking->setVisible(true);
         ui->label_AllowEscapeRope->setVisible(true);
-        // TODO: pokefirered is not set up for the Region Map Editor and vice versa. 
+        // TODO: pokefirered is not set up for the Region Map Editor and vice versa.
         //       porymap will crash on attempt. Remove below once resolved
         ui->actionRegion_Map_Editor->setVisible(false);
         break;
@@ -378,38 +363,31 @@ void MainWindow::setProjectSpecificUIVisibility()
     }
 }
 
-void MainWindow::mapSortOrder_changed(QAction *action)
-{
+void MainWindow::mapSortOrder_changed(QAction* action) {
     QList<QAction*> items = ui->toolButton_MapSortOrder->menu()->actions();
     int i = 0;
-    for (; i < items.count(); i++)
-    {
-        if (items[i] == action)
-        {
+    for (; i < items.count(); i++) {
+        if (items[i] == action) {
             break;
         }
     }
 
-    if (i != mapSortOrder)
-    {
+    if (i != mapSortOrder) {
         ui->toolButton_MapSortOrder->setIcon(action->icon());
         mapSortOrder = static_cast<MapSortOrder>(i);
         porymapConfig.setMapSortOrder(mapSortOrder);
-        if (isProjectOpen())
-        {
+        if (isProjectOpen()) {
             sortMapList();
             applyMapListFilter(ui->lineEdit_filterBox->text());
         }
     }
 }
 
-void MainWindow::on_lineEdit_filterBox_textChanged(const QString &arg1)
-{
+void MainWindow::on_lineEdit_filterBox_textChanged(const QString& arg1) {
     this->applyMapListFilter(arg1);
 }
 
-void MainWindow::applyMapListFilter(QString filterText)
-{
+void MainWindow::applyMapListFilter(QString filterText) {
     mapListProxyModel->setFilterRegExp(QRegExp(filterText, Qt::CaseInsensitive, QRegExp::FixedString));
     if (filterText.isEmpty()) {
         ui->mapList->collapseAll();
@@ -496,9 +474,7 @@ bool MainWindow::openProject(QString dir) {
         QObject::connect(editor->project, &Project::uncheckMonitorFilesAction, [this]() { ui->actionMonitor_Project_Files->setChecked(false); });
         on_actionMonitor_Project_Files_triggered(porymapConfig.getMonitorFiles());
         editor->project->set_root(dir);
-        success = loadDataStructures()
-               && populateMapList()
-               && setMap(getDefaultMap(), true);
+        success = loadDataStructures() && populateMapList() && setMap(getDefaultMap(), true);
     } else {
         QString open_map = editor->map->name;
         editor->project->fileWatcher.removePaths(editor->project->fileWatcher.files());
@@ -514,11 +490,10 @@ bool MainWindow::openProject(QString dir) {
         this->statusBar()->showMessage(QString("Failed to open project %1").arg(nativeDir));
         QMessageBox msgBox(this);
         QString errorMsg = QString("There was an error opening the project %1. Please see %2 for full error details.\n\n%3")
-                .arg(dir)
-                .arg(getLogPath())
-                .arg(getMostRecentError());
+                               .arg(dir)
+                               .arg(getLogPath())
+                               .arg(getMostRecentError());
         msgBox.critical(nullptr, "Error Opening Project", errorMsg);
-
     }
 
     if (success) {
@@ -564,8 +539,7 @@ QString MainWindow::getExistingDirectory(QString dir) {
     return QFileDialog::getExistingDirectory(this, "Open Directory", dir, QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 }
 
-void MainWindow::on_action_Open_Project_triggered()
-{
+void MainWindow::on_action_Open_Project_triggered() {
     QString recent = ".";
     if (!projectConfig.getRecentMap().isEmpty()) {
         recent = projectConfig.getRecentMap();
@@ -634,16 +608,14 @@ bool MainWindow::setMap(QString map_name, bool scrollTreeView) {
     return true;
 }
 
-void MainWindow::redrawMapScene()
-{
+void MainWindow::redrawMapScene() {
     if (!editor->displayMap())
         return;
 
     this->refreshMapScene();
 }
 
-void MainWindow::refreshMapScene()
-{
+void MainWindow::refreshMapScene() {
     on_mainTabBar_tabBarClicked(ui->mainTabBar->currentIndex());
 
     ui->graphicsView_Map->setScene(editor->scene);
@@ -654,18 +626,21 @@ void MainWindow::refreshMapScene()
     ui->graphicsView_Connections->setSceneRect(editor->scene->sceneRect());
 
     ui->graphicsView_Metatiles->setScene(editor->scene_metatiles);
-    //ui->graphicsView_Metatiles->setSceneRect(editor->scene_metatiles->sceneRect());
+    // ui->graphicsView_Metatiles->setSceneRect(editor->scene_metatiles->sceneRect());
     ui->graphicsView_Metatiles->setFixedSize(editor->metatile_selector_item->pixmap().width() + 2, editor->metatile_selector_item->pixmap().height() + 2);
 
     ui->graphicsView_BorderMetatile->setScene(editor->scene_selected_border_metatiles);
-    ui->graphicsView_BorderMetatile->setFixedSize(editor->selected_border_metatiles_item->pixmap().width() + 2, editor->selected_border_metatiles_item->pixmap().height() + 2);
+    ui->graphicsView_BorderMetatile->setFixedSize(
+        editor->selected_border_metatiles_item->pixmap().width() + 2, editor->selected_border_metatiles_item->pixmap().height() + 2);
 
     ui->graphicsView_currentMetatileSelection->setScene(editor->scene_current_metatile_selection);
-    ui->graphicsView_currentMetatileSelection->setFixedSize(editor->current_metatile_selection_item->pixmap().width() + 2, editor->current_metatile_selection_item->pixmap().height() + 2);
+    ui->graphicsView_currentMetatileSelection->setFixedSize(
+        editor->current_metatile_selection_item->pixmap().width() + 2, editor->current_metatile_selection_item->pixmap().height() + 2);
 
     ui->graphicsView_Collision->setScene(editor->scene_collision_metatiles);
-    //ui->graphicsView_Collision->setSceneRect(editor->scene_collision_metatiles->sceneRect());
-    ui->graphicsView_Collision->setFixedSize(editor->movement_permissions_selector_item->pixmap().width() + 2, editor->movement_permissions_selector_item->pixmap().height() + 2);
+    // ui->graphicsView_Collision->setSceneRect(editor->scene_collision_metatiles->sceneRect());
+    ui->graphicsView_Collision->setFixedSize(
+        editor->movement_permissions_selector_item->pixmap().width() + 2, editor->movement_permissions_selector_item->pixmap().height() + 2);
 
     on_horizontalSlider_MetatileZoom_valueChanged(ui->horizontalSlider_MetatileZoom->value());
 }
@@ -689,17 +664,17 @@ void MainWindow::openWarpMap(QString map_name, QString warp_num) {
     if (!setMap(map_name, true)) {
         QMessageBox msgBox(this);
         QString errorMsg = QString("There was an error opening map %1. Please see %2 for full error details.\n\n%3")
-                .arg(map_name)
-                .arg(getLogPath())
-                .arg(getMostRecentError());
+                               .arg(map_name)
+                               .arg(getLogPath())
+                               .arg(getMostRecentError());
         msgBox.critical(nullptr, "Error Opening Map", errorMsg);
         return;
     }
 
     QList<Event*> warp_events = editor->map->events["warp_event_group"];
     if (warp_events.length() > warpNum) {
-        Event *warp_event = warp_events.at(warpNum);
-        for (DraggablePixmapItem *item : editor->getObjects()) {
+        Event* warp_event = warp_events.at(warpNum);
+        for (DraggablePixmapItem* item : editor->getObjects()) {
             if (item->event == warp_event) {
                 editor->selected_events->clear();
                 editor->selected_events->append(item);
@@ -725,7 +700,7 @@ void MainWindow::displayMapProperties() {
     }
 
     ui->frame_3->setEnabled(true);
-    Map *map = editor->map;
+    Map* map = editor->map;
 
     ui->comboBox_PrimaryTileset->blockSignals(true);
     ui->comboBox_SecondaryTileset->blockSignals(true);
@@ -758,43 +733,37 @@ void MainWindow::displayMapProperties() {
     ui->tableWidget_CustomHeaderFields->blockSignals(false);
 }
 
-void MainWindow::on_comboBox_Song_currentTextChanged(const QString &song)
-{
+void MainWindow::on_comboBox_Song_currentTextChanged(const QString& song) {
     if (editor && editor->map) {
         editor->map->song = song;
     }
 }
 
-void MainWindow::on_comboBox_Location_currentTextChanged(const QString &location)
-{
+void MainWindow::on_comboBox_Location_currentTextChanged(const QString& location) {
     if (editor && editor->map) {
         editor->map->location = location;
     }
 }
 
-void MainWindow::on_comboBox_Weather_currentTextChanged(const QString &weather)
-{
+void MainWindow::on_comboBox_Weather_currentTextChanged(const QString& weather) {
     if (editor && editor->map) {
         editor->map->weather = weather;
     }
 }
 
-void MainWindow::on_comboBox_Type_currentTextChanged(const QString &type)
-{
+void MainWindow::on_comboBox_Type_currentTextChanged(const QString& type) {
     if (editor && editor->map) {
         editor->map->type = type;
     }
 }
 
-void MainWindow::on_comboBox_BattleScene_currentTextChanged(const QString &battle_scene)
-{
+void MainWindow::on_comboBox_BattleScene_currentTextChanged(const QString& battle_scene) {
     if (editor && editor->map) {
         editor->map->battle_scene = battle_scene;
     }
 }
 
-void MainWindow::on_checkBox_Visibility_clicked(bool checked)
-{
+void MainWindow::on_checkBox_Visibility_clicked(bool checked) {
     if (editor && editor->map) {
         if (checked) {
             editor->map->requiresFlash = "TRUE";
@@ -804,8 +773,7 @@ void MainWindow::on_checkBox_Visibility_clicked(bool checked)
     }
 }
 
-void MainWindow::on_checkBox_ShowLocation_clicked(bool checked)
-{
+void MainWindow::on_checkBox_ShowLocation_clicked(bool checked) {
     if (editor && editor->map) {
         if (checked) {
             editor->map->show_location = "TRUE";
@@ -815,8 +783,7 @@ void MainWindow::on_checkBox_ShowLocation_clicked(bool checked)
     }
 }
 
-void MainWindow::on_checkBox_AllowRunning_clicked(bool checked)
-{
+void MainWindow::on_checkBox_AllowRunning_clicked(bool checked) {
     if (editor && editor->map) {
         if (checked) {
             editor->map->allowRunning = "1";
@@ -826,8 +793,7 @@ void MainWindow::on_checkBox_AllowRunning_clicked(bool checked)
     }
 }
 
-void MainWindow::on_checkBox_AllowBiking_clicked(bool checked)
-{
+void MainWindow::on_checkBox_AllowBiking_clicked(bool checked) {
     if (editor && editor->map) {
         if (checked) {
             editor->map->allowBiking = "1";
@@ -837,8 +803,7 @@ void MainWindow::on_checkBox_AllowBiking_clicked(bool checked)
     }
 }
 
-void MainWindow::on_checkBox_AllowEscapeRope_clicked(bool checked)
-{
+void MainWindow::on_checkBox_AllowEscapeRope_clicked(bool checked) {
     if (editor && editor->map) {
         if (checked) {
             editor->map->allowEscapeRope = "1";
@@ -848,43 +813,27 @@ void MainWindow::on_checkBox_AllowEscapeRope_clicked(bool checked)
     }
 }
 
-void MainWindow::on_spinBox_FloorNumber_valueChanged(int offset)
-{
+void MainWindow::on_spinBox_FloorNumber_valueChanged(int offset) {
     if (editor && editor->map) {
         editor->map->floorNumber = offset;
     }
 }
 
 bool MainWindow::loadDataStructures() {
-    Project *project = editor->project;
-    bool success = project->readMapLayouts()
-                && project->readRegionMapSections()
-                && project->readItemNames()
-                && project->readFlagNames()
-                && project->readVarNames()
-                && project->readMovementTypes()
-                && project->readInitialFacingDirections()
-                && project->readMapTypes()
-                && project->readMapBattleScenes()
-                && project->readWeatherNames()
-                && project->readCoordEventWeatherNames()
-                && project->readSecretBaseIds() 
-                && project->readBgEventFacingDirections()
-                && project->readTrainerTypes()
-                && project->readMetatileBehaviors()
-                && project->readTilesetProperties()
-                && project->readMaxMapDataSize()
-                && project->readHealLocations()
-                && project->readMiscellaneousConstants()
-                && project->readSpeciesIconPaths()
-                && project->readWildMonData();
-    
+    Project* project = editor->project;
+    bool success = project->readMapLayouts() && project->readRegionMapSections() && project->readItemNames() && project->readFlagNames()
+        && project->readVarNames() && project->readMovementTypes() && project->readInitialFacingDirections() && project->readMapTypes()
+        && project->readMapBattleScenes() && project->readWeatherNames() && project->readCoordEventWeatherNames() && project->readSecretBaseIds()
+        && project->readBgEventFacingDirections() && project->readTrainerTypes() && project->readMetatileBehaviors() && project->readTilesetProperties()
+        && project->readMaxMapDataSize() && project->readHealLocations() && project->readMiscellaneousConstants() && project->readSpeciesIconPaths()
+        && project->readWildMonData();
+
     return success && loadProjectCombos();
 }
 
 bool MainWindow::loadProjectCombos() {
     // set up project ui comboboxes
-    Project *project = editor->project;
+    Project* project = editor->project;
 
     // Block signals to the comboboxes while they are being modified
     const QSignalBlocker blocker1(ui->comboBox_Song);
@@ -928,7 +877,7 @@ bool MainWindow::populateMapList() {
 }
 
 void MainWindow::sortMapList() {
-    Project *project = editor->project;
+    Project* project = editor->project;
 
     QIcon mapFolderIcon;
     mapFolderIcon.addFile(QStringLiteral(":/icons/folder_closed_map.ico"), QSize(), QIcon::Normal, QIcon::Off);
@@ -936,98 +885,95 @@ void MainWindow::sortMapList() {
 
     QIcon folderIcon;
     folderIcon.addFile(QStringLiteral(":/icons/folder_closed.ico"), QSize(), QIcon::Normal, QIcon::Off);
-    //folderIcon.addFile(QStringLiteral(":/icons/folder.ico"), QSize(), QIcon::Normal, QIcon::On);
+    // folderIcon.addFile(QStringLiteral(":/icons/folder.ico"), QSize(), QIcon::Normal, QIcon::On);
 
     ui->mapList->setUpdatesEnabled(false);
     mapListModel->clear();
     mapGroupItemsList->clear();
-    QStandardItem *root = mapListModel->invisibleRootItem();
+    QStandardItem* root = mapListModel->invisibleRootItem();
 
-    switch (mapSortOrder)
-    {
-        case MapSortOrder::Group:
-            for (int i = 0; i < project->groupNames.length(); i++) {
-                QString group_name = project->groupNames.value(i);
-                QStandardItem *group = new QStandardItem;
-                group->setText(group_name);
-                group->setIcon(mapFolderIcon);
-                group->setEditable(false);
-                group->setData(group_name, Qt::UserRole);
-                group->setData("map_group", MapListUserRoles::TypeRole);
-                group->setData(i, MapListUserRoles::GroupRole);
-                root->appendRow(group);
-                mapGroupItemsList->append(group);
-                QStringList names = project->groupedMapNames.value(i);
-                for (int j = 0; j < names.length(); j++) {
-                    QString map_name = names.value(j);
-                    QStandardItem *map = createMapItem(map_name, i, j);
-                    group->appendRow(map);
-                    mapListIndexes.insert(map_name, map->index());
-                }
+    switch (mapSortOrder) {
+    case MapSortOrder::Group:
+        for (int i = 0; i < project->groupNames.length(); i++) {
+            QString group_name = project->groupNames.value(i);
+            QStandardItem* group = new QStandardItem;
+            group->setText(group_name);
+            group->setIcon(mapFolderIcon);
+            group->setEditable(false);
+            group->setData(group_name, Qt::UserRole);
+            group->setData("map_group", MapListUserRoles::TypeRole);
+            group->setData(i, MapListUserRoles::GroupRole);
+            root->appendRow(group);
+            mapGroupItemsList->append(group);
+            QStringList names = project->groupedMapNames.value(i);
+            for (int j = 0; j < names.length(); j++) {
+                QString map_name = names.value(j);
+                QStandardItem* map = createMapItem(map_name, i, j);
+                group->appendRow(map);
+                mapListIndexes.insert(map_name, map->index());
             }
-            break;
-        case MapSortOrder::Area:
-        {
-            QMap<QString, int> mapsecToGroupNum;
-            for (int i = 0; i < project->mapSectionNameToValue.size(); i++) {
-                QString mapsec_name = project->mapSectionValueToName.value(i);
-                QStandardItem *mapsec = new QStandardItem;
-                mapsec->setText(mapsec_name);
-                mapsec->setIcon(folderIcon);
-                mapsec->setEditable(false);
-                mapsec->setData(mapsec_name, Qt::UserRole);
-                mapsec->setData("map_sec", MapListUserRoles::TypeRole);
-                mapsec->setData(i, MapListUserRoles::GroupRole);
-                root->appendRow(mapsec);
-                mapGroupItemsList->append(mapsec);
-                mapsecToGroupNum.insert(mapsec_name, i);
-            }
-            for (int i = 0; i < project->groupNames.length(); i++) {
-                QStringList names = project->groupedMapNames.value(i);
-                for (int j = 0; j < names.length(); j++) {
-                    QString map_name = names.value(j);
-                    QStandardItem *map = createMapItem(map_name, i, j);
-                    QString location = project->readMapLocation(map_name);
-                    QStandardItem *mapsecItem = mapGroupItemsList->at(mapsecToGroupNum[location]);
-                    mapsecItem->setIcon(mapFolderIcon);
-                    mapsecItem->appendRow(map);
-                    mapListIndexes.insert(map_name, map->index());
-                }
-            }
-            break;
         }
-        case MapSortOrder::Layout:
-        {
-            QMap<QString, int> layoutIndices;
-            for (int i = 0; i < project->mapLayoutsTable.length(); i++) {
-                QString layoutId = project->mapLayoutsTable.value(i);
-                MapLayout *layout = project->mapLayouts.value(layoutId);
-                QStandardItem *layoutItem = new QStandardItem;
-                layoutItem->setText(layout->name);
-                layoutItem->setIcon(folderIcon);
-                layoutItem->setEditable(false);
-                layoutItem->setData(layout->name, Qt::UserRole);
-                layoutItem->setData("map_layout", MapListUserRoles::TypeRole);
-                layoutItem->setData(layout->id, MapListUserRoles::TypeRole2);
-                layoutItem->setData(i, MapListUserRoles::GroupRole);
-                root->appendRow(layoutItem);
-                mapGroupItemsList->append(layoutItem);
-                layoutIndices[layoutId] = i;
-            }
-            for (int i = 0; i < project->groupNames.length(); i++) {
-                QStringList names = project->groupedMapNames.value(i);
-                for (int j = 0; j < names.length(); j++) {
-                    QString map_name = names.value(j);
-                    QStandardItem *map = createMapItem(map_name, i, j);
-                    QString layoutId = project->readMapLayoutId(map_name);
-                    QStandardItem *layoutItem = mapGroupItemsList->at(layoutIndices.value(layoutId));
-                    layoutItem->setIcon(mapFolderIcon);
-                    layoutItem->appendRow(map);
-                    mapListIndexes.insert(map_name, map->index());
-                }
-            }
-            break;
+        break;
+    case MapSortOrder::Area: {
+        QMap<QString, int> mapsecToGroupNum;
+        for (int i = 0; i < project->mapSectionNameToValue.size(); i++) {
+            QString mapsec_name = project->mapSectionValueToName.value(i);
+            QStandardItem* mapsec = new QStandardItem;
+            mapsec->setText(mapsec_name);
+            mapsec->setIcon(folderIcon);
+            mapsec->setEditable(false);
+            mapsec->setData(mapsec_name, Qt::UserRole);
+            mapsec->setData("map_sec", MapListUserRoles::TypeRole);
+            mapsec->setData(i, MapListUserRoles::GroupRole);
+            root->appendRow(mapsec);
+            mapGroupItemsList->append(mapsec);
+            mapsecToGroupNum.insert(mapsec_name, i);
         }
+        for (int i = 0; i < project->groupNames.length(); i++) {
+            QStringList names = project->groupedMapNames.value(i);
+            for (int j = 0; j < names.length(); j++) {
+                QString map_name = names.value(j);
+                QStandardItem* map = createMapItem(map_name, i, j);
+                QString location = project->readMapLocation(map_name);
+                QStandardItem* mapsecItem = mapGroupItemsList->at(mapsecToGroupNum[location]);
+                mapsecItem->setIcon(mapFolderIcon);
+                mapsecItem->appendRow(map);
+                mapListIndexes.insert(map_name, map->index());
+            }
+        }
+        break;
+    }
+    case MapSortOrder::Layout: {
+        QMap<QString, int> layoutIndices;
+        for (int i = 0; i < project->mapLayoutsTable.length(); i++) {
+            QString layoutId = project->mapLayoutsTable.value(i);
+            MapLayout* layout = project->mapLayouts.value(layoutId);
+            QStandardItem* layoutItem = new QStandardItem;
+            layoutItem->setText(layout->name);
+            layoutItem->setIcon(folderIcon);
+            layoutItem->setEditable(false);
+            layoutItem->setData(layout->name, Qt::UserRole);
+            layoutItem->setData("map_layout", MapListUserRoles::TypeRole);
+            layoutItem->setData(layout->id, MapListUserRoles::TypeRole2);
+            layoutItem->setData(i, MapListUserRoles::GroupRole);
+            root->appendRow(layoutItem);
+            mapGroupItemsList->append(layoutItem);
+            layoutIndices[layoutId] = i;
+        }
+        for (int i = 0; i < project->groupNames.length(); i++) {
+            QStringList names = project->groupedMapNames.value(i);
+            for (int j = 0; j < names.length(); j++) {
+                QString map_name = names.value(j);
+                QStandardItem* map = createMapItem(map_name, i, j);
+                QString layoutId = project->readMapLayoutId(map_name);
+                QStandardItem* layoutItem = mapGroupItemsList->at(layoutIndices.value(layoutId));
+                layoutItem->setIcon(mapFolderIcon);
+                layoutItem->appendRow(map);
+                mapListIndexes.insert(map_name, map->index());
+            }
+        }
+        break;
+    }
     }
 
     ui->mapList->setUpdatesEnabled(true);
@@ -1036,7 +982,7 @@ void MainWindow::sortMapList() {
 }
 
 QStandardItem* MainWindow::createMapItem(QString mapName, int groupNum, int inGroupNum) {
-    QStandardItem *map = new QStandardItem;
+    QStandardItem* map = new QStandardItem;
     map->setText(QString("[%1.%2] ").arg(groupNum).arg(inGroupNum, 2, 10, QLatin1Char('0')) + mapName);
     map->setIcon(*mapIcon);
     map->setEditable(false);
@@ -1045,14 +991,13 @@ QStandardItem* MainWindow::createMapItem(QString mapName, int groupNum, int inGr
     return map;
 }
 
-void MainWindow::onOpenMapListContextMenu(const QPoint &point)
-{
+void MainWindow::onOpenMapListContextMenu(const QPoint& point) {
     QModelIndex index = mapListProxyModel->mapToSource(ui->mapList->indexAt(point));
     if (!index.isValid()) {
         return;
     }
 
-    QStandardItem *selectedItem = mapListModel->itemFromIndex(index);
+    QStandardItem* selectedItem = mapListModel->itemFromIndex(index);
     QVariant itemType = selectedItem->data(MapListUserRoles::TypeRole);
     if (!itemType.isValid()) {
         return;
@@ -1084,20 +1029,17 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point)
     }
 }
 
-void MainWindow::onAddNewMapToGroupClick(QAction* triggeredAction)
-{
+void MainWindow::onAddNewMapToGroupClick(QAction* triggeredAction) {
     int groupNum = triggeredAction->data().toInt();
     openNewMapPopupWindow(MapSortOrder::Group, groupNum);
 }
 
-void MainWindow::onAddNewMapToAreaClick(QAction* triggeredAction)
-{
+void MainWindow::onAddNewMapToAreaClick(QAction* triggeredAction) {
     QString secName = triggeredAction->data().toString();
     openNewMapPopupWindow(MapSortOrder::Area, secName);
 }
 
-void MainWindow::onAddNewMapToLayoutClick(QAction* triggeredAction)
-{
+void MainWindow::onAddNewMapToLayoutClick(QAction* triggeredAction) {
     QString layoutId = triggeredAction->data().toString();
     openNewMapPopupWindow(MapSortOrder::Layout, layoutId);
 }
@@ -1105,10 +1047,10 @@ void MainWindow::onAddNewMapToLayoutClick(QAction* triggeredAction)
 void MainWindow::onNewMapCreated() {
     QString newMapName = this->newmapprompt->map->name;
     int newMapGroup = this->newmapprompt->group;
-    Map *newMap_ = this->newmapprompt->map;
+    Map* newMap_ = this->newmapprompt->map;
     bool existingLayout = this->newmapprompt->existingLayout;
 
-    Map *newMap = editor->project->addNewMapToGroup(newMapName, newMapGroup, newMap_, existingLayout);
+    Map* newMap = editor->project->addNewMapToGroup(newMapName, newMapGroup, newMap_, existingLayout);
 
     logInfo(QString("Created a new map named %1.").arg(newMapName));
 
@@ -1118,7 +1060,7 @@ void MainWindow::onNewMapCreated() {
     QStandardItem* groupItem = mapGroupItemsList->at(newMapGroup);
     int numMapsInGroup = groupItem->rowCount();
 
-    QStandardItem *newMapItem = createMapItem(newMapName, newMapGroup, numMapsInGroup);
+    QStandardItem* newMapItem = createMapItem(newMapName, newMapGroup, numMapsInGroup);
     groupItem->appendRow(newMapItem);
     mapListIndexes.insert(newMapName, newMapItem->index());
 
@@ -1128,7 +1070,7 @@ void MainWindow::onNewMapCreated() {
     if (newMap->isFlyable == "TRUE") {
         addNewEvent(EventType::HealLocation);
         editor->project->saveHealLocationStruct(newMap);
-        editor->save();// required
+        editor->save(); // required
     }
 
     disconnect(this->newmapprompt, &NewMapPopup::applied, this, &MainWindow::onNewMapCreated);
@@ -1144,17 +1086,16 @@ void MainWindow::openNewMapPopupWindow(int type, QVariant data) {
         this->newmapprompt->raise();
         this->newmapprompt->activateWindow();
     }
-    switch (type)
-    {
-        case MapSortOrder::Group:
-            this->newmapprompt->init(type, data.toInt(), QString(), QString());
-            break;
-        case MapSortOrder::Area:
-            this->newmapprompt->init(type, 0, data.toString(), QString());
-            break;
-        case MapSortOrder::Layout:
-            this->newmapprompt->init(type, 0, QString(), data.toString());
-            break;
+    switch (type) {
+    case MapSortOrder::Group:
+        this->newmapprompt->init(type, data.toInt(), QString(), QString());
+        break;
+    case MapSortOrder::Area:
+        this->newmapprompt->init(type, 0, data.toString(), QString());
+        break;
+    case MapSortOrder::Layout:
+        this->newmapprompt->init(type, 0, QString(), data.toString());
+        break;
     }
     connect(this->newmapprompt, &NewMapPopup::applied, this, &MainWindow::onNewMapCreated);
     this->newmapprompt->setAttribute(Qt::WA_DeleteOnClose);
@@ -1165,9 +1106,9 @@ void MainWindow::on_action_NewMap_triggered() {
 }
 
 void MainWindow::on_actionNew_Tileset_triggered() {
-    NewTilesetDialog *createTilesetDialog = new NewTilesetDialog(editor->project, this);
-    if(createTilesetDialog->exec() == QDialog::Accepted){
-        if(createTilesetDialog->friendlyName.isEmpty()) {
+    NewTilesetDialog* createTilesetDialog = new NewTilesetDialog(editor->project, this);
+    if (createTilesetDialog->exec() == QDialog::Accepted) {
+        if (createTilesetDialog->friendlyName.isEmpty()) {
             logError(QString("Tried to create a directory with an empty name."));
             QMessageBox msgBox(this);
             msgBox.setText("Failed to add new tileset.");
@@ -1180,11 +1121,12 @@ void MainWindow::on_actionNew_Tileset_triggered() {
         }
         QString fullDirectoryPath = editor->project->root + createTilesetDialog->path;
         QDir directory;
-        if(directory.exists(fullDirectoryPath)) {
+        if (directory.exists(fullDirectoryPath)) {
             logError(QString("Could not create tileset \"%1\", the folder \"%2\" already exists.").arg(createTilesetDialog->friendlyName, fullDirectoryPath));
             QMessageBox msgBox(this);
             msgBox.setText("Failed to add new tileset.");
-            QString message = QString("The folder for tileset \"%1\" already exists. View porymap.log for specific errors.").arg(createTilesetDialog->friendlyName);
+            QString message
+                = QString("The folder for tileset \"%1\" already exists. View porymap.log for specific errors.").arg(createTilesetDialog->friendlyName);
             msgBox.setInformativeText(message);
             msgBox.setDefaultButton(QMessageBox::Ok);
             msgBox.setIcon(QMessageBox::Icon::Critical);
@@ -1192,11 +1134,14 @@ void MainWindow::on_actionNew_Tileset_triggered() {
             return;
         }
         QMap<QString, QStringList> tilesets = this->editor->project->getTilesetLabels();
-        if(tilesets.value("primary").contains(createTilesetDialog->fullSymbolName) || tilesets.value("secondary").contains(createTilesetDialog->fullSymbolName)) {
-            logError(QString("Could not create tileset \"%1\", the symbol \"%2\" already exists.").arg(createTilesetDialog->friendlyName, createTilesetDialog->fullSymbolName));
+        if (tilesets.value("primary").contains(createTilesetDialog->fullSymbolName)
+            || tilesets.value("secondary").contains(createTilesetDialog->fullSymbolName)) {
+            logError(QString("Could not create tileset \"%1\", the symbol \"%2\" already exists.")
+                         .arg(createTilesetDialog->friendlyName, createTilesetDialog->fullSymbolName));
             QMessageBox msgBox(this);
             msgBox.setText("Failed to add new tileset.");
-            QString message = QString("The symbol for tileset \"%1\" (\"%2\") already exists.").arg(createTilesetDialog->friendlyName, createTilesetDialog->fullSymbolName);
+            QString message
+                = QString("The symbol for tileset \"%1\" (\"%2\") already exists.").arg(createTilesetDialog->friendlyName, createTilesetDialog->fullSymbolName);
             msgBox.setInformativeText(message);
             msgBox.setDefaultButton(QMessageBox::Ok);
             msgBox.setIcon(QMessageBox::Icon::Critical);
@@ -1205,7 +1150,7 @@ void MainWindow::on_actionNew_Tileset_triggered() {
         }
         directory.mkdir(fullDirectoryPath);
         directory.mkdir(fullDirectoryPath + "/palettes");
-        Tileset *newSet = new Tileset();
+        Tileset* newSet = new Tileset();
         newSet->name = createTilesetDialog->fullSymbolName;
         newSet->tilesImagePath = fullDirectoryPath + "/tiles.png";
         newSet->metatiles_path = fullDirectoryPath + "/metatiles.bin";
@@ -1214,13 +1159,13 @@ void MainWindow::on_actionNew_Tileset_triggered() {
         int numMetaTiles = createTilesetDialog->isSecondary ? (Project::getNumTilesTotal() - Project::getNumTilesPrimary()) : Project::getNumTilesPrimary();
         QImage tilesImage(":/images/blank_tileset.png");
         editor->project->loadTilesetTiles(newSet, tilesImage);
-        for(int i = 0; i < numMetaTiles; ++i) {
+        for (int i = 0; i < numMetaTiles; ++i) {
             int tilesPerMetatile = projectConfig.getTripleLayerMetatilesEnabled() ? 12 : 8;
-            Metatile *mt = new Metatile();
-            for(int j = 0; j < tilesPerMetatile; ++j){
+            Metatile* mt = new Metatile();
+            for (int j = 0; j < tilesPerMetatile; ++j) {
                 Tile tile(0, false, false, 0);
-                //Create a checkerboard-style dummy tileset
-                if(((i / 8) % 2) == 0)
+                // Create a checkerboard-style dummy tileset
+                if (((i / 8) % 2) == 0)
                     tile.tile = ((i % 2) == 0) ? 1 : 2;
                 else
                     tile.tile = ((i % 2) == 1) ? 1 : 2;
@@ -1233,18 +1178,18 @@ void MainWindow::on_actionNew_Tileset_triggered() {
 
             newSet->metatiles.append(mt);
         }
-        for(int i = 0; i < 16; ++i) {
+        for (int i = 0; i < 16; ++i) {
             QList<QRgb> currentPal;
-            for(int i = 0; i < 16;++i) {
-                currentPal.append(qRgb(0,0,0));
+            for (int i = 0; i < 16; ++i) {
+                currentPal.append(qRgb(0, 0, 0));
             }
             newSet->palettes.append(currentPal);
             newSet->palettePreviews.append(currentPal);
             QString fileName = QString("%1.pal").arg(i, 2, 10, QLatin1Char('0'));
-            newSet->palettePaths.append(fullDirectoryPath+"/palettes/" + fileName);
+            newSet->palettePaths.append(fullDirectoryPath + "/palettes/" + fileName);
         }
-        newSet->palettes[0][1] = qRgb(255,0,255);
-        newSet->palettePreviews[0][1] = qRgb(255,0,255);
+        newSet->palettes[0][1] = qRgb(255, 0, 255);
+        newSet->palettePreviews[0][1] = qRgb(255, 0, 255);
         newSet->is_compressed = "TRUE";
         newSet->padding = "0";
         editor->project->saveTilesetTilesImage(newSet);
@@ -1252,12 +1197,12 @@ void MainWindow::on_actionNew_Tileset_triggered() {
         editor->project->saveTilesetMetatileAttributes(newSet);
         editor->project->saveTilesetPalettes(newSet);
 
-        //append to tileset specific files
+        // append to tileset specific files
 
         newSet->appendToHeaders(editor->project->root + "/data/tilesets/headers.inc", createTilesetDialog->friendlyName);
         newSet->appendToGraphics(editor->project->root + "/data/tilesets/graphics.inc", createTilesetDialog->friendlyName, !createTilesetDialog->isSecondary);
         newSet->appendToMetatiles(editor->project->root + "/data/tilesets/metatiles.inc", createTilesetDialog->friendlyName, !createTilesetDialog->isSecondary);
-        if(!createTilesetDialog->isSecondary) {
+        if (!createTilesetDialog->isSecondary) {
             this->ui->comboBox_PrimaryTileset->addItem(createTilesetDialog->fullSymbolName);
         } else {
             this->ui->comboBox_SecondaryTileset->addItem(createTilesetDialog->fullSymbolName);
@@ -1279,21 +1224,18 @@ void MainWindow::on_actionNew_Tileset_triggered() {
 void MainWindow::updateTilesetEditor() {
     if (this->tilesetEditor) {
         this->tilesetEditor->update(
-            this->editor->map,
-            editor->ui->comboBox_PrimaryTileset->currentText(),
-            editor->ui->comboBox_SecondaryTileset->currentText()
-        );
+            this->editor->map, editor->ui->comboBox_PrimaryTileset->currentText(), editor->ui->comboBox_SecondaryTileset->currentText());
     }
 }
 
-void MainWindow::redrawMetatileSelection()
-{
+void MainWindow::redrawMetatileSelection() {
     double scale = pow(3.0, static_cast<double>(porymapConfig.getMetatilesZoom() - 30) / 30.0);
     QTransform transform;
     transform.scale(scale, scale);
 
     ui->graphicsView_currentMetatileSelection->setTransform(transform);
-    ui->graphicsView_currentMetatileSelection->setFixedSize(editor->current_metatile_selection_item->pixmap().width() * scale + 2, editor->current_metatile_selection_item->pixmap().height() * scale + 2);
+    ui->graphicsView_currentMetatileSelection->setFixedSize(
+        editor->current_metatile_selection_item->pixmap().width() * scale + 2, editor->current_metatile_selection_item->pixmap().height() * scale + 2);
 
     QPoint size = editor->metatile_selector_item->getSelectionDimensions();
     if (size.x() == 1 && size.y() == 1) {
@@ -1303,30 +1245,28 @@ void MainWindow::redrawMetatileSelection()
     }
 }
 
-void MainWindow::currentMetatilesSelectionChanged()
-{
+void MainWindow::currentMetatilesSelectionChanged() {
     redrawMetatileSelection();
     if (this->tilesetEditor)
         this->tilesetEditor->selectMetatile(editor->metatile_selector_item->getSelectedMetatiles()->at(0));
 }
 
-void MainWindow::on_mapList_activated(const QModelIndex &index)
-{
+void MainWindow::on_mapList_activated(const QModelIndex& index) {
     QVariant data = index.data(Qt::UserRole);
     if (index.data(MapListUserRoles::TypeRole) == "map_name" && !data.isNull()) {
         QString mapName = data.toString();
         if (!setMap(mapName)) {
             QMessageBox msgBox(this);
             QString errorMsg = QString("There was an error opening map %1. Please see %2 for full error details.\n\n%3")
-                    .arg(mapName)
-                    .arg(getLogPath())
-                    .arg(getMostRecentError());
+                                   .arg(mapName)
+                                   .arg(getLogPath())
+                                   .arg(getMostRecentError());
             msgBox.critical(nullptr, "Error Opening Map", errorMsg);
         }
     }
 }
 
-void MainWindow::drawMapListIcons(QAbstractItemModel *model) {
+void MainWindow::drawMapListIcons(QAbstractItemModel* model) {
     projectHasUnsavedChanges = false;
     QList<QModelIndex> list;
     list.append(QModelIndex());
@@ -1341,7 +1281,7 @@ void MainWindow::drawMapListIcons(QAbstractItemModel *model) {
             if (!data.isNull()) {
                 QString map_name = data.toString();
                 if (editor->project && editor->project->mapCache.contains(map_name)) {
-                    QStandardItem *map = mapListModel->itemFromIndex(mapListIndexes.value(map_name));
+                    QStandardItem* map = mapListModel->itemFromIndex(mapListIndexes.value(map_name));
                     map->setIcon(*mapIcon);
                     if (editor->project->mapCache.value(map_name)->hasUnsavedChanges()) {
                         map->setIcon(*mapEditedIcon);
@@ -1360,8 +1300,7 @@ void MainWindow::updateMapList() {
     drawMapListIcons(mapListModel);
 }
 
-void MainWindow::on_action_Save_Project_triggered()
-{
+void MainWindow::on_action_Save_Project_triggered() {
     editor->saveProject();
     updateMapList();
 }
@@ -1375,8 +1314,7 @@ void MainWindow::on_action_Save_triggered() {
     updateMapList();
 }
 
-void MainWindow::on_tabWidget_2_currentChanged(int index)
-{
+void MainWindow::on_tabWidget_2_currentChanged(int index) {
     if (index == 0) {
         editor->setEditingMap();
     } else if (index == 1) {
@@ -1386,16 +1324,14 @@ void MainWindow::on_tabWidget_2_currentChanged(int index)
     editor->cursorMapTileRect->setVisible(false);
 }
 
-void MainWindow::on_action_Exit_triggered()
-{
+void MainWindow::on_action_Exit_triggered() {
     QApplication::quit();
 }
 
-void MainWindow::on_mainTabBar_tabBarClicked(int index)
-{
+void MainWindow::on_mainTabBar_tabBarClicked(int index) {
     ui->mainTabBar->setCurrentIndex(index);
 
-    int tabIndexToStackIndex[5] = {0, 0, 1, 2, 3};
+    int tabIndexToStackIndex[5] = { 0, 0, 1, 2, 3 };
     ui->mainStackedWidget->setCurrentIndex(tabIndexToStackIndex[index]);
 
     if (index == 0) {
@@ -1431,8 +1367,7 @@ void MainWindow::on_actionBetter_Cursors_triggered() {
     this->editor->settings->betterCursors = ui->actionBetter_Cursors->isChecked();
 }
 
-void MainWindow::on_actionPlayer_View_Rectangle_triggered()
-{
+void MainWindow::on_actionPlayer_View_Rectangle_triggered() {
     bool enabled = ui->actionPlayer_View_Rectangle->isChecked();
     porymapConfig.setShowPlayerView(enabled);
     this->editor->settings->playerViewRectEnabled = enabled;
@@ -1441,8 +1376,7 @@ void MainWindow::on_actionPlayer_View_Rectangle_triggered()
     }
 }
 
-void MainWindow::on_actionCursor_Tile_Outline_triggered()
-{
+void MainWindow::on_actionCursor_Tile_Outline_triggered() {
     bool enabled = ui->actionCursor_Tile_Outline->isChecked();
     porymapConfig.setShowCursorTile(enabled);
     this->editor->settings->cursorTileRectEnabled = enabled;
@@ -1451,8 +1385,7 @@ void MainWindow::on_actionCursor_Tile_Outline_triggered()
     }
 }
 
-void MainWindow::on_actionUse_Encounter_Json_triggered(bool checked)
-{
+void MainWindow::on_actionUse_Encounter_Json_triggered(bool checked) {
     QMessageBox warning(this);
     warning.setText("You must reload the project for this setting to take effect.");
     warning.setIcon(QMessageBox::Information);
@@ -1460,18 +1393,15 @@ void MainWindow::on_actionUse_Encounter_Json_triggered(bool checked)
     projectConfig.setEncounterJsonActive(checked);
 }
 
-void MainWindow::on_actionMonitor_Project_Files_triggered(bool checked)
-{
+void MainWindow::on_actionMonitor_Project_Files_triggered(bool checked) {
     porymapConfig.setMonitorFiles(checked);
 }
 
-void MainWindow::on_actionUse_Poryscript_triggered(bool checked)
-{
+void MainWindow::on_actionUse_Poryscript_triggered(bool checked) {
     projectConfig.setUsePoryScript(checked);
 }
 
-void MainWindow::on_actionEdit_Shortcuts_triggered()
-{
+void MainWindow::on_actionEdit_Shortcuts_triggered() {
     if (!shortcutsEditor)
         initShortcutsEditor();
 
@@ -1485,8 +1415,7 @@ void MainWindow::on_actionEdit_Shortcuts_triggered()
 
 void MainWindow::initShortcutsEditor() {
     shortcutsEditor = new ShortcutsEditor(this);
-    connect(shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
-            this, &MainWindow::applyUserShortcuts);
+    connect(shortcutsEditor, &ShortcutsEditor::shortcutsSaved, this, &MainWindow::applyUserShortcuts);
 
     connectSubEditorsToShortcutsEditor();
 
@@ -1498,46 +1427,38 @@ void MainWindow::connectSubEditorsToShortcutsEditor() {
      * be returned by shortcutableObjects() to be passed to ShortcutsEditor. */
     if (!tilesetEditor)
         initTilesetEditor();
-    connect(shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
-            tilesetEditor, &TilesetEditor::applyUserShortcuts);
+    connect(shortcutsEditor, &ShortcutsEditor::shortcutsSaved, tilesetEditor, &TilesetEditor::applyUserShortcuts);
 
     // TODO: Remove this check when the region map editor supports pokefirered.
     if (projectConfig.getBaseGameVersion() != BaseGameVersion::pokefirered) {
         if (!regionMapEditor)
             initRegionMapEditor();
         if (regionMapEditor)
-            connect(shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
-                    regionMapEditor, &RegionMapEditor::applyUserShortcuts);
+            connect(shortcutsEditor, &ShortcutsEditor::shortcutsSaved, regionMapEditor, &RegionMapEditor::applyUserShortcuts);
     }
 }
 
-void MainWindow::on_actionPencil_triggered()
-{
+void MainWindow::on_actionPencil_triggered() {
     on_toolButton_Paint_clicked();
 }
 
-void MainWindow::on_actionPointer_triggered()
-{
+void MainWindow::on_actionPointer_triggered() {
     on_toolButton_Select_clicked();
 }
 
-void MainWindow::on_actionFlood_Fill_triggered()
-{
+void MainWindow::on_actionFlood_Fill_triggered() {
     on_toolButton_Fill_clicked();
 }
 
-void MainWindow::on_actionEyedropper_triggered()
-{
+void MainWindow::on_actionEyedropper_triggered() {
     on_toolButton_Dropper_clicked();
 }
 
-void MainWindow::on_actionMove_triggered()
-{
+void MainWindow::on_actionMove_triggered() {
     on_toolButton_Move_clicked();
 }
 
-void MainWindow::on_actionMap_Shift_triggered()
-{
+void MainWindow::on_actionMap_Shift_triggered() {
     on_toolButton_Shift_clicked();
 }
 
@@ -1545,10 +1466,9 @@ void MainWindow::resetMapViewScale() {
     editor->scaleMapView(0);
 }
 
-void MainWindow::addNewEvent(QString event_type)
-{
+void MainWindow::addNewEvent(QString event_type) {
     if (editor && editor->project) {
-        DraggablePixmapItem *object = editor->addNewEvent(event_type);
+        DraggablePixmapItem* object = editor->addNewEvent(event_type);
         if (object) {
             updateObjects();
             editor->selectMapEvent(object, false);
@@ -1558,7 +1478,7 @@ void MainWindow::addNewEvent(QString event_type)
             if (event_type == EventType::Object) {
                 msgBox.setInformativeText(QString("The limit for object events (%1) has been reached.\n\n"
                                                   "This limit can be adjusted with OBJECT_EVENT_TEMPLATES_COUNT in 'include/constants/global.h'.")
-                                          .arg(editor->project->getMaxObjectEvents()));
+                                              .arg(editor->project->getMaxObjectEvents()));
             }
             msgBox.setDefaultButton(QMessageBox::Ok);
             msgBox.setIcon(QMessageBox::Icon::Warning);
@@ -1581,49 +1501,39 @@ void MainWindow::updateObjects() {
     bool hasBGs = false;
     bool hasHealspots = false;
 
-    for (DraggablePixmapItem *item : editor->getObjects())
-    {
+    for (DraggablePixmapItem* item : editor->getObjects()) {
         QString event_type = item->event->get("event_type");
 
         if (event_type == EventType::Object) {
             hasObjects = true;
-        }
-        else if (event_type == EventType::Warp) {
+        } else if (event_type == EventType::Warp) {
             hasWarps = true;
-        }
-        else if (event_type == EventType::Trigger || event_type == EventType::WeatherTrigger) {
+        } else if (event_type == EventType::Trigger || event_type == EventType::WeatherTrigger) {
             hasTriggers = true;
-        }
-        else if (event_type == EventType::Sign || event_type == EventType::HiddenItem || event_type == EventType::SecretBase) {
+        } else if (event_type == EventType::Sign || event_type == EventType::HiddenItem || event_type == EventType::SecretBase) {
             hasBGs = true;
-        }
-        else if (event_type == EventType::HealLocation) {
+        } else if (event_type == EventType::HealLocation) {
             hasHealspots = true;
         }
     }
 
-    if (hasObjects)
-    {
+    if (hasObjects) {
         ui->tabWidget_EventType->addTab(eventTabObjectWidget, "Objects");
     }
 
-    if (hasWarps)
-    {
+    if (hasWarps) {
         ui->tabWidget_EventType->addTab(eventTabWarpWidget, "Warps");
     }
 
-    if (hasTriggers)
-    {
+    if (hasTriggers) {
         ui->tabWidget_EventType->addTab(eventTabTriggerWidget, "Triggers");
     }
 
-    if (hasBGs)
-    {
+    if (hasBGs) {
         ui->tabWidget_EventType->addTab(eventTabBGWidget, "BGs");
     }
 
-    if (hasHealspots)
-    {
+    if (hasHealspots) {
         ui->tabWidget_EventType->addTab(eventTabHealspotWidget, "Healspots");
     }
 
@@ -1632,45 +1542,45 @@ void MainWindow::updateObjects() {
 
 // Should probably just pass layout and let the editor work it out
 void MainWindow::updateSelectedObjects() {
-    QList<DraggablePixmapItem *> all_events = editor->getObjects();
-    QList<DraggablePixmapItem *> events;
+    QList<DraggablePixmapItem*> all_events = editor->getObjects();
+    QList<DraggablePixmapItem*> events;
 
     if (editor->selected_events && editor->selected_events->length()) {
         events = *editor->selected_events;
     } else {
         if (all_events.length()) {
-            DraggablePixmapItem *selectedEvent = all_events.first();
+            DraggablePixmapItem* selectedEvent = all_events.first();
             editor->selected_events->append(selectedEvent);
             editor->redrawObject(selectedEvent);
             events.append(selectedEvent);
         }
     }
 
-    for (auto *button : openScriptButtons)
+    for (auto* button : openScriptButtons)
         delete button;
     openScriptButtons.clear();
 
     QMap<QString, int> event_obj_gfx_constants = editor->project->getEventObjGfxConstants();
 
-    QList<EventPropertiesFrame *> frames;
+    QList<EventPropertiesFrame*> frames;
 
     bool inConnectionEnabled = projectConfig.getObjectEventInConnectionEnabled();
     bool quantityEnabled = projectConfig.getHiddenItemQuantityEnabled();
     bool underfootEnabled = projectConfig.getHiddenItemRequiresItemfinderEnabled();
     bool respawnDataEnabled = projectConfig.getHealLocationRespawnDataEnabled();
-    for (DraggablePixmapItem *item : events) {
-        EventPropertiesFrame *frame = new EventPropertiesFrame(item->event);
-//        frame->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    for (DraggablePixmapItem* item : events) {
+        EventPropertiesFrame* frame = new EventPropertiesFrame(item->event);
+        //        frame->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
-        NoScrollSpinBox *x = frame->ui->spinBox_x;
-        NoScrollSpinBox *y = frame->ui->spinBox_y;
-        NoScrollSpinBox *z = frame->ui->spinBox_z;
+        NoScrollSpinBox* x = frame->ui->spinBox_x;
+        NoScrollSpinBox* y = frame->ui->spinBox_y;
+        NoScrollSpinBox* z = frame->ui->spinBox_z;
 
         x->setValue(item->event->x());
         connect(x, QOverload<int>::of(&QSpinBox::valueChanged), [this, item, x](int value) {
             int delta = value - item->event->x();
             if (delta)
-                editor->map->editHistory.push(new EventMove(QList<Event *>() << item->event, delta, 0, x->getActionId()));
+                editor->map->editHistory.push(new EventMove(QList<Event*>() << item->event, delta, 0, x->getActionId()));
         });
         connect(item, &DraggablePixmapItem::xChanged, x, &NoScrollSpinBox::setValue);
 
@@ -1678,7 +1588,7 @@ void MainWindow::updateSelectedObjects() {
         connect(y, QOverload<int>::of(&QSpinBox::valueChanged), [this, item, y](int value) {
             int delta = value - item->event->y();
             if (delta)
-                editor->map->editHistory.push(new EventMove(QList<Event *>() << item->event, 0, delta, y->getActionId()));
+                editor->map->editHistory.push(new EventMove(QList<Event*>() << item->event, 0, delta, y->getActionId()));
         });
         connect(item, &DraggablePixmapItem::yChanged, y, &NoScrollSpinBox::setValue);
 
@@ -1690,19 +1600,19 @@ void MainWindow::updateSelectedObjects() {
         QString event_group_type = item->event->get("event_group_type");
         QString map_name = item->event->get("map_name");
         int event_offs;
-        if (event_type == EventType::Warp) { event_offs = 0; }
-        else { event_offs = 1; }
+        if (event_type == EventType::Warp) {
+            event_offs = 0;
+        } else {
+            event_offs = 1;
+        }
         frame->ui->label_name->setText(QString("%1 Id").arg(event_type));
 
-        if (events.count() == 1)
-        {
+        if (events.count() == 1) {
             frame->ui->spinBox_index->setValue(editor->project->getMap(map_name)->events.value(event_group_type).indexOf(item->event) + event_offs);
             frame->ui->spinBox_index->setMinimum(event_offs);
             frame->ui->spinBox_index->setMaximum(editor->project->getMap(map_name)->events.value(event_group_type).length() + event_offs - 1);
             connect(frame->ui->spinBox_index, QOverload<int>::of(&QSpinBox::valueChanged), this, &MainWindow::selectedEventIndexChanged);
-        }
-        else
-        {
+        } else {
             frame->ui->spinBox_index->setVisible(false);
         }
 
@@ -1749,7 +1659,8 @@ void MainWindow::updateSelectedObjects() {
             frame->ui->comboBox_script->setCurrentText(item->event->get("script_label"));
             //item->bind(frame->ui->comboBox_script, "script_label");
             connect(frame->ui->comboBox_script, SIGNAL(activated(QString)), item, SLOT(set_script(QString)));
-            //connect(frame->ui->comboBox_script, static_cast<void (QComboBox::*)(const QString&)>(&QComboBox::activated), item, [item](QString script_label){ item->event->put("script_label", script_label); });
+            //connect(frame->ui->comboBox_script, static_cast<void (QComboBox::*)(const QString&)>(&QComboBox::activated), item, [item](QString script_label){
+            item->event->put("script_label", script_label); });
             //connect(item, SIGNAL(scriptChanged(QString)), frame->ui->comboBox_script, SLOT(setValue(QString)));
             */
 
@@ -1760,34 +1671,30 @@ void MainWindow::updateSelectedObjects() {
             fields << "event_flag";
             fields << "trainer_type";
             fields << "sight_radius_tree_id";
-            if (inConnectionEnabled) fields << "in_connection";
-        }
-        else if (event_type == EventType::Warp) {
+            if (inConnectionEnabled)
+                fields << "in_connection";
+        } else if (event_type == EventType::Warp) {
             fields << "destination_map_name";
             fields << "destination_warp";
-        }
-        else if (event_type == EventType::Trigger) {
+        } else if (event_type == EventType::Trigger) {
             fields << "script_label";
             fields << "script_var";
             fields << "script_var_value";
-        }
-        else if (event_type == EventType::WeatherTrigger) {
+        } else if (event_type == EventType::WeatherTrigger) {
             fields << "weather";
-        }
-        else if (event_type == EventType::Sign) {
+        } else if (event_type == EventType::Sign) {
             fields << "player_facing_direction";
             fields << "script_label";
-        }
-        else if (event_type == EventType::HiddenItem) {
+        } else if (event_type == EventType::HiddenItem) {
             fields << "item";
             fields << "flag";
-            if (quantityEnabled) fields << "quantity";
-            if (underfootEnabled) fields << "underfoot";
-        }
-        else if (event_type == EventType::SecretBase) {
+            if (quantityEnabled)
+                fields << "quantity";
+            if (underfootEnabled)
+                fields << "underfoot";
+        } else if (event_type == EventType::SecretBase) {
             fields << "secret_base_id";
-        }
-        else if (event_type == EventType::HealLocation) {
+        } else if (event_type == EventType::HealLocation) {
             // Hide elevation so users don't get impression that editing it is meaningful.
             frame->ui->spinBox_z->setVisible(false);
             frame->ui->label_z->setVisible(false);
@@ -1798,18 +1705,18 @@ void MainWindow::updateSelectedObjects() {
         }
 
         // Some keys shouldn't use a combobox
-        QStringList spinKeys = {"quantity", "respawn_npc"};
-        QStringList checkKeys = {"underfoot", "in_connection"};
+        QStringList spinKeys = { "quantity", "respawn_npc" };
+        QStringList checkKeys = { "underfoot", "in_connection" };
         for (QString key : fields) {
             QString value = item->event->get(key);
-            QWidget *widget = new QWidget(frame);
-            QFormLayout *fl = new QFormLayout(widget);
+            QWidget* widget = new QWidget(frame);
+            QFormLayout* fl = new QFormLayout(widget);
             fl->setContentsMargins(9, 0, 9, 0);
             fl->setRowWrapPolicy(QFormLayout::WrapLongRows);
 
-            NoScrollSpinBox *spin;
-            NoScrollComboBox *combo;
-            QCheckBox *check;
+            NoScrollSpinBox* spin;
+            NoScrollComboBox* combo;
+            QCheckBox* check;
 
             if (spinKeys.contains(key)) {
                 spin = new NoScrollSpinBox(widget);
@@ -1865,10 +1772,9 @@ void MainWindow::updateSelectedObjects() {
                 if (!editor->project->movementTypes.contains(value)) {
                     combo->addItem(value);
                 }
-                connect(combo, static_cast<void (QComboBox::*)(const QString &)>(&QComboBox::currentTextChanged),
-                        this, [this, item](QString value){
-                            item->event->setFrameFromMovement(editor->project->facingDirections.value(value));
-                            item->updatePixmap();
+                connect(combo, static_cast<void (QComboBox::*)(const QString&)>(&QComboBox::currentTextChanged), this, [this, item](QString value) {
+                    item->event->setFrameFromMovement(editor->project->facingDirections.value(value));
+                    item->updatePixmap();
                 });
                 combo->addItems(editor->project->movementTypes);
                 combo->setCurrentIndex(combo->findText(value));
@@ -1930,7 +1836,7 @@ void MainWindow::updateSelectedObjects() {
                 combo->addItems(editor->project->mapNames);
                 combo->setToolTip("The map where the player will respawn after whiteout.");
             } else if (key == "respawn_npc") {
-                spin->setToolTip("event_object ID of the NPC the player interacts with\n" 
+                spin->setToolTip("event_object ID of the NPC the player interacts with\n"
                                  "upon respawning after whiteout.");
                 spin->setMinimum(1);
                 spin->setMaximum(126);
@@ -1946,10 +1852,8 @@ void MainWindow::updateSelectedObjects() {
                 widget->setLayout(fl);
                 frame->layout()->addWidget(widget);
 
-                connect(spin, QOverload<int>::of(&NoScrollSpinBox::valueChanged), [item, key](int value) {
-                    item->event->put(key, value);
-                });
-            // Keys using check boxes
+                connect(spin, QOverload<int>::of(&NoScrollSpinBox::valueChanged), [item, key](int value) { item->event->put(key, value); });
+                // Keys using check boxes
             } else if (checkKeys.contains(key)) {
                 check->setChecked(value.toInt());
 
@@ -1958,8 +1862,7 @@ void MainWindow::updateSelectedObjects() {
                 frame->layout()->addWidget(widget);
 
                 connect(check, &QCheckBox::stateChanged, [item, key](int state) {
-                    switch (state)
-                    {
+                    switch (state) {
                     case Qt::Checked:
                         item->event->put(key, true);
                         break;
@@ -1968,21 +1871,20 @@ void MainWindow::updateSelectedObjects() {
                         break;
                     }
                 });
-            // Keys using combo boxes
+                // Keys using combo boxes
             } else {
                 combo->setCurrentText(value);
 
                 if (key == "script_label") {
                     // Add button next to combo which opens combo's current script.
-                    auto *hl = new QHBoxLayout();
+                    auto* hl = new QHBoxLayout();
                     hl->setSpacing(3);
-                    auto *openScriptButton = new QToolButton(widget);
+                    auto* openScriptButton = new QToolButton(widget);
                     openScriptButtons << openScriptButton;
                     openScriptButton->setFixedSize(combo->height(), combo->height());
                     openScriptButton->setIcon(QFileIconProvider().icon(QFileIconProvider::File));
                     openScriptButton->setToolTip("Go to this script definition in text editor.");
-                    connect(openScriptButton, &QToolButton::clicked,
-                            [this, combo]() { this->editor->openScript(combo->currentText()); });
+                    connect(openScriptButton, &QToolButton::clicked, [this, combo]() { this->editor->openScript(combo->currentText()); });
                     hl->addWidget(combo);
                     hl->addWidget(openScriptButton);
                     fl->addRow(new QLabel(field_labels[key], widget), hl);
@@ -2001,110 +1903,88 @@ void MainWindow::updateSelectedObjects() {
         frames.append(frame);
     }
 
-    //int scroll = ui->scrollArea_4->verticalScrollBar()->value();
+    // int scroll = ui->scrollArea_4->verticalScrollBar()->value();
 
-    QScrollArea *scrollTarget = ui->scrollArea_Multiple;
-    QWidget *target = ui->scrollAreaWidgetContents_Multiple;
+    QScrollArea* scrollTarget = ui->scrollArea_Multiple;
+    QWidget* target = ui->scrollAreaWidgetContents_Multiple;
 
     isProgrammaticEventTabChange = true;
 
-    if (events.length() == 1)
-    {
+    if (events.length() == 1) {
         QString event_group_type = events[0]->event->get("event_group_type");
 
         if (event_group_type == "object_event_group") {
             scrollTarget = ui->scrollArea_Objects;
             target = ui->scrollAreaWidgetContents_Objects;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Objects);
-        }
-        else if (event_group_type == "warp_event_group") {
+        } else if (event_group_type == "warp_event_group") {
             scrollTarget = ui->scrollArea_Warps;
             target = ui->scrollAreaWidgetContents_Warps;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Warps);
-        }
-        else if (event_group_type == "coord_event_group") {
+        } else if (event_group_type == "coord_event_group") {
             scrollTarget = ui->scrollArea_Triggers;
             target = ui->scrollAreaWidgetContents_Triggers;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Triggers);
-        }
-        else if (event_group_type == "bg_event_group") {
+        } else if (event_group_type == "bg_event_group") {
             scrollTarget = ui->scrollArea_BGs;
             target = ui->scrollAreaWidgetContents_BGs;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_BGs);
-        }
-        else if (event_group_type == "heal_event_group") {
+        } else if (event_group_type == "heal_event_group") {
             scrollTarget = ui->scrollArea_Healspots;
             target = ui->scrollAreaWidgetContents_Healspots;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Healspots);
         }
         ui->tabWidget_EventType->removeTab(ui->tabWidget_EventType->indexOf(ui->tab_Multiple));
-    }
-    else if (events.length() > 1)
-    {
+    } else if (events.length() > 1) {
         ui->tabWidget_EventType->addTab(ui->tab_Multiple, "Multiple");
         ui->tabWidget_EventType->setCurrentWidget(ui->tab_Multiple);
     }
 
     isProgrammaticEventTabChange = false;
 
-    if (events.length() != 0)
-    {
-        if (target->children().length())
-        {
-            for (QObject *obj : target->children())
-            {
+    if (events.length() != 0) {
+        if (target->children().length()) {
+            for (QObject* obj : target->children()) {
                 obj->deleteLater();
             }
 
             delete target->layout();
         }
 
-        QVBoxLayout *layout = new QVBoxLayout(target);
+        QVBoxLayout* layout = new QVBoxLayout(target);
         target->setLayout(layout);
         scrollTarget->setWidgetResizable(true);
         scrollTarget->setWidget(target);
 
-        for (EventPropertiesFrame *frame : frames) {
+        for (EventPropertiesFrame* frame : frames) {
             layout->addWidget(frame);
         }
 
         layout->addStretch(1);
 
         // doesn't work
-        //QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
-        //ui->scrollArea_4->ensureVisible(0, scroll);
+        // QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+        // ui->scrollArea_4->ensureVisible(0, scroll);
 
         ui->label_NoEvents->hide();
         ui->tabWidget_EventType->show();
-    }
-    else
-    {
+    } else {
         ui->tabWidget_EventType->hide();
         ui->label_NoEvents->show();
     }
 }
 
-QString MainWindow::getEventGroupFromTabWidget(QWidget *tab)
-{
+QString MainWindow::getEventGroupFromTabWidget(QWidget* tab) {
     QString ret = "";
-    if (tab == eventTabObjectWidget)
-    {
+    if (tab == eventTabObjectWidget) {
         ret = "object_event_group";
-    }
-    else if (tab == eventTabWarpWidget)
-    {
+    } else if (tab == eventTabWarpWidget) {
         ret = "warp_event_group";
-    }
-    else if (tab == eventTabTriggerWidget)
-    {
+    } else if (tab == eventTabTriggerWidget) {
         ret = "coord_event_group";
-    }
-    else if (tab == eventTabBGWidget)
-    {
+    } else if (tab == eventTabBGWidget) {
         ret = "bg_event_group";
-    }
-    else if (tab == eventTabHealspotWidget)
-    {
+    } else if (tab == eventTabHealspotWidget) {
         ret = "heal_event_group";
     }
     return ret;
@@ -2113,33 +1993,29 @@ QString MainWindow::getEventGroupFromTabWidget(QWidget *tab)
 void MainWindow::eventTabChanged(int index) {
     if (editor->map) {
         QString group = getEventGroupFromTabWidget(ui->tabWidget_EventType->widget(index));
-        DraggablePixmapItem *selectedEvent = nullptr;
+        DraggablePixmapItem* selectedEvent = nullptr;
 
         if (group == "object_event_group") {
             selectedEvent = selectedObject;
             ui->newEventToolButton->setDefaultAction(ui->newEventToolButton->newObjectAction);
-        }
-        else if (group == "warp_event_group") {
+        } else if (group == "warp_event_group") {
             selectedEvent = selectedWarp;
             ui->newEventToolButton->setDefaultAction(ui->newEventToolButton->newWarpAction);
-        }
-        else if (group == "coord_event_group") {
+        } else if (group == "coord_event_group") {
             selectedEvent = selectedTrigger;
             ui->newEventToolButton->setDefaultAction(ui->newEventToolButton->newTriggerAction);
-        }
-        else if (group == "bg_event_group") {
+        } else if (group == "bg_event_group") {
             selectedEvent = selectedBG;
             ui->newEventToolButton->setDefaultAction(ui->newEventToolButton->newSignAction);
-        }
-        else if (group == "heal_event_group") {
+        } else if (group == "heal_event_group") {
             selectedEvent = selectedHealspot;
         }
 
         if (!isProgrammaticEventTabChange) {
             if (!selectedEvent && editor->map->events.value(group).count()) {
-                Event *event = editor->map->events.value(group).at(0);
-                for (QGraphicsItem *child : editor->events_group->childItems()) {
-                    DraggablePixmapItem *item = static_cast<DraggablePixmapItem *>(child);
+                Event* event = editor->map->events.value(group).at(0);
+                for (QGraphicsItem* child : editor->events_group->childItems()) {
+                    DraggablePixmapItem* item = static_cast<DraggablePixmapItem*>(child);
                     if (item->event == event) {
                         selectedEvent = item;
                         break;
@@ -2147,21 +2023,21 @@ void MainWindow::eventTabChanged(int index) {
                 }
             }
 
-            if (selectedEvent) editor->selectMapEvent(selectedEvent);
+            if (selectedEvent)
+                editor->selectMapEvent(selectedEvent);
         }
     }
 
     isProgrammaticEventTabChange = false;
 }
 
-void MainWindow::selectedEventIndexChanged(int index)
-{
+void MainWindow::selectedEventIndexChanged(int index) {
     QString group = getEventGroupFromTabWidget(ui->tabWidget_EventType->currentWidget());
     int event_offs = group == "warp_event_group" ? 0 : 1;
-    Event *event = editor->map->events.value(group).at(index - event_offs);
-    DraggablePixmapItem *selectedEvent = nullptr;
-    for (QGraphicsItem *child : editor->events_group->childItems()) {
-        DraggablePixmapItem *item = static_cast<DraggablePixmapItem *>(child);
+    Event* event = editor->map->events.value(group).at(index - event_offs);
+    DraggablePixmapItem* selectedEvent = nullptr;
+    for (QGraphicsItem* child : editor->events_group->childItems()) {
+        DraggablePixmapItem* item = static_cast<DraggablePixmapItem*>(child);
         if (item->event == event) {
             selectedEvent = item;
             break;
@@ -2185,11 +2061,11 @@ void MainWindow::on_toolButton_deleteObject_clicked() {
     }
     if (editor && editor->selected_events) {
         if (editor->selected_events->length()) {
-            DraggablePixmapItem *nextSelectedEvent = nullptr;
-            QList<Event *> selectedEvents;
+            DraggablePixmapItem* nextSelectedEvent = nullptr;
+            QList<Event*> selectedEvents;
             int numEvents = editor->selected_events->length();
             int numDeleted = 0;
-            for (DraggablePixmapItem *item : *editor->selected_events) {
+            for (DraggablePixmapItem* item : *editor->selected_events) {
                 QString event_group = item->event->get("event_group_type");
                 if (event_group != "heal_event_group") {
                     // Get the index for the event that should be selected after this event has been deleted.
@@ -2201,11 +2077,11 @@ void MainWindow::on_toolButton_deleteObject_clicked() {
                             index++;
                         else
                             index--;
-                        Event *event = nullptr;
+                        Event* event = nullptr;
                         if (index >= 0)
                             event = editor->map->events.value(event_group).at(index);
-                        for (QGraphicsItem *child : editor->events_group->childItems()) {
-                            DraggablePixmapItem *event_item = static_cast<DraggablePixmapItem *>(child);
+                        for (QGraphicsItem* child : editor->events_group->childItems()) {
+                            DraggablePixmapItem* event_item = static_cast<DraggablePixmapItem*>(child);
                             if (event_item->event == event) {
                                 nextSelectedEvent = event_item;
                                 break;
@@ -2214,8 +2090,7 @@ void MainWindow::on_toolButton_deleteObject_clicked() {
                     }
                     item->event->setPixmapItem(item);
                     selectedEvents.append(item->event);
-                }
-                else { // don't allow deletion of heal locations
+                } else { // don't allow deletion of heal locations
                     logWarn(QString("Cannot delete event of type '%1'").arg(item->event->get("event_type")));
                 }
             }
@@ -2226,8 +2101,7 @@ void MainWindow::on_toolButton_deleteObject_clicked() {
     }
 }
 
-void MainWindow::on_toolButton_Paint_clicked()
-{
+void MainWindow::on_toolButton_Paint_clicked() {
     if (ui->mainTabBar->currentIndex() == 0)
         editor->map_edit_mode = "paint";
     else
@@ -2246,8 +2120,7 @@ void MainWindow::on_toolButton_Paint_clicked()
     checkToolButtons();
 }
 
-void MainWindow::on_toolButton_Select_clicked()
-{
+void MainWindow::on_toolButton_Select_clicked() {
     if (ui->mainTabBar->currentIndex() == 0)
         editor->map_edit_mode = "select";
     else
@@ -2263,8 +2136,7 @@ void MainWindow::on_toolButton_Select_clicked()
     checkToolButtons();
 }
 
-void MainWindow::on_toolButton_Fill_clicked()
-{
+void MainWindow::on_toolButton_Fill_clicked() {
     if (ui->mainTabBar->currentIndex() == 0)
         editor->map_edit_mode = "fill";
     else
@@ -2280,8 +2152,7 @@ void MainWindow::on_toolButton_Fill_clicked()
     checkToolButtons();
 }
 
-void MainWindow::on_toolButton_Dropper_clicked()
-{
+void MainWindow::on_toolButton_Dropper_clicked() {
     if (ui->mainTabBar->currentIndex() == 0)
         editor->map_edit_mode = "pick";
     else
@@ -2297,8 +2168,7 @@ void MainWindow::on_toolButton_Dropper_clicked()
     checkToolButtons();
 }
 
-void MainWindow::on_toolButton_Move_clicked()
-{
+void MainWindow::on_toolButton_Move_clicked() {
     if (ui->mainTabBar->currentIndex() == 0)
         editor->map_edit_mode = "move";
     else
@@ -2314,8 +2184,7 @@ void MainWindow::on_toolButton_Move_clicked()
     checkToolButtons();
 }
 
-void MainWindow::on_toolButton_Shift_clicked()
-{
+void MainWindow::on_toolButton_Shift_clicked() {
     if (ui->mainTabBar->currentIndex() == 0)
         editor->map_edit_mode = "shift";
     else
@@ -2371,16 +2240,16 @@ void MainWindow::onLoadMapRequested(QString mapName, QString fromMapName) {
     if (!setMap(mapName, true)) {
         QMessageBox msgBox(this);
         QString errorMsg = QString("There was an error opening map %1. Please see %2 for full error details.\n\n%3")
-                .arg(mapName)
-                .arg(getLogPath())
-                .arg(getMostRecentError());
+                               .arg(mapName)
+                               .arg(getLogPath())
+                               .arg(getMostRecentError());
         msgBox.critical(nullptr, "Error Opening Map", errorMsg);
         return;
     }
     editor->setSelectedConnectionFromMap(fromMapName);
 }
 
-void MainWindow::onMapChanged(Map *) {
+void MainWindow::onMapChanged(Map*) {
     updateMapList();
 }
 
@@ -2402,7 +2271,7 @@ void MainWindow::onTilesetsSaved(QString primaryTilesetLabel, QString secondaryT
     } else {
         this->editor->project->getTileset(primaryTilesetLabel, true);
     }
-    if (secondaryTilesetLabel == this->editor->map->layout->tileset_secondary_label)  {
+    if (secondaryTilesetLabel == this->editor->map->layout->tileset_secondary_label) {
         this->editor->updateSecondaryTileset(secondaryTilesetLabel, true);
         updated = true;
     } else {
@@ -2416,7 +2285,7 @@ void MainWindow::onWildMonDataChanged() {
     projectHasUnsavedChanges = true;
 }
 
-void MainWindow::onMapRulerStatusChanged(const QString &status) {
+void MainWindow::onMapRulerStatusChanged(const QString& status) {
     if (status.isEmpty()) {
         label_MapRulerStatus->hide();
     } else if (label_MapRulerStatus->parentWidget()) {
@@ -2427,7 +2296,7 @@ void MainWindow::onMapRulerStatusChanged(const QString &status) {
     }
 }
 
-void MainWindow::moveEvent(QMoveEvent *event) {
+void MainWindow::moveEvent(QMoveEvent* event) {
     QMainWindow::moveEvent(event);
     if (label_MapRulerStatus->isVisible() && label_MapRulerStatus->parentWidget())
         label_MapRulerStatus->move(label_MapRulerStatus->parentWidget()->mapToGlobal(QPoint(6, 6)));
@@ -2446,7 +2315,8 @@ void MainWindow::on_actionExport_Map_Timelapse_Image_triggered() {
 }
 
 void MainWindow::showExportMapImageWindow(ImageExporterMode mode) {
-    if (!editor->project) return;
+    if (!editor->project)
+        return;
 
     if (this->mapImageExporter)
         delete this->mapImageExporter;
@@ -2463,29 +2333,24 @@ void MainWindow::showExportMapImageWindow(ImageExporterMode mode) {
     }
 }
 
-void MainWindow::on_comboBox_ConnectionDirection_currentIndexChanged(const QString &direction)
-{
+void MainWindow::on_comboBox_ConnectionDirection_currentIndexChanged(const QString& direction) {
     editor->updateCurrentConnectionDirection(direction);
 }
 
-void MainWindow::on_spinBox_ConnectionOffset_valueChanged(int offset)
-{
+void MainWindow::on_spinBox_ConnectionOffset_valueChanged(int offset) {
     editor->updateConnectionOffset(offset);
 }
 
-void MainWindow::on_comboBox_ConnectedMap_currentTextChanged(const QString &mapName)
-{
+void MainWindow::on_comboBox_ConnectedMap_currentTextChanged(const QString& mapName) {
     if (editor->project->mapNames.contains(mapName))
         editor->setConnectionMap(mapName);
 }
 
-void MainWindow::on_pushButton_AddConnection_clicked()
-{
+void MainWindow::on_pushButton_AddConnection_clicked() {
     editor->addNewConnection();
 }
 
-void MainWindow::on_pushButton_RemoveConnection_clicked()
-{
+void MainWindow::on_pushButton_RemoveConnection_clicked() {
     editor->removeCurrentConnection();
 }
 
@@ -2501,20 +2366,17 @@ void MainWindow::on_pushButton_ConfigureEncountersJSON_clicked() {
     editor->configureEncounterJSON(this);
 }
 
-void MainWindow::on_comboBox_DiveMap_currentTextChanged(const QString &mapName)
-{
+void MainWindow::on_comboBox_DiveMap_currentTextChanged(const QString& mapName) {
     if (editor->project->mapNames.contains(mapName))
         editor->updateDiveMap(mapName);
 }
 
-void MainWindow::on_comboBox_EmergeMap_currentTextChanged(const QString &mapName)
-{
+void MainWindow::on_comboBox_EmergeMap_currentTextChanged(const QString& mapName) {
     if (editor->project->mapNames.contains(mapName))
         editor->updateEmergeMap(mapName);
 }
 
-void MainWindow::on_comboBox_PrimaryTileset_currentTextChanged(const QString &tilesetLabel)
-{
+void MainWindow::on_comboBox_PrimaryTileset_currentTextChanged(const QString& tilesetLabel) {
     if (editor->project->tilesetLabels["primary"].contains(tilesetLabel) && editor->map) {
         editor->updatePrimaryTileset(tilesetLabel);
         redrawMapScene();
@@ -2523,8 +2385,7 @@ void MainWindow::on_comboBox_PrimaryTileset_currentTextChanged(const QString &ti
     }
 }
 
-void MainWindow::on_comboBox_SecondaryTileset_currentTextChanged(const QString &tilesetLabel)
-{
+void MainWindow::on_comboBox_SecondaryTileset_currentTextChanged(const QString& tilesetLabel) {
     if (editor->project->tilesetLabels["secondary"].contains(tilesetLabel) && editor->map) {
         editor->updateSecondaryTileset(tilesetLabel);
         redrawMapScene();
@@ -2533,18 +2394,17 @@ void MainWindow::on_comboBox_SecondaryTileset_currentTextChanged(const QString &
     }
 }
 
-void MainWindow::on_pushButton_ChangeDimensions_clicked()
-{
+void MainWindow::on_pushButton_ChangeDimensions_clicked() {
     QDialog dialog(this, Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
     dialog.setWindowTitle("Change Map Dimensions");
     dialog.setWindowModality(Qt::NonModal);
 
     QFormLayout form(&dialog);
 
-    QSpinBox *widthSpinBox = new QSpinBox();
-    QSpinBox *heightSpinBox = new QSpinBox();
-    QSpinBox *bwidthSpinBox = new QSpinBox();
-    QSpinBox *bheightSpinBox = new QSpinBox();
+    QSpinBox* widthSpinBox = new QSpinBox();
+    QSpinBox* heightSpinBox = new QSpinBox();
+    QSpinBox* bwidthSpinBox = new QSpinBox();
+    QSpinBox* bheightSpinBox = new QSpinBox();
     widthSpinBox->setMinimum(1);
     heightSpinBox->setMinimum(1);
     bwidthSpinBox->setMinimum(1);
@@ -2568,7 +2428,7 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked()
         form.addRow(new QLabel("Height"), heightSpinBox);
     }
 
-    QLabel *errorLabel = new QLabel();
+    QLabel* errorLabel = new QLabel();
     QPalette errorPalette;
     errorPalette.setColor(QPalette::WindowText, Qt::red);
     errorLabel->setPalette(errorPalette);
@@ -2576,7 +2436,7 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked()
 
     QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
     form.addRow(&buttonBox);
-    connect(&buttonBox, &QDialogButtonBox::accepted, [&dialog, &widthSpinBox, &heightSpinBox, &errorLabel, this](){
+    connect(&buttonBox, &QDialogButtonBox::accepted, [&dialog, &widthSpinBox, &heightSpinBox, &errorLabel, this]() {
         // Ensure width and height are an acceptable size.
         // The maximum number of metatiles in a map is the following:
         //    max = (width + 15) * (height + 14)
@@ -2587,12 +2447,12 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked()
             dialog.accept();
         } else {
             QString errorText = QString("Error: The specified width and height are too large.\n"
-                    "The maximum map width and height is the following: (width + 15) * (height + 14) <= %1\n"
-                    "The specified map width and height was: (%2 + 15) * (%3 + 14) = %4")
-                        .arg(maxMetatiles)
-                        .arg(widthSpinBox->value())
-                        .arg(heightSpinBox->value())
-                        .arg(numMetatiles);
+                                        "The maximum map width and height is the following: (width + 15) * (height + 14) <= %1\n"
+                                        "The specified map width and height was: (%2 + 15) * (%3 + 14) = %4")
+                                    .arg(maxMetatiles)
+                                    .arg(widthSpinBox->value())
+                                    .arg(heightSpinBox->value())
+                                    .arg(numMetatiles);
             errorLabel->setText(errorText);
             errorLabel->setVisible(true);
         }
@@ -2602,7 +2462,7 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked()
     form.addRow(errorLabel);
 
     if (dialog.exec() == QDialog::Accepted) {
-        Map *map = editor->map;
+        Map* map = editor->map;
         Blockdata oldMetatiles = map->layout->blockdata;
         Blockdata oldBorder = map->layout->border;
         QSize oldMapDimensions(map->getWidth(), map->getHeight());
@@ -2612,18 +2472,13 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked()
         if (oldMapDimensions != newMapDimensions || oldBorderDimensions != newBorderDimensions) {
             editor->map->setDimensions(newMapDimensions.width(), newMapDimensions.height());
             editor->map->setBorderDimensions(newBorderDimensions.width(), newBorderDimensions.height());
-            editor->map->editHistory.push(new ResizeMap(map,
-                oldMapDimensions, newMapDimensions,
-                oldMetatiles, map->layout->blockdata,
-                oldBorderDimensions, newBorderDimensions,
-                oldBorder, map->layout->border
-            ));
+            editor->map->editHistory.push(new ResizeMap(map, oldMapDimensions, newMapDimensions, oldMetatiles, map->layout->blockdata, oldBorderDimensions,
+                newBorderDimensions, oldBorder, map->layout->border));
         }
     }
 }
 
-void MainWindow::on_checkBox_smartPaths_stateChanged(int selected)
-{
+void MainWindow::on_checkBox_smartPaths_stateChanged(int selected) {
     bool enabled = selected == Qt::Checked;
     editor->settings->smartPathsEnabled = enabled;
     if (enabled) {
@@ -2633,14 +2488,12 @@ void MainWindow::on_checkBox_smartPaths_stateChanged(int selected)
     }
 }
 
-void MainWindow::on_checkBox_ToggleBorder_stateChanged(int selected)
-{
+void MainWindow::on_checkBox_ToggleBorder_stateChanged(int selected) {
     bool visible = selected != 0;
     editor->toggleBorderVisibility(visible);
 }
 
-void MainWindow::on_actionTileset_Editor_triggered()
-{
+void MainWindow::on_actionTileset_Editor_triggered() {
     if (!this->tilesetEditor) {
         initTilesetEditor();
     }
@@ -2660,23 +2513,20 @@ void MainWindow::initTilesetEditor() {
     connect(this->tilesetEditor, &TilesetEditor::tilesetsSaved, this, &MainWindow::onTilesetsSaved);
 }
 
-void MainWindow::on_toolButton_ExpandAll_clicked()
-{
+void MainWindow::on_toolButton_ExpandAll_clicked() {
     if (ui->mapList) {
         ui->mapList->expandToDepth(0);
     }
 }
 
-void MainWindow::on_toolButton_CollapseAll_clicked()
-{
+void MainWindow::on_toolButton_CollapseAll_clicked() {
     if (ui->mapList) {
         ui->mapList->collapseAll();
     }
 }
 
-void MainWindow::on_actionAbout_Porymap_triggered()
-{
-    AboutPorymap *window = new AboutPorymap(this);
+void MainWindow::on_actionAbout_Porymap_triggered() {
+    AboutPorymap* window = new AboutPorymap(this);
     window->setAttribute(Qt::WA_DeleteOnClose);
     window->show();
 }
@@ -2694,12 +2544,9 @@ void MainWindow::on_actionOpen_Config_Folder_triggered() {
 void MainWindow::on_actionEdit_Preferences_triggered() {
     if (!preferenceEditor) {
         preferenceEditor = new PreferenceEditor(this);
-        connect(preferenceEditor, &PreferenceEditor::themeChanged,
-                this, &MainWindow::setTheme);
-        connect(preferenceEditor, &PreferenceEditor::themeChanged,
-                editor, &Editor::maskNonVisibleConnectionTiles);
-        connect(preferenceEditor, &PreferenceEditor::preferencesSaved,
-                this, &MainWindow::togglePreferenceSpecificUi);
+        connect(preferenceEditor, &PreferenceEditor::themeChanged, this, &MainWindow::setTheme);
+        connect(preferenceEditor, &PreferenceEditor::themeChanged, editor, &Editor::maskNonVisibleConnectionTiles);
+        connect(preferenceEditor, &PreferenceEditor::preferencesSaved, this, &MainWindow::togglePreferenceSpecificUi);
     }
 
     if (!preferenceEditor->isVisible()) {
@@ -2713,10 +2560,10 @@ void MainWindow::on_actionEdit_Preferences_triggered() {
 
 void MainWindow::togglePreferenceSpecificUi() {
     if (porymapConfig.getTextEditorGotoLine().isEmpty()) {
-        for (auto *button : openScriptButtons)
+        for (auto* button : openScriptButtons)
             button->hide();
     } else {
-        for (auto *button : openScriptButtons)
+        for (auto* button : openScriptButtons)
             button->show();
     }
 
@@ -2726,16 +2573,14 @@ void MainWindow::togglePreferenceSpecificUi() {
         ui->actionOpen_Project_in_Text_Editor->setEnabled(true);
 }
 
-void MainWindow::on_pushButton_AddCustomHeaderField_clicked()
-{
+void MainWindow::on_pushButton_AddCustomHeaderField_clicked() {
     int rowIndex = this->ui->tableWidget_CustomHeaderFields->rowCount();
     this->ui->tableWidget_CustomHeaderFields->insertRow(rowIndex);
     this->ui->tableWidget_CustomHeaderFields->selectRow(rowIndex);
     this->editor->updateCustomMapHeaderValues(this->ui->tableWidget_CustomHeaderFields);
 }
 
-void MainWindow::on_pushButton_DeleteCustomHeaderField_clicked()
-{
+void MainWindow::on_pushButton_DeleteCustomHeaderField_clicked() {
     int rowCount = this->ui->tableWidget_CustomHeaderFields->rowCount();
     if (rowCount > 0) {
         QModelIndexList indexList = ui->tableWidget_CustomHeaderFields->selectionModel()->selectedIndexes();
@@ -2757,8 +2602,7 @@ void MainWindow::on_pushButton_DeleteCustomHeaderField_clicked()
     }
 }
 
-void MainWindow::on_tableWidget_CustomHeaderFields_cellChanged(int, int)
-{
+void MainWindow::on_tableWidget_CustomHeaderFields_cellChanged(int, int) {
     this->editor->updateCustomMapHeaderValues(this->ui->tableWidget_CustomHeaderFields);
 }
 
@@ -2768,8 +2612,7 @@ void MainWindow::on_horizontalSlider_MetatileZoom_valueChanged(int value) {
 
     QTransform transform;
     transform.scale(scale, scale);
-    QSize size(editor->metatile_selector_item->pixmap().width(), 
-               editor->metatile_selector_item->pixmap().height());
+    QSize size(editor->metatile_selector_item->pixmap().width(), editor->metatile_selector_item->pixmap().height());
     size *= scale;
 
     ui->graphicsView_Metatiles->setResizeAnchor(QGraphicsView::NoAnchor);
@@ -2778,7 +2621,7 @@ void MainWindow::on_horizontalSlider_MetatileZoom_valueChanged(int value) {
 
     ui->graphicsView_BorderMetatile->setTransform(transform);
     ui->graphicsView_BorderMetatile->setFixedSize(ceil(static_cast<double>(editor->selected_border_metatiles_item->pixmap().width()) * scale) + 2,
-                                                  ceil(static_cast<double>(editor->selected_border_metatiles_item->pixmap().height()) * scale) + 2);
+        ceil(static_cast<double>(editor->selected_border_metatiles_item->pixmap().height()) * scale) + 2);
 
     redrawMetatileSelection();
 }
@@ -2801,15 +2644,14 @@ void MainWindow::on_actionRegion_Map_Editor_triggered() {
 
 bool MainWindow::initRegionMapEditor() {
     this->regionMapEditor = new RegionMapEditor(this, this->editor->project);
-    bool success = this->regionMapEditor->loadRegionMapData()
-                && this->regionMapEditor->loadCityMaps();
+    bool success = this->regionMapEditor->loadRegionMapData() && this->regionMapEditor->loadCityMaps();
     if (!success) {
         delete this->regionMapEditor;
         this->regionMapEditor = nullptr;
         QMessageBox msgBox(this);
         QString errorMsg = QString("There was an error opening the region map data. Please see %1 for full error details.\n\n%3")
-                .arg(getLogPath())
-                .arg(getMostRecentError());
+                               .arg(getLogPath())
+                               .arg(getMostRecentError());
         msgBox.critical(nullptr, "Error Opening Region Map Editor", errorMsg);
 
         return false;
@@ -2831,12 +2673,11 @@ void MainWindow::closeSupplementaryWindows() {
         delete this->shortcutsEditor;
 }
 
-void MainWindow::closeEvent(QCloseEvent *event) {
+void MainWindow::closeEvent(QCloseEvent* event) {
     if (isProjectOpen()) {
         if (projectHasUnsavedChanges || (editor->map && editor->map->hasUnsavedChanges())) {
             QMessageBox::StandardButton result = QMessageBox::question(
-                this, "porymap", "The project has been modified, save changes?",
-                QMessageBox::No | QMessageBox::Yes | QMessageBox::Cancel, QMessageBox::Yes);
+                this, "porymap", "The project has been modified, save changes?", QMessageBox::No | QMessageBox::Yes | QMessageBox::Cancel, QMessageBox::Yes);
 
             if (result == QMessageBox::Yes) {
                 editor->saveProject();
@@ -2850,12 +2691,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
         projectConfig.save();
     }
 
-    porymapConfig.setMainGeometry(
-        this->saveGeometry(),
-        this->saveState(),
-        this->ui->splitter_map->saveState(),
-        this->ui->splitter_main->saveState()
-    );
+    porymapConfig.setMainGeometry(this->saveGeometry(), this->saveState(), this->ui->splitter_map->saveState(), this->ui->splitter_main->saveState());
     porymapConfig.save();
     shortcutsConfig.save();
 

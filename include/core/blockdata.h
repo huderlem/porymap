@@ -7,8 +7,7 @@
 #include <QByteArray>
 #include <QVector>
 
-class Blockdata : public QVector<Block>
-{
+class Blockdata : public QVector<Block> {
 public:
     QByteArray serialize() const;
 };

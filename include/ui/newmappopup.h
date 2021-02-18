@@ -11,13 +11,12 @@ namespace Ui {
 class NewMapPopup;
 }
 
-class NewMapPopup : public QMainWindow
-{
+class NewMapPopup : public QMainWindow {
     Q_OBJECT
 public:
-    explicit NewMapPopup(QWidget *parent = nullptr, Project *project = nullptr);
+    explicit NewMapPopup(QWidget* parent = nullptr, Project* project = nullptr);
     ~NewMapPopup();
-    Map *map;
+    Map* map;
     int group;
     bool existingLayout;
     QString layoutId;
@@ -29,14 +28,14 @@ signals:
     void applied();
 
 private:
-    Ui::NewMapPopup *ui;
-    Project *project;
+    Ui::NewMapPopup* ui;
+    Project* project;
     void setDefaultValues(int, QString);
     bool checkNewMapDimensions();
 
 private slots:
     void on_pushButton_NewMap_Accept_clicked();
-    void on_lineEdit_NewMap_Name_textChanged(const QString &);
+    void on_lineEdit_NewMap_Name_textChanged(const QString&);
 };
 
 #endif // NEWMAPPOPUP_H

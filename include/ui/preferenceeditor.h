@@ -6,32 +6,30 @@
 class NoScrollComboBox;
 class QAbstractButton;
 
-
 namespace Ui {
 class PreferenceEditor;
 }
 
-class PreferenceEditor : public QMainWindow
-{
+class PreferenceEditor : public QMainWindow {
     Q_OBJECT
 
 public:
-    explicit PreferenceEditor(QWidget *parent = nullptr);
+    explicit PreferenceEditor(QWidget* parent = nullptr);
     ~PreferenceEditor();
 
 signals:
     void preferencesSaved();
-    void themeChanged(const QString &theme);
+    void themeChanged(const QString& theme);
 
 private:
-    Ui::PreferenceEditor *ui;
-    NoScrollComboBox *themeSelector;
+    Ui::PreferenceEditor* ui;
+    NoScrollComboBox* themeSelector;
 
     void populateFields();
     void saveFields();
 
 private slots:
-    void dialogButtonClicked(QAbstractButton *button);
+    void dialogButtonClicked(QAbstractButton* button);
 };
 
 #endif // PREFERENCES_H

@@ -8,15 +8,17 @@
 class CurrentSelectedMetatilesPixmapItem : public QObject, public QGraphicsPixmapItem {
     Q_OBJECT
 public:
-    CurrentSelectedMetatilesPixmapItem(Map *map, MetatileSelector *metatileSelector) {
+    CurrentSelectedMetatilesPixmapItem(Map* map, MetatileSelector* metatileSelector) {
         this->map = map;
         this->metatileSelector = metatileSelector;
     }
     Map* map = nullptr;
-    MetatileSelector *metatileSelector;
+    MetatileSelector* metatileSelector;
     void draw();
 
-    void setMap(Map *map) { this->map = map; }
+    void setMap(Map* map) {
+        this->map = map;
+    }
 };
 
 #endif // CURRENTSELECTEDMETATILESPIXMAPITEM_H

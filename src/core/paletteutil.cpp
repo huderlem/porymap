@@ -3,12 +3,10 @@
 #include <QFileInfo>
 #include <QRegularExpression>
 
-PaletteUtil::PaletteUtil()
-{
-
+PaletteUtil::PaletteUtil() {
 }
 
-QList<QRgb> PaletteUtil::parse(QString filepath, bool *error) {
+QList<QRgb> PaletteUtil::parse(QString filepath, bool* error) {
     QFileInfo info(filepath);
     QString extension = info.completeSuffix();
     if (extension.isNull()) {
@@ -34,7 +32,7 @@ QList<QRgb> PaletteUtil::parse(QString filepath, bool *error) {
     return QList<QRgb>();
 }
 
-QList<QRgb> PaletteUtil::parsePal(QString filepath, bool *error) {
+QList<QRgb> PaletteUtil::parsePal(QString filepath, bool* error) {
     QFile file(filepath);
     if (!file.open(QIODevice::ReadOnly)) {
         *error = true;
@@ -53,7 +51,7 @@ QList<QRgb> PaletteUtil::parsePal(QString filepath, bool *error) {
     }
 }
 
-QList<QRgb> PaletteUtil::parseJASC(QString filepath, bool *error) {
+QList<QRgb> PaletteUtil::parseJASC(QString filepath, bool* error) {
     QFile file(filepath);
     if (!file.open(QIODevice::ReadOnly)) {
         *error = true;
@@ -105,9 +103,7 @@ QList<QRgb> PaletteUtil::parseJASC(QString filepath, bool *error) {
                 return QList<QRgb>();
             }
 
-            palette.append(qRgb(this->clampColorValue(red),
-                                this->clampColorValue(green),
-                                this->clampColorValue(blue)));
+            palette.append(qRgb(this->clampColorValue(red), this->clampColorValue(green), this->clampColorValue(blue)));
         } else {
             *error = true;
             logError(QString("JASC palette file '%1' had an unexpected format. Invalid color '%2'.").arg(filepath).arg(line));
@@ -120,7 +116,7 @@ QList<QRgb> PaletteUtil::parseJASC(QString filepath, bool *error) {
     return palette;
 }
 
-QList<QRgb> PaletteUtil::parseAdvanceMapPal(QString filepath, bool *error) {
+QList<QRgb> PaletteUtil::parseAdvanceMapPal(QString filepath, bool* error) {
     QFile file(filepath);
     if (!file.open(QIODevice::ReadOnly)) {
         *error = true;
@@ -133,7 +129,9 @@ QList<QRgb> PaletteUtil::parseAdvanceMapPal(QString filepath, bool *error) {
 
     if (in.length() % 4 != 0) {
         *error = true;
-        logError(QString("Advance Map 1.92 palette file '%1' had an unexpected format. File's length must be a multiple of 4, but the length is %2.").arg(filepath).arg(in.length()));
+        logError(QString("Advance Map 1.92 palette file '%1' had an unexpected format. File's length must be a multiple of 4, but the length is %2.")
+                     .arg(filepath)
+                     .arg(in.length()));
         return QList<QRgb>();
     }
 
@@ -143,16 +141,14 @@ QList<QRgb> PaletteUtil::parseAdvanceMapPal(QString filepath, bool *error) {
         unsigned char red = static_cast<unsigned char>(in.at(i));
         unsigned char green = static_cast<unsigned char>(in.at(i + 1));
         unsigned char blue = static_cast<unsigned char>(in.at(i + 2));
-        palette.append(qRgb(this->clampColorValue(red),
-                            this->clampColorValue(green),
-                            this->clampColorValue(blue)));
+        palette.append(qRgb(this->clampColorValue(red), this->clampColorValue(green), this->clampColorValue(blue)));
         i += 4;
     }
 
     return palette;
 }
 
-QList<QRgb> PaletteUtil::parseAdobeColorTable(QString filepath, bool *error) {
+QList<QRgb> PaletteUtil::parseAdobeColorTable(QString filepath, bool* error) {
     QFile file(filepath);
     if (!file.open(QIODevice::ReadOnly)) {
         *error = true;
@@ -165,7 +161,9 @@ QList<QRgb> PaletteUtil::parseAdobeColorTable(QString filepath, bool *error) {
 
     if (in.length() != 0x300) {
         *error = true;
-        logError(QString("Adobe Color Table palette file '%1' had an unexpected format. File's length must be exactly 768, but the length is %2.").arg(filepath).arg(in.length()));
+        logError(QString("Adobe Color Table palette file '%1' had an unexpected format. File's length must be exactly 768, but the length is %2.")
+                     .arg(filepath)
+                     .arg(in.length()));
         return QList<QRgb>();
     }
 
@@ -175,16 +173,14 @@ QList<QRgb> PaletteUtil::parseAdobeColorTable(QString filepath, bool *error) {
         unsigned char red = static_cast<unsigned char>(in.at(i));
         unsigned char green = static_cast<unsigned char>(in.at(i + 1));
         unsigned char blue = static_cast<unsigned char>(in.at(i + 2));
-        palette.append(qRgb(this->clampColorValue(red),
-                            this->clampColorValue(green),
-                            this->clampColorValue(blue)));
+        palette.append(qRgb(this->clampColorValue(red), this->clampColorValue(green), this->clampColorValue(blue)));
         i += 3;
     }
 
     return palette;
 }
 
-QList<QRgb> PaletteUtil::parseTileLayerPro(QString filepath, bool *error) {
+QList<QRgb> PaletteUtil::parseTileLayerPro(QString filepath, bool* error) {
     QFile file(filepath);
     if (!file.open(QIODevice::ReadOnly)) {
         *error = true;
@@ -203,7 +199,9 @@ QList<QRgb> PaletteUtil::parseTileLayerPro(QString filepath, bool *error) {
 
     if (in.length() != 0x304) {
         *error = true;
-        logError(QString("Tile Layer Pro palette file '%1' had an unexpected format. File's length must be exactly 772, but the length is %2.").arg(filepath).arg(in.length()));
+        logError(QString("Tile Layer Pro palette file '%1' had an unexpected format. File's length must be exactly 772, but the length is %2.")
+                     .arg(filepath)
+                     .arg(in.length()));
         return QList<QRgb>();
     }
 
@@ -213,16 +211,14 @@ QList<QRgb> PaletteUtil::parseTileLayerPro(QString filepath, bool *error) {
         unsigned char red = static_cast<unsigned char>(in.at(i));
         unsigned char green = static_cast<unsigned char>(in.at(i + 1));
         unsigned char blue = static_cast<unsigned char>(in.at(i + 2));
-        palette.append(qRgb(this->clampColorValue(red),
-                            this->clampColorValue(green),
-                            this->clampColorValue(blue)));
+        palette.append(qRgb(this->clampColorValue(red), this->clampColorValue(green), this->clampColorValue(blue)));
         i += 3;
     }
 
     return palette;
 }
 
-QList<QRgb> PaletteUtil::parseAdvancePaletteEditor(QString filepath, bool *error) {
+QList<QRgb> PaletteUtil::parseAdvancePaletteEditor(QString filepath, bool* error) {
     QFile file(filepath);
     if (!file.open(QIODevice::ReadOnly)) {
         *error = true;
@@ -254,13 +250,11 @@ QList<QRgb> PaletteUtil::parseAdvancePaletteEditor(QString filepath, bool *error
             return QList<QRgb>();
         }
 
-        raw = ((raw & 0xFF)<< 8) | ((raw >> 8) & 0xFF);
+        raw = ((raw & 0xFF) << 8) | ((raw >> 8) & 0xFF);
         int red = (raw & 0x1F) * 8;
         int green = ((raw >> 5) & 0x1F) * 8;
         int blue = ((raw >> 10) & 0x1F) * 8;
-        palette.append(qRgb(this->clampColorValue(red),
-                            this->clampColorValue(green),
-                            this->clampColorValue(blue)));
+        palette.append(qRgb(this->clampColorValue(red), this->clampColorValue(green), this->clampColorValue(blue)));
     }
 
     file.close();
@@ -282,9 +276,7 @@ void PaletteUtil::writeJASC(QString filepath, QVector<QRgb> palette, int offset,
 
     for (int i = offset; i < offset + nColors; i++) {
         QRgb color = palette.at(i);
-        text += QString::number(qRed(color)) + " "
-              + QString::number(qGreen(color)) + " "
-              + QString::number(qBlue(color)) + "\r\n";
+        text += QString::number(qRed(color)) + " " + QString::number(qGreen(color)) + " " + QString::number(qBlue(color)) + "\r\n";
     }
 
     QFile file(filepath);

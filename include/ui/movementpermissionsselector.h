@@ -3,10 +3,10 @@
 
 #include "selectablepixmapitem.h"
 
-class MovementPermissionsSelector: public SelectablePixmapItem {
+class MovementPermissionsSelector : public SelectablePixmapItem {
     Q_OBJECT
 public:
-    MovementPermissionsSelector(): SelectablePixmapItem(32, 32, 1, 1) {
+    MovementPermissionsSelector() : SelectablePixmapItem(32, 32, 1, 1) {
         setAcceptHoverEvents(true);
     }
     void draw();

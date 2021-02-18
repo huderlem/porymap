@@ -3,7 +3,7 @@
 #include <QPainter>
 
 void CurrentSelectedMetatilesPixmapItem::draw() {
-    QList<uint16_t> *selectedMetatiles = metatileSelector->getSelectedMetatiles();
+    QList<uint16_t>* selectedMetatiles = metatileSelector->getSelectedMetatiles();
     QPoint selectionDimensions = metatileSelector->getSelectionDimensions();
     int width = selectionDimensions.x() * 16;
     int height = selectionDimensions.y() * 16;
@@ -16,11 +16,7 @@ void CurrentSelectedMetatilesPixmapItem::draw() {
             int y = j * 16;
             int index = j * selectionDimensions.x() + i;
             QImage metatile_image = getMetatileImage(
-                        selectedMetatiles->at(index),
-                        map->layout->tileset_primary,
-                        map->layout->tileset_secondary,
-                        map->metatileLayerOrder,
-                        map->metatileLayerOpacity);
+                selectedMetatiles->at(index), map->layout->tileset_primary, map->layout->tileset_secondary, map->metatileLayerOrder, map->metatileLayerOpacity);
             QPoint metatile_origin = QPoint(x, y);
             painter.drawImage(metatile_origin, metatile_image);
         }

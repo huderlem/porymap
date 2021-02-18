@@ -22,12 +22,10 @@ void MainWindow::tryRedrawMapArea(bool forceRedraw) {
 
 void MainWindow::tryCommitMapChanges(bool commitChanges) {
     if (commitChanges) {
-        Map *map = this->editor->map;
+        Map* map = this->editor->map;
         if (map) {
-            map->editHistory.push(new ScriptEditMap(map,
-                map->layout->lastCommitMapBlocks.dimensions, QSize(map->getWidth(), map->getHeight()),
-                map->layout->lastCommitMapBlocks.blocks, map->layout->blockdata
-            ));
+            map->editHistory.push(new ScriptEditMap(map, map->layout->lastCommitMapBlocks.dimensions, QSize(map->getWidth(), map->getHeight()),
+                map->layout->lastCommitMapBlocks.blocks, map->layout->blockdata));
         }
     }
 }
@@ -245,7 +243,7 @@ void MainWindow::addImage(int x, int y, QString filepath) {
     this->ui->graphicsView_Map->scene()->update();
 }
 
-void MainWindow::refreshAfterPaletteChange(Tileset *tileset) {
+void MainWindow::refreshAfterPaletteChange(Tileset* tileset) {
     if (this->tilesetEditor) {
         this->tilesetEditor->updateTilesets(this->editor->map->layout->tileset_primary_label, this->editor->map->layout->tileset_secondary_label);
     }
@@ -257,7 +255,7 @@ void MainWindow::refreshAfterPaletteChange(Tileset *tileset) {
     this->editor->project->saveTilesetPalettes(tileset);
 }
 
-void MainWindow::setTilesetPalette(Tileset *tileset, int paletteIndex, QList<QList<int>> colors) {
+void MainWindow::setTilesetPalette(Tileset* tileset, int paletteIndex, QList<QList<int>> colors) {
     if (!this->editor || !this->editor->map || !this->editor->map->layout)
         return;
     if (paletteIndex >= tileset->palettes.size())
@@ -305,23 +303,23 @@ void MainWindow::setSecondaryTilesetPalettes(QList<QList<QList<int>>> palettes) 
     this->refreshAfterPaletteChange(this->editor->map->layout->tileset_secondary);
 }
 
-QJSValue MainWindow::getTilesetPalette(const QList<QList<QRgb>> &palettes, int paletteIndex) {
+QJSValue MainWindow::getTilesetPalette(const QList<QList<QRgb>>& palettes, int paletteIndex) {
     if (paletteIndex >= palettes.size())
         return QJSValue();
 
     QList<QList<int>> palette;
     for (auto color : palettes.value(paletteIndex)) {
-        palette.append(QList<int>({qRed(color), qGreen(color), qBlue(color)}));
+        palette.append(QList<int>({ qRed(color), qGreen(color), qBlue(color) }));
     }
     return Scripting::getEngine()->toScriptValue(palette);
 }
 
-QJSValue MainWindow::getTilesetPalettes(const QList<QList<QRgb>> &palettes) {
+QJSValue MainWindow::getTilesetPalettes(const QList<QList<QRgb>>& palettes) {
     QList<QList<QList<int>>> outPalettes;
     for (int i = 0; i < palettes.size(); i++) {
         QList<QList<int>> colors;
         for (auto color : palettes.value(i)) {
-            colors.append(QList<int>({qRed(color), qGreen(color), qBlue(color)}));
+            colors.append(QList<int>({ qRed(color), qGreen(color), qBlue(color) }));
         }
         outPalettes.append(colors);
     }
@@ -360,7 +358,7 @@ void MainWindow::refreshAfterPalettePreviewChange() {
     this->editor->updateMapConnections();
 }
 
-void MainWindow::setTilesetPalettePreview(Tileset *tileset, int paletteIndex, QList<QList<int>> colors) {
+void MainWindow::setTilesetPalettePreview(Tileset* tileset, int paletteIndex, QList<QList<int>> colors) {
     if (!this->editor || !this->editor->map || !this->editor->map->layout)
         return;
     if (paletteIndex >= tileset->palettePreviews.size())
@@ -481,12 +479,10 @@ void MainWindow::registerAction(QString functionName, QString actionName, QStrin
 
     Scripting::registerAction(functionName, actionName);
     if (Scripting::numRegisteredActions() == 1) {
-        QAction *section = this->ui->menuTools->addSection("Custom Actions");
+        QAction* section = this->ui->menuTools->addSection("Custom Actions");
         this->registeredActions.append(section);
     }
-    QAction *action = this->ui->menuTools->addAction(actionName, [actionName](){
-       Scripting::invokeAction(actionName);
-    });
+    QAction* action = this->ui->menuTools->addAction(actionName, [actionName]() { Scripting::invokeAction(actionName); });
     if (!shortcut.isEmpty()) {
         action->setShortcut(QKeySequence(shortcut));
     }
@@ -494,13 +490,11 @@ void MainWindow::registerAction(QString functionName, QString actionName, QStrin
 }
 
 void MainWindow::setTimeout(QJSValue callback, int milliseconds) {
-  if (!callback.isCallable() || milliseconds < 0)
-      return;
+    if (!callback.isCallable() || milliseconds < 0)
+        return;
 
-    QTimer *timer = new QTimer(0);
-    connect(timer, &QTimer::timeout, [=](){
-        this->invokeCallback(callback);
-    });
+    QTimer* timer = new QTimer(0);
+    connect(timer, &QTimer::timeout, [=]() { this->invokeCallback(callback); });
     connect(timer, &QTimer::timeout, timer, &QTimer::deleteLater);
     timer->setSingleShot(true);
     timer->start(milliseconds);

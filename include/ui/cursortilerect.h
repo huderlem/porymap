@@ -5,12 +5,10 @@
 #include <QPainter>
 #include <QRgb>
 
-class CursorTileRect : public QGraphicsItem
-{
+class CursorTileRect : public QGraphicsItem {
 public:
-    CursorTileRect(bool *enabled, QRgb color);
-    QRectF boundingRect() const override
-    {
+    CursorTileRect(bool* enabled, QRgb color);
+    QRectF boundingRect() const override {
         int width = this->width;
         int height = this->height;
         if (this->singleTileMode) {
@@ -21,15 +19,12 @@ public:
             height = 32;
         }
         qreal penWidth = 4;
-        return QRectF(-penWidth,
-                      -penWidth,
-                      width + penWidth * 2,
-                      height + penWidth * 2);
+        return QRectF(-penWidth, -penWidth, width + penWidth * 2, height + penWidth * 2);
     }
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override
-    {
-        if (!(*enabled)) return;
+    void paint(QPainter* painter, const QStyleOptionGraphicsItem*, QWidget*) override {
+        if (!(*enabled))
+            return;
         int width = this->width;
         int height = this->height;
         if (this->singleTileMode) {
@@ -51,15 +46,20 @@ public:
     void initRightClickSelectionAnchor(int coordX, int coordY);
     void stopRightClickSelectionAnchor();
     void setSmartPathMode(bool enable);
-    bool getSmartPathMode() { return this->smartPathMode; }
+    bool getSmartPathMode() {
+        return this->smartPathMode;
+    }
     void setStraightPathMode(bool enable);
-    bool getStraightPathMode() { return this->straightPathMode; }
+    bool getStraightPathMode() {
+        return this->straightPathMode;
+    }
     void setSingleTileMode();
     void stopSingleTileMode();
     void updateLocation(int x, int y);
     void updateSelectionSize(int width, int height);
     void setVisibility(bool visible);
-    bool *enabled;
+    bool* enabled;
+
 private:
     bool visible;
     int width;
@@ -76,6 +76,5 @@ private:
     QRgb color;
     bool smartPathInEffect();
 };
-
 
 #endif // CURSORTILERECT_H

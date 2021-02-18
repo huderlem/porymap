@@ -10,11 +10,11 @@
 // a key in a std::hash structure. Qt 5.14 added this function, so
 // this file should only be included in earlier versions.
 namespace std {
-  template<> struct hash<QString> {
+template <> struct hash<QString> {
     std::size_t operator()(const QString& s) const noexcept {
-      return static_cast<size_t>(qHash(s));
+        return static_cast<size_t>(qHash(s));
     }
-  };
+};
 }
 
 #endif // QSTRINGHASH_H

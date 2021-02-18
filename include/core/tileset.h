@@ -6,12 +6,11 @@
 #include "tile.h"
 #include <QImage>
 
-class Tileset
-{
+class Tileset {
 public:
     Tileset() = default;
-    Tileset(const Tileset &other) = default;
-    Tileset &operator=(const Tileset &other) = default;
+    Tileset(const Tileset& other) = default;
+    Tileset& operator=(const Tileset& other) = default;
 
 public:
     QString name;
@@ -38,7 +37,7 @@ public:
     static Metatile* getMetatile(int, Tileset*, Tileset*);
     static QList<QList<QRgb>> getBlockPalettes(Tileset*, Tileset*, bool useTruePalettes = false);
     static QList<QRgb> getPalette(int, Tileset*, Tileset*, bool useTruePalettes = false);
-    static bool metatileIsValid(uint16_t metatileId, Tileset *, Tileset *);
+    static bool metatileIsValid(uint16_t metatileId, Tileset*, Tileset*);
 
     bool appendToHeaders(QString headerFile, QString friendlyName);
     bool appendToGraphics(QString graphicsFile, QString friendlyName, bool primary);

@@ -10,33 +10,28 @@
 #include <QPalette>
 #include <QStringList>
 
-NewMapPopup::NewMapPopup(QWidget *parent, Project *project) :
-    QMainWindow(parent),
-    ui(new Ui::NewMapPopup)
-{
+NewMapPopup::NewMapPopup(QWidget* parent, Project* project) : QMainWindow(parent), ui(new Ui::NewMapPopup) {
     ui->setupUi(this);
     this->project = project;
     this->existingLayout = false;
 }
 
-NewMapPopup::~NewMapPopup()
-{
+NewMapPopup::~NewMapPopup() {
     delete ui;
 }
 
 void NewMapPopup::init(int type, int group, QString sec, QString layoutId) {
-    switch (type)
-    {
-        case MapSortOrder::Group:
-            setDefaultValues(group, QString());
-            break;
-        case MapSortOrder::Area:
-            setDefaultValues(group, sec);
-            break;
-        case MapSortOrder::Layout:
-            useLayout(layoutId);
-            setDefaultValues(group, QString());
-            break;
+    switch (type) {
+    case MapSortOrder::Group:
+        setDefaultValues(group, QString());
+        break;
+    case MapSortOrder::Area:
+        setDefaultValues(group, sec);
+        break;
+    case MapSortOrder::Layout:
+        useLayout(layoutId);
+        setDefaultValues(group, QString());
+        break;
     }
     connectSignals();
 }
@@ -47,19 +42,18 @@ bool NewMapPopup::checkNewMapDimensions() {
 
     if (numMetatiles > maxMetatiles) {
         ui->frame_NewMap_Warning->setVisible(true);
-        //ui->label_NewMap_WarningMessage->setText("WARNING: The specified map dimensions are too large.");
+        // ui->label_NewMap_WarningMessage->setText("WARNING: The specified map dimensions are too large.");
         QString errorText = QString("Error: The specified width and height are too large.\n"
-                    "The maximum map width and height is the following: (width + 15) * (height + 14) <= %1\n"
-                    "The specified map width and height was: (%2 + 15) * (%3 + 14) = %4")
-                        .arg(maxMetatiles)
-                        .arg(ui->spinBox_NewMap_Width->value())
-                        .arg(ui->spinBox_NewMap_Height->value())
-                        .arg(numMetatiles);
+                                    "The maximum map width and height is the following: (width + 15) * (height + 14) <= %1\n"
+                                    "The specified map width and height was: (%2 + 15) * (%3 + 14) = %4")
+                                .arg(maxMetatiles)
+                                .arg(ui->spinBox_NewMap_Width->value())
+                                .arg(ui->spinBox_NewMap_Height->value())
+                                .arg(numMetatiles);
         ui->label_NewMap_WarningMessage->setText(errorText);
         ui->label_NewMap_WarningMessage->setWordWrap(true);
         return false;
-    }
-    else {
+    } else {
         ui->frame_NewMap_Warning->setVisible(false);
         ui->label_NewMap_WarningMessage->clear();
         return true;
@@ -71,10 +65,10 @@ void NewMapPopup::connectSignals() {
     ui->spinBox_NewMap_Height->setMinimum(1);
     ui->spinBox_NewMap_Width->setMaximum(project->getMaxMapWidth());
     ui->spinBox_NewMap_Height->setMaximum(project->getMaxMapHeight());
-    
-    //ui->icon_NewMap_WarningIcon->setPixmap();
-    connect(ui->spinBox_NewMap_Width, QOverload<int>::of(&QSpinBox::valueChanged), [=](int){checkNewMapDimensions();});
-    connect(ui->spinBox_NewMap_Height, QOverload<int>::of(&QSpinBox::valueChanged), [=](int){checkNewMapDimensions();});
+
+    // ui->icon_NewMap_WarningIcon->setPixmap();
+    connect(ui->spinBox_NewMap_Width, QOverload<int>::of(&QSpinBox::valueChanged), [=](int) { checkNewMapDimensions(); });
+    connect(ui->spinBox_NewMap_Height, QOverload<int>::of(&QSpinBox::valueChanged), [=](int) { checkNewMapDimensions(); });
 }
 
 void NewMapPopup::useLayout(QString layoutId) {
@@ -112,13 +106,13 @@ void NewMapPopup::setDefaultValues(int groupNum, QString mapSec) {
 
     ui->comboBox_NewMap_Type->addItems(project->mapTypes);
     ui->comboBox_NewMap_Location->addItems(project->mapSectionValueToName.values());
-    if (!mapSec.isEmpty()) ui->comboBox_NewMap_Location->setCurrentText(mapSec);
+    if (!mapSec.isEmpty())
+        ui->comboBox_NewMap_Location->setCurrentText(mapSec);
     ui->checkBox_NewMap_Show_Location->setChecked(true);
 
     ui->frame_NewMap_Options->setEnabled(true);
 
-    switch (projectConfig.getBaseGameVersion())
-    {
+    switch (projectConfig.getBaseGameVersion()) {
     case BaseGameVersion::pokeruby:
         ui->checkBox_NewMap_Allow_Running->setVisible(false);
         ui->checkBox_NewMap_Allow_Biking->setVisible(false);
@@ -164,7 +158,7 @@ void NewMapPopup::setDefaultValues(int groupNum, QString mapSec) {
     }
 }
 
-void NewMapPopup::on_lineEdit_NewMap_Name_textChanged(const QString &text) {
+void NewMapPopup::on_lineEdit_NewMap_Name_textChanged(const QString& text) {
     if (project->mapNames.contains(text)) {
         QPalette palette = this->ui->lineEdit_NewMap_Name->palette();
         QColor color = Qt::red;
@@ -181,8 +175,8 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
         // ignore when map dimensions are invalid
         return;
     }
-    Map *newMap = new Map;
-    MapLayout *layout;
+    Map* newMap = new Map;
+    MapLayout* layout;
 
     // If map name is not unique, use default value. Also use only valid characters.
     // After stripping invalid characters, strip any leading digits.

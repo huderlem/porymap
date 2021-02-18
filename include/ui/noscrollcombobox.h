@@ -3,13 +3,12 @@
 
 #include <QComboBox>
 
-class NoScrollComboBox : public QComboBox
-{
+class NoScrollComboBox : public QComboBox {
     Q_OBJECT
 
 public:
-    explicit NoScrollComboBox(QWidget *parent = nullptr);
-    void wheelEvent(QWheelEvent *event);
+    explicit NoScrollComboBox(QWidget* parent = nullptr);
+    void wheelEvent(QWheelEvent* event);
 
 private:
 };

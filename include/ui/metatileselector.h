@@ -7,10 +7,10 @@
 #include "tileset.h"
 #include "maplayout.h"
 
-class MetatileSelector: public SelectablePixmapItem {
+class MetatileSelector : public SelectablePixmapItem {
     Q_OBJECT
 public:
-    MetatileSelector(int numMetatilesWide, Map *map): SelectablePixmapItem(16, 16) {
+    MetatileSelector(int numMetatilesWide, Map* map) : SelectablePixmapItem(16, 16) {
         this->externalSelection = false;
         this->numMetatilesWide = numMetatilesWide;
         this->map = map;
@@ -31,23 +31,25 @@ public:
     void setExternalSelection(int, int, QList<uint16_t>, QList<QPair<uint16_t, uint16_t>>);
     QPoint getMetatileIdCoordsOnWidget(uint16_t);
     void setMap(Map*);
+
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent*);
     void mouseMoveEvent(QGraphicsSceneMouseEvent*);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent*);
     void hoverMoveEvent(QGraphicsSceneHoverEvent*);
     void hoverLeaveEvent(QGraphicsSceneHoverEvent*);
+
 private:
     bool externalSelection;
     int numMetatilesWide;
-    Map *map;
-    Tileset *primaryTileset;
-    Tileset *secondaryTileset;
-    QList<uint16_t> *selectedMetatiles;
-    QList<QPair<uint16_t, uint16_t>> *selectedCollisions;
+    Map* map;
+    Tileset* primaryTileset;
+    Tileset* secondaryTileset;
+    QList<uint16_t>* selectedMetatiles;
+    QList<QPair<uint16_t, uint16_t>>* selectedCollisions;
     int externalSelectionWidth;
     int externalSelectionHeight;
-    QList<uint16_t> *externalSelectedMetatiles;
+    QList<uint16_t>* externalSelectedMetatiles;
 
     void updateSelectedMetatiles();
     uint16_t getMetatileId(int x, int y);

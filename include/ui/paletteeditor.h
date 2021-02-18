@@ -20,22 +20,22 @@ public:
     }
 };
 
-class PaletteEditor :  public QMainWindow {
+class PaletteEditor : public QMainWindow {
     Q_OBJECT
 public:
-    explicit PaletteEditor(Project*, Tileset*, Tileset*, int paletteId, QWidget *parent = nullptr);
+    explicit PaletteEditor(Project*, Tileset*, Tileset*, int paletteId, QWidget* parent = nullptr);
     ~PaletteEditor();
     void setPaletteId(int);
     void setTilesets(Tileset*, Tileset*);
 
 private:
-    Ui::PaletteEditor *ui;
-    Project *project = nullptr;
+    Ui::PaletteEditor* ui;
+    Project* project = nullptr;
     QList<QList<QSlider*>> sliders;
     QList<QFrame*> frames;
     QList<QLabel*> rgbLabels;
-    Tileset *primaryTileset;
-    Tileset *secondaryTileset;
+    Tileset* primaryTileset;
+    Tileset* secondaryTileset;
     QList<History<PaletteHistoryItem*>> palettesHistory;
     void disableSliderSignals();
     void enableSliderSignals();

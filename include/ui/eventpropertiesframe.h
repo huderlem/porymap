@@ -9,20 +9,19 @@ namespace Ui {
 class EventPropertiesFrame;
 }
 
-class EventPropertiesFrame : public QFrame
-{
+class EventPropertiesFrame : public QFrame {
     Q_OBJECT
 
 public:
-    explicit EventPropertiesFrame(Event *event, QWidget *parent = nullptr);
+    explicit EventPropertiesFrame(Event* event, QWidget* parent = nullptr);
     ~EventPropertiesFrame();
     void paintEvent(QPaintEvent*);
 
 public:
-    Ui::EventPropertiesFrame *ui;
+    Ui::EventPropertiesFrame* ui;
 
 private:
-    Event *event;
+    Event* event;
     bool firstShow = true;
 };
 

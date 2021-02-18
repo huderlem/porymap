@@ -16,7 +16,6 @@
 #include <QAbstractButton>
 
 KeyValueConfigBase::~KeyValueConfigBase() {
-
 }
 
 void KeyValueConfigBase::load() {
@@ -81,15 +80,11 @@ void KeyValueConfigBase::save() {
 }
 
 const QMap<MapSortOrder, QString> mapSortOrderMap = {
-    {MapSortOrder::Group, "group"},
-    {MapSortOrder::Layout, "layout"},
-    {MapSortOrder::Area, "area"},
+    { MapSortOrder::Group, "group" }, { MapSortOrder::Layout, "layout" }, { MapSortOrder::Area, "area" },
 };
 
 const QMap<QString, MapSortOrder> mapSortOrderReverseMap = {
-    {"group", MapSortOrder::Group},
-    {"layout", MapSortOrder::Layout},
-    {"area", MapSortOrder::Area},
+    { "group", MapSortOrder::Group }, { "layout", MapSortOrder::Layout }, { "area", MapSortOrder::Area },
 };
 
 PorymapConfig porymapConfig;
@@ -217,8 +212,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("show_player_view", this->showPlayerView ? "1" : "0");
     map.insert("show_cursor_tile", this->showCursorTile ? "1" : "0");
     map.insert("monitor_files", this->monitorFiles ? "1" : "0");
-    map.insert("region_map_dimensions", QString("%1x%2").arg(this->regionMapDimensions.width())
-                                                        .arg(this->regionMapDimensions.height()));
+    map.insert("region_map_dimensions", QString("%1x%2").arg(this->regionMapDimensions.width()).arg(this->regionMapDimensions.height()));
     map.insert("theme", this->theme);
     map.insert("text_editor_open_directory", this->textEditorOpenFolder);
     map.insert("text_editor_goto_line", this->textEditorGotoLine);
@@ -262,8 +256,7 @@ void PorymapConfig::setMonitorFiles(bool monitor) {
     this->save();
 }
 
-void PorymapConfig::setMainGeometry(QByteArray mainWindowGeometry_, QByteArray mainWindowState_,
-                                QByteArray mapSplitterState_, QByteArray mainSplitterState_) {
+void PorymapConfig::setMainGeometry(QByteArray mainWindowGeometry_, QByteArray mainWindowState_, QByteArray mapSplitterState_, QByteArray mainSplitterState_) {
     this->mainWindowGeometry = mainWindowGeometry_;
     this->mainWindowState = mainWindowState_;
     this->mapSplitterState = mapSplitterState_;
@@ -317,12 +310,12 @@ void PorymapConfig::setTheme(QString theme) {
     this->theme = theme;
 }
 
-void PorymapConfig::setTextEditorOpenFolder(const QString &command) {
+void PorymapConfig::setTextEditorOpenFolder(const QString& command) {
     this->textEditorOpenFolder = command;
     this->save();
 }
 
-void PorymapConfig::setTextEditorGotoLine(const QString &command) {
+void PorymapConfig::setTextEditorGotoLine(const QString& command) {
     this->textEditorGotoLine = command;
     this->save();
 }
@@ -414,15 +407,11 @@ QString PorymapConfig::getTextEditorGotoLine() {
 }
 
 const QMap<BaseGameVersion, QString> baseGameVersionMap = {
-    {BaseGameVersion::pokeruby, "pokeruby"},
-    {BaseGameVersion::pokefirered, "pokefirered"},
-    {BaseGameVersion::pokeemerald, "pokeemerald"},
+    { BaseGameVersion::pokeruby, "pokeruby" }, { BaseGameVersion::pokefirered, "pokefirered" }, { BaseGameVersion::pokeemerald, "pokeemerald" },
 };
 
 const QMap<QString, BaseGameVersion> baseGameVersionReverseMap = {
-    {"pokeruby", BaseGameVersion::pokeruby},
-    {"pokefirered", BaseGameVersion::pokefirered},
-    {"pokeemerald", BaseGameVersion::pokeemerald},
+    { "pokeruby", BaseGameVersion::pokeruby }, { "pokefirered", BaseGameVersion::pokefirered }, { "pokeemerald", BaseGameVersion::pokeemerald },
 };
 
 ProjectConfig projectConfig;
@@ -527,14 +516,22 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
 void ProjectConfig::setUnreadKeys() {
     // Set game-version specific defaults for any config field that wasn't read
     bool isPokefirered = this->baseGameVersion == BaseGameVersion::pokefirered;
-    if (!readKeys.contains("use_custom_border_size")) this->useCustomBorderSize = isPokefirered;
-    if (!readKeys.contains("enable_event_weather_trigger")) this->enableEventWeatherTrigger = !isPokefirered;
-    if (!readKeys.contains("enable_event_secret_base")) this->enableEventSecretBase = !isPokefirered;
-    if (!readKeys.contains("enable_hidden_item_quantity")) this->enableHiddenItemQuantity = isPokefirered;
-    if (!readKeys.contains("enable_hidden_item_requires_itemfinder")) this->enableHiddenItemRequiresItemfinder = isPokefirered;
-    if (!readKeys.contains("enable_heal_location_respawn_data")) this->enableHealLocationRespawnData = isPokefirered;
-    if (!readKeys.contains("enable_object_event_in_connection")) this->enableObjectEventInConnection = isPokefirered;
-    if (!readKeys.contains("enable_floor_number")) this->enableFloorNumber = isPokefirered;
+    if (!readKeys.contains("use_custom_border_size"))
+        this->useCustomBorderSize = isPokefirered;
+    if (!readKeys.contains("enable_event_weather_trigger"))
+        this->enableEventWeatherTrigger = !isPokefirered;
+    if (!readKeys.contains("enable_event_secret_base"))
+        this->enableEventSecretBase = !isPokefirered;
+    if (!readKeys.contains("enable_hidden_item_quantity"))
+        this->enableHiddenItemQuantity = isPokefirered;
+    if (!readKeys.contains("enable_hidden_item_requires_itemfinder"))
+        this->enableHiddenItemRequiresItemfinder = isPokefirered;
+    if (!readKeys.contains("enable_heal_location_respawn_data"))
+        this->enableHealLocationRespawnData = isPokefirered;
+    if (!readKeys.contains("enable_object_event_in_connection"))
+        this->enableObjectEventInConnection = isPokefirered;
+    if (!readKeys.contains("enable_floor_number"))
+        this->enableFloorNumber = isPokefirered;
 }
 
 QMap<QString, QString> ProjectConfig::getKeyValueMap() {
@@ -568,7 +565,7 @@ void ProjectConfig::onNewConfigFileCreated() {
 
         QFormLayout form(&dialog);
 
-        QComboBox *baseGameVersionComboBox = new QComboBox();
+        QComboBox* baseGameVersionComboBox = new QComboBox();
         baseGameVersionComboBox->addItem("pokeruby", BaseGameVersion::pokeruby);
         baseGameVersionComboBox->addItem("pokefirered", BaseGameVersion::pokefirered);
         baseGameVersionComboBox->addItem("pokeemerald", BaseGameVersion::pokeemerald);
@@ -614,7 +611,7 @@ BaseGameVersion ProjectConfig::getBaseGameVersion() {
     return this->baseGameVersion;
 }
 
-void ProjectConfig::setRecentMap(const QString &map) {
+void ProjectConfig::setRecentMap(const QString& map) {
     this->recentMap = map;
     this->save();
 }
@@ -762,42 +759,38 @@ QMap<QString, QString> ShortcutsConfig::getKeyValueMap() {
     return map;
 }
 
-void ShortcutsConfig::setDefaultShortcuts(const QObjectList &objects) {
+void ShortcutsConfig::setDefaultShortcuts(const QObjectList& objects) {
     storeShortcutsFromList(StoreType::Default, objects);
     save();
 }
 
-QList<QKeySequence> ShortcutsConfig::defaultShortcuts(const QObject *object) const {
+QList<QKeySequence> ShortcutsConfig::defaultShortcuts(const QObject* object) const {
     return default_shortcuts.values(cfgKey(object));
 }
 
-void ShortcutsConfig::setUserShortcuts(const QObjectList &objects) {
+void ShortcutsConfig::setUserShortcuts(const QObjectList& objects) {
     storeShortcutsFromList(StoreType::User, objects);
     save();
 }
 
-void ShortcutsConfig::setUserShortcuts(const QMultiMap<const QObject *, QKeySequence> &objects_keySequences) {
-    for (auto *object : objects_keySequences.uniqueKeys())
+void ShortcutsConfig::setUserShortcuts(const QMultiMap<const QObject*, QKeySequence>& objects_keySequences) {
+    for (auto* object : objects_keySequences.uniqueKeys())
         if (!object->objectName().isEmpty() && !object->objectName().startsWith("_q_"))
             storeShortcuts(StoreType::User, cfgKey(object), objects_keySequences.values(object));
     save();
 }
 
-QList<QKeySequence> ShortcutsConfig::userShortcuts(const QObject *object) const {
+QList<QKeySequence> ShortcutsConfig::userShortcuts(const QObject* object) const {
     return user_shortcuts.values(cfgKey(object));
 }
 
-void ShortcutsConfig::storeShortcutsFromList(StoreType storeType, const QObjectList &objects) {
-    for (const auto *object : objects)
+void ShortcutsConfig::storeShortcutsFromList(StoreType storeType, const QObjectList& objects) {
+    for (const auto* object : objects)
         if (!object->objectName().isEmpty() && !object->objectName().startsWith("_q_"))
             storeShortcuts(storeType, cfgKey(object), currentShortcuts(object));
 }
 
-void ShortcutsConfig::storeShortcuts(
-        StoreType storeType,
-        const QString &cfgKey,
-        const QList<QKeySequence> &keySequences)
-{
+void ShortcutsConfig::storeShortcuts(StoreType storeType, const QString& cfgKey, const QList<QKeySequence>& keySequences) {
     bool storeUser = (storeType == User) || !user_shortcuts.contains(cfgKey);
 
     if (storeType == Default)
@@ -820,11 +813,11 @@ void ShortcutsConfig::storeShortcuts(
     }
 }
 
-/* Creates a config key from the object's name prepended with the parent 
+/* Creates a config key from the object's name prepended with the parent
  * window's object name, and converts camelCase to snake_case. */
-QString ShortcutsConfig::cfgKey(const QObject *object) const {
+QString ShortcutsConfig::cfgKey(const QObject* object) const {
     auto cfg_key = QString();
-    auto *parentWidget = static_cast<QWidget *>(object->parent());
+    auto* parentWidget = static_cast<QWidget*>(object->parent());
     if (parentWidget)
         cfg_key = parentWidget->window()->objectName() + '_';
     cfg_key += object->objectName();
@@ -839,19 +832,19 @@ QString ShortcutsConfig::cfgKey(const QObject *object) const {
     return cfg_key.toLower();
 }
 
-QList<QKeySequence> ShortcutsConfig::currentShortcuts(const QObject *object) const {
+QList<QKeySequence> ShortcutsConfig::currentShortcuts(const QObject* object) const {
     if (object->inherits("QAction")) {
-        const auto *action = qobject_cast<const QAction *>(object);
+        const auto* action = qobject_cast<const QAction*>(object);
         return action->shortcuts();
     } else if (object->inherits("Shortcut")) {
-        const auto *shortcut = qobject_cast<const Shortcut *>(object);
+        const auto* shortcut = qobject_cast<const Shortcut*>(object);
         return shortcut->keys();
     } else if (object->inherits("QShortcut")) {
-        const auto *qshortcut = qobject_cast<const QShortcut *>(object);
+        const auto* qshortcut = qobject_cast<const QShortcut*>(object);
         return { qshortcut->key() };
     } else if (object->property("shortcut").isValid()) {
         return { object->property("shortcut").value<QKeySequence>() };
     } else {
-        return { };
+        return {};
     }
 }

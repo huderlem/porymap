@@ -1,7 +1,6 @@
 #include "settings.h"
 
-Settings::Settings()
-{
+Settings::Settings() {
     this->smartPathsEnabled = false;
     this->betterCursors = true;
     this->playerViewRectEnabled = false;

@@ -6,11 +6,10 @@
 #include <QList>
 #include <QString>
 
-class MetatileParser
-{
+class MetatileParser {
 public:
     MetatileParser();
-    QList<Metatile*> parse(QString filepath, bool *error, bool primaryTileset);
+    QList<Metatile*> parse(QString filepath, bool* error, bool primaryTileset);
 };
 
 #endif // METATILEPARSER_H

@@ -3,10 +3,10 @@
 
 #include "selectablepixmapitem.h"
 
-class TilemapTileSelector: public SelectablePixmapItem {
+class TilemapTileSelector : public SelectablePixmapItem {
     Q_OBJECT
 public:
-    TilemapTileSelector(QPixmap pixmap_): SelectablePixmapItem(8, 8, 1, 1) {
+    TilemapTileSelector(QPixmap pixmap_) : SelectablePixmapItem(8, 8, 1, 1) {
         this->tilemap = pixmap_;
         this->setPixmap(this->tilemap);
         this->numTilesWide = tilemap.width() / 8;

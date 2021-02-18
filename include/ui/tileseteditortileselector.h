@@ -4,11 +4,10 @@
 #include "selectablepixmapitem.h"
 #include "tileset.h"
 
-class TilesetEditorTileSelector: public SelectablePixmapItem {
+class TilesetEditorTileSelector : public SelectablePixmapItem {
     Q_OBJECT
 public:
-    TilesetEditorTileSelector(Tileset *primaryTileset, Tileset *secondaryTileset, bool isTripleLayer)
-        : SelectablePixmapItem(16, 16, isTripleLayer ? 6 : 4, 2) {
+    TilesetEditorTileSelector(Tileset* primaryTileset, Tileset* secondaryTileset, bool isTripleLayer) : SelectablePixmapItem(16, 16, isTripleLayer ? 6 : 4, 2) {
         this->primaryTileset = primaryTileset;
         this->secondaryTileset = secondaryTileset;
         this->numTilesWide = 16;
@@ -45,8 +44,8 @@ private:
     QList<Tile> externalSelectedTiles;
     QList<int> externalSelectedPos;
 
-    Tileset *primaryTileset;
-    Tileset *secondaryTileset;
+    Tileset* primaryTileset;
+    Tileset* secondaryTileset;
     QList<uint16_t> selectedTiles;
     int numTilesWide;
     int paletteId;

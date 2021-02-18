@@ -3,14 +3,14 @@
 #include <QDebug>
 
 void TilemapTileSelector::draw() {
-    size_t width_  = this->tilemap.width();
+    size_t width_ = this->tilemap.width();
     this->pixelWidth = width_;
     size_t height_ = this->tilemap.height();
     this->pixelHeight = height_;
-    size_t ntiles_ = (width_/8) * (height_/8);
+    size_t ntiles_ = (width_ / 8) * (height_ / 8);
 
     this->numTilesWide = width_ / 8;
-    this->numTiles     = ntiles_;
+    this->numTiles = ntiles_;
 
     this->setPixmap(tilemap);
     this->drawSelection();
@@ -47,31 +47,31 @@ QImage TilemapTileSelector::tileImg(unsigned tileId) {
     return this->tilemap.copy(pos.x() * 8, pos.y() * 8, 8, 8).toImage();
 }
 
-void TilemapTileSelector::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+void TilemapTileSelector::mousePressEvent(QGraphicsSceneMouseEvent* event) {
     SelectablePixmapItem::mousePressEvent(event);
     this->updateSelectedTile();
     emit selectedTileChanged(this->selectedTile);
 }
 
-void TilemapTileSelector::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
+void TilemapTileSelector::mouseMoveEvent(QGraphicsSceneMouseEvent* event) {
     SelectablePixmapItem::mouseMoveEvent(event);
     this->updateSelectedTile();
     emit hoveredTileChanged(this->selectedTile);
     emit selectedTileChanged(this->selectedTile);
 }
 
-void TilemapTileSelector::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
+void TilemapTileSelector::mouseReleaseEvent(QGraphicsSceneMouseEvent* event) {
     SelectablePixmapItem::mouseReleaseEvent(event);
     this->updateSelectedTile();
     emit selectedTileChanged(this->selectedTile);
 }
 
-void TilemapTileSelector::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
+void TilemapTileSelector::hoverMoveEvent(QGraphicsSceneHoverEvent* event) {
     QPoint pos = this->getCellPos(event->pos());
     unsigned tileId = this->getTileId(pos.x(), pos.y());
     emit this->hoveredTileChanged(tileId);
 }
 
-void TilemapTileSelector::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
+void TilemapTileSelector::hoverLeaveEvent(QGraphicsSceneHoverEvent*) {
     emit this->hoveredTileCleared();
 }

@@ -15,18 +15,19 @@ class Editor;
 class DraggablePixmapItem : public QObject, public QGraphicsPixmapItem {
     Q_OBJECT
 public:
-    DraggablePixmapItem(QPixmap pixmap): QGraphicsPixmapItem(pixmap) {}
-    
-    DraggablePixmapItem(Event *event_, Editor *editor_) : QGraphicsPixmapItem(event_->pixmap) {
+    DraggablePixmapItem(QPixmap pixmap) : QGraphicsPixmapItem(pixmap) {
+    }
+
+    DraggablePixmapItem(Event* event_, Editor* editor_) : QGraphicsPixmapItem(event_->pixmap) {
         event = event_;
         event->setPixmapItem(this);
         editor = editor_;
         updatePosition();
     }
 
-    Editor *editor = nullptr;
-    Event *event = nullptr;
-    QGraphicsItemAnimation *pos_anim = nullptr;
+    Editor* editor = nullptr;
+    Event* event = nullptr;
+    QGraphicsItemAnimation* pos_anim = nullptr;
 
     bool active;
     int last_x;
@@ -36,11 +37,11 @@ public:
     void move(int x, int y);
     void emitPositionChanged();
     void updatePixmap();
-    void bind(QComboBox *combo, QString key);
-    void bindToUserData(QComboBox *combo, QString key);
+    void bind(QComboBox* combo, QString key);
+    void bindToUserData(QComboBox* combo, QString key);
 
 signals:
-    void positionChanged(Event *event);
+    void positionChanged(Event* event);
     void xChanged(int);
     void yChanged(int);
     void elevationChanged(int);
@@ -48,23 +49,23 @@ signals:
     void onPropertyChanged(QString key, QString value);
 
 public slots:
-    void set_x(const QString &text) {
+    void set_x(const QString& text) {
         event->put("x", text);
         updatePosition();
     }
-    void set_y(const QString &text) {
+    void set_y(const QString& text) {
         event->put("y", text);
         updatePosition();
     }
-    void set_elevation(const QString &text) {
+    void set_elevation(const QString& text) {
         event->put("elevation", text);
         updatePosition();
     }
-    void set_sprite(const QString &text) {
+    void set_sprite(const QString& text) {
         event->put("sprite", text);
         updatePixmap();
     }
-    void set_script(const QString &text) {
+    void set_script(const QString& text) {
         event->put("script_label", text);
     }
 

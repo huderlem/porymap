@@ -6,10 +6,8 @@
 #include <QFileDialog>
 #include <QMessageBox>
 
-PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset *secondaryTileset, int paletteId, QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::PaletteEditor)
-{
+PaletteEditor::PaletteEditor(Project* project, Tileset* primaryTileset, Tileset* secondaryTileset, int paletteId, QWidget* parent)
+    : QMainWindow(parent), ui(new Ui::PaletteEditor) {
     this->project = project;
     this->primaryTileset = primaryTileset;
     this->secondaryTileset = secondaryTileset;
@@ -116,8 +114,7 @@ PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset 
     this->restoreWindowState();
 }
 
-PaletteEditor::~PaletteEditor()
-{
+PaletteEditor::~PaletteEditor() {
     delete ui;
 }
 
@@ -156,9 +153,9 @@ void PaletteEditor::refreshColorSliders() {
             color = this->secondaryTileset->palettes.at(paletteNum).at(i);
         }
 
-        this->sliders[i][0]->setValue(qRed(color)   / 8);
+        this->sliders[i][0]->setValue(qRed(color) / 8);
         this->sliders[i][1]->setValue(qGreen(color) / 8);
-        this->sliders[i][2]->setValue(qBlue(color)  / 8);
+        this->sliders[i][2]->setValue(qBlue(color) / 8);
     }
     enableSliderSignals();
 }
@@ -173,10 +170,7 @@ void PaletteEditor::refreshColor(int colorIndex) {
     int red = this->sliders[colorIndex][0]->value() * 8;
     int green = this->sliders[colorIndex][1]->value() * 8;
     int blue = this->sliders[colorIndex][2]->value() * 8;
-    QString stylesheet = QString("background-color: rgb(%1, %2, %3);")
-            .arg(red)
-            .arg(green)
-            .arg(blue);
+    QString stylesheet = QString("background-color: rgb(%1, %2, %3);").arg(red).arg(green).arg(blue);
     this->frames[colorIndex]->setStyleSheet(stylesheet);
     this->rgbLabels[colorIndex]->setText(QString("RGB(%1, %2, %3)").arg(red).arg(green).arg(blue));
 }
@@ -189,7 +183,7 @@ void PaletteEditor::setPaletteId(int paletteId) {
     this->ui->spinBox_PaletteId->blockSignals(false);
 }
 
-void PaletteEditor::setTilesets(Tileset *primaryTileset, Tileset *secondaryTileset) {
+void PaletteEditor::setTilesets(Tileset* primaryTileset, Tileset* secondaryTileset) {
     this->primaryTileset = primaryTileset;
     this->secondaryTileset = secondaryTileset;
     this->refreshColorSliders();
@@ -201,9 +195,7 @@ void PaletteEditor::setColor(int colorIndex) {
     int red = this->sliders[colorIndex][0]->value() * 8;
     int green = this->sliders[colorIndex][1]->value() * 8;
     int blue = this->sliders[colorIndex][2]->value() * 8;
-    Tileset *tileset = paletteNum < Project::getNumPalettesPrimary()
-            ? this->primaryTileset
-            : this->secondaryTileset;
+    Tileset* tileset = paletteNum < Project::getNumPalettesPrimary() ? this->primaryTileset : this->secondaryTileset;
     tileset->palettes[paletteNum][colorIndex] = qRgb(red, green, blue);
     tileset->palettePreviews[paletteNum][colorIndex] = qRgb(red, green, blue);
     this->refreshColor(colorIndex);
@@ -225,7 +217,7 @@ void PaletteEditor::commitEditHistory(int paletteId) {
     for (int i = 0; i < 16; i++) {
         colors.append(qRgb(this->sliders[i][0]->value() * 8, this->sliders[i][1]->value() * 8, this->sliders[i][2]->value() * 8));
     }
-    PaletteHistoryItem *commit = new PaletteHistoryItem(colors);
+    PaletteHistoryItem* commit = new PaletteHistoryItem(colors);
     this->palettesHistory[paletteId].push(commit);
 }
 
@@ -236,22 +228,21 @@ void PaletteEditor::restoreWindowState() {
     this->restoreState(geometry.value("palette_editor_state"));
 }
 
-void PaletteEditor::on_actionUndo_triggered()
-{
+void PaletteEditor::on_actionUndo_triggered() {
     int paletteId = this->ui->spinBox_PaletteId->value();
-    PaletteHistoryItem *prev = this->palettesHistory[paletteId].back();
+    PaletteHistoryItem* prev = this->palettesHistory[paletteId].back();
     this->setColorsFromHistory(prev, paletteId);
 }
 
-void PaletteEditor::on_actionRedo_triggered()
-{
+void PaletteEditor::on_actionRedo_triggered() {
     int paletteId = this->ui->spinBox_PaletteId->value();
-    PaletteHistoryItem *next = this->palettesHistory[paletteId].next();
+    PaletteHistoryItem* next = this->palettesHistory[paletteId].next();
     this->setColorsFromHistory(next, paletteId);
 }
 
-void PaletteEditor::setColorsFromHistory(PaletteHistoryItem *history, int paletteId) {
-    if (!history) return;
+void PaletteEditor::setColorsFromHistory(PaletteHistoryItem* history, int paletteId) {
+    if (!history)
+        return;
 
     for (int i = 0; i < 16; i++) {
         if (paletteId < Project::getNumPalettesPrimary()) {
@@ -268,13 +259,8 @@ void PaletteEditor::setColorsFromHistory(PaletteHistoryItem *history, int palett
     emit this->changedPaletteColor();
 }
 
-void PaletteEditor::on_actionImport_Palette_triggered()
-{
-    QString filepath = QFileDialog::getOpenFileName(
-                this,
-                QString("Import Tileset Palette"),
-                this->project->root,
-                "Palette Files (*.pal *.act *tpl *gpl)");
+void PaletteEditor::on_actionImport_Palette_triggered() {
+    QString filepath = QFileDialog::getOpenFileName(this, QString("Import Tileset Palette"), this->project->root, "Palette Files (*.pal *.act *tpl *gpl)");
     if (filepath.isEmpty()) {
         return;
     }
@@ -322,8 +308,5 @@ void PaletteEditor::on_actionImport_Palette_triggered()
 }
 
 void PaletteEditor::closeEvent(QCloseEvent*) {
-    porymapConfig.setPaletteEditorGeometry(
-        this->saveGeometry(),
-        this->saveState()
-    );
+    porymapConfig.setPaletteEditorGeometry(this->saveGeometry(), this->saveState());
 }

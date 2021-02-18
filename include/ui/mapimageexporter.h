@@ -16,20 +16,19 @@ enum ImageExporterMode {
     Timelapse,
 };
 
-class MapImageExporter : public QDialog
-{
+class MapImageExporter : public QDialog {
     Q_OBJECT
 
 public:
-    explicit MapImageExporter(QWidget *parent, Editor *editor, ImageExporterMode mode);
+    explicit MapImageExporter(QWidget* parent, Editor* editor, ImageExporterMode mode);
     ~MapImageExporter();
 
 private:
-    Ui::MapImageExporter *ui;
+    Ui::MapImageExporter* ui;
 
-    Map *map = nullptr;
-    Editor *editor = nullptr;
-    QGraphicsScene *scene = nullptr;
+    Map* map = nullptr;
+    Editor* editor = nullptr;
+    QGraphicsScene* scene = nullptr;
 
     QPixmap preview;
 
@@ -51,9 +50,9 @@ private:
 
     void updatePreview();
     void saveImage();
-    QPixmap getStitchedImage(QProgressDialog *progress, bool includeBorder);
-    QPixmap getFormattedMapPixmap(Map *map, bool ignoreBorder);
-    bool historyItemAppliesToFrame(const QUndoCommand *command);
+    QPixmap getStitchedImage(QProgressDialog* progress, bool includeBorder);
+    QPixmap getFormattedMapPixmap(Map* map, bool ignoreBorder);
+    bool historyItemAppliesToFrame(const QUndoCommand* command);
 
 private slots:
     void on_checkBox_Objects_stateChanged(int state);
