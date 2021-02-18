@@ -1836,29 +1836,6 @@ bool Project::readMapGroups() {
     return true;
 }
 
-Map* Project::addNewMapToGroup(QString mapName, int groupNum) {
-    // Setup new map in memory, but don't write to file until map is actually saved later.
-    mapNames.append(mapName);
-    mapGroups.insert(mapName, groupNum);
-    groupedMapNames[groupNum].append(mapName);
-
-    Map *map = new Map;
-    map->isPersistedToFile = false;
-    map->setName(mapName);
-    mapConstantsToMapNames.insert(map->constantName, map->name);
-    mapNamesToMapConstants.insert(map->name, map->constantName);
-    setNewMapHeader(map, mapLayoutsTable.size() + 1);
-    setNewMapLayout(map);
-    loadMapTilesets(map);
-    setNewMapBlockdata(map);
-    setNewMapBorder(map);
-    setNewMapEvents(map);
-    setNewMapConnections(map);
-    mapCache.insert(mapName, map);
-
-    return map;
-}
-
 Map* Project::addNewMapToGroup(QString mapName, int groupNum, Map *newMap, bool existingLayout) {
     mapNames.append(mapName);
     mapGroups.insert(mapName, groupNum);
