@@ -1105,10 +1105,10 @@ void MainWindow::onAddNewMapToLayoutClick(QAction* triggeredAction)
 void MainWindow::onNewMapCreated() {
     QString newMapName = this->newmapprompt->map->name;
     int newMapGroup = this->newmapprompt->group;
-    Map *newMap_ = this->newmapprompt->map;
+    Map *newMap = this->newmapprompt->map;
     bool existingLayout = this->newmapprompt->existingLayout;
 
-    Map *newMap = editor->project->addNewMapToGroup(newMapName, newMapGroup, newMap_, existingLayout);
+    newMap = editor->project->addNewMapToGroup(newMapName, newMapGroup, newMap, existingLayout);
 
     logInfo(QString("Created a new map named %1.").arg(newMapName));
 
@@ -1132,6 +1132,7 @@ void MainWindow::onNewMapCreated() {
     }
 
     disconnect(this->newmapprompt, &NewMapPopup::applied, this, &MainWindow::onNewMapCreated);
+    delete newMap;
 }
 
 void MainWindow::openNewMapPopupWindow(int type, QVariant data) {
