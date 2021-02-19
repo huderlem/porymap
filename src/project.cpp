@@ -1856,7 +1856,6 @@ Map* Project::addNewMapToGroup(QString mapName, int groupNum, Map *newMap, bool 
     loadMapTilesets(newMap);
     setNewMapEvents(newMap);
     setNewMapConnections(newMap);
-    mapCache.insert(mapName, newMap);
 
     return newMap;
 }
