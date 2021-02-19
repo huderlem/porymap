@@ -1242,14 +1242,15 @@ void Project::saveMap(Map *map) {
         QString text = this->getScriptDefaultString(projectConfig.getUsePoryScript(), map->name);
         saveTextFile(root + "/data/maps/" + map->name + "/scripts" + this->getScriptFileExtension(projectConfig.getUsePoryScript()), text);
 
-        if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeruby || projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+        bool usesTextFile = projectConfig.getCreateMapTextFileEnabled();
+        if (usesTextFile) {
             // Create file data/maps/<map_name>/text.inc
             saveTextFile(root + "/data/maps/" + map->name + "/text" + this->getScriptFileExtension(projectConfig.getUsePoryScript()), "\n");
         }
 
         // Simply append to data/event_scripts.s.
         text = QString("\n\t.include \"data/maps/%1/scripts.inc\"\n").arg(map->name);
-        if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeruby || projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+        if (usesTextFile) {
             text += QString("\t.include \"data/maps/%1/text.inc\"\n").arg(map->name);
         }
         appendTextFile(root + "/data/event_scripts.s", text);
