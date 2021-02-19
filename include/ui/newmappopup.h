@@ -33,6 +33,7 @@ private:
     Project *project;
     void setDefaultValues(int, QString);
     bool checkNewMapDimensions();
+    bool checkNewMapGroup();
 
 private slots:
     void on_pushButton_NewMap_Accept_clicked();
