@@ -64,14 +64,31 @@ bool NewMapPopup::checkNewMapDimensions() {
         ui->label_NewMap_WarningMessage->clear();
         return true;
     }
-};
+}
+
+bool NewMapPopup::checkNewMapGroup() {
+    group = project->groupNames.indexOf(this->ui->comboBox_NewMap_Group->currentText());
+
+    if (group < 0) {
+        ui->frame_NewMap_Warning->setVisible(true);
+        QString errorText = QString("Error: The specified map group '%1' does not exist.")
+                        .arg(ui->comboBox_NewMap_Group->currentText());
+        ui->label_NewMap_WarningMessage->setText(errorText);
+        ui->label_NewMap_WarningMessage->setWordWrap(true);
+        return false;
+    } else {
+        ui->frame_NewMap_Warning->setVisible(false);
+        ui->label_NewMap_WarningMessage->clear();
+        return true;
+    }
+}
 
 void NewMapPopup::connectSignals() {
     ui->spinBox_NewMap_Width->setMinimum(1);
     ui->spinBox_NewMap_Height->setMinimum(1);
     ui->spinBox_NewMap_Width->setMaximum(project->getMaxMapWidth());
     ui->spinBox_NewMap_Height->setMaximum(project->getMaxMapHeight());
-    
+
     //ui->icon_NewMap_WarningIcon->setPixmap();
     connect(ui->spinBox_NewMap_Width, QOverload<int>::of(&QSpinBox::valueChanged), [=](int){checkNewMapDimensions();});
     connect(ui->spinBox_NewMap_Height, QOverload<int>::of(&QSpinBox::valueChanged), [=](int){checkNewMapDimensions();});
@@ -177,8 +194,8 @@ void NewMapPopup::on_lineEdit_NewMap_Name_textChanged(const QString &text) {
 }
 
 void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
-    if (!checkNewMapDimensions()) {
-        // ignore when map dimensions are invalid
+    if (!checkNewMapDimensions() || !checkNewMapGroup()) {
+        // ignore when map dimensions or map group are invalid
         return;
     }
     Map *newMap = new Map;
@@ -236,7 +253,6 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
         newMap->floorNumber = this->ui->spinBox_NewMap_Floor_Number->value();
     }
 
-    group = project->groupNames.indexOf(this->ui->comboBox_NewMap_Group->currentText());
     newMap->layout = layout;
     newMap->layoutId = layout->id;
     if (this->existingLayout) {
