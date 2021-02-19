@@ -142,6 +142,7 @@ public:
         this->enableHealLocationRespawnData = false;
         this->enableObjectEventInConnection = false;
         this->enableFloorNumber = false;
+        this->createMapTextFile = false;
         this->enableTripleLayerMetatiles = false;
         this->customScripts.clear();
         this->readKeys.clear();
@@ -172,6 +173,8 @@ public:
     bool getObjectEventInConnectionEnabled();
     void setFloorNumberEnabled(bool enable);
     bool getFloorNumberEnabled();
+    void setCreateMapTextFileEnabled(bool enable);
+    bool getCreateMapTextFileEnabled();
     void setTripleLayerMetatilesEnabled(bool enable);
     bool getTripleLayerMetatilesEnabled();
     void setCustomScripts(QList<QString> scripts);
@@ -196,6 +199,7 @@ private:
     bool enableHealLocationRespawnData;
     bool enableObjectEventInConnection;
     bool enableFloorNumber;
+    bool createMapTextFile;
     bool enableTripleLayerMetatiles;
     QList<QString> customScripts;
     QStringList readKeys;
