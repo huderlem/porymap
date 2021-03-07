@@ -2332,7 +2332,7 @@ QString Project::getScriptFileExtension(bool usePoryScript) const {
 
 QString Project::getScriptDefaultString(bool usePoryScript, QString mapName) const {
     if(usePoryScript)
-        return QString("mapscripts %1_MapScripts {}").arg(mapName);
+        return QString("mapscripts %1_MapScripts {}\n").arg(mapName);
     else
         return QString("%1_MapScripts::\n\t.byte 0\n").arg(mapName);
 }
