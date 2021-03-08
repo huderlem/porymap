@@ -8,6 +8,57 @@
 #include <QImage>
 
 
+Tileset::Tileset(const Tileset &other)
+    : name(other.name),
+      is_compressed(other.is_compressed),
+      is_secondary(other.is_secondary),
+      padding(other.padding),
+      tiles_label(other.tiles_label),
+      palettes_label(other.palettes_label),
+      metatiles_label(other.metatiles_label),
+      metatiles_path(other.metatiles_path),
+      callback_label(other.callback_label),
+      metatile_attrs_label(other.metatile_attrs_label),
+      metatile_attrs_path(other.metatile_attrs_path),
+      tilesImagePath(other.tilesImagePath),
+      tilesImage(other.tilesImage),
+      palettePaths(other.palettePaths),
+      tiles(other.tiles),
+      palettes(other.palettes),
+      palettePreviews(other.palettePreviews)
+{
+    for (auto *metatile : other.metatiles) {
+        metatiles.append(new Metatile(*metatile));
+    }
+}
+
+Tileset &Tileset::operator=(const Tileset &other) {
+    name = other.name;
+    is_compressed = other.is_compressed;
+    is_secondary = other.is_secondary;
+    padding = other.padding;
+    tiles_label = other.tiles_label;
+    palettes_label = other.palettes_label;
+    metatiles_label = other.metatiles_label;
+    metatiles_path = other.metatiles_path;
+    callback_label = other.callback_label;
+    metatile_attrs_label = other.metatile_attrs_label;
+    metatile_attrs_path = other.metatile_attrs_path;
+    tilesImagePath = other.tilesImagePath;
+    tilesImage = other.tilesImage;
+    palettePaths = other.palettePaths;
+    tiles = other.tiles;
+    palettes = other.palettes;
+    palettePreviews = other.palettePreviews;
+
+    metatiles.clear();
+    for (auto *metatile : other.metatiles) {
+        metatiles.append(new Metatile(*metatile));
+    }
+
+    return *this;
+}
+
 Tileset* Tileset::getBlockTileset(int metatile_index, Tileset *primaryTileset, Tileset *secondaryTileset) {
     if (metatile_index < Project::getNumMetatilesPrimary()) {
         return primaryTileset;

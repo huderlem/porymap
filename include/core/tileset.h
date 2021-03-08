@@ -10,8 +10,8 @@ class Tileset
 {
 public:
     Tileset() = default;
-    Tileset(const Tileset &other) = default;
-    Tileset &operator=(const Tileset &other) = default;
+    Tileset(const Tileset &other);
+    Tileset &operator=(const Tileset &other);
 
 public:
     QString name;
