@@ -61,7 +61,11 @@ void Scripting::invokeCallback(CallbackType type, QJSValueList args) {
 
         QJSValue result = callbackFunction.call(args);
         if (result.isError()) {
-            logError(QString("Module %1 encountered an error when calling '%2'").arg(module.toString()).arg(functionName));
+            QFileInfo file(result.property("fileName").toString());
+            logError(QString("Error in custom script '%1' at line %2: '%3'")
+                     .arg(file.fileName())
+                     .arg(result.property("lineNumber").toString())
+                     .arg(result.toString()));
             continue;
         }
     }
@@ -90,7 +94,11 @@ void Scripting::invokeAction(QString actionName) {
 
         QJSValue result = callbackFunction.call(QJSValueList());
         if (result.isError()) {
-            logError(QString("Module %1 encountered an error when calling '%2'").arg(module.toString()).arg(functionName));
+            QFileInfo file(result.property("fileName").toString());
+            logError(QString("Error in custom script '%1' at line %2: '%3'")
+                     .arg(file.fileName())
+                     .arg(result.property("lineNumber").toString())
+                     .arg(result.toString()));
             continue;
         }
     }
