@@ -109,6 +109,8 @@ void NewMapPopup::setDefaultValues(int groupNum, QString mapSec) {
     ui->comboBox_NewMap_Group->addItems(project->groupNames);
     ui->comboBox_NewMap_Group->setCurrentText(project->groupNames.at(groupNum));
 
+    ui->comboBox_Song->addItems(project->getSongNames());
+
     if (existingLayout) {
         ui->spinBox_NewMap_Width->setValue(project->mapLayouts.value(layoutId)->width.toInt(nullptr, 0));
         ui->spinBox_NewMap_Height->setValue(project->mapLayouts.value(layoutId)->height.toInt(nullptr, 0));
@@ -212,7 +214,7 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
     newMap->name = newMapName;
     newMap->type = this->ui->comboBox_NewMap_Type->currentText();
     newMap->location = this->ui->comboBox_NewMap_Location->currentText();
-    newMap->song = this->project->defaultSong;
+    newMap->song = this->ui->comboBox_Song->currentText();
     newMap->requiresFlash = "0";
     newMap->weather = this->project->weatherNames.value(0, "WEATHER_NONE");
     newMap->show_location = this->ui->checkBox_NewMap_Show_Location->isChecked() ? "1" : "0";
