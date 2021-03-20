@@ -34,6 +34,7 @@ public:
 
     void updatePosition();
     void move(int x, int y);
+    void move(const QPoint &pos) { move(pos.x(), pos.y()); }
     void emitPositionChanged();
     void updatePixmap();
     void bind(QComboBox *combo, QString key);

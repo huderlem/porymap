@@ -1551,6 +1551,9 @@ void MainWindow::addNewEvent(QString event_type)
     if (editor && editor->project) {
         DraggablePixmapItem *object = editor->addNewEvent(event_type);
         if (object) {
+            auto halfSize = ui->graphicsView_Map->size() / 2;
+            auto centerPos = ui->graphicsView_Map->mapToScene(halfSize.width(), halfSize.height());
+            object->move(Metatile::coordFromPixmapCoord(centerPos));
             updateObjects();
             editor->selectMapEvent(object, false);
         } else {
