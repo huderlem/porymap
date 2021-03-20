@@ -11,6 +11,9 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ### Added
 - Add ability to export map timelapse animated GIFs with `File -> Export Map Timelapse Image...`.
 
+### Changed
+- New events will be placed in the center of the current view of the map.
+
 ### Fixed
 - Fix tileset palette editor crash that could occur when switching maps or tilesets with it open.
 
