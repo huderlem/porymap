@@ -65,9 +65,16 @@ void DraggablePixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *mouse) {
     this->editor->selectingEvent = true;
 }
 
-void DraggablePixmapItem::move(int x, int y) {
-    event->setX(event->x() + x);
-    event->setY(event->y() + y);
+void DraggablePixmapItem::move(int dx, int dy) {
+    event->setX(event->x() + dx);
+    event->setY(event->y() + dy);
+    updatePosition();
+    emitPositionChanged();
+}
+
+void DraggablePixmapItem::moveTo(const QPoint &pos) {
+    event->setX(pos.x());
+    event->setY(pos.y());
     updatePosition();
     emitPositionChanged();
 }
