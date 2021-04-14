@@ -17,6 +17,7 @@
 #include "shortcut.h"
 
 #include <QFileDialog>
+#include <QClipboard>
 #include <QDirIterator>
 #include <QStandardItemModel>
 #include <QSpinBox>
@@ -34,6 +35,9 @@
 #include <QTransform>
 #include <QSignalBlocker>
 #include <QSet>
+
+using OrderedJson = poryjson::Json;
+using OrderedJsonDoc = poryjson::JsonDoc;
 
 
 
@@ -149,6 +153,12 @@ void MainWindow::initExtraShortcuts() {
     auto *shortcut_Open_Scripts = new Shortcut(QKeySequence(), ui->toolButton_Open_Scripts, SLOT(click()));
     shortcut_Open_Scripts->setObjectName("shortcut_Open_Scripts");
     shortcut_Open_Scripts->setWhatsThis("Open Map Scripts");
+
+    auto *shortcut_Copy = new Shortcut(QKeySequence("Ctrl+C"), this, SLOT(copy()));
+    shortcut_Copy->setObjectName("shortcut_Copy");
+
+    auto *shortcut_Paste = new Shortcut(QKeySequence("Ctrl+V"), this, SLOT(paste()));
+    shortcut_Paste->setObjectName("shortcut_Paste");
 }
 
 QObjectList MainWindow::shortcutableObjects() const {
@@ -1370,6 +1380,225 @@ void MainWindow::on_action_Save_Project_triggered()
 
 void MainWindow::duplicate() {
     editor->duplicateSelectedEvents();
+}
+
+void MainWindow::copy() {
+    auto focused = QApplication::focusWidget();
+    if (focused) {
+        QString objectName = focused->objectName();
+        if (objectName == "graphicsView_currentMetatileSelection") {
+            // copy the current metatile selection as json data
+            OrderedJson::object copyObject;
+            copyObject["object"] = "metatile_selection";
+            OrderedJson::array metatiles;
+            for (auto item : *editor->metatile_selector_item->getSelectedMetatiles()) {
+                metatiles.append(static_cast<int>(item));
+            }
+            OrderedJson::array collisions;
+            for (auto collisionPair : *editor->metatile_selector_item->getSelectedCollisions()) {
+                OrderedJson::object collision;
+                collision["collision"] = collisionPair.first;
+                collision["elevation"] = collisionPair.second;
+                collisions.append(collision);
+            }
+            if (collisions.length() != metatiles.length()) {
+                // fill in collisions
+                collisions.clear();
+                for (int i = 0; i < metatiles.length(); i++) {
+                    OrderedJson::object collision;
+                    collision["collision"] = 0;
+                    collision["elevation"] = 3;
+                    collisions.append(collision);
+                }
+            }
+            copyObject["metatile_selection"] = metatiles;
+            copyObject["collision_selection"] = collisions;
+            copyObject["width"] = editor->metatile_selector_item->getSelectionDimensions().x();
+            copyObject["height"] = editor->metatile_selector_item->getSelectionDimensions().y();
+            setClipboardData(copyObject);
+            logInfo("Copied metatile selection to clipboard");
+        } else if (objectName == "graphicsView_Map") {
+            // which tab are we in?
+            switch (ui->mainTabBar->currentIndex())
+            {
+            default:
+                break;
+            case 0:
+            {
+                // copy the map image
+                QPixmap pixmap = editor->map ? editor->map->render(true) : QPixmap();
+                setClipboardData(pixmap.toImage());
+                logInfo("Copied current map image to clipboard");
+                break;
+            }
+            case 1:
+            {
+                // copy the currently selected event(s) as a json object
+                OrderedJson::object copyObject;
+                copyObject["object"] = "events";
+
+                QList<DraggablePixmapItem *> events;
+                if (editor->selected_events && editor->selected_events->length()) {
+                    events = *editor->selected_events;
+                }
+
+                OrderedJson::array eventsArray;
+
+                for (auto item : events) {
+                    Event *event = item->event;
+                    QString type = event->get("event_type");
+
+                    if (type == EventType::HealLocation) {
+                        // no copy on heal locations
+                        continue;
+                    }
+
+                    OrderedJson::object eventJson;
+
+                    for (QString key : event->values.keys()) {
+                        eventJson[key] = event->values[key];
+                    }
+
+                    eventsArray.append(eventJson);
+                }
+
+                copyObject["events"] = eventsArray;
+                setClipboardData(copyObject);
+                logInfo("Copied currently selected events to clipboard");
+
+                break;
+            }
+            }
+        }
+    }
+}
+
+void MainWindow::setClipboardData(OrderedJson::object object) {
+    QClipboard *clipboard = QGuiApplication::clipboard();
+    QString newText;
+    int indent = 0;
+    object["application"] = "porymap";
+    OrderedJson data(object);
+    data.dump(newText, &indent);
+    clipboard->setText(newText);
+}
+
+void MainWindow::setClipboardData(QImage image) {
+    QClipboard *clipboard = QGuiApplication::clipboard();
+    clipboard->setImage(image);
+}
+
+void MainWindow::paste() {
+    if (!editor || !editor->project || !editor->map) return;
+
+    QClipboard *clipboard = QGuiApplication::clipboard();
+    QString clipboardText(clipboard->text());
+
+
+    if (!clipboardText.isEmpty()) {
+        // we only can paste json text
+        // so, check if clipboard text is valid json
+        QString parseError;
+        QJsonDocument pasteJsonDoc = QJsonDocument::fromJson(clipboardText.toUtf8());
+
+        // test empty
+        QJsonObject pasteObject = pasteJsonDoc.object();
+
+        //OrderedJson::object pasteObject = pasteJson.object_items();
+        if (pasteObject["application"].toString() != "porymap") {
+            return;
+        }
+
+        logInfo("Attempting to paste from JSON in clipboard");
+
+        switch (ui->mainTabBar->currentIndex())
+            {
+            default:
+                break;
+            case 0:
+            {
+                // can only paste currently selected metatiles on this tab
+                // can only paste events to this tab
+                if (pasteObject["object"].toString() != "metatile_selection") {
+                    return;
+                }
+                QJsonArray metatilesArray = pasteObject["metatile_selection"].toArray();
+                QJsonArray collisionsArray = pasteObject["collision_selection"].toArray();
+                int width = pasteObject["width"].toInt();
+                int height = pasteObject["height"].toInt();
+                QList<uint16_t> metatiles;
+                QList<QPair<uint16_t, uint16_t>> collisions;
+                for (auto tile : metatilesArray) {
+                    metatiles.append(static_cast<uint16_t>(tile.toInt()));
+                }
+                for (QJsonValue collision : collisionsArray) {
+                    collisions.append({static_cast<uint16_t>(collision["collision"].toInt()), static_cast<uint16_t>(collision["elevation"].toInt())});
+                }
+                editor->metatile_selector_item->setExternalSelection(width, height, metatiles, collisions);
+                break;
+            }
+            case 1:
+            {
+                // can only paste events to this tab
+                if (pasteObject["object"].toString() != "events") {
+                    return;
+                }
+
+                QList<Event *> newEvents;
+
+                QJsonArray events = pasteObject["events"].toArray();
+                for (QJsonValue event : events) {
+                    // paste the event to the map
+                    QString type = event["event_type"].toString();
+
+                    Event *pasteEvent = Event::createNewEvent(type, editor->map->name, editor->project);
+
+                    for (auto key : event.toObject().keys())
+                    {
+                        QString value;
+
+                        QJsonValue valueJson = event[key];
+
+                        switch (valueJson.type()) {
+                            default:
+                            case QJsonValue::Type::Null:
+                            case QJsonValue::Type::Array:
+                            case QJsonValue::Type::Object:
+                                break;
+                            case QJsonValue::Type::Double:
+                                value = QString::number(valueJson.toInt());
+                                break;
+                            case QJsonValue::Type::String:
+                                value = valueJson.toString();
+                                break;
+                            case QJsonValue::Type::Bool:
+                                value = QString::number(valueJson.toBool());
+                                break;
+                        }
+                        pasteEvent->put(key, value);
+                    }
+
+                    pasteEvent->put("map_name", editor->map->name);
+                    editor->map->addEvent(pasteEvent);
+                    newEvents.append(pasteEvent);
+                }
+
+                editor->project->loadEventPixmaps(editor->map->getAllEvents());
+
+                for (Event *event : newEvents) {
+                    editor->addMapEvent(event);
+                }
+
+                // select these events
+                editor->selected_events->clear();
+                for (Event *event : newEvents) {
+                    editor->selected_events->append(event->pixmapItem);
+                }
+                editor->shouldReselectEvents();
+                break;
+            }
+        }
+    }
 }
 
 void MainWindow::on_action_Save_triggered() {
