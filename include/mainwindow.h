@@ -13,6 +13,7 @@
 #include <QAbstractItemModel>
 #include <QJSValue>
 #include "project.h"
+#include "orderedjson.h"
 #include "config.h"
 #include "map.h"
 #include "editor.h"
@@ -120,6 +121,10 @@ private slots:
     void openWarpMap(QString map_name, QString warp_num);
 
     void duplicate();
+    void setClipboardData(poryjson::Json::object);
+    void setClipboardData(QImage);
+    void copy();
+    void paste();
 
     void onLoadMapRequested(QString, QString);
     void onMapChanged(Map *map);
