@@ -30,6 +30,7 @@ enum CommandId {
     ID_EventCreate,
     ID_EventDelete,
     ID_EventDuplicate,
+    ID_EventPaste,
 };
 
 #define IDMask_EventType_Object  (1 << 8)
@@ -322,10 +323,21 @@ public:
     bool mergeWith(const QUndoCommand *) override { return false; }
     int id() const override;
 
-private:
+protected:
     Map *map;
     QList<Event *> selectedEvents; // allow multiple deletion of events
     Editor *editor;
+};
+
+
+
+/// Implements a command to commit Event pastes from clipboard.
+class EventPaste : public EventDuplicate {
+public:
+    EventPaste(Editor *editor, Map *map, QList<Event *> pastedEvents,
+        QUndoCommand *parent = nullptr);
+
+    int id() const override;
 };
 
 

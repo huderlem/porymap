@@ -414,7 +414,11 @@ int EventDelete::id() const {
 EventDuplicate::EventDuplicate(Editor *editor, Map *map,
     QList<Event *> selectedEvents,
     QUndoCommand *parent) : QUndoCommand(parent) {
-    setText("Duplicate Event");
+    if (selectedEvents.size() > 1) {
+        setText("Duplicate Events");
+    } else {
+        setText("Duplicate Event");
+    }
 
     this->editor = editor;
 
@@ -460,6 +464,24 @@ void EventDuplicate::undo() {
 
 int EventDuplicate::id() const {
     return CommandId::ID_EventDuplicate | getEventTypeMask(this->selectedEvents);
+}
+
+/******************************************************************************
+    ************************************************************************
+ ******************************************************************************/
+
+EventPaste::EventPaste(Editor *editor, Map *map,
+    QList<Event *> pastedEvents,
+    QUndoCommand *parent) : EventDuplicate(editor, map, pastedEvents) {
+    if (pastedEvents.size() > 1) {
+        setText("Paste Events");
+    } else {
+        setText("Paste Event");
+    }
+}
+
+int EventPaste::id() const {
+    return CommandId::ID_EventPaste | getEventTypeMask(this->selectedEvents);
 }
 
 /******************************************************************************

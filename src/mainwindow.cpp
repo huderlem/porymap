@@ -156,9 +156,11 @@ void MainWindow::initExtraShortcuts() {
 
     auto *shortcut_Copy = new Shortcut(QKeySequence("Ctrl+C"), this, SLOT(copy()));
     shortcut_Copy->setObjectName("shortcut_Copy");
+    shortcut_Copy->setWhatsThis("Copy");
 
     auto *shortcut_Paste = new Shortcut(QKeySequence("Ctrl+V"), this, SLOT(paste()));
     shortcut_Paste->setObjectName("shortcut_Paste");
+    shortcut_Copy->setWhatsThis("Paste");
 }
 
 QObjectList MainWindow::shortcutableObjects() const {
@@ -1582,18 +1584,8 @@ void MainWindow::paste() {
                     newEvents.append(pasteEvent);
                 }
 
-                editor->project->loadEventPixmaps(editor->map->getAllEvents());
+                editor->map->editHistory.push(new EventPaste(this->editor, editor->map, newEvents));
 
-                for (Event *event : newEvents) {
-                    editor->addMapEvent(event);
-                }
-
-                // select these events
-                editor->selected_events->clear();
-                for (Event *event : newEvents) {
-                    editor->selected_events->append(event->pixmapItem);
-                }
-                editor->shouldReselectEvents();
                 break;
             }
         }
