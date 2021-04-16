@@ -467,15 +467,15 @@ QStringList ParseUtil::getGlobalScriptLabels(const QString &filePath) {
         return getGlobalRawScriptLabels(readTextFile(filePath));
     else if (filePath.endsWith(".pory"))
         return getGlobalPoryScriptLabels(readTextFile(filePath));
-
-    return { };
+    else
+        return { };
 }
 
 QStringList ParseUtil::getGlobalRawScriptLabels(QString text) {
     removeStringLiterals(text);
     removeLineComments(text, "@");
 
-    auto rawScriptLabels = QStringList();
+    QStringList rawScriptLabels;
 
     QRegularExpressionMatchIterator it = re_globalIncScriptLabel.globalMatch(text);
     while (it.hasNext()) {
@@ -490,7 +490,7 @@ QStringList ParseUtil::getGlobalPoryScriptLabels(QString text) {
     removeStringLiterals(text);
     removeLineComments(text, {"//", "#"});
 
-    auto poryScriptLabels = QStringList();
+    QStringList poryScriptLabels;
 
     QRegularExpressionMatchIterator it = re_globalPoryScriptLabel.globalMatch(text);
     while (it.hasNext())
@@ -520,12 +520,15 @@ QString ParseUtil::removeLineComments(QString text, const QStringList &commentSy
 }
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
+
 #include <QProcess>
 
 QStringList ParseUtil::splitShellCommand(QStringView command) {
     return QProcess::splitCommand(command);
 }
+
 #else
+
 // The source for QProcess::splitCommand() as of Qt 5.15.2
 QStringList ParseUtil::splitShellCommand(QStringView command) {
     QStringList args;
@@ -565,4 +568,5 @@ QStringList ParseUtil::splitShellCommand(QStringView command) {
 
     return args;
 }
+
 #endif

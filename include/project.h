@@ -62,7 +62,7 @@ public:
     QStringList secretBaseIds;
     QStringList bgEventFacingDirections;
     QStringList trainerTypes;
-    QStringList eventScriptLabels;
+    QStringList globalScriptLabels;
     QMap<QString, int> metatileBehaviorMap;
     QMap<int, QString> metatileBehaviorMapInverse;
     QMap<QString, QString> facingDirections;
@@ -180,7 +180,7 @@ public:
     QString getScriptDefaultString(bool usePoryScript, QString mapName) const;
     QString getMapScriptsFilePath(const QString &mapName) const;
     QStringList getEventScriptsFilePaths() const;
-    QCompleter *getEventScriptLabelCompleter(QStringList additionalCompletions) const;
+    QCompleter *getEventScriptLabelCompleter(QStringList additionalScriptLabels);
 
     bool loadMapBorder(Map *map);
 
@@ -223,8 +223,8 @@ private:
     static int default_map_size;
     static int max_object_events;
 
-    QStringListModel *eventScriptLabelModel = nullptr;
-    QCompleter *eventScriptLabelCompleter = nullptr;
+    QStringListModel eventScriptLabelModel;
+    QCompleter eventScriptLabelCompleter;
 
 signals:
     void reloadProject();
