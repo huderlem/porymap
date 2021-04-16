@@ -6,11 +6,11 @@
 QJSValue MainWindow::getBlock(int x, int y) {
     if (!this->editor || !this->editor->map)
         return QJSValue();
-    Block *block = this->editor->map->getBlock(x, y);
-    if (!block) {
+    Block block;
+    if (!this->editor->map->getBlock(x, y, &block)) {
         return Scripting::fromBlock(Block());
     }
-    return Scripting::fromBlock(*block);
+    return Scripting::fromBlock(block);
 }
 
 void MainWindow::tryRedrawMapArea(bool forceRedraw) {
@@ -26,7 +26,7 @@ void MainWindow::tryCommitMapChanges(bool commitChanges) {
         if (map) {
             map->editHistory.push(new ScriptEditMap(map,
                 map->layout->lastCommitMapBlocks.dimensions, QSize(map->getWidth(), map->getHeight()),
-                map->layout->lastCommitMapBlocks.blocks->copy(), map->layout->blockdata->copy()
+                map->layout->lastCommitMapBlocks.blocks, map->layout->blockdata
             ));
         }
     }
@@ -51,21 +51,21 @@ void MainWindow::setBlocksFromSelection(int x, int y, bool forceRedraw, bool com
 int MainWindow::getMetatileId(int x, int y) {
     if (!this->editor || !this->editor->map)
         return 0;
-    Block *block = this->editor->map->getBlock(x, y);
-    if (!block) {
+    Block block;
+    if (!this->editor->map->getBlock(x, y, &block)) {
         return 0;
     }
-    return block->tile;
+    return block.tile;
 }
 
 void MainWindow::setMetatileId(int x, int y, int metatileId, bool forceRedraw, bool commitChanges) {
     if (!this->editor || !this->editor->map)
         return;
-    Block *block = this->editor->map->getBlock(x, y);
-    if (!block) {
+    Block block;
+    if (!this->editor->map->getBlock(x, y, &block)) {
         return;
     }
-    this->editor->map->setBlock(x, y, Block(metatileId, block->collision, block->elevation));
+    this->editor->map->setBlock(x, y, Block(metatileId, block.collision, block.elevation));
     this->tryCommitMapChanges(commitChanges);
     this->tryRedrawMapArea(forceRedraw);
 }
@@ -73,21 +73,21 @@ void MainWindow::setMetatileId(int x, int y, int metatileId, bool forceRedraw, b
 int MainWindow::getCollision(int x, int y) {
     if (!this->editor || !this->editor->map)
         return 0;
-    Block *block = this->editor->map->getBlock(x, y);
-    if (!block) {
+    Block block;
+    if (!this->editor->map->getBlock(x, y, &block)) {
         return 0;
     }
-    return block->collision;
+    return block.collision;
 }
 
 void MainWindow::setCollision(int x, int y, int collision, bool forceRedraw, bool commitChanges) {
     if (!this->editor || !this->editor->map)
         return;
-    Block *block = this->editor->map->getBlock(x, y);
-    if (!block) {
+    Block block;
+    if (!this->editor->map->getBlock(x, y, &block)) {
         return;
     }
-    this->editor->map->setBlock(x, y, Block(block->tile, collision, block->elevation));
+    this->editor->map->setBlock(x, y, Block(block.tile, collision, block.elevation));
     this->tryCommitMapChanges(commitChanges);
     this->tryRedrawMapArea(forceRedraw);
 }
@@ -95,21 +95,21 @@ void MainWindow::setCollision(int x, int y, int collision, bool forceRedraw, boo
 int MainWindow::getElevation(int x, int y) {
     if (!this->editor || !this->editor->map)
         return 0;
-    Block *block = this->editor->map->getBlock(x, y);
-    if (!block) {
+    Block block;
+    if (!this->editor->map->getBlock(x, y, &block)) {
         return 0;
     }
-    return block->elevation;
+    return block.elevation;
 }
 
 void MainWindow::setElevation(int x, int y, int elevation, bool forceRedraw, bool commitChanges) {
     if (!this->editor || !this->editor->map)
         return;
-    Block *block = this->editor->map->getBlock(x, y);
-    if (!block) {
+    Block block;
+    if (!this->editor->map->getBlock(x, y, &block)) {
         return;
     }
-    this->editor->map->setBlock(x, y, Block(block->tile, block->collision, elevation));
+    this->editor->map->setBlock(x, y, Block(block.tile, block.collision, elevation));
     this->tryCommitMapChanges(commitChanges);
     this->tryRedrawMapArea(forceRedraw);
 }
@@ -149,7 +149,7 @@ void MainWindow::magicFillFromSelection(int x, int y, bool forceRedraw, bool com
 void MainWindow::shift(int xDelta, int yDelta, bool forceRedraw, bool commitChanges) {
     if (!this->editor || !this->editor->map)
         return;
-    this->editor->map_item->shift(xDelta, yDelta);
+    this->editor->map_item->shift(xDelta, yDelta, true);
     this->tryCommitMapChanges(commitChanges);
     this->tryRedrawMapArea(forceRedraw);
 }
@@ -260,7 +260,7 @@ void MainWindow::refreshAfterPaletteChange(Tileset *tileset) {
 void MainWindow::setTilesetPalette(Tileset *tileset, int paletteIndex, QList<QList<int>> colors) {
     if (!this->editor || !this->editor->map || !this->editor->map->layout)
         return;
-    if (paletteIndex >= tileset->palettes->size())
+    if (paletteIndex >= tileset->palettes.size())
         return;
     if (colors.size() != 16)
         return;
@@ -268,8 +268,8 @@ void MainWindow::setTilesetPalette(Tileset *tileset, int paletteIndex, QList<QLi
     for (int i = 0; i < 16; i++) {
         if (colors[i].size() != 3)
             continue;
-        (*tileset->palettes)[paletteIndex][i] = qRgb(colors[i][0], colors[i][1], colors[i][2]);
-        (*tileset->palettePreviews)[paletteIndex][i] = qRgb(colors[i][0], colors[i][1], colors[i][2]);
+        tileset->palettes[paletteIndex][i] = qRgb(colors[i][0], colors[i][1], colors[i][2]);
+        tileset->palettePreviews[paletteIndex][i] = qRgb(colors[i][0], colors[i][1], colors[i][2]);
     }
 }
 
@@ -305,22 +305,22 @@ void MainWindow::setSecondaryTilesetPalettes(QList<QList<QList<int>>> palettes) 
     this->refreshAfterPaletteChange(this->editor->map->layout->tileset_secondary);
 }
 
-QJSValue MainWindow::getTilesetPalette(QList<QList<QRgb>> *palettes, int paletteIndex) {
-    if (paletteIndex >= palettes->size())
+QJSValue MainWindow::getTilesetPalette(const QList<QList<QRgb>> &palettes, int paletteIndex) {
+    if (paletteIndex >= palettes.size())
         return QJSValue();
 
     QList<QList<int>> palette;
-    for (auto color : palettes->value(paletteIndex)) {
+    for (auto color : palettes.value(paletteIndex)) {
         palette.append(QList<int>({qRed(color), qGreen(color), qBlue(color)}));
     }
     return Scripting::getEngine()->toScriptValue(palette);
 }
 
-QJSValue MainWindow::getTilesetPalettes(QList<QList<QRgb>> *palettes) {
+QJSValue MainWindow::getTilesetPalettes(const QList<QList<QRgb>> &palettes) {
     QList<QList<QList<int>>> outPalettes;
-    for (int i = 0; i < palettes->size(); i++) {
+    for (int i = 0; i < palettes.size(); i++) {
         QList<QList<int>> colors;
-        for (auto color : palettes->value(i)) {
+        for (auto color : palettes.value(i)) {
             colors.append(QList<int>({qRed(color), qGreen(color), qBlue(color)}));
         }
         outPalettes.append(colors);
@@ -363,7 +363,7 @@ void MainWindow::refreshAfterPalettePreviewChange() {
 void MainWindow::setTilesetPalettePreview(Tileset *tileset, int paletteIndex, QList<QList<int>> colors) {
     if (!this->editor || !this->editor->map || !this->editor->map->layout)
         return;
-    if (paletteIndex >= tileset->palettePreviews->size())
+    if (paletteIndex >= tileset->palettePreviews.size())
         return;
     if (colors.size() != 16)
         return;
@@ -371,8 +371,7 @@ void MainWindow::setTilesetPalettePreview(Tileset *tileset, int paletteIndex, QL
     for (int i = 0; i < 16; i++) {
         if (colors[i].size() != 3)
             continue;
-        auto palettes = tileset->palettePreviews;
-        (*palettes)[paletteIndex][i] = qRgb(colors[i][0], colors[i][1], colors[i][2]);
+        tileset->palettePreviews[paletteIndex][i] = qRgb(colors[i][0], colors[i][1], colors[i][2]);
     }
 }
 
@@ -502,7 +501,7 @@ void MainWindow::setTimeout(QJSValue callback, int milliseconds) {
     connect(timer, &QTimer::timeout, [=](){
         this->invokeCallback(callback);
     });
-    connect(timer, SIGNAL(timeout()), timer, SLOT(deleteLater()));
+    connect(timer, &QTimer::timeout, timer, &QTimer::deleteLater);
     timer->setSingleShot(true);
     timer->start(milliseconds);
 }

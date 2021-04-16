@@ -47,7 +47,7 @@ public:
     QString allowRunning;
     QString allowBiking;
     QString allowEscapeRope;
-    int floorNumber;
+    int floorNumber = 0;
     QString battle_scene;
     QString sharedEventsMap = "";
     QString sharedScriptsMap = "";
@@ -75,11 +75,11 @@ public:
     int getBorderHeight();
     QPixmap render(bool ignoreCache, MapLayout * fromLayout = nullptr);
     QPixmap renderCollision(qreal opacity, bool ignoreCache);
-    bool mapBlockChanged(int i, Blockdata * cache);
-    bool borderBlockChanged(int i, Blockdata * cache);
+    bool mapBlockChanged(int i, const Blockdata &cache);
+    bool borderBlockChanged(int i, const Blockdata &cache);
     void cacheBlockdata();
     void cacheCollision();
-    Block *getBlock(int x, int y);
+    bool getBlock(int x, int y, Block *out);
     void setBlock(int x, int y, Block block, bool enableScriptCallback = false);
     void floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
     void _floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);

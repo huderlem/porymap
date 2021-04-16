@@ -210,13 +210,30 @@
         </widget>
        </item>
        <item row="10" column="0">
+        <widget class="QLabel" name="label_Song">
+         <property name="text">
+          <string>Song</string>
+         </property>
+        </widget>
+       </item>
+       <item row="10" column="1">
+        <widget class="NoScrollComboBox" name="comboBox_Song">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The default background music for this map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="editable">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="11" column="0">
         <widget class="QLabel" name="label_NewMap_Flyable">
          <property name="text">
           <string>Can Fly To</string>
          </property>
         </widget>
        </item>
-       <item row="10" column="1">
+       <item row="11" column="1">
         <widget class="QCheckBox" name="checkBox_NewMap_Flyable">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Whether to add a heal location to the new map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -226,14 +243,14 @@
          </property>
         </widget>
        </item>
-       <item row="11" column="0">
+       <item row="12" column="0">
         <widget class="QLabel" name="label_NewMap_Show_Location">
          <property name="text">
           <string>Show Location Name</string>
          </property>
         </widget>
        </item>
-       <item row="11" column="1">
+       <item row="12" column="1">
         <widget class="QCheckBox" name="checkBox_NewMap_Show_Location">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Whether or not to display the location name when the player enters the map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -243,14 +260,14 @@
          </property>
         </widget>
        </item>
-       <item row="12" column="0">
+       <item row="13" column="0">
         <widget class="QLabel" name="label_NewMap_Allow_Running">
          <property name="text">
           <string>Allow Running</string>
          </property>
         </widget>
        </item>
-       <item row="12" column="1">
+       <item row="13" column="1">
         <widget class="QCheckBox" name="checkBox_NewMap_Allow_Running">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Allows the player to use Running Shoes&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -260,14 +277,14 @@
          </property>
         </widget>
        </item>
-       <item row="13" column="0">
+       <item row="14" column="0">
         <widget class="QLabel" name="label_NewMap_Allow_Biking">
          <property name="text">
           <string>Allow Biking</string>
          </property>
         </widget>
        </item>
-       <item row="13" column="1">
+       <item row="14" column="1">
         <widget class="QCheckBox" name="checkBox_NewMap_Allow_Biking">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Allows the player to use a Bike&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -277,14 +294,14 @@
          </property>
         </widget>
        </item>
-       <item row="14" column="0">
+       <item row="15" column="0">
         <widget class="QLabel" name="label_NewMap_Allow_Escape_Rope">
          <property name="text">
           <string>Allow Dig &amp; Escape Rope</string>
          </property>
         </widget>
        </item>
-       <item row="14" column="1">
+       <item row="15" column="1">
         <widget class="QCheckBox" name="checkBox_NewMap_Allow_Escape_Rope">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Allows the player to use Dig or Escape Rope&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -294,14 +311,14 @@
          </property>
         </widget>
        </item>
-       <item row="15" column="0">
+       <item row="16" column="0">
         <widget class="QLabel" name="label_NewMap_Floor_Number">
          <property name="text">
           <string>Floor Number</string>
          </property>
         </widget>
        </item>
-       <item row="15" column="1">
+       <item row="16" column="1">
         <widget class="QSpinBox" name="spinBox_NewMap_Floor_Number">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Floor number to be used for maps with elevators.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>

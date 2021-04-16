@@ -7,54 +7,56 @@
 #include <QPainter>
 #include <QImage>
 
-Tileset::Tileset()
-{
 
+Tileset::Tileset(const Tileset &other)
+    : name(other.name),
+      is_compressed(other.is_compressed),
+      is_secondary(other.is_secondary),
+      padding(other.padding),
+      tiles_label(other.tiles_label),
+      palettes_label(other.palettes_label),
+      metatiles_label(other.metatiles_label),
+      metatiles_path(other.metatiles_path),
+      callback_label(other.callback_label),
+      metatile_attrs_label(other.metatile_attrs_label),
+      metatile_attrs_path(other.metatile_attrs_path),
+      tilesImagePath(other.tilesImagePath),
+      tilesImage(other.tilesImage),
+      palettePaths(other.palettePaths),
+      tiles(other.tiles),
+      palettes(other.palettes),
+      palettePreviews(other.palettePreviews)
+{
+    for (auto *metatile : other.metatiles) {
+        metatiles.append(new Metatile(*metatile));
+    }
 }
 
-Tileset* Tileset::copy() {
-    Tileset *copy = new Tileset;
-    copy->name = this->name;
-    copy->is_compressed = this->is_compressed;
-    copy->is_secondary = this->is_secondary;
-    copy->padding = this->padding;
-    copy->tiles_label = this->tiles_label;
-    copy->palettes_label = this->palettes_label;
-    copy->metatiles_label = this->metatiles_label;
-    copy->metatiles_path = this->metatiles_path;
-    copy->callback_label = this->callback_label;
-    copy->metatile_attrs_label = this->metatile_attrs_label;
-    copy->metatile_attrs_path = this->metatile_attrs_path;
-    copy->tilesImage = this->tilesImage.copy();
-    copy->tilesImagePath = this->tilesImagePath;
-    for (int i = 0; i < this->palettePaths.length(); i++) {
-        copy->palettePaths.append(this->palettePaths.at(i));
+Tileset &Tileset::operator=(const Tileset &other) {
+    name = other.name;
+    is_compressed = other.is_compressed;
+    is_secondary = other.is_secondary;
+    padding = other.padding;
+    tiles_label = other.tiles_label;
+    palettes_label = other.palettes_label;
+    metatiles_label = other.metatiles_label;
+    metatiles_path = other.metatiles_path;
+    callback_label = other.callback_label;
+    metatile_attrs_label = other.metatile_attrs_label;
+    metatile_attrs_path = other.metatile_attrs_path;
+    tilesImagePath = other.tilesImagePath;
+    tilesImage = other.tilesImage;
+    palettePaths = other.palettePaths;
+    tiles = other.tiles;
+    palettes = other.palettes;
+    palettePreviews = other.palettePreviews;
+
+    metatiles.clear();
+    for (auto *metatile : other.metatiles) {
+        metatiles.append(new Metatile(*metatile));
     }
-    copy->tiles = new QList<QImage>;
-    for (QImage tile : *this->tiles) {
-        copy->tiles->append(tile.copy());
-    }
-    copy->metatiles = new QList<Metatile*>;
-    for (Metatile *metatile : *this->metatiles) {
-        copy->metatiles->append(metatile->copy());
-    }
-    copy->palettes = new QList<QList<QRgb>>;
-    for (QList<QRgb> palette : *this->palettes) {
-        QList<QRgb> copyPalette;
-        for (QRgb color : palette) {
-            copyPalette.append(color);
-        }
-        copy->palettes->append(copyPalette);
-    }
-    copy->palettePreviews = new QList<QList<QRgb>>;
-    for (QList<QRgb> palette : *this->palettePreviews) {
-        QList<QRgb> copyPalette;
-        for (QRgb color : palette) {
-            copyPalette.append(color);
-        }
-        copy->palettePreviews->append(copyPalette);
-    }
-    return copy;
+
+    return *this;
 }
 
 Tileset* Tileset::getBlockTileset(int metatile_index, Tileset *primaryTileset, Tileset *secondaryTileset) {
@@ -68,21 +70,20 @@ Tileset* Tileset::getBlockTileset(int metatile_index, Tileset *primaryTileset, T
 Metatile* Tileset::getMetatile(int index, Tileset *primaryTileset, Tileset *secondaryTileset) {
     Tileset *tileset = Tileset::getBlockTileset(index, primaryTileset, secondaryTileset);
     int local_index = Metatile::getBlockIndex(index);
-    if (!tileset || !tileset->metatiles) {
+    if (!tileset) {
         return nullptr;
     }
-    Metatile *metatile = tileset->metatiles->value(local_index, nullptr);
-    return metatile;
+    return tileset->metatiles.value(local_index, nullptr);
 }
 
 bool Tileset::metatileIsValid(uint16_t metatileId, Tileset *primaryTileset, Tileset *secondaryTileset) {
     if (metatileId >= Project::getNumMetatilesTotal())
         return false;
 
-    if (metatileId < Project::getNumMetatilesPrimary() && metatileId >= primaryTileset->metatiles->length())
+    if (metatileId < Project::getNumMetatilesPrimary() && metatileId >= primaryTileset->metatiles.length())
         return false;
 
-    if (metatileId >= Project::getNumMetatilesPrimary() + secondaryTileset->metatiles->length())
+    if (metatileId >= Project::getNumMetatilesPrimary() + secondaryTileset->metatiles.length())
         return false;
 
     return true;
@@ -92,11 +93,11 @@ QList<QList<QRgb>> Tileset::getBlockPalettes(Tileset *primaryTileset, Tileset *s
     QList<QList<QRgb>> palettes;
     auto primaryPalettes = useTruePalettes ? primaryTileset->palettes : primaryTileset->palettePreviews;
     for (int i = 0; i < Project::getNumPalettesPrimary(); i++) {
-        palettes.append(primaryPalettes->at(i));
+        palettes.append(primaryPalettes.at(i));
     }
     auto secondaryPalettes = useTruePalettes ? secondaryTileset->palettes : secondaryTileset->palettePreviews;
     for (int i = Project::getNumPalettesPrimary(); i < Project::getNumPalettesTotal(); i++) {
-        palettes.append(secondaryPalettes->at(i));
+        palettes.append(secondaryPalettes.at(i));
     }
     return palettes;
 }
@@ -107,8 +108,8 @@ QList<QRgb> Tileset::getPalette(int paletteId, Tileset *primaryTileset, Tileset 
             ? primaryTileset
             : secondaryTileset;
     auto palettes = useTruePalettes ? tileset->palettes : tileset->palettePreviews;
-    for (int i = 0; i < palettes->at(paletteId).length(); i++) {
-        paletteTable.append(palettes->at(paletteId).at(i));
+    for (int i = 0; i < palettes.at(paletteId).length(); i++) {
+        paletteTable.append(palettes.at(paletteId).at(i));
     }
     return paletteTable;
 }

@@ -77,8 +77,8 @@ public:
     Q_INVOKABLE void setPrimaryTilesetPalettes(QList<QList<QList<int>>> palettes);
     Q_INVOKABLE void setSecondaryTilesetPalette(int paletteIndex, QList<QList<int>> colors);
     Q_INVOKABLE void setSecondaryTilesetPalettes(QList<QList<QList<int>>> palettes);
-    QJSValue getTilesetPalette(QList<QList<QRgb>> *palettes, int paletteIndex);
-    QJSValue getTilesetPalettes(QList<QList<QRgb>> *palettes);
+    QJSValue getTilesetPalette(const QList<QList<QRgb>> &palettes, int paletteIndex);
+    QJSValue getTilesetPalettes(const QList<QList<QRgb>> &palettes);
     Q_INVOKABLE QJSValue getPrimaryTilesetPalette(int paletteIndex);
     Q_INVOKABLE QJSValue getPrimaryTilesetPalettes();
     Q_INVOKABLE QJSValue getSecondaryTilesetPalette(int paletteIndex);
@@ -222,6 +222,8 @@ private slots:
     void on_toolButton_ExpandAll_clicked();
     void on_toolButton_CollapseAll_clicked();
     void on_actionAbout_Porymap_triggered();
+    void on_actionOpen_Log_File_triggered();
+    void on_actionOpen_Config_Folder_triggered();
     void on_pushButton_AddCustomHeaderField_clicked();
     void on_pushButton_DeleteCustomHeaderField_clicked();
     void on_tableWidget_CustomHeaderFields_cellChanged(int row, int column);
@@ -236,14 +238,14 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    QLabel *label_MapRulerStatus;
-    TilesetEditor *tilesetEditor = nullptr;
-    RegionMapEditor *regionMapEditor = nullptr;
-    ShortcutsEditor *shortcutsEditor = nullptr;
-    MapImageExporter *mapImageExporter = nullptr;
+    QLabel *label_MapRulerStatus = nullptr;
+    QPointer<TilesetEditor> tilesetEditor = nullptr;
+    QPointer<RegionMapEditor> regionMapEditor = nullptr;
+    QPointer<ShortcutsEditor> shortcutsEditor = nullptr;
+    QPointer<MapImageExporter> mapImageExporter = nullptr;
+    QPointer<NewMapPopup> newmapprompt = nullptr;
+    QPointer<PreferenceEditor> preferenceEditor = nullptr;
     FilterChildrenProxyModel *mapListProxyModel;
-    NewMapPopup *newmapprompt = nullptr;
-    PreferenceEditor *preferenceEditor = nullptr;
     QStandardItemModel *mapListModel;
     QList<QStandardItem*> *mapGroupItemsList;
     QMap<QString, QModelIndex> mapListIndexes;

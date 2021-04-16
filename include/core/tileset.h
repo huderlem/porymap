@@ -9,7 +9,10 @@
 class Tileset
 {
 public:
-    Tileset();
+    Tileset() = default;
+    Tileset(const Tileset &other);
+    Tileset &operator=(const Tileset &other);
+
 public:
     QString name;
     QString is_compressed;
@@ -24,14 +27,12 @@ public:
     QString metatile_attrs_path;
     QString tilesImagePath;
     QImage tilesImage;
-    QList<QString> palettePaths;
+    QStringList palettePaths;
 
-    QList<QImage> *tiles = nullptr;
-    QList<Metatile*> *metatiles = nullptr;
-    QList<QList<QRgb>> *palettes = nullptr;
-    QList<QList<QRgb>> *palettePreviews = nullptr;
-
-    Tileset* copy();
+    QList<QImage> tiles;
+    QList<Metatile*> metatiles;
+    QList<QList<QRgb>> palettes;
+    QList<QList<QRgb>> palettePreviews;
 
     static Tileset* getBlockTileset(int, Tileset*, Tileset*);
     static Metatile* getMetatile(int, Tileset*, Tileset*);

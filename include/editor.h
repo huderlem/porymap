@@ -60,7 +60,6 @@ public:
     void displayCurrentMetatilesSelection();
     void redrawCurrentMetatilesSelection();
     void displayMovementPermissionSelector();
-    void displayElevationMetatiles();
     void displayMapEvents();
     void displayMapConnections();
     void displayMapBorder();
@@ -75,7 +74,6 @@ public:
     void setEditingObjects();
     void setEditingConnections();
     void setMapEditingButtonsEnabled(bool enabled);
-    void clearWildMonTabWidgets();
     void setCurrentConnectionDirection(QString curDirection);
     void updateCurrentConnectionDirection(QString curDirection);
     void setConnectionsVisibility(bool visible);
@@ -99,7 +97,6 @@ public:
     void selectMapEvent(DraggablePixmapItem *object);
     void selectMapEvent(DraggablePixmapItem *object, bool toggle);
     DraggablePixmapItem *addNewEvent(QString event_type);
-    Event* createNewEvent(QString event_type);
     void deleteEvent(Event *);
     void updateSelectedEvents();
     void duplicateSelectedEvents();
@@ -143,8 +140,6 @@ public:
     qreal collisionOpacity = 0.5;
 
     void objectsView_onMousePress(QMouseEvent *event);
-    void objectsView_onMouseMove(QMouseEvent *event);
-    void objectsView_onMouseRelease(QMouseEvent *event);
 
     int getBorderDrawDistance(int dimension);
 
@@ -154,6 +149,7 @@ public:
 
     void shouldReselectEvents();
     void scaleMapView(int);
+    void openInTextEditor(const QString &path, int lineNum = 0) const;
 
 public slots:
     void openMapScripts() const;
@@ -177,18 +173,9 @@ private:
     void updateMirroredConnectionMap(MapConnection*, QString);
     void updateMirroredConnection(MapConnection*, QString, QString, bool isDelete = false);
     void updateEncounterFields(EncounterFields newFields);
-    Event* createNewObjectEvent();
-    Event* createNewWarpEvent();
-    Event* createNewHealLocationEvent();
-    Event* createNewTriggerEvent();
-    Event* createNewWeatherTriggerEvent();
-    Event* createNewSignEvent();
-    Event* createNewHiddenItemEvent();
-    Event* createNewSecretBaseEvent();
     QString getMovementPermissionText(uint16_t collision, uint16_t elevation);
     QString getMetatileDisplayMessage(uint16_t metatileId);
     bool eventLimitReached(Map *, QString);
-    void openInTextEditor(const QString &path, int lineNum = 0) const;
     bool startDetachedProcess(const QString &command,
                               const QString &workingDirectory = QString(),
                               qint64 *pid = nullptr) const;

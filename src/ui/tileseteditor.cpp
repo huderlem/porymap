@@ -81,8 +81,8 @@ void TilesetEditor::setTilesets(QString primaryTilesetLabel, QString secondaryTi
     Tileset *secondaryTileset = project->getTileset(secondaryTilesetLabel);
     if (this->primaryTileset) delete this->primaryTileset;
     if (this->secondaryTileset) delete this->secondaryTileset;
-    this->primaryTileset = primaryTileset->copy();
-    this->secondaryTileset = secondaryTileset->copy();
+    this->primaryTileset = new Tileset(*primaryTileset);
+    this->secondaryTileset = new Tileset(*secondaryTileset);
     if (paletteEditor) paletteEditor->setTilesets(this->primaryTileset, this->secondaryTileset);
 }
 
@@ -157,12 +157,12 @@ void TilesetEditor::setMetatileLabelValidator() {
 void TilesetEditor::initMetatileSelector()
 {
     this->metatileSelector = new TilesetEditorMetatileSelector(this->primaryTileset, this->secondaryTileset, this->map);
-    connect(this->metatileSelector, SIGNAL(hoveredMetatileChanged(uint16_t)),
-            this, SLOT(onHoveredMetatileChanged(uint16_t)));
-    connect(this->metatileSelector, SIGNAL(hoveredMetatileCleared()),
-            this, SLOT(onHoveredMetatileCleared()));
-    connect(this->metatileSelector, SIGNAL(selectedMetatileChanged(uint16_t)),
-            this, SLOT(onSelectedMetatileChanged(uint16_t)));
+    connect(this->metatileSelector, &TilesetEditorMetatileSelector::hoveredMetatileChanged,
+            this, &TilesetEditor::onHoveredMetatileChanged);
+    connect(this->metatileSelector, &TilesetEditorMetatileSelector::hoveredMetatileCleared,
+            this, &TilesetEditor::onHoveredMetatileCleared);
+    connect(this->metatileSelector, &TilesetEditorMetatileSelector::selectedMetatileChanged,
+            this, &TilesetEditor::onSelectedMetatileChanged);
 
     this->metatilesScene = new QGraphicsScene;
     this->metatilesScene->addItem(this->metatileSelector);
@@ -175,10 +175,10 @@ void TilesetEditor::initMetatileSelector()
 void TilesetEditor::initMetatileLayersItem() {
     Metatile *metatile = Tileset::getMetatile(this->metatileSelector->getSelectedMetatile(), this->primaryTileset, this->secondaryTileset);
     this->metatileLayersItem = new MetatileLayersItem(metatile, this->primaryTileset, this->secondaryTileset);
-    connect(this->metatileLayersItem, SIGNAL(tileChanged(int, int)),
-            this, SLOT(onMetatileLayerTileChanged(int, int)));
-    connect(this->metatileLayersItem, SIGNAL(selectedTilesChanged(QPoint, int, int)),
-            this, SLOT(onMetatileLayerSelectionChanged(QPoint, int, int)));
+    connect(this->metatileLayersItem, &MetatileLayersItem::tileChanged,
+            this, &TilesetEditor::onMetatileLayerTileChanged);
+    connect(this->metatileLayersItem, &MetatileLayersItem::selectedTilesChanged,
+            this, &TilesetEditor::onMetatileLayerSelectionChanged);
 
     this->metatileLayersScene = new QGraphicsScene;
     this->metatileLayersScene->addItem(this->metatileLayersItem);
@@ -187,13 +187,14 @@ void TilesetEditor::initMetatileLayersItem() {
 
 void TilesetEditor::initTileSelector()
 {
-    this->tileSelector = new TilesetEditorTileSelector(this->primaryTileset, this->secondaryTileset, projectConfig.getTripleLayerMetatilesEnabled());
-    connect(this->tileSelector, SIGNAL(hoveredTileChanged(uint16_t)),
-            this, SLOT(onHoveredTileChanged(uint16_t)));
-    connect(this->tileSelector, SIGNAL(hoveredTileCleared()),
-            this, SLOT(onHoveredTileCleared()));
-    connect(this->tileSelector, SIGNAL(selectedTilesChanged()),
-            this, SLOT(onSelectedTilesChanged()));
+    this->tileSelector = new TilesetEditorTileSelector(this->primaryTileset, this->secondaryTileset,
+                                                       projectConfig.getTripleLayerMetatilesEnabled());
+    connect(this->tileSelector, &TilesetEditorTileSelector::hoveredTileChanged,
+            this, &TilesetEditor::onHoveredTileChanged);
+    connect(this->tileSelector, &TilesetEditorTileSelector::hoveredTileCleared,
+            this, &TilesetEditor::onHoveredTileCleared);
+    connect(this->tileSelector, &TilesetEditorTileSelector::selectedTilesChanged,
+            this, &TilesetEditor::onSelectedTilesChanged);
 
     this->tilesScene = new QGraphicsScene;
     this->tilesScene->addItem(this->tileSelector);
@@ -261,7 +262,7 @@ void TilesetEditor::restoreWindowState() {
 }
 
 void TilesetEditor::initMetatileHistory() {
-    MetatileHistoryItem *commit = new MetatileHistoryItem(0, nullptr, this->metatile->copy());
+    MetatileHistoryItem *commit = new MetatileHistoryItem(0, nullptr, new Metatile(*metatile));
     metatileHistory.push(commit);
 }
 
@@ -360,7 +361,7 @@ void TilesetEditor::onSelectedTilesChanged() {
 }
 
 void TilesetEditor::onMetatileLayerTileChanged(int x, int y) {
-    const QList<QPoint> tileCoords = QList<QPoint>{
+    static const QList<QPoint> tileCoords = QList<QPoint>{
         QPoint(0, 0),
         QPoint(1, 0),
         QPoint(0, 1),
@@ -374,7 +375,7 @@ void TilesetEditor::onMetatileLayerTileChanged(int x, int y) {
         QPoint(4, 1),
         QPoint(5, 1),
     };
-    Metatile *prevMetatile = this->metatile->copy();
+    Metatile *prevMetatile = new Metatile(*this->metatile);
     QPoint dimensions = this->tileSelector->getSelectionDimensions();
     QList<Tile> tiles = this->tileSelector->getSelectedTiles();
     int selectedTileIndex = 0;
@@ -386,11 +387,11 @@ void TilesetEditor::onMetatileLayerTileChanged(int x, int y) {
             if (tileIndex < maxTileIndex
              && tileCoords.at(tileIndex).x() >= x
              && tileCoords.at(tileIndex).y() >= y){
-                Tile *tile = &(*this->metatile->tiles)[tileIndex];
-                tile->tile = tiles.at(selectedTileIndex).tile;
-                tile->xflip = tiles.at(selectedTileIndex).xflip;
-                tile->yflip = tiles.at(selectedTileIndex).yflip;
-                tile->palette = tiles.at(selectedTileIndex).palette;
+                Tile &tile = this->metatile->tiles[tileIndex];
+                tile.tile = tiles.at(selectedTileIndex).tile;
+                tile.xflip = tiles.at(selectedTileIndex).xflip;
+                tile.yflip = tiles.at(selectedTileIndex).yflip;
+                tile.palette = tiles.at(selectedTileIndex).palette;
             }
             selectedTileIndex++;
         }
@@ -400,7 +401,8 @@ void TilesetEditor::onMetatileLayerTileChanged(int x, int y) {
     this->metatileLayersItem->draw();
     this->hasUnsavedChanges = true;
 
-    MetatileHistoryItem *commit = new MetatileHistoryItem(metatileSelector->getSelectedMetatile(), prevMetatile, this->metatile->copy());
+    MetatileHistoryItem *commit = new MetatileHistoryItem(metatileSelector->getSelectedMetatile(),
+                                                          prevMetatile, new Metatile(*this->metatile));
     metatileHistory.push(commit);
 }
 
@@ -415,7 +417,7 @@ void TilesetEditor::onMetatileLayerSelectionChanged(QPoint selectionOrigin, int 
         for (int i = 0; i < width; i++) {
             int tileIndex = ((x + i) / 2 * 4) + ((y + j) * 2) + ((x + i) % 2);
             if (tileIndex < maxTileIndex) {
-                tiles.append(this->metatile->tiles->at(tileIndex));
+                tiles.append(this->metatile->tiles.at(tileIndex));
                 tileIdxs.append(tileIndex);
             }
         }
@@ -464,9 +466,10 @@ void TilesetEditor::on_checkBox_yFlip_stateChanged(int checked)
 void TilesetEditor::on_comboBox_metatileBehaviors_activated(const QString &metatileBehavior)
 {
     if (this->metatile) {
-        Metatile *prevMetatile = this->metatile->copy();
+        Metatile *prevMetatile = new Metatile(*this->metatile);
         this->metatile->behavior = static_cast<uint8_t>(project->metatileBehaviorMap[metatileBehavior]);
-        MetatileHistoryItem *commit = new MetatileHistoryItem(metatileSelector->getSelectedMetatile(), prevMetatile, this->metatile->copy());
+        MetatileHistoryItem *commit = new MetatileHistoryItem(metatileSelector->getSelectedMetatile(),
+                                                              prevMetatile, new Metatile(*this->metatile));
         metatileHistory.push(commit);
         this->hasUnsavedChanges = true;
     }
@@ -481,9 +484,10 @@ void TilesetEditor::saveMetatileLabel()
 {
     // Only commit if the field has changed.
     if (this->metatile && this->metatile->label != this->ui->lineEdit_metatileLabel->text()) {
-        Metatile *prevMetatile = this->metatile->copy();
+        Metatile *prevMetatile = new Metatile(*this->metatile);
         this->metatile->label = this->ui->lineEdit_metatileLabel->text();
-        MetatileHistoryItem *commit = new MetatileHistoryItem(metatileSelector->getSelectedMetatile(), prevMetatile, this->metatile->copy());
+        MetatileHistoryItem *commit = new MetatileHistoryItem(metatileSelector->getSelectedMetatile(),
+                                                              prevMetatile, new Metatile(*this->metatile));
         metatileHistory.push(commit);
         this->hasUnsavedChanges = true;
     }
@@ -492,9 +496,10 @@ void TilesetEditor::saveMetatileLabel()
 void TilesetEditor::on_comboBox_layerType_activated(int layerType)
 {
     if (this->metatile) {
-        Metatile *prevMetatile = this->metatile->copy();
+        Metatile *prevMetatile = new Metatile(*this->metatile);
         this->metatile->layerType = static_cast<uint8_t>(layerType);
-        MetatileHistoryItem *commit = new MetatileHistoryItem(metatileSelector->getSelectedMetatile(), prevMetatile, this->metatile->copy());
+        MetatileHistoryItem *commit = new MetatileHistoryItem(metatileSelector->getSelectedMetatile(),
+                                                              prevMetatile, new Metatile(*this->metatile));
         metatileHistory.push(commit);
         this->hasUnsavedChanges = true;
     }
@@ -503,9 +508,10 @@ void TilesetEditor::on_comboBox_layerType_activated(int layerType)
 void TilesetEditor::on_comboBox_encounterType_activated(int encounterType)
 {
     if (this->metatile) {
-        Metatile *prevMetatile = this->metatile->copy();
+        Metatile *prevMetatile = new Metatile(*this->metatile);
         this->metatile->encounterType = static_cast<uint8_t>(encounterType);
-        MetatileHistoryItem *commit = new MetatileHistoryItem(metatileSelector->getSelectedMetatile(), prevMetatile, this->metatile->copy());
+        MetatileHistoryItem *commit = new MetatileHistoryItem(metatileSelector->getSelectedMetatile(),
+                                                              prevMetatile, new Metatile(*this->metatile));
         metatileHistory.push(commit);
         this->hasUnsavedChanges = true;
     }
@@ -514,9 +520,10 @@ void TilesetEditor::on_comboBox_encounterType_activated(int encounterType)
 void TilesetEditor::on_comboBox_terrainType_activated(int terrainType)
 {
     if (this->metatile) {
-        Metatile *prevMetatile = this->metatile->copy();
+        Metatile *prevMetatile = new Metatile(*this->metatile);
         this->metatile->terrainType = static_cast<uint8_t>(terrainType);
-        MetatileHistoryItem *commit = new MetatileHistoryItem(metatileSelector->getSelectedMetatile(), prevMetatile, this->metatile->copy());
+        MetatileHistoryItem *commit = new MetatileHistoryItem(metatileSelector->getSelectedMetatile(),
+                                                              prevMetatile, new Metatile(*this->metatile));
         metatileHistory.push(commit);
         this->hasUnsavedChanges = true;
     }
@@ -619,9 +626,8 @@ void TilesetEditor::importTilesetTiles(Tileset *tileset, bool primary) {
             return;
         }
 
-        PaletteUtil parser;
         bool error = false;
-        QList<QRgb> palette = parser.parse(filepath, &error);
+        QList<QRgb> palette = PaletteUtil::parse(filepath, &error);
         if (error) {
             QMessageBox msgBox(this);
             msgBox.setText("Failed to import palette.");
@@ -709,59 +715,49 @@ void TilesetEditor::on_actionChange_Metatiles_Count_triggered()
     secondarySpinBox->setMinimum(1);
     primarySpinBox->setMaximum(Project::getNumMetatilesPrimary());
     secondarySpinBox->setMaximum(Project::getNumMetatilesTotal() - Project::getNumMetatilesPrimary());
-    primarySpinBox->setValue(this->primaryTileset->metatiles->length());
-    secondarySpinBox->setValue(this->secondaryTileset->metatiles->length());
+    primarySpinBox->setValue(this->primaryTileset->metatiles.length());
+    secondarySpinBox->setValue(this->secondaryTileset->metatiles.length());
     form.addRow(new QLabel("Primary Tileset"), primarySpinBox);
     form.addRow(new QLabel("Secondary Tileset"), secondarySpinBox);
 
     QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
-    connect(&buttonBox, SIGNAL(accepted()), &dialog, SLOT(accept()));
-    connect(&buttonBox, SIGNAL(rejected()), &dialog, SLOT(reject()));
+    connect(&buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(&buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
     form.addRow(&buttonBox);
 
     if (dialog.exec() == QDialog::Accepted) {
         int numPrimaryMetatiles = primarySpinBox->value();
         int numSecondaryMetatiles = secondarySpinBox->value();
         int numTiles = projectConfig.getTripleLayerMetatilesEnabled() ? 12 : 8;
-        while (this->primaryTileset->metatiles->length() > numPrimaryMetatiles) {
-            Metatile *metatile = this->primaryTileset->metatiles->takeLast();
-            delete metatile;
+        while (this->primaryTileset->metatiles.length() > numPrimaryMetatiles) {
+            delete this->primaryTileset->metatiles.takeLast();
         }
-        while (this->primaryTileset->metatiles->length() < numPrimaryMetatiles) {
-            Tile tile;
-            tile.palette = 0;
-            tile.tile = 0;
-            tile.xflip = false;
-            tile.yflip = false;
+        while (this->primaryTileset->metatiles.length() < numPrimaryMetatiles) {
+            Tile tile(0, false, false, 0);
             Metatile *metatile = new Metatile;
             metatile->behavior = 0;
             metatile->layerType = 0;
             metatile->encounterType = 0;
             metatile->terrainType = 0;
             for (int i = 0; i < numTiles; i++) {
-                metatile->tiles->append(tile);
+                metatile->tiles.append(tile);
             }
-            this->primaryTileset->metatiles->append(metatile);
+            this->primaryTileset->metatiles.append(metatile);
         }
-        while (this->secondaryTileset->metatiles->length() > numSecondaryMetatiles) {
-            Metatile *metatile = this->secondaryTileset->metatiles->takeLast();
-            delete metatile;
+        while (this->secondaryTileset->metatiles.length() > numSecondaryMetatiles) {
+            delete this->secondaryTileset->metatiles.takeLast();
         }
-        while (this->secondaryTileset->metatiles->length() < numSecondaryMetatiles) {
-            Tile tile;
-            tile.palette = 0;
-            tile.tile = 0;
-            tile.xflip = 0;
-            tile.yflip = 0;
+        while (this->secondaryTileset->metatiles.length() < numSecondaryMetatiles) {
+            Tile tile(0, false, false, 0);
             Metatile *metatile = new Metatile;
             metatile->behavior = 0;
             metatile->layerType = 0;
             metatile->encounterType = 0;
             metatile->terrainType = 0;
             for (int i = 0; i < numTiles; i++) {
-                metatile->tiles->append(tile);
+                metatile->tiles.append(tile);
             }
-            this->secondaryTileset->metatiles->append(metatile);
+            this->secondaryTileset->metatiles.append(metatile);
         }
 
         this->metatileSelector->updateSelectedMetatile();
@@ -773,9 +769,12 @@ void TilesetEditor::on_actionChange_Metatiles_Count_triggered()
 void TilesetEditor::on_actionChange_Palettes_triggered()
 {
     if (!this->paletteEditor) {
-        this->paletteEditor = new PaletteEditor(this->project, this->primaryTileset, this->secondaryTileset, this->paletteId, this);
-        connect(this->paletteEditor, SIGNAL(changedPaletteColor()), this, SLOT(onPaletteEditorChangedPaletteColor()));
-        connect(this->paletteEditor, SIGNAL(changedPalette(int)), this, SLOT(onPaletteEditorChangedPalette(int)));
+        this->paletteEditor = new PaletteEditor(this->project, this->primaryTileset,
+                                                this->secondaryTileset, this->paletteId, this);
+        connect(this->paletteEditor, &PaletteEditor::changedPaletteColor,
+                this, &TilesetEditor::onPaletteEditorChangedPaletteColor);
+        connect(this->paletteEditor, &PaletteEditor::changedPalette,
+                this, &TilesetEditor::onPaletteEditorChangedPalette);
     }
 
     if (!this->paletteEditor->isVisible()) {
@@ -807,7 +806,7 @@ void TilesetEditor::on_actionUndo_triggered()
     Metatile *temp = Tileset::getMetatile(commit->metatileId, this->primaryTileset, this->secondaryTileset);
     if (temp) {
         this->metatile = temp;
-        this->metatile->copyInPlace(prev);
+        *this->metatile = *prev;
         this->metatileSelector->select(commit->metatileId);
         this->metatileSelector->draw();
         this->metatileLayersItem->draw();
@@ -824,8 +823,8 @@ void TilesetEditor::on_actionRedo_triggered()
 
     Metatile *temp = Tileset::getMetatile(commit->metatileId, this->primaryTileset, this->secondaryTileset);
     if (temp) {
-        this->metatile = Tileset::getMetatile(commit->metatileId, this->primaryTileset, this->secondaryTileset);
-        this->metatile->copyInPlace(next);
+        this->metatile = temp;
+        *this->metatile = *next;
         this->metatileSelector->select(commit->metatileId);
         this->metatileSelector->draw();
         this->metatileLayersItem->draw();
@@ -879,9 +878,8 @@ void TilesetEditor::importTilesetMetatiles(Tileset *tileset, bool primary)
         return;
     }
 
-    MetatileParser parser;
     bool error = false;
-    QList<Metatile*> *metatiles = parser.parse(filepath, &error, primary);
+    QList<Metatile*> metatiles = MetatileParser::parse(filepath, &error, primary);
     if (error) {
         QMessageBox msgBox(this);
         msgBox.setText("Failed to import metatiles from Advance Map 1.92 .bvd file.");
@@ -896,13 +894,14 @@ void TilesetEditor::importTilesetMetatiles(Tileset *tileset, bool primary)
     // TODO: This is crude because it makes a history entry for every newly-imported metatile.
     //       Revisit this when tiles and num metatiles are added to tileset editory history.
     int metatileIdBase = primary ? 0 : Project::getNumMetatilesPrimary();
-    for (int i = 0; i < metatiles->length(); i++) {
-        if (i >= tileset->metatiles->length()) {
+    for (int i = 0; i < metatiles.length(); i++) {
+        if (i >= tileset->metatiles.length()) {
             break;
         }
 
-        Metatile *prevMetatile = tileset->metatiles->at(i)->copy();
-        MetatileHistoryItem *commit = new MetatileHistoryItem(static_cast<uint16_t>(metatileIdBase + i), prevMetatile, metatiles->at(i)->copy());
+        Metatile *prevMetatile = new Metatile(*tileset->metatiles.at(i));
+        MetatileHistoryItem *commit = new MetatileHistoryItem(static_cast<uint16_t>(metatileIdBase + i),
+                                                              prevMetatile, new Metatile(*metatiles.at(i)));
         metatileHistory.push(commit);
     }
 

@@ -15,7 +15,7 @@ enum MapSortOrder {
     Layout  =  2,
 };
 
-class KeyValueConfigBase : public QObject
+class KeyValueConfigBase
 {
 public:
     void save();
@@ -38,7 +38,6 @@ public:
     }
     virtual void reset() override {
         this->recentProject = "";
-        this->recentMap = "";
         this->mapSortOrder = MapSortOrder::Group;
         this->prettyCursors = true;
         this->collisionOpacity = 50;
@@ -52,7 +51,6 @@ public:
         this->textEditorGotoLine = "";
     }
     void setRecentProject(QString project);
-    void setRecentMap(QString map);
     void setMapSortOrder(MapSortOrder order);
     void setPrettyCursors(bool enabled);
     void setMainGeometry(QByteArray, QByteArray, QByteArray, QByteArray);
@@ -69,7 +67,6 @@ public:
     void setTextEditorOpenFolder(const QString &command);
     void setTextEditorGotoLine(const QString &command);
     QString getRecentProject();
-    QString getRecentMap();
     MapSortOrder getMapSortOrder();
     bool getPrettyCursors();
     QMap<QString, QByteArray> getMainGeometry();
@@ -93,7 +90,6 @@ protected:
     virtual void setUnreadKeys() override {};
 private:
     QString recentProject;
-    QString recentMap;
     QString stringFromByteArray(QByteArray);
     QByteArray bytesFromString(QString);
     MapSortOrder mapSortOrder;
@@ -136,6 +132,7 @@ public:
     }
     virtual void reset() override {
         this->baseGameVersion = BaseGameVersion::pokeemerald;
+        this->recentMap = QString();
         this->useEncounterJson = true;
         this->useCustomBorderSize = false;
         this->enableEventWeatherTrigger = true;
@@ -145,12 +142,15 @@ public:
         this->enableHealLocationRespawnData = false;
         this->enableObjectEventInConnection = false;
         this->enableFloorNumber = false;
+        this->createMapTextFile = false;
         this->enableTripleLayerMetatiles = false;
         this->customScripts.clear();
         this->readKeys.clear();
     }
     void setBaseGameVersion(BaseGameVersion baseGameVersion);
     BaseGameVersion getBaseGameVersion();
+    void setRecentMap(const QString &map);
+    QString getRecentMap();
     void setEncounterJsonActive(bool active);
     bool getEncounterJsonActive();
     void setUsePoryScript(bool usePoryScript);
@@ -173,6 +173,8 @@ public:
     bool getObjectEventInConnectionEnabled();
     void setFloorNumberEnabled(bool enable);
     bool getFloorNumberEnabled();
+    void setCreateMapTextFileEnabled(bool enable);
+    bool getCreateMapTextFileEnabled();
     void setTripleLayerMetatilesEnabled(bool enable);
     bool getTripleLayerMetatilesEnabled();
     void setCustomScripts(QList<QString> scripts);
@@ -186,6 +188,7 @@ protected:
 private:
     BaseGameVersion baseGameVersion;
     QString projectDir;
+    QString recentMap;
     bool useEncounterJson;
     bool usePoryScript;
     bool useCustomBorderSize;
@@ -196,6 +199,7 @@ private:
     bool enableHealLocationRespawnData;
     bool enableObjectEventInConnection;
     bool enableFloorNumber;
+    bool createMapTextFile;
     bool enableTripleLayerMetatiles;
     QList<QString> customScripts;
     QStringList readKeys;

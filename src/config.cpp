@@ -109,8 +109,6 @@ QString PorymapConfig::getConfigFilepath() {
 void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
     if (key == "recent_project") {
         this->recentProject = value;
-    } else if (key == "recent_map") {
-        this->recentMap = value;
     } else if (key == "pretty_cursors") {
         bool ok;
         this->prettyCursors = value.toInt(&ok);
@@ -202,7 +200,6 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
 QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     QMap<QString, QString> map;
     map.insert("recent_project", this->recentProject);
-    map.insert("recent_map", this->recentMap);
     map.insert("pretty_cursors", this->prettyCursors ? "1" : "0");
     map.insert("map_sort_order", mapSortOrderMap.value(this->mapSortOrder));
     map.insert("main_window_geometry", stringFromByteArray(this->mainWindowGeometry));
@@ -247,11 +244,6 @@ QByteArray PorymapConfig::bytesFromString(QString in) {
 
 void PorymapConfig::setRecentProject(QString project) {
     this->recentProject = project;
-    this->save();
-}
-
-void PorymapConfig::setRecentMap(QString map) {
-    this->recentMap = map;
     this->save();
 }
 
@@ -337,10 +329,6 @@ void PorymapConfig::setTextEditorGotoLine(const QString &command) {
 
 QString PorymapConfig::getRecentProject() {
     return this->recentProject;
-}
-
-QString PorymapConfig::getRecentMap() {
-    return this->recentMap;
 }
 
 MapSortOrder PorymapConfig::getMapSortOrder() {
@@ -453,6 +441,8 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
             this->baseGameVersion = BaseGameVersion::pokeemerald;
             logWarn(QString("Invalid config value for base_game_version: '%1'. Must be 'pokeruby', 'pokefirered' or 'pokeemerald'.").arg(value));
         }
+    } else if (key == "recent_map") {
+        this->recentMap = value;
     } else if (key == "use_encounter_json") {
         bool ok;
         this->useEncounterJson = value.toInt(&ok);
@@ -513,6 +503,12 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         if (!ok) {
             logWarn(QString("Invalid config value for enable_floor_number: '%1'. Must be 0 or 1.").arg(value));
         }
+    } else if (key == "create_map_text_file") {
+        bool ok;
+        this->createMapTextFile = value.toInt(&ok);
+        if (!ok) {
+            logWarn(QString("Invalid config value for create_map_text_file: '%1'. Must be 0 or 1.").arg(value));
+        }
     } else if (key == "enable_triple_layer_metatiles") {
         bool ok;
         this->enableTripleLayerMetatiles = value.toInt(&ok);
@@ -545,11 +541,13 @@ void ProjectConfig::setUnreadKeys() {
     if (!readKeys.contains("enable_heal_location_respawn_data")) this->enableHealLocationRespawnData = isPokefirered;
     if (!readKeys.contains("enable_object_event_in_connection")) this->enableObjectEventInConnection = isPokefirered;
     if (!readKeys.contains("enable_floor_number")) this->enableFloorNumber = isPokefirered;
+    if (!readKeys.contains("create_map_text_file")) this->createMapTextFile = (this->baseGameVersion != BaseGameVersion::pokeemerald);
 }
 
 QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     QMap<QString, QString> map;
     map.insert("base_game_version", baseGameVersionMap.value(this->baseGameVersion));
+    map.insert("recent_map", this->recentMap);
     map.insert("use_encounter_json", QString::number(this->useEncounterJson));
     map.insert("use_poryscript", QString::number(this->usePoryScript));
     map.insert("use_custom_border_size", QString::number(this->useCustomBorderSize));
@@ -560,6 +558,7 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("enable_heal_location_respawn_data", QString::number(this->enableHealLocationRespawnData));
     map.insert("enable_object_event_in_connection", QString::number(this->enableObjectEventInConnection));
     map.insert("enable_floor_number", QString::number(this->enableFloorNumber));
+    map.insert("create_map_text_file", QString::number(this->createMapTextFile));
     map.insert("enable_triple_layer_metatiles", QString::number(this->enableTripleLayerMetatiles));
     map.insert("custom_scripts", this->customScripts.join(","));
     return map;
@@ -584,7 +583,7 @@ void ProjectConfig::onNewConfigFileCreated() {
         form.addRow(new QLabel("Game Version"), baseGameVersionComboBox);
 
         QDialogButtonBox buttonBox(QDialogButtonBox::Ok, Qt::Horizontal, &dialog);
-        connect(&buttonBox, SIGNAL(accepted()), &dialog, SLOT(accept()));
+        QObject::connect(&buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
         form.addRow(&buttonBox);
 
         if (dialog.exec() == QDialog::Accepted) {
@@ -600,6 +599,7 @@ void ProjectConfig::onNewConfigFileCreated() {
     this->enableHealLocationRespawnData = isPokefirered;
     this->enableObjectEventInConnection = isPokefirered;
     this->enableFloorNumber = isPokefirered;
+    this->createMapTextFile = (this->baseGameVersion != BaseGameVersion::pokeemerald);
     this->useEncounterJson = true;
     this->usePoryScript = false;
     this->enableTripleLayerMetatiles = false;
@@ -621,6 +621,15 @@ void ProjectConfig::setBaseGameVersion(BaseGameVersion baseGameVersion) {
 
 BaseGameVersion ProjectConfig::getBaseGameVersion() {
     return this->baseGameVersion;
+}
+
+void ProjectConfig::setRecentMap(const QString &map) {
+    this->recentMap = map;
+    this->save();
+}
+
+QString ProjectConfig::getRecentMap() {
+    return this->recentMap;
 }
 
 void ProjectConfig::setEncounterJsonActive(bool active) {
@@ -711,6 +720,15 @@ void ProjectConfig::setFloorNumberEnabled(bool enable) {
 
 bool ProjectConfig::getFloorNumberEnabled() {
     return this->enableFloorNumber;
+}
+
+void ProjectConfig::setCreateMapTextFileEnabled(bool enable) {
+    this->createMapTextFile = enable;
+    this->save();
+}
+
+bool ProjectConfig::getCreateMapTextFileEnabled() {
+    return this->createMapTextFile;
 }
 
 void ProjectConfig::setTripleLayerMetatilesEnabled(bool enable) {

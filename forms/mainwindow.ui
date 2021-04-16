@@ -2649,6 +2649,8 @@
      <string>Help</string>
     </property>
     <addaction name="actionAbout_Porymap"/>
+    <addaction name="actionOpen_Log_File"/>
+    <addaction name="actionOpen_Config_Folder"/>
    </widget>
    <widget class="QMenu" name="menuOptions">
     <property name="title">
@@ -2942,6 +2944,16 @@
   <action name="actionExport_Map_Timelapse_Image">
    <property name="text">
     <string>Export Map Timelapse Image...</string>
+   </property>
+  </action>
+  <action name="actionOpen_Log_File">
+   <property name="text">
+    <string>Open Log File</string>
+   </property>
+  </action>
+  <action name="actionOpen_Config_Folder">
+   <property name="text">
+    <string>Open Config Folder</string>
    </property>
   </action>
  </widget>

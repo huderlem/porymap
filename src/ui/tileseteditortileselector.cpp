@@ -13,14 +13,13 @@ QPoint TilesetEditorTileSelector::getSelectionDimensions() {
 }
 
 void TilesetEditorTileSelector::draw() {
-    if (!this->primaryTileset || !this->primaryTileset->tiles
-     || !this->secondaryTileset || !this->secondaryTileset->tiles) {
+    if (!this->primaryTileset || !this->secondaryTileset) {
         this->setPixmap(QPixmap());
     }
 
     int totalTiles = Project::getNumTilesTotal();
-    int primaryLength = this->primaryTileset->tiles->length();
-    int secondaryLength = this->secondaryTileset->tiles->length();
+    int primaryLength = this->primaryTileset->tiles.length();
+    int secondaryLength = this->secondaryTileset->tiles.length();
     int height = totalTiles / this->numTilesWide;
     QList<QRgb> palette = Tileset::getPalette(this->paletteId, this->primaryTileset, this->secondaryTileset, true);
     QImage image(this->numTilesWide * 16, height * 16, QImage::Format_RGBA8888);
@@ -218,12 +217,11 @@ QPoint TilesetEditorTileSelector::getTileCoordsOnWidget(uint16_t tile) {
 }
 
 QImage TilesetEditorTileSelector::buildPrimaryTilesIndexedImage() {
-    if (!this->primaryTileset || !this->primaryTileset->tiles
-     || !this->secondaryTileset || !this->secondaryTileset->tiles) {
+    if (!this->primaryTileset || !this->secondaryTileset) {
         return QImage();
     }
 
-    int primaryLength = this->primaryTileset->tiles->length();
+    int primaryLength = this->primaryTileset->tiles.length();
     int height = qCeil(primaryLength / static_cast<double>(this->numTilesWide));
     QImage image(this->numTilesWide * 8, height * 8, QImage::Format_RGBA8888);
 
@@ -254,12 +252,11 @@ QImage TilesetEditorTileSelector::buildPrimaryTilesIndexedImage() {
 }
 
 QImage TilesetEditorTileSelector::buildSecondaryTilesIndexedImage() {
-    if (!this->primaryTileset || !this->primaryTileset->tiles
-     || !this->secondaryTileset || !this->secondaryTileset->tiles) {
+    if (!this->primaryTileset || !this->secondaryTileset) {
         return QImage();
     }
 
-    int secondaryLength = this->secondaryTileset->tiles->length();
+    int secondaryLength = this->secondaryTileset->tiles.length();
     int height = qCeil(secondaryLength / static_cast<double>(this->numTilesWide));
     QImage image(this->numTilesWide * 8, height * 8, QImage::Format_RGBA8888);
 

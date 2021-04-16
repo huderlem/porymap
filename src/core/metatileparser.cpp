@@ -2,19 +2,15 @@
 #include "config.h"
 #include "log.h"
 #include "project.h"
+#include <QString>
 
-MetatileParser::MetatileParser()
-{
-
-}
-
-QList<Metatile*> *MetatileParser::parse(QString filepath, bool *error, bool primaryTileset)
+QList<Metatile*> MetatileParser::parse(QString filepath, bool *error, bool primaryTileset)
 {
     QFile file(filepath);
     if (!file.open(QIODevice::ReadOnly)) {
         *error = true;
         logError(QString("Could not open Advance Map 1.92 Metatile .bvd file '%1': ").arg(filepath) + file.errorString());
-        return nullptr;
+        return { };
     }
 
     QByteArray in = file.readAll();
@@ -23,7 +19,7 @@ QList<Metatile*> *MetatileParser::parse(QString filepath, bool *error, bool prim
     if (in.length() < 9 || in.length() % 2 != 0) {
         *error = true;
         logError(QString("Advance Map 1.92 Metatile .bvd file '%1' is an unexpected size.").arg(filepath));
-        return nullptr;
+        return { };
     }
 
     int projIdOffset = in.length() - 4;
@@ -46,7 +42,7 @@ QList<Metatile*> *MetatileParser::parse(QString filepath, bool *error, bool prim
     } else {
         *error = true;
         logError(QString("Detected unsupported game type from .bvd file. Last 4 bytes of file must be 'RSE ' or 'FRLG'."));
-        return nullptr;
+        return { };
     }
 
     int maxMetatiles = primaryTileset ? Project::getNumMetatilesPrimary() : Project::getNumMetatilesTotal() - Project::getNumMetatilesPrimary();
@@ -57,32 +53,32 @@ QList<Metatile*> *MetatileParser::parse(QString filepath, bool *error, bool prim
     if (numMetatiles > maxMetatiles) {
         *error = true;
         logError(QString(".bvd file contains data for %1 metatiles, but the maximum number of metatiles is %2.").arg(numMetatiles).arg(maxMetatiles));
-        return nullptr;
+        return { };
     }
     if (numMetatiles < 1) {
         *error = true;
         logError(QString(".bvd file contains no data for metatiles."));
-        return nullptr;
+        return { };
     }
 
     int expectedFileSize = 4 + (metatileSize * numMetatiles) + (attrSize * numMetatiles) + 4;
     if (in.length() != expectedFileSize) {
         *error = true;
         logError(QString(".bvd file is an unexpected size. Expected %1 bytes, but it has %2 bytes.").arg(expectedFileSize).arg(in.length()));
-        return nullptr;
+        return { };
     }
 
-    QList<Metatile*> *metatiles = new QList<Metatile*>();
+    QList<Metatile*> metatiles;
     for (int i = 0; i < numMetatiles; i++) {
         Metatile *metatile = new Metatile();
-        QList<Tile> *tiles = new QList<Tile>();
+        QList<Tile> tiles;
         for (int j = 0; j < 8; j++) {
             int metatileOffset = 4 + i * metatileSize + j * 2;
             uint16_t word = static_cast<uint16_t>(
                         static_cast<unsigned char>(in.at(metatileOffset)) |
                         (static_cast<unsigned char>(in.at(metatileOffset + 1)) << 8));
             Tile tile(word & 0x3ff, (word >> 10) & 1, (word >> 11) & 1, (word >> 12) & 0xf);
-            tiles->append(tile);
+            tiles.append(tile);
         }
 
         int attrOffset = 4 + (numMetatiles * metatileSize) + (i * attrSize);
@@ -104,7 +100,7 @@ QList<Metatile*> *MetatileParser::parse(QString filepath, bool *error, bool prim
             metatile->terrainType = 0;
         }
         metatile->tiles = tiles;
-        metatiles->append(metatile);
+        metatiles.append(metatile);
     }
 
     return metatiles;

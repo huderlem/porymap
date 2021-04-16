@@ -11,16 +11,17 @@ class Metatile
 {
 public:
     Metatile();
+    Metatile(const Metatile &other) = default;
+    Metatile &operator=(const Metatile &other) = default;
+
 public:
-    QList<Tile> *tiles = nullptr;
+    QList<Tile> tiles;
     uint16_t behavior;     // 8 bits RSE, 9 bits FRLG
     uint8_t layerType;
     uint8_t encounterType; // FRLG only
     uint8_t terrainType;   // FRLG only
     QString label;
 
-    Metatile *copy();
-    void copyInPlace(Metatile*);
     static int getBlockIndex(int);
     static QPoint coordFromPixmapCoord(const QPointF &pixelCoord);
 };
