@@ -180,7 +180,7 @@ public:
     QString getScriptDefaultString(bool usePoryScript, QString mapName) const;
     QString getMapScriptsFilePath(const QString &mapName) const;
     QStringList getEventScriptsFilePaths() const;
-    QCompleter *getEventScriptLabelCompleter(const QStringList &additionalCompletions) const;
+    QCompleter *getEventScriptLabelCompleter(QStringList additionalCompletions) const;
 
     bool loadMapBorder(Map *map);
 

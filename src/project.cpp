@@ -2386,8 +2386,10 @@ QStringList Project::getEventScriptsFilePaths() const {
     return filePaths;
 }
 
-QCompleter *Project::getEventScriptLabelCompleter(const QStringList &additionalCompletions) const {
-    eventScriptLabelModel->setStringList(eventScriptLabels + additionalCompletions);
+QCompleter *Project::getEventScriptLabelCompleter(QStringList additionalCompletions) const {
+    additionalCompletions += eventScriptLabels;
+    additionalCompletions.removeDuplicates();
+    eventScriptLabelModel->setStringList(additionalCompletions);
     return eventScriptLabelCompleter;
 }
 
