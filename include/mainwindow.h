@@ -259,8 +259,11 @@ private:
     QIcon* mapEditedIcon;
     QIcon* mapOpenedIcon;
 
-    QAction *undoAction;
-    QAction *redoAction;
+    QAction *undoAction = nullptr;
+    QAction *redoAction = nullptr;
+
+    QAction *copyAction = nullptr;
+    QAction *pasteAction = nullptr;
 
     QWidget *eventTabObjectWidget;
     QWidget *eventTabWarpWidget;
