@@ -36,7 +36,10 @@ int Project::max_map_data_size = 10240; // 0x2800
 int Project::default_map_size = 20;
 int Project::max_object_events = 64;
 
-Project::Project(QWidget *parent) : QObject(parent)
+Project::Project(QWidget *parent) :
+    QObject(parent),
+    eventScriptLabelModel(this),
+    eventScriptLabelCompleter(this)
 {
     initSignals();
 }
@@ -2311,6 +2314,18 @@ bool Project::readMiscellaneousConstants() {
     return true;
 }
 
+bool Project::readEventScriptLabels() {
+    for (const auto &filePath : getEventScriptsFilePaths())
+        globalScriptLabels << ParseUtil::getGlobalScriptLabels(filePath);
+
+    eventScriptLabelModel.setStringList(globalScriptLabels);
+    eventScriptLabelCompleter.setModel(&eventScriptLabelModel);
+    eventScriptLabelCompleter.setCaseSensitivity(Qt::CaseInsensitive);
+    eventScriptLabelCompleter.setFilterMode(Qt::MatchContains);
+
+    return true;
+}
+
 QString Project::fixPalettePath(QString path) {
     path = path.replace(QRegExp("\\.gbapal$"), ".pal");
     return path;
@@ -2372,6 +2387,13 @@ QStringList Project::getEventScriptsFilePaths() const {
         filePaths << it_inc_maps.next();
 
     return filePaths;
+}
+
+QCompleter *Project::getEventScriptLabelCompleter(QStringList additionalScriptLabels) {
+    additionalScriptLabels << globalScriptLabels;
+    additionalScriptLabels.removeDuplicates();
+    eventScriptLabelModel.setStringList(additionalScriptLabels);
+    return &eventScriptLabelCompleter;
 }
 
 void Project::loadEventPixmaps(QList<Event*> objects) {

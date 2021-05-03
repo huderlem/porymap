@@ -877,8 +877,9 @@ bool MainWindow::loadDataStructures() {
                 && project->readHealLocations()
                 && project->readMiscellaneousConstants()
                 && project->readSpeciesIconPaths()
-                && project->readWildMonData();
-    
+                && project->readWildMonData()
+                && project->readEventScriptLabels();
+
     return success && loadProjectCombos();
 }
 
@@ -1913,7 +1914,9 @@ void MainWindow::updateSelectedObjects() {
                                   "normal movement behavior actions.");
                 combo->setMinimumContentsLength(4);
             } else if (key == "script_label") {
-                combo->addItems(editor->map->eventScriptLabels());
+                const auto localScriptLabels = editor->map->eventScriptLabels();
+                combo->addItems(localScriptLabels);
+                combo->setCompleter(editor->project->getEventScriptLabelCompleter(localScriptLabels));
                 combo->setToolTip("The script which is executed with this event.");
             } else if (key == "trainer_type") {
                 combo->addItems(editor->project->trainerTypes);

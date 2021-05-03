@@ -60,6 +60,9 @@ public:
     static int getScriptLineNumber(const QString &filePath, const QString &scriptLabel);
     static int getRawScriptLineNumber(QString text, const QString &scriptLabel);
     static int getPoryScriptLineNumber(QString text, const QString &scriptLabel);
+    static QStringList getGlobalScriptLabels(const QString &filePath);
+    static QStringList getGlobalRawScriptLabels(QString text);
+    static QStringList getGlobalPoryScriptLabels(QString text);
     static QString removeStringLiterals(QString text);
     static QString removeLineComments(QString text, const QString &commentSymbol);
     static QString removeLineComments(QString text, const QStringList &commentSymbols);
@@ -74,6 +77,12 @@ private:
     QList<Token> generatePostfix(const QList<Token> &tokens);
     int evaluatePostfix(const QList<Token> &postfix);
     void error(const QString &message, const QString &expression);
+
+    static const QRegularExpression re_incScriptLabel;
+    static const QRegularExpression re_globalIncScriptLabel;
+    static const QRegularExpression re_poryScriptLabel;
+    static const QRegularExpression re_globalPoryScriptLabel;
+    static const QRegularExpression re_poryRawSection;
 };
 
 #endif // PARSEUTIL_H

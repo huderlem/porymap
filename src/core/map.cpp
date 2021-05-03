@@ -427,8 +427,8 @@ QStringList Map::eventScriptLabels(const QString &event_group_type) const {
             scriptLabels << event->get("script_label");
     }
 
+    scriptLabels.removeAll("");
     scriptLabels.removeDuplicates();
-    scriptLabels.removeAll(QString());
     if (scriptLabels.contains("0x0"))
         scriptLabels.move(scriptLabels.indexOf("0x0"), scriptLabels.count() - 1);
     if (scriptLabels.contains("NULL"))

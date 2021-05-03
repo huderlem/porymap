@@ -6,6 +6,11 @@
 #include <QJsonObject>
 #include <QStack>
 
+const QRegularExpression ParseUtil::re_incScriptLabel("\\b(?<label>[\\w_][\\w\\d_]*):{1,2}");
+const QRegularExpression ParseUtil::re_globalIncScriptLabel("\\b(?<label>[\\w_][\\w\\d_]*)::");
+const QRegularExpression ParseUtil::re_poryScriptLabel("\\b(script)(\\((global|local)\\))?\\s*\\b(?<label>[\\w_][\\w\\d_]*)");
+const QRegularExpression ParseUtil::re_globalPoryScriptLabel("\\b(script)(\\((global)\\))?\\s*\\b(?<label>[\\w_][\\w\\d_]*)");
+const QRegularExpression ParseUtil::re_poryRawSection("\\b(raw)\\s*`(?<raw_script>[^`]*)");
 
 void ParseUtil::set_root(const QString &dir) {
     this->root = dir;
@@ -425,7 +430,6 @@ int ParseUtil::getRawScriptLineNumber(QString text, const QString &scriptLabel) 
     text = removeStringLiterals(text);
     text = removeLineComments(text, "@");
 
-    static const QRegularExpression re_incScriptLabel("\\b(?<label>[\\w_][\\w\\d_]*):{1,2}");
     QRegularExpressionMatchIterator it = re_incScriptLabel.globalMatch(text);
     while (it.hasNext()) {
         const QRegularExpressionMatch match = it.next();
@@ -440,7 +444,6 @@ int ParseUtil::getPoryScriptLineNumber(QString text, const QString &scriptLabel)
     text = removeStringLiterals(text);
     text = removeLineComments(text, {"//", "#"});
 
-    static const QRegularExpression re_poryScriptLabel("\\b(script)(\\((global|local)\\))?\\s*\\b(?<label>[\\w_][\\w\\d_]*)");
     QRegularExpressionMatchIterator it = re_poryScriptLabel.globalMatch(text);
     while (it.hasNext()) {
         const QRegularExpressionMatch match = it.next();
@@ -448,7 +451,6 @@ int ParseUtil::getPoryScriptLineNumber(QString text, const QString &scriptLabel)
             return text.left(match.capturedStart("label")).count('\n') + 1;
     }
 
-    static const QRegularExpression re_poryRawSection("\\b(raw)\\s*`(?<raw_script>[^`]*)");
     QRegularExpressionMatchIterator raw_it = re_poryRawSection.globalMatch(text);
     while (raw_it.hasNext()) {
         const QRegularExpressionMatch match = raw_it.next();
@@ -458,6 +460,47 @@ int ParseUtil::getPoryScriptLineNumber(QString text, const QString &scriptLabel)
     }
 
     return 0;
+}
+
+QStringList ParseUtil::getGlobalScriptLabels(const QString &filePath) {
+    if (filePath.endsWith(".inc") || filePath.endsWith(".s"))
+        return getGlobalRawScriptLabels(readTextFile(filePath));
+    else if (filePath.endsWith(".pory"))
+        return getGlobalPoryScriptLabels(readTextFile(filePath));
+    else
+        return { };
+}
+
+QStringList ParseUtil::getGlobalRawScriptLabels(QString text) {
+    removeStringLiterals(text);
+    removeLineComments(text, "@");
+
+    QStringList rawScriptLabels;
+
+    QRegularExpressionMatchIterator it = re_globalIncScriptLabel.globalMatch(text);
+    while (it.hasNext()) {
+        const QRegularExpressionMatch match = it.next();
+        rawScriptLabels << match.captured("label");
+    }
+
+    return rawScriptLabels;
+}
+
+QStringList ParseUtil::getGlobalPoryScriptLabels(QString text) {
+    removeStringLiterals(text);
+    removeLineComments(text, {"//", "#"});
+
+    QStringList poryScriptLabels;
+
+    QRegularExpressionMatchIterator it = re_globalPoryScriptLabel.globalMatch(text);
+    while (it.hasNext())
+        poryScriptLabels << it.next().captured("label");
+
+    QRegularExpressionMatchIterator raw_it = re_poryRawSection.globalMatch(text);
+    while (raw_it.hasNext())
+        poryScriptLabels << getGlobalRawScriptLabels(raw_it.next().captured("raw_script"));
+
+    return poryScriptLabels;
 }
 
 QString ParseUtil::removeStringLiterals(QString text) {
@@ -477,12 +520,15 @@ QString ParseUtil::removeLineComments(QString text, const QStringList &commentSy
 }
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
+
 #include <QProcess>
 
 QStringList ParseUtil::splitShellCommand(QStringView command) {
     return QProcess::splitCommand(command);
 }
+
 #else
+
 // The source for QProcess::splitCommand() as of Qt 5.15.2
 QStringList ParseUtil::splitShellCommand(QStringView command) {
     QStringList args;
@@ -522,4 +568,5 @@ QStringList ParseUtil::splitShellCommand(QStringView command) {
 
     return args;
 }
+
 #endif
