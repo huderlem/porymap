@@ -154,13 +154,16 @@ void MainWindow::initExtraShortcuts() {
     shortcut_Open_Scripts->setObjectName("shortcut_Open_Scripts");
     shortcut_Open_Scripts->setWhatsThis("Open Map Scripts");
 
-    auto *shortcut_Copy = new Shortcut(QKeySequence("Ctrl+C"), this, SLOT(copy()));
-    shortcut_Copy->setObjectName("shortcut_Copy");
-    shortcut_Copy->setWhatsThis("Copy");
+    copyAction = new QAction("Copy", this);
+    copyAction->setShortcut(QKeySequence("Ctrl+C"));
+    connect(copyAction, &QAction::triggered, this, &MainWindow::copy);
+    ui->menuEdit->addSeparator();
+    ui->menuEdit->addAction(copyAction);
 
-    auto *shortcut_Paste = new Shortcut(QKeySequence("Ctrl+V"), this, SLOT(paste()));
-    shortcut_Paste->setObjectName("shortcut_Paste");
-    shortcut_Copy->setWhatsThis("Paste");
+    pasteAction = new QAction("Paste", this);
+    pasteAction->setShortcut(QKeySequence("Ctrl+V"));
+    connect(pasteAction, &QAction::triggered, this, &MainWindow::paste);
+    ui->menuEdit->addAction(pasteAction);
 }
 
 QObjectList MainWindow::shortcutableObjects() const {
