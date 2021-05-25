@@ -38,19 +38,15 @@ Editor::Editor(Ui::MainWindow* ui)
             selectNewEvents = false;
         }
 
-        // Set auto-save timer if enabled.
-        if (!editGroup.isClean()) {
-            if (autoSaveTimerId) {
-                killTimer(autoSaveTimerId);
-                autoSaveTimerId = 0;
-            }
-
-            if (porymapConfig.getAutoSaveDelay() > 0) {
-                autoSaveTimerId = startTimer(porymapConfig.getAutoSaveDelay());
-            }
-        } else if (autoSaveTimerId) {
+        // Reset the auto-save timer if it is active.
+        if (autoSaveTimerId) {
             killTimer(autoSaveTimerId);
             autoSaveTimerId = 0;
+        }
+
+        // Set the auto-save timer if it is enabled.
+        if (!editGroup.isClean() && porymapConfig.getAutoSaveDelay() > 0) {
+            autoSaveTimerId = startTimer(porymapConfig.getAutoSaveDelay());
         }
     });
 }
@@ -1062,6 +1058,10 @@ bool Editor::setMap(QString map_name) {
     }
 
     if (autoSaveTimerId) {
+        killTimer(autoSaveTimerId);
+        autoSaveTimerId = 0;
+        saveProject();
+    } else if (porymapConfig.getAutoSaveOnMapChange()) {
         save();
     }
 

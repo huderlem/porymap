@@ -42,9 +42,9 @@ void PreferenceEditor::populateFields() {
     themeSelector->setCurrentText(porymapConfig.getTheme());
 
     ui->spinBox_AutoSaveDelay->setValue(porymapConfig.getAutoSaveDelay());
+    ui->checkBox_AutoSaveOnMapChange->setChecked(porymapConfig.getAutoSaveOnMapChange());
 
     ui->lineEdit_TextEditorOpenFolder->setText(porymapConfig.getTextEditorOpenFolder());
-
     ui->lineEdit_TextEditorGotoLine->setText(porymapConfig.getTextEditorGotoLine());
 }
 
@@ -56,16 +56,16 @@ void PreferenceEditor::saveFields() {
     }
 
     porymapConfig.setAutoSaveDelay(ui->spinBox_AutoSaveDelay->value());
+    porymapConfig.setAutoSaveOnMapChange(ui->checkBox_AutoSaveOnMapChange->isChecked());
 
     porymapConfig.setTextEditorOpenFolder(ui->lineEdit_TextEditorOpenFolder->text());
-
     porymapConfig.setTextEditorGotoLine(ui->lineEdit_TextEditorGotoLine->text());
 
     emit preferencesSaved();
 }
 
 void PreferenceEditor::dialogButtonClicked(QAbstractButton *button) {
-    auto buttonRole = ui->buttonBox->buttonRole(button);
+    const auto buttonRole = ui->buttonBox->buttonRole(button);
     if (buttonRole == QDialogButtonBox::AcceptRole) {
         saveFields();
         close();

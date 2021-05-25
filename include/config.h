@@ -68,6 +68,7 @@ public:
     void setTextEditorOpenFolder(const QString &command);
     void setTextEditorGotoLine(const QString &command);
     void setAutoSaveDelay(int delay);
+    void setAutoSaveOnMapChange(bool enabled);
     QString getRecentProject();
     MapSortOrder getMapSortOrder();
     bool getPrettyCursors();
@@ -85,6 +86,7 @@ public:
     QString getTextEditorOpenFolder();
     QString getTextEditorGotoLine();
     int getAutoSaveDelay();
+    bool getAutoSaveOnMapChange();
 protected:
     virtual QString getConfigFilepath() override;
     virtual void parseConfigKeyValue(QString key, QString value) override;
@@ -118,6 +120,7 @@ private:
     QString textEditorOpenFolder;
     QString textEditorGotoLine;
     int autoSaveDelay;
+    bool autoSaveOnMapChange;
 };
 
 extern PorymapConfig porymapConfig;
