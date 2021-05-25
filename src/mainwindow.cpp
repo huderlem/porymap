@@ -244,6 +244,7 @@ void MainWindow::initExtraSignals() {
 
 void MainWindow::initEditor() {
     this->editor = new Editor(ui);
+    connect(this->editor, &Editor::saved, this, &MainWindow::updateMapList);
     connect(this->editor, &Editor::objectsChanged, this, &MainWindow::updateObjects);
     connect(this->editor, &Editor::selectedObjectsChanged, this, &MainWindow::updateSelectedObjects);
     connect(this->editor, &Editor::loadMapRequested, this, &MainWindow::onLoadMapRequested);
@@ -1380,7 +1381,6 @@ void MainWindow::updateMapList() {
 void MainWindow::on_action_Save_Project_triggered()
 {
     editor->saveProject();
-    updateMapList();
 }
 
 void MainWindow::duplicate() {
@@ -1598,7 +1598,6 @@ void MainWindow::paste() {
 
 void MainWindow::on_action_Save_triggered() {
     editor->save();
-    updateMapList();
 }
 
 void MainWindow::on_tabWidget_2_currentChanged(int index)

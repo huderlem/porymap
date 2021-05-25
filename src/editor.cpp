@@ -39,14 +39,23 @@ Editor::Editor(Ui::MainWindow* ui)
         }
 
         // Reset the auto-save timer if it is active.
-        if (autoSaveTimerId) {
-            killTimer(autoSaveTimerId);
-            autoSaveTimerId = 0;
-        }
+        auto timer = autoSaveTimers.take(editGroup.activeStack());
+        if (timer.data())
+            delete timer;
 
-        // Set the auto-save timer if it is enabled.
+        // Start the auto-save timer if it is enabled.
         if (!editGroup.isClean() && porymapConfig.getAutoSaveDelay() > 0) {
-            autoSaveTimerId = startTimer(porymapConfig.getAutoSaveDelay());
+            timer = new QTimer(editGroup.activeStack());
+            timer->setSingleShot(true);
+            autoSaveTimers.insert(editGroup.activeStack(), timer);
+
+            auto *currentMap = map;
+            timer->callOnTimeout(this, [this, currentMap, timer]() {
+                save(currentMap);
+                timer->deleteLater();
+            });
+
+            timer->start(porymapConfig.getAutoSaveDelay());
         }
     });
 }
@@ -67,30 +76,23 @@ void Editor::saveProject() {
         saveUiFields();
         project->saveAllMaps();
         project->saveAllDataStructures();
+
+        emit saved();
     }
 }
 
-void Editor::save() {
-    if (project && map) {
+void Editor::save(Map *map_) {
+    if (project && map_) {
         saveUiFields();
-        project->saveMap(map);
+        project->saveMap(map_);
         project->saveAllDataStructures();
+
+        emit saved(map_);
     }
 }
 
 void Editor::saveUiFields() {
     saveEncounterTabData();
-}
-
-void Editor::timerEvent(QTimerEvent *event) {
-    if (event->timerId() == autoSaveTimerId) {
-        event->accept();
-        saveProject();
-        killTimer(autoSaveTimerId);
-        autoSaveTimerId = 0;
-    } else {
-        QObject::timerEvent(event);
-    }
 }
 
 void Editor::closeProject() {
@@ -1057,11 +1059,7 @@ bool Editor::setMap(QString map_name) {
         return false;
     }
 
-    if (autoSaveTimerId) {
-        killTimer(autoSaveTimerId);
-        autoSaveTimerId = 0;
-        saveProject();
-    } else if (porymapConfig.getAutoSaveOnMapChange()) {
+    if (porymapConfig.getAutoSaveOnMapChange()) {
         save();
     }
 
