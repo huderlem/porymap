@@ -192,6 +192,13 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->textEditorOpenFolder = value;
     } else if (key == "text_editor_goto_line") {
         this->textEditorGotoLine = value;
+    } else if (key == "auto_save_delay") {
+        bool ok;
+        this->autoSaveDelay = value.toInt(&ok);
+        if (!ok || this->autoSaveDelay < 0) {
+            logWarn(QString("Invalid config value for auto_save_delay: '%1'. Must be a non-negative integer.").arg(value));
+            this->autoSaveDelay = 0;
+        }
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -222,6 +229,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("theme", this->theme);
     map.insert("text_editor_open_directory", this->textEditorOpenFolder);
     map.insert("text_editor_goto_line", this->textEditorGotoLine);
+    map.insert("auto_save_delay", QString("%1").arg(this->autoSaveDelay));
     return map;
 }
 
@@ -327,6 +335,11 @@ void PorymapConfig::setTextEditorGotoLine(const QString &command) {
     this->save();
 }
 
+void PorymapConfig::setAutoSaveDelay(int delay) {
+    this->autoSaveDelay = delay;
+    this->save();
+}
+
 QString PorymapConfig::getRecentProject() {
     return this->recentProject;
 }
@@ -411,6 +424,10 @@ QString PorymapConfig::getTextEditorOpenFolder() {
 
 QString PorymapConfig::getTextEditorGotoLine() {
     return this->textEditorGotoLine;
+}
+
+int PorymapConfig::getAutoSaveDelay() {
+    return this->autoSaveDelay;
 }
 
 const QMap<BaseGameVersion, QString> baseGameVersionMap = {

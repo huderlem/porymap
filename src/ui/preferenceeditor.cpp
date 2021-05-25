@@ -18,6 +18,7 @@ PreferenceEditor::PreferenceEditor(QWidget *parent) :
     auto *formLayout = new QFormLayout(ui->groupBox_Themes);
     themeSelector = new NoScrollComboBox(ui->groupBox_Themes);
     formLayout->addRow("Themes", themeSelector);
+    ui->spinBox_AutoSaveDelay->setRange(0, INT_MAX);
     setAttribute(Qt::WA_DeleteOnClose);
     connect(ui->buttonBox, &QDialogButtonBox::clicked,
             this, &PreferenceEditor::dialogButtonClicked);
@@ -30,7 +31,7 @@ PreferenceEditor::~PreferenceEditor()
 }
 
 void PreferenceEditor::populateFields() {
-    QStringList themes = { "default" };
+    QStringList themes("default");
     QRegularExpression re(":/themes/([A-z0-9_-]+).qss");
     QDirIterator it(":/themes", QDirIterator::Subdirectories);
     while (it.hasNext()) {
@@ -39,6 +40,8 @@ void PreferenceEditor::populateFields() {
     }
     themeSelector->addItems(themes);
     themeSelector->setCurrentText(porymapConfig.getTheme());
+
+    ui->spinBox_AutoSaveDelay->setValue(porymapConfig.getAutoSaveDelay());
 
     ui->lineEdit_TextEditorOpenFolder->setText(porymapConfig.getTextEditorOpenFolder());
 
@@ -51,6 +54,8 @@ void PreferenceEditor::saveFields() {
         porymapConfig.setTheme(theme);
         emit themeChanged(theme);
     }
+
+    porymapConfig.setAutoSaveDelay(ui->spinBox_AutoSaveDelay->value());
 
     porymapConfig.setTextEditorOpenFolder(ui->lineEdit_TextEditorOpenFolder->text());
 

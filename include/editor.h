@@ -157,6 +157,9 @@ public slots:
     void openProjectInTextEditor() const;
     void maskNonVisibleConnectionTiles();
 
+protected:
+    void timerEvent(QTimerEvent *event) override;
+
 private:
     void setConnectionItemsVisible(bool);
     void setBorderItemsVisible(bool, qreal = 1);
@@ -179,6 +182,8 @@ private:
     bool startDetachedProcess(const QString &command,
                               const QString &workingDirectory = QString(),
                               qint64 *pid = nullptr) const;
+
+    int autoSaveTimerId = 0;
 
 private slots:
     void onMapStartPaint(QGraphicsSceneMouseEvent *event, MapPixmapItem *item);

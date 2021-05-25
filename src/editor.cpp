@@ -29,13 +29,28 @@ Editor::Editor(Ui::MainWindow* ui)
     this->map_ruler = new MapRuler(4);
     connect(this->map_ruler, &MapRuler::statusChanged, this, &Editor::mapRulerStatusChanged);
 
-    /// Instead of updating the selected events after every single undo action
-    /// (eg when the user rolls back several at once), only reselect events when
-    /// the index is changed.
     connect(&editGroup, &QUndoGroup::indexChanged, [this](int) {
+        /// Instead of updating the selected events after every single undo action
+        /// (eg when the user rolls back several at once), only reselect events when
+        /// the index is changed.
         if (selectNewEvents) {
             updateSelectedEvents();
             selectNewEvents = false;
+        }
+
+        // Set auto-save timer if enabled.
+        if (!editGroup.isClean()) {
+            if (autoSaveTimerId) {
+                killTimer(autoSaveTimerId);
+                autoSaveTimerId = 0;
+            }
+
+            if (porymapConfig.getAutoSaveDelay() > 0) {
+                autoSaveTimerId = startTimer(porymapConfig.getAutoSaveDelay());
+            }
+        } else if (autoSaveTimerId) {
+            killTimer(autoSaveTimerId);
+            autoSaveTimerId = 0;
         }
     });
 }
@@ -69,6 +84,17 @@ void Editor::save() {
 
 void Editor::saveUiFields() {
     saveEncounterTabData();
+}
+
+void Editor::timerEvent(QTimerEvent *event) {
+    if (event->timerId() == autoSaveTimerId) {
+        event->accept();
+        saveProject();
+        killTimer(autoSaveTimerId);
+        autoSaveTimerId = 0;
+    } else {
+        QObject::timerEvent(event);
+    }
 }
 
 void Editor::closeProject() {
@@ -1033,6 +1059,10 @@ void Editor::setConnectionsVisibility(bool visible) {
 bool Editor::setMap(QString map_name) {
     if (map_name.isEmpty()) {
         return false;
+    }
+
+    if (autoSaveTimerId) {
+        save();
     }
 
     if (project) {

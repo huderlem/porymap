@@ -32,6 +32,62 @@
      </widget>
     </item>
     <item>
+     <widget class="QGroupBox" name="groupBox_AutoSave">
+      <property name="title">
+       <string>Auto-Save</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_3">
+       <item row="0" column="1">
+        <widget class="QSpinBox" name="spinBox_AutoSaveDelay">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="buttonSymbols">
+          <enum>QAbstractSpinBox::UpDownArrows</enum>
+         </property>
+         <property name="specialValueText">
+          <string>Off</string>
+         </property>
+         <property name="accelerated">
+          <bool>true</bool>
+         </property>
+         <property name="correctionMode">
+          <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
+         </property>
+         <property name="showGroupSeparator" stdset="0">
+          <bool>false</bool>
+         </property>
+         <property name="suffix">
+          <string>ms</string>
+         </property>
+         <property name="maximum">
+          <number>1200000</number>
+         </property>
+         <property name="singleStep">
+          <number>500</number>
+         </property>
+         <property name="stepType">
+          <enum>QAbstractSpinBox::DefaultStepType</enum>
+         </property>
+         <property name="value">
+          <number>0</number>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_AutoSaveDelay">
+         <property name="text">
+          <string>Auto-Save Delay</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
      <widget class="QGroupBox" name="groupBox_TextEditor">
       <property name="title">
        <string>Preferred Text Editor</string>
@@ -65,8 +121,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>582</width>
-            <height>372</height>
+            <width>570</width>
+            <height>307</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_2">

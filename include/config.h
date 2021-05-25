@@ -49,6 +49,7 @@ public:
         this->theme = "default";
         this->textEditorOpenFolder = "";
         this->textEditorGotoLine = "";
+        this->autoSaveDelay = 0;
     }
     void setRecentProject(QString project);
     void setMapSortOrder(MapSortOrder order);
@@ -66,6 +67,7 @@ public:
     void setTheme(QString theme);
     void setTextEditorOpenFolder(const QString &command);
     void setTextEditorGotoLine(const QString &command);
+    void setAutoSaveDelay(int delay);
     QString getRecentProject();
     MapSortOrder getMapSortOrder();
     bool getPrettyCursors();
@@ -82,6 +84,7 @@ public:
     QString getTheme();
     QString getTextEditorOpenFolder();
     QString getTextEditorGotoLine();
+    int getAutoSaveDelay();
 protected:
     virtual QString getConfigFilepath() override;
     virtual void parseConfigKeyValue(QString key, QString value) override;
@@ -114,6 +117,7 @@ private:
     QString theme;
     QString textEditorOpenFolder;
     QString textEditorGotoLine;
+    int autoSaveDelay;
 };
 
 extern PorymapConfig porymapConfig;
