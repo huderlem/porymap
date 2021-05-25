@@ -41,6 +41,7 @@ void PreferenceEditor::populateFields() {
     themeSelector->addItems(themes);
     themeSelector->setCurrentText(porymapConfig.getTheme());
 
+    ui->checkBox_AutoSaveEnabled->setChecked(porymapConfig.getAutoSaveEnabled());
     ui->spinBox_AutoSaveDelay->setValue(porymapConfig.getAutoSaveDelay());
     ui->checkBox_AutoSaveOnMapChange->setChecked(porymapConfig.getAutoSaveOnMapChange());
 
@@ -55,6 +56,7 @@ void PreferenceEditor::saveFields() {
         emit themeChanged(theme);
     }
 
+    porymapConfig.setAutoSaveEnabled(ui->checkBox_AutoSaveEnabled->isChecked());
     porymapConfig.setAutoSaveDelay(ui->spinBox_AutoSaveDelay->value());
     porymapConfig.setAutoSaveOnMapChange(ui->checkBox_AutoSaveOnMapChange->isChecked());
 

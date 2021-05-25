@@ -44,7 +44,7 @@ Editor::Editor(Ui::MainWindow* ui)
             delete timer;
 
         // Start the auto-save timer if it is enabled.
-        if (!editGroup.isClean() && porymapConfig.getAutoSaveDelay() > 0) {
+        if (!editGroup.isClean() && porymapConfig.getAutoSaveEnabled() && porymapConfig.getAutoSaveDelay() > 0) {
             timer = new QTimer(editGroup.activeStack());
             timer->setSingleShot(true);
             autoSaveTimers.insert(editGroup.activeStack(), timer);
@@ -1059,7 +1059,7 @@ bool Editor::setMap(QString map_name) {
         return false;
     }
 
-    if (porymapConfig.getAutoSaveOnMapChange()) {
+    if (porymapConfig.getAutoSaveEnabled() && porymapConfig.getAutoSaveOnMapChange()) {
         save();
     }
 

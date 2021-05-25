@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>600</width>
-    <height>480</height>
+    <height>640</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -36,69 +36,131 @@
       <property name="title">
        <string>Auto-Save</string>
       </property>
-      <layout class="QGridLayout" name="gridLayout_3">
-       <item row="0" column="1">
-        <widget class="QSpinBox" name="spinBox_AutoSaveDelay">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QLabel" name="label_AutoSaveWarning">
+         <property name="text">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;WARNING&lt;/span&gt;: It is not recommended to enable auto-save if you are not using G&lt;span style=&quot; font-weight:600;&quot;&gt;it&lt;/span&gt; to commit changes to your project. Auto-save does &lt;span style=&quot; font-weight:600;&quot;&gt;NOT&lt;/span&gt; create a backup.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
-         <property name="buttonSymbols">
-          <enum>QAbstractSpinBox::UpDownArrows</enum>
-         </property>
-         <property name="specialValueText">
-          <string>Off</string>
-         </property>
-         <property name="accelerated">
+         <property name="wordWrap">
           <bool>true</bool>
          </property>
-         <property name="correctionMode">
-          <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkBox_AutoSaveEnabled">
+         <property name="text">
+          <string>Enable Auto-Save</string>
          </property>
-         <property name="showGroupSeparator" stdset="0">
+        </widget>
+       </item>
+       <item>
+        <widget class="QFrame" name="frame_AutoSaveOptions">
+         <property name="enabled">
           <bool>false</bool>
          </property>
-         <property name="suffix">
-          <string>ms</string>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
          </property>
-         <property name="maximum">
-          <number>1200000</number>
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
          </property>
-         <property name="singleStep">
-          <number>500</number>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
          </property>
-         <property name="stepType">
-          <enum>QAbstractSpinBox::DefaultStepType</enum>
-         </property>
-         <property name="value">
-          <number>0</number>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_AutoSaveDelay">
-         <property name="text">
-          <string>Auto-Save Delay</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QCheckBox" name="checkBox_AutoSaveOnMapChange">
-         <property name="layoutDirection">
-          <enum>Qt::LeftToRight</enum>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label_AutoSaveOnMapChange">
-         <property name="text">
-          <string>Auto-Save when changing maps</string>
-         </property>
+         <layout class="QGridLayout" name="gridLayout_4">
+          <property name="leftMargin">
+           <number>9</number>
+          </property>
+          <property name="topMargin">
+           <number>9</number>
+          </property>
+          <property name="rightMargin">
+           <number>9</number>
+          </property>
+          <property name="bottomMargin">
+           <number>9</number>
+          </property>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_AutoSaveOnMapChange">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When enabled, maps will be saved when switching to a different map in the editor.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Auto-Save when changing maps</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_AutoSaveDelay">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Controls the amount of time (in milliseconds) to wait before saving a dirty map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Auto-Save Delay</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QSpinBox" name="spinBox_AutoSaveDelay">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The amount of time in milliseconds before a dirty map will be saved. Subsequent edits within this time period will reset the timer. Setting to 0ms disables the auto-save timer.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="buttonSymbols">
+             <enum>QAbstractSpinBox::UpDownArrows</enum>
+            </property>
+            <property name="specialValueText">
+             <string>0ms (Off)</string>
+            </property>
+            <property name="accelerated">
+             <bool>true</bool>
+            </property>
+            <property name="correctionMode">
+             <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
+            </property>
+            <property name="showGroupSeparator" stdset="0">
+             <bool>false</bool>
+            </property>
+            <property name="suffix">
+             <string>ms</string>
+            </property>
+            <property name="maximum">
+             <number>1200000</number>
+            </property>
+            <property name="singleStep">
+             <number>500</number>
+            </property>
+            <property name="stepType">
+             <enum>QAbstractSpinBox::DefaultStepType</enum>
+            </property>
+            <property name="value">
+             <number>0</number>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QCheckBox" name="checkBox_AutoSaveOnMapChange">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When enabled, maps will be saved when switching to a different map in the editor.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="layoutDirection">
+             <enum>Qt::LeftToRight</enum>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
       </layout>
@@ -138,8 +200,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>570</width>
-            <height>307</height>
+            <width>582</width>
+            <height>338</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_2">
@@ -259,5 +321,22 @@
   </widget>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>checkBox_AutoSaveEnabled</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>frame_AutoSaveOptions</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>299</x>
+     <y>123</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>299</x>
+     <y>178</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
