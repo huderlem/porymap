@@ -3064,17 +3064,21 @@ void MainWindow::closeSupplementaryWindows() {
 void MainWindow::closeEvent(QCloseEvent *event) {
     if (isProjectOpen()) {
         if (projectHasUnsavedChanges || (editor->map && editor->map->hasUnsavedChanges())) {
-            QMessageBox::StandardButton result = QMessageBox::question(
-                this, "porymap", "The project has been modified, save changes?",
-                QMessageBox::No | QMessageBox::Yes | QMessageBox::Cancel, QMessageBox::Yes);
-
-            if (result == QMessageBox::Yes) {
+            if (porymapConfig.getAutoSaveEnabled()) {
                 editor->saveProject();
-            } else if (result == QMessageBox::No) {
-                logWarn("Closing porymap with unsaved changes.");
-            } else if (result == QMessageBox::Cancel) {
-                event->ignore();
-                return;
+            } else {
+                QMessageBox::StandardButton result = QMessageBox::question(
+                    this, "porymap", "The project has been modified, save changes?",
+                    QMessageBox::No | QMessageBox::Yes | QMessageBox::Cancel, QMessageBox::Yes);
+
+                if (result == QMessageBox::Yes) {
+                    editor->saveProject();
+                } else if (result == QMessageBox::No) {
+                    logWarn("Closing porymap with unsaved changes.");
+                } else if (result == QMessageBox::Cancel) {
+                    event->ignore();
+                    return;
+                }
             }
         }
         projectConfig.save();

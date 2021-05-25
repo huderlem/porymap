@@ -1,5 +1,5 @@
-#ifndef PREFERENCES_H
-#define PREFERENCES_H
+#ifndef PREFERENCEEDITOR_H
+#define PREFERENCEEDITOR_H
 
 #include <QMainWindow>
 
@@ -34,4 +34,4 @@ private slots:
     void dialogButtonClicked(QAbstractButton *button);
 };
 
-#endif // PREFERENCES_H
+#endif // PREFERENCEEDITOR_H
