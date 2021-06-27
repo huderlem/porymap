@@ -35,6 +35,7 @@
 #include <QTransform>
 #include <QSignalBlocker>
 #include <QSet>
+#include <QLoggingCategory>
 
 using OrderedJson = poryjson::Json;
 using OrderedJsonDoc = poryjson::JsonDoc;
@@ -66,6 +67,10 @@ MainWindow::MainWindow(QWidget *parent) :
         setWindowDisabled(false);
         on_toolButton_Paint_clicked();
     }
+
+    // there is a bug affecting macOS users, where the trackpad deilveres a bad touch-release gesture
+    // the warning is a bit annoying, so it is disabled here
+    QLoggingCategory::setFilterRules(QStringLiteral("qt.pointer.dispatch=false"));
 }
 
 MainWindow::~MainWindow()
