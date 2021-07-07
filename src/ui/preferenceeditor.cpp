@@ -18,6 +18,7 @@ PreferenceEditor::PreferenceEditor(QWidget *parent) :
     auto *formLayout = new QFormLayout(ui->groupBox_Themes);
     themeSelector = new NoScrollComboBox(ui->groupBox_Themes);
     formLayout->addRow("Themes", themeSelector);
+    ui->spinBox_AutoSaveDelay->setRange(0, INT_MAX);
     setAttribute(Qt::WA_DeleteOnClose);
     connect(ui->buttonBox, &QDialogButtonBox::clicked,
             this, &PreferenceEditor::dialogButtonClicked);
@@ -30,7 +31,7 @@ PreferenceEditor::~PreferenceEditor()
 }
 
 void PreferenceEditor::populateFields() {
-    QStringList themes = { "default" };
+    QStringList themes("default");
     QRegularExpression re(":/themes/([A-z0-9_-]+).qss");
     QDirIterator it(":/themes", QDirIterator::Subdirectories);
     while (it.hasNext()) {
@@ -40,8 +41,11 @@ void PreferenceEditor::populateFields() {
     themeSelector->addItems(themes);
     themeSelector->setCurrentText(porymapConfig.getTheme());
 
-    ui->lineEdit_TextEditorOpenFolder->setText(porymapConfig.getTextEditorOpenFolder());
+    ui->checkBox_AutoSaveEnabled->setChecked(porymapConfig.getAutoSaveEnabled());
+    ui->spinBox_AutoSaveDelay->setValue(porymapConfig.getAutoSaveDelay());
+    ui->checkBox_AutoSaveOnMapChange->setChecked(porymapConfig.getAutoSaveOnMapChange());
 
+    ui->lineEdit_TextEditorOpenFolder->setText(porymapConfig.getTextEditorOpenFolder());
     ui->lineEdit_TextEditorGotoLine->setText(porymapConfig.getTextEditorGotoLine());
 }
 
@@ -52,15 +56,18 @@ void PreferenceEditor::saveFields() {
         emit themeChanged(theme);
     }
 
-    porymapConfig.setTextEditorOpenFolder(ui->lineEdit_TextEditorOpenFolder->text());
+    porymapConfig.setAutoSaveEnabled(ui->checkBox_AutoSaveEnabled->isChecked());
+    porymapConfig.setAutoSaveDelay(ui->spinBox_AutoSaveDelay->value());
+    porymapConfig.setAutoSaveOnMapChange(ui->checkBox_AutoSaveOnMapChange->isChecked());
 
+    porymapConfig.setTextEditorOpenFolder(ui->lineEdit_TextEditorOpenFolder->text());
     porymapConfig.setTextEditorGotoLine(ui->lineEdit_TextEditorGotoLine->text());
 
     emit preferencesSaved();
 }
 
 void PreferenceEditor::dialogButtonClicked(QAbstractButton *button) {
-    auto buttonRole = ui->buttonBox->buttonRole(button);
+    const auto buttonRole = ui->buttonBox->buttonRole(button);
     if (buttonRole == QDialogButtonBox::AcceptRole) {
         saveFields();
         close();

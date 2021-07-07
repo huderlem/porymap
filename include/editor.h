@@ -1,4 +1,5 @@
 #pragma once
+#include <qvector.h>
 #ifndef EDITOR_H
 #define EDITOR_H
 
@@ -47,7 +48,8 @@ public:
     Map *map = nullptr;
     Settings *settings;
     void saveProject();
-    void save();
+    void save(Map *map_);
+    void save() { save(map); }
     void closeProject();
     bool setMap(QString map_name);
     void saveUiFields();
@@ -179,6 +181,8 @@ private:
                               const QString &workingDirectory = QString(),
                               qint64 *pid = nullptr) const;
 
+    QHash<QUndoStack *, QPointer<QTimer>> autoSaveTimers;
+
 private slots:
     void onMapStartPaint(QGraphicsSceneMouseEvent *event, MapPixmapItem *item);
     void onMapEndPaint(QGraphicsSceneMouseEvent *event, MapPixmapItem *item);
@@ -203,6 +207,7 @@ private slots:
     void onWheelZoom(int);
 
 signals:
+    void saved(Map *map = nullptr);
     void objectsChanged();
     void selectedObjectsChanged();
     void loadMapRequested(QString, QString);

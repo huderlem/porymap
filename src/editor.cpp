@@ -29,13 +29,33 @@ Editor::Editor(Ui::MainWindow* ui)
     this->map_ruler = new MapRuler(4);
     connect(this->map_ruler, &MapRuler::statusChanged, this, &Editor::mapRulerStatusChanged);
 
-    /// Instead of updating the selected events after every single undo action
-    /// (eg when the user rolls back several at once), only reselect events when
-    /// the index is changed.
     connect(&editGroup, &QUndoGroup::indexChanged, [this](int) {
+        /// Instead of updating the selected events after every single undo action
+        /// (eg when the user rolls back several at once), only reselect events when
+        /// the index is changed.
         if (selectNewEvents) {
             updateSelectedEvents();
             selectNewEvents = false;
+        }
+
+        // Reset the auto-save timer if it is active.
+        auto timer = autoSaveTimers.take(editGroup.activeStack());
+        if (timer.data())
+            delete timer;
+
+        // Start the auto-save timer if it is enabled.
+        if (!editGroup.isClean() && porymapConfig.getAutoSaveEnabled() && porymapConfig.getAutoSaveDelay() > 0) {
+            timer = new QTimer(editGroup.activeStack());
+            timer->setSingleShot(true);
+            autoSaveTimers.insert(editGroup.activeStack(), timer);
+
+            auto *currentMap = map;
+            timer->callOnTimeout(this, [this, currentMap, timer]() {
+                save(currentMap);
+                timer->deleteLater();
+            });
+
+            timer->start(porymapConfig.getAutoSaveDelay());
         }
     });
 }
@@ -56,14 +76,18 @@ void Editor::saveProject() {
         saveUiFields();
         project->saveAllMaps();
         project->saveAllDataStructures();
+
+        emit saved();
     }
 }
 
-void Editor::save() {
-    if (project && map) {
+void Editor::save(Map *map_) {
+    if (project && map_) {
         saveUiFields();
-        project->saveMap(map);
+        project->saveMap(map_);
         project->saveAllDataStructures();
+
+        emit saved(map_);
     }
 }
 
@@ -1053,6 +1077,10 @@ void Editor::setConnectionsVisibility(bool visible) {
 bool Editor::setMap(QString map_name) {
     if (map_name.isEmpty()) {
         return false;
+    }
+
+    if (porymapConfig.getAutoSaveEnabled() && porymapConfig.getAutoSaveOnMapChange()) {
+        save();
     }
 
     if (project) {

@@ -249,6 +249,7 @@ void MainWindow::initExtraSignals() {
 
 void MainWindow::initEditor() {
     this->editor = new Editor(ui);
+    connect(this->editor, &Editor::saved, this, &MainWindow::updateMapList);
     connect(this->editor, &Editor::objectsChanged, this, &MainWindow::updateObjects);
     connect(this->editor, &Editor::selectedObjectsChanged, this, &MainWindow::updateSelectedObjects);
     connect(this->editor, &Editor::loadMapRequested, this, &MainWindow::onLoadMapRequested);
@@ -1385,7 +1386,6 @@ void MainWindow::updateMapList() {
 void MainWindow::on_action_Save_Project_triggered()
 {
     editor->saveProject();
-    updateMapList();
 }
 
 void MainWindow::duplicate() {
@@ -1603,7 +1603,6 @@ void MainWindow::paste() {
 
 void MainWindow::on_action_Save_triggered() {
     editor->save();
-    updateMapList();
 }
 
 void MainWindow::on_tabWidget_2_currentChanged(int index)
@@ -3076,17 +3075,21 @@ void MainWindow::closeSupplementaryWindows() {
 void MainWindow::closeEvent(QCloseEvent *event) {
     if (isProjectOpen()) {
         if (projectHasUnsavedChanges || (editor->map && editor->map->hasUnsavedChanges())) {
-            QMessageBox::StandardButton result = QMessageBox::question(
-                this, "porymap", "The project has been modified, save changes?",
-                QMessageBox::No | QMessageBox::Yes | QMessageBox::Cancel, QMessageBox::Yes);
-
-            if (result == QMessageBox::Yes) {
+            if (porymapConfig.getAutoSaveEnabled()) {
                 editor->saveProject();
-            } else if (result == QMessageBox::No) {
-                logWarn("Closing porymap with unsaved changes.");
-            } else if (result == QMessageBox::Cancel) {
-                event->ignore();
-                return;
+            } else {
+                QMessageBox::StandardButton result = QMessageBox::question(
+                    this, "porymap", "The project has been modified, save changes?",
+                    QMessageBox::No | QMessageBox::Yes | QMessageBox::Cancel, QMessageBox::Yes);
+
+                if (result == QMessageBox::Yes) {
+                    editor->saveProject();
+                } else if (result == QMessageBox::No) {
+                    logWarn("Closing porymap with unsaved changes.");
+                } else if (result == QMessageBox::Cancel) {
+                    event->ignore();
+                    return;
+                }
             }
         }
         projectConfig.save();
