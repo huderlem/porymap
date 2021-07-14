@@ -5,6 +5,8 @@
 #include "log.h"
 #include <QFileDialog>
 #include <QMessageBox>
+#include <string>
+#include <exception>
 
 PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset *secondaryTileset, int paletteId, QWidget *parent) :
     QMainWindow(parent),
@@ -105,12 +107,31 @@ PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset 
     this->rgbLabels.append(this->ui->label_rgb14);
     this->rgbLabels.append(this->ui->label_rgb15);
 
+    this->hexboxes.clear();
+    this->hexboxes.append(this->ui->lineEdit);
+    this->hexboxes.append(this->ui->lineEdit_2);
+    this->hexboxes.append(this->ui->lineEdit_3);
+    this->hexboxes.append(this->ui->lineEdit_4);
+    this->hexboxes.append(this->ui->lineEdit_5);
+    this->hexboxes.append(this->ui->lineEdit_6);
+    this->hexboxes.append(this->ui->lineEdit_7);
+    this->hexboxes.append(this->ui->lineEdit_8);
+    this->hexboxes.append(this->ui->lineEdit_9);
+    this->hexboxes.append(this->ui->lineEdit_10);
+    this->hexboxes.append(this->ui->lineEdit_11);
+    this->hexboxes.append(this->ui->lineEdit_12);
+    this->hexboxes.append(this->ui->lineEdit_13);
+    this->hexboxes.append(this->ui->lineEdit_14);
+    this->hexboxes.append(this->ui->lineEdit_15);
+    this->hexboxes.append(this->ui->lineEdit_16);
+
     // Setup edit-undo history for each of the palettes.
     for (int i = 0; i < Project::getNumPalettesTotal(); i++) {
         this->palettesHistory.append(History<PaletteHistoryItem*>());
     }
 
     this->initColorSliders();
+    this->initHexBoxes();
     this->setPaletteId(paletteId);
     this->commitEditHistory(this->ui->spinBox_PaletteId->value());
     this->restoreWindowState();
@@ -137,11 +158,29 @@ void PaletteEditor::enableSliderSignals() {
     }
 }
 
+void PaletteEditor::disableHexBoxSignals() {
+    for (int i = 0; i < this->hexboxes.length(); i++) {
+        this->hexboxes.at(i)->blockSignals(true);
+    }
+}
+
+void PaletteEditor::enableHexBoxSignals() {
+    for (int i = 0; i < this->hexboxes.length(); i++) {
+        this->hexboxes.at(i)->blockSignals(false);
+    }
+}
+
 void PaletteEditor::initColorSliders() {
     for (int i = 0; i < 16; i++) {
         connect(this->sliders[i][0], &QSlider::valueChanged, [=](int) { this->setColor(i); });
         connect(this->sliders[i][1], &QSlider::valueChanged, [=](int) { this->setColor(i); });
         connect(this->sliders[i][2], &QSlider::valueChanged, [=](int) { this->setColor(i); });
+    }
+}
+
+void PaletteEditor::initHexBoxes() {
+    for (int i = 0; i < 16; i++) {
+        connect(this->hexboxes[i], &QLineEdit::textChanged, this, [=]() { this->updateHexBox(i); });
     }
 }
 
@@ -179,6 +218,11 @@ void PaletteEditor::refreshColor(int colorIndex) {
             .arg(blue);
     this->frames[colorIndex]->setStyleSheet(stylesheet);
     this->rgbLabels[colorIndex]->setText(QString("RGB(%1, %2, %3)").arg(red).arg(green).arg(blue));
+    QRgb color = (red << 16)  |
+                (green << 8) |
+                (blue);
+    QString hexcode = QString().setNum(color, 16).toUpper();
+    this->hexboxes[colorIndex]->setText(hexcode);
 }
 
 void PaletteEditor::setPaletteId(int paletteId) {
@@ -209,6 +253,28 @@ void PaletteEditor::setColor(int colorIndex) {
     this->refreshColor(colorIndex);
     this->commitEditHistory(paletteNum);
     emit this->changedPaletteColor();
+}
+
+void PaletteEditor::updateHexBox(int colorIndex) {
+    this->disableHexBoxSignals();
+    QString newText = this->hexboxes[colorIndex]->text();
+    std::string newTextStr = newText.toUtf8().constData();
+    if(newTextStr.length() == 6) {
+        QRgb color;
+        try {
+            color = std::stoi(newTextStr, nullptr, 16);
+        }
+        catch(std::exception& e) {
+            // Use white if the color can't be converted.
+            color = 0xFFFFFF;
+            newText.setNum(color, 16).toUpper();
+            this->hexboxes[colorIndex]->setText(newText);
+        }
+        this->sliders[colorIndex][0]->setValue(qRed(color)   / 8);
+        this->sliders[colorIndex][1]->setValue(qGreen(color) / 8);
+        this->sliders[colorIndex][2]->setValue(qBlue(color)  / 8);
+    }
+    this->enableHexBoxSignals();
 }
 
 void PaletteEditor::on_spinBox_PaletteId_valueChanged(int paletteId) {

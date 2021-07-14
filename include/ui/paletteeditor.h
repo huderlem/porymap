@@ -5,6 +5,7 @@
 #include <QSlider>
 #include <QFrame>
 #include <QLabel>
+#include <QLineEdit>
 #include "project.h"
 #include "history.h"
 
@@ -34,16 +35,21 @@ private:
     QList<QList<QSlider*>> sliders;
     QList<QFrame*> frames;
     QList<QLabel*> rgbLabels;
+    QList<QLineEdit*> hexboxes;
     Tileset *primaryTileset;
     Tileset *secondaryTileset;
     QList<History<PaletteHistoryItem*>> palettesHistory;
     void disableSliderSignals();
     void enableSliderSignals();
+    void disableHexBoxSignals();
+    void enableHexBoxSignals();
     void initColorSliders();
+    void initHexBoxes();
     void refreshColorSliders();
     void refreshColors();
     void refreshColor(int);
     void setColor(int);
+    void updateHexBox(int);
     void commitEditHistory(int paletteid);
     void restoreWindowState();
     void setColorsFromHistory(PaletteHistoryItem*, int);
