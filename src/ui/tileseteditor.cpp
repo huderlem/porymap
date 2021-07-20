@@ -281,6 +281,13 @@ void TilesetEditor::refresh() {
     this->metatileSelector->select(this->metatileSelector->getSelectedMetatile());
     this->drawSelectedTiles();
 
+    if (metatileSelector) {
+        if (metatileSelector->selectorShowUnused || metatileSelector->selectorShowCounts) {
+            countMetatileUsage();
+            this->metatileSelector->draw();
+        }
+    }
+
     this->ui->graphicsView_Tiles->setSceneRect(0, 0, this->tileSelector->pixmap().width() + 2, this->tileSelector->pixmap().height() + 2);
     this->ui->graphicsView_Tiles->setFixedSize(this->tileSelector->pixmap().width() + 2, this->tileSelector->pixmap().height() + 2);
     this->ui->graphicsView_Metatiles->setSceneRect(0, 0, this->metatileSelector->pixmap().width() + 2, this->metatileSelector->pixmap().height() + 2);
@@ -908,4 +915,61 @@ void TilesetEditor::importTilesetMetatiles(Tileset *tileset, bool primary)
     tileset->metatiles = metatiles;
     this->refresh();
     this->hasUnsavedChanges = true;
+}
+
+void TilesetEditor::on_actionShow_Unused_toggled(bool checked) {
+    this->metatileSelector->selectorShowUnused = checked;
+
+    if (checked) countMetatileUsage();
+
+    this->metatileSelector->draw();
+}
+
+void TilesetEditor::on_actionShow_Counts_toggled(bool checked) {
+    this->metatileSelector->selectorShowCounts = checked;
+
+    if (checked) countMetatileUsage();
+
+    this->metatileSelector->draw();
+}
+
+void TilesetEditor::countMetatileUsage() {
+    // do not double count
+    metatileSelector->usedMetatiles.fill(0);
+
+    for (auto layout : this->project->mapLayouts.values()) {
+        bool usesPrimary = false;
+        bool usesSecondary = false;
+
+        if (layout->tileset_primary_label == this->primaryTileset->name) {
+            usesPrimary = true;
+        }
+
+        if (layout->tileset_secondary_label == this->secondaryTileset->name) {
+            usesSecondary = true;
+        }
+
+        if (usesPrimary || usesSecondary) {
+            this->project->loadLayout(layout);
+
+            // for each block in the layout, mark in the vector that it is used
+            for (int i = 0; i < layout->blockdata.length(); i++) {
+                uint16_t tile = layout->blockdata.at(i).tile;
+                if (tile < this->project->getNumMetatilesPrimary()) {
+                    if (usesPrimary) metatileSelector->usedMetatiles[tile]++;
+                } else {
+                    if (usesSecondary) metatileSelector->usedMetatiles[tile]++;
+                }
+            }
+
+            for (int i = 0; i < layout->border.length(); i++) {
+                uint16_t tile = layout->border.at(i).tile;                
+                if (tile < this->project->getNumMetatilesPrimary()) {
+                    if (usesPrimary) metatileSelector->usedMetatiles[tile]++;
+                } else {
+                    if (usesSecondary) metatileSelector->usedMetatiles[tile]++;
+                }
+            }
+        }
+    }
 }

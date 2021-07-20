@@ -35,6 +35,11 @@ public:
         Blockdata blocks;
         QSize dimensions;
     } lastCommitMapBlocks; // to track map changes
+
+    int getWidth();
+    int getHeight();
+    int getBorderWidth();
+    int getBorderHeight();
 };
 
 #endif // MAPLAYOUT_H

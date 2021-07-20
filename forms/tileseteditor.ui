@@ -527,6 +527,8 @@
     <addaction name="actionImport_Primary_Metatiles"/>
     <addaction name="actionImport_Secondary_Metatiles"/>
     <addaction name="actionChange_Metatiles_Count"/>
+    <addaction name="actionShow_Unused"/>
+    <addaction name="actionShow_Counts"/>
     <addaction name="actionChange_Palettes"/>
     <addaction name="separator"/>
     <addaction name="actionExport_Primary_Tiles_Image"/>
@@ -570,6 +572,22 @@
   <action name="actionChange_Palettes">
    <property name="text">
     <string>Palette Editor</string>
+   </property>
+  </action>
+  <action name="actionShow_Unused">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Display Unused Metatiles</string>
+   </property>
+  </action>
+  <action name="actionShow_Counts">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Display Metatile Usage Counts</string>
    </property>
   </action>
   <action name="actionUndo">

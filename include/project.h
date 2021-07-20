@@ -95,7 +95,8 @@ public:
     QMap<QString, QStringList> tilesetLabels;
 
     Blockdata readBlockdata(QString);
-    bool loadBlockdata(Map*);
+    bool loadBlockdata(MapLayout*);
+    bool loadLayoutBorder(MapLayout*);
 
     void saveTextFile(QString path, QString text);
     void appendTextFile(QString path, QString text);
@@ -122,8 +123,9 @@ public:
     QMap<QString, bool> getTopLevelMapFields();
     bool loadMapData(Map*);
     bool readMapLayouts();
+    bool loadLayout(MapLayout *);
     bool loadMapLayout(Map*);
-    bool loadMapTilesets(Map*);
+    bool loadLayoutTilesets(MapLayout*);
     void loadTilesetAssets(Tileset*);
     void loadTilesetTiles(Tileset*, QImage);
     void loadTilesetMetatiles(Tileset*);
@@ -181,8 +183,6 @@ public:
     QString getMapScriptsFilePath(const QString &mapName) const;
     QStringList getEventScriptsFilePaths() const;
     QCompleter *getEventScriptLabelCompleter(QStringList additionalScriptLabels);
-
-    bool loadMapBorder(Map *map);
 
     void saveMapHealEvents(Map *map);
 
