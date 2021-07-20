@@ -63,19 +63,19 @@ QString Map::bgEventsLabelFromName(QString mapName)
 }
 
 int Map::getWidth() {
-    return layout->width.toInt(nullptr, 0);
+    return layout->getWidth();
 }
 
 int Map::getHeight() {
-    return layout->height.toInt(nullptr, 0);
+    return layout->getHeight();
 }
 
 int Map::getBorderWidth() {
-    return layout->border_width.toInt(nullptr, 0);
+    return layout->getBorderWidth();
 }
 
 int Map::getBorderHeight() {
-    return layout->border_height.toInt(nullptr, 0);
+    return layout->getBorderHeight();
 }
 
 bool Map::mapBlockChanged(int i, const Blockdata &cache) {

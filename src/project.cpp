@@ -447,6 +447,17 @@ void Project::setNewMapHeader(Map* map, int mapIndex) {
     map->battle_scene = mapBattleScenes.value(0, "MAP_BATTLE_SCENE_NORMAL");
 }
 
+bool Project::loadLayout(MapLayout *layout) {
+    // Force these to run even if one fails
+    bool loadedTilesets = loadLayoutTilesets(layout);
+    bool loadedBlockdata = loadBlockdata(layout);
+    bool loadedBorder = loadLayoutBorder(layout);
+
+    return loadedTilesets 
+        && loadedBlockdata 
+        && loadedBorder;
+}
+
 bool Project::loadMapLayout(Map* map) {
     if (!map->isPersistedToFile) {
         return true;
@@ -459,14 +470,11 @@ bool Project::loadMapLayout(Map* map) {
         return false;
     }
 
-    // Force these to run even if one fails
-    bool loadedTilesets = loadMapTilesets(map);
-    bool loadedBlockdata = loadBlockdata(map);
-    bool loadedBorder = loadMapBorder(map);
-
-    return loadedTilesets 
-        && loadedBlockdata 
-        && loadedBorder;
+    if (map->hasUnsavedChanges()) {
+        return true;
+    } else {
+        return loadLayout(map->layout);
+    }
 }
 
 bool Project::readMapLayouts() {
@@ -1080,30 +1088,31 @@ void Project::saveTilesetPalettes(Tileset *tileset) {
     }
 }
 
-bool Project::loadMapTilesets(Map* map) {
-    if (map->hasUnsavedChanges()) {
-        return true;
-    }
+bool Project::loadLayoutTilesets(MapLayout *layout) {
+    // TODO: investigate where to put this now
+    // if (map->hasUnsavedChanges()) {
+    //     return true;
+    // }
 
-    map->layout->tileset_primary = getTileset(map->layout->tileset_primary_label);
-    if (!map->layout->tileset_primary) {
+    layout->tileset_primary = getTileset(layout->tileset_primary_label);
+    if (!layout->tileset_primary) {
         QString defaultTileset = tilesetLabels["primary"].value(0, "gTileset_General");
-        logWarn(QString("Map layout %1 has invalid primary tileset '%2'. Using default '%3'").arg(map->layout->id).arg(map->layout->tileset_primary_label).arg(defaultTileset));
-        map->layout->tileset_primary_label = defaultTileset;
-        map->layout->tileset_primary = getTileset(map->layout->tileset_primary_label);
-        if (!map->layout->tileset_primary) {
+        logWarn(QString("Map layout %1 has invalid primary tileset '%2'. Using default '%3'").arg(layout->id).arg(layout->tileset_primary_label).arg(defaultTileset));
+        layout->tileset_primary_label = defaultTileset;
+        layout->tileset_primary = getTileset(layout->tileset_primary_label);
+        if (!layout->tileset_primary) {
             logError(QString("Failed to set default primary tileset."));
             return false;
         }
     }
 
-    map->layout->tileset_secondary = getTileset(map->layout->tileset_secondary_label);
-    if (!map->layout->tileset_secondary) {
+    layout->tileset_secondary = getTileset(layout->tileset_secondary_label);
+    if (!layout->tileset_secondary) {
         QString defaultTileset = tilesetLabels["secondary"].value(0, projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered ? "gTileset_PalletTown" : "gTileset_Petalburg");
-        logWarn(QString("Map layout %1 has invalid secondary tileset '%2'. Using default '%3'").arg(map->layout->id).arg(map->layout->tileset_secondary_label).arg(defaultTileset));
-        map->layout->tileset_secondary_label = defaultTileset;
-        map->layout->tileset_secondary = getTileset(map->layout->tileset_secondary_label);
-        if (!map->layout->tileset_secondary) {
+        logWarn(QString("Map layout %1 has invalid secondary tileset '%2'. Using default '%3'").arg(layout->id).arg(layout->tileset_secondary_label).arg(defaultTileset));
+        layout->tileset_secondary_label = defaultTileset;
+        layout->tileset_secondary = getTileset(layout->tileset_secondary_label);
+        if (!layout->tileset_secondary) {
             logError(QString("Failed to set default secondary tileset."));
             return false;
         }
@@ -1140,23 +1149,23 @@ Tileset* Project::loadTileset(QString label, Tileset *tileset) {
     return tileset;
 }
 
-bool Project::loadBlockdata(Map *map) {
-    if (map->hasUnsavedChanges()) {
-        return true;
-    }
+bool Project::loadBlockdata(MapLayout *layout) {
+    // if (map->hasUnsavedChanges()) {
+    //     return true;
+    // }
 
-    QString path = QString("%1/%2").arg(root).arg(map->layout->blockdata_path);
-    map->layout->blockdata = readBlockdata(path);
-    map->layout->lastCommitMapBlocks.blocks = map->layout->blockdata;
-    map->layout->lastCommitMapBlocks.dimensions = QSize(map->getWidth(), map->getHeight());
+    QString path = QString("%1/%2").arg(root).arg(layout->blockdata_path);
+    layout->blockdata = readBlockdata(path);
+    layout->lastCommitMapBlocks.blocks = layout->blockdata;
+    layout->lastCommitMapBlocks.dimensions = QSize(layout->getWidth(), layout->getHeight());
 
-    if (map->layout->blockdata.count() != map->getWidth() * map->getHeight()) {
+    if (layout->blockdata.count() != layout->getWidth() * layout->getHeight()) {
         logWarn(QString("Layout blockdata length %1 does not match dimensions %2x%3 (should be %4). Resizing blockdata.")
-                .arg(map->layout->blockdata.count())
-                .arg(map->getWidth())
-                .arg(map->getHeight())
-                .arg(map->getWidth() * map->getHeight()));
-        map->layout->blockdata.resize(map->getWidth() * map->getHeight());
+                .arg(layout->blockdata.count())
+                .arg(layout->getWidth())
+                .arg(layout->getHeight())
+                .arg(layout->getWidth() * layout->getHeight()));
+        layout->blockdata.resize(layout->getWidth() * layout->getHeight());
     }
     return true;
 }
@@ -1170,19 +1179,19 @@ void Project::setNewMapBlockdata(Map *map) {
     map->layout->lastCommitMapBlocks.dimensions = QSize(map->getWidth(), map->getHeight());
 }
 
-bool Project::loadMapBorder(Map *map) {
-    if (map->hasUnsavedChanges()) {
-        return true;
-    }
+bool Project::loadLayoutBorder(MapLayout *layout) {
+    // if (map->hasUnsavedChanges()) {
+    //     return true;
+    // }
 
-    QString path = QString("%1/%2").arg(root).arg(map->layout->border_path);
-    map->layout->border = readBlockdata(path);
-    int borderLength = map->getBorderWidth() * map->getBorderHeight();
-    if (map->layout->border.count() != borderLength) {
+    QString path = QString("%1/%2").arg(root).arg(layout->border_path);
+    layout->border = readBlockdata(path);
+    int borderLength = layout->getBorderWidth() * layout->getBorderHeight();
+    if (layout->border.count() != borderLength) {
         logWarn(QString("Layout border blockdata length %1 must be %2. Resizing border blockdata.")
-                .arg(map->layout->border.count())
+                .arg(layout->border.count())
                 .arg(borderLength));
-        map->layout->border.resize(borderLength);
+        layout->border.resize(borderLength);
     }
     return true;
 }
@@ -1856,7 +1865,8 @@ Map* Project::addNewMapToGroup(QString mapName, int groupNum, Map *newMap, bool 
         setNewMapBorder(newMap);
     }
 
-    loadMapTilesets(newMap);
+    //loadMapTilesets(newMap);
+    loadLayoutTilesets(newMap->layout);
     setNewMapEvents(newMap);
     setNewMapConnections(newMap);
 

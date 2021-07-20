@@ -14,3 +14,19 @@ QString MapLayout::layoutConstantFromName(QString mapName) {
 
     return constantName;
 }
+
+int MapLayout::getWidth() {
+    return width.toInt(nullptr, 0);
+}
+
+int MapLayout::getHeight() {
+    return height.toInt(nullptr, 0);
+}
+
+int MapLayout::getBorderWidth() {
+    return border_width.toInt(nullptr, 0);
+}
+
+int MapLayout::getBorderHeight() {
+    return border_height.toInt(nullptr, 0);
+}
