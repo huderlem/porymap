@@ -52,6 +52,8 @@ void TilesetEditorTileSelector::draw() {
     if (!this->externalSelection || (this->externalSelectionWidth == 1 && this->externalSelectionHeight == 1)) {
         this->drawSelection();
     }
+
+    if (showUnused) drawUnused();
 }
 
 void TilesetEditorTileSelector::select(uint16_t tile) {
@@ -285,4 +287,54 @@ QImage TilesetEditorTileSelector::buildSecondaryTilesIndexedImage() {
     QList<QRgb> palette = Tileset::getPalette(this->paletteId, this->primaryTileset, this->secondaryTileset, true);
     indexedImage.setColorTable(palette.toVector());
     return indexedImage;
+}
+
+void TilesetEditorTileSelector::drawUnused() {
+    // setup the circle with a line through it image to layer above unused metatiles
+    QPixmap redX(16, 16);
+    redX.fill(Qt::transparent);
+
+    QBitmap mask(16, 16);
+
+    QPen whitePen(Qt::white);
+    whitePen.setWidth(1);
+    QPen pinkPen(Qt::magenta);
+    pinkPen.setWidth(1);
+
+    QPainter oPainter(&redX);
+
+    oPainter.setPen(whitePen);
+    oPainter.drawEllipse(QRect(1, 1, 14, 14));
+    oPainter.setPen(pinkPen);
+    oPainter.drawEllipse(QRect(2, 2, 12, 12));
+    oPainter.drawEllipse(QRect(3, 3, 10, 10));
+
+    oPainter.setPen(whitePen);
+    oPainter.drawEllipse(QRect(4, 4, 8, 8));
+
+    whitePen.setWidth(3);
+    oPainter.setPen(whitePen);
+    oPainter.drawLine(0, 0, 15, 15);
+
+    pinkPen.setWidth(1);
+    oPainter.setPen(pinkPen);
+    oPainter.drawLine(2, 2, 13, 13);
+
+    oPainter.end();
+
+    // draw symbol on unused metatiles
+    QPixmap tilesPixmap = this->pixmap();
+
+    QPainter unusedPainter(&tilesPixmap);
+    unusedPainter.setOpacity(0.5);
+
+    for (int tile = 0; tile < this->usedTiles.size(); tile++) {
+        if (!usedTiles[tile]) {
+            unusedPainter.drawPixmap((tile % 16) * 16, (tile / 16) * 16, redX);
+        }
+    }
+
+    unusedPainter.end();
+
+    this->setPixmap(tilesPixmap);
 }

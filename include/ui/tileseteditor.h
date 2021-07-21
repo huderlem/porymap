@@ -77,6 +77,7 @@ private slots:
 
     void on_actionShow_Unused_toggled(bool checked);
     void on_actionShow_Counts_toggled(bool checked);
+    void on_actionShow_UnusedTiles_toggled(bool checked);
 
     void on_actionUndo_triggered();
 
@@ -123,6 +124,7 @@ private:
     void saveMetatileLabel();
     void closeEvent(QCloseEvent*);
     void countMetatileUsage();
+    void countTileUsage();
 
     Ui::TilesetEditor *ui;
     History<MetatileHistoryItem*> metatileHistory;

@@ -160,14 +160,14 @@ void TilesetEditorMetatileSelector::drawUnused() {
 
     QPen whitePen(Qt::white);
     whitePen.setWidth(1);
-    QPen redPen(Qt::magenta);
-    redPen.setWidth(1);
+    QPen pinkPen(Qt::magenta);
+    pinkPen.setWidth(1);
 
     QPainter oPainter(&redX);
 
     oPainter.setPen(whitePen);
     oPainter.drawEllipse(QRect(1, 1, 30, 30));
-    oPainter.setPen(redPen);
+    oPainter.setPen(pinkPen);
     oPainter.drawEllipse(QRect(2, 2, 28, 28));
     oPainter.drawEllipse(QRect(3, 3, 26, 26));
 
@@ -178,8 +178,8 @@ void TilesetEditorMetatileSelector::drawUnused() {
     oPainter.setPen(whitePen);
     oPainter.drawLine(0, 0, 31, 31);
 
-    redPen.setWidth(3);
-    oPainter.setPen(redPen);
+    pinkPen.setWidth(3);
+    oPainter.setPen(pinkPen);
     oPainter.drawLine(2, 2, 29, 29);
 
     oPainter.end();
@@ -188,6 +188,7 @@ void TilesetEditorMetatileSelector::drawUnused() {
     QPixmap metatilesPixmap = this->pixmap();
 
     QPainter unusedPainter(&metatilesPixmap);
+    unusedPainter.setOpacity(0.5);
 
     for (int tile = 0; tile < this->usedMetatiles.size(); tile++) {
         if (!usedMetatiles[tile]) {
