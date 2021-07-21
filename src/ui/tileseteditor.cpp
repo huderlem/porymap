@@ -288,6 +288,13 @@ void TilesetEditor::refresh() {
         }
     }
 
+    if (tileSelector) {
+        if (tileSelector->showUnused) {
+            countTileUsage();
+            this->tileSelector->draw();
+        }
+    }
+
     this->ui->graphicsView_Tiles->setSceneRect(0, 0, this->tileSelector->pixmap().width() + 2, this->tileSelector->pixmap().height() + 2);
     this->ui->graphicsView_Tiles->setFixedSize(this->tileSelector->pixmap().width() + 2, this->tileSelector->pixmap().height() + 2);
     this->ui->graphicsView_Metatiles->setSceneRect(0, 0, this->metatileSelector->pixmap().width() + 2, this->metatileSelector->pixmap().height() + 2);
@@ -933,6 +940,14 @@ void TilesetEditor::on_actionShow_Counts_toggled(bool checked) {
     this->metatileSelector->draw();
 }
 
+void TilesetEditor::on_actionShow_UnusedTiles_toggled(bool checked) {
+    this->tileSelector->showUnused = checked;
+
+    if (checked) countTileUsage();
+
+    this->tileSelector->draw();
+}
+
 void TilesetEditor::countMetatileUsage() {
     // do not double count
     metatileSelector->usedMetatiles.fill(0);
@@ -970,6 +985,62 @@ void TilesetEditor::countMetatileUsage() {
                     if (usesSecondary) metatileSelector->usedMetatiles[tile]++;
                 }
             }
+        }
+    }
+}
+
+void TilesetEditor::countTileUsage() {
+    // check primary tiles
+    this->tileSelector->usedTiles.resize(Project::getNumTilesTotal());
+    this->tileSelector->usedTiles.fill(0);
+
+    QSet<Tileset*> primaryTilesets;
+    QSet<Tileset*> secondaryTilesets;
+
+    for (auto layout : this->project->mapLayouts.values()) {
+        if (layout->tileset_primary_label == this->primaryTileset->name
+         || layout->tileset_secondary_label == this->secondaryTileset->name) {
+            this->project->loadLayoutTilesets(layout);
+            // need to check metatiles
+            if (layout->tileset_primary && layout->tileset_secondary) {
+                primaryTilesets.insert(layout->tileset_primary);
+                secondaryTilesets.insert(layout->tileset_secondary);
+            }
+        }
+    }
+
+    // check primary tilesets that are used with this secondary tileset for
+    // reference to secondary tiles in primary metatiles
+    for (Tileset *tileset : primaryTilesets) {
+        for (Metatile *metatile : tileset->metatiles) {
+            for (Tile tile : metatile->tiles) {
+                if (tile.tile >= Project::getNumTilesPrimary())
+                    this->tileSelector->usedTiles[tile.tile]++;
+            }
+        }
+    }
+
+    // do the opposite for primary tiles in secondary metatiles
+    for (Tileset *tileset : secondaryTilesets) {
+        for (Metatile *metatile : tileset->metatiles) {
+            for (Tile tile : metatile->tiles) {
+                if (tile.tile < Project::getNumTilesPrimary())
+                    this->tileSelector->usedTiles[tile.tile]++;
+            }
+        }
+    }
+
+    // check this primary tileset metatiles
+    for (Metatile *metatile : this->primaryTileset->metatiles) {
+        for (Tile tile : metatile->tiles) {
+            this->tileSelector->usedTiles[tile.tile]++;
+        }
+    }
+
+    // and the secondary metatiles
+    for (Metatile *metatile : this->secondaryTileset->metatiles) {
+        for (Tile tile : metatile->tiles) {
+            this->tileSelector->usedTiles[tile.tile]++;
         }
     }
 }

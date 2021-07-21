@@ -31,6 +31,9 @@ public:
     QImage buildPrimaryTilesIndexedImage();
     QImage buildSecondaryTilesIndexedImage();
 
+    QVector<uint16_t> usedTiles;
+    bool showUnused = false;
+
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent*);
     void mouseMoveEvent(QGraphicsSceneMouseEvent*);
@@ -58,6 +61,8 @@ private:
     QPoint getTileCoords(uint16_t);
     QList<QRgb> getCurPaletteTable();
     QList<Tile> buildSelectedTiles(int, int, QList<Tile>);
+
+    void drawUnused();
 
 signals:
     void hoveredTileChanged(uint16_t);

@@ -17,7 +17,6 @@ public:
     void updateSelectedMetatile();
     QPoint getMetatileIdCoordsOnWidget(uint16_t metatileId);
 
-    // 
     QVector<uint16_t> usedMetatiles;
     bool selectorShowUnused = false;
     bool selectorShowCounts = false;

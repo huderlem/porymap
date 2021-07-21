@@ -1089,11 +1089,6 @@ void Project::saveTilesetPalettes(Tileset *tileset) {
 }
 
 bool Project::loadLayoutTilesets(MapLayout *layout) {
-    // TODO: investigate where to put this now
-    // if (map->hasUnsavedChanges()) {
-    //     return true;
-    // }
-
     layout->tileset_primary = getTileset(layout->tileset_primary_label);
     if (!layout->tileset_primary) {
         QString defaultTileset = tilesetLabels["primary"].value(0, "gTileset_General");
