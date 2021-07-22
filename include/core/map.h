@@ -35,7 +35,6 @@ public:
 public:
     QString name;
     QString constantName;
-    QString group_num;
     QString song;
     QString layoutId;
     QString location;
