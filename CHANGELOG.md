@@ -10,6 +10,9 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 
 ### Added
 - Add ability to export map timelapse animated GIFs with `File -> Export Map Timelapse Image...`.
+- Porymap is now compatible with Qt6.
+- Add tool to count the times each metatile or tile is used in the tileset editor.
+- Events, current metatile selections, and map images can now be copied and pasted, including between windows.
 
 ### Changed
 - New events will be placed in the center of the current view of the map.
