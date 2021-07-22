@@ -260,7 +260,6 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
     if (this->existingLayout) {
         project->loadMapLayout(newMap);
     }
-    newMap->group_num = QString::number(group);
     map = newMap;
     emit applied();
     this->close();

@@ -1145,10 +1145,6 @@ Tileset* Project::loadTileset(QString label, Tileset *tileset) {
 }
 
 bool Project::loadBlockdata(MapLayout *layout) {
-    // if (map->hasUnsavedChanges()) {
-    //     return true;
-    // }
-
     QString path = QString("%1/%2").arg(root).arg(layout->blockdata_path);
     layout->blockdata = readBlockdata(path);
     layout->lastCommitMapBlocks.blocks = layout->blockdata;
@@ -1175,10 +1171,6 @@ void Project::setNewMapBlockdata(Map *map) {
 }
 
 bool Project::loadLayoutBorder(MapLayout *layout) {
-    // if (map->hasUnsavedChanges()) {
-    //     return true;
-    // }
-
     QString path = QString("%1/%2").arg(root).arg(layout->border_path);
     layout->border = readBlockdata(path);
     int borderLength = layout->getBorderWidth() * layout->getBorderHeight();
@@ -1860,7 +1852,6 @@ Map* Project::addNewMapToGroup(QString mapName, int groupNum, Map *newMap, bool 
         setNewMapBorder(newMap);
     }
 
-    //loadMapTilesets(newMap);
     loadLayoutTilesets(newMap->layout);
     setNewMapEvents(newMap);
     setNewMapConnections(newMap);
