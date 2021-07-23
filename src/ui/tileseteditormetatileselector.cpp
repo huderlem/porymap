@@ -190,9 +190,20 @@ void TilesetEditorMetatileSelector::drawUnused() {
     QPainter unusedPainter(&metatilesPixmap);
     unusedPainter.setOpacity(0.5);
 
-    for (int tile = 0; tile < this->usedMetatiles.size(); tile++) {
+    int primaryLength = this->primaryTileset->metatiles.length();
+    int length_ = primaryLength + this->secondaryTileset->metatiles.length();
+    int height_ = length_ / this->numMetatilesWide;
+    if (length_ % this->numMetatilesWide != 0) {
+        height_++;
+    }
+
+    for (int i = 0; i < length_; i++) {
+        int tile = i;
+        if (i >= primaryLength) {
+            tile += Project::getNumMetatilesPrimary() - primaryLength;
+        }
         if (!usedMetatiles[tile]) {
-            unusedPainter.drawPixmap((tile % 8) * 32, (tile / 8) * 32, redX);
+            unusedPainter.drawPixmap((i % 8) * 32, (i / 8) * 32, redX);
         }
     }
 
@@ -222,11 +233,22 @@ void TilesetEditorMetatileSelector::drawCounts() {
     whitePen.setWidth(1);
     countPainter.setPen(whitePen);
 
-    for (int tile = 0; tile < this->usedMetatiles.size(); tile++) {
+    int primaryLength = this->primaryTileset->metatiles.length();
+    int length_ = primaryLength + this->secondaryTileset->metatiles.length();
+    int height_ = length_ / this->numMetatilesWide;
+    if (length_ % this->numMetatilesWide != 0) {
+        height_++;
+    }
+
+    for (int i = 0; i < length_; i++) {
+        int tile = i;
+        if (i >= primaryLength) {
+            tile += Project::getNumMetatilesPrimary() - primaryLength;
+        }
         int count = usedMetatiles[tile];
         QString countText = QString::number(count);
         if (count > 1000) countText = ">1k";
-        countPainter.drawText((tile % 8) * 32 + 1, (tile / 8) * 32 + 32 - 1, countText);
+        countPainter.drawText((i % 8) * 32 + 1, (i / 8) * 32 + 32 - 1, countText);
     }
 
     countPainter.end();
