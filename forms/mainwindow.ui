@@ -2742,6 +2742,7 @@
     <addaction name="actionNew_Tileset"/>
     <addaction name="actionTileset_Editor"/>
     <addaction name="actionRegion_Map_Editor"/>
+    <addaction name="separator"/>
     <addaction name="actionImport_Map_from_Advance_Map_1_92"/>
    </widget>
    <widget class="QMenu" name="menuHelp">

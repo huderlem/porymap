@@ -124,51 +124,7 @@ void NewMapPopup::setDefaultValues(int groupNum, QString mapSec) {
 
     ui->frame_NewMap_Options->setEnabled(true);
 
-    switch (projectConfig.getBaseGameVersion())
-    {
-    case BaseGameVersion::pokeruby:
-        ui->checkBox_NewMap_Allow_Running->setVisible(false);
-        ui->checkBox_NewMap_Allow_Biking->setVisible(false);
-        ui->checkBox_NewMap_Allow_Escape_Rope->setVisible(false);
-        ui->label_NewMap_Allow_Running->setVisible(false);
-        ui->label_NewMap_Allow_Biking->setVisible(false);
-        ui->label_NewMap_Allow_Escape_Rope->setVisible(false);
-        break;
-    case BaseGameVersion::pokeemerald:
-        ui->checkBox_NewMap_Allow_Running->setVisible(true);
-        ui->checkBox_NewMap_Allow_Biking->setVisible(true);
-        ui->checkBox_NewMap_Allow_Escape_Rope->setVisible(true);
-        ui->label_NewMap_Allow_Running->setVisible(true);
-        ui->label_NewMap_Allow_Biking->setVisible(true);
-        ui->label_NewMap_Allow_Escape_Rope->setVisible(true);
-        break;
-    case BaseGameVersion::pokefirered:
-        ui->checkBox_NewMap_Allow_Running->setVisible(true);
-        ui->checkBox_NewMap_Allow_Biking->setVisible(true);
-        ui->checkBox_NewMap_Allow_Escape_Rope->setVisible(true);
-        ui->label_NewMap_Allow_Running->setVisible(true);
-        ui->label_NewMap_Allow_Biking->setVisible(true);
-        ui->label_NewMap_Allow_Escape_Rope->setVisible(true);
-        break;
-    }
-    if (projectConfig.getUseCustomBorderSize()) {
-        ui->spinBox_NewMap_BorderWidth->setVisible(true);
-        ui->spinBox_NewMap_BorderHeight->setVisible(true);
-        ui->label_NewMap_BorderWidth->setVisible(true);
-        ui->label_NewMap_BorderHeight->setVisible(true);
-    } else {
-        ui->spinBox_NewMap_BorderWidth->setVisible(false);
-        ui->spinBox_NewMap_BorderHeight->setVisible(false);
-        ui->label_NewMap_BorderWidth->setVisible(false);
-        ui->label_NewMap_BorderHeight->setVisible(false);
-    }
-    if (projectConfig.getFloorNumberEnabled()) {
-        ui->spinBox_NewMap_Floor_Number->setVisible(true);
-        ui->label_NewMap_Floor_Number->setVisible(true);
-    } else {
-        ui->spinBox_NewMap_Floor_Number->setVisible(false);
-        ui->label_NewMap_Floor_Number->setVisible(false);
-    }
+    setDefaultValuesProjectConfig(false, NULL);
 }
 
 void NewMapPopup::setDefaultValuesImportMap(MapLayout *mapLayout) {
@@ -192,6 +148,18 @@ void NewMapPopup::setDefaultValuesImportMap(MapLayout *mapLayout) {
 
     ui->frame_NewMap_Options->setEnabled(true);
 
+    setDefaultValuesProjectConfig(true, mapLayout);
+
+    map = new Map();
+    map->layout = new MapLayout();
+    map->layout->blockdata = mapLayout->blockdata->copy();
+
+    if (mapLayout->border != nullptr) {
+        map->layout->border = mapLayout->border->copy();
+    }
+}
+
+void NewMapPopup::setDefaultValuesProjectConfig(bool importedMap, MapLayout *mapLayout) {
     switch (projectConfig.getBaseGameVersion())
     {
     case BaseGameVersion::pokeruby:
@@ -220,15 +188,19 @@ void NewMapPopup::setDefaultValuesImportMap(MapLayout *mapLayout) {
         break;
     }
     if (projectConfig.getUseCustomBorderSize()) {
-        ui->spinBox_NewMap_BorderWidth->setValue(mapLayout->border_width.toInt(nullptr, 0));
-        ui->spinBox_NewMap_BorderHeight->setValue(mapLayout->border_height.toInt(nullptr, 0));
+        if (importedMap) {
+            ui->spinBox_NewMap_BorderWidth->setValue(mapLayout->border_width.toInt(nullptr, 0));
+            ui->spinBox_NewMap_BorderHeight->setValue(mapLayout->border_height.toInt(nullptr, 0));
+        }
         ui->spinBox_NewMap_BorderWidth->setVisible(true);
         ui->spinBox_NewMap_BorderHeight->setVisible(true);
         ui->label_NewMap_BorderWidth->setVisible(true);
         ui->label_NewMap_BorderHeight->setVisible(true);
     } else {
-        ui->spinBox_NewMap_BorderWidth->setValue(DEFAULT_BORDER_WIDTH);
-        ui->spinBox_NewMap_BorderHeight->setValue(DEFAULT_BORDER_HEIGHT);
+        if (importedMap) {
+            ui->spinBox_NewMap_BorderWidth->setValue(DEFAULT_BORDER_WIDTH);
+            ui->spinBox_NewMap_BorderHeight->setValue(DEFAULT_BORDER_HEIGHT);
+        }
         ui->spinBox_NewMap_BorderWidth->setVisible(false);
         ui->spinBox_NewMap_BorderHeight->setVisible(false);
         ui->label_NewMap_BorderWidth->setVisible(false);
@@ -240,14 +212,6 @@ void NewMapPopup::setDefaultValuesImportMap(MapLayout *mapLayout) {
     } else {
         ui->spinBox_NewMap_Floor_Number->setVisible(false);
         ui->label_NewMap_Floor_Number->setVisible(false);
-    }
-
-    map = new Map();
-    map->layout = new MapLayout();
-    map->layout->blockdata = mapLayout->blockdata->copy();
-
-    if (mapLayout->border != nullptr) {
-        map->layout->border = mapLayout->border->copy();
     }
 }
 
@@ -288,7 +252,7 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
 
     if (this->existingLayout) {
         layout = this->project->mapLayouts.value(this->layoutId);
-        newMap->needsLayoutDir = false;     
+        newMap->needsLayoutDir = false;
     } else {
         layout = new MapLayout;
         layout->id = MapLayout::layoutConstantFromName(newMapName);

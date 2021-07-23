@@ -1912,8 +1912,7 @@ Map* Project::addNewMapToGroup(QString mapName, int groupNum, Map *newMap, bool 
     mapGroups->insert(mapName, groupNum);
     groupedMapNames[groupNum].append(mapName);
 
-    Map *map = new Map;
-    map = newMap;
+    Map *map = newMap;
 
     map->isPersistedToFile = false;
     map->setName(mapName);
@@ -1923,11 +1922,7 @@ Map* Project::addNewMapToGroup(QString mapName, int groupNum, Map *newMap, bool 
     if (!existingLayout) {
         mapLayouts.insert(map->layoutId, map->layout);
         mapLayoutsTable.append(map->layoutId);
-        if (importedMap) {
-            map->layout->lastCommitMapBlocks.blocks = new Blockdata;
-            map->layout->lastCommitMapBlocks.blocks->copyFrom(map->layout->blockdata);
-            map->layout->lastCommitMapBlocks.dimensions = QSize(map->getWidth(), map->getHeight());
-        } else {
+        if (!importedMap) {
             setNewMapBlockdata(map);
         }
         if (map->layout->border == nullptr) {

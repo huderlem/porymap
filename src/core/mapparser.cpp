@@ -5,7 +5,6 @@
 
 MapParser::MapParser()
 {
-
 }
 
 MapLayout *MapParser::parse(QString filepath, bool *error, Project *project)
@@ -48,23 +47,6 @@ MapLayout *MapParser::parse(QString filepath, bool *error, Project *project)
                                  (static_cast<unsigned char>(in.at(14)) << 16) |
                                  (static_cast<unsigned char>(in.at(15)) << 24);
 
-    /*int maxMetatiles = primaryTileset ? Project::getNumMetatilesPrimary() : Project::getNumMetatilesTotal() - Project::getNumMetatilesPrimary();
-    int numMetatiles = static_cast<unsigned char>(in.at(0)) |
-                                (static_cast<unsigned char>(in.at(1)) << 8) |
-                                (static_cast<unsigned char>(in.at(2)) << 16) |
-                                (static_cast<unsigned char>(in.at(3)) << 24);
-    if (numMetatiles > maxMetatiles) {
-        *error = true;
-        logError(QString(".bvd file contains data for %1 metatiles, but the maximum number of metatiles is %2.").arg(numMetatiles).arg(maxMetatiles));
-        return nullptr;
-    }
-
-    if (numMetatiles < 1) {
-        *error = true;
-        logError(QString(".bvd file contains no data for metatiles."));
-        return nullptr;
-    }*/
-
     int numMetatiles = mapWidth * mapHeight;
     int expectedFileSize = 20 + (numBorderTiles * 2) + (numMetatiles * 2);
     if (in.length() != expectedFileSize) {
@@ -82,7 +64,7 @@ MapLayout *MapParser::parse(QString filepath, bool *error, Project *project)
     Blockdata *border = nullptr;
     if (numBorderTiles != 0) {
         border = new Blockdata();
-        for (int i = 20; (i + 1) < 20 + (numBorderTiles * 2); i += 2) {
+        for (int i = 20; (i + 1) < mapDataOffset; i += 2) {
             uint16_t word = static_cast<uint16_t>((in[i] & 0xff) + ((in[i + 1] & 0xff) << 8));
             border->addBlock(word);
         }

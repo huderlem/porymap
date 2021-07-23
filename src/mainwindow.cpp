@@ -2368,22 +2368,6 @@ void MainWindow::importMapFromAdvanceMap1_92()
         return;
     }
 
-    // TODO: This is crude because it makes a history entry for every newly-imported metatile.
-    //       Revisit this when tiles and num metatiles are added to tileset editory history.
-   /* int metatileIdBase = primary ? 0 : Project::getNumMetatilesPrimary();
-    for (int i = 0; i < metatiles->length(); i++) {
-        if (i >= tileset->metatiles->length()) {
-            break;
-        }
-
-        Metatile *prevMetatile = tileset->metatiles->at(i)->copy();
-        MetatileHistoryItem *commit = new MetatileHistoryItem(static_cast<uint16_t>(metatileIdBase + i), prevMetatile, metatiles->at(i)->copy());
-        metatileHistory.push(commit);
-    }*/
-
-    //tileset->metatiles = metatiles;
-    //this->refresh();
-    //this->hasUnsavedChanges = true;
     openNewMapPopupWindowImportMap(mapLayout);
 }
 

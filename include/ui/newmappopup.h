@@ -35,6 +35,7 @@ private:
     Project *project;
     void setDefaultValues(int, QString);
     void setDefaultValuesImportMap(MapLayout *);
+    void setDefaultValuesProjectConfig(bool, MapLayout*);
     bool checkNewMapDimensions();
 
 private slots:
