@@ -1,5 +1,8 @@
+#pragma once
 #ifndef EDITCOMMANDS_H
 #define EDITCOMMANDS_H
+
+#include "blockdata.h"
 
 #include <QUndoCommand>
 #include <QList>
@@ -12,7 +15,7 @@ class DraggablePixmapItem;
 class Editor;
 
 enum CommandId {
-    ID_PaintMetatile,
+    ID_PaintMetatile = 0,
     ID_BucketFillMetatile,
     ID_MagicFillMetatile,
     ID_ShiftMetatiles,
@@ -27,18 +30,22 @@ enum CommandId {
     ID_EventCreate,
     ID_EventDelete,
     ID_EventDuplicate,
+    ID_EventPaste,
 };
 
-
+#define IDMask_EventType_Object  (1 << 8)
+#define IDMask_EventType_Warp    (1 << 9)
+#define IDMask_EventType_BG      (1 << 10)
+#define IDMask_EventType_Trigger (1 << 11)
+#define IDMask_EventType_Heal    (1 << 12)
 
 /// Implements a command to commit metatile paint actions
 /// onto the map using the pencil tool.
 class PaintMetatile : public QUndoCommand {
 public:
     PaintMetatile(Map *map,
-        Blockdata *oldMetatiles, Blockdata *newMetatiles,
+        const Blockdata &oldMetatiles, const Blockdata &newMetatiles,
         unsigned actionId, QUndoCommand *parent = nullptr);
-    virtual ~PaintMetatile();
 
     void undo() override;
     void redo() override;
@@ -49,8 +56,8 @@ public:
 private:
     Map *map;
 
-    Blockdata *newMetatiles;
-    Blockdata *oldMetatiles;
+    Blockdata newMetatiles;
+    Blockdata oldMetatiles;
 
     unsigned actionId;
 };
@@ -62,7 +69,7 @@ private:
 class PaintCollision : public PaintMetatile {
 public:
     PaintCollision(Map *map,
-        Blockdata *oldCollision, Blockdata *newCollision,
+        const Blockdata &oldCollision, const Blockdata &newCollision,
         unsigned actionId, QUndoCommand *parent = nullptr)
     : PaintMetatile(map, oldCollision, newCollision, actionId, parent) {
         setText("Paint Collision");
@@ -77,9 +84,8 @@ public:
 class PaintBorder : public QUndoCommand {
 public:
     PaintBorder(Map *map,
-        Blockdata *oldBorder, Blockdata *newBorder,
+        const Blockdata &oldBorder, const Blockdata &newBorder,
         unsigned actionId, QUndoCommand *parent = nullptr);
-    ~PaintBorder();
 
     void undo() override;
     void redo() override;
@@ -90,8 +96,8 @@ public:
 private:
     Map *map;
 
-    Blockdata *newBorder;
-    Blockdata *oldBorder;
+    Blockdata newBorder;
+    Blockdata oldBorder;
 
     unsigned actionId;
 };
@@ -103,7 +109,7 @@ private:
 class BucketFillMetatile : public PaintMetatile {
 public:
     BucketFillMetatile(Map *map,
-        Blockdata *oldMetatiles, Blockdata *newMetatiles,
+        const Blockdata &oldMetatiles, const Blockdata &newMetatiles,
         unsigned actionId, QUndoCommand *parent = nullptr)
       : PaintMetatile(map, oldMetatiles, newMetatiles, actionId, parent) {
         setText("Bucket Fill Metatiles");
@@ -119,7 +125,7 @@ public:
 class BucketFillCollision : public PaintCollision {
 public:
     BucketFillCollision(Map *map,
-        Blockdata *oldCollision, Blockdata *newCollision,
+        const Blockdata &oldCollision, const Blockdata &newCollision,
         QUndoCommand *parent = nullptr)
       : PaintCollision(map, oldCollision, newCollision, -1, parent) {
         setText("Flood Fill Collision");
@@ -136,7 +142,7 @@ public:
 class MagicFillMetatile : public PaintMetatile {
 public:
     MagicFillMetatile(Map *map,
-        Blockdata *oldMetatiles, Blockdata *newMetatiles,
+        const Blockdata &oldMetatiles, const Blockdata &newMetatiles,
         unsigned actionId, QUndoCommand *parent = nullptr)
       : PaintMetatile(map, oldMetatiles, newMetatiles, actionId, parent) {
         setText("Magic Fill Metatiles");
@@ -151,7 +157,7 @@ public:
 class MagicFillCollision : public PaintCollision {
 public:
     MagicFillCollision(Map *map,
-        Blockdata *oldCollision, Blockdata *newCollision,
+        const Blockdata &oldCollision, const Blockdata &newCollision,
         QUndoCommand *parent = nullptr)
     : PaintCollision(map, oldCollision, newCollision, -1, parent) {
         setText("Magic Fill Collision");
@@ -167,9 +173,8 @@ public:
 class ShiftMetatiles : public QUndoCommand {
 public:
     ShiftMetatiles(Map *map,
-        Blockdata *oldMetatiles, Blockdata *newMetatiles,
+        const Blockdata &oldMetatiles, const Blockdata &newMetatiles,
         unsigned actionId, QUndoCommand *parent = nullptr);
-    ~ShiftMetatiles();
 
     void undo() override;
     void redo() override;
@@ -180,8 +185,8 @@ public:
 private:
     Map *map;
 
-    Blockdata *newMetatiles;
-    Blockdata *oldMetatiles;
+    Blockdata newMetatiles;
+    Blockdata oldMetatiles;
 
     unsigned actionId;
 };
@@ -192,11 +197,10 @@ private:
 class ResizeMap : public QUndoCommand {
 public:
     ResizeMap(Map *map, QSize oldMapDimensions, QSize newMapDimensions,
-        Blockdata *oldMetatiles, Blockdata *newMetatiles,
+        const Blockdata &oldMetatiles, const Blockdata &newMetatiles,
         QSize oldBorderDimensions, QSize newBorderDimensions,
-        Blockdata *oldBorder, Blockdata *newBorder,
+        const Blockdata &oldBorder, const Blockdata &newBorder,
         QUndoCommand *parent = nullptr);
-    ~ResizeMap();
 
     void undo() override;
     void redo() override;
@@ -217,11 +221,11 @@ private:
     int newBorderWidth;
     int newBorderHeight;
 
-    Blockdata *newMetatiles;
-    Blockdata *oldMetatiles;
+    Blockdata newMetatiles;
+    Blockdata oldMetatiles;
 
-    Blockdata *newBorder;
-    Blockdata *oldBorder;
+    Blockdata newBorder;
+    Blockdata oldBorder;
 };
 
 
@@ -233,13 +237,12 @@ public:
     EventMove(QList<Event *> events,
         int deltaX, int deltaY, unsigned actionId,
         QUndoCommand *parent = nullptr);
-    ~EventMove();
 
     void undo() override;
     void redo() override;
 
     bool mergeWith(const QUndoCommand *command) override;
-    int id() const override { return CommandId::ID_EventMove; }
+    int id() const override;
 
 private:
     QList<Event *> events;
@@ -257,9 +260,9 @@ public:
     EventShift(QList<Event *> events,
         int deltaX, int deltaY, unsigned actionId,
         QUndoCommand *parent = nullptr);
-    ~EventShift();
-
-    int id() const override { return CommandId::ID_EventShift; }
+    int id() const override;
+private:
+    QList<Event *> events;
 };
 
 
@@ -270,13 +273,12 @@ class EventCreate : public QUndoCommand {
 public:
     EventCreate(Editor *editor, Map *map, Event *event,
         QUndoCommand *parent = nullptr);
-    ~EventCreate();
 
     void undo() override;
     void redo() override;
 
     bool mergeWith(const QUndoCommand *) override { return false; }
-    int id() const override { return CommandId::ID_EventCreate; }
+    int id() const override;
 
 private:
     Map *map;
@@ -293,13 +295,12 @@ public:
     EventDelete(Editor *editor, Map *map,
         QList<Event *> selectedEvents, Event *nextSelectedEvent,
         QUndoCommand *parent = nullptr);
-    ~EventDelete();
 
     void undo() override;
     void redo() override;
 
     bool mergeWith(const QUndoCommand *) override { return false; }
-    int id() const override { return CommandId::ID_EventDelete; }
+    int id() const override;
 
 private:
     Editor *editor;
@@ -315,18 +316,28 @@ class EventDuplicate : public QUndoCommand {
 public:
     EventDuplicate(Editor *editor, Map *map, QList<Event *> selectedEvents,
         QUndoCommand *parent = nullptr);
-    ~EventDuplicate();
 
     void undo() override;
     void redo() override;
 
     bool mergeWith(const QUndoCommand *) override { return false; }
-    int id() const override { return CommandId::ID_EventDuplicate; }
+    int id() const override;
 
-private:
+protected:
     Map *map;
     QList<Event *> selectedEvents; // allow multiple deletion of events
     Editor *editor;
+};
+
+
+
+/// Implements a command to commit Event pastes from clipboard.
+class EventPaste : public EventDuplicate {
+public:
+    EventPaste(Editor *editor, Map *map, QList<Event *> pastedEvents,
+        QUndoCommand *parent = nullptr);
+
+    int id() const override;
 };
 
 
@@ -337,9 +348,8 @@ class ScriptEditMap : public QUndoCommand {
 public:
     ScriptEditMap(Map *map,
         QSize oldMapDimensions, QSize newMapDimensions,
-        Blockdata *oldMetatiles, Blockdata *newMetatiles,
+        const Blockdata &oldMetatiles, const Blockdata &newMetatiles,
         QUndoCommand *parent = nullptr);
-    ~ScriptEditMap();
 
     void undo() override;
     void redo() override;
@@ -350,8 +360,8 @@ public:
 private:
     Map *map;
 
-    Blockdata *newMetatiles;
-    Blockdata *oldMetatiles;
+    Blockdata newMetatiles;
+    Blockdata oldMetatiles;
 
     int oldMapWidth;
     int oldMapHeight;

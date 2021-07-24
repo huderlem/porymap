@@ -33,7 +33,8 @@ public:
     int last_y;
 
     void updatePosition();
-    void move(int x, int y);
+    void move(int dx, int dy);
+    void moveTo(const QPoint &pos);
     void emitPositionChanged();
     void updatePixmap();
     void bind(QComboBox *combo, QString key);

@@ -63,8 +63,7 @@ void RegionMap::saveTileImages() {
             this->region_map_png_path = project->root + "/graphics/pokenav/region_map.png";
             pngImage.save(pngPath());
 
-            PaletteUtil parser;
-            parser.writeJASC(project->root + "/graphics/pokenav/region_map.pal", pngImage.colorTable(), 0x70, 0x20);
+            PaletteUtil::writeJASC(project->root + "/graphics/pokenav/region_map.pal", pngImage.colorTable(), 0x70, 0x20);
         }
         region_map_png_needs_saving = false;
     }
@@ -130,12 +129,11 @@ bool RegionMap::readLayout() {
         return false;
     }
 
-    QMap<QString, QString> *qmap = new QMap<QString, QString>;
+    QMap<QString, QString> qmap;
 
     bool mapNamesQualified = false, mapEntriesQualified = false;
 
     QTextStream in(&file);
-    in.setCodec("UTF-8");
     while (!in.atEnd()) {
         QString line = in.readLine();
         if (line.contains(QRegularExpression(".*sMapName.*="))) {
@@ -155,7 +153,7 @@ bool RegionMap::readLayout() {
             QStringList entry =  reAfter.match(line).captured(1).remove(" ").split(",");
             QString mapsec = reBefore.match(line).captured(1);
             QString insertion = entry[4].remove("sMapName_");
-            qmap->insert(mapsec, sMapNamesMap.value(insertion));
+            qmap.insert(mapsec, sMapNamesMap.value(insertion));
             mapSecToMapEntry[mapsec] = {
             //  x                 y                 width             height            name
                 entry[0].toInt(), entry[1].toInt(), entry[2].toInt(), entry[3].toInt(), insertion
@@ -265,7 +263,7 @@ void RegionMap::saveOptions(int id, QString sec, QString name, int x, int y) {
         this->map_squares[index].mapsec = sec;
         if (!name.isEmpty()) {
             this->map_squares[index].map_name = name;
-            this->project->mapSecToMapHoverName->insert(sec, name);
+            this->project->mapSecToMapHoverName.insert(sec, name);
             QString sName = fixCase(sec);
             sMapNamesMap.insert(sName, name);
             if (!mapSecToMapEntry.keys().contains(sec)) {

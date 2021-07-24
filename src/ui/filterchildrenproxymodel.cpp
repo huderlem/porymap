@@ -9,7 +9,7 @@ FilterChildrenProxyModel::FilterChildrenProxyModel(QObject *parent) :
 bool FilterChildrenProxyModel::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const
 {
     // custom behaviour :
-    if(filterRegExp().isEmpty() == false)
+    if(filterRegularExpression().pattern().isEmpty() == false)
     {
         // get source-model index for current row
         QModelIndex source_index = sourceModel()->index(source_row, this->filterKeyColumn(), source_parent) ;
@@ -27,7 +27,7 @@ bool FilterChildrenProxyModel::filterAcceptsRow(int source_row, const QModelInde
             // check current index itself
             QString key = sourceModel()->data(source_index, filterRole()).toString();
             QString parentKey = sourceModel()->data(source_parent, filterRole()).toString();
-            return key.contains(filterRegExp()) || parentKey.contains(filterRegExp());
+            return key.contains(filterRegularExpression()) || parentKey.contains(filterRegularExpression());
         }
     }
     // parent call for initial behaviour

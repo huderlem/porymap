@@ -1,3 +1,4 @@
+#pragma once
 #ifndef REGIONMAP_H
 #define REGIONMAP_H
 
@@ -78,14 +79,10 @@ public:
     QString city_map_name;
 };
 
-class RegionMap : public QObject
+class RegionMap
 {
-    Q_OBJECT
-
 public:
     RegionMap() = default;
-
-    ~RegionMap() {};
 
     Project *project = nullptr;
 

@@ -15,6 +15,18 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout_15">
+    <property name="leftMargin">
+     <number>9</number>
+    </property>
+    <property name="topMargin">
+     <number>6</number>
+    </property>
+    <property name="rightMargin">
+     <number>9</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
     <item row="0" column="0">
      <widget class="QSplitter" name="splitter_main">
       <property name="orientation">
@@ -41,7 +53,7 @@
          <number>0</number>
         </property>
         <property name="rightMargin">
-         <number>0</number>
+         <number>3</number>
         </property>
         <property name="bottomMargin">
          <number>0</number>
@@ -94,24 +106,6 @@
           </item>
           <item>
            <widget class="QToolButton" name="toolButton_ExpandAll">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>16777215</height>
-             </size>
-            </property>
             <property name="toolTip">
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Expand all map folders&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
@@ -132,24 +126,6 @@
           </item>
           <item>
            <widget class="QToolButton" name="toolButton_CollapseAll">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>23</width>
-              <height>22</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>23</width>
-              <height>22</height>
-             </size>
-            </property>
             <property name="toolTip">
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Collapse all map list folders&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
@@ -230,8 +206,26 @@
        </layout>
       </widget>
       <widget class="QFrame" name="frame_Main">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <horstretch>1</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <layout class="QVBoxLayout" name="verticalLayout_13">
         <property name="spacing">
+         <number>0</number>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
          <number>0</number>
         </property>
         <item>
@@ -350,124 +344,44 @@
                     <number>0</number>
                    </property>
                    <item row="0" column="0">
-                    <widget class="QScrollArea" name="scrollArea">
+                    <widget class="GraphicsView" name="graphicsView_Map">
                      <property name="sizePolicy">
                       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                       <horstretch>1</horstretch>
+                       <horstretch>0</horstretch>
                        <verstretch>0</verstretch>
                       </sizepolicy>
                      </property>
-                     <property name="widgetResizable">
-                      <bool>true</bool>
+                     <property name="mouseTracking">
+                      <bool>false</bool>
                      </property>
-                     <widget class="QWidget" name="scrollAreaWidgetContents_5">
-                      <property name="geometry">
-                       <rect>
-                        <x>0</x>
-                        <y>0</y>
-                        <width>508</width>
-                        <height>665</height>
-                       </rect>
-                      </property>
-                      <layout class="QGridLayout" name="gridLayout_8">
-                       <property name="leftMargin">
-                        <number>0</number>
-                       </property>
-                       <property name="topMargin">
-                        <number>0</number>
-                       </property>
-                       <property name="rightMargin">
-                        <number>0</number>
-                       </property>
-                       <property name="bottomMargin">
-                        <number>0</number>
-                       </property>
-                       <property name="spacing">
-                        <number>0</number>
-                       </property>
-                       <item row="1" column="2">
-                        <spacer name="horizontalSpacer_5">
-                         <property name="orientation">
-                          <enum>Qt::Horizontal</enum>
-                         </property>
-                         <property name="sizeHint" stdset="0">
-                          <size>
-                           <width>166</width>
-                           <height>16</height>
-                          </size>
-                         </property>
-                        </spacer>
-                       </item>
-                       <item row="1" column="0">
-                        <spacer name="horizontalSpacer_4">
-                         <property name="orientation">
-                          <enum>Qt::Horizontal</enum>
-                         </property>
-                         <property name="sizeHint" stdset="0">
-                          <size>
-                           <width>166</width>
-                           <height>16</height>
-                          </size>
-                         </property>
-                        </spacer>
-                       </item>
-                       <item row="0" column="1">
-                        <spacer name="verticalSpacer_4">
-                         <property name="orientation">
-                          <enum>Qt::Vertical</enum>
-                         </property>
-                         <property name="sizeHint" stdset="0">
-                          <size>
-                           <width>16</width>
-                           <height>166</height>
-                          </size>
-                         </property>
-                        </spacer>
-                       </item>
-                       <item row="1" column="1">
-                        <widget class="GraphicsView" name="graphicsView_Map">
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
-                         <property name="mouseTracking">
-                          <bool>false</bool>
-                         </property>
-                         <property name="autoFillBackground">
-                          <bool>false</bool>
-                         </property>
-                         <property name="sizeAdjustPolicy">
-                          <enum>QAbstractScrollArea::AdjustIgnored</enum>
-                         </property>
-                         <property name="dragMode">
-                          <enum>QGraphicsView::NoDrag</enum>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="2" column="1">
-                        <spacer name="verticalSpacer_3">
-                         <property name="orientation">
-                          <enum>Qt::Vertical</enum>
-                         </property>
-                         <property name="sizeHint" stdset="0">
-                          <size>
-                           <width>16</width>
-                           <height>166</height>
-                          </size>
-                         </property>
-                        </spacer>
-                       </item>
-                      </layout>
-                     </widget>
+                     <property name="autoFillBackground">
+                      <bool>false</bool>
+                     </property>
+                     <property name="verticalScrollBarPolicy">
+                      <enum>Qt::ScrollBarAsNeeded</enum>
+                     </property>
+                     <property name="horizontalScrollBarPolicy">
+                      <enum>Qt::ScrollBarAsNeeded</enum>
+                     </property>
+                     <property name="sizeAdjustPolicy">
+                      <enum>QAbstractScrollArea::AdjustIgnored</enum>
+                     </property>
+                     <property name="dragMode">
+                      <enum>QGraphicsView::NoDrag</enum>
+                     </property>
+                     <property name="transformationAnchor">
+                      <enum>QGraphicsView::AnchorUnderMouse</enum>
+                     </property>
+                     <property name="resizeAnchor">
+                      <enum>QGraphicsView::AnchorUnderMouse</enum>
+                     </property>
                     </widget>
                    </item>
                   </layout>
                  </widget>
                 </item>
                 <item row="0" column="0">
-                 <widget class="QFrame" name="frame_6">
+                 <widget class="QFrame" name="frame_mapTools">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                     <horstretch>0</horstretch>
@@ -488,141 +402,165 @@
                   </property>
                   <layout class="QHBoxLayout" name="horizontalLayout_2">
                    <property name="spacing">
-                    <number>4</number>
+                    <number>3</number>
                    </property>
                    <property name="leftMargin">
-                    <number>4</number>
+                    <number>3</number>
                    </property>
                    <property name="topMargin">
-                    <number>4</number>
+                    <number>3</number>
                    </property>
                    <property name="rightMargin">
-                    <number>4</number>
+                    <number>3</number>
                    </property>
                    <property name="bottomMargin">
-                    <number>4</number>
+                    <number>3</number>
                    </property>
                    <item>
-                    <widget class="QToolButton" name="toolButton_Paint">
-                     <property name="enabled">
-                      <bool>true</bool>
+                    <widget class="QFrame" name="frame_toolButtons">
+                     <property name="frameShape">
+                      <enum>QFrame::NoFrame</enum>
                      </property>
-                     <property name="toolTip">
-                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pencil&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Click&lt;/span&gt; and drag to draw on the map.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Right-click&lt;/span&gt; and drag to select tiles.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                     <property name="frameShadow">
+                      <enum>QFrame::Raised</enum>
                      </property>
-                     <property name="text">
-                      <string>Paint</string>
-                     </property>
-                     <property name="icon">
-                      <iconset resource="../resources/images.qrc">
-                       <normaloff>:/icons/pencil.ico</normaloff>:/icons/pencil.ico</iconset>
-                     </property>
-                     <property name="checkable">
-                      <bool>true</bool>
-                     </property>
-                     <property name="checked">
-                      <bool>true</bool>
-                     </property>
-                     <property name="autoRaise">
-                      <bool>false</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QToolButton" name="toolButton_Select">
-                     <property name="enabled">
-                      <bool>true</bool>
-                     </property>
-                     <property name="toolTip">
-                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pointer&lt;/p&gt;&lt;p&gt;Does nothing&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                     </property>
-                     <property name="text">
-                      <string>Select</string>
-                     </property>
-                     <property name="icon">
-                      <iconset resource="../resources/images.qrc">
-                       <normaloff>:/icons/cursor.ico</normaloff>:/icons/cursor.ico</iconset>
-                     </property>
-                     <property name="checkable">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QToolButton" name="toolButton_Fill">
-                     <property name="toolTip">
-                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Bucket Fill&lt;/p&gt;&lt;p&gt;Fills all similar tiles in a region with the selected metatiles or collision attributes&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                     </property>
-                     <property name="text">
-                      <string>Fill</string>
-                     </property>
-                     <property name="icon">
-                      <iconset resource="../resources/images.qrc">
-                       <normaloff>:/icons/fill_color.ico</normaloff>:/icons/fill_color.ico</iconset>
-                     </property>
-                     <property name="checkable">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QToolButton" name="toolButton_Dropper">
-                     <property name="toolTip">
-                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Eyedropper&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Click&lt;/span&gt; to select a metatile or collision attribute.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                     </property>
-                     <property name="text">
-                      <string>Dropper</string>
-                     </property>
-                     <property name="icon">
-                      <iconset resource="../resources/images.qrc">
-                       <normaloff>:/icons/pipette.ico</normaloff>:/icons/pipette.ico</iconset>
-                     </property>
-                     <property name="checkable">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QToolButton" name="toolButton_Move">
-                     <property name="toolTip">
-                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Move&lt;/p&gt;&lt;p&gt;Click to drag map around.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                     </property>
-                     <property name="text">
-                      <string>...</string>
-                     </property>
-                     <property name="icon">
-                      <iconset resource="../resources/images.qrc">
-                       <normaloff>:/icons/move.ico</normaloff>:/icons/move.ico</iconset>
-                     </property>
-                     <property name="checkable">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QToolButton" name="toolButton_Shift">
-                     <property name="toolTip">
-                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Map Shift&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Click and drag&lt;/span&gt; on the map to shift the positions of all metatiles (Map tab) or events (Events tab) at once. This is useful after resizing a map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                     </property>
-                     <property name="text">
-                      <string>Shift</string>
-                     </property>
-                     <property name="icon">
-                      <iconset resource="../resources/images.qrc">
-                       <normaloff>:/icons/shift.ico</normaloff>:/icons/shift.ico</iconset>
-                     </property>
-                     <property name="checkable">
-                      <bool>true</bool>
-                     </property>
+                     <layout class="QHBoxLayout" name="horizontalLayout_17">
+                      <property name="spacing">
+                       <number>3</number>
+                      </property>
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>9</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <item>
+                       <widget class="QToolButton" name="toolButton_Paint">
+                        <property name="enabled">
+                         <bool>true</bool>
+                        </property>
+                        <property name="toolTip">
+                         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pencil&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Click&lt;/span&gt; and drag to draw on the map.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Right-click&lt;/span&gt; and drag to select tiles.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                        </property>
+                        <property name="text">
+                         <string>Paint</string>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="../resources/images.qrc">
+                          <normaloff>:/icons/pencil.ico</normaloff>:/icons/pencil.ico</iconset>
+                        </property>
+                        <property name="checkable">
+                         <bool>true</bool>
+                        </property>
+                        <property name="checked">
+                         <bool>true</bool>
+                        </property>
+                        <property name="autoRaise">
+                         <bool>false</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QToolButton" name="toolButton_Select">
+                        <property name="enabled">
+                         <bool>true</bool>
+                        </property>
+                        <property name="toolTip">
+                         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pointer&lt;/p&gt;&lt;p&gt;Does nothing&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                        </property>
+                        <property name="text">
+                         <string>Select</string>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="../resources/images.qrc">
+                          <normaloff>:/icons/cursor.ico</normaloff>:/icons/cursor.ico</iconset>
+                        </property>
+                        <property name="checkable">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QToolButton" name="toolButton_Fill">
+                        <property name="toolTip">
+                         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Bucket Fill&lt;/p&gt;&lt;p&gt;Fills all similar tiles in a region with the selected metatiles or collision attributes&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                        </property>
+                        <property name="text">
+                         <string>Fill</string>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="../resources/images.qrc">
+                          <normaloff>:/icons/fill_color.ico</normaloff>:/icons/fill_color.ico</iconset>
+                        </property>
+                        <property name="checkable">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QToolButton" name="toolButton_Dropper">
+                        <property name="toolTip">
+                         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Eyedropper&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Click&lt;/span&gt; to select a metatile or collision attribute.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                        </property>
+                        <property name="text">
+                         <string>Dropper</string>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="../resources/images.qrc">
+                          <normaloff>:/icons/pipette.ico</normaloff>:/icons/pipette.ico</iconset>
+                        </property>
+                        <property name="checkable">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QToolButton" name="toolButton_Move">
+                        <property name="toolTip">
+                         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Move&lt;/p&gt;&lt;p&gt;Click to drag map around.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                        </property>
+                        <property name="text">
+                         <string>...</string>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="../resources/images.qrc">
+                          <normaloff>:/icons/move.ico</normaloff>:/icons/move.ico</iconset>
+                        </property>
+                        <property name="checkable">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QToolButton" name="toolButton_Shift">
+                        <property name="toolTip">
+                         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Map Shift&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Click and drag&lt;/span&gt; on the map to shift the positions of all metatiles (Map tab) or events (Events tab) at once. This is useful after resizing a map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                        </property>
+                        <property name="text">
+                         <string>Shift</string>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="../resources/images.qrc">
+                          <normaloff>:/icons/shift.ico</normaloff>:/icons/shift.ico</iconset>
+                        </property>
+                        <property name="checkable">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
                     </widget>
                    </item>
                    <item>
                     <widget class="QCheckBox" name="checkBox_smartPaths">
                      <property name="toolTip">
                       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Smart-path mode allows easier drawing of paths. If a 3x3 metatile block is selcted in the right panel, then smart path mode will automatically form a pathway using those selected blocks.&lt;/p&gt;&lt;p&gt;When smart-path mode is &lt;span style=&quot; font-weight:600;&quot;&gt;not&lt;/span&gt; enabled, clicking and dragging a selection will tile it in a grid.&lt;/p&gt;&lt;p&gt;Hold down the &lt;span style=&quot; font-weight:600;&quot;&gt;shift&lt;/span&gt; key while editing to quickly enable smart-path mode.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                     </property>
-                     <property name="styleSheet">
-                      <string notr="true">margin-left: 10px</string>
                      </property>
                      <property name="text">
                       <string>Smart Paths</string>
@@ -893,7 +831,7 @@
                                <rect>
                                 <x>0</x>
                                 <y>0</y>
-                                <width>442</width>
+                                <width>428</width>
                                 <height>77</height>
                                </rect>
                               </property>
@@ -1083,8 +1021,8 @@
                          <rect>
                           <x>0</x>
                           <y>0</y>
-                          <width>425</width>
-                          <height>419</height>
+                          <width>411</width>
+                          <height>449</height>
                          </rect>
                         </property>
                         <property name="sizePolicy">
@@ -1213,93 +1151,127 @@
                       <enum>QLayout::SetDefaultConstraint</enum>
                      </property>
                      <property name="leftMargin">
-                      <number>0</number>
+                      <number>3</number>
                      </property>
                      <property name="topMargin">
-                      <number>0</number>
+                      <number>3</number>
                      </property>
                      <property name="rightMargin">
-                      <number>0</number>
+                      <number>3</number>
                      </property>
                      <property name="bottomMargin">
-                      <number>0</number>
+                      <number>3</number>
                      </property>
-                     <item row="2" column="1">
-                      <widget class="QGraphicsView" name="graphicsView_Collision">
-                       <property name="sizePolicy">
-                        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                         <horstretch>0</horstretch>
-                         <verstretch>0</verstretch>
-                        </sizepolicy>
+                     <item row="0" column="0">
+                      <widget class="QScrollArea" name="scrollArea_1">
+                       <property name="widgetResizable">
+                        <bool>true</bool>
                        </property>
-                       <property name="minimumSize">
-                        <size>
-                         <width>64</width>
-                         <height>512</height>
-                        </size>
-                       </property>
-                      </widget>
-                     </item>
-                     <item row="3" column="1">
-                      <spacer name="verticalSpacer_6">
-                       <property name="orientation">
-                        <enum>Qt::Vertical</enum>
-                       </property>
-                       <property name="sizeHint" stdset="0">
-                        <size>
-                         <width>20</width>
-                         <height>40</height>
-                        </size>
-                       </property>
-                      </spacer>
-                     </item>
-                     <item row="2" column="2">
-                      <spacer name="horizontalSpacer_19">
-                       <property name="orientation">
-                        <enum>Qt::Horizontal</enum>
-                       </property>
-                       <property name="sizeHint" stdset="0">
-                        <size>
-                         <width>40</width>
-                         <height>20</height>
-                        </size>
-                       </property>
-                      </spacer>
-                     </item>
-                     <item row="2" column="0">
-                      <spacer name="horizontalSpacer_18">
-                       <property name="orientation">
-                        <enum>Qt::Horizontal</enum>
-                       </property>
-                       <property name="sizeHint" stdset="0">
-                        <size>
-                         <width>40</width>
-                         <height>20</height>
-                        </size>
-                       </property>
-                      </spacer>
-                     </item>
-                     <item row="1" column="1">
-                      <widget class="QSlider" name="horizontalSlider_CollisionTransparency">
-                       <property name="minimum">
-                        <number>0</number>
-                       </property>
-                       <property name="maximum">
-                        <number>100</number>
-                       </property>
-                       <property name="value">
-                        <number>50</number>
-                       </property>
-                       <property name="orientation">
-                        <enum>Qt::Horizontal</enum>
-                       </property>
-                      </widget>
-                     </item>
-                     <item row="0" column="1">
-                      <widget class="QLabel" name="label">
-                       <property name="text">
-                        <string>Opacity</string>
-                       </property>
+                       <widget class="QWidget" name="scrollAreaWidgetContents">
+                        <property name="geometry">
+                         <rect>
+                          <x>0</x>
+                          <y>0</y>
+                          <width>428</width>
+                          <height>704</height>
+                         </rect>
+                        </property>
+                        <layout class="QGridLayout" name="gridLayout_7">
+                         <property name="leftMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="topMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="rightMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="bottomMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="spacing">
+                          <number>0</number>
+                         </property>
+                         <item row="0" column="1">
+                          <widget class="QLabel" name="label">
+                           <property name="text">
+                            <string>Opacity</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="1" column="1">
+                          <widget class="QSlider" name="horizontalSlider_CollisionTransparency">
+                           <property name="minimum">
+                            <number>0</number>
+                           </property>
+                           <property name="maximum">
+                            <number>100</number>
+                           </property>
+                           <property name="value">
+                            <number>50</number>
+                           </property>
+                           <property name="orientation">
+                            <enum>Qt::Horizontal</enum>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="2" column="0">
+                          <spacer name="horizontalSpacer_18">
+                           <property name="orientation">
+                            <enum>Qt::Horizontal</enum>
+                           </property>
+                           <property name="sizeHint" stdset="0">
+                            <size>
+                             <width>86</width>
+                             <height>20</height>
+                            </size>
+                           </property>
+                          </spacer>
+                         </item>
+                         <item row="2" column="1">
+                          <widget class="QGraphicsView" name="graphicsView_Collision">
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="minimumSize">
+                            <size>
+                             <width>64</width>
+                             <height>512</height>
+                            </size>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="2" column="2">
+                          <spacer name="horizontalSpacer_19">
+                           <property name="orientation">
+                            <enum>Qt::Horizontal</enum>
+                           </property>
+                           <property name="sizeHint" stdset="0">
+                            <size>
+                             <width>86</width>
+                             <height>20</height>
+                            </size>
+                           </property>
+                          </spacer>
+                         </item>
+                         <item row="3" column="1">
+                          <spacer name="verticalSpacer_6">
+                           <property name="orientation">
+                            <enum>Qt::Vertical</enum>
+                           </property>
+                           <property name="sizeHint" stdset="0">
+                            <size>
+                             <width>20</width>
+                             <height>94</height>
+                            </size>
+                           </property>
+                          </spacer>
+                         </item>
+                        </layout>
+                       </widget>
                       </widget>
                      </item>
                     </layout>
@@ -1310,6 +1282,18 @@
                </widget>
                <widget class="QWidget" name="mapView_ObjectInfo">
                 <layout class="QGridLayout" name="gridLayout">
+                 <property name="leftMargin">
+                  <number>1</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>1</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>1</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>1</number>
+                 </property>
                  <item row="0" column="0">
                   <widget class="QFrame" name="frame_Objects">
                    <property name="enabled">
@@ -1323,7 +1307,7 @@
                    </property>
                    <property name="minimumSize">
                     <size>
-                     <width>444</width>
+                     <width>330</width>
                      <height>0</height>
                     </size>
                    </property>
@@ -1379,11 +1363,11 @@
                        </property>
                        <item>
                         <widget class="NewEventToolButton" name="newEventToolButton">
-                         <property name="minimumSize">
-                          <size>
-                           <width>40</width>
-                           <height>32</height>
-                          </size>
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
                          </property>
                          <property name="toolTip">
                           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Add a new event to the map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -1403,16 +1387,10 @@
                        <item>
                         <widget class="QToolButton" name="toolButton_deleteObject">
                          <property name="sizePolicy">
-                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                          <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
                            <horstretch>0</horstretch>
                            <verstretch>0</verstretch>
                           </sizepolicy>
-                         </property>
-                         <property name="minimumSize">
-                          <size>
-                           <width>40</width>
-                           <height>32</height>
-                          </size>
                          </property>
                          <property name="toolTip">
                           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Delete the selected event from the map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -1437,18 +1415,12 @@
                          <property name="orientation">
                           <enum>Qt::Horizontal</enum>
                          </property>
-                         <property name="sizeHint" stdset="0">
-                          <size>
-                           <width>40</width>
-                           <height>20</height>
-                          </size>
-                         </property>
                         </spacer>
                        </item>
                        <item>
                         <widget class="QToolButton" name="toolButton_Open_Scripts">
                          <property name="sizePolicy">
-                          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                          <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
                            <horstretch>0</horstretch>
                            <verstretch>0</verstretch>
                           </sizepolicy>
@@ -1758,12 +1730,6 @@
            </layout>
           </widget>
           <widget class="QWidget" name="tab_Attributes">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
            <layout class="QVBoxLayout" name="gridLayout_Attributes">
             <property name="spacing">
              <number>0</number>
@@ -2151,7 +2117,7 @@
                <property name="spacing">
                 <number>0</number>
                </property>
-               <item row="1" column="0">
+               <item row="2" column="0">
                 <widget class="QFrame" name="horizontalFrame">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -2275,7 +2241,41 @@
                  </layout>
                 </widget>
                </item>
-               <item row="2" column="0">
+               <item row="6" column="0">
+                <widget class="QGraphicsView" name="graphicsView_Connections">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="mouseTracking">
+                  <bool>false</bool>
+                 </property>
+                 <property name="autoFillBackground">
+                  <bool>false</bool>
+                 </property>
+                 <property name="verticalScrollBarPolicy">
+                  <enum>Qt::ScrollBarAsNeeded</enum>
+                 </property>
+                 <property name="horizontalScrollBarPolicy">
+                  <enum>Qt::ScrollBarAsNeeded</enum>
+                 </property>
+                 <property name="sizeAdjustPolicy">
+                  <enum>QAbstractScrollArea::AdjustIgnored</enum>
+                 </property>
+                 <property name="dragMode">
+                  <enum>QGraphicsView::NoDrag</enum>
+                 </property>
+                 <property name="transformationAnchor">
+                  <enum>QGraphicsView::AnchorUnderMouse</enum>
+                 </property>
+                 <property name="resizeAnchor">
+                  <enum>QGraphicsView::AnchorUnderMouse</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="0">
                 <widget class="QFrame" name="horizontalFrame2">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -2391,199 +2391,82 @@
                  </layout>
                 </widget>
                </item>
-               <item row="3" column="0">
-                <widget class="QFrame" name="gridFrame1">
+               <item row="5" column="0">
+                <widget class="QFrame" name="horizontalFrame3">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
                  <property name="frameShape">
                   <enum>QFrame::StyledPanel</enum>
                  </property>
                  <property name="frameShadow">
                   <enum>QFrame::Raised</enum>
                  </property>
-                 <layout class="QGridLayout" name="gridLayout_13">
+                 <layout class="QHBoxLayout" name="horizontalLayout_6">
+                  <property name="spacing">
+                   <number>4</number>
+                  </property>
                   <property name="leftMargin">
-                   <number>0</number>
+                   <number>4</number>
                   </property>
                   <property name="topMargin">
-                   <number>0</number>
+                   <number>4</number>
                   </property>
                   <property name="rightMargin">
-                   <number>0</number>
+                   <number>4</number>
                   </property>
                   <property name="bottomMargin">
-                   <number>0</number>
+                   <number>4</number>
                   </property>
-                  <property name="spacing">
-                   <number>0</number>
-                  </property>
-                  <item row="1" column="0">
-                   <widget class="QScrollArea" name="scrollArea_5">
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                      <horstretch>1</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
+                  <item>
+                   <widget class="QLabel" name="label_14">
+                    <property name="text">
+                     <string>Dive Map</string>
                     </property>
-                    <property name="widgetResizable">
-                     <bool>true</bool>
-                    </property>
-                    <widget class="QWidget" name="scrollAreaWidgetContents_3">
-                     <property name="geometry">
-                      <rect>
-                       <x>0</x>
-                       <y>0</y>
-                       <width>101</width>
-                       <height>101</height>
-                      </rect>
-                     </property>
-                     <layout class="QGridLayout" name="gridLayout_14">
-                      <item row="1" column="2">
-                       <spacer name="horizontalSpacer_8">
-                        <property name="orientation">
-                         <enum>Qt::Horizontal</enum>
-                        </property>
-                        <property name="sizeHint" stdset="0">
-                         <size>
-                          <width>40</width>
-                          <height>20</height>
-                         </size>
-                        </property>
-                       </spacer>
-                      </item>
-                      <item row="2" column="1">
-                       <spacer name="verticalSpacer_2">
-                        <property name="orientation">
-                         <enum>Qt::Vertical</enum>
-                        </property>
-                        <property name="sizeHint" stdset="0">
-                         <size>
-                          <width>20</width>
-                          <height>40</height>
-                         </size>
-                        </property>
-                       </spacer>
-                      </item>
-                      <item row="0" column="1">
-                       <spacer name="verticalSpacer">
-                        <property name="orientation">
-                         <enum>Qt::Vertical</enum>
-                        </property>
-                        <property name="sizeHint" stdset="0">
-                         <size>
-                          <width>20</width>
-                          <height>40</height>
-                         </size>
-                        </property>
-                       </spacer>
-                      </item>
-                      <item row="1" column="1">
-                       <widget class="QGraphicsView" name="graphicsView_Connections">
-                        <property name="backgroundBrush">
-                         <brush brushstyle="SolidPattern">
-                          <color alpha="255">
-                           <red>0</red>
-                           <green>0</green>
-                           <blue>0</blue>
-                          </color>
-                         </brush>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="1" column="0">
-                       <spacer name="horizontalSpacer_7">
-                        <property name="orientation">
-                         <enum>Qt::Horizontal</enum>
-                        </property>
-                        <property name="sizeHint" stdset="0">
-                         <size>
-                          <width>40</width>
-                          <height>20</height>
-                         </size>
-                        </property>
-                       </spacer>
-                      </item>
-                     </layout>
-                    </widget>
                    </widget>
                   </item>
-                  <item row="0" column="0">
-                   <widget class="QFrame" name="horizontalFrame3">
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
+                  <item>
+                   <widget class="NoScrollComboBox" name="comboBox_DiveMap">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Destination map name when using &lt;span style=&quot; font-weight:600;&quot;&gt;Dive&lt;/span&gt;. If empty, no such connection will exist.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
-                    <property name="frameShape">
-                     <enum>QFrame::StyledPanel</enum>
+                    <property name="editable">
+                     <bool>true</bool>
                     </property>
-                    <property name="frameShadow">
-                     <enum>QFrame::Raised</enum>
-                    </property>
-                    <layout class="QHBoxLayout" name="horizontalLayout_6">
-                     <property name="spacing">
-                      <number>4</number>
-                     </property>
-                     <property name="leftMargin">
-                      <number>4</number>
-                     </property>
-                     <property name="topMargin">
-                      <number>4</number>
-                     </property>
-                     <property name="rightMargin">
-                      <number>4</number>
-                     </property>
-                     <property name="bottomMargin">
-                      <number>4</number>
-                     </property>
-                     <item>
-                      <widget class="QLabel" name="label_14">
-                       <property name="text">
-                        <string>Dive Map</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="NoScrollComboBox" name="comboBox_DiveMap">
-                       <property name="toolTip">
-                        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Destination map name when using &lt;span style=&quot; font-weight:600;&quot;&gt;Dive&lt;/span&gt;. If empty, no such connection will exist.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                       </property>
-                       <property name="editable">
-                        <bool>true</bool>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="label_15">
-                       <property name="text">
-                        <string>Emerge Map</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="NoScrollComboBox" name="comboBox_EmergeMap">
-                       <property name="toolTip">
-                        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Destination map name when emerging using &lt;span style=&quot; font-weight:600;&quot;&gt;Dive&lt;/span&gt;. If empty, no such connection will exist.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                       </property>
-                       <property name="editable">
-                        <bool>true</bool>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <spacer name="horizontalSpacer_10">
-                       <property name="orientation">
-                        <enum>Qt::Horizontal</enum>
-                       </property>
-                       <property name="sizeHint" stdset="0">
-                        <size>
-                         <width>40</width>
-                         <height>20</height>
-                        </size>
-                       </property>
-                      </spacer>
-                     </item>
-                    </layout>
                    </widget>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="label_15">
+                    <property name="text">
+                     <string>Emerge Map</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="NoScrollComboBox" name="comboBox_EmergeMap">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Destination map name when emerging using &lt;span style=&quot; font-weight:600;&quot;&gt;Dive&lt;/span&gt;. If empty, no such connection will exist.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                    <property name="editable">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="horizontalSpacer_10">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
                   </item>
                  </layout>
                 </widget>
@@ -2638,6 +2521,23 @@
                     <property name="icon">
                      <iconset resource="../resources/images.qrc">
                       <normaloff>:/icons/add.ico</normaloff>:/icons/add.ico</iconset>
+                    </property>
+                    <property name="flat">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="pushButton_DeleteWildMonGroup">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Delete a group of wild pokemon data on this map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../resources/images.qrc">
+                      <normaloff>:/icons/delete.ico</normaloff>:/icons/delete.ico</iconset>
                     </property>
                     <property name="flat">
                      <bool>true</bool>
@@ -2707,6 +2607,7 @@
     <addaction name="separator"/>
     <addaction name="action_Export_Map_Image"/>
     <addaction name="actionExport_Stitched_Map_Image"/>
+    <addaction name="actionExport_Map_Timelapse_Image"/>
     <addaction name="separator"/>
     <addaction name="action_Exit"/>
    </widget>
@@ -2724,8 +2625,6 @@
     <addaction name="actionCursor_Tile_Outline"/>
     <addaction name="actionPlayer_View_Rectangle"/>
     <addaction name="actionBetter_Cursors"/>
-    <addaction name="separator"/>
-    <addaction name="actionThemes"/>
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
@@ -2744,12 +2643,16 @@
     <addaction name="actionRegion_Map_Editor"/>
     <addaction name="separator"/>
     <addaction name="actionImport_Map_from_Advance_Map_1_92"/>
+    <addaction name="separator"/>
+    <addaction name="actionOpen_Project_in_Text_Editor"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
      <string>Help</string>
     </property>
     <addaction name="actionAbout_Porymap"/>
+    <addaction name="actionOpen_Log_File"/>
+    <addaction name="actionOpen_Config_Folder"/>
    </widget>
    <widget class="QMenu" name="menuOptions">
     <property name="title">
@@ -2758,6 +2661,9 @@
     <addaction name="actionUse_Encounter_Json"/>
     <addaction name="actionMonitor_Project_Files"/>
     <addaction name="actionUse_Poryscript"/>
+    <addaction name="separator"/>
+    <addaction name="actionEdit_Preferences"/>
+    <addaction name="actionEdit_Shortcuts"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -3014,14 +2920,42 @@
     <string>Ctrl+Shift+N</string>
    </property>
   </action>
-  <action name="actionThemes">
-   <property name="text">
-    <string>Themes...</string>
-   </property>
-  </action>
   <action name="actionExport_Stitched_Map_Image">
    <property name="text">
     <string>Export Map Stitch Image...</string>
+   </property>
+  </action>
+  <action name="actionEdit_Preferences">
+   <property name="text">
+    <string>Edit Preferences...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+,</string>
+   </property>
+  </action>
+  <action name="actionOpen_Project_in_Text_Editor">
+   <property name="text">
+    <string>Open Project in Text Editor</string>
+   </property>
+  </action>
+  <action name="actionEdit_Shortcuts">
+   <property name="text">
+    <string>Edit Shortcuts...</string>
+   </property>
+  </action>
+  <action name="actionExport_Map_Timelapse_Image">
+   <property name="text">
+    <string>Export Map Timelapse Image...</string>
+   </property>
+  </action>
+  <action name="actionOpen_Log_File">
+   <property name="text">
+    <string>Open Log File</string>
+   </property>
+  </action>
+  <action name="actionOpen_Config_Folder">
+   <property name="text">
+    <string>Open Config Folder</string>
    </property>
   </action>
   <action name="actionImport_Map_from_Advance_Map_1_92">

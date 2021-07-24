@@ -1,33 +1,28 @@
 #include "bordermetatilespixmapitem.h"
 #include "imageproviders.h"
+#include "metatile.h"
 #include "editcommands.h"
 #include <QPainter>
 
 void BorderMetatilesPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     QList<uint16_t> *selectedMetatiles = this->metatileSelector->getSelectedMetatiles();
     QPoint selectionDimensions = this->metatileSelector->getSelectionDimensions();
-    QPointF pos = event->pos();
-    int x = static_cast<int>(pos.x()) / 16;
-    int y = static_cast<int>(pos.y()) / 16;
+    QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
     int width = map->getBorderWidth();
     int height = map->getBorderHeight();
 
-    Blockdata *oldBorder = map->layout->border->copy();
+    Blockdata oldBorder = map->layout->border;
 
-    for (int i = 0; i < selectionDimensions.x() && (i + x) < width; i++) {
-        for (int j = 0; j < selectionDimensions.y() && (j + y) < height; j++) {
-            int blockIndex = (j + y) * width + (i + x);
+    for (int i = 0; i < selectionDimensions.x() && (i + pos.x()) < width; i++) {
+        for (int j = 0; j < selectionDimensions.y() && (j + pos.y()) < height; j++) {
+            int blockIndex = (j + pos.y()) * width + (i + pos.x());
             uint16_t tile = selectedMetatiles->at(j * selectionDimensions.x() + i);
-            (*map->layout->border->blocks)[blockIndex].tile = tile;
+            map->layout->border[blockIndex].tile = tile;
         }
     }
 
-    Blockdata *newBorder = map->layout->border->copy();
-    if (newBorder->equals(oldBorder)) {
-        delete newBorder;
-        delete oldBorder;
-    } else {
-        map->editHistory.push(new PaintBorder(map, oldBorder, newBorder, 0));
+    if (map->layout->border != oldBorder) {
+        map->editHistory.push(new PaintBorder(map, oldBorder, map->layout->border, 0));
     }
 
     emit borderMetatilesChanged();
@@ -40,7 +35,6 @@ void BorderMetatilesPixmapItem::draw() {
     int height = map->getBorderHeight();
     QImage image(16 * width, 16 * height, QImage::Format_RGBA8888);
     QPainter painter(&image);
-    QVector<Block> *blocks = map->layout->border->blocks;
 
     for (int i = 0; i < width; i++) {
         for (int j = 0; j < height; j++) {
@@ -48,7 +42,7 @@ void BorderMetatilesPixmapItem::draw() {
             int y = j * 16;
             int index = j * width + i;
             QImage metatile_image = getMetatileImage(
-                        blocks->value(index).tile,
+                        map->layout->border.value(index).tile,
                         map->layout->tileset_primary,
                         map->layout->tileset_secondary,
                         map->metatileLayerOrder,

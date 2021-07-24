@@ -55,18 +55,17 @@ MapLayout *MapParser::parse(QString filepath, bool *error, Project *project)
         return nullptr;
     }
 
-    Blockdata *blockdata = new Blockdata();
+    Blockdata blockdata;
     for (int i = mapDataOffset; (i + 1) < in.length(); i += 2) {
         uint16_t word = static_cast<uint16_t>((in[i] & 0xff) + ((in[i + 1] & 0xff) << 8));
-        blockdata->addBlock(word);
+        blockdata.append(word);
     }
 
-    Blockdata *border = nullptr;
+    Blockdata border;
     if (numBorderTiles != 0) {
-        border = new Blockdata();
         for (int i = 20; (i + 1) < mapDataOffset; i += 2) {
             uint16_t word = static_cast<uint16_t>((in[i] & 0xff) + ((in[i + 1] & 0xff) << 8));
-            border->addBlock(word);
+            border.append(word);
         }
     }
 
@@ -88,10 +87,10 @@ MapLayout *MapParser::parse(QString filepath, bool *error, Project *project)
     else
         mapLayout->tileset_secondary_label = tilesets.at(mapSecondaryTilesetNum);
 
-    mapLayout->blockdata = blockdata->copy();
+    mapLayout->blockdata = blockdata;
 
-    if (border != nullptr) {
-        mapLayout->border = border->copy();
+    if (!border.isEmpty()) {
+        mapLayout->border = border;
     }
 
     return mapLayout;

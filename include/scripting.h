@@ -1,3 +1,4 @@
+#pragma once
 #ifndef SCRIPTING_H
 #define SCRIPTING_H
 

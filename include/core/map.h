@@ -1,3 +1,4 @@
+#pragma once
 #ifndef MAP_H
 #define MAP_H
 
@@ -34,7 +35,6 @@ public:
 public:
     QString name;
     QString constantName;
-    QString group_num;
     QString song;
     QString layoutId;
     QString location;
@@ -46,7 +46,7 @@ public:
     QString allowRunning;
     QString allowBiking;
     QString allowEscapeRope;
-    int floorNumber;
+    int floorNumber = 0;
     QString battle_scene;
     QString sharedEventsMap = "";
     QString sharedScriptsMap = "";
@@ -74,16 +74,17 @@ public:
     int getBorderHeight();
     QPixmap render(bool ignoreCache, MapLayout * fromLayout = nullptr);
     QPixmap renderCollision(qreal opacity, bool ignoreCache);
-    bool mapBlockChanged(int i, Blockdata * cache);
-    bool borderBlockChanged(int i, Blockdata * cache);
+    bool mapBlockChanged(int i, const Blockdata &cache);
+    bool borderBlockChanged(int i, const Blockdata &cache);
     void cacheBlockdata();
     void cacheCollision();
-    Block *getBlock(int x, int y);
+    bool getBlock(int x, int y, Block *out);
     void setBlock(int x, int y, Block block, bool enableScriptCallback = false);
     void floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
     void _floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
     void magicFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
-    QList<Event*> getAllEvents();
+    QList<Event*> getAllEvents() const;
+    QStringList eventScriptLabels(const QString &event_group_type = QString()) const;
     void removeEvent(Event*);
     void addEvent(Event*);
     QPixmap renderConnection(MapConnection, MapLayout *);
@@ -113,6 +114,7 @@ private:
 
 signals:
     void mapChanged(Map *map);
+    void mapDimensionsChanged(const QSize &size);
     void mapNeedsRedrawing();
 };
 

@@ -47,6 +47,11 @@ public:
 
     void resize(int width, int height);
 
+    QObjectList shortcutableObjects() const;
+
+public slots:
+    void applyUserShortcuts();
+
 private:
     Ui::RegionMapEditor *ui;
     Project *project;
@@ -81,6 +86,7 @@ private:
     RegionMapPixmapItem *region_map_item = nullptr;
     CityMapPixmapItem *city_map_item = nullptr;
 
+    void initShortcuts();
     void displayRegionMap();
     void displayRegionMapImage();
     void displayRegionMapLayout();
@@ -97,6 +103,7 @@ private:
     bool createCityMap(QString name);
     bool tryInsertNewMapEntry(QString);
 
+    void restoreWindowState();
     void closeEvent(QCloseEvent* event);
 
 private slots:
@@ -111,8 +118,8 @@ private slots:
     void on_action_Import_CityMap_ImageTiles_triggered();
     void on_tabWidget_Region_Map_currentChanged(int);
     void on_pushButton_RM_Options_delete_clicked();
-    void on_comboBox_RM_ConnectedMap_activated(const QString &);
-    void on_comboBox_RM_Entry_MapSection_activated(const QString &);
+    void on_comboBox_RM_ConnectedMap_textActivated(const QString &);
+    void on_comboBox_RM_Entry_MapSection_textActivated(const QString &);
     void on_spinBox_RM_Entry_x_valueChanged(int);
     void on_spinBox_RM_Entry_y_valueChanged(int);
     void on_spinBox_RM_Entry_width_valueChanged(int);

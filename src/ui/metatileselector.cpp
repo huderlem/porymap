@@ -12,13 +12,12 @@ QPoint MetatileSelector::getSelectionDimensions() {
 }
 
 void MetatileSelector::draw() {
-    if (!this->primaryTileset || !this->primaryTileset->metatiles
-     || !this->secondaryTileset || !this->secondaryTileset->metatiles) {
+    if (!this->primaryTileset || !this->secondaryTileset) {
         this->setPixmap(QPixmap());
     }
 
-    int primaryLength = this->primaryTileset->metatiles->length();
-    int length_ = primaryLength + this->secondaryTileset->metatiles->length();
+    int primaryLength = this->primaryTileset->metatiles.length();
+    int length_ = primaryLength + this->secondaryTileset->metatiles.length();
     int height_ = length_ / this->numMetatilesWide;
     if (length_ % this->numMetatilesWide != 0) {
         height_++;
@@ -69,7 +68,7 @@ void MetatileSelector::setTilesets(Tileset *primaryTileset, Tileset *secondaryTi
         if (this->externalSelection) {
             this->select(0);
         } else {
-            this->select(Project::getNumMetatilesPrimary() + this->secondaryTileset->metatiles->length() - 1);
+            this->select(Project::getNumMetatilesPrimary() + this->secondaryTileset->metatiles.length() - 1);
         }
     } else if (this->externalSelection) {
         emit selectedMetatilesChanged();
@@ -181,10 +180,10 @@ bool MetatileSelector::selectionIsValid() {
 
 uint16_t MetatileSelector::getMetatileId(int x, int y) {
     int index = y * this->numMetatilesWide + x;
-    if (index < this->primaryTileset->metatiles->length()) {
+    if (index < this->primaryTileset->metatiles.length()) {
         return static_cast<uint16_t>(index);
     } else {
-        return static_cast<uint16_t>(Project::getNumMetatilesPrimary() + index - this->primaryTileset->metatiles->length());
+        return static_cast<uint16_t>(Project::getNumMetatilesPrimary() + index - this->primaryTileset->metatiles.length());
     }
 }
 
@@ -197,7 +196,7 @@ QPoint MetatileSelector::getMetatileIdCoords(uint16_t metatileId) {
 
     int index = metatileId < Project::getNumMetatilesPrimary()
                 ? metatileId
-                : metatileId - Project::getNumMetatilesPrimary() + this->primaryTileset->metatiles->length();
+                : metatileId - Project::getNumMetatilesPrimary() + this->primaryTileset->metatiles.length();
     return QPoint(index % this->numMetatilesWide, index / this->numMetatilesWide);
 }
 

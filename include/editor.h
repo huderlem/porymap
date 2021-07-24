@@ -1,3 +1,4 @@
+#pragma once
 #ifndef EDITOR_H
 #define EDITOR_H
 
@@ -23,6 +24,7 @@
 #include "settings.h"
 #include "movablerect.h"
 #include "cursortilerect.h"
+#include "mapruler.h"
 
 class DraggablePixmapItem;
 class MetatilesPixmapItem;
@@ -58,7 +60,6 @@ public:
     void displayCurrentMetatilesSelection();
     void redrawCurrentMetatilesSelection();
     void displayMovementPermissionSelector();
-    void displayElevationMetatiles();
     void displayMapEvents();
     void displayMapConnections();
     void displayMapBorder();
@@ -73,7 +74,6 @@ public:
     void setEditingObjects();
     void setEditingConnections();
     void setMapEditingButtonsEnabled(bool enabled);
-    void clearWildMonTabWidgets();
     void setCurrentConnectionDirection(QString curDirection);
     void updateCurrentConnectionDirection(QString curDirection);
     void setConnectionsVisibility(bool visible);
@@ -82,6 +82,7 @@ public:
     void addNewConnection();
     void removeCurrentConnection();
     void addNewWildMonGroup(QWidget *window);
+    void deleteWildMonGroup();
     void updateDiveMap(QString mapName);
     void updateEmergeMap(QString mapName);
     void setSelectedConnectionFromMap(QString mapName);
@@ -96,7 +97,6 @@ public:
     void selectMapEvent(DraggablePixmapItem *object);
     void selectMapEvent(DraggablePixmapItem *object, bool toggle);
     DraggablePixmapItem *addNewEvent(QString event_type);
-    Event* createNewEvent(QString event_type);
     void deleteEvent(Event *);
     void updateSelectedEvents();
     void duplicateSelectedEvents();
@@ -109,12 +109,14 @@ public:
     ConnectionPixmapItem* selected_connection_item = nullptr;
     QList<QGraphicsPixmapItem*> connection_items;
     QList<ConnectionPixmapItem*> connection_edit_items;
+    QGraphicsPathItem *connection_mask = nullptr;
     CollisionPixmapItem *collision_item = nullptr;
     QGraphicsItemGroup *events_group = nullptr;
     QList<QGraphicsPixmapItem*> borderItems;
     QList<QGraphicsLineItem*> gridLines;
     MovableRect *playerViewRect = nullptr;
     CursorTileRect *cursorMapTileRect = nullptr;
+    MapRuler *map_ruler = nullptr;
 
     QGraphicsScene *scene_metatiles = nullptr;
     QGraphicsScene *scene_current_metatile_selection = nullptr;
@@ -133,13 +135,10 @@ public:
     QString map_edit_mode = "paint";
     QString obj_edit_mode = "select";
 
-    int scale_exp = 0;
-    double scale_base = sqrt(2); // adjust scale factor with this
+    int scaleIndex = 2;
     qreal collisionOpacity = 0.5;
 
     void objectsView_onMousePress(QMouseEvent *event);
-    void objectsView_onMouseMove(QMouseEvent *event);
-    void objectsView_onMouseRelease(QMouseEvent *event);
 
     int getBorderDrawDistance(int dimension);
 
@@ -148,6 +147,14 @@ public:
     bool selectingEvent = false;
 
     void shouldReselectEvents();
+    void scaleMapView(int);
+    void openInTextEditor(const QString &path, int lineNum = 0) const;
+
+public slots:
+    void openMapScripts() const;
+    void openScript(const QString &scriptLabel) const;
+    void openProjectInTextEditor() const;
+    void maskNonVisibleConnectionTiles();
 
 private:
     void setConnectionItemsVisible(bool);
@@ -165,17 +172,12 @@ private:
     void updateMirroredConnectionMap(MapConnection*, QString);
     void updateMirroredConnection(MapConnection*, QString, QString, bool isDelete = false);
     void updateEncounterFields(EncounterFields newFields);
-    Event* createNewObjectEvent();
-    Event* createNewWarpEvent();
-    Event* createNewHealLocationEvent();
-    Event* createNewTriggerEvent();
-    Event* createNewWeatherTriggerEvent();
-    Event* createNewSignEvent();
-    Event* createNewHiddenItemEvent();
-    Event* createNewSecretBaseEvent();
     QString getMovementPermissionText(uint16_t collision, uint16_t elevation);
     QString getMetatileDisplayMessage(uint16_t metatileId);
     bool eventLimitReached(Map *, QString);
+    bool startDetachedProcess(const QString &command,
+                              const QString &workingDirectory = QString(),
+                              qint64 *pid = nullptr) const;
 
 private slots:
     void onMapStartPaint(QGraphicsSceneMouseEvent *event, MapPixmapItem *item);
@@ -193,11 +195,12 @@ private slots:
     void onHoveredMovementPermissionCleared();
     void onHoveredMetatileSelectionChanged(uint16_t);
     void onHoveredMetatileSelectionCleared();
-    void onHoveredMapMetatileChanged(int, int);
+    void onHoveredMapMetatileChanged(const QPoint &pos);
     void onHoveredMapMetatileCleared();
     void onHoveredMapMovementPermissionChanged(int, int);
     void onHoveredMapMovementPermissionCleared();
     void onSelectedMetatilesChanged();
+    void onWheelZoom(int);
 
 signals:
     void objectsChanged();
@@ -206,7 +209,7 @@ signals:
     void wildMonDataChanged();
     void warpEventDoubleClicked(QString mapName, QString warpNum);
     void currentMetatilesSelectionChanged();
-    void wheelZoom(int delta);
+    void mapRulerStatusChanged(const QString &);
 };
 
 #endif // EDITOR_H

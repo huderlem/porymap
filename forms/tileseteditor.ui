@@ -529,6 +529,10 @@
     <addaction name="actionChange_Metatiles_Count"/>
     <addaction name="actionChange_Palettes"/>
     <addaction name="separator"/>
+    <addaction name="actionShow_Unused"/>
+    <addaction name="actionShow_Counts"/>
+    <addaction name="actionShow_UnusedTiles"/>
+    <addaction name="separator"/>
     <addaction name="actionExport_Primary_Tiles_Image"/>
     <addaction name="actionExport_Secondary_Tiles_Image"/>
    </widget>
@@ -570,6 +574,30 @@
   <action name="actionChange_Palettes">
    <property name="text">
     <string>Palette Editor</string>
+   </property>
+  </action>
+  <action name="actionShow_Unused">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Display Unused Metatiles</string>
+   </property>
+  </action>
+  <action name="actionShow_UnusedTiles">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Display Unused Tiles</string>
+   </property>
+  </action>
+  <action name="actionShow_Counts">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Display Metatile Usage Counts</string>
    </property>
   </action>
   <action name="actionUndo">

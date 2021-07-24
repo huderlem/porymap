@@ -1,3 +1,4 @@
+#pragma once
 #ifndef CONFIG_H
 #define CONFIG_H
 
@@ -5,6 +6,8 @@
 #include <QObject>
 #include <QByteArrayList>
 #include <QSize>
+#include <QKeySequence>
+#include <QMultiMap>
 
 enum MapSortOrder {
     Group   =  0,
@@ -12,7 +15,7 @@ enum MapSortOrder {
     Layout  =  2,
 };
 
-class KeyValueConfigBase : public QObject
+class KeyValueConfigBase
 {
 public:
     void save();
@@ -35,7 +38,6 @@ public:
     }
     virtual void reset() override {
         this->recentProject = "";
-        this->recentMap = "";
         this->mapSortOrder = MapSortOrder::Group;
         this->prettyCursors = true;
         this->collisionOpacity = 50;
@@ -45,12 +47,16 @@ public:
         this->monitorFiles = true;
         this->regionMapDimensions = QSize(32, 20);
         this->theme = "default";
+        this->textEditorOpenFolder = "";
+        this->textEditorGotoLine = "";
     }
     void setRecentProject(QString project);
-    void setRecentMap(QString map);
     void setMapSortOrder(MapSortOrder order);
     void setPrettyCursors(bool enabled);
-    void setGeometry(QByteArray, QByteArray, QByteArray, QByteArray);
+    void setMainGeometry(QByteArray, QByteArray, QByteArray, QByteArray);
+    void setTilesetEditorGeometry(QByteArray, QByteArray);
+    void setPaletteEditorGeometry(QByteArray, QByteArray);
+    void setRegionMapEditorGeometry(QByteArray, QByteArray);
     void setCollisionOpacity(int opacity);
     void setMetatilesZoom(int zoom);
     void setShowPlayerView(bool enabled);
@@ -58,11 +64,15 @@ public:
     void setMonitorFiles(bool monitor);
     void setRegionMapDimensions(int width, int height);
     void setTheme(QString theme);
+    void setTextEditorOpenFolder(const QString &command);
+    void setTextEditorGotoLine(const QString &command);
     QString getRecentProject();
-    QString getRecentMap();
     MapSortOrder getMapSortOrder();
     bool getPrettyCursors();
-    QMap<QString, QByteArray> getGeometry();
+    QMap<QString, QByteArray> getMainGeometry();
+    QMap<QString, QByteArray> getTilesetEditorGeometry();
+    QMap<QString, QByteArray> getPaletteEditorGeometry();
+    QMap<QString, QByteArray> getRegionMapEditorGeometry();
     int getCollisionOpacity();
     int getMetatilesZoom();
     bool getShowPlayerView();
@@ -70,6 +80,8 @@ public:
     bool getMonitorFiles();
     QSize getRegionMapDimensions();
     QString getTheme();
+    QString getTextEditorOpenFolder();
+    QString getTextEditorGotoLine();
 protected:
     virtual QString getConfigFilepath() override;
     virtual void parseConfigKeyValue(QString key, QString value) override;
@@ -78,16 +90,21 @@ protected:
     virtual void setUnreadKeys() override {};
 private:
     QString recentProject;
-    QString recentMap;
     QString stringFromByteArray(QByteArray);
     QByteArray bytesFromString(QString);
     MapSortOrder mapSortOrder;
     bool prettyCursors;
-    QByteArray windowGeometry;
-    QByteArray windowState;
+    QByteArray mainWindowGeometry;
+    QByteArray mainWindowState;
     QByteArray mapSplitterState;
     QByteArray eventsSlpitterState;
     QByteArray mainSplitterState;
+    QByteArray tilesetEditorGeometry;
+    QByteArray tilesetEditorState;
+    QByteArray paletteEditorGeometry;
+    QByteArray paletteEditorState;
+    QByteArray regionMapEditorGeometry;
+    QByteArray regionMapEditorState;
     int collisionOpacity;
     int metatilesZoom;
     bool showPlayerView;
@@ -95,6 +112,8 @@ private:
     bool monitorFiles;
     QSize regionMapDimensions;
     QString theme;
+    QString textEditorOpenFolder;
+    QString textEditorGotoLine;
 };
 
 extern PorymapConfig porymapConfig;
@@ -113,6 +132,7 @@ public:
     }
     virtual void reset() override {
         this->baseGameVersion = BaseGameVersion::pokeemerald;
+        this->recentMap = QString();
         this->useEncounterJson = true;
         this->useCustomBorderSize = false;
         this->enableEventWeatherTrigger = true;
@@ -122,12 +142,15 @@ public:
         this->enableHealLocationRespawnData = false;
         this->enableObjectEventInConnection = false;
         this->enableFloorNumber = false;
+        this->createMapTextFile = false;
         this->enableTripleLayerMetatiles = false;
         this->customScripts.clear();
         this->readKeys.clear();
     }
     void setBaseGameVersion(BaseGameVersion baseGameVersion);
     BaseGameVersion getBaseGameVersion();
+    void setRecentMap(const QString &map);
+    QString getRecentMap();
     void setEncounterJsonActive(bool active);
     bool getEncounterJsonActive();
     void setUsePoryScript(bool usePoryScript);
@@ -150,6 +173,8 @@ public:
     bool getObjectEventInConnectionEnabled();
     void setFloorNumberEnabled(bool enable);
     bool getFloorNumberEnabled();
+    void setCreateMapTextFileEnabled(bool enable);
+    bool getCreateMapTextFileEnabled();
     void setTripleLayerMetatilesEnabled(bool enable);
     bool getTripleLayerMetatilesEnabled();
     void setCustomScripts(QList<QString> scripts);
@@ -163,6 +188,7 @@ protected:
 private:
     BaseGameVersion baseGameVersion;
     QString projectDir;
+    QString recentMap;
     bool useEncounterJson;
     bool usePoryScript;
     bool useCustomBorderSize;
@@ -173,11 +199,61 @@ private:
     bool enableHealLocationRespawnData;
     bool enableObjectEventInConnection;
     bool enableFloorNumber;
+    bool createMapTextFile;
     bool enableTripleLayerMetatiles;
     QList<QString> customScripts;
     QStringList readKeys;
 };
 
 extern ProjectConfig projectConfig;
+
+class QAction;
+class Shortcut;
+
+class ShortcutsConfig : public KeyValueConfigBase
+{
+public:
+    ShortcutsConfig() :
+        user_shortcuts({ }),
+        default_shortcuts({ })
+    { }
+
+    virtual void reset() override { user_shortcuts.clear(); }
+
+    // Call this before applying user shortcuts so that the user can restore defaults.
+    void setDefaultShortcuts(const QObjectList &objects);
+    QList<QKeySequence> defaultShortcuts(const QObject *object) const;
+
+    void setUserShortcuts(const QObjectList &objects);
+    void setUserShortcuts(const QMultiMap<const QObject *, QKeySequence> &objects_keySequences);
+    QList<QKeySequence> userShortcuts(const QObject *object) const;
+
+protected:
+    virtual QString getConfigFilepath() override;
+    virtual void parseConfigKeyValue(QString key, QString value) override;
+    virtual QMap<QString, QString> getKeyValueMap() override;
+    virtual void onNewConfigFileCreated() override { };
+    virtual void setUnreadKeys() override { };
+
+private:
+    QMultiMap<QString, QKeySequence> user_shortcuts;
+    QMultiMap<QString, QKeySequence> default_shortcuts;
+
+    enum StoreType {
+        User,
+        Default
+    };
+
+    QString cfgKey(const QObject *object) const;
+    QList<QKeySequence> currentShortcuts(const QObject *object) const;
+
+    void storeShortcutsFromList(StoreType storeType, const QObjectList &objects);
+    void storeShortcuts(
+            StoreType storeType,
+            const QString &cfgKey,
+            const QList<QKeySequence> &keySequences);
+};
+
+extern ShortcutsConfig shortcutsConfig;
 
 #endif // CONFIG_H

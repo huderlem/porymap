@@ -37,9 +37,15 @@ class TilesetEditor : public QMainWindow
 public:
     explicit TilesetEditor(Project*, Map*, QWidget *parent = nullptr);
     ~TilesetEditor();
-    void setMap(Map*);
-    void setTilesets(QString, QString);
+    void update(Map *map, QString primaryTilsetLabel, QString secondaryTilesetLabel);
+    void updateMap(Map *map);
+    void updateTilesets(QString primaryTilsetLabel, QString secondaryTilesetLabel);
     bool selectMetatile(uint16_t metatileId);
+
+    QObjectList shortcutableObjects() const;
+
+public slots:
+    void applyUserShortcuts();
 
 private slots:
     void onHoveredMetatileChanged(uint16_t);
@@ -69,11 +75,15 @@ private slots:
 
     void on_actionChange_Palettes_triggered();
 
+    void on_actionShow_Unused_toggled(bool checked);
+    void on_actionShow_Counts_toggled(bool checked);
+    void on_actionShow_UnusedTiles_toggled(bool checked);
+
     void on_actionUndo_triggered();
 
     void on_actionRedo_triggered();
 
-    void on_comboBox_metatileBehaviors_activated(const QString &arg1);
+    void on_comboBox_metatileBehaviors_textActivated(const QString &arg1);
 
     void on_lineEdit_metatileLabel_editingFinished();
 
@@ -92,17 +102,30 @@ private slots:
     void on_actionImport_Secondary_Metatiles_triggered();
 
 private:
-    void init(Project*, Map*);
-    void closeEvent(QCloseEvent*);
-    void initMetatileSelector(Map*);
+    void initUi();
+    void setMetatileBehaviors();
+    void setMetatileLayersUi();
+    void setVersionSpecificUi();
+    void setMetatileLabelValidator();
+    void initMetatileSelector();
     void initTileSelector();
     void initSelectedTileItem();
     void initMetatileLayersItem();
+    void initShortcuts();
+    void initExtraShortcuts();
+    void restoreWindowState();
+    void initMetatileHistory();
+    void setTilesets(QString primaryTilesetLabel, QString secondaryTilesetLabel);
+    void reset();
     void drawSelectedTiles();
     void importTilesetTiles(Tileset*, bool);
     void importTilesetMetatiles(Tileset*, bool);
     void refresh();
     void saveMetatileLabel();
+    void closeEvent(QCloseEvent*);
+    void countMetatileUsage();
+    void countTileUsage();
+
     Ui::TilesetEditor *ui;
     History<MetatileHistoryItem*> metatileHistory;
     TilesetEditorMetatileSelector *metatileSelector = nullptr;
@@ -110,6 +133,7 @@ private:
     MetatileLayersItem *metatileLayersItem = nullptr;
     PaletteEditor *paletteEditor = nullptr;
     Project *project = nullptr;
+    Map *map = nullptr;
     Metatile *metatile = nullptr;
     int paletteId;
     bool tileXFlip;

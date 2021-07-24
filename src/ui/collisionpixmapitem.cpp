@@ -1,5 +1,6 @@
 #include "collisionpixmapitem.h"
 #include "editcommands.h"
+#include "metatile.h"
 
 void CollisionPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
     int x = static_cast<int>(event->pos().x()) / 16;
@@ -18,11 +19,9 @@ void CollisionPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
 }
 
 void CollisionPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
-    QPointF pos = event->pos();
-    int x = static_cast<int>(pos.x()) / 16;
-    int y = static_cast<int>(pos.y()) / 16;
-    this->paint_tile_initial_x = this->straight_path_initial_x = x;
-    this->paint_tile_initial_y = this->straight_path_initial_y = y;
+    QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
+    this->paint_tile_initial_x = this->straight_path_initial_x = pos.x();
+    this->paint_tile_initial_y = this->straight_path_initial_y = pos.y();
     emit mouseEvent(event, this);
 }
 
@@ -46,35 +45,28 @@ void CollisionPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
     if (event->type() == QEvent::GraphicsSceneMouseRelease) {
         actionId_++;
     } else if (map) {
-        Blockdata *oldCollision = map->layout->blockdata->copy();
+        Blockdata oldCollision = map->layout->blockdata;
 
-        QPointF pos = event->pos();
-        int x = static_cast<int>(pos.x()) / 16;
-        int y = static_cast<int>(pos.y()) / 16;
+        QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
 
         // Set straight paths on/off and snap to the dominant axis when on
         if (event->modifiers() & Qt::ControlModifier) {
             this->lockNondominantAxis(event);
-            x = this->adjustCoord(x, MapPixmapItem::Axis::X);
-            y = this->adjustCoord(y, MapPixmapItem::Axis::Y);
+            pos = this->adjustCoords(pos);
         } else {
             this->prevStraightPathState = false;
             this->lockedAxis = MapPixmapItem::Axis::None;
         }
 
-        Block *block = map->getBlock(x, y);
-        if (block) {
-            block->collision = this->movementPermissionsSelector->getSelectedCollision();
-            block->elevation = this->movementPermissionsSelector->getSelectedElevation();
-            map->setBlock(x, y, *block, true);
+        Block block;
+        if (map->getBlock(pos.x(), pos.y(), &block)) {
+            block.collision = this->movementPermissionsSelector->getSelectedCollision();
+            block.elevation = this->movementPermissionsSelector->getSelectedElevation();
+            map->setBlock(pos.x(), pos.y(), block, true);
         }
 
-        Blockdata *newCollision = map->layout->blockdata->copy();
-        if (newCollision->equals(oldCollision)) {
-            delete newCollision;
-            delete oldCollision;
-        } else {
-            map->editHistory.push(new PaintCollision(map, oldCollision, newCollision, actionId_));
+        if (map->layout->blockdata != oldCollision) {
+            map->editHistory.push(new PaintCollision(map, oldCollision, map->layout->blockdata, actionId_));
         }
     }
 }
@@ -83,21 +75,15 @@ void CollisionPixmapItem::floodFill(QGraphicsSceneMouseEvent *event) {
     if (event->type() == QEvent::GraphicsSceneMouseRelease) {
         this->actionId_++;
     } else if (map) {
-        Blockdata *oldCollision = map->layout->blockdata->copy();
+        Blockdata oldCollision = map->layout->blockdata;
 
-        QPointF pos = event->pos();
-        int x = static_cast<int>(pos.x()) / 16;
-        int y = static_cast<int>(pos.y()) / 16;
+        QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
         uint16_t collision = this->movementPermissionsSelector->getSelectedCollision();
         uint16_t elevation = this->movementPermissionsSelector->getSelectedElevation();
-        map->floodFillCollisionElevation(x, y, collision, elevation);
+        map->floodFillCollisionElevation(pos.x(), pos.y(), collision, elevation);
 
-        Blockdata *newCollision = map->layout->blockdata->copy();
-        if (newCollision->equals(oldCollision)) {
-            delete newCollision;
-            delete oldCollision;
-        } else {
-            map->editHistory.push(new BucketFillCollision(map, oldCollision, newCollision));
+        if (map->layout->blockdata != oldCollision) {
+            map->editHistory.push(new BucketFillCollision(map, oldCollision, map->layout->blockdata));
         }
     }
 }
@@ -106,45 +92,37 @@ void CollisionPixmapItem::magicFill(QGraphicsSceneMouseEvent *event) {
     if (event->type() == QEvent::GraphicsSceneMouseRelease) {
         this->actionId_++;
     } else if (map) {
-        Blockdata *oldCollision = map->layout->blockdata->copy();
-        QPointF pos = event->pos();
-        int x = static_cast<int>(pos.x()) / 16;
-        int y = static_cast<int>(pos.y()) / 16;
+        Blockdata oldCollision = map->layout->blockdata;
+        QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
         uint16_t collision = this->movementPermissionsSelector->getSelectedCollision();
         uint16_t elevation = this->movementPermissionsSelector->getSelectedElevation();
-        map->magicFillCollisionElevation(x, y, collision, elevation);
+        map->magicFillCollisionElevation(pos.x(), pos.y(), collision, elevation);
 
-        Blockdata *newCollision = map->layout->blockdata->copy();
-        if (newCollision->equals(oldCollision)) {
-            delete newCollision;
-            delete oldCollision;
-        } else {
-            map->editHistory.push(new MagicFillCollision(map, oldCollision, newCollision));
+        if (map->layout->blockdata != oldCollision) {
+            map->editHistory.push(new MagicFillCollision(map, oldCollision, map->layout->blockdata));
         }
     }
 }
 
 void CollisionPixmapItem::pick(QGraphicsSceneMouseEvent *event) {
-    QPointF pos = event->pos();
-    int x = static_cast<int>(pos.x()) / 16;
-    int y = static_cast<int>(pos.y()) / 16;
-    Block *block = map->getBlock(x, y);
-    if (block) {
-        this->movementPermissionsSelector->select(block->collision, block->elevation);
+    QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
+    Block block;
+    if (map->getBlock(pos.x(), pos.y(), &block)) {
+        this->movementPermissionsSelector->select(block.collision, block.elevation);
     }
 }
 
 void CollisionPixmapItem::updateMovementPermissionSelection(QGraphicsSceneMouseEvent *event) {
-    QPointF pos = event->pos();
-    int x = static_cast<int>(pos.x()) / 16;
-    int y = static_cast<int>(pos.y()) / 16;
+    QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
 
     // Snap point to within map bounds.
-    if (x < 0) x = 0;
-    if (x >= map->getWidth()) x = map->getWidth() - 1;
-    if (y < 0) y = 0;
-    if (y >= map->getHeight()) y = map->getHeight() - 1;
+    if (pos.x() < 0) pos.setX(0);
+    if (pos.x() >= map->getWidth()) pos.setX(map->getWidth() - 1);
+    if (pos.y() < 0) pos.setY(0);
+    if (pos.y() >= map->getHeight()) pos.setY(map->getHeight() - 1);
 
-    Block *block = map->getBlock(x, y);
-    this->movementPermissionsSelector->select(block->collision, block->elevation);
+    Block block;
+    if (map->getBlock(pos.x(), pos.y(), &block)) {
+        this->movementPermissionsSelector->select(block.collision, block.elevation);
+    }
 }

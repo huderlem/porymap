@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>PreferenceEditor</class>
+ <widget class="QMainWindow" name="PreferenceEditor">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>600</width>
+    <height>480</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Preferences</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="spacing">
+     <number>9</number>
+    </property>
+    <item>
+     <widget class="QGroupBox" name="groupBox_Themes">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="title">
+       <string>Application Theme</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QGroupBox" name="groupBox_TextEditor">
+      <property name="title">
+       <string>Preferred Text Editor</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <item row="2" column="0">
+        <widget class="QScrollArea" name="scrollArea_TextEditor">
+         <property name="frameShape">
+          <enum>QFrame::NoFrame</enum>
+         </property>
+         <property name="widgetResizable">
+          <bool>true</bool>
+         </property>
+         <widget class="QWidget" name="scrollAreaWidgetContents_TextEditor">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>582</width>
+            <height>372</height>
+           </rect>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_2">
+           <property name="sizeConstraint">
+            <enum>QLayout::SetMinimumSize</enum>
+           </property>
+           <item row="6" column="0" colspan="2">
+            <widget class="QLabel" name="label_TextEditorGotoLineHelp">
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When this command is set a button will appear next to the &lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;Script&lt;/span&gt; combo-box in the &lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;Events&lt;/span&gt; tab which executes this command.&lt;span style=&quot; font-weight:600;&quot;&gt; %F&lt;/span&gt; will be substituted with the file path of the script and &lt;span style=&quot; font-weight:600;&quot;&gt;%L&lt;/span&gt; will be substituted with the line number of the script in that file. &lt;span style=&quot; font-weight:600;&quot;&gt;%F &lt;/span&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;must&lt;/span&gt; be given if &lt;span style=&quot; font-weight:600;&quot;&gt;%L&lt;/span&gt; is given. If &lt;span style=&quot; font-weight:600;&quot;&gt;%F&lt;/span&gt; is &lt;span style=&quot; font-style:italic;&quot;&gt;not&lt;/span&gt; given then the script's file path will be added to the end of the command. If the script can't be found then the current map's scripts file is opened.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="0">
+            <widget class="QLabel" name="label_TextEditorGotoLine">
+             <property name="text">
+              <string>Goto Line Command</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="lineEdit_TextEditorOpenFolder">
+             <property name="toolTip">
+              <string>The shell command for your preferred text editor (possibly an absolute path if the program doesn't exist in your PATH).</string>
+             </property>
+             <property name="placeholderText">
+              <string>e.g. code %D</string>
+             </property>
+             <property name="clearButtonEnabled">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0" colspan="2">
+            <widget class="QLabel" name="label_TextEditorOpenFolderHelp">
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is the command that is executed when clicking &lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;Open Project in Text Editor&lt;/span&gt; in the &lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;Tools&lt;/span&gt; menu. &lt;span style=&quot; font-weight:600;&quot;&gt;%D&lt;/span&gt; will be substituted with the project's root directory. If &lt;span style=&quot; font-weight:600;&quot;&gt;%D&lt;/span&gt; is &lt;span style=&quot; font-style:italic;&quot;&gt;not&lt;/span&gt; specified then the project directory will be added to the end of the command.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_TextEditorOpenFolder">
+             <property name="text">
+              <string>Open Directory Command</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="1">
+            <widget class="QLineEdit" name="lineEdit_TextEditorGotoLine">
+             <property name="toolTip">
+              <string>The shell command for your preferred text editor to open a file to a specific line number (possibly an absolute path if the program doesn't exist in your PATH).</string>
+             </property>
+             <property name="placeholderText">
+              <string>e.g. code --goto %F:%L</string>
+             </property>
+             <property name="clearButtonEnabled">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0" colspan="2">
+            <spacer name="verticalSpacer_2">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeType">
+              <enum>QSizePolicy::Fixed</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>15</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="7" column="0" colspan="2">
+            <spacer name="verticalSpacer">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QDialogButtonBox" name="buttonBox">
+      <property name="standardButtons">
+       <set>QDialogButtonBox::Apply|QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -60,6 +60,9 @@ Location
 Can Fly To
 	Whether a heal location event will be created with this map. This cannot be changed in porymap.
 
+Show Location Name
+    Shows or hides the map name popup window when entering the map. This can be changed in porymap.
+
 Allow Running
 	Whether the player can sprint on this map. This can be changed in porymap.
 

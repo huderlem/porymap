@@ -10,12 +10,18 @@ namespace Ui {
 class MapImageExporter;
 }
 
+enum ImageExporterMode {
+    Normal,
+    Stitch,
+    Timelapse,
+};
+
 class MapImageExporter : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit MapImageExporter(QWidget *parent, Editor *editor, bool stitchMode);
+    explicit MapImageExporter(QWidget *parent, Editor *editor, ImageExporterMode mode);
     ~MapImageExporter();
 
 private:
@@ -39,12 +45,15 @@ private:
     bool showGrid = false;
     bool showBorder = false;
     bool showCollision = false;
-    bool stitchMode = false;
+    int timelapseSkipAmount = 1;
+    int timelapseDelayMs = 200;
+    ImageExporterMode mode = ImageExporterMode::Normal;
 
     void updatePreview();
     void saveImage();
     QPixmap getStitchedImage(QProgressDialog *progress, bool includeBorder);
     QPixmap getFormattedMapPixmap(Map *map, bool ignoreBorder);
+    bool historyItemAppliesToFrame(const QUndoCommand *command);
 
 private slots:
     void on_checkBox_Objects_stateChanged(int state);
@@ -65,6 +74,8 @@ private slots:
     void on_pushButton_Save_pressed();
     void on_pushButton_Reset_pressed();
     void on_pushButton_Cancel_pressed();
+    void on_spinBox_TimelapseDelay_valueChanged(int delayMs);
+    void on_spinBox_FrameSkip_valueChanged(int skip);
 };
 
 #endif // MAPIMAGEEXPORTER_H

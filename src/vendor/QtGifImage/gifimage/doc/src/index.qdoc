@@ -1,0 +1,71 @@
+/****************************************************************************
+** Copyright (c) 2013 Debao Zhang <hello@debao.me>
+** All right reserved.
+**
+** Permission is hereby granted, free of charge, to any person obtaining
+** a copy of this software and associated documentation files (the
+** "Software"), to deal in the Software without restriction, including
+** without limitation the rights to use, copy, modify, merge, publish,
+** distribute, sublicense, and/or sell copies of the Software, and to
+** permit persons to whom the Software is furnished to do so, subject to
+** the following conditions:
+**
+** The above copyright notice and this permission notice shall be
+** included in all copies or substantial portions of the Software.
+**
+** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+** EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+** MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+** NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+** LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+** OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+** WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+**
+****************************************************************************/
+
+/*!
+    \title Qt GifImage
+    \page index.html
+    \brief Qt GifImage provides functionality for handling .gif files.
+
+    The \l{Qt GifImage C++ Classes}{Qt GifImage Module} provides a set of classes to read and write .gif files.
+    The library can be used to
+
+    \list
+       \li Generate a new .gif file from a list of QImage files.
+       \li Extract frames to a list of QImage files.
+    \endlist
+
+    \image demo1.gif
+
+    \table
+      \row
+        \li Source code: \li \l{https://github.com/dbzhang800/QtGifImage}
+      \row
+        \li Issures: \li \l{https://github.com/dbzhang800/QtGifImage/issues}
+      \row
+        \li License: \li MIT
+    \endtable
+
+    \section1 Getting Started
+
+    To include the definitions of the module's classes, using the following directive:
+
+    \code
+    #include <QtGifImage>
+    \endcode
+
+    To link against the module, add this line to your qmake .pro file:
+
+    \code
+    QT += gifimage
+    \endcode
+
+    More information can be found in \l{Qt GifImage Build} page.
+
+    \section1 Related information
+    \list
+        \li \l{Qt GifImage C++ Classes}
+        \li \l{Qt GifImage Examples}
+    \endlist
+*/

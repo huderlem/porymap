@@ -6,12 +6,15 @@
 #include "mapconnection.h"
 #include "currentselectedmetatilespixmapitem.h"
 #include "mapsceneeventfilter.h"
+#include "metatile.h"
 #include "montabwidget.h"
 #include "editcommands.h"
+#include "config.h"
 #include <QCheckBox>
 #include <QPainter>
 #include <QMouseEvent>
 #include <QDir>
+#include <QProcess>
 #include <math.h>
 
 static bool selectNewEvents = false;
@@ -23,6 +26,8 @@ Editor::Editor(Ui::MainWindow* ui)
     this->settings = new Settings();
     this->playerViewRect = new MovableRect(&this->settings->playerViewRectEnabled, 30 * 8, 20 * 8, qRgb(255, 255, 255));
     this->cursorMapTileRect = new CursorTileRect(&this->settings->cursorTileRectEnabled, qRgb(255, 255, 255));
+    this->map_ruler = new MapRuler(4);
+    connect(this->map_ruler, &MapRuler::statusChanged, this, &Editor::mapRulerStatusChanged);
 
     /// Instead of updating the selected events after every single undo action
     /// (eg when the user rolls back several at once), only reselect events when
@@ -41,6 +46,7 @@ Editor::~Editor()
     delete this->settings;
     delete this->playerViewRect;
     delete this->cursorMapTileRect;
+    delete this->map_ruler;
 
     closeProject();
 }
@@ -310,7 +316,7 @@ void Editor::addNewWildMonGroup(QWidget *window) {
             dialog.accept();
         }
     });
-    connect(&buttonBox, SIGNAL(rejected()), &dialog, SLOT(reject()));
+    connect(&buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
     form.addRow(&buttonBox);
 
     if (dialog.exec() == QDialog::Accepted) {
@@ -348,6 +354,44 @@ void Editor::addNewWildMonGroup(QWidget *window) {
             tabIndex++;
         }
         saveEncounterTabData();
+        emit wildMonDataChanged();
+    }
+}
+
+void Editor::deleteWildMonGroup() {
+    QComboBox *labelCombo = ui->comboBox_EncounterGroupLabel;
+
+    if (labelCombo->count() < 1) {
+        return;
+    }
+
+    QMessageBox msgBox;
+    msgBox.setText("Confirm Delete");
+    msgBox.setInformativeText("Are you sure you want to delete " + labelCombo->currentText() + "?");
+
+    QPushButton *deleteButton = msgBox.addButton("Delete", QMessageBox::DestructiveRole);
+    msgBox.addButton(QMessageBox::Cancel);
+    msgBox.setDefaultButton(QMessageBox::Cancel);
+    msgBox.exec();
+
+    if (msgBox.clickedButton() == deleteButton) {
+        auto it = project->wildMonData.find(map->constantName);
+        if (it == project->wildMonData.end()) {
+          logError(QString("Failed to find data for map %1. Unable to delete").arg(map->constantName));
+          return;
+        }
+
+        int i = project->encounterGroupLabels.indexOf(labelCombo->currentText());
+        if (i < 0) {
+          logError(QString("Failed to find selected wild mon group: %1. Unable to delete")
+                   .arg(labelCombo->currentText()));
+          return;
+        }
+
+        it.value().erase(labelCombo->currentText());
+        project->encounterGroupLabels.remove(i);
+
+        displayWildMonTables();
         emit wildMonDataChanged();
     }
 }
@@ -467,8 +511,8 @@ void Editor::configureEncounterJSON(QWidget *window) {
 
     QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
 
-    connect(&buttonBox, SIGNAL(accepted()), &dialog, SLOT(accept()));
-    connect(&buttonBox, SIGNAL(rejected()), &dialog, SLOT(reject()));
+    connect(&buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(&buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
 
     // lambda: Get a QStringList of the existing field names.
     auto getFieldNames = [&tempFields]() {
@@ -508,8 +552,8 @@ void Editor::configureEncounterJSON(QWidget *window) {
         QDialog newNameDialog(nullptr, Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
         newNameDialog.setWindowModality(Qt::NonModal);
         QDialogButtonBox newFieldButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &newNameDialog);
-        connect(&newFieldButtonBox, SIGNAL(accepted()), &newNameDialog, SLOT(accept()));
-        connect(&newFieldButtonBox, SIGNAL(rejected()), &newNameDialog, SLOT(reject()));
+        connect(&newFieldButtonBox, &QDialogButtonBox::accepted, &newNameDialog, &QDialog::accept);
+        connect(&newFieldButtonBox, &QDialogButtonBox::rejected, &newNameDialog, &QDialog::reject);
 
         QLineEdit *newNameEdit = new QLineEdit;
         newNameEdit->setClearButtonEnabled(true);
@@ -682,11 +726,11 @@ void Editor::populateConnectionMapPickers() {
     ui->comboBox_EmergeMap->blockSignals(true);
 
     ui->comboBox_ConnectedMap->clear();
-    ui->comboBox_ConnectedMap->addItems(*project->mapNames);
+    ui->comboBox_ConnectedMap->addItems(project->mapNames);
     ui->comboBox_DiveMap->clear();
-    ui->comboBox_DiveMap->addItems(*project->mapNames);
+    ui->comboBox_DiveMap->addItems(project->mapNames);
     ui->comboBox_EmergeMap->clear();
-    ui->comboBox_EmergeMap->addItems(*project->mapNames);
+    ui->comboBox_EmergeMap->addItems(project->mapNames);
 
     ui->comboBox_ConnectedMap->blockSignals(false);
     ui->comboBox_DiveMap->blockSignals(true);
@@ -759,11 +803,13 @@ void Editor::updateCurrentConnectionDirection(QString curDirection) {
     QString originalDirection = selected_connection_item->connection->direction;
     setCurrentConnectionDirection(curDirection);
     updateMirroredConnectionDirection(selected_connection_item->connection, originalDirection);
+    maskNonVisibleConnectionTiles();
 }
 
 void Editor::onConnectionMoved(MapConnection* connection) {
     updateMirroredConnectionOffset(connection);
     onConnectionOffsetChanged(connection->offset.toInt());
+    maskNonVisibleConnectionTiles();
 }
 
 void Editor::onConnectionOffsetChanged(int newOffset) {
@@ -887,23 +933,64 @@ void Editor::onSelectedMetatilesChanged() {
     this->redrawCurrentMetatilesSelection();
 }
 
-void Editor::onHoveredMapMetatileChanged(int x, int y) {
-    this->playerViewRect->updateLocation(x, y);
-    this->cursorMapTileRect->updateLocation(x, y);
+void Editor::onWheelZoom(int s) {
+    // Don't zoom the map when the user accidentally scrolls while performing a magic fill. (ctrl + middle button click)
+    if (!(QApplication::mouseButtons() & Qt::MiddleButton)) {
+        scaleMapView(s);
+    }
+}
+
+const QList<double> zoomLevels = QList<double>
+{
+    0.5,
+    0.75,
+    1.0,
+    1.5,
+    2.0,
+    3.0,
+    4.0,
+    6.0,
+};
+
+void Editor::scaleMapView(int s) {
+    // Clamp the scale index to a valid value.
+    int nextScaleIndex = this->scaleIndex + s;
+    if (nextScaleIndex < 0)
+        nextScaleIndex = 0;
+    if (nextScaleIndex >= zoomLevels.size())
+        nextScaleIndex = zoomLevels.size() - 1;
+
+    // Early exit if the scale index hasn't changed.
+    if (nextScaleIndex == this->scaleIndex)
+        return;
+
+    // Set the graphics views' scale transformation based
+    // on the new scale amount.
+    this->scaleIndex = nextScaleIndex;
+    double scaleFactor = zoomLevels[nextScaleIndex];
+    QTransform transform = QTransform::fromScale(scaleFactor, scaleFactor);
+    ui->graphicsView_Map->setTransform(transform);
+    ui->graphicsView_Connections->setTransform(transform);
+}
+
+void Editor::onHoveredMapMetatileChanged(const QPoint &pos) {
+    this->playerViewRect->updateLocation(pos.x(), pos.y());
+    this->cursorMapTileRect->updateLocation(pos.x(), pos.y());
     if (map_item->paintingMode == MapPixmapItem::PaintMode::Metatiles
-     && x >= 0 && x < map->getWidth() && y >= 0 && y < map->getHeight()) {
-        int blockIndex = y * map->getWidth() + x;
-        int metatileId = map->layout->blockdata->blocks->at(blockIndex).tile;
+     && pos.x() >= 0 && pos.x() < map->getWidth() && pos.y() >= 0 && pos.y() < map->getHeight()) {
+        int blockIndex = pos.y() * map->getWidth() + pos.x();
+        int metatileId = map->layout->blockdata.at(blockIndex).tile;
         this->ui->statusBar->showMessage(QString("X: %1, Y: %2, %3, Scale = %4x")
-                              .arg(x)
-                              .arg(y)
+                              .arg(pos.x())
+                              .arg(pos.y())
                               .arg(getMetatileDisplayMessage(metatileId))
-                              .arg(QString::number(pow(scale_base, scale_exp), 'g', 2)));
+                              .arg(QString::number(zoomLevels[this->scaleIndex], 'g', 2)));
     } else if (map_item->paintingMode == MapPixmapItem::PaintMode::EventObjects
-        && x >= 0 && x < map->getWidth() && y >= 0 && y < map->getHeight()) {
-        this->ui->statusBar->showMessage(QString("X: %1, Y: %2")
-                              .arg(x)
-                              .arg(y));
+        && pos.x() >= 0 && pos.x() < map->getWidth() && pos.y() >= 0 && pos.y() < map->getHeight()) {
+        this->ui->statusBar->showMessage(QString("X: %1, Y: %2, Scale = %3x")
+                              .arg(pos.x())
+                              .arg(pos.y())
+                              .arg(QString::number(zoomLevels[this->scaleIndex], 'g', 2)));
     }
 }
 
@@ -922,8 +1009,8 @@ void Editor::onHoveredMapMovementPermissionChanged(int x, int y) {
     if (map_item->paintingMode == MapPixmapItem::PaintMode::Metatiles
      && x >= 0 && x < map->getWidth() && y >= 0 && y < map->getHeight()) {
         int blockIndex = y * map->getWidth() + x;
-        uint16_t collision = map->layout->blockdata->blocks->at(blockIndex).collision;
-        uint16_t elevation = map->layout->blockdata->blocks->at(blockIndex).elevation;
+        uint16_t collision = map->layout->blockdata.at(blockIndex).collision;
+        uint16_t elevation = map->layout->blockdata.at(blockIndex).elevation;
         QString message = QString("X: %1, Y: %2, %3")
                             .arg(x)
                             .arg(y)
@@ -982,6 +1069,8 @@ bool Editor::setMap(QString map_name) {
         if (!displayMap()) {
             return false;
         }
+        map_ruler->setMapDimensions(QSize(map->getWidth(), map->getHeight()));
+        connect(map, &Map::mapDimensionsChanged, map_ruler, &MapRuler::setMapDimensions);
         updateSelectedEvents();
     }
 
@@ -989,17 +1078,15 @@ bool Editor::setMap(QString map_name) {
 }
 
 void Editor::onMapStartPaint(QGraphicsSceneMouseEvent *event, MapPixmapItem *item) {
-    if (!(item->paintingMode == MapPixmapItem::PaintMode::Metatiles)) {
+    if (item->paintingMode != MapPixmapItem::PaintMode::Metatiles) {
         return;
     }
 
-    QPointF pos = event->pos();
-    int x = static_cast<int>(pos.x()) / 16;
-    int y = static_cast<int>(pos.y()) / 16;
+    QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
     if (event->buttons() & Qt::RightButton && (map_edit_mode == "paint" || map_edit_mode == "fill")) {
-        this->cursorMapTileRect->initRightClickSelectionAnchor(x, y);
+        this->cursorMapTileRect->initRightClickSelectionAnchor(pos.x(), pos.y());
     } else {
-        this->cursorMapTileRect->initAnchor(x, y);
+        this->cursorMapTileRect->initAnchor(pos.x(), pos.y());
     }
 }
 
@@ -1043,9 +1130,7 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item
         return;
     }
 
-    QPointF pos = event->pos();
-    int x = static_cast<int>(pos.x()) / 16;
-    int y = static_cast<int>(pos.y()) / 16;
+    QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
 
     if (item->paintingMode == MapPixmapItem::PaintMode::Metatiles) {
         if (map_edit_mode == "paint") {
@@ -1062,8 +1147,7 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item
                 this->setStraightPathCursorMode(event);
                 if (this->cursorMapTileRect->getStraightPathMode()) {
                     item->lockNondominantAxis(event);
-                    x = item->adjustCoord(x, MapPixmapItem::Axis::X);
-                    y = item->adjustCoord(y, MapPixmapItem::Axis::Y);
+                    pos = item->adjustCoords(pos);
                 }
                 item->paint(event);
             }
@@ -1087,8 +1171,7 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item
             this->setStraightPathCursorMode(event);
             if (this->cursorMapTileRect->getStraightPathMode()) {
                 item->lockNondominantAxis(event);
-                x = item->adjustCoord(x, MapPixmapItem::Axis::X);
-                y = item->adjustCoord(y, MapPixmapItem::Axis::Y);
+                pos = item->adjustCoords(pos);
             }
             item->shift(event);
         }
@@ -1112,7 +1195,7 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item
                 if (eventType != EventType::HealLocation) {
                     DraggablePixmapItem * newEvent = addNewEvent(eventType);
                     if (newEvent) {
-                        newEvent->move(x, y);
+                        newEvent->move(pos.x(), pos.y());
                         emit objectsChanged();
                         selectMapEvent(newEvent, false);
                     }
@@ -1129,18 +1212,18 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item
                 actionId++;
             } else {
                 if (event->type() == QEvent::GraphicsSceneMousePress) {
-                    selection_origin = QPoint(x, y);
+                    selection_origin = QPoint(pos.x(), pos.y());
                 } else if (event->type() == QEvent::GraphicsSceneMouseMove) {
-                    if (x != selection_origin.x() || y != selection_origin.y()) {
-                        int xDelta = x - selection_origin.x();
-                        int yDelta = y - selection_origin.y();
+                    if (pos.x() != selection_origin.x() || pos.y() != selection_origin.y()) {
+                        int xDelta = pos.x() - selection_origin.x();
+                        int yDelta = pos.y() - selection_origin.y();
 
                         QList<Event *> selectedEvents;
 
                         for (DraggablePixmapItem *item : getObjects()) {
                             selectedEvents.append(item->event);
                         }
-                        selection_origin = QPoint(x, y);
+                        selection_origin = QPoint(pos.x(), pos.y());
 
                         map->editHistory.push(new EventShift(selectedEvents, xDelta, yDelta, actionId));
                     }
@@ -1148,8 +1231,8 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item
             }
         }
     }
-    this->playerViewRect->updateLocation(x, y);
-    this->cursorMapTileRect->updateLocation(x, y);
+    this->playerViewRect->updateLocation(pos.x(), pos.y());
+    this->cursorMapTileRect->updateLocation(pos.x(), pos.y());
 }
 
 void Editor::mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixmapItem *item) {
@@ -1157,9 +1240,7 @@ void Editor::mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixm
         return;
     }
 
-    QPointF pos = event->pos();
-    int x = static_cast<int>(pos.x()) / 16;
-    int y = static_cast<int>(pos.y()) / 16;
+    QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
 
     if (map_edit_mode == "paint") {
         if (event->buttons() & Qt::RightButton) {
@@ -1174,8 +1255,7 @@ void Editor::mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixm
             this->setStraightPathCursorMode(event);
             if (this->cursorMapTileRect->getStraightPathMode()) {
                 item->lockNondominantAxis(event);
-                x = item->adjustCoord(x, MapPixmapItem::Axis::X);
-                y = item->adjustCoord(y, MapPixmapItem::Axis::Y);
+                pos = item->adjustCoords(pos);
             }
             item->paint(event);
         }
@@ -1195,13 +1275,12 @@ void Editor::mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixm
         this->setStraightPathCursorMode(event);
         if (this->cursorMapTileRect->getStraightPathMode()) {
             item->lockNondominantAxis(event);
-            x = item->adjustCoord(x, MapPixmapItem::Axis::X);
-            y = item->adjustCoord(y, MapPixmapItem::Axis::Y);
+            pos = item->adjustCoords(pos);
         }
         item->shift(event);
     }
-    this->playerViewRect->updateLocation(x, y);
-    this->cursorMapTileRect->updateLocation(x, y);
+    this->playerViewRect->updateLocation(pos.x(), pos.y());
+    this->cursorMapTileRect->updateLocation(pos.x(), pos.y());
 }
 
 bool Editor::displayMap() {
@@ -1209,7 +1288,8 @@ bool Editor::displayMap() {
         scene = new QGraphicsScene;
         MapSceneEventFilter *filter = new MapSceneEventFilter();
         scene->installEventFilter(filter);
-        connect(filter, &MapSceneEventFilter::wheelZoom, this, &Editor::wheelZoom);
+        connect(filter, &MapSceneEventFilter::wheelZoom, this, &Editor::onWheelZoom);
+        scene->installEventFilter(this->map_ruler);
     }
 
     if (map_item && scene) {
@@ -1217,6 +1297,7 @@ bool Editor::displayMap() {
         delete map_item;
         scene->removeItem(this->playerViewRect);
         scene->removeItem(this->cursorMapTileRect);
+        scene->removeItem(this->map_ruler);
     }
 
     displayMetatileSelector();
@@ -1233,8 +1314,10 @@ bool Editor::displayMap() {
 
     this->playerViewRect->setZValue(1000);
     this->cursorMapTileRect->setZValue(1001);
+    this->map_ruler->setZValue(1002);
     scene->addItem(this->playerViewRect);
     scene->addItem(this->cursorMapTileRect);
+    scene->addItem(this->map_ruler);
 
     if (map_item) {
         map_item->setVisible(false);
@@ -1257,12 +1340,12 @@ void Editor::displayMetatileSelector() {
     scene_metatiles = new QGraphicsScene;
     if (!metatile_selector_item) {
         metatile_selector_item = new MetatileSelector(8, map);
-        connect(metatile_selector_item, SIGNAL(hoveredMetatileSelectionChanged(uint16_t)),
-                this, SLOT(onHoveredMetatileSelectionChanged(uint16_t)));
-        connect(metatile_selector_item, SIGNAL(hoveredMetatileSelectionCleared()),
-                this, SLOT(onHoveredMetatileSelectionCleared()));
-        connect(metatile_selector_item, SIGNAL(selectedMetatilesChanged()),
-                this, SLOT(onSelectedMetatilesChanged()));
+        connect(metatile_selector_item, &MetatileSelector::hoveredMetatileSelectionChanged,
+                this, &Editor::onHoveredMetatileSelectionChanged);
+        connect(metatile_selector_item, &MetatileSelector::hoveredMetatileSelectionCleared,
+                this, &Editor::onHoveredMetatileSelectionCleared);
+        connect(metatile_selector_item, &MetatileSelector::selectedMetatilesChanged,
+                this, &Editor::onSelectedMetatilesChanged);
         metatile_selector_item->select(0);
     } else {
         metatile_selector_item->setMap(map);
@@ -1274,16 +1357,11 @@ void Editor::displayMetatileSelector() {
 
 void Editor::displayMapMetatiles() {
     map_item = new MapPixmapItem(map, this->metatile_selector_item, this->settings);
-    connect(map_item, SIGNAL(mouseEvent(QGraphicsSceneMouseEvent*,MapPixmapItem*)),
-            this, SLOT(mouseEvent_map(QGraphicsSceneMouseEvent*,MapPixmapItem*)));
-    connect(map_item, SIGNAL(startPaint(QGraphicsSceneMouseEvent*,MapPixmapItem*)),
-            this, SLOT(onMapStartPaint(QGraphicsSceneMouseEvent*,MapPixmapItem*)));
-    connect(map_item, SIGNAL(endPaint(QGraphicsSceneMouseEvent*,MapPixmapItem*)),
-            this, SLOT(onMapEndPaint(QGraphicsSceneMouseEvent*,MapPixmapItem*)));
-    connect(map_item, SIGNAL(hoveredMapMetatileChanged(int, int)),
-            this, SLOT(onHoveredMapMetatileChanged(int, int)));
-    connect(map_item, SIGNAL(hoveredMapMetatileCleared()),
-            this, SLOT(onHoveredMapMetatileCleared()));
+    connect(map_item, &MapPixmapItem::mouseEvent, this, &Editor::mouseEvent_map);
+    connect(map_item, &MapPixmapItem::startPaint, this, &Editor::onMapStartPaint);
+    connect(map_item, &MapPixmapItem::endPaint, this, &Editor::onMapEndPaint);
+    connect(map_item, &MapPixmapItem::hoveredMapMetatileChanged, this, &Editor::onHoveredMapMetatileChanged);
+    connect(map_item, &MapPixmapItem::hoveredMapMetatileCleared, this, &Editor::onHoveredMapMetatileCleared);
 
     map_item->draw(true);
     scene->addItem(map_item);
@@ -1303,13 +1381,13 @@ void Editor::displayMapMovementPermissions() {
         scene->removeItem(collision_item);
         delete collision_item;
     }
-    collision_item = new CollisionPixmapItem(map, this->movement_permissions_selector_item, this->metatile_selector_item, this->settings, &this->collisionOpacity);
-    connect(collision_item, SIGNAL(mouseEvent(QGraphicsSceneMouseEvent*,CollisionPixmapItem*)),
-            this, SLOT(mouseEvent_collision(QGraphicsSceneMouseEvent*,CollisionPixmapItem*)));
-    connect(collision_item, SIGNAL(hoveredMapMovementPermissionChanged(int, int)),
-            this, SLOT(onHoveredMapMovementPermissionChanged(int, int)));
-    connect(collision_item, SIGNAL(hoveredMapMovementPermissionCleared()),
-            this, SLOT(onHoveredMapMovementPermissionCleared()));
+    collision_item = new CollisionPixmapItem(map, this->movement_permissions_selector_item,
+                                             this->metatile_selector_item, this->settings, &this->collisionOpacity);
+    connect(collision_item, &CollisionPixmapItem::mouseEvent, this, &Editor::mouseEvent_collision);
+    connect(collision_item, &CollisionPixmapItem::hoveredMapMovementPermissionChanged,
+            this, &Editor::onHoveredMapMovementPermissionChanged);
+    connect(collision_item, &CollisionPixmapItem::hoveredMapMovementPermissionCleared,
+            this, &Editor::onHoveredMapMovementPermissionCleared);
 
     collision_item->draw(true);
     scene->addItem(collision_item);
@@ -1326,7 +1404,8 @@ void Editor::displayBorderMetatiles() {
     selected_border_metatiles_item->draw();
     scene_selected_border_metatiles->addItem(selected_border_metatiles_item);
 
-    connect(selected_border_metatiles_item, SIGNAL(borderMetatilesChanged()), this, SLOT(onBorderMetatilesChanged()));
+    connect(selected_border_metatiles_item, &BorderMetatilesPixmapItem::borderMetatilesChanged,
+            this, &Editor::onBorderMetatilesChanged);
 }
 
 void Editor::displayCurrentMetatilesSelection() {
@@ -1358,10 +1437,10 @@ void Editor::displayMovementPermissionSelector() {
     scene_collision_metatiles = new QGraphicsScene;
     if (!movement_permissions_selector_item) {
         movement_permissions_selector_item = new MovementPermissionsSelector();
-        connect(movement_permissions_selector_item, SIGNAL(hoveredMovementPermissionChanged(uint16_t, uint16_t)),
-                this, SLOT(onHoveredMovementPermissionChanged(uint16_t, uint16_t)));
-        connect(movement_permissions_selector_item, SIGNAL(hoveredMovementPermissionCleared()),
-                this, SLOT(onHoveredMovementPermissionCleared()));
+        connect(movement_permissions_selector_item, &MovementPermissionsSelector::hoveredMovementPermissionChanged,
+                this, &Editor::onHoveredMovementPermissionChanged);
+        connect(movement_permissions_selector_item, &MovementPermissionsSelector::hoveredMovementPermissionCleared,
+                this, &Editor::onHoveredMovementPermissionCleared);
         movement_permissions_selector_item->select(0, 3);
     }
 
@@ -1437,6 +1516,8 @@ void Editor::displayMapConnections() {
     if (!connection_edit_items.empty()) {
         onConnectionItemSelected(connection_edit_items.first());
     }
+
+    maskNonVisibleConnectionTiles();
 }
 
 void Editor::createConnectionItem(MapConnection* connection, bool hide) {
@@ -1475,10 +1556,38 @@ void Editor::createConnectionItem(MapConnection* connection, bool hide) {
     connection_edit_item->setY(y);
     connection_edit_item->setZValue(-1);
     scene->addItem(connection_edit_item);
-    connect(connection_edit_item, SIGNAL(connectionMoved(MapConnection*)), this, SLOT(onConnectionMoved(MapConnection*)));
-    connect(connection_edit_item, SIGNAL(connectionItemSelected(ConnectionPixmapItem*)), this, SLOT(onConnectionItemSelected(ConnectionPixmapItem*)));
-    connect(connection_edit_item, SIGNAL(connectionItemDoubleClicked(ConnectionPixmapItem*)), this, SLOT(onConnectionItemDoubleClicked(ConnectionPixmapItem*)));
+    connect(connection_edit_item, &ConnectionPixmapItem::connectionMoved,
+            this, &Editor::onConnectionMoved);
+    connect(connection_edit_item, &ConnectionPixmapItem::connectionItemSelected,
+            this, &Editor::onConnectionItemSelected);
+    connect(connection_edit_item, &ConnectionPixmapItem::connectionItemDoubleClicked,
+            this, &Editor::onConnectionItemDoubleClicked);
     connection_edit_items.append(connection_edit_item);
+}
+
+// Hides connected map tiles that cannot be seen from the current map (beyond BORDER_DISTANCE).
+void Editor::maskNonVisibleConnectionTiles() {
+    if (connection_mask) {
+        if (connection_mask->scene()) {
+            connection_mask->scene()->removeItem(connection_mask);
+        }
+        delete connection_mask;
+    }
+
+    QPainterPath mask;
+    mask.addRect(scene->itemsBoundingRect().toRect());
+    mask.addRect(
+        -BORDER_DISTANCE * 16,
+        -BORDER_DISTANCE * 16,
+        (map->getWidth() + BORDER_DISTANCE * 2) * 16,
+        (map->getHeight() + BORDER_DISTANCE * 2) * 16
+    );
+
+    // Mask the tiles with the current theme's background color.
+    QPen pen(ui->graphicsView_Map->palette().color(QPalette::Active, QPalette::Base));
+    QBrush brush(ui->graphicsView_Map->palette().color(QPalette::Active, QPalette::Base));
+
+    connection_mask = scene->addPath(mask, pen, brush);
 }
 
 void Editor::displayMapBorder() {
@@ -1527,6 +1636,8 @@ void Editor::updateMapConnections() {
         connection_edit_items[i]->basePixmap = pixmap;
         connection_edit_items[i]->setPixmap(pixmap);
     }
+
+    maskNonVisibleConnectionTiles();
 }
 
 int Editor::getBorderDrawDistance(int dimension) {
@@ -1583,17 +1694,18 @@ void Editor::updateConnectionOffset(int offset) {
     }
     selected_connection_item->blockSignals(false);
     updateMirroredConnectionOffset(selected_connection_item->connection);
+    maskNonVisibleConnectionTiles();
 }
 
 void Editor::setConnectionMap(QString mapName) {
-    if (!mapName.isEmpty() && !project->mapNames->contains(mapName)) {
+    if (!mapName.isEmpty() && !project->mapNames.contains(mapName)) {
         logError(QString("Invalid map name '%1' specified for connection.").arg(mapName));
         return;
     }
     if (!selected_connection_item)
         return;
 
-    if (mapName.isEmpty()) {
+    if (mapName.isEmpty() || mapName == NONE_MAP_NAME) {
         removeCurrentConnection();
         return;
     }
@@ -1603,6 +1715,7 @@ void Editor::setConnectionMap(QString mapName) {
     selected_connection_item->connection->map_name = mapName;
     setCurrentConnectionDirection(selected_connection_item->connection->direction);
     updateMirroredConnectionMap(selected_connection_item->connection, originalMapName);
+    maskNonVisibleConnectionTiles();
 }
 
 void Editor::addNewConnection() {
@@ -1621,9 +1734,9 @@ void Editor::addNewConnection() {
     }
 
     // Don't connect the map to itself.
-    QString defaultMapName = project->mapNames->first();
+    QString defaultMapName = project->mapNames.first();
     if (defaultMapName == map->name) {
-        defaultMapName = project->mapNames->value(1);
+        defaultMapName = project->mapNames.value(1);
     }
 
     MapConnection* newConnection = new MapConnection;
@@ -1731,7 +1844,7 @@ void Editor::updateEmergeMap(QString mapName) {
 }
 
 void Editor::updateDiveEmergeMap(QString mapName, QString direction) {
-    if (!mapName.isEmpty() && !project->mapNamesToMapConstants->contains(mapName)) {
+    if (!mapName.isEmpty() && !project->mapNamesToMapConstants.contains(mapName)) {
         logError(QString("Invalid %1 connection map name: '%2'").arg(direction).arg(mapName));
         return;
     }
@@ -1744,7 +1857,7 @@ void Editor::updateDiveEmergeMap(QString mapName, QString direction) {
         }
     }
 
-    if (mapName.isEmpty()) {
+    if (mapName.isEmpty() || mapName == NONE_MAP_NAME) {
         // Remove dive/emerge connection
         if (connection) {
             map->connections.removeOne(connection);
@@ -1932,6 +2045,82 @@ void Editor::deleteEvent(Event *event) {
     //updateSelectedObjects();
 }
 
+void Editor::openMapScripts() const {
+    const QString scriptPath = project->getMapScriptsFilePath(map->name);
+    openInTextEditor(scriptPath);
+}
+
+void Editor::openScript(const QString &scriptLabel) const {
+    // Find the location of scriptLabel.
+    QStringList scriptPaths(project->getMapScriptsFilePath(map->name));
+    scriptPaths << project->getEventScriptsFilePaths();
+    int lineNum = 0;
+    QString scriptPath = scriptPaths.first();
+    for (const auto &path : scriptPaths) {
+        lineNum = ParseUtil::getScriptLineNumber(path, scriptLabel);
+        if (lineNum != 0) {
+            scriptPath = path;
+            break;
+        }
+    }
+
+    openInTextEditor(scriptPath, lineNum);
+}
+
+void Editor::openInTextEditor(const QString &path, int lineNum) const {
+    QString command = porymapConfig.getTextEditorGotoLine();
+    if (command.isEmpty()) {
+        // Open map scripts in the system's default editor.
+        QDesktopServices::openUrl(QUrl::fromLocalFile(path));
+    } else {
+        if (command.contains("%F")) {
+            if (command.contains("%L"))
+                command.replace("%L", QString::number(lineNum));
+            command.replace("%F", '\"' + path + '\"');
+        } else {
+            command += " \"" + path + '\"';
+        }
+        startDetachedProcess(command);
+    }
+}
+
+void Editor::openProjectInTextEditor() const {
+    QString command = porymapConfig.getTextEditorOpenFolder();
+    if (command.contains("%D"))
+        command.replace("%D", '\"' + project->root + '\"');
+    else
+        command += " \"" + project->root + '\"';
+    startDetachedProcess(command);
+}
+
+bool Editor::startDetachedProcess(const QString &command, const QString &workingDirectory, qint64 *pid) const {
+    logInfo("Executing command: " + command);
+    QProcess process;
+#ifdef Q_OS_WIN
+    QStringList arguments = ParseUtil::splitShellCommand(command);
+    const QString program = arguments.takeFirst();
+    QFileInfo programFileInfo(program);
+    if (programFileInfo.isExecutable()) {
+        process.setProgram(program);
+        process.setArguments(arguments);
+    } else {
+        // program is a batch script (such as VSCode's 'code' script) and needs to be started by cmd.exe.
+        process.setProgram(QProcessEnvironment::systemEnvironment().value("COMSPEC"));
+        // Windows is finicky with quotes on the command-line. I can't explain why this difference is necessary.
+        if (command.startsWith('"'))
+            process.setNativeArguments("/c \"" + command + '"');
+        else
+            process.setArguments(QStringList() << "/c" << program << arguments);
+    }
+#else
+    QStringList arguments = ParseUtil::splitShellCommand(command);
+    process.setProgram(arguments.takeFirst());
+    process.setArguments(arguments);
+#endif
+    process.setWorkingDirectory(workingDirectory);
+    return process.startDetached(pid);
+}
+
 // It doesn't seem to be possible to prevent the mousePress event
 // from triggering both event's DraggablePixmapItem and the background mousePress.
 // Since the DraggablePixmapItem's event fires first, we can set a temp
@@ -1942,8 +2131,8 @@ void Editor::objectsView_onMousePress(QMouseEvent *event) {
     if (map_item && map_item->paintingMode != MapPixmapItem::PaintMode::EventObjects) {
         return;
     }
-    if (this->map_edit_mode == "paint" && event->buttons() & Qt::RightButton) {
-        this->map_edit_mode = "select";
+    if (this->obj_edit_mode == "paint" && event->buttons() & Qt::RightButton) {
+        this->obj_edit_mode = "select";
         this->settings->mapCursor = QCursor();
         this->cursorMapTileRect->setSingleTileMode();
         this->ui->toolButton_Paint->setChecked(false);

@@ -8,20 +8,18 @@
 class TilesetEditorMetatileSelector: public SelectablePixmapItem {
     Q_OBJECT
 public:
-    TilesetEditorMetatileSelector(Tileset *primaryTileset, Tileset *secondaryTileset, Map *map): SelectablePixmapItem(32, 32, 1, 1) {
-        this->primaryTileset = primaryTileset;
-        this->secondaryTileset = secondaryTileset;
-        this->numMetatilesWide = 8;
-        this->map = map;
-        setAcceptHoverEvents(true);
-    }
+    TilesetEditorMetatileSelector(Tileset *primaryTileset, Tileset *secondaryTileset, Map *map);
     Map *map = nullptr;
     void draw();
     bool select(uint16_t metatileId);
-    void setTilesets(Tileset*, Tileset*);
+    void setTilesets(Tileset*, Tileset*, bool draw = true);
     uint16_t getSelectedMetatile();
     void updateSelectedMetatile();
     QPoint getMetatileIdCoordsOnWidget(uint16_t metatileId);
+
+    QVector<uint16_t> usedMetatiles;
+    bool selectorShowUnused = false;
+    bool selectorShowCounts = false;
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent*);
@@ -38,6 +36,10 @@ private:
     uint16_t getMetatileId(int x, int y);
     QPoint getMetatileIdCoords(uint16_t);
     bool shouldAcceptEvent(QGraphicsSceneMouseEvent*);
+
+    void drawFilters();
+    void drawUnused();
+    void drawCounts();
 
 signals:
     void hoveredMetatileChanged(uint16_t);

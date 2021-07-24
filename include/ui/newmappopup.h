@@ -37,6 +37,7 @@ private:
     void setDefaultValuesImportMap(MapLayout *);
     void setDefaultValuesProjectConfig(bool, MapLayout*);
     bool checkNewMapDimensions();
+    bool checkNewMapGroup();
 
 private slots:
     void on_pushButton_NewMap_Accept_clicked();

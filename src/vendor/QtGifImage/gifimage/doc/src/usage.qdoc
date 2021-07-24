@@ -1,0 +1,53 @@
+/*!
+    \page building
+    \title Qt GifImage Build
+
+    \section1 Usage(1): Use Qt GifImage as Qt5's addon module
+
+    1. Download the source code from \l {https://github.com/dbzhang800/QtGifImage/archive/master.zip} {github.com}.
+
+    2. Put the source code in any directory you like. At the toplevel directory run
+
+    \note Perl is needed in this step.
+
+    \code
+    qmake
+    make
+    make install
+    \endcode
+
+    The library, the header files, and others will be installed to your system.
+
+    3. Add following line to your qmake's project file:
+
+    \code
+    QT += gifimage
+    \endcode
+
+    4. Then, using Qt Qt GifImage in your code
+
+    \section1 Usage(2): Use source code directly
+
+    The package contains a qtgifimage.pri file that allows you to integrate
+    the component into applications that use qmake for the build step.
+
+    1. Download the source code from \l {https://github.com/dbzhang800/QtGifImage/archive/master.zip} {github.com}
+
+    2. Put the source code in any directory you like. For example, 3rdparty:
+
+    \code
+    |-- project.pro
+    |-- ....
+    |-- 3rdparty\
+    |     |-- qtgifimage\
+    |     |
+    \endcode
+
+    3. Add following line to your qmake project file:
+
+    \code
+    include(3rdparty/qtgifimage/src/gifimage/qtgifimage.pri)
+    \endcode
+
+    4. Then, using Qt GifImage in your code
+*/

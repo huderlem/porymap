@@ -1,5 +1,6 @@
 #include "config.h"
 #include "log.h"
+#include "shortcut.h"
 #include <QDir>
 #include <QFile>
 #include <QFormLayout>
@@ -11,6 +12,8 @@
 #include <QTextStream>
 #include <QRegularExpression>
 #include <QStandardPaths>
+#include <QAction>
+#include <QAbstractButton>
 
 KeyValueConfigBase::~KeyValueConfigBase() {
 
@@ -34,9 +37,8 @@ void KeyValueConfigBase::load() {
     }
 
     QTextStream in(&file);
-    in.setCodec("UTF-8");
     QList<QString> configLines;
-    QRegularExpression re("^(?<key>.+)=(?<value>.*)$");
+    QRegularExpression re("^(?<key>[^=]+)=(?<value>.*)$");
     while (!in.atEnd()) {
         QString line = in.readLine().trimmed();
         int commentIndex = line.indexOf("#");
@@ -106,8 +108,6 @@ QString PorymapConfig::getConfigFilepath() {
 void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
     if (key == "recent_project") {
         this->recentProject = value;
-    } else if (key == "recent_map") {
-        this->recentMap = value;
     } else if (key == "pretty_cursors") {
         bool ok;
         this->prettyCursors = value.toInt(&ok);
@@ -122,10 +122,10 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
             this->mapSortOrder = MapSortOrder::Group;
             logWarn(QString("Invalid config value for map_sort_order: '%1'. Must be 'group', 'area', or 'layout'.").arg(value));
         }
-    } else if (key == "window_geometry") {
-        this->windowGeometry = bytesFromString(value);
-    } else if (key == "window_state") {
-        this->windowState = bytesFromString(value);
+    } else if (key == "main_window_geometry") {
+        this->mainWindowGeometry = bytesFromString(value);
+    } else if (key == "main_window_state") {
+        this->mainWindowState = bytesFromString(value);
     } else if (key == "map_splitter_state") {
         this->mapSplitterState = bytesFromString(value);
     } else if (key == "main_splitter_state") {
@@ -137,6 +137,18 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
             logWarn(QString("Invalid config value for collision_opacity: '%1'. Must be an integer.").arg(value));
             this->collisionOpacity = 50;
         }
+    } else if (key == "tileset_editor_geometry") {
+        this->tilesetEditorGeometry = bytesFromString(value);
+    } else if (key == "tileset_editor_state") {
+        this->tilesetEditorState = bytesFromString(value);
+    } else if (key == "palette_editor_geometry") {
+        this->paletteEditorGeometry = bytesFromString(value);
+    } else if (key == "palette_editor_state") {
+        this->paletteEditorState = bytesFromString(value);
+    } else if (key == "region_map_editor_geometry") {
+        this->regionMapEditorGeometry = bytesFromString(value);
+    } else if (key == "region_map_editor_state") {
+        this->regionMapEditorState = bytesFromString(value);
     } else if (key == "metatiles_zoom") {
         bool ok;
         this->metatilesZoom = qMax(10, qMin(100, value.toInt(&ok)));
@@ -175,6 +187,10 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         }
     } else if (key == "theme") {
         this->theme = value;
+    } else if (key == "text_editor_open_directory") {
+        this->textEditorOpenFolder = value;
+    } else if (key == "text_editor_goto_line") {
+        this->textEditorGotoLine = value;
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -183,13 +199,18 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
 QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     QMap<QString, QString> map;
     map.insert("recent_project", this->recentProject);
-    map.insert("recent_map", this->recentMap);
     map.insert("pretty_cursors", this->prettyCursors ? "1" : "0");
     map.insert("map_sort_order", mapSortOrderMap.value(this->mapSortOrder));
-    map.insert("window_geometry", stringFromByteArray(this->windowGeometry));
-    map.insert("window_state", stringFromByteArray(this->windowState));
+    map.insert("main_window_geometry", stringFromByteArray(this->mainWindowGeometry));
+    map.insert("main_window_state", stringFromByteArray(this->mainWindowState));
     map.insert("map_splitter_state", stringFromByteArray(this->mapSplitterState));
     map.insert("main_splitter_state", stringFromByteArray(this->mainSplitterState));
+    map.insert("tileset_editor_geometry", stringFromByteArray(this->tilesetEditorGeometry));
+    map.insert("tileset_editor_state", stringFromByteArray(this->tilesetEditorState));
+    map.insert("palette_editor_geometry", stringFromByteArray(this->paletteEditorGeometry));
+    map.insert("palette_editor_state", stringFromByteArray(this->paletteEditorState));
+    map.insert("region_map_editor_geometry", stringFromByteArray(this->regionMapEditorGeometry));
+    map.insert("region_map_editor_state", stringFromByteArray(this->regionMapEditorState));
     map.insert("collision_opacity", QString("%1").arg(this->collisionOpacity));
     map.insert("metatiles_zoom", QString("%1").arg(this->metatilesZoom));
     map.insert("show_player_view", this->showPlayerView ? "1" : "0");
@@ -198,6 +219,8 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("region_map_dimensions", QString("%1x%2").arg(this->regionMapDimensions.width())
                                                         .arg(this->regionMapDimensions.height()));
     map.insert("theme", this->theme);
+    map.insert("text_editor_open_directory", this->textEditorOpenFolder);
+    map.insert("text_editor_goto_line", this->textEditorGotoLine);
     return map;
 }
 
@@ -223,11 +246,6 @@ void PorymapConfig::setRecentProject(QString project) {
     this->save();
 }
 
-void PorymapConfig::setRecentMap(QString map) {
-    this->recentMap = map;
-    this->save();
-}
-
 void PorymapConfig::setMapSortOrder(MapSortOrder order) {
     this->mapSortOrder = order;
     this->save();
@@ -243,12 +261,30 @@ void PorymapConfig::setMonitorFiles(bool monitor) {
     this->save();
 }
 
-void PorymapConfig::setGeometry(QByteArray windowGeometry_, QByteArray windowState_,
+void PorymapConfig::setMainGeometry(QByteArray mainWindowGeometry_, QByteArray mainWindowState_,
                                 QByteArray mapSplitterState_, QByteArray mainSplitterState_) {
-    this->windowGeometry = windowGeometry_;
-    this->windowState = windowState_;
+    this->mainWindowGeometry = mainWindowGeometry_;
+    this->mainWindowState = mainWindowState_;
     this->mapSplitterState = mapSplitterState_;
     this->mainSplitterState = mainSplitterState_;
+    this->save();
+}
+
+void PorymapConfig::setTilesetEditorGeometry(QByteArray tilesetEditorGeometry_, QByteArray tilesetEditorState_) {
+    this->tilesetEditorGeometry = tilesetEditorGeometry_;
+    this->tilesetEditorState = tilesetEditorState_;
+    this->save();
+}
+
+void PorymapConfig::setPaletteEditorGeometry(QByteArray paletteEditorGeometry_, QByteArray paletteEditorState_) {
+    this->paletteEditorGeometry = paletteEditorGeometry_;
+    this->paletteEditorState = paletteEditorState_;
+    this->save();
+}
+
+void PorymapConfig::setRegionMapEditorGeometry(QByteArray regionMapEditorGeometry_, QByteArray regionMapEditorState_) {
+    this->regionMapEditorGeometry = regionMapEditorGeometry_;
+    this->regionMapEditorState = regionMapEditorState_;
     this->save();
 }
 
@@ -280,12 +316,18 @@ void PorymapConfig::setTheme(QString theme) {
     this->theme = theme;
 }
 
-QString PorymapConfig::getRecentProject() {
-    return this->recentProject;
+void PorymapConfig::setTextEditorOpenFolder(const QString &command) {
+    this->textEditorOpenFolder = command;
+    this->save();
 }
 
-QString PorymapConfig::getRecentMap() {
-    return this->recentMap;
+void PorymapConfig::setTextEditorGotoLine(const QString &command) {
+    this->textEditorGotoLine = command;
+    this->save();
+}
+
+QString PorymapConfig::getRecentProject() {
+    return this->recentProject;
 }
 
 MapSortOrder PorymapConfig::getMapSortOrder() {
@@ -296,13 +338,40 @@ bool PorymapConfig::getPrettyCursors() {
     return this->prettyCursors;
 }
 
-QMap<QString, QByteArray> PorymapConfig::getGeometry() {
+QMap<QString, QByteArray> PorymapConfig::getMainGeometry() {
     QMap<QString, QByteArray> geometry;
 
-    geometry.insert("window_geometry", this->windowGeometry);
-    geometry.insert("window_state", this->windowState);
+    geometry.insert("main_window_geometry", this->mainWindowGeometry);
+    geometry.insert("main_window_state", this->mainWindowState);
     geometry.insert("map_splitter_state", this->mapSplitterState);
     geometry.insert("main_splitter_state", this->mainSplitterState);
+
+    return geometry;
+}
+
+QMap<QString, QByteArray> PorymapConfig::getTilesetEditorGeometry() {
+    QMap<QString, QByteArray> geometry;
+
+    geometry.insert("tileset_editor_geometry", this->tilesetEditorGeometry);
+    geometry.insert("tileset_editor_state", this->tilesetEditorState);
+
+    return geometry;
+}
+
+QMap<QString, QByteArray> PorymapConfig::getPaletteEditorGeometry() {
+    QMap<QString, QByteArray> geometry;
+
+    geometry.insert("palette_editor_geometry", this->paletteEditorGeometry);
+    geometry.insert("palette_editor_state", this->paletteEditorState);
+
+    return geometry;
+}
+
+QMap<QString, QByteArray> PorymapConfig::getRegionMapEditorGeometry() {
+    QMap<QString, QByteArray> geometry;
+
+    geometry.insert("region_map_editor_geometry", this->regionMapEditorGeometry);
+    geometry.insert("region_map_editor_state", this->regionMapEditorState);
 
     return geometry;
 }
@@ -335,6 +404,14 @@ QString PorymapConfig::getTheme() {
     return this->theme;
 }
 
+QString PorymapConfig::getTextEditorOpenFolder() {
+    return this->textEditorOpenFolder;
+}
+
+QString PorymapConfig::getTextEditorGotoLine() {
+    return this->textEditorGotoLine;
+}
+
 const QMap<BaseGameVersion, QString> baseGameVersionMap = {
     {BaseGameVersion::pokeruby, "pokeruby"},
     {BaseGameVersion::pokefirered, "pokefirered"},
@@ -351,7 +428,7 @@ ProjectConfig projectConfig;
 
 QString ProjectConfig::getConfigFilepath() {
     // porymap config file is in the same directory as porymap itself.
-    return QDir(this->projectDir).filePath("porymap.project.cfg");;
+    return QDir(this->projectDir).filePath("porymap.project.cfg");
 }
 
 void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
@@ -363,6 +440,8 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
             this->baseGameVersion = BaseGameVersion::pokeemerald;
             logWarn(QString("Invalid config value for base_game_version: '%1'. Must be 'pokeruby', 'pokefirered' or 'pokeemerald'.").arg(value));
         }
+    } else if (key == "recent_map") {
+        this->recentMap = value;
     } else if (key == "use_encounter_json") {
         bool ok;
         this->useEncounterJson = value.toInt(&ok);
@@ -423,6 +502,12 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         if (!ok) {
             logWarn(QString("Invalid config value for enable_floor_number: '%1'. Must be 0 or 1.").arg(value));
         }
+    } else if (key == "create_map_text_file") {
+        bool ok;
+        this->createMapTextFile = value.toInt(&ok);
+        if (!ok) {
+            logWarn(QString("Invalid config value for create_map_text_file: '%1'. Must be 0 or 1.").arg(value));
+        }
     } else if (key == "enable_triple_layer_metatiles") {
         bool ok;
         this->enableTripleLayerMetatiles = value.toInt(&ok);
@@ -455,11 +540,13 @@ void ProjectConfig::setUnreadKeys() {
     if (!readKeys.contains("enable_heal_location_respawn_data")) this->enableHealLocationRespawnData = isPokefirered;
     if (!readKeys.contains("enable_object_event_in_connection")) this->enableObjectEventInConnection = isPokefirered;
     if (!readKeys.contains("enable_floor_number")) this->enableFloorNumber = isPokefirered;
+    if (!readKeys.contains("create_map_text_file")) this->createMapTextFile = (this->baseGameVersion != BaseGameVersion::pokeemerald);
 }
 
 QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     QMap<QString, QString> map;
     map.insert("base_game_version", baseGameVersionMap.value(this->baseGameVersion));
+    map.insert("recent_map", this->recentMap);
     map.insert("use_encounter_json", QString::number(this->useEncounterJson));
     map.insert("use_poryscript", QString::number(this->usePoryScript));
     map.insert("use_custom_border_size", QString::number(this->useCustomBorderSize));
@@ -470,6 +557,7 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("enable_heal_location_respawn_data", QString::number(this->enableHealLocationRespawnData));
     map.insert("enable_object_event_in_connection", QString::number(this->enableObjectEventInConnection));
     map.insert("enable_floor_number", QString::number(this->enableFloorNumber));
+    map.insert("create_map_text_file", QString::number(this->createMapTextFile));
     map.insert("enable_triple_layer_metatiles", QString::number(this->enableTripleLayerMetatiles));
     map.insert("custom_scripts", this->customScripts.join(","));
     return map;
@@ -494,7 +582,7 @@ void ProjectConfig::onNewConfigFileCreated() {
         form.addRow(new QLabel("Game Version"), baseGameVersionComboBox);
 
         QDialogButtonBox buttonBox(QDialogButtonBox::Ok, Qt::Horizontal, &dialog);
-        connect(&buttonBox, SIGNAL(accepted()), &dialog, SLOT(accept()));
+        QObject::connect(&buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
         form.addRow(&buttonBox);
 
         if (dialog.exec() == QDialog::Accepted) {
@@ -510,6 +598,7 @@ void ProjectConfig::onNewConfigFileCreated() {
     this->enableHealLocationRespawnData = isPokefirered;
     this->enableObjectEventInConnection = isPokefirered;
     this->enableFloorNumber = isPokefirered;
+    this->createMapTextFile = (this->baseGameVersion != BaseGameVersion::pokeemerald);
     this->useEncounterJson = true;
     this->usePoryScript = false;
     this->enableTripleLayerMetatiles = false;
@@ -531,6 +620,15 @@ void ProjectConfig::setBaseGameVersion(BaseGameVersion baseGameVersion) {
 
 BaseGameVersion ProjectConfig::getBaseGameVersion() {
     return this->baseGameVersion;
+}
+
+void ProjectConfig::setRecentMap(const QString &map) {
+    this->recentMap = map;
+    this->save();
+}
+
+QString ProjectConfig::getRecentMap() {
+    return this->recentMap;
 }
 
 void ProjectConfig::setEncounterJsonActive(bool active) {
@@ -623,6 +721,15 @@ bool ProjectConfig::getFloorNumberEnabled() {
     return this->enableFloorNumber;
 }
 
+void ProjectConfig::setCreateMapTextFileEnabled(bool enable) {
+    this->createMapTextFile = enable;
+    this->save();
+}
+
+bool ProjectConfig::getCreateMapTextFileEnabled() {
+    return this->createMapTextFile;
+}
+
 void ProjectConfig::setTripleLayerMetatilesEnabled(bool enable) {
     this->enableTripleLayerMetatiles = enable;
     this->save();
@@ -639,4 +746,129 @@ void ProjectConfig::setCustomScripts(QList<QString> scripts) {
 
 QList<QString> ProjectConfig::getCustomScripts() {
     return this->customScripts;
+}
+
+ShortcutsConfig shortcutsConfig;
+
+QString ShortcutsConfig::getConfigFilepath() {
+    QString settingsPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    QDir dir(settingsPath);
+    if (!dir.exists())
+        dir.mkpath(settingsPath);
+
+    QString configPath = dir.absoluteFilePath("porymap.shortcuts.cfg");
+
+    return configPath;
+}
+
+void ShortcutsConfig::parseConfigKeyValue(QString key, QString value) {
+    QStringList keySequences = value.split(' ');
+    for (auto keySequence : keySequences)
+        user_shortcuts.insert(key, keySequence);
+}
+
+QMap<QString, QString> ShortcutsConfig::getKeyValueMap() {
+    QMap<QString, QString> map;
+    for (auto cfg_key : user_shortcuts.uniqueKeys()) {
+        auto keySequences = user_shortcuts.values(cfg_key);
+        QStringList keySequenceStrings;
+        for (auto keySequence : keySequences)
+            keySequenceStrings.append(keySequence.toString());
+        map.insert(cfg_key, keySequenceStrings.join(' '));
+    }
+    return map;
+}
+
+void ShortcutsConfig::setDefaultShortcuts(const QObjectList &objects) {
+    storeShortcutsFromList(StoreType::Default, objects);
+    save();
+}
+
+QList<QKeySequence> ShortcutsConfig::defaultShortcuts(const QObject *object) const {
+    return default_shortcuts.values(cfgKey(object));
+}
+
+void ShortcutsConfig::setUserShortcuts(const QObjectList &objects) {
+    storeShortcutsFromList(StoreType::User, objects);
+    save();
+}
+
+void ShortcutsConfig::setUserShortcuts(const QMultiMap<const QObject *, QKeySequence> &objects_keySequences) {
+    for (auto *object : objects_keySequences.uniqueKeys())
+        if (!object->objectName().isEmpty() && !object->objectName().startsWith("_q_"))
+            storeShortcuts(StoreType::User, cfgKey(object), objects_keySequences.values(object));
+    save();
+}
+
+QList<QKeySequence> ShortcutsConfig::userShortcuts(const QObject *object) const {
+    return user_shortcuts.values(cfgKey(object));
+}
+
+void ShortcutsConfig::storeShortcutsFromList(StoreType storeType, const QObjectList &objects) {
+    for (const auto *object : objects)
+        if (!object->objectName().isEmpty() && !object->objectName().startsWith("_q_"))
+            storeShortcuts(storeType, cfgKey(object), currentShortcuts(object));
+}
+
+void ShortcutsConfig::storeShortcuts(
+        StoreType storeType,
+        const QString &cfgKey,
+        const QList<QKeySequence> &keySequences)
+{
+    bool storeUser = (storeType == User) || !user_shortcuts.contains(cfgKey);
+
+    if (storeType == Default)
+        default_shortcuts.remove(cfgKey);
+    if (storeUser)
+        user_shortcuts.remove(cfgKey);
+
+    if (keySequences.isEmpty()) {
+        if (storeType == Default)
+            default_shortcuts.insert(cfgKey, QKeySequence());
+        if (storeUser)
+            user_shortcuts.insert(cfgKey, QKeySequence());
+    } else {
+        for (auto keySequence : keySequences) {
+            if (storeType == Default)
+                default_shortcuts.insert(cfgKey, keySequence);
+            if (storeUser)
+                user_shortcuts.insert(cfgKey, keySequence);
+        }
+    }
+}
+
+/* Creates a config key from the object's name prepended with the parent 
+ * window's object name, and converts camelCase to snake_case. */
+QString ShortcutsConfig::cfgKey(const QObject *object) const {
+    auto cfg_key = QString();
+    auto *parentWidget = static_cast<QWidget *>(object->parent());
+    if (parentWidget)
+        cfg_key = parentWidget->window()->objectName() + '_';
+    cfg_key += object->objectName();
+
+    QRegularExpression re("[A-Z]");
+    int i = cfg_key.indexOf(re, 1);
+    while (i != -1) {
+        if (cfg_key.at(i - 1) != '_')
+            cfg_key.insert(i++, '_');
+        i = cfg_key.indexOf(re, i + 1);
+    }
+    return cfg_key.toLower();
+}
+
+QList<QKeySequence> ShortcutsConfig::currentShortcuts(const QObject *object) const {
+    if (object->inherits("QAction")) {
+        const auto *action = qobject_cast<const QAction *>(object);
+        return action->shortcuts();
+    } else if (object->inherits("Shortcut")) {
+        const auto *shortcut = qobject_cast<const Shortcut *>(object);
+        return shortcut->keys();
+    } else if (object->inherits("QShortcut")) {
+        const auto *qshortcut = qobject_cast<const QShortcut *>(object);
+        return { qshortcut->key() };
+    } else if (object->property("shortcut").isValid()) {
+        return { object->property("shortcut").value<QKeySequence>() };
+    } else {
+        return { };
+    }
 }

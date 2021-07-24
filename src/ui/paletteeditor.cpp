@@ -1,9 +1,10 @@
 #include "paletteeditor.h"
 #include "ui_paletteeditor.h"
 #include "paletteutil.h"
+#include "config.h"
+#include "log.h"
 #include <QFileDialog>
 #include <QMessageBox>
-#include "log.h"
 
 PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset *secondaryTileset, int paletteId, QWidget *parent) :
     QMainWindow(parent),
@@ -112,6 +113,7 @@ PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset 
     this->initColorSliders();
     this->setPaletteId(paletteId);
     this->commitEditHistory(this->ui->spinBox_PaletteId->value());
+    this->restoreWindowState();
 }
 
 PaletteEditor::~PaletteEditor()
@@ -149,9 +151,9 @@ void PaletteEditor::refreshColorSliders() {
     for (int i = 0; i < 16; i++) {
         QRgb color;
         if (paletteNum < Project::getNumPalettesPrimary()) {
-            color = this->primaryTileset->palettes->at(paletteNum).at(i);
+            color = this->primaryTileset->palettes.at(paletteNum).at(i);
         } else {
-            color = this->secondaryTileset->palettes->at(paletteNum).at(i);
+            color = this->secondaryTileset->palettes.at(paletteNum).at(i);
         }
 
         this->sliders[i][0]->setValue(qRed(color)   / 8);
@@ -202,8 +204,8 @@ void PaletteEditor::setColor(int colorIndex) {
     Tileset *tileset = paletteNum < Project::getNumPalettesPrimary()
             ? this->primaryTileset
             : this->secondaryTileset;
-    (*tileset->palettes)[paletteNum][colorIndex] = qRgb(red, green, blue);
-    (*tileset->palettePreviews)[paletteNum][colorIndex] = qRgb(red, green, blue);
+    tileset->palettes[paletteNum][colorIndex] = qRgb(red, green, blue);
+    tileset->palettePreviews[paletteNum][colorIndex] = qRgb(red, green, blue);
     this->refreshColor(colorIndex);
     this->commitEditHistory(paletteNum);
     emit this->changedPaletteColor();
@@ -227,6 +229,13 @@ void PaletteEditor::commitEditHistory(int paletteId) {
     this->palettesHistory[paletteId].push(commit);
 }
 
+void PaletteEditor::restoreWindowState() {
+    logInfo("Restoring palette editor geometry from previous session.");
+    QMap<QString, QByteArray> geometry = porymapConfig.getPaletteEditorGeometry();
+    this->restoreGeometry(geometry.value("palette_editor_geometry"));
+    this->restoreState(geometry.value("palette_editor_state"));
+}
+
 void PaletteEditor::on_actionUndo_triggered()
 {
     int paletteId = this->ui->spinBox_PaletteId->value();
@@ -246,11 +255,11 @@ void PaletteEditor::setColorsFromHistory(PaletteHistoryItem *history, int palett
 
     for (int i = 0; i < 16; i++) {
         if (paletteId < Project::getNumPalettesPrimary()) {
-            (*this->primaryTileset->palettes)[paletteId][i] = history->colors.at(i);
-            (*this->primaryTileset->palettePreviews)[paletteId][i] = history->colors.at(i);
+            this->primaryTileset->palettes[paletteId][i] = history->colors.at(i);
+            this->primaryTileset->palettePreviews[paletteId][i] = history->colors.at(i);
         } else {
-            (*this->secondaryTileset->palettes)[paletteId][i] = history->colors.at(i);
-            (*this->secondaryTileset->palettePreviews)[paletteId][i] = history->colors.at(i);
+            this->secondaryTileset->palettes[paletteId][i] = history->colors.at(i);
+            this->secondaryTileset->palettePreviews[paletteId][i] = history->colors.at(i);
         }
     }
 
@@ -270,9 +279,8 @@ void PaletteEditor::on_actionImport_Palette_triggered()
         return;
     }
 
-    PaletteUtil parser;
     bool error = false;
-    QList<QRgb> palette = parser.parse(filepath, &error);
+    QList<QRgb> palette = PaletteUtil::parse(filepath, &error);
     if (error) {
         QMessageBox msgBox(this);
         msgBox.setText("Failed to import palette.");
@@ -298,11 +306,11 @@ void PaletteEditor::on_actionImport_Palette_triggered()
     int paletteId = this->ui->spinBox_PaletteId->value();
     for (int i = 0; i < 16; i++) {
         if (paletteId < Project::getNumPalettesPrimary()) {
-            (*this->primaryTileset->palettes)[paletteId][i] = palette.at(i);
-            (*this->primaryTileset->palettePreviews)[paletteId][i] = palette.at(i);
+            this->primaryTileset->palettes[paletteId][i] = palette.at(i);
+            this->primaryTileset->palettePreviews[paletteId][i] = palette.at(i);
         } else {
-            (*this->secondaryTileset->palettes)[paletteId][i] = palette.at(i);
-            (*this->secondaryTileset->palettePreviews)[paletteId][i] = palette.at(i);
+            this->secondaryTileset->palettes[paletteId][i] = palette.at(i);
+            this->secondaryTileset->palettePreviews[paletteId][i] = palette.at(i);
         }
     }
 
@@ -310,4 +318,11 @@ void PaletteEditor::on_actionImport_Palette_triggered()
     this->refreshColors();
     this->commitEditHistory(paletteId);
     emit this->changedPaletteColor();
+}
+
+void PaletteEditor::closeEvent(QCloseEvent*) {
+    porymapConfig.setPaletteEditorGeometry(
+        this->saveGeometry(),
+        this->saveState()
+    );
 }

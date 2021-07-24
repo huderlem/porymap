@@ -1,6 +1,7 @@
 #include "regionmapeditor.h"
 #include "ui_regionmapeditor.h"
 #include "imageexport.h"
+#include "shortcut.h"
 #include "config.h"
 #include "log.h"
 
@@ -24,6 +25,8 @@ RegionMapEditor::RegionMapEditor(QWidget *parent, Project *project_) :
     this->project = project_;
     this->region_map = new RegionMap;
     this->ui->action_RegionMap_Resize->setVisible(false);
+    this->initShortcuts();
+    this->restoreWindowState();
 }
 
 RegionMapEditor::~RegionMapEditor()
@@ -40,6 +43,13 @@ RegionMapEditor::~RegionMapEditor()
     delete scene_city_map_image;
     delete scene_region_map_layout;
     delete scene_region_map_tiles;
+}
+
+void RegionMapEditor::restoreWindowState() {
+    logInfo("Restoring region map editor geometry from previous session.");
+    QMap<QString, QByteArray> geometry = porymapConfig.getRegionMapEditorGeometry();
+    this->restoreGeometry(geometry.value("region_map_editor_geometry"));
+    this->restoreState(geometry.value("region_map_editor_state"));
 }
 
 void RegionMapEditor::on_action_RegionMap_Save_triggered() {
@@ -82,6 +92,39 @@ bool RegionMapEditor::loadCityMaps() {
     }
     this->ui->comboBox_CityMap_picker->addItems(without_bin);
     return true;
+}
+
+void RegionMapEditor::initShortcuts() {
+    auto *shortcut_RM_Options_delete = new Shortcut(
+            {QKeySequence("Del"), QKeySequence("Backspace")}, this, SLOT(on_pushButton_RM_Options_delete_clicked()));
+    shortcut_RM_Options_delete->setObjectName("shortcut_RM_Options_delete");
+    shortcut_RM_Options_delete->setWhatsThis("Map Layout: Delete Square");
+
+    shortcutsConfig.load();
+    shortcutsConfig.setDefaultShortcuts(shortcutableObjects());
+    applyUserShortcuts();
+}
+
+QObjectList RegionMapEditor::shortcutableObjects() const {
+    QObjectList shortcutable_objects;
+
+    for (auto *action : findChildren<QAction *>())
+        if (!action->objectName().isEmpty())
+            shortcutable_objects.append(qobject_cast<QObject *>(action));
+    for (auto *shortcut : findChildren<Shortcut *>())
+        if (!shortcut->objectName().isEmpty())
+            shortcutable_objects.append(qobject_cast<QObject *>(shortcut));
+
+    return shortcutable_objects;
+}
+
+void RegionMapEditor::applyUserShortcuts() {
+    for (auto *action : findChildren<QAction *>())
+        if (!action->objectName().isEmpty())
+            action->setShortcuts(shortcutsConfig.userShortcuts(action));
+    for (auto *shortcut : findChildren<Shortcut *>())
+        if (!shortcut->objectName().isEmpty())
+            shortcut->setKeys(shortcutsConfig.userShortcuts(shortcut));
 }
 
 void RegionMapEditor::displayRegionMap() {
@@ -172,7 +215,7 @@ void RegionMapEditor::displayRegionMapLayoutOptions() {
 
 void RegionMapEditor::updateRegionMapLayoutOptions(int index) {
     this->ui->comboBox_RM_ConnectedMap->blockSignals(true);
-    this->ui->lineEdit_RM_MapName->setText(this->project->mapSecToMapHoverName->value(this->region_map->map_squares[index].mapsec));
+    this->ui->lineEdit_RM_MapName->setText(this->project->mapSecToMapHoverName.value(this->region_map->map_squares[index].mapsec));
     this->ui->comboBox_RM_ConnectedMap->setCurrentText(this->region_map->map_squares[index].mapsec);
     this->ui->comboBox_RM_ConnectedMap->blockSignals(false);
 }
@@ -395,7 +438,7 @@ void RegionMapEditor::onRegionMapLayoutSelectedTileChanged(int index) {
     this->currIndex = index;
     this->region_map_layout_item->highlightedTile = index;
     if (this->region_map->map_squares[index].has_map) {
-        message = QString("\t %1").arg(this->project->mapSecToMapHoverName->value(
+        message = QString("\t %1").arg(this->project->mapSecToMapHoverName.value(
                       this->region_map->map_squares[index].mapsec)).remove("{NAME_END}");
     }
     this->ui->statusbar->showMessage(message);
@@ -411,7 +454,7 @@ void RegionMapEditor::onRegionMapLayoutHoveredTileChanged(int index) {
     if (x >= 0 && y >= 0) {
         message = QString("(%1, %2)").arg(x).arg(y);
         if (this->region_map->map_squares[index].has_map) {
-            message += QString("\t %1").arg(this->project->mapSecToMapHoverName->value(
+            message += QString("\t %1").arg(this->project->mapSecToMapHoverName.value(
                            this->region_map->map_squares[index].mapsec)).remove("{NAME_END}");
         }
     }
@@ -507,13 +550,13 @@ void RegionMapEditor::on_tabWidget_Region_Map_currentChanged(int index) {
     }
 }
 
-void RegionMapEditor::on_comboBox_RM_ConnectedMap_activated(const QString &mapsec) {
-    this->ui->lineEdit_RM_MapName->setText(this->project->mapSecToMapHoverName->value(mapsec));
+void RegionMapEditor::on_comboBox_RM_ConnectedMap_textActivated(const QString &mapsec) {
+    this->ui->lineEdit_RM_MapName->setText(this->project->mapSecToMapHoverName.value(mapsec));
     onRegionMapLayoutSelectedTileChanged(this->currIndex);// re-draw layout image
     this->hasUnsavedChanges = true;// sometimes this is called for unknown reasons
 }
 
-void RegionMapEditor::on_comboBox_RM_Entry_MapSection_activated(const QString &text) {
+void RegionMapEditor::on_comboBox_RM_Entry_MapSection_textActivated(const QString &text) {
     this->activeEntry = text;
     this->region_map_entries_item->currentSection = activeEntry;
     updateRegionMapEntryOptions(activeEntry);
@@ -588,7 +631,7 @@ void RegionMapEditor::on_pushButton_CityMap_add_clicked() {
     QString name;
 
     form.addRow(&buttonBox);
-    connect(&buttonBox, SIGNAL(rejected()), &popup, SLOT(reject()));
+    connect(&buttonBox, &QDialogButtonBox::rejected, &popup, &QDialog::reject);
     connect(&buttonBox, &QDialogButtonBox::accepted, [&popup, &input, &name](){
         name = input->text().remove(QRegularExpression("[^a-zA-Z0-9_]+"));
         if (!name.isEmpty())
@@ -623,8 +666,8 @@ void RegionMapEditor::on_action_RegionMap_Resize_triggered() {
     QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &popup);
 
     form.addRow(&buttonBox);
-    connect(&buttonBox, SIGNAL(rejected()), &popup, SLOT(reject()));
-    connect(&buttonBox, SIGNAL(accepted()), &popup, SLOT(accept()));
+    connect(&buttonBox, &QDialogButtonBox::rejected, &popup, &QDialog::reject);
+    connect(&buttonBox, &QDialogButtonBox::accepted, &popup, &QDialog::accept);
 
     if (popup.exec() == QDialog::Accepted) {
         resize(widthSpinBox->value(), heightSpinBox->value());
@@ -717,7 +760,7 @@ void RegionMapEditor::on_action_Swap_triggered() {
 
     QString beforeSection, afterSection;
     uint8_t oldId, newId; 
-    connect(&buttonBox, SIGNAL(rejected()), &popup, SLOT(reject()));
+    connect(&buttonBox, &QDialogButtonBox::rejected, &popup, &QDialog::reject);
     connect(&buttonBox, &QDialogButtonBox::accepted, [this, &popup, &oldSecBox, &newSecBox, 
                                                       &beforeSection, &afterSection, &oldId, &newId](){
         beforeSection = oldSecBox->currentText();
@@ -899,6 +942,11 @@ void RegionMapEditor::closeEvent(QCloseEvent *event)
     } else {
         event->accept();
     }
+
+    porymapConfig.setRegionMapEditorGeometry(
+        this->saveGeometry(),
+        this->saveState()
+    );
 }
 
 void RegionMapEditor::on_verticalSlider_Zoom_Map_Image_valueChanged(int val) {

@@ -7,6 +7,20 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 The **"Breaking Changes"** listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. If porymap is used on a project that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.
 
 ## [Unreleased]
+
+### Added
+- Add ability to export map timelapse animated GIFs with `File -> Export Map Timelapse Image...`.
+- Porymap is now compatible with Qt6.
+- Add tool to count the times each metatile or tile is used in the tileset editor.
+- Events, current metatile selections, and map images can now be copied and pasted, including between windows.
+
+### Changed
+- New events will be placed in the center of the current view of the map.
+
+### Fixed
+- Fix tileset palette editor crash that could occur when switching maps or tilesets with it open.
+
+## [4.4.0] - 2020-12-20
 ### Added
 - Add undoable edit history for Events tab.
 - Add keyboard shortcut for `DEL` key to delete the currently selected event(s).
@@ -15,6 +29,11 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - The New Map dialog now gives an option to specify the "Show Location Name" field.
 - Some new shortcuts were added in [porymap/#290](https://github.com/huderlem/porymap/pull/290).
 - All plain text boxes now have a clear button to delete the text.
+- The window sizes and positions of the tileset editor, palette editor, and region map editor are now stored in `porymap.cfg`.
+- Add ruler tool for measuring metatile distance in events tab (Right-click to turn on/off, left-click to lock in place).
+- Add delete button to wild pokemon encounters tab.
+- Add shortcut customization via `Options -> Edit Shortcuts`.
+- Add custom text editor commands in `Options -> Edit Preferences`, a tool-button next to the `Script` combo-box, and `Tools -> Open Project in Text Editor`. The tool-button will open the containing file to the cooresponding script.
 
 ### Changed
 - Holding `shift` now toggles "Smart Path" drawing; when the "Smart Paths" checkbox is checked, holding `shift` will temporarily disable it.
@@ -22,7 +41,10 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ### Fixed
 - Fix a bug with the current metatile selection zoom.
 - Fix bug preventing the status bar from updating the current position while dragging events.
-- Fix porymap icon not showing on window or panel on Linux
+- Fix porymap icon not showing on window or panel on Linux.
+- The main window can now be resized to fit on lower resolution displays.
+- Zooming the map in/out will now focus on the cursor.
+- Fix bug where object event sprites whose name contained a 0 character would display the placeholder "N" picture.
 
 ## [4.3.1] - 2020-07-17
 ### Added
@@ -250,7 +272,8 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ## [1.0.0] - 2018-10-26
 This was the initial release.
 
-[Unreleased]: https://github.com/huderlem/porymap/compare/4.3.1...HEAD
+[Unreleased]: https://github.com/huderlem/porymap/compare/4.4.0...HEAD
+[4.4.0]: https://github.com/huderlem/porymap/compare/4.3.1...4.4.0
 [4.3.1]: https://github.com/huderlem/porymap/compare/4.3.0...4.3.1
 [4.3.0]: https://github.com/huderlem/porymap/compare/4.2.0...4.3.0
 [4.2.0]: https://github.com/huderlem/porymap/compare/4.1.0...4.2.0
