@@ -71,7 +71,7 @@ void MonTabWidget::populateTab(int tabIndex, WildMonInfo monInfo, QString fieldN
         fieldIndex++;
     }
     bool insertGroupLabel = false;
-    if (!editor->project->wildMonFields[fieldIndex].groups.isEmpty()) insertGroupLabel = true;
+    if (!editor->project->wildMonFields[fieldIndex].groups.empty()) insertGroupLabel = true;
 
     speciesTable->setRowCount(monInfo.wildPokemon.size());
     speciesTable->setColumnCount(insertGroupLabel ? 8 : 7);
@@ -159,8 +159,9 @@ void MonTabWidget::createSpeciesTableRow(QTableWidget *table, WildPokemon mon, i
     }
 
     double slotChanceTotal = 0.0;
-    if (!editor->project->wildMonFields[fieldIndex].groups.isEmpty()) {
-        for (QString groupKey : editor->project->wildMonFields[fieldIndex].groups.keys()) {
+    if (!editor->project->wildMonFields[fieldIndex].groups.empty()) {
+        for (auto groupKeyPair : editor->project->wildMonFields[fieldIndex].groups) {
+            QString groupKey = groupKeyPair.first;
             if (editor->project->wildMonFields[fieldIndex].groups[groupKey].contains(index)) {
                 for (int chanceIndex : editor->project->wildMonFields[fieldIndex].groups[groupKey]) {
                     slotChanceTotal += static_cast<double>(editor->project->wildMonFields[fieldIndex].encounterRates[chanceIndex]);
@@ -198,11 +199,12 @@ void MonTabWidget::createSpeciesTableRow(QTableWidget *table, WildPokemon mon, i
     maxLevelFrame->setLayout(maxLevelSpinboxLayout);
 
     bool insertGroupLabel = false;
-    if (!editor->project->wildMonFields[fieldIndex].groups.isEmpty()) insertGroupLabel = true;
+    if (!editor->project->wildMonFields[fieldIndex].groups.empty()) insertGroupLabel = true;
     table->setCellWidget(index, 0, monNum);
     if (insertGroupLabel) {
         QString groupName = QString();
-        for (QString groupKey : editor->project->wildMonFields[fieldIndex].groups.keys()) {
+        for (auto groupKeyPair : editor->project->wildMonFields[fieldIndex].groups) {
+            QString groupKey = groupKeyPair.first;
             if (editor->project->wildMonFields[fieldIndex].groups[groupKey].contains(index)) {
                 groupName = groupKey;
                 break;

@@ -730,7 +730,8 @@ void Project::saveWildMonData() {
         fieldObject["encounter_rates"] = rateArray;
 
         OrderedJson::object groupsObject;
-        for (QString groupName : fieldInfo.groups.keys()) {
+        for (auto groupNamePair : fieldInfo.groups) {
+            QString groupName = groupNamePair.first;
             OrderedJson::array subGroupIndices;
             std::sort(fieldInfo.groups[groupName].begin(), fieldInfo.groups[groupName].end());
             for (int slotIndex : fieldInfo.groups[groupName]) {
@@ -754,9 +755,10 @@ void Project::saveWildMonData() {
             encounterObject["base_label"] = groupLabel;
 
             WildPokemonHeader encounterHeader = wildMonData[key][groupLabel];
-            for (QString fieldName : encounterHeader.wildMons.keys()) {
+            for (auto fieldNamePair : encounterHeader.wildMons) {
+                QString fieldName = fieldNamePair.first;
                 OrderedJson::object fieldObject;
-                WildMonInfo monInfo = encounterHeader.wildMons.value(fieldName);
+                WildMonInfo monInfo = encounterHeader.wildMons[fieldName];
                 fieldObject["encounter_rate"] = monInfo.encounterRate;
                 OrderedJson::array monArray;
                 for (WildPokemon wildMon : monInfo.wildPokemon) {
@@ -1726,20 +1728,18 @@ bool Project::readWildMonData() {
 
     QString wildMonJsonFilepath = QString("%1/src/data/wild_encounters.json").arg(root);
     fileWatcher.addPath(wildMonJsonFilepath);
-    QJsonDocument wildMonsJsonDoc;
-    if (!parser.tryParseJsonFile(&wildMonsJsonDoc, wildMonJsonFilepath)) {
+
+    OrderedJson::object wildMonObj;
+    if (!parser.tryParseOrderedJsonFile(&wildMonObj, wildMonJsonFilepath)) {
         logError(QString("Failed to read wild encounters from %1").arg(wildMonJsonFilepath));
         return false;
     }
 
-    QJsonObject wildMonObj = wildMonsJsonDoc.object();
-
-    for (auto subObjectRef : wildMonObj["wild_encounter_groups"].toArray()) {
-        QJsonObject subObject = subObjectRef.toObject();
-        if (!subObject["for_maps"].toBool()) {
+    for (OrderedJson subObjectRef : wildMonObj["wild_encounter_groups"].array_items()) {
+        OrderedJson::object subObject = subObjectRef.object_items();
+        if (!subObject["for_maps"].bool_value()) {
             QString err;
-            QString subObjson = QJsonDocument(subObject).toJson();
-            OrderedJson::object orderedSubObject = OrderedJson::parse(subObjson, err).object_items();
+            OrderedJson::object orderedSubObject = OrderedJson::parse(OrderedJson(subObject).dump(), err).object_items();
             extraEncounterGroups.push_back(orderedSubObject);
             if (!err.isEmpty()) {
                 logWarn(QString("Encountered a problem while parsing extra encounter groups: %1").arg(err));
@@ -1747,44 +1747,55 @@ bool Project::readWildMonData() {
             continue;
         }
 
-        for (auto field : subObject["fields"].toArray()) {
+        for (OrderedJson field : subObject["fields"].array_items()) {
             EncounterField encounterField;
-            encounterField.name = field.toObject()["type"].toString();
-            for (auto val : field.toObject()["encounter_rates"].toArray()) {
-                encounterField.encounterRates.append(val.toInt());
+            OrderedJson::object fieldObj = field.object_items();
+            encounterField.name = fieldObj["type"].string_value();
+            for (auto val : fieldObj["encounter_rates"].array_items()) {
+                encounterField.encounterRates.append(val.int_value());
             }
-            for (QString group : field.toObject()["groups"].toObject().keys()) {
-                for (auto slotNum : field.toObject()["groups"].toObject()[group].toArray()) {
-                    encounterField.groups[group].append(slotNum.toInt());
+
+            QList<QString> subGroups;
+            for (auto groupPair : fieldObj["groups"].object_items()) {
+                subGroups.append(groupPair.first);
+            }
+            for (QString group : subGroups) {
+                OrderedJson::object groupsObj = fieldObj["groups"].object_items();
+                for (auto slotNum : groupsObj[group].array_items()) {
+                    encounterField.groups[group].append(slotNum.int_value());
                 }
             }
             wildMonFields.append(encounterField);
         }
 
-        QJsonArray encounters = subObject["encounters"].toArray();
-        for (QJsonValue encounter : encounters) {
-            QString mapConstant = encounter.toObject().value("map").toString();
+        auto encounters = subObject["encounters"].array_items();
+        for (auto encounter : encounters) {
+            OrderedJson::object encounterObj = encounter.object_items();
+            QString mapConstant = encounterObj["map"].string_value();
 
             WildPokemonHeader header;
 
             for (EncounterField monField : wildMonFields) {
                 QString field = monField.name;
-                if (encounter.toObject().value(field) != QJsonValue::Undefined) {
+                if (!encounterObj[field].is_null()) {
+                    OrderedJson::object encounterFieldObj = encounterObj[field].object_items();
                     header.wildMons[field].active = true;
-                    header.wildMons[field].encounterRate = encounter.toObject().value(field).toObject().value("encounter_rate").toInt();
-                    for (QJsonValue mon : encounter.toObject().value(field).toObject().value("mons").toArray()) {
+                    header.wildMons[field].encounterRate = encounterFieldObj["encounter_rate"].int_value();
+                    for (auto mon : encounterFieldObj["mons"].array_items()) {
                         WildPokemon newMon;
-                        newMon.minLevel = mon.toObject().value("min_level").toInt();
-                        newMon.maxLevel = mon.toObject().value("max_level").toInt();
-                        newMon.species = mon.toObject().value("species").toString();
+                        OrderedJson::object monObj = mon.object_items();
+                        newMon.minLevel = monObj["min_level"].int_value();
+                        newMon.maxLevel = monObj["max_level"].int_value();
+                        newMon.species = monObj["species"].string_value();
                         header.wildMons[field].wildPokemon.append(newMon);
                     }
                 }
             }
-            wildMonData[mapConstant].insert({encounter.toObject().value("base_label").toString(), header});
-            encounterGroupLabels.append(encounter.toObject().value("base_label").toString());
+            wildMonData[mapConstant].insert({encounterObj["base_label"].string_value(), header});
+            encounterGroupLabels.append(encounterObj["base_label"].string_value());
         }
     }
+
     return true;
 }
 

@@ -340,12 +340,14 @@ void Editor::addNewWildMonGroup(QWidget *window) {
             if (fieldCheckboxes[tabIndex]->isChecked()) {
                 if (copyCheckbox->isChecked()) {
                     MonTabWidget *copyFrom = static_cast<MonTabWidget *>(stack->widget(stackIndex));
-                    if (copyFrom->isTabEnabled(tabIndex))
-                        header.wildMons.insert(fieldName, copyMonInfoFromTab(copyFrom->tableAt(tabIndex), monField));
-                    else
-                        header.wildMons.insert(fieldName, getDefaultMonInfo(monField));
+                    if (copyFrom->isTabEnabled(tabIndex)) {
+                        header.wildMons[fieldName] = copyMonInfoFromTab(copyFrom->tableAt(tabIndex), monField);
+                    }
+                    else {
+                        header.wildMons[fieldName] = getDefaultMonInfo(monField);
+                    }
                 } else {
-                    header.wildMons.insert(fieldName, getDefaultMonInfo(monField));
+                    header.wildMons[fieldName] = getDefaultMonInfo(monField);
                 }
                 tabWidget->populateTab(tabIndex, header.wildMons[fieldName], fieldName);
             } else {
@@ -409,14 +411,16 @@ void Editor::configureEncounterJSON(QWidget *window) {
         int total = 0, spinnerIndex = 0;
         QString groupTotalMessage;
         QMap<QString, int> groupTotals;
-        for (QString key : currentField.groups.keys())
-            groupTotals.insert(key, 0);// add to group map and initialize total to zero
+        for (auto keyPair : currentField.groups) {
+            groupTotals.insert(keyPair.first, 0);// add to group map and initialize total to zero
+        }
         for (auto slot : fieldSlots) {
             QSpinBox *spinner = slot->findChild<QSpinBox *>();
             int val = spinner->value();
             currentField.encounterRates[spinnerIndex] = val;
-            if (!currentField.groups.isEmpty()) {
-                for (QString key : currentField.groups.keys()) {
+            if (!currentField.groups.empty()) {
+                for (auto keyPair : currentField.groups) {
+                    QString key = keyPair.first;
                     if (currentField.groups[key].contains(spinnerIndex)) {
                         groupTotals[key] += val;
                         break;
@@ -427,9 +431,10 @@ void Editor::configureEncounterJSON(QWidget *window) {
             }
             spinnerIndex++;
         }
-        if (!currentField.groups.isEmpty()) {
+        if (!currentField.groups.empty()) {
             groupTotalMessage += "Totals: ";
-            for (QString key : currentField.groups.keys()) {
+            for (auto keyPair : currentField.groups) {
+                QString key = keyPair.first;
                 groupTotalMessage += QString("%1 (%2),\t").arg(groupTotals[key]).arg(key);
             }
             groupTotalMessage.chop(2);
@@ -456,7 +461,7 @@ void Editor::configureEncounterJSON(QWidget *window) {
             updateTotal(currentField);
         });
 
-        bool useGroups = !currentField.groups.isEmpty();
+        bool useGroups = !currentField.groups.empty();
 
         QFrame *slotChoiceFrame = new QFrame;
         QVBoxLayout *slotChoiceLayout = new QVBoxLayout;
@@ -465,22 +470,27 @@ void Editor::configureEncounterJSON(QWidget *window) {
             connect(groupCombo, QOverload<const QString &>::of(&QComboBox::textActivated), [&tempFields, &currentField, index](QString newGroupName) {
                 for (EncounterField &field : tempFields) {
                     if (field.name == currentField.name) {
-                        for (QString groupName : field.groups.keys()) {
+                        for (auto groupNameIterator : field.groups) {
+                            QString groupName = groupNameIterator.first;
                             if (field.groups[groupName].contains(index)) {
                                 field.groups[groupName].removeAll(index);
                                 break;
                             }
                         }
-                        for (QString groupName : field.groups.keys()) {
+                        for (auto groupNameIterator : field.groups) {
+                            QString groupName = groupNameIterator.first;
                             if (groupName == newGroupName) field.groups[newGroupName].append(index);
                         }
                         break;
                     }
                 }
             });
-            groupCombo->addItems(currentField.groups.keys());
+            for (auto groupNameIterator : currentField.groups) {
+                groupCombo->addItem(groupNameIterator.first);
+            }
             QString currentGroupName;
-            for (QString groupName : currentField.groups.keys()) {
+            for (auto groupNameIterator : currentField.groups) {
+                QString groupName = groupNameIterator.first;
                 if (currentField.groups[groupName].contains(index)) {
                     currentGroupName = groupName;
                     break;
@@ -676,7 +686,8 @@ void Editor::updateEncounterFields(EncounterFields newFields) {
                         for (auto groupNamePair : project->wildMonData[map]) {
                             QString groupName = groupNamePair.first;
                             WildPokemonHeader &monHeader = project->wildMonData[map][groupName];
-                            for (QString fieldName : monHeader.wildMons.keys()) {
+                            for (auto fieldNamePair : monHeader.wildMons) {
+                                QString fieldName = fieldNamePair.first;
                                 if (fieldName == oldFieldName) {
                                     monHeader.wildMons[fieldName].wildPokemon.resize(newField.encounterRates.size());
                                 }
@@ -692,9 +703,10 @@ void Editor::updateEncounterFields(EncounterFields newFields) {
                 for (auto groupNamePair : project->wildMonData[map]) {
                     QString groupName = groupNamePair.first;
                     WildPokemonHeader &monHeader = project->wildMonData[map][groupName];
-                    for (QString fieldName : monHeader.wildMons.keys()) {
+                    for (auto fieldNamePair : monHeader.wildMons) {
+                        QString fieldName = fieldNamePair.first;
                         if (fieldName == oldFieldName) {
-                            monHeader.wildMons.remove(fieldName);
+                            monHeader.wildMons.erase(fieldName);
                         }
                     }
                 }
