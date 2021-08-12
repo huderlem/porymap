@@ -19,7 +19,7 @@ WildMonInfo copyMonInfoFromTab(QTableWidget *monTable, EncounterField monField) 
     WildMonInfo newInfo;
     QVector<WildPokemon> newWildMons;
 
-    bool extraColumn = !monField.groups.isEmpty();
+    bool extraColumn = !monField.groups.empty();
     for (int row = 0; row < monTable->rowCount(); row++) {
         WildPokemon newWildMon;
         newWildMon.species = monTable->cellWidget(row, extraColumn ? 2 : 1)->findChild<QComboBox *>()->currentText();

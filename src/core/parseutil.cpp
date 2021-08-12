@@ -404,6 +404,17 @@ bool ParseUtil::tryParseJsonFile(QJsonDocument *out, const QString &filepath) {
     return true;
 }
 
+bool ParseUtil::tryParseOrderedJsonFile(poryjson::Json::object *out, const QString &filepath) {
+    QString err;
+    QString jsonTxt = readTextFile(filepath);
+    *out = OrderedJson::parse(jsonTxt, err).object_items();
+    if (!err.isEmpty()) {
+        logError(QString("Error: Failed to parse json file %1: %2").arg(filepath).arg(err));
+        return false;
+    }
+    return true;
+}
+
 bool ParseUtil::ensureFieldsExist(const QJsonObject &obj, const QList<QString> &fields) {
     for (QString field : fields) {
         if (!obj.contains(field)) {

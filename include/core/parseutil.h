@@ -53,6 +53,7 @@ public:
     QList<QStringList> getLabelMacros(const QList<QStringList>&, const QString&);
     QStringList getLabelValues(const QList<QStringList>&, const QString&);
     bool tryParseJsonFile(QJsonDocument *out, const QString &filepath);
+    bool tryParseOrderedJsonFile(poryjson::Json::object *out, const QString &filepath);
     bool ensureFieldsExist(const QJsonObject &obj, const QList<QString> &fields);
 
     // Returns the 1-indexed line number for the definition of scriptLabel in the scripts file at filePath.
