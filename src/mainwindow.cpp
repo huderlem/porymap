@@ -1588,7 +1588,6 @@ void MainWindow::paste() {
                     }
 
                     pasteEvent->put("map_name", editor->map->name);
-                    editor->map->addEvent(pasteEvent);
                     newEvents.append(pasteEvent);
                 }
 
