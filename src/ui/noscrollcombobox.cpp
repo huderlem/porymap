@@ -16,6 +16,10 @@ NoScrollComboBox::NoScrollComboBox(QWidget *parent)
     setEditable(true);// can set to false manually when using
     this->completer()->setCompletionMode(QCompleter::PopupCompletion);
     this->completer()->setFilterMode(Qt::MatchContains);
+
+    QRegularExpression re("[A-Za-z_0-9]+");
+    QValidator *validator = new QRegularExpressionValidator(re);
+    this->setValidator(validator);
 }
 
 void NoScrollComboBox::wheelEvent(QWheelEvent *event)
