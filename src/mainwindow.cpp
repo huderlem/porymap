@@ -1528,7 +1528,6 @@ void MainWindow::paste() {
             case 0:
             {
                 // can only paste currently selected metatiles on this tab
-                // can only paste events to this tab
                 if (pasteObject["object"].toString() != "metatile_selection") {
                     return;
                 }
@@ -1594,6 +1593,7 @@ void MainWindow::paste() {
                 }
 
                 editor->map->editHistory.push(new EventPaste(this->editor, editor->map, newEvents));
+                updateObjects();
 
                 break;
             }
