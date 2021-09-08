@@ -53,6 +53,7 @@ public:
     QMap<QString, QString> customHeaders;
     MapLayout *layout;
     bool isPersistedToFile = true;
+    bool hasUnsavedDataChanges = false;
     bool needsLayoutDir = true;
     QImage collision_image;
     QPixmap collision_pixmap;
