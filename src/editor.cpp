@@ -1930,8 +1930,7 @@ void Editor::updateCustomMapHeaderValues(QTableWidget *table)
         fields[keyStr] = valueStr;
     }
     map->customHeaders = fields;
-    map->hasUnsavedDataChanges = true;
-    emit shouldUpdateWindow();
+    emit editedMapData();
 }
 
 Tileset* Editor::getCurrentMapPrimaryTileset()

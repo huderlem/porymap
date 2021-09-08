@@ -17,7 +17,7 @@ NoScrollComboBox::NoScrollComboBox(QWidget *parent)
     this->completer()->setCompletionMode(QCompleter::PopupCompletion);
     this->completer()->setFilterMode(Qt::MatchContains);
 
-    QRegularExpression re("[A-Za-z_0-9]+");
+    QRegularExpression re("[^\\s]*");
     QValidator *validator = new QRegularExpressionValidator(re);
     this->setValidator(validator);
 }

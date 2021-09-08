@@ -210,7 +210,7 @@ signals:
     void warpEventDoubleClicked(QString mapName, QString warpNum);
     void currentMetatilesSelectionChanged();
     void mapRulerStatusChanged(const QString &);
-    void shouldUpdateWindow();
+    void editedMapData();
 };
 
 #endif // EDITOR_H

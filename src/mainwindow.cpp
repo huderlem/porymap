@@ -256,7 +256,7 @@ void MainWindow::initEditor() {
     connect(this->editor, &Editor::currentMetatilesSelectionChanged, this, &MainWindow::currentMetatilesSelectionChanged);
     connect(this->editor, &Editor::wildMonDataChanged, this, &MainWindow::onWildMonDataChanged);
     connect(this->editor, &Editor::mapRulerStatusChanged, this, &MainWindow::onMapRulerStatusChanged);
-    connect(this->editor, &Editor::shouldUpdateWindow, this, [=]() { showWindowTitle(); });
+    connect(this->editor, &Editor::editedMapData, this, &MainWindow::markMapEdited);
     connect(ui->toolButton_Open_Scripts, &QToolButton::pressed, this->editor, &Editor::openMapScripts);
     connect(ui->actionOpen_Project_in_Text_Editor, &QAction::triggered, this->editor, &Editor::openProjectInTextEditor);
 
@@ -337,6 +337,13 @@ void MainWindow::showWindowTitle() {
             .arg(editor->map->name)
             .arg(editor->project->getProjectTitle())
         );
+    }
+}
+
+void MainWindow::markMapEdited() {
+    if (editor && editor->map) {
+        editor->map->hasUnsavedDataChanges = true;
+        showWindowTitle();
     }
 }
 
@@ -797,8 +804,7 @@ void MainWindow::on_comboBox_Song_currentTextChanged(const QString &song)
 {
     if (editor && editor->map) {
         editor->map->song = song;
-        editor->map->hasUnsavedDataChanges = true;
-        showWindowTitle();
+        markMapEdited();
     }
 }
 
@@ -806,8 +812,7 @@ void MainWindow::on_comboBox_Location_currentTextChanged(const QString &location
 {
     if (editor && editor->map) {
         editor->map->location = location;
-        editor->map->hasUnsavedDataChanges = true;
-        showWindowTitle();
+        markMapEdited();
     }
 }
 
@@ -815,8 +820,7 @@ void MainWindow::on_comboBox_Weather_currentTextChanged(const QString &weather)
 {
     if (editor && editor->map) {
         editor->map->weather = weather;
-        editor->map->hasUnsavedDataChanges = true;
-        showWindowTitle();
+        markMapEdited();
     }
 }
 
@@ -824,8 +828,7 @@ void MainWindow::on_comboBox_Type_currentTextChanged(const QString &type)
 {
     if (editor && editor->map) {
         editor->map->type = type;
-        editor->map->hasUnsavedDataChanges = true;
-        showWindowTitle();
+        markMapEdited();
     }
 }
 
@@ -833,8 +836,7 @@ void MainWindow::on_comboBox_BattleScene_currentTextChanged(const QString &battl
 {
     if (editor && editor->map) {
         editor->map->battle_scene = battle_scene;
-        editor->map->hasUnsavedDataChanges = true;
-        showWindowTitle();
+        markMapEdited();
     }
 }
 
@@ -846,8 +848,7 @@ void MainWindow::on_checkBox_Visibility_clicked(bool checked)
         } else {
             editor->map->requiresFlash = "FALSE";
         }
-        editor->map->hasUnsavedDataChanges = true;
-        showWindowTitle();
+        markMapEdited();
     }
 }
 
@@ -859,8 +860,7 @@ void MainWindow::on_checkBox_ShowLocation_clicked(bool checked)
         } else {
             editor->map->show_location = "FALSE";
         }
-        editor->map->hasUnsavedDataChanges = true;
-        showWindowTitle();
+        markMapEdited();
     }
 }
 
@@ -872,8 +872,7 @@ void MainWindow::on_checkBox_AllowRunning_clicked(bool checked)
         } else {
             editor->map->allowRunning = "0";
         }
-        editor->map->hasUnsavedDataChanges = true;
-        showWindowTitle();
+        markMapEdited();
     }
 }
 
@@ -885,8 +884,7 @@ void MainWindow::on_checkBox_AllowBiking_clicked(bool checked)
         } else {
             editor->map->allowBiking = "0";
         }
-        editor->map->hasUnsavedDataChanges = true;
-        showWindowTitle();
+        markMapEdited();
     }
 }
 
@@ -898,8 +896,7 @@ void MainWindow::on_checkBox_AllowEscapeRope_clicked(bool checked)
         } else {
             editor->map->allowEscapeRope = "0";
         }
-        editor->map->hasUnsavedDataChanges = true;
-        showWindowTitle();
+        markMapEdited();
     }
 }
 
@@ -907,8 +904,7 @@ void MainWindow::on_spinBox_FloorNumber_valueChanged(int offset)
 {
     if (editor && editor->map) {
         editor->map->floorNumber = offset;
-        editor->map->hasUnsavedDataChanges = true;
-        showWindowTitle();
+        markMapEdited();
     }
 }
 
@@ -2012,10 +2008,7 @@ void MainWindow::updateSelectedObjects() {
             frame->ui->comboBox_sprite->addItems(event_obj_gfx_constants.keys());
             frame->ui->comboBox_sprite->setCurrentIndex(frame->ui->comboBox_sprite->findText(item->event->get("sprite")));
             connect(frame->ui->comboBox_sprite, &QComboBox::currentTextChanged, item, &DraggablePixmapItem::set_sprite);
-            connect(frame->ui->comboBox_sprite, &QComboBox::currentTextChanged, this, [=]() {
-                this->editor->map->hasUnsavedDataChanges = true;
-                showWindowTitle();
-            });
+            connect(frame->ui->comboBox_sprite, &QComboBox::currentTextChanged, this, &MainWindow::markMapEdited);
 
             /*
             frame->ui->script->setVisible(true);
@@ -2226,10 +2219,7 @@ void MainWindow::updateSelectedObjects() {
                     item->event->put(key, value);
                 });
 
-                connect(spin, QOverload<int>::of(&NoScrollSpinBox::valueChanged), this, [=]() {
-                    this->editor->map->hasUnsavedDataChanges = true;
-                    showWindowTitle();
-                });
+                connect(spin, QOverload<int>::of(&NoScrollSpinBox::valueChanged), this, &MainWindow::markMapEdited);
             // Keys using check boxes
             } else if (checkKeys.contains(key)) {
                 check->setChecked(value.toInt());
@@ -2250,10 +2240,7 @@ void MainWindow::updateSelectedObjects() {
                     }
                 });
 
-                connect(check, &QCheckBox::stateChanged, this, [=]() {
-                    this->editor->map->hasUnsavedDataChanges = true;
-                    showWindowTitle();
-                });
+                connect(check, &QCheckBox::stateChanged, this, &MainWindow::markMapEdited);
             // Keys using combo boxes
             } else {
                 combo->setCurrentText(value);
@@ -2283,10 +2270,7 @@ void MainWindow::updateSelectedObjects() {
 
                 item->bind(combo, key);
 
-                connect(combo, &QComboBox::currentTextChanged, this, [=]() {
-                    this->editor->map->hasUnsavedDataChanges = true;
-                    showWindowTitle();
-                });
+                connect(combo, &QComboBox::currentTextChanged, this, &MainWindow::markMapEdited);
             }
         }
         frames.append(frame);
@@ -2710,8 +2694,7 @@ void MainWindow::onTilesetsSaved(QString primaryTilesetLabel, QString secondaryT
 }
 
 void MainWindow::onWildMonDataChanged() {
-    editor->map->hasUnsavedDataChanges = true;
-    showWindowTitle();
+    markMapEdited();
 }
 
 void MainWindow::onMapRulerStatusChanged(const QString &status) {
@@ -2764,38 +2747,33 @@ void MainWindow::showExportMapImageWindow(ImageExporterMode mode) {
 void MainWindow::on_comboBox_ConnectionDirection_currentTextChanged(const QString &direction)
 {
     editor->updateCurrentConnectionDirection(direction);
-    editor->map->hasUnsavedDataChanges = true;
-    showWindowTitle();
+    markMapEdited();
 }
 
 void MainWindow::on_spinBox_ConnectionOffset_valueChanged(int offset)
 {
     editor->updateConnectionOffset(offset);
-    editor->map->hasUnsavedDataChanges = true;
-    showWindowTitle();
+    markMapEdited();
 }
 
 void MainWindow::on_comboBox_ConnectedMap_currentTextChanged(const QString &mapName)
 {
     if (editor->project->mapNames.contains(mapName)) {
         editor->setConnectionMap(mapName);
-        editor->map->hasUnsavedDataChanges = true;
-        showWindowTitle();
+        markMapEdited();
     }
 }
 
 void MainWindow::on_pushButton_AddConnection_clicked()
 {
     editor->addNewConnection();
-    editor->map->hasUnsavedDataChanges = true;
-    showWindowTitle();
+    markMapEdited();
 }
 
 void MainWindow::on_pushButton_RemoveConnection_clicked()
 {
     editor->removeCurrentConnection();
-    editor->map->hasUnsavedDataChanges = true;
-    showWindowTitle();
+    markMapEdited();
 }
 
 void MainWindow::on_pushButton_NewWildMonGroup_clicked() {
@@ -2814,8 +2792,7 @@ void MainWindow::on_comboBox_DiveMap_currentTextChanged(const QString &mapName)
 {
     if (editor->project->mapNames.contains(mapName)) {
         editor->updateDiveMap(mapName);
-        editor->map->hasUnsavedDataChanges = true;
-        showWindowTitle();
+        markMapEdited();
     }
 }
 
@@ -2823,8 +2800,7 @@ void MainWindow::on_comboBox_EmergeMap_currentTextChanged(const QString &mapName
 {
     if (editor->project->mapNames.contains(mapName)) {
         editor->updateEmergeMap(mapName);
-        editor->map->hasUnsavedDataChanges = true;
-        showWindowTitle();
+        markMapEdited();
     }
 }
 
@@ -2835,8 +2811,7 @@ void MainWindow::on_comboBox_PrimaryTileset_currentTextChanged(const QString &ti
         redrawMapScene();
         on_horizontalSlider_MetatileZoom_valueChanged(ui->horizontalSlider_MetatileZoom->value());
         updateTilesetEditor();
-        editor->map->hasUnsavedDataChanges = true;
-        showWindowTitle();
+        markMapEdited();
     }
 }
 
@@ -2847,8 +2822,7 @@ void MainWindow::on_comboBox_SecondaryTileset_currentTextChanged(const QString &
         redrawMapScene();
         on_horizontalSlider_MetatileZoom_valueChanged(ui->horizontalSlider_MetatileZoom->value());
         updateTilesetEditor();
-        editor->map->hasUnsavedDataChanges = true;
-        showWindowTitle();
+        markMapEdited();
     }
 }
 

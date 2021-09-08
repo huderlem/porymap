@@ -307,6 +307,7 @@ private:
     void checkToolButtons();
     void clickToolButtonFromEditMode(QString editMode);
 
+    void markMapEdited();
     void showWindowTitle();
 
     void initWindow();
