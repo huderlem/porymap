@@ -449,5 +449,5 @@ void Map::addEvent(Event *event) {
 }
 
 bool Map::hasUnsavedChanges() {
-    return !editHistory.isClean() || !isPersistedToFile;
+    return !editHistory.isClean() || hasUnsavedDataChanges || !isPersistedToFile;
 }

@@ -1420,6 +1420,7 @@ void Project::saveMap(Map *map) {
     updateMapLayout(map);
 
     map->isPersistedToFile = true;
+    map->hasUnsavedDataChanges = false;
     map->editHistory.setClean();
 }
 
