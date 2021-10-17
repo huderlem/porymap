@@ -798,7 +798,7 @@ void Project::saveMapConstantsHeader() {
 
     int groupNum = 0;
     for (QStringList mapNames : groupedMapNames) {
-        text += QString("// Map Group %1\n").arg(groupNum);
+        text += "// " + groupNames.at(groupNum) + "\n";
         int maxLength = 0;
         for (QString mapName : mapNames) {
             QString mapConstantName = mapNamesToMapConstants.value(mapName);
