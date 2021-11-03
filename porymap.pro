@@ -13,6 +13,7 @@ TEMPLATE = app
 RC_ICONS = resources/icons/porymap-icon-2.ico
 ICON = resources/icons/porymap.icns
 QMAKE_CXXFLAGS += -std=c++11 -Wall
+QMAKE_TARGET_BUNDLE_PREFIX = com.pret
 
 SOURCES += src/core/block.cpp \
     src/core/blockdata.cpp \
