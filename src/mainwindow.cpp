@@ -2710,7 +2710,7 @@ void MainWindow::onMapRulerStatusChanged(const QString &status) {
 
 void MainWindow::moveEvent(QMoveEvent *event) {
     QMainWindow::moveEvent(event);
-    if (label_MapRulerStatus->isVisible() && label_MapRulerStatus->parentWidget())
+    if (label_MapRulerStatus && label_MapRulerStatus->isVisible() && label_MapRulerStatus->parentWidget())
         label_MapRulerStatus->move(label_MapRulerStatus->parentWidget()->mapToGlobal(QPoint(6, 6)));
 }
 
