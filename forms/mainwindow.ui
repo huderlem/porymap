@@ -2642,6 +2642,8 @@
     <addaction name="actionTileset_Editor"/>
     <addaction name="actionRegion_Map_Editor"/>
     <addaction name="separator"/>
+    <addaction name="actionImport_Map_from_Advance_Map_1_92"/>
+    <addaction name="separator"/>
     <addaction name="actionOpen_Project_in_Text_Editor"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
@@ -2954,6 +2956,11 @@
   <action name="actionOpen_Config_Folder">
    <property name="text">
     <string>Open Config Folder</string>
+   </property>
+  </action>
+  <action name="actionImport_Map_from_Advance_Map_1_92">
+   <property name="text">
+    <string>Import Map from Advance Map 1.92...</string>
    </property>
   </action>
  </widget>

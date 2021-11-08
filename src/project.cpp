@@ -1848,7 +1848,7 @@ bool Project::readMapGroups() {
     return true;
 }
 
-Map* Project::addNewMapToGroup(QString mapName, int groupNum, Map *newMap, bool existingLayout) {
+Map* Project::addNewMapToGroup(QString mapName, int groupNum, Map *newMap, bool existingLayout, bool importedMap) {
     mapNames.append(mapName);
     mapGroups.insert(mapName, groupNum);
     groupedMapNames[groupNum].append(mapName);
@@ -1861,8 +1861,12 @@ Map* Project::addNewMapToGroup(QString mapName, int groupNum, Map *newMap, bool 
     if (!existingLayout) {
         mapLayouts.insert(newMap->layoutId, newMap->layout);
         mapLayoutsTable.append(newMap->layoutId);
-        setNewMapBlockdata(newMap);
-        setNewMapBorder(newMap);
+        if (!importedMap) {
+            setNewMapBlockdata(newMap);
+        }
+        if (newMap->layout->border.isEmpty()) {
+            setNewMapBorder(newMap);
+        }
     }
 
     loadLayoutTilesets(newMap->layout);
@@ -1910,6 +1914,7 @@ QMap<QString, QStringList> Project::getTilesetLabels() {
     QStringList secondaryTilesets;
     allTilesets.insert("primary", primaryTilesets);
     allTilesets.insert("secondary", secondaryTilesets);
+    QList<QString> tilesetLabelsOrdered;
 
     QString filename = "data/tilesets/headers.inc";
     QString headers_text = parser.readTextFile(root + "/" + filename);
@@ -1938,8 +1943,10 @@ QMap<QString, QStringList> Project::getTilesetLabels() {
             allTilesets["secondary"].append(tilesetLabel);
         else
             allTilesets["primary"].append(tilesetLabel);
+        tilesetLabelsOrdered.append(tilesetLabel);
     }
     this->tilesetLabels = allTilesets;
+    this->tilesetLabelsOrdered = tilesetLabelsOrdered;
     return allTilesets;
 }
 

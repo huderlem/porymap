@@ -93,6 +93,7 @@ public:
     Tileset* loadTileset(QString, Tileset *tileset = nullptr);
     Tileset* getTileset(QString, bool forceLoad = false);
     QMap<QString, QStringList> tilesetLabels;
+    QList<QString> tilesetLabelsOrdered;
 
     Blockdata readBlockdata(QString);
     bool loadBlockdata(MapLayout*);
@@ -103,7 +104,7 @@ public:
     void deleteFile(QString path);
 
     bool readMapGroups();
-    Map* addNewMapToGroup(QString, int, Map*, bool);
+    Map* addNewMapToGroup(QString, int, Map*, bool, bool);
     QString getNewMapName();
     QString getProjectTitle();
 

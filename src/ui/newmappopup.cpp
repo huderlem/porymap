@@ -17,6 +17,7 @@ NewMapPopup::NewMapPopup(QWidget *parent, Project *project) :
     ui->setupUi(this);
     this->project = project;
     this->existingLayout = false;
+    this->importedMap = false;
 }
 
 NewMapPopup::~NewMapPopup()
@@ -38,6 +39,12 @@ void NewMapPopup::init(int type, int group, QString sec, QString layoutId) {
             setDefaultValues(group, QString());
             break;
     }
+    connectSignals();
+}
+
+void NewMapPopup::initImportMap(MapLayout *mapLayout) {
+    this->importedMap = true;
+    setDefaultValuesImportMap(mapLayout);
     connectSignals();
 }
 
@@ -136,6 +143,42 @@ void NewMapPopup::setDefaultValues(int groupNum, QString mapSec) {
 
     ui->frame_NewMap_Options->setEnabled(true);
 
+    setDefaultValuesProjectConfig(false, NULL);
+}
+
+void NewMapPopup::setDefaultValuesImportMap(MapLayout *mapLayout) {
+    ui->lineEdit_NewMap_Name->setText(project->getNewMapName());
+
+    QMap<QString, QStringList> tilesets = project->getTilesetLabels();
+    ui->comboBox_NewMap_Primary_Tileset->addItems(tilesets.value("primary"));
+    ui->comboBox_NewMap_Secondary_Tileset->addItems(tilesets.value("secondary"));
+
+    ui->comboBox_NewMap_Group->addItems(project->groupNames);
+    ui->comboBox_NewMap_Group->setCurrentText(project->groupNames.at(0));
+
+    ui->spinBox_NewMap_Width->setValue(mapLayout->width.toInt(nullptr, 0));
+    ui->spinBox_NewMap_Height->setValue(mapLayout->height.toInt(nullptr, 0));
+    ui->comboBox_NewMap_Primary_Tileset->setCurrentText(mapLayout->tileset_primary_label);
+    ui->comboBox_NewMap_Secondary_Tileset->setCurrentText(mapLayout->tileset_secondary_label);
+
+    ui->comboBox_NewMap_Type->addItems(project->mapTypes);
+    ui->comboBox_NewMap_Location->addItems(project->mapSectionValueToName.values());
+    ui->checkBox_NewMap_Show_Location->setChecked(true);
+
+    ui->frame_NewMap_Options->setEnabled(true);
+
+    setDefaultValuesProjectConfig(true, mapLayout);
+
+    map = new Map();
+    map->layout = new MapLayout();
+    map->layout->blockdata = mapLayout->blockdata;
+
+    if (!mapLayout->border.isEmpty()) {
+        map->layout->border = mapLayout->border;
+    }
+}
+
+void NewMapPopup::setDefaultValuesProjectConfig(bool importedMap, MapLayout *mapLayout) {
     switch (projectConfig.getBaseGameVersion())
     {
     case BaseGameVersion::pokeruby:
@@ -164,11 +207,19 @@ void NewMapPopup::setDefaultValues(int groupNum, QString mapSec) {
         break;
     }
     if (projectConfig.getUseCustomBorderSize()) {
+        if (importedMap) {
+            ui->spinBox_NewMap_BorderWidth->setValue(mapLayout->border_width.toInt(nullptr, 0));
+            ui->spinBox_NewMap_BorderHeight->setValue(mapLayout->border_height.toInt(nullptr, 0));
+        }
         ui->spinBox_NewMap_BorderWidth->setVisible(true);
         ui->spinBox_NewMap_BorderHeight->setVisible(true);
         ui->label_NewMap_BorderWidth->setVisible(true);
         ui->label_NewMap_BorderHeight->setVisible(true);
     } else {
+        if (importedMap) {
+            ui->spinBox_NewMap_BorderWidth->setValue(DEFAULT_BORDER_WIDTH);
+            ui->spinBox_NewMap_BorderHeight->setValue(DEFAULT_BORDER_HEIGHT);
+        }
         ui->spinBox_NewMap_BorderWidth->setVisible(false);
         ui->spinBox_NewMap_BorderHeight->setVisible(false);
         ui->label_NewMap_BorderWidth->setVisible(false);
@@ -240,6 +291,12 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
         layout->tileset_secondary_label = this->ui->comboBox_NewMap_Secondary_Tileset->currentText();
         layout->border_path = QString("data/layouts/%1/border.bin").arg(newMapName);
         layout->blockdata_path = QString("data/layouts/%1/map.bin").arg(newMapName);
+    }
+
+    if (this->importedMap) {
+        layout->blockdata = map->layout->blockdata;
+        if (!map->layout->border.isEmpty())
+            layout->border = map->layout->border;
     }
 
     if (this->ui->checkBox_NewMap_Flyable->isChecked()) {
