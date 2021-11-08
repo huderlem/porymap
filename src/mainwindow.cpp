@@ -455,6 +455,8 @@ void MainWindow::loadUserSettings() {
     this->editor->settings->playerViewRectEnabled = porymapConfig.getShowPlayerView();
     ui->actionCursor_Tile_Outline->setChecked(porymapConfig.getShowCursorTile());
     this->editor->settings->cursorTileRectEnabled = porymapConfig.getShowCursorTile();
+    ui->checkBox_ToggleBorder->setChecked(porymapConfig.getShowBorder());
+    ui->checkBox_ToggleGrid->setChecked(porymapConfig.getShowGrid());
     mapSortOrder = porymapConfig.getMapSortOrder();
     ui->horizontalSlider_CollisionTransparency->blockSignals(true);
     this->editor->collisionOpacity = static_cast<qreal>(porymapConfig.getCollisionOpacity()) / 100;

@@ -168,6 +168,18 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         if (!ok) {
             logWarn(QString("Invalid config value for show_cursor_tile: '%1'. Must be 0 or 1.").arg(value));
         }
+    } else if (key == "show_border") {
+        bool ok;
+        this->showBorder = value.toInt(&ok);
+        if (!ok) {
+            logWarn(QString("Invalid config value for show_border: '%1'. Must be 0 or 1.").arg(value));
+        }
+    } else if (key == "show_grid") {
+        bool ok;
+        this->showGrid = value.toInt(&ok);
+        if (!ok) {
+            logWarn(QString("Invalid config value for show_grid: '%1'. Must be 0 or 1.").arg(value));
+        }
     } else if (key == "monitor_files") {
         bool ok;
         this->monitorFiles = value.toInt(&ok);
@@ -215,6 +227,8 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("metatiles_zoom", QString("%1").arg(this->metatilesZoom));
     map.insert("show_player_view", this->showPlayerView ? "1" : "0");
     map.insert("show_cursor_tile", this->showCursorTile ? "1" : "0");
+    map.insert("show_border", this->showBorder ? "1" : "0");
+    map.insert("show_grid", this->showGrid ? "1" : "0");
     map.insert("monitor_files", this->monitorFiles ? "1" : "0");
     map.insert("region_map_dimensions", QString("%1x%2").arg(this->regionMapDimensions.width())
                                                         .arg(this->regionMapDimensions.height()));
@@ -308,6 +322,16 @@ void PorymapConfig::setShowCursorTile(bool enabled) {
     this->save();
 }
 
+void PorymapConfig::setShowBorder(bool enabled) {
+    this->showBorder = enabled;
+    this->save();
+}
+
+void PorymapConfig::setShowGrid(bool enabled) {
+    this->showGrid = enabled;
+    this->save();
+}
+
 void PorymapConfig::setRegionMapDimensions(int width, int height) {
     this->regionMapDimensions = QSize(width, height);
 }
@@ -390,6 +414,14 @@ bool PorymapConfig::getShowPlayerView() {
 
 bool PorymapConfig::getShowCursorTile() {
     return this->showCursorTile;
+}
+
+bool PorymapConfig::getShowBorder() {
+    return this->showBorder;
+}
+
+bool PorymapConfig::getShowGrid() {
+    return this->showGrid;
 }
 
 bool PorymapConfig::getMonitorFiles() {
