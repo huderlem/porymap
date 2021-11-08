@@ -13,6 +13,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Porymap is now compatible with Qt6.
 - Add tool to count the times each metatile or tile is used in the tileset editor.
 - Events, current metatile selections, and map images can now be copied and pasted, including between windows.
+- The grid and map border visibility are now saved as config options.
 
 ### Changed
 - New events will be placed in the center of the current view of the map.

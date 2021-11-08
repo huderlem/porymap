@@ -44,6 +44,8 @@ public:
         this->metatilesZoom = 30;
         this->showPlayerView = false;
         this->showCursorTile = true;
+        this->showBorder = true;
+        this->showGrid = false;
         this->monitorFiles = true;
         this->regionMapDimensions = QSize(32, 20);
         this->theme = "default";
@@ -61,6 +63,8 @@ public:
     void setMetatilesZoom(int zoom);
     void setShowPlayerView(bool enabled);
     void setShowCursorTile(bool enabled);
+    void setShowBorder(bool enabled);
+    void setShowGrid(bool enabled);
     void setMonitorFiles(bool monitor);
     void setRegionMapDimensions(int width, int height);
     void setTheme(QString theme);
@@ -77,6 +81,8 @@ public:
     int getMetatilesZoom();
     bool getShowPlayerView();
     bool getShowCursorTile();
+    bool getShowBorder();
+    bool getShowGrid();
     bool getMonitorFiles();
     QSize getRegionMapDimensions();
     QString getTheme();
@@ -109,6 +115,8 @@ private:
     int metatilesZoom;
     bool showPlayerView;
     bool showCursorTile;
+    bool showBorder;
+    bool showGrid;
     bool monitorFiles;
     QSize regionMapDimensions;
     QString theme;

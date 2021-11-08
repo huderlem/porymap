@@ -201,6 +201,7 @@ private slots:
     void onHoveredMapMovementPermissionCleared();
     void onSelectedMetatilesChanged();
     void onWheelZoom(int);
+    void onToggleGridClicked(bool);
 
 signals:
     void objectsChanged();

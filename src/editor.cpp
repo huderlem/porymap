@@ -1663,6 +1663,10 @@ int Editor::getBorderDrawDistance(int dimension) {
     }
 }
 
+void Editor::onToggleGridClicked(bool checked) {
+    porymapConfig.setShowGrid(checked);
+}
+
 void Editor::displayMapGrid() {
     for (QGraphicsLineItem* item : gridLines) {
         if (item && item->scene()) {
@@ -1689,6 +1693,7 @@ void Editor::displayMapGrid() {
         gridLines.append(line);
         connect(ui->checkBox_ToggleGrid, &QCheckBox::toggled, [=](bool checked){line->setVisible(checked);});
     }
+    connect(ui->checkBox_ToggleGrid, &QCheckBox::toggled, this, &Editor::onToggleGridClicked);
 }
 
 void Editor::updateConnectionOffset(int offset) {
@@ -1915,6 +1920,7 @@ void Editor::toggleBorderVisibility(bool visible)
 {
     this->setBorderItemsVisible(visible);
     this->setConnectionsVisibility(visible);
+    porymapConfig.setShowBorder(visible);
 }
 
 void Editor::updateCustomMapHeaderValues(QTableWidget *table)
