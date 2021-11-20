@@ -17,6 +17,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 
 ### Changed
 - New events will be placed in the center of the current view of the map.
+- Scripting API errors are more detailed and logged in more situations.
 
 ### Fixed
 - Fix % operator in C defines not being evaluated
