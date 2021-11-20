@@ -51,23 +51,25 @@ void Scripting::loadModules(QStringList moduleFiles) {
     }
 }
 
+bool Scripting::tryErrorJS(QJSValue js) {
+    if (!js.isError()) return false;
+
+    QFileInfo file(js.property("fileName").toString());
+    logError(QString("Error in custom script '%1' at line %2: '%3'")
+             .arg(file.fileName())
+             .arg(js.property("lineNumber").toString())
+             .arg(js.toString()));
+    return true;
+}
+
 void Scripting::invokeCallback(CallbackType type, QJSValueList args) {
     for (QJSValue module : this->modules) {
         QString functionName = callbackFunctions[type];
         QJSValue callbackFunction = module.property(functionName);
-        if (callbackFunction.isError()) {
-            continue;
-        }
+        if (tryErrorJS(callbackFunction)) continue;
 
         QJSValue result = callbackFunction.call(args);
-        if (result.isError()) {
-            QFileInfo file(result.property("fileName").toString());
-            logError(QString("Error in custom script '%1' at line %2: '%3'")
-                     .arg(file.fileName())
-                     .arg(result.property("lineNumber").toString())
-                     .arg(result.toString()));
-            continue;
-        }
+        if (tryErrorJS(result)) continue;
     }
 }
 
@@ -88,19 +90,14 @@ void Scripting::invokeAction(QString actionName) {
     QString functionName = instance->registeredActions.value(actionName);
     for (QJSValue module : instance->modules) {
         QJSValue callbackFunction = module.property(functionName);
-        if (callbackFunction.isError()) {
+        if (callbackFunction.isUndefined() || !callbackFunction.isCallable()) {
+            logError(QString("Unknown custom script function '%1'").arg(functionName));
             continue;
         }
+        if (tryErrorJS(callbackFunction)) continue;
 
         QJSValue result = callbackFunction.call(QJSValueList());
-        if (result.isError()) {
-            QFileInfo file(result.property("fileName").toString());
-            logError(QString("Error in custom script '%1' at line %2: '%3'")
-                     .arg(file.fileName())
-                     .arg(result.property("lineNumber").toString())
-                     .arg(result.toString()));
-            continue;
-        }
+        if (tryErrorJS(result)) continue;
     }
 }
 
