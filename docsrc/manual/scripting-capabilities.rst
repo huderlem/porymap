@@ -72,7 +72,7 @@ The grass-randomizer script above happens implicitly when the user paints on the
 
 .. code-block:: js
 
-	function applyNightTint() {
+	export function applyNightTint() {
 	    // Apply night palette tinting...
 	}
 
@@ -556,7 +556,7 @@ These are some miscellaneous functions that can be very useful when building cus
 
 .. js:function:: map.registerAction(functionName, actionName, shortcut = "")
 
-   Registers a JavaScript function to an action that can be manually triggered in Porymap's ``Tools`` menu. Optionally, a keyboard shortcut (e.g. ``"Ctrl+P"``) can also be specified, assuming it doesn't collide with any existing shortcuts used by Porymap.
+   Registers a JavaScript function to an action that can be manually triggered in Porymap's ``Tools`` menu. Optionally, a keyboard shortcut (e.g. ``"Ctrl+P"``) can also be specified, assuming it doesn't collide with any existing shortcuts used by Porymap. The function specified by ``functionName`` must have the ``export`` keyword.
 
    :param string functionName: name of the JavaScript function
    :param string actionName: name of the action that will be displayed in the ``Tools`` menu

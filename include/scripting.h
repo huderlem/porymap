@@ -30,6 +30,7 @@ public:
     static void cb_ProjectClosed(QString projectPath);
     static void cb_MetatileChanged(int x, int y, Block prevBlock, Block newBlock);
     static void cb_MapOpened(QString mapName);
+    static bool tryErrorJS(QJSValue js);
 
 private:
     QJSEngine *engine;

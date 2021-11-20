@@ -507,7 +507,7 @@ void MainWindow::setTimeout(QJSValue callback, int milliseconds) {
 }
 
 void MainWindow::invokeCallback(QJSValue callback) {
-    callback.call();
+    Scripting::tryErrorJS(callback.call());
 }
 
 void MainWindow::log(QString message) {
