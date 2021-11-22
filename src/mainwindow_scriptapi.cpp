@@ -241,8 +241,8 @@ void MainWindow::addFilledRect(int x, int y, int width, int height, QString colo
 void MainWindow::addImage(int x, int y, QString filepath) {
     if (!this->ui || !this->ui->graphicsView_Map)
         return;
-    this->ui->graphicsView_Map->overlay.addImage(x, y, filepath);
-    this->ui->graphicsView_Map->scene()->update();
+    if (this->ui->graphicsView_Map->overlay.addImage(x, y, filepath))
+        this->ui->graphicsView_Map->scene()->update();
 }
 
 void MainWindow::refreshAfterPaletteChange(Tileset *tileset) {

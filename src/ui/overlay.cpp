@@ -1,4 +1,5 @@
 #include "overlay.h"
+#include "log.h"
 
 void OverlayText::render(QPainter *painter) {
     QFont font = painter->font();
@@ -40,6 +41,12 @@ void Overlay::addRect(int x, int y, int width, int height, QString color, bool f
     this->items.append(new OverlayRect(x, y, width, height, QColor(color), filled));
 }
 
-void Overlay::addImage(int x, int y, QString filepath) {
-    this->items.append(new OverlayImage(x, y, QImage(filepath)));
+bool Overlay::addImage(int x, int y, QString filepath) {
+    QImage image = QImage(filepath);
+    if (image.isNull()) {
+        logError(QString("Failed to load image '%1'").arg(filepath));
+        return false;
+    }
+    this->items.append(new OverlayImage(x, y, image));
+    return true;
 }
