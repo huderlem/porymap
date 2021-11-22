@@ -79,7 +79,7 @@ public:
     void clearItems();
     void addText(QString text, int x, int y, QString color = "#000000", int fontSize = 12);
     void addRect(int x, int y, int width, int height, QString color = "#000000", bool filled = false);
-    void addImage(int x, int y, QString filepath);
+    bool addImage(int x, int y, QString filepath);
 private:
     QList<OverlayItem*> items;
 };
