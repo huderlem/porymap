@@ -112,6 +112,8 @@ public:
     Q_INVOKABLE void setMetatileLayerOrder(QList<int> order);
     Q_INVOKABLE QList<float> getMetatileLayerOpacity();
     Q_INVOKABLE void setMetatileLayerOpacity(QList<float> order);
+    Q_INVOKABLE QString getMetatileLabel(int metatileId);
+    Q_INVOKABLE void setMetatileLabel(int metatileId, QString label);
 
 private slots:
     void on_action_Open_Project_triggered();

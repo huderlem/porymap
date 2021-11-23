@@ -76,6 +76,10 @@ bool TilesetEditor::selectMetatile(uint16_t metatileId) {
     return true;
 }
 
+uint16_t TilesetEditor::getSelectedMetatile() {
+    return this->metatileSelector->getSelectedMetatile();
+}
+
 void TilesetEditor::setTilesets(QString primaryTilesetLabel, QString secondaryTilesetLabel) {
     Tileset *primaryTileset = project->getTileset(primaryTilesetLabel);
     Tileset *secondaryTileset = project->getTileset(secondaryTilesetLabel);
@@ -173,7 +177,7 @@ void TilesetEditor::initMetatileSelector()
 }
 
 void TilesetEditor::initMetatileLayersItem() {
-    Metatile *metatile = Tileset::getMetatile(this->metatileSelector->getSelectedMetatile(), this->primaryTileset, this->secondaryTileset);
+    Metatile *metatile = Tileset::getMetatile(this->getSelectedMetatile(), this->primaryTileset, this->secondaryTileset);
     this->metatileLayersItem = new MetatileLayersItem(metatile, this->primaryTileset, this->secondaryTileset);
     connect(this->metatileLayersItem, &MetatileLayersItem::tileChanged,
             this, &TilesetEditor::onMetatileLayerTileChanged);
@@ -278,7 +282,7 @@ void TilesetEditor::refresh() {
     this->metatileLayersItem->setTilesets(this->primaryTileset, this->secondaryTileset);
     this->tileSelector->setTilesets(this->primaryTileset, this->secondaryTileset);
     this->metatileSelector->setTilesets(this->primaryTileset, this->secondaryTileset);
-    this->metatileSelector->select(this->metatileSelector->getSelectedMetatile());
+    this->metatileSelector->select(this->getSelectedMetatile());
     this->drawSelectedTiles();
 
     if (metatileSelector) {
@@ -415,7 +419,7 @@ void TilesetEditor::onMetatileLayerTileChanged(int x, int y) {
     this->metatileLayersItem->draw();
     this->hasUnsavedChanges = true;
 
-    MetatileHistoryItem *commit = new MetatileHistoryItem(metatileSelector->getSelectedMetatile(),
+    MetatileHistoryItem *commit = new MetatileHistoryItem(this->getSelectedMetatile(),
                                                           prevMetatile, new Metatile(*this->metatile));
     metatileHistory.push(commit);
 }
@@ -482,11 +486,17 @@ void TilesetEditor::on_comboBox_metatileBehaviors_textActivated(const QString &m
     if (this->metatile) {
         Metatile *prevMetatile = new Metatile(*this->metatile);
         this->metatile->behavior = static_cast<uint8_t>(project->metatileBehaviorMap[metatileBehavior]);
-        MetatileHistoryItem *commit = new MetatileHistoryItem(metatileSelector->getSelectedMetatile(),
+        MetatileHistoryItem *commit = new MetatileHistoryItem(this->getSelectedMetatile(),
                                                               prevMetatile, new Metatile(*this->metatile));
         metatileHistory.push(commit);
         this->hasUnsavedChanges = true;
     }
+}
+
+void TilesetEditor::setMetatileLabel(QString label)
+{
+    this->ui->lineEdit_metatileLabel->setText(label);
+    saveMetatileLabel();
 }
 
 void TilesetEditor::on_lineEdit_metatileLabel_editingFinished()
@@ -500,7 +510,7 @@ void TilesetEditor::saveMetatileLabel()
     if (this->metatile && this->metatile->label != this->ui->lineEdit_metatileLabel->text()) {
         Metatile *prevMetatile = new Metatile(*this->metatile);
         this->metatile->label = this->ui->lineEdit_metatileLabel->text();
-        MetatileHistoryItem *commit = new MetatileHistoryItem(metatileSelector->getSelectedMetatile(),
+        MetatileHistoryItem *commit = new MetatileHistoryItem(this->getSelectedMetatile(),
                                                               prevMetatile, new Metatile(*this->metatile));
         metatileHistory.push(commit);
         this->hasUnsavedChanges = true;
@@ -512,7 +522,7 @@ void TilesetEditor::on_comboBox_layerType_activated(int layerType)
     if (this->metatile) {
         Metatile *prevMetatile = new Metatile(*this->metatile);
         this->metatile->layerType = static_cast<uint8_t>(layerType);
-        MetatileHistoryItem *commit = new MetatileHistoryItem(metatileSelector->getSelectedMetatile(),
+        MetatileHistoryItem *commit = new MetatileHistoryItem(this->getSelectedMetatile(),
                                                               prevMetatile, new Metatile(*this->metatile));
         metatileHistory.push(commit);
         this->hasUnsavedChanges = true;
@@ -524,7 +534,7 @@ void TilesetEditor::on_comboBox_encounterType_activated(int encounterType)
     if (this->metatile) {
         Metatile *prevMetatile = new Metatile(*this->metatile);
         this->metatile->encounterType = static_cast<uint8_t>(encounterType);
-        MetatileHistoryItem *commit = new MetatileHistoryItem(metatileSelector->getSelectedMetatile(),
+        MetatileHistoryItem *commit = new MetatileHistoryItem(this->getSelectedMetatile(),
                                                               prevMetatile, new Metatile(*this->metatile));
         metatileHistory.push(commit);
         this->hasUnsavedChanges = true;
@@ -536,7 +546,7 @@ void TilesetEditor::on_comboBox_terrainType_activated(int terrainType)
     if (this->metatile) {
         Metatile *prevMetatile = new Metatile(*this->metatile);
         this->metatile->terrainType = static_cast<uint8_t>(terrainType);
-        MetatileHistoryItem *commit = new MetatileHistoryItem(metatileSelector->getSelectedMetatile(),
+        MetatileHistoryItem *commit = new MetatileHistoryItem(this->getSelectedMetatile(),
                                                               prevMetatile, new Metatile(*this->metatile));
         metatileHistory.push(commit);
         this->hasUnsavedChanges = true;

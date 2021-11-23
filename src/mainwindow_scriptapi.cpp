@@ -539,3 +539,41 @@ void MainWindow::setMetatileLayerOpacity(QList<float> order) {
     this->editor->map->metatileLayerOpacity = order;
     this->refreshAfterPalettePreviewChange();
 }
+
+QString MainWindow::getMetatileLabel(int metatileId) {
+    if (!this->editor || !this->editor->map || !this->editor->map->layout)
+        return QString();
+    Tileset * primaryTileset = this->editor->map->layout->tileset_primary;
+    Tileset * secondaryTileset = this->editor->map->layout->tileset_secondary;
+    Metatile * metatile = Tileset::getMetatile(metatileId, primaryTileset, secondaryTileset);
+    if (!metatile || metatile->label.size() == 0)
+        return QString();
+
+    return metatile->label;
+}
+
+void MainWindow::setMetatileLabel(int metatileId, QString label) {
+    if (!this->editor || !this->editor->map || !this->editor->map->layout)
+        return;
+    Tileset * primaryTileset = this->editor->map->layout->tileset_primary;
+    Tileset * secondaryTileset = this->editor->map->layout->tileset_secondary;
+    Metatile * metatile = Tileset::getMetatile(metatileId, primaryTileset, secondaryTileset);
+    if (!metatile)
+        return;
+
+    // TODO: Verify input
+    //label.remove(QRegularExpression("?![_A-Za-z0-9]*$"));
+
+    if (this->tilesetEditor && this->tilesetEditor->getSelectedMetatile() == metatileId) {
+        this->tilesetEditor->setMetatileLabel(label);
+    } else if (metatile->label != label) {
+        metatile->label = label;
+
+        // TODO: Writing to file immediately.
+        //       Perhaps update tilesets to carry a "hasUnsavedChanges" field,
+        //       and on saving the project save all tilesets with unsaved changes.
+        //       saveTilesetMetatileLabels can be trivially updated to handle a single tileset at a time.
+        if (editor->project)
+            editor->project->saveTilesetMetatileLabels(primaryTileset, secondaryTileset);
+    }
+}
