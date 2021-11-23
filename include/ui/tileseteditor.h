@@ -41,6 +41,8 @@ public:
     void updateMap(Map *map);
     void updateTilesets(QString primaryTilsetLabel, QString secondaryTilesetLabel);
     bool selectMetatile(uint16_t metatileId);
+    uint16_t getSelectedMetatile();
+    void setMetatileLabel(QString label);
 
     QObjectList shortcutableObjects() const;
 
