@@ -156,6 +156,15 @@ QJSValue Scripting::dimensions(int width, int height) {
     return obj;
 }
 
+QJSValue Scripting::fromTile(Tile tile) {
+    QJSValue obj = instance->engine->newObject();
+    obj.setProperty("tile", tile.tile);
+    obj.setProperty("xflip", tile.xflip);
+    obj.setProperty("yflip", tile.yflip);
+    obj.setProperty("palette", tile.palette);
+    return obj;
+}
+
 QJSEngine *Scripting::getEngine() {
     return instance->engine;
 }
