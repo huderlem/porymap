@@ -120,9 +120,9 @@ void TilesetEditor::setMetatileBehaviors() {
 
 void TilesetEditor::setMetatileLayersUi() {
     if (!projectConfig.getTripleLayerMetatilesEnabled()) {
-        this->ui->comboBox_layerType->addItem("Normal - Middle/Top", 0);
-        this->ui->comboBox_layerType->addItem("Covered - Bottom/Middle", 1);
-        this->ui->comboBox_layerType->addItem("Split - Bottom/Top", 2);
+        this->ui->comboBox_layerType->addItem("Normal - Middle/Top", METATILE_LAYER_MIDDLE_TOP);
+        this->ui->comboBox_layerType->addItem("Covered - Bottom/Middle", METATILE_LAYER_BOTTOM_MIDDLE);
+        this->ui->comboBox_layerType->addItem("Split - Bottom/Top", METATILE_LAYER_BOTTOM_TOP);
     } else {
         this->ui->comboBox_layerType->setVisible(false);
         this->ui->label_layerType->setVisible(false);
@@ -134,15 +134,15 @@ void TilesetEditor::setVersionSpecificUi() {
     if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
         this->ui->comboBox_encounterType->setVisible(true);
         this->ui->label_encounterType->setVisible(true);
-        this->ui->comboBox_encounterType->addItem("None", 0);
-        this->ui->comboBox_encounterType->addItem("Land", 1);
-        this->ui->comboBox_encounterType->addItem("Water", 2);
+        this->ui->comboBox_encounterType->addItem("None", ENCOUNTER_NONE);
+        this->ui->comboBox_encounterType->addItem("Land", ENCOUNTER_LAND);
+        this->ui->comboBox_encounterType->addItem("Water", ENCOUNTER_WATER);
         this->ui->comboBox_terrainType->setVisible(true);
         this->ui->label_terrainType->setVisible(true);
-        this->ui->comboBox_terrainType->addItem("Normal", 0);
-        this->ui->comboBox_terrainType->addItem("Grass", 1);
-        this->ui->comboBox_terrainType->addItem("Water", 2);
-        this->ui->comboBox_terrainType->addItem("Waterfall", 3);
+        this->ui->comboBox_terrainType->addItem("Normal", TERRAIN_NONE);
+        this->ui->comboBox_terrainType->addItem("Grass", TERRAIN_GRASS);
+        this->ui->comboBox_terrainType->addItem("Water", TERRAIN_WATER);
+        this->ui->comboBox_terrainType->addItem("Waterfall", TERRAIN_WATERFALL);
     } else {
         this->ui->comboBox_encounterType->setVisible(false);
         this->ui->label_encounterType->setVisible(false);
@@ -485,7 +485,7 @@ void TilesetEditor::on_comboBox_metatileBehaviors_textActivated(const QString &m
 {
     if (this->metatile) {
         Metatile *prevMetatile = new Metatile(*this->metatile);
-        this->metatile->behavior = static_cast<uint8_t>(project->metatileBehaviorMap[metatileBehavior]);
+        this->metatile->behavior = static_cast<uint16_t>(project->metatileBehaviorMap[metatileBehavior]);
         MetatileHistoryItem *commit = new MetatileHistoryItem(this->getSelectedMetatile(),
                                                               prevMetatile, new Metatile(*this->metatile));
         metatileHistory.push(commit);

@@ -112,6 +112,8 @@ public:
     Q_INVOKABLE void setMetatileLayerOrder(QList<int> order);
     Q_INVOKABLE QList<float> getMetatileLayerOpacity();
     Q_INVOKABLE void setMetatileLayerOpacity(QList<float> order);
+    void saveMetatilesByMetatileId(int metatileId);
+    void saveMetatileAttributesByMetatileId(int metatileId);
     Metatile * getMetatile(int metatileId);
     Q_INVOKABLE QString getMetatileLabel(int metatileId);
     Q_INVOKABLE void setMetatileLabel(int metatileId, QString label);
@@ -124,7 +126,8 @@ public:
     Q_INVOKABLE int getMetatileBehavior(int metatileId);
     Q_INVOKABLE void setMetatileBehavior(int metatileId, int behavior);
     Q_INVOKABLE QJSValue getMetatileTile(int metatileId, int tileIndex);
-    Q_INVOKABLE void setMetatileTile(int metatileId, int tileIndex, int tile, bool xflip, bool yflip, int palette);
+    Q_INVOKABLE void setMetatileTile(int metatileId, int tileIndex, int tileId, bool xflip, bool yflip, int palette, bool forceRedraw = true);
+    Q_INVOKABLE void setMetatileTile(int metatileId, int tileIndex, QJSValue obj, bool forceRedraw = true);
 
 
 private slots:
@@ -303,6 +306,8 @@ private:
     bool projectOpenFailure = false;
 
     MapSortOrder mapSortOrder;
+
+    bool needsFullRedraw = false;
 
     bool setMap(QString, bool scrollTreeView = false);
     void redrawMapScene();

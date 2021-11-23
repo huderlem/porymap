@@ -15,7 +15,15 @@ QJSValue MainWindow::getBlock(int x, int y) {
 }
 
 void MainWindow::tryRedrawMapArea(bool forceRedraw) {
-    if (forceRedraw) {
+    if (!forceRedraw) return;
+
+    if (this->needsFullRedraw) {
+        this->editor->map_item->draw(true);
+        this->editor->collision_item->draw(true);
+        this->editor->updateMapBorder();
+        this->editor->updateMapConnections();
+        this->needsFullRedraw = false;
+    } else {
         this->editor->map_item->draw();
         this->editor->collision_item->draw();
     }
@@ -541,6 +549,32 @@ void MainWindow::setMetatileLayerOpacity(QList<float> order) {
     this->refreshAfterPalettePreviewChange();
 }
 
+void MainWindow::saveMetatilesByMetatileId(int metatileId) {
+    Tileset * tileset = Tileset::getBlockTileset(metatileId, this->editor->map->layout->tileset_primary, this->editor->map->layout->tileset_secondary);
+    if (this->editor->project)
+        this->editor->project->saveTilesetMetatiles(tileset);
+
+    // Refresh anything that can display metatiles (except the actual map view)
+    if (this->tilesetEditor)
+        this->tilesetEditor->updateTilesets(this->editor->map->layout->tileset_primary_label, this->editor->map->layout->tileset_secondary_label);
+    if (this->editor->metatile_selector_item)
+        this->editor->metatile_selector_item->draw();
+    if (this->editor->selected_border_metatiles_item)
+        this->editor->selected_border_metatiles_item->draw();
+    if (this->editor->current_metatile_selection_item)
+        this->editor->current_metatile_selection_item->draw();
+}
+
+void MainWindow::saveMetatileAttributesByMetatileId(int metatileId) {
+    Tileset * tileset = Tileset::getBlockTileset(metatileId, this->editor->map->layout->tileset_primary, this->editor->map->layout->tileset_secondary);
+    if (this->editor->project)
+        this->editor->project->saveTilesetMetatileAttributes(tileset);
+
+    // If the Tileset Editor is currently displaying the updated metatile, refresh it
+    if (this->tilesetEditor && this->tilesetEditor->getSelectedMetatile() == metatileId)
+        this->tilesetEditor->updateTilesets(this->editor->map->layout->tileset_primary_label, this->editor->map->layout->tileset_secondary_label);
+}
+
 Metatile * MainWindow::getMetatile(int metatileId) {
     if (!this->editor || !this->editor->map || !this->editor->map->layout)
         return nullptr;
@@ -548,101 +582,129 @@ Metatile * MainWindow::getMetatile(int metatileId) {
 }
 
 QString MainWindow::getMetatileLabel(int metatileId) {
-    Metatile * metatile = getMetatile(metatileId);
+    Metatile * metatile = this->getMetatile(metatileId);
     if (!metatile || metatile->label.size() == 0)
         return QString();
     return metatile->label;
 }
 
+// TODO: Validate label
 void MainWindow::setMetatileLabel(int metatileId, QString label) {
-    Metatile * metatile = getMetatile(metatileId);
+    Metatile * metatile = this->getMetatile(metatileId);
     if (!metatile)
         return;
-
-    // TODO: Verify input
-    //label.remove(QRegularExpression("?![_A-Za-z0-9]*$"));
 
     if (this->tilesetEditor && this->tilesetEditor->getSelectedMetatile() == metatileId) {
         this->tilesetEditor->setMetatileLabel(label);
     } else if (metatile->label != label) {
         metatile->label = label;
-
-        // TODO: Writing to file immediately.
-        //       Perhaps update tilesets to carry a "hasUnsavedChanges" field,
-        //       and on saving the project save all tilesets with unsaved changes.
-        //       saveTilesetMetatileLabels can be trivially updated to handle a single tileset at a time.
         if (this->editor->project)
             this->editor->project->saveTilesetMetatileLabels(this->editor->map->layout->tileset_primary, this->editor->map->layout->tileset_secondary);
     }
 }
 
 int MainWindow::getMetatileLayerType(int metatileId) {
-    Metatile * metatile = getMetatile(metatileId);
+    Metatile * metatile = this->getMetatile(metatileId);
     if (!metatile)
         return -1;
     return metatile->layerType;
 }
 
 void MainWindow::setMetatileLayerType(int metatileId, int layerType) {
-    // TODO
-    Metatile * metatile = getMetatile(metatileId);
-    if (!metatile)
+    Metatile * metatile = this->getMetatile(metatileId);
+    uint8_t u_layerType = static_cast<uint8_t>(layerType);
+    if (!metatile || metatile->layerType == u_layerType || u_layerType >= NUM_METATILE_LAYER_TYPES)
         return;
+    metatile->layerType = u_layerType;
+    this->saveMetatileAttributesByMetatileId(metatileId);
 }
 
 int MainWindow::getMetatileEncounterType(int metatileId) {
-    Metatile * metatile = getMetatile(metatileId);
+    Metatile * metatile = this->getMetatile(metatileId);
     if (!metatile)
         return -1;
     return metatile->encounterType;
 }
 
 void MainWindow::setMetatileEncounterType(int metatileId, int encounterType) {
-    // TODO
-    Metatile * metatile = getMetatile(metatileId);
-    if (!metatile)
+    Metatile * metatile = this->getMetatile(metatileId);
+    uint8_t u_encounterType = static_cast<uint8_t>(encounterType);
+    if (!metatile || metatile->encounterType == u_encounterType || u_encounterType >= NUM_METATILE_ENCOUNTER_TYPES)
         return;
+    metatile->encounterType = u_encounterType;
+    this->saveMetatileAttributesByMetatileId(metatileId);
 }
 
 int MainWindow::getMetatileTerrainType(int metatileId) {
-    Metatile * metatile = getMetatile(metatileId);
+    Metatile * metatile = this->getMetatile(metatileId);
     if (!metatile)
         return -1;
     return metatile->terrainType;
 }
 
 void MainWindow::setMetatileTerrainType(int metatileId, int terrainType) {
-    // TODO
-    Metatile * metatile = getMetatile(metatileId);
-    if (!metatile)
+    Metatile * metatile = this->getMetatile(metatileId);
+    uint8_t u_terrainType = static_cast<uint8_t>(terrainType);
+    if (!metatile || metatile->terrainType == u_terrainType ||  u_terrainType >= NUM_METATILE_TERRAIN_TYPES)
         return;
+    metatile->terrainType = u_terrainType;
+    this->saveMetatileAttributesByMetatileId(metatileId);
 }
 
 int MainWindow::getMetatileBehavior(int metatileId) {
-    Metatile * metatile = getMetatile(metatileId);
+    Metatile * metatile = this->getMetatile(metatileId);
     if (!metatile)
         return -1;
     return metatile->behavior;
 }
 
 void MainWindow::setMetatileBehavior(int metatileId, int behavior) {
-    // TODO
-    Metatile * metatile = getMetatile(metatileId);
-    if (!metatile)
+    Metatile * metatile = this->getMetatile(metatileId);
+    uint16_t u_behavior = static_cast<uint16_t>(behavior);
+    if (!metatile || metatile->behavior == u_behavior)
         return;
+    metatile->behavior = u_behavior;
+    this->saveMetatileAttributesByMetatileId(metatileId);
 }
 
 QJSValue MainWindow::getMetatileTile(int metatileId, int tileIndex) {
-    Metatile * metatile = getMetatile(metatileId);
+    Metatile * metatile = this->getMetatile(metatileId);
     int maxTileIndex = projectConfig.getTripleLayerMetatilesEnabled() ? 12 : 8;
-    if (!metatile || tileIndex >= maxTileIndex)
+    if (!metatile || tileIndex >= maxTileIndex || tileIndex < 0)
         return QJSValue();
     return Scripting::fromTile(metatile->tiles[tileIndex]);
 }
 
-void MainWindow::setMetatileTile(int metatileId, int tileIndex, int tile, bool xflip, bool yflip, int palette) {
-    // TODO
-    Metatile * metatile = getMetatile(metatileId);
-    if (!metatile)
+void MainWindow::setMetatileTile(int metatileId, int tileIndex, int tileId, bool xflip, bool yflip, int palette, bool forceRedraw) {
+    Metatile * metatile = this->getMetatile(metatileId);
+    int maxTileIndex = projectConfig.getTripleLayerMetatilesEnabled() ? 12 : 8;
+    if (!metatile || tileIndex >= maxTileIndex || tileIndex < 0)
         return;
+    Tile * tile = &metatile->tiles[tileIndex];
+    if (!tile) return;
+    if (tile->tile == tileId
+     && tile->xflip == xflip
+     && tile->yflip == yflip
+     && tile->palette == palette)
+        return;
+
+    tile->tile = tileId;
+    tile->xflip = xflip;
+    tile->yflip = yflip;
+    tile->palette = palette;
+    this->saveMetatilesByMetatileId(metatileId);
+
+    // TODO: Making tryRedrawMapArea do a full draw is unnecessarily expensive.
+    // The map metatiles that need to be updated are not changed by the above
+    // operation, so they will not be redrawn if the cache isn't ignored.
+    // Ideally setMetatileTile would properly set each of the map spaces that
+    // use this metatile so that the cache could be used, though this would
+    // likely still require a full read of the map and its border/connections.
+    this->needsFullRedraw = true;
+    this->tryRedrawMapArea(forceRedraw);
+}
+
+void MainWindow::setMetatileTile(int metatileId, int tileIndex, QJSValue obj, bool forceRedraw) {
+    Tile tile = Scripting::toTile(obj);
+    this->setMetatileTile(metatileId, tileIndex, tile.tile, tile.xflip, tile.yflip, tile.palette, forceRedraw);
 }
