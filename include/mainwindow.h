@@ -114,6 +114,17 @@ public:
     Q_INVOKABLE void setMetatileLayerOpacity(QList<float> order);
     Q_INVOKABLE QString getMetatileLabel(int metatileId);
     Q_INVOKABLE void setMetatileLabel(int metatileId, QString label);
+    Q_INVOKABLE int getMetatileLayerType(int metatileId);
+    Q_INVOKABLE void setMetatileLayerType(int metatileId, int layerType);
+    Q_INVOKABLE int getMetatileEncounterType(int metatileId);
+    Q_INVOKABLE void setMetatileEncounterType(int metatileId, int encounterType);
+    Q_INVOKABLE int getMetatileTerrainType(int metatileId);
+    Q_INVOKABLE void setMetatileTerrainType(int metatileId, int terrainType);
+    Q_INVOKABLE int getMetatileBehavior(int metatileId);
+    Q_INVOKABLE void setMetatileBehavior(int metatileId, int behavior);
+    Q_INVOKABLE QJSValue getMetatileTile(int metatileId, int tileIndex);
+    Q_INVOKABLE void setMetatileTile(int metatileId, int tileIndex, int tile, bool xflip, bool yflip, int palette);
+
 
 private slots:
     void on_action_Open_Project_triggered();

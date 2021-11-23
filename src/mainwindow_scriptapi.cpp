@@ -577,3 +577,48 @@ void MainWindow::setMetatileLabel(int metatileId, QString label) {
             editor->project->saveTilesetMetatileLabels(primaryTileset, secondaryTileset);
     }
 }
+
+int MainWindow::getMetatileLayerType(int metatileId) {
+    // TODO
+    return 0;
+}
+
+void MainWindow::setMetatileLayerType(int metatileId, int layerType) {
+    // TODO
+}
+
+int MainWindow::getMetatileEncounterType(int metatileId) {
+    // TODO
+    return 0;
+}
+
+void MainWindow::setMetatileEncounterType(int metatileId, int encounterType) {
+    // TODO
+}
+
+int MainWindow::getMetatileTerrainType(int metatileId) {
+    // TODO
+    return 0;
+}
+
+void MainWindow::setMetatileTerrainType(int metatileId, int terrainType) {
+    // TODO
+}
+
+int MainWindow::getMetatileBehavior(int metatileId) {
+    // TODO
+    return 0;
+}
+
+void MainWindow::setMetatileBehavior(int metatileId, int behavior) {
+    // TODO
+}
+
+QJSValue MainWindow::getMetatileTile(int metatileId, int tileIndex) {
+    // TODO
+    return QJSValue();
+}
+
+void MainWindow::setMetatileTile(int metatileId, int tileIndex, int tile, bool xflip, bool yflip, int palette) {
+    // TODO
+}
