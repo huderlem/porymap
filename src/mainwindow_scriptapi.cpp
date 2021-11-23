@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include "scripting.h"
 #include "editcommands.h"
+#include "config.h"
 
 QJSValue MainWindow::getBlock(int x, int y) {
     if (!this->editor || !this->editor->map)
@@ -540,24 +541,21 @@ void MainWindow::setMetatileLayerOpacity(QList<float> order) {
     this->refreshAfterPalettePreviewChange();
 }
 
-QString MainWindow::getMetatileLabel(int metatileId) {
+Metatile * MainWindow::getMetatile(int metatileId) {
     if (!this->editor || !this->editor->map || !this->editor->map->layout)
-        return QString();
-    Tileset * primaryTileset = this->editor->map->layout->tileset_primary;
-    Tileset * secondaryTileset = this->editor->map->layout->tileset_secondary;
-    Metatile * metatile = Tileset::getMetatile(metatileId, primaryTileset, secondaryTileset);
+        return nullptr;
+    return Tileset::getMetatile(metatileId, this->editor->map->layout->tileset_primary, this->editor->map->layout->tileset_secondary);
+}
+
+QString MainWindow::getMetatileLabel(int metatileId) {
+    Metatile * metatile = getMetatile(metatileId);
     if (!metatile || metatile->label.size() == 0)
         return QString();
-
     return metatile->label;
 }
 
 void MainWindow::setMetatileLabel(int metatileId, QString label) {
-    if (!this->editor || !this->editor->map || !this->editor->map->layout)
-        return;
-    Tileset * primaryTileset = this->editor->map->layout->tileset_primary;
-    Tileset * secondaryTileset = this->editor->map->layout->tileset_secondary;
-    Metatile * metatile = Tileset::getMetatile(metatileId, primaryTileset, secondaryTileset);
+    Metatile * metatile = getMetatile(metatileId);
     if (!metatile)
         return;
 
@@ -573,52 +571,78 @@ void MainWindow::setMetatileLabel(int metatileId, QString label) {
         //       Perhaps update tilesets to carry a "hasUnsavedChanges" field,
         //       and on saving the project save all tilesets with unsaved changes.
         //       saveTilesetMetatileLabels can be trivially updated to handle a single tileset at a time.
-        if (editor->project)
-            editor->project->saveTilesetMetatileLabels(primaryTileset, secondaryTileset);
+        if (this->editor->project)
+            this->editor->project->saveTilesetMetatileLabels(this->editor->map->layout->tileset_primary, this->editor->map->layout->tileset_secondary);
     }
 }
 
 int MainWindow::getMetatileLayerType(int metatileId) {
-    // TODO
-    return 0;
+    Metatile * metatile = getMetatile(metatileId);
+    if (!metatile)
+        return -1;
+    return metatile->layerType;
 }
 
 void MainWindow::setMetatileLayerType(int metatileId, int layerType) {
     // TODO
+    Metatile * metatile = getMetatile(metatileId);
+    if (!metatile)
+        return;
 }
 
 int MainWindow::getMetatileEncounterType(int metatileId) {
-    // TODO
-    return 0;
+    Metatile * metatile = getMetatile(metatileId);
+    if (!metatile)
+        return -1;
+    return metatile->encounterType;
 }
 
 void MainWindow::setMetatileEncounterType(int metatileId, int encounterType) {
     // TODO
+    Metatile * metatile = getMetatile(metatileId);
+    if (!metatile)
+        return;
 }
 
 int MainWindow::getMetatileTerrainType(int metatileId) {
-    // TODO
-    return 0;
+    Metatile * metatile = getMetatile(metatileId);
+    if (!metatile)
+        return -1;
+    return metatile->terrainType;
 }
 
 void MainWindow::setMetatileTerrainType(int metatileId, int terrainType) {
     // TODO
+    Metatile * metatile = getMetatile(metatileId);
+    if (!metatile)
+        return;
 }
 
 int MainWindow::getMetatileBehavior(int metatileId) {
-    // TODO
-    return 0;
+    Metatile * metatile = getMetatile(metatileId);
+    if (!metatile)
+        return -1;
+    return metatile->behavior;
 }
 
 void MainWindow::setMetatileBehavior(int metatileId, int behavior) {
     // TODO
+    Metatile * metatile = getMetatile(metatileId);
+    if (!metatile)
+        return;
 }
 
 QJSValue MainWindow::getMetatileTile(int metatileId, int tileIndex) {
-    // TODO
-    return QJSValue();
+    Metatile * metatile = getMetatile(metatileId);
+    int maxTileIndex = projectConfig.getTripleLayerMetatilesEnabled() ? 12 : 8;
+    if (!metatile || tileIndex >= maxTileIndex)
+        return QJSValue();
+    return Scripting::fromTile(metatile->tiles[tileIndex]);
 }
 
 void MainWindow::setMetatileTile(int metatileId, int tileIndex, int tile, bool xflip, bool yflip, int palette) {
     // TODO
+    Metatile * metatile = getMetatile(metatileId);
+    if (!metatile)
+        return;
 }

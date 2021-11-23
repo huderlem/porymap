@@ -20,6 +20,7 @@ class Scripting
 public:
     Scripting(MainWindow *mainWindow);
     static QJSValue fromBlock(Block block);
+    static QJSValue fromTile(Tile tile);
     static QJSValue dimensions(int width, int height);
     static QJSEngine *getEngine();
     static void init(MainWindow *mainWindow);

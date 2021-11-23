@@ -112,6 +112,7 @@ public:
     Q_INVOKABLE void setMetatileLayerOrder(QList<int> order);
     Q_INVOKABLE QList<float> getMetatileLayerOpacity();
     Q_INVOKABLE void setMetatileLayerOpacity(QList<float> order);
+    Metatile * getMetatile(int metatileId);
     Q_INVOKABLE QString getMetatileLabel(int metatileId);
     Q_INVOKABLE void setMetatileLabel(int metatileId, QString label);
     Q_INVOKABLE int getMetatileLayerType(int metatileId);
