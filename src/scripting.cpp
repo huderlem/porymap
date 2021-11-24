@@ -142,7 +142,7 @@ void Scripting::cb_MapOpened(QString mapName) {
 
 QJSValue Scripting::fromBlock(Block block) {
     QJSValue obj = instance->engine->newObject();
-    obj.setProperty("metatileId", block.tile);
+    obj.setProperty("metatileId", block.metatileId);
     obj.setProperty("collision", block.collision);
     obj.setProperty("elevation", block.elevation);
     obj.setProperty("rawValue", block.rawValue());
@@ -157,14 +157,14 @@ QJSValue Scripting::dimensions(int width, int height) {
 }
 
 Tile Scripting::toTile(QJSValue obj) {
-    if (!obj.hasProperty("tile")
+    if (!obj.hasProperty("tileId")
      || !obj.hasProperty("xflip")
      || !obj.hasProperty("yflip")
      || !obj.hasProperty("palette")) {
         return Tile();
     }
     Tile tile = Tile();
-    tile.tile = obj.property("tile").toInt();
+    tile.tileId = obj.property("tileId").toInt();
     tile.xflip = obj.property("xflip").toBool();
     tile.yflip = obj.property("yflip").toBool();
     tile.palette = obj.property("palette").toInt();
@@ -173,7 +173,7 @@ Tile Scripting::toTile(QJSValue obj) {
 
 QJSValue Scripting::fromTile(Tile tile) {
     QJSValue obj = instance->engine->newObject();
-    obj.setProperty("tile", tile.tile);
+    obj.setProperty("tileId", tile.tileId);
     obj.setProperty("xflip", tile.xflip);
     obj.setProperty("yflip", tile.yflip);
     obj.setProperty("palette", tile.palette);

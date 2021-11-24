@@ -47,7 +47,7 @@ QImage getMetatileImage(
         int l = layerOrder.size() >= numLayers ? layerOrder[layer] : layer;
         int bottomLayer = layerOrder.size() >= numLayers ? layerOrder[0] : 0;
         Tile tile_ = metatile->tiles.value((y * 2) + x + (l * 4));
-        QImage tile_image = getTileImage(tile_.tile, primaryTileset, secondaryTileset);
+        QImage tile_image = getTileImage(tile_.tileId, primaryTileset, secondaryTileset);
         if (tile_image.isNull()) {
             // Some metatiles specify tiles that are outside the valid range.
             // These are treated as completely transparent, so they can be skipped without
@@ -66,7 +66,7 @@ QImage getMetatileImage(
                 tile_image.setColor(j, palette.value(j));
             }
         } else {
-            logWarn(QString("Tile '%1' is referring to invalid palette number: '%2'").arg(tile_.tile).arg(tile_.palette));
+            logWarn(QString("Tile '%1' is referring to invalid palette number: '%2'").arg(tile_.tileId).arg(tile_.palette));
         }
 
         QPoint origin = QPoint(x*8, y*8);

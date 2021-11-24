@@ -1298,9 +1298,9 @@ void MainWindow::on_actionNew_Tileset_triggered() {
                 Tile tile(0, false, false, 0);
                 //Create a checkerboard-style dummy tileset
                 if(((i / 8) % 2) == 0)
-                    tile.tile = ((i % 2) == 0) ? 1 : 2;
+                    tile.tileId = ((i % 2) == 0) ? 1 : 2;
                 else
-                    tile.tile = ((i % 2) == 1) ? 1 : 2;
+                    tile.tileId = ((i % 2) == 1) ? 1 : 2;
                 mt->tiles.append(tile);
             }
             mt->behavior = 0;

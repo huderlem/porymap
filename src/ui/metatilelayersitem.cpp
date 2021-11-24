@@ -26,7 +26,7 @@ void MetatileLayersItem::draw() {
     int numTiles = isTripleLayerMetatile ? 12 : 8;
     for (int i = 0; i < numTiles; i++) {
         Tile tile = this->metatile->tiles.at(i);
-        QImage tileImage = getPalettedTileImage(tile.tile, this->primaryTileset, this->secondaryTileset, tile.palette, true)
+        QImage tileImage = getPalettedTileImage(tile.tileId, this->primaryTileset, this->secondaryTileset, tile.palette, true)
                 .mirrored(tile.xflip, tile.yflip)
                 .scaled(16, 16);
         painter.drawImage(tileCoords.at(i), tileImage);

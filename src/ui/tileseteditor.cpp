@@ -319,7 +319,7 @@ void TilesetEditor::drawSelectedTiles() {
     int tileIndex = 0;
     for (int j = 0; j < dimensions.y(); j++) {
         for (int i = 0; i < dimensions.x(); i++) {
-            QImage tileImage = getPalettedTileImage(tiles.at(tileIndex).tile, this->primaryTileset, this->secondaryTileset, tiles.at(tileIndex).palette, true)
+            QImage tileImage = getPalettedTileImage(tiles.at(tileIndex).tileId, this->primaryTileset, this->secondaryTileset, tiles.at(tileIndex).palette, true)
                     .mirrored(tiles.at(tileIndex).xflip, tiles.at(tileIndex).yflip)
                     .scaled(16, 16);
             tileIndex++;
@@ -406,7 +406,7 @@ void TilesetEditor::onMetatileLayerTileChanged(int x, int y) {
              && tileCoords.at(tileIndex).x() >= x
              && tileCoords.at(tileIndex).y() >= y){
                 Tile &tile = this->metatile->tiles[tileIndex];
-                tile.tile = tiles.at(selectedTileIndex).tile;
+                tile.tileId = tiles.at(selectedTileIndex).tileId;
                 tile.xflip = tiles.at(selectedTileIndex).xflip;
                 tile.yflip = tiles.at(selectedTileIndex).yflip;
                 tile.palette = tiles.at(selectedTileIndex).palette;
@@ -442,9 +442,9 @@ void TilesetEditor::onMetatileLayerSelectionChanged(QPoint selectionOrigin, int 
     }
 
     if (width == 1 && height == 1) {
-        this->tileSelector->highlight(static_cast<uint16_t>(tiles[0].tile));
+        this->tileSelector->highlight(static_cast<uint16_t>(tiles[0].tileId));
         ui->spinBox_paletteSelector->setValue(tiles[0].palette);
-        QPoint pos = tileSelector->getTileCoordsOnWidget(static_cast<uint16_t>(tiles[0].tile));
+        QPoint pos = tileSelector->getTileCoordsOnWidget(static_cast<uint16_t>(tiles[0].tileId));
         ui->scrollArea_Tiles->ensureVisible(pos.x(), pos.y());
     }
     this->tileSelector->setExternalSelection(width, height, tiles, tileIdxs);
@@ -979,20 +979,20 @@ void TilesetEditor::countMetatileUsage() {
 
             // for each block in the layout, mark in the vector that it is used
             for (int i = 0; i < layout->blockdata.length(); i++) {
-                uint16_t tile = layout->blockdata.at(i).tile;
-                if (tile < this->project->getNumMetatilesPrimary()) {
-                    if (usesPrimary) metatileSelector->usedMetatiles[tile]++;
+                uint16_t metatileId = layout->blockdata.at(i).metatileId;
+                if (metatileId < this->project->getNumMetatilesPrimary()) {
+                    if (usesPrimary) metatileSelector->usedMetatiles[metatileId]++;
                 } else {
-                    if (usesSecondary) metatileSelector->usedMetatiles[tile]++;
+                    if (usesSecondary) metatileSelector->usedMetatiles[metatileId]++;
                 }
             }
 
             for (int i = 0; i < layout->border.length(); i++) {
-                uint16_t tile = layout->border.at(i).tile;                
-                if (tile < this->project->getNumMetatilesPrimary()) {
-                    if (usesPrimary) metatileSelector->usedMetatiles[tile]++;
+                uint16_t metatileId = layout->border.at(i).metatileId;
+                if (metatileId < this->project->getNumMetatilesPrimary()) {
+                    if (usesPrimary) metatileSelector->usedMetatiles[metatileId]++;
                 } else {
-                    if (usesSecondary) metatileSelector->usedMetatiles[tile]++;
+                    if (usesSecondary) metatileSelector->usedMetatiles[metatileId]++;
                 }
             }
         }
@@ -1024,8 +1024,8 @@ void TilesetEditor::countTileUsage() {
     for (Tileset *tileset : primaryTilesets) {
         for (Metatile *metatile : tileset->metatiles) {
             for (Tile tile : metatile->tiles) {
-                if (tile.tile >= Project::getNumTilesPrimary())
-                    this->tileSelector->usedTiles[tile.tile]++;
+                if (tile.tileId >= Project::getNumTilesPrimary())
+                    this->tileSelector->usedTiles[tile.tileId]++;
             }
         }
     }
@@ -1034,8 +1034,8 @@ void TilesetEditor::countTileUsage() {
     for (Tileset *tileset : secondaryTilesets) {
         for (Metatile *metatile : tileset->metatiles) {
             for (Tile tile : metatile->tiles) {
-                if (tile.tile < Project::getNumTilesPrimary())
-                    this->tileSelector->usedTiles[tile.tile]++;
+                if (tile.tileId < Project::getNumTilesPrimary())
+                    this->tileSelector->usedTiles[tile.tileId]++;
             }
         }
     }
@@ -1043,14 +1043,14 @@ void TilesetEditor::countTileUsage() {
     // check this primary tileset metatiles
     for (Metatile *metatile : this->primaryTileset->metatiles) {
         for (Tile tile : metatile->tiles) {
-            this->tileSelector->usedTiles[tile.tile]++;
+            this->tileSelector->usedTiles[tile.tileId]++;
         }
     }
 
     // and the secondary metatiles
     for (Metatile *metatile : this->secondaryTileset->metatiles) {
         for (Tile tile : metatile->tiles) {
-            this->tileSelector->usedTiles[tile.tile]++;
+            this->tileSelector->usedTiles[tile.tileId]++;
         }
     }
 }

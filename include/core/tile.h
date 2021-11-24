@@ -7,21 +7,21 @@ class Tile
 {
 public:
     Tile() :
-        tile(0),
+        tileId(0),
         xflip(false),
         yflip(false),
         palette(0)
     {  }
 
-    Tile(int tile, bool xflip, bool yflip, int palette) :
-        tile(tile),
+    Tile(int tileId, bool xflip, bool yflip, int palette) :
+        tileId(tileId),
         xflip(xflip),
         yflip(yflip),
         palette(palette)
     {  }
 
 public:
-    int tile;
+    int tileId;
     bool xflip;
     bool yflip;
     int palette;

@@ -16,8 +16,8 @@ void BorderMetatilesPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
     for (int i = 0; i < selectionDimensions.x() && (i + pos.x()) < width; i++) {
         for (int j = 0; j < selectionDimensions.y() && (j + pos.y()) < height; j++) {
             int blockIndex = (j + pos.y()) * width + (i + pos.x());
-            uint16_t tile = selectedMetatiles->at(j * selectionDimensions.x() + i);
-            map->layout->border[blockIndex].tile = tile;
+            uint16_t metatileId = selectedMetatiles->at(j * selectionDimensions.x() + i);
+            map->layout->border[blockIndex].metatileId = metatileId;
         }
     }
 
@@ -42,7 +42,7 @@ void BorderMetatilesPixmapItem::draw() {
             int y = j * 16;
             int index = j * width + i;
             QImage metatile_image = getMetatileImage(
-                        map->layout->border.value(index).tile,
+                        map->layout->border.value(index).metatileId,
                         map->layout->tileset_primary,
                         map->layout->tileset_secondary,
                         map->metatileLayerOrder,
