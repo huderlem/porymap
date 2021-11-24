@@ -991,7 +991,7 @@ void Editor::onHoveredMapMetatileChanged(const QPoint &pos) {
     if (map_item->paintingMode == MapPixmapItem::PaintMode::Metatiles
      && pos.x() >= 0 && pos.x() < map->getWidth() && pos.y() >= 0 && pos.y() < map->getHeight()) {
         int blockIndex = pos.y() * map->getWidth() + pos.x();
-        int metatileId = map->layout->blockdata.at(blockIndex).tile;
+        int metatileId = map->layout->blockdata.at(blockIndex).metatileId;
         this->ui->statusBar->showMessage(QString("X: %1, Y: %2, %3, Scale = %4x")
                               .arg(pos.x())
                               .arg(pos.y())
