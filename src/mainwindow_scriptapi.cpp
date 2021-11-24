@@ -14,6 +14,14 @@ QJSValue MainWindow::getBlock(int x, int y) {
     return Scripting::fromBlock(block);
 }
 
+// TODO: "needsFullRedraw" is used when redrawing the map after
+// changing a metatile's tiles via script. It is unnecessarily
+// resource intensive. The map metatiles that need to be updated are
+// not marked as changed, so they will not be redrawn if the cache
+// isn't ignored. Ideally the setMetatileTiles functions would properly
+// set each of the map spaces that use the modified metatile so that
+// the cache could be used, though this would lkely still require a
+// full read of the map and its border/connections.
 void MainWindow::tryRedrawMapArea(bool forceRedraw) {
     if (!forceRedraw) return;
 
@@ -64,7 +72,7 @@ int MainWindow::getMetatileId(int x, int y) {
     if (!this->editor->map->getBlock(x, y, &block)) {
         return 0;
     }
-    return block.tile;
+    return block.metatileId;
 }
 
 void MainWindow::setMetatileId(int x, int y, int metatileId, bool forceRedraw, bool commitChanges) {
@@ -96,7 +104,7 @@ void MainWindow::setCollision(int x, int y, int collision, bool forceRedraw, boo
     if (!this->editor->map->getBlock(x, y, &block)) {
         return;
     }
-    this->editor->map->setBlock(x, y, Block(block.tile, collision, block.elevation));
+    this->editor->map->setBlock(x, y, Block(block.metatileId, collision, block.elevation));
     this->tryCommitMapChanges(commitChanges);
     this->tryRedrawMapArea(forceRedraw);
 }
@@ -118,7 +126,7 @@ void MainWindow::setElevation(int x, int y, int elevation, bool forceRedraw, boo
     if (!this->editor->map->getBlock(x, y, &block)) {
         return;
     }
-    this->editor->map->setBlock(x, y, Block(block.tile, block.collision, elevation));
+    this->editor->map->setBlock(x, y, Block(block.metatileId, block.collision, elevation));
     this->tryCommitMapChanges(commitChanges);
     this->tryRedrawMapArea(forceRedraw);
 }
@@ -667,44 +675,74 @@ void MainWindow::setMetatileBehavior(int metatileId, int behavior) {
     this->saveMetatileAttributesByMetatileId(metatileId);
 }
 
-QJSValue MainWindow::getMetatileTile(int metatileId, int tileIndex) {
-    Metatile * metatile = this->getMetatile(metatileId);
-    int maxTileIndex = projectConfig.getTripleLayerMetatilesEnabled() ? 12 : 8;
-    if (!metatile || tileIndex >= maxTileIndex || tileIndex < 0)
-        return QJSValue();
-    return Scripting::fromTile(metatile->tiles[tileIndex]);
+int MainWindow::calculateTileBounds(int * tileStart, int * tileEnd) {
+    int maxNumTiles = projectConfig.getTripleLayerMetatilesEnabled() ? 12 : 8;
+    if (*tileEnd >= maxNumTiles || *tileEnd < 0)
+        *tileEnd = maxNumTiles - 1;
+    if (*tileStart >= maxNumTiles || *tileStart < 0)
+        *tileStart = 0;
+    return 1 + (*tileEnd - *tileStart);
 }
 
-void MainWindow::setMetatileTile(int metatileId, int tileIndex, int tileId, bool xflip, bool yflip, int palette, bool forceRedraw) {
+QJSValue MainWindow::getMetatileTiles(int metatileId, int tileStart, int tileEnd) {
     Metatile * metatile = this->getMetatile(metatileId);
-    int maxTileIndex = projectConfig.getTripleLayerMetatilesEnabled() ? 12 : 8;
-    if (!metatile || tileIndex >= maxTileIndex || tileIndex < 0)
-        return;
-    Tile * tile = &metatile->tiles[tileIndex];
-    if (!tile) return;
-    if (tile->tile == tileId
-     && tile->xflip == xflip
-     && tile->yflip == yflip
-     && tile->palette == palette)
+    int numTiles = calculateTileBounds(&tileStart, &tileEnd);
+    if (!metatile || numTiles <= 0)
+        return QJSValue();
+
+    QJSValue tiles = Scripting::getEngine()->newArray(numTiles);
+    for (int i = 0; i < numTiles; i++, tileStart++)
+        tiles.setProperty(i, Scripting::fromTile(metatile->tiles[tileStart]));
+    return tiles;
+}
+
+void MainWindow::setMetatileTiles(int metatileId, QJSValue tilesObj, int tileStart, int tileEnd, bool forceRedraw) {
+    Metatile * metatile = this->getMetatile(metatileId);
+    int numTiles = calculateTileBounds(&tileStart, &tileEnd);
+    if (!metatile || numTiles <= 0)
         return;
 
-    tile->tile = tileId;
-    tile->xflip = xflip;
-    tile->yflip = yflip;
-    tile->palette = palette;
+    // Write to metatile using as many of the given Tiles as possible
+    int numTileObjs = qMin(tilesObj.property("length").toInt(), numTiles);
+    int i = 0;
+    for (; i < numTileObjs; i++)
+        metatile->tiles[i] = Scripting::toTile(tilesObj.property(i));
+
+    // Fill remainder of specified length with empty Tiles
+    for (; i < numTiles; i++)
+        metatile->tiles[i] = Tile();
+
     this->saveMetatilesByMetatileId(metatileId);
-
-    // TODO: Making tryRedrawMapArea do a full draw is unnecessarily expensive.
-    // The map metatiles that need to be updated are not changed by the above
-    // operation, so they will not be redrawn if the cache isn't ignored.
-    // Ideally setMetatileTile would properly set each of the map spaces that
-    // use this metatile so that the cache could be used, though this would
-    // likely still require a full read of the map and its border/connections.
     this->needsFullRedraw = true;
     this->tryRedrawMapArea(forceRedraw);
 }
 
-void MainWindow::setMetatileTile(int metatileId, int tileIndex, QJSValue obj, bool forceRedraw) {
-    Tile tile = Scripting::toTile(obj);
-    this->setMetatileTile(metatileId, tileIndex, tile.tile, tile.xflip, tile.yflip, tile.palette, forceRedraw);
+void MainWindow::setMetatileTiles(int metatileId, int tileId, bool xflip, bool yflip, int palette, int tileStart, int tileEnd, bool forceRedraw) {
+    Metatile * metatile = this->getMetatile(metatileId);
+    int numTiles = calculateTileBounds(&tileStart, &tileEnd);
+    if (!metatile || numTiles <= 0)
+        return;
+
+    // Write to metatile using Tiles of the specified value
+    Tile tile = Tile(tileId, xflip, yflip, palette);
+    for (int i = 0; i < numTiles; i++)
+        metatile->tiles[i] = tile;
+
+    this->saveMetatilesByMetatileId(metatileId);
+    this->needsFullRedraw = true;
+    this->tryRedrawMapArea(forceRedraw);
+}
+
+QJSValue MainWindow::getMetatileTile(int metatileId, int tileIndex) {
+    QJSValue tilesObj = this->getMetatileTiles(metatileId, tileIndex, tileIndex);
+    return tilesObj.property(0);
+}
+
+void MainWindow::setMetatileTile(int metatileId, int tileIndex, int tileId, bool xflip, bool yflip, int palette, bool forceRedraw) {
+    this->setMetatileTiles(metatileId, tileId, xflip, yflip, palette, tileIndex, tileIndex, forceRedraw);
+}
+
+void MainWindow::setMetatileTile(int metatileId, int tileIndex, QJSValue tileObj, bool forceRedraw) {
+    Tile tile = Scripting::toTile(tileObj);
+    this->setMetatileTiles(metatileId, tile.tileId, tile.xflip, tile.yflip, tile.palette, tileIndex, tileIndex, forceRedraw);
 }
