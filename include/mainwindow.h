@@ -127,7 +127,11 @@ public:
     Q_INVOKABLE void setMetatileBehavior(int metatileId, int behavior);
     Q_INVOKABLE QJSValue getMetatileTile(int metatileId, int tileIndex);
     Q_INVOKABLE void setMetatileTile(int metatileId, int tileIndex, int tileId, bool xflip, bool yflip, int palette, bool forceRedraw = true);
-    Q_INVOKABLE void setMetatileTile(int metatileId, int tileIndex, QJSValue obj, bool forceRedraw = true);
+    Q_INVOKABLE void setMetatileTile(int metatileId, int tileIndex, QJSValue tileObj, bool forceRedraw = true);
+    int calculateTileBounds(int * tileStart, int * tileEnd);
+    Q_INVOKABLE QJSValue getMetatileTiles(int metatileId, int tileStart = 0, int tileEnd = -1);
+    Q_INVOKABLE void setMetatileTiles(int metatileId, QJSValue tilesObj, int tileStart = 0, int tileEnd = -1, bool forceRedraw = true);
+    Q_INVOKABLE void setMetatileTiles(int metatileId, int tileId, bool xflip, bool yflip, int palette, int tileStart = 0, int tileEnd = -1, bool forceRedraw = true);
 
 
 private slots:
