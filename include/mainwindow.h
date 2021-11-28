@@ -71,7 +71,7 @@ public:
     Q_INVOKABLE void addText(QString text, int x, int y, QString color = "#000000", int fontSize = 12);
     Q_INVOKABLE void addRect(int x, int y, int width, int height, QString color = "#000000");
     Q_INVOKABLE void addFilledRect(int x, int y, int width, int height, QString color = "#000000");
-    Q_INVOKABLE void addImage(int x, int y, QString filepath);
+    Q_INVOKABLE void addImage(int x, int y, QString filepath, int width = -1, int height = -1, unsigned offset = 0, bool hflip = false, bool vflip = false, bool setTransparency = false);
     void refreshAfterPaletteChange(Tileset *tileset);
     void setTilesetPalette(Tileset *tileset, int paletteIndex, QList<QList<int>> colors);
     Q_INVOKABLE void setPrimaryTilesetPalette(int paletteIndex, QList<QList<int>> colors);
