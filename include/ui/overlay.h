@@ -75,6 +75,7 @@ public:
     ~Overlay() {
         this->clearItems();
     }
+    void setHidden(bool hidden);
     void renderItems(QPainter *painter);
     QList<OverlayItem*> getItems();
     void clearItems();
@@ -83,6 +84,7 @@ public:
     bool addImage(int x, int y, QString filepath, int width = -1, int height = -1, unsigned offset = 0, bool hflip = false, bool vflip = false, bool setTransparency = false);
 private:
     QList<OverlayItem*> items;
+    bool hidden;
 };
 
 #endif // OVERLAY_H

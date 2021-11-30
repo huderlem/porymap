@@ -26,6 +26,11 @@ void GraphicsView::clearOverlays() {
         overlay->clearItems();
 }
 
+void GraphicsView::setOverlaysHidden(bool hidden) {
+    foreach (Overlay * overlay, this->overlayMap)
+        overlay->setHidden(hidden);
+}
+
 Overlay * GraphicsView::getOverlay(int layer) {
     Overlay * overlay = this->overlayMap.value(layer, nullptr);
     if (!overlay) {

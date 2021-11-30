@@ -238,6 +238,24 @@ void MainWindow::clearOverlay(int layer) {
     this->ui->graphicsView_Map->scene()->update();
 }
 
+void MainWindow::hideOverlay(int layer) {
+    this->setOverlayVisibility(false, layer);
+}
+
+void MainWindow::showOverlay(int layer) {
+    this->setOverlayVisibility(true, layer);
+}
+
+void MainWindow::setOverlayVisibility(bool visible, int layer) {
+    if (!this->ui || !this->ui->graphicsView_Map)
+        return;
+    if (layer == INT_MAX)
+        this->ui->graphicsView_Map->setOverlaysHidden(!visible);
+    else
+        this->ui->graphicsView_Map->getOverlay(layer)->setHidden(!visible);
+    this->ui->graphicsView_Map->scene()->update();
+}
+
 void MainWindow::addText(QString text, int x, int y, QString color, int fontSize, int layer) {
     if (!this->ui || !this->ui->graphicsView_Map || layer == INT_MAX)
         return;
