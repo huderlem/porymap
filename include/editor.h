@@ -212,6 +212,7 @@ signals:
     void currentMetatilesSelectionChanged();
     void mapRulerStatusChanged(const QString &);
     void editedMapData();
+    void tilesetUpdated(QString);
 };
 
 #endif // EDITOR_H

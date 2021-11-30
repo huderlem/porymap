@@ -258,6 +258,7 @@ void MainWindow::initEditor() {
     connect(this->editor, &Editor::wildMonDataChanged, this, &MainWindow::onWildMonDataChanged);
     connect(this->editor, &Editor::mapRulerStatusChanged, this, &MainWindow::onMapRulerStatusChanged);
     connect(this->editor, &Editor::editedMapData, this, &MainWindow::markMapEdited);
+    connect(this->editor, &Editor::tilesetUpdated, this, &Scripting::cb_TilesetUpdated);
     connect(ui->toolButton_Open_Scripts, &QToolButton::pressed, this->editor, &Editor::openMapScripts);
     connect(ui->actionOpen_Project_in_Text_Editor, &QAction::triggered, this->editor, &Editor::openProjectInTextEditor);
 
@@ -2701,12 +2702,14 @@ void MainWindow::onTilesetsSaved(QString primaryTilesetLabel, QString secondaryT
     bool updated = false;
     if (primaryTilesetLabel == this->editor->map->layout->tileset_primary_label) {
         this->editor->updatePrimaryTileset(primaryTilesetLabel, true);
+        Scripting::cb_TilesetUpdated(primaryTilesetLabel);
         updated = true;
     } else {
         this->editor->project->getTileset(primaryTilesetLabel, true);
     }
     if (secondaryTilesetLabel == this->editor->map->layout->tileset_secondary_label)  {
         this->editor->updateSecondaryTileset(secondaryTilesetLabel, true);
+        Scripting::cb_TilesetUpdated(secondaryTilesetLabel);
         updated = true;
     } else {
         this->editor->project->getTileset(secondaryTilesetLabel, true);

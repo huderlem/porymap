@@ -6,6 +6,7 @@ QMap<CallbackType, QString> callbackFunctions = {
     {OnProjectClosed, "onProjectClosed"},
     {OnBlockChanged, "onBlockChanged"},
     {OnMapOpened, "onMapOpened"},
+    {OnTilesetUpdated, "onTilesetUpdated"},
 };
 
 Scripting *instance = nullptr;
@@ -138,6 +139,15 @@ void Scripting::cb_MapOpened(QString mapName) {
         mapName,
     };
     instance->invokeCallback(OnMapOpened, args);
+}
+
+void Scripting::cb_TilesetUpdated(QString tilesetName) {
+    if (!instance) return;
+
+    QJSValueList args {
+        tilesetName,
+    };
+    instance->invokeCallback(OnTilesetUpdated, args);
 }
 
 QJSValue Scripting::fromBlock(Block block) {

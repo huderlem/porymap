@@ -13,6 +13,7 @@ enum CallbackType {
     OnProjectClosed,
     OnBlockChanged,
     OnMapOpened,
+    OnTilesetUpdated,
 };
 
 class Scripting
@@ -32,6 +33,7 @@ public:
     static void cb_ProjectClosed(QString projectPath);
     static void cb_MetatileChanged(int x, int y, Block prevBlock, Block newBlock);
     static void cb_MapOpened(QString mapName);
+    static void cb_TilesetUpdated(QString tilesetName);
     static bool tryErrorJS(QJSValue js);
 
 private:

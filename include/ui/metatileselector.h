@@ -31,6 +31,8 @@ public:
     void setExternalSelection(int, int, QList<uint16_t>, QList<QPair<uint16_t, uint16_t>>);
     QPoint getMetatileIdCoordsOnWidget(uint16_t);
     void setMap(Map*);
+    Tileset *primaryTileset;
+    Tileset *secondaryTileset;
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent*);
     void mouseMoveEvent(QGraphicsSceneMouseEvent*);
@@ -41,8 +43,6 @@ private:
     bool externalSelection;
     int numMetatilesWide;
     Map *map;
-    Tileset *primaryTileset;
-    Tileset *secondaryTileset;
     QList<uint16_t> *selectedMetatiles;
     QList<QPair<uint16_t, uint16_t>> *selectedCollisions;
     int externalSelectionWidth;
