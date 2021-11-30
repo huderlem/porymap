@@ -12,11 +12,13 @@ class GraphicsView : public QGraphicsView
 public:
     GraphicsView() : QGraphicsView() {}
     GraphicsView(QWidget *parent) : QGraphicsView(parent) {}
+    Overlay * getOverlay(int layer);
+    void clearOverlays();
 
 public:
 //    GraphicsView_Object object;
     Editor *editor;
-    Overlay overlay;
+    QMap<int, Overlay*> overlayMap;
 protected:
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);

@@ -17,9 +17,22 @@ void GraphicsView::mouseReleaseEvent(QMouseEvent *event) {
 }
 
 void GraphicsView::drawForeground(QPainter *painter, const QRectF&) {
-    for (auto item : this->overlay.getItems()) {
-        item->render(painter);
+    foreach (Overlay * overlay, this->overlayMap)
+        overlay->renderItems(painter);
+}
+
+void GraphicsView::clearOverlays() {
+    foreach (Overlay * overlay, this->overlayMap)
+        overlay->clearItems();
+}
+
+Overlay * GraphicsView::getOverlay(int layer) {
+    Overlay * overlay = this->overlayMap.value(layer, nullptr);
+    if (!overlay) {
+        overlay = new Overlay();
+        this->overlayMap.insert(layer, overlay);
     }
+    return overlay;
 }
 
 void GraphicsView::moveEvent(QMoveEvent *event) {

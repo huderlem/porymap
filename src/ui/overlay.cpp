@@ -22,6 +22,12 @@ void OverlayImage::render(QPainter *painter) {
     painter->drawImage(this->x, this->y, this->image);
 }
 
+void Overlay::renderItems(QPainter *painter) {
+    for (auto item : this->items) {
+        item->render(painter);
+    }
+}
+
 void Overlay::clearItems() {
     for (auto item : this->items) {
         delete item;

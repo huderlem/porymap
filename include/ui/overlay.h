@@ -75,6 +75,7 @@ public:
     ~Overlay() {
         this->clearItems();
     }
+    void renderItems(QPainter *painter);
     QList<OverlayItem*> getItems();
     void clearItems();
     void addText(QString text, int x, int y, QString color = "#000000", int fontSize = 12);
