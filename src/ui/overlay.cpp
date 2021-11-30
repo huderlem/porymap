@@ -23,9 +23,10 @@ void OverlayImage::render(QPainter *painter) {
 }
 
 void Overlay::renderItems(QPainter *painter) {
-    for (auto item : this->items) {
+    if (this->hidden) return;
+
+    for (auto item : this->items)
         item->render(painter);
-    }
 }
 
 void Overlay::clearItems() {
@@ -37,6 +38,10 @@ void Overlay::clearItems() {
 
 QList<OverlayItem*> Overlay::getItems() {
     return this->items;
+}
+
+void Overlay::setHidden(bool hidden) {
+    this->hidden = hidden;
 }
 
 void Overlay::addText(QString text, int x, int y, QString color, int fontSize) {

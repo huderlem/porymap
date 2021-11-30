@@ -68,6 +68,9 @@ public:
     Q_INVOKABLE void setWidth(int width);
     Q_INVOKABLE void setHeight(int height);
     Q_INVOKABLE void clearOverlay(int layer = INT_MAX);
+    Q_INVOKABLE void hideOverlay(int layer = INT_MAX);
+    Q_INVOKABLE void showOverlay(int layer = INT_MAX);
+    Q_INVOKABLE void setOverlayVisibility(bool visible, int layer = INT_MAX);
     Q_INVOKABLE void addText(QString text, int x, int y, QString color = "#000000", int fontSize = 12, int layer = 0);
     Q_INVOKABLE void addRect(int x, int y, int width, int height, QString color = "#000000", int layer = 0);
     Q_INVOKABLE void addFilledRect(int x, int y, int width, int height, QString color = "#000000", int layer = 0);

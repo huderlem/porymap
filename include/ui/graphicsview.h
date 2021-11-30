@@ -14,6 +14,7 @@ public:
     GraphicsView(QWidget *parent) : QGraphicsView(parent) {}
     Overlay * getOverlay(int layer);
     void clearOverlays();
+    void setOverlaysHidden(bool hidden);
 
 public:
 //    GraphicsView_Object object;
