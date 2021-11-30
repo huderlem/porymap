@@ -605,7 +605,7 @@ void MainWindow::on_action_Open_Project_triggered()
     if (!dir.isEmpty()) {
         if (this->editor && this->editor->project) {
             Scripting::cb_ProjectClosed(this->editor->project->root);
-            this->ui->graphicsView_Map->overlay.clearItems();
+            this->ui->graphicsView_Map->clearOverlays();
         }
         porymapConfig.setRecentProject(dir);
         setWindowDisabled(!openProject(dir));

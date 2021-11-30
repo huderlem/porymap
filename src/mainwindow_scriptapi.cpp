@@ -227,38 +227,42 @@ void MainWindow::setHeight(int height) {
     this->onMapNeedsRedrawing();
 }
 
-void MainWindow::clearOverlay() {
+void MainWindow::clearOverlay(int layer) {
     if (!this->ui || !this->ui->graphicsView_Map)
         return;
-    this->ui->graphicsView_Map->overlay.clearItems();
+    // INT_MAX is used as an indicator value to refer to all overlays
+    if (layer == INT_MAX)
+        this->ui->graphicsView_Map->clearOverlays();
+    else
+        this->ui->graphicsView_Map->getOverlay(layer)->clearItems();
     this->ui->graphicsView_Map->scene()->update();
 }
 
-void MainWindow::addText(QString text, int x, int y, QString color, int fontSize) {
-    if (!this->ui || !this->ui->graphicsView_Map)
+void MainWindow::addText(QString text, int x, int y, QString color, int fontSize, int layer) {
+    if (!this->ui || !this->ui->graphicsView_Map || layer == INT_MAX)
         return;
-    this->ui->graphicsView_Map->overlay.addText(text, x, y, color, fontSize);
+    this->ui->graphicsView_Map->getOverlay(layer)->addText(text, x, y, color, fontSize);
     this->ui->graphicsView_Map->scene()->update();
 }
 
-void MainWindow::addRect(int x, int y, int width, int height, QString color) {
-    if (!this->ui || !this->ui->graphicsView_Map)
+void MainWindow::addRect(int x, int y, int width, int height, QString color, int layer) {
+    if (!this->ui || !this->ui->graphicsView_Map || layer == INT_MAX)
         return;
-    this->ui->graphicsView_Map->overlay.addRect(x, y, width, height, color, false);
+    this->ui->graphicsView_Map->getOverlay(layer)->addRect(x, y, width, height, color, false);
     this->ui->graphicsView_Map->scene()->update();
 }
 
-void MainWindow::addFilledRect(int x, int y, int width, int height, QString color) {
-    if (!this->ui || !this->ui->graphicsView_Map)
+void MainWindow::addFilledRect(int x, int y, int width, int height, QString color, int layer) {
+    if (!this->ui || !this->ui->graphicsView_Map || layer == INT_MAX)
         return;
-    this->ui->graphicsView_Map->overlay.addRect(x, y, width, height, color, true);
+    this->ui->graphicsView_Map->getOverlay(layer)->addRect(x, y, width, height, color, true);
     this->ui->graphicsView_Map->scene()->update();
 }
 
-void MainWindow::addImage(int x, int y, QString filepath, int width, int height, unsigned offset, bool hflip, bool vflip, bool setTransparency) {
-    if (!this->ui || !this->ui->graphicsView_Map)
+void MainWindow::addImage(int x, int y, QString filepath, int width, int height, unsigned offset, bool hflip, bool vflip, bool setTransparency, int layer) {
+    if (!this->ui || !this->ui->graphicsView_Map || layer == INT_MAX)
         return;
-    if (this->ui->graphicsView_Map->overlay.addImage(x, y, filepath, width, height, offset, hflip, vflip, setTransparency))
+    if (this->ui->graphicsView_Map->getOverlay(layer)->addImage(x, y, filepath, width, height, offset, hflip, vflip, setTransparency))
         this->ui->graphicsView_Map->scene()->update();
 }
 
