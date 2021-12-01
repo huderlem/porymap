@@ -97,6 +97,10 @@ public:
     Q_INVOKABLE QJSValue getPrimaryTilesetPalettesPreview();
     Q_INVOKABLE QJSValue getSecondaryTilesetPalettePreview(int paletteIndex);
     Q_INVOKABLE QJSValue getSecondaryTilesetPalettesPreview();
+    Q_INVOKABLE int getNumPrimaryTilesetMetatiles();
+    Q_INVOKABLE int getNumSecondaryTilesetMetatiles();
+    Q_INVOKABLE bool isPrimaryTileset(QString tilesetName);
+    Q_INVOKABLE bool isSecondaryTileset(QString tilesetName);
     Q_INVOKABLE QString getPrimaryTileset();
     Q_INVOKABLE QString getSecondaryTileset();
     Q_INVOKABLE void setPrimaryTileset(QString tileset);
@@ -128,6 +132,7 @@ public:
     Q_INVOKABLE void setMetatileTerrainType(int metatileId, int terrainType);
     Q_INVOKABLE int getMetatileBehavior(int metatileId);
     Q_INVOKABLE void setMetatileBehavior(int metatileId, int behavior);
+    Q_INVOKABLE int getNumTilesInMetatile();
     Q_INVOKABLE QJSValue getMetatileTile(int metatileId, int tileIndex);
     Q_INVOKABLE void setMetatileTile(int metatileId, int tileIndex, int tileId, bool xflip, bool yflip, int palette, bool forceRedraw = true);
     Q_INVOKABLE void setMetatileTile(int metatileId, int tileIndex, QJSValue tileObj, bool forceRedraw = true);

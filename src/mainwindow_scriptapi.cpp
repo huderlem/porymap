@@ -470,6 +470,30 @@ QJSValue MainWindow::getSecondaryTilesetPalettesPreview() {
     return this->getTilesetPalettes(this->editor->map->layout->tileset_secondary->palettePreviews);
 }
 
+int MainWindow::getNumPrimaryTilesetMetatiles() {
+    if (!this->editor || !this->editor->map || !this->editor->map->layout || !this->editor->map->layout->tileset_primary)
+        return 0;
+    return this->editor->map->layout->tileset_primary->metatiles.length();
+}
+
+int MainWindow::getNumSecondaryTilesetMetatiles() {
+    if (!this->editor || !this->editor->map || !this->editor->map->layout || !this->editor->map->layout->tileset_secondary)
+        return 0;
+    return this->editor->map->layout->tileset_secondary->metatiles.length();
+}
+
+bool MainWindow::isPrimaryTileset(QString tilesetName) {
+    if (!this->editor || !this->editor->project)
+        return false;
+    return this->editor->project->tilesetLabels["primary"].contains(tilesetName);
+}
+
+bool MainWindow::isSecondaryTileset(QString tilesetName) {
+    if (!this->editor || !this->editor->project)
+        return false;
+    return this->editor->project->tilesetLabels["secondary"].contains(tilesetName);
+}
+
 QString MainWindow::getPrimaryTileset() {
     if (!this->editor || !this->editor->map || !this->editor->map->layout || !this->editor->map->layout->tileset_primary)
         return QString();
@@ -697,8 +721,12 @@ void MainWindow::setMetatileBehavior(int metatileId, int behavior) {
     this->saveMetatileAttributesByMetatileId(metatileId);
 }
 
+int MainWindow::getNumTilesInMetatile() {
+    return projectConfig.getTripleLayerMetatilesEnabled() ? 12 : 8;
+}
+
 int MainWindow::calculateTileBounds(int * tileStart, int * tileEnd) {
-    int maxNumTiles = projectConfig.getTripleLayerMetatilesEnabled() ? 12 : 8;
+    int maxNumTiles = this->getNumTilesInMetatile();
     if (*tileEnd >= maxNumTiles || *tileEnd < 0)
         *tileEnd = maxNumTiles - 1;
     if (*tileStart >= maxNumTiles || *tileStart < 0)
