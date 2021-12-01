@@ -15,7 +15,25 @@ QImage getCollisionMetatileImage(int collision, int elevation) {
 }
 
 QImage getMetatileImage(
-        uint16_t tile,
+        uint16_t metatileId,
+        Tileset *primaryTileset,
+        Tileset *secondaryTileset,
+        QList<int> layerOrder,
+        QList<float> layerOpacity,
+        bool useTruePalettes)
+{
+    Metatile* metatile = Tileset::getMetatile(metatileId, primaryTileset, secondaryTileset);
+    Tileset* blockTileset = Tileset::getBlockTileset(metatileId, primaryTileset, secondaryTileset);
+    if (!metatile || !blockTileset) {
+        QImage metatile_image(16, 16, QImage::Format_RGBA8888);
+        metatile_image.fill(Qt::magenta);
+        return metatile_image;
+    }
+    return getMetatileImage(metatile, primaryTileset, secondaryTileset, layerOrder, layerOpacity, useTruePalettes);
+}
+
+QImage getMetatileImage(
+        Metatile *metatile,
         Tileset *primaryTileset,
         Tileset *secondaryTileset,
         QList<int> layerOrder,
@@ -23,19 +41,12 @@ QImage getMetatileImage(
         bool useTruePalettes)
 {
     QImage metatile_image(16, 16, QImage::Format_RGBA8888);
-    metatile_image.fill(Qt::black);
-
-    Metatile* metatile = Tileset::getMetatile(tile, primaryTileset, secondaryTileset);
     if (!metatile) {
         metatile_image.fill(Qt::magenta);
         return metatile_image;
     }
+    metatile_image.fill(Qt::black);
 
-    Tileset* blockTileset = Tileset::getBlockTileset(tile, primaryTileset, secondaryTileset);
-    if (!blockTileset) {
-        metatile_image.fill(Qt::magenta);
-        return metatile_image;
-    }
     QList<QList<QRgb>> palettes = Tileset::getBlockPalettes(primaryTileset, secondaryTileset, useTruePalettes);
 
     QPainter metatile_painter(&metatile_image);
@@ -46,8 +57,8 @@ QImage getMetatileImage(
     for (int x = 0; x < 2; x++) {
         int l = layerOrder.size() >= numLayers ? layerOrder[layer] : layer;
         int bottomLayer = layerOrder.size() >= numLayers ? layerOrder[0] : 0;
-        Tile tile_ = metatile->tiles.value((y * 2) + x + (l * 4));
-        QImage tile_image = getTileImage(tile_.tileId, primaryTileset, secondaryTileset);
+        Tile tile = metatile->tiles.value((y * 2) + x + (l * 4));
+        QImage tile_image = getTileImage(tile.tileId, primaryTileset, secondaryTileset);
         if (tile_image.isNull()) {
             // Some metatiles specify tiles that are outside the valid range.
             // These are treated as completely transparent, so they can be skipped without
@@ -60,13 +71,13 @@ QImage getMetatileImage(
         }
 
         // Colorize the metatile tiles with its palette.
-        if (tile_.palette < palettes.length()) {
-            QList<QRgb> palette = palettes.value(tile_.palette);
+        if (tile.palette < palettes.length()) {
+            QList<QRgb> palette = palettes.value(tile.palette);
             for (int j = 0; j < palette.length(); j++) {
                 tile_image.setColor(j, palette.value(j));
             }
         } else {
-            logWarn(QString("Tile '%1' is referring to invalid palette number: '%2'").arg(tile_.tileId).arg(tile_.palette));
+            logWarn(QString("Tile '%1' is referring to invalid palette number: '%2'").arg(tile.tileId).arg(tile.palette));
         }
 
         QPoint origin = QPoint(x*8, y*8);
@@ -87,24 +98,24 @@ QImage getMetatileImage(
             tile_image.setColor(0, color.rgba());
         }
 
-        metatile_painter.drawImage(origin, tile_image.mirrored(tile_.xflip, tile_.yflip));
+        metatile_painter.drawImage(origin, tile_image.mirrored(tile.xflip, tile.yflip));
     }
     metatile_painter.end();
 
     return metatile_image;
 }
 
-QImage getTileImage(uint16_t tile, Tileset *primaryTileset, Tileset *secondaryTileset) {
-    Tileset *tileset = Tileset::getBlockTileset(tile, primaryTileset, secondaryTileset);
-    int local_index = Metatile::getBlockIndex(tile);
+QImage getTileImage(uint16_t tileId, Tileset *primaryTileset, Tileset *secondaryTileset) {
+    Tileset *tileset = Tileset::getBlockTileset(tileId, primaryTileset, secondaryTileset);
+    int local_index = Metatile::getBlockIndex(tileId);
     if (!tileset) {
         return QImage();
     }
     return tileset->tiles.value(local_index, QImage());
 }
 
-QImage getColoredTileImage(uint16_t tile, Tileset *primaryTileset, Tileset *secondaryTileset, QList<QRgb> palette) {
-    QImage tileImage = getTileImage(tile, primaryTileset, secondaryTileset);
+QImage getColoredTileImage(uint16_t tileId, Tileset *primaryTileset, Tileset *secondaryTileset, QList<QRgb> palette) {
+    QImage tileImage = getTileImage(tileId, primaryTileset, secondaryTileset);
     if (tileImage.isNull()) {
         tileImage = QImage(16, 16, QImage::Format_RGBA8888);
         QPainter painter(&tileImage);
@@ -118,11 +129,11 @@ QImage getColoredTileImage(uint16_t tile, Tileset *primaryTileset, Tileset *seco
     return tileImage;
 }
 
-QImage getPalettedTileImage(uint16_t tile, Tileset *primaryTileset, Tileset *secondaryTileset, int paletteId, bool useTruePalettes) {
+QImage getPalettedTileImage(uint16_t tileId, Tileset *primaryTileset, Tileset *secondaryTileset, int paletteId, bool useTruePalettes) {
     QList<QRgb> palette = Tileset::getPalette(paletteId, primaryTileset, secondaryTileset, useTruePalettes);
-    return getColoredTileImage(tile, primaryTileset, secondaryTileset, palette);
+    return getColoredTileImage(tileId, primaryTileset, secondaryTileset, palette);
 }
 
-QImage getGreyscaleTileImage(uint16_t tile, Tileset *primaryTileset, Tileset *secondaryTileset) {
-    return getColoredTileImage(tile, primaryTileset, secondaryTileset, greyscalePalette);
+QImage getGreyscaleTileImage(uint16_t tileId, Tileset *primaryTileset, Tileset *secondaryTileset) {
+    return getColoredTileImage(tileId, primaryTileset, secondaryTileset, greyscalePalette);
 }

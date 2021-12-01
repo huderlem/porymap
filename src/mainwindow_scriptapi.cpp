@@ -3,6 +3,7 @@
 #include "scripting.h"
 #include "editcommands.h"
 #include "config.h"
+#include "imageproviders.h"
 
 QJSValue MainWindow::getBlock(int x, int y) {
     if (!this->editor || !this->editor->map)
@@ -288,6 +289,60 @@ void MainWindow::createImage(int x, int y, QString filepath, int width, int heig
     if (!this->ui || !this->ui->graphicsView_Map || layer == INT_MAX)
         return;
     if (this->ui->graphicsView_Map->getOverlay(layer)->addImage(x, y, filepath, width, height, offset, hflip, vflip, setTransparency))
+        this->ui->graphicsView_Map->scene()->update();
+}
+
+void MainWindow::addTileImage(int x, int y, int tileId, bool xflip, bool yflip, int palette, int layer) {
+    if (!this->ui || !this->ui->graphicsView_Map || layer == INT_MAX
+     || !this->editor || !this->editor->map || !this->editor->map->layout
+     || !this->editor->map->layout->tileset_primary || !this->editor->map->layout->tileset_secondary)
+        return;
+    QImage image = getPalettedTileImage(tileId,
+                                        this->editor->map->layout->tileset_primary,
+                                        this->editor->map->layout->tileset_secondary,
+                                        palette)
+                                        .mirrored(xflip, yflip);
+    if (this->ui->graphicsView_Map->getOverlay(layer)->addImage(x, y, image))
+        this->ui->graphicsView_Map->scene()->update();
+}
+
+void MainWindow::addTilesImage(int x, int y, QJSValue tilesObj, int layer) {
+    if (!this->ui || !this->ui->graphicsView_Map || layer == INT_MAX
+     || !this->editor || !this->editor->map || !this->editor->map->layout
+     || !this->editor->map->layout->tileset_primary || !this->editor->map->layout->tileset_secondary)
+        return;
+
+    // Create metatile from JS tiles array
+    Metatile metatile;
+    int numTiles = this->getNumTilesInMetatile();
+    int numTileObjs = qMin(tilesObj.property("length").toInt(), numTiles);
+    int i = 0;
+    for (; i < numTileObjs; i++)
+        metatile.tiles.append(Scripting::toTile(tilesObj.property(i)));
+    for (; i < numTiles; i++)
+        metatile.tiles.append(Tile());
+
+    // Create image from metatile
+    QImage image = getMetatileImage(&metatile,
+                                    this->editor->map->layout->tileset_primary,
+                                    this->editor->map->layout->tileset_secondary,
+                                    this->editor->map->metatileLayerOrder,
+                                    this->editor->map->metatileLayerOpacity);
+    if (this->ui->graphicsView_Map->getOverlay(layer)->addImage(x, y, image))
+        this->ui->graphicsView_Map->scene()->update();
+}
+
+void MainWindow::addMetatileImage(int x, int y, int metatileId, int layer) {
+    if (!this->ui || !this->ui->graphicsView_Map || layer == INT_MAX
+     || !this->editor || !this->editor->map || !this->editor->map->layout
+     || !this->editor->map->layout->tileset_primary || !this->editor->map->layout->tileset_secondary)
+        return;
+    QImage image = getMetatileImage(static_cast<uint16_t>(metatileId),
+                                    this->editor->map->layout->tileset_primary,
+                                    this->editor->map->layout->tileset_secondary,
+                                    this->editor->map->metatileLayerOrder,
+                                    this->editor->map->metatileLayerOpacity);
+    if (this->ui->graphicsView_Map->getOverlay(layer)->addImage(x, y, image))
         this->ui->graphicsView_Map->scene()->update();
 }
 

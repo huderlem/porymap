@@ -89,3 +89,12 @@ bool Overlay::addImage(int x, int y, QString filepath, int width, int height, un
     this->items.append(new OverlayImage(x, y, image));
     return true;
 }
+
+bool Overlay::addImage(int x, int y, QImage image) {
+    if (image.isNull()) {
+        logError(QString("Failed to load custom image"));
+        return false;
+    }
+    this->items.append(new OverlayImage(x, y, image));
+    return true;
+}
