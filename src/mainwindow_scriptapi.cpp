@@ -277,7 +277,14 @@ void MainWindow::addFilledRect(int x, int y, int width, int height, QString colo
     this->ui->graphicsView_Map->scene()->update();
 }
 
-void MainWindow::addImage(int x, int y, QString filepath, int width, int height, unsigned offset, bool hflip, bool vflip, bool setTransparency, int layer) {
+void MainWindow::addImage(int x, int y, QString filepath, int layer) {
+    if (!this->ui || !this->ui->graphicsView_Map || layer == INT_MAX)
+        return;
+    if (this->ui->graphicsView_Map->getOverlay(layer)->addImage(x, y, filepath, -1, -1, 0, false, false, false))
+        this->ui->graphicsView_Map->scene()->update();
+}
+
+void MainWindow::createImage(int x, int y, QString filepath, int width, int height, unsigned offset, bool hflip, bool vflip, bool setTransparency, int layer) {
     if (!this->ui || !this->ui->graphicsView_Map || layer == INT_MAX)
         return;
     if (this->ui->graphicsView_Map->getOverlay(layer)->addImage(x, y, filepath, width, height, offset, hflip, vflip, setTransparency))
