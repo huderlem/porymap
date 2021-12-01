@@ -538,10 +538,22 @@ int MainWindow::getNumPrimaryTilesetMetatiles() {
     return this->editor->map->layout->tileset_primary->metatiles.length();
 }
 
+int MainWindow::getMaxPrimaryTilesetMetatiles() {
+    if (!this->editor || !this->editor->project)
+        return 0;
+    return this->editor->project->getNumMetatilesPrimary();
+}
+
 int MainWindow::getNumSecondaryTilesetMetatiles() {
     if (!this->editor || !this->editor->map || !this->editor->map->layout || !this->editor->map->layout->tileset_secondary)
         return 0;
     return this->editor->map->layout->tileset_secondary->metatiles.length();
+}
+
+int MainWindow::getMaxSecondaryTilesetMetatiles() {
+    if (!this->editor || !this->editor->project)
+        return 0;
+    return this->editor->project->getNumMetatilesTotal() - this->editor->project->getNumMetatilesPrimary();
 }
 
 bool MainWindow::isPrimaryTileset(QString tilesetName) {
