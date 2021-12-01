@@ -102,7 +102,9 @@ public:
     Q_INVOKABLE QJSValue getSecondaryTilesetPalettePreview(int paletteIndex);
     Q_INVOKABLE QJSValue getSecondaryTilesetPalettesPreview();
     Q_INVOKABLE int getNumPrimaryTilesetMetatiles();
+    Q_INVOKABLE int getMaxPrimaryTilesetMetatiles();
     Q_INVOKABLE int getNumSecondaryTilesetMetatiles();
+    Q_INVOKABLE int getMaxSecondaryTilesetMetatiles();
     Q_INVOKABLE bool isPrimaryTileset(QString tilesetName);
     Q_INVOKABLE bool isSecondaryTileset(QString tilesetName);
     Q_INVOKABLE QString getPrimaryTileset();
