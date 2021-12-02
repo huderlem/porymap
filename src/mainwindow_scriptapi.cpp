@@ -651,6 +651,14 @@ void MainWindow::log(QString message) {
     logInfo(message);
 }
 
+void MainWindow::warn(QString message) {
+    logWarn(message);
+}
+
+void MainWindow::error(QString message) {
+    logError(message);
+}
+
 QList<int> MainWindow::getMetatileLayerOrder() {
     if (!this->editor || !this->editor->map)
         return QList<int>();
