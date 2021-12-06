@@ -292,7 +292,7 @@ void MainWindow::createImage(int x, int y, QString filepath, int width, int heig
         this->ui->graphicsView_Map->scene()->update();
 }
 
-void MainWindow::addTileImage(int x, int y, int tileId, bool xflip, bool yflip, int palette, int layer) {
+void MainWindow::addTileImage(int x, int y, int tileId, bool xflip, bool yflip, int palette, bool setTransparency, int layer) {
     if (!this->ui || !this->ui->graphicsView_Map || layer == INT_MAX
      || !this->editor || !this->editor->map || !this->editor->map->layout
      || !this->editor->map->layout->tileset_primary || !this->editor->map->layout->tileset_secondary)
@@ -302,6 +302,8 @@ void MainWindow::addTileImage(int x, int y, int tileId, bool xflip, bool yflip, 
                                         this->editor->map->layout->tileset_secondary,
                                         palette)
                                         .mirrored(xflip, yflip);
+    if (setTransparency)
+        image.setColor(0, qRgba(0, 0, 0, 0));
     if (this->ui->graphicsView_Map->getOverlay(layer)->addImage(x, y, image))
         this->ui->graphicsView_Map->scene()->update();
 }
