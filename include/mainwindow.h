@@ -76,7 +76,7 @@ public:
     Q_INVOKABLE void addFilledRect(int x, int y, int width, int height, QString color = "#000000", int layer = 0);
     Q_INVOKABLE void addImage(int x, int y, QString filepath, int layer = 0);
     Q_INVOKABLE void createImage(int x, int y, QString filepath, int width = -1, int height = -1, unsigned offset = 0, bool hflip = false, bool vflip = false, bool setTransparency = false, int layer = 0);
-    Q_INVOKABLE void addTileImage(int x, int y, int tileId, bool xflip, bool yflip, int palette, int layer = 0);
+    Q_INVOKABLE void addTileImage(int x, int y, int tileId, bool xflip, bool yflip, int palette, bool setTransparency = false, int layer = 0);
     Q_INVOKABLE void addTilesImage(int x, int y, QJSValue tilesObj, int layer = 0);
     Q_INVOKABLE void addMetatileImage(int x, int y, int metatileId, int layer = 0);
     void refreshAfterPaletteChange(Tileset *tileset);
