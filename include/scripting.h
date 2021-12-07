@@ -25,6 +25,7 @@ public:
     static Tile toTile(QJSValue obj);
     static QJSValue dimensions(int width, int height);
     static QJSEngine *getEngine();
+    static QImage getImage(QString filepath);
     static void init(MainWindow *mainWindow);
     static void registerAction(QString functionName, QString actionName);
     static int numRegisteredActions();
@@ -41,6 +42,7 @@ private:
     QStringList filepaths;
     QList<QJSValue> modules;
     QMap<QString, QString> registeredActions;
+    QMap<QString, const QImage*> imageCache;
 
     void loadModules(QStringList moduleFiles);
     void invokeCallback(CallbackType type, QJSValueList args);
