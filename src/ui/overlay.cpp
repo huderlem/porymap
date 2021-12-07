@@ -1,4 +1,5 @@
 #include "overlay.h"
+#include "scripting.h"
 #include "log.h"
 
 void OverlayText::render(QPainter *painter) {
@@ -53,7 +54,7 @@ void Overlay::addRect(int x, int y, int width, int height, QString color, bool f
 }
 
 bool Overlay::addImage(int x, int y, QString filepath, int width, int height, unsigned offset, bool hflip, bool vflip, bool setTransparency) {
-    QImage image = QImage(filepath);
+    QImage image = Scripting::getImage(filepath);
     if (image.isNull()) {
         logError(QString("Failed to load image '%1'").arg(filepath));
         return false;

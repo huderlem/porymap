@@ -193,3 +193,12 @@ QJSValue Scripting::fromTile(Tile tile) {
 QJSEngine *Scripting::getEngine() {
     return instance->engine;
 }
+
+QImage Scripting::getImage(QString filepath) {
+    const QImage * image = instance->imageCache.value(filepath, nullptr);
+    if (!image) {
+        image = new QImage(filepath);
+        instance->imageCache.insert(filepath, image);
+    }
+    return QImage(*image);
+}
