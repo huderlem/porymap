@@ -1348,7 +1348,6 @@ void Editor::displayMetatileSelector() {
         metatile_selector_item->scene()->removeItem(metatile_selector_item);
         delete scene_metatiles;
     }
-
     scene_metatiles = new QGraphicsScene;
     if (!metatile_selector_item) {
         metatile_selector_item = new MetatileSelector(8, map);
@@ -1362,10 +1361,10 @@ void Editor::displayMetatileSelector() {
     } else {
         metatile_selector_item->setMap(map);
         if (metatile_selector_item->primaryTileset
-         && metatile_selector_item->primaryTileset->name != map->layout->tileset_primary->name)
+         && metatile_selector_item->primaryTileset != map->layout->tileset_primary)
             emit tilesetUpdated(map->layout->tileset_primary->name);
         if (metatile_selector_item->secondaryTileset
-         && metatile_selector_item->secondaryTileset->name != map->layout->tileset_secondary->name)
+         && metatile_selector_item->secondaryTileset != map->layout->tileset_secondary)
             emit tilesetUpdated(map->layout->tileset_secondary->name);
         metatile_selector_item->setTilesets(map->layout->tileset_primary, map->layout->tileset_secondary);
     }
