@@ -36,16 +36,7 @@ void Scripting::loadModules(QStringList moduleFiles) {
         if (module.isError()) {
             QString relativePath = QDir::cleanPath(projectConfig.getProjectDir() + QDir::separator() + filepath);
             module = this->engine->importModule(relativePath);
-            if (module.isError()) {
-                logError(QString("Failed to load custom script file '%1'\nName: %2\nMessage: %3\nFile: %4\nLine Number: %5\nStack: %6")
-                         .arg(filepath)
-                         .arg(module.property("name").toString())
-                         .arg(module.property("message").toString())
-                         .arg(module.property("fileName").toString())
-                         .arg(module.property("lineNumber").toString())
-                         .arg(module.property("stack").toString()));
-                continue;
-            }
+            if (tryErrorJS(module)) continue;
         }
 
         logInfo(QString("Successfully loaded custom script file '%1'").arg(filepath));
@@ -56,10 +47,18 @@ void Scripting::loadModules(QStringList moduleFiles) {
 bool Scripting::tryErrorJS(QJSValue js) {
     if (!js.isError()) return false;
 
+    // Get properties of the error
     QFileInfo file(js.property("fileName").toString());
-    logError(QString("Error in custom script '%1' at line %2: '%3'")
-             .arg(file.fileName())
-             .arg(js.property("lineNumber").toString())
+    QString fileName = file.fileName();
+    QString lineNumber = js.property("lineNumber").toString();
+
+    // Convert properties to message strings
+    QString fileErrStr = fileName == "undefined" ? "" : QString(" '%1'").arg(fileName);
+    QString lineErrStr = lineNumber == "undefined" ? "" : QString(" at line %1").arg(lineNumber);
+
+    logError(QString("Error in custom script%1%2: '%3'")
+             .arg(fileErrStr)
+             .arg(lineErrStr)
              .arg(js.toString()));
     return true;
 }
