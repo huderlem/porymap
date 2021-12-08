@@ -22,8 +22,11 @@ void GraphicsView::drawForeground(QPainter *painter, const QRectF&) {
 }
 
 void GraphicsView::clearOverlays() {
-    foreach (Overlay * overlay, this->overlayMap)
+    foreach (Overlay * overlay, this->overlayMap) {
         overlay->clearItems();
+        delete overlay;
+    }
+    this->overlayMap.clear();
 }
 
 void GraphicsView::setOverlaysHidden(bool hidden) {
