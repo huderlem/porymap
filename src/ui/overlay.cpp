@@ -53,7 +53,7 @@ void Overlay::addRect(int x, int y, int width, int height, QString color, bool f
     this->items.append(new OverlayRect(x, y, width, height, QColor(color), filled));
 }
 
-bool Overlay::addImage(int x, int y, QString filepath, int width, int height, unsigned offset, bool hflip, bool vflip, bool setTransparency) {
+bool Overlay::addImage(int x, int y, QString filepath, int width, int height, unsigned offset, bool xflip, bool yflip, QList<QRgb> palette, bool setTransparency) {
     QImage image = Scripting::getImage(filepath);
     if (image.isNull()) {
         logError(QString("Failed to load image '%1'").arg(filepath));
@@ -81,8 +81,11 @@ bool Overlay::addImage(int x, int y, QString filepath, int width, int height, un
     if (width != fullWidth || height != fullHeight)
         image = image.copy(offset % fullWidth, offset / fullWidth, width, height);
 
-    if (hflip || vflip)
-        image = image.transformed(QTransform().scale(hflip ? -1 : 1, vflip ? -1 : 1));
+    if (xflip || yflip)
+        image = image.transformed(QTransform().scale(xflip ? -1 : 1, yflip ? -1 : 1));
+
+    for (int i = 0; i < palette.size(); i++)
+        image.setColor(i, palette.at(i));
 
     if (setTransparency)
         image.setColor(0, qRgba(0, 0, 0, 0));

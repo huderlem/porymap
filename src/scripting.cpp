@@ -14,6 +14,7 @@ Scripting *instance = nullptr;
 void Scripting::init(MainWindow *mainWindow) {
     if (instance) {
         instance->engine->setInterrupted(true);
+        qDeleteAll(instance->imageCache);
         delete instance;
     }
     instance = new Scripting(mainWindow);
