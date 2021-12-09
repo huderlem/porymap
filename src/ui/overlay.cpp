@@ -2,32 +2,32 @@
 #include "scripting.h"
 #include "log.h"
 
-void OverlayText::render(QPainter *painter) {
+void OverlayText::render(QPainter *painter, int x, int y) {
     QFont font = painter->font();
     font.setPixelSize(this->fontSize);
     painter->setFont(font);
     painter->setPen(this->color);
-    painter->drawText(this->x, this->y, this->text);
+    painter->drawText(this->x + x, this->y + y, this->text);
 }
 
-void OverlayRect::render(QPainter *painter) {
+void OverlayRect::render(QPainter *painter, int x, int y) {
     if (this->filled) {
-        painter->fillRect(this->x, this->y, this->width, this->height, this->color);
+        painter->fillRect(this->x + x, this->y + y, this->width, this->height, this->color);
     } else {
         painter->setPen(this->color);
-        painter->drawRect(this->x, this->y, this->width, this->height);
+        painter->drawRect(this->x + x, this->y + y, this->width, this->height);
     }
 }
 
-void OverlayImage::render(QPainter *painter) {
-    painter->drawImage(this->x, this->y, this->image);
+void OverlayImage::render(QPainter *painter, int x, int y) {
+    painter->drawImage(this->x + x, this->y + y, this->image);
 }
 
 void Overlay::renderItems(QPainter *painter) {
     if (this->hidden) return;
 
     for (auto item : this->items)
-        item->render(painter);
+        item->render(painter, this->x, this->y);
 }
 
 void Overlay::clearItems() {
@@ -41,8 +41,38 @@ QList<OverlayItem*> Overlay::getItems() {
     return this->items;
 }
 
+bool Overlay::getHidden() {
+    return this->hidden;
+}
+
 void Overlay::setHidden(bool hidden) {
     this->hidden = hidden;
+}
+
+int Overlay::getX() {
+    return this->x;
+}
+
+int Overlay::getY() {
+    return this->y;
+}
+
+void Overlay::setX(int x) {
+    this->x = x;
+}
+
+void Overlay::setY(int y) {
+    this->y = y;
+}
+
+void Overlay::setPosition(int x, int y) {
+    this->x = x;
+    this->y = y;
+}
+
+void Overlay::move(int deltaX, int deltaY) {
+    this->x += deltaX;
+    this->y += deltaY;
 }
 
 void Overlay::addText(QString text, int x, int y, QString color, int fontSize) {

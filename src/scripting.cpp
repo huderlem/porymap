@@ -179,6 +179,13 @@ QJSValue Scripting::dimensions(int width, int height) {
     return obj;
 }
 
+QJSValue Scripting::position(int x, int y) {
+    QJSValue obj = instance->engine->newObject();
+    obj.setProperty("x", x);
+    obj.setProperty("y", y);
+    return obj;
+}
+
 Tile Scripting::toTile(QJSValue obj) {
     if (!obj.hasProperty("tileId")
      || !obj.hasProperty("xflip")

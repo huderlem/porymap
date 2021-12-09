@@ -25,6 +25,7 @@ public:
     static QJSValue fromTile(Tile tile);
     static Tile toTile(QJSValue obj);
     static QJSValue dimensions(int width, int height);
+    static QJSValue position(int x, int y);
     static QJSEngine *getEngine();
     static QImage getImage(QString filepath);
     static void init(MainWindow *mainWindow);
