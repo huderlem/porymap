@@ -2969,6 +2969,10 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked()
                 oldBorder, map->layout->border
             ));
         }
+        if (oldMapDimensions != newMapDimensions) {
+            Scripting::cb_MapResized(oldMapDimensions.width(), oldMapDimensions.height(),
+                                     newMapDimensions.width(), newMapDimensions.height());
+        }
     }
 }
 
