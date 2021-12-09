@@ -10,7 +10,7 @@ class OverlayItem {
 public:
     OverlayItem() {}
     virtual ~OverlayItem() {};
-    virtual void render(QPainter *) {};
+    virtual void render(QPainter *, int, int) {};
 };
 
 class OverlayText : public OverlayItem {
@@ -23,7 +23,7 @@ public:
         this->fontSize = fontSize;
     }
     ~OverlayText() {}
-    virtual void render(QPainter *painter);
+    virtual void render(QPainter *painter, int x, int y);
 private:
     QString text;
     int x;
@@ -43,7 +43,7 @@ public:
         this->filled = filled;
     }
     ~OverlayRect() {}
-    virtual void render(QPainter *painter);
+    virtual void render(QPainter *painter, int x, int y);
 private:
     int x;
     int y;
@@ -61,7 +61,7 @@ public:
         this->image = image;
     }
     ~OverlayImage() {}
-    virtual void render(QPainter *painter);
+    virtual void render(QPainter *painter, int x, int y);
 private:
     int x;
     int y;
@@ -71,11 +71,22 @@ private:
 class Overlay
 {
 public:
-    Overlay() {}
+    Overlay() {
+        this->x = 0;
+        this->y = 0;
+        this->hidden = false;
+    }
     ~Overlay() {
         this->clearItems();
     }
+    bool getHidden();
     void setHidden(bool hidden);
+    int getX();
+    int getY();
+    void setX(int x);
+    void setY(int y);
+    void setPosition(int x, int y);
+    void move(int deltaX, int deltaY);
     void renderItems(QPainter *painter);
     QList<OverlayItem*> getItems();
     void clearItems();
@@ -85,6 +96,8 @@ public:
     bool addImage(int x, int y, QImage image);
 private:
     QList<OverlayItem*> items;
+    int x;
+    int y;
     bool hidden;
 };
 

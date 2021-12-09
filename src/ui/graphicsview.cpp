@@ -34,6 +34,26 @@ void GraphicsView::setOverlaysHidden(bool hidden) {
         overlay->setHidden(hidden);
 }
 
+void GraphicsView::setOverlaysX(int x) {
+    foreach (Overlay * overlay, this->overlayMap)
+        overlay->setX(x);
+}
+
+void GraphicsView::setOverlaysY(int y) {
+    foreach (Overlay * overlay, this->overlayMap)
+        overlay->setY(y);
+}
+
+void GraphicsView::setOverlaysPosition(int x, int y) {
+    foreach (Overlay * overlay, this->overlayMap)
+        overlay->setPosition(x, y);
+}
+
+void GraphicsView::moveOverlays(int deltaX, int deltaY) {
+    foreach (Overlay * overlay, this->overlayMap)
+        overlay->move(deltaX, deltaY);
+}
+
 Overlay * GraphicsView::getOverlay(int layer) {
     Overlay * overlay = this->overlayMap.value(layer, nullptr);
     if (!overlay) {

@@ -15,6 +15,10 @@ public:
     Overlay * getOverlay(int layer);
     void clearOverlays();
     void setOverlaysHidden(bool hidden);
+    void setOverlaysX(int x);
+    void setOverlaysY(int y);
+    void setOverlaysPosition(int x, int y);
+    void moveOverlays(int deltaX, int deltaY);
 
 public:
 //    GraphicsView_Object object;
