@@ -810,10 +810,6 @@ void MainWindow::setMetatileBehavior(int metatileId, int behavior) {
     this->saveMetatileAttributesByMetatileId(metatileId);
 }
 
-int MainWindow::getNumTilesInMetatile() {
-    return projectConfig.getTripleLayerMetatilesEnabled() ? 12 : 8;
-}
-
 int MainWindow::calculateTileBounds(int * tileStart, int * tileEnd) {
     int maxNumTiles = this->getNumTilesInMetatile();
     if (*tileEnd >= maxNumTiles || *tileEnd < 0)
@@ -884,4 +880,20 @@ void MainWindow::setMetatileTile(int metatileId, int tileIndex, int tileId, bool
 void MainWindow::setMetatileTile(int metatileId, int tileIndex, QJSValue tileObj, bool forceRedraw) {
     Tile tile = Scripting::toTile(tileObj);
     this->setMetatileTiles(metatileId, tile.tileId, tile.xflip, tile.yflip, tile.palette, tileIndex, tileIndex, forceRedraw);
+}
+
+int MainWindow::getNumTilesInMetatile() {
+    return projectConfig.getTripleLayerMetatilesEnabled() ? 12 : 8;
+}
+
+int MainWindow::getNumMetatileLayers() {
+    return projectConfig.getTripleLayerMetatilesEnabled() ? 3 : 2;
+}
+
+int MainWindow::getBaseGameVersion() {
+    return projectConfig.getBaseGameVersion();
+}
+
+QList<QString> MainWindow::getCustomScripts() {
+    return projectConfig.getCustomScripts();
 }
