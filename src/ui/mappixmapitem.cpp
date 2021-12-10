@@ -1,6 +1,7 @@
 #include "mappixmapitem.h"
 #include "metatile.h"
 #include "log.h"
+#include "scripting.h"
 
 #include "editcommands.h"
 
@@ -95,6 +96,7 @@ void MapPixmapItem::shift(int xDelta, int yDelta, bool fromScriptCall) {
     }
 
     if (!fromScriptCall && map->layout->blockdata != oldMetatiles) {
+        Scripting::cb_MapShifted(xDelta, yDelta);
         map->editHistory.push(new ShiftMetatiles(map, oldMetatiles, map->layout->blockdata, actionId_));
     }
 }
