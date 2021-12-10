@@ -81,6 +81,7 @@ public:
     void cacheCollision();
     bool getBlock(int x, int y, Block *out);
     void setBlock(int x, int y, Block block, bool enableScriptCallback = false);
+    void setBlockdata(Blockdata blockdata);
     void floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
     void _floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
     void magicFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
