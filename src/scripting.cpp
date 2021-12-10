@@ -7,6 +7,7 @@ QMap<CallbackType, QString> callbackFunctions = {
     {OnBlockChanged, "onBlockChanged"},
     {OnMapOpened, "onMapOpened"},
     {OnMapResized, "onMapResized"},
+    {OnMapShifted, "onMapShifted"},
     {OnTilesetUpdated, "onTilesetUpdated"},
     {OnTabChanged, "onTabChanged"},
 };
@@ -153,6 +154,16 @@ void Scripting::cb_MapResized(int oldWidth, int oldHeight, int newWidth, int new
         newHeight,
     };
     instance->invokeCallback(OnMapResized, args);
+}
+
+void Scripting::cb_MapShifted(int xDelta, int yDelta) {
+    if (!instance) return;
+
+    QJSValueList args {
+        xDelta,
+        yDelta,
+    };
+    instance->invokeCallback(OnMapShifted, args);
 }
 
 void Scripting::cb_TilesetUpdated(QString tilesetName) {
