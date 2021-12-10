@@ -170,8 +170,10 @@ public:
     Q_INVOKABLE int getNumMetatileLayers();
     Q_INVOKABLE int getBaseGameVersion();
     Q_INVOKABLE QList<QString> getCustomScripts();
-    Q_INVOKABLE int getCurrentTab();
-    Q_INVOKABLE void setCurrentTab(int index);
+    Q_INVOKABLE int getMainTab();
+    Q_INVOKABLE void setMainTab(int index);
+    Q_INVOKABLE int getMapViewTab();
+    Q_INVOKABLE void setMapViewTab(int index);
 
 
 private slots:
@@ -203,7 +205,6 @@ private slots:
     void on_action_NewMap_triggered();
     void on_actionNew_Tileset_triggered();
     void on_action_Save_triggered();
-    void on_tabWidget_2_currentChanged(int index);
     void on_action_Exit_triggered();
     void on_comboBox_Song_currentTextChanged(const QString &arg1);
     void on_comboBox_Location_currentTextChanged(const QString &arg1);
@@ -221,6 +222,7 @@ private slots:
     void on_actionEdit_Shortcuts_triggered();
 
     void on_mainTabBar_tabBarClicked(int index);
+    void on_mapViewTab_tabBarClicked(int index);
 
     void on_actionZoom_In_triggered();
     void on_actionZoom_Out_triggered();
@@ -394,7 +396,8 @@ private:
     QString getEventGroupFromTabWidget(QWidget *tab);
     void closeSupplementaryWindows();
     void setWindowDisabled(bool);
-    void setMainTab(int);
+    void setMainTabInternal(int);
+    void setMapViewTabInternal(int);
 
     void initTilesetEditor();
     bool initRegionMapEditor();
