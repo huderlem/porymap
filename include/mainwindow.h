@@ -167,6 +167,8 @@ public:
     Q_INVOKABLE int getNumMetatileLayers();
     Q_INVOKABLE int getBaseGameVersion();
     Q_INVOKABLE QList<QString> getCustomScripts();
+    Q_INVOKABLE int getCurrentTab();
+    Q_INVOKABLE void setCurrentTab(int index);
 
 
 private slots:
@@ -389,6 +391,7 @@ private:
     QString getEventGroupFromTabWidget(QWidget *tab);
     void closeSupplementaryWindows();
     void setWindowDisabled(bool);
+    void setMainTab(int);
 
     void initTilesetEditor();
     bool initRegionMapEditor();

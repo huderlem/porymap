@@ -676,7 +676,7 @@ void MainWindow::redrawMapScene()
 
 void MainWindow::refreshMapScene()
 {
-    on_mainTabBar_tabBarClicked(ui->mainTabBar->currentIndex());
+    setMainTab(ui->mainTabBar->currentIndex());
 
     ui->graphicsView_Map->setScene(editor->scene);
     ui->graphicsView_Map->setSceneRect(editor->scene->sceneRect());
@@ -1678,6 +1678,14 @@ void MainWindow::on_action_Exit_triggered()
 }
 
 void MainWindow::on_mainTabBar_tabBarClicked(int index)
+{
+    int oldIndex = ui->mainTabBar->currentIndex();
+    if (index != oldIndex)
+        Scripting::cb_TabChanged(oldIndex, index);
+    setMainTab(index);
+}
+
+void MainWindow::setMainTab(int index)
 {
     ui->mainTabBar->setCurrentIndex(index);
 
