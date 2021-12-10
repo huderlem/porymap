@@ -15,6 +15,7 @@ enum CallbackType {
     OnMapOpened,
     OnMapResized,
     OnTilesetUpdated,
+    OnTabChanged,
 };
 
 class Scripting
@@ -38,6 +39,7 @@ public:
     static void cb_MapOpened(QString mapName);
     static void cb_MapResized(int oldWidth, int oldHeight, int newWidth, int newHeight);
     static void cb_TilesetUpdated(QString tilesetName);
+    static void cb_TabChanged(int oldTab, int newTab);
     static bool tryErrorJS(QJSValue js);
 
 private:
