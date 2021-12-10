@@ -49,7 +49,7 @@ void PaintMetatile::redo() {
 
     if (!map) return;
 
-    map->layout->blockdata = newMetatiles;
+    map->setBlockdata(newMetatiles);
 
     map->layout->lastCommitMapBlocks.blocks = map->layout->blockdata;
 
@@ -59,7 +59,7 @@ void PaintMetatile::redo() {
 void PaintMetatile::undo() {
     if (!map) return;
 
-    map->layout->blockdata = oldMetatiles;
+    map->setBlockdata(oldMetatiles);
 
     map->layout->lastCommitMapBlocks.blocks = map->layout->blockdata;
 
@@ -139,7 +139,7 @@ void ShiftMetatiles::redo() {
 
     if (!map) return;
 
-    map->layout->blockdata = newMetatiles;
+    map->setBlockdata(newMetatiles);
 
     map->layout->lastCommitMapBlocks.blocks = map->layout->blockdata;
 
@@ -149,7 +149,7 @@ void ShiftMetatiles::redo() {
 void ShiftMetatiles::undo() {
     if (!map) return;
 
-    map->layout->blockdata = oldMetatiles;
+    map->setBlockdata(oldMetatiles);
 
     map->layout->lastCommitMapBlocks.blocks = map->layout->blockdata;
 
@@ -209,7 +209,7 @@ void ResizeMap::redo() {
 
     if (!map) return;
 
-    map->layout->blockdata = newMetatiles;
+    map->setBlockdata(newMetatiles);
     map->setDimensions(newMapWidth, newMapHeight, false);
 
     map->layout->border = newBorder;
@@ -223,7 +223,7 @@ void ResizeMap::redo() {
 void ResizeMap::undo() {
     if (!map) return;
 
-    map->layout->blockdata = oldMetatiles;
+    map->setBlockdata(oldMetatiles);
     map->setDimensions(oldMapWidth, oldMapHeight, false);
 
     map->layout->border = oldBorder;
@@ -510,7 +510,7 @@ void ScriptEditMap::redo() {
 
     if (!map) return;
 
-    map->layout->blockdata = newMetatiles;
+    map->setBlockdata(newMetatiles);
     if (newMapWidth != map->getWidth() || newMapHeight != map->getHeight()) {
         map->setDimensions(newMapWidth, newMapHeight, false);
     }
@@ -524,7 +524,7 @@ void ScriptEditMap::redo() {
 void ScriptEditMap::undo() {
     if (!map) return;
 
-    map->layout->blockdata = oldMetatiles;
+    map->setBlockdata(oldMetatiles);
     if (oldMapWidth != map->getWidth() || oldMapHeight != map->getHeight()) {
         map->setDimensions(oldMapWidth, oldMapHeight, false);
     }

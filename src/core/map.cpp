@@ -354,6 +354,19 @@ void Map::setBlock(int x, int y, Block block, bool enableScriptCallback) {
     }
 }
 
+void Map::setBlockdata(Blockdata blockdata) {
+    int width = getWidth();
+    int size = qMin(blockdata.size(), layout->blockdata.size());
+    for (int i = 0; i < size; i++) {
+        Block prevBlock = layout->blockdata.at(i);
+        Block newBlock = blockdata.at(i);
+        if (prevBlock != newBlock) {
+            layout->blockdata.replace(i, newBlock);
+            Scripting::cb_MetatileChanged(i % width, i / width, prevBlock, newBlock);
+        }
+    }
+}
+
 void Map::_floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation) {
     QList<QPoint> todo;
     todo.append(QPoint(x, y));
