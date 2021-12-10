@@ -83,8 +83,8 @@ void Overlay::addRect(int x, int y, int width, int height, QString color, bool f
     this->items.append(new OverlayRect(x, y, width, height, QColor(color), filled));
 }
 
-bool Overlay::addImage(int x, int y, QString filepath, int width, int height, unsigned offset, bool xflip, bool yflip, QList<QRgb> palette, bool setTransparency) {
-    QImage image = Scripting::getImage(filepath);
+bool Overlay::addImage(int x, int y, QString filepath, bool useCache, int width, int height, unsigned offset, bool xflip, bool yflip, QList<QRgb> palette, bool setTransparency) {
+    QImage image = useCache ? Scripting::getImage(filepath) : QImage(filepath);
     if (image.isNull()) {
         logError(QString("Failed to load image '%1'").arg(filepath));
         return false;
