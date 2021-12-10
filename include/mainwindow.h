@@ -90,8 +90,11 @@ public:
     Q_INVOKABLE void addText(QString text, int x, int y, QString color = "#000000", int fontSize = 12, int layer = 0);
     Q_INVOKABLE void addRect(int x, int y, int width, int height, QString color = "#000000", int layer = 0);
     Q_INVOKABLE void addFilledRect(int x, int y, int width, int height, QString color = "#000000", int layer = 0);
-    Q_INVOKABLE void addImage(int x, int y, QString filepath, int layer = 0);
-    Q_INVOKABLE void createImage(int x, int y, QString filepath, int width = -1, int height = -1, unsigned offset = 0, bool xflip = false, bool yflip = false, int paletteId = -1, bool setTransparency = false, int layer = 0);
+    Q_INVOKABLE void addImage(int x, int y, QString filepath, int layer = 0, bool useCache = true);
+    Q_INVOKABLE void createImage(int x, int y, QString filepath,
+                                 int width = -1, int height = -1, unsigned offset = 0,
+                                 bool xflip = false, bool yflip = false, int paletteId = -1, bool setTransparency = false,
+                                 int layer = 0, bool useCache = true);
     Q_INVOKABLE void addTileImage(int x, int y, int tileId, bool xflip, bool yflip, int paletteId, bool setTransparency = false, int layer = 0);
     Q_INVOKABLE void addTilesImage(int x, int y, QJSValue tilesObj, int layer = 0);
     Q_INVOKABLE void addMetatileImage(int x, int y, int metatileId, int layer = 0);

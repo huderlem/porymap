@@ -374,21 +374,21 @@ void MainWindow::addFilledRect(int x, int y, int width, int height, QString colo
     this->ui->graphicsView_Map->scene()->update();
 }
 
-void MainWindow::addImage(int x, int y, QString filepath, int layer) {
+void MainWindow::addImage(int x, int y, QString filepath, int layer, bool useCache) {
     if (!this->ui || !this->ui->graphicsView_Map)
         return;
-    if (this->ui->graphicsView_Map->getOverlay(layer)->addImage(x, y, filepath))
+    if (this->ui->graphicsView_Map->getOverlay(layer)->addImage(x, y, filepath, useCache))
         this->ui->graphicsView_Map->scene()->update();
 }
 
-void MainWindow::createImage(int x, int y, QString filepath, int width, int height, unsigned offset, bool xflip, bool yflip, int paletteId, bool setTransparency, int layer) {
+void MainWindow::createImage(int x, int y, QString filepath, int width, int height, unsigned offset, bool xflip, bool yflip, int paletteId, bool setTransparency, int layer, bool useCache) {
     if (!this->ui || !this->ui->graphicsView_Map || !this->editor || !this->editor->map || !this->editor->map->layout
      || !this->editor->map->layout->tileset_primary || !this->editor->map->layout->tileset_secondary)
         return;
     QList<QRgb> palette;
     if (paletteId != -1)
         palette = Tileset::getPalette(paletteId, this->editor->map->layout->tileset_primary, this->editor->map->layout->tileset_secondary);
-    if (this->ui->graphicsView_Map->getOverlay(layer)->addImage(x, y, filepath, width, height, offset, xflip, yflip, palette, setTransparency))
+    if (this->ui->graphicsView_Map->getOverlay(layer)->addImage(x, y, filepath, useCache, width, height, offset, xflip, yflip, palette, setTransparency))
         this->ui->graphicsView_Map->scene()->update();
 }
 
