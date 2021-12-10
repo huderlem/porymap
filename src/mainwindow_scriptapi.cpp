@@ -990,14 +990,26 @@ QList<QString> MainWindow::getCustomScripts() {
     return projectConfig.getCustomScripts();
 }
 
-int MainWindow::getCurrentTab() {
+int MainWindow::getMainTab() {
     if (!this->ui || !this->ui->mainTabBar)
         return -1;
     return this->ui->mainTabBar->currentIndex();
 }
 
-void MainWindow::setCurrentTab(int index) {
+void MainWindow::setMainTab(int index) {
     if (!this->ui || !this->ui->mainTabBar || index < 0 || index >= this->ui->mainTabBar->count())
-        return
-    this->setMainTab(index);
+        return;
+    this->setMainTabInternal(index);
+}
+
+int MainWindow::getMapViewTab() {
+    if (this->getMainTab() != 0 || !this->ui->mapViewTab)
+        return -1;
+    return this->ui->mapViewTab->currentIndex();
+}
+
+void MainWindow::setMapViewTab(int index) {
+    if (this->getMainTab() != 0 || !this->ui->mapViewTab || index < 0 || index >= this->ui->mapViewTab->count())
+        return;
+    this->setMapViewTabInternal(index);
 }

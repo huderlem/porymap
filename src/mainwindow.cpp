@@ -676,7 +676,7 @@ void MainWindow::redrawMapScene()
 
 void MainWindow::refreshMapScene()
 {
-    setMainTab(ui->mainTabBar->currentIndex());
+    setMainTabInternal(ui->mainTabBar->currentIndex());
 
     ui->graphicsView_Map->setScene(editor->scene);
     ui->graphicsView_Map->setSceneRect(editor->scene->sceneRect());
@@ -1661,7 +1661,13 @@ void MainWindow::on_action_Save_triggered() {
     updateMapList();
 }
 
-void MainWindow::on_tabWidget_2_currentChanged(int index)
+void MainWindow::on_mapViewTab_tabBarClicked(int index)
+{
+    Scripting::cb_MapViewTabChanged(ui->mapViewTab->currentIndex(), index);
+    setMapViewTabInternal(index);
+}
+
+void MainWindow::setMapViewTabInternal(int index)
 {
     if (index == 0) {
         editor->setEditingMap();
@@ -1681,11 +1687,11 @@ void MainWindow::on_mainTabBar_tabBarClicked(int index)
 {
     int oldIndex = ui->mainTabBar->currentIndex();
     if (index != oldIndex)
-        Scripting::cb_TabChanged(oldIndex, index);
-    setMainTab(index);
+        Scripting::cb_MainTabChanged(oldIndex, index);
+    setMainTabInternal(index);
 }
 
-void MainWindow::setMainTab(int index)
+void MainWindow::setMainTabInternal(int index)
 {
     ui->mainTabBar->setCurrentIndex(index);
 
@@ -1694,7 +1700,7 @@ void MainWindow::setMainTab(int index)
 
     if (index == 0) {
         ui->stackedWidget_MapEvents->setCurrentIndex(0);
-        on_tabWidget_2_currentChanged(ui->tabWidget_2->currentIndex());
+        setMapViewTabInternal(ui->mapViewTab->currentIndex());
         clickToolButtonFromEditMode(editor->map_edit_mode);
     } else if (index == 1) {
         ui->stackedWidget_MapEvents->setCurrentIndex(1);
@@ -2542,7 +2548,7 @@ void MainWindow::on_toolButton_Paint_clicked()
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/pencil_cursor.ico"), 10, 10);
 
     // do not stop single tile mode when editing collision
-    if (ui->tabWidget_2->currentIndex() == 0)
+    if (ui->mapViewTab->currentIndex() == 0)
         editor->cursorMapTileRect->stopSingleTileMode();
 
     ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);

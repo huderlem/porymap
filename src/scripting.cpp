@@ -9,7 +9,8 @@ QMap<CallbackType, QString> callbackFunctions = {
     {OnMapResized, "onMapResized"},
     {OnMapShifted, "onMapShifted"},
     {OnTilesetUpdated, "onTilesetUpdated"},
-    {OnTabChanged, "onTabChanged"},
+    {OnMainTabChanged, "onMainTabChanged"},
+    {OnMapViewTabChanged, "onMapViewTabChanged"},
 };
 
 Scripting *instance = nullptr;
@@ -175,14 +176,24 @@ void Scripting::cb_TilesetUpdated(QString tilesetName) {
     instance->invokeCallback(OnTilesetUpdated, args);
 }
 
-void Scripting::cb_TabChanged(int oldTab, int newTab) {
+void Scripting::cb_MainTabChanged(int oldTab, int newTab) {
     if (!instance) return;
 
     QJSValueList args {
         oldTab,
         newTab,
     };
-    instance->invokeCallback(OnTabChanged, args);
+    instance->invokeCallback(OnMainTabChanged, args);
+}
+
+void Scripting::cb_MapViewTabChanged(int oldTab, int newTab) {
+    if (!instance) return;
+
+    QJSValueList args {
+        oldTab,
+        newTab,
+    };
+    instance->invokeCallback(OnMapViewTabChanged, args);
 }
 
 QJSValue Scripting::fromBlock(Block block) {
