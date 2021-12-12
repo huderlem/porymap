@@ -344,7 +344,7 @@
                     <number>0</number>
                    </property>
                    <item row="0" column="0">
-                    <widget class="GraphicsView" name="graphicsView_Map">
+                    <widget class="MapView" name="graphicsView_Map">
                      <property name="sizePolicy">
                       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                        <horstretch>0</horstretch>

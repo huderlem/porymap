@@ -675,7 +675,10 @@ void MapPixmapItem::draw(bool ignoreCache) {
 
 void MapPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
     QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
-    emit this->hoveredMapMetatileChanged(pos);
+    if (pos != this->metatilePos) {
+        this->metatilePos = pos;
+        emit this->hoveredMapMetatileChanged(pos);
+    }
     if (this->settings->betterCursors && this->paintingMode != MapPixmapItem::PaintMode::Disabled) {
         setCursor(this->settings->mapCursor);
     }
@@ -699,7 +702,10 @@ void MapPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 }
 void MapPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
-    emit this->hoveredMapMetatileChanged(pos);
+    if (pos != this->metatilePos) {
+        this->metatilePos = pos;
+        emit this->hoveredMapMetatileChanged(pos);
+    }
     emit mouseEvent(event, this);
 }
 void MapPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {

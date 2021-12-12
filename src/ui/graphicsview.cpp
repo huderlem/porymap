@@ -1,4 +1,5 @@
 #include "graphicsview.h"
+#include "mapview.h"
 #include "editor.h"
 
 void GraphicsView::mousePressEvent(QMouseEvent *event) {
@@ -16,12 +17,31 @@ void GraphicsView::mouseReleaseEvent(QMouseEvent *event) {
     QGraphicsView::mouseReleaseEvent(event);
 }
 
-void GraphicsView::drawForeground(QPainter *painter, const QRectF&) {
-    foreach (Overlay * overlay, this->overlayMap)
-        overlay->renderItems(painter);
+void GraphicsView::moveEvent(QMoveEvent *event) {
+    QGraphicsView::moveEvent(event);
+    QLabel *label_MapRulerStatus = findChild<QLabel *>("label_MapRulerStatus", Qt::FindDirectChildrenOnly);
+    if (label_MapRulerStatus && label_MapRulerStatus->isVisible())
+        label_MapRulerStatus->move(mapToGlobal(QPoint(6, 6)));
 }
 
-void GraphicsView::clearOverlays() {
+void MapView::drawForeground(QPainter *painter, const QRectF&) {
+    foreach (Overlay * overlay, this->overlayMap)
+        overlay->renderItems(painter);
+
+    if (!editor) return;
+
+    QStyleOptionGraphicsItem option;
+    for (QGraphicsLineItem* line : editor->gridLines) {
+        if (line && line->isVisible())
+            line->paint(painter, &option, this);
+    }
+    if (editor->playerViewRect && editor->playerViewRect->isVisible())
+        editor->playerViewRect->paint(painter, &option, this);
+    if (editor->cursorMapTileRect && editor->cursorMapTileRect->isVisible())
+        editor->cursorMapTileRect->paint(painter, &option, this);
+}
+
+void MapView::clearOverlays() {
     foreach (Overlay * overlay, this->overlayMap) {
         overlay->clearItems();
         delete overlay;
@@ -29,43 +49,36 @@ void GraphicsView::clearOverlays() {
     this->overlayMap.clear();
 }
 
-void GraphicsView::setOverlaysHidden(bool hidden) {
+void MapView::setOverlaysHidden(bool hidden) {
     foreach (Overlay * overlay, this->overlayMap)
         overlay->setHidden(hidden);
 }
 
-void GraphicsView::setOverlaysX(int x) {
+void MapView::setOverlaysX(int x) {
     foreach (Overlay * overlay, this->overlayMap)
         overlay->setX(x);
 }
 
-void GraphicsView::setOverlaysY(int y) {
+void MapView::setOverlaysY(int y) {
     foreach (Overlay * overlay, this->overlayMap)
         overlay->setY(y);
 }
 
-void GraphicsView::setOverlaysPosition(int x, int y) {
+void MapView::setOverlaysPosition(int x, int y) {
     foreach (Overlay * overlay, this->overlayMap)
         overlay->setPosition(x, y);
 }
 
-void GraphicsView::moveOverlays(int deltaX, int deltaY) {
+void MapView::moveOverlays(int deltaX, int deltaY) {
     foreach (Overlay * overlay, this->overlayMap)
         overlay->move(deltaX, deltaY);
 }
 
-Overlay * GraphicsView::getOverlay(int layer) {
+Overlay * MapView::getOverlay(int layer) {
     Overlay * overlay = this->overlayMap.value(layer, nullptr);
     if (!overlay) {
         overlay = new Overlay();
         this->overlayMap.insert(layer, overlay);
     }
     return overlay;
-}
-
-void GraphicsView::moveEvent(QMoveEvent *event) {
-    QGraphicsView::moveEvent(event);
-    QLabel *label_MapRulerStatus = findChild<QLabel *>("label_MapRulerStatus", Qt::FindDirectChildrenOnly);
-    if (label_MapRulerStatus && label_MapRulerStatus->isVisible())
-        label_MapRulerStatus->move(mapToGlobal(QPoint(6, 6)));
 }

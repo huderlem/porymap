@@ -102,6 +102,8 @@ public:
     void duplicateSelectedEvents();
     void redrawObject(DraggablePixmapItem *item);
     QList<DraggablePixmapItem *> getObjects();
+    void updateCursorRectPos(int x, int y);
+    void setCursorRectVisible(bool visible);
 
     QGraphicsScene *scene = nullptr;
     QGraphicsPixmapItem *current_view = nullptr;

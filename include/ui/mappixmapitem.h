@@ -40,6 +40,7 @@ public:
     bool prevStraightPathState;
     int straight_path_initial_x;
     int straight_path_initial_y;
+    QPoint metatilePos;
     enum Axis {
         None = 0,
         X,
