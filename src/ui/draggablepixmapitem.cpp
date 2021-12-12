@@ -82,8 +82,8 @@ void DraggablePixmapItem::moveTo(const QPoint &pos) {
 void DraggablePixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *mouse) {
     if (active) {
         QPoint pos = Metatile::coordFromPixmapCoord(mouse->scenePos());
-        emit this->editor->map_item->hoveredMapMetatileChanged(pos);
         if (pos.x() != last_x || pos.y() != last_y) {
+            emit this->editor->map_item->hoveredMapMetatileChanged(pos);
         	QList <Event *> selectedEvents;
             if (editor->selected_events->contains(this)) {
                 for (DraggablePixmapItem *item : *editor->selected_events) {

@@ -41,10 +41,10 @@ public:
         }
 
         painter->setPen(this->color);
-        painter->drawRect(-1, -1, width + 2, height + 2);
+        painter->drawRect(x() - 1, y() - 1, width + 2, height + 2);
         painter->setPen(QColor(0, 0, 0));
-        painter->drawRect(-2, -2, width + 4, height + 4);
-        painter->drawRect(0, 0, width, height);
+        painter->drawRect(x() - 2, y() - 2, width + 4, height + 4);
+        painter->drawRect(x(), y(), width, height);
     }
     void initAnchor(int coordX, int coordY);
     void stopAnchor();
@@ -58,10 +58,10 @@ public:
     void stopSingleTileMode();
     void updateLocation(int x, int y);
     void updateSelectionSize(int width, int height);
-    void setVisibility(bool visible);
+    void setActive(bool active);
     bool *enabled;
 private:
-    bool visible;
+    bool active;
     int width;
     int height;
     bool anchored;

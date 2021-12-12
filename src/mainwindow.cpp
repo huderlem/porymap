@@ -1674,8 +1674,7 @@ void MainWindow::setMapViewTabInternal(int index)
     } else if (index == 1) {
         editor->setEditingCollision();
     }
-    editor->playerViewRect->setVisible(false);
-    editor->cursorMapTileRect->setVisible(false);
+    editor->setCursorRectVisible(false);
 }
 
 void MainWindow::on_action_Exit_triggered()
@@ -1738,6 +1737,7 @@ void MainWindow::on_actionPlayer_View_Rectangle_triggered()
     this->editor->settings->playerViewRectEnabled = enabled;
     if (this->editor->map_item->has_mouse) {
         this->editor->playerViewRect->setVisible(enabled);
+        ui->graphicsView_Map->scene()->update();
     }
 }
 
@@ -1747,7 +1747,8 @@ void MainWindow::on_actionCursor_Tile_Outline_triggered()
     porymapConfig.setShowCursorTile(enabled);
     this->editor->settings->cursorTileRectEnabled = enabled;
     if (this->editor->map_item->has_mouse) {
-        this->editor->cursorMapTileRect->setVisibility(enabled);
+        this->editor->cursorMapTileRect->setVisible(enabled);
+        ui->graphicsView_Map->scene()->update();
     }
 }
 

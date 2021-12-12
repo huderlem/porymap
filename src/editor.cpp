@@ -96,7 +96,7 @@ void Editor::setEditingMap() {
     setBorderItemsVisible(ui->checkBox_ToggleBorder->isChecked());
     setConnectionItemsVisible(false);
     this->cursorMapTileRect->stopSingleTileMode();
-    this->cursorMapTileRect->setVisibility(true);
+    this->cursorMapTileRect->setActive(true);
 
     setMapEditingButtonsEnabled(true);
 }
@@ -119,7 +119,7 @@ void Editor::setEditingCollision() {
     setBorderItemsVisible(ui->checkBox_ToggleBorder->isChecked());
     setConnectionItemsVisible(false);
     this->cursorMapTileRect->setSingleTileMode();
-    this->cursorMapTileRect->setVisibility(true);
+    this->cursorMapTileRect->setActive(true);
 
     setMapEditingButtonsEnabled(true);
 }
@@ -142,7 +142,7 @@ void Editor::setEditingObjects() {
     setBorderItemsVisible(ui->checkBox_ToggleBorder->isChecked());
     setConnectionItemsVisible(false);
     this->cursorMapTileRect->setSingleTileMode();
-    this->cursorMapTileRect->setVisibility(false);
+    this->cursorMapTileRect->setActive(false);
 
     setMapEditingButtonsEnabled(false);
 }
@@ -190,7 +190,7 @@ void Editor::setEditingConnections() {
     setBorderItemsVisible(true, 0.4);
     setConnectionItemsVisible(true);
     this->cursorMapTileRect->setSingleTileMode();
-    this->cursorMapTileRect->setVisibility(false);
+    this->cursorMapTileRect->setActive(false);
 }
 
 void Editor::displayWildMonTables() {
@@ -985,9 +985,26 @@ void Editor::scaleMapView(int s) {
     ui->graphicsView_Connections->setTransform(transform);
 }
 
+void Editor::updateCursorRectPos(int x, int y) {
+    if (this->playerViewRect)
+        this->playerViewRect->updateLocation(x, y);
+    if (this->cursorMapTileRect)
+        this->cursorMapTileRect->updateLocation(x, y);
+    if (ui->graphicsView_Map->scene())
+        ui->graphicsView_Map->scene()->update();
+}
+
+void Editor::setCursorRectVisible(bool visible) {
+    if (this->playerViewRect)
+        this->playerViewRect->setVisible(visible);
+    if (this->cursorMapTileRect)
+        this->cursorMapTileRect->setVisible(visible);
+    if (ui->graphicsView_Map->scene())
+        ui->graphicsView_Map->scene()->update();
+}
+
 void Editor::onHoveredMapMetatileChanged(const QPoint &pos) {
-    this->playerViewRect->updateLocation(pos.x(), pos.y());
-    this->cursorMapTileRect->updateLocation(pos.x(), pos.y());
+    this->updateCursorRectPos(pos.x(), pos.y());
     if (map_item->paintingMode == MapPixmapItem::PaintMode::Metatiles
      && pos.x() >= 0 && pos.x() < map->getWidth() && pos.y() >= 0 && pos.y() < map->getHeight()) {
         int blockIndex = pos.y() * map->getWidth() + pos.x();
@@ -1007,8 +1024,7 @@ void Editor::onHoveredMapMetatileChanged(const QPoint &pos) {
 }
 
 void Editor::onHoveredMapMetatileCleared() {
-    this->playerViewRect->setVisible(false);
-    this->cursorMapTileRect->setVisible(false);
+    this->setCursorRectVisible(false);
     if (map_item->paintingMode == MapPixmapItem::PaintMode::Metatiles
      || map_item->paintingMode == MapPixmapItem::PaintMode::EventObjects) {
         this->ui->statusBar->clearMessage();
@@ -1016,8 +1032,7 @@ void Editor::onHoveredMapMetatileCleared() {
 }
 
 void Editor::onHoveredMapMovementPermissionChanged(int x, int y) {
-    this->playerViewRect->updateLocation(x, y);
-    this->cursorMapTileRect->updateLocation(x, y);
+    this->updateCursorRectPos(x, y);
     if (map_item->paintingMode == MapPixmapItem::PaintMode::Metatiles
      && x >= 0 && x < map->getWidth() && y >= 0 && y < map->getHeight()) {
         int blockIndex = y * map->getWidth() + x;
@@ -1032,8 +1047,7 @@ void Editor::onHoveredMapMovementPermissionChanged(int x, int y) {
 }
 
 void Editor::onHoveredMapMovementPermissionCleared() {
-    this->playerViewRect->setVisible(false);
-    this->cursorMapTileRect->setVisible(false);
+    this->setCursorRectVisible(false);
     if (map_item->paintingMode == MapPixmapItem::PaintMode::Metatiles) {
         this->ui->statusBar->clearMessage();
     }
@@ -1243,8 +1257,6 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item
             }
         }
     }
-    this->playerViewRect->updateLocation(pos.x(), pos.y());
-    this->cursorMapTileRect->updateLocation(pos.x(), pos.y());
 }
 
 void Editor::mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixmapItem *item) {
@@ -1291,8 +1303,6 @@ void Editor::mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixm
         }
         item->shift(event);
     }
-    this->playerViewRect->updateLocation(pos.x(), pos.y());
-    this->cursorMapTileRect->updateLocation(pos.x(), pos.y());
 }
 
 bool Editor::displayMap() {
@@ -1307,8 +1317,6 @@ bool Editor::displayMap() {
     if (map_item && scene) {
         scene->removeItem(map_item);
         delete map_item;
-        scene->removeItem(this->playerViewRect);
-        scene->removeItem(this->cursorMapTileRect);
         scene->removeItem(this->map_ruler);
     }
 
@@ -1324,11 +1332,7 @@ bool Editor::displayMap() {
     displayMapGrid();
     displayWildMonTables();
 
-    this->playerViewRect->setZValue(1000);
-    this->cursorMapTileRect->setZValue(1001);
-    this->map_ruler->setZValue(1002);
-    scene->addItem(this->playerViewRect);
-    scene->addItem(this->cursorMapTileRect);
+    this->map_ruler->setZValue(1000);
     scene->addItem(this->map_ruler);
 
     if (map_item) {
@@ -1670,14 +1674,13 @@ int Editor::getBorderDrawDistance(int dimension) {
 
 void Editor::onToggleGridClicked(bool checked) {
     porymapConfig.setShowGrid(checked);
+    if (ui->graphicsView_Map->scene())
+        ui->graphicsView_Map->scene()->update();
 }
 
 void Editor::displayMapGrid() {
     for (QGraphicsLineItem* item : gridLines) {
-        if (item && item->scene()) {
-            item->scene()->removeItem(item);
-        }
-        delete item;
+        if (item) delete item;
     }
     gridLines.clear();
     ui->checkBox_ToggleGrid->disconnect();
@@ -1686,14 +1689,14 @@ void Editor::displayMapGrid() {
     int pixelHeight = map->getHeight() * 16;
     for (int i = 0; i <= map->getWidth(); i++) {
         int x = i * 16;
-        QGraphicsLineItem *line = scene->addLine(x, 0, x, pixelHeight);
+        QGraphicsLineItem *line = new QGraphicsLineItem(x, 0, x, pixelHeight);
         line->setVisible(ui->checkBox_ToggleGrid->isChecked());
         gridLines.append(line);
         connect(ui->checkBox_ToggleGrid, &QCheckBox::toggled, [=](bool checked){line->setVisible(checked);});
     }
     for (int j = 0; j <= map->getHeight(); j++) {
         int y = j * 16;
-        QGraphicsLineItem *line = scene->addLine(0, y, pixelWidth, y);
+        QGraphicsLineItem *line = new QGraphicsLineItem(0, y, pixelWidth, y);
         line->setVisible(ui->checkBox_ToggleGrid->isChecked());
         gridLines.append(line);
         connect(ui->checkBox_ToggleGrid, &QCheckBox::toggled, [=](bool checked){line->setVisible(checked);});
