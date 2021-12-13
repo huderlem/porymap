@@ -59,6 +59,7 @@ public:
     void updateLocation(int x, int y);
     void updateSelectionSize(int width, int height);
     void setActive(bool active);
+    bool getActive();
     bool *enabled;
 private:
     bool active;

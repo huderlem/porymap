@@ -676,7 +676,7 @@ void MainWindow::redrawMapScene()
 
 void MainWindow::refreshMapScene()
 {
-    setMainTabInternal(ui->mainTabBar->currentIndex());
+    on_mainTabBar_tabBarClicked(ui->mainTabBar->currentIndex());
 
     ui->graphicsView_Map->setScene(editor->scene);
     ui->graphicsView_Map->setSceneRect(editor->scene->sceneRect());
@@ -1663,12 +1663,12 @@ void MainWindow::on_action_Save_triggered() {
 
 void MainWindow::on_mapViewTab_tabBarClicked(int index)
 {
-    Scripting::cb_MapViewTabChanged(ui->mapViewTab->currentIndex(), index);
-    setMapViewTabInternal(index);
-}
+    int oldIndex = ui->mapViewTab->currentIndex();
+    if (index != oldIndex)
+        Scripting::cb_MapViewTabChanged(oldIndex, index);
 
-void MainWindow::setMapViewTabInternal(int index)
-{
+    ui->mapViewTab->setCurrentIndex(index);
+
     if (index == 0) {
         editor->setEditingMap();
     } else if (index == 1) {
@@ -1687,11 +1687,7 @@ void MainWindow::on_mainTabBar_tabBarClicked(int index)
     int oldIndex = ui->mainTabBar->currentIndex();
     if (index != oldIndex)
         Scripting::cb_MainTabChanged(oldIndex, index);
-    setMainTabInternal(index);
-}
 
-void MainWindow::setMainTabInternal(int index)
-{
     ui->mainTabBar->setCurrentIndex(index);
 
     int tabIndexToStackIndex[5] = {0, 0, 1, 2, 3};
@@ -1699,7 +1695,7 @@ void MainWindow::setMainTabInternal(int index)
 
     if (index == 0) {
         ui->stackedWidget_MapEvents->setCurrentIndex(0);
-        setMapViewTabInternal(ui->mapViewTab->currentIndex());
+        on_mapViewTab_tabBarClicked(ui->mapViewTab->currentIndex());
         clickToolButtonFromEditMode(editor->map_edit_mode);
     } else if (index == 1) {
         ui->stackedWidget_MapEvents->setCurrentIndex(1);
@@ -1747,7 +1743,7 @@ void MainWindow::on_actionCursor_Tile_Outline_triggered()
     porymapConfig.setShowCursorTile(enabled);
     this->editor->settings->cursorTileRectEnabled = enabled;
     if (this->editor->map_item->has_mouse) {
-        this->editor->cursorMapTileRect->setVisible(enabled);
+        this->editor->cursorMapTileRect->setVisible(enabled && this->editor->cursorMapTileRect->getActive());
         ui->graphicsView_Map->scene()->update();
     }
 }

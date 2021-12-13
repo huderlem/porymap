@@ -22,7 +22,7 @@ QJSValue MainWindow::getBlock(int x, int y) {
 // isn't ignored. Ideally the setMetatileTiles functions would properly
 // set each of the map spaces that use the modified metatile so that
 // the cache could be used, though this would lkely still require a
-// full read of the map and its border/connections.
+// full read of the map.
 void MainWindow::tryRedrawMapArea(bool forceRedraw) {
     if (!forceRedraw) return;
 
@@ -655,6 +655,31 @@ int MainWindow::getMaxSecondaryTilesetMetatiles() {
     return this->editor->project->getNumMetatilesTotal() - this->editor->project->getNumMetatilesPrimary();
 }
 
+
+int MainWindow::getNumPrimaryTilesetTiles() {
+    if (!this->editor || !this->editor->map || !this->editor->map->layout || !this->editor->map->layout->tileset_primary)
+        return 0;
+    return this->editor->map->layout->tileset_primary->tiles.length();
+}
+
+int MainWindow::getMaxPrimaryTilesetTiles() {
+    if (!this->editor || !this->editor->project)
+        return 0;
+    return this->editor->project->getNumTilesPrimary();
+}
+
+int MainWindow::getNumSecondaryTilesetTiles() {
+    if (!this->editor || !this->editor->map || !this->editor->map->layout || !this->editor->map->layout->tileset_secondary)
+        return 0;
+    return this->editor->map->layout->tileset_secondary->tiles.length();
+}
+
+int MainWindow::getMaxSecondaryTilesetTiles() {
+    if (!this->editor || !this->editor->project)
+        return 0;
+    return this->editor->project->getNumTilesTotal() - this->editor->project->getNumTilesPrimary();
+}
+
 bool MainWindow::isPrimaryTileset(QString tilesetName) {
     if (!this->editor || !this->editor->project)
         return false;
@@ -823,11 +848,18 @@ QString MainWindow::getMetatileLabel(int metatileId) {
     return metatile->label;
 }
 
-// TODO: Validate label
 void MainWindow::setMetatileLabel(int metatileId, QString label) {
     Metatile * metatile = this->getMetatile(metatileId);
     if (!metatile)
         return;
+
+    QRegularExpression expression("[_A-Za-z0-9]*$");
+    QRegularExpressionValidator validator(expression);
+    int pos = 0;
+    if (validator.validate(label, pos) != QValidator::Acceptable) {
+        logError(QString("Invalid metatile label %1").arg(label));
+        return;
+    }
 
     if (this->tilesetEditor && this->tilesetEditor->getSelectedMetatile() == metatileId) {
         this->tilesetEditor->setMetatileLabel(label);
@@ -932,12 +964,12 @@ void MainWindow::setMetatileTiles(int metatileId, QJSValue tilesObj, int tileSta
     // Write to metatile using as many of the given Tiles as possible
     int numTileObjs = qMin(tilesObj.property("length").toInt(), numTiles);
     int i = 0;
-    for (; i < numTileObjs; i++)
-        metatile->tiles[i] = Scripting::toTile(tilesObj.property(i));
+    for (; i < numTileObjs; i++, tileStart++)
+        metatile->tiles[tileStart] = Scripting::toTile(tilesObj.property(i));
 
     // Fill remainder of specified length with empty Tiles
-    for (; i < numTiles; i++)
-        metatile->tiles[i] = Tile();
+    for (; i < numTiles; i++, tileStart++)
+        metatile->tiles[tileStart] = Tile();
 
     this->saveMetatilesByMetatileId(metatileId);
     this->needsFullRedraw = true;
@@ -952,7 +984,7 @@ void MainWindow::setMetatileTiles(int metatileId, int tileId, bool xflip, bool y
 
     // Write to metatile using Tiles of the specified value
     Tile tile = Tile(tileId, xflip, yflip, palette);
-    for (int i = 0; i < numTiles; i++)
+    for (int i = tileStart; i <= tileEnd; i++)
         metatile->tiles[i] = tile;
 
     this->saveMetatilesByMetatileId(metatileId);
@@ -999,7 +1031,10 @@ int MainWindow::getMainTab() {
 void MainWindow::setMainTab(int index) {
     if (!this->ui || !this->ui->mainTabBar || index < 0 || index >= this->ui->mainTabBar->count())
         return;
-    this->setMainTabInternal(index);
+    // Can't select Wild Encounters tab if it's disabled
+    if (index == 4 && !projectConfig.getEncounterJsonActive())
+        return;
+    this->on_mainTabBar_tabBarClicked(index);
 }
 
 int MainWindow::getMapViewTab() {
@@ -1011,5 +1046,5 @@ int MainWindow::getMapViewTab() {
 void MainWindow::setMapViewTab(int index) {
     if (this->getMainTab() != 0 || !this->ui->mapViewTab || index < 0 || index >= this->ui->mapViewTab->count())
         return;
-    this->setMapViewTabInternal(index);
+    this->on_mapViewTab_tabBarClicked(index);
 }

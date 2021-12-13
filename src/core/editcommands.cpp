@@ -209,7 +209,7 @@ void ResizeMap::redo() {
 
     if (!map) return;
 
-    map->setBlockdata(newMetatiles);
+    map->layout->blockdata = newMetatiles;
     map->setDimensions(newMapWidth, newMapHeight, false);
 
     map->layout->border = newBorder;
@@ -223,7 +223,7 @@ void ResizeMap::redo() {
 void ResizeMap::undo() {
     if (!map) return;
 
-    map->setBlockdata(oldMetatiles);
+    map->layout->blockdata = oldMetatiles;
     map->setDimensions(oldMapWidth, oldMapHeight, false);
 
     map->layout->border = oldBorder;
@@ -510,9 +510,11 @@ void ScriptEditMap::redo() {
 
     if (!map) return;
 
-    map->setBlockdata(newMetatiles);
     if (newMapWidth != map->getWidth() || newMapHeight != map->getHeight()) {
+        map->layout->blockdata = newMetatiles;
         map->setDimensions(newMapWidth, newMapHeight, false);
+    } else {
+        map->setBlockdata(newMetatiles);
     }
 
     map->layout->lastCommitMapBlocks.blocks = newMetatiles;
@@ -524,9 +526,11 @@ void ScriptEditMap::redo() {
 void ScriptEditMap::undo() {
     if (!map) return;
 
-    map->setBlockdata(oldMetatiles);
     if (oldMapWidth != map->getWidth() || oldMapHeight != map->getHeight()) {
+        map->layout->blockdata = oldMetatiles;
         map->setDimensions(oldMapWidth, oldMapHeight, false);
+    } else {
+        map->setBlockdata(oldMetatiles);
     }
 
     map->layout->lastCommitMapBlocks.blocks = oldMetatiles;
