@@ -683,8 +683,10 @@ void MapPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
         setCursor(this->settings->mapCursor);
     }
 }
-void MapPixmapItem::hoverEnterEvent(QGraphicsSceneHoverEvent *) {
+void MapPixmapItem::hoverEnterEvent(QGraphicsSceneHoverEvent * event) {
     this->has_mouse = true;
+    QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
+    emit this->hoveredMapMetatileChanged(pos);
 }
 void MapPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
     emit this->hoveredMapMetatileCleared();

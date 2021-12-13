@@ -24,6 +24,11 @@ void CursorTileRect::setActive(bool active)
     this->active = active;
 }
 
+bool CursorTileRect::getActive()
+{
+    return active;
+}
+
 void CursorTileRect::initAnchor(int coordX, int coordY)
 {
     this->anchorCoordX = coordX;

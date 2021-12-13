@@ -124,6 +124,10 @@ public:
     Q_INVOKABLE int getMaxPrimaryTilesetMetatiles();
     Q_INVOKABLE int getNumSecondaryTilesetMetatiles();
     Q_INVOKABLE int getMaxSecondaryTilesetMetatiles();
+    Q_INVOKABLE int getNumPrimaryTilesetTiles();
+    Q_INVOKABLE int getMaxPrimaryTilesetTiles();
+    Q_INVOKABLE int getNumSecondaryTilesetTiles();
+    Q_INVOKABLE int getMaxSecondaryTilesetTiles();
     Q_INVOKABLE bool isPrimaryTileset(QString tilesetName);
     Q_INVOKABLE bool isSecondaryTileset(QString tilesetName);
     Q_INVOKABLE QString getPrimaryTileset();
@@ -396,8 +400,6 @@ private:
     QString getEventGroupFromTabWidget(QWidget *tab);
     void closeSupplementaryWindows();
     void setWindowDisabled(bool);
-    void setMainTabInternal(int);
-    void setMapViewTabInternal(int);
 
     void initTilesetEditor();
     bool initRegionMapEditor();
