@@ -1014,8 +1014,8 @@ int MainWindow::getNumMetatileLayers() {
     return projectConfig.getTripleLayerMetatilesEnabled() ? 3 : 2;
 }
 
-int MainWindow::getBaseGameVersion() {
-    return projectConfig.getBaseGameVersion();
+QString MainWindow::getBaseGameVersion() {
+    return projectConfig.getBaseGameVersionString();
 }
 
 QList<QString> MainWindow::getCustomScripts() {

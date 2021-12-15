@@ -157,6 +157,7 @@ public:
     }
     void setBaseGameVersion(BaseGameVersion baseGameVersion);
     BaseGameVersion getBaseGameVersion();
+    QString getBaseGameVersionString();
     void setRecentMap(const QString &map);
     QString getRecentMap();
     void setEncounterJsonActive(bool active);

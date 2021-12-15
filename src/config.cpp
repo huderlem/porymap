@@ -654,6 +654,10 @@ BaseGameVersion ProjectConfig::getBaseGameVersion() {
     return this->baseGameVersion;
 }
 
+QString ProjectConfig::getBaseGameVersionString() {
+    return baseGameVersionMap.value(this->baseGameVersion);
+}
+
 void ProjectConfig::setRecentMap(const QString &map) {
     this->recentMap = map;
     this->save();

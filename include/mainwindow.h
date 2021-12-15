@@ -172,7 +172,7 @@ public:
     Q_INVOKABLE void setMetatileTiles(int metatileId, int tileId, bool xflip, bool yflip, int palette, int tileStart = 0, int tileEnd = -1, bool forceRedraw = true);
     Q_INVOKABLE int getNumTilesInMetatile();
     Q_INVOKABLE int getNumMetatileLayers();
-    Q_INVOKABLE int getBaseGameVersion();
+    Q_INVOKABLE QString getBaseGameVersion();
     Q_INVOKABLE QList<QString> getCustomScripts();
     Q_INVOKABLE int getMainTab();
     Q_INVOKABLE void setMainTab(int index);
