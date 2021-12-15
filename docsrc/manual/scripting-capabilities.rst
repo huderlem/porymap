@@ -118,6 +118,42 @@ Callbacks
    :param object prevBlock: the block's state before it was modified. The object's shape is ``{metatileId, collision, elevation, rawValue}``
    :param object newBlock: the block's new state after it was modified. The object's shape is ``{metatileId, collision, elevation, rawValue}``
 
+.. js:function:: onMapResized(oldWidth, oldHeight, newWidth, newHeight)
+
+   Called when the dimensions of the map are changed.
+
+   :param number oldWidth: the width of the map before the change
+   :param number oldHeight: the height of the map before the change
+   :param number newWidth: the width of the map after the change
+   :param number newHeight: the height of the map after the change
+
+.. js:function:: onMapShifted(xDelta, yDelta)
+
+   Called when the map is updated by use of the Map Shift tool.
+
+   :param number xDelta: the horizontal change from the shift
+   :param number yDelta: the vertical change from the shift
+
+.. js:function:: onTilesetUpdated(tilesetName)
+
+   Called when the currently loaded tileset is changed by switching to a new one or by saving changes to it in the Tileset Editor.
+
+   :param string tilesetName: the name of the updated tileset
+
+.. js:function:: onMainTabChanged(oldTab, newTab)
+
+   Called when the selected tab in the main tab bar is changed. Tabs are indexed from left to right, starting at 0 (``0``: Map, ``1``: Events, ``2``: Header, ``3``: Connections, ``4``: Wild Pokemon)
+
+   :param number oldTab: the index of the previously selected tab
+   :param number newTab: the index of the newly selected tab
+
+.. js:function:: onMapViewTabChanged(oldTab, newTab)
+
+   Called when the selected tab in the map view tab bar is changed. Tabs are indexed from left to right, starting at 0 (``0``: Metatiles, ``1``: Collision)
+
+   :param number oldTab: the index of the previously selected tab
+   :param number newTab: the index of the newly selected tab
+
 Functions
 ~~~~~~~~~
 
