@@ -142,14 +142,14 @@ Callbacks
 
 .. js:function:: onMainTabChanged(oldTab, newTab)
 
-   Called when the selected tab in the main tab bar is changed. Tabs are indexed from left to right, starting at 0 (``0``: Map, ``1``: Events, ``2``: Header, ``3``: Connections, ``4``: Wild Pokemon)
+   Called when the selected tab in the main tab bar is changed. Tabs are indexed from left to right, starting at 0 (``0``: Map, ``1``: Events, ``2``: Header, ``3``: Connections, ``4``: Wild Pokemon).
 
    :param number oldTab: the index of the previously selected tab
    :param number newTab: the index of the newly selected tab
 
 .. js:function:: onMapViewTabChanged(oldTab, newTab)
 
-   Called when the selected tab in the map view tab bar is changed. Tabs are indexed from left to right, starting at 0 (``0``: Metatiles, ``1``: Collision)
+   Called when the selected tab in the map view tab bar is changed. Tabs are indexed from left to right, starting at 0 (``0``: Metatiles, ``1``: Collision).
 
    :param number oldTab: the index of the previously selected tab
    :param number newTab: the index of the newly selected tab
@@ -584,6 +584,42 @@ The following functions are related to settings.
    Sets the toggle state of smart paths.
 
    :param boolean enabled: smart paths enabled
+
+.. js:function:: map.getBaseGameVersion()
+
+   Gets the project's base game version.
+
+   :returns string: ``"pokeruby"``, ``"pokefirered"``, or ``"pokeemerald"``
+
+.. js:function:: map.getCustomScripts()
+
+   Gets the list of paths to custom scripts.
+
+   :returns array: string array of custom scripts paths
+
+.. js:function:: map.getMainTab()
+
+   Gets the index of the currently selected main tab. Tabs are indexed from left to right, starting at 0 (``0``: Map, ``1``: Events, ``2``: Header, ``3``: Connections, ``4``: Wild Pokemon).
+
+   :returns number: current main tab index
+
+.. js:function:: map.setMainTab(tab)
+
+   Sets the currently selected main tab. Tabs are indexed from left to right, starting at 0 (``0``: Map, ``1``: Events, ``2``: Header, ``3``: Connections, ``4``: Wild Pokemon).
+
+   :param number tab: index of the tab to select
+
+.. js:function:: map.getMapViewTab()
+
+   Gets the index of the currently selected map view tab. Tabs are indexed from left to right, starting at 0 (``0``: Metatiles, ``1``: Collision).
+
+   :returns number: current map view tab index
+
+.. js:function:: map.setMapViewTab(tab)
+
+   Sets the currently selected map view tab. Tabs are indexed from left to right, starting at 0 (``0``: Metatiles, ``1``: Collision).
+
+   :param number tab: index of the tab to select
 
 Utility Functions
 ^^^^^^^^^^^^^^^^^
