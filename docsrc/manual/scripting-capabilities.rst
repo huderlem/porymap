@@ -495,6 +495,20 @@ The following functions are related to tilesets and how they are rendered. The f
 
    :param array palettes: array of arrays of colors. Each color is a 3-element RGB array
 
+.. js:function:: map.isPrimaryTileset(tilesetName)
+
+   Gets whether the specified tileset is a primary tileset.
+
+   :param string tilesetName: the tileset name
+   :returns boolean: is a primary tileset
+
+.. js:function:: map.isSecondaryTileset(tilesetName)
+
+   Gets whether the specified tileset is a secondary tileset.
+
+   :param string tilesetName: the tileset name
+   :returns boolean: is a secondary tileset
+
 .. js:function:: map.getPrimaryTileset()
 
    Gets the name of the primary tileset for the currently-opened map.
@@ -518,6 +532,66 @@ The following functions are related to tilesets and how they are rendered. The f
    Sets the secondary tileset for the currently-opened map.
 
    :param string tileset: the tileset name
+
+.. js:function:: map.getNumPrimaryTilesetMetatiles()
+
+   Gets the number of metatiles in the primary tileset for the currently-opened map.
+
+   :returns number: number of metatiles
+
+.. js:function:: map.getMaxPrimaryTilesetMetatiles()
+
+   Gets the maximum number of metatiles allowed in a primary tileset.
+
+   :returns number: maximum number of metatiles
+
+.. js:function:: map.getNumSecondaryTilesetMetatiles()
+
+   Gets the number of metatiles in the secondary tileset for the currently-opened map.
+
+   :returns number: number of metatiles
+
+.. js:function:: map.getMaxSecondaryTilesetMetatiles()
+
+   Gets the maximum number of metatiles allowed in a secondary tileset.
+
+   :returns number: maximum number of metatiles
+
+.. js:function:: map.getNumPrimaryTilesetTiles()
+
+   Gets the number of tiles in the primary tileset for the currently-opened map.
+
+   :returns number: number of tiles
+
+.. js:function:: map.getMaxPrimaryTilesetTiles()
+
+   Gets the maximum number of tiles allowed in a primary tileset.
+
+   :returns number: maximum number of tiles
+
+.. js:function:: map.getNumSecondaryTilesetTiles()
+
+   Gets the number of tiles in the secondary tileset for the currently-opened map.
+
+   :returns number: number of tiles
+
+.. js:function:: map.getMaxSecondaryTilesetTiles()
+
+   Gets the maximum number of tiles allowed in a secondary tileset.
+
+   :returns number: maximum number of tiles
+
+.. js:function:: map.getNumTilesInMetatile()
+
+   Gets the number of tiles in a metatile. Will be either ``8`` or ``12`` depending on ``enable_triple_layer_metatiles``.
+
+   :returns number: number of tiles in a metatile
+
+.. js:function:: map.getNumMetatileLayers()
+
+   Gets the number of layers in a metatiles. Will be either ``2`` or ``3`` depending on ``enable_triple_layer_metatiles``.
+
+   :returns number: number of layers in a metatile
 
 .. js:function:: map.getMetatileLayerOrder()
 
