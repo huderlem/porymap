@@ -607,6 +607,19 @@ These are some miscellaneous functions that can be very useful when building cus
 
 .. js:function:: map.log(message)
 
-   Logs a message to the Porymap log file. This is useful for debugging custom scripts.
+   Logs a message to the Porymap log file with the prefix ``[INFO]``. This is useful for debugging custom scripts.
+
+   :param string message: the message to log
+
+.. js:function:: map.warn(message)
+
+   Logs a message to the Porymap log file with the prefix ``[WARN]``.
+
+   :param string message: the message to log
+
+
+.. js:function:: map.error(message)
+
+   Logs a message to the Porymap log file with the prefix ``[ERROR]``.
 
    :param string message: the message to log
