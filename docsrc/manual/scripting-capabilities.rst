@@ -597,25 +597,96 @@ The following functions are related to tilesets and how they are rendered. The f
 
    Gets the order that metatile layers are rendered.
 
-   :return array: array of layers. The bottom layer is represented as 0.
+   :returns array: array of layers. The bottom layer is represented as 0.
 
 .. js:function:: map.setMetatileLayerOrder(order)
 
    Sets the order that metatile layers are rendered.
 
-   :param array: array of layers. The bottom layer is represented as 0.
+   :param array order: array of layers. The bottom layer is represented as 0.
 
 .. js:function:: map.getMetatileLayerOpacity()
 
    Gets the opacities that metatile layers are rendered with.
 
-   :return array: array of opacities for each layer. The bottom layer is the first element.
+   :returns array: array of opacities for each layer. The bottom layer is the first element.
 
 .. js:function:: map.setMetatileLayerOpacity(opacities)
 
    Sets the opacities that metatile layers are rendered with.
 
-   :param array: array of opacities for each layer. The bottom layer is the first element.
+   :param array opacities: array of opacities for each layer. The bottom layer is the first element.
+
+.. js:function:: map.getMetatileLabel(metatileId)
+
+   Gets the label for the specified metatile.
+
+   :param number metatileId: id of target metatile
+   :returns string: the label
+
+.. js:function:: map.setMetatileLabel(metatileId, label)
+
+   Sets the label for the specified metatile. A label can only consist of letters, numbers, and underscores.
+
+   :param number metatileId: id of target metatile
+   :param string label: the label
+
+.. js:function:: map.getMetatileLayerType(metatileId)
+
+   Gets the layer type for the specified metatile. ``0``: Middle/Top, ``1``: Bottom/Middle, ``2``: Bottom/Top.
+
+   :param number metatileId: id of target metatile
+   :returns number: the layer type
+
+.. js:function:: map.setMetatileLayerType(metatileId, layerType)
+
+   Sets the layer type for the specified metatile. ``0``: Middle/Top, ``1``: Bottom/Middle, ``2``: Bottom/Top.
+
+   :param number metatileId: id of target metatile
+   :param number layerType: the layer type
+
+.. js:function:: map.getMetatileEncounterType(metatileId)
+
+   Gets the encounter type for the specified metatile. ``0``: None, ``1``: Land, ``2``: Water
+
+   :param number metatileId: id of target metatile
+   :returns number: the encounter type
+
+.. js:function:: map.setMetatileEncounterType(metatileId, encounterType)
+
+   Sets the encounter type for the specified metatile. ``0``: None, ``1``: Land, ``2``: Water
+
+   :param number metatileId: id of target metatile
+   :param number encounterType: the encounter type
+
+.. js:function:: map.getMetatileTerrainType(metatileId)
+
+   Gets the terrain type for the specified metatile. ``0``: None, ``1``: Grass, ``2``: Water, ``3``: Waterfall
+
+   :param number metatileId: id of target metatile
+   :returns number: the terrain type
+
+.. js:function:: map.setMetatileTerrainType(metatileId, terrainType)
+
+   Sets the terrain type for the specified metatile. ``0``: None, ``1``: Grass, ``2``: Water, ``3``: Waterfall
+
+   :param number metatileId: id of target metatile
+   :param number terrainType: the terrain type
+
+.. js:function:: map.getMetatileBehavior(metatileId)
+
+   Gets the behavior for the specified metatile.
+
+   :param number metatileId: id of target metatile
+   :returns number: the behavior
+
+.. js:function:: map.setMetatileBehavior(metatileId, behavior)
+
+   Sets the behavior for the specified metatile.
+
+   :param number metatileId: id of target metatile
+   :param number behavior: the behavior
+
 
 
 Settings Functions
