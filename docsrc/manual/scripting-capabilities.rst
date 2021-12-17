@@ -471,43 +471,99 @@ The following functions are related to an overlay that is drawn on top of the ma
    :param number deltaX: the number of pixels to move horizontally
    :param number deltaY: the number of pixels to move vertically
 
-.. js:function:: map.addText(text, x, y, color = "#000000", size = 12)
+.. js:function:: map.addText(text, x, y, color = "#000000", size = 12, layer = 0)
 
-   Adds a text item to the overlay.
+   Adds a text item to the specified overlay layer.
 
    :param string text: the text to display
-   :param number x: the x pixel coordinate of the text
-   :param number y: the y pixel coordinate of the text
+   :param number x: the x pixel coordinate of the text (relative to the layer's position)
+   :param number y: the y pixel coordinate of the text (relative to the layer's position)
    :param string color: the color of the text. Can be specified as "#RRGGBB" or "#AARRGGBB". Defaults to black.
    :param number size: the font size of the text. Defaults to 12.
+   :param number layer: the layer id. Defaults to ``0``
 
-.. js:function:: map.addRect(x, y, width, height, color = "#000000")
+.. js:function:: map.addRect(x, y, width, height, color = "#000000", layer = 0)
 
-   Adds a rectangle outline item to the overlay.
+   Adds a rectangle outline item to the specified overlay layer.
 
-   :param number x: the x pixel coordinate of the rectangle's top-left corner
-   :param number y: the y pixel coordinate of the rectangle's top-left corner
+   :param number x: the x pixel coordinate of the rectangle's top-left corner (relative to the layer's position)
+   :param number y: the y pixel coordinate of the rectangle's top-left corner (relative to the layer's position)
    :param number width: the pixel width of the rectangle
    :param number height: the pixel height of the rectangle
    :param string color: the color of the rectangle. Can be specified as "#RRGGBB" or "#AARRGGBB". Defaults to black.
+   :param number layer: the layer id. Defaults to ``0``
 
-.. js:function:: map.addFilledRect(x, y, width, height, color = "#000000")
+.. js:function:: map.addFilledRect(x, y, width, height, color = "#000000", layer = 0)
 
-   Adds a filled rectangle item to the overlay.
+   Adds a filled rectangle item to the specified overlay layer.
 
-   :param number x: the x pixel coordinate of the rectangle's top-left corner
-   :param number y: the y pixel coordinate of the rectangle's top-left corner
+   :param number x: the x pixel coordinate of the rectangle's top-left corner (relative to the layer's position)
+   :param number y: the y pixel coordinate of the rectangle's top-left corner (relative to the layer's position)
    :param number width: the pixel width of the rectangle
    :param number height: the pixel height of the rectangle
    :param string color: the color of the rectangle. Can be specified as "#RRGGBB" or "#AARRGGBB". Defaults to black.
+   :param number layer: the layer id. Defaults to ``0``
 
-.. js:function:: map.addImage(x, y, filepath)
+.. js:function:: map.addImage(x, y, filepath, layer = 0, useCache = true)
 
-   Adds an image item to the overlay.
+   Adds an image item to the specified overlay layer.
 
-   :param number x: the x pixel coordinate of the image's top-left corner
-   :param number y: the y pixel coordinate of the image's top-left corner
+   :param number x: the x pixel coordinate of the image's top-left corner (relative to the layer's position)
+   :param number y: the y pixel coordinate of the image's top-left corner (relative to the layer's position)
    :param string filepath: the image's filepath
+   :param number layer: the layer id. Defaults to ``0``
+   :param boolean useCache: whether the image should be saved/loaded using the cache. Defaults to ``true``. Reading images from a file is slow. Setting ``useCache`` to ``true`` will save the image to memory so that the next time the filepath is encountered the image can be loaded from memory rather than the file.
+
+.. js:function:: map.createImage(x, y, filepath, width = -1, height = -1, offset = 0, xflip = false, yflip = false, paletteId = -1, setTransparency = false, layer = 0, useCache = true)
+
+   Creates an image item on the specified overlay layer. This differs from ``map.addImage`` by allowing the new image to be a transformation of the image file.
+
+   :param number x: the x pixel coordinate of the image's top-left corner (relative to the layer's position)
+   :param number y: the y pixel coordinate of the image's top-left corner (relative to the layer's position)
+   :param string filepath: the image's filepath
+   :param number width: the image width. If ``-1``, use the full width of the original image. Defaults to ``-1``
+   :param number height: the image height. If ``-1``, use the full height of the original image. Defaults to ``-1``
+   :param number offset: the pixel offset into the original image where data should be read from. Defaults to ``0``
+   :param boolean xflip: whether the image should be a horizontal flip of the original image. Defaults to ``false``
+   :param boolean yflip: whether the image should be a vertical flip of the original image. Defaults to ``false``
+   :param number paletteId: the id of which currently loaded tileset palette to use for the image. If ``-1``, use the original image's palette. Defaults to ``-1``
+   :param boolean setTransparency: whether the color at index 0 should be overwritten with transparent pixels. Defaults to ``false``
+   :param number layer: the layer id. Defaults to ``0``
+   :param boolean useCache: whether the image should be saved/loaded using the cache. Defaults to ``true``. Reading images from a file is slow. Setting ``useCache`` to ``true`` will save the image to memory so that the next time the filepath is encountered the image can be loaded from memory rather than the file.
+
+.. js:function:: map.addTileImage(x, y, tileId, xflip, yflip, palette, setTransparency = false, layer = 0)
+
+   Creates an image of a tile on the specified overlay layer.
+
+   :param number x: the x pixel coordinate of the image's top-left corner (relative to the layer's position)
+   :param number y: the y pixel coordinate of the image's top-left corner (relative to the layer's position)
+   :param number tileId: tile value for the image
+   :param boolean xflip: whether the tile image is flipped horizontally
+   :param boolean yflip: whether the tile image is flipped vertically
+   :param number palette: palette number for the tile image
+   :param boolean setTransparency: whether the color at index 0 should be overwritten with transparent pixels. Defaults to ``false``
+   :param number layer: the layer id. Defaults to ``0``
+
+.. js:function:: map.addTileImage(x, y, tile, setTransparency = false, layer = 0)
+
+   Creates an image of a tile on the specified overlay layer. This is an overloaded function that takes a single tile as a JavaScript object instead of each of the tile's properties individually.
+
+   :param number x: the x pixel coordinate of the image's top-left corner (relative to the layer's position)
+   :param number y: the y pixel coordinate of the image's top-left corner (relative to the layer's position)
+   :param {tileId,xflip,yflip,palette} tile: the tile to create an image of
+   :param boolean setTransparency: whether the color at index 0 should be overwritten with transparent pixels. Defaults to ``false``
+   :param number layer: the layer id. Defaults to ``0``
+
+.. js:function:: map.addMetatileImage(x, y, metatileId, setTransparency = false, layer = 0)
+
+   Creates an image of a metatile on the specified overlay layer.
+
+   :param number x: the x pixel coordinate of the image's top-left corner (relative to the layer's position)
+   :param number y: the y pixel coordinate of the image's top-left corner (relative to the layer's position)
+   :param number metatileId: id of the metatile to create an image of
+   :param boolean setTransparency: whether the color at index 0 should be overwritten with transparent pixels. Defaults to ``false``
+   :param number layer: the layer id. Defaults to ``0``
+
 
 Tileset Functions
 ^^^^^^^^^^^^^^^^^
@@ -839,13 +895,13 @@ The following functions are related to tilesets and how they are rendered. The f
    :param number palette: new tile's palette number
    :param boolean forceRedraw: Force the map view to refresh. Defaults to ``true``. Redrawing the map view is expensive, so set to ``false`` when making many consecutive map edits, and then redraw the map once using ``map.redraw()``.
 
-.. js:function:: map.setMetatileTile(metatileId, tileIndex, tileObj, forceRedraw = true)
+.. js:function:: map.setMetatileTile(metatileId, tileIndex, tile, forceRedraw = true)
 
    Sets the tile at the specified index of the metatile. This is an overloaded function that takes a single tile as a JavaScript object instead of each of the tile's properties individually.
 
    :param number metatileId: id of target metatile
    :param number tileIndex: index of the tile to set
-   :param {tileId,xflip,yflip,palette} tileObj: the new tile
+   :param {tileId,xflip,yflip,palette} tile: the new tile
    :param boolean forceRedraw: Force the map view to refresh. Defaults to ``true``. Redrawing the map view is expensive, so set to ``false`` when making many consecutive map edits, and then redraw the map once using ``map.redraw()``.
 
 .. js:function:: map.setMetatileTiles(metatileId, tileId, xflip, yflip, palette, tileStart = 0, tileEnd = -1, forceRedraw = true)
@@ -862,12 +918,12 @@ The following functions are related to tilesets and how they are rendered. The f
    :param boolean forceRedraw: Force the map view to refresh. Defaults to ``true``. Redrawing the map view is expensive, so set to ``false`` when making many consecutive map edits, and then redraw the map once using ``map.redraw()``.
 
 
-.. js:function:: map.setMetatileTiles(metatileId, tilesObj, tileStart = 0, tileEnd = -1, forceRedraw = true)
+.. js:function:: map.setMetatileTiles(metatileId, tiles, tileStart = 0, tileEnd = -1, forceRedraw = true)
 
    Sets the tiles in the specified range of the metatile. This is an overloaded function that takes an array of tiles as JavaScript objects instead of each of the tile properties individually.
 
    :param number metatileId: id of target metatile
-   :param array tilesObj: array of tiles to set. Each tile is an object of the form ``{tileId, xflip, yflip, palette}``. If the array does not have sufficient objects to set all the tiles in the specified range then the remaining tiles will be set with all default values.
+   :param array tiles: array of tiles to set. Each tile is an object of the form ``{tileId, xflip, yflip, palette}``. If the array does not have sufficient objects to set all the tiles in the specified range then the remaining tiles will be set with all default values.
    :param number tileStart: index of the first tile to set. Defaults to ``0`` (the first tile)
    :param number tileEnd: index of the last tile to set. Defaults to ``-1`` (the last tile)
    :param boolean forceRedraw: Force the map view to refresh. Defaults to ``true``. Redrawing the map view is expensive, so set to ``false`` when making many consecutive map edits, and then redraw the map once using ``map.redraw()``.
