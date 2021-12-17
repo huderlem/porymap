@@ -14,14 +14,20 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Add tool to count the times each metatile or tile is used in the tileset editor.
 - Events, current metatile selections, and map images can now be copied and pasted, including between windows.
 - The grid and map border visibility are now saved as config options.
+- Add ~60 new API functions, including new features like reading/writing metatile data, layering, moving, and hiding items in the overlay, creating modified images and tile/metatile images, reading tileset sizes, logging warnings and errors, and more.
+- Add 5 new scripting callbacks.
 
 ### Changed
 - New events will be placed in the center of the current view of the map.
 - Scripting API errors are more detailed and logged in more situations.
+- Add new optional arguments to 5 existing API functions.
+- Top-level UI elements now render above the scripting overlay.
+- The onBlockChanged script callback is now called for blocks changed by Undo/Redo.
 
 ### Fixed
 - Fix tileset palette editor crash that could occur when switching maps or tilesets with it open.
 - Loading wild encounters will now properly preserve the original order, so saving the file will not give huge diffs.
+- Fix bug where the tile selection cursor could be toggld on in the Events tab.
 
 ## [4.4.0] - 2020-12-20
 ### Added
