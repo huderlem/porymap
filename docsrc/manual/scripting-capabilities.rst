@@ -806,6 +806,8 @@ The following functions are related to tilesets and how they are rendered. The f
 .. js:function:: map.setMetatileLabel(metatileId, label)
 
    Sets the label for the specified metatile. A label can only consist of letters, numbers, and underscores.
+   
+   **Warning:** This function writes directly to the project. There is no undo for this.
 
    :param number metatileId: id of target metatile
    :param string label: the label
@@ -820,6 +822,8 @@ The following functions are related to tilesets and how they are rendered. The f
 .. js:function:: map.setMetatileLayerType(metatileId, layerType)
 
    Sets the layer type for the specified metatile. ``0``: Middle/Top, ``1``: Bottom/Middle, ``2``: Bottom/Top.
+  
+   **Warning:** This function writes directly to the tileset. There is no undo for this.
 
    :param number metatileId: id of target metatile
    :param number layerType: the layer type
@@ -834,6 +838,8 @@ The following functions are related to tilesets and how they are rendered. The f
 .. js:function:: map.setMetatileEncounterType(metatileId, encounterType)
 
    Sets the encounter type for the specified metatile. ``0``: None, ``1``: Land, ``2``: Water
+   
+   **Warning:** This function writes directly to the tileset. There is no undo for this.
 
    :param number metatileId: id of target metatile
    :param number encounterType: the encounter type
@@ -848,6 +854,8 @@ The following functions are related to tilesets and how they are rendered. The f
 .. js:function:: map.setMetatileTerrainType(metatileId, terrainType)
 
    Sets the terrain type for the specified metatile. ``0``: None, ``1``: Grass, ``2``: Water, ``3``: Waterfall
+   
+   **Warning:** This function writes directly to the tileset. There is no undo for this.
 
    :param number metatileId: id of target metatile
    :param number terrainType: the terrain type
@@ -862,6 +870,8 @@ The following functions are related to tilesets and how they are rendered. The f
 .. js:function:: map.setMetatileBehavior(metatileId, behavior)
 
    Sets the behavior for the specified metatile.
+   
+   **Warning:** This function writes directly to the tileset. There is no undo for this.
 
    :param number metatileId: id of target metatile
    :param number behavior: the behavior
@@ -886,6 +896,8 @@ The following functions are related to tilesets and how they are rendered. The f
 .. js:function:: map.setMetatileTile(metatileId, tileIndex, tileId, xflip, yflip, palette, forceRedraw = true)
 
    Sets the tile at the specified index of the metatile.
+   
+   **Warning:** This function writes directly to the tileset. There is no undo for this.
 
    :param number metatileId: id of target metatile
    :param number tileIndex: index of the tile to set
@@ -898,6 +910,8 @@ The following functions are related to tilesets and how they are rendered. The f
 .. js:function:: map.setMetatileTile(metatileId, tileIndex, tile, forceRedraw = true)
 
    Sets the tile at the specified index of the metatile. This is an overloaded function that takes a single tile as a JavaScript object instead of each of the tile's properties individually.
+   
+   **Warning:** This function writes directly to the tileset. There is no undo for this.
 
    :param number metatileId: id of target metatile
    :param number tileIndex: index of the tile to set
@@ -907,6 +921,8 @@ The following functions are related to tilesets and how they are rendered. The f
 .. js:function:: map.setMetatileTiles(metatileId, tileId, xflip, yflip, palette, tileStart = 0, tileEnd = -1, forceRedraw = true)
 
    Sets the tiles in the specified range of the metatile. All tiles in the specified range will be set using the same given values.
+   
+   **Warning:** This function writes directly to the tileset. There is no undo for this.
 
    :param number metatileId: id of target metatile
    :param number tileId: new tiles' value
@@ -921,6 +937,8 @@ The following functions are related to tilesets and how they are rendered. The f
 .. js:function:: map.setMetatileTiles(metatileId, tiles, tileStart = 0, tileEnd = -1, forceRedraw = true)
 
    Sets the tiles in the specified range of the metatile. This is an overloaded function that takes an array of tiles as JavaScript objects instead of each of the tile properties individually.
+   
+   **Warning:** This function writes directly to the tileset. There is no undo for this.
 
    :param number metatileId: id of target metatile
    :param array tiles: array of tiles to set. Each tile is an object of the form ``{tileId, xflip, yflip, palette}``. If the array does not have sufficient objects to set all the tiles in the specified range then the remaining tiles will be set with all default values.
