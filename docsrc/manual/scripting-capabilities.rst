@@ -342,11 +342,134 @@ The following functions are related to editing the map's blocks or retrieving in
 Map Overlay Functions
 ^^^^^^^^^^^^^^^^^^^^^
 
-The following functions are related to an overlay that is drawn on top of the map area. Text, images, and shapes can be drawn using these functions.
+The following functions are related to an overlay that is drawn on top of the map area. Text, images, and shapes can be drawn using these functions. Items can be drawn and manipulated on separate layers by specifiying a layer id. Items on higher layer ids will be drawn above those on lower layers. If no layer is specified they will be added to the default layer ``0``. The visibility and position of each layer can be changed; by default all layers are visible, and their position is ``0,0``.
 
-.. js:function:: map.clearOverlay()
+.. js:function:: map.clearOverlay(layer = 0)
+
+   Clears and erases all overlay items on the specified layer that were previously-added to the map.
+
+   :param number layer: the layer id. Defaults to ``0``
+
+.. js:function:: map.clearOverlays()
 
    Clears and erases all overlay items that were previously-added to the map.
+
+.. js:function:: map.hideOverlay(layer = 0)
+
+   Hides all overlay items on the specified layer.
+
+   :param number layer: the layer id. Defaults to ``0``
+
+.. js:function:: map.hideOverlays()
+
+   Hides all overlay items on all active layers.
+
+.. js:function:: map.showOverlay(layer = 0)
+
+   Shows all overlay items on the specified layer.
+
+   :param number layer: the layer id. Defaults to ``0``
+
+.. js:function:: map.showOverlays()
+
+   Shows all overlay items on all active layers.
+
+.. js:function:: map.getOverlayVisibility(layer = 0)
+
+   Gets whether the specified overlay layer is currently showing or not.
+
+   :param number layer: the layer id. Defaults to ``0``
+   :returns boolean: whether the layer is showing
+
+.. js:function:: map.setOverlayVisibility(visible, layer = 0)
+
+   Sets the visibility of the specified overlay layer.
+
+   :param boolean visible: whether the layer should be showing
+   :param number layer: the layer id. Defaults to ``0``
+
+.. js:function:: map.setOverlaysVisibility(visible)
+
+   Sets the visibility of all active overlay layers.
+
+   :param boolean visible: whether the layers should be showing
+
+.. js:function:: map.getOverlayX(layer = 0)
+
+   Gets the x position of the specified overlay layer.
+
+   :param number layer: the layer id. Defaults to ``0``
+   :returns number: the pixel x coordinate
+
+.. js:function:: map.getOverlayY(layer = 0)
+
+   Gets the y position of the specified overlay layer.
+
+   :param number layer: the layer id. Defaults to ``0``
+   :returns number: the pixel y coordinate
+
+.. js:function:: map.setOverlayX(x, layer = 0)
+
+   Sets the x position of the specified overlay layer.
+
+   :param number x: the pixel x coordinate
+   :param number layer: the layer id. Defaults to ``0``
+
+.. js:function:: map.setOverlayY(y, layer = 0)
+
+   Sets the y position of the specified overlay layer.
+
+   :param number y: the pixel y coordinate
+   :param number layer: the layer id. Defaults to ``0``
+
+.. js:function:: map.setOverlaysX(x)
+
+   Sets the x position of all active overlay layers.
+
+   :param number x: the pixel x coordinate
+
+.. js:function:: map.setOverlaysY(y)
+
+   Sets the y position of all active overlay layers.
+
+   :param number y: the pixel y coordinate
+
+.. js:function:: map.getOverlayPosition(layer = 0)
+
+   Gets the position of the specified overlay layer.
+
+   :param number layer: the layer id. Defaults to ``0``
+   :returns {x, y}: the layer's pixel coordinates
+
+.. js:function:: map.setOverlayPosition(x, y, layer = 0)
+
+   Sets the position of the specified overlay layer.
+
+   :param number x: the pixel x coordinate
+   :param number y: the pixel y coordinate
+   :param number layer: the layer id. Defaults to ``0``
+
+.. js:function:: map.setOverlaysPosition(x, y)
+
+   Sets the position of all active overlay layers.
+
+   :param number x: the pixel x coordinate
+   :param number y: the pixel y coordinate
+
+.. js:function:: map.moveOverlay(deltaX, deltaY, layer = 0)
+
+   Moves the specified overlay layer.
+
+   :param number deltaX: the number of pixels to move horizontally
+   :param number deltaY: the number of pixels to move vertically
+   :param number layer: the layer id. Defaults to ``0``
+
+.. js:function:: map.moveOverlays(deltaX, deltaY)
+
+   Moves all active overlay layers.
+
+   :param number deltaX: the number of pixels to move horizontally
+   :param number deltaY: the number of pixels to move vertically
 
 .. js:function:: map.addText(text, x, y, color = "#000000", size = 12)
 
