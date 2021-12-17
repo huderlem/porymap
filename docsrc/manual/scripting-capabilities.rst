@@ -687,6 +687,68 @@ The following functions are related to tilesets and how they are rendered. The f
    :param number metatileId: id of target metatile
    :param number behavior: the behavior
 
+.. js:function:: map.getMetatileTile(metatileId, tileIndex)
+
+   Gets the tile at the specified index of the metatile.
+
+   :param number metatileId: id of target metatile
+   :param number tileIndex: index of the tile to get
+   :returns {tileId, xflip, yflip, palette}: the tile
+
+.. js:function:: map.getMetatileTiles(metatileId, tileStart = 0, tileEnd = -1)
+
+   Gets the tiles in the specified range of the metatile.
+
+   :param number metatileId: id of target metatile
+   :param number tileStart: index of the first tile to get. Defaults to ``0`` (the first tile)
+   :param number tileEnd: index of the last tile to get. Defaults to ``-1`` (the last tile)
+   :returns array: array of tiles in the specified range. Each tile is an object of the form ``{tileId, xflip, yflip, palette}``
+
+.. js:function:: map.setMetatileTile(metatileId, tileIndex, tileId, xflip, yflip, palette, forceRedraw = true)
+
+   Sets the tile at the specified index of the metatile.
+
+   :param number metatileId: id of target metatile
+   :param number tileIndex: index of the tile to set
+   :param number tileId: new tile's value
+   :param boolean xflip: whether the new tile is flipped horizontally
+   :param boolean yflip: whether the new tile is flipped vertically
+   :param number palette: new tile's palette number
+   :param boolean forceRedraw: Force the map view to refresh. Defaults to ``true``. Redrawing the map view is expensive, so set to ``false`` when making many consecutive map edits, and then redraw the map once using ``map.redraw()``.
+
+.. js:function:: map.setMetatileTile(metatileId, tileIndex, tileObj, forceRedraw = true)
+
+   Sets the tile at the specified index of the metatile. This is an overloaded function that takes a single tile as a JavaScript object instead of each of the tile's properties individually.
+
+   :param number metatileId: id of target metatile
+   :param number tileIndex: index of the tile to set
+   :param {tileId,xflip,yflip,palette} tileObj: the new tile
+   :param boolean forceRedraw: Force the map view to refresh. Defaults to ``true``. Redrawing the map view is expensive, so set to ``false`` when making many consecutive map edits, and then redraw the map once using ``map.redraw()``.
+
+.. js:function:: map.setMetatileTiles(metatileId, tileId, xflip, yflip, palette, tileStart = 0, tileEnd = -1, forceRedraw = true)
+
+   Sets the tiles in the specified range of the metatile. All tiles in the specified range will be set using the same given values.
+
+   :param number metatileId: id of target metatile
+   :param number tileId: new tiles' value
+   :param boolean xflip: whether the new tiles are flipped horizontally
+   :param boolean yflip: whether the new tiles are flipped vertically
+   :param number palette: new tiles' palette number
+   :param number tileStart: index of the first tile to set. Defaults to ``0`` (the first tile)
+   :param number tileEnd: index of the last tile to set. Defaults to ``-1`` (the last tile)
+   :param boolean forceRedraw: Force the map view to refresh. Defaults to ``true``. Redrawing the map view is expensive, so set to ``false`` when making many consecutive map edits, and then redraw the map once using ``map.redraw()``.
+
+
+.. js:function:: map.setMetatileTiles(metatileId, tilesObj, tileStart = 0, tileEnd = -1, forceRedraw = true)
+
+   Sets the tiles in the specified range of the metatile. This is an overloaded function that takes an array of tiles as JavaScript objects instead of each of the tile properties individually.
+
+   :param number metatileId: id of target metatile
+   :param array tilesObj: array of tiles to set. Each tile is an object of the form ``{tileId, xflip, yflip, palette}``. If the array does not have sufficient objects to set all the tiles in the specified range then the remaining tiles will be set with all default values.
+   :param number tileStart: index of the first tile to set. Defaults to ``0`` (the first tile)
+   :param number tileEnd: index of the last tile to set. Defaults to ``-1`` (the last tile)
+   :param boolean forceRedraw: Force the map view to refresh. Defaults to ``true``. Redrawing the map view is expensive, so set to ``false`` when making many consecutive map edits, and then redraw the map once using ``map.redraw()``.
+
 
 
 Settings Functions
