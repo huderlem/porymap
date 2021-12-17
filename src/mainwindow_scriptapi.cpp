@@ -407,32 +407,12 @@ void MainWindow::addTileImage(int x, int y, int tileId, bool xflip, bool yflip, 
         this->ui->graphicsView_Map->scene()->update();
 }
 
-void MainWindow::addTilesImage(int x, int y, QJSValue tilesObj, int layer) {
-    if (!this->ui || !this->ui->graphicsView_Map || !this->editor || !this->editor->map || !this->editor->map->layout
-     || !this->editor->map->layout->tileset_primary || !this->editor->map->layout->tileset_secondary)
-        return;
-
-    // Create metatile from JS tiles array
-    Metatile metatile;
-    int numTiles = this->getNumTilesInMetatile();
-    int numTileObjs = qMin(tilesObj.property("length").toInt(), numTiles);
-    int i = 0;
-    for (; i < numTileObjs; i++)
-        metatile.tiles.append(Scripting::toTile(tilesObj.property(i)));
-    for (; i < numTiles; i++)
-        metatile.tiles.append(Tile());
-
-    // Create image from metatile
-    QImage image = getMetatileImage(&metatile,
-                                    this->editor->map->layout->tileset_primary,
-                                    this->editor->map->layout->tileset_secondary,
-                                    this->editor->map->metatileLayerOrder,
-                                    this->editor->map->metatileLayerOpacity);
-    if (this->ui->graphicsView_Map->getOverlay(layer)->addImage(x, y, image))
-        this->ui->graphicsView_Map->scene()->update();
+void MainWindow::addTileImage(int x, int y, QJSValue tileObj, bool setTransparency, int layer) {
+    Tile tile = Scripting::toTile(tileObj);
+    this->addTileImage(x, y, tile.tileId, tile.xflip, tile.yflip, tile.palette, setTransparency, layer);
 }
 
-void MainWindow::addMetatileImage(int x, int y, int metatileId, int layer) {
+void MainWindow::addMetatileImage(int x, int y, int metatileId, bool setTransparency, int layer) {
     if (!this->ui || !this->ui->graphicsView_Map || !this->editor || !this->editor->map || !this->editor->map->layout
      || !this->editor->map->layout->tileset_primary || !this->editor->map->layout->tileset_secondary)
         return;
@@ -441,6 +421,8 @@ void MainWindow::addMetatileImage(int x, int y, int metatileId, int layer) {
                                     this->editor->map->layout->tileset_secondary,
                                     this->editor->map->metatileLayerOrder,
                                     this->editor->map->metatileLayerOpacity);
+    if (setTransparency)
+        image.setColor(0, qRgba(0, 0, 0, 0));
     if (this->ui->graphicsView_Map->getOverlay(layer)->addImage(x, y, image))
         this->ui->graphicsView_Map->scene()->update();
 }

@@ -96,8 +96,8 @@ public:
                                  bool xflip = false, bool yflip = false, int paletteId = -1, bool setTransparency = false,
                                  int layer = 0, bool useCache = true);
     Q_INVOKABLE void addTileImage(int x, int y, int tileId, bool xflip, bool yflip, int paletteId, bool setTransparency = false, int layer = 0);
-    Q_INVOKABLE void addTilesImage(int x, int y, QJSValue tilesObj, int layer = 0);
-    Q_INVOKABLE void addMetatileImage(int x, int y, int metatileId, int layer = 0);
+    Q_INVOKABLE void addTileImage(int x, int y, QJSValue tileObj, bool setTransparency = false, int layer = 0);
+    Q_INVOKABLE void addMetatileImage(int x, int y, int metatileId, bool setTransparency = false, int layer = 0);
     void refreshAfterPaletteChange(Tileset *tileset);
     void setTilesetPalette(Tileset *tileset, int paletteIndex, QList<QList<int>> colors);
     Q_INVOKABLE void setPrimaryTilesetPalette(int paletteIndex, QList<QList<int>> colors);
