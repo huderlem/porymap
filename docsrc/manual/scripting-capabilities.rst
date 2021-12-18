@@ -118,6 +118,17 @@ Callbacks
    :param object prevBlock: the block's state before it was modified. The object's shape is ``{metatileId, collision, elevation, rawValue}``
    :param object newBlock: the block's new state after it was modified. The object's shape is ``{metatileId, collision, elevation, rawValue}``
 
+.. js:function:: onBlockHoverChanged(x, y)
+
+   Called when the mouse enters a new map block.
+
+   :param number x: x coordinate of the block
+   :param number y: y coordinate of the block
+
+.. js:function:: onBlockHoverCleared()
+
+   Called when the mouse exits the map.
+
 .. js:function:: onMapResized(oldWidth, oldHeight, newWidth, newHeight)
 
    Called when the dimensions of the map are changed.

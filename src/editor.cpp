@@ -10,6 +10,7 @@
 #include "montabwidget.h"
 #include "editcommands.h"
 #include "config.h"
+#include "scripting.h"
 #include <QCheckBox>
 #include <QPainter>
 #include <QMouseEvent>
@@ -992,6 +993,7 @@ void Editor::updateCursorRectPos(int x, int y) {
         this->cursorMapTileRect->updateLocation(x, y);
     if (ui->graphicsView_Map->scene())
         ui->graphicsView_Map->scene()->update();
+    Scripting::cb_BlockHoverChanged(x, y);
 }
 
 void Editor::setCursorRectVisible(bool visible) {
@@ -1029,6 +1031,7 @@ void Editor::onHoveredMapMetatileCleared() {
      || map_item->paintingMode == MapPixmapItem::PaintMode::EventObjects) {
         this->ui->statusBar->clearMessage();
     }
+    Scripting::cb_BlockHoverCleared();
 }
 
 void Editor::onHoveredMapMovementPermissionChanged(int x, int y) {
@@ -1051,6 +1054,7 @@ void Editor::onHoveredMapMovementPermissionCleared() {
     if (map_item->paintingMode == MapPixmapItem::PaintMode::Metatiles) {
         this->ui->statusBar->clearMessage();
     }
+    Scripting::cb_BlockHoverCleared();
 }
 
 QString Editor::getMovementPermissionText(uint16_t collision, uint16_t elevation) {

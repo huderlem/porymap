@@ -15,7 +15,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Events, current metatile selections, and map images can now be copied and pasted, including between windows.
 - The grid and map border visibility are now saved as config options.
 - Add ~60 new API functions, including new features like reading/writing metatile data, layering, moving, and hiding items in the overlay, creating modified images and tile/metatile images, reading tileset sizes, logging warnings and errors, and more.
-- Add 5 new scripting callbacks.
+- Add 7 new scripting callbacks.
 
 ### Changed
 - New events will be placed in the center of the current view of the map.

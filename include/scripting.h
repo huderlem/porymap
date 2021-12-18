@@ -12,6 +12,8 @@ enum CallbackType {
     OnProjectOpened,
     OnProjectClosed,
     OnBlockChanged,
+    OnBlockHoverChanged,
+    OnBlockHoverCleared,
     OnMapOpened,
     OnMapResized,
     OnMapShifted,
@@ -38,6 +40,8 @@ public:
     static void cb_ProjectOpened(QString projectPath);
     static void cb_ProjectClosed(QString projectPath);
     static void cb_MetatileChanged(int x, int y, Block prevBlock, Block newBlock);
+    static void cb_BlockHoverChanged(int x, int y);
+    static void cb_BlockHoverCleared();
     static void cb_MapOpened(QString mapName);
     static void cb_MapResized(int oldWidth, int oldHeight, int newWidth, int newHeight);
     static void cb_MapShifted(int xDelta, int yDelta);
