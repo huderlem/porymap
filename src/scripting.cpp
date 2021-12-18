@@ -5,6 +5,8 @@ QMap<CallbackType, QString> callbackFunctions = {
     {OnProjectOpened, "onProjectOpened"},
     {OnProjectClosed, "onProjectClosed"},
     {OnBlockChanged, "onBlockChanged"},
+    {OnBlockHoverChanged, "onBlockHoverChanged"},
+    {OnBlockHoverCleared, "onBlockHoverCleared"},
     {OnMapOpened, "onMapOpened"},
     {OnMapResized, "onMapResized"},
     {OnMapShifted, "onMapShifted"},
@@ -134,6 +136,21 @@ void Scripting::cb_MetatileChanged(int x, int y, Block prevBlock, Block newBlock
         instance->fromBlock(newBlock),
     };
     instance->invokeCallback(OnBlockChanged, args);
+}
+
+void Scripting::cb_BlockHoverChanged(int x, int y) {
+    if (!instance) return;
+
+    QJSValueList args {
+        x,
+        y,
+    };
+    instance->invokeCallback(OnBlockHoverChanged, args);
+}
+
+void Scripting::cb_BlockHoverCleared() {
+    if (!instance) return;
+    instance->invokeCallback(OnBlockHoverCleared, QJSValueList());
 }
 
 void Scripting::cb_MapOpened(QString mapName) {
