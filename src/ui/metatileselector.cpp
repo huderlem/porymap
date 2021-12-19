@@ -64,26 +64,15 @@ bool MetatileSelector::selectFromMap(uint16_t metatileId, uint16_t collision, ui
 void MetatileSelector::setTilesets(Tileset *primaryTileset, Tileset *secondaryTileset) {
     this->primaryTileset = primaryTileset;
     this->secondaryTileset = secondaryTileset;
-    if (!this->selectionIsValid()) {
-        if (this->externalSelection) {
-            this->select(0);
-        } else {
-            this->select(Project::getNumMetatilesPrimary() + this->secondaryTileset->metatiles.length() - 1);
-        }
-    } else if (this->externalSelection) {
-        emit selectedMetatilesChanged();
-    } else {
-        updateSelectedMetatiles();
-    }
+    if (this->externalSelection)
+        this->updateExternalSelectedMetatiles();
+    else
+        this->updateSelectedMetatiles();
     this->draw();
 }
 
 QList<uint16_t>* MetatileSelector::getSelectedMetatiles() {
-    if (this->externalSelection) {
-        return this->externalSelectedMetatiles;
-    } else {
-        return this->selectedMetatiles;
-    }
+    return this->selectedMetatiles;
 }
 
 QList<QPair<uint16_t, uint16_t>>* MetatileSelector::getSelectedCollisions() {
@@ -95,10 +84,15 @@ void MetatileSelector::setExternalSelection(int width, int height, QList<uint16_
     this->externalSelectionWidth = width;
     this->externalSelectionHeight = height;
     this->externalSelectedMetatiles->clear();
+    this->selectedMetatiles->clear();
     this->selectedCollisions->clear();
     for (int i = 0; i < metatiles.length(); i++) {
-        this->externalSelectedMetatiles->append(metatiles.at(i));
         this->selectedCollisions->append(collisions.at(i));
+        uint16_t metatileId = metatiles.at(i);
+        this->externalSelectedMetatiles->append(metatileId);
+        if (!Tileset::metatileIsValid(metatileId, this->primaryTileset, this->secondaryTileset))
+            metatileId = 0;
+        this->selectedMetatiles->append(metatileId);
     }
 
     this->draw();
@@ -151,31 +145,23 @@ void MetatileSelector::updateSelectedMetatiles() {
     for (int j = 0; j < dimensions.y(); j++) {
         for (int i = 0; i < dimensions.x(); i++) {
             uint16_t metatileId = this->getMetatileId(origin.x() + i, origin.y() + j);
+            if (!Tileset::metatileIsValid(metatileId, this->primaryTileset, this->secondaryTileset))
+                metatileId = 0;
             this->selectedMetatiles->append(metatileId);
         }
     }
     emit selectedMetatilesChanged();
 }
 
-bool MetatileSelector::selectionIsValid() {
-    if (this->externalSelection) {
-        for (int i = 0; i < this->externalSelectedMetatiles->count(); ++i) {
-            int tileId = this->externalSelectedMetatiles->at(i);
-            if (!Tileset::metatileIsValid(tileId, this->primaryTileset, this->secondaryTileset))
-                return false;
-        }
-        return true;
-    } else {
-        QPoint origin = this->getSelectionStart();
-        QPoint dimensions = this->getSelectionDimensions();
-        for (int j = 0; j < dimensions.y(); j++) {
-            for (int i = 0; i < dimensions.x(); i++) {
-                if (!Tileset::metatileIsValid(this->getMetatileId(origin.x() + i, origin.y() + j), this->primaryTileset, this->secondaryTileset))
-                    return false;
-            }
-        }
-        return true;
+void MetatileSelector::updateExternalSelectedMetatiles() {
+    this->selectedMetatiles->clear();
+    for (int i = 0; i < this->externalSelectedMetatiles->count(); ++i) {
+        uint16_t metatileId = this->externalSelectedMetatiles->at(i);
+        if (!Tileset::metatileIsValid(metatileId, this->primaryTileset, this->secondaryTileset))
+            metatileId = 0;
+        this->selectedMetatiles->append(metatileId);
     }
+    emit selectedMetatilesChanged();
 }
 
 uint16_t MetatileSelector::getMetatileId(int x, int y) {
