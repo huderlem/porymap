@@ -19,6 +19,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - New events will be placed in the center of the current view of the map.
 
 ### Fixed
+- Fix % operator in C defines not being evaluated
 - Fix tileset palette editor crash that could occur when switching maps or tilesets with it open.
 - Loading wild encounters will now properly preserve the original order, so saving the file will not give huge diffs.
 
