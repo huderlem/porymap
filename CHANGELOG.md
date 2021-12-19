@@ -21,6 +21,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ### Fixed
 - Fix % operator in C defines not being evaluated
 - Fix tileset palette editor crash that could occur when switching maps or tilesets with it open.
+- The metatile selection is no longer reset if it becomes invalid by changing the tileset. Invalid metatiles in the selection will be temporarily replaced with metatile 0.
 - Loading wild encounters will now properly preserve the original order, so saving the file will not give huge diffs.
 
 ## [4.4.0] - 2020-12-20
