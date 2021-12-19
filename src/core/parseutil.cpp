@@ -130,6 +130,7 @@ QMap<QString, int> Token::precedenceMap = QMap<QString, int>(
 {
     {"*", 3},
     {"/", 3},
+    {"%", 3},
     {"+", 4},
     {"-", 4},
     {"<<", 5},
@@ -194,6 +195,8 @@ int ParseUtil::evaluatePostfix(const QList<Token> &postfix) {
                 result = op1 * op2;
             } else if (token.value == "/") {
                 result = op1 / op2;
+            } else if (token.value == "%") {
+                result = op1 % op2;
             } else if (token.value == "+") {
                 result = op1 + op2;
             } else if (token.value == "-") {
