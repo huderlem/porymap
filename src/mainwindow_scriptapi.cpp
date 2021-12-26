@@ -1020,7 +1020,7 @@ void MainWindow::setMainTab(int index) {
 }
 
 int MainWindow::getMapViewTab() {
-    if (this->getMainTab() != 0 || !this->ui->mapViewTab)
+    if (!this->ui || !this->ui->mapViewTab)
         return -1;
     return this->ui->mapViewTab->currentIndex();
 }
