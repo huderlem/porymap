@@ -7,15 +7,18 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 The **"Breaking Changes"** listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. If porymap is used on a project that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.
 
 ## [Unreleased]
+Nothing, yet.
 
+## [4.5.0] - 2021-12-26
 ### Added
+- WSL project paths are now supported. (For example, \wsl$\Ubuntu-20.04\home\huderlem\pokeemerald)
 - Add ability to export map timelapse animated GIFs with `File -> Export Map Timelapse Image...`.
-- Porymap is now compatible with Qt6.
 - Add tool to count the times each metatile or tile is used in the tileset editor.
 - Events, current metatile selections, and map images can now be copied and pasted, including between windows.
 - The grid and map border visibility are now saved as config options.
-- Add ~60 new API functions, including new features like reading/writing metatile data, layering, moving, and hiding items in the overlay, creating modified images and tile/metatile images, reading tileset sizes, logging warnings and errors, and more.
-- Add 7 new scripting callbacks.
+- Add ~60 new scripting API functions, including new features like reading/writing metatile data, layering, moving, and hiding items in the overlay, creating modified images and tile/metatile images, reading tileset sizes, logging warnings and errors, and more.
+- Add 7 new scripting API callbacks.
+- Porymap is now compatible with Qt6.
 
 ### Changed
 - New events will be placed in the center of the current view of the map.
@@ -283,7 +286,8 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ## [1.0.0] - 2018-10-26
 This was the initial release.
 
-[Unreleased]: https://github.com/huderlem/porymap/compare/4.4.0...HEAD
+[Unreleased]: https://github.com/huderlem/porymap/compare/4.5.0...HEAD
+[4.5.0]: https://github.com/huderlem/porymap/compare/4.4.0...4.4.0
 [4.4.0]: https://github.com/huderlem/porymap/compare/4.3.1...4.4.0
 [4.3.1]: https://github.com/huderlem/porymap/compare/4.3.0...4.3.1
 [4.3.0]: https://github.com/huderlem/porymap/compare/4.2.0...4.3.0

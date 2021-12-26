@@ -30,6 +30,7 @@ Main Window
 .. csv-table::
    :header: Actions
    :widths: 20, 20
+   :escape: \
 
    Save Current Map, ``Ctrl+S``
    Save All Maps, ``Shift+Ctrl+S``
@@ -41,7 +42,7 @@ Main Window
    Open New Tileset Dialog, ``Ctrl+Shift+N``
    Open Tileset Editor, ``Ctrl+T``
    Open Region Map Editor, ``Ctrl+M``
-   Edit Preferences, ``Ctrl+,``
+   Edit Preferences, ``Ctrl+\,``
 
 .. csv-table::
    :header: Map Editing
