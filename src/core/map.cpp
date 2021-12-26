@@ -312,12 +312,12 @@ void Map::setDimensions(int newWidth, int newHeight, bool setNewBlockdata) {
 
     int oldWidth = layout->width.toInt();
     int oldHeight = layout->height.toInt();
+    layout->width = QString::number(newWidth);
+    layout->height = QString::number(newHeight);
+
     if (oldWidth != newWidth || oldHeight != newHeight) {
         Scripting::cb_MapResized(oldWidth, oldHeight, newWidth, newHeight);
     }
-
-    layout->width = QString::number(newWidth);
-    layout->height = QString::number(newHeight);
 
     emit mapChanged(this);
     emit mapDimensionsChanged(QSize(getWidth(), getHeight()));
