@@ -2730,7 +2730,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Use PoryScript</string>
+    <string>Use Poryscript</string>
    </property>
   </action>
   <action name="action_NewMap">
