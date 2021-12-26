@@ -1664,10 +1664,9 @@ void MainWindow::on_action_Save_triggered() {
 void MainWindow::on_mapViewTab_tabBarClicked(int index)
 {
     int oldIndex = ui->mapViewTab->currentIndex();
+    ui->mapViewTab->setCurrentIndex(index);
     if (index != oldIndex)
         Scripting::cb_MapViewTabChanged(oldIndex, index);
-
-    ui->mapViewTab->setCurrentIndex(index);
 
     if (index == 0) {
         editor->setEditingMap();
@@ -1685,10 +1684,9 @@ void MainWindow::on_action_Exit_triggered()
 void MainWindow::on_mainTabBar_tabBarClicked(int index)
 {
     int oldIndex = ui->mainTabBar->currentIndex();
+    ui->mainTabBar->setCurrentIndex(index);
     if (index != oldIndex)
         Scripting::cb_MainTabChanged(oldIndex, index);
-
-    ui->mainTabBar->setCurrentIndex(index);
 
     int tabIndexToStackIndex[5] = {0, 0, 1, 2, 3};
     ui->mainStackedWidget->setCurrentIndex(tabIndexToStackIndex[index]);
