@@ -96,8 +96,8 @@ void MapPixmapItem::shift(int xDelta, int yDelta, bool fromScriptCall) {
     }
 
     if (!fromScriptCall && map->layout->blockdata != oldMetatiles) {
-        Scripting::cb_MapShifted(xDelta, yDelta);
         map->editHistory.push(new ShiftMetatiles(map, oldMetatiles, map->layout->blockdata, actionId_));
+        Scripting::cb_MapShifted(xDelta, yDelta);
     }
 }
 
