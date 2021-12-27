@@ -2441,6 +2441,7 @@ void Project::loadEventPixmaps(QList<Event*> objects) {
         object->spriteWidth = 16;
         object->spriteHeight = 16;
         object->usingSprite = false;
+        object->inanimate = true;
         QString event_type = object->get("event_type");
         if (event_type == EventType::Object) {
             object->pixmap = QPixmap(":/images/Entities_16x16.png").copy(0, 0, 16, 16);
@@ -2457,6 +2458,7 @@ void Project::loadEventPixmaps(QList<Event*> objects) {
         if (event_type == EventType::Object) {
             QString info_label = pointerHash[object->get("sprite")].replace("&", "");
             QStringList gfx_info = parser.readCArray("src/data/object_events/object_event_graphics_info.h", info_label);
+            object->inanimate = (gfx_info.value(8) == "TRUE");
             QString pic_label = gfx_info.value(14);
             QString dimensions_label = gfx_info.value(11);
             QString subsprites_label = gfx_info.value(12);
