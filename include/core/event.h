@@ -99,6 +99,7 @@ public:
     int frame = 0;
     bool hFlip = false;
     bool usingSprite;
+    bool inanimate;
 
     DraggablePixmapItem *pixmapItem = nullptr;
     void setPixmapItem(DraggablePixmapItem *item) { pixmapItem = item; }

@@ -26,7 +26,8 @@ Event::Event(const Event& toCopy) :
     spriteHeight(toCopy.spriteHeight),
     frame(toCopy.frame),
     hFlip(toCopy.hFlip),
-    usingSprite(toCopy.usingSprite)
+    usingSprite(toCopy.usingSprite),
+    inanimate(toCopy.inanimate)
 {  }
 
 Event::Event(QJsonObject obj, QString type) : Event()
@@ -427,6 +428,8 @@ void Event::setFrameFromMovement(QString facingDir) {
     // defaults
     this->frame = 0;
     this->hFlip = false;
+    if (this->inanimate)
+        return;
     if (facingDir == "DIR_NORTH") {
         this->frame = 1;
         this->hFlip = false;
