@@ -9,6 +9,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ## [Unreleased]
 ### Changed
 - If an object event is inanimate, it will always render using its first frame.
+- Only log "Unknown custom script function" when a registered script function is not present in any script.
 
 ## [4.5.0] - 2021-12-26
 ### Added

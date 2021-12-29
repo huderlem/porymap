@@ -94,18 +94,20 @@ void Scripting::invokeAction(QString actionName) {
     if (!instance) return;
     if (!instance->registeredActions.contains(actionName)) return;
 
+    bool foundFunction = false;
     QString functionName = instance->registeredActions.value(actionName);
     for (QJSValue module : instance->modules) {
         QJSValue callbackFunction = module.property(functionName);
-        if (callbackFunction.isUndefined() || !callbackFunction.isCallable()) {
-            logError(QString("Unknown custom script function '%1'").arg(functionName));
+        if (callbackFunction.isUndefined() || !callbackFunction.isCallable())
             continue;
-        }
+        foundFunction = true;
         if (tryErrorJS(callbackFunction)) continue;
 
         QJSValue result = callbackFunction.call(QJSValueList());
         if (tryErrorJS(result)) continue;
     }
+    if (!foundFunction)
+        logError(QString("Unknown custom script function '%1'").arg(functionName));
 }
 
 void Scripting::cb_ProjectOpened(QString projectPath) {
