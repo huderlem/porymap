@@ -69,6 +69,11 @@ void MapView::setOverlaysPosition(int x, int y) {
         overlay->setPosition(x, y);
 }
 
+void MapView::setOverlaysOpacity(int opacity) {
+    foreach (Overlay * overlay, this->overlayMap)
+        overlay->setOpacity(opacity);
+}
+
 void MapView::moveOverlays(int deltaX, int deltaY) {
     foreach (Overlay * overlay, this->overlayMap)
         overlay->move(deltaX, deltaY);

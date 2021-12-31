@@ -353,6 +353,26 @@ void MainWindow::moveOverlays(int deltaX, int deltaY) {
     this->ui->graphicsView_Map->scene()->update();
 }
 
+int MainWindow::getOverlayOpacity(int layer) {
+    if (!this->ui || !this->ui->graphicsView_Map)
+        return 0;
+    return this->ui->graphicsView_Map->getOverlay(layer)->getOpacity();
+}
+
+void MainWindow::setOverlayOpacity(int opacity, int layer) {
+    if (!this->ui || !this->ui->graphicsView_Map)
+        return;
+    this->ui->graphicsView_Map->getOverlay(layer)->setOpacity(opacity);
+    this->ui->graphicsView_Map->scene()->update();
+}
+
+void MainWindow::setOverlaysOpacity(int opacity) {
+    if (!this->ui || !this->ui->graphicsView_Map)
+        return;
+    this->ui->graphicsView_Map->setOverlaysOpacity(opacity);
+    this->ui->graphicsView_Map->scene()->update();
+}
+
 void MainWindow::addText(QString text, int x, int y, QString color, int fontSize, int layer) {
     if (!this->ui || !this->ui->graphicsView_Map)
         return;

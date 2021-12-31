@@ -26,6 +26,7 @@ void OverlayImage::render(QPainter *painter, int x, int y) {
 void Overlay::renderItems(QPainter *painter) {
     if (this->hidden) return;
 
+    painter->setOpacity(this->opacity);
     for (auto item : this->items)
         item->render(painter, this->x, this->y);
 }
@@ -47,6 +48,18 @@ bool Overlay::getHidden() {
 
 void Overlay::setHidden(bool hidden) {
     this->hidden = hidden;
+}
+
+int Overlay::getOpacity() {
+    return this->opacity * 100;
+}
+
+void Overlay::setOpacity(int opacity) {
+    if (opacity < 0 || opacity > 100) {
+        logError(QString("Invalid overlay opacity '%1'").arg(opacity));
+        return;
+    }
+    this->opacity = static_cast<qreal>(opacity) / 100;
 }
 
 int Overlay::getX() {
