@@ -181,6 +181,29 @@ public:
     Q_INVOKABLE void setMainTab(int index);
     Q_INVOKABLE int getMapViewTab();
     Q_INVOKABLE void setMapViewTab(int index);
+    bool gameStringToBool(QString s);
+    Q_INVOKABLE QString getSong();
+    Q_INVOKABLE void setSong(QString song);
+    Q_INVOKABLE QString getLocation();
+    Q_INVOKABLE void setLocation(QString location);
+    Q_INVOKABLE bool getRequiresFlash();
+    Q_INVOKABLE void setRequiresFlash(bool require);
+    Q_INVOKABLE QString getWeather();
+    Q_INVOKABLE void setWeather(QString weather);
+    Q_INVOKABLE QString getType();
+    Q_INVOKABLE void setType(QString type);
+    Q_INVOKABLE QString getBattleScene();
+    Q_INVOKABLE void setBattleScene(QString battleScene);
+    Q_INVOKABLE bool getShowLocationName();
+    Q_INVOKABLE void setShowLocationName(bool show);
+    Q_INVOKABLE bool getAllowRunning();
+    Q_INVOKABLE void setAllowRunning(bool allow);
+    Q_INVOKABLE bool getAllowBiking();
+    Q_INVOKABLE void setAllowBiking(bool allow);
+    Q_INVOKABLE bool getAllowEscaping();
+    Q_INVOKABLE void setAllowEscaping(bool allow);
+    Q_INVOKABLE int getFloorNumber();
+    Q_INVOKABLE void setFloorNumber(int floorNumber);
 
 
 private slots:

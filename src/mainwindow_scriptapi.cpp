@@ -1050,3 +1050,129 @@ void MainWindow::setMapViewTab(int index) {
         return;
     this->on_mapViewTab_tabBarClicked(index);
 }
+
+bool MainWindow::gameStringToBool(QString s) {
+    return (s.toInt() > 0 || s == "TRUE");
+}
+
+QString MainWindow::getSong() {
+    if (!this->editor || !this->editor->map)
+        return QString();
+    return this->editor->map->song;
+}
+
+void MainWindow::setSong(QString song) {
+    if (!this->editor || !this->editor->map)
+        return;
+}
+
+QString MainWindow::getLocation() {
+    if (!this->editor || !this->editor->map)
+        return QString();
+    return this->editor->map->location;
+}
+
+void MainWindow::setLocation(QString location) {
+    if (!this->editor || !this->editor->map)
+        return;
+}
+
+bool MainWindow::getRequiresFlash() {
+    if (!this->editor || !this->editor->map)
+        return false;
+    return this->gameStringToBool(this->editor->map->requiresFlash);
+}
+
+void MainWindow::setRequiresFlash(bool require) {
+    if (!this->editor || !this->editor->map)
+        return;
+}
+
+QString MainWindow::getWeather() {
+    if (!this->editor || !this->editor->map)
+        return QString();
+    return this->editor->map->weather;
+}
+
+void MainWindow::setWeather(QString weather) {
+    if (!this->editor || !this->editor->map)
+        return;
+}
+
+QString MainWindow::getType() {
+    if (!this->editor || !this->editor->map)
+        return QString();
+    return this->editor->map->type;
+}
+
+void MainWindow::setType(QString type) {
+    if (!this->editor || !this->editor->map)
+        return;
+}
+
+QString MainWindow::getBattleScene() {
+    if (!this->editor || !this->editor->map)
+        return QString();
+    return this->editor->map->battle_scene;
+}
+
+void MainWindow::setBattleScene(QString battleScene) {
+    if (!this->editor || !this->editor->map)
+        return;
+}
+
+bool MainWindow::getShowLocationName() {
+    if (!this->editor || !this->editor->map)
+        return false;
+    return this->gameStringToBool(this->editor->map->show_location);
+}
+
+void MainWindow::setShowLocationName(bool show) {
+    if (!this->editor || !this->editor->map)
+        return;
+}
+
+bool MainWindow::getAllowRunning() {
+    if (!this->editor || !this->editor->map)
+        return false;
+    return this->gameStringToBool(this->editor->map->allowRunning);
+}
+
+void MainWindow::setAllowRunning(bool allow) {
+    if (!this->editor || !this->editor->map)
+        return;
+}
+
+bool MainWindow::getAllowBiking() {
+    if (!this->editor || !this->editor->map)
+        return false;
+    return this->gameStringToBool(this->editor->map->allowBiking);
+}
+
+void MainWindow::setAllowBiking(bool allow) {
+    if (!this->editor || !this->editor->map)
+        return;
+}
+
+bool MainWindow::getAllowEscaping() {
+    if (!this->editor || !this->editor->map)
+        return false;
+    return this->gameStringToBool(this->editor->map->allowEscapeRope);
+}
+
+void MainWindow::setAllowEscaping(bool allow) {
+    if (!this->editor || !this->editor->map)
+        return;
+}
+
+int MainWindow::getFloorNumber() {
+    if (!this->editor || !this->editor->map)
+        return 0;
+    return this->editor->map->floorNumber;
+}
+
+void MainWindow::setFloorNumber(int floorNumber) {
+    if (!this->editor || !this->editor->map)
+        return;
+}
+
