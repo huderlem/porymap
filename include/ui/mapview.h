@@ -16,6 +16,7 @@ public:
     void setOverlaysY(int y);
     void setOverlaysPosition(int x, int y);
     void moveOverlays(int deltaX, int deltaY);
+    void setOverlaysOpacity(int opacity);
 
 public:
     QMap<int, Overlay*> overlayMap;

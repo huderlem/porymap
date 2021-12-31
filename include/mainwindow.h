@@ -87,6 +87,9 @@ public:
     Q_INVOKABLE void setOverlaysPosition(int x, int y);
     Q_INVOKABLE void moveOverlay(int deltaX, int deltaY, int layer = 0);
     Q_INVOKABLE void moveOverlays(int deltaX, int deltaY);
+    Q_INVOKABLE int getOverlayOpacity(int layer);
+    Q_INVOKABLE void setOverlayOpacity(int opacity, int layer = 0);
+    Q_INVOKABLE void setOverlaysOpacity(int opacity);
     Q_INVOKABLE void addText(QString text, int x, int y, QString color = "#000000", int fontSize = 12, int layer = 0);
     Q_INVOKABLE void addRect(int x, int y, int width, int height, QString color = "#000000", int layer = 0);
     Q_INVOKABLE void addFilledRect(int x, int y, int width, int height, QString color = "#000000", int layer = 0);

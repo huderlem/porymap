@@ -75,12 +75,15 @@ public:
         this->x = 0;
         this->y = 0;
         this->hidden = false;
+        this->opacity = 1.0;
     }
     ~Overlay() {
         this->clearItems();
     }
     bool getHidden();
     void setHidden(bool hidden);
+    int getOpacity();
+    void setOpacity(int opacity);
     int getX();
     int getY();
     void setX(int x);
@@ -99,6 +102,7 @@ private:
     int x;
     int y;
     bool hidden;
+    qreal opacity;
 };
 
 #endif // OVERLAY_H
