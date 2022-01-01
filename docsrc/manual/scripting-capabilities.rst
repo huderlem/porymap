@@ -350,6 +350,143 @@ The following functions are related to editing the map's blocks or retrieving in
 
    Commits any uncommitted changes to the map's edit/undo history. Useful when delaying commits using ``commitChanges = false`` in certain map editing functions.
 
+Map Header Editing Functions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The following functions are related to reading/writing the map's header properties.
+
+.. js:function:: map.getSong()
+
+   Gets the name of the background song for the currently-opened map.
+
+   :returns string: the name of the song
+
+.. js:function:: map.setSong(song)
+
+   Sets the name of the background song for the currently-opened map. The song name must be one of the names in the "Song" dropdown menu on the Header tab.
+
+   :param string song: the name of the song
+
+.. js:function:: map.getLocation()
+
+   Gets the name of the region map location for the currently-opened map.
+
+   :returns string: the name of the location
+
+.. js:function:: map.setLocation(location)
+
+   Sets the name of the region map location for the currently-opened map. The location name must be one of the names in the "Location" dropdown menu on the Header tab.
+
+   :param string location: the name of the location
+
+.. js:function:: map.getRequiresFlash()
+
+   Gets whether flash would be required in-game for the currently-opened map.
+
+   :returns boolean: whether flash is required
+
+.. js:function:: map.setRequiresFlash(require)
+
+   Sets whether flash would be required in-game for the currently-opened map.
+
+   :param boolean require: whether flash should be required
+
+.. js:function:: map.getWeather()
+
+   Gets the name of the weather for the currently-opened map.
+
+   :returns string: the name of the weather
+
+.. js:function:: map.setWeather(weather)
+
+   Sets the name of the weather for the currently-opened map. The weather name must be one of the names in the "Weather" dropdown menu on the Header tab.
+
+   :param string weather: the name of the weather
+
+.. js:function:: map.getType()
+
+   Gets the name of the map type for the currently-opened map.
+
+   :returns string: the name of the map type
+
+.. js:function:: map.setType(type)
+
+   Sets the name of the map type for the currently-opened map. The map type name must be one of the names in the "Type" dropdown menu on the Header tab.
+
+   :param string type: the name of the map type
+
+.. js:function:: map.getBattleScene()
+
+   Gets the name of the battle scene for the currently-opened map.
+
+   :returns string: the name of the battle scene
+
+.. js:function:: map.setBattleScene(battleScene)
+
+   Sets the name of the battle scene for the currently-opened map. The battle scene name must be one of the names in the "Battle scene" dropdown menu on the Header tab.
+
+   :param string battleScene: the name of the battle scene
+
+.. js:function:: map.getShowLocationName()
+
+   Gets whether the location name will appear in-game for the currently-opened map.
+
+   :returns boolean: whether the location name will be shown
+
+.. js:function:: map.setShowLocationName(show)
+
+   Sets whether the location name should appear in-game for the currently-opened map.
+
+   :param boolean show: whether the location name should be shown
+
+.. js:function:: map.getAllowRunning()
+
+   Gets whether running is allowed in-game for the currently-opened map.
+
+   :returns boolean: whether running is allowed
+
+.. js:function:: map.setAllowRunning(allow)
+
+   Sets whether running should be allowed in-game for the currently-opened map.
+
+   :param boolean allow: whether running should be allowed
+
+.. js:function:: map.getAllowBiking()
+
+   Gets whether biking is allowed in-game for the currently-opened map.
+
+   :returns boolean: whether biking is allowed
+
+.. js:function:: map.setAllowBiking(allow)
+
+   Sets whether biking should be allowed in-game for the currently-opened map.
+
+   :param boolean allow: whether biking should be allowed
+
+.. js:function:: map.getAllowEscaping()
+
+   Gets whether escaping (using Escape Rope or Dig) is allowed in-game for the currently-opened map.
+
+   :returns boolean: whether escaping is allowed
+
+.. js:function:: map.setAllowEscaping(allow)
+
+   Sets whether escaping (using Escape Rope or Dig) should be allowed in-game for the currently-opened map.
+
+   :param boolean allow: whether escaping should be allowed
+
+.. js:function:: map.getFloorNumber()
+
+   Gets the floor number for the currently-opened map.
+
+   :returns number: the floor number
+
+.. js:function:: map.setFloorNumber(floorNumber)
+
+   Sets the floor number for the currently-opened map. Floor numbers can be any number between -128 and 127 inclusive.
+
+   :param number floorNumber: the floor number
+
 Map Overlay Functions
 ^^^^^^^^^^^^^^^^^^^^^
 
@@ -404,6 +541,26 @@ The following functions are related to an overlay that is drawn on top of the ma
    Sets the visibility of all active overlay layers.
 
    :param boolean visible: whether the layers should be showing
+
+.. js:function:: map.getOverlayOpacity(layer = 0)
+
+   Gets the opacity of the specified overlay layer. Opacity ranges from 0 (invisible) to 100 (completely opaque).
+
+   :param number layer: the layer id. Defaults to ``0``
+   :returns number: the opacity
+
+.. js:function:: map.setOverlayOpacity(opacity, layer = 0)
+
+   Sets the opacity of the specified overlay layer. Opacity ranges from 0 (invisible) to 100 (completely opaque).
+
+   :param number opacity: the opacity
+   :param number layer: the layer id. Defaults to ``0``
+
+.. js:function:: map.setOverlaysOpacity(opacity)
+
+   Sets the opacity of all active overlay layers. Opacity ranges from 0 (invisible) to 100 (completely opaque).
+
+   :param number opacity: the opacity
 
 .. js:function:: map.getOverlayX(layer = 0)
 
