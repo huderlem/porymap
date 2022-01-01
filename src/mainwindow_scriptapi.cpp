@@ -1062,8 +1062,14 @@ QString MainWindow::getSong() {
 }
 
 void MainWindow::setSong(QString song) {
-    if (!this->editor || !this->editor->map)
+    if (!this->ui || !this->editor || !this->editor->project)
         return;
+    QStringList songs = this->editor->project->getSongNames();
+    if (!songs.contains(song)) {
+        logError(QString("Unknown song '%1'").arg(song));
+        return;
+    }
+    this->ui->comboBox_Song->setCurrentText(song);
 }
 
 QString MainWindow::getLocation() {
@@ -1073,8 +1079,13 @@ QString MainWindow::getLocation() {
 }
 
 void MainWindow::setLocation(QString location) {
-    if (!this->editor || !this->editor->map)
+    if (!this->ui || !this->editor || !this->editor->project)
         return;
+    if (!this->editor->project->mapSectionNameToValue.contains(location)) {
+        logError(QString("Unknown location '%1'").arg(location));
+        return;
+    }
+    this->ui->comboBox_Location->setCurrentText(location);
 }
 
 bool MainWindow::getRequiresFlash() {
@@ -1084,8 +1095,9 @@ bool MainWindow::getRequiresFlash() {
 }
 
 void MainWindow::setRequiresFlash(bool require) {
-    if (!this->editor || !this->editor->map)
+    if (!this->ui)
         return;
+    this->ui->checkBox_Visibility->setChecked(require);
 }
 
 QString MainWindow::getWeather() {
@@ -1095,8 +1107,13 @@ QString MainWindow::getWeather() {
 }
 
 void MainWindow::setWeather(QString weather) {
-    if (!this->editor || !this->editor->map)
+    if (!this->ui || !this->editor || !this->editor->project)
         return;
+    if (!this->editor->project->weatherNames.contains(weather)) {
+        logError(QString("Unknown weather '%1'").arg(weather));
+        return;
+    }
+    this->ui->comboBox_Weather->setCurrentText(weather);
 }
 
 QString MainWindow::getType() {
@@ -1106,8 +1123,13 @@ QString MainWindow::getType() {
 }
 
 void MainWindow::setType(QString type) {
-    if (!this->editor || !this->editor->map)
+    if (!this->ui || !this->editor || !this->editor->project)
         return;
+    if (!this->editor->project->mapTypes.contains(type)) {
+        logError(QString("Unknown map type '%1'").arg(type));
+        return;
+    }
+    this->ui->comboBox_Type->setCurrentText(type);
 }
 
 QString MainWindow::getBattleScene() {
@@ -1117,8 +1139,13 @@ QString MainWindow::getBattleScene() {
 }
 
 void MainWindow::setBattleScene(QString battleScene) {
-    if (!this->editor || !this->editor->map)
+    if (!this->ui || !this->editor || !this->editor->project)
         return;
+    if (!this->editor->project->mapBattleScenes.contains(battleScene)) {
+        logError(QString("Unknown battle scene '%1'").arg(battleScene));
+        return;
+    }
+    this->ui->comboBox_BattleScene->setCurrentText(battleScene);
 }
 
 bool MainWindow::getShowLocationName() {
@@ -1128,8 +1155,9 @@ bool MainWindow::getShowLocationName() {
 }
 
 void MainWindow::setShowLocationName(bool show) {
-    if (!this->editor || !this->editor->map)
+    if (!this->ui)
         return;
+    this->ui->checkBox_ShowLocation->setChecked(show);
 }
 
 bool MainWindow::getAllowRunning() {
@@ -1139,8 +1167,9 @@ bool MainWindow::getAllowRunning() {
 }
 
 void MainWindow::setAllowRunning(bool allow) {
-    if (!this->editor || !this->editor->map)
+    if (!this->ui)
         return;
+    this->ui->checkBox_AllowRunning->setChecked(allow);
 }
 
 bool MainWindow::getAllowBiking() {
@@ -1150,8 +1179,9 @@ bool MainWindow::getAllowBiking() {
 }
 
 void MainWindow::setAllowBiking(bool allow) {
-    if (!this->editor || !this->editor->map)
+    if (!this->ui)
         return;
+    this->ui->checkBox_AllowBiking->setChecked(allow);
 }
 
 bool MainWindow::getAllowEscaping() {
@@ -1161,8 +1191,9 @@ bool MainWindow::getAllowEscaping() {
 }
 
 void MainWindow::setAllowEscaping(bool allow) {
-    if (!this->editor || !this->editor->map)
+    if (!this->ui)
         return;
+    this->ui->checkBox_AllowEscapeRope->setChecked(allow);
 }
 
 int MainWindow::getFloorNumber() {
@@ -1172,7 +1203,12 @@ int MainWindow::getFloorNumber() {
 }
 
 void MainWindow::setFloorNumber(int floorNumber) {
-    if (!this->editor || !this->editor->map)
+    if (!this->ui)
         return;
+    if (floorNumber < -128 || floorNumber > 127) {
+        logError(QString("Invalid floor number '%1'").arg(floorNumber));
+        return;
+    }
+    this->ui->spinBox_FloorNumber->setValue(floorNumber);
 }
 
