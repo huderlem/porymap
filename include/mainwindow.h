@@ -241,10 +241,10 @@ private slots:
     void on_comboBox_Weather_currentTextChanged(const QString &arg1);
     void on_comboBox_Type_currentTextChanged(const QString &arg1);
     void on_comboBox_BattleScene_currentTextChanged(const QString &arg1);
-    void on_checkBox_ShowLocation_clicked(bool checked);
-    void on_checkBox_AllowRunning_clicked(bool checked);
-    void on_checkBox_AllowBiking_clicked(bool checked);
-    void on_checkBox_AllowEscapeRope_clicked(bool checked);
+    void on_checkBox_ShowLocation_stateChanged(int selected);
+    void on_checkBox_AllowRunning_stateChanged(int selected);
+    void on_checkBox_AllowBiking_stateChanged(int selected);
+    void on_checkBox_AllowEscapeRope_stateChanged(int selected);
     void on_spinBox_FloorNumber_valueChanged(int offset);
     void on_actionUse_Encounter_Json_triggered(bool checked);
     void on_actionMonitor_Project_Files_triggered(bool checked);
@@ -301,8 +301,8 @@ private slots:
     void on_comboBox_SecondaryTileset_currentTextChanged(const QString &arg1);
     void on_pushButton_ChangeDimensions_clicked();
     void on_checkBox_smartPaths_stateChanged(int selected);
-    void on_checkBox_Visibility_clicked(bool checked);
-    void on_checkBox_ToggleBorder_stateChanged(int arg1);
+    void on_checkBox_Visibility_stateChanged(int selected);
+    void on_checkBox_ToggleBorder_stateChanged(int selected);
 
     void resetMapViewScale();
 

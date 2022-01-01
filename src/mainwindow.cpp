@@ -844,9 +844,10 @@ void MainWindow::on_comboBox_BattleScene_currentTextChanged(const QString &battl
     }
 }
 
-void MainWindow::on_checkBox_Visibility_clicked(bool checked)
+void MainWindow::on_checkBox_Visibility_stateChanged(int selected)
 {
     if (editor && editor->map) {
+        bool checked = selected == Qt::Checked;
         if (checked) {
             editor->map->requiresFlash = "TRUE";
         } else {
@@ -856,9 +857,10 @@ void MainWindow::on_checkBox_Visibility_clicked(bool checked)
     }
 }
 
-void MainWindow::on_checkBox_ShowLocation_clicked(bool checked)
+void MainWindow::on_checkBox_ShowLocation_stateChanged(int selected)
 {
     if (editor && editor->map) {
+        bool checked = selected == Qt::Checked;
         if (checked) {
             editor->map->show_location = "TRUE";
         } else {
@@ -868,9 +870,10 @@ void MainWindow::on_checkBox_ShowLocation_clicked(bool checked)
     }
 }
 
-void MainWindow::on_checkBox_AllowRunning_clicked(bool checked)
+void MainWindow::on_checkBox_AllowRunning_stateChanged(int selected)
 {
     if (editor && editor->map) {
+        bool checked = selected == Qt::Checked;
         if (checked) {
             editor->map->allowRunning = "1";
         } else {
@@ -880,9 +883,10 @@ void MainWindow::on_checkBox_AllowRunning_clicked(bool checked)
     }
 }
 
-void MainWindow::on_checkBox_AllowBiking_clicked(bool checked)
+void MainWindow::on_checkBox_AllowBiking_stateChanged(int selected)
 {
     if (editor && editor->map) {
+        bool checked = selected == Qt::Checked;
         if (checked) {
             editor->map->allowBiking = "1";
         } else {
@@ -892,9 +896,10 @@ void MainWindow::on_checkBox_AllowBiking_clicked(bool checked)
     }
 }
 
-void MainWindow::on_checkBox_AllowEscapeRope_clicked(bool checked)
+void MainWindow::on_checkBox_AllowEscapeRope_stateChanged(int selected)
 {
     if (editor && editor->map) {
+        bool checked = selected == Qt::Checked;
         if (checked) {
             editor->map->allowEscapeRope = "1";
         } else {
