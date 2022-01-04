@@ -1114,7 +1114,11 @@ The following functions are related to tilesets and how they are rendered. The f
    :param number tileEnd: index of the last tile to set. Defaults to ``-1`` (the last tile)
    :param boolean forceRedraw: Force the map view to refresh. Defaults to ``true``. Redrawing the map view is expensive, so set to ``false`` when making many consecutive map edits, and then redraw the map once using ``map.redraw()``.
 
+..js:function:: map.getTilePixels(tileId)
 
+   Gets the pixel data for the specified tile. The pixel data is an array of numbers indicating which palette color each pixel uses. Tiles are 8x8, so the pixel array will be 64 elements long.
+
+   :returns array: the pixel data
 
 Settings Functions
 ^^^^^^^^^^^^^^^^^^
