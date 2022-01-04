@@ -6,25 +6,16 @@
 class Tile
 {
 public:
-    Tile() :
-        tileId(0),
-        xflip(false),
-        yflip(false),
-        palette(0)
-    {  }
-
-    Tile(int tileId, bool xflip, bool yflip, int palette) :
-        tileId(tileId),
-        xflip(xflip),
-        yflip(yflip),
-        palette(palette)
-    {  }
+    Tile();
+    Tile(int tileId, bool xflip, bool yflip, int palette);
 
 public:
     int tileId;
     bool xflip;
     bool yflip;
     int palette;
+
+    static int getIndexInTileset(int);
 };
 
 #endif // TILE_H

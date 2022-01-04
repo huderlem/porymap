@@ -23,7 +23,7 @@ QImage getMetatileImage(
         bool useTruePalettes)
 {
     Metatile* metatile = Tileset::getMetatile(metatileId, primaryTileset, secondaryTileset);
-    Tileset* blockTileset = Tileset::getBlockTileset(metatileId, primaryTileset, secondaryTileset);
+    Tileset* blockTileset = Tileset::getMetatileTileset(metatileId, primaryTileset, secondaryTileset);
     if (!metatile || !blockTileset) {
         QImage metatile_image(16, 16, QImage::Format_RGBA8888);
         metatile_image.fill(Qt::magenta);
@@ -106,12 +106,12 @@ QImage getMetatileImage(
 }
 
 QImage getTileImage(uint16_t tileId, Tileset *primaryTileset, Tileset *secondaryTileset) {
-    Tileset *tileset = Tileset::getBlockTileset(tileId, primaryTileset, secondaryTileset);
-    int local_index = Metatile::getBlockIndex(tileId);
+    Tileset *tileset = Tileset::getTileTileset(tileId, primaryTileset, secondaryTileset);
+    int index = Tile::getIndexInTileset(tileId);
     if (!tileset) {
         return QImage();
     }
-    return tileset->tiles.value(local_index, QImage());
+    return tileset->tiles.value(index, QImage());
 }
 
 QImage getColoredTileImage(uint16_t tileId, Tileset *primaryTileset, Tileset *secondaryTileset, QList<QRgb> palette) {

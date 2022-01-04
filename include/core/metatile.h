@@ -44,7 +44,7 @@ public:
     uint8_t terrainType;   // FRLG only
     QString label;
 
-    static int getBlockIndex(int);
+    static int getIndexInTileset(int);
     static QPoint coordFromPixmapCoord(const QPointF &pixelCoord);
 };
 

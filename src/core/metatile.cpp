@@ -9,11 +9,11 @@ Metatile::Metatile() :
     terrainType(0)
 {  }
 
-int Metatile::getBlockIndex(int index) {
-    if (index < Project::getNumMetatilesPrimary()) {
-        return index;
+int Metatile::getIndexInTileset(int metatileId) {
+    if (metatileId < Project::getNumMetatilesPrimary()) {
+        return metatileId;
     } else {
-        return index - Project::getNumMetatilesPrimary();
+        return metatileId - Project::getNumMetatilesPrimary();
     }
 }
 

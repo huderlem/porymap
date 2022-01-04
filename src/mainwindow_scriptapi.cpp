@@ -812,8 +812,8 @@ void MainWindow::setMetatileLayerOpacity(QList<float> order) {
 }
 
 void MainWindow::saveMetatilesByMetatileId(int metatileId) {
-    Tileset * tileset = Tileset::getBlockTileset(metatileId, this->editor->map->layout->tileset_primary, this->editor->map->layout->tileset_secondary);
-    if (this->editor->project)
+    Tileset * tileset = Tileset::getMetatileTileset(metatileId, this->editor->map->layout->tileset_primary, this->editor->map->layout->tileset_secondary);
+    if (this->editor->project && tileset)
         this->editor->project->saveTilesetMetatiles(tileset);
 
     // Refresh anything that can display metatiles (except the actual map view)
@@ -828,8 +828,8 @@ void MainWindow::saveMetatilesByMetatileId(int metatileId) {
 }
 
 void MainWindow::saveMetatileAttributesByMetatileId(int metatileId) {
-    Tileset * tileset = Tileset::getBlockTileset(metatileId, this->editor->map->layout->tileset_primary, this->editor->map->layout->tileset_secondary);
-    if (this->editor->project)
+    Tileset * tileset = Tileset::getMetatileTileset(metatileId, this->editor->map->layout->tileset_primary, this->editor->map->layout->tileset_secondary);
+    if (this->editor->project && tileset)
         this->editor->project->saveTilesetMetatileAttributes(tileset);
 
     // If the Tileset Editor is currently displaying the updated metatile, refresh it
@@ -1006,6 +1006,20 @@ void MainWindow::setMetatileTile(int metatileId, int tileIndex, int tileId, bool
 void MainWindow::setMetatileTile(int metatileId, int tileIndex, QJSValue tileObj, bool forceRedraw) {
     Tile tile = Scripting::toTile(tileObj);
     this->setMetatileTiles(metatileId, tile.tileId, tile.xflip, tile.yflip, tile.palette, tileIndex, tileIndex, forceRedraw);
+}
+
+QJSValue MainWindow::getTilePixels(int tileId) {
+    if (tileId < 0 || !this->editor || !this->editor->project || !this->editor->map || !this->editor->map->layout)
+        return QJSValue();
+    QImage tileImage = getTileImage(tileId, this->editor->map->layout->tileset_primary, this->editor->map->layout->tileset_secondary);
+    if (tileImage.isNull() || tileImage.sizeInBytes() < 64)
+        return QJSValue();
+    const uchar * pixels = tileImage.constBits();
+    QJSValue pixelArray = Scripting::getEngine()->newArray(64);
+    for (int i = 0; i < 64; i++) {
+        pixelArray.setProperty(i, pixels[i]);
+    }
+    return pixelArray;
 }
 
 int MainWindow::getNumTilesInMetatile() {
