@@ -1116,7 +1116,7 @@ The following functions are related to tilesets and how they are rendered. The f
 
 ..js:function:: map.getTilePixels(tileId)
 
-   Gets the pixel data for the specified tile. The pixel data is an array of numbers indicating which palette color each pixel uses. Tiles are 8x8, so the pixel array will be 64 elements long.
+   Gets the pixel data for the specified tile. The pixel data is an array of indexes indicating which palette color each pixel uses. Tiles are 8x8, so the pixel array will be 64 elements long.
 
    :returns array: the pixel data
 
