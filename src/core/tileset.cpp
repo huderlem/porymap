@@ -59,21 +59,33 @@ Tileset &Tileset::operator=(const Tileset &other) {
     return *this;
 }
 
-Tileset* Tileset::getBlockTileset(int metatile_index, Tileset *primaryTileset, Tileset *secondaryTileset) {
-    if (metatile_index < Project::getNumMetatilesPrimary()) {
+Tileset* Tileset::getTileTileset(int tileId, Tileset *primaryTileset, Tileset *secondaryTileset) {
+    if (tileId < Project::getNumTilesPrimary()) {
         return primaryTileset;
-    } else {
+    } else if (tileId < Project::getNumTilesTotal()) {
         return secondaryTileset;
+    } else {
+        return nullptr;
     }
 }
 
-Metatile* Tileset::getMetatile(int index, Tileset *primaryTileset, Tileset *secondaryTileset) {
-    Tileset *tileset = Tileset::getBlockTileset(index, primaryTileset, secondaryTileset);
-    int local_index = Metatile::getBlockIndex(index);
+Tileset* Tileset::getMetatileTileset(int metatileId, Tileset *primaryTileset, Tileset *secondaryTileset) {
+    if (metatileId < Project::getNumMetatilesPrimary()) {
+        return primaryTileset;
+    } else if (metatileId < Project::getNumMetatilesTotal()) {
+        return secondaryTileset;
+    } else {
+        return nullptr;
+    }
+}
+
+Metatile* Tileset::getMetatile(int metatileId, Tileset *primaryTileset, Tileset *secondaryTileset) {
+    Tileset *tileset = Tileset::getMetatileTileset(metatileId, primaryTileset, secondaryTileset);
+    int index = Metatile::getIndexInTileset(metatileId);
     if (!tileset) {
         return nullptr;
     }
-    return tileset->metatiles.value(local_index, nullptr);
+    return tileset->metatiles.value(index, nullptr);
 }
 
 bool Tileset::metatileIsValid(uint16_t metatileId, Tileset *primaryTileset, Tileset *secondaryTileset) {

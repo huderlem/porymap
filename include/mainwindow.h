@@ -173,6 +173,7 @@ public:
     Q_INVOKABLE QJSValue getMetatileTiles(int metatileId, int tileStart = 0, int tileEnd = -1);
     Q_INVOKABLE void setMetatileTiles(int metatileId, QJSValue tilesObj, int tileStart = 0, int tileEnd = -1, bool forceRedraw = true);
     Q_INVOKABLE void setMetatileTiles(int metatileId, int tileId, bool xflip, bool yflip, int palette, int tileStart = 0, int tileEnd = -1, bool forceRedraw = true);
+    Q_INVOKABLE QJSValue getTilePixels(int tileId);
     Q_INVOKABLE int getNumTilesInMetatile();
     Q_INVOKABLE int getNumMetatileLayers();
     Q_INVOKABLE QString getBaseGameVersion();

@@ -34,7 +34,8 @@ public:
     QList<QList<QRgb>> palettes;
     QList<QList<QRgb>> palettePreviews;
 
-    static Tileset* getBlockTileset(int, Tileset*, Tileset*);
+    static Tileset* getMetatileTileset(int, Tileset*, Tileset*);
+    static Tileset* getTileTileset(int, Tileset*, Tileset*);
     static Metatile* getMetatile(int, Tileset*, Tileset*);
     static QList<QList<QRgb>> getBlockPalettes(Tileset*, Tileset*, bool useTruePalettes = false);
     static QList<QRgb> getPalette(int, Tileset*, Tileset*, bool useTruePalettes = false);

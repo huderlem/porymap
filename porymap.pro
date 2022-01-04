@@ -27,6 +27,7 @@ SOURCES += src/core/block.cpp \
     src/core/metatileparser.cpp \
     src/core/paletteutil.cpp \
     src/core/parseutil.cpp \
+    src/core/tile.cpp \
     src/core/tileset.cpp \
     src/core/regionmap.cpp \
     src/core/wildmoninfo.cpp \
