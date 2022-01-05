@@ -759,6 +759,7 @@ void MainWindow::displayMapProperties() {
     const QSignalBlocker blockerA(ui->checkBox_AllowRunning);
     const QSignalBlocker blockerB(ui->checkBox_AllowBiking);
     const QSignalBlocker blockerC(ui->spinBox_FloorNumber);
+    const QSignalBlocker blockerD(ui->checkBox_AllowEscapeRope);
 
     ui->checkBox_Visibility->setChecked(false);
     ui->checkBox_ShowLocation->setChecked(false);

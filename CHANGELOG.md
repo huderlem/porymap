@@ -15,6 +15,9 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - If an object event is inanimate, it will always render using its first frame.
 - Only log "Unknown custom script function" when a registered script function is not present in any script.
 
+### Fixed
+- Fix maps being incorrectly marked as having unsaved changes when switching maps.
+
 ## [4.5.0] - 2021-12-26
 ### Added
 - WSL project paths are now supported. (For example, \wsl$\Ubuntu-20.04\home\huderlem\pokeemerald)
