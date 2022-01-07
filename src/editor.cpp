@@ -993,7 +993,6 @@ void Editor::updateCursorRectPos(int x, int y) {
         this->cursorMapTileRect->updateLocation(x, y);
     if (ui->graphicsView_Map->scene())
         ui->graphicsView_Map->scene()->update();
-    Scripting::cb_BlockHoverChanged(x, y);
 }
 
 void Editor::setCursorRectVisible(bool visible) {
@@ -1023,6 +1022,7 @@ void Editor::onHoveredMapMetatileChanged(const QPoint &pos) {
                               .arg(pos.y())
                               .arg(QString::number(zoomLevels[this->scaleIndex], 'g', 2)));
     }
+    Scripting::cb_BlockHoverChanged(pos.x(), pos.y());
 }
 
 void Editor::onHoveredMapMetatileCleared() {
@@ -1047,6 +1047,7 @@ void Editor::onHoveredMapMovementPermissionChanged(int x, int y) {
                             .arg(this->getMovementPermissionText(collision, elevation));
         this->ui->statusBar->showMessage(message);
     }
+    Scripting::cb_BlockHoverChanged(x, y);
 }
 
 void Editor::onHoveredMapMovementPermissionCleared() {
@@ -1172,6 +1173,9 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item
                 } else {
                     item->floodFill(event);
                 }
+            } else if (event->type() == QEvent::GraphicsSceneMouseRelease) {
+                // Update the tile rectangle at the end of a click-drag selection
+                this->updateCursorRectPos(pos.x(), pos.y());
             } else {
                 this->setSmartPathCursorMode(event);
                 this->setStraightPathCursorMode(event);
