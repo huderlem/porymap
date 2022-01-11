@@ -3,12 +3,19 @@
 #include "metatile.h"
 
 void CollisionPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
-    int x = static_cast<int>(event->pos().x()) / 16;
-    int y = static_cast<int>(event->pos().y()) / 16;
-    emit this->hoveredMapMovementPermissionChanged(x, y);
+    QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
+    if (pos != this->previousPos) {
+        this->previousPos = pos;
+        emit this->hoveredMapMovementPermissionChanged(pos.x(), pos.y());
+    }
     if (this->settings->betterCursors && this->paintingMode == MapPixmapItem::PaintMode::Metatiles) {
         setCursor(this->settings->mapCursor);
     }
+}
+
+void CollisionPixmapItem::hoverEnterEvent(QGraphicsSceneHoverEvent * event) {
+    QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
+    emit this->hoveredMapMovementPermissionChanged(pos.x(), pos.y());
 }
 
 void CollisionPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
@@ -26,6 +33,11 @@ void CollisionPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 }
 
 void CollisionPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
+    QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
+    if (pos != this->previousPos) {
+        this->previousPos = pos;
+        emit this->hoveredMapMovementPermissionChanged(pos.x(), pos.y());
+    }
     emit mouseEvent(event, this);
 }
 

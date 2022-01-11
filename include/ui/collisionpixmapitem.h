@@ -27,6 +27,7 @@ public:
 
 private:
     unsigned actionId_ = 0;
+    QPoint previousPos;
 
 signals:
     void mouseEvent(QGraphicsSceneMouseEvent *, CollisionPixmapItem *);
@@ -35,6 +36,7 @@ signals:
 
 protected:
     void hoverMoveEvent(QGraphicsSceneHoverEvent*);
+    void hoverEnterEvent(QGraphicsSceneHoverEvent*);
     void hoverLeaveEvent(QGraphicsSceneHoverEvent*);
     void mousePressEvent(QGraphicsSceneMouseEvent*);
     void mouseMoveEvent(QGraphicsSceneMouseEvent*);
