@@ -1173,10 +1173,11 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item
                 } else {
                     item->floodFill(event);
                 }
-            } else if (event->type() == QEvent::GraphicsSceneMouseRelease) {
-                // Update the tile rectangle at the end of a click-drag selection
-                this->updateCursorRectPos(pos.x(), pos.y());
             } else {
+                if (event->type() == QEvent::GraphicsSceneMouseRelease) {
+                    // Update the tile rectangle at the end of a click-drag selection
+                    this->updateCursorRectPos(pos.x(), pos.y());
+                }
                 this->setSmartPathCursorMode(event);
                 this->setStraightPathCursorMode(event);
                 if (this->cursorMapTileRect->getStraightPathMode()) {
