@@ -71,7 +71,7 @@ Event* Event::createNewObjectEvent(Project *project)
     Event *event = new Event;
     event->put("event_group_type", "object_event_group");
     event->put("event_type", EventType::Object);
-    event->put("sprite", project->getEventObjGfxConstants().keys().first());
+    event->put("sprite", project->gfxNames.first());
     event->put("movement_type", project->movementTypes.first());
     if (projectConfig.getObjectEventInConnectionEnabled()) {
         event->put("in_connection", false);

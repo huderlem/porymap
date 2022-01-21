@@ -1078,8 +1078,7 @@ QString MainWindow::getSong() {
 void MainWindow::setSong(QString song) {
     if (!this->ui || !this->editor || !this->editor->project)
         return;
-    QStringList songs = this->editor->project->getSongNames();
-    if (!songs.contains(song)) {
+    if (!this->editor->project->songNames.contains(song)) {
         logError(QString("Unknown song '%1'").arg(song));
         return;
     }
