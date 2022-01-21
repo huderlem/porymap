@@ -51,6 +51,8 @@ public:
     QMap<QString, QString> mapSecToMapHoverName;
     QMap<QString, int> mapSectionNameToValue;
     QMap<int, QString> mapSectionValueToName;
+    QStringList gfxNames;
+    QStringList songNames;
     QStringList itemNames;
     QStringList flagNames;
     QStringList varNames;
@@ -151,7 +153,6 @@ public:
     void saveTilesetPalettes(Tileset*);
 
     QString defaultSong;
-    QStringList getSongNames();
     QStringList getVisibilities();
     QMap<QString, QStringList> getTilesetLabels();
     bool readTilesetProperties();
@@ -173,9 +174,10 @@ public:
     bool readHealLocations();
     bool readMiscellaneousConstants();
     bool readEventScriptLabels();
+    bool readObjEventGfxConstants();
+    bool readSongNames();
 
     void loadEventPixmaps(QList<Event*> objects);
-    QMap<QString, int> getEventObjGfxConstants();
     QString fixPalettePath(QString path);
     QString fixGraphicPath(QString path);
 

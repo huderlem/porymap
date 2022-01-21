@@ -2276,25 +2276,31 @@ bool Project::readMetatileBehaviors() {
     return true;
 }
 
-QStringList Project::getSongNames() {
+bool Project::readSongNames() {
     QStringList songDefinePrefixes{ "\\bSE_", "\\bMUS_" };
     QString filename = "include/constants/songs.h";
     fileWatcher.addPath(root + "/" + filename);
     QMap<QString, int> songDefines = parser.readCDefines(filename, songDefinePrefixes);
-    QStringList names = songDefines.keys();
-    this->defaultSong = names.value(0, "MUS_DUMMY");
-
-    return names;
+    this->songNames = songDefines.keys();
+    this->defaultSong = this->songNames.value(0, "MUS_DUMMY");
+    if (this->songNames.isEmpty()) {
+        logError(QString("Failed to read song names from %1.").arg(filename));
+        return false;
+    }
+    return true;
 }
 
-QMap<QString, int> Project::getEventObjGfxConstants() {
-    QStringList eventObjGfxPrefixes("\\bOBJ_EVENT_GFX_");
-
+bool Project::readObjEventGfxConstants() {
+    QStringList objEventGfxPrefixes("\\bOBJ_EVENT_GFX_");
     QString filename = "include/constants/event_objects.h";
     fileWatcher.addPath(root + "/" + filename);
-    QMap<QString, int> constants = parser.readCDefines(filename, eventObjGfxPrefixes);
-
-    return constants;
+    QMap<QString, int> gfxDefines = parser.readCDefines(filename, objEventGfxPrefixes);
+    this->gfxNames = gfxDefines.keys();
+    if (this->gfxNames.isEmpty()) {
+        logError(QString("Failed to read object event graphics constants from %1.").arg(filename));
+        return false;
+    }
+    return true;
 }
 
 bool Project::readMiscellaneousConstants() {
@@ -2423,8 +2429,6 @@ void Project::loadEventPixmaps(QList<Event*> objects) {
     if (!needs_update) {
         return;
     }
-
-    QMap<QString, int> constants = getEventObjGfxConstants();
 
     fileWatcher.addPaths(QStringList() << root + "/" + "src/data/object_events/object_event_graphics_info_pointers.h"
                                        << root + "/" + "src/data/object_events/object_event_graphics_info.h"

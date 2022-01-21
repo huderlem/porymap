@@ -941,7 +941,9 @@ bool MainWindow::loadDataStructures() {
                 && project->readMiscellaneousConstants()
                 && project->readSpeciesIconPaths()
                 && project->readWildMonData()
-                && project->readEventScriptLabels();
+                && project->readEventScriptLabels()
+                && project->readObjEventGfxConstants()
+                && project->readSongNames();
 
     return success && loadProjectCombos();
 }
@@ -960,7 +962,7 @@ bool MainWindow::loadProjectCombos() {
     const QSignalBlocker blocker7(ui->comboBox_Type);
 
     ui->comboBox_Song->clear();
-    ui->comboBox_Song->addItems(project->getSongNames());
+    ui->comboBox_Song->addItems(project->songNames);
     ui->comboBox_Location->clear();
     ui->comboBox_Location->addItems(project->mapSectionValueToName.values());
 
@@ -1954,8 +1956,6 @@ void MainWindow::updateSelectedObjects() {
         delete button;
     openScriptButtons.clear();
 
-    QMap<QString, int> event_obj_gfx_constants = editor->project->getEventObjGfxConstants();
-
     QList<EventPropertiesFrame *> frames;
 
     bool inConnectionEnabled = projectConfig.getObjectEventInConnectionEnabled();
@@ -2043,7 +2043,7 @@ void MainWindow::updateSelectedObjects() {
         if (event_type == EventType::Object) {
 
             frame->ui->sprite->setVisible(true);
-            frame->ui->comboBox_sprite->addItems(event_obj_gfx_constants.keys());
+            frame->ui->comboBox_sprite->addItems(editor->project->gfxNames);
             frame->ui->comboBox_sprite->setCurrentIndex(frame->ui->comboBox_sprite->findText(item->event->get("sprite")));
             connect(frame->ui->comboBox_sprite, &QComboBox::currentTextChanged, item, &DraggablePixmapItem::set_sprite);
             connect(frame->ui->comboBox_sprite, &QComboBox::currentTextChanged, this, &MainWindow::markMapEdited);

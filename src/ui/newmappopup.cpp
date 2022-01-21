@@ -116,7 +116,7 @@ void NewMapPopup::setDefaultValues(int groupNum, QString mapSec) {
     ui->comboBox_NewMap_Group->addItems(project->groupNames);
     ui->comboBox_NewMap_Group->setCurrentText(project->groupNames.at(groupNum));
 
-    ui->comboBox_Song->addItems(project->getSongNames());
+    ui->comboBox_Song->addItems(project->songNames);
 
     if (existingLayout) {
         ui->spinBox_NewMap_Width->setValue(project->mapLayouts.value(layoutId)->width.toInt(nullptr, 0));
