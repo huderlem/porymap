@@ -83,7 +83,7 @@ public:
     OrderedJson::object buildSignEventJSON();
     OrderedJson::object buildHiddenItemEventJSON();
     OrderedJson::object buildSecretBaseEventJSON();
-    void setPixmapFromSpritesheet(QImage, int, int, int, bool);
+    void setPixmapFromSpritesheet(QImage, int, int, bool);
     int getPixelX();
     int getPixelY();
     QMap<QString, bool> getExpectedFields();
@@ -99,7 +99,6 @@ public:
     int frame = 0;
     bool hFlip = false;
     bool usingSprite;
-    bool inanimate;
 
     DraggablePixmapItem *pixmapItem = nullptr;
     void setPixmapItem(DraggablePixmapItem *item) { pixmapItem = item; }

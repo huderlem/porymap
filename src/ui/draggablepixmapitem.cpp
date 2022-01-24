@@ -26,10 +26,7 @@ void DraggablePixmapItem::emitPositionChanged() {
 }
 
 void DraggablePixmapItem::updatePixmap() {
-    QList<Event*> objects;
-    objects.append(event);
-    event->pixmap = QPixmap();
-    editor->project->loadEventPixmaps(objects);
+    editor->project->setEventPixmap(event, true);
     this->updatePosition();
     editor->redrawObject(this);
     emit spriteChanged(event->pixmap);

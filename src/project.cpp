@@ -2418,18 +2418,38 @@ QCompleter *Project::getEventScriptLabelCompleter(QStringList additionalScriptLa
     return &eventScriptLabelCompleter;
 }
 
-void Project::loadEventPixmaps(QList<Event*> objects) {
-    bool needs_update = false;
-    for (Event *object : objects) {
-        if (object->pixmap.isNull()) {
-            needs_update = true;
-            break;
-        }
-    }
-    if (!needs_update) {
+void Project::setEventPixmap(Event * event, bool forceLoad) {
+    if (!event || (!event->pixmap.isNull() && !forceLoad))
         return;
-    }
 
+    event->spriteWidth = 16;
+    event->spriteHeight = 16;
+    event->usingSprite = false;
+
+    QString event_type = event->get("event_type");
+    if (event_type == EventType::Object) {
+        QString gfxName = event->get("sprite");
+        EventGraphics * eventGfx = eventGraphicsMap.value(gfxName, nullptr);
+        if (!eventGfx || eventGfx->spritesheet.isNull()) {
+            // No sprite associated with this gfx constant.
+            // Use default sprite instead.
+            event->pixmap = QPixmap(":/images/Entities_16x16.png").copy(0, 0, 16, 16);
+        } else {
+            event->setFrameFromMovement(facingDirections.value(event->get("movement_type")));
+            event->setPixmapFromSpritesheet(eventGfx->spritesheet, eventGfx->spriteWidth, eventGfx->spriteHeight, eventGfx->inanimate);
+        }
+    } else if (event_type == EventType::Warp) {
+        event->pixmap = QPixmap(":/images/Entities_16x16.png").copy(16, 0, 16, 16);
+    } else if (event_type == EventType::Trigger || event_type == EventType::WeatherTrigger) {
+        event->pixmap = QPixmap(":/images/Entities_16x16.png").copy(32, 0, 16, 16);
+    } else if (event_type == EventType::Sign || event_type == EventType::HiddenItem || event_type == EventType::SecretBase) {
+        event->pixmap = QPixmap(":/images/Entities_16x16.png").copy(48, 0, 16, 16);
+    } else if (event_type == EventType::HealLocation) {
+        event->pixmap = QPixmap(":/images/Entities_16x16.png").copy(64, 0, 16, 16);
+    }
+}
+
+bool Project::readEventGraphics() {
     fileWatcher.addPaths(QStringList() << root + "/" + "src/data/object_events/object_event_graphics_info_pointers.h"
                                        << root + "/" + "src/data/object_events/object_event_graphics_info.h"
                                        << root + "/" + "src/data/object_events/object_event_pic_tables.h"
@@ -2437,63 +2457,50 @@ void Project::loadEventPixmaps(QList<Event*> objects) {
 
     QMap<QString, QString> pointerHash = parser.readNamedIndexCArray("src/data/object_events/object_event_graphics_info_pointers.h", "gObjectEventGraphicsInfoPointers");
 
-    for (Event *object : objects) {
-        if (!object->pixmap.isNull()) {
-            continue;
-        }
+    qDeleteAll(eventGraphicsMap);
+    eventGraphicsMap.clear();
+    for (QString gfxName : this->gfxNames) {
+        EventGraphics * eventGraphics = new EventGraphics;
 
-        object->spriteWidth = 16;
-        object->spriteHeight = 16;
-        object->usingSprite = false;
-        object->inanimate = true;
-        QString event_type = object->get("event_type");
-        if (event_type == EventType::Object) {
-            object->pixmap = QPixmap(":/images/Entities_16x16.png").copy(0, 0, 16, 16);
-        } else if (event_type == EventType::Warp) {
-            object->pixmap = QPixmap(":/images/Entities_16x16.png").copy(16, 0, 16, 16);
-        } else if (event_type == EventType::Trigger || event_type == EventType::WeatherTrigger) {
-            object->pixmap = QPixmap(":/images/Entities_16x16.png").copy(32, 0, 16, 16);
-        } else if (event_type == EventType::Sign || event_type == EventType::HiddenItem || event_type == EventType::SecretBase) {
-            object->pixmap = QPixmap(":/images/Entities_16x16.png").copy(48, 0, 16, 16);
-        } else if (event_type == EventType::HealLocation) {
-            object->pixmap = QPixmap(":/images/Entities_16x16.png").copy(64, 0, 16, 16);
-        }
+        QString info_label = pointerHash[gfxName].replace("&", "");
+        QStringList gfx_info = parser.readCArray("src/data/object_events/object_event_graphics_info.h", info_label);
 
-        if (event_type == EventType::Object) {
-            QString info_label = pointerHash[object->get("sprite")].replace("&", "");
-            QStringList gfx_info = parser.readCArray("src/data/object_events/object_event_graphics_info.h", info_label);
-            object->inanimate = (gfx_info.value(8) == "TRUE");
-            QString pic_label = gfx_info.value(14);
-            QString dimensions_label = gfx_info.value(11);
-            QString subsprites_label = gfx_info.value(12);
-            QString gfx_label = parser.readCArray("src/data/object_events/object_event_pic_tables.h", pic_label).value(0);
-            gfx_label = gfx_label.section(QRegularExpression("[\\(\\)]"), 1, 1);
-            QString path = parser.readCIncbin("src/data/object_events/object_event_graphics.h", gfx_label);
+        eventGraphics->inanimate = (gfx_info.value(8) == "TRUE");
+        QString pic_label = gfx_info.value(14);
+        QString dimensions_label = gfx_info.value(11);
+        QString subsprites_label = gfx_info.value(12);
 
-            if (!path.isNull()) {
-                path = fixGraphicPath(path);
-                QImage spritesheet(root + "/" + path);
-                if (!spritesheet.isNull()) {
-                    // Infer the sprite dimensions from the OAM labels.
-                    int spriteWidth, spriteHeight;
-                    QRegularExpression re("\\S+_(\\d+)x(\\d+)");
-                    QRegularExpressionMatch dimensionMatch = re.match(dimensions_label);
-                    QRegularExpressionMatch oamTablesMatch = re.match(subsprites_label);
-                    if (oamTablesMatch.hasMatch()) {
-                        spriteWidth = oamTablesMatch.captured(1).toInt();
-                        spriteHeight = oamTablesMatch.captured(2).toInt();
-                    } else if (dimensionMatch.hasMatch()) {
-                        spriteWidth = dimensionMatch.captured(1).toInt();
-                        spriteHeight = dimensionMatch.captured(2).toInt();
-                    } else {
-                        spriteWidth = spritesheet.width();
-                        spriteHeight = spritesheet.height();
-                    }
-                    object->setPixmapFromSpritesheet(spritesheet, spriteWidth, spriteHeight, object->frame, object->hFlip);
+        QString gfx_label = parser.readCArray("src/data/object_events/object_event_pic_tables.h", pic_label).value(0);
+        gfx_label = gfx_label.section(QRegularExpression("[\\(\\)]"), 1, 1);
+        QString path = parser.readCIncbin("src/data/object_events/object_event_graphics.h", gfx_label);
+
+        if (!path.isNull()) {
+            path = fixGraphicPath(path);
+            eventGraphics->spritesheet = QImage(root + "/" + path);
+            if (!eventGraphics->spritesheet.isNull()) {
+                // Infer the sprite dimensions from the OAM labels.
+                QRegularExpression re("\\S+_(\\d+)x(\\d+)");
+                QRegularExpressionMatch dimensionMatch = re.match(dimensions_label);
+                QRegularExpressionMatch oamTablesMatch = re.match(subsprites_label);
+                if (oamTablesMatch.hasMatch()) {
+                    eventGraphics->spriteWidth = oamTablesMatch.captured(1).toInt();
+                    eventGraphics->spriteHeight = oamTablesMatch.captured(2).toInt();
+                } else if (dimensionMatch.hasMatch()) {
+                    eventGraphics->spriteWidth = dimensionMatch.captured(1).toInt();
+                    eventGraphics->spriteHeight = dimensionMatch.captured(2).toInt();
+                } else {
+                    eventGraphics->spriteWidth = eventGraphics->spritesheet.width();
+                    eventGraphics->spriteHeight = eventGraphics->spritesheet.height();
                 }
             }
+        } else {
+            eventGraphics->spritesheet = QImage();
+            eventGraphics->spriteWidth = 16;
+            eventGraphics->spriteHeight = 16;
         }
+        eventGraphicsMap.insert(gfxName, eventGraphics);
     }
+    return true;
 }
 
 bool Project::readSpeciesIconPaths() {

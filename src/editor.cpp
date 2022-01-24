@@ -1498,10 +1498,7 @@ void Editor::displayMapEvents() {
 
     QList<Event *> events = map->getAllEvents();
     for (Event *event : events) {
-        event->setFrameFromMovement(project->facingDirections.value(event->get("movement_type")));
-    }
-    project->loadEventPixmaps(events);
-    for (Event *event : events) {
+        project->setEventPixmap(event);
         addMapEvent(event);
     }
     //objects_group->setFiltersChildEvents(false);
@@ -1971,7 +1968,7 @@ QList<DraggablePixmapItem *> Editor::getObjects() {
 }
 
 void Editor::redrawObject(DraggablePixmapItem *item) {
-    if (item) {
+    if (item && item->event && !item->event->pixmap.isNull()) {
         qreal opacity = item->event->usingSprite ? 1.0 : 0.7;
         item->setOpacity(opacity);
         item->setPixmap(item->event->pixmap.copy(item->event->frame * item->event->spriteWidth % item->event->pixmap.width(), 0, item->event->spriteWidth, item->event->spriteHeight));

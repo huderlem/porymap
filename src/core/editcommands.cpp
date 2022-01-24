@@ -322,7 +322,7 @@ void EventCreate::redo() {
 
     map->addEvent(event);
 
-    editor->project->loadEventPixmaps(map->getAllEvents());
+    editor->project->setEventPixmap(event);
     editor->addMapEvent(event);
 
     // select this event
@@ -388,8 +388,7 @@ void EventDelete::redo() {
 void EventDelete::undo() {
     for (Event *event : selectedEvents) {
         map->addEvent(event);
-
-        editor->project->loadEventPixmaps(map->getAllEvents());
+        editor->project->setEventPixmap(event);
         editor->addMapEvent(event);
     }
 
@@ -431,11 +430,7 @@ void EventDuplicate::redo() {
 
     for (Event *event : selectedEvents) {
         map->addEvent(event);
-    }
-
-    editor->project->loadEventPixmaps(map->getAllEvents());
-
-    for (Event *event : selectedEvents) {
+        editor->project->setEventPixmap(event);
         editor->addMapEvent(event);
     }
 

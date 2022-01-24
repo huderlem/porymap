@@ -368,8 +368,8 @@ QPixmap MapImageExporter::getFormattedMapPixmap(Map *map, bool ignoreBorder) {
     // draw events
     QPainter eventPainter(&pixmap);
     QList<Event*> events = map->getAllEvents();
-    editor->project->loadEventPixmaps(events);
     for (Event *event : events) {
+        editor->project->setEventPixmap(event);
         QString group = event->get("event_group_type");
         if ((showObjects && group == "object_event_group")
          || (showWarps && group == "warp_event_group")
