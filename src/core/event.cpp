@@ -26,8 +26,7 @@ Event::Event(const Event& toCopy) :
     spriteHeight(toCopy.spriteHeight),
     frame(toCopy.frame),
     hFlip(toCopy.hFlip),
-    usingSprite(toCopy.usingSprite),
-    inanimate(toCopy.inanimate)
+    usingSprite(toCopy.usingSprite)
 {  }
 
 Event::Event(QJsonObject obj, QString type) : Event()
@@ -410,13 +409,14 @@ OrderedJson::object Event::buildSecretBaseEventJSON()
     return secretBaseObj;
 }
 
-void Event::setPixmapFromSpritesheet(QImage spritesheet, int spriteWidth, int spriteHeight, int frame, bool hFlip)
+void Event::setPixmapFromSpritesheet(QImage spritesheet, int spriteWidth, int spriteHeight, bool inanimate)
 {
-    // Set first palette color fully transparent.
+    int frame = inanimate ? 0 : this->frame;
     QImage img = spritesheet.copy(frame * spriteWidth % spritesheet.width(), 0, spriteWidth, spriteHeight);
-    if (hFlip) {
+    if (this->hFlip && !inanimate) {
         img = img.transformed(QTransform().scale(-1, 1));
     }
+    // Set first palette color fully transparent.
     img.setColor(0, qRgba(0, 0, 0, 0));
     pixmap = QPixmap::fromImage(img);
     this->spriteWidth = spriteWidth;
@@ -428,8 +428,6 @@ void Event::setFrameFromMovement(QString facingDir) {
     // defaults
     this->frame = 0;
     this->hFlip = false;
-    if (this->inanimate)
-        return;
     if (facingDir == "DIR_NORTH") {
         this->frame = 1;
         this->hFlip = false;

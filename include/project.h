@@ -18,6 +18,14 @@
 #include <QVariant>
 #include <QFileSystemWatcher>
 
+struct EventGraphics
+{
+    QImage spritesheet;
+    int spriteWidth;
+    int spriteHeight;
+    bool inanimate;
+};
+
 static QString NONE_MAP_CONSTANT = "MAP_NONE";
 static QString NONE_MAP_NAME = "None";
 
@@ -51,6 +59,7 @@ public:
     QMap<QString, QString> mapSecToMapHoverName;
     QMap<QString, int> mapSectionNameToValue;
     QMap<int, QString> mapSectionValueToName;
+    QMap<QString, EventGraphics*> eventGraphicsMap;
     QStringList gfxNames;
     QStringList songNames;
     QStringList itemNames;
@@ -176,8 +185,10 @@ public:
     bool readEventScriptLabels();
     bool readObjEventGfxConstants();
     bool readSongNames();
+    bool readEventGraphics();
 
-    void loadEventPixmaps(QList<Event*> objects);
+    void setEventPixmap(Event * event, bool forceLoad = false);
+
     QString fixPalettePath(QString path);
     QString fixGraphicPath(QString path);
 

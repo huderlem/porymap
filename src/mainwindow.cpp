@@ -943,6 +943,7 @@ bool MainWindow::loadDataStructures() {
                 && project->readWildMonData()
                 && project->readEventScriptLabels()
                 && project->readObjEventGfxConstants()
+                && project->readEventGraphics()
                 && project->readSongNames();
 
     return success && loadProjectCombos();
@@ -2171,8 +2172,8 @@ void MainWindow::updateSelectedObjects() {
                     combo->addItem(value);
                 }
                 connect(combo, static_cast<void (QComboBox::*)(const QString &)>(&QComboBox::currentTextChanged),
-                        this, [this, item](QString value){
-                            item->event->setFrameFromMovement(editor->project->facingDirections.value(value));
+                        this, [item](QString value){
+                            item->event->put("movement_type", value);
                             item->updatePixmap();
                 });
                 combo->addItems(editor->project->movementTypes);
