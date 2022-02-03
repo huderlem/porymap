@@ -758,11 +758,7 @@ void TilesetEditor::on_actionChange_Metatiles_Count_triggered()
         }
         while (this->primaryTileset->metatiles.length() < numPrimaryMetatiles) {
             Tile tile(0, false, false, 0);
-            Metatile *metatile = new Metatile;
-            metatile->behavior = 0;
-            metatile->layerType = 0;
-            metatile->encounterType = 0;
-            metatile->terrainType = 0;
+            Metatile *metatile = new Metatile();
             for (int i = 0; i < numTiles; i++) {
                 metatile->tiles.append(tile);
             }
@@ -773,11 +769,7 @@ void TilesetEditor::on_actionChange_Metatiles_Count_triggered()
         }
         while (this->secondaryTileset->metatiles.length() < numSecondaryMetatiles) {
             Tile tile(0, false, false, 0);
-            Metatile *metatile = new Metatile;
-            metatile->behavior = 0;
-            metatile->layerType = 0;
-            metatile->encounterType = 0;
-            metatile->terrainType = 0;
+            Metatile *metatile = new Metatile();
             for (int i = 0; i < numTiles; i++) {
                 metatile->tiles.append(tile);
             }

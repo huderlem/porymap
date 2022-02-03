@@ -1313,11 +1313,6 @@ void MainWindow::on_actionNew_Tileset_triggered() {
                     tile.tileId = ((i % 2) == 1) ? 1 : 2;
                 mt->tiles.append(tile);
             }
-            mt->behavior = 0;
-            mt->layerType = 0;
-            mt->encounterType = 0;
-            mt->terrainType = 0;
-
             newSet.metatiles.append(mt);
         }
         for(int i = 0; i < 16; ++i) {
