@@ -24,7 +24,6 @@ QList<Metatile*> MetatileParser::parse(QString filepath, bool *error, bool prima
 
     int projIdOffset = in.length() - 4;
     int metatileSize = 16;
-    int attrSize;
     BaseGameVersion version;
     if (in.at(projIdOffset + 0) == 'R'
      && in.at(projIdOffset + 1) == 'S'
@@ -32,19 +31,18 @@ QList<Metatile*> MetatileParser::parse(QString filepath, bool *error, bool prima
      && in.at(projIdOffset + 3) == ' ') {
         // ruby and emerald are handled equally here.
         version = BaseGameVersion::pokeemerald;
-        attrSize = 2;
     } else if (in.at(projIdOffset + 0) == 'F'
             && in.at(projIdOffset + 1) == 'R'
             && in.at(projIdOffset + 2) == 'L'
             && in.at(projIdOffset + 3) == 'G') {
         version = BaseGameVersion::pokefirered;
-        attrSize = 4;
     } else {
         *error = true;
         logError(QString("Detected unsupported game type from .bvd file. Last 4 bytes of file must be 'RSE ' or 'FRLG'."));
         return { };
     }
 
+    int attrSize = Metatile::getAttributesSize(version);
     int maxMetatiles = primaryTileset ? Project::getNumMetatilesPrimary() : Project::getNumMetatilesTotal() - Project::getNumMetatilesPrimary();
     int numMetatiles = static_cast<unsigned char>(in.at(0)) |
                                 (static_cast<unsigned char>(in.at(1)) << 8) |
@@ -82,23 +80,10 @@ QList<Metatile*> MetatileParser::parse(QString filepath, bool *error, bool prima
         }
 
         int attrOffset = 4 + (numMetatiles * metatileSize) + (i * attrSize);
-        if (version == BaseGameVersion::pokefirered) {
-            int value = static_cast<unsigned char>(in.at(attrOffset)) |
-                        (static_cast<unsigned char>(in.at(attrOffset + 1)) << 8) |
-                        (static_cast<unsigned char>(in.at(attrOffset + 2)) << 16) |
-                        (static_cast<unsigned char>(in.at(attrOffset + 3)) << 24);
-            metatile->behavior = value & 0x1FF;
-            metatile->terrainType = (value & 0x3E00) >> 9;
-            metatile->encounterType = (value & 0x7000000) >> 24;
-            metatile->layerType = (value & 0x60000000) >> 29;
-        } else {
-            int value = static_cast<unsigned char>(in.at(attrOffset)) |
-                        (static_cast<unsigned char>(in.at(attrOffset + 1)) << 8);
-            metatile->behavior = value & 0xFF;
-            metatile->layerType = (value & 0xF000) >> 12;
-            metatile->encounterType = 0;
-            metatile->terrainType = 0;
-        }
+        uint32_t attributes = 0;
+        for (int j = 0; j < attrSize; j++)
+            attributes |= static_cast<unsigned char>(in.at(attrOffset + j)) << (8 * j);
+        metatile->setAttributes(attributes, version);
         metatile->tiles = tiles;
         metatiles.append(metatile);
     }

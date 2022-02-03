@@ -3,6 +3,7 @@
 #define METATILE_H
 
 #include "tile.h"
+#include "config.h"
 #include <QImage>
 #include <QPoint>
 #include <QString>
@@ -42,10 +43,15 @@ public:
     uint8_t layerType;
     uint8_t encounterType; // FRLG only
     uint8_t terrainType;   // FRLG only
+    uint32_t unusedAttributes;
     QString label;
+
+    void setAttributes(uint32_t data, BaseGameVersion version);
+    uint32_t getAttributes(BaseGameVersion version);
 
     static int getIndexInTileset(int);
     static QPoint coordFromPixmapCoord(const QPointF &pixelCoord);
+    static int getAttributesSize(BaseGameVersion version);
 };
 
 #endif // METATILE_H
