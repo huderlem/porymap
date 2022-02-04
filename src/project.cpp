@@ -1054,13 +1054,9 @@ void Project::saveTilesetMetatiles(Tileset *tileset) {
         for (Metatile *metatile : tileset->metatiles) {
             int numTiles = projectConfig.getTripleLayerMetatilesEnabled() ? 12 : 8;
             for (int i = 0; i < numTiles; i++) {
-                Tile tile = metatile->tiles.at(i);
-                uint16_t value = static_cast<uint16_t>((tile.tileId & 0x3ff)
-                                                    | ((tile.xflip & 1) << 10)
-                                                    | ((tile.yflip & 1) << 11)
-                                                    | ((tile.palette & 0xf) << 12));
-                data.append(static_cast<char>(value & 0xff));
-                data.append(static_cast<char>((value >> 8) & 0xff));
+                uint16_t tile = metatile->tiles.at(i).rawValue();
+                data.append(static_cast<char>(tile));
+                data.append(static_cast<char>(tile >> 8));
             }
         }
         metatiles_file.write(data);
@@ -1562,13 +1558,8 @@ void Project::loadTilesetMetatiles(Tileset* tileset) {
             Metatile *metatile = new Metatile;
             int index = i * (2 * 4 * num_layers);
             for (int j = 0; j < 4 * num_layers; j++) {
-                uint16_t word = data[index++] & 0xff;
-                word += (data[index++] & 0xff) << 8;
-                Tile tile;
-                tile.tileId = word & 0x3ff;
-                tile.xflip = (word >> 10) & 1;
-                tile.yflip = (word >> 11) & 1;
-                tile.palette = (word >> 12) & 0xf;
+                Tile tile(static_cast<unsigned char>(data[index++])
+                       | (static_cast<unsigned char>(data[index++]) << 8));
                 metatile->tiles.append(tile);
             }
             metatiles.append(metatile);
