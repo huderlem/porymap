@@ -1558,9 +1558,9 @@ void Project::loadTilesetMetatiles(Tileset* tileset) {
             Metatile *metatile = new Metatile;
             int index = i * (2 * 4 * num_layers);
             for (int j = 0; j < 4 * num_layers; j++) {
-                Tile tile(static_cast<unsigned char>(data[index++])
-                       | (static_cast<unsigned char>(data[index++]) << 8));
-                metatile->tiles.append(tile);
+                uint16_t tileRaw = static_cast<unsigned char>(data[index++]);
+                tileRaw |= static_cast<unsigned char>(data[index++]) << 8;
+                metatile->tiles.append(Tile(tileRaw));
             }
             metatiles.append(metatile);
         }
