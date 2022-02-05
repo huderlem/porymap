@@ -3,6 +3,12 @@
 #include "project.h"
 #include "config.h"
 
+QString EventGroup::Object = "object_event_group";
+QString EventGroup::Warp = "warp_event_group";
+QString EventGroup::Heal = "heal_event_group";
+QString EventGroup::Coord = "coord_event_group";
+QString EventGroup::Bg = "bg_event_group";
+
 QString EventType::Object = "event_object";
 QString EventType::Warp = "event_warp";
 QString EventType::Trigger = "event_trigger";
@@ -10,7 +16,18 @@ QString EventType::WeatherTrigger = "event_weather_trigger";
 QString EventType::Sign = "event_sign";
 QString EventType::HiddenItem = "event_hidden_item";
 QString EventType::SecretBase = "event_secret_base";
-QString EventType::HealLocation = "event_heal_location";
+QString EventType::HealLocation = "event_healspot";
+
+const QMap<QString, QString> EventTypeTable = {
+    {EventType::Object,         EventGroup::Object},
+    {EventType::Warp,           EventGroup::Warp},
+    {EventType::Trigger,        EventGroup::Coord},
+    {EventType::WeatherTrigger, EventGroup::Coord},
+    {EventType::Sign,           EventGroup::Bg},
+    {EventType::HiddenItem,     EventGroup::Bg},
+    {EventType::SecretBase,     EventGroup::Bg},
+    {EventType::HealLocation,   EventGroup::Heal},
+};
 
 Event::Event() :
     spriteWidth(16),
@@ -68,7 +85,7 @@ Event* Event::createNewEvent(QString event_type, QString map_name, Project *proj
 Event* Event::createNewObjectEvent(Project *project)
 {
     Event *event = new Event;
-    event->put("event_group_type", "object_event_group");
+    event->put("event_group_type", EventGroup::Object);
     event->put("event_type", EventType::Object);
     event->put("sprite", project->gfxNames.first());
     event->put("movement_type", project->movementTypes.first());
@@ -89,7 +106,7 @@ Event* Event::createNewObjectEvent(Project *project)
 Event* Event::createNewWarpEvent(QString map_name)
 {
     Event *event = new Event;
-    event->put("event_group_type", "warp_event_group");
+    event->put("event_group_type", EventGroup::Warp);
     event->put("event_type", EventType::Warp);
     event->put("destination_warp", 0);
     event->put("destination_map_name", map_name);
@@ -100,7 +117,7 @@ Event* Event::createNewWarpEvent(QString map_name)
 Event* Event::createNewHealLocationEvent(QString map_name)
 {
     Event *event = new Event;
-    event->put("event_group_type", "heal_event_group");
+    event->put("event_group_type", EventGroup::Heal);
     event->put("event_type", EventType::HealLocation);
     event->put("loc_name", QString(Map::mapConstantFromName(map_name)).remove(0,4));
     event->put("id_name", map_name.replace(QRegularExpression("([a-z])([A-Z])"), "\\1_\\2").toUpper());
@@ -115,7 +132,7 @@ Event* Event::createNewHealLocationEvent(QString map_name)
 Event* Event::createNewTriggerEvent(Project *project)
 {
     Event *event = new Event;
-    event->put("event_group_type", "coord_event_group");
+    event->put("event_group_type", EventGroup::Coord);
     event->put("event_type", EventType::Trigger);
     event->put("script_label", "NULL");
     event->put("script_var", project->varNames.first());
@@ -127,7 +144,7 @@ Event* Event::createNewTriggerEvent(Project *project)
 Event* Event::createNewWeatherTriggerEvent(Project *project)
 {
     Event *event = new Event;
-    event->put("event_group_type", "coord_event_group");
+    event->put("event_group_type", EventGroup::Coord);
     event->put("event_type", EventType::WeatherTrigger);
     event->put("weather", project->coordEventWeatherNames.first());
     event->put("elevation", 0);
@@ -137,7 +154,7 @@ Event* Event::createNewWeatherTriggerEvent(Project *project)
 Event* Event::createNewSignEvent(Project *project)
 {
     Event *event = new Event;
-    event->put("event_group_type", "bg_event_group");
+    event->put("event_group_type", EventGroup::Bg);
     event->put("event_type", EventType::Sign);
     event->put("player_facing_direction", project->bgEventFacingDirections.first());
     event->put("script_label", "NULL");
@@ -148,7 +165,7 @@ Event* Event::createNewSignEvent(Project *project)
 Event* Event::createNewHiddenItemEvent(Project *project)
 {
     Event *event = new Event;
-    event->put("event_group_type", "bg_event_group");
+    event->put("event_group_type", EventGroup::Bg);
     event->put("event_type", EventType::HiddenItem);
     event->put("item", project->itemNames.first());
     event->put("flag", project->flagNames.first());
@@ -165,7 +182,7 @@ Event* Event::createNewHiddenItemEvent(Project *project)
 Event* Event::createNewSecretBaseEvent(Project *project)
 {
     Event *event = new Event;
-    event->put("event_group_type", "bg_event_group");
+    event->put("event_group_type", EventGroup::Bg);
     event->put("event_type", EventType::SecretBase);
     event->put("secret_base_id", project->secretBaseIds.first());
     event->put("elevation", 0);
@@ -441,4 +458,12 @@ void Event::setFrameFromMovement(QString facingDir) {
         this->frame = 2;
         this->hFlip = true;
     }
+}
+
+bool Event::isValidType(QString event_type) {
+    return EventTypeTable.contains(event_type);
+}
+
+QString Event::typeToGroup(QString event_type) {
+    return EventTypeTable.value(event_type, QString());
 }
