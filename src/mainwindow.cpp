@@ -728,7 +728,7 @@ void MainWindow::openWarpMap(QString map_name, QString warp_num) {
         return;
     }
 
-    QList<Event*> warp_events = editor->map->events["warp_event_group"];
+    QList<Event*> warp_events = editor->map->events[EventGroup::Warp];
     if (warp_events.length() > warpNum) {
         Event *warp_event = warp_events.at(warpNum);
         for (DraggablePixmapItem *item : editor->getObjects()) {
@@ -2323,27 +2323,27 @@ void MainWindow::updateSelectedObjects() {
     {
         QString event_group_type = events[0]->event->get("event_group_type");
 
-        if (event_group_type == "object_event_group") {
+        if (event_group_type == EventGroup::Object) {
             scrollTarget = ui->scrollArea_Objects;
             target = ui->scrollAreaWidgetContents_Objects;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Objects);
         }
-        else if (event_group_type == "warp_event_group") {
+        else if (event_group_type == EventGroup::Warp) {
             scrollTarget = ui->scrollArea_Warps;
             target = ui->scrollAreaWidgetContents_Warps;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Warps);
         }
-        else if (event_group_type == "coord_event_group") {
+        else if (event_group_type == EventGroup::Coord) {
             scrollTarget = ui->scrollArea_Triggers;
             target = ui->scrollAreaWidgetContents_Triggers;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Triggers);
         }
-        else if (event_group_type == "bg_event_group") {
+        else if (event_group_type == EventGroup::Bg) {
             scrollTarget = ui->scrollArea_BGs;
             target = ui->scrollAreaWidgetContents_BGs;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_BGs);
         }
-        else if (event_group_type == "heal_event_group") {
+        else if (event_group_type == EventGroup::Heal) {
             scrollTarget = ui->scrollArea_Healspots;
             target = ui->scrollAreaWidgetContents_Healspots;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Healspots);
@@ -2400,23 +2400,23 @@ QString MainWindow::getEventGroupFromTabWidget(QWidget *tab)
     QString ret = "";
     if (tab == eventTabObjectWidget)
     {
-        ret = "object_event_group";
+        ret = EventGroup::Object;
     }
     else if (tab == eventTabWarpWidget)
     {
-        ret = "warp_event_group";
+        ret = EventGroup::Warp;
     }
     else if (tab == eventTabTriggerWidget)
     {
-        ret = "coord_event_group";
+        ret = EventGroup::Coord;
     }
     else if (tab == eventTabBGWidget)
     {
-        ret = "bg_event_group";
+        ret = EventGroup::Bg;
     }
     else if (tab == eventTabHealspotWidget)
     {
-        ret = "heal_event_group";
+        ret = EventGroup::Heal;
     }
     return ret;
 }
@@ -2426,23 +2426,23 @@ void MainWindow::eventTabChanged(int index) {
         QString group = getEventGroupFromTabWidget(ui->tabWidget_EventType->widget(index));
         DraggablePixmapItem *selectedEvent = nullptr;
 
-        if (group == "object_event_group") {
+        if (group == EventGroup::Object) {
             selectedEvent = selectedObject;
             ui->newEventToolButton->setDefaultAction(ui->newEventToolButton->newObjectAction);
         }
-        else if (group == "warp_event_group") {
+        else if (group == EventGroup::Warp) {
             selectedEvent = selectedWarp;
             ui->newEventToolButton->setDefaultAction(ui->newEventToolButton->newWarpAction);
         }
-        else if (group == "coord_event_group") {
+        else if (group == EventGroup::Coord) {
             selectedEvent = selectedTrigger;
             ui->newEventToolButton->setDefaultAction(ui->newEventToolButton->newTriggerAction);
         }
-        else if (group == "bg_event_group") {
+        else if (group == EventGroup::Bg) {
             selectedEvent = selectedBG;
             ui->newEventToolButton->setDefaultAction(ui->newEventToolButton->newSignAction);
         }
-        else if (group == "heal_event_group") {
+        else if (group == EventGroup::Heal) {
             selectedEvent = selectedHealspot;
         }
 
@@ -2468,7 +2468,7 @@ void MainWindow::eventTabChanged(int index) {
 void MainWindow::selectedEventIndexChanged(int index)
 {
     QString group = getEventGroupFromTabWidget(ui->tabWidget_EventType->currentWidget());
-    int event_offs = group == "warp_event_group" ? 0 : 1;
+    int event_offs = group == EventGroup::Warp ? 0 : 1;
     Event *event = editor->map->events.value(group).at(index - event_offs);
     DraggablePixmapItem *selectedEvent = nullptr;
     for (QGraphicsItem *child : editor->events_group->childItems()) {
@@ -2502,7 +2502,7 @@ void MainWindow::on_toolButton_deleteObject_clicked() {
             int numDeleted = 0;
             for (DraggablePixmapItem *item : *editor->selected_events) {
                 QString event_group = item->event->get("event_group_type");
-                if (event_group != "heal_event_group") {
+                if (event_group != EventGroup::Heal) {
                     // Get the index for the event that should be selected after this event has been deleted.
                     // If it's at the end of the list, select the previous event, otherwise select the next one.
                     // Don't bother getting the event to select if there are still more events to delete
