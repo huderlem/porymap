@@ -18,6 +18,10 @@ void NewEventToolButton::init()
     this->newObjectAction->setIcon(QIcon(":/icons/add.ico"));
     connect(this->newObjectAction, &QAction::triggered, this, &NewEventToolButton::newObject);
 
+    this->newCloneObjectAction = new QAction("New Object Clone", this);
+    this->newCloneObjectAction->setIcon(QIcon(":/icons/add.ico"));
+    connect(this->newCloneObjectAction, &QAction::triggered, this, &NewEventToolButton::newCloneObject);
+
     this->newWarpAction = new QAction("New Warp", this);
     this->newWarpAction->setIcon(QIcon(":/icons/add.ico"));
     connect(this->newWarpAction, &QAction::triggered, this, &NewEventToolButton::newWarp);
@@ -50,6 +54,7 @@ void NewEventToolButton::init()
 
     QMenu *alignMenu = new QMenu();
     alignMenu->addAction(this->newObjectAction);
+    alignMenu->addAction(this->newCloneObjectAction);
     alignMenu->addAction(this->newWarpAction);
     //alignMenu->addAction(this->newHealLocationAction);
     alignMenu->addAction(this->newTriggerAction);
@@ -69,6 +74,12 @@ QString NewEventToolButton::getSelectedEventType()
 void NewEventToolButton::newObject()
 {
     this->selectedEventType = EventType::Object;
+    emit newEventAdded(this->selectedEventType);
+}
+
+void NewEventToolButton::newCloneObject()
+{
+    this->selectedEventType = EventType::CloneObject;
     emit newEventAdded(this->selectedEventType);
 }
 

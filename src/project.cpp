@@ -213,26 +213,51 @@ bool Project::loadMapData(Map* map) {
     // Events
     map->events[EventGroup::Object].clear();
     QJsonArray objectEventsArr = mapObj["object_events"].toArray();
+    bool hasCloneObjects = projectConfig.getEventCloneObjectEnabled();
     for (int i = 0; i < objectEventsArr.size(); i++) {
         QJsonObject event = objectEventsArr[i].toObject();
-        Event *object = new Event(event, EventType::Object);
-        object->put("map_name", map->name);
-        object->put("sprite", event["graphics_id"].toString());
-        if (projectConfig.getObjectEventInConnectionEnabled()) {
-            object->put("in_connection", event["in_connection"].toBool());
+        // If clone objects are not enabled then no type field is present
+        QString type = hasCloneObjects ? event["type"].toString() : "object";
+        if (type == "object") {
+            Event *object = new Event(event, EventType::Object);
+            object->put("map_name", map->name);
+            object->put("sprite", event["graphics_id"].toString());
+            object->put("x", QString::number(event["x"].toInt()));
+            object->put("y", QString::number(event["y"].toInt()));
+            object->put("elevation", QString::number(event["elevation"].toInt()));
+            object->put("movement_type", event["movement_type"].toString());
+            object->put("radius_x", QString::number(event["movement_range_x"].toInt()));
+            object->put("radius_y", QString::number(event["movement_range_y"].toInt()));
+            object->put("trainer_type", event["trainer_type"].toString());
+            object->put("sight_radius_tree_id", event["trainer_sight_or_berry_tree_id"].toString());
+            object->put("script_label", event["script"].toString());
+            object->put("event_flag", event["flag"].toString());
+            object->put("event_group_type", EventGroup::Object);
+            map->events[EventGroup::Object].append(object);
+        } else if (type == "clone") {
+            Event *object = new Event(event, EventType::CloneObject);
+            object->put("map_name", map->name);
+            object->put("sprite", event["graphics_id"].toString());
+            object->put("x", QString::number(event["x"].toInt()));
+            object->put("y", QString::number(event["y"].toInt()));
+            object->put("target_local_id", QString::number(event["target_local_id"].toInt()));
+
+            // Ensure the target map constant is valid before adding it to the events.
+            QString mapConstant = event["target_map"].toString();
+            if (mapConstantsToMapNames.contains(mapConstant)) {
+                object->put("target_map", mapConstantsToMapNames.value(mapConstant));
+                object->put("event_group_type", EventGroup::Object);
+                map->events[EventGroup::Object].append(object);
+            } else if (mapConstant == NONE_MAP_CONSTANT) {
+                object->put("target_map", NONE_MAP_NAME);
+                object->put("event_group_type", EventGroup::Object);
+                map->events[EventGroup::Object].append(object);
+            } else {
+                logError(QString("Destination map constant '%1' is invalid").arg(mapConstant));
+            }
+        } else {
+            logError(QString("Map %1 object_event %2 has invalid type '%3'. Must be 'object' or 'clone'.").arg(map->name).arg(i).arg(type));
         }
-        object->put("x", QString::number(event["x"].toInt()));
-        object->put("y", QString::number(event["y"].toInt()));
-        object->put("elevation", QString::number(event["elevation"].toInt()));
-        object->put("movement_type", event["movement_type"].toString());
-        object->put("radius_x", QString::number(event["movement_range_x"].toInt()));
-        object->put("radius_y", QString::number(event["movement_range_y"].toInt()));
-        object->put("trainer_type", event["trainer_type"].toString());
-        object->put("sight_radius_tree_id", event["trainer_sight_or_berry_tree_id"].toString());
-        object->put("script_label", event["script"].toString());
-        object->put("event_flag", event["flag"].toString());
-        object->put("event_group_type", EventGroup::Object);
-        map->events[EventGroup::Object].append(object);
     }
 
     map->events[EventGroup::Warp].clear();
@@ -1334,9 +1359,15 @@ void Project::saveMap(Map *map) {
         // Object events
         OrderedJson::array objectEventsArr;
         for (int i = 0; i < map->events[EventGroup::Object].length(); i++) {
-            Event *object_event = map->events[EventGroup::Object].value(i);
-            OrderedJson::object eventObj = object_event->buildObjectEventJSON();
-            objectEventsArr.push_back(eventObj);
+            Event *event = map->events[EventGroup::Object].value(i);
+            QString event_type = event->get("event_type");
+            OrderedJson::object jsonObj;
+            if (event_type == EventType::Object) {
+                jsonObj = event->buildObjectEventJSON();
+            } else if (event_type == EventType::CloneObject) {
+                jsonObj = event->buildCloneObjectEventJSON(mapNamesToMapConstants);
+            }
+            objectEventsArr.push_back(jsonObj);
         }
         mapObj["object_events"] = objectEventsArr;
 
@@ -2248,9 +2279,8 @@ bool Project::readObjEventGfxConstants() {
     QStringList objEventGfxPrefixes("\\bOBJ_EVENT_GFX_");
     QString filename = "include/constants/event_objects.h";
     fileWatcher.addPath(root + "/" + filename);
-    QMap<QString, int> gfxDefines = parser.readCDefines(filename, objEventGfxPrefixes);
-    this->gfxNames = gfxDefines.keys();
-    if (this->gfxNames.isEmpty()) {
+    this->gfxDefines = parser.readCDefines(filename, objEventGfxPrefixes);
+    if (this->gfxDefines.isEmpty()) {
         logError(QString("Failed to read object event graphics constants from %1.").arg(filename));
         return false;
     }
@@ -2380,25 +2410,48 @@ void Project::setEventPixmap(Event * event, bool forceLoad) {
     event->spriteHeight = 16;
     event->usingSprite = false;
 
-    QString event_type = event->get("event_type");
-    if (event_type == EventType::Object) {
-        QString gfxName = event->get("sprite");
+    QString group_type = event->get("event_group_type");
+    if (group_type == EventGroup::Object) {
+        QString gfxName;
+        QString movement;
+        QString event_type = event->get("event_type");
+        if (event_type == EventType::CloneObject) {
+            // Try to get the targeted object to clone
+            int eventIndex = event->getInt("target_local_id") - 1;
+            Map * clonedMap = getMap(event->get("target_map"));
+            Event * clonedEvent = clonedMap ? clonedMap->events[EventGroup::Object].value(eventIndex, nullptr) : nullptr;
+            if (clonedEvent && clonedEvent->get("event_type") == EventType::Object) {
+                // Get graphics data from cloned object
+                gfxName = clonedEvent->get("sprite");
+                movement = clonedEvent->get("movement_type");
+            } else {
+                // Invalid object specified, use default graphics data (as would be shown in-game)
+                gfxName = gfxDefines.key(0);
+                movement = movementTypes.first();
+            }
+            // Update clone object's sprite text to match target object
+            event->put("sprite", gfxName);
+        } else {
+            // Get graphics data of regular object
+            gfxName = event->get("sprite");
+            movement = event->get("movement_type");
+        }
         EventGraphics * eventGfx = eventGraphicsMap.value(gfxName, nullptr);
         if (!eventGfx || eventGfx->spritesheet.isNull()) {
             // No sprite associated with this gfx constant.
             // Use default sprite instead.
             event->pixmap = QPixmap(":/images/Entities_16x16.png").copy(0, 0, 16, 16);
         } else {
-            event->setFrameFromMovement(facingDirections.value(event->get("movement_type")));
+            event->setFrameFromMovement(facingDirections.value(movement));
             event->setPixmapFromSpritesheet(eventGfx->spritesheet, eventGfx->spriteWidth, eventGfx->spriteHeight, eventGfx->inanimate);
         }
-    } else if (event_type == EventType::Warp) {
+    } else if (group_type == EventGroup::Warp) {
         event->pixmap = QPixmap(":/images/Entities_16x16.png").copy(16, 0, 16, 16);
-    } else if (event_type == EventType::Trigger || event_type == EventType::WeatherTrigger) {
+    } else if (group_type == EventGroup::Coord) {
         event->pixmap = QPixmap(":/images/Entities_16x16.png").copy(32, 0, 16, 16);
-    } else if (event_type == EventType::Sign || event_type == EventType::HiddenItem || event_type == EventType::SecretBase) {
+    } else if (group_type == EventGroup::Bg) {
         event->pixmap = QPixmap(":/images/Entities_16x16.png").copy(48, 0, 16, 16);
-    } else if (event_type == EventType::HealLocation) {
+    } else if (group_type == EventGroup::Heal) {
         event->pixmap = QPixmap(":/images/Entities_16x16.png").copy(64, 0, 16, 16);
     }
 }
@@ -2413,7 +2466,8 @@ bool Project::readEventGraphics() {
 
     qDeleteAll(eventGraphicsMap);
     eventGraphicsMap.clear();
-    for (QString gfxName : this->gfxNames) {
+    QStringList gfxNames = gfxDefines.keys();
+    for (QString gfxName : gfxNames) {
         EventGraphics * eventGraphics = new EventGraphics;
 
         QString info_label = pointerHash[gfxName].replace("&", "");

@@ -60,7 +60,7 @@ public:
     QMap<QString, int> mapSectionNameToValue;
     QMap<int, QString> mapSectionValueToName;
     QMap<QString, EventGraphics*> eventGraphicsMap;
-    QStringList gfxNames;
+    QMap<QString, int> gfxDefines;
     QStringList songNames;
     QStringList itemNames;
     QStringList flagNames;

@@ -148,7 +148,7 @@ public:
         this->enableHiddenItemQuantity = false;
         this->enableHiddenItemRequiresItemfinder = false;
         this->enableHealLocationRespawnData = false;
-        this->enableObjectEventInConnection = false;
+        this->enableEventCloneObject = false;
         this->enableFloorNumber = false;
         this->createMapTextFile = false;
         this->enableTripleLayerMetatiles = false;
@@ -178,8 +178,8 @@ public:
     bool getHiddenItemRequiresItemfinderEnabled();
     void setHealLocationRespawnDataEnabled(bool enable);
     bool getHealLocationRespawnDataEnabled();
-    void setObjectEventInConnectionEnabled(bool enable);
-    bool getObjectEventInConnectionEnabled();
+    void setEventCloneObjectEnabled(bool enable);
+    bool getEventCloneObjectEnabled();
     void setFloorNumberEnabled(bool enable);
     bool getFloorNumberEnabled();
     void setCreateMapTextFileEnabled(bool enable);
@@ -206,7 +206,7 @@ private:
     bool enableHiddenItemQuantity;
     bool enableHiddenItemRequiresItemfinder;
     bool enableHealLocationRespawnData;
-    bool enableObjectEventInConnection;
+    bool enableEventCloneObject;
     bool enableFloorNumber;
     bool createMapTextFile;
     bool enableTripleLayerMetatiles;

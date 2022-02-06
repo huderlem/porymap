@@ -9,18 +9,16 @@
 int getEventTypeMask(QList<Event *> events) {
     int eventTypeMask = 0;
     for (auto event : events) {
-        if (event->get("event_type") == EventType::Object) {
+        QString groupType = event->get("event_group_type");
+        if (groupType == EventGroup::Object) {
             eventTypeMask |= IDMask_EventType_Object;
-        } else if (event->get("event_type") == EventType::Warp) {
+        } else if (groupType == EventGroup::Warp) {
             eventTypeMask |= IDMask_EventType_Warp;
-        } else if (event->get("event_type") == EventType::Trigger ||
-                   event->get("event_type") == EventType::WeatherTrigger) {
+        } else if (groupType == EventGroup::Coord) {
             eventTypeMask |= IDMask_EventType_Trigger;
-        } else if (event->get("event_type") == EventType::Sign ||
-                   event->get("event_type") == EventType::HiddenItem ||
-                   event->get("event_type") == EventType::SecretBase) {
+        } else if (groupType == EventGroup::Bg) {
             eventTypeMask |= IDMask_EventType_BG;
-        } else if (event->get("event_type") == EventType::HealLocation) {
+        } else if (groupType == EventGroup::Heal) {
             eventTypeMask |= IDMask_EventType_Heal;
         }
     }
