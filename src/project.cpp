@@ -1739,13 +1739,7 @@ bool Project::readWildMonData() {
     for (OrderedJson subObjectRef : wildMonObj["wild_encounter_groups"].array_items()) {
         OrderedJson::object subObject = subObjectRef.object_items();
         if (!subObject["for_maps"].bool_value()) {
-            QString err;
-            QString subObjson = OrderedJson(subObject).dump();
-            OrderedJson::object orderedSubObject = OrderedJson::parse(subObjson, err).object_items();
-            extraEncounterGroups.push_back(orderedSubObject);
-            if (!err.isEmpty()) {
-                logWarn(QString("Encountered a problem while parsing extra encounter groups: %1").arg(err));
-            }
+            extraEncounterGroups.push_back(subObject);
             continue;
         }
 
