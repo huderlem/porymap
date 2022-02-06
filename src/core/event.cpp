@@ -10,6 +10,7 @@ QString EventGroup::Coord = "coord_event_group";
 QString EventGroup::Bg = "bg_event_group";
 
 QString EventType::Object = "event_object";
+QString EventType::CloneObject = "event_clone_object";
 QString EventType::Warp = "event_warp";
 QString EventType::Trigger = "event_trigger";
 QString EventType::WeatherTrigger = "event_weather_trigger";
@@ -20,6 +21,7 @@ QString EventType::HealLocation = "event_healspot";
 
 const QMap<QString, QString> EventTypeTable = {
     {EventType::Object,         EventGroup::Object},
+    {EventType::CloneObject,    EventGroup::Object},
     {EventType::Warp,           EventGroup::Warp},
     {EventType::Trigger,        EventGroup::Coord},
     {EventType::WeatherTrigger, EventGroup::Coord},
@@ -58,6 +60,8 @@ Event* Event::createNewEvent(QString event_type, QString map_name, Project *proj
     if (event_type == EventType::Object) {
         event = createNewObjectEvent(project);
         event->setFrameFromMovement(event->get("movement_type"));
+    } else if (event_type == EventType::CloneObject) {
+        event = createNewCloneObjectEvent(project, map_name);
     } else if (event_type == EventType::Warp) {
         event = createNewWarpEvent(map_name);
     } else if (event_type == EventType::HealLocation) {
@@ -77,6 +81,8 @@ Event* Event::createNewEvent(QString event_type, QString map_name, Project *proj
         event = new Event;
     }
 
+    event->put("event_type", event_type);
+    event->put("event_group_type", typeToGroup(event_type));
     event->setX(0);
     event->setY(0);
     return event;
@@ -85,13 +91,8 @@ Event* Event::createNewEvent(QString event_type, QString map_name, Project *proj
 Event* Event::createNewObjectEvent(Project *project)
 {
     Event *event = new Event;
-    event->put("event_group_type", EventGroup::Object);
-    event->put("event_type", EventType::Object);
-    event->put("sprite", project->gfxNames.first());
+    event->put("sprite", project->gfxDefines.keys().first());
     event->put("movement_type", project->movementTypes.first());
-    if (projectConfig.getObjectEventInConnectionEnabled()) {
-        event->put("in_connection", false);
-    }
     event->put("radius_x", 0);
     event->put("radius_y", 0);
     event->put("script_label", "NULL");
@@ -103,11 +104,18 @@ Event* Event::createNewObjectEvent(Project *project)
     return event;
 }
 
+Event* Event::createNewCloneObjectEvent(Project *project, QString map_name)
+{
+    Event *event = new Event;
+    event->put("sprite", project->gfxDefines.keys().first());
+    event->put("target_local_id", 1);
+    event->put("target_map", map_name);
+    return event;
+}
+
 Event* Event::createNewWarpEvent(QString map_name)
 {
     Event *event = new Event;
-    event->put("event_group_type", EventGroup::Warp);
-    event->put("event_type", EventType::Warp);
     event->put("destination_warp", 0);
     event->put("destination_map_name", map_name);
     event->put("elevation", 0);
@@ -117,8 +125,6 @@ Event* Event::createNewWarpEvent(QString map_name)
 Event* Event::createNewHealLocationEvent(QString map_name)
 {
     Event *event = new Event;
-    event->put("event_group_type", EventGroup::Heal);
-    event->put("event_type", EventType::HealLocation);
     event->put("loc_name", QString(Map::mapConstantFromName(map_name)).remove(0,4));
     event->put("id_name", map_name.replace(QRegularExpression("([a-z])([A-Z])"), "\\1_\\2").toUpper());
     event->put("elevation", 3);
@@ -132,8 +138,6 @@ Event* Event::createNewHealLocationEvent(QString map_name)
 Event* Event::createNewTriggerEvent(Project *project)
 {
     Event *event = new Event;
-    event->put("event_group_type", EventGroup::Coord);
-    event->put("event_type", EventType::Trigger);
     event->put("script_label", "NULL");
     event->put("script_var", project->varNames.first());
     event->put("script_var_value", "0");
@@ -144,8 +148,6 @@ Event* Event::createNewTriggerEvent(Project *project)
 Event* Event::createNewWeatherTriggerEvent(Project *project)
 {
     Event *event = new Event;
-    event->put("event_group_type", EventGroup::Coord);
-    event->put("event_type", EventType::WeatherTrigger);
     event->put("weather", project->coordEventWeatherNames.first());
     event->put("elevation", 0);
     return event;
@@ -154,8 +156,6 @@ Event* Event::createNewWeatherTriggerEvent(Project *project)
 Event* Event::createNewSignEvent(Project *project)
 {
     Event *event = new Event;
-    event->put("event_group_type", EventGroup::Bg);
-    event->put("event_type", EventType::Sign);
     event->put("player_facing_direction", project->bgEventFacingDirections.first());
     event->put("script_label", "NULL");
     event->put("elevation", 0);
@@ -165,8 +165,6 @@ Event* Event::createNewSignEvent(Project *project)
 Event* Event::createNewHiddenItemEvent(Project *project)
 {
     Event *event = new Event;
-    event->put("event_group_type", EventGroup::Bg);
-    event->put("event_type", EventType::HiddenItem);
     event->put("item", project->itemNames.first());
     event->put("flag", project->flagNames.first());
     event->put("elevation", 3);
@@ -182,8 +180,6 @@ Event* Event::createNewHiddenItemEvent(Project *project)
 Event* Event::createNewSecretBaseEvent(Project *project)
 {
     Event *event = new Event;
-    event->put("event_group_type", EventGroup::Bg);
-    event->put("event_type", EventType::SecretBase);
     event->put("secret_base_id", project->secretBaseIds.first());
     event->put("elevation", 0);
     return event;
@@ -199,81 +195,76 @@ int Event::getPixelY()
     return (this->y() * 16) - qMax(0, this->spriteHeight - 16);
 }
 
-static QMap<QString, bool> expectedObjectFields {
-    {"graphics_id", true},
-    {"x", true},
-    {"y", true},
-    {"elevation", true},
-    {"movement_type", true},
-    {"movement_range_x", true},
-    {"movement_range_y", true},
-    {"trainer_type", true},
-    {"trainer_sight_or_berry_tree_id", true},
-    {"script", true},
-    {"flag", true},
+const QStringList expectedObjectFields = {
+    "graphics_id",
+    "elevation",
+    "movement_type",
+    "movement_range_x",
+    "movement_range_y",
+    "trainer_type",
+    "trainer_sight_or_berry_tree_id",
+    "script",
+    "flag",
 };
 
-static QMap<QString, bool> expectedWarpFields {
-    {"x", true},
-    {"y", true},
-    {"elevation", true},
-    {"dest_map", true},
-    {"dest_warp_id", true},
+const QStringList expectedCloneObjectFields = {
+    "type",
+    "graphics_id",
+    "target_local_id",
+    "target_map",
 };
 
-static QMap<QString, bool> expectedTriggerFields {
-    {"type", true},
-    {"x", true},
-    {"y", true},
-    {"elevation", true},
-    {"var", true},
-    {"var_value", true},
-    {"script", true},
+const QStringList expectedWarpFields = {
+    "elevation",
+    "dest_map",
+    "dest_warp_id",
 };
 
-static QMap<QString, bool> expectedWeatherTriggerFields {
-    {"type", true},
-    {"x", true},
-    {"y", true},
-    {"elevation", true},
-    {"weather", true},
+const QStringList expectedTriggerFields = {
+    "type",
+    "elevation",
+    "var",
+    "var_value",
+    "script",
 };
 
-static QMap<QString, bool> expectedSignFields {
-    {"type", true},
-    {"x", true},
-    {"y", true},
-    {"elevation", true},
-    {"player_facing_dir", true},
-    {"script", true},
+const QStringList expectedWeatherTriggerFields = {
+    "type",
+    "elevation",
+    "weather",
 };
 
-static QMap<QString, bool> expectedHiddenItemFields {
-    {"type", true},
-    {"x", true},
-    {"y", true},
-    {"elevation", true},
-    {"item", true},
-    {"flag", true},
+const QStringList expectedSignFields = {
+    "type",
+    "elevation",
+    "player_facing_dir",
+    "script",
 };
 
-static QMap<QString, bool> expectedSecretBaseFields {
-    {"type", true},
-    {"x", true},
-    {"y", true},
-    {"elevation", true},
-    {"secret_base_id", true},
+const QStringList expectedHiddenItemFields = {
+    "type",
+    "elevation",
+    "item",
+    "flag",
 };
 
-QMap<QString, bool> Event::getExpectedFields()
+const QStringList expectedSecretBaseFields = {
+    "type",
+    "elevation",
+    "secret_base_id",
+};
+
+QStringList Event::getExpectedFields()
 {
     QString type = this->get("event_type");
-    QMap<QString, bool> expectedFields = QMap<QString, bool>();
+    QStringList expectedFields = QStringList();
     if (type == EventType::Object) {
         expectedFields = expectedObjectFields;
-        if (projectConfig.getObjectEventInConnectionEnabled()) {
-            expectedFields.insert("in_connection", true);
+        if (projectConfig.getEventCloneObjectEnabled()) {
+            expectedFields.append("type");
         }
+    } else if (type == EventType::CloneObject) {
+        expectedFields = expectedCloneObjectFields;
     } else if (type == EventType::Warp) {
         expectedFields = expectedWarpFields;
     } else if (type == EventType::Trigger) {
@@ -285,23 +276,24 @@ QMap<QString, bool> Event::getExpectedFields()
     } else if (type == EventType::HiddenItem) {
         expectedFields = expectedHiddenItemFields;
         if (projectConfig.getHiddenItemQuantityEnabled()) {
-            expectedFields.insert("quantity", true);
+            expectedFields.append("quantity");
         }
         if (projectConfig.getHiddenItemRequiresItemfinderEnabled()) {
-            expectedFields.insert("underfoot", true);
+            expectedFields.append("underfoot");
         }
     } else if (type == EventType::SecretBase) {
         expectedFields = expectedSecretBaseFields;
     }
+    expectedFields << "x" << "y";
     return expectedFields;
 };
 
 void Event::readCustomValues(QJsonObject values)
 {
     this->customValues.clear();
-    QMap<QString, bool> expectedValues = this->getExpectedFields();
+    QStringList expectedFields = this->getExpectedFields();
     for (QString key : values.keys()) {
-        if (!expectedValues.contains(key)) {
+        if (!expectedFields.contains(key)) {
             this->customValues[key] = values[key].toString();
         }
     }
@@ -318,24 +310,38 @@ void Event::addCustomValuesTo(OrderedJson::object *obj)
 
 OrderedJson::object Event::buildObjectEventJSON()
 {
-    OrderedJson::object eventObj;
-    eventObj["graphics_id"] = this->get("sprite");
-    if (projectConfig.getObjectEventInConnectionEnabled()) {
-        eventObj["in_connection"] = this->getInt("in_connection") > 0 || this->get("in_connection") == "TRUE";
+    OrderedJson::object objectObj;
+    if (projectConfig.getEventCloneObjectEnabled()) {
+        objectObj["type"] = "object";
     }
-    eventObj["x"] = this->getS16("x");
-    eventObj["y"] = this->getS16("y");
-    eventObj["elevation"] = this->getInt("elevation");
-    eventObj["movement_type"] = this->get("movement_type");
-    eventObj["movement_range_x"] = this->getInt("radius_x");
-    eventObj["movement_range_y"] = this->getInt("radius_y");
-    eventObj["trainer_type"] = this->get("trainer_type");
-    eventObj["trainer_sight_or_berry_tree_id"] = this->get("sight_radius_tree_id");
-    eventObj["script"] = this->get("script_label");
-    eventObj["flag"] = this->get("event_flag");
-    this->addCustomValuesTo(&eventObj);
+    objectObj["graphics_id"] = this->get("sprite");
+    objectObj["x"] = this->getS16("x");
+    objectObj["y"] = this->getS16("y");
+    objectObj["elevation"] = this->getInt("elevation");
+    objectObj["movement_type"] = this->get("movement_type");
+    objectObj["movement_range_x"] = this->getInt("radius_x");
+    objectObj["movement_range_y"] = this->getInt("radius_y");
+    objectObj["trainer_type"] = this->get("trainer_type");
+    objectObj["trainer_sight_or_berry_tree_id"] = this->get("sight_radius_tree_id");
+    objectObj["script"] = this->get("script_label");
+    objectObj["flag"] = this->get("event_flag");
+    this->addCustomValuesTo(&objectObj);
 
-    return eventObj;
+    return objectObj;
+}
+
+OrderedJson::object Event::buildCloneObjectEventJSON(const QMap<QString, QString> &mapNamesToMapConstants)
+{
+    OrderedJson::object cloneObj;
+    cloneObj["type"] = "clone";
+    cloneObj["graphics_id"] = this->get("sprite");
+    cloneObj["x"] = this->getS16("x");
+    cloneObj["y"] = this->getS16("y");
+    cloneObj["target_local_id"] = this->getInt("target_local_id");
+    cloneObj["target_map"] = mapNamesToMapConstants.value(this->get("target_map"));
+    this->addCustomValuesTo(&cloneObj);
+
+    return cloneObj;
 }
 
 OrderedJson::object Event::buildWarpEventJSON(const QMap<QString, QString> &mapNamesToMapConstants)

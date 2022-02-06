@@ -389,23 +389,13 @@ void MainWindow::setProjectSpecificUIVisibility()
         break;
     }
 
-    if (projectConfig.getEventWeatherTriggerEnabled()) {
-        ui->newEventToolButton->newWeatherTriggerAction->setVisible(true);
-    } else {
-        ui->newEventToolButton->newWeatherTriggerAction->setVisible(false);
-    }
-    if (projectConfig.getEventSecretBaseEnabled()) {
-        ui->newEventToolButton->newSecretBaseAction->setVisible(true);
-    } else {
-        ui->newEventToolButton->newSecretBaseAction->setVisible(false);
-    }
-    if (projectConfig.getFloorNumberEnabled()) {
-        ui->spinBox_FloorNumber->setVisible(true);
-        ui->label_FloorNumber->setVisible(true);
-    } else {
-        ui->spinBox_FloorNumber->setVisible(false);
-        ui->label_FloorNumber->setVisible(false);
-    }
+    ui->newEventToolButton->newWeatherTriggerAction->setVisible(projectConfig.getEventWeatherTriggerEnabled());
+    ui->newEventToolButton->newSecretBaseAction->setVisible(projectConfig.getEventSecretBaseEnabled());
+    ui->newEventToolButton->newCloneObjectAction->setVisible(projectConfig.getEventCloneObjectEnabled());
+
+    bool floorNumEnabled = projectConfig.getFloorNumberEnabled();
+    ui->spinBox_FloorNumber->setVisible(floorNumEnabled);
+    ui->label_FloorNumber->setVisible(floorNumEnabled);
 }
 
 void MainWindow::mapSortOrder_changed(QAction *action)
@@ -1862,7 +1852,7 @@ void MainWindow::addNewEvent(QString event_type)
         } else {
             QMessageBox msgBox(this);
             msgBox.setText("Failed to add new event");
-            if (event_type == EventType::Object) {
+            if (Event::typeToGroup(event_type) == EventGroup::Object) {
                 msgBox.setInformativeText(QString("The limit for object events (%1) has been reached.\n\n"
                                                   "This limit can be adjusted with OBJECT_EVENT_TEMPLATES_COUNT in 'include/constants/global.h'.")
                                           .arg(editor->project->getMaxObjectEvents()));
@@ -1882,57 +1872,20 @@ void MainWindow::updateObjects() {
     selectedHealspot = nullptr;
     ui->tabWidget_EventType->clear();
 
-    bool hasObjects = false;
-    bool hasWarps = false;
-    bool hasTriggers = false;
-    bool hasBGs = false;
-    bool hasHealspots = false;
-
-    for (DraggablePixmapItem *item : editor->getObjects())
-    {
-        QString event_type = item->event->get("event_type");
-
-        if (event_type == EventType::Object) {
-            hasObjects = true;
-        }
-        else if (event_type == EventType::Warp) {
-            hasWarps = true;
-        }
-        else if (event_type == EventType::Trigger || event_type == EventType::WeatherTrigger) {
-            hasTriggers = true;
-        }
-        else if (event_type == EventType::Sign || event_type == EventType::HiddenItem || event_type == EventType::SecretBase) {
-            hasBGs = true;
-        }
-        else if (event_type == EventType::HealLocation) {
-            hasHealspots = true;
-        }
-    }
-
-    if (hasObjects)
-    {
+    if (editor->map->events.value(EventGroup::Object).length())
         ui->tabWidget_EventType->addTab(eventTabObjectWidget, "Objects");
-    }
 
-    if (hasWarps)
-    {
+    if (editor->map->events.value(EventGroup::Warp).length())
         ui->tabWidget_EventType->addTab(eventTabWarpWidget, "Warps");
-    }
 
-    if (hasTriggers)
-    {
+    if (editor->map->events.value(EventGroup::Coord).length())
         ui->tabWidget_EventType->addTab(eventTabTriggerWidget, "Triggers");
-    }
 
-    if (hasBGs)
-    {
+    if (editor->map->events.value(EventGroup::Bg).length())
         ui->tabWidget_EventType->addTab(eventTabBGWidget, "BGs");
-    }
 
-    if (hasHealspots)
-    {
+    if (editor->map->events.value(EventGroup::Heal).length())
         ui->tabWidget_EventType->addTab(eventTabHealspotWidget, "Healspots");
-    }
 
     updateSelectedObjects();
 }
@@ -1959,7 +1912,6 @@ void MainWindow::updateSelectedObjects() {
 
     QList<EventPropertiesFrame *> frames;
 
-    bool inConnectionEnabled = projectConfig.getObjectEventInConnectionEnabled();
     bool quantityEnabled = projectConfig.getHiddenItemQuantityEnabled();
     bool underfootEnabled = projectConfig.getHiddenItemRequiresItemfinderEnabled();
     bool respawnDataEnabled = projectConfig.getHealLocationRespawnDataEnabled();
@@ -2024,7 +1976,6 @@ void MainWindow::updateSelectedObjects() {
         field_labels["radius_y"] = "Movement Radius Y";
         field_labels["trainer_type"] = "Trainer Type";
         field_labels["sight_radius_tree_id"] = "Sight Radius / Berry Tree ID";
-        field_labels["in_connection"] = "In Connection";
         field_labels["destination_warp"] = "Destination Warp";
         field_labels["destination_map_name"] = "Destination Map";
         field_labels["script_var"] = "Var";
@@ -2038,13 +1989,15 @@ void MainWindow::updateSelectedObjects() {
         field_labels["secret_base_id"] = "Secret Base Id";
         field_labels["respawn_map"] = "Respawn Map";
         field_labels["respawn_npc"] = "Respawn NPC";
+        field_labels["target_local_id"] = "Target Local Id";
+        field_labels["target_map"] = "Target Map";
 
         QStringList fields;
 
         if (event_type == EventType::Object) {
 
             frame->ui->sprite->setVisible(true);
-            frame->ui->comboBox_sprite->addItems(editor->project->gfxNames);
+            frame->ui->comboBox_sprite->addItems(editor->project->gfxDefines.keys());
             frame->ui->comboBox_sprite->setCurrentIndex(frame->ui->comboBox_sprite->findText(item->event->get("sprite")));
             connect(frame->ui->comboBox_sprite, &QComboBox::currentTextChanged, item, &DraggablePixmapItem::set_sprite);
             connect(frame->ui->comboBox_sprite, &QComboBox::currentTextChanged, this, &MainWindow::markMapEdited);
@@ -2066,7 +2019,17 @@ void MainWindow::updateSelectedObjects() {
             fields << "event_flag";
             fields << "trainer_type";
             fields << "sight_radius_tree_id";
-            if (inConnectionEnabled) fields << "in_connection";
+        }
+        else if (event_type == EventType::CloneObject) {
+            frame->ui->sprite->setVisible(true);
+            frame->ui->comboBox_sprite->setEnabled(false);
+            frame->ui->comboBox_sprite->addItem(item->event->get("sprite"));
+
+            frame->ui->spinBox_z->setVisible(false);
+            frame->ui->label_z->setVisible(false);
+
+            fields << "target_local_id";
+            fields << "target_map";
         }
         else if (event_type == EventType::Warp) {
             fields << "destination_map_name";
@@ -2104,8 +2067,8 @@ void MainWindow::updateSelectedObjects() {
         }
 
         // Some keys shouldn't use a combobox
-        QStringList spinKeys = {"quantity", "respawn_npc"};
-        QStringList checkKeys = {"underfoot", "in_connection"};
+        QStringList spinKeys = {"quantity", "respawn_npc", "target_local_id"};
+        QStringList checkKeys = {"underfoot"};
         for (QString key : fields) {
             QString value = item->event->get(key);
             QWidget *widget = new QWidget(frame);
@@ -2229,8 +2192,6 @@ void MainWindow::updateSelectedObjects() {
                 combo->setToolTip("The maximum sight range of a trainer,\n"
                                   "OR the unique id of the berry tree.");
                 combo->setMinimumContentsLength(4);
-            } else if (key == "in_connection") {
-                check->setToolTip("Check if object is positioned in the connection to another map.");
             } else if (key == "respawn_map") {
                 if (!editor->project->mapNames.contains(value)) {
                     combo->addItem(value);
@@ -2242,6 +2203,27 @@ void MainWindow::updateSelectedObjects() {
                                  "upon respawning after whiteout.");
                 spin->setMinimum(1);
                 spin->setMaximum(126);
+            } else if (key == "target_local_id") {
+                spin->setToolTip("event_object ID of the object being cloned.");
+                spin->setMinimum(1);
+                spin->setMaximum(126);
+                connect(spin, QOverload<int>::of(&NoScrollSpinBox::valueChanged), [item, frame](int value) {
+                    item->event->put("target_local_id", value);
+                    item->updatePixmap();
+                    frame->ui->comboBox_sprite->setItemText(0, item->event->get("sprite"));
+                });
+            } else if (key == "target_map") {
+                if (!editor->project->mapNames.contains(value)) {
+                    combo->addItem(value);
+                }
+                combo->addItems(editor->project->mapNames);
+                combo->setCurrentIndex(combo->findText(value));
+                combo->setToolTip("The name of the map that the object being cloned is on.");
+                connect(combo, static_cast<void (QComboBox::*)(const QString &)>(&QComboBox::currentTextChanged), this, [item, frame](QString value){
+                    item->event->put("target_map", value);
+                    item->updatePixmap();
+                    frame->ui->comboBox_sprite->setItemText(0, item->event->get("sprite"));
+                });
             } else {
                 combo->addItem(value);
             }

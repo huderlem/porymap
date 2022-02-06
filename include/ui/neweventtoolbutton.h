@@ -11,6 +11,7 @@ public:
     explicit NewEventToolButton(QWidget *parent = nullptr);
     QString getSelectedEventType();
     QAction *newObjectAction;
+    QAction *newCloneObjectAction;
     QAction *newWarpAction;
     QAction *newHealLocationAction;
     QAction *newTriggerAction;
@@ -20,6 +21,7 @@ public:
     QAction *newSecretBaseAction;
 public slots:
     void newObject();
+    void newCloneObject();
     void newWarp();
     void newHealLocation();
     void newTrigger();

@@ -2058,7 +2058,7 @@ DraggablePixmapItem* Editor::addNewEvent(QString event_type) {
 bool Editor::eventLimitReached(Map *map, QString event_type)
 {
     if (project && map && !event_type.isEmpty()) {
-        if (event_type == EventType::Object)
+        if (Event::typeToGroup(event_type) == EventGroup::Object)
             return map->events.value(EventGroup::Object).length() >= project->getMaxObjectEvents();
     }
     return false;
