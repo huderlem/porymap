@@ -692,22 +692,22 @@ void MainWindow::refreshMapScene()
     on_horizontalSlider_MetatileZoom_valueChanged(ui->horizontalSlider_MetatileZoom->value());
 }
 
-void MainWindow::openWarpMap(QString map_name, QString warp_num) {
+void MainWindow::openWarpMap(QString map_name, QString event_id, QString event_group) {
     // Ensure valid destination map name.
     if (!editor->project->mapNames.contains(map_name)) {
-        logError(QString("Invalid warp destination map name '%1'").arg(map_name));
+        logError(QString("Invalid map name '%1'").arg(map_name));
         return;
     }
 
-    // Ensure valid destination warp number.
+    // Ensure valid event number.
     bool ok;
-    int warpNum = warp_num.toInt(&ok, 0);
+    int event_index = event_id.toInt(&ok, 0);
     if (!ok) {
-        logError(QString("Invalid warp number '%1' for destination map '%2'").arg(warp_num).arg(map_name));
+        logError(QString("Invalid event number '%1' for map '%2'").arg(event_id).arg(map_name));
         return;
     }
 
-    // Open the destination map, and select the target warp event.
+    // Open the destination map.
     if (!setMap(map_name, true)) {
         QMessageBox msgBox(this);
         QString errorMsg = QString("There was an error opening map %1. Please see %2 for full error details.\n\n%3")
@@ -718,11 +718,14 @@ void MainWindow::openWarpMap(QString map_name, QString warp_num) {
         return;
     }
 
-    QList<Event*> warp_events = editor->map->events[EventGroup::Warp];
-    if (warp_events.length() > warpNum) {
-        Event *warp_event = warp_events.at(warpNum);
+    // Select the target event.
+    if (event_group != EventGroup::Warp && event_index)
+        event_index--;
+    QList<Event*> events = editor->map->events[event_group];
+    if (events.length() > event_index) {
+        Event *event = events.at(event_index);
         for (DraggablePixmapItem *item : editor->getObjects()) {
-            if (item->event == warp_event) {
+            if (item->event == event) {
                 editor->selected_events->clear();
                 editor->selected_events->append(item);
                 editor->updateSelectedEvents();

@@ -18,7 +18,7 @@ void NewEventToolButton::init()
     this->newObjectAction->setIcon(QIcon(":/icons/add.ico"));
     connect(this->newObjectAction, &QAction::triggered, this, &NewEventToolButton::newObject);
 
-    this->newCloneObjectAction = new QAction("New Object Clone", this);
+    this->newCloneObjectAction = new QAction("New Clone Object", this);
     this->newCloneObjectAction->setIcon(QIcon(":/icons/add.ico"));
     connect(this->newCloneObjectAction, &QAction::triggered, this, &NewEventToolButton::newCloneObject);
 

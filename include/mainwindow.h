@@ -212,7 +212,7 @@ private slots:
     void on_action_Reload_Project_triggered();
     void on_mapList_activated(const QModelIndex &index);
     void on_action_Save_Project_triggered();
-    void openWarpMap(QString map_name, QString warp_num);
+    void openWarpMap(QString map_name, QString event_id, QString event_group);
 
     void duplicate();
     void setClipboardData(poryjson::Json::object);
