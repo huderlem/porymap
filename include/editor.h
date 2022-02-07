@@ -210,7 +210,7 @@ signals:
     void selectedObjectsChanged();
     void loadMapRequested(QString, QString);
     void wildMonDataChanged();
-    void warpEventDoubleClicked(QString mapName, QString warpNum);
+    void warpEventDoubleClicked(QString, QString, QString);
     void currentMetatilesSelectionChanged();
     void mapRulerStatusChanged(const QString &);
     void editedMapData();
