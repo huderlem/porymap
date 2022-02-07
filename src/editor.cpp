@@ -1004,25 +1004,33 @@ void Editor::setCursorRectVisible(bool visible) {
         ui->graphicsView_Map->scene()->update();
 }
 
+bool Editor::isWithinMap(int x, int y) {
+    return (x >= 0 && x < map->getWidth() && y >= 0 && y < map->getHeight());
+}
+
 void Editor::onHoveredMapMetatileChanged(const QPoint &pos) {
-    this->updateCursorRectPos(pos.x(), pos.y());
-    if (map_item->paintingMode == MapPixmapItem::PaintMode::Metatiles
-     && pos.x() >= 0 && pos.x() < map->getWidth() && pos.y() >= 0 && pos.y() < map->getHeight()) {
-        int blockIndex = pos.y() * map->getWidth() + pos.x();
+    int x = pos.x();
+    int y = pos.y();
+    if (!this->isWithinMap(x, y))
+        return;
+
+    this->updateCursorRectPos(x, y);
+    if (map_item->paintingMode == MapPixmapItem::PaintMode::Metatiles) {
+        int blockIndex = y * map->getWidth() + x;
         int metatileId = map->layout->blockdata.at(blockIndex).metatileId;
         this->ui->statusBar->showMessage(QString("X: %1, Y: %2, %3, Scale = %4x")
-                              .arg(pos.x())
-                              .arg(pos.y())
+                              .arg(x)
+                              .arg(y)
                               .arg(getMetatileDisplayMessage(metatileId))
                               .arg(QString::number(zoomLevels[this->scaleIndex], 'g', 2)));
-    } else if (map_item->paintingMode == MapPixmapItem::PaintMode::EventObjects
-        && pos.x() >= 0 && pos.x() < map->getWidth() && pos.y() >= 0 && pos.y() < map->getHeight()) {
+    }
+    else if (map_item->paintingMode == MapPixmapItem::PaintMode::EventObjects) {
         this->ui->statusBar->showMessage(QString("X: %1, Y: %2, Scale = %3x")
-                              .arg(pos.x())
-                              .arg(pos.y())
+                              .arg(x)
+                              .arg(y)
                               .arg(QString::number(zoomLevels[this->scaleIndex], 'g', 2)));
     }
-    Scripting::cb_BlockHoverChanged(pos.x(), pos.y());
+    Scripting::cb_BlockHoverChanged(x, y);
 }
 
 void Editor::onHoveredMapMetatileCleared() {
@@ -1035,9 +1043,11 @@ void Editor::onHoveredMapMetatileCleared() {
 }
 
 void Editor::onHoveredMapMovementPermissionChanged(int x, int y) {
+    if (!this->isWithinMap(x, y))
+        return;
+
     this->updateCursorRectPos(x, y);
-    if (map_item->paintingMode == MapPixmapItem::PaintMode::Metatiles
-     && x >= 0 && x < map->getWidth() && y >= 0 && y < map->getHeight()) {
+    if (map_item->paintingMode == MapPixmapItem::PaintMode::Metatiles) {
         int blockIndex = y * map->getWidth() + x;
         uint16_t collision = map->layout->blockdata.at(blockIndex).collision;
         uint16_t elevation = map->layout->blockdata.at(blockIndex).elevation;

@@ -14,6 +14,7 @@ void CollisionPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
 }
 
 void CollisionPixmapItem::hoverEnterEvent(QGraphicsSceneHoverEvent * event) {
+    this->has_mouse = true;
     QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
     emit this->hoveredMapMovementPermissionChanged(pos.x(), pos.y());
 }
@@ -23,6 +24,7 @@ void CollisionPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
     if (this->settings->betterCursors && this->paintingMode == MapPixmapItem::PaintMode::Metatiles){
         unsetCursor();
     }
+    this->has_mouse = false;
 }
 
 void CollisionPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
