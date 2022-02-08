@@ -95,6 +95,7 @@ public:
     void setBorderDimensions(int newWidth, int newHeight, bool setNewBlockdata = true);
     void cacheBorder();
     bool hasUnsavedChanges();
+    bool isWithinBounds(int x, int y);
 
     // for memory management
     QVector<Event *> ownedEvents;

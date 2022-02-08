@@ -335,7 +335,7 @@ void Map::setBorderDimensions(int newWidth, int newHeight, bool setNewBlockdata)
 }
 
 bool Map::getBlock(int x, int y, Block *out) {
-    if (x >= 0 && x < getWidth() && y >= 0 && y < getHeight()) {
+    if (isWithinBounds(x, y)) {
         int i = y * getWidth() + x;
         *out = layout->blockdata.value(i);
         return true;
@@ -469,4 +469,8 @@ void Map::addEvent(Event *event) {
 
 bool Map::hasUnsavedChanges() {
     return !editHistory.isClean() || hasUnsavedDataChanges || !isPersistedToFile;
+}
+
+bool Map::isWithinBounds(int x, int y) {
+    return (x >= 0 && x < this->getWidth() && y >= 0 && y < this->getHeight());
 }

@@ -177,7 +177,6 @@ private:
     QString getMovementPermissionText(uint16_t collision, uint16_t elevation);
     QString getMetatileDisplayMessage(uint16_t metatileId);
     bool eventLimitReached(Map *, QString);
-    bool isWithinMap(int x, int y);
     bool startDetachedProcess(const QString &command,
                               const QString &workingDirectory = QString(),
                               qint64 *pid = nullptr) const;

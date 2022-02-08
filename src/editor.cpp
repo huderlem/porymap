@@ -1004,14 +1004,10 @@ void Editor::setCursorRectVisible(bool visible) {
         ui->graphicsView_Map->scene()->update();
 }
 
-bool Editor::isWithinMap(int x, int y) {
-    return (x >= 0 && x < map->getWidth() && y >= 0 && y < map->getHeight());
-}
-
 void Editor::onHoveredMapMetatileChanged(const QPoint &pos) {
     int x = pos.x();
     int y = pos.y();
-    if (!this->isWithinMap(x, y))
+    if (!map->isWithinBounds(x, y))
         return;
 
     this->updateCursorRectPos(x, y);
@@ -1043,7 +1039,7 @@ void Editor::onHoveredMapMetatileCleared() {
 }
 
 void Editor::onHoveredMapMovementPermissionChanged(int x, int y) {
-    if (!this->isWithinMap(x, y))
+    if (!map->isWithinBounds(x, y))
         return;
 
     this->updateCursorRectPos(x, y);
