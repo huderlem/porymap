@@ -17,6 +17,8 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 
 ### Fixed
 - Fix cursor tile outline not updating at the end of a dragged selection.
+- Fix cursor tile and player view outlines exiting map bounds while painting.
+- Fix cursor tile and player view outlines not updating immediately when toggled in Collision view.
 - Fix selected space not updating while painting in Collision view.
 
 ## [4.5.0] - 2021-12-26
