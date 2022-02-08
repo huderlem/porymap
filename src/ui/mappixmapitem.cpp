@@ -191,8 +191,7 @@ void MapPixmapItem::paintSmartPath(int x, int y, bool fromScriptCall) {
     // Fill the region with the open tile.
     for (int i = 0; i <= 1; i++)
     for (int j = 0; j <= 1; j++) {
-        // Check if in map bounds.
-        if (!(i + x < map->getWidth() && i + x >= 0 && j + y < map->getHeight() && j + y >= 0))
+        if (!map->isWithinBounds(x + i, y + j))
             continue;
         int actualX = i + x;
         int actualY = j + y;
@@ -210,8 +209,7 @@ void MapPixmapItem::paintSmartPath(int x, int y, bool fromScriptCall) {
     // Go back and resolve the edge tiles
     for (int i = -1; i <= 2; i++)
     for (int j = -1; j <= 2; j++) {
-        // Check if in map bounds.
-        if (!(i + x < map->getWidth() && i + x >= 0 && j + y < map->getHeight() && j + y >= 0))
+        if (!map->isWithinBounds(x + i, y + j))
             continue;
         // Ignore the corners, which can't possible be affected by the smart path.
         if ((i == -1 && j == -1) || (i == 2 && j == -1) ||
