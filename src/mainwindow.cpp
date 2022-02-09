@@ -719,10 +719,9 @@ void MainWindow::openWarpMap(QString map_name, QString event_id, QString event_g
     }
 
     // Select the target event.
-    if (event_group != EventGroup::Warp && event_index)
-        event_index--;
+    event_index -= Event::getIndexOffset(event_group);
     QList<Event*> events = editor->map->events[event_group];
-    if (events.length() > event_index) {
+    if (event_index < events.length() && event_index >= 0) {
         Event *event = events.at(event_index);
         for (DraggablePixmapItem *item : editor->getObjects()) {
             if (item->event == event) {
@@ -1949,9 +1948,7 @@ void MainWindow::updateSelectedObjects() {
         QString event_type = item->event->get("event_type");
         QString event_group_type = item->event->get("event_group_type");
         QString map_name = item->event->get("map_name");
-        int event_offs;
-        if (event_type == EventType::Warp) { event_offs = 0; }
-        else { event_offs = 1; }
+        int event_offs = Event::getIndexOffset(event_group_type);
         frame->ui->label_name->setText(QString("%1 Id").arg(event_type));
 
         if (events.count() == 1)
@@ -2456,7 +2453,7 @@ void MainWindow::eventTabChanged(int index) {
 void MainWindow::selectedEventIndexChanged(int index)
 {
     QString group = getEventGroupFromTabWidget(ui->tabWidget_EventType->currentWidget());
-    int event_offs = group == EventGroup::Warp ? 0 : 1;
+    int event_offs = Event::getIndexOffset(group);
     Event *event = editor->map->events.value(group).at(index - event_offs);
     DraggablePixmapItem *selectedEvent = nullptr;
     for (QGraphicsItem *child : editor->events_group->childItems()) {

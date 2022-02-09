@@ -195,7 +195,7 @@ int Event::getPixelY()
     return (this->y() * 16) - qMax(0, this->spriteHeight - 16);
 }
 
-const QStringList expectedObjectFields = {
+const QSet<QString> expectedObjectFields = {
     "graphics_id",
     "elevation",
     "movement_type",
@@ -207,20 +207,20 @@ const QStringList expectedObjectFields = {
     "flag",
 };
 
-const QStringList expectedCloneObjectFields = {
+const QSet<QString> expectedCloneObjectFields = {
     "type",
     "graphics_id",
     "target_local_id",
     "target_map",
 };
 
-const QStringList expectedWarpFields = {
+const QSet<QString> expectedWarpFields = {
     "elevation",
     "dest_map",
     "dest_warp_id",
 };
 
-const QStringList expectedTriggerFields = {
+const QSet<QString> expectedTriggerFields = {
     "type",
     "elevation",
     "var",
@@ -228,40 +228,40 @@ const QStringList expectedTriggerFields = {
     "script",
 };
 
-const QStringList expectedWeatherTriggerFields = {
+const QSet<QString> expectedWeatherTriggerFields = {
     "type",
     "elevation",
     "weather",
 };
 
-const QStringList expectedSignFields = {
+const QSet<QString> expectedSignFields = {
     "type",
     "elevation",
     "player_facing_dir",
     "script",
 };
 
-const QStringList expectedHiddenItemFields = {
+const QSet<QString> expectedHiddenItemFields = {
     "type",
     "elevation",
     "item",
     "flag",
 };
 
-const QStringList expectedSecretBaseFields = {
+const QSet<QString> expectedSecretBaseFields = {
     "type",
     "elevation",
     "secret_base_id",
 };
 
-QStringList Event::getExpectedFields()
+QSet<QString> Event::getExpectedFields()
 {
     QString type = this->get("event_type");
-    QStringList expectedFields = QStringList();
+    QSet<QString> expectedFields = QSet<QString>();
     if (type == EventType::Object) {
         expectedFields = expectedObjectFields;
         if (projectConfig.getEventCloneObjectEnabled()) {
-            expectedFields.append("type");
+            expectedFields.insert("type");
         }
     } else if (type == EventType::CloneObject) {
         expectedFields = expectedCloneObjectFields;
@@ -276,10 +276,10 @@ QStringList Event::getExpectedFields()
     } else if (type == EventType::HiddenItem) {
         expectedFields = expectedHiddenItemFields;
         if (projectConfig.getHiddenItemQuantityEnabled()) {
-            expectedFields.append("quantity");
+            expectedFields.insert("quantity");
         }
         if (projectConfig.getHiddenItemRequiresItemfinderEnabled()) {
-            expectedFields.append("underfoot");
+            expectedFields.insert("underfoot");
         }
     } else if (type == EventType::SecretBase) {
         expectedFields = expectedSecretBaseFields;
@@ -291,7 +291,7 @@ QStringList Event::getExpectedFields()
 void Event::readCustomValues(QJsonObject values)
 {
     this->customValues.clear();
-    QStringList expectedFields = this->getExpectedFields();
+    QSet<QString> expectedFields = this->getExpectedFields();
     for (QString key : values.keys()) {
         if (!expectedFields.contains(key)) {
             this->customValues[key] = values[key].toString();
@@ -464,6 +464,11 @@ void Event::setFrameFromMovement(QString facingDir) {
         this->frame = 2;
         this->hFlip = true;
     }
+}
+
+// All event groups excepts warps have IDs that start at 1
+int Event::getIndexOffset(QString group_type) {
+    return (group_type == EventGroup::Warp) ? 0 : 1;
 }
 
 bool Event::isValidType(QString event_type) {
