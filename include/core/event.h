@@ -89,6 +89,7 @@ public:
     static Event* createNewSecretBaseEvent(Project*);
     static bool isValidType(QString event_type);
     static QString typeToGroup(QString event_type);
+    static int getIndexOffset(QString group_type);
 
     OrderedJson::object buildObjectEventJSON();
     OrderedJson::object buildCloneObjectEventJSON(const QMap<QString, QString> &);
@@ -101,7 +102,7 @@ public:
     void setPixmapFromSpritesheet(QImage, int, int, bool);
     int getPixelX();
     int getPixelY();
-    QStringList getExpectedFields();
+    QSet<QString> getExpectedFields();
     void readCustomValues(QJsonObject values);
     void addCustomValuesTo(OrderedJson::object *obj);
     void setFrameFromMovement(QString);
