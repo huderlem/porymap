@@ -10,6 +10,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ### Added
 - Add ability to set the opacity of the scripting overlay.
 - Add ability to get/set map header properties and read tile pixel data via the API.
+- Add button to copy the full metatile label to the clipboard in the Tileset Editor.
 
 ### Changed
 - If an object event is inanimate, it will always render using its first frame.
