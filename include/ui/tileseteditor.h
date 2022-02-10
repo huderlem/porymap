@@ -103,6 +103,8 @@ private slots:
 
     void on_actionImport_Secondary_Metatiles_triggered();
 
+    void on_copyButton_metatileLabel_clicked();
+
 private:
     void initUi();
     void setMetatileBehaviors();
