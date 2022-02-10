@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>700</width>
+    <width>727</width>
     <height>700</height>
    </rect>
   </property>
@@ -271,7 +271,7 @@
               </widget>
              </item>
              <item row="8" column="0" colspan="3">
-              <widget class="NoScrollComboBox" name="comboBox_metatileBehaviors" native="true"/>
+              <widget class="NoScrollComboBox" name="comboBox_metatileBehaviors"/>
              </item>
              <item row="11" column="0">
               <widget class="QLabel" name="label_terrainType">
@@ -315,8 +315,15 @@
              </item>
              <item row="14" column="3">
               <widget class="QToolButton" name="copyButton_metatileLabel">
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copies the full metatile label to the clipboard.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
                <property name="text">
                 <string>...</string>
+               </property>
+               <property name="icon">
+                <iconset resource="../resources/images.qrc">
+                 <normaloff>:/icons/clipboard.ico</normaloff>:/icons/clipboard.ico</iconset>
                </property>
               </widget>
              </item>
@@ -434,8 +441,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>384</width>
-            <height>262</height>
+            <width>411</width>
+            <height>247</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_2">
@@ -527,7 +534,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>700</width>
+     <width>727</width>
      <height>22</height>
     </rect>
    </property>
@@ -660,10 +667,12 @@
  <customwidgets>
   <customwidget>
    <class>NoScrollComboBox</class>
-   <extends>QWidget</extends>
+   <extends>QComboBox</extends>
    <header>noscrollcombobox.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../resources/images.qrc"/>
+ </resources>
  <connections/>
 </ui>
