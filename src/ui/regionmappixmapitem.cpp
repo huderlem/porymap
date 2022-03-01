@@ -3,13 +3,13 @@
 void RegionMapPixmapItem::draw() {
     if (!region_map) return;
 
-    QImage image(region_map->width() * 8, region_map->height() * 8, QImage::Format_RGBA8888);
+    QImage image(region_map->pixelWidth(), region_map->pixelHeight(), QImage::Format_RGBA8888);
 
     QPainter painter(&image);
-    for (int i = 0; i < region_map->map_squares.size(); i++) {
-        QImage img = this->tile_selector->tileImg(region_map->map_squares[i].tile_img_id);
-        int x = i % region_map->width();
-        int y = i / region_map->width();
+    for (int i = 0; i < region_map->tilemapSize(); i++) {
+        QImage img = this->tile_selector->tileImg(region_map->getTile(i));
+        int x = i % region_map->tilemapWidth();
+        int y = i / region_map->tilemapWidth();
         QPoint pos = QPoint(x * 8, y * 8);
         painter.drawImage(pos, img);
     }
@@ -23,8 +23,13 @@ void RegionMapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
         QPointF pos = event->pos();
         int x = static_cast<int>(pos.x()) / 8;
         int y = static_cast<int>(pos.y()) / 8;
-        int index = x + y * region_map->width();
-        this->region_map->map_squares[index].tile_img_id = this->tile_selector->selectedTile;
+        int index = x + y * region_map->tilemapWidth();
+        this->region_map->setTileData(index, 
+                this->tile_selector->selectedTile,
+                this->tile_selector->tile_hFlip,
+                this->tile_selector->tile_vFlip,
+                this->tile_selector->tile_palette
+            );
         draw();
     }
 }
@@ -54,8 +59,8 @@ void RegionMapPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     QPointF pos = event->pos();
     int x = static_cast<int>(pos.x()) / 8;
     int y = static_cast<int>(pos.y()) / 8;
-    if (x < this->region_map->width()  && x >= 0 
-     && y < this->region_map->height() && y >= 0) {
+    if (x < this->region_map->tilemapWidth()  && x >= 0 
+     && y < this->region_map->tilemapHeight() && y >= 0) {
         emit this->hoveredRegionMapTileChanged(x, y);
         emit mouseEvent(event, this);
     }

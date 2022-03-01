@@ -3,16 +3,16 @@
 #include <QDebug>
 
 void TilemapTileSelector::draw() {
-    size_t width_  = this->tilemap.width();
+    size_t width_  = this->tileset.width();
     this->pixelWidth = width_;
-    size_t height_ = this->tilemap.height();
+    size_t height_ = this->tileset.height();
     this->pixelHeight = height_;
     size_t ntiles_ = (width_/8) * (height_/8);
 
     this->numTilesWide = width_ / 8;
     this->numTiles     = ntiles_;
 
-    this->setPixmap(tilemap);
+    this->setPixmap(QPixmap::fromImage(tileset));
     this->drawSelection();
 }
 
@@ -28,10 +28,6 @@ void TilemapTileSelector::updateSelectedTile() {
     this->selectedTile = this->getTileId(origin.x(), origin.y());
 }
 
-unsigned TilemapTileSelector::getSelectedTile() {
-    return this->selectedTile;
-}
-
 unsigned TilemapTileSelector::getTileId(int x, int y) {
     unsigned index = y * this->numTilesWide + x;
     return index < this->numTiles ? index : this->numTiles % index;
@@ -42,9 +38,49 @@ QPoint TilemapTileSelector::getTileIdCoords(unsigned tileId) {
     return QPoint(index % this->numTilesWide, index / this->numTilesWide);
 }
 
-QImage TilemapTileSelector::tileImg(unsigned tileId) {
+QImage TilemapTileSelector::tileImg(shared_ptr<TilemapTile> tile) {
+    // TODO: this is slow on the entries tab, so maybe do not do all of the redraw for every section change
+    unsigned tileId = tile->id();
     QPoint pos = getTileIdCoords(tileId);
-    return this->tilemap.copy(pos.x() * 8, pos.y() * 8, 8, 8).toImage();
+
+    QImage tilesetImage = this->tileset;
+    tilesetImage.convertTo(QImage::Format::Format_Indexed8);
+
+    // TODO: bounds check on the palette copying
+
+    switch(this->format) {
+        case TilemapFormat::Plain:
+        {
+            // TODO: even allow palettes for Plain tiles?
+            // 1 x palette x any colors
+            break;
+        }
+        case TilemapFormat::BPP_4:
+        {
+// before Qt 6, the color table is a QVector which is deprecated now, and this method does not exits
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            tilesetImage.setColorTable(this->palette.toVector().mid(tile->palette() * 16, 16));
+#else
+            tilesetImage.setColorTable(this->palette.mid(tile->palette() * 16, 16));
+#endif
+            break;
+        }
+        case TilemapFormat::BPP_8:
+        {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            tilesetImage.setColorTable(this->palette.toVector());
+#else
+            tilesetImage.setColorTable(this->palette);
+#endif
+            break;
+        }
+        default: break;
+    }
+
+    // take a tile from the tileset
+    QImage img = tilesetImage.copy(pos.x() * 8, pos.y() * 8, 8, 8);
+    img = img.mirrored(tile->hFlip(), tile->vFlip());
+    return img;
 }
 
 void TilemapTileSelector::mousePressEvent(QGraphicsSceneMouseEvent *event) {

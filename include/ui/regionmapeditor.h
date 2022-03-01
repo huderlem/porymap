@@ -6,6 +6,8 @@
 #include "regionmaplayoutpixmapitem.h"
 #include "regionmapentriespixmapitem.h"
 #include "regionmap.h"
+#include "orderedjson.h"
+#include "project.h"
 
 #include <QMainWindow>
 #include <QGraphicsSceneMouseEvent>
@@ -24,9 +26,10 @@ public:
     explicit RegionMapEditor(QWidget *parent = 0, Project *pro = nullptr);
     ~RegionMapEditor();
 
-    RegionMap *region_map;
+    RegionMap *region_map = nullptr;
+    tsl::ordered_map<QString, RegionMap *> region_maps;
 
-    bool loadRegionMapData();
+    bool load();
     bool loadCityMaps();
     void setCurrentSquareOptions();
 
@@ -56,9 +59,11 @@ private:
     Ui::RegionMapEditor *ui;
     Project *project;
 
+    poryjson::Json rmConfigJson;
+
     History<RegionMapHistoryItem*> history;
 
-    int currIndex;
+    int currIndex = 0;
     unsigned selectedCityTile;
     unsigned selectedImageTile;
     QString activeEntry;
@@ -86,6 +91,17 @@ private:
     RegionMapPixmapItem *region_map_item = nullptr;
     CityMapPixmapItem *city_map_item = nullptr;
 
+    bool loadRegionMapEntries();
+    bool saveRegionMapEntries();
+    tsl::ordered_map<QString, MapSectionEntry> region_map_entries;
+
+    void buildConfigDialog();
+    poryjson::Json configRegionMapDialog();
+    void buildUpdateConfigDialog();
+    poryjson::Json buildDefaultJson();
+    poryjson::Json getJsonFromAlias(QString alias);
+    bool loadRegionMapData();
+
     void initShortcuts();
     void displayRegionMap();
     void displayRegionMapImage();
@@ -94,11 +110,11 @@ private:
     void displayRegionMapLayoutOptions();
     void updateRegionMapLayoutOptions(int index);
     void displayRegionMapTileSelector();
+    void updateLayerDisplayed();
     void displayCityMapTileSelector();
     void displayCityMap(QString name);
     void displayRegionMapEntryOptions();
     void updateRegionMapEntryOptions(QString);
-    void importTileImage(bool city = false);
 
     bool createCityMap(QString name);
     bool tryInsertNewMapEntry(QString);
@@ -114,21 +130,22 @@ private slots:
     void on_action_RegionMap_ClearImage_triggered();
     void on_action_RegionMap_ClearLayout_triggered();
     void on_action_Swap_triggered();
-    void on_action_Import_RegionMap_ImageTiles_triggered();
-    void on_action_Import_CityMap_ImageTiles_triggered();
     void on_tabWidget_Region_Map_currentChanged(int);
     void on_pushButton_RM_Options_delete_clicked();
     void on_comboBox_RM_ConnectedMap_textActivated(const QString &);
     void on_comboBox_RM_Entry_MapSection_textActivated(const QString &);
+    void on_comboBox_regionSelector_textActivated(const QString &);
+    void on_comboBox_layoutLayer_textActivated(const QString &);
     void on_spinBox_RM_Entry_x_valueChanged(int);
     void on_spinBox_RM_Entry_y_valueChanged(int);
     void on_spinBox_RM_Entry_width_valueChanged(int);
     void on_spinBox_RM_Entry_height_valueChanged(int);
+    void on_spinBox_tilePalette_valueChanged(int);
+    void on_checkBox_tileHFlip_stateChanged(int);
+    void on_checkBox_tileVFlip_stateChanged(int);
     void on_pushButton_CityMap_add_clicked();
     void on_verticalSlider_Zoom_Map_Image_valueChanged(int);
     void on_verticalSlider_Zoom_Image_Tiles_valueChanged(int);
-    void on_verticalSlider_Zoom_City_Map_valueChanged(int);
-    void on_verticalSlider_Zoom_City_Tiles_valueChanged(int);
     void on_comboBox_CityMap_picker_currentTextChanged(const QString &);
     void on_lineEdit_RM_MapName_textEdited(const QString &);
     void onHoveredRegionMapTileChanged(int x, int y);

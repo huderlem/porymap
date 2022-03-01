@@ -9,6 +9,7 @@
 #include "wildmoninfo.h"
 #include "parseutil.h"
 #include "orderedjson.h"
+#include "regionmap.h"
 
 #include <QStringList>
 #include <QList>

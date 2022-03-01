@@ -77,6 +77,7 @@ SOURCES += src/core/block.cpp \
     src/ui/shortcutseditor.cpp \
     src/ui/multikeyedit.cpp \
     src/ui/preferenceeditor.cpp \
+    src/ui/regionmappropertiesdialog.cpp \
     src/config.cpp \
     src/editor.cpp \
     src/main.cpp \
@@ -151,6 +152,7 @@ HEADERS  += include/core/block.h \
     include/ui/shortcutseditor.h \
     include/ui/multikeyedit.h \
     include/ui/preferenceeditor.h \
+    include/ui/regionmappropertiesdialog.h \
     include/config.h \
     include/editor.h \
     include/mainwindow.h \
@@ -169,11 +171,13 @@ FORMS    += forms/mainwindow.ui \
     forms/newtilesetdialog.ui \
     forms/mapimageexporter.ui \
     forms/shortcutseditor.ui \
-    forms/preferenceeditor.ui
+    forms/preferenceeditor.ui \
+    forms/regionmappropertiesdialog.ui
 
 RESOURCES += \
     resources/images.qrc \
-    resources/themes.qrc
+    resources/themes.qrc \
+    resources/text.qrc
 
 INCLUDEPATH += include
 INCLUDEPATH += include/core

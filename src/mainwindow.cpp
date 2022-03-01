@@ -388,7 +388,7 @@ void MainWindow::setProjectSpecificUIVisibility()
         ui->label_AllowEscapeRope->setVisible(true);
         // TODO: pokefirered is not set up for the Region Map Editor and vice versa. 
         //       porymap will crash on attempt. Remove below once resolved
-        ui->actionRegion_Map_Editor->setVisible(false);
+        ui->actionRegion_Map_Editor->setVisible(true);
         break;
     }
 
@@ -1799,13 +1799,13 @@ void MainWindow::connectSubEditorsToShortcutsEditor() {
             tilesetEditor, &TilesetEditor::applyUserShortcuts);
 
     // TODO: Remove this check when the region map editor supports pokefirered.
-    if (projectConfig.getBaseGameVersion() != BaseGameVersion::pokefirered) {
+    //if (projectConfig.getBaseGameVersion() != BaseGameVersion::pokefirered) {
         if (!regionMapEditor)
             initRegionMapEditor();
         if (regionMapEditor)
             connect(shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
                     regionMapEditor, &RegionMapEditor::applyUserShortcuts);
-    }
+    //}
 }
 
 void MainWindow::on_actionPencil_triggered()
@@ -3150,8 +3150,7 @@ void MainWindow::on_actionRegion_Map_Editor_triggered() {
 
 bool MainWindow::initRegionMapEditor() {
     this->regionMapEditor = new RegionMapEditor(this, this->editor->project);
-    bool success = this->regionMapEditor->loadRegionMapData()
-                && this->regionMapEditor->loadCityMaps();
+    bool success = this->regionMapEditor->load();
     if (!success) {
         delete this->regionMapEditor;
         this->regionMapEditor = nullptr;
