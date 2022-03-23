@@ -349,12 +349,15 @@ void MainWindow::markMapEdited() {
     }
 }
 
+void MainWindow::setWildEncountersUIEnabled(bool enabled) {
+    ui->actionUse_Encounter_Json->setChecked(enabled);
+    ui->mainTabBar->setTabEnabled(4, enabled);
+}
+
 void MainWindow::setProjectSpecificUIVisibility()
 {
-    ui->actionUse_Encounter_Json->setChecked(projectConfig.getEncounterJsonActive());
     ui->actionUse_Poryscript->setChecked(projectConfig.getUsePoryScript());
-
-    ui->mainTabBar->setTabEnabled(4, projectConfig.getEncounterJsonActive());
+    this->setWildEncountersUIEnabled(projectConfig.getEncounterJsonActive());
 
     switch (projectConfig.getBaseGameVersion())
     {
@@ -515,6 +518,7 @@ bool MainWindow::openProject(QString dir) {
         editor->project = new Project(this);
         QObject::connect(editor->project, &Project::reloadProject, this, &MainWindow::on_action_Reload_Project_triggered);
         QObject::connect(editor->project, &Project::mapCacheCleared, this, &MainWindow::onMapCacheCleared);
+        QObject::connect(editor->project, &Project::disableWildEncountersUI, [this]() { this->setWildEncountersUIEnabled(false); });
         QObject::connect(editor->project, &Project::uncheckMonitorFilesAction, [this]() { ui->actionMonitor_Project_Files->setChecked(false); });
         on_actionMonitor_Project_Files_triggered(porymapConfig.getMonitorFiles());
         editor->project->set_root(dir);

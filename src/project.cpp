@@ -1723,8 +1723,12 @@ bool Project::readWildMonData() {
 
     OrderedJson::object wildMonObj;
     if (!parser.tryParseOrderedJsonFile(&wildMonObj, wildMonJsonFilepath)) {
-        logError(QString("Failed to read wild encounters from %1").arg(wildMonJsonFilepath));
-        return false;
+        // Failing to read wild encounters data is not a critical error, just disable the
+        // encounter editor and log a warning in case the user intended to have this data.
+        projectConfig.setEncounterJsonActive(false);
+        emit disableWildEncountersUI();
+        logWarn(QString("Failed to read wild encounters from %1").arg(wildMonJsonFilepath));
+        return true;
     }
 
     for (OrderedJson subObjectRef : wildMonObj["wild_encounter_groups"].array_items()) {
