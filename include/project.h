@@ -244,6 +244,7 @@ signals:
     void reloadProject();
     void uncheckMonitorFilesAction();
     void mapCacheCleared();
+    void disableWildEncountersUI();
 };
 
 #endif // PROJECT_H
