@@ -833,7 +833,7 @@ void MainWindow::saveMetatileAttributesByMetatileId(int metatileId) {
         this->editor->project->saveTilesetMetatileAttributes(tileset);
 
     // If the Tileset Editor is currently displaying the updated metatile, refresh it
-    if (this->tilesetEditor && this->tilesetEditor->getSelectedMetatile() == metatileId)
+    if (this->tilesetEditor && this->tilesetEditor->getSelectedMetatileId() == metatileId)
         this->tilesetEditor->updateTilesets(this->editor->map->layout->tileset_primary_label, this->editor->map->layout->tileset_secondary_label);
 }
 
@@ -863,7 +863,7 @@ void MainWindow::setMetatileLabel(int metatileId, QString label) {
         return;
     }
 
-    if (this->tilesetEditor && this->tilesetEditor->getSelectedMetatile() == metatileId) {
+    if (this->tilesetEditor && this->tilesetEditor->getSelectedMetatileId() == metatileId) {
         this->tilesetEditor->setMetatileLabel(label);
     } else if (metatile->label != label) {
         metatile->label = label;
