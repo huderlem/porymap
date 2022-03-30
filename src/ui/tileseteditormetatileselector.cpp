@@ -78,7 +78,7 @@ void TilesetEditorMetatileSelector::updateSelectedMetatile() {
     emit selectedMetatileChanged(this->selectedMetatile);
 }
 
-uint16_t TilesetEditorMetatileSelector::getSelectedMetatile() {
+uint16_t TilesetEditorMetatileSelector::getSelectedMetatileId() {
     return this->selectedMetatile;
 }
 
