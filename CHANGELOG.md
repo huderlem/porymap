@@ -11,6 +11,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Proper support for pokefirered's clone objects was added, which requires the changes made in [pokefirered/#484](https://github.com/pret/pokefirered/pull/484).
 
 ### Added
+- Add Copy/Paste for metatiles in the Tileset Editor.
 - Add ability to set the opacity of the scripting overlay.
 - Add ability to get/set map header properties and read tile pixel data via the API.
 
