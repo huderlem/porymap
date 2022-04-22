@@ -442,6 +442,9 @@ bool RegionMapEditor::loadCityMaps() {
 void RegionMapEditor::on_action_RegionMap_Save_triggered() {
     // TODO: save current region map, add "Save All" to save all region maps
     // TODO: save the config json as well
+    this->region_map->save();
+
+    // save entries
 }
 
 void RegionMapEditor::setCurrentSquareOptions() {
@@ -909,6 +912,7 @@ void RegionMapEditor::on_tabWidget_Region_Map_currentChanged(int index) {
 }
 
 void RegionMapEditor::on_comboBox_RM_ConnectedMap_textActivated(const QString &mapsec) {
+    this->region_map->setSquareMapSection(this->currIndex, mapsec);
     onRegionMapLayoutSelectedTileChanged(this->currIndex);// re-draw layout image
     this->hasUnsavedChanges = true;// TODO: sometimes this is called for unknown reasons
 }

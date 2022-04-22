@@ -84,6 +84,7 @@ public:
     void save();
     void saveTilemap();
     void saveLayout();
+    void saveConfig();// ? or do this in the editor only?
     void saveOptions(int id, QString sec, QString name, int x, int y);
 
     void resize(int width, int height);
@@ -98,6 +99,7 @@ public:
     shared_ptr<TilemapTile> getTile(int x, int y);
     bool squareHasMap(int index);
     QString squareMapSection(int index);
+    void setSquareMapSection(int index, QString section);
     int squareX(int index);
     int squareY(int index);
     bool squareInLayout(int x, int y);
@@ -115,6 +117,9 @@ public:
 
     QVector<uint8_t> getTiles();
     void setTiles(QVector<uint8_t> tileIds);
+
+    QByteArray getTilemap();
+    void setTilemap(QByteArray newTilemap);
 
     QStringList getLayers() { return this->layout_layers; }
     void setLayer(QString layer) { this->current_layer = layer; }
@@ -142,7 +147,7 @@ public:
     QString fullPath(QString local);
 
 private:
-    
+    // TODO: defaults needed?
     tsl::ordered_map<QString, MapSectionEntry> *region_map_entries = nullptr;
 
     QString alias;
@@ -150,18 +155,14 @@ private:
     int tilemap_width;
     int tilemap_height;
 
-    // default is 32x20 (or 30x20 / screen size??)
     int region_width;
     int region_height;
 
-    // default is 28x15
     int layout_width;
     int layout_height;
 
     int offset_left;
     int offset_top;
-    //int ;
-    //int img_height_;
 
     TilemapFormat tilemap_format;
 
@@ -175,29 +176,21 @@ private:
     QString entries_path;
     QString layout_path;
 
-    // TODO: default values?
     QString layout_array_label;
     bool layout_uses_layers = false;
-    //QList<QString> layout_layers;
+    QStringList layout_constants;
+    QString layout_qualifiers;
 
-    //QList<RegionMapSquare> map_squares;
     QList<shared_ptr<TilemapTile>> tilemap;
 
-    // what about separate array for layout
-    // and a pointer to an entries / map sections object (from project? or editor?)
-    QStringList layout_layers;
+    QStringList layout_layers; // TODO: is this used?
     QString current_layer;
 
-    // TODO: qstring, or {section name, x, y, section_id, has_map}
-    QMap<QString, QList<LayoutSquare>> layouts; // key: layer, value: layout list
+    // TODO: just use ordered map?
+    QMap<QString, QList<LayoutSquare>> layouts; // key: layer, value: layout
 
     // TODO
     QString city_map_tiles_path;
-
-    // todo: no???? why would i be doing this it's pointless
-    // let the user figure this shit out
-    bool region_map_png_needs_saving = false;
-    bool city_map_png_needs_saving = false;
 
     int get_tilemap_index(int x, int y);
     int get_layout_index(int x, int y);

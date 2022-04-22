@@ -60,7 +60,7 @@ public:
     virtual void setVFlip(bool vFlip) { this->vFlip_ = vFlip; }
     virtual void setPalette(int palette) { this->palette_ = palette; }
 
-    virtual QString info() {
+    virtual QString info() const {
         return QString("Tile: 0x") + QString("%1  ").arg(this->id(), 4, 16, QChar('0')).toUpper();
     }
 };
@@ -70,6 +70,8 @@ public:
     PlainTile(unsigned raw) : TilemapTile(raw, raw, false, false, 0) {}
 
     ~PlainTile() {}
+
+    virtual unsigned raw () const override { return id(); }
 };
 
 class BPP4Tile : public TilemapTile {
@@ -84,7 +86,11 @@ public:
 
     ~BPP4Tile() {}
 
-    virtual QString info() override {
+    virtual unsigned raw () const override {
+        return (id()) | (hFlip() << 10) | (vFlip() << 11) | (palette() << 12);
+    }
+
+    virtual QString info() const override {
         return TilemapTile::info() + QString("hFlip: %1  vFlip: %2  palette: %3").arg(this->hFlip()).arg(this->vFlip()).arg(this->palette());
     }
 };
@@ -101,7 +107,11 @@ public:
 
     ~BPP8Tile() {}
 
-    virtual QString info() override {
+    virtual unsigned raw () const override {
+        return (id()) | (hFlip() << 10) | (vFlip() << 11);
+    }
+
+    virtual QString info() const override {
         return TilemapTile::info() + QString("hFlip: %1  vFlip: %2").arg(this->hFlip()).arg(this->vFlip());
     }
 };
