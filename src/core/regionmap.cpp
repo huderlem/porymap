@@ -84,43 +84,19 @@ bool RegionMap::loadTilemap(poryjson::Json tilemapJson) {
         this->palette_path = tilemapObject["palette"].string_value();
     }
 
-    QFile tilemapFile(fullPath(tilemap_path));
+    QFile tilemapFile(fullPath(this->tilemap_path));
     if (!tilemapFile.open(QIODevice::ReadOnly)) {
         logError(QString("Failed to open region map tilemap file %1.").arg(tilemap_path));
         return false;
     }
-    QDataStream dataStream(&tilemapFile);
-    dataStream.setByteOrder(QDataStream::LittleEndian);
 
     if (tilemapFile.size() < tilemapBytes()) {
         logError(QString("The region map tilemap at %1 is too small.").arg(tilemap_path));
         return false;
     }
 
-    this->tilemap.resize(tilemapSize());
-    switch (this->tilemap_format) {
-        case TilemapFormat::Plain:
-            for (int i = 0; i < tilemapBytes(); i++) {
-                uint8_t tile;
-                dataStream >> tile;
-                this->tilemap[i] = make_shared<PlainTile>(tile);
-            }
-            break;
-        case TilemapFormat::BPP_4:
-            for (int i = 0; i < tilemapBytes(); i+=2) {
-                uint16_t tile;
-                dataStream >> tile;
-                this->tilemap[i / 2] = make_shared<BPP4Tile>(tile & 0xffff);
-            }
-            break;
-        case TilemapFormat::BPP_8:
-            for (int i = 0; i < tilemapBytes(); i+=2) {
-                uint16_t tile;
-                dataStream >> tile;
-                this->tilemap[i / 2] = make_shared<BPP8Tile>(tile & 0xffff);
-            }
-            break;
-    }
+    QByteArray newTilemap = tilemapFile.readAll();
+    this->setTilemap(newTilemap);
     
     tilemapFile.close();
 
@@ -132,6 +108,9 @@ bool RegionMap::loadLayout(poryjson::Json layoutJson) {
         this->layout_format = LayoutFormat::None;
         return true;
     }
+
+    // TODO: reset other values here
+    this->layout_constants.clear();
 
     poryjson::Json::object layoutObject = layoutJson.object_items();
 
@@ -201,13 +180,16 @@ bool RegionMap::loadLayout(poryjson::Json layoutJson) {
             QRegularExpressionMatch match = re.match(text);
             if (match.hasMatch()) {
                 // TODO: keep track of labels and consts
-                QString qualifiers = match.captured("qual_1") + match.captured("qual_2");
+                QString qualifiers = match.captured("qual_1") + " " + match.captured("qual_2");
                 QString type = match.captured("type");
                 QString label = match.captured("label");
                 QStringList constants;
                 if (!match.captured("const_1").isNull()) constants.append(match.captured("const_1"));
                 if (!match.captured("const_2").isNull()) constants.append(match.captured("const_2"));
                 if (!match.captured("const_3").isNull()) constants.append(match.captured("const_3"));
+                this->layout_constants = constants;
+                this->layout_qualifiers = qualifiers + " " + type;
+                this->layout_array_label = label;
 
                 // find layers
                 QRegularExpression reLayers("(?<layer>\\[(?<label>LAYER_[A-Za-z0-9_]+)\\][^\\[\\]]+)");
@@ -261,18 +243,75 @@ bool RegionMap::loadLayout(poryjson::Json layoutJson) {
 
 void RegionMap::save() {
     logInfo("Saving region map data.");
-    
+
+    saveTilemap();
+    saveLayout();
+
     // TODO
 }
 
 void RegionMap::saveTilemap() {
-    // TODO
-
+    QFile tilemapFile(fullPath(this->tilemap_path));
+    if (!tilemapFile.open(QIODevice::WriteOnly)) {
+        logError(QString("Failed to open region map tilemap file %1 for writing.").arg(this->tilemap_path));
+        return;
+    }
+    tilemapFile.write(this->getTilemap());
+    tilemapFile.close();
 }
 
 void RegionMap::saveLayout() {
-    // TODO
-
+    switch (this->layout_format) {
+        case LayoutFormat::Binary:
+        {
+            QByteArray data;
+            for (int m = 0; m < this->layout_height; m++) {
+                for (int n = 0; n < this->layout_width; n++) {
+                    int i = n + this->layout_width * m;
+                    data.append(this->project->mapSectionNameToValue.value(this->layouts["main"][i].map_section));
+                }
+            }
+            QFile bfile(fullPath(this->layout_path));
+            if (!bfile.open(QIODevice::WriteOnly)) {
+                logError("Failed to open region map layout binary for writing.");
+            }
+            bfile.write(data);
+            bfile.close();
+            break;
+        }
+        case LayoutFormat::CArray:
+        {
+            QString text = QString("%1 %2").arg(this->layout_qualifiers).arg(this->layout_array_label);
+            for (QString label : this->layout_constants) {
+                text += QString("[%1]").arg(label);
+            }
+            text += " = {\n";
+            if (this->layout_layers.size() == 1) {
+                // TODO: single layered
+                // just dump the array of map sections, or save as multi dimensional [width][height]?
+            } else {
+                // multi layered
+                for (auto layoutName : this->layout_layers) {
+                    text += QString("    [%1] =\n    {\n").arg(layoutName);
+                    for (int row = 0; row < this->layout_height; row++) {
+                        text += "        {";
+                        for (int col = 0; col < this->layout_width; col++) {
+                            int i = col + row * this->layout_width;
+                            text += this->layouts[layoutName][i].map_section + ", ";
+                        }
+                        text.chop(2);
+                        text += "},\n";
+                    }
+                    text += "    },\n";
+                }
+                text.chop(2);
+                text += "\n";
+            }
+            text += "};\n";
+            this->project->saveTextFile(fullPath(this->layout_path), text);
+            break;
+        }
+    }
 }
 
 void RegionMap::saveOptions(int id, QString sec, QString name, int x, int y) {
@@ -303,6 +342,66 @@ void RegionMap::replaceSectionId(unsigned oldId, unsigned newId) {
 void RegionMap::resize(int newWidth, int newHeight) {
     // TODO
 
+}
+
+QByteArray RegionMap::getTilemap() {
+    QByteArray tilemapArray;
+    QDataStream dataStream(&tilemapArray, QIODevice::WriteOnly);
+    dataStream.setByteOrder(QDataStream::LittleEndian);
+
+    switch (this->tilemap_format) {
+        case TilemapFormat::Plain:
+            for (int i = 0; i < tilemapSize(); i++) {
+                uint8_t tile = this->tilemap[i]->raw();
+                dataStream << tile;
+            }
+            break;
+        case TilemapFormat::BPP_4:
+            for (int i = 0; i < tilemapSize(); i++) {
+                uint16_t tile = this->tilemap[i]->raw();
+                dataStream << tile;
+            }
+            break;
+        case TilemapFormat::BPP_8:
+            for (int i = 0; i < tilemapSize(); i++) {
+                uint16_t tile = this->tilemap[i]->raw();
+                dataStream << tile;
+            }
+            break;
+    }
+
+    return tilemapArray;
+}
+
+void RegionMap::setTilemap(QByteArray newTilemap) {
+    QDataStream dataStream(newTilemap);
+    dataStream.setByteOrder(QDataStream::LittleEndian);
+
+    this->tilemap.clear();
+    this->tilemap.resize(tilemapSize());
+    switch (this->tilemap_format) {
+        case TilemapFormat::Plain:
+            for (int i = 0; i < tilemapBytes(); i++) {
+                uint8_t tile;
+                dataStream >> tile;
+                this->tilemap[i] = make_shared<PlainTile>(tile);
+            }
+            break;
+        case TilemapFormat::BPP_4:
+            for (int i = 0; i < tilemapSize(); i++) {
+                uint16_t tile;
+                dataStream >> tile;
+                this->tilemap[i] = make_shared<BPP4Tile>(tile & 0xffff);
+            }
+            break;
+        case TilemapFormat::BPP_8:
+            for (int i = 0; i < tilemapSize(); i++) {
+                uint16_t tile;
+                dataStream >> tile;
+                this->tilemap[i] = make_shared<BPP8Tile>(tile & 0xffff);
+            }
+            break;
+    }
 }
 
 QVector<uint8_t> RegionMap::getTiles() {
@@ -394,6 +493,14 @@ bool RegionMap::squareHasMap(int index) {
 QString RegionMap::squareMapSection(int index) {
     int layoutIndex = tilemapToLayoutIndex(index);
     return (layoutIndex < 0 || !this->layouts.contains(this->current_layer)) ? QString() : this->layouts[this->current_layer][layoutIndex].map_section;
+}
+
+void RegionMap::setSquareMapSection(int index, QString section) {
+    int layoutIndex = tilemapToLayoutIndex(index);
+    if (!(layoutIndex < 0 || !this->layouts.contains(this->current_layer))) {
+        this->layouts[this->current_layer][layoutIndex].map_section = section;
+        this->layouts[this->current_layer][layoutIndex].has_map = !(section == "MAPSEC_NONE" || section.isEmpty());
+    }
 }
 
 int RegionMap::squareX(int index) {
