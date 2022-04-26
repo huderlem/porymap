@@ -12,7 +12,7 @@ TARGET = porymap
 TEMPLATE = app
 RC_ICONS = resources/icons/porymap-icon-2.ico
 ICON = resources/icons/porymap.icns
-QMAKE_CXXFLAGS += -std=c++11 -Wall
+QMAKE_CXXFLAGS += -std=c++17 -Wall
 QMAKE_TARGET_BUNDLE_PREFIX = com.pret
 
 SOURCES += src/core/block.cpp \
@@ -33,6 +33,7 @@ SOURCES += src/core/block.cpp \
     src/core/wildmoninfo.cpp \
     src/core/editcommands.cpp \
     src/lib/orderedjson.cpp \
+    src/core/regionmapeditcommands.cpp \
     src/mainwindow_scriptapi.cpp \
     src/ui/aboutporymap.cpp \
     src/ui/draggablepixmapitem.cpp \
@@ -106,6 +107,7 @@ HEADERS  += include/core/block.h \
     include/core/regionmap.h \
     include/core/wildmoninfo.h \
     include/core/editcommands.h \
+    include/core/regionmapeditcommands.h \
     include/lib/orderedmap.h \
     include/lib/orderedjson.h \
     include/ui/aboutporymap.h \

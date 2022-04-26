@@ -4,6 +4,7 @@
 #include "project.h"
 #include "log.h"
 #include "config.h"
+#include "regionmapeditcommands.h"
 
 #include <QByteArray>
 #include <QFile>
@@ -163,7 +164,7 @@ bool RegionMap::loadLayout(poryjson::Json layoutJson) {
                     layout.append(square);
                 }
             }
-            this->layouts["main"] = layout;
+            setLayout("main", layout);
             break;
         }
         case LayoutFormat::CArray:
@@ -226,7 +227,7 @@ bool RegionMap::loadLayout(poryjson::Json layoutJson) {
                         }
                         y++;
                     }
-                    this->layouts[layerName] = layout;
+                    setLayout(layerName, layout);
                 }
 
             } else {
@@ -241,13 +242,23 @@ bool RegionMap::loadLayout(poryjson::Json layoutJson) {
     return !errored;
 }
 
-void RegionMap::save() {
-    logInfo("Saving region map data.");
+void RegionMap::commit(QUndoCommand *command) {
+    editHistory.push(command);
+}
 
+void RegionMap::undo() {
+    //
+    editHistory.undo();
+}
+
+void RegionMap::redo() {
+    //
+    editHistory.redo();
+}
+
+void RegionMap::save() {
     saveTilemap();
     saveLayout();
-
-    // TODO
 }
 
 void RegionMap::saveTilemap() {
@@ -320,18 +331,19 @@ void RegionMap::saveOptions(int id, QString sec, QString name, int x, int y) {
 }
 
 void RegionMap::resetSquare(int index) {
-    // TODO
-
+    this->layouts[this->current_layer][index].map_section = "MAPSEC_NONE";
+    this->layouts[this->current_layer][index].has_map = false;
 }
 
 void RegionMap::clearLayout() {
-    // TODO
-
+    for (int i = 0; i < this->layout_width * this->layout_height; i++) {
+        resetSquare(i);
+    }
 }
 
 void RegionMap::clearImage() {
-    // TODO
-
+    QByteArray zeros(this->tilemapSize(), 0);
+    this->setTilemap(zeros);
 }
 
 void RegionMap::replaceSectionId(unsigned oldId, unsigned newId) {
@@ -404,8 +416,17 @@ void RegionMap::setTilemap(QByteArray newTilemap) {
     }
 }
 
+QList<LayoutSquare> RegionMap::getLayout(QString layer) {
+    return this->layouts[layer];
+}
+
+void RegionMap::setLayout(QString layer, QList<LayoutSquare> layout) {
+    this->layouts[layer] = layout;
+}
+
 QVector<uint8_t> RegionMap::getTiles() {
     QVector<uint8_t> tileIds;
+    // unused? remove when redo history is fully transitioned
     // TODO: change this to use TilemapTile instead of uint8_t
 
     return tileIds;
@@ -423,7 +444,7 @@ int RegionMap::get_tilemap_index(int x, int y) {
 
 // Layout coords to layout index.
 int RegionMap::get_layout_index(int x, int y) {
-    return x + y * this->tilemap_width;
+    return x + y * this->layout_width;
 }
 
 unsigned RegionMap::getTileId(int index) {
@@ -526,7 +547,7 @@ MapSectionEntry RegionMap::getEntry(QString section) {
 }
 
 QString RegionMap::palPath() {
-    return this->project->root + "/" + this->palette_path;
+    return this->palette_path.isEmpty() ? QString() : this->project->root + "/" + this->palette_path;
 }
 
 QString RegionMap::pngPath() {

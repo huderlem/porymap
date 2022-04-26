@@ -20,6 +20,7 @@ void TilemapTileSelector::select(unsigned tileId) {
     QPoint coords = this->getTileIdCoords(tileId);
     SelectablePixmapItem::select(coords.x(), coords.y(), 0, 0);
     this->selectedTile = tileId;
+    this->drawSelection();
     emit selectedTileChanged(tileId);
 }
 
@@ -50,11 +51,7 @@ QImage TilemapTileSelector::tileImg(shared_ptr<TilemapTile> tile) {
 
     switch(this->format) {
         case TilemapFormat::Plain:
-        {
-            // TODO: even allow palettes for Plain tiles?
-            // 1 x palette x any colors
             break;
-        }
         case TilemapFormat::BPP_4:
         {
 // before Qt 6, the color table is a QVector which is deprecated now, and this method does not exits
@@ -67,10 +64,11 @@ QImage TilemapTileSelector::tileImg(shared_ptr<TilemapTile> tile) {
         }
         case TilemapFormat::BPP_8:
         {
+            // TODO:
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            tilesetImage.setColorTable(this->palette.toVector());
+            //tilesetImage.setColorTable(this->palette.toVector());
 #else
-            tilesetImage.setColorTable(this->palette);
+            //tilesetImage.setColorTable(this->palette);
 #endif
             break;
         }
