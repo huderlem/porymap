@@ -19,32 +19,6 @@ using std::shared_ptr;
 
 class Project;
 
-enum RegionMapEditorBox {
-    BackgroundImage = 1,
-    CityMapImage    = 2,
-};
-
-class RegionMapHistoryItem {
-public:
-    int which;
-    int mapWidth = 0;
-    int mapHeight = 0;
-    QVector<uint8_t> tiles;
-    QString cityMap;
-    RegionMapHistoryItem(int which, QVector<uint8_t> tiles, QString cityMap) {
-        this->which = which;
-        this->tiles = tiles;
-        this->cityMap = cityMap;
-    }
-    RegionMapHistoryItem(int which, QVector<uint8_t> tiles, int width, int height) {
-        this->which = which;
-        this->tiles = tiles;
-        this->mapWidth = width;
-        this->mapHeight = height;
-    }
-    ~RegionMapHistoryItem() {}
-};
-
 struct LayoutSquare
 {
     QString map_section;
@@ -69,9 +43,9 @@ public:
     RegionMap() = delete;
     RegionMap(Project *);
 
-    Project *project = nullptr;
+    ~RegionMap() {}
 
-    History<RegionMapHistoryItem*> history; // TODO
+    Project *project = nullptr;
 
     bool loadMapData(poryjson::Json);
     bool loadTilemap(poryjson::Json);
@@ -121,6 +95,9 @@ public:
     QByteArray getTilemap();
     void setTilemap(QByteArray newTilemap);
 
+    QList<LayoutSquare> getLayout(QString layer);
+    void setLayout(QString layer, QList<LayoutSquare> layout);
+
     QStringList getLayers() { return this->layout_layers; }
     void setLayer(QString layer) { this->current_layer = layer; }
     QString getLayer() { return this->current_layer; }
@@ -145,6 +122,12 @@ public:
     int pixelHeight() { return this->tilemap_height * 8; }
 
     QString fullPath(QString local);
+
+    void commit(QUndoCommand *command);
+    QUndoStack editHistory;
+
+    void undo();
+    void redo();
 
 private:
     // TODO: defaults needed?

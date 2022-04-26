@@ -123,7 +123,9 @@ public:
         this->tileset = QImage(tilesetFilepath);
         this->format = format;
         bool err;
-        this->palette = PaletteUtil::parse(palFilepath, &err);
+        if (!palFilepath.isEmpty()) {
+            this->palette = PaletteUtil::parse(palFilepath, &err);
+        }
         this->setPixmap(QPixmap::fromImage(this->tileset));
         this->numTilesWide = this->tileset.width() / 8;
         this->selectedTile = 0x00;

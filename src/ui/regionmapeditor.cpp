@@ -1,6 +1,7 @@
 #include "regionmapeditor.h"
 #include "ui_regionmapeditor.h"
 #include "regionmappropertiesdialog.h"
+#include "regionmapeditcommands.h"
 #include "imageexport.h"
 #include "shortcut.h"
 #include "config.h"
@@ -36,6 +37,11 @@ RegionMapEditor::RegionMapEditor(QWidget *parent, Project *project_) :
 RegionMapEditor::~RegionMapEditor()
 {
     delete ui;
+    // deletion must be done in this order else crashes
+    auto stacks = this->history.stacks();
+    for (auto *stack : stacks) {
+        this->history.removeStack(stack);
+    }
     for (auto p : this->region_maps) {
         delete p.second;
     }
@@ -63,6 +69,21 @@ void RegionMapEditor::initShortcuts() {
             {QKeySequence("Del"), QKeySequence("Backspace")}, this, SLOT(on_pushButton_RM_Options_delete_clicked()));
     shortcut_RM_Options_delete->setObjectName("shortcut_RM_Options_delete");
     shortcut_RM_Options_delete->setWhatsThis("Map Layout: Delete Square");
+
+    QAction *undoAction = this->history.createUndoAction(this, tr("&Undo"));
+    undoAction->setObjectName("action_RegionMap_Undo");
+    undoAction->setShortcut(QKeySequence("Ctrl+Z"));
+
+    QAction *redoAction = this->history.createRedoAction(this, tr("&Redo"));
+    redoAction->setObjectName("action_RegionMap_Redo");
+    redoAction->setShortcuts({QKeySequence("Ctrl+Y"), QKeySequence("Ctrl+Shift+Z")});
+
+    ui->menuEdit->addAction(undoAction);
+    ui->menuEdit->addAction(redoAction);
+
+    connect(&(this->history), &QUndoGroup::indexChanged, [this](int) {
+        on_tabWidget_Region_Map_currentChanged(this->ui->tabWidget_Region_Map->currentIndex());
+    });
 
     shortcutsConfig.load();
     shortcutsConfig.setDefaultShortcuts(shortcutableObjects());
@@ -409,6 +430,8 @@ bool RegionMapEditor::load() {
         newMap->loadMapData(o);
 
         region_maps[alias] = newMap;
+
+        this->history.addStack(&(newMap->editHistory));
     }
 
     // add to ui
@@ -420,6 +443,7 @@ bool RegionMapEditor::load() {
     if (!region_maps.empty()) {
         this->region_map = region_maps.begin()->second;
         this->currIndex = this->region_map->firstLayoutIndex();
+        this->region_map->editHistory.setActive();
 
         displayRegionMap();
     }
@@ -477,11 +501,14 @@ void RegionMapEditor::on_comboBox_regionSelector_textActivated(const QString &re
     //
     if (this->region_maps.contains(region)) {
         this->region_map = region_maps.at(region);
+        this->region_map->editHistory.setActive();
         this->currIndex = this->region_map->firstLayoutIndex();
         // TODO: make the above into a function that takes an alias string? in case there is more to it
 
         // TODO: anything else needed here?
         displayRegionMap();
+
+        //this->editGroup.setActiveStack(&(this->region_map->editHistory));
     }
 }
 
@@ -510,15 +537,6 @@ void RegionMapEditor::displayRegionMapImage() {
     this->ui->graphicsView_Region_Map_BkgImg->setScene(this->scene_region_map_image);
 
     on_verticalSlider_Zoom_Map_Image_valueChanged(this->ui->verticalSlider_Zoom_Map_Image->value());
-
-    // if (regionMapFirstDraw) {
-    //     on_verticalSlider_Zoom_Map_Image_valueChanged(this->ui->verticalSlider_Zoom_Map_Image->value());
-    //     RegionMapHistoryItem *commit = new RegionMapHistoryItem(
-    //         RegionMapEditorBox::BackgroundImage, this->region_map->getTiles(), this->region_map->tilemapWidth(), this->region_map->height()
-    //     );
-    //     history.push(commit);
-    //     regionMapFirstDraw = false;
-    // }
 }
 
 void RegionMapEditor::displayRegionMapLayout() {
@@ -669,6 +687,8 @@ void RegionMapEditor::displayRegionMapTileSelector() {
 
     this->ui->graphicsView_RegionMap_Tiles->setScene(this->scene_region_map_tiles);
     on_verticalSlider_Zoom_Image_Tiles_valueChanged(this->ui->verticalSlider_Zoom_Image_Tiles->value());
+
+    this->ui->frame_tileOptions->setEnabled(this->region_map->tilemapFormat() != TilemapFormat::Plain);
 
     this->mapsquare_selector_item->select(this->selectedImageTile);
 }
@@ -842,21 +862,9 @@ void RegionMapEditor::mouseEvent_region_map(QGraphicsSceneMouseEvent *event, Reg
         item->select(event);
     //} else if (event->buttons() & Qt::MiddleButton) {// TODO
     } else {
-        if (event->type() == QEvent::GraphicsSceneMouseRelease) {
-            //< TODO: history
-            // RegionMapHistoryItem *current = history.current();
-            // bool addToHistory = !(current && current->tiles == this->region_map->getTiles());
-            // if (addToHistory) {
-            //     RegionMapHistoryItem *commit = new RegionMapHistoryItem(
-            //         RegionMapEditorBox::BackgroundImage, this->region_map->getTiles(), this->region_map->width(), this->region_map->height()
-            //     );
-            //     history.push(commit);
-            // }
-        } else {
-            item->paint(event);
-            this->region_map_layout_item->draw();
-            this->hasUnsavedChanges = true;
-        }
+        item->paint(event);
+        this->region_map_layout_item->draw();
+        this->hasUnsavedChanges = true;
     }
 }
 
@@ -894,15 +902,20 @@ void RegionMapEditor::mouseEvent_city_map(QGraphicsSceneMouseEvent *event, CityM
 
 void RegionMapEditor::on_tabWidget_Region_Map_currentChanged(int index) {
     this->ui->stackedWidget_RM_Options->setCurrentIndex(index);
+    if (!region_map) return;
     switch (index)
     {
         case 0:
             this->ui->verticalSlider_Zoom_Image_Tiles->setVisible(true);
-            this->region_map_item->draw();
+            if (this->region_map_item)
+                this->region_map_item->draw();
             break;
         case 1:
             this->ui->verticalSlider_Zoom_Image_Tiles->setVisible(false);
-            this->region_map_layout_item->draw();
+            if (this->region_map_layout_item) {
+                this->region_map_layout_item->draw();
+                updateRegionMapLayoutOptions(this->currIndex);
+            }
             break;
         case 2:
             this->ui->verticalSlider_Zoom_Image_Tiles->setVisible(false);
@@ -912,9 +925,17 @@ void RegionMapEditor::on_tabWidget_Region_Map_currentChanged(int index) {
 }
 
 void RegionMapEditor::on_comboBox_RM_ConnectedMap_textActivated(const QString &mapsec) {
+    QString layer = this->region_map->getLayer();
+    QList<LayoutSquare> oldLayout = this->region_map->getLayout(layer);
     this->region_map->setSquareMapSection(this->currIndex, mapsec);
-    onRegionMapLayoutSelectedTileChanged(this->currIndex);// re-draw layout image
+    QList<LayoutSquare> newLayout = this->region_map->getLayout(layer);
+
+    EditLayout *command = new EditLayout(this->region_map, layer, this->currIndex, oldLayout, newLayout);
+    this->region_map->commit(command);
+
     this->hasUnsavedChanges = true;// TODO: sometimes this is called for unknown reasons
+
+    onRegionMapLayoutSelectedTileChanged(this->currIndex);// re-draw layout image
 }
 
 void RegionMapEditor::on_comboBox_RM_Entry_MapSection_textActivated(const QString &text) {
@@ -988,10 +1009,21 @@ void RegionMapEditor::on_lineEdit_RM_MapName_textEdited(const QString &text) {
 }
 
 void RegionMapEditor::on_pushButton_RM_Options_delete_clicked() {
-    this->region_map->resetSquare(this->region_map_layout_item->selectedTile);
-    updateRegionMapLayoutOptions(this->region_map_layout_item->selectedTile);
+    // TODO: crashing
+    int index = this->region_map->tilemapToLayoutIndex(this->currIndex);
+    QList<LayoutSquare> oldLayout = this->region_map->getLayout(this->region_map->getLayer());
+    //this->region_map->resetSquare(this->region_map_layout_item->selectedTile);
+    this->region_map->resetSquare(index);
+    QList<LayoutSquare> newLayout = this->region_map->getLayout(this->region_map->getLayer());
+    EditLayout *commit = new EditLayout(this->region_map, this->region_map->getLayer(), this->currIndex, oldLayout, newLayout);
+    commit->setText("Reset Layout Square");
+    this->region_map->editHistory.push(commit);
+    //updateRegionMapLayoutOptions(this->region_map_layout_item->selectedTile);
+    updateRegionMapLayoutOptions(this->currIndex);
     this->region_map_layout_item->draw();
-    this->region_map_layout_item->select(this->region_map_layout_item->selectedTile);
+    //this->region_map_layout_item->select(this->region_map_layout_item->selectedTile);
+    this->region_map_layout_item->select(this->currIndex);
+    // ^ this line necessary?
     this->hasUnsavedChanges = true;
 }
 
@@ -1082,63 +1114,6 @@ void RegionMapEditor::on_action_RegionMap_Resize_triggered() {
     return;
 }
 
-void RegionMapEditor::on_action_RegionMap_Undo_triggered() {
-    //< TODO: edit history
-    undo();
-    this->hasUnsavedChanges = true;
-}
-
-void RegionMapEditor::undo() {
-    //< TODO: edit history
-    RegionMapHistoryItem *commit = history.back();
-    if (!commit) return;
-
-    switch (commit->which)
-    {
-        case RegionMapEditorBox::BackgroundImage:
-            //if (commit->mapWidth != this->region_map->width() || commit->mapHeight != this->region_map->height())
-            //    this->resize(commit->mapWidth, commit->mapHeight);
-            this->region_map->setTiles(commit->tiles);
-            this->region_map_item->draw();
-            this->region_map_layout_item->draw();
-            this->region_map_entries_item->draw();
-            break;
-        case RegionMapEditorBox::CityMapImage:
-            //< if (commit->cityMap == this->city_map_item->file)
-            //<     this->city_map_item->setTiles(commit->tiles);
-            //< this->city_map_item->draw();
-            break;
-    }
-}
-
-void RegionMapEditor::on_action_RegionMap_Redo_triggered() {
-    //< TODO: edit history
-    redo();
-    this->hasUnsavedChanges = true;
-}
-
-void RegionMapEditor::redo() {
-    //< TODO: edit history
-    RegionMapHistoryItem *commit = history.next();
-    if (!commit) return;
-
-    switch (commit->which)
-    {
-        case RegionMapEditorBox::BackgroundImage:
-            //if (commit->mapWidth != this->region_map->width() || commit->mapHeight != this->region_map->height())
-            //    this->resize(commit->mapWidth, commit->mapHeight);
-            this->region_map->setTiles(commit->tiles);
-            this->region_map_item->draw();
-            this->region_map_layout_item->draw();
-            this->region_map_entries_item->draw();
-            break;
-        case RegionMapEditorBox::CityMapImage:
-            //< this->city_map_item->setTiles(commit->tiles);
-            //< this->city_map_item->draw();
-            break;
-    }
-}
-
 void RegionMapEditor::resize(int w, int h) {
     this->region_map->resize(w, h);
     this->currIndex = this->region_map->padLeft() * w + this->region_map->padTop();
@@ -1189,11 +1164,13 @@ void RegionMapEditor::on_action_Swap_triggered() {
 }
 
 void RegionMapEditor::on_action_RegionMap_ClearImage_triggered() {
+    QByteArray oldTilemap = this->region_map->getTilemap();
     this->region_map->clearImage();
-    RegionMapHistoryItem *commit = new RegionMapHistoryItem(
-        RegionMapEditorBox::BackgroundImage, this->region_map->getTiles(), this->region_map->tilemapWidth(), this->region_map->tilemapHeight()
-    );
-    history.push(commit);
+    QByteArray newTilemap = this->region_map->getTilemap();
+    
+    EditTilemap *commit = new EditTilemap(this->region_map, oldTilemap, newTilemap, -1);
+    commit->setText("Clear Tilemap");
+    this->region_map->editHistory.push(commit);
 
     displayRegionMapImage();
     displayRegionMapLayout();
@@ -1209,7 +1186,12 @@ void RegionMapEditor::on_action_RegionMap_ClearLayout_triggered() {
     );
 
     if (result == QMessageBox::Yes) {
+        QList<LayoutSquare> oldLayout = this->region_map->getLayout(this->region_map->getLayer());
         this->region_map->clearLayout();
+        QList<LayoutSquare> newLayout = this->region_map->getLayout(this->region_map->getLayer());
+        EditLayout *commit = new EditLayout(this->region_map, this->region_map->getLayer(), -1, oldLayout, newLayout);
+        commit->setText("Clear Layout");
+        this->region_map->editHistory.push(commit);
         displayRegionMapLayout();
     } else {
         return;

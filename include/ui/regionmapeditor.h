@@ -45,9 +45,6 @@ public:
     void onRegionMapEntriesSelectedTileChanged(QString) {};
     void onRegionMapEntryDragged(int, int);
 
-    void undo();
-    void redo();
-
     void resize(int width, int height);
 
     QObjectList shortcutableObjects() const;
@@ -61,7 +58,7 @@ private:
 
     poryjson::Json rmConfigJson;
 
-    History<RegionMapHistoryItem*> history;
+    QUndoGroup history;
 
     int currIndex = 0;
     unsigned selectedCityTile;
@@ -124,8 +121,6 @@ private:
 
 private slots:
     void on_action_RegionMap_Save_triggered();
-    void on_action_RegionMap_Undo_triggered();
-    void on_action_RegionMap_Redo_triggered();
     void on_action_RegionMap_Resize_triggered();
     void on_action_RegionMap_ClearImage_triggered();
     void on_action_RegionMap_ClearLayout_triggered();

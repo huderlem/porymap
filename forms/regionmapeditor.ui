@@ -1124,8 +1124,6 @@
     <property name="title">
      <string>Edit</string>
     </property>
-    <addaction name="action_RegionMap_Undo"/>
-    <addaction name="action_RegionMap_Redo"/>
     <addaction name="action_RegionMap_Resize"/>
     <addaction name="separator"/>
     <addaction name="action_Swap"/>
@@ -1148,22 +1146,6 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
-   </property>
-  </action>
-  <action name="action_RegionMap_Undo">
-   <property name="text">
-    <string>Undo</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Z</string>
-   </property>
-  </action>
-  <action name="action_RegionMap_Redo">
-   <property name="text">
-    <string>Redo</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Y</string>
    </property>
   </action>
   <action name="action_RegionMap_Resize">
