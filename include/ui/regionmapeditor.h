@@ -31,7 +31,6 @@ public:
 
     bool load();
     bool loadCityMaps();
-    void setCurrentSquareOptions();
 
     void onRegionMapTileSelectorSelectedTileChanged(unsigned id);
     void onCityMapTileSelectorSelectedTileChanged(unsigned id);
