@@ -385,7 +385,7 @@ poryjson::Json RegionMapEditor::getJsonFromAlias(QString alias) {
 
 bool RegionMapEditor::load() {
     // check for config json file
-    QString jsonConfigFilepath = this->project->root + "/src/data/region_map/region_map_config.json";
+    QString jsonConfigFilepath = this->project->root + "/src/data/region_map/porymap_config.json";
     if (!QFile::exists(jsonConfigFilepath)) {
         logWarn("Region Map config file not found.");
 
@@ -410,8 +410,10 @@ bool RegionMapEditor::load() {
     }
     else {
         logInfo("Region map configuration file found.");
-
-        // TODO: load rmConfigJson from the config file, and verify it
+        ParseUtil parser;
+        OrderedJson::object obj;
+        parser.tryParseOrderedJsonFile(&obj, jsonConfigFilepath);
+        this->rmConfigJson = OrderedJson(obj);
     }
 
     // if all has gone well, this->rmConfigJson should be populated
@@ -460,18 +462,23 @@ bool RegionMapEditor::loadCityMaps() {
 
 void RegionMapEditor::on_action_RegionMap_Save_triggered() {
     // TODO: add "Save All" to save all region maps
-    // TODO: save the config json as well
     this->region_map->save();
 
     // save entries
     saveRegionMapEntries();
 
     // save config
-}
+    QString filepath = QString("%1/src/data/region_map/porymap_config.json").arg(this->project->root);
+    QFile file(filepath);
+    if (!file.open(QIODevice::WriteOnly)) {
+        logError(QString("Error: Could not open %1 for writing").arg(filepath));
+        return;
+    }
+    OrderedJsonDoc jsonDoc(&(this->rmConfigJson));
+    jsonDoc.dump(&file);
+    file.close();
 
-void RegionMapEditor::setCurrentSquareOptions() {
-    // TODO
-
+    this->hasUnsavedChanges = false;
 }
 
 void RegionMapEditor::displayRegionMap() {
@@ -848,7 +855,6 @@ void RegionMapEditor::onRegionMapEntryDragged(int new_x, int new_y) {
 }
 
 void RegionMapEditor::onRegionMapLayoutSelectedTileChanged(int index) {
-    setCurrentSquareOptions();
     QString message = QString();
     this->currIndex = index;
     this->region_map_layout_item->highlightedTile = index;
