@@ -80,7 +80,6 @@ bool RegionMap::loadTilemap(poryjson::Json tilemapJson) {
     this->tileset_path = tilemapObject["tileset_path"].string_value();
     this->tilemap_path = tilemapObject["tilemap_path"].string_value();
 
-    //! TODO: set a config option for this
     if (tilemapObject.contains("palette")) {
         this->palette_path = tilemapObject["palette"].string_value();
     }
@@ -346,9 +345,13 @@ void RegionMap::clearImage() {
     this->setTilemap(zeros);
 }
 
-void RegionMap::replaceSectionId(unsigned oldId, unsigned newId) {
-    // TODO
-
+void RegionMap::replaceSection(QString oldSection, QString newSection) {
+    for (auto &square : this->layouts[this->current_layer]) {
+        if (square.map_section == oldSection) {
+            square.map_section = newSection;
+            square.has_map = (newSection != "MAPSEC_NONE");
+        }
+    }
 }
 
 void RegionMap::resize(int newWidth, int newHeight) {

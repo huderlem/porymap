@@ -112,6 +112,7 @@ private:
     void displayCityMap(QString name);
     void displayRegionMapEntryOptions();
     void updateRegionMapEntryOptions(QString);
+    void setRegionMap(RegionMap *map);
 
     bool createCityMap(QString name);
     bool tryInsertNewMapEntry(QString);

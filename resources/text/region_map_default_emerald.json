@@ -33,8 +33,5 @@
             },
             "layout": null
         }
-    ],
-    "entries": {
-        "path": "src/data/region_map/region_map_sections.json"
-    }
+    ]
 }
