@@ -56,6 +56,7 @@ public:
     void setEntries(tsl::ordered_map<QString, MapSectionEntry> *entries) { this->region_map_entries = entries; }
     MapSectionEntry getEntry(QString section);
     void setEntry(QString section, MapSectionEntry entry);
+    void removeEntry(QString section);
 
     void save();
     void saveTilemap();

@@ -587,6 +587,10 @@ void RegionMap::setEntry(QString section, MapSectionEntry entry) {
     this->region_map_entries->operator[](section) = entry;
 }
 
+void RegionMap::removeEntry(QString section) {
+    this->region_map_entries->erase(section);
+}
+
 QString RegionMap::palPath() {
     return this->palette_path.isEmpty() ? QString() : this->project->root + "/" + this->palette_path;
 }

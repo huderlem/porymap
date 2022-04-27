@@ -136,6 +136,7 @@ private slots:
     void on_spinBox_RM_Entry_y_valueChanged(int);
     void on_spinBox_RM_Entry_width_valueChanged(int);
     void on_spinBox_RM_Entry_height_valueChanged(int);
+    void on_pushButton_entryActivate_clicked();
     void on_spinBox_RM_LayoutWidth_valueChanged(int);
     void on_spinBox_RM_LayoutHeight_valueChanged(int);
     void on_spinBox_tilePalette_valueChanged(int);

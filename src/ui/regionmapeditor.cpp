@@ -646,6 +646,7 @@ void RegionMapEditor::updateRegionMapEntryOptions(QString section) {
     this->ui->spinBox_RM_Entry_y->setEnabled(enabled);
     this->ui->spinBox_RM_Entry_width->setEnabled(enabled);
     this->ui->spinBox_RM_Entry_height->setEnabled(enabled);
+    this->ui->pushButton_entryActivate->setText(enabled ? "Remove" : "Add");
 
     this->ui->lineEdit_RM_MapName->blockSignals(true);
     this->ui->spinBox_RM_Entry_x->blockSignals(true);
@@ -670,6 +671,35 @@ void RegionMapEditor::updateRegionMapEntryOptions(QString section) {
     this->ui->spinBox_RM_Entry_y->blockSignals(false);
     this->ui->spinBox_RM_Entry_width->blockSignals(false);
     this->ui->spinBox_RM_Entry_height->blockSignals(false);
+}
+
+void RegionMapEditor::on_pushButton_entryActivate_clicked() {
+    QString section = this->ui->comboBox_RM_Entry_MapSection->currentText();
+    if (section == "MAPSEC_NONE") return;
+
+    if (this->region_map_entries.contains(section)) {
+        // disable
+        MapSectionEntry oldEntry = this->region_map->getEntry(section);
+        this->region_map->removeEntry(section);
+        MapSectionEntry newEntry = this->region_map->getEntry(section);
+        RemoveEntry *commit = new RemoveEntry(this->region_map, section, oldEntry, newEntry);
+        this->region_map->editHistory.push(commit);
+        updateRegionMapEntryOptions(section);
+
+        this->ui->pushButton_entryActivate->setText("Add");
+    } else {
+        // enable
+        MapSectionEntry oldEntry = this->region_map->getEntry(section);
+        MapSectionEntry entry = MapSectionEntry();
+        entry.valid = true;
+        this->region_map->setEntry(section, entry);
+        MapSectionEntry newEntry = this->region_map->getEntry(section);
+        AddEntry *commit = new AddEntry(this->region_map, section, oldEntry, newEntry);
+        this->region_map->editHistory.push(commit);
+        updateRegionMapEntryOptions(section);
+
+        this->ui->pushButton_entryActivate->setText("Remove");
+    }
 }
 
 void RegionMapEditor::displayRegionMapTileSelector() {
