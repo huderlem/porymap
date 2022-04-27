@@ -424,6 +424,43 @@ void RegionMap::setLayout(QString layer, QList<LayoutSquare> layout) {
     this->layouts[layer] = layout;
 }
 
+QMap<QString, QList<LayoutSquare>> RegionMap::getAllLayouts() {
+    return this->layouts;
+}
+
+void RegionMap::setAllLayouts(QMap<QString, QList<LayoutSquare>> newLayouts) {
+    this->layouts = newLayouts;
+}
+
+void RegionMap::setLayoutDimensions(int width, int height, bool update) {
+    // for each layer!
+    if (update) {
+        for (QString layer : this->layout_layers) {
+            //
+            QList<LayoutSquare> oldLayout = this->getLayout(layer);
+            QList<LayoutSquare> newLayout;
+
+            for (int y = 0; y < height; y++)
+            for (int x = 0; x < width; x++) {
+                //
+                LayoutSquare newSquare;
+                if (x < this->layout_width && y < this->layout_height) {
+                    // within old layout
+                    int oldIndex = this->get_layout_index(x, y);
+                    newSquare = oldLayout[oldIndex];
+                }
+                newLayout.append(newSquare);
+            }
+            this->setLayout(layer, newLayout);
+        }
+    }
+
+    this->layout_width = width;
+    this->layout_height = height;
+
+    // TODO: commit
+}
+
 QVector<uint8_t> RegionMap::getTiles() {
     QVector<uint8_t> tileIds;
     // unused? remove when redo history is fully transitioned
@@ -544,6 +581,10 @@ MapSectionEntry RegionMap::getEntry(QString section) {
         return this->region_map_entries->operator[](section);
     else
         return MapSectionEntry();
+}
+
+void RegionMap::setEntry(QString section, MapSectionEntry entry) {
+    this->region_map_entries->operator[](section) = entry;
 }
 
 QString RegionMap::palPath() {
