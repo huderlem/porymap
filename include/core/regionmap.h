@@ -21,10 +21,11 @@ class Project;
 
 struct LayoutSquare
 {
+    LayoutSquare() : map_section("MAPSEC_NONE"), x(-1), y(-1), has_map(false) {}
     QString map_section;
     int x;
     int y;
-    bool has_map = false;
+    bool has_map;
 };
 
 struct MapSectionEntry
@@ -54,6 +55,7 @@ public:
 
     void setEntries(tsl::ordered_map<QString, MapSectionEntry> *entries) { this->region_map_entries = entries; }
     MapSectionEntry getEntry(QString section);
+    void setEntry(QString section, MapSectionEntry entry);
 
     void save();
     void saveTilemap();
@@ -98,6 +100,9 @@ public:
     QList<LayoutSquare> getLayout(QString layer);
     void setLayout(QString layer, QList<LayoutSquare> layout);
 
+    QMap<QString, QList<LayoutSquare>> getAllLayouts();
+    void setAllLayouts(QMap<QString, QList<LayoutSquare>> newLayouts);
+
     QStringList getLayers() { return this->layout_layers; }
     void setLayer(QString layer) { this->current_layer = layer; }
     QString getLayer() { return this->current_layer; }
@@ -113,6 +118,10 @@ public:
     int tilemapHeight() { return this->tilemap_height; }
     int tilemapSize() { return this->tilemap_width * this->tilemap_height; }
     int tilemapBytes();
+
+    int layoutWidth() { return this->layout_width; }
+    int layoutHeight() { return this->layout_height; }
+    void setLayoutDimensions(int width, int height, bool update = true);
 
     int tilemapToLayoutIndex(int index);
 
