@@ -68,7 +68,7 @@ public:
     void resetSquare(int index);
     void clearLayout();
     void clearImage();
-    void replaceSectionId(unsigned oldId, unsigned newId);
+    void replaceSection(QString oldSection, QString newSection);
 
     unsigned getTileId(int index);
     shared_ptr<TilemapTile> getTile(int index);
@@ -100,6 +100,8 @@ public:
 
     QList<LayoutSquare> getLayout(QString layer);
     void setLayout(QString layer, QList<LayoutSquare> layout);
+
+    bool layoutEnabled() { return this->layout_format != LayoutFormat::None; }
 
     QMap<QString, QList<LayoutSquare>> getAllLayouts();
     void setAllLayouts(QMap<QString, QList<LayoutSquare>> newLayouts);
@@ -143,7 +145,7 @@ private:
     // TODO: defaults needed?
     tsl::ordered_map<QString, MapSectionEntry> *region_map_entries = nullptr;
 
-    QString alias;
+    QString alias = "";
 
     int tilemap_width;
     int tilemap_height;
@@ -174,16 +176,15 @@ private:
     QStringList layout_constants;
     QString layout_qualifiers;
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    QVector<shared_ptr<TilemapTile>> tilemap;
+#else
     QList<shared_ptr<TilemapTile>> tilemap;
+#endif
 
-    QStringList layout_layers; // TODO: is this used?
+    QStringList layout_layers;
     QString current_layer;
-
-    // TODO: just use ordered map?
-    QMap<QString, QList<LayoutSquare>> layouts; // key: layer, value: layout
-
-    // TODO
-    QString city_map_tiles_path;
+    QMap<QString, QList<LayoutSquare>> layouts;
 
     int get_tilemap_index(int x, int y);
     int get_layout_index(int x, int y);

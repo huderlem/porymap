@@ -84,8 +84,5 @@
                 "path": "src/data/region_map/region_map_layout_sevii_67.h"
             }
         }
-    ],
-    "revion_map_sections": {
-        "path": "src/data/region_map/region_map_sections.json"
-    }
+    ]
 }

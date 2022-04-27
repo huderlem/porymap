@@ -409,6 +409,8 @@ bool RegionMapEditor::load() {
         }
     }
     else {
+        // TODO: put this first? so can fall back on the above if parse errors
+        // TODO: verify this object before assignment
         logInfo("Region map configuration file found.");
         ParseUtil parser;
         OrderedJson::object obj;
@@ -443,14 +445,29 @@ bool RegionMapEditor::load() {
 
     // display the first region map in the list
     if (!region_maps.empty()) {
-        this->region_map = region_maps.begin()->second;
-        this->currIndex = this->region_map->firstLayoutIndex();
-        this->region_map->editHistory.setActive();
-
-        displayRegionMap();
+        setRegionMap(region_maps.begin()->second);
     }
 
     return true;
+}
+
+void RegionMapEditor::setRegionMap(RegionMap *map) {
+    //
+    this->region_map = map;
+    this->currIndex = this->region_map->firstLayoutIndex();
+    this->region_map->editHistory.setActive();
+
+    if (this->region_map->layoutEnabled()) {
+        this->ui->tabWidget_Region_Map->setTabEnabled(1, true);
+        this->ui->tabWidget_Region_Map->setTabEnabled(2, true);
+    } else {
+        this->ui->tabWidget_Region_Map->setTabEnabled(1, false);
+        this->ui->tabWidget_Region_Map->setTabEnabled(2, false);
+    }
+
+    this->ui->tabWidget_Region_Map->setCurrentIndex(0);
+
+    displayRegionMap();
 }
 
 bool RegionMapEditor::loadCityMaps() {
@@ -505,15 +522,7 @@ void RegionMapEditor::updateLayerDisplayed() {
 void RegionMapEditor::on_comboBox_regionSelector_textActivated(const QString &region) {
     //
     if (this->region_maps.contains(region)) {
-        this->region_map = region_maps.at(region);
-        this->region_map->editHistory.setActive();
-        this->currIndex = this->region_map->firstLayoutIndex();
-        // TODO: make the above into a function that takes an alias string? in case there is more to it
-
-        // TODO: anything else needed here?
-        displayRegionMap();
-
-        //this->editGroup.setActiveStack(&(this->region_map->editHistory));
+        setRegionMap(region_maps.at(region));
     }
 }
 
@@ -572,6 +581,8 @@ void RegionMapEditor::displayRegionMapLayout() {
 }
 
 void RegionMapEditor::displayRegionMapLayoutOptions() {
+    if (!this->region_map->layoutEnabled()) return;
+
     this->ui->comboBox_RM_ConnectedMap->clear();
     this->ui->comboBox_RM_ConnectedMap->addItems(this->project->mapSectionValueToName.values());
 
@@ -634,6 +645,8 @@ void RegionMapEditor::displayRegionMapEntriesImage() {
 }
 
 void RegionMapEditor::displayRegionMapEntryOptions() {
+    if (!this->region_map->layoutEnabled()) return;
+
     this->ui->comboBox_RM_Entry_MapSection->addItems(this->project->mapSectionValueToName.values());
     int width = this->region_map->tilemapWidth() - this->region_map->padLeft() - this->region_map->padRight();
     int height = this->region_map->tilemapHeight() - this->region_map->padTop() - this->region_map->padBottom();
@@ -646,6 +659,8 @@ void RegionMapEditor::displayRegionMapEntryOptions() {
 }
 
 void RegionMapEditor::updateRegionMapEntryOptions(QString section) {
+    if (!this->region_map->layoutEnabled()) return;
+
     bool enabled = (section != "MAPSEC_NONE") && (this->region_map_entries.contains(section));
 
     this->ui->lineEdit_RM_MapName->setEnabled(enabled);
@@ -670,8 +685,6 @@ void RegionMapEditor::updateRegionMapEntryOptions(QString section) {
     this->ui->spinBox_RM_Entry_y->setValue(entry.y);
     this->ui->spinBox_RM_Entry_width->setValue(entry.width);
     this->ui->spinBox_RM_Entry_height->setValue(entry.height);
-
-    // TODO: if not enabled, button to enable, otherwise button to disable / remove entry from map
 
     this->ui->lineEdit_RM_MapName->blockSignals(false);
     this->ui->spinBox_RM_Entry_x->blockSignals(false);
@@ -1007,6 +1020,7 @@ void RegionMapEditor::on_comboBox_layoutLayer_textActivated(const QString &text)
 
 void RegionMapEditor::on_spinBox_RM_Entry_x_valueChanged(int x) {
     //tryInsertNewMapEntry(activeEntry);
+    qDebug() << "spinBox_RM_Entry_x valueChanged" << x;
     if (!this->region_map_entries.contains(activeEntry)) return;
     MapSectionEntry oldEntry = this->region_map_entries[activeEntry];
     this->region_map_entries[activeEntry].x = x;
@@ -1213,8 +1227,6 @@ void RegionMapEditor::resize(int w, int h) {
 }
 
 void RegionMapEditor::on_action_Swap_triggered() {
-    // TODO: does this function still work?
-    // TODO: fix for string ids not uint8 ids
     QDialog popup(this, Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
     popup.setWindowTitle("Swap Map Sections");
     popup.setWindowModality(Qt::NonModal);
@@ -1232,21 +1244,22 @@ void RegionMapEditor::on_action_Swap_triggered() {
     form.addRow(&buttonBox);
 
     QString beforeSection, afterSection;
-    uint8_t oldId, newId; 
     connect(&buttonBox, &QDialogButtonBox::rejected, &popup, &QDialog::reject);
-    connect(&buttonBox, &QDialogButtonBox::accepted, [this, &popup, &oldSecBox, &newSecBox, 
-                                                      &beforeSection, &afterSection, &oldId, &newId](){
+    connect(&buttonBox, &QDialogButtonBox::accepted, [this, &popup, &oldSecBox, &newSecBox, &beforeSection, &afterSection](){
         beforeSection = oldSecBox->currentText();
         afterSection = newSecBox->currentText();
         if (!beforeSection.isEmpty() && !afterSection.isEmpty()) {
-            oldId = static_cast<uint8_t>(this->project->mapSectionNameToValue.value(beforeSection));
-            newId = static_cast<uint8_t>(this->project->mapSectionNameToValue.value(afterSection));
             popup.accept();
         }
     });
 
     if (popup.exec() == QDialog::Accepted) {
-        this->region_map->replaceSectionId(oldId, newId);
+        QList<LayoutSquare> oldLayout = this->region_map->getLayout(this->region_map->getLayer());
+        this->region_map->replaceSection(beforeSection, afterSection);
+        QList<LayoutSquare> newLayout = this->region_map->getLayout(this->region_map->getLayer());
+        EditLayout *commit = new EditLayout(this->region_map, this->region_map->getLayer(), -2, oldLayout, newLayout);
+        commit->setText("Swap Layout Sections " + beforeSection + " >> " + afterSection);
+        this->region_map->editHistory.push(commit);
         displayRegionMapLayout();
         this->region_map_layout_item->select(this->region_map_layout_item->selectedTile);
         this->hasUnsavedChanges = true;
