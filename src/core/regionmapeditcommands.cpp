@@ -225,4 +225,37 @@ void RemoveEntry::undo() {
     QUndoCommand::undo();
 }
 
+///
+
+ResizeTilemap::ResizeTilemap(RegionMap *map, QByteArray oldTilemap, QByteArray newTilemap,
+        int oldWidth, int oldHeight, int newWidth, int newHeight, QUndoCommand *parent) 
+    : EditTilemap(map, oldTilemap, newTilemap, -1, parent) {
+    setText("Resize Tilemap");
+
+    this->oldWidth = oldWidth;
+    this->oldHeight = oldHeight;
+    this->newWidth = newWidth;
+    this->newHeight = newHeight;
+}
+
+void ResizeTilemap::redo() {
+    QUndoCommand::redo();
+
+    if (!map) return;
+
+    map->resizeTilemap(this->newWidth, this->newHeight, false);
+    map->setTilemap(this->newTilemap);
+    map->emitDisplay();
+}
+
+void ResizeTilemap::undo() {
+    if (!map) return;
+
+    map->resizeTilemap(this->oldWidth, this->oldHeight, false);
+    map->setTilemap(this->oldTilemap);
+    map->emitDisplay();
+
+    QUndoCommand::undo();
+}
+
 

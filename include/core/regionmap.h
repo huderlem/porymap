@@ -38,8 +38,9 @@ struct MapSectionEntry
     bool valid = false;
 };
 
-class RegionMap
+class RegionMap : public QObject
 {
+    Q_OBJECT
 public:
     RegionMap() = delete;
     RegionMap(Project *);
@@ -64,7 +65,7 @@ public:
     void saveConfig();// ? or do this in the editor only?
     void saveOptions(int id, QString sec, QString name, int x, int y);
 
-    void resize(int width, int height);
+    void resizeTilemap(int width, int height, bool update = true);
     void resetSquare(int index);
     void clearLayout();
     void clearImage();
@@ -86,6 +87,9 @@ public:
     void setTile(int index, TilemapTile &tile);
     void setTileData(int index, unsigned id, bool hFlip, bool vFlip, int palette);
     int getMapSquareIndex(int x, int y);
+
+    QString getAlias() { return this->alias; }
+    poryjson::Json::object config();
     
     QString palPath();
     QString pngPath();
@@ -141,6 +145,11 @@ public:
     void undo();
     void redo();
 
+    void emitDisplay();
+
+signals:
+    void mapNeedsDisplaying();
+
 private:
     // TODO: defaults needed?
     tsl::ordered_map<QString, MapSectionEntry> *region_map_entries = nullptr;
@@ -149,9 +158,6 @@ private:
 
     int tilemap_width;
     int tilemap_height;
-
-    int region_width;
-    int region_height;
 
     int layout_width;
     int layout_height;

@@ -17,7 +17,7 @@ public:
         this->tile_selector = tile_selector;
         setAcceptHoverEvents(true);
     }
-    RegionMap *region_map;
+    RegionMap *region_map = nullptr;
     TilemapTileSelector *tile_selector;
     
     virtual void paint(QGraphicsSceneMouseEvent *);

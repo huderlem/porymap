@@ -1,8 +1,6 @@
 #include "regionmappixmapitem.h"
 #include "regionmapeditcommands.h"
 
-static unsigned actionId_ = 0;
-
 void RegionMapPixmapItem::draw() {
     if (!region_map) return;
 
@@ -23,25 +21,17 @@ void RegionMapPixmapItem::draw() {
 
 void RegionMapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
     if (region_map) {
-        if (event->type() == QEvent::GraphicsSceneMouseRelease) {
-            actionId_++;
-        } else {
-            QPointF pos = event->pos();
-            int x = static_cast<int>(pos.x()) / 8;
-            int y = static_cast<int>(pos.y()) / 8;
-            int index = x + y * region_map->tilemapWidth();
-            QByteArray oldTilemap = this->region_map->getTilemap();
-            this->region_map->setTileData(index, 
-                    this->tile_selector->selectedTile,
-                    this->tile_selector->tile_hFlip,
-                    this->tile_selector->tile_vFlip,
-                    this->tile_selector->tile_palette
-                );
-            QByteArray newTilemap = this->region_map->getTilemap();
-            EditTilemap *command = new EditTilemap(this->region_map, oldTilemap, newTilemap, actionId_);
-            this->region_map->commit(command);
-            draw();
-        }
+        QPointF pos = event->pos();
+        int x = static_cast<int>(pos.x()) / 8;
+        int y = static_cast<int>(pos.y()) / 8;
+        int index = x + y * region_map->tilemapWidth();
+        this->region_map->setTileData(index, 
+                this->tile_selector->selectedTile,
+                this->tile_selector->tile_hFlip,
+                this->tile_selector->tile_vFlip,
+                this->tile_selector->tile_palette
+            );
+        draw();
     }
 }
 

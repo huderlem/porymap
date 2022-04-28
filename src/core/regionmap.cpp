@@ -31,8 +31,6 @@ bool RegionMap::loadMapData(poryjson::Json data) {
     poryjson::Json::object mapObject = data.object_items();
 
     this->alias = mapObject["alias"].string_value();
-    this->region_width = mapObject["width"].int_value();
-    this->region_height = mapObject["height"].int_value();
 
     poryjson::Json tilemapJson = mapObject["tilemap"];
     poryjson::Json layoutJson = mapObject["layout"];
@@ -260,6 +258,41 @@ void RegionMap::save() {
     saveLayout();
 }
 
+poryjson::Json::object RegionMap::config() {
+    poryjson::Json::object config;
+
+    config["alias"] = this->alias;
+
+    poryjson::Json::object tilemapObject;
+    tilemapObject["width"] = this->tilemap_width;
+    tilemapObject["height"] = this->tilemap_height;
+
+    QMap<TilemapFormat, QString> tilemapFormatMap = { {TilemapFormat::Plain, "plain"}, {TilemapFormat::BPP_4, "4bpp"}, {TilemapFormat::BPP_8, "8bpp"} };
+    tilemapObject["format"] = tilemapFormatMap[this->tilemap_format];
+    tilemapObject["tileset_path"] = this->tileset_path;
+    tilemapObject["tilemap_path"] = this->tilemap_path;
+    if (!this->palette_path.isEmpty()) {
+        tilemapObject["palette"] = this->palette_path;
+    }
+    config["tilemap"] = tilemapObject;
+
+    if (this->layout_format != LayoutFormat::None) {
+        poryjson::Json::object layoutObject;
+        layoutObject["width"] = this->layout_width;
+        layoutObject["height"] = this->layout_height;
+        layoutObject["offset_left"] = this->offset_left;
+        layoutObject["offset_top"] = this->offset_top;
+        QMap<LayoutFormat, QString> layoutFormatMap = { {LayoutFormat::Binary, "binary"}, {LayoutFormat::CArray, "C array"} };
+        layoutObject["format"] = layoutFormatMap[this->layout_format];
+        layoutObject["path"] = this->layout_path;
+        config["layout"] = layoutObject;
+    } else {
+        config["layout"] = nullptr;
+    }
+
+    return config;
+}
+
 void RegionMap::saveTilemap() {
     QFile tilemapFile(fullPath(this->tilemap_path));
     if (!tilemapFile.open(QIODevice::WriteOnly)) {
@@ -354,9 +387,52 @@ void RegionMap::replaceSection(QString oldSection, QString newSection) {
     }
 }
 
-void RegionMap::resize(int newWidth, int newHeight) {
-    // TODO
+void RegionMap::resizeTilemap(int newWidth, int newHeight, bool update) {
+    auto tilemapCopy = this->tilemap;
+    int oldWidth = this->tilemap_width;
+    int oldHeight = this->tilemap_height;
+    this->tilemap_width = newWidth;
+    this->tilemap_height = newHeight;
 
+    if (update) {
+        QByteArray tilemapArray;
+        QDataStream dataStream(&tilemapArray, QIODevice::WriteOnly);
+        dataStream.setByteOrder(QDataStream::LittleEndian);
+        switch (this->tilemap_format) {
+            case TilemapFormat::Plain:
+                for (int y = 0; y < newHeight; y++)
+                for (int x = 0; x < newWidth; x++) {
+                    if (y < oldHeight && x < oldWidth) {
+                        int i = x + y * oldWidth;
+                        uint8_t tile = tilemapCopy[i]->raw();
+                        dataStream << tile;
+                    } else {
+                        uint8_t tile = 0;
+                        dataStream << tile;
+                    }
+                }
+                break;
+            case TilemapFormat::BPP_4:
+            case TilemapFormat::BPP_8:
+                for (int y = 0; y < newHeight; y++)
+                for (int x = 0; x < newWidth; x++) {
+                    if (y < oldHeight && x < oldWidth) {
+                        int i = x + y * oldWidth;
+                        uint16_t tile = tilemapCopy[i]->raw();
+                        dataStream << tile;
+                    } else {
+                        uint16_t tile = 0;
+                        dataStream << tile;
+                    }
+                }
+                break;
+        }
+        setTilemap(tilemapArray);
+    }
+}
+
+void RegionMap::emitDisplay() {
+    emit mapNeedsDisplaying();
 }
 
 QByteArray RegionMap::getTilemap() {

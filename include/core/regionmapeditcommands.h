@@ -14,6 +14,9 @@ enum RMCommandId {
     ID_EditLayout,
     ID_ResizeLayout,
     ID_EditEntry,
+    ID_RemoveEntry,
+    ID_AddEntry,
+    ID_ResizeTilemap,
 };
 
 
@@ -28,7 +31,7 @@ public:
     bool mergeWith(const QUndoCommand *command) override;
     int id() const override { return RMCommandId::ID_EditTilemap; }
 
-private:
+protected:
     RegionMap *map;
 
     QByteArray oldTilemap;
@@ -110,6 +113,8 @@ public:
 
     void undo() override;
     void redo() override;
+
+    int id() const override { return RMCommandId::ID_RemoveEntry; }
 };
 
 
@@ -120,10 +125,28 @@ public:
 
     void undo() override;
     void redo() override;
+
+    int id() const override { return RMCommandId::ID_AddEntry; }
 };
 
-// ResizeTilemap
 
-// ResizeMap
+/// ResizeTilemap
+class ResizeTilemap : public EditTilemap {
+public:
+    ResizeTilemap(RegionMap *map, QByteArray oldTilemap, QByteArray newTilemap,
+        int oldWidth, int oldHeight, int newWidth, int newHeight, QUndoCommand *parent = nullptr);
+
+    void undo() override;
+    void redo() override;
+
+    int id() const override { return RMCommandId::ID_ResizeTilemap; }
+
+private:
+    int oldWidth;
+    int oldHeight;
+    int newWidth;
+    int newHeight;
+};
+
 
 #endif // REGIONMAPEDITCOMMANDS_H
