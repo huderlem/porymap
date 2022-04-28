@@ -249,7 +249,7 @@ void RegionMapEditor::buildConfigDialog() {
     // and populate it with the current values
     // the user can edit and save the config for an existing map this way
     connect(regionMapList, &QListWidget::itemDoubleClicked, [this, &rmConfigJsonUpdate, updateMapList, regionMapList](QListWidgetItem *item) {
-        int itemIndex = regionMapList->indexFromItem(item).row();
+        int itemIndex = regionMapList->row(item);
 
         QString err;
         poryjson::Json clickedJson = poryjson::Json::parse(item->data(Qt::UserRole).toString(), err);
