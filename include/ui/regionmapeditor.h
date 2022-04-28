@@ -44,7 +44,7 @@ public:
     void onRegionMapEntriesSelectedTileChanged(QString) {};
     void onRegionMapEntryDragged(int, int);
 
-    void resize(int width, int height);
+    void resizeTilemap(int width, int height);
 
     QObjectList shortcutableObjects() const;
 
@@ -87,6 +87,8 @@ private:
     RegionMapPixmapItem *region_map_item = nullptr;
     CityMapPixmapItem *city_map_item = nullptr;
 
+    bool saveRegionMap(RegionMap *map);
+    void saveConfig();
     bool loadRegionMapEntries();
     bool saveRegionMapEntries();
     tsl::ordered_map<QString, MapSectionEntry> region_map_entries;
@@ -122,6 +124,7 @@ private:
 
 private slots:
     void on_action_RegionMap_Save_triggered();
+    void on_actionSave_All_triggered();
     void on_action_RegionMap_Resize_triggered();
     void on_action_RegionMap_ClearImage_triggered();
     void on_action_RegionMap_ClearLayout_triggered();

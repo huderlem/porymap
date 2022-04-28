@@ -17,8 +17,6 @@ RegionMapPropertiesDialog::~RegionMapPropertiesDialog()
 
 void RegionMapPropertiesDialog::hideMessages() {
     ui->message_alias->setVisible(false);
-    ui->message_width->setVisible(false);
-    ui->message_height->setVisible(false);
     ui->message_tilemapFormat->setVisible(false);
     ui->message_tilemapWidth->setVisible(false);
     ui->message_tilemapHeight->setVisible(false);
@@ -48,8 +46,6 @@ void RegionMapPropertiesDialog::setProperties(poryjson::Json json) {
 
     // Region Map Properties
     ui->config_alias->setText(object["alias"].string_value());
-    ui->config_width->setValue(object["width"].int_value());
-    ui->config_height->setValue(object["height"].int_value());
 
     // Tilemap properties
     poryjson::Json::object tilemap = object["tilemap"].object_items();
@@ -82,8 +78,6 @@ poryjson::Json RegionMapPropertiesDialog::saveToJson() {
     // TODO: make sure next comment is not a lie
     // data should already be verified and valid at this point
     config["alias"] = ui->config_alias->text();
-    config["width"] = ui->config_width->value();
-    config["height"] = ui->config_height->value();
 
     poryjson::Json::object tilemapObject;
     tilemapObject["width"] = ui->config_tilemapWidth->value();

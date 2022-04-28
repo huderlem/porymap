@@ -51,42 +51,6 @@
         </widget>
        </item>
        <item>
-        <spacer name="horizontalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="checkBox_crop">
-         <property name="text">
-          <string>Crop View to Map Size</string>
-         </property>
-         <property name="checked">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer_3">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
         <spacer name="horizontalSpacer">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -196,7 +160,7 @@
               <x>0</x>
               <y>0</y>
               <width>466</width>
-              <height>350</height>
+              <height>351</height>
              </rect>
             </property>
             <layout class="QGridLayout" name="gridLayout_18">
@@ -317,7 +281,7 @@
               <x>0</x>
               <y>0</y>
               <width>466</width>
-              <height>350</height>
+              <height>351</height>
              </rect>
             </property>
             <layout class="QGridLayout" name="gridLayout_19">
@@ -438,7 +402,7 @@
               <x>0</x>
               <y>0</y>
               <width>466</width>
-              <height>350</height>
+              <height>351</height>
              </rect>
             </property>
             <layout class="QGridLayout" name="gridLayout_24">
@@ -588,7 +552,7 @@
               <x>8</x>
               <y>0</y>
               <width>278</width>
-              <height>341</height>
+              <height>342</height>
              </rect>
             </property>
             <property name="sizePolicy">
@@ -1126,6 +1090,7 @@
      <string>File</string>
     </property>
     <addaction name="action_RegionMap_Save"/>
+    <addaction name="actionSave_All"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -1157,7 +1122,7 @@
   </action>
   <action name="action_RegionMap_Resize">
    <property name="text">
-    <string>Resize</string>
+    <string>Resize Tilemap</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+R</string>
@@ -1191,6 +1156,11 @@
   <action name="action_Import_CityMap_ImageTiles">
    <property name="text">
     <string>Import City Map Image Tiles...</string>
+   </property>
+  </action>
+  <action name="actionSave_All">
+   <property name="text">
+    <string>Save All</string>
    </property>
   </action>
  </widget>

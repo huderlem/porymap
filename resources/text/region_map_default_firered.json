@@ -2,8 +2,6 @@
     "region_maps": [
         {
             "alias": "kanto",
-            "width": 30,
-            "height": 20,
             "tilemap": {
                 "width": 30,
                 "height": 20,
@@ -23,8 +21,6 @@
         },
         {
             "alias": "sevii_123",
-            "width": 30,
-            "height": 20,
             "tilemap": {
                 "width": 30,
                 "height": 20,
@@ -44,8 +40,6 @@
         },
         {
             "alias": "sevii_45",
-            "width": 30,
-            "height": 20,
             "tilemap": {
                 "width": 30,
                 "height": 20,
@@ -65,8 +59,6 @@
         },
         {
             "alias": "sevii_67",
-            "width": 30,
-            "height": 20,
             "tilemap": {
                 "width": 30,
                 "height": 20,
