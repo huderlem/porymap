@@ -181,6 +181,7 @@ private:
     bool layout_uses_layers = false;
     QStringList layout_constants;
     QString layout_qualifiers;
+    QString layout_type;
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QVector<shared_ptr<TilemapTile>> tilemap;

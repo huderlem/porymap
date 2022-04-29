@@ -1798,14 +1798,11 @@ void MainWindow::connectSubEditorsToShortcutsEditor() {
     connect(shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
             tilesetEditor, &TilesetEditor::applyUserShortcuts);
 
-    // TODO: Remove this check when the region map editor supports pokefirered.
-    //if (projectConfig.getBaseGameVersion() != BaseGameVersion::pokefirered) {
-        if (!regionMapEditor)
-            initRegionMapEditor();
-        if (regionMapEditor)
-            connect(shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
-                    regionMapEditor, &RegionMapEditor::applyUserShortcuts);
-    //}
+    if (!regionMapEditor)
+        initRegionMapEditor();
+    if (regionMapEditor)
+        connect(shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
+                regionMapEditor, &RegionMapEditor::applyUserShortcuts);
 }
 
 void MainWindow::on_actionPencil_triggered()

@@ -31,7 +31,11 @@
     </widget>
    </item>
    <item row="0" column="1">
-    <widget class="QLineEdit" name="config_alias"/>
+    <widget class="QLineEdit" name="config_alias">
+     <property name="toolTip">
+      <string>A nickname for this region map that will differentiate it from others (should be unique).</string>
+     </property>
+    </widget>
    </item>
    <item row="1" column="1">
     <widget class="QLabel" name="message_alias">
@@ -58,6 +62,9 @@
       </item>
       <item row="0" column="1">
        <widget class="QComboBox" name="config_tilemapFormat">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The tilemap format can be either:&lt;/p&gt;&lt;p&gt;1) Plain (tilemap is a list of 8-bit tile indexes into the tileset)&lt;/p&gt;&lt;p&gt;2) 4BPP (tilemap entries are 16 bits, with x/y-flip, and palette index for 16 16-color palettes)&lt;/p&gt;&lt;p&gt;3) 8BPP (tilemap entries are 16 bits, with x/y-flip, single 256-color palette)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
         <item>
          <property name="text">
           <string>plain</string>
@@ -123,6 +130,9 @@
           <height>0</height>
          </size>
         </property>
+        <property name="toolTip">
+         <string>The height of the tilemap</string>
+        </property>
         <property name="maximum">
          <number>255</number>
         </property>
@@ -170,6 +180,9 @@
              <height>0</height>
             </size>
            </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Path to the tileset image (.png) relative to the project root.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
           </widget>
          </item>
          <item>
@@ -201,6 +214,9 @@
       </item>
       <item row="8" column="1">
        <widget class="QFrame" name="frame_2">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Path to the tilemap binary relative to the project root.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
         <property name="frameShape">
          <enum>QFrame::NoFrame</enum>
         </property>
@@ -272,7 +288,11 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="QLineEdit" name="config_tilemapPalettePath"/>
+          <widget class="QLineEdit" name="config_tilemapPalettePath">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;(optional) Path to the .pal JASC palette file&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QPushButton" name="browse_tilemapPalettePath">
@@ -308,6 +328,9 @@
           <height>0</height>
          </size>
         </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The width of the tilemap&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
         <property name="maximum">
          <number>255</number>
         </property>
@@ -334,6 +357,9 @@
       </item>
       <item row="0" column="1">
        <widget class="QComboBox" name="config_layoutFormat">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The format of the layout file, can be a C array in a text file with &amp;quot;MAPSEC_&amp;quot;-prefixed constants, or a binary file where each byte is a value of some &amp;quot;MAPSEC_&amp;quot;-prefixed constant.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
         <item>
          <property name="text">
           <string>C array</string>
@@ -385,7 +411,11 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="QLineEdit" name="config_layoutPath"/>
+          <widget class="QLineEdit" name="config_layoutPath">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The path to the layout file, relative to the project root.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QPushButton" name="browse_layoutPath">
@@ -443,6 +473,9 @@
              <height>0</height>
             </size>
            </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The layout width.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="minimum">
             <number>0</number>
            </property>
@@ -473,6 +506,9 @@
          </item>
          <item>
           <widget class="QSpinBox" name="config_leftOffs">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The offset from the left of the tilemap where the layout starts.&lt;/p&gt;&lt;p&gt;(ie, coordinate (0,0) in the layout would be (offset left, offset top) in the tilemap).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="maximum">
             <number>255</number>
            </property>
@@ -540,6 +576,9 @@
              <height>0</height>
             </size>
            </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The layout height.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="minimum">
             <number>0</number>
            </property>
@@ -569,7 +608,11 @@
           </widget>
          </item>
          <item>
-          <widget class="QSpinBox" name="config_topOffs"/>
+          <widget class="QSpinBox" name="config_topOffs">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The offset from the top of the tilemap where the layout starts.&lt;/p&gt;&lt;p&gt;(ie, coordinate (0,0) in the layout would be (offset left, offset top) in the tilemap).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+          </widget>
          </item>
          <item>
           <spacer name="horizontalSpacer_5">

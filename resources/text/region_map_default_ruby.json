@@ -1,0 +1,22 @@
+{
+    "region_maps": [
+        {
+            "alias": "hoenn",
+            "tilemap": {
+                "width": 64,
+                "height": 64,
+                "format": "plain",
+                "tileset_path": "graphics/pokenav/region_map.png",
+                "tilemap_path": "graphics/pokenav/region_map_map.bin"
+            },
+            "layout": {
+                "width": 28,
+                "height": 15,
+                "offset_left": 1,
+                "offset_top": 2,
+                "format": "C array",
+                "path": "src/data/region_map/region_map_layout.h"
+            }
+        }
+    ]
+}

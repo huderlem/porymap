@@ -93,11 +93,11 @@ private:
     bool saveRegionMapEntries();
     tsl::ordered_map<QString, MapSectionEntry> region_map_entries;
 
-    void buildConfigDialog();
+    bool buildConfigDialog();
     poryjson::Json configRegionMapDialog();
     void buildUpdateConfigDialog();
     poryjson::Json buildDefaultJson();
-    poryjson::Json getJsonFromAlias(QString alias);
+    bool verifyConfig(poryjson::Json cfg);
 
     bool modified();
 
@@ -117,7 +117,6 @@ private:
     void setRegionMap(RegionMap *map);
 
     bool createCityMap(QString name);
-    bool tryInsertNewMapEntry(QString);
 
     void restoreWindowState();
     void closeEvent(QCloseEvent* event);

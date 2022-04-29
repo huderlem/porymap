@@ -48,28 +48,40 @@ QImage TilemapTileSelector::tileImg(shared_ptr<TilemapTile> tile) {
     tilesetImage.convertTo(QImage::Format::Format_Indexed8);
 
     // TODO: bounds check on the palette copying
-
     switch(this->format) {
         case TilemapFormat::Plain:
             break;
         case TilemapFormat::BPP_4:
         {
+            QVector<QRgb> newColorTable;
+            int palMinLength = tile->palette() * 16 + 16;
+            if ((this->palette.count() < palMinLength) || (tilesetImage.colorTable().count() != 16)) {
+                // either a) the palette has less than 256 colors, or b) the image is improperly indexed
+                for (QRgb color : tilesetImage.colorTable()) {
+                    int gray = qGray(color);
+                    newColorTable.append(qRgb(gray, gray, gray));
+                }
+            } else {
+                // use actual pal
 // before Qt 6, the color table is a QVector which is deprecated now, and this method does not exits
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            tilesetImage.setColorTable(this->palette.toVector().mid(tile->palette() * 16, 16));
+                newColorTable = this->palette.toVector().mid(tile->palette() * 16, 16);
 #else
-            tilesetImage.setColorTable(this->palette.mid(tile->palette() * 16, 16));
+                newColorTable = this->palette.mid(tile->palette() * 16, 16);
 #endif
+            }
+            tilesetImage.setColorTable(newColorTable);
             break;
         }
         case TilemapFormat::BPP_8:
         {
-            // TODO:
+            if (tilesetImage.colorTable().count() == this->palette.count()) {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            //tilesetImage.setColorTable(this->palette.toVector());
+                tilesetImage.setColorTable(this->palette.toVector());
 #else
-            //tilesetImage.setColorTable(this->palette);
+                tilesetImage.setColorTable(this->palette);
 #endif
+            }
             break;
         }
         default: break;
