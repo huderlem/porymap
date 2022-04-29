@@ -62,8 +62,6 @@ public:
     void save();
     void saveTilemap();
     void saveLayout();
-    void saveConfig();// ? or do this in the editor only?
-    void saveOptions(int id, QString sec, QString name, int x, int y);
 
     void resizeTilemap(int width, int height, bool update = true);
     void resetSquare(int index);
@@ -93,11 +91,7 @@ public:
     
     QString palPath();
     QString pngPath();
-    QString cityTilesPath();
     QString entriesPath() { return this->entries_path; }
-
-    QVector<uint8_t> getTiles();
-    void setTiles(QVector<uint8_t> tileIds);
 
     QByteArray getTilemap();
     void setTilemap(QByteArray newTilemap);
@@ -181,7 +175,6 @@ private:
     bool layout_uses_layers = false;
     QStringList layout_constants;
     QString layout_qualifiers;
-    QString layout_type;
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QVector<shared_ptr<TilemapTile>> tilemap;

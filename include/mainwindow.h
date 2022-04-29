@@ -345,7 +345,7 @@ private:
     QPointer<RegionMapEditor> regionMapEditor = nullptr;
     QPointer<ShortcutsEditor> shortcutsEditor = nullptr;
     QPointer<MapImageExporter> mapImageExporter = nullptr;
-    QPointer<NewMapPopup> newmapprompt = nullptr;
+    QPointer<NewMapPopup> newMapPrompt = nullptr;
     QPointer<PreferenceEditor> preferenceEditor = nullptr;
     FilterChildrenProxyModel *mapListProxyModel;
     QStandardItemModel *mapListModel;
