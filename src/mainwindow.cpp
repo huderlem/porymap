@@ -1166,11 +1166,11 @@ void MainWindow::onAddNewMapToLayoutClick(QAction* triggeredAction)
 }
 
 void MainWindow::onNewMapCreated() {
-    QString newMapName = this->newmapprompt->map->name;
-    int newMapGroup = this->newmapprompt->group;
-    Map *newMap = this->newmapprompt->map;
-    bool existingLayout = this->newmapprompt->existingLayout;
-    bool importedMap = this->newmapprompt->importedMap;
+    QString newMapName = this->newMapPrompt->map->name;
+    int newMapGroup = this->newMapPrompt->group;
+    Map *newMap = this->newMapPrompt->map;
+    bool existingLayout = this->newMapPrompt->existingLayout;
+    bool importedMap = this->newMapPrompt->importedMap;
 
     newMap = editor->project->addNewMapToGroup(newMapName, newMapGroup, newMap, existingLayout, importedMap);
 
@@ -1195,52 +1195,52 @@ void MainWindow::onNewMapCreated() {
         editor->save();// required
     }
 
-    disconnect(this->newmapprompt, &NewMapPopup::applied, this, &MainWindow::onNewMapCreated);
+    disconnect(this->newMapPrompt, &NewMapPopup::applied, this, &MainWindow::onNewMapCreated);
     delete newMap;
 }
 
 void MainWindow::openNewMapPopupWindow(int type, QVariant data) {
-    if (!this->newmapprompt) {
-        this->newmapprompt = new NewMapPopup(this, this->editor->project);
+    if (!this->newMapPrompt) {
+        this->newMapPrompt = new NewMapPopup(this, this->editor->project);
     }
-    if (!this->newmapprompt->isVisible()) {
-        this->newmapprompt->show();
+    if (!this->newMapPrompt->isVisible()) {
+        this->newMapPrompt->show();
     } else {
-        this->newmapprompt->raise();
-        this->newmapprompt->activateWindow();
+        this->newMapPrompt->raise();
+        this->newMapPrompt->activateWindow();
     }
     switch (type)
     {
         case MapSortOrder::Group:
-            this->newmapprompt->init(type, data.toInt(), QString(), QString());
+            this->newMapPrompt->init(type, data.toInt(), QString(), QString());
             break;
         case MapSortOrder::Area:
-            this->newmapprompt->init(type, 0, data.toString(), QString());
+            this->newMapPrompt->init(type, 0, data.toString(), QString());
             break;
         case MapSortOrder::Layout:
-            this->newmapprompt->init(type, 0, QString(), data.toString());
+            this->newMapPrompt->init(type, 0, QString(), data.toString());
             break;
     }
-    connect(this->newmapprompt, &NewMapPopup::applied, this, &MainWindow::onNewMapCreated);
-    this->newmapprompt->setAttribute(Qt::WA_DeleteOnClose);
+    connect(this->newMapPrompt, &NewMapPopup::applied, this, &MainWindow::onNewMapCreated);
+    this->newMapPrompt->setAttribute(Qt::WA_DeleteOnClose);
 }
 
 void MainWindow::openNewMapPopupWindowImportMap(MapLayout *mapLayout) {
-    if (!this->newmapprompt) {
-        this->newmapprompt = new NewMapPopup(this, this->editor->project);
+    if (!this->newMapPrompt) {
+        this->newMapPrompt = new NewMapPopup(this, this->editor->project);
     }
-    if (!this->newmapprompt->isVisible()) {
-        this->newmapprompt->show();
+    if (!this->newMapPrompt->isVisible()) {
+        this->newMapPrompt->show();
     } else {
-        this->newmapprompt->raise();
-        this->newmapprompt->activateWindow();
+        this->newMapPrompt->raise();
+        this->newMapPrompt->activateWindow();
     }
 
-    this->newmapprompt->initImportMap(mapLayout);
+    this->newMapPrompt->initImportMap(mapLayout);
 
-    connect(this->newmapprompt, SIGNAL(applied()), this, SLOT(onNewMapCreated()));
-    connect(this->newmapprompt, &QObject::destroyed, [=](QObject *) { this->newmapprompt = nullptr; });
-            this->newmapprompt->setAttribute(Qt::WA_DeleteOnClose);
+    connect(this->newMapPrompt, SIGNAL(applied()), this, SLOT(onNewMapCreated()));
+    connect(this->newMapPrompt, &QObject::destroyed, [=](QObject *) { this->newMapPrompt = nullptr; });
+            this->newMapPrompt->setAttribute(Qt::WA_DeleteOnClose);
 }
 
 void MainWindow::on_action_NewMap_triggered() {
@@ -3164,16 +3164,26 @@ bool MainWindow::initRegionMapEditor() {
 }
 
 void MainWindow::closeSupplementaryWindows() {
-    if (this->tilesetEditor)
+    if (this->tilesetEditor) {
         delete this->tilesetEditor;
-    if (this->regionMapEditor)
+        this->tilesetEditor = nullptr;
+    }
+    if (this->regionMapEditor) {
         delete this->regionMapEditor;
-    if (this->mapImageExporter)
+        this->regionMapEditor = nullptr;
+    }
+    if (this->mapImageExporter) {
         delete this->mapImageExporter;
-    if (this->newmapprompt)
-        delete this->newmapprompt;
-    if (this->shortcutsEditor)
+        this->mapImageExporter = nullptr;
+    }
+    if (this->newMapPrompt) {
+        delete this->newMapPrompt;
+        this->newMapPrompt = nullptr;
+    }
+    if (this->shortcutsEditor) {
         delete this->shortcutsEditor;
+        this->shortcutsEditor = nullptr;
+    }
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {

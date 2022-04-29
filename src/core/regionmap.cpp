@@ -100,7 +100,6 @@ bool RegionMap::loadLayout(poryjson::Json layoutJson) {
         return true;
     }
 
-    // TODO: reset other values here
     this->layout_constants.clear();
 
     poryjson::Json::object layoutObject = layoutJson.object_items();
@@ -121,7 +120,7 @@ bool RegionMap::loadLayout(poryjson::Json layoutJson) {
     switch (this->layout_format) {
         case LayoutFormat::Binary:
         {
-            // TODO: only one layer supported for binary layouts (change or no?)
+            // only one layer supported for binary layouts
             QFile binFile(fullPath(this->layout_path));
             if (!binFile.open(QIODevice::ReadOnly)) {
                 logError(QString("Failed to read region map layout binary file %1").arg(this->layout_path));
@@ -168,7 +167,6 @@ bool RegionMap::loadLayout(poryjson::Json layoutJson) {
             // check for layers, extract info
             QRegularExpressionMatch match = re.match(text);
             if (match.hasMatch()) {
-                // TODO: keep track of labels and consts
                 QString qualifiers = match.captured("qual_1") + " " + match.captured("qual_2");
                 QString type = match.captured("type");
                 QString label = match.captured("label");
@@ -203,7 +201,6 @@ bool RegionMap::loadLayout(poryjson::Json layoutJson) {
                         int x = 0;
                         for (QString section : rowSections) {
                             QString square_section_name = section.trimmed();
-                            int square_index = get_tilemap_index(x, y);
 
                             LayoutSquare square;
                             square.map_section = square_section_name;
@@ -223,14 +220,12 @@ bool RegionMap::loadLayout(poryjson::Json layoutJson) {
                 QRegularExpression reAlt("(?<qual_1>static)?\\s?(?<qual_2>const)?\\s?(?<type>[A-Za-z0-9_]+)?\\s+(?<label>[A-Za-z0-9_]+)\\[\\]");
                 QRegularExpressionMatch matchAlt = reAlt.match(text);
                 if (matchAlt.hasMatch()) {
-                    // TODO: save type info
                     QString qualifiers = matchAlt.captured("qual_1") + " " + matchAlt.captured("qual_2");
                     QString type = matchAlt.captured("type");
                     QString label = matchAlt.captured("label");
                     this->layout_constants.append("");
                     this->layout_qualifiers = qualifiers + " " + type;
                     this->layout_array_label = label;
-                    this->layout_type = type;
 
                     QRegularExpression reSec("(?<sec>MAPSEC_[A-Za-z0-9_]+)");
                     QRegularExpressionMatchIterator k = reSec.globalMatch(text);
@@ -262,6 +257,9 @@ bool RegionMap::loadLayout(poryjson::Json layoutJson) {
             }
             break;
         }
+        case LayoutFormat::None:
+        default:
+            break;
     }
     this->current_layer = this->layout_layers.first();
 
@@ -273,12 +271,10 @@ void RegionMap::commit(QUndoCommand *command) {
 }
 
 void RegionMap::undo() {
-    //
     editHistory.undo();
 }
 
 void RegionMap::redo() {
-    //
     editHistory.redo();
 }
 
@@ -388,12 +384,10 @@ void RegionMap::saveLayout() {
             this->project->saveTextFile(fullPath(this->layout_path), text);
             break;
         }
+        case LayoutFormat::None:
+        default:
+            break;
     }
-}
-
-void RegionMap::saveOptions(int id, QString sec, QString name, int x, int y) {
-    // TODO
-
 }
 
 void RegionMap::resetSquare(int index) {
@@ -546,16 +540,14 @@ void RegionMap::setAllLayouts(QMap<QString, QList<LayoutSquare>> newLayouts) {
 }
 
 void RegionMap::setLayoutDimensions(int width, int height, bool update) {
-    // for each layer!
+    // for each layer
     if (update) {
         for (QString layer : this->layout_layers) {
-            //
             QList<LayoutSquare> oldLayout = this->getLayout(layer);
             QList<LayoutSquare> newLayout;
 
             for (int y = 0; y < height; y++)
             for (int x = 0; x < width; x++) {
-                //
                 LayoutSquare newSquare;
                 if (x < this->layout_width && y < this->layout_height) {
                     // within old layout
@@ -570,21 +562,6 @@ void RegionMap::setLayoutDimensions(int width, int height, bool update) {
 
     this->layout_width = width;
     this->layout_height = height;
-
-    // TODO: commit
-}
-
-QVector<uint8_t> RegionMap::getTiles() {
-    QVector<uint8_t> tileIds;
-    // unused? remove when redo history is fully transitioned
-    // TODO: change this to use TilemapTile instead of uint8_t
-
-    return tileIds;
-}
-
-void RegionMap::setTiles(QVector<uint8_t> tileIds) {
-    // TODO
-
 }
 
 // Layout coords to image index.
@@ -710,12 +687,6 @@ QString RegionMap::palPath() {
 
 QString RegionMap::pngPath() {
     return this->project->root + "/" + this->tileset_path;
-}
-
-QString RegionMap::cityTilesPath() {
-    // TODO
-
-    return QString();
 }
 
 // From x, y of image.

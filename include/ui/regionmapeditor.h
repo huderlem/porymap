@@ -30,10 +30,8 @@ public:
     tsl::ordered_map<QString, RegionMap *> region_maps;
 
     bool load();
-    bool loadCityMaps();
 
     void onRegionMapTileSelectorSelectedTileChanged(unsigned id);
-    void onCityMapTileSelectorSelectedTileChanged(unsigned id);
     void onRegionMapTileSelectorHoveredTileChanged(unsigned id);
     void onRegionMapTileSelectorHoveredTileCleared();
 
@@ -64,7 +62,6 @@ private:
     unsigned selectedImageTile;
     QString activeEntry;
 
-    bool hasUnsavedChanges = false;
     bool cityMapFirstDraw = true;
     bool regionMapFirstDraw = true;
     bool entriesFirstDraw = true;
@@ -95,7 +92,6 @@ private:
 
     bool buildConfigDialog();
     poryjson::Json configRegionMapDialog();
-    void buildUpdateConfigDialog();
     poryjson::Json buildDefaultJson();
     bool verifyConfig(poryjson::Json cfg);
 
@@ -110,13 +106,9 @@ private:
     void updateRegionMapLayoutOptions(int index);
     void displayRegionMapTileSelector();
     void updateLayerDisplayed();
-    void displayCityMapTileSelector();
-    void displayCityMap(QString name);
     void displayRegionMapEntryOptions();
     void updateRegionMapEntryOptions(QString);
     void setRegionMap(RegionMap *map);
-
-    bool createCityMap(QString name);
 
     void restoreWindowState();
     void closeEvent(QCloseEvent* event);
@@ -144,15 +136,12 @@ private slots:
     void on_spinBox_tilePalette_valueChanged(int);
     void on_checkBox_tileHFlip_stateChanged(int);
     void on_checkBox_tileVFlip_stateChanged(int);
-    void on_pushButton_CityMap_add_clicked();
     void on_verticalSlider_Zoom_Map_Image_valueChanged(int);
     void on_verticalSlider_Zoom_Image_Tiles_valueChanged(int);
-    void on_comboBox_CityMap_picker_currentTextChanged(const QString &);
     void on_lineEdit_RM_MapName_textEdited(const QString &);
     void onHoveredRegionMapTileChanged(int x, int y);
     void onHoveredRegionMapTileCleared();
     void mouseEvent_region_map(QGraphicsSceneMouseEvent *event, RegionMapPixmapItem *item);
-    void mouseEvent_city_map(QGraphicsSceneMouseEvent *event, CityMapPixmapItem *item);
 };
 
 #endif // REGIONMAPEDITOR_H
