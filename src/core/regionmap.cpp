@@ -15,13 +15,7 @@
 
 using std::make_shared;
 
-static bool ensureRegionMapFileExists(QString filepath) {
-    if (!QFile::exists(filepath)) {
-        logError(QString("Region map file does not exist: %1").arg(filepath));
-        return false;
-    }
-    return true;
-}
+
 
 RegionMap::RegionMap(Project *project) {
     this->project = project;
@@ -39,8 +33,7 @@ bool RegionMap::loadMapData(poryjson::Json data) {
     this->layout_layers.clear();
     this->layouts.clear();
 
-    loadTilemap(tilemapJson);
-    loadLayout(layoutJson);
+    return loadTilemap(tilemapJson) && loadLayout(layoutJson);
 }
 
 int RegionMap::tilemapBytes() {
@@ -166,8 +159,6 @@ bool RegionMap::loadLayout(poryjson::Json layoutJson) {
         }
         case LayoutFormat::CArray:
         {
-            // TODO: pokeruby / non-layered style C array or just an array of mapsections
-
             ParseUtil parser;
             QString text = parser.readTextFile(fullPath(this->layout_path));
 
@@ -228,8 +219,46 @@ bool RegionMap::loadLayout(poryjson::Json layoutJson) {
                 }
 
             } else {
-                logError("Region map layout is not readable.");
-                return false;
+                // try single-layered
+                QRegularExpression reAlt("(?<qual_1>static)?\\s?(?<qual_2>const)?\\s?(?<type>[A-Za-z0-9_]+)?\\s+(?<label>[A-Za-z0-9_]+)\\[\\]");
+                QRegularExpressionMatch matchAlt = reAlt.match(text);
+                if (matchAlt.hasMatch()) {
+                    // TODO: save type info
+                    QString qualifiers = matchAlt.captured("qual_1") + " " + matchAlt.captured("qual_2");
+                    QString type = matchAlt.captured("type");
+                    QString label = matchAlt.captured("label");
+                    this->layout_constants.append("");
+                    this->layout_qualifiers = qualifiers + " " + type;
+                    this->layout_array_label = label;
+                    this->layout_type = type;
+
+                    QRegularExpression reSec("(?<sec>MAPSEC_[A-Za-z0-9_]+)");
+                    QRegularExpressionMatchIterator k = reSec.globalMatch(text);
+
+                    QList<LayoutSquare> layout;
+                    int l = 0;
+                    while (k.hasNext()) {
+                        QRegularExpressionMatch p = k.next();
+                        QString sec = p.captured("sec");
+
+                        int x = l % this->layout_width;
+                        int y = l / this->layout_width;
+
+                        LayoutSquare square;
+                        square.map_section = sec;
+                        square.has_map = (sec != "MAPSEC_NONE" && !sec.isEmpty());
+                        square.x = x;
+                        square.y = y;
+                        layout.append(square);
+
+                        l++;
+                    }
+                    this->layout_layers.append("main");
+                    setLayout("main", layout);
+                } else {
+                    logError("Region map layout is not readable.");
+                    return false;
+                }
             }
             break;
         }
@@ -256,6 +285,8 @@ void RegionMap::redo() {
 void RegionMap::save() {
     saveTilemap();
     saveLayout();
+
+    this->editHistory.setClean();
 }
 
 poryjson::Json::object RegionMap::config() {
@@ -330,8 +361,11 @@ void RegionMap::saveLayout() {
             }
             text += " = {\n";
             if (this->layout_layers.size() == 1) {
-                // TODO: single layered
-                // just dump the array of map sections, or save as multi dimensional [width][height]?
+                for (LayoutSquare s : this->getLayout("main")) {
+                    text += "    " + s.map_section + ",\n";
+                }
+                text.chop(2);
+                text += "\n";
             } else {
                 // multi layered
                 for (auto layoutName : this->layout_layers) {

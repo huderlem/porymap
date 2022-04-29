@@ -180,8 +180,14 @@ void buildEmeraldDefaults(poryjson::Json &json) {
 
     QString err;
     json = poryjson::Json::parse(emeraldDefault, err);
+}
 
-    // TODO: error check these
+void buildRubyDefaults(poryjson::Json &json) {
+    ParseUtil parser;
+    QString emeraldDefault = parser.readTextFile(":/text/region_map_default_ruby.json");
+
+    QString err;
+    json = poryjson::Json::parse(emeraldDefault, err);
 }
 
 void buildFireredDefaults(poryjson::Json &json) {
@@ -201,7 +207,7 @@ poryjson::Json RegionMapEditor::buildDefaultJson() {
             break;
 
         case BaseGameVersion::pokeruby:
-            // TODO: pokeruby defaults
+            buildRubyDefaults(defaultJson);
             break;
 
         case BaseGameVersion::pokefirered:
@@ -212,7 +218,7 @@ poryjson::Json RegionMapEditor::buildDefaultJson() {
     return defaultJson;
 }
 
-void RegionMapEditor::buildConfigDialog() {
+bool RegionMapEditor::buildConfigDialog() {
     // use this temporary object while window is active, save only when user accepts
     poryjson::Json rmConfigJsonUpdate = this->rmConfigJson;
 
@@ -302,13 +308,13 @@ void RegionMapEditor::buildConfigDialog() {
     // //cityMapList->setFocusPolicy(Qt::NoFocus);
     // form.addRow(new QLabel("City Map List:"));
     // form.addRow(cityMapList);
-
+    //
     // for (int i = 0; i < 20; i++) {
     //     QListWidgetItem *newItem = new QListWidgetItem;
     //     newItem->setText(QString("city %1").arg(i));
     //     cityMapList->addItem(newItem);
     // }
-
+    //
     // QPushButton *addCitiesButton = new QPushButton("Configure City Maps...");
     // form.addRow(addCitiesButton);
     // // needs to pick tilemaps and such here too
@@ -347,12 +353,12 @@ void RegionMapEditor::buildConfigDialog() {
     if (dialog.exec() == QDialog::Accepted) {
         // if everything looks good, we can update the master json
         this->rmConfigJson = rmConfigJsonUpdate;
-    } else {
-        // TODO: return bool from this function so can close RME on error
+        return true;
     }
+
+    return false;
 }
 
-// TODO: set tooltips, default values in spinboxes
 poryjson::Json RegionMapEditor::configRegionMapDialog() {
 
     RegionMapPropertiesDialog dialog(this);
@@ -361,8 +367,6 @@ poryjson::Json RegionMapEditor::configRegionMapDialog() {
     if (dialog.exec() == QDialog::Accepted) {
         poryjson::Json regionMapJson = dialog.saveToJson();
         return regionMapJson;
-    } else {
-        // TODO: anything?
     }
 
     return poryjson::Json();
@@ -373,17 +377,45 @@ void RegionMapEditor::buildUpdateConfigDialog() {
     // TODO: get rid of this function
 }
 
-poryjson::Json RegionMapEditor::getJsonFromAlias(QString alias) {
-    // unused
-    // TODO: get a map Json from an alias
+bool RegionMapEditor::verifyConfig(poryjson::Json cfg) {
+    OrderedJson::object obj = cfg.object_items();
+
+    if (!obj.contains("region_maps")) {
+        logError("Region map config json has no map list.");
+        return false;
+    }
+
+    OrderedJson::array arr = obj["region_maps"].array_items();
+
+    for (auto ref : arr) {
+        RegionMap tempMap(this->project);
+        if (!tempMap.loadMapData(ref)) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool RegionMapEditor::load() {
     // check for config json file
     QString jsonConfigFilepath = this->project->root + "/src/data/region_map/porymap_config.json";
-    if (!QFile::exists(jsonConfigFilepath)) {
-        logWarn("Region Map config file not found.");
 
+    bool badConfig = true;
+
+    if (QFile::exists(jsonConfigFilepath)) {
+        logInfo("Region map configuration file found.");
+        ParseUtil parser;
+        OrderedJson::object obj;
+        if (parser.tryParseOrderedJsonFile(&obj, jsonConfigFilepath)) {
+            this->rmConfigJson = OrderedJson(obj);
+        }
+        badConfig = !verifyConfig(this->rmConfigJson);
+    } else {
+        logWarn("Region Map config file not found.");
+    }
+
+    if (badConfig) {
         // show popup explaining next window
         QMessageBox warning;
         warning.setText("Region map configuration not found.");
@@ -393,24 +425,15 @@ bool RegionMapEditor::load() {
 
         if (warning.exec() == QMessageBox::Ok) {
             // there is a separate window that allows to load multiple region maps, 
-            buildConfigDialog();
-
-            // TODO: need to somehow handle (by making above function return bool?)
-            //       when user closes the config dialog without setting up maps so we
-            //       can return false from here in that case as well
+            if (!buildConfigDialog()) {
+                logError("Region map loading interrupted [user]");
+                return false;
+            }
         } else {
-            // TODO: Do not open region map editor (maybe just return false is sufficient?)
+            // do not open editor
+            logError("Region map loading interrupted [user]");
             return false;
         }
-    }
-    else {
-        // TODO: put this first? so can fall back on the above if parse errors
-        // TODO: verify this object before assignment
-        logInfo("Region map configuration file found.");
-        ParseUtil parser;
-        OrderedJson::object obj;
-        parser.tryParseOrderedJsonFile(&obj, jsonConfigFilepath);
-        this->rmConfigJson = OrderedJson(obj);
     }
 
     // if all has gone well, this->rmConfigJson should be populated
@@ -420,13 +443,14 @@ bool RegionMapEditor::load() {
     // load the region maps into this->region_maps
     poryjson::Json::object regionMapObjectCopy = this->rmConfigJson.object_items();
     for (auto o : regionMapObjectCopy["region_maps"].array_items()) {
-        // TODO: could this crash?
         QString alias = o.object_items().at("alias").string_value();
 
         RegionMap *newMap = new RegionMap(this->project);
-        // TODO: is there a better way than this pointer to get entries to pixmap item? (surely)
         newMap->setEntries(&this->region_map_entries);
-        newMap->loadMapData(o);
+        if (!newMap->loadMapData(o)) {
+            delete newMap;
+            return false;
+        }
 
         connect(newMap, &RegionMap::mapNeedsDisplaying, [this]() {
             displayRegionMap();
@@ -481,7 +505,6 @@ bool RegionMapEditor::loadCityMaps() {
 }
 
 bool RegionMapEditor::saveRegionMap(RegionMap *map) {
-    //
     if (!map) return false;
 
     map->save();
@@ -512,7 +535,6 @@ void RegionMapEditor::saveConfig() {
 }
 
 void RegionMapEditor::on_action_RegionMap_Save_triggered() {
-    // TODO: add "Save All" to save all region maps
     saveRegionMap(this->region_map);
 
     // save entries
@@ -875,11 +897,6 @@ bool RegionMapEditor::createCityMap(QString name) {
     */
 }
 
-bool RegionMapEditor::tryInsertNewMapEntry(QString mapsec) {
-    // TODO
-    return false;
-}
-
 void RegionMapEditor::onRegionMapTileSelectorSelectedTileChanged(unsigned id) {
     this->selectedImageTile = id;
 }
@@ -1059,7 +1076,6 @@ void RegionMapEditor::on_comboBox_RM_Entry_MapSection_textActivated(const QStrin
 }
 
 void RegionMapEditor::on_comboBox_layoutLayer_textActivated(const QString &text) {
-    // TODO: verify whether layer is legit
     this->region_map->setLayer(text);
     displayRegionMapLayout();
     displayRegionMapLayoutOptions();
