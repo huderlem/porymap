@@ -12,7 +12,7 @@ void TilemapTileSelector::draw() {
     this->numTilesWide = width_ / 8;
     this->numTiles     = ntiles_;
 
-    this->setPixmap(QPixmap::fromImage(tileset));
+    this->setPixmap(QPixmap::fromImage(this->setPalette(this->tile_palette)));
     this->drawSelection();
 }
 
@@ -39,11 +39,7 @@ QPoint TilemapTileSelector::getTileIdCoords(unsigned tileId) {
     return QPoint(index % this->numTilesWide, index / this->numTilesWide);
 }
 
-QImage TilemapTileSelector::tileImg(shared_ptr<TilemapTile> tile) {
-    // TODO: this is slow on the entries tab, so maybe do not do all of the redraw for every section change
-    unsigned tileId = tile->id();
-    QPoint pos = getTileIdCoords(tileId);
-
+QImage TilemapTileSelector::setPalette(int paletteIndex) {
     QImage tilesetImage = this->tileset;
     tilesetImage.convertTo(QImage::Format::Format_Indexed8);
 
@@ -54,7 +50,7 @@ QImage TilemapTileSelector::tileImg(shared_ptr<TilemapTile> tile) {
         case TilemapFormat::BPP_4:
         {
             QVector<QRgb> newColorTable;
-            int palMinLength = tile->palette() * 16 + 16;
+            int palMinLength = paletteIndex * 16 + 16;
             if ((this->palette.count() < palMinLength) || (tilesetImage.colorTable().count() != 16)) {
                 // either a) the palette has less than 256 colors, or b) the image is improperly indexed
                 for (QRgb color : tilesetImage.colorTable()) {
@@ -65,9 +61,9 @@ QImage TilemapTileSelector::tileImg(shared_ptr<TilemapTile> tile) {
                 // use actual pal
 // before Qt 6, the color table is a QVector which is deprecated now, and this method does not exits
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                newColorTable = this->palette.toVector().mid(tile->palette() * 16, 16);
+                newColorTable = this->palette.toVector().mid(paletteIndex * 16, 16);
 #else
-                newColorTable = this->palette.mid(tile->palette() * 16, 16);
+                newColorTable = this->palette.mid(paletteIndex * 16, 16);
 #endif
             }
             tilesetImage.setColorTable(newColorTable);
@@ -86,6 +82,15 @@ QImage TilemapTileSelector::tileImg(shared_ptr<TilemapTile> tile) {
         }
         default: break;
     }
+
+    return tilesetImage;
+}
+
+QImage TilemapTileSelector::tileImg(shared_ptr<TilemapTile> tile) {
+    unsigned tileId = tile->id();
+    QPoint pos = getTileIdCoords(tileId);
+
+    QImage tilesetImage = setPalette(tile->palette());
 
     // take a tile from the tileset
     QImage img = tilesetImage.copy(pos.x() * 8, pos.y() * 8, 8, 8);

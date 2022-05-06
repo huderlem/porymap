@@ -549,6 +549,8 @@ void RegionMap::setLayoutDimensions(int width, int height, bool update) {
             for (int y = 0; y < height; y++)
             for (int x = 0; x < width; x++) {
                 LayoutSquare newSquare;
+                newSquare.x = x;
+                newSquare.y = y;
                 if (x < this->layout_width && y < this->layout_height) {
                     // within old layout
                     int oldIndex = this->get_layout_index(x, y);

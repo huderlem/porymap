@@ -54,7 +54,8 @@ void RegionMapEntriesPixmapItem::draw() {
     this->selectionOffsetY = entry_h - 1;
 
     this->setPixmap(QPixmap::fromImage(image));
-    this->drawSelection();
+
+    if (selectingEntry) this->drawSelection();
 }
 
 void RegionMapEntriesPixmapItem::select(int x, int y) {
@@ -81,7 +82,6 @@ void RegionMapEntriesPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event
     int x = pos.x() - this->region_map->padLeft();
     int y = pos.y() - this->region_map->padTop();
 
-    //RegionMapEntry entry = this->region_map->mapSecToMapEntry.value(currentSection);
     MapSectionEntry entry = this->region_map->getEntry(currentSection);
     pressedX = x - entry.x;
     pressedY = y - entry.y;

@@ -55,6 +55,8 @@ public:
     bool loadEntries();
 
     void setEntries(tsl::ordered_map<QString, MapSectionEntry> *entries) { this->region_map_entries = entries; }
+    void setEntries(tsl::ordered_map<QString, MapSectionEntry> entries) { *(this->region_map_entries) = entries; }
+    void clearEntries() { this->region_map_entries->clear(); }
     MapSectionEntry getEntry(QString section);
     void setEntry(QString section, MapSectionEntry entry);
     void removeEntry(QString section);

@@ -119,6 +119,7 @@ private slots:
     void on_action_RegionMap_Resize_triggered();
     void on_action_RegionMap_ClearImage_triggered();
     void on_action_RegionMap_ClearLayout_triggered();
+    void on_action_RegionMap_ClearEntries_triggered();
     void on_action_Swap_triggered();
     void on_tabWidget_Region_Map_currentChanged(int);
     void on_pushButton_RM_Options_delete_clicked();
