@@ -60,6 +60,10 @@ public:
     virtual void setVFlip(bool vFlip) { this->vFlip_ = vFlip; }
     virtual void setPalette(int palette) { this->palette_ = palette; }
 
+    bool operator==(const TilemapTile& other) {
+        return (this->raw() == other.raw());
+    }
+
     virtual QString info() const {
         return QString("Tile: 0x") + QString("%1  ").arg(this->id(), 4, 16, QChar('0')).toUpper();
     }
@@ -132,7 +136,7 @@ public:
         setAcceptHoverEvents(true);
     }
     void draw();
-    void setPalette();
+    QImage setPalette(int index);
 
     int pixelWidth;
     int pixelHeight;
@@ -146,7 +150,10 @@ public:
     void selectHFlip(bool vFlip) { this->tile_vFlip = vFlip; }
     bool tile_vFlip = false;
 
-    void selectPalette(int palette) { this->tile_palette = palette; }
+    void selectPalette(int palette) {
+        this->tile_palette = palette;
+        this->draw();
+    }
     int tile_palette = 0;
 
     QImage tileset;

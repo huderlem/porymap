@@ -482,9 +482,8 @@ void RegionMapEditor::setRegionMap(RegionMap *map) {
     } else {
         this->ui->tabWidget_Region_Map->setTabEnabled(1, false);
         this->ui->tabWidget_Region_Map->setTabEnabled(2, false);
+        this->ui->tabWidget_Region_Map->setCurrentIndex(0);
     }
-
-    this->ui->tabWidget_Region_Map->setCurrentIndex(0);
 
     displayRegionMap();
 }
@@ -685,27 +684,27 @@ void RegionMapEditor::displayRegionMapEntriesImage() {
 void RegionMapEditor::displayRegionMapEntryOptions() {
     if (!this->region_map->layoutEnabled()) return;
 
+    this->ui->comboBox_RM_Entry_MapSection->clear();
     this->ui->comboBox_RM_Entry_MapSection->addItems(this->project->mapSectionValueToName.values());
-    int width = this->region_map->tilemapWidth() - this->region_map->padLeft() - this->region_map->padRight();
-    int height = this->region_map->tilemapHeight() - this->region_map->padTop() - this->region_map->padBottom();
-    this->ui->spinBox_RM_Entry_x->setMaximum(width - 1);
-    this->ui->spinBox_RM_Entry_y->setMaximum(height - 1);
+    this->ui->spinBox_RM_Entry_x->setMaximum(128);
+    this->ui->spinBox_RM_Entry_y->setMaximum(128);
     this->ui->spinBox_RM_Entry_width->setMinimum(1);
     this->ui->spinBox_RM_Entry_height->setMinimum(1);
-    this->ui->spinBox_RM_Entry_width->setMaximum(width);
-    this->ui->spinBox_RM_Entry_height->setMaximum(height);
+    this->ui->spinBox_RM_Entry_width->setMaximum(128);
+    this->ui->spinBox_RM_Entry_height->setMaximum(128);
 }
 
 void RegionMapEditor::updateRegionMapEntryOptions(QString section) {
     if (!this->region_map->layoutEnabled()) return;
 
-    bool enabled = (section != "MAPSEC_NONE") && (this->region_map_entries.contains(section));
+    bool enabled = ((section != "MAPSEC_NONE") && (section != "MAPSEC_COUNT")) && (this->region_map_entries.contains(section));
 
     this->ui->lineEdit_RM_MapName->setEnabled(enabled);
     this->ui->spinBox_RM_Entry_x->setEnabled(enabled);
     this->ui->spinBox_RM_Entry_y->setEnabled(enabled);
     this->ui->spinBox_RM_Entry_width->setEnabled(enabled);
     this->ui->spinBox_RM_Entry_height->setEnabled(enabled);
+    this->ui->pushButton_entryActivate->setEnabled(section != "MAPSEC_NONE" && section != "MAPSEC_COUNT");
     this->ui->pushButton_entryActivate->setText(enabled ? "Remove" : "Add");
 
     this->ui->lineEdit_RM_MapName->blockSignals(true);
@@ -862,7 +861,22 @@ void RegionMapEditor::mouseEvent_region_map(QGraphicsSceneMouseEvent *event, Reg
 
     if (event->buttons() & Qt::RightButton) {
         item->select(event);
-    //} else if (event->buttons() & Qt::MiddleButton) {// TODO
+        // set palette and flips
+        auto tile = this->region_map->getTile(x, y);
+        this->ui->spinBox_tilePalette->setValue(tile->palette());
+        this->ui->checkBox_tileHFlip->setChecked(tile->hFlip());
+        this->ui->checkBox_tileVFlip->setChecked(tile->vFlip());
+    } else if (event->modifiers() & Qt::ControlModifier) {
+        if (event->type() == QEvent::GraphicsSceneMouseRelease) {
+            actionId_++;
+        } else {
+            QByteArray oldTilemap = this->region_map->getTilemap();
+            item->fill(event);
+            QByteArray newTilemap = this->region_map->getTilemap();
+            EditTilemap *command = new EditTilemap(this->region_map, oldTilemap, newTilemap, actionId_);
+            command->setText("Fill Tilemap");
+            this->region_map->commit(command);
+        }
     } else {
         if (event->type() == QEvent::GraphicsSceneMouseRelease) {
             actionId_++;
@@ -872,7 +886,6 @@ void RegionMapEditor::mouseEvent_region_map(QGraphicsSceneMouseEvent *event, Reg
             QByteArray newTilemap = this->region_map->getTilemap();
             EditTilemap *command = new EditTilemap(this->region_map, oldTilemap, newTilemap, actionId_);
             this->region_map->commit(command);
-            //this->region_map_layout_item->draw();
         }
     }
 }
@@ -942,7 +955,6 @@ void RegionMapEditor::on_spinBox_RM_Entry_x_valueChanged(int x) {
                                                   this->region_map_entries[activeEntry].y + this->region_map->padTop());
     this->region_map_entries_item->select(idx);
     this->region_map_entries_item->draw();
-    this->ui->spinBox_RM_Entry_width->setMaximum(this->region_map->tilemapWidth() - this->region_map->padLeft() - this->region_map->padRight() - x);
 }
 
 void RegionMapEditor::on_spinBox_RM_Entry_y_valueChanged(int y) {
@@ -956,7 +968,6 @@ void RegionMapEditor::on_spinBox_RM_Entry_y_valueChanged(int y) {
                                                   this->region_map_entries[activeEntry].y + this->region_map->padTop());
     this->region_map_entries_item->select(idx);
     this->region_map_entries_item->draw();
-    this->ui->spinBox_RM_Entry_height->setMaximum(this->region_map->tilemapHeight() - this->region_map->padTop() - this->region_map->padBottom() - y);
 }
 
 void RegionMapEditor::on_spinBox_RM_Entry_width_valueChanged(int width) {
@@ -1159,6 +1170,24 @@ void RegionMapEditor::on_action_RegionMap_ClearLayout_triggered() {
         QList<LayoutSquare> newLayout = this->region_map->getLayout(this->region_map->getLayer());
         EditLayout *commit = new EditLayout(this->region_map, this->region_map->getLayer(), -1, oldLayout, newLayout);
         commit->setText("Clear Layout");
+        this->region_map->editHistory.push(commit);
+        displayRegionMapLayout();
+    } else {
+        return;
+    }
+}
+
+void RegionMapEditor::on_action_RegionMap_ClearEntries_triggered() {
+    QMessageBox::StandardButton result = QMessageBox::question(
+        this,
+        "WARNING",
+        "This action will remove the entire mapsection entries list, continue?",
+        QMessageBox::Yes | QMessageBox::Cancel,
+        QMessageBox::Yes
+    );
+
+    if (result == QMessageBox::Yes) {
+        ClearEntries *commit = new ClearEntries(this->region_map, this->region_map_entries);
         this->region_map->editHistory.push(commit);
         displayRegionMapLayout();
     } else {

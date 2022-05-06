@@ -17,6 +17,7 @@ enum RMCommandId {
     ID_RemoveEntry,
     ID_AddEntry,
     ID_ResizeTilemap,
+    ID_ClearEntries,
 };
 
 
@@ -148,5 +149,21 @@ private:
     int newHeight;
 };
 
+
+/// ClearEntries
+class ClearEntries : public QUndoCommand {
+public:
+    ClearEntries(RegionMap *map, tsl::ordered_map<QString, MapSectionEntry>, QUndoCommand *parent = nullptr);
+
+    void undo() override;
+    void redo() override;
+
+    bool mergeWith(const QUndoCommand *command) override { return false; }
+    int id() const override { return RMCommandId::ID_ClearEntries; }
+
+private:
+    RegionMap *map;
+    tsl::ordered_map<QString, MapSectionEntry> entries;
+};
 
 #endif // REGIONMAPEDITCOMMANDS_H

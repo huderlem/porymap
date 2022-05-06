@@ -3147,6 +3147,11 @@ void MainWindow::on_actionRegion_Map_Editor_triggered() {
 
 bool MainWindow::initRegionMapEditor() {
     this->regionMapEditor = new RegionMapEditor(this, this->editor->project);
+    this->regionMapEditor->setAttribute(Qt::WA_DeleteOnClose);
+    connect(this->regionMapEditor, &QObject::destroyed, [this](){
+        this->regionMapEditor = nullptr;
+    });
+
     bool success = this->regionMapEditor->load();
     if (!success) {
         delete this->regionMapEditor;

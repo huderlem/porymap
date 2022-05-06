@@ -21,8 +21,10 @@ public:
     TilemapTileSelector *tile_selector;
     
     virtual void paint(QGraphicsSceneMouseEvent *);
+    virtual void fill(QGraphicsSceneMouseEvent *);
     virtual void select(QGraphicsSceneMouseEvent *);
     virtual void draw();
+    void floodFill(int x, int y, std::shared_ptr<TilemapTile> oldTile, std::shared_ptr<TilemapTile> newTile);
 
 signals:
     void mouseEvent(QGraphicsSceneMouseEvent *, RegionMapPixmapItem *);

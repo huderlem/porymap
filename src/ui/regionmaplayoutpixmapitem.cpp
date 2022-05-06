@@ -62,9 +62,7 @@ void RegionMapLayoutPixmapItem::highlight(int x, int y, int red) {
 
 void RegionMapLayoutPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     QPoint pos = this->getCellPos(event->pos());
-    int index = this->region_map->getMapSquareIndex(pos.x(), pos.y());
-    if (this->region_map->squareX(index) >= 0
-     && this->region_map->squareY(index) >= 0) {
+    if (this->region_map->squareInLayout(pos.x(), pos.y())) {
         SelectablePixmapItem::mousePressEvent(event);
         this->updateSelectedTile();
         emit selectedTileChanged(this->selectedTile);
