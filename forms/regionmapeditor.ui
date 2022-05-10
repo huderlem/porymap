@@ -1100,6 +1100,7 @@
     </property>
     <addaction name="action_RegionMap_Resize"/>
     <addaction name="action_Swap"/>
+    <addaction name="action_Replace"/>
     <addaction name="separator"/>
     <addaction name="action_RegionMap_ClearImage"/>
     <addaction name="action_RegionMap_ClearLayout"/>
@@ -1138,7 +1139,7 @@
   </action>
   <action name="action_Swap">
    <property name="text">
-    <string>Swap...</string>
+    <string>Swap Layout Sections...</string>
    </property>
   </action>
   <action name="action_RegionMap_ClearImage">
@@ -1174,6 +1175,11 @@
   <action name="action_Configure">
    <property name="text">
     <string>Update Config...</string>
+   </property>
+  </action>
+  <action name="action_Replace">
+   <property name="text">
+    <string>Replace Layout Section...</string>
    </property>
   </action>
  </widget>

@@ -70,6 +70,7 @@ public:
     void clearLayout();
     void clearImage();
     void replaceSection(QString oldSection, QString newSection);
+    void swapSections(QString secA, QString secB);
 
     unsigned getTileId(int index);
     shared_ptr<TilemapTile> getTile(int index);

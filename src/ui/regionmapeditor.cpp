@@ -83,6 +83,10 @@ void RegionMapEditor::initShortcuts() {
     shortcutsConfig.load();
     shortcutsConfig.setDefaultShortcuts(shortcutableObjects());
     applyUserShortcuts();
+
+    connect(&(this->history), &QUndoGroup::indexChanged, [this](int) {
+        on_tabWidget_Region_Map_currentChanged(this->ui->tabWidget_Region_Map->currentIndex());
+    });
 }
 
 QObjectList RegionMapEditor::shortcutableObjects() const {
@@ -421,9 +425,11 @@ void RegionMapEditor::clear() {
     // except the config json
 
     auto stacks = this->history.stacks();
+    this->history.blockSignals(true);
     for (auto *stack : stacks) {
         this->history.removeStack(stack);
     }
+    this->history.blockSignals(false);
     for (auto p : this->region_maps) {
         delete p.second;
     }
@@ -497,10 +503,6 @@ bool RegionMapEditor::setup() {
         setRegionMap(region_maps.begin()->second);
     }
 
-    connect(&(this->history), &QUndoGroup::indexChanged, [this](int) {
-        on_tabWidget_Region_Map_currentChanged(this->ui->tabWidget_Region_Map->currentIndex());
-    });
-
     this->show();
     this->setWindowState(Qt::WindowState::WindowActive);
     this->activateWindow();
@@ -555,7 +557,6 @@ bool RegionMapEditor::load() {
 void RegionMapEditor::setRegionMap(RegionMap *map) {
     this->region_map = map;
     this->currIndex = this->region_map->firstLayoutIndex();
-    this->region_map->editHistory.setActive();
 
     if (this->region_map->layoutEnabled()) {
         this->ui->tabWidget_Region_Map->setTabEnabled(1, true);
@@ -567,6 +568,7 @@ void RegionMapEditor::setRegionMap(RegionMap *map) {
     }
 
     displayRegionMap();
+    this->region_map->editHistory.setActive();
 }
 
 bool RegionMapEditor::saveRegionMap(RegionMap *map) {
@@ -1217,6 +1219,45 @@ void RegionMapEditor::on_action_Swap_triggered() {
 
     QComboBox *oldSecBox = new QComboBox();
     oldSecBox->addItems(this->project->mapSectionValueToName.values());
+    form.addRow(new QLabel("Map Section 1:"), oldSecBox);
+    QComboBox *newSecBox = new QComboBox();
+    newSecBox->addItems(this->project->mapSectionValueToName.values());
+    form.addRow(new QLabel("Map Section 2:"), newSecBox);
+
+    QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &popup);
+    form.addRow(&buttonBox);
+
+    QString beforeSection, afterSection;
+    connect(&buttonBox, &QDialogButtonBox::rejected, &popup, &QDialog::reject);
+    connect(&buttonBox, &QDialogButtonBox::accepted, [&popup, &oldSecBox, &newSecBox, &beforeSection, &afterSection](){
+        beforeSection = oldSecBox->currentText();
+        afterSection = newSecBox->currentText();
+        if (!beforeSection.isEmpty() && !afterSection.isEmpty()) {
+            popup.accept();
+        }
+    });
+
+    if (popup.exec() == QDialog::Accepted) {
+        QList<LayoutSquare> oldLayout = this->region_map->getLayout(this->region_map->getLayer());
+        this->region_map->swapSections(beforeSection, afterSection);
+        QList<LayoutSquare> newLayout = this->region_map->getLayout(this->region_map->getLayer());
+        EditLayout *commit = new EditLayout(this->region_map, this->region_map->getLayer(), -5, oldLayout, newLayout);
+        commit->setText("Swap Layout Sections " + beforeSection + " <<>> " + afterSection);
+        this->region_map->editHistory.push(commit);
+        displayRegionMapLayout();
+        this->region_map_layout_item->select(this->region_map_layout_item->selectedTile);
+    }
+}
+
+void RegionMapEditor::on_action_Replace_triggered() {
+    QDialog popup(this, Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
+    popup.setWindowTitle("Replace Map Section");
+    popup.setWindowModality(Qt::NonModal);
+
+    QFormLayout form(&popup);
+
+    QComboBox *oldSecBox = new QComboBox();
+    oldSecBox->addItems(this->project->mapSectionValueToName.values());
     form.addRow(new QLabel("Old Map Section:"), oldSecBox);
     QComboBox *newSecBox = new QComboBox();
     newSecBox->addItems(this->project->mapSectionValueToName.values());
@@ -1240,7 +1281,7 @@ void RegionMapEditor::on_action_Swap_triggered() {
         this->region_map->replaceSection(beforeSection, afterSection);
         QList<LayoutSquare> newLayout = this->region_map->getLayout(this->region_map->getLayer());
         EditLayout *commit = new EditLayout(this->region_map, this->region_map->getLayer(), -2, oldLayout, newLayout);
-        commit->setText("Swap Layout Sections " + beforeSection + " >> " + afterSection);
+        commit->setText("Replace Layout Section " + beforeSection + " >> " + afterSection);
         this->region_map->editHistory.push(commit);
         displayRegionMapLayout();
         this->region_map_layout_item->select(this->region_map_layout_item->selectedTile);
