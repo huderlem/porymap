@@ -415,6 +415,19 @@ void RegionMap::replaceSection(QString oldSection, QString newSection) {
     }
 }
 
+void RegionMap::swapSections(QString secA, QString secB) {
+    for (auto &square : this->layouts[this->current_layer]) {
+        if (square.map_section == secA) {
+            square.map_section = secB;
+            square.has_map = (square.map_section != "MAPSEC_NONE");
+        }
+        else if (square.map_section == secB) {
+            square.map_section = secA;
+            square.has_map = (square.map_section != "MAPSEC_NONE");
+        }
+    }
+}
+
 void RegionMap::resizeTilemap(int newWidth, int newHeight, bool update) {
     auto tilemapCopy = this->tilemap;
     int oldWidth = this->tilemap_width;
