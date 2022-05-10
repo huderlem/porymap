@@ -1091,14 +1091,16 @@
     </property>
     <addaction name="action_RegionMap_Save"/>
     <addaction name="actionSave_All"/>
+    <addaction name="separator"/>
+    <addaction name="action_Configure"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
      <string>Edit</string>
     </property>
     <addaction name="action_RegionMap_Resize"/>
-    <addaction name="separator"/>
     <addaction name="action_Swap"/>
+    <addaction name="separator"/>
     <addaction name="action_RegionMap_ClearImage"/>
     <addaction name="action_RegionMap_ClearLayout"/>
     <addaction name="action_RegionMap_ClearEntries"/>
@@ -1167,6 +1169,11 @@
   <action name="action_RegionMap_ClearEntries">
    <property name="text">
     <string>Clear Map Entries</string>
+   </property>
+  </action>
+  <action name="action_Configure">
+   <property name="text">
+    <string>Update Config...</string>
    </property>
   </action>
  </widget>

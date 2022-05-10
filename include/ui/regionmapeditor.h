@@ -26,9 +26,6 @@ public:
     explicit RegionMapEditor(QWidget *parent = 0, Project *pro = nullptr);
     ~RegionMapEditor();
 
-    RegionMap *region_map = nullptr;
-    tsl::ordered_map<QString, RegionMap *> region_maps;
-
     bool load();
 
     void onRegionMapTileSelectorSelectedTileChanged(unsigned id);
@@ -53,13 +50,17 @@ private:
     Ui::RegionMapEditor *ui;
     Project *project;
 
+    RegionMap *region_map = nullptr;
+    tsl::ordered_map<QString, RegionMap *> region_maps;
+
     poryjson::Json rmConfigJson;
+
+    bool configSaved = false;
 
     QUndoGroup history;
 
     int currIndex = 0;
-    unsigned selectedCityTile;
-    unsigned selectedImageTile;
+    unsigned selectedImageTile = 0;
     QString activeEntry;
 
     bool cityMapFirstDraw = true;
@@ -83,6 +84,10 @@ private:
     RegionMapLayoutPixmapItem *region_map_layout_item = nullptr;
     RegionMapPixmapItem *region_map_item = nullptr;
     CityMapPixmapItem *city_map_item = nullptr;
+
+    bool reload();
+    bool setup();
+    void clear();
 
     bool saveRegionMap(RegionMap *map);
     void saveConfig();
@@ -121,6 +126,7 @@ private slots:
     void on_action_RegionMap_ClearLayout_triggered();
     void on_action_RegionMap_ClearEntries_triggered();
     void on_action_Swap_triggered();
+    void on_action_Configure_triggered();
     void on_tabWidget_Region_Map_currentChanged(int);
     void on_pushButton_RM_Options_delete_clicked();
     void on_comboBox_RM_ConnectedMap_textActivated(const QString &);
