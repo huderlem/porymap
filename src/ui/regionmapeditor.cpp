@@ -47,10 +47,10 @@ RegionMapEditor::~RegionMapEditor()
     delete mapsquare_selector_item;
     delete region_map_layout_item;
     delete scene_region_map_image;
-    delete city_map_selector_item;
-    delete city_map_item;
-    delete scene_city_map_tiles;
-    delete scene_city_map_image;
+    //delete city_map_selector_item;
+    //delete city_map_item;
+    //delete scene_city_map_tiles;
+    //delete scene_city_map_image;
     delete scene_region_map_layout;
     delete scene_region_map_tiles;
     delete ui;
@@ -226,7 +226,7 @@ bool RegionMapEditor::buildConfigDialog() {
 
     QDialog dialog(this);
     dialog.setWindowTitle("Configure Region Maps");
-    dialog.setWindowModality(Qt::ApplicationModal);
+    dialog.setWindowModality(Qt::WindowModal);
 
     QFormLayout form(&dialog);
 
@@ -251,6 +251,19 @@ bool RegionMapEditor::buildConfigDialog() {
             newItem->setData(Qt::UserRole, objectString);
             regionMapList->addItem(newItem);
         }
+    };
+    updateMapList();
+
+    auto updateJsonFromList = [regionMapList, &rmConfigJsonUpdate]() {
+        poryjson::Json::object newJson;
+        poryjson::Json::array mapArr;
+        for (auto item : regionMapList->findItems("*", Qt::MatchWildcard)) {
+            QString err;
+            poryjson::Json itemJson = poryjson::Json::parse(item->data(Qt::UserRole).toString(), err);
+            mapArr.append(itemJson);
+        }
+        newJson["region_maps"] = mapArr;
+        rmConfigJsonUpdate = poryjson::Json(newJson);
     };
 
     // when double clicking a region map from the list, bring up the configuration window 
@@ -297,6 +310,18 @@ bool RegionMapEditor::buildConfigDialog() {
         newItem->setText(resultObj["alias"].string_value());
         newItem->setData(Qt::UserRole, resultStr);
         regionMapList->addItem(newItem);
+    });
+
+    QPushButton *delMapButton = new QPushButton("Delete Selected Region Map");
+    form.addRow(delMapButton);
+
+    connect(delMapButton, &QPushButton::clicked, [this, regionMapList, &updateJsonFromList] {
+        QListWidgetItem *item = regionMapList->currentItem();
+        if (item) {
+            regionMapList->removeItemWidget(item);
+            delete item;
+            updateJsonFromList();
+        }
     });
 
     // TODO: city maps (leaving this for now)
@@ -351,6 +376,7 @@ bool RegionMapEditor::buildConfigDialog() {
     if (dialog.exec() == QDialog::Accepted) {
         // if everything looks good, we can update the master json
         this->rmConfigJson = rmConfigJsonUpdate;
+        this->configSaved = false;
         return true;
     }
 
@@ -390,6 +416,98 @@ bool RegionMapEditor::verifyConfig(poryjson::Json cfg) {
     return true;
 }
 
+void RegionMapEditor::clear() {
+    // clear everything that gets loaded in a way that will not crash the destructor
+    // except the config json
+
+    auto stacks = this->history.stacks();
+    for (auto *stack : stacks) {
+        this->history.removeStack(stack);
+    }
+    for (auto p : this->region_maps) {
+        delete p.second;
+    }
+    this->region_map = nullptr;
+    this->region_maps.clear();
+    this->region_map_entries.clear();
+
+    this->currIndex = 0;
+    this->activeEntry = QString();
+    this->entriesFirstDraw = true;
+
+    delete region_map_item;
+    region_map_item = nullptr;
+
+    delete mapsquare_selector_item;
+    mapsquare_selector_item = nullptr;
+
+    delete region_map_layout_item;
+    region_map_layout_item = nullptr;
+
+    delete scene_region_map_image;
+    scene_region_map_image = nullptr;
+
+    delete scene_region_map_layout;
+    scene_region_map_layout = nullptr;
+
+    delete scene_region_map_tiles;
+    scene_region_map_tiles = nullptr;
+}
+
+bool RegionMapEditor::reload() {
+    clear();
+    return setup();
+}
+
+bool RegionMapEditor::setup() {
+    // if all has gone well, this->rmConfigJson should be populated
+    // next, load the entries
+    loadRegionMapEntries();
+
+    // load the region maps into this->region_maps
+    poryjson::Json::object regionMapObjectCopy = this->rmConfigJson.object_items();
+    for (auto o : regionMapObjectCopy["region_maps"].array_items()) {
+        QString alias = o.object_items().at("alias").string_value();
+
+        RegionMap *newMap = new RegionMap(this->project);
+        newMap->setEntries(&this->region_map_entries);
+        if (!newMap->loadMapData(o)) {
+            delete newMap;
+            // TODO: consider continue, just reporting error loading single map?
+            return false;
+        }
+
+        connect(newMap, &RegionMap::mapNeedsDisplaying, [this]() {
+            displayRegionMap();
+        });
+
+        region_maps[alias] = newMap;
+
+        this->history.addStack(&(newMap->editHistory));
+    }
+
+    // add to ui
+    this->ui->comboBox_regionSelector->clear();
+    for (auto p : region_maps) {
+        this->ui->comboBox_regionSelector->addItem(p.first);
+    }
+
+    // display the first region map in the list
+    if (!region_maps.empty()) {
+        setRegionMap(region_maps.begin()->second);
+    }
+
+    connect(&(this->history), &QUndoGroup::indexChanged, [this](int) {
+        on_tabWidget_Region_Map_currentChanged(this->ui->tabWidget_Region_Map->currentIndex());
+    });
+
+    this->show();
+    this->setWindowState(Qt::WindowState::WindowActive);
+    this->activateWindow();
+
+    return true;
+}
+
 bool RegionMapEditor::load() {
     // check for config json file
     QString jsonConfigFilepath = this->project->root + "/src/data/region_map/porymap_config.json";
@@ -402,6 +520,7 @@ bool RegionMapEditor::load() {
         OrderedJson::object obj;
         if (parser.tryParseOrderedJsonFile(&obj, jsonConfigFilepath)) {
             this->rmConfigJson = OrderedJson(obj);
+            this->configSaved = true;
         }
         badConfig = !verifyConfig(this->rmConfigJson);
     } else {
@@ -411,6 +530,7 @@ bool RegionMapEditor::load() {
     if (badConfig) {
         // show popup explaining next window
         QMessageBox warning;
+        warning.setIcon(QMessageBox::Warning);
         warning.setText("Region map configuration not found.");
         warning.setInformativeText("In order to continue, you must setup porymap to use your region map.");
         warning.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
@@ -429,46 +549,7 @@ bool RegionMapEditor::load() {
         }
     }
 
-    // if all has gone well, this->rmConfigJson should be populated
-    // next, load the entries
-    loadRegionMapEntries();
-
-    // load the region maps into this->region_maps
-    poryjson::Json::object regionMapObjectCopy = this->rmConfigJson.object_items();
-    for (auto o : regionMapObjectCopy["region_maps"].array_items()) {
-        QString alias = o.object_items().at("alias").string_value();
-
-        RegionMap *newMap = new RegionMap(this->project);
-        newMap->setEntries(&this->region_map_entries);
-        if (!newMap->loadMapData(o)) {
-            delete newMap;
-            return false;
-        }
-
-        connect(newMap, &RegionMap::mapNeedsDisplaying, [this]() {
-            displayRegionMap();
-        });
-
-        region_maps[alias] = newMap;
-
-        this->history.addStack(&(newMap->editHistory));
-    }
-
-    // add to ui
-    for (auto p : region_maps) {
-        ui->comboBox_regionSelector->addItem(p.first);
-    }
-
-    // display the first region map in the list
-    if (!region_maps.empty()) {
-        setRegionMap(region_maps.begin()->second);
-    }
-
-    connect(&(this->history), &QUndoGroup::indexChanged, [this](int) {
-        on_tabWidget_Region_Map_currentChanged(this->ui->tabWidget_Region_Map->currentIndex());
-    });
-
-    return true;
+    return setup();
 }
 
 void RegionMapEditor::setRegionMap(RegionMap *map) {
@@ -516,6 +597,8 @@ void RegionMapEditor::saveConfig() {
     OrderedJsonDoc jsonDoc(&newConfigJson);
     jsonDoc.dump(&file);
     file.close();
+
+    this->configSaved = true;
 }
 
 void RegionMapEditor::on_action_RegionMap_Save_triggered() {
@@ -534,6 +617,28 @@ void RegionMapEditor::on_actionSave_All_triggered() {
     }
     saveRegionMapEntries();
     saveConfig();
+}
+
+void RegionMapEditor::on_action_Configure_triggered() {
+    if (this->modified()) {
+        QMessageBox warning;
+        warning.setIcon(QMessageBox::Warning);
+        warning.setText("Reconfiguring region maps will discard any unsaved changes.");
+        warning.setInformativeText("Continue?");
+        warning.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+        warning.setDefaultButton(QMessageBox::Ok);
+
+        if (warning.exec() == QMessageBox::Ok) {
+            if (buildConfigDialog()) {
+                reload();
+            }
+        }
+    }
+    else {
+        if (buildConfigDialog()) {
+            reload();
+        }
+    }
 }
 
 void RegionMapEditor::displayRegionMap() {
@@ -1196,7 +1301,7 @@ void RegionMapEditor::on_action_RegionMap_ClearEntries_triggered() {
 }
 
 bool RegionMapEditor::modified() {
-    return !this->history.isClean();
+    return !this->history.isClean() || !this->configSaved;
 }
 
 void RegionMapEditor::closeEvent(QCloseEvent *event)
