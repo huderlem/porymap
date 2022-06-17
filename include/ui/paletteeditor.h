@@ -34,6 +34,7 @@ private:
     QList<QList<QSlider*>> sliders;
     QList<QFrame*> frames;
     QList<QLabel*> rgbLabels;
+    QList<QToolButton *> pickButtons;
     Tileset *primaryTileset;
     Tileset *secondaryTileset;
     QList<History<PaletteHistoryItem*>> palettesHistory;
@@ -48,6 +49,7 @@ private:
     void restoreWindowState();
     void setColorsFromHistory(PaletteHistoryItem*, int);
     void closeEvent(QCloseEvent*);
+    void pickColor(int i);
 
 signals:
     void closed();
