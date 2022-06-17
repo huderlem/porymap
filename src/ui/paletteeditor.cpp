@@ -1,8 +1,10 @@
 #include "paletteeditor.h"
 #include "ui_paletteeditor.h"
+#include "colorpicker.h"
 #include "paletteutil.h"
 #include "config.h"
 #include "log.h"
+
 #include <QFileDialog>
 #include <QMessageBox>
 
@@ -105,9 +107,38 @@ PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset 
     this->rgbLabels.append(this->ui->label_rgb14);
     this->rgbLabels.append(this->ui->label_rgb15);
 
+    this->pickButtons.clear();
+    this->pickButtons.append(this->ui->toolButton_0);
+    this->pickButtons.append(this->ui->toolButton_1);
+    this->pickButtons.append(this->ui->toolButton_2);
+    this->pickButtons.append(this->ui->toolButton_3);
+    this->pickButtons.append(this->ui->toolButton_4);
+    this->pickButtons.append(this->ui->toolButton_5);
+    this->pickButtons.append(this->ui->toolButton_6);
+    this->pickButtons.append(this->ui->toolButton_7);
+    this->pickButtons.append(this->ui->toolButton_8);
+    this->pickButtons.append(this->ui->toolButton_9);
+    this->pickButtons.append(this->ui->toolButton_10);
+    this->pickButtons.append(this->ui->toolButton_11);
+    this->pickButtons.append(this->ui->toolButton_12);
+    this->pickButtons.append(this->ui->toolButton_13);
+    this->pickButtons.append(this->ui->toolButton_14);
+    this->pickButtons.append(this->ui->toolButton_15);
+
     // Setup edit-undo history for each of the palettes.
     for (int i = 0; i < Project::getNumPalettesTotal(); i++) {
         this->palettesHistory.append(History<PaletteHistoryItem*>());
+    }
+
+    // Connect the color picker's selection to the correct color index
+    for (int i = 0; i < 16; i++) {
+        connect(this->pickButtons[i], &QToolButton::clicked, [this, i](){
+            disableSliderSignals();
+            this->pickColor(i);
+            this->setColor(i);
+            enableSliderSignals();
+        });
+        this->pickButtons[i]->setEnabled(i < (Project::getNumPalettesTotal() - 1));
     }
 
     this->initColorSliders();
@@ -209,6 +240,18 @@ void PaletteEditor::setColor(int colorIndex) {
     this->refreshColor(colorIndex);
     this->commitEditHistory(paletteNum);
     emit this->changedPaletteColor();
+}
+
+void PaletteEditor::pickColor(int i) {
+    ColorPicker picker(this);
+    if (picker.exec() == QDialog::Accepted) {
+        QColor c = picker.getColor();
+        // TODO: round? or keep floor?
+        this->sliders[i][0]->setValue(c.red() / 8);
+        this->sliders[i][1]->setValue(c.green() / 8);
+        this->sliders[i][2]->setValue(c.blue() / 8);
+    }
+    return;
 }
 
 void PaletteEditor::on_spinBox_PaletteId_valueChanged(int paletteId) {

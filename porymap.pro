@@ -82,6 +82,7 @@ SOURCES += src/core/block.cpp \
     src/ui/multikeyedit.cpp \
     src/ui/preferenceeditor.cpp \
     src/ui/regionmappropertiesdialog.cpp \
+    src/ui/colorpicker.cpp \
     src/config.cpp \
     src/editor.cpp \
     src/main.cpp \
@@ -164,6 +165,7 @@ HEADERS  += include/core/block.h \
     include/ui/multikeyedit.h \
     include/ui/preferenceeditor.h \
     include/ui/regionmappropertiesdialog.h \
+    include/ui/colorpicker.h \
     include/config.h \
     include/editor.h \
     include/mainwindow.h \
@@ -184,6 +186,7 @@ FORMS    += forms/mainwindow.ui \
     forms/shortcutseditor.ui \
     forms/preferenceeditor.ui \
     forms/regionmappropertiesdialog.ui
+    forms/colorpicker.ui
 
 RESOURCES += \
     resources/images.qrc \
