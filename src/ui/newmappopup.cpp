@@ -156,6 +156,8 @@ void NewMapPopup::setDefaultValuesImportMap(MapLayout *mapLayout) {
     ui->comboBox_NewMap_Group->addItems(project->groupNames);
     ui->comboBox_NewMap_Group->setCurrentText(project->groupNames.at(0));
 
+    ui->comboBox_Song->addItems(project->songNames);
+
     ui->spinBox_NewMap_Width->setValue(mapLayout->width.toInt(nullptr, 0));
     ui->spinBox_NewMap_Height->setValue(mapLayout->height.toInt(nullptr, 0));
     ui->comboBox_NewMap_Primary_Tileset->setCurrentText(mapLayout->tileset_primary_label);
