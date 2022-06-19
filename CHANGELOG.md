@@ -25,6 +25,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix cursor tile and player view outlines exiting map bounds while painting.
 - Fix cursor tile and player view outlines not updating immediately when toggled in Collision view.
 - Fix selected space not updating while painting in Collision view.
+- Fix the map music dropdown being empty when importing a map from Advance Map.
 
 ## [4.5.0] - 2021-12-26
 ### Added
