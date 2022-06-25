@@ -218,7 +218,7 @@ bool Project::loadMapData(Map* map) {
         QJsonObject event = objectEventsArr[i].toObject();
         // If clone objects are not enabled then no type field is present
         QString type = hasCloneObjects ? event["type"].toString() : "object";
-        if (type == "object") {
+        if (type.isEmpty() || type == "object") {
             Event *object = new Event(event, EventType::Object);
             object->put("map_name", map->name);
             object->put("sprite", event["graphics_id"].toString());
