@@ -20,7 +20,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Only log "Unknown custom script function" when a registered script function is not present in any script.
 - Unused metatile attribute bits that are set are preserved instead of being cleared.
 - The wild encounter editor is automatically disabled if the encounter JSON data cannot be read
-- Overhauled the region map editor, adding support for tilemaps, and significant customization. Also support pokefirered.
+- Overhauled the region map editor, adding support for tilemaps, and significant customization. Also now supports pokefirered.
 
 ### Fixed
 - Fix cursor tile outline not updating at the end of a dragged selection.
