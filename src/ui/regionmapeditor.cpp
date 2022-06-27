@@ -47,10 +47,6 @@ RegionMapEditor::~RegionMapEditor()
     delete mapsquare_selector_item;
     delete region_map_layout_item;
     delete scene_region_map_image;
-    //delete city_map_selector_item;
-    //delete city_map_item;
-    //delete scene_city_map_tiles;
-    //delete scene_city_map_image;
     delete scene_region_map_layout;
     delete scene_region_map_tiles;
     delete ui;
