@@ -71,19 +71,15 @@ private:
     double initialScale = 30.0;
 
     QGraphicsScene *scene_region_map_image   = nullptr;
-    QGraphicsScene *scene_city_map_image     = nullptr;
     QGraphicsScene *scene_region_map_layout  = nullptr;
     QGraphicsScene *scene_region_map_entries = nullptr;
     QGraphicsScene *scene_region_map_tiles   = nullptr;
-    QGraphicsScene *scene_city_map_tiles     = nullptr;
 
     TilemapTileSelector *mapsquare_selector_item = nullptr;
-    TilemapTileSelector *city_map_selector_item  = nullptr;
 
     RegionMapEntriesPixmapItem *region_map_entries_item = nullptr;
     RegionMapLayoutPixmapItem *region_map_layout_item = nullptr;
     RegionMapPixmapItem *region_map_item = nullptr;
-    CityMapPixmapItem *city_map_item = nullptr;
 
     bool reload();
     bool setup();
