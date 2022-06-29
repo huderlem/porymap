@@ -860,8 +860,10 @@ void TilesetEditor::on_actionPaste_triggered()
 {
     Metatile *prevMetatile = new Metatile(*this->metatile);
     uint16_t metatileId = this->getSelectedMetatileId();
-    if (!this->replaceMetatile(metatileId, this->copiedMetatile))
+    if (!this->replaceMetatile(metatileId, this->copiedMetatile)) {
+        delete prevMetatile;
         return;
+    }
 
     MetatileHistoryItem *commit = new MetatileHistoryItem(metatileId, prevMetatile, new Metatile(*this->metatile));
     metatileHistory.push(commit);
