@@ -815,7 +815,7 @@ void TilesetEditor::onPaletteEditorChangedPalette(int paletteId) {
 bool TilesetEditor::replaceMetatile(uint16_t metatileId, Metatile * src)
 {
     Metatile * dest = Tileset::getMetatile(metatileId, this->primaryTileset, this->secondaryTileset);
-    if (!dest || !src)
+    if (!dest || !src || *dest == *src)
         return false;
 
     this->metatile = dest;
