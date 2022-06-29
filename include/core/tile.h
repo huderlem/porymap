@@ -22,4 +22,15 @@ public:
     static int getIndexInTileset(int);
 };
 
+inline bool operator==(const Tile &a, const Tile &b) {
+    return a.tileId  == b.tileId &&
+           a.xflip   == b.xflip &&
+           a.yflip   == b.yflip &&
+           a.palette == b.palette;
+}
+
+inline bool operator!=(const Tile &a, const Tile &b) {
+    return !(operator==(a, b));
+}
+
 #endif // TILE_H
