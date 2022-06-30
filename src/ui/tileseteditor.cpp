@@ -1072,7 +1072,7 @@ void TilesetEditor::on_copyButton_metatileLabel_clicked() {
     QClipboard * clipboard = QGuiApplication::clipboard();
     QString label = this->ui->lineEdit_metatileLabel->text();
     if (!label.isEmpty()) {
-        Tileset * tileset = Tileset::getMetatileTileset(this->getSelectedMetatile(), this->primaryTileset, this->secondaryTileset);
+        Tileset * tileset = Tileset::getMetatileTileset(this->getSelectedMetatileId(), this->primaryTileset, this->secondaryTileset);
         if (tileset)
             label.prepend("METATILE_" + QString(tileset->name).replace("gTileset_", "") + "_");
     }
