@@ -13,7 +13,7 @@ public:
     void draw();
     bool select(uint16_t metatileId);
     void setTilesets(Tileset*, Tileset*, bool draw = true);
-    uint16_t getSelectedMetatile();
+    uint16_t getSelectedMetatileId();
     void updateSelectedMetatile();
     QPoint getMetatileIdCoordsOnWidget(uint16_t metatileId);
 

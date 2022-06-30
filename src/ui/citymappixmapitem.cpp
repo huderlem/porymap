@@ -26,15 +26,16 @@ void CityMapPixmapItem::init() {
 void CityMapPixmapItem::draw() {
     QImage image(width_ * 8, height_ * 8, QImage::Format_RGBA8888);
 
-    QPainter painter(&image);
-    for (int i = 0; i < data.size() / 2; i++) {
-        QImage img = this->tile_selector->tileImg(data[i * 2]);// need to skip every other tile
-        int x = i % width_;
-        int y = i / width_;
-        QPoint pos = QPoint(x * 8, y * 8);
-        painter.drawImage(pos, img);
-    }
-    painter.end();
+    // TODO: construct temporary tile from this based on the id?
+    // QPainter painter(&image);
+    // for (int i = 0; i < data.size() / 2; i++) {
+    //     QImage img = this->tile_selector->tileImg(data[i * 2]);// need to skip every other tile
+    //     int x = i % width_;
+    //     int y = i / width_;
+    //     QPoint pos = QPoint(x * 8, y * 8);
+    //     painter.drawImage(pos, img);
+    // }
+    // painter.end();
 
     this->setPixmap(QPixmap::fromImage(image));
 }

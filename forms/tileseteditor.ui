@@ -567,6 +567,8 @@
     <property name="title">
      <string>Edit</string>
     </property>
+    <addaction name="actionCopy"/>
+    <addaction name="actionPaste"/>
     <addaction name="actionUndo"/>
     <addaction name="actionRedo"/>
    </widget>
@@ -661,6 +663,22 @@
   <action name="actionImport_Secondary_Metatiles">
    <property name="text">
     <string>Import Secondary Metatiles from Advance Map 1.92...</string>
+   </property>
+  </action>
+  <action name="actionCopy">
+   <property name="text">
+    <string>Copy</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+C</string>
+   </property>
+  </action>
+  <action name="actionPaste">
+   <property name="text">
+    <string>Paste</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+V</string>
    </property>
   </action>
  </widget>

@@ -14,6 +14,7 @@ class EventType
 {
 public:
     static QString Object;
+    static QString CloneObject;
     static QString Warp;
     static QString Trigger;
     static QString WeatherTrigger;
@@ -21,6 +22,16 @@ public:
     static QString HiddenItem;
     static QString SecretBase;
     static QString HealLocation;
+};
+
+class EventGroup
+{
+public:
+    static QString Object;
+    static QString Warp;
+    static QString Coord;
+    static QString Bg;
+    static QString Heal;
 };
 
 class DraggablePixmapItem;
@@ -68,6 +79,7 @@ public:
 
     static Event* createNewEvent(QString, QString, Project*);
     static Event* createNewObjectEvent(Project*);
+    static Event* createNewCloneObjectEvent(Project*, QString);
     static Event* createNewWarpEvent(QString);
     static Event* createNewHealLocationEvent(QString);
     static Event* createNewTriggerEvent(Project*);
@@ -75,8 +87,12 @@ public:
     static Event* createNewSignEvent(Project*);
     static Event* createNewHiddenItemEvent(Project*);
     static Event* createNewSecretBaseEvent(Project*);
+    static bool isValidType(QString event_type);
+    static QString typeToGroup(QString event_type);
+    static int getIndexOffset(QString group_type);
 
     OrderedJson::object buildObjectEventJSON();
+    OrderedJson::object buildCloneObjectEventJSON(const QMap<QString, QString> &);
     OrderedJson::object buildWarpEventJSON(const QMap<QString, QString> &);
     OrderedJson::object buildTriggerEventJSON();
     OrderedJson::object buildWeatherTriggerEventJSON();
@@ -86,7 +102,7 @@ public:
     void setPixmapFromSpritesheet(QImage, int, int, bool);
     int getPixelX();
     int getPixelY();
-    QMap<QString, bool> getExpectedFields();
+    QSet<QString> getExpectedFields();
     void readCustomValues(QJsonObject values);
     void addCustomValuesTo(OrderedJson::object *obj);
     void setFrameFromMovement(QString);

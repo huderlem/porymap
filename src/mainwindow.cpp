@@ -349,12 +349,15 @@ void MainWindow::markMapEdited() {
     }
 }
 
+void MainWindow::setWildEncountersUIEnabled(bool enabled) {
+    ui->actionUse_Encounter_Json->setChecked(enabled);
+    ui->mainTabBar->setTabEnabled(4, enabled);
+}
+
 void MainWindow::setProjectSpecificUIVisibility()
 {
-    ui->actionUse_Encounter_Json->setChecked(projectConfig.getEncounterJsonActive());
     ui->actionUse_Poryscript->setChecked(projectConfig.getUsePoryScript());
-
-    ui->mainTabBar->setTabEnabled(4, projectConfig.getEncounterJsonActive());
+    this->setWildEncountersUIEnabled(projectConfig.getEncounterJsonActive());
 
     switch (projectConfig.getBaseGameVersion())
     {
@@ -385,27 +388,17 @@ void MainWindow::setProjectSpecificUIVisibility()
         ui->label_AllowEscapeRope->setVisible(true);
         // TODO: pokefirered is not set up for the Region Map Editor and vice versa. 
         //       porymap will crash on attempt. Remove below once resolved
-        ui->actionRegion_Map_Editor->setVisible(false);
+        ui->actionRegion_Map_Editor->setVisible(true);
         break;
     }
 
-    if (projectConfig.getEventWeatherTriggerEnabled()) {
-        ui->newEventToolButton->newWeatherTriggerAction->setVisible(true);
-    } else {
-        ui->newEventToolButton->newWeatherTriggerAction->setVisible(false);
-    }
-    if (projectConfig.getEventSecretBaseEnabled()) {
-        ui->newEventToolButton->newSecretBaseAction->setVisible(true);
-    } else {
-        ui->newEventToolButton->newSecretBaseAction->setVisible(false);
-    }
-    if (projectConfig.getFloorNumberEnabled()) {
-        ui->spinBox_FloorNumber->setVisible(true);
-        ui->label_FloorNumber->setVisible(true);
-    } else {
-        ui->spinBox_FloorNumber->setVisible(false);
-        ui->label_FloorNumber->setVisible(false);
-    }
+    ui->newEventToolButton->newWeatherTriggerAction->setVisible(projectConfig.getEventWeatherTriggerEnabled());
+    ui->newEventToolButton->newSecretBaseAction->setVisible(projectConfig.getEventSecretBaseEnabled());
+    ui->newEventToolButton->newCloneObjectAction->setVisible(projectConfig.getEventCloneObjectEnabled());
+
+    bool floorNumEnabled = projectConfig.getFloorNumberEnabled();
+    ui->spinBox_FloorNumber->setVisible(floorNumEnabled);
+    ui->label_FloorNumber->setVisible(floorNumEnabled);
 }
 
 void MainWindow::mapSortOrder_changed(QAction *action)
@@ -525,6 +518,7 @@ bool MainWindow::openProject(QString dir) {
         editor->project = new Project(this);
         QObject::connect(editor->project, &Project::reloadProject, this, &MainWindow::on_action_Reload_Project_triggered);
         QObject::connect(editor->project, &Project::mapCacheCleared, this, &MainWindow::onMapCacheCleared);
+        QObject::connect(editor->project, &Project::disableWildEncountersUI, [this]() { this->setWildEncountersUIEnabled(false); });
         QObject::connect(editor->project, &Project::uncheckMonitorFilesAction, [this]() { ui->actionMonitor_Project_Files->setChecked(false); });
         on_actionMonitor_Project_Files_triggered(porymapConfig.getMonitorFiles());
         editor->project->set_root(dir);
@@ -702,22 +696,22 @@ void MainWindow::refreshMapScene()
     on_horizontalSlider_MetatileZoom_valueChanged(ui->horizontalSlider_MetatileZoom->value());
 }
 
-void MainWindow::openWarpMap(QString map_name, QString warp_num) {
+void MainWindow::openWarpMap(QString map_name, QString event_id, QString event_group) {
     // Ensure valid destination map name.
     if (!editor->project->mapNames.contains(map_name)) {
-        logError(QString("Invalid warp destination map name '%1'").arg(map_name));
+        logError(QString("Invalid map name '%1'").arg(map_name));
         return;
     }
 
-    // Ensure valid destination warp number.
+    // Ensure valid event number.
     bool ok;
-    int warpNum = warp_num.toInt(&ok, 0);
+    int event_index = event_id.toInt(&ok, 0);
     if (!ok) {
-        logError(QString("Invalid warp number '%1' for destination map '%2'").arg(warp_num).arg(map_name));
+        logError(QString("Invalid event number '%1' for map '%2'").arg(event_id).arg(map_name));
         return;
     }
 
-    // Open the destination map, and select the target warp event.
+    // Open the destination map.
     if (!setMap(map_name, true)) {
         QMessageBox msgBox(this);
         QString errorMsg = QString("There was an error opening map %1. Please see %2 for full error details.\n\n%3")
@@ -728,11 +722,13 @@ void MainWindow::openWarpMap(QString map_name, QString warp_num) {
         return;
     }
 
-    QList<Event*> warp_events = editor->map->events["warp_event_group"];
-    if (warp_events.length() > warpNum) {
-        Event *warp_event = warp_events.at(warpNum);
+    // Select the target event.
+    event_index -= Event::getIndexOffset(event_group);
+    QList<Event*> events = editor->map->events[event_group];
+    if (event_index < events.length() && event_index >= 0) {
+        Event *event = events.at(event_index);
         for (DraggablePixmapItem *item : editor->getObjects()) {
-            if (item->event == warp_event) {
+            if (item->event == event) {
                 editor->selected_events->clear();
                 editor->selected_events->append(item);
                 editor->updateSelectedEvents();
@@ -1170,11 +1166,11 @@ void MainWindow::onAddNewMapToLayoutClick(QAction* triggeredAction)
 }
 
 void MainWindow::onNewMapCreated() {
-    QString newMapName = this->newmapprompt->map->name;
-    int newMapGroup = this->newmapprompt->group;
-    Map *newMap = this->newmapprompt->map;
-    bool existingLayout = this->newmapprompt->existingLayout;
-    bool importedMap = this->newmapprompt->importedMap;
+    QString newMapName = this->newMapPrompt->map->name;
+    int newMapGroup = this->newMapPrompt->group;
+    Map *newMap = this->newMapPrompt->map;
+    bool existingLayout = this->newMapPrompt->existingLayout;
+    bool importedMap = this->newMapPrompt->importedMap;
 
     newMap = editor->project->addNewMapToGroup(newMapName, newMapGroup, newMap, existingLayout, importedMap);
 
@@ -1199,52 +1195,52 @@ void MainWindow::onNewMapCreated() {
         editor->save();// required
     }
 
-    disconnect(this->newmapprompt, &NewMapPopup::applied, this, &MainWindow::onNewMapCreated);
+    disconnect(this->newMapPrompt, &NewMapPopup::applied, this, &MainWindow::onNewMapCreated);
     delete newMap;
 }
 
 void MainWindow::openNewMapPopupWindow(int type, QVariant data) {
-    if (!this->newmapprompt) {
-        this->newmapprompt = new NewMapPopup(this, this->editor->project);
+    if (!this->newMapPrompt) {
+        this->newMapPrompt = new NewMapPopup(this, this->editor->project);
     }
-    if (!this->newmapprompt->isVisible()) {
-        this->newmapprompt->show();
+    if (!this->newMapPrompt->isVisible()) {
+        this->newMapPrompt->show();
     } else {
-        this->newmapprompt->raise();
-        this->newmapprompt->activateWindow();
+        this->newMapPrompt->raise();
+        this->newMapPrompt->activateWindow();
     }
     switch (type)
     {
         case MapSortOrder::Group:
-            this->newmapprompt->init(type, data.toInt(), QString(), QString());
+            this->newMapPrompt->init(type, data.toInt(), QString(), QString());
             break;
         case MapSortOrder::Area:
-            this->newmapprompt->init(type, 0, data.toString(), QString());
+            this->newMapPrompt->init(type, 0, data.toString(), QString());
             break;
         case MapSortOrder::Layout:
-            this->newmapprompt->init(type, 0, QString(), data.toString());
+            this->newMapPrompt->init(type, 0, QString(), data.toString());
             break;
     }
-    connect(this->newmapprompt, &NewMapPopup::applied, this, &MainWindow::onNewMapCreated);
-    this->newmapprompt->setAttribute(Qt::WA_DeleteOnClose);
+    connect(this->newMapPrompt, &NewMapPopup::applied, this, &MainWindow::onNewMapCreated);
+    this->newMapPrompt->setAttribute(Qt::WA_DeleteOnClose);
 }
 
 void MainWindow::openNewMapPopupWindowImportMap(MapLayout *mapLayout) {
-    if (!this->newmapprompt) {
-        this->newmapprompt = new NewMapPopup(this, this->editor->project);
+    if (!this->newMapPrompt) {
+        this->newMapPrompt = new NewMapPopup(this, this->editor->project);
     }
-    if (!this->newmapprompt->isVisible()) {
-        this->newmapprompt->show();
+    if (!this->newMapPrompt->isVisible()) {
+        this->newMapPrompt->show();
     } else {
-        this->newmapprompt->raise();
-        this->newmapprompt->activateWindow();
+        this->newMapPrompt->raise();
+        this->newMapPrompt->activateWindow();
     }
 
-    this->newmapprompt->initImportMap(mapLayout);
+    this->newMapPrompt->initImportMap(mapLayout);
 
-    connect(this->newmapprompt, SIGNAL(applied()), this, SLOT(onNewMapCreated()));
-    connect(this->newmapprompt, &QObject::destroyed, [=](QObject *) { this->newmapprompt = nullptr; });
-            this->newmapprompt->setAttribute(Qt::WA_DeleteOnClose);
+    connect(this->newMapPrompt, SIGNAL(applied()), this, SLOT(onNewMapCreated()));
+    connect(this->newMapPrompt, &QObject::destroyed, [=](QObject *) { this->newMapPrompt = nullptr; });
+            this->newMapPrompt->setAttribute(Qt::WA_DeleteOnClose);
 }
 
 void MainWindow::on_action_NewMap_triggered() {
@@ -1802,14 +1798,11 @@ void MainWindow::connectSubEditorsToShortcutsEditor() {
     connect(shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
             tilesetEditor, &TilesetEditor::applyUserShortcuts);
 
-    // TODO: Remove this check when the region map editor supports pokefirered.
-    if (projectConfig.getBaseGameVersion() != BaseGameVersion::pokefirered) {
-        if (!regionMapEditor)
-            initRegionMapEditor();
-        if (regionMapEditor)
-            connect(shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
-                    regionMapEditor, &RegionMapEditor::applyUserShortcuts);
-    }
+    if (!regionMapEditor)
+        initRegionMapEditor();
+    if (regionMapEditor)
+        connect(shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
+                regionMapEditor, &RegionMapEditor::applyUserShortcuts);
 }
 
 void MainWindow::on_actionPencil_triggered()
@@ -1859,7 +1852,7 @@ void MainWindow::addNewEvent(QString event_type)
         } else {
             QMessageBox msgBox(this);
             msgBox.setText("Failed to add new event");
-            if (event_type == EventType::Object) {
+            if (Event::typeToGroup(event_type) == EventGroup::Object) {
                 msgBox.setInformativeText(QString("The limit for object events (%1) has been reached.\n\n"
                                                   "This limit can be adjusted with OBJECT_EVENT_TEMPLATES_COUNT in 'include/constants/global.h'.")
                                           .arg(editor->project->getMaxObjectEvents()));
@@ -1879,57 +1872,20 @@ void MainWindow::updateObjects() {
     selectedHealspot = nullptr;
     ui->tabWidget_EventType->clear();
 
-    bool hasObjects = false;
-    bool hasWarps = false;
-    bool hasTriggers = false;
-    bool hasBGs = false;
-    bool hasHealspots = false;
-
-    for (DraggablePixmapItem *item : editor->getObjects())
-    {
-        QString event_type = item->event->get("event_type");
-
-        if (event_type == EventType::Object) {
-            hasObjects = true;
-        }
-        else if (event_type == EventType::Warp) {
-            hasWarps = true;
-        }
-        else if (event_type == EventType::Trigger || event_type == EventType::WeatherTrigger) {
-            hasTriggers = true;
-        }
-        else if (event_type == EventType::Sign || event_type == EventType::HiddenItem || event_type == EventType::SecretBase) {
-            hasBGs = true;
-        }
-        else if (event_type == EventType::HealLocation) {
-            hasHealspots = true;
-        }
-    }
-
-    if (hasObjects)
-    {
+    if (editor->map->events.value(EventGroup::Object).length())
         ui->tabWidget_EventType->addTab(eventTabObjectWidget, "Objects");
-    }
 
-    if (hasWarps)
-    {
+    if (editor->map->events.value(EventGroup::Warp).length())
         ui->tabWidget_EventType->addTab(eventTabWarpWidget, "Warps");
-    }
 
-    if (hasTriggers)
-    {
+    if (editor->map->events.value(EventGroup::Coord).length())
         ui->tabWidget_EventType->addTab(eventTabTriggerWidget, "Triggers");
-    }
 
-    if (hasBGs)
-    {
+    if (editor->map->events.value(EventGroup::Bg).length())
         ui->tabWidget_EventType->addTab(eventTabBGWidget, "BGs");
-    }
 
-    if (hasHealspots)
-    {
+    if (editor->map->events.value(EventGroup::Heal).length())
         ui->tabWidget_EventType->addTab(eventTabHealspotWidget, "Healspots");
-    }
 
     updateSelectedObjects();
 }
@@ -1956,7 +1912,6 @@ void MainWindow::updateSelectedObjects() {
 
     QList<EventPropertiesFrame *> frames;
 
-    bool inConnectionEnabled = projectConfig.getObjectEventInConnectionEnabled();
     bool quantityEnabled = projectConfig.getHiddenItemQuantityEnabled();
     bool underfootEnabled = projectConfig.getHiddenItemRequiresItemfinderEnabled();
     bool respawnDataEnabled = projectConfig.getHealLocationRespawnDataEnabled();
@@ -1991,9 +1946,7 @@ void MainWindow::updateSelectedObjects() {
         QString event_type = item->event->get("event_type");
         QString event_group_type = item->event->get("event_group_type");
         QString map_name = item->event->get("map_name");
-        int event_offs;
-        if (event_type == EventType::Warp) { event_offs = 0; }
-        else { event_offs = 1; }
+        int event_offs = Event::getIndexOffset(event_group_type);
         frame->ui->label_name->setText(QString("%1 Id").arg(event_type));
 
         if (events.count() == 1)
@@ -2021,7 +1974,6 @@ void MainWindow::updateSelectedObjects() {
         field_labels["radius_y"] = "Movement Radius Y";
         field_labels["trainer_type"] = "Trainer Type";
         field_labels["sight_radius_tree_id"] = "Sight Radius / Berry Tree ID";
-        field_labels["in_connection"] = "In Connection";
         field_labels["destination_warp"] = "Destination Warp";
         field_labels["destination_map_name"] = "Destination Map";
         field_labels["script_var"] = "Var";
@@ -2035,13 +1987,15 @@ void MainWindow::updateSelectedObjects() {
         field_labels["secret_base_id"] = "Secret Base Id";
         field_labels["respawn_map"] = "Respawn Map";
         field_labels["respawn_npc"] = "Respawn NPC";
+        field_labels["target_local_id"] = "Target Local Id";
+        field_labels["target_map"] = "Target Map";
 
         QStringList fields;
 
         if (event_type == EventType::Object) {
 
             frame->ui->sprite->setVisible(true);
-            frame->ui->comboBox_sprite->addItems(editor->project->gfxNames);
+            frame->ui->comboBox_sprite->addItems(editor->project->gfxDefines.keys());
             frame->ui->comboBox_sprite->setCurrentIndex(frame->ui->comboBox_sprite->findText(item->event->get("sprite")));
             connect(frame->ui->comboBox_sprite, &QComboBox::currentTextChanged, item, &DraggablePixmapItem::set_sprite);
             connect(frame->ui->comboBox_sprite, &QComboBox::currentTextChanged, this, &MainWindow::markMapEdited);
@@ -2063,7 +2017,17 @@ void MainWindow::updateSelectedObjects() {
             fields << "event_flag";
             fields << "trainer_type";
             fields << "sight_radius_tree_id";
-            if (inConnectionEnabled) fields << "in_connection";
+        }
+        else if (event_type == EventType::CloneObject) {
+            frame->ui->sprite->setVisible(true);
+            frame->ui->comboBox_sprite->setEnabled(false);
+            frame->ui->comboBox_sprite->addItem(item->event->get("sprite"));
+
+            frame->ui->spinBox_z->setVisible(false);
+            frame->ui->label_z->setVisible(false);
+
+            fields << "target_local_id";
+            fields << "target_map";
         }
         else if (event_type == EventType::Warp) {
             fields << "destination_map_name";
@@ -2101,8 +2065,8 @@ void MainWindow::updateSelectedObjects() {
         }
 
         // Some keys shouldn't use a combobox
-        QStringList spinKeys = {"quantity", "respawn_npc"};
-        QStringList checkKeys = {"underfoot", "in_connection"};
+        QStringList spinKeys = {"quantity", "respawn_npc", "target_local_id"};
+        QStringList checkKeys = {"underfoot"};
         for (QString key : fields) {
             QString value = item->event->get(key);
             QWidget *widget = new QWidget(frame);
@@ -2226,8 +2190,6 @@ void MainWindow::updateSelectedObjects() {
                 combo->setToolTip("The maximum sight range of a trainer,\n"
                                   "OR the unique id of the berry tree.");
                 combo->setMinimumContentsLength(4);
-            } else if (key == "in_connection") {
-                check->setToolTip("Check if object is positioned in the connection to another map.");
             } else if (key == "respawn_map") {
                 if (!editor->project->mapNames.contains(value)) {
                     combo->addItem(value);
@@ -2239,6 +2201,27 @@ void MainWindow::updateSelectedObjects() {
                                  "upon respawning after whiteout.");
                 spin->setMinimum(1);
                 spin->setMaximum(126);
+            } else if (key == "target_local_id") {
+                spin->setToolTip("event_object ID of the object being cloned.");
+                spin->setMinimum(1);
+                spin->setMaximum(126);
+                connect(spin, QOverload<int>::of(&NoScrollSpinBox::valueChanged), [item, frame](int value) {
+                    item->event->put("target_local_id", value);
+                    item->updatePixmap();
+                    frame->ui->comboBox_sprite->setItemText(0, item->event->get("sprite"));
+                });
+            } else if (key == "target_map") {
+                if (!editor->project->mapNames.contains(value)) {
+                    combo->addItem(value);
+                }
+                combo->addItems(editor->project->mapNames);
+                combo->setCurrentIndex(combo->findText(value));
+                combo->setToolTip("The name of the map that the object being cloned is on.");
+                connect(combo, static_cast<void (QComboBox::*)(const QString &)>(&QComboBox::currentTextChanged), this, [item, frame](QString value){
+                    item->event->put("target_map", value);
+                    item->updatePixmap();
+                    frame->ui->comboBox_sprite->setItemText(0, item->event->get("sprite"));
+                });
             } else {
                 combo->addItem(value);
             }
@@ -2323,27 +2306,27 @@ void MainWindow::updateSelectedObjects() {
     {
         QString event_group_type = events[0]->event->get("event_group_type");
 
-        if (event_group_type == "object_event_group") {
+        if (event_group_type == EventGroup::Object) {
             scrollTarget = ui->scrollArea_Objects;
             target = ui->scrollAreaWidgetContents_Objects;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Objects);
         }
-        else if (event_group_type == "warp_event_group") {
+        else if (event_group_type == EventGroup::Warp) {
             scrollTarget = ui->scrollArea_Warps;
             target = ui->scrollAreaWidgetContents_Warps;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Warps);
         }
-        else if (event_group_type == "coord_event_group") {
+        else if (event_group_type == EventGroup::Coord) {
             scrollTarget = ui->scrollArea_Triggers;
             target = ui->scrollAreaWidgetContents_Triggers;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Triggers);
         }
-        else if (event_group_type == "bg_event_group") {
+        else if (event_group_type == EventGroup::Bg) {
             scrollTarget = ui->scrollArea_BGs;
             target = ui->scrollAreaWidgetContents_BGs;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_BGs);
         }
-        else if (event_group_type == "heal_event_group") {
+        else if (event_group_type == EventGroup::Heal) {
             scrollTarget = ui->scrollArea_Healspots;
             target = ui->scrollAreaWidgetContents_Healspots;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Healspots);
@@ -2400,23 +2383,23 @@ QString MainWindow::getEventGroupFromTabWidget(QWidget *tab)
     QString ret = "";
     if (tab == eventTabObjectWidget)
     {
-        ret = "object_event_group";
+        ret = EventGroup::Object;
     }
     else if (tab == eventTabWarpWidget)
     {
-        ret = "warp_event_group";
+        ret = EventGroup::Warp;
     }
     else if (tab == eventTabTriggerWidget)
     {
-        ret = "coord_event_group";
+        ret = EventGroup::Coord;
     }
     else if (tab == eventTabBGWidget)
     {
-        ret = "bg_event_group";
+        ret = EventGroup::Bg;
     }
     else if (tab == eventTabHealspotWidget)
     {
-        ret = "heal_event_group";
+        ret = EventGroup::Heal;
     }
     return ret;
 }
@@ -2426,23 +2409,23 @@ void MainWindow::eventTabChanged(int index) {
         QString group = getEventGroupFromTabWidget(ui->tabWidget_EventType->widget(index));
         DraggablePixmapItem *selectedEvent = nullptr;
 
-        if (group == "object_event_group") {
+        if (group == EventGroup::Object) {
             selectedEvent = selectedObject;
             ui->newEventToolButton->setDefaultAction(ui->newEventToolButton->newObjectAction);
         }
-        else if (group == "warp_event_group") {
+        else if (group == EventGroup::Warp) {
             selectedEvent = selectedWarp;
             ui->newEventToolButton->setDefaultAction(ui->newEventToolButton->newWarpAction);
         }
-        else if (group == "coord_event_group") {
+        else if (group == EventGroup::Coord) {
             selectedEvent = selectedTrigger;
             ui->newEventToolButton->setDefaultAction(ui->newEventToolButton->newTriggerAction);
         }
-        else if (group == "bg_event_group") {
+        else if (group == EventGroup::Bg) {
             selectedEvent = selectedBG;
             ui->newEventToolButton->setDefaultAction(ui->newEventToolButton->newSignAction);
         }
-        else if (group == "heal_event_group") {
+        else if (group == EventGroup::Heal) {
             selectedEvent = selectedHealspot;
         }
 
@@ -2468,7 +2451,7 @@ void MainWindow::eventTabChanged(int index) {
 void MainWindow::selectedEventIndexChanged(int index)
 {
     QString group = getEventGroupFromTabWidget(ui->tabWidget_EventType->currentWidget());
-    int event_offs = group == "warp_event_group" ? 0 : 1;
+    int event_offs = Event::getIndexOffset(group);
     Event *event = editor->map->events.value(group).at(index - event_offs);
     DraggablePixmapItem *selectedEvent = nullptr;
     for (QGraphicsItem *child : editor->events_group->childItems()) {
@@ -2502,7 +2485,7 @@ void MainWindow::on_toolButton_deleteObject_clicked() {
             int numDeleted = 0;
             for (DraggablePixmapItem *item : *editor->selected_events) {
                 QString event_group = item->event->get("event_group_type");
-                if (event_group != "heal_event_group") {
+                if (event_group != EventGroup::Heal) {
                     // Get the index for the event that should be selected after this event has been deleted.
                     // If it's at the end of the list, select the previous event, otherwise select the next one.
                     // Don't bother getting the event to select if there are still more events to delete
@@ -3164,8 +3147,12 @@ void MainWindow::on_actionRegion_Map_Editor_triggered() {
 
 bool MainWindow::initRegionMapEditor() {
     this->regionMapEditor = new RegionMapEditor(this, this->editor->project);
-    bool success = this->regionMapEditor->loadRegionMapData()
-                && this->regionMapEditor->loadCityMaps();
+    this->regionMapEditor->setAttribute(Qt::WA_DeleteOnClose);
+    connect(this->regionMapEditor, &QObject::destroyed, [this](){
+        this->regionMapEditor = nullptr;
+    });
+
+    bool success = this->regionMapEditor->load();
     if (!success) {
         delete this->regionMapEditor;
         this->regionMapEditor = nullptr;
@@ -3182,16 +3169,26 @@ bool MainWindow::initRegionMapEditor() {
 }
 
 void MainWindow::closeSupplementaryWindows() {
-    if (this->tilesetEditor)
+    if (this->tilesetEditor) {
         delete this->tilesetEditor;
-    if (this->regionMapEditor)
+        this->tilesetEditor = nullptr;
+    }
+    if (this->regionMapEditor) {
         delete this->regionMapEditor;
-    if (this->mapImageExporter)
+        this->regionMapEditor = nullptr;
+    }
+    if (this->mapImageExporter) {
         delete this->mapImageExporter;
-    if (this->newmapprompt)
-        delete this->newmapprompt;
-    if (this->shortcutsEditor)
+        this->mapImageExporter = nullptr;
+    }
+    if (this->newMapPrompt) {
+        delete this->newMapPrompt;
+        this->newMapPrompt = nullptr;
+    }
+    if (this->shortcutsEditor) {
         delete this->shortcutsEditor;
+        this->shortcutsEditor = nullptr;
+    }
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {

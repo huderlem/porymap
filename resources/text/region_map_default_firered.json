@@ -1,0 +1,80 @@
+{
+    "region_maps": [
+        {
+            "alias": "kanto",
+            "tilemap": {
+                "width": 30,
+                "height": 20,
+                "format": "4bpp",
+                "tileset_path": "graphics/region_map/region_map.png",
+                "tilemap_path": "graphics/region_map/kanto.bin",
+                "palette": "graphics/region_map/region_map.pal"
+            },
+            "layout": {
+                "width": 22,
+                "height": 15,
+                "offset_left": 4,
+                "offset_top": 4,
+                "format": "C array",
+                "path": "src/data/region_map/region_map_layout_kanto.h"
+            }
+        },
+        {
+            "alias": "sevii_123",
+            "tilemap": {
+                "width": 30,
+                "height": 20,
+                "format": "4bpp",
+                "tileset_path": "graphics/region_map/region_map.png",
+                "tilemap_path": "graphics/region_map/sevii_123.bin",
+                "palette": "graphics/region_map/region_map.pal"
+            },
+            "layout": {
+                "width": 22,
+                "height": 15,
+                "offset_left": 4,
+                "offset_top": 4,
+                "format": "C array",
+                "path": "src/data/region_map/region_map_layout_sevii_123.h"
+            }
+        },
+        {
+            "alias": "sevii_45",
+            "tilemap": {
+                "width": 30,
+                "height": 20,
+                "format": "4bpp",
+                "tileset_path": "graphics/region_map/region_map.png",
+                "tilemap_path": "graphics/region_map/sevii_45.bin",
+                "palette": "graphics/region_map/region_map.pal"
+            },
+            "layout": {
+                "width": 22,
+                "height": 15,
+                "offset_left": 4,
+                "offset_top": 4,
+                "format": "C array",
+                "path": "src/data/region_map/region_map_layout_sevii_45.h"
+            }
+        },
+        {
+            "alias": "sevii_67",
+            "tilemap": {
+                "width": 30,
+                "height": 20,
+                "format": "4bpp",
+                "tileset_path": "graphics/region_map/region_map.png",
+                "tilemap_path": "graphics/region_map/sevii_67.bin",
+                "palette": "graphics/region_map/region_map.pal"
+            },
+            "layout": {
+                "width": 22,
+                "height": 15,
+                "offset_left": 4,
+                "offset_top": 4,
+                "format": "C array",
+                "path": "src/data/region_map/region_map_layout_sevii_67.h"
+            }
+        }
+    ]
+}

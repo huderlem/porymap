@@ -212,7 +212,7 @@ private slots:
     void on_action_Reload_Project_triggered();
     void on_mapList_activated(const QModelIndex &index);
     void on_action_Save_Project_triggered();
-    void openWarpMap(QString map_name, QString warp_num);
+    void openWarpMap(QString map_name, QString event_id, QString event_group);
 
     void duplicate();
     void setClipboardData(poryjson::Json::object);
@@ -345,7 +345,7 @@ private:
     QPointer<RegionMapEditor> regionMapEditor = nullptr;
     QPointer<ShortcutsEditor> shortcutsEditor = nullptr;
     QPointer<MapImageExporter> mapImageExporter = nullptr;
-    QPointer<NewMapPopup> newmapprompt = nullptr;
+    QPointer<NewMapPopup> newMapPrompt = nullptr;
     QPointer<PreferenceEditor> preferenceEditor = nullptr;
     FilterChildrenProxyModel *mapListProxyModel;
     QStandardItemModel *mapListModel;
@@ -418,6 +418,7 @@ private:
     void initShortcuts();
     void initExtraShortcuts();
     void setProjectSpecificUIVisibility();
+    void setWildEncountersUIEnabled(bool enabled);
     void loadUserSettings();
     void applyMapListFilter(QString filterText);
     void restoreWindowState();

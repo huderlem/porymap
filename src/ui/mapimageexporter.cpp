@@ -371,11 +371,11 @@ QPixmap MapImageExporter::getFormattedMapPixmap(Map *map, bool ignoreBorder) {
     for (Event *event : events) {
         editor->project->setEventPixmap(event);
         QString group = event->get("event_group_type");
-        if ((showObjects && group == "object_event_group")
-         || (showWarps && group == "warp_event_group")
-         || (showBGs && group == "bg_event_group")
-         || (showTriggers && group == "coord_event_group")
-         || (showHealSpots && group == "heal_event_group"))
+        if ((showObjects && group == EventGroup::Object)
+         || (showWarps && group == EventGroup::Warp)
+         || (showBGs && group == EventGroup::Bg)
+         || (showTriggers && group == EventGroup::Coord)
+         || (showHealSpots && group == EventGroup::Heal))
             eventPainter.drawImage(QPoint(event->getPixelX(), event->getPixelY()), event->pixmap.toImage());
     }
     eventPainter.end();

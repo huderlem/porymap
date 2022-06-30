@@ -7,7 +7,11 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 The **"Breaking Changes"** listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. If porymap is used on a project that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.
 
 ## [Unreleased]
+### Breaking Changes
+- Proper support for pokefirered's clone objects was added, which requires the changes made in [pokefirered/#484](https://github.com/pret/pokefirered/pull/484).
+
 ### Added
+- Add Copy/Paste for metatiles in the Tileset Editor.
 - Add ability to set the opacity of the scripting overlay.
 - Add ability to get/set map header properties and read tile pixel data via the API.
 - Add button to copy the full metatile label to the clipboard in the Tileset Editor.
@@ -16,12 +20,15 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - If an object event is inanimate, it will always render using its first frame.
 - Only log "Unknown custom script function" when a registered script function is not present in any script.
 - Unused metatile attribute bits that are set are preserved instead of being cleared.
+- The wild encounter editor is automatically disabled if the encounter JSON data cannot be read
+- Overhauled the region map editor, adding support for tilemaps, and significant customization. Also now supports pokefirered.
 
 ### Fixed
 - Fix cursor tile outline not updating at the end of a dragged selection.
 - Fix cursor tile and player view outlines exiting map bounds while painting.
 - Fix cursor tile and player view outlines not updating immediately when toggled in Collision view.
 - Fix selected space not updating while painting in Collision view.
+- Fix the map music dropdown being empty when importing a map from Advance Map.
 
 ## [4.5.0] - 2021-12-26
 ### Added

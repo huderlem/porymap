@@ -34,6 +34,9 @@ QString ParseUtil::readTextFile(const QString &path) {
         return QString();
     }
     QTextStream in(&file);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    in.setCodec("UTF-8");
+#endif // Qt6 defaults to UTF-8, but setCodec is renamed to setEncoding
     QString text = "";
     while (!in.atEnd()) {
         text += in.readLine() + '\n';

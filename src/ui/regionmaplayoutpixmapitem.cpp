@@ -3,24 +3,29 @@
 void RegionMapLayoutPixmapItem::draw() {
     if (!region_map) return;
 
-    QImage image(region_map->width() * 8, region_map->height() * 8, QImage::Format_RGBA8888);
+    QImage image(region_map->pixelWidth(), region_map->pixelHeight(), QImage::Format_RGBA8888);
 
     QPainter painter(&image);
-    for (int i = 0; i < region_map->map_squares.size(); i++) {
-        QImage bottom_img = this->tile_selector->tileImg(region_map->map_squares[i].tile_img_id);
+    for (int i = 0; i < region_map->tilemapSize(); i++) {
+        QImage bottom_img = this->tile_selector->tileImg(region_map->getTile(i));
         QImage top_img(8, 8, QImage::Format_RGBA8888);
-        if (region_map->map_squares[i].has_map) {
+        if (region_map->squareHasMap(i)) {
             top_img.fill(Qt::gray);
         } else {
             top_img.fill(Qt::black);
         }
-        int x = i % region_map->width();
-        int y = i / region_map->width();
+        int x = i % region_map->tilemapWidth();
+        int y = i / region_map->tilemapWidth();
         QPoint pos = QPoint(x * 8, y * 8);
         painter.setOpacity(1);
         painter.drawImage(pos, bottom_img);
         painter.save();
-        painter.setOpacity(0.55);
+        if (region_map->squareInLayout(x, y)) {
+            painter.setOpacity(0.55);
+        } else {
+            painter.setOpacity(0.8);
+        }
+        
         painter.drawImage(pos, top_img);
         painter.restore();
     }
@@ -40,8 +45,8 @@ void RegionMapLayoutPixmapItem::select(int x, int y) {
 }
 
 void RegionMapLayoutPixmapItem::select(int index) {
-    int x = index % this->region_map->width();
-    int y = index / this->region_map->width();
+    int x = index % this->region_map->tilemapWidth();
+    int y = index / this->region_map->tilemapWidth();
     SelectablePixmapItem::select(x, y, 0, 0);
     this->selectedTile = index;
     this->updateSelectedTile();
@@ -51,15 +56,13 @@ void RegionMapLayoutPixmapItem::select(int index) {
 
 void RegionMapLayoutPixmapItem::highlight(int x, int y, int red) {
     this->highlightedTile = red;
-    SelectablePixmapItem::select(x + this->region_map->padLeft, y + this->region_map->padTop, 0, 0);
+    SelectablePixmapItem::select(x + this->region_map->padLeft(), y + this->region_map->padTop(), 0, 0);
     draw();
 }
 
 void RegionMapLayoutPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     QPoint pos = this->getCellPos(event->pos());
-    int index = this->region_map->getMapSquareIndex(pos.x(), pos.y());
-    if (this->region_map->map_squares[index].x >= 0
-     && this->region_map->map_squares[index].y >= 0) {
+    if (this->region_map->squareInLayout(pos.x(), pos.y())) {
         SelectablePixmapItem::mousePressEvent(event);
         this->updateSelectedTile();
         emit selectedTileChanged(this->selectedTile);

@@ -39,10 +39,10 @@ determined by this file.
    ``use_custom_border_size``, 0, project, yes, Whether to allow variable border sizes
    ``enable_event_weather_trigger``, 1 if not ``pokefirered``, project, yes, Allows adding Weather Trigger events
    ``enable_event_secret_base``, 1 if not ``pokefirered``, project, yes, Allows adding Secret Base events
+   ``enable_event_clone_object``, 1 if ``pokefirered``, project, yes, Allows adding Clone Object events
    ``enable_hidden_item_quantity``, 1 if ``pokefirered``, project, yes, Adds ``Quantity`` to Hidden Item events
    ``enable_hidden_item_requires_itemfinder``, 1 if ``pokefirered``, project, yes, Adds ``Requires Itemfinder`` to Hidden Item events
    ``enable_heal_location_respawn_data``, 1 if ``pokefirered``, project, yes, Adds ``Respawn Map`` and ``Respawn NPC`` to Heal Location events
-   ``enable_object_event_in_connection``, 1 if ``pokefirered``, project, yes, Adds ``In Connection`` to Object events
    ``enable_floor_number``, 1 if ``pokefirered``, project, yes, Adds ``Floor Number`` to map headers
    ``create_map_text_file``, 1 if not ``pokeemerald``, project, yes, A ``text.inc`` or ``text.pory`` file will be created for any new map
    ``enable_triple_layer_metatiles``, 0, project, yes, Enables triple-layer metatiles (See https://github.com/pret/pokeemerald/wiki/Triple-layer-metatiles)

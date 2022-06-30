@@ -40,6 +40,7 @@ TilesetEditor::~TilesetEditor()
     delete selectedTilePixmapItem;
     delete selectedTileScene;
     delete metatileLayersScene;
+    delete copiedMetatile;
 }
 
 void TilesetEditor::update(Map *map, QString primaryTilesetLabel, QString secondaryTilesetLabel) {
@@ -76,8 +77,8 @@ bool TilesetEditor::selectMetatile(uint16_t metatileId) {
     return true;
 }
 
-uint16_t TilesetEditor::getSelectedMetatile() {
-    return this->metatileSelector->getSelectedMetatile();
+uint16_t TilesetEditor::getSelectedMetatileId() {
+    return this->metatileSelector->getSelectedMetatileId();
 }
 
 void TilesetEditor::setTilesets(QString primaryTilesetLabel, QString secondaryTilesetLabel) {
@@ -177,7 +178,7 @@ void TilesetEditor::initMetatileSelector()
 }
 
 void TilesetEditor::initMetatileLayersItem() {
-    Metatile *metatile = Tileset::getMetatile(this->getSelectedMetatile(), this->primaryTileset, this->secondaryTileset);
+    Metatile *metatile = Tileset::getMetatile(this->getSelectedMetatileId(), this->primaryTileset, this->secondaryTileset);
     this->metatileLayersItem = new MetatileLayersItem(metatile, this->primaryTileset, this->secondaryTileset);
     connect(this->metatileLayersItem, &MetatileLayersItem::tileChanged,
             this, &TilesetEditor::onMetatileLayerTileChanged);
@@ -282,7 +283,7 @@ void TilesetEditor::refresh() {
     this->metatileLayersItem->setTilesets(this->primaryTileset, this->secondaryTileset);
     this->tileSelector->setTilesets(this->primaryTileset, this->secondaryTileset);
     this->metatileSelector->setTilesets(this->primaryTileset, this->secondaryTileset);
-    this->metatileSelector->select(this->getSelectedMetatile());
+    this->metatileSelector->select(this->getSelectedMetatileId());
     this->drawSelectedTiles();
 
     if (metatileSelector) {
@@ -419,7 +420,7 @@ void TilesetEditor::onMetatileLayerTileChanged(int x, int y) {
     this->metatileLayersItem->draw();
     this->hasUnsavedChanges = true;
 
-    MetatileHistoryItem *commit = new MetatileHistoryItem(this->getSelectedMetatile(),
+    MetatileHistoryItem *commit = new MetatileHistoryItem(this->getSelectedMetatileId(),
                                                           prevMetatile, new Metatile(*this->metatile));
     metatileHistory.push(commit);
 }
@@ -486,7 +487,7 @@ void TilesetEditor::on_comboBox_metatileBehaviors_textActivated(const QString &m
     if (this->metatile) {
         Metatile *prevMetatile = new Metatile(*this->metatile);
         this->metatile->behavior = static_cast<uint16_t>(project->metatileBehaviorMap[metatileBehavior]);
-        MetatileHistoryItem *commit = new MetatileHistoryItem(this->getSelectedMetatile(),
+        MetatileHistoryItem *commit = new MetatileHistoryItem(this->getSelectedMetatileId(),
                                                               prevMetatile, new Metatile(*this->metatile));
         metatileHistory.push(commit);
         this->hasUnsavedChanges = true;
@@ -510,7 +511,7 @@ void TilesetEditor::saveMetatileLabel()
     if (this->metatile && this->metatile->label != this->ui->lineEdit_metatileLabel->text()) {
         Metatile *prevMetatile = new Metatile(*this->metatile);
         this->metatile->label = this->ui->lineEdit_metatileLabel->text();
-        MetatileHistoryItem *commit = new MetatileHistoryItem(this->getSelectedMetatile(),
+        MetatileHistoryItem *commit = new MetatileHistoryItem(this->getSelectedMetatileId(),
                                                               prevMetatile, new Metatile(*this->metatile));
         metatileHistory.push(commit);
         this->hasUnsavedChanges = true;
@@ -522,7 +523,7 @@ void TilesetEditor::on_comboBox_layerType_activated(int layerType)
     if (this->metatile) {
         Metatile *prevMetatile = new Metatile(*this->metatile);
         this->metatile->layerType = static_cast<uint8_t>(layerType);
-        MetatileHistoryItem *commit = new MetatileHistoryItem(this->getSelectedMetatile(),
+        MetatileHistoryItem *commit = new MetatileHistoryItem(this->getSelectedMetatileId(),
                                                               prevMetatile, new Metatile(*this->metatile));
         metatileHistory.push(commit);
         this->hasUnsavedChanges = true;
@@ -534,7 +535,7 @@ void TilesetEditor::on_comboBox_encounterType_activated(int encounterType)
     if (this->metatile) {
         Metatile *prevMetatile = new Metatile(*this->metatile);
         this->metatile->encounterType = static_cast<uint8_t>(encounterType);
-        MetatileHistoryItem *commit = new MetatileHistoryItem(this->getSelectedMetatile(),
+        MetatileHistoryItem *commit = new MetatileHistoryItem(this->getSelectedMetatileId(),
                                                               prevMetatile, new Metatile(*this->metatile));
         metatileHistory.push(commit);
         this->hasUnsavedChanges = true;
@@ -546,7 +547,7 @@ void TilesetEditor::on_comboBox_terrainType_activated(int terrainType)
     if (this->metatile) {
         Metatile *prevMetatile = new Metatile(*this->metatile);
         this->metatile->terrainType = static_cast<uint8_t>(terrainType);
-        MetatileHistoryItem *commit = new MetatileHistoryItem(this->getSelectedMetatile(),
+        MetatileHistoryItem *commit = new MetatileHistoryItem(this->getSelectedMetatileId(),
                                                               prevMetatile, new Metatile(*this->metatile));
         metatileHistory.push(commit);
         this->hasUnsavedChanges = true;
@@ -811,6 +812,21 @@ void TilesetEditor::onPaletteEditorChangedPalette(int paletteId) {
     this->on_spinBox_paletteSelector_valueChanged(paletteId);
 }
 
+bool TilesetEditor::replaceMetatile(uint16_t metatileId, Metatile * src)
+{
+    Metatile * dest = Tileset::getMetatile(metatileId, this->primaryTileset, this->secondaryTileset);
+    if (!dest || !src || *dest == *src)
+        return false;
+
+    this->metatile = dest;
+    *this->metatile = *src;
+    this->metatileSelector->select(metatileId);
+    this->metatileSelector->draw();
+    this->metatileLayersItem->draw();
+    this->metatileLayersItem->clearLastModifiedCoords();
+    return true;
+}
+
 void TilesetEditor::on_actionUndo_triggered()
 {
     MetatileHistoryItem *commit = this->metatileHistory.current();
@@ -818,34 +834,39 @@ void TilesetEditor::on_actionUndo_triggered()
     Metatile *prev = commit->prevMetatile;
     if (!prev) return;
     this->metatileHistory.back();
-
-    Metatile *temp = Tileset::getMetatile(commit->metatileId, this->primaryTileset, this->secondaryTileset);
-    if (temp) {
-        this->metatile = temp;
-        *this->metatile = *prev;
-        this->metatileSelector->select(commit->metatileId);
-        this->metatileSelector->draw();
-        this->metatileLayersItem->draw();
-        this->metatileLayersItem->clearLastModifiedCoords();
-    }
+    this->replaceMetatile(commit->metatileId, prev);
 }
 
 void TilesetEditor::on_actionRedo_triggered()
 {
     MetatileHistoryItem *commit = this->metatileHistory.next();
     if (!commit) return;
-    Metatile *next = commit->newMetatile;
-    if (!next) return;
+    this->replaceMetatile(commit->metatileId, commit->newMetatile);
+}
 
-    Metatile *temp = Tileset::getMetatile(commit->metatileId, this->primaryTileset, this->secondaryTileset);
-    if (temp) {
-        this->metatile = temp;
-        *this->metatile = *next;
-        this->metatileSelector->select(commit->metatileId);
-        this->metatileSelector->draw();
-        this->metatileLayersItem->draw();
-        this->metatileLayersItem->clearLastModifiedCoords();
+void TilesetEditor::on_actionCopy_triggered()
+{
+    Metatile * toCopy = Tileset::getMetatile(this->getSelectedMetatileId(), this->primaryTileset, this->secondaryTileset);
+    if (!toCopy) return;
+
+    if (!this->copiedMetatile)
+        this->copiedMetatile = new Metatile(*toCopy);
+    else
+        *this->copiedMetatile = *toCopy;
+    this->copiedMetatile->label = ""; // Don't copy the label, these should be unique to each metatile
+}
+
+void TilesetEditor::on_actionPaste_triggered()
+{
+    Metatile *prevMetatile = new Metatile(*this->metatile);
+    uint16_t metatileId = this->getSelectedMetatileId();
+    if (!this->replaceMetatile(metatileId, this->copiedMetatile)) {
+        delete prevMetatile;
+        return;
     }
+
+    MetatileHistoryItem *commit = new MetatileHistoryItem(metatileId, prevMetatile, new Metatile(*this->metatile));
+    metatileHistory.push(commit);
 }
 
 void TilesetEditor::on_actionExport_Primary_Tiles_Image_triggered()

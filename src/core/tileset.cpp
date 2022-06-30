@@ -188,7 +188,7 @@ bool Tileset::appendToMetatiles(QString metatileFile, QString friendlyName, bool
     dataString.append(QString("\t.incbin \"data/tilesets/%1/%2/metatiles.bin\"\n").arg(primaryString, friendlyName.toLower()));
     dataString.append(QString("\n\t.align 1\n"));
     dataString.append(QString("gMetatileAttributes_%1::\n").arg(friendlyName));
-    dataString.append(QString("\t.incbin \"data/tilesets/%1/%2/metatile_attributes.bin\"").arg(primaryString, friendlyName.toLower()));
+    dataString.append(QString("\t.incbin \"data/tilesets/%1/%2/metatile_attributes.bin\"\n").arg(primaryString, friendlyName.toLower()));
     file.write(dataString.toUtf8());
     file.flush();
     file.close();

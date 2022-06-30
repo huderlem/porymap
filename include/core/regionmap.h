@@ -3,7 +3,6 @@
 #define REGIONMAP_H
 
 #include "map.h"
-#include "project.h"
 #include "tilemaptileselector.h"
 #include "history.h"
 
@@ -15,138 +14,183 @@
 #include <QGraphicsScene>
 #include <QGraphicsView>
 
-enum RegionMapEditorBox {
-    BackgroundImage = 1,
-    CityMapImage    = 2,
-};
+#include <memory>
+using std::shared_ptr;
 
-class RegionMapHistoryItem {
-public:
-    int which;
-    int mapWidth = 0;
-    int mapHeight = 0;
-    QVector<uint8_t> tiles;
-    QString cityMap;
-    RegionMapHistoryItem(int which, QVector<uint8_t> tiles, QString cityMap) {
-        this->which = which;
-        this->tiles = tiles;
-        this->cityMap = cityMap;
-    }
-    RegionMapHistoryItem(int which, QVector<uint8_t> tiles, int width, int height) {
-        this->which = which;
-        this->tiles = tiles;
-        this->mapWidth = width;
-        this->mapHeight = height;
-    }
-    ~RegionMapHistoryItem() {}
-};
+class Project;
 
-class RegionMapEntry
+struct LayoutSquare
 {
-public:
-    RegionMapEntry()=default;
-    RegionMapEntry(int x_, int y_, int width_, int height_, QString name_) {
-        this-> x = x_;
-        this-> y = y_;
-        this-> width = width_;
-        this-> height = height_;
-        this-> name = name_;
-    }
+    LayoutSquare() : map_section("MAPSEC_NONE"), x(-1), y(-1), has_map(false) {}
+    QString map_section;
     int x;
     int y;
-    int width;
-    int height;
-    QString name;
-
-    void setX(int);
-    void setY(int);
-    void setWidth(int);
-    void setHeight(int);
+    bool has_map;
 };
 
-class RegionMapSquare
+struct MapSectionEntry
 {
-public:
-    int x = -1;
-    int y = -1;
-    uint8_t tile_img_id = 0x00;
-    uint8_t secid = 0x00;
-    bool has_map = false;
-    bool has_city_map = false;
-    bool duplicated = false;
-    QString map_name;
-    QString mapsec;
-    QString city_map_name;
+    QString name = "";
+    int x = 0;
+    int y = 0;
+    int width = 1;
+    int height = 1;
+    bool valid = false;
 };
 
-class RegionMap
+class RegionMap : public QObject
 {
+    Q_OBJECT
 public:
-    RegionMap() = default;
+    RegionMap() = delete;
+    RegionMap(Project *);
+
+    ~RegionMap() {}
 
     Project *project = nullptr;
 
-    QVector<RegionMapSquare> map_squares;
-    History<RegionMapHistoryItem*> history;
+    bool loadMapData(poryjson::Json);
+    bool loadTilemap(poryjson::Json);
+    bool loadLayout(poryjson::Json);
+    bool loadEntries();
 
-    QMap<QString, QString> sMapNamesMap;
-    QMap<QString, RegionMapEntry> mapSecToMapEntry;
-    QVector<QString> sMapNames;
-
-    const int padLeft   = 1;
-    const int padRight  = 3;
-    const int padTop    = 2;
-    const int padBottom = 3;
-
-    bool init(Project*);
-
-    bool readBkgImgBin();
-    bool readLayout();
+    void setEntries(tsl::ordered_map<QString, MapSectionEntry> *entries) { this->region_map_entries = entries; }
+    void setEntries(tsl::ordered_map<QString, MapSectionEntry> entries) { *(this->region_map_entries) = entries; }
+    void clearEntries() { this->region_map_entries->clear(); }
+    MapSectionEntry getEntry(QString section);
+    void setEntry(QString section, MapSectionEntry entry);
+    void removeEntry(QString section);
 
     void save();
-    void saveTileImages();
-    void saveBkgImgBin();
+    void saveTilemap();
     void saveLayout();
-    void saveOptions(int id, QString sec, QString name, int x, int y);
 
-    void resize(int width, int height);
+    void resizeTilemap(int width, int height, bool update = true);
     void resetSquare(int index);
     void clearLayout();
     void clearImage();
-    void replaceSectionId(unsigned oldId, unsigned newId);
+    void replaceSection(QString oldSection, QString newSection);
+    void swapSections(QString secA, QString secB);
 
-    int  width();
-    int  height();
-    QSize imgSize();
+    unsigned getTileId(int index);
+    shared_ptr<TilemapTile> getTile(int index);
     unsigned getTileId(int x, int y);
-    int getMapSquareIndex(int x, int y);
-    QString pngPath();
-    void setTemporaryPngPath(QString);
-    QString cityTilesPath();
-    void setTemporaryCityTilesPath(QString);
+    shared_ptr<TilemapTile> getTile(int x, int y);
+    bool squareHasMap(int index);
+    QString squareMapSection(int index);
+    void setSquareMapSection(int index, QString section);
+    int squareX(int index);
+    int squareY(int index);
+    bool squareInLayout(int x, int y);
+    int firstLayoutIndex() { return this->offset_left + this->offset_top * this->tilemap_width; }
 
-    QVector<uint8_t> getTiles();
-    void setTiles(QVector<uint8_t> tileIds);
+    void setTileId(int index, unsigned id);
+    void setTile(int index, TilemapTile &tile);
+    void setTileData(int index, unsigned id, bool hFlip, bool vFlip, int palette);
+    int getMapSquareIndex(int x, int y);
+
+    QString getAlias() { return this->alias; }
+    poryjson::Json::object config();
+    
+    QString palPath();
+    QString pngPath();
+    QString entriesPath() { return this->entries_path; }
+
+    QByteArray getTilemap();
+    void setTilemap(QByteArray newTilemap);
+
+    QList<LayoutSquare> getLayout(QString layer);
+    void setLayout(QString layer, QList<LayoutSquare> layout);
+
+    bool layoutEnabled() { return this->layout_format != LayoutFormat::None; }
+
+    QMap<QString, QList<LayoutSquare>> getAllLayouts();
+    void setAllLayouts(QMap<QString, QList<LayoutSquare>> newLayouts);
+
+    QStringList getLayers() { return this->layout_layers; }
+    void setLayer(QString layer) { this->current_layer = layer; }
+    QString getLayer() { return this->current_layer; }
 
     QString fixCase(QString);
 
+    int padLeft() { return this->offset_left; }
+    int padTop() { return this->offset_top; }
+    int padRight() { return this->tilemap_width - this->layout_width - this->offset_left; }
+    int padBottom() { return this->tilemap_height - this->layout_height - this->offset_top; }
+
+    int tilemapWidth() { return this->tilemap_width; }
+    int tilemapHeight() { return this->tilemap_height; }
+    int tilemapSize() { return this->tilemap_width * this->tilemap_height; }
+    int tilemapBytes();
+
+    int layoutWidth() { return this->layout_width; }
+    int layoutHeight() { return this->layout_height; }
+    void setLayoutDimensions(int width, int height, bool update = true);
+
+    int tilemapToLayoutIndex(int index);
+
+    TilemapFormat tilemapFormat() { return this->tilemap_format; }
+
+    int pixelWidth() { return this->tilemap_width * 8; }
+    int pixelHeight() { return this->tilemap_height * 8; }
+
+    QString fullPath(QString local);
+
+    void commit(QUndoCommand *command);
+    QUndoStack editHistory;
+
+    void undo();
+    void redo();
+
+    void emitDisplay();
+
+signals:
+    void mapNeedsDisplaying();
+
 private:
-    int layout_width_;
-    int layout_height_;
-    int img_width_;
-    int img_height_;
+    // TODO: defaults needed?
+    tsl::ordered_map<QString, MapSectionEntry> *region_map_entries = nullptr;
 
-    QString region_map_png_path;
-    QString region_map_bin_path;
-    QString region_map_entries_path;
-    QString region_map_layout_bin_path;
-    QString city_map_tiles_path;
+    QString alias = "";
 
-    bool region_map_png_needs_saving = false;
-    bool city_map_png_needs_saving = false;
+    int tilemap_width;
+    int tilemap_height;
 
-    int img_index_(int x, int y);
-    int layout_index_(int x, int y);
+    int layout_width;
+    int layout_height;
+
+    int offset_left;
+    int offset_top;
+
+    TilemapFormat tilemap_format;
+
+    enum class LayoutFormat { None, Binary, CArray };
+    LayoutFormat layout_format;
+
+    QString tileset_path;
+    QString tilemap_path;
+    QString palette_path = "";
+
+    QString entries_path;
+    QString layout_path;
+
+    QString layout_array_label;
+    bool layout_uses_layers = false;
+    QStringList layout_constants;
+    QString layout_qualifiers;
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    QVector<shared_ptr<TilemapTile>> tilemap;
+#else
+    QList<shared_ptr<TilemapTile>> tilemap;
+#endif
+
+    QStringList layout_layers;
+    QString current_layer;
+    QMap<QString, QList<LayoutSquare>> layouts;
+
+    int get_tilemap_index(int x, int y);
+    int get_layout_index(int x, int y);
 };
 
 #endif // REGIONMAP_H

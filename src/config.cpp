@@ -522,11 +522,11 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         if (!ok) {
             logWarn(QString("Invalid config value for enable_heal_location_respawn_data: '%1'. Must be 0 or 1.").arg(value));
         }
-    } else if (key == "enable_object_event_in_connection") {
+    } else if (key == "enable_event_clone_object") {
         bool ok;
-        this->enableObjectEventInConnection = value.toInt(&ok);
+        this->enableEventCloneObject = value.toInt(&ok);
         if (!ok) {
-            logWarn(QString("Invalid config value for enable_object_event_in_connection: '%1'. Must be 0 or 1.").arg(value));
+            logWarn(QString("Invalid config value for enable_event_clone_object: '%1'. Must be 0 or 1.").arg(value));
         }
     } else if (key == "enable_floor_number") {
         bool ok;
@@ -570,7 +570,7 @@ void ProjectConfig::setUnreadKeys() {
     if (!readKeys.contains("enable_hidden_item_quantity")) this->enableHiddenItemQuantity = isPokefirered;
     if (!readKeys.contains("enable_hidden_item_requires_itemfinder")) this->enableHiddenItemRequiresItemfinder = isPokefirered;
     if (!readKeys.contains("enable_heal_location_respawn_data")) this->enableHealLocationRespawnData = isPokefirered;
-    if (!readKeys.contains("enable_object_event_in_connection")) this->enableObjectEventInConnection = isPokefirered;
+    if (!readKeys.contains("enable_event_clone_object")) this->enableEventCloneObject = isPokefirered;
     if (!readKeys.contains("enable_floor_number")) this->enableFloorNumber = isPokefirered;
     if (!readKeys.contains("create_map_text_file")) this->createMapTextFile = (this->baseGameVersion != BaseGameVersion::pokeemerald);
 }
@@ -587,7 +587,7 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("enable_hidden_item_quantity", QString::number(this->enableHiddenItemQuantity));
     map.insert("enable_hidden_item_requires_itemfinder", QString::number(this->enableHiddenItemRequiresItemfinder));
     map.insert("enable_heal_location_respawn_data", QString::number(this->enableHealLocationRespawnData));
-    map.insert("enable_object_event_in_connection", QString::number(this->enableObjectEventInConnection));
+    map.insert("enable_event_clone_object", QString::number(this->enableEventCloneObject));
     map.insert("enable_floor_number", QString::number(this->enableFloorNumber));
     map.insert("create_map_text_file", QString::number(this->createMapTextFile));
     map.insert("enable_triple_layer_metatiles", QString::number(this->enableTripleLayerMetatiles));
@@ -628,7 +628,7 @@ void ProjectConfig::onNewConfigFileCreated() {
     this->enableHiddenItemQuantity = isPokefirered;
     this->enableHiddenItemRequiresItemfinder = isPokefirered;
     this->enableHealLocationRespawnData = isPokefirered;
-    this->enableObjectEventInConnection = isPokefirered;
+    this->enableEventCloneObject = isPokefirered;
     this->enableFloorNumber = isPokefirered;
     this->createMapTextFile = (this->baseGameVersion != BaseGameVersion::pokeemerald);
     this->useEncounterJson = true;
@@ -739,13 +739,13 @@ bool ProjectConfig::getHealLocationRespawnDataEnabled() {
     return this->enableHealLocationRespawnData;
 }
 
-void ProjectConfig::setObjectEventInConnectionEnabled(bool enable) {
-    this->enableObjectEventInConnection = enable;
+void ProjectConfig::setEventCloneObjectEnabled(bool enable) {
+    this->enableEventCloneObject = enable;
     this->save();
 }
 
-bool ProjectConfig::getObjectEventInConnectionEnabled() {
-    return this->enableObjectEventInConnection;
+bool ProjectConfig::getEventCloneObjectEnabled() {
+    return this->enableEventCloneObject;
 }
 
 void ProjectConfig::setFloorNumberEnabled(bool enable) {
