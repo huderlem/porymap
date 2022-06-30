@@ -14,8 +14,8 @@
                 "height": 15,
                 "offset_left": 1,
                 "offset_top": 2,
-                "format": "binary",
-                "path": "graphics/pokenav/region_map_section_layout.bin"
+                "format": "C array",
+                "path": "src/data/region_map/region_map_layout.h"
             }
         },
         {
