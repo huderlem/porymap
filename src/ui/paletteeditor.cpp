@@ -5,8 +5,12 @@
 #include "config.h"
 #include "log.h"
 
+#include <cmath>
+
 #include <QFileDialog>
 #include <QMessageBox>
+
+static inline int rgb5(int rgb) { return round(static_cast<double>(rgb * 31) / 255.0); }
 
 PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset *secondaryTileset, int paletteId, QWidget *parent) :
     QMainWindow(parent),
@@ -18,112 +22,70 @@ PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset 
     this->ui->setupUi(this);
     this->ui->spinBox_PaletteId->setMinimum(0);
     this->ui->spinBox_PaletteId->setMaximum(Project::getNumPalettesTotal() - 1);
+    
     this->sliders.clear();
     for (int i = 0; i < 16; i++) {
-        this->sliders.append(QList<QSlider*>());
+        QList<QSlider *> rgbSliders;
+        rgbSliders.append(this->ui->container->findChild<QSlider *>("slider_red_" + QString::number(i)));
+        rgbSliders.append(this->ui->container->findChild<QSlider *>("slider_green_" + QString::number(i)));
+        rgbSliders.append(this->ui->container->findChild<QSlider *>("slider_blue_" + QString::number(i)));
+        this->sliders.append(rgbSliders);
     }
-    this->sliders[0].append(this->ui->horizontalSlider);
-    this->sliders[0].append(this->ui->horizontalSlider_2);
-    this->sliders[0].append(this->ui->horizontalSlider_3);
-    this->sliders[1].append(this->ui->horizontalSlider_4);
-    this->sliders[1].append(this->ui->horizontalSlider_5);
-    this->sliders[1].append(this->ui->horizontalSlider_6);
-    this->sliders[2].append(this->ui->horizontalSlider_7);
-    this->sliders[2].append(this->ui->horizontalSlider_8);
-    this->sliders[2].append(this->ui->horizontalSlider_9);
-    this->sliders[3].append(this->ui->horizontalSlider_10);
-    this->sliders[3].append(this->ui->horizontalSlider_11);
-    this->sliders[3].append(this->ui->horizontalSlider_12);
-    this->sliders[4].append(this->ui->horizontalSlider_13);
-    this->sliders[4].append(this->ui->horizontalSlider_14);
-    this->sliders[4].append(this->ui->horizontalSlider_15);
-    this->sliders[5].append(this->ui->horizontalSlider_16);
-    this->sliders[5].append(this->ui->horizontalSlider_17);
-    this->sliders[5].append(this->ui->horizontalSlider_18);
-    this->sliders[6].append(this->ui->horizontalSlider_19);
-    this->sliders[6].append(this->ui->horizontalSlider_20);
-    this->sliders[6].append(this->ui->horizontalSlider_21);
-    this->sliders[7].append(this->ui->horizontalSlider_22);
-    this->sliders[7].append(this->ui->horizontalSlider_23);
-    this->sliders[7].append(this->ui->horizontalSlider_24);
-    this->sliders[8].append(this->ui->horizontalSlider_25);
-    this->sliders[8].append(this->ui->horizontalSlider_26);
-    this->sliders[8].append(this->ui->horizontalSlider_27);
-    this->sliders[9].append(this->ui->horizontalSlider_28);
-    this->sliders[9].append(this->ui->horizontalSlider_29);
-    this->sliders[9].append(this->ui->horizontalSlider_30);
-    this->sliders[10].append(this->ui->horizontalSlider_31);
-    this->sliders[10].append(this->ui->horizontalSlider_32);
-    this->sliders[10].append(this->ui->horizontalSlider_33);
-    this->sliders[11].append(this->ui->horizontalSlider_34);
-    this->sliders[11].append(this->ui->horizontalSlider_35);
-    this->sliders[11].append(this->ui->horizontalSlider_36);
-    this->sliders[12].append(this->ui->horizontalSlider_37);
-    this->sliders[12].append(this->ui->horizontalSlider_38);
-    this->sliders[12].append(this->ui->horizontalSlider_39);
-    this->sliders[13].append(this->ui->horizontalSlider_40);
-    this->sliders[13].append(this->ui->horizontalSlider_41);
-    this->sliders[13].append(this->ui->horizontalSlider_42);
-    this->sliders[14].append(this->ui->horizontalSlider_43);
-    this->sliders[14].append(this->ui->horizontalSlider_44);
-    this->sliders[14].append(this->ui->horizontalSlider_45);
-    this->sliders[15].append(this->ui->horizontalSlider_46);
-    this->sliders[15].append(this->ui->horizontalSlider_47);
-    this->sliders[15].append(this->ui->horizontalSlider_48);
+
+    this->spinners.clear();
+    for (int i = 0; i < 16; i++) {
+        QList<QSpinBox *> rgbSpinners;
+        rgbSpinners.append(this->ui->container->findChild<QSpinBox *>("spin_red_" + QString::number(i)));
+        rgbSpinners.append(this->ui->container->findChild<QSpinBox *>("spin_green_" + QString::number(i)));
+        rgbSpinners.append(this->ui->container->findChild<QSpinBox *>("spin_blue_" + QString::number(i)));
+        this->spinners.append(rgbSpinners);
+    }
 
     this->frames.clear();
-    this->frames.append(this->ui->frame);
-    this->frames.append(this->ui->frame_2);
-    this->frames.append(this->ui->frame_3);
-    this->frames.append(this->ui->frame_4);
-    this->frames.append(this->ui->frame_5);
-    this->frames.append(this->ui->frame_6);
-    this->frames.append(this->ui->frame_7);
-    this->frames.append(this->ui->frame_8);
-    this->frames.append(this->ui->frame_9);
-    this->frames.append(this->ui->frame_10);
-    this->frames.append(this->ui->frame_11);
-    this->frames.append(this->ui->frame_12);
-    this->frames.append(this->ui->frame_13);
-    this->frames.append(this->ui->frame_14);
-    this->frames.append(this->ui->frame_15);
-    this->frames.append(this->ui->frame_16);
+    for (int i = 0; i < 16; i++) {
+        this->frames.append(this->ui->container->findChild<QFrame *>("colorFrame_" + QString::number(i)));
+    }
 
     this->rgbLabels.clear();
-    this->rgbLabels.append(this->ui->label_rgb0);
-    this->rgbLabels.append(this->ui->label_rgb1);
-    this->rgbLabels.append(this->ui->label_rgb2);
-    this->rgbLabels.append(this->ui->label_rgb3);
-    this->rgbLabels.append(this->ui->label_rgb4);
-    this->rgbLabels.append(this->ui->label_rgb5);
-    this->rgbLabels.append(this->ui->label_rgb6);
-    this->rgbLabels.append(this->ui->label_rgb7);
-    this->rgbLabels.append(this->ui->label_rgb8);
-    this->rgbLabels.append(this->ui->label_rgb9);
-    this->rgbLabels.append(this->ui->label_rgb10);
-    this->rgbLabels.append(this->ui->label_rgb11);
-    this->rgbLabels.append(this->ui->label_rgb12);
-    this->rgbLabels.append(this->ui->label_rgb13);
-    this->rgbLabels.append(this->ui->label_rgb14);
-    this->rgbLabels.append(this->ui->label_rgb15);
+    for (int i = 0; i < 16; i++) {
+        this->rgbLabels.append(this->ui->container->findChild<QLabel *>("rgb_" + QString::number(i)));
+    }
 
     this->pickButtons.clear();
-    this->pickButtons.append(this->ui->toolButton_0);
-    this->pickButtons.append(this->ui->toolButton_1);
-    this->pickButtons.append(this->ui->toolButton_2);
-    this->pickButtons.append(this->ui->toolButton_3);
-    this->pickButtons.append(this->ui->toolButton_4);
-    this->pickButtons.append(this->ui->toolButton_5);
-    this->pickButtons.append(this->ui->toolButton_6);
-    this->pickButtons.append(this->ui->toolButton_7);
-    this->pickButtons.append(this->ui->toolButton_8);
-    this->pickButtons.append(this->ui->toolButton_9);
-    this->pickButtons.append(this->ui->toolButton_10);
-    this->pickButtons.append(this->ui->toolButton_11);
-    this->pickButtons.append(this->ui->toolButton_12);
-    this->pickButtons.append(this->ui->toolButton_13);
-    this->pickButtons.append(this->ui->toolButton_14);
-    this->pickButtons.append(this->ui->toolButton_15);
+    for (int i = 0; i < 16; i++) {
+        this->pickButtons.append(this->ui->container->findChild<QToolButton *>("pick_" + QString::number(i)));
+    }
+
+    this->hexEdits.clear();
+    for (int i = 0; i < 16; i++) {
+        this->hexEdits.append(this->ui->container->findChild<QLineEdit *>("hex_" + QString::number(i)));
+        // TODO: connect edits to validator (for valid hex code--ie 6 digits 0-9a-fA-F) and update
+    }
+
+    // Connect to function that will update color when hex edit is changed
+    for (int i = 0; i < this->hexEdits.length(); i++) {
+        connect(this->hexEdits[i], &QLineEdit::textEdited, [this, i](QString text){
+            //
+            setSignalsEnabled(false);
+            if (text.length() == 6) {
+                bool ok = false;
+                QRgb color = text.toInt(&ok, 16);
+                if (!ok) {
+                    // Use white if the color can't be converted.
+                    color = 0xFFFFFF;
+                    //newText.setNum(color, 16).toUpper();
+                    // TODO: verify this pads to 6
+                    this->hexEdits[i]->setText(QString::number(color, 16).rightJustified(6, '0'));
+                }
+                this->sliders[i][0]->setValue(rgb5(qRed(color)));
+                this->sliders[i][1]->setValue(rgb5(qGreen(color)));
+                this->sliders[i][2]->setValue(rgb5(qBlue(color)));
+
+                this->setColor(i);
+            }
+            setSignalsEnabled(true);
+        });
+    }
 
     // Setup edit-undo history for each of the palettes.
     for (int i = 0; i < Project::getNumPalettesTotal(); i++) {
@@ -133,10 +95,10 @@ PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset 
     // Connect the color picker's selection to the correct color index
     for (int i = 0; i < 16; i++) {
         connect(this->pickButtons[i], &QToolButton::clicked, [this, i](){
-            disableSliderSignals();
+            setSignalsEnabled(false); // TODO: this *should* be unneccesary
             this->pickColor(i);
             this->setColor(i);
-            enableSliderSignals();
+            setSignalsEnabled(true);
         });
         this->pickButtons[i]->setEnabled(i < (Project::getNumPalettesTotal() - 1));
     }
@@ -152,19 +114,22 @@ PaletteEditor::~PaletteEditor()
     delete ui;
 }
 
-void PaletteEditor::disableSliderSignals() {
+void PaletteEditor::setSignalsEnabled(bool enabled) {
+    // spinners, sliders, hexbox
     for (int i = 0; i < this->sliders.length(); i++) {
-        this->sliders.at(i).at(0)->blockSignals(true);
-        this->sliders.at(i).at(1)->blockSignals(true);
-        this->sliders.at(i).at(2)->blockSignals(true);
+        this->sliders.at(i).at(0)->blockSignals(!enabled);
+        this->sliders.at(i).at(1)->blockSignals(!enabled);
+        this->sliders.at(i).at(2)->blockSignals(!enabled);
     }
-}
 
-void PaletteEditor::enableSliderSignals() {
-    for (int i = 0; i < this->sliders.length(); i++) {
-        this->sliders.at(i).at(0)->blockSignals(false);
-        this->sliders.at(i).at(1)->blockSignals(false);
-        this->sliders.at(i).at(2)->blockSignals(false);
+    for (int i = 0; i < this->spinners.length(); i++) {
+        this->spinners.at(i).at(0)->blockSignals(!enabled);
+        this->spinners.at(i).at(1)->blockSignals(!enabled);
+        this->spinners.at(i).at(2)->blockSignals(!enabled);
+    }
+
+    for (int i = 0; i < this->hexEdits.length(); i++) {
+        this->hexEdits.at(i)->blockSignals(!enabled);
     }
 }
 
@@ -177,7 +142,7 @@ void PaletteEditor::initColorSliders() {
 }
 
 void PaletteEditor::refreshColorSliders() {
-    disableSliderSignals();
+    setSignalsEnabled(false);
     int paletteNum = this->ui->spinBox_PaletteId->value();
     for (int i = 0; i < 16; i++) {
         QRgb color;
@@ -187,11 +152,11 @@ void PaletteEditor::refreshColorSliders() {
             color = this->secondaryTileset->palettes.at(paletteNum).at(i);
         }
 
-        this->sliders[i][0]->setValue(qRed(color)   / 8);
-        this->sliders[i][1]->setValue(qGreen(color) / 8);
-        this->sliders[i][2]->setValue(qBlue(color)  / 8);
+        this->sliders[i][0]->setValue(rgb5(qRed(color)));
+        this->sliders[i][1]->setValue(rgb5(qGreen(color)));
+        this->sliders[i][2]->setValue(rgb5(qBlue(color)));
     }
-    enableSliderSignals();
+    setSignalsEnabled(true);
 }
 
 void PaletteEditor::refreshColors() {
@@ -201,6 +166,7 @@ void PaletteEditor::refreshColors() {
 }
 
 void PaletteEditor::refreshColor(int colorIndex) {
+    setSignalsEnabled(false);
     int red = this->sliders[colorIndex][0]->value() * 8;
     int green = this->sliders[colorIndex][1]->value() * 8;
     int blue = this->sliders[colorIndex][2]->value() * 8;
@@ -209,7 +175,14 @@ void PaletteEditor::refreshColor(int colorIndex) {
             .arg(green)
             .arg(blue);
     this->frames[colorIndex]->setStyleSheet(stylesheet);
-    this->rgbLabels[colorIndex]->setText(QString("RGB(%1, %2, %3)").arg(red).arg(green).arg(blue));
+    this->rgbLabels[colorIndex]->setText(QString("   RGB(%1, %2, %3)").arg(red).arg(green).arg(blue));
+    QColor color(red, green, blue);
+    QString hexcode = color.name().remove(0, 1);//.toUpper();//QString::number(color.rgb(), 16).toUpper();
+    this->hexEdits[colorIndex]->setText(hexcode);
+    this->spinners[colorIndex][0]->setValue(red);
+    this->spinners[colorIndex][1]->setValue(green);
+    this->spinners[colorIndex][2]->setValue(blue);
+    setSignalsEnabled(true);
 }
 
 void PaletteEditor::setPaletteId(int paletteId) {
@@ -246,10 +219,9 @@ void PaletteEditor::pickColor(int i) {
     ColorPicker picker(this);
     if (picker.exec() == QDialog::Accepted) {
         QColor c = picker.getColor();
-        // TODO: round? or keep floor?
-        this->sliders[i][0]->setValue(c.red() / 8);
-        this->sliders[i][1]->setValue(c.green() / 8);
-        this->sliders[i][2]->setValue(c.blue() / 8);
+        this->sliders[i][0]->setValue(rgb5(c.red()));
+        this->sliders[i][1]->setValue(rgb5(c.green()));
+        this->sliders[i][2]->setValue(rgb5(c.blue()));
     }
     return;
 }
