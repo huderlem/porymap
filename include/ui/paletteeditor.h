@@ -32,14 +32,14 @@ private:
     Ui::PaletteEditor *ui;
     Project *project = nullptr;
     QList<QList<QSlider*>> sliders;
+    QList<QList<QSpinBox *>> spinners;
     QList<QFrame*> frames;
     QList<QLabel*> rgbLabels;
     QList<QToolButton *> pickButtons;
+    QList<QLineEdit *> hexEdits;
     Tileset *primaryTileset;
     Tileset *secondaryTileset;
     QList<History<PaletteHistoryItem*>> palettesHistory;
-    void disableSliderSignals();
-    void enableSliderSignals();
     void initColorSliders();
     void refreshColorSliders();
     void refreshColors();
@@ -50,6 +50,8 @@ private:
     void setColorsFromHistory(PaletteHistoryItem*, int);
     void closeEvent(QCloseEvent*);
     void pickColor(int i);
+
+    void setSignalsEnabled(bool enabled);
 
 signals:
     void closed();
