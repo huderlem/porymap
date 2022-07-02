@@ -187,6 +187,7 @@ public:
     bool readObjEventGfxConstants();
     bool readSongNames();
     bool readEventGraphics();
+    QMap<QString, QMap<QString, QString>> readObjEventGfxInfo();
 
     void setEventPixmap(Event * event, bool forceLoad = false);
 

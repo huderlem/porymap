@@ -32,6 +32,9 @@ SOURCES += src/core/block.cpp \
     src/core/regionmap.cpp \
     src/core/wildmoninfo.cpp \
     src/core/editcommands.cpp \
+    src/lib/fex/lexer.cpp \
+    src/lib/fex/parser.cpp \
+    src/lib/fex/parser_util.cpp \
     src/lib/orderedjson.cpp \
     src/core/regionmapeditcommands.cpp \
     src/mainwindow_scriptapi.cpp \
@@ -108,6 +111,12 @@ HEADERS  += include/core/block.h \
     include/core/wildmoninfo.h \
     include/core/editcommands.h \
     include/core/regionmapeditcommands.h \
+    include/lib/fex/array.h \
+    include/lib/fex/array_value.h \
+    include/lib/fex/define_statement.h \
+    include/lib/fex/lexer.h \
+    include/lib/fex/parser.h \
+    include/lib/fex/parser_util.h \
     include/lib/orderedmap.h \
     include/lib/orderedjson.h \
     include/ui/aboutporymap.h \
