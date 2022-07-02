@@ -794,6 +794,23 @@ QList<int> MainWindow::getMetatileLayerOrder() {
 void MainWindow::setMetatileLayerOrder(QList<int> order) {
     if (!this->editor || !this->editor->map)
         return;
+
+    const int numLayers = 3;
+    int size = order.size();
+    if (size < numLayers) {
+        logError(QString("Metatile layer order has insufficient elements (%1), needs at least %2.").arg(size).arg(numLayers));
+        return;
+    }
+    bool invalid = false;
+    for (int i = 0; i < numLayers; i++) {
+        int layer = order.at(i);
+        if (layer < 0 || layer >= numLayers) {
+            logError(QString("'%1' is not a valid metatile layer order value, must be in range 0-%2.").arg(layer).arg(numLayers - 1));
+            invalid = true;
+        }
+    }
+    if (invalid) return;
+
     this->editor->map->metatileLayerOrder = order;
     this->refreshAfterPalettePreviewChange();
 }

@@ -56,7 +56,7 @@ QImage getMetatileImage(
     for (int layer = 0; layer < numLayers; layer++)
     for (int y = 0; y < 2; y++)
     for (int x = 0; x < 2; x++) {
-        int l = layerOrder.size() >= numLayers ? (layerOrder[layer] % numLayers) : layer;
+        int l = layerOrder.size() >= numLayers ? layerOrder[layer] : layer;
         int bottomLayer = layerOrder.size() >= numLayers ? layerOrder[0] : 0;
 
         // Get the tile to render next
