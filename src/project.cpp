@@ -10,6 +10,8 @@
 #include "map.h"
 
 #include "orderedjson.h"
+#include "lib/fex/lexer.h"
+#include "lib/fex/parser.h"
 
 #include <QDir>
 #include <QJsonArray>
@@ -2471,16 +2473,20 @@ bool Project::readEventGraphics() {
     qDeleteAll(eventGraphicsMap);
     eventGraphicsMap.clear();
     QStringList gfxNames = gfxDefines.keys();
+    QMap<QString, QMap<QString, QString>> gfxInfos = readObjEventGfxInfo();
     for (QString gfxName : gfxNames) {
         EventGraphics * eventGraphics = new EventGraphics;
 
         QString info_label = pointerHash[gfxName].replace("&", "");
-        QStringList gfx_info = parser.readCArray("src/data/object_events/object_event_graphics_info.h", info_label);
+        if (!gfxInfos.contains(info_label))
+            continue;
 
-        eventGraphics->inanimate = (gfx_info.value(8) == "TRUE");
-        QString pic_label = gfx_info.value(14);
-        QString dimensions_label = gfx_info.value(11);
-        QString subsprites_label = gfx_info.value(12);
+        QMap<QString, QString>gfxInfoAttributes = gfxInfos[info_label];
+
+        eventGraphics->inanimate = gfxInfoAttributes.value("inanimate") == "TRUE";
+        QString pic_label = gfxInfoAttributes.value("images");
+        QString dimensions_label = gfxInfoAttributes.value("oam");
+        QString subsprites_label = gfxInfoAttributes.value("subspriteTables");
 
         QString gfx_label = parser.readCArray("src/data/object_events/object_event_pic_tables.h", pic_label).value(0);
         gfx_label = gfx_label.section(QRegularExpression("[\\(\\)]"), 1, 1);
@@ -2513,6 +2519,28 @@ bool Project::readEventGraphics() {
         eventGraphicsMap.insert(gfxName, eventGraphics);
     }
     return true;
+}
+
+QMap<QString, QMap<QString, QString>> Project::readObjEventGfxInfo() {
+    // TODO: refactor this to be more general if we end up directly parsing C
+    // for more use cases in the future.
+    auto cParser = fex::Parser();
+    auto tokens = fex::Lexer().LexFile((root + "/src/data/object_events/object_event_graphics_info.h").toStdString());
+    auto gfxInfoObjects = cParser.ParseTopLevelObjects(tokens);
+    QMap<QString, QMap<QString, QString>> gfxInfos;
+    for (auto it = gfxInfoObjects.begin(); it != gfxInfoObjects.end(); it++) {
+        QMap<QString, QString> values;
+        for (const fex::ArrayValue &v : it->second.values()) {
+            if (v.type() != fex::ArrayValue::Type::kValuePair)
+                continue;
+            QString key = QString::fromStdString(v.pair().first);
+            QString value = QString::fromStdString(v.pair().second->string_value());
+            values.insert(key, value);
+        }
+        gfxInfos.insert(QString::fromStdString(it->first), values);
+    }
+
+    return gfxInfos;
 }
 
 bool Project::readSpeciesIconPaths() {
