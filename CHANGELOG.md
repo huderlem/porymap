@@ -23,6 +23,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - The wild encounter editor is automatically disabled if the encounter JSON data cannot be read
 - Overhauled the region map editor, adding support for tilemaps, and significant customization. Also now supports pokefirered.
 - Metatiles are always rendered accurately with 3 layers, and the unused layer is not assumed to be transparent.
+- `object_event_graphics_info.h` can now be parsed correctly if it uses structs with attributes.
 
 ### Fixed
 - Fix cursor tile outline not updating at the end of a dragged selection.
