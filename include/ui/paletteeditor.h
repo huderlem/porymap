@@ -40,8 +40,9 @@ private:
     Tileset *primaryTileset;
     Tileset *secondaryTileset;
     QList<History<PaletteHistoryItem*>> palettesHistory;
-    void initColorSliders();
+    void initConnections();
     void refreshColorSliders();
+    void refreshColorUis();
     void refreshColors();
     void refreshColor(int);
     void setColor(int);
@@ -50,6 +51,15 @@ private:
     void setColorsFromHistory(PaletteHistoryItem*, int);
     void closeEvent(QCloseEvent*);
     void pickColor(int i);
+
+    void updateColorUi(int index, QRgb color);
+    QRgb roundRgb(QRgb rgb); // rgb5 * 8 each component
+    QColor roundColor(QColor color);
+    void setRgb(int index, QRgb rgb);
+
+    void setRgbFromSliders(int colorIndex);
+    void setRgbFromHexEdit(int colorIndex);
+    void setRgbFromSpinners(int colorIndex);
 
     void setSignalsEnabled(bool enabled);
 

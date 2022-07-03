@@ -65,25 +65,7 @@ PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset 
     // Connect to function that will update color when hex edit is changed
     for (int i = 0; i < this->hexEdits.length(); i++) {
         connect(this->hexEdits[i], &QLineEdit::textEdited, [this, i](QString text){
-            //
-            setSignalsEnabled(false);
-            if (text.length() == 6) {
-                bool ok = false;
-                QRgb color = text.toInt(&ok, 16);
-                if (!ok) {
-                    // Use white if the color can't be converted.
-                    color = 0xFFFFFF;
-                    //newText.setNum(color, 16).toUpper();
-                    // TODO: verify this pads to 6
-                    this->hexEdits[i]->setText(QString::number(color, 16).rightJustified(6, '0'));
-                }
-                this->sliders[i][0]->setValue(rgb5(qRed(color)));
-                this->sliders[i][1]->setValue(rgb5(qGreen(color)));
-                this->sliders[i][2]->setValue(rgb5(qBlue(color)));
-
-                this->setColor(i);
-            }
-            setSignalsEnabled(true);
+            if (text.length() == 6) setRgbFromHexEdit(i);
         });
     }
 
@@ -94,16 +76,13 @@ PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset 
 
     // Connect the color picker's selection to the correct color index
     for (int i = 0; i < 16; i++) {
-        connect(this->pickButtons[i], &QToolButton::clicked, [this, i](){
-            setSignalsEnabled(false); // TODO: this *should* be unneccesary
-            this->pickColor(i);
-            this->setColor(i);
-            setSignalsEnabled(true);
-        });
-        this->pickButtons[i]->setEnabled(i < (Project::getNumPalettesTotal() - 1));
+        connect(this->pickButtons[i], &QToolButton::clicked, [this, i](){ this->pickColor(i); });
+        //this->pickButtons[i]->setEnabled(i < (Project::getNumPalettesTotal() - 1));
     }
 
-    this->initColorSliders();
+    this->setStyleSheet("QLabel { font-family: \"Courier\" }");
+
+    this->initConnections();
     this->setPaletteId(paletteId);
     this->commitEditHistory(this->ui->spinBox_PaletteId->value());
     this->restoreWindowState();
@@ -112,6 +91,56 @@ PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset 
 PaletteEditor::~PaletteEditor()
 {
     delete ui;
+}
+
+QColor PaletteEditor::roundColor(QColor color) {
+    return QColor(rgb5(color.red()) * 8, rgb5(color.green()) * 8, rgb5(color.blue()) * 8);
+}
+
+QRgb PaletteEditor::roundRgb(QRgb rgb) {
+    return qRgb(rgb5(qRed(rgb)) * 8, rgb5(qGreen(rgb)) * 8, rgb5(qBlue(rgb)) * 8);
+}
+
+/// replace refreshColorSliders(), refreshColor()
+/// do i need rgb arg or should I grab it from the tileset?
+/// 
+void PaletteEditor::updateColorUi(int colorIndex, QRgb rgb) {
+    setSignalsEnabled(false);
+
+    // TODO: this rgb should be sanitized (rounded) already?
+    //rgb = roundRgb(rgb);
+
+    int red = qRed(rgb);
+    int green = qGreen(rgb);
+    int blue = qBlue(rgb);
+    
+    // sliders
+    this->sliders[colorIndex][0]->setValue(rgb5(red));
+    this->sliders[colorIndex][1]->setValue(rgb5(green));
+    this->sliders[colorIndex][2]->setValue(rgb5(blue));
+
+    // hex
+    QColor color(red, green, blue);
+    QString hexcode = color.name().remove(0, 1).toUpper();//QString::number(color.rgb(), 16).toUpper();
+    this->hexEdits[colorIndex]->setText(hexcode);
+    // this->hexEdits[i]->setText(QString::number(color, 16).rightJustified(6, '0'));
+
+    // spinners
+    this->spinners[colorIndex][0]->setValue(red);
+    this->spinners[colorIndex][1]->setValue(green);
+    this->spinners[colorIndex][2]->setValue(blue);
+
+    // frame
+    QString stylesheet = QString("background-color: rgb(%1, %2, %3);").arg(red).arg(green).arg(blue);
+    this->frames[colorIndex]->setStyleSheet(stylesheet);
+    
+    // rgb label
+    int w = 3;
+    QChar spc = ' ';
+    int base = 10;
+    this->rgbLabels[colorIndex]->setText(QString("  RGB(%1, %2, %3)").arg(red, w, base, spc).arg(green, w, base, spc).arg(blue, w, base, spc));
+
+    setSignalsEnabled(true);
 }
 
 void PaletteEditor::setSignalsEnabled(bool enabled) {
@@ -133,15 +162,63 @@ void PaletteEditor::setSignalsEnabled(bool enabled) {
     }
 }
 
-void PaletteEditor::initColorSliders() {
+// TODO: move this to constructor?
+void PaletteEditor::initConnections() {
     for (int i = 0; i < 16; i++) {
-        connect(this->sliders[i][0], &QSlider::valueChanged, [=](int) { this->setColor(i); });
-        connect(this->sliders[i][1], &QSlider::valueChanged, [=](int) { this->setColor(i); });
-        connect(this->sliders[i][2], &QSlider::valueChanged, [=](int) { this->setColor(i); });
+        connect(this->sliders[i][0], &QSlider::valueChanged, [=](int) { setRgbFromSliders(i); });
+        connect(this->sliders[i][1], &QSlider::valueChanged, [=](int) { setRgbFromSliders(i); });
+        connect(this->sliders[i][2], &QSlider::valueChanged, [=](int) { setRgbFromSliders(i); });
+
+        connect(this->spinners[i][0], &QSpinBox::valueChanged, [=](int) { setRgbFromSpinners(i); });
+        connect(this->spinners[i][1], &QSpinBox::valueChanged, [=](int) { setRgbFromSpinners(i); });
+        connect(this->spinners[i][2], &QSpinBox::valueChanged, [=](int) { setRgbFromSpinners(i); });
     }
 }
 
+void PaletteEditor::setRgb(int colorIndex, QRgb rgb) {
+    int paletteNum = this->ui->spinBox_PaletteId->value();
+
+    Tileset *tileset = paletteNum < Project::getNumPalettesPrimary()
+            ? this->primaryTileset
+            : this->secondaryTileset;
+    tileset->palettes[paletteNum][colorIndex] = rgb;//qRgb(red, green, blue);
+    tileset->palettePreviews[paletteNum][colorIndex] = rgb;//qRgb(red, green, blue);
+    // TODO: round rgb? ^^    
+
+    //this->refreshColor(colorIndex);
+
+    this->updateColorUi(colorIndex, rgb);
+    
+    this->commitEditHistory(paletteNum);
+    emit this->changedPaletteColor();
+}
+
+// x = y * 31 / 255
+// TODO: better math, why not worky if just * 8???
+void PaletteEditor::setRgbFromSliders(int colorIndex) {
+    //*
+    setRgb(colorIndex, qRgb(round(this->sliders[colorIndex][0]->value() * 255. / 31.),
+                            round(this->sliders[colorIndex][1]->value() * 255. / 31.),
+                            round(this->sliders[colorIndex][2]->value() * 255. / 31.)));
+    //*/
+}
+
+void PaletteEditor::setRgbFromHexEdit(int colorIndex) {
+    QString text = this->hexEdits[colorIndex]->text();
+    bool ok = false;
+    QRgb rgb = text.toInt(&ok, 16);
+    if (!ok) rgb = 0xFFFFFFFF;
+    setRgb(colorIndex, rgb);
+}
+
+void PaletteEditor::setRgbFromSpinners(int colorIndex) {
+    setRgb(colorIndex, qRgb(this->spinners[colorIndex][0]->value(),
+                            this->spinners[colorIndex][1]->value(),
+                            this->spinners[colorIndex][2]->value()));
+}
+
 void PaletteEditor::refreshColorSliders() {
+    return;
     setSignalsEnabled(false);
     int paletteNum = this->ui->spinBox_PaletteId->value();
     for (int i = 0; i < 16; i++) {
@@ -159,6 +236,20 @@ void PaletteEditor::refreshColorSliders() {
     setSignalsEnabled(true);
 }
 
+void PaletteEditor::refreshColorUis() {
+    int paletteNum = this->ui->spinBox_PaletteId->value();
+    for (int i = 0; i < 16; i++) {
+        QRgb color;
+        if (paletteNum < Project::getNumPalettesPrimary()) {
+            color = this->primaryTileset->palettes.at(paletteNum).at(i);
+        } else {
+            color = this->secondaryTileset->palettes.at(paletteNum).at(i);
+        }
+
+        this->updateColorUi(i, color);
+    }
+}
+
 void PaletteEditor::refreshColors() {
     for (int i = 0; i < 16; i++) {
         this->refreshColor(i);
@@ -166,6 +257,7 @@ void PaletteEditor::refreshColors() {
 }
 
 void PaletteEditor::refreshColor(int colorIndex) {
+    return;
     setSignalsEnabled(false);
     int red = this->sliders[colorIndex][0]->value() * 8;
     int green = this->sliders[colorIndex][1]->value() * 8;
@@ -188,19 +280,22 @@ void PaletteEditor::refreshColor(int colorIndex) {
 void PaletteEditor::setPaletteId(int paletteId) {
     this->ui->spinBox_PaletteId->blockSignals(true);
     this->ui->spinBox_PaletteId->setValue(paletteId);
-    this->refreshColorSliders();
-    this->refreshColors();
+    //this->refreshColorSliders();
+    //this->refreshColors();
+    this->refreshColorUis();
     this->ui->spinBox_PaletteId->blockSignals(false);
 }
 
 void PaletteEditor::setTilesets(Tileset *primaryTileset, Tileset *secondaryTileset) {
     this->primaryTileset = primaryTileset;
     this->secondaryTileset = secondaryTileset;
-    this->refreshColorSliders();
-    this->refreshColors();
+    //this->refreshColorSliders();
+    //this->refreshColors();
+    this->refreshColorUis();
 }
 
 void PaletteEditor::setColor(int colorIndex) {
+    return;
     int paletteNum = this->ui->spinBox_PaletteId->value();
     int red = this->sliders[colorIndex][0]->value() * 8;
     int green = this->sliders[colorIndex][1]->value() * 8;
@@ -215,20 +310,22 @@ void PaletteEditor::setColor(int colorIndex) {
     emit this->changedPaletteColor();
 }
 
-void PaletteEditor::pickColor(int i) {
+void PaletteEditor::pickColor(int index) {
     ColorPicker picker(this);
     if (picker.exec() == QDialog::Accepted) {
         QColor c = picker.getColor();
-        this->sliders[i][0]->setValue(rgb5(c.red()));
-        this->sliders[i][1]->setValue(rgb5(c.green()));
-        this->sliders[i][2]->setValue(rgb5(c.blue()));
+        //this->sliders[i][0]->setValue(rgb5(c.red()));
+        //this->sliders[i][1]->setValue(rgb5(c.green()));
+        //this->sliders[i][2]->setValue(rgb5(c.blue()));
+        this->setRgb(index, c.rgb());
     }
     return;
 }
 
 void PaletteEditor::on_spinBox_PaletteId_valueChanged(int paletteId) {
-    this->refreshColorSliders();
-    this->refreshColors();
+    //this->refreshColorSliders();
+    //this->refreshColors();
+    this->refreshColorUis();
     if (!this->palettesHistory[paletteId].current()) {
         this->commitEditHistory(paletteId);
     }
@@ -236,6 +333,8 @@ void PaletteEditor::on_spinBox_PaletteId_valueChanged(int paletteId) {
 }
 
 void PaletteEditor::commitEditHistory(int paletteId) {
+    // TODO: fix
+    return;
     QList<QRgb> colors;
     for (int i = 0; i < 16; i++) {
         colors.append(qRgb(this->sliders[i][0]->value() * 8, this->sliders[i][1]->value() * 8, this->sliders[i][2]->value() * 8));
@@ -278,8 +377,9 @@ void PaletteEditor::setColorsFromHistory(PaletteHistoryItem *history, int palett
         }
     }
 
-    this->refreshColorSliders();
-    this->refreshColors();
+    //this->refreshColorSliders();
+    //this->refreshColors();
+    this->refreshColorUis();
     emit this->changedPaletteColor();
 }
 
@@ -329,8 +429,9 @@ void PaletteEditor::on_actionImport_Palette_triggered()
         }
     }
 
-    this->refreshColorSliders();
-    this->refreshColors();
+    //this->refreshColorSliders();
+    //this->refreshColors();
+    this->refreshColorUis();
     this->commitEditHistory(paletteId);
     emit this->changedPaletteColor();
 }
