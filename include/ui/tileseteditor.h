@@ -103,6 +103,8 @@ private slots:
 
     void on_actionImport_Secondary_Metatiles_triggered();
 
+    void on_copyButton_metatileLabel_clicked();
+
     void on_actionCopy_triggered();
 
     void on_actionPaste_triggered();
