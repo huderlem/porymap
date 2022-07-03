@@ -2530,12 +2530,32 @@ QMap<QString, QMap<QString, QString>> Project::readObjEventGfxInfo() {
     QMap<QString, QMap<QString, QString>> gfxInfos;
     for (auto it = gfxInfoObjects.begin(); it != gfxInfoObjects.end(); it++) {
         QMap<QString, QString> values;
+        int i = 0;
         for (const fex::ArrayValue &v : it->second.values()) {
-            if (v.type() != fex::ArrayValue::Type::kValuePair)
-                continue;
-            QString key = QString::fromStdString(v.pair().first);
-            QString value = QString::fromStdString(v.pair().second->string_value());
-            values.insert(key, value);
+            if (v.type() == fex::ArrayValue::Type::kValuePair) {
+                QString key = QString::fromStdString(v.pair().first);
+                QString value = QString::fromStdString(v.pair().second->string_value());
+                values.insert(key, value);
+            } else {
+                // This is for backwards compatibility with the old-style version of
+                // object_event_graphics_info.h, in which the structs didn't use
+                // attribute names to specify each struct member.
+                switch (i) {
+                    case 8:
+                        values.insert("inanimate", QString::fromStdString(v.string_value()));
+                        break;
+                    case 11:
+                        values.insert("oam", QString::fromStdString(v.string_value()));
+                        break;
+                    case 12:
+                        values.insert("subspriteTables", QString::fromStdString(v.string_value()));
+                        break;
+                    case 14:
+                        values.insert("images", QString::fromStdString(v.string_value()));
+                        break;
+                }
+            }
+            i++;
         }
         gfxInfos.insert(QString::fromStdString(it->first), values);
     }
