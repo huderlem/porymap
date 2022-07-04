@@ -28,6 +28,7 @@ protected:
     virtual QMap<QString, QString> getKeyValueMap() = 0;
     virtual void onNewConfigFileCreated() = 0;
     virtual void setUnreadKeys() = 0;
+    void setConfigBool(QString key, bool * field, QString value);
 };
 
 class PorymapConfig: public KeyValueConfigBase
