@@ -116,6 +116,8 @@ QString PorymapConfig::getConfigFilepath() {
 void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
     if (key == "recent_project") {
         this->recentProject = value;
+    } else if (key == "reopen_on_launch") {
+        setConfigBool(key, &this->reopenOnLaunch, value);
     } else if (key == "pretty_cursors") {
         setConfigBool(key, &this->prettyCursors, value);
     } else if (key == "map_sort_order") {
@@ -195,6 +197,7 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
 QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     QMap<QString, QString> map;
     map.insert("recent_project", this->recentProject);
+    map.insert("reopen_on_launch", this->reopenOnLaunch ? "1" : "0");
     map.insert("pretty_cursors", this->prettyCursors ? "1" : "0");
     map.insert("map_sort_order", mapSortOrderMap.value(this->mapSortOrder));
     map.insert("main_window_geometry", stringFromByteArray(this->mainWindowGeometry));
@@ -241,6 +244,11 @@ QByteArray PorymapConfig::bytesFromString(QString in) {
 
 void PorymapConfig::setRecentProject(QString project) {
     this->recentProject = project;
+    this->save();
+}
+
+void PorymapConfig::setReopenOnLaunch(bool enabled) {
+    this->reopenOnLaunch = enabled;
     this->save();
 }
 
@@ -336,6 +344,10 @@ void PorymapConfig::setTextEditorGotoLine(const QString &command) {
 
 QString PorymapConfig::getRecentProject() {
     return this->recentProject;
+}
+
+bool PorymapConfig::getReopenOnLaunch() {
+    return this->reopenOnLaunch;
 }
 
 MapSortOrder PorymapConfig::getMapSortOrder() {
