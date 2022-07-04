@@ -485,6 +485,9 @@ void MainWindow::setTheme(QString theme) {
 }
 
 bool MainWindow::openRecentProject() {
+    if (!porymapConfig.getReopenOnLaunch())
+        return false;
+
     QString default_dir = porymapConfig.getRecentProject();
     if (!default_dir.isNull() && default_dir.length() > 0) {
         logInfo(QString("Opening recent project: '%1'").arg(default_dir));
