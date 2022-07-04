@@ -17,6 +17,7 @@ determined by this file.
    :widths: 10, 3, 5, 5, 20
 
    ``recent_project``, , global, yes, The project that will be opened on launch
+   ``reopen_on_launch``, 1, global, yes, Whether the most recent project should be opened on launch
    ``recent_map``, , global, yes, The map that will be opened on launch
    ``pretty_cursors``, 1, global, yes, Whether to use custom crosshair cursors
    ``map_sort_order``, group, global, yes, The order map list is sorted in
