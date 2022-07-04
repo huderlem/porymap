@@ -79,6 +79,14 @@ void KeyValueConfigBase::save() {
     }
 }
 
+void KeyValueConfigBase::setConfigBool(QString key, bool * field, QString value) {
+    bool ok;
+    *field = value.toInt(&ok);
+    if (!ok) {
+        logWarn(QString("Invalid config value for %1: '%2'. Must be 0 or 1.").arg(key).arg(value));
+    }
+}
+
 const QMap<MapSortOrder, QString> mapSortOrderMap = {
     {MapSortOrder::Group, "group"},
     {MapSortOrder::Layout, "layout"},
@@ -109,11 +117,7 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
     if (key == "recent_project") {
         this->recentProject = value;
     } else if (key == "pretty_cursors") {
-        bool ok;
-        this->prettyCursors = value.toInt(&ok);
-        if (!ok) {
-            logWarn(QString("Invalid config value for pretty_cursors: '%1'. Must be 0 or 1.").arg(value));
-        }
+        setConfigBool(key, &this->prettyCursors, value);
     } else if (key == "map_sort_order") {
         QString sortOrder = value.toLower();
         if (mapSortOrderReverseMap.contains(sortOrder)) {
@@ -157,35 +161,15 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
             this->metatilesZoom = 30;
         }
     } else if (key == "show_player_view") {
-        bool ok;
-        this->showPlayerView = value.toInt(&ok);
-        if (!ok) {
-            logWarn(QString("Invalid config value for show_player_view: '%1'. Must be 0 or 1.").arg(value));
-        }
+        setConfigBool(key, &this->showPlayerView, value);
     } else if (key == "show_cursor_tile") {
-        bool ok;
-        this->showCursorTile = value.toInt(&ok);
-        if (!ok) {
-            logWarn(QString("Invalid config value for show_cursor_tile: '%1'. Must be 0 or 1.").arg(value));
-        }
+        setConfigBool(key, &this->showCursorTile, value);
     } else if (key == "show_border") {
-        bool ok;
-        this->showBorder = value.toInt(&ok);
-        if (!ok) {
-            logWarn(QString("Invalid config value for show_border: '%1'. Must be 0 or 1.").arg(value));
-        }
+        setConfigBool(key, &this->showBorder, value);
     } else if (key == "show_grid") {
-        bool ok;
-        this->showGrid = value.toInt(&ok);
-        if (!ok) {
-            logWarn(QString("Invalid config value for show_grid: '%1'. Must be 0 or 1.").arg(value));
-        }
+        setConfigBool(key, &this->showGrid, value);
     } else if (key == "monitor_files") {
-        bool ok;
-        this->monitorFiles = value.toInt(&ok);
-        if (!ok) {
-            logWarn(QString("Invalid config value for monitor_files: '%1'. Must be 0 or 1.").arg(value));
-        }
+        setConfigBool(key, &this->monitorFiles, value);
     } else if (key == "region_map_dimensions") {
         bool ok1, ok2;
         QStringList dims = value.split("x");
@@ -475,77 +459,29 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
     } else if (key == "recent_map") {
         this->recentMap = value;
     } else if (key == "use_encounter_json") {
-        bool ok;
-        this->useEncounterJson = value.toInt(&ok);
-        if (!ok) {
-            logWarn(QString("Invalid config value for use_encounter_json: '%1'. Must be 0 or 1.").arg(value));
-        }
+        setConfigBool(key, &this->useEncounterJson, value);
     } else if (key == "use_poryscript") {
-        bool ok;
-        this->usePoryScript = value.toInt(&ok);
-        if (!ok) {
-            logWarn(QString("Invalid config value for use_poryscript: '%1'. Must be 0 or 1.").arg(value));
-        }
+        setConfigBool(key, &this->usePoryScript, value);
     } else if (key == "use_custom_border_size") {
-        bool ok;
-        this->useCustomBorderSize = value.toInt(&ok);
-        if (!ok) {
-            logWarn(QString("Invalid config value for use_custom_border_size: '%1'. Must be 0 or 1.").arg(value));
-        }
+        setConfigBool(key, &this->useCustomBorderSize, value);
     } else if (key == "enable_event_weather_trigger") {
-        bool ok;
-        this->enableEventWeatherTrigger = value.toInt(&ok);
-        if (!ok) {
-            logWarn(QString("Invalid config value for enable_event_weather_trigger: '%1'. Must be 0 or 1.").arg(value));
-        }
+        setConfigBool(key, &this->enableEventWeatherTrigger, value);
     } else if (key == "enable_event_secret_base") {
-        bool ok;
-        this->enableEventSecretBase = value.toInt(&ok);
-        if (!ok) {
-            logWarn(QString("Invalid config value for enable_event_secret_base: '%1'. Must be 0 or 1.").arg(value));
-        }
+        setConfigBool(key, &this->enableEventSecretBase, value);
     } else if (key == "enable_hidden_item_quantity") {
-        bool ok;
-        this->enableHiddenItemQuantity = value.toInt(&ok);
-        if (!ok) {
-            logWarn(QString("Invalid config value for enable_hidden_item_quantity: '%1'. Must be 0 or 1.").arg(value));
-        }
+        setConfigBool(key, &this->enableHiddenItemQuantity, value);
     } else if (key == "enable_hidden_item_requires_itemfinder") {
-        bool ok;
-        this->enableHiddenItemRequiresItemfinder = value.toInt(&ok);
-        if (!ok) {
-            logWarn(QString("Invalid config value for enable_hidden_item_requires_itemfinder: '%1'. Must be 0 or 1.").arg(value));
-        }
+        setConfigBool(key, &this->enableHiddenItemRequiresItemfinder, value);
     } else if (key == "enable_heal_location_respawn_data") {
-        bool ok;
-        this->enableHealLocationRespawnData = value.toInt(&ok);
-        if (!ok) {
-            logWarn(QString("Invalid config value for enable_heal_location_respawn_data: '%1'. Must be 0 or 1.").arg(value));
-        }
+        setConfigBool(key, &this->enableHealLocationRespawnData, value);
     } else if (key == "enable_event_clone_object") {
-        bool ok;
-        this->enableEventCloneObject = value.toInt(&ok);
-        if (!ok) {
-            logWarn(QString("Invalid config value for enable_event_clone_object: '%1'. Must be 0 or 1.").arg(value));
-        }
+        setConfigBool(key, &this->enableEventCloneObject, value);
     } else if (key == "enable_floor_number") {
-        bool ok;
-        this->enableFloorNumber = value.toInt(&ok);
-        if (!ok) {
-            logWarn(QString("Invalid config value for enable_floor_number: '%1'. Must be 0 or 1.").arg(value));
-        }
+        setConfigBool(key, &this->enableFloorNumber, value);
     } else if (key == "create_map_text_file") {
-        bool ok;
-        this->createMapTextFile = value.toInt(&ok);
-        if (!ok) {
-            logWarn(QString("Invalid config value for create_map_text_file: '%1'. Must be 0 or 1.").arg(value));
-        }
+        setConfigBool(key, &this->createMapTextFile, value);
     } else if (key == "enable_triple_layer_metatiles") {
-        bool ok;
-        this->enableTripleLayerMetatiles = value.toInt(&ok);
-        if (!ok) {
-            logWarn(QString("Invalid config value for enable_triple_layer_metatiles: '%1'. Must be 0 or 1.").arg(value));
-        }
+        setConfigBool(key, &this->enableTripleLayerMetatiles, value);
     } else if (key == "custom_scripts") {
         this->customScripts.clear();
         QList<QString> paths = value.split(",");
