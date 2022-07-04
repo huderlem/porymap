@@ -461,6 +461,7 @@ void MainWindow::loadUserSettings() {
     ui->horizontalSlider_MetatileZoom->setValue(porymapConfig.getMetatilesZoom());
     ui->horizontalSlider_MetatileZoom->blockSignals(false);
     ui->actionMonitor_Project_Files->setChecked(porymapConfig.getMonitorFiles());
+    ui->actionOpen_Recent_Project_On_Launch->setChecked(porymapConfig.getReopenOnLaunch());
     setTheme(porymapConfig.getTheme());
 }
 
@@ -1768,6 +1769,11 @@ void MainWindow::on_actionMonitor_Project_Files_triggered(bool checked)
 void MainWindow::on_actionUse_Poryscript_triggered(bool checked)
 {
     projectConfig.setUsePoryScript(checked);
+}
+
+void MainWindow::on_actionOpen_Recent_Project_On_Launch_triggered(bool checked)
+{
+    porymapConfig.setReopenOnLaunch(checked);
 }
 
 void MainWindow::on_actionEdit_Shortcuts_triggered()
