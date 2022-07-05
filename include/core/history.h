@@ -8,6 +8,13 @@ template <typename T>
 class History {
 public:
     History() { }
+
+    ~History() {
+        while (!history.isEmpty()) {
+            delete history.takeLast();
+        }
+    }
+
     T back() {
         if (head > 0) {
             return history.at(--head);
