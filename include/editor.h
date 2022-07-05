@@ -151,6 +151,7 @@ public:
     void shouldReselectEvents();
     void scaleMapView(int);
     void openInTextEditor(const QString &path, int lineNum = 0) const;
+    bool eventLimitReached(QString event_type);
 
 public slots:
     void openMapScripts() const;
@@ -176,7 +177,6 @@ private:
     void updateEncounterFields(EncounterFields newFields);
     QString getMovementPermissionText(uint16_t collision, uint16_t elevation);
     QString getMetatileDisplayMessage(uint16_t metatileId);
-    bool eventLimitReached(Map *, QString);
     bool startDetachedProcess(const QString &command,
                               const QString &workingDirectory = QString(),
                               qint64 *pid = nullptr) const;
