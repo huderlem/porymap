@@ -3,7 +3,7 @@
 
 #include <QtWidgets>
 
-const int zoom_box_dimensions = 7;
+const int zoom_box_dimensions = 15;
 
 ColorPicker::ColorPicker(QWidget *parent) :
     QDialog(parent),
@@ -48,23 +48,23 @@ void ColorPicker::hover(int mouseX, int mouseY) {
         return;
 
     // 15 X 15 box with 8x magnification = 120px square)
-    QRect zoomRect(mouseX - 7, mouseY - 7, 15, 15);
-    QPixmap grab = screen->grabWindow(0, mouseX - 7, mouseY - 7, 15, 15);
+    QRect zoomRect(mouseX - zoom_box_dimensions / 2, mouseY - zoom_box_dimensions / 2, zoom_box_dimensions, zoom_box_dimensions);
+    QPixmap grab = screen->grabWindow(0, mouseX - zoom_box_dimensions / 2, mouseY - zoom_box_dimensions / 2, zoom_box_dimensions, zoom_box_dimensions);
     int pixelRatio = grab.devicePixelRatio();
 
     // TODO: investigate for high dpi displays why text is too high res
     grab.setDevicePixelRatio(1);
-    QPixmap magnified = grab.scaled(120, 120, Qt::KeepAspectRatio);
+    QPixmap magnified = grab.scaled(zoom_box_dimensions * 8, zoom_box_dimensions * 8, Qt::KeepAspectRatio);
 
     QPainter painter(&magnified);
     painter.setRenderHint(QPainter::Antialiasing, false);
-    QRectF rect(55, 55, 9, 9);
+    QRectF rect(zoom_box_dimensions / 2 * 8 - 1, zoom_box_dimensions / 2 * 8 - 1, zoom_box_dimensions / 2 + 2, zoom_box_dimensions / 2 + 2);
     painter.drawRect(rect);
     painter.end();
 
     // TODO: bounds checking?
 
-    this->color = grab.toImage().pixelColor(7 * pixelRatio, 7 * pixelRatio);
+    this->color = grab.toImage().pixelColor(zoom_box_dimensions / 2 * pixelRatio, zoom_box_dimensions / 2 * pixelRatio);
     int r = this->color.red();
     int g = this->color.green();
     int b = this->color.blue();
