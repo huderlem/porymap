@@ -185,7 +185,7 @@ FORMS    += forms/mainwindow.ui \
     forms/mapimageexporter.ui \
     forms/shortcutseditor.ui \
     forms/preferenceeditor.ui \
-    forms/regionmappropertiesdialog.ui
+    forms/regionmappropertiesdialog.ui \
     forms/colorpicker.ui
 
 RESOURCES += \
