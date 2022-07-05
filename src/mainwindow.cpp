@@ -1654,8 +1654,8 @@ void MainWindow::paste() {
                 }
 
                 if (!newEvents.isEmpty()) {
-                    editor->map->editHistory.push(new EventPaste(this->editor, editor->map, newEvents));
                     updateObjects();
+                    editor->map->editHistory.push(new EventPaste(this->editor, editor->map, newEvents));
                 }
                 break;
             }
