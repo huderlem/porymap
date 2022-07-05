@@ -51,6 +51,7 @@ PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset 
     this->frames.clear();
     for (int i = 0; i < 16; i++) {
         this->frames.append(this->ui->container->findChild<QFrame *>("colorFrame_" + QString::number(i)));
+        this->frames[i]->setFrameStyle(QFrame::Box | QFrame::Plain);
     }
 
     this->rgbLabels.clear();
