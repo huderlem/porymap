@@ -43,9 +43,9 @@ PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset 
         rgbSpinners.append(this->ui->container->findChild<QSpinBox *>("spin_blue_" + QString::number(i)));
         this->spinners.append(rgbSpinners);
 
-        connect(this->spinners[i][0], &QSpinBox::valueChanged, [=](int) { setRgbFromSpinners(i); });
-        connect(this->spinners[i][1], &QSpinBox::valueChanged, [=](int) { setRgbFromSpinners(i); });
-        connect(this->spinners[i][2], &QSpinBox::valueChanged, [=](int) { setRgbFromSpinners(i); });
+        connect(this->spinners[i][0], QOverload<int>::of(&QSpinBox::valueChanged), [=](int) { setRgbFromSpinners(i); });
+        connect(this->spinners[i][1], QOverload<int>::of(&QSpinBox::valueChanged), [=](int) { setRgbFromSpinners(i); });
+        connect(this->spinners[i][2], QOverload<int>::of(&QSpinBox::valueChanged), [=](int) { setRgbFromSpinners(i); });
     }
 
     this->frames.clear();
