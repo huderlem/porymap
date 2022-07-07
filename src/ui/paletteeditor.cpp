@@ -10,6 +10,10 @@
 #include <QMessageBox>
 
 static inline int rgb5(int rgb) { return round(static_cast<double>(rgb * 31) / 255.0); }
+static inline int rgb8(int rgb) { return round(rgb * 255. / 31.); }
+static inline int gbaRed(int rgb) { return rgb & 0x1f; }
+static inline int gbaGreen(int rgb) { return (rgb >> 5) & 0x1f; }
+static inline int gbaBlue(int rgb) { return (rgb >> 10) & 0x1f; }
 
 PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset *secondaryTileset, int paletteId, QWidget *parent) :
     QMainWindow(parent),
@@ -21,7 +25,7 @@ PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset 
     this->ui->setupUi(this);
     this->ui->spinBox_PaletteId->setMinimum(0);
     this->ui->spinBox_PaletteId->setMaximum(Project::getNumPalettesTotal() - 1);
-    
+
     this->sliders.clear();
     for (int i = 0; i < 16; i++) {
         QList<QSlider *> rgbSliders;
@@ -51,13 +55,7 @@ PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset 
     this->frames.clear();
     for (int i = 0; i < 16; i++) {
         this->frames.append(this->ui->container->findChild<QFrame *>("colorFrame_" + QString::number(i)));
-        this->frames[i]->setFrameStyle(QFrame::Box | QFrame::Plain);
-    }
-
-    this->rgbLabels.clear();
-    for (int i = 0; i < 16; i++) {
-        this->rgbLabels.append(this->ui->container->findChild<QLabel *>("rgb_" + QString::number(i)));
-        this->rgbLabels[i]->setStyleSheet("QLabel { font-family: \"Courier\" }");
+        this->frames[i]->setFrameStyle(QFrame::NoFrame);
     }
 
     this->pickButtons.clear();
@@ -70,8 +68,6 @@ PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset 
     for (int i = 0; i < 16; i++) {
         this->hexEdits.append(this->ui->container->findChild<QLineEdit *>("hex_" + QString::number(i)));
         this->hexEdits[i]->setValidator(hexValidator);
-        this->hexEdits[i]->setInputMask("HHHHHH");
-        this->hexEdits[i]->setMaxLength(6);
     }
 
     // Connect to function that will update color when hex edit is changed
@@ -91,6 +87,12 @@ PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset 
         connect(this->pickButtons[i], &QToolButton::clicked, [this, i](){ this->pickColor(i); });
     }
 
+    setBitDepth(24);
+
+    // Connect bit depth buttons
+    connect(this->ui->bit_depth_15, &QRadioButton::toggled, [this](bool checked){ if (checked) this->setBitDepth(15); });
+    connect(this->ui->bit_depth_24, &QRadioButton::toggled, [this](bool checked){ if (checked) this->setBitDepth(24); });
+
     this->setPaletteId(paletteId);
     this->commitEditHistory(this->ui->spinBox_PaletteId->value());
     this->restoreWindowState();
@@ -108,31 +110,41 @@ void PaletteEditor::updateColorUi(int colorIndex, QRgb rgb) {
     int red = qRed(rgb);
     int green = qGreen(rgb);
     int blue = qBlue(rgb);
-    
-    // sliders
-    this->sliders[colorIndex][0]->setValue(rgb5(red));
-    this->sliders[colorIndex][1]->setValue(rgb5(green));
-    this->sliders[colorIndex][2]->setValue(rgb5(blue));
 
-    // hex
-    QColor color(red, green, blue);
-    QString hexcode = color.name().remove(0, 1).toUpper();
-    this->hexEdits[colorIndex]->setText(hexcode);
+    if (this->bitDepth == 15) {
+        // sliders
+        this->sliders[colorIndex][0]->setValue(rgb5(red));
+        this->sliders[colorIndex][1]->setValue(rgb5(green));
+        this->sliders[colorIndex][2]->setValue(rgb5(blue));
 
-    // spinners
-    this->spinners[colorIndex][0]->setValue(red);
-    this->spinners[colorIndex][1]->setValue(green);
-    this->spinners[colorIndex][2]->setValue(blue);
+        // hex
+        int hex15 = (rgb5(blue) << 10) | (rgb5(green) << 5) | rgb5(red);
+        QString hexcode = QString::number(hex15, 16).toUpper();
+
+        // spinners
+        this->spinners[colorIndex][0]->setValue(rgb5(red));
+        this->spinners[colorIndex][1]->setValue(rgb5(green));
+        this->spinners[colorIndex][2]->setValue(rgb5(blue));
+    } else {
+        // sliders
+        this->sliders[colorIndex][0]->setValue(red);
+        this->sliders[colorIndex][1]->setValue(green);
+        this->sliders[colorIndex][2]->setValue(blue);
+
+        // hex
+        QColor color(red, green, blue);
+        QString hexcode = color.name().remove(0, 1).toUpper();
+        this->hexEdits[colorIndex]->setText(hexcode);
+
+        // spinners
+        this->spinners[colorIndex][0]->setValue(red);
+        this->spinners[colorIndex][1]->setValue(green);
+        this->spinners[colorIndex][2]->setValue(blue);
+    }
 
     // frame
     QString stylesheet = QString("background-color: rgb(%1, %2, %3);").arg(red).arg(green).arg(blue);
     this->frames[colorIndex]->setStyleSheet(stylesheet);
-    
-    // rgb label
-    int w = 3;
-    QChar spc = ' ';
-    int base = 10;
-    this->rgbLabels[colorIndex]->setText(QString("  RGB(%1, %2, %3)").arg(red, w, base, spc).arg(green, w, base, spc).arg(blue, w, base, spc));
 
     setSignalsEnabled(true);
 }
@@ -156,6 +168,68 @@ void PaletteEditor::setSignalsEnabled(bool enabled) {
     }
 }
 
+void PaletteEditor::setBitDepth(int bits) {
+    setSignalsEnabled(false);
+    switch (bits) {
+    case 15:
+        for (int i = 0; i < 16; i++) {
+            // sliders ranged [0, 31] with 1 single step and 4 page step
+            this->sliders[i][0]->setSingleStep(1);
+            this->sliders[i][1]->setSingleStep(1);
+            this->sliders[i][2]->setSingleStep(1);
+            this->sliders[i][0]->setPageStep(4);
+            this->sliders[i][1]->setPageStep(4);
+            this->sliders[i][2]->setPageStep(4);
+            this->sliders[i][0]->setMaximum(31);
+            this->sliders[i][1]->setMaximum(31);
+            this->sliders[i][2]->setMaximum(31);
+
+            // spinners limited [0, 31] with 1 step
+            this->spinners[i][0]->setSingleStep(1);
+            this->spinners[i][1]->setSingleStep(1);
+            this->spinners[i][2]->setSingleStep(1);
+            this->spinners[i][0]->setMaximum(31);
+            this->spinners[i][1]->setMaximum(31);
+            this->spinners[i][2]->setMaximum(31);
+
+            // hex box now 4 digits
+            this->hexEdits[i]->setInputMask("HHHH");
+            this->hexEdits[i]->setMaxLength(4);
+        }
+        break;
+    case 24:
+    default:
+        for (int i = 0; i < 16; i++) {
+            // sliders ranged [0, 31] with 1 single step and 4 page step
+            this->sliders[i][0]->setSingleStep(8);
+            this->sliders[i][1]->setSingleStep(8);
+            this->sliders[i][2]->setSingleStep(8);
+            this->sliders[i][0]->setPageStep(24);
+            this->sliders[i][1]->setPageStep(24);
+            this->sliders[i][2]->setPageStep(24);
+            this->sliders[i][0]->setMaximum(255);
+            this->sliders[i][1]->setMaximum(255);
+            this->sliders[i][2]->setMaximum(255);
+
+            // spinners limited [0, 31] with 1 step
+            this->spinners[i][0]->setSingleStep(8);
+            this->spinners[i][1]->setSingleStep(8);
+            this->spinners[i][2]->setSingleStep(8);
+            this->spinners[i][0]->setMaximum(255);
+            this->spinners[i][1]->setMaximum(255);
+            this->spinners[i][2]->setMaximum(255);
+
+            // hex box now 4 digits
+            this->hexEdits[i]->setInputMask("HHHHHH");
+            this->hexEdits[i]->setMaxLength(6);
+        }
+        break;
+    }
+    this->bitDepth = bits;
+    refreshColorUis();
+    setSignalsEnabled(true);
+}
+
 void PaletteEditor::setRgb(int colorIndex, QRgb rgb) {
     int paletteNum = this->ui->spinBox_PaletteId->value();
 
@@ -172,23 +246,45 @@ void PaletteEditor::setRgb(int colorIndex, QRgb rgb) {
 }
 
 void PaletteEditor::setRgbFromSliders(int colorIndex) {
-    setRgb(colorIndex, qRgb(round(this->sliders[colorIndex][0]->value() * 255. / 31.),
-                            round(this->sliders[colorIndex][1]->value() * 255. / 31.),
-                            round(this->sliders[colorIndex][2]->value() * 255. / 31.)));
+    if (this->bitDepth == 15) {
+        setRgb(colorIndex, qRgb(rgb8(this->sliders[colorIndex][0]->value()),
+                                rgb8(this->sliders[colorIndex][1]->value()),
+                                rgb8(this->sliders[colorIndex][2]->value())));
+    } else {
+        setRgb(colorIndex, qRgb(this->sliders[colorIndex][0]->value(),
+                                this->sliders[colorIndex][1]->value(),
+                                this->sliders[colorIndex][2]->value()));
+    }
 }
 
 void PaletteEditor::setRgbFromHexEdit(int colorIndex) {
     QString text = this->hexEdits[colorIndex]->text();
     bool ok = false;
-    QRgb rgb = text.toInt(&ok, 16);
-    if (!ok) rgb = 0xFFFFFFFF;
-    setRgb(colorIndex, rgb);
+    if (this->bitDepth == 15) {
+        int rgb15 = text.toInt(&ok, 16);
+        int rc = gbaRed(rgb15);
+        int gc = gbaGreen(rgb15);
+        int bc = gbaBlue(rgb15);
+        QRgb rgb = qRgb(rc, gc, bc);
+        if (!ok) rgb = 0xFFFFFFFF;
+        setRgb(colorIndex, rgb);
+    } else {
+        QRgb rgb = text.toInt(&ok, 16);
+        if (!ok) rgb = 0xFFFFFFFF;
+        setRgb(colorIndex, rgb);
+    }
 }
 
 void PaletteEditor::setRgbFromSpinners(int colorIndex) {
-    setRgb(colorIndex, qRgb(this->spinners[colorIndex][0]->value(),
-                            this->spinners[colorIndex][1]->value(),
-                            this->spinners[colorIndex][2]->value()));
+    if (this->bitDepth == 15) {
+        setRgb(colorIndex, qRgb(rgb8(this->spinners[colorIndex][0]->value()),
+                                rgb8(this->spinners[colorIndex][1]->value()),
+                                rgb8(this->spinners[colorIndex][2]->value())));
+    } else {
+        setRgb(colorIndex, qRgb(this->spinners[colorIndex][0]->value(),
+                                this->spinners[colorIndex][1]->value(),
+                                this->spinners[colorIndex][2]->value()));
+    }
 }
 
 void PaletteEditor::refreshColorUis() {

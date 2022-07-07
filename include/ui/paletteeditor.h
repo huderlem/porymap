@@ -36,7 +36,6 @@ private:
     QList<QList<QSlider*>> sliders;
     QList<QList<QSpinBox *>> spinners;
     QList<QFrame*> frames;
-    QList<QLabel*> rgbLabels;
     QList<QToolButton *> pickButtons;
     QList<QLineEdit *> hexEdits;
 
@@ -58,6 +57,9 @@ private:
     void setRgbFromSliders(int colorIndex);
     void setRgbFromHexEdit(int colorIndex);
     void setRgbFromSpinners(int colorIndex);
+
+    void setBitDepth(int bits);
+    int bitDepth = 24;
 
     class HexCodeValidator : public QValidator {
         virtual QValidator::State validate(QString &input, int &) const override {
