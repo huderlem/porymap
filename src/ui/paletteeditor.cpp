@@ -73,7 +73,7 @@ PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset 
     // Connect to function that will update color when hex edit is changed
     for (int i = 0; i < this->hexEdits.length(); i++) {
         connect(this->hexEdits[i], &QLineEdit::textEdited, [this, i](QString text){
-            if (text.length() == 6) setRgbFromHexEdit(i);
+            if ((this->bitDepth == 24 && text.length() == 6) || (this->bitDepth == 15 && text.length() == 4)) setRgbFromHexEdit(i);
         });
     }
 
@@ -120,6 +120,7 @@ void PaletteEditor::updateColorUi(int colorIndex, QRgb rgb) {
         // hex
         int hex15 = (rgb5(blue) << 10) | (rgb5(green) << 5) | rgb5(red);
         QString hexcode = QString::number(hex15, 16).toUpper();
+        this->hexEdits[colorIndex]->setText(hexcode);
 
         // spinners
         this->spinners[colorIndex][0]->setValue(rgb5(red));
