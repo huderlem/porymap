@@ -119,7 +119,7 @@ void PaletteEditor::updateColorUi(int colorIndex, QRgb rgb) {
 
         // hex
         int hex15 = (rgb5(blue) << 10) | (rgb5(green) << 5) | rgb5(red);
-        QString hexcode = QString::number(hex15, 16).toUpper();
+        QString hexcode = QString("%1").arg(hex15, 4, 16, QLatin1Char('0')).toUpper();
         this->hexEdits[colorIndex]->setText(hexcode);
 
         // spinners
