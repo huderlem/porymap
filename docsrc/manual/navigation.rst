@@ -73,7 +73,8 @@ Wild Pokémon Tab
 Tileset Editor
 --------------
 
-The Tileset Editor can be opened with *File -> Tileset Editor* (``Ctrl+T``).  When the Tileset Editor is opened, it is opened in the context of the currently-opened map.  Every map has a primary and secondary tileset, so you will work with a combination of the two whenever you use the Tileset Editor.  The left-side pane shows the primary and secondary tilesets' metatiles.  The right-side panes allow you to modify the currently-selected metatile.
+The Tileset Editor can be opened with *File -> Tileset Editor* (``Ctrl+T``).  
+Check out :ref:`The Tileset Editor <tse-ref>` section for more details.
 
 .. figure:: images/navigation/tileset-editor.png
     :alt: Tileset Editor
@@ -83,11 +84,13 @@ The Tileset Editor can be opened with *File -> Tileset Editor* (``Ctrl+T``).  Wh
 Region Map Editor
 -----------------
 
-The Region Map Editor can be opened with *File -> Region Map Editor* (``Ctrl+M``). This window will allow you to modify the look and layout of maps on the game's region map.  You can also modify the city map images using the bottom two panes. Currently the Region Map Editor is only available for pokeemerald and pokeruby projects.
+The Region Map Editor can be opened with *File -> Region Map Editor* (``Ctrl+M``). 
+This window will allow you to modify the look and layout of maps on the game's region map.
+Check out :ref:`The Region Map Editor <rme-ref>` section for more details.
 
 .. figure:: images/navigation/region-map-editor.png
     :alt: Region Map Editor
 
     Region Map Editor
 
-We covered all of the basic views and windows of Porymap above.  Next, let's learn how to use Porymap's features to the fullest when editing map tiles.
+We covered all of the basic views and windows of porymap above.  Next, let's learn how to use Porymap's features to the fullest when editing map tiles.

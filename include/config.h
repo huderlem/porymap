@@ -28,6 +28,7 @@ protected:
     virtual QMap<QString, QString> getKeyValueMap() = 0;
     virtual void onNewConfigFileCreated() = 0;
     virtual void setUnreadKeys() = 0;
+    void setConfigBool(QString key, bool * field, QString value);
 };
 
 class PorymapConfig: public KeyValueConfigBase
@@ -38,6 +39,7 @@ public:
     }
     virtual void reset() override {
         this->recentProject = "";
+        this->reopenOnLaunch = true;
         this->mapSortOrder = MapSortOrder::Group;
         this->prettyCursors = true;
         this->collisionOpacity = 50;
@@ -53,6 +55,7 @@ public:
         this->textEditorGotoLine = "";
     }
     void setRecentProject(QString project);
+    void setReopenOnLaunch(bool enabled);
     void setMapSortOrder(MapSortOrder order);
     void setPrettyCursors(bool enabled);
     void setMainGeometry(QByteArray, QByteArray, QByteArray, QByteArray);
@@ -71,6 +74,7 @@ public:
     void setTextEditorOpenFolder(const QString &command);
     void setTextEditorGotoLine(const QString &command);
     QString getRecentProject();
+    bool getReopenOnLaunch();
     MapSortOrder getMapSortOrder();
     bool getPrettyCursors();
     QMap<QString, QByteArray> getMainGeometry();
@@ -96,6 +100,7 @@ protected:
     virtual void setUnreadKeys() override {};
 private:
     QString recentProject;
+    bool reopenOnLaunch;
     QString stringFromByteArray(QByteArray);
     QByteArray bytesFromString(QString);
     MapSortOrder mapSortOrder;

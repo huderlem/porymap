@@ -461,6 +461,7 @@ void MainWindow::loadUserSettings() {
     ui->horizontalSlider_MetatileZoom->setValue(porymapConfig.getMetatilesZoom());
     ui->horizontalSlider_MetatileZoom->blockSignals(false);
     ui->actionMonitor_Project_Files->setChecked(porymapConfig.getMonitorFiles());
+    ui->actionOpen_Recent_Project_On_Launch->setChecked(porymapConfig.getReopenOnLaunch());
     setTheme(porymapConfig.getTheme());
 }
 
@@ -485,6 +486,9 @@ void MainWindow::setTheme(QString theme) {
 }
 
 bool MainWindow::openRecentProject() {
+    if (!porymapConfig.getReopenOnLaunch())
+        return false;
+
     QString default_dir = porymapConfig.getRecentProject();
     if (!default_dir.isNull() && default_dir.length() > 0) {
         logInfo(QString("Opening recent project: '%1'").arg(default_dir));
@@ -1772,6 +1776,11 @@ void MainWindow::on_actionMonitor_Project_Files_triggered(bool checked)
 void MainWindow::on_actionUse_Poryscript_triggered(bool checked)
 {
     projectConfig.setUsePoryScript(checked);
+}
+
+void MainWindow::on_actionOpen_Recent_Project_On_Launch_triggered(bool checked)
+{
+    porymapConfig.setReopenOnLaunch(checked);
 }
 
 void MainWindow::on_actionEdit_Shortcuts_triggered()

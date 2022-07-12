@@ -2661,6 +2661,7 @@
     <addaction name="actionUse_Encounter_Json"/>
     <addaction name="actionMonitor_Project_Files"/>
     <addaction name="actionUse_Poryscript"/>
+    <addaction name="actionOpen_Recent_Project_On_Launch"/>
     <addaction name="separator"/>
     <addaction name="actionEdit_Preferences"/>
     <addaction name="actionEdit_Shortcuts"/>
@@ -2731,6 +2732,14 @@
    </property>
    <property name="text">
     <string>Use Poryscript</string>
+   </property>
+  </action>
+  <action name="actionOpen_Recent_Project_On_Launch">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Open Recent Project On Launch</string>
    </property>
   </action>
   <action name="action_NewMap">

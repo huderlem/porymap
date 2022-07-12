@@ -556,10 +556,15 @@ void TilesetEditor::on_comboBox_terrainType_activated(int terrainType)
 
 void TilesetEditor::on_actionSave_Tileset_triggered()
 {
+    // need this temporary metatile ID to reset selection after saving
+    // when the tilesetsSaved signal is sent, it will be reset to the current map metatile
+    uint16_t reselectMetatileID = this->metatileSelector->getSelectedMetatileId();
+
     saveMetatileLabel();
 
     this->project->saveTilesets(this->primaryTileset, this->secondaryTileset);
     emit this->tilesetsSaved(this->primaryTileset->name, this->secondaryTileset->name);
+    this->metatileSelector->select(reselectMetatileID);
     if (this->paletteEditor) {
         this->paletteEditor->setTilesets(this->primaryTileset, this->secondaryTileset);
     }
