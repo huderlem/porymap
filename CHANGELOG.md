@@ -16,6 +16,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Add ability to get/set map header properties and read tile pixel data via the API.
 - Add button to copy the full metatile label to the clipboard in the Tileset Editor.
 - Add option to not open the most recent project on launch.
+- Add color picker to palette editor for taking colors from the screen.
 
 ### Changed
 - If an object event is inanimate, it will always render using its first frame.
@@ -25,6 +26,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Overhauled the region map editor, adding support for tilemaps, and significant customization. Also now supports pokefirered.
 - Metatiles are always rendered accurately with 3 layers, and the unused layer is not assumed to be transparent.
 - `object_event_graphics_info.h` can now be parsed correctly if it uses structs with attributes.
+- Palette editor ui is updated a bit to allow hex and rgb value input.
 
 ### Fixed
 - Fix cursor tile outline not updating at the end of a dragged selection.
@@ -32,6 +34,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix cursor tile and player view outlines not updating immediately when toggled in Collision view.
 - Fix selected space not updating while painting in Collision view.
 - Fix the map music dropdown being empty when importing a map from Advance Map.
+- Fixed a bug where saving the tileset editor would reselect the main editor's first selected metatile.
 
 ## [4.5.0] - 2021-12-26
 ### Added
