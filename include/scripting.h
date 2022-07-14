@@ -33,6 +33,7 @@ public:
     static QJSValue position(int x, int y);
     static QJSEngine *getEngine();
     static QImage getImage(QString filepath);
+    static QJSValue dialogInput(QJSValue input, bool selectedOk);
     static void init(MainWindow *mainWindow);
     static void registerAction(QString functionName, QString actionName);
     static int numRegisteredActions();

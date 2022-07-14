@@ -262,6 +262,13 @@ QJSValue Scripting::fromTile(Tile tile) {
     return obj;
 }
 
+QJSValue Scripting::dialogInput(QJSValue input, bool selectedOk) {
+    QJSValue obj = instance->engine->newObject();
+    obj.setProperty("input", input);
+    obj.setProperty("ok", selectedOk);
+    return obj;
+}
+
 QJSEngine *Scripting::getEngine() {
     return instance->engine;
 }
