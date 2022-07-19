@@ -4,9 +4,8 @@
 #include "project.h"
 #include "log.h"
 #include "editor.h"
-#include "eventpropertiesframe.h"
-#include "ui_eventpropertiesframe.h"
 #include "prefabcreationdialog.h"
+#include "eventframes.h"
 #include "bordermetatilespixmapitem.h"
 #include "currentselectedmetatilespixmapitem.h"
 #include "customattributestable.h"
@@ -291,6 +290,23 @@ void MainWindow::initEditor() {
 
     // Toggle an asterisk in the window title when the undo state is changed
     connect(&editor->editGroup, &QUndoGroup::cleanChanged, this, &MainWindow::showWindowTitle);
+
+    // selecting objects from the spinners
+    connect(this->ui->spinner_ObjectID, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
+        this->editor->selectedEventIndexChanged(value, Event::Group::Object);
+    });
+    connect(this->ui->spinner_WarpID, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
+        this->editor->selectedEventIndexChanged(value, Event::Group::Warp);
+    });
+    connect(this->ui->spinner_TriggerID, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
+        this->editor->selectedEventIndexChanged(value, Event::Group::Coord);
+    });
+    connect(this->ui->spinner_BgID, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
+        this->editor->selectedEventIndexChanged(value, Event::Group::Bg);
+    });
+    connect(this->ui->spinner_HealID, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
+        this->editor->selectedEventIndexChanged(value, Event::Group::Heal);
+    });
 }
 
 void MainWindow::initMiscHeapObjects() {
@@ -388,8 +404,6 @@ void MainWindow::setProjectSpecificUIVisibility()
         ui->label_AllowRunning->setVisible(true);
         ui->label_AllowBiking->setVisible(true);
         ui->label_AllowEscapeRope->setVisible(true);
-        // TODO: pokefirered is not set up for the Region Map Editor and vice versa. 
-        //       porymap will crash on attempt. Remove below once resolved
         ui->actionRegion_Map_Editor->setVisible(true);
         break;
     }
@@ -704,18 +718,10 @@ void MainWindow::refreshMapScene()
     on_horizontalSlider_MetatileZoom_valueChanged(ui->horizontalSlider_MetatileZoom->value());
 }
 
-void MainWindow::openWarpMap(QString map_name, QString event_id, QString event_group) {
+void MainWindow::openWarpMap(QString map_name, int event_id, Event::Group event_group) {
     // Ensure valid destination map name.
     if (!editor->project->mapNames.contains(map_name)) {
         logError(QString("Invalid map name '%1'").arg(map_name));
-        return;
-    }
-
-    // Ensure valid event number.
-    bool ok;
-    int event_index = event_id.toInt(&ok, 0);
-    if (!ok) {
-        logError(QString("Invalid event number '%1' for map '%2'").arg(event_id).arg(map_name));
         return;
     }
 
@@ -731,10 +737,10 @@ void MainWindow::openWarpMap(QString map_name, QString event_id, QString event_g
     }
 
     // Select the target event.
-    event_index -= Event::getIndexOffset(event_group);
+    event_id -= Event::getIndexOffset(event_group);
     QList<Event*> events = editor->map->events[event_group];
-    if (event_index < events.length() && event_index >= 0) {
-        Event *event = events.at(event_index);
+    if (event_id < events.length() && event_id >= 0) {
+        Event *event = events.at(event_id);
         for (DraggablePixmapItem *item : editor->getObjects()) {
             if (item->event == event) {
                 editor->selected_events->clear();
@@ -1197,9 +1203,9 @@ void MainWindow::onNewMapCreated() {
     setMap(newMapName, true);
 
     if (ParseUtil::gameStringToBool(newMap->isFlyable)) {
-        addNewEvent(EventType::HealLocation);
+        addNewEvent(Event::Type::HealLocation);
         editor->project->saveHealLocationStruct(newMap);
-        editor->save();// required
+        editor->save();
     }
 
     disconnect(this->newMapPrompt, &NewMapPopup::applied, this, &MainWindow::onNewMapCreated);
@@ -1444,8 +1450,7 @@ void MainWindow::updateMapList() {
     drawMapListIcons(mapListModel);
 }
 
-void MainWindow::on_action_Save_Project_triggered()
-{
+void MainWindow::on_action_Save_Project_triggered() {
     editor->saveProject();
     updateMapList();
 }
@@ -1508,6 +1513,8 @@ void MainWindow::copy() {
             }
             case 1:
             {
+                if (!editor || !editor->project) break;
+
                 // copy the currently selected event(s) as a json object
                 OrderedJson::object copyObject;
                 copyObject["object"] = "events";
@@ -1521,22 +1528,20 @@ void MainWindow::copy() {
 
                 for (auto item : events) {
                     Event *event = item->event;
-                    QString type = event->get("event_type");
 
-                    if (type == EventType::HealLocation) {
+                    if (event->getEventType() == Event::Type::HealLocation) {
                         // no copy on heal locations
-                        logWarn(QString("Copying events of type '%1' is not allowed.").arg(type));
+                        logWarn(QString("Copying heal location events is not allowed."));
                         continue;
                     }
 
-                    OrderedJson::object eventJson;
-
-                    for (QString key : event->values.keys()) {
-                        eventJson[key] = event->values[key];
-                    }
-
-                    eventsArray.append(eventJson);
+                    OrderedJson::object eventContainer;
+                    eventContainer["event_type"] = Event::eventTypeToString(event->getEventType());
+                    OrderedJson::object eventJson = event->buildEventJson(editor->project);
+                    eventContainer["event"] = eventJson;
+                    eventsArray.append(eventContainer);
                 }
+
                 if (!eventsArray.isEmpty()) {
                     copyObject["events"] = eventsArray;
                     setClipboardData(copyObject);
@@ -1624,48 +1629,63 @@ void MainWindow::paste() {
                 QJsonArray events = pasteObject["events"].toArray();
                 for (QJsonValue event : events) {
                     // paste the event to the map
-                    QString type = event["event_type"].toString();
+                    Event *pasteEvent = nullptr;
 
+                    Event::Type type = Event::eventTypeFromString(event["event_type"].toString());
                     if (editor->eventLimitReached(type)) {
-                        logWarn(QString("Skipping paste, the map limit for events of type '%1' has been reached.").arg(type));
+                        logWarn(QString("Skipping paste, the map limit for events of type '%1' has been reached.").arg(event["event_type"].toString()));
                         continue;
                     }
 
-                    Event *pasteEvent = Event::createNewEvent(type, editor->map->name, editor->project);
-
-                    for (auto key : event.toObject().keys())
-                    {
-                        QString value;
-
-                        QJsonValue valueJson = event[key];
-
-                        switch (valueJson.type()) {
-                            default:
-                            case QJsonValue::Type::Null:
-                            case QJsonValue::Type::Array:
-                            case QJsonValue::Type::Object:
-                                break;
-                            case QJsonValue::Type::Double:
-                                value = QString::number(valueJson.toInt());
-                                break;
-                            case QJsonValue::Type::String:
-                                value = valueJson.toString();
-                                break;
-                            case QJsonValue::Type::Bool:
-                                value = QString::number(valueJson.toBool());
-                                break;
-                        }
-                        pasteEvent->put(key, value);
+                    switch (type) {
+                    case Event::Type::Object:
+                        // TODO: check event limit?
+                        pasteEvent = new ObjectEvent();
+                        pasteEvent->loadFromJson(event["event"].toObject(), this->editor->project);
+                        break;
+                    case Event::Type::CloneObject:
+                        pasteEvent = new CloneObjectEvent();
+                        pasteEvent->loadFromJson(event["event"].toObject(), this->editor->project);
+                        break;
+                    case Event::Type::Warp:
+                        pasteEvent = new WarpEvent();
+                        pasteEvent->loadFromJson(event["event"].toObject(), this->editor->project);
+                        break;
+                    case Event::Type::Trigger:
+                        pasteEvent = new TriggerEvent();
+                        pasteEvent->loadFromJson(event["event"].toObject(), this->editor->project);
+                        break;
+                    case Event::Type::WeatherTrigger:
+                        pasteEvent = new WeatherTriggerEvent();
+                        pasteEvent->loadFromJson(event["event"].toObject(), this->editor->project);
+                        break;
+                    case Event::Type::Sign:
+                        pasteEvent = new SignEvent();
+                        pasteEvent->loadFromJson(event["event"].toObject(), this->editor->project);
+                        break;
+                    case Event::Type::HiddenItem:
+                        pasteEvent = new HiddenItemEvent();
+                        pasteEvent->loadFromJson(event["event"].toObject(), this->editor->project);
+                        break;
+                    case Event::Type::SecretBase:
+                        pasteEvent = new SecretBaseEvent();
+                        pasteEvent->loadFromJson(event["event"].toObject(), this->editor->project);
+                        break;
+                    default:
+                        break;
                     }
 
-                    pasteEvent->put("map_name", editor->map->name);
-                    newEvents.append(pasteEvent);
+                    if (pasteEvent) {
+                        pasteEvent->setMap(this->editor->map);
+                        newEvents.append(pasteEvent);
+                    }
                 }
 
-                if (!newEvents.isEmpty()) {
-                    updateObjects();
+                if (!newEvents.empty()) {
                     editor->map->editHistory.push(new EventPaste(this->editor, editor->map, newEvents));
+                    updateObjects();
                 }
+
                 break;
             }
         }
@@ -1865,10 +1885,9 @@ void MainWindow::resetMapViewScale() {
     editor->scaleMapView(0);
 }
 
-void MainWindow::addNewEvent(QString event_type)
-{
+void MainWindow::addNewEvent(Event::Type type) {
     if (editor && editor->project) {
-        DraggablePixmapItem *object = editor->addNewEvent(event_type);
+        DraggablePixmapItem *object = editor->addNewEvent(type);
         if (object) {
             auto halfSize = ui->graphicsView_Map->size() / 2;
             auto centerPos = ui->graphicsView_Map->mapToScene(halfSize.width(), halfSize.height());
@@ -1878,7 +1897,7 @@ void MainWindow::addNewEvent(QString event_type)
         } else {
             QMessageBox msgBox(this);
             msgBox.setText("Failed to add new event");
-            if (Event::typeToGroup(event_type) == EventGroup::Object) {
+            if (Event::typeToGroup(type) == Event::Group::Object) {
                 msgBox.setInformativeText(QString("The limit for object events (%1) has been reached.\n\n"
                                                   "This limit can be adjusted with OBJECT_EVENT_TEMPLATES_COUNT in '%2'.")
                                           .arg(editor->project->getMaxObjectEvents())
@@ -1899,19 +1918,19 @@ void MainWindow::updateObjects() {
     selectedHealspot = nullptr;
     ui->tabWidget_EventType->clear();
 
-    if (editor->map->events.value(EventGroup::Object).length())
+    if (editor->map->events.value(Event::Group::Object).length())
         ui->tabWidget_EventType->addTab(eventTabObjectWidget, "Objects");
 
-    if (editor->map->events.value(EventGroup::Warp).length())
+    if (editor->map->events.value(Event::Group::Warp).length())
         ui->tabWidget_EventType->addTab(eventTabWarpWidget, "Warps");
 
-    if (editor->map->events.value(EventGroup::Coord).length())
+    if (editor->map->events.value(Event::Group::Coord).length())
         ui->tabWidget_EventType->addTab(eventTabTriggerWidget, "Triggers");
 
-    if (editor->map->events.value(EventGroup::Bg).length())
+    if (editor->map->events.value(Event::Group::Bg).length())
         ui->tabWidget_EventType->addTab(eventTabBGWidget, "BGs");
 
-    if (editor->map->events.value(EventGroup::Heal).length())
+    if (editor->map->events.value(Event::Group::Heal).length())
         ui->tabWidget_EventType->addTab(eventTabHealspotWidget, "Healspots");
 
     updateSelectedObjects();
@@ -1919,12 +1938,17 @@ void MainWindow::updateObjects() {
 
 // Should probably just pass layout and let the editor work it out
 void MainWindow::updateSelectedObjects() {
+    // TODO: make events and/or frames list static? don't want to clear and
+    // re-add children frames if they are already there in a multi-select
+    // because QVBoxLayout::addWidget() is taking a lot of time
+    // TODO: frame->setActive(false) on old frames, (true) on active ones
     QList<DraggablePixmapItem *> all_events = editor->getObjects();
     QList<DraggablePixmapItem *> events;
 
     if (editor->selected_events && editor->selected_events->length()) {
         events = *editor->selected_events;
-    } else {
+    }
+    else {
         if (all_events.length()) {
             DraggablePixmapItem *selectedEvent = all_events.first();
             editor->selected_events->append(selectedEvent);
@@ -1933,526 +1957,171 @@ void MainWindow::updateSelectedObjects() {
         }
     }
 
-    for (auto *button : openScriptButtons)
-        delete button;
-    openScriptButtons.clear();
-
-    QList<EventPropertiesFrame *> frames;
-
-    bool quantityEnabled = projectConfig.getHiddenItemQuantityEnabled();
-    bool underfootEnabled = projectConfig.getHiddenItemRequiresItemfinderEnabled();
-    bool respawnDataEnabled = projectConfig.getHealLocationRespawnDataEnabled();
-    for (DraggablePixmapItem *item : events) {
-        EventPropertiesFrame *frame = new EventPropertiesFrame(item->event);
-//        frame->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-
-        NoScrollSpinBox *x = frame->ui->spinBox_x;
-        NoScrollSpinBox *y = frame->ui->spinBox_y;
-        NoScrollSpinBox *z = frame->ui->spinBox_z;
-
-        x->setValue(item->event->x());
-        connect(x, QOverload<int>::of(&QSpinBox::valueChanged), [this, item, x](int value) {
-            int delta = value - item->event->x();
-            if (delta)
-                editor->map->editHistory.push(new EventMove(QList<Event *>() << item->event, delta, 0, x->getActionId()));
-        });
-        connect(item, &DraggablePixmapItem::xChanged, x, &NoScrollSpinBox::setValue);
-
-        y->setValue(item->event->y());
-        connect(y, QOverload<int>::of(&QSpinBox::valueChanged), [this, item, y](int value) {
-            int delta = value - item->event->y();
-            if (delta)
-                editor->map->editHistory.push(new EventMove(QList<Event *>() << item->event, 0, delta, y->getActionId()));
-        });
-        connect(item, &DraggablePixmapItem::yChanged, y, &NoScrollSpinBox::setValue);
-
-        z->setValue(item->event->elevation());
-        connect(z, &NoScrollSpinBox::textChanged, item, &DraggablePixmapItem::set_elevation);
-        connect(item, &DraggablePixmapItem::elevationChanged, z, &NoScrollSpinBox::setValue);
-
-        QString event_type = item->event->get("event_type");
-        QString event_group_type = item->event->get("event_group_type");
-        QString map_name = item->event->get("map_name");
-        int event_offs = Event::getIndexOffset(event_group_type);
-        frame->ui->label_name->setText(QString("%1 Id").arg(event_type));
-
-        if (events.count() == 1)
-        {
-            frame->ui->spinBox_index->setValue(editor->project->getMap(map_name)->events.value(event_group_type).indexOf(item->event) + event_offs);
-            frame->ui->spinBox_index->setMinimum(event_offs);
-            frame->ui->spinBox_index->setMaximum(editor->project->getMap(map_name)->events.value(event_group_type).length() + event_offs - 1);
-            connect(frame->ui->spinBox_index, QOverload<int>::of(&QSpinBox::valueChanged), this, &MainWindow::selectedEventIndexChanged);
-        }
-        else
-        {
-            frame->ui->spinBox_index->setVisible(false);
-        }
-
-        frame->ui->label_spritePixmap->setPixmap(item->event->pixmap);
-        connect(item, &DraggablePixmapItem::spriteChanged, frame->ui->label_spritePixmap, &QLabel::setPixmap);
-
-        frame->ui->sprite->setVisible(false);
-
-        QMap<QString, QString> field_labels;
-        field_labels["script_label"] = "Script";
-        field_labels["event_flag"] = "Event Flag";
-        field_labels["movement_type"] = "Movement";
-        field_labels["radius_x"] = "Movement Radius X";
-        field_labels["radius_y"] = "Movement Radius Y";
-        field_labels["trainer_type"] = "Trainer Type";
-        field_labels["sight_radius_tree_id"] = "Sight Radius / Berry Tree ID";
-        field_labels["destination_warp"] = "Destination Warp";
-        field_labels["destination_map_name"] = "Destination Map";
-        field_labels["script_var"] = "Var";
-        field_labels["script_var_value"] = "Var Value";
-        field_labels["player_facing_direction"] = "Player Facing Direction";
-        field_labels["item"] = "Item";
-        field_labels["quantity"] = "Quantity";
-        field_labels["underfoot"] = "Requires Itemfinder";
-        field_labels["weather"] = "Weather";
-        field_labels["flag"] = "Flag";
-        field_labels["secret_base_id"] = "Secret Base Id";
-        field_labels["respawn_map"] = "Respawn Map";
-        field_labels["respawn_npc"] = "Respawn NPC";
-        field_labels["target_local_id"] = "Target Local Id";
-        field_labels["target_map"] = "Target Map";
-
-        QStringList fields;
-
-        if (event_type == EventType::Object) {
-
-            frame->ui->sprite->setVisible(true);
-            frame->ui->comboBox_sprite->addItems(editor->project->gfxDefines.keys());
-            frame->ui->comboBox_sprite->setCurrentIndex(frame->ui->comboBox_sprite->findText(item->event->get("sprite")));
-            connect(frame->ui->comboBox_sprite, &QComboBox::currentTextChanged, item, &DraggablePixmapItem::set_sprite);
-            connect(frame->ui->comboBox_sprite, &QComboBox::currentTextChanged, this, &MainWindow::markMapEdited);
-
-            /*
-            frame->ui->script->setVisible(true);
-            frame->ui->comboBox_script->addItem(item->event->get("script_label"));
-            frame->ui->comboBox_script->setCurrentText(item->event->get("script_label"));
-            //item->bind(frame->ui->comboBox_script, "script_label");
-            connect(frame->ui->comboBox_script, SIGNAL(activated(QString)), item, SLOT(set_script(QString)));
-            //connect(frame->ui->comboBox_script, static_cast<void (QComboBox::*)(const QString&)>(&QComboBox::activated), item, [item](QString script_label){ item->event->put("script_label", script_label); });
-            //connect(item, SIGNAL(scriptChanged(QString)), frame->ui->comboBox_script, SLOT(setValue(QString)));
-            */
-
-            fields << "movement_type";
-            fields << "radius_x";
-            fields << "radius_y";
-            fields << "script_label";
-            fields << "event_flag";
-            fields << "trainer_type";
-            fields << "sight_radius_tree_id";
-        }
-        else if (event_type == EventType::CloneObject) {
-            frame->ui->sprite->setVisible(true);
-            frame->ui->comboBox_sprite->setEnabled(false);
-            frame->ui->comboBox_sprite->addItem(item->event->get("sprite"));
-
-            frame->ui->spinBox_z->setVisible(false);
-            frame->ui->label_z->setVisible(false);
-
-            fields << "target_local_id";
-            fields << "target_map";
-        }
-        else if (event_type == EventType::Warp) {
-            fields << "destination_map_name";
-            fields << "destination_warp";
-        }
-        else if (event_type == EventType::Trigger) {
-            fields << "script_label";
-            fields << "script_var";
-            fields << "script_var_value";
-        }
-        else if (event_type == EventType::WeatherTrigger) {
-            fields << "weather";
-        }
-        else if (event_type == EventType::Sign) {
-            fields << "player_facing_direction";
-            fields << "script_label";
-        }
-        else if (event_type == EventType::HiddenItem) {
-            fields << "item";
-            fields << "flag";
-            if (quantityEnabled) fields << "quantity";
-            if (underfootEnabled) fields << "underfoot";
-        }
-        else if (event_type == EventType::SecretBase) {
-            fields << "secret_base_id";
-        }
-        else if (event_type == EventType::HealLocation) {
-            // Hide elevation so users don't get impression that editing it is meaningful.
-            frame->ui->spinBox_z->setVisible(false);
-            frame->ui->label_z->setVisible(false);
-            if (respawnDataEnabled) {
-                fields << "respawn_map";
-                fields << "respawn_npc";
-            }
-        }
-
-        // Some keys shouldn't use a combobox
-        QStringList spinKeys = {"quantity", "respawn_npc", "target_local_id"};
-        QStringList checkKeys = {"underfoot"};
-        for (QString key : fields) {
-            QString value = item->event->get(key);
-            QWidget *widget = new QWidget(frame);
-            QFormLayout *fl = new QFormLayout(widget);
-            fl->setContentsMargins(9, 0, 9, 0);
-            fl->setRowWrapPolicy(QFormLayout::WrapLongRows);
-
-            NoScrollSpinBox *spin;
-            NoScrollComboBox *combo;
-            QCheckBox *check;
-
-            if (spinKeys.contains(key)) {
-                spin = new NoScrollSpinBox(widget);
-            } else if (checkKeys.contains(key)) {
-                check = new QCheckBox(widget);
-            } else {
-                combo = new NoScrollComboBox(widget);
-                combo->setEditable(true);
-            }
-
-            if (key == "destination_map_name") {
-                if (!editor->project->mapNames.contains(value)) {
-                    combo->addItem(value);
-                }
-                combo->addItems(editor->project->mapNames);
-                combo->setCurrentIndex(combo->findText(value));
-                combo->setToolTip("The destination map name of the warp.");
-            } else if (key == "destination_warp") {
-                combo->setToolTip("The warp id on the destination map.");
-            } else if (key == "item") {
-                if (!editor->project->itemNames.contains(value)) {
-                    combo->addItem(value);
-                }
-                combo->addItems(editor->project->itemNames);
-                combo->setCurrentIndex(combo->findText(value));
-            } else if (key == "quantity") {
-                spin->setToolTip("The number of items received when the hidden item is picked up.");
-                // Min 1 not needed. 0 is treated as a valid quantity and works as expected in-game.
-                spin->setMaximum(127);
-            } else if (key == "underfoot") {
-                check->setToolTip("If checked, hidden item can only be picked up using the Itemfinder");
-            } else if (key == "flag" || key == "event_flag") {
-                if (!editor->project->flagNames.contains(value)) {
-                    combo->addItem(value);
-                }
-                combo->addItems(editor->project->flagNames);
-                combo->setCurrentIndex(combo->findText(value));
-                if (key == "flag")
-                    combo->setToolTip("The flag which is set when the hidden item is picked up.");
-                else if (key == "event_flag")
-                    combo->setToolTip("The flag which hides the object when set.");
-            } else if (key == "script_var") {
-                if (!editor->project->varNames.contains(value)) {
-                    combo->addItem(value);
-                }
-                combo->addItems(editor->project->varNames);
-                combo->setCurrentIndex(combo->findText(value));
-                combo->setToolTip("The variable by which the script is triggered.\n"
-                                  "The script is triggered when this variable's value matches 'Var Value'.");
-            } else if (key == "script_var_value") {
-                combo->setToolTip("The variable's value which triggers the script.");
-            } else if (key == "movement_type") {
-                if (!editor->project->movementTypes.contains(value)) {
-                    combo->addItem(value);
-                }
-                connect(combo, static_cast<void (QComboBox::*)(const QString &)>(&QComboBox::currentTextChanged),
-                        this, [item](QString value){
-                            item->event->put("movement_type", value);
-                            item->updatePixmap();
-                });
-                combo->addItems(editor->project->movementTypes);
-                combo->setCurrentIndex(combo->findText(value));
-                combo->setToolTip("The object's natural movement behavior when\n"
-                                  "the player is not interacting with it.");
-            } else if (key == "weather") {
-                if (!editor->project->coordEventWeatherNames.contains(value)) {
-                    combo->addItem(value);
-                }
-                combo->addItems(editor->project->coordEventWeatherNames);
-                combo->setCurrentIndex(combo->findText(value));
-                combo->setToolTip("The weather that starts when the player steps on this spot.");
-            } else if (key == "secret_base_id") {
-                if (!editor->project->secretBaseIds.contains(value)) {
-                    combo->addItem(value);
-                }
-                combo->addItems(editor->project->secretBaseIds);
-                combo->setCurrentIndex(combo->findText(value));
-                combo->setToolTip("The secret base id which is inside this secret\n"
-                                  "base entrance. Secret base ids are meant to be\n"
-                                  "unique to each and every secret base entrance.");
-            } else if (key == "player_facing_direction") {
-                if (!editor->project->bgEventFacingDirections.contains(value)) {
-                    combo->addItem(value);
-                }
-                combo->addItems(editor->project->bgEventFacingDirections);
-                combo->setCurrentIndex(combo->findText(value));
-                combo->setToolTip("The direction which the player must be facing\n"
-                                  "to be able to interact with this event.");
-            } else if (key == "radius_x") {
-                combo->setToolTip("The maximum number of metatiles this object\n"
-                                  "is allowed to move left or right during its\n"
-                                  "normal movement behavior actions.");
-                combo->setMinimumContentsLength(4);
-            } else if (key == "radius_y") {
-                combo->setToolTip("The maximum number of metatiles this object\n"
-                                  "is allowed to move up or down during its\n"
-                                  "normal movement behavior actions.");
-                combo->setMinimumContentsLength(4);
-            } else if (key == "script_label") {
-                const auto localScriptLabels = editor->map->eventScriptLabels();
-                combo->addItems(localScriptLabels);
-                combo->setCompleter(editor->project->getEventScriptLabelCompleter(localScriptLabels));
-                combo->setToolTip("The script which is executed with this event.");
-            } else if (key == "trainer_type") {
-                combo->addItems(editor->project->trainerTypes);
-                combo->setCurrentIndex(combo->findText(value));
-                combo->setToolTip("The trainer type of this object event.\n"
-                                  "If it is not a trainer, use NONE. SEE ALL DIRECTIONS\n"
-                                  "should only be used with a sight radius of 1.");
-            } else if (key == "sight_radius_tree_id") {
-                combo->setToolTip("The maximum sight range of a trainer,\n"
-                                  "OR the unique id of the berry tree.");
-                combo->setMinimumContentsLength(4);
-            } else if (key == "respawn_map") {
-                if (!editor->project->mapNames.contains(value)) {
-                    combo->addItem(value);
-                }
-                combo->addItems(editor->project->mapNames);
-                combo->setToolTip("The map where the player will respawn after whiteout.");
-            } else if (key == "respawn_npc") {
-                spin->setToolTip("event_object ID of the NPC the player interacts with\n" 
-                                 "upon respawning after whiteout.");
-                spin->setMinimum(1);
-                spin->setMaximum(126);
-            } else if (key == "target_local_id") {
-                spin->setToolTip("event_object ID of the object being cloned.");
-                spin->setMinimum(1);
-                spin->setMaximum(126);
-                connect(spin, QOverload<int>::of(&NoScrollSpinBox::valueChanged), [item, frame](int value) {
-                    item->event->put("target_local_id", value);
-                    item->updatePixmap();
-                    frame->ui->comboBox_sprite->setItemText(0, item->event->get("sprite"));
-                });
-            } else if (key == "target_map") {
-                if (!editor->project->mapNames.contains(value)) {
-                    combo->addItem(value);
-                }
-                combo->addItems(editor->project->mapNames);
-                combo->setCurrentIndex(combo->findText(value));
-                combo->setToolTip("The name of the map that the object being cloned is on.");
-                connect(combo, static_cast<void (QComboBox::*)(const QString &)>(&QComboBox::currentTextChanged), this, [item, frame](QString value){
-                    item->event->put("target_map", value);
-                    item->updatePixmap();
-                    frame->ui->comboBox_sprite->setItemText(0, item->event->get("sprite"));
-                });
-            } else {
-                combo->addItem(value);
-            }
-
-            // Keys using spin boxes
-            if (spinKeys.contains(key)) {
-                spin->setValue(value.toInt());
-
-                fl->addRow(new QLabel(field_labels[key], widget), spin);
-                widget->setLayout(fl);
-                frame->layout()->addWidget(widget);
-
-                connect(spin, QOverload<int>::of(&NoScrollSpinBox::valueChanged), [item, key](int value) {
-                    item->event->put(key, value);
-                });
-
-                connect(spin, QOverload<int>::of(&NoScrollSpinBox::valueChanged), this, &MainWindow::markMapEdited);
-            // Keys using check boxes
-            } else if (checkKeys.contains(key)) {
-                check->setChecked(value.toInt());
-
-                fl->addRow(new QLabel(field_labels[key], widget), check);
-                widget->setLayout(fl);
-                frame->layout()->addWidget(widget);
-
-                connect(check, &QCheckBox::stateChanged, [item, key](int state) {
-                    switch (state)
-                    {
-                    case Qt::Checked:
-                        item->event->put(key, true);
-                        break;
-                    case Qt::Unchecked:
-                        item->event->put(key, false);
-                        break;
-                    }
-                });
-
-                connect(check, &QCheckBox::stateChanged, this, &MainWindow::markMapEdited);
-            // Keys using combo boxes
-            } else {
-                combo->setCurrentText(value);
-
-                if (key == "script_label") {
-                    // Add button next to combo which opens combo's current script.
-                    auto *hl = new QHBoxLayout();
-                    hl->setSpacing(3);
-                    auto *openScriptButton = new QToolButton(widget);
-                    openScriptButtons << openScriptButton;
-                    openScriptButton->setFixedSize(combo->height(), combo->height());
-                    openScriptButton->setIcon(QFileIconProvider().icon(QFileIconProvider::File));
-                    openScriptButton->setToolTip("Go to this script definition in text editor.");
-                    connect(openScriptButton, &QToolButton::clicked,
-                            [this, combo]() { this->editor->openScript(combo->currentText()); });
-                    hl->addWidget(combo);
-                    hl->addWidget(openScriptButton);
-                    fl->addRow(new QLabel(field_labels[key], widget), hl);
-                    if (porymapConfig.getTextEditorGotoLine().isEmpty())
-                        openScriptButton->hide();
-                } else {
-                    fl->addRow(new QLabel(field_labels[key], widget), combo);
-                }
-
-                widget->setLayout(fl);
-                frame->layout()->addWidget(widget);
-
-                item->bind(combo, key);
-
-                connect(combo, &QComboBox::currentTextChanged, this, &MainWindow::markMapEdited);
-            }
-        }
-        frames.append(frame);
-    }
-
-    //int scroll = ui->scrollArea_4->verticalScrollBar()->value();
-
     QScrollArea *scrollTarget = ui->scrollArea_Multiple;
     QWidget *target = ui->scrollAreaWidgetContents_Multiple;
 
     isProgrammaticEventTabChange = true;
 
-    if (events.length() == 1)
-    {
-        QString event_group_type = events[0]->event->get("event_group_type");
+    if (events.length() == 1) {
+        Event *current = events[0]->event;
+        Event::Group event_group_type = current->getEventGroup();
+        int event_offs = Event::getIndexOffset(event_group_type);
 
-        if (event_group_type == EventGroup::Object) {
+        // TODO: use switch
+        // TODO: don't need to set min/max every time, just when changing number of events in the group
+        if (event_group_type == Event::Group::Object) {
             scrollTarget = ui->scrollArea_Objects;
             target = ui->scrollAreaWidgetContents_Objects;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Objects);
+
+            this->ui->spinner_ObjectID->setValue(current->getEventIndex() + event_offs);
+            this->ui->spinner_ObjectID->setMinimum(event_offs);
+            this->ui->spinner_ObjectID->setMaximum(current->getMap()->events.value(event_group_type).length() + event_offs - 1);
+
         }
-        else if (event_group_type == EventGroup::Warp) {
+        else if (event_group_type == Event::Group::Warp) {
             scrollTarget = ui->scrollArea_Warps;
             target = ui->scrollAreaWidgetContents_Warps;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Warps);
+
+            this->ui->spinner_WarpID->setValue(current->getEventIndex() + event_offs);
+            this->ui->spinner_WarpID->setMinimum(event_offs);
+            this->ui->spinner_WarpID->setMaximum(current->getMap()->events.value(event_group_type).length() + event_offs - 1);
         }
-        else if (event_group_type == EventGroup::Coord) {
+        else if (event_group_type == Event::Group::Coord) {
             scrollTarget = ui->scrollArea_Triggers;
             target = ui->scrollAreaWidgetContents_Triggers;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Triggers);
+
+            this->ui->spinner_TriggerID->setValue(current->getEventIndex() + event_offs);
+            this->ui->spinner_TriggerID->setMinimum(event_offs);
+            this->ui->spinner_TriggerID->setMaximum(current->getMap()->events.value(event_group_type).length() + event_offs - 1);
         }
-        else if (event_group_type == EventGroup::Bg) {
+        else if (event_group_type == Event::Group::Bg) {
             scrollTarget = ui->scrollArea_BGs;
             target = ui->scrollAreaWidgetContents_BGs;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_BGs);
+
+            this->ui->spinner_BgID->setValue(current->getEventIndex() + event_offs);
+            this->ui->spinner_BgID->setMinimum(event_offs);
+            this->ui->spinner_BgID->setMaximum(current->getMap()->events.value(event_group_type).length() + event_offs - 1);
         }
-        else if (event_group_type == EventGroup::Heal) {
+        else if (event_group_type == Event::Group::Heal) {
             scrollTarget = ui->scrollArea_Healspots;
             target = ui->scrollAreaWidgetContents_Healspots;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Healspots);
+
+            this->ui->spinner_HealID->setValue(current->getEventIndex() + event_offs);
+            this->ui->spinner_HealID->setMinimum(event_offs);
+            this->ui->spinner_HealID->setMaximum(current->getMap()->events.value(event_group_type).length() + event_offs - 1);
         }
         ui->tabWidget_EventType->removeTab(ui->tabWidget_EventType->indexOf(ui->tab_Multiple));
     }
-    else if (events.length() > 1)
-    {
+    else if (events.length() > 1) {
         ui->tabWidget_EventType->addTab(ui->tab_Multiple, "Multiple");
         ui->tabWidget_EventType->setCurrentWidget(ui->tab_Multiple);
     }
 
     isProgrammaticEventTabChange = false;
 
-    if (events.length() != 0)
-    {
-        if (target->children().length())
-        {
-            for (QObject *obj : target->children())
-            {
-                obj->deleteLater();
-            }
+    QList<EventFrame *> frames;
+    for (DraggablePixmapItem *item : events) {
+        Event *event = item->event;
+        EventFrame *eventFrame = event->createEventFrame();
+        eventFrame->populate(this->editor->project);
+        eventFrame->initialize();
+        eventFrame->setParent(nullptr);
+        // TODO: hide
+        eventFrame->connectSignals();
+        // connect(item, &DraggablePixmapItem::spriteChanged, frame->ui->label_spritePixmap, &QLabel::setPixmap);
+        frames.append(eventFrame);
+    }
 
-            delete target->layout();
+    if (target->layout() && target->children().length()) {
+        for (QFrame *frame : target->findChildren<EventFrame *>()) {
+            frame->hide();
         }
 
-        QVBoxLayout *layout = new QVBoxLayout(target);
+        delete target->layout();
+    }
+
+    // TODO: clear every layout instead?
+    // TODO: layout not clearing?
+    //        eg: scrolling through objets to clone object you
+    //            can see previous obj frame below clone frame
+    //       possibly can just set enabled (false) which can hide frame
+    if (!events.empty()) {
+
+        QVBoxLayout *layout = new QVBoxLayout;
         target->setLayout(layout);
         scrollTarget->setWidgetResizable(true);
         scrollTarget->setWidget(target);
 
-        for (EventPropertiesFrame *frame : frames) {
+        for (EventFrame *frame : frames) {
+            frame->show();
             layout->addWidget(frame);
         }
 
         layout->addStretch(1);
 
-        // doesn't work
-        //QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
-        //ui->scrollArea_4->ensureVisible(0, scroll);
-
         ui->label_NoEvents->hide();
         ui->tabWidget_EventType->show();
     }
-    else
-    {
+    else {
         ui->tabWidget_EventType->hide();
         ui->label_NoEvents->show();
     }
 }
 
-QString MainWindow::getEventGroupFromTabWidget(QWidget *tab)
+Event::Group MainWindow::getEventGroupFromTabWidget(QWidget *tab)
 {
-    QString ret = "";
+    Event::Group ret = Event::Group::None;
     if (tab == eventTabObjectWidget)
     {
-        ret = EventGroup::Object;
+        ret = Event::Group::Object;
     }
     else if (tab == eventTabWarpWidget)
     {
-        ret = EventGroup::Warp;
+        ret = Event::Group::Warp;
     }
     else if (tab == eventTabTriggerWidget)
     {
-        ret = EventGroup::Coord;
+        ret = Event::Group::Coord;
     }
     else if (tab == eventTabBGWidget)
     {
-        ret = EventGroup::Bg;
+        ret = Event::Group::Bg;
     }
     else if (tab == eventTabHealspotWidget)
     {
-        ret = EventGroup::Heal;
+        ret = Event::Group::Heal;
     }
     return ret;
 }
 
 void MainWindow::eventTabChanged(int index) {
     if (editor->map) {
-        QString group = getEventGroupFromTabWidget(ui->tabWidget_EventType->widget(index));
+        Event::Group group = getEventGroupFromTabWidget(ui->tabWidget_EventType->widget(index));
         DraggablePixmapItem *selectedEvent = nullptr;
 
-        if (group == EventGroup::Object) {
+        // TODO: use switch
+        if (group == Event::Group::Object) {
             selectedEvent = selectedObject;
             ui->newEventToolButton->setDefaultAction(ui->newEventToolButton->newObjectAction);
         }
-        else if (group == EventGroup::Warp) {
+        else if (group == Event::Group::Warp) {
             selectedEvent = selectedWarp;
             ui->newEventToolButton->setDefaultAction(ui->newEventToolButton->newWarpAction);
         }
-        else if (group == EventGroup::Coord) {
+        else if (group == Event::Group::Coord) {
             selectedEvent = selectedTrigger;
             ui->newEventToolButton->setDefaultAction(ui->newEventToolButton->newTriggerAction);
         }
-        else if (group == EventGroup::Bg) {
+        else if (group == Event::Group::Bg) {
             selectedEvent = selectedBG;
             ui->newEventToolButton->setDefaultAction(ui->newEventToolButton->newSignAction);
         }
-        else if (group == EventGroup::Heal) {
+        else if (group == Event::Group::Heal) {
             selectedEvent = selectedHealspot;
         }
 
@@ -2475,24 +2144,6 @@ void MainWindow::eventTabChanged(int index) {
     isProgrammaticEventTabChange = false;
 }
 
-void MainWindow::selectedEventIndexChanged(int index)
-{
-    QString group = getEventGroupFromTabWidget(ui->tabWidget_EventType->currentWidget());
-    int event_offs = Event::getIndexOffset(group);
-    Event *event = editor->map->events.value(group).at(index - event_offs);
-    DraggablePixmapItem *selectedEvent = nullptr;
-    for (QGraphicsItem *child : editor->events_group->childItems()) {
-        DraggablePixmapItem *item = static_cast<DraggablePixmapItem *>(child);
-        if (item->event == event) {
-            selectedEvent = item;
-            break;
-        }
-    }
-
-    if (selectedEvent != nullptr)
-        editor->selectMapEvent(selectedEvent);
-}
-
 void MainWindow::on_horizontalSlider_CollisionTransparency_valueChanged(int value) {
     this->editor->collisionOpacity = static_cast<qreal>(value) / 100;
     porymapConfig.setCollisionOpacity(value);
@@ -2511,8 +2162,8 @@ void MainWindow::on_toolButton_deleteObject_clicked() {
             int numEvents = editor->selected_events->length();
             int numDeleted = 0;
             for (DraggablePixmapItem *item : *editor->selected_events) {
-                QString event_group = item->event->get("event_group_type");
-                if (event_group != EventGroup::Heal) {
+                Event::Group event_group = item->event->getEventGroup();
+                if (event_group != Event::Group::Heal) {
                     // Get the index for the event that should be selected after this event has been deleted.
                     // If it's at the end of the list, select the previous event, otherwise select the next one.
                     // Don't bother getting the event to select if there are still more events to delete
@@ -2537,7 +2188,7 @@ void MainWindow::on_toolButton_deleteObject_clicked() {
                     selectedEvents.append(item->event);
                 }
                 else { // don't allow deletion of heal locations
-                    logWarn(QString("Cannot delete event of type '%1'").arg(item->event->get("event_type")));
+                    logWarn(QString("Cannot delete event of type '%1'").arg(Event::eventTypeToString(item->event->getEventType())));
                 }
             }
             if (numDeleted) {

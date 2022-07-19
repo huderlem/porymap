@@ -1,6 +1,5 @@
 #include "editor.h"
 #include "draggablepixmapitem.h"
-#include "event.h"
 #include "imageproviders.h"
 #include "log.h"
 #include "mapconnection.h"
@@ -1230,12 +1229,12 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item
                 // Left-clicking while in paint mode will add a new event of the
                 // type of the first currently selected events.
                 // Disallow adding heal locations, deleting them is not possible yet
-                QString eventType = EventType::Object;
+                Event::Type eventType = Event::Type::Object;
                 if (this->selected_events->size() > 0)
-                    eventType = this->selected_events->first()->event->get("event_type");
+                    eventType = this->selected_events->first()->event->getEventType();
 
-                if (eventType != EventType::HealLocation) {
-                    DraggablePixmapItem * newEvent = addNewEvent(eventType);
+                if (eventType != Event::Type::HealLocation) {
+                    DraggablePixmapItem *newEvent = addNewEvent(eventType);
                     if (newEvent) {
                         newEvent->move(pos.x(), pos.y());
                         emit objectsChanged();
@@ -1250,7 +1249,6 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item
             static unsigned actionId = 0;
 
             if (event->type() == QEvent::GraphicsSceneMouseRelease) {
-                // TODO: commit / update history here
                 actionId++;
             } else {
                 if (event->type() == QEvent::GraphicsSceneMousePress) {
@@ -1516,7 +1514,6 @@ void Editor::displayMapEvents() {
 
 DraggablePixmapItem *Editor::addMapEvent(Event *event) {
     DraggablePixmapItem *object = new DraggablePixmapItem(event, this);
-    event->setPixmapItem(object);
     this->redrawObject(object);
     events_group->addToGroup(object);
     return object;
@@ -1969,6 +1966,7 @@ Tileset* Editor::getCurrentMapPrimaryTileset()
 }
 
 QList<DraggablePixmapItem *> Editor::getObjects() {
+    // TODO: why using this instead of map->getAllEvents()?
     QList<DraggablePixmapItem *> list;
     for (QGraphicsItem *child : events_group->childItems()) {
         list.append(static_cast<DraggablePixmapItem *>(child));
@@ -1977,15 +1975,16 @@ QList<DraggablePixmapItem *> Editor::getObjects() {
 }
 
 void Editor::redrawObject(DraggablePixmapItem *item) {
-    if (item && item->event && !item->event->pixmap.isNull()) {
-        qreal opacity = item->event->usingSprite ? 1.0 : 0.7;
+    if (item && item->event && !item->event->getPixmap().isNull()) {
+        qreal opacity = item->event->getUsingSprite() ? 1.0 : 0.7;
         item->setOpacity(opacity);
-        item->setPixmap(item->event->pixmap.copy(item->event->frame * item->event->spriteWidth % item->event->pixmap.width(), 0, item->event->spriteWidth, item->event->spriteHeight));
+        project->setEventPixmap(item->event, true);
+        item->setPixmap(item->event->getPixmap());
         item->setShapeMode(QGraphicsPixmapItem::BoundingRectShape);
         if (selected_events && selected_events->contains(item)) {
             QImage image = item->pixmap().toImage();
             QPainter painter(&image);
-            painter.setPen(QColor(250, 0, 255));
+            painter.setPen(QColor(255, 0, 255));
             painter.drawRect(0, 0, image.width() - 1, image.height() - 1);
             painter.end();
             item->setPixmap(QPixmap::fromImage(image));
@@ -2026,6 +2025,22 @@ void Editor::selectMapEvent(DraggablePixmapItem *object, bool toggle) {
     }
 }
 
+void Editor::selectedEventIndexChanged(int index, Event::Group eventGroup)
+{
+    int event_offs = Event::getIndexOffset(eventGroup);
+    Event *event = this->map->events.value(eventGroup).at(index - event_offs);
+    DraggablePixmapItem *selectedEvent = nullptr;
+    for (QGraphicsItem *child : this->events_group->childItems()) {
+        DraggablePixmapItem *item = static_cast<DraggablePixmapItem *>(child);
+        if (item->event == event) {
+            selectedEvent = item;
+            break;
+        }
+    }
+
+    if (selectedEvent) this->selectMapEvent(selectedEvent);
+}
+
 void Editor::duplicateSelectedEvents() {
     if (!selected_events || !selected_events->length() || !map || !current_view || map_item->paintingMode != MapPixmapItem::PaintMode::EventObjects)
         return;
@@ -2033,54 +2048,95 @@ void Editor::duplicateSelectedEvents() {
     QList<Event *> selectedEvents;
     for (int i = 0; i < selected_events->length(); i++) {
         Event *original = selected_events->at(i)->event;
-        QString eventType = original->get("event_type");
+        Event::Type eventType = original->getEventType();
         if (eventLimitReached(eventType)) {
-            logWarn(QString("Skipping duplication, the map limit for events of type '%1' has been reached.").arg(eventType));
+            logWarn(QString("Skipping duplication, the map limit for events of type '%1' has been reached.").arg(Event::eventTypeToString(eventType)));
             continue;
         }
-        if (eventType == EventType::HealLocation) continue;
-        Event *duplicate = new Event(*original);
-        duplicate->setX(duplicate->x() + 1);
-        duplicate->setY(duplicate->y() + 1);
+        if (eventType == Event::Type::HealLocation) {
+            logWarn("Skipping duplication, event is a heal location.");
+            continue;
+        }
+        Event *duplicate = original->duplicate();
+        if (!duplicate) {
+            logError("Encountered a problem duplicating an event.");
+            continue;
+        }
+        duplicate->setX(duplicate->getX() + 1);
+        duplicate->setY(duplicate->getY() + 1);
         selectedEvents.append(duplicate);
     }
     map->editHistory.push(new EventDuplicate(this, map, selectedEvents));
 }
 
-DraggablePixmapItem* Editor::addNewEvent(QString event_type) {
-    if (project && map && !event_type.isEmpty() && !eventLimitReached(event_type)) {
-        Event *event = Event::createNewEvent(event_type, map->name, project);
-        event->put("map_name", map->name);
-        if (event_type == EventType::HealLocation) {
-            HealLocation hl = HealLocation::fromEvent(event);
-            project->healLocations.append(hl);
-            event->put("index", project->healLocations.length());
+DraggablePixmapItem *Editor::addNewEvent(Event::Type type) {
+    Event *event = nullptr;
+
+    if (project && map && !eventLimitReached(type)) {
+        switch (type) {
+        case Event::Type::Object:
+            event = new ObjectEvent();
+            break;
+        case Event::Type::CloneObject:
+            event = new CloneObjectEvent();
+            break;
+        case Event::Type::Warp:
+            event = new WarpEvent();
+            break;
+        case Event::Type::Trigger:
+            event = new TriggerEvent();
+            break;
+        case Event::Type::WeatherTrigger:
+            event = new WeatherTriggerEvent();
+            break;
+        case Event::Type::Sign:
+            event = new SignEvent();
+            break;
+        case Event::Type::HiddenItem:
+            event = new HiddenItemEvent();
+            break;
+        case Event::Type::SecretBase:
+            event = new SecretBaseEvent();
+            break;
+        case Event::Type::HealLocation: {
+            event = new HealLocationEvent();
+            event->setMap(this->map);
+            event->setDefaultValues(this->project);
+            HealLocation healLocation = HealLocation::fromEvent(event);
+            project->healLocations.append(healLocation);
+            ((HealLocationEvent *)event)->setIndex(project->healLocations.length());
+            break;
         }
+        default:
+            break;
+        }
+        if (!event) return nullptr;
+
+        event->setDefaultValues(this->project);
+
         map->editHistory.push(new EventCreate(this, map, event));
-        
-        return event->pixmapItem;
+        return event->getPixmapItem();
     }
+
     return nullptr;
 }
 
 // Currently only object events have an explicit limit
-bool Editor::eventLimitReached(QString event_type)
-{
-    if (project && map && !event_type.isEmpty()) {
-        if (Event::typeToGroup(event_type) == EventGroup::Object)
-            return map->events.value(EventGroup::Object).length() >= project->getMaxObjectEvents();
+bool Editor::eventLimitReached(Event::Type event_type) {
+    if (project && map) {
+        if (Event::typeToGroup(event_type) == Event::Group::Object)
+            return map->events.value(Event::Group::Object).length() >= project->getMaxObjectEvents();
     }
     return false;
 }
 
 void Editor::deleteEvent(Event *event) {
-    Map *map = project->getMap(event->get("map_name"));
+    Map *map = event->getMap();
     if (map) {
         map->removeEvent(event);
-        if (event->pixmapItem) {
-            events_group->removeFromGroup(event->pixmapItem);
-            delete event->pixmapItem;
-            event->pixmapItem = nullptr;
+        if (event->getPixmapItem()) {
+            events_group->removeFromGroup(event->getPixmapItem());
+            delete event->getPixmapItem();
         }
     }
     //selected_events->removeAll(event);
@@ -2181,6 +2237,7 @@ void Editor::objectsView_onMousePress(QMouseEvent *event) {
         this->ui->toolButton_Select->setChecked(true);
     }
 
+    // TODO: why do the old objects not get cleared?
     bool multiSelect = event->modifiers() & Qt::ControlModifier;
     if (!selectingEvent && !multiSelect && selected_events->length() > 1) {
         DraggablePixmapItem *first = selected_events->first();

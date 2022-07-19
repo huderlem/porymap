@@ -1,7 +1,7 @@
 #ifndef NEWEVENTTOOLBUTTON_H
 #define NEWEVENTTOOLBUTTON_H
 
-#include "event.h"
+#include "events.h"
 #include <QToolButton>
 
 class NewEventToolButton : public QToolButton
@@ -9,7 +9,7 @@ class NewEventToolButton : public QToolButton
     Q_OBJECT
 public:
     explicit NewEventToolButton(QWidget *parent = nullptr);
-    QString getSelectedEventType();
+    Event::Type getSelectedEventType();
     QAction *newObjectAction;
     QAction *newCloneObjectAction;
     QAction *newWarpAction;
@@ -30,9 +30,9 @@ public slots:
     void newHiddenItem();
     void newSecretBase();
 signals:
-    void newEventAdded(QString);
+    void newEventAdded(Event::Type);
 private:
-    QString selectedEventType;
+    Event::Type selectedEventType;
     void init();
 };
 

@@ -26,6 +26,8 @@
 #include "shortcutseditor.h"
 #include "preferenceeditor.h"
 
+
+
 namespace Ui {
 class MainWindow;
 }
@@ -161,7 +163,7 @@ private slots:
     void on_action_Reload_Project_triggered();
     void on_mapList_activated(const QModelIndex &index);
     void on_action_Save_Project_triggered();
-    void openWarpMap(QString map_name, QString event_id, QString event_group);
+    void openWarpMap(QString map_name, int event_id, Event::Group event_group);
 
     void duplicate();
     void setClipboardData(poryjson::Json::object);
@@ -216,7 +218,7 @@ private slots:
 
     void on_toolButton_deleteObject_clicked();
 
-    void addNewEvent(QString);
+    void addNewEvent(Event::Type type);
     void updateSelectedObjects();
     void updateObjects();
 
@@ -264,8 +266,6 @@ private slots:
     void closeEvent(QCloseEvent *);
 
     void eventTabChanged(int index);
-
-    void selectedEventIndexChanged(int index);
 
     void on_horizontalSlider_CollisionTransparency_valueChanged(int value);
     void on_toolButton_ExpandAll_clicked();
@@ -374,7 +374,7 @@ private:
     void setTheme(QString);
     bool openRecentProject();
     void updateTilesetEditor();
-    QString getEventGroupFromTabWidget(QWidget *tab);
+    Event::Group getEventGroupFromTabWidget(QWidget *tab);
     void closeSupplementaryWindows();
     void setWindowDisabled(bool);
 

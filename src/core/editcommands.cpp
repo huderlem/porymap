@@ -9,16 +9,16 @@
 int getEventTypeMask(QList<Event *> events) {
     int eventTypeMask = 0;
     for (auto event : events) {
-        QString groupType = event->get("event_group_type");
-        if (groupType == EventGroup::Object) {
+        Event::Group groupType = event->getEventGroup();
+        if (groupType == Event::Group::Object) {
             eventTypeMask |= IDMask_EventType_Object;
-        } else if (groupType == EventGroup::Warp) {
+        } else if (groupType == Event::Group::Warp) {
             eventTypeMask |= IDMask_EventType_Warp;
-        } else if (groupType == EventGroup::Coord) {
+        } else if (groupType == Event::Group::Coord) {
             eventTypeMask |= IDMask_EventType_Trigger;
-        } else if (groupType == EventGroup::Bg) {
+        } else if (groupType == Event::Group::Bg) {
             eventTypeMask |= IDMask_EventType_BG;
-        } else if (groupType == EventGroup::Heal) {
+        } else if (groupType == Event::Group::Heal) {
             eventTypeMask |= IDMask_EventType_Heal;
         }
     }
@@ -261,13 +261,13 @@ void EventMove::redo() {
     QUndoCommand::redo();
 
     for (Event *event : events) {
-        event->pixmapItem->move(deltaX, deltaY);
+        event->getPixmapItem()->move(deltaX, deltaY);
     }
 }
 
 void EventMove::undo() {
     for (Event *event : events) {
-        event->pixmapItem->move(-deltaX, -deltaY);
+        event->getPixmapItem()->move(-deltaX, -deltaY);
     }
 
     QUndoCommand::undo();
@@ -331,16 +331,16 @@ void EventCreate::redo() {
 
     // select this event
     editor->selected_events->clear();
-    editor->selectMapEvent(event->pixmapItem, false);
+    editor->selectMapEvent(event->getPixmapItem(), false);
 }
 
 void EventCreate::undo() {
     map->removeEvent(event);
 
-    if (editor->scene->items().contains(event->pixmapItem)) {
-        editor->scene->removeItem(event->pixmapItem);
+    if (editor->scene->items().contains(event->getPixmapItem())) {
+        editor->scene->removeItem(event->getPixmapItem());
     }
-    editor->selected_events->removeOne(event->pixmapItem);
+    editor->selected_events->removeOne(event->getPixmapItem());
 
     editor->shouldReselectEvents();
 
@@ -377,15 +377,15 @@ void EventDelete::redo() {
     for (Event *event : selectedEvents) {
         map->removeEvent(event);
 
-        if (editor->scene->items().contains(event->pixmapItem)) {
-            editor->scene->removeItem(event->pixmapItem);
+        if (editor->scene->items().contains(event->getPixmapItem())) {
+            editor->scene->removeItem(event->getPixmapItem());
         }
-        editor->selected_events->removeOne(event->pixmapItem);
+        editor->selected_events->removeOne(event->getPixmapItem());
     }
 
     editor->selected_events->clear();
     if (nextSelectedEvent)
-        editor->selected_events->append(nextSelectedEvent->pixmapItem);
+        editor->selected_events->append(nextSelectedEvent->getPixmapItem());
     editor->shouldReselectEvents();
 }
 
@@ -399,7 +399,7 @@ void EventDelete::undo() {
     // select these events
     editor->selected_events->clear();
     for (Event *event : selectedEvents) {
-        editor->selected_events->append(event->pixmapItem);
+        editor->selected_events->append(event->getPixmapItem());
     }
     editor->shouldReselectEvents();
 
@@ -441,7 +441,7 @@ void EventDuplicate::redo() {
     // select these events
     editor->selected_events->clear();
     for (Event *event : selectedEvents) {
-        editor->selected_events->append(event->pixmapItem);
+        editor->selected_events->append(event->getPixmapItem());
     }
     editor->shouldReselectEvents();
 }
@@ -450,10 +450,10 @@ void EventDuplicate::undo() {
     for (Event *event : selectedEvents) {
         map->removeEvent(event);
 
-        if (editor->scene->items().contains(event->pixmapItem)) {
-            editor->scene->removeItem(event->pixmapItem);
+        if (editor->scene->items().contains(event->getPixmapItem())) {
+            editor->scene->removeItem(event->getPixmapItem());
         }
-        editor->selected_events->removeOne(event->pixmapItem);
+        editor->selected_events->removeOne(event->getPixmapItem());
     }
 
     editor->shouldReselectEvents();
@@ -471,7 +471,7 @@ int EventDuplicate::id() const {
 
 EventPaste::EventPaste(Editor *editor, Map *map,
     QList<Event *> pastedEvents,
-    QUndoCommand *parent) : EventDuplicate(editor, map, pastedEvents) {
+    QUndoCommand *parent) : EventDuplicate(editor, map, pastedEvents, parent) {
     if (pastedEvents.size() > 1) {
         setText("Paste Events");
     } else {

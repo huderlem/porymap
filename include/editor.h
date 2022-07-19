@@ -96,7 +96,7 @@ public:
     DraggablePixmapItem *addMapEvent(Event *event);
     void selectMapEvent(DraggablePixmapItem *object);
     void selectMapEvent(DraggablePixmapItem *object, bool toggle);
-    DraggablePixmapItem *addNewEvent(QString event_type);
+    DraggablePixmapItem *addNewEvent(Event::Type type);
     void deleteEvent(Event *);
     void updateSelectedEvents();
     void duplicateSelectedEvents();
@@ -131,8 +131,7 @@ public:
     CurrentSelectedMetatilesPixmapItem *current_metatile_selection_item = nullptr;
     MovementPermissionsSelector *movement_permissions_selector_item = nullptr;
 
-    QList<DraggablePixmapItem*> *events = nullptr;
-    QList<DraggablePixmapItem*> *selected_events = nullptr;
+    QList<DraggablePixmapItem *> *selected_events = nullptr;
 
     QString map_edit_mode = "paint";
     QString obj_edit_mode = "select";
@@ -151,7 +150,7 @@ public:
     void shouldReselectEvents();
     void scaleMapView(int);
     void openInTextEditor(const QString &path, int lineNum = 0) const;
-    bool eventLimitReached(QString event_type);
+    bool eventLimitReached(Event::Type type);
 
 public slots:
     void openMapScripts() const;
@@ -159,6 +158,7 @@ public slots:
     void openProjectInTextEditor() const;
     void maskNonVisibleConnectionTiles();
     void onBorderMetatilesChanged();
+    void selectedEventIndexChanged(int index, Event::Group eventGroup);
 
 private:
     void setConnectionItemsVisible(bool);
@@ -210,7 +210,7 @@ signals:
     void selectedObjectsChanged();
     void loadMapRequested(QString, QString);
     void wildMonDataChanged();
-    void warpEventDoubleClicked(QString, QString, QString);
+    void warpEventDoubleClicked(QString, int, Event::Group);
     void currentMetatilesSelectionChanged();
     void mapRulerStatusChanged(const QString &);
     void editedMapData();

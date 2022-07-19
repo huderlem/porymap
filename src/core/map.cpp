@@ -474,34 +474,40 @@ QList<Event *> Map::getAllEvents() const {
     return all_events;
 }
 
-QStringList Map::eventScriptLabels(const QString &event_group_type) const {
+QStringList Map::eventScriptLabels(Event::Group group) const {
     QStringList scriptLabels;
-    if (event_group_type.isEmpty()) {
-        for (const auto *event : getAllEvents())
-            scriptLabels << event->get("script_label");
+
+    if (group == Event::Group::None) {
+        ScriptTracker scriptTracker;
+        for (Event *event : this->getAllEvents()) {
+            event->accept(&scriptTracker);
+        }
+        scriptLabels = scriptTracker.getScripts();
     } else {
-        for (const auto *event : events.value(event_group_type))
-            scriptLabels << event->get("script_label");
+        ScriptTracker scriptTracker;
+        for (Event *event : events.value(group)) {
+            event->accept(&scriptTracker);
+        }
+        scriptLabels = scriptTracker.getScripts();
     }
 
     scriptLabels.removeAll("");
     scriptLabels.removeDuplicates();
-    if (scriptLabels.contains("0x0"))
-        scriptLabels.move(scriptLabels.indexOf("0x0"), scriptLabels.count() - 1);
-    if (scriptLabels.contains("NULL"))
-        scriptLabels.move(scriptLabels.indexOf("NULL"), scriptLabels.count() - 1);
+    scriptLabels.prepend("0x0");
+    scriptLabels.prepend("NULL");
 
     return scriptLabels;
 }
 
 void Map::removeEvent(Event *event) {
-    for (QString key : events.keys()) {
+    for (Event::Group key : events.keys()) {
         events[key].removeAll(event);
     }
 }
 
 void Map::addEvent(Event *event) {
-    events[event->get("event_group_type")].append(event);
+    event->setMap(this);
+    events[event->getEventGroup()].append(event);
     if (!ownedEvents.contains(event)) ownedEvents.append(event);
 }
 

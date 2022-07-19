@@ -4,6 +4,7 @@
 
 #include "heallocation.h"
 #include "log.h"
+#include "orderedjson.h"
 
 #include <QString>
 #include <QList>
