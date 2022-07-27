@@ -30,6 +30,17 @@ uint16_t Tile::rawValue() const {
          | ((this->palette & 0xF) << 12));
 }
 
+void Tile::sanitize() {
+    if (tileId < 0 || tileId >= Project::getNumTilesTotal()) {
+        logWarn(QString("Resetting tile's invalid tile id '%1' to 0.").arg(tileId));
+        tileId = 0;
+    }
+    if (palette < 0 || palette >= Project::getNumPalettesTotal()) {
+        logWarn(QString("Resetting tile's invalid palette id '%1' to 0.").arg(palette));
+        palette = 0;
+    }
+}
+
 int Tile::getIndexInTileset(int tileId) {
     if (tileId < Project::getNumTilesPrimary()) {
         return tileId;

@@ -120,6 +120,12 @@ QList<QRgb> Tileset::getPalette(int paletteId, Tileset *primaryTileset, Tileset 
             ? primaryTileset
             : secondaryTileset;
     auto palettes = useTruePalettes ? tileset->palettes : tileset->palettePreviews;
+
+    if (paletteId < 0 || paletteId >= palettes.length()){
+        logError(QString("Invalid tileset palette id '%1' requested.").arg(paletteId));
+        return paletteTable;
+    }
+
     for (int i = 0; i < palettes.at(paletteId).length(); i++) {
         paletteTable.append(palettes.at(paletteId).at(i));
     }

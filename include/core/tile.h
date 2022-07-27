@@ -18,6 +18,7 @@ public:
     int palette;
 
     uint16_t rawValue() const;
+    void sanitize();
 
     static int getIndexInTileset(int);
 };
