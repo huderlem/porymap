@@ -35,6 +35,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix collision values of 2 or 3 not rendering properly.
 - Fix the map music dropdown being empty when importing a map from Advance Map.
 - Fixed a bug where saving the tileset editor would reselect the main editor's first selected metatile.
+- Fix crashes / unexpected behavior if certain scripting API functions are given invalid palette or tile numbers.
 
 ## [4.5.0] - 2021-12-26
 ### Added
