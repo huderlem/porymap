@@ -239,17 +239,17 @@ QJSValue Scripting::position(int x, int y) {
 }
 
 Tile Scripting::toTile(QJSValue obj) {
-    if (!obj.hasProperty("tileId")
-     || !obj.hasProperty("xflip")
-     || !obj.hasProperty("yflip")
-     || !obj.hasProperty("palette")) {
-        return Tile();
-    }
     Tile tile = Tile();
-    tile.tileId = obj.property("tileId").toInt();
-    tile.xflip = obj.property("xflip").toBool();
-    tile.yflip = obj.property("yflip").toBool();
-    tile.palette = obj.property("palette").toInt();
+
+    if (obj.hasProperty("tileId"))
+        tile.tileId = obj.property("tileId").toInt();
+    if (obj.hasProperty("xflip"))
+        tile.xflip = obj.property("xflip").toBool();
+    if (obj.hasProperty("yflip"))
+        tile.yflip = obj.property("yflip").toBool();
+    if (obj.hasProperty("palette"))
+        tile.palette = obj.property("palette").toInt();
+
     return tile;
 }
 
