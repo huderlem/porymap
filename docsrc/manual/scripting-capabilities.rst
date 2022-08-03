@@ -190,8 +190,18 @@ The following functions are related to editing the map's blocks or retrieving in
    :param number x: x coordinate of the block
    :param number y: y coordinate of the block
    :param number metatileId: the metatile id of the block
-   :param number collision: the collision of the block (``0`` = passable, ``1`` = impassable)
+   :param number collision: the collision of the block (``0`` = passable, ``1-3`` = impassable)
    :param number elevation: the elevation of the block
+   :param boolean forceRedraw: Force the map view to refresh. Defaults to ``true``. Redrawing the map view is expensive, so set to ``false`` when making many consecutive map edits, and then redraw the map once using ``map.redraw()``.
+   :param boolean commitChanges: Commit the changes to the map's edit/undo history. Defaults to ``true``. When making many related map edits, it can be useful to set this to ``false``, and then commit all of them together with ``map.commit()``.
+
+.. js:function:: map.setBlock(x, y, rawValue, forceRedraw = true, commitChanges = true)
+
+   Sets a block in the currently-opened map. This is an overloaded function that takes the raw value of a block instead of each of the block's properties individually.
+
+   :param number x: x coordinate of the block
+   :param number y: y coordinate of the block
+   :param number rawValue: the 16 bit value of the block. Bits ``0-9`` will be the metatile id, bits ``10-11`` will be the collision, and bits ``12-15`` will be the elevation.
    :param boolean forceRedraw: Force the map view to refresh. Defaults to ``true``. Redrawing the map view is expensive, so set to ``false`` when making many consecutive map edits, and then redraw the map once using ``map.redraw()``.
    :param boolean commitChanges: Commit the changes to the map's edit/undo history. Defaults to ``true``. When making many related map edits, it can be useful to set this to ``false``, and then commit all of them together with ``map.commit()``.
 
@@ -215,7 +225,7 @@ The following functions are related to editing the map's blocks or retrieving in
 
 .. js:function:: map.getCollision(x, y)
 
-   Gets the collision of a block in the currently-opened map. (``0`` = passable, ``1`` = impassable)
+   Gets the collision of a block in the currently-opened map. (``0`` = passable, ``1-3`` = impassable)
 
    :param number x: x coordinate of the block
    :param number y: y coordinate of the block
@@ -223,7 +233,7 @@ The following functions are related to editing the map's blocks or retrieving in
 
 .. js:function:: map.setCollision(x, y, collision, forceRedraw = true, commitChanges = true)
 
-   Sets the collision of a block in the currently-opened map. (``0`` = passable, ``1`` = impassable)
+   Sets the collision of a block in the currently-opened map. (``0`` = passable, ``1-3`` = impassable)
 
    :param number x: x coordinate of the block
    :param number y: y coordinate of the block

@@ -12,8 +12,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 
 ### Added
 - Add Copy/Paste for metatiles in the Tileset Editor.
-- Add ability to set the opacity of the scripting overlay.
-- Add ability to get/set map header properties and read tile pixel data via the API.
+- Add new features to the scripting API, including the ability to set overlay opacity, get/set map header properties, read tile pixel data, and set blocks using a raw value.
 - Add button to copy the full metatile label to the clipboard in the Tileset Editor.
 - Add option to not open the most recent project on launch.
 - Add color picker to palette editor for taking colors from the screen.
@@ -33,6 +32,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix cursor tile and player view outlines exiting map bounds while painting.
 - Fix cursor tile and player view outlines not updating immediately when toggled in Collision view.
 - Fix selected space not updating while painting in Collision view.
+- Fix collision values of 2 or 3 not rendering properly.
 - Fix the map music dropdown being empty when importing a map from Advance Map.
 - Fixed a bug where saving the tileset editor would reselect the main editor's first selected metatile.
 
