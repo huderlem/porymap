@@ -1075,7 +1075,7 @@ QString Editor::getMovementPermissionText(uint16_t collision, uint16_t elevation
     } else if (collision == 0) {
         message = QString("Collision: Passable, Elevation: %1").arg(elevation);
     } else {
-        message = QString("Collision: Impassable, Elevation: %1").arg(elevation);
+        message = QString("Collision: Impassable (%1), Elevation: %2").arg(collision).arg(elevation);
     }
     return message;
 }

@@ -8,7 +8,7 @@ QImage getCollisionMetatileImage(Block block) {
 }
 
 QImage getCollisionMetatileImage(int collision, int elevation) {
-    int x = collision * 16;
+    int x = (collision != 0) * 16;
     int y = elevation * 16;
     QPixmap collisionImage = QPixmap(":/images/collisions.png").copy(x, y, 16, 16);
     return collisionImage.toImage();

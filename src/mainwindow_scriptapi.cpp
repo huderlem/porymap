@@ -50,10 +50,18 @@ void MainWindow::tryCommitMapChanges(bool commitChanges) {
     }
 }
 
-void MainWindow::setBlock(int x, int y, int tile, int collision, int elevation, bool forceRedraw, bool commitChanges) {
+void MainWindow::setBlock(int x, int y, int metatileId, int collision, int elevation, bool forceRedraw, bool commitChanges) {
     if (!this->editor || !this->editor->map)
         return;
-    this->editor->map->setBlock(x, y, Block(tile, collision, elevation));
+    this->editor->map->setBlock(x, y, Block(metatileId, collision, elevation));
+    this->tryCommitMapChanges(commitChanges);
+    this->tryRedrawMapArea(forceRedraw);
+}
+
+void MainWindow::setBlock(int x, int y, int rawValue, bool forceRedraw, bool commitChanges) {
+    if (!this->editor || !this->editor->map)
+        return;
+    this->editor->map->setBlock(x, y, Block(static_cast<uint16_t>(rawValue)));
     this->tryCommitMapChanges(commitChanges);
     this->tryRedrawMapArea(forceRedraw);
 }
