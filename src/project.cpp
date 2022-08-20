@@ -1583,14 +1583,14 @@ void Project::loadTilesetMetatiles(Tileset* tileset) {
     QFile metatiles_file(tileset->metatiles_path);
     if (metatiles_file.open(QIODevice::ReadOnly)) {
         QByteArray data = metatiles_file.readAll();
-        int metatile_data_length = projectConfig.getTripleLayerMetatilesEnabled() ? 24 : 16;
-        int num_metatiles = data.length() / metatile_data_length;
-        int num_layers = projectConfig.getTripleLayerMetatilesEnabled() ? 3 : 2;
+        int tilesPerMetatile = projectConfig.getTripleLayerMetatilesEnabled() ? 12 : 8;
+        int bytesPerMetatile = 2 * tilesPerMetatile;
+        int num_metatiles = data.length() / bytesPerMetatile;
         QList<Metatile*> metatiles;
         for (int i = 0; i < num_metatiles; i++) {
             Metatile *metatile = new Metatile;
-            int index = i * (2 * 4 * num_layers);
-            for (int j = 0; j < 4 * num_layers; j++) {
+            int index = i * bytesPerMetatile;
+            for (int j = 0; j < tilesPerMetatile; j++) {
                 uint16_t tileRaw = static_cast<unsigned char>(data[index++]);
                 tileRaw |= static_cast<unsigned char>(data[index++]) << 8;
                 metatile->tiles.append(Tile(tileRaw));
