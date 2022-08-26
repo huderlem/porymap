@@ -961,6 +961,22 @@ void MainWindow::setMetatileBehavior(int metatileId, int behavior) {
     this->saveMetatileAttributesByMetatileId(metatileId);
 }
 
+int MainWindow::getMetatileAttributes(int metatileId) {
+    Metatile * metatile = this->getMetatile(metatileId);
+    if (!metatile)
+        return -1;
+    return metatile->getAttributes(projectConfig.getBaseGameVersion());
+}
+
+void MainWindow::setMetatileAttributes(int metatileId, int attributes) {
+    Metatile * metatile = this->getMetatile(metatileId);
+    uint32_t u_attributes = static_cast<uint32_t>(attributes);
+    if (!metatile)
+        return;
+    metatile->setAttributes(u_attributes, projectConfig.getBaseGameVersion());
+    this->saveMetatileAttributesByMetatileId(metatileId);
+}
+
 int MainWindow::calculateTileBounds(int * tileStart, int * tileEnd) {
     int maxNumTiles = this->getNumTilesInMetatile();
     if (*tileEnd >= maxNumTiles || *tileEnd < 0)

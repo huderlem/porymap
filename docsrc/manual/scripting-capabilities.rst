@@ -1054,6 +1054,22 @@ The following functions are related to tilesets and how they are rendered. The f
    :param number metatileId: id of target metatile
    :param number behavior: the behavior
 
+.. js:function:: map.getMetatileAttributes(metatileId)
+
+   Gets the raw attributes value for the specified metatile.
+
+   :param number metatileId: id of target metatile
+   :returns number: the raw attributes value
+
+.. js:function:: map.setMetatileAttributes(metatileId, attributes)
+
+   Sets the raw attributes value for the specified metatile.
+   
+   **Warning:** This function writes directly to the tileset. There is no undo for this. Porymap will not limit the value of existing attributes to their usual range.
+
+   :param number metatileId: id of target metatile
+   :param number attributes: the raw attributes value
+
 .. js:function:: map.getMetatileTile(metatileId, tileIndex)
 
    Gets the tile at the specified index of the metatile.

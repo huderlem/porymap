@@ -12,17 +12,17 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 
 ### Added
 - Add Copy/Paste for metatiles in the Tileset Editor.
-- Add new features to the scripting API, including the ability to set overlay opacity, get/set map header properties, read tile pixel data, and set blocks using a raw value.
+- Add new features to the scripting API, including the ability to set overlay opacity, get/set map header properties, read tile pixel data, and set blocks or metatile attributes using a raw value.
 - Add button to copy the full metatile label to the clipboard in the Tileset Editor.
 - Add option to not open the most recent project on launch.
 - Add color picker to palette editor for taking colors from the screen.
 
 ### Changed
+- Overhauled the region map editor, adding support for tilemaps, and significant customization. Also now supports pokefirered.
 - If an object event is inanimate, it will always render using its first frame.
 - Only log "Unknown custom script function" when a registered script function is not present in any script.
 - Unused metatile attribute bits that are set are preserved instead of being cleared.
 - The wild encounter editor is automatically disabled if the encounter JSON data cannot be read
-- Overhauled the region map editor, adding support for tilemaps, and significant customization. Also now supports pokefirered.
 - Metatiles are always rendered accurately with 3 layers, and the unused layer is not assumed to be transparent.
 - `object_event_graphics_info.h` can now be parsed correctly if it uses structs with attributes.
 - Palette editor ui is updated a bit to allow hex and rgb value input.
