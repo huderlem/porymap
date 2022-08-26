@@ -105,20 +105,20 @@ void DraggablePixmapItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *) {
     QString eventType = this->event->get("event_type");
     if (eventType == EventType::Warp) {
         QString destMap = this->event->get("destination_map_name");
-        if (destMap != NONE_MAP_NAME) {
+        if (destMap != DYNAMIC_MAP_NAME) {
             emit editor->warpEventDoubleClicked(destMap, this->event->get("destination_warp"), EventGroup::Warp);
         }
     }
     else if (eventType == EventType::CloneObject) {
         QString destMap = this->event->get("target_map");
-        if (destMap != NONE_MAP_NAME) {
+        if (destMap != DYNAMIC_MAP_NAME) {
             emit editor->warpEventDoubleClicked(destMap, this->event->get("target_local_id"), EventGroup::Object);
         }
     }
     else if (eventType == EventType::SecretBase) {
         QString baseId = this->event->get("secret_base_id");
         QString destMap = editor->project->mapConstantsToMapNames.value("MAP_" + baseId.left(baseId.lastIndexOf("_")));
-        if (destMap != NONE_MAP_NAME) {
+        if (destMap != DYNAMIC_MAP_NAME) {
             emit editor->warpEventDoubleClicked(destMap, "0", EventGroup::Warp);
         }
     }

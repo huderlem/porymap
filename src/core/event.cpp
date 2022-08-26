@@ -116,7 +116,7 @@ Event* Event::createNewCloneObjectEvent(Project *project, QString map_name)
 Event* Event::createNewWarpEvent(QString map_name)
 {
     Event *event = new Event;
-    event->put("destination_warp", 0);
+    event->put("destination_warp", "0");
     event->put("destination_map_name", map_name);
     event->put("elevation", 0);
     return event;
@@ -351,7 +351,7 @@ OrderedJson::object Event::buildWarpEventJSON(const QMap<QString, QString> &mapN
     warpObj["y"] = this->getU16("y");
     warpObj["elevation"] = this->getInt("elevation");
     warpObj["dest_map"] = mapNamesToMapConstants.value(this->get("destination_map_name"));
-    warpObj["dest_warp_id"] = this->getInt("destination_warp");
+    warpObj["dest_warp_id"] = this->get("destination_warp");
     this->addCustomValuesTo(&warpObj);
 
     return warpObj;

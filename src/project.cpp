@@ -250,8 +250,8 @@ bool Project::loadMapData(Map* map) {
                 object->put("target_map", mapConstantsToMapNames.value(mapConstant));
                 object->put("event_group_type", EventGroup::Object);
                 map->events[EventGroup::Object].append(object);
-            } else if (mapConstant == NONE_MAP_CONSTANT) {
-                object->put("target_map", NONE_MAP_NAME);
+            } else if (mapConstant == DYNAMIC_MAP_CONSTANT) {
+                object->put("target_map", DYNAMIC_MAP_NAME);
                 object->put("event_group_type", EventGroup::Object);
                 map->events[EventGroup::Object].append(object);
             } else {
@@ -271,7 +271,7 @@ bool Project::loadMapData(Map* map) {
         warp->put("x", QString::number(event["x"].toInt()));
         warp->put("y", QString::number(event["y"].toInt()));
         warp->put("elevation", QString::number(event["elevation"].toInt()));
-        warp->put("destination_warp", QString::number(event["dest_warp_id"].toInt()));
+        warp->put("destination_warp", event["dest_warp_id"].toString());
 
         // Ensure the warp destination map constant is valid before adding it to the warps.
         QString mapConstant = event["dest_map"].toString();
@@ -279,8 +279,8 @@ bool Project::loadMapData(Map* map) {
             warp->put("destination_map_name", mapConstantsToMapNames.value(mapConstant));
             warp->put("event_group_type", EventGroup::Warp);
             map->events[EventGroup::Warp].append(warp);
-        } else if (mapConstant == NONE_MAP_CONSTANT) {
-            warp->put("destination_map_name", NONE_MAP_NAME);
+        } else if (mapConstant == DYNAMIC_MAP_CONSTANT) {
+            warp->put("destination_map_name", DYNAMIC_MAP_NAME);
             warp->put("event_group_type", EventGroup::Warp);
             map->events[EventGroup::Warp].append(warp);
         } else {
@@ -1829,9 +1829,9 @@ bool Project::readMapGroups() {
         }
     }
 
-    mapConstantsToMapNames.insert(NONE_MAP_CONSTANT, NONE_MAP_NAME);
-    mapNamesToMapConstants.insert(NONE_MAP_NAME, NONE_MAP_CONSTANT);
-    maps.append(NONE_MAP_NAME);
+    mapConstantsToMapNames.insert(DYNAMIC_MAP_CONSTANT, DYNAMIC_MAP_NAME);
+    mapNamesToMapConstants.insert(DYNAMIC_MAP_NAME, DYNAMIC_MAP_CONSTANT);
+    maps.append(DYNAMIC_MAP_NAME);
 
     groupNames = groups;
     groupedMapNames = groupedMaps;
