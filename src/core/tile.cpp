@@ -8,7 +8,7 @@
         palette(0)
     {  }
 
- Tile::Tile(int tileId, bool xflip, bool yflip, int palette) :
+ Tile::Tile(uint16_t tileId, uint16_t xflip, uint16_t yflip, uint16_t palette) :
         tileId(tileId),
         xflip(xflip),
         yflip(yflip),
@@ -28,17 +28,6 @@ uint16_t Tile::rawValue() const {
          | ((this->xflip & 1) << 10)
          | ((this->yflip & 1) << 11)
          | ((this->palette & 0xF) << 12));
-}
-
-void Tile::sanitize() {
-    if (tileId < 0 || tileId >= Project::getNumTilesTotal()) {
-        logWarn(QString("Resetting tile's invalid tile id '%1' to 0.").arg(tileId));
-        tileId = 0;
-    }
-    if (palette < 0 || palette >= Project::getNumPalettesTotal()) {
-        logWarn(QString("Resetting tile's invalid palette id '%1' to 0.").arg(palette));
-        palette = 0;
-    }
 }
 
 int Tile::getIndexInTileset(int tileId) {

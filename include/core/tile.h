@@ -8,17 +8,15 @@ class Tile
 {
 public:
     Tile();
-    Tile(int tileId, bool xflip, bool yflip, int palette);
+    Tile(uint16_t tileId, uint16_t xflip, uint16_t yflip, uint16_t palette);
     Tile(uint16_t raw);
 
 public:
-    int tileId;
-    bool xflip;
-    bool yflip;
-    int palette;
-
+    uint16_t tileId:10;
+    uint16_t xflip:1;
+    uint16_t yflip:1;
+    uint16_t palette:4;
     uint16_t rawValue() const;
-    void sanitize();
 
     static int getIndexInTileset(int);
 };

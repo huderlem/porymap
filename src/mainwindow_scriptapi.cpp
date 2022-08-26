@@ -991,11 +991,8 @@ void MainWindow::setMetatileTiles(int metatileId, QJSValue tilesObj, int tileSta
     // Write to metatile using as many of the given Tiles as possible
     int numTileObjs = qMin(tilesObj.property("length").toInt(), numTiles);
     int i = 0;
-    for (; i < numTileObjs; i++, tileStart++) {
-        Tile tile = Scripting::toTile(tilesObj.property(i));
-        tile.sanitize();
-        metatile->tiles[tileStart] = tile;
-    }
+    for (; i < numTileObjs; i++, tileStart++)
+        metatile->tiles[tileStart] = Scripting::toTile(tilesObj.property(i));
 
     // Fill remainder of specified length with empty Tiles
     for (; i < numTiles; i++, tileStart++)
@@ -1014,7 +1011,6 @@ void MainWindow::setMetatileTiles(int metatileId, int tileId, bool xflip, bool y
 
     // Write to metatile using Tiles of the specified value
     Tile tile = Tile(tileId, xflip, yflip, palette);
-    tile.sanitize();
     for (int i = tileStart; i <= tileEnd; i++)
         metatile->tiles[i] = tile;
 
