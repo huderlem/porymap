@@ -50,6 +50,16 @@ void MainWindow::tryCommitMapChanges(bool commitChanges) {
     }
 }
 
+void MainWindow::tryRedrawBorder(bool forceRedraw) {
+    if (!forceRedraw) return;
+    // TODO
+}
+
+void MainWindow::tryCommitBorderChanges(bool commitChanges) {
+    if (!commitChanges) return;
+    // TODO
+}
+
 void MainWindow::setBlock(int x, int y, int tile, int collision, int elevation, bool forceRedraw, bool commitChanges) {
     if (!this->editor || !this->editor->map)
         return;
@@ -91,13 +101,19 @@ void MainWindow::setMetatileId(int x, int y, int metatileId, bool forceRedraw, b
 int MainWindow::getBorderMetatileId(int x, int y) {
     if (!this->editor || !this->editor->map)
         return 0;
-    // TODO
+    if (!this->editor->map->isWithinBorderBounds(x, y))
+        return 0;
+    return this->editor->map->getBorderMetatileId(x, y);
 }
 
 void MainWindow::setBorderMetatileId(int x, int y, int metatileId, bool forceRedraw, bool commitChanges) {
     if (!this->editor || !this->editor->map)
         return;
-    // TODO
+    if (!this->editor->map->isWithinBorderBounds(x, y))
+        return;
+    this->editor->map->setBorderMetatileId(x, y, metatileId);
+    this->tryCommitBorderChanges(commitChanges);
+    this->tryRedrawBorder(forceRedraw);
 }
 
 int MainWindow::getCollision(int x, int y) {
@@ -213,19 +229,19 @@ int MainWindow::getHeight() {
 QJSValue MainWindow::getBorderDimensions() {
     if (!this->editor || !this->editor->map)
         return QJSValue();
-    // TODO    
+    return Scripting::dimensions(this->editor->map->getBorderWidth(), this->editor->map->getBorderHeight());
 }
 
 int MainWindow::getBorderWidth() {
     if (!this->editor || !this->editor->map)
         return 0;
-    // TODO
+    return this->editor->map->getBorderWidth();
 }
 
 int MainWindow::getBorderHeight() {
     if (!this->editor || !this->editor->map)
         return 0;
-    // TODO
+    return this->editor->map->getBorderHeight();
 }
 
 void MainWindow::setDimensions(int width, int height) {
@@ -259,20 +275,32 @@ void MainWindow::setHeight(int height) {
 }
 
 void MainWindow::setBorderDimensions(int width, int height) {
-    if (!this->editor || !this->editor->map)
+    if (!this->editor || !this->editor->map || !projectConfig.getUseCustomBorderSize())
         return;
-    // TODO    
+    if (width < 1 || height < 1 || width > MAX_BORDER_WIDTH || height > MAX_BORDER_HEIGHT)
+        return;
+    this->editor->map->setBorderDimensions(width, height);
+    this->tryCommitBorderChanges(true);
+    // TODO
 }
 
 void MainWindow::setBorderWidth(int width) {
-    if (!this->editor || !this->editor->map)
+    if (!this->editor || !this->editor->map || !projectConfig.getUseCustomBorderSize())
         return;
+    if (width < 1 || width > MAX_BORDER_WIDTH)
+        return;
+    this->editor->map->setBorderDimensions(width, this->editor->map->getBorderHeight());
+    this->tryCommitBorderChanges(true);
     // TODO
 }
 
 void MainWindow::setBorderHeight(int height) {
-    if (!this->editor || !this->editor->map)
+    if (!this->editor || !this->editor->map || !projectConfig.getUseCustomBorderSize())
         return;
+    if (height < 1 || height > MAX_BORDER_HEIGHT)
+        return;
+    this->editor->map->setBorderDimensions(this->editor->map->getBorderWidth(), height);
+    this->tryCommitBorderChanges(true);
     // TODO
 }
 

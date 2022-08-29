@@ -5,10 +5,12 @@ QMap<CallbackType, QString> callbackFunctions = {
     {OnProjectOpened, "onProjectOpened"},
     {OnProjectClosed, "onProjectClosed"},
     {OnBlockChanged, "onBlockChanged"},
+    {OnBorderMetatileChanged, "onBorderMetatileChanged"},
     {OnBlockHoverChanged, "onBlockHoverChanged"},
     {OnBlockHoverCleared, "onBlockHoverCleared"},
     {OnMapOpened, "onMapOpened"},
     {OnMapResized, "onMapResized"},
+    {OnBorderResized, "onBorderResized"},
     {OnMapShifted, "onMapShifted"},
     {OnTilesetUpdated, "onTilesetUpdated"},
     {OnMainTabChanged, "onMainTabChanged"},
@@ -140,6 +142,18 @@ void Scripting::cb_MetatileChanged(int x, int y, Block prevBlock, Block newBlock
     instance->invokeCallback(OnBlockChanged, args);
 }
 
+void Scripting::cb_BorderMetatileChanged(int x, int y, uint16_t prevMetatileId, uint16_t newMetatileId) {
+    if (!instance) return;
+
+    QJSValueList args {
+        x,
+        y,
+        prevMetatileId,
+        newMetatileId,
+    };
+    instance->invokeCallback(OnBorderMetatileChanged, args);
+}
+
 void Scripting::cb_BlockHoverChanged(int x, int y) {
     if (!instance) return;
 
@@ -174,6 +188,18 @@ void Scripting::cb_MapResized(int oldWidth, int oldHeight, int newWidth, int new
         newHeight,
     };
     instance->invokeCallback(OnMapResized, args);
+}
+
+void Scripting::cb_BorderResized(int oldWidth, int oldHeight, int newWidth, int newHeight) {
+    if (!instance) return;
+
+    QJSValueList args {
+        oldWidth,
+        oldHeight,
+        newWidth,
+        newHeight,
+    };
+    instance->invokeCallback(OnBorderResized, args);
 }
 
 void Scripting::cb_MapShifted(int xDelta, int yDelta) {

@@ -12,10 +12,12 @@ enum CallbackType {
     OnProjectOpened,
     OnProjectClosed,
     OnBlockChanged,
+    OnBorderMetatileChanged,
     OnBlockHoverChanged,
     OnBlockHoverCleared,
     OnMapOpened,
     OnMapResized,
+    OnBorderResized,
     OnMapShifted,
     OnTilesetUpdated,
     OnMainTabChanged,
@@ -40,10 +42,12 @@ public:
     static void cb_ProjectOpened(QString projectPath);
     static void cb_ProjectClosed(QString projectPath);
     static void cb_MetatileChanged(int x, int y, Block prevBlock, Block newBlock);
+    static void cb_BorderMetatileChanged(int x, int y, uint16_t prevMetatileId, uint16_t newMetatileId);
     static void cb_BlockHoverChanged(int x, int y);
     static void cb_BlockHoverCleared();
     static void cb_MapOpened(QString mapName);
     static void cb_MapResized(int oldWidth, int oldHeight, int newWidth, int newHeight);
+    static void cb_BorderResized(int oldWidth, int oldHeight, int newWidth, int newHeight);
     static void cb_MapShifted(int xDelta, int yDelta);
     static void cb_TilesetUpdated(QString tilesetName);
     static void cb_MainTabChanged(int oldTab, int newTab);

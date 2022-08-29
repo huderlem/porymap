@@ -101,7 +101,7 @@ void PaintBorder::redo() {
 
     if (!map) return;
 
-    map->layout->border = newBorder;
+    map->setBorderBlockData(newBorder);
 
     map->borderItem->draw();
 }
@@ -109,7 +109,7 @@ void PaintBorder::redo() {
 void PaintBorder::undo() {
     if (!map) return;
 
-    map->layout->border = oldBorder;
+    map->setBorderBlockData(oldBorder);
 
     map->borderItem->draw();
 
