@@ -88,6 +88,18 @@ void MainWindow::setMetatileId(int x, int y, int metatileId, bool forceRedraw, b
     this->tryRedrawMapArea(forceRedraw);
 }
 
+int MainWindow::getBorderMetatileId(int x, int y) {
+    if (!this->editor || !this->editor->map)
+        return 0;
+    // TODO
+}
+
+void MainWindow::setBorderMetatileId(int x, int y, int metatileId, bool forceRedraw, bool commitChanges) {
+    if (!this->editor || !this->editor->map)
+        return;
+    // TODO
+}
+
 int MainWindow::getCollision(int x, int y) {
     if (!this->editor || !this->editor->map)
         return 0;
@@ -198,6 +210,24 @@ int MainWindow::getHeight() {
     return this->editor->map->getHeight();
 }
 
+QJSValue MainWindow::getBorderDimensions() {
+    if (!this->editor || !this->editor->map)
+        return QJSValue();
+    // TODO    
+}
+
+int MainWindow::getBorderWidth() {
+    if (!this->editor || !this->editor->map)
+        return 0;
+    // TODO
+}
+
+int MainWindow::getBorderHeight() {
+    if (!this->editor || !this->editor->map)
+        return 0;
+    // TODO
+}
+
 void MainWindow::setDimensions(int width, int height) {
     if (!this->editor || !this->editor->map)
         return;
@@ -226,6 +256,24 @@ void MainWindow::setHeight(int height) {
     this->editor->map->setDimensions(this->editor->map->getWidth(), height);
     this->tryCommitMapChanges(true);
     this->onMapNeedsRedrawing();
+}
+
+void MainWindow::setBorderDimensions(int width, int height) {
+    if (!this->editor || !this->editor->map)
+        return;
+    // TODO    
+}
+
+void MainWindow::setBorderWidth(int width) {
+    if (!this->editor || !this->editor->map)
+        return;
+    // TODO
+}
+
+void MainWindow::setBorderHeight(int height) {
+    if (!this->editor || !this->editor->map)
+        return;
+    // TODO
 }
 
 void MainWindow::clearOverlay(int layer) {

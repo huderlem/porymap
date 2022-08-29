@@ -50,6 +50,8 @@ public:
     Q_INVOKABLE void setBlocksFromSelection(int x, int y, bool forceRedraw = true, bool commitChanges = true);
     Q_INVOKABLE int getMetatileId(int x, int y);
     Q_INVOKABLE void setMetatileId(int x, int y, int metatileId, bool forceRedraw = true, bool commitChanges = true);
+    Q_INVOKABLE int getBorderMetatileId(int x, int y);
+    Q_INVOKABLE void setBorderMetatileId(int x, int y, int metatileId, bool forceRedraw = true, bool commitChanges = true);
     Q_INVOKABLE int getCollision(int x, int y);
     Q_INVOKABLE void setCollision(int x, int y, int collision, bool forceRedraw = true, bool commitChanges = true);
     Q_INVOKABLE int getElevation(int x, int y);
@@ -64,9 +66,15 @@ public:
     Q_INVOKABLE QJSValue getDimensions();
     Q_INVOKABLE int getWidth();
     Q_INVOKABLE int getHeight();
+    Q_INVOKABLE QJSValue getBorderDimensions();
+    Q_INVOKABLE int getBorderWidth();
+    Q_INVOKABLE int getBorderHeight();
     Q_INVOKABLE void setDimensions(int width, int height);
     Q_INVOKABLE void setWidth(int width);
     Q_INVOKABLE void setHeight(int height);
+    Q_INVOKABLE void setBorderDimensions(int width, int height);
+    Q_INVOKABLE void setBorderWidth(int width);
+    Q_INVOKABLE void setBorderHeight(int height);
     Q_INVOKABLE void clearOverlay(int layer = 0);
     Q_INVOKABLE void clearOverlays();
     Q_INVOKABLE void hideOverlay(int layer = 0);
