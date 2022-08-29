@@ -343,12 +343,14 @@ public:
 
 
 /// Implements a command to commit map edits from the scripting API.
-/// The scripting api can edit metatiles and map dimensions.
+/// The scripting api can edit map/border blocks and dimensions.
 class ScriptEditMap : public QUndoCommand {
 public:
     ScriptEditMap(Map *map,
         QSize oldMapDimensions, QSize newMapDimensions,
         const Blockdata &oldMetatiles, const Blockdata &newMetatiles,
+        QSize oldBorderDimensions, QSize newBorderDimensions,
+        const Blockdata &oldBorder, const Blockdata &newBorder,
         QUndoCommand *parent = nullptr);
 
     void undo() override;
@@ -363,10 +365,18 @@ private:
     Blockdata newMetatiles;
     Blockdata oldMetatiles;
 
+    Blockdata newBorder;
+    Blockdata oldBorder;
+
     int oldMapWidth;
     int oldMapHeight;
     int newMapWidth;
     int newMapHeight;
+
+    int oldBorderWidth;
+    int oldBorderHeight;
+    int newBorderWidth;
+    int newBorderHeight;
 };
 
 #endif // EDITCOMMANDS_H

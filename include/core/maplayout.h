@@ -33,8 +33,10 @@ public:
     Blockdata cached_border;
     struct {
         Blockdata blocks;
-        QSize dimensions;
-    } lastCommitMapBlocks; // to track map changes
+        QSize mapDimensions;
+        Blockdata border;
+        QSize borderDimensions;
+    } lastCommitBlocks; // to track map changes
 
     int getWidth();
     int getHeight();

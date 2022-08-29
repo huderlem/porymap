@@ -29,12 +29,15 @@ void MainWindow::tryRedrawMapArea(bool forceRedraw) {
     if (this->needsFullRedraw) {
         this->editor->map_item->draw(true);
         this->editor->collision_item->draw(true);
+        this->editor->selected_border_metatiles_item->draw();
         this->editor->updateMapBorder();
         this->editor->updateMapConnections();
         this->needsFullRedraw = false;
     } else {
         this->editor->map_item->draw();
         this->editor->collision_item->draw();
+        this->editor->selected_border_metatiles_item->draw();
+        this->editor->updateMapBorder();
     }
 }
 
@@ -43,21 +46,13 @@ void MainWindow::tryCommitMapChanges(bool commitChanges) {
         Map *map = this->editor->map;
         if (map) {
             map->editHistory.push(new ScriptEditMap(map,
-                map->layout->lastCommitMapBlocks.dimensions, QSize(map->getWidth(), map->getHeight()),
-                map->layout->lastCommitMapBlocks.blocks, map->layout->blockdata
+                map->layout->lastCommitBlocks.mapDimensions, QSize(map->getWidth(), map->getHeight()),
+                map->layout->lastCommitBlocks.blocks, map->layout->blockdata,
+                map->layout->lastCommitBlocks.borderDimensions, QSize(map->getBorderWidth(), map->getBorderHeight()),
+                map->layout->lastCommitBlocks.border, map->layout->border
             ));
         }
     }
-}
-
-void MainWindow::tryRedrawBorder(bool forceRedraw) {
-    if (!forceRedraw) return;
-    // TODO
-}
-
-void MainWindow::tryCommitBorderChanges(bool commitChanges) {
-    if (!commitChanges) return;
-    // TODO
 }
 
 void MainWindow::setBlock(int x, int y, int tile, int collision, int elevation, bool forceRedraw, bool commitChanges) {
@@ -112,8 +107,8 @@ void MainWindow::setBorderMetatileId(int x, int y, int metatileId, bool forceRed
     if (!this->editor->map->isWithinBorderBounds(x, y))
         return;
     this->editor->map->setBorderMetatileId(x, y, metatileId);
-    this->tryCommitBorderChanges(commitChanges);
-    this->tryRedrawBorder(forceRedraw);
+    this->tryCommitMapChanges(commitChanges);
+    this->tryRedrawMapArea(forceRedraw);
 }
 
 int MainWindow::getCollision(int x, int y) {
@@ -280,8 +275,8 @@ void MainWindow::setBorderDimensions(int width, int height) {
     if (width < 1 || height < 1 || width > MAX_BORDER_WIDTH || height > MAX_BORDER_HEIGHT)
         return;
     this->editor->map->setBorderDimensions(width, height);
-    this->tryCommitBorderChanges(true);
-    // TODO
+    this->tryCommitMapChanges(true);
+    this->onMapNeedsRedrawing();
 }
 
 void MainWindow::setBorderWidth(int width) {
@@ -290,8 +285,8 @@ void MainWindow::setBorderWidth(int width) {
     if (width < 1 || width > MAX_BORDER_WIDTH)
         return;
     this->editor->map->setBorderDimensions(width, this->editor->map->getBorderHeight());
-    this->tryCommitBorderChanges(true);
-    // TODO
+    this->tryCommitMapChanges(true);
+    this->onMapNeedsRedrawing();
 }
 
 void MainWindow::setBorderHeight(int height) {
@@ -300,8 +295,8 @@ void MainWindow::setBorderHeight(int height) {
     if (height < 1 || height > MAX_BORDER_HEIGHT)
         return;
     this->editor->map->setBorderDimensions(this->editor->map->getBorderWidth(), height);
-    this->tryCommitBorderChanges(true);
-    // TODO
+    this->tryCommitMapChanges(true);
+    this->onMapNeedsRedrawing();
 }
 
 void MainWindow::clearOverlay(int layer) {
