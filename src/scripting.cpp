@@ -15,6 +15,7 @@ QMap<CallbackType, QString> callbackFunctions = {
     {OnTilesetUpdated, "onTilesetUpdated"},
     {OnMainTabChanged, "onMainTabChanged"},
     {OnMapViewTabChanged, "onMapViewTabChanged"},
+    {OnBorderVisibilityToggled, "onBorderVisibilityToggled"},
 };
 
 Scripting *instance = nullptr;
@@ -239,6 +240,15 @@ void Scripting::cb_MapViewTabChanged(int oldTab, int newTab) {
         newTab,
     };
     instance->invokeCallback(OnMapViewTabChanged, args);
+}
+
+void Scripting::cb_BorderVisibilityToggled(bool visible) {
+    if (!instance) return;
+
+    QJSValueList args {
+        visible,
+    };
+    instance->invokeCallback(OnBorderVisibilityToggled, args);
 }
 
 QJSValue Scripting::fromBlock(Block block) {

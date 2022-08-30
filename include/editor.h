@@ -88,7 +88,7 @@ public:
     void setSelectedConnectionFromMap(QString mapName);
     void updatePrimaryTileset(QString tilesetLabel, bool forceLoad = false);
     void updateSecondaryTileset(QString tilesetLabel, bool forceLoad = false);
-    void toggleBorderVisibility(bool visible);
+    void toggleBorderVisibility(bool visible, bool enableScriptCallback = true);
     void updateCustomMapHeaderValues(QTableWidget *);
     void configureEncounterJSON(QWidget *);
     Tileset *getCurrentMapPrimaryTileset();

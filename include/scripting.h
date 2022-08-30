@@ -22,6 +22,7 @@ enum CallbackType {
     OnTilesetUpdated,
     OnMainTabChanged,
     OnMapViewTabChanged,
+    OnBorderVisibilityToggled,
 };
 
 class Scripting
@@ -52,6 +53,7 @@ public:
     static void cb_TilesetUpdated(QString tilesetName);
     static void cb_MainTabChanged(int oldTab, int newTab);
     static void cb_MapViewTabChanged(int oldTab, int newTab);
+    static void cb_BorderVisibilityToggled(bool visible);
     static bool tryErrorJS(QJSValue js);
 
 private:

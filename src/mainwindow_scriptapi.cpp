@@ -794,7 +794,7 @@ bool MainWindow::getGridVisibility() {
 }
 
 void MainWindow::setBorderVisibility(bool visible) {
-    this->editor->toggleBorderVisibility(visible);
+    this->editor->toggleBorderVisibility(visible, false);
 }
 
 bool MainWindow::getBorderVisibility() {

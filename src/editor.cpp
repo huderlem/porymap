@@ -1936,11 +1936,13 @@ void Editor::updateSecondaryTileset(QString tilesetLabel, bool forceLoad)
     }
 }
 
-void Editor::toggleBorderVisibility(bool visible)
+void Editor::toggleBorderVisibility(bool visible, bool enableScriptCallback)
 {
     this->setBorderItemsVisible(visible);
     this->setConnectionsVisibility(visible);
     porymapConfig.setShowBorder(visible);
+    if (enableScriptCallback)
+        Scripting::cb_BorderVisibilityToggled(visible);
 }
 
 void Editor::updateCustomMapHeaderValues(QTableWidget *table)
