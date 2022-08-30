@@ -118,6 +118,15 @@ Callbacks
    :param object prevBlock: the block's state before it was modified. The object's shape is ``{metatileId, collision, elevation, rawValue}``
    :param object newBlock: the block's new state after it was modified. The object's shape is ``{metatileId, collision, elevation, rawValue}``
 
+.. js:function:: onBorderMetatileChanged(x, y, prevMetatileId, newMetatileId)
+
+   Called when a border metatile is changed.
+
+   :param number x: x coordinate of the block
+   :param number y: y coordinate of the block
+   :param number prevMetatileId: the metatile id of the border block before it was modified
+   :param number newMetatileId: the metatile id of the border block after it was modified
+
 .. js:function:: onBlockHoverChanged(x, y)
 
    Called when the mouse enters a new map block.
@@ -137,6 +146,15 @@ Callbacks
    :param number oldHeight: the height of the map before the change
    :param number newWidth: the width of the map after the change
    :param number newHeight: the height of the map after the change
+
+.. js:function:: onBorderResized(oldWidth, oldHeight, newWidth, newHeight)
+
+   Called when the dimensions of the border are changed.
+
+   :param number oldWidth: the width of the border before the change
+   :param number oldHeight: the height of the border before the change
+   :param number newWidth: the width of the border after the change
+   :param number newHeight: the height of the border after the change
 
 .. js:function:: onMapShifted(xDelta, yDelta)
 
@@ -164,6 +182,12 @@ Callbacks
 
    :param number oldTab: the index of the previously selected tab
    :param number newTab: the index of the newly selected tab
+
+.. js:function:: onBorderVisibilityToggled(visible)
+
+   Called when the visibility of the border and connecting maps is toggled on or off.
+
+   :param boolean visible: whether the border is now visible
 
 Functions
 ~~~~~~~~~
@@ -206,6 +230,24 @@ The following functions are related to editing the map's blocks or retrieving in
 .. js:function:: map.setMetatileId(x, y, metatileId, forceRedraw = true, commitChanges = true)
 
    Sets the metatile id of a block in the currently-opened map.
+
+   :param number x: x coordinate of the block
+   :param number y: y coordinate of the block
+   :param number metatileId: the metatile id of the block
+   :param boolean forceRedraw: Force the map view to refresh. Defaults to ``true``. Redrawing the map view is expensive, so set to ``false`` when making many consecutive map edits, and then redraw the map once using ``map.redraw()``.
+   :param boolean commitChanges: Commit the changes to the map's edit/undo history. Defaults to ``true``. When making many related map edits, it can be useful to set this to ``false``, and then commit all of them together with ``map.commit()``.
+
+.. js:function:: map.getBorderMetatileId(x, y)
+
+   Gets the metatile id of a block in the border of the currently-opened map.
+
+   :param number x: x coordinate of the block
+   :param number y: y coordinate of the block
+   :returns number: the metatile id of the block
+
+.. js:function:: map.setBorderMetatileId(x, y, metatileId, forceRedraw = true, commitChanges = true)
+
+   Sets the metatile id of a block in the border of the currently-opened map.
 
    :param number x: x coordinate of the block
    :param number y: y coordinate of the block
@@ -323,6 +365,24 @@ The following functions are related to editing the map's blocks or retrieving in
 
    :returns number: the height of the map
 
+.. js:function:: map.getBorderDimensions()
+
+   Gets the dimensions of the border of the currently-opened map.
+
+   :returns {width, height}: the dimensions of the border
+
+.. js:function:: map.getBorderWidth()
+
+   Gets the width of the border of the currently-opened map.
+
+   :returns number: the width of the border
+
+.. js:function:: map.getBorderHeight()
+
+   Gets the height of the border of the currently-opened map.
+
+   :returns number: the height of the border
+
 .. js:function:: map.setDimensions(width, height)
 
    Sets the dimensions of the currently-opened map.
@@ -339,6 +399,25 @@ The following functions are related to editing the map's blocks or retrieving in
 .. js:function:: map.setHeight()
 
    Sets the height of the currently-opened map.
+
+   :param number height: height in blocks
+
+.. js:function:: map.setBorderDimensions(width, height)
+
+   Sets the dimensions of the border of the currently-opened map. If the config setting ``use_custom_border_size`` is set to ``0`` then this does nothing.
+
+   :param number width: width in blocks
+   :param number height: height in blocks
+
+.. js:function:: map.setBorderWidth(width)
+
+   Sets the width of the border of the currently-opened map. If the config setting ``use_custom_border_size`` is set to ``0`` then this does nothing.
+
+   :param number width: width in blocks
+
+.. js:function:: map.setBorderHeight()
+
+   Sets the height of the border of the currently-opened map. If the config setting ``use_custom_border_size`` is set to ``0`` then this does nothing.
 
    :param number height: height in blocks
 
