@@ -76,6 +76,7 @@ public:
     NoScrollSpinBox *spinner_radius_x;
     NoScrollSpinBox *spinner_radius_y;
     NoScrollComboBox *combo_script;
+    QToolButton *button_script;
     NoScrollComboBox *combo_flag;
     NoScrollComboBox *combo_trainer_type;
     NoScrollComboBox *combo_radius_treeid;

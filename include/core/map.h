@@ -107,6 +107,7 @@ public:
     bool hasUnsavedChanges();
     bool isWithinBounds(int x, int y);
     bool isWithinBorderBounds(int x, int y);
+    void openScript(QString label);
 
     MapPixmapItem *mapItem = nullptr;
     void setMapItem(MapPixmapItem *item) { mapItem = item; }
@@ -127,6 +128,7 @@ signals:
     void mapChanged(Map *map);
     void mapDimensionsChanged(const QSize &size);
     void mapNeedsRedrawing();
+    void openScriptRequested(QString label);
 };
 
 #endif // MAP_H

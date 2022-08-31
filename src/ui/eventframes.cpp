@@ -77,19 +77,7 @@ void EventFrame::setup() {
 
     l_layout_xyz->addLayout(l_layout_z);
 
-    // id / index spinner
-    // this->spinner_id = new NoScrollSpinBox(this);
-
-    // QHBoxLayout *l_layout_id = new QHBoxLayout();
-
-    // this->label_id = new QLabel("id");
-    // l_layout_id->addWidget(this->spinner_id);
-    // l_layout_id->addWidget(this->label_id);
-    // l_layout_id->addItem(createSpacerH());
-
     QVBoxLayout *l_vbox_1 = new QVBoxLayout();
-    // l_vbox_1->addLayout(l_layout_id);
-
     l_vbox_1->addItem(createSpacerV());
     l_vbox_1->addLayout(l_layout_xyz);
 
@@ -112,12 +100,6 @@ void EventFrame::setup() {
     this->layout_contents->setContentsMargins(0, 0, 0, 0);
 
     this->layout_main->addLayout(this->layout_contents);
-
-
-    ///
-    /// connect slots to event modifiers -- actually different function
-    ///
-    //this->connectSignals();
 }
 
 // TODO: add / delete buttons?
@@ -131,7 +113,7 @@ void EventFrame::initCustomAttributesTable() {
 // ie, mark connections dirty and need redo
 void EventFrame::connectSignals() {
     this->spinner_x->disconnect();
-    connect(this->spinner_x, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value){
+    connect(this->spinner_x, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
         int delta = value - event->getX();
         if (delta) this->event->getMap()->editHistory.push(new EventMove(QList<Event *>() << this->event, delta, 0, this->spinner_x->getActionId()));
     });
@@ -139,7 +121,7 @@ void EventFrame::connectSignals() {
     connect(this->event->getPixmapItem(), &DraggablePixmapItem::xChanged, this->spinner_x, &NoScrollSpinBox::setValue);
     
     this->spinner_y->disconnect();
-    connect(this->spinner_y, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value){
+    connect(this->spinner_y, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
         int delta = value - event->getY();
         if (delta) this->event->getMap()->editHistory.push(new EventMove(QList<Event *>() << this->event, 0, delta, this->spinner_y->getActionId()));
     });
@@ -147,15 +129,13 @@ void EventFrame::connectSignals() {
     
     // TODO??
     this->spinner_z->disconnect();
-    connect(this->spinner_z, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value){
-        int delta = value - event->getZ();
-        //if (delta) this->event->getMap()->editHistory.push(new EventMove(QList<Event *>() << this->event, delta, 0, this->spinner_z->getActionId()));
+    connect(this->spinner_z, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
+        this->event->setZ(value);
     });
 }
 
 void EventFrame::initialize() {
     // this->initialized = true;
-    // move to before add values to combos? will spinners need to be set agane?
     // TODO: does this signal blocker block spinner signals?
     const QSignalBlocker blocker(this);
     
@@ -167,11 +147,8 @@ void EventFrame::initialize() {
 }
 
 void EventFrame::populate(Project *project) {
-    //
     if (this->populated) return;
     const QSignalBlocker blocker(this);
-
-    // spinBox_index->setValue(editor->project->getMap(map_name)->events.value(event_group_type).indexOf(item->event) + event_offs);
 
     this->populated = true;
 }
@@ -184,16 +161,9 @@ void EventFrame::setActive(bool active) {
 
 
 
-///
-/// 
-///
-
-//*
-// TODO: spinbox limits, autocompleters
+// TODO: spinbox limits
 void ObjectFrame::setup() {
     EventFrame::setup();
-
-    //this->label_id->setText("object id");
 
     // sprite combo
     QFormLayout *l_form_sprite = new QFormLayout();
@@ -228,7 +198,19 @@ void ObjectFrame::setup() {
     QFormLayout *l_form_script = new QFormLayout();
     this->combo_script = new NoScrollComboBox(this);
     this->combo_script->setToolTip("The script which is executed with this event.");
-    l_form_script->addRow("Script", this->combo_script);
+
+    // Add button next to combo which opens combo's current script.
+    this->button_script = new QToolButton(this);
+    this->button_script->setToolTip("Go to this script definition in text editor.");
+    this->button_script->setFixedSize(this->combo_script->height(), this->combo_script->height());
+    this->button_script->setIcon(QFileIconProvider().icon(QFileIconProvider::File));
+
+    QHBoxLayout *l_hbox_scr = new QHBoxLayout();
+    l_hbox_scr->setSpacing(3);
+    l_hbox_scr->addWidget(this->combo_script);
+    l_hbox_scr->addWidget(this->button_script);
+
+    l_form_script->addRow("Script", l_hbox_scr);
     this->layout_contents->addLayout(l_form_script);
 
     // event flag
@@ -255,16 +237,9 @@ void ObjectFrame::setup() {
     l_form_radius_treeid->addRow("Sight Radius / Berry Tree ID", this->combo_radius_treeid);
     this->layout_contents->addLayout(l_form_radius_treeid);
 
-    // in connection
-    // QFormLayout *l_form_connection = new QFormLayout();
-    // this->check_in_connection = new QCheckBox(this);
-    // l_form_connection->addRow("In Connection", this->check_in_connection);
-    // this->layout_contents->addLayout(l_form_connection);
-
     // custom attributes
     EventFrame::initCustomAttributesTable();
 }
-//*/
 
 void ObjectFrame::connectSignals() {
     EventFrame::connectSignals();
@@ -297,10 +272,14 @@ void ObjectFrame::connectSignals() {
 
     // script
     // add local event script labels to combo? or
-    // TODO: openScriptButton
     this->combo_script->disconnect();
     connect(this->combo_script, &QComboBox::currentTextChanged, [this](const QString &text) {
         this->object->setScript(text);
+    });
+
+    this->button_script->disconnect();
+    connect(this->button_script, &QToolButton::clicked, [this]() {
+        this->object->getMap()->openScript(this->combo_script->currentText());
     });
 
     // flag
@@ -348,6 +327,8 @@ void ObjectFrame::initialize() {
 
     // script
     this->combo_script->setCurrentText(this->object->getScript());
+    if (porymapConfig.getTextEditorGotoLine().isEmpty())
+        this->button_script->hide();
 
     // flag
     index = this->combo_flag->findText(this->object->getFlag());
@@ -467,20 +448,6 @@ void CloneObjectFrame::populate(Project *project) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 void WarpFrame::setup() {
     EventFrame::setup();
 
@@ -547,11 +514,6 @@ void WarpFrame::populate(Project *project) {
 
 
 
-
-
-
-
-
 void TriggerFrame::setup() {
     EventFrame::setup();
 
@@ -570,7 +532,7 @@ void TriggerFrame::setup() {
     l_form_var->addRow("Var", this->combo_var);
     this->layout_contents->addLayout(l_form_var);
 
-    // var value spinner
+    // var value combo
     QFormLayout *l_form_var_val = new QFormLayout();
     this->combo_var_value = new NoScrollComboBox(this);
     this->combo_var_value->setToolTip("The variable's value which triggers the script.");
@@ -584,10 +546,27 @@ void TriggerFrame::setup() {
 void TriggerFrame::connectSignals() {
     EventFrame::connectSignals();
 
-    //
+    // label
+    this->combo_script->disconnect();
+    connect(this->combo_script, &QComboBox::currentTextChanged, [this](const QString &text) {
+        this->trigger->setScriptLabel(text);
+    });
+
+    // var
+    this->combo_var->disconnect();
+    connect(this->combo_var, &QComboBox::currentTextChanged, [this](const QString &text) {
+        this->trigger->setScriptVar(text);
+    });
+
+    // value
+    this->combo_var_value->disconnect();
+    connect(this->combo_var_value, &QComboBox::currentTextChanged, [this](const QString &text) {
+        this->trigger->setScriptVarValue(text);
+    });
 }
 
 void TriggerFrame::initialize() {
+    // TODO: make us of this or delete it
     //if (this->populated) return;
     const QSignalBlocker blocker(this);
     EventFrame::initialize();
@@ -627,10 +606,6 @@ void TriggerFrame::populate(Project *project) {
     this->scriptCompleter->setFilterMode(Qt::MatchContains);
     this->combo_script->setCompleter(this->scriptCompleter);
 }
-
-
-
-
 
 
 
@@ -681,16 +656,6 @@ void WeatherTriggerFrame::populate(Project *project) {
     // weather
     this->combo_weather->addItems(project->coordEventWeatherNames);
 }
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -768,21 +733,6 @@ void SignFrame::populate(Project *project) {
     this->scriptCompleter->setFilterMode(Qt::MatchContains);
     this->combo_script->setCompleter(this->scriptCompleter);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -897,19 +847,6 @@ void HiddenItemFrame::populate(Project *project) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 void SecretBaseFrame::setup() {
     EventFrame::setup();
 
@@ -962,33 +899,8 @@ void SecretBaseFrame::populate(Project *project) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 void HealLocationFrame::setup() {
     EventFrame::setup();
-
-    //this->label_id->setText("heal location id");
 
     // item combo
     QFormLayout *l_form_respawn_map = new QFormLayout();

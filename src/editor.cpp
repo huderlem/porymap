@@ -1092,6 +1092,12 @@ bool Editor::setMap(QString map_name) {
         return false;
     }
 
+    // disconnect previous map's signals so they are not firing
+    // multiple times if set again in the future
+    if (map) {
+        map->disconnect(this);
+    }
+
     if (project) {
         Map *loadedMap = project->loadMap(map_name);
         if (!loadedMap) {
@@ -1108,6 +1114,7 @@ bool Editor::setMap(QString map_name) {
         }
         map_ruler->setMapDimensions(QSize(map->getWidth(), map->getHeight()));
         connect(map, &Map::mapDimensionsChanged, map_ruler, &MapRuler::setMapDimensions);
+        connect(map, &Map::openScriptRequested, this, &Editor::openScript);
         updateSelectedEvents();
     }
 
@@ -2128,19 +2135,6 @@ bool Editor::eventLimitReached(Event::Type event_type) {
             return map->events.value(Event::Group::Object).length() >= project->getMaxObjectEvents();
     }
     return false;
-}
-
-void Editor::deleteEvent(Event *event) {
-    Map *map = event->getMap();
-    if (map) {
-        map->removeEvent(event);
-        if (event->getPixmapItem()) {
-            events_group->removeFromGroup(event->getPixmapItem());
-            delete event->getPixmapItem();
-        }
-    }
-    //selected_events->removeAll(event);
-    //updateSelectedObjects();
 }
 
 void Editor::openMapScripts() const {

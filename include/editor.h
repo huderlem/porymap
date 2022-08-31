@@ -97,13 +97,14 @@ public:
     void selectMapEvent(DraggablePixmapItem *object);
     void selectMapEvent(DraggablePixmapItem *object, bool toggle);
     DraggablePixmapItem *addNewEvent(Event::Type type);
-    void deleteEvent(Event *);
     void updateSelectedEvents();
     void duplicateSelectedEvents();
     void redrawObject(DraggablePixmapItem *item);
     QList<DraggablePixmapItem *> getObjects();
     void updateCursorRectPos(int x, int y);
     void setCursorRectVisible(bool visible);
+
+    bool eventLimitReached(Map *, Event::Type);
 
     QGraphicsScene *scene = nullptr;
     QGraphicsPixmapItem *current_view = nullptr;

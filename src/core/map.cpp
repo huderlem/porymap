@@ -340,6 +340,10 @@ void Map::setBorderDimensions(int newWidth, int newHeight, bool setNewBlockdata,
     emit mapChanged(this);
 }
 
+void Map::openScript(QString label) {
+    emit openScriptRequested(label);
+}
+
 bool Map::getBlock(int x, int y, Block *out) {
     if (isWithinBounds(x, y)) {
         int i = y * getWidth() + x;

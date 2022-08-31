@@ -1632,14 +1632,14 @@ void MainWindow::paste() {
                     Event *pasteEvent = nullptr;
 
                     Event::Type type = Event::eventTypeFromString(event["event_type"].toString());
-                    if (editor->eventLimitReached(type)) {
-                        logWarn(QString("Skipping paste, the map limit for events of type '%1' has been reached.").arg(event["event_type"].toString()));
-                        continue;
+
+                    if (this->editor->eventLimitReached(type)) {
+                        logWarn(QString("Cannot paste event, the limit for type '%1' has been reached.").arg(event["event_type"].toString()));
+                        break;
                     }
 
                     switch (type) {
                     case Event::Type::Object:
-                        // TODO: check event limit?
                         pasteEvent = new ObjectEvent();
                         pasteEvent->loadFromJson(event["event"].toObject(), this->editor->project);
                         break;
@@ -1936,7 +1936,6 @@ void MainWindow::updateObjects() {
     updateSelectedObjects();
 }
 
-// Should probably just pass layout and let the editor work it out
 void MainWindow::updateSelectedObjects() {
     // TODO: make events and/or frames list static? don't want to clear and
     // re-add children frames if they are already there in a multi-select
@@ -1960,60 +1959,67 @@ void MainWindow::updateSelectedObjects() {
     QScrollArea *scrollTarget = ui->scrollArea_Multiple;
     QWidget *target = ui->scrollAreaWidgetContents_Multiple;
 
-    isProgrammaticEventTabChange = true;
+    this->isProgrammaticEventTabChange = true;
 
     if (events.length() == 1) {
+        // single selected event case
         Event *current = events[0]->event;
-        Event::Group event_group_type = current->getEventGroup();
-        int event_offs = Event::getIndexOffset(event_group_type);
+        Event::Group eventGroup = current->getEventGroup();
+        int event_offs = Event::getIndexOffset(eventGroup);
 
-        // TODO: use switch
-        // TODO: don't need to set min/max every time, just when changing number of events in the group
-        if (event_group_type == Event::Group::Object) {
+        switch (eventGroup) {
+        case Event::Group::Object: {
             scrollTarget = ui->scrollArea_Objects;
             target = ui->scrollAreaWidgetContents_Objects;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Objects);
 
             this->ui->spinner_ObjectID->setValue(current->getEventIndex() + event_offs);
             this->ui->spinner_ObjectID->setMinimum(event_offs);
-            this->ui->spinner_ObjectID->setMaximum(current->getMap()->events.value(event_group_type).length() + event_offs - 1);
-
+            this->ui->spinner_ObjectID->setMaximum(current->getMap()->events.value(eventGroup).length() + event_offs - 1);
+            break;
         }
-        else if (event_group_type == Event::Group::Warp) {
+        case Event::Group::Warp: {
             scrollTarget = ui->scrollArea_Warps;
             target = ui->scrollAreaWidgetContents_Warps;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Warps);
 
             this->ui->spinner_WarpID->setValue(current->getEventIndex() + event_offs);
             this->ui->spinner_WarpID->setMinimum(event_offs);
-            this->ui->spinner_WarpID->setMaximum(current->getMap()->events.value(event_group_type).length() + event_offs - 1);
+            this->ui->spinner_WarpID->setMaximum(current->getMap()->events.value(eventGroup).length() + event_offs - 1);
+            break;
         }
-        else if (event_group_type == Event::Group::Coord) {
+        case Event::Group::Coord: {
             scrollTarget = ui->scrollArea_Triggers;
             target = ui->scrollAreaWidgetContents_Triggers;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Triggers);
 
             this->ui->spinner_TriggerID->setValue(current->getEventIndex() + event_offs);
             this->ui->spinner_TriggerID->setMinimum(event_offs);
-            this->ui->spinner_TriggerID->setMaximum(current->getMap()->events.value(event_group_type).length() + event_offs - 1);
+            this->ui->spinner_TriggerID->setMaximum(current->getMap()->events.value(eventGroup).length() + event_offs - 1);
+            break;
         }
-        else if (event_group_type == Event::Group::Bg) {
+        case Event::Group::Bg: {
             scrollTarget = ui->scrollArea_BGs;
             target = ui->scrollAreaWidgetContents_BGs;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_BGs);
 
             this->ui->spinner_BgID->setValue(current->getEventIndex() + event_offs);
             this->ui->spinner_BgID->setMinimum(event_offs);
-            this->ui->spinner_BgID->setMaximum(current->getMap()->events.value(event_group_type).length() + event_offs - 1);
+            this->ui->spinner_BgID->setMaximum(current->getMap()->events.value(eventGroup).length() + event_offs - 1);
+            break;
         }
-        else if (event_group_type == Event::Group::Heal) {
+        case Event::Group::Heal: {
             scrollTarget = ui->scrollArea_Healspots;
             target = ui->scrollAreaWidgetContents_Healspots;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Healspots);
 
             this->ui->spinner_HealID->setValue(current->getEventIndex() + event_offs);
             this->ui->spinner_HealID->setMinimum(event_offs);
-            this->ui->spinner_HealID->setMaximum(current->getMap()->events.value(event_group_type).length() + event_offs - 1);
+            this->ui->spinner_HealID->setMaximum(current->getMap()->events.value(eventGroup).length() + event_offs - 1);
+            break;
+        }
+        default:
+            break;
         }
         ui->tabWidget_EventType->removeTab(ui->tabWidget_EventType->indexOf(ui->tab_Multiple));
     }
@@ -2022,7 +2028,7 @@ void MainWindow::updateSelectedObjects() {
         ui->tabWidget_EventType->setCurrentWidget(ui->tab_Multiple);
     }
 
-    isProgrammaticEventTabChange = false;
+    this->isProgrammaticEventTabChange = false;
 
     QList<EventFrame *> frames;
     for (DraggablePixmapItem *item : events) {
@@ -2030,28 +2036,20 @@ void MainWindow::updateSelectedObjects() {
         EventFrame *eventFrame = event->createEventFrame();
         eventFrame->populate(this->editor->project);
         eventFrame->initialize();
-        eventFrame->setParent(nullptr);
-        // TODO: hide
         eventFrame->connectSignals();
-        // connect(item, &DraggablePixmapItem::spriteChanged, frame->ui->label_spritePixmap, &QLabel::setPixmap);
         frames.append(eventFrame);
     }
 
     if (target->layout() && target->children().length()) {
         for (QFrame *frame : target->findChildren<EventFrame *>()) {
-            frame->hide();
+            if (!frames.contains(frame))
+                frame->hide();
         }
-
         delete target->layout();
     }
 
-    // TODO: clear every layout instead?
-    // TODO: layout not clearing?
-    //        eg: scrolling through objets to clone object you
-    //            can see previous obj frame below clone frame
-    //       possibly can just set enabled (false) which can hide frame
+    // TODO: necessary? keep layout just remove widgets?
     if (!events.empty()) {
-
         QVBoxLayout *layout = new QVBoxLayout;
         target->setLayout(layout);
         scrollTarget->setWidgetResizable(true);
@@ -2104,25 +2102,26 @@ void MainWindow::eventTabChanged(int index) {
         Event::Group group = getEventGroupFromTabWidget(ui->tabWidget_EventType->widget(index));
         DraggablePixmapItem *selectedEvent = nullptr;
 
-        // TODO: use switch
-        if (group == Event::Group::Object) {
+        switch (group) {
+        case Event::Group::Object:
             selectedEvent = selectedObject;
             ui->newEventToolButton->setDefaultAction(ui->newEventToolButton->newObjectAction);
-        }
-        else if (group == Event::Group::Warp) {
+            break;
+        case Event::Group::Warp:
             selectedEvent = selectedWarp;
             ui->newEventToolButton->setDefaultAction(ui->newEventToolButton->newWarpAction);
-        }
-        else if (group == Event::Group::Coord) {
+            break;
+        case Event::Group::Coord:
             selectedEvent = selectedTrigger;
             ui->newEventToolButton->setDefaultAction(ui->newEventToolButton->newTriggerAction);
-        }
-        else if (group == Event::Group::Bg) {
+            break;
+        case Event::Group::Bg:
             selectedEvent = selectedBG;
             ui->newEventToolButton->setDefaultAction(ui->newEventToolButton->newSignAction);
-        }
-        else if (group == Event::Group::Heal) {
+            break;
+        case Event::Group::Heal:
             selectedEvent = selectedHealspot;
+            break;
         }
 
         if (!isProgrammaticEventTabChange) {
@@ -2712,7 +2711,7 @@ void MainWindow::on_actionAbout_Porymap_triggered()
 void MainWindow::on_actionOpen_Log_File_triggered() {
     const QString logPath = getLogPath();
     const int lineCount = ParseUtil::textFileLineCount(logPath);
-    editor->openInTextEditor(logPath, lineCount);
+    this->editor->openInTextEditor(logPath, lineCount);
 }
 
 void MainWindow::on_actionOpen_Config_Folder_triggered() {
@@ -2741,14 +2740,6 @@ void MainWindow::on_actionEdit_Preferences_triggered() {
 }
 
 void MainWindow::togglePreferenceSpecificUi() {
-    if (porymapConfig.getTextEditorGotoLine().isEmpty()) {
-        for (auto *button : openScriptButtons)
-            button->hide();
-    } else {
-        for (auto *button : openScriptButtons)
-            button->show();
-    }
-
     if (porymapConfig.getTextEditorOpenFolder().isEmpty())
         ui->actionOpen_Project_in_Text_Editor->setEnabled(false);
     else

@@ -325,8 +325,6 @@ private:
     DraggablePixmapItem *selectedBG;
     DraggablePixmapItem *selectedHealspot;
 
-    QVector<QToolButton *> openScriptButtons;
-
     bool isProgrammaticEventTabChange;
     bool projectHasUnsavedChanges;
     bool projectOpenFailure = false;
