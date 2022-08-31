@@ -1167,6 +1167,12 @@ The following functions are related to settings.
 
    :returns string: ``"pokeruby"``, ``"pokefirered"``, or ``"pokeemerald"``
 
+.. js:function:: map.getPorymapVersion()
+
+   Gets the current version of Porymap (``MAJOR.MINOR.PATCH``).
+
+   :returns {major, minor, patch}: the version object
+
 .. js:function:: map.getCustomScripts()
 
    Gets the list of paths to custom scripts.

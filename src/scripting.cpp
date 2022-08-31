@@ -238,6 +238,14 @@ QJSValue Scripting::position(int x, int y) {
     return obj;
 }
 
+QJSValue Scripting::version(QList<int> versionNums) {
+    QJSValue obj = instance->engine->newObject();
+    obj.setProperty("major", versionNums.at(0));
+    obj.setProperty("minor", versionNums.at(1));
+    obj.setProperty("patch", versionNums.at(2));
+    return obj;
+}
+
 Tile Scripting::toTile(QJSValue obj) {
     if (!obj.hasProperty("tileId")
      || !obj.hasProperty("xflip")

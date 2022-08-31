@@ -177,6 +177,7 @@ public:
     Q_INVOKABLE int getNumTilesInMetatile();
     Q_INVOKABLE int getNumMetatileLayers();
     Q_INVOKABLE QString getBaseGameVersion();
+    Q_INVOKABLE QJSValue getPorymapVersion();
     Q_INVOKABLE QList<QString> getCustomScripts();
     Q_INVOKABLE int getMainTab();
     Q_INVOKABLE void setMainTab(int index);

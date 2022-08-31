@@ -4,6 +4,7 @@
 #include "editcommands.h"
 #include "config.h"
 #include "imageproviders.h"
+#include "aboutporymap.h"
 
 QJSValue MainWindow::getBlock(int x, int y) {
     if (!this->editor || !this->editor->map)
@@ -1049,6 +1050,13 @@ int MainWindow::getNumMetatileLayers() {
 
 QString MainWindow::getBaseGameVersion() {
     return projectConfig.getBaseGameVersionString();
+}
+
+QJSValue MainWindow::getPorymapVersion() {
+    AboutPorymap *window = new AboutPorymap(this);
+    QJSValue version = Scripting::version(window->getVersionNumbers());
+    delete window;
+    return version;
 }
 
 QList<QString> MainWindow::getCustomScripts() {
