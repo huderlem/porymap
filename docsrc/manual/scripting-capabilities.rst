@@ -415,7 +415,7 @@ The following functions are related to editing the map's blocks or retrieving in
 
    :param number width: width in blocks
 
-.. js:function:: map.setBorderHeight()
+.. js:function:: map.setBorderHeight(height)
 
    Sets the height of the border of the currently-opened map. If the config setting ``use_custom_border_size`` is set to ``0`` then this does nothing.
 
