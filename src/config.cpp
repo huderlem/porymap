@@ -61,7 +61,7 @@ const QMap<ProjectFilePath, std::pair<QString, QString>> defaultPaths = {
 
 std::optional<ProjectFilePath> reverseDefaultPaths(QString str) {
     for (auto it = defaultPaths.constKeyValueBegin(); it != defaultPaths.constKeyValueEnd(); ++it) {
-        if (it->second.first == str) return it->first;
+        if ((*it).second.first == str) return (*it).first;
     }
     return std::nullopt;
 }
@@ -601,7 +601,7 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("create_map_text_file", QString::number(this->createMapTextFile));
     map.insert("enable_triple_layer_metatiles", QString::number(this->enableTripleLayerMetatiles));
     for (auto it = this->filePaths.constKeyValueBegin(); it != this->filePaths.constKeyValueEnd(); ++it) {
-        map.insert("path/"+defaultPaths[it->first].first, it->second);
+        map.insert("path/"+defaultPaths[(*it).first].first, (*it).second);
     }
     return map;
 }
