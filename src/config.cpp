@@ -59,11 +59,11 @@ const QMap<ProjectFilePath, std::pair<QString, QString>> defaultPaths = {
     {ProjectFilePath::path_initial_facing_table,        { "path_initial_facing_table",       "src/event_object_movement.c"}},
 };
 
-std::optional<ProjectFilePath> reverseDefaultPaths(QString str) {
+ProjectFilePath reverseDefaultPaths(QString str) {
     for (auto it = defaultPaths.constKeyValueBegin(); it != defaultPaths.constKeyValueEnd(); ++it) {
         if ((*it).second.first == str) return (*it).first;
     }
-    return std::nullopt;
+    return static_cast<ProjectFilePath>(-1);
 }
 
 
@@ -561,8 +561,8 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
 #endif
     } else if (key.startsWith("path/")) {
         auto k = reverseDefaultPaths(key.mid(5));
-        if (k.has_value()) {
-            this->filePaths[k.value()] = value;
+        if (k != static_cast<ProjectFilePath>(-1)) {
+            this->filePaths[k] = value;
         } else {
             logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
         }
