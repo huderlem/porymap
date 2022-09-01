@@ -727,7 +727,7 @@ void Project::saveMapGroups() {
 }
 
 void Project::saveWildMonData() {
-    if (!projectConfig.getEncounterJsonActive()) return;
+    if (!userConfig.getEncounterJsonActive()) return;
 
     QString wildEncountersJsonFilepath = QString("%1/src/data/wild_encounters.json").arg(root);
     QFile wildEncountersFile(wildEncountersJsonFilepath);
@@ -1716,7 +1716,7 @@ bool Project::readWildMonData() {
     wildMonFields.clear();
     wildMonData.clear();
     encounterGroupLabels.clear();
-    if (!projectConfig.getEncounterJsonActive()) {
+    if (!userConfig.getEncounterJsonActive()) {
         return true;
     }
 
@@ -1727,7 +1727,7 @@ bool Project::readWildMonData() {
     if (!parser.tryParseOrderedJsonFile(&wildMonObj, wildMonJsonFilepath)) {
         // Failing to read wild encounters data is not a critical error, just disable the
         // encounter editor and log a warning in case the user intended to have this data.
-        projectConfig.setEncounterJsonActive(false);
+        userConfig.setEncounterJsonActive(false);
         emit disableWildEncountersUI();
         logWarn(QString("Failed to read wild encounters from %1").arg(wildMonJsonFilepath));
         return true;
@@ -2295,7 +2295,7 @@ bool Project::readObjEventGfxConstants() {
 
 bool Project::readMiscellaneousConstants() {
     miscConstants.clear();
-    if (projectConfig.getEncounterJsonActive()) {
+    if (userConfig.getEncounterJsonActive()) {
         QString filename = "include/constants/pokemon.h";
         fileWatcher.addPath(root + "/" + filename);
         QMap<QString, int> pokemonDefines = parser.readCDefines(filename, { "MIN_", "MAX_" });

@@ -1052,7 +1052,7 @@ QString MainWindow::getBaseGameVersion() {
 }
 
 QList<QString> MainWindow::getCustomScripts() {
-    return projectConfig.getCustomScripts();
+    return userConfig.getCustomScripts();
 }
 
 int MainWindow::getMainTab() {
@@ -1065,7 +1065,7 @@ void MainWindow::setMainTab(int index) {
     if (!this->ui || !this->ui->mainTabBar || index < 0 || index >= this->ui->mainTabBar->count())
         return;
     // Can't select Wild Encounters tab if it's disabled
-    if (index == 4 && !projectConfig.getEncounterJsonActive())
+    if (index == 4 && !userConfig.getEncounterJsonActive())
         return;
     this->on_mainTabBar_tabBarClicked(index);
 }

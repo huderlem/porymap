@@ -468,10 +468,6 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
             this->baseGameVersion = BaseGameVersion::pokeemerald;
             logWarn(QString("Invalid config value for base_game_version: '%1'. Must be 'pokeruby', 'pokefirered' or 'pokeemerald'.").arg(value));
         }
-    } else if (key == "recent_map") {
-        this->recentMap = value;
-    } else if (key == "use_encounter_json") {
-        setConfigBool(key, &this->useEncounterJson, value);
     } else if (key == "use_poryscript") {
         setConfigBool(key, &this->usePoryScript, value);
     } else if (key == "use_custom_border_size") {
@@ -494,15 +490,21 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         setConfigBool(key, &this->createMapTextFile, value);
     } else if (key == "enable_triple_layer_metatiles") {
         setConfigBool(key, &this->enableTripleLayerMetatiles, value);
+#ifdef CONFIG_BACKWARDS_COMPATABILITY
+    } else if (key == "recent_map") {
+        userConfig.setRecentMap(value);
+    } else if (key == "use_encounter_json") {
+        userConfig.setConfigBool(key, &userConfig.useEncounterJson, value);
     } else if (key == "custom_scripts") {
-        this->customScripts.clear();
+        userConfig.customScripts.clear();
         QList<QString> paths = value.split(",");
         paths.removeDuplicates();
         for (QString script : paths) {
             if (!script.isEmpty()) {
-                this->customScripts.append(script);
+                userConfig.customScripts.append(script);
             }
         }
+#endif
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -526,8 +528,6 @@ void ProjectConfig::setUnreadKeys() {
 QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     QMap<QString, QString> map;
     map.insert("base_game_version", baseGameVersionMap.value(this->baseGameVersion));
-    map.insert("recent_map", this->recentMap);
-    map.insert("use_encounter_json", QString::number(this->useEncounterJson));
     map.insert("use_poryscript", QString::number(this->usePoryScript));
     map.insert("use_custom_border_size", QString::number(this->useCustomBorderSize));
     map.insert("enable_event_weather_trigger", QString::number(this->enableEventWeatherTrigger));
@@ -539,7 +539,6 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("enable_floor_number", QString::number(this->enableFloorNumber));
     map.insert("create_map_text_file", QString::number(this->createMapTextFile));
     map.insert("enable_triple_layer_metatiles", QString::number(this->enableTripleLayerMetatiles));
-    map.insert("custom_scripts", this->customScripts.join(","));
     return map;
 }
 
@@ -579,10 +578,8 @@ void ProjectConfig::onNewConfigFileCreated() {
     this->enableEventCloneObject = isPokefirered;
     this->enableFloorNumber = isPokefirered;
     this->createMapTextFile = (this->baseGameVersion != BaseGameVersion::pokeemerald);
-    this->useEncounterJson = true;
     this->usePoryScript = false;
     this->enableTripleLayerMetatiles = false;
-    this->customScripts.clear();
 }
 
 void ProjectConfig::setProjectDir(QString projectDir) {
@@ -604,24 +601,6 @@ BaseGameVersion ProjectConfig::getBaseGameVersion() {
 
 QString ProjectConfig::getBaseGameVersionString() {
     return baseGameVersionMap.value(this->baseGameVersion);
-}
-
-void ProjectConfig::setRecentMap(const QString &map) {
-    this->recentMap = map;
-    this->save();
-}
-
-QString ProjectConfig::getRecentMap() {
-    return this->recentMap;
-}
-
-void ProjectConfig::setEncounterJsonActive(bool active) {
-    this->useEncounterJson = active;
-    this->save();
-}
-
-bool ProjectConfig::getEncounterJsonActive() {
-    return this->useEncounterJson;
 }
 
 void ProjectConfig::setUsePoryScript(bool usePoryScript) {
@@ -723,12 +702,82 @@ bool ProjectConfig::getTripleLayerMetatilesEnabled() {
     return this->enableTripleLayerMetatiles;
 }
 
-void ProjectConfig::setCustomScripts(QList<QString> scripts) {
+UserConfig userConfig;
+
+QString UserConfig::getConfigFilepath() {
+    // porymap config file is in the same directory as porymap itself.
+    return QDir(this->projectDir).filePath("porymap.user.cfg");
+}
+
+void UserConfig::parseConfigKeyValue(QString key, QString value) {
+    if (key == "recent_map") {
+        this->recentMap = value;
+    } else if (key == "use_encounter_json") {
+        setConfigBool(key, &this->useEncounterJson, value);
+    } else if (key == "custom_scripts") {
+        this->customScripts.clear();
+        QList<QString> paths = value.split(",");
+        paths.removeDuplicates();
+        for (QString script : paths) {
+            if (!script.isEmpty()) {
+                this->customScripts.append(script);
+            }
+        }
+    } else {
+        logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
+    }
+    readKeys.append(key);
+}
+
+void UserConfig::setUnreadKeys() {
+}
+
+QMap<QString, QString> UserConfig::getKeyValueMap() {
+    QMap<QString, QString> map;
+    map.insert("recent_map", this->recentMap);
+    map.insert("use_encounter_json", QString::number(this->useEncounterJson));
+    map.insert("custom_scripts", this->customScripts.join(","));
+    return map;
+}
+
+void UserConfig::onNewConfigFileCreated() {
+    QString dirName = QDir(this->projectDir).dirName().toLower();
+    this->useEncounterJson = true;
+    this->customScripts.clear();
+}
+
+void UserConfig::setProjectDir(QString projectDir) {
+    this->projectDir = projectDir;
+}
+
+QString UserConfig::getProjectDir() {
+    return this->projectDir;
+}
+
+void UserConfig::setRecentMap(const QString &map) {
+    this->recentMap = map;
+    this->save();
+}
+
+QString UserConfig::getRecentMap() {
+    return this->recentMap;
+}
+
+void UserConfig::setEncounterJsonActive(bool active) {
+    this->useEncounterJson = active;
+    this->save();
+}
+
+bool UserConfig::getEncounterJsonActive() {
+    return this->useEncounterJson;
+}
+
+void UserConfig::setCustomScripts(QList<QString> scripts) {
     this->customScripts = scripts;
     this->save();
 }
 
-QList<QString> ProjectConfig::getCustomScripts() {
+QList<QString> UserConfig::getCustomScripts() {
     return this->customScripts;
 }
 

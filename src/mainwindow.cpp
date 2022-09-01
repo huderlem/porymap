@@ -357,7 +357,7 @@ void MainWindow::setWildEncountersUIEnabled(bool enabled) {
 void MainWindow::setProjectSpecificUIVisibility()
 {
     ui->actionUse_Poryscript->setChecked(projectConfig.getUsePoryScript());
-    this->setWildEncountersUIEnabled(projectConfig.getEncounterJsonActive());
+    this->setWildEncountersUIEnabled(userConfig.getEncounterJsonActive());
 
     switch (projectConfig.getBaseGameVersion())
     {
@@ -509,6 +509,8 @@ bool MainWindow::openProject(QString dir) {
     this->statusBar()->showMessage(QString("Opening project %1").arg(nativeDir));
 
     bool success = true;
+    userConfig.setProjectDir(dir);
+    userConfig.load();
     projectConfig.setProjectDir(dir);
     projectConfig.load();
 
@@ -570,7 +572,7 @@ QString MainWindow::getDefaultMap() {
     if (editor && editor->project) {
         QList<QStringList> names = editor->project->groupedMapNames;
         if (!names.isEmpty()) {
-            QString recentMap = projectConfig.getRecentMap();
+            QString recentMap = userConfig.getRecentMap();
             if (!recentMap.isNull() && recentMap.length() > 0) {
                 for (int i = 0; i < names.length(); i++) {
                     if (names.value(i).contains(recentMap)) {
@@ -597,8 +599,8 @@ QString MainWindow::getExistingDirectory(QString dir) {
 void MainWindow::on_action_Open_Project_triggered()
 {
     QString recent = ".";
-    if (!projectConfig.getRecentMap().isEmpty()) {
-        recent = projectConfig.getRecentMap();
+    if (!userConfig.getRecentMap().isEmpty()) {
+        recent = userConfig.getRecentMap();
     }
     QString dir = getExistingDirectory(recent);
     if (!dir.isEmpty()) {
@@ -742,7 +744,7 @@ void MainWindow::openWarpMap(QString map_name, QString event_id, QString event_g
 }
 
 void MainWindow::setRecentMap(QString mapName) {
-    projectConfig.setRecentMap(mapName);
+    userConfig.setRecentMap(mapName);
 }
 
 void MainWindow::displayMapProperties() {
@@ -1707,7 +1709,7 @@ void MainWindow::on_mainTabBar_tabBarClicked(int index)
         editor->setEditingConnections();
     }
     if (index != 4) {
-        if (projectConfig.getEncounterJsonActive())
+        if (userConfig.getEncounterJsonActive())
             editor->saveEncounterTabData();
     }
     if (index != 1) {
@@ -1758,7 +1760,7 @@ void MainWindow::on_actionUse_Encounter_Json_triggered(bool checked)
     warning.setText("You must reload the project for this setting to take effect.");
     warning.setIcon(QMessageBox::Information);
     warning.exec();
-    projectConfig.setEncounterJsonActive(checked);
+    userConfig.setEncounterJsonActive(checked);
 }
 
 void MainWindow::on_actionMonitor_Project_Files_triggered(bool checked)
@@ -3217,6 +3219,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
             }
         }
         projectConfig.save();
+        userConfig.save();
     }
 
     porymapConfig.setMainGeometry(

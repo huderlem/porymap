@@ -9,6 +9,8 @@
 #include <QKeySequence>
 #include <QMultiMap>
 
+#define CONFIG_BACKWARDS_COMPATABILITY
+
 enum MapSortOrder {
     Group   =  0,
     Area    =  1,
@@ -145,8 +147,6 @@ public:
     }
     virtual void reset() override {
         this->baseGameVersion = BaseGameVersion::pokeemerald;
-        this->recentMap = QString();
-        this->useEncounterJson = true;
         this->useCustomBorderSize = false;
         this->enableEventWeatherTrigger = true;
         this->enableEventSecretBase = true;
@@ -157,16 +157,11 @@ public:
         this->enableFloorNumber = false;
         this->createMapTextFile = false;
         this->enableTripleLayerMetatiles = false;
-        this->customScripts.clear();
         this->readKeys.clear();
     }
     void setBaseGameVersion(BaseGameVersion baseGameVersion);
     BaseGameVersion getBaseGameVersion();
     QString getBaseGameVersionString();
-    void setRecentMap(const QString &map);
-    QString getRecentMap();
-    void setEncounterJsonActive(bool active);
-    bool getEncounterJsonActive();
     void setUsePoryScript(bool usePoryScript);
     bool getUsePoryScript();
     void setProjectDir(QString projectDir);
@@ -191,8 +186,6 @@ public:
     bool getCreateMapTextFileEnabled();
     void setTripleLayerMetatilesEnabled(bool enable);
     bool getTripleLayerMetatilesEnabled();
-    void setCustomScripts(QList<QString> scripts);
-    QList<QString> getCustomScripts();
 protected:
     virtual QString getConfigFilepath() override;
     virtual void parseConfigKeyValue(QString key, QString value) override;
@@ -202,8 +195,6 @@ protected:
 private:
     BaseGameVersion baseGameVersion;
     QString projectDir;
-    QString recentMap;
-    bool useEncounterJson;
     bool usePoryScript;
     bool useCustomBorderSize;
     bool enableEventWeatherTrigger;
@@ -215,11 +206,49 @@ private:
     bool enableFloorNumber;
     bool createMapTextFile;
     bool enableTripleLayerMetatiles;
-    QList<QString> customScripts;
     QStringList readKeys;
 };
 
 extern ProjectConfig projectConfig;
+
+class UserConfig: public KeyValueConfigBase
+{
+public:
+    UserConfig() {
+        reset();
+    }
+    virtual void reset() override {
+        this->recentMap = QString();
+        this->useEncounterJson = true;
+        this->customScripts.clear();
+        this->readKeys.clear();
+    }
+    void setRecentMap(const QString &map);
+    QString getRecentMap();
+    void setEncounterJsonActive(bool active);
+    bool getEncounterJsonActive();
+    void setProjectDir(QString projectDir);
+    QString getProjectDir();
+    void setCustomScripts(QList<QString> scripts);
+    QList<QString> getCustomScripts();
+protected:
+    virtual QString getConfigFilepath() override;
+    virtual void parseConfigKeyValue(QString key, QString value) override;
+    virtual QMap<QString, QString> getKeyValueMap() override;
+    virtual void onNewConfigFileCreated() override;
+    virtual void setUnreadKeys() override;
+#ifdef CONFIG_BACKWARDS_COMPATABILITY
+    friend class ProjectConfig;
+#endif    
+private:
+    QString projectDir;
+    QString recentMap;
+    bool useEncounterJson;
+    QList<QString> customScripts;
+    QStringList readKeys;
+};
+
+extern UserConfig userConfig;
 
 class QAction;
 class Shortcut;
