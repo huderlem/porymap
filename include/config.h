@@ -139,6 +139,50 @@ enum BaseGameVersion {
     pokeemerald,
 };
 
+enum ProjectFilePath {
+    data_map_folders,
+    data_scripts_folders,
+    data_layouts_folders,
+    data_event_scripts,
+    json_map_groups,
+    json_layouts,
+    json_wild_encounters,
+    json_region_map_entries,
+    json_region_porymap_cfg,
+    tilesets_headers,
+    tilesets_graphics,
+    tilesets_metatiles,
+    data_obj_event_gfx_pointers,
+    data_obj_event_gfx_info,
+    data_obj_event_pic_tables,
+    data_obj_event_gfx,
+    data_pokemon_gfx,
+    data_heal_locations,
+    data_region_map_entries,
+    constants_global,
+    constants_map_groups,
+    constants_items,
+    constants_opponents,
+    constants_flags,
+    constants_vars,
+    constants_weather,
+    constants_songs,
+    constants_heal_locations,
+    constants_pokemon,
+    constants_map_types,
+    constants_trainer_types,
+    constants_secret_bases,
+    constants_obj_event_movement,
+    constants_obj_events,
+    constants_event_bg,
+    constants_region_map_sections,
+    constants_metatile_labels,
+    constants_metatile_behaviors,
+    constants_fieldmap,
+    path_initial_facing_table,
+    path_pokemon_icon_table,
+};
+
 class ProjectConfig: public KeyValueConfigBase
 {
 public:
@@ -157,6 +201,7 @@ public:
         this->enableFloorNumber = false;
         this->createMapTextFile = false;
         this->enableTripleLayerMetatiles = false;
+        this->filePaths.clear();
         this->readKeys.clear();
     }
     void setBaseGameVersion(BaseGameVersion baseGameVersion);
@@ -186,6 +231,8 @@ public:
     bool getCreateMapTextFileEnabled();
     void setTripleLayerMetatilesEnabled(bool enable);
     bool getTripleLayerMetatilesEnabled();
+    void setFilePath(ProjectFilePath pathId, QString path);
+    QString getFilePath(ProjectFilePath pathId);
 protected:
     virtual QString getConfigFilepath() override;
     virtual void parseConfigKeyValue(QString key, QString value) override;
@@ -195,6 +242,7 @@ protected:
 private:
     BaseGameVersion baseGameVersion;
     QString projectDir;
+    QMap<ProjectFilePath, QString> filePaths;
     bool usePoryScript;
     bool useCustomBorderSize;
     bool enableEventWeatherTrigger;

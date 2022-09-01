@@ -15,6 +15,59 @@
 #include <QAction>
 #include <QAbstractButton>
 
+const QMap<ProjectFilePath, std::pair<QString, QString>> defaultPaths = {
+    {ProjectFilePath::data_map_folders,                 { "data_map_folders",                "data/maps/"}},
+    {ProjectFilePath::data_scripts_folders,             { "data_scripts_folders",            "data/scripts/"}},
+    {ProjectFilePath::data_layouts_folders,             { "data_layouts_folders",            "data/layouts/"}},
+    {ProjectFilePath::data_event_scripts,               { "data_event_scripts",              "data/event_scripts.s"}},
+    {ProjectFilePath::json_map_groups,                  { "json_map_groups",                 "data/maps/map_groups.json"}},
+    {ProjectFilePath::json_layouts,                     { "json_layouts",                    "data/layouts/layouts.json"}},
+    {ProjectFilePath::json_wild_encounters,             { "json_wild_encounters",            "src/data/wild_encounters.json"}},
+    {ProjectFilePath::json_region_map_entries,          { "json_region_map_entries",         "src/data/region_map/region_map_sections.json"}},
+    {ProjectFilePath::json_region_porymap_cfg,          { "json_region_porymap_cfg",         "src/data/region_map/porymap_config.json"}},
+    {ProjectFilePath::tilesets_headers,                 { "tilesets_headers",                "data/tilesets/headers.inc"}},
+    {ProjectFilePath::tilesets_graphics,                { "tilesets_graphics",               "data/tilesets/graphics.inc"}},
+    {ProjectFilePath::tilesets_metatiles,               { "tilesets_metatiles",              "data/tilesets/metatiles.inc"}},
+    {ProjectFilePath::data_obj_event_gfx_pointers,      { "data_obj_event_gfx_pointers",     "src/data/object_events/object_event_graphics_info_pointers.h"}},
+    {ProjectFilePath::data_obj_event_gfx_info,          { "data_obj_event_gfx_info",         "src/data/object_events/object_event_graphics_info.h"}},
+    {ProjectFilePath::data_obj_event_pic_tables,        { "data_obj_event_pic_tables",       "src/data/object_events/object_event_pic_tables.h"}},
+    {ProjectFilePath::data_obj_event_gfx,               { "data_obj_event_gfx",              "src/data/object_events/object_event_graphics.h"}},
+    {ProjectFilePath::data_pokemon_gfx,                 { "data_pokemon_gfx",                "src/data/graphics/pokemon.h"}},
+    {ProjectFilePath::data_heal_locations,              { "data_heal_locations",             "src/data/heal_locations.h"}},
+    {ProjectFilePath::data_region_map_entries,          { "data_region_map_entries",         "src/data/region_map/region_map_entries.h"}},
+    {ProjectFilePath::constants_global,                 { "constants_global",                "include/constants/global.h"}},
+    {ProjectFilePath::constants_map_groups,             { "constants_map_groups",            "include/constants/map_groups.h"}},
+    {ProjectFilePath::constants_items,                  { "constants_items",                 "include/constants/items.h"}},
+    {ProjectFilePath::constants_opponents,              { "constants_opponents",             "include/constants/opponents.h"}},
+    {ProjectFilePath::constants_flags,                  { "constants_flags",                 "include/constants/flags.h"}},
+    {ProjectFilePath::constants_vars,                   { "constants_vars",                  "include/constants/vars.h"}},
+    {ProjectFilePath::constants_weather,                { "constants_weather",               "include/constants/weather.h"}},
+    {ProjectFilePath::constants_songs,                  { "constants_songs",                 "include/constants/songs.h"}},
+    {ProjectFilePath::constants_heal_locations,         { "constants_heal_locations",        "include/constants/heal_locations.h"}},
+    {ProjectFilePath::constants_pokemon,                { "constants_pokemon",               "include/constants/pokemon.h"}},
+    {ProjectFilePath::constants_map_types,              { "constants_map_types",             "include/constants/map_types.h"}},
+    {ProjectFilePath::constants_trainer_types,          { "constants_trainer_types",         "include/constants/trainer_types.h"}},
+    {ProjectFilePath::constants_secret_bases,           { "constants_secret_bases",          "include/constants/secret_bases.h"}},
+    {ProjectFilePath::constants_obj_event_movement,     { "constants_obj_event_movement",    "include/constants/event_object_movement.h"}},
+    {ProjectFilePath::constants_obj_events,             { "constants_obj_events",            "include/constants/event_objects.h"}},
+    {ProjectFilePath::constants_event_bg,               { "constants_event_bg",              "include/constants/event_bg.h"}},
+    {ProjectFilePath::constants_region_map_sections,    { "constants_region_map_sections",   "include/constants/region_map_sections.h"}},
+    {ProjectFilePath::constants_metatile_labels,        { "constants_metatile_labels",       "include/constants/metatile_labels.h"}},
+    {ProjectFilePath::constants_metatile_behaviors,     { "constants_metatile_behaviors",    "include/constants/metatile_behaviors.h"}},
+    {ProjectFilePath::constants_fieldmap,               { "constants_fieldmap",              "include/fieldmap.h"}},
+    {ProjectFilePath::path_pokemon_icon_table,          { "path_pokemon_icon_table",         "src/pokemon_icon.c"}},
+    {ProjectFilePath::path_initial_facing_table,        { "path_initial_facing_table",       "src/event_object_movement.c"}},
+};
+
+std::optional<ProjectFilePath> reverseDefaultPaths(QString str) {
+    for (auto it = defaultPaths.constKeyValueBegin(); it != defaultPaths.constKeyValueEnd(); ++it) {
+        if (it->second.first == str) return it->first;
+    }
+    return std::nullopt;
+}
+
+
+
 KeyValueConfigBase::~KeyValueConfigBase() {
 
 }
@@ -56,7 +109,7 @@ void KeyValueConfigBase::load() {
             continue;
         }
 
-        this->parseConfigKeyValue(match.captured("key").toLower(), match.captured("value"));
+        this->parseConfigKeyValue(match.captured("key").trimmed().toLower(), match.captured("value").trimmed());
     }
     this->setUnreadKeys();
 
@@ -222,6 +275,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("theme", this->theme);
     map.insert("text_editor_open_directory", this->textEditorOpenFolder);
     map.insert("text_editor_goto_line", this->textEditorGotoLine);
+    
     return map;
 }
 
@@ -505,6 +559,13 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
             }
         }
 #endif
+    } else if (key.startsWith("path/")) {
+        auto k = reverseDefaultPaths(key.mid(5));
+        if (k.has_value()) {
+            this->filePaths[k.value()] = value;
+        } else {
+            logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
+        }
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -539,6 +600,9 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("enable_floor_number", QString::number(this->enableFloorNumber));
     map.insert("create_map_text_file", QString::number(this->createMapTextFile));
     map.insert("enable_triple_layer_metatiles", QString::number(this->enableTripleLayerMetatiles));
+    for (auto it = this->filePaths.constKeyValueBegin(); it != this->filePaths.constKeyValueEnd(); ++it) {
+        map.insert("path/"+defaultPaths[it->first].first, it->second);
+    }
     return map;
 }
 
@@ -588,6 +652,21 @@ void ProjectConfig::setProjectDir(QString projectDir) {
 
 QString ProjectConfig::getProjectDir() {
     return this->projectDir;
+}
+
+void ProjectConfig::setFilePath(ProjectFilePath pathId, QString path) {
+    if (!defaultPaths.contains(pathId)) return;
+    this->filePaths[pathId] = path;
+}
+
+QString ProjectConfig::getFilePath(ProjectFilePath pathId) {
+    if (this->filePaths.contains(pathId)) {
+        return this->filePaths[pathId];
+    } else if (defaultPaths.contains(pathId)) {
+        return defaultPaths[pathId].second;
+    } else {
+        return QString();
+    }
 }
 
 void ProjectConfig::setBaseGameVersion(BaseGameVersion baseGameVersion) {

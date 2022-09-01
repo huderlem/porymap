@@ -110,7 +110,7 @@ void RegionMapEditor::applyUserShortcuts() {
 bool RegionMapEditor::loadRegionMapEntries() {
     this->region_map_entries.clear();
 
-    QString regionMapSectionFilepath = QString("%1/src/data/region_map/region_map_sections.json").arg(this->project->root);
+    QString regionMapSectionFilepath = QString("%1/%2").arg(this->project->root).arg(projectConfig.getFilePath(ProjectFilePath::json_region_map_entries));
 
     ParseUtil parser;
     QJsonDocument sectionsDoc;
@@ -140,7 +140,7 @@ bool RegionMapEditor::loadRegionMapEntries() {
 }
 
 bool RegionMapEditor::saveRegionMapEntries() {
-    QString regionMapSectionFilepath = QString("%1/src/data/region_map/region_map_sections.json").arg(this->project->root);
+    QString regionMapSectionFilepath = QString("%1/%2").arg(this->project->root).arg(projectConfig.getFilePath(ProjectFilePath::json_region_map_entries));
 
     QFile sectionsFile(regionMapSectionFilepath);
     if (!sectionsFile.open(QIODevice::WriteOnly)) {
@@ -508,7 +508,7 @@ bool RegionMapEditor::setup() {
 
 bool RegionMapEditor::load() {
     // check for config json file
-    QString jsonConfigFilepath = this->project->root + "/src/data/region_map/porymap_config.json";
+    QString jsonConfigFilepath = this->project->root + "/" + projectConfig.getFilePath(ProjectFilePath::json_region_porymap_cfg);
 
     bool badConfig = true;
 
@@ -586,7 +586,7 @@ void RegionMapEditor::saveConfig() {
     mapsObject["region_maps"] = mapArray;
 
     OrderedJson newConfigJson(mapsObject);
-    QString filepath = QString("%1/src/data/region_map/porymap_config.json").arg(this->project->root);
+    QString filepath = QString("%1/%2").arg(this->project->root).arg(projectConfig.getFilePath(ProjectFilePath::json_region_porymap_cfg));
     QFile file(filepath);
     if (!file.open(QIODevice::WriteOnly)) {
         logError(QString("Error: Could not open %1 for writing").arg(filepath));

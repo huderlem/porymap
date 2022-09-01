@@ -1865,8 +1865,9 @@ void MainWindow::addNewEvent(QString event_type)
             msgBox.setText("Failed to add new event");
             if (Event::typeToGroup(event_type) == EventGroup::Object) {
                 msgBox.setInformativeText(QString("The limit for object events (%1) has been reached.\n\n"
-                                                  "This limit can be adjusted with OBJECT_EVENT_TEMPLATES_COUNT in 'include/constants/global.h'.")
-                                          .arg(editor->project->getMaxObjectEvents()));
+                                                  "This limit can be adjusted with OBJECT_EVENT_TEMPLATES_COUNT in '%2'.")
+                                          .arg(editor->project->getMaxObjectEvents())
+                                          .arg(projectConfig.getFilePath(ProjectFilePath::constants_global)));
             }
             msgBox.setDefaultButton(QMessageBox::Ok);
             msgBox.setIcon(QMessageBox::Icon::Warning);

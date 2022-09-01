@@ -183,7 +183,7 @@ bool Project::loadMapData(Map* map) {
         return true;
     }
 
-    QString mapFilepath = QString("%1/data/maps/%2/map.json").arg(root).arg(map->name);
+    QString mapFilepath = QString("%1/%3%2/map.json").arg(root).arg(map->name).arg(projectConfig.getFilePath(ProjectFilePath::data_map_folders));
     QJsonDocument mapDoc;
     if (!parser.tryParseJsonFile(&mapDoc, mapFilepath)) {
         logError(QString("Failed to read map data from %1").arg(mapFilepath));
@@ -425,7 +425,7 @@ QString Project::readMapLayoutId(QString map_name) {
         return mapCache.value(map_name)->layoutId;
     }
 
-    QString mapFilepath = QString("%1/data/maps/%2/map.json").arg(root).arg(map_name);
+    QString mapFilepath = QString("%1/%3%2/map.json").arg(root).arg(map_name).arg(projectConfig.getFilePath(ProjectFilePath::data_map_folders));
     QJsonDocument mapDoc;
     if (!parser.tryParseJsonFile(&mapDoc, mapFilepath)) {
         logError(QString("Failed to read map layout id from %1").arg(mapFilepath));
@@ -441,7 +441,7 @@ QString Project::readMapLocation(QString map_name) {
         return mapCache.value(map_name)->location;
     }
 
-    QString mapFilepath = QString("%1/data/maps/%2/map.json").arg(root).arg(map_name);
+    QString mapFilepath = QString("%1/%3%2/map.json").arg(root).arg(map_name).arg(projectConfig.getFilePath(ProjectFilePath::data_map_folders));
     QJsonDocument mapDoc;
     if (!parser.tryParseJsonFile(&mapDoc, mapFilepath)) {
         logError(QString("Failed to read map's region map section from %1").arg(mapFilepath));
@@ -508,7 +508,7 @@ bool Project::readMapLayouts() {
     mapLayouts.clear();
     mapLayoutsTable.clear();
 
-    QString layoutsFilepath = QString("%1/data/layouts/layouts.json").arg(root);
+    QString layoutsFilepath = QString("%1/%2").arg(root).arg(projectConfig.getFilePath(ProjectFilePath::json_layouts));
     fileWatcher.addPath(layoutsFilepath);
     QJsonDocument layoutsDoc;
     if (!parser.tryParseJsonFile(&layoutsDoc, layoutsFilepath)) {
@@ -627,7 +627,7 @@ bool Project::readMapLayouts() {
 }
 
 void Project::saveMapLayouts() {
-    QString layoutsFilepath = QString("%1/data/layouts/layouts.json").arg(root);
+    QString layoutsFilepath = QString("%1/%2").arg(root).arg(projectConfig.getFilePath(ProjectFilePath::json_layouts));
     QFile layoutsFile(layoutsFilepath);
     if (!layoutsFile.open(QIODevice::WriteOnly)) {
         logError(QString("Error: Could not open %1 for writing").arg(layoutsFilepath));
@@ -679,8 +679,8 @@ void Project::setNewMapLayout(Map* map) {
     layout->height = QString::number(getDefaultMapSize());
     layout->border_width = QString::number(DEFAULT_BORDER_WIDTH);
     layout->border_height = QString::number(DEFAULT_BORDER_HEIGHT);
-    layout->border_path = QString("data/layouts/%1/border.bin").arg(map->name);
-    layout->blockdata_path = QString("data/layouts/%1/map.bin").arg(map->name);
+    layout->border_path = QString("%2%1/border.bin").arg(map->name).arg(projectConfig.getFilePath(ProjectFilePath::data_layouts_folders));
+    layout->blockdata_path = QString("%2%1/map.bin").arg(map->name).arg(projectConfig.getFilePath(ProjectFilePath::data_layouts_folders));
     layout->tileset_primary_label = tilesetLabels["primary"].value(0, "gTileset_General");
     layout->tileset_secondary_label = tilesetLabels["secondary"].value(0, projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered ? "gTileset_PalletTown" : "gTileset_Petalburg");
     map->layout = layout;
@@ -692,7 +692,7 @@ void Project::setNewMapLayout(Map* map) {
 }
 
 void Project::saveMapGroups() {
-    QString mapGroupsFilepath = QString("%1/data/maps/map_groups.json").arg(root);
+    QString mapGroupsFilepath = QString("%1/%2").arg(root).arg(projectConfig.getFilePath(ProjectFilePath::json_map_groups));
     QFile mapGroupsFile(mapGroupsFilepath);
     if (!mapGroupsFile.open(QIODevice::WriteOnly)) {
         logError(QString("Error: Could not open %1 for writing").arg(mapGroupsFilepath));
@@ -729,7 +729,7 @@ void Project::saveMapGroups() {
 void Project::saveWildMonData() {
     if (!userConfig.getEncounterJsonActive()) return;
 
-    QString wildEncountersJsonFilepath = QString("%1/src/data/wild_encounters.json").arg(root);
+    QString wildEncountersJsonFilepath = QString("%1/%2").arg(root).arg(projectConfig.getFilePath(ProjectFilePath::json_wild_encounters));
     QFile wildEncountersFile(wildEncountersJsonFilepath);
     if (!wildEncountersFile.open(QIODevice::WriteOnly)) {
         logError(QString("Error: Could not open %1 for writing").arg(wildEncountersJsonFilepath));
@@ -849,7 +849,7 @@ void Project::saveMapConstantsHeader() {
     text += QString("#define MAP_GROUPS_COUNT %1\n\n").arg(groupNum);
     text += QString("#endif // GUARD_CONSTANTS_MAP_GROUPS_H\n");
 
-    QString mapGroupFilepath = root + "/include/constants/map_groups.h";
+    QString mapGroupFilepath = root + "/" + projectConfig.getFilePath(ProjectFilePath::constants_map_groups);
     ignoreWatchedFileTemporarily(mapGroupFilepath);
     saveTextFile(mapGroupFilepath, text);
 }
@@ -953,11 +953,11 @@ void Project::saveHealLocationStruct(Map *map) {
     data_text += QString("};\n");
     constants_text += QString("\n#endif // GUARD_CONSTANTS_HEAL_LOCATIONS_H\n");
 
-    QString healLocationFilepath = root + "/src/data/heal_locations.h";
+    QString healLocationFilepath = root + "/" + projectConfig.getFilePath(ProjectFilePath::data_heal_locations);
     ignoreWatchedFileTemporarily(healLocationFilepath);
     saveTextFile(healLocationFilepath, data_text);
 
-    QString healLocationConstantsFilepath = root + "/include/constants/heal_locations.h";
+    QString healLocationConstantsFilepath = root + "/" + projectConfig.getFilePath(ProjectFilePath::constants_heal_locations);
     ignoreWatchedFileTemporarily(healLocationConstantsFilepath);
     saveTextFile(healLocationConstantsFilepath, constants_text);
 }
@@ -981,7 +981,7 @@ void Project::saveTilesetMetatileLabels(Tileset *primaryTileset, Tileset *second
     QMap<QString, int> defines;
     bool definesFileModified = false;
 
-    QString metatileLabelsFilename = "include/constants/metatile_labels.h";
+    QString metatileLabelsFilename = projectConfig.getFilePath(ProjectFilePath::constants_metatile_labels);
     defines = parser.readCDefines(metatileLabelsFilename, (QStringList() << "METATILE_"));
 
     // Purge old entries from the file.
@@ -1630,7 +1630,7 @@ void Project::loadTilesetMetatiles(Tileset* tileset) {
 
 void Project::loadTilesetMetatileLabels(Tileset* tileset) {
     QString tilesetPrefix = QString("METATILE_%1_").arg(QString(tileset->name).replace("gTileset_", ""));
-    QString metatileLabelsFilename = "include/constants/metatile_labels.h";
+    QString metatileLabelsFilename = projectConfig.getFilePath(ProjectFilePath::constants_metatile_labels);
     fileWatcher.addPath(root + "/" + metatileLabelsFilename);
     QMap<QString, int> labels = parser.readCDefines(metatileLabelsFilename, QStringList() << tilesetPrefix);
 
@@ -1720,7 +1720,7 @@ bool Project::readWildMonData() {
         return true;
     }
 
-    QString wildMonJsonFilepath = QString("%1/src/data/wild_encounters.json").arg(root);
+    QString wildMonJsonFilepath = QString("%1/%2").arg(root).arg(projectConfig.getFilePath(ProjectFilePath::json_wild_encounters));
     fileWatcher.addPath(wildMonJsonFilepath);
 
     OrderedJson::object wildMonObj;
@@ -1944,7 +1944,7 @@ QMap<QString, QStringList> Project::getTilesetLabels() {
 bool Project::readTilesetProperties() {
     QStringList definePrefixes;
     definePrefixes << "\\bNUM_";
-    QString filename = "include/fieldmap.h";
+    QString filename = projectConfig.getFilePath(ProjectFilePath::constants_fieldmap);
     fileWatcher.addPath(root + "/" + filename);
     QMap<QString, int> defines = parser.readCDefines(filename, definePrefixes);
 
@@ -2002,7 +2002,7 @@ bool Project::readTilesetProperties() {
 bool Project::readMaxMapDataSize() {
     QStringList definePrefixes;
     definePrefixes << "\\bMAX_";
-    QString filename = "include/fieldmap.h"; // already in fileWatcher from readTilesetProperties
+    QString filename = projectConfig.getFilePath(ProjectFilePath::constants_fieldmap); // already in fileWatcher from readTilesetProperties
     QMap<QString, int> defines = parser.readCDefines(filename, definePrefixes);
 
     auto it = defines.find("MAX_MAP_DATA_SIZE");
@@ -2031,7 +2031,7 @@ bool Project::readRegionMapSections() {
     this->mapSectionValueToName.clear();
 
     QStringList prefixes = (QStringList() << "\\bMAPSEC_");
-    QString filename = "include/constants/region_map_sections.h";
+    QString filename = projectConfig.getFilePath(ProjectFilePath::constants_region_map_sections);
     fileWatcher.addPath(root + "/" + filename);
     this->mapSectionNameToValue = parser.readCDefines(filename, prefixes);
     if (this->mapSectionNameToValue.isEmpty()) {
@@ -2048,7 +2048,7 @@ bool Project::readRegionMapSections() {
 bool Project::readHealLocations() {
     dataQualifiers.clear();
     healLocations.clear();
-    QString filename = "src/data/heal_locations.h";
+    QString filename = projectConfig.getFilePath(ProjectFilePath::data_heal_locations);
     fileWatcher.addPath(root + "/" + filename);
     QString text = parser.readTextFile(root + "/" + filename);
     text.replace(QRegularExpression("//.*?(\r\n?|\n)|/\\*.*?\\*/", QRegularExpression::DotMatchesEverythingOption), "");
@@ -2095,7 +2095,7 @@ bool Project::readHealLocations() {
 
 bool Project::readItemNames() {
     QStringList prefixes("\\bITEM_(?!(B_)?USE_)");  // Exclude ITEM_USE_ and ITEM_B_USE_ constants
-    QString filename = "include/constants/items.h";
+    QString filename = projectConfig.getFilePath(ProjectFilePath::constants_items);
     fileWatcher.addPath(root + "/" + filename);
     itemNames = parser.readCDefinesSorted(filename, prefixes);
     if (itemNames.isEmpty()) {
@@ -2108,12 +2108,12 @@ bool Project::readItemNames() {
 bool Project::readFlagNames() {
     // First read MAX_TRAINERS_COUNT, used to skip over trainer flags
     // If this fails flags may simply be out of order, no need to check for success
-    QString opponentsFilename = "include/constants/opponents.h";
+    QString opponentsFilename = projectConfig.getFilePath(ProjectFilePath::constants_opponents);
     fileWatcher.addPath(root + "/" + opponentsFilename);
     QMap<QString, int> maxTrainers = parser.readCDefines(opponentsFilename, QStringList() << "\\bMAX_");
     // Parse flags
     QStringList prefixes("\\bFLAG_");
-    QString flagsFilename = "include/constants/flags.h";
+    QString flagsFilename = projectConfig.getFilePath(ProjectFilePath::constants_flags);
     fileWatcher.addPath(root + "/" + flagsFilename);
     flagNames = parser.readCDefinesSorted(flagsFilename, prefixes, maxTrainers);
     if (flagNames.isEmpty()) {
@@ -2125,7 +2125,7 @@ bool Project::readFlagNames() {
 
 bool Project::readVarNames() {
     QStringList prefixes("\\bVAR_");
-    QString filename = "include/constants/vars.h";
+    QString filename = projectConfig.getFilePath(ProjectFilePath::constants_vars);
     fileWatcher.addPath(root + "/" + filename);
     varNames = parser.readCDefinesSorted(filename, prefixes);
     if (varNames.isEmpty()) {
@@ -2137,7 +2137,7 @@ bool Project::readVarNames() {
 
 bool Project::readMovementTypes() {
     QStringList prefixes("\\bMOVEMENT_TYPE_");
-    QString filename = "include/constants/event_object_movement.h";
+    QString filename = projectConfig.getFilePath(ProjectFilePath::constants_obj_event_movement);
     fileWatcher.addPath(root + "/" + filename);
     movementTypes = parser.readCDefinesSorted(filename, prefixes);
     if (movementTypes.isEmpty()) {
@@ -2148,7 +2148,7 @@ bool Project::readMovementTypes() {
 }
 
 bool Project::readInitialFacingDirections() {
-    QString filename = "src/event_object_movement.c";
+    QString filename = projectConfig.getFilePath(ProjectFilePath::path_initial_facing_table);
     fileWatcher.addPath(root + "/" + filename);
     facingDirections = parser.readNamedIndexCArray(filename, "gInitialMovementTypeFacingDirections");
     if (facingDirections.isEmpty()) {
@@ -2160,7 +2160,7 @@ bool Project::readInitialFacingDirections() {
 
 bool Project::readMapTypes() {
     QStringList prefixes("\\bMAP_TYPE_");
-    QString filename = "include/constants/map_types.h";
+    QString filename = projectConfig.getFilePath(ProjectFilePath::constants_map_types);
     fileWatcher.addPath(root + "/" + filename);
     mapTypes = parser.readCDefinesSorted(filename, prefixes);
     if (mapTypes.isEmpty()) {
@@ -2172,9 +2172,9 @@ bool Project::readMapTypes() {
 
 bool Project::readMapBattleScenes() {
     QStringList prefixes("\\bMAP_BATTLE_SCENE_");
-    QString filename = "include/constants/map_types.h";
+    QString filename = projectConfig.getFilePath(ProjectFilePath::constants_map_types);
     fileWatcher.addPath(root + "/" + filename);
-    mapBattleScenes = parser.readCDefinesSorted("include/constants/map_types.h", prefixes);
+    mapBattleScenes = parser.readCDefinesSorted(filename, prefixes);
     if (mapBattleScenes.isEmpty()) {
         logError(QString("Failed to read map battle scene constants from %1").arg(filename));
         return false;
@@ -2184,7 +2184,7 @@ bool Project::readMapBattleScenes() {
 
 bool Project::readWeatherNames() {
     QStringList prefixes("\\bWEATHER_");
-    QString filename = "include/constants/weather.h";
+    QString filename = projectConfig.getFilePath(ProjectFilePath::constants_weather);
     fileWatcher.addPath(root + "/" + filename);
     weatherNames = parser.readCDefinesSorted(filename, prefixes);
     if (weatherNames.isEmpty()) {
@@ -2199,7 +2199,7 @@ bool Project::readCoordEventWeatherNames() {
         return true;
 
     QStringList prefixes("\\bCOORD_EVENT_WEATHER_");
-    QString filename = "include/constants/weather.h";
+    QString filename = projectConfig.getFilePath(ProjectFilePath::constants_weather);
     fileWatcher.addPath(root + "/" + filename);
     coordEventWeatherNames = parser.readCDefinesSorted(filename, prefixes);
     if (coordEventWeatherNames.isEmpty()) {
@@ -2214,7 +2214,7 @@ bool Project::readSecretBaseIds() {
         return true;
 
     QStringList prefixes("\\bSECRET_BASE_[A-Za-z0-9_]*_[0-9]+");
-    QString filename = "include/constants/secret_bases.h";
+    QString filename = projectConfig.getFilePath(ProjectFilePath::constants_secret_bases);
     fileWatcher.addPath(root + "/" + filename);
     secretBaseIds = parser.readCDefinesSorted(filename, prefixes);
     if (secretBaseIds.isEmpty()) {
@@ -2226,7 +2226,7 @@ bool Project::readSecretBaseIds() {
 
 bool Project::readBgEventFacingDirections() {
     QStringList prefixes("\\bBG_EVENT_PLAYER_FACING_");
-    QString filename = "include/constants/event_bg.h";
+    QString filename = projectConfig.getFilePath(ProjectFilePath::constants_event_bg);
     fileWatcher.addPath(root + "/" + filename);
     bgEventFacingDirections = parser.readCDefinesSorted(filename, prefixes);
     if (bgEventFacingDirections.isEmpty()) {
@@ -2238,7 +2238,7 @@ bool Project::readBgEventFacingDirections() {
 
 bool Project::readTrainerTypes() {
     QStringList prefixes("\\bTRAINER_TYPE_");
-    QString filename = "include/constants/trainer_types.h";
+    QString filename = projectConfig.getFilePath(ProjectFilePath::constants_trainer_types);
     fileWatcher.addPath(root + "/" + filename);
     trainerTypes = parser.readCDefinesSorted(filename, prefixes);
     if (trainerTypes.isEmpty()) {
@@ -2253,7 +2253,7 @@ bool Project::readMetatileBehaviors() {
     this->metatileBehaviorMapInverse.clear();
 
     QStringList prefixes("\\bMB_");
-    QString filename = "include/constants/metatile_behaviors.h";
+    QString filename = projectConfig.getFilePath(ProjectFilePath::constants_metatile_behaviors);
     fileWatcher.addPath(root + "/" + filename);
     this->metatileBehaviorMap = parser.readCDefines(filename, prefixes);
     if (this->metatileBehaviorMap.isEmpty()) {
@@ -2269,7 +2269,7 @@ bool Project::readMetatileBehaviors() {
 
 bool Project::readSongNames() {
     QStringList songDefinePrefixes{ "\\bSE_", "\\bMUS_" };
-    QString filename = "include/constants/songs.h";
+    QString filename = projectConfig.getFilePath(ProjectFilePath::constants_songs);
     fileWatcher.addPath(root + "/" + filename);
     QMap<QString, int> songDefines = parser.readCDefines(filename, songDefinePrefixes);
     this->songNames = songDefines.keys();
@@ -2283,7 +2283,7 @@ bool Project::readSongNames() {
 
 bool Project::readObjEventGfxConstants() {
     QStringList objEventGfxPrefixes("\\bOBJ_EVENT_GFX_");
-    QString filename = "include/constants/event_objects.h";
+    QString filename = projectConfig.getFilePath(ProjectFilePath::constants_obj_events);
     fileWatcher.addPath(root + "/" + filename);
     this->gfxDefines = parser.readCDefines(filename, objEventGfxPrefixes);
     if (this->gfxDefines.isEmpty()) {
@@ -2296,14 +2296,14 @@ bool Project::readObjEventGfxConstants() {
 bool Project::readMiscellaneousConstants() {
     miscConstants.clear();
     if (userConfig.getEncounterJsonActive()) {
-        QString filename = "include/constants/pokemon.h";
+        QString filename = projectConfig.getFilePath(ProjectFilePath::constants_pokemon);
         fileWatcher.addPath(root + "/" + filename);
         QMap<QString, int> pokemonDefines = parser.readCDefines(filename, { "MIN_", "MAX_" });
         miscConstants.insert("max_level_define", pokemonDefines.value("MAX_LEVEL") > pokemonDefines.value("MIN_LEVEL") ? pokemonDefines.value("MAX_LEVEL") : 100);
         miscConstants.insert("min_level_define", pokemonDefines.value("MIN_LEVEL") < pokemonDefines.value("MAX_LEVEL") ? pokemonDefines.value("MIN_LEVEL") : 1);
     }
 
-    QString filename = "include/constants/global.h";
+    QString filename = projectConfig.getFilePath(ProjectFilePath::constants_global);
     fileWatcher.addPath(root + "/" + filename);
     QStringList definePrefixes("\\bOBJECT_");
     QMap<QString, int> defines = parser.readCDefines(filename, definePrefixes);
@@ -2366,7 +2366,7 @@ QString Project::getScriptDefaultString(bool usePoryScript, QString mapName) con
 
 QString Project::getMapScriptsFilePath(const QString &mapName) const {
     const bool usePoryscript = projectConfig.getUsePoryScript();
-    auto path = QDir::cleanPath(root + "/data/maps/" + mapName + "/scripts");
+    auto path = QDir::cleanPath(root + projectConfig.getFilePath(ProjectFilePath::data_map_folders) + mapName + "/scripts");
     auto extension = getScriptFileExtension(usePoryscript);
     if (usePoryscript && !QFile::exists(path + extension))
         extension = getScriptFileExtension(false);
@@ -2375,9 +2375,9 @@ QString Project::getMapScriptsFilePath(const QString &mapName) const {
 }
 
 QStringList Project::getEventScriptsFilePaths() const {
-    QStringList filePaths(QDir::cleanPath(root + "/data/event_scripts.s"));
-    const QString scriptsDir = QDir::cleanPath(root + "/data/scripts");
-    const QString mapsDir = QDir::cleanPath(root + "/data/maps");
+    QStringList filePaths(QDir::cleanPath(root + "/" + projectConfig.getFilePath(ProjectFilePath::data_event_scripts)));
+    const QString scriptsDir = QDir::cleanPath(root + "/" + projectConfig.getFilePath(ProjectFilePath::data_scripts_folders));
+    const QString mapsDir = QDir::cleanPath(root + "/" + projectConfig.getFilePath(ProjectFilePath::data_map_folders));
     const bool usePoryscript = projectConfig.getUsePoryScript();
 
     if (usePoryscript) {
@@ -2463,12 +2463,12 @@ void Project::setEventPixmap(Event * event, bool forceLoad) {
 }
 
 bool Project::readEventGraphics() {
-    fileWatcher.addPaths(QStringList() << root + "/" + "src/data/object_events/object_event_graphics_info_pointers.h"
-                                       << root + "/" + "src/data/object_events/object_event_graphics_info.h"
-                                       << root + "/" + "src/data/object_events/object_event_pic_tables.h"
-                                       << root + "/" + "src/data/object_events/object_event_graphics.h");
+    fileWatcher.addPaths(QStringList() << root + "/" + projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx_pointers)
+                                       << root + "/" + projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx_info)
+                                       << root + "/" + projectConfig.getFilePath(ProjectFilePath::data_obj_event_pic_tables)
+                                       << root + "/" + projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx));
 
-    QMap<QString, QString> pointerHash = parser.readNamedIndexCArray("src/data/object_events/object_event_graphics_info_pointers.h", "gObjectEventGraphicsInfoPointers");
+    QMap<QString, QString> pointerHash = parser.readNamedIndexCArray(projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx_pointers), "gObjectEventGraphicsInfoPointers");
 
     qDeleteAll(eventGraphicsMap);
     eventGraphicsMap.clear();
@@ -2488,9 +2488,9 @@ bool Project::readEventGraphics() {
         QString dimensions_label = gfxInfoAttributes.value("oam");
         QString subsprites_label = gfxInfoAttributes.value("subspriteTables");
 
-        QString gfx_label = parser.readCArray("src/data/object_events/object_event_pic_tables.h", pic_label).value(0);
+        QString gfx_label = parser.readCArray(projectConfig.getFilePath(ProjectFilePath::data_obj_event_pic_tables), pic_label).value(0);
         gfx_label = gfx_label.section(QRegularExpression("[\\(\\)]"), 1, 1);
-        QString path = parser.readCIncbin("src/data/object_events/object_event_graphics.h", gfx_label);
+        QString path = parser.readCIncbin(projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx), gfx_label);
 
         if (!path.isNull()) {
             path = fixGraphicPath(path);
@@ -2525,7 +2525,7 @@ QMap<QString, QMap<QString, QString>> Project::readObjEventGfxInfo() {
     // TODO: refactor this to be more general if we end up directly parsing C
     // for more use cases in the future.
     auto cParser = fex::Parser();
-    auto tokens = fex::Lexer().LexFile((root + "/src/data/object_events/object_event_graphics_info.h").toStdString());
+    auto tokens = fex::Lexer().LexFile((root + "/" + projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx_info)).toStdString());
     auto gfxInfoObjects = cParser.ParseTopLevelObjects(tokens);
     QMap<QString, QMap<QString, QString>> gfxInfos;
     for (auto it = gfxInfoObjects.begin(); it != gfxInfoObjects.end(); it++) {
@@ -2565,8 +2565,8 @@ QMap<QString, QMap<QString, QString>> Project::readObjEventGfxInfo() {
 
 bool Project::readSpeciesIconPaths() {
     speciesToIconPath.clear();
-    QString srcfilename = "src/pokemon_icon.c";
-    QString incfilename = "src/data/graphics/pokemon.h";
+    QString srcfilename = projectConfig.getFilePath(ProjectFilePath::path_pokemon_icon_table);
+    QString incfilename = projectConfig.getFilePath(ProjectFilePath::data_pokemon_gfx);
     fileWatcher.addPath(root + "/" + srcfilename);
     fileWatcher.addPath(root + "/" + incfilename);
     QMap<QString, QString> monIconNames = parser.readNamedIndexCArray(srcfilename, "gMonIconTable");
