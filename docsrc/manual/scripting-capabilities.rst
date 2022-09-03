@@ -1255,9 +1255,74 @@ These are some miscellaneous functions that can be very useful when building cus
 
    :param string message: the message to log
 
-
 .. js:function:: map.error(message)
 
    Logs a message to the Porymap log file with the prefix ``[ERROR]``.
 
    :param string message: the message to log
+
+.. js:function:: map.showMessage(text, informativeText, detailedText)
+
+   Displays a message box with an "Information" icon and an ``OK`` button. Execution stops while the window is open.
+
+   :param string text: the main message text
+   :param string informativeText: smaller text below the main message. Defaults to ``""``
+   :param string detailedText: text hidden behind a "Show Details" box. Defaults to ``""``
+
+.. js:function:: map.showWarning(text, informativeText, detailedText)
+
+   Displays a message box with a "Warning" icon and an ``OK`` button. Execution stops while the window is open.
+
+   :param string text: the main message text
+   :param string informativeText: smaller text below the main message. Defaults to ``""``
+   :param string detailedText: text hidden behind a "Show Details" box. Defaults to ``""``
+
+.. js:function:: map.showError(text, informativeText, detailedText)
+
+   Displays a message box with a "Critical" icon and an ``OK`` button. Execution stops while the window is open.
+
+   :param string text: the main message text
+   :param string informativeText: smaller text below the main message. Defaults to ``""``
+   :param string detailedText: text hidden behind a "Show Details" box. Defaults to ``""``
+
+.. js:function:: map.showQuestion(text, informativeText, detailedText)
+
+   Displays a message box with a "Question" icon and a ``Yes`` and a ``No`` button. Execution stops while the window is open.
+
+   :param string text: the main message text
+   :param string informativeText: smaller text below the main message. Defaults to ``""``
+   :param string detailedText: text hidden behind a "Show Details" box. Defaults to ``""``
+   :returns boolean: ``true`` if ``Yes`` was selected, ``false`` if ``No`` was selected or if the window was closed without selection
+
+.. js:function:: map.getInputText(title, label, default)
+
+   Displays a text input dialog with an ``OK`` and a ``Cancel`` button. Execution stops while the window is open.
+
+   :param string title: the text in the window title bar
+   :param string label: the text adjacent to the input entry area
+   :param string default: the text in the input entry area when the window is opened. Defaults to ``""``
+   :returns {input, ok}: ``input`` will be the input text and ``ok`` will be ``true`` if ``OK`` was selected. ``input`` will be ``""`` and ``ok`` will be ``false`` if ``Cancel`` was selected or if the window was closed without selection.
+
+.. js:function:: map.getInputNumber(title, label, default, min, max, decimals, step)
+
+   Displays a number input dialog with an ``OK`` and a ``Cancel`` button. Execution stops while the window is open.
+
+   :param string title: the text in the window title bar
+   :param string label: the text adjacent to the input entry area
+   :param number default: the number in the input entry area when the window is opened. Defaults to ``0``
+   :param number min: the minimum allowable input value. Defaults to ``-2147483648``
+   :param number max: the maximum allowable input value. Defaults to ``2147483647``
+   :param number decimals: the number of decimals used for the input number. Defaults to ``0``
+   :param number step: the increment by which the input number will change when the spinner is used. Defaults to ``1``
+   :returns {input, ok}: ``input`` will be the input number and ``ok`` will be ``true`` if ``OK`` was selected. ``input`` will be ``default`` and ``ok`` will be ``false`` if ``Cancel`` was selected or if the window was closed without selection.
+
+.. js:function:: map.getInputItem(title, label, items, default, editable)
+
+   Displays a text input dialog with an items dropdown and an ``OK`` and a ``Cancel`` button. Execution stops while the window is open.
+
+   :param string title: the text in the window title bar
+   :param string label: the text adjacent to the input entry area
+   :param array items: an array of text items that will populate the dropdown
+   :param number default: the index of the item to select by default. Defaults to ``0``
+   :param boolean editable: whether the user is allowed to enter their own text instead. Defaults to ``false``
+   :returns {input, ok}: ``input`` will be the input text and ``ok`` will be ``true`` if ``OK`` was selected. ``input`` will be the text of the item at ``default`` and ``ok`` will be ``false`` if ``Cancel`` was selected or if the window was closed without selection.

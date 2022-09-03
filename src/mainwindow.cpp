@@ -1520,6 +1520,7 @@ void MainWindow::copy() {
 
                     if (type == EventType::HealLocation) {
                         // no copy on heal locations
+                        logWarn(QString("Copying events of type '%1' is not allowed.").arg(type));
                         continue;
                     }
 
@@ -1531,11 +1532,11 @@ void MainWindow::copy() {
 
                     eventsArray.append(eventJson);
                 }
-
-                copyObject["events"] = eventsArray;
-                setClipboardData(copyObject);
-                logInfo("Copied currently selected events to clipboard");
-
+                if (!eventsArray.isEmpty()) {
+                    copyObject["events"] = eventsArray;
+                    setClipboardData(copyObject);
+                    logInfo("Copied currently selected events to clipboard");
+                }
                 break;
             }
             }
@@ -1620,6 +1621,11 @@ void MainWindow::paste() {
                     // paste the event to the map
                     QString type = event["event_type"].toString();
 
+                    if (editor->eventLimitReached(type)) {
+                        logWarn(QString("Skipping paste, the map limit for events of type '%1' has been reached.").arg(type));
+                        continue;
+                    }
+
                     Event *pasteEvent = Event::createNewEvent(type, editor->map->name, editor->project);
 
                     for (auto key : event.toObject().keys())
@@ -1651,9 +1657,10 @@ void MainWindow::paste() {
                     newEvents.append(pasteEvent);
                 }
 
-                editor->map->editHistory.push(new EventPaste(this->editor, editor->map, newEvents));
-                updateObjects();
-
+                if (!newEvents.isEmpty()) {
+                    updateObjects();
+                    editor->map->editHistory.push(new EventPaste(this->editor, editor->map, newEvents));
+                }
                 break;
             }
         }

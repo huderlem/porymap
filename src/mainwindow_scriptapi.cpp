@@ -793,6 +793,55 @@ void MainWindow::error(QString message) {
     logError(message);
 }
 
+void MainWindow::runMessageBox(QString text, QString informativeText, QString detailedText, QMessageBox::Icon icon) {
+    QMessageBox messageBox(this);
+    messageBox.setText(text);
+    messageBox.setInformativeText(informativeText);
+    messageBox.setDetailedText(detailedText);
+    messageBox.setIcon(icon);
+    messageBox.exec();
+}
+
+void MainWindow::showMessage(QString text, QString informativeText, QString detailedText) {
+    this->runMessageBox(text, informativeText, detailedText, QMessageBox::Information);
+}
+
+void MainWindow::showWarning(QString text, QString informativeText, QString detailedText) {
+    this->runMessageBox(text, informativeText, detailedText, QMessageBox::Warning);
+}
+
+void MainWindow::showError(QString text, QString informativeText, QString detailedText) {
+    this->runMessageBox(text, informativeText, detailedText, QMessageBox::Critical);
+}
+
+bool MainWindow::showQuestion(QString text, QString informativeText, QString detailedText) {
+    QMessageBox messageBox(this);
+    messageBox.setText(text);
+    messageBox.setInformativeText(informativeText);
+    messageBox.setDetailedText(detailedText);
+    messageBox.setIcon(QMessageBox::Question);
+    messageBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    return messageBox.exec() == QMessageBox::Yes;
+}
+
+QJSValue MainWindow::getInputText(QString title, QString label, QString defaultValue) {
+    bool ok;
+    QString input = QInputDialog::getText(this, title, label, QLineEdit::Normal, defaultValue, &ok);
+    return Scripting::dialogInput(input, ok);
+}
+
+QJSValue MainWindow::getInputNumber(QString title, QString label, double defaultValue, double min, double max, int decimals, double step) {
+    bool ok;
+    double input = QInputDialog::getDouble(this, title, label, defaultValue, min, max, decimals, &ok, Qt::WindowFlags(), step);
+    return Scripting::dialogInput(input, ok);
+}
+
+QJSValue MainWindow::getInputItem(QString title, QString label, QStringList items, int defaultValue, bool editable) {
+    bool ok;
+    QString input = QInputDialog::getItem(this, title, label, items, defaultValue, editable, &ok);
+    return Scripting::dialogInput(input, ok);
+}
+
 QList<int> MainWindow::getMetatileLayerOrder() {
     if (!this->editor || !this->editor->map)
         return QList<int>();

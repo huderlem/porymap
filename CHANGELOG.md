@@ -12,7 +12,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 
 ### Added
 - Add Copy/Paste for metatiles in the Tileset Editor.
-- Add new features to the scripting API, including the ability to set overlay opacity, get/set map header properties, read tile pixel data, and set blocks or metatile attributes using a raw value.
+- Add new features to the scripting API, including the ability to display message boxes and user input windows, set overlay opacity, get/set map header properties, read tile pixel data, and set blocks or metatile attributes using a raw value.
 - Add button to copy the full metatile label to the clipboard in the Tileset Editor.
 - Add option to not open the most recent project on launch.
 - Add color picker to palette editor for taking colors from the screen.
@@ -25,6 +25,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - The wild encounter editor is automatically disabled if the encounter JSON data cannot be read
 - Metatiles are always rendered accurately with 3 layers, and the unused layer is not assumed to be transparent.
 - `object_event_graphics_info.h` can now be parsed correctly if it uses structs with attributes.
+- The selection is no longer reset when pasting events. The newly pasted events are selected instead.
 - Palette editor ui is updated a bit to allow hex and rgb value input.
 
 ### Fixed
@@ -34,6 +35,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix selected space not updating while painting in Collision view.
 - Fix collision values of 2 or 3 not rendering properly.
 - Fix the map music dropdown being empty when importing a map from Advance Map.
+- Fix object events added by pasting ignoring the map event limit.
 - Fixed a bug where saving the tileset editor would reselect the main editor's first selected metatile.
 - Fix crashes / unexpected behavior if certain scripting API functions are given invalid palette or tile numbers.
 
