@@ -26,6 +26,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Overhauled the region map editor, adding support for tilemaps, and significant customization. Also now supports pokefirered.
 - Metatiles are always rendered accurately with 3 layers, and the unused layer is not assumed to be transparent.
 - `object_event_graphics_info.h` can now be parsed correctly if it uses structs with attributes.
+- The selection is no longer reset when pasting events. The newly pasted events are selected instead.
 - Palette editor ui is updated a bit to allow hex and rgb value input.
 
 ### Fixed
@@ -34,6 +35,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix cursor tile and player view outlines not updating immediately when toggled in Collision view.
 - Fix selected space not updating while painting in Collision view.
 - Fix the map music dropdown being empty when importing a map from Advance Map.
+- Fix object events added by pasting ignoring the map event limit.
 - Fixed a bug where saving the tileset editor would reselect the main editor's first selected metatile.
 
 ## [4.5.0] - 2021-12-26
