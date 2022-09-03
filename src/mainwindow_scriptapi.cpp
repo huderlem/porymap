@@ -29,12 +29,15 @@ void MainWindow::tryRedrawMapArea(bool forceRedraw) {
     if (this->needsFullRedraw) {
         this->editor->map_item->draw(true);
         this->editor->collision_item->draw(true);
+        this->editor->selected_border_metatiles_item->draw();
         this->editor->updateMapBorder();
         this->editor->updateMapConnections();
         this->needsFullRedraw = false;
     } else {
         this->editor->map_item->draw();
         this->editor->collision_item->draw();
+        this->editor->selected_border_metatiles_item->draw();
+        this->editor->updateMapBorder();
     }
 }
 
@@ -43,8 +46,10 @@ void MainWindow::tryCommitMapChanges(bool commitChanges) {
         Map *map = this->editor->map;
         if (map) {
             map->editHistory.push(new ScriptEditMap(map,
-                map->layout->lastCommitMapBlocks.dimensions, QSize(map->getWidth(), map->getHeight()),
-                map->layout->lastCommitMapBlocks.blocks, map->layout->blockdata
+                map->layout->lastCommitBlocks.mapDimensions, QSize(map->getWidth(), map->getHeight()),
+                map->layout->lastCommitBlocks.blocks, map->layout->blockdata,
+                map->layout->lastCommitBlocks.borderDimensions, QSize(map->getBorderWidth(), map->getBorderHeight()),
+                map->layout->lastCommitBlocks.border, map->layout->border
             ));
         }
     }
@@ -84,6 +89,24 @@ void MainWindow::setMetatileId(int x, int y, int metatileId, bool forceRedraw, b
         return;
     }
     this->editor->map->setBlock(x, y, Block(metatileId, block.collision, block.elevation));
+    this->tryCommitMapChanges(commitChanges);
+    this->tryRedrawMapArea(forceRedraw);
+}
+
+int MainWindow::getBorderMetatileId(int x, int y) {
+    if (!this->editor || !this->editor->map)
+        return 0;
+    if (!this->editor->map->isWithinBorderBounds(x, y))
+        return 0;
+    return this->editor->map->getBorderMetatileId(x, y);
+}
+
+void MainWindow::setBorderMetatileId(int x, int y, int metatileId, bool forceRedraw, bool commitChanges) {
+    if (!this->editor || !this->editor->map)
+        return;
+    if (!this->editor->map->isWithinBorderBounds(x, y))
+        return;
+    this->editor->map->setBorderMetatileId(x, y, metatileId);
     this->tryCommitMapChanges(commitChanges);
     this->tryRedrawMapArea(forceRedraw);
 }
@@ -198,6 +221,24 @@ int MainWindow::getHeight() {
     return this->editor->map->getHeight();
 }
 
+QJSValue MainWindow::getBorderDimensions() {
+    if (!this->editor || !this->editor->map)
+        return QJSValue();
+    return Scripting::dimensions(this->editor->map->getBorderWidth(), this->editor->map->getBorderHeight());
+}
+
+int MainWindow::getBorderWidth() {
+    if (!this->editor || !this->editor->map)
+        return 0;
+    return this->editor->map->getBorderWidth();
+}
+
+int MainWindow::getBorderHeight() {
+    if (!this->editor || !this->editor->map)
+        return 0;
+    return this->editor->map->getBorderHeight();
+}
+
 void MainWindow::setDimensions(int width, int height) {
     if (!this->editor || !this->editor->map)
         return;
@@ -224,6 +265,36 @@ void MainWindow::setHeight(int height) {
     if (!Project::mapDimensionsValid(this->editor->map->getWidth(), height))
         return;
     this->editor->map->setDimensions(this->editor->map->getWidth(), height);
+    this->tryCommitMapChanges(true);
+    this->onMapNeedsRedrawing();
+}
+
+void MainWindow::setBorderDimensions(int width, int height) {
+    if (!this->editor || !this->editor->map || !projectConfig.getUseCustomBorderSize())
+        return;
+    if (width < 1 || height < 1 || width > MAX_BORDER_WIDTH || height > MAX_BORDER_HEIGHT)
+        return;
+    this->editor->map->setBorderDimensions(width, height);
+    this->tryCommitMapChanges(true);
+    this->onMapNeedsRedrawing();
+}
+
+void MainWindow::setBorderWidth(int width) {
+    if (!this->editor || !this->editor->map || !projectConfig.getUseCustomBorderSize())
+        return;
+    if (width < 1 || width > MAX_BORDER_WIDTH)
+        return;
+    this->editor->map->setBorderDimensions(width, this->editor->map->getBorderHeight());
+    this->tryCommitMapChanges(true);
+    this->onMapNeedsRedrawing();
+}
+
+void MainWindow::setBorderHeight(int height) {
+    if (!this->editor || !this->editor->map || !projectConfig.getUseCustomBorderSize())
+        return;
+    if (height < 1 || height > MAX_BORDER_HEIGHT)
+        return;
+    this->editor->map->setBorderDimensions(this->editor->map->getBorderWidth(), height);
     this->tryCommitMapChanges(true);
     this->onMapNeedsRedrawing();
 }
@@ -723,7 +794,7 @@ bool MainWindow::getGridVisibility() {
 }
 
 void MainWindow::setBorderVisibility(bool visible) {
-    this->editor->toggleBorderVisibility(visible);
+    this->editor->toggleBorderVisibility(visible, false);
 }
 
 bool MainWindow::getBorderVisibility() {

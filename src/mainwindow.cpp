@@ -2913,9 +2913,8 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked()
     bheightSpinBox->setMinimum(1);
     widthSpinBox->setMaximum(editor->project->getMaxMapWidth());
     heightSpinBox->setMaximum(editor->project->getMaxMapHeight());
-    // Maximum based only on data type (u8) of map border width/height
-    bwidthSpinBox->setMaximum(255);
-    bheightSpinBox->setMaximum(255);
+    bwidthSpinBox->setMaximum(MAX_BORDER_WIDTH);
+    bheightSpinBox->setMaximum(MAX_BORDER_HEIGHT);
     widthSpinBox->setValue(editor->map->getWidth());
     heightSpinBox->setValue(editor->map->getHeight());
     bwidthSpinBox->setValue(editor->map->getBorderWidth());

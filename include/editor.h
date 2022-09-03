@@ -88,7 +88,7 @@ public:
     void setSelectedConnectionFromMap(QString mapName);
     void updatePrimaryTileset(QString tilesetLabel, bool forceLoad = false);
     void updateSecondaryTileset(QString tilesetLabel, bool forceLoad = false);
-    void toggleBorderVisibility(bool visible);
+    void toggleBorderVisibility(bool visible, bool enableScriptCallback = true);
     void updateCustomMapHeaderValues(QTableWidget *);
     void configureEncounterJSON(QWidget *);
     Tileset *getCurrentMapPrimaryTileset();
@@ -158,6 +158,7 @@ public slots:
     void openScript(const QString &scriptLabel) const;
     void openProjectInTextEditor() const;
     void maskNonVisibleConnectionTiles();
+    void onBorderMetatilesChanged();
 
 private:
     void setConnectionItemsVisible(bool);
@@ -192,7 +193,6 @@ private slots:
     void onConnectionItemSelected(ConnectionPixmapItem* connectionItem);
     void onConnectionItemDoubleClicked(ConnectionPixmapItem* connectionItem);
     void onConnectionDirectionChanged(QString newDirection);
-    void onBorderMetatilesChanged();
     void onHoveredMovementPermissionChanged(uint16_t, uint16_t);
     void onHoveredMovementPermissionCleared();
     void onHoveredMetatileSelectionChanged(uint16_t);
