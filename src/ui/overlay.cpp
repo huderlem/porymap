@@ -98,7 +98,7 @@ void Overlay::addRect(int x, int y, int width, int height, QString color, bool f
     this->items.append(new OverlayRect(x, y, width, height, QColor(color), filled));
 }
 
-bool Overlay::addImage(int x, int y, QString filepath, bool useCache, int width, int height, unsigned offset, bool xflip, bool yflip, QList<QRgb> palette, bool setTransparency) {
+bool Overlay::addImage(int x, int y, QString filepath, bool useCache, int width, int height, unsigned offset, qreal hScale, qreal vScale, QList<QRgb> palette, bool setTransparency) {
     QImage image = useCache ? Scripting::getImage(filepath) : QImage(filepath);
     if (image.isNull()) {
         logError(QString("Failed to load image '%1'").arg(filepath));
@@ -126,8 +126,8 @@ bool Overlay::addImage(int x, int y, QString filepath, bool useCache, int width,
     if (width != fullWidth || height != fullHeight)
         image = image.copy(offset % fullWidth, offset / fullWidth, width, height);
 
-    if (xflip || yflip)
-        image = image.transformed(QTransform().scale(xflip ? -1 : 1, yflip ? -1 : 1));
+    if (hScale != 1 || vScale != 1)
+        image = image.transformed(QTransform().scale(hScale, vScale));
 
     for (int i = 0; i < palette.size(); i++)
         image.setColor(i, palette.at(i));

@@ -105,7 +105,7 @@ public:
     Q_INVOKABLE void addImage(int x, int y, QString filepath, int layer = 0, bool useCache = true);
     Q_INVOKABLE void createImage(int x, int y, QString filepath,
                                  int width = -1, int height = -1, unsigned offset = 0,
-                                 bool xflip = false, bool yflip = false, int paletteId = -1, bool setTransparency = false,
+                                 qreal hScale = 1, qreal vScale = 1, int paletteId = -1, bool setTransparency = false,
                                  int layer = 0, bool useCache = true);
     Q_INVOKABLE void addTileImage(int x, int y, int tileId, bool xflip, bool yflip, int paletteId, bool setTransparency = false, int layer = 0);
     Q_INVOKABLE void addTileImage(int x, int y, QJSValue tileObj, bool setTransparency = false, int layer = 0);
@@ -196,6 +196,7 @@ public:
     Q_INVOKABLE int getNumTilesInMetatile();
     Q_INVOKABLE int getNumMetatileLayers();
     Q_INVOKABLE QString getBaseGameVersion();
+    Q_INVOKABLE QJSValue getPorymapVersion();
     Q_INVOKABLE QList<QString> getCustomScripts();
     Q_INVOKABLE int getMainTab();
     Q_INVOKABLE void setMainTab(int index);

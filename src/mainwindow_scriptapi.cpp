@@ -4,6 +4,7 @@
 #include "editcommands.h"
 #include "config.h"
 #include "imageproviders.h"
+#include "aboutporymap.h"
 
 QJSValue MainWindow::getBlock(int x, int y) {
     if (!this->editor || !this->editor->map)
@@ -480,14 +481,14 @@ void MainWindow::addImage(int x, int y, QString filepath, int layer, bool useCac
         this->ui->graphicsView_Map->scene()->update();
 }
 
-void MainWindow::createImage(int x, int y, QString filepath, int width, int height, unsigned offset, bool xflip, bool yflip, int paletteId, bool setTransparency, int layer, bool useCache) {
+void MainWindow::createImage(int x, int y, QString filepath, int width, int height, unsigned offset, qreal hScale, qreal vScale, int paletteId, bool setTransparency, int layer, bool useCache) {
     if (!this->ui || !this->ui->graphicsView_Map || !this->editor || !this->editor->map || !this->editor->map->layout
      || !this->editor->map->layout->tileset_primary || !this->editor->map->layout->tileset_secondary)
         return;
     QList<QRgb> palette;
     if (paletteId != -1)
         palette = Tileset::getPalette(paletteId, this->editor->map->layout->tileset_primary, this->editor->map->layout->tileset_secondary);
-    if (this->ui->graphicsView_Map->getOverlay(layer)->addImage(x, y, filepath, useCache, width, height, offset, xflip, yflip, palette, setTransparency))
+    if (this->ui->graphicsView_Map->getOverlay(layer)->addImage(x, y, filepath, useCache, width, height, offset, hScale, vScale, palette, setTransparency))
         this->ui->graphicsView_Map->scene()->update();
 }
 
@@ -1193,6 +1194,13 @@ int MainWindow::getNumMetatileLayers() {
 
 QString MainWindow::getBaseGameVersion() {
     return projectConfig.getBaseGameVersionString();
+}
+
+QJSValue MainWindow::getPorymapVersion() {
+    AboutPorymap *window = new AboutPorymap(this);
+    QJSValue version = Scripting::version(window->getVersionNumbers());
+    delete window;
+    return version;
 }
 
 QList<QString> MainWindow::getCustomScripts() {

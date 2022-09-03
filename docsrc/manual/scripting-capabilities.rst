@@ -771,18 +771,18 @@ The following functions are related to an overlay that is drawn on top of the ma
    :param number layer: the layer id. Defaults to ``0``
    :param boolean useCache: whether the image should be saved/loaded using the cache. Defaults to ``true``. Reading images from a file is slow. Setting ``useCache`` to ``true`` will save the image to memory so that the next time the filepath is encountered the image can be loaded from memory rather than the file.
 
-.. js:function:: map.createImage(x, y, filepath, width = -1, height = -1, offset = 0, xflip = false, yflip = false, paletteId = -1, setTransparency = false, layer = 0, useCache = true)
+.. js:function:: map.createImage(x, y, filepath, width = -1, height = -1, offset = 0, hScale = 1, vScale = 1, paletteId = -1, setTransparency = false, layer = 0, useCache = true)
 
    Creates an image item on the specified overlay layer. This differs from ``map.addImage`` by allowing the new image to be a transformation of the image file.
 
    :param number x: the x pixel coordinate of the image's top-left corner (relative to the layer's position)
    :param number y: the y pixel coordinate of the image's top-left corner (relative to the layer's position)
    :param string filepath: the image's filepath
-   :param number width: the image width. If ``-1``, use the full width of the original image. Defaults to ``-1``
-   :param number height: the image height. If ``-1``, use the full height of the original image. Defaults to ``-1``
+   :param number width: the width in pixels of the area to read in the image. If ``-1``, use the full width of the original image. Defaults to ``-1``
+   :param number height: the height in pixels of the area to read in the image. If ``-1``, use the full height of the original image. Defaults to ``-1``
    :param number offset: the pixel offset into the original image where data should be read from. Defaults to ``0``
-   :param boolean xflip: whether the image should be a horizontal flip of the original image. Defaults to ``false``
-   :param boolean yflip: whether the image should be a vertical flip of the original image. Defaults to ``false``
+   :param number hScale: the horizontal scale for the image. Negative values will be a horizontal flip of the original image. Defaults to ``1``
+   :param number vScale: the vertical scale for the image. Negative values will be a vertical flip of the original image. Defaults to ``1``
    :param number paletteId: the id of which currently loaded tileset palette to use for the image. If ``-1``, use the original image's palette. Defaults to ``-1``
    :param boolean setTransparency: whether the color at index 0 should be overwritten with transparent pixels. Defaults to ``false``
    :param number layer: the layer id. Defaults to ``0``
@@ -1271,6 +1271,12 @@ The following functions are related to settings.
    Gets the project's base game version.
 
    :returns string: ``"pokeruby"``, ``"pokefirered"``, or ``"pokeemerald"``
+
+.. js:function:: map.getPorymapVersion()
+
+   Gets the current version of Porymap (``MAJOR.MINOR.PATCH``).
+
+   :returns {major, minor, patch}: the version object
 
 .. js:function:: map.getCustomScripts()
 
