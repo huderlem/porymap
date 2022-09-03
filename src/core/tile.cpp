@@ -8,7 +8,7 @@
         palette(0)
     {  }
 
- Tile::Tile(int tileId, bool xflip, bool yflip, int palette) :
+ Tile::Tile(uint16_t tileId, uint16_t xflip, uint16_t yflip, uint16_t palette) :
         tileId(tileId),
         xflip(xflip),
         yflip(yflip),

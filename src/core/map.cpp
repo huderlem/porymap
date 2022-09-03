@@ -328,8 +328,14 @@ void Map::setBorderDimensions(int newWidth, int newHeight, bool setNewBlockdata)
         setNewBorderDimensionsBlockdata(newWidth, newHeight);
     }
 
+    int oldWidth = layout->border_width.toInt();
+    int oldHeight = layout->border_height.toInt();
     layout->border_width = QString::number(newWidth);
     layout->border_height = QString::number(newHeight);
+
+    if (oldWidth != newWidth || oldHeight != newHeight) {
+        Scripting::cb_BorderResized(oldWidth, oldHeight, newWidth, newHeight);
+    }
 
     emit mapChanged(this);
 }
@@ -344,6 +350,7 @@ bool Map::getBlock(int x, int y, Block *out) {
 }
 
 void Map::setBlock(int x, int y, Block block, bool enableScriptCallback) {
+    if (!isWithinBounds(x, y)) return;
     int i = y * getWidth() + x;
     if (i < layout->blockdata.size()) {
         Block prevBlock = layout->blockdata.at(i);
@@ -363,6 +370,35 @@ void Map::setBlockdata(Blockdata blockdata) {
         if (prevBlock != newBlock) {
             layout->blockdata.replace(i, newBlock);
             Scripting::cb_MetatileChanged(i % width, i / width, prevBlock, newBlock);
+        }
+    }
+}
+
+uint16_t Map::getBorderMetatileId(int x, int y) {
+    int i = y * getBorderWidth() + x;
+    return layout->border[i].metatileId;
+}
+
+void Map::setBorderMetatileId(int x, int y, uint16_t metatileId, bool enableScriptCallback) {
+    int i = y * getBorderWidth() + x;
+    if (i < layout->border.size()) {
+        uint16_t prevMetatileId = layout->border[i].metatileId;
+        layout->border[i].metatileId = metatileId;
+        if (prevMetatileId != metatileId && enableScriptCallback) {
+            Scripting::cb_BorderMetatileChanged(x, y, prevMetatileId, metatileId);
+        }
+    }
+}
+
+void Map::setBorderBlockData(Blockdata blockdata) {
+    int width = getBorderWidth();
+    int size = qMin(blockdata.size(), layout->border.size());
+    for (int i = 0; i < size; i++) {
+        Block prevBlock = layout->border.at(i);
+        Block newBlock = blockdata.at(i);
+        if (prevBlock != newBlock) {
+            layout->border.replace(i, newBlock);
+            Scripting::cb_BorderMetatileChanged(i % width, i / width, prevBlock.metatileId, newBlock.metatileId);
         }
     }
 }
@@ -473,4 +509,8 @@ bool Map::hasUnsavedChanges() {
 
 bool Map::isWithinBounds(int x, int y) {
     return (x >= 0 && x < this->getWidth() && y >= 0 && y < this->getHeight());
+}
+
+bool Map::isWithinBorderBounds(int x, int y) {
+    return (x >= 0 && x < this->getBorderWidth() && y >= 0 && y < this->getBorderHeight());
 }
