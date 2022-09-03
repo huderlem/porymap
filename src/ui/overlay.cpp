@@ -26,9 +26,11 @@ void OverlayImage::render(QPainter *painter, int x, int y) {
 void Overlay::renderItems(QPainter *painter) {
     if (this->hidden) return;
 
+    qreal oldOpacity = painter->opacity();
     painter->setOpacity(this->opacity);
     for (auto item : this->items)
         item->render(painter, this->x, this->y);
+    painter->setOpacity(oldOpacity);
 }
 
 void Overlay::clearItems() {

@@ -55,10 +55,18 @@ void MainWindow::tryCommitMapChanges(bool commitChanges) {
     }
 }
 
-void MainWindow::setBlock(int x, int y, int tile, int collision, int elevation, bool forceRedraw, bool commitChanges) {
+void MainWindow::setBlock(int x, int y, int metatileId, int collision, int elevation, bool forceRedraw, bool commitChanges) {
     if (!this->editor || !this->editor->map)
         return;
-    this->editor->map->setBlock(x, y, Block(tile, collision, elevation));
+    this->editor->map->setBlock(x, y, Block(metatileId, collision, elevation));
+    this->tryCommitMapChanges(commitChanges);
+    this->tryRedrawMapArea(forceRedraw);
+}
+
+void MainWindow::setBlock(int x, int y, int rawValue, bool forceRedraw, bool commitChanges) {
+    if (!this->editor || !this->editor->map)
+        return;
+    this->editor->map->setBlock(x, y, Block(static_cast<uint16_t>(rawValue)));
     this->tryCommitMapChanges(commitChanges);
     this->tryRedrawMapArea(forceRedraw);
 }
@@ -1070,6 +1078,22 @@ void MainWindow::setMetatileBehavior(int metatileId, int behavior) {
     if (!metatile || metatile->behavior == u_behavior)
         return;
     metatile->behavior = u_behavior;
+    this->saveMetatileAttributesByMetatileId(metatileId);
+}
+
+int MainWindow::getMetatileAttributes(int metatileId) {
+    Metatile * metatile = this->getMetatile(metatileId);
+    if (!metatile)
+        return -1;
+    return metatile->getAttributes(projectConfig.getBaseGameVersion());
+}
+
+void MainWindow::setMetatileAttributes(int metatileId, int attributes) {
+    Metatile * metatile = this->getMetatile(metatileId);
+    uint32_t u_attributes = static_cast<uint32_t>(attributes);
+    if (!metatile)
+        return;
+    metatile->setAttributes(u_attributes, projectConfig.getBaseGameVersion());
     this->saveMetatileAttributesByMetatileId(metatileId);
 }
 

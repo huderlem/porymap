@@ -46,7 +46,8 @@ public:
     Q_INVOKABLE QJSValue getBlock(int x, int y);
     void tryRedrawMapArea(bool forceRedraw);
     void tryCommitMapChanges(bool commitChanges);
-    Q_INVOKABLE void setBlock(int x, int y, int tile, int collision, int elevation, bool forceRedraw = true, bool commitChanges = true);
+    Q_INVOKABLE void setBlock(int x, int y, int metatileId, int collision, int elevation, bool forceRedraw = true, bool commitChanges = true);
+    Q_INVOKABLE void setBlock(int x, int y, int rawValue, bool forceRedraw = true, bool commitChanges = true);
     Q_INVOKABLE void setBlocksFromSelection(int x, int y, bool forceRedraw = true, bool commitChanges = true);
     Q_INVOKABLE int getMetatileId(int x, int y);
     Q_INVOKABLE void setMetatileId(int x, int y, int metatileId, bool forceRedraw = true, bool commitChanges = true);
@@ -182,6 +183,8 @@ public:
     Q_INVOKABLE void setMetatileTerrainType(int metatileId, int terrainType);
     Q_INVOKABLE int getMetatileBehavior(int metatileId);
     Q_INVOKABLE void setMetatileBehavior(int metatileId, int behavior);
+    Q_INVOKABLE int getMetatileAttributes(int metatileId);
+    Q_INVOKABLE void setMetatileAttributes(int metatileId, int attributes);
     Q_INVOKABLE QJSValue getMetatileTile(int metatileId, int tileIndex);
     Q_INVOKABLE void setMetatileTile(int metatileId, int tileIndex, int tileId, bool xflip, bool yflip, int palette, bool forceRedraw = true);
     Q_INVOKABLE void setMetatileTile(int metatileId, int tileIndex, QJSValue tileObj, bool forceRedraw = true);

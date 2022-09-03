@@ -350,6 +350,7 @@ bool Map::getBlock(int x, int y, Block *out) {
 }
 
 void Map::setBlock(int x, int y, Block block, bool enableScriptCallback) {
+    if (!isWithinBounds(x, y)) return;
     int i = y * getWidth() + x;
     if (i < layout->blockdata.size()) {
         Block prevBlock = layout->blockdata.at(i);

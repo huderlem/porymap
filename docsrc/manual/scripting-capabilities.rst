@@ -214,8 +214,18 @@ The following functions are related to editing the map's blocks or retrieving in
    :param number x: x coordinate of the block
    :param number y: y coordinate of the block
    :param number metatileId: the metatile id of the block
-   :param number collision: the collision of the block (``0`` = passable, ``1`` = impassable)
+   :param number collision: the collision of the block (``0`` = passable, ``1-3`` = impassable)
    :param number elevation: the elevation of the block
+   :param boolean forceRedraw: Force the map view to refresh. Defaults to ``true``. Redrawing the map view is expensive, so set to ``false`` when making many consecutive map edits, and then redraw the map once using ``map.redraw()``.
+   :param boolean commitChanges: Commit the changes to the map's edit/undo history. Defaults to ``true``. When making many related map edits, it can be useful to set this to ``false``, and then commit all of them together with ``map.commit()``.
+
+.. js:function:: map.setBlock(x, y, rawValue, forceRedraw = true, commitChanges = true)
+
+   Sets a block in the currently-opened map. This is an overloaded function that takes the raw value of a block instead of each of the block's properties individually.
+
+   :param number x: x coordinate of the block
+   :param number y: y coordinate of the block
+   :param number rawValue: the 16 bit value of the block. Bits ``0-9`` will be the metatile id, bits ``10-11`` will be the collision, and bits ``12-15`` will be the elevation.
    :param boolean forceRedraw: Force the map view to refresh. Defaults to ``true``. Redrawing the map view is expensive, so set to ``false`` when making many consecutive map edits, and then redraw the map once using ``map.redraw()``.
    :param boolean commitChanges: Commit the changes to the map's edit/undo history. Defaults to ``true``. When making many related map edits, it can be useful to set this to ``false``, and then commit all of them together with ``map.commit()``.
 
@@ -257,7 +267,7 @@ The following functions are related to editing the map's blocks or retrieving in
 
 .. js:function:: map.getCollision(x, y)
 
-   Gets the collision of a block in the currently-opened map. (``0`` = passable, ``1`` = impassable)
+   Gets the collision of a block in the currently-opened map. (``0`` = passable, ``1-3`` = impassable)
 
    :param number x: x coordinate of the block
    :param number y: y coordinate of the block
@@ -265,7 +275,7 @@ The following functions are related to editing the map's blocks or retrieving in
 
 .. js:function:: map.setCollision(x, y, collision, forceRedraw = true, commitChanges = true)
 
-   Sets the collision of a block in the currently-opened map. (``0`` = passable, ``1`` = impassable)
+   Sets the collision of a block in the currently-opened map. (``0`` = passable, ``1-3`` = impassable)
 
    :param number x: x coordinate of the block
    :param number y: y coordinate of the block
@@ -1123,6 +1133,22 @@ The following functions are related to tilesets and how they are rendered. The f
    :param number metatileId: id of target metatile
    :param number behavior: the behavior
 
+.. js:function:: map.getMetatileAttributes(metatileId)
+
+   Gets the raw attributes value for the specified metatile.
+
+   :param number metatileId: id of target metatile
+   :returns number: the raw attributes value
+
+.. js:function:: map.setMetatileAttributes(metatileId, attributes)
+
+   Sets the raw attributes value for the specified metatile.
+   
+   **Warning:** This function writes directly to the tileset. There is no undo for this. Porymap will not limit the value of existing attributes to their usual range.
+
+   :param number metatileId: id of target metatile
+   :param number attributes: the raw attributes value
+
 .. js:function:: map.getMetatileTile(metatileId, tileIndex)
 
    Gets the tile at the specified index of the metatile.
@@ -1193,7 +1219,7 @@ The following functions are related to tilesets and how they are rendered. The f
    :param number tileEnd: index of the last tile to set. Defaults to ``-1`` (the last tile)
    :param boolean forceRedraw: Force the map view to refresh. Defaults to ``true``. Redrawing the map view is expensive, so set to ``false`` when making many consecutive map edits, and then redraw the map once using ``map.redraw()``.
 
-..js:function:: map.getTilePixels(tileId)
+.. js:function:: map.getTilePixels(tileId)
 
    Gets the pixel data for the specified tile. The pixel data is an array of indexes indicating which palette color each pixel uses. Tiles are 8x8, so the pixel array will be 64 elements long.
 

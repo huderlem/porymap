@@ -16,7 +16,7 @@ uint16_t MovementPermissionsSelector::getSelectedElevation() {
 }
 
 void MovementPermissionsSelector::select(uint16_t collision, uint16_t elevation) {
-    SelectablePixmapItem::select(collision, elevation, 0, 0);
+    SelectablePixmapItem::select(collision != 0, elevation, 0, 0);
 }
 
 void MovementPermissionsSelector::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
