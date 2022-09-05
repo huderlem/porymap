@@ -4,17 +4,6 @@
 #include "editcommands.h"
 #include "config.h"
 #include "imageproviders.h"
-#include "aboutporymap.h"
-
-QJSValue MainWindow::getBlock(int x, int y) {
-    if (!this->editor || !this->editor->map)
-        return QJSValue();
-    Block block;
-    if (!this->editor->map->getBlock(x, y, &block)) {
-        return Scripting::fromBlock(Block());
-    }
-    return Scripting::fromBlock(block);
-}
 
 // TODO: "needsFullRedraw" is used when redrawing the map after
 // changing a metatile's tiles via script. It is unnecessarily
@@ -54,6 +43,20 @@ void MainWindow::tryCommitMapChanges(bool commitChanges) {
             ));
         }
     }
+}
+
+//=====================
+// Editing map blocks
+//=====================
+
+QJSValue MainWindow::getBlock(int x, int y) {
+    if (!this->editor || !this->editor->map)
+        return QJSValue();
+    Block block;
+    if (!this->editor->map->getBlock(x, y, &block)) {
+        return Scripting::fromBlock(Block());
+    }
+    return Scripting::fromBlock(block);
 }
 
 void MainWindow::setBlock(int x, int y, int metatileId, int collision, int elevation, bool forceRedraw, bool commitChanges) {
@@ -98,24 +101,6 @@ void MainWindow::setMetatileId(int x, int y, int metatileId, bool forceRedraw, b
         return;
     }
     this->editor->map->setBlock(x, y, Block(metatileId, block.collision, block.elevation));
-    this->tryCommitMapChanges(commitChanges);
-    this->tryRedrawMapArea(forceRedraw);
-}
-
-int MainWindow::getBorderMetatileId(int x, int y) {
-    if (!this->editor || !this->editor->map)
-        return 0;
-    if (!this->editor->map->isWithinBorderBounds(x, y))
-        return 0;
-    return this->editor->map->getBorderMetatileId(x, y);
-}
-
-void MainWindow::setBorderMetatileId(int x, int y, int metatileId, bool forceRedraw, bool commitChanges) {
-    if (!this->editor || !this->editor->map)
-        return;
-    if (!this->editor->map->isWithinBorderBounds(x, y))
-        return;
-    this->editor->map->setBorderMetatileId(x, y, metatileId);
     this->tryCommitMapChanges(commitChanges);
     this->tryRedrawMapArea(forceRedraw);
 }
@@ -230,24 +215,6 @@ int MainWindow::getHeight() {
     return this->editor->map->getHeight();
 }
 
-QJSValue MainWindow::getBorderDimensions() {
-    if (!this->editor || !this->editor->map)
-        return QJSValue();
-    return Scripting::dimensions(this->editor->map->getBorderWidth(), this->editor->map->getBorderHeight());
-}
-
-int MainWindow::getBorderWidth() {
-    if (!this->editor || !this->editor->map)
-        return 0;
-    return this->editor->map->getBorderWidth();
-}
-
-int MainWindow::getBorderHeight() {
-    if (!this->editor || !this->editor->map)
-        return 0;
-    return this->editor->map->getBorderHeight();
-}
-
 void MainWindow::setDimensions(int width, int height) {
     if (!this->editor || !this->editor->map)
         return;
@@ -276,6 +243,46 @@ void MainWindow::setHeight(int height) {
     this->editor->map->setDimensions(this->editor->map->getWidth(), height);
     this->tryCommitMapChanges(true);
     this->onMapNeedsRedrawing();
+}
+
+//=====================
+// Editing map border
+//=====================
+
+int MainWindow::getBorderMetatileId(int x, int y) {
+    if (!this->editor || !this->editor->map)
+        return 0;
+    if (!this->editor->map->isWithinBorderBounds(x, y))
+        return 0;
+    return this->editor->map->getBorderMetatileId(x, y);
+}
+
+void MainWindow::setBorderMetatileId(int x, int y, int metatileId, bool forceRedraw, bool commitChanges) {
+    if (!this->editor || !this->editor->map)
+        return;
+    if (!this->editor->map->isWithinBorderBounds(x, y))
+        return;
+    this->editor->map->setBorderMetatileId(x, y, metatileId);
+    this->tryCommitMapChanges(commitChanges);
+    this->tryRedrawMapArea(forceRedraw);
+}
+
+QJSValue MainWindow::getBorderDimensions() {
+    if (!this->editor || !this->editor->map)
+        return QJSValue();
+    return Scripting::dimensions(this->editor->map->getBorderWidth(), this->editor->map->getBorderHeight());
+}
+
+int MainWindow::getBorderWidth() {
+    if (!this->editor || !this->editor->map)
+        return 0;
+    return this->editor->map->getBorderWidth();
+}
+
+int MainWindow::getBorderHeight() {
+    if (!this->editor || !this->editor->map)
+        return 0;
+    return this->editor->map->getBorderHeight();
 }
 
 void MainWindow::setBorderDimensions(int width, int height) {
@@ -308,224 +315,9 @@ void MainWindow::setBorderHeight(int height) {
     this->onMapNeedsRedrawing();
 }
 
-void MainWindow::clearOverlay(int layer) {
-    if (!this->ui || !this->ui->graphicsView_Map)
-        return;
-    this->ui->graphicsView_Map->getOverlay(layer)->clearItems();
-    this->ui->graphicsView_Map->scene()->update();
-}
-
-void MainWindow::clearOverlays() {
-    if (!this->ui || !this->ui->graphicsView_Map)
-        return;
-    this->ui->graphicsView_Map->clearOverlays();
-    this->ui->graphicsView_Map->scene()->update();
-}
-
-void MainWindow::hideOverlay(int layer) {
-    this->setOverlayVisibility(false, layer);
-}
-
-void MainWindow::hideOverlays() {
-    this->setOverlaysVisibility(false);
-}
-
-void MainWindow::showOverlay(int layer) {
-    this->setOverlayVisibility(true, layer);
-}
-
-void MainWindow::showOverlays() {
-    this->setOverlaysVisibility(true);
-}
-
-bool MainWindow::getOverlayVisibility(int layer) {
-    if (!this->ui || !this->ui->graphicsView_Map)
-        return false;
-    return !(this->ui->graphicsView_Map->getOverlay(layer)->getHidden());
-}
-
-void MainWindow::setOverlayVisibility(bool visible, int layer) {
-    if (!this->ui || !this->ui->graphicsView_Map)
-        return;
-    this->ui->graphicsView_Map->getOverlay(layer)->setHidden(!visible);
-    this->ui->graphicsView_Map->scene()->update();
-}
-
-void MainWindow::setOverlaysVisibility(bool visible) {
-    if (!this->ui || !this->ui->graphicsView_Map)
-        return;
-    this->ui->graphicsView_Map->setOverlaysHidden(!visible);
-    this->ui->graphicsView_Map->scene()->update();
-}
-
-int MainWindow::getOverlayX(int layer) {
-    if (!this->ui || !this->ui->graphicsView_Map)
-        return 0;
-    return this->ui->graphicsView_Map->getOverlay(layer)->getX();
-}
-
-int MainWindow::getOverlayY(int layer) {
-    if (!this->ui || !this->ui->graphicsView_Map)
-        return 0;
-    return this->ui->graphicsView_Map->getOverlay(layer)->getY();
-}
-
-void MainWindow::setOverlayX(int x, int layer) {
-    if (!this->ui || !this->ui->graphicsView_Map)
-        return;
-    this->ui->graphicsView_Map->getOverlay(layer)->setX(x);
-    this->ui->graphicsView_Map->scene()->update();
-}
-
-void MainWindow::setOverlayY(int y, int layer) {
-    if (!this->ui || !this->ui->graphicsView_Map)
-        return;
-    this->ui->graphicsView_Map->getOverlay(layer)->setY(y);
-    this->ui->graphicsView_Map->scene()->update();
-}
-
-void MainWindow::setOverlaysX(int x) {
-    if (!this->ui || !this->ui->graphicsView_Map)
-        return;
-    this->ui->graphicsView_Map->setOverlaysX(x);
-    this->ui->graphicsView_Map->scene()->update();
-}
-
-void MainWindow::setOverlaysY(int y) {
-    if (!this->ui || !this->ui->graphicsView_Map)
-        return;
-    this->ui->graphicsView_Map->setOverlaysY(y);
-    this->ui->graphicsView_Map->scene()->update();
-}
-
-QJSValue MainWindow::getOverlayPosition(int layer) {
-    if (!this->ui || !this->ui->graphicsView_Map)
-        return QJSValue();
-    Overlay * overlay = this->ui->graphicsView_Map->getOverlay(layer);
-    return Scripting::position(overlay->getX(), overlay->getY());
-}
-
-void MainWindow::setOverlayPosition(int x, int y, int layer) {
-    if (!this->ui || !this->ui->graphicsView_Map)
-        return;
-    this->ui->graphicsView_Map->getOverlay(layer)->setPosition(x, y);
-    this->ui->graphicsView_Map->scene()->update();
-}
-
-void MainWindow::setOverlaysPosition(int x, int y) {
-    if (!this->ui || !this->ui->graphicsView_Map)
-        return;
-    this->ui->graphicsView_Map->setOverlaysPosition(x, y);
-    this->ui->graphicsView_Map->scene()->update();
-}
-
-void MainWindow::moveOverlay(int deltaX, int deltaY, int layer) {
-    if (!this->ui || !this->ui->graphicsView_Map)
-        return;
-    this->ui->graphicsView_Map->getOverlay(layer)->move(deltaX, deltaY);
-    this->ui->graphicsView_Map->scene()->update();
-}
-
-void MainWindow::moveOverlays(int deltaX, int deltaY) {
-    if (!this->ui || !this->ui->graphicsView_Map)
-        return;
-    this->ui->graphicsView_Map->moveOverlays(deltaX, deltaY);
-    this->ui->graphicsView_Map->scene()->update();
-}
-
-int MainWindow::getOverlayOpacity(int layer) {
-    if (!this->ui || !this->ui->graphicsView_Map)
-        return 0;
-    return this->ui->graphicsView_Map->getOverlay(layer)->getOpacity();
-}
-
-void MainWindow::setOverlayOpacity(int opacity, int layer) {
-    if (!this->ui || !this->ui->graphicsView_Map)
-        return;
-    this->ui->graphicsView_Map->getOverlay(layer)->setOpacity(opacity);
-    this->ui->graphicsView_Map->scene()->update();
-}
-
-void MainWindow::setOverlaysOpacity(int opacity) {
-    if (!this->ui || !this->ui->graphicsView_Map)
-        return;
-    this->ui->graphicsView_Map->setOverlaysOpacity(opacity);
-    this->ui->graphicsView_Map->scene()->update();
-}
-
-void MainWindow::addText(QString text, int x, int y, QString color, int fontSize, int layer) {
-    if (!this->ui || !this->ui->graphicsView_Map)
-        return;
-    this->ui->graphicsView_Map->getOverlay(layer)->addText(text, x, y, color, fontSize);
-    this->ui->graphicsView_Map->scene()->update();
-}
-
-void MainWindow::addRect(int x, int y, int width, int height, QString color, int layer) {
-    if (!this->ui || !this->ui->graphicsView_Map)
-        return;
-    this->ui->graphicsView_Map->getOverlay(layer)->addRect(x, y, width, height, color, false);
-    this->ui->graphicsView_Map->scene()->update();
-}
-
-void MainWindow::addFilledRect(int x, int y, int width, int height, QString color, int layer) {
-    if (!this->ui || !this->ui->graphicsView_Map)
-        return;
-    this->ui->graphicsView_Map->getOverlay(layer)->addRect(x, y, width, height, color, true);
-    this->ui->graphicsView_Map->scene()->update();
-}
-
-void MainWindow::addImage(int x, int y, QString filepath, int layer, bool useCache) {
-    if (!this->ui || !this->ui->graphicsView_Map)
-        return;
-    if (this->ui->graphicsView_Map->getOverlay(layer)->addImage(x, y, filepath, useCache))
-        this->ui->graphicsView_Map->scene()->update();
-}
-
-void MainWindow::createImage(int x, int y, QString filepath, int width, int height, unsigned offset, qreal hScale, qreal vScale, int paletteId, bool setTransparency, int layer, bool useCache) {
-    if (!this->ui || !this->ui->graphicsView_Map || !this->editor || !this->editor->map || !this->editor->map->layout
-     || !this->editor->map->layout->tileset_primary || !this->editor->map->layout->tileset_secondary)
-        return;
-    QList<QRgb> palette;
-    if (paletteId != -1)
-        palette = Tileset::getPalette(paletteId, this->editor->map->layout->tileset_primary, this->editor->map->layout->tileset_secondary);
-    if (this->ui->graphicsView_Map->getOverlay(layer)->addImage(x, y, filepath, useCache, width, height, offset, hScale, vScale, palette, setTransparency))
-        this->ui->graphicsView_Map->scene()->update();
-}
-
-void MainWindow::addTileImage(int x, int y, int tileId, bool xflip, bool yflip, int paletteId, bool setTransparency, int layer) {
-    if (!this->ui || !this->ui->graphicsView_Map || !this->editor || !this->editor->map || !this->editor->map->layout
-     || !this->editor->map->layout->tileset_primary || !this->editor->map->layout->tileset_secondary)
-        return;
-    QImage image = getPalettedTileImage(tileId,
-                                        this->editor->map->layout->tileset_primary,
-                                        this->editor->map->layout->tileset_secondary,
-                                        paletteId)
-                                        .mirrored(xflip, yflip);
-    if (setTransparency)
-        image.setColor(0, qRgba(0, 0, 0, 0));
-    if (this->ui->graphicsView_Map->getOverlay(layer)->addImage(x, y, image))
-        this->ui->graphicsView_Map->scene()->update();
-}
-
-void MainWindow::addTileImage(int x, int y, QJSValue tileObj, bool setTransparency, int layer) {
-    Tile tile = Scripting::toTile(tileObj);
-    this->addTileImage(x, y, tile.tileId, tile.xflip, tile.yflip, tile.palette, setTransparency, layer);
-}
-
-void MainWindow::addMetatileImage(int x, int y, int metatileId, bool setTransparency, int layer) {
-    if (!this->ui || !this->ui->graphicsView_Map || !this->editor || !this->editor->map || !this->editor->map->layout
-     || !this->editor->map->layout->tileset_primary || !this->editor->map->layout->tileset_secondary)
-        return;
-    QImage image = getMetatileImage(static_cast<uint16_t>(metatileId),
-                                    this->editor->map->layout->tileset_primary,
-                                    this->editor->map->layout->tileset_secondary,
-                                    this->editor->map->metatileLayerOrder,
-                                    this->editor->map->metatileLayerOpacity);
-    if (setTransparency)
-        image.setColor(0, qRgba(0, 0, 0, 0));
-    if (this->ui->graphicsView_Map->getOverlay(layer)->addImage(x, y, image))
-        this->ui->graphicsView_Map->scene()->update();
-}
+//======================
+// Editing map tilesets
+//======================
 
 void MainWindow::refreshAfterPaletteChange(Tileset *tileset) {
     if (this->tilesetEditor) {
@@ -719,24 +511,11 @@ int MainWindow::getNumPrimaryTilesetMetatiles() {
     return this->editor->map->layout->tileset_primary->metatiles.length();
 }
 
-int MainWindow::getMaxPrimaryTilesetMetatiles() {
-    if (!this->editor || !this->editor->project)
-        return 0;
-    return this->editor->project->getNumMetatilesPrimary();
-}
-
 int MainWindow::getNumSecondaryTilesetMetatiles() {
     if (!this->editor || !this->editor->map || !this->editor->map->layout || !this->editor->map->layout->tileset_secondary)
         return 0;
     return this->editor->map->layout->tileset_secondary->metatiles.length();
 }
-
-int MainWindow::getMaxSecondaryTilesetMetatiles() {
-    if (!this->editor || !this->editor->project)
-        return 0;
-    return this->editor->project->getNumMetatilesTotal() - this->editor->project->getNumMetatilesPrimary();
-}
-
 
 int MainWindow::getNumPrimaryTilesetTiles() {
     if (!this->editor || !this->editor->map || !this->editor->map->layout || !this->editor->map->layout->tileset_primary)
@@ -744,34 +523,10 @@ int MainWindow::getNumPrimaryTilesetTiles() {
     return this->editor->map->layout->tileset_primary->tiles.length();
 }
 
-int MainWindow::getMaxPrimaryTilesetTiles() {
-    if (!this->editor || !this->editor->project)
-        return 0;
-    return this->editor->project->getNumTilesPrimary();
-}
-
 int MainWindow::getNumSecondaryTilesetTiles() {
     if (!this->editor || !this->editor->map || !this->editor->map->layout || !this->editor->map->layout->tileset_secondary)
         return 0;
     return this->editor->map->layout->tileset_secondary->tiles.length();
-}
-
-int MainWindow::getMaxSecondaryTilesetTiles() {
-    if (!this->editor || !this->editor->project)
-        return 0;
-    return this->editor->project->getNumTilesTotal() - this->editor->project->getNumTilesPrimary();
-}
-
-bool MainWindow::isPrimaryTileset(QString tilesetName) {
-    if (!this->editor || !this->editor->project)
-        return false;
-    return this->editor->project->tilesetLabels["primary"].contains(tilesetName);
-}
-
-bool MainWindow::isSecondaryTileset(QString tilesetName) {
-    if (!this->editor || !this->editor->project)
-        return false;
-    return this->editor->project->tilesetLabels["secondary"].contains(tilesetName);
 }
 
 QString MainWindow::getPrimaryTileset() {
@@ -792,169 +547,6 @@ void MainWindow::setPrimaryTileset(QString tileset) {
 
 void MainWindow::setSecondaryTileset(QString tileset) {
     this->on_comboBox_SecondaryTileset_currentTextChanged(tileset);
-}
-
-void MainWindow::setGridVisibility(bool visible) {
-    this->ui->checkBox_ToggleGrid->setChecked(visible);
-}
-
-bool MainWindow::getGridVisibility() {
-    return this->ui->checkBox_ToggleGrid->isChecked();
-}
-
-void MainWindow::setBorderVisibility(bool visible) {
-    this->editor->toggleBorderVisibility(visible, false);
-}
-
-bool MainWindow::getBorderVisibility() {
-    return this->ui->checkBox_ToggleBorder->isChecked();
-}
-
-void MainWindow::setSmartPathsEnabled(bool visible) {
-    this->ui->checkBox_smartPaths->setChecked(visible);
-}
-
-bool MainWindow::getSmartPathsEnabled() {
-    return this->ui->checkBox_smartPaths->isChecked();
-}
-
-void MainWindow::registerAction(QString functionName, QString actionName, QString shortcut) {
-    if (!this->ui || !this->ui->menuTools)
-        return;
-
-    Scripting::registerAction(functionName, actionName);
-    if (Scripting::numRegisteredActions() == 1) {
-        QAction *section = this->ui->menuTools->addSection("Custom Actions");
-        this->registeredActions.append(section);
-    }
-    QAction *action = this->ui->menuTools->addAction(actionName, [actionName](){
-       Scripting::invokeAction(actionName);
-    });
-    if (!shortcut.isEmpty()) {
-        action->setShortcut(QKeySequence(shortcut));
-    }
-    this->registeredActions.append(action);
-}
-
-void MainWindow::setTimeout(QJSValue callback, int milliseconds) {
-  if (!callback.isCallable() || milliseconds < 0)
-      return;
-
-    QTimer *timer = new QTimer(0);
-    connect(timer, &QTimer::timeout, [=](){
-        this->invokeCallback(callback);
-    });
-    connect(timer, &QTimer::timeout, timer, &QTimer::deleteLater);
-    timer->setSingleShot(true);
-    timer->start(milliseconds);
-}
-
-void MainWindow::invokeCallback(QJSValue callback) {
-    Scripting::tryErrorJS(callback.call());
-}
-
-void MainWindow::log(QString message) {
-    logInfo(message);
-}
-
-void MainWindow::warn(QString message) {
-    logWarn(message);
-}
-
-void MainWindow::error(QString message) {
-    logError(message);
-}
-
-void MainWindow::runMessageBox(QString text, QString informativeText, QString detailedText, QMessageBox::Icon icon) {
-    QMessageBox messageBox(this);
-    messageBox.setText(text);
-    messageBox.setInformativeText(informativeText);
-    messageBox.setDetailedText(detailedText);
-    messageBox.setIcon(icon);
-    messageBox.exec();
-}
-
-void MainWindow::showMessage(QString text, QString informativeText, QString detailedText) {
-    this->runMessageBox(text, informativeText, detailedText, QMessageBox::Information);
-}
-
-void MainWindow::showWarning(QString text, QString informativeText, QString detailedText) {
-    this->runMessageBox(text, informativeText, detailedText, QMessageBox::Warning);
-}
-
-void MainWindow::showError(QString text, QString informativeText, QString detailedText) {
-    this->runMessageBox(text, informativeText, detailedText, QMessageBox::Critical);
-}
-
-bool MainWindow::showQuestion(QString text, QString informativeText, QString detailedText) {
-    QMessageBox messageBox(this);
-    messageBox.setText(text);
-    messageBox.setInformativeText(informativeText);
-    messageBox.setDetailedText(detailedText);
-    messageBox.setIcon(QMessageBox::Question);
-    messageBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-    return messageBox.exec() == QMessageBox::Yes;
-}
-
-QJSValue MainWindow::getInputText(QString title, QString label, QString defaultValue) {
-    bool ok;
-    QString input = QInputDialog::getText(this, title, label, QLineEdit::Normal, defaultValue, &ok);
-    return Scripting::dialogInput(input, ok);
-}
-
-QJSValue MainWindow::getInputNumber(QString title, QString label, double defaultValue, double min, double max, int decimals, double step) {
-    bool ok;
-    double input = QInputDialog::getDouble(this, title, label, defaultValue, min, max, decimals, &ok, Qt::WindowFlags(), step);
-    return Scripting::dialogInput(input, ok);
-}
-
-QJSValue MainWindow::getInputItem(QString title, QString label, QStringList items, int defaultValue, bool editable) {
-    bool ok;
-    QString input = QInputDialog::getItem(this, title, label, items, defaultValue, editable, &ok);
-    return Scripting::dialogInput(input, ok);
-}
-
-QList<int> MainWindow::getMetatileLayerOrder() {
-    if (!this->editor || !this->editor->map)
-        return QList<int>();
-    return this->editor->map->metatileLayerOrder;
-}
-
-void MainWindow::setMetatileLayerOrder(QList<int> order) {
-    if (!this->editor || !this->editor->map)
-        return;
-
-    const int numLayers = 3;
-    int size = order.size();
-    if (size < numLayers) {
-        logError(QString("Metatile layer order has insufficient elements (%1), needs at least %2.").arg(size).arg(numLayers));
-        return;
-    }
-    bool invalid = false;
-    for (int i = 0; i < numLayers; i++) {
-        int layer = order.at(i);
-        if (layer < 0 || layer >= numLayers) {
-            logError(QString("'%1' is not a valid metatile layer order value, must be in range 0-%2.").arg(layer).arg(numLayers - 1));
-            invalid = true;
-        }
-    }
-    if (invalid) return;
-
-    this->editor->map->metatileLayerOrder = order;
-    this->refreshAfterPalettePreviewChange();
-}
-
-QList<float> MainWindow::getMetatileLayerOpacity() {
-    if (!this->editor || !this->editor->map)
-        return QList<float>();
-    return this->editor->map->metatileLayerOpacity;
-}
-
-void MainWindow::setMetatileLayerOpacity(QList<float> order) {
-    if (!this->editor || !this->editor->map)
-        return;
-    this->editor->map->metatileLayerOpacity = order;
-    this->refreshAfterPalettePreviewChange();
 }
 
 void MainWindow::saveMetatilesByMetatileId(int metatileId) {
@@ -1184,55 +776,9 @@ QJSValue MainWindow::getTilePixels(int tileId) {
     return pixelArray;
 }
 
-int MainWindow::getNumTilesInMetatile() {
-    return projectConfig.getTripleLayerMetatilesEnabled() ? 12 : 8;
-}
-
-int MainWindow::getNumMetatileLayers() {
-    return projectConfig.getTripleLayerMetatilesEnabled() ? 3 : 2;
-}
-
-QString MainWindow::getBaseGameVersion() {
-    return projectConfig.getBaseGameVersionString();
-}
-
-QJSValue MainWindow::getPorymapVersion() {
-    AboutPorymap *window = new AboutPorymap(this);
-    QJSValue version = Scripting::version(window->getVersionNumbers());
-    delete window;
-    return version;
-}
-
-QList<QString> MainWindow::getCustomScripts() {
-    return projectConfig.getCustomScripts();
-}
-
-int MainWindow::getMainTab() {
-    if (!this->ui || !this->ui->mainTabBar)
-        return -1;
-    return this->ui->mainTabBar->currentIndex();
-}
-
-void MainWindow::setMainTab(int index) {
-    if (!this->ui || !this->ui->mainTabBar || index < 0 || index >= this->ui->mainTabBar->count())
-        return;
-    // Can't select Wild Encounters tab if it's disabled
-    if (index == 4 && !projectConfig.getEncounterJsonActive())
-        return;
-    this->on_mainTabBar_tabBarClicked(index);
-}
-
-int MainWindow::getMapViewTab() {
-    if (!this->ui || !this->ui->mapViewTab)
-        return -1;
-    return this->ui->mapViewTab->currentIndex();
-}
-
-void MainWindow::setMapViewTab(int index) {
-    if (this->getMainTab() != 0 || !this->ui->mapViewTab || index < 0 || index >= this->ui->mapViewTab->count())
-        return;
-    this->on_mapViewTab_tabBarClicked(index);
-}
+//=====================
+// Editing map header
+//=====================
 
 bool MainWindow::gameStringToBool(QString s) {
     return (s.toInt() > 0 || s == "TRUE");

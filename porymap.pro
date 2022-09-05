@@ -37,7 +37,10 @@ SOURCES += src/core/block.cpp \
     src/lib/fex/parser_util.cpp \
     src/lib/orderedjson.cpp \
     src/core/regionmapeditcommands.cpp \
-    src/mainwindow_scriptapi.cpp \
+    src/script_api/api_map.cpp \
+    src/script_api/api_overlay.cpp \
+    src/script_api/api_util.cpp \
+    src/script_api/scripting.cpp \
     src/ui/aboutporymap.cpp \
     src/ui/draggablepixmapitem.cpp \
     src/ui/bordermetatilespixmapitem.cpp \
@@ -88,7 +91,6 @@ SOURCES += src/core/block.cpp \
     src/main.cpp \
     src/mainwindow.cpp \
     src/project.cpp \
-    src/scripting.cpp \
     src/settings.cpp \
     src/log.cpp
 
