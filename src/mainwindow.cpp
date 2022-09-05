@@ -540,6 +540,7 @@ bool MainWindow::openProject(QString dir) {
     if (success) {
         showWindowTitle();
         this->statusBar()->showMessage(QString("Opened project %1").arg(nativeDir));
+        Scripting::cb_ProjectOpened(dir);
     } else {
         this->statusBar()->showMessage(QString("Failed to open project %1").arg(nativeDir));
         QMessageBox msgBox(this);
@@ -550,14 +551,6 @@ bool MainWindow::openProject(QString dir) {
         msgBox.critical(nullptr, "Error Opening Project", errorMsg);
 
     }
-
-    if (success) {
-        for (auto action : this->registeredActions) {
-            this->ui->menuTools->removeAction(action);
-        }
-        Scripting::cb_ProjectOpened(dir);
-    }
-
     projectOpenFailure = !success;
     return success;
 }
@@ -3237,8 +3230,4 @@ void MainWindow::closeEvent(QCloseEvent *event) {
     shortcutsConfig.save();
 
     QMainWindow::closeEvent(event);
-}
-
-MapView *MainWindow::getMapView() {
-    return this->ui->graphicsView_Map;
 }

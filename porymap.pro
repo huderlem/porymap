@@ -169,6 +169,7 @@ HEADERS  += include/core/block.h \
     include/ui/preferenceeditor.h \
     include/ui/regionmappropertiesdialog.h \
     include/ui/colorpicker.h \
+    include/api_util.h \
     include/config.h \
     include/editor.h \
     include/mainwindow.h \

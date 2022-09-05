@@ -3,16 +3,20 @@
 #include "scripting.h"
 #include "config.h"
 
-void MainWindow::registerAction(QString functionName, QString actionName, QString shortcut) {
-    if (!this->ui || !this->ui->menuTools)
+ScriptUtility::ScriptUtility(MainWindow *mainWindow) {
+    this->window = mainWindow;
+}
+
+void ScriptUtility::registerAction(QString functionName, QString actionName, QString shortcut) {
+    if (!window || !window->ui || !window->ui->menuTools)
         return;
 
-    Scripting::registerAction(functionName, actionName);
-    if (Scripting::numRegisteredActions() == 1) {
-        QAction *section = this->ui->menuTools->addSection("Custom Actions");
+    this->actionMap.insert(actionName, functionName);
+    if (this->actionMap.size() == 1) {
+        QAction *section = window->ui->menuTools->addSection("Custom Actions");
         this->registeredActions.append(section);
     }
-    QAction *action = this->ui->menuTools->addAction(actionName, [actionName](){
+    QAction *action = window->ui->menuTools->addAction(actionName, [actionName](){
        Scripting::invokeAction(actionName);
     });
     if (!shortcut.isEmpty()) {
@@ -21,37 +25,47 @@ void MainWindow::registerAction(QString functionName, QString actionName, QStrin
     this->registeredActions.append(action);
 }
 
-void MainWindow::setTimeout(QJSValue callback, int milliseconds) {
+void ScriptUtility::clearActions() {
+    for (auto action : this->registeredActions) {
+        window->ui->menuTools->removeAction(action);
+    }
+}
+
+QString ScriptUtility::getActionFunctionName(QString actionName) {
+    return this->actionMap.value(actionName);
+}
+
+void ScriptUtility::setTimeout(QJSValue callback, int milliseconds) {
   if (!callback.isCallable() || milliseconds < 0)
       return;
 
     QTimer *timer = new QTimer(0);
     connect(timer, &QTimer::timeout, [=](){
-        this->invokeCallback(callback);
+        this->callTimeoutFunction(callback);
     });
     connect(timer, &QTimer::timeout, timer, &QTimer::deleteLater);
     timer->setSingleShot(true);
     timer->start(milliseconds);
 }
 
-void MainWindow::invokeCallback(QJSValue callback) {
+void ScriptUtility::callTimeoutFunction(QJSValue callback) {
     Scripting::tryErrorJS(callback.call());
 }
 
-void MainWindow::log(QString message) {
+void ScriptUtility::log(QString message) {
     logInfo(message);
 }
 
-void MainWindow::warn(QString message) {
+void ScriptUtility::warn(QString message) {
     logWarn(message);
 }
 
-void MainWindow::error(QString message) {
+void ScriptUtility::error(QString message) {
     logError(message);
 }
 
-void MainWindow::runMessageBox(QString text, QString informativeText, QString detailedText, QMessageBox::Icon icon) {
-    QMessageBox messageBox(this);
+void ScriptUtility::runMessageBox(QString text, QString informativeText, QString detailedText, QMessageBox::Icon icon) {
+    QMessageBox messageBox(window);
     messageBox.setText(text);
     messageBox.setInformativeText(informativeText);
     messageBox.setDetailedText(detailedText);
@@ -59,20 +73,20 @@ void MainWindow::runMessageBox(QString text, QString informativeText, QString de
     messageBox.exec();
 }
 
-void MainWindow::showMessage(QString text, QString informativeText, QString detailedText) {
+void ScriptUtility::showMessage(QString text, QString informativeText, QString detailedText) {
     this->runMessageBox(text, informativeText, detailedText, QMessageBox::Information);
 }
 
-void MainWindow::showWarning(QString text, QString informativeText, QString detailedText) {
+void ScriptUtility::showWarning(QString text, QString informativeText, QString detailedText) {
     this->runMessageBox(text, informativeText, detailedText, QMessageBox::Warning);
 }
 
-void MainWindow::showError(QString text, QString informativeText, QString detailedText) {
+void ScriptUtility::showError(QString text, QString informativeText, QString detailedText) {
     this->runMessageBox(text, informativeText, detailedText, QMessageBox::Critical);
 }
 
-bool MainWindow::showQuestion(QString text, QString informativeText, QString detailedText) {
-    QMessageBox messageBox(this);
+bool ScriptUtility::showQuestion(QString text, QString informativeText, QString detailedText) {
+    QMessageBox messageBox(window);
     messageBox.setText(text);
     messageBox.setInformativeText(informativeText);
     messageBox.setDetailedText(detailedText);
@@ -81,83 +95,87 @@ bool MainWindow::showQuestion(QString text, QString informativeText, QString det
     return messageBox.exec() == QMessageBox::Yes;
 }
 
-QJSValue MainWindow::getInputText(QString title, QString label, QString defaultValue) {
+QJSValue ScriptUtility::getInputText(QString title, QString label, QString defaultValue) {
     bool ok;
-    QString input = QInputDialog::getText(this, title, label, QLineEdit::Normal, defaultValue, &ok);
+    QString input = QInputDialog::getText(window, title, label, QLineEdit::Normal, defaultValue, &ok);
     return Scripting::dialogInput(input, ok);
 }
 
-QJSValue MainWindow::getInputNumber(QString title, QString label, double defaultValue, double min, double max, int decimals, double step) {
+QJSValue ScriptUtility::getInputNumber(QString title, QString label, double defaultValue, double min, double max, int decimals, double step) {
     bool ok;
-    double input = QInputDialog::getDouble(this, title, label, defaultValue, min, max, decimals, &ok, Qt::WindowFlags(), step);
+    double input = QInputDialog::getDouble(window, title, label, defaultValue, min, max, decimals, &ok, Qt::WindowFlags(), step);
     return Scripting::dialogInput(input, ok);
 }
 
-QJSValue MainWindow::getInputItem(QString title, QString label, QStringList items, int defaultValue, bool editable) {
+QJSValue ScriptUtility::getInputItem(QString title, QString label, QStringList items, int defaultValue, bool editable) {
     bool ok;
-    QString input = QInputDialog::getItem(this, title, label, items, defaultValue, editable, &ok);
+    QString input = QInputDialog::getItem(window, title, label, items, defaultValue, editable, &ok);
     return Scripting::dialogInput(input, ok);
 }
 
-int MainWindow::getMainTab() {
-    if (!this->ui || !this->ui->mainTabBar)
+int ScriptUtility::getMainTab() {
+    if (!window || !window->ui || !window->ui->mainTabBar)
         return -1;
-    return this->ui->mainTabBar->currentIndex();
+    return window->ui->mainTabBar->currentIndex();
 }
 
-void MainWindow::setMainTab(int index) {
-    if (!this->ui || !this->ui->mainTabBar || index < 0 || index >= this->ui->mainTabBar->count())
+void ScriptUtility::setMainTab(int index) {
+    if (!window || !window->ui || !window->ui->mainTabBar || index < 0 || index >= window->ui->mainTabBar->count())
         return;
     // Can't select Wild Encounters tab if it's disabled
     if (index == 4 && !projectConfig.getEncounterJsonActive())
         return;
-    this->on_mainTabBar_tabBarClicked(index);
+    window->on_mainTabBar_tabBarClicked(index);
 }
 
-int MainWindow::getMapViewTab() {
-    if (!this->ui || !this->ui->mapViewTab)
+int ScriptUtility::getMapViewTab() {
+    if (!window || !window->ui || !window->ui->mapViewTab)
         return -1;
-    return this->ui->mapViewTab->currentIndex();
+    return window->ui->mapViewTab->currentIndex();
 }
 
-void MainWindow::setMapViewTab(int index) {
-    if (this->getMainTab() != 0 || !this->ui->mapViewTab || index < 0 || index >= this->ui->mapViewTab->count())
+void ScriptUtility::setMapViewTab(int index) {
+    if (this->getMainTab() != 0 || !window->ui->mapViewTab || index < 0 || index >= window->ui->mapViewTab->count())
         return;
-    this->on_mapViewTab_tabBarClicked(index);
+    window->on_mapViewTab_tabBarClicked(index);
 }
 
-void MainWindow::setGridVisibility(bool visible) {
-    this->ui->checkBox_ToggleGrid->setChecked(visible);
+void ScriptUtility::setGridVisibility(bool visible) {
+    window->ui->checkBox_ToggleGrid->setChecked(visible);
 }
 
-bool MainWindow::getGridVisibility() {
-    return this->ui->checkBox_ToggleGrid->isChecked();
+bool ScriptUtility::getGridVisibility() {
+    return window->ui->checkBox_ToggleGrid->isChecked();
 }
 
-void MainWindow::setBorderVisibility(bool visible) {
-    this->editor->toggleBorderVisibility(visible, false);
+void ScriptUtility::setBorderVisibility(bool visible) {
+    window->editor->toggleBorderVisibility(visible, false);
 }
 
-bool MainWindow::getBorderVisibility() {
-    return this->ui->checkBox_ToggleBorder->isChecked();
+bool ScriptUtility::getBorderVisibility() {
+    return window->ui->checkBox_ToggleBorder->isChecked();
 }
 
-void MainWindow::setSmartPathsEnabled(bool visible) {
-    this->ui->checkBox_smartPaths->setChecked(visible);
+void ScriptUtility::setSmartPathsEnabled(bool visible) {
+    window->ui->checkBox_smartPaths->setChecked(visible);
 }
 
-bool MainWindow::getSmartPathsEnabled() {
-    return this->ui->checkBox_smartPaths->isChecked();
+bool ScriptUtility::getSmartPathsEnabled() {
+    return window->ui->checkBox_smartPaths->isChecked();
 }
 
-QList<int> MainWindow::getMetatileLayerOrder() {
-    if (!this->editor || !this->editor->map)
+QList<QString> ScriptUtility::getCustomScripts() {
+    return projectConfig.getCustomScripts();
+}
+
+QList<int> ScriptUtility::getMetatileLayerOrder() {
+    if (!window || !window->editor || !window->editor->map)
         return QList<int>();
-    return this->editor->map->metatileLayerOrder;
+    return window->editor->map->metatileLayerOrder;
 }
 
-void MainWindow::setMetatileLayerOrder(QList<int> order) {
-    if (!this->editor || !this->editor->map)
+void ScriptUtility::setMetatileLayerOrder(QList<int> order) {
+    if (!window || !window->editor || !window->editor->map)
         return;
 
     const int numLayers = 3;
@@ -176,36 +194,31 @@ void MainWindow::setMetatileLayerOrder(QList<int> order) {
     }
     if (invalid) return;
 
-    this->editor->map->metatileLayerOrder = order;
-    this->refreshAfterPalettePreviewChange();
+    window->editor->map->metatileLayerOrder = order;
+    window->refreshAfterPalettePreviewChange();
 }
 
-QList<float> MainWindow::getMetatileLayerOpacity() {
-    if (!this->editor || !this->editor->map)
+QList<float> ScriptUtility::getMetatileLayerOpacity() {
+    if (!window || !window->editor || !window->editor->map)
         return QList<float>();
-    return this->editor->map->metatileLayerOpacity;
+    return window->editor->map->metatileLayerOpacity;
 }
 
-void MainWindow::setMetatileLayerOpacity(QList<float> order) {
-    if (!this->editor || !this->editor->map)
+void ScriptUtility::setMetatileLayerOpacity(QList<float> order) {
+    if (!window || !window->editor || !window->editor->map)
         return;
-    this->editor->map->metatileLayerOpacity = order;
-    this->refreshAfterPalettePreviewChange();
+    window->editor->map->metatileLayerOpacity = order;
+    window->refreshAfterPalettePreviewChange();
 }
 
-bool MainWindow::isPrimaryTileset(QString tilesetName) {
-    if (!this->editor || !this->editor->project)
+bool ScriptUtility::isPrimaryTileset(QString tilesetName) {
+    if (!window || !window->editor || !window->editor->project)
         return false;
-    return this->editor->project->tilesetLabels["primary"].contains(tilesetName);
+    return window->editor->project->tilesetLabels["primary"].contains(tilesetName);
 }
 
-bool MainWindow::isSecondaryTileset(QString tilesetName) {
-    if (!this->editor || !this->editor->project)
+bool ScriptUtility::isSecondaryTileset(QString tilesetName) {
+    if (!window || !window->editor || !window->editor->project)
         return false;
-    return this->editor->project->tilesetLabels["secondary"].contains(tilesetName);
+    return window->editor->project->tilesetLabels["secondary"].contains(tilesetName);
 }
-
-QList<QString> MainWindow::getCustomScripts() {
-    return projectConfig.getCustomScripts();
-}
-

@@ -25,6 +25,7 @@ Scripting *instance = nullptr;
 void Scripting::init(MainWindow *mainWindow) {
     if (instance) {
         instance->engine->setInterrupted(true);
+        instance->scriptUtility->clearActions();
         qDeleteAll(instance->imageCache);
         delete instance;
     }
@@ -38,6 +39,7 @@ Scripting::Scripting(MainWindow *mainWindow) {
         this->filepaths.append(script);
     }
     this->loadModules(this->filepaths);
+    this->scriptUtility = new ScriptUtility(mainWindow);
 }
 
 void Scripting::loadModules(QStringList moduleFiles) {
@@ -58,7 +60,8 @@ void Scripting::populateGlobalObject(MainWindow *mainWindow) {
     if (!instance || !instance->engine) return;
 
     instance->engine->globalObject().setProperty("map", instance->engine->newQObject(mainWindow));
-    instance->engine->globalObject().setProperty("overlay", instance->engine->newQObject(mainWindow->getMapView()));
+    instance->engine->globalObject().setProperty("overlay", instance->engine->newQObject(mainWindow->ui->graphicsView_Map));
+    instance->engine->globalObject().setProperty("utility", instance->engine->newQObject(instance->scriptUtility));
 
     QJSValue constants = instance->engine->newObject();
 
@@ -91,6 +94,7 @@ void Scripting::populateGlobalObject(MainWindow *mainWindow) {
     // Prevent changes to the object properties of the global object
     instance->engine->evaluate("Object.freeze(map);");
     instance->engine->evaluate("Object.freeze(overlay);");
+    instance->engine->evaluate("Object.freeze(utility);");
     instance->engine->evaluate("Object.freeze(constants.version);");
     instance->engine->evaluate("Object.freeze(constants);");
 }
@@ -125,22 +129,12 @@ void Scripting::invokeCallback(CallbackType type, QJSValueList args) {
     }
 }
 
-void Scripting::registerAction(QString functionName, QString actionName) {
-    if (!instance) return;
-    instance->registeredActions.insert(actionName, functionName);
-}
-
-int Scripting::numRegisteredActions() {
-    if (!instance) return 0;
-    return instance->registeredActions.size();
-}
-
 void Scripting::invokeAction(QString actionName) {
-    if (!instance) return;
-    if (!instance->registeredActions.contains(actionName)) return;
+    if (!instance || !instance->scriptUtility) return;
+    QString functionName = instance->scriptUtility->getActionFunctionName(actionName);
+    if (functionName.isEmpty()) return;
 
     bool foundFunction = false;
-    QString functionName = instance->registeredActions.value(actionName);
     for (QJSValue module : instance->modules) {
         QJSValue callbackFunction = module.property(functionName);
         if (callbackFunction.isUndefined() || !callbackFunction.isCallable())

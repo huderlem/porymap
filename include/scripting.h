@@ -4,6 +4,7 @@
 
 #include "mainwindow.h"
 #include "block.h"
+#include "api_util.h"
 
 #include <QStringList>
 #include <QJSEngine>
@@ -63,8 +64,8 @@ private:
     QJSEngine *engine;
     QStringList filepaths;
     QList<QJSValue> modules;
-    QMap<QString, QString> registeredActions;
     QMap<QString, const QImage*> imageCache;
+    ScriptUtility *scriptUtility;
 
     void loadModules(QStringList moduleFiles);
     void invokeCallback(CallbackType type, QJSValueList args);

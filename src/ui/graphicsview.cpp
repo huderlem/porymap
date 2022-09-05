@@ -42,9 +42,9 @@ void MapView::drawForeground(QPainter *painter, const QRectF&) {
 }
 
 void MapView::clearOverlayMap() {
-    foreach (Overlay * layer, this->overlayMap) {
-        layer->clearItems();
-        delete layer;
+    foreach (Overlay * overlay, this->overlayMap) {
+        overlay->clearItems();
+        delete overlay;
     }
     this->overlayMap.clear();
 }

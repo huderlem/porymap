@@ -42,8 +42,6 @@ public:
     MainWindow(const MainWindow &) = delete;
     MainWindow & operator = (const MainWindow &) = delete;
 
-    MapView *getMapView();
-
     // Scripting API
     Q_INVOKABLE QJSValue getBlock(int x, int y);
     void tryRedrawMapArea(bool forceRedraw);
@@ -104,36 +102,10 @@ public:
     Q_INVOKABLE int getNumSecondaryTilesetMetatiles();
     Q_INVOKABLE int getNumPrimaryTilesetTiles();
     Q_INVOKABLE int getNumSecondaryTilesetTiles();
-    Q_INVOKABLE bool isPrimaryTileset(QString tilesetName);
-    Q_INVOKABLE bool isSecondaryTileset(QString tilesetName);
     Q_INVOKABLE QString getPrimaryTileset();
     Q_INVOKABLE QString getSecondaryTileset();
     Q_INVOKABLE void setPrimaryTileset(QString tileset);
     Q_INVOKABLE void setSecondaryTileset(QString tileset);
-    Q_INVOKABLE void setGridVisibility(bool visible);
-    Q_INVOKABLE bool getGridVisibility();
-    Q_INVOKABLE void setBorderVisibility(bool visible);
-    Q_INVOKABLE bool getBorderVisibility();
-    Q_INVOKABLE void setSmartPathsEnabled(bool visible);
-    Q_INVOKABLE bool getSmartPathsEnabled();
-    Q_INVOKABLE void registerAction(QString functionName, QString actionName, QString shortcut = "");
-    Q_INVOKABLE void setTimeout(QJSValue callback, int milliseconds);
-    void invokeCallback(QJSValue callback);
-    Q_INVOKABLE void log(QString message);
-    Q_INVOKABLE void warn(QString message);
-    Q_INVOKABLE void error(QString message);
-    void runMessageBox(QString text, QString informativeText, QString detailedText, QMessageBox::Icon icon);
-    Q_INVOKABLE void showMessage(QString text, QString informativeText = "", QString detailedText = "");
-    Q_INVOKABLE void showWarning(QString text, QString informativeText = "", QString detailedText = "");
-    Q_INVOKABLE void showError(QString text, QString informativeText = "", QString detailedText = "");
-    Q_INVOKABLE bool showQuestion(QString text, QString informativeText = "", QString detailedText = "");
-    Q_INVOKABLE QJSValue getInputText(QString title, QString label, QString defaultValue = "");
-    Q_INVOKABLE QJSValue getInputNumber(QString title, QString label, double defaultValue = 0, double min = INT_MIN, double max = INT_MAX, int decimals = 0, double step = 1);
-    Q_INVOKABLE QJSValue getInputItem(QString title, QString label, QStringList items, int defaultValue = 0, bool editable = false);
-    Q_INVOKABLE QList<int> getMetatileLayerOrder();
-    Q_INVOKABLE void setMetatileLayerOrder(QList<int> order);
-    Q_INVOKABLE QList<float> getMetatileLayerOpacity();
-    Q_INVOKABLE void setMetatileLayerOpacity(QList<float> order);
     void saveMetatilesByMetatileId(int metatileId);
     void saveMetatileAttributesByMetatileId(int metatileId);
     Metatile * getMetatile(int metatileId);
@@ -157,11 +129,6 @@ public:
     Q_INVOKABLE void setMetatileTiles(int metatileId, QJSValue tilesObj, int tileStart = 0, int tileEnd = -1, bool forceRedraw = true);
     Q_INVOKABLE void setMetatileTiles(int metatileId, int tileId, bool xflip, bool yflip, int palette, int tileStart = 0, int tileEnd = -1, bool forceRedraw = true);
     Q_INVOKABLE QJSValue getTilePixels(int tileId);
-    Q_INVOKABLE QList<QString> getCustomScripts();
-    Q_INVOKABLE int getMainTab();
-    Q_INVOKABLE void setMainTab(int index);
-    Q_INVOKABLE int getMapViewTab();
-    Q_INVOKABLE void setMapViewTab(int index);
     bool gameStringToBool(QString s);
     Q_INVOKABLE QString getSong();
     Q_INVOKABLE void setSong(QString song);
@@ -185,6 +152,10 @@ public:
     Q_INVOKABLE void setAllowEscaping(bool allow);
     Q_INVOKABLE int getFloorNumber();
     Q_INVOKABLE void setFloorNumber(int floorNumber);
+
+public slots:
+    void on_mainTabBar_tabBarClicked(int index);
+    void on_mapViewTab_tabBarClicked(int index);
 
 private slots:
     void on_action_Open_Project_triggered();
@@ -231,9 +202,6 @@ private slots:
     void on_actionUse_Poryscript_triggered(bool checked);
     void on_actionOpen_Recent_Project_On_Launch_triggered(bool checked);
     void on_actionEdit_Shortcuts_triggered();
-
-    void on_mainTabBar_tabBarClicked(int index);
-    void on_mapViewTab_tabBarClicked(int index);
 
     void on_actionZoom_In_triggered();
     void on_actionZoom_Out_triggered();
@@ -318,8 +286,11 @@ private slots:
     void on_actionEdit_Preferences_triggered();
     void togglePreferenceSpecificUi();
 
-private:
+public:
     Ui::MainWindow *ui;
+    Editor *editor = nullptr;
+
+private:
     QLabel *label_MapRulerStatus = nullptr;
     QPointer<TilesetEditor> tilesetEditor = nullptr;
     QPointer<RegionMapEditor> regionMapEditor = nullptr;
@@ -331,7 +302,6 @@ private:
     QStandardItemModel *mapListModel;
     QList<QStandardItem*> *mapGroupItemsList;
     QMap<QString, QModelIndex> mapListIndexes;
-    Editor *editor = nullptr;
     QIcon* mapIcon;
     QIcon* mapEditedIcon;
     QIcon* mapOpenedIcon;
@@ -355,7 +325,6 @@ private:
     DraggablePixmapItem *selectedBG;
     DraggablePixmapItem *selectedHealspot;
 
-    QList<QAction *> registeredActions;
     QVector<QToolButton *> openScriptButtons;
 
     bool isProgrammaticEventTabChange;
