@@ -3,20 +3,20 @@
 #include <QPainter>
 
 void CurrentSelectedMetatilesPixmapItem::draw() {
-    QList<uint16_t> *selectedMetatiles = metatileSelector->getSelectedMetatiles();
-    QPoint selectionDimensions = metatileSelector->getSelectionDimensions();
-    int width = selectionDimensions.x() * 16;
-    int height = selectionDimensions.y() * 16;
+    MetatileSelection selection = metatileSelector->getMetatileSelection();
+    int width = selection.dimensions.x() * 16;
+    int height = selection.dimensions.y() * 16;
     QImage image(width, height, QImage::Format_RGBA8888);
     QPainter painter(&image);
 
-    for (int i = 0; i < selectionDimensions.x(); i++) {
-        for (int j = 0; j < selectionDimensions.y(); j++) {
+    for (int i = 0; i < selection.dimensions.x(); i++) {
+        for (int j = 0; j < selection.dimensions.y(); j++) {
             int x = i * 16;
             int y = j * 16;
-            int index = j * selectionDimensions.x() + i;
+            int index = j * selection.dimensions.x() + i;
+            MetatileSelectionItem item = selection.metatileItems.at(index);
             QImage metatile_image = getMetatileImage(
-                        selectedMetatiles->at(index),
+                        item.metatileId,
                         map->layout->tileset_primary,
                         map->layout->tileset_secondary,
                         map->metatileLayerOrder,
