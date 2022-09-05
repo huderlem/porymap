@@ -1,6 +1,6 @@
 #pragma once
-#ifndef APIUTIL_H
-#define APIUTIL_H
+#ifndef SCRIPTUTILITY_H
+#define SCRIPTUTILITY_H
 
 #include "mainwindow.h"
 
@@ -51,4 +51,4 @@ private:
     QMap<QString, QString> actionMap;
 };
 
-#endif // APIUTIL_H
+#endif // SCRIPTUTILITY_H
