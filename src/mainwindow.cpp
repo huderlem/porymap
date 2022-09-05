@@ -604,7 +604,7 @@ void MainWindow::on_action_Open_Project_triggered()
     if (!dir.isEmpty()) {
         if (this->editor && this->editor->project) {
             Scripting::cb_ProjectClosed(this->editor->project->root);
-            this->ui->graphicsView_Map->clearOverlays();
+            this->ui->graphicsView_Map->clearOverlayMap();
         }
         porymapConfig.setRecentProject(dir);
         setWindowDisabled(!openProject(dir));
@@ -3235,4 +3235,8 @@ void MainWindow::closeEvent(QCloseEvent *event) {
     shortcutsConfig.save();
 
     QMainWindow::closeEvent(event);
+}
+
+MapView *MainWindow::getMapView() {
+    return this->ui->graphicsView_Map;
 }

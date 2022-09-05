@@ -42,6 +42,8 @@ public:
     MainWindow(const MainWindow &) = delete;
     MainWindow & operator = (const MainWindow &) = delete;
 
+    MapView *getMapView();
+
     // Scripting API
     Q_INVOKABLE QJSValue getBlock(int x, int y);
     void tryRedrawMapArea(bool forceRedraw);
@@ -76,40 +78,6 @@ public:
     Q_INVOKABLE void setBorderDimensions(int width, int height);
     Q_INVOKABLE void setBorderWidth(int width);
     Q_INVOKABLE void setBorderHeight(int height);
-    Q_INVOKABLE void clearOverlay(int layer = 0);
-    Q_INVOKABLE void clearOverlays();
-    Q_INVOKABLE void hideOverlay(int layer = 0);
-    Q_INVOKABLE void hideOverlays();
-    Q_INVOKABLE void showOverlay(int layer = 0);
-    Q_INVOKABLE void showOverlays();
-    Q_INVOKABLE bool getOverlayVisibility(int layer = 0);
-    Q_INVOKABLE void setOverlayVisibility(bool visible, int layer = 0);
-    Q_INVOKABLE void setOverlaysVisibility(bool visible);
-    Q_INVOKABLE int getOverlayX(int layer = 0);
-    Q_INVOKABLE int getOverlayY(int layer = 0);
-    Q_INVOKABLE void setOverlayX(int x, int layer = 0);
-    Q_INVOKABLE void setOverlayY(int y, int layer = 0);
-    Q_INVOKABLE void setOverlaysX(int x);
-    Q_INVOKABLE void setOverlaysY(int y);
-    Q_INVOKABLE QJSValue getOverlayPosition(int layer = 0);
-    Q_INVOKABLE void setOverlayPosition(int x, int y, int layer = 0);
-    Q_INVOKABLE void setOverlaysPosition(int x, int y);
-    Q_INVOKABLE void moveOverlay(int deltaX, int deltaY, int layer = 0);
-    Q_INVOKABLE void moveOverlays(int deltaX, int deltaY);
-    Q_INVOKABLE int getOverlayOpacity(int layer);
-    Q_INVOKABLE void setOverlayOpacity(int opacity, int layer = 0);
-    Q_INVOKABLE void setOverlaysOpacity(int opacity);
-    Q_INVOKABLE void addText(QString text, int x, int y, QString color = "#000000", int fontSize = 12, int layer = 0);
-    Q_INVOKABLE void addRect(int x, int y, int width, int height, QString color = "#000000", int layer = 0);
-    Q_INVOKABLE void addFilledRect(int x, int y, int width, int height, QString color = "#000000", int layer = 0);
-    Q_INVOKABLE void addImage(int x, int y, QString filepath, int layer = 0, bool useCache = true);
-    Q_INVOKABLE void createImage(int x, int y, QString filepath,
-                                 int width = -1, int height = -1, unsigned offset = 0,
-                                 qreal hScale = 1, qreal vScale = 1, int paletteId = -1, bool setTransparency = false,
-                                 int layer = 0, bool useCache = true);
-    Q_INVOKABLE void addTileImage(int x, int y, int tileId, bool xflip, bool yflip, int paletteId, bool setTransparency = false, int layer = 0);
-    Q_INVOKABLE void addTileImage(int x, int y, QJSValue tileObj, bool setTransparency = false, int layer = 0);
-    Q_INVOKABLE void addMetatileImage(int x, int y, int metatileId, bool setTransparency = false, int layer = 0);
     void refreshAfterPaletteChange(Tileset *tileset);
     void setTilesetPalette(Tileset *tileset, int paletteIndex, QList<QList<int>> colors);
     Q_INVOKABLE void setPrimaryTilesetPalette(int paletteIndex, QList<QList<int>> colors);
@@ -225,7 +193,6 @@ public:
     Q_INVOKABLE void setAllowEscaping(bool allow);
     Q_INVOKABLE int getFloorNumber();
     Q_INVOKABLE void setFloorNumber(int floorNumber);
-
 
 private slots:
     void on_action_Open_Project_triggered();

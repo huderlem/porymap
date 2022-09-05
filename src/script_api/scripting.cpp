@@ -33,6 +33,7 @@ Scripting::Scripting(MainWindow *mainWindow) {
     this->engine = new QJSEngine(mainWindow);
     this->engine->installExtensions(QJSEngine::ConsoleExtension);
     this->engine->globalObject().setProperty("map", this->engine->newQObject(mainWindow));
+    this->engine->globalObject().setProperty("overlay", this->engine->newQObject(mainWindow->getMapView()));
     for (QString script : projectConfig.getCustomScripts()) {
         this->filepaths.append(script);
     }

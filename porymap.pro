@@ -137,6 +137,7 @@ HEADERS  += include/core/block.h \
     include/ui/graphicsview.h \
     include/ui/imageproviders.h \
     include/ui/mappixmapitem.h \
+    include/ui/mapview.h \
     include/ui/regionmappixmapitem.h \
     include/ui/citymappixmapitem.h \
     include/ui/mapsceneeventfilter.h \
