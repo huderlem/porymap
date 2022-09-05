@@ -101,13 +101,9 @@ public:
     Q_INVOKABLE QJSValue getSecondaryTilesetPalettePreview(int paletteIndex);
     Q_INVOKABLE QJSValue getSecondaryTilesetPalettesPreview();
     Q_INVOKABLE int getNumPrimaryTilesetMetatiles();
-    Q_INVOKABLE int getMaxPrimaryTilesetMetatiles();
     Q_INVOKABLE int getNumSecondaryTilesetMetatiles();
-    Q_INVOKABLE int getMaxSecondaryTilesetMetatiles();
     Q_INVOKABLE int getNumPrimaryTilesetTiles();
-    Q_INVOKABLE int getMaxPrimaryTilesetTiles();
     Q_INVOKABLE int getNumSecondaryTilesetTiles();
-    Q_INVOKABLE int getMaxSecondaryTilesetTiles();
     Q_INVOKABLE bool isPrimaryTileset(QString tilesetName);
     Q_INVOKABLE bool isSecondaryTileset(QString tilesetName);
     Q_INVOKABLE QString getPrimaryTileset();
@@ -161,10 +157,6 @@ public:
     Q_INVOKABLE void setMetatileTiles(int metatileId, QJSValue tilesObj, int tileStart = 0, int tileEnd = -1, bool forceRedraw = true);
     Q_INVOKABLE void setMetatileTiles(int metatileId, int tileId, bool xflip, bool yflip, int palette, int tileStart = 0, int tileEnd = -1, bool forceRedraw = true);
     Q_INVOKABLE QJSValue getTilePixels(int tileId);
-    Q_INVOKABLE int getNumTilesInMetatile();
-    Q_INVOKABLE int getNumMetatileLayers();
-    Q_INVOKABLE QString getBaseGameVersion();
-    Q_INVOKABLE QJSValue getPorymapVersion();
     Q_INVOKABLE QList<QString> getCustomScripts();
     Q_INVOKABLE int getMainTab();
     Q_INVOKABLE void setMainTab(int index);

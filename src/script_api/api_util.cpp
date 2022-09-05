@@ -2,7 +2,6 @@
 #include "ui_mainwindow.h"
 #include "scripting.h"
 #include "config.h"
-#include "aboutporymap.h"
 
 void MainWindow::registerAction(QString functionName, QString actionName, QString shortcut) {
     if (!this->ui || !this->ui->menuTools)
@@ -204,55 +203,6 @@ bool MainWindow::isSecondaryTileset(QString tilesetName) {
     if (!this->editor || !this->editor->project)
         return false;
     return this->editor->project->tilesetLabels["secondary"].contains(tilesetName);
-}
-
-
-//=================================
-// Here below should be constants
-//=================================
-
-
-int MainWindow::getMaxPrimaryTilesetMetatiles() {
-    if (!this->editor || !this->editor->project)
-        return 0;
-    return this->editor->project->getNumMetatilesPrimary();
-}
-
-int MainWindow::getMaxSecondaryTilesetMetatiles() {
-    if (!this->editor || !this->editor->project)
-        return 0;
-    return this->editor->project->getNumMetatilesTotal() - this->editor->project->getNumMetatilesPrimary();
-}
-
-int MainWindow::getMaxPrimaryTilesetTiles() {
-    if (!this->editor || !this->editor->project)
-        return 0;
-    return this->editor->project->getNumTilesPrimary();
-}
-
-int MainWindow::getMaxSecondaryTilesetTiles() {
-    if (!this->editor || !this->editor->project)
-        return 0;
-    return this->editor->project->getNumTilesTotal() - this->editor->project->getNumTilesPrimary();
-}
-
-int MainWindow::getNumTilesInMetatile() {
-    return projectConfig.getTripleLayerMetatilesEnabled() ? 12 : 8;
-}
-
-int MainWindow::getNumMetatileLayers() {
-    return projectConfig.getTripleLayerMetatilesEnabled() ? 3 : 2;
-}
-
-QString MainWindow::getBaseGameVersion() {
-    return projectConfig.getBaseGameVersionString();
-}
-
-QJSValue MainWindow::getPorymapVersion() {
-    AboutPorymap *window = new AboutPorymap(this);
-    QJSValue version = Scripting::version(window->getVersionNumbers());
-    delete window;
-    return version;
 }
 
 QList<QString> MainWindow::getCustomScripts() {

@@ -1,5 +1,7 @@
 #include "scripting.h"
 #include "log.h"
+#include "config.h"
+#include "aboutporymap.h"
 
 QMap<CallbackType, QString> callbackFunctions = {
     {OnProjectOpened, "onProjectOpened"},
@@ -32,8 +34,6 @@ void Scripting::init(MainWindow *mainWindow) {
 Scripting::Scripting(MainWindow *mainWindow) {
     this->engine = new QJSEngine(mainWindow);
     this->engine->installExtensions(QJSEngine::ConsoleExtension);
-    this->engine->globalObject().setProperty("map", this->engine->newQObject(mainWindow));
-    this->engine->globalObject().setProperty("overlay", this->engine->newQObject(mainWindow->getMapView()));
     for (QString script : projectConfig.getCustomScripts()) {
         this->filepaths.append(script);
     }
@@ -52,6 +52,47 @@ void Scripting::loadModules(QStringList moduleFiles) {
         logInfo(QString("Successfully loaded custom script file '%1'").arg(filepath));
         this->modules.append(module);
     }
+}
+
+void Scripting::populateGlobalObject(MainWindow *mainWindow) {
+    if (!instance || !instance->engine) return;
+
+    instance->engine->globalObject().setProperty("map", instance->engine->newQObject(mainWindow));
+    instance->engine->globalObject().setProperty("overlay", instance->engine->newQObject(mainWindow->getMapView()));
+
+    QJSValue constants = instance->engine->newObject();
+
+    // Get basic tile/metatile information
+    int numTilesPrimary = Project::getNumTilesPrimary();
+    int numTilesTotal = Project::getNumTilesTotal();
+    int numMetatilesPrimary = Project::getNumMetatilesPrimary();
+    int numMetatilesTotal = Project::getNumMetatilesTotal();
+    bool tripleLayerEnabled = projectConfig.getTripleLayerMetatilesEnabled();
+
+    // Invisibly create an "About" window to read Porymap version
+    AboutPorymap *about = new AboutPorymap(mainWindow);
+    if (about) {
+        QJSValue version = Scripting::version(about->getVersionNumbers());
+        constants.setProperty("version", version);
+        delete about;
+    } else {
+        logError("Failed to read Porymap version for API");
+    }
+    constants.setProperty("max_primary_tiles", numTilesPrimary);
+    constants.setProperty("max_secondary_tiles", numTilesTotal - numTilesPrimary);
+    constants.setProperty("max_primary_metatiles", numMetatilesPrimary);
+    constants.setProperty("max_secondary_metatiles", numMetatilesTotal - numMetatilesPrimary);
+    constants.setProperty("layers_per_metatile", tripleLayerEnabled ? 3 : 2);
+    constants.setProperty("tiles_per_metatile", tripleLayerEnabled ? 12 : 8);
+    constants.setProperty("base_game_version", projectConfig.getBaseGameVersionString());
+
+    instance->engine->globalObject().setProperty("constants", constants);
+
+    // Prevent changes to the object properties of the global object
+    instance->engine->evaluate("Object.freeze(map);");
+    instance->engine->evaluate("Object.freeze(overlay);");
+    instance->engine->evaluate("Object.freeze(constants.version);");
+    instance->engine->evaluate("Object.freeze(constants);");
 }
 
 bool Scripting::tryErrorJS(QJSValue js) {

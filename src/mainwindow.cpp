@@ -946,6 +946,8 @@ bool MainWindow::loadDataStructures() {
                 && project->readEventGraphics()
                 && project->readSongNames();
 
+    Scripting::populateGlobalObject(this);
+
     return success && loadProjectCombos();
 }
 
