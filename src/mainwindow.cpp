@@ -2030,7 +2030,7 @@ void MainWindow::updateSelectedObjects() {
 
     this->isProgrammaticEventTabChange = false;
 
-    QList<EventFrame *> frames;
+    QList<QFrame *> frames;
     for (DraggablePixmapItem *item : events) {
         Event *event = item->event;
         EventFrame *eventFrame = event->createEventFrame();
@@ -2055,7 +2055,7 @@ void MainWindow::updateSelectedObjects() {
         scrollTarget->setWidgetResizable(true);
         scrollTarget->setWidget(target);
 
-        for (EventFrame *frame : frames) {
+        for (QFrame *frame : frames) {
             frame->show();
             layout->addWidget(frame);
         }
