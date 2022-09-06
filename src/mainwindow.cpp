@@ -16,6 +16,7 @@
 #include "flowlayout.h"
 #include "shortcut.h"
 #include "mapparser.h"
+#include "prefab.h"
 
 #include <QFileDialog>
 #include <QClipboard>
@@ -552,6 +553,12 @@ bool MainWindow::openProject(QString dir) {
     }
 
     if (success) {
+        prefab.initPrefabUI(
+                    ui->scrollAreaWidgetContents_Prefabs,
+                    ui->label_prefabHelp,
+                    editor->ui->comboBox_PrimaryTileset->currentText(),
+                    editor->ui->comboBox_SecondaryTileset->currentText(),
+                    editor->map);
         for (auto action : this->registeredActions) {
             this->ui->menuTools->removeAction(action);
         }

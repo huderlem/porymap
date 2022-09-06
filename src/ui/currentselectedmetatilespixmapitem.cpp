@@ -2,8 +2,7 @@
 #include "imageproviders.h"
 #include <QPainter>
 
-void CurrentSelectedMetatilesPixmapItem::draw() {
-    MetatileSelection selection = metatileSelector->getMetatileSelection();
+QPixmap drawMetatileSelection(MetatileSelection selection, Map *map) {
     int width = selection.dimensions.x() * 16;
     int height = selection.dimensions.y() * 16;
     QImage image(width, height, QImage::Format_RGBA8888);
@@ -27,5 +26,10 @@ void CurrentSelectedMetatilesPixmapItem::draw() {
     }
 
     painter.end();
-    setPixmap(QPixmap::fromImage(image));
+    return QPixmap::fromImage(image);
+}
+
+void CurrentSelectedMetatilesPixmapItem::draw() {
+    MetatileSelection selection = metatileSelector->getMetatileSelection();
+    setPixmap(drawMetatileSelection(selection, this->map));
 }
