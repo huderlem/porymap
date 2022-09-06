@@ -2009,7 +2009,7 @@ void Editor::updateSelectedEvents() {
         redrawObject(item);
     }
 
-    emit selectedObjectsChanged();
+    emit objectsChanged();
 }
 
 void Editor::selectMapEvent(DraggablePixmapItem *object) {

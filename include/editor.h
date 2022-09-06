@@ -208,7 +208,6 @@ private slots:
 
 signals:
     void objectsChanged();
-    void selectedObjectsChanged();
     void loadMapRequested(QString, QString);
     void wildMonDataChanged();
     void warpEventDoubleClicked(QString, int, Event::Group);

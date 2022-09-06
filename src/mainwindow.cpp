@@ -252,7 +252,6 @@ void MainWindow::initExtraSignals() {
 void MainWindow::initEditor() {
     this->editor = new Editor(ui);
     connect(this->editor, &Editor::objectsChanged, this, &MainWindow::updateObjects);
-    connect(this->editor, &Editor::selectedObjectsChanged, this, &MainWindow::updateSelectedObjects);
     connect(this->editor, &Editor::loadMapRequested, this, &MainWindow::onLoadMapRequested);
     connect(this->editor, &Editor::warpEventDoubleClicked, this, &MainWindow::openWarpMap);
     connect(this->editor, &Editor::currentMetatilesSelectionChanged, this, &MainWindow::currentMetatilesSelectionChanged);
@@ -1910,12 +1909,9 @@ void MainWindow::addNewEvent(Event::Type type) {
     }
 }
 
-void MainWindow::updateObjects() {
-    selectedObject = nullptr;
-    selectedWarp = nullptr;
-    selectedTrigger = nullptr;
-    selectedBG = nullptr;
-    selectedHealspot = nullptr;
+void MainWindow::displayEventTabs() {
+    const QSignalBlocker blocker(ui->tabWidget_EventType);
+
     ui->tabWidget_EventType->clear();
 
     if (editor->map->events.value(Event::Group::Object).length())
@@ -1932,6 +1928,16 @@ void MainWindow::updateObjects() {
 
     if (editor->map->events.value(Event::Group::Heal).length())
         ui->tabWidget_EventType->addTab(eventTabHealspotWidget, "Healspots");
+}
+
+void MainWindow::updateObjects() {
+    selectedObject = nullptr;
+    selectedWarp = nullptr;
+    selectedTrigger = nullptr;
+    selectedBG = nullptr;
+    selectedHealspot = nullptr;
+
+    displayEventTabs();
 
     updateSelectedObjects();
 }
