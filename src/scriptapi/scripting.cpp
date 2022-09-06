@@ -91,10 +91,7 @@ void Scripting::populateGlobalObject(MainWindow *mainWindow) {
 
     instance->engine->globalObject().setProperty("constants", constants);
 
-    // Prevent changes to the object properties of the global object
-    instance->engine->evaluate("Object.freeze(map);");
-    instance->engine->evaluate("Object.freeze(overlay);");
-    instance->engine->evaluate("Object.freeze(utility);");
+    // Prevent changes to the constants object
     instance->engine->evaluate("Object.freeze(constants.version);");
     instance->engine->evaluate("Object.freeze(constants);");
 }
