@@ -127,6 +127,8 @@ void MapPixmapItem::paintNormal(int x, int y, bool fromScriptCall) {
         if (map->getBlock(actualX, actualY, &block)) {
             int index = j * selection.dimensions.x() + i;
             MetatileSelectionItem item = selection.metatileItems.at(index);
+            if (!item.enabled)
+                continue;
             block.metatileId = item.metatileId;
             if (selection.hasCollision && selection.collisionItems.length() == selection.metatileItems.length()) {
                 CollisionSelectionItem collisionItem = selection.collisionItems.at(index);

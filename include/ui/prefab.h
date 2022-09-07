@@ -18,7 +18,7 @@ struct PrefabItem
 class Prefab
 {
 public:
-    void initPrefabUI(QWidget *prefabWidget, QLabel *emptyPrefabLabel, QString primaryTileset, QString secondaryTileset, Map *map);
+    void initPrefabUI(MetatileSelector *selector, QWidget *prefabWidget, QLabel *emptyPrefabLabel, QString primaryTileset, QString secondaryTileset, Map *map);
 
 private:
     QList<PrefabItem> items;

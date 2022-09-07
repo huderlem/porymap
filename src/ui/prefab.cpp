@@ -86,7 +86,7 @@ QList<PrefabItem> Prefab::getPrefabsForTilesets(QString primaryTileset, QString 
     return filteredPrefabs;
 }
 
-void Prefab::initPrefabUI(QWidget *prefabWidget, QLabel *emptyPrefabLabel, QString primaryTileset, QString secondaryTileset, Map *map) {
+void Prefab::initPrefabUI(MetatileSelector *selector, QWidget *prefabWidget, QLabel *emptyPrefabLabel, QString primaryTileset, QString secondaryTileset, Map *map) {
     this->loadPrefabs();
     QList<PrefabItem> prefabs = this->getPrefabsForTilesets(primaryTileset, secondaryTileset);
     if (prefabs.isEmpty()) {
@@ -107,6 +107,9 @@ void Prefab::initPrefabUI(QWidget *prefabWidget, QLabel *emptyPrefabLabel, QStri
                                                      scene->itemsBoundingRect().height() + 2);
 
         prefabWidget->layout()->addWidget(frame);
+        QObject::connect(frame->ui->graphicsView_Prefab, &ClickableGraphicsView::clicked, [=](){
+            selector->setDirectSelection(item.selection);
+        });
     }
     auto spacer = new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::Expanding);
     prefabWidget->layout()->addItem(spacer);

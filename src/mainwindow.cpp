@@ -554,6 +554,7 @@ bool MainWindow::openProject(QString dir) {
 
     if (success) {
         prefab.initPrefabUI(
+                    editor->metatile_selector_item,
                     ui->scrollAreaWidgetContents_Prefabs,
                     ui->label_prefabHelp,
                     editor->ui->comboBox_PrimaryTileset->currentText(),

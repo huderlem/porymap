@@ -95,6 +95,14 @@ void MetatileSelector::setExternalSelection(int width, int height, QList<uint16_
     emit selectedMetatilesChanged();
 }
 
+void MetatileSelector::setDirectSelection(MetatileSelection selection) {
+    this->externalSelection = false;
+    this->externalSelectedMetatiles.clear();
+    this->selection = selection;
+    this->draw();
+    emit selectedMetatilesChanged();
+}
+
 bool MetatileSelector::shouldAcceptEvent(QGraphicsSceneMouseEvent *event) {
     QPoint pos = this->getCellPos(event->pos());
     return Tileset::metatileIsValid(getMetatileId(pos.x(), pos.y()), this->primaryTileset, this->secondaryTileset);
