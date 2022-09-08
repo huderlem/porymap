@@ -177,11 +177,22 @@ bool isSmartPathTile(QList<MetatileSelectionItem> metatileItems, uint16_t metati
     return false;
 }
 
+bool isValidSmartPathSelection(MetatileSelection selection) {
+    if (selection.dimensions.x() != 3 || selection.dimensions.y() != 3)
+        return false;
+
+    for (int i = 0; i < selection.metatileItems.length(); i++) {
+        if (!selection.metatileItems.at(i).enabled)
+            return false;
+    }
+
+    return true;
+}
+
 void MapPixmapItem::paintSmartPath(int x, int y, bool fromScriptCall) {
     MetatileSelection selection = this->metatileSelector->getMetatileSelection();
-
-    // Smart path should never be enabled without a 3x3 block selection.
-    if (selection.dimensions.x() != 3 || selection.dimensions.y() != 3) return;
+    if (!isValidSmartPathSelection(selection))
+        return;
 
     // Shift to the middle tile of the smart path selection.
     uint16_t openTile = selection.metatileItems.at(4).metatileId;
@@ -420,13 +431,15 @@ void MapPixmapItem::magicFill(
                     if (i < 0) i = selectionDimensions.x() + i;
                     if (j < 0) j = selectionDimensions.y() + j;
                     int index = j * selectionDimensions.x() + i;
-                    block.metatileId = selectedMetatiles.at(index).metatileId;
-                    if (setCollisions) {
-                        CollisionSelectionItem item = selectedCollisions.at(index);
-                        block.collision = item.collision;
-                        block.elevation = item.elevation;
+                    if (selectedMetatiles.at(index).enabled) {
+                        block.metatileId = selectedMetatiles.at(index).metatileId;
+                        if (setCollisions) {
+                            CollisionSelectionItem item = selectedCollisions.at(index);
+                            block.collision = item.collision;
+                            block.elevation = item.elevation;
+                        }
+                        map->setBlock(x, y, block, !fromScriptCall);
                     }
-                    map->setBlock(x, y, block, !fromScriptCall);
                 }
             }
         }
@@ -480,7 +493,7 @@ void MapPixmapItem::floodFill(
         int index = j * selectionDimensions.x() + i;
         uint16_t metatileId = selectedMetatiles.at(index).metatileId;
         uint16_t old_metatileId = block.metatileId;
-        if (selectedMetatiles.count() != 1 || old_metatileId != metatileId) {
+        if (selectedMetatiles.at(index).enabled && (selectedMetatiles.count() != 1 || old_metatileId != metatileId)) {
             block.metatileId = metatileId;
             if (setCollisions) {
                 CollisionSelectionItem item = selectedCollisions.at(index);
@@ -514,9 +527,8 @@ void MapPixmapItem::floodFill(
 
 void MapPixmapItem::floodFillSmartPath(int initialX, int initialY, bool fromScriptCall) {
     MetatileSelection selection = this->metatileSelector->getMetatileSelection();
-
-    // Smart path should never be enabled without a 3x3 block selection.
-    if (selection.dimensions.x() != 3 || selection.dimensions.y() != 3) return;
+    if (!isValidSmartPathSelection(selection))
+        return;
 
     // Shift to the middle tile of the smart path selection.
     uint16_t openTile = selection.metatileItems.at(4).metatileId;

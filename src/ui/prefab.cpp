@@ -4,6 +4,7 @@
 #include "ui_prefabframe.h"
 #include "parseutil.h"
 #include "currentselectedmetatilespixmapitem.h"
+#include "log.h"
 
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -86,9 +87,29 @@ QList<PrefabItem> Prefab::getPrefabsForTilesets(QString primaryTileset, QString 
     return filteredPrefabs;
 }
 
-void Prefab::initPrefabUI(MetatileSelector *selector, QWidget *prefabWidget, QLabel *emptyPrefabLabel, QString primaryTileset, QString secondaryTileset, Map *map) {
+void Prefab::initPrefabUI(MetatileSelector *selector, QWidget *prefabWidget, QLabel *emptyPrefabLabel, Map *map) {
+    logInfo("initPrefabUI");
+    this->selector = selector;
+    this->prefabWidget = prefabWidget;
+    this->emptyPrefabLabel = emptyPrefabLabel;
     this->loadPrefabs();
-    QList<PrefabItem> prefabs = this->getPrefabsForTilesets(primaryTileset, secondaryTileset);
+    logInfo("initPrefabUI loaded prefabs");
+    this->updatePrefabUi(map);
+    logInfo("initPrefabUI after updatePrefabUi");
+}
+
+void Prefab::updatePrefabUi(Map *map) {
+    // Cleanup the PrefabFrame to have a clean slate.
+    auto layout = this->prefabWidget->layout();
+    while (layout && layout->count() > 1) {
+        auto child = layout->takeAt(1);
+        if (child->widget()) {
+            delete child->widget();
+        }
+        delete child;
+    }
+
+    QList<PrefabItem> prefabs = this->getPrefabsForTilesets(map->layout->tileset_primary_label, map->layout->tileset_secondary_label);
     if (prefabs.isEmpty()) {
         emptyPrefabLabel->setVisible(true);
         return;
@@ -113,6 +134,11 @@ void Prefab::initPrefabUI(MetatileSelector *selector, QWidget *prefabWidget, QLa
     }
     auto spacer = new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::Expanding);
     prefabWidget->layout()->addItem(spacer);
+}
+
+void Prefab::addPrefab(MetatileSelection selection, Map *map, QString name) {
+    this->items.append(PrefabItem{name, map->layout->tileset_primary_label, map->layout->tileset_secondary_label, selection});
+    this->updatePrefabUi(map);
 }
 
 

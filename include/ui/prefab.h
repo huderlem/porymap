@@ -18,11 +18,16 @@ struct PrefabItem
 class Prefab
 {
 public:
-    void initPrefabUI(MetatileSelector *selector, QWidget *prefabWidget, QLabel *emptyPrefabLabel, QString primaryTileset, QString secondaryTileset, Map *map);
+    void initPrefabUI(MetatileSelector *selector, QWidget *prefabWidget, QLabel *emptyPrefabLabel, Map *map);
+    void addPrefab(MetatileSelection selection, Map *map, QString name);
 
 private:
+    MetatileSelector *selector;
+    QWidget *prefabWidget;
+    QLabel *emptyPrefabLabel;
     QList<PrefabItem> items;
     void loadPrefabs();
+    void updatePrefabUi(Map *map);
     QList<PrefabItem> getPrefabsForTilesets(QString primaryTileset, QString secondaryTileset);
 };
 

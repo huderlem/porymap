@@ -6,6 +6,7 @@
 #include "editor.h"
 #include "eventpropertiesframe.h"
 #include "ui_eventpropertiesframe.h"
+#include "prefabcreationdialog.h"
 #include "bordermetatilespixmapitem.h"
 #include "currentselectedmetatilespixmapitem.h"
 #include "customattributestable.h"
@@ -557,8 +558,6 @@ bool MainWindow::openProject(QString dir) {
                     editor->metatile_selector_item,
                     ui->scrollAreaWidgetContents_Prefabs,
                     ui->label_prefabHelp,
-                    editor->ui->comboBox_PrimaryTileset->currentText(),
-                    editor->ui->comboBox_SecondaryTileset->currentText(),
                     editor->map);
         for (auto action : this->registeredActions) {
             this->ui->menuTools->removeAction(action);
@@ -3173,6 +3172,15 @@ void MainWindow::on_actionRegion_Map_Editor_triggered() {
         this->regionMapEditor->showNormal();
     } else {
         this->regionMapEditor->activateWindow();
+    }
+}
+
+void MainWindow::on_pushButton_CreatePrefab_clicked() {
+    PrefabCreationDialog dialog(this, this->editor->metatile_selector_item, this->editor->map);
+    dialog.setWindowTitle("Create Prefab");
+    dialog.setWindowModality(Qt::NonModal);
+    if (dialog.exec() == QDialog::Accepted) {
+        dialog.savePrefab();
     }
 }
 

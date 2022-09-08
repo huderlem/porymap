@@ -14,11 +14,15 @@ public:
 public:
     void mousePressEvent(QMouseEvent *event) {
         QGraphicsView::mousePressEvent(event);
-        emit this->clicked();
+        emit this->clicked(event);
+    }
+    void mouseDoubleClickEvent(QMouseEvent *event) {
+        QGraphicsView::mouseDoubleClickEvent(event);
+        emit this->clicked(event);
     }
 
 signals:
-    void clicked();
+    void clicked(QMouseEvent *event);
 };
 
 class Editor;
