@@ -780,14 +780,9 @@ void Project::saveMapConstantsHeader() {
 // saves heal location coords in root + /src/data/heal_locations.h
 // and indexes as defines in root + /include/constants/heal_locations.h
 void Project::saveHealLocationStruct(Map *map) {
-    QString constantPrefix, arrayName;
-    if (projectConfig.getHealLocationRespawnDataEnabled()) {
-        constantPrefix = "SPAWN_";
-        arrayName = "sSpawnPoints";
-    } else {
-        constantPrefix = "HEAL_LOCATION_";
-        arrayName = "sHealLocations";
-    }
+    bool respawnEnabled = projectConfig.getHealLocationRespawnDataEnabled();
+
+    QString arrayName = respawnEnabled ? "sSpawnPoints" : "sHealLocations";
 
     const QString qualifiers = QString(healLocationDataQualifiers.isStatic ? "static " : "")
                              + QString(healLocationDataQualifiers.isConst ? "const " : "");
@@ -828,8 +823,7 @@ void Project::saveHealLocationStruct(Map *map) {
         }
 
         // Save first array (heal location coords), only data array in RSE
-        data_text += QString("    [%1%2 - 1] = {MAP_GROUP(%3), MAP_NUM(%3), %4, %5},\n")
-                     .arg(constantPrefix)
+        data_text += QString("    [%1 - 1] = {MAP_GROUP(%2), MAP_NUM(%2), %3, %4},\n")
                      .arg(map_in.idName)
                      .arg(map_in.mapName)
                      .arg(map_in.x)
@@ -837,24 +831,21 @@ void Project::saveHealLocationStruct(Map *map) {
 
         // Save constants
         if (map_in.index != 0) {
-            constants_text += QString("#define %1%2 %3\n")
-                              .arg(constantPrefix)
+            constants_text += QString("#define %1 %2\n")
                               .arg(map_in.idName)
                               .arg(map_in.index);
         } else {
-            constants_text += QString("#define %1%2 %3\n")
-                              .arg(constantPrefix)
+            constants_text += QString("#define %1 %2\n")
                               .arg(map_in.idName)
                               .arg(i);
         }
         i++;
     }
-    if (projectConfig.getHealLocationRespawnDataEnabled()) {
+    if (respawnEnabled) {
         // Save second array (map where player respawns for each heal location)
         data_text += QString("};\n\n%1u16 sWhiteoutRespawnHealCenterMapIdxs[][2] =\n{\n").arg(qualifiers);
         for (auto map_in : this->healLocations) {
-            data_text += QString("    [%1%2 - 1] = {MAP_GROUP(%3), MAP_NUM(%3)},\n")
-                         .arg(constantPrefix)
+            data_text += QString("    [%1 - 1] = {MAP_GROUP(%2), MAP_NUM(%2)},\n")
                          .arg(map_in.idName)
                          .arg(map_in.respawnMap);
         }
@@ -862,8 +853,7 @@ void Project::saveHealLocationStruct(Map *map) {
         // Save third array (object id of NPC player speaks to upon respawning for each heal location)
         data_text += QString("};\n\n%1u8 sWhiteoutRespawnHealerNpcIds[] =\n{\n").arg(qualifiers);
         for (auto map_in : this->healLocations) {
-            data_text += QString("    [%1%2 - 1] = %3,\n")
-                         .arg(constantPrefix)
+            data_text += QString("    [%1 - 1] = %2,\n")
                          .arg(map_in.idName)
                          .arg(map_in.respawnNPC);
         }
@@ -2030,9 +2020,7 @@ bool Project::readHealLocations() {
     this->healLocationDataQualifiers = this->getDataQualifiers(text, tableName);
 
     // Create regex pattern for e.g. SPAWN_PALLET_TOWN or HEAL_LOCATION_PETALBURG_CITY
-    // TODO: Make this config agnostic, e.g. either should be valid
-    QString prefix = respawnEnabled ? "SPAWN_" : "HEAL_LOCATION_";
-    QRegularExpression constantsExpr = QRegularExpression(QString("%1[A-Za-z0-9_]+").arg(prefix));
+    QRegularExpression constantsExpr = QRegularExpression("(SPAWN|HEAL_LOCATION)_[A-Za-z0-9_]+");
 
     // Find all the unique heal location constants used in the data tables.
     // Porymap doesn't care whether or not a constant appeared in the heal locations constants file.
