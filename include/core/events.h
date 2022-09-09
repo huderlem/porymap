@@ -626,15 +626,15 @@ public:
     void setRespawnMap(QString newRespawnMap) { this->respawnMap = newRespawnMap; }
     QString getRespawnMap() { return this->respawnMap; }
 
-    void setRespawnNPC(uint16_t newRespawnNPC) { this->respawnNPC = newRespawnNPC; }
-    uint16_t getRespawnNPC() { return this->respawnNPC; }
+    void setRespawnNPC(uint8_t newRespawnNPC) { this->respawnNPC = newRespawnNPC; }
+    uint8_t getRespawnNPC() { return this->respawnNPC; }
 
 private:
     int index = -1;
     QString locationName;
     QString idName;
     QString respawnMap;
-    uint16_t respawnNPC = 0;
+    uint8_t respawnNPC = 0;
 };
 
 

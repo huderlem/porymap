@@ -49,6 +49,7 @@ public:
     QStringList mapNames;
     QMap<QString, QVariant> miscConstants;
     QList<HealLocation> healLocations;
+    QMap<QString, int> healLocationNameToValue;
     QMap<QString, QString> mapConstantsToMapNames;
     QMap<QString, QString> mapNamesToMapConstants;
     QStringList mapLayoutsTable;
@@ -97,7 +98,7 @@ public:
         bool isConst;
     };
     DataQualifiers getDataQualifiers(QString, QString);
-    QMap<QString, DataQualifiers> dataQualifiers;
+    DataQualifiers healLocationDataQualifiers;
 
     QMap<QString, Map*> mapCache;
     Map* loadMap(QString);
@@ -187,6 +188,7 @@ public:
     bool readBgEventFacingDirections();
     bool readTrainerTypes();
     bool readMetatileBehaviors();
+    bool readHealLocationConstants();
     bool readHealLocations();
     bool readMiscellaneousConstants();
     bool readEventScriptLabels();
