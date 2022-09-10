@@ -72,7 +72,7 @@ void Prefab::loadPrefabs() {
             selection.collisionItems[index].elevation = metatileObj["elevation"].toInt();
         }
 
-        this->items.append(PrefabItem{name, primaryTileset, secondaryTileset, selection});
+        this->items.append(PrefabItem{QUuid::createUuid(), name, primaryTileset, secondaryTileset, selection});
     }
 }
 
@@ -116,7 +116,7 @@ void Prefab::updatePrefabUi(Map *map) {
     }
 
     emptyPrefabLabel->setVisible(false);
-    for (auto item : this->items) {
+    for (auto item : prefabs) {
         PrefabFrame *frame = new PrefabFrame();
         frame->ui->label_Name->setText(item.name);
 
@@ -126,10 +126,22 @@ void Prefab::updatePrefabUi(Map *map) {
         frame->ui->graphicsView_Prefab->setScene(scene);
         frame->ui->graphicsView_Prefab->setFixedSize(scene->itemsBoundingRect().width() + 2,
                                                      scene->itemsBoundingRect().height() + 2);
-
         prefabWidget->layout()->addWidget(frame);
-        QObject::connect(frame->ui->graphicsView_Prefab, &ClickableGraphicsView::clicked, [=](){
+
+        // Clicking on the prefab graphics item selects it for painting.
+        QObject::connect(frame->ui->graphicsView_Prefab, &ClickableGraphicsView::clicked, [this, item](){
             selector->setDirectSelection(item.selection);
+        });
+
+        // Clicking the delete button removes it from the list of known prefabs and updates the UI.
+        QObject::connect(frame->ui->pushButton_DeleteItem, &QPushButton::clicked, [this, item, map](){
+            for (int i = 0; i < this->items.size(); i++) {
+                if (this->items[i].id == item.id) {
+                    this->items.removeAt(i);
+                    this->updatePrefabUi(map);
+                    break;
+                }
+            }
         });
     }
     auto spacer = new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::Expanding);
@@ -137,7 +149,13 @@ void Prefab::updatePrefabUi(Map *map) {
 }
 
 void Prefab::addPrefab(MetatileSelection selection, Map *map, QString name) {
-    this->items.append(PrefabItem{name, map->layout->tileset_primary_label, map->layout->tileset_secondary_label, selection});
+    this->items.append(PrefabItem{
+                           QUuid::createUuid(),
+                           name,
+                           map->layout->tileset_primary_label,
+                           map->layout->tileset_secondary_label,
+                           selection
+                       });
     this->updatePrefabUi(map);
 }
 

@@ -6,9 +6,11 @@
 
 #include <QString>
 #include <QLabel>
+#include <QUuid>
 
 struct PrefabItem
 {
+    QUuid id;
     QString name;
     QString primaryTileset;
     QString secondaryTileset;
