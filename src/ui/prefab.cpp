@@ -69,11 +69,14 @@ void Prefab::loadPrefabs() {
             if (x < 0 || x >= width || y < 0 || y >= height)
                 continue;
             int index = y * width + x;
-            selection.metatileItems[index].enabled = true;
+            int metatileId = metatileObj["metatile_id"].toInt();
+            if (metatileId < 0 || metatileId >= Project::getNumMetatilesTotal())
+                continue;
             selection.metatileItems[index].metatileId = metatileObj["metatile_id"].toInt();
-            selection.collisionItems[index].enabled = true;
             selection.collisionItems[index].collision = metatileObj["collision"].toInt();
             selection.collisionItems[index].elevation = metatileObj["elevation"].toInt();
+            selection.metatileItems[index].enabled = true;
+            selection.collisionItems[index].enabled = true;
         }
 
         this->items.append(PrefabItem{QUuid::createUuid(), name, primaryTileset, secondaryTileset, selection});
