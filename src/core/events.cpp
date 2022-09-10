@@ -879,13 +879,16 @@ OrderedJson::object HealLocationEvent::buildEventJson(Project *) {
 }
 
 void HealLocationEvent::setDefaultValues(Project *) {
-    if (this->getMap()) {
-        this->setLocationName(Map::mapConstantFromName(this->getMap()->name).remove(0,4));
-        this->setIdName(this->getMap()->name.replace(QRegularExpression("([a-z])([A-Z])"), "\\1_\\2").toUpper());
-    }
     this->setElevation(3);
-    if (projectConfig.getHealLocationRespawnDataEnabled()) {
-        if (this->getMap()) this->setRespawnMap(this->getMap()->name);
+    if (!this->getMap())
+        return;
+    bool respawnEanbled = projectConfig.getHealLocationRespawnDataEnabled();
+    QString mapConstant = Map::mapConstantFromName(this->getMap()->name).remove(0,4);
+    QString prefix = respawnEanbled ? "SPAWN_" : "HEAL_LOCATION_";
+    this->setLocationName(mapConstant);
+    this->setIdName(prefix + mapConstant);
+    if (respawnEanbled) {
+        this->setRespawnMap(this->getMap()->name);
         this->setRespawnNPC(1);
     }
 }
