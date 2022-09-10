@@ -159,7 +159,7 @@ public:
     void saveMapGroups();
     void saveWildMonData();
     void saveMapConstantsHeader();
-    void saveHealLocationStruct(Map*);
+    void saveHealLocations(Map*);
     void saveTilesets(Tileset*, Tileset*);
     void saveTilesetMetatileLabels(Tileset*, Tileset*);
     void saveTilesetMetatileAttributes(Tileset*);
@@ -209,8 +209,6 @@ public:
     QCompleter *getEventScriptLabelCompleter(QStringList additionalScriptLabels);
     QStringList getGlobalScriptLabels();
 
-    void saveMapHealEvents(Map *map);
-
     static int getNumTilesPrimary();
     static int getNumTilesTotal();
     static int getNumMetatilesPrimary();
@@ -235,6 +233,9 @@ private:
     void setNewMapBorder(Map *map);
     void setNewMapEvents(Map *map);
     void setNewMapConnections(Map *map);
+
+    void saveHealLocationsData(Map *map);
+    void saveHealLocationsConstants();
 
     void ignoreWatchedFileTemporarily(QString filepath);
 

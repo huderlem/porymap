@@ -777,35 +777,14 @@ void Project::saveMapConstantsHeader() {
     saveTextFile(mapGroupFilepath, text);
 }
 
-// saves heal location coords in root + /src/data/heal_locations.h
-// and indexes as defines in root + /include/constants/heal_locations.h
-void Project::saveHealLocationStruct(Map *map) {
-    bool respawnEnabled = projectConfig.getHealLocationRespawnDataEnabled();
+void Project::saveHealLocations(Map *map) {
+    this->saveHealLocationsData(map);
+    this->saveHealLocationsConstants();
+}
 
-    QString arrayName = respawnEnabled ? "sSpawnPoints" : "sHealLocations";
-
-    const QString qualifiers = QString(healLocationDataQualifiers.isStatic ? "static " : "")
-                             + QString(healLocationDataQualifiers.isConst ? "const " : "");
-
-    QString data_text = QString("%1struct HealLocation %2[] =\n{\n").arg(qualifiers).arg(arrayName);
-
-    QString constants_text = QString("#ifndef GUARD_CONSTANTS_HEAL_LOCATIONS_H\n");
-    constants_text += QString("#define GUARD_CONSTANTS_HEAL_LOCATIONS_H\n\n");
-
-    QMap<QString, int> healLocationsDupes;
-    QSet<QString> healLocationsUnique;
-
-    // set healLocationsDupes and healLocationsUnique
-    for (auto it = this->healLocations.begin(); it != this->healLocations.end(); it++) {
-        HealLocation loc = *it;
-        QString xname = loc.idName;
-        if (healLocationsUnique.contains(xname)) {
-            healLocationsDupes[xname] = 1;
-        }
-        healLocationsUnique.insert(xname);
-    }
-
-    // set new location in healLocations list
+// Saves heal location maps/coords/respawn data in root + /src/data/heal_locations.h
+void Project::saveHealLocationsData(Map *map) {
+    // Update heal locations from map
     if (map->events[Event::Group::Heal].length() > 0) {
         for (Event *healEvent : map->events[Event::Group::Heal]) {
             HealLocation hl = HealLocation::fromEvent(healEvent);
@@ -813,62 +792,115 @@ void Project::saveHealLocationStruct(Map *map) {
         }
     }
 
-    int i = 1;
-    for (auto map_in : this->healLocations) {
-        // add numbered suffix for duplicate constants
-        if (healLocationsDupes.keys().contains(map_in.idName)) {
-            QString duplicateName = map_in.idName;
-            map_in.idName += QString("_%1").arg(healLocationsDupes[duplicateName]);
+    // Find any duplicate constant names
+    QMap<QString, int> healLocationsDupes;
+    QSet<QString> healLocationsUnique;
+    for (auto hl : this->healLocations) {
+        QString idName = hl.idName;
+        if (healLocationsUnique.contains(idName))
+            healLocationsDupes[idName] = 1;
+        else
+            healLocationsUnique.insert(idName);
+    }
+
+    // Create the definition text for each data table
+    bool respawnEnabled = projectConfig.getHealLocationRespawnDataEnabled();
+    QString arrayName = respawnEnabled ? "sSpawnPoints" : "sHealLocations";
+    const QString qualifiers = QString(healLocationDataQualifiers.isStatic ? "static " : "")
+                             + QString(healLocationDataQualifiers.isConst ? "const " : "");
+
+    QString locationTableText = QString("%1struct HealLocation %2[] =\n{\n").arg(qualifiers).arg(arrayName);
+    QString respawnMapTableText, respawnNPCTableText;
+    if (respawnEnabled) {
+        respawnMapTableText = QString("\n%1u16 sWhiteoutRespawnHealCenterMapIdxs[][2] =\n{\n").arg(qualifiers);
+        respawnNPCTableText = QString("\n%1u8 sWhiteoutRespawnHealerNpcIds[] =\n{\n").arg(qualifiers);
+    }
+
+    // Populate the data tables with the heal location data
+    int i = 0;
+    const QString emptyMapName = "UNDEFINED"; // TODO: Use a project-wide constant here?
+    for (auto hl : this->healLocations) {
+        // Add numbered suffix for duplicate constants
+        if (healLocationsDupes.keys().contains(hl.idName)) {
+            QString duplicateName = hl.idName;
+            hl.idName += QString("_%1").arg(healLocationsDupes[duplicateName]);
             healLocationsDupes[duplicateName]++;
+            this->healLocations[i].idName = hl.idName; // Update the name for writing constants later
         }
 
-        // Save first array (heal location coords), only data array in RSE
-        data_text += QString("    [%1 - 1] = {MAP_GROUP(%2), MAP_NUM(%2), %3, %4},\n")
-                     .arg(map_in.idName)
-                     .arg(map_in.mapName)
-                     .arg(map_in.x)
-                     .arg(map_in.y);
+        // Add entry to map/coords table
+        QString mapName = !hl.mapName.isEmpty() ? hl.mapName : emptyMapName;
+        locationTableText += QString("    [%1 - 1] = {MAP_GROUP(%2), MAP_NUM(%2), %3, %4},\n")
+                             .arg(hl.idName)
+                             .arg(mapName)
+                             .arg(hl.x)
+                             .arg(hl.y);
 
-        // Save constants
-        if (map_in.index != 0) {
-            constants_text += QString("#define %1 %2\n")
-                              .arg(map_in.idName)
-                              .arg(map_in.index);
-        } else {
-            constants_text += QString("#define %1 %2\n")
-                              .arg(map_in.idName)
-                              .arg(i);
+        // Add entry to respawn map and npc tables
+        if (respawnEnabled) {
+            mapName = !hl.respawnMap.isEmpty() ? hl.respawnMap : emptyMapName;
+            respawnMapTableText += QString("    [%1 - 1] = {MAP_GROUP(%2), MAP_NUM(%2)},\n")
+                                   .arg(hl.idName)
+                                   .arg(mapName);
+
+            respawnNPCTableText += QString("    [%1 - 1] = %2,\n")
+                                   .arg(hl.idName)
+                                   .arg(hl.respawnNPC);
         }
         i++;
     }
-    if (respawnEnabled) {
-        // Save second array (map where player respawns for each heal location)
-        data_text += QString("};\n\n%1u16 sWhiteoutRespawnHealCenterMapIdxs[][2] =\n{\n").arg(qualifiers);
-        for (auto map_in : this->healLocations) {
-            data_text += QString("    [%1 - 1] = {MAP_GROUP(%2), MAP_NUM(%2)},\n")
-                         .arg(map_in.idName)
-                         .arg(map_in.respawnMap);
-        }
+    const QString tableEnd = QString("};\n");
+    QString text = locationTableText + tableEnd;
+    if (respawnEnabled)
+        text += respawnMapTableText + tableEnd + respawnNPCTableText + tableEnd;
 
-        // Save third array (object id of NPC player speaks to upon respawning for each heal location)
-        data_text += QString("};\n\n%1u8 sWhiteoutRespawnHealerNpcIds[] =\n{\n").arg(qualifiers);
-        for (auto map_in : this->healLocations) {
-            data_text += QString("    [%1 - 1] = %2,\n")
-                         .arg(map_in.idName)
-                         .arg(map_in.respawnNPC);
+    QString filepath = root + "/src/data/heal_locations.h";
+    ignoreWatchedFileTemporarily(filepath);
+    saveTextFile(filepath, text);
+}
+
+// Saves heal location defines in root + /include/constants/heal_locations.h
+void Project::saveHealLocationsConstants() {
+    // Get existing defines, and create an inverted map so they'll be in sorted order for printing
+    int nextDefineValue = 1;
+    QMap<int, QString> valuesToNames = QMap<int, QString>();
+    QStringList defineNames = this->healLocationNameToValue.keys();
+    QList<int> defineValues = this->healLocationNameToValue.values();
+    for (auto name : defineNames) {
+        int value = this->healLocationNameToValue.value(name);
+        if (valuesToNames.contains(value)) {
+            do { // Redefine duplicate as first available value
+                value = nextDefineValue++;
+            } while (defineValues.contains(value));
         }
+        valuesToNames.insert(value, name);
     }
 
-    data_text += QString("};\n");
-    constants_text += QString("\n#endif // GUARD_CONSTANTS_HEAL_LOCATIONS_H\n");
+    // Check for new id names in the heal locations list
+    for (auto hl : this->healLocations) {
+        if (this->healLocationNameToValue.contains(hl.idName))
+            continue;
+        int value;
+        do { // Give new heal location first available value
+            value = nextDefineValue++;
+        } while (valuesToNames.contains(value));
+        valuesToNames.insert(value, hl.idName);
+    }
 
-    QString healLocationFilepath = root + "/" + projectConfig.getFilePath(ProjectFilePath::data_heal_locations);
-    ignoreWatchedFileTemporarily(healLocationFilepath);
-    saveTextFile(healLocationFilepath, data_text);
+    // Include guards
+    const QString guardName = "GUARD_CONSTANTS_HEAL_LOCATIONS_H";
+    QString constantsText = QString("#ifndef %1\n#define %1\n\n").arg(guardName);
 
-    QString healLocationConstantsFilepath = root + "/" + projectConfig.getFilePath(ProjectFilePath::constants_heal_locations);
-    ignoreWatchedFileTemporarily(healLocationConstantsFilepath);
-    saveTextFile(healLocationConstantsFilepath, constants_text);
+    // List defines in ascending order
+    QMap<int, QString>::const_iterator i;
+    for (i = valuesToNames.constBegin(); i != valuesToNames.constEnd(); i++)
+        constantsText += QString("#define %1 %2\n").arg(i.value()).arg(i.key());
+
+    constantsText += QString("\n#endif // %1\n").arg(guardName);
+
+    QString filepath = root + "/" + projectConfig.getFilePath(ProjectFilePath::constants_heal_locations);
+    ignoreWatchedFileTemporarily(filepath);
+    saveTextFile(filepath, constantsText);
 }
 
 void Project::saveTilesets(Tileset *primaryTileset, Tileset *secondaryTileset) {
@@ -1341,7 +1373,7 @@ void Project::saveMap(Map *map) {
 
     saveLayoutBorder(map);
     saveLayoutBlockdata(map);
-    saveMapHealEvents(map);
+    saveHealLocations(map);
 
     // Update global data structures with current map data.
     updateMapLayout(map);
@@ -2019,19 +2051,20 @@ bool Project::readHealLocations() {
     QString tableName = respawnEnabled ? "sSpawnPoints" : "sHealLocations";
     this->healLocationDataQualifiers = this->getDataQualifiers(text, tableName);
 
-    // Create regex pattern for e.g. SPAWN_PALLET_TOWN or HEAL_LOCATION_PETALBURG_CITY
+    // Create regex pattern for the constants (ex: "SPAWN_PALLET_TOWN" or "HEAL_LOCATION_PETALBURG_CITY")
     QRegularExpression constantsExpr = QRegularExpression("(SPAWN|HEAL_LOCATION)_[A-Za-z0-9_]+");
 
     // Find all the unique heal location constants used in the data tables.
     // Porymap doesn't care whether or not a constant appeared in the heal locations constants file.
     // Any data entry without a designated initializer using one of these constants will be silently discarded.
+    // Any data entry that repeats a designated initializer will also be discarded.
     QStringList constants = QStringList();
     QRegularExpressionMatchIterator constantsMatch = constantsExpr.globalMatch(text);
     while (constantsMatch.hasNext())
         constants << constantsMatch.next().captured();
     constants.removeDuplicates();
 
-    // Pattern for a map value pair. ex: "MAP_GROUP(PALLET_TOWN), MAP_NUM(PALLET_TOWN)"
+    // Pattern for a map value pair (ex: "MAP_GROUP(PALLET_TOWN), MAP_NUM(PALLET_TOWN)")
     const QString mapPattern = "MAP_GROUP[\\(\\s]+(?<map>[A-Za-z0-9_]+)[\\s\\)]+,\\s*MAP_NUM[\\(\\s]+(\\1)[\\s\\)]+";
     // Pattern for an x, y number pair
     const QString coordPattern = "\\s*(?<x>[0-9A-Fa-fx]+),\\s*(?<y>[0-9A-Fa-fx]+)"; 
@@ -2052,10 +2085,9 @@ bool Project::readHealLocations() {
             int y = match.captured("y").toInt();
             healLocation = HealLocation(idName, mapName, this->healLocations.size() + 1, x, y);
         } else {
-            // If the heal location is missing from the location table it can be skipped.
-            // Even if it has data in the other tables, Porymap would never display it.
-            // TODO: Don't skip these, preserve their data
-            continue;
+            // This heal location has data, but is missing from the location table and won't be displayed by Porymap.
+            // Add a dummy entry, and preserve the rest of its data for the user anyway
+            healLocation = HealLocation(idName, "", this->healLocations.size() + 1, 0, 0);
         }
 
         // Read respawn data
@@ -2485,17 +2517,6 @@ bool Project::readSpeciesIconPaths() {
         speciesToIconPath.insert(species, root + "/" + path.replace("4bpp", "png"));
     }
     return true;
-}
-
-void Project::saveMapHealEvents(Map *map) {
-    // save heal event changes
-    if (map->events[Event::Group::Heal].length() > 0) {
-        for (Event *healEvent : map->events[Event::Group::Heal]) {
-            HealLocation hl = HealLocation::fromEvent(healEvent);
-            this->healLocations[hl.index - 1] = hl;
-        }
-    }
-    saveHealLocationStruct(map);
 }
 
 void Project::setNewMapEvents(Map *map) {

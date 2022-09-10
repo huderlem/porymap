@@ -1204,7 +1204,7 @@ void MainWindow::onNewMapCreated() {
 
     if (ParseUtil::gameStringToBool(newMap->isFlyable)) {
         addNewEvent(Event::Type::HealLocation);
-        editor->project->saveHealLocationStruct(newMap);
+        editor->project->saveHealLocations(newMap);
         editor->save();
     }
 
