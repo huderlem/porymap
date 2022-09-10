@@ -26,11 +26,26 @@
    <string>Frame</string>
   </property>
   <property name="frameShape">
-   <enum>QFrame::Box</enum>
+   <enum>QFrame::NoFrame</enum>
+  </property>
+  <property name="frameShadow">
+   <enum>QFrame::Plain</enum>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <property name="sizeConstraint">
     <enum>QLayout::SetMinimumSize</enum>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>2</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>2</number>
    </property>
    <item>
     <layout class="QVBoxLayout" name="verticalLayout">
@@ -62,13 +77,13 @@
          <number>0</number>
         </property>
         <property name="topMargin">
-         <number>6</number>
+         <number>0</number>
         </property>
         <property name="rightMargin">
-         <number>9</number>
+         <number>0</number>
         </property>
         <property name="bottomMargin">
-         <number>6</number>
+         <number>0</number>
         </property>
         <item>
          <widget class="QPushButton" name="pushButton_DeleteItem">

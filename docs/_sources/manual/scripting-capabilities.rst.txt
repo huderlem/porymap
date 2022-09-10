@@ -118,6 +118,15 @@ Callbacks
    :param object prevBlock: the block's state before it was modified. The object's shape is ``{metatileId, collision, elevation, rawValue}``
    :param object newBlock: the block's new state after it was modified. The object's shape is ``{metatileId, collision, elevation, rawValue}``
 
+.. js:function:: onBorderMetatileChanged(x, y, prevMetatileId, newMetatileId)
+
+   Called when a border metatile is changed.
+
+   :param number x: x coordinate of the block
+   :param number y: y coordinate of the block
+   :param number prevMetatileId: the metatile id of the border block before it was modified
+   :param number newMetatileId: the metatile id of the border block after it was modified
+
 .. js:function:: onBlockHoverChanged(x, y)
 
    Called when the mouse enters a new map block.
@@ -137,6 +146,15 @@ Callbacks
    :param number oldHeight: the height of the map before the change
    :param number newWidth: the width of the map after the change
    :param number newHeight: the height of the map after the change
+
+.. js:function:: onBorderResized(oldWidth, oldHeight, newWidth, newHeight)
+
+   Called when the dimensions of the border are changed.
+
+   :param number oldWidth: the width of the border before the change
+   :param number oldHeight: the height of the border before the change
+   :param number newWidth: the width of the border after the change
+   :param number newHeight: the height of the border after the change
 
 .. js:function:: onMapShifted(xDelta, yDelta)
 
@@ -165,6 +183,12 @@ Callbacks
    :param number oldTab: the index of the previously selected tab
    :param number newTab: the index of the newly selected tab
 
+.. js:function:: onBorderVisibilityToggled(visible)
+
+   Called when the visibility of the border and connecting maps is toggled on or off.
+
+   :param boolean visible: whether the border is now visible
+
 Functions
 ~~~~~~~~~
 
@@ -190,8 +214,18 @@ The following functions are related to editing the map's blocks or retrieving in
    :param number x: x coordinate of the block
    :param number y: y coordinate of the block
    :param number metatileId: the metatile id of the block
-   :param number collision: the collision of the block (``0`` = passable, ``1`` = impassable)
+   :param number collision: the collision of the block (``0`` = passable, ``1-3`` = impassable)
    :param number elevation: the elevation of the block
+   :param boolean forceRedraw: Force the map view to refresh. Defaults to ``true``. Redrawing the map view is expensive, so set to ``false`` when making many consecutive map edits, and then redraw the map once using ``map.redraw()``.
+   :param boolean commitChanges: Commit the changes to the map's edit/undo history. Defaults to ``true``. When making many related map edits, it can be useful to set this to ``false``, and then commit all of them together with ``map.commit()``.
+
+.. js:function:: map.setBlock(x, y, rawValue, forceRedraw = true, commitChanges = true)
+
+   Sets a block in the currently-opened map. This is an overloaded function that takes the raw value of a block instead of each of the block's properties individually.
+
+   :param number x: x coordinate of the block
+   :param number y: y coordinate of the block
+   :param number rawValue: the 16 bit value of the block. Bits ``0-9`` will be the metatile id, bits ``10-11`` will be the collision, and bits ``12-15`` will be the elevation.
    :param boolean forceRedraw: Force the map view to refresh. Defaults to ``true``. Redrawing the map view is expensive, so set to ``false`` when making many consecutive map edits, and then redraw the map once using ``map.redraw()``.
    :param boolean commitChanges: Commit the changes to the map's edit/undo history. Defaults to ``true``. When making many related map edits, it can be useful to set this to ``false``, and then commit all of them together with ``map.commit()``.
 
@@ -213,9 +247,27 @@ The following functions are related to editing the map's blocks or retrieving in
    :param boolean forceRedraw: Force the map view to refresh. Defaults to ``true``. Redrawing the map view is expensive, so set to ``false`` when making many consecutive map edits, and then redraw the map once using ``map.redraw()``.
    :param boolean commitChanges: Commit the changes to the map's edit/undo history. Defaults to ``true``. When making many related map edits, it can be useful to set this to ``false``, and then commit all of them together with ``map.commit()``.
 
+.. js:function:: map.getBorderMetatileId(x, y)
+
+   Gets the metatile id of a block in the border of the currently-opened map.
+
+   :param number x: x coordinate of the block
+   :param number y: y coordinate of the block
+   :returns number: the metatile id of the block
+
+.. js:function:: map.setBorderMetatileId(x, y, metatileId, forceRedraw = true, commitChanges = true)
+
+   Sets the metatile id of a block in the border of the currently-opened map.
+
+   :param number x: x coordinate of the block
+   :param number y: y coordinate of the block
+   :param number metatileId: the metatile id of the block
+   :param boolean forceRedraw: Force the map view to refresh. Defaults to ``true``. Redrawing the map view is expensive, so set to ``false`` when making many consecutive map edits, and then redraw the map once using ``map.redraw()``.
+   :param boolean commitChanges: Commit the changes to the map's edit/undo history. Defaults to ``true``. When making many related map edits, it can be useful to set this to ``false``, and then commit all of them together with ``map.commit()``.
+
 .. js:function:: map.getCollision(x, y)
 
-   Gets the collision of a block in the currently-opened map. (``0`` = passable, ``1`` = impassable)
+   Gets the collision of a block in the currently-opened map. (``0`` = passable, ``1-3`` = impassable)
 
    :param number x: x coordinate of the block
    :param number y: y coordinate of the block
@@ -223,7 +275,7 @@ The following functions are related to editing the map's blocks or retrieving in
 
 .. js:function:: map.setCollision(x, y, collision, forceRedraw = true, commitChanges = true)
 
-   Sets the collision of a block in the currently-opened map. (``0`` = passable, ``1`` = impassable)
+   Sets the collision of a block in the currently-opened map. (``0`` = passable, ``1-3`` = impassable)
 
    :param number x: x coordinate of the block
    :param number y: y coordinate of the block
@@ -323,6 +375,24 @@ The following functions are related to editing the map's blocks or retrieving in
 
    :returns number: the height of the map
 
+.. js:function:: map.getBorderDimensions()
+
+   Gets the dimensions of the border of the currently-opened map.
+
+   :returns {width, height}: the dimensions of the border
+
+.. js:function:: map.getBorderWidth()
+
+   Gets the width of the border of the currently-opened map.
+
+   :returns number: the width of the border
+
+.. js:function:: map.getBorderHeight()
+
+   Gets the height of the border of the currently-opened map.
+
+   :returns number: the height of the border
+
 .. js:function:: map.setDimensions(width, height)
 
    Sets the dimensions of the currently-opened map.
@@ -342,6 +412,25 @@ The following functions are related to editing the map's blocks or retrieving in
 
    :param number height: height in blocks
 
+.. js:function:: map.setBorderDimensions(width, height)
+
+   Sets the dimensions of the border of the currently-opened map. If the config setting ``use_custom_border_size`` is set to ``0`` then this does nothing.
+
+   :param number width: width in blocks
+   :param number height: height in blocks
+
+.. js:function:: map.setBorderWidth(width)
+
+   Sets the width of the border of the currently-opened map. If the config setting ``use_custom_border_size`` is set to ``0`` then this does nothing.
+
+   :param number width: width in blocks
+
+.. js:function:: map.setBorderHeight(height)
+
+   Sets the height of the border of the currently-opened map. If the config setting ``use_custom_border_size`` is set to ``0`` then this does nothing.
+
+   :param number height: height in blocks
+
 .. js:function:: map.redraw()
 
    Redraws the entire map area. Useful when delaying map redraws using ``forceRedraw = false`` in certain map editing functions.
@@ -349,6 +438,143 @@ The following functions are related to editing the map's blocks or retrieving in
 .. js:function:: map.commit()
 
    Commits any uncommitted changes to the map's edit/undo history. Useful when delaying commits using ``commitChanges = false`` in certain map editing functions.
+
+Map Header Editing Functions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The following functions are related to reading/writing the map's header properties.
+
+.. js:function:: map.getSong()
+
+   Gets the name of the background song for the currently-opened map.
+
+   :returns string: the name of the song
+
+.. js:function:: map.setSong(song)
+
+   Sets the name of the background song for the currently-opened map. The song name must be one of the names in the "Song" dropdown menu on the Header tab.
+
+   :param string song: the name of the song
+
+.. js:function:: map.getLocation()
+
+   Gets the name of the region map location for the currently-opened map.
+
+   :returns string: the name of the location
+
+.. js:function:: map.setLocation(location)
+
+   Sets the name of the region map location for the currently-opened map. The location name must be one of the names in the "Location" dropdown menu on the Header tab.
+
+   :param string location: the name of the location
+
+.. js:function:: map.getRequiresFlash()
+
+   Gets whether flash would be required in-game for the currently-opened map.
+
+   :returns boolean: whether flash is required
+
+.. js:function:: map.setRequiresFlash(require)
+
+   Sets whether flash would be required in-game for the currently-opened map.
+
+   :param boolean require: whether flash should be required
+
+.. js:function:: map.getWeather()
+
+   Gets the name of the weather for the currently-opened map.
+
+   :returns string: the name of the weather
+
+.. js:function:: map.setWeather(weather)
+
+   Sets the name of the weather for the currently-opened map. The weather name must be one of the names in the "Weather" dropdown menu on the Header tab.
+
+   :param string weather: the name of the weather
+
+.. js:function:: map.getType()
+
+   Gets the name of the map type for the currently-opened map.
+
+   :returns string: the name of the map type
+
+.. js:function:: map.setType(type)
+
+   Sets the name of the map type for the currently-opened map. The map type name must be one of the names in the "Type" dropdown menu on the Header tab.
+
+   :param string type: the name of the map type
+
+.. js:function:: map.getBattleScene()
+
+   Gets the name of the battle scene for the currently-opened map.
+
+   :returns string: the name of the battle scene
+
+.. js:function:: map.setBattleScene(battleScene)
+
+   Sets the name of the battle scene for the currently-opened map. The battle scene name must be one of the names in the "Battle scene" dropdown menu on the Header tab.
+
+   :param string battleScene: the name of the battle scene
+
+.. js:function:: map.getShowLocationName()
+
+   Gets whether the location name will appear in-game for the currently-opened map.
+
+   :returns boolean: whether the location name will be shown
+
+.. js:function:: map.setShowLocationName(show)
+
+   Sets whether the location name should appear in-game for the currently-opened map.
+
+   :param boolean show: whether the location name should be shown
+
+.. js:function:: map.getAllowRunning()
+
+   Gets whether running is allowed in-game for the currently-opened map.
+
+   :returns boolean: whether running is allowed
+
+.. js:function:: map.setAllowRunning(allow)
+
+   Sets whether running should be allowed in-game for the currently-opened map.
+
+   :param boolean allow: whether running should be allowed
+
+.. js:function:: map.getAllowBiking()
+
+   Gets whether biking is allowed in-game for the currently-opened map.
+
+   :returns boolean: whether biking is allowed
+
+.. js:function:: map.setAllowBiking(allow)
+
+   Sets whether biking should be allowed in-game for the currently-opened map.
+
+   :param boolean allow: whether biking should be allowed
+
+.. js:function:: map.getAllowEscaping()
+
+   Gets whether escaping (using Escape Rope or Dig) is allowed in-game for the currently-opened map.
+
+   :returns boolean: whether escaping is allowed
+
+.. js:function:: map.setAllowEscaping(allow)
+
+   Sets whether escaping (using Escape Rope or Dig) should be allowed in-game for the currently-opened map.
+
+   :param boolean allow: whether escaping should be allowed
+
+.. js:function:: map.getFloorNumber()
+
+   Gets the floor number for the currently-opened map.
+
+   :returns number: the floor number
+
+.. js:function:: map.setFloorNumber(floorNumber)
+
+   Sets the floor number for the currently-opened map. Floor numbers can be any number between -128 and 127 inclusive.
+
+   :param number floorNumber: the floor number
 
 Map Overlay Functions
 ^^^^^^^^^^^^^^^^^^^^^
@@ -404,6 +630,26 @@ The following functions are related to an overlay that is drawn on top of the ma
    Sets the visibility of all active overlay layers.
 
    :param boolean visible: whether the layers should be showing
+
+.. js:function:: map.getOverlayOpacity(layer = 0)
+
+   Gets the opacity of the specified overlay layer. Opacity ranges from 0 (invisible) to 100 (completely opaque).
+
+   :param number layer: the layer id. Defaults to ``0``
+   :returns number: the opacity
+
+.. js:function:: map.setOverlayOpacity(opacity, layer = 0)
+
+   Sets the opacity of the specified overlay layer. Opacity ranges from 0 (invisible) to 100 (completely opaque).
+
+   :param number opacity: the opacity
+   :param number layer: the layer id. Defaults to ``0``
+
+.. js:function:: map.setOverlaysOpacity(opacity)
+
+   Sets the opacity of all active overlay layers. Opacity ranges from 0 (invisible) to 100 (completely opaque).
+
+   :param number opacity: the opacity
 
 .. js:function:: map.getOverlayX(layer = 0)
 
@@ -525,18 +771,18 @@ The following functions are related to an overlay that is drawn on top of the ma
    :param number layer: the layer id. Defaults to ``0``
    :param boolean useCache: whether the image should be saved/loaded using the cache. Defaults to ``true``. Reading images from a file is slow. Setting ``useCache`` to ``true`` will save the image to memory so that the next time the filepath is encountered the image can be loaded from memory rather than the file.
 
-.. js:function:: map.createImage(x, y, filepath, width = -1, height = -1, offset = 0, xflip = false, yflip = false, paletteId = -1, setTransparency = false, layer = 0, useCache = true)
+.. js:function:: map.createImage(x, y, filepath, width = -1, height = -1, offset = 0, hScale = 1, vScale = 1, paletteId = -1, setTransparency = false, layer = 0, useCache = true)
 
    Creates an image item on the specified overlay layer. This differs from ``map.addImage`` by allowing the new image to be a transformation of the image file.
 
    :param number x: the x pixel coordinate of the image's top-left corner (relative to the layer's position)
    :param number y: the y pixel coordinate of the image's top-left corner (relative to the layer's position)
    :param string filepath: the image's filepath
-   :param number width: the image width. If ``-1``, use the full width of the original image. Defaults to ``-1``
-   :param number height: the image height. If ``-1``, use the full height of the original image. Defaults to ``-1``
+   :param number width: the width in pixels of the area to read in the image. If ``-1``, use the full width of the original image. Defaults to ``-1``
+   :param number height: the height in pixels of the area to read in the image. If ``-1``, use the full height of the original image. Defaults to ``-1``
    :param number offset: the pixel offset into the original image where data should be read from. Defaults to ``0``
-   :param boolean xflip: whether the image should be a horizontal flip of the original image. Defaults to ``false``
-   :param boolean yflip: whether the image should be a vertical flip of the original image. Defaults to ``false``
+   :param number hScale: the horizontal scale for the image. Negative values will be a horizontal flip of the original image. Defaults to ``1``
+   :param number vScale: the vertical scale for the image. Negative values will be a vertical flip of the original image. Defaults to ``1``
    :param number paletteId: the id of which currently loaded tileset palette to use for the image. If ``-1``, use the original image's palette. Defaults to ``-1``
    :param boolean setTransparency: whether the color at index 0 should be overwritten with transparent pixels. Defaults to ``false``
    :param number layer: the layer id. Defaults to ``0``
@@ -887,6 +1133,22 @@ The following functions are related to tilesets and how they are rendered. The f
    :param number metatileId: id of target metatile
    :param number behavior: the behavior
 
+.. js:function:: map.getMetatileAttributes(metatileId)
+
+   Gets the raw attributes value for the specified metatile.
+
+   :param number metatileId: id of target metatile
+   :returns number: the raw attributes value
+
+.. js:function:: map.setMetatileAttributes(metatileId, attributes)
+
+   Sets the raw attributes value for the specified metatile.
+   
+   **Warning:** This function writes directly to the tileset. There is no undo for this. Porymap will not limit the value of existing attributes to their usual range.
+
+   :param number metatileId: id of target metatile
+   :param number attributes: the raw attributes value
+
 .. js:function:: map.getMetatileTile(metatileId, tileIndex)
 
    Gets the tile at the specified index of the metatile.
@@ -957,7 +1219,11 @@ The following functions are related to tilesets and how they are rendered. The f
    :param number tileEnd: index of the last tile to set. Defaults to ``-1`` (the last tile)
    :param boolean forceRedraw: Force the map view to refresh. Defaults to ``true``. Redrawing the map view is expensive, so set to ``false`` when making many consecutive map edits, and then redraw the map once using ``map.redraw()``.
 
+.. js:function:: map.getTilePixels(tileId)
 
+   Gets the pixel data for the specified tile. The pixel data is an array of indexes indicating which palette color each pixel uses. Tiles are 8x8, so the pixel array will be 64 elements long.
+
+   :returns array: the pixel data
 
 Settings Functions
 ^^^^^^^^^^^^^^^^^^
@@ -1005,6 +1271,12 @@ The following functions are related to settings.
    Gets the project's base game version.
 
    :returns string: ``"pokeruby"``, ``"pokefirered"``, or ``"pokeemerald"``
+
+.. js:function:: map.getPorymapVersion()
+
+   Gets the current version of Porymap (``MAJOR.MINOR.PATCH``).
+
+   :returns {major, minor, patch}: the version object
 
 .. js:function:: map.getCustomScripts()
 
@@ -1068,9 +1340,74 @@ These are some miscellaneous functions that can be very useful when building cus
 
    :param string message: the message to log
 
-
 .. js:function:: map.error(message)
 
    Logs a message to the Porymap log file with the prefix ``[ERROR]``.
 
    :param string message: the message to log
+
+.. js:function:: map.showMessage(text, informativeText, detailedText)
+
+   Displays a message box with an "Information" icon and an ``OK`` button. Execution stops while the window is open.
+
+   :param string text: the main message text
+   :param string informativeText: smaller text below the main message. Defaults to ``""``
+   :param string detailedText: text hidden behind a "Show Details" box. Defaults to ``""``
+
+.. js:function:: map.showWarning(text, informativeText, detailedText)
+
+   Displays a message box with a "Warning" icon and an ``OK`` button. Execution stops while the window is open.
+
+   :param string text: the main message text
+   :param string informativeText: smaller text below the main message. Defaults to ``""``
+   :param string detailedText: text hidden behind a "Show Details" box. Defaults to ``""``
+
+.. js:function:: map.showError(text, informativeText, detailedText)
+
+   Displays a message box with a "Critical" icon and an ``OK`` button. Execution stops while the window is open.
+
+   :param string text: the main message text
+   :param string informativeText: smaller text below the main message. Defaults to ``""``
+   :param string detailedText: text hidden behind a "Show Details" box. Defaults to ``""``
+
+.. js:function:: map.showQuestion(text, informativeText, detailedText)
+
+   Displays a message box with a "Question" icon and a ``Yes`` and a ``No`` button. Execution stops while the window is open.
+
+   :param string text: the main message text
+   :param string informativeText: smaller text below the main message. Defaults to ``""``
+   :param string detailedText: text hidden behind a "Show Details" box. Defaults to ``""``
+   :returns boolean: ``true`` if ``Yes`` was selected, ``false`` if ``No`` was selected or if the window was closed without selection
+
+.. js:function:: map.getInputText(title, label, default)
+
+   Displays a text input dialog with an ``OK`` and a ``Cancel`` button. Execution stops while the window is open.
+
+   :param string title: the text in the window title bar
+   :param string label: the text adjacent to the input entry area
+   :param string default: the text in the input entry area when the window is opened. Defaults to ``""``
+   :returns {input, ok}: ``input`` will be the input text and ``ok`` will be ``true`` if ``OK`` was selected. ``input`` will be ``""`` and ``ok`` will be ``false`` if ``Cancel`` was selected or if the window was closed without selection.
+
+.. js:function:: map.getInputNumber(title, label, default, min, max, decimals, step)
+
+   Displays a number input dialog with an ``OK`` and a ``Cancel`` button. Execution stops while the window is open.
+
+   :param string title: the text in the window title bar
+   :param string label: the text adjacent to the input entry area
+   :param number default: the number in the input entry area when the window is opened. Defaults to ``0``
+   :param number min: the minimum allowable input value. Defaults to ``-2147483648``
+   :param number max: the maximum allowable input value. Defaults to ``2147483647``
+   :param number decimals: the number of decimals used for the input number. Defaults to ``0``
+   :param number step: the increment by which the input number will change when the spinner is used. Defaults to ``1``
+   :returns {input, ok}: ``input`` will be the input number and ``ok`` will be ``true`` if ``OK`` was selected. ``input`` will be ``default`` and ``ok`` will be ``false`` if ``Cancel`` was selected or if the window was closed without selection.
+
+.. js:function:: map.getInputItem(title, label, items, default, editable)
+
+   Displays a text input dialog with an items dropdown and an ``OK`` and a ``Cancel`` button. Execution stops while the window is open.
+
+   :param string title: the text in the window title bar
+   :param string label: the text adjacent to the input entry area
+   :param array items: an array of text items that will populate the dropdown
+   :param number default: the index of the item to select by default. Defaults to ``0``
+   :param boolean editable: whether the user is allowed to enter their own text instead. Defaults to ``false``
+   :returns {input, ok}: ``input`` will be the input text and ``ok`` will be ``true`` if ``OK`` was selected. ``input`` will be the text of the item at ``default`` and ``ok`` will be ``false`` if ``Cancel`` was selected or if the window was closed without selection.
