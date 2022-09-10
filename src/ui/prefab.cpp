@@ -14,6 +14,7 @@
 #include <QWidget>
 #include <QDir>
 #include <QSpacerItem>
+#include <QMessageBox>
 
 using OrderedJson = poryjson::Json;
 using OrderedJsonDoc = poryjson::JsonDoc;
@@ -184,9 +185,23 @@ void Prefab::updatePrefabUi(Map *map) {
         QObject::connect(frame->ui->pushButton_DeleteItem, &QPushButton::clicked, [this, item, map](){
             for (int i = 0; i < this->items.size(); i++) {
                 if (this->items[i].id == item.id) {
-                    this->items.removeAt(i);
-                    this->savePrefabs();
-                    this->updatePrefabUi(map);
+                    QMessageBox msgBox;
+                    msgBox.setText("Confirm Prefab Deletion");
+                    if (this->items[i].name.isEmpty()) {
+                        msgBox.setInformativeText("Are you sure you want to delete this prefab?");
+                    } else {
+                        msgBox.setInformativeText(QString("Are you sure you want to delete prefab \"%1\"?").arg(this->items[i].name));
+                    }
+
+                    QPushButton *deleteButton = msgBox.addButton("Delete", QMessageBox::DestructiveRole);
+                    msgBox.addButton(QMessageBox::Cancel);
+                    msgBox.setDefaultButton(QMessageBox::Cancel);
+                    msgBox.exec();
+                    if (msgBox.clickedButton() == deleteButton) {
+                        this->items.removeAt(i);
+                        this->savePrefabs();
+                        this->updatePrefabUi(map);
+                    }
                     break;
                 }
             }
