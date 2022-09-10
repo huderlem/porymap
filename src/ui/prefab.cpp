@@ -5,6 +5,7 @@
 #include "parseutil.h"
 #include "currentselectedmetatilespixmapitem.h"
 #include "log.h"
+#include "project.h"
 
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -88,17 +89,16 @@ QList<PrefabItem> Prefab::getPrefabsForTilesets(QString primaryTileset, QString 
 }
 
 void Prefab::initPrefabUI(MetatileSelector *selector, QWidget *prefabWidget, QLabel *emptyPrefabLabel, Map *map) {
-    logInfo("initPrefabUI");
     this->selector = selector;
     this->prefabWidget = prefabWidget;
     this->emptyPrefabLabel = emptyPrefabLabel;
     this->loadPrefabs();
-    logInfo("initPrefabUI loaded prefabs");
     this->updatePrefabUi(map);
-    logInfo("initPrefabUI after updatePrefabUi");
 }
 
 void Prefab::updatePrefabUi(Map *map) {
+    if (!this->selector)
+        return;
     // Cleanup the PrefabFrame to have a clean slate.
     auto layout = this->prefabWidget->layout();
     while (layout && layout->count() > 1) {
@@ -149,11 +149,23 @@ void Prefab::updatePrefabUi(Map *map) {
 }
 
 void Prefab::addPrefab(MetatileSelection selection, Map *map, QString name) {
+    bool usesPrimaryTileset = false;
+    bool usesSecondaryTileset = false;
+    for (auto metatile : selection.metatileItems) {
+        if (!metatile.enabled)
+            continue;
+        if (metatile.metatileId < Project::getNumMetatilesPrimary()) {
+            usesPrimaryTileset = true;
+        } else if (metatile.metatileId < Project::getNumMetatilesTotal()) {
+            usesSecondaryTileset = true;
+        }
+    }
+
     this->items.append(PrefabItem{
                            QUuid::createUuid(),
                            name,
-                           map->layout->tileset_primary_label,
-                           map->layout->tileset_secondary_label,
+                           usesPrimaryTileset ? map->layout->tileset_primary_label : "",
+                           usesSecondaryTileset ? map->layout->tileset_secondary_label: "",
                            selection
                        });
     this->updatePrefabUi(map);

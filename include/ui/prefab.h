@@ -22,6 +22,7 @@ class Prefab
 public:
     void initPrefabUI(MetatileSelector *selector, QWidget *prefabWidget, QLabel *emptyPrefabLabel, Map *map);
     void addPrefab(MetatileSelection selection, Map *map, QString name);
+    void updatePrefabUi(Map *map);
 
 private:
     MetatileSelector *selector;
@@ -29,7 +30,6 @@ private:
     QLabel *emptyPrefabLabel;
     QList<PrefabItem> items;
     void loadPrefabs();
-    void updatePrefabUi(Map *map);
     QList<PrefabItem> getPrefabsForTilesets(QString primaryTileset, QString secondaryTileset);
 };
 

@@ -667,6 +667,7 @@ bool MainWindow::setMap(QString map_name, bool scrollTreeView) {
     updateMapList();
 
     Scripting::cb_MapOpened(map_name);
+    prefab.updatePrefabUi(editor->map);
     updateTilesetEditor();
     return true;
 }
@@ -1696,6 +1697,8 @@ void MainWindow::on_mapViewTab_tabBarClicked(int index)
         editor->setEditingMap();
     } else if (index == 1) {
         editor->setEditingCollision();
+    } else if (index == 2) {
+        editor->setEditingMap();
     }
     editor->setCursorRectVisible(false);
 }
@@ -2893,6 +2896,7 @@ void MainWindow::on_comboBox_PrimaryTileset_currentTextChanged(const QString &ti
         redrawMapScene();
         on_horizontalSlider_MetatileZoom_valueChanged(ui->horizontalSlider_MetatileZoom->value());
         updateTilesetEditor();
+        prefab.updatePrefabUi(editor->map);
         markMapEdited();
     }
 }
@@ -2904,6 +2908,7 @@ void MainWindow::on_comboBox_SecondaryTileset_currentTextChanged(const QString &
         redrawMapScene();
         on_horizontalSlider_MetatileZoom_valueChanged(ui->horizontalSlider_MetatileZoom->value());
         updateTilesetEditor();
+        prefab.updatePrefabUi(editor->map);
         markMapEdited();
     }
 }
