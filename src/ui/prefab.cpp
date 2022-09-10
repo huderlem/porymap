@@ -15,6 +15,9 @@
 #include <QDir>
 #include <QSpacerItem>
 
+using OrderedJson = poryjson::Json;
+using OrderedJsonDoc = poryjson::JsonDoc;
+
 
 void Prefab::loadPrefabs() {
     this->items.clear();
@@ -75,6 +78,50 @@ void Prefab::loadPrefabs() {
 
         this->items.append(PrefabItem{QUuid::createUuid(), name, primaryTileset, secondaryTileset, selection});
     }
+}
+
+void Prefab::savePrefabs() {
+    QString filepath = projectConfig.getPrefabFilepath();
+    if (filepath.isEmpty()) return;
+    QFile prefabsFile(filepath);
+    if (!prefabsFile.open(QIODevice::WriteOnly)) {
+        logError(QString("Error: Could not open %1 for writing").arg(filepath));
+        return;
+    }
+
+    OrderedJson::array prefabsArr;
+    for (auto item : this->items) {
+        OrderedJson::object prefabObj;
+        prefabObj["name"] = item.name;
+        prefabObj["width"] = item.selection.dimensions.x();
+        prefabObj["height"] = item.selection.dimensions.y();
+        prefabObj["primary_tileset"] = item.primaryTileset;
+        prefabObj["secondary_tileset"] = item.secondaryTileset;
+        OrderedJson::array metatiles;
+        for (int y = 0; y < item.selection.dimensions.y(); y++) {
+            for (int x = 0; x < item.selection.dimensions.x(); x++) {
+                int index = y * item.selection.dimensions.x() + x;
+                auto metatileItem = item.selection.metatileItems.at(index);
+                if (metatileItem.enabled) {
+                    auto collisionItem = item.selection.collisionItems.at(index);
+                    OrderedJson::object metatileObj;
+                    metatileObj["x"] = x;
+                    metatileObj["y"] = y;
+                    metatileObj["metatile_id"] = metatileItem.metatileId;
+                    metatileObj["collision"] = collisionItem.collision;
+                    metatileObj["elevation"] = collisionItem.elevation;
+                    metatiles.push_back(metatileObj);
+                }
+            }
+        }
+        prefabObj["metatiles"] = metatiles;
+        prefabsArr.push_back(prefabObj);
+    }
+
+    OrderedJson prefabJson(prefabsArr);
+    OrderedJsonDoc jsonDoc(&prefabJson);
+    jsonDoc.dump(&prefabsFile);
+    prefabsFile.close();
 }
 
 QList<PrefabItem> Prefab::getPrefabsForTilesets(QString primaryTileset, QString secondaryTileset) {
@@ -138,6 +185,7 @@ void Prefab::updatePrefabUi(Map *map) {
             for (int i = 0; i < this->items.size(); i++) {
                 if (this->items[i].id == item.id) {
                     this->items.removeAt(i);
+                    this->savePrefabs();
                     this->updatePrefabUi(map);
                     break;
                 }
@@ -168,6 +216,7 @@ void Prefab::addPrefab(MetatileSelection selection, Map *map, QString name) {
                            usesSecondaryTileset ? map->layout->tileset_secondary_label: "",
                            selection
                        });
+    this->savePrefabs();
     this->updatePrefabUi(map);
 }
 

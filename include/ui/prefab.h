@@ -30,6 +30,7 @@ private:
     QLabel *emptyPrefabLabel;
     QList<PrefabItem> items;
     void loadPrefabs();
+    void savePrefabs();
     QList<PrefabItem> getPrefabsForTilesets(QString primaryTileset, QString secondaryTileset);
 };
 
