@@ -19,7 +19,6 @@
 using OrderedJson = poryjson::Json;
 using OrderedJsonDoc = poryjson::JsonDoc;
 
-
 void Prefab::loadPrefabs() {
     this->items.clear();
     QString filepath = projectConfig.getPrefabFilepath();
@@ -127,6 +126,9 @@ void Prefab::savePrefabs() {
 
 QList<PrefabItem> Prefab::getPrefabsForTilesets(QString primaryTileset, QString secondaryTileset) {
     QList<PrefabItem> filteredPrefabs;
+    // Prefabs are only valid for the tileset(s) from which they were created.
+    // If, say, no metatiles in the prefab are from the primary tileset, then
+    // any primary tileset is valid for that prefab.
     for (auto item : this->items) {
         if ((item.primaryTileset.isEmpty() || item.primaryTileset == primaryTileset) &&
             (item.secondaryTileset.isEmpty() || item.secondaryTileset == secondaryTileset)) {
@@ -144,6 +146,10 @@ void Prefab::initPrefabUI(MetatileSelector *selector, QWidget *prefabWidget, QLa
     this->updatePrefabUi(map);
 }
 
+// This function recreates the UI state for the prefab tab.
+// We completely delete all the prefab widgets, and recreate new widgets
+// from the relevant list of prefab items.
+// This is not very efficient, but it gets the job done.
 void Prefab::updatePrefabUi(Map *map) {
     if (!this->selector)
         return;
@@ -164,6 +170,13 @@ void Prefab::updatePrefabUi(Map *map) {
     }
 
     emptyPrefabLabel->setVisible(false);
+
+    // Add all the prefab widgets to this wrapper parent frame because directly adding them
+    // to the main prefab widget will cause the UI to immediately render each new widget, which is slow.
+    // This avoids unpleasant UI lag when a large number of prefabs are present.
+    QFrame *parentFrame = new QFrame();
+    parentFrame->setLayout(new QVBoxLayout());
+
     for (auto item : prefabs) {
         PrefabFrame *frame = new PrefabFrame();
         frame->ui->label_Name->setText(item.name);
@@ -174,7 +187,7 @@ void Prefab::updatePrefabUi(Map *map) {
         frame->ui->graphicsView_Prefab->setScene(scene);
         frame->ui->graphicsView_Prefab->setFixedSize(scene->itemsBoundingRect().width() + 2,
                                                      scene->itemsBoundingRect().height() + 2);
-        prefabWidget->layout()->addWidget(frame);
+        parentFrame->layout()->addWidget(frame);
 
         // Clicking on the prefab graphics item selects it for painting.
         QObject::connect(frame->ui->graphicsView_Prefab, &ClickableGraphicsView::clicked, [this, item](){
@@ -207,11 +220,14 @@ void Prefab::updatePrefabUi(Map *map) {
             }
         });
     }
-    auto spacer = new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::Expanding);
-    prefabWidget->layout()->addItem(spacer);
+    prefabWidget->layout()->addWidget(parentFrame);
+    auto verticalSpacer = new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::Expanding);
+    prefabWidget->layout()->addItem(verticalSpacer);
 }
 
 void Prefab::addPrefab(MetatileSelection selection, Map *map, QString name) {
+    // First, determine which tilesets are actually used in this new prefab,
+    // based on the metatile ids.
     bool usesPrimaryTileset = false;
     bool usesSecondaryTileset = false;
     for (auto metatile : selection.metatileItems) {
@@ -234,6 +250,5 @@ void Prefab::addPrefab(MetatileSelection selection, Map *map, QString name) {
     this->savePrefabs();
     this->updatePrefabUi(map);
 }
-
 
 Prefab prefab;
