@@ -741,6 +741,10 @@ void ProjectConfig::setPrefabFilepath(QString filepath) {
 }
 
 QString ProjectConfig::getPrefabFilepath() {
+    if (this->prefabFilepath.isEmpty()) {
+        // Default to the <projectroot>/prefabs.json, if no path exists.
+        this->setPrefabFilepath(QDir(this->projectDir).filePath("prefabs.json"));
+    }
     return this->prefabFilepath;
 }
 
