@@ -47,6 +47,9 @@ determined by this file.
    ``enable_floor_number``, 1 if ``pokefirered``, project, yes, Adds ``Floor Number`` to map headers
    ``create_map_text_file``, 1 if not ``pokeemerald``, project, yes, A ``text.inc`` or ``text.pory`` file will be created for any new map
    ``enable_triple_layer_metatiles``, 0, project, yes, Enables triple-layer metatiles (See https://github.com/pret/pokeemerald/wiki/Triple-layer-metatiles)
+   ``new_map_metatile``, 1, project, yes, The metatile id that will be used to fill new maps
+   ``new_map_elevation``, 3, project, yes, The elevation that will be used to fill new maps
+   ``new_map_border_metatiles``, "``468,469,476,477`` or ``20,21,28,29``", project, yes, The list of metatile ids that will be used to fill the 2x2 border of new maps
    ``custom_scripts``, , project, yes, A list of script files to load into the scripting engine
    ``prefabs_filepath``, ``<project_root>/prefabs.json``, project, yes, The filepath containing prefab JSON data
 

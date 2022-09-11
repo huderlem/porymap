@@ -1179,11 +1179,14 @@ bool Project::loadBlockdata(MapLayout *layout) {
 
 void Project::setNewMapBlockdata(Map *map) {
     map->layout->blockdata.clear();
-    for (int i = 0; i < map->getWidth() * map->getHeight(); i++) {
-        map->layout->blockdata.append(qint16(0x3001));
+    int width = map->getWidth();
+    int height = map->getHeight();
+    Block block(projectConfig.getNewMapMetatileId(), 0, projectConfig.getNewMapElevation());
+    for (int i = 0; i < width * height; i++) {
+        map->layout->blockdata.append(block);
     }
     map->layout->lastCommitBlocks.blocks = map->layout->blockdata;
-    map->layout->lastCommitBlocks.mapDimensions = QSize(map->getWidth(), map->getHeight());
+    map->layout->lastCommitBlocks.mapDimensions = QSize(width, height);
 }
 
 bool Project::loadLayoutBorder(MapLayout *layout) {
@@ -1204,23 +1207,20 @@ bool Project::loadLayoutBorder(MapLayout *layout) {
 
 void Project::setNewMapBorder(Map *map) {
     map->layout->border.clear();
-    if (map->getBorderWidth() != DEFAULT_BORDER_WIDTH || map->getBorderHeight() != DEFAULT_BORDER_HEIGHT) {
-        for (int i = 0; i < map->getBorderWidth() * map->getBorderHeight(); i++) {
+    int width = map->getBorderWidth();
+    int height = map->getBorderHeight();
+    if (width != DEFAULT_BORDER_WIDTH || height != DEFAULT_BORDER_HEIGHT) {
+        for (int i = 0; i < width * height; i++) {
             map->layout->border.append(0);
         }
-    } else if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
-        map->layout->border.append(qint16(0x0014));
-        map->layout->border.append(qint16(0x0015));
-        map->layout->border.append(qint16(0x001C));
-        map->layout->border.append(qint16(0x001D));
     } else {
-        map->layout->border.append(qint16(0x01D4));
-        map->layout->border.append(qint16(0x01D5));
-        map->layout->border.append(qint16(0x01DC));
-        map->layout->border.append(qint16(0x01DD));
+        QList<int> metatileIds = projectConfig.getNewMapBorderMetatileIds();
+        for (int i = 0; i < DEFAULT_BORDER_WIDTH * DEFAULT_BORDER_HEIGHT; i++) {
+            map->layout->border.append(qint16(metatileIds.at(i)));
+        }
     }
     map->layout->lastCommitBlocks.border = map->layout->border;
-    map->layout->lastCommitBlocks.borderDimensions = QSize(map->getBorderWidth(), map->getBorderHeight());
+    map->layout->lastCommitBlocks.borderDimensions = QSize(width, height);
 }
 
 void Project::saveLayoutBorder(Map *map) {

@@ -9,6 +9,10 @@
 #include <QKeySequence>
 #include <QMultiMap>
 
+// In both versions the default new map border is a generic tree
+#define DEFAULT_BORDER_RSE (QList<int>{468, 469, 476, 477})
+#define DEFAULT_BORDER_FRLG (QList<int>{20, 21, 28, 29})
+
 enum MapSortOrder {
     Group   =  0,
     Area    =  1,
@@ -28,7 +32,8 @@ protected:
     virtual QMap<QString, QString> getKeyValueMap() = 0;
     virtual void onNewConfigFileCreated() = 0;
     virtual void setUnreadKeys() = 0;
-    void setConfigBool(QString key, bool * field, QString value);
+    bool getConfigBool(QString key, QString value);
+    int getConfigInteger(QString key, QString value, int min, int max, int defaultValue);
 };
 
 class PorymapConfig: public KeyValueConfigBase
@@ -157,6 +162,9 @@ public:
         this->enableFloorNumber = false;
         this->createMapTextFile = false;
         this->enableTripleLayerMetatiles = false;
+        this->newMapMetatileId = 1;
+        this->newMapElevation = 3;
+        this->newMapBorderMetatileIds = DEFAULT_BORDER_RSE;
         this->prefabFilepath = QString();
         this->customScripts.clear();
         this->readKeys.clear();
@@ -192,6 +200,12 @@ public:
     bool getCreateMapTextFileEnabled();
     void setTripleLayerMetatilesEnabled(bool enable);
     bool getTripleLayerMetatilesEnabled();
+    void setNewMapMetatileId(int metatileId);
+    int getNewMapMetatileId();
+    void setNewMapElevation(int elevation);
+    int getNewMapElevation();
+    void setNewMapBorderMetatileIds(QList<int> metatileIds);
+    QList<int> getNewMapBorderMetatileIds();
     void setCustomScripts(QList<QString> scripts);
     QList<QString> getCustomScripts();
     void setPrefabFilepath(QString filepath);
@@ -218,6 +232,9 @@ private:
     bool enableFloorNumber;
     bool createMapTextFile;
     bool enableTripleLayerMetatiles;
+    int newMapMetatileId;
+    int newMapElevation;
+    QList<int> newMapBorderMetatileIds;
     QList<QString> customScripts;
     QStringList readKeys;
     QString prefabFilepath;
