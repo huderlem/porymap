@@ -88,7 +88,7 @@ public:
     void setSelectedConnectionFromMap(QString mapName);
     void updatePrimaryTileset(QString tilesetLabel, bool forceLoad = false);
     void updateSecondaryTileset(QString tilesetLabel, bool forceLoad = false);
-    void toggleBorderVisibility(bool visible);
+    void toggleBorderVisibility(bool visible, bool enableScriptCallback = true);
     void updateCustomMapHeaderValues(QTableWidget *);
     void configureEncounterJSON(QWidget *);
     Tileset *getCurrentMapPrimaryTileset();
@@ -151,12 +151,14 @@ public:
     void shouldReselectEvents();
     void scaleMapView(int);
     void openInTextEditor(const QString &path, int lineNum = 0) const;
+    bool eventLimitReached(QString event_type);
 
 public slots:
     void openMapScripts() const;
     void openScript(const QString &scriptLabel) const;
     void openProjectInTextEditor() const;
     void maskNonVisibleConnectionTiles();
+    void onBorderMetatilesChanged();
 
 private:
     void setConnectionItemsVisible(bool);
@@ -176,7 +178,6 @@ private:
     void updateEncounterFields(EncounterFields newFields);
     QString getMovementPermissionText(uint16_t collision, uint16_t elevation);
     QString getMetatileDisplayMessage(uint16_t metatileId);
-    bool eventLimitReached(Map *, QString);
     bool startDetachedProcess(const QString &command,
                               const QString &workingDirectory = QString(),
                               qint64 *pid = nullptr) const;
@@ -192,7 +193,6 @@ private slots:
     void onConnectionItemSelected(ConnectionPixmapItem* connectionItem);
     void onConnectionItemDoubleClicked(ConnectionPixmapItem* connectionItem);
     void onConnectionDirectionChanged(QString newDirection);
-    void onBorderMetatilesChanged();
     void onHoveredMovementPermissionChanged(uint16_t, uint16_t);
     void onHoveredMovementPermissionCleared();
     void onHoveredMetatileSelectionChanged(uint16_t);

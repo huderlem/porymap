@@ -46,10 +46,13 @@ public:
     Q_INVOKABLE QJSValue getBlock(int x, int y);
     void tryRedrawMapArea(bool forceRedraw);
     void tryCommitMapChanges(bool commitChanges);
-    Q_INVOKABLE void setBlock(int x, int y, int tile, int collision, int elevation, bool forceRedraw = true, bool commitChanges = true);
+    Q_INVOKABLE void setBlock(int x, int y, int metatileId, int collision, int elevation, bool forceRedraw = true, bool commitChanges = true);
+    Q_INVOKABLE void setBlock(int x, int y, int rawValue, bool forceRedraw = true, bool commitChanges = true);
     Q_INVOKABLE void setBlocksFromSelection(int x, int y, bool forceRedraw = true, bool commitChanges = true);
     Q_INVOKABLE int getMetatileId(int x, int y);
     Q_INVOKABLE void setMetatileId(int x, int y, int metatileId, bool forceRedraw = true, bool commitChanges = true);
+    Q_INVOKABLE int getBorderMetatileId(int x, int y);
+    Q_INVOKABLE void setBorderMetatileId(int x, int y, int metatileId, bool forceRedraw = true, bool commitChanges = true);
     Q_INVOKABLE int getCollision(int x, int y);
     Q_INVOKABLE void setCollision(int x, int y, int collision, bool forceRedraw = true, bool commitChanges = true);
     Q_INVOKABLE int getElevation(int x, int y);
@@ -64,9 +67,15 @@ public:
     Q_INVOKABLE QJSValue getDimensions();
     Q_INVOKABLE int getWidth();
     Q_INVOKABLE int getHeight();
+    Q_INVOKABLE QJSValue getBorderDimensions();
+    Q_INVOKABLE int getBorderWidth();
+    Q_INVOKABLE int getBorderHeight();
     Q_INVOKABLE void setDimensions(int width, int height);
     Q_INVOKABLE void setWidth(int width);
     Q_INVOKABLE void setHeight(int height);
+    Q_INVOKABLE void setBorderDimensions(int width, int height);
+    Q_INVOKABLE void setBorderWidth(int width);
+    Q_INVOKABLE void setBorderHeight(int height);
     Q_INVOKABLE void clearOverlay(int layer = 0);
     Q_INVOKABLE void clearOverlays();
     Q_INVOKABLE void hideOverlay(int layer = 0);
@@ -96,7 +105,7 @@ public:
     Q_INVOKABLE void addImage(int x, int y, QString filepath, int layer = 0, bool useCache = true);
     Q_INVOKABLE void createImage(int x, int y, QString filepath,
                                  int width = -1, int height = -1, unsigned offset = 0,
-                                 bool xflip = false, bool yflip = false, int paletteId = -1, bool setTransparency = false,
+                                 qreal hScale = 1, qreal vScale = 1, int paletteId = -1, bool setTransparency = false,
                                  int layer = 0, bool useCache = true);
     Q_INVOKABLE void addTileImage(int x, int y, int tileId, bool xflip, bool yflip, int paletteId, bool setTransparency = false, int layer = 0);
     Q_INVOKABLE void addTileImage(int x, int y, QJSValue tileObj, bool setTransparency = false, int layer = 0);
@@ -149,6 +158,14 @@ public:
     Q_INVOKABLE void log(QString message);
     Q_INVOKABLE void warn(QString message);
     Q_INVOKABLE void error(QString message);
+    void runMessageBox(QString text, QString informativeText, QString detailedText, QMessageBox::Icon icon);
+    Q_INVOKABLE void showMessage(QString text, QString informativeText = "", QString detailedText = "");
+    Q_INVOKABLE void showWarning(QString text, QString informativeText = "", QString detailedText = "");
+    Q_INVOKABLE void showError(QString text, QString informativeText = "", QString detailedText = "");
+    Q_INVOKABLE bool showQuestion(QString text, QString informativeText = "", QString detailedText = "");
+    Q_INVOKABLE QJSValue getInputText(QString title, QString label, QString defaultValue = "");
+    Q_INVOKABLE QJSValue getInputNumber(QString title, QString label, double defaultValue = 0, double min = INT_MIN, double max = INT_MAX, int decimals = 0, double step = 1);
+    Q_INVOKABLE QJSValue getInputItem(QString title, QString label, QStringList items, int defaultValue = 0, bool editable = false);
     Q_INVOKABLE QList<int> getMetatileLayerOrder();
     Q_INVOKABLE void setMetatileLayerOrder(QList<int> order);
     Q_INVOKABLE QList<float> getMetatileLayerOpacity();
@@ -166,6 +183,8 @@ public:
     Q_INVOKABLE void setMetatileTerrainType(int metatileId, int terrainType);
     Q_INVOKABLE int getMetatileBehavior(int metatileId);
     Q_INVOKABLE void setMetatileBehavior(int metatileId, int behavior);
+    Q_INVOKABLE int getMetatileAttributes(int metatileId);
+    Q_INVOKABLE void setMetatileAttributes(int metatileId, int attributes);
     Q_INVOKABLE QJSValue getMetatileTile(int metatileId, int tileIndex);
     Q_INVOKABLE void setMetatileTile(int metatileId, int tileIndex, int tileId, bool xflip, bool yflip, int palette, bool forceRedraw = true);
     Q_INVOKABLE void setMetatileTile(int metatileId, int tileIndex, QJSValue tileObj, bool forceRedraw = true);
@@ -177,6 +196,7 @@ public:
     Q_INVOKABLE int getNumTilesInMetatile();
     Q_INVOKABLE int getNumMetatileLayers();
     Q_INVOKABLE QString getBaseGameVersion();
+    Q_INVOKABLE QJSValue getPorymapVersion();
     Q_INVOKABLE QList<QString> getCustomScripts();
     Q_INVOKABLE int getMainTab();
     Q_INVOKABLE void setMainTab(int index);
@@ -334,6 +354,7 @@ private slots:
     void on_pushButton_NewWildMonGroup_clicked();
     void on_pushButton_DeleteWildMonGroup_clicked();
     void on_pushButton_ConfigureEncountersJSON_clicked();
+    void on_pushButton_CreatePrefab_clicked();
 
     void on_actionRegion_Map_Editor_triggered();
     void on_actionEdit_Preferences_triggered();

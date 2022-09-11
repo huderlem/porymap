@@ -5,14 +5,17 @@ QMap<CallbackType, QString> callbackFunctions = {
     {OnProjectOpened, "onProjectOpened"},
     {OnProjectClosed, "onProjectClosed"},
     {OnBlockChanged, "onBlockChanged"},
+    {OnBorderMetatileChanged, "onBorderMetatileChanged"},
     {OnBlockHoverChanged, "onBlockHoverChanged"},
     {OnBlockHoverCleared, "onBlockHoverCleared"},
     {OnMapOpened, "onMapOpened"},
     {OnMapResized, "onMapResized"},
+    {OnBorderResized, "onBorderResized"},
     {OnMapShifted, "onMapShifted"},
     {OnTilesetUpdated, "onTilesetUpdated"},
     {OnMainTabChanged, "onMainTabChanged"},
     {OnMapViewTabChanged, "onMapViewTabChanged"},
+    {OnBorderVisibilityToggled, "onBorderVisibilityToggled"},
 };
 
 Scripting *instance = nullptr;
@@ -140,6 +143,18 @@ void Scripting::cb_MetatileChanged(int x, int y, Block prevBlock, Block newBlock
     instance->invokeCallback(OnBlockChanged, args);
 }
 
+void Scripting::cb_BorderMetatileChanged(int x, int y, uint16_t prevMetatileId, uint16_t newMetatileId) {
+    if (!instance) return;
+
+    QJSValueList args {
+        x,
+        y,
+        prevMetatileId,
+        newMetatileId,
+    };
+    instance->invokeCallback(OnBorderMetatileChanged, args);
+}
+
 void Scripting::cb_BlockHoverChanged(int x, int y) {
     if (!instance) return;
 
@@ -174,6 +189,18 @@ void Scripting::cb_MapResized(int oldWidth, int oldHeight, int newWidth, int new
         newHeight,
     };
     instance->invokeCallback(OnMapResized, args);
+}
+
+void Scripting::cb_BorderResized(int oldWidth, int oldHeight, int newWidth, int newHeight) {
+    if (!instance) return;
+
+    QJSValueList args {
+        oldWidth,
+        oldHeight,
+        newWidth,
+        newHeight,
+    };
+    instance->invokeCallback(OnBorderResized, args);
 }
 
 void Scripting::cb_MapShifted(int xDelta, int yDelta) {
@@ -215,6 +242,15 @@ void Scripting::cb_MapViewTabChanged(int oldTab, int newTab) {
     instance->invokeCallback(OnMapViewTabChanged, args);
 }
 
+void Scripting::cb_BorderVisibilityToggled(bool visible) {
+    if (!instance) return;
+
+    QJSValueList args {
+        visible,
+    };
+    instance->invokeCallback(OnBorderVisibilityToggled, args);
+}
+
 QJSValue Scripting::fromBlock(Block block) {
     QJSValue obj = instance->engine->newObject();
     obj.setProperty("metatileId", block.metatileId);
@@ -238,18 +274,26 @@ QJSValue Scripting::position(int x, int y) {
     return obj;
 }
 
+QJSValue Scripting::version(QList<int> versionNums) {
+    QJSValue obj = instance->engine->newObject();
+    obj.setProperty("major", versionNums.at(0));
+    obj.setProperty("minor", versionNums.at(1));
+    obj.setProperty("patch", versionNums.at(2));
+    return obj;
+}
+
 Tile Scripting::toTile(QJSValue obj) {
-    if (!obj.hasProperty("tileId")
-     || !obj.hasProperty("xflip")
-     || !obj.hasProperty("yflip")
-     || !obj.hasProperty("palette")) {
-        return Tile();
-    }
     Tile tile = Tile();
-    tile.tileId = obj.property("tileId").toInt();
-    tile.xflip = obj.property("xflip").toBool();
-    tile.yflip = obj.property("yflip").toBool();
-    tile.palette = obj.property("palette").toInt();
+
+    if (obj.hasProperty("tileId"))
+        tile.tileId = obj.property("tileId").toInt();
+    if (obj.hasProperty("xflip"))
+        tile.xflip = obj.property("xflip").toBool();
+    if (obj.hasProperty("yflip"))
+        tile.yflip = obj.property("yflip").toBool();
+    if (obj.hasProperty("palette"))
+        tile.palette = obj.property("palette").toInt();
+
     return tile;
 }
 
@@ -259,6 +303,13 @@ QJSValue Scripting::fromTile(Tile tile) {
     obj.setProperty("xflip", tile.xflip);
     obj.setProperty("yflip", tile.yflip);
     obj.setProperty("palette", tile.palette);
+    return obj;
+}
+
+QJSValue Scripting::dialogInput(QJSValue input, bool selectedOk) {
+    QJSValue obj = instance->engine->newObject();
+    obj.setProperty("input", input);
+    obj.setProperty("ok", selectedOk);
     return obj;
 }
 

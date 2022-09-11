@@ -566,6 +566,8 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         } else {
             logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
         }
+    } else if (key == "prefabs_filepath") {
+        this->prefabFilepath = value;
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -600,6 +602,7 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("enable_floor_number", QString::number(this->enableFloorNumber));
     map.insert("create_map_text_file", QString::number(this->createMapTextFile));
     map.insert("enable_triple_layer_metatiles", QString::number(this->enableTripleLayerMetatiles));
+    map.insert("prefabs_filepath", this->prefabFilepath);
     for (auto it = this->filePaths.constKeyValueBegin(); it != this->filePaths.constKeyValueEnd(); ++it) {
         map.insert("path/"+defaultPaths[(*it).first].first, (*it).second);
     }
@@ -858,6 +861,18 @@ void UserConfig::setCustomScripts(QList<QString> scripts) {
 
 QList<QString> UserConfig::getCustomScripts() {
     return this->customScripts;
+}
+
+void ProjectConfig::setPrefabFilepath(QString filepath) {
+    this->prefabFilepath = filepath;
+    this->save();
+}
+
+QString ProjectConfig::getPrefabFilepath() {
+    if (this->prefabFilepath.isEmpty()) {
+        this->setPrefabFilepath("prefabs.json");
+    }
+    return this->prefabFilepath;
 }
 
 ShortcutsConfig shortcutsConfig;

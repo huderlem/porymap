@@ -1078,8 +1078,8 @@ void Project::saveTilesetMetatiles(Tileset *tileset) {
     QFile metatiles_file(tileset->metatiles_path);
     if (metatiles_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
         QByteArray data;
+        int numTiles = projectConfig.getTripleLayerMetatilesEnabled() ? 12 : 8;
         for (Metatile *metatile : tileset->metatiles) {
-            int numTiles = projectConfig.getTripleLayerMetatilesEnabled() ? 12 : 8;
             for (int i = 0; i < numTiles; i++) {
                 uint16_t tile = metatile->tiles.at(i).rawValue();
                 data.append(static_cast<char>(tile));
@@ -1163,8 +1163,8 @@ Tileset* Project::loadTileset(QString label, Tileset *tileset) {
 bool Project::loadBlockdata(MapLayout *layout) {
     QString path = QString("%1/%2").arg(root).arg(layout->blockdata_path);
     layout->blockdata = readBlockdata(path);
-    layout->lastCommitMapBlocks.blocks = layout->blockdata;
-    layout->lastCommitMapBlocks.dimensions = QSize(layout->getWidth(), layout->getHeight());
+    layout->lastCommitBlocks.blocks = layout->blockdata;
+    layout->lastCommitBlocks.mapDimensions = QSize(layout->getWidth(), layout->getHeight());
 
     if (layout->blockdata.count() != layout->getWidth() * layout->getHeight()) {
         logWarn(QString("Layout blockdata length %1 does not match dimensions %2x%3 (should be %4). Resizing blockdata.")
@@ -1182,13 +1182,16 @@ void Project::setNewMapBlockdata(Map *map) {
     for (int i = 0; i < map->getWidth() * map->getHeight(); i++) {
         map->layout->blockdata.append(qint16(0x3001));
     }
-    map->layout->lastCommitMapBlocks.blocks = map->layout->blockdata;
-    map->layout->lastCommitMapBlocks.dimensions = QSize(map->getWidth(), map->getHeight());
+    map->layout->lastCommitBlocks.blocks = map->layout->blockdata;
+    map->layout->lastCommitBlocks.mapDimensions = QSize(map->getWidth(), map->getHeight());
 }
 
 bool Project::loadLayoutBorder(MapLayout *layout) {
     QString path = QString("%1/%2").arg(root).arg(layout->border_path);
     layout->border = readBlockdata(path);
+    layout->lastCommitBlocks.border = layout->border;
+    layout->lastCommitBlocks.borderDimensions = QSize(layout->getBorderWidth(), layout->getBorderHeight());
+
     int borderLength = layout->getBorderWidth() * layout->getBorderHeight();
     if (layout->border.count() != borderLength) {
         logWarn(QString("Layout border blockdata length %1 must be %2. Resizing border blockdata.")
@@ -1216,6 +1219,8 @@ void Project::setNewMapBorder(Map *map) {
         map->layout->border.append(qint16(0x01DC));
         map->layout->border.append(qint16(0x01DD));
     }
+    map->layout->lastCommitBlocks.border = map->layout->border;
+    map->layout->lastCommitBlocks.borderDimensions = QSize(map->getBorderWidth(), map->getBorderHeight());
 }
 
 void Project::saveLayoutBorder(Map *map) {
@@ -1583,14 +1588,14 @@ void Project::loadTilesetMetatiles(Tileset* tileset) {
     QFile metatiles_file(tileset->metatiles_path);
     if (metatiles_file.open(QIODevice::ReadOnly)) {
         QByteArray data = metatiles_file.readAll();
-        int metatile_data_length = projectConfig.getTripleLayerMetatilesEnabled() ? 24 : 16;
-        int num_metatiles = data.length() / metatile_data_length;
-        int num_layers = projectConfig.getTripleLayerMetatilesEnabled() ? 3 : 2;
+        int tilesPerMetatile = projectConfig.getTripleLayerMetatilesEnabled() ? 12 : 8;
+        int bytesPerMetatile = 2 * tilesPerMetatile;
+        int num_metatiles = data.length() / bytesPerMetatile;
         QList<Metatile*> metatiles;
         for (int i = 0; i < num_metatiles; i++) {
             Metatile *metatile = new Metatile;
-            int index = i * (2 * 4 * num_layers);
-            for (int j = 0; j < 4 * num_layers; j++) {
+            int index = i * bytesPerMetatile;
+            for (int j = 0; j < tilesPerMetatile; j++) {
                 uint16_t tileRaw = static_cast<unsigned char>(data[index++]);
                 tileRaw |= static_cast<unsigned char>(data[index++]) << 8;
                 metatile->tiles.append(Tile(tileRaw));

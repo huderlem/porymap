@@ -17,6 +17,10 @@
 #define DEFAULT_BORDER_WIDTH 2
 #define DEFAULT_BORDER_HEIGHT 2
 
+// Maximum based only on data type (u8) of map border width/height
+#define MAX_BORDER_WIDTH 255
+#define MAX_BORDER_HEIGHT 255
+
 // Number of metatiles to draw out from edge of map. Could allow modification of this in the future.
 // porymap will reflect changes to it, but the value is hard-coded in the projects at the moment
 #define BORDER_DISTANCE 7
@@ -82,6 +86,9 @@ public:
     bool getBlock(int x, int y, Block *out);
     void setBlock(int x, int y, Block block, bool enableScriptCallback = false);
     void setBlockdata(Blockdata blockdata);
+    uint16_t getBorderMetatileId(int x, int y);
+    void setBorderMetatileId(int x, int y, uint16_t metatileId, bool enableScriptCallback = false);
+    void setBorderBlockData(Blockdata blockdata);
     void floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
     void _floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
     void magicFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
@@ -96,6 +103,7 @@ public:
     void cacheBorder();
     bool hasUnsavedChanges();
     bool isWithinBounds(int x, int y);
+    bool isWithinBorderBounds(int x, int y);
 
     // for memory management
     QVector<Event *> ownedEvents;

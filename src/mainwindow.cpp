@@ -6,6 +6,7 @@
 #include "editor.h"
 #include "eventpropertiesframe.h"
 #include "ui_eventpropertiesframe.h"
+#include "prefabcreationdialog.h"
 #include "bordermetatilespixmapitem.h"
 #include "currentselectedmetatilespixmapitem.h"
 #include "customattributestable.h"
@@ -16,6 +17,7 @@
 #include "flowlayout.h"
 #include "shortcut.h"
 #include "mapparser.h"
+#include "prefab.h"
 
 #include <QFileDialog>
 #include <QClipboard>
@@ -554,6 +556,11 @@ bool MainWindow::openProject(QString dir) {
     }
 
     if (success) {
+        prefab.initPrefabUI(
+                    editor->metatile_selector_item,
+                    ui->scrollAreaWidgetContents_Prefabs,
+                    ui->label_prefabHelp,
+                    editor->map);
         for (auto action : this->registeredActions) {
             this->ui->menuTools->removeAction(action);
         }
@@ -662,6 +669,7 @@ bool MainWindow::setMap(QString map_name, bool scrollTreeView) {
     updateMapList();
 
     Scripting::cb_MapOpened(map_name);
+    prefab.updatePrefabUi(editor->map);
     updateTilesetEditor();
     return true;
 }
@@ -1381,7 +1389,8 @@ void MainWindow::redrawMetatileSelection()
 
     QPoint size = editor->metatile_selector_item->getSelectionDimensions();
     if (size.x() == 1 && size.y() == 1) {
-        QPoint pos = editor->metatile_selector_item->getMetatileIdCoordsOnWidget(editor->metatile_selector_item->getSelectedMetatiles()->at(0));
+        MetatileSelection selection = editor->metatile_selector_item->getMetatileSelection();
+        QPoint pos = editor->metatile_selector_item->getMetatileIdCoordsOnWidget(selection.metatileItems.first().metatileId);
         pos *= scale;
         ui->scrollArea_2->ensureVisible(pos.x(), pos.y(), 8 * scale, 8 * scale);
     }
@@ -1390,8 +1399,10 @@ void MainWindow::redrawMetatileSelection()
 void MainWindow::currentMetatilesSelectionChanged()
 {
     redrawMetatileSelection();
-    if (this->tilesetEditor)
-        this->tilesetEditor->selectMetatile(editor->metatile_selector_item->getSelectedMetatiles()->at(0));
+    if (this->tilesetEditor) {
+        MetatileSelection selection = editor->metatile_selector_item->getMetatileSelection();
+        this->tilesetEditor->selectMetatile(selection.metatileItems.first().metatileId);
+    }
 }
 
 void MainWindow::on_mapList_activated(const QModelIndex &index)
@@ -1463,15 +1474,18 @@ void MainWindow::copy() {
             OrderedJson::object copyObject;
             copyObject["object"] = "metatile_selection";
             OrderedJson::array metatiles;
-            for (auto item : *editor->metatile_selector_item->getSelectedMetatiles()) {
-                metatiles.append(static_cast<int>(item));
+            MetatileSelection selection = editor->metatile_selector_item->getMetatileSelection();
+            for (auto item : selection.metatileItems) {
+                metatiles.append(static_cast<int>(item.metatileId));
             }
             OrderedJson::array collisions;
-            for (auto collisionPair : *editor->metatile_selector_item->getSelectedCollisions()) {
-                OrderedJson::object collision;
-                collision["collision"] = collisionPair.first;
-                collision["elevation"] = collisionPair.second;
-                collisions.append(collision);
+            if (selection.hasCollision) {
+                for (auto item : selection.collisionItems) {
+                    OrderedJson::object collision;
+                    collision["collision"] = item.collision;
+                    collision["elevation"] = item.elevation;
+                    collisions.append(collision);
+                }
             }
             if (collisions.length() != metatiles.length()) {
                 // fill in collisions
@@ -1522,6 +1536,7 @@ void MainWindow::copy() {
 
                     if (type == EventType::HealLocation) {
                         // no copy on heal locations
+                        logWarn(QString("Copying events of type '%1' is not allowed.").arg(type));
                         continue;
                     }
 
@@ -1533,11 +1548,11 @@ void MainWindow::copy() {
 
                     eventsArray.append(eventJson);
                 }
-
-                copyObject["events"] = eventsArray;
-                setClipboardData(copyObject);
-                logInfo("Copied currently selected events to clipboard");
-
+                if (!eventsArray.isEmpty()) {
+                    copyObject["events"] = eventsArray;
+                    setClipboardData(copyObject);
+                    logInfo("Copied currently selected events to clipboard");
+                }
                 break;
             }
             }
@@ -1622,6 +1637,11 @@ void MainWindow::paste() {
                     // paste the event to the map
                     QString type = event["event_type"].toString();
 
+                    if (editor->eventLimitReached(type)) {
+                        logWarn(QString("Skipping paste, the map limit for events of type '%1' has been reached.").arg(type));
+                        continue;
+                    }
+
                     Event *pasteEvent = Event::createNewEvent(type, editor->map->name, editor->project);
 
                     for (auto key : event.toObject().keys())
@@ -1653,9 +1673,10 @@ void MainWindow::paste() {
                     newEvents.append(pasteEvent);
                 }
 
-                editor->map->editHistory.push(new EventPaste(this->editor, editor->map, newEvents));
-                updateObjects();
-
+                if (!newEvents.isEmpty()) {
+                    updateObjects();
+                    editor->map->editHistory.push(new EventPaste(this->editor, editor->map, newEvents));
+                }
                 break;
             }
         }
@@ -1678,6 +1699,8 @@ void MainWindow::on_mapViewTab_tabBarClicked(int index)
         editor->setEditingMap();
     } else if (index == 1) {
         editor->setEditingCollision();
+    } else if (index == 2) {
+        editor->setEditingMap();
     }
     editor->setCursorRectVisible(false);
 }
@@ -2876,6 +2899,7 @@ void MainWindow::on_comboBox_PrimaryTileset_currentTextChanged(const QString &ti
         redrawMapScene();
         on_horizontalSlider_MetatileZoom_valueChanged(ui->horizontalSlider_MetatileZoom->value());
         updateTilesetEditor();
+        prefab.updatePrefabUi(editor->map);
         markMapEdited();
     }
 }
@@ -2887,6 +2911,7 @@ void MainWindow::on_comboBox_SecondaryTileset_currentTextChanged(const QString &
         redrawMapScene();
         on_horizontalSlider_MetatileZoom_valueChanged(ui->horizontalSlider_MetatileZoom->value());
         updateTilesetEditor();
+        prefab.updatePrefabUi(editor->map);
         markMapEdited();
     }
 }
@@ -2909,9 +2934,8 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked()
     bheightSpinBox->setMinimum(1);
     widthSpinBox->setMaximum(editor->project->getMaxMapWidth());
     heightSpinBox->setMaximum(editor->project->getMaxMapHeight());
-    // Maximum based only on data type (u8) of map border width/height
-    bwidthSpinBox->setMaximum(255);
-    bheightSpinBox->setMaximum(255);
+    bwidthSpinBox->setMaximum(MAX_BORDER_WIDTH);
+    bheightSpinBox->setMaximum(MAX_BORDER_HEIGHT);
     widthSpinBox->setValue(editor->map->getWidth());
     heightSpinBox->setValue(editor->map->getHeight());
     bwidthSpinBox->setValue(editor->map->getBorderWidth());
@@ -3010,7 +3034,9 @@ void MainWindow::on_actionTileset_Editor_triggered()
     } else {
         this->tilesetEditor->activateWindow();
     }
-    this->tilesetEditor->selectMetatile(this->editor->metatile_selector_item->getSelectedMetatiles()->at(0));
+
+    MetatileSelection selection = this->editor->metatile_selector_item->getMetatileSelection();
+    this->tilesetEditor->selectMetatile(selection.metatileItems.first().metatileId);
 }
 
 void MainWindow::initTilesetEditor() {
@@ -3154,6 +3180,15 @@ void MainWindow::on_actionRegion_Map_Editor_triggered() {
         this->regionMapEditor->showNormal();
     } else {
         this->regionMapEditor->activateWindow();
+    }
+}
+
+void MainWindow::on_pushButton_CreatePrefab_clicked() {
+    PrefabCreationDialog dialog(this, this->editor->metatile_selector_item, this->editor->map);
+    dialog.setWindowTitle("Create Prefab");
+    dialog.setWindowModality(Qt::NonModal);
+    if (dialog.exec() == QDialog::Accepted) {
+        dialog.savePrefab();
     }
 }
 

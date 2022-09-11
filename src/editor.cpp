@@ -1075,7 +1075,7 @@ QString Editor::getMovementPermissionText(uint16_t collision, uint16_t elevation
     } else if (collision == 0) {
         message = QString("Collision: Passable, Elevation: %1").arg(elevation);
     } else {
-        message = QString("Collision: Impassable, Elevation: %1").arg(elevation);
+        message = QString("Collision: Impassable (%1), Elevation: %2").arg(collision).arg(elevation);
     }
     return message;
 }
@@ -1936,11 +1936,13 @@ void Editor::updateSecondaryTileset(QString tilesetLabel, bool forceLoad)
     }
 }
 
-void Editor::toggleBorderVisibility(bool visible)
+void Editor::toggleBorderVisibility(bool visible, bool enableScriptCallback)
 {
     this->setBorderItemsVisible(visible);
     this->setConnectionsVisibility(visible);
     porymapConfig.setShowBorder(visible);
+    if (enableScriptCallback)
+        Scripting::cb_BorderVisibilityToggled(visible);
 }
 
 void Editor::updateCustomMapHeaderValues(QTableWidget *table)
@@ -2031,7 +2033,7 @@ void Editor::duplicateSelectedEvents() {
     for (int i = 0; i < selected_events->length(); i++) {
         Event *original = selected_events->at(i)->event;
         QString eventType = original->get("event_type");
-        if (eventLimitReached(map, eventType)) {
+        if (eventLimitReached(eventType)) {
             logWarn(QString("Skipping duplication, the map limit for events of type '%1' has been reached.").arg(eventType));
             continue;
         }
@@ -2045,7 +2047,7 @@ void Editor::duplicateSelectedEvents() {
 }
 
 DraggablePixmapItem* Editor::addNewEvent(QString event_type) {
-    if (project && map && !event_type.isEmpty() && !eventLimitReached(map, event_type)) {
+    if (project && map && !event_type.isEmpty() && !eventLimitReached(event_type)) {
         Event *event = Event::createNewEvent(event_type, map->name, project);
         event->put("map_name", map->name);
         if (event_type == EventType::HealLocation) {
@@ -2061,7 +2063,7 @@ DraggablePixmapItem* Editor::addNewEvent(QString event_type) {
 }
 
 // Currently only object events have an explicit limit
-bool Editor::eventLimitReached(Map *map, QString event_type)
+bool Editor::eventLimitReached(QString event_type)
 {
     if (project && map && !event_type.isEmpty()) {
         if (Event::typeToGroup(event_type) == EventGroup::Object)

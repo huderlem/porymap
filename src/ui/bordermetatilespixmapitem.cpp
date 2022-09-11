@@ -5,19 +5,17 @@
 #include <QPainter>
 
 void BorderMetatilesPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
-    QList<uint16_t> *selectedMetatiles = this->metatileSelector->getSelectedMetatiles();
-    QPoint selectionDimensions = this->metatileSelector->getSelectionDimensions();
+    MetatileSelection selection = this->metatileSelector->getMetatileSelection();
     QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
     int width = map->getBorderWidth();
     int height = map->getBorderHeight();
 
     Blockdata oldBorder = map->layout->border;
 
-    for (int i = 0; i < selectionDimensions.x() && (i + pos.x()) < width; i++) {
-        for (int j = 0; j < selectionDimensions.y() && (j + pos.y()) < height; j++) {
-            int blockIndex = (j + pos.y()) * width + (i + pos.x());
-            uint16_t metatileId = selectedMetatiles->at(j * selectionDimensions.x() + i);
-            map->layout->border[blockIndex].metatileId = metatileId;
+    for (int i = 0; i < selection.dimensions.x() && (i + pos.x()) < width; i++) {
+        for (int j = 0; j < selection.dimensions.y() && (j + pos.y()) < height; j++) {
+            MetatileSelectionItem item = selection.metatileItems.at(j * selection.dimensions.x() + i);
+            map->setBorderMetatileId(pos.x() + i, pos.y() + j, item.metatileId, true);
         }
     }
 
@@ -40,9 +38,8 @@ void BorderMetatilesPixmapItem::draw() {
         for (int j = 0; j < height; j++) {
             int x = i * 16;
             int y = j * 16;
-            int index = j * width + i;
             QImage metatile_image = getMetatileImage(
-                        map->layout->border.value(index).metatileId,
+                        map->getBorderMetatileId(i, j),
                         map->layout->tileset_primary,
                         map->layout->tileset_secondary,
                         map->metatileLayerOrder,

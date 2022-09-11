@@ -52,5 +52,6 @@ your project root as ``porymap.user.cfg``. You should add this file to your giti
    ``create_map_text_file``, 1 if not ``pokeemerald``, project, yes, A ``text.inc`` or ``text.pory`` file will be created for any new map
    ``enable_triple_layer_metatiles``, 0, project, yes, Enables triple-layer metatiles (See https://github.com/pret/pokeemerald/wiki/Triple-layer-metatiles)
    ``custom_scripts``, , user, yes, A list of script files to load into the scripting engine
+   ``prefabs_filepath``, ``<project_root>/prefabs.json``, project, yes, The filepath containing prefab JSON data
 
 Some of these settings can be toggled manually in porymap via the *Options* menu.

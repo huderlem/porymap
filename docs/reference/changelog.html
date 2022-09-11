@@ -109,6 +109,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../manual/editing-map-tiles.html#change-map-border">Change Map Border</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../manual/editing-map-tiles.html#change-map-tilesets">Change Map Tilesets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../manual/editing-map-tiles.html#undo-redo">Undo &amp; Redo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../manual/editing-map-tiles.html#prefabs">Prefabs</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../manual/editing-map-collisions.html">Editing Map Collisions</a><ul>
@@ -121,6 +122,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../manual/editing-map-events.html#adding-deleting-events">Adding &amp; Deleting Events</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../manual/editing-map-events.html#event-positions">Event Positions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../manual/editing-map-events.html#object-events">Object Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../manual/editing-map-events.html#clone-object-events">Clone Object Events</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../manual/editing-map-events.html#warp-events">Warp Events</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../manual/editing-map-events.html#trigger-events">Trigger Events</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../manual/editing-map-events.html#weather-trigger-events">Weather Trigger Events</a></li>
@@ -153,7 +155,25 @@
 <li class="toctree-l2"><a class="reference internal" href="../manual/region-map-editor.html#background-image-tab">Background Image Tab</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../manual/region-map-editor.html#map-layout-tab">Map Layout Tab</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../manual/region-map-editor.html#map-entries-tab">Map Entries Tab</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../manual/region-map-editor.html#city-maps">City Maps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../manual/tileset-editor.html">The Tileset Editor</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../manual/tileset-editor.html#metatile-properties">Metatile Properties</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../manual/tileset-editor.html#layer-type">Layer Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../manual/tileset-editor.html#metatile-behavior">Metatile Behavior</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../manual/tileset-editor.html#encounter-type">Encounter Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../manual/tileset-editor.html#terrain-type">Terrain Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../manual/tileset-editor.html#metatile-label">Metatile Label</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../manual/tileset-editor.html#tools-menu">Tools Menu</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../manual/tileset-editor.html#import-tiles-image">Import Tiles Image…</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../manual/tileset-editor.html#import-metatiles-from-advance-map-1-92">Import Metatiles from Advance Map 1.92…</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../manual/tileset-editor.html#change-number-of-metatiles">Change Number of Metatiles</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../manual/tileset-editor.html#other-tools">Other Tools</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../manual/tileset-editor.html#palette-editor">Palette Editor</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../manual/scripting-capabilities.html">Scripting Capabilities</a><ul>
@@ -163,6 +183,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../manual/scripting-capabilities.html#callbacks">Callbacks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../manual/scripting-capabilities.html#functions">Functions</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../manual/scripting-capabilities.html#map-editing-functions">Map Editing Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../manual/scripting-capabilities.html#map-header-editing-functions">Map Header Editing Functions</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../manual/scripting-capabilities.html#map-overlay-functions">Map Overlay Functions</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../manual/scripting-capabilities.html#tileset-functions">Tileset Functions</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../manual/scripting-capabilities.html#settings-functions">Settings Functions</a></li>
@@ -185,94 +206,100 @@
 <p class="caption"><span class="caption-text">Reference</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Changelog</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#unreleased">Unreleased</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id1">4.5.0 - 2021-12-26</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#unreleased">Unreleased</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#breaking-changes">Breaking Changes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#added">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#changed">Changed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#fixed">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id2">4.4.0 - 2020-12-20</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id3">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id4">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id5">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id1">4.5.0 - 2021-12-26</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id2">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id3">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id4">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id6">4.3.1 - 2020-07-17</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id7">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id8">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id9">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id5">4.4.0 - 2020-12-20</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id6">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id7">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id8">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id10">4.3.0 - 2020-06-27</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id11">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id12">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id13">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id9">4.3.1 - 2020-07-17</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id10">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id11">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id12">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id14">4.2.0 - 2020-06-06</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id15">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id16">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id17">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id13">4.3.0 - 2020-06-27</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id14">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id15">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id16">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id18">4.1.0 - 2020-05-18</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id19">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id20">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id21">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id17">4.2.0 - 2020-06-06</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id18">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id19">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id20">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id22">4.0.0 - 2020-04-28</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#breaking-changes">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id23">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id24">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id25">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id21">4.1.0 - 2020-05-18</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id22">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id23">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id24">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id26">3.0.1 - 2020-03-04</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id27">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id25">4.0.0 - 2020-04-28</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id26">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id27">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id28">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id29">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id28">3.0.0 - 2020-03-04</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id29">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id30">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id31">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id32">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id30">3.0.1 - 2020-03-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id31">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id33">2.0.0 - 2019-10-16</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id34">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id35">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id36">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id37">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id32">3.0.0 - 2020-03-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id33">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id34">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id35">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id36">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id38">1.2.2 - 2019-05-16</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id37">2.0.0 - 2019-10-16</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id38">Breaking Changes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id39">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id40">Changed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id41">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id42">1.2.1 - 2019-02-16</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id42">1.2.2 - 2019-05-16</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#id43">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id44">Fixed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id44">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id45">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id45">1.2.0 - 2019-02-04</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id46">Breaking Changes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id46">1.2.1 - 2019-02-16</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#id47">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id48">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id49">Fixed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id48">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id50">1.1.0 - 2018-12-27</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id51">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id52">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id53">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id54">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id49">1.2.0 - 2019-02-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id50">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id51">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id52">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id53">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id55">1.0.0 - 2018-10-26</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id54">1.1.0 - 2018-12-27</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id55">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id56">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id57">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id58">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#id59">1.0.0 - 2018-10-26</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="related-projects.html">Related Projects</a></li>
@@ -350,12 +377,55 @@ and this project somewhat adheres to <a class="reference external" href="https:/
 <p>The <strong>“Breaking Changes”</strong> listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. If porymap is used on a project that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.</p>
 <div class="section" id="unreleased">
 <h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/4.5.0...HEAD">Unreleased</a><a class="headerlink" href="#unreleased" title="Permalink to this headline">¶</a></h2>
-<p>Nothing, yet.</p>
+<div class="section" id="breaking-changes">
+<h3>Breaking Changes<a class="headerlink" href="#breaking-changes" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Proper support for pokefirered’s clone objects was added, which requires the changes made in <a class="reference external" href="https://github.com/pret/pokefirered/pull/484">pokefirered/#484</a>.</p></li>
+</ul>
 </div>
-<div class="section" id="id1">
-<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/4.4.0...4.4.0">4.5.0</a> - 2021-12-26<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="added">
 <h3>Added<a class="headerlink" href="#added" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Add Copy/Paste for metatiles in the Tileset Editor.</p></li>
+<li><p>Add new features to the scripting API, including the ability to display message boxes and user input windows, set overlay opacity, get/set map header properties, read tile pixel data, and set blocks or metatile attributes using a raw value.</p></li>
+<li><p>Add button to copy the full metatile label to the clipboard in the Tileset Editor.</p></li>
+<li><p>Add option to not open the most recent project on launch.</p></li>
+<li><p>Add color picker to palette editor for taking colors from the screen.</p></li>
+</ul>
+</div>
+<div class="section" id="changed">
+<h3>Changed<a class="headerlink" href="#changed" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Overhauled the region map editor, adding support for tilemaps, and significant customization. Also now supports pokefirered.</p></li>
+<li><p>If an object event is inanimate, it will always render using its first frame.</p></li>
+<li><p>Only log “Unknown custom script function” when a registered script function is not present in any script.</p></li>
+<li><p>Unused metatile attribute bits that are set are preserved instead of being cleared.</p></li>
+<li><p>The wild encounter editor is automatically disabled if the encounter JSON data cannot be read</p></li>
+<li><p>Metatiles are always rendered accurately with 3 layers, and the unused layer is not assumed to be transparent.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">object_event_graphics_info.h</span></code> can now be parsed correctly if it uses structs with attributes.</p></li>
+<li><p>The selection is no longer reset when pasting events. The newly pasted events are selected instead.</p></li>
+<li><p>Palette editor ui is updated a bit to allow hex and rgb value input.</p></li>
+</ul>
+</div>
+<div class="section" id="fixed">
+<h3>Fixed<a class="headerlink" href="#fixed" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Fix cursor tile outline not updating at the end of a dragged selection.</p></li>
+<li><p>Fix cursor tile and player view outlines exiting map bounds while painting.</p></li>
+<li><p>Fix cursor tile and player view outlines not updating immediately when toggled in Collision view.</p></li>
+<li><p>Fix selected space not updating while painting in Collision view.</p></li>
+<li><p>Fix collision values of 2 or 3 not rendering properly.</p></li>
+<li><p>Fix the map music dropdown being empty when importing a map from Advance Map.</p></li>
+<li><p>Fix object events added by pasting ignoring the map event limit.</p></li>
+<li><p>Fixed a bug where saving the tileset editor would reselect the main editor’s first selected metatile.</p></li>
+<li><p>Fix crashes / unexpected behavior if certain scripting API functions are given invalid palette or tile numbers.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id1">
+<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/4.4.0...4.5.0">4.5.0</a> - 2021-12-26<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id2">
+<h3>Added<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>WSL project paths are now supported. (For example, \wsl$\Ubuntu-20.04\home\huderlem\pokeemerald)</p></li>
 <li><p>Add ability to export map timelapse animated GIFs with <code class="docutils literal notranslate"><span class="pre">File</span> <span class="pre">-&gt;</span> <span class="pre">Export</span> <span class="pre">Map</span> <span class="pre">Timelapse</span> <span class="pre">Image...</span></code>.</p></li>
@@ -367,8 +437,8 @@ and this project somewhat adheres to <a class="reference external" href="https:/
 <li><p>Porymap is now compatible with Qt6.</p></li>
 </ul>
 </div>
-<div class="section" id="changed">
-<h3>Changed<a class="headerlink" href="#changed" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id3">
+<h3>Changed<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>New events will be placed in the center of the current view of the map.</p></li>
 <li><p>Scripting API errors are more detailed and logged in more situations.</p></li>
@@ -377,8 +447,8 @@ and this project somewhat adheres to <a class="reference external" href="https:/
 <li><p>The onBlockChanged script callback is now called for blocks changed by Undo/Redo.</p></li>
 </ul>
 </div>
-<div class="section" id="fixed">
-<h3>Fixed<a class="headerlink" href="#fixed" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id4">
+<h3>Fixed<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Fix % operator in C defines not being evaluated</p></li>
 <li><p>Fix tileset palette editor crash that could occur when switching maps or tilesets with it open.</p></li>
@@ -388,10 +458,10 @@ and this project somewhat adheres to <a class="reference external" href="https:/
 </ul>
 </div>
 </div>
-<div class="section" id="id2">
-<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/4.3.1...4.4.0">4.4.0</a> - 2020-12-20<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id3">
-<h3>Added<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id5">
+<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/4.3.1...4.4.0">4.4.0</a> - 2020-12-20<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id6">
+<h3>Added<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Add undoable edit history for Events tab.</p></li>
 <li><p>Add keyboard shortcut for <code class="docutils literal notranslate"><span class="pre">DEL</span></code> key to delete the currently selected event(s).</p></li>
@@ -407,14 +477,14 @@ and this project somewhat adheres to <a class="reference external" href="https:/
 <li><p>Add custom text editor commands in <code class="docutils literal notranslate"><span class="pre">Options</span> <span class="pre">-&gt;</span> <span class="pre">Edit</span> <span class="pre">Preferences</span></code>, a tool-button next to the <code class="docutils literal notranslate"><span class="pre">Script</span></code> combo-box, and <code class="docutils literal notranslate"><span class="pre">Tools</span> <span class="pre">-&gt;</span> <span class="pre">Open</span> <span class="pre">Project</span> <span class="pre">in</span> <span class="pre">Text</span> <span class="pre">Editor</span></code>. The tool-button will open the containing file to the cooresponding script.</p></li>
 </ul>
 </div>
-<div class="section" id="id4">
-<h3>Changed<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id7">
+<h3>Changed<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Holding <code class="docutils literal notranslate"><span class="pre">shift</span></code> now toggles “Smart Path” drawing; when the “Smart Paths” checkbox is checked, holding <code class="docutils literal notranslate"><span class="pre">shift</span></code> will temporarily disable it.</p></li>
 </ul>
 </div>
-<div class="section" id="id5">
-<h3>Fixed<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id8">
+<h3>Fixed<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Fix a bug with the current metatile selection zoom.</p></li>
 <li><p>Fix bug preventing the status bar from updating the current position while dragging events.</p></li>
@@ -425,26 +495,26 @@ and this project somewhat adheres to <a class="reference external" href="https:/
 </ul>
 </div>
 </div>
-<div class="section" id="id6">
-<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/4.3.0...4.3.1">4.3.1</a> - 2020-07-17<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id7">
-<h3>Added<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id9">
+<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/4.3.0...4.3.1">4.3.1</a> - 2020-07-17<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id10">
+<h3>Added<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Add keyboard shortcut <code class="docutils literal notranslate"><span class="pre">Ctrl</span> <span class="pre">+</span> <span class="pre">D</span></code> for duplicating map events.</p></li>
 <li><p>Add keyboard shortcut <code class="docutils literal notranslate"><span class="pre">Ctrl</span> <span class="pre">+</span> <span class="pre">Shift</span> <span class="pre">+</span> <span class="pre">Z</span></code> for “redo” in the tileset editor.</p></li>
 <li><p>Add scripting api to reorder metatile layers and draw them with opacity.</p></li>
 </ul>
 </div>
-<div class="section" id="id8">
-<h3>Changed<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id11">
+<h3>Changed<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>The tileset editor now syncs its metatile selection with the map’s metatile selector.</p></li>
 <li><p>The number of object events per map is now limited to OBJECT_EVENT_TEMPLATES_COUNT</p></li>
 <li><p>The tileset editor can now flip selections that were taken from an existing metatile.</p></li>
 </ul>
 </div>
-<div class="section" id="id9">
-<h3>Fixed<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id12">
+<h3>Fixed<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Fix bug where editing a metatile layer would have no effect.</p></li>
 <li><p>Fix a crash that occured when creating a new tileset using triple layer mode.</p></li>
@@ -455,22 +525,22 @@ and this project somewhat adheres to <a class="reference external" href="https:/
 </ul>
 </div>
 </div>
-<div class="section" id="id10">
-<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/4.2.0...4.3.0">4.3.0</a> - 2020-06-27<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id11">
-<h3>Added<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id13">
+<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/4.2.0...4.3.0">4.3.0</a> - 2020-06-27<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id14">
+<h3>Added<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Add triple-layer metatiles support.</p></li>
 </ul>
 </div>
-<div class="section" id="id12">
-<h3>Changed<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id15">
+<h3>Changed<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>The “Open Scripts” button will fall back to <code class="docutils literal notranslate"><span class="pre">scripts.inc</span></code> if <code class="docutils literal notranslate"><span class="pre">scripts.pory</span></code> doesn’t exist.</p></li>
 </ul>
 </div>
-<div class="section" id="id13">
-<h3>Fixed<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id16">
+<h3>Fixed<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Fix bug where exported tileset images could be horizontally or vertically flipped.</p></li>
 <li><p>Fix bug where the map list wasn’t filtered properly after switching filter types.</p></li>
@@ -478,47 +548,47 @@ and this project somewhat adheres to <a class="reference external" href="https:/
 </ul>
 </div>
 </div>
-<div class="section" id="id14">
-<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/4.1.0...4.2.0">4.2.0</a> - 2020-06-06<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id15">
-<h3>Added<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id17">
+<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/4.1.0...4.2.0">4.2.0</a> - 2020-06-06<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id18">
+<h3>Added<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Add more project-specific configs to better support porting features from different projects.</p></li>
 <li><p>Add metatile label names to the status bar when hovering over metatiles in the map editor tab.</p></li>
 <li><p>Add mouse coordinates to the status bar when hovering in the events tab.</p></li>
 </ul>
 </div>
-<div class="section" id="id16">
-<h3>Changed<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id19">
+<h3>Changed<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">metatile_labels.h</span></code> is now watched for changes.</p></li>
 </ul>
 </div>
-<div class="section" id="id17">
-<h3>Fixed<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id20">
+<h3>Fixed<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Reduce time it takes to load maps and save in the tileset editor.</p></li>
 <li><p>Fix crash that could occur when parsing unknown symbols when evaluating <code class="docutils literal notranslate"><span class="pre">define</span></code> expressions.</p></li>
 </ul>
 </div>
 </div>
-<div class="section" id="id18">
-<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/4.0.0...4.1.0">4.1.0</a> - 2020-05-18<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id19">
-<h3>Added<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id21">
+<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/4.0.0...4.1.0">4.1.0</a> - 2020-05-18<a class="headerlink" href="#id21" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id22">
+<h3>Added<a class="headerlink" href="#id22" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Add scripting capabilities, which allows the user to add custom behavior to Porymap using JavaScript scripts.</p></li>
 <li><p>Add ability to import FRLG tileset .bvd files from Advance Map 1.92.</p></li>
 </ul>
 </div>
-<div class="section" id="id20">
-<h3>Changed<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id23">
+<h3>Changed<a class="headerlink" href="#id23" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Edit modes are no longer shared between the Map and Events tabs. Pencil is default for Map tab, and Pointer is default for Events tab.</p></li>
 </ul>
 </div>
-<div class="section" id="id21">
-<h3>Fixed<a class="headerlink" href="#id21" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id24">
+<h3>Fixed<a class="headerlink" href="#id24" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Disallow drawing new heal locations in the events tab.</p></li>
 <li><p>Fix issue where the metatile selection window was not resizable.</p></li>
@@ -529,16 +599,16 @@ and this project somewhat adheres to <a class="reference external" href="https:/
 </ul>
 </div>
 </div>
-<div class="section" id="id22">
-<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/3.0.1...4.0.0">4.0.0</a> - 2020-04-28<a class="headerlink" href="#id22" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="breaking-changes">
-<h3>Breaking Changes<a class="headerlink" href="#breaking-changes" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id25">
+<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/3.0.1...4.0.0">4.0.0</a> - 2020-04-28<a class="headerlink" href="#id25" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id26">
+<h3>Breaking Changes<a class="headerlink" href="#id26" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>If you are using pokeemerald or pokeruby, there were changes made in <a class="reference external" href="https://github.com/pret/pokeemerald/pull/1010">pokeemerald/#1010</a> and <a class="reference external" href="https://github.com/pret/pokeruby/pull/776">pokeruby/#776</a> that you will need to integrate in order to use this version of porymap.</p></li>
 </ul>
 </div>
-<div class="section" id="id23">
-<h3>Added<a class="headerlink" href="#id23" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id27">
+<h3>Added<a class="headerlink" href="#id27" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Support for <a class="reference external" href="https://github.com/pret/pokefirered">pokefirered</a>. Kanto fans rejoice! At long last porymap supports the FRLG decompilation project.</p></li>
 <li><p>Add ability to export map stitches with <code class="docutils literal notranslate"><span class="pre">File</span> <span class="pre">-&gt;</span> <span class="pre">Export</span> <span class="pre">Map</span> <span class="pre">Stitch</span> <span class="pre">Image...</span></code>.</p></li>
@@ -549,8 +619,8 @@ and this project somewhat adheres to <a class="reference external" href="https:/
 <li><p>Add <code class="docutils literal notranslate"><span class="pre">Pencil</span></code>, <code class="docutils literal notranslate"><span class="pre">Move</span></code>, and <code class="docutils literal notranslate"><span class="pre">Map</span> <span class="pre">Shift</span></code> tools to the Events tab.</p></li>
 </ul>
 </div>
-<div class="section" id="id24">
-<h3>Changed<a class="headerlink" href="#id24" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id28">
+<h3>Changed<a class="headerlink" href="#id28" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Porymap now saves map and encounter json data in an order consistent with the upstream repos. This will provide more comprehensible diffs when files are saved.</p></li>
 <li><p>Update Porymap icon.</p></li>
@@ -558,8 +628,8 @@ and this project somewhat adheres to <a class="reference external" href="https:/
 <li><p>Extend connection min and max offsets to player’s view boundary, rather than the map’s boundary.</p></li>
 </ul>
 </div>
-<div class="section" id="id25">
-<h3>Fixed<a class="headerlink" href="#id25" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id29">
+<h3>Fixed<a class="headerlink" href="#id29" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Fix bug where pressing TAB key did not navigate through widgets in the wild encounter tables.</p></li>
 <li><p>Fix bug that allowed selecting an invalid metatile in the metatile selector.</p></li>
@@ -568,19 +638,19 @@ and this project somewhat adheres to <a class="reference external" href="https:/
 </ul>
 </div>
 </div>
-<div class="section" id="id26">
-<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/3.0.0...3.0.1">3.0.1</a> - 2020-03-04<a class="headerlink" href="#id26" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id27">
-<h3>Fixed<a class="headerlink" href="#id27" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id30">
+<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/3.0.0...3.0.1">3.0.1</a> - 2020-03-04<a class="headerlink" href="#id30" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id31">
+<h3>Fixed<a class="headerlink" href="#id31" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Fix bug on Mac where tileset images were corrupted when saving.</p></li>
 </ul>
 </div>
 </div>
-<div class="section" id="id28">
-<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/2.0.0...3.0.0">3.0.0</a> - 2020-03-04<a class="headerlink" href="#id28" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id29">
-<h3>Breaking Changes<a class="headerlink" href="#id29" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id32">
+<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/2.0.0...3.0.0">3.0.0</a> - 2020-03-04<a class="headerlink" href="#id32" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id33">
+<h3>Breaking Changes<a class="headerlink" href="#id33" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>pokeemerald and pokeruby both underwent a naming consistency update with respect to “object events”. As such, these naming changes break old versions of Porymap.</p>
 <ul>
@@ -590,22 +660,22 @@ and this project somewhat adheres to <a class="reference external" href="https:/
 </li>
 </ul>
 </div>
-<div class="section" id="id30">
-<h3>Added<a class="headerlink" href="#id30" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id34">
+<h3>Added<a class="headerlink" href="#id34" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Add optional support for Poryscript script files via the <code class="docutils literal notranslate"><span class="pre">use_poryscript</span></code> config option.</p></li>
 <li><p>Selecting a group of metatiles from the map area now also copies the collision properties, too.</p></li>
 <li><p>Add keyboard shortcut <code class="docutils literal notranslate"><span class="pre">Ctrl</span> <span class="pre">+</span> <span class="pre">G</span></code> for toggling the map grid.</p></li>
 </ul>
 </div>
-<div class="section" id="id31">
-<h3>Changed<a class="headerlink" href="#id31" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id35">
+<h3>Changed<a class="headerlink" href="#id35" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Draw map connections with the current map’s tilesets to more accurately mimic their appearance in-game.</p></li>
 </ul>
 </div>
-<div class="section" id="id32">
-<h3>Fixed<a class="headerlink" href="#id32" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id36">
+<h3>Fixed<a class="headerlink" href="#id36" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Fix index-out-of-bounds crash when deleting the last event in an event type group.</p></li>
 <li><p>Fix bug where exporting tileset images could add an extra row of junk at the end.</p></li>
@@ -615,17 +685,17 @@ and this project somewhat adheres to <a class="reference external" href="https:/
 </ul>
 </div>
 </div>
-<div class="section" id="id33">
-<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/1.2.2...2.0.0">2.0.0</a> - 2019-10-16<a class="headerlink" href="#id33" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id34">
-<h3>Breaking Changes<a class="headerlink" href="#id34" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id37">
+<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/1.2.2...2.0.0">2.0.0</a> - 2019-10-16<a class="headerlink" href="#id37" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id38">
+<h3>Breaking Changes<a class="headerlink" href="#id38" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Accomodate event object graphics pointer table being explicitly indexed. From changes introduced in commits <a class="reference external" href="https://github.com/pret/pokeemerald/commit/cdae0c1444bed98e652c87dc3e3edcecacfef8be">cdae0c1444bed98e652c87dc3e3edcecacfef8be</a> and <a class="reference external" href="https://github.com/pret/pokeruby/commit/0e8ccfc4fd3544001f4c25fafd401f7558bdefba">0e8ccfc4fd3544001f4c25fafd401f7558bdefba</a>.</p></li>
 <li><p>New “field” key in wild encounter JSON data from pokeemerald and pokeruby commits <a class="reference external" href="https://github.com/pret/pokeemerald/commit/adb0a444577b59eb02788c782a3d04bc285be0ba">adb0a444577b59eb02788c782a3d04bc285be0ba</a> and <a class="reference external" href="c73de8bed752ca538d90cfc93c4a9e8c7965f8c9">https://github.com/pret/pokeruby/commit/c73de8bed752ca538d90cfc93c4a9e8c7965f8c9</a>.</p></li>
 </ul>
 </div>
-<div class="section" id="id35">
-<h3>Added<a class="headerlink" href="#id35" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id39">
+<h3>Added<a class="headerlink" href="#id39" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Add wild encounter table editor.</p></li>
 <li><p>Add dark themes.</p></li>
@@ -633,16 +703,16 @@ and this project somewhat adheres to <a class="reference external" href="https:/
 <li><p>Add warning when closing porymap with unsaved changes.</p></li>
 </ul>
 </div>
-<div class="section" id="id36">
-<h3>Changed<a class="headerlink" href="#id36" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id40">
+<h3>Changed<a class="headerlink" href="#id40" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Exporting map images is now more configurable. Events, connections, collision, etc. can be toggled on and off before exporting the image.</p></li>
 <li><p>The entire Tileset Editor selection is now conveniently flipped when selecting x-flip or y-flip.</p></li>
 <li><p>Autocomplete for porymap’s comboboxes no longer require typing the full string prefix.</p></li>
 </ul>
 </div>
-<div class="section" id="id37">
-<h3>Fixed<a class="headerlink" href="#id37" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id41">
+<h3>Fixed<a class="headerlink" href="#id41" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Fix bug where map group names were hardcoded when creating a new map.</p></li>
 <li><p>Fix bug in Tileset Editor where multi-tile selections weren’t properly painted when clicking on the bottom row of the metatile layers.</p></li>
@@ -653,18 +723,18 @@ and this project somewhat adheres to <a class="reference external" href="https:/
 </ul>
 </div>
 </div>
-<div class="section" id="id38">
-<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/1.2.1...1.2.2">1.2.2</a> - 2019-05-16<a class="headerlink" href="#id38" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id39">
-<h3>Added<a class="headerlink" href="#id39" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id42">
+<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/1.2.1...1.2.2">1.2.2</a> - 2019-05-16<a class="headerlink" href="#id42" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id43">
+<h3>Added<a class="headerlink" href="#id43" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Add region map editor</p></li>
 <li><p>Add ability to add new tilesets</p></li>
 <li><p>Add official Porymap documentation website: https://huderlem.github.io/porymap/</p></li>
 </ul>
 </div>
-<div class="section" id="id40">
-<h3>Changed<a class="headerlink" href="#id40" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id44">
+<h3>Changed<a class="headerlink" href="#id44" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Event sprites now display as facing the direction of their movement type.</p></li>
 <li><p>Default values for newly-created events now use valid values from the project, rather than hardcoded values.</p></li>
@@ -674,8 +744,8 @@ and this project somewhat adheres to <a class="reference external" href="https:/
 <li><p>Default values for new events are now more sensible and guaranteed to be valid.</p></li>
 </ul>
 </div>
-<div class="section" id="id41">
-<h3>Fixed<a class="headerlink" href="#id41" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id45">
+<h3>Fixed<a class="headerlink" href="#id45" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Fix bug in zoomed metatile selector where a large selection rectangle was being rendered.</p></li>
 <li><p>Fix bug where edited map icons were not rendered properly.</p></li>
@@ -684,32 +754,32 @@ and this project somewhat adheres to <a class="reference external" href="https:/
 </ul>
 </div>
 </div>
-<div class="section" id="id42">
-<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/1.2.0...1.2.1">1.2.1</a> - 2019-02-16<a class="headerlink" href="#id42" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id43">
-<h3>Added<a class="headerlink" href="#id43" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id46">
+<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/1.2.0...1.2.1">1.2.1</a> - 2019-02-16<a class="headerlink" href="#id46" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id47">
+<h3>Added<a class="headerlink" href="#id47" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Add ability to zoom in and out the map metatile selector via a slider at the bottom of the metatile selector window.</p></li>
 </ul>
 </div>
-<div class="section" id="id44">
-<h3>Fixed<a class="headerlink" href="#id44" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id48">
+<h3>Fixed<a class="headerlink" href="#id48" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Fix crash when creating a new map from a layout that has no pre-existing maps that use it.</p></li>
 <li><p>Fix bug where <code class="docutils literal notranslate"><span class="pre">var_value</span></code>, <code class="docutils literal notranslate"><span class="pre">trainer_type</span></code> and <code class="docutils literal notranslate"><span class="pre">trainer_sight_or_berry_tree_id</span></code> JSON fields were being interpreted as integers.</p></li>
 </ul>
 </div>
 </div>
-<div class="section" id="id45">
-<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/1.1.0...1.2.0">1.2.0</a> - 2019-02-04<a class="headerlink" href="#id45" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id46">
-<h3>Breaking Changes<a class="headerlink" href="#id46" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id49">
+<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/1.1.0...1.2.0">1.2.0</a> - 2019-02-04<a class="headerlink" href="#id49" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id50">
+<h3>Breaking Changes<a class="headerlink" href="#id50" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>New JSON map data format in pokeemerald and pokeruby from commits  <a class="reference external" href="https://github.com/pret/pokeemerald/commit/82abc164dc9f6a74fdf0c535cc1621b7ed05318b">82abc164dc9f6a74fdf0c535cc1621b7ed05318b</a> and <a class="reference external" href="https://github.com/pret/pokeruby/commit/a0ba1b7c6353f7e4f3066025514c05b323a0123d">a0ba1b7c6353f7e4f3066025514c05b323a0123d</a>.</p></li>
 </ul>
 </div>
-<div class="section" id="id47">
-<h3>Added<a class="headerlink" href="#id47" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id51">
+<h3>Added<a class="headerlink" href="#id51" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Add “magic fill” mode to fill tool (hold down CTRL key). This fills all matching metatiles on the map, rather than only the contiguous region.</p></li>
 <li><p>Add ability to import tileset palettes (JASC, .pal, .tpl, .gpl, .act).</p></li>
@@ -722,8 +792,8 @@ and this project somewhat adheres to <a class="reference external" href="https:/
 <li><p>Add ability to define custom fields for map header and all events.</p></li>
 </ul>
 </div>
-<div class="section" id="id48">
-<h3>Changed<a class="headerlink" href="#id48" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id52">
+<h3>Changed<a class="headerlink" href="#id52" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Collapse the map list by default.</p></li>
 <li><p>Collision view now has a transparency slider to help make it easier to view the underlying metatiles.</p></li>
@@ -737,8 +807,8 @@ and this project somewhat adheres to <a class="reference external" href="https:/
 <li><p>The tiles image in the tileset editor will no longer flip according to the x/y flip checkboxes. The individual tile selection still flips, though.</p></li>
 </ul>
 </div>
-<div class="section" id="id49">
-<h3>Fixed<a class="headerlink" href="#id49" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id53">
+<h3>Fixed<a class="headerlink" href="#id53" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Fix bug where smart paths could be auto-enabled, despite the checkbox being disabled.</p></li>
 <li><p>Fix crash that could occur when changing the palette id in the tileset palette editor.</p></li>
@@ -747,32 +817,32 @@ and this project somewhat adheres to <a class="reference external" href="https:/
 </ul>
 </div>
 </div>
-<div class="section" id="id50">
-<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/1.0.0...1.1.0">1.1.0</a> - 2018-12-27<a class="headerlink" href="#id50" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id51">
-<h3>Breaking Changes<a class="headerlink" href="#id51" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id54">
+<h2><a class="reference external" href="https://github.com/huderlem/porymap/compare/1.0.0...1.1.0">1.1.0</a> - 2018-12-27<a class="headerlink" href="#id54" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id55">
+<h3>Breaking Changes<a class="headerlink" href="#id55" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>New map header format in pokeemerald from commit <a class="reference external" href="https://github.com/pret/pokeemerald/commit/a1ea3b5e394bc115ba9b86348c161094a00dcca7">a1ea3b5e394bc115ba9b86348c161094a00dcca7</a>.</p></li>
 </ul>
 </div>
-<div class="section" id="id52">
-<h3>Added<a class="headerlink" href="#id52" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id56">
+<h3>Added<a class="headerlink" href="#id56" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Add <code class="docutils literal notranslate"><span class="pre">porymap.project.cfg</span></code> config file to project repos, in order to house project-specific settings, such as <code class="docutils literal notranslate"><span class="pre">base_game_version=pokeemerald</span></code>.</p></li>
 <li><p>Write all logs to <code class="docutils literal notranslate"><span class="pre">porymap.log</span></code> file, so users can view any errors that porymap hits.</p></li>
 <li><p>Changelog</p></li>
 </ul>
 </div>
-<div class="section" id="id53">
-<h3>Changed<a class="headerlink" href="#id53" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id57">
+<h3>Changed<a class="headerlink" href="#id57" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Add <code class="docutils literal notranslate"><span class="pre">porymap.cfg</span></code> base config file, rather than using built-in system settings (e.g. registry on Windows).</p></li>
 <li><p>Properly read/write map headers for <code class="docutils literal notranslate"><span class="pre">pokeemerald</span></code>.</p></li>
 <li><p>Overhauled event editing pane, which now contains tabs for each different event. Events of the same type can be iterated through using the spinner at the top of the tab. This makes it possible to edit events that are outside the viewing window.</p></li>
 </ul>
 </div>
-<div class="section" id="id54">
-<h3>Fixed<a class="headerlink" href="#id54" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id58">
+<h3>Fixed<a class="headerlink" href="#id58" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Creating new hidden-item events now uses a valid default flag value.</p></li>
 <li><p>Fix bug where tilesets were sometimes not displaying their bottom row of metatiles.</p></li>
@@ -785,8 +855,8 @@ and this project somewhat adheres to <a class="reference external" href="https:/
 </ul>
 </div>
 </div>
-<div class="section" id="id55">
-<h2><a class="reference external" href="https://github.com/huderlem/porymap/tree/1.0.0">1.0.0</a> - 2018-10-26<a class="headerlink" href="#id55" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id59">
+<h2><a class="reference external" href="https://github.com/huderlem/porymap/tree/1.0.0">1.0.0</a> - 2018-10-26<a class="headerlink" href="#id59" title="Permalink to this headline">¶</a></h2>
 <p>This was the initial release.</p>
 </div>
 </div>
