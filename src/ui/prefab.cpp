@@ -26,12 +26,13 @@ void Prefab::loadPrefabs() {
 
     ParseUtil parser;
     QJsonDocument prefabDoc;
+    QFileInfo info(filepath);
+    if (info.isRelative()) {
+        filepath = QDir::cleanPath(projectConfig.getProjectDir() + QDir::separator() + filepath);
+    }
     if (!QFile::exists(filepath) || !parser.tryParseJsonFile(&prefabDoc, filepath)) {
-        QString relativePath = QDir::cleanPath(projectConfig.getProjectDir() + QDir::separator() + filepath);
-        if (!parser.tryParseJsonFile(&prefabDoc, relativePath)) {
-            logError(QString("Failed to prefab data from %1").arg(filepath));
-            return;
-        }
+        logError(QString("Failed to prefab data from %1").arg(filepath));
+        return;
     }
 
     QJsonArray prefabs = prefabDoc.array();
@@ -86,9 +87,20 @@ void Prefab::loadPrefabs() {
 void Prefab::savePrefabs() {
     QString filepath = projectConfig.getPrefabFilepath();
     if (filepath.isEmpty()) return;
+
+    QFileInfo info(filepath);
+    if (info.isRelative()) {
+        filepath = QDir::cleanPath(projectConfig.getProjectDir() + QDir::separator() + filepath);
+    }
     QFile prefabsFile(filepath);
     if (!prefabsFile.open(QIODevice::WriteOnly)) {
         logError(QString("Error: Could not open %1 for writing").arg(filepath));
+        QMessageBox messageBox;
+        messageBox.setText("Failed to save prefabs file!");
+        messageBox.setInformativeText(QString("Could not open \"%1\" for writing").arg(filepath));
+        messageBox.setDetailedText("Any created prefabs will not be available next time Porymap is opened. Please fix your prefabs_filepath in the Porymap project config file.");
+        messageBox.setIcon(QMessageBox::Warning);
+        messageBox.exec();
         return;
     }
 
@@ -106,13 +118,15 @@ void Prefab::savePrefabs() {
                 int index = y * item.selection.dimensions.x() + x;
                 auto metatileItem = item.selection.metatileItems.at(index);
                 if (metatileItem.enabled) {
-                    auto collisionItem = item.selection.collisionItems.at(index);
                     OrderedJson::object metatileObj;
                     metatileObj["x"] = x;
                     metatileObj["y"] = y;
                     metatileObj["metatile_id"] = metatileItem.metatileId;
-                    metatileObj["collision"] = collisionItem.collision;
-                    metatileObj["elevation"] = collisionItem.elevation;
+                    if (item.selection.hasCollision && index < item.selection.collisionItems.size()) {
+                        auto collisionItem = item.selection.collisionItems.at(index);
+                        metatileObj["collision"] = collisionItem.collision;
+                        metatileObj["elevation"] = collisionItem.elevation;
+                    }
                     metatiles.push_back(metatileObj);
                 }
             }
