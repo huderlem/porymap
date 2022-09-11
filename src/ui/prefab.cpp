@@ -29,7 +29,7 @@ void Prefab::loadPrefabs() {
     if (!QFile::exists(filepath) || !parser.tryParseJsonFile(&prefabDoc, filepath)) {
         QString relativePath = QDir::cleanPath(projectConfig.getProjectDir() + QDir::separator() + filepath);
         if (!parser.tryParseJsonFile(&prefabDoc, relativePath)) {
-            logError(QString("Failed to prefab data from %1").arg(filepath));
+            logError(QString("Failed to read prefab data from %1").arg(filepath));
             return;
         }
     }
