@@ -58,16 +58,16 @@ public:
             int initialX,
             int initialY,
             QPoint selectionDimensions,
-            QList<uint16_t> *selectedMetatiles,
-            QList<QPair<uint16_t, uint16_t>> *selectedCollisions,
+            QList<MetatileSelectionItem> selectedMetatiles,
+            QList<CollisionSelectionItem> selectedCollisions,
             bool fromScriptCall = false);
     void floodFill(int x, int y, bool fromScriptCall = false);
     void floodFill(int x, int y, uint16_t metatileId, bool fromScriptCall = false);
     void floodFill(int initialX,
                    int initialY,
                    QPoint selectionDimensions,
-                   QList<uint16_t> *selectedMetatiles,
-                   QList<QPair<uint16_t, uint16_t>> *selectedCollisions,
+                   QList<MetatileSelectionItem> selectedMetatiles,
+                   QList<CollisionSelectionItem> selectedCollisions,
                    bool fromScriptCall = false);
     void floodFillSmartPath(int initialX, int initialY, bool fromScriptCall = false);
     virtual void pick(QGraphicsSceneMouseEvent*);

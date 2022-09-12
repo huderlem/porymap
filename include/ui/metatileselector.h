@@ -7,6 +7,27 @@
 #include "tileset.h"
 #include "maplayout.h"
 
+struct MetatileSelectionItem
+{
+    bool enabled;
+    uint16_t metatileId;
+};
+
+struct CollisionSelectionItem
+{
+    bool enabled;
+    uint16_t collision;
+    uint16_t elevation;
+};
+
+struct MetatileSelection
+{
+    QPoint dimensions;
+    bool hasCollision;
+    QList<MetatileSelectionItem> metatileItems;
+    QList<CollisionSelectionItem> collisionItems;
+};
+
 class MetatileSelector: public SelectablePixmapItem {
     Q_OBJECT
 public:
@@ -16,9 +37,7 @@ public:
         this->map = map;
         this->primaryTileset = map->layout->tileset_primary;
         this->secondaryTileset = map->layout->tileset_secondary;
-        this->selectedMetatiles = new QList<uint16_t>();
-        this->selectedCollisions = new QList<QPair<uint16_t, uint16_t>>();
-        this->externalSelectedMetatiles = new QList<uint16_t>();
+        this->selection = MetatileSelection{};
         setAcceptHoverEvents(true);
     }
     QPoint getSelectionDimensions();
@@ -26,8 +45,8 @@ public:
     bool select(uint16_t metatile);
     bool selectFromMap(uint16_t metatileId, uint16_t collision, uint16_t elevation);
     void setTilesets(Tileset*, Tileset*);
-    QList<uint16_t>* getSelectedMetatiles();
-    QList<QPair<uint16_t, uint16_t>>* getSelectedCollisions();
+    MetatileSelection getMetatileSelection();
+    void setDirectSelection(MetatileSelection selection);
     void setExternalSelection(int, int, QList<uint16_t>, QList<QPair<uint16_t, uint16_t>>);
     QPoint getMetatileIdCoordsOnWidget(uint16_t);
     void setMap(Map*);
@@ -43,11 +62,10 @@ private:
     bool externalSelection;
     int numMetatilesWide;
     Map *map;
-    QList<uint16_t> *selectedMetatiles;
-    QList<QPair<uint16_t, uint16_t>> *selectedCollisions;
     int externalSelectionWidth;
     int externalSelectionHeight;
-    QList<uint16_t> *externalSelectedMetatiles;
+    QList<uint16_t> externalSelectedMetatiles;
+    MetatileSelection selection;
 
     void updateSelectedMetatiles();
     void updateExternalSelectedMetatiles();

@@ -48,6 +48,7 @@ SOURCES += src/core/block.cpp \
     src/ui/connectionpixmapitem.cpp \
     src/ui/currentselectedmetatilespixmapitem.cpp \
     src/ui/overlay.cpp \
+    src/ui/prefab.cpp \
     src/ui/regionmaplayoutpixmapitem.cpp \
     src/ui/regionmapentriespixmapitem.cpp \
     src/ui/cursortilerect.cpp \
@@ -57,6 +58,7 @@ SOURCES += src/core/block.cpp \
     src/ui/graphicsview.cpp \
     src/ui/imageproviders.cpp \
     src/ui/mappixmapitem.cpp \
+    src/ui/prefabcreationdialog.cpp \
     src/ui/regionmappixmapitem.cpp \
     src/ui/citymappixmapitem.cpp \
     src/ui/mapsceneeventfilter.cpp \
@@ -83,6 +85,7 @@ SOURCES += src/core/block.cpp \
     src/ui/shortcut.cpp \
     src/ui/shortcutseditor.cpp \
     src/ui/multikeyedit.cpp \
+    src/ui/prefabframe.cpp \
     src/ui/preferenceeditor.cpp \
     src/ui/regionmappropertiesdialog.cpp \
     src/ui/colorpicker.cpp \
@@ -128,6 +131,7 @@ HEADERS  += include/core/block.h \
     include/ui/collisionpixmapitem.h \
     include/ui/connectionpixmapitem.h \
     include/ui/currentselectedmetatilespixmapitem.h \
+    include/ui/prefabframe.h \
     include/ui/regionmaplayoutpixmapitem.h \
     include/ui/regionmapentriespixmapitem.h \
     include/ui/cursortilerect.h \
@@ -138,6 +142,7 @@ HEADERS  += include/core/block.h \
     include/ui/imageproviders.h \
     include/ui/mappixmapitem.h \
     include/ui/mapview.h \
+    include/ui/prefabcreationdialog.h \
     include/ui/regionmappixmapitem.h \
     include/ui/citymappixmapitem.h \
     include/ui/mapsceneeventfilter.h \
@@ -166,6 +171,7 @@ HEADERS  += include/core/block.h \
     include/ui/shortcut.h \
     include/ui/shortcutseditor.h \
     include/ui/multikeyedit.h \
+    include/ui/prefab.h \
     include/ui/preferenceeditor.h \
     include/ui/regionmappropertiesdialog.h \
     include/ui/colorpicker.h \
@@ -180,6 +186,8 @@ HEADERS  += include/core/block.h \
 
 FORMS    += forms/mainwindow.ui \
     forms/eventpropertiesframe.ui \
+    forms/prefabcreationdialog.ui \
+    forms/prefabframe.ui \
     forms/tileseteditor.ui \
     forms/paletteeditor.ui \
     forms/regionmapeditor.ui \

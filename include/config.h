@@ -157,6 +157,7 @@ public:
         this->enableFloorNumber = false;
         this->createMapTextFile = false;
         this->enableTripleLayerMetatiles = false;
+        this->prefabFilepath = QString();
         this->customScripts.clear();
         this->readKeys.clear();
     }
@@ -193,6 +194,8 @@ public:
     bool getTripleLayerMetatilesEnabled();
     void setCustomScripts(QList<QString> scripts);
     QList<QString> getCustomScripts();
+    void setPrefabFilepath(QString filepath);
+    QString getPrefabFilepath();
 protected:
     virtual QString getConfigFilepath() override;
     virtual void parseConfigKeyValue(QString key, QString value) override;
@@ -217,6 +220,7 @@ private:
     bool enableTripleLayerMetatiles;
     QList<QString> customScripts;
     QStringList readKeys;
+    QString prefabFilepath;
 };
 
 extern ProjectConfig projectConfig;

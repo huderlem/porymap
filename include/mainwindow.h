@@ -281,6 +281,7 @@ private slots:
     void on_pushButton_NewWildMonGroup_clicked();
     void on_pushButton_DeleteWildMonGroup_clicked();
     void on_pushButton_ConfigureEncountersJSON_clicked();
+    void on_pushButton_CreatePrefab_clicked();
 
     void on_actionRegion_Map_Editor_triggered();
     void on_actionEdit_Preferences_triggered();
