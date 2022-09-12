@@ -9,6 +9,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ## [Unreleased]
 ### Breaking Changes
 - Proper support for pokefirered's clone objects was added, which requires the changes made in [pokefirered/#484](https://github.com/pret/pokefirered/pull/484).
+- `dest_warp_id` is now a string field, and `MAP_NONE` has been renamed `MAP_DYNAMIC`. This requires the changes made in [pokeemerald/#1755](https://github.com/pret/pokeemerald/pull/1755), [pokefirered/#484](https://github.com/pret/pokefirered/pull/484), or [pokeruby/#849](https://github.com/pret/pokeruby/pull/849) for the respective project.
 
 ### Added
 - Add Copy/Paste for metatiles in the Tileset Editor.
