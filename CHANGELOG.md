@@ -16,6 +16,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Add new features to the scripting API, including the ability to display message boxes and user input windows, set overlay opacity, get/set map header properties, read tile pixel data, and set blocks or metatile attributes using a raw value.
 - Add button to copy the full metatile label to the clipboard in the Tileset Editor.
 - Add option to not open the most recent project on launch.
+- Add options for customizing how new maps are filled
 - Add color picker to palette editor for taking colors from the screen.
 
 ### Changed
@@ -39,6 +40,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix object events added by pasting ignoring the map event limit.
 - Fixed a bug where saving the tileset editor would reselect the main editor's first selected metatile.
 - Fix crashes / unexpected behavior if certain scripting API functions are given invalid palette or tile numbers.
+- Silence unnecessary errors about `SECRET_BASE_GROUP` when parsing `secret_bases.h`.
 
 ## [4.5.0] - 2021-12-26
 ### Added
