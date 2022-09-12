@@ -54,7 +54,6 @@ public:
         this->showBorder = true;
         this->showGrid = false;
         this->monitorFiles = true;
-        this->regionMapDimensions = QSize(32, 20);
         this->theme = "default";
         this->textEditorOpenFolder = "";
         this->textEditorGotoLine = "";
@@ -74,7 +73,6 @@ public:
     void setShowBorder(bool enabled);
     void setShowGrid(bool enabled);
     void setMonitorFiles(bool monitor);
-    void setRegionMapDimensions(int width, int height);
     void setTheme(QString theme);
     void setTextEditorOpenFolder(const QString &command);
     void setTextEditorGotoLine(const QString &command);
@@ -93,7 +91,6 @@ public:
     bool getShowBorder();
     bool getShowGrid();
     bool getMonitorFiles();
-    QSize getRegionMapDimensions();
     QString getTheme();
     QString getTextEditorOpenFolder();
     QString getTextEditorGotoLine();
@@ -128,7 +125,6 @@ private:
     bool showBorder;
     bool showGrid;
     bool monitorFiles;
-    QSize regionMapDimensions;
     QString theme;
     QString textEditorOpenFolder;
     QString textEditorGotoLine;

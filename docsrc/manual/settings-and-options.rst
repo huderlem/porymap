@@ -30,7 +30,6 @@ determined by this file.
    ``show_player_view``, 0, global, yes, Display a rectangle for the GBA screen radius
    ``show_cursor_tile``, 0, global, yes, Display a rectangle around the hovered metatile(s)
    ``monitor_files``, 1, global, yes, Whether porymap will monitor changes to project files
-   ``region_map_dimensions``, 32x20, global, yes, The dimensions of the region map tilemap
    ``theme``, default, global, yes, The color theme for porymap windows and widgets
    ``text_editor_goto_line``, , global, yes, The command that will be executed when clicking the button next the ``Script`` combo-box.
    ``text_editor_open_directory``, , global, yes, The command that will be executed when clicking ``Open Project in Text Editor``.

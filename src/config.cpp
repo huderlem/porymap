@@ -174,17 +174,6 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->showGrid = getConfigBool(key, value);
     } else if (key == "monitor_files") {
         this->monitorFiles = getConfigBool(key, value);
-    } else if (key == "region_map_dimensions") {
-        bool ok1, ok2;
-        QStringList dims = value.split("x");
-        int w = dims[0].toInt(&ok1);
-        int h = dims[1].toInt(&ok2);
-        if (!ok1 || !ok2) {
-            logWarn("Cannot parse region map dimensions. Using default values instead.");
-            this->regionMapDimensions = QSize(32, 20);
-        } else {
-            this->regionMapDimensions = QSize(w, h);
-        }
     } else if (key == "theme") {
         this->theme = value;
     } else if (key == "text_editor_open_directory") {
@@ -219,8 +208,6 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("show_border", this->showBorder ? "1" : "0");
     map.insert("show_grid", this->showGrid ? "1" : "0");
     map.insert("monitor_files", this->monitorFiles ? "1" : "0");
-    map.insert("region_map_dimensions", QString("%1x%2").arg(this->regionMapDimensions.width())
-                                                        .arg(this->regionMapDimensions.height()));
     map.insert("theme", this->theme);
     map.insert("text_editor_open_directory", this->textEditorOpenFolder);
     map.insert("text_editor_goto_line", this->textEditorGotoLine);
@@ -326,10 +313,6 @@ void PorymapConfig::setShowGrid(bool enabled) {
     this->save();
 }
 
-void PorymapConfig::setRegionMapDimensions(int width, int height) {
-    this->regionMapDimensions = QSize(width, height);
-}
-
 void PorymapConfig::setTheme(QString theme) {
     this->theme = theme;
 }
@@ -424,10 +407,6 @@ bool PorymapConfig::getShowGrid() {
 
 bool PorymapConfig::getMonitorFiles() {
     return this->monitorFiles;
-}
-
-QSize PorymapConfig::getRegionMapDimensions() {
-    return this->regionMapDimensions;
 }
 
 QString PorymapConfig::getTheme() {
