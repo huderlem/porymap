@@ -2371,7 +2371,7 @@ QString Project::getScriptDefaultString(bool usePoryScript, QString mapName) con
 
 QString Project::getMapScriptsFilePath(const QString &mapName) const {
     const bool usePoryscript = projectConfig.getUsePoryScript();
-    auto path = QDir::cleanPath(root + projectConfig.getFilePath(ProjectFilePath::data_map_folders) + mapName + "/scripts");
+    auto path = QDir::cleanPath(root + "/" + projectConfig.getFilePath(ProjectFilePath::data_map_folders) + "/" + mapName + "/scripts");
     auto extension = getScriptFileExtension(usePoryscript);
     if (usePoryscript && !QFile::exists(path + extension))
         extension = getScriptFileExtension(false);
