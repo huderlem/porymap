@@ -640,9 +640,9 @@
   {
     "name": "Gate",
     "width": 6,
-    "height": 6,
+    "height": 7,
     "primary_tileset": "gTileset_General",
-    "secondary_tileset": "gTileset_ViridianCity",
+    "secondary_tileset": "",
     "metatiles": [
       {
         "x": 0,
@@ -773,111 +773,153 @@
       {
         "x": 0,
         "y": 3,
-        "metatile_id": 368,
+        "metatile_id": 438,
         "collision": 1,
         "elevation": 0
       },
       {
         "x": 1,
         "y": 3,
-        "metatile_id": 693,
+        "metatile_id": 437,
         "collision": 1,
         "elevation": 0
       },
       {
         "x": 2,
         "y": 3,
-        "metatile_id": 694,
+        "metatile_id": 437,
         "collision": 1,
         "elevation": 0
       },
       {
         "x": 3,
         "y": 3,
-        "metatile_id": 694,
+        "metatile_id": 437,
         "collision": 1,
         "elevation": 0
       },
       {
         "x": 4,
         "y": 3,
-        "metatile_id": 695,
+        "metatile_id": 437,
         "collision": 1,
         "elevation": 0
       },
       {
         "x": 5,
         "y": 3,
-        "metatile_id": 369,
+        "metatile_id": 439,
         "collision": 1,
         "elevation": 0
       },
       {
         "x": 0,
         "y": 4,
-        "metatile_id": 100,
+        "metatile_id": 92,
         "collision": 1,
         "elevation": 0
       },
       {
         "x": 1,
         "y": 4,
-        "metatile_id": 400,
+        "metatile_id": 392,
         "collision": 1,
         "elevation": 0
       },
       {
         "x": 2,
         "y": 4,
-        "metatile_id": 401,
-        "collision": 0,
-        "elevation": 3
+        "metatile_id": 393,
+        "collision": 1,
+        "elevation": 0
       },
       {
         "x": 3,
         "y": 4,
-        "metatile_id": 401,
-        "collision": 0,
-        "elevation": 3
+        "metatile_id": 393,
+        "collision": 1,
+        "elevation": 0
       },
       {
         "x": 4,
         "y": 4,
-        "metatile_id": 402,
+        "metatile_id": 394,
         "collision": 1,
         "elevation": 0
       },
       {
         "x": 5,
         "y": 4,
-        "metatile_id": 102,
+        "metatile_id": 94,
+        "collision": 1,
+        "elevation": 0
+      },
+      {
+        "x": 0,
+        "y": 5,
+        "metatile_id": 100,
         "collision": 1,
         "elevation": 0
       },
       {
         "x": 1,
         "y": 5,
-        "metatile_id": 408,
-        "collision": 0,
-        "elevation": 3
+        "metatile_id": 400,
+        "collision": 1,
+        "elevation": 0
       },
       {
         "x": 2,
         "y": 5,
-        "metatile_id": 409,
+        "metatile_id": 401,
         "collision": 0,
         "elevation": 3
       },
       {
         "x": 3,
         "y": 5,
-        "metatile_id": 409,
+        "metatile_id": 401,
         "collision": 0,
         "elevation": 3
       },
       {
         "x": 4,
         "y": 5,
+        "metatile_id": 402,
+        "collision": 1,
+        "elevation": 0
+      },
+      {
+        "x": 5,
+        "y": 5,
+        "metatile_id": 102,
+        "collision": 1,
+        "elevation": 0
+      },
+      {
+        "x": 1,
+        "y": 6,
+        "metatile_id": 408,
+        "collision": 0,
+        "elevation": 3
+      },
+      {
+        "x": 2,
+        "y": 6,
+        "metatile_id": 409,
+        "collision": 0,
+        "elevation": 3
+      },
+      {
+        "x": 3,
+        "y": 6,
+        "metatile_id": 409,
+        "collision": 0,
+        "elevation": 3
+      },
+      {
+        "x": 4,
+        "y": 6,
         "metatile_id": 410,
         "collision": 0,
         "elevation": 3
