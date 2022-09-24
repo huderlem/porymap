@@ -208,7 +208,7 @@ void Prefab::updatePrefabUi(Map *map) {
 
         // Clicking on the prefab graphics item selects it for painting.
         QObject::connect(frame->ui->graphicsView_Prefab, &ClickableGraphicsView::clicked, [this, item](){
-            selector->setDirectSelection(item.selection);
+            selector->setPrefabSelection(item.selection);
         });
 
         // Clicking the delete button removes it from the list of known prefabs and updates the UI.
