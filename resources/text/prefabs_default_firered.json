@@ -309,47 +309,47 @@
     "width": 6,
     "height": 5,
     "primary_tileset": "gTileset_General",
-    "secondary_tileset": "gTileset_ViridianCity",
+    "secondary_tileset": "",
     "metatiles": [
       {
         "x": 0,
         "y": 0,
-        "metatile_id": 685,
+        "metatile_id": 313,
         "collision": 0,
         "elevation": 3
       },
       {
         "x": 1,
         "y": 0,
-        "metatile_id": 686,
+        "metatile_id": 314,
         "collision": 0,
         "elevation": 3
       },
       {
         "x": 2,
         "y": 0,
-        "metatile_id": 686,
+        "metatile_id": 314,
         "collision": 0,
         "elevation": 3
       },
       {
         "x": 3,
         "y": 0,
-        "metatile_id": 686,
+        "metatile_id": 314,
         "collision": 0,
         "elevation": 3
       },
       {
         "x": 4,
         "y": 0,
-        "metatile_id": 686,
+        "metatile_id": 314,
         "collision": 0,
         "elevation": 3
       },
       {
         "x": 5,
         "y": 0,
-        "metatile_id": 687,
+        "metatile_id": 315,
         "collision": 0,
         "elevation": 3
       },
