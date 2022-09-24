@@ -36,7 +36,7 @@ void MetatileSelector::draw() {
     painter.end();
     this->setPixmap(QPixmap::fromImage(image));
 
-    if (!this->externalSelection || (this->externalSelectionWidth == 1 && this->externalSelectionHeight == 1)) {
+    if (!this->prefabSelection && (!this->externalSelection || (this->externalSelectionWidth == 1 && this->externalSelectionHeight == 1))) {
         this->drawSelection();
     }
 }
@@ -44,6 +44,13 @@ void MetatileSelector::draw() {
 bool MetatileSelector::select(uint16_t metatileId) {
     if (!Tileset::metatileIsValid(metatileId, this->primaryTileset, this->secondaryTileset)) return false;
     this->externalSelection = false;
+    this->prefabSelection = false;
+    this->selection = MetatileSelection{
+            QPoint(1, 1),
+            false,
+            QList<MetatileSelectionItem>({MetatileSelectionItem{true, metatileId}}),
+            QList<CollisionSelectionItem>(),
+    };
     QPoint coords = this->getMetatileIdCoords(metatileId);
     SelectablePixmapItem::select(coords.x(), coords.y(), 0, 0);
     this->updateSelectedMetatiles();
@@ -73,6 +80,7 @@ MetatileSelection MetatileSelector::getMetatileSelection() {
 }
 
 void MetatileSelector::setExternalSelection(int width, int height, QList<uint16_t> metatiles, QList<QPair<uint16_t, uint16_t>> collisions) {
+    this->prefabSelection = false;
     this->externalSelection = true;
     this->externalSelectionWidth = width;
     this->externalSelectionHeight = height;
@@ -95,8 +103,9 @@ void MetatileSelector::setExternalSelection(int width, int height, QList<uint16_
     emit selectedMetatilesChanged();
 }
 
-void MetatileSelector::setDirectSelection(MetatileSelection selection) {
+void MetatileSelector::setPrefabSelection(MetatileSelection selection) {
     this->externalSelection = false;
+    this->prefabSelection = true;
     this->externalSelectedMetatiles.clear();
     this->selection = selection;
     this->draw();
@@ -142,6 +151,7 @@ void MetatileSelector::hoverLeaveEvent(QGraphicsSceneHoverEvent*) {
 
 void MetatileSelector::updateSelectedMetatiles() {
     this->externalSelection = false;
+    this->prefabSelection = false;
     this->selection.metatileItems.clear();
     this->selection.collisionItems.clear();
     this->selection.hasCollision = false;

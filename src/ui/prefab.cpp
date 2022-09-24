@@ -21,17 +21,18 @@ using OrderedJsonDoc = poryjson::JsonDoc;
 
 void Prefab::loadPrefabs() {
     this->items.clear();
-    QString filepath = projectConfig.getPrefabFilepath();
+    QString filepath = projectConfig.getPrefabFilepath(false);
     if (filepath.isEmpty()) return;
 
     ParseUtil parser;
     QJsonDocument prefabDoc;
+    QFileInfo info(filepath);
+    if (info.isRelative()) {
+        filepath = QDir::cleanPath(projectConfig.getProjectDir() + QDir::separator() + filepath);
+    }
     if (!QFile::exists(filepath) || !parser.tryParseJsonFile(&prefabDoc, filepath)) {
-        QString relativePath = QDir::cleanPath(projectConfig.getProjectDir() + QDir::separator() + filepath);
-        if (!parser.tryParseJsonFile(&prefabDoc, relativePath)) {
-            logError(QString("Failed to prefab data from %1").arg(filepath));
-            return;
-        }
+        logError(QString("Failed to read prefab data from %1").arg(filepath));
+        return;
     }
 
     QJsonArray prefabs = prefabDoc.array();
@@ -84,11 +85,22 @@ void Prefab::loadPrefabs() {
 }
 
 void Prefab::savePrefabs() {
-    QString filepath = projectConfig.getPrefabFilepath();
+    QString filepath = projectConfig.getPrefabFilepath(true);
     if (filepath.isEmpty()) return;
+
+    QFileInfo info(filepath);
+    if (info.isRelative()) {
+        filepath = QDir::cleanPath(projectConfig.getProjectDir() + QDir::separator() + filepath);
+    }
     QFile prefabsFile(filepath);
     if (!prefabsFile.open(QIODevice::WriteOnly)) {
         logError(QString("Error: Could not open %1 for writing").arg(filepath));
+        QMessageBox messageBox;
+        messageBox.setText("Failed to save prefabs file!");
+        messageBox.setInformativeText(QString("Could not open \"%1\" for writing").arg(filepath));
+        messageBox.setDetailedText("Any created prefabs will not be available next time Porymap is opened. Please fix your prefabs_filepath in the Porymap project config file.");
+        messageBox.setIcon(QMessageBox::Warning);
+        messageBox.exec();
         return;
     }
 
@@ -106,13 +118,15 @@ void Prefab::savePrefabs() {
                 int index = y * item.selection.dimensions.x() + x;
                 auto metatileItem = item.selection.metatileItems.at(index);
                 if (metatileItem.enabled) {
-                    auto collisionItem = item.selection.collisionItems.at(index);
                     OrderedJson::object metatileObj;
                     metatileObj["x"] = x;
                     metatileObj["y"] = y;
                     metatileObj["metatile_id"] = metatileItem.metatileId;
-                    metatileObj["collision"] = collisionItem.collision;
-                    metatileObj["elevation"] = collisionItem.elevation;
+                    if (item.selection.hasCollision && index < item.selection.collisionItems.size()) {
+                        auto collisionItem = item.selection.collisionItems.at(index);
+                        metatileObj["collision"] = collisionItem.collision;
+                        metatileObj["elevation"] = collisionItem.elevation;
+                    }
                     metatiles.push_back(metatileObj);
                 }
             }
@@ -145,6 +159,7 @@ void Prefab::initPrefabUI(MetatileSelector *selector, QWidget *prefabWidget, QLa
     this->selector = selector;
     this->prefabWidget = prefabWidget;
     this->emptyPrefabLabel = emptyPrefabLabel;
+    this->handlePrefabImport();
     this->loadPrefabs();
     this->updatePrefabUi(map);
 }
@@ -194,7 +209,7 @@ void Prefab::updatePrefabUi(Map *map) {
 
         // Clicking on the prefab graphics item selects it for painting.
         QObject::connect(frame->ui->graphicsView_Prefab, &ClickableGraphicsView::clicked, [this, item](){
-            selector->setDirectSelection(item.selection);
+            selector->setPrefabSelection(item.selection);
         });
 
         // Clicking the delete button removes it from the list of known prefabs and updates the UI.
@@ -252,6 +267,71 @@ void Prefab::addPrefab(MetatileSelection selection, Map *map, QString name) {
                        });
     this->savePrefabs();
     this->updatePrefabUi(map);
+}
+
+void Prefab::handlePrefabImport() {
+    BaseGameVersion version = projectConfig.getBaseGameVersion();
+    // Ensure we have default prefabs for the project's game version.
+    if (version != BaseGameVersion::pokeruby && version != BaseGameVersion::pokeemerald && version != BaseGameVersion::pokefirered)
+        return;
+
+    // Exit early if the user has already setup prefabs.
+    if (!projectConfig.getPrefabFilepath(false).isEmpty())
+        return;
+
+    // Exit early if the user has already gone through this import prompt before.
+    if (projectConfig.getPrefabImportPrompted())
+        return;
+
+    // Display a dialog box to the user, asking if the default prefabs should be imported
+    // into their project.
+     QMessageBox::StandardButton prompt =
+             QMessageBox::question(nullptr,
+                                   "Import Default Prefabs",
+                                   QString("Would you like to import the default prefabs for %1? This will create a file called 'prefabs.json' in your project directory.")
+                                               .arg(projectConfig.getBaseGameVersionString()),
+                                   QMessageBox::Yes | QMessageBox::No);
+
+    if (prompt == QMessageBox::Yes) {
+        // Sets up the default prefabs.json filepath.
+        QString filepath = projectConfig.getPrefabFilepath(true);
+
+        QFileInfo info(filepath);
+        if (info.isRelative()) {
+            filepath = QDir::cleanPath(projectConfig.getProjectDir() + QDir::separator() + filepath);
+        }
+        QFile prefabsFile(filepath);
+        if (!prefabsFile.open(QIODevice::WriteOnly)) {
+            projectConfig.setPrefabFilepath(QString());
+
+            logError(QString("Error: Could not open %1 for writing").arg(filepath));
+            QMessageBox messageBox;
+            messageBox.setText("Failed to import default prefabs file!");
+            messageBox.setInformativeText(QString("Could not open \"%1\" for writing").arg(filepath));
+            messageBox.setIcon(QMessageBox::Warning);
+            messageBox.exec();
+            return;
+        }
+
+        ParseUtil parser;
+        QString content;
+        switch (version) {
+        case BaseGameVersion::pokeruby:
+            content = parser.readTextFile(":/text/prefabs_default_ruby.json");
+            break;
+        case BaseGameVersion::pokefirered:
+            content = parser.readTextFile(":/text/prefabs_default_firered.json");
+            break;
+        case BaseGameVersion::pokeemerald:
+            content = parser.readTextFile(":/text/prefabs_default_emerald.json");
+            break;
+        }
+
+        prefabsFile.write(content.toUtf8());
+        prefabsFile.close();
+    }
+
+    projectConfig.setPrefabImportPrompted(true);
 }
 
 Prefab prefab;

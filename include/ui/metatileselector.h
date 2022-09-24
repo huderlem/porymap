@@ -33,6 +33,7 @@ class MetatileSelector: public SelectablePixmapItem {
 public:
     MetatileSelector(int numMetatilesWide, Map *map): SelectablePixmapItem(16, 16) {
         this->externalSelection = false;
+        this->prefabSelection = false;
         this->numMetatilesWide = numMetatilesWide;
         this->map = map;
         this->primaryTileset = map->layout->tileset_primary;
@@ -46,7 +47,7 @@ public:
     bool selectFromMap(uint16_t metatileId, uint16_t collision, uint16_t elevation);
     void setTilesets(Tileset*, Tileset*);
     MetatileSelection getMetatileSelection();
-    void setDirectSelection(MetatileSelection selection);
+    void setPrefabSelection(MetatileSelection selection);
     void setExternalSelection(int, int, QList<uint16_t>, QList<QPair<uint16_t, uint16_t>>);
     QPoint getMetatileIdCoordsOnWidget(uint16_t);
     void setMap(Map*);
@@ -60,6 +61,7 @@ protected:
     void hoverLeaveEvent(QGraphicsSceneHoverEvent*);
 private:
     bool externalSelection;
+    bool prefabSelection;
     int numMetatilesWide;
     Map *map;
     int externalSelectionWidth;

@@ -504,6 +504,8 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         }
     } else if (key == "prefabs_filepath") {
         this->prefabFilepath = value;
+    } else if (key == "prefabs_import_prompted") {
+        setConfigBool(key, &this->prefabImportPrompted, value);
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -549,6 +551,7 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("new_map_border_metatiles", metatiles.join(","));
     map.insert("custom_scripts", this->customScripts.join(","));
     map.insert("prefabs_filepath", this->prefabFilepath);
+    map.insert("prefabs_import_prompted", QString::number(this->prefabImportPrompted));
     return map;
 }
 
@@ -776,12 +779,20 @@ void ProjectConfig::setPrefabFilepath(QString filepath) {
     this->save();
 }
 
-QString ProjectConfig::getPrefabFilepath() {
-    if (this->prefabFilepath.isEmpty()) {
-        // Default to the <projectroot>/prefabs.json, if no path exists.
-        this->setPrefabFilepath(QDir(this->projectDir).filePath("prefabs.json"));
+QString ProjectConfig::getPrefabFilepath(bool setIfEmpty) {
+    if (setIfEmpty && this->prefabFilepath.isEmpty()) {
+        this->setPrefabFilepath("prefabs.json");
     }
     return this->prefabFilepath;
+}
+
+void ProjectConfig::setPrefabImportPrompted(bool prompted) {
+    this->prefabImportPrompted = prompted;
+    this->save();
+}
+
+bool ProjectConfig::getPrefabImportPrompted() {
+    return this->prefabImportPrompted;
 }
 
 ShortcutsConfig shortcutsConfig;

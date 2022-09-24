@@ -162,6 +162,7 @@ public:
         this->newMapElevation = 3;
         this->newMapBorderMetatileIds = DEFAULT_BORDER_RSE;
         this->prefabFilepath = QString();
+        this->prefabImportPrompted = false;
         this->customScripts.clear();
         this->readKeys.clear();
     }
@@ -205,7 +206,9 @@ public:
     void setCustomScripts(QList<QString> scripts);
     QList<QString> getCustomScripts();
     void setPrefabFilepath(QString filepath);
-    QString getPrefabFilepath();
+    QString getPrefabFilepath(bool setIfEmpty);
+    void setPrefabImportPrompted(bool prompted);
+    bool getPrefabImportPrompted();
 protected:
     virtual QString getConfigFilepath() override;
     virtual void parseConfigKeyValue(QString key, QString value) override;
@@ -234,6 +237,7 @@ private:
     QList<QString> customScripts;
     QStringList readKeys;
     QString prefabFilepath;
+    bool prefabImportPrompted;
 };
 
 extern ProjectConfig projectConfig;
