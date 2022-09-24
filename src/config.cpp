@@ -505,7 +505,7 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
     } else if (key == "prefabs_filepath") {
         this->prefabFilepath = value;
     } else if (key == "prefabs_import_prompted") {
-        setConfigBool(key, &this->prefabImportPrompted, value);
+        this->prefabImportPrompted = getConfigBool(key, value);
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
