@@ -78,7 +78,7 @@ The grass-randomizer script above happens implicitly when the user paints on the
 
 	// Porymap callback when project is opened.
 	export function onProjectOpened(projectPath) {
-        map.registerAction("applyNightTint", "View Night Tint", "T")
+        utility.registerAction("applyNightTint", "View Night Tint", "T")
 	}
 
 Then, to trigger the ``applyNightTint()`` function, we could either click ``Tools -> View Night Tint`` or use the ``T`` keyboard shortcut.
@@ -192,12 +192,12 @@ Callbacks
 Functions
 ~~~~~~~~~
 
-All scripting functions are callable via the global ``map`` object.
-
 Map Editing Functions
 ^^^^^^^^^^^^^^^^^^^^^
 
 The following functions are related to editing the map's blocks or retrieving information about them.
+
+All map editing functions are callable via the global ``map`` object.
 
 .. js:function:: map.getBlock(x, y)
 
@@ -444,6 +444,8 @@ Map Header Editing Functions
 
 The following functions are related to reading/writing the map's header properties.
 
+All map header functions are callable via the global ``map`` object.
+
 .. js:function:: map.getSong()
 
    Gets the name of the background song for the currently-opened map.
@@ -576,256 +578,60 @@ The following functions are related to reading/writing the map's header properti
 
    :param number floorNumber: the floor number
 
-Map Overlay Functions
-^^^^^^^^^^^^^^^^^^^^^
-
-The following functions are related to an overlay that is drawn on top of the map area. Text, images, and shapes can be drawn using these functions. Items can be drawn and manipulated on separate layers by specifiying a layer id. Items on higher layer ids will be drawn above those on lower layers. If no layer is specified they will be added to the default layer ``0``. The visibility and position of each layer can be changed; by default all layers are visible, and their position is ``0,0``.
-
-.. js:function:: map.clearOverlay(layer = 0)
-
-   Clears and erases all overlay items on the specified layer that were previously-added to the map.
-
-   :param number layer: the layer id. Defaults to ``0``
-
-.. js:function:: map.clearOverlays()
-
-   Clears and erases all overlay items that were previously-added to the map.
-
-.. js:function:: map.hideOverlay(layer = 0)
-
-   Hides all overlay items on the specified layer.
-
-   :param number layer: the layer id. Defaults to ``0``
-
-.. js:function:: map.hideOverlays()
-
-   Hides all overlay items on all active layers.
-
-.. js:function:: map.showOverlay(layer = 0)
-
-   Shows all overlay items on the specified layer.
-
-   :param number layer: the layer id. Defaults to ``0``
-
-.. js:function:: map.showOverlays()
-
-   Shows all overlay items on all active layers.
-
-.. js:function:: map.getOverlayVisibility(layer = 0)
-
-   Gets whether the specified overlay layer is currently showing or not.
-
-   :param number layer: the layer id. Defaults to ``0``
-   :returns boolean: whether the layer is showing
-
-.. js:function:: map.setOverlayVisibility(visible, layer = 0)
-
-   Sets the visibility of the specified overlay layer.
-
-   :param boolean visible: whether the layer should be showing
-   :param number layer: the layer id. Defaults to ``0``
-
-.. js:function:: map.setOverlaysVisibility(visible)
-
-   Sets the visibility of all active overlay layers.
-
-   :param boolean visible: whether the layers should be showing
-
-.. js:function:: map.getOverlayOpacity(layer = 0)
-
-   Gets the opacity of the specified overlay layer. Opacity ranges from 0 (invisible) to 100 (completely opaque).
-
-   :param number layer: the layer id. Defaults to ``0``
-   :returns number: the opacity
-
-.. js:function:: map.setOverlayOpacity(opacity, layer = 0)
-
-   Sets the opacity of the specified overlay layer. Opacity ranges from 0 (invisible) to 100 (completely opaque).
-
-   :param number opacity: the opacity
-   :param number layer: the layer id. Defaults to ``0``
-
-.. js:function:: map.setOverlaysOpacity(opacity)
-
-   Sets the opacity of all active overlay layers. Opacity ranges from 0 (invisible) to 100 (completely opaque).
-
-   :param number opacity: the opacity
-
-.. js:function:: map.getOverlayX(layer = 0)
-
-   Gets the x position of the specified overlay layer.
-
-   :param number layer: the layer id. Defaults to ``0``
-   :returns number: the pixel x coordinate
-
-.. js:function:: map.getOverlayY(layer = 0)
-
-   Gets the y position of the specified overlay layer.
-
-   :param number layer: the layer id. Defaults to ``0``
-   :returns number: the pixel y coordinate
-
-.. js:function:: map.setOverlayX(x, layer = 0)
-
-   Sets the x position of the specified overlay layer.
-
-   :param number x: the pixel x coordinate
-   :param number layer: the layer id. Defaults to ``0``
-
-.. js:function:: map.setOverlayY(y, layer = 0)
-
-   Sets the y position of the specified overlay layer.
-
-   :param number y: the pixel y coordinate
-   :param number layer: the layer id. Defaults to ``0``
-
-.. js:function:: map.setOverlaysX(x)
-
-   Sets the x position of all active overlay layers.
-
-   :param number x: the pixel x coordinate
-
-.. js:function:: map.setOverlaysY(y)
-
-   Sets the y position of all active overlay layers.
-
-   :param number y: the pixel y coordinate
-
-.. js:function:: map.getOverlayPosition(layer = 0)
-
-   Gets the position of the specified overlay layer.
-
-   :param number layer: the layer id. Defaults to ``0``
-   :returns {x, y}: the layer's pixel coordinates
-
-.. js:function:: map.setOverlayPosition(x, y, layer = 0)
-
-   Sets the position of the specified overlay layer.
-
-   :param number x: the pixel x coordinate
-   :param number y: the pixel y coordinate
-   :param number layer: the layer id. Defaults to ``0``
-
-.. js:function:: map.setOverlaysPosition(x, y)
-
-   Sets the position of all active overlay layers.
-
-   :param number x: the pixel x coordinate
-   :param number y: the pixel y coordinate
-
-.. js:function:: map.moveOverlay(deltaX, deltaY, layer = 0)
-
-   Moves the specified overlay layer.
-
-   :param number deltaX: the number of pixels to move horizontally
-   :param number deltaY: the number of pixels to move vertically
-   :param number layer: the layer id. Defaults to ``0``
-
-.. js:function:: map.moveOverlays(deltaX, deltaY)
-
-   Moves all active overlay layers.
-
-   :param number deltaX: the number of pixels to move horizontally
-   :param number deltaY: the number of pixels to move vertically
-
-.. js:function:: map.addText(text, x, y, color = "#000000", size = 12, layer = 0)
-
-   Adds a text item to the specified overlay layer.
-
-   :param string text: the text to display
-   :param number x: the x pixel coordinate of the text (relative to the layer's position)
-   :param number y: the y pixel coordinate of the text (relative to the layer's position)
-   :param string color: the color of the text. Can be specified as "#RRGGBB" or "#AARRGGBB". Defaults to black.
-   :param number size: the font size of the text. Defaults to 12.
-   :param number layer: the layer id. Defaults to ``0``
-
-.. js:function:: map.addRect(x, y, width, height, color = "#000000", layer = 0)
-
-   Adds a rectangle outline item to the specified overlay layer.
-
-   :param number x: the x pixel coordinate of the rectangle's top-left corner (relative to the layer's position)
-   :param number y: the y pixel coordinate of the rectangle's top-left corner (relative to the layer's position)
-   :param number width: the pixel width of the rectangle
-   :param number height: the pixel height of the rectangle
-   :param string color: the color of the rectangle. Can be specified as "#RRGGBB" or "#AARRGGBB". Defaults to black.
-   :param number layer: the layer id. Defaults to ``0``
-
-.. js:function:: map.addFilledRect(x, y, width, height, color = "#000000", layer = 0)
-
-   Adds a filled rectangle item to the specified overlay layer.
-
-   :param number x: the x pixel coordinate of the rectangle's top-left corner (relative to the layer's position)
-   :param number y: the y pixel coordinate of the rectangle's top-left corner (relative to the layer's position)
-   :param number width: the pixel width of the rectangle
-   :param number height: the pixel height of the rectangle
-   :param string color: the color of the rectangle. Can be specified as "#RRGGBB" or "#AARRGGBB". Defaults to black.
-   :param number layer: the layer id. Defaults to ``0``
-
-.. js:function:: map.addImage(x, y, filepath, layer = 0, useCache = true)
-
-   Adds an image item to the specified overlay layer.
-
-   :param number x: the x pixel coordinate of the image's top-left corner (relative to the layer's position)
-   :param number y: the y pixel coordinate of the image's top-left corner (relative to the layer's position)
-   :param string filepath: the image's filepath
-   :param number layer: the layer id. Defaults to ``0``
-   :param boolean useCache: whether the image should be saved/loaded using the cache. Defaults to ``true``. Reading images from a file is slow. Setting ``useCache`` to ``true`` will save the image to memory so that the next time the filepath is encountered the image can be loaded from memory rather than the file.
-
-.. js:function:: map.createImage(x, y, filepath, width = -1, height = -1, offset = 0, hScale = 1, vScale = 1, paletteId = -1, setTransparency = false, layer = 0, useCache = true)
-
-   Creates an image item on the specified overlay layer. This differs from ``map.addImage`` by allowing the new image to be a transformation of the image file.
-
-   :param number x: the x pixel coordinate of the image's top-left corner (relative to the layer's position)
-   :param number y: the y pixel coordinate of the image's top-left corner (relative to the layer's position)
-   :param string filepath: the image's filepath
-   :param number width: the width in pixels of the area to read in the image. If ``-1``, use the full width of the original image. Defaults to ``-1``
-   :param number height: the height in pixels of the area to read in the image. If ``-1``, use the full height of the original image. Defaults to ``-1``
-   :param number offset: the pixel offset into the original image where data should be read from. Defaults to ``0``
-   :param number hScale: the horizontal scale for the image. Negative values will be a horizontal flip of the original image. Defaults to ``1``
-   :param number vScale: the vertical scale for the image. Negative values will be a vertical flip of the original image. Defaults to ``1``
-   :param number paletteId: the id of which currently loaded tileset palette to use for the image. If ``-1``, use the original image's palette. Defaults to ``-1``
-   :param boolean setTransparency: whether the color at index 0 should be overwritten with transparent pixels. Defaults to ``false``
-   :param number layer: the layer id. Defaults to ``0``
-   :param boolean useCache: whether the image should be saved/loaded using the cache. Defaults to ``true``. Reading images from a file is slow. Setting ``useCache`` to ``true`` will save the image to memory so that the next time the filepath is encountered the image can be loaded from memory rather than the file.
-
-.. js:function:: map.addTileImage(x, y, tileId, xflip, yflip, palette, setTransparency = false, layer = 0)
-
-   Creates an image of a tile on the specified overlay layer.
-
-   :param number x: the x pixel coordinate of the image's top-left corner (relative to the layer's position)
-   :param number y: the y pixel coordinate of the image's top-left corner (relative to the layer's position)
-   :param number tileId: tile value for the image
-   :param boolean xflip: whether the tile image is flipped horizontally
-   :param boolean yflip: whether the tile image is flipped vertically
-   :param number palette: palette number for the tile image
-   :param boolean setTransparency: whether the color at index 0 should be overwritten with transparent pixels. Defaults to ``false``
-   :param number layer: the layer id. Defaults to ``0``
-
-.. js:function:: map.addTileImage(x, y, tile, setTransparency = false, layer = 0)
-
-   Creates an image of a tile on the specified overlay layer. This is an overloaded function that takes a single tile as a JavaScript object instead of each of the tile's properties individually.
-
-   :param number x: the x pixel coordinate of the image's top-left corner (relative to the layer's position)
-   :param number y: the y pixel coordinate of the image's top-left corner (relative to the layer's position)
-   :param {tileId,xflip,yflip,palette} tile: the tile to create an image of
-   :param boolean setTransparency: whether the color at index 0 should be overwritten with transparent pixels. Defaults to ``false``
-   :param number layer: the layer id. Defaults to ``0``
-
-.. js:function:: map.addMetatileImage(x, y, metatileId, setTransparency = false, layer = 0)
-
-   Creates an image of a metatile on the specified overlay layer.
-
-   :param number x: the x pixel coordinate of the image's top-left corner (relative to the layer's position)
-   :param number y: the y pixel coordinate of the image's top-left corner (relative to the layer's position)
-   :param number metatileId: id of the metatile to create an image of
-   :param boolean setTransparency: whether the color at index 0 should be overwritten with transparent pixels. Defaults to ``false``
-   :param number layer: the layer id. Defaults to ``0``
-
-
 Tileset Functions
 ^^^^^^^^^^^^^^^^^
 
 The following functions are related to tilesets and how they are rendered. The functions with "preview" in their name operate on a "fake" version of the palette colors. This means that changing these "preview" colors won't affect the actual tileset colors in the project. A good use of the "preview" palettes would be Day/Night tints, for example.
+
+All tileset functions are callable via the global ``map`` object.
+
+.. js:function:: map.getPrimaryTileset()
+
+   Gets the name of the primary tileset for the currently-opened map.
+
+   :returns string: primary tileset name
+
+.. js:function:: map.setPrimaryTileset(tileset)
+
+   Sets the primary tileset for the currently-opened map.
+
+   :param string tileset: the tileset name
+
+.. js:function:: map.getSecondaryTileset()
+
+   Gets the name of the secondary tileset for the currently-opened map.
+
+   :returns string: secondary tileset name
+
+.. js:function:: map.setSecondaryTileset(tileset)
+
+   Sets the secondary tileset for the currently-opened map.
+
+   :param string tileset: the tileset name
+
+.. js:function:: map.getNumPrimaryTilesetTiles()
+
+   Gets the number of tiles in the primary tileset for the currently-opened map.
+
+   :returns number: number of tiles
+
+.. js:function:: map.getNumSecondaryTilesetTiles()
+
+   Gets the number of tiles in the secondary tileset for the currently-opened map.
+
+   :returns number: number of tiles
+
+.. js:function:: map.getNumPrimaryTilesetMetatiles()
+
+   Gets the number of metatiles in the primary tileset for the currently-opened map.
+
+   :returns number: number of metatiles
+
+.. js:function:: map.getNumSecondaryTilesetMetatiles()
+
+   Gets the number of metatiles in the secondary tileset for the currently-opened map.
+
+   :returns number: number of metatiles
 
 .. js:function:: map.getPrimaryTilesetPalettePreview(paletteIndex)
 
@@ -930,104 +736,6 @@ The following functions are related to tilesets and how they are rendered. The f
    Sets all of the palettes in the secondary tileset of the currently-opened map. This will permanently affect the palettes and save the palettes to disk.
 
    :param array palettes: array of arrays of colors. Each color is a 3-element RGB array
-
-.. js:function:: map.isPrimaryTileset(tilesetName)
-
-   Gets whether the specified tileset is a primary tileset.
-
-   :param string tilesetName: the tileset name
-   :returns boolean: is a primary tileset
-
-.. js:function:: map.isSecondaryTileset(tilesetName)
-
-   Gets whether the specified tileset is a secondary tileset.
-
-   :param string tilesetName: the tileset name
-   :returns boolean: is a secondary tileset
-
-.. js:function:: map.getPrimaryTileset()
-
-   Gets the name of the primary tileset for the currently-opened map.
-
-   :returns string: primary tileset name
-
-.. js:function:: map.setPrimaryTileset(tileset)
-
-   Sets the primary tileset for the currently-opened map.
-
-   :param string tileset: the tileset name
-
-.. js:function:: map.getSecondaryTileset()
-
-   Gets the name of the secondary tileset for the currently-opened map.
-
-   :returns string: secondary tileset name
-
-.. js:function:: map.setSecondaryTileset(tileset)
-
-   Sets the secondary tileset for the currently-opened map.
-
-   :param string tileset: the tileset name
-
-.. js:function:: map.getNumPrimaryTilesetMetatiles()
-
-   Gets the number of metatiles in the primary tileset for the currently-opened map.
-
-   :returns number: number of metatiles
-
-.. js:function:: map.getMaxPrimaryTilesetMetatiles()
-
-   Gets the maximum number of metatiles allowed in a primary tileset.
-
-   :returns number: maximum number of metatiles
-
-.. js:function:: map.getNumSecondaryTilesetMetatiles()
-
-   Gets the number of metatiles in the secondary tileset for the currently-opened map.
-
-   :returns number: number of metatiles
-
-.. js:function:: map.getMaxSecondaryTilesetMetatiles()
-
-   Gets the maximum number of metatiles allowed in a secondary tileset.
-
-   :returns number: maximum number of metatiles
-
-.. js:function:: map.getNumPrimaryTilesetTiles()
-
-   Gets the number of tiles in the primary tileset for the currently-opened map.
-
-   :returns number: number of tiles
-
-.. js:function:: map.getMaxPrimaryTilesetTiles()
-
-   Gets the maximum number of tiles allowed in a primary tileset.
-
-   :returns number: maximum number of tiles
-
-.. js:function:: map.getNumSecondaryTilesetTiles()
-
-   Gets the number of tiles in the secondary tileset for the currently-opened map.
-
-   :returns number: number of tiles
-
-.. js:function:: map.getMaxSecondaryTilesetTiles()
-
-   Gets the maximum number of tiles allowed in a secondary tileset.
-
-   :returns number: maximum number of tiles
-
-.. js:function:: map.getNumTilesInMetatile()
-
-   Gets the number of tiles in a metatile. Will be either ``8`` or ``12`` depending on ``enable_triple_layer_metatiles``.
-
-   :returns number: number of tiles in a metatile
-
-.. js:function:: map.getNumMetatileLayers()
-
-   Gets the number of layers in a metatiles. Will be either ``2`` or ``3`` depending on ``enable_triple_layer_metatiles``.
-
-   :returns number: number of layers in a metatile
 
 .. js:function:: map.getMetatileLayerOrder()
 
@@ -1225,84 +933,322 @@ The following functions are related to tilesets and how they are rendered. The f
 
    :returns array: the pixel data
 
+Overlay Functions
+^^^^^^^^^^^^^^^^^
+
+The following functions are related to an overlay that is drawn on top of the map area. Text, images, and shapes can be drawn using these functions. Items can be drawn and manipulated on separate layers by specifiying a layer id. Items on higher layer ids will be drawn above those on lower layers. The visibility, position, and opacity of each layer can be changed; by default all layers are visible, at position ``0,0``, and have an opacity of ``100``.
+
+All overlay functions are callable via the global ``overlay`` object.
+
+.. js:function:: overlay.clear(layer)
+
+   Clears and erases all previously-added overlay items on the specified layer.
+
+   :param number layer: the layer id
+
+.. js:function:: overlay.clear()
+
+   This is an overloaded function. Clears and erases all previously-added overlay items on every layer.
+
+.. js:function:: overlay.hide(layer)
+
+   Hides all overlay items on the specified layer.
+
+   :param number layer: the layer id
+
+.. js:function:: overlay.hide()
+
+   This is an overloaded function. Hides all overlay items on all active layers. Layers that have not been used yet will not be hidden.
+
+.. js:function:: overlay.show(layer)
+
+   Shows all overlay items on the specified layer.
+
+   :param number layer: the layer id
+
+.. js:function:: overlay.show()
+
+   This is an overloaded function. Shows all overlay items on all active layers.
+
+.. js:function:: overlay.getVisibility(layer = 0)
+
+   Gets whether the specified overlay layer is currently showing or not.
+
+   :param number layer: the layer id. Defaults to ``0``
+   :returns boolean: whether the layer is showing
+
+.. js:function:: overlay.setVisibility(visible, layer)
+
+   Sets the visibility of the specified overlay layer.
+
+   :param boolean visible: whether the layer should be showing
+   :param number layer: the layer id
+
+.. js:function:: overlay.setVisibility(visible)
+
+   This is an overloaded function. Sets the visibility of all active overlay layers.
+
+   :param boolean visible: whether the layers should be showing
+
+.. js:function:: overlay.getOpacity(layer = 0)
+
+   Gets the opacity of the specified overlay layer. Opacity ranges from ``0`` (invisible) to ``100`` (completely opaque).
+
+   :param number layer: the layer id. Defaults to ``0``
+   :returns number: the opacity
+
+.. js:function:: overlay.setOpacity(opacity, layer)
+
+   Sets the opacity of the specified overlay layer. Opacity ranges from ``0`` (invisible) to ``100`` (completely opaque).
+
+   :param number opacity: the opacity
+   :param number layer: the layer id
+
+.. js:function:: overlay.setOpacity(opacity)
+
+   This is an overloaded function. Sets the opacity of all active overlay layers. Layers that have not been used yet will not have their opacity changed. Opacity ranges from ``0`` (invisible) to ``100`` (completely opaque).
+
+   :param number opacity: the opacity
+
+.. js:function:: overlay.getX(layer = 0)
+
+   Gets the x position of the specified overlay layer.
+
+   :param number layer: the layer id. Defaults to ``0``
+   :returns number: the pixel x coordinate
+
+.. js:function:: overlay.getY(layer = 0)
+
+   Gets the y position of the specified overlay layer.
+
+   :param number layer: the layer id. Defaults to ``0``
+   :returns number: the pixel y coordinate
+
+.. js:function:: overlay.setX(x, layer)
+
+   Sets the x position of the specified overlay layer.
+
+   :param number x: the pixel x coordinate
+   :param number layer: the layer id
+
+.. js:function:: overlay.setX(x)
+
+   This is an overloaded function. Sets the x position of all active overlay layers. Layers that have not been used yet will not have their position changed.
+
+   :param number x: the pixel x coordinate
+
+.. js:function:: overlay.setY(y, layer)
+
+   Sets the y position of the specified overlay layer.
+
+   :param number y: the pixel y coordinate
+   :param number layer: the layer id
+
+.. js:function:: overlay.setY(y)
+
+   This is an overloaded function. Sets the y position of all active overlay layers. Layers that have not been used yet will not have their position changed.
+
+   :param number y: the pixel y coordinate
+
+.. js:function:: overlay.getPosition(layer = 0)
+
+   Gets the position of the specified overlay layer.
+
+   :param number layer: the layer id. Defaults to ``0``
+   :returns {x, y}: the layer's pixel coordinates
+
+.. js:function:: overlay.setPosition(x, y, layer)
+
+   Sets the position of the specified overlay layer.
+
+   :param number x: the pixel x coordinate
+   :param number y: the pixel y coordinate
+   :param number layer: the layer id
+
+.. js:function:: overlay.setPosition(x, y)
+
+   This is an overloaded function. Sets the position of all active overlay layers. Layers that have not been used yet will not have their position changed.
+
+   :param number x: the pixel x coordinate
+   :param number y: the pixel y coordinate
+
+.. js:function:: overlay.move(deltaX, deltaY, layer)
+
+   Moves the specified overlay layer.
+
+   :param number deltaX: the number of pixels to move horizontally
+   :param number deltaY: the number of pixels to move vertically
+   :param number layer: the layer id
+
+.. js:function:: overlay.move(deltaX, deltaY)
+
+   This is an overloaded function. Moves all active overlay layers. Layers that have not been used yet will not have their position changed.
+
+   :param number deltaX: the number of pixels to move horizontally
+   :param number deltaY: the number of pixels to move vertically
+
+.. js:function:: overlay.addText(text, x, y, color = "#000000", size = 12, layer = 0)
+
+   Adds a text item to the specified overlay layer.
+
+   :param string text: the text to display
+   :param number x: the x pixel coordinate of the text (relative to the layer's position)
+   :param number y: the y pixel coordinate of the text (relative to the layer's position)
+   :param string color: the color of the text. Can be specified as "#RRGGBB" or "#AARRGGBB". Defaults to black.
+   :param number size: the font size of the text. Defaults to 12.
+   :param number layer: the layer id. Defaults to ``0``
+
+.. js:function:: overlay.addRect(x, y, width, height, color = "#000000", layer = 0)
+
+   Adds a rectangle outline item to the specified overlay layer.
+
+   :param number x: the x pixel coordinate of the rectangle's top-left corner (relative to the layer's position)
+   :param number y: the y pixel coordinate of the rectangle's top-left corner (relative to the layer's position)
+   :param number width: the pixel width of the rectangle
+   :param number height: the pixel height of the rectangle
+   :param string color: the color of the rectangle. Can be specified as "#RRGGBB" or "#AARRGGBB". Defaults to black.
+   :param number layer: the layer id. Defaults to ``0``
+
+.. js:function:: overlay.addFilledRect(x, y, width, height, color = "#000000", layer = 0)
+
+   Adds a filled rectangle item to the specified overlay layer.
+
+   :param number x: the x pixel coordinate of the rectangle's top-left corner (relative to the layer's position)
+   :param number y: the y pixel coordinate of the rectangle's top-left corner (relative to the layer's position)
+   :param number width: the pixel width of the rectangle
+   :param number height: the pixel height of the rectangle
+   :param string color: the color of the rectangle. Can be specified as "#RRGGBB" or "#AARRGGBB". Defaults to black.
+   :param number layer: the layer id. Defaults to ``0``
+
+.. js:function:: overlay.addImage(x, y, filepath, layer = 0, useCache = true)
+
+   Adds an image item to the specified overlay layer.
+
+   :param number x: the x pixel coordinate of the image's top-left corner (relative to the layer's position)
+   :param number y: the y pixel coordinate of the image's top-left corner (relative to the layer's position)
+   :param string filepath: the image's filepath
+   :param number layer: the layer id. Defaults to ``0``
+   :param boolean useCache: whether the image should be saved/loaded using the cache. Defaults to ``true``. Reading images from a file is slow. Setting ``useCache`` to ``true`` will save the image to memory so that the next time the filepath is encountered the image can be loaded from memory rather than the file.
+
+.. js:function:: overlay.createImage(x, y, filepath, width = -1, height = -1, offset = 0, hScale = 1, vScale = 1, paletteId = -1, setTransparency = false, layer = 0, useCache = true)
+
+   Creates an image item on the specified overlay layer. This differs from ``overlay.addImage`` by allowing the new image to be a transformation of the image file.
+
+   :param number x: the x pixel coordinate of the image's top-left corner (relative to the layer's position)
+   :param number y: the y pixel coordinate of the image's top-left corner (relative to the layer's position)
+   :param string filepath: the image's filepath
+   :param number width: the width in pixels of the area to read in the image. If ``-1``, use the full width of the original image. Defaults to ``-1``
+   :param number height: the height in pixels of the area to read in the image. If ``-1``, use the full height of the original image. Defaults to ``-1``
+   :param number offset: the pixel offset into the original image where data should be read from. Defaults to ``0``
+   :param number hScale: the horizontal scale for the image. Negative values will be a horizontal flip of the original image. Defaults to ``1``
+   :param number vScale: the vertical scale for the image. Negative values will be a vertical flip of the original image. Defaults to ``1``
+   :param number paletteId: the id of which currently loaded tileset palette to use for the image. If ``-1``, use the original image's palette. Defaults to ``-1``
+   :param boolean setTransparency: whether the color at index 0 should be overwritten with transparent pixels. Defaults to ``false``
+   :param number layer: the layer id. Defaults to ``0``
+   :param boolean useCache: whether the image should be saved/loaded using the cache. Defaults to ``true``. Reading images from a file is slow. Setting ``useCache`` to ``true`` will save the image to memory so that the next time the filepath is encountered the image can be loaded from memory rather than the file.
+
+.. js:function:: overlay.addTileImage(x, y, tileId, xflip, yflip, palette, setTransparency = false, layer = 0)
+
+   Creates an image of a tile on the specified overlay layer.
+
+   :param number x: the x pixel coordinate of the image's top-left corner (relative to the layer's position)
+   :param number y: the y pixel coordinate of the image's top-left corner (relative to the layer's position)
+   :param number tileId: tile value for the image
+   :param boolean xflip: whether the tile image is flipped horizontally
+   :param boolean yflip: whether the tile image is flipped vertically
+   :param number palette: palette number for the tile image
+   :param boolean setTransparency: whether the color at index 0 should be overwritten with transparent pixels. Defaults to ``false``
+   :param number layer: the layer id. Defaults to ``0``
+
+.. js:function:: overlay.addTileImage(x, y, tile, setTransparency = false, layer = 0)
+
+   Creates an image of a tile on the specified overlay layer. This is an overloaded function that takes a single tile as a JavaScript object instead of each of the tile's properties individually.
+
+   :param number x: the x pixel coordinate of the image's top-left corner (relative to the layer's position)
+   :param number y: the y pixel coordinate of the image's top-left corner (relative to the layer's position)
+   :param {tileId,xflip,yflip,palette} tile: the tile to create an image of
+   :param boolean setTransparency: whether the color at index 0 should be overwritten with transparent pixels. Defaults to ``false``
+   :param number layer: the layer id. Defaults to ``0``
+
+.. js:function:: overlay.addMetatileImage(x, y, metatileId, setTransparency = false, layer = 0)
+
+   Creates an image of a metatile on the specified overlay layer.
+
+   :param number x: the x pixel coordinate of the image's top-left corner (relative to the layer's position)
+   :param number y: the y pixel coordinate of the image's top-left corner (relative to the layer's position)
+   :param number metatileId: id of the metatile to create an image of
+   :param boolean setTransparency: whether the color at index 0 should be overwritten with transparent pixels. Defaults to ``false``
+   :param number layer: the layer id. Defaults to ``0``
+
+
 Settings Functions
 ^^^^^^^^^^^^^^^^^^
 
 The following functions are related to settings.
 
-.. js:function:: map.getGridVisibility()
+All settings functions are callable via the global ``utility`` object.
+
+.. js:function:: utility.getGridVisibility()
 
    Gets the visibility of the map grid overlay.
 
    :returns boolean: grid visibility
 
-.. js:function:: map.setGridVisibility(visible)
+.. js:function:: utility.setGridVisibility(visible)
 
    Sets the visibility of the map grid overlay.
 
    :param boolean visible: grid visibility
 
-.. js:function:: map.getBorderVisibility()
+.. js:function:: utility.getBorderVisibility()
 
    Gets the visibility of the map's border.
 
    :returns boolean: border visibility
 
-.. js:function:: map.setBorderVisibility(visible)
+.. js:function:: utility.setBorderVisibility(visible)
 
    Sets the visibility of the map's border.
 
    :param boolean visible: border visibility
 
-.. js:function:: map.getSmartPathsEnabled()
+.. js:function:: utility.getSmartPathsEnabled()
 
    Gets the toggle state of smart paths.
 
    :returns boolean: smart paths enabled
 
-.. js:function:: map.setSmartPathsEnabled(enabled)
+.. js:function:: utility.setSmartPathsEnabled(enabled)
 
    Sets the toggle state of smart paths.
 
    :param boolean enabled: smart paths enabled
 
-.. js:function:: map.getBaseGameVersion()
-
-   Gets the project's base game version.
-
-   :returns string: ``"pokeruby"``, ``"pokefirered"``, or ``"pokeemerald"``
-
-.. js:function:: map.getPorymapVersion()
-
-   Gets the current version of Porymap (``MAJOR.MINOR.PATCH``).
-
-   :returns {major, minor, patch}: the version object
-
-.. js:function:: map.getCustomScripts()
+.. js:function:: utility.getCustomScripts()
 
    Gets the list of paths to custom scripts.
 
    :returns array: string array of custom scripts paths
 
-.. js:function:: map.getMainTab()
+.. js:function:: utility.getMainTab()
 
    Gets the index of the currently selected main tab. Tabs are indexed from left to right, starting at 0 (``0``: Map, ``1``: Events, ``2``: Header, ``3``: Connections, ``4``: Wild Pokemon).
 
    :returns number: current main tab index
 
-.. js:function:: map.setMainTab(tab)
+.. js:function:: utility.setMainTab(tab)
 
    Sets the currently selected main tab. Tabs are indexed from left to right, starting at 0 (``0``: Map, ``1``: Events, ``2``: Header, ``3``: Connections, ``4``: Wild Pokemon).
 
    :param number tab: index of the tab to select
 
-.. js:function:: map.getMapViewTab()
+.. js:function:: utility.getMapViewTab()
 
    Gets the index of the currently selected map view tab. Tabs are indexed from left to right, starting at 0 (``0``: Metatiles, ``1``: Collision).
 
    :returns number: current map view tab index
 
-.. js:function:: map.setMapViewTab(tab)
+.. js:function:: utility.setMapViewTab(tab)
 
    Sets the currently selected map view tab. Tabs are indexed from left to right, starting at 0 (``0``: Metatiles, ``1``: Collision).
 
@@ -1313,7 +1259,9 @@ Utility Functions
 
 These are some miscellaneous functions that can be very useful when building custom scripts.
 
-.. js:function:: map.registerAction(functionName, actionName, shortcut = "")
+All utility functions are callable via the global ``utility`` object.
+
+.. js:function:: utility.registerAction(functionName, actionName, shortcut = "")
 
    Registers a JavaScript function to an action that can be manually triggered in Porymap's ``Tools`` menu. Optionally, a keyboard shortcut (e.g. ``"Ctrl+P"``) can also be specified, assuming it doesn't collide with any existing shortcuts used by Porymap. The function specified by ``functionName`` must have the ``export`` keyword.
 
@@ -1321,32 +1269,32 @@ These are some miscellaneous functions that can be very useful when building cus
    :param string actionName: name of the action that will be displayed in the ``Tools`` menu
    :param string shortcut: optional keyboard shortcut
 
-.. js:function:: map.setTimeout(func, delayMs)
+.. js:function:: utility.setTimeout(func, delayMs)
 
    This behaves essentially the same as JavaScript's ``setTimeout()`` that is used in web browsers or NodeJS. The ``func`` argument is a JavaScript function (NOT the name of a function) which will be executed after a delay. This is useful for creating animations or refreshing the overlay at constant intervals.
 
    :param function func: a JavaScript function that will be executed later
    :param number delayMs: the number of milliseconds to wait before executing ``func``
 
-.. js:function:: map.log(message)
+.. js:function:: utility.log(message)
 
    Logs a message to the Porymap log file with the prefix ``[INFO]``. This is useful for debugging custom scripts.
 
    :param string message: the message to log
 
-.. js:function:: map.warn(message)
+.. js:function:: utility.warn(message)
 
    Logs a message to the Porymap log file with the prefix ``[WARN]``.
 
    :param string message: the message to log
 
-.. js:function:: map.error(message)
+.. js:function:: utility.error(message)
 
    Logs a message to the Porymap log file with the prefix ``[ERROR]``.
 
    :param string message: the message to log
 
-.. js:function:: map.showMessage(text, informativeText, detailedText)
+.. js:function:: utility.showMessage(text, informativeText, detailedText)
 
    Displays a message box with an "Information" icon and an ``OK`` button. Execution stops while the window is open.
 
@@ -1354,7 +1302,7 @@ These are some miscellaneous functions that can be very useful when building cus
    :param string informativeText: smaller text below the main message. Defaults to ``""``
    :param string detailedText: text hidden behind a "Show Details" box. Defaults to ``""``
 
-.. js:function:: map.showWarning(text, informativeText, detailedText)
+.. js:function:: utility.showWarning(text, informativeText, detailedText)
 
    Displays a message box with a "Warning" icon and an ``OK`` button. Execution stops while the window is open.
 
@@ -1362,7 +1310,7 @@ These are some miscellaneous functions that can be very useful when building cus
    :param string informativeText: smaller text below the main message. Defaults to ``""``
    :param string detailedText: text hidden behind a "Show Details" box. Defaults to ``""``
 
-.. js:function:: map.showError(text, informativeText, detailedText)
+.. js:function:: utility.showError(text, informativeText, detailedText)
 
    Displays a message box with a "Critical" icon and an ``OK`` button. Execution stops while the window is open.
 
@@ -1370,7 +1318,7 @@ These are some miscellaneous functions that can be very useful when building cus
    :param string informativeText: smaller text below the main message. Defaults to ``""``
    :param string detailedText: text hidden behind a "Show Details" box. Defaults to ``""``
 
-.. js:function:: map.showQuestion(text, informativeText, detailedText)
+.. js:function:: utility.showQuestion(text, informativeText, detailedText)
 
    Displays a message box with a "Question" icon and a ``Yes`` and a ``No`` button. Execution stops while the window is open.
 
@@ -1379,7 +1327,7 @@ These are some miscellaneous functions that can be very useful when building cus
    :param string detailedText: text hidden behind a "Show Details" box. Defaults to ``""``
    :returns boolean: ``true`` if ``Yes`` was selected, ``false`` if ``No`` was selected or if the window was closed without selection
 
-.. js:function:: map.getInputText(title, label, default)
+.. js:function:: utility.getInputText(title, label, default)
 
    Displays a text input dialog with an ``OK`` and a ``Cancel`` button. Execution stops while the window is open.
 
@@ -1388,7 +1336,7 @@ These are some miscellaneous functions that can be very useful when building cus
    :param string default: the text in the input entry area when the window is opened. Defaults to ``""``
    :returns {input, ok}: ``input`` will be the input text and ``ok`` will be ``true`` if ``OK`` was selected. ``input`` will be ``""`` and ``ok`` will be ``false`` if ``Cancel`` was selected or if the window was closed without selection.
 
-.. js:function:: map.getInputNumber(title, label, default, min, max, decimals, step)
+.. js:function:: utility.getInputNumber(title, label, default, min, max, decimals, step)
 
    Displays a number input dialog with an ``OK`` and a ``Cancel`` button. Execution stops while the window is open.
 
@@ -1401,7 +1349,7 @@ These are some miscellaneous functions that can be very useful when building cus
    :param number step: the increment by which the input number will change when the spinner is used. Defaults to ``1``
    :returns {input, ok}: ``input`` will be the input number and ``ok`` will be ``true`` if ``OK`` was selected. ``input`` will be ``default`` and ``ok`` will be ``false`` if ``Cancel`` was selected or if the window was closed without selection.
 
-.. js:function:: map.getInputItem(title, label, items, default, editable)
+.. js:function:: utility.getInputItem(title, label, items, default, editable)
 
    Displays a text input dialog with an items dropdown and an ``OK`` and a ``Cancel`` button. Execution stops while the window is open.
 
@@ -1411,3 +1359,64 @@ These are some miscellaneous functions that can be very useful when building cus
    :param number default: the index of the item to select by default. Defaults to ``0``
    :param boolean editable: whether the user is allowed to enter their own text instead. Defaults to ``false``
    :returns {input, ok}: ``input`` will be the input text and ``ok`` will be ``true`` if ``OK`` was selected. ``input`` will be the text of the item at ``default`` and ``ok`` will be ``false`` if ``Cancel`` was selected or if the window was closed without selection.
+
+.. js:function:: utility.isPrimaryTileset(tilesetName)
+
+   Gets whether the specified tileset is a primary tileset.
+
+   :param string tilesetName: the tileset name
+   :returns boolean: is a primary tileset
+
+.. js:function:: utility.isSecondaryTileset(tilesetName)
+
+   Gets whether the specified tileset is a secondary tileset.
+
+   :param string tilesetName: the tileset name
+   :returns boolean: is a secondary tileset
+
+Constants
+~~~~~~~~~
+
+Some constant values are provided for convenience. These are read-only properties guaranteed not to change unless a new project is opened or the current one is reloaded.
+
+All constants are accessible via the global ``constants`` object.
+
+.. js:attribute:: constants.max_primary_tiles
+
+   The maximum number of tiles in a primary tileset.
+
+.. js:attribute:: constants.max_secondary_tiles
+
+   The maximum number of tiles in a secondary tileset.
+
+.. js:attribute:: constants.max_primary_metatiles
+
+   The maximum number of metatiles in a primary tileset.
+
+.. js:attribute:: constants.max_secondary_metatiles
+
+   The maximum number of metatiles in a secondary tileset.
+
+.. js:attribute:: constants.layers_per_metatile
+
+   The number of tile layers used in each metatile. This will either be ``2`` or ``3``, depending on the config setting ``enable_triple_layer_metatiles``.
+
+.. js:attribute:: constants.tiles_per_metatile
+
+   The number of tiles in each metatile. This will either be ``8`` or ``12``, depending on the config setting ``enable_triple_layer_metatiles``.
+
+.. js:attribute:: constants.base_game_version
+
+   The string value of the config setting ``base_game_version``. This will either be ``pokeruby``, ``pokefirered``, or ``pokeemerald``.
+
+.. js:attribute:: constants.version.major
+
+   Porymap's major version number. For example, for Porymap version ``5.0.1`` this will be ``5``.
+
+.. js:attribute:: constants.version.minor
+
+   Porymap's minor version number. For example, for Porymap version ``5.0.1`` this will be ``0``.
+
+.. js:attribute:: constants.version.patch
+
+   Porymap's patch version number. For example, for Porymap version ``5.0.1`` this will be ``1``.

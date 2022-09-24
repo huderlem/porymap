@@ -37,7 +37,10 @@ SOURCES += src/core/block.cpp \
     src/lib/fex/parser_util.cpp \
     src/lib/orderedjson.cpp \
     src/core/regionmapeditcommands.cpp \
-    src/mainwindow_scriptapi.cpp \
+    src/scriptapi/apimap.cpp \
+    src/scriptapi/apioverlay.cpp \
+    src/scriptapi/apiutility.cpp \
+    src/scriptapi/scripting.cpp \
     src/ui/aboutporymap.cpp \
     src/ui/draggablepixmapitem.cpp \
     src/ui/bordermetatilespixmapitem.cpp \
@@ -91,7 +94,6 @@ SOURCES += src/core/block.cpp \
     src/main.cpp \
     src/mainwindow.cpp \
     src/project.cpp \
-    src/scripting.cpp \
     src/settings.cpp \
     src/log.cpp
 
@@ -139,6 +141,7 @@ HEADERS  += include/core/block.h \
     include/ui/graphicsview.h \
     include/ui/imageproviders.h \
     include/ui/mappixmapitem.h \
+    include/ui/mapview.h \
     include/ui/prefabcreationdialog.h \
     include/ui/regionmappixmapitem.h \
     include/ui/citymappixmapitem.h \
@@ -177,6 +180,7 @@ HEADERS  += include/core/block.h \
     include/mainwindow.h \
     include/project.h \
     include/scripting.h \
+    include/scriptutility.h \
     include/settings.h \
     include/log.h
 

@@ -1,5 +1,7 @@
 #include "scripting.h"
 #include "log.h"
+#include "config.h"
+#include "aboutporymap.h"
 
 QMap<CallbackType, QString> callbackFunctions = {
     {OnProjectOpened, "onProjectOpened"},
@@ -23,6 +25,7 @@ Scripting *instance = nullptr;
 void Scripting::init(MainWindow *mainWindow) {
     if (instance) {
         instance->engine->setInterrupted(true);
+        instance->scriptUtility->clearActions();
         qDeleteAll(instance->imageCache);
         delete instance;
     }
@@ -32,11 +35,11 @@ void Scripting::init(MainWindow *mainWindow) {
 Scripting::Scripting(MainWindow *mainWindow) {
     this->engine = new QJSEngine(mainWindow);
     this->engine->installExtensions(QJSEngine::ConsoleExtension);
-    this->engine->globalObject().setProperty("map", this->engine->newQObject(mainWindow));
     for (QString script : projectConfig.getCustomScripts()) {
         this->filepaths.append(script);
     }
     this->loadModules(this->filepaths);
+    this->scriptUtility = new ScriptUtility(mainWindow);
 }
 
 void Scripting::loadModules(QStringList moduleFiles) {
@@ -51,6 +54,46 @@ void Scripting::loadModules(QStringList moduleFiles) {
         logInfo(QString("Successfully loaded custom script file '%1'").arg(filepath));
         this->modules.append(module);
     }
+}
+
+void Scripting::populateGlobalObject(MainWindow *mainWindow) {
+    if (!instance || !instance->engine) return;
+
+    instance->engine->globalObject().setProperty("map", instance->engine->newQObject(mainWindow));
+    instance->engine->globalObject().setProperty("overlay", instance->engine->newQObject(mainWindow->ui->graphicsView_Map));
+    instance->engine->globalObject().setProperty("utility", instance->engine->newQObject(instance->scriptUtility));
+
+    QJSValue constants = instance->engine->newObject();
+
+    // Get basic tile/metatile information
+    int numTilesPrimary = Project::getNumTilesPrimary();
+    int numTilesTotal = Project::getNumTilesTotal();
+    int numMetatilesPrimary = Project::getNumMetatilesPrimary();
+    int numMetatilesTotal = Project::getNumMetatilesTotal();
+    bool tripleLayerEnabled = projectConfig.getTripleLayerMetatilesEnabled();
+
+    // Invisibly create an "About" window to read Porymap version
+    AboutPorymap *about = new AboutPorymap(mainWindow);
+    if (about) {
+        QJSValue version = Scripting::version(about->getVersionNumbers());
+        constants.setProperty("version", version);
+        delete about;
+    } else {
+        logError("Failed to read Porymap version for API");
+    }
+    constants.setProperty("max_primary_tiles", numTilesPrimary);
+    constants.setProperty("max_secondary_tiles", numTilesTotal - numTilesPrimary);
+    constants.setProperty("max_primary_metatiles", numMetatilesPrimary);
+    constants.setProperty("max_secondary_metatiles", numMetatilesTotal - numMetatilesPrimary);
+    constants.setProperty("layers_per_metatile", tripleLayerEnabled ? 3 : 2);
+    constants.setProperty("tiles_per_metatile", tripleLayerEnabled ? 12 : 8);
+    constants.setProperty("base_game_version", projectConfig.getBaseGameVersionString());
+
+    instance->engine->globalObject().setProperty("constants", constants);
+
+    // Prevent changes to the constants object
+    instance->engine->evaluate("Object.freeze(constants.version);");
+    instance->engine->evaluate("Object.freeze(constants);");
 }
 
 bool Scripting::tryErrorJS(QJSValue js) {
@@ -83,22 +126,12 @@ void Scripting::invokeCallback(CallbackType type, QJSValueList args) {
     }
 }
 
-void Scripting::registerAction(QString functionName, QString actionName) {
-    if (!instance) return;
-    instance->registeredActions.insert(actionName, functionName);
-}
-
-int Scripting::numRegisteredActions() {
-    if (!instance) return 0;
-    return instance->registeredActions.size();
-}
-
 void Scripting::invokeAction(QString actionName) {
-    if (!instance) return;
-    if (!instance->registeredActions.contains(actionName)) return;
+    if (!instance || !instance->scriptUtility) return;
+    QString functionName = instance->scriptUtility->getActionFunctionName(actionName);
+    if (functionName.isEmpty()) return;
 
     bool foundFunction = false;
-    QString functionName = instance->registeredActions.value(actionName);
     for (QJSValue module : instance->modules) {
         QJSValue callbackFunction = module.property(functionName);
         if (callbackFunction.isUndefined() || !callbackFunction.isCallable())

@@ -538,11 +538,9 @@ bool MainWindow::openProject(QString dir) {
         editor->project->clearTilesetCache();
         success = loadDataStructures() && populateMapList() && setMap(open_map, true);
     }
-
-    if (success) {
-        showWindowTitle();
-        this->statusBar()->showMessage(QString("Opened project %1").arg(nativeDir));
-    } else {
+    
+    projectOpenFailure = !success;
+    if (projectOpenFailure) {
         this->statusBar()->showMessage(QString("Failed to open project %1").arg(nativeDir));
         QMessageBox msgBox(this);
         QString errorMsg = QString("There was an error opening the project %1. Please see %2 for full error details.\n\n%3")
@@ -550,23 +548,19 @@ bool MainWindow::openProject(QString dir) {
                 .arg(getLogPath())
                 .arg(getMostRecentError());
         msgBox.critical(nullptr, "Error Opening Project", errorMsg);
-
+        return false;
     }
+    
+    showWindowTitle();
+    this->statusBar()->showMessage(QString("Opened project %1").arg(nativeDir));
 
-    if (success) {
-        prefab.initPrefabUI(
-                    editor->metatile_selector_item,
-                    ui->scrollAreaWidgetContents_Prefabs,
-                    ui->label_prefabHelp,
-                    editor->map);
-        for (auto action : this->registeredActions) {
-            this->ui->menuTools->removeAction(action);
-        }
-        Scripting::cb_ProjectOpened(dir);
-    }
-
-    projectOpenFailure = !success;
-    return success;
+    prefab.initPrefabUI(
+                editor->metatile_selector_item,
+                ui->scrollAreaWidgetContents_Prefabs,
+                ui->label_prefabHelp,
+                editor->map);
+    Scripting::cb_ProjectOpened(dir);
+    return true;
 }
 
 bool MainWindow::isProjectOpen() {
@@ -611,7 +605,7 @@ void MainWindow::on_action_Open_Project_triggered()
     if (!dir.isEmpty()) {
         if (this->editor && this->editor->project) {
             Scripting::cb_ProjectClosed(this->editor->project->root);
-            this->ui->graphicsView_Map->clearOverlays();
+            this->ui->graphicsView_Map->clearOverlayMap();
         }
         porymapConfig.setRecentProject(dir);
         setWindowDisabled(!openProject(dir));
@@ -953,6 +947,8 @@ bool MainWindow::loadDataStructures() {
                 && project->readObjEventGfxConstants()
                 && project->readEventGraphics()
                 && project->readSongNames();
+
+    Scripting::populateGlobalObject(this);
 
     return success && loadProjectCombos();
 }
