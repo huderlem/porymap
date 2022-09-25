@@ -10,8 +10,7 @@ A global settings file is stored in a platform-dependent location for app config
 
 A config file is also created when opening a project in porymap for the first time. It is stored in
 your project root as ``porymap.project.cfg``. There are several project-specific settings that are
-determined by this file. You may want to check in this file so that other users will have your
-porject settings.
+determined by this file. You may want to force commit this file so that other users will automatically have access to your project settings.
 
 A second config file is created for user-specific settings. It is stored in
 your project root as ``porymap.user.cfg``. You should add this file to your gitignore.
@@ -55,5 +54,6 @@ your project root as ``porymap.user.cfg``. You should add this file to your giti
    ``new_map_border_metatiles``, "``468,469,476,477`` or ``20,21,28,29``", project, yes, The list of metatile ids that will be used to fill the 2x2 border of new maps
    ``custom_scripts``, , user, yes, A list of script files to load into the scripting engine
    ``prefabs_filepath``, ``<project_root>/prefabs.json``, project, yes, The filepath containing prefab JSON data
+   ``prefabs_import_prompted``, 0, project, no, Keeps track of whether or not the project was prompted for importing default prefabs
 
 Some of these settings can be toggled manually in porymap via the *Options* menu.
