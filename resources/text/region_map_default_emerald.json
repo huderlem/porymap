@@ -6,8 +6,8 @@
                 "width": 64,
                 "height": 64,
                 "format": "plain",
-                "tileset_path": "graphics/pokenav/region_map.png",
-                "tilemap_path": "graphics/pokenav/region_map_map.bin"
+                "tileset_path": "graphics/pokenav/region_map/map.png",
+                "tilemap_path": "graphics/pokenav/region_map/map.bin"
             },
             "layout": {
                 "width": 28,
