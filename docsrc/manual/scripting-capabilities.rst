@@ -78,7 +78,7 @@ The grass-randomizer script above happens implicitly when the user paints on the
 
 	// Porymap callback when project is opened.
 	export function onProjectOpened(projectPath) {
-        utility.registerAction("applyNightTint", "View Night Tint", "T")
+	   utility.registerAction("applyNightTint", "View Night Tint", "T")
 	}
 
 Then, to trigger the ``applyNightTint()`` function, we could either click ``Tools -> View Night Tint`` or use the ``T`` keyboard shortcut.
@@ -178,7 +178,7 @@ Callbacks
 
 .. js:function:: onMapViewTabChanged(oldTab, newTab)
 
-   Called when the selected tab in the map view tab bar is changed. Tabs are indexed from left to right, starting at 0 (``0``: Metatiles, ``1``: Collision).
+   Called when the selected tab in the map view tab bar is changed. Tabs are indexed from left to right, starting at 0 (``0``: Metatiles, ``1``: Collision, ``2``: Prefabs).
 
    :param number oldTab: the index of the previously selected tab
    :param number newTab: the index of the newly selected tab
@@ -1244,13 +1244,13 @@ All settings functions are callable via the global ``utility`` object.
 
 .. js:function:: utility.getMapViewTab()
 
-   Gets the index of the currently selected map view tab. Tabs are indexed from left to right, starting at 0 (``0``: Metatiles, ``1``: Collision).
+   Gets the index of the currently selected map view tab. Tabs are indexed from left to right, starting at 0 (``0``: Metatiles, ``1``: Collision, ``2``: Prefabs).
 
    :returns number: current map view tab index
 
 .. js:function:: utility.setMapViewTab(tab)
 
-   Sets the currently selected map view tab. Tabs are indexed from left to right, starting at 0 (``0``: Metatiles, ``1``: Collision).
+   Sets the currently selected map view tab. Tabs are indexed from left to right, starting at 0 (``0``: Metatiles, ``1``: Collision, ``2``: Prefabs).
 
    :param number tab: index of the tab to select
 
