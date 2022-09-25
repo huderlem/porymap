@@ -178,6 +178,8 @@ Prefabs, or "prefabricated selections", are a way to optimize your map-editing w
 
     Prefab Tab
 
+Porymap provides a set of default prefabs for each supported base game version (pokeemerald, pokefirered, and pokeruby). When opening a project for the first time, Porymap will prompt the user for importing those default prefabs.
+
 To create a new prefab, simply select a group of metatiles from the main map view. (See the `Selecting Metatiles`_. section above for how to use right-click-drag to select from the map area.) Then, click the "Create from Selection" button. This will bring up the following window where individual metatiles can be toggled on/off in the prefab. You can also give your prefab a name.
 
 .. figure:: images/editing-map-tiles/prefab-create.png
@@ -194,4 +196,4 @@ To select a prefab to use for painting on the map, simply click on the prefab im
 
     Painting with a Prefab
 
-Prefab data is saved to a JSON file. It defaults to ``<project_root>/prefabs.json``. However, it can be configured in Porymap's project config file.
+Prefab data is saved to a JSON file. It defaults to ``<project_root>/prefabs.json``. However, it can be configured in Porymap's project config file using the ``prefabs_filepath`` setting.
