@@ -35,7 +35,7 @@ void Scripting::init(MainWindow *mainWindow) {
 Scripting::Scripting(MainWindow *mainWindow) {
     this->engine = new QJSEngine(mainWindow);
     this->engine->installExtensions(QJSEngine::ConsoleExtension);
-    for (QString script : projectConfig.getCustomScripts()) {
+    for (QString script : userConfig.getCustomScripts()) {
         this->filepaths.append(script);
     }
     this->loadModules(this->filepaths);
@@ -46,7 +46,7 @@ void Scripting::loadModules(QStringList moduleFiles) {
     for (QString filepath : moduleFiles) {
         QJSValue module = this->engine->importModule(filepath);
         if (module.isError()) {
-            QString relativePath = QDir::cleanPath(projectConfig.getProjectDir() + QDir::separator() + filepath);
+            QString relativePath = QDir::cleanPath(userConfig.getProjectDir() + QDir::separator() + filepath);
             module = this->engine->importModule(relativePath);
             if (tryErrorJS(module)) continue;
         }

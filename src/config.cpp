@@ -16,6 +16,57 @@
 #include <QAction>
 #include <QAbstractButton>
 
+const QMap<ProjectFilePath, std::pair<QString, QString>> defaultPaths = {
+    {ProjectFilePath::data_map_folders,                 { "data_map_folders",                "data/maps/"}},
+    {ProjectFilePath::data_scripts_folders,             { "data_scripts_folders",            "data/scripts/"}},
+    {ProjectFilePath::data_layouts_folders,             { "data_layouts_folders",            "data/layouts/"}},
+    {ProjectFilePath::data_event_scripts,               { "data_event_scripts",              "data/event_scripts.s"}},
+    {ProjectFilePath::json_map_groups,                  { "json_map_groups",                 "data/maps/map_groups.json"}},
+    {ProjectFilePath::json_layouts,                     { "json_layouts",                    "data/layouts/layouts.json"}},
+    {ProjectFilePath::json_wild_encounters,             { "json_wild_encounters",            "src/data/wild_encounters.json"}},
+    {ProjectFilePath::json_region_map_entries,          { "json_region_map_entries",         "src/data/region_map/region_map_sections.json"}},
+    {ProjectFilePath::json_region_porymap_cfg,          { "json_region_porymap_cfg",         "src/data/region_map/porymap_config.json"}},
+    {ProjectFilePath::tilesets_headers,                 { "tilesets_headers",                "data/tilesets/headers.inc"}},
+    {ProjectFilePath::tilesets_graphics,                { "tilesets_graphics",               "data/tilesets/graphics.inc"}},
+    {ProjectFilePath::tilesets_metatiles,               { "tilesets_metatiles",              "data/tilesets/metatiles.inc"}},
+    {ProjectFilePath::data_obj_event_gfx_pointers,      { "data_obj_event_gfx_pointers",     "src/data/object_events/object_event_graphics_info_pointers.h"}},
+    {ProjectFilePath::data_obj_event_gfx_info,          { "data_obj_event_gfx_info",         "src/data/object_events/object_event_graphics_info.h"}},
+    {ProjectFilePath::data_obj_event_pic_tables,        { "data_obj_event_pic_tables",       "src/data/object_events/object_event_pic_tables.h"}},
+    {ProjectFilePath::data_obj_event_gfx,               { "data_obj_event_gfx",              "src/data/object_events/object_event_graphics.h"}},
+    {ProjectFilePath::data_pokemon_gfx,                 { "data_pokemon_gfx",                "src/data/graphics/pokemon.h"}},
+    {ProjectFilePath::data_heal_locations,              { "data_heal_locations",             "src/data/heal_locations.h"}},
+    {ProjectFilePath::data_region_map_entries,          { "data_region_map_entries",         "src/data/region_map/region_map_entries.h"}},
+    {ProjectFilePath::constants_global,                 { "constants_global",                "include/constants/global.h"}},
+    {ProjectFilePath::constants_map_groups,             { "constants_map_groups",            "include/constants/map_groups.h"}},
+    {ProjectFilePath::constants_items,                  { "constants_items",                 "include/constants/items.h"}},
+    {ProjectFilePath::constants_opponents,              { "constants_opponents",             "include/constants/opponents.h"}},
+    {ProjectFilePath::constants_flags,                  { "constants_flags",                 "include/constants/flags.h"}},
+    {ProjectFilePath::constants_vars,                   { "constants_vars",                  "include/constants/vars.h"}},
+    {ProjectFilePath::constants_weather,                { "constants_weather",               "include/constants/weather.h"}},
+    {ProjectFilePath::constants_songs,                  { "constants_songs",                 "include/constants/songs.h"}},
+    {ProjectFilePath::constants_heal_locations,         { "constants_heal_locations",        "include/constants/heal_locations.h"}},
+    {ProjectFilePath::constants_pokemon,                { "constants_pokemon",               "include/constants/pokemon.h"}},
+    {ProjectFilePath::constants_map_types,              { "constants_map_types",             "include/constants/map_types.h"}},
+    {ProjectFilePath::constants_trainer_types,          { "constants_trainer_types",         "include/constants/trainer_types.h"}},
+    {ProjectFilePath::constants_secret_bases,           { "constants_secret_bases",          "include/constants/secret_bases.h"}},
+    {ProjectFilePath::constants_obj_event_movement,     { "constants_obj_event_movement",    "include/constants/event_object_movement.h"}},
+    {ProjectFilePath::constants_obj_events,             { "constants_obj_events",            "include/constants/event_objects.h"}},
+    {ProjectFilePath::constants_event_bg,               { "constants_event_bg",              "include/constants/event_bg.h"}},
+    {ProjectFilePath::constants_region_map_sections,    { "constants_region_map_sections",   "include/constants/region_map_sections.h"}},
+    {ProjectFilePath::constants_metatile_labels,        { "constants_metatile_labels",       "include/constants/metatile_labels.h"}},
+    {ProjectFilePath::constants_metatile_behaviors,     { "constants_metatile_behaviors",    "include/constants/metatile_behaviors.h"}},
+    {ProjectFilePath::constants_fieldmap,               { "constants_fieldmap",              "include/fieldmap.h"}},
+    {ProjectFilePath::path_pokemon_icon_table,          { "path_pokemon_icon_table",         "src/pokemon_icon.c"}},
+    {ProjectFilePath::path_initial_facing_table,        { "path_initial_facing_table",       "src/event_object_movement.c"}},
+};
+
+ProjectFilePath reverseDefaultPaths(QString str) {
+    for (auto it = defaultPaths.constKeyValueBegin(); it != defaultPaths.constKeyValueEnd(); ++it) {
+        if ((*it).second.first == str) return (*it).first;
+    }
+    return static_cast<ProjectFilePath>(-1);
+}
+
 KeyValueConfigBase::~KeyValueConfigBase() {
 
 }
@@ -57,7 +108,7 @@ void KeyValueConfigBase::load() {
             continue;
         }
 
-        this->parseConfigKeyValue(match.captured("key").toLower(), match.captured("value"));
+        this->parseConfigKeyValue(match.captured("key").trimmed().toLower(), match.captured("value").trimmed());
     }
     this->setUnreadKeys();
 
@@ -211,6 +262,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("theme", this->theme);
     map.insert("text_editor_open_directory", this->textEditorOpenFolder);
     map.insert("text_editor_goto_line", this->textEditorGotoLine);
+    
     return map;
 }
 
@@ -449,10 +501,6 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
             this->baseGameVersion = BaseGameVersion::pokeemerald;
             logWarn(QString("Invalid config value for base_game_version: '%1'. Must be 'pokeruby', 'pokefirered' or 'pokeemerald'.").arg(value));
         }
-    } else if (key == "recent_map") {
-        this->recentMap = value;
-    } else if (key == "use_encounter_json") {
-        this->useEncounterJson = getConfigBool(key, value);
     } else if (key == "use_poryscript") {
         this->usePoryScript = getConfigBool(key, value);
     } else if (key == "use_custom_border_size") {
@@ -493,14 +541,27 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
             // Set any metatiles not provided to 0
             this->newMapBorderMetatileIds.append(0);
         }
+#ifdef CONFIG_BACKWARDS_COMPATABILITY
+    } else if (key == "recent_map") {
+        userConfig.setRecentMap(value);
+    } else if (key == "use_encounter_json") {
+        userConfig.useEncounterJson = getConfigBool(key, value);
     } else if (key == "custom_scripts") {
-        this->customScripts.clear();
+        userConfig.customScripts.clear();
         QList<QString> paths = value.split(",");
         paths.removeDuplicates();
         for (QString script : paths) {
             if (!script.isEmpty()) {
-                this->customScripts.append(script);
+                userConfig.customScripts.append(script);
             }
+        }
+#endif
+    } else if (key.startsWith("path/")) {
+        auto k = reverseDefaultPaths(key.mid(5));
+        if (k != static_cast<ProjectFilePath>(-1)) {
+            this->setFilePath(k, value);
+        } else {
+            logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
         }
     } else if (key == "prefabs_filepath") {
         this->prefabFilepath = value;
@@ -530,8 +591,6 @@ void ProjectConfig::setUnreadKeys() {
 QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     QMap<QString, QString> map;
     map.insert("base_game_version", baseGameVersionMap.value(this->baseGameVersion));
-    map.insert("recent_map", this->recentMap);
-    map.insert("use_encounter_json", QString::number(this->useEncounterJson));
     map.insert("use_poryscript", QString::number(this->usePoryScript));
     map.insert("use_custom_border_size", QString::number(this->useCustomBorderSize));
     map.insert("enable_event_weather_trigger", QString::number(this->enableEventWeatherTrigger));
@@ -549,9 +608,11 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     for (auto metatile : this->newMapBorderMetatileIds)
         metatiles << QString::number(metatile);
     map.insert("new_map_border_metatiles", metatiles.join(","));
-    map.insert("custom_scripts", this->customScripts.join(","));
     map.insert("prefabs_filepath", this->prefabFilepath);
     map.insert("prefabs_import_prompted", QString::number(this->prefabImportPrompted));
+    for (auto it = this->filePaths.constKeyValueBegin(); it != this->filePaths.constKeyValueEnd(); ++it) {
+        map.insert("path/"+defaultPaths[(*it).first].first, (*it).second);
+    }
     return map;
 }
 
@@ -591,13 +652,11 @@ void ProjectConfig::onNewConfigFileCreated() {
     this->enableEventCloneObject = isPokefirered;
     this->enableFloorNumber = isPokefirered;
     this->createMapTextFile = (this->baseGameVersion != BaseGameVersion::pokeemerald);
-    this->useEncounterJson = true;
     this->usePoryScript = false;
     this->enableTripleLayerMetatiles = false;
     this->newMapMetatileId = 1;
     this->newMapElevation = 3;
     this->newMapBorderMetatileIds = isPokefirered ? DEFAULT_BORDER_FRLG : DEFAULT_BORDER_RSE;
-    this->customScripts.clear();
 }
 
 void ProjectConfig::setProjectDir(QString projectDir) {
@@ -606,6 +665,21 @@ void ProjectConfig::setProjectDir(QString projectDir) {
 
 QString ProjectConfig::getProjectDir() {
     return this->projectDir;
+}
+
+void ProjectConfig::setFilePath(ProjectFilePath pathId, QString path) {
+    if (!defaultPaths.contains(pathId)) return;
+    this->filePaths[pathId] = path;
+}
+
+QString ProjectConfig::getFilePath(ProjectFilePath pathId) {
+    if (this->filePaths.contains(pathId)) {
+        return this->filePaths[pathId];
+    } else if (defaultPaths.contains(pathId)) {
+        return defaultPaths[pathId].second;
+    } else {
+        return QString();
+    }
 }
 
 void ProjectConfig::setBaseGameVersion(BaseGameVersion baseGameVersion) {
@@ -619,24 +693,6 @@ BaseGameVersion ProjectConfig::getBaseGameVersion() {
 
 QString ProjectConfig::getBaseGameVersionString() {
     return baseGameVersionMap.value(this->baseGameVersion);
-}
-
-void ProjectConfig::setRecentMap(const QString &map) {
-    this->recentMap = map;
-    this->save();
-}
-
-QString ProjectConfig::getRecentMap() {
-    return this->recentMap;
-}
-
-void ProjectConfig::setEncounterJsonActive(bool active) {
-    this->useEncounterJson = active;
-    this->save();
-}
-
-bool ProjectConfig::getEncounterJsonActive() {
-    return this->useEncounterJson;
 }
 
 void ProjectConfig::setUsePoryScript(bool usePoryScript) {
@@ -765,15 +821,6 @@ QList<int> ProjectConfig::getNewMapBorderMetatileIds() {
     return this->newMapBorderMetatileIds;
 }
 
-void ProjectConfig::setCustomScripts(QList<QString> scripts) {
-    this->customScripts = scripts;
-    this->save();
-}
-
-QList<QString> ProjectConfig::getCustomScripts() {
-    return this->customScripts;
-}
-
 void ProjectConfig::setPrefabFilepath(QString filepath) {
     this->prefabFilepath = filepath;
     this->save();
@@ -793,6 +840,86 @@ void ProjectConfig::setPrefabImportPrompted(bool prompted) {
 
 bool ProjectConfig::getPrefabImportPrompted() {
     return this->prefabImportPrompted;
+}
+
+
+UserConfig userConfig;
+
+QString UserConfig::getConfigFilepath() {
+    // porymap config file is in the same directory as porymap itself.
+    return QDir(this->projectDir).filePath("porymap.user.cfg");
+}
+
+void UserConfig::parseConfigKeyValue(QString key, QString value) {
+    if (key == "recent_map") {
+        this->recentMap = value;
+    } else if (key == "use_encounter_json") {
+        this->useEncounterJson = getConfigBool(key, value);
+    } else if (key == "custom_scripts") {
+        this->customScripts.clear();
+        QList<QString> paths = value.split(",");
+        paths.removeDuplicates();
+        for (QString script : paths) {
+            if (!script.isEmpty()) {
+                this->customScripts.append(script);
+            }
+        }
+    } else {
+        logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
+    }
+    readKeys.append(key);
+}
+
+void UserConfig::setUnreadKeys() {
+}
+
+QMap<QString, QString> UserConfig::getKeyValueMap() {
+    QMap<QString, QString> map;
+    map.insert("recent_map", this->recentMap);
+    map.insert("use_encounter_json", QString::number(this->useEncounterJson));
+    map.insert("custom_scripts", this->customScripts.join(","));
+    return map;
+}
+
+void UserConfig::onNewConfigFileCreated() {
+    QString dirName = QDir(this->projectDir).dirName().toLower();
+    this->useEncounterJson = true;
+    this->customScripts.clear();
+}
+
+void UserConfig::setProjectDir(QString projectDir) {
+    this->projectDir = projectDir;
+}
+
+QString UserConfig::getProjectDir() {
+    return this->projectDir;
+}
+
+void UserConfig::setRecentMap(const QString &map) {
+    this->recentMap = map;
+    this->save();
+}
+
+QString UserConfig::getRecentMap() {
+    return this->recentMap;
+}
+
+void UserConfig::setEncounterJsonActive(bool active) {
+    this->useEncounterJson = active;
+    this->save();
+}
+
+bool UserConfig::getEncounterJsonActive() {
+    return this->useEncounterJson;
+}
+
+void UserConfig::setCustomScripts(QList<QString> scripts) {
+    this->customScripts = scripts;
+    this->save();
+}
+
+QList<QString> UserConfig::getCustomScripts() {
+    return this->customScripts;
 }
 
 ShortcutsConfig shortcutsConfig;

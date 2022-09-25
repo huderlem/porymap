@@ -33,16 +33,19 @@ to a file, it probably is not a good idea to edit yourself unless otherwise note
    include/constants/flags.h, yes, no, 
    include/constants/vars.h, yes, no, 
    include/constants/weather.h, yes, no, 
+   include/constants/songs.h, yes, no, 
    include/constants/heal_locations.h, no, yes, 
    include/constants/pokemon.h, yes, no, reads min and max level constants
    include/constants/map_types.h, yes, no, 
    include/constants/trainer_types.h, yes, no, 
    include/constants/secret_bases.h, yes, no, pokeemerald and pokeruby only
    include/constants/event_object_movement.h, yes, no, 
+   include/constants/event_objects.h, yes, no, 
    include/constants/event_bg.h, yes, no, 
    include/constants/region_map_sections.h, yes, no, 
    include/constants/metatile_labels.h, yes, yes, 
    include/constants/metatile_behaviors.h, yes, no, 
    include/fieldmap.h, yes, no, reads tileset related constants
+   src/event_object_movement.c, yes, no, 
 
 

@@ -123,7 +123,7 @@ void ScriptUtility::setMainTab(int index) {
     if (!window || !window->ui || !window->ui->mainTabBar || index < 0 || index >= window->ui->mainTabBar->count())
         return;
     // Can't select Wild Encounters tab if it's disabled
-    if (index == 4 && !projectConfig.getEncounterJsonActive())
+    if (index == 4 && !userConfig.getEncounterJsonActive())
         return;
     window->on_mainTabBar_tabBarClicked(index);
 }
@@ -165,7 +165,7 @@ bool ScriptUtility::getSmartPathsEnabled() {
 }
 
 QList<QString> ScriptUtility::getCustomScripts() {
-    return projectConfig.getCustomScripts();
+    return userConfig.getCustomScripts();
 }
 
 QList<int> ScriptUtility::getMetatileLayerOrder() {

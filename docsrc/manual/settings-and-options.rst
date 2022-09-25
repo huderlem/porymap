@@ -10,7 +10,11 @@ A global settings file is stored in a platform-dependent location for app config
 
 A config file is also created when opening a project in porymap for the first time. It is stored in
 your project root as ``porymap.project.cfg``. There are several project-specific settings that are
-determined by this file.
+determined by this file. You may want to check in this file so that other users will have your
+porject settings.
+
+A second config file is created for user-specific settings. It is stored in
+your project root as ``porymap.user.cfg``. You should add this file to your gitignore.
 
 .. csv-table::
    :header: Setting,Default,Location,Can Edit?,Description
@@ -18,7 +22,7 @@ determined by this file.
 
    ``recent_project``, , global, yes, The project that will be opened on launch
    ``reopen_on_launch``, 1, global, yes, Whether the most recent project should be opened on launch
-   ``recent_map``, , global, yes, The map that will be opened on launch
+   ``recent_map``, , user, yes, The map that will be opened on launch
    ``pretty_cursors``, 1, global, yes, Whether to use custom crosshair cursors
    ``map_sort_order``, group, global, yes, The order map list is sorted in
    ``window_geometry``, , global, no, For restoring window sizes
@@ -34,7 +38,7 @@ determined by this file.
    ``text_editor_goto_line``, , global, yes, The command that will be executed when clicking the button next the ``Script`` combo-box.
    ``text_editor_open_directory``, , global, yes, The command that will be executed when clicking ``Open Project in Text Editor``.
    ``base_game_version``, , project, no, The base pret repo for this project
-   ``use_encounter_json``, 1, project, yes, Enables wild encounter table editing
+   ``use_encounter_json``, 1, user, yes, Enables wild encounter table editing
    ``use_poryscript``, 0, project, yes, Whether to open .pory files for scripts
    ``use_custom_border_size``, 0, project, yes, Whether to allow variable border sizes
    ``enable_event_weather_trigger``, 1 if not ``pokefirered``, project, yes, Allows adding Weather Trigger events
@@ -49,7 +53,7 @@ determined by this file.
    ``new_map_metatile``, 1, project, yes, The metatile id that will be used to fill new maps
    ``new_map_elevation``, 3, project, yes, The elevation that will be used to fill new maps
    ``new_map_border_metatiles``, "``468,469,476,477`` or ``20,21,28,29``", project, yes, The list of metatile ids that will be used to fill the 2x2 border of new maps
-   ``custom_scripts``, , project, yes, A list of script files to load into the scripting engine
+   ``custom_scripts``, , user, yes, A list of script files to load into the scripting engine
    ``prefabs_filepath``, ``<project_root>/prefabs.json``, project, yes, The filepath containing prefab JSON data
 
 Some of these settings can be toggled manually in porymap via the *Options* menu.
