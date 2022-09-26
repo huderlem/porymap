@@ -42,7 +42,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix object events added by pasting ignoring the map event limit.
 - Fixed a bug where saving the tileset editor would reselect the main editor's first selected metatile.
 - Fix crashes / unexpected behavior if certain scripting API functions are given invalid palette or tile numbers.
-- Silence unnecessary errors about `SECRET_BASE_GROUP` when parsing `secret_bases.h`.
+- Silence unnecessary error logging when parsing C defines Porymap doesn't use.
 
 ## [4.5.0] - 2021-12-26
 ### Added
