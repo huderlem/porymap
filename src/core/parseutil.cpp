@@ -16,15 +16,33 @@ void ParseUtil::set_root(const QString &dir) {
     this->root = dir;
 }
 
-void ParseUtil::error(const QString &message, const QString &expression) {
-    QStringList lines = text.split(QRegularExpression("[\r\n]"));
+void ParseUtil::recordError(const QString &message) {
+    this->errorMap[this->curDefine].append(message);
+}
+
+void ParseUtil::recordErrors(const QStringList &errors) {
+    if (errors.isEmpty()) return;
+    this->errorMap[this->curDefine].append(errors);
+}
+
+void ParseUtil::logRecordedErrors() {
+    QStringList errors = this->errorMap.value(this->curDefine);
+    if (errors.isEmpty()) return;
+    QString message = QString("Failed to parse '%1':").arg(this->curDefine);
+    for (const auto error : errors)
+        message.append(QString("\n%1").arg(error));
+    logError(message);
+}
+
+QString ParseUtil::createErrorMessage(const QString &message, const QString &expression) {
+    QStringList lines = this->text.split(QRegularExpression("[\r\n]"));
     int lineNum = 0, colNum = 0;
     for (QString line : lines) {
         lineNum++;
         colNum = line.indexOf(expression) + 1;
         if (colNum) break;
     }
-    logError(QString("%1:%2:%3: %4").arg(file).arg(lineNum).arg(colNum).arg(message));
+    return QString("%1:%2:%3: %4").arg(this->file).arg(lineNum).arg(colNum).arg(message);
 }
 
 QString ParseUtil::readTextFile(const QString &path) {
@@ -52,8 +70,8 @@ int ParseUtil::textFileLineCount(const QString &path) {
 QList<QStringList> ParseUtil::parseAsm(const QString &filename) {
     QList<QStringList> parsed;
 
-    text = readTextFile(root + '/' + filename);
-    const QStringList lines = removeLineComments(text, "@").split('\n');
+    this->text = readTextFile(this->root + '/' + filename);
+    const QStringList lines = removeLineComments(this->text, "@").split('\n');
     for (const auto &line : lines) {
         const QString trimmedLine = line.trimmed();
         if (trimmedLine.isEmpty()) {
@@ -101,6 +119,8 @@ QList<Token> ParseUtil::tokenizeExpression(QString expression, const QMap<QStrin
             if (!token.isEmpty()) {
                 if (tokenType == "identifier") {
                     if (knownIdentifiers.contains(token)) {
+                        // Any errors encountered when this identifier was evaluated should be recorded for this expression as well.
+                        recordErrors(this->errorMap.value(token));
                         QString actualToken = QString("%1").arg(knownIdentifiers.value(token));
                         expression = expression.replace(0, token.length(), actualToken);
                         token = actualToken;
@@ -109,14 +129,14 @@ QList<Token> ParseUtil::tokenizeExpression(QString expression, const QMap<QStrin
                         tokenType = "error";
                         QString message = QString("unknown token '%1' found in expression '%2'")
                                           .arg(token).arg(expression);
-                        error(message, expression);
+                        recordError(createErrorMessage(message, expression));
                     }
                 }
                 else if (tokenType == "operator") {
                     if (!Token::precedenceMap.contains(token)) {
                         QString message = QString("unsupported postfix operator: '%1'")
                                           .arg(token);
-                        error(message, expression);
+                        recordError(createErrorMessage(message, expression));
                     }
                 }
 
@@ -161,7 +181,7 @@ QList<Token> ParseUtil::generatePostfix(const QList<Token> &tokens) {
                 // pop the left parenthesis token
                 operatorStack.pop();
             } else {
-                logError("Mismatched parentheses detected in expression!");
+                recordError("Mismatched parentheses detected in expression!");
             }
         } else {
             // token is an operator
@@ -176,7 +196,7 @@ QList<Token> ParseUtil::generatePostfix(const QList<Token> &tokens) {
 
     while (!operatorStack.isEmpty()) {
         if (operatorStack.top().value == "(" || operatorStack.top().value == ")") {
-            logError("Mismatched parentheses detected in expression!");
+            recordError("Mismatched parentheses detected in expression!");
         } else {
             output.append(operatorStack.pop());
         }
@@ -230,7 +250,7 @@ QString ParseUtil::readCIncbin(const QString &filename, const QString &label) {
         return path;
     }
 
-    text = readTextFile(root + "/" + filename);
+    this->text = readTextFile(this->root + "/" + filename);
 
     QRegularExpression re(QString(
         "\\b%1\\b"
@@ -239,7 +259,7 @@ QString ParseUtil::readCIncbin(const QString &filename, const QString &label) {
         "\\(\\s*\"([^\"]*)\"\\s*\\)").arg(label));
 
     QRegularExpressionMatch match;
-    qsizetype pos = text.indexOf(re, 0, &match);
+    qsizetype pos = this->text.indexOf(re, 0, &match);
     if (pos != -1) {
         path = match.captured(1);
     }
@@ -253,36 +273,40 @@ QMap<QString, int> ParseUtil::readCDefines(const QString &filename,
 {
     QMap<QString, int> filteredDefines;
 
-    file = filename;
+    this->file = filename;
 
-    if (file.isEmpty()) {
+    if (this->file.isEmpty()) {
         return filteredDefines;
     }
 
-    QString filepath = root + "/" + file;
-    text = readTextFile(filepath);
+    QString filepath = this->root + "/" + this->file;
+    this->text = readTextFile(filepath);
 
-    if (text.isNull()) {
+    if (this->text.isNull()) {
         logError(QString("Failed to read C defines file: '%1'").arg(filepath));
         return filteredDefines;
     }
 
-    text.replace(QRegularExpression("(//.*)|(\\/+\\*+[^*]*\\*+\\/+)"), "");
-    text.replace(QRegularExpression("(\\\\\\s+)"), "");
+    this->text.replace(QRegularExpression("(//.*)|(\\/+\\*+[^*]*\\*+\\/+)"), "");
+    this->text.replace(QRegularExpression("(\\\\\\s+)"), "");
     allDefines.insert("FALSE", 0);
     allDefines.insert("TRUE", 1);
 
     QRegularExpression re("#define\\s+(?<defineName>\\w+)[^\\S\\n]+(?<defineValue>.+)");
-    QRegularExpressionMatchIterator iter = re.globalMatch(text);
+    QRegularExpressionMatchIterator iter = re.globalMatch(this->text);
+    this->errorMap.clear();
     while (iter.hasNext()) {
         QRegularExpressionMatch match = iter.next();
         QString name = match.captured("defineName");
         QString expression = match.captured("defineValue");
         if (expression == " ") continue;
+        this->curDefine = name;
         int value = evaluateDefine(expression, allDefines);
         allDefines.insert(name, value);
         for (QString prefix : prefixes) {
             if (name.startsWith(prefix) || QRegularExpression(prefix).match(name).hasMatch()) {
+                // Only log errors for defines that Porymap is looking for
+                logRecordedErrors();
                 filteredDefines.insert(name, value);
             }
         }
@@ -296,7 +320,7 @@ QStringList ParseUtil::readCDefinesSorted(const QString &filename,
 {
     QMap<QString, int> defines = readCDefines(filename, prefixes, knownDefines);
 
-    // The defines should to be sorted by their underlying value, not alphabetically.
+    // The defines should be sorted by their underlying value, not alphabetically.
     // Reverse the map and read out the resulting keys in order.
     QMultiMap<int, QString> definesInverse;
     for (QString defineName : defines.keys()) {
@@ -312,11 +336,11 @@ QStringList ParseUtil::readCArray(const QString &filename, const QString &label)
         return list;
     }
 
-    file = filename;
-    text = readTextFile(root + "/" + filename);
+    this->file = filename;
+    this->text = readTextFile(this->root + "/" + filename);
 
     QRegularExpression re(QString(R"(\b%1\b\s*(\[?[^\]]*\])?\s*=\s*\{([^\}]*)\})").arg(label));
-    QRegularExpressionMatch match = re.match(text);
+    QRegularExpressionMatch match = re.match(this->text);
 
     if (match.hasMatch()) {
         QString body = match.captured(2);
@@ -332,11 +356,11 @@ QStringList ParseUtil::readCArray(const QString &filename, const QString &label)
 }
 
 QMap<QString, QString> ParseUtil::readNamedIndexCArray(const QString &filename, const QString &label) {
-    text = readTextFile(root + "/" + filename);
+    this->text = readTextFile(this->root + "/" + filename);
     QMap<QString, QString> map;
 
     QRegularExpression re_text(QString(R"(\b%1\b\s*(\[?[^\]]*\])?\s*=\s*\{([^\}]*)\})").arg(label));
-    QString body = re_text.match(text).captured(2).replace(QRegularExpression("\\s*"), "");
+    QString body = re_text.match(this->text).captured(2).replace(QRegularExpression("\\s*"), "");
 
     QRegularExpression re("\\[(?<index>[A-Za-z0-9_]*)\\]=(?<value>&?[A-Za-z0-9_]*)");
     QRegularExpressionMatchIterator iter = re.globalMatch(body);
