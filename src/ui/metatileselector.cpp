@@ -4,11 +4,7 @@
 #include <QPainter>
 
 QPoint MetatileSelector::getSelectionDimensions() {
-    if (this->externalSelection) {
-        return QPoint(this->externalSelectionWidth, this->externalSelectionHeight);
-    } else {
-        return SelectablePixmapItem::getSelectionDimensions();
-    }
+    return selection.dimensions;
 }
 
 void MetatileSelector::draw() {
@@ -40,7 +36,7 @@ void MetatileSelector::draw() {
     painter.end();
     this->setPixmap(QPixmap::fromImage(image));
 
-    if (!this->externalSelection || (this->externalSelectionWidth == 1 && this->externalSelectionHeight == 1)) {
+    if (!this->prefabSelection && (!this->externalSelection || (this->externalSelectionWidth == 1 && this->externalSelectionHeight == 1))) {
         this->drawSelection();
     }
 }
@@ -48,6 +44,13 @@ void MetatileSelector::draw() {
 bool MetatileSelector::select(uint16_t metatileId) {
     if (!Tileset::metatileIsValid(metatileId, this->primaryTileset, this->secondaryTileset)) return false;
     this->externalSelection = false;
+    this->prefabSelection = false;
+    this->selection = MetatileSelection{
+            QPoint(1, 1),
+            false,
+            QList<MetatileSelectionItem>({MetatileSelectionItem{true, metatileId}}),
+            QList<CollisionSelectionItem>(),
+    };
     QPoint coords = this->getMetatileIdCoords(metatileId);
     SelectablePixmapItem::select(coords.x(), coords.y(), 0, 0);
     this->updateSelectedMetatiles();
@@ -57,7 +60,8 @@ bool MetatileSelector::select(uint16_t metatileId) {
 bool MetatileSelector::selectFromMap(uint16_t metatileId, uint16_t collision, uint16_t elevation) {
     if (!Tileset::metatileIsValid(metatileId, this->primaryTileset, this->secondaryTileset)) return false;
     this->select(metatileId);
-    this->selectedCollisions->append(QPair<uint16_t, uint16_t>(collision, elevation));
+    this->selection.collisionItems.append(CollisionSelectionItem{true, collision, elevation});
+    this->selection.hasCollision = true;
     return true;
 }
 
@@ -71,30 +75,39 @@ void MetatileSelector::setTilesets(Tileset *primaryTileset, Tileset *secondaryTi
     this->draw();
 }
 
-QList<uint16_t>* MetatileSelector::getSelectedMetatiles() {
-    return this->selectedMetatiles;
-}
-
-QList<QPair<uint16_t, uint16_t>>* MetatileSelector::getSelectedCollisions() {
-    return this->selectedCollisions;
+MetatileSelection MetatileSelector::getMetatileSelection() {
+    return selection;
 }
 
 void MetatileSelector::setExternalSelection(int width, int height, QList<uint16_t> metatiles, QList<QPair<uint16_t, uint16_t>> collisions) {
+    this->prefabSelection = false;
     this->externalSelection = true;
     this->externalSelectionWidth = width;
     this->externalSelectionHeight = height;
-    this->externalSelectedMetatiles->clear();
-    this->selectedMetatiles->clear();
-    this->selectedCollisions->clear();
+    this->externalSelectedMetatiles.clear();
+    this->selection.metatileItems.clear();
+    this->selection.collisionItems.clear();
+    this->selection.hasCollision = true;
+    this->selection.dimensions = QPoint(width, height);
     for (int i = 0; i < metatiles.length(); i++) {
-        this->selectedCollisions->append(collisions.at(i));
+        auto collision = collisions.at(i);
+        this->selection.collisionItems.append(CollisionSelectionItem{true, collision.first, collision.second});
         uint16_t metatileId = metatiles.at(i);
-        this->externalSelectedMetatiles->append(metatileId);
+        this->externalSelectedMetatiles.append(metatileId);
         if (!Tileset::metatileIsValid(metatileId, this->primaryTileset, this->secondaryTileset))
             metatileId = 0;
-        this->selectedMetatiles->append(metatileId);
+        this->selection.metatileItems.append(MetatileSelectionItem{true, metatileId});
     }
 
+    this->draw();
+    emit selectedMetatilesChanged();
+}
+
+void MetatileSelector::setPrefabSelection(MetatileSelection selection) {
+    this->externalSelection = false;
+    this->prefabSelection = true;
+    this->externalSelectedMetatiles.clear();
+    this->selection = selection;
     this->draw();
     emit selectedMetatilesChanged();
 }
@@ -138,28 +151,31 @@ void MetatileSelector::hoverLeaveEvent(QGraphicsSceneHoverEvent*) {
 
 void MetatileSelector::updateSelectedMetatiles() {
     this->externalSelection = false;
-    this->selectedMetatiles->clear();
-    this->selectedCollisions->clear();
+    this->prefabSelection = false;
+    this->selection.metatileItems.clear();
+    this->selection.collisionItems.clear();
+    this->selection.hasCollision = false;
+    this->selection.dimensions = SelectablePixmapItem::getSelectionDimensions();
     QPoint origin = this->getSelectionStart();
-    QPoint dimensions = this->getSelectionDimensions();
-    for (int j = 0; j < dimensions.y(); j++) {
-        for (int i = 0; i < dimensions.x(); i++) {
+    for (int j = 0; j < this->selection.dimensions.y(); j++) {
+        for (int i = 0; i < this->selection.dimensions.x(); i++) {
             uint16_t metatileId = this->getMetatileId(origin.x() + i, origin.y() + j);
             if (!Tileset::metatileIsValid(metatileId, this->primaryTileset, this->secondaryTileset))
                 metatileId = 0;
-            this->selectedMetatiles->append(metatileId);
+            this->selection.metatileItems.append(MetatileSelectionItem{true, metatileId});
         }
     }
     emit selectedMetatilesChanged();
 }
 
 void MetatileSelector::updateExternalSelectedMetatiles() {
-    this->selectedMetatiles->clear();
-    for (int i = 0; i < this->externalSelectedMetatiles->count(); ++i) {
-        uint16_t metatileId = this->externalSelectedMetatiles->at(i);
+    this->selection.metatileItems.clear();
+    this->selection.dimensions = QPoint(this->externalSelectionWidth, this->externalSelectionHeight);
+    for (int i = 0; i < this->externalSelectedMetatiles.count(); ++i) {
+        uint16_t metatileId = this->externalSelectedMetatiles.at(i);
         if (!Tileset::metatileIsValid(metatileId, this->primaryTileset, this->secondaryTileset))
             metatileId = 0;
-        this->selectedMetatiles->append(metatileId);
+        this->selection.metatileItems.append(MetatileSelectionItem{true, metatileId});
     }
     emit selectedMetatilesChanged();
 }

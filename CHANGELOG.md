@@ -4,18 +4,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project somewhat adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).  The MAJOR version number is bumped when there are breaking changes in the pret projects.
 
-The **"Breaking Changes"** listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. If porymap is used on a project that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.
+The **"Breaking Changes"** listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. It also includes changes to the scripting API that may change the behavior of existing porymap scripts. If porymap is used with a project or API script that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.
 
 ## [Unreleased]
 ### Breaking Changes
 - Proper support for pokefirered's clone objects was added, which requires the changes made in [pokefirered/#484](https://github.com/pret/pokefirered/pull/484).
 - `dest_warp_id` is now a string field, and `MAP_NONE` has been renamed `MAP_DYNAMIC`. This requires the changes made in [pokeemerald/#1755](https://github.com/pret/pokeemerald/pull/1755), [pokefirered/#484](https://github.com/pret/pokefirered/pull/484), or [pokeruby/#849](https://github.com/pret/pokeruby/pull/849) for the respective project.
+- Many API functions which were previously accessible via the `map` object are now accessible via one of the new objects `overlay`, `utility`, or `constants`. Some functions were renamed accordingly. See [porymap/#460](https://github.com/huderlem/porymap/pull/460) for a full list of API function name changes.
+- The boolean arguments `xflip` and `yflip` in the API function `createImage` have been replaced with arguments for horizontal and vertical scale.
 
 ### Added
+- Add prefab support
 - Add Copy/Paste for metatiles in the Tileset Editor.
-- Add new features to the scripting API, including the ability to display message boxes and user input windows, set overlay opacity, get/set map header properties, read tile pixel data, and set blocks or metatile attributes using a raw value.
+- Add new features to the scripting API, including the ability to display message boxes and user input windows, set overlay opacity, get/set map header properties, read/write the map border, read tile pixel data, and set blocks or metatile attributes using a raw value.
 - Add button to copy the full metatile label to the clipboard in the Tileset Editor.
 - Add option to not open the most recent project on launch.
+- Add options for customizing how new maps are filled
 - Add color picker to palette editor for taking colors from the screen.
 
 ### Changed
@@ -39,6 +43,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix object events added by pasting ignoring the map event limit.
 - Fixed a bug where saving the tileset editor would reselect the main editor's first selected metatile.
 - Fix crashes / unexpected behavior if certain scripting API functions are given invalid palette or tile numbers.
+- Silence unnecessary errors about `SECRET_BASE_GROUP` when parsing `secret_bases.h`.
 
 ## [4.5.0] - 2021-12-26
 ### Added

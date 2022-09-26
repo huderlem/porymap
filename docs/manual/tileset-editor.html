@@ -1,0 +1,541 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>The Tileset Editor &mdash; porymap  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/porymap-icon-2.ico"/>
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Scripting Capabilities" href="scripting-capabilities.html" />
+    <link rel="prev" title="The Region Map Editor" href="region-map-editor.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: linear-gradient(180deg, #08ACD5 50%, #FF6262 0%);" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> porymap
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Manual</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#about-porymap">About Porymap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#getting-started">Getting Started</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="navigation.html">Navigation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="navigation.html#map-list">Map List</a></li>
+<li class="toctree-l2"><a class="reference internal" href="navigation.html#main-window">Main Window</a></li>
+<li class="toctree-l2"><a class="reference internal" href="navigation.html#tileset-editor">Tileset Editor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="navigation.html#region-map-editor">Region Map Editor</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="editing-map-tiles.html">Editing Map Tiles</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-tiles.html#visual-options">Visual Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-tiles.html#selecting-metatiles">Selecting Metatiles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-tiles.html#pencil-tool">Pencil Tool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-tiles.html#pointer-tool">Pointer Tool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-tiles.html#bucket-fill-tool">Bucket Fill Tool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-tiles.html#map-shift-tool">Map Shift Tool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-tiles.html#smart-paths">Smart Paths</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-tiles.html#straight-paths">Straight Paths</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-tiles.html#change-map-border">Change Map Border</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-tiles.html#change-map-tilesets">Change Map Tilesets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-tiles.html#undo-redo">Undo &amp; Redo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-tiles.html#prefabs">Prefabs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="editing-map-collisions.html">Editing Map Collisions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-collisions.html#selecting-collision-types">Selecting Collision Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-collisions.html#painting-collisions">Painting Collisions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-collisions.html#collision-types">Collision Types</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="editing-map-events.html">Editing Map Events</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#adding-deleting-events">Adding &amp; Deleting Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-positions">Event Positions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#object-events">Object Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#clone-object-events">Clone Object Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#warp-events">Warp Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#trigger-events">Trigger Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#weather-trigger-events">Weather Trigger Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#sign-event">Sign Event</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#hidden-item-event">Hidden Item Event</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#secret-base-event">Secret Base Event</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#heal-location-healspots">Heal Location / Healspots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#open-map-scripts">Open Map Scripts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#tool-buttons">Tool Buttons</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#ruler-tool">Ruler Tool</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="editing-map-header.html">Editing Map Headers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="editing-map-connections.html">Editing Map Connections</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-connections.html#dive-emerge-warps">Dive &amp; Emerge Warps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-connections.html#mirror-connections">Mirror Connections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-connections.html#follow-connections">Follow Connections</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="editing-wild-encounters.html">Editing Wild Encounters</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="editing-wild-encounters.html#adding-new-encounter-groups">Adding New Encounter Groups</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-wild-encounters.html#configuring-the-wild-encounter-fields">Configuring the Wild Encounter Fields</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="creating-new-maps.html">Creating New Maps</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="creating-new-maps.html#new-map-options">New Map Options</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="region-map-editor.html">The Region Map Editor</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="region-map-editor.html#background-image-tab">Background Image Tab</a></li>
+<li class="toctree-l2"><a class="reference internal" href="region-map-editor.html#map-layout-tab">Map Layout Tab</a></li>
+<li class="toctree-l2"><a class="reference internal" href="region-map-editor.html#map-entries-tab">Map Entries Tab</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">The Tileset Editor</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#metatile-properties">Metatile Properties</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#layer-type">Layer Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#metatile-behavior">Metatile Behavior</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#encounter-type">Encounter Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#terrain-type">Terrain Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#metatile-label">Metatile Label</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#tools-menu">Tools Menu</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#import-tiles-image">Import Tiles Image…</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#import-metatiles-from-advance-map-1-92">Import Metatiles from Advance Map 1.92…</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#change-number-of-metatiles">Change Number of Metatiles</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#other-tools">Other Tools</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#palette-editor">Palette Editor</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="scripting-capabilities.html">Scripting Capabilities</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="scripting-capabilities.html#writing-a-custom-script">Writing a Custom Script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scripting-capabilities.html#registering-script-actions">Registering Script Actions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scripting-capabilities.html#scripting-api">Scripting API</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="scripting-capabilities.html#callbacks">Callbacks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="scripting-capabilities.html#functions">Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#map-editing-functions">Map Editing Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#map-header-editing-functions">Map Header Editing Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#map-overlay-functions">Map Overlay Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#tileset-functions">Tileset Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#settings-functions">Settings Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#utility-functions">Utility Functions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="project-files.html">Project Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="shortcuts.html">Shortcuts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="shortcuts.html#main-window">Main Window</a></li>
+<li class="toctree-l2"><a class="reference internal" href="shortcuts.html#tileset-editor">Tileset Editor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="shortcuts.html#region-map-editor">Region Map Editor</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="settings-and-options.html">Porymap Settings</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../reference/changelog.html">Changelog</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#unreleased">Unreleased</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#breaking-changes">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#added">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#changed">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#fixed">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id1">4.5.0 - 2021-12-26</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id2">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id3">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id4">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id5">4.4.0 - 2020-12-20</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id6">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id7">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id8">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id9">4.3.1 - 2020-07-17</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id10">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id11">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id12">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id13">4.3.0 - 2020-06-27</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id14">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id15">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id16">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id17">4.2.0 - 2020-06-06</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id18">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id19">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id20">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id21">4.1.0 - 2020-05-18</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id22">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id23">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id24">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id25">4.0.0 - 2020-04-28</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id26">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id27">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id28">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id29">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id30">3.0.1 - 2020-03-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id31">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id32">3.0.0 - 2020-03-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id33">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id34">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id35">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id36">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id37">2.0.0 - 2019-10-16</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id38">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id39">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id40">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id41">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id42">1.2.2 - 2019-05-16</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id43">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id44">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id45">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id46">1.2.1 - 2019-02-16</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id47">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id48">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id49">1.2.0 - 2019-02-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id50">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id51">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id52">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id53">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id54">1.1.0 - 2018-12-27</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id55">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id56">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id57">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id58">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id59">1.0.0 - 2018-10-26</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/related-projects.html">Related Projects</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">porymap</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>The Tileset Editor</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/huderlem/porymap/blob/master/docsrc/manual/tileset-editor.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="the-tileset-editor">
+<span id="tse-ref"></span><h1>The Tileset Editor<a class="headerlink" href="#the-tileset-editor" title="Permalink to this headline">¶</a></h1>
+<p>Here, you can edit individual tilesets.
+When the Tileset Editor is opened, it is opened in the context of the
+currently-opened map.  Every map has a primary and secondary tileset, so you
+will work with a combination of the two whenever you use the Tileset Editor.
+The left-side pane shows the primary and secondary tilesets’ metatiles.
+The right-side panes allow you to modify the currently-selected metatile.</p>
+<div class="figure align-center" id="id1">
+<a class="reference internal image-reference" href="../_images/tse-open-window.png"><img alt="TSE Window" src="../_images/tse-open-window.png" style="width: 75%;" /></a>
+<p class="caption"><span class="caption-text">Tileset Editor Window</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</div>
+<div class="section" id="metatile-properties">
+<h2>Metatile Properties<a class="headerlink" href="#metatile-properties" title="Permalink to this headline">¶</a></h2>
+<div class="figure align-center" id="id2">
+<a class="reference internal image-reference" href="../_images/tse-metatile-properties.png"><img alt="MP Frame" src="../_images/tse-metatile-properties.png" style="width: 30%;" /></a>
+<p class="caption"><span class="caption-text">Metatile Properties Panel</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</div>
+<div class="section" id="layer-type">
+<h3>Layer Type<a class="headerlink" href="#layer-type" title="Permalink to this headline">¶</a></h3>
+<p>Defines the background layers the metatiles will use for drawing.
+The options are:</p>
+<p><strong>Normal</strong> — Metatile uses middle and top bg layers</p>
+<p><strong>Covered</strong> — Metatile uses bottom and middle bg layers</p>
+<p><strong>Split</strong> — Metatile uses bottom and top bg layers</p>
+</div>
+<div class="section" id="metatile-behavior">
+<h3>Metatile Behavior<a class="headerlink" href="#metatile-behavior" title="Permalink to this headline">¶</a></h3>
+<p>Defines the metatile behavior associated with this metatile.  This can be used
+for a variety of different reasons. For example, warps, ice, and tall grass effects
+are all determined by a metatile’s behavior.</p>
+<p>This dropdown is populated with constants found in <code class="docutils literal notranslate"><span class="pre">include/constants/metatile_behaviors.h</span></code>.</p>
+</div>
+<div class="section" id="encounter-type">
+<h3>Encounter Type<a class="headerlink" href="#encounter-type" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p><em>pokefirered exclusive</em></p>
+</div></blockquote>
+<p>Used to determine which category of wild encounter to attempt.</p>
+</div>
+<div class="section" id="terrain-type">
+<h3>Terrain Type<a class="headerlink" href="#terrain-type" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p><em>pokefirered exclusive</em></p>
+</div></blockquote>
+<p>Used to determine certain attributes of metatiles.  Can be useful in certain scenarios.
+For example, to determine if the player is facing water or standing in grass.</p>
+</div>
+<div class="section" id="metatile-label">
+<h3>Metatile Label<a class="headerlink" href="#metatile-label" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p><em>optional</em></p>
+</div></blockquote>
+<p>A name can be given to metatiles so that they may be referenced in source code.
+These are defined in <code class="docutils literal notranslate"><span class="pre">include/constants/metatile_labels.h</span></code> and can be used in
+together with the <code class="docutils literal notranslate"><span class="pre">METATILE_ID</span></code> macro.</p>
+<p>For example, the metatile pictured above can be accessed like
+<code class="docutils literal notranslate"><span class="pre">METATILE_ID(General,</span> <span class="pre">Plain_Grass)</span></code>.</p>
+</div>
+</div>
+<div class="section" id="tools-menu">
+<h2>Tools Menu<a class="headerlink" href="#tools-menu" title="Permalink to this headline">¶</a></h2>
+<p>The tileset editor provides users with several useful tools for making edits
+easier and more convenient.</p>
+<div class="section" id="import-tiles-image">
+<h3>Import Tiles Image…<a class="headerlink" href="#import-tiles-image" title="Permalink to this headline">¶</a></h3>
+<p>Tool to automatically import a new tile image for a tileset.
+The tile image is an indexed png of 8x8 pixel tiles, which are used to form
+metatiles in the tileset editor.</p>
+</div>
+<div class="section" id="import-metatiles-from-advance-map-1-92">
+<h3>Import Metatiles from Advance Map 1.92…<a class="headerlink" href="#import-metatiles-from-advance-map-1-92" title="Permalink to this headline">¶</a></h3>
+<p>Helpful for users converting projects from binary hacks.
+Metatile data exported from Advance Map 1.92 in a <code class="docutils literal notranslate"><span class="pre">.bvd`</span></code> file can be imported
+into porymap’s tileset editor.
+This saves a lot of time since metatiles will not have to be defined from scratch.</p>
+</div>
+<div class="section" id="change-number-of-metatiles">
+<h3>Change Number of Metatiles<a class="headerlink" href="#change-number-of-metatiles" title="Permalink to this headline">¶</a></h3>
+<p>The number of metatiles in both the current primary and current secondary tileset
+can be adjusted within the limits.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You may need to change the Makefile rules for the number of tiles allowed
+for the tileset in the file <code class="docutils literal notranslate"><span class="pre">graphics_file_rules.mk</span></code>. You can simply
+remove the <code class="docutils literal notranslate"><span class="pre">-num_tiles=</span></code> argument altogether.</p>
+</div>
+</div>
+<div class="section" id="other-tools">
+<h3>Other Tools<a class="headerlink" href="#other-tools" title="Permalink to this headline">¶</a></h3>
+<div class="figure align-center" id="id3">
+<a class="reference internal image-reference" href="../_images/tse-display-tool.png"><img alt="TSE Unused" src="../_images/tse-display-tool.png" style="width: 60%;" /></a>
+<p class="caption"><span class="caption-text">Displaying Unused Tiles</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+</div>
+<p>There are also tools to count the number of metatile and tile usages across the
+entire project, which can be useful, for example, in determining whether a
+metatile can be deleted.  The output of these operations is pictured above.</p>
+</div>
+</div>
+<div class="section" id="palette-editor">
+<h2>Palette Editor<a class="headerlink" href="#palette-editor" title="Permalink to this headline">¶</a></h2>
+<p>The palette editor is where the <code class="docutils literal notranslate"><span class="pre">.pal</span></code> files are modified for each tileset.</p>
+<div class="figure align-center" id="id4">
+<a class="reference internal image-reference" href="../_images/pe-open-window.png"><img alt="PE" src="../_images/pe-open-window.png" style="width: 75%;" /></a>
+<p class="caption"><span class="caption-text">Palette Editor</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
+</div>
+<p>The current palette is indicated by the spinner at the top left. To switch
+between palettes, just change the spinner value.
+At the top right is a setting for the bit depth at which colors are displayed.
+The colors in a palette file are displayed as 24 bit numbers, but the GBA
+hardware only allows 15 bit colors, so displaying in 15 bits can be more realistic.</p>
+<p>Each individual color can be adjusted with either the sliders or the spinners,
+in addition to the hex value box.  Each color also has an eyedropper toolbutton
+which allows users to pick any color from the screen and add it to the palette.</p>
+<p>Entire palettes can also be imported from a variety of formats,
+including JASC, Adobe Color Table, Tile Layer Pro, and Advance PE.
+Each imported palette must contain 16 colors.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="scripting-capabilities.html" class="btn btn-neutral float-right" title="Scripting Capabilities" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="region-map-editor.html" class="btn btn-neutral float-left" title="The Region Map Editor" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, huderlem
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

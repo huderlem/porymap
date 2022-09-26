@@ -39,7 +39,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Project Files" href="project-files.html" />
-    <link rel="prev" title="The Region Map Editor" href="region-map-editor.html" /> 
+    <link rel="prev" title="The Tileset Editor" href="tileset-editor.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -109,6 +109,7 @@
 <li class="toctree-l2"><a class="reference internal" href="editing-map-tiles.html#change-map-border">Change Map Border</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-tiles.html#change-map-tilesets">Change Map Tilesets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-tiles.html#undo-redo">Undo &amp; Redo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-tiles.html#prefabs">Prefabs</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="editing-map-collisions.html">Editing Map Collisions</a><ul>
@@ -121,6 +122,7 @@
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#adding-deleting-events">Adding &amp; Deleting Events</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-positions">Event Positions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#object-events">Object Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#clone-object-events">Clone Object Events</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#warp-events">Warp Events</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#trigger-events">Trigger Events</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#weather-trigger-events">Weather Trigger Events</a></li>
@@ -153,7 +155,25 @@
 <li class="toctree-l2"><a class="reference internal" href="region-map-editor.html#background-image-tab">Background Image Tab</a></li>
 <li class="toctree-l2"><a class="reference internal" href="region-map-editor.html#map-layout-tab">Map Layout Tab</a></li>
 <li class="toctree-l2"><a class="reference internal" href="region-map-editor.html#map-entries-tab">Map Entries Tab</a></li>
-<li class="toctree-l2"><a class="reference internal" href="region-map-editor.html#city-maps">City Maps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tileset-editor.html">The Tileset Editor</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tileset-editor.html#metatile-properties">Metatile Properties</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tileset-editor.html#layer-type">Layer Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tileset-editor.html#metatile-behavior">Metatile Behavior</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tileset-editor.html#encounter-type">Encounter Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tileset-editor.html#terrain-type">Terrain Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tileset-editor.html#metatile-label">Metatile Label</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tileset-editor.html#tools-menu">Tools Menu</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tileset-editor.html#import-tiles-image">Import Tiles Image…</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tileset-editor.html#import-metatiles-from-advance-map-1-92">Import Metatiles from Advance Map 1.92…</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tileset-editor.html#change-number-of-metatiles">Change Number of Metatiles</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tileset-editor.html#other-tools">Other Tools</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tileset-editor.html#palette-editor">Palette Editor</a></li>
 </ul>
 </li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Scripting Capabilities</a><ul>
@@ -163,6 +183,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#callbacks">Callbacks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#functions">Functions</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#map-editing-functions">Map Editing Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#map-header-editing-functions">Map Header Editing Functions</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#map-overlay-functions">Map Overlay Functions</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#tileset-functions">Tileset Functions</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#settings-functions">Settings Functions</a></li>
@@ -185,94 +206,100 @@
 <p class="caption"><span class="caption-text">Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../reference/changelog.html">Changelog</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#unreleased">Unreleased</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id1">4.5.0 - 2021-12-26</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#unreleased">Unreleased</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#breaking-changes">Breaking Changes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#added">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#changed">Changed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#fixed">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id2">4.4.0 - 2020-12-20</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id3">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id4">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id5">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id1">4.5.0 - 2021-12-26</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id2">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id3">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id4">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id6">4.3.1 - 2020-07-17</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id7">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id8">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id9">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id5">4.4.0 - 2020-12-20</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id6">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id7">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id8">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id10">4.3.0 - 2020-06-27</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id11">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id12">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id13">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id9">4.3.1 - 2020-07-17</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id10">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id11">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id12">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id14">4.2.0 - 2020-06-06</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id15">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id16">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id17">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id13">4.3.0 - 2020-06-27</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id14">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id15">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id16">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id18">4.1.0 - 2020-05-18</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id19">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id20">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id21">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id17">4.2.0 - 2020-06-06</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id18">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id19">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id20">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id22">4.0.0 - 2020-04-28</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#breaking-changes">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id23">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id24">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id25">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id21">4.1.0 - 2020-05-18</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id22">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id23">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id24">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id26">3.0.1 - 2020-03-04</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id27">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id25">4.0.0 - 2020-04-28</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id26">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id27">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id28">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id29">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id28">3.0.0 - 2020-03-04</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id29">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id30">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id31">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id32">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id30">3.0.1 - 2020-03-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id31">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id33">2.0.0 - 2019-10-16</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id34">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id35">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id36">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id37">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id32">3.0.0 - 2020-03-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id33">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id34">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id35">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id36">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id38">1.2.2 - 2019-05-16</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id37">2.0.0 - 2019-10-16</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id38">Breaking Changes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id39">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id40">Changed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id41">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id42">1.2.1 - 2019-02-16</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id42">1.2.2 - 2019-05-16</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id43">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id44">Fixed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id44">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id45">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id45">1.2.0 - 2019-02-04</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id46">Breaking Changes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id46">1.2.1 - 2019-02-16</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id47">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id48">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id49">Fixed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id48">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id50">1.1.0 - 2018-12-27</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id51">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id52">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id53">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id54">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id49">1.2.0 - 2019-02-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id50">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id51">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id52">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id53">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id55">1.0.0 - 2018-10-26</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id54">1.1.0 - 2018-12-27</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id55">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id56">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id57">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id58">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id59">1.0.0 - 2018-10-26</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/related-projects.html">Related Projects</a></li>
@@ -391,9 +418,9 @@
 </pre></div>
 </div>
 <p>Let’s test the script out by re-launching Porymap. If we try to paint grass on the map, we should see our script inserting a nice randomized grass pattern.</p>
-<div class="figure align-default" id="id3">
+<div class="figure align-default" id="id4">
 <img alt="Grass-Randomizing Script" src="../_images/porymap-scripting-grass.gif" />
-<p class="caption"><span class="caption-text">Grass-Randomizing Script</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-text">Grass-Randomizing Script</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 <div class="section" id="registering-script-actions">
@@ -472,6 +499,22 @@
 </dd></dl>
 
 <dl class="js function">
+<dt id="onBorderMetatileChanged">
+<code class="sig-name descname">onBorderMetatileChanged</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">prevMetatileId</em>, <em class="sig-param">newMetatileId</em><span class="sig-paren">)</span><a class="headerlink" href="#onBorderMetatileChanged" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when a border metatile is changed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>number</em>) – x coordinate of the block</p></li>
+<li><p><strong>y</strong> (<em>number</em>) – y coordinate of the block</p></li>
+<li><p><strong>prevMetatileId</strong> (<em>number</em>) – the metatile id of the border block before it was modified</p></li>
+<li><p><strong>newMetatileId</strong> (<em>number</em>) – the metatile id of the border block after it was modified</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
 <dt id="onBlockHoverChanged">
 <code class="sig-name descname">onBlockHoverChanged</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em><span class="sig-paren">)</span><a class="headerlink" href="#onBlockHoverChanged" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called when the mouse enters a new map block.</p>
@@ -502,6 +545,22 @@
 <li><p><strong>oldHeight</strong> (<em>number</em>) – the height of the map before the change</p></li>
 <li><p><strong>newWidth</strong> (<em>number</em>) – the width of the map after the change</p></li>
 <li><p><strong>newHeight</strong> (<em>number</em>) – the height of the map after the change</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="onBorderResized">
+<code class="sig-name descname">onBorderResized</code><span class="sig-paren">(</span><em class="sig-param">oldWidth</em>, <em class="sig-param">oldHeight</em>, <em class="sig-param">newWidth</em>, <em class="sig-param">newHeight</em><span class="sig-paren">)</span><a class="headerlink" href="#onBorderResized" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when the dimensions of the border are changed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>oldWidth</strong> (<em>number</em>) – the width of the border before the change</p></li>
+<li><p><strong>oldHeight</strong> (<em>number</em>) – the height of the border before the change</p></li>
+<li><p><strong>newWidth</strong> (<em>number</em>) – the width of the border after the change</p></li>
+<li><p><strong>newHeight</strong> (<em>number</em>) – the height of the border after the change</p></li>
 </ul>
 </dd>
 </dl>
@@ -562,6 +621,19 @@
 </dl>
 </dd></dl>
 
+<dl class="js function">
+<dt id="onBorderVisibilityToggled">
+<code class="sig-name descname">onBorderVisibilityToggled</code><span class="sig-paren">(</span><em class="sig-param">visible</em><span class="sig-paren">)</span><a class="headerlink" href="#onBorderVisibilityToggled" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when the visibility of the border and connecting maps is toggled on or off.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>visible</strong> (<em>boolean</em>) – whether the border is now visible</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </div>
 <div class="section" id="functions">
 <h3>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h3>
@@ -596,8 +668,25 @@
 <li><p><strong>x</strong> (<em>number</em>) – x coordinate of the block</p></li>
 <li><p><strong>y</strong> (<em>number</em>) – y coordinate of the block</p></li>
 <li><p><strong>metatileId</strong> (<em>number</em>) – the metatile id of the block</p></li>
-<li><p><strong>collision</strong> (<em>number</em>) – the collision of the block (<code class="docutils literal notranslate"><span class="pre">0</span></code> = passable, <code class="docutils literal notranslate"><span class="pre">1</span></code> = impassable)</p></li>
+<li><p><strong>collision</strong> (<em>number</em>) – the collision of the block (<code class="docutils literal notranslate"><span class="pre">0</span></code> = passable, <code class="docutils literal notranslate"><span class="pre">1-3</span></code> = impassable)</p></li>
 <li><p><strong>elevation</strong> (<em>number</em>) – the elevation of the block</p></li>
+<li><p><strong>forceRedraw</strong> (<em>boolean</em>) – Force the map view to refresh. Defaults to <code class="docutils literal notranslate"><span class="pre">true</span></code>. Redrawing the map view is expensive, so set to <code class="docutils literal notranslate"><span class="pre">false</span></code> when making many consecutive map edits, and then redraw the map once using <code class="docutils literal notranslate"><span class="pre">map.redraw()</span></code>.</p></li>
+<li><p><strong>commitChanges</strong> (<em>boolean</em>) – Commit the changes to the map’s edit/undo history. Defaults to <code class="docutils literal notranslate"><span class="pre">true</span></code>. When making many related map edits, it can be useful to set this to <code class="docutils literal notranslate"><span class="pre">false</span></code>, and then commit all of them together with <code class="docutils literal notranslate"><span class="pre">map.commit()</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="id0">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">setBlock</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">rawValue</em>, <em class="sig-param">forceRedraw = true</em>, <em class="sig-param">commitChanges = true</em><span class="sig-paren">)</span><a class="headerlink" href="#id0" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets a block in the currently-opened map. This is an overloaded function that takes the raw value of a block instead of each of the block’s properties individually.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>number</em>) – x coordinate of the block</p></li>
+<li><p><strong>y</strong> (<em>number</em>) – y coordinate of the block</p></li>
+<li><p><strong>rawValue</strong> (<em>number</em>) – the 16 bit value of the block. Bits <code class="docutils literal notranslate"><span class="pre">0-9</span></code> will be the metatile id, bits <code class="docutils literal notranslate"><span class="pre">10-11</span></code> will be the collision, and bits <code class="docutils literal notranslate"><span class="pre">12-15</span></code> will be the elevation.</p></li>
 <li><p><strong>forceRedraw</strong> (<em>boolean</em>) – Force the map view to refresh. Defaults to <code class="docutils literal notranslate"><span class="pre">true</span></code>. Redrawing the map view is expensive, so set to <code class="docutils literal notranslate"><span class="pre">false</span></code> when making many consecutive map edits, and then redraw the map once using <code class="docutils literal notranslate"><span class="pre">map.redraw()</span></code>.</p></li>
 <li><p><strong>commitChanges</strong> (<em>boolean</em>) – Commit the changes to the map’s edit/undo history. Defaults to <code class="docutils literal notranslate"><span class="pre">true</span></code>. When making many related map edits, it can be useful to set this to <code class="docutils literal notranslate"><span class="pre">false</span></code>, and then commit all of them together with <code class="docutils literal notranslate"><span class="pre">map.commit()</span></code>.</p></li>
 </ul>
@@ -640,9 +729,43 @@
 </dd></dl>
 
 <dl class="js function">
+<dt id="map.getBorderMetatileId">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">getBorderMetatileId</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em><span class="sig-paren">)</span><a class="headerlink" href="#map.getBorderMetatileId" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the metatile id of a block in the border of the currently-opened map.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>number</em>) – x coordinate of the block</p></li>
+<li><p><strong>y</strong> (<em>number</em>) – y coordinate of the block</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns number</dt>
+<dd class="field-even"><p>the metatile id of the block</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.setBorderMetatileId">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">setBorderMetatileId</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">metatileId</em>, <em class="sig-param">forceRedraw = true</em>, <em class="sig-param">commitChanges = true</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setBorderMetatileId" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the metatile id of a block in the border of the currently-opened map.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>number</em>) – x coordinate of the block</p></li>
+<li><p><strong>y</strong> (<em>number</em>) – y coordinate of the block</p></li>
+<li><p><strong>metatileId</strong> (<em>number</em>) – the metatile id of the block</p></li>
+<li><p><strong>forceRedraw</strong> (<em>boolean</em>) – Force the map view to refresh. Defaults to <code class="docutils literal notranslate"><span class="pre">true</span></code>. Redrawing the map view is expensive, so set to <code class="docutils literal notranslate"><span class="pre">false</span></code> when making many consecutive map edits, and then redraw the map once using <code class="docutils literal notranslate"><span class="pre">map.redraw()</span></code>.</p></li>
+<li><p><strong>commitChanges</strong> (<em>boolean</em>) – Commit the changes to the map’s edit/undo history. Defaults to <code class="docutils literal notranslate"><span class="pre">true</span></code>. When making many related map edits, it can be useful to set this to <code class="docutils literal notranslate"><span class="pre">false</span></code>, and then commit all of them together with <code class="docutils literal notranslate"><span class="pre">map.commit()</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
 <dt id="map.getCollision">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">getCollision</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em><span class="sig-paren">)</span><a class="headerlink" href="#map.getCollision" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the collision of a block in the currently-opened map. (<code class="docutils literal notranslate"><span class="pre">0</span></code> = passable, <code class="docutils literal notranslate"><span class="pre">1</span></code> = impassable)</p>
+<dd><p>Gets the collision of a block in the currently-opened map. (<code class="docutils literal notranslate"><span class="pre">0</span></code> = passable, <code class="docutils literal notranslate"><span class="pre">1-3</span></code> = impassable)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Arguments</dt>
 <dd class="field-odd"><ul class="simple">
@@ -659,7 +782,7 @@
 <dl class="js function">
 <dt id="map.setCollision">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">setCollision</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">collision</em>, <em class="sig-param">forceRedraw = true</em>, <em class="sig-param">commitChanges = true</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setCollision" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the collision of a block in the currently-opened map. (<code class="docutils literal notranslate"><span class="pre">0</span></code> = passable, <code class="docutils literal notranslate"><span class="pre">1</span></code> = impassable)</p>
+<dd><p>Sets the collision of a block in the currently-opened map. (<code class="docutils literal notranslate"><span class="pre">0</span></code> = passable, <code class="docutils literal notranslate"><span class="pre">1-3</span></code> = impassable)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Arguments</dt>
 <dd class="field-odd"><ul class="simple">
@@ -839,6 +962,39 @@
 </dd></dl>
 
 <dl class="js function">
+<dt id="map.getBorderDimensions">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">getBorderDimensions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#map.getBorderDimensions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the dimensions of the border of the currently-opened map.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns {width, height}</dt>
+<dd class="field-odd"><p>the dimensions of the border</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.getBorderWidth">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">getBorderWidth</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#map.getBorderWidth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the width of the border of the currently-opened map.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns number</dt>
+<dd class="field-odd"><p>the width of the border</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.getBorderHeight">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">getBorderHeight</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#map.getBorderHeight" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the height of the border of the currently-opened map.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns number</dt>
+<dd class="field-odd"><p>the height of the border</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
 <dt id="map.setDimensions">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">setDimensions</code><span class="sig-paren">(</span><em class="sig-param">width</em>, <em class="sig-param">height</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setDimensions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the dimensions of the currently-opened map.</p>
@@ -879,6 +1035,46 @@
 </dd></dl>
 
 <dl class="js function">
+<dt id="map.setBorderDimensions">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">setBorderDimensions</code><span class="sig-paren">(</span><em class="sig-param">width</em>, <em class="sig-param">height</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setBorderDimensions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the dimensions of the border of the currently-opened map. If the config setting <code class="docutils literal notranslate"><span class="pre">use_custom_border_size</span></code> is set to <code class="docutils literal notranslate"><span class="pre">0</span></code> then this does nothing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>width</strong> (<em>number</em>) – width in blocks</p></li>
+<li><p><strong>height</strong> (<em>number</em>) – height in blocks</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.setBorderWidth">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">setBorderWidth</code><span class="sig-paren">(</span><em class="sig-param">width</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setBorderWidth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the width of the border of the currently-opened map. If the config setting <code class="docutils literal notranslate"><span class="pre">use_custom_border_size</span></code> is set to <code class="docutils literal notranslate"><span class="pre">0</span></code> then this does nothing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>width</strong> (<em>number</em>) – width in blocks</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.setBorderHeight">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">setBorderHeight</code><span class="sig-paren">(</span><em class="sig-param">height</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setBorderHeight" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the height of the border of the currently-opened map. If the config setting <code class="docutils literal notranslate"><span class="pre">use_custom_border_size</span></code> is set to <code class="docutils literal notranslate"><span class="pre">0</span></code> then this does nothing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>height</strong> (<em>number</em>) – height in blocks</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
 <dt id="map.redraw">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">redraw</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#map.redraw" title="Permalink to this definition">¶</a></dt>
 <dd><p>Redraws the entire map area. Useful when delaying map redraws using <code class="docutils literal notranslate"><span class="pre">forceRedraw</span> <span class="pre">=</span> <span class="pre">false</span></code> in certain map editing functions.</p>
@@ -888,6 +1084,274 @@
 <dt id="map.commit">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">commit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#map.commit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Commits any uncommitted changes to the map’s edit/undo history. Useful when delaying commits using <code class="docutils literal notranslate"><span class="pre">commitChanges</span> <span class="pre">=</span> <span class="pre">false</span></code> in certain map editing functions.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="map-header-editing-functions">
+<h4>Map Header Editing Functions<a class="headerlink" href="#map-header-editing-functions" title="Permalink to this headline">¶</a></h4>
+<p>The following functions are related to reading/writing the map’s header properties.</p>
+<dl class="js function">
+<dt id="map.getSong">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">getSong</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#map.getSong" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the name of the background song for the currently-opened map.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns string</dt>
+<dd class="field-odd"><p>the name of the song</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.setSong">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">setSong</code><span class="sig-paren">(</span><em class="sig-param">song</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setSong" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the name of the background song for the currently-opened map. The song name must be one of the names in the “Song” dropdown menu on the Header tab.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>song</strong> (<em>string</em>) – the name of the song</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.getLocation">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">getLocation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#map.getLocation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the name of the region map location for the currently-opened map.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns string</dt>
+<dd class="field-odd"><p>the name of the location</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.setLocation">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">setLocation</code><span class="sig-paren">(</span><em class="sig-param">location</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setLocation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the name of the region map location for the currently-opened map. The location name must be one of the names in the “Location” dropdown menu on the Header tab.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>location</strong> (<em>string</em>) – the name of the location</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.getRequiresFlash">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">getRequiresFlash</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#map.getRequiresFlash" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets whether flash would be required in-game for the currently-opened map.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns boolean</dt>
+<dd class="field-odd"><p>whether flash is required</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.setRequiresFlash">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">setRequiresFlash</code><span class="sig-paren">(</span><em class="sig-param">require</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setRequiresFlash" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets whether flash would be required in-game for the currently-opened map.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>require</strong> (<em>boolean</em>) – whether flash should be required</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.getWeather">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">getWeather</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#map.getWeather" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the name of the weather for the currently-opened map.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns string</dt>
+<dd class="field-odd"><p>the name of the weather</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.setWeather">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">setWeather</code><span class="sig-paren">(</span><em class="sig-param">weather</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setWeather" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the name of the weather for the currently-opened map. The weather name must be one of the names in the “Weather” dropdown menu on the Header tab.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>weather</strong> (<em>string</em>) – the name of the weather</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.getType">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">getType</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#map.getType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the name of the map type for the currently-opened map.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns string</dt>
+<dd class="field-odd"><p>the name of the map type</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.setType">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">setType</code><span class="sig-paren">(</span><em class="sig-param">type</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the name of the map type for the currently-opened map. The map type name must be one of the names in the “Type” dropdown menu on the Header tab.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>type</strong> (<em>string</em>) – the name of the map type</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.getBattleScene">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">getBattleScene</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#map.getBattleScene" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the name of the battle scene for the currently-opened map.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns string</dt>
+<dd class="field-odd"><p>the name of the battle scene</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.setBattleScene">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">setBattleScene</code><span class="sig-paren">(</span><em class="sig-param">battleScene</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setBattleScene" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the name of the battle scene for the currently-opened map. The battle scene name must be one of the names in the “Battle scene” dropdown menu on the Header tab.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>battleScene</strong> (<em>string</em>) – the name of the battle scene</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.getShowLocationName">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">getShowLocationName</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#map.getShowLocationName" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets whether the location name will appear in-game for the currently-opened map.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns boolean</dt>
+<dd class="field-odd"><p>whether the location name will be shown</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.setShowLocationName">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">setShowLocationName</code><span class="sig-paren">(</span><em class="sig-param">show</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setShowLocationName" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets whether the location name should appear in-game for the currently-opened map.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>show</strong> (<em>boolean</em>) – whether the location name should be shown</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.getAllowRunning">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">getAllowRunning</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#map.getAllowRunning" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets whether running is allowed in-game for the currently-opened map.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns boolean</dt>
+<dd class="field-odd"><p>whether running is allowed</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.setAllowRunning">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">setAllowRunning</code><span class="sig-paren">(</span><em class="sig-param">allow</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setAllowRunning" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets whether running should be allowed in-game for the currently-opened map.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>allow</strong> (<em>boolean</em>) – whether running should be allowed</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.getAllowBiking">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">getAllowBiking</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#map.getAllowBiking" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets whether biking is allowed in-game for the currently-opened map.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns boolean</dt>
+<dd class="field-odd"><p>whether biking is allowed</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.setAllowBiking">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">setAllowBiking</code><span class="sig-paren">(</span><em class="sig-param">allow</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setAllowBiking" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets whether biking should be allowed in-game for the currently-opened map.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>allow</strong> (<em>boolean</em>) – whether biking should be allowed</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.getAllowEscaping">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">getAllowEscaping</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#map.getAllowEscaping" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets whether escaping (using Escape Rope or Dig) is allowed in-game for the currently-opened map.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns boolean</dt>
+<dd class="field-odd"><p>whether escaping is allowed</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.setAllowEscaping">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">setAllowEscaping</code><span class="sig-paren">(</span><em class="sig-param">allow</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setAllowEscaping" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets whether escaping (using Escape Rope or Dig) should be allowed in-game for the currently-opened map.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>allow</strong> (<em>boolean</em>) – whether escaping should be allowed</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.getFloorNumber">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">getFloorNumber</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#map.getFloorNumber" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the floor number for the currently-opened map.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns number</dt>
+<dd class="field-odd"><p>the floor number</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.setFloorNumber">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">setFloorNumber</code><span class="sig-paren">(</span><em class="sig-param">floorNumber</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setFloorNumber" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the floor number for the currently-opened map. Floor numbers can be any number between -128 and 127 inclusive.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>floorNumber</strong> (<em>number</em>) – the floor number</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 </div>
@@ -989,6 +1453,49 @@
 <dt class="field-odd">Arguments</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>visible</strong> (<em>boolean</em>) – whether the layers should be showing</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.getOverlayOpacity">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">getOverlayOpacity</code><span class="sig-paren">(</span><em class="sig-param">layer = 0</em><span class="sig-paren">)</span><a class="headerlink" href="#map.getOverlayOpacity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the opacity of the specified overlay layer. Opacity ranges from 0 (invisible) to 100 (completely opaque).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>layer</strong> (<em>number</em>) – the layer id. Defaults to <code class="docutils literal notranslate"><span class="pre">0</span></code></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns number</dt>
+<dd class="field-even"><p>the opacity</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.setOverlayOpacity">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">setOverlayOpacity</code><span class="sig-paren">(</span><em class="sig-param">opacity</em>, <em class="sig-param">layer = 0</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setOverlayOpacity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the opacity of the specified overlay layer. Opacity ranges from 0 (invisible) to 100 (completely opaque).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>opacity</strong> (<em>number</em>) – the opacity</p></li>
+<li><p><strong>layer</strong> (<em>number</em>) – the layer id. Defaults to <code class="docutils literal notranslate"><span class="pre">0</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.setOverlaysOpacity">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">setOverlaysOpacity</code><span class="sig-paren">(</span><em class="sig-param">opacity</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setOverlaysOpacity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the opacity of all active overlay layers. Opacity ranges from 0 (invisible) to 100 (completely opaque).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>opacity</strong> (<em>number</em>) – the opacity</p></li>
 </ul>
 </dd>
 </dl>
@@ -1227,7 +1734,7 @@
 
 <dl class="js function">
 <dt id="map.createImage">
-<code class="sig-prename descclassname">map.</code><code class="sig-name descname">createImage</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">filepath</em>, <em class="sig-param">width = -1</em>, <em class="sig-param">height = -1</em>, <em class="sig-param">offset = 0</em>, <em class="sig-param">xflip = false</em>, <em class="sig-param">yflip = false</em>, <em class="sig-param">paletteId = -1</em>, <em class="sig-param">setTransparency = false</em>, <em class="sig-param">layer = 0</em>, <em class="sig-param">useCache = true</em><span class="sig-paren">)</span><a class="headerlink" href="#map.createImage" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">createImage</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">filepath</em>, <em class="sig-param">width = -1</em>, <em class="sig-param">height = -1</em>, <em class="sig-param">offset = 0</em>, <em class="sig-param">hScale = 1</em>, <em class="sig-param">vScale = 1</em>, <em class="sig-param">paletteId = -1</em>, <em class="sig-param">setTransparency = false</em>, <em class="sig-param">layer = 0</em>, <em class="sig-param">useCache = true</em><span class="sig-paren">)</span><a class="headerlink" href="#map.createImage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates an image item on the specified overlay layer. This differs from <code class="docutils literal notranslate"><span class="pre">map.addImage</span></code> by allowing the new image to be a transformation of the image file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Arguments</dt>
@@ -1235,11 +1742,11 @@
 <li><p><strong>x</strong> (<em>number</em>) – the x pixel coordinate of the image’s top-left corner (relative to the layer’s position)</p></li>
 <li><p><strong>y</strong> (<em>number</em>) – the y pixel coordinate of the image’s top-left corner (relative to the layer’s position)</p></li>
 <li><p><strong>filepath</strong> (<em>string</em>) – the image’s filepath</p></li>
-<li><p><strong>width</strong> (<em>number</em>) – the image width. If <code class="docutils literal notranslate"><span class="pre">-1</span></code>, use the full width of the original image. Defaults to <code class="docutils literal notranslate"><span class="pre">-1</span></code></p></li>
-<li><p><strong>height</strong> (<em>number</em>) – the image height. If <code class="docutils literal notranslate"><span class="pre">-1</span></code>, use the full height of the original image. Defaults to <code class="docutils literal notranslate"><span class="pre">-1</span></code></p></li>
+<li><p><strong>width</strong> (<em>number</em>) – the width in pixels of the area to read in the image. If <code class="docutils literal notranslate"><span class="pre">-1</span></code>, use the full width of the original image. Defaults to <code class="docutils literal notranslate"><span class="pre">-1</span></code></p></li>
+<li><p><strong>height</strong> (<em>number</em>) – the height in pixels of the area to read in the image. If <code class="docutils literal notranslate"><span class="pre">-1</span></code>, use the full height of the original image. Defaults to <code class="docutils literal notranslate"><span class="pre">-1</span></code></p></li>
 <li><p><strong>offset</strong> (<em>number</em>) – the pixel offset into the original image where data should be read from. Defaults to <code class="docutils literal notranslate"><span class="pre">0</span></code></p></li>
-<li><p><strong>xflip</strong> (<em>boolean</em>) – whether the image should be a horizontal flip of the original image. Defaults to <code class="docutils literal notranslate"><span class="pre">false</span></code></p></li>
-<li><p><strong>yflip</strong> (<em>boolean</em>) – whether the image should be a vertical flip of the original image. Defaults to <code class="docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><strong>hScale</strong> (<em>number</em>) – the horizontal scale for the image. Negative values will be a horizontal flip of the original image. Defaults to <code class="docutils literal notranslate"><span class="pre">1</span></code></p></li>
+<li><p><strong>vScale</strong> (<em>number</em>) – the vertical scale for the image. Negative values will be a vertical flip of the original image. Defaults to <code class="docutils literal notranslate"><span class="pre">1</span></code></p></li>
 <li><p><strong>paletteId</strong> (<em>number</em>) – the id of which currently loaded tileset palette to use for the image. If <code class="docutils literal notranslate"><span class="pre">-1</span></code>, use the original image’s palette. Defaults to <code class="docutils literal notranslate"><span class="pre">-1</span></code></p></li>
 <li><p><strong>setTransparency</strong> (<em>boolean</em>) – whether the color at index 0 should be overwritten with transparent pixels. Defaults to <code class="docutils literal notranslate"><span class="pre">false</span></code></p></li>
 <li><p><strong>layer</strong> (<em>number</em>) – the layer id. Defaults to <code class="docutils literal notranslate"><span class="pre">0</span></code></p></li>
@@ -1270,8 +1777,8 @@
 </dd></dl>
 
 <dl class="js function">
-<dt id="id0">
-<code class="sig-prename descclassname">map.</code><code class="sig-name descname">addTileImage</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">tile</em>, <em class="sig-param">setTransparency = false</em>, <em class="sig-param">layer = 0</em><span class="sig-paren">)</span><a class="headerlink" href="#id0" title="Permalink to this definition">¶</a></dt>
+<dt id="id1">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">addTileImage</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">tile</em>, <em class="sig-param">setTransparency = false</em>, <em class="sig-param">layer = 0</em><span class="sig-paren">)</span><a class="headerlink" href="#id1" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates an image of a tile on the specified overlay layer. This is an overloaded function that takes a single tile as a JavaScript object instead of each of the tile’s properties individually.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Arguments</dt>
@@ -1917,6 +2424,37 @@
 </dd></dl>
 
 <dl class="js function">
+<dt id="map.getMetatileAttributes">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">getMetatileAttributes</code><span class="sig-paren">(</span><em class="sig-param">metatileId</em><span class="sig-paren">)</span><a class="headerlink" href="#map.getMetatileAttributes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the raw attributes value for the specified metatile.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>metatileId</strong> (<em>number</em>) – id of target metatile</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns number</dt>
+<dd class="field-even"><p>the raw attributes value</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.setMetatileAttributes">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">setMetatileAttributes</code><span class="sig-paren">(</span><em class="sig-param">metatileId</em>, <em class="sig-param">attributes</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setMetatileAttributes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the raw attributes value for the specified metatile.</p>
+<p><strong>Warning:</strong> This function writes directly to the tileset. There is no undo for this. Porymap will not limit the value of existing attributes to their usual range.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>metatileId</strong> (<em>number</em>) – id of target metatile</p></li>
+<li><p><strong>attributes</strong> (<em>number</em>) – the raw attributes value</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
 <dt id="map.getMetatileTile">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">getMetatileTile</code><span class="sig-paren">(</span><em class="sig-param">metatileId</em>, <em class="sig-param">tileIndex</em><span class="sig-paren">)</span><a class="headerlink" href="#map.getMetatileTile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets the tile at the specified index of the metatile.</p>
@@ -1972,8 +2510,8 @@
 </dd></dl>
 
 <dl class="js function">
-<dt id="id1">
-<code class="sig-prename descclassname">map.</code><code class="sig-name descname">setMetatileTile</code><span class="sig-paren">(</span><em class="sig-param">metatileId</em>, <em class="sig-param">tileIndex</em>, <em class="sig-param">tile</em>, <em class="sig-param">forceRedraw = true</em><span class="sig-paren">)</span><a class="headerlink" href="#id1" title="Permalink to this definition">¶</a></dt>
+<dt id="id2">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">setMetatileTile</code><span class="sig-paren">(</span><em class="sig-param">metatileId</em>, <em class="sig-param">tileIndex</em>, <em class="sig-param">tile</em>, <em class="sig-param">forceRedraw = true</em><span class="sig-paren">)</span><a class="headerlink" href="#id2" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the tile at the specified index of the metatile. This is an overloaded function that takes a single tile as a JavaScript object instead of each of the tile’s properties individually.</p>
 <p><strong>Warning:</strong> This function writes directly to the tileset. There is no undo for this.</p>
 <dl class="field-list simple">
@@ -2010,8 +2548,8 @@
 </dd></dl>
 
 <dl class="js function">
-<dt id="id2">
-<code class="sig-prename descclassname">map.</code><code class="sig-name descname">setMetatileTiles</code><span class="sig-paren">(</span><em class="sig-param">metatileId</em>, <em class="sig-param">tiles</em>, <em class="sig-param">tileStart = 0</em>, <em class="sig-param">tileEnd = -1</em>, <em class="sig-param">forceRedraw = true</em><span class="sig-paren">)</span><a class="headerlink" href="#id2" title="Permalink to this definition">¶</a></dt>
+<dt id="id3">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">setMetatileTiles</code><span class="sig-paren">(</span><em class="sig-param">metatileId</em>, <em class="sig-param">tiles</em>, <em class="sig-param">tileStart = 0</em>, <em class="sig-param">tileEnd = -1</em>, <em class="sig-param">forceRedraw = true</em><span class="sig-paren">)</span><a class="headerlink" href="#id3" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the tiles in the specified range of the metatile. This is an overloaded function that takes an array of tiles as JavaScript objects instead of each of the tile properties individually.</p>
 <p><strong>Warning:</strong> This function writes directly to the tileset. There is no undo for this.</p>
 <dl class="field-list simple">
@@ -2023,6 +2561,17 @@
 <li><p><strong>tileEnd</strong> (<em>number</em>) – index of the last tile to set. Defaults to <code class="docutils literal notranslate"><span class="pre">-1</span></code> (the last tile)</p></li>
 <li><p><strong>forceRedraw</strong> (<em>boolean</em>) – Force the map view to refresh. Defaults to <code class="docutils literal notranslate"><span class="pre">true</span></code>. Redrawing the map view is expensive, so set to <code class="docutils literal notranslate"><span class="pre">false</span></code> when making many consecutive map edits, and then redraw the map once using <code class="docutils literal notranslate"><span class="pre">map.redraw()</span></code>.</p></li>
 </ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.getTilePixels">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">getTilePixels</code><span class="sig-paren">(</span><em class="sig-param">tileId</em><span class="sig-paren">)</span><a class="headerlink" href="#map.getTilePixels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the pixel data for the specified tile. The pixel data is an array of indexes indicating which palette color each pixel uses. Tiles are 8x8, so the pixel array will be 64 elements long.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns array</dt>
+<dd class="field-odd"><p>the pixel data</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2110,6 +2659,17 @@
 <dl class="field-list simple">
 <dt class="field-odd">Returns string</dt>
 <dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">&quot;pokeruby&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;pokefirered&quot;</span></code>, or <code class="docutils literal notranslate"><span class="pre">&quot;pokeemerald&quot;</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.getPorymapVersion">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">getPorymapVersion</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#map.getPorymapVersion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the current version of Porymap (<code class="docutils literal notranslate"><span class="pre">MAJOR.MINOR.PATCH</span></code>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns {major, minor, patch}</dt>
+<dd class="field-odd"><p>the version object</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2245,6 +2805,129 @@
 </dl>
 </dd></dl>
 
+<dl class="js function">
+<dt id="map.showMessage">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">showMessage</code><span class="sig-paren">(</span><em class="sig-param">text</em>, <em class="sig-param">informativeText</em>, <em class="sig-param">detailedText</em><span class="sig-paren">)</span><a class="headerlink" href="#map.showMessage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Displays a message box with an “Information” icon and an <code class="docutils literal notranslate"><span class="pre">OK</span></code> button. Execution stops while the window is open.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>text</strong> (<em>string</em>) – the main message text</p></li>
+<li><p><strong>informativeText</strong> (<em>string</em>) – smaller text below the main message. Defaults to <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p></li>
+<li><p><strong>detailedText</strong> (<em>string</em>) – text hidden behind a “Show Details” box. Defaults to <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.showWarning">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">showWarning</code><span class="sig-paren">(</span><em class="sig-param">text</em>, <em class="sig-param">informativeText</em>, <em class="sig-param">detailedText</em><span class="sig-paren">)</span><a class="headerlink" href="#map.showWarning" title="Permalink to this definition">¶</a></dt>
+<dd><p>Displays a message box with a “Warning” icon and an <code class="docutils literal notranslate"><span class="pre">OK</span></code> button. Execution stops while the window is open.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>text</strong> (<em>string</em>) – the main message text</p></li>
+<li><p><strong>informativeText</strong> (<em>string</em>) – smaller text below the main message. Defaults to <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p></li>
+<li><p><strong>detailedText</strong> (<em>string</em>) – text hidden behind a “Show Details” box. Defaults to <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.showError">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">showError</code><span class="sig-paren">(</span><em class="sig-param">text</em>, <em class="sig-param">informativeText</em>, <em class="sig-param">detailedText</em><span class="sig-paren">)</span><a class="headerlink" href="#map.showError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Displays a message box with a “Critical” icon and an <code class="docutils literal notranslate"><span class="pre">OK</span></code> button. Execution stops while the window is open.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>text</strong> (<em>string</em>) – the main message text</p></li>
+<li><p><strong>informativeText</strong> (<em>string</em>) – smaller text below the main message. Defaults to <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p></li>
+<li><p><strong>detailedText</strong> (<em>string</em>) – text hidden behind a “Show Details” box. Defaults to <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.showQuestion">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">showQuestion</code><span class="sig-paren">(</span><em class="sig-param">text</em>, <em class="sig-param">informativeText</em>, <em class="sig-param">detailedText</em><span class="sig-paren">)</span><a class="headerlink" href="#map.showQuestion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Displays a message box with a “Question” icon and a <code class="docutils literal notranslate"><span class="pre">Yes</span></code> and a <code class="docutils literal notranslate"><span class="pre">No</span></code> button. Execution stops while the window is open.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>text</strong> (<em>string</em>) – the main message text</p></li>
+<li><p><strong>informativeText</strong> (<em>string</em>) – smaller text below the main message. Defaults to <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p></li>
+<li><p><strong>detailedText</strong> (<em>string</em>) – text hidden behind a “Show Details” box. Defaults to <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns boolean</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">true</span></code> if <code class="docutils literal notranslate"><span class="pre">Yes</span></code> was selected, <code class="docutils literal notranslate"><span class="pre">false</span></code> if <code class="docutils literal notranslate"><span class="pre">No</span></code> was selected or if the window was closed without selection</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.getInputText">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">getInputText</code><span class="sig-paren">(</span><em class="sig-param">title</em>, <em class="sig-param">label</em>, <em class="sig-param">default</em><span class="sig-paren">)</span><a class="headerlink" href="#map.getInputText" title="Permalink to this definition">¶</a></dt>
+<dd><p>Displays a text input dialog with an <code class="docutils literal notranslate"><span class="pre">OK</span></code> and a <code class="docutils literal notranslate"><span class="pre">Cancel</span></code> button. Execution stops while the window is open.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>title</strong> (<em>string</em>) – the text in the window title bar</p></li>
+<li><p><strong>label</strong> (<em>string</em>) – the text adjacent to the input entry area</p></li>
+<li><p><strong>default</strong> (<em>string</em>) – the text in the input entry area when the window is opened. Defaults to <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns {input, ok}</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">input</span></code> will be the input text and <code class="docutils literal notranslate"><span class="pre">ok</span></code> will be <code class="docutils literal notranslate"><span class="pre">true</span></code> if <code class="docutils literal notranslate"><span class="pre">OK</span></code> was selected. <code class="docutils literal notranslate"><span class="pre">input</span></code> will be <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">ok</span></code> will be <code class="docutils literal notranslate"><span class="pre">false</span></code> if <code class="docutils literal notranslate"><span class="pre">Cancel</span></code> was selected or if the window was closed without selection.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.getInputNumber">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">getInputNumber</code><span class="sig-paren">(</span><em class="sig-param">title</em>, <em class="sig-param">label</em>, <em class="sig-param">default</em>, <em class="sig-param">min</em>, <em class="sig-param">max</em>, <em class="sig-param">decimals</em>, <em class="sig-param">step</em><span class="sig-paren">)</span><a class="headerlink" href="#map.getInputNumber" title="Permalink to this definition">¶</a></dt>
+<dd><p>Displays a number input dialog with an <code class="docutils literal notranslate"><span class="pre">OK</span></code> and a <code class="docutils literal notranslate"><span class="pre">Cancel</span></code> button. Execution stops while the window is open.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>title</strong> (<em>string</em>) – the text in the window title bar</p></li>
+<li><p><strong>label</strong> (<em>string</em>) – the text adjacent to the input entry area</p></li>
+<li><p><strong>default</strong> (<em>number</em>) – the number in the input entry area when the window is opened. Defaults to <code class="docutils literal notranslate"><span class="pre">0</span></code></p></li>
+<li><p><strong>min</strong> (<em>number</em>) – the minimum allowable input value. Defaults to <code class="docutils literal notranslate"><span class="pre">-2147483648</span></code></p></li>
+<li><p><strong>max</strong> (<em>number</em>) – the maximum allowable input value. Defaults to <code class="docutils literal notranslate"><span class="pre">2147483647</span></code></p></li>
+<li><p><strong>decimals</strong> (<em>number</em>) – the number of decimals used for the input number. Defaults to <code class="docutils literal notranslate"><span class="pre">0</span></code></p></li>
+<li><p><strong>step</strong> (<em>number</em>) – the increment by which the input number will change when the spinner is used. Defaults to <code class="docutils literal notranslate"><span class="pre">1</span></code></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns {input, ok}</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">input</span></code> will be the input number and <code class="docutils literal notranslate"><span class="pre">ok</span></code> will be <code class="docutils literal notranslate"><span class="pre">true</span></code> if <code class="docutils literal notranslate"><span class="pre">OK</span></code> was selected. <code class="docutils literal notranslate"><span class="pre">input</span></code> will be <code class="docutils literal notranslate"><span class="pre">default</span></code> and <code class="docutils literal notranslate"><span class="pre">ok</span></code> will be <code class="docutils literal notranslate"><span class="pre">false</span></code> if <code class="docutils literal notranslate"><span class="pre">Cancel</span></code> was selected or if the window was closed without selection.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="map.getInputItem">
+<code class="sig-prename descclassname">map.</code><code class="sig-name descname">getInputItem</code><span class="sig-paren">(</span><em class="sig-param">title</em>, <em class="sig-param">label</em>, <em class="sig-param">items</em>, <em class="sig-param">default</em>, <em class="sig-param">editable</em><span class="sig-paren">)</span><a class="headerlink" href="#map.getInputItem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Displays a text input dialog with an items dropdown and an <code class="docutils literal notranslate"><span class="pre">OK</span></code> and a <code class="docutils literal notranslate"><span class="pre">Cancel</span></code> button. Execution stops while the window is open.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>title</strong> (<em>string</em>) – the text in the window title bar</p></li>
+<li><p><strong>label</strong> (<em>string</em>) – the text adjacent to the input entry area</p></li>
+<li><p><strong>items</strong> (<em>array</em>) – an array of text items that will populate the dropdown</p></li>
+<li><p><strong>default</strong> (<em>number</em>) – the index of the item to select by default. Defaults to <code class="docutils literal notranslate"><span class="pre">0</span></code></p></li>
+<li><p><strong>editable</strong> (<em>boolean</em>) – whether the user is allowed to enter their own text instead. Defaults to <code class="docutils literal notranslate"><span class="pre">false</span></code></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns {input, ok}</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">input</span></code> will be the input text and <code class="docutils literal notranslate"><span class="pre">ok</span></code> will be <code class="docutils literal notranslate"><span class="pre">true</span></code> if <code class="docutils literal notranslate"><span class="pre">OK</span></code> was selected. <code class="docutils literal notranslate"><span class="pre">input</span></code> will be the text of the item at <code class="docutils literal notranslate"><span class="pre">default</span></code> and <code class="docutils literal notranslate"><span class="pre">ok</span></code> will be <code class="docutils literal notranslate"><span class="pre">false</span></code> if <code class="docutils literal notranslate"><span class="pre">Cancel</span></code> was selected or if the window was closed without selection.</p>
+</dd>
+</dl>
+</dd></dl>
+
 </div>
 </div>
 </div>
@@ -2261,7 +2944,7 @@
         <a href="project-files.html" class="btn btn-neutral float-right" title="Project Files" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="region-map-editor.html" class="btn btn-neutral float-left" title="The Region Map Editor" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="tileset-editor.html" class="btn btn-neutral float-left" title="The Tileset Editor" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

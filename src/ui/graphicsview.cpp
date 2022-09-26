@@ -41,42 +41,12 @@ void MapView::drawForeground(QPainter *painter, const QRectF&) {
         editor->cursorMapTileRect->paint(painter, &option, this);
 }
 
-void MapView::clearOverlays() {
+void MapView::clearOverlayMap() {
     foreach (Overlay * overlay, this->overlayMap) {
         overlay->clearItems();
         delete overlay;
     }
     this->overlayMap.clear();
-}
-
-void MapView::setOverlaysHidden(bool hidden) {
-    foreach (Overlay * overlay, this->overlayMap)
-        overlay->setHidden(hidden);
-}
-
-void MapView::setOverlaysX(int x) {
-    foreach (Overlay * overlay, this->overlayMap)
-        overlay->setX(x);
-}
-
-void MapView::setOverlaysY(int y) {
-    foreach (Overlay * overlay, this->overlayMap)
-        overlay->setY(y);
-}
-
-void MapView::setOverlaysPosition(int x, int y) {
-    foreach (Overlay * overlay, this->overlayMap)
-        overlay->setPosition(x, y);
-}
-
-void MapView::setOverlaysOpacity(int opacity) {
-    foreach (Overlay * overlay, this->overlayMap)
-        overlay->setOpacity(opacity);
-}
-
-void MapView::moveOverlays(int deltaX, int deltaY) {
-    foreach (Overlay * overlay, this->overlayMap)
-        overlay->move(deltaX, deltaY);
 }
 
 Overlay * MapView::getOverlay(int layer) {

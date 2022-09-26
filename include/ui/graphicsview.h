@@ -4,6 +4,27 @@
 #include <QGraphicsView>
 #include <QMouseEvent>
 
+class ClickableGraphicsView : public QGraphicsView
+{
+    Q_OBJECT
+public:
+    ClickableGraphicsView() : QGraphicsView() {}
+    ClickableGraphicsView(QWidget *parent) : QGraphicsView(parent) {}
+
+public:
+    void mousePressEvent(QMouseEvent *event) {
+        QGraphicsView::mousePressEvent(event);
+        emit this->clicked(event);
+    }
+    void mouseDoubleClickEvent(QMouseEvent *event) {
+        QGraphicsView::mouseDoubleClickEvent(event);
+        emit this->clicked(event);
+    }
+
+signals:
+    void clicked(QMouseEvent *event);
+};
+
 class Editor;
 
 class GraphicsView : public QGraphicsView

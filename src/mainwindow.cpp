@@ -6,6 +6,7 @@
 #include "editor.h"
 #include "eventpropertiesframe.h"
 #include "ui_eventpropertiesframe.h"
+#include "prefabcreationdialog.h"
 #include "bordermetatilespixmapitem.h"
 #include "currentselectedmetatilespixmapitem.h"
 #include "customattributestable.h"
@@ -16,6 +17,7 @@
 #include "flowlayout.h"
 #include "shortcut.h"
 #include "mapparser.h"
+#include "prefab.h"
 
 #include <QFileDialog>
 #include <QClipboard>
@@ -357,7 +359,7 @@ void MainWindow::setWildEncountersUIEnabled(bool enabled) {
 void MainWindow::setProjectSpecificUIVisibility()
 {
     ui->actionUse_Poryscript->setChecked(projectConfig.getUsePoryScript());
-    this->setWildEncountersUIEnabled(projectConfig.getEncounterJsonActive());
+    this->setWildEncountersUIEnabled(userConfig.getEncounterJsonActive());
 
     switch (projectConfig.getBaseGameVersion())
     {
@@ -509,6 +511,8 @@ bool MainWindow::openProject(QString dir) {
     this->statusBar()->showMessage(QString("Opening project %1").arg(nativeDir));
 
     bool success = true;
+    userConfig.setProjectDir(dir);
+    userConfig.load();
     projectConfig.setProjectDir(dir);
     projectConfig.load();
 
@@ -536,11 +540,9 @@ bool MainWindow::openProject(QString dir) {
         editor->project->clearTilesetCache();
         success = loadDataStructures() && populateMapList() && setMap(open_map, true);
     }
-
-    if (success) {
-        showWindowTitle();
-        this->statusBar()->showMessage(QString("Opened project %1").arg(nativeDir));
-    } else {
+    
+    projectOpenFailure = !success;
+    if (projectOpenFailure) {
         this->statusBar()->showMessage(QString("Failed to open project %1").arg(nativeDir));
         QMessageBox msgBox(this);
         QString errorMsg = QString("There was an error opening the project %1. Please see %2 for full error details.\n\n%3")
@@ -548,18 +550,19 @@ bool MainWindow::openProject(QString dir) {
                 .arg(getLogPath())
                 .arg(getMostRecentError());
         msgBox.critical(nullptr, "Error Opening Project", errorMsg);
-
+        return false;
     }
+    
+    showWindowTitle();
+    this->statusBar()->showMessage(QString("Opened project %1").arg(nativeDir));
 
-    if (success) {
-        for (auto action : this->registeredActions) {
-            this->ui->menuTools->removeAction(action);
-        }
-        Scripting::cb_ProjectOpened(dir);
-    }
-
-    projectOpenFailure = !success;
-    return success;
+    prefab.initPrefabUI(
+                editor->metatile_selector_item,
+                ui->scrollAreaWidgetContents_Prefabs,
+                ui->label_prefabHelp,
+                editor->map);
+    Scripting::cb_ProjectOpened(dir);
+    return true;
 }
 
 bool MainWindow::isProjectOpen() {
@@ -570,7 +573,7 @@ QString MainWindow::getDefaultMap() {
     if (editor && editor->project) {
         QList<QStringList> names = editor->project->groupedMapNames;
         if (!names.isEmpty()) {
-            QString recentMap = projectConfig.getRecentMap();
+            QString recentMap = userConfig.getRecentMap();
             if (!recentMap.isNull() && recentMap.length() > 0) {
                 for (int i = 0; i < names.length(); i++) {
                     if (names.value(i).contains(recentMap)) {
@@ -597,14 +600,14 @@ QString MainWindow::getExistingDirectory(QString dir) {
 void MainWindow::on_action_Open_Project_triggered()
 {
     QString recent = ".";
-    if (!projectConfig.getRecentMap().isEmpty()) {
-        recent = projectConfig.getRecentMap();
+    if (!userConfig.getRecentMap().isEmpty()) {
+        recent = userConfig.getRecentMap();
     }
     QString dir = getExistingDirectory(recent);
     if (!dir.isEmpty()) {
         if (this->editor && this->editor->project) {
             Scripting::cb_ProjectClosed(this->editor->project->root);
-            this->ui->graphicsView_Map->clearOverlays();
+            this->ui->graphicsView_Map->clearOverlayMap();
         }
         porymapConfig.setRecentProject(dir);
         setWindowDisabled(!openProject(dir));
@@ -660,6 +663,7 @@ bool MainWindow::setMap(QString map_name, bool scrollTreeView) {
     updateMapList();
 
     Scripting::cb_MapOpened(map_name);
+    prefab.updatePrefabUi(editor->map);
     updateTilesetEditor();
     return true;
 }
@@ -742,7 +746,7 @@ void MainWindow::openWarpMap(QString map_name, QString event_id, QString event_g
 }
 
 void MainWindow::setRecentMap(QString mapName) {
-    projectConfig.setRecentMap(mapName);
+    userConfig.setRecentMap(mapName);
 }
 
 void MainWindow::displayMapProperties() {
@@ -945,6 +949,8 @@ bool MainWindow::loadDataStructures() {
                 && project->readObjEventGfxConstants()
                 && project->readEventGraphics()
                 && project->readSongNames();
+
+    Scripting::populateGlobalObject(this);
 
     return success && loadProjectCombos();
 }
@@ -1379,7 +1385,8 @@ void MainWindow::redrawMetatileSelection()
 
     QPoint size = editor->metatile_selector_item->getSelectionDimensions();
     if (size.x() == 1 && size.y() == 1) {
-        QPoint pos = editor->metatile_selector_item->getMetatileIdCoordsOnWidget(editor->metatile_selector_item->getSelectedMetatiles()->at(0));
+        MetatileSelection selection = editor->metatile_selector_item->getMetatileSelection();
+        QPoint pos = editor->metatile_selector_item->getMetatileIdCoordsOnWidget(selection.metatileItems.first().metatileId);
         pos *= scale;
         ui->scrollArea_2->ensureVisible(pos.x(), pos.y(), 8 * scale, 8 * scale);
     }
@@ -1388,8 +1395,10 @@ void MainWindow::redrawMetatileSelection()
 void MainWindow::currentMetatilesSelectionChanged()
 {
     redrawMetatileSelection();
-    if (this->tilesetEditor)
-        this->tilesetEditor->selectMetatile(editor->metatile_selector_item->getSelectedMetatiles()->at(0));
+    if (this->tilesetEditor) {
+        MetatileSelection selection = editor->metatile_selector_item->getMetatileSelection();
+        this->tilesetEditor->selectMetatile(selection.metatileItems.first().metatileId);
+    }
 }
 
 void MainWindow::on_mapList_activated(const QModelIndex &index)
@@ -1461,15 +1470,18 @@ void MainWindow::copy() {
             OrderedJson::object copyObject;
             copyObject["object"] = "metatile_selection";
             OrderedJson::array metatiles;
-            for (auto item : *editor->metatile_selector_item->getSelectedMetatiles()) {
-                metatiles.append(static_cast<int>(item));
+            MetatileSelection selection = editor->metatile_selector_item->getMetatileSelection();
+            for (auto item : selection.metatileItems) {
+                metatiles.append(static_cast<int>(item.metatileId));
             }
             OrderedJson::array collisions;
-            for (auto collisionPair : *editor->metatile_selector_item->getSelectedCollisions()) {
-                OrderedJson::object collision;
-                collision["collision"] = collisionPair.first;
-                collision["elevation"] = collisionPair.second;
-                collisions.append(collision);
+            if (selection.hasCollision) {
+                for (auto item : selection.collisionItems) {
+                    OrderedJson::object collision;
+                    collision["collision"] = item.collision;
+                    collision["elevation"] = item.elevation;
+                    collisions.append(collision);
+                }
             }
             if (collisions.length() != metatiles.length()) {
                 // fill in collisions
@@ -1683,6 +1695,8 @@ void MainWindow::on_mapViewTab_tabBarClicked(int index)
         editor->setEditingMap();
     } else if (index == 1) {
         editor->setEditingCollision();
+    } else if (index == 2) {
+        editor->setEditingMap();
     }
     editor->setCursorRectVisible(false);
 }
@@ -1714,7 +1728,7 @@ void MainWindow::on_mainTabBar_tabBarClicked(int index)
         editor->setEditingConnections();
     }
     if (index != 4) {
-        if (projectConfig.getEncounterJsonActive())
+        if (userConfig.getEncounterJsonActive())
             editor->saveEncounterTabData();
     }
     if (index != 1) {
@@ -1765,7 +1779,7 @@ void MainWindow::on_actionUse_Encounter_Json_triggered(bool checked)
     warning.setText("You must reload the project for this setting to take effect.");
     warning.setIcon(QMessageBox::Information);
     warning.exec();
-    projectConfig.setEncounterJsonActive(checked);
+    userConfig.setEncounterJsonActive(checked);
 }
 
 void MainWindow::on_actionMonitor_Project_Files_triggered(bool checked)
@@ -1870,8 +1884,9 @@ void MainWindow::addNewEvent(QString event_type)
             msgBox.setText("Failed to add new event");
             if (Event::typeToGroup(event_type) == EventGroup::Object) {
                 msgBox.setInformativeText(QString("The limit for object events (%1) has been reached.\n\n"
-                                                  "This limit can be adjusted with OBJECT_EVENT_TEMPLATES_COUNT in 'include/constants/global.h'.")
-                                          .arg(editor->project->getMaxObjectEvents()));
+                                                  "This limit can be adjusted with OBJECT_EVENT_TEMPLATES_COUNT in '%2'.")
+                                          .arg(editor->project->getMaxObjectEvents())
+                                          .arg(projectConfig.getFilePath(ProjectFilePath::constants_global)));
             }
             msgBox.setDefaultButton(QMessageBox::Ok);
             msgBox.setIcon(QMessageBox::Icon::Warning);
@@ -2880,6 +2895,7 @@ void MainWindow::on_comboBox_PrimaryTileset_currentTextChanged(const QString &ti
         redrawMapScene();
         on_horizontalSlider_MetatileZoom_valueChanged(ui->horizontalSlider_MetatileZoom->value());
         updateTilesetEditor();
+        prefab.updatePrefabUi(editor->map);
         markMapEdited();
     }
 }
@@ -2891,6 +2907,7 @@ void MainWindow::on_comboBox_SecondaryTileset_currentTextChanged(const QString &
         redrawMapScene();
         on_horizontalSlider_MetatileZoom_valueChanged(ui->horizontalSlider_MetatileZoom->value());
         updateTilesetEditor();
+        prefab.updatePrefabUi(editor->map);
         markMapEdited();
     }
 }
@@ -3013,7 +3030,9 @@ void MainWindow::on_actionTileset_Editor_triggered()
     } else {
         this->tilesetEditor->activateWindow();
     }
-    this->tilesetEditor->selectMetatile(this->editor->metatile_selector_item->getSelectedMetatiles()->at(0));
+
+    MetatileSelection selection = this->editor->metatile_selector_item->getMetatileSelection();
+    this->tilesetEditor->selectMetatile(selection.metatileItems.first().metatileId);
 }
 
 void MainWindow::initTilesetEditor() {
@@ -3160,6 +3179,15 @@ void MainWindow::on_actionRegion_Map_Editor_triggered() {
     }
 }
 
+void MainWindow::on_pushButton_CreatePrefab_clicked() {
+    PrefabCreationDialog dialog(this, this->editor->metatile_selector_item, this->editor->map);
+    dialog.setWindowTitle("Create Prefab");
+    dialog.setWindowModality(Qt::NonModal);
+    if (dialog.exec() == QDialog::Accepted) {
+        dialog.savePrefab();
+    }
+}
+
 bool MainWindow::initRegionMapEditor() {
     this->regionMapEditor = new RegionMapEditor(this, this->editor->project);
     this->regionMapEditor->setAttribute(Qt::WA_DeleteOnClose);
@@ -3223,6 +3251,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
             }
         }
         projectConfig.save();
+        userConfig.save();
     }
 
     porymapConfig.setMainGeometry(

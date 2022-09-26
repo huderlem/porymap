@@ -167,3 +167,33 @@ Undo & Redo
 -----------
 
 When painting metatiles, you can undo and redo actions you take.  This makes it very easy to fix mistakes or go back in time.  Undo can be performed with ``Ctrl+Z`` or *Edit -> Undo*.  Redo can be performed with ``Ctrl+Y`` or *Edit -> Redo*.
+
+Prefabs
+-------
+
+Prefabs, or "prefabricated selections", are a way to optimize your map-editing workflow by defining pre-built metatile selections. This can be useful when larger map objects can't be selected from the main metatile selector window. For example, the Poké Mart building is only partially selectable in the metatile selector view.
+
+.. figure:: images/editing-map-tiles/prefab-list.png
+    :alt: Prefab Tab
+
+    Prefab Tab
+
+Porymap provides a set of default prefabs for each supported base game version (pokeemerald, pokefirered, and pokeruby). When opening a project for the first time, Porymap will prompt the user for importing those default prefabs.
+
+To create a new prefab, simply select a group of metatiles from the main map view. (See the `Selecting Metatiles`_. section above for how to use right-click-drag to select from the map area.) Then, click the "Create from Selection" button. This will bring up the following window where individual metatiles can be toggled on/off in the prefab. You can also give your prefab a name.
+
+.. figure:: images/editing-map-tiles/prefab-create.png
+    :alt: Prefab Creation Window
+
+    Prefab Creation Window
+
+Prefabs are designated for whichever primary and secondary tilesets were used to create them. As such, any prefabs for with tilesets that are incompatible with the currently-opened map will be hidden from the Prefab list.
+
+To select a prefab to use for painting on the map, simply click on the prefab image in the list view.
+
+.. figure:: images/editing-map-tiles/prefab-demo.gif
+    :alt: Painting with a Prefab
+
+    Painting with a Prefab
+
+Prefab data is saved to a JSON file. It defaults to ``<project_root>/prefabs.json``. However, it can be configured in Porymap's project config file using the ``prefabs_filepath`` setting.

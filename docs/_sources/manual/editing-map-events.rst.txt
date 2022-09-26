@@ -60,7 +60,7 @@ Object events are typically used for NPCs (non-player-characters).  More technic
     Object Event Properties
 
 Id
-    This is the local id of the object in the map.  Some script values use this local id to specify object when using scripting commands such as `applymovement`.
+    This is the local id of the object in the map.  Some script values use this local id to specify an object when using scripting commands such as `applymovement`.
 
 Sprite
     The sprite that is used by the object.
@@ -83,8 +83,27 @@ Trainer Type
 Sight Radius or Berry Tree ID
     If the object is a trainer, this property control how many tiles the trainer can see to spot the player for battle.  If the object is a berry tree, this specifies the global id of the berry tree.  Each berry tree in the game has a unique berry tree id.
 
-In Connection
-    Exclusive to pokefirered. Used to replace objects that are visible in a map's connection with their corresponding object on the connecting map. When checked, these objects will make odd use of other fields; its trainer type value will be the connecting map number, its Sight Radius / Berry Tree Id will be the connecting map group, and its z coordinate will be the object's local id on the connecting map. 
+Clone Object Events
+-------------------
+
+Clone Object events are a special type of object that inherits its properties from another Object event. They are used in-game to load objects that are visible in the connecting area of adjacent maps. The targeted object to clone is specified by id and map name. If the targeted object does not exist, or it's also a clone, the sprite for graphics id 0 will be displayed instead. Double-clicking on a Clone Object will open the targeted map with the targeted object selected. This event type is exclusive to pokefirered projects; the code to process them does not exist in pokeemerald/pokeruby.
+
+.. figure:: images/editing-map-events/event-clone-object.png
+    :alt: Clone Object Event Properties
+
+    Clone Object Event Properties
+
+Id
+    This is the local id of the object in the map.  Some script values use this local id to specify an object when using scripting commands such as `applymovement`.
+
+Sprite
+    The sprite that is used by the object. Clone Objects inherit their sprite from the targeted object, so this cannot be edited. This field is not actually read by the game.
+
+Target Local Id
+    The local id of the object to be cloned.
+
+Target Map
+    The name of the map the object to be cloned is on.
 
 .. _event-warps:
 

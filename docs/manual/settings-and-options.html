@@ -109,6 +109,7 @@
 <li class="toctree-l2"><a class="reference internal" href="editing-map-tiles.html#change-map-border">Change Map Border</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-tiles.html#change-map-tilesets">Change Map Tilesets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-tiles.html#undo-redo">Undo &amp; Redo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-tiles.html#prefabs">Prefabs</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="editing-map-collisions.html">Editing Map Collisions</a><ul>
@@ -121,6 +122,7 @@
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#adding-deleting-events">Adding &amp; Deleting Events</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-positions">Event Positions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#object-events">Object Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#clone-object-events">Clone Object Events</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#warp-events">Warp Events</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#trigger-events">Trigger Events</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#weather-trigger-events">Weather Trigger Events</a></li>
@@ -153,7 +155,25 @@
 <li class="toctree-l2"><a class="reference internal" href="region-map-editor.html#background-image-tab">Background Image Tab</a></li>
 <li class="toctree-l2"><a class="reference internal" href="region-map-editor.html#map-layout-tab">Map Layout Tab</a></li>
 <li class="toctree-l2"><a class="reference internal" href="region-map-editor.html#map-entries-tab">Map Entries Tab</a></li>
-<li class="toctree-l2"><a class="reference internal" href="region-map-editor.html#city-maps">City Maps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tileset-editor.html">The Tileset Editor</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tileset-editor.html#metatile-properties">Metatile Properties</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tileset-editor.html#layer-type">Layer Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tileset-editor.html#metatile-behavior">Metatile Behavior</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tileset-editor.html#encounter-type">Encounter Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tileset-editor.html#terrain-type">Terrain Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tileset-editor.html#metatile-label">Metatile Label</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tileset-editor.html#tools-menu">Tools Menu</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tileset-editor.html#import-tiles-image">Import Tiles Image…</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tileset-editor.html#import-metatiles-from-advance-map-1-92">Import Metatiles from Advance Map 1.92…</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tileset-editor.html#change-number-of-metatiles">Change Number of Metatiles</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tileset-editor.html#other-tools">Other Tools</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tileset-editor.html#palette-editor">Palette Editor</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="scripting-capabilities.html">Scripting Capabilities</a><ul>
@@ -163,6 +183,7 @@
 <li class="toctree-l3"><a class="reference internal" href="scripting-capabilities.html#callbacks">Callbacks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="scripting-capabilities.html#functions">Functions</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#map-editing-functions">Map Editing Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#map-header-editing-functions">Map Header Editing Functions</a></li>
 <li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#map-overlay-functions">Map Overlay Functions</a></li>
 <li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#tileset-functions">Tileset Functions</a></li>
 <li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#settings-functions">Settings Functions</a></li>
@@ -185,94 +206,100 @@
 <p class="caption"><span class="caption-text">Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../reference/changelog.html">Changelog</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#unreleased">Unreleased</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id1">4.5.0 - 2021-12-26</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#unreleased">Unreleased</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#breaking-changes">Breaking Changes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#added">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#changed">Changed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#fixed">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id2">4.4.0 - 2020-12-20</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id3">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id4">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id5">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id1">4.5.0 - 2021-12-26</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id2">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id3">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id4">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id6">4.3.1 - 2020-07-17</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id7">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id8">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id9">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id5">4.4.0 - 2020-12-20</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id6">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id7">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id8">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id10">4.3.0 - 2020-06-27</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id11">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id12">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id13">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id9">4.3.1 - 2020-07-17</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id10">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id11">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id12">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id14">4.2.0 - 2020-06-06</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id15">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id16">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id17">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id13">4.3.0 - 2020-06-27</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id14">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id15">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id16">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id18">4.1.0 - 2020-05-18</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id19">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id20">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id21">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id17">4.2.0 - 2020-06-06</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id18">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id19">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id20">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id22">4.0.0 - 2020-04-28</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#breaking-changes">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id23">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id24">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id25">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id21">4.1.0 - 2020-05-18</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id22">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id23">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id24">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id26">3.0.1 - 2020-03-04</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id27">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id25">4.0.0 - 2020-04-28</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id26">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id27">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id28">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id29">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id28">3.0.0 - 2020-03-04</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id29">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id30">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id31">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id32">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id30">3.0.1 - 2020-03-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id31">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id33">2.0.0 - 2019-10-16</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id34">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id35">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id36">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id37">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id32">3.0.0 - 2020-03-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id33">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id34">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id35">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id36">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id38">1.2.2 - 2019-05-16</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id37">2.0.0 - 2019-10-16</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id38">Breaking Changes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id39">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id40">Changed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id41">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id42">1.2.1 - 2019-02-16</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id42">1.2.2 - 2019-05-16</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id43">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id44">Fixed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id44">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id45">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id45">1.2.0 - 2019-02-04</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id46">Breaking Changes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id46">1.2.1 - 2019-02-16</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id47">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id48">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id49">Fixed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id48">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id50">1.1.0 - 2018-12-27</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id51">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id52">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id53">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id54">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id49">1.2.0 - 2019-02-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id50">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id51">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id52">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id53">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id55">1.0.0 - 2018-10-26</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id54">1.1.0 - 2018-12-27</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id55">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id56">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id57">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id58">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id59">1.0.0 - 2018-10-26</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/related-projects.html">Related Projects</a></li>
@@ -373,137 +400,149 @@ determined by this file.</p>
 <td><p>yes</p></td>
 <td><p>The project that will be opened on launch</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">recent_map</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">reopen_on_launch</span></code></p></td>
+<td><p>1</p></td>
+<td><p>global</p></td>
+<td><p>yes</p></td>
+<td><p>Whether the most recent project should be opened on launch</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">recent_map</span></code></p></td>
 <td></td>
 <td><p>global</p></td>
 <td><p>yes</p></td>
 <td><p>The map that will be opened on launch</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">pretty_cursors</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">pretty_cursors</span></code></p></td>
 <td><p>1</p></td>
 <td><p>global</p></td>
 <td><p>yes</p></td>
 <td><p>Whether to use custom crosshair cursors</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">map_sort_order</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">map_sort_order</span></code></p></td>
 <td><p>group</p></td>
 <td><p>global</p></td>
 <td><p>yes</p></td>
 <td><p>The order map list is sorted in</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">window_geometry</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">window_geometry</span></code></p></td>
 <td></td>
 <td><p>global</p></td>
 <td><p>no</p></td>
 <td><p>For restoring window sizes</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">window_state</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">window_state</span></code></p></td>
 <td></td>
 <td><p>global</p></td>
 <td><p>no</p></td>
 <td><p>For restoring window sizes</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">map_splitter_state</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">map_splitter_state</span></code></p></td>
 <td></td>
 <td><p>global</p></td>
 <td><p>no</p></td>
 <td><p>For restoring window sizes</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">main_splitter_state</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">main_splitter_state</span></code></p></td>
 <td></td>
 <td><p>global</p></td>
 <td><p>no</p></td>
 <td><p>For restoring window sizes</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">collision_opacity</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">collision_opacity</span></code></p></td>
 <td><p>50</p></td>
 <td><p>global</p></td>
 <td><p>yes</p></td>
 <td><p>Opacity of collision overlay</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">metatiles_zoom</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">metatiles_zoom</span></code></p></td>
 <td><p>30</p></td>
 <td><p>global</p></td>
 <td><p>yes</p></td>
 <td><p>Scale of map metatiles</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">show_player_view</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">show_player_view</span></code></p></td>
 <td><p>0</p></td>
 <td><p>global</p></td>
 <td><p>yes</p></td>
 <td><p>Display a rectangle for the GBA screen radius</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">show_cursor_tile</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">show_cursor_tile</span></code></p></td>
 <td><p>0</p></td>
 <td><p>global</p></td>
 <td><p>yes</p></td>
 <td><p>Display a rectangle around the hovered metatile(s)</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">monitor_files</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">monitor_files</span></code></p></td>
 <td><p>1</p></td>
 <td><p>global</p></td>
 <td><p>yes</p></td>
 <td><p>Whether porymap will monitor changes to project files</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">region_map_dimensions</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">region_map_dimensions</span></code></p></td>
 <td><p>32x20</p></td>
 <td><p>global</p></td>
 <td><p>yes</p></td>
 <td><p>The dimensions of the region map tilemap</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">theme</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">theme</span></code></p></td>
 <td><p>default</p></td>
 <td><p>global</p></td>
 <td><p>yes</p></td>
 <td><p>The color theme for porymap windows and widgets</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">text_editor_goto_line</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">text_editor_goto_line</span></code></p></td>
 <td></td>
 <td><p>global</p></td>
 <td><p>yes</p></td>
 <td><p>The command that will be executed when clicking the button next the <code class="docutils literal notranslate"><span class="pre">Script</span></code> combo-box.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">text_editor_open_directory</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">text_editor_open_directory</span></code></p></td>
 <td></td>
 <td><p>global</p></td>
 <td><p>yes</p></td>
 <td><p>The command that will be executed when clicking <code class="docutils literal notranslate"><span class="pre">Open</span> <span class="pre">Project</span> <span class="pre">in</span> <span class="pre">Text</span> <span class="pre">Editor</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">base_game_version</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">base_game_version</span></code></p></td>
 <td></td>
 <td><p>project</p></td>
 <td><p>no</p></td>
 <td><p>The base pret repo for this project</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">use_encounter_json</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">use_encounter_json</span></code></p></td>
 <td><p>1</p></td>
 <td><p>project</p></td>
 <td><p>yes</p></td>
 <td><p>Enables wild encounter table editing</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">use_poryscript</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">use_poryscript</span></code></p></td>
 <td><p>0</p></td>
 <td><p>project</p></td>
 <td><p>yes</p></td>
 <td><p>Whether to open .pory files for scripts</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">use_custom_border_size</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">use_custom_border_size</span></code></p></td>
 <td><p>0</p></td>
 <td><p>project</p></td>
 <td><p>yes</p></td>
 <td><p>Whether to allow variable border sizes</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">enable_event_weather_trigger</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">enable_event_weather_trigger</span></code></p></td>
 <td><p>1 if not <code class="docutils literal notranslate"><span class="pre">pokefirered</span></code></p></td>
 <td><p>project</p></td>
 <td><p>yes</p></td>
 <td><p>Allows adding Weather Trigger events</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">enable_event_secret_base</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">enable_event_secret_base</span></code></p></td>
 <td><p>1 if not <code class="docutils literal notranslate"><span class="pre">pokefirered</span></code></p></td>
 <td><p>project</p></td>
 <td><p>yes</p></td>
 <td><p>Allows adding Secret Base events</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">enable_event_clone_object</span></code></p></td>
+<td><p>1 if <code class="docutils literal notranslate"><span class="pre">pokefirered</span></code></p></td>
+<td><p>project</p></td>
+<td><p>yes</p></td>
+<td><p>Allows adding Clone Object events</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">enable_hidden_item_quantity</span></code></p></td>
 <td><p>1 if <code class="docutils literal notranslate"><span class="pre">pokefirered</span></code></p></td>
@@ -523,35 +562,35 @@ determined by this file.</p>
 <td><p>yes</p></td>
 <td><p>Adds <code class="docutils literal notranslate"><span class="pre">Respawn</span> <span class="pre">Map</span></code> and <code class="docutils literal notranslate"><span class="pre">Respawn</span> <span class="pre">NPC</span></code> to Heal Location events</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">enable_object_event_in_connection</span></code></p></td>
-<td><p>1 if <code class="docutils literal notranslate"><span class="pre">pokefirered</span></code></p></td>
-<td><p>project</p></td>
-<td><p>yes</p></td>
-<td><p>Adds <code class="docutils literal notranslate"><span class="pre">In</span> <span class="pre">Connection</span></code> to Object events</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">enable_floor_number</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">enable_floor_number</span></code></p></td>
 <td><p>1 if <code class="docutils literal notranslate"><span class="pre">pokefirered</span></code></p></td>
 <td><p>project</p></td>
 <td><p>yes</p></td>
 <td><p>Adds <code class="docutils literal notranslate"><span class="pre">Floor</span> <span class="pre">Number</span></code> to map headers</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">create_map_text_file</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">create_map_text_file</span></code></p></td>
 <td><p>1 if not <code class="docutils literal notranslate"><span class="pre">pokeemerald</span></code></p></td>
 <td><p>project</p></td>
 <td><p>yes</p></td>
 <td><p>A <code class="docutils literal notranslate"><span class="pre">text.inc</span></code> or <code class="docutils literal notranslate"><span class="pre">text.pory</span></code> file will be created for any new map</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">enable_triple_layer_metatiles</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">enable_triple_layer_metatiles</span></code></p></td>
 <td><p>0</p></td>
 <td><p>project</p></td>
 <td><p>yes</p></td>
 <td><p>Enables triple-layer metatiles (See <a class="reference external" href="https://github.com/pret/pokeemerald/wiki/Triple-layer-metatiles">https://github.com/pret/pokeemerald/wiki/Triple-layer-metatiles</a>)</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">custom_scripts</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">custom_scripts</span></code></p></td>
 <td></td>
 <td><p>project</p></td>
 <td><p>yes</p></td>
 <td><p>A list of script files to load into the scripting engine</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">prefabs_filepath</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&lt;project_root&gt;/prefabs.json</span></code></p></td>
+<td><p>project</p></td>
+<td><p>yes</p></td>
+<td><p>The filepath containing prefab JSON data</p></td>
 </tr>
 </tbody>
 </table>

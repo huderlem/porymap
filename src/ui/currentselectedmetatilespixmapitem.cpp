@@ -2,30 +2,37 @@
 #include "imageproviders.h"
 #include <QPainter>
 
-void CurrentSelectedMetatilesPixmapItem::draw() {
-    QList<uint16_t> *selectedMetatiles = metatileSelector->getSelectedMetatiles();
-    QPoint selectionDimensions = metatileSelector->getSelectionDimensions();
-    int width = selectionDimensions.x() * 16;
-    int height = selectionDimensions.y() * 16;
+QPixmap drawMetatileSelection(MetatileSelection selection, Map *map) {
+    int width = selection.dimensions.x() * 16;
+    int height = selection.dimensions.y() * 16;
     QImage image(width, height, QImage::Format_RGBA8888);
+    image.fill(QColor(0, 0, 0, 0));
     QPainter painter(&image);
 
-    for (int i = 0; i < selectionDimensions.x(); i++) {
-        for (int j = 0; j < selectionDimensions.y(); j++) {
+    for (int i = 0; i < selection.dimensions.x(); i++) {
+        for (int j = 0; j < selection.dimensions.y(); j++) {
             int x = i * 16;
             int y = j * 16;
-            int index = j * selectionDimensions.x() + i;
-            QImage metatile_image = getMetatileImage(
-                        selectedMetatiles->at(index),
-                        map->layout->tileset_primary,
-                        map->layout->tileset_secondary,
-                        map->metatileLayerOrder,
-                        map->metatileLayerOpacity);
             QPoint metatile_origin = QPoint(x, y);
-            painter.drawImage(metatile_origin, metatile_image);
+            int index = j * selection.dimensions.x() + i;
+            MetatileSelectionItem item = selection.metatileItems.at(index);
+            if (item.enabled) {
+                QImage metatile_image = getMetatileImage(
+                            item.metatileId,
+                            map->layout->tileset_primary,
+                            map->layout->tileset_secondary,
+                            map->metatileLayerOrder,
+                            map->metatileLayerOpacity);
+                painter.drawImage(metatile_origin, metatile_image);
+            }
         }
     }
 
     painter.end();
-    setPixmap(QPixmap::fromImage(image));
+    return QPixmap::fromImage(image);
+}
+
+void CurrentSelectedMetatilesPixmapItem::draw() {
+    MetatileSelection selection = metatileSelector->getMetatileSelection();
+    setPixmap(drawMetatileSelection(selection, this->map));
 }
