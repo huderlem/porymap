@@ -80,7 +80,6 @@ void KeyValueConfigBase::load() {
         } else {
             file.close();
             this->onNewConfigFileCreated();
-            this->save();
         }
     }
 
@@ -111,6 +110,7 @@ void KeyValueConfigBase::load() {
         this->parseConfigKeyValue(match.captured("key").trimmed().toLower(), match.captured("value").trimmed());
     }
     this->setUnreadKeys();
+    this->save();
 
     file.close();
 }
