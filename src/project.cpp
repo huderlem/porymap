@@ -2221,15 +2221,10 @@ bool Project::readSecretBaseIds() {
     if (!projectConfig.getEventSecretBaseEnabled())
         return true;
 
-    // SECRET_BASE_GROUP is a function-like macro, which Porymap can't handle.
-    // Redefine it so Porymap won't produce spurious errors about failing to parse it.
-    QMap<QString, int> knownDefines = QMap<QString, int>();
-    knownDefines.insert("SECRET_BASE_GROUP", 0);
-
     QStringList prefixes("\\bSECRET_BASE_[A-Za-z0-9_]*_[0-9]+");
     QString filename = projectConfig.getFilePath(ProjectFilePath::constants_secret_bases);
     fileWatcher.addPath(root + "/" + filename);
-    secretBaseIds = parser.readCDefinesSorted(filename, prefixes, knownDefines);
+    secretBaseIds = parser.readCDefinesSorted(filename, prefixes);
     if (secretBaseIds.isEmpty()) {
         logError(QString("Failed to read secret base id constants from %1").arg(filename));
         return false;

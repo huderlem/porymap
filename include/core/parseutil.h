@@ -74,10 +74,15 @@ private:
     QString root;
     QString text;
     QString file;
+    QString curDefine;
+    QMap<QString, QStringList> errorMap;
     QList<Token> tokenizeExpression(QString expression, const QMap<QString, int> &knownIdentifiers);
     QList<Token> generatePostfix(const QList<Token> &tokens);
     int evaluatePostfix(const QList<Token> &postfix);
-    void error(const QString &message, const QString &expression);
+    void recordError(const QString &message);
+    void recordErrors(const QStringList &errors);
+    void logRecordedErrors();
+    QString createErrorMessage(const QString &message, const QString &expression);
 
     static const QRegularExpression re_incScriptLabel;
     static const QRegularExpression re_globalIncScriptLabel;
