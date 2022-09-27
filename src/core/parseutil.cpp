@@ -6,6 +6,9 @@
 #include <QJsonObject>
 #include <QStack>
 
+#include "lib/fex/lexer.h"
+#include "lib/fex/parser.h"
+
 const QRegularExpression ParseUtil::re_incScriptLabel("\\b(?<label>[\\w_][\\w\\d_]*):{1,2}");
 const QRegularExpression ParseUtil::re_globalIncScriptLabel("\\b(?<label>[\\w_][\\w\\d_]*)::");
 const QRegularExpression ParseUtil::re_poryScriptLabel("\\b(script)(\\((global|local)\\))?\\s*\\b(?<label>[\\w_][\\w\\d_]*)");
@@ -373,6 +376,31 @@ QMap<QString, QString> ParseUtil::readNamedIndexCArray(const QString &filename, 
     }
 
     return map;
+}
+
+QMap<QString, QMap<QString, QString>> ParseUtil::readCStructs(const QString &filePath, const QHash<int, QString> memberMap) {
+    auto cParser = fex::Parser();
+    auto tokens = fex::Lexer().LexFile(filePath.toStdString());
+    auto structs = cParser.ParseTopLevelObjects(tokens);
+    QMap<QString, QMap<QString, QString>> structMaps;
+    for (auto it = structs.begin(); it != structs.end(); it++) {
+        QMap<QString, QString> values;
+        int i = 0;
+        for (const fex::ArrayValue &v : it->second.values()) {
+            if (v.type() == fex::ArrayValue::Type::kValuePair) {
+                QString key = QString::fromStdString(v.pair().first);
+                QString value = QString::fromStdString(v.pair().second->string_value());
+                values.insert(key, value);
+            } else {
+                // For backwards compatibility with structs that don't specify member names.
+                if (memberMap.contains(i))
+                    values.insert(memberMap.value(i), QString::fromStdString(v.string_value()));
+            }
+            i++;
+        }
+        structMaps.insert(QString::fromStdString(it->first), values);
+    }
+    return structMaps;
 }
 
 QList<QStringList> ParseUtil::getLabelMacros(const QList<QStringList> &list, const QString &label) {
