@@ -20,6 +20,7 @@ const QMap<ProjectFilePath, std::pair<QString, QString>> defaultPaths = {
     {ProjectFilePath::data_map_folders,                 { "data_map_folders",                "data/maps/"}},
     {ProjectFilePath::data_scripts_folders,             { "data_scripts_folders",            "data/scripts/"}},
     {ProjectFilePath::data_layouts_folders,             { "data_layouts_folders",            "data/layouts/"}},
+    {ProjectFilePath::data_tilesets_folders,            { "data_tilesets_folders",           "data/tilesets/"}},
     {ProjectFilePath::data_event_scripts,               { "data_event_scripts",              "data/event_scripts.s"}},
     {ProjectFilePath::json_map_groups,                  { "json_map_groups",                 "data/maps/map_groups.json"}},
     {ProjectFilePath::json_layouts,                     { "json_layouts",                    "data/layouts/layouts.json"}},

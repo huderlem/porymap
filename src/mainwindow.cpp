@@ -1342,9 +1342,9 @@ void MainWindow::on_actionNew_Tileset_triggered() {
 
         //append to tileset specific files
 
-        newSet.appendToHeaders(editor->project->root + "/data/tilesets/headers.inc", createTilesetDialog->friendlyName);
-        newSet.appendToGraphics(editor->project->root + "/data/tilesets/graphics.inc", createTilesetDialog->friendlyName, !createTilesetDialog->isSecondary);
-        newSet.appendToMetatiles(editor->project->root + "/data/tilesets/metatiles.inc", createTilesetDialog->friendlyName, !createTilesetDialog->isSecondary);
+        newSet.appendToHeaders(editor->project->root + "/" + projectConfig.getFilePath(ProjectFilePath::tilesets_headers), createTilesetDialog->friendlyName);
+        newSet.appendToGraphics(editor->project->root + "/" + projectConfig.getFilePath(ProjectFilePath::tilesets_graphics), createTilesetDialog->friendlyName, !createTilesetDialog->isSecondary);
+        newSet.appendToMetatiles(editor->project->root + "/" + projectConfig.getFilePath(ProjectFilePath::tilesets_metatiles), createTilesetDialog->friendlyName, !createTilesetDialog->isSecondary);
         if(!createTilesetDialog->isSecondary) {
             this->ui->comboBox_PrimaryTileset->addItem(createTilesetDialog->fullSymbolName);
         } else {

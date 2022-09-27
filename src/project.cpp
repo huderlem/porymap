@@ -627,7 +627,7 @@ bool Project::readMapLayouts() {
 }
 
 void Project::saveMapLayouts() {
-    QString layoutsFilepath = QString("%1/%2").arg(root).arg(projectConfig.getFilePath(ProjectFilePath::json_layouts));
+    QString layoutsFilepath = root + "/" + projectConfig.getFilePath(ProjectFilePath::json_layouts);
     QFile layoutsFile(layoutsFilepath);
     if (!layoutsFile.open(QIODevice::WriteOnly)) {
         logError(QString("Error: Could not open %1 for writing").arg(layoutsFilepath));
@@ -821,7 +821,8 @@ void Project::saveWildMonData() {
 void Project::saveMapConstantsHeader() {
     QString text = QString("#ifndef GUARD_CONSTANTS_MAP_GROUPS_H\n");
     text += QString("#define GUARD_CONSTANTS_MAP_GROUPS_H\n");
-    text += QString("\n//\n// DO NOT MODIFY THIS FILE! It is auto-generated from data/maps/map_groups.json\n//\n\n");
+    text += QString("\n//\n// DO NOT MODIFY THIS FILE! It is auto-generated from %1\n//\n\n")
+                    .arg(projectConfig.getFilePath(ProjectFilePath::json_map_groups));
 
     int groupNum = 0;
     for (QStringList mapNames : groupedMapNames) {
@@ -1132,7 +1133,7 @@ bool Project::loadLayoutTilesets(MapLayout *layout) {
 }
 
 Tileset* Project::loadTileset(QString label, Tileset *tileset) {
-    const QStringList values = parser.getLabelValues(parser.parseAsm("data/tilesets/headers.inc"), label);
+    const QStringList values = parser.getLabelValues(parser.parseAsm(projectConfig.getFilePath(ProjectFilePath::tilesets_headers)), label);
     if (values.isEmpty()) {
         return nullptr;
     }
@@ -1250,7 +1251,8 @@ void Project::saveAllMaps() {
 
 void Project::saveMap(Map *map) {
     // Create/Modify a few collateral files for brand new maps.
-    QString mapDataDir = QString(root + "/data/maps/%1").arg(map->name);
+    QString basePath = projectConfig.getFilePath(ProjectFilePath::data_map_folders);
+    QString mapDataDir = root + "/" + basePath + map->name;
     if (!map->isPersistedToFile) {
         if (!QDir::root().mkdir(mapDataDir)) {
             logError(QString("Error: failed to create directory for new map: '%1'").arg(mapDataDir));
@@ -1258,30 +1260,30 @@ void Project::saveMap(Map *map) {
 
         // Create file data/maps/<map_name>/scripts.inc
         QString text = this->getScriptDefaultString(projectConfig.getUsePoryScript(), map->name);
-        saveTextFile(root + "/data/maps/" + map->name + "/scripts" + this->getScriptFileExtension(projectConfig.getUsePoryScript()), text);
+        saveTextFile(mapDataDir + "/scripts" + this->getScriptFileExtension(projectConfig.getUsePoryScript()), text);
 
         bool usesTextFile = projectConfig.getCreateMapTextFileEnabled();
         if (usesTextFile) {
             // Create file data/maps/<map_name>/text.inc
-            saveTextFile(root + "/data/maps/" + map->name + "/text" + this->getScriptFileExtension(projectConfig.getUsePoryScript()), "\n");
+            saveTextFile(mapDataDir + "/text" + this->getScriptFileExtension(projectConfig.getUsePoryScript()), "\n");
         }
 
         // Simply append to data/event_scripts.s.
-        text = QString("\n\t.include \"data/maps/%1/scripts.inc\"\n").arg(map->name);
+        text = QString("\n\t.include \"%1%2/scripts.inc\"\n").arg(basePath, map->name);
         if (usesTextFile) {
-            text += QString("\t.include \"data/maps/%1/text.inc\"\n").arg(map->name);
+            text += QString("\t.include \"%1%2/text.inc\"\n").arg(basePath, map->name);
         }
-        appendTextFile(root + "/data/event_scripts.s", text);
+        appendTextFile(root + "/" + projectConfig.getFilePath(ProjectFilePath::data_event_scripts), text);
 
         if (map->needsLayoutDir) {
-            QString newLayoutDir = QString(root + "/data/layouts/%1").arg(map->name);
+            QString newLayoutDir = QString(root + "/%1%2").arg(projectConfig.getFilePath(ProjectFilePath::data_layouts_folders), map->name);
             if (!QDir::root().mkdir(newLayoutDir)) {
                 logError(QString("Error: failed to create directory for new layout: '%1'").arg(newLayoutDir));
             }
         }
     }
 
-    QString layoutsFilepath = QString("%1/data/layouts/layouts.json").arg(root);
+    QString layoutsFilepath = root + "/" + projectConfig.getFilePath(ProjectFilePath::json_layouts);
     QJsonDocument layoutsDoc;
     if (!parser.tryParseJsonFile(&layoutsDoc, layoutsFilepath)) {
         logError(QString("Failed to read map layouts from %1").arg(layoutsFilepath));
@@ -1475,9 +1477,10 @@ void Project::loadTilesetAssets(Tileset* tileset) {
     }
     QRegularExpression re("([a-z])([A-Z0-9])");
     QString tilesetName = tileset->name;
-    QString dir_path = root + "/data/tilesets/" + category + '/' + tilesetName.replace("gTileset_", "").replace(re, "\\1_\\2").toLower();
+    QString basePath = root + "/" + projectConfig.getFilePath(ProjectFilePath::data_tilesets_folders) + category + "/";
+    QString dir_path = basePath + tilesetName.replace("gTileset_", "").replace(re, "\\1_\\2").toLower();
 
-    const QList<QStringList> graphics = parser.parseAsm("data/tilesets/graphics.inc");
+    const QList<QStringList> graphics = parser.parseAsm(projectConfig.getFilePath(ProjectFilePath::tilesets_graphics));
     const QStringList tiles_values = parser.getLabelValues(graphics, tileset->tiles_label);
     const QStringList palettes_values = parser.getLabelValues(graphics, tileset->palettes_label);
 
@@ -1502,7 +1505,7 @@ void Project::loadTilesetAssets(Tileset* tileset) {
         }
     }
 
-    const QList<QStringList> metatiles_macros = parser.parseAsm("data/tilesets/metatiles.inc");
+    const QList<QStringList> metatiles_macros = parser.parseAsm(projectConfig.getFilePath(ProjectFilePath::tilesets_metatiles));
     const QStringList metatiles_values = parser.getLabelValues(metatiles_macros, tileset->metatiles_label);
     if (!metatiles_values.isEmpty()) {
         tileset->metatiles_path = root + '/' + metatiles_values.value(0).section('"', 1, 1);
@@ -1802,7 +1805,7 @@ bool Project::readMapGroups() {
     mapNamesToMapConstants.clear();
     mapGroups.clear();
 
-    QString mapGroupsFilepath = QString("%1/data/maps/map_groups.json").arg(root);
+    QString mapGroupsFilepath = root + "/" + projectConfig.getFilePath(ProjectFilePath::json_map_groups);
     fileWatcher.addPath(mapGroupsFilepath);
     QJsonDocument mapGroupsDoc;
     if (!parser.tryParseJsonFile(&mapGroupsDoc, mapGroupsFilepath)) {
@@ -1912,7 +1915,7 @@ QMap<QString, QStringList> Project::getTilesetLabels() {
     allTilesets.insert("secondary", secondaryTilesets);
     QList<QString> tilesetLabelsOrdered;
 
-    QString filename = "data/tilesets/headers.inc";
+    QString filename = projectConfig.getFilePath(ProjectFilePath::tilesets_headers);
     QString headers_text = parser.readTextFile(root + "/" + filename);
     if (headers_text.isEmpty()) {
         logError(QString("Failed to read tileset labels from %1.").arg(filename));

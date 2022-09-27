@@ -144,6 +144,7 @@ enum ProjectFilePath {
     data_map_folders,
     data_scripts_folders,
     data_layouts_folders,
+    data_tilesets_folders,
     data_event_scripts,
     json_map_groups,
     json_layouts,

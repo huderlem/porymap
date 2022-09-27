@@ -161,6 +161,7 @@ bool Tileset::appendToHeaders(QString headerFile, QString friendlyName){
 
 bool Tileset::appendToGraphics(QString graphicsFile, QString friendlyName, bool primary) {
     QString primaryString = primary ? "primary" : "secondary";
+    QString basePath = projectConfig.getFilePath(ProjectFilePath::data_tilesets_folders);
     QFile file(graphicsFile);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Append)) {
         logError(QString("Could not write to file \"%1\"").arg(graphicsFile));
@@ -170,12 +171,12 @@ bool Tileset::appendToGraphics(QString graphicsFile, QString friendlyName, bool 
     dataString.append(QString("gTilesetPalettes_%1::\n").arg(friendlyName));
     for(int i = 0; i < Project::getNumPalettesTotal(); ++i) {
         QString paletteString = QString("%1.gbapal").arg(i, 2, 10, QLatin1Char('0'));
-        dataString.append(QString("\t.incbin \"data/tilesets/%1/%2/palettes/%3\"\n").arg(primaryString, friendlyName.toLower(), paletteString));
+        dataString.append(QString("\t.incbin \"%1%2/%3/palettes/%4\"\n").arg(basePath, primaryString, friendlyName.toLower(), paletteString));
 
     }
     dataString.append("\n\t.align 2\n");
     dataString.append(QString("gTilesetTiles_%1::\n").arg(friendlyName));
-    dataString.append(QString("\t.incbin \"data/tilesets/%1/%2/tiles.4bpp.lz\"\n").arg(primaryString, friendlyName.toLower()));
+    dataString.append(QString("\t.incbin \"%1%2/%3/tiles.4bpp.lz\"\n").arg(basePath, primaryString, friendlyName.toLower()));
     file.write(dataString.toUtf8());
     file.flush();
     file.close();
@@ -184,6 +185,7 @@ bool Tileset::appendToGraphics(QString graphicsFile, QString friendlyName, bool 
 
 bool Tileset::appendToMetatiles(QString metatileFile, QString friendlyName, bool primary) {
     QString primaryString = primary ? "primary" : "secondary";
+    QString basePath = projectConfig.getFilePath(ProjectFilePath::data_tilesets_folders);
     QFile file(metatileFile);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Append)) {
         logError(QString("Could not write to file \"%1\"").arg(metatileFile));
@@ -191,10 +193,10 @@ bool Tileset::appendToMetatiles(QString metatileFile, QString friendlyName, bool
     }
     QString dataString = "\n\t.align 1\n";
     dataString.append(QString("gMetatiles_%1::\n").arg(friendlyName));
-    dataString.append(QString("\t.incbin \"data/tilesets/%1/%2/metatiles.bin\"\n").arg(primaryString, friendlyName.toLower()));
+    dataString.append(QString("\t.incbin \"%1%2/%3/metatiles.bin\"\n").arg(basePath, primaryString, friendlyName.toLower()));
     dataString.append(QString("\n\t.align 1\n"));
     dataString.append(QString("gMetatileAttributes_%1::\n").arg(friendlyName));
-    dataString.append(QString("\t.incbin \"data/tilesets/%1/%2/metatile_attributes.bin\"\n").arg(primaryString, friendlyName.toLower()));
+    dataString.append(QString("\t.incbin \"%1%2/%3/metatile_attributes.bin\"\n").arg(basePath, primaryString, friendlyName.toLower()));
     file.write(dataString.toUtf8());
     file.flush();
     file.close();
