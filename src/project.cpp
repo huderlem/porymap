@@ -10,8 +10,6 @@
 #include "map.h"
 
 #include "orderedjson.h"
-#include "lib/fex/lexer.h"
-#include "lib/fex/parser.h"
 
 #include <QDir>
 #include <QJsonArray>
@@ -2481,7 +2479,18 @@ bool Project::readEventGraphics() {
     qDeleteAll(eventGraphicsMap);
     eventGraphicsMap.clear();
     QStringList gfxNames = gfxDefines.keys();
-    QMap<QString, QMap<QString, QString>> gfxInfos = readObjEventGfxInfo();
+
+    // The positions of each of the required members for the gfx info struct.
+    // For backwards compatibility if the struct doesn't use initializers.
+    const auto gfxInfoMemberMap = QHash<int, QString>{
+        {8, "inanimate"},
+        {11, "oam"},
+        {12, "subspriteTables"},
+        {14, "images"},
+    };
+
+    QString filepath = root + "/" + projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx_info);
+    QMap<QString, QMap<QString, QString>> gfxInfos = ParseUtil::readCStructs(filepath, gfxInfoMemberMap);
     for (QString gfxName : gfxNames) {
         EventGraphics * eventGraphics = new EventGraphics;
 
@@ -2527,48 +2536,6 @@ bool Project::readEventGraphics() {
         eventGraphicsMap.insert(gfxName, eventGraphics);
     }
     return true;
-}
-
-QMap<QString, QMap<QString, QString>> Project::readObjEventGfxInfo() {
-    // TODO: refactor this to be more general if we end up directly parsing C
-    // for more use cases in the future.
-    auto cParser = fex::Parser();
-    auto tokens = fex::Lexer().LexFile((root + "/" + projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx_info)).toStdString());
-    auto gfxInfoObjects = cParser.ParseTopLevelObjects(tokens);
-    QMap<QString, QMap<QString, QString>> gfxInfos;
-    for (auto it = gfxInfoObjects.begin(); it != gfxInfoObjects.end(); it++) {
-        QMap<QString, QString> values;
-        int i = 0;
-        for (const fex::ArrayValue &v : it->second.values()) {
-            if (v.type() == fex::ArrayValue::Type::kValuePair) {
-                QString key = QString::fromStdString(v.pair().first);
-                QString value = QString::fromStdString(v.pair().second->string_value());
-                values.insert(key, value);
-            } else {
-                // This is for backwards compatibility with the old-style version of
-                // object_event_graphics_info.h, in which the structs didn't use
-                // attribute names to specify each struct member.
-                switch (i) {
-                    case 8:
-                        values.insert("inanimate", QString::fromStdString(v.string_value()));
-                        break;
-                    case 11:
-                        values.insert("oam", QString::fromStdString(v.string_value()));
-                        break;
-                    case 12:
-                        values.insert("subspriteTables", QString::fromStdString(v.string_value()));
-                        break;
-                    case 14:
-                        values.insert("images", QString::fromStdString(v.string_value()));
-                        break;
-                }
-            }
-            i++;
-        }
-        gfxInfos.insert(QString::fromStdString(it->first), values);
-    }
-
-    return gfxInfos;
 }
 
 bool Project::readSpeciesIconPaths() {

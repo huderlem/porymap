@@ -69,6 +69,7 @@ public:
     static QString removeLineComments(QString text, const QStringList &commentSymbols);
 
     static QStringList splitShellCommand(QStringView command);
+    static QMap<QString, QMap<QString, QString>> readCStructs(const QString &filePath, const QHash<int, QString> memberMap = { });
 
 private:
     QString root;
