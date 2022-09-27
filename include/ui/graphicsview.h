@@ -12,12 +12,8 @@ public:
     ClickableGraphicsView(QWidget *parent) : QGraphicsView(parent) {}
 
 public:
-    void mousePressEvent(QMouseEvent *event) {
-        QGraphicsView::mousePressEvent(event);
-        emit this->clicked(event);
-    }
-    void mouseDoubleClickEvent(QMouseEvent *event) {
-        QGraphicsView::mouseDoubleClickEvent(event);
+    void mouseReleaseEvent(QMouseEvent *event) override {
+        QGraphicsView::mouseReleaseEvent(event);
         emit this->clicked(event);
     }
 
