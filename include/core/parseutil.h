@@ -75,7 +75,7 @@ private:
     QString text;
     QString file;
     QString curDefine;
-    QMap<QString, QStringList> errorMap;
+    QHash<QString, QStringList> errorMap;
     QList<Token> tokenizeExpression(QString expression, const QMap<QString, int> &knownIdentifiers);
     QList<Token> generatePostfix(const QList<Token> &tokens);
     int evaluatePostfix(const QList<Token> &postfix);
