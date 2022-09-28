@@ -378,12 +378,25 @@ QMap<QString, QString> ParseUtil::readNamedIndexCArray(const QString &filename, 
     return map;
 }
 
-QMap<QString, QMap<QString, QString>> ParseUtil::readCStructs(const QString &filePath, const QHash<int, QString> memberMap) {
+bool ParseUtil::gameStringToBool(QString gameString) {
+    if (QString::compare(gameString, "TRUE", Qt::CaseInsensitive) == 0)
+        return true;
+    if (QString::compare(gameString, "FALSE", Qt::CaseInsensitive) == 0)
+        return false;
+    bool ok;
+    int num = gameString.toInt(&ok);
+    if (!ok) logWarn(QString("Unable to convert string '%1' to bool, will be interpreted as 'FALSE'").arg(gameString));
+    return num != 0;
+}
+
+QMap<QString, QMap<QString, QString>> ParseUtil::readCStructs(const QString &filePath, const QString &target, const QHash<int, QString> memberMap) {
     auto cParser = fex::Parser();
     auto tokens = fex::Lexer().LexFile(filePath.toStdString());
     auto structs = cParser.ParseTopLevelObjects(tokens);
     QMap<QString, QMap<QString, QString>> structMaps;
     for (auto it = structs.begin(); it != structs.end(); it++) {
+        QString structLabel = QString::fromStdString(it->first);
+        if (!target.isEmpty() && target != structLabel) continue; // Speed up parsing if only looking for a particular symbol
         QMap<QString, QString> values;
         int i = 0;
         for (const fex::ArrayValue &v : it->second.values()) {
@@ -398,7 +411,7 @@ QMap<QString, QMap<QString, QString>> ParseUtil::readCStructs(const QString &fil
             }
             i++;
         }
-        structMaps.insert(QString::fromStdString(it->first), values);
+        structMaps.insert(structLabel, values);
     }
     return structMaps;
 }

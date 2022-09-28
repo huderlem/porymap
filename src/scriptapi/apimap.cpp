@@ -780,10 +780,6 @@ QJSValue MainWindow::getTilePixels(int tileId) {
 // Editing map header
 //=====================
 
-bool MainWindow::gameStringToBool(QString s) {
-    return (s.toInt() > 0 || s == "TRUE");
-}
-
 QString MainWindow::getSong() {
     if (!this->editor || !this->editor->map)
         return QString();
@@ -819,7 +815,7 @@ void MainWindow::setLocation(QString location) {
 bool MainWindow::getRequiresFlash() {
     if (!this->editor || !this->editor->map)
         return false;
-    return this->gameStringToBool(this->editor->map->requiresFlash);
+    return ParseUtil::gameStringToBool(this->editor->map->requiresFlash);
 }
 
 void MainWindow::setRequiresFlash(bool require) {
@@ -879,7 +875,7 @@ void MainWindow::setBattleScene(QString battleScene) {
 bool MainWindow::getShowLocationName() {
     if (!this->editor || !this->editor->map)
         return false;
-    return this->gameStringToBool(this->editor->map->show_location);
+    return ParseUtil::gameStringToBool(this->editor->map->show_location);
 }
 
 void MainWindow::setShowLocationName(bool show) {
@@ -891,7 +887,7 @@ void MainWindow::setShowLocationName(bool show) {
 bool MainWindow::getAllowRunning() {
     if (!this->editor || !this->editor->map)
         return false;
-    return this->gameStringToBool(this->editor->map->allowRunning);
+    return ParseUtil::gameStringToBool(this->editor->map->allowRunning);
 }
 
 void MainWindow::setAllowRunning(bool allow) {
@@ -903,7 +899,7 @@ void MainWindow::setAllowRunning(bool allow) {
 bool MainWindow::getAllowBiking() {
     if (!this->editor || !this->editor->map)
         return false;
-    return this->gameStringToBool(this->editor->map->allowBiking);
+    return ParseUtil::gameStringToBool(this->editor->map->allowBiking);
 }
 
 void MainWindow::setAllowBiking(bool allow) {
@@ -915,7 +911,7 @@ void MainWindow::setAllowBiking(bool allow) {
 bool MainWindow::getAllowEscaping() {
     if (!this->editor || !this->editor->map)
         return false;
-    return this->gameStringToBool(this->editor->map->allowEscapeRope);
+    return ParseUtil::gameStringToBool(this->editor->map->allowEscapeRope);
 }
 
 void MainWindow::setAllowEscaping(bool allow) {

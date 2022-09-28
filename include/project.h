@@ -81,6 +81,7 @@ public:
     ParseUtil parser;
     QFileSystemWatcher fileWatcher;
     QMap<QString, qint64> modifiedFileTimestamps;
+    bool usingAsmTilesets;
 
     void set_root(QString);
 
@@ -105,7 +106,7 @@ public:
     Tileset* loadTileset(QString, Tileset *tileset = nullptr);
     Tileset* getTileset(QString, bool forceLoad = false);
     QMap<QString, QStringList> tilesetLabels;
-    QList<QString> tilesetLabelsOrdered;
+    QStringList tilesetLabelsOrdered;
 
     Blockdata readBlockdata(QString);
     bool loadBlockdata(MapLayout*);
@@ -143,6 +144,8 @@ public:
     void loadTilesetTiles(Tileset*, QImage);
     void loadTilesetMetatiles(Tileset*);
     void loadTilesetMetatileLabels(Tileset*);
+    void loadTilesetPalettes(Tileset*);
+    void readTilesetPaths(Tileset* tileset);
 
     void saveLayoutBlockdata(Map*);
     void saveLayoutBorder(Map*);
@@ -164,7 +167,7 @@ public:
 
     QString defaultSong;
     QStringList getVisibilities();
-    QMap<QString, QStringList> getTilesetLabels();
+    bool readTilesetLabels();
     bool readTilesetProperties();
     bool readMaxMapDataSize();
     bool readRegionMapSections();
