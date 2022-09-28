@@ -30,6 +30,7 @@ void EventFrame::setup() {
 
     // set frame style
     this->setFrameStyle(QFrame::Box | QFrame::Raised);
+    this->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
 
     ///
     /// init widgets
@@ -69,16 +70,18 @@ void EventFrame::setup() {
     this->spinner_z->setMinimum(numeric_limits<int16_t>::min());
     this->spinner_z->setMaximum(numeric_limits<int16_t>::max());
 
-    QLabel *l_label_z = new QLabel("z");
+    this->hideable_label_z = new QLabel("z");
 
     QHBoxLayout *l_layout_z = new QHBoxLayout();
-    l_layout_z->addWidget(l_label_z);
+    l_layout_z->addWidget(hideable_label_z);
     l_layout_z->addWidget(this->spinner_z);
 
     l_layout_xyz->addLayout(l_layout_z);
 
     QVBoxLayout *l_vbox_1 = new QVBoxLayout();
-    l_vbox_1->addItem(createSpacerV());
+
+    this->label_id = new QLabel("event_type");
+    l_vbox_1->addWidget(this->label_id);
     l_vbox_1->addLayout(l_layout_xyz);
 
     // icon / pixmap label
@@ -102,7 +105,6 @@ void EventFrame::setup() {
     this->layout_main->addLayout(this->layout_contents);
 }
 
-// TODO: add / delete buttons?
 void EventFrame::initCustomAttributesTable() {
     CustomAttributesTable *customAttributes = new CustomAttributesTable(this->event, this);
     this->layout_contents->addWidget(customAttributes);
@@ -169,6 +171,8 @@ void EventFrame::setActive(bool active) {
 // TODO: spinbox limits
 void ObjectFrame::setup() {
     EventFrame::setup();
+
+    this->label_id->setText("Object");
 
     // sprite combo
     QFormLayout *l_form_sprite = new QFormLayout();
@@ -384,6 +388,8 @@ void ObjectFrame::populate(Project *project) {
 void CloneObjectFrame::setup() {
     EventFrame::setup();
 
+    this->label_id->setText("Clone Object");
+
     this->spinner_z->setEnabled(false);
 
     // sprite combo (edits disabled)
@@ -467,6 +473,8 @@ void CloneObjectFrame::populate(Project *project) {
 void WarpFrame::setup() {
     EventFrame::setup();
 
+    this->label_id->setText("Warp");
+
     // desination map combo
     QFormLayout *l_form_dest_map = new QFormLayout();
     this->combo_dest_map = new NoScrollComboBox(this);
@@ -534,6 +542,8 @@ void WarpFrame::populate(Project *project) {
 
 void TriggerFrame::setup() {
     EventFrame::setup();
+
+    this->label_id->setText("Trigger");
 
     // script combo
     QFormLayout *l_form_script = new QFormLayout();
@@ -633,6 +643,8 @@ void TriggerFrame::populate(Project *project) {
 void WeatherTriggerFrame::setup() {
     EventFrame::setup();
 
+    this->label_id->setText("Weather Trigger");
+
     // weather combo
     QFormLayout *l_form_weather = new QFormLayout();
     this->combo_weather = new NoScrollComboBox(this);
@@ -683,6 +695,8 @@ void WeatherTriggerFrame::populate(Project *project) {
 
 void SignFrame::setup() {
     EventFrame::setup();
+
+    this->label_id->setText("Sign");
 
     // facing dir combo
     QFormLayout *l_form_facing_dir = new QFormLayout();
@@ -762,6 +776,8 @@ void SignFrame::populate(Project *project) {
 
 void HiddenItemFrame::setup() {
     EventFrame::setup();
+
+    this->label_id->setText("Hidden Item");
 
     // item combo
     QFormLayout *l_form_item = new QFormLayout();
@@ -882,6 +898,8 @@ void HiddenItemFrame::populate(Project *project) {
 void SecretBaseFrame::setup() {
     EventFrame::setup();
 
+    this->label_id->setText("Secret Base");
+
     this->spinner_z->setEnabled(false);
 
     // item combo
@@ -934,6 +952,11 @@ void SecretBaseFrame::populate(Project *project) {
 
 void HealLocationFrame::setup() {
     EventFrame::setup();
+
+    this->label_id->setText("Heal Location");
+
+    this->hideable_label_z->setVisible(false);
+    this->spinner_z->setVisible(false);
 
     // respawn map combo
     this->hideable_respawn_map = new QFrame;

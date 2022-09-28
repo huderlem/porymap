@@ -38,6 +38,7 @@ public:
     NoScrollSpinBox *spinner_x;
     NoScrollSpinBox *spinner_y;
     NoScrollSpinBox *spinner_z;
+    QLabel *hideable_label_z;
 
     QLabel *label_icon;
 
