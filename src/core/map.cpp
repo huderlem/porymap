@@ -515,6 +515,14 @@ void Map::addEvent(Event *event) {
     if (!ownedEvents.contains(event)) ownedEvents.append(event);
 }
 
+void Map::modify() {
+    emit modified();
+}
+
+void Map::clean() {
+    this->hasUnsavedDataChanges = false;
+}
+
 bool Map::hasUnsavedChanges() {
     return !editHistory.isClean() || hasUnsavedDataChanges || !isPersistedToFile;
 }

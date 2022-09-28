@@ -119,6 +119,8 @@ public:
     void setBorderItem(BorderMetatilesPixmapItem *item) { borderItem = item; }
 
     QUndoStack editHistory;
+    void modify();
+    void clean();
 
 private:
     void setNewDimensionsBlockdata(int newWidth, int newHeight);
@@ -126,6 +128,7 @@ private:
 
 signals:
     void mapChanged(Map *map);
+    void modified();
     void mapDimensionsChanged(const QSize &size);
     void mapNeedsRedrawing();
     void openScriptRequested(QString label);

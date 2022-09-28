@@ -671,6 +671,7 @@ bool MainWindow::setMap(QString map_name, bool scrollTreeView) {
 
     connect(editor->map, &Map::mapChanged, this, &MainWindow::onMapChanged);
     connect(editor->map, &Map::mapNeedsRedrawing, this, &MainWindow::onMapNeedsRedrawing);
+    connect(editor->map, &Map::modified, [this](){ this->markMapEdited(); });
 
     setRecentMap(map_name);
     updateMapList();
@@ -1452,6 +1453,7 @@ void MainWindow::updateMapList() {
 void MainWindow::on_action_Save_Project_triggered() {
     editor->saveProject();
     updateMapList();
+    showWindowTitle();
 }
 
 void MainWindow::duplicate() {
@@ -1694,6 +1696,7 @@ void MainWindow::paste() {
 void MainWindow::on_action_Save_triggered() {
     editor->save();
     updateMapList();
+    showWindowTitle();
 }
 
 void MainWindow::on_mapViewTab_tabBarClicked(int index)

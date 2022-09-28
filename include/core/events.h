@@ -119,6 +119,8 @@ public:
     void setMap(Map *newMap) { this->map = newMap; }
     Map *getMap() const { return this->map; }
 
+    void modify();
+
     virtual void accept(EventVisitor *) { }
 
     void setX(int newX) { this->x = newX; }

@@ -115,7 +115,9 @@ void EventFrame::connectSignals() {
     this->spinner_x->disconnect();
     connect(this->spinner_x, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
         int delta = value - event->getX();
-        if (delta) this->event->getMap()->editHistory.push(new EventMove(QList<Event *>() << this->event, delta, 0, this->spinner_x->getActionId()));
+        if (delta) {
+            this->event->getMap()->editHistory.push(new EventMove(QList<Event *>() << this->event, delta, 0, this->spinner_x->getActionId()));
+        }
     });
     // TODO: make sure item is always existing here!, will need to reconnect this when item is deleted? is item ever deleted?
     connect(this->event->getPixmapItem(), &DraggablePixmapItem::xChanged, this->spinner_x, &NoScrollSpinBox::setValue);
@@ -123,7 +125,9 @@ void EventFrame::connectSignals() {
     this->spinner_y->disconnect();
     connect(this->spinner_y, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
         int delta = value - event->getY();
-        if (delta) this->event->getMap()->editHistory.push(new EventMove(QList<Event *>() << this->event, 0, delta, this->spinner_y->getActionId()));
+        if (delta) {
+            this->event->getMap()->editHistory.push(new EventMove(QList<Event *>() << this->event, 0, delta, this->spinner_y->getActionId()));
+        }
     });
     connect(this->event->getPixmapItem(), &DraggablePixmapItem::yChanged, this->spinner_y, &NoScrollSpinBox::setValue);
     
@@ -131,6 +135,7 @@ void EventFrame::connectSignals() {
     this->spinner_z->disconnect();
     connect(this->spinner_z, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
         this->event->setZ(value);
+        this->event->modify();
     });
 }
 
@@ -249,6 +254,7 @@ void ObjectFrame::connectSignals() {
     connect(this->combo_sprite, &QComboBox::currentTextChanged, [this](const QString &text) {
         this->object->setGfx(text);
         this->object->getPixmapItem()->updatePixmap();
+        this->object->modify();
     });
     connect(this->object->getPixmapItem(), &DraggablePixmapItem::spriteChanged, this->label_icon, &QLabel::setPixmap);
 
@@ -257,17 +263,20 @@ void ObjectFrame::connectSignals() {
     connect(this->combo_movement, &QComboBox::currentTextChanged, [this](const QString &text) {
         this->object->setMovement(text);
         this->object->getPixmapItem()->updatePixmap();
+        this->object->modify();
     });
 
     // radii
     this->spinner_radius_x->disconnect();
     connect(this->spinner_radius_x, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
         this->object->setRadiusX(value);
+        this->object->modify();
     });
 
     this->spinner_radius_y->disconnect();
     connect(this->spinner_radius_y, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
         this->object->setRadiusY(value);
+        this->object->modify();
     });
 
     // script
@@ -275,29 +284,34 @@ void ObjectFrame::connectSignals() {
     this->combo_script->disconnect();
     connect(this->combo_script, &QComboBox::currentTextChanged, [this](const QString &text) {
         this->object->setScript(text);
+        this->object->modify();
     });
 
     this->button_script->disconnect();
     connect(this->button_script, &QToolButton::clicked, [this]() {
         this->object->getMap()->openScript(this->combo_script->currentText());
+        this->object->modify();
     });
 
     // flag
     this->combo_flag->disconnect();
     connect(this->combo_flag, &QComboBox::currentTextChanged, [this](const QString &text) {
         this->object->setFlag(text);
+        this->object->modify();
     });
 
     // trainer type
     this->combo_trainer_type->disconnect();
     connect(this->combo_trainer_type, &QComboBox::currentTextChanged, [this](const QString &text) {
         this->object->setTrainerType(text);
+        this->object->modify();
     });
 
     // sight berry
     this->combo_radius_treeid->disconnect();
     connect(this->combo_radius_treeid, &QComboBox::currentTextChanged, [this](const QString &text) {
         this->object->setSightRadiusBerryTreeID(text);
+        this->object->modify();
     });
 }
 
@@ -404,12 +418,14 @@ void CloneObjectFrame::connectSignals() {
     this->combo_target_map->disconnect();
     connect(this->combo_target_map, &QComboBox::currentTextChanged, [this](const QString &text) {
         this->clone->setTargetMap(text);
+        this->clone->modify();
     });
 
     // target id
     this->spinner_target_id->disconnect();
     connect(this->spinner_target_id, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
         this->clone->setTargetID(value);
+        this->clone->modify();
     });
 }
 
@@ -476,12 +492,14 @@ void WarpFrame::connectSignals() {
     this->combo_dest_map->disconnect();
     connect(this->combo_dest_map, &QComboBox::currentTextChanged, [this](const QString &text) {
         this->warp->setDestinationMap(text);
+        this->warp->modify();
     });
 
     // dest id
     this->spinner_dest_warp->disconnect();
     connect(this->spinner_dest_warp, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
         this->warp->setDestinationWarpID(value);
+        this->warp->modify();
     });
 }
 
@@ -550,18 +568,21 @@ void TriggerFrame::connectSignals() {
     this->combo_script->disconnect();
     connect(this->combo_script, &QComboBox::currentTextChanged, [this](const QString &text) {
         this->trigger->setScriptLabel(text);
+        this->trigger->modify();
     });
 
     // var
     this->combo_var->disconnect();
     connect(this->combo_var, &QComboBox::currentTextChanged, [this](const QString &text) {
         this->trigger->setScriptVar(text);
+        this->trigger->modify();
     });
 
     // value
     this->combo_var_value->disconnect();
     connect(this->combo_var_value, &QComboBox::currentTextChanged, [this](const QString &text) {
         this->trigger->setScriptVarValue(text);
+        this->trigger->modify();
     });
 }
 
@@ -630,6 +651,7 @@ void WeatherTriggerFrame::connectSignals() {
     this->combo_weather->disconnect();
     connect(this->combo_weather, &QComboBox::currentTextChanged, [this](const QString &text) {
         this->weatherTrigger->setWeather(text);
+        this->weatherTrigger->modify();
     });
 }
 
@@ -688,12 +710,14 @@ void SignFrame::connectSignals() {
     this->combo_facing_dir->disconnect();
     connect(this->combo_facing_dir, &QComboBox::currentTextChanged, [this](const QString &text) {
         this->sign->setFacingDirection(text);
+        this->sign->modify();
     });
 
     // script
     this->combo_script->disconnect();
     connect(this->combo_script, &QComboBox::currentTextChanged, [this](const QString &text) {
         this->sign->setScriptLabel(text);
+        this->sign->modify();
     });
 }
 
@@ -784,24 +808,28 @@ void HiddenItemFrame::connectSignals() {
     this->combo_item->disconnect();
     connect(this->combo_item, &QComboBox::currentTextChanged, [this](const QString &text) {
         this->hiddenItem->setItem(text);
+        this->hiddenItem->modify();
     });
 
     // flag
     this->combo_flag->disconnect();
     connect(this->combo_flag, &QComboBox::currentTextChanged, [this](const QString &text) {
         this->hiddenItem->setFlag(text);
+        this->hiddenItem->modify();
     });
 
     // quantity
     this->spinner_quantity->disconnect();
     connect(this->spinner_quantity, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
         this->hiddenItem->setQuantity(value);
+        this->hiddenItem->modify();
     });
 
     // underfoot
     this->check_itemfinder->disconnect();
     connect(this->check_itemfinder, &QCheckBox::stateChanged, [=](int state) {
         this->hiddenItem->setUnderfoot(state == Qt::Checked);
+        this->hiddenItem->modify();
     });
 }
 
@@ -875,6 +903,7 @@ void SecretBaseFrame::connectSignals() {
     this->combo_base_id->disconnect();
     connect(this->combo_base_id, &QComboBox::currentTextChanged, [this](const QString &text) {
         this->secretBase->setBaseID(text);
+        this->secretBase->modify();
     });
 }
 
@@ -936,11 +965,13 @@ void HealLocationFrame::connectSignals() {
         this->combo_respawn_map->disconnect();
         connect(this->combo_respawn_map, &QComboBox::currentTextChanged, [this](const QString &text) {
             this->healLocation->setRespawnMap(text);
+            this->healLocation->modify();
         });
 
         this->spinner_respawn_npc->disconnect();
         connect(this->spinner_respawn_npc, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
             this->healLocation->setRespawnNPC(value);
+            this->healLocation->modify();
         });
     }
 }

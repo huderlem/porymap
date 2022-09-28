@@ -49,6 +49,10 @@ void Event::addCustomValuesTo(OrderedJson::object *obj) {
     }
 }
 
+void Event::modify() {
+    this->map->modify();
+}
+
 QString Event::eventTypeToString(Event::Type type) {
     switch (type) {
     case Event::Type::Object:
