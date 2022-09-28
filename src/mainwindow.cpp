@@ -787,14 +787,14 @@ void MainWindow::displayMapProperties() {
 
     ui->comboBox_Song->setCurrentText(map->song);
     ui->comboBox_Location->setCurrentText(map->location);
-    ui->checkBox_Visibility->setChecked(map->requiresFlash.toInt() > 0 || map->requiresFlash == "TRUE");
+    ui->checkBox_Visibility->setChecked(ParseUtil::gameStringToBool(map->requiresFlash));
     ui->comboBox_Weather->setCurrentText(map->weather);
     ui->comboBox_Type->setCurrentText(map->type);
     ui->comboBox_BattleScene->setCurrentText(map->battle_scene);
-    ui->checkBox_ShowLocation->setChecked(map->show_location.toInt() > 0 || map->show_location == "TRUE");
-    ui->checkBox_AllowRunning->setChecked(map->allowRunning.toInt() > 0 || map->allowRunning == "TRUE");
-    ui->checkBox_AllowBiking->setChecked(map->allowBiking.toInt() > 0 || map->allowBiking == "TRUE");
-    ui->checkBox_AllowEscapeRope->setChecked(map->allowEscapeRope.toInt() > 0 || map->allowEscapeRope == "TRUE");
+    ui->checkBox_ShowLocation->setChecked(ParseUtil::gameStringToBool(map->show_location));
+    ui->checkBox_AllowRunning->setChecked(ParseUtil::gameStringToBool(map->allowRunning));
+    ui->checkBox_AllowBiking->setChecked(ParseUtil::gameStringToBool(map->allowBiking));
+    ui->checkBox_AllowEscapeRope->setChecked(ParseUtil::gameStringToBool(map->allowEscapeRope));
     ui->spinBox_FloorNumber->setValue(map->floorNumber);
 
     // Custom fields table.
@@ -940,6 +940,7 @@ bool MainWindow::loadDataStructures() {
                 && project->readTrainerTypes()
                 && project->readMetatileBehaviors()
                 && project->readTilesetProperties()
+                && project->readTilesetLabels()
                 && project->readMaxMapDataSize()
                 && project->readHealLocations()
                 && project->readMiscellaneousConstants()
@@ -972,16 +973,10 @@ bool MainWindow::loadProjectCombos() {
     ui->comboBox_Song->addItems(project->songNames);
     ui->comboBox_Location->clear();
     ui->comboBox_Location->addItems(project->mapSectionValueToName.values());
-
-    QMap<QString, QStringList> tilesets = project->getTilesetLabels();
-    if (tilesets.isEmpty()) {
-        return false;
-    }
-
     ui->comboBox_PrimaryTileset->clear();
-    ui->comboBox_PrimaryTileset->addItems(tilesets.value("primary"));
+    ui->comboBox_PrimaryTileset->addItems(project->tilesetLabels.value("primary"));
     ui->comboBox_SecondaryTileset->clear();
-    ui->comboBox_SecondaryTileset->addItems(tilesets.value("secondary"));
+    ui->comboBox_SecondaryTileset->addItems(project->tilesetLabels.value("secondary"));
     ui->comboBox_Weather->clear();
     ui->comboBox_Weather->addItems(project->weatherNames);
     ui->comboBox_BattleScene->clear();
@@ -1199,7 +1194,7 @@ void MainWindow::onNewMapCreated() {
     sortMapList();
     setMap(newMapName, true);
 
-    if (newMap->isFlyable == "TRUE") {
+    if (ParseUtil::gameStringToBool(newMap->isFlyable)) {
         addNewEvent(EventType::HealLocation);
         editor->project->saveHealLocationStruct(newMap);
         editor->save();// required
@@ -1284,8 +1279,8 @@ void MainWindow::on_actionNew_Tileset_triggered() {
             msgBox.exec();
             return;
         }
-        QMap<QString, QStringList> tilesets = this->editor->project->getTilesetLabels();
-        if(tilesets.value("primary").contains(createTilesetDialog->fullSymbolName) || tilesets.value("secondary").contains(createTilesetDialog->fullSymbolName)) {
+        if (editor->project->tilesetLabels.value("primary").contains(createTilesetDialog->fullSymbolName)
+         || editor->project->tilesetLabels.value("secondary").contains(createTilesetDialog->fullSymbolName)) {
             logError(QString("Could not create tileset \"%1\", the symbol \"%2\" already exists.").arg(createTilesetDialog->friendlyName, createTilesetDialog->fullSymbolName));
             QMessageBox msgBox(this);
             msgBox.setText("Failed to add new tileset.");
@@ -1333,26 +1328,25 @@ void MainWindow::on_actionNew_Tileset_triggered() {
         }
         newSet.palettes[0][1] = qRgb(255,0,255);
         newSet.palettePreviews[0][1] = qRgb(255,0,255);
-        newSet.is_compressed = "TRUE";
-        newSet.padding = "0";
         editor->project->saveTilesetTilesImage(&newSet);
         editor->project->saveTilesetMetatiles(&newSet);
         editor->project->saveTilesetMetatileAttributes(&newSet);
         editor->project->saveTilesetPalettes(&newSet);
 
         //append to tileset specific files
+        newSet.appendToHeaders(editor->project->root, createTilesetDialog->friendlyName, editor->project->usingAsmTilesets);
+        newSet.appendToGraphics(editor->project->root, createTilesetDialog->friendlyName, !createTilesetDialog->isSecondary, editor->project->usingAsmTilesets);
+        newSet.appendToMetatiles(editor->project->root, createTilesetDialog->friendlyName, !createTilesetDialog->isSecondary, editor->project->usingAsmTilesets);
 
-        newSet.appendToHeaders(editor->project->root + "/" + projectConfig.getFilePath(ProjectFilePath::tilesets_headers), createTilesetDialog->friendlyName);
-        newSet.appendToGraphics(editor->project->root + "/" + projectConfig.getFilePath(ProjectFilePath::tilesets_graphics), createTilesetDialog->friendlyName, !createTilesetDialog->isSecondary);
-        newSet.appendToMetatiles(editor->project->root + "/" + projectConfig.getFilePath(ProjectFilePath::tilesets_metatiles), createTilesetDialog->friendlyName, !createTilesetDialog->isSecondary);
         if(!createTilesetDialog->isSecondary) {
             this->ui->comboBox_PrimaryTileset->addItem(createTilesetDialog->fullSymbolName);
+            editor->project->tilesetLabels["primary"].append(createTilesetDialog->fullSymbolName);
+
         } else {
             this->ui->comboBox_SecondaryTileset->addItem(createTilesetDialog->fullSymbolName);
+            editor->project->tilesetLabels["secondary"].append(createTilesetDialog->fullSymbolName);
         }
-
-        // hydrate tileset labels.
-        this->editor->project->getTilesetLabels();
+        editor->project->tilesetLabelsOrdered.append(createTilesetDialog->fullSymbolName);
 
         QMessageBox msgBox(this);
         msgBox.setText("Successfully created tileset.");
