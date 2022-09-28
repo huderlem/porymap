@@ -133,7 +133,6 @@ void EventFrame::connectSignals() {
     });
     connect(this->event->getPixmapItem(), &DraggablePixmapItem::yChanged, this->spinner_y, &NoScrollSpinBox::setValue);
     
-    // TODO??
     this->spinner_z->disconnect();
     connect(this->spinner_z, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
         this->event->setZ(value);

@@ -1982,9 +1982,9 @@ void MainWindow::updateSelectedObjects() {
             target = ui->scrollAreaWidgetContents_Objects;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Objects);
 
-            this->ui->spinner_ObjectID->setValue(current->getEventIndex() + event_offs);
             this->ui->spinner_ObjectID->setMinimum(event_offs);
             this->ui->spinner_ObjectID->setMaximum(current->getMap()->events.value(eventGroup).length() + event_offs - 1);
+            this->ui->spinner_ObjectID->setValue(current->getEventIndex() + event_offs);
             break;
         }
         case Event::Group::Warp: {
@@ -1992,9 +1992,9 @@ void MainWindow::updateSelectedObjects() {
             target = ui->scrollAreaWidgetContents_Warps;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Warps);
 
-            this->ui->spinner_WarpID->setValue(current->getEventIndex() + event_offs);
             this->ui->spinner_WarpID->setMinimum(event_offs);
             this->ui->spinner_WarpID->setMaximum(current->getMap()->events.value(eventGroup).length() + event_offs - 1);
+            this->ui->spinner_WarpID->setValue(current->getEventIndex() + event_offs);
             break;
         }
         case Event::Group::Coord: {
@@ -2002,9 +2002,9 @@ void MainWindow::updateSelectedObjects() {
             target = ui->scrollAreaWidgetContents_Triggers;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Triggers);
 
-            this->ui->spinner_TriggerID->setValue(current->getEventIndex() + event_offs);
             this->ui->spinner_TriggerID->setMinimum(event_offs);
             this->ui->spinner_TriggerID->setMaximum(current->getMap()->events.value(eventGroup).length() + event_offs - 1);
+            this->ui->spinner_TriggerID->setValue(current->getEventIndex() + event_offs);
             break;
         }
         case Event::Group::Bg: {
@@ -2012,9 +2012,9 @@ void MainWindow::updateSelectedObjects() {
             target = ui->scrollAreaWidgetContents_BGs;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_BGs);
 
-            this->ui->spinner_BgID->setValue(current->getEventIndex() + event_offs);
             this->ui->spinner_BgID->setMinimum(event_offs);
             this->ui->spinner_BgID->setMaximum(current->getMap()->events.value(eventGroup).length() + event_offs - 1);
+            this->ui->spinner_BgID->setValue(current->getEventIndex() + event_offs);
             break;
         }
         case Event::Group::Heal: {
@@ -2022,9 +2022,9 @@ void MainWindow::updateSelectedObjects() {
             target = ui->scrollAreaWidgetContents_Healspots;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Healspots);
 
-            this->ui->spinner_HealID->setValue(current->getEventIndex() + event_offs);
             this->ui->spinner_HealID->setMinimum(event_offs);
             this->ui->spinner_HealID->setMaximum(current->getMap()->events.value(eventGroup).length() + event_offs - 1);
+            this->ui->spinner_HealID->setValue(current->getEventIndex() + event_offs);
             break;
         }
         default:
