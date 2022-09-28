@@ -218,6 +218,8 @@ public:
     virtual void populate(Project *project) override;
 
 public:
+    QFrame *hideable_quantity;
+    QFrame *hideable_itemfinder;
     NoScrollComboBox *combo_item;
     NoScrollComboBox *combo_flag;
     NoScrollSpinBox *spinner_quantity;
@@ -263,6 +265,8 @@ public:
     virtual void populate(Project *project) override;
 
 public:
+    QFrame *hideable_respawn_map;
+    QFrame *hideable_respawn_npc;
     NoScrollComboBox *combo_respawn_map;
     NoScrollSpinBox *spinner_respawn_npc;
 

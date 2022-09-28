@@ -754,20 +754,24 @@ void HiddenItemFrame::setup() {
     this->layout_contents->addLayout(l_form_flag);
 
     // quantity spinner
-    QFormLayout *l_form_quantity = new QFormLayout();
-    this->spinner_quantity = new NoScrollSpinBox(this);
+    this->hideable_quantity = new QFrame;
+    QFormLayout *l_form_quantity = new QFormLayout(hideable_quantity);
+    l_form_quantity->setContentsMargins(0, 0, 0, 0);
+    this->spinner_quantity = new NoScrollSpinBox(hideable_quantity);
     this->spinner_quantity->setToolTip("The number of items received when the hidden item is picked up.");
     this->spinner_quantity->setMinimum(0x01);
     this->spinner_quantity->setMaximum(0xFF);
     l_form_quantity->addRow("Quantity", this->spinner_quantity);
-    this->layout_contents->addLayout(l_form_quantity);
+    this->layout_contents->addWidget(this->hideable_quantity);
 
     // itemfinder checkbox
-    QFormLayout *l_form_itemfinder = new QFormLayout();
-    this->check_itemfinder = new QCheckBox(this);
+    this->hideable_itemfinder = new QFrame;
+    QFormLayout *l_form_itemfinder = new QFormLayout(hideable_itemfinder);
+    l_form_itemfinder->setContentsMargins(0, 0, 0, 0);
+    this->check_itemfinder = new QCheckBox(hideable_itemfinder);
     this->check_itemfinder->setToolTip("If checked, hidden item can only be picked up using the Itemfinder");
     l_form_itemfinder->addRow("Requires Itemfinder", this->check_itemfinder);
-    this->layout_contents->addLayout(l_form_itemfinder);
+    this->layout_contents->addWidget(hideable_itemfinder);
 
     // custom attributes
     EventFrame::initCustomAttributesTable();
@@ -827,13 +831,13 @@ void HiddenItemFrame::initialize() {
     if (projectConfig.getHiddenItemQuantityEnabled()) {
         this->spinner_quantity->setValue(this->hiddenItem->getQuantity());
     }
-    this->spinner_quantity->setVisible(projectConfig.getHiddenItemQuantityEnabled());
+    this->hideable_quantity->setVisible(projectConfig.getHiddenItemQuantityEnabled());
 
     // underfoot
     if (projectConfig.getHiddenItemRequiresItemfinderEnabled()) {
         this->check_itemfinder->setChecked(this->hiddenItem->getQuantity());
     }
-    this->check_itemfinder->setVisible(projectConfig.getHiddenItemRequiresItemfinderEnabled());
+    this->hideable_itemfinder->setVisible(projectConfig.getHiddenItemRequiresItemfinderEnabled());
 }
 
 void HiddenItemFrame::populate(Project *project) {
@@ -902,20 +906,24 @@ void SecretBaseFrame::populate(Project *project) {
 void HealLocationFrame::setup() {
     EventFrame::setup();
 
-    // item combo
-    QFormLayout *l_form_respawn_map = new QFormLayout();
-    this->combo_respawn_map = new NoScrollComboBox(this);
+    // respawn map combo
+    this->hideable_respawn_map = new QFrame;
+    QFormLayout *l_form_respawn_map = new QFormLayout(hideable_respawn_map);
+    l_form_respawn_map->setContentsMargins(0, 0, 0, 0);
+    this->combo_respawn_map = new NoScrollComboBox(hideable_respawn_map);
     this->combo_respawn_map->setToolTip("The map where the player will respawn after whiteout.");
     l_form_respawn_map->addRow("Respawn Map", this->combo_respawn_map);
-    this->layout_contents->addLayout(l_form_respawn_map);
+    this->layout_contents->addWidget(hideable_respawn_map);
 
-    // item combo
-    QFormLayout *l_form_respawn_npc= new QFormLayout();
-    this->spinner_respawn_npc = new NoScrollSpinBox(this);
+    // npc spinner
+    this->hideable_respawn_npc = new QFrame;
+    QFormLayout *l_form_respawn_npc = new QFormLayout(hideable_respawn_npc);
+    l_form_respawn_npc->setContentsMargins(0, 0, 0, 0);
+    this->spinner_respawn_npc = new NoScrollSpinBox(hideable_respawn_npc);
     this->spinner_respawn_npc->setToolTip("event_object ID of the NPC the player interacts with\n" 
                                           "upon respawning after whiteout.");
     l_form_respawn_npc->addRow("Respawn NPC", this->spinner_respawn_npc);
-    this->layout_contents->addLayout(l_form_respawn_npc);
+    this->layout_contents->addWidget(hideable_respawn_npc);
 
     // custom attributes
     EventFrame::initCustomAttributesTable();
@@ -952,8 +960,8 @@ void HealLocationFrame::initialize() {
         this->spinner_respawn_npc->setValue(this->healLocation->getRespawnNPC());
     }
 
-    this->combo_respawn_map->setVisible(projectConfig.getHealLocationRespawnDataEnabled());
-    this->spinner_respawn_npc->setVisible(projectConfig.getHealLocationRespawnDataEnabled());
+    this->hideable_respawn_map->setVisible(projectConfig.getHealLocationRespawnDataEnabled());
+    this->hideable_respawn_npc->setVisible(projectConfig.getHealLocationRespawnDataEnabled());
 }
 
 void HealLocationFrame::populate(Project *project) {
