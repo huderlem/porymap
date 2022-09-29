@@ -26,6 +26,10 @@ public:
     virtual void initialize();
     virtual void populate(Project *project);
 
+    void invalidateConnections();
+    void invalidateUi();
+    void invalidateValues();
+
     virtual void setActive(bool active);
 
 public:
@@ -48,6 +52,7 @@ public:
 protected:
     bool populated = false;
     bool initialized = false;
+    bool connected = false;
 
 private:
     Event *event;

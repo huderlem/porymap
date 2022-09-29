@@ -114,6 +114,8 @@ void EventFrame::initCustomAttributesTable() {
 // perhaps connect to object destroyed signal from draggablepixamapitem to signal need reconnect
 // ie, mark connections dirty and need redo
 void EventFrame::connectSignals() {
+    this->connected = true;
+
     this->spinner_x->disconnect();
     connect(this->spinner_x, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
         int delta = value - event->getX();
@@ -141,8 +143,8 @@ void EventFrame::connectSignals() {
 }
 
 void EventFrame::initialize() {
-    // this->initialized = true;
-    // TODO: does this signal blocker block spinner signals?
+    this->initialized = true;
+
     const QSignalBlocker blocker(this);
     
     this->spinner_x->setValue(this->event->getX());
@@ -152,14 +154,22 @@ void EventFrame::initialize() {
     this->label_icon->setPixmap(this->event->getPixmap());
 }
 
-void EventFrame::populate(Project *project) {
-    if (this->populated) return;
-    const QSignalBlocker blocker(this);
-
+void EventFrame::populate(Project *) {
     this->populated = true;
 }
 
-// so setProject / populate() doesnt send signals to connections
+void EventFrame::invalidateConnections() {
+    this->connected = false;
+}
+
+void EventFrame::invalidateUi() {
+    this->initialized = false;
+}
+
+void EventFrame::invalidateValues() {
+    this->populated = false;
+}
+
 void EventFrame::setActive(bool active) {
     this->setEnabled(active);
     this->blockSignals(!active);
@@ -167,7 +177,6 @@ void EventFrame::setActive(bool active) {
 
 
 
-// TODO: spinbox limits
 void ObjectFrame::setup() {
     EventFrame::setup();
 
@@ -191,10 +200,14 @@ void ObjectFrame::setup() {
     // movement radii
     QFormLayout *l_form_radii_xy = new QFormLayout();
     this->spinner_radius_x = new NoScrollSpinBox(this);
+    this->spinner_radius_x->setMinimum(0);
+    this->spinner_radius_x->setMaximum(255);
     this->spinner_radius_x->setToolTip("The maximum number of metatiles this object\n"
                                        "is allowed to move left or right during its\n"
                                        "normal movement behavior actions.");
     this->spinner_radius_y = new NoScrollSpinBox(this);
+    this->spinner_radius_y->setMinimum(0);
+    this->spinner_radius_y->setMaximum(255);
     this->spinner_radius_y->setToolTip("The maximum number of metatiles this object\n"
                                        "is allowed to move up or down during its\n"
                                        "normal movement behavior actions.");
@@ -250,6 +263,8 @@ void ObjectFrame::setup() {
 }
 
 void ObjectFrame::connectSignals() {
+    if (this->connected) return;
+
     EventFrame::connectSignals();
 
     // sprite update
@@ -283,7 +298,6 @@ void ObjectFrame::connectSignals() {
     });
 
     // script
-    // add local event script labels to combo? or
     this->combo_script->disconnect();
     connect(this->combo_script, &QComboBox::currentTextChanged, [this](const QString &text) {
         this->object->setScript(text);
@@ -321,7 +335,8 @@ void ObjectFrame::connectSignals() {
 // TODO: how often do i really need to call findText() it seems slow
 //       when the frame has already been initialized, shouldn't need to again
 void ObjectFrame::initialize() {
-    //if (this->initialized) return;
+    if (this->initialized) return;
+
     const QSignalBlocker blocker(this);
     EventFrame::initialize();
 
@@ -364,6 +379,7 @@ void ObjectFrame::initialize() {
 
 void ObjectFrame::populate(Project *project) {
     if (this->populated) return;
+
     const QSignalBlocker blocker(this);
     EventFrame::populate(project);
 
@@ -374,7 +390,6 @@ void ObjectFrame::populate(Project *project) {
 
     QStringList scriptLabels = this->object->getMap()->eventScriptLabels() + project->getGlobalScriptLabels();
     scriptLabels.removeDuplicates();
-    // TODO: are there any additional labels?
 
     this->scriptCompleter = new QCompleter(scriptLabels, this);
     this->scriptCompleter->setCaseSensitivity(Qt::CaseInsensitive);
@@ -417,6 +432,8 @@ void CloneObjectFrame::setup() {
 }
 
 void CloneObjectFrame::connectSignals() {
+    if (this->connected) return;
+
     EventFrame::connectSignals();
 
     // target map
@@ -435,7 +452,8 @@ void CloneObjectFrame::connectSignals() {
 }
 
 void CloneObjectFrame::initialize() {
-    //if (this->populated) return;
+    if (this->initialized) return;
+
     const QSignalBlocker blocker(this);
     EventFrame::initialize();
 
@@ -461,6 +479,7 @@ void CloneObjectFrame::initialize() {
 
 void CloneObjectFrame::populate(Project *project) {
     if (this->populated) return;
+
     const QSignalBlocker blocker(this);
     EventFrame::populate(project);
 
@@ -493,6 +512,8 @@ void WarpFrame::setup() {
 }
 
 void WarpFrame::connectSignals() {
+    if (this->connected) return;
+
     EventFrame::connectSignals();
 
     // dest map
@@ -511,7 +532,8 @@ void WarpFrame::connectSignals() {
 }
 
 void WarpFrame::initialize() {
-    //if (this->populated) return;
+    if (this->initialized) return;
+
     const QSignalBlocker blocker(this);
     EventFrame::initialize();
 
@@ -531,6 +553,7 @@ void WarpFrame::initialize() {
 
 void WarpFrame::populate(Project *project) {
     if (this->populated) return;
+
     const QSignalBlocker blocker(this);
     EventFrame::populate(project);
 
@@ -571,6 +594,8 @@ void TriggerFrame::setup() {
 }
 
 void TriggerFrame::connectSignals() {
+    if (this->connected) return;
+
     EventFrame::connectSignals();
 
     // label
@@ -596,8 +621,8 @@ void TriggerFrame::connectSignals() {
 }
 
 void TriggerFrame::initialize() {
-    // TODO: make us of this or delete it
-    //if (this->populated) return;
+    if (this->initialized) return;
+
     const QSignalBlocker blocker(this);
     EventFrame::initialize();
 
@@ -620,6 +645,7 @@ void TriggerFrame::initialize() {
 
 void TriggerFrame::populate(Project *project) {
     if (this->populated) return;
+
     const QSignalBlocker blocker(this);
     EventFrame::populate(project);
 
@@ -656,6 +682,8 @@ void WeatherTriggerFrame::setup() {
 }
 
 void WeatherTriggerFrame::connectSignals() {
+    if (this->connected) return;
+
     EventFrame::connectSignals();
 
     // weather
@@ -667,6 +695,8 @@ void WeatherTriggerFrame::connectSignals() {
 }
 
 void WeatherTriggerFrame::initialize() {
+    if (this->initialized) return;
+
     const QSignalBlocker blocker(this);
     EventFrame::initialize();
 
@@ -683,6 +713,7 @@ void WeatherTriggerFrame::initialize() {
 
 void WeatherTriggerFrame::populate(Project *project) {
     if (this->populated) return;
+
     const QSignalBlocker blocker(this);
     EventFrame::populate(project);
 
@@ -717,6 +748,8 @@ void SignFrame::setup() {
 }
 
 void SignFrame::connectSignals() {
+    if (this->connected) return;
+
     EventFrame::connectSignals();
 
     // facing dir
@@ -735,6 +768,8 @@ void SignFrame::connectSignals() {
 }
 
 void SignFrame::initialize() {
+    if (this->initialized) return;
+
     const QSignalBlocker blocker(this);
     EventFrame::initialize();
 
@@ -754,6 +789,7 @@ void SignFrame::initialize() {
 
 void SignFrame::populate(Project *project) {
     if (this->populated) return;
+
     const QSignalBlocker blocker(this);
     EventFrame::populate(project);
 
@@ -817,6 +853,8 @@ void HiddenItemFrame::setup() {
 }
 
 void HiddenItemFrame::connectSignals() {
+    if (this->connected) return;
+
     EventFrame::connectSignals();
 
     // item
@@ -849,6 +887,8 @@ void HiddenItemFrame::connectSignals() {
 }
 
 void HiddenItemFrame::initialize() {
+    if (this->initialized) return;
+
     const QSignalBlocker blocker(this);
     EventFrame::initialize();
 
@@ -885,6 +925,7 @@ void HiddenItemFrame::initialize() {
 
 void HiddenItemFrame::populate(Project *project) {
     if (this->populated) return;
+
     const QSignalBlocker blocker(this);
     EventFrame::populate(project);
 
@@ -915,6 +956,8 @@ void SecretBaseFrame::setup() {
 }
 
 void SecretBaseFrame::connectSignals() {
+    if (this->connected) return;
+
     EventFrame::connectSignals();
 
     this->combo_base_id->disconnect();
@@ -925,6 +968,8 @@ void SecretBaseFrame::connectSignals() {
 }
 
 void SecretBaseFrame::initialize() {
+    if (this->initialized) return;
+
     const QSignalBlocker blocker(this);
     EventFrame::initialize();
 
@@ -941,6 +986,7 @@ void SecretBaseFrame::initialize() {
 
 void SecretBaseFrame::populate(Project *project) {
     if (this->populated) return;
+
     const QSignalBlocker blocker(this);
     EventFrame::populate(project);
 
@@ -981,6 +1027,8 @@ void HealLocationFrame::setup() {
 }
 
 void HealLocationFrame::connectSignals() {
+    if (this->connected) return;
+
     EventFrame::connectSignals();
 
     if (projectConfig.getHealLocationRespawnDataEnabled()) {
@@ -999,6 +1047,8 @@ void HealLocationFrame::connectSignals() {
 }
 
 void HealLocationFrame::initialize() {
+    if (this->initialized) return;
+
     const QSignalBlocker blocker(this);
     EventFrame::initialize();
 
@@ -1019,6 +1069,7 @@ void HealLocationFrame::initialize() {
 
 void HealLocationFrame::populate(Project *project) {
     if (this->populated) return;
+
     const QSignalBlocker blocker(this);
     EventFrame::populate(project);
 

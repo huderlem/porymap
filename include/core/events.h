@@ -84,7 +84,7 @@ public:
         None,
     };
 
-    // all event groups excepts warps have IDs that start at 1
+    // all event groups except warps have IDs that start at 1
     static int getIndexOffset(Event::Group group) {
         return (group == Event::Group::Warp) ? 0 : 1;
     }
@@ -159,7 +159,7 @@ public:
     void setPixmap(QPixmap newPixmap) { this->pixmap = newPixmap; }
     QPixmap getPixmap() { return this->pixmap; }
 
-    void setPixmapItem(DraggablePixmapItem *item) { this->pixmapItem = item; }
+    void setPixmapItem(DraggablePixmapItem *item);
     DraggablePixmapItem *getPixmapItem() { return this->pixmapItem; }
 
     void setUsingSprite(bool newUsingSprite) { this->usingSprite = newUsingSprite; }
@@ -175,14 +175,6 @@ public:
 
     static QString eventTypeToString(Event::Type type);
     static Event::Type eventTypeFromString(QString type);
-
-
-// pure virtual public methods
-public:
-
-    // // update spinbox values, etc, combo indices
-    // virtual void updateFrame(); // setFrameFromMovement, (aka redisplay?)
-    // virtual void disableFrame(); // setParrent(nullptr), disconnectSignals()
 
 // protected attributes
 protected:
@@ -214,10 +206,6 @@ protected:
 /// Object Event
 ///
 class ObjectEvent : public Event {
-    //
-    // in each derived class constructor, need to createEventFrame, since not
-    // doing that in base class. make sure to upcall though
-
 public:
     ObjectEvent() : Event() {
         this->eventGroup = Event::Group::Object;
@@ -229,7 +217,6 @@ public:
 
     virtual void accept(EventVisitor *visitor) override { visitor->visitObject(this); }
 
-    //virtual EventFrame *getEventFrame() override;
     virtual EventFrame *createEventFrame() override;
 
     virtual OrderedJson::object buildEventJson(Project *project) override;
@@ -276,7 +263,7 @@ protected:
     int radiusX = 0;
     int radiusY = 0;
     QString trainerType;
-    QString sightRadiusBerryTreeID; // TODO: int?
+    QString sightRadiusBerryTreeID;
     QString script;
     QString flag;
 

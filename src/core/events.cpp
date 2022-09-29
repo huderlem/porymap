@@ -17,8 +17,15 @@ EventFrame *Event::getEventFrame() {
 }
 
 void Event::destroyEventFrame() {
-    if (eventFrame) delete eventFrame;
-    eventFrame = nullptr;
+    if (this->eventFrame) delete this->eventFrame;
+    this->eventFrame = nullptr;
+}
+
+void Event::setPixmapItem(DraggablePixmapItem *item) {
+    this->pixmapItem = item;
+    if (this->eventFrame) {
+        this->eventFrame->invalidateConnections();
+    }
 }
 
 int Event::getEventIndex() {
