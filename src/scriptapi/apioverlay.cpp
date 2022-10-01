@@ -144,14 +144,14 @@ void MapView::addImage(int x, int y, QString filepath, int layer, bool useCache)
         this->scene()->update();
 }
 
-void MapView::createImage(int x, int y, QString filepath, int width, int height, unsigned offset, qreal hScale, qreal vScale, int paletteId, bool setTransparency, int layer, bool useCache) {
+void MapView::createImage(int x, int y, QString filepath, int width, int height, int xOffset, int yOffset, qreal hScale, qreal vScale, int paletteId, bool setTransparency, int layer, bool useCache) {
     if (!this->editor || !this->editor->map || !this->editor->map->layout
      || !this->editor->map->layout->tileset_primary || !this->editor->map->layout->tileset_secondary)
         return;
     QList<QRgb> palette;
     if (paletteId != -1)
         palette = Tileset::getPalette(paletteId, this->editor->map->layout->tileset_primary, this->editor->map->layout->tileset_secondary);
-    if (this->getOverlay(layer)->addImage(x, y, filepath, useCache, width, height, offset, hScale, vScale, palette, setTransparency))
+    if (this->getOverlay(layer)->addImage(x, y, filepath, useCache, width, height, xOffset, yOffset, hScale, vScale, palette, setTransparency))
         this->scene()->update();
 }
 
