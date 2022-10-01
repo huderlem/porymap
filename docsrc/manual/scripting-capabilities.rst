@@ -1360,6 +1360,66 @@ All utility functions are callable via the global ``utility`` object.
    :param boolean editable: whether the user is allowed to enter their own text instead. Defaults to ``false``
    :returns {input, ok}: ``input`` will be the input text and ``ok`` will be ``true`` if ``OK`` was selected. ``input`` will be the text of the item at ``default`` and ``ok`` will be ``false`` if ``Cancel`` was selected or if the window was closed without selection.
 
+.. js:function:: utility.getMapNames()
+
+   Gets the list of map names.
+
+   :returns array: the list of map names
+
+.. js:function:: utility.getTilesetNames()
+
+   Gets the list of tileset names.
+
+   :returns array: the list of tileset names
+
+.. js:function:: utility.getPrimaryTilesetNames()
+
+   Gets the list of primary tileset names.
+
+   :returns array: the list of primary tileset names
+
+.. js:function:: utility.getSecondaryTilesetNames()
+
+   Gets the list of secondary tileset names.
+
+   :returns array: the list of secondary tileset names
+
+.. js:function:: utility.getMetatileBehaviorNames()
+
+   Gets the list of metatile behavior names.
+
+   :returns array: the list of metatile behavior names
+
+.. js:function:: utility.getSongNames()
+
+   Gets the list of song names.
+
+   :returns array: the list of song names
+
+.. js:function:: utility.getLocationNames()
+
+   Gets the list of map location names.
+
+   :returns array: the list of map location names
+
+.. js:function:: utility.getWeatherNames()
+
+   Gets the list of weather names.
+
+   :returns array: the list of weather names
+
+.. js:function:: utility.getMapTypeNames()
+
+   Gets the list of map type names.
+
+   :returns array: the list of map type names
+
+.. js:function:: utility.getBattleSceneNames()
+
+   Gets the list of battle scene names.
+
+   :returns array: the list of battle scene names
+
 .. js:function:: utility.isPrimaryTileset(tilesetName)
 
    Gets whether the specified tileset is a primary tileset.
