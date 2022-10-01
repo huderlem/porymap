@@ -39,6 +39,16 @@ public:
     Q_INVOKABLE void setMetatileLayerOrder(QList<int> order);
     Q_INVOKABLE QList<float> getMetatileLayerOpacity();
     Q_INVOKABLE void setMetatileLayerOpacity(QList<float> order);
+    Q_INVOKABLE QList<QString> getMapNames();
+    Q_INVOKABLE QList<QString> getTilesetNames();
+    Q_INVOKABLE QList<QString> getPrimaryTilesetNames();
+    Q_INVOKABLE QList<QString> getSecondaryTilesetNames();
+    Q_INVOKABLE QList<QString> getMetatileBehaviorNames();
+    Q_INVOKABLE QList<QString> getSongNames();
+    Q_INVOKABLE QList<QString> getLocationNames();
+    Q_INVOKABLE QList<QString> getWeatherNames();
+    Q_INVOKABLE QList<QString> getMapTypeNames();
+    Q_INVOKABLE QList<QString> getBattleSceneNames();
     Q_INVOKABLE bool isPrimaryTileset(QString tilesetName);
     Q_INVOKABLE bool isSecondaryTileset(QString tilesetName);
 
