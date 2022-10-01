@@ -10,7 +10,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ### Breaking Changes
 - Proper support for pokefirered's clone objects was added, which requires the changes made in [pokefirered/#484](https://github.com/pret/pokefirered/pull/484).
 - Many API functions which were previously accessible via the `map` object are now accessible via one of the new objects `overlay`, `utility`, or `constants`. Some functions were renamed accordingly. See [porymap/#460](https://github.com/huderlem/porymap/pull/460) for a full list of API function name changes.
-- The boolean arguments `xflip` and `yflip` in the API function `createImage` have been replaced with arguments for horizontal and vertical scale.
+- Arguments for the API function `createImage` have changed: `xflip` and `yflip`  have been replaced with `hScale` and `vScale`, and `offset` has been replaced with `xOffset` and `yOffset`.
 
 ### Added
 - Add prefab support
