@@ -211,14 +211,70 @@ void ScriptUtility::setMetatileLayerOpacity(QList<float> order) {
     window->refreshAfterPalettePreviewChange();
 }
 
-bool ScriptUtility::isPrimaryTileset(QString tilesetName) {
+QList<QString> ScriptUtility::getMapNames() {
     if (!window || !window->editor || !window->editor->project)
-        return false;
-    return window->editor->project->tilesetLabels["primary"].contains(tilesetName);
+        return QList<QString>();
+    return window->editor->project->mapNames;
+}
+
+QList<QString> ScriptUtility::getTilesetNames() {
+    if (!window || !window->editor || !window->editor->project)
+        return QList<QString>();
+    return window->editor->project->tilesetLabelsOrdered;
+}
+
+QList<QString> ScriptUtility::getPrimaryTilesetNames() {
+    if (!window || !window->editor || !window->editor->project)
+        return QList<QString>();
+    return window->editor->project->tilesetLabels["primary"];
+}
+
+QList<QString> ScriptUtility::getSecondaryTilesetNames() {
+    if (!window || !window->editor || !window->editor->project)
+        return QList<QString>();
+    return window->editor->project->tilesetLabels["secondary"];
+}
+
+QList<QString> ScriptUtility::getMetatileBehaviorNames() {
+    if (!window || !window->editor || !window->editor->project)
+        return QList<QString>();
+    return window->editor->project->metatileBehaviorMap.keys();
+}
+
+QList<QString> ScriptUtility::getSongNames() {
+    if (!window || !window->editor || !window->editor->project)
+        return QList<QString>();
+    return window->editor->project->songNames;
+}
+
+QList<QString> ScriptUtility::getLocationNames() {
+    if (!window || !window->editor || !window->editor->project)
+        return QList<QString>();
+    return window->editor->project->mapSectionNameToValue.keys();
+}
+
+QList<QString> ScriptUtility::getWeatherNames() {
+    if (!window || !window->editor || !window->editor->project)
+        return QList<QString>();
+    return window->editor->project->weatherNames;
+}
+
+QList<QString> ScriptUtility::getMapTypeNames() {
+    if (!window || !window->editor || !window->editor->project)
+        return QList<QString>();
+    return window->editor->project->mapTypes;
+}
+
+QList<QString> ScriptUtility::getBattleSceneNames() {
+    if (!window || !window->editor || !window->editor->project)
+        return QList<QString>();
+    return window->editor->project->mapBattleScenes;
+}
+
+bool ScriptUtility::isPrimaryTileset(QString tilesetName) {
+    return getPrimaryTilesetNames().contains(tilesetName);
 }
 
 bool ScriptUtility::isSecondaryTileset(QString tilesetName) {
-    if (!window || !window->editor || !window->editor->project)
-        return false;
-    return window->editor->project->tilesetLabels["secondary"].contains(tilesetName);
+    return getSecondaryTilesetNames().contains(tilesetName);
 }
