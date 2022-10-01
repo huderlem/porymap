@@ -1130,7 +1130,7 @@ All overlay functions are callable via the global ``overlay`` object.
    :param number layer: the layer id. Defaults to ``0``
    :param boolean useCache: whether the image should be saved/loaded using the cache. Defaults to ``true``. Reading images from a file is slow. Setting ``useCache`` to ``true`` will save the image to memory so that the next time the filepath is encountered the image can be loaded from memory rather than the file.
 
-.. js:function:: overlay.createImage(x, y, filepath, width = -1, height = -1, offset = 0, hScale = 1, vScale = 1, paletteId = -1, setTransparency = false, layer = 0, useCache = true)
+.. js:function:: overlay.createImage(x, y, filepath, width = -1, height = -1, xOffset = 0, yOffset = 0, hScale = 1, vScale = 1, paletteId = -1, setTransparency = false, layer = 0, useCache = true)
 
    Creates an image item on the specified overlay layer. This differs from ``overlay.addImage`` by allowing the new image to be a transformation of the image file.
 
@@ -1139,7 +1139,8 @@ All overlay functions are callable via the global ``overlay`` object.
    :param string filepath: the image's filepath
    :param number width: the width in pixels of the area to read in the image. If ``-1``, use the full width of the original image. Defaults to ``-1``
    :param number height: the height in pixels of the area to read in the image. If ``-1``, use the full height of the original image. Defaults to ``-1``
-   :param number offset: the pixel offset into the original image where data should be read from. Defaults to ``0``
+   :param number xOffset: the x pixel coordinate on the original image where data should be read from. Defaults to ``0``
+   :param number yOffset: the y pixel coordinate on the original image where data should be read from. Defaults to ``0``
    :param number hScale: the horizontal scale for the image. Negative values will be a horizontal flip of the original image. Defaults to ``1``
    :param number vScale: the vertical scale for the image. Negative values will be a vertical flip of the original image. Defaults to ``1``
    :param number paletteId: the id of which currently loaded tileset palette to use for the image. If ``-1``, use the original image's palette. Defaults to ``-1``
