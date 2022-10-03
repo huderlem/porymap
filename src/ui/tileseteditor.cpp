@@ -527,6 +527,7 @@ void TilesetEditor::on_comboBox_layerType_activated(int layerType)
                                                               prevMetatile, new Metatile(*this->metatile));
         metatileHistory.push(commit);
         this->hasUnsavedChanges = true;
+        this->metatileSelector->draw(); // Changing the layer type can affect how fully transparent metatiles appear
     }
 }
 
