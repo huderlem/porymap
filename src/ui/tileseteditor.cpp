@@ -1074,12 +1074,11 @@ void TilesetEditor::countTileUsage() {
 }
 
 void TilesetEditor::on_copyButton_metatileLabel_clicked() {
-    QClipboard * clipboard = QGuiApplication::clipboard();
     QString label = this->ui->lineEdit_metatileLabel->text();
-    if (!label.isEmpty()) {
-        Tileset * tileset = Tileset::getMetatileTileset(this->getSelectedMetatileId(), this->primaryTileset, this->secondaryTileset);
-        if (tileset)
-            label.prepend("METATILE_" + QString(tileset->name).replace("gTileset_", "") + "_");
-    }
-    clipboard->setText(label);
+    if (label.isEmpty()) return;
+    Tileset * tileset = Tileset::getMetatileTileset(this->getSelectedMetatileId(), this->primaryTileset, this->secondaryTileset);
+    if (tileset)
+        label.prepend("METATILE_" + QString(tileset->name).replace("gTileset_", "") + "_");
+    QGuiApplication::clipboard()->setText(label);
+    QToolTip::showText(this->ui->copyButton_metatileLabel->mapToGlobal(QPoint(0, 0)), "Copied!");
 }
