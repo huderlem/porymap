@@ -795,6 +795,14 @@ bool ProjectConfig::getTripleLayerMetatilesEnabled() {
     return this->enableTripleLayerMetatiles;
 }
 
+int ProjectConfig::getNumLayersInMetatile() {
+    return this->enableTripleLayerMetatiles ? 3 : 2;
+}
+
+int ProjectConfig::getNumTilesInMetatile() {
+    return this->enableTripleLayerMetatiles ? 12 : 8;
+}
+
 void ProjectConfig::setNewMapMetatileId(int metatileId) {
     this->newMapMetatileId = metatileId;
     this->save();

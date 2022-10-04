@@ -19,11 +19,9 @@ void MetatileLayersItem::draw() {
         QPoint(80, 16),
     };
 
-    bool isTripleLayerMetatile = projectConfig.getTripleLayerMetatilesEnabled();
-    int width = isTripleLayerMetatile ? 96 : 64;
-    QPixmap pixmap(width, 32);
+    int numTiles = projectConfig.getNumTilesInMetatile();
+    QPixmap pixmap(numTiles * 8, 32);
     QPainter painter(&pixmap);
-    int numTiles = isTripleLayerMetatile ? 12 : 8;
     for (int i = 0; i < numTiles; i++) {
         Tile tile = this->metatile->tiles.at(i);
         QImage tileImage = getPalettedTileImage(tile.tileId, this->primaryTileset, this->secondaryTileset, tile.palette, true)
@@ -98,8 +96,7 @@ void MetatileLayersItem::clearLastModifiedCoords() {
 }
 
 void MetatileLayersItem::getBoundedCoords(QPointF pos, int *x, int *y) {
-    bool isTripleLayerMetatile = projectConfig.getTripleLayerMetatilesEnabled();
-    int maxX = isTripleLayerMetatile ? 5 : 3;
+    int maxX = (projectConfig.getNumLayersInMetatile() * 2) - 1;
     *x = static_cast<int>(pos.x()) / 16;
     *y = static_cast<int>(pos.y()) / 16;
     if (*x < 0) *x = 0;

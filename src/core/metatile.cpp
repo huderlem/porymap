@@ -10,6 +10,19 @@ Metatile::Metatile() :
     unusedAttributes(0)
 {  }
 
+Metatile::Metatile(const int numTiles) :
+    behavior(0),
+    layerType(0),
+    encounterType(0),
+    terrainType(0),
+    unusedAttributes(0)
+{
+    Tile tile = Tile();
+    for (int i = 0; i < numTiles; i++) {
+        this->tiles.append(tile);
+    }
+}
+
 int Metatile::getIndexInTileset(int metatileId) {
     if (metatileId < Project::getNumMetatilesPrimary()) {
         return metatileId;

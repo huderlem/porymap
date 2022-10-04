@@ -238,6 +238,8 @@ public:
     bool getCreateMapTextFileEnabled();
     void setTripleLayerMetatilesEnabled(bool enable);
     bool getTripleLayerMetatilesEnabled();
+    int getNumLayersInMetatile();
+    int getNumTilesInMetatile();
     void setNewMapMetatileId(int metatileId);
     int getNewMapMetatileId();
     void setNewMapElevation(int elevation);

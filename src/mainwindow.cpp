@@ -1307,8 +1307,8 @@ void MainWindow::on_actionNew_Tileset_triggered() {
         int numMetaTiles = createTilesetDialog->isSecondary ? (Project::getNumTilesTotal() - Project::getNumTilesPrimary()) : Project::getNumTilesPrimary();
         QImage tilesImage(":/images/blank_tileset.png");
         editor->project->loadTilesetTiles(&newSet, tilesImage);
+        int tilesPerMetatile = projectConfig.getNumTilesInMetatile();
         for(int i = 0; i < numMetaTiles; ++i) {
-            int tilesPerMetatile = projectConfig.getTripleLayerMetatilesEnabled() ? 12 : 8;
             Metatile *mt = new Metatile();
             for(int j = 0; j < tilesPerMetatile; ++j){
                 Tile tile(0, false, false, 0);

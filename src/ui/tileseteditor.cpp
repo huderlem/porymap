@@ -192,8 +192,7 @@ void TilesetEditor::initMetatileLayersItem() {
 
 void TilesetEditor::initTileSelector()
 {
-    this->tileSelector = new TilesetEditorTileSelector(this->primaryTileset, this->secondaryTileset,
-                                                       projectConfig.getTripleLayerMetatilesEnabled());
+    this->tileSelector = new TilesetEditorTileSelector(this->primaryTileset, this->secondaryTileset, projectConfig.getNumLayersInMetatile());
     connect(this->tileSelector, &TilesetEditorTileSelector::hoveredTileChanged,
             this, &TilesetEditor::onHoveredTileChanged);
     connect(this->tileSelector, &TilesetEditorTileSelector::hoveredTileCleared,
@@ -398,8 +397,7 @@ void TilesetEditor::onMetatileLayerTileChanged(int x, int y) {
     QPoint dimensions = this->tileSelector->getSelectionDimensions();
     QList<Tile> tiles = this->tileSelector->getSelectedTiles();
     int selectedTileIndex = 0;
-    bool isTripleLayerMetatile = projectConfig.getTripleLayerMetatilesEnabled();
-    int maxTileIndex = isTripleLayerMetatile ? 12: 8;
+    int maxTileIndex = projectConfig.getNumTilesInMetatile();
     for (int j = 0; j < dimensions.y(); j++) {
         for (int i = 0; i < dimensions.x(); i++) {
             int tileIndex = ((x + i) / 2 * 4) + ((y + j) * 2) + ((x + i) % 2);
@@ -430,8 +428,7 @@ void TilesetEditor::onMetatileLayerSelectionChanged(QPoint selectionOrigin, int 
     QList<int> tileIdxs;
     int x = selectionOrigin.x();
     int y = selectionOrigin.y();
-    bool isTripleLayerMetatile = projectConfig.getTripleLayerMetatilesEnabled();
-    int maxTileIndex = isTripleLayerMetatile ? 12: 8;
+    int maxTileIndex = projectConfig.getNumTilesInMetatile();
     for (int j = 0; j < height; j++) {
         for (int i = 0; i < width; i++) {
             int tileIndex = ((x + i) / 2 * 4) + ((y + j) * 2) + ((x + i) % 2);
@@ -759,28 +756,18 @@ void TilesetEditor::on_actionChange_Metatiles_Count_triggered()
     if (dialog.exec() == QDialog::Accepted) {
         int numPrimaryMetatiles = primarySpinBox->value();
         int numSecondaryMetatiles = secondarySpinBox->value();
-        int numTiles = projectConfig.getTripleLayerMetatilesEnabled() ? 12 : 8;
+        int numTiles = projectConfig.getNumTilesInMetatile();
         while (this->primaryTileset->metatiles.length() > numPrimaryMetatiles) {
             delete this->primaryTileset->metatiles.takeLast();
         }
         while (this->primaryTileset->metatiles.length() < numPrimaryMetatiles) {
-            Tile tile(0, false, false, 0);
-            Metatile *metatile = new Metatile();
-            for (int i = 0; i < numTiles; i++) {
-                metatile->tiles.append(tile);
-            }
-            this->primaryTileset->metatiles.append(metatile);
+            this->primaryTileset->metatiles.append(new Metatile(numTiles));
         }
         while (this->secondaryTileset->metatiles.length() > numSecondaryMetatiles) {
             delete this->secondaryTileset->metatiles.takeLast();
         }
         while (this->secondaryTileset->metatiles.length() < numSecondaryMetatiles) {
-            Tile tile(0, false, false, 0);
-            Metatile *metatile = new Metatile();
-            for (int i = 0; i < numTiles; i++) {
-                metatile->tiles.append(tile);
-            }
-            this->secondaryTileset->metatiles.append(metatile);
+            this->secondaryTileset->metatiles.append(new Metatile(numTiles));
         }
 
         this->metatileSelector->updateSelectedMetatile();
@@ -852,10 +839,7 @@ void TilesetEditor::on_actionRedo_triggered()
 
 void TilesetEditor::on_actionCut_triggered()
 {
-    int numTiles = projectConfig.getTripleLayerMetatilesEnabled() ? 12 : 8;
-    Metatile * empty = new Metatile();
-    for (int i = 0; i < numTiles; i++)
-        empty->tiles.append(Tile());
+    Metatile * empty = new Metatile(projectConfig.getNumTilesInMetatile());
     this->copyMetatile(true);
     this->pasteMetatile(empty);
     delete empty;
