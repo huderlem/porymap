@@ -818,7 +818,7 @@ void TilesetEditor::onPaletteEditorChangedPalette(int paletteId) {
     this->on_spinBox_paletteSelector_valueChanged(paletteId);
 }
 
-bool TilesetEditor::replaceMetatile(uint16_t metatileId, Metatile * src)
+bool TilesetEditor::replaceMetatile(uint16_t metatileId, const Metatile * src)
 {
     Metatile * dest = Tileset::getMetatile(metatileId, this->primaryTileset, this->secondaryTileset);
     if (!dest || !src || *dest == *src)
@@ -850,8 +850,28 @@ void TilesetEditor::on_actionRedo_triggered()
     this->replaceMetatile(commit->metatileId, commit->newMetatile);
 }
 
+void TilesetEditor::on_actionCut_triggered()
+{
+    int numTiles = projectConfig.getTripleLayerMetatilesEnabled() ? 12 : 8;
+    Metatile * empty = new Metatile();
+    for (int i = 0; i < numTiles; i++)
+        empty->tiles.append(Tile());
+    this->copyMetatile(true);
+    this->pasteMetatile(empty);
+    delete empty;
+}
+
 void TilesetEditor::on_actionCopy_triggered()
 {
+    this->copyMetatile(false);
+}
+
+void TilesetEditor::on_actionPaste_triggered()
+{
+    this->pasteMetatile(this->copiedMetatile);
+}
+
+void TilesetEditor::copyMetatile(bool cut) {
     Metatile * toCopy = Tileset::getMetatile(this->getSelectedMetatileId(), this->primaryTileset, this->secondaryTileset);
     if (!toCopy) return;
 
@@ -859,14 +879,14 @@ void TilesetEditor::on_actionCopy_triggered()
         this->copiedMetatile = new Metatile(*toCopy);
     else
         *this->copiedMetatile = *toCopy;
-    this->copiedMetatile->label = ""; // Don't copy the label, these should be unique to each metatile
+    if (!cut) this->copiedMetatile->label = ""; // Don't copy the label unless it's a cut, these should be unique to each metatile
 }
 
-void TilesetEditor::on_actionPaste_triggered()
+void TilesetEditor::pasteMetatile(const Metatile * toPaste)
 {
     Metatile *prevMetatile = new Metatile(*this->metatile);
     uint16_t metatileId = this->getSelectedMetatileId();
-    if (!this->replaceMetatile(metatileId, this->copiedMetatile)) {
+    if (!this->replaceMetatile(metatileId, toPaste)) {
         delete prevMetatile;
         return;
     }
