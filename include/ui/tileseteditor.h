@@ -105,8 +105,8 @@ private slots:
 
     void on_copyButton_metatileLabel_clicked();
 
+    void on_actionCut_triggered();
     void on_actionCopy_triggered();
-
     void on_actionPaste_triggered();
 
 private:
@@ -133,7 +133,9 @@ private:
     void closeEvent(QCloseEvent*);
     void countMetatileUsage();
     void countTileUsage();
-    bool replaceMetatile(uint16_t metatileId, Metatile * src);
+    void copyMetatile(bool cut);
+    void pasteMetatile(const Metatile * toPaste);
+    bool replaceMetatile(uint16_t metatileId, const Metatile * src);
 
     Ui::TilesetEditor *ui;
     History<MetatileHistoryItem*> metatileHistory;
