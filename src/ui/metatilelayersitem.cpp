@@ -19,9 +19,9 @@ void MetatileLayersItem::draw() {
         QPoint(80, 16),
     };
 
-    int numTiles = projectConfig.getNumTilesInMetatile();
-    QPixmap pixmap(numTiles * 8, 32);
+    QPixmap pixmap(projectConfig.getNumLayersInMetatile() * 32, 32);
     QPainter painter(&pixmap);
+    int numTiles = projectConfig.getNumTilesInMetatile();
     for (int i = 0; i < numTiles; i++) {
         Tile tile = this->metatile->tiles.at(i);
         QImage tileImage = getPalettedTileImage(tile.tileId, this->primaryTileset, this->secondaryTileset, tile.palette, true)
