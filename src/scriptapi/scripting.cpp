@@ -70,7 +70,6 @@ void Scripting::populateGlobalObject(MainWindow *mainWindow) {
     int numTilesTotal = Project::getNumTilesTotal();
     int numMetatilesPrimary = Project::getNumMetatilesPrimary();
     int numMetatilesTotal = Project::getNumMetatilesTotal();
-    bool tripleLayerEnabled = projectConfig.getTripleLayerMetatilesEnabled();
 
     // Invisibly create an "About" window to read Porymap version
     AboutPorymap *about = new AboutPorymap(mainWindow);
@@ -85,8 +84,8 @@ void Scripting::populateGlobalObject(MainWindow *mainWindow) {
     constants.setProperty("max_secondary_tiles", numTilesTotal - numTilesPrimary);
     constants.setProperty("max_primary_metatiles", numMetatilesPrimary);
     constants.setProperty("max_secondary_metatiles", numMetatilesTotal - numMetatilesPrimary);
-    constants.setProperty("layers_per_metatile", tripleLayerEnabled ? 3 : 2);
-    constants.setProperty("tiles_per_metatile", tripleLayerEnabled ? 12 : 8);
+    constants.setProperty("layers_per_metatile", projectConfig.getNumLayersInMetatile());
+    constants.setProperty("tiles_per_metatile", projectConfig.getNumTilesInMetatile());
     constants.setProperty("base_game_version", projectConfig.getBaseGameVersionString());
 
     instance->engine->globalObject().setProperty("constants", constants);

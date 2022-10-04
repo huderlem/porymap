@@ -1079,7 +1079,7 @@ void Project::saveTilesetMetatiles(Tileset *tileset) {
     QFile metatiles_file(tileset->metatiles_path);
     if (metatiles_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
         QByteArray data;
-        int numTiles = projectConfig.getTripleLayerMetatilesEnabled() ? 12 : 8;
+        int numTiles = projectConfig.getNumTilesInMetatile();
         for (Metatile *metatile : tileset->metatiles) {
             for (int i = 0; i < numTiles; i++) {
                 uint16_t tile = metatile->tiles.at(i).rawValue();
@@ -1591,7 +1591,7 @@ void Project::loadTilesetMetatiles(Tileset* tileset) {
     QFile metatiles_file(tileset->metatiles_path);
     if (metatiles_file.open(QIODevice::ReadOnly)) {
         QByteArray data = metatiles_file.readAll();
-        int tilesPerMetatile = projectConfig.getTripleLayerMetatilesEnabled() ? 12 : 8;
+        int tilesPerMetatile = projectConfig.getNumTilesInMetatile();
         int bytesPerMetatile = 2 * tilesPerMetatile;
         int num_metatiles = data.length() / bytesPerMetatile;
         QList<Metatile*> metatiles;

@@ -36,6 +36,7 @@ public:
     Metatile();
     Metatile(const Metatile &other) = default;
     Metatile &operator=(const Metatile &other) = default;
+    Metatile(const int numTiles);
 
 public:
     QList<Tile> tiles;
