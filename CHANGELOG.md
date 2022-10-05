@@ -17,6 +17,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Add Cut/Copy/Paste for metatiles in the Tileset Editor.
 - Add new features to the scripting API, including the ability to display message boxes and user input windows, set overlay opacity, get/set map header properties, read/write the map border, read tile pixel data, and set blocks or metatile attributes using a raw value.
 - Add button to copy the full metatile label to the clipboard in the Tileset Editor.
+- Add ability to export an image of the primary or secondary tileset's metatiles.
 - Add option to not open the most recent project on launch.
 - Add options for customizing how new maps are filled
 - Add color picker to palette editor for taking colors from the screen.
