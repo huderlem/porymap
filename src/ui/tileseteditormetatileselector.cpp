@@ -12,27 +12,32 @@ TilesetEditorMetatileSelector::TilesetEditorMetatileSelector(Tileset *primaryTil
     this->usedMetatiles.resize(Project::getNumMetatilesTotal());
 }
 
-void TilesetEditorMetatileSelector::draw() {
-    if (!this->primaryTileset || !this->secondaryTileset) {
-        this->setPixmap(QPixmap());
-    }
+QImage TilesetEditorMetatileSelector::buildAllMetatilesImage() {
+    return this->buildImage(0, Project::getNumMetatilesPrimary() + this->secondaryTileset->metatiles.length() - 1);
+}
 
-    int primaryLength = this->primaryTileset->metatiles.length();
-    int length_ = primaryLength + this->secondaryTileset->metatiles.length();
-    int height_ = length_ / this->numMetatilesWide;
-    if (length_ % this->numMetatilesWide != 0) {
-        height_++;
+QImage TilesetEditorMetatileSelector::buildPrimaryMetatilesImage() {
+    return this->buildImage(0, this->primaryTileset->metatiles.length() - 1);
+}
+
+QImage TilesetEditorMetatileSelector::buildSecondaryMetatilesImage() {
+    int numPrimary = Project::getNumMetatilesPrimary();
+    return this->buildImage(numPrimary, numPrimary + this->secondaryTileset->metatiles.length() - 1);
+}
+
+QImage TilesetEditorMetatileSelector::buildImage(int metatileIdStart, int metatileIdEnd) {
+    int totalMetatiles = metatileIdEnd - metatileIdStart + 1;
+    int numMetatilesHigh = totalMetatiles / this->numMetatilesWide;
+    if (totalMetatiles % this->numMetatilesWide != 0) {
+        // Round up height for incomplete last row
+        numMetatilesHigh++;
     }
-    QImage image(this->numMetatilesWide * 32, height_ * 32, QImage::Format_RGBA8888);
+    QImage image(this->numMetatilesWide * 32, numMetatilesHigh * 32, QImage::Format_RGBA8888);
     image.fill(Qt::magenta);
     QPainter painter(&image);
-    for (int i = 0; i < length_; i++) {
-        int tile = i;
-        if (i >= primaryLength) {
-            tile += Project::getNumMetatilesPrimary() - primaryLength;
-        }
+    for (int i = 0; i < totalMetatiles; i++) {
         QImage metatile_image = getMetatileImage(
-                    tile,
+                    i + metatileIdStart,
                     this->primaryTileset,
                     this->secondaryTileset,
                     map->metatileLayerOrder,
@@ -44,9 +49,15 @@ void TilesetEditorMetatileSelector::draw() {
         QPoint metatile_origin = QPoint(map_x * 32, map_y * 32);
         painter.drawImage(metatile_origin, metatile_image);
     }
-
     painter.end();
-    this->setPixmap(QPixmap::fromImage(image));
+    return image;
+}
+
+void TilesetEditorMetatileSelector::draw() {
+    if (!this->primaryTileset || !this->secondaryTileset) {
+        this->setPixmap(QPixmap());
+    }
+    this->setPixmap(QPixmap::fromImage(this->buildAllMetatilesImage()));
     this->drawSelection();
 
     drawFilters();

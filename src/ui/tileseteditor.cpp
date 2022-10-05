@@ -902,6 +902,28 @@ void TilesetEditor::on_actionExport_Secondary_Tiles_Image_triggered()
     }
 }
 
+void TilesetEditor::on_actionExport_Primary_Metatiles_Image_triggered()
+{
+    QString defaultName = QString("%1_Metatiles").arg(this->primaryTileset->name);
+    QString defaultFilepath = QString("%1/%2.png").arg(this->project->root).arg(defaultName);
+    QString filepath = QFileDialog::getSaveFileName(this, "Export Primary Metatiles Image", defaultFilepath, "Image Files (*.png)");
+    if (!filepath.isEmpty()) {
+        QImage image = this->metatileSelector->buildPrimaryMetatilesImage();
+        image.save(filepath, "PNG");
+    }
+}
+
+void TilesetEditor::on_actionExport_Secondary_Metatiles_Image_triggered()
+{
+    QString defaultName = QString("%1_Metatiles").arg(this->secondaryTileset->name);
+    QString defaultFilepath = QString("%1/%2.png").arg(this->project->root).arg(defaultName);
+    QString filepath = QFileDialog::getSaveFileName(this, "Export Secondary Metatiles Image", defaultFilepath, "Image Files (*.png)");
+    if (!filepath.isEmpty()) {
+        QImage image = this->metatileSelector->buildSecondaryMetatilesImage();
+        image.save(filepath, "PNG");
+    }
+}
+
 void TilesetEditor::on_actionImport_Primary_Metatiles_triggered()
 {
     this->importTilesetMetatiles(this->primaryTileset, true);

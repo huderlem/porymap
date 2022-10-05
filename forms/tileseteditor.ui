@@ -562,6 +562,8 @@
     <addaction name="separator"/>
     <addaction name="actionExport_Primary_Tiles_Image"/>
     <addaction name="actionExport_Secondary_Tiles_Image"/>
+    <addaction name="actionExport_Primary_Metatiles_Image"/>
+    <addaction name="actionExport_Secondary_Metatiles_Image"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -664,6 +666,16 @@
   <action name="actionImport_Secondary_Metatiles">
    <property name="text">
     <string>Import Secondary Metatiles from Advance Map 1.92...</string>
+   </property>
+  </action>
+  <action name="actionExport_Primary_Metatiles_Image">
+   <property name="text">
+    <string>Export Primary Metatiles Image...</string>
+   </property>
+  </action>
+  <action name="actionExport_Secondary_Metatiles_Image">
+   <property name="text">
+    <string>Export Secondary Metatiles Image...</string>
    </property>
   </action>
   <action name="actionCut">

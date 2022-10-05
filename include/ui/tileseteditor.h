@@ -96,11 +96,11 @@ private slots:
     void on_comboBox_terrainType_activated(int arg1);
 
     void on_actionExport_Primary_Tiles_Image_triggered();
-
     void on_actionExport_Secondary_Tiles_Image_triggered();
+    void on_actionExport_Primary_Metatiles_Image_triggered();
+    void on_actionExport_Secondary_Metatiles_Image_triggered();
 
     void on_actionImport_Primary_Metatiles_triggered();
-
     void on_actionImport_Secondary_Metatiles_triggered();
 
     void on_copyButton_metatileLabel_clicked();
