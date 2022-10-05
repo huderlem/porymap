@@ -1802,12 +1802,14 @@ void MainWindow::on_actionEdit_Shortcuts_triggered()
     if (!shortcutsEditor)
         initShortcutsEditor();
 
-    if (shortcutsEditor->isHidden())
+    if (shortcutsEditor->isHidden()) {
         shortcutsEditor->show();
-    else if (shortcutsEditor->isMinimized())
+    } else if (shortcutsEditor->isMinimized()) {
         shortcutsEditor->showNormal();
-    else
+    } else {
+        shortcutsEditor->raise();
         shortcutsEditor->activateWindow();
+    }
 }
 
 void MainWindow::initShortcutsEditor() {
@@ -3028,6 +3030,7 @@ void MainWindow::on_actionTileset_Editor_triggered()
     } else if (this->tilesetEditor->isMinimized()) {
         this->tilesetEditor->showNormal();
     } else {
+        this->tilesetEditor->raise();
         this->tilesetEditor->activateWindow();
     }
 
@@ -3087,6 +3090,7 @@ void MainWindow::on_actionEdit_Preferences_triggered() {
     } else if (preferenceEditor->isMinimized()) {
         preferenceEditor->showNormal();
     } else {
+        preferenceEditor->raise();
         preferenceEditor->activateWindow();
     }
 }
@@ -3175,6 +3179,7 @@ void MainWindow::on_actionRegion_Map_Editor_triggered() {
     } else if (this->regionMapEditor->isMinimized()) {
         this->regionMapEditor->showNormal();
     } else {
+        this->regionMapEditor->raise();
         this->regionMapEditor->activateWindow();
     }
 }

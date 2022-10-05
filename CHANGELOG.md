@@ -43,6 +43,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fixed a bug where saving the tileset editor would reselect the main editor's first selected metatile.
 - Fix crashes / unexpected behavior if certain scripting API functions are given invalid palette or tile numbers.
 - Silence unnecessary error logging when parsing C defines Porymap doesn't use.
+- Fix some windows like the Tileset Editor not raising to the front when reactivated.
 
 ## [4.5.0] - 2021-12-26
 ### Added

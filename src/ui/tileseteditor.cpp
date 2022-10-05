@@ -792,6 +792,7 @@ void TilesetEditor::on_actionChange_Palettes_triggered()
     } else if (this->paletteEditor->isMinimized()) {
         this->paletteEditor->showNormal();
     } else {
+        this->paletteEditor->raise();
         this->paletteEditor->activateWindow();
     }
 }
