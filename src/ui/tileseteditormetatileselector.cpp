@@ -13,29 +13,27 @@ TilesetEditorMetatileSelector::TilesetEditorMetatileSelector(Tileset *primaryTil
 }
 
 QImage TilesetEditorMetatileSelector::buildAllMetatilesImage() {
-    return this->buildImage(0, Project::getNumMetatilesPrimary() + this->secondaryTileset->metatiles.length() - 1);
+    return this->buildImage(0, Project::getNumMetatilesPrimary() + this->secondaryTileset->metatiles.length());
 }
 
 QImage TilesetEditorMetatileSelector::buildPrimaryMetatilesImage() {
-    return this->buildImage(0, this->primaryTileset->metatiles.length() - 1);
+    return this->buildImage(0, this->primaryTileset->metatiles.length());
 }
 
 QImage TilesetEditorMetatileSelector::buildSecondaryMetatilesImage() {
-    int numPrimary = Project::getNumMetatilesPrimary();
-    return this->buildImage(numPrimary, numPrimary + this->secondaryTileset->metatiles.length() - 1);
+    return this->buildImage(Project::getNumMetatilesPrimary(), this->secondaryTileset->metatiles.length());
 }
 
-QImage TilesetEditorMetatileSelector::buildImage(int metatileIdStart, int metatileIdEnd) {
-    int totalMetatiles = metatileIdEnd - metatileIdStart + 1;
-    int numMetatilesHigh = totalMetatiles / this->numMetatilesWide;
-    if (totalMetatiles % this->numMetatilesWide != 0) {
+QImage TilesetEditorMetatileSelector::buildImage(int metatileIdStart, int numMetatiles) {
+    int numMetatilesHigh = numMetatiles / this->numMetatilesWide;
+    if (numMetatiles % this->numMetatilesWide != 0) {
         // Round up height for incomplete last row
         numMetatilesHigh++;
     }
     QImage image(this->numMetatilesWide * 32, numMetatilesHigh * 32, QImage::Format_RGBA8888);
     image.fill(Qt::magenta);
     QPainter painter(&image);
-    for (int i = 0; i < totalMetatiles; i++) {
+    for (int i = 0; i < numMetatiles; i++) {
         QImage metatile_image = getMetatileImage(
                     i + metatileIdStart,
                     this->primaryTileset,

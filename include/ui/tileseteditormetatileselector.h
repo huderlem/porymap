@@ -43,7 +43,7 @@ private:
     void drawUnused();
     void drawCounts();
     QImage buildAllMetatilesImage();
-    QImage buildImage(int metatileIdStart, int metatileIdEnd);
+    QImage buildImage(int metatileIdStart, int numMetatiles);
 
 signals:
     void hoveredMetatileChanged(uint16_t);
