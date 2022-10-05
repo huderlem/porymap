@@ -23,8 +23,7 @@ QImage getMetatileImage(
         bool useTruePalettes)
 {
     Metatile* metatile = Tileset::getMetatile(metatileId, primaryTileset, secondaryTileset);
-    Tileset* blockTileset = Tileset::getMetatileTileset(metatileId, primaryTileset, secondaryTileset);
-    if (!metatile || !blockTileset) {
+    if (!metatile) {
         QImage metatile_image(16, 16, QImage::Format_RGBA8888);
         metatile_image.fill(Qt::magenta);
         return metatile_image;

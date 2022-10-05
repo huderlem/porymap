@@ -52,9 +52,6 @@ QImage TilesetEditorMetatileSelector::buildImage(int metatileIdStart, int numMet
 }
 
 void TilesetEditorMetatileSelector::draw() {
-    if (!this->primaryTileset || !this->secondaryTileset) {
-        this->setPixmap(QPixmap());
-    }
     this->setPixmap(QPixmap::fromImage(this->buildAllMetatilesImage()));
     this->drawSelection();
 
