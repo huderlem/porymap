@@ -13,7 +13,7 @@ TilesetEditorMetatileSelector::TilesetEditorMetatileSelector(Tileset *primaryTil
 }
 
 QImage TilesetEditorMetatileSelector::buildAllMetatilesImage() {
-    return this->buildImage(0, Project::getNumMetatilesPrimary() + this->secondaryTileset->metatiles.length());
+    return this->buildImage(0, this->primaryTileset->metatiles.length() + this->secondaryTileset->metatiles.length());
 }
 
 QImage TilesetEditorMetatileSelector::buildPrimaryMetatilesImage() {
@@ -30,12 +30,19 @@ QImage TilesetEditorMetatileSelector::buildImage(int metatileIdStart, int numMet
         // Round up height for incomplete last row
         numMetatilesHigh++;
     }
+    int numPrimary = this->primaryTileset->metatiles.length();
+    int maxPrimary = Project::getNumMetatilesPrimary();
+    bool includesPrimary = metatileIdStart < maxPrimary;
+
     QImage image(this->numMetatilesWide * 32, numMetatilesHigh * 32, QImage::Format_RGBA8888);
     image.fill(Qt::magenta);
     QPainter painter(&image);
     for (int i = 0; i < numMetatiles; i++) {
+        int metatileId = i + metatileIdStart;
+        if (includesPrimary && metatileId >= numPrimary)
+            metatileId += maxPrimary - numPrimary; // Skip over unused region of primary tileset
         QImage metatile_image = getMetatileImage(
-                    i + metatileIdStart,
+                    metatileId,
                     this->primaryTileset,
                     this->secondaryTileset,
                     map->metatileLayerOrder,
