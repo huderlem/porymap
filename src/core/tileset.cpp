@@ -169,6 +169,7 @@ bool Tileset::appendToHeaders(QString root, QString friendlyName, bool usingAsm)
 }
 
 // TODO: Interpet isSecondary to remove primary argument here and below
+// TODO: friendlyName.toLower() is not the usual format for tileset folders
 bool Tileset::appendToGraphics(QString root, QString friendlyName, bool primary, bool usingAsm) {
     QString graphicsFile = root + "/" + (usingAsm ? projectConfig.getFilePath(ProjectFilePath::tilesets_graphics_asm)
                                                   : projectConfig.getFilePath(ProjectFilePath::tilesets_graphics));

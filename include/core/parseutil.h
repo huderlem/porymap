@@ -48,8 +48,10 @@ public:
     QStringList readCArray(const QString &text, const QString &label);
     QMap<QString, QString> readNamedIndexCArray(const QString &text, const QString &label);
     QString readCIncbin(const QString &text, const QString &label);
+    QStringList readCIncbinArray(const QString &filename, const QString &label);
     QMap<QString, int> readCDefines(const QString &filename, const QStringList &prefixes, QMap<QString, int> = { });
     QStringList readCDefinesSorted(const QString&, const QStringList&, const QMap<QString, int>& = { });
+    QMap<QString, QMap<QString, QString>> readCStructs(const QString &, const QString & = "", const QHash<int, QString> = { });
     QList<QStringList> getLabelMacros(const QList<QStringList>&, const QString&);
     QStringList getLabelValues(const QList<QStringList>&, const QString&);
     bool tryParseJsonFile(QJsonDocument *out, const QString &filepath);
@@ -70,7 +72,6 @@ public:
 
     static QStringList splitShellCommand(QStringView command);
     static bool gameStringToBool(QString gameString);
-    static QMap<QString, QMap<QString, QString>> readCStructs(const QString &filePath, const QString &target = "", const QHash<int, QString> memberMap = { });
 
 private:
     QString root;

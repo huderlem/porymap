@@ -1153,7 +1153,7 @@ Tileset* Project::loadTileset(QString label, Tileset *tileset) {
         }
     } else {
         // Read C tileset header
-        QMap<QString, QMap<QString, QString>> structs = ParseUtil::readCStructs(this->root + "/" + projectConfig.getFilePath(ProjectFilePath::tilesets_headers), label);
+        QMap<QString, QMap<QString, QString>> structs = parser.readCStructs(projectConfig.getFilePath(ProjectFilePath::tilesets_headers), label);
         if (!structs.contains(label)) {
             return nullptr;
         }
@@ -1519,12 +1519,26 @@ void Project::readTilesetPaths(Tileset* tileset) {
             tileset->metatiles_path = root + '/' + metatiles_values.value(0).section('"', 1, 1);
         if (!metatile_attrs_values.isEmpty())
             tileset->metatile_attrs_path = root + '/' + metatile_attrs_values.value(0).section('"', 1, 1);
-        for (const auto &value : palettes_values) {
+        for (const auto &value : palettes_values)
             tileset->palettePaths.append(this->fixPalettePath(root + '/' + value.section('"', 1, 1)));
-        }
     } else {
         // Read C tileset data files
-        // TODO
+        const QString graphicsFile = projectConfig.getFilePath(ProjectFilePath::tilesets_graphics);
+        const QString metatilesFile = projectConfig.getFilePath(ProjectFilePath::tilesets_metatiles);
+        
+        const QString tilesImagePath = parser.readCIncbin(graphicsFile, tileset->tiles_label);
+        const QStringList palettePaths = parser.readCIncbinArray(graphicsFile, tileset->palettes_label);
+        const QString metatilesPath = parser.readCIncbin(metatilesFile, tileset->metatiles_label);
+        const QString metatileAttrsPath = parser.readCIncbin(metatilesFile, tileset->metatile_attrs_label);
+
+        if (!tilesImagePath.isEmpty())
+            tileset->tilesImagePath = this->fixGraphicPath(root + '/' + tilesImagePath);
+        if (!metatilesPath.isEmpty())
+            tileset->metatiles_path = root + '/' + metatilesPath;
+        if (!metatileAttrsPath.isEmpty())
+            tileset->metatile_attrs_path = root + '/' + metatileAttrsPath;
+        for (const auto &path : palettePaths)
+            tileset->palettePaths.append(this->fixPalettePath(root + '/' + path));
     }
 
     // Construct the expected path of the tileset's graphics, in case Porymap couldn't find any paths.
@@ -1934,13 +1948,13 @@ bool Project::readTilesetLabels() {
     this->tilesetLabels.insert("secondary", secondaryTilesets);
     this->tilesetLabelsOrdered.clear();
 
-    QString filename = this->root + "/" + projectConfig.getFilePath(ProjectFilePath::tilesets_headers);
-    QFileInfo fileInfo(filename);
+    QString filename = projectConfig.getFilePath(ProjectFilePath::tilesets_headers);
+    QFileInfo fileInfo(this->root + "/" + filename);
     if (!fileInfo.exists() || !fileInfo.isFile()) {
         // If the tileset headers file is missing, the user may still have the old assembly format.
         this->usingAsmTilesets = true;
-        QString asm_filename = this->root + "/" + projectConfig.getFilePath(ProjectFilePath::tilesets_headers_asm);
-        QString text = parser.readTextFile(asm_filename);
+        QString asm_filename = projectConfig.getFilePath(ProjectFilePath::tilesets_headers_asm);
+        QString text = parser.readTextFile(this->root + "/" + asm_filename);
         if (text.isEmpty()) {
             logError(QString("Failed to read tileset labels from '%1' or '%2'.").arg(filename).arg(asm_filename));
             return false;
@@ -1959,7 +1973,7 @@ bool Project::readTilesetLabels() {
         filename = asm_filename; // For error reporting further down
     } else {
         this->usingAsmTilesets = false;
-        QMap<QString, QMap<QString, QString>> structs = ParseUtil::readCStructs(filename);
+        QMap<QString, QMap<QString, QString>> structs = parser.readCStructs(filename);
         QStringList labels = structs.keys();
         for (const auto tilesetLabel : labels) {
             if (tilesetLabel.isEmpty()) continue;
@@ -2525,8 +2539,8 @@ bool Project::readEventGraphics() {
         {14, "images"},
     };
 
-    QString filepath = root + "/" + projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx_info);
-    QMap<QString, QMap<QString, QString>> gfxInfos = ParseUtil::readCStructs(filepath, "", gfxInfoMemberMap);
+    QString filepath = projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx_info);
+    QMap<QString, QMap<QString, QString>> gfxInfos = parser.readCStructs(filepath, "", gfxInfoMemberMap);
     for (QString gfxName : gfxNames) {
         EventGraphics * eventGraphics = new EventGraphics;
 
