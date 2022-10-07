@@ -270,6 +270,30 @@ QString ParseUtil::readCIncbin(const QString &filename, const QString &label) {
     return path;
 }
 
+QStringList ParseUtil::readCIncbinArray(const QString &filename, const QString &label) {
+    QStringList paths;
+
+    if (label.isNull()) {
+        return paths;
+    }
+
+    this->text = readTextFile(this->root + "/" + filename);
+
+    // Get the text starting after the label all the way to the definition's end
+    QRegularExpression re(QString("\\b%1\\b(.*?)};").arg(label), QRegularExpression::DotMatchesEverythingOption);
+    QRegularExpressionMatch arrayMatch = re.match(this->text);
+    if (!arrayMatch.hasMatch())
+        return paths;
+
+    // Extract incbin paths from the array
+    re.setPattern("INCBIN_[US][0-9][0-9]?\\(\\s*\"([^\"]*)\"\\s*\\)");
+    QRegularExpressionMatchIterator iter = re.globalMatch(arrayMatch.captured(1));
+    while (iter.hasNext()) {
+        paths.append(iter.next().captured(1));
+    }
+    return paths;
+}
+
 QMap<QString, int> ParseUtil::readCDefines(const QString &filename,
                                            const QStringList &prefixes,
                                            QMap<QString, int> allDefines)
@@ -389,14 +413,15 @@ bool ParseUtil::gameStringToBool(QString gameString) {
     return num != 0;
 }
 
-QMap<QString, QMap<QString, QString>> ParseUtil::readCStructs(const QString &filePath, const QString &target, const QHash<int, QString> memberMap) {
+QMap<QString, QMap<QString, QString>> ParseUtil::readCStructs(const QString &filename, const QString &label, const QHash<int, QString> memberMap) {
+    QString filePath = this->root + "/" + filename;
     auto cParser = fex::Parser();
     auto tokens = fex::Lexer().LexFile(filePath.toStdString());
     auto structs = cParser.ParseTopLevelObjects(tokens);
     QMap<QString, QMap<QString, QString>> structMaps;
     for (auto it = structs.begin(); it != structs.end(); it++) {
         QString structLabel = QString::fromStdString(it->first);
-        if (!target.isEmpty() && target != structLabel) continue; // Speed up parsing if only looking for a particular symbol
+        if (!label.isEmpty() && label != structLabel) continue; // Speed up parsing if only looking for a particular symbol
         QMap<QString, QString> values;
         int i = 0;
         for (const fex::ArrayValue &v : it->second.values()) {
