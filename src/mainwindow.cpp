@@ -1266,7 +1266,7 @@ void MainWindow::on_actionNew_Tileset_triggered() {
             msgBox.exec();
             return;
         }
-        QString fullDirectoryPath = editor->project->root + createTilesetDialog->path;
+        QString fullDirectoryPath = editor->project->root + "/" + createTilesetDialog->path;
         QDir directory;
         if(directory.exists(fullDirectoryPath)) {
             logError(QString("Could not create tileset \"%1\", the folder \"%2\" already exists.").arg(createTilesetDialog->friendlyName, fullDirectoryPath));
@@ -1335,8 +1335,8 @@ void MainWindow::on_actionNew_Tileset_triggered() {
 
         //append to tileset specific files
         newSet.appendToHeaders(editor->project->root, createTilesetDialog->friendlyName, editor->project->usingAsmTilesets);
-        newSet.appendToGraphics(editor->project->root, createTilesetDialog->friendlyName, !createTilesetDialog->isSecondary, editor->project->usingAsmTilesets);
-        newSet.appendToMetatiles(editor->project->root, createTilesetDialog->friendlyName, !createTilesetDialog->isSecondary, editor->project->usingAsmTilesets);
+        newSet.appendToGraphics(editor->project->root, createTilesetDialog->friendlyName, editor->project->usingAsmTilesets);
+        newSet.appendToMetatiles(editor->project->root, createTilesetDialog->friendlyName, editor->project->usingAsmTilesets);
 
         if(!createTilesetDialog->isSecondary) {
             this->ui->comboBox_PrimaryTileset->addItem(createTilesetDialog->fullSymbolName);
