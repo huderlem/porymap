@@ -37,10 +37,11 @@ public:
     static QList<QList<QRgb>> getBlockPalettes(Tileset*, Tileset*, bool useTruePalettes = false);
     static QList<QRgb> getPalette(int, Tileset*, Tileset*, bool useTruePalettes = false);
     static bool metatileIsValid(uint16_t metatileId, Tileset *, Tileset *);
-
+    static QString getExpectedDir(QString tilesetName, bool isSecondary);
+    QString getExpectedDir();
     bool appendToHeaders(QString root, QString friendlyName, bool usingAsm);
-    bool appendToGraphics(QString root, QString friendlyName, bool primary, bool usingAsm);
-    bool appendToMetatiles(QString root, QString friendlyName, bool primary, bool usingAsm);
+    bool appendToGraphics(QString root, QString friendlyName, bool usingAsm);
+    bool appendToMetatiles(QString root, QString friendlyName, bool usingAsm);
 };
 
 #endif // TILESET_H

@@ -168,9 +168,7 @@ bool Tileset::appendToHeaders(QString root, QString friendlyName, bool usingAsm)
     return true;
 }
 
-// TODO: Interpet isSecondary to remove primary argument here and below
-// TODO: friendlyName.toLower() is not the usual format for tileset folders
-bool Tileset::appendToGraphics(QString root, QString friendlyName, bool primary, bool usingAsm) {
+bool Tileset::appendToGraphics(QString root, QString friendlyName, bool usingAsm) {
     QString graphicsFile = root + "/" + (usingAsm ? projectConfig.getFilePath(ProjectFilePath::tilesets_graphics_asm)
                                                   : projectConfig.getFilePath(ProjectFilePath::tilesets_graphics));
     QFile file(graphicsFile);
@@ -179,10 +177,9 @@ bool Tileset::appendToGraphics(QString root, QString friendlyName, bool primary,
         return false;
     }
 
-    const QString primaryString = primary ? "primary" : "secondary";
-    const QString tilesetDir = QString("%1%2/%3/").arg(projectConfig.getFilePath(ProjectFilePath::data_tilesets_folders), primaryString, friendlyName.toLower());
-    const QString tilesPath = tilesetDir + "tiles.4bpp.lz";
-    const QString palettesPath = tilesetDir + "palettes/";
+    const QString tilesetDir = this->getExpectedDir();
+    const QString tilesPath = tilesetDir + "/tiles.4bpp.lz";
+    const QString palettesPath = tilesetDir + "/palettes/";
 
     QString dataString = "\n";
     if (usingAsm) {
@@ -197,6 +194,7 @@ bool Tileset::appendToGraphics(QString root, QString friendlyName, bool primary,
         dataString.append(QString("const u16 gTilesetPalettes_%1[][16] =\n{\n").arg(friendlyName));
         for (int i = 0; i < Project::getNumPalettesTotal(); i++)
             dataString.append(QString("    INCBIN_U16(\"%1%2.gbapal\"),\n").arg(palettesPath).arg(i, 2, 10, QLatin1Char('0')));
+        dataString.append("};\n");
         dataString.append(QString("\nconst u32 gTilesetTiles_%1[] = INCBIN_U32(\"%2\");\n").arg(friendlyName, tilesPath));
     }
     file.write(dataString.toUtf8());
@@ -205,7 +203,7 @@ bool Tileset::appendToGraphics(QString root, QString friendlyName, bool primary,
     return true;
 }
 
-bool Tileset::appendToMetatiles(QString root, QString friendlyName, bool primary, bool usingAsm) {
+bool Tileset::appendToMetatiles(QString root, QString friendlyName, bool usingAsm) {
     QString metatileFile = root + "/" + (usingAsm ? projectConfig.getFilePath(ProjectFilePath::tilesets_metatiles_asm)
                                                   : projectConfig.getFilePath(ProjectFilePath::tilesets_metatiles));
     QFile file(metatileFile);
@@ -214,10 +212,9 @@ bool Tileset::appendToMetatiles(QString root, QString friendlyName, bool primary
         return false;
     }
 
-    const QString primaryString = primary ? "primary" : "secondary";
-    const QString tilesetDir = QString("%1%2/%3/").arg(projectConfig.getFilePath(ProjectFilePath::data_tilesets_folders), primaryString, friendlyName.toLower());
-    const QString metatilesPath = tilesetDir + "metatiles.bin";
-    const QString metatileAttrsPath = tilesetDir + "metatile_attributes.bin";
+    const QString tilesetDir = this->getExpectedDir();
+    const QString metatilesPath = tilesetDir + "/metatiles.bin";
+    const QString metatileAttrsPath = tilesetDir + "/metatile_attributes.bin";
 
     QString dataString = "\n";
     if (usingAsm) {
@@ -236,4 +233,19 @@ bool Tileset::appendToMetatiles(QString root, QString friendlyName, bool primary
     file.flush();
     file.close();
     return true;
+}
+
+// The path where Porymap expects a Tileset's graphics assets to be stored (but not necessarily where they actually are)
+// Example: for gTileset_DepartmentStore, returns "data/tilesets/secondary/department_store/"
+QString Tileset::getExpectedDir()
+{
+    return Tileset::getExpectedDir(this->name, ParseUtil::gameStringToBool(this->is_secondary));
+}
+
+QString Tileset::getExpectedDir(QString tilesetName, bool isSecondary)
+{
+    QRegularExpression re("([a-z])([A-Z0-9])");
+    const QString category = isSecondary ? "secondary" : "primary";
+    const QString basePath = projectConfig.getFilePath(ProjectFilePath::data_tilesets_folders) + category + "/";
+    return basePath + tilesetName.replace("gTileset_", "").replace(re, "\\1_\\2").toLower();
 }

@@ -1503,6 +1503,7 @@ void Project::loadTilesetAssets(Tileset* tileset) {
 
 void Project::readTilesetPaths(Tileset* tileset) {
     // Parse the tileset data files to try and get explicit file paths for this tileset's assets
+    const QString rootDir = this->root + "/";
     if (this->usingAsmTilesets) {
         // Read asm tileset data files. Backwards compatibility
         const QList<QStringList> graphics = parser.parseAsm(projectConfig.getFilePath(ProjectFilePath::tilesets_graphics_asm));
@@ -1514,13 +1515,13 @@ void Project::readTilesetPaths(Tileset* tileset) {
         const QStringList metatile_attrs_values = parser.getLabelValues(metatiles_macros, tileset->metatile_attrs_label);
 
         if (!tiles_values.isEmpty())
-            tileset->tilesImagePath = this->fixGraphicPath(root + '/' + tiles_values.value(0).section('"', 1, 1));
+            tileset->tilesImagePath = this->fixGraphicPath(rootDir + tiles_values.value(0).section('"', 1, 1));
         if (!metatiles_values.isEmpty())
-            tileset->metatiles_path = root + '/' + metatiles_values.value(0).section('"', 1, 1);
+            tileset->metatiles_path = rootDir + metatiles_values.value(0).section('"', 1, 1);
         if (!metatile_attrs_values.isEmpty())
-            tileset->metatile_attrs_path = root + '/' + metatile_attrs_values.value(0).section('"', 1, 1);
+            tileset->metatile_attrs_path = rootDir + metatile_attrs_values.value(0).section('"', 1, 1);
         for (const auto &value : palettes_values)
-            tileset->palettePaths.append(this->fixPalettePath(root + '/' + value.section('"', 1, 1)));
+            tileset->palettePaths.append(this->fixPalettePath(rootDir + value.section('"', 1, 1)));
     } else {
         // Read C tileset data files
         const QString graphicsFile = projectConfig.getFilePath(ProjectFilePath::tilesets_graphics);
@@ -1532,24 +1533,17 @@ void Project::readTilesetPaths(Tileset* tileset) {
         const QString metatileAttrsPath = parser.readCIncbin(metatilesFile, tileset->metatile_attrs_label);
 
         if (!tilesImagePath.isEmpty())
-            tileset->tilesImagePath = this->fixGraphicPath(root + '/' + tilesImagePath);
+            tileset->tilesImagePath = this->fixGraphicPath(rootDir + tilesImagePath);
         if (!metatilesPath.isEmpty())
-            tileset->metatiles_path = root + '/' + metatilesPath;
+            tileset->metatiles_path = rootDir + metatilesPath;
         if (!metatileAttrsPath.isEmpty())
-            tileset->metatile_attrs_path = root + '/' + metatileAttrsPath;
+            tileset->metatile_attrs_path = rootDir + metatileAttrsPath;
         for (const auto &path : palettePaths)
-            tileset->palettePaths.append(this->fixPalettePath(root + '/' + path));
+            tileset->palettePaths.append(this->fixPalettePath(rootDir + path));
     }
 
-    // Construct the expected path of the tileset's graphics, in case Porymap couldn't find any paths.
-    // This will be used for e.g. gTileset_General, which has paths specified in graphics.c instead
-    QRegularExpression re("([a-z])([A-Z0-9])");
-    QString tilesetName = tileset->name;
-    QString category = ParseUtil::gameStringToBool(tileset->is_secondary) ? "secondary" : "primary";
-    QString basePath = root + "/" + projectConfig.getFilePath(ProjectFilePath::data_tilesets_folders) + category + "/";
-    QString defaultPath = basePath + tilesetName.replace("gTileset_", "").replace(re, "\\1_\\2").toLower();
-
-    // Try to set defaults
+    // Try to set default paths, if any weren't found by reading the files above
+    QString defaultPath = rootDir + tileset->getExpectedDir();
     if (tileset->tilesImagePath.isEmpty())
         tileset->tilesImagePath = defaultPath + "/tiles.png";
     if (tileset->metatiles_path.isEmpty())
