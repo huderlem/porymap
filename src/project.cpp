@@ -1131,6 +1131,7 @@ bool Project::loadLayoutTilesets(MapLayout *layout) {
 }
 
 Tileset* Project::loadTileset(QString label, Tileset *tileset) {
+    auto memberMap = Tileset::getHeaderMemberMap(this->usingAsmTilesets);
     if (this->usingAsmTilesets) {
         // Read asm tileset header. Backwards compatibility
         const QStringList values = parser.getLabelValues(parser.parseAsm(projectConfig.getFilePath(ProjectFilePath::tilesets_headers_asm)), label);
@@ -1140,27 +1141,22 @@ Tileset* Project::loadTileset(QString label, Tileset *tileset) {
         if (tileset == nullptr) {
             tileset = new Tileset;
         }
-        // Skips 0 (isCompressed), 2 (padding), and 6/7 (callback)
         tileset->name = label;
-        tileset->is_secondary = values.value(1);
-        tileset->tiles_label = values.value(3);
-        tileset->palettes_label = values.value(4);
-        tileset->metatiles_label = values.value(5);
-        if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
-            tileset->metatile_attrs_label = values.value(7);
-        } else {
-            tileset->metatile_attrs_label = values.value(6);
-        }
+        tileset->is_secondary = values.value(memberMap.key("isSecondary"));
+        tileset->tiles_label = values.value(memberMap.key("tiles"));
+        tileset->palettes_label = values.value(memberMap.key("palettes"));
+        tileset->metatiles_label = values.value(memberMap.key("metatiles"));
+        tileset->metatile_attrs_label = values.value(memberMap.key("metatileAttributes"));
     } else {
         // Read C tileset header
-        QMap<QString, QMap<QString, QString>> structs = parser.readCStructs(projectConfig.getFilePath(ProjectFilePath::tilesets_headers), label);
+        const auto structs = parser.readCStructs(projectConfig.getFilePath(ProjectFilePath::tilesets_headers), label, memberMap);
         if (!structs.contains(label)) {
             return nullptr;
         }
         if (tileset == nullptr) {
             tileset = new Tileset;
         }
-        QMap<QString, QString> tilesetAttributes = structs[label];
+        const auto tilesetAttributes = structs[label];
         tileset->name = label;
         tileset->is_secondary = tilesetAttributes.value("isSecondary");
         tileset->tiles_label = tilesetAttributes.value("tiles");
@@ -1967,7 +1963,7 @@ bool Project::readTilesetLabels() {
         filename = asm_filename; // For error reporting further down
     } else {
         this->usingAsmTilesets = false;
-        QMap<QString, QMap<QString, QString>> structs = parser.readCStructs(filename);
+        const auto structs = parser.readCStructs(filename, "", Tileset::getHeaderMemberMap(this->usingAsmTilesets));
         QStringList labels = structs.keys();
         for (const auto tilesetLabel : labels) {
             if (tilesetLabel.isEmpty()) continue;
@@ -1975,7 +1971,7 @@ bool Project::readTilesetLabels() {
                 this->tilesetLabels["secondary"].append(tilesetLabel);
             else
                 this->tilesetLabels["primary"].append(tilesetLabel);
-            this->tilesetLabelsOrdered.append(tilesetLabel);
+            this->tilesetLabelsOrdered.append(tilesetLabel); // TODO: This is alphabetical, AdvanceMap import wants the vanilla order
         }
     }
 
@@ -2534,7 +2530,7 @@ bool Project::readEventGraphics() {
     };
 
     QString filepath = projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx_info);
-    QMap<QString, QMap<QString, QString>> gfxInfos = parser.readCStructs(filepath, "", gfxInfoMemberMap);
+    const auto gfxInfos = parser.readCStructs(filepath, "", gfxInfoMemberMap);
     for (QString gfxName : gfxNames) {
         EventGraphics * eventGraphics = new EventGraphics;
 
@@ -2542,7 +2538,7 @@ bool Project::readEventGraphics() {
         if (!gfxInfos.contains(info_label))
             continue;
 
-        QMap<QString, QString>gfxInfoAttributes = gfxInfos[info_label];
+        const auto gfxInfoAttributes = gfxInfos[info_label];
 
         eventGraphics->inanimate = ParseUtil::gameStringToBool(gfxInfoAttributes.value("inanimate"));
         QString pic_label = gfxInfoAttributes.value("images");
