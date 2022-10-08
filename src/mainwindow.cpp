@@ -792,9 +792,11 @@ void MainWindow::displayMapProperties() {
     ui->comboBox_Type->setCurrentText(map->type);
     ui->comboBox_BattleScene->setCurrentText(map->battle_scene);
     ui->checkBox_ShowLocation->setChecked(ParseUtil::gameStringToBool(map->show_location));
-    ui->checkBox_AllowRunning->setChecked(ParseUtil::gameStringToBool(map->allowRunning));
-    ui->checkBox_AllowBiking->setChecked(ParseUtil::gameStringToBool(map->allowBiking));
-    ui->checkBox_AllowEscapeRope->setChecked(ParseUtil::gameStringToBool(map->allowEscapeRope));
+    if (projectConfig.getBaseGameVersion() != BaseGameVersion::pokeruby) {
+        ui->checkBox_AllowRunning->setChecked(ParseUtil::gameStringToBool(map->allowRunning));
+        ui->checkBox_AllowBiking->setChecked(ParseUtil::gameStringToBool(map->allowBiking));
+        ui->checkBox_AllowEscapeRope->setChecked(ParseUtil::gameStringToBool(map->allowEscapeRope));
+    }
     ui->spinBox_FloorNumber->setValue(map->floorNumber);
 
     // Custom fields table.
