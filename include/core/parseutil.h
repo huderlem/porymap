@@ -71,7 +71,7 @@ public:
     static QString removeLineComments(QString text, const QStringList &commentSymbols);
 
     static QStringList splitShellCommand(QStringView command);
-    static bool gameStringToBool(QString gameString);
+    static bool gameStringToBool(QString gameString, bool * ok = nullptr);
 
 private:
     QString root;

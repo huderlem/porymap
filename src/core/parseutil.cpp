@@ -402,15 +402,13 @@ QMap<QString, QString> ParseUtil::readNamedIndexCArray(const QString &filename, 
     return map;
 }
 
-bool ParseUtil::gameStringToBool(QString gameString) {
+bool ParseUtil::gameStringToBool(QString gameString, bool * ok) {
+    if (ok) *ok = true;
     if (QString::compare(gameString, "TRUE", Qt::CaseInsensitive) == 0)
         return true;
     if (QString::compare(gameString, "FALSE", Qt::CaseInsensitive) == 0)
         return false;
-    bool ok;
-    int num = gameString.toInt(&ok);
-    if (!ok) logWarn(QString("Unable to convert string '%1' to bool, will be interpreted as 'FALSE'").arg(gameString));
-    return num != 0;
+    return gameString.toInt(ok) != 0;
 }
 
 QMap<QString, QHash<QString, QString>> ParseUtil::readCStructs(const QString &filename, const QString &label, const QHash<int, QString> memberMap) {
