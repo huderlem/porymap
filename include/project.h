@@ -167,6 +167,8 @@ public:
 
     QString defaultSong;
     QStringList getVisibilities();
+    void insertTilesetLabel(QString label, bool isSecondary);
+    void insertTilesetLabel(QString label, QString isSecondaryStr);
     bool readTilesetLabels();
     bool readTilesetProperties();
     bool readMaxMapDataSize();

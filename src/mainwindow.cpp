@@ -1342,13 +1342,10 @@ void MainWindow::on_actionNew_Tileset_triggered() {
 
         if(!createTilesetDialog->isSecondary) {
             this->ui->comboBox_PrimaryTileset->addItem(createTilesetDialog->fullSymbolName);
-            editor->project->tilesetLabels["primary"].append(createTilesetDialog->fullSymbolName);
-
         } else {
             this->ui->comboBox_SecondaryTileset->addItem(createTilesetDialog->fullSymbolName);
-            editor->project->tilesetLabels["secondary"].append(createTilesetDialog->fullSymbolName);
         }
-        editor->project->tilesetLabelsOrdered.append(createTilesetDialog->fullSymbolName);
+        editor->project->insertTilesetLabel(createTilesetDialog->fullSymbolName, createTilesetDialog->isSecondary);
 
         QMessageBox msgBox(this);
         msgBox.setText("Successfully created tileset.");

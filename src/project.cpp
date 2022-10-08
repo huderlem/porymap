@@ -1930,6 +1930,22 @@ Project::DataQualifiers Project::getDataQualifiers(QString text, QString label) 
     return qualifiers;
 }
 
+void Project::insertTilesetLabel(QString label, bool isSecondary) {
+    QString category = isSecondary ? "secondary" : "primary";
+    this->tilesetLabels[category].append(label);
+    this->tilesetLabelsOrdered.append(label);
+}
+
+void Project::insertTilesetLabel(QString label, QString isSecondaryStr) {
+    bool ok;
+    bool isSecondary = ParseUtil::gameStringToBool(isSecondaryStr, &ok);
+    if (!ok) {
+        logError(QString("Unable to convert value '%1' of isSecondary to bool for tileset %2.").arg(isSecondaryStr).arg(label));
+        return;
+    }
+    insertTilesetLabel(label, isSecondary);
+}
+
 bool Project::readTilesetLabels() {
     QStringList primaryTilesets;
     QStringList secondaryTilesets;
@@ -1953,25 +1969,16 @@ bool Project::readTilesetLabels() {
         QRegularExpressionMatchIterator iter = re.globalMatch(text);
         while (iter.hasNext()) {
             QRegularExpressionMatch match = iter.next();
-            QString tilesetLabel = match.captured("label");
-            if (ParseUtil::gameStringToBool(match.captured("isSecondary")))
-                this->tilesetLabels["secondary"].append(tilesetLabel);
-            else
-                this->tilesetLabels["primary"].append(tilesetLabel);
-            this->tilesetLabelsOrdered.append(tilesetLabel);
+            insertTilesetLabel(match.captured("label"), match.captured("isSecondary"));
         }
         filename = asm_filename; // For error reporting further down
     } else {
         this->usingAsmTilesets = false;
         const auto structs = parser.readCStructs(filename, "", Tileset::getHeaderMemberMap(this->usingAsmTilesets));
         QStringList labels = structs.keys();
-        for (const auto tilesetLabel : labels) {
-            if (tilesetLabel.isEmpty()) continue;
-            if (ParseUtil::gameStringToBool(structs[tilesetLabel].value("isSecondary")))
-                this->tilesetLabels["secondary"].append(tilesetLabel);
-            else
-                this->tilesetLabels["primary"].append(tilesetLabel);
-            this->tilesetLabelsOrdered.append(tilesetLabel); // TODO: This is alphabetical, AdvanceMap import wants the vanilla order
+        // TODO: This is alphabetical, AdvanceMap import wants the vanilla order in tilesetLabelsOrdered
+        for (const auto tilesetLabel : labels){
+            insertTilesetLabel(tilesetLabel, structs[tilesetLabel].value("isSecondary"));
         }
     }
 
