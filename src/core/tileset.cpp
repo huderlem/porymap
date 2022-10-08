@@ -136,6 +136,7 @@ bool Tileset::appendToHeaders(QString root, QString friendlyName, bool usingAsm)
     }
     QString dataString = "\n";
     if (usingAsm) {
+        // Append to asm file
         dataString.append("\t.align 2\n");
         dataString.append(QString("%1::\n").arg(this->name));
         dataString.append("\t.byte TRUE @ is compressed\n");
@@ -152,14 +153,15 @@ bool Tileset::appendToHeaders(QString root, QString friendlyName, bool usingAsm)
             dataString.append("\t.4byte NULL @ animation callback\n");
         }
     } else {
+        // Append to C file
         dataString.append(QString("const struct Tileset %1 =\n{\n").arg(this->name));
-        dataString.append("    .isCompressed = TRUE,\n");
+        if (projectConfig.getTilesetsHaveIsCompressed()) dataString.append("    .isCompressed = TRUE,\n");
         dataString.append(QString("    .isSecondary = %1,\n").arg(this->is_secondary));
         dataString.append(QString("    .tiles = gTilesetTiles_%1,\n").arg(friendlyName));
         dataString.append(QString("    .palettes = gTilesetPalettes_%1,\n").arg(friendlyName));
         dataString.append(QString("    .metatiles = gMetatiles_%1,\n").arg(friendlyName));
         dataString.append(QString("    .metatileAttributes = gMetatileAttributes_%1,\n").arg(friendlyName));
-        dataString.append("    .callback = NULL,\n");
+        if (projectConfig.getTilesetsHaveCallback()) dataString.append("    .callback = NULL,\n");
         dataString.append("};\n");
     }
     file.write(dataString.toUtf8());
@@ -183,6 +185,7 @@ bool Tileset::appendToGraphics(QString root, QString friendlyName, bool usingAsm
 
     QString dataString = "\n";
     if (usingAsm) {
+        // Append to asm file
         dataString.append("\t.align 2\n");
         dataString.append(QString("gTilesetPalettes_%1::\n").arg(friendlyName));
         for (int i = 0; i < Project::getNumPalettesTotal(); i++)
@@ -191,6 +194,7 @@ bool Tileset::appendToGraphics(QString root, QString friendlyName, bool usingAsm
         dataString.append(QString("gTilesetTiles_%1::\n").arg(friendlyName));
         dataString.append(QString("\t.incbin \"%1\"\n").arg(tilesPath));
     } else {
+        // Append to C file
         dataString.append(QString("const u16 gTilesetPalettes_%1[][16] =\n{\n").arg(friendlyName));
         for (int i = 0; i < Project::getNumPalettesTotal(); i++)
             dataString.append(QString("    INCBIN_U16(\"%1%2.gbapal\"),\n").arg(palettesPath).arg(i, 2, 10, QLatin1Char('0')));
@@ -218,6 +222,7 @@ bool Tileset::appendToMetatiles(QString root, QString friendlyName, bool usingAs
 
     QString dataString = "\n";
     if (usingAsm) {
+        // Append to asm file
         dataString.append("\t.align 1\n");
         dataString.append(QString("gMetatiles_%1::\n").arg(friendlyName));
         dataString.append(QString("\t.incbin \"%1\"\n").arg(metatilesPath));
@@ -225,6 +230,7 @@ bool Tileset::appendToMetatiles(QString root, QString friendlyName, bool usingAs
         dataString.append(QString("gMetatileAttributes_%1::\n").arg(friendlyName));
         dataString.append(QString("\t.incbin \"%1\"\n").arg(metatileAttrsPath));
     } else {
+        // Append to C file
         dataString.append(QString("const u16 gMetatiles_%1[] = INCBIN_U16(\"%2\");\n").arg(friendlyName, metatilesPath));
         QString attrSize = (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) ? "32" : "16";
         dataString.append(QString("const u%1 gMetatileAttributes_%2[] = INCBIN_U%1(\"%3\");\n").arg(attrSize, friendlyName, metatileAttrsPath));
@@ -236,7 +242,7 @@ bool Tileset::appendToMetatiles(QString root, QString friendlyName, bool usingAs
 }
 
 // The path where Porymap expects a Tileset's graphics assets to be stored (but not necessarily where they actually are)
-// Example: for gTileset_DepartmentStore, returns "data/tilesets/secondary/department_store/"
+// Example: for gTileset_DepartmentStore, returns "data/tilesets/secondary/department_store"
 QString Tileset::getExpectedDir()
 {
     return Tileset::getExpectedDir(this->name, ParseUtil::gameStringToBool(this->is_secondary));

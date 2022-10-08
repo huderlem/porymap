@@ -571,6 +571,10 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         this->prefabFilepath = value;
     } else if (key == "prefabs_import_prompted") {
         this->prefabImportPrompted = getConfigBool(key, value);
+    } else if (key == "tilesets_have_callback") {
+        this->tilesetsHaveCallback = getConfigBool(key, value);
+    } else if (key == "tilesets_have_is_compressed") {
+        this->tilesetsHaveIsCompressed = getConfigBool(key, value);
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -617,6 +621,8 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     for (auto it = this->filePaths.constKeyValueBegin(); it != this->filePaths.constKeyValueEnd(); ++it) {
         map.insert("path/"+defaultPaths[(*it).first].first, (*it).second);
     }
+    map.insert("tilesets_have_callback", QString::number(this->tilesetsHaveCallback));
+    map.insert("tilesets_have_is_compressed", QString::number(this->tilesetsHaveIsCompressed));
     return map;
 }
 
@@ -656,10 +662,6 @@ void ProjectConfig::onNewConfigFileCreated() {
     this->enableEventCloneObject = isPokefirered;
     this->enableFloorNumber = isPokefirered;
     this->createMapTextFile = (this->baseGameVersion != BaseGameVersion::pokeemerald);
-    this->usePoryScript = false;
-    this->enableTripleLayerMetatiles = false;
-    this->newMapMetatileId = 1;
-    this->newMapElevation = 3;
     this->newMapBorderMetatileIds = isPokefirered ? DEFAULT_BORDER_FRLG : DEFAULT_BORDER_RSE;
 }
 
@@ -852,6 +854,24 @@ void ProjectConfig::setPrefabImportPrompted(bool prompted) {
 
 bool ProjectConfig::getPrefabImportPrompted() {
     return this->prefabImportPrompted;
+}
+
+void ProjectConfig::setTilesetsHaveCallback(bool has) {
+    this->tilesetsHaveCallback = has;
+    this->save();
+}
+
+bool ProjectConfig::getTilesetsHaveCallback() {
+    return this->tilesetsHaveCallback;
+}
+
+void ProjectConfig::setTilesetsHaveIsCompressed(bool has) {
+    this->tilesetsHaveIsCompressed = has;
+    this->save();
+}
+
+bool ProjectConfig::getTilesetsHaveIsCompressed() {
+    return this->tilesetsHaveIsCompressed;
 }
 
 
