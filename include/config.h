@@ -205,12 +205,15 @@ public:
         this->enableEventCloneObject = false;
         this->enableFloorNumber = false;
         this->createMapTextFile = false;
+        this->usePoryScript = false;
         this->enableTripleLayerMetatiles = false;
         this->newMapMetatileId = 1;
         this->newMapElevation = 3;
         this->newMapBorderMetatileIds = DEFAULT_BORDER_RSE;
         this->prefabFilepath = QString();
         this->prefabImportPrompted = false;
+        this->tilesetsHaveCallback = true;
+        this->tilesetsHaveIsCompressed = true;
         this->filePaths.clear();
         this->readKeys.clear();
     }
@@ -255,6 +258,10 @@ public:
     QString getPrefabFilepath(bool setIfEmpty);
     void setPrefabImportPrompted(bool prompted);
     bool getPrefabImportPrompted();
+    void setTilesetsHaveCallback(bool has);
+    bool getTilesetsHaveCallback();
+    void setTilesetsHaveIsCompressed(bool has);
+    bool getTilesetsHaveIsCompressed();
 protected:
     virtual QString getConfigFilepath() override;
     virtual void parseConfigKeyValue(QString key, QString value) override;
@@ -282,6 +289,8 @@ private:
     QStringList readKeys;
     QString prefabFilepath;
     bool prefabImportPrompted;
+    bool tilesetsHaveCallback;
+    bool tilesetsHaveIsCompressed;
 };
 
 extern ProjectConfig projectConfig;
