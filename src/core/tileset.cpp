@@ -255,3 +255,23 @@ QString Tileset::getExpectedDir(QString tilesetName, bool isSecondary)
     const QString basePath = projectConfig.getFilePath(ProjectFilePath::data_tilesets_folders) + category + "/";
     return basePath + tilesetName.replace("gTileset_", "").replace(re, "\\1_\\2").toLower();
 }
+
+// Get the expected positions of the members in struct Tileset.
+// Used when parsing asm tileset data, or C tileset data that's missing initializers.
+QHash<int, QString> Tileset::getHeaderMemberMap(bool usingAsm)
+{
+     // The asm header has a padding field that needs to be skipped
+    int paddingOffset = usingAsm ? 1 : 0;
+
+    // The position of metatileAttributes changes between games
+    bool isPokefirered = (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered);
+    int metatileAttrPosition = (isPokefirered ? 6 : 5) + paddingOffset;
+
+    auto map = QHash<int, QString>();
+    map.insert(1, "isSecondary");
+    map.insert(2 + paddingOffset, "tiles");
+    map.insert(3 + paddingOffset, "palettes");
+    map.insert(4 + paddingOffset, "metatiles");
+    map.insert(metatileAttrPosition, "metatileAttributes");
+    return map;
+}

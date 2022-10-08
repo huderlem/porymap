@@ -413,16 +413,17 @@ bool ParseUtil::gameStringToBool(QString gameString) {
     return num != 0;
 }
 
-QMap<QString, QMap<QString, QString>> ParseUtil::readCStructs(const QString &filename, const QString &label, const QHash<int, QString> memberMap) {
+QMap<QString, QHash<QString, QString>> ParseUtil::readCStructs(const QString &filename, const QString &label, const QHash<int, QString> memberMap) {
     QString filePath = this->root + "/" + filename;
     auto cParser = fex::Parser();
     auto tokens = fex::Lexer().LexFile(filePath.toStdString());
     auto structs = cParser.ParseTopLevelObjects(tokens);
-    QMap<QString, QMap<QString, QString>> structMaps;
+    QMap<QString, QHash<QString, QString>> structMaps;
     for (auto it = structs.begin(); it != structs.end(); it++) {
         QString structLabel = QString::fromStdString(it->first);
+        if (structLabel.isEmpty()) continue;
         if (!label.isEmpty() && label != structLabel) continue; // Speed up parsing if only looking for a particular symbol
-        QMap<QString, QString> values;
+        QHash<QString, QString> values;
         int i = 0;
         for (const fex::ArrayValue &v : it->second.values()) {
             if (v.type() == fex::ArrayValue::Type::kValuePair) {
@@ -430,7 +431,7 @@ QMap<QString, QMap<QString, QString>> ParseUtil::readCStructs(const QString &fil
                 QString value = QString::fromStdString(v.pair().second->string_value());
                 values.insert(key, value);
             } else {
-                // For backwards compatibility with structs that don't specify member names.
+                // For compatibility with structs that don't specify member names.
                 if (memberMap.contains(i))
                     values.insert(memberMap.value(i), QString::fromStdString(v.string_value()));
             }

@@ -51,7 +51,7 @@ public:
     QStringList readCIncbinArray(const QString &filename, const QString &label);
     QMap<QString, int> readCDefines(const QString &filename, const QStringList &prefixes, QMap<QString, int> = { });
     QStringList readCDefinesSorted(const QString&, const QStringList&, const QMap<QString, int>& = { });
-    QMap<QString, QMap<QString, QString>> readCStructs(const QString &, const QString & = "", const QHash<int, QString> = { });
+    QMap<QString, QHash<QString, QString>> readCStructs(const QString &, const QString & = "", const QHash<int, QString> = { });
     QList<QStringList> getLabelMacros(const QList<QStringList>&, const QString&);
     QStringList getLabelValues(const QList<QStringList>&, const QString&);
     bool tryParseJsonFile(QJsonDocument *out, const QString &filepath);
