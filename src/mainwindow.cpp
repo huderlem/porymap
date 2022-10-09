@@ -1697,6 +1697,7 @@ void MainWindow::on_mapViewTab_tabBarClicked(int index)
         editor->setEditingCollision();
     } else if (index == 2) {
         editor->setEditingMap();
+        prefab.tryImportDefaultPrefabs(this->editor->map);
     }
     editor->setCursorRectVisible(false);
 }
