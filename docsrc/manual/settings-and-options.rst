@@ -55,5 +55,7 @@ your project root as ``porymap.user.cfg``. You should add this file to your giti
    ``custom_scripts``, , user, yes, A list of script files to load into the scripting engine
    ``prefabs_filepath``, ``<project_root>/prefabs.json``, project, yes, The filepath containing prefab JSON data
    ``prefabs_import_prompted``, 0, project, no, Keeps track of whether or not the project was prompted for importing default prefabs
+   ``tilesets_have_callback``, 1, project, yes, Whether new tileset headers should have the ``callback`` field
+   ``tilesets_have_is_compressed``, 1, project, yes, Whether new tileset headers should have the ``isCompressed`` field
 
 Some of these settings can be toggled manually in porymap via the *Options* menu.
