@@ -26,11 +26,20 @@ void OverlayImage::render(QPainter *painter, int x, int y) {
 void Overlay::renderItems(QPainter *painter) {
     if (this->hidden) return;
 
+    if (this->clippingRect) {
+        painter->setClipping(true);
+        painter->setClipRect(*this->clippingRect);
+    }
+
     qreal oldOpacity = painter->opacity();
     painter->setOpacity(this->opacity);
     for (auto item : this->items)
         item->render(painter, this->x, this->y);
     painter->setOpacity(oldOpacity);
+
+    if (this->clippingRect) {
+        painter->setClipping(false);
+    }
 }
 
 void Overlay::clearItems() {
@@ -78,6 +87,20 @@ void Overlay::setX(int x) {
 
 void Overlay::setY(int y) {
     this->y = y;
+}
+
+void Overlay::setClippingRect(QRectF rect) {
+    if (this->clippingRect) {
+        delete this->clippingRect;
+    }
+    this->clippingRect = new QRectF(rect);
+}
+
+void Overlay::clearClippingRect() {
+    if (this->clippingRect) {
+        delete this->clippingRect;
+    }
+    this->clippingRect = nullptr;
 }
 
 void Overlay::setPosition(int x, int y) {

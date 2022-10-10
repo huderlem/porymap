@@ -79,6 +79,29 @@ void MapView::setY(int y) {
     this->scene()->update();
 }
 
+void MapView::setClippingRect(int x, int y, int width, int height, int layer) {
+    this->getOverlay(layer)->setClippingRect(QRectF(x, y, width, height));
+    this->scene()->update();
+}
+
+void MapView::setClippingRect(int x, int y, int width, int height) {
+    QRectF rect = QRectF(x, y, width, height);
+    foreach (Overlay * layer, this->overlayMap)
+        layer->setClippingRect(rect);
+    this->scene()->update();
+}
+
+void MapView::clearClippingRect(int layer) {
+    this->getOverlay(layer)->clearClippingRect();
+    this->scene()->update();
+}
+
+void MapView::clearClippingRect() {
+    foreach (Overlay * layer, this->overlayMap)
+        layer->clearClippingRect();
+    this->scene()->update();
+}
+
 QJSValue MapView::getPosition(int layer) {
     Overlay * overlay = this->getOverlay(layer);
     return Scripting::position(overlay->getX(), overlay->getY());

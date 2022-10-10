@@ -32,6 +32,10 @@ public:
     Q_INVOKABLE void setX(int x);
     Q_INVOKABLE void setY(int y, int layer);
     Q_INVOKABLE void setY(int y);
+    Q_INVOKABLE void setClippingRect(int x, int y, int width, int height, int layer);
+    Q_INVOKABLE void setClippingRect(int x, int y, int width, int height);
+    Q_INVOKABLE void clearClippingRect(int layer);
+    Q_INVOKABLE void clearClippingRect();
     Q_INVOKABLE QJSValue getPosition(int layer = 0);
     Q_INVOKABLE void setPosition(int x, int y, int layer);
     Q_INVOKABLE void setPosition(int x, int y);
