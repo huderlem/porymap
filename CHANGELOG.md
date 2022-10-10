@@ -32,6 +32,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - `object_event_graphics_info.h` can now be parsed correctly if it uses structs with attributes.
 - The selection is no longer reset when pasting events. The newly pasted events are selected instead.
 - Palette editor ui is updated a bit to allow hex and rgb value input.
+- The metatile behavior is now displayed in the bottom bar mouseover text.
 
 ### Fixed
 - Fix cursor tile outline not updating at the end of a dragged selection.
