@@ -1069,7 +1069,7 @@ All overlay functions are callable via the global ``overlay`` object.
    :param number width: the rectangle's pixel width
    :param number height: the rectangle's pixel height
 
-.. js:function:: overlay.clearClippingRect(int layer)
+.. js:function:: overlay.clearClippingRect(layer)
 
    Clears any clipping for the specified overlay layer. See ``setClippingRect`` for more info about clipping.
 
