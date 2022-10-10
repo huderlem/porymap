@@ -1055,17 +1055,17 @@ All overlay functions are callable via the global ``overlay`` object.
    Sets the rectangular clipping region for the specifieid overlay layer. A clipping region will cause the overlay's rendering to be contained inside it. In other words, any content from the overlay layer will not be visible outside of the specified rectangle.
 
    :param number x: the rectangle's pixel x coordinate, 0 is the left edge of the current map. A negative value is where the left map border's region is
-   :param number x: the rectangle's pixel y coordinate, 0 is the top edge of the current map. A negative value is where the top map border's region is
+   :param number y: the rectangle's pixel y coordinate, 0 is the top edge of the current map. A negative value is where the top map border's region is
    :param number width: the rectangle's pixel width
    :param number height: the rectangle's pixel height
    :param number layer: the layer id
 
-.. js:function:: overlay.setClippingRect(x, y, width, height, layer)
+.. js:function:: overlay.setClippingRect(x, y, width, height)
 
    This is an overloaded function. Sets the rectangular clipping region for all overlay layers. A clipping region will cause the overlay's rendering to be contained inside it. In other words, any content from the overlay layer will not be visible outside of the specified rectangle.
 
    :param number x: the rectangle's pixel x coordinate, 0 is the left edge of the current map. A negative value is where the left map border's region is
-   :param number x: the rectangle's pixel y coordinate, 0 is the top edge of the current map. A negative value is where the top map border's region is
+   :param number y: the rectangle's pixel y coordinate, 0 is the top edge of the current map. A negative value is where the top map border's region is
    :param number width: the rectangle's pixel width
    :param number height: the rectangle's pixel height
 
