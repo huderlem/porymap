@@ -1050,6 +1050,35 @@ All overlay functions are callable via the global ``overlay`` object.
 
    :param number y: the pixel y coordinate
 
+.. js:function:: overlay.setClippingRect(x, y, width, height, layer)
+
+   Sets the rectangular clipping region for the specifieid overlay layer. A clipping region will cause the overlay's rendering to be contained inside it. In other words, any content from the overlay layer will not be visible outside of the specified rectangle.
+
+   :param number x: the rectangle's pixel x coordinate, 0 is the left edge of the current map. A negative value is where the left map border's region is
+   :param number x: the rectangle's pixel y coordinate, 0 is the top edge of the current map. A negative value is where the top map border's region is
+   :param number width: the rectangle's pixel width
+   :param number height: the rectangle's pixel height
+   :param number layer: the layer id
+
+.. js:function:: overlay.setClippingRect(x, y, width, height, layer)
+
+   This is an overloaded function. Sets the rectangular clipping region for all overlay layers. A clipping region will cause the overlay's rendering to be contained inside it. In other words, any content from the overlay layer will not be visible outside of the specified rectangle.
+
+   :param number x: the rectangle's pixel x coordinate, 0 is the left edge of the current map. A negative value is where the left map border's region is
+   :param number x: the rectangle's pixel y coordinate, 0 is the top edge of the current map. A negative value is where the top map border's region is
+   :param number width: the rectangle's pixel width
+   :param number height: the rectangle's pixel height
+
+.. js:function:: overlay.clearClippingRect(int layer)
+
+   Clears any clipping for the specified overlay layer. See ``setClippingRect`` for more info about clipping.
+
+   :param number layer: the layer id
+
+.. js:function:: overlay.clearClippingRect()
+
+   Clears any clipping for all overlay layers. See ``setClippingRect`` for more info about clipping.
+
 .. js:function:: overlay.getPosition(layer = 0)
 
    Gets the position of the specified overlay layer.
