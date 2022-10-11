@@ -70,6 +70,23 @@ private:
     QImage image;
 };
 
+class OverlayPath : public OverlayItem {
+public:
+    OverlayPath(QPainterPath path, QString color) {
+        this->prevX = 0;
+        this->prevY = 0;
+        this->path = path;
+        this->color = color;
+    }
+    ~OverlayPath() {}
+    virtual void render(QPainter *painter, int x, int y);
+private:
+    int prevX;
+    int prevY;
+    QPainterPath path;
+    QString color;
+};
+
 class Overlay
 {
 public:
@@ -102,6 +119,7 @@ public:
     void addRect(int x, int y, int width, int height, QString color = "#000000", bool filled = false);
     bool addImage(int x, int y, QString filepath, bool useCache = true, int width = -1, int height = -1, int xOffset = 0, int yOffset = 0, qreal hScale = 1, qreal vScale = 1, QList<QRgb> palette = QList<QRgb>(), bool setTransparency = false);
     bool addImage(int x, int y, QImage image);
+    bool addPath(QList<int> x, QList<int> y, QString color);
 private:
     QList<OverlayItem*> items;
     int x;

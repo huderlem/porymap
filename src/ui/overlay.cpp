@@ -23,6 +23,17 @@ void OverlayImage::render(QPainter *painter, int x, int y) {
     painter->drawImage(this->x + x, this->y + y, this->image);
 }
 
+void OverlayPath::render(QPainter *painter, int x, int y) {
+    if (x != this->prevX || y != this->prevY) {
+        // Overlay has moved since the path was last drawn
+        path.translate(x - prevX, y - prevY);
+    }
+    this->prevX = x;
+    this->prevY = y;
+    painter->setPen(this->color);
+    painter->drawPath(this->path);
+}
+
 void Overlay::renderItems(QPainter *painter) {
     if (this->hidden) return;
 
@@ -173,5 +184,22 @@ bool Overlay::addImage(int x, int y, QImage image) {
         return false;
     }
     this->items.append(new OverlayImage(x, y, image));
+    return true;
+}
+
+bool Overlay::addPath(QList<int> x, QList<int> y, QString color) {
+    int numPoints = qMin(x.length(), y.length());
+    if (numPoints < 2) {
+        logError("Overlay path must have at least two points.");
+        return false;
+    }
+
+    QPainterPath path;
+    path.moveTo(x.at(0), y.at(0));
+
+    for (int i = 1; i < numPoints; i++)
+        path.lineTo(x.at(i), y.at(i));
+
+    this->items.append(new OverlayPath(path, color));
     return true;
 }

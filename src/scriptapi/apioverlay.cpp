@@ -212,3 +212,8 @@ void MapView::addMetatileImage(int x, int y, int metatileId, bool setTransparenc
     if (this->getOverlay(layer)->addImage(x, y, image))
         this->scene()->update();
 }
+
+void MapView::addPath(QList<int> x, QList<int> y, QString color, int layer) {
+    if (this->getOverlay(layer)->addPath(x, y, color))
+        this->scene()->update();
+}

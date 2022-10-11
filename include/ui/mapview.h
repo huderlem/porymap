@@ -55,6 +55,7 @@ public:
     Q_INVOKABLE void addTileImage(int x, int y, int tileId, bool xflip, bool yflip, int paletteId, bool setTransparency = false, int layer = 0);
     Q_INVOKABLE void addTileImage(int x, int y, QJSValue tileObj, bool setTransparency = false, int layer = 0);
     Q_INVOKABLE void addMetatileImage(int x, int y, int metatileId, bool setTransparency = false, int layer = 0);
+    Q_INVOKABLE void addPath(QList<int> x, QList<int> y, QString color = "#000000", int layer = 0);
 
 private:
     QMap<int, Overlay*> overlayMap;
