@@ -6,6 +6,9 @@
 #include <QJsonObject>
 #include <QStack>
 
+#include "lib/fex/lexer.h"
+#include "lib/fex/parser.h"
+
 const QRegularExpression ParseUtil::re_incScriptLabel("\\b(?<label>[\\w_][\\w\\d_]*):{1,2}");
 const QRegularExpression ParseUtil::re_globalIncScriptLabel("\\b(?<label>[\\w_][\\w\\d_]*)::");
 const QRegularExpression ParseUtil::re_poryScriptLabel("\\b(script)(\\((global|local)\\))?\\s*\\b(?<label>[\\w_][\\w\\d_]*)");
@@ -267,6 +270,30 @@ QString ParseUtil::readCIncbin(const QString &filename, const QString &label) {
     return path;
 }
 
+QStringList ParseUtil::readCIncbinArray(const QString &filename, const QString &label) {
+    QStringList paths;
+
+    if (label.isNull()) {
+        return paths;
+    }
+
+    this->text = readTextFile(this->root + "/" + filename);
+
+    // Get the text starting after the label all the way to the definition's end
+    QRegularExpression re(QString("\\b%1\\b(.*?)};").arg(label), QRegularExpression::DotMatchesEverythingOption);
+    QRegularExpressionMatch arrayMatch = re.match(this->text);
+    if (!arrayMatch.hasMatch())
+        return paths;
+
+    // Extract incbin paths from the array
+    re.setPattern("INCBIN_[US][0-9][0-9]?\\(\\s*\"([^\"]*)\"\\s*\\)");
+    QRegularExpressionMatchIterator iter = re.globalMatch(arrayMatch.captured(1));
+    while (iter.hasNext()) {
+        paths.append(iter.next().captured(1));
+    }
+    return paths;
+}
+
 QMap<QString, int> ParseUtil::readCDefines(const QString &filename,
                                            const QStringList &prefixes,
                                            QMap<QString, int> allDefines)
@@ -373,6 +400,44 @@ QMap<QString, QString> ParseUtil::readNamedIndexCArray(const QString &filename, 
     }
 
     return map;
+}
+
+bool ParseUtil::gameStringToBool(QString gameString, bool * ok) {
+    if (ok) *ok = true;
+    if (QString::compare(gameString, "TRUE", Qt::CaseInsensitive) == 0)
+        return true;
+    if (QString::compare(gameString, "FALSE", Qt::CaseInsensitive) == 0)
+        return false;
+    return gameString.toInt(ok) != 0;
+}
+
+QMap<QString, QHash<QString, QString>> ParseUtil::readCStructs(const QString &filename, const QString &label, const QHash<int, QString> memberMap) {
+    QString filePath = this->root + "/" + filename;
+    auto cParser = fex::Parser();
+    auto tokens = fex::Lexer().LexFile(filePath.toStdString());
+    auto structs = cParser.ParseTopLevelObjects(tokens);
+    QMap<QString, QHash<QString, QString>> structMaps;
+    for (auto it = structs.begin(); it != structs.end(); it++) {
+        QString structLabel = QString::fromStdString(it->first);
+        if (structLabel.isEmpty()) continue;
+        if (!label.isEmpty() && label != structLabel) continue; // Speed up parsing if only looking for a particular symbol
+        QHash<QString, QString> values;
+        int i = 0;
+        for (const fex::ArrayValue &v : it->second.values()) {
+            if (v.type() == fex::ArrayValue::Type::kValuePair) {
+                QString key = QString::fromStdString(v.pair().first);
+                QString value = QString::fromStdString(v.pair().second->string_value());
+                values.insert(key, value);
+            } else {
+                // For compatibility with structs that don't specify member names.
+                if (memberMap.contains(i))
+                    values.insert(memberMap.value(i), QString::fromStdString(v.string_value()));
+            }
+            i++;
+        }
+        structMaps.insert(structLabel, values);
+    }
+    return structMaps;
 }
 
 QList<QStringList> ParseUtil::getLabelMacros(const QList<QStringList> &list, const QString &label) {

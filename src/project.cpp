@@ -10,8 +10,6 @@
 #include "map.h"
 
 #include "orderedjson.h"
-#include "lib/fex/lexer.h"
-#include "lib/fex/parser.h"
 
 #include <QDir>
 #include <QJsonArray>
@@ -1133,26 +1131,38 @@ bool Project::loadLayoutTilesets(MapLayout *layout) {
 }
 
 Tileset* Project::loadTileset(QString label, Tileset *tileset) {
-    const QStringList values = parser.getLabelValues(parser.parseAsm(projectConfig.getFilePath(ProjectFilePath::tilesets_headers)), label);
-    if (values.isEmpty()) {
-        return nullptr;
-    }
-    if (tileset == nullptr) {
-        tileset = new Tileset;
-    }
-    tileset->name = label;
-    tileset->is_compressed = values.value(0);
-    tileset->is_secondary = values.value(1);
-    tileset->padding = values.value(2);
-    tileset->tiles_label = values.value(3);
-    tileset->palettes_label = values.value(4);
-    tileset->metatiles_label = values.value(5);
-    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
-        tileset->callback_label = values.value(6);
-        tileset->metatile_attrs_label = values.value(7);
+    auto memberMap = Tileset::getHeaderMemberMap(this->usingAsmTilesets);
+    if (this->usingAsmTilesets) {
+        // Read asm tileset header. Backwards compatibility
+        const QStringList values = parser.getLabelValues(parser.parseAsm(projectConfig.getFilePath(ProjectFilePath::tilesets_headers_asm)), label);
+        if (values.isEmpty()) {
+            return nullptr;
+        }
+        if (tileset == nullptr) {
+            tileset = new Tileset;
+        }
+        tileset->name = label;
+        tileset->is_secondary = values.value(memberMap.key("isSecondary"));
+        tileset->tiles_label = values.value(memberMap.key("tiles"));
+        tileset->palettes_label = values.value(memberMap.key("palettes"));
+        tileset->metatiles_label = values.value(memberMap.key("metatiles"));
+        tileset->metatile_attrs_label = values.value(memberMap.key("metatileAttributes"));
     } else {
-        tileset->metatile_attrs_label = values.value(6);
-        tileset->callback_label = values.value(7);
+        // Read C tileset header
+        const auto structs = parser.readCStructs(projectConfig.getFilePath(ProjectFilePath::tilesets_headers), label, memberMap);
+        if (!structs.contains(label)) {
+            return nullptr;
+        }
+        if (tileset == nullptr) {
+            tileset = new Tileset;
+        }
+        const auto tilesetAttributes = structs[label];
+        tileset->name = label;
+        tileset->is_secondary = tilesetAttributes.value("isSecondary");
+        tileset->tiles_label = tilesetAttributes.value("tiles");
+        tileset->palettes_label = tilesetAttributes.value("palettes");
+        tileset->metatiles_label = tilesetAttributes.value("metatiles");
+        tileset->metatile_attrs_label = tilesetAttributes.value("metatileAttributes");
     }
 
     loadTilesetAssets(tileset);
@@ -1331,15 +1341,15 @@ void Project::saveMap(Map *map) {
     mapObj["layout"] = map->layout->id;
     mapObj["music"] = map->song;
     mapObj["region_map_section"] = map->location;
-    mapObj["requires_flash"] = map->requiresFlash.toInt() > 0 || map->requiresFlash == "TRUE";
+    mapObj["requires_flash"] = ParseUtil::gameStringToBool(map->requiresFlash);
     mapObj["weather"] = map->weather;
     mapObj["map_type"] = map->type;
     if (projectConfig.getBaseGameVersion() != BaseGameVersion::pokeruby) {
-        mapObj["allow_cycling"] = map->allowBiking.toInt() > 0 || map->allowBiking == "TRUE";
-        mapObj["allow_escaping"] = map->allowEscapeRope.toInt() > 0 || map->allowEscapeRope == "TRUE";
-        mapObj["allow_running"] = map->allowRunning.toInt() > 0 || map->allowRunning == "TRUE";
+        mapObj["allow_cycling"] = ParseUtil::gameStringToBool(map->allowBiking);
+        mapObj["allow_escaping"] = ParseUtil::gameStringToBool(map->allowEscapeRope);
+        mapObj["allow_running"] = ParseUtil::gameStringToBool(map->allowRunning);
     }
-    mapObj["show_map_name"] = map->show_location.toInt() > 0 || map->show_location == "TRUE";
+    mapObj["show_map_name"] = ParseUtil::gameStringToBool(map->show_location);
     if (projectConfig.getFloorNumberEnabled()) {
         mapObj["floor_number"] = map->floorNumber;
     }
@@ -1471,56 +1481,10 @@ void Project::saveAllDataStructures() {
 }
 
 void Project::loadTilesetAssets(Tileset* tileset) {
-    QString category = (tileset->is_secondary == "TRUE") ? "secondary" : "primary";
     if (tileset->name.isNull()) {
         return;
     }
-    QRegularExpression re("([a-z])([A-Z0-9])");
-    QString tilesetName = tileset->name;
-    QString basePath = root + "/" + projectConfig.getFilePath(ProjectFilePath::data_tilesets_folders) + category + "/";
-    QString dir_path = basePath + tilesetName.replace("gTileset_", "").replace(re, "\\1_\\2").toLower();
-
-    const QList<QStringList> graphics = parser.parseAsm(projectConfig.getFilePath(ProjectFilePath::tilesets_graphics));
-    const QStringList tiles_values = parser.getLabelValues(graphics, tileset->tiles_label);
-    const QStringList palettes_values = parser.getLabelValues(graphics, tileset->palettes_label);
-
-    QString tiles_path;
-    if (!tiles_values.isEmpty()) {
-        tiles_path = root + '/' + tiles_values.value(0).section('"', 1, 1);
-    } else {
-        tiles_path = dir_path + "/tiles.4bpp";
-        if (tileset->is_compressed == "TRUE") {
-            tiles_path += ".lz";
-        }
-    }
-
-    if (!palettes_values.isEmpty()) {
-        for (const auto &value : palettes_values) {
-            tileset->palettePaths.append(this->fixPalettePath(root + '/' + value.section('"', 1, 1)));
-        }
-    } else {
-        QString palettes_dir_path = dir_path + "/palettes";
-        for (int i = 0; i < 16; i++) {
-            tileset->palettePaths.append(palettes_dir_path + '/' + QString("%1").arg(i, 2, 10, QLatin1Char('0')) + ".pal");
-        }
-    }
-
-    const QList<QStringList> metatiles_macros = parser.parseAsm(projectConfig.getFilePath(ProjectFilePath::tilesets_metatiles));
-    const QStringList metatiles_values = parser.getLabelValues(metatiles_macros, tileset->metatiles_label);
-    if (!metatiles_values.isEmpty()) {
-        tileset->metatiles_path = root + '/' + metatiles_values.value(0).section('"', 1, 1);
-    } else {
-        tileset->metatiles_path = dir_path + "/metatiles.bin";
-    }
-    const QStringList metatile_attrs_values = parser.getLabelValues(metatiles_macros, tileset->metatile_attrs_label);
-    if (!metatile_attrs_values.isEmpty()) {
-        tileset->metatile_attrs_path = root + '/' + metatile_attrs_values.value(0).section('"', 1, 1);
-    } else {
-        tileset->metatile_attrs_path = dir_path + "/metatile_attributes.bin";
-    }
-
-    tiles_path = fixGraphicPath(tiles_path);
-    tileset->tilesImagePath = tiles_path;
+    this->readTilesetPaths(tileset);
     QImage image;
     if (QFile::exists(tileset->tilesImagePath)) {
         image = QImage(tileset->tilesImagePath);
@@ -1530,8 +1494,67 @@ void Project::loadTilesetAssets(Tileset* tileset) {
     this->loadTilesetTiles(tileset, image);
     this->loadTilesetMetatiles(tileset);
     this->loadTilesetMetatileLabels(tileset);
+    this->loadTilesetPalettes(tileset);
+}
 
-    // palettes
+void Project::readTilesetPaths(Tileset* tileset) {
+    // Parse the tileset data files to try and get explicit file paths for this tileset's assets
+    const QString rootDir = this->root + "/";
+    if (this->usingAsmTilesets) {
+        // Read asm tileset data files. Backwards compatibility
+        const QList<QStringList> graphics = parser.parseAsm(projectConfig.getFilePath(ProjectFilePath::tilesets_graphics_asm));
+        const QList<QStringList> metatiles_macros = parser.parseAsm(projectConfig.getFilePath(ProjectFilePath::tilesets_metatiles_asm));
+
+        const QStringList tiles_values = parser.getLabelValues(graphics, tileset->tiles_label);
+        const QStringList palettes_values = parser.getLabelValues(graphics, tileset->palettes_label);
+        const QStringList metatiles_values = parser.getLabelValues(metatiles_macros, tileset->metatiles_label);
+        const QStringList metatile_attrs_values = parser.getLabelValues(metatiles_macros, tileset->metatile_attrs_label);
+
+        if (!tiles_values.isEmpty())
+            tileset->tilesImagePath = this->fixGraphicPath(rootDir + tiles_values.value(0).section('"', 1, 1));
+        if (!metatiles_values.isEmpty())
+            tileset->metatiles_path = rootDir + metatiles_values.value(0).section('"', 1, 1);
+        if (!metatile_attrs_values.isEmpty())
+            tileset->metatile_attrs_path = rootDir + metatile_attrs_values.value(0).section('"', 1, 1);
+        for (const auto &value : palettes_values)
+            tileset->palettePaths.append(this->fixPalettePath(rootDir + value.section('"', 1, 1)));
+    } else {
+        // Read C tileset data files
+        const QString graphicsFile = projectConfig.getFilePath(ProjectFilePath::tilesets_graphics);
+        const QString metatilesFile = projectConfig.getFilePath(ProjectFilePath::tilesets_metatiles);
+        
+        const QString tilesImagePath = parser.readCIncbin(graphicsFile, tileset->tiles_label);
+        const QStringList palettePaths = parser.readCIncbinArray(graphicsFile, tileset->palettes_label);
+        const QString metatilesPath = parser.readCIncbin(metatilesFile, tileset->metatiles_label);
+        const QString metatileAttrsPath = parser.readCIncbin(metatilesFile, tileset->metatile_attrs_label);
+
+        if (!tilesImagePath.isEmpty())
+            tileset->tilesImagePath = this->fixGraphicPath(rootDir + tilesImagePath);
+        if (!metatilesPath.isEmpty())
+            tileset->metatiles_path = rootDir + metatilesPath;
+        if (!metatileAttrsPath.isEmpty())
+            tileset->metatile_attrs_path = rootDir + metatileAttrsPath;
+        for (const auto &path : palettePaths)
+            tileset->palettePaths.append(this->fixPalettePath(rootDir + path));
+    }
+
+    // Try to set default paths, if any weren't found by reading the files above
+    QString defaultPath = rootDir + tileset->getExpectedDir();
+    if (tileset->tilesImagePath.isEmpty())
+        tileset->tilesImagePath = defaultPath + "/tiles.png";
+    if (tileset->metatiles_path.isEmpty())
+        tileset->metatiles_path = defaultPath + "/metatiles.bin";
+    if (tileset->metatile_attrs_path.isEmpty())
+        tileset->metatile_attrs_path = defaultPath + "/metatile_attributes.bin";
+    if (tileset->palettePaths.isEmpty()) {
+        QString palettes_dir_path = defaultPath + "/palettes/";
+        for (int i = 0; i < 16; i++) {
+            tileset->palettePaths.append(palettes_dir_path + QString("%1").arg(i, 2, 10, QLatin1Char('0')) + ".pal");
+        }
+    }
+}
+
+void Project::loadTilesetPalettes(Tileset* tileset) {
     QList<QList<QRgb>> palettes;
     QList<QList<QRgb>> palettePreviews;
     for (int i = 0; i < tileset->palettePaths.length(); i++) {
@@ -1645,7 +1668,7 @@ void Project::loadTilesetMetatileLabels(Tileset* tileset) {
     for (QString labelName : labels.keys()) {
         int metatileId = labels[labelName];
         // subtract Project::num_tiles_primary from secondary metatiles
-        Metatile *metatile = Tileset::getMetatile(metatileId - (tileset->is_secondary == "TRUE" ? Project::num_tiles_primary : 0), tileset, nullptr);
+        Metatile *metatile = Tileset::getMetatile(metatileId - (ParseUtil::gameStringToBool(tileset->is_secondary) ? Project::num_tiles_primary : 0), tileset, nullptr);
         if (metatile) {
             metatile->label = labelName.replace(tilesetPrefix, "");
         } else {
@@ -1907,46 +1930,68 @@ Project::DataQualifiers Project::getDataQualifiers(QString text, QString label) 
     return qualifiers;
 }
 
-QMap<QString, QStringList> Project::getTilesetLabels() {
-    QMap<QString, QStringList> allTilesets;
+void Project::insertTilesetLabel(QString label, bool isSecondary) {
+    QString category = isSecondary ? "secondary" : "primary";
+    this->tilesetLabels[category].append(label);
+    this->tilesetLabelsOrdered.append(label);
+}
+
+void Project::insertTilesetLabel(QString label, QString isSecondaryStr) {
+    bool ok;
+    bool isSecondary = ParseUtil::gameStringToBool(isSecondaryStr, &ok);
+    if (!ok) {
+        logError(QString("Unable to convert value '%1' of isSecondary to bool for tileset %2.").arg(isSecondaryStr).arg(label));
+        return;
+    }
+    insertTilesetLabel(label, isSecondary);
+}
+
+bool Project::readTilesetLabels() {
     QStringList primaryTilesets;
     QStringList secondaryTilesets;
-    allTilesets.insert("primary", primaryTilesets);
-    allTilesets.insert("secondary", secondaryTilesets);
-    QList<QString> tilesetLabelsOrdered;
+    this->tilesetLabels.clear();
+    this->tilesetLabels.insert("primary", primaryTilesets);
+    this->tilesetLabels.insert("secondary", secondaryTilesets);
+    this->tilesetLabelsOrdered.clear();
 
     QString filename = projectConfig.getFilePath(ProjectFilePath::tilesets_headers);
-    QString headers_text = parser.readTextFile(root + "/" + filename);
-    if (headers_text.isEmpty()) {
-        logError(QString("Failed to read tileset labels from %1.").arg(filename));
-        return QMap<QString, QStringList>();
-    }
-
-    QRegularExpression re("(?<label>[A-Za-z0-9_]*):{1,2}[A-Za-z0-9_@ ]*\\s+.+\\s+\\.byte\\s+(?<isSecondary>[A-Za-z0-9_]+)");
-    QRegularExpressionMatchIterator iter = re.globalMatch(headers_text);
-
-    while (iter.hasNext()) {
-        QRegularExpressionMatch match = iter.next();
-        QString tilesetLabel = match.captured("label");
-        QString secondaryTilesetValue = match.captured("isSecondary");
-
-        if (secondaryTilesetValue != "1" && secondaryTilesetValue != "TRUE" 
-         && secondaryTilesetValue != "0" && secondaryTilesetValue != "FALSE") {
-            logWarn(QString("Unexpected secondary tileset flag found in %1. Expected 'TRUE', 'FALSE', '1', or '0', but found '%2'")
-                    .arg(tilesetLabel).arg(secondaryTilesetValue));
-            continue;
+    QFileInfo fileInfo(this->root + "/" + filename);
+    if (!fileInfo.exists() || !fileInfo.isFile()) {
+        // If the tileset headers file is missing, the user may still have the old assembly format.
+        this->usingAsmTilesets = true;
+        QString asm_filename = projectConfig.getFilePath(ProjectFilePath::tilesets_headers_asm);
+        QString text = parser.readTextFile(this->root + "/" + asm_filename);
+        if (text.isEmpty()) {
+            logError(QString("Failed to read tileset labels from '%1' or '%2'.").arg(filename).arg(asm_filename));
+            return false;
         }
-
-        bool isSecondaryTileset = (secondaryTilesetValue == "TRUE" || secondaryTilesetValue == "1");
-        if (isSecondaryTileset)
-            allTilesets["secondary"].append(tilesetLabel);
-        else
-            allTilesets["primary"].append(tilesetLabel);
-        tilesetLabelsOrdered.append(tilesetLabel);
+        QRegularExpression re("(?<label>[A-Za-z0-9_]*):{1,2}[A-Za-z0-9_@ ]*\\s+.+\\s+\\.byte\\s+(?<isSecondary>[A-Za-z0-9_]+)");
+        QRegularExpressionMatchIterator iter = re.globalMatch(text);
+        while (iter.hasNext()) {
+            QRegularExpressionMatch match = iter.next();
+            insertTilesetLabel(match.captured("label"), match.captured("isSecondary"));
+        }
+        filename = asm_filename; // For error reporting further down
+    } else {
+        this->usingAsmTilesets = false;
+        const auto structs = parser.readCStructs(filename, "", Tileset::getHeaderMemberMap(this->usingAsmTilesets));
+        QStringList labels = structs.keys();
+        // TODO: This is alphabetical, AdvanceMap import wants the vanilla order in tilesetLabelsOrdered
+        for (const auto tilesetLabel : labels){
+            insertTilesetLabel(tilesetLabel, structs[tilesetLabel].value("isSecondary"));
+        }
     }
-    this->tilesetLabels = allTilesets;
-    this->tilesetLabelsOrdered = tilesetLabelsOrdered;
-    return allTilesets;
+
+    bool success = true;
+    if (this->tilesetLabels["secondary"].isEmpty()) {
+        logError(QString("Failed to find any secondary tilesets in %1").arg(filename));
+        success = false;
+    }
+    if (this->tilesetLabels["primary"].isEmpty()) {
+        logError(QString("Failed to find any primary tilesets in %1").arg(filename));
+        success = false;
+    }
+    return success;
 }
 
 bool Project::readTilesetProperties() {
@@ -2481,7 +2526,18 @@ bool Project::readEventGraphics() {
     qDeleteAll(eventGraphicsMap);
     eventGraphicsMap.clear();
     QStringList gfxNames = gfxDefines.keys();
-    QMap<QString, QMap<QString, QString>> gfxInfos = readObjEventGfxInfo();
+
+    // The positions of each of the required members for the gfx info struct.
+    // For backwards compatibility if the struct doesn't use initializers.
+    const auto gfxInfoMemberMap = QHash<int, QString>{
+        {8, "inanimate"},
+        {11, "oam"},
+        {12, "subspriteTables"},
+        {14, "images"},
+    };
+
+    QString filepath = projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx_info);
+    const auto gfxInfos = parser.readCStructs(filepath, "", gfxInfoMemberMap);
     for (QString gfxName : gfxNames) {
         EventGraphics * eventGraphics = new EventGraphics;
 
@@ -2489,9 +2545,9 @@ bool Project::readEventGraphics() {
         if (!gfxInfos.contains(info_label))
             continue;
 
-        QMap<QString, QString>gfxInfoAttributes = gfxInfos[info_label];
+        const auto gfxInfoAttributes = gfxInfos[info_label];
 
-        eventGraphics->inanimate = gfxInfoAttributes.value("inanimate") == "TRUE";
+        eventGraphics->inanimate = ParseUtil::gameStringToBool(gfxInfoAttributes.value("inanimate"));
         QString pic_label = gfxInfoAttributes.value("images");
         QString dimensions_label = gfxInfoAttributes.value("oam");
         QString subsprites_label = gfxInfoAttributes.value("subspriteTables");
@@ -2527,48 +2583,6 @@ bool Project::readEventGraphics() {
         eventGraphicsMap.insert(gfxName, eventGraphics);
     }
     return true;
-}
-
-QMap<QString, QMap<QString, QString>> Project::readObjEventGfxInfo() {
-    // TODO: refactor this to be more general if we end up directly parsing C
-    // for more use cases in the future.
-    auto cParser = fex::Parser();
-    auto tokens = fex::Lexer().LexFile((root + "/" + projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx_info)).toStdString());
-    auto gfxInfoObjects = cParser.ParseTopLevelObjects(tokens);
-    QMap<QString, QMap<QString, QString>> gfxInfos;
-    for (auto it = gfxInfoObjects.begin(); it != gfxInfoObjects.end(); it++) {
-        QMap<QString, QString> values;
-        int i = 0;
-        for (const fex::ArrayValue &v : it->second.values()) {
-            if (v.type() == fex::ArrayValue::Type::kValuePair) {
-                QString key = QString::fromStdString(v.pair().first);
-                QString value = QString::fromStdString(v.pair().second->string_value());
-                values.insert(key, value);
-            } else {
-                // This is for backwards compatibility with the old-style version of
-                // object_event_graphics_info.h, in which the structs didn't use
-                // attribute names to specify each struct member.
-                switch (i) {
-                    case 8:
-                        values.insert("inanimate", QString::fromStdString(v.string_value()));
-                        break;
-                    case 11:
-                        values.insert("oam", QString::fromStdString(v.string_value()));
-                        break;
-                    case 12:
-                        values.insert("subspriteTables", QString::fromStdString(v.string_value()));
-                        break;
-                    case 14:
-                        values.insert("images", QString::fromStdString(v.string_value()));
-                        break;
-                }
-            }
-            i++;
-        }
-        gfxInfos.insert(QString::fromStdString(it->first), values);
-    }
-
-    return gfxInfos;
 }
 
 bool Project::readSpeciesIconPaths() {

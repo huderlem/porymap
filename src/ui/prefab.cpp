@@ -159,7 +159,6 @@ void Prefab::initPrefabUI(MetatileSelector *selector, QWidget *prefabWidget, QLa
     this->selector = selector;
     this->prefabWidget = prefabWidget;
     this->emptyPrefabLabel = emptyPrefabLabel;
-    this->handlePrefabImport();
     this->loadPrefabs();
     this->updatePrefabUi(map);
 }
@@ -270,7 +269,7 @@ void Prefab::addPrefab(MetatileSelection selection, Map *map, QString name) {
     this->updatePrefabUi(map);
 }
 
-void Prefab::handlePrefabImport() {
+void Prefab::tryImportDefaultPrefabs(Map *map) {
     BaseGameVersion version = projectConfig.getBaseGameVersion();
     // Ensure we have default prefabs for the project's game version.
     if (version != BaseGameVersion::pokeruby && version != BaseGameVersion::pokeemerald && version != BaseGameVersion::pokefirered)
@@ -330,6 +329,8 @@ void Prefab::handlePrefabImport() {
 
         prefabsFile.write(content.toUtf8());
         prefabsFile.close();
+        this->loadPrefabs();
+        this->updatePrefabUi(map);
     }
 
     projectConfig.setPrefabImportPrompted(true);

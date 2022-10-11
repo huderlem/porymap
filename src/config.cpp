@@ -27,9 +27,12 @@ const QMap<ProjectFilePath, std::pair<QString, QString>> defaultPaths = {
     {ProjectFilePath::json_wild_encounters,             { "json_wild_encounters",            "src/data/wild_encounters.json"}},
     {ProjectFilePath::json_region_map_entries,          { "json_region_map_entries",         "src/data/region_map/region_map_sections.json"}},
     {ProjectFilePath::json_region_porymap_cfg,          { "json_region_porymap_cfg",         "src/data/region_map/porymap_config.json"}},
-    {ProjectFilePath::tilesets_headers,                 { "tilesets_headers",                "data/tilesets/headers.inc"}},
-    {ProjectFilePath::tilesets_graphics,                { "tilesets_graphics",               "data/tilesets/graphics.inc"}},
-    {ProjectFilePath::tilesets_metatiles,               { "tilesets_metatiles",              "data/tilesets/metatiles.inc"}},
+    {ProjectFilePath::tilesets_headers,                 { "tilesets_headers",                "src/data/tilesets/headers.h"}},
+    {ProjectFilePath::tilesets_graphics,                { "tilesets_graphics",               "src/data/tilesets/graphics.h"}},
+    {ProjectFilePath::tilesets_metatiles,               { "tilesets_metatiles",              "src/data/tilesets/metatiles.h"}},
+    {ProjectFilePath::tilesets_headers_asm,             { "tilesets_headers_asm",            "data/tilesets/headers.inc"}},
+    {ProjectFilePath::tilesets_graphics_asm,            { "tilesets_graphics_asm",           "data/tilesets/graphics.inc"}},
+    {ProjectFilePath::tilesets_metatiles_asm,           { "tilesets_metatiles_asm",          "data/tilesets/metatiles.inc"}},
     {ProjectFilePath::data_obj_event_gfx_pointers,      { "data_obj_event_gfx_pointers",     "src/data/object_events/object_event_graphics_info_pointers.h"}},
     {ProjectFilePath::data_obj_event_gfx_info,          { "data_obj_event_gfx_info",         "src/data/object_events/object_event_graphics_info.h"}},
     {ProjectFilePath::data_obj_event_pic_tables,        { "data_obj_event_pic_tables",       "src/data/object_events/object_event_pic_tables.h"}},
@@ -568,6 +571,10 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         this->prefabFilepath = value;
     } else if (key == "prefabs_import_prompted") {
         this->prefabImportPrompted = getConfigBool(key, value);
+    } else if (key == "tilesets_have_callback") {
+        this->tilesetsHaveCallback = getConfigBool(key, value);
+    } else if (key == "tilesets_have_is_compressed") {
+        this->tilesetsHaveIsCompressed = getConfigBool(key, value);
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -614,6 +621,8 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     for (auto it = this->filePaths.constKeyValueBegin(); it != this->filePaths.constKeyValueEnd(); ++it) {
         map.insert("path/"+defaultPaths[(*it).first].first, (*it).second);
     }
+    map.insert("tilesets_have_callback", QString::number(this->tilesetsHaveCallback));
+    map.insert("tilesets_have_is_compressed", QString::number(this->tilesetsHaveIsCompressed));
     return map;
 }
 
@@ -653,10 +662,6 @@ void ProjectConfig::onNewConfigFileCreated() {
     this->enableEventCloneObject = isPokefirered;
     this->enableFloorNumber = isPokefirered;
     this->createMapTextFile = (this->baseGameVersion != BaseGameVersion::pokeemerald);
-    this->usePoryScript = false;
-    this->enableTripleLayerMetatiles = false;
-    this->newMapMetatileId = 1;
-    this->newMapElevation = 3;
     this->newMapBorderMetatileIds = isPokefirered ? DEFAULT_BORDER_FRLG : DEFAULT_BORDER_RSE;
 }
 
@@ -849,6 +854,24 @@ void ProjectConfig::setPrefabImportPrompted(bool prompted) {
 
 bool ProjectConfig::getPrefabImportPrompted() {
     return this->prefabImportPrompted;
+}
+
+void ProjectConfig::setTilesetsHaveCallback(bool has) {
+    this->tilesetsHaveCallback = has;
+    this->save();
+}
+
+bool ProjectConfig::getTilesetsHaveCallback() {
+    return this->tilesetsHaveCallback;
+}
+
+void ProjectConfig::setTilesetsHaveIsCompressed(bool has) {
+    this->tilesetsHaveIsCompressed = has;
+    this->save();
+}
+
+bool ProjectConfig::getTilesetsHaveIsCompressed() {
+    return this->tilesetsHaveIsCompressed;
 }
 
 

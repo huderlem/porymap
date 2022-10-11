@@ -76,6 +76,7 @@ public:
         this->y = 0;
         this->hidden = false;
         this->opacity = 1.0;
+        this->clippingRect = nullptr;
     }
     ~Overlay() {
         this->clearItems();
@@ -88,6 +89,8 @@ public:
     int getY();
     void setX(int x);
     void setY(int y);
+    void setClippingRect(QRectF rect);
+    void clearClippingRect();
     void setPosition(int x, int y);
     void move(int deltaX, int deltaY);
     void renderItems(QPainter *painter);
@@ -105,6 +108,7 @@ private:
     int y;
     bool hidden;
     qreal opacity;
+    QRectF *clippingRect;
 };
 
 #endif // OVERLAY_H

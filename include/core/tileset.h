@@ -15,14 +15,11 @@ public:
 
 public:
     QString name;
-    QString is_compressed;
     QString is_secondary;
-    QString padding;
     QString tiles_label;
     QString palettes_label;
     QString metatiles_label;
     QString metatiles_path;
-    QString callback_label;
     QString metatile_attrs_label;
     QString metatile_attrs_path;
     QString tilesImagePath;
@@ -40,10 +37,12 @@ public:
     static QList<QList<QRgb>> getBlockPalettes(Tileset*, Tileset*, bool useTruePalettes = false);
     static QList<QRgb> getPalette(int, Tileset*, Tileset*, bool useTruePalettes = false);
     static bool metatileIsValid(uint16_t metatileId, Tileset *, Tileset *);
-
-    bool appendToHeaders(QString headerFile, QString friendlyName);
-    bool appendToGraphics(QString graphicsFile, QString friendlyName, bool primary);
-    bool appendToMetatiles(QString metatileFile, QString friendlyName, bool primary);
+    static QHash<int, QString> getHeaderMemberMap(bool usingAsm);
+    static QString getExpectedDir(QString tilesetName, bool isSecondary);
+    QString getExpectedDir();
+    bool appendToHeaders(QString root, QString friendlyName, bool usingAsm);
+    bool appendToGraphics(QString root, QString friendlyName, bool usingAsm);
+    bool appendToMetatiles(QString root, QString friendlyName, bool usingAsm);
 };
 
 #endif // TILESET_H

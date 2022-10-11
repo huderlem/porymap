@@ -109,9 +109,8 @@ void NewMapPopup::useLayout(QString layoutId) {
 void NewMapPopup::setDefaultValues(int groupNum, QString mapSec) {
     ui->lineEdit_NewMap_Name->setText(project->getNewMapName());
 
-    QMap<QString, QStringList> tilesets = project->getTilesetLabels();
-    ui->comboBox_NewMap_Primary_Tileset->addItems(tilesets.value("primary"));
-    ui->comboBox_NewMap_Secondary_Tileset->addItems(tilesets.value("secondary"));
+    ui->comboBox_NewMap_Primary_Tileset->addItems(project->tilesetLabels.value("primary"));
+    ui->comboBox_NewMap_Secondary_Tileset->addItems(project->tilesetLabels.value("secondary"));
 
     ui->comboBox_NewMap_Group->addItems(project->groupNames);
     ui->comboBox_NewMap_Group->setCurrentText(project->groupNames.at(groupNum));
@@ -149,9 +148,8 @@ void NewMapPopup::setDefaultValues(int groupNum, QString mapSec) {
 void NewMapPopup::setDefaultValuesImportMap(MapLayout *mapLayout) {
     ui->lineEdit_NewMap_Name->setText(project->getNewMapName());
 
-    QMap<QString, QStringList> tilesets = project->getTilesetLabels();
-    ui->comboBox_NewMap_Primary_Tileset->addItems(tilesets.value("primary"));
-    ui->comboBox_NewMap_Secondary_Tileset->addItems(tilesets.value("secondary"));
+    ui->comboBox_NewMap_Primary_Tileset->addItems(project->tilesetLabels.value("primary"));
+    ui->comboBox_NewMap_Secondary_Tileset->addItems(project->tilesetLabels.value("secondary"));
 
     ui->comboBox_NewMap_Group->addItems(project->groupNames);
     ui->comboBox_NewMap_Group->setCurrentText(project->groupNames.at(0));

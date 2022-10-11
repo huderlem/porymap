@@ -30,8 +30,10 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - The wild encounter editor is automatically disabled if the encounter JSON data cannot be read
 - Metatiles are always rendered accurately with 3 layers, and the unused layer is not assumed to be transparent.
 - `object_event_graphics_info.h` can now be parsed correctly if it uses structs with attributes.
+- Tileset data in `headers`, `graphics`, and `metatiles` can now be parsed if written in C.
 - The selection is no longer reset when pasting events. The newly pasted events are selected instead.
 - Palette editor ui is updated a bit to allow hex and rgb value input.
+- The metatile behavior is now displayed in the bottom bar mouseover text.
 
 ### Fixed
 - Fix cursor tile outline not updating at the end of a dragged selection.

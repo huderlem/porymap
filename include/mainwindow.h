@@ -129,7 +129,6 @@ public:
     Q_INVOKABLE void setMetatileTiles(int metatileId, QJSValue tilesObj, int tileStart = 0, int tileEnd = -1, bool forceRedraw = true);
     Q_INVOKABLE void setMetatileTiles(int metatileId, int tileId, bool xflip, bool yflip, int palette, int tileStart = 0, int tileEnd = -1, bool forceRedraw = true);
     Q_INVOKABLE QJSValue getTilePixels(int tileId);
-    bool gameStringToBool(QString s);
     Q_INVOKABLE QString getSong();
     Q_INVOKABLE void setSong(QString song);
     Q_INVOKABLE QString getLocation();
