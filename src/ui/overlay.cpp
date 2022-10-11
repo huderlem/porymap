@@ -2,47 +2,49 @@
 #include "scripting.h"
 #include "log.h"
 
-void OverlayText::render(QPainter *painter, int x, int y) {
+void OverlayText::render(QPainter *painter) {
     QFont font = painter->font();
     font.setPixelSize(this->fontSize);
     painter->setFont(font);
     painter->setPen(this->color);
-    painter->drawStaticText(this->x + x, this->y + y, this->text);
+    painter->drawStaticText(this->x, this->y, this->text);
 }
 
-void OverlayPath::render(QPainter *painter, int x, int y) {
-    if (x != this->prevX || y != this->prevY) {
-        // Overlay has moved since the path was last drawn
-        path.translate(x - prevX, y - prevY);
-    }
-    this->prevX = x;
-    this->prevY = y;
+void OverlayPath::render(QPainter *painter) {
     painter->setPen(this->borderColor);
     painter->drawPath(this->path);
     painter->fillPath(this->path, this->fillColor);
 }
 
-void OverlayImage::render(QPainter *painter, int x, int y) {
-    painter->drawImage(this->x + x, this->y + y, this->image);
+void OverlayImage::render(QPainter *painter) {
+    painter->drawImage(this->x, this->y, this->image);
 }
 
 void Overlay::renderItems(QPainter *painter) {
     if (this->hidden) return;
+
+    painter->save();
+
+    QTransform transform = painter->transform();
+    transform.translate(this->x, this->y);
+    transform.rotate(this->rotation);
+    transform.scale(this->hScale, this->vScale);
+    painter->setTransform(transform);
+
+    /*painter->translate(this->x, this->y);
+    painter->rotate(this->rotation);
+    painter->scale(this->hScale, this->vScale);*/
 
     if (this->clippingRect) {
         painter->setClipping(true);
         painter->setClipRect(*this->clippingRect);
     }
 
-    qreal oldOpacity = painter->opacity();
     painter->setOpacity(this->opacity);
     for (auto item : this->items)
-        item->render(painter, this->x, this->y);
-    painter->setOpacity(oldOpacity);
+        item->render(painter);
 
-    if (this->clippingRect) {
-        painter->setClipping(false);
-    }
+    painter->restore();
 }
 
 void Overlay::clearItems() {
@@ -90,6 +92,34 @@ void Overlay::setX(int x) {
 
 void Overlay::setY(int y) {
     this->y = y;
+}
+
+int Overlay::getHScale() {
+    return this->hScale;
+}
+
+int Overlay::getVScale() {
+    return this->vScale;
+}
+
+void Overlay::setHScale(int scale) {
+    this->hScale = scale;
+}
+
+void Overlay::setVScale(int scale) {
+    this->vScale = scale;
+}
+
+int Overlay::getRotation() {
+    return this->rotation;
+}
+
+void Overlay::setRotation(int rotation) {
+    this->rotation = rotation;
+}
+
+void Overlay::rotate(int degrees) {
+    this->rotation += degrees;
 }
 
 void Overlay::setClippingRect(QRectF rect) {
@@ -143,18 +173,18 @@ bool Overlay::addRect(int x, int y, int width, int height, QString borderColorSt
     return true;
 }
 
-bool Overlay::addPath(QList<int> x, QList<int> y, QString borderColorStr, QString fillColorStr) {
-    int numPoints = qMin(x.length(), y.length());
+bool Overlay::addPath(QList<int> xCoords, QList<int> yCoords, QString borderColorStr, QString fillColorStr) {
+    int numPoints = qMin(xCoords.length(), yCoords.length());
     if (numPoints < 2) {
         logError("Overlay path must have at least two points.");
         return false;
     }
 
     QPainterPath path;
-    path.moveTo(x.at(0), y.at(0));
+    path.moveTo(xCoords.at(0), yCoords.at(0));
 
     for (int i = 1; i < numPoints; i++)
-        path.lineTo(x.at(i), y.at(i));
+        path.lineTo(xCoords.at(i), yCoords.at(i));
 
     this->items.append(new OverlayPath(path, getColor(borderColorStr), getColor(fillColorStr)));
     return true;

@@ -147,6 +147,66 @@ void MapView::setOpacity(int opacity) {
     this->scene()->update();
 }
 
+int MapView::getHorizontalScale(int layer) {
+    return this->getOverlay(layer)->getHScale();
+}
+
+int MapView::getVerticalScale(int layer) {
+    return this->getOverlay(layer)->getVScale();
+}
+
+void MapView::setHorizontalScale(int scale, int layer) {
+    this->getOverlay(layer)->setHScale(scale);
+    this->scene()->update();
+}
+
+// Overload. No layer provided, set horizontal scale of all layers
+void MapView::setHorizontalScale(int scale) {
+    foreach (Overlay * layer, this->overlayMap)
+        layer->setHScale(scale);
+    this->scene()->update();
+}
+
+void MapView::setVerticalScale(int scale, int layer) {
+    this->getOverlay(layer)->setVScale(scale);
+    this->scene()->update();
+}
+
+// Overload. No layer provided, set vertical scale of all layers
+void MapView::setVerticalScale(int scale) {
+    foreach (Overlay * layer, this->overlayMap)
+        layer->setVScale(scale);
+    this->scene()->update();
+}
+
+int MapView::getRotation(int layer) {
+    return this->getOverlay(layer)->getRotation();
+}
+
+void MapView::setRotation(int rotation, int layer) {
+    this->getOverlay(layer)->setRotation(rotation);
+    this->scene()->update();
+}
+
+// Overload. No layer provided, set rotation of all layers
+void MapView::setRotation(int rotation) {
+    foreach (Overlay * layer, this->overlayMap)
+        layer->setRotation(rotation);
+    this->scene()->update();
+}
+
+void MapView::rotate(int degrees, int layer) {
+    this->getOverlay(layer)->rotate(degrees);
+    this->scene()->update();
+}
+
+// Overload. No layer provided, rotate all layers
+void MapView::rotate(int degrees) {
+    foreach (Overlay * layer, this->overlayMap)
+        layer->rotate(degrees);
+    this->scene()->update();
+}
+
 void MapView::addText(QString text, int x, int y, QString color, int fontSize, int layer) {
     this->getOverlay(layer)->addText(text, x, y, color, fontSize);
     this->scene()->update();

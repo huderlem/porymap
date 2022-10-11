@@ -44,6 +44,17 @@ public:
     Q_INVOKABLE int getOpacity(int layer = 0);
     Q_INVOKABLE void setOpacity(int opacity, int layer);
     Q_INVOKABLE void setOpacity(int opacity);
+    Q_INVOKABLE int getHorizontalScale(int layer);
+    Q_INVOKABLE int getVerticalScale(int layer);
+    Q_INVOKABLE void setHorizontalScale(int scale, int layer);
+    Q_INVOKABLE void setHorizontalScale(int scale);
+    Q_INVOKABLE void setVerticalScale(int scale, int layer);
+    Q_INVOKABLE void setVerticalScale(int scale);
+    Q_INVOKABLE int getRotation(int layer);
+    Q_INVOKABLE void setRotation(int rotation, int layer);
+    Q_INVOKABLE void setRotation(int rotation);
+    Q_INVOKABLE void rotate(int degrees, int layer);
+    Q_INVOKABLE void rotate(int degrees);
     Q_INVOKABLE void addText(QString text, int x, int y, QString color = "#000000", int fontSize = 12, int layer = 0);
     Q_INVOKABLE void addRect(int x, int y, int width, int height, QString borderColor = "#000000", QString fillColor = "transparent", int rounding = 0, int layer = 0);
     Q_INVOKABLE void addPath(QList<int> x, QList<int> y, QString borderColor = "#000000", QString fillColor = "transparent", int layer = 0);
