@@ -5,6 +5,7 @@
 #include <QString>
 #include <QColor>
 #include <QPainter>
+#include <QStaticText>
 
 class OverlayItem {
 public:
@@ -15,8 +16,9 @@ public:
 
 class OverlayText : public OverlayItem {
 public:
-    OverlayText(QString text, int x, int y, QColor color, int fontSize) {
-        this->text = text;
+    OverlayText(const QString inputText, int x, int y, QColor color, int fontSize) :
+        text(QStaticText(inputText))
+    {
         this->x = x;
         this->y = y;
         this->color = color;
@@ -25,7 +27,7 @@ public:
     ~OverlayText() {}
     virtual void render(QPainter *painter, int x, int y);
 private:
-    QString text;
+    const QStaticText text;
     int x;
     int y;
     QColor color;
@@ -93,7 +95,7 @@ public:
     void renderItems(QPainter *painter);
     QList<OverlayItem*> getItems();
     void clearItems();
-    void addText(QString text, int x, int y, QString color = "#000000", int fontSize = 12);
+    void addText(const QString text, int x, int y, QString color = "#000000", int fontSize = 12);
     void addRect(int x, int y, int width, int height, QString color = "#000000", bool filled = false);
     bool addImage(int x, int y, QString filepath, bool useCache = true, int width = -1, int height = -1, int xOffset = 0, int yOffset = 0, qreal hScale = 1, qreal vScale = 1, QList<QRgb> palette = QList<QRgb>(), bool setTransparency = false);
     bool addImage(int x, int y, QImage image);

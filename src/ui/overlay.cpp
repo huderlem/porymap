@@ -7,7 +7,7 @@ void OverlayText::render(QPainter *painter, int x, int y) {
     font.setPixelSize(this->fontSize);
     painter->setFont(font);
     painter->setPen(this->color);
-    painter->drawText(this->x + x, this->y + y, this->text);
+    painter->drawStaticText(this->x + x, this->y + y, this->text);
 }
 
 void OverlayRect::render(QPainter *painter, int x, int y) {
@@ -90,7 +90,7 @@ void Overlay::move(int deltaX, int deltaY) {
     this->y += deltaY;
 }
 
-void Overlay::addText(QString text, int x, int y, QString color, int fontSize) {
+void Overlay::addText(const QString text, int x, int y, QString color, int fontSize) {
     this->items.append(new OverlayText(text, x, y, QColor(color), fontSize));
 }
 
