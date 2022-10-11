@@ -34,23 +34,21 @@ private:
     int fontSize;
 };
 
-class OverlayRect : public OverlayItem {
+class OverlayPath : public OverlayItem {
 public:
-    OverlayRect(int x, int y, int width, int height, QColor borderColor, QColor fillColor) {
-        this->x = x;
-        this->y = y;
-        this->width = width;
-        this->height = height;
+    OverlayPath(QPainterPath path, QColor borderColor, QColor fillColor) {
+        this->prevX = 0;
+        this->prevY = 0;
+        this->path = path;
         this->borderColor = borderColor;
         this->fillColor = fillColor;
     }
-    ~OverlayRect() {}
+    ~OverlayPath() {}
     virtual void render(QPainter *painter, int x, int y);
 private:
-    int x;
-    int y;
-    int width;
-    int height;
+    int prevX;
+    int prevY;
+    QPainterPath path;
     QColor borderColor;
     QColor fillColor;
 };
@@ -68,23 +66,6 @@ private:
     int x;
     int y;
     QImage image;
-};
-
-class OverlayPath : public OverlayItem {
-public:
-    OverlayPath(QPainterPath path, QColor color) {
-        this->prevX = 0;
-        this->prevY = 0;
-        this->path = path;
-        this->color = color;
-    }
-    ~OverlayPath() {}
-    virtual void render(QPainter *painter, int x, int y);
-private:
-    int prevX;
-    int prevY;
-    QPainterPath path;
-    QColor color;
 };
 
 class Overlay
@@ -112,13 +93,13 @@ public:
     void renderItems(QPainter *painter);
     QList<OverlayItem*> getItems();
     void clearItems();
-    bool addText(const QString text, int x, int y, QString colorStr, int fontSize);
-    bool addRect(int x, int y, int width, int height, QString borderColorStr, QString fillColorStr);
+    void addText(const QString text, int x, int y, QString colorStr, int fontSize);
+    bool addRect(int x, int y, int width, int height, QString borderColorStr, QString fillColorStr, int rounding);
     bool addImage(int x, int y, QString filepath, bool useCache = true, int width = -1, int height = -1, int xOffset = 0, int yOffset = 0, qreal hScale = 1, qreal vScale = 1, QList<QRgb> palette = QList<QRgb>(), bool setTransparency = false);
     bool addImage(int x, int y, QImage image);
-    bool addPath(QList<int> x, QList<int> y, QString colorStr);
+    bool addPath(QList<int> x, QList<int> y, QString borderColorStr, QString fillColorStr);
 private:
-    QColor getColor(QString colorStr, bool * ok);
+    QColor getColor(QString colorStr);
     QList<OverlayItem*> items;
     int x;
     int y;

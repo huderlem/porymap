@@ -125,17 +125,17 @@ void MapView::setOpacity(int opacity) {
 }
 
 void MapView::addText(QString text, int x, int y, QString color, int fontSize, int layer) {
-    if (this->getOverlay(layer)->addText(text, x, y, color, fontSize))
+    this->getOverlay(layer)->addText(text, x, y, color, fontSize);
+    this->scene()->update();
+}
+
+void MapView::addRect(int x, int y, int width, int height, QString borderColor, QString fillColor, int rounding, int layer) {
+    if (this->getOverlay(layer)->addRect(x, y, width, height, borderColor, fillColor, rounding))
         this->scene()->update();
 }
 
-void MapView::addRect(int x, int y, int width, int height, QString borderColor, QString fillColor, int layer) {
-    if (this->getOverlay(layer)->addRect(x, y, width, height, borderColor, fillColor))
-        this->scene()->update();
-}
-
-void MapView::addPath(QList<int> x, QList<int> y, QString color, int layer) {
-    if (this->getOverlay(layer)->addPath(x, y, color))
+void MapView::addPath(QList<int> x, QList<int> y, QString borderColor, QString fillColor, int layer) {
+    if (this->getOverlay(layer)->addPath(x, y, borderColor, fillColor))
         this->scene()->update();
 }
 

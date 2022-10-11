@@ -41,7 +41,8 @@ public:
     Q_INVOKABLE void setOpacity(int opacity, int layer);
     Q_INVOKABLE void setOpacity(int opacity);
     Q_INVOKABLE void addText(QString text, int x, int y, QString color = "#000000", int fontSize = 12, int layer = 0);
-    Q_INVOKABLE void addRect(int x, int y, int width, int height, QString borderColor = "#000000", QString fillColor = "transparent", int layer = 0);
+    Q_INVOKABLE void addRect(int x, int y, int width, int height, QString borderColor = "#000000", QString fillColor = "transparent", int rounding = 0, int layer = 0);
+    Q_INVOKABLE void addPath(QList<int> x, QList<int> y, QString borderColor = "#000000", QString fillColor = "transparent", int layer = 0);
     Q_INVOKABLE void addImage(int x, int y, QString filepath, int layer = 0, bool useCache = true);
     Q_INVOKABLE void createImage(int x, int y, QString filepath,
                                  int width = -1, int height = -1, int xOffset = 0, int yOffset = 0,
@@ -50,7 +51,6 @@ public:
     Q_INVOKABLE void addTileImage(int x, int y, int tileId, bool xflip, bool yflip, int paletteId, bool setTransparency = false, int layer = 0);
     Q_INVOKABLE void addTileImage(int x, int y, QJSValue tileObj, bool setTransparency = false, int layer = 0);
     Q_INVOKABLE void addMetatileImage(int x, int y, int metatileId, bool setTransparency = false, int layer = 0);
-    Q_INVOKABLE void addPath(QList<int> x, QList<int> y, QString color = "#000000", int layer = 0);
 
 private:
     QMap<int, Overlay*> overlayMap;

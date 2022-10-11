@@ -10,17 +10,6 @@ void OverlayText::render(QPainter *painter, int x, int y) {
     painter->drawStaticText(this->x + x, this->y + y, this->text);
 }
 
-void OverlayRect::render(QPainter *painter, int x, int y) {
-    QRectF rect(this->x + x, this->y + y, this->width, this->height);
-    painter->setPen(this->borderColor);
-    painter->drawRect(rect);
-    painter->fillRect(rect, this->fillColor);
-}
-
-void OverlayImage::render(QPainter *painter, int x, int y) {
-    painter->drawImage(this->x + x, this->y + y, this->image);
-}
-
 void OverlayPath::render(QPainter *painter, int x, int y) {
     if (x != this->prevX || y != this->prevY) {
         // Overlay has moved since the path was last drawn
@@ -28,8 +17,13 @@ void OverlayPath::render(QPainter *painter, int x, int y) {
     }
     this->prevX = x;
     this->prevY = y;
-    painter->setPen(this->color);
+    painter->setPen(this->borderColor);
     painter->drawPath(this->path);
+    painter->fillPath(this->path, this->fillColor);
+}
+
+void OverlayImage::render(QPainter *painter, int x, int y) {
+    painter->drawImage(this->x + x, this->y + y, this->image);
 }
 
 void Overlay::renderItems(QPainter *painter) {
@@ -67,7 +61,7 @@ int Overlay::getOpacity() {
 
 void Overlay::setOpacity(int opacity) {
     if (opacity < 0 || opacity > 100) {
-        logError(QString("Invalid overlay opacity '%1'").arg(opacity));
+        logError(QString("Invalid overlay opacity '%1', must be in range 0-100").arg(opacity));
         return;
     }
     this->opacity = static_cast<qreal>(opacity) / 100;
@@ -99,41 +93,34 @@ void Overlay::move(int deltaX, int deltaY) {
     this->y += deltaY;
 }
 
-QColor Overlay::getColor(QString colorStr, bool * ok) {
+QColor Overlay::getColor(QString colorStr) {
     if (colorStr.isEmpty())
         colorStr = "transparent";
     QColor color = QColor(colorStr);
     if (!color.isValid()) {
-        logError(QString("\"%1\" is not a valid color. Colors can be in the format \"#RRGGBB\" or \"#AARRGGBB\"").arg(colorStr));
-        if (ok) *ok = false; // Not set to true in here, allow for repeat usage
+        logWarn(QString("Invalid overlay color \"%1\". Colors can be in the format \"#RRGGBB\" or \"#AARRGGBB\"").arg(colorStr));
+        color = QColor("transparent");
     }
     return color;
 }
 
-bool Overlay::addText(const QString text, int x, int y, QString colorStr, int fontSize) {
-    bool ok = true;
-    QColor color = getColor(colorStr, &ok);
-    if (!ok) return false;
+void Overlay::addText(const QString text, int x, int y, QString colorStr, int fontSize) {
+    this->items.append(new OverlayText(text, x, y, getColor(colorStr), fontSize));
+}
 
-    this->items.append(new OverlayText(text, x, y, color, fontSize));
+bool Overlay::addRect(int x, int y, int width, int height, QString borderColorStr, QString fillColorStr, int rounding) {
+    if (rounding < 0 || rounding > 100) {
+        logError(QString("Invalid rectangle rounding '%1', must be in range 0-100").arg(rounding));
+        return false;
+    }
+
+    QPainterPath path;
+    path.addRoundedRect(QRectF(x, y, width, height), rounding, rounding, Qt::RelativeSize);
+    this->items.append(new OverlayPath(path, getColor(borderColorStr), getColor(fillColorStr)));
     return true;
 }
 
-bool Overlay::addRect(int x, int y, int width, int height, QString borderColorStr, QString fillColorStr) {
-    bool ok = true;
-    QColor borderColor = getColor(borderColorStr, &ok);
-    QColor fillColor = getColor(fillColorStr, &ok);
-    if (!ok) return false;
-
-    this->items.append(new OverlayRect(x, y, width, height, borderColor, fillColor));
-    return true;
-}
-
-bool Overlay::addPath(QList<int> x, QList<int> y, QString colorStr) {
-    bool ok = true;
-    QColor color = getColor(colorStr, &ok);
-    if (!ok) return false;
-
+bool Overlay::addPath(QList<int> x, QList<int> y, QString borderColorStr, QString fillColorStr) {
     int numPoints = qMin(x.length(), y.length());
     if (numPoints < 2) {
         logError("Overlay path must have at least two points.");
@@ -146,7 +133,7 @@ bool Overlay::addPath(QList<int> x, QList<int> y, QString colorStr) {
     for (int i = 1; i < numPoints; i++)
         path.lineTo(x.at(i), y.at(i));
 
-    this->items.append(new OverlayPath(path, color));
+    this->items.append(new OverlayPath(path, getColor(borderColorStr), getColor(fillColorStr)));
     return true;
 }
 
