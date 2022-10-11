@@ -11,12 +11,10 @@ void OverlayText::render(QPainter *painter, int x, int y) {
 }
 
 void OverlayRect::render(QPainter *painter, int x, int y) {
-    if (this->filled) {
-        painter->fillRect(this->x + x, this->y + y, this->width, this->height, this->color);
-    } else {
-        painter->setPen(this->color);
-        painter->drawRect(this->x + x, this->y + y, this->width, this->height);
-    }
+    QRectF rect(this->x + x, this->y + y, this->width, this->height);
+    painter->setPen(this->borderColor);
+    painter->drawRect(rect);
+    painter->fillRect(rect, this->fillColor);
 }
 
 void OverlayImage::render(QPainter *painter, int x, int y) {
@@ -124,12 +122,55 @@ void Overlay::move(int deltaX, int deltaY) {
     this->y += deltaY;
 }
 
-void Overlay::addText(const QString text, int x, int y, QString color, int fontSize) {
-    this->items.append(new OverlayText(text, x, y, QColor(color), fontSize));
+QColor Overlay::getColor(QString colorStr, bool * ok) {
+    if (colorStr.isEmpty())
+        colorStr = "transparent";
+    QColor color = QColor(colorStr);
+    if (!color.isValid()) {
+        logError(QString("\"%1\" is not a valid color. Colors can be in the format \"#RRGGBB\" or \"#AARRGGBB\"").arg(colorStr));
+        if (ok) *ok = false; // Not set to true in here, allow for repeat usage
+    }
+    return color;
 }
 
-void Overlay::addRect(int x, int y, int width, int height, QString color, bool filled) {
-    this->items.append(new OverlayRect(x, y, width, height, QColor(color), filled));
+bool Overlay::addText(const QString text, int x, int y, QString colorStr, int fontSize) {
+    bool ok = true;
+    QColor color = getColor(colorStr, &ok);
+    if (!ok) return false;
+
+    this->items.append(new OverlayText(text, x, y, color, fontSize));
+    return true;
+}
+
+bool Overlay::addRect(int x, int y, int width, int height, QString borderColorStr, QString fillColorStr) {
+    bool ok = true;
+    QColor borderColor = getColor(borderColorStr, &ok);
+    QColor fillColor = getColor(fillColorStr, &ok);
+    if (!ok) return false;
+
+    this->items.append(new OverlayRect(x, y, width, height, borderColor, fillColor));
+    return true;
+}
+
+bool Overlay::addPath(QList<int> x, QList<int> y, QString colorStr) {
+    bool ok = true;
+    QColor color = getColor(colorStr, &ok);
+    if (!ok) return false;
+
+    int numPoints = qMin(x.length(), y.length());
+    if (numPoints < 2) {
+        logError("Overlay path must have at least two points.");
+        return false;
+    }
+
+    QPainterPath path;
+    path.moveTo(x.at(0), y.at(0));
+
+    for (int i = 1; i < numPoints; i++)
+        path.lineTo(x.at(i), y.at(i));
+
+    this->items.append(new OverlayPath(path, color));
+    return true;
 }
 
 bool Overlay::addImage(int x, int y, QString filepath, bool useCache, int width, int height, int xOffset, int yOffset, qreal hScale, qreal vScale, QList<QRgb> palette, bool setTransparency) {
@@ -184,22 +225,5 @@ bool Overlay::addImage(int x, int y, QImage image) {
         return false;
     }
     this->items.append(new OverlayImage(x, y, image));
-    return true;
-}
-
-bool Overlay::addPath(QList<int> x, QList<int> y, QString color) {
-    int numPoints = qMin(x.length(), y.length());
-    if (numPoints < 2) {
-        logError("Overlay path must have at least two points.");
-        return false;
-    }
-
-    QPainterPath path;
-    path.moveTo(x.at(0), y.at(0));
-
-    for (int i = 1; i < numPoints; i++)
-        path.lineTo(x.at(i), y.at(i));
-
-    this->items.append(new OverlayPath(path, color));
     return true;
 }

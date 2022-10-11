@@ -148,18 +148,18 @@ void MapView::setOpacity(int opacity) {
 }
 
 void MapView::addText(QString text, int x, int y, QString color, int fontSize, int layer) {
-    this->getOverlay(layer)->addText(text, x, y, color, fontSize);
-    this->scene()->update();
+    if (this->getOverlay(layer)->addText(text, x, y, color, fontSize))
+        this->scene()->update();
 }
 
-void MapView::addRect(int x, int y, int width, int height, QString color, int layer) {
-    this->getOverlay(layer)->addRect(x, y, width, height, color, false);
-    this->scene()->update();
+void MapView::addRect(int x, int y, int width, int height, QString borderColor, QString fillColor, int layer) {
+    if (this->getOverlay(layer)->addRect(x, y, width, height, borderColor, fillColor))
+        this->scene()->update();
 }
 
-void MapView::addFilledRect(int x, int y, int width, int height, QString color, int layer) {
-    this->getOverlay(layer)->addRect(x, y, width, height, color, true);
-    this->scene()->update();
+void MapView::addPath(QList<int> x, QList<int> y, QString color, int layer) {
+    if (this->getOverlay(layer)->addPath(x, y, color))
+        this->scene()->update();
 }
 
 void MapView::addImage(int x, int y, QString filepath, int layer, bool useCache) {
@@ -210,10 +210,5 @@ void MapView::addMetatileImage(int x, int y, int metatileId, bool setTransparenc
     if (setTransparency)
         image.setColor(0, qRgba(0, 0, 0, 0));
     if (this->getOverlay(layer)->addImage(x, y, image))
-        this->scene()->update();
-}
-
-void MapView::addPath(QList<int> x, QList<int> y, QString color, int layer) {
-    if (this->getOverlay(layer)->addPath(x, y, color))
         this->scene()->update();
 }
