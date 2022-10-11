@@ -36,13 +36,13 @@ private:
 
 class OverlayRect : public OverlayItem {
 public:
-    OverlayRect(int x, int y, int width, int height, QColor color, bool filled) {
+    OverlayRect(int x, int y, int width, int height, QColor borderColor, QColor fillColor) {
         this->x = x;
         this->y = y;
         this->width = width;
         this->height = height;
-        this->color = color;
-        this->filled = filled;
+        this->borderColor = borderColor;
+        this->fillColor = fillColor;
     }
     ~OverlayRect() {}
     virtual void render(QPainter *painter, int x, int y);
@@ -51,8 +51,8 @@ private:
     int y;
     int width;
     int height;
-    QColor color;
-    bool filled;
+    QColor borderColor;
+    QColor fillColor;
 };
 
 class OverlayImage : public OverlayItem {
@@ -72,7 +72,7 @@ private:
 
 class OverlayPath : public OverlayItem {
 public:
-    OverlayPath(QPainterPath path, QString color) {
+    OverlayPath(QPainterPath path, QColor color) {
         this->prevX = 0;
         this->prevY = 0;
         this->path = path;
@@ -84,7 +84,7 @@ private:
     int prevX;
     int prevY;
     QPainterPath path;
-    QString color;
+    QColor color;
 };
 
 class Overlay
@@ -112,12 +112,13 @@ public:
     void renderItems(QPainter *painter);
     QList<OverlayItem*> getItems();
     void clearItems();
-    void addText(const QString text, int x, int y, QString color = "#000000", int fontSize = 12);
-    void addRect(int x, int y, int width, int height, QString color = "#000000", bool filled = false);
+    bool addText(const QString text, int x, int y, QString colorStr, int fontSize);
+    bool addRect(int x, int y, int width, int height, QString borderColorStr, QString fillColorStr);
     bool addImage(int x, int y, QString filepath, bool useCache = true, int width = -1, int height = -1, int xOffset = 0, int yOffset = 0, qreal hScale = 1, qreal vScale = 1, QList<QRgb> palette = QList<QRgb>(), bool setTransparency = false);
     bool addImage(int x, int y, QImage image);
-    bool addPath(QList<int> x, QList<int> y, QString color);
+    bool addPath(QList<int> x, QList<int> y, QString colorStr);
 private:
+    QColor getColor(QString colorStr, bool * ok);
     QList<OverlayItem*> items;
     int x;
     int y;
