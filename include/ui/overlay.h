@@ -11,7 +11,7 @@ class OverlayItem {
 public:
     OverlayItem() {}
     virtual ~OverlayItem() {};
-    virtual void render(QPainter *, int, int) {};
+    virtual void render(QPainter *) {};
 };
 
 class OverlayText : public OverlayItem {
@@ -25,7 +25,7 @@ public:
         this->fontSize = fontSize;
     }
     ~OverlayText() {}
-    virtual void render(QPainter *painter, int x, int y);
+    virtual void render(QPainter *painter);
 private:
     const QStaticText text;
     int x;
@@ -37,17 +37,13 @@ private:
 class OverlayPath : public OverlayItem {
 public:
     OverlayPath(QPainterPath path, QColor borderColor, QColor fillColor) {
-        this->prevX = 0;
-        this->prevY = 0;
         this->path = path;
         this->borderColor = borderColor;
         this->fillColor = fillColor;
     }
     ~OverlayPath() {}
-    virtual void render(QPainter *painter, int x, int y);
+    virtual void render(QPainter *painter);
 private:
-    int prevX;
-    int prevY;
     QPainterPath path;
     QColor borderColor;
     QColor fillColor;
@@ -61,7 +57,7 @@ public:
         this->image = image;
     }
     ~OverlayImage() {}
-    virtual void render(QPainter *painter, int x, int y);
+    virtual void render(QPainter *painter);
 private:
     int x;
     int y;
@@ -74,6 +70,9 @@ public:
     Overlay() {
         this->x = 0;
         this->y = 0;
+        this->rotation = 0;
+        this->hScale = 1.0;
+        this->vScale = 1.0;
         this->hidden = false;
         this->opacity = 1.0;
         this->clippingRect = nullptr;
@@ -89,6 +88,13 @@ public:
     int getY();
     void setX(int x);
     void setY(int y);
+    int getHScale();
+    int getVScale();
+    void setHScale(int scale);
+    void setVScale(int scale);
+    int getRotation();
+    void setRotation(int rotation);
+    void rotate(int degrees);
     void setClippingRect(QRectF rect);
     void clearClippingRect();
     void setPosition(int x, int y);
@@ -100,12 +106,15 @@ public:
     bool addRect(int x, int y, int width, int height, QString borderColorStr, QString fillColorStr, int rounding);
     bool addImage(int x, int y, QString filepath, bool useCache = true, int width = -1, int height = -1, int xOffset = 0, int yOffset = 0, qreal hScale = 1, qreal vScale = 1, QList<QRgb> palette = QList<QRgb>(), bool setTransparency = false);
     bool addImage(int x, int y, QImage image);
-    bool addPath(QList<int> x, QList<int> y, QString borderColorStr, QString fillColorStr);
+    bool addPath(QList<int> xCoords, QList<int> yCoords, QString borderColorStr, QString fillColorStr);
 private:
     QColor getColor(QString colorStr);
     QList<OverlayItem*> items;
     int x;
     int y;
+    int rotation;
+    qreal hScale;
+    qreal vScale;
     bool hidden;
     qreal opacity;
     QRectF *clippingRect;
