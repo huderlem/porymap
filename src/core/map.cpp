@@ -305,7 +305,7 @@ void Map::setNewBorderDimensionsBlockdata(int newWidth, int newHeight) {
     layout->border = newBlockdata;
 }
 
-void Map::setDimensions(int newWidth, int newHeight, bool setNewBlockdata) {
+void Map::setDimensions(int newWidth, int newHeight, bool setNewBlockdata, bool enableScriptCallback) {
     if (setNewBlockdata) {
         setNewDimensionsBlockdata(newWidth, newHeight);
     }
@@ -315,7 +315,7 @@ void Map::setDimensions(int newWidth, int newHeight, bool setNewBlockdata) {
     layout->width = QString::number(newWidth);
     layout->height = QString::number(newHeight);
 
-    if (oldWidth != newWidth || oldHeight != newHeight) {
+    if (enableScriptCallback && (oldWidth != newWidth || oldHeight != newHeight)) {
         Scripting::cb_MapResized(oldWidth, oldHeight, newWidth, newHeight);
     }
 
@@ -323,7 +323,7 @@ void Map::setDimensions(int newWidth, int newHeight, bool setNewBlockdata) {
     emit mapDimensionsChanged(QSize(getWidth(), getHeight()));
 }
 
-void Map::setBorderDimensions(int newWidth, int newHeight, bool setNewBlockdata) {
+void Map::setBorderDimensions(int newWidth, int newHeight, bool setNewBlockdata, bool enableScriptCallback) {
     if (setNewBlockdata) {
         setNewBorderDimensionsBlockdata(newWidth, newHeight);
     }
@@ -333,7 +333,7 @@ void Map::setBorderDimensions(int newWidth, int newHeight, bool setNewBlockdata)
     layout->border_width = QString::number(newWidth);
     layout->border_height = QString::number(newHeight);
 
-    if (oldWidth != newWidth || oldHeight != newHeight) {
+    if (enableScriptCallback && (oldWidth != newWidth || oldHeight != newHeight)) {
         Scripting::cb_BorderResized(oldWidth, oldHeight, newWidth, newHeight);
     }
 
@@ -361,7 +361,7 @@ void Map::setBlock(int x, int y, Block block, bool enableScriptCallback) {
     }
 }
 
-void Map::setBlockdata(Blockdata blockdata) {
+void Map::setBlockdata(Blockdata blockdata, bool enableScriptCallback) {
     int width = getWidth();
     int size = qMin(blockdata.size(), layout->blockdata.size());
     for (int i = 0; i < size; i++) {
@@ -369,7 +369,8 @@ void Map::setBlockdata(Blockdata blockdata) {
         Block newBlock = blockdata.at(i);
         if (prevBlock != newBlock) {
             layout->blockdata.replace(i, newBlock);
-            Scripting::cb_MetatileChanged(i % width, i / width, prevBlock, newBlock);
+            if (enableScriptCallback)
+                Scripting::cb_MetatileChanged(i % width, i / width, prevBlock, newBlock);
         }
     }
 }
@@ -390,7 +391,7 @@ void Map::setBorderMetatileId(int x, int y, uint16_t metatileId, bool enableScri
     }
 }
 
-void Map::setBorderBlockData(Blockdata blockdata) {
+void Map::setBorderBlockData(Blockdata blockdata, bool enableScriptCallback) {
     int width = getBorderWidth();
     int size = qMin(blockdata.size(), layout->border.size());
     for (int i = 0; i < size; i++) {
@@ -398,7 +399,8 @@ void Map::setBorderBlockData(Blockdata blockdata) {
         Block newBlock = blockdata.at(i);
         if (prevBlock != newBlock) {
             layout->border.replace(i, newBlock);
-            Scripting::cb_BorderMetatileChanged(i % width, i / width, prevBlock.metatileId, newBlock.metatileId);
+            if (enableScriptCallback)
+                Scripting::cb_BorderMetatileChanged(i % width, i / width, prevBlock.metatileId, newBlock.metatileId);
         }
     }
 }
