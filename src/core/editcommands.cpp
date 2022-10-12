@@ -47,7 +47,7 @@ void PaintMetatile::redo() {
 
     if (!map) return;
 
-    map->setBlockdata(newMetatiles);
+    map->setBlockdata(newMetatiles, true);
 
     map->layout->lastCommitBlocks.blocks = map->layout->blockdata;
 
@@ -57,7 +57,7 @@ void PaintMetatile::redo() {
 void PaintMetatile::undo() {
     if (!map) return;
 
-    map->setBlockdata(oldMetatiles);
+    map->setBlockdata(oldMetatiles, true);
 
     map->layout->lastCommitBlocks.blocks = map->layout->blockdata;
 
@@ -101,7 +101,7 @@ void PaintBorder::redo() {
 
     if (!map) return;
 
-    map->setBorderBlockData(newBorder);
+    map->setBorderBlockData(newBorder, true);
 
     map->layout->lastCommitBlocks.border = map->layout->border;
 
@@ -111,7 +111,7 @@ void PaintBorder::redo() {
 void PaintBorder::undo() {
     if (!map) return;
 
-    map->setBorderBlockData(oldBorder);
+    map->setBorderBlockData(oldBorder, true);
 
     map->layout->lastCommitBlocks.border = map->layout->border;
 
@@ -141,7 +141,7 @@ void ShiftMetatiles::redo() {
 
     if (!map) return;
 
-    map->setBlockdata(newMetatiles);
+    map->setBlockdata(newMetatiles, true);
 
     map->layout->lastCommitBlocks.blocks = map->layout->blockdata;
 
@@ -151,7 +151,7 @@ void ShiftMetatiles::redo() {
 void ShiftMetatiles::undo() {
     if (!map) return;
 
-    map->setBlockdata(oldMetatiles);
+    map->setBlockdata(oldMetatiles, true);
 
     map->layout->lastCommitBlocks.blocks = map->layout->blockdata;
 
@@ -212,10 +212,10 @@ void ResizeMap::redo() {
     if (!map) return;
 
     map->layout->blockdata = newMetatiles;
-    map->setDimensions(newMapWidth, newMapHeight, false);
+    map->setDimensions(newMapWidth, newMapHeight, false, true);
 
     map->layout->border = newBorder;
-    map->setBorderDimensions(newBorderWidth, newBorderHeight, false);
+    map->setBorderDimensions(newBorderWidth, newBorderHeight, false, true);
 
     map->layout->lastCommitBlocks.mapDimensions = QSize(map->getWidth(), map->getHeight());
     map->layout->lastCommitBlocks.borderDimensions = QSize(map->getBorderWidth(), map->getBorderHeight());
@@ -227,10 +227,10 @@ void ResizeMap::undo() {
     if (!map) return;
 
     map->layout->blockdata = oldMetatiles;
-    map->setDimensions(oldMapWidth, oldMapHeight, false);
+    map->setDimensions(oldMapWidth, oldMapHeight, false, true);
 
     map->layout->border = oldBorder;
-    map->setBorderDimensions(oldBorderWidth, oldBorderHeight, false);
+    map->setBorderDimensions(oldBorderWidth, oldBorderHeight, false, true);
 
     map->layout->lastCommitBlocks.mapDimensions = QSize(map->getWidth(), map->getHeight());
     map->layout->lastCommitBlocks.borderDimensions = QSize(map->getBorderWidth(), map->getBorderHeight());
@@ -538,7 +538,8 @@ void ScriptEditMap::redo() {
     map->layout->lastCommitBlocks.border = newBorder;
     map->layout->lastCommitBlocks.borderDimensions = QSize(newBorderWidth, newBorderHeight);
 
-    map->mapNeedsRedrawing();
+    renderMapBlocks(map);
+    map->borderItem->draw();
 }
 
 void ScriptEditMap::undo() {
@@ -563,7 +564,8 @@ void ScriptEditMap::undo() {
     map->layout->lastCommitBlocks.border = oldBorder;
     map->layout->lastCommitBlocks.borderDimensions = QSize(oldBorderWidth, oldBorderHeight);
 
-    map->mapNeedsRedrawing();
+    renderMapBlocks(map);
+    map->borderItem->draw();
 
     QUndoCommand::undo();
 }

@@ -2984,8 +2984,8 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked()
         QSize newMapDimensions(widthSpinBox->value(), heightSpinBox->value());
         QSize newBorderDimensions(bwidthSpinBox->value(), bheightSpinBox->value());
         if (oldMapDimensions != newMapDimensions || oldBorderDimensions != newBorderDimensions) {
-            editor->map->setDimensions(newMapDimensions.width(), newMapDimensions.height());
-            editor->map->setBorderDimensions(newBorderDimensions.width(), newBorderDimensions.height());
+            editor->map->setDimensions(newMapDimensions.width(), newMapDimensions.height(), true);
+            editor->map->setBorderDimensions(newBorderDimensions.width(), newBorderDimensions.height(), true);
             editor->map->editHistory.push(new ResizeMap(map,
                 oldMapDimensions, newMapDimensions,
                 oldMetatiles, map->layout->blockdata,

@@ -85,10 +85,10 @@ public:
     void cacheCollision();
     bool getBlock(int x, int y, Block *out);
     void setBlock(int x, int y, Block block, bool enableScriptCallback = false);
-    void setBlockdata(Blockdata blockdata);
+    void setBlockdata(Blockdata blockdata, bool enableScriptCallback = false);
     uint16_t getBorderMetatileId(int x, int y);
     void setBorderMetatileId(int x, int y, uint16_t metatileId, bool enableScriptCallback = false);
-    void setBorderBlockData(Blockdata blockdata);
+    void setBorderBlockData(Blockdata blockdata, bool enableScriptCallback = false);
     void floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
     void _floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
     void magicFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
@@ -98,8 +98,8 @@ public:
     void addEvent(Event*);
     QPixmap renderConnection(MapConnection, MapLayout *);
     QPixmap renderBorder(bool ignoreCache = false);
-    void setDimensions(int newWidth, int newHeight, bool setNewBlockdata = true);
-    void setBorderDimensions(int newWidth, int newHeight, bool setNewBlockdata = true);
+    void setDimensions(int newWidth, int newHeight, bool setNewBlockdata = true, bool enableScriptCallback = false);
+    void setBorderDimensions(int newWidth, int newHeight, bool setNewBlockdata = true, bool enableScriptCallback = false);
     void cacheBorder();
     bool hasUnsavedChanges();
     bool isWithinBounds(int x, int y);
