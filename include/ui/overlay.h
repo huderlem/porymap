@@ -70,7 +70,7 @@ public:
     Overlay() {
         this->x = 0;
         this->y = 0;
-        this->rotation = 0;
+        this->angle = 0;
         this->hScale = 1.0;
         this->vScale = 1.0;
         this->hidden = false;
@@ -92,8 +92,8 @@ public:
     int getVScale();
     void setHScale(int scale);
     void setVScale(int scale);
-    int getRotation();
-    void setRotation(int rotation);
+    int getAngle();
+    void setAngle(int angle);
     void rotate(int degrees);
     void setClippingRect(QRectF rect);
     void clearClippingRect();
@@ -108,11 +108,12 @@ public:
     bool addImage(int x, int y, QImage image);
     bool addPath(QList<int> xCoords, QList<int> yCoords, QString borderColorStr, QString fillColorStr);
 private:
+    void clampAngle();
     QColor getColor(QString colorStr);
     QList<OverlayItem*> items;
     int x;
     int y;
-    int rotation;
+    int angle;
     qreal hScale;
     qreal vScale;
     bool hidden;
