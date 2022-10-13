@@ -179,19 +179,19 @@ void MapView::setVerticalScale(int scale) {
     this->scene()->update();
 }
 
-int MapView::getRotation(int layer) {
-    return this->getOverlay(layer)->getRotation();
+int MapView::getAngle(int layer) {
+    return this->getOverlay(layer)->getAngle();
 }
 
-void MapView::setRotation(int rotation, int layer) {
-    this->getOverlay(layer)->setRotation(rotation);
+void MapView::setAngle(int angle, int layer) {
+    this->getOverlay(layer)->setAngle(angle);
     this->scene()->update();
 }
 
-// Overload. No layer provided, set rotation of all layers
-void MapView::setRotation(int rotation) {
+// Overload. No layer provided, set angle of all layers
+void MapView::setAngle(int angle) {
     foreach (Overlay * layer, this->overlayMap)
-        layer->setRotation(rotation);
+        layer->setAngle(angle);
     this->scene()->update();
 }
 

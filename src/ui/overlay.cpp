@@ -27,13 +27,9 @@ void Overlay::renderItems(QPainter *painter) {
 
     QTransform transform = painter->transform();
     transform.translate(this->x, this->y);
-    transform.rotate(this->rotation);
+    transform.rotate(this->angle);
     transform.scale(this->hScale, this->vScale);
     painter->setTransform(transform);
-
-    /*painter->translate(this->x, this->y);
-    painter->rotate(this->rotation);
-    painter->scale(this->hScale, this->vScale);*/
 
     if (this->clippingRect) {
         painter->setClipping(true);
@@ -110,16 +106,26 @@ void Overlay::setVScale(int scale) {
     this->vScale = scale;
 }
 
-int Overlay::getRotation() {
-    return this->rotation;
+int Overlay::getAngle() {
+    return this->angle;
 }
 
-void Overlay::setRotation(int rotation) {
-    this->rotation = rotation;
+void Overlay::setAngle(int angle) {
+    this->angle = angle;
+    this->clampAngle();
 }
 
 void Overlay::rotate(int degrees) {
-    this->rotation += degrees;
+    this->angle += degrees;
+    this->clampAngle();
+}
+
+void Overlay::clampAngle() {
+    // transform.rotate would handle this already, but we only
+    // want to report angles 0-359 for Overlay::getAngle
+    this->angle %= 360;
+    if (this->angle < 0)
+        this->angle += 360;
 }
 
 void Overlay::setClippingRect(QRectF rect) {
