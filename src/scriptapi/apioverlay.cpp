@@ -217,9 +217,23 @@ void MapView::addRect(int x, int y, int width, int height, QString borderColor, 
         this->scene()->update();
 }
 
-void MapView::addPath(QList<int> x, QList<int> y, QString borderColor, QString fillColor, int layer) {
-    if (this->getOverlay(layer)->addPath(x, y, borderColor, fillColor))
+void MapView::addPath(QList<int> xCoords, QList<int> yCoords, QString borderColor, QString fillColor, int layer) {
+    if (this->getOverlay(layer)->addPath(xCoords, yCoords, borderColor, fillColor))
         this->scene()->update();
+}
+
+void MapView::addPath(QList<QList<int>> coords, QString borderColor, QString fillColor, int layer) {
+    QList<int> xCoords;
+    QList<int> yCoords;
+    for (int i = 0; i < coords.length(); i++) {
+        if (coords[i].length() < 2){
+            logWarn(QString("Element %1 of overlay path does not have an x and y value.").arg(i));
+            continue;
+        }
+        xCoords.append(coords[i][0]);
+        yCoords.append(coords[i][1]);
+    }
+    this->addPath(xCoords, yCoords, borderColor, fillColor, layer);
 }
 
 void MapView::addImage(int x, int y, QString filepath, int layer, bool useCache) {
