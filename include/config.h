@@ -163,7 +163,6 @@ enum ProjectFilePath {
     data_obj_event_gfx,
     data_pokemon_gfx,
     data_heal_locations,
-    data_region_map_entries,
     constants_global,
     constants_map_groups,
     constants_items,

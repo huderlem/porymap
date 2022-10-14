@@ -39,7 +39,6 @@ const QMap<ProjectFilePath, std::pair<QString, QString>> defaultPaths = {
     {ProjectFilePath::data_obj_event_gfx,               { "data_obj_event_gfx",              "src/data/object_events/object_event_graphics.h"}},
     {ProjectFilePath::data_pokemon_gfx,                 { "data_pokemon_gfx",                "src/data/graphics/pokemon.h"}},
     {ProjectFilePath::data_heal_locations,              { "data_heal_locations",             "src/data/heal_locations.h"}},
-    {ProjectFilePath::data_region_map_entries,          { "data_region_map_entries",         "src/data/region_map/region_map_entries.h"}},
     {ProjectFilePath::constants_global,                 { "constants_global",                "include/constants/global.h"}},
     {ProjectFilePath::constants_map_groups,             { "constants_map_groups",            "include/constants/map_groups.h"}},
     {ProjectFilePath::constants_items,                  { "constants_items",                 "include/constants/items.h"}},
