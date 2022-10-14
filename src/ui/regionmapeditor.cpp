@@ -125,13 +125,13 @@ bool RegionMapEditor::loadRegionMapEntries() {
 
     for (auto entryRef : object["map_sections"].toArray()) {
         QJsonObject entryObject = entryRef.toObject();
-        QString entryMapSection = entryObject["map_section"].toString();
+        QString entryMapSection = ParseUtil::jsonToQString(entryObject["map_section"]);
         MapSectionEntry entry;
-        entry.name = entryObject["name"].toString();
-        entry.x = entryObject["x"].toInt();
-        entry.y = entryObject["y"].toInt();
-        entry.width = entryObject["width"].toInt();
-        entry.height = entryObject["height"].toInt();
+        entry.name = ParseUtil::jsonToQString(entryObject["name"]);
+        entry.x = ParseUtil::jsonToInt(entryObject["x"]);
+        entry.y = ParseUtil::jsonToInt(entryObject["y"]);
+        entry.width = ParseUtil::jsonToInt(entryObject["width"]);
+        entry.height = ParseUtil::jsonToInt(entryObject["height"]);
         entry.valid = true;
         this->region_map_entries[entryMapSection] = entry;
     }

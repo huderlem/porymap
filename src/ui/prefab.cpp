@@ -46,14 +46,14 @@ void Prefab::loadPrefabs() {
         if (prefabObj.isEmpty())
             continue;
 
-        int width = prefabObj["width"].toInt();
-        int height = prefabObj["height"].toInt();
+        int width = ParseUtil::jsonToInt(prefabObj["width"]);
+        int height = ParseUtil::jsonToInt(prefabObj["height"]);
         if (width <= 0 || height <= 0)
             continue;
 
-        QString name = prefabObj["name"].toString();
-        QString primaryTileset = prefabObj["primary_tileset"].toString();
-        QString secondaryTileset = prefabObj["secondary_tileset"].toString();
+        QString name = ParseUtil::jsonToQString(prefabObj["name"]);
+        QString primaryTileset = ParseUtil::jsonToQString(prefabObj["primary_tileset"]);
+        QString secondaryTileset = ParseUtil::jsonToQString(prefabObj["secondary_tileset"]);
 
         MetatileSelection selection;
         selection.dimensions = QPoint(width, height);
@@ -65,17 +65,17 @@ void Prefab::loadPrefabs() {
         QJsonArray metatiles = prefabObj["metatiles"].toArray();
         for (int j = 0; j < metatiles.size(); j++) {
             QJsonObject metatileObj = metatiles[j].toObject();
-            int x = metatileObj["x"].toInt();
-            int y = metatileObj["y"].toInt();
+            int x = ParseUtil::jsonToInt(metatileObj["x"]);
+            int y = ParseUtil::jsonToInt(metatileObj["y"]);
             if (x < 0 || x >= width || y < 0 || y >= height)
                 continue;
             int index = y * width + x;
-            int metatileId = metatileObj["metatile_id"].toInt();
+            int metatileId = ParseUtil::jsonToInt(metatileObj["metatile_id"]);
             if (metatileId < 0 || metatileId >= Project::getNumMetatilesTotal())
                 continue;
-            selection.metatileItems[index].metatileId = metatileObj["metatile_id"].toInt();
-            selection.collisionItems[index].collision = metatileObj["collision"].toInt();
-            selection.collisionItems[index].elevation = metatileObj["elevation"].toInt();
+            selection.metatileItems[index].metatileId = ParseUtil::jsonToInt(metatileObj["metatile_id"]);
+            selection.collisionItems[index].collision = ParseUtil::jsonToInt(metatileObj["collision"]);
+            selection.collisionItems[index].elevation = ParseUtil::jsonToInt(metatileObj["elevation"]);
             selection.metatileItems[index].enabled = true;
             selection.collisionItems[index].enabled = true;
         }

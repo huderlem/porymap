@@ -1574,8 +1574,8 @@ void MainWindow::paste() {
                 }
                 QJsonArray metatilesArray = pasteObject["metatile_selection"].toArray();
                 QJsonArray collisionsArray = pasteObject["collision_selection"].toArray();
-                int width = pasteObject["width"].toInt();
-                int height = pasteObject["height"].toInt();
+                int width = ParseUtil::jsonToInt(pasteObject["width"]);
+                int height = ParseUtil::jsonToInt(pasteObject["height"]);
                 QList<uint16_t> metatiles;
                 QList<QPair<uint16_t, uint16_t>> collisions;
                 for (auto tile : metatilesArray) {

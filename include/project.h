@@ -134,7 +134,7 @@ public:
     bool readSpeciesIconPaths();
     QMap<QString, QString> speciesToIconPath;
 
-    QMap<QString, bool> getTopLevelMapFields();
+    QSet<QString> getTopLevelMapFields();
     bool loadMapData(Map*);
     bool readMapLayouts();
     bool loadLayout(MapLayout *);
