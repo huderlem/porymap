@@ -11,22 +11,22 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Proper support for pokefirered's clone objects was added, which requires the changes made in [pokefirered/#484](https://github.com/pret/pokefirered/pull/484).
 - Many API functions which were previously accessible via the `map` object are now accessible via one of the new objects `overlay`, `utility`, or `constants`. Some functions were renamed accordingly. See [porymap/#460](https://github.com/huderlem/porymap/pull/460) for a full list of API function name changes.
 - Arguments for the API function `createImage` have changed: `xflip` and `yflip`  have been replaced with `hScale` and `vScale`, and `offset` has been replaced with `xOffset` and `yOffset`.
+- The API function `addFilledRect` has been removed; it's been replaced by new arguments in `addRect`: `color` has been replaced with `borderColor` and `fillColor`, and a new `rounding` argument allows ellipses to be drawn.
 
 ### Added
 - Add prefab support
 - Add Cut/Copy/Paste for metatiles in the Tileset Editor.
-- Add new features to the scripting API, including the ability to display message boxes and user input windows, set overlay opacity, get/set map header properties, read/write the map border, read tile pixel data, and set blocks or metatile attributes using a raw value.
 - Add button to copy the full metatile label to the clipboard in the Tileset Editor.
 - Add ability to export an image of the primary or secondary tileset's metatiles.
 - Add option to not open the most recent project on launch.
 - Add options for customizing how new maps are filled
 - Add color picker to palette editor for taking colors from the screen.
+- Add new features to the scripting API, including the ability to display messages and user input windows, set the overlay's opacity, rotation, scale, and clipping, interact with map header properties and the map border, read tile pixel data, and more.
 
 ### Changed
 - Overhauled the region map editor, adding support for tilemaps, and significant customization. Also now supports pokefirered.
 - If an object event is inanimate, it will always render using its first frame.
-- Only log "Unknown custom script function" when a registered script function is not present in any script.
-- Unused metatile attribute bits that are set are preserved instead of being cleared.
+- Unused metatile attribute bits are preserved instead of being cleared.
 - The wild encounter editor is automatically disabled if the encounter JSON data cannot be read
 - Metatiles are always rendered accurately with 3 layers, and the unused layer is not assumed to be transparent.
 - `object_event_graphics_info.h` can now be parsed correctly if it uses structs with attributes.
@@ -34,6 +34,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - The selection is no longer reset when pasting events. The newly pasted events are selected instead.
 - Palette editor ui is updated a bit to allow hex and rgb value input.
 - The metatile behavior is now displayed in the bottom bar mouseover text.
+- Removed some unnecessary error logs from the scripting API and added new useful ones.
 
 ### Fixed
 - Fix cursor tile outline not updating at the end of a dragged selection.
@@ -43,8 +44,9 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix collision values of 2 or 3 not rendering properly.
 - Fix the map music dropdown being empty when importing a map from Advance Map.
 - Fix object events added by pasting ignoring the map event limit.
-- Fixed a bug where saving the tileset editor would reselect the main editor's first selected metatile.
+- Fix a bug where saving the tileset editor would reselect the main editor's first selected metatile.
 - Fix crashes / unexpected behavior if certain scripting API functions are given invalid palette or tile numbers.
+- Fix drawing large amounts of text with the scripting API causing a significant drop in performance.
 - Silence unnecessary error logging when parsing C defines Porymap doesn't use.
 - Fix some windows like the Tileset Editor not raising to the front when reactivated.
 

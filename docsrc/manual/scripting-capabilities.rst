@@ -936,7 +936,7 @@ All tileset functions are callable via the global ``map`` object.
 Overlay Functions
 ^^^^^^^^^^^^^^^^^
 
-The following functions are related to an overlay that is drawn on top of the map area. Text, images, and shapes can be drawn using these functions. Items can be drawn and manipulated on separate layers by specifiying a layer id. Items on higher layer ids will be drawn above those on lower layers. The visibility, position, and opacity of each layer can be changed; by default all layers are visible, at position ``0,0``, and have an opacity of ``100``.
+The following functions are related to an overlay that is drawn on top of the map area. Text, images, and shapes can be drawn using these functions. Items can be drawn and manipulated on separate layers by specifiying a layer id. Items on higher layer ids will be drawn above those on lower layers. The visibility, opacity, position, rotation, and scale of each layer can be changed; by default all layers are visible, have an opacity of ``100``, are at position ``0,0``, an angle of ``0``, and a horizontal and vertical scale of ``1.0``.
 
 All overlay functions are callable via the global ``overlay`` object.
 
@@ -1009,6 +1009,79 @@ All overlay functions are callable via the global ``overlay`` object.
    This is an overloaded function. Sets the opacity of all active overlay layers. Layers that have not been used yet will not have their opacity changed. Opacity ranges from ``0`` (invisible) to ``100`` (completely opaque).
 
    :param number opacity: the opacity
+
+.. js:function:: overlay.getHorizontalScale(layer = 0)
+
+   Gets the horizontal scale of the specified overlay layer. ``1.0`` is normal size.
+
+   :param number layer: the layer id. Defaults to ``0``
+   :returns number: the scale
+
+.. js:function:: overlay.getVerticalScale(layer = 0)
+
+   Gets the vertical scale of the specified overlay layer. ``1.0`` is normal size.
+
+   :param number layer: the layer id. Defaults to ``0``
+   :returns number: the scale
+
+.. js:function:: overlay.setHorizontalScale(scale, layer)
+
+   Sets the horizontal scale of the specified overlay layer. ``1.0`` is normal size.
+
+   :param number scale: the scale to set
+   :param number layer: the layer id
+
+.. js:function:: overlay.setHorizontalScale(scale)
+
+   This is an overloaded function. Sets the horizontal scale of all active overlay layers. Layers that have not been used yet will not have their scale changed. ``1.0`` is normal size.
+
+   :param number scale: the scale to set
+
+.. js:function:: overlay.setVerticalScale(scale, layer)
+
+   Sets the vertical scale of the specified overlay layer. ``1.0`` is normal size.
+
+   :param number scale: the scale to set
+   :param number layer: the layer id
+
+.. js:function:: overlay.setVerticalScale(scale)
+
+   This is an overloaded function. Sets the vertical scale of all active overlay layers. Layers that have not been used yet will not have their scale changed. ``1.0`` is normal size.
+
+   :param number scale: the scale to set
+
+.. js:function:: overlay.getAngle(layer = 0)
+
+   Gets the angle the specified overlay layer is rotated to.
+
+   :param number layer: the layer id. Defaults to ``0``
+   :returns number: the angle
+
+.. js:function:: overlay.setAngle(angle, layer)
+
+   Sets the angle the specified overlay layer is rotated to.
+
+   :param number angle: the angle to set
+   :param number layer: the layer id
+
+.. js:function:: overlay.setAngle(angle)
+
+   This is an overloaded function. Sets the angle that all active overlay layers are rotated to. Layers that have not been used yet will not have their angle changed.
+
+   :param number angle: the angle to set
+
+.. js:function:: overlay.rotate(degrees, layer)
+
+   Rotates the specified overlay layer. A positive number of degrees is clockwise rotation, a negative number of degrees is counterclockwise rotation.
+
+   :param number degrees: the number of degrees to rotate
+   :param number layer: the layer id
+
+.. js:function:: overlay.rotate(degrees)
+
+   This is an overloaded function. Rotates the all active overlay layers. Layers that have not been used yet will not be rotated. A positive number of degrees is clockwise rotation, a negative number of degrees is counterclockwise rotation.
+
+   :param number degrees: the number of degrees to rotate
 
 .. js:function:: overlay.getX(layer = 0)
 
@@ -1123,11 +1196,11 @@ All overlay functions are callable via the global ``overlay`` object.
    :param string text: the text to display
    :param number x: the x pixel coordinate of the text (relative to the layer's position)
    :param number y: the y pixel coordinate of the text (relative to the layer's position)
-   :param string color: the color of the text. Can be specified as "#RRGGBB" or "#AARRGGBB". Defaults to black.
+   :param string color: the color of the text. Can be specified as ``"#RRGGBB"`` or ``"#AARRGGBB"``. Defaults to black.
    :param number size: the font size of the text. Defaults to 12.
    :param number layer: the layer id. Defaults to ``0``
 
-.. js:function:: overlay.addRect(x, y, width, height, color = "#000000", layer = 0)
+.. js:function:: overlay.addRect(x, y, width, height, borderColor = "#000000", fillColor = "", rounding = 0, layer = 0)
 
    Adds a rectangle outline item to the specified overlay layer.
 
@@ -1135,18 +1208,19 @@ All overlay functions are callable via the global ``overlay`` object.
    :param number y: the y pixel coordinate of the rectangle's top-left corner (relative to the layer's position)
    :param number width: the pixel width of the rectangle
    :param number height: the pixel height of the rectangle
-   :param string color: the color of the rectangle. Can be specified as "#RRGGBB" or "#AARRGGBB". Defaults to black.
+   :param string borderColor: the color of the rectangle's border. Can be specified as ``"#RRGGBB"`` or ``"#AARRGGBB"``. Defaults to black.
+   :param string fillColor: the color of the area enclosed by the rectangle. Can be specified as ``"#RRGGBB"`` or ``"#AARRGGBB"``. Defaults to transparent.
+   :param number rounding: the percent degree the corners will be rounded. ``0`` is rectangular, ``100`` is elliptical. Defaults to ``0``
    :param number layer: the layer id. Defaults to ``0``
 
-.. js:function:: overlay.addFilledRect(x, y, width, height, color = "#000000", layer = 0)
+.. js:function:: overlay.addPath(xCoords, yCoords, borderColor = "#000000", fillColor = "", layer = 0)
 
-   Adds a filled rectangle item to the specified overlay layer.
+   Draws a straight path on the specified layer by connecting the coordinates at (``xCoords``, ``yCoords``). The area enclosed by the path can be colored in, and will follow the `"odd-even" fill rule <https://doc.qt.io/qt-5/qt.html#FillRule-enum>`_.
 
-   :param number x: the x pixel coordinate of the rectangle's top-left corner (relative to the layer's position)
-   :param number y: the y pixel coordinate of the rectangle's top-left corner (relative to the layer's position)
-   :param number width: the pixel width of the rectangle
-   :param number height: the pixel height of the rectangle
-   :param string color: the color of the rectangle. Can be specified as "#RRGGBB" or "#AARRGGBB". Defaults to black.
+   :param array xCoords: array of x pixel coordinates to connect to create the path
+   :param array yCoords: array of y pixel coordinates to connect to create the path
+   :param string borderColor: the color of the path. Can be specified as ``"#RRGGBB"`` or ``"#AARRGGBB"``. Defaults to black.
+   :param string fillColor: the color of the area enclosed by the path. Can be specified as ``"#RRGGBB"`` or ``"#AARRGGBB"``. Defaults to transparent.
    :param number layer: the layer id. Defaults to ``0``
 
 .. js:function:: overlay.addImage(x, y, filepath, layer = 0, useCache = true)
