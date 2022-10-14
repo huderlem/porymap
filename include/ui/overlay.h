@@ -88,10 +88,10 @@ public:
     int getY();
     void setX(int x);
     void setY(int y);
-    int getHScale();
-    int getVScale();
-    void setHScale(int scale);
-    void setVScale(int scale);
+    qreal getHScale();
+    qreal getVScale();
+    void setHScale(qreal scale);
+    void setVScale(qreal scale);
     int getAngle();
     void setAngle(int angle);
     void rotate(int degrees);

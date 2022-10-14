@@ -44,12 +44,12 @@ public:
     Q_INVOKABLE int getOpacity(int layer = 0);
     Q_INVOKABLE void setOpacity(int opacity, int layer);
     Q_INVOKABLE void setOpacity(int opacity);
-    Q_INVOKABLE int getHorizontalScale(int layer = 0);
-    Q_INVOKABLE int getVerticalScale(int layer = 0);
-    Q_INVOKABLE void setHorizontalScale(int scale, int layer);
-    Q_INVOKABLE void setHorizontalScale(int scale);
-    Q_INVOKABLE void setVerticalScale(int scale, int layer);
-    Q_INVOKABLE void setVerticalScale(int scale);
+    Q_INVOKABLE qreal getHorizontalScale(int layer = 0);
+    Q_INVOKABLE qreal getVerticalScale(int layer = 0);
+    Q_INVOKABLE void setHorizontalScale(qreal scale, int layer);
+    Q_INVOKABLE void setHorizontalScale(qreal scale);
+    Q_INVOKABLE void setVerticalScale(qreal scale, int layer);
+    Q_INVOKABLE void setVerticalScale(qreal scale);
     Q_INVOKABLE int getAngle(int layer = 0);
     Q_INVOKABLE void setAngle(int angle, int layer);
     Q_INVOKABLE void setAngle(int angle);
