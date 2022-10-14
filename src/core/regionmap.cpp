@@ -162,7 +162,7 @@ bool RegionMap::loadLayout(poryjson::Json layoutJson) {
             QString text = parser.readTextFile(fullPath(this->layout_path));
 
             QRegularExpression re("(?<qual_1>static)?\\s?(?<qual_2>const)?\\s?(?<type>[A-Za-z0-9_]+)?\\s+(?<label>[A-Za-z0-9_]+)"
-                                  "(\\[(?<const_1>[A-Za-z0-9_]+)\\])?(\\[(?<const_2>[A-Za-z0-9_]+)\\])?(\\[(?<const_3>[A-Za-z0-9_]+)\\])?\\s+=");
+                                  "(\\[(?<const_1>[A-Za-z0-9_]+)\\])(\\[(?<const_2>[A-Za-z0-9_]+)\\])(\\[(?<const_3>[A-Za-z0-9_]+)\\])\\s+=");
 
             // check for layers, extract info
             QRegularExpressionMatch match = re.match(text);
@@ -220,6 +220,7 @@ bool RegionMap::loadLayout(poryjson::Json layoutJson) {
                 QRegularExpression reAlt("(?<qual_1>static)?\\s?(?<qual_2>const)?\\s?(?<type>[A-Za-z0-9_]+)?\\s+(?<label>[A-Za-z0-9_]+)\\[\\]");
                 QRegularExpressionMatch matchAlt = reAlt.match(text);
                 if (matchAlt.hasMatch()) {
+                    // single dimensional
                     QString qualifiers = matchAlt.captured("qual_1") + " " + matchAlt.captured("qual_2");
                     QString type = matchAlt.captured("type");
                     QString label = matchAlt.captured("label");
@@ -251,8 +252,50 @@ bool RegionMap::loadLayout(poryjson::Json layoutJson) {
                     this->layout_layers.append("main");
                     setLayout("main", layout);
                 } else {
-                    logError("Region map layout is not readable.");
-                    return false;
+                    QRegularExpression reAlt2("(?<qual_1>static)?\\s?(?<qual_2>const)?\\s?(?<type>[A-Za-z0-9_]+)?\\s+(?<label>[A-Za-z0-9_]+)"
+                                  "(\\[(?<const_1>[A-Za-z0-9_]+)\\])(\\[(?<const_2>[A-Za-z0-9_]+)\\])\\s+=");
+                    QRegularExpressionMatch matchAlt2 = reAlt2.match(text);
+                    if (matchAlt2.hasMatch()) {
+                        // double dimensional
+                        QString qualifiers = matchAlt2.captured("qual_1") + " " + matchAlt2.captured("qual_2");
+                        QString type = matchAlt2.captured("type");
+                        QString label = matchAlt2.captured("label");
+                        QStringList constants;
+                        constants.append(matchAlt2.captured("const_1"));
+                        constants.append(matchAlt2.captured("const_2"));
+                        this->layout_constants = constants;
+                        this->layout_qualifiers = qualifiers + " " + type;
+                        this->layout_array_label = label;
+
+                        QRegularExpression rowRe("{(?<row>[A-Z0-9_, ]+)}");
+                        QRegularExpressionMatchIterator j = rowRe.globalMatch(text);
+
+                        this->layout_layers.append("main");
+                        QList<LayoutSquare> layout;
+
+                        int y = 0;
+                        while (j.hasNext()) {
+                            QRegularExpressionMatch n = j.next();
+                            QString row = n.captured("row");
+                            QStringList rowSections = row.split(',');
+                            int x = 0;
+                            for (QString section : rowSections) {
+                                QString square_section_name = section.trimmed();
+                                LayoutSquare square;
+                                square.map_section = square_section_name;
+                                square.has_map = (square_section_name != "MAPSEC_NONE" && !square_section_name.isEmpty());
+                                square.x = x;
+                                square.y = y;
+                                layout.append(square);
+                                x++;
+                            }
+                            y++;
+                        }
+                        setLayout("main", layout);
+                    } else {
+                        logError("Region map layout is not readable.");
+                        return false;
+                    }
                 }
             }
             break;
@@ -261,7 +304,12 @@ bool RegionMap::loadLayout(poryjson::Json layoutJson) {
         default:
             break;
     }
-    this->current_layer = this->layout_layers.first();
+    if (this->layout_layers.isEmpty()) {
+        logError("Encountered an error parsing the region map layout.");
+        errored = true;
+    } else {
+        this->current_layer = this->layout_layers.first();
+    }
 
     return !errored;
 }
