@@ -42,14 +42,13 @@ public:
     QString song;
     QString layoutId;
     QString location;
-    QString requiresFlash;
-    QString isFlyable;
+    bool requiresFlash;
     QString weather;
     QString type;
-    QString show_location;
-    QString allowRunning;
-    QString allowBiking;
-    QString allowEscapeRope;
+    bool show_location;
+    bool allowRunning;
+    bool allowBiking;
+    bool allowEscaping;
     int floorNumber = 0;
     QString battle_scene;
     QString sharedEventsMap = "";
@@ -59,6 +58,7 @@ public:
     bool isPersistedToFile = true;
     bool hasUnsavedDataChanges = false;
     bool needsLayoutDir = true;
+    bool needsHealLocation = false;
     QImage collision_image;
     QPixmap collision_pixmap;
     QImage image;

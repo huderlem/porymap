@@ -193,16 +193,15 @@ bool Project::loadMapData(Map* map) {
     map->song = mapObj["music"].toString();
     map->layoutId = mapObj["layout"].toString();
     map->location = mapObj["region_map_section"].toString();
-    map->requiresFlash = QString::number(mapObj["requires_flash"].toBool());
+    map->requiresFlash = mapObj["requires_flash"].toBool();
     map->weather = mapObj["weather"].toString();
     map->type = mapObj["map_type"].toString();
-    map->requiresFlash = QString::number(mapObj["requires_flash"].toBool());
-    map->show_location = QString::number(mapObj["show_map_name"].toBool());
+    map->show_location = mapObj["show_map_name"].toBool();
     map->battle_scene = mapObj["battle_scene"].toString();
     if (projectConfig.getBaseGameVersion() != BaseGameVersion::pokeruby) {
-        map->allowBiking = QString::number(mapObj["allow_cycling"].toBool());
-        map->allowEscapeRope = QString::number(mapObj["allow_escaping"].toBool());
-        map->allowRunning = QString::number(mapObj["allow_running"].toBool());
+        map->allowBiking = mapObj["allow_cycling"].toBool();
+        map->allowEscaping = mapObj["allow_escaping"].toBool();
+        map->allowRunning = mapObj["allow_running"].toBool();
     }
     if (projectConfig.getFloorNumberEnabled()) {
         map->floorNumber = mapObj["floor_number"].toInt();
@@ -453,17 +452,15 @@ QString Project::readMapLocation(QString map_name) {
 void Project::setNewMapHeader(Map* map, int mapIndex) {
     map->layoutId = QString("%1").arg(mapIndex);
     map->location = mapSectionValueToName.value(0);
-    map->requiresFlash = "FALSE";
+    map->requiresFlash = false;
     map->weather = weatherNames.value(0, "WEATHER_NONE");
     map->type = mapTypes.value(0, "MAP_TYPE_NONE");
     map->song = defaultSong;
-    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeruby) {
-        map->show_location = "TRUE";
-    } else {
-        map->allowBiking = "1";
-        map->allowEscapeRope = "0";
-        map->allowRunning = "1";
-        map->show_location = "1";
+    map->show_location = true;
+    if (projectConfig.getBaseGameVersion() != BaseGameVersion::pokeruby) {
+        map->allowBiking = true;
+        map->allowEscaping = false;
+        map->allowRunning = true;
     }
     if (projectConfig.getFloorNumberEnabled()) {
         map->floorNumber = 0;
@@ -1341,15 +1338,15 @@ void Project::saveMap(Map *map) {
     mapObj["layout"] = map->layout->id;
     mapObj["music"] = map->song;
     mapObj["region_map_section"] = map->location;
-    mapObj["requires_flash"] = ParseUtil::gameStringToBool(map->requiresFlash);
+    mapObj["requires_flash"] = map->requiresFlash;
     mapObj["weather"] = map->weather;
     mapObj["map_type"] = map->type;
     if (projectConfig.getBaseGameVersion() != BaseGameVersion::pokeruby) {
-        mapObj["allow_cycling"] = ParseUtil::gameStringToBool(map->allowBiking);
-        mapObj["allow_escaping"] = ParseUtil::gameStringToBool(map->allowEscapeRope);
-        mapObj["allow_running"] = ParseUtil::gameStringToBool(map->allowRunning);
+        mapObj["allow_cycling"] = map->allowBiking;
+        mapObj["allow_escaping"] = map->allowEscaping;
+        mapObj["allow_running"] = map->allowRunning;
     }
-    mapObj["show_map_name"] = ParseUtil::gameStringToBool(map->show_location);
+    mapObj["show_map_name"] = map->show_location;
     if (projectConfig.getFloorNumberEnabled()) {
         mapObj["floor_number"] = map->floorNumber;
     }

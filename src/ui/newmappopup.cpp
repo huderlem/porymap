@@ -266,9 +266,9 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
     newMap->type = this->ui->comboBox_NewMap_Type->currentText();
     newMap->location = this->ui->comboBox_NewMap_Location->currentText();
     newMap->song = this->ui->comboBox_Song->currentText();
-    newMap->requiresFlash = "0";
+    newMap->requiresFlash = false;
     newMap->weather = this->project->weatherNames.value(0, "WEATHER_NONE");
-    newMap->show_location = this->ui->checkBox_NewMap_Show_Location->isChecked() ? "1" : "0";
+    newMap->show_location = this->ui->checkBox_NewMap_Show_Location->isChecked();
     newMap->battle_scene = this->project->mapBattleScenes.value(0, "MAP_BATTLE_SCENE_NORMAL");
 
     if (this->existingLayout) {
@@ -301,13 +301,13 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
     }
 
     if (this->ui->checkBox_NewMap_Flyable->isChecked()) {
-        newMap->isFlyable = "TRUE";
+        newMap->needsHealLocation = true;
     }
 
     if (projectConfig.getBaseGameVersion() != BaseGameVersion::pokeruby) {
-        newMap->allowRunning = this->ui->checkBox_NewMap_Allow_Running->isChecked() ? "1" : "0";
-        newMap->allowBiking = this->ui->checkBox_NewMap_Allow_Biking->isChecked() ? "1" : "0";
-        newMap->allowEscapeRope = this->ui->checkBox_NewMap_Allow_Escape_Rope->isChecked() ? "1" : "0";
+        newMap->allowRunning = this->ui->checkBox_NewMap_Allow_Running->isChecked();
+        newMap->allowBiking = this->ui->checkBox_NewMap_Allow_Biking->isChecked();
+        newMap->allowEscaping = this->ui->checkBox_NewMap_Allow_Escape_Rope->isChecked();
     }
     if (projectConfig.getFloorNumberEnabled()) {
         newMap->floorNumber = this->ui->spinBox_NewMap_Floor_Number->value();
