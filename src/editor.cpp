@@ -1973,7 +1973,6 @@ Tileset* Editor::getCurrentMapPrimaryTileset()
 }
 
 QList<DraggablePixmapItem *> Editor::getObjects() {
-    // TODO: why using this instead of map->getAllEvents()?
     QList<DraggablePixmapItem *> list;
     for (QGraphicsItem *child : events_group->childItems()) {
         list.append(static_cast<DraggablePixmapItem *>(child));
@@ -2231,7 +2230,6 @@ void Editor::objectsView_onMousePress(QMouseEvent *event) {
         this->ui->toolButton_Select->setChecked(true);
     }
 
-    // TODO: why do the old objects not get cleared?
     bool multiSelect = event->modifiers() & Qt::ControlModifier;
     if (!selectingEvent && !multiSelect && selected_events->length() > 1) {
         DraggablePixmapItem *first = selected_events->first();

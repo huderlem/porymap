@@ -1946,10 +1946,6 @@ void MainWindow::updateObjects() {
 }
 
 void MainWindow::updateSelectedObjects() {
-    // TODO: make events and/or frames list static? don't want to clear and
-    // re-add children frames if they are already there in a multi-select
-    // because QVBoxLayout::addWidget() is taking a lot of time
-    // TODO: frame->setActive(false) on old frames, (true) on active ones
     QList<DraggablePixmapItem *> all_events = editor->getObjects();
     QList<DraggablePixmapItem *> events;
 
@@ -2057,7 +2053,6 @@ void MainWindow::updateSelectedObjects() {
         delete target->layout();
     }
 
-    // TODO: necessary? keep layout just remove widgets?
     if (!events.empty()) {
         QVBoxLayout *layout = new QVBoxLayout;
         target->setLayout(layout);

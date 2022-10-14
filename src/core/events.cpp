@@ -215,7 +215,16 @@ QSet<QString> ObjectEvent::getExpectedFields() {
 }
 
 void ObjectEvent::loadPixmap(Project *project) {
-    EventGraphics *eventGfx = project->eventGraphicsMap.value(gfx, nullptr);
+    EventGraphics *eventGfx = project->eventGraphicsMap.value(this->gfx, nullptr);
+    if (!eventGfx) {
+        // Invalid gfx constant.
+        // If this is a number, try to use that instead.
+        bool ok;
+        int altGfx = this->gfx.toInt(&ok);
+        if (ok && (altGfx < project->gfxDefines.count())) {
+            eventGfx = project->eventGraphicsMap.value(project->gfxDefines.key(altGfx, "NULL"), nullptr);
+        }
+    }
     if (!eventGfx || eventGfx->spritesheet.isNull()) {
         // No sprite associated with this gfx constant.
         // Use default sprite instead.

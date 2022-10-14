@@ -110,9 +110,6 @@ void EventFrame::initCustomAttributesTable() {
     this->layout_contents->addWidget(customAttributes);
 }
 
-// TODO: only do this when pixmap item is deleted (ie, when switching between maps or in displayMapEvents())
-// perhaps connect to object destroyed signal from draggablepixamapitem to signal need reconnect
-// ie, mark connections dirty and need redo
 void EventFrame::connectSignals() {
     this->connected = true;
 
@@ -123,7 +120,7 @@ void EventFrame::connectSignals() {
             this->event->getMap()->editHistory.push(new EventMove(QList<Event *>() << this->event, delta, 0, this->spinner_x->getActionId()));
         }
     });
-    // TODO: make sure item is always existing here!, will need to reconnect this when item is deleted? is item ever deleted?
+
     connect(this->event->getPixmapItem(), &DraggablePixmapItem::xChanged, this->spinner_x, &NoScrollSpinBox::setValue);
     
     this->spinner_y->disconnect();
@@ -332,8 +329,6 @@ void ObjectFrame::connectSignals() {
     });
 }
 
-// TODO: how often do i really need to call findText() it seems slow
-//       when the frame has already been initialized, shouldn't need to again
 void ObjectFrame::initialize() {
     if (this->initialized) return;
 
@@ -461,7 +456,6 @@ void CloneObjectFrame::initialize() {
 
     // sprite
     this->combo_sprite->setCurrentText(this->clone->getGfx());
-    // TODO: update this with object gfx change?
 
     // target id
     this->spinner_target_id->setMinimum(1);
@@ -655,7 +649,6 @@ void TriggerFrame::populate(Project *project) {
     // script
     QStringList scriptLabels = this->trigger->getMap()->eventScriptLabels() + project->getGlobalScriptLabels();
     scriptLabels.removeDuplicates();
-    // TODO: are there any additional labels?
 
     this->scriptCompleter = new QCompleter(scriptLabels, this);
     this->scriptCompleter->setCaseSensitivity(Qt::CaseInsensitive);
@@ -799,7 +792,6 @@ void SignFrame::populate(Project *project) {
     // script
     QStringList scriptLabels = this->sign->getMap()->eventScriptLabels() + project->getGlobalScriptLabels();
     scriptLabels.removeDuplicates();
-    // TODO: are there any additional labels?
 
     this->scriptCompleter = new QCompleter(scriptLabels, this);
     this->scriptCompleter->setCaseSensitivity(Qt::CaseInsensitive);
