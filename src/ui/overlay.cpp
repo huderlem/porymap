@@ -11,9 +11,9 @@ void OverlayText::render(QPainter *painter) {
 }
 
 void OverlayPath::render(QPainter *painter) {
+    painter->fillPath(this->path, this->fillColor);
     painter->setPen(this->borderColor);
     painter->drawPath(this->path);
-    painter->fillPath(this->path, this->fillColor);
 }
 
 void OverlayImage::render(QPainter *painter) {
@@ -90,19 +90,19 @@ void Overlay::setY(int y) {
     this->y = y;
 }
 
-int Overlay::getHScale() {
+qreal Overlay::getHScale() {
     return this->hScale;
 }
 
-int Overlay::getVScale() {
+qreal Overlay::getVScale() {
     return this->vScale;
 }
 
-void Overlay::setHScale(int scale) {
+void Overlay::setHScale(qreal scale) {
     this->hScale = scale;
 }
 
-void Overlay::setVScale(int scale) {
+void Overlay::setVScale(qreal scale) {
     this->vScale = scale;
 }
 

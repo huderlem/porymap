@@ -147,33 +147,33 @@ void MapView::setOpacity(int opacity) {
     this->scene()->update();
 }
 
-int MapView::getHorizontalScale(int layer) {
+qreal MapView::getHorizontalScale(int layer) {
     return this->getOverlay(layer)->getHScale();
 }
 
-int MapView::getVerticalScale(int layer) {
+qreal MapView::getVerticalScale(int layer) {
     return this->getOverlay(layer)->getVScale();
 }
 
-void MapView::setHorizontalScale(int scale, int layer) {
+void MapView::setHorizontalScale(qreal scale, int layer) {
     this->getOverlay(layer)->setHScale(scale);
     this->scene()->update();
 }
 
 // Overload. No layer provided, set horizontal scale of all layers
-void MapView::setHorizontalScale(int scale) {
+void MapView::setHorizontalScale(qreal scale) {
     foreach (Overlay * layer, this->overlayMap)
         layer->setHScale(scale);
     this->scene()->update();
 }
 
-void MapView::setVerticalScale(int scale, int layer) {
+void MapView::setVerticalScale(qreal scale, int layer) {
     this->getOverlay(layer)->setVScale(scale);
     this->scene()->update();
 }
 
 // Overload. No layer provided, set vertical scale of all layers
-void MapView::setVerticalScale(int scale) {
+void MapView::setVerticalScale(qreal scale) {
     foreach (Overlay * layer, this->overlayMap)
         layer->setVScale(scale);
     this->scene()->update();
