@@ -179,19 +179,19 @@ void MapView::setVerticalScale(qreal scale) {
     this->scene()->update();
 }
 
-int MapView::getAngle(int layer) {
-    return this->getOverlay(layer)->getAngle();
+int MapView::getRotation(int layer) {
+    return this->getOverlay(layer)->getRotation();
 }
 
-void MapView::setAngle(int angle, int layer) {
-    this->getOverlay(layer)->setAngle(angle);
+void MapView::setRotation(int angle, int layer) {
+    this->getOverlay(layer)->setRotation(angle);
     this->scene()->update();
 }
 
-// Overload. No layer provided, set angle of all layers
-void MapView::setAngle(int angle) {
+// Overload. No layer provided, set rotation of all layers
+void MapView::setRotation(int angle) {
     foreach (Overlay * layer, this->overlayMap)
-        layer->setAngle(angle);
+        layer->setRotation(angle);
     this->scene()->update();
 }
 

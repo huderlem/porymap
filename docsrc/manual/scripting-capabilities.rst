@@ -1050,21 +1050,21 @@ All overlay functions are callable via the global ``overlay`` object.
 
    :param number scale: the scale to set
 
-.. js:function:: overlay.getAngle(layer = 0)
+.. js:function:: overlay.getRotation(layer = 0)
 
    Gets the angle the specified overlay layer is rotated to.
 
    :param number layer: the layer id. Defaults to ``0``
-   :returns number: the angle
+   :returns number: the angle the layer is rotated to
 
-.. js:function:: overlay.setAngle(angle, layer)
+.. js:function:: overlay.setRotation(angle, layer)
 
    Sets the angle the specified overlay layer is rotated to.
 
    :param number angle: the angle to set
    :param number layer: the layer id
 
-.. js:function:: overlay.setAngle(angle)
+.. js:function:: overlay.setRotation(angle)
 
    This is an overloaded function. Sets the angle that all active overlay layers are rotated to. Layers that have not been used yet will not have their angle changed.
 
