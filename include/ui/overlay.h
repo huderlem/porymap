@@ -6,6 +6,7 @@
 #include <QColor>
 #include <QPainter>
 #include <QStaticText>
+#include <QPainterPath>
 
 class OverlayItem {
 public:

@@ -57,9 +57,8 @@ public:
     Q_INVOKABLE void rotate(int degrees);
     Q_INVOKABLE void addText(QString text, int x, int y, QString color = "#000000", int fontSize = 12, int layer = 0);
     Q_INVOKABLE void addRect(int x, int y, int width, int height, QString borderColor = "#000000", QString fillColor = "transparent", int rounding = 0, int layer = 0);
+    Q_INVOKABLE void addPath(QList<QList<int>> coords, QString borderColor = "#000000", QString fillColor = "transparent", int layer = 0);
     Q_INVOKABLE void addPath(QList<int> xCoords, QList<int> yCoords, QString borderColor = "#000000", QString fillColor = "transparent", int layer = 0);
-    // TODO: Not invokable, haven't successfully tested 2D js array --> QList<QList<int>>.
-    void addPath(QList<QList<int>> coords, QString borderColor = "#000000", QString fillColor = "transparent", int layer = 0);
     Q_INVOKABLE void addImage(int x, int y, QString filepath, int layer = 0, bool useCache = true);
     Q_INVOKABLE void createImage(int x, int y, QString filepath,
                                  int width = -1, int height = -1, int xOffset = 0, int yOffset = 0,
