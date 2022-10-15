@@ -93,8 +93,8 @@ public:
     qreal getVScale();
     void setHScale(qreal scale);
     void setVScale(qreal scale);
-    int getAngle();
-    void setAngle(int angle);
+    int getRotation();
+    void setRotation(int angle);
     void rotate(int degrees);
     void setClippingRect(QRectF rect);
     void clearClippingRect();

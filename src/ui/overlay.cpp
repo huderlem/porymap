@@ -106,11 +106,11 @@ void Overlay::setVScale(qreal scale) {
     this->vScale = scale;
 }
 
-int Overlay::getAngle() {
+int Overlay::getRotation() {
     return this->angle;
 }
 
-void Overlay::setAngle(int angle) {
+void Overlay::setRotation(int angle) {
     this->angle = angle;
     this->clampAngle();
 }
@@ -122,7 +122,7 @@ void Overlay::rotate(int degrees) {
 
 void Overlay::clampAngle() {
     // transform.rotate would handle this already, but we only
-    // want to report angles 0-359 for Overlay::getAngle
+    // want to report angles 0-359 for Overlay::getRotation
     this->angle %= 360;
     if (this->angle < 0)
         this->angle += 360;
