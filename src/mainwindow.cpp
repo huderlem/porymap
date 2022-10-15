@@ -2060,8 +2060,8 @@ void MainWindow::updateSelectedObjects() {
         scrollTarget->setWidget(target);
 
         for (QFrame *frame : frames) {
-            frame->show();
             layout->addWidget(frame);
+            frame->show();
         }
 
         layout->addStretch(1);
