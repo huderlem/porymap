@@ -803,11 +803,29 @@ void MainWindow::displayMapProperties() {
     ui->tableWidget_CustomHeaderFields->blockSignals(true);
     ui->tableWidget_CustomHeaderFields->setRowCount(0);
     for (auto it = map->customHeaders.begin(); it != map->customHeaders.end(); it++) {
+        QTableWidgetItem * tableItem;
+        QJsonValue value = it.value();
+        switch (value.type())
+        {
+        case QJsonValue::String:
+        case QJsonValue::Double:
+            tableItem = new QTableWidgetItem(ParseUtil::jsonToQString(value));
+            break;
+        case QJsonValue::Bool:
+            tableItem = new QTableWidgetItem("");
+            tableItem->setCheckState(value.toBool() ? Qt::Checked : Qt::Unchecked);
+            break;
+        default:
+            tableItem = new QTableWidgetItem("This value cannot be edited from this table");
+            tableItem->setFlags(Qt::NoItemFlags);
+            break;
+        }
         int rowIndex = ui->tableWidget_CustomHeaderFields->rowCount();
         ui->tableWidget_CustomHeaderFields->insertRow(rowIndex);
         ui->tableWidget_CustomHeaderFields->setItem(rowIndex, 0, new QTableWidgetItem(it.key()));
-        ui->tableWidget_CustomHeaderFields->setItem(rowIndex, 1, new QTableWidgetItem(it.value()));
+        ui->tableWidget_CustomHeaderFields->setItem(rowIndex, 1, tableItem);
     }
+    ui->tableWidget_CustomHeaderFields->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     ui->tableWidget_CustomHeaderFields->blockSignals(false);
 }
 

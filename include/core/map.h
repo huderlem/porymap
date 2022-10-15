@@ -53,7 +53,7 @@ public:
     QString battle_scene;
     QString sharedEventsMap = "";
     QString sharedScriptsMap = "";
-    QMap<QString, QString> customHeaders;
+    QMap<QString, QJsonValue> customHeaders;
     MapLayout *layout;
     bool isPersistedToFile = true;
     bool hasUnsavedDataChanges = false;

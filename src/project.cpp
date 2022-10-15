@@ -412,7 +412,7 @@ bool Project::loadMapData(Map* map) {
     QSet<QString> baseFields = this->getTopLevelMapFields();
     for (QString key : mapObj.keys()) {
         if (!baseFields.contains(key)) {
-            map->customHeaders.insert(key, ParseUtil::jsonToQString(mapObj[key]));
+            map->customHeaders.insert(key, mapObj[key]);
         }
     }
 
@@ -1440,7 +1440,7 @@ void Project::saveMap(Map *map) {
 
     // Custom header fields.
     for (QString key : map->customHeaders.keys()) {
-        mapObj[key] = map->customHeaders[key];
+        //mapObj[key] = map->customHeaders[key];
     }
 
     OrderedJson mapJson(mapObj);

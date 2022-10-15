@@ -1958,7 +1958,7 @@ void Editor::updateCustomMapHeaderValues(QTableWidget *table)
         if (value) valueStr = value->text();
         fields[keyStr] = valueStr;
     }
-    map->customHeaders = fields;
+    //map->customHeaders = fields;
     emit editedMapData();
 }
 
