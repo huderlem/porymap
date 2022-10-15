@@ -49,7 +49,6 @@ void EventFrame::setup() {
     l_layout_x->addWidget(this->spinner_x);
 
     l_layout_xyz->addLayout(l_layout_x);
-    l_layout_xyz->addItem(createSpacerH());
 
     // y spinner & label
     this->spinner_y = new NoScrollSpinBox(this);
@@ -63,7 +62,6 @@ void EventFrame::setup() {
     l_layout_y->addWidget(this->spinner_y);
 
     l_layout_xyz->addLayout(l_layout_y);
-    l_layout_xyz->addItem(createSpacerH());
 
     // z spinner & label
     this->spinner_z = new NoScrollSpinBox(this);
@@ -77,6 +75,7 @@ void EventFrame::setup() {
     l_layout_z->addWidget(this->spinner_z);
 
     l_layout_xyz->addLayout(l_layout_z);
+    l_layout_xyz->addItem(createSpacerH());
 
     QVBoxLayout *l_vbox_1 = new QVBoxLayout();
 
