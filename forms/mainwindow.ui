@@ -1387,7 +1387,7 @@
                    </property>
                    <property name="minimumSize">
                     <size>
-                     <width>330</width>
+                     <width>0</width>
                      <height>0</height>
                     </size>
                    </property>
@@ -1527,6 +1527,12 @@
                     </item>
                     <item row="2" column="0">
                      <widget class="QTabWidget" name="tabWidget_EventType">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
                       <property name="currentIndex">
                        <number>0</number>
                       </property>
