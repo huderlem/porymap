@@ -803,27 +803,10 @@ void MainWindow::displayMapProperties() {
     ui->tableWidget_CustomHeaderFields->blockSignals(true);
     ui->tableWidget_CustomHeaderFields->setRowCount(0);
     for (auto it = map->customHeaders.begin(); it != map->customHeaders.end(); it++) {
-        QTableWidgetItem * tableItem;
-        QJsonValue value = it.value();
-        switch (value.type())
-        {
-        case QJsonValue::String:
-        case QJsonValue::Double:
-            tableItem = new QTableWidgetItem(ParseUtil::jsonToQString(value));
-            break;
-        case QJsonValue::Bool:
-            tableItem = new QTableWidgetItem("");
-            tableItem->setCheckState(value.toBool() ? Qt::Checked : Qt::Unchecked);
-            break;
-        default:
-            tableItem = new QTableWidgetItem("This value cannot be edited from this table");
-            tableItem->setFlags(Qt::NoItemFlags);
-            break;
-        }
         int rowIndex = ui->tableWidget_CustomHeaderFields->rowCount();
         ui->tableWidget_CustomHeaderFields->insertRow(rowIndex);
         ui->tableWidget_CustomHeaderFields->setItem(rowIndex, 0, new QTableWidgetItem(it.key()));
-        ui->tableWidget_CustomHeaderFields->setItem(rowIndex, 1, tableItem);
+        ui->tableWidget_CustomHeaderFields->setItem(rowIndex, 1, createNewCustomHeaderItem(it.value()));
     }
     ui->tableWidget_CustomHeaderFields->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     ui->tableWidget_CustomHeaderFields->blockSignals(false);
@@ -3097,11 +3080,35 @@ void MainWindow::togglePreferenceSpecificUi() {
         ui->actionOpen_Project_in_Text_Editor->setEnabled(true);
 }
 
+QTableWidgetItem * MainWindow::createNewCustomHeaderItem(QJsonValue value) {
+    QTableWidgetItem * tableItem;
+    switch (value.type())
+    {
+    case QJsonValue::String:
+    case QJsonValue::Double:
+        tableItem = new QTableWidgetItem(ParseUtil::jsonToQString(value));
+        break;
+    case QJsonValue::Bool:
+        tableItem = new QTableWidgetItem("");
+        tableItem->setCheckState(value.toBool() ? Qt::Checked : Qt::Unchecked);
+        break;
+    default:
+        tableItem = new QTableWidgetItem("This value cannot be edited from this table");
+        tableItem->setFlags(Qt::NoItemFlags);
+        break;
+    }
+    tableItem->setData(Qt::UserRole, value); // Save the original value/type for when it's written back to the project
+    return tableItem;
+}
+
 void MainWindow::on_pushButton_AddCustomHeaderField_clicked()
 {
     int rowIndex = this->ui->tableWidget_CustomHeaderFields->rowCount();
     this->ui->tableWidget_CustomHeaderFields->insertRow(rowIndex);
     this->ui->tableWidget_CustomHeaderFields->selectRow(rowIndex);
+    // TODO: New items default to string, allow type selection
+    QJsonValue defaultValue = QJsonValue(QString(""));
+    this->ui->tableWidget_CustomHeaderFields->setItem(rowIndex, 1, createNewCustomHeaderItem(defaultValue));
     this->editor->updateCustomMapHeaderValues(this->ui->tableWidget_CustomHeaderFields);
 }
 
