@@ -1213,9 +1213,18 @@ All overlay functions are callable via the global ``overlay`` object.
    :param number rounding: the percent degree the corners will be rounded. ``0`` is rectangular, ``100`` is elliptical. Defaults to ``0``
    :param number layer: the layer id. Defaults to ``0``
 
+.. js:function:: overlay.addPath(coords, borderColor = "#000000", fillColor = "", layer = 0)
+
+   Draws a straight path on the specified layer by connecting the coordinate pairs in ``coords``. The area enclosed by the path can be colored in, and will follow the `"odd-even" fill rule <https://doc.qt.io/qt-5/qt.html#FillRule-enum>`_.
+
+   :param array coords: array of pixel coordinates to connect to create the path. Each element of the array should be an array containing an x and y pixel coordinate
+   :param string borderColor: the color of the path. Can be specified as ``"#RRGGBB"`` or ``"#AARRGGBB"``. Defaults to black.
+   :param string fillColor: the color of the area enclosed by the path. Can be specified as ``"#RRGGBB"`` or ``"#AARRGGBB"``. Defaults to transparent.
+   :param number layer: the layer id. Defaults to ``0``
+
 .. js:function:: overlay.addPath(xCoords, yCoords, borderColor = "#000000", fillColor = "", layer = 0)
 
-   Draws a straight path on the specified layer by connecting the coordinates at (``xCoords``, ``yCoords``). The area enclosed by the path can be colored in, and will follow the `"odd-even" fill rule <https://doc.qt.io/qt-5/qt.html#FillRule-enum>`_.
+   This is an overloaded function. Draws a straight path on the specified layer by connecting the coordinates at (``xCoords``, ``yCoords``). The area enclosed by the path can be colored in, and will follow the `"odd-even" fill rule <https://doc.qt.io/qt-5/qt.html#FillRule-enum>`_.
 
    :param array xCoords: array of x pixel coordinates to connect to create the path
    :param array yCoords: array of y pixel coordinates to connect to create the path
