@@ -1440,28 +1440,7 @@ void Project::saveMap(Map *map) {
 
     // Custom header fields.
     for (QString key : map->customHeaders.keys()) {
-        QJsonValue value = map->customHeaders[key];
-        switch (value.type())
-        {
-        default:
-        case QJsonValue::String:
-            mapObj[key] = value.toString();
-            break;
-        case QJsonValue::Double:
-            mapObj[key] = value.toInt();
-            break;
-        case QJsonValue::Bool:
-            mapObj[key] = value.toBool();
-            break;
-        case QJsonValue::Array:
-            // TODO: Custom array values are replaced with empty strings
-            mapObj[key] = value.toString();
-            break;
-        case QJsonValue::Object:
-            // TODO: Custom object values are replaced with empty strings
-            mapObj[key] = value.toString();
-            break;
-        }
+        mapObj[key] = OrderedJson::fromQJsonValue(map->customHeaders[key]);
     }
 
     OrderedJson mapJson(mapObj);

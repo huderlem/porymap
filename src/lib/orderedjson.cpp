@@ -308,6 +308,33 @@ const Json & JsonArray::operator[] (int i) const {
     else return m_value[i];
 }
 
+const Json Json::fromQJsonValue(QJsonValue value) {
+    switch (value.type())
+    {
+    default:
+    case QJsonValue::String: return value.toString();
+    case QJsonValue::Double: return value.toInt();
+    case QJsonValue::Bool:   return value.toBool();
+    case QJsonValue::Array:
+    {
+        QJsonArray qArr = value.toArray();
+        Json::array arr;
+        for (const auto &i: qArr)
+            arr.push_back(Json::fromQJsonValue(i));
+        return arr;
+    }
+    case QJsonValue::Object:
+    {
+        QJsonObject qObj = value.toObject();
+        Json::object obj;
+        for (auto it = qObj.constBegin(); it != qObj.constEnd(); it++)
+            obj[it.key()] = Json::fromQJsonValue(it.value());
+        return obj;
+    }
+    }
+}
+
+
 /* * * * * * * * * * * * * * * * * * * *
  * Comparison
  */
