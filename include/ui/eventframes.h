@@ -148,6 +148,10 @@ public:
     TriggerFrame(TriggerEvent *trigger, QWidget *parent = nullptr)
         : EventFrame(trigger, parent), trigger(trigger) {}
 
+    virtual ~TriggerFrame() {
+        delete this->scriptCompleter;
+    }
+
     virtual void setup() override;
     virtual void initialize() override;
     virtual void connectSignals() override;
@@ -193,6 +197,10 @@ class SignFrame : public EventFrame {
 public:
     SignFrame(SignEvent *sign, QWidget *parent = nullptr)
         : EventFrame(sign, parent), sign(sign) {}
+
+    virtual ~SignFrame() {
+        delete this->scriptCompleter;
+    }
 
     virtual void setup() override;
     virtual void initialize() override;

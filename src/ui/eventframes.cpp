@@ -385,6 +385,11 @@ void ObjectFrame::populate(Project *project) {
     QStringList scriptLabels = this->object->getMap()->eventScriptLabels() + project->getGlobalScriptLabels();
     scriptLabels.removeDuplicates();
 
+    if (this->object->getMap()) {
+        const auto localScriptLabels = this->object->getMap()->eventScriptLabels();
+        this->combo_script->addItems(localScriptLabels);
+    }
+
     this->scriptCompleter = new QCompleter(scriptLabels, this);
     this->scriptCompleter->setCaseSensitivity(Qt::CaseInsensitive);
     this->scriptCompleter->setFilterMode(Qt::MatchContains);
@@ -649,6 +654,11 @@ void TriggerFrame::populate(Project *project) {
     QStringList scriptLabels = this->trigger->getMap()->eventScriptLabels() + project->getGlobalScriptLabels();
     scriptLabels.removeDuplicates();
 
+    if (this->trigger->getMap()) {
+        const auto localScriptLabels = this->trigger->getMap()->eventScriptLabels();
+        this->combo_script->addItems(localScriptLabels);
+    }
+
     this->scriptCompleter = new QCompleter(scriptLabels, this);
     this->scriptCompleter->setCaseSensitivity(Qt::CaseInsensitive);
     this->scriptCompleter->setFilterMode(Qt::MatchContains);
@@ -791,6 +801,11 @@ void SignFrame::populate(Project *project) {
     // script
     QStringList scriptLabels = this->sign->getMap()->eventScriptLabels() + project->getGlobalScriptLabels();
     scriptLabels.removeDuplicates();
+
+    if (this->sign->getMap()) {
+        const auto localScriptLabels = this->sign->getMap()->eventScriptLabels();
+        this->combo_script->addItems(localScriptLabels);
+    }
 
     this->scriptCompleter = new QCompleter(scriptLabels, this);
     this->scriptCompleter->setCaseSensitivity(Qt::CaseInsensitive);
