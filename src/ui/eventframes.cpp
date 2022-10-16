@@ -435,10 +435,14 @@ void CloneObjectFrame::connectSignals() {
 
     EventFrame::connectSignals();
 
+    // update icon displayed in frame with target
+    connect(this->clone->getPixmapItem(), &DraggablePixmapItem::spriteChanged, this->label_icon, &QLabel::setPixmap);
+
     // target map
     this->combo_target_map->disconnect();
     connect(this->combo_target_map, &QComboBox::currentTextChanged, [this](const QString &text) {
         this->clone->setTargetMap(text);
+        this->clone->getPixmapItem()->updatePixmap();
         this->clone->modify();
     });
 
@@ -446,6 +450,7 @@ void CloneObjectFrame::connectSignals() {
     this->spinner_target_id->disconnect();
     connect(this->spinner_target_id, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
         this->clone->setTargetID(value);
+        this->clone->getPixmapItem()->updatePixmap();
         this->clone->modify();
     });
 }
