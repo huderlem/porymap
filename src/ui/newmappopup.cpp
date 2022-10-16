@@ -118,8 +118,8 @@ void NewMapPopup::setDefaultValues(int groupNum, QString mapSec) {
     ui->comboBox_Song->addItems(project->songNames);
 
     if (existingLayout) {
-        ui->spinBox_NewMap_Width->setValue(project->mapLayouts.value(layoutId)->width.toInt(nullptr, 0));
-        ui->spinBox_NewMap_Height->setValue(project->mapLayouts.value(layoutId)->height.toInt(nullptr, 0));
+        ui->spinBox_NewMap_Width->setValue(project->mapLayouts.value(layoutId)->width);
+        ui->spinBox_NewMap_Height->setValue(project->mapLayouts.value(layoutId)->height);
         ui->comboBox_NewMap_Primary_Tileset->setCurrentText(project->mapLayouts.value(layoutId)->tileset_primary_label);
         ui->comboBox_NewMap_Secondary_Tileset->setCurrentText(project->mapLayouts.value(layoutId)->tileset_secondary_label);
         ui->spinBox_NewMap_Width->setDisabled(true);
@@ -156,8 +156,8 @@ void NewMapPopup::setDefaultValuesImportMap(MapLayout *mapLayout) {
 
     ui->comboBox_Song->addItems(project->songNames);
 
-    ui->spinBox_NewMap_Width->setValue(mapLayout->width.toInt(nullptr, 0));
-    ui->spinBox_NewMap_Height->setValue(mapLayout->height.toInt(nullptr, 0));
+    ui->spinBox_NewMap_Width->setValue(mapLayout->width);
+    ui->spinBox_NewMap_Height->setValue(mapLayout->height);
     ui->comboBox_NewMap_Primary_Tileset->setCurrentText(mapLayout->tileset_primary_label);
     ui->comboBox_NewMap_Secondary_Tileset->setCurrentText(mapLayout->tileset_secondary_label);
 
@@ -208,8 +208,8 @@ void NewMapPopup::setDefaultValuesProjectConfig(bool importedMap, MapLayout *map
     }
     if (projectConfig.getUseCustomBorderSize()) {
         if (importedMap) {
-            ui->spinBox_NewMap_BorderWidth->setValue(mapLayout->border_width.toInt(nullptr, 0));
-            ui->spinBox_NewMap_BorderHeight->setValue(mapLayout->border_height.toInt(nullptr, 0));
+            ui->spinBox_NewMap_BorderWidth->setValue(mapLayout->border_width);
+            ui->spinBox_NewMap_BorderHeight->setValue(mapLayout->border_height);
         }
         ui->spinBox_NewMap_BorderWidth->setVisible(true);
         ui->spinBox_NewMap_BorderHeight->setVisible(true);
@@ -278,14 +278,14 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
         layout = new MapLayout;
         layout->id = MapLayout::layoutConstantFromName(newMapName);
         layout->name = QString("%1_Layout").arg(newMap->name);
-        layout->width = QString::number(this->ui->spinBox_NewMap_Width->value());
-        layout->height = QString::number(this->ui->spinBox_NewMap_Height->value());
+        layout->width = this->ui->spinBox_NewMap_Width->value();
+        layout->height = this->ui->spinBox_NewMap_Height->value();
         if (projectConfig.getUseCustomBorderSize()) {
-            layout->border_width = QString::number(this->ui->spinBox_NewMap_BorderWidth->value());
-            layout->border_height = QString::number(this->ui->spinBox_NewMap_BorderHeight->value());
+            layout->border_width = this->ui->spinBox_NewMap_BorderWidth->value();
+            layout->border_height = this->ui->spinBox_NewMap_BorderHeight->value();
         } else {
-            layout->border_width = QString::number(DEFAULT_BORDER_WIDTH);
-            layout->border_height = QString::number(DEFAULT_BORDER_HEIGHT);
+            layout->border_width = DEFAULT_BORDER_WIDTH;
+            layout->border_height = DEFAULT_BORDER_HEIGHT;
         }
         layout->tileset_primary_label = this->ui->comboBox_NewMap_Primary_Tileset->currentText();
         layout->tileset_secondary_label = this->ui->comboBox_NewMap_Secondary_Tileset->currentText();

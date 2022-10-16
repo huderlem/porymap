@@ -567,29 +567,29 @@ bool Project::readMapLayouts() {
             logError(QString("Invalid layout 'width' value '%1' on layout %2 in %3. Must be greater than 0.").arg(lwidth).arg(i).arg(layoutsFilepath));
             return false;
         }
-        layout->width = QString::number(lwidth);
+        layout->width = lwidth;
         int lheight = ParseUtil::jsonToInt(layoutObj["height"]);
         if (lheight <= 0) {
             logError(QString("Invalid layout 'height' value '%1' on layout %2 in %3. Must be greater than 0.").arg(lheight).arg(i).arg(layoutsFilepath));
             return false;
         }
-        layout->height = QString::number(lheight);
+        layout->height = lheight;
         if (useCustomBorderSize) {
             int bwidth = ParseUtil::jsonToInt(layoutObj["border_width"]);
             if (bwidth <= 0) {  // 0 is an expected border width/height that should be handled, GF used it for the RS layouts in FRLG
                 logWarn(QString("Invalid layout 'border_width' value '%1' on layout %2 in %3. Must be greater than 0. Using default (%4) instead.").arg(bwidth).arg(i).arg(layoutsFilepath).arg(DEFAULT_BORDER_WIDTH));
                 bwidth = DEFAULT_BORDER_WIDTH;
             }
-            layout->border_width = QString::number(bwidth);
+            layout->border_width = bwidth;
             int bheight = ParseUtil::jsonToInt(layoutObj["border_height"]);
             if (bheight <= 0) {
                 logWarn(QString("Invalid layout 'border_height' value '%1' on layout %2 in %3. Must be greater than 0. Using default (%4) instead.").arg(bheight).arg(i).arg(layoutsFilepath).arg(DEFAULT_BORDER_HEIGHT));
                 bheight = DEFAULT_BORDER_HEIGHT;
             }
-            layout->border_height = QString::number(bheight);
+            layout->border_height = bheight;
         } else {
-            layout->border_width = QString::number(DEFAULT_BORDER_WIDTH);
-            layout->border_height = QString::number(DEFAULT_BORDER_HEIGHT);
+            layout->border_width = DEFAULT_BORDER_WIDTH;
+            layout->border_height = DEFAULT_BORDER_HEIGHT;
         }
         layout->tileset_primary_label = ParseUtil::jsonToQString(layoutObj["primary_tileset"]);
         if (layout->tileset_primary_label.isEmpty()) {
@@ -641,11 +641,11 @@ void Project::saveMapLayouts() {
         OrderedJson::object layoutObj;
         layoutObj["id"] = layout->id;
         layoutObj["name"] = layout->name;
-        layoutObj["width"] = layout->width.toInt(nullptr, 0);
-        layoutObj["height"] = layout->height.toInt(nullptr, 0);
+        layoutObj["width"] = layout->width;
+        layoutObj["height"] = layout->height;
         if (useCustomBorderSize) {
-            layoutObj["border_width"] = layout->border_width.toInt(nullptr, 0);
-            layoutObj["border_height"] = layout->border_height.toInt(nullptr, 0);
+            layoutObj["border_width"] = layout->border_width;
+            layoutObj["border_height"] = layout->border_height;
         }
         layoutObj["primary_tileset"] = layout->tileset_primary_label;
         layoutObj["secondary_tileset"] = layout->tileset_secondary_label;
@@ -672,10 +672,10 @@ void Project::setNewMapLayout(Map* map) {
     MapLayout *layout = new MapLayout();
     layout->id = MapLayout::layoutConstantFromName(map->name);
     layout->name = QString("%1_Layout").arg(map->name);
-    layout->width = QString::number(getDefaultMapSize());
-    layout->height = QString::number(getDefaultMapSize());
-    layout->border_width = QString::number(DEFAULT_BORDER_WIDTH);
-    layout->border_height = QString::number(DEFAULT_BORDER_HEIGHT);
+    layout->width = getDefaultMapSize();
+    layout->height = getDefaultMapSize();
+    layout->border_width = DEFAULT_BORDER_WIDTH;
+    layout->border_height = DEFAULT_BORDER_HEIGHT;
     layout->border_path = QString("%2%1/border.bin").arg(map->name).arg(projectConfig.getFilePath(ProjectFilePath::data_layouts_folders));
     layout->blockdata_path = QString("%2%1/map.bin").arg(map->name).arg(projectConfig.getFilePath(ProjectFilePath::data_layouts_folders));
     layout->tileset_primary_label = tilesetLabels["primary"].value(0, "gTileset_General");
@@ -1311,11 +1311,11 @@ void Project::saveMap(Map *map) {
     QJsonObject newLayoutObj;
     newLayoutObj["id"] = map->layout->id;
     newLayoutObj["name"] = map->layout->name;
-    newLayoutObj["width"] = map->layout->width.toInt();
-    newLayoutObj["height"] = map->layout->height.toInt();
+    newLayoutObj["width"] = map->layout->width;
+    newLayoutObj["height"] = map->layout->height;
     if (projectConfig.getUseCustomBorderSize()) {
-        newLayoutObj["border_width"] = map->layout->border_width.toInt();
-        newLayoutObj["border_height"] = map->layout->border_height.toInt();
+        newLayoutObj["border_width"] = map->layout->border_width;
+        newLayoutObj["border_height"] = map->layout->border_height;
     }
     newLayoutObj["primary_tileset"] = map->layout->tileset_primary_label;
     newLayoutObj["secondary_tileset"] = map->layout->tileset_secondary_label;
@@ -1361,7 +1361,7 @@ void Project::saveMap(Map *map) {
             if (mapNamesToMapConstants.contains(connection->map_name)) {
                 OrderedJson::object connectionObj;
                 connectionObj["direction"] = connection->direction;
-                connectionObj["offset"] = connection->offset.toInt();
+                connectionObj["offset"] = connection->offset;
                 connectionObj["map"] = this->mapNamesToMapConstants.value(connection->map_name);
                 connectionsArr.append(connectionObj);
             } else {

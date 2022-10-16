@@ -15,7 +15,7 @@ public:
         setFlag(ItemSendsGeometryChanges);
         this->initialX = x;
         this->initialY = y;
-        this->initialOffset = connection->offset.toInt();
+        this->initialOffset = connection->offset;
         this->baseMapWidth = baseMapWidth;
         this->baseMapHeight = baseMapHeight;
     }

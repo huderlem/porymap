@@ -8,7 +8,7 @@
 class MapConnection {
 public:
     QString direction;
-    QString offset;
+    int offset;
     QString map_name;
 };
 

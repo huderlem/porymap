@@ -241,7 +241,7 @@ QPixmap MapImageExporter::getStitchedImage(QProgressDialog *progress, bool inclu
                 continue;
             int x = cur.x;
             int y = cur.y;
-            int offset = connection->offset.toInt(nullptr, 0);
+            int offset = connection->offset;
             Map *connectionMap = this->editor->project->loadMap(connection->map_name);
             if (connection->direction == "up") {
                 x += offset;

@@ -177,7 +177,7 @@ void Editor::setEditingConnections() {
         bool controlsEnabled = selected_connection_item != nullptr;
         setConnectionEditControlsEnabled(controlsEnabled);
         if (selected_connection_item) {
-            onConnectionOffsetChanged(selected_connection_item->connection->offset.toInt());
+            onConnectionOffsetChanged(selected_connection_item->connection->offset);
             setConnectionMap(selected_connection_item->connection->map_name);
             setCurrentConnectionDirection(selected_connection_item->connection->direction);
         }
@@ -775,7 +775,7 @@ void Editor::setCurrentConnectionDirection(QString curDirection) {
     selected_connection_item->connection->direction = curDirection;
 
     QPixmap pixmap = connected_map->renderConnection(*selected_connection_item->connection, map->layout);
-    int offset = selected_connection_item->connection->offset.toInt(nullptr, 0);
+    int offset = selected_connection_item->connection->offset;
     selected_connection_item->initialOffset = offset;
     int x = 0, y = 0;
     if (selected_connection_item->connection->direction == "up") {
@@ -821,7 +821,7 @@ void Editor::updateCurrentConnectionDirection(QString curDirection) {
 
 void Editor::onConnectionMoved(MapConnection* connection) {
     updateMirroredConnectionOffset(connection);
-    onConnectionOffsetChanged(connection->offset.toInt());
+    onConnectionOffsetChanged(connection->offset);
     maskNonVisibleConnectionTiles();
 }
 
@@ -835,7 +835,7 @@ void Editor::onConnectionOffsetChanged(int newOffset) {
 void Editor::setConnectionEditControlValues(MapConnection* connection) {
     QString mapName = connection ? connection->map_name : "";
     QString direction = connection ? connection->direction : "";
-    int offset = connection ? connection->offset.toInt() : 0;
+    int offset = connection ? connection->offset : 0;
 
     ui->comboBox_ConnectedMap->blockSignals(true);
     ui->comboBox_ConnectionDirection->blockSignals(true);
@@ -884,7 +884,7 @@ void Editor::onConnectionItemSelected(ConnectionPixmapItem* connectionItem) {
     setConnectionEditControlValues(selected_connection_item->connection);
     ui->spinBox_ConnectionOffset->setMaximum(selected_connection_item->getMaxOffset());
     ui->spinBox_ConnectionOffset->setMinimum(selected_connection_item->getMinOffset());
-    onConnectionOffsetChanged(selected_connection_item->connection->offset.toInt());
+    onConnectionOffsetChanged(selected_connection_item->connection->offset);
 }
 
 void Editor::setSelectedConnectionFromMap(QString mapName) {
@@ -1561,7 +1561,7 @@ void Editor::createConnectionItem(MapConnection* connection, bool hide) {
     }
 
     QPixmap pixmap = connected_map->renderConnection(*connection, map->layout);
-    int offset = connection->offset.toInt(nullptr, 0);
+    int offset = connection->offset;
     int x = 0, y = 0;
     if (connection->direction == "up") {
         x = offset * 16;
@@ -1724,7 +1724,7 @@ void Editor::updateConnectionOffset(int offset) {
     selected_connection_item->blockSignals(true);
     offset = qMin(offset, selected_connection_item->getMaxOffset());
     offset = qMax(offset, selected_connection_item->getMinOffset());
-    selected_connection_item->connection->offset = QString::number(offset);
+    selected_connection_item->connection->offset = offset;
     if (selected_connection_item->connection->direction == "up" || selected_connection_item->connection->direction == "down") {
         selected_connection_item->setX(selected_connection_item->initialX + (offset - selected_connection_item->initialOffset) * 16);
     } else if (selected_connection_item->connection->direction == "left" || selected_connection_item->connection->direction == "right") {
@@ -1779,7 +1779,7 @@ void Editor::addNewConnection() {
 
     MapConnection* newConnection = new MapConnection;
     newConnection->direction = minDirection;
-    newConnection->offset = "0";
+    newConnection->offset = 0;
     newConnection->map_name = defaultMapName;
     map->connections.append(newConnection);
     createConnectionItem(newConnection, true);
@@ -1847,7 +1847,7 @@ void Editor::updateMirroredConnection(MapConnection* connection, QString origina
         otherMap->connections.append(mirrorConnection);
     }
 
-    mirrorConnection->offset = QString::number(-connection->offset.toInt());
+    mirrorConnection->offset = -connection->offset;
 }
 
 void Editor::removeCurrentConnection() {
@@ -1905,7 +1905,7 @@ void Editor::updateDiveEmergeMap(QString mapName, QString direction) {
         if (!connection) {
             connection = new MapConnection;
             connection->direction = direction;
-            connection->offset = "0";
+            connection->offset = 0;
             connection->map_name = mapName;
             map->connections.append(connection);
             updateMirroredConnection(connection, connection->direction, connection->map_name);

@@ -70,10 +70,10 @@ MapLayout *MapParser::parse(QString filepath, bool *error, Project *project)
     }
 
     MapLayout *mapLayout = new MapLayout();
-    mapLayout->width = QString::number(mapWidth);
-    mapLayout->height = QString::number(mapHeight);
-    mapLayout->border_width = (borderWidth == 0) ?  QString::number(2) :  QString::number(borderWidth);
-    mapLayout->border_height = (borderHeight == 0) ?  QString::number(2) :  QString::number(borderHeight);
+    mapLayout->width = mapWidth;
+    mapLayout->height = mapHeight;
+    mapLayout->border_width = (borderWidth == 0) ?  DEFAULT_BORDER_WIDTH : borderWidth;
+    mapLayout->border_height = (borderHeight == 0) ?  DEFAULT_BORDER_HEIGHT : borderHeight;
 
     QList<QString> tilesets = project->tilesetLabelsOrdered;
 
