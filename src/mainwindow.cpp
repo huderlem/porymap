@@ -1934,11 +1934,22 @@ void MainWindow::displayEventTabs() {
 }
 
 void MainWindow::updateObjects() {
-    selectedObject = nullptr;
-    selectedWarp = nullptr;
-    selectedTrigger = nullptr;
-    selectedBG = nullptr;
-    selectedHealspot = nullptr;
+    QList<DraggablePixmapItem *> all_objects = editor->getObjects();
+    if (selectedObject && !all_objects.contains(selectedObject)) {
+        selectedObject = nullptr;
+    }
+    if (selectedWarp && !all_objects.contains(selectedWarp)) {
+        selectedWarp = nullptr;
+    }
+    if (selectedTrigger && !all_objects.contains(selectedTrigger)) {
+        selectedTrigger = nullptr;
+    }
+    if (selectedBG && !all_objects.contains(selectedBG)) {
+        selectedBG = nullptr;
+    }
+    if (selectedHealspot && !all_objects.contains(selectedHealspot)) {
+        selectedHealspot = nullptr;
+    }
 
     displayEventTabs();
 
@@ -1953,11 +1964,17 @@ void MainWindow::updateSelectedObjects() {
         events = *editor->selected_events;
     }
     else {
+        QList<Event *> all_events;
+        if (editor->map) {
+            all_events = editor->map->getAllEvents();
+        }
         if (all_events.length()) {
-            DraggablePixmapItem *selectedEvent = all_events.first();
-            editor->selected_events->append(selectedEvent);
-            editor->redrawObject(selectedEvent);
-            events.append(selectedEvent);
+            DraggablePixmapItem *selectedEvent = all_events.first()->getPixmapItem();
+            if (selectedEvent) {
+                editor->selected_events->append(selectedEvent);
+                editor->redrawObject(selectedEvent);
+                events.append(selectedEvent);
+            }
         }
     }
 
@@ -1978,6 +1995,8 @@ void MainWindow::updateSelectedObjects() {
             target = ui->scrollAreaWidgetContents_Objects;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Objects);
 
+            selectedObject = current->getPixmapItem();
+
             this->ui->spinner_ObjectID->setMinimum(event_offs);
             this->ui->spinner_ObjectID->setMaximum(current->getMap()->events.value(eventGroup).length() + event_offs - 1);
             this->ui->spinner_ObjectID->setValue(current->getEventIndex() + event_offs);
@@ -1987,6 +2006,8 @@ void MainWindow::updateSelectedObjects() {
             scrollTarget = ui->scrollArea_Warps;
             target = ui->scrollAreaWidgetContents_Warps;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Warps);
+
+            selectedWarp = current->getPixmapItem();
 
             this->ui->spinner_WarpID->setMinimum(event_offs);
             this->ui->spinner_WarpID->setMaximum(current->getMap()->events.value(eventGroup).length() + event_offs - 1);
@@ -1998,6 +2019,8 @@ void MainWindow::updateSelectedObjects() {
             target = ui->scrollAreaWidgetContents_Triggers;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Triggers);
 
+            selectedTrigger = current->getPixmapItem();
+
             this->ui->spinner_TriggerID->setMinimum(event_offs);
             this->ui->spinner_TriggerID->setMaximum(current->getMap()->events.value(eventGroup).length() + event_offs - 1);
             this->ui->spinner_TriggerID->setValue(current->getEventIndex() + event_offs);
@@ -2008,6 +2031,8 @@ void MainWindow::updateSelectedObjects() {
             target = ui->scrollAreaWidgetContents_BGs;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_BGs);
 
+            selectedBG = current->getPixmapItem();
+
             this->ui->spinner_BgID->setMinimum(event_offs);
             this->ui->spinner_BgID->setMaximum(current->getMap()->events.value(eventGroup).length() + event_offs - 1);
             this->ui->spinner_BgID->setValue(current->getEventIndex() + event_offs);
@@ -2017,6 +2042,8 @@ void MainWindow::updateSelectedObjects() {
             scrollTarget = ui->scrollArea_Healspots;
             target = ui->scrollAreaWidgetContents_Healspots;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Healspots);
+
+            selectedHealspot = current->getPixmapItem();
 
             this->ui->spinner_HealID->setMinimum(event_offs);
             this->ui->spinner_HealID->setMaximum(current->getMap()->events.value(eventGroup).length() + event_offs - 1);
@@ -2167,26 +2194,7 @@ void MainWindow::on_toolButton_deleteObject_clicked() {
             for (DraggablePixmapItem *item : *editor->selected_events) {
                 Event::Group event_group = item->event->getEventGroup();
                 if (event_group != Event::Group::Heal) {
-                    // Get the index for the event that should be selected after this event has been deleted.
-                    // If it's at the end of the list, select the previous event, otherwise select the next one.
-                    // Don't bother getting the event to select if there are still more events to delete
-                    if (++numDeleted == numEvents) {
-                        int index = editor->map->events.value(event_group).indexOf(item->event);
-                        if (index != editor->map->events.value(event_group).size() - 1)
-                            index++;
-                        else
-                            index--;
-                        Event *event = nullptr;
-                        if (index >= 0)
-                            event = editor->map->events.value(event_group).at(index);
-                        for (QGraphicsItem *child : editor->events_group->childItems()) {
-                            DraggablePixmapItem *event_item = static_cast<DraggablePixmapItem *>(child);
-                            if (event_item->event == event) {
-                                nextSelectedEvent = event_item;
-                                break;
-                            }
-                        }
-                    }
+                    numDeleted++;
                     item->event->setPixmapItem(item);
                     selectedEvents.append(item->event);
                 }
@@ -2195,6 +2203,27 @@ void MainWindow::on_toolButton_deleteObject_clicked() {
                 }
             }
             if (numDeleted) {
+                // Get the index for the event that should be selected after this event has been deleted.
+                // Select event at next smallest index when deleting a single event.
+                // If deleting multiple events, just let editor work out next selected.
+                if (numDeleted == 1) {
+                    Event::Group event_group = selectedEvents[0]->getEventGroup();
+                    int index = editor->map->events.value(event_group).indexOf(selectedEvents[0]);
+                    if (index != editor->map->events.value(event_group).size() - 1)
+                        index++;
+                    else
+                        index--;
+                    Event *event = nullptr;
+                    if (index >= 0)
+                        event = editor->map->events.value(event_group).at(index);
+                    for (QGraphicsItem *child : editor->events_group->childItems()) {
+                        DraggablePixmapItem *event_item = static_cast<DraggablePixmapItem *>(child);
+                        if (event_item->event == event) {
+                            nextSelectedEvent = event_item;
+                            break;
+                        }
+                    }
+                }
                 editor->map->editHistory.push(new EventDelete(editor, editor->map, selectedEvents, nextSelectedEvent ? nextSelectedEvent->event : nullptr));
             }
         }
