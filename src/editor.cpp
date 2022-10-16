@@ -2031,12 +2031,12 @@ void Editor::selectMapEvent(DraggablePixmapItem *object, bool toggle) {
     }
 }
 
-void Editor::selectedEventIndexChanged(int index, Event::Group eventGroup)
-{
+void Editor::selectedEventIndexChanged(int index, Event::Group eventGroup) {
     int event_offs = Event::getIndexOffset(eventGroup);
+    index = index - event_offs;
     Event *event = nullptr;
     if (index < this->map->events.value(eventGroup).length()) {
-        event = this->map->events.value(eventGroup).at(index - event_offs);
+        event = this->map->events.value(eventGroup).at(index);
     }
     DraggablePixmapItem *selectedEvent = nullptr;
     for (QGraphicsItem *child : this->events_group->childItems()) {
