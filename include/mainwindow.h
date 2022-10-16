@@ -388,7 +388,7 @@ private:
     void redrawMetatileSelection();
 
     QObjectList shortcutableObjects() const;
-    QTableWidgetItem * createNewCustomHeaderItem(QJsonValue value);
+    void addCustomHeaderValue(QString key, QJsonValue value, bool isNew = false);
 };
 
 enum MapListUserRoles {
