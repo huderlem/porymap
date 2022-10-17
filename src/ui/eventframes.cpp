@@ -443,6 +443,7 @@ void CloneObjectFrame::connectSignals() {
     connect(this->combo_target_map, &QComboBox::currentTextChanged, [this](const QString &text) {
         this->clone->setTargetMap(text);
         this->clone->getPixmapItem()->updatePixmap();
+        this->combo_sprite->setCurrentText(this->clone->getGfx());
         this->clone->modify();
     });
 
@@ -451,6 +452,7 @@ void CloneObjectFrame::connectSignals() {
     connect(this->spinner_target_id, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
         this->clone->setTargetID(value);
         this->clone->getPixmapItem()->updatePixmap();
+        this->combo_sprite->setCurrentText(this->clone->getGfx());
         this->clone->modify();
     });
 }
