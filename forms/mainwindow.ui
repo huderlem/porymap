@@ -2125,7 +2125,7 @@
                   <string>Custom fields will be added to the map.json file for the current map.</string>
                  </property>
                  <attribute name="horizontalHeaderVisible">
-                  <bool>false</bool>
+                  <bool>true</bool>
                  </attribute>
                  <attribute name="horizontalHeaderCascadingSectionResizes">
                   <bool>false</bool>

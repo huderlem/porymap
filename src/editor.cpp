@@ -1959,7 +1959,7 @@ void Editor::updateCustomMapHeaderValues(QTableWidget *table)
         if (key.isEmpty() || !typeItem || !valueItem)
             continue;
 
-        // Read which JSON type to save the value as from the table data
+        // Read from the table data which JSON type to save the value as
         QJsonValue::Type type = static_cast<QJsonValue::Type>(typeItem->data(Qt::UserRole).toInt());
         QJsonValue value;
         switch (type)

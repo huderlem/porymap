@@ -3088,10 +3088,11 @@ void MainWindow::addCustomHeaderValue(QString key, QJsonValue value, bool isNew)
     case QJsonValue::Bool:
         valueItem = new QTableWidgetItem("");
         valueItem->setCheckState(value.toBool() ? Qt::Checked : Qt::Unchecked);
+        valueItem->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsSelectable);
         break;
     default:
         valueItem = new QTableWidgetItem("This value cannot be edited from this table");
-        valueItem->setFlags(Qt::NoItemFlags);
+        valueItem->setFlags(Qt::ItemIsSelectable);
         valueItem->setData(Qt::UserRole, value); // Preserve the value for writing to the file
         break;
     }
@@ -3108,6 +3109,7 @@ void MainWindow::addCustomHeaderValue(QString key, QJsonValue value, bool isNew)
     QTableWidgetItem * typeItem = new QTableWidgetItem(typeToName[type]);
     typeItem->setFlags(Qt::ItemIsEnabled);
     typeItem->setData(Qt::UserRole, type); // Record the type for writing to the file
+    typeItem->setTextAlignment(Qt::AlignCenter);
 
     int rowIndex = this->ui->tableWidget_CustomHeaderFields->rowCount();
     this->ui->tableWidget_CustomHeaderFields->insertRow(rowIndex);
