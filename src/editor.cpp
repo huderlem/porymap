@@ -2125,6 +2125,7 @@ DraggablePixmapItem *Editor::addNewEvent(Event::Type type) {
         }
         if (!event) return nullptr;
 
+        event->setMap(this->map);
         event->setDefaultValues(this->project);
 
         map->editHistory.push(new EventCreate(this, map, event));
