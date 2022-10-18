@@ -719,6 +719,10 @@ void MainWindow::refreshMapScene()
 }
 
 void MainWindow::openWarpMap(QString map_name, int event_id, Event::Group event_group) {
+    // Can't warp to dynamic maps
+    if (map_name == DYNAMIC_MAP_NAME)
+        return;
+
     // Ensure valid destination map name.
     if (!editor->project->mapNames.contains(map_name)) {
         logError(QString("Invalid map name '%1'").arg(map_name));
@@ -737,10 +741,10 @@ void MainWindow::openWarpMap(QString map_name, int event_id, Event::Group event_
     }
 
     // Select the target event.
-    event_id -= Event::getIndexOffset(event_group);
+    int index = event_id - Event::getIndexOffset(event_group);
     QList<Event*> events = editor->map->events[event_group];
-    if (event_id < events.length() && event_id >= 0) {
-        Event *event = events.at(event_id);
+    if (index < events.length() && index >= 0) {
+        Event *event = events.at(index);
         for (DraggablePixmapItem *item : editor->getObjects()) {
             if (item->event == event) {
                 editor->selected_events->clear();
@@ -748,6 +752,9 @@ void MainWindow::openWarpMap(QString map_name, int event_id, Event::Group event_
                 editor->updateSelectedEvents();
             }
         }
+    } else {
+        // Can still warp to this map, but can't select the specified event
+        logWarn(QString("%1 %2 doesn't exist on map '%3'").arg(Event::eventGroupToString(event_group)).arg(event_id).arg(map_name));
     }
 }
 
@@ -1884,25 +1891,20 @@ void MainWindow::addNewEvent(Event::Type type) {
     }
 }
 
+void MainWindow::tryAddEventTab(QWidget * tab, Event::Group group) {
+    if (editor->map->events.value(group).length())
+        ui->tabWidget_EventType->addTab(tab, QString("%1s").arg(Event::eventGroupToString(group)));
+}
+
 void MainWindow::displayEventTabs() {
     const QSignalBlocker blocker(ui->tabWidget_EventType);
 
     ui->tabWidget_EventType->clear();
-
-    if (editor->map->events.value(Event::Group::Object).length())
-        ui->tabWidget_EventType->addTab(eventTabObjectWidget, "Objects");
-
-    if (editor->map->events.value(Event::Group::Warp).length())
-        ui->tabWidget_EventType->addTab(eventTabWarpWidget, "Warps");
-
-    if (editor->map->events.value(Event::Group::Coord).length())
-        ui->tabWidget_EventType->addTab(eventTabTriggerWidget, "Triggers");
-
-    if (editor->map->events.value(Event::Group::Bg).length())
-        ui->tabWidget_EventType->addTab(eventTabBGWidget, "BGs");
-
-    if (editor->map->events.value(Event::Group::Heal).length())
-        ui->tabWidget_EventType->addTab(eventTabHealspotWidget, "Healspots");
+    tryAddEventTab(eventTabObjectWidget,   Event::Group::Object);
+    tryAddEventTab(eventTabWarpWidget,     Event::Group::Warp);
+    tryAddEventTab(eventTabTriggerWidget,  Event::Group::Coord);
+    tryAddEventTab(eventTabBGWidget,       Event::Group::Bg);
+    tryAddEventTab(eventTabHealspotWidget, Event::Group::Heal);
 }
 
 void MainWindow::updateObjects() {

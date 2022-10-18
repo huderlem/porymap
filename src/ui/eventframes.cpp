@@ -507,9 +507,9 @@ void WarpFrame::setup() {
 
     // desination warp id
     QFormLayout *l_form_dest_warp = new QFormLayout();
-    this->spinner_dest_warp = new NoScrollSpinBox(this);
-    this->spinner_dest_warp->setToolTip("The warp id on the destination map.");
-    l_form_dest_warp->addRow("Destination Warp", this->spinner_dest_warp);
+    this->combo_dest_warp = new NoScrollComboBox(this);
+    this->combo_dest_warp->setToolTip("The warp id on the destination map.");
+    l_form_dest_warp->addRow("Destination Warp", this->combo_dest_warp);
     this->layout_contents->addLayout(l_form_dest_warp);
 
     // custom attributes
@@ -529,9 +529,9 @@ void WarpFrame::connectSignals() {
     });
 
     // dest id
-    this->spinner_dest_warp->disconnect();
-    connect(this->spinner_dest_warp, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
-        this->warp->setDestinationWarpID(value);
+    this->combo_dest_warp->disconnect();
+    connect(this->combo_dest_warp, &QComboBox::currentTextChanged, [this](const QString &text) {
+        this->warp->setDestinationWarpID(text);
         this->warp->modify();
     });
 }
@@ -553,7 +553,7 @@ void WarpFrame::initialize() {
     }
 
     // dest id
-    this->spinner_dest_warp->setValue(this->warp->getDestinationWarpID());
+    this->combo_dest_warp->setCurrentText(this->warp->getDestinationWarpID());
 }
 
 void WarpFrame::populate(Project *project) {

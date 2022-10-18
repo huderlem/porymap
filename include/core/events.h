@@ -173,6 +173,7 @@ public:
 
     int getEventIndex();
 
+    static QString eventGroupToString(Event::Group group);
     static QString eventTypeToString(Event::Type type);
     static Event::Type eventTypeFromString(QString type);
 
@@ -340,12 +341,12 @@ public:
     void setDestinationMap(QString newDestinationMap) { this->destinationMap = newDestinationMap; }
     QString getDestinationMap() { return this->destinationMap; }
 
-    void setDestinationWarpID(int newDestinationWarpID) { this->destinationWarpID = newDestinationWarpID; }
-    int getDestinationWarpID() { return this->destinationWarpID; }
+    void setDestinationWarpID(QString newDestinationWarpID) { this->destinationWarpID = newDestinationWarpID; }
+    QString getDestinationWarpID() { return this->destinationWarpID; }
 
 private:
     QString destinationMap;
-    int destinationWarpID = 0;
+    QString destinationWarpID;
 };
 
 

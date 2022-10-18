@@ -61,6 +61,23 @@ void Event::modify() {
     this->map->modify();
 }
 
+QString Event::eventGroupToString(Event::Group group) {
+    switch (group) {
+    case Event::Group::Object:
+        return "Object";
+    case Event::Group::Warp:
+        return "Warp";
+    case Event::Group::Coord:
+        return "Trigger";
+    case Event::Group::Bg:
+        return "BG";
+    case Event::Group::Heal:
+        return "Healspot";
+    default:
+        return "";
+    }
+}
+
 QString Event::eventTypeToString(Event::Type type) {
     switch (type) {
     case Event::Type::Object:
@@ -324,8 +341,8 @@ bool CloneObjectEvent::loadFromJson(QJsonObject json, Project *project) {
     } else if (mapConstant == DYNAMIC_MAP_CONSTANT) {
         this->setTargetMap(DYNAMIC_MAP_NAME);
     } else {
-        logError(QString("Destination map constant '%1' is invalid").arg(mapConstant));
-        return false;
+        logWarn(QString("Target Map constant '%1' is invalid. Using default '%2'.").arg(mapConstant).arg(DYNAMIC_MAP_CONSTANT));
+        this->setTargetMap(DYNAMIC_MAP_NAME);
     }
 
     this->readCustomValues(json);
@@ -425,7 +442,7 @@ bool WarpEvent::loadFromJson(QJsonObject json, Project *project) {
     this->setX(ParseUtil::jsonToInt(json["x"]));
     this->setY(ParseUtil::jsonToInt(json["y"]));
     this->setElevation(ParseUtil::jsonToInt(json["elevation"]));
-    this->setDestinationWarpID(ParseUtil::jsonToInt(json["dest_warp_id"]));
+    this->setDestinationWarpID(ParseUtil::jsonToQString(json["dest_warp_id"]));
 
     // Ensure the warp destination map constant is valid before adding it to the warps.
     QString mapConstant = ParseUtil::jsonToQString(json["dest_map"]);
@@ -434,8 +451,8 @@ bool WarpEvent::loadFromJson(QJsonObject json, Project *project) {
     } else if (mapConstant == DYNAMIC_MAP_CONSTANT) {
         this->setDestinationMap(DYNAMIC_MAP_NAME);
     } else {
-        logError(QString("Destination map constant '%1' is invalid for warp").arg(mapConstant));
-        return false;
+        logWarn(QString("Destination Map constant '%1' is invalid. Using default '%2'.").arg(mapConstant).arg(DYNAMIC_MAP_CONSTANT));
+        this->setDestinationMap(DYNAMIC_MAP_NAME);
     }
 
     this->readCustomValues(json);
@@ -445,7 +462,7 @@ bool WarpEvent::loadFromJson(QJsonObject json, Project *project) {
 
 void WarpEvent::setDefaultValues(Project *) {
     if (this->getMap()) this->setDestinationMap(this->getMap()->name);
-    this->setDestinationWarpID(0);
+    this->setDestinationWarpID("0");
     this->setElevation(0);
 }
 

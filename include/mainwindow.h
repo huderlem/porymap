@@ -219,6 +219,7 @@ private slots:
     void on_toolButton_deleteObject_clicked();
 
     void addNewEvent(Event::Type type);
+    void tryAddEventTab(QWidget * tab, Event::Group group);
     void displayEventTabs();
     void updateSelectedObjects();
     void updateObjects();

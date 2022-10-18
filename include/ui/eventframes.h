@@ -133,7 +133,7 @@ public:
 
 public:
     NoScrollComboBox *combo_dest_map;
-    NoScrollSpinBox *spinner_dest_warp;
+    NoScrollComboBox *combo_dest_warp;
 
 private:
     WarpEvent *warp;
