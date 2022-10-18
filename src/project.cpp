@@ -160,7 +160,6 @@ const QSet<QString> defaultTopLevelMapFields = {
     "bg_events",
     "shared_events_map",
     "shared_scripts_map",
-    "test",
 };
 
 QSet<QString> Project::getTopLevelMapFields() {
@@ -218,7 +217,7 @@ bool Project::loadMapData(Map* map) {
     for (int i = 0; i < objectEventsArr.size(); i++) {
         QJsonObject event = objectEventsArr[i].toObject();
         // If clone objects are not enabled then no type field is present
-        QString type = hasCloneObjects ? event["type"].toString() : "object";
+        QString type = hasCloneObjects ? ParseUtil::jsonToQString(event["type"]) : "object";
         if (type.isEmpty() || type == "object") {
             ObjectEvent *object = new ObjectEvent();
             object->loadFromJson(event, this);
@@ -253,7 +252,7 @@ bool Project::loadMapData(Map* map) {
     QJsonArray coordEventsArr = mapObj["coord_events"].toArray();
     for (int i = 0; i < coordEventsArr.size(); i++) {
         QJsonObject event = coordEventsArr[i].toObject();
-        QString type = event["type"].toString();
+        QString type = ParseUtil::jsonToQString(event["type"]);
         if (type == "trigger") {
             TriggerEvent *coord = new TriggerEvent();
             coord->loadFromJson(event, this);
@@ -271,7 +270,7 @@ bool Project::loadMapData(Map* map) {
     QJsonArray bgEventsArr = mapObj["bg_events"].toArray();
     for (int i = 0; i < bgEventsArr.size(); i++) {
         QJsonObject event = bgEventsArr[i].toObject();
-        QString type = event["type"].toString();
+        QString type = ParseUtil::jsonToQString(event["type"]);
         if (type == "sign") {
             SignEvent *bg = new SignEvent();
             bg->loadFromJson(event, this);
