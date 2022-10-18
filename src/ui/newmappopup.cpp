@@ -1,5 +1,4 @@
 #include "newmappopup.h"
-#include "event.h"
 #include "maplayout.h"
 #include "mainwindow.h"
 #include "ui_newmappopup.h"

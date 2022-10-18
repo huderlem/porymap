@@ -33,7 +33,8 @@ CustomAttributesTable::CustomAttributesTable(Event *event, QWidget *parent) :
     this->table->horizontalHeader()->setStretchLastSection(true);
     layout->addWidget(this->table);
 
-    for (auto it = event->customValues.begin(); it != event->customValues.end(); it++) {
+    QMap<QString, QString> customValues = this->event->getCustomValues();
+    for (auto it = customValues.begin(); it != customValues.end(); it++) {
         int rowIndex = this->table->rowCount();
         this->table->insertRow(rowIndex);
         this->table->setItem(rowIndex, 0, new QTableWidgetItem(it.key()));
@@ -44,7 +45,7 @@ CustomAttributesTable::CustomAttributesTable(Event *event, QWidget *parent) :
         int rowIndex = this->table->rowCount();
         this->table->insertRow(rowIndex);
         this->table->selectRow(rowIndex);
-        this->event->customValues = this->getTableFields();
+        this->event->setCustomValues(this->getTableFields());
         this->resizeVertically();
     });
 
@@ -66,13 +67,13 @@ CustomAttributesTable::CustomAttributesTable(Event *event, QWidget *parent) :
                 this->table->selectRow(0);
             }
 
-            this->event->customValues = this->getTableFields();
+            this->event->setCustomValues(this->getTableFields());
             this->resizeVertically();
         }
     });
 
     connect(this->table, &QTableWidget::cellChanged, [=]() {
-        this->event->customValues = this->getTableFields();
+        this->event->setCustomValues(this->getTableFields());
     });
 
     this->resizeVertically();

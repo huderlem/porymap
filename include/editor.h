@@ -96,14 +96,15 @@ public:
     DraggablePixmapItem *addMapEvent(Event *event);
     void selectMapEvent(DraggablePixmapItem *object);
     void selectMapEvent(DraggablePixmapItem *object, bool toggle);
-    DraggablePixmapItem *addNewEvent(QString event_type);
-    void deleteEvent(Event *);
+    DraggablePixmapItem *addNewEvent(Event::Type type);
     void updateSelectedEvents();
     void duplicateSelectedEvents();
     void redrawObject(DraggablePixmapItem *item);
     QList<DraggablePixmapItem *> getObjects();
     void updateCursorRectPos(int x, int y);
     void setCursorRectVisible(bool visible);
+
+    bool eventLimitReached(Map *, Event::Type);
 
     QGraphicsScene *scene = nullptr;
     QGraphicsPixmapItem *current_view = nullptr;
@@ -131,8 +132,7 @@ public:
     CurrentSelectedMetatilesPixmapItem *current_metatile_selection_item = nullptr;
     MovementPermissionsSelector *movement_permissions_selector_item = nullptr;
 
-    QList<DraggablePixmapItem*> *events = nullptr;
-    QList<DraggablePixmapItem*> *selected_events = nullptr;
+    QList<DraggablePixmapItem *> *selected_events = nullptr;
 
     QString map_edit_mode = "paint";
     QString obj_edit_mode = "select";
@@ -151,7 +151,7 @@ public:
     void shouldReselectEvents();
     void scaleMapView(int);
     void openInTextEditor(const QString &path, int lineNum = 0) const;
-    bool eventLimitReached(QString event_type);
+    bool eventLimitReached(Event::Type type);
 
 public slots:
     void openMapScripts() const;
@@ -159,6 +159,7 @@ public slots:
     void openProjectInTextEditor() const;
     void maskNonVisibleConnectionTiles();
     void onBorderMetatilesChanged();
+    void selectedEventIndexChanged(int index, Event::Group eventGroup);
 
 private:
     void setConnectionItemsVisible(bool);
@@ -207,10 +208,9 @@ private slots:
 
 signals:
     void objectsChanged();
-    void selectedObjectsChanged();
     void loadMapRequested(QString, QString);
     void wildMonDataChanged();
-    void warpEventDoubleClicked(QString, QString, QString);
+    void warpEventDoubleClicked(QString, int, Event::Group);
     void currentMetatilesSelectionChanged();
     void mapRulerStatusChanged(const QString &);
     void editedMapData();

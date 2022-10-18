@@ -66,61 +66,61 @@ void NewEventToolButton::init()
     this->setDefaultAction(this->newObjectAction);
 }
 
-QString NewEventToolButton::getSelectedEventType()
+Event::Type NewEventToolButton::getSelectedEventType()
 {
     return this->selectedEventType;
 }
 
 void NewEventToolButton::newObject()
 {
-    this->selectedEventType = EventType::Object;
+    this->selectedEventType = Event::Type::Object;
     emit newEventAdded(this->selectedEventType);
 }
 
 void NewEventToolButton::newCloneObject()
 {
-    this->selectedEventType = EventType::CloneObject;
+    this->selectedEventType = Event::Type::CloneObject;
     emit newEventAdded(this->selectedEventType);
 }
 
 void NewEventToolButton::newWarp()
 {
-    this->selectedEventType = EventType::Warp;
+    this->selectedEventType = Event::Type::Warp;
     emit newEventAdded(this->selectedEventType);
 }
 
 void NewEventToolButton::newHealLocation()
 {
-    this->selectedEventType = EventType::HealLocation;
+    this->selectedEventType = Event::Type::HealLocation;
     emit newEventAdded(this->selectedEventType);
 }
 
 void NewEventToolButton::newTrigger()
 {
-    this->selectedEventType = EventType::Trigger;
+    this->selectedEventType = Event::Type::Trigger;
     emit newEventAdded(this->selectedEventType);
 }
 
 void NewEventToolButton::newWeatherTrigger()
 {
-    this->selectedEventType = EventType::WeatherTrigger;
+    this->selectedEventType = Event::Type::WeatherTrigger;
     emit newEventAdded(this->selectedEventType);
 }
 
 void NewEventToolButton::newSign()
 {
-    this->selectedEventType = EventType::Sign;
+    this->selectedEventType = Event::Type::Sign;
     emit newEventAdded(this->selectedEventType);
 }
 
 void NewEventToolButton::newHiddenItem()
 {
-    this->selectedEventType = EventType::HiddenItem;
+    this->selectedEventType = Event::Type::HiddenItem;
     emit newEventAdded(this->selectedEventType);
 }
 
 void NewEventToolButton::newSecretBase()
 {
-    this->selectedEventType = EventType::SecretBase;
+    this->selectedEventType = Event::Type::SecretBase;
     emit newEventAdded(this->selectedEventType);
 }

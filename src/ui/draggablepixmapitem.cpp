@@ -13,44 +13,23 @@ void DraggablePixmapItem::updatePosition() {
     setX(x);
     setY(y);
     if (editor->selected_events && editor->selected_events->contains(this)) {
-        setZValue(event->y() + 1);
+        setZValue(event->getY() + 1);
     } else {
-        setZValue(event->y());
+        setZValue(event->getY());
     }
 }
 
 void DraggablePixmapItem::emitPositionChanged() {
-    emit xChanged(event->x());
-    emit yChanged(event->y());
-    emit elevationChanged(event->elevation());
+    emit xChanged(event->getX());
+    emit yChanged(event->getY());
+    emit elevationChanged(event->getElevation());
 }
 
 void DraggablePixmapItem::updatePixmap() {
     editor->project->setEventPixmap(event, true);
     this->updatePosition();
     editor->redrawObject(this);
-    emit spriteChanged(event->pixmap);
-}
-
-void DraggablePixmapItem::bind(QComboBox *combo, QString key) {
-    connect(combo, static_cast<void (QComboBox::*)(const QString &)>(&QComboBox::currentTextChanged),
-            this, [this, key](QString value){
-        this->event->put(key, value);
-    });
-    connect(this, &DraggablePixmapItem::onPropertyChanged,
-            this, [combo, key](QString key2, QString value){
-        if (key2 == key) {
-            combo->addItem(value);
-            combo->setCurrentText(value);
-        }
-    });
-}
-
-void DraggablePixmapItem::bindToUserData(QComboBox *combo, QString key) {
-    connect(combo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-            this, [this, combo, key](int index) {
-        this->event->put(key, combo->itemData(index).toString());
-    });
+    emit spriteChanged(event->getPixmap());
 }
 
 void DraggablePixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *mouse) {
@@ -63,8 +42,8 @@ void DraggablePixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *mouse) {
 }
 
 void DraggablePixmapItem::move(int dx, int dy) {
-    event->setX(event->x() + dx);
-    event->setY(event->y() + dy);
+    event->setX(event->getX() + dx);
+    event->setY(event->getY() + dy);
     updatePosition();
     emitPositionChanged();
 }
@@ -102,24 +81,27 @@ void DraggablePixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *) {
 }
 
 void DraggablePixmapItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *) {
-    QString eventType = this->event->get("event_type");
-    if (eventType == EventType::Warp) {
-        QString destMap = this->event->get("destination_map_name");
+    Event::Type eventType = this->event->getEventType();
+    if (eventType == Event::Type::Warp) {
+        WarpEvent *warp = dynamic_cast<WarpEvent *>(this->event);
+        QString destMap = warp->getDestinationMap();
         if (destMap != NONE_MAP_NAME) {
-            emit editor->warpEventDoubleClicked(destMap, this->event->get("destination_warp"), EventGroup::Warp);
+            emit editor->warpEventDoubleClicked(destMap, warp->getDestinationWarpID(), Event::Group::Warp);
         }
     }
-    else if (eventType == EventType::CloneObject) {
-        QString destMap = this->event->get("target_map");
+    else if (eventType == Event::Type::CloneObject) {
+        CloneObjectEvent *clone = dynamic_cast<CloneObjectEvent *>(this->event);
+        QString destMap = clone->getTargetMap();
         if (destMap != NONE_MAP_NAME) {
-            emit editor->warpEventDoubleClicked(destMap, this->event->get("target_local_id"), EventGroup::Object);
+            emit editor->warpEventDoubleClicked(destMap, clone->getTargetID(), Event::Group::Object);
         }
     }
-    else if (eventType == EventType::SecretBase) {
-        QString baseId = this->event->get("secret_base_id");
+    else if (eventType == Event::Type::SecretBase) {
+        SecretBaseEvent *base = dynamic_cast<SecretBaseEvent *>(this->event);
+        QString baseId = base->getBaseID();
         QString destMap = editor->project->mapConstantsToMapNames.value("MAP_" + baseId.left(baseId.lastIndexOf("_")));
         if (destMap != NONE_MAP_NAME) {
-            emit editor->warpEventDoubleClicked(destMap, "0", EventGroup::Warp);
+            emit editor->warpEventDoubleClicked(destMap, 0, Event::Group::Warp);
         }
     }
 }

@@ -5,7 +5,6 @@
 #include "map.h"
 #include "blockdata.h"
 #include "heallocation.h"
-#include "event.h"
 #include "wildmoninfo.h"
 #include "parseutil.h"
 #include "orderedjson.h"
@@ -82,6 +81,8 @@ public:
     QFileSystemWatcher fileWatcher;
     QMap<QString, qint64> modifiedFileTimestamps;
     bool usingAsmTilesets;
+
+    const QPixmap entitiesPixmap = QPixmap(":/images/Entities_16x16.png");
 
     void set_root(QString);
 
@@ -194,7 +195,7 @@ public:
     bool readEventGraphics();
     QMap<QString, QMap<QString, QString>> readObjEventGfxInfo();
 
-    void setEventPixmap(Event * event, bool forceLoad = false);
+    void setEventPixmap(Event *event, bool forceLoad = false);
 
     QString fixPalettePath(QString path);
     QString fixGraphicPath(QString path);
@@ -204,6 +205,7 @@ public:
     QString getMapScriptsFilePath(const QString &mapName) const;
     QStringList getEventScriptsFilePaths() const;
     QCompleter *getEventScriptLabelCompleter(QStringList additionalScriptLabels);
+    QStringList getGlobalScriptLabels();
 
     void saveMapHealEvents(Map *map);
 

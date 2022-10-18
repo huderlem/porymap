@@ -104,8 +104,8 @@ public:
     Json(double value);             // NUMBER
     Json(int value);                // NUMBER
     Json(bool value);               // BOOL
-    Json(const QString &value); // STRING
-    Json(QString &&value);      // STRING
+    Json(const QString &value);     // STRING
+    Json(QString &&value);          // STRING
     Json(const char * value);       // STRING
     Json(const array &values);      // ARRAY
     Json(array &&values);           // ARRAY
