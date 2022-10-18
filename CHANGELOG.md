@@ -36,6 +36,9 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - The currently selected event for each event group will persist between tabs.
 - An object event's sprite will now render if a number is specified instead of a graphics constant.
 - Palette editor ui is updated a bit to allow hex and rgb value input.
+- Heal location constants will no longer be deleted if they're not used in the data tables.
+- The heal location prefixes `SPAWN_` and `HEAL_LOCATION_` may now be used interchangeably.
+- The number and order of entries in the heal location data tables can now be changed arbitrarily, and independently of each other.
 - The metatile behavior is now displayed in the bottom bar mouseover text.
 - Removed some unnecessary error logs from the scripting API and added new useful ones.
 
