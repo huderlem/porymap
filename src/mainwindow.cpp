@@ -2156,6 +2156,8 @@ void MainWindow::eventTabChanged(int index) {
         case Event::Group::Heal:
             selectedEvent = selectedHealspot;
             break;
+        default:
+            break;
         }
 
         if (!isProgrammaticEventTabChange) {
@@ -2192,7 +2194,6 @@ void MainWindow::on_toolButton_deleteObject_clicked() {
         if (editor->selected_events->length()) {
             DraggablePixmapItem *nextSelectedEvent = nullptr;
             QList<Event *> selectedEvents;
-            int numEvents = editor->selected_events->length();
             int numDeleted = 0;
             for (DraggablePixmapItem *item : *editor->selected_events) {
                 Event::Group event_group = item->event->getEventGroup();

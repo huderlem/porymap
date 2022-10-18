@@ -1585,7 +1585,7 @@
                            </widget>
                           </item>
                           <item>
-                           <spacer name="horizontalSpacer_4">
+                           <spacer name="horizontalSpacer_Objects">
                             <property name="orientation">
                              <enum>Qt::Horizontal</enum>
                             </property>
@@ -1679,7 +1679,7 @@
                            </widget>
                           </item>
                           <item>
-                           <spacer name="horizontalSpacer_4">
+                           <spacer name="horizontalSpacer_Warps">
                             <property name="orientation">
                              <enum>Qt::Horizontal</enum>
                             </property>
@@ -1773,7 +1773,7 @@
                            </widget>
                           </item>
                           <item>
-                           <spacer name="horizontalSpacer_4">
+                           <spacer name="horizontalSpacer_Triggers">
                             <property name="orientation">
                              <enum>Qt::Horizontal</enum>
                             </property>
@@ -1873,7 +1873,7 @@
                            </widget>
                           </item>
                           <item>
-                           <spacer name="horizontalSpacer_4">
+                           <spacer name="horizontalSpacer_BGs">
                             <property name="orientation">
                              <enum>Qt::Horizontal</enum>
                             </property>
@@ -1967,7 +1967,7 @@
                            </widget>
                           </item>
                           <item>
-                           <spacer name="horizontalSpacer_4">
+                           <spacer name="horizontalSpacer_Healspots">
                             <property name="orientation">
                              <enum>Qt::Horizontal</enum>
                             </property>
