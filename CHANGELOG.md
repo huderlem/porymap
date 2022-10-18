@@ -31,12 +31,18 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Metatiles are always rendered accurately with 3 layers, and the unused layer is not assumed to be transparent.
 - `object_event_graphics_info.h` can now be parsed correctly if it uses structs with attributes.
 - Tileset data in `headers`, `graphics`, and `metatiles` can now be parsed if written in C.
+- The amount of time it takes to render the event panel has been reduced, which is most noticeable when selecting multiple events at once.
 - The selection is no longer reset when pasting events. The newly pasted events are selected instead.
+- The currently selected event for each event group will persist between tabs.
+- An object event's sprite will now render if a number is specified instead of a graphics constant.
 - Palette editor ui is updated a bit to allow hex and rgb value input.
 - The metatile behavior is now displayed in the bottom bar mouseover text.
 - Removed some unnecessary error logs from the scripting API and added new useful ones.
 
 ### Fixed
+- Fix events losing their assigned script when the script autocomplete is used.
+- Fix the unsaved changes indicator not disappearing when saving changes to events.
+- Fix copy and paste for events not including their custom attributes.
 - Fix cursor tile outline not updating at the end of a dragged selection.
 - Fix cursor tile and player view outlines exiting map bounds while painting.
 - Fix cursor tile and player view outlines not updating immediately when toggled in Collision view.
