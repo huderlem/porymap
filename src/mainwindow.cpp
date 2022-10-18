@@ -2088,10 +2088,13 @@ void MainWindow::updateSelectedObjects() {
 
         for (QFrame *frame : frames) {
             layout->addWidget(frame);
+        }
+        layout->addStretch(1);
+        // Show the frames after the vertical spacer is added to avoid visual jank
+        // where the frame would stretch to the bottom of the layout.
+        for (QFrame *frame : frames) {
             frame->show();
         }
-
-        layout->addStretch(1);
 
         ui->label_NoEvents->hide();
         ui->tabWidget_EventType->show();
