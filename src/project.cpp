@@ -854,7 +854,7 @@ void Project::saveHealLocationsData(Map *map) {
     if (respawnEnabled)
         text += respawnMapTableText + tableEnd + respawnNPCTableText + tableEnd;
 
-    QString filepath = root + "/src/data/heal_locations.h";
+    QString filepath = root + "/" + projectConfig.getFilePath(ProjectFilePath::data_heal_locations);
     ignoreWatchedFileTemporarily(filepath);
     saveTextFile(filepath, text);
 }
@@ -2024,7 +2024,7 @@ bool Project::readRegionMapSections() {
 bool Project::readHealLocationConstants() {
     this->healLocationNameToValue.clear();
     QStringList prefixes{ "\\bSPAWN_", "\\bHEAL_LOCATION_" };
-    QString constantsFilename = "include/constants/heal_locations.h";
+    QString constantsFilename = projectConfig.getFilePath(ProjectFilePath::constants_heal_locations);
     fileWatcher.addPath(root + "/" + constantsFilename);
     this->healLocationNameToValue = parser.readCDefines(constantsFilename, prefixes);
     // No need to check if empty, not finding any heal location constants is ok
