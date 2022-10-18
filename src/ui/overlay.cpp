@@ -2,44 +2,45 @@
 #include "scripting.h"
 #include "log.h"
 
-void OverlayText::render(QPainter *painter, int x, int y) {
+void OverlayText::render(QPainter *painter) {
     QFont font = painter->font();
     font.setPixelSize(this->fontSize);
     painter->setFont(font);
     painter->setPen(this->color);
-    painter->drawStaticText(this->x + x, this->y + y, this->text);
+    painter->drawStaticText(this->x, this->y, this->text);
 }
 
-void OverlayRect::render(QPainter *painter, int x, int y) {
-    if (this->filled) {
-        painter->fillRect(this->x + x, this->y + y, this->width, this->height, this->color);
-    } else {
-        painter->setPen(this->color);
-        painter->drawRect(this->x + x, this->y + y, this->width, this->height);
-    }
+void OverlayPath::render(QPainter *painter) {
+    painter->fillPath(this->path, this->fillColor);
+    painter->setPen(this->borderColor);
+    painter->drawPath(this->path);
 }
 
-void OverlayImage::render(QPainter *painter, int x, int y) {
-    painter->drawImage(this->x + x, this->y + y, this->image);
+void OverlayImage::render(QPainter *painter) {
+    painter->drawImage(this->x, this->y, this->image);
 }
 
 void Overlay::renderItems(QPainter *painter) {
     if (this->hidden) return;
+
+    painter->save();
+
+    QTransform transform = painter->transform();
+    transform.translate(this->x, this->y);
+    transform.rotate(this->angle);
+    transform.scale(this->hScale, this->vScale);
+    painter->setTransform(transform);
 
     if (this->clippingRect) {
         painter->setClipping(true);
         painter->setClipRect(*this->clippingRect);
     }
 
-    qreal oldOpacity = painter->opacity();
     painter->setOpacity(this->opacity);
     for (auto item : this->items)
-        item->render(painter, this->x, this->y);
-    painter->setOpacity(oldOpacity);
+        item->render(painter);
 
-    if (this->clippingRect) {
-        painter->setClipping(false);
-    }
+    painter->restore();
 }
 
 void Overlay::clearItems() {
@@ -67,7 +68,7 @@ int Overlay::getOpacity() {
 
 void Overlay::setOpacity(int opacity) {
     if (opacity < 0 || opacity > 100) {
-        logError(QString("Invalid overlay opacity '%1'").arg(opacity));
+        logError(QString("Invalid overlay opacity '%1', must be in range 0-100").arg(opacity));
         return;
     }
     this->opacity = static_cast<qreal>(opacity) / 100;
@@ -87,6 +88,44 @@ void Overlay::setX(int x) {
 
 void Overlay::setY(int y) {
     this->y = y;
+}
+
+qreal Overlay::getHScale() {
+    return this->hScale;
+}
+
+qreal Overlay::getVScale() {
+    return this->vScale;
+}
+
+void Overlay::setHScale(qreal scale) {
+    this->hScale = scale;
+}
+
+void Overlay::setVScale(qreal scale) {
+    this->vScale = scale;
+}
+
+int Overlay::getRotation() {
+    return this->angle;
+}
+
+void Overlay::setRotation(int angle) {
+    this->angle = angle;
+    this->clampAngle();
+}
+
+void Overlay::rotate(int degrees) {
+    this->angle += degrees;
+    this->clampAngle();
+}
+
+void Overlay::clampAngle() {
+    // transform.rotate would handle this already, but we only
+    // want to report angles 0-359 for Overlay::getRotation
+    this->angle %= 360;
+    if (this->angle < 0)
+        this->angle += 360;
 }
 
 void Overlay::setClippingRect(QRectF rect) {
@@ -113,12 +152,48 @@ void Overlay::move(int deltaX, int deltaY) {
     this->y += deltaY;
 }
 
-void Overlay::addText(const QString text, int x, int y, QString color, int fontSize) {
-    this->items.append(new OverlayText(text, x, y, QColor(color), fontSize));
+QColor Overlay::getColor(QString colorStr) {
+    if (colorStr.isEmpty())
+        colorStr = "transparent";
+    QColor color = QColor(colorStr);
+    if (!color.isValid()) {
+        logWarn(QString("Invalid overlay color \"%1\". Colors can be in the format \"#RRGGBB\" or \"#AARRGGBB\"").arg(colorStr));
+        color = QColor("transparent");
+    }
+    return color;
 }
 
-void Overlay::addRect(int x, int y, int width, int height, QString color, bool filled) {
-    this->items.append(new OverlayRect(x, y, width, height, QColor(color), filled));
+void Overlay::addText(const QString text, int x, int y, QString colorStr, int fontSize) {
+    this->items.append(new OverlayText(text, x, y, getColor(colorStr), fontSize));
+}
+
+bool Overlay::addRect(int x, int y, int width, int height, QString borderColorStr, QString fillColorStr, int rounding) {
+    if (rounding < 0 || rounding > 100) {
+        logError(QString("Invalid rectangle rounding '%1', must be in range 0-100").arg(rounding));
+        return false;
+    }
+
+    QPainterPath path;
+    path.addRoundedRect(QRectF(x, y, width, height), rounding, rounding, Qt::RelativeSize);
+    this->items.append(new OverlayPath(path, getColor(borderColorStr), getColor(fillColorStr)));
+    return true;
+}
+
+bool Overlay::addPath(QList<int> xCoords, QList<int> yCoords, QString borderColorStr, QString fillColorStr) {
+    int numPoints = qMin(xCoords.length(), yCoords.length());
+    if (numPoints < 2) {
+        logError("Overlay path must have at least two points.");
+        return false;
+    }
+
+    QPainterPath path;
+    path.moveTo(xCoords.at(0), yCoords.at(0));
+
+    for (int i = 1; i < numPoints; i++)
+        path.lineTo(xCoords.at(i), yCoords.at(i));
+
+    this->items.append(new OverlayPath(path, getColor(borderColorStr), getColor(fillColorStr)));
+    return true;
 }
 
 bool Overlay::addImage(int x, int y, QString filepath, bool useCache, int width, int height, int xOffset, int yOffset, qreal hScale, qreal vScale, QList<QRgb> palette, bool setTransparency) {

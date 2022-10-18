@@ -8,7 +8,7 @@
 
 #include <QtWidgets>
 
-#include "event.h"
+#include "events.h"
 
 class Editor;
 
@@ -17,10 +17,10 @@ class DraggablePixmapItem : public QObject, public QGraphicsPixmapItem {
 public:
     DraggablePixmapItem(QPixmap pixmap): QGraphicsPixmapItem(pixmap) {}
     
-    DraggablePixmapItem(Event *event_, Editor *editor_) : QGraphicsPixmapItem(event_->pixmap) {
-        event = event_;
+    DraggablePixmapItem(Event *event, Editor *editor) : QGraphicsPixmapItem(event->getPixmap()) {
+        this->event = event;
         event->setPixmapItem(this);
-        editor = editor_;
+        this->editor = editor;
         updatePosition();
     }
 
@@ -37,8 +37,6 @@ public:
     void moveTo(const QPoint &pos);
     void emitPositionChanged();
     void updatePixmap();
-    void bind(QComboBox *combo, QString key);
-    void bindToUserData(QComboBox *combo, QString key);
 
 signals:
     void positionChanged(Event *event);
@@ -49,24 +47,17 @@ signals:
     void onPropertyChanged(QString key, QString value);
 
 public slots:
-    void set_x(const QString &text) {
-        event->put("x", text);
+    void set_x(int x) {
+        event->setX(x);
         updatePosition();
     }
-    void set_y(const QString &text) {
-        event->put("y", text);
+    void set_y(int y) {
+        event->setY(y);
         updatePosition();
     }
-    void set_elevation(const QString &text) {
-        event->put("elevation", text);
+    void set_elevation(int z) {
+        event->setElevation(z);
         updatePosition();
-    }
-    void set_sprite(const QString &text) {
-        event->put("sprite", text);
-        updatePixmap();
-    }
-    void set_script(const QString &text) {
-        event->put("script_label", text);
     }
 
 protected:

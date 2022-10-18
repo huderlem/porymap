@@ -365,21 +365,6 @@ QPixmap MapImageExporter::getFormattedMapPixmap(Map *map, bool ignoreBorder) {
         pixmap = map->pixmap;
     }
 
-    // draw events
-    QPainter eventPainter(&pixmap);
-    QList<Event*> events = map->getAllEvents();
-    for (Event *event : events) {
-        editor->project->setEventPixmap(event);
-        QString group = event->get("event_group_type");
-        if ((showObjects && group == EventGroup::Object)
-         || (showWarps && group == EventGroup::Warp)
-         || (showBGs && group == EventGroup::Bg)
-         || (showTriggers && group == EventGroup::Coord)
-         || (showHealSpots && group == EventGroup::Heal))
-            eventPainter.drawImage(QPoint(event->getPixelX(), event->getPixelY()), event->pixmap.toImage());
-    }
-    eventPainter.end();
-
     // draw map border
     // note: this will break when allowing map to be selected from drop down maybe
     int borderHeight = 0, borderWidth = 0;
@@ -418,6 +403,21 @@ QPixmap MapImageExporter::getFormattedMapPixmap(Map *map, bool ignoreBorder) {
         }
         connectionPainter.end();
     }
+
+    // draw events
+    QPainter eventPainter(&pixmap);
+    QList<Event *> events = map->getAllEvents();
+    for (Event *event : events) {
+        editor->project->setEventPixmap(event);
+        Event::Group group = event->getEventGroup();
+        if ((showObjects && group == Event::Group::Object)
+         || (showWarps && group == Event::Group::Warp)
+         || (showBGs && group == Event::Group::Bg)
+         || (showTriggers && group == Event::Group::Coord)
+         || (showHealSpots && group == Event::Group::Heal))
+            eventPainter.drawImage(QPoint(event->getPixelX(), event->getPixelY()), event->getPixmap().toImage());
+    }
+    eventPainter.end();
 
     // draw grid directly onto the pixmap
     // since the last grid lines are outside of the pixmap, add a pixel to the bottom and right

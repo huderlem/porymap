@@ -17,7 +17,7 @@ QMAKE_TARGET_BUNDLE_PREFIX = com.pret
 
 SOURCES += src/core/block.cpp \
     src/core/blockdata.cpp \
-    src/core/event.cpp \
+    src/core/events.cpp \
     src/core/heallocation.cpp \
     src/core/imageexport.cpp \
     src/core/map.cpp \
@@ -53,7 +53,7 @@ SOURCES += src/core/block.cpp \
     src/ui/regionmapentriespixmapitem.cpp \
     src/ui/cursortilerect.cpp \
     src/ui/customattributestable.cpp \
-    src/ui/eventpropertiesframe.cpp \
+    src/ui/eventframes.cpp \
     src/ui/filterchildrenproxymodel.cpp \
     src/ui/graphicsview.cpp \
     src/ui/imageproviders.cpp \
@@ -99,7 +99,7 @@ SOURCES += src/core/block.cpp \
 
 HEADERS  += include/core/block.h \
     include/core/blockdata.h \
-    include/core/event.h \
+    include/core/events.h \
     include/core/heallocation.h \
     include/core/history.h \
     include/core/imageexport.h \
@@ -136,7 +136,7 @@ HEADERS  += include/core/block.h \
     include/ui/regionmapentriespixmapitem.h \
     include/ui/cursortilerect.h \
     include/ui/customattributestable.h \
-    include/ui/eventpropertiesframe.h \
+    include/ui/eventframes.h \
     include/ui/filterchildrenproxymodel.h \
     include/ui/graphicsview.h \
     include/ui/imageproviders.h \
@@ -185,7 +185,6 @@ HEADERS  += include/core/block.h \
     include/log.h
 
 FORMS    += forms/mainwindow.ui \
-    forms/eventpropertiesframe.ui \
     forms/prefabcreationdialog.ui \
     forms/prefabframe.ui \
     forms/tileseteditor.ui \
@@ -209,5 +208,6 @@ INCLUDEPATH += include
 INCLUDEPATH += include/core
 INCLUDEPATH += include/ui
 INCLUDEPATH += include/lib
+INCLUDEPATH += forms
 
 include(src/vendor/QtGifImage/gifimage/qtgifimage.pri)

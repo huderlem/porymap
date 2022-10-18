@@ -44,9 +44,21 @@ public:
     Q_INVOKABLE int getOpacity(int layer = 0);
     Q_INVOKABLE void setOpacity(int opacity, int layer);
     Q_INVOKABLE void setOpacity(int opacity);
+    Q_INVOKABLE qreal getHorizontalScale(int layer = 0);
+    Q_INVOKABLE qreal getVerticalScale(int layer = 0);
+    Q_INVOKABLE void setHorizontalScale(qreal scale, int layer);
+    Q_INVOKABLE void setHorizontalScale(qreal scale);
+    Q_INVOKABLE void setVerticalScale(qreal scale, int layer);
+    Q_INVOKABLE void setVerticalScale(qreal scale);
+    Q_INVOKABLE int getRotation(int layer = 0);
+    Q_INVOKABLE void setRotation(int angle, int layer);
+    Q_INVOKABLE void setRotation(int angle);
+    Q_INVOKABLE void rotate(int degrees, int layer);
+    Q_INVOKABLE void rotate(int degrees);
     Q_INVOKABLE void addText(QString text, int x, int y, QString color = "#000000", int fontSize = 12, int layer = 0);
-    Q_INVOKABLE void addRect(int x, int y, int width, int height, QString color = "#000000", int layer = 0);
-    Q_INVOKABLE void addFilledRect(int x, int y, int width, int height, QString color = "#000000", int layer = 0);
+    Q_INVOKABLE void addRect(int x, int y, int width, int height, QString borderColor = "#000000", QString fillColor = "transparent", int rounding = 0, int layer = 0);
+    Q_INVOKABLE void addPath(QList<QList<int>> coords, QString borderColor = "#000000", QString fillColor = "transparent", int layer = 0);
+    Q_INVOKABLE void addPath(QList<int> xCoords, QList<int> yCoords, QString borderColor = "#000000", QString fillColor = "transparent", int layer = 0);
     Q_INVOKABLE void addImage(int x, int y, QString filepath, int layer = 0, bool useCache = true);
     Q_INVOKABLE void createImage(int x, int y, QString filepath,
                                  int width = -1, int height = -1, int xOffset = 0, int yOffset = 0,

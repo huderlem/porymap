@@ -260,7 +260,8 @@ void ResizeTilemap::undo() {
 
 ///
 
-ClearEntries::ClearEntries(RegionMap *map, tsl::ordered_map<QString, MapSectionEntry> entries, QUndoCommand *parent) {
+ClearEntries::ClearEntries(RegionMap *map, tsl::ordered_map<QString, MapSectionEntry> entries, QUndoCommand *parent)
+    : QUndoCommand(parent) {
     setText("Clear Entries");
 
     this->map = map;

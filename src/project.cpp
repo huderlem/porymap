@@ -212,7 +212,7 @@ bool Project::loadMapData(Map* map) {
     map->sharedScriptsMap = ParseUtil::jsonToQString(mapObj["shared_scripts_map"]);
 
     // Events
-    map->events[EventGroup::Object].clear();
+    map->events[Event::Group::Object].clear();
     QJsonArray objectEventsArr = mapObj["object_events"].toArray();
     bool hasCloneObjects = projectConfig.getEventCloneObjectEnabled();
     for (int i = 0; i < objectEventsArr.size(); i++) {
@@ -220,173 +220,97 @@ bool Project::loadMapData(Map* map) {
         // If clone objects are not enabled then no type field is present
         QString type = hasCloneObjects ? event["type"].toString() : "object";
         if (type.isEmpty() || type == "object") {
-            Event *object = new Event(event, EventType::Object);
-            object->put("map_name", map->name);
-            object->put("sprite", event["graphics_id"].toString());
-            object->put("x", QString::number(event["x"].toInt()));
-            object->put("y", QString::number(event["y"].toInt()));
-            object->put("elevation", QString::number(event["elevation"].toInt()));
-            object->put("movement_type", event["movement_type"].toString());
-            object->put("radius_x", QString::number(event["movement_range_x"].toInt()));
-            object->put("radius_y", QString::number(event["movement_range_y"].toInt()));
-            object->put("trainer_type", event["trainer_type"].toString());
-            object->put("sight_radius_tree_id", event["trainer_sight_or_berry_tree_id"].toString());
-            object->put("script_label", event["script"].toString());
-            object->put("event_flag", event["flag"].toString());
-            object->put("event_group_type", EventGroup::Object);
-            map->events[EventGroup::Object].append(object);
+            ObjectEvent *object = new ObjectEvent();
+            object->loadFromJson(event, this);
+            map->addEvent(object);
         } else if (type == "clone") {
-            Event *object = new Event(event, EventType::CloneObject);
-            object->put("map_name", map->name);
-            object->put("sprite", event["graphics_id"].toString());
-            object->put("x", QString::number(event["x"].toInt()));
-            object->put("y", QString::number(event["y"].toInt()));
-            object->put("target_local_id", QString::number(event["target_local_id"].toInt()));
-
-            // Ensure the target map constant is valid before adding it to the events.
-            QString mapConstant = event["target_map"].toString();
-            if (mapConstantsToMapNames.contains(mapConstant)) {
-                object->put("target_map", mapConstantsToMapNames.value(mapConstant));
-                object->put("event_group_type", EventGroup::Object);
-                map->events[EventGroup::Object].append(object);
-            } else if (mapConstant == NONE_MAP_CONSTANT) {
-                object->put("target_map", NONE_MAP_NAME);
-                object->put("event_group_type", EventGroup::Object);
-                map->events[EventGroup::Object].append(object);
-            } else {
-                logError(QString("Destination map constant '%1' is invalid").arg(mapConstant));
+            CloneObjectEvent *clone = new CloneObjectEvent();
+            if (clone->loadFromJson(event, this)) {
+                map->addEvent(clone);
+            }
+            else {
+                delete clone;
             }
         } else {
             logError(QString("Map %1 object_event %2 has invalid type '%3'. Must be 'object' or 'clone'.").arg(map->name).arg(i).arg(type));
         }
     }
 
-    map->events[EventGroup::Warp].clear();
+    map->events[Event::Group::Warp].clear();
     QJsonArray warpEventsArr = mapObj["warp_events"].toArray();
     for (int i = 0; i < warpEventsArr.size(); i++) {
         QJsonObject event = warpEventsArr[i].toObject();
-        Event *warp = new Event(event, EventType::Warp);
-        warp->put("map_name", map->name);
-        warp->put("x", QString::number(event["x"].toInt()));
-        warp->put("y", QString::number(event["y"].toInt()));
-        warp->put("elevation", QString::number(event["elevation"].toInt()));
-        warp->put("destination_warp", QString::number(event["dest_warp_id"].toInt()));
-
-        // Ensure the warp destination map constant is valid before adding it to the warps.
-        QString mapConstant = event["dest_map"].toString();
-        if (mapConstantsToMapNames.contains(mapConstant)) {
-            warp->put("destination_map_name", mapConstantsToMapNames.value(mapConstant));
-            warp->put("event_group_type", EventGroup::Warp);
-            map->events[EventGroup::Warp].append(warp);
-        } else if (mapConstant == NONE_MAP_CONSTANT) {
-            warp->put("destination_map_name", NONE_MAP_NAME);
-            warp->put("event_group_type", EventGroup::Warp);
-            map->events[EventGroup::Warp].append(warp);
-        } else {
-            logError(QString("Destination map constant '%1' is invalid for warp").arg(mapConstant));
+        WarpEvent *warp = new WarpEvent();
+        if (warp->loadFromJson(event, this)) {
+            map->addEvent(warp);
+        }
+        else {
+            delete warp;
         }
     }
 
-    map->events[EventGroup::Heal].clear();
-    for (auto it = healLocations.begin(); it != healLocations.end(); it++) {
-
-        HealLocation loc = *it;
-
-        //if TRUE map is flyable / has healing location
-        if (loc.mapName == QString(mapNamesToMapConstants.value(map->name)).remove(0,4)) {
-            Event *heal = new Event;
-            heal->put("map_name", map->name);
-            heal->put("x", loc.x);
-            heal->put("y", loc.y);
-            heal->put("loc_name", loc.mapName);
-            heal->put("id_name", loc.idName);
-            heal->put("index", loc.index);
-            heal->put("elevation", 3); // TODO: change this?
-            heal->put("destination_map_name", mapConstantsToMapNames.value(map->name));
-            heal->put("event_group_type", EventGroup::Heal);
-            heal->put("event_type", EventType::HealLocation);
-            if (projectConfig.getHealLocationRespawnDataEnabled()) {
-                heal->put("respawn_map", mapConstantsToMapNames.value(QString("MAP_" + loc.respawnMap)));
-                heal->put("respawn_npc", loc.respawnNPC);
-            }
-            map->events[EventGroup::Heal].append(heal);
-        }
-
-    }
-
-    map->events[EventGroup::Coord].clear();
+    map->events[Event::Group::Coord].clear();
     QJsonArray coordEventsArr = mapObj["coord_events"].toArray();
     for (int i = 0; i < coordEventsArr.size(); i++) {
         QJsonObject event = coordEventsArr[i].toObject();
         QString type = event["type"].toString();
         if (type == "trigger") {
-            Event *coord = new Event(event, EventType::Trigger);
-            coord->put("map_name", map->name);
-            coord->put("x", QString::number(event["x"].toInt()));
-            coord->put("y", QString::number(event["y"].toInt()));
-            coord->put("elevation", QString::number(event["elevation"].toInt()));
-            coord->put("script_var", event["var"].toString());
-            coord->put("script_var_value", event["var_value"].toString());
-            coord->put("script_label", event["script"].toString());
-            coord->put("event_group_type", EventGroup::Coord);
-            map->events[EventGroup::Coord].append(coord);
+            TriggerEvent *coord = new TriggerEvent();
+            coord->loadFromJson(event, this);
+            map->addEvent(coord);
         } else if (type == "weather") {
-            Event *coord = new Event(event, EventType::WeatherTrigger);
-            coord->put("map_name", map->name);
-            coord->put("x", QString::number(event["x"].toInt()));
-            coord->put("y", QString::number(event["y"].toInt()));
-            coord->put("elevation", QString::number(event["elevation"].toInt()));
-            coord->put("weather", event["weather"].toString());
-            coord->put("event_group_type", EventGroup::Coord);
-            coord->put("event_type", EventType::WeatherTrigger);
-            map->events[EventGroup::Coord].append(coord);
+            WeatherTriggerEvent *coord = new WeatherTriggerEvent();
+            coord->loadFromJson(event, this);
+            map->addEvent(coord);
         } else {
             logError(QString("Map %1 coord_event %2 has invalid type '%3'. Must be 'trigger' or 'weather'.").arg(map->name).arg(i).arg(type));
         }
     }
 
-    map->events[EventGroup::Bg].clear();
+    map->events[Event::Group::Bg].clear();
     QJsonArray bgEventsArr = mapObj["bg_events"].toArray();
     for (int i = 0; i < bgEventsArr.size(); i++) {
         QJsonObject event = bgEventsArr[i].toObject();
         QString type = event["type"].toString();
         if (type == "sign") {
-            Event *bg = new Event(event, EventType::Sign);
-            bg->put("map_name", map->name);
-            bg->put("x", QString::number(event["x"].toInt()));
-            bg->put("y", QString::number(event["y"].toInt()));
-            bg->put("elevation", QString::number(event["elevation"].toInt()));
-            bg->put("player_facing_direction", event["player_facing_dir"].toString());
-            bg->put("script_label", event["script"].toString());
-            bg->put("event_group_type", EventGroup::Bg);
-            map->events[EventGroup::Bg].append(bg);
+            SignEvent *bg = new SignEvent();
+            bg->loadFromJson(event, this);
+            map->addEvent(bg);
         } else if (type == "hidden_item") {
-            Event *bg = new Event(event, EventType::HiddenItem);
-            bg->put("map_name", map->name);
-            bg->put("x", QString::number(event["x"].toInt()));
-            bg->put("y", QString::number(event["y"].toInt()));
-            bg->put("elevation", QString::number(event["elevation"].toInt()));
-            bg->put("item", event["item"].toString());
-            bg->put("flag", event["flag"].toString());
-            if (projectConfig.getHiddenItemQuantityEnabled()) {
-                bg->put("quantity", event["quantity"].toInt());
-            }
-            if (projectConfig.getHiddenItemRequiresItemfinderEnabled()) {
-                bg->put("underfoot", event["underfoot"].toBool());
-            }
-            bg->put("event_group_type", EventGroup::Bg);
-            map->events[EventGroup::Bg].append(bg);
+            HiddenItemEvent *bg = new HiddenItemEvent();
+            bg->loadFromJson(event, this);
+            map->addEvent(bg);
         } else if (type == "secret_base") {
-            Event *bg = new Event(event, EventType::SecretBase);
-            bg->put("map_name", map->name);
-            bg->put("x", QString::number(event["x"].toInt()));
-            bg->put("y", QString::number(event["y"].toInt()));
-            bg->put("elevation", QString::number(event["elevation"].toInt()));
-            bg->put("secret_base_id", event["secret_base_id"].toString());
-            bg->put("event_group_type", EventGroup::Bg);
-            map->events[EventGroup::Bg].append(bg);
+            SecretBaseEvent *bg = new SecretBaseEvent();
+            bg->loadFromJson(event, this);
+            map->addEvent(bg);
         } else {
             logError(QString("Map %1 bg_event %2 has invalid type '%3'. Must be 'sign', 'hidden_item', or 'secret_base'.").arg(map->name).arg(i).arg(type));
+        }
+    }
+
+    map->events[Event::Group::Heal].clear();
+    for (auto it = healLocations.begin(); it != healLocations.end(); it++) {
+        HealLocation loc = *it;
+        //if TRUE map is flyable / has healing location
+        if (loc.mapName == QString(mapNamesToMapConstants.value(map->name)).remove(0,4)) {
+            HealLocationEvent *heal = new HealLocationEvent();
+            heal->setMap(map);
+            heal->setX(loc.x);
+            heal->setY(loc.y);
+            heal->setElevation(3);
+            heal->setLocationName(loc.mapName);
+            heal->setIdName(loc.idName);
+            heal->setIndex(loc.index);
+
+            // TODO: what is this
+            // heal->put("destination_map_name", mapConstantsToMapNames.value(map->name));
+
+            if (projectConfig.getHealLocationRespawnDataEnabled()) {
+                heal->setRespawnMap(mapConstantsToMapNames.value(QString("MAP_" + loc.respawnMap)));
+                heal->setRespawnNPC(loc.respawnNPC);
+            }
+            map->events[Event::Group::Heal].append(heal);
         }
     }
 
@@ -886,8 +810,8 @@ void Project::saveHealLocationStruct(Map *map) {
     }
 
     // set new location in healLocations list
-    if (map->events[EventGroup::Heal].length() > 0) {
-        for (Event *healEvent : map->events[EventGroup::Heal]) {
+    if (map->events[Event::Group::Heal].length() > 0) {
+        for (Event *healEvent : map->events[Event::Group::Heal]) {
             HealLocation hl = HealLocation::fromEvent(healEvent);
             healLocations[hl.index - 1] = hl;
         }
@@ -1360,9 +1284,9 @@ void Project::saveMap(Map *map) {
         for (MapConnection* connection : map->connections) {
             if (mapNamesToMapConstants.contains(connection->map_name)) {
                 OrderedJson::object connectionObj;
-                connectionObj["direction"] = connection->direction;
-                connectionObj["offset"] = connection->offset;
                 connectionObj["map"] = this->mapNamesToMapConstants.value(connection->map_name);
+                connectionObj["offset"] = connection->offset;
+                connectionObj["direction"] = connection->direction;
                 connectionsArr.append(connectionObj);
             } else {
                 logError(QString("Failed to write map connection. '%1' is not a valid map name").arg(connection->map_name));
@@ -1376,58 +1300,38 @@ void Project::saveMap(Map *map) {
     if (map->sharedEventsMap.isEmpty()) {
         // Object events
         OrderedJson::array objectEventsArr;
-        for (int i = 0; i < map->events[EventGroup::Object].length(); i++) {
-            Event *event = map->events[EventGroup::Object].value(i);
-            QString event_type = event->get("event_type");
-            OrderedJson::object jsonObj;
-            if (event_type == EventType::Object) {
-                jsonObj = event->buildObjectEventJSON();
-            } else if (event_type == EventType::CloneObject) {
-                jsonObj = event->buildCloneObjectEventJSON(mapNamesToMapConstants);
-            }
+        for (int i = 0; i < map->events[Event::Group::Object].length(); i++) {
+            Event *event = map->events[Event::Group::Object].value(i);
+            OrderedJson::object jsonObj = event->buildEventJson(this);
             objectEventsArr.push_back(jsonObj);
         }
         mapObj["object_events"] = objectEventsArr;
 
+
         // Warp events
         OrderedJson::array warpEventsArr;
-        for (int i = 0; i < map->events[EventGroup::Warp].length(); i++) {
-            Event *warp_event = map->events[EventGroup::Warp].value(i);
-            OrderedJson::object warpObj = warp_event->buildWarpEventJSON(mapNamesToMapConstants);
+        for (int i = 0; i < map->events[Event::Group::Warp].length(); i++) {
+            Event *event = map->events[Event::Group::Warp].value(i);
+            OrderedJson::object warpObj = event->buildEventJson(this);
             warpEventsArr.append(warpObj);
         }
         mapObj["warp_events"] = warpEventsArr;
 
         // Coord events
         OrderedJson::array coordEventsArr;
-        for (int i = 0; i < map->events[EventGroup::Coord].length(); i++) {
-            Event *event = map->events[EventGroup::Coord].value(i);
-            QString event_type = event->get("event_type");
-            if (event_type == EventType::Trigger) {
-                OrderedJson::object triggerObj = event->buildTriggerEventJSON();
-                coordEventsArr.append(triggerObj);
-            } else if (event_type == EventType::WeatherTrigger) {
-                OrderedJson::object weatherObj = event->buildWeatherTriggerEventJSON();
-                coordEventsArr.append(weatherObj);
-            }
+        for (int i = 0; i < map->events[Event::Group::Coord].length(); i++) {
+            Event *event = map->events[Event::Group::Coord].value(i);
+            OrderedJson::object triggerObj = event->buildEventJson(this);
+            coordEventsArr.append(triggerObj);
         }
         mapObj["coord_events"] = coordEventsArr;
 
         // Bg Events
         OrderedJson::array bgEventsArr;
-        for (int i = 0; i < map->events[EventGroup::Bg].length(); i++) {
-            Event *event = map->events[EventGroup::Bg].value(i);
-            QString event_type = event->get("event_type");
-            if (event_type == EventType::Sign) {
-                OrderedJson::object signObj = event->buildSignEventJSON();
-                bgEventsArr.append(signObj);
-            } else if (event_type == EventType::HiddenItem) {
-                OrderedJson::object hiddenItemObj = event->buildHiddenItemEventJSON();
-                bgEventsArr.append(hiddenItemObj);
-            } else if (event_type == EventType::SecretBase) {
-                OrderedJson::object secretBaseObj = event->buildSecretBaseEventJSON();
-                bgEventsArr.append(secretBaseObj);
-            }
+        for (int i = 0; i < map->events[Event::Group::Bg].length(); i++) {
+            Event *event = map->events[Event::Group::Bg].value(i);
+            OrderedJson::object bgObj = event->buildEventJson(this);
+            bgEventsArr.append(bgObj);
         }
         mapObj["bg_events"] = bgEventsArr;
     } else {
@@ -2378,6 +2282,10 @@ bool Project::readMiscellaneousConstants() {
     return true;
 }
 
+QStringList Project::getGlobalScriptLabels() {
+    return this->eventScriptLabelModel.stringList();
+}
+
 bool Project::readEventScriptLabels() {
     for (const auto &filePath : getEventScriptsFilePaths())
         globalScriptLabels << ParseUtil::getGlobalScriptLabels(filePath);
@@ -2460,58 +2368,9 @@ QCompleter *Project::getEventScriptLabelCompleter(QStringList additionalScriptLa
     return &eventScriptLabelCompleter;
 }
 
-void Project::setEventPixmap(Event * event, bool forceLoad) {
-    if (!event || (!event->pixmap.isNull() && !forceLoad))
-        return;
-
-    event->spriteWidth = 16;
-    event->spriteHeight = 16;
-    event->usingSprite = false;
-
-    QString group_type = event->get("event_group_type");
-    if (group_type == EventGroup::Object) {
-        QString gfxName;
-        QString movement;
-        QString event_type = event->get("event_type");
-        if (event_type == EventType::CloneObject) {
-            // Try to get the targeted object to clone
-            int eventIndex = event->getInt("target_local_id") - 1;
-            Map * clonedMap = getMap(event->get("target_map"));
-            Event * clonedEvent = clonedMap ? clonedMap->events[EventGroup::Object].value(eventIndex, nullptr) : nullptr;
-            if (clonedEvent && clonedEvent->get("event_type") == EventType::Object) {
-                // Get graphics data from cloned object
-                gfxName = clonedEvent->get("sprite");
-                movement = clonedEvent->get("movement_type");
-            } else {
-                // Invalid object specified, use default graphics data (as would be shown in-game)
-                gfxName = gfxDefines.key(0);
-                movement = movementTypes.first();
-            }
-            // Update clone object's sprite text to match target object
-            event->put("sprite", gfxName);
-        } else {
-            // Get graphics data of regular object
-            gfxName = event->get("sprite");
-            movement = event->get("movement_type");
-        }
-        EventGraphics * eventGfx = eventGraphicsMap.value(gfxName, nullptr);
-        if (!eventGfx || eventGfx->spritesheet.isNull()) {
-            // No sprite associated with this gfx constant.
-            // Use default sprite instead.
-            event->pixmap = QPixmap(":/images/Entities_16x16.png").copy(0, 0, 16, 16);
-        } else {
-            event->setFrameFromMovement(facingDirections.value(movement));
-            event->setPixmapFromSpritesheet(eventGfx->spritesheet, eventGfx->spriteWidth, eventGfx->spriteHeight, eventGfx->inanimate);
-        }
-    } else if (group_type == EventGroup::Warp) {
-        event->pixmap = QPixmap(":/images/Entities_16x16.png").copy(16, 0, 16, 16);
-    } else if (group_type == EventGroup::Coord) {
-        event->pixmap = QPixmap(":/images/Entities_16x16.png").copy(32, 0, 16, 16);
-    } else if (group_type == EventGroup::Bg) {
-        event->pixmap = QPixmap(":/images/Entities_16x16.png").copy(48, 0, 16, 16);
-    } else if (group_type == EventGroup::Heal) {
-        event->pixmap = QPixmap(":/images/Entities_16x16.png").copy(64, 0, 16, 16);
-    }
+void Project::setEventPixmap(Event *event, bool forceLoad) {
+    if (event && (event->getPixmap().isNull() || forceLoad))
+        event->loadPixmap(this);
 }
 
 bool Project::readEventGraphics() {
@@ -2600,8 +2459,8 @@ bool Project::readSpeciesIconPaths() {
 
 void Project::saveMapHealEvents(Map *map) {
     // save heal event changes
-    if (map->events[EventGroup::Heal].length() > 0) {
-        for (Event *healEvent : map->events[EventGroup::Heal]) {
+    if (map->events[Event::Group::Heal].length() > 0) {
+        for (Event *healEvent : map->events[Event::Group::Heal]) {
             HealLocation hl = HealLocation::fromEvent(healEvent);
             healLocations[hl.index - 1] = hl;
         }
@@ -2610,11 +2469,11 @@ void Project::saveMapHealEvents(Map *map) {
 }
 
 void Project::setNewMapEvents(Map *map) {
-    map->events[EventGroup::Object].clear();
-    map->events[EventGroup::Warp].clear();
-    map->events[EventGroup::Heal].clear();
-    map->events[EventGroup::Coord].clear();
-    map->events[EventGroup::Bg].clear();
+    map->events[Event::Group::Object].clear();
+    map->events[Event::Group::Warp].clear();
+    map->events[Event::Group::Heal].clear();
+    map->events[Event::Group::Coord].clear();
+    map->events[Event::Group::Bg].clear();
 }
 
 int Project::getNumTilesPrimary()

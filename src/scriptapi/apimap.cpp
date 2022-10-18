@@ -347,36 +347,44 @@ void MainWindow::setTilesetPalette(Tileset *tileset, int paletteIndex, QList<QLi
     }
 }
 
-void MainWindow::setPrimaryTilesetPalette(int paletteIndex, QList<QList<int>> colors) {
+void MainWindow::setPrimaryTilesetPalette(int paletteIndex, QList<QList<int>> colors, bool forceRedraw) {
     if (!this->editor || !this->editor->map || !this->editor->map->layout || !this->editor->map->layout->tileset_primary)
         return;
     this->setTilesetPalette(this->editor->map->layout->tileset_primary, paletteIndex, colors);
-    this->refreshAfterPaletteChange(this->editor->map->layout->tileset_primary);
+    if (forceRedraw) {
+        this->refreshAfterPaletteChange(this->editor->map->layout->tileset_primary);
+    }
 }
 
-void MainWindow::setPrimaryTilesetPalettes(QList<QList<QList<int>>> palettes) {
+void MainWindow::setPrimaryTilesetPalettes(QList<QList<QList<int>>> palettes, bool forceRedraw) {
     if (!this->editor || !this->editor->map || !this->editor->map->layout || !this->editor->map->layout->tileset_primary)
         return;
     for (int i = 0; i < palettes.size(); i++) {
         this->setTilesetPalette(this->editor->map->layout->tileset_primary, i, palettes[i]);
     }
-    this->refreshAfterPaletteChange(this->editor->map->layout->tileset_primary);
+    if (forceRedraw) {
+        this->refreshAfterPaletteChange(this->editor->map->layout->tileset_primary);
+    }
 }
 
-void MainWindow::setSecondaryTilesetPalette(int paletteIndex, QList<QList<int>> colors) {
+void MainWindow::setSecondaryTilesetPalette(int paletteIndex, QList<QList<int>> colors, bool forceRedraw) {
     if (!this->editor || !this->editor->map || !this->editor->map->layout || !this->editor->map->layout->tileset_secondary)
         return;
     this->setTilesetPalette(this->editor->map->layout->tileset_secondary, paletteIndex, colors);
-    this->refreshAfterPaletteChange(this->editor->map->layout->tileset_secondary);
+    if (forceRedraw) {
+        this->refreshAfterPaletteChange(this->editor->map->layout->tileset_secondary);
+    }
 }
 
-void MainWindow::setSecondaryTilesetPalettes(QList<QList<QList<int>>> palettes) {
+void MainWindow::setSecondaryTilesetPalettes(QList<QList<QList<int>>> palettes, bool forceRedraw) {
     if (!this->editor || !this->editor->map || !this->editor->map->layout || !this->editor->map->layout->tileset_secondary)
         return;
     for (int i = 0; i < palettes.size(); i++) {
         this->setTilesetPalette(this->editor->map->layout->tileset_secondary, i, palettes[i]);
     }
-    this->refreshAfterPaletteChange(this->editor->map->layout->tileset_secondary);
+    if (forceRedraw) {
+        this->refreshAfterPaletteChange(this->editor->map->layout->tileset_secondary);
+    }
 }
 
 QJSValue MainWindow::getTilesetPalette(const QList<QList<QRgb>> &palettes, int paletteIndex) {
@@ -449,36 +457,44 @@ void MainWindow::setTilesetPalettePreview(Tileset *tileset, int paletteIndex, QL
     }
 }
 
-void MainWindow::setPrimaryTilesetPalettePreview(int paletteIndex, QList<QList<int>> colors) {
+void MainWindow::setPrimaryTilesetPalettePreview(int paletteIndex, QList<QList<int>> colors, bool forceRedraw) {
     if (!this->editor || !this->editor->map || !this->editor->map->layout || !this->editor->map->layout->tileset_primary)
         return;
     this->setTilesetPalettePreview(this->editor->map->layout->tileset_primary, paletteIndex, colors);
-    this->refreshAfterPalettePreviewChange();
+    if (forceRedraw) {
+        this->refreshAfterPalettePreviewChange();
+    }
 }
 
-void MainWindow::setPrimaryTilesetPalettesPreview(QList<QList<QList<int>>> palettes) {
+void MainWindow::setPrimaryTilesetPalettesPreview(QList<QList<QList<int>>> palettes, bool forceRedraw) {
     if (!this->editor || !this->editor->map || !this->editor->map->layout || !this->editor->map->layout->tileset_primary)
         return;
     for (int i = 0; i < palettes.size(); i++) {
         this->setTilesetPalettePreview(this->editor->map->layout->tileset_primary, i, palettes[i]);
     }
-    this->refreshAfterPalettePreviewChange();
+    if (forceRedraw) {
+        this->refreshAfterPalettePreviewChange();
+    }
 }
 
-void MainWindow::setSecondaryTilesetPalettePreview(int paletteIndex, QList<QList<int>> colors) {
+void MainWindow::setSecondaryTilesetPalettePreview(int paletteIndex, QList<QList<int>> colors, bool forceRedraw) {
     if (!this->editor || !this->editor->map || !this->editor->map->layout || !this->editor->map->layout->tileset_secondary)
         return;
     this->setTilesetPalettePreview(this->editor->map->layout->tileset_secondary, paletteIndex, colors);
-    this->refreshAfterPalettePreviewChange();
+    if (forceRedraw) {
+        this->refreshAfterPalettePreviewChange();
+    }
 }
 
-void MainWindow::setSecondaryTilesetPalettesPreview(QList<QList<QList<int>>> palettes) {
+void MainWindow::setSecondaryTilesetPalettesPreview(QList<QList<QList<int>>> palettes, bool forceRedraw) {
     if (!this->editor || !this->editor->map || !this->editor->map->layout || !this->editor->map->layout->tileset_secondary)
         return;
     for (int i = 0; i < palettes.size(); i++) {
         this->setTilesetPalettePreview(this->editor->map->layout->tileset_secondary, i, palettes[i]);
     }
-    this->refreshAfterPalettePreviewChange();
+    if (forceRedraw) {
+        this->refreshAfterPalettePreviewChange();
+    }
 }
 
 QJSValue MainWindow::getPrimaryTilesetPalettePreview(int paletteIndex) {

@@ -1,7 +1,7 @@
 #ifndef CUSTOMATTRIBUTESTABLE_H
 #define CUSTOMATTRIBUTESTABLE_H
 
-#include "event.h"
+#include "events.h"
 #include <QObject>
 #include <QFrame>
 #include <QTableWidget>

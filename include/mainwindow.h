@@ -26,6 +26,8 @@
 #include "shortcutseditor.h"
 #include "preferenceeditor.h"
 
+
+
 namespace Ui {
 class MainWindow;
 }
@@ -78,10 +80,10 @@ public:
     Q_INVOKABLE void setBorderHeight(int height);
     void refreshAfterPaletteChange(Tileset *tileset);
     void setTilesetPalette(Tileset *tileset, int paletteIndex, QList<QList<int>> colors);
-    Q_INVOKABLE void setPrimaryTilesetPalette(int paletteIndex, QList<QList<int>> colors);
-    Q_INVOKABLE void setPrimaryTilesetPalettes(QList<QList<QList<int>>> palettes);
-    Q_INVOKABLE void setSecondaryTilesetPalette(int paletteIndex, QList<QList<int>> colors);
-    Q_INVOKABLE void setSecondaryTilesetPalettes(QList<QList<QList<int>>> palettes);
+    Q_INVOKABLE void setPrimaryTilesetPalette(int paletteIndex, QList<QList<int>> colors, bool forceRedraw = true);
+    Q_INVOKABLE void setPrimaryTilesetPalettes(QList<QList<QList<int>>> palettes, bool forceRedraw = true);
+    Q_INVOKABLE void setSecondaryTilesetPalette(int paletteIndex, QList<QList<int>> colors, bool forceRedraw = true);
+    Q_INVOKABLE void setSecondaryTilesetPalettes(QList<QList<QList<int>>> palettes, bool forceRedraw = true);
     QJSValue getTilesetPalette(const QList<QList<QRgb>> &palettes, int paletteIndex);
     QJSValue getTilesetPalettes(const QList<QList<QRgb>> &palettes);
     Q_INVOKABLE QJSValue getPrimaryTilesetPalette(int paletteIndex);
@@ -90,10 +92,10 @@ public:
     Q_INVOKABLE QJSValue getSecondaryTilesetPalettes();
     void refreshAfterPalettePreviewChange();
     void setTilesetPalettePreview(Tileset *tileset, int paletteIndex, QList<QList<int>> colors);
-    Q_INVOKABLE void setPrimaryTilesetPalettePreview(int paletteIndex, QList<QList<int>> colors);
-    Q_INVOKABLE void setPrimaryTilesetPalettesPreview(QList<QList<QList<int>>> palettes);
-    Q_INVOKABLE void setSecondaryTilesetPalettePreview(int paletteIndex, QList<QList<int>> colors);
-    Q_INVOKABLE void setSecondaryTilesetPalettesPreview(QList<QList<QList<int>>> palettes);
+    Q_INVOKABLE void setPrimaryTilesetPalettePreview(int paletteIndex, QList<QList<int>> colors, bool forceRedraw = true);
+    Q_INVOKABLE void setPrimaryTilesetPalettesPreview(QList<QList<QList<int>>> palettes, bool forceRedraw = true);
+    Q_INVOKABLE void setSecondaryTilesetPalettePreview(int paletteIndex, QList<QList<int>> colors, bool forceRedraw = true);
+    Q_INVOKABLE void setSecondaryTilesetPalettesPreview(QList<QList<QList<int>>> palettes, bool forceRedraw = true);
     Q_INVOKABLE QJSValue getPrimaryTilesetPalettePreview(int paletteIndex);
     Q_INVOKABLE QJSValue getPrimaryTilesetPalettesPreview();
     Q_INVOKABLE QJSValue getSecondaryTilesetPalettePreview(int paletteIndex);
@@ -161,7 +163,7 @@ private slots:
     void on_action_Reload_Project_triggered();
     void on_mapList_activated(const QModelIndex &index);
     void on_action_Save_Project_triggered();
-    void openWarpMap(QString map_name, QString event_id, QString event_group);
+    void openWarpMap(QString map_name, int event_id, Event::Group event_group);
 
     void duplicate();
     void setClipboardData(poryjson::Json::object);
@@ -216,7 +218,8 @@ private slots:
 
     void on_toolButton_deleteObject_clicked();
 
-    void addNewEvent(QString);
+    void addNewEvent(Event::Type type);
+    void displayEventTabs();
     void updateSelectedObjects();
     void updateObjects();
 
@@ -264,8 +267,6 @@ private slots:
     void closeEvent(QCloseEvent *);
 
     void eventTabChanged(int index);
-
-    void selectedEventIndexChanged(int index);
 
     void on_horizontalSlider_CollisionTransparency_valueChanged(int value);
     void on_toolButton_ExpandAll_clicked();
@@ -325,8 +326,6 @@ private:
     DraggablePixmapItem *selectedBG;
     DraggablePixmapItem *selectedHealspot;
 
-    QVector<QToolButton *> openScriptButtons;
-
     bool isProgrammaticEventTabChange;
     bool projectHasUnsavedChanges;
     bool projectOpenFailure = false;
@@ -374,7 +373,7 @@ private:
     void setTheme(QString);
     bool openRecentProject();
     void updateTilesetEditor();
-    QString getEventGroupFromTabWidget(QWidget *tab);
+    Event::Group getEventGroupFromTabWidget(QWidget *tab);
     void closeSupplementaryWindows();
     void setWindowDisabled(bool);
 

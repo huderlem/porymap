@@ -268,14 +268,14 @@ bool RegionMap::loadLayout(poryjson::Json layoutJson) {
                         this->layout_array_label = label;
 
                         QRegularExpression rowRe("{(?<row>[A-Z0-9_, ]+)}");
-                        QRegularExpressionMatchIterator j = rowRe.globalMatch(text);
+                        QRegularExpressionMatchIterator k = rowRe.globalMatch(text);
 
                         this->layout_layers.append("main");
                         QList<LayoutSquare> layout;
 
                         int y = 0;
-                        while (j.hasNext()) {
-                            QRegularExpressionMatch n = j.next();
+                        while (k.hasNext()) {
+                            QRegularExpressionMatch n = k.next();
                             QString row = n.captured("row");
                             QStringList rowSections = row.split(',');
                             int x = 0;
@@ -357,7 +357,7 @@ poryjson::Json::object RegionMap::config() {
         layoutObject["height"] = this->layout_height;
         layoutObject["offset_left"] = this->offset_left;
         layoutObject["offset_top"] = this->offset_top;
-        QMap<LayoutFormat, QString> layoutFormatMap = { {LayoutFormat::Binary, "binary"}, {LayoutFormat::CArray, "C array"} };
+        static QMap<LayoutFormat, QString> layoutFormatMap = { {LayoutFormat::Binary, "binary"}, {LayoutFormat::CArray, "C array"} };
         layoutObject["format"] = layoutFormatMap[this->layout_format];
         layoutObject["path"] = this->layout_path;
         config["layout"] = layoutObject;
@@ -405,11 +405,26 @@ void RegionMap::saveLayout() {
             }
             text += " = {\n";
             if (this->layout_layers.size() == 1) {
-                for (LayoutSquare s : this->getLayout("main")) {
-                    text += "    " + s.map_section + ",\n";
+                if (this->layout_constants.count() == 1) {
+                    for (LayoutSquare s : this->getLayout("main")) {
+                        text += "    " + s.map_section + ",\n";
+                    }
+                    text.chop(2);
+                    text += "\n";
+                } else if (this->layout_constants.count() == 2) {
+                    for (int row = 0; row < this->layout_height; row++) {
+                        text += "    {";
+                        for (int col = 0; col < this->layout_width; col++) {
+                            int i = col + row * this->layout_width;
+                            text += this->layouts["main"][i].map_section + ", ";
+                        }
+                        text.chop(2);
+                        text += "},-\n";
+                    }
+                } else {
+                    logError(QString("Failed to save region map layout for %1").arg(this->layout_array_label));
+                    return;
                 }
-                text.chop(2);
-                text += "\n";
             } else {
                 // multi layered
                 for (auto layoutName : this->layout_layers) {

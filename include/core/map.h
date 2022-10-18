@@ -6,7 +6,7 @@
 #include "mapconnection.h"
 #include "maplayout.h"
 #include "tileset.h"
-#include "event.h"
+#include "events.h"
 
 #include <QUndoStack>
 #include <QPixmap>
@@ -63,7 +63,10 @@ public:
     QPixmap collision_pixmap;
     QImage image;
     QPixmap pixmap;
-    QMap<QString, QList<Event*>> events;
+    
+    QMap<Event::Group, QList<Event *>> events;
+    QList<Event *> ownedEvents; // for memory management
+
     QList<MapConnection*> connections;
     QList<int> metatileLayerOrder;
     QList<float> metatileLayerOpacity;
@@ -92,10 +95,10 @@ public:
     void floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
     void _floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
     void magicFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
-    QList<Event*> getAllEvents() const;
-    QStringList eventScriptLabels(const QString &event_group_type = QString()) const;
-    void removeEvent(Event*);
-    void addEvent(Event*);
+    QList<Event *> getAllEvents() const;
+    QStringList eventScriptLabels(Event::Group group = Event::Group::None) const;
+    void removeEvent(Event *);
+    void addEvent(Event *);
     QPixmap renderConnection(MapConnection, MapLayout *);
     QPixmap renderBorder(bool ignoreCache = false);
     void setDimensions(int newWidth, int newHeight, bool setNewBlockdata = true, bool enableScriptCallback = false);
@@ -104,9 +107,7 @@ public:
     bool hasUnsavedChanges();
     bool isWithinBounds(int x, int y);
     bool isWithinBorderBounds(int x, int y);
-
-    // for memory management
-    QVector<Event *> ownedEvents;
+    void openScript(QString label);
 
     MapPixmapItem *mapItem = nullptr;
     void setMapItem(MapPixmapItem *item) { mapItem = item; }
@@ -118,6 +119,8 @@ public:
     void setBorderItem(BorderMetatilesPixmapItem *item) { borderItem = item; }
 
     QUndoStack editHistory;
+    void modify();
+    void clean();
 
 private:
     void setNewDimensionsBlockdata(int newWidth, int newHeight);
@@ -125,8 +128,10 @@ private:
 
 signals:
     void mapChanged(Map *map);
+    void modified();
     void mapDimensionsChanged(const QSize &size);
     void mapNeedsRedrawing();
+    void openScriptRequested(QString label);
 };
 
 #endif // MAP_H

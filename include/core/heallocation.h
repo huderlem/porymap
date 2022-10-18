@@ -2,9 +2,10 @@
 #ifndef HEALLOCATION_H
 #define HEALLOCATION_H
 
-#include "event.h"
 #include <QString>
 #include <QDebug>
+
+class Event;
 
 class HealLocation {
 
@@ -21,7 +22,7 @@ public:
     uint16_t  y;
     QString respawnMap;
     uint16_t respawnNPC;
-    static HealLocation fromEvent(Event*);
+    static HealLocation fromEvent(Event *);
 };
 
 #endif // HEALLOCATION_H

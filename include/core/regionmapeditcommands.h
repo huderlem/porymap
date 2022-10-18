@@ -158,7 +158,7 @@ public:
     void undo() override;
     void redo() override;
 
-    bool mergeWith(const QUndoCommand *command) override { return false; }
+    bool mergeWith(const QUndoCommand *) override { return false; }
     int id() const override { return RMCommandId::ID_ClearEntries; }
 
 private:

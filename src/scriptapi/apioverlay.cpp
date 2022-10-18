@@ -147,19 +147,93 @@ void MapView::setOpacity(int opacity) {
     this->scene()->update();
 }
 
+qreal MapView::getHorizontalScale(int layer) {
+    return this->getOverlay(layer)->getHScale();
+}
+
+qreal MapView::getVerticalScale(int layer) {
+    return this->getOverlay(layer)->getVScale();
+}
+
+void MapView::setHorizontalScale(qreal scale, int layer) {
+    this->getOverlay(layer)->setHScale(scale);
+    this->scene()->update();
+}
+
+// Overload. No layer provided, set horizontal scale of all layers
+void MapView::setHorizontalScale(qreal scale) {
+    foreach (Overlay * layer, this->overlayMap)
+        layer->setHScale(scale);
+    this->scene()->update();
+}
+
+void MapView::setVerticalScale(qreal scale, int layer) {
+    this->getOverlay(layer)->setVScale(scale);
+    this->scene()->update();
+}
+
+// Overload. No layer provided, set vertical scale of all layers
+void MapView::setVerticalScale(qreal scale) {
+    foreach (Overlay * layer, this->overlayMap)
+        layer->setVScale(scale);
+    this->scene()->update();
+}
+
+int MapView::getRotation(int layer) {
+    return this->getOverlay(layer)->getRotation();
+}
+
+void MapView::setRotation(int angle, int layer) {
+    this->getOverlay(layer)->setRotation(angle);
+    this->scene()->update();
+}
+
+// Overload. No layer provided, set rotation of all layers
+void MapView::setRotation(int angle) {
+    foreach (Overlay * layer, this->overlayMap)
+        layer->setRotation(angle);
+    this->scene()->update();
+}
+
+void MapView::rotate(int degrees, int layer) {
+    this->getOverlay(layer)->rotate(degrees);
+    this->scene()->update();
+}
+
+// Overload. No layer provided, rotate all layers
+void MapView::rotate(int degrees) {
+    foreach (Overlay * layer, this->overlayMap)
+        layer->rotate(degrees);
+    this->scene()->update();
+}
+
 void MapView::addText(QString text, int x, int y, QString color, int fontSize, int layer) {
     this->getOverlay(layer)->addText(text, x, y, color, fontSize);
     this->scene()->update();
 }
 
-void MapView::addRect(int x, int y, int width, int height, QString color, int layer) {
-    this->getOverlay(layer)->addRect(x, y, width, height, color, false);
-    this->scene()->update();
+void MapView::addRect(int x, int y, int width, int height, QString borderColor, QString fillColor, int rounding, int layer) {
+    if (this->getOverlay(layer)->addRect(x, y, width, height, borderColor, fillColor, rounding))
+        this->scene()->update();
 }
 
-void MapView::addFilledRect(int x, int y, int width, int height, QString color, int layer) {
-    this->getOverlay(layer)->addRect(x, y, width, height, color, true);
-    this->scene()->update();
+void MapView::addPath(QList<int> xCoords, QList<int> yCoords, QString borderColor, QString fillColor, int layer) {
+    if (this->getOverlay(layer)->addPath(xCoords, yCoords, borderColor, fillColor))
+        this->scene()->update();
+}
+
+void MapView::addPath(QList<QList<int>> coords, QString borderColor, QString fillColor, int layer) {
+    QList<int> xCoords;
+    QList<int> yCoords;
+    for (int i = 0; i < coords.length(); i++) {
+        if (coords[i].length() < 2){
+            logWarn(QString("Element %1 of overlay path does not have an x and y value.").arg(i));
+            continue;
+        }
+        xCoords.append(coords[i][0]);
+        yCoords.append(coords[i][1]);
+    }
+    this->addPath(xCoords, yCoords, borderColor, fillColor, layer);
 }
 
 void MapView::addImage(int x, int y, QString filepath, int layer, bool useCache) {
