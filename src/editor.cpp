@@ -10,6 +10,7 @@
 #include "editcommands.h"
 #include "config.h"
 #include "scripting.h"
+#include "customattributestable.h"
 #include <QCheckBox>
 #include <QPainter>
 #include <QMouseEvent>
@@ -1952,39 +1953,7 @@ void Editor::toggleBorderVisibility(bool visible, bool enableScriptCallback)
 
 void Editor::updateCustomMapHeaderValues(QTableWidget *table)
 {
-    QMap<QString, QJsonValue> fields;
-    for (int row = 0; row < table->rowCount(); row++) {
-        QString key = "";
-        QTableWidgetItem *typeItem = table->item(row, 0);
-        QTableWidgetItem *keyItem = table->item(row, 1);
-        QTableWidgetItem *valueItem = table->item(row, 2);
-
-        if (keyItem) key = keyItem->text();
-        if (key.isEmpty() || !typeItem || !valueItem)
-            continue;
-
-        // Read from the table data which JSON type to save the value as
-        QJsonValue::Type type = static_cast<QJsonValue::Type>(typeItem->data(Qt::UserRole).toInt());
-        QJsonValue value;
-        switch (type)
-        {
-        case QJsonValue::String:
-            value = QJsonValue(valueItem->text());
-            break;
-        case QJsonValue::Double:
-            value = QJsonValue(valueItem->text().toInt());
-            break;
-        case QJsonValue::Bool:
-            value = QJsonValue(valueItem->checkState() == Qt::Checked);
-            break;
-        default:
-            // All other types will just be preserved
-            value = valueItem->data(Qt::UserRole).toJsonValue();
-            break;
-        }
-        fields[key] = value;
-    }
-    map->customHeaders = fields;
+    map->customHeaders = CustomAttributesTable::getAttributes(table);
     emit editedMapData();
 }
 

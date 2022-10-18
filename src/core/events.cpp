@@ -38,13 +38,12 @@ void Event::setDefaultValues(Project *) {
     this->setElevation(3);
 }
 
-// TODO: Don't assume string type
 void Event::readCustomValues(QJsonObject values) {
     this->customValues.clear();
     QSet<QString> expectedFields = this->getExpectedFields();
     for (QString key : values.keys()) {
         if (!expectedFields.contains(key)) {
-            this->customValues[key] = values[key].toString();
+            this->customValues[key] = values[key];
         }
     }
 }
@@ -52,7 +51,7 @@ void Event::readCustomValues(QJsonObject values) {
 void Event::addCustomValuesTo(OrderedJson::object *obj) {
     for (QString key : this->customValues.keys()) {
         if (!obj->contains(key)) {
-            (*obj)[key] = this->customValues[key];
+            (*obj)[key] = OrderedJson::fromQJsonValue(this->customValues[key]);
         }
     }
 }

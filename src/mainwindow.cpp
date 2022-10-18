@@ -816,7 +816,7 @@ void MainWindow::displayMapProperties() {
     ui->tableWidget_CustomHeaderFields->blockSignals(true);
     ui->tableWidget_CustomHeaderFields->setRowCount(0);
     for (auto it = map->customHeaders.begin(); it != map->customHeaders.end(); it++)
-        addCustomHeaderValue(it.key(), it.value());
+        CustomAttributesTable::addAttribute(ui->tableWidget_CustomHeaderFields, it.key(), it.value());
     ui->tableWidget_CustomHeaderFields->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     ui->tableWidget_CustomHeaderFields->blockSignals(false);
 }
@@ -2756,90 +2756,20 @@ void MainWindow::togglePreferenceSpecificUi() {
         ui->actionOpen_Project_in_Text_Editor->setEnabled(true);
 }
 
-void MainWindow::addCustomHeaderValue(QString key, QJsonValue value, bool isNew) {
-    QTableWidgetItem * valueItem;
-    QJsonValue::Type type = value.type();
-    switch (type)
-    {
-    case QJsonValue::String:
-    case QJsonValue::Double:
-        valueItem = new QTableWidgetItem(ParseUtil::jsonToQString(value));
-        break;
-    case QJsonValue::Bool:
-        valueItem = new QTableWidgetItem("");
-        valueItem->setCheckState(value.toBool() ? Qt::Checked : Qt::Unchecked);
-        valueItem->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsSelectable);
-        break;
-    default:
-        valueItem = new QTableWidgetItem("This value cannot be edited from this table");
-        valueItem->setFlags(Qt::ItemIsSelectable);
-        valueItem->setData(Qt::UserRole, value); // Preserve the value for writing to the file
-        break;
-    }
-
-    const QHash<QJsonValue::Type, QString> typeToName = {
-        {QJsonValue::Bool, "Bool"},
-        {QJsonValue::Double, "Number"},
-        {QJsonValue::String, "String"},
-        {QJsonValue::Array, "Array"},
-        {QJsonValue::Object, "Object"},
-        {QJsonValue::Null, "Null"},
-        {QJsonValue::Undefined, "Null"},
-    };
-    QTableWidgetItem * typeItem = new QTableWidgetItem(typeToName[type]);
-    typeItem->setFlags(Qt::ItemIsEnabled);
-    typeItem->setData(Qt::UserRole, type); // Record the type for writing to the file
-    typeItem->setTextAlignment(Qt::AlignCenter);
-
-    int rowIndex = this->ui->tableWidget_CustomHeaderFields->rowCount();
-    this->ui->tableWidget_CustomHeaderFields->insertRow(rowIndex);
-    this->ui->tableWidget_CustomHeaderFields->setItem(rowIndex, 0, typeItem);
-    this->ui->tableWidget_CustomHeaderFields->setItem(rowIndex, 1, new QTableWidgetItem(key));
-    this->ui->tableWidget_CustomHeaderFields->setItem(rowIndex, 2, valueItem);
-
-    if (isNew) {
-        valueItem->setText(""); // Erase the "0" in new numbers
-        this->ui->tableWidget_CustomHeaderFields->selectRow(rowIndex);
-        this->editor->updateCustomMapHeaderValues(this->ui->tableWidget_CustomHeaderFields);
-    }
-}
-
 void MainWindow::on_pushButton_AddCustomHeaderField_clicked()
 {
-    const QMap<QString, QJsonValue> valueTypes = {
-        {"String",  QJsonValue(QString(""))},
-        {"Number",  QJsonValue(0)},
-        {"Boolean", QJsonValue(false)},
-    };
-
     bool ok;
-    QStringList typeNames = valueTypes.keys();
-    QString selection = QInputDialog::getItem(this, "", "Choose Value Type", typeNames, typeNames.indexOf("String"), false, &ok);
-    if (ok)
-        addCustomHeaderValue("", valueTypes[selection], true);
+    QJsonValue value = CustomAttributesTable::pickType(this, &ok);
+    if (ok){
+        CustomAttributesTable::addAttribute(this->ui->tableWidget_CustomHeaderFields, "", value, true);
+        this->editor->updateCustomMapHeaderValues(this->ui->tableWidget_CustomHeaderFields);
+    }
 }
 
 void MainWindow::on_pushButton_DeleteCustomHeaderField_clicked()
 {
-    int rowCount = this->ui->tableWidget_CustomHeaderFields->rowCount();
-    if (rowCount > 0) {
-        QModelIndexList indexList = ui->tableWidget_CustomHeaderFields->selectionModel()->selectedIndexes();
-        QList<QPersistentModelIndex> persistentIndexes;
-        for (QModelIndex index : indexList) {
-            QPersistentModelIndex persistentIndex(index);
-            persistentIndexes.append(persistentIndex);
-        }
-
-        for (QPersistentModelIndex index : persistentIndexes) {
-            this->ui->tableWidget_CustomHeaderFields->removeRow(index.row());
-        }
-
-        if (this->ui->tableWidget_CustomHeaderFields->rowCount() > 0) {
-            this->ui->tableWidget_CustomHeaderFields->selectRow(0);
-        }
-
+    if (CustomAttributesTable::deleteSelectedAttributes(this->ui->tableWidget_CustomHeaderFields))
         this->editor->updateCustomMapHeaderValues(this->ui->tableWidget_CustomHeaderFields);
-    }
 }
 
 void MainWindow::on_tableWidget_CustomHeaderFields_cellChanged(int, int)

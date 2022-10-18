@@ -85,9 +85,8 @@ void DraggablePixmapItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *) {
     if (eventType == Event::Type::Warp) {
         WarpEvent *warp = dynamic_cast<WarpEvent *>(this->event);
         QString destMap = warp->getDestinationMap();
-        bool ok;
-        int warpId = ParseUtil::gameStringToInt(warp->getDestinationWarpID(), &ok);
-        if (ok) emit editor->warpEventDoubleClicked(destMap, warpId, Event::Group::Warp);
+        int warpId = ParseUtil::gameStringToInt(warp->getDestinationWarpID());
+        emit editor->warpEventDoubleClicked(destMap, warpId, Event::Group::Warp);
     }
     else if (eventType == Event::Type::CloneObject) {
         CloneObjectEvent *clone = dynamic_cast<CloneObjectEvent *>(this->event);
