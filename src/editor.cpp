@@ -1747,7 +1747,7 @@ void Editor::setConnectionMap(QString mapName) {
     if (!selected_connection_item)
         return;
 
-    if (mapName.isEmpty() || mapName == NONE_MAP_NAME) {
+    if (mapName.isEmpty() || mapName == DYNAMIC_MAP_NAME) {
         removeCurrentConnection();
         return;
     }
@@ -1899,7 +1899,7 @@ void Editor::updateDiveEmergeMap(QString mapName, QString direction) {
         }
     }
 
-    if (mapName.isEmpty() || mapName == NONE_MAP_NAME) {
+    if (mapName.isEmpty() || mapName == DYNAMIC_MAP_NAME) {
         // Remove dive/emerge connection
         if (connection) {
             map->connections.removeOne(connection);

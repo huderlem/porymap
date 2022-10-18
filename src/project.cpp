@@ -1762,9 +1762,9 @@ bool Project::readMapGroups() {
         }
     }
 
-    mapConstantsToMapNames.insert(NONE_MAP_CONSTANT, NONE_MAP_NAME);
-    mapNamesToMapConstants.insert(NONE_MAP_NAME, NONE_MAP_CONSTANT);
-    maps.append(NONE_MAP_NAME);
+    mapConstantsToMapNames.insert(DYNAMIC_MAP_CONSTANT, DYNAMIC_MAP_NAME);
+    mapNamesToMapConstants.insert(DYNAMIC_MAP_NAME, DYNAMIC_MAP_CONSTANT);
+    maps.append(DYNAMIC_MAP_NAME);
 
     groupNames = groups;
     groupedMapNames = groupedMaps;

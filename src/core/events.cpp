@@ -321,8 +321,8 @@ bool CloneObjectEvent::loadFromJson(QJsonObject json, Project *project) {
     QString mapConstant = ParseUtil::jsonToQString(json["target_map"]);
     if (project->mapConstantsToMapNames.contains(mapConstant)) {
         this->setTargetMap(project->mapConstantsToMapNames.value(mapConstant));
-    } else if (mapConstant == NONE_MAP_CONSTANT) {
-        this->setTargetMap(NONE_MAP_NAME);
+    } else if (mapConstant == DYNAMIC_MAP_CONSTANT) {
+        this->setTargetMap(DYNAMIC_MAP_NAME);
     } else {
         logError(QString("Destination map constant '%1' is invalid").arg(mapConstant));
         return false;
@@ -431,8 +431,8 @@ bool WarpEvent::loadFromJson(QJsonObject json, Project *project) {
     QString mapConstant = ParseUtil::jsonToQString(json["dest_map"]);
     if (project->mapConstantsToMapNames.contains(mapConstant)) {
         this->setDestinationMap(project->mapConstantsToMapNames.value(mapConstant));
-    } else if (mapConstant == NONE_MAP_CONSTANT) {
-        this->setDestinationMap(NONE_MAP_NAME);
+    } else if (mapConstant == DYNAMIC_MAP_CONSTANT) {
+        this->setDestinationMap(DYNAMIC_MAP_NAME);
     } else {
         logError(QString("Destination map constant '%1' is invalid for warp").arg(mapConstant));
         return false;
