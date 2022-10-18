@@ -640,12 +640,13 @@ All tileset functions are callable via the global ``map`` object.
    :param number paletteIndex: the palette index
    :returns array: array of colors. Each color is a 3-element RGB array
 
-.. js:function:: map.setPrimaryTilesetPalettePreview(paletteIndex, colors)
+.. js:function:: map.setPrimaryTilesetPalettePreview(paletteIndex, colors, forceRedraw = true)
 
    Sets a palette in the primary tileset of the currently-opened map. This will NOT affect the true underlying colors--it only displays these colors in the map-editing area of Porymap.
 
    :param number paletteIndex: the palette index
    :param array colors: array of colors. Each color is a 3-element RGB array
+   :param boolean forceRedraw: Redraw the elements with the updated palette. Defaults to ``true``. Redrawing the elements that use palettes is expensive, so it can be useful to batch together many calls to palette functions and only set ``redraw`` to ``true`` on the final call.
 
 .. js:function:: map.getPrimaryTilesetPalettesPreview()
 
@@ -653,11 +654,12 @@ All tileset functions are callable via the global ``map`` object.
 
    :returns array: array of arrays of colors. Each color is a 3-element RGB array
 
-.. js:function:: map.setPrimaryTilesetPalettesPreview(palettes)
+.. js:function:: map.setPrimaryTilesetPalettesPreview(palettes, forceRedraw = true)
 
    Sets all of the palettes in the primary tileset of the currently-opened map. This will NOT affect the true underlying colors--it only displays these colors in the map-editing area of Porymap.
 
    :param array palettes: array of arrays of colors. Each color is a 3-element RGB array
+   :param boolean forceRedraw: Redraw the elements with the updated palettes. Defaults to ``true``. Redrawing the elements that use palettes is expensive, so it can be useful to batch together many calls to palette functions and only set ``redraw`` to ``true`` on the final call.
 
 .. js:function:: map.getSecondaryTilesetPalettePreview(paletteIndex)
 
@@ -666,12 +668,13 @@ All tileset functions are callable via the global ``map`` object.
    :param number paletteIndex: the palette index
    :returns array: array of colors. Each color is a 3-element RGB array
 
-.. js:function:: map.setSecondaryTilesetPalettePreview(paletteIndex, colors)
+.. js:function:: map.setSecondaryTilesetPalettePreview(paletteIndex, colors, forceRedraw = true)
 
    Sets a palette in the secondary tileset of the currently-opened map. This will NOT affect the true underlying colors--it only displays these colors in the map-editing area of Porymap.
 
    :param number paletteIndex: the palette index
    :param array colors: array of colors. Each color is a 3-element RGB array
+   :param boolean forceRedraw: Redraw the elements with the updated palette. Defaults to ``true``. Redrawing the elements that use palettes is expensive, so it can be useful to batch together many calls to palette functions and only set ``redraw`` to ``true`` on the final call.
 
 .. js:function:: map.getSecondaryTilesetPalettesPreview()
 
@@ -679,11 +682,12 @@ All tileset functions are callable via the global ``map`` object.
 
    :returns array: array of arrays of colors. Each color is a 3-element RGB array
 
-.. js:function:: map.setSecondaryTilesetPalettesPreview(palettes)
+.. js:function:: map.setSecondaryTilesetPalettesPreview(palettes, forceRedraw = true)
 
    Sets all of the palettes in the secondary tileset of the currently-opened map. This will NOT affect the true underlying colors--it only displays these colors in the map-editing area of Porymap.
 
    :param array palettes: array of arrays of colors. Each color is a 3-element RGB array
+   :param boolean forceRedraw: Redraw the elements with the updated palettes. Defaults to ``true``. Redrawing the elements that use palettes is expensive, so it can be useful to batch together many calls to palette functions and only set ``redraw`` to ``true`` on the final call.
 
 .. js:function:: map.getPrimaryTilesetPalette(paletteIndex)
 
@@ -692,12 +696,13 @@ All tileset functions are callable via the global ``map`` object.
    :param number paletteIndex: the palette index
    :returns array: array of colors. Each color is a 3-element RGB array
 
-.. js:function:: map.setPrimaryTilesetPalette(paletteIndex, colors)
+.. js:function:: map.setPrimaryTilesetPalette(paletteIndex, colors, forceRedraw = true)
 
    Sets a palette in the primary tileset of the currently-opened map. This will permanently affect the palette and save the palette to disk.
 
    :param number paletteIndex: the palette index
    :param array colors: array of colors. Each color is a 3-element RGB array
+   :param boolean forceRedraw: Redraw the elements with the updated palette. Defaults to ``true``. Redrawing the elements that use palettes is expensive, so it can be useful to batch together many calls to palette functions and only set ``redraw`` to ``true`` on the final call.
 
 .. js:function:: map.getPrimaryTilesetPalettes()
 
@@ -705,11 +710,12 @@ All tileset functions are callable via the global ``map`` object.
 
    :returns array: array of arrays of colors. Each color is a 3-element RGB array
 
-.. js:function:: map.setPrimaryTilesetPalettes(palettes)
+.. js:function:: map.setPrimaryTilesetPalettes(palettes, forceRedraw = true)
 
    Sets all of the palettes in the primary tileset of the currently-opened map. This will permanently affect the palettes and save the palettes to disk.
 
    :param array palettes: array of arrays of colors. Each color is a 3-element RGB array
+   :param boolean forceRedraw: Redraw the elements with the updated palettes. Defaults to ``true``. Redrawing the elements that use palettes is expensive, so it can be useful to batch together many calls to palette functions and only set ``redraw`` to ``true`` on the final call.
 
 .. js:function:: map.getSecondaryTilesetPalette(paletteIndex)
 
@@ -718,12 +724,13 @@ All tileset functions are callable via the global ``map`` object.
    :param number paletteIndex: the palette index
    :returns array: array of colors. Each color is a 3-element RGB array
 
-.. js:function:: map.setSecondaryTilesetPalette(paletteIndex, colors)
+.. js:function:: map.setSecondaryTilesetPalette(paletteIndex, colors, forceRedraw = true)
 
    Sets a palette in the secondary tileset of the currently-opened map. This will permanently affect the palette and save the palette to disk.
 
    :param number paletteIndex: the palette index
    :param array colors: array of colors. Each color is a 3-element RGB array
+   :param boolean forceRedraw: Redraw the elements with the updated palette. Defaults to ``true``. Redrawing the elements that use palettes is expensive, so it can be useful to batch together many calls to palette functions and only set ``redraw`` to ``true`` on the final call.
 
 .. js:function:: map.getSecondaryTilesetPalettes()
 
@@ -731,11 +738,12 @@ All tileset functions are callable via the global ``map`` object.
 
    :returns array: array of arrays of colors. Each color is a 3-element RGB array
 
-.. js:function:: map.setSecondaryTilesetPalettes(palettes)
+.. js:function:: map.setSecondaryTilesetPalettes(palettes, forceRedraw = true)
 
    Sets all of the palettes in the secondary tileset of the currently-opened map. This will permanently affect the palettes and save the palettes to disk.
 
    :param array palettes: array of arrays of colors. Each color is a 3-element RGB array
+   :param boolean forceRedraw: Redraw the elements with the updated palettes. Defaults to ``true``. Redrawing the elements that use palettes is expensive, so it can be useful to batch together many calls to palette functions and only set ``redraw`` to ``true`` on the final call.
 
 .. js:function:: map.getMetatileLayerOrder()
 
