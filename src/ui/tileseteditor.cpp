@@ -348,25 +348,37 @@ void TilesetEditor::onHoveredMetatileCleared() {
     this->ui->statusbar->clearMessage();
 }
 
+void TilesetEditor::setComboValue(QComboBox * combo, int value) {
+    int index = combo->findData(value);
+    if (index >= 0) {
+        // Valid item
+        combo->setCurrentIndex(index);
+    } else if (combo->isEditable()) {
+        // Invalid item in editable box, just display the text
+        combo->setCurrentText(QString::number(value));
+    } else {
+        // Invalid item in uneditable box, display text as placeholder
+        // On Qt < 5.15 this will display an empty box
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
+        combo->setPlaceholderText(QString::number(value));
+#endif
+        combo->setCurrentIndex(index);
+    }
+}
+
 void TilesetEditor::onSelectedMetatileChanged(uint16_t metatileId) {
     this->metatile = Tileset::getMetatile(metatileId, this->primaryTileset, this->secondaryTileset);
     this->metatileLayersItem->setMetatile(metatile);
     this->metatileLayersItem->draw();
     this->ui->graphicsView_metatileLayers->setFixedSize(this->metatileLayersItem->pixmap().width() + 2, this->metatileLayersItem->pixmap().height() + 2);
-
-    int index = this->ui->comboBox_metatileBehaviors->findData(this->metatile->behavior);
-    if (index != -1)
-        this->ui->comboBox_metatileBehaviors->setCurrentIndex(index);
-    else
-        this->ui->comboBox_metatileBehaviors->setCurrentText(QString::number(this->metatile->behavior));
-
     this->ui->lineEdit_metatileLabel->setText(this->metatile->label);
+    setComboValue(this->ui->comboBox_metatileBehaviors, this->metatile->behavior);
     if (!projectConfig.getTripleLayerMetatilesEnabled()) {
-        this->ui->comboBox_layerType->setCurrentIndex(this->ui->comboBox_layerType->findData(this->metatile->layerType));
+        setComboValue(this->ui->comboBox_layerType, this->metatile->layerType);
     }
     if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
-        this->ui->comboBox_encounterType->setCurrentIndex(this->ui->comboBox_encounterType->findData(this->metatile->encounterType));
-        this->ui->comboBox_terrainType->setCurrentIndex(this->ui->comboBox_terrainType->findData(this->metatile->terrainType));
+        setComboValue(this->ui->comboBox_encounterType, this->metatile->encounterType);
+        setComboValue(this->ui->comboBox_terrainType, this->metatile->terrainType);
     }
 }
 

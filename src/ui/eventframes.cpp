@@ -334,18 +334,11 @@ void ObjectFrame::initialize() {
     const QSignalBlocker blocker(this);
     EventFrame::initialize();
 
-    int index = -1;
-
     // sprite
-    index = this->combo_sprite->findText(this->object->getGfx());
-    if (index < 0) {
-        this->combo_sprite->setCurrentText(this->object->getGfx());
-    } else {
-        this->combo_sprite->setCurrentIndex(index);
-    }
+    this->combo_sprite->setTextItem(this->object->getGfx());
 
     // movement
-    this->combo_movement->setCurrentIndex(this->combo_movement->findText(this->object->getMovement()));
+    this->combo_movement->setTextItem(this->object->getMovement());
 
     // radius
     this->spinner_radius_x->setValue(this->object->getRadiusX());
@@ -357,15 +350,10 @@ void ObjectFrame::initialize() {
         this->button_script->hide();
 
     // flag
-    index = this->combo_flag->findText(this->object->getFlag());
-    if (index < 0) {
-        this->combo_flag->setCurrentText(this->object->getFlag());
-    } else {
-        this->combo_flag->setCurrentIndex(index);
-    }
+    this->combo_flag->setTextItem(this->object->getFlag());
 
     // trainer type
-    this->combo_trainer_type->setCurrentIndex(this->combo_trainer_type->findText(this->object->getTrainerType()));
+    this->combo_trainer_type->setTextItem(this->object->getTrainerType());
 
     // sight berry
     this->combo_radius_treeid->setCurrentText(this->object->getSightRadiusBerryTreeID());
@@ -463,8 +451,6 @@ void CloneObjectFrame::initialize() {
     const QSignalBlocker blocker(this);
     EventFrame::initialize();
 
-    int index = -1;
-
     // sprite
     this->combo_sprite->setCurrentText(this->clone->getGfx());
 
@@ -474,12 +460,7 @@ void CloneObjectFrame::initialize() {
     this->spinner_target_id->setValue(this->clone->getTargetID());
 
     // target map
-    index = this->combo_target_map->findText(this->clone->getTargetMap());
-    if (index < 0) {
-        this->combo_target_map->setCurrentText(this->clone->getTargetMap());
-    } else {
-        this->combo_target_map->setCurrentIndex(index);
-    }
+    this->combo_target_map->setTextItem(this->clone->getTargetMap());
 }
 
 void CloneObjectFrame::populate(Project *project) {
@@ -542,15 +523,8 @@ void WarpFrame::initialize() {
     const QSignalBlocker blocker(this);
     EventFrame::initialize();
 
-    int index = -1;
-
     // dest map
-    index = this->combo_dest_map->findText(this->warp->getDestinationMap());
-    if (index < 0) {
-        this->combo_dest_map->setCurrentText(this->warp->getDestinationMap());
-    } else {
-        this->combo_dest_map->setCurrentIndex(index);
-    }
+    this->combo_dest_map->setTextItem(this->warp->getDestinationMap());
 
     // dest id
     this->spinner_dest_warp->setValue(this->warp->getDestinationWarpID());
@@ -631,18 +605,11 @@ void TriggerFrame::initialize() {
     const QSignalBlocker blocker(this);
     EventFrame::initialize();
 
-    int index = -1;
-
     // script
     this->combo_script->setCurrentText(this->trigger->getScriptLabel());
 
     // var
-    index = this->combo_var->findText(this->trigger->getScriptVar());
-    if (index < 0) {
-        this->combo_var->setCurrentText(this->trigger->getScriptVar());
-    } else {
-        this->combo_var->setCurrentIndex(index);
-    }
+    this->combo_var->setTextItem(this->trigger->getScriptVar());
 
     // var value
     this->combo_var_value->setCurrentText(this->trigger->getScriptVarValue());
@@ -709,15 +676,8 @@ void WeatherTriggerFrame::initialize() {
     const QSignalBlocker blocker(this);
     EventFrame::initialize();
 
-    int index = -1;
-
     // weather
-    index = this->combo_weather->findText(this->weatherTrigger->getWeather());
-    if (index < 0) {
-        this->combo_weather->setCurrentText(this->weatherTrigger->getWeather());
-    } else {
-        this->combo_weather->setCurrentIndex(index);
-    }
+    this->combo_weather->setTextItem(this->weatherTrigger->getWeather());
 }
 
 void WeatherTriggerFrame::populate(Project *project) {
@@ -782,15 +742,8 @@ void SignFrame::initialize() {
     const QSignalBlocker blocker(this);
     EventFrame::initialize();
 
-    int index = -1;
-
     // facing dir
-    index = this->combo_facing_dir->findText(this->sign->getFacingDirection());
-    if (index < 0) {
-        this->combo_facing_dir->setCurrentText(this->sign->getFacingDirection());
-    } else {
-        this->combo_facing_dir->setCurrentIndex(index);
-    }
+    this->combo_facing_dir->setTextItem(this->sign->getFacingDirection());
 
     // script
     this->combo_script->setCurrentText(this->sign->getScriptLabel());
@@ -905,23 +858,11 @@ void HiddenItemFrame::initialize() {
     const QSignalBlocker blocker(this);
     EventFrame::initialize();
 
-    int index = -1;
-
     // item
-    index = this->combo_item->findText(this->hiddenItem->getItem());
-    if (index < 0) {
-        this->combo_item->setCurrentText(this->hiddenItem->getItem());
-    } else {
-        this->combo_item->setCurrentIndex(index);
-    }
+    this->combo_item->setTextItem(this->hiddenItem->getItem());
 
     // flag
-    index = this->combo_flag->findText(this->hiddenItem->getFlag());
-    if (index < 0) {
-        this->combo_flag->setCurrentText(this->hiddenItem->getFlag());
-    } else {
-        this->combo_flag->setCurrentIndex(index);
-    }
+    this->combo_flag->setTextItem(this->hiddenItem->getFlag());
 
     // quantity
     if (projectConfig.getHiddenItemQuantityEnabled()) {
@@ -986,15 +927,8 @@ void SecretBaseFrame::initialize() {
     const QSignalBlocker blocker(this);
     EventFrame::initialize();
 
-    int index = -1;
-
     // id
-    index = this->combo_base_id->findText(this->secretBase->getBaseID());
-    if (index < 0) {
-        this->combo_base_id->setCurrentText(this->secretBase->getBaseID());
-    } else {
-        this->combo_base_id->setCurrentIndex(index);
-    }
+    this->combo_base_id->setTextItem(this->secretBase->getBaseID());
 }
 
 void SecretBaseFrame::populate(Project *project) {
@@ -1065,19 +999,14 @@ void HealLocationFrame::initialize() {
     const QSignalBlocker blocker(this);
     EventFrame::initialize();
 
-    if (projectConfig.getHealLocationRespawnDataEnabled()) {
-        int index = this->combo_respawn_map->findText(this->healLocation->getRespawnMap());
-        if (index < 0) {
-            this->combo_respawn_map->setCurrentText(this->healLocation->getRespawnMap());
-        } else {
-            this->combo_respawn_map->setCurrentIndex(index);
-        }
-
+    bool respawnEnabled = projectConfig.getHealLocationRespawnDataEnabled();
+    if (respawnEnabled) {
+        this->combo_respawn_map->setTextItem(this->healLocation->getRespawnMap());
         this->spinner_respawn_npc->setValue(this->healLocation->getRespawnNPC());
     }
 
-    this->hideable_respawn_map->setVisible(projectConfig.getHealLocationRespawnDataEnabled());
-    this->hideable_respawn_npc->setVisible(projectConfig.getHealLocationRespawnDataEnabled());
+    this->hideable_respawn_map->setVisible(respawnEnabled);
+    this->hideable_respawn_npc->setVisible(respawnEnabled);
 }
 
 void HealLocationFrame::populate(Project *project) {
