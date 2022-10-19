@@ -25,6 +25,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 
 ### Changed
 - Overhauled the region map editor, adding support for tilemaps, and significant customization. Also now supports pokefirered.
+- The Custom Attributes table for map headers and events now supports types other than strings.
 - If an object event is inanimate, it will always render using its first frame.
 - Unused metatile attribute bits are preserved instead of being cleared.
 - The wild encounter editor is automatically disabled if the encounter JSON data cannot be read
@@ -35,6 +36,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Palette editor ui is updated a bit to allow hex and rgb value input.
 - The metatile behavior is now displayed in the bottom bar mouseover text.
 - Removed some unnecessary error logs from the scripting API and added new useful ones.
+- If any JSON data is the incorrect type Porymap will now attempt to convert it.
 
 ### Fixed
 - Fix cursor tile outline not updating at the end of a dragged selection.
