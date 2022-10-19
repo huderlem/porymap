@@ -1199,7 +1199,7 @@ All overlay functions are callable via the global ``overlay`` object.
 
 .. js:function:: overlay.addText(text, x, y, color = "#000000", size = 12, layer = 0)
 
-   Adds a text item to the specified overlay layer.
+   Adds a text item to the specified overlay layer. Text can be additionally formatted with a `limited set of HTML tags <https://doc.qt.io/qt-5/richtext-html-subset.html#supported-tags>`_. Note that only text can be displayed, so text decoration like underlines or table borders will not appear.
 
    :param string text: the text to display
    :param number x: the x pixel coordinate of the text (relative to the layer's position)
