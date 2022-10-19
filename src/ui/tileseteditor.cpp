@@ -353,7 +353,13 @@ void TilesetEditor::onSelectedMetatileChanged(uint16_t metatileId) {
     this->metatileLayersItem->setMetatile(metatile);
     this->metatileLayersItem->draw();
     this->ui->graphicsView_metatileLayers->setFixedSize(this->metatileLayersItem->pixmap().width() + 2, this->metatileLayersItem->pixmap().height() + 2);
-    this->ui->comboBox_metatileBehaviors->setCurrentIndex(this->ui->comboBox_metatileBehaviors->findData(this->metatile->behavior));
+
+    int index = this->ui->comboBox_metatileBehaviors->findData(this->metatile->behavior);
+    if (index != -1)
+        this->ui->comboBox_metatileBehaviors->setCurrentIndex(index);
+    else
+        this->ui->comboBox_metatileBehaviors->setCurrentText(QString::number(this->metatile->behavior));
+
     this->ui->lineEdit_metatileLabel->setText(this->metatile->label);
     if (!projectConfig.getTripleLayerMetatilesEnabled()) {
         this->ui->comboBox_layerType->setCurrentIndex(this->ui->comboBox_layerType->findData(this->metatile->layerType));

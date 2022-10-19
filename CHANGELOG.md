@@ -58,6 +58,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix drawing large amounts of text with the scripting API causing a significant drop in performance.
 - Silence unnecessary error logging when parsing C defines Porymap doesn't use.
 - Fix some windows like the Tileset Editor not raising to the front when reactivated.
+- Metatile behaviors with no constant will now display their value in the Tileset Editor.
 
 ## [4.5.0] - 2021-12-26
 ### Added
