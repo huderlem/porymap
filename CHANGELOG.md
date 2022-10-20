@@ -51,6 +51,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix cursor tile and player view outlines not updating immediately when toggled in Collision view.
 - Fix selected space not updating while painting in Collision view.
 - Fix collision values of 2 or 3 not rendering properly.
+- Fix the map tree view arrows not displaying for custom themes.
 - Fix the map music dropdown being empty when importing a map from Advance Map.
 - Fix object events added by pasting ignoring the map event limit.
 - Fix a bug where saving the tileset editor would reselect the main editor's first selected metatile.
