@@ -246,6 +246,30 @@ QTreeView::branch {
     background: #19232D;
 }
 
+QTreeView::branch:has-siblings:!adjoins-item {
+    border-image: url(:/icons/ui/dark_vline.png) 0;
+}
+
+QTreeView::branch:has-siblings:adjoins-item {
+    border-image: url(:/icons/ui/dark_branch_more.png) 0;
+}
+
+QTreeView::branch:!has-children:!has-siblings:adjoins-item {
+    border-image: url(:/icons/ui/dark_branch_end.png) 0;
+}
+
+QTreeView::branch:has-children:!has-siblings:closed,
+QTreeView::branch:closed:has-children:has-siblings {
+        border-image: none;
+        image: url(:/icons/ui/dark_branch_closed.png);
+}
+
+QTreeView::branch:open:has-children:!has-siblings,
+QTreeView::branch:open:has-children:has-siblings  {
+        border-image: none;
+        image: url(:/icons/ui/dark_branch_open.png);
+}
+
 /* Scroll Bar */
 
 QScrollBar::vertical {

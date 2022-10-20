@@ -39,6 +39,14 @@
         <file>icons/ui/dark_checkbox_unchecked_disabled@2x.png</file>
         <file>icons/ui/dark_checkbox_unchecked.png</file>
         <file>icons/ui/dark_checkbox_unchecked@2x.png</file>
+        <file>icons/ui/dark_branch_closed.png</file>
+        <file>icons/ui/dark_branch_closed@2x.png</file>
+        <file>icons/ui/dark_branch_open.png</file>
+        <file>icons/ui/dark_branch_open@2x.png</file>
+        <file>icons/ui/dark_branch_end.png</file>
+        <file>icons/ui/dark_branch_end@2x.png</file>
+        <file>icons/ui/dark_branch_more.png</file>
+        <file>icons/ui/dark_branch_more@2x.png</file>
         <file>icons/ui/midnight_checkbox_checked_disabled.png</file>
         <file>icons/ui/midnight_checkbox_checked_disabled@2x.png</file>
         <file>icons/ui/midnight_checkbox_checked.png</file>
@@ -47,6 +55,14 @@
         <file>icons/ui/midnight_checkbox_unchecked_disabled@2x.png</file>
         <file>icons/ui/midnight_checkbox_unchecked.png</file>
         <file>icons/ui/midnight_checkbox_unchecked@2x.png</file>
+        <file>icons/ui/midnight_branch_closed.png</file>
+        <file>icons/ui/midnight_branch_closed@2x.png</file>
+        <file>icons/ui/midnight_branch_open.png</file>
+        <file>icons/ui/midnight_branch_open@2x.png</file>
+        <file>icons/ui/midnight_branch_end.png</file>
+        <file>icons/ui/midnight_branch_end@2x.png</file>
+        <file>icons/ui/midnight_branch_more.png</file>
+        <file>icons/ui/midnight_branch_more@2x.png</file>
         <file>images/blank_tileset.png</file>
         <file>images/collisions.png</file>
         <file>images/Entities_16x16.png</file>
