@@ -9,6 +9,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ## [Unreleased]
 ### Breaking Changes
 - Proper support for pokefirered's clone objects was added, which requires the changes made in [pokefirered/#484](https://github.com/pret/pokefirered/pull/484).
+- Warp IDs are now treated as strings, which requires the change to `mapjson` made in [pokeemerald/#1755](https://github.com/pret/pokeemerald/pull/1755). Additionally `MAP_NONE` was renamed to `MAP_DYNAMIC`. Both changes also apply to pokefirered and pokeruby.
 - Many API functions which were previously accessible via the `map` object are now accessible via one of the new objects `overlay`, `utility`, or `constants`. Some functions were renamed accordingly. See [porymap/#460](https://github.com/huderlem/porymap/pull/460) for a full list of API function name changes.
 - Arguments for the API function `createImage` have changed: `xflip` and `yflip`  have been replaced with `hScale` and `vScale`, and `offset` has been replaced with `xOffset` and `yOffset`.
 - The API function `addFilledRect` has been removed; it's been replaced by new arguments in `addRect`: `color` has been replaced with `borderColor` and `fillColor`, and a new `rounding` argument allows ellipses to be drawn.
