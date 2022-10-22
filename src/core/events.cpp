@@ -43,7 +43,7 @@ void Event::readCustomValues(QJsonObject values) {
     QSet<QString> expectedFields = this->getExpectedFields();
     for (QString key : values.keys()) {
         if (!expectedFields.contains(key)) {
-            this->customValues[key] = values[key].toString();
+            this->customValues[key] = values[key];
         }
     }
 }
@@ -51,13 +51,30 @@ void Event::readCustomValues(QJsonObject values) {
 void Event::addCustomValuesTo(OrderedJson::object *obj) {
     for (QString key : this->customValues.keys()) {
         if (!obj->contains(key)) {
-            (*obj)[key] = this->customValues[key];
+            (*obj)[key] = OrderedJson::fromQJsonValue(this->customValues[key]);
         }
     }
 }
 
 void Event::modify() {
     this->map->modify();
+}
+
+QString Event::eventGroupToString(Event::Group group) {
+    switch (group) {
+    case Event::Group::Object:
+        return "Object";
+    case Event::Group::Warp:
+        return "Warp";
+    case Event::Group::Coord:
+        return "Trigger";
+    case Event::Group::Bg:
+        return "BG";
+    case Event::Group::Heal:
+        return "Healspot";
+    default:
+        return "";
+    }
 }
 
 QString Event::eventTypeToString(Event::Type type) {
@@ -163,17 +180,17 @@ OrderedJson::object ObjectEvent::buildEventJson(Project *) {
 }
 
 bool ObjectEvent::loadFromJson(QJsonObject json, Project *) {
-    this->setX(json["x"].toInt());
-    this->setY(json["y"].toInt());
-    this->setElevation(json["elevation"].toInt());
-    this->setGfx(json["graphics_id"].toString());
-    this->setMovement(json["movement_type"].toString());
-    this->setRadiusX(json["movement_range_x"].toInt());
-    this->setRadiusY(json["movement_range_y"].toInt());
-    this->setTrainerType(json["trainer_type"].toString());
-    this->setSightRadiusBerryTreeID(json["trainer_sight_or_berry_tree_id"].toString());
-    this->setScript(json["script"].toString());
-    this->setFlag(json["flag"].toString());
+    this->setX(ParseUtil::jsonToInt(json["x"]));
+    this->setY(ParseUtil::jsonToInt(json["y"]));
+    this->setElevation(ParseUtil::jsonToInt(json["elevation"]));
+    this->setGfx(ParseUtil::jsonToQString(json["graphics_id"]));
+    this->setMovement(ParseUtil::jsonToQString(json["movement_type"]));
+    this->setRadiusX(ParseUtil::jsonToInt(json["movement_range_x"]));
+    this->setRadiusY(ParseUtil::jsonToInt(json["movement_range_y"]));
+    this->setTrainerType(ParseUtil::jsonToQString(json["trainer_type"]));
+    this->setSightRadiusBerryTreeID(ParseUtil::jsonToQString(json["trainer_sight_or_berry_tree_id"]));
+    this->setScript(ParseUtil::jsonToQString(json["script"]));
+    this->setFlag(ParseUtil::jsonToQString(json["flag"]));
     
     this->readCustomValues(json);
 
@@ -220,7 +237,7 @@ void ObjectEvent::loadPixmap(Project *project) {
         // Invalid gfx constant.
         // If this is a number, try to use that instead.
         bool ok;
-        int altGfx = this->gfx.toInt(&ok);
+        int altGfx = ParseUtil::gameStringToInt(this->gfx, &ok);
         if (ok && (altGfx < project->gfxDefines.count())) {
             eventGfx = project->eventGraphicsMap.value(project->gfxDefines.key(altGfx, "NULL"), nullptr);
         }
@@ -311,20 +328,20 @@ OrderedJson::object CloneObjectEvent::buildEventJson(Project *project) {
 }
 
 bool CloneObjectEvent::loadFromJson(QJsonObject json, Project *project) {
-    this->setX(json["x"].toInt());
-    this->setY(json["y"].toInt());
-    this->setGfx(json["graphics_id"].toString());
-    this->setTargetID(json["target_local_id"].toInt());
+    this->setX(ParseUtil::jsonToInt(json["x"]));
+    this->setY(ParseUtil::jsonToInt(json["y"]));
+    this->setGfx(ParseUtil::jsonToQString(json["graphics_id"]));
+    this->setTargetID(ParseUtil::jsonToInt(json["target_local_id"]));
 
     // Ensure the target map constant is valid before adding it to the events.
-    QString mapConstant = json["target_map"].toString();
+    QString mapConstant = ParseUtil::jsonToQString(json["target_map"]);
     if (project->mapConstantsToMapNames.contains(mapConstant)) {
         this->setTargetMap(project->mapConstantsToMapNames.value(mapConstant));
-    } else if (mapConstant == NONE_MAP_CONSTANT) {
-        this->setTargetMap(NONE_MAP_NAME);
+    } else if (mapConstant == DYNAMIC_MAP_CONSTANT) {
+        this->setTargetMap(DYNAMIC_MAP_NAME);
     } else {
-        logError(QString("Destination map constant '%1' is invalid").arg(mapConstant));
-        return false;
+        logWarn(QString("Target Map constant '%1' is invalid. Using default '%2'.").arg(mapConstant).arg(DYNAMIC_MAP_CONSTANT));
+        this->setTargetMap(DYNAMIC_MAP_NAME);
     }
 
     this->readCustomValues(json);
@@ -421,20 +438,20 @@ OrderedJson::object WarpEvent::buildEventJson(Project *project) {
 }
 
 bool WarpEvent::loadFromJson(QJsonObject json, Project *project) {
-    this->setX(json["x"].toInt());
-    this->setY(json["y"].toInt());
-    this->setElevation(json["elevation"].toInt());
-    this->setDestinationWarpID(json["dest_warp_id"].toInt());
+    this->setX(ParseUtil::jsonToInt(json["x"]));
+    this->setY(ParseUtil::jsonToInt(json["y"]));
+    this->setElevation(ParseUtil::jsonToInt(json["elevation"]));
+    this->setDestinationWarpID(ParseUtil::jsonToQString(json["dest_warp_id"]));
 
     // Ensure the warp destination map constant is valid before adding it to the warps.
-    QString mapConstant = json["dest_map"].toString();
+    QString mapConstant = ParseUtil::jsonToQString(json["dest_map"]);
     if (project->mapConstantsToMapNames.contains(mapConstant)) {
         this->setDestinationMap(project->mapConstantsToMapNames.value(mapConstant));
-    } else if (mapConstant == NONE_MAP_CONSTANT) {
-        this->setDestinationMap(NONE_MAP_NAME);
+    } else if (mapConstant == DYNAMIC_MAP_CONSTANT) {
+        this->setDestinationMap(DYNAMIC_MAP_NAME);
     } else {
-        logError(QString("Destination map constant '%1' is invalid for warp").arg(mapConstant));
-        return false;
+        logWarn(QString("Destination Map constant '%1' is invalid. Using default '%2'.").arg(mapConstant).arg(DYNAMIC_MAP_CONSTANT));
+        this->setDestinationMap(DYNAMIC_MAP_NAME);
     }
 
     this->readCustomValues(json);
@@ -444,7 +461,7 @@ bool WarpEvent::loadFromJson(QJsonObject json, Project *project) {
 
 void WarpEvent::setDefaultValues(Project *) {
     if (this->getMap()) this->setDestinationMap(this->getMap()->name);
-    this->setDestinationWarpID(0);
+    this->setDestinationWarpID("0");
     this->setElevation(0);
 }
 
@@ -515,12 +532,12 @@ OrderedJson::object TriggerEvent::buildEventJson(Project *) {
 }
 
 bool TriggerEvent::loadFromJson(QJsonObject json, Project *) {
-    this->setX(json["x"].toInt());
-    this->setY(json["y"].toInt());
-    this->setElevation(json["elevation"].toInt());
-    this->setScriptVar(json["var"].toString());
-    this->setScriptVarValue(json["var_value"].toString());
-    this->setScriptLabel(json["script"].toString());
+    this->setX(ParseUtil::jsonToInt(json["x"]));
+    this->setY(ParseUtil::jsonToInt(json["y"]));
+    this->setElevation(ParseUtil::jsonToInt(json["elevation"]));
+    this->setScriptVar(ParseUtil::jsonToQString(json["var"]));
+    this->setScriptVarValue(ParseUtil::jsonToQString(json["var_value"]));
+    this->setScriptLabel(ParseUtil::jsonToQString(json["script"]));
 
     this->readCustomValues(json);
 
@@ -589,10 +606,10 @@ OrderedJson::object WeatherTriggerEvent::buildEventJson(Project *) {
 }
 
 bool WeatherTriggerEvent::loadFromJson(QJsonObject json, Project *) {
-    this->setX(json["x"].toInt());
-    this->setY(json["y"].toInt());
-    this->setElevation(json["elevation"].toInt());
-    this->setWeather(json["weather"].toString());
+    this->setX(ParseUtil::jsonToInt(json["x"]));
+    this->setY(ParseUtil::jsonToInt(json["y"]));
+    this->setElevation(ParseUtil::jsonToInt(json["elevation"]));
+    this->setWeather(ParseUtil::jsonToQString(json["weather"]));
 
     this->readCustomValues(json);
 
@@ -665,11 +682,11 @@ OrderedJson::object SignEvent::buildEventJson(Project *) {
 }
 
 bool SignEvent::loadFromJson(QJsonObject json, Project *) {
-    this->setX(json["x"].toInt());
-    this->setY(json["y"].toInt());
-    this->setElevation(json["elevation"].toInt());
-    this->setFacingDirection(json["player_facing_dir"].toString());
-    this->setScriptLabel(json["script"].toString());
+    this->setX(ParseUtil::jsonToInt(json["x"]));
+    this->setY(ParseUtil::jsonToInt(json["y"]));
+    this->setElevation(ParseUtil::jsonToInt(json["elevation"]));
+    this->setFacingDirection(ParseUtil::jsonToQString(json["player_facing_dir"]));
+    this->setScriptLabel(ParseUtil::jsonToQString(json["script"]));
 
     this->readCustomValues(json);
 
@@ -746,16 +763,16 @@ OrderedJson::object HiddenItemEvent::buildEventJson(Project *) {
 }
 
 bool HiddenItemEvent::loadFromJson(QJsonObject json, Project *) {
-    this->setX(json["x"].toInt());
-    this->setY(json["y"].toInt());
-    this->setElevation(json["elevation"].toInt());
-    this->setItem(json["item"].toString());
-    this->setFlag(json["flag"].toString());
+    this->setX(ParseUtil::jsonToInt(json["x"]));
+    this->setY(ParseUtil::jsonToInt(json["y"]));
+    this->setElevation(ParseUtil::jsonToInt(json["elevation"]));
+    this->setItem(ParseUtil::jsonToQString(json["item"]));
+    this->setFlag(ParseUtil::jsonToQString(json["flag"]));
     if (projectConfig.getHiddenItemQuantityEnabled()) {
-        this->setQuantity(json["quantity"].toInt());
+        this->setQuantity(ParseUtil::jsonToInt(json["quantity"]));
     }
     if (projectConfig.getHiddenItemRequiresItemfinderEnabled()) {
-        this->setUnderfoot(json["underfoot"].toBool());
+        this->setUnderfoot(ParseUtil::jsonToBool(json["underfoot"]));
     }
 
     this->readCustomValues(json);
@@ -834,10 +851,10 @@ OrderedJson::object SecretBaseEvent::buildEventJson(Project *) {
 }
 
 bool SecretBaseEvent::loadFromJson(QJsonObject json, Project *) {
-    this->setX(json["x"].toInt());
-    this->setY(json["y"].toInt());
-    this->setElevation(json["elevation"].toInt());
-    this->setBaseID(json["secret_base_id"].toString());
+    this->setX(ParseUtil::jsonToInt(json["x"]));
+    this->setY(ParseUtil::jsonToInt(json["y"]));
+    this->setElevation(ParseUtil::jsonToInt(json["elevation"]));
+    this->setBaseID(ParseUtil::jsonToQString(json["secret_base_id"]));
 
     this->readCustomValues(json);
 

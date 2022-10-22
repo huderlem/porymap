@@ -151,8 +151,8 @@ public:
     virtual QSet<QString> getExpectedFields() = 0;
     void readCustomValues(QJsonObject values);
     void addCustomValuesTo(OrderedJson::object *obj);
-    QMap<QString, QString> getCustomValues() { return this->customValues; }
-    void setCustomValues(QMap<QString, QString> newCustomValues) { this->customValues = newCustomValues; }
+    const QMap<QString, QJsonValue> getCustomValues() { return this->customValues; }
+    void setCustomValues(const QMap<QString, QJsonValue> newCustomValues) { this->customValues = newCustomValues; }
 
     virtual void loadPixmap(Project *project) = 0;
 
@@ -173,6 +173,7 @@ public:
 
     int getEventIndex();
 
+    static QString eventGroupToString(Event::Group group);
     static QString eventTypeToString(Event::Type type);
     static Event::Type eventTypeFromString(QString type);
 
@@ -192,7 +193,7 @@ protected:
     int spriteHeight = 16;
     bool usingSprite = false;
 
-    QMap<QString, QString> customValues;
+    QMap<QString, QJsonValue> customValues;
 
     QPixmap pixmap;
     DraggablePixmapItem *pixmapItem = nullptr;
@@ -340,12 +341,12 @@ public:
     void setDestinationMap(QString newDestinationMap) { this->destinationMap = newDestinationMap; }
     QString getDestinationMap() { return this->destinationMap; }
 
-    void setDestinationWarpID(int newDestinationWarpID) { this->destinationWarpID = newDestinationWarpID; }
-    int getDestinationWarpID() { return this->destinationWarpID; }
+    void setDestinationWarpID(QString newDestinationWarpID) { this->destinationWarpID = newDestinationWarpID; }
+    QString getDestinationWarpID() { return this->destinationWarpID; }
 
 private:
     QString destinationMap;
-    int destinationWarpID = 0;
+    QString destinationWarpID;
 };
 
 

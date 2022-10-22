@@ -142,36 +142,36 @@ void Project::setNewMapConnections(Map *map) {
     map->connections.clear();
 }
 
-static QMap<QString, bool> defaultTopLevelMapFields {
-    {"id", true},
-    {"name", true},
-    {"layout", true},
-    {"music", true},
-    {"region_map_section", true},
-    {"requires_flash", true},
-    {"weather", true},
-    {"map_type", true},
-    {"show_map_name", true},
-    {"battle_scene", true},
-    {"connections", true},
-    {"object_events", true},
-    {"warp_events", true},
-    {"coord_events", true},
-    {"bg_events", true},
-    {"shared_events_map", true},
-    {"shared_scripts_map", true},
+const QSet<QString> defaultTopLevelMapFields = {
+    "id",
+    "name",
+    "layout",
+    "music",
+    "region_map_section",
+    "requires_flash",
+    "weather",
+    "map_type",
+    "show_map_name",
+    "battle_scene",
+    "connections",
+    "object_events",
+    "warp_events",
+    "coord_events",
+    "bg_events",
+    "shared_events_map",
+    "shared_scripts_map",
 };
 
-QMap<QString, bool> Project::getTopLevelMapFields() {
-    QMap<QString, bool> topLevelMapFields = defaultTopLevelMapFields;
+QSet<QString> Project::getTopLevelMapFields() {
+    QSet<QString> topLevelMapFields = defaultTopLevelMapFields;
     if (projectConfig.getBaseGameVersion() != BaseGameVersion::pokeruby) {
-        topLevelMapFields.insert("allow_cycling", true);
-        topLevelMapFields.insert("allow_escaping", true);
-        topLevelMapFields.insert("allow_running", true);
+        topLevelMapFields.insert("allow_cycling");
+        topLevelMapFields.insert("allow_escaping");
+        topLevelMapFields.insert("allow_running");
     }
 
     if (projectConfig.getFloorNumberEnabled()) {
-        topLevelMapFields.insert("floor_number", true);
+        topLevelMapFields.insert("floor_number");
     }
     return topLevelMapFields;
 }
@@ -190,25 +190,25 @@ bool Project::loadMapData(Map* map) {
 
     QJsonObject mapObj = mapDoc.object();
 
-    map->song = mapObj["music"].toString();
-    map->layoutId = mapObj["layout"].toString();
-    map->location = mapObj["region_map_section"].toString();
-    map->requiresFlash = QString::number(mapObj["requires_flash"].toBool());
-    map->weather = mapObj["weather"].toString();
-    map->type = mapObj["map_type"].toString();
-    map->requiresFlash = QString::number(mapObj["requires_flash"].toBool());
-    map->show_location = QString::number(mapObj["show_map_name"].toBool());
-    map->battle_scene = mapObj["battle_scene"].toString();
+    map->song          = ParseUtil::jsonToQString(mapObj["music"]);
+    map->layoutId      = ParseUtil::jsonToQString(mapObj["layout"]);
+    map->location      = ParseUtil::jsonToQString(mapObj["region_map_section"]);
+    map->requiresFlash = ParseUtil::jsonToBool(mapObj["requires_flash"]);
+    map->weather       = ParseUtil::jsonToQString(mapObj["weather"]);
+    map->type          = ParseUtil::jsonToQString(mapObj["map_type"]);
+    map->show_location = ParseUtil::jsonToBool(mapObj["show_map_name"]);
+    map->battle_scene  = ParseUtil::jsonToQString(mapObj["battle_scene"]);
+
     if (projectConfig.getBaseGameVersion() != BaseGameVersion::pokeruby) {
-        map->allowBiking = QString::number(mapObj["allow_cycling"].toBool());
-        map->allowEscapeRope = QString::number(mapObj["allow_escaping"].toBool());
-        map->allowRunning = QString::number(mapObj["allow_running"].toBool());
+        map->allowBiking   = ParseUtil::jsonToBool(mapObj["allow_cycling"]);
+        map->allowEscaping = ParseUtil::jsonToBool(mapObj["allow_escaping"]);
+        map->allowRunning  = ParseUtil::jsonToBool(mapObj["allow_running"]);
     }
     if (projectConfig.getFloorNumberEnabled()) {
-        map->floorNumber = mapObj["floor_number"].toInt();
+        map->floorNumber = ParseUtil::jsonToInt(mapObj["floor_number"]);
     }
-    map->sharedEventsMap = mapObj["shared_events_map"].toString();
-    map->sharedScriptsMap = mapObj["shared_scripts_map"].toString();
+    map->sharedEventsMap  = ParseUtil::jsonToQString(mapObj["shared_events_map"]);
+    map->sharedScriptsMap = ParseUtil::jsonToQString(mapObj["shared_scripts_map"]);
 
     // Events
     map->events[Event::Group::Object].clear();
@@ -217,7 +217,7 @@ bool Project::loadMapData(Map* map) {
     for (int i = 0; i < objectEventsArr.size(); i++) {
         QJsonObject event = objectEventsArr[i].toObject();
         // If clone objects are not enabled then no type field is present
-        QString type = hasCloneObjects ? event["type"].toString() : "object";
+        QString type = hasCloneObjects ? ParseUtil::jsonToQString(event["type"]) : "object";
         if (type.isEmpty() || type == "object") {
             ObjectEvent *object = new ObjectEvent();
             object->loadFromJson(event, this);
@@ -252,7 +252,7 @@ bool Project::loadMapData(Map* map) {
     QJsonArray coordEventsArr = mapObj["coord_events"].toArray();
     for (int i = 0; i < coordEventsArr.size(); i++) {
         QJsonObject event = coordEventsArr[i].toObject();
-        QString type = event["type"].toString();
+        QString type = ParseUtil::jsonToQString(event["type"]);
         if (type == "trigger") {
             TriggerEvent *coord = new TriggerEvent();
             coord->loadFromJson(event, this);
@@ -270,7 +270,7 @@ bool Project::loadMapData(Map* map) {
     QJsonArray bgEventsArr = mapObj["bg_events"].toArray();
     for (int i = 0; i < bgEventsArr.size(); i++) {
         QJsonObject event = bgEventsArr[i].toObject();
-        QString type = event["type"].toString();
+        QString type = ParseUtil::jsonToQString(event["type"]);
         if (type == "sign") {
             SignEvent *bg = new SignEvent();
             bg->loadFromJson(event, this);
@@ -319,9 +319,9 @@ bool Project::loadMapData(Map* map) {
         for (int i = 0; i < connectionsArr.size(); i++) {
             QJsonObject connectionObj = connectionsArr[i].toObject();
             MapConnection *connection = new MapConnection;
-            connection->direction = connectionObj["direction"].toString();
-            connection->offset = QString::number(connectionObj["offset"].toInt());
-            QString mapConstant = connectionObj["map"].toString();
+            connection->direction = ParseUtil::jsonToQString(connectionObj["direction"]);
+            connection->offset    = ParseUtil::jsonToInt(connectionObj["offset"]);
+            QString mapConstant   = ParseUtil::jsonToQString(connectionObj["map"]);
             if (mapConstantsToMapNames.contains(mapConstant)) {
                 connection->map_name = mapConstantsToMapNames.value(mapConstant);
                 map->connections.append(connection);
@@ -332,10 +332,10 @@ bool Project::loadMapData(Map* map) {
     }
 
     // Check for custom fields
-    QMap<QString, bool> baseFields = this->getTopLevelMapFields();
+    QSet<QString> baseFields = this->getTopLevelMapFields();
     for (QString key : mapObj.keys()) {
         if (!baseFields.contains(key)) {
-            map->customHeaders.insert(key, mapObj[key].toString());
+            map->customHeaders.insert(key, mapObj[key]);
         }
     }
 
@@ -355,7 +355,7 @@ QString Project::readMapLayoutId(QString map_name) {
     }
 
     QJsonObject mapObj = mapDoc.object();
-    return mapObj["layout"].toString();
+    return ParseUtil::jsonToQString(mapObj["layout"]);
 }
 
 QString Project::readMapLocation(QString map_name) {
@@ -371,23 +371,21 @@ QString Project::readMapLocation(QString map_name) {
     }
 
     QJsonObject mapObj = mapDoc.object();
-    return mapObj["region_map_section"].toString();
+    return ParseUtil::jsonToQString(mapObj["region_map_section"]);
 }
 
 void Project::setNewMapHeader(Map* map, int mapIndex) {
     map->layoutId = QString("%1").arg(mapIndex);
     map->location = mapSectionValueToName.value(0);
-    map->requiresFlash = "FALSE";
+    map->requiresFlash = false;
     map->weather = weatherNames.value(0, "WEATHER_NONE");
     map->type = mapTypes.value(0, "MAP_TYPE_NONE");
     map->song = defaultSong;
-    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeruby) {
-        map->show_location = "TRUE";
-    } else {
-        map->allowBiking = "1";
-        map->allowEscapeRope = "0";
-        map->allowRunning = "1";
-        map->show_location = "1";
+    map->show_location = true;
+    if (projectConfig.getBaseGameVersion() != BaseGameVersion::pokeruby) {
+        map->allowBiking = true;
+        map->allowEscaping = false;
+        map->allowRunning = true;
     }
     if (projectConfig.getFloorNumberEnabled()) {
         map->floorNumber = 0;
@@ -445,7 +443,7 @@ bool Project::readMapLayouts() {
         return false;
     }
 
-    layoutsLabel = layoutsObj["layouts_table_label"].toString();
+    layoutsLabel = ParseUtil::jsonToQString(layoutsObj["layouts_table_label"]);
     if (layoutsLabel.isNull()) {
         layoutsLabel = "gMapLayouts";
         logWarn(QString("'layouts_table_label' value is missing from %1. Defaulting to %2")
@@ -477,61 +475,61 @@ bool Project::readMapLayouts() {
             return false;
         }
         MapLayout *layout = new MapLayout();
-        layout->id = layoutObj["id"].toString();
+        layout->id = ParseUtil::jsonToQString(layoutObj["id"]);
         if (layout->id.isEmpty()) {
             logError(QString("Missing 'id' value on layout %1 in %2").arg(i).arg(layoutsFilepath));
             return false;
         }
-        layout->name = layoutObj["name"].toString();
+        layout->name = ParseUtil::jsonToQString(layoutObj["name"]);
         if (layout->name.isEmpty()) {
             logError(QString("Missing 'name' value on layout %1 in %2").arg(i).arg(layoutsFilepath));
             return false;
         }
-        int lwidth = layoutObj["width"].toInt();
+        int lwidth = ParseUtil::jsonToInt(layoutObj["width"]);
         if (lwidth <= 0) {
             logError(QString("Invalid layout 'width' value '%1' on layout %2 in %3. Must be greater than 0.").arg(lwidth).arg(i).arg(layoutsFilepath));
             return false;
         }
-        layout->width = QString::number(lwidth);
-        int lheight = layoutObj["height"].toInt();
+        layout->width = lwidth;
+        int lheight = ParseUtil::jsonToInt(layoutObj["height"]);
         if (lheight <= 0) {
             logError(QString("Invalid layout 'height' value '%1' on layout %2 in %3. Must be greater than 0.").arg(lheight).arg(i).arg(layoutsFilepath));
             return false;
         }
-        layout->height = QString::number(lheight);
+        layout->height = lheight;
         if (useCustomBorderSize) {
-            int bwidth = layoutObj["border_width"].toInt();
+            int bwidth = ParseUtil::jsonToInt(layoutObj["border_width"]);
             if (bwidth <= 0) {  // 0 is an expected border width/height that should be handled, GF used it for the RS layouts in FRLG
                 logWarn(QString("Invalid layout 'border_width' value '%1' on layout %2 in %3. Must be greater than 0. Using default (%4) instead.").arg(bwidth).arg(i).arg(layoutsFilepath).arg(DEFAULT_BORDER_WIDTH));
                 bwidth = DEFAULT_BORDER_WIDTH;
             }
-            layout->border_width = QString::number(bwidth);
-            int bheight = layoutObj["border_height"].toInt();
+            layout->border_width = bwidth;
+            int bheight = ParseUtil::jsonToInt(layoutObj["border_height"]);
             if (bheight <= 0) {
                 logWarn(QString("Invalid layout 'border_height' value '%1' on layout %2 in %3. Must be greater than 0. Using default (%4) instead.").arg(bheight).arg(i).arg(layoutsFilepath).arg(DEFAULT_BORDER_HEIGHT));
                 bheight = DEFAULT_BORDER_HEIGHT;
             }
-            layout->border_height = QString::number(bheight);
+            layout->border_height = bheight;
         } else {
-            layout->border_width = QString::number(DEFAULT_BORDER_WIDTH);
-            layout->border_height = QString::number(DEFAULT_BORDER_HEIGHT);
+            layout->border_width = DEFAULT_BORDER_WIDTH;
+            layout->border_height = DEFAULT_BORDER_HEIGHT;
         }
-        layout->tileset_primary_label = layoutObj["primary_tileset"].toString();
+        layout->tileset_primary_label = ParseUtil::jsonToQString(layoutObj["primary_tileset"]);
         if (layout->tileset_primary_label.isEmpty()) {
             logError(QString("Missing 'primary_tileset' value on layout %1 in %2").arg(i).arg(layoutsFilepath));
             return false;
         }
-        layout->tileset_secondary_label = layoutObj["secondary_tileset"].toString();
+        layout->tileset_secondary_label = ParseUtil::jsonToQString(layoutObj["secondary_tileset"]);
         if (layout->tileset_secondary_label.isEmpty()) {
             logError(QString("Missing 'secondary_tileset' value on layout %1 in %2").arg(i).arg(layoutsFilepath));
             return false;
         }
-        layout->border_path = layoutObj["border_filepath"].toString();
+        layout->border_path = ParseUtil::jsonToQString(layoutObj["border_filepath"]);
         if (layout->border_path.isEmpty()) {
             logError(QString("Missing 'border_filepath' value on layout %1 in %2").arg(i).arg(layoutsFilepath));
             return false;
         }
-        layout->blockdata_path = layoutObj["blockdata_filepath"].toString();
+        layout->blockdata_path = ParseUtil::jsonToQString(layoutObj["blockdata_filepath"]);
         if (layout->blockdata_path.isEmpty()) {
             logError(QString("Missing 'blockdata_filepath' value on layout %1 in %2").arg(i).arg(layoutsFilepath));
             return false;
@@ -566,11 +564,11 @@ void Project::saveMapLayouts() {
         OrderedJson::object layoutObj;
         layoutObj["id"] = layout->id;
         layoutObj["name"] = layout->name;
-        layoutObj["width"] = layout->width.toInt(nullptr, 0);
-        layoutObj["height"] = layout->height.toInt(nullptr, 0);
+        layoutObj["width"] = layout->width;
+        layoutObj["height"] = layout->height;
         if (useCustomBorderSize) {
-            layoutObj["border_width"] = layout->border_width.toInt(nullptr, 0);
-            layoutObj["border_height"] = layout->border_height.toInt(nullptr, 0);
+            layoutObj["border_width"] = layout->border_width;
+            layoutObj["border_height"] = layout->border_height;
         }
         layoutObj["primary_tileset"] = layout->tileset_primary_label;
         layoutObj["secondary_tileset"] = layout->tileset_secondary_label;
@@ -597,10 +595,10 @@ void Project::setNewMapLayout(Map* map) {
     MapLayout *layout = new MapLayout();
     layout->id = MapLayout::layoutConstantFromName(map->name);
     layout->name = QString("%1_Layout").arg(map->name);
-    layout->width = QString::number(getDefaultMapSize());
-    layout->height = QString::number(getDefaultMapSize());
-    layout->border_width = QString::number(DEFAULT_BORDER_WIDTH);
-    layout->border_height = QString::number(DEFAULT_BORDER_HEIGHT);
+    layout->width = getDefaultMapSize();
+    layout->height = getDefaultMapSize();
+    layout->border_width = DEFAULT_BORDER_WIDTH;
+    layout->border_height = DEFAULT_BORDER_HEIGHT;
     layout->border_path = QString("%2%1/border.bin").arg(map->name).arg(projectConfig.getFilePath(ProjectFilePath::data_layouts_folders));
     layout->blockdata_path = QString("%2%1/map.bin").arg(map->name).arg(projectConfig.getFilePath(ProjectFilePath::data_layouts_folders));
     layout->tileset_primary_label = tilesetLabels["primary"].value(0, "gTileset_General");
@@ -1254,11 +1252,11 @@ void Project::saveMap(Map *map) {
     QJsonObject newLayoutObj;
     newLayoutObj["id"] = map->layout->id;
     newLayoutObj["name"] = map->layout->name;
-    newLayoutObj["width"] = map->layout->width.toInt();
-    newLayoutObj["height"] = map->layout->height.toInt();
+    newLayoutObj["width"] = map->layout->width;
+    newLayoutObj["height"] = map->layout->height;
     if (projectConfig.getUseCustomBorderSize()) {
-        newLayoutObj["border_width"] = map->layout->border_width.toInt();
-        newLayoutObj["border_height"] = map->layout->border_height.toInt();
+        newLayoutObj["border_width"] = map->layout->border_width;
+        newLayoutObj["border_height"] = map->layout->border_height;
     }
     newLayoutObj["primary_tileset"] = map->layout->tileset_primary_label;
     newLayoutObj["secondary_tileset"] = map->layout->tileset_secondary_label;
@@ -1283,15 +1281,15 @@ void Project::saveMap(Map *map) {
     mapObj["layout"] = map->layout->id;
     mapObj["music"] = map->song;
     mapObj["region_map_section"] = map->location;
-    mapObj["requires_flash"] = ParseUtil::gameStringToBool(map->requiresFlash);
+    mapObj["requires_flash"] = map->requiresFlash;
     mapObj["weather"] = map->weather;
     mapObj["map_type"] = map->type;
     if (projectConfig.getBaseGameVersion() != BaseGameVersion::pokeruby) {
-        mapObj["allow_cycling"] = ParseUtil::gameStringToBool(map->allowBiking);
-        mapObj["allow_escaping"] = ParseUtil::gameStringToBool(map->allowEscapeRope);
-        mapObj["allow_running"] = ParseUtil::gameStringToBool(map->allowRunning);
+        mapObj["allow_cycling"] = map->allowBiking;
+        mapObj["allow_escaping"] = map->allowEscaping;
+        mapObj["allow_running"] = map->allowRunning;
     }
-    mapObj["show_map_name"] = ParseUtil::gameStringToBool(map->show_location);
+    mapObj["show_map_name"] = map->show_location;
     if (projectConfig.getFloorNumberEnabled()) {
         mapObj["floor_number"] = map->floorNumber;
     }
@@ -1304,7 +1302,7 @@ void Project::saveMap(Map *map) {
             if (mapNamesToMapConstants.contains(connection->map_name)) {
                 OrderedJson::object connectionObj;
                 connectionObj["map"] = this->mapNamesToMapConstants.value(connection->map_name);
-                connectionObj["offset"] = connection->offset.toInt();
+                connectionObj["offset"] = connection->offset;
                 connectionObj["direction"] = connection->direction;
                 connectionsArr.append(connectionObj);
             } else {
@@ -1363,7 +1361,7 @@ void Project::saveMap(Map *map) {
 
     // Custom header fields.
     for (QString key : map->customHeaders.keys()) {
-        mapObj[key] = map->customHeaders[key];
+        mapObj[key] = OrderedJson::fromQJsonValue(map->customHeaders[key]);
     }
 
     OrderedJson mapJson(mapObj);
@@ -1765,12 +1763,12 @@ bool Project::readMapGroups() {
     QStringList maps;
     QStringList groups;
     for (int groupIndex = 0; groupIndex < mapGroupOrder.size(); groupIndex++) {
-        QString groupName = mapGroupOrder.at(groupIndex).toString();
+        QString groupName = ParseUtil::jsonToQString(mapGroupOrder.at(groupIndex));
         QJsonArray mapNames = mapGroupsObj.value(groupName).toArray();
         groupedMaps.append(QStringList());
         groups.append(groupName);
         for (int j = 0; j < mapNames.size(); j++) {
-            QString mapName = mapNames.at(j).toString();
+            QString mapName = ParseUtil::jsonToQString(mapNames.at(j));
             mapGroups.insert(mapName, groupIndex);
             groupedMaps[groupIndex].append(mapName);
             maps.append(mapName);
@@ -1782,9 +1780,9 @@ bool Project::readMapGroups() {
         }
     }
 
-    mapConstantsToMapNames.insert(NONE_MAP_CONSTANT, NONE_MAP_NAME);
-    mapNamesToMapConstants.insert(NONE_MAP_NAME, NONE_MAP_CONSTANT);
-    maps.append(NONE_MAP_NAME);
+    mapConstantsToMapNames.insert(DYNAMIC_MAP_CONSTANT, DYNAMIC_MAP_NAME);
+    mapNamesToMapConstants.insert(DYNAMIC_MAP_NAME, DYNAMIC_MAP_CONSTANT);
+    maps.append(DYNAMIC_MAP_NAME);
 
     groupNames = groups;
     groupedMapNames = groupedMaps;

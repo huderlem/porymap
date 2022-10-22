@@ -72,7 +72,11 @@ public:
     static QString removeLineComments(QString text, const QStringList &commentSymbols);
 
     static QStringList splitShellCommand(QStringView command);
+    static int gameStringToInt(QString gameString, bool * ok = nullptr);
     static bool gameStringToBool(QString gameString, bool * ok = nullptr);
+    static QString jsonToQString(QJsonValue value, bool * ok = nullptr);
+    static int jsonToInt(QJsonValue value, bool * ok = nullptr);
+    static bool jsonToBool(QJsonValue value, bool * ok = nullptr);
 
 private:
     QString root;

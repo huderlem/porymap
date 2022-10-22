@@ -404,13 +404,17 @@ QMap<QString, QString> ParseUtil::readNamedIndexCArray(const QString &filename, 
     return map;
 }
 
-bool ParseUtil::gameStringToBool(QString gameString, bool * ok) {
+int ParseUtil::gameStringToInt(QString gameString, bool * ok) {
     if (ok) *ok = true;
     if (QString::compare(gameString, "TRUE", Qt::CaseInsensitive) == 0)
-        return true;
+        return 1;
     if (QString::compare(gameString, "FALSE", Qt::CaseInsensitive) == 0)
-        return false;
-    return gameString.toInt(ok) != 0;
+        return 0;
+    return gameString.toInt(ok);
+}
+
+bool ParseUtil::gameStringToBool(QString gameString, bool * ok) {
+    return gameStringToInt(gameString, ok) != 0;
 }
 
 QMap<QString, QHash<QString, QString>> ParseUtil::readCStructs(const QString &filename, const QString &label, const QHash<int, QString> memberMap) {
@@ -520,6 +524,48 @@ bool ParseUtil::ensureFieldsExist(const QJsonObject &obj, const QList<QString> &
         }
     }
     return true;
+}
+
+// QJsonValues are strictly typed, and so will not attempt any implicit conversions.
+// The below functions are for attempting to convert a JSON value read from the user's
+// project to a QString, int, or bool (whichever Porymap expects).
+QString ParseUtil::jsonToQString(QJsonValue value, bool * ok) {
+    if (ok) *ok = true;
+    switch (value.type())
+    {
+    case QJsonValue::String: return value.toString();
+    case QJsonValue::Double: return QString::number(value.toInt());
+    case QJsonValue::Bool:   return QString::number(value.toBool());
+    default:                 break;
+    }
+    if (ok) *ok = false;
+    return QString();
+}
+
+int ParseUtil::jsonToInt(QJsonValue value, bool * ok) {
+    if (ok) *ok = true;
+    switch (value.type())
+    {
+    case QJsonValue::String: return ParseUtil::gameStringToInt(value.toString(), ok);
+    case QJsonValue::Double: return value.toInt();
+    case QJsonValue::Bool:   return value.toBool();
+    default:                 break;
+    }
+    if (ok) *ok = false;
+    return 0;
+}
+
+bool ParseUtil::jsonToBool(QJsonValue value, bool * ok) {
+    if (ok) *ok = true;
+    switch (value.type())
+    {
+    case QJsonValue::String: return ParseUtil::gameStringToBool(value.toString(), ok);
+    case QJsonValue::Double: return value.toInt() != 0;
+    case QJsonValue::Bool:   return value.toBool();
+    default:                 break;
+    }
+    if (ok) *ok = false;
+    return false;
 }
 
 int ParseUtil::getScriptLineNumber(const QString &filePath, const QString &scriptLabel) {

@@ -196,7 +196,7 @@ private slots:
     void on_checkBox_ShowLocation_stateChanged(int selected);
     void on_checkBox_AllowRunning_stateChanged(int selected);
     void on_checkBox_AllowBiking_stateChanged(int selected);
-    void on_checkBox_AllowEscapeRope_stateChanged(int selected);
+    void on_checkBox_AllowEscaping_stateChanged(int selected);
     void on_spinBox_FloorNumber_valueChanged(int offset);
     void on_actionUse_Encounter_Json_triggered(bool checked);
     void on_actionMonitor_Project_Files_triggered(bool checked);
@@ -219,6 +219,7 @@ private slots:
     void on_toolButton_deleteObject_clicked();
 
     void addNewEvent(Event::Type type);
+    void tryAddEventTab(QWidget * tab, Event::Group group);
     void displayEventTabs();
     void updateSelectedObjects();
     void updateObjects();
@@ -387,6 +388,7 @@ private:
     void redrawMetatileSelection();
 
     QObjectList shortcutableObjects() const;
+    void addCustomHeaderValue(QString key, QJsonValue value, bool isNew = false);
 };
 
 enum MapListUserRoles {

@@ -16,17 +16,17 @@ QString MapLayout::layoutConstantFromName(QString mapName) {
 }
 
 int MapLayout::getWidth() {
-    return width.toInt(nullptr, 0);
+    return width;
 }
 
 int MapLayout::getHeight() {
-    return height.toInt(nullptr, 0);
+    return height;
 }
 
 int MapLayout::getBorderWidth() {
-    return border_width.toInt(nullptr, 0);
+    return border_width;
 }
 
 int MapLayout::getBorderHeight() {
-    return border_height.toInt(nullptr, 0);
+    return border_height;
 }

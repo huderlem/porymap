@@ -310,10 +310,10 @@ void Map::setDimensions(int newWidth, int newHeight, bool setNewBlockdata, bool 
         setNewDimensionsBlockdata(newWidth, newHeight);
     }
 
-    int oldWidth = layout->width.toInt();
-    int oldHeight = layout->height.toInt();
-    layout->width = QString::number(newWidth);
-    layout->height = QString::number(newHeight);
+    int oldWidth = layout->width;
+    int oldHeight = layout->height;
+    layout->width = newWidth;
+    layout->height = newHeight;
 
     if (enableScriptCallback && (oldWidth != newWidth || oldHeight != newHeight)) {
         Scripting::cb_MapResized(oldWidth, oldHeight, newWidth, newHeight);
@@ -328,10 +328,10 @@ void Map::setBorderDimensions(int newWidth, int newHeight, bool setNewBlockdata,
         setNewBorderDimensionsBlockdata(newWidth, newHeight);
     }
 
-    int oldWidth = layout->border_width.toInt();
-    int oldHeight = layout->border_height.toInt();
-    layout->border_width = QString::number(newWidth);
-    layout->border_height = QString::number(newHeight);
+    int oldWidth = layout->border_width;
+    int oldHeight = layout->border_height;
+    layout->border_width = newWidth;
+    layout->border_height = newHeight;
 
     if (enableScriptCallback && (oldWidth != newWidth || oldHeight != newHeight)) {
         Scripting::cb_BorderResized(oldWidth, oldHeight, newWidth, newHeight);

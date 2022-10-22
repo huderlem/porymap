@@ -14,10 +14,10 @@ public:
     static QString layoutConstantFromName(QString mapName);
     QString id;
     QString name;
-    QString width;
-    QString height;
-    QString border_width;
-    QString border_height;
+    int width;
+    int height;
+    int border_width;
+    int border_height;
     QString border_path;
     QString blockdata_path;
     QString tileset_primary_label;

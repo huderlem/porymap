@@ -56,7 +56,7 @@ QVariant ConnectionPixmapItem::itemChange(GraphicsItemChange change, const QVari
             y = this->initialY;
         }
 
-        this->connection->offset = QString::number(newOffset);
+        this->connection->offset = newOffset;
         emit connectionMoved(this->connection);
         return QPointF(x, y);
     }

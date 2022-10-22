@@ -831,7 +831,7 @@ void MainWindow::setLocation(QString location) {
 bool MainWindow::getRequiresFlash() {
     if (!this->editor || !this->editor->map)
         return false;
-    return ParseUtil::gameStringToBool(this->editor->map->requiresFlash);
+    return this->editor->map->requiresFlash;
 }
 
 void MainWindow::setRequiresFlash(bool require) {
@@ -891,7 +891,7 @@ void MainWindow::setBattleScene(QString battleScene) {
 bool MainWindow::getShowLocationName() {
     if (!this->editor || !this->editor->map)
         return false;
-    return ParseUtil::gameStringToBool(this->editor->map->show_location);
+    return this->editor->map->show_location;
 }
 
 void MainWindow::setShowLocationName(bool show) {
@@ -903,7 +903,7 @@ void MainWindow::setShowLocationName(bool show) {
 bool MainWindow::getAllowRunning() {
     if (!this->editor || !this->editor->map)
         return false;
-    return ParseUtil::gameStringToBool(this->editor->map->allowRunning);
+    return this->editor->map->allowRunning;
 }
 
 void MainWindow::setAllowRunning(bool allow) {
@@ -915,7 +915,7 @@ void MainWindow::setAllowRunning(bool allow) {
 bool MainWindow::getAllowBiking() {
     if (!this->editor || !this->editor->map)
         return false;
-    return ParseUtil::gameStringToBool(this->editor->map->allowBiking);
+    return this->editor->map->allowBiking;
 }
 
 void MainWindow::setAllowBiking(bool allow) {
@@ -927,13 +927,13 @@ void MainWindow::setAllowBiking(bool allow) {
 bool MainWindow::getAllowEscaping() {
     if (!this->editor || !this->editor->map)
         return false;
-    return ParseUtil::gameStringToBool(this->editor->map->allowEscapeRope);
+    return this->editor->map->allowEscaping;
 }
 
 void MainWindow::setAllowEscaping(bool allow) {
     if (!this->ui)
         return;
-    this->ui->checkBox_AllowEscapeRope->setChecked(allow);
+    this->ui->checkBox_AllowEscaping->setChecked(allow);
 }
 
 int MainWindow::getFloorNumber() {

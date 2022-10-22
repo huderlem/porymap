@@ -60,6 +60,9 @@
 #include <QPair>
 #include <QFile>
 #include <QTextStream>
+#include <QJsonValue>
+#include <QJsonArray>
+#include <QJsonObject>
 
 #include <memory>
 #include <initializer_list>
@@ -128,6 +131,8 @@ public:
         std::is_constructible<Json, decltype(*std::declval<V>().begin())>::value,
             int>::type = 0>
     Json(const V & v) : Json(array(v.begin(), v.end())) {}
+
+    static const Json fromQJsonValue(QJsonValue value);
 
     // This prevents Json(some_pointer) from accidentally producing a bool. Use
     // Json(bool(some_pointer)) if that behavior is desired.

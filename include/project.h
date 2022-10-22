@@ -26,8 +26,9 @@ struct EventGraphics
     bool inanimate;
 };
 
-static QString NONE_MAP_CONSTANT = "MAP_NONE";
-static QString NONE_MAP_NAME = "None";
+// The constant and displayed name of the special map value used by warps with multiple potential destinations
+static QString DYNAMIC_MAP_CONSTANT = "MAP_DYNAMIC";
+static QString DYNAMIC_MAP_NAME = "Dynamic";
 
 class Project : public QObject
 {
@@ -136,7 +137,7 @@ public:
     bool readSpeciesIconPaths();
     QMap<QString, QString> speciesToIconPath;
 
-    QMap<QString, bool> getTopLevelMapFields();
+    QSet<QString> getTopLevelMapFields();
     bool loadMapData(Map*);
     bool readMapLayouts();
     bool loadLayout(MapLayout *);

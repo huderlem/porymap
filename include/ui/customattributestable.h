@@ -12,11 +12,15 @@ public:
     explicit CustomAttributesTable(Event *event, QWidget *parent = nullptr);
     ~CustomAttributesTable();
 
+    static const QMap<QString, QJsonValue> getAttributes(QTableWidget * table);
+    static QJsonValue pickType(QWidget * parent, bool * ok = nullptr);
+    static void addAttribute(QTableWidget * table, QString key, QJsonValue value, bool isNew = false);
+    static bool deleteSelectedAttributes(QTableWidget * table);
+
 private:
     Event *event;
     QTableWidget *table;
     void resizeVertically();
-    QMap<QString, QString> getTableFields();
 };
 
 #endif // CUSTOMATTRIBUTESTABLE_H

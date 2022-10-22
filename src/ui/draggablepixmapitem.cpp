@@ -85,23 +85,17 @@ void DraggablePixmapItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *) {
     if (eventType == Event::Type::Warp) {
         WarpEvent *warp = dynamic_cast<WarpEvent *>(this->event);
         QString destMap = warp->getDestinationMap();
-        if (destMap != NONE_MAP_NAME) {
-            emit editor->warpEventDoubleClicked(destMap, warp->getDestinationWarpID(), Event::Group::Warp);
-        }
+        int warpId = ParseUtil::gameStringToInt(warp->getDestinationWarpID());
+        emit editor->warpEventDoubleClicked(destMap, warpId, Event::Group::Warp);
     }
     else if (eventType == Event::Type::CloneObject) {
         CloneObjectEvent *clone = dynamic_cast<CloneObjectEvent *>(this->event);
-        QString destMap = clone->getTargetMap();
-        if (destMap != NONE_MAP_NAME) {
-            emit editor->warpEventDoubleClicked(destMap, clone->getTargetID(), Event::Group::Object);
-        }
+        emit editor->warpEventDoubleClicked(clone->getTargetMap(), clone->getTargetID(), Event::Group::Object);
     }
     else if (eventType == Event::Type::SecretBase) {
         SecretBaseEvent *base = dynamic_cast<SecretBaseEvent *>(this->event);
         QString baseId = base->getBaseID();
         QString destMap = editor->project->mapConstantsToMapNames.value("MAP_" + baseId.left(baseId.lastIndexOf("_")));
-        if (destMap != NONE_MAP_NAME) {
-            emit editor->warpEventDoubleClicked(destMap, 0, Event::Group::Warp);
-        }
+        emit editor->warpEventDoubleClicked(destMap, 0, Event::Group::Warp);
     }
 }

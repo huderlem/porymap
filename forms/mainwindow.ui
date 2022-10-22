@@ -2276,14 +2276,14 @@
                 </widget>
                </item>
                <item row="10" column="0">
-                <widget class="QLabel" name="label_AllowEscapeRope">
+                <widget class="QLabel" name="label_AllowEscaping">
                  <property name="text">
                   <string>Allow Dig &amp; Escape Rope</string>
                  </property>
                 </widget>
                </item>
                <item row="10" column="1">
-                <widget class="QCheckBox" name="checkBox_AllowEscapeRope">
+                <widget class="QCheckBox" name="checkBox_AllowEscaping">
                  <property name="toolTip">
                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Allows the player to use Dig or Escape Rope&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
@@ -2388,7 +2388,7 @@
                   <string>Custom fields will be added to the map.json file for the current map.</string>
                  </property>
                  <attribute name="horizontalHeaderVisible">
-                  <bool>false</bool>
+                  <bool>true</bool>
                  </attribute>
                  <attribute name="horizontalHeaderCascadingSectionResizes">
                   <bool>false</bool>
@@ -2405,6 +2405,11 @@
                  <attribute name="verticalHeaderVisible">
                   <bool>false</bool>
                  </attribute>
+                 <column>
+                  <property name="text">
+                   <string>Type</string>
+                  </property>
+                 </column>
                  <column>
                   <property name="text">
                    <string>Key</string>

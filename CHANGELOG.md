@@ -26,6 +26,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 
 ### Changed
 - Overhauled the region map editor, adding support for tilemaps, and significant customization. Also now supports pokefirered.
+- The Custom Attributes table for map headers and events now supports types other than strings.
 - If an object event is inanimate, it will always render using its first frame.
 - Unused metatile attribute bits are preserved instead of being cleared.
 - The wild encounter editor is automatically disabled if the encounter JSON data cannot be read
@@ -42,6 +43,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - The number and order of entries in the heal location data tables can now be changed arbitrarily, and independently of each other.
 - The metatile behavior is now displayed in the bottom bar mouseover text.
 - Removed some unnecessary error logs from the scripting API and added new useful ones.
+- If any JSON data is the incorrect type Porymap will now attempt to convert it.
 
 ### Fixed
 - Fix events losing their assigned script when the script autocomplete is used.

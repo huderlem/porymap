@@ -381,28 +381,28 @@ void MainWindow::setProjectSpecificUIVisibility()
     case BaseGameVersion::pokeruby:
         ui->checkBox_AllowRunning->setVisible(false);
         ui->checkBox_AllowBiking->setVisible(false);
-        ui->checkBox_AllowEscapeRope->setVisible(false);
+        ui->checkBox_AllowEscaping->setVisible(false);
         ui->label_AllowRunning->setVisible(false);
         ui->label_AllowBiking->setVisible(false);
-        ui->label_AllowEscapeRope->setVisible(false);
+        ui->label_AllowEscaping->setVisible(false);
         ui->actionRegion_Map_Editor->setVisible(true);
         break;
     case BaseGameVersion::pokeemerald:
         ui->checkBox_AllowRunning->setVisible(true);
         ui->checkBox_AllowBiking->setVisible(true);
-        ui->checkBox_AllowEscapeRope->setVisible(true);
+        ui->checkBox_AllowEscaping->setVisible(true);
         ui->label_AllowRunning->setVisible(true);
         ui->label_AllowBiking->setVisible(true);
-        ui->label_AllowEscapeRope->setVisible(true);
+        ui->label_AllowEscaping->setVisible(true);
         ui->actionRegion_Map_Editor->setVisible(true);
         break;
     case BaseGameVersion::pokefirered:
         ui->checkBox_AllowRunning->setVisible(true);
         ui->checkBox_AllowBiking->setVisible(true);
-        ui->checkBox_AllowEscapeRope->setVisible(true);
+        ui->checkBox_AllowEscaping->setVisible(true);
         ui->label_AllowRunning->setVisible(true);
         ui->label_AllowBiking->setVisible(true);
-        ui->label_AllowEscapeRope->setVisible(true);
+        ui->label_AllowEscaping->setVisible(true);
         ui->actionRegion_Map_Editor->setVisible(true);
         break;
     }
@@ -719,6 +719,10 @@ void MainWindow::refreshMapScene()
 }
 
 void MainWindow::openWarpMap(QString map_name, int event_id, Event::Group event_group) {
+    // Can't warp to dynamic maps
+    if (map_name == DYNAMIC_MAP_NAME)
+        return;
+
     // Ensure valid destination map name.
     if (!editor->project->mapNames.contains(map_name)) {
         logError(QString("Invalid map name '%1'").arg(map_name));
@@ -737,10 +741,10 @@ void MainWindow::openWarpMap(QString map_name, int event_id, Event::Group event_
     }
 
     // Select the target event.
-    event_id -= Event::getIndexOffset(event_group);
+    int index = event_id - Event::getIndexOffset(event_group);
     QList<Event*> events = editor->map->events[event_group];
-    if (event_id < events.length() && event_id >= 0) {
-        Event *event = events.at(event_id);
+    if (index < events.length() && index >= 0) {
+        Event *event = events.at(index);
         for (DraggablePixmapItem *item : editor->getObjects()) {
             if (item->event == event) {
                 editor->selected_events->clear();
@@ -748,6 +752,9 @@ void MainWindow::openWarpMap(QString map_name, int event_id, Event::Group event_
                 editor->updateSelectedEvents();
             }
         }
+    } else {
+        // Can still warp to this map, but can't select the specified event
+        logWarn(QString("%1 %2 doesn't exist on map '%3'").arg(Event::eventGroupToString(event_group)).arg(event_id).arg(map_name));
     }
 }
 
@@ -769,13 +776,13 @@ void MainWindow::displayMapProperties() {
     const QSignalBlocker blockerA(ui->checkBox_AllowRunning);
     const QSignalBlocker blockerB(ui->checkBox_AllowBiking);
     const QSignalBlocker blockerC(ui->spinBox_FloorNumber);
-    const QSignalBlocker blockerD(ui->checkBox_AllowEscapeRope);
+    const QSignalBlocker blockerD(ui->checkBox_AllowEscaping);
 
     ui->checkBox_Visibility->setChecked(false);
     ui->checkBox_ShowLocation->setChecked(false);
     ui->checkBox_AllowRunning->setChecked(false);
     ui->checkBox_AllowBiking->setChecked(false);
-    ui->checkBox_AllowEscapeRope->setChecked(false);
+    ui->checkBox_AllowEscaping->setChecked(false);
     if (!editor || !editor->map || !editor->project) {
         ui->frame_3->setEnabled(false);
         return;
@@ -793,27 +800,24 @@ void MainWindow::displayMapProperties() {
 
     ui->comboBox_Song->setCurrentText(map->song);
     ui->comboBox_Location->setCurrentText(map->location);
-    ui->checkBox_Visibility->setChecked(ParseUtil::gameStringToBool(map->requiresFlash));
+    ui->checkBox_Visibility->setChecked(map->requiresFlash);
     ui->comboBox_Weather->setCurrentText(map->weather);
     ui->comboBox_Type->setCurrentText(map->type);
     ui->comboBox_BattleScene->setCurrentText(map->battle_scene);
-    ui->checkBox_ShowLocation->setChecked(ParseUtil::gameStringToBool(map->show_location));
+    ui->checkBox_ShowLocation->setChecked(map->show_location);
     if (projectConfig.getBaseGameVersion() != BaseGameVersion::pokeruby) {
-        ui->checkBox_AllowRunning->setChecked(ParseUtil::gameStringToBool(map->allowRunning));
-        ui->checkBox_AllowBiking->setChecked(ParseUtil::gameStringToBool(map->allowBiking));
-        ui->checkBox_AllowEscapeRope->setChecked(ParseUtil::gameStringToBool(map->allowEscapeRope));
+        ui->checkBox_AllowRunning->setChecked(map->allowRunning);
+        ui->checkBox_AllowBiking->setChecked(map->allowBiking);
+        ui->checkBox_AllowEscaping->setChecked(map->allowEscaping);
     }
     ui->spinBox_FloorNumber->setValue(map->floorNumber);
 
     // Custom fields table.
     ui->tableWidget_CustomHeaderFields->blockSignals(true);
     ui->tableWidget_CustomHeaderFields->setRowCount(0);
-    for (auto it = map->customHeaders.begin(); it != map->customHeaders.end(); it++) {
-        int rowIndex = ui->tableWidget_CustomHeaderFields->rowCount();
-        ui->tableWidget_CustomHeaderFields->insertRow(rowIndex);
-        ui->tableWidget_CustomHeaderFields->setItem(rowIndex, 0, new QTableWidgetItem(it.key()));
-        ui->tableWidget_CustomHeaderFields->setItem(rowIndex, 1, new QTableWidgetItem(it.value()));
-    }
+    for (auto it = map->customHeaders.begin(); it != map->customHeaders.end(); it++)
+        CustomAttributesTable::addAttribute(ui->tableWidget_CustomHeaderFields, it.key(), it.value());
+    ui->tableWidget_CustomHeaderFields->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     ui->tableWidget_CustomHeaderFields->blockSignals(false);
 }
 
@@ -860,12 +864,7 @@ void MainWindow::on_comboBox_BattleScene_currentTextChanged(const QString &battl
 void MainWindow::on_checkBox_Visibility_stateChanged(int selected)
 {
     if (editor && editor->map) {
-        bool checked = selected == Qt::Checked;
-        if (checked) {
-            editor->map->requiresFlash = "TRUE";
-        } else {
-            editor->map->requiresFlash = "FALSE";
-        }
+        editor->map->requiresFlash = (selected == Qt::Checked);
         markMapEdited();
     }
 }
@@ -873,12 +872,7 @@ void MainWindow::on_checkBox_Visibility_stateChanged(int selected)
 void MainWindow::on_checkBox_ShowLocation_stateChanged(int selected)
 {
     if (editor && editor->map) {
-        bool checked = selected == Qt::Checked;
-        if (checked) {
-            editor->map->show_location = "TRUE";
-        } else {
-            editor->map->show_location = "FALSE";
-        }
+        editor->map->show_location = (selected == Qt::Checked);
         markMapEdited();
     }
 }
@@ -886,12 +880,7 @@ void MainWindow::on_checkBox_ShowLocation_stateChanged(int selected)
 void MainWindow::on_checkBox_AllowRunning_stateChanged(int selected)
 {
     if (editor && editor->map) {
-        bool checked = selected == Qt::Checked;
-        if (checked) {
-            editor->map->allowRunning = "1";
-        } else {
-            editor->map->allowRunning = "0";
-        }
+        editor->map->allowRunning = (selected == Qt::Checked);
         markMapEdited();
     }
 }
@@ -899,25 +888,15 @@ void MainWindow::on_checkBox_AllowRunning_stateChanged(int selected)
 void MainWindow::on_checkBox_AllowBiking_stateChanged(int selected)
 {
     if (editor && editor->map) {
-        bool checked = selected == Qt::Checked;
-        if (checked) {
-            editor->map->allowBiking = "1";
-        } else {
-            editor->map->allowBiking = "0";
-        }
+        editor->map->allowBiking = (selected == Qt::Checked);
         markMapEdited();
     }
 }
 
-void MainWindow::on_checkBox_AllowEscapeRope_stateChanged(int selected)
+void MainWindow::on_checkBox_AllowEscaping_stateChanged(int selected)
 {
     if (editor && editor->map) {
-        bool checked = selected == Qt::Checked;
-        if (checked) {
-            editor->map->allowEscapeRope = "1";
-        } else {
-            editor->map->allowEscapeRope = "0";
-        }
+        editor->map->allowEscaping = (selected == Qt::Checked);
         markMapEdited();
     }
 }
@@ -1202,7 +1181,7 @@ void MainWindow::onNewMapCreated() {
     sortMapList();
     setMap(newMapName, true);
 
-    if (ParseUtil::gameStringToBool(newMap->isFlyable)) {
+    if (newMap->needsHealLocation) {
         addNewEvent(Event::Type::HealLocation);
         editor->project->saveHealLocations(newMap);
         editor->save();
@@ -1605,8 +1584,8 @@ void MainWindow::paste() {
                 }
                 QJsonArray metatilesArray = pasteObject["metatile_selection"].toArray();
                 QJsonArray collisionsArray = pasteObject["collision_selection"].toArray();
-                int width = pasteObject["width"].toInt();
-                int height = pasteObject["height"].toInt();
+                int width = ParseUtil::jsonToInt(pasteObject["width"]);
+                int height = ParseUtil::jsonToInt(pasteObject["height"]);
                 QList<uint16_t> metatiles;
                 QList<QPair<uint16_t, uint16_t>> collisions;
                 for (auto tile : metatilesArray) {
@@ -1912,25 +1891,20 @@ void MainWindow::addNewEvent(Event::Type type) {
     }
 }
 
+void MainWindow::tryAddEventTab(QWidget * tab, Event::Group group) {
+    if (editor->map->events.value(group).length())
+        ui->tabWidget_EventType->addTab(tab, QString("%1s").arg(Event::eventGroupToString(group)));
+}
+
 void MainWindow::displayEventTabs() {
     const QSignalBlocker blocker(ui->tabWidget_EventType);
 
     ui->tabWidget_EventType->clear();
-
-    if (editor->map->events.value(Event::Group::Object).length())
-        ui->tabWidget_EventType->addTab(eventTabObjectWidget, "Objects");
-
-    if (editor->map->events.value(Event::Group::Warp).length())
-        ui->tabWidget_EventType->addTab(eventTabWarpWidget, "Warps");
-
-    if (editor->map->events.value(Event::Group::Coord).length())
-        ui->tabWidget_EventType->addTab(eventTabTriggerWidget, "Triggers");
-
-    if (editor->map->events.value(Event::Group::Bg).length())
-        ui->tabWidget_EventType->addTab(eventTabBGWidget, "BGs");
-
-    if (editor->map->events.value(Event::Group::Heal).length())
-        ui->tabWidget_EventType->addTab(eventTabHealspotWidget, "Healspots");
+    tryAddEventTab(eventTabObjectWidget,   Event::Group::Object);
+    tryAddEventTab(eventTabWarpWidget,     Event::Group::Warp);
+    tryAddEventTab(eventTabTriggerWidget,  Event::Group::Coord);
+    tryAddEventTab(eventTabBGWidget,       Event::Group::Bg);
+    tryAddEventTab(eventTabHealspotWidget, Event::Group::Heal);
 }
 
 void MainWindow::updateObjects() {
@@ -2785,33 +2759,18 @@ void MainWindow::togglePreferenceSpecificUi() {
 
 void MainWindow::on_pushButton_AddCustomHeaderField_clicked()
 {
-    int rowIndex = this->ui->tableWidget_CustomHeaderFields->rowCount();
-    this->ui->tableWidget_CustomHeaderFields->insertRow(rowIndex);
-    this->ui->tableWidget_CustomHeaderFields->selectRow(rowIndex);
-    this->editor->updateCustomMapHeaderValues(this->ui->tableWidget_CustomHeaderFields);
+    bool ok;
+    QJsonValue value = CustomAttributesTable::pickType(this, &ok);
+    if (ok){
+        CustomAttributesTable::addAttribute(this->ui->tableWidget_CustomHeaderFields, "", value, true);
+        this->editor->updateCustomMapHeaderValues(this->ui->tableWidget_CustomHeaderFields);
+    }
 }
 
 void MainWindow::on_pushButton_DeleteCustomHeaderField_clicked()
 {
-    int rowCount = this->ui->tableWidget_CustomHeaderFields->rowCount();
-    if (rowCount > 0) {
-        QModelIndexList indexList = ui->tableWidget_CustomHeaderFields->selectionModel()->selectedIndexes();
-        QList<QPersistentModelIndex> persistentIndexes;
-        for (QModelIndex index : indexList) {
-            QPersistentModelIndex persistentIndex(index);
-            persistentIndexes.append(persistentIndex);
-        }
-
-        for (QPersistentModelIndex index : persistentIndexes) {
-            this->ui->tableWidget_CustomHeaderFields->removeRow(index.row());
-        }
-
-        if (this->ui->tableWidget_CustomHeaderFields->rowCount() > 0) {
-            this->ui->tableWidget_CustomHeaderFields->selectRow(0);
-        }
-
+    if (CustomAttributesTable::deleteSelectedAttributes(this->ui->tableWidget_CustomHeaderFields))
         this->editor->updateCustomMapHeaderValues(this->ui->tableWidget_CustomHeaderFields);
-    }
 }
 
 void MainWindow::on_tableWidget_CustomHeaderFields_cellChanged(int, int)
