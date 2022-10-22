@@ -419,7 +419,7 @@ void RegionMap::saveLayout() {
                             text += this->layouts["main"][i].map_section + ", ";
                         }
                         text.chop(2);
-                        text += "},-\n";
+                        text += "},\n";
                     }
                 } else {
                     logError(QString("Failed to save region map layout for %1").arg(this->layout_array_label));
