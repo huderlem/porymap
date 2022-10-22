@@ -136,6 +136,7 @@ private:
     void copyMetatile(bool cut);
     void pasteMetatile(const Metatile * toPaste);
     bool replaceMetatile(uint16_t metatileId, const Metatile * src);
+    void setComboValue(QComboBox * combo, int value);
 
     Ui::TilesetEditor *ui;
     History<MetatileHistoryItem*> metatileHistory;

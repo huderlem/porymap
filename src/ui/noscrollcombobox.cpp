@@ -28,3 +28,12 @@ void NoScrollComboBox::wheelEvent(QWheelEvent *event)
     if (hasFocus())
         QComboBox::wheelEvent(event);
 }
+
+void NoScrollComboBox::setTextItem(const QString &text)
+{
+    int index = this->findText(text);
+    if (index >= 0)
+        this->setCurrentIndex(index);
+    else
+        this->setCurrentText(text);
+}
