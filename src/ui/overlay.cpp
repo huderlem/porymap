@@ -25,16 +25,16 @@ void Overlay::renderItems(QPainter *painter) {
 
     painter->save();
 
+    if (this->clippingRect) {
+        painter->setClipping(true);
+        painter->setClipRect(*this->clippingRect);
+    }
+
     QTransform transform = painter->transform();
     transform.translate(this->x, this->y);
     transform.rotate(this->angle);
     transform.scale(this->hScale, this->vScale);
     painter->setTransform(transform);
-
-    if (this->clippingRect) {
-        painter->setClipping(true);
-        painter->setClipRect(*this->clippingRect);
-    }
 
     painter->setOpacity(this->opacity);
     for (auto item : this->items)
