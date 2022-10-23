@@ -202,10 +202,10 @@ void ObjectEvent::setDefaultValues(Project *project) {
     this->setMovement(project->movementTypes.first());
     this->setScript("NULL");
     this->setTrainerType(project->trainerTypes.value(0, "0"));
-
+    this->setFlag("0");
     this->setRadiusX(0);
     this->setRadiusY(0);
-
+    this->setSightRadiusBerryTreeID("0");
     this->setFrameFromMovement(project->facingDirections.value(this->getMovement()));
 }
 
