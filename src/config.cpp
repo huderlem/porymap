@@ -518,8 +518,9 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         this->enableHiddenItemRequiresItemfinder = getConfigBool(key, value);
     } else if (key == "enable_heal_location_respawn_data") {
         this->enableHealLocationRespawnData = getConfigBool(key, value);
-    } else if (key == "enable_event_clone_object") {
+    } else if (key == "enable_event_clone_object" || key == "enable_object_event_in_connection") {
         this->enableEventCloneObject = getConfigBool(key, value);
+        key = "enable_event_clone_object"; // Backwards compatibiliy, replace old name above
     } else if (key == "enable_floor_number") {
         this->enableFloorNumber = getConfigBool(key, value);
     } else if (key == "create_map_text_file") {
