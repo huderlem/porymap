@@ -591,26 +591,6 @@ void Project::ignoreWatchedFileTemporarily(QString filepath) {
     modifiedFileTimestamps.insert(filepath, QDateTime::currentMSecsSinceEpoch() + 5000);
 }
 
-void Project::setNewMapLayout(Map* map) {
-    MapLayout *layout = new MapLayout();
-    layout->id = MapLayout::layoutConstantFromName(map->name);
-    layout->name = QString("%1_Layout").arg(map->name);
-    layout->width = getDefaultMapSize();
-    layout->height = getDefaultMapSize();
-    layout->border_width = DEFAULT_BORDER_WIDTH;
-    layout->border_height = DEFAULT_BORDER_HEIGHT;
-    layout->border_path = QString("%2%1/border.bin").arg(map->name).arg(projectConfig.getFilePath(ProjectFilePath::data_layouts_folders));
-    layout->blockdata_path = QString("%2%1/map.bin").arg(map->name).arg(projectConfig.getFilePath(ProjectFilePath::data_layouts_folders));
-    layout->tileset_primary_label = this->primaryTilesetLabels.value(0, "gTileset_General");
-    layout->tileset_secondary_label = this->secondaryTilesetLabels.value(0, projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered ? "gTileset_PalletTown" : "gTileset_Petalburg");
-    map->layout = layout;
-    map->layoutId = layout->id;
-
-    // Insert new entry into the global map layouts.
-    mapLayouts.insert(layout->id, layout);
-    mapLayoutsTable.append(layout->id);
-}
-
 void Project::saveMapGroups() {
     QString mapGroupsFilepath = QString("%1/%2").arg(root).arg(projectConfig.getFilePath(ProjectFilePath::json_map_groups));
     QFile mapGroupsFile(mapGroupsFilepath);
@@ -1046,7 +1026,7 @@ void Project::saveTilesetPalettes(Tileset *tileset) {
 bool Project::loadLayoutTilesets(MapLayout *layout) {
     layout->tileset_primary = getTileset(layout->tileset_primary_label);
     if (!layout->tileset_primary) {
-        QString defaultTileset = primaryTilesetLabels.value(0, "gTileset_General");
+        QString defaultTileset = this->getDefaultPrimaryTilesetLabel();
         logWarn(QString("Map layout %1 has invalid primary tileset '%2'. Using default '%3'").arg(layout->id).arg(layout->tileset_primary_label).arg(defaultTileset));
         layout->tileset_primary_label = defaultTileset;
         layout->tileset_primary = getTileset(layout->tileset_primary_label);
@@ -1058,7 +1038,7 @@ bool Project::loadLayoutTilesets(MapLayout *layout) {
 
     layout->tileset_secondary = getTileset(layout->tileset_secondary_label);
     if (!layout->tileset_secondary) {
-        QString defaultTileset = secondaryTilesetLabels.value(0, projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered ? "gTileset_PalletTown" : "gTileset_Petalburg");
+        QString defaultTileset = this->getDefaultSecondaryTilesetLabel();
         logWarn(QString("Map layout %1 has invalid secondary tileset '%2'. Using default '%3'").arg(layout->id).arg(layout->tileset_secondary_label).arg(defaultTileset));
         layout->tileset_secondary_label = defaultTileset;
         layout->tileset_secondary = getTileset(layout->tileset_secondary_label);
@@ -1850,8 +1830,28 @@ Project::DataQualifiers Project::getDataQualifiers(QString text, QString label) 
     return qualifiers;
 }
 
+QString Project::getDefaultPrimaryTilesetLabel() {
+    QString defaultLabel = projectConfig.getDefaultPrimaryTileset();
+    if (!this->primaryTilesetLabels.contains(defaultLabel)) {
+        QString firstLabel = this->primaryTilesetLabels.first();
+        logWarn(QString("Unable to find default primary tileset '%1', using '%2' instead.").arg(defaultLabel).arg(firstLabel));
+        defaultLabel = firstLabel;
+    }
+    return defaultLabel;
+}
+
+QString Project::getDefaultSecondaryTilesetLabel() {
+    QString defaultLabel = projectConfig.getDefaultSecondaryTileset();
+    if (!this->secondaryTilesetLabels.contains(defaultLabel)) {
+        QString firstLabel = this->secondaryTilesetLabels.first();
+        logWarn(QString("Unable to find default secondary tileset '%1', using '%2' instead.").arg(defaultLabel).arg(firstLabel));
+        defaultLabel = firstLabel;
+    }
+    return defaultLabel;
+}
+
 void Project::insertTilesetLabel(QString label, bool isSecondary) {
-    if (isSecondary)
+    if (!isSecondary)
         this->primaryTilesetLabels.append(label);
     else
         this->secondaryTilesetLabels.append(label);

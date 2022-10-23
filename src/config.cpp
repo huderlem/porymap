@@ -545,6 +545,10 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
             // Set any metatiles not provided to 0
             this->newMapBorderMetatileIds.append(0);
         }
+    } else if (key == "default_primary_tileset") {
+        this->defaultPrimaryTileset = value;
+    } else if (key == "default_secondary_tileset") {
+        this->defaultSecondaryTileset = value;
 #ifdef CONFIG_BACKWARDS_COMPATABILITY
     } else if (key == "recent_map") {
         userConfig.setRecentMap(value);
@@ -594,6 +598,7 @@ void ProjectConfig::setUnreadKeys() {
     if (!readKeys.contains("enable_floor_number")) this->enableFloorNumber = isPokefirered;
     if (!readKeys.contains("create_map_text_file")) this->createMapTextFile = (this->baseGameVersion != BaseGameVersion::pokeemerald);
     if (!readKeys.contains("new_map_border_metatiles")) this->newMapBorderMetatileIds = isPokefirered ? DEFAULT_BORDER_FRLG : DEFAULT_BORDER_RSE;
+    if (!readKeys.contains("default_secondary_tileset")) this->defaultSecondaryTileset = isPokefirered ? "gTileset_PalletTown" : "gTileset_Petalburg";
 }
 
 QMap<QString, QString> ProjectConfig::getKeyValueMap() {
@@ -616,6 +621,8 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     for (auto metatile : this->newMapBorderMetatileIds)
         metatiles << QString::number(metatile);
     map.insert("new_map_border_metatiles", metatiles.join(","));
+    map.insert("default_primary_tileset", this->defaultPrimaryTileset);
+    map.insert("default_secondary_tileset", this->defaultSecondaryTileset);
     map.insert("prefabs_filepath", this->prefabFilepath);
     map.insert("prefabs_import_prompted", QString::number(this->prefabImportPrompted));
     for (auto it = this->filePaths.constKeyValueBegin(); it != this->filePaths.constKeyValueEnd(); ++it) {
@@ -652,17 +659,7 @@ void ProjectConfig::onNewConfigFileCreated() {
             this->baseGameVersion = static_cast<BaseGameVersion>(baseGameVersionComboBox->currentData().toInt());
         }
     }
-    bool isPokefirered = this->baseGameVersion == BaseGameVersion::pokefirered;
-    this->useCustomBorderSize = isPokefirered;
-    this->enableEventWeatherTrigger = !isPokefirered;
-    this->enableEventSecretBase = !isPokefirered;
-    this->enableHiddenItemQuantity = isPokefirered;
-    this->enableHiddenItemRequiresItemfinder = isPokefirered;
-    this->enableHealLocationRespawnData = isPokefirered;
-    this->enableEventCloneObject = isPokefirered;
-    this->enableFloorNumber = isPokefirered;
-    this->createMapTextFile = (this->baseGameVersion != BaseGameVersion::pokeemerald);
-    this->newMapBorderMetatileIds = isPokefirered ? DEFAULT_BORDER_FRLG : DEFAULT_BORDER_RSE;
+    this->setUnreadKeys(); // Initialize version-specific options
 }
 
 void ProjectConfig::setProjectDir(QString projectDir) {
@@ -833,6 +830,14 @@ void ProjectConfig::setNewMapBorderMetatileIds(QList<int> metatileIds) {
 
 QList<int> ProjectConfig::getNewMapBorderMetatileIds() {
     return this->newMapBorderMetatileIds;
+}
+
+QString ProjectConfig::getDefaultPrimaryTileset() {
+    return this->defaultPrimaryTileset;
+}
+
+QString ProjectConfig::getDefaultSecondaryTileset() {
+    return this->defaultSecondaryTileset;
 }
 
 void ProjectConfig::setPrefabFilepath(QString filepath) {

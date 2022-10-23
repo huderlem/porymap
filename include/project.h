@@ -211,6 +211,9 @@ public:
     QCompleter *getEventScriptLabelCompleter(QStringList additionalScriptLabels);
     QStringList getGlobalScriptLabels();
 
+    QString getDefaultPrimaryTilesetLabel();
+    QString getDefaultSecondaryTilesetLabel();
+
     static int getNumTilesPrimary();
     static int getNumTilesTotal();
     static int getNumMetatilesPrimary();
@@ -230,7 +233,6 @@ private:
     void updateMapLayout(Map*);
 
     void setNewMapHeader(Map* map, int mapIndex);
-    void setNewMapLayout(Map* map);
     void setNewMapBlockdata(Map* map);
     void setNewMapBorder(Map *map);
     void setNewMapEvents(Map *map);

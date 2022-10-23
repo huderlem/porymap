@@ -132,6 +132,10 @@ void NewMapPopup::setDefaultValues(int groupNum, QString mapSec) {
         ui->spinBox_NewMap_Height->setValue(project->getDefaultMapSize());
         ui->spinBox_NewMap_BorderWidth->setValue(DEFAULT_BORDER_WIDTH);
         ui->spinBox_NewMap_BorderHeight->setValue(DEFAULT_BORDER_HEIGHT);
+        int primaryIdx = ui->comboBox_NewMap_Primary_Tileset->findText(project->getDefaultPrimaryTilesetLabel());
+        int secondaryIdx = ui->comboBox_NewMap_Secondary_Tileset->findText(project->getDefaultSecondaryTilesetLabel());
+        ui->comboBox_NewMap_Primary_Tileset->setCurrentIndex(primaryIdx);
+        ui->comboBox_NewMap_Secondary_Tileset->setCurrentIndex(secondaryIdx);
     }
 
     ui->comboBox_NewMap_Type->addItems(project->mapTypes);
