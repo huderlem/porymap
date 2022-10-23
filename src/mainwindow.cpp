@@ -961,9 +961,9 @@ bool MainWindow::loadProjectCombos() {
     ui->comboBox_Location->clear();
     ui->comboBox_Location->addItems(project->mapSectionValueToName.values());
     ui->comboBox_PrimaryTileset->clear();
-    ui->comboBox_PrimaryTileset->addItems(project->tilesetLabels.value("primary"));
+    ui->comboBox_PrimaryTileset->addItems(project->primaryTilesetLabels);
     ui->comboBox_SecondaryTileset->clear();
-    ui->comboBox_SecondaryTileset->addItems(project->tilesetLabels.value("secondary"));
+    ui->comboBox_SecondaryTileset->addItems(project->secondaryTilesetLabels);
     ui->comboBox_Weather->clear();
     ui->comboBox_Weather->addItems(project->weatherNames);
     ui->comboBox_BattleScene->clear();
@@ -1266,8 +1266,7 @@ void MainWindow::on_actionNew_Tileset_triggered() {
             msgBox.exec();
             return;
         }
-        if (editor->project->tilesetLabels.value("primary").contains(createTilesetDialog->fullSymbolName)
-         || editor->project->tilesetLabels.value("secondary").contains(createTilesetDialog->fullSymbolName)) {
+        if (editor->project->tilesetLabelsOrdered.contains(createTilesetDialog->fullSymbolName)) {
             logError(QString("Could not create tileset \"%1\", the symbol \"%2\" already exists.").arg(createTilesetDialog->friendlyName, createTilesetDialog->fullSymbolName));
             QMessageBox msgBox(this);
             msgBox.setText("Failed to add new tileset.");
@@ -2547,7 +2546,7 @@ void MainWindow::on_comboBox_EmergeMap_currentTextChanged(const QString &mapName
 
 void MainWindow::on_comboBox_PrimaryTileset_currentTextChanged(const QString &tilesetLabel)
 {
-    if (editor->project->tilesetLabels["primary"].contains(tilesetLabel) && editor->map) {
+    if (editor->project->primaryTilesetLabels.contains(tilesetLabel) && editor->map) {
         editor->updatePrimaryTileset(tilesetLabel);
         redrawMapScene();
         on_horizontalSlider_MetatileZoom_valueChanged(ui->horizontalSlider_MetatileZoom->value());
@@ -2559,7 +2558,7 @@ void MainWindow::on_comboBox_PrimaryTileset_currentTextChanged(const QString &ti
 
 void MainWindow::on_comboBox_SecondaryTileset_currentTextChanged(const QString &tilesetLabel)
 {
-    if (editor->project->tilesetLabels["secondary"].contains(tilesetLabel) && editor->map) {
+    if (editor->project->secondaryTilesetLabels.contains(tilesetLabel) && editor->map) {
         editor->updateSecondaryTileset(tilesetLabel);
         redrawMapScene();
         on_horizontalSlider_MetatileZoom_valueChanged(ui->horizontalSlider_MetatileZoom->value());

@@ -601,8 +601,8 @@ void Project::setNewMapLayout(Map* map) {
     layout->border_height = DEFAULT_BORDER_HEIGHT;
     layout->border_path = QString("%2%1/border.bin").arg(map->name).arg(projectConfig.getFilePath(ProjectFilePath::data_layouts_folders));
     layout->blockdata_path = QString("%2%1/map.bin").arg(map->name).arg(projectConfig.getFilePath(ProjectFilePath::data_layouts_folders));
-    layout->tileset_primary_label = tilesetLabels["primary"].value(0, "gTileset_General");
-    layout->tileset_secondary_label = tilesetLabels["secondary"].value(0, projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered ? "gTileset_PalletTown" : "gTileset_Petalburg");
+    layout->tileset_primary_label = this->primaryTilesetLabels.value(0, "gTileset_General");
+    layout->tileset_secondary_label = this->secondaryTilesetLabels.value(0, projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered ? "gTileset_PalletTown" : "gTileset_Petalburg");
     map->layout = layout;
     map->layoutId = layout->id;
 
@@ -1046,7 +1046,7 @@ void Project::saveTilesetPalettes(Tileset *tileset) {
 bool Project::loadLayoutTilesets(MapLayout *layout) {
     layout->tileset_primary = getTileset(layout->tileset_primary_label);
     if (!layout->tileset_primary) {
-        QString defaultTileset = tilesetLabels["primary"].value(0, "gTileset_General");
+        QString defaultTileset = primaryTilesetLabels.value(0, "gTileset_General");
         logWarn(QString("Map layout %1 has invalid primary tileset '%2'. Using default '%3'").arg(layout->id).arg(layout->tileset_primary_label).arg(defaultTileset));
         layout->tileset_primary_label = defaultTileset;
         layout->tileset_primary = getTileset(layout->tileset_primary_label);
@@ -1058,7 +1058,7 @@ bool Project::loadLayoutTilesets(MapLayout *layout) {
 
     layout->tileset_secondary = getTileset(layout->tileset_secondary_label);
     if (!layout->tileset_secondary) {
-        QString defaultTileset = tilesetLabels["secondary"].value(0, projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered ? "gTileset_PalletTown" : "gTileset_Petalburg");
+        QString defaultTileset = secondaryTilesetLabels.value(0, projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered ? "gTileset_PalletTown" : "gTileset_Petalburg");
         logWarn(QString("Map layout %1 has invalid secondary tileset '%2'. Using default '%3'").arg(layout->id).arg(layout->tileset_secondary_label).arg(defaultTileset));
         layout->tileset_secondary_label = defaultTileset;
         layout->tileset_secondary = getTileset(layout->tileset_secondary_label);
@@ -1851,8 +1851,10 @@ Project::DataQualifiers Project::getDataQualifiers(QString text, QString label) 
 }
 
 void Project::insertTilesetLabel(QString label, bool isSecondary) {
-    QString category = isSecondary ? "secondary" : "primary";
-    this->tilesetLabels[category].append(label);
+    if (isSecondary)
+        this->primaryTilesetLabels.append(label);
+    else
+        this->secondaryTilesetLabels.append(label);
     this->tilesetLabelsOrdered.append(label);
 }
 
@@ -1869,9 +1871,8 @@ void Project::insertTilesetLabel(QString label, QString isSecondaryStr) {
 bool Project::readTilesetLabels() {
     QStringList primaryTilesets;
     QStringList secondaryTilesets;
-    this->tilesetLabels.clear();
-    this->tilesetLabels.insert("primary", primaryTilesets);
-    this->tilesetLabels.insert("secondary", secondaryTilesets);
+    this->primaryTilesetLabels.clear();
+    this->secondaryTilesetLabels.clear();
     this->tilesetLabelsOrdered.clear();
 
     QString filename = projectConfig.getFilePath(ProjectFilePath::tilesets_headers);
@@ -1903,11 +1904,11 @@ bool Project::readTilesetLabels() {
     }
 
     bool success = true;
-    if (this->tilesetLabels["secondary"].isEmpty()) {
+    if (this->secondaryTilesetLabels.isEmpty()) {
         logError(QString("Failed to find any secondary tilesets in %1").arg(filename));
         success = false;
     }
-    if (this->tilesetLabels["primary"].isEmpty()) {
+    if (this->primaryTilesetLabels.isEmpty()) {
         logError(QString("Failed to find any primary tilesets in %1").arg(filename));
         success = false;
     }
