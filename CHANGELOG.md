@@ -25,6 +25,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 
 ### Changed
 - Overhauled the region map editor, adding support for tilemaps, and significant customization. Also now supports pokefirered.
+- Previous settings will be remembered in the New Map Options window.
 - The Custom Attributes table for map headers and events now supports types other than strings.
 - If an object event is inanimate, it will always render using its first frame.
 - Unused metatile attribute bits are preserved instead of being cleared.
@@ -62,6 +63,8 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Silence unnecessary error logging when parsing C defines Porymap doesn't use.
 - Fix some windows like the Tileset Editor not raising to the front when reactivated.
 - Metatile behaviors with no constant will now display their value in the Tileset Editor.
+- Fix incorrect limits on Floor Number and Border Width/Height in the New Map Options window.
+- Fix Border Width/Height being set to 0 when creating a new map from an existing layout.
 
 ## [4.5.0] - 2021-12-26
 ### Added
