@@ -1887,6 +1887,9 @@ bool Project::readTilesetLabels() {
             QRegularExpressionMatch match = iter.next();
             appendTilesetLabel(match.captured("label"), match.captured("isSecondary"));
         }
+        this->primaryTilesetLabels.sort();
+        this->secondaryTilesetLabels.sort();
+        this->tilesetLabelsOrdered.sort();
         filename = asm_filename; // For error reporting further down
     } else {
         this->usingAsmTilesets = false;
