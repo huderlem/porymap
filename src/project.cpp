@@ -2166,7 +2166,7 @@ bool Project::readMovementTypes() {
 }
 
 bool Project::readInitialFacingDirections() {
-    QString filename = projectConfig.getFilePath(ProjectFilePath::path_initial_facing_table);
+    QString filename = projectConfig.getFilePath(ProjectFilePath::initial_facing_table);
     fileWatcher.addPath(root + "/" + filename);
     facingDirections = parser.readNamedIndexCArray(filename, "gInitialMovementTypeFacingDirections");
     if (facingDirections.isEmpty()) {
@@ -2507,7 +2507,7 @@ bool Project::readEventGraphics() {
 
 bool Project::readSpeciesIconPaths() {
     speciesToIconPath.clear();
-    QString srcfilename = projectConfig.getFilePath(ProjectFilePath::path_pokemon_icon_table);
+    QString srcfilename = projectConfig.getFilePath(ProjectFilePath::pokemon_icon_table);
     QString incfilename = projectConfig.getFilePath(ProjectFilePath::data_pokemon_gfx);
     fileWatcher.addPath(root + "/" + srcfilename);
     fileWatcher.addPath(root + "/" + incfilename);

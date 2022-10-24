@@ -59,8 +59,8 @@ const QMap<ProjectFilePath, std::pair<QString, QString>> defaultPaths = {
     {ProjectFilePath::constants_metatile_labels,        { "constants_metatile_labels",       "include/constants/metatile_labels.h"}},
     {ProjectFilePath::constants_metatile_behaviors,     { "constants_metatile_behaviors",    "include/constants/metatile_behaviors.h"}},
     {ProjectFilePath::constants_fieldmap,               { "constants_fieldmap",              "include/fieldmap.h"}},
-    {ProjectFilePath::path_pokemon_icon_table,          { "path_pokemon_icon_table",         "src/pokemon_icon.c"}},
-    {ProjectFilePath::path_initial_facing_table,        { "path_initial_facing_table",       "src/event_object_movement.c"}},
+    {ProjectFilePath::pokemon_icon_table,               { "pokemon_icon_table",              "src/pokemon_icon.c"}},
+    {ProjectFilePath::initial_facing_table,             { "initial_facing_table",            "src/event_object_movement.c"}},
 };
 
 ProjectFilePath reverseDefaultPaths(QString str) {

@@ -183,8 +183,8 @@ enum ProjectFilePath {
     constants_metatile_labels,
     constants_metatile_behaviors,
     constants_fieldmap,
-    path_initial_facing_table,
-    path_pokemon_icon_table,
+    initial_facing_table,
+    pokemon_icon_table,
 };
 
 class ProjectConfig: public KeyValueConfigBase
