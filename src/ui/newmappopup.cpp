@@ -9,6 +9,8 @@
 #include <QPalette>
 #include <QStringList>
 
+struct NewMapPopup::Settings NewMapPopup::settings = {};
+
 NewMapPopup::NewMapPopup(QWidget *parent, Project *project) :
     QMainWindow(parent),
     ui(new Ui::NewMapPopup)
@@ -24,27 +26,64 @@ NewMapPopup::~NewMapPopup()
     delete ui;
 }
 
-void NewMapPopup::init(int type, int group, QString sec, QString layoutId) {
+void NewMapPopup::initSettings(Project *project) {
+    settings.group = project->groupNames.at(0);
+    settings.width = project->getDefaultMapSize();
+    settings.height = project->getDefaultMapSize();
+    settings.borderWidth = DEFAULT_BORDER_WIDTH;
+    settings.borderHeight = DEFAULT_BORDER_HEIGHT;
+    settings.primaryTileset = project->getDefaultPrimaryTilesetLabel();
+    settings.secondaryTileset = project->getDefaultSecondaryTilesetLabel();
+    settings.type = project->mapTypes.at(0);
+    settings.location = project->mapSectionValueToName.values().at(0);
+    settings.song = project->songNames.at(0);
+    settings.canFlyTo = false;
+    settings.showLocationName = true;
+    settings.allowRunning = false;
+    settings.allowBiking = false;
+    settings.allowEscaping = false;
+    settings.floorNumber = 0;
+}
+
+void NewMapPopup::init(MapSortOrder type, QVariant data) {
+    int groupNum = 0;
+    QString mapSec = QString();
+
     switch (type)
     {
-        case MapSortOrder::Group:
-            setDefaultValues(group, QString());
-            break;
-        case MapSortOrder::Area:
-            setDefaultValues(group, sec);
-            break;
-        case MapSortOrder::Layout:
-            useLayout(layoutId);
-            setDefaultValues(group, QString());
-            break;
+    case MapSortOrder::Group:
+        groupNum = data.toInt();
+        break;
+    case MapSortOrder::Area:
+        mapSec = data.toString();
+        break;
+    case MapSortOrder::Layout:
+        this->existingLayout = true;
+        this->layoutId = data.toString();
+        break;
     }
+
+    populateComboBoxes();
+    setDefaultValues(groupNum, mapSec);
+    setDefaultValuesProjectConfig();
     connectSignals();
 }
 
 void NewMapPopup::initImportMap(MapLayout *mapLayout) {
     this->importedMap = true;
+    populateComboBoxes();
     setDefaultValuesImportMap(mapLayout);
+    setDefaultValuesProjectConfig();
     connectSignals();
+}
+
+void NewMapPopup::populateComboBoxes() {
+    ui->comboBox_NewMap_Primary_Tileset->addItems(project->primaryTilesetLabels);
+    ui->comboBox_NewMap_Secondary_Tileset->addItems(project->secondaryTilesetLabels);
+    ui->comboBox_NewMap_Group->addItems(project->groupNames);
+    ui->comboBox_NewMap_Song->addItems(project->songNames);
+    ui->comboBox_NewMap_Type->addItems(project->mapTypes);
+    ui->comboBox_NewMap_Location->addItems(project->mapSectionValueToName.values());
 }
 
 bool NewMapPopup::checkNewMapDimensions() {
@@ -53,7 +92,6 @@ bool NewMapPopup::checkNewMapDimensions() {
 
     if (numMetatiles > maxMetatiles) {
         ui->frame_NewMap_Warning->setVisible(true);
-        //ui->label_NewMap_WarningMessage->setText("WARNING: The specified map dimensions are too large.");
         QString errorText = QString("Error: The specified width and height are too large.\n"
                     "The maximum map width and height is the following: (width + 15) * (height + 14) <= %1\n"
                     "The specified map width and height was: (%2 + 15) * (%3 + 14) = %4")
@@ -95,32 +133,23 @@ void NewMapPopup::connectSignals() {
     ui->spinBox_NewMap_Width->setMaximum(project->getMaxMapWidth());
     ui->spinBox_NewMap_Height->setMaximum(project->getMaxMapHeight());
 
-    //ui->icon_NewMap_WarningIcon->setPixmap();
     connect(ui->spinBox_NewMap_Width, QOverload<int>::of(&QSpinBox::valueChanged), [=](int){checkNewMapDimensions();});
     connect(ui->spinBox_NewMap_Height, QOverload<int>::of(&QSpinBox::valueChanged), [=](int){checkNewMapDimensions();});
-}
-
-void NewMapPopup::useLayout(QString layoutId) {
-    this->existingLayout = true;
-    this->layoutId = layoutId;
 }
 
 void NewMapPopup::setDefaultValues(int groupNum, QString mapSec) {
     ui->lineEdit_NewMap_Name->setText(project->getNewMapName());
 
-    ui->comboBox_NewMap_Primary_Tileset->addItems(project->primaryTilesetLabels);
-    ui->comboBox_NewMap_Secondary_Tileset->addItems(project->secondaryTilesetLabels);
+    ui->comboBox_NewMap_Group->setTextItem(project->groupNames.at(groupNum));
 
-    ui->comboBox_NewMap_Group->addItems(project->groupNames);
-    ui->comboBox_NewMap_Group->setCurrentText(project->groupNames.at(groupNum));
-
-    ui->comboBox_Song->addItems(project->songNames);
-
-    if (existingLayout) {
-        ui->spinBox_NewMap_Width->setValue(project->mapLayouts.value(layoutId)->width);
-        ui->spinBox_NewMap_Height->setValue(project->mapLayouts.value(layoutId)->height);
-        ui->comboBox_NewMap_Primary_Tileset->setCurrentText(project->mapLayouts.value(layoutId)->tileset_primary_label);
-        ui->comboBox_NewMap_Secondary_Tileset->setCurrentText(project->mapLayouts.value(layoutId)->tileset_secondary_label);
+    if (this->existingLayout) {
+        MapLayout * layout = project->mapLayouts.value(layoutId);
+        ui->spinBox_NewMap_Width->setValue(layout->width);
+        ui->spinBox_NewMap_Height->setValue(layout->height);
+        ui->spinBox_NewMap_BorderWidth->setValue(layout->border_width);
+        ui->spinBox_NewMap_BorderHeight->setValue(layout->border_height);
+        ui->comboBox_NewMap_Primary_Tileset->setTextItem(layout->tileset_primary_label);
+        ui->comboBox_NewMap_Secondary_Tileset->setTextItem(layout->tileset_secondary_label);
         ui->spinBox_NewMap_Width->setDisabled(true);
         ui->spinBox_NewMap_Height->setDisabled(true);
         ui->spinBox_NewMap_BorderWidth->setDisabled(true);
@@ -132,109 +161,60 @@ void NewMapPopup::setDefaultValues(int groupNum, QString mapSec) {
         ui->spinBox_NewMap_Height->setValue(project->getDefaultMapSize());
         ui->spinBox_NewMap_BorderWidth->setValue(DEFAULT_BORDER_WIDTH);
         ui->spinBox_NewMap_BorderHeight->setValue(DEFAULT_BORDER_HEIGHT);
-        int primaryIdx = ui->comboBox_NewMap_Primary_Tileset->findText(project->getDefaultPrimaryTilesetLabel());
-        int secondaryIdx = ui->comboBox_NewMap_Secondary_Tileset->findText(project->getDefaultSecondaryTilesetLabel());
-        ui->comboBox_NewMap_Primary_Tileset->setCurrentIndex(primaryIdx);
-        ui->comboBox_NewMap_Secondary_Tileset->setCurrentIndex(secondaryIdx);
+        ui->comboBox_NewMap_Primary_Tileset->setTextItem(project->getDefaultPrimaryTilesetLabel());
+        ui->comboBox_NewMap_Secondary_Tileset->setTextItem(project->getDefaultSecondaryTilesetLabel());
     }
 
-    ui->comboBox_NewMap_Type->addItems(project->mapTypes);
-    ui->comboBox_NewMap_Location->addItems(project->mapSectionValueToName.values());
-    if (!mapSec.isEmpty()) ui->comboBox_NewMap_Location->setCurrentText(mapSec);
+    if (!mapSec.isEmpty()) ui->comboBox_NewMap_Location->setTextItem(mapSec);
     ui->checkBox_NewMap_Show_Location->setChecked(true);
 
     ui->frame_NewMap_Options->setEnabled(true);
-
-    setDefaultValuesProjectConfig(false, NULL);
 }
 
 void NewMapPopup::setDefaultValuesImportMap(MapLayout *mapLayout) {
     ui->lineEdit_NewMap_Name->setText(project->getNewMapName());
 
-    ui->comboBox_NewMap_Primary_Tileset->addItems(project->primaryTilesetLabels);
-    ui->comboBox_NewMap_Secondary_Tileset->addItems(project->secondaryTilesetLabels);
-
-    ui->comboBox_NewMap_Group->addItems(project->groupNames);
-    ui->comboBox_NewMap_Group->setCurrentText(project->groupNames.at(0));
-
-    ui->comboBox_Song->addItems(project->songNames);
+    ui->comboBox_NewMap_Group->setTextItem(project->groupNames.at(0));
 
     ui->spinBox_NewMap_Width->setValue(mapLayout->width);
     ui->spinBox_NewMap_Height->setValue(mapLayout->height);
-    ui->comboBox_NewMap_Primary_Tileset->setCurrentText(mapLayout->tileset_primary_label);
-    ui->comboBox_NewMap_Secondary_Tileset->setCurrentText(mapLayout->tileset_secondary_label);
+    ui->spinBox_NewMap_BorderWidth->setValue(mapLayout->border_width);
+    ui->spinBox_NewMap_BorderHeight->setValue(mapLayout->border_height);
 
-    ui->comboBox_NewMap_Type->addItems(project->mapTypes);
-    ui->comboBox_NewMap_Location->addItems(project->mapSectionValueToName.values());
+    ui->comboBox_NewMap_Primary_Tileset->setTextItem(mapLayout->tileset_primary_label);
+    ui->comboBox_NewMap_Secondary_Tileset->setTextItem(mapLayout->tileset_secondary_label);
+
     ui->checkBox_NewMap_Show_Location->setChecked(true);
 
     ui->frame_NewMap_Options->setEnabled(true);
 
-    setDefaultValuesProjectConfig(true, mapLayout);
-
-    map = new Map();
-    map->layout = new MapLayout();
-    map->layout->blockdata = mapLayout->blockdata;
+    this->map = new Map();
+    this->map->layout = new MapLayout();
+    this->map->layout->blockdata = mapLayout->blockdata;
 
     if (!mapLayout->border.isEmpty()) {
-        map->layout->border = mapLayout->border;
+        this->map->layout->border = mapLayout->border;
     }
 }
 
-void NewMapPopup::setDefaultValuesProjectConfig(bool importedMap, MapLayout *mapLayout) {
-    switch (projectConfig.getBaseGameVersion())
-    {
-    case BaseGameVersion::pokeruby:
-        ui->checkBox_NewMap_Allow_Running->setVisible(false);
-        ui->checkBox_NewMap_Allow_Biking->setVisible(false);
-        ui->checkBox_NewMap_Allow_Escape_Rope->setVisible(false);
-        ui->label_NewMap_Allow_Running->setVisible(false);
-        ui->label_NewMap_Allow_Biking->setVisible(false);
-        ui->label_NewMap_Allow_Escape_Rope->setVisible(false);
-        break;
-    case BaseGameVersion::pokeemerald:
-        ui->checkBox_NewMap_Allow_Running->setVisible(true);
-        ui->checkBox_NewMap_Allow_Biking->setVisible(true);
-        ui->checkBox_NewMap_Allow_Escape_Rope->setVisible(true);
-        ui->label_NewMap_Allow_Running->setVisible(true);
-        ui->label_NewMap_Allow_Biking->setVisible(true);
-        ui->label_NewMap_Allow_Escape_Rope->setVisible(true);
-        break;
-    case BaseGameVersion::pokefirered:
-        ui->checkBox_NewMap_Allow_Running->setVisible(true);
-        ui->checkBox_NewMap_Allow_Biking->setVisible(true);
-        ui->checkBox_NewMap_Allow_Escape_Rope->setVisible(true);
-        ui->label_NewMap_Allow_Running->setVisible(true);
-        ui->label_NewMap_Allow_Biking->setVisible(true);
-        ui->label_NewMap_Allow_Escape_Rope->setVisible(true);
-        break;
-    }
-    if (projectConfig.getUseCustomBorderSize()) {
-        if (importedMap) {
-            ui->spinBox_NewMap_BorderWidth->setValue(mapLayout->border_width);
-            ui->spinBox_NewMap_BorderHeight->setValue(mapLayout->border_height);
-        }
-        ui->spinBox_NewMap_BorderWidth->setVisible(true);
-        ui->spinBox_NewMap_BorderHeight->setVisible(true);
-        ui->label_NewMap_BorderWidth->setVisible(true);
-        ui->label_NewMap_BorderHeight->setVisible(true);
-    } else {
-        if (importedMap) {
-            ui->spinBox_NewMap_BorderWidth->setValue(DEFAULT_BORDER_WIDTH);
-            ui->spinBox_NewMap_BorderHeight->setValue(DEFAULT_BORDER_HEIGHT);
-        }
-        ui->spinBox_NewMap_BorderWidth->setVisible(false);
-        ui->spinBox_NewMap_BorderHeight->setVisible(false);
-        ui->label_NewMap_BorderWidth->setVisible(false);
-        ui->label_NewMap_BorderHeight->setVisible(false);
-    }
-    if (projectConfig.getFloorNumberEnabled()) {
-        ui->spinBox_NewMap_Floor_Number->setVisible(true);
-        ui->label_NewMap_Floor_Number->setVisible(true);
-    } else {
-        ui->spinBox_NewMap_Floor_Number->setVisible(false);
-        ui->label_NewMap_Floor_Number->setVisible(false);
-    }
+void NewMapPopup::setDefaultValuesProjectConfig() {
+    bool hasFlags = (projectConfig.getBaseGameVersion() != BaseGameVersion::pokeruby);
+    ui->checkBox_NewMap_Allow_Running->setVisible(hasFlags);
+    ui->checkBox_NewMap_Allow_Biking->setVisible(hasFlags);
+    ui->checkBox_NewMap_Allow_Escape_Rope->setVisible(hasFlags);
+    ui->label_NewMap_Allow_Running->setVisible(hasFlags);
+    ui->label_NewMap_Allow_Biking->setVisible(hasFlags);
+    ui->label_NewMap_Allow_Escape_Rope->setVisible(hasFlags);
+
+    bool hasCustomBorders = projectConfig.getUseCustomBorderSize();
+    ui->spinBox_NewMap_BorderWidth->setVisible(hasCustomBorders);
+    ui->spinBox_NewMap_BorderHeight->setVisible(hasCustomBorders);
+    ui->label_NewMap_BorderWidth->setVisible(hasCustomBorders);
+    ui->label_NewMap_BorderHeight->setVisible(hasCustomBorders);
+
+    bool hasFloorNumber = projectConfig.getFloorNumberEnabled();
+    ui->spinBox_NewMap_Floor_Number->setVisible(hasFloorNumber);
+    ui->label_NewMap_Floor_Number->setVisible(hasFloorNumber);
 }
 
 void NewMapPopup::on_lineEdit_NewMap_Name_textChanged(const QString &text) {
@@ -268,7 +248,7 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
     newMap->name = newMapName;
     newMap->type = this->ui->comboBox_NewMap_Type->currentText();
     newMap->location = this->ui->comboBox_NewMap_Location->currentText();
-    newMap->song = this->ui->comboBox_Song->currentText();
+    newMap->song = this->ui->comboBox_NewMap_Song->currentText();
     newMap->requiresFlash = false;
     newMap->weather = this->project->weatherNames.value(0, "WEATHER_NONE");
     newMap->show_location = this->ui->checkBox_NewMap_Show_Location->isChecked();

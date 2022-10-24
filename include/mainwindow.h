@@ -176,7 +176,7 @@ private slots:
     void onMapNeedsRedrawing();
     void onTilesetsSaved(QString, QString);
     void onWildMonDataChanged();
-    void openNewMapPopupWindow(int, QVariant);
+    void openNewMapPopupWindow(MapSortOrder, QVariant);
     void openNewMapPopupWindowImportMap(MapLayout *);
     void onNewMapCreated();
     void onMapCacheCleared();
@@ -330,6 +330,7 @@ private:
     bool isProgrammaticEventTabChange;
     bool projectHasUnsavedChanges;
     bool projectOpenFailure = false;
+    bool openedNewMapDialog = false;
 
     MapSortOrder mapSortOrder;
 

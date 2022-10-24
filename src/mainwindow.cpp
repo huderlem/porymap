@@ -1191,7 +1191,10 @@ void MainWindow::onNewMapCreated() {
     delete newMap;
 }
 
-void MainWindow::openNewMapPopupWindow(int type, QVariant data) {
+void MainWindow::openNewMapPopupWindow(MapSortOrder type, QVariant data) {
+    if (!openedNewMapDialog) {
+        NewMapPopup::initSettings(this->editor->project);
+    }
     if (!this->newMapPrompt) {
         this->newMapPrompt = new NewMapPopup(this, this->editor->project);
     }
@@ -1201,18 +1204,7 @@ void MainWindow::openNewMapPopupWindow(int type, QVariant data) {
         this->newMapPrompt->raise();
         this->newMapPrompt->activateWindow();
     }
-    switch (type)
-    {
-        case MapSortOrder::Group:
-            this->newMapPrompt->init(type, data.toInt(), QString(), QString());
-            break;
-        case MapSortOrder::Area:
-            this->newMapPrompt->init(type, 0, data.toString(), QString());
-            break;
-        case MapSortOrder::Layout:
-            this->newMapPrompt->init(type, 0, QString(), data.toString());
-            break;
-    }
+    this->newMapPrompt->init(type, data);
     connect(this->newMapPrompt, &NewMapPopup::applied, this, &MainWindow::onNewMapCreated);
     this->newMapPrompt->setAttribute(Qt::WA_DeleteOnClose);
 }
@@ -1232,7 +1224,7 @@ void MainWindow::openNewMapPopupWindowImportMap(MapLayout *mapLayout) {
 
     connect(this->newMapPrompt, SIGNAL(applied()), this, SLOT(onNewMapCreated()));
     connect(this->newMapPrompt, &QObject::destroyed, [=](QObject *) { this->newMapPrompt = nullptr; });
-            this->newMapPrompt->setAttribute(Qt::WA_DeleteOnClose);
+    this->newMapPrompt->setAttribute(Qt::WA_DeleteOnClose);
 }
 
 void MainWindow::on_action_NewMap_triggered() {

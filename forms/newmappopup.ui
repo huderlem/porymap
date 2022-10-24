@@ -217,7 +217,7 @@
         </widget>
        </item>
        <item row="10" column="1">
-        <widget class="NoScrollComboBox" name="comboBox_Song">
+        <widget class="NoScrollComboBox" name="comboBox_NewMap_Song">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The default background music for this map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
