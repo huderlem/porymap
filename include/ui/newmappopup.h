@@ -22,10 +22,10 @@ public:
     bool existingLayout;
     bool importedMap;
     QString layoutId;
+    void init();
     void init(MapSortOrder type, QVariant data);
-    void initImportMap(MapLayout *);
-    void connectSignals();
-    static void initSettings(Project *project);
+    void init(MapLayout *);
+    static void setDefaultSettings(Project *project);
 
 signals:
     void applied();
@@ -33,12 +33,11 @@ signals:
 private:
     Ui::NewMapPopup *ui;
     Project *project;
-    void setDefaultValues(int, QString);
-    void setDefaultValuesImportMap(MapLayout *);
-    void setDefaultValuesProjectConfig();
     bool checkNewMapDimensions();
     bool checkNewMapGroup();
-    void populateComboBoxes();
+    void saveSettings();
+    void useLayout(QString layoutId);
+    void useLayoutSettings(MapLayout *mapLayout);
 
     struct Settings {
         QString group;
@@ -46,8 +45,8 @@ private:
         int height;
         int borderWidth;
         int borderHeight;
-        QString primaryTileset;
-        QString secondaryTileset;
+        QString primaryTilesetLabel;
+        QString secondaryTilesetLabel;
         QString type;
         QString location;
         QString song;

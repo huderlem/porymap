@@ -176,8 +176,7 @@ private slots:
     void onMapNeedsRedrawing();
     void onTilesetsSaved(QString, QString);
     void onWildMonDataChanged();
-    void openNewMapPopupWindow(MapSortOrder, QVariant);
-    void openNewMapPopupWindowImportMap(MapLayout *);
+    void openNewMapPopupWindow();
     void onNewMapCreated();
     void onMapCacheCleared();
     void importMapFromAdvanceMap1_92();

@@ -1141,20 +1141,20 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point)
 
 void MainWindow::onAddNewMapToGroupClick(QAction* triggeredAction)
 {
-    int groupNum = triggeredAction->data().toInt();
-    openNewMapPopupWindow(MapSortOrder::Group, groupNum);
+    openNewMapPopupWindow();
+    this->newMapPrompt->init(MapSortOrder::Group, triggeredAction->data());
 }
 
 void MainWindow::onAddNewMapToAreaClick(QAction* triggeredAction)
 {
-    QString secName = triggeredAction->data().toString();
-    openNewMapPopupWindow(MapSortOrder::Area, secName);
+    openNewMapPopupWindow();
+    this->newMapPrompt->init(MapSortOrder::Area, triggeredAction->data());
 }
 
 void MainWindow::onAddNewMapToLayoutClick(QAction* triggeredAction)
 {
-    QString layoutId = triggeredAction->data().toString();
-    openNewMapPopupWindow(MapSortOrder::Layout, layoutId);
+    openNewMapPopupWindow();
+    this->newMapPrompt->init(MapSortOrder::Layout, triggeredAction->data());
 }
 
 void MainWindow::onNewMapCreated() {
@@ -1191,9 +1191,10 @@ void MainWindow::onNewMapCreated() {
     delete newMap;
 }
 
-void MainWindow::openNewMapPopupWindow(MapSortOrder type, QVariant data) {
+void MainWindow::openNewMapPopupWindow() {
     if (!openedNewMapDialog) {
-        NewMapPopup::initSettings(this->editor->project);
+        NewMapPopup::setDefaultSettings(this->editor->project);
+        openedNewMapDialog = true;
     }
     if (!this->newMapPrompt) {
         this->newMapPrompt = new NewMapPopup(this, this->editor->project);
@@ -1204,31 +1205,13 @@ void MainWindow::openNewMapPopupWindow(MapSortOrder type, QVariant data) {
         this->newMapPrompt->raise();
         this->newMapPrompt->activateWindow();
     }
-    this->newMapPrompt->init(type, data);
     connect(this->newMapPrompt, &NewMapPopup::applied, this, &MainWindow::onNewMapCreated);
     this->newMapPrompt->setAttribute(Qt::WA_DeleteOnClose);
 }
 
-void MainWindow::openNewMapPopupWindowImportMap(MapLayout *mapLayout) {
-    if (!this->newMapPrompt) {
-        this->newMapPrompt = new NewMapPopup(this, this->editor->project);
-    }
-    if (!this->newMapPrompt->isVisible()) {
-        this->newMapPrompt->show();
-    } else {
-        this->newMapPrompt->raise();
-        this->newMapPrompt->activateWindow();
-    }
-
-    this->newMapPrompt->initImportMap(mapLayout);
-
-    connect(this->newMapPrompt, SIGNAL(applied()), this, SLOT(onNewMapCreated()));
-    connect(this->newMapPrompt, &QObject::destroyed, [=](QObject *) { this->newMapPrompt = nullptr; });
-    this->newMapPrompt->setAttribute(Qt::WA_DeleteOnClose);
-}
-
 void MainWindow::on_action_NewMap_triggered() {
-    openNewMapPopupWindow(MapSortOrder::Group, 0);
+    openNewMapPopupWindow();
+    this->newMapPrompt->init();
 }
 
 // Insert label for newly-created tileset into sorted list of existing labels
@@ -2466,7 +2449,8 @@ void MainWindow::importMapFromAdvanceMap1_92()
         return;
     }
 
-    openNewMapPopupWindowImportMap(mapLayout);
+    openNewMapPopupWindow();
+    this->newMapPrompt->init(mapLayout);
 }
 
 void MainWindow::showExportMapImageWindow(ImageExporterMode mode) {
