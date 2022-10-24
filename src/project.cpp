@@ -1062,7 +1062,7 @@ Tileset* Project::loadTileset(QString label, Tileset *tileset) {
             tileset = new Tileset;
         }
         tileset->name = label;
-        tileset->is_secondary = values.value(memberMap.key("isSecondary"));
+        tileset->is_secondary = ParseUtil::gameStringToBool(values.value(memberMap.key("isSecondary")));
         tileset->tiles_label = values.value(memberMap.key("tiles"));
         tileset->palettes_label = values.value(memberMap.key("palettes"));
         tileset->metatiles_label = values.value(memberMap.key("metatiles"));
@@ -1078,7 +1078,7 @@ Tileset* Project::loadTileset(QString label, Tileset *tileset) {
         }
         const auto tilesetAttributes = structs[label];
         tileset->name = label;
-        tileset->is_secondary = tilesetAttributes.value("isSecondary");
+        tileset->is_secondary = ParseUtil::gameStringToBool(tilesetAttributes.value("isSecondary"));
         tileset->tiles_label = tilesetAttributes.value("tiles");
         tileset->palettes_label = tilesetAttributes.value("palettes");
         tileset->metatiles_label = tilesetAttributes.value("metatiles");
@@ -1568,7 +1568,8 @@ void Project::loadTilesetMetatileLabels(Tileset* tileset) {
     for (QString labelName : labels.keys()) {
         int metatileId = labels[labelName];
         // subtract Project::num_tiles_primary from secondary metatiles
-        Metatile *metatile = Tileset::getMetatile(metatileId - (ParseUtil::gameStringToBool(tileset->is_secondary) ? Project::num_tiles_primary : 0), tileset, nullptr);
+        int offset = tileset->is_secondary ? Project::num_tiles_primary : 0;
+        Metatile *metatile = Tileset::getMetatile(metatileId - offset, tileset, nullptr);
         if (metatile) {
             metatile->label = labelName.replace(tilesetPrefix, "");
         } else {

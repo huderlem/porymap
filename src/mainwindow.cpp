@@ -1284,7 +1284,7 @@ void MainWindow::on_actionNew_Tileset_triggered() {
         newSet.tilesImagePath = fullDirectoryPath + "/tiles.png";
         newSet.metatiles_path = fullDirectoryPath + "/metatiles.bin";
         newSet.metatile_attrs_path = fullDirectoryPath + "/metatile_attributes.bin";
-        newSet.is_secondary = createTilesetDialog->isSecondary ? "TRUE" : "FALSE";
+        newSet.is_secondary = createTilesetDialog->isSecondary;
         int numMetaTiles = createTilesetDialog->isSecondary ? (Project::getNumTilesTotal() - Project::getNumTilesPrimary()) : Project::getNumTilesPrimary();
         QImage tilesImage(":/images/blank_tileset.png");
         editor->project->loadTilesetTiles(&newSet, tilesImage);
