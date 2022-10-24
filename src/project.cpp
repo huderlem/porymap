@@ -1851,22 +1851,16 @@ QString Project::getDefaultSecondaryTilesetLabel() {
     return defaultLabel;
 }
 
-void Project::insertTilesetLabel(QString label, bool isSecondary) {
-    if (!isSecondary)
-        this->primaryTilesetLabels.append(label);
-    else
-        this->secondaryTilesetLabels.append(label);
-    this->tilesetLabelsOrdered.append(label);
-}
-
-void Project::insertTilesetLabel(QString label, QString isSecondaryStr) {
+void Project::appendTilesetLabel(QString label, QString isSecondaryStr) {
     bool ok;
     bool isSecondary = ParseUtil::gameStringToBool(isSecondaryStr, &ok);
     if (!ok) {
         logError(QString("Unable to convert value '%1' of isSecondary to bool for tileset %2.").arg(isSecondaryStr).arg(label));
         return;
     }
-    insertTilesetLabel(label, isSecondary);
+    QStringList * list = isSecondary ? &this->secondaryTilesetLabels : &this->primaryTilesetLabels;
+    list->append(label);
+    this->tilesetLabelsOrdered.append(label);
 }
 
 bool Project::readTilesetLabels() {
@@ -1891,7 +1885,7 @@ bool Project::readTilesetLabels() {
         QRegularExpressionMatchIterator iter = re.globalMatch(text);
         while (iter.hasNext()) {
             QRegularExpressionMatch match = iter.next();
-            insertTilesetLabel(match.captured("label"), match.captured("isSecondary"));
+            appendTilesetLabel(match.captured("label"), match.captured("isSecondary"));
         }
         filename = asm_filename; // For error reporting further down
     } else {
@@ -1900,7 +1894,7 @@ bool Project::readTilesetLabels() {
         QStringList labels = structs.keys();
         // TODO: This is alphabetical, AdvanceMap import wants the vanilla order in tilesetLabelsOrdered
         for (const auto tilesetLabel : labels){
-            insertTilesetLabel(tilesetLabel, structs[tilesetLabel].value("isSecondary"));
+            appendTilesetLabel(tilesetLabel, structs[tilesetLabel].value("isSecondary"));
         }
     }
 

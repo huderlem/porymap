@@ -1239,6 +1239,15 @@ void MainWindow::on_action_NewMap_triggered() {
     openNewMapPopupWindow(MapSortOrder::Group, 0);
 }
 
+// Insert label for newly-created tileset into sorted list of existing labels
+int MainWindow::insertTilesetLabel(QStringList * list, QString label) {
+    int i = 0;
+    for (; i < list->length(); i++)
+        if (list->at(i) > label) break;
+    list->insert(i, label);
+    return i;
+}
+
 void MainWindow::on_actionNew_Tileset_triggered() {
     NewTilesetDialog *createTilesetDialog = new NewTilesetDialog(editor->project, this);
     if(createTilesetDialog->exec() == QDialog::Accepted){
@@ -1324,12 +1333,14 @@ void MainWindow::on_actionNew_Tileset_triggered() {
         newSet.appendToGraphics(editor->project->root, createTilesetDialog->friendlyName, editor->project->usingAsmTilesets);
         newSet.appendToMetatiles(editor->project->root, createTilesetDialog->friendlyName, editor->project->usingAsmTilesets);
 
-        if(!createTilesetDialog->isSecondary) {
-            this->ui->comboBox_PrimaryTileset->addItem(createTilesetDialog->fullSymbolName);
+        if (!createTilesetDialog->isSecondary) {
+            int index = insertTilesetLabel(&editor->project->primaryTilesetLabels, createTilesetDialog->fullSymbolName);
+            this->ui->comboBox_PrimaryTileset->insertItem(index, createTilesetDialog->fullSymbolName);
         } else {
-            this->ui->comboBox_SecondaryTileset->addItem(createTilesetDialog->fullSymbolName);
+            int index = insertTilesetLabel(&editor->project->secondaryTilesetLabels, createTilesetDialog->fullSymbolName);
+            this->ui->comboBox_SecondaryTileset->insertItem(index, createTilesetDialog->fullSymbolName);
         }
-        editor->project->insertTilesetLabel(createTilesetDialog->fullSymbolName, createTilesetDialog->isSecondary);
+        insertTilesetLabel(&editor->project->tilesetLabelsOrdered, createTilesetDialog->fullSymbolName);
 
         QMessageBox msgBox(this);
         msgBox.setText("Successfully created tileset.");

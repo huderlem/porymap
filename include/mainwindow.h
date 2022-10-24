@@ -389,6 +389,7 @@ private:
 
     QObjectList shortcutableObjects() const;
     void addCustomHeaderValue(QString key, QJsonValue value, bool isNew = false);
+    int insertTilesetLabel(QStringList * list, QString label);
 };
 
 enum MapListUserRoles {
