@@ -2710,7 +2710,7 @@ void MainWindow::on_actionOpen_Log_File_triggered() {
 }
 
 void MainWindow::on_actionOpen_Config_Folder_triggered() {
-    QDesktopServices::openUrl(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
+    QDesktopServices::openUrl(QUrl::fromLocalFile(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)));
 }
 
 void MainWindow::on_actionEdit_Preferences_triggered() {
