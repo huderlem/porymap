@@ -195,6 +195,9 @@ bool CustomAttributesTable::deleteSelectedAttributes(QTableWidget * table) {
         persistentIndexes.append(persistentIndex);
     }
 
+    if (persistentIndexes.isEmpty())
+        return false;
+
     for (QPersistentModelIndex index : persistentIndexes) {
         table->removeRow(index.row());
     }
