@@ -40,19 +40,34 @@ public:
 
 public:
     QList<Tile> tiles;
-    uint16_t behavior;     // 8 bits RSE, 9 bits FRLG
-    uint8_t layerType;
-    uint8_t encounterType; // FRLG only
-    uint8_t terrainType;   // FRLG only
+    uint32_t behavior;
+    uint32_t layerType;
+    uint32_t encounterType;
+    uint32_t terrainType;
     uint32_t unusedAttributes;
     QString label;
 
+    uint32_t getAttributes();
+    void setAttributes(uint32_t data);
     void setAttributes(uint32_t data, BaseGameVersion version);
-    uint32_t getAttributes(BaseGameVersion version);
 
     static int getIndexInTileset(int);
     static QPoint coordFromPixmapCoord(const QPointF &pixelCoord);
     static int getAttributesSize(BaseGameVersion version);
+    static void calculateAttributeLayout();
+
+private:
+    static uint32_t behaviorMask;
+    static uint32_t terrainTypeMask;
+    static uint32_t encounterTypeMask;
+    static uint32_t layerTypeMask;
+    static uint32_t unusedAttrMask;
+    static int behaviorShift;
+    static int terrainTypeShift;
+    static int encounterTypeShift;
+    static int layerTypeShift;
+
+    static int getShiftValue(uint32_t mask);
 };
 
 inline bool operator==(const Metatile &a, const Metatile &b) {

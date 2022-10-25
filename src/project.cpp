@@ -980,10 +980,9 @@ void Project::saveTilesetMetatileAttributes(Tileset *tileset) {
     QFile attrs_file(tileset->metatile_attrs_path);
     if (attrs_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
         QByteArray data;
-        BaseGameVersion version = projectConfig.getBaseGameVersion();
-        int attrSize = Metatile::getAttributesSize(version);
+        int attrSize = projectConfig.getMetatileAttributesSize();
         for (Metatile *metatile : tileset->metatiles) {
-            uint32_t attributes = metatile->getAttributes(version);
+            uint32_t attributes = metatile->getAttributes();
             for (int i = 0; i < attrSize; i++)
                 data.append(static_cast<char>(attributes >> (8 * i)));
         }
@@ -1538,9 +1537,7 @@ void Project::loadTilesetMetatiles(Tileset* tileset) {
     if (attrs_file.open(QIODevice::ReadOnly)) {
         QByteArray data = attrs_file.readAll();
         int num_metatiles = tileset->metatiles.count();
-
-        BaseGameVersion version = projectConfig.getBaseGameVersion();
-        int attrSize = Metatile::getAttributesSize(version);
+        int attrSize = projectConfig.getMetatileAttributesSize();
         int num_metatileAttrs = data.length() / attrSize;
         if (num_metatiles != num_metatileAttrs) {
             logWarn(QString("Metatile count %1 does not match metatile attribute count %2 in %3").arg(num_metatiles).arg(num_metatileAttrs).arg(tileset->name));
@@ -1552,7 +1549,7 @@ void Project::loadTilesetMetatiles(Tileset* tileset) {
             uint32_t attributes = 0;
             for (int j = 0; j < attrSize; j++)
                 attributes |= static_cast<unsigned char>(data.at(i * attrSize + j)) << (8 * j);
-            tileset->metatiles.at(i)->setAttributes(attributes, version);
+            tileset->metatiles.at(i)->setAttributes(attributes);
         }
     } else {
         logError(QString("Could not open tileset metatile attributes file '%1'").arg(tileset->metatile_attrs_path));

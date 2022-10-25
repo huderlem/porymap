@@ -145,7 +145,17 @@ bool KeyValueConfigBase::getConfigBool(QString key, QString value) {
 
 int KeyValueConfigBase::getConfigInteger(QString key, QString value, int min, int max, int defaultValue) {
     bool ok;
-    int result = value.toInt(&ok);
+    int result = value.toInt(&ok, 0);
+    if (!ok) {
+        logWarn(QString("Invalid config value for %1: '%2'. Must be an integer.").arg(key).arg(value));
+        return defaultValue;
+    }
+    return qMin(max, qMax(min, result));
+}
+
+long KeyValueConfigBase::getConfigLong(QString key, QString value, long min, long max, long defaultValue) {
+    bool ok;
+    long result = value.toLong(&ok, 0);
     if (!ok) {
         logWarn(QString("Invalid config value for %1: '%2'. Must be an integer.").arg(key).arg(value));
         return defaultValue;
@@ -549,6 +559,21 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         this->defaultPrimaryTileset = value;
     } else if (key == "default_secondary_tileset") {
         this->defaultSecondaryTileset = value;
+    } else if (key == "metatile_attributes_size") {
+        int size = getConfigInteger(key, value, 1, 4, 2);
+        if (size & (size - 1)) {
+            logWarn(QString("Invalid config value for %1: must be 1, 2, or 4").arg(key));
+            size = 2;
+        }
+        this->metatileAttributesSize = size;
+    } else if (key == "metatile_behavior_mask") {
+        this->metatileBehaviorMask = getConfigLong(key, value, 0, 0xFFFFFFFF, 0);
+    } else if (key == "metatile_terrain_type_mask") {
+        this->metatileTerrainTypeMask = getConfigLong(key, value, 0, 0xFFFFFFFF, 0);
+    } else if (key == "metatile_encounter_type_mask") {
+        this->metatileEncounterTypeMask = getConfigLong(key, value, 0, 0xFFFFFFFF, 0);
+    } else if (key == "metatile_layer_type_mask") {
+        this->metatileLayerTypeMask = getConfigLong(key, value, 0, 0xFFFFFFFF, 0);
 #ifdef CONFIG_BACKWARDS_COMPATABILITY
     } else if (key == "recent_map") {
         userConfig.setRecentMap(value);
@@ -599,6 +624,11 @@ void ProjectConfig::setUnreadKeys() {
     if (!readKeys.contains("create_map_text_file")) this->createMapTextFile = (this->baseGameVersion != BaseGameVersion::pokeemerald);
     if (!readKeys.contains("new_map_border_metatiles")) this->newMapBorderMetatileIds = isPokefirered ? DEFAULT_BORDER_FRLG : DEFAULT_BORDER_RSE;
     if (!readKeys.contains("default_secondary_tileset")) this->defaultSecondaryTileset = isPokefirered ? "gTileset_PalletTown" : "gTileset_Petalburg";
+    if (!readKeys.contains("metatile_attributes_size")) this->metatileAttributesSize = isPokefirered ? 4 : 2;
+    if (!readKeys.contains("metatile_behavior_mask")) this->metatileBehaviorMask = isPokefirered ? 0x000001FF : 0x00FF;
+    if (!readKeys.contains("metatile_terrain_type_mask")) this->metatileTerrainTypeMask = isPokefirered ? 0x00003E00 : 0;
+    if (!readKeys.contains("metatile_encounter_type_mask")) this->metatileEncounterTypeMask = isPokefirered ? 0x07000000 : 0;
+    if (!readKeys.contains("metatile_layer_type_mask")) this-> metatileLayerTypeMask = isPokefirered ? 0x60000000 : 0xF000;
 }
 
 QMap<QString, QString> ProjectConfig::getKeyValueMap() {
@@ -630,6 +660,11 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     }
     map.insert("tilesets_have_callback", QString::number(this->tilesetsHaveCallback));
     map.insert("tilesets_have_is_compressed", QString::number(this->tilesetsHaveIsCompressed));
+    map.insert("metatile_attributes_size", QString::number(this->metatileAttributesSize));
+    map.insert("metatile_behavior_mask", "0x" + QString::number(this->metatileBehaviorMask, 16).toUpper());
+    map.insert("metatile_terrain_type_mask", "0x" + QString::number(this->metatileTerrainTypeMask, 16).toUpper());
+    map.insert("metatile_encounter_type_mask", "0x" + QString::number(this->metatileEncounterTypeMask, 16).toUpper());
+    map.insert("metatile_layer_type_mask", "0x" + QString::number(this->metatileLayerTypeMask, 16).toUpper());
     return map;
 }
 
@@ -877,6 +912,26 @@ void ProjectConfig::setTilesetsHaveIsCompressed(bool has) {
 
 bool ProjectConfig::getTilesetsHaveIsCompressed() {
     return this->tilesetsHaveIsCompressed;
+}
+
+int ProjectConfig::getMetatileAttributesSize() {
+    return this->metatileAttributesSize;
+}
+
+uint32_t ProjectConfig::getMetatileBehaviorMask() {
+    return this->metatileBehaviorMask;
+}
+
+uint32_t ProjectConfig::getMetatileTerrainTypeMask() {
+    return this->metatileTerrainTypeMask;
+}
+
+uint32_t ProjectConfig::getMetatileEncounterTypeMask() {
+    return this->metatileEncounterTypeMask;
+}
+
+uint32_t ProjectConfig::getMetatileLayerTypeMask() {
+    return this->metatileLayerTypeMask;
 }
 
 

@@ -694,15 +694,14 @@ int MainWindow::getMetatileAttributes(int metatileId) {
     Metatile * metatile = this->getMetatile(metatileId);
     if (!metatile)
         return -1;
-    return metatile->getAttributes(projectConfig.getBaseGameVersion());
+    return metatile->getAttributes();
 }
 
 void MainWindow::setMetatileAttributes(int metatileId, int attributes) {
     Metatile * metatile = this->getMetatile(metatileId);
-    uint32_t u_attributes = static_cast<uint32_t>(attributes);
     if (!metatile)
         return;
-    metatile->setAttributes(u_attributes, projectConfig.getBaseGameVersion());
+    metatile->setAttributes(attributes);
     this->saveMetatileAttributesByMetatileId(metatileId);
 }
 

@@ -233,8 +233,8 @@ bool Tileset::appendToMetatiles(QString root, QString friendlyName, bool usingAs
     } else {
         // Append to C file
         dataString.append(QString("const u16 gMetatiles_%1[] = INCBIN_U16(\"%2\");\n").arg(friendlyName, metatilesPath));
-        QString attrSize = (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) ? "32" : "16";
-        dataString.append(QString("const u%1 gMetatileAttributes_%2[] = INCBIN_U%1(\"%3\");\n").arg(attrSize, friendlyName, metatileAttrsPath));
+        QString numBits = QString::number(projectConfig.getMetatileAttributesSize() * 8);
+        dataString.append(QString("const u%1 gMetatileAttributes_%2[] = INCBIN_U%1(\"%3\");\n").arg(numBits, friendlyName, metatileAttrsPath));
     }
     file.write(dataString.toUtf8());
     file.flush();
