@@ -591,26 +591,6 @@ void Project::ignoreWatchedFileTemporarily(QString filepath) {
     modifiedFileTimestamps.insert(filepath, QDateTime::currentMSecsSinceEpoch() + 5000);
 }
 
-void Project::setNewMapLayout(Map* map) {
-    MapLayout *layout = new MapLayout();
-    layout->id = MapLayout::layoutConstantFromName(map->name);
-    layout->name = QString("%1_Layout").arg(map->name);
-    layout->width = getDefaultMapSize();
-    layout->height = getDefaultMapSize();
-    layout->border_width = DEFAULT_BORDER_WIDTH;
-    layout->border_height = DEFAULT_BORDER_HEIGHT;
-    layout->border_path = QString("%2%1/border.bin").arg(map->name).arg(projectConfig.getFilePath(ProjectFilePath::data_layouts_folders));
-    layout->blockdata_path = QString("%2%1/map.bin").arg(map->name).arg(projectConfig.getFilePath(ProjectFilePath::data_layouts_folders));
-    layout->tileset_primary_label = tilesetLabels["primary"].value(0, "gTileset_General");
-    layout->tileset_secondary_label = tilesetLabels["secondary"].value(0, projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered ? "gTileset_PalletTown" : "gTileset_Petalburg");
-    map->layout = layout;
-    map->layoutId = layout->id;
-
-    // Insert new entry into the global map layouts.
-    mapLayouts.insert(layout->id, layout);
-    mapLayoutsTable.append(layout->id);
-}
-
 void Project::saveMapGroups() {
     QString mapGroupsFilepath = QString("%1/%2").arg(root).arg(projectConfig.getFilePath(ProjectFilePath::json_map_groups));
     QFile mapGroupsFile(mapGroupsFilepath);
@@ -1046,7 +1026,7 @@ void Project::saveTilesetPalettes(Tileset *tileset) {
 bool Project::loadLayoutTilesets(MapLayout *layout) {
     layout->tileset_primary = getTileset(layout->tileset_primary_label);
     if (!layout->tileset_primary) {
-        QString defaultTileset = tilesetLabels["primary"].value(0, "gTileset_General");
+        QString defaultTileset = this->getDefaultPrimaryTilesetLabel();
         logWarn(QString("Map layout %1 has invalid primary tileset '%2'. Using default '%3'").arg(layout->id).arg(layout->tileset_primary_label).arg(defaultTileset));
         layout->tileset_primary_label = defaultTileset;
         layout->tileset_primary = getTileset(layout->tileset_primary_label);
@@ -1058,7 +1038,7 @@ bool Project::loadLayoutTilesets(MapLayout *layout) {
 
     layout->tileset_secondary = getTileset(layout->tileset_secondary_label);
     if (!layout->tileset_secondary) {
-        QString defaultTileset = tilesetLabels["secondary"].value(0, projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered ? "gTileset_PalletTown" : "gTileset_Petalburg");
+        QString defaultTileset = this->getDefaultSecondaryTilesetLabel();
         logWarn(QString("Map layout %1 has invalid secondary tileset '%2'. Using default '%3'").arg(layout->id).arg(layout->tileset_secondary_label).arg(defaultTileset));
         layout->tileset_secondary_label = defaultTileset;
         layout->tileset_secondary = getTileset(layout->tileset_secondary_label);
@@ -1082,7 +1062,7 @@ Tileset* Project::loadTileset(QString label, Tileset *tileset) {
             tileset = new Tileset;
         }
         tileset->name = label;
-        tileset->is_secondary = values.value(memberMap.key("isSecondary"));
+        tileset->is_secondary = ParseUtil::gameStringToBool(values.value(memberMap.key("isSecondary")));
         tileset->tiles_label = values.value(memberMap.key("tiles"));
         tileset->palettes_label = values.value(memberMap.key("palettes"));
         tileset->metatiles_label = values.value(memberMap.key("metatiles"));
@@ -1098,7 +1078,7 @@ Tileset* Project::loadTileset(QString label, Tileset *tileset) {
         }
         const auto tilesetAttributes = structs[label];
         tileset->name = label;
-        tileset->is_secondary = tilesetAttributes.value("isSecondary");
+        tileset->is_secondary = ParseUtil::gameStringToBool(tilesetAttributes.value("isSecondary"));
         tileset->tiles_label = tilesetAttributes.value("tiles");
         tileset->palettes_label = tilesetAttributes.value("palettes");
         tileset->metatiles_label = tilesetAttributes.value("metatiles");
@@ -1588,7 +1568,8 @@ void Project::loadTilesetMetatileLabels(Tileset* tileset) {
     for (QString labelName : labels.keys()) {
         int metatileId = labels[labelName];
         // subtract Project::num_tiles_primary from secondary metatiles
-        Metatile *metatile = Tileset::getMetatile(metatileId - (ParseUtil::gameStringToBool(tileset->is_secondary) ? Project::num_tiles_primary : 0), tileset, nullptr);
+        int offset = tileset->is_secondary ? Project::num_tiles_primary : 0;
+        Metatile *metatile = Tileset::getMetatile(metatileId - offset, tileset, nullptr);
         if (metatile) {
             metatile->label = labelName.replace(tilesetPrefix, "");
         } else {
@@ -1850,28 +1831,43 @@ Project::DataQualifiers Project::getDataQualifiers(QString text, QString label) 
     return qualifiers;
 }
 
-void Project::insertTilesetLabel(QString label, bool isSecondary) {
-    QString category = isSecondary ? "secondary" : "primary";
-    this->tilesetLabels[category].append(label);
-    this->tilesetLabelsOrdered.append(label);
+QString Project::getDefaultPrimaryTilesetLabel() {
+    QString defaultLabel = projectConfig.getDefaultPrimaryTileset();
+    if (!this->primaryTilesetLabels.contains(defaultLabel)) {
+        QString firstLabel = this->primaryTilesetLabels.first();
+        logWarn(QString("Unable to find default primary tileset '%1', using '%2' instead.").arg(defaultLabel).arg(firstLabel));
+        defaultLabel = firstLabel;
+    }
+    return defaultLabel;
 }
 
-void Project::insertTilesetLabel(QString label, QString isSecondaryStr) {
+QString Project::getDefaultSecondaryTilesetLabel() {
+    QString defaultLabel = projectConfig.getDefaultSecondaryTileset();
+    if (!this->secondaryTilesetLabels.contains(defaultLabel)) {
+        QString firstLabel = this->secondaryTilesetLabels.first();
+        logWarn(QString("Unable to find default secondary tileset '%1', using '%2' instead.").arg(defaultLabel).arg(firstLabel));
+        defaultLabel = firstLabel;
+    }
+    return defaultLabel;
+}
+
+void Project::appendTilesetLabel(QString label, QString isSecondaryStr) {
     bool ok;
     bool isSecondary = ParseUtil::gameStringToBool(isSecondaryStr, &ok);
     if (!ok) {
         logError(QString("Unable to convert value '%1' of isSecondary to bool for tileset %2.").arg(isSecondaryStr).arg(label));
         return;
     }
-    insertTilesetLabel(label, isSecondary);
+    QStringList * list = isSecondary ? &this->secondaryTilesetLabels : &this->primaryTilesetLabels;
+    list->append(label);
+    this->tilesetLabelsOrdered.append(label);
 }
 
 bool Project::readTilesetLabels() {
     QStringList primaryTilesets;
     QStringList secondaryTilesets;
-    this->tilesetLabels.clear();
-    this->tilesetLabels.insert("primary", primaryTilesets);
-    this->tilesetLabels.insert("secondary", secondaryTilesets);
+    this->primaryTilesetLabels.clear();
+    this->secondaryTilesetLabels.clear();
     this->tilesetLabelsOrdered.clear();
 
     QString filename = projectConfig.getFilePath(ProjectFilePath::tilesets_headers);
@@ -1889,8 +1885,11 @@ bool Project::readTilesetLabels() {
         QRegularExpressionMatchIterator iter = re.globalMatch(text);
         while (iter.hasNext()) {
             QRegularExpressionMatch match = iter.next();
-            insertTilesetLabel(match.captured("label"), match.captured("isSecondary"));
+            appendTilesetLabel(match.captured("label"), match.captured("isSecondary"));
         }
+        this->primaryTilesetLabels.sort();
+        this->secondaryTilesetLabels.sort();
+        this->tilesetLabelsOrdered.sort();
         filename = asm_filename; // For error reporting further down
     } else {
         this->usingAsmTilesets = false;
@@ -1898,16 +1897,16 @@ bool Project::readTilesetLabels() {
         QStringList labels = structs.keys();
         // TODO: This is alphabetical, AdvanceMap import wants the vanilla order in tilesetLabelsOrdered
         for (const auto tilesetLabel : labels){
-            insertTilesetLabel(tilesetLabel, structs[tilesetLabel].value("isSecondary"));
+            appendTilesetLabel(tilesetLabel, structs[tilesetLabel].value("isSecondary"));
         }
     }
 
     bool success = true;
-    if (this->tilesetLabels["secondary"].isEmpty()) {
+    if (this->secondaryTilesetLabels.isEmpty()) {
         logError(QString("Failed to find any secondary tilesets in %1").arg(filename));
         success = false;
     }
-    if (this->tilesetLabels["primary"].isEmpty()) {
+    if (this->primaryTilesetLabels.isEmpty()) {
         logError(QString("Failed to find any primary tilesets in %1").arg(filename));
         success = false;
     }
@@ -2164,7 +2163,7 @@ bool Project::readMovementTypes() {
 }
 
 bool Project::readInitialFacingDirections() {
-    QString filename = projectConfig.getFilePath(ProjectFilePath::path_initial_facing_table);
+    QString filename = projectConfig.getFilePath(ProjectFilePath::initial_facing_table);
     fileWatcher.addPath(root + "/" + filename);
     facingDirections = parser.readNamedIndexCArray(filename, "gInitialMovementTypeFacingDirections");
     if (facingDirections.isEmpty()) {
@@ -2505,7 +2504,7 @@ bool Project::readEventGraphics() {
 
 bool Project::readSpeciesIconPaths() {
     speciesToIconPath.clear();
-    QString srcfilename = projectConfig.getFilePath(ProjectFilePath::path_pokemon_icon_table);
+    QString srcfilename = projectConfig.getFilePath(ProjectFilePath::pokemon_icon_table);
     QString incfilename = projectConfig.getFilePath(ProjectFilePath::data_pokemon_gfx);
     fileWatcher.addPath(root + "/" + srcfilename);
     fileWatcher.addPath(root + "/" + incfilename);

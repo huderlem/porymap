@@ -176,8 +176,7 @@ private slots:
     void onMapNeedsRedrawing();
     void onTilesetsSaved(QString, QString);
     void onWildMonDataChanged();
-    void openNewMapPopupWindow(int, QVariant);
-    void openNewMapPopupWindowImportMap(MapLayout *);
+    void openNewMapPopupWindow();
     void onNewMapCreated();
     void onMapCacheCleared();
     void importMapFromAdvanceMap1_92();
@@ -330,6 +329,7 @@ private:
     bool isProgrammaticEventTabChange;
     bool projectHasUnsavedChanges;
     bool projectOpenFailure = false;
+    bool openedNewMapDialog = false;
 
     MapSortOrder mapSortOrder;
 
@@ -389,6 +389,7 @@ private:
 
     QObjectList shortcutableObjects() const;
     void addCustomHeaderValue(QString key, QJsonValue value, bool isNew = false);
+    int insertTilesetLabel(QStringList * list, QString label);
 };
 
 enum MapListUserRoles {

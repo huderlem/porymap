@@ -183,8 +183,8 @@ enum ProjectFilePath {
     constants_metatile_labels,
     constants_metatile_behaviors,
     constants_fieldmap,
-    path_initial_facing_table,
-    path_pokemon_icon_table,
+    initial_facing_table,
+    pokemon_icon_table,
 };
 
 class ProjectConfig: public KeyValueConfigBase
@@ -209,6 +209,7 @@ public:
         this->newMapMetatileId = 1;
         this->newMapElevation = 3;
         this->newMapBorderMetatileIds = DEFAULT_BORDER_RSE;
+        this->defaultPrimaryTileset = "gTileset_General";
         this->prefabFilepath = QString();
         this->prefabImportPrompted = false;
         this->tilesetsHaveCallback = true;
@@ -251,6 +252,8 @@ public:
     int getNewMapElevation();
     void setNewMapBorderMetatileIds(QList<int> metatileIds);
     QList<int> getNewMapBorderMetatileIds();
+    QString getDefaultPrimaryTileset();
+    QString getDefaultSecondaryTileset();
     void setFilePath(ProjectFilePath pathId, QString path);
     QString getFilePath(ProjectFilePath pathId);
     void setPrefabFilepath(QString filepath);
@@ -285,6 +288,8 @@ private:
     int newMapMetatileId;
     int newMapElevation;
     QList<int> newMapBorderMetatileIds;
+    QString defaultPrimaryTileset;
+    QString defaultSecondaryTileset;
     QStringList readKeys;
     QString prefabFilepath;
     bool prefabImportPrompted;

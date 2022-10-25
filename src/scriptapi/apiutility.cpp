@@ -226,13 +226,13 @@ QList<QString> ScriptUtility::getTilesetNames() {
 QList<QString> ScriptUtility::getPrimaryTilesetNames() {
     if (!window || !window->editor || !window->editor->project)
         return QList<QString>();
-    return window->editor->project->tilesetLabels["primary"];
+    return window->editor->project->primaryTilesetLabels;
 }
 
 QList<QString> ScriptUtility::getSecondaryTilesetNames() {
     if (!window || !window->editor || !window->editor->project)
         return QList<QString>();
-    return window->editor->project->tilesetLabels["secondary"];
+    return window->editor->project->secondaryTilesetLabels;
 }
 
 QList<QString> ScriptUtility::getMetatileBehaviorNames() {

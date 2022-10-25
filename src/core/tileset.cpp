@@ -128,19 +128,20 @@ QList<QRgb> Tileset::getPalette(int paletteId, Tileset *primaryTileset, Tileset 
 
 bool Tileset::appendToHeaders(QString root, QString friendlyName, bool usingAsm) {
     QString headersFile = root + "/" + (usingAsm ? projectConfig.getFilePath(ProjectFilePath::tilesets_headers_asm)
-                                              : projectConfig.getFilePath(ProjectFilePath::tilesets_headers));
+                                                 : projectConfig.getFilePath(ProjectFilePath::tilesets_headers));
     QFile file(headersFile);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Append)) {
         logError(QString("Could not write to file \"%1\"").arg(headersFile));
         return false;
     }
+    QString isSecondaryStr = this->is_secondary ? "TRUE" : "FALSE";
     QString dataString = "\n";
     if (usingAsm) {
         // Append to asm file
         dataString.append("\t.align 2\n");
         dataString.append(QString("%1::\n").arg(this->name));
         dataString.append("\t.byte TRUE @ is compressed\n");
-        dataString.append(QString("\t.byte %1 @ is secondary\n").arg(this->is_secondary));
+        dataString.append(QString("\t.byte %1 @ is secondary\n").arg(isSecondaryStr));
         dataString.append("\t.2byte 0 @ padding\n");
         dataString.append(QString("\t.4byte gTilesetTiles_%1\n").arg(friendlyName));
         dataString.append(QString("\t.4byte gTilesetPalettes_%1\n").arg(friendlyName));
@@ -156,7 +157,7 @@ bool Tileset::appendToHeaders(QString root, QString friendlyName, bool usingAsm)
         // Append to C file
         dataString.append(QString("const struct Tileset %1 =\n{\n").arg(this->name));
         if (projectConfig.getTilesetsHaveIsCompressed()) dataString.append("    .isCompressed = TRUE,\n");
-        dataString.append(QString("    .isSecondary = %1,\n").arg(this->is_secondary));
+        dataString.append(QString("    .isSecondary = %1,\n").arg(isSecondaryStr));
         dataString.append(QString("    .tiles = gTilesetTiles_%1,\n").arg(friendlyName));
         dataString.append(QString("    .palettes = gTilesetPalettes_%1,\n").arg(friendlyName));
         dataString.append(QString("    .metatiles = gMetatiles_%1,\n").arg(friendlyName));
@@ -245,7 +246,7 @@ bool Tileset::appendToMetatiles(QString root, QString friendlyName, bool usingAs
 // Example: for gTileset_DepartmentStore, returns "data/tilesets/secondary/department_store"
 QString Tileset::getExpectedDir()
 {
-    return Tileset::getExpectedDir(this->name, ParseUtil::gameStringToBool(this->is_secondary));
+    return Tileset::getExpectedDir(this->name, this->is_secondary);
 }
 
 QString Tileset::getExpectedDir(QString tilesetName, bool isSecondary)

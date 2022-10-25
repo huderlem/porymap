@@ -961,9 +961,9 @@ bool MainWindow::loadProjectCombos() {
     ui->comboBox_Location->clear();
     ui->comboBox_Location->addItems(project->mapSectionValueToName.values());
     ui->comboBox_PrimaryTileset->clear();
-    ui->comboBox_PrimaryTileset->addItems(project->tilesetLabels.value("primary"));
+    ui->comboBox_PrimaryTileset->addItems(project->primaryTilesetLabels);
     ui->comboBox_SecondaryTileset->clear();
-    ui->comboBox_SecondaryTileset->addItems(project->tilesetLabels.value("secondary"));
+    ui->comboBox_SecondaryTileset->addItems(project->secondaryTilesetLabels);
     ui->comboBox_Weather->clear();
     ui->comboBox_Weather->addItems(project->weatherNames);
     ui->comboBox_BattleScene->clear();
@@ -1141,20 +1141,20 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point)
 
 void MainWindow::onAddNewMapToGroupClick(QAction* triggeredAction)
 {
-    int groupNum = triggeredAction->data().toInt();
-    openNewMapPopupWindow(MapSortOrder::Group, groupNum);
+    openNewMapPopupWindow();
+    this->newMapPrompt->init(MapSortOrder::Group, triggeredAction->data());
 }
 
 void MainWindow::onAddNewMapToAreaClick(QAction* triggeredAction)
 {
-    QString secName = triggeredAction->data().toString();
-    openNewMapPopupWindow(MapSortOrder::Area, secName);
+    openNewMapPopupWindow();
+    this->newMapPrompt->init(MapSortOrder::Area, triggeredAction->data());
 }
 
 void MainWindow::onAddNewMapToLayoutClick(QAction* triggeredAction)
 {
-    QString layoutId = triggeredAction->data().toString();
-    openNewMapPopupWindow(MapSortOrder::Layout, layoutId);
+    openNewMapPopupWindow();
+    this->newMapPrompt->init(MapSortOrder::Layout, triggeredAction->data());
 }
 
 void MainWindow::onNewMapCreated() {
@@ -1191,7 +1191,11 @@ void MainWindow::onNewMapCreated() {
     delete newMap;
 }
 
-void MainWindow::openNewMapPopupWindow(int type, QVariant data) {
+void MainWindow::openNewMapPopupWindow() {
+    if (!openedNewMapDialog) {
+        NewMapPopup::setDefaultSettings(this->editor->project);
+        openedNewMapDialog = true;
+    }
     if (!this->newMapPrompt) {
         this->newMapPrompt = new NewMapPopup(this, this->editor->project);
     }
@@ -1200,43 +1204,23 @@ void MainWindow::openNewMapPopupWindow(int type, QVariant data) {
     } else {
         this->newMapPrompt->raise();
         this->newMapPrompt->activateWindow();
-    }
-    switch (type)
-    {
-        case MapSortOrder::Group:
-            this->newMapPrompt->init(type, data.toInt(), QString(), QString());
-            break;
-        case MapSortOrder::Area:
-            this->newMapPrompt->init(type, 0, data.toString(), QString());
-            break;
-        case MapSortOrder::Layout:
-            this->newMapPrompt->init(type, 0, QString(), data.toString());
-            break;
     }
     connect(this->newMapPrompt, &NewMapPopup::applied, this, &MainWindow::onNewMapCreated);
     this->newMapPrompt->setAttribute(Qt::WA_DeleteOnClose);
 }
 
-void MainWindow::openNewMapPopupWindowImportMap(MapLayout *mapLayout) {
-    if (!this->newMapPrompt) {
-        this->newMapPrompt = new NewMapPopup(this, this->editor->project);
-    }
-    if (!this->newMapPrompt->isVisible()) {
-        this->newMapPrompt->show();
-    } else {
-        this->newMapPrompt->raise();
-        this->newMapPrompt->activateWindow();
-    }
-
-    this->newMapPrompt->initImportMap(mapLayout);
-
-    connect(this->newMapPrompt, SIGNAL(applied()), this, SLOT(onNewMapCreated()));
-    connect(this->newMapPrompt, &QObject::destroyed, [=](QObject *) { this->newMapPrompt = nullptr; });
-            this->newMapPrompt->setAttribute(Qt::WA_DeleteOnClose);
+void MainWindow::on_action_NewMap_triggered() {
+    openNewMapPopupWindow();
+    this->newMapPrompt->init();
 }
 
-void MainWindow::on_action_NewMap_triggered() {
-    openNewMapPopupWindow(MapSortOrder::Group, 0);
+// Insert label for newly-created tileset into sorted list of existing labels
+int MainWindow::insertTilesetLabel(QStringList * list, QString label) {
+    int i = 0;
+    for (; i < list->length(); i++)
+        if (list->at(i) > label) break;
+    list->insert(i, label);
+    return i;
 }
 
 void MainWindow::on_actionNew_Tileset_triggered() {
@@ -1266,8 +1250,7 @@ void MainWindow::on_actionNew_Tileset_triggered() {
             msgBox.exec();
             return;
         }
-        if (editor->project->tilesetLabels.value("primary").contains(createTilesetDialog->fullSymbolName)
-         || editor->project->tilesetLabels.value("secondary").contains(createTilesetDialog->fullSymbolName)) {
+        if (editor->project->tilesetLabelsOrdered.contains(createTilesetDialog->fullSymbolName)) {
             logError(QString("Could not create tileset \"%1\", the symbol \"%2\" already exists.").arg(createTilesetDialog->friendlyName, createTilesetDialog->fullSymbolName));
             QMessageBox msgBox(this);
             msgBox.setText("Failed to add new tileset.");
@@ -1285,7 +1268,7 @@ void MainWindow::on_actionNew_Tileset_triggered() {
         newSet.tilesImagePath = fullDirectoryPath + "/tiles.png";
         newSet.metatiles_path = fullDirectoryPath + "/metatiles.bin";
         newSet.metatile_attrs_path = fullDirectoryPath + "/metatile_attributes.bin";
-        newSet.is_secondary = createTilesetDialog->isSecondary ? "TRUE" : "FALSE";
+        newSet.is_secondary = createTilesetDialog->isSecondary;
         int numMetaTiles = createTilesetDialog->isSecondary ? (Project::getNumTilesTotal() - Project::getNumTilesPrimary()) : Project::getNumTilesPrimary();
         QImage tilesImage(":/images/blank_tileset.png");
         editor->project->loadTilesetTiles(&newSet, tilesImage);
@@ -1325,12 +1308,14 @@ void MainWindow::on_actionNew_Tileset_triggered() {
         newSet.appendToGraphics(editor->project->root, createTilesetDialog->friendlyName, editor->project->usingAsmTilesets);
         newSet.appendToMetatiles(editor->project->root, createTilesetDialog->friendlyName, editor->project->usingAsmTilesets);
 
-        if(!createTilesetDialog->isSecondary) {
-            this->ui->comboBox_PrimaryTileset->addItem(createTilesetDialog->fullSymbolName);
+        if (!createTilesetDialog->isSecondary) {
+            int index = insertTilesetLabel(&editor->project->primaryTilesetLabels, createTilesetDialog->fullSymbolName);
+            this->ui->comboBox_PrimaryTileset->insertItem(index, createTilesetDialog->fullSymbolName);
         } else {
-            this->ui->comboBox_SecondaryTileset->addItem(createTilesetDialog->fullSymbolName);
+            int index = insertTilesetLabel(&editor->project->secondaryTilesetLabels, createTilesetDialog->fullSymbolName);
+            this->ui->comboBox_SecondaryTileset->insertItem(index, createTilesetDialog->fullSymbolName);
         }
-        editor->project->insertTilesetLabel(createTilesetDialog->fullSymbolName, createTilesetDialog->isSecondary);
+        insertTilesetLabel(&editor->project->tilesetLabelsOrdered, createTilesetDialog->fullSymbolName);
 
         QMessageBox msgBox(this);
         msgBox.setText("Successfully created tileset.");
@@ -2464,7 +2449,8 @@ void MainWindow::importMapFromAdvanceMap1_92()
         return;
     }
 
-    openNewMapPopupWindowImportMap(mapLayout);
+    openNewMapPopupWindow();
+    this->newMapPrompt->init(mapLayout);
 }
 
 void MainWindow::showExportMapImageWindow(ImageExporterMode mode) {
@@ -2547,7 +2533,7 @@ void MainWindow::on_comboBox_EmergeMap_currentTextChanged(const QString &mapName
 
 void MainWindow::on_comboBox_PrimaryTileset_currentTextChanged(const QString &tilesetLabel)
 {
-    if (editor->project->tilesetLabels["primary"].contains(tilesetLabel) && editor->map) {
+    if (editor->project->primaryTilesetLabels.contains(tilesetLabel) && editor->map) {
         editor->updatePrimaryTileset(tilesetLabel);
         redrawMapScene();
         on_horizontalSlider_MetatileZoom_valueChanged(ui->horizontalSlider_MetatileZoom->value());
@@ -2559,7 +2545,7 @@ void MainWindow::on_comboBox_PrimaryTileset_currentTextChanged(const QString &ti
 
 void MainWindow::on_comboBox_SecondaryTileset_currentTextChanged(const QString &tilesetLabel)
 {
-    if (editor->project->tilesetLabels["secondary"].contains(tilesetLabel) && editor->map) {
+    if (editor->project->secondaryTilesetLabels.contains(tilesetLabel) && editor->map) {
         editor->updateSecondaryTileset(tilesetLabel);
         redrawMapScene();
         on_horizontalSlider_MetatileZoom_valueChanged(ui->horizontalSlider_MetatileZoom->value());

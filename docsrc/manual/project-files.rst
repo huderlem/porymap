@@ -57,7 +57,7 @@ For example if you wanted to rename ``include/constants/items.h`` to ``headers/d
    include/constants/metatile_labels.h, yes, yes, ``constants_metatile_labels``,
    include/constants/metatile_behaviors.h, yes, no, ``constants_metatile_behaviors``,
    include/fieldmap.h, yes, no, ``constants_fieldmap``, reads tileset related constants
-   src/event_object_movement.c, yes, no, ``path_initial_facing_table``, reads ``gInitialMovementTypeFacingDirections``
-   src/pokemon_icon.c, yes, no, ``path_pokemon_icon_table``, reads files in ``gMonIconTable``
+   src/event_object_movement.c, yes, no, ``initial_facing_table``, reads ``gInitialMovementTypeFacingDirections``
+   src/pokemon_icon.c, yes, no, ``pokemon_icon_table``, reads files in ``gMonIconTable``
 
 

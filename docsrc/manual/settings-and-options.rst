@@ -52,6 +52,8 @@ your project root as ``porymap.user.cfg``. You should add this file to your giti
    ``new_map_metatile``, 1, project, yes, The metatile id that will be used to fill new maps
    ``new_map_elevation``, 3, project, yes, The elevation that will be used to fill new maps
    ``new_map_border_metatiles``, "``468,469,476,477`` or ``20,21,28,29``", project, yes, The list of metatile ids that will be used to fill the 2x2 border of new maps
+   ``default_primary_tileset``, ``gTileset_General``, project, yes, The label of the default primary tileset
+   ``default_secondary_tileset``, ``gTileset_Petalburg`` or ``gTileset_PalletTown``, project, yes, The label of the default secondary tileset
    ``custom_scripts``, , user, yes, A list of script files to load into the scripting engine
    ``prefabs_filepath``, ``<project_root>/prefabs.json``, project, yes, The filepath containing prefab JSON data
    ``prefabs_import_prompted``, 0, project, no, Keeps track of whether or not the project was prompted for importing default prefabs

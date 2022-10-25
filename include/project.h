@@ -108,7 +108,8 @@ public:
     QMap<QString, Tileset*> tilesetCache;
     Tileset* loadTileset(QString, Tileset *tileset = nullptr);
     Tileset* getTileset(QString, bool forceLoad = false);
-    QMap<QString, QStringList> tilesetLabels;
+    QStringList primaryTilesetLabels;
+    QStringList secondaryTilesetLabels;
     QStringList tilesetLabelsOrdered;
 
     Blockdata readBlockdata(QString);
@@ -170,8 +171,7 @@ public:
 
     QString defaultSong;
     QStringList getVisibilities();
-    void insertTilesetLabel(QString label, bool isSecondary);
-    void insertTilesetLabel(QString label, QString isSecondaryStr);
+    void appendTilesetLabel(QString label, QString isSecondaryStr);
     bool readTilesetLabels();
     bool readTilesetProperties();
     bool readMaxMapDataSize();
@@ -210,6 +210,9 @@ public:
     QCompleter *getEventScriptLabelCompleter(QStringList additionalScriptLabels);
     QStringList getGlobalScriptLabels();
 
+    QString getDefaultPrimaryTilesetLabel();
+    QString getDefaultSecondaryTilesetLabel();
+
     static int getNumTilesPrimary();
     static int getNumTilesTotal();
     static int getNumMetatilesPrimary();
@@ -229,7 +232,6 @@ private:
     void updateMapLayout(Map*);
 
     void setNewMapHeader(Map* map, int mapIndex);
-    void setNewMapLayout(Map* map);
     void setNewMapBlockdata(Map* map);
     void setNewMapBorder(Map *map);
     void setNewMapEvents(Map *map);

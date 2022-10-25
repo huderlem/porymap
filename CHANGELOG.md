@@ -19,13 +19,13 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Add Cut/Copy/Paste for metatiles in the Tileset Editor.
 - Add button to copy the full metatile label to the clipboard in the Tileset Editor.
 - Add ability to export an image of the primary or secondary tileset's metatiles.
-- Add option to not open the most recent project on launch.
-- Add options for customizing how new maps are filled
+- Add new config options for customizing how new maps are filled, setting default tilesets, and whether the most recent project should be opened on launch.
 - Add color picker to palette editor for taking colors from the screen.
 - Add new features to the scripting API, including the ability to display messages and user input windows, set the overlay's opacity, rotation, scale, and clipping, interact with map header properties and the map border, read tile pixel data, and more.
 
 ### Changed
 - Overhauled the region map editor, adding support for tilemaps, and significant customization. Also now supports pokefirered.
+- Previous settings will be remembered in the New Map Options window.
 - The Custom Attributes table for map headers and events now supports types other than strings.
 - If an object event is inanimate, it will always render using its first frame.
 - Unused metatile attribute bits are preserved instead of being cleared.
@@ -63,6 +63,8 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Silence unnecessary error logging when parsing C defines Porymap doesn't use.
 - Fix some windows like the Tileset Editor not raising to the front when reactivated.
 - Metatile behaviors with no constant will now display their value in the Tileset Editor.
+- Fix incorrect limits on Floor Number and Border Width/Height in the New Map Options window.
+- Fix Border Width/Height being set to 0 when creating a new map from an existing layout.
 
 ## [4.5.0] - 2021-12-26
 ### Added
