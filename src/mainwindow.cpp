@@ -2590,9 +2590,7 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked()
     }
 
     QLabel *errorLabel = new QLabel();
-    QPalette errorPalette;
-    errorPalette.setColor(QPalette::WindowText, Qt::red);
-    errorLabel->setPalette(errorPalette);
+    errorLabel->setStyleSheet("QLabel { color: red }");
     errorLabel->setVisible(false);
 
     QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);

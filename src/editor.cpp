@@ -265,14 +265,10 @@ void Editor::addNewWildMonGroup(QWidget *window) {
     lineEdit->setValidator(validator);
     connect(lineEdit, &QLineEdit::textChanged, [this, &lineEdit, &buttonBox](QString text){
         if (this->project->encounterGroupLabels.contains(text)) {
-            QPalette palette = lineEdit->palette();
-            QColor color = Qt::red;
-            color.setAlpha(25);
-            palette.setColor(QPalette::Base, color);
-            lineEdit->setPalette(palette);
+            lineEdit->setStyleSheet("QLineEdit { background-color: rgba(255, 0, 0, 25%) }");
             buttonBox.button(QDialogButtonBox::Ok)->setDisabled(true);
         } else {
-            lineEdit->setPalette(QPalette());
+            lineEdit->setStyleSheet("");
             buttonBox.button(QDialogButtonBox::Ok)->setEnabled(true);
         }
     });

@@ -65,6 +65,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Metatile behaviors with no constant will now display their value in the Tileset Editor.
 - Fix incorrect limits on Floor Number and Border Width/Height in the New Map Options window.
 - Fix Border Width/Height being set to 0 when creating a new map from an existing layout.
+- Fix certain UI elements not highlighting red on some platforms.
 
 ## [4.5.0] - 2021-12-26
 ### Added

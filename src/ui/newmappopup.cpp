@@ -6,7 +6,6 @@
 
 #include <QMap>
 #include <QSet>
-#include <QPalette>
 #include <QStringList>
 
 struct NewMapPopup::Settings NewMapPopup::settings = {};
@@ -228,13 +227,9 @@ void NewMapPopup::useLayout(QString layoutId) {
 
 void NewMapPopup::on_lineEdit_NewMap_Name_textChanged(const QString &text) {
     if (project->mapNames.contains(text)) {
-        QPalette palette = this->ui->lineEdit_NewMap_Name->palette();
-        QColor color = Qt::red;
-        color.setAlpha(25);
-        palette.setColor(QPalette::Base, color);
-        this->ui->lineEdit_NewMap_Name->setPalette(palette);
+        this->ui->lineEdit_NewMap_Name->setStyleSheet("QLineEdit { background-color: rgba(255, 0, 0, 25%) }");
     } else {
-        this->ui->lineEdit_NewMap_Name->setPalette(QPalette());
+        this->ui->lineEdit_NewMap_Name->setStyleSheet("");
     }
 }
 
