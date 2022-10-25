@@ -633,6 +633,7 @@ void MainWindow::on_action_Reload_Project_triggered() {
     warning.setText("WARNING");
     warning.setInformativeText("Reloading this project will discard any unsaved changes.");
     warning.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+    warning.setDefaultButton(QMessageBox::Cancel);
     warning.setIcon(QMessageBox::Warning);
 
     if (warning.exec() == QMessageBox::Ok) {
