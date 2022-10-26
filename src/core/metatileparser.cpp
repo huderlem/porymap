@@ -82,7 +82,7 @@ QList<Metatile*> MetatileParser::parse(QString filepath, bool *error, bool prima
         uint32_t attributes = 0;
         for (int j = 0; j < attrSize; j++)
             attributes |= static_cast<unsigned char>(in.at(attrOffset + j)) << (8 * j);
-        metatile->convertAttributes(attributes, version);
+        metatile->setAttributes(attributes, version);
         metatile->tiles = tiles;
         metatiles.append(metatile);
     }

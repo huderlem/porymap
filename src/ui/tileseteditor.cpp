@@ -113,7 +113,7 @@ void TilesetEditor::initUi() {
 
 void TilesetEditor::setAttributesUi() {
     // Behavior
-    if (Metatile::customLayout[Metatile::Attr::Behavior].mask) {
+    if (Metatile::getBehaviorMask()) {
         for (int num : project->metatileBehaviorMapInverse.keys()) {
             this->ui->comboBox_metatileBehaviors->addItem(project->metatileBehaviorMapInverse[num], num);
         }
@@ -123,7 +123,7 @@ void TilesetEditor::setAttributesUi() {
     }
 
     // Terrain Type
-    if (Metatile::customLayout[Metatile::Attr::TerrainType].mask) {
+    if (Metatile::getTerrainTypeMask()) {
         this->ui->comboBox_terrainType->addItem("Normal", TERRAIN_NONE);
         this->ui->comboBox_terrainType->addItem("Grass", TERRAIN_GRASS);
         this->ui->comboBox_terrainType->addItem("Water", TERRAIN_WATER);
@@ -134,7 +134,7 @@ void TilesetEditor::setAttributesUi() {
     }
 
     // Encounter Type
-    if (Metatile::customLayout[Metatile::Attr::EncounterType].mask) {
+    if (Metatile::getEncounterTypeMask()) {
         this->ui->comboBox_encounterType->addItem("None", ENCOUNTER_NONE);
         this->ui->comboBox_encounterType->addItem("Land", ENCOUNTER_LAND);
         this->ui->comboBox_encounterType->addItem("Water", ENCOUNTER_WATER);
@@ -148,7 +148,7 @@ void TilesetEditor::setAttributesUi() {
         this->ui->comboBox_layerType->addItem("Normal - Middle/Top", METATILE_LAYER_MIDDLE_TOP);
         this->ui->comboBox_layerType->addItem("Covered - Bottom/Middle", METATILE_LAYER_BOTTOM_MIDDLE);
         this->ui->comboBox_layerType->addItem("Split - Bottom/Top", METATILE_LAYER_BOTTOM_TOP);
-        if (!Metatile::customLayout[Metatile::Attr::LayerType].mask) {
+        if (!Metatile::getLayerTypeMask()) {
             // User doesn't have triple layer metatiles, but has no layer type attribute.
             // Porymap is still using the layer type value to render metatiles, and with
             // no mask set every metatile will be "Middle/Top", so just display the combo

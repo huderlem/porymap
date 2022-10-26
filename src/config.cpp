@@ -627,11 +627,10 @@ void ProjectConfig::setUnreadKeys() {
     if (!readKeys.contains("new_map_border_metatiles")) this->newMapBorderMetatileIds = isPokefirered ? DEFAULT_BORDER_FRLG : DEFAULT_BORDER_RSE;
     if (!readKeys.contains("default_secondary_tileset")) this->defaultSecondaryTileset = isPokefirered ? "gTileset_PalletTown" : "gTileset_Petalburg";
     if (!readKeys.contains("metatile_attributes_size")) this->metatileAttributesSize = Metatile::getDefaultAttributesSize(this->baseGameVersion);
-    const QHash<Metatile::Attr, Metatile::AttrLayout> layout = isPokefirered ? Metatile::defaultLayoutFRLG : Metatile::defaultLayoutRSE;
-    if (!readKeys.contains("metatile_behavior_mask")) this->metatileBehaviorMask = layout[Metatile::Attr::Behavior].mask;
-    if (!readKeys.contains("metatile_terrain_type_mask")) this->metatileTerrainTypeMask = layout[Metatile::Attr::TerrainType].mask;
-    if (!readKeys.contains("metatile_encounter_type_mask")) this->metatileEncounterTypeMask = layout[Metatile::Attr::EncounterType].mask;
-    if (!readKeys.contains("metatile_layer_type_mask")) this-> metatileLayerTypeMask = layout[Metatile::Attr::LayerType].mask;
+    if (!readKeys.contains("metatile_behavior_mask")) this->metatileBehaviorMask = Metatile::getBehaviorMask(this->baseGameVersion);
+    if (!readKeys.contains("metatile_terrain_type_mask")) this->metatileTerrainTypeMask = Metatile::getTerrainTypeMask(this->baseGameVersion);
+    if (!readKeys.contains("metatile_encounter_type_mask")) this->metatileEncounterTypeMask = Metatile::getEncounterTypeMask(this->baseGameVersion);
+    if (!readKeys.contains("metatile_layer_type_mask")) this-> metatileLayerTypeMask = Metatile::getLayerTypeMask(this->baseGameVersion);
     if (!readKeys.contains("enable_map_allow_flags")) this->enableMapAllowFlags = (this->baseGameVersion != BaseGameVersion::pokeruby);
 }
 
