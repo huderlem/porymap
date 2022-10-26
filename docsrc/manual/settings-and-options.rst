@@ -59,5 +59,10 @@ your project root as ``porymap.user.cfg``. You should add this file to your giti
    ``prefabs_import_prompted``, 0, project, no, Keeps track of whether or not the project was prompted for importing default prefabs
    ``tilesets_have_callback``, 1, project, yes, Whether new tileset headers should have the ``callback`` field
    ``tilesets_have_is_compressed``, 1, project, yes, Whether new tileset headers should have the ``isCompressed`` field
+   ``metatile_attributes_size``, 2 or 4, project, yes, The number of attribute bytes each metatile has
+   ``metatile_behavior_mask``, ``0xFF`` or ``0x1FF``, project, yes, The mask for the metatile Behavior attribute
+   ``metatile_encounter_type_mask``, ``0x0`` or ``0x7000000``, project, yes, The mask for the metatile Encounter Type attribute
+   ``metatile_layer_type_mask``, ``0xF000`` or ``0x60000000``, project, yes, The mask for the metatile Layer Type attribute
+   ``metatile_terrain_type_mask``, ``0x0`` or ``0x3E00``, project, yes, The mask for the metatile Terrain Type attribute
 
 Some of these settings can be toggled manually in porymap via the *Options* menu.
