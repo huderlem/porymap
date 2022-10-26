@@ -574,6 +574,8 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         this->metatileEncounterTypeMask = getConfigLong(key, value, 0, 0xFFFFFFFF, 0);
     } else if (key == "metatile_layer_type_mask") {
         this->metatileLayerTypeMask = getConfigLong(key, value, 0, 0xFFFFFFFF, 0);
+    } else if (key == "enable_map_allow_flags") {
+        this->enableMapAllowFlags = getConfigBool(key, value);
 #ifdef CONFIG_BACKWARDS_COMPATABILITY
     } else if (key == "recent_map") {
         userConfig.setRecentMap(value);
@@ -630,6 +632,7 @@ void ProjectConfig::setUnreadKeys() {
     if (!readKeys.contains("metatile_terrain_type_mask")) this->metatileTerrainTypeMask = layout[Metatile::Attr::TerrainType].mask;
     if (!readKeys.contains("metatile_encounter_type_mask")) this->metatileEncounterTypeMask = layout[Metatile::Attr::EncounterType].mask;
     if (!readKeys.contains("metatile_layer_type_mask")) this-> metatileLayerTypeMask = layout[Metatile::Attr::LayerType].mask;
+    if (!readKeys.contains("enable_map_allow_flags")) this->enableMapAllowFlags = (this->baseGameVersion != BaseGameVersion::pokeruby);
 }
 
 QMap<QString, QString> ProjectConfig::getKeyValueMap() {
@@ -666,6 +669,7 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("metatile_terrain_type_mask", "0x" + QString::number(this->metatileTerrainTypeMask, 16).toUpper());
     map.insert("metatile_encounter_type_mask", "0x" + QString::number(this->metatileEncounterTypeMask, 16).toUpper());
     map.insert("metatile_layer_type_mask", "0x" + QString::number(this->metatileLayerTypeMask, 16).toUpper());
+    map.insert("enable_map_allow_flags", QString::number(this->enableMapAllowFlags));
     return map;
 }
 
@@ -933,6 +937,10 @@ uint32_t ProjectConfig::getMetatileEncounterTypeMask() {
 
 uint32_t ProjectConfig::getMetatileLayerTypeMask() {
     return this->metatileLayerTypeMask;
+}
+
+bool ProjectConfig::getMapAllowFlagsEnabled() {
+    return this->enableMapAllowFlags;
 }
 
 

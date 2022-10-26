@@ -164,7 +164,7 @@ const QSet<QString> defaultTopLevelMapFields = {
 
 QSet<QString> Project::getTopLevelMapFields() {
     QSet<QString> topLevelMapFields = defaultTopLevelMapFields;
-    if (projectConfig.getBaseGameVersion() != BaseGameVersion::pokeruby) {
+    if (projectConfig.getMapAllowFlagsEnabled()) {
         topLevelMapFields.insert("allow_cycling");
         topLevelMapFields.insert("allow_escaping");
         topLevelMapFields.insert("allow_running");
@@ -199,7 +199,7 @@ bool Project::loadMapData(Map* map) {
     map->show_location = ParseUtil::jsonToBool(mapObj["show_map_name"]);
     map->battle_scene  = ParseUtil::jsonToQString(mapObj["battle_scene"]);
 
-    if (projectConfig.getBaseGameVersion() != BaseGameVersion::pokeruby) {
+    if (projectConfig.getMapAllowFlagsEnabled()) {
         map->allowBiking   = ParseUtil::jsonToBool(mapObj["allow_cycling"]);
         map->allowEscaping = ParseUtil::jsonToBool(mapObj["allow_escaping"]);
         map->allowRunning  = ParseUtil::jsonToBool(mapObj["allow_running"]);
@@ -382,15 +382,10 @@ void Project::setNewMapHeader(Map* map, int mapIndex) {
     map->type = mapTypes.value(0, "MAP_TYPE_NONE");
     map->song = defaultSong;
     map->show_location = true;
-    if (projectConfig.getBaseGameVersion() != BaseGameVersion::pokeruby) {
-        map->allowBiking = true;
-        map->allowEscaping = false;
-        map->allowRunning = true;
-    }
-    if (projectConfig.getFloorNumberEnabled()) {
-        map->floorNumber = 0;
-    }
-
+    map->allowBiking = true;
+    map->allowEscaping = false;
+    map->allowRunning = true;
+    map->floorNumber = 0;
     map->battle_scene = mapBattleScenes.value(0, "MAP_BATTLE_SCENE_NORMAL");
 }
 
@@ -1263,7 +1258,7 @@ void Project::saveMap(Map *map) {
     mapObj["requires_flash"] = map->requiresFlash;
     mapObj["weather"] = map->weather;
     mapObj["map_type"] = map->type;
-    if (projectConfig.getBaseGameVersion() != BaseGameVersion::pokeruby) {
+    if (projectConfig.getMapAllowFlagsEnabled()) {
         mapObj["allow_cycling"] = map->allowBiking;
         mapObj["allow_escaping"] = map->allowEscaping;
         mapObj["allow_running"] = map->allowRunning;

@@ -270,6 +270,7 @@ public:
     uint32_t getMetatileTerrainTypeMask();
     uint32_t getMetatileEncounterTypeMask();
     uint32_t getMetatileLayerTypeMask();
+    bool getMapAllowFlagsEnabled();
 protected:
     virtual QString getConfigFilepath() override;
     virtual void parseConfigKeyValue(QString key, QString value) override;
@@ -306,6 +307,7 @@ private:
     uint32_t metatileTerrainTypeMask;
     uint32_t metatileEncounterTypeMask;
     uint32_t metatileLayerTypeMask;
+    bool enableMapAllowFlags;
 };
 
 extern ProjectConfig projectConfig;

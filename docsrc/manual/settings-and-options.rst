@@ -47,6 +47,7 @@ your project root as ``porymap.user.cfg``. You should add this file to your giti
    ``enable_hidden_item_requires_itemfinder``, 1 if ``pokefirered``, project, yes, Adds ``Requires Itemfinder`` to Hidden Item events
    ``enable_heal_location_respawn_data``, 1 if ``pokefirered``, project, yes, Adds ``Respawn Map`` and ``Respawn NPC`` to Heal Location events
    ``enable_floor_number``, 1 if ``pokefirered``, project, yes, Adds ``Floor Number`` to map headers
+   ``enable_map_allow_flags``, 1 if not ``pokeruby``, project, yes, "Adds ``Allow Running``, ``Allow Biking``, and ``Allow Dig & Escape Rope`` to map headers"
    ``create_map_text_file``, 1 if not ``pokeemerald``, project, yes, A ``text.inc`` or ``text.pory`` file will be created for any new map
    ``enable_triple_layer_metatiles``, 0, project, yes, Enables triple-layer metatiles (See https://github.com/pret/pokeemerald/wiki/Triple-layer-metatiles)
    ``new_map_metatile``, 1, project, yes, The metatile id that will be used to fill new maps

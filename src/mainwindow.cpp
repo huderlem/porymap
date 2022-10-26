@@ -376,36 +376,13 @@ void MainWindow::setProjectSpecificUIVisibility()
     ui->actionUse_Poryscript->setChecked(projectConfig.getUsePoryScript());
     this->setWildEncountersUIEnabled(userConfig.getEncounterJsonActive());
 
-    switch (projectConfig.getBaseGameVersion())
-    {
-    case BaseGameVersion::pokeruby:
-        ui->checkBox_AllowRunning->setVisible(false);
-        ui->checkBox_AllowBiking->setVisible(false);
-        ui->checkBox_AllowEscaping->setVisible(false);
-        ui->label_AllowRunning->setVisible(false);
-        ui->label_AllowBiking->setVisible(false);
-        ui->label_AllowEscaping->setVisible(false);
-        ui->actionRegion_Map_Editor->setVisible(true);
-        break;
-    case BaseGameVersion::pokeemerald:
-        ui->checkBox_AllowRunning->setVisible(true);
-        ui->checkBox_AllowBiking->setVisible(true);
-        ui->checkBox_AllowEscaping->setVisible(true);
-        ui->label_AllowRunning->setVisible(true);
-        ui->label_AllowBiking->setVisible(true);
-        ui->label_AllowEscaping->setVisible(true);
-        ui->actionRegion_Map_Editor->setVisible(true);
-        break;
-    case BaseGameVersion::pokefirered:
-        ui->checkBox_AllowRunning->setVisible(true);
-        ui->checkBox_AllowBiking->setVisible(true);
-        ui->checkBox_AllowEscaping->setVisible(true);
-        ui->label_AllowRunning->setVisible(true);
-        ui->label_AllowBiking->setVisible(true);
-        ui->label_AllowEscaping->setVisible(true);
-        ui->actionRegion_Map_Editor->setVisible(true);
-        break;
-    }
+    bool hasFlags = projectConfig.getMapAllowFlagsEnabled();
+    ui->checkBox_AllowRunning->setVisible(hasFlags);
+    ui->checkBox_AllowBiking->setVisible(hasFlags);
+    ui->checkBox_AllowEscaping->setVisible(hasFlags);
+    ui->label_AllowRunning->setVisible(hasFlags);
+    ui->label_AllowBiking->setVisible(hasFlags);
+    ui->label_AllowEscaping->setVisible(hasFlags);
 
     ui->newEventToolButton->newWeatherTriggerAction->setVisible(projectConfig.getEventWeatherTriggerEnabled());
     ui->newEventToolButton->newSecretBaseAction->setVisible(projectConfig.getEventSecretBaseEnabled());
@@ -806,11 +783,9 @@ void MainWindow::displayMapProperties() {
     ui->comboBox_Type->setCurrentText(map->type);
     ui->comboBox_BattleScene->setCurrentText(map->battle_scene);
     ui->checkBox_ShowLocation->setChecked(map->show_location);
-    if (projectConfig.getBaseGameVersion() != BaseGameVersion::pokeruby) {
-        ui->checkBox_AllowRunning->setChecked(map->allowRunning);
-        ui->checkBox_AllowBiking->setChecked(map->allowBiking);
-        ui->checkBox_AllowEscaping->setChecked(map->allowEscaping);
-    }
+    ui->checkBox_AllowRunning->setChecked(map->allowRunning);
+    ui->checkBox_AllowBiking->setChecked(map->allowBiking);
+    ui->checkBox_AllowEscaping->setChecked(map->allowEscaping);
     ui->spinBox_FloorNumber->setValue(map->floorNumber);
 
     // Custom fields table.
