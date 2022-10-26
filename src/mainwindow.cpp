@@ -528,7 +528,7 @@ bool MainWindow::openProject(QString dir) {
     userConfig.load();
     projectConfig.setProjectDir(dir);
     projectConfig.load();
-    Metatile::calculateAttributeLayout();
+    Metatile::setCustomLayout();
 
     this->closeSupplementaryWindows();
     this->setProjectSpecificUIVisibility();

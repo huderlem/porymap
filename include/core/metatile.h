@@ -47,27 +47,37 @@ public:
     uint32_t unusedAttributes;
     QString label;
 
+    enum Attr {
+        Behavior,
+        TerrainType,
+        EncounterType,
+        LayerType,
+    };
+
+    struct AttrLayout {
+        uint32_t mask;
+        int shift;
+    };
+
+    static const QHash<Metatile::Attr, Metatile::AttrLayout> defaultLayoutFRLG;
+    static const QHash<Metatile::Attr, Metatile::AttrLayout> defaultLayoutRSE;
+
     uint32_t getAttributes();
     void setAttributes(uint32_t data);
-    void setAttributes(uint32_t data, BaseGameVersion version);
+    void convertAttributes(uint32_t data, BaseGameVersion version);
 
     static int getIndexInTileset(int);
     static QPoint coordFromPixmapCoord(const QPointF &pixelCoord);
-    static int getAttributesSize(BaseGameVersion version);
-    static void calculateAttributeLayout();
+    static int getDefaultAttributesSize(BaseGameVersion version);
+    static void setCustomLayout();
 
 private:
-    static uint32_t behaviorMask;
-    static uint32_t terrainTypeMask;
-    static uint32_t encounterTypeMask;
-    static uint32_t layerTypeMask;
+    static QHash<Metatile::Attr, Metatile::AttrLayout> customLayout;
     static uint32_t unusedAttrMask;
-    static int behaviorShift;
-    static int terrainTypeShift;
-    static int encounterTypeShift;
-    static int layerTypeShift;
 
-    static int getShiftValue(uint32_t mask);
+    void setAttributes(uint32_t, const QHash<Metatile::Attr, Metatile::AttrLayout>*);
+    static void setCustomAttributeLayout(Metatile::AttrLayout *, uint32_t, uint32_t, QString);
+    static bool doMasksOverlap(QList<uint32_t>);
 };
 
 inline bool operator==(const Metatile &a, const Metatile &b) {

@@ -563,7 +563,7 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         int size = getConfigInteger(key, value, 1, 4, 2);
         if (size & (size - 1)) {
             logWarn(QString("Invalid config value for %1: must be 1, 2, or 4").arg(key));
-            size = 2;
+            return; // Don't set a default now, it will be set later based on the base game version
         }
         this->metatileAttributesSize = size;
     } else if (key == "metatile_behavior_mask") {
@@ -624,11 +624,12 @@ void ProjectConfig::setUnreadKeys() {
     if (!readKeys.contains("create_map_text_file")) this->createMapTextFile = (this->baseGameVersion != BaseGameVersion::pokeemerald);
     if (!readKeys.contains("new_map_border_metatiles")) this->newMapBorderMetatileIds = isPokefirered ? DEFAULT_BORDER_FRLG : DEFAULT_BORDER_RSE;
     if (!readKeys.contains("default_secondary_tileset")) this->defaultSecondaryTileset = isPokefirered ? "gTileset_PalletTown" : "gTileset_Petalburg";
-    if (!readKeys.contains("metatile_attributes_size")) this->metatileAttributesSize = isPokefirered ? 4 : 2;
-    if (!readKeys.contains("metatile_behavior_mask")) this->metatileBehaviorMask = isPokefirered ? 0x000001FF : 0x00FF;
-    if (!readKeys.contains("metatile_terrain_type_mask")) this->metatileTerrainTypeMask = isPokefirered ? 0x00003E00 : 0;
-    if (!readKeys.contains("metatile_encounter_type_mask")) this->metatileEncounterTypeMask = isPokefirered ? 0x07000000 : 0;
-    if (!readKeys.contains("metatile_layer_type_mask")) this-> metatileLayerTypeMask = isPokefirered ? 0x60000000 : 0xF000;
+    if (!readKeys.contains("metatile_attributes_size")) this->metatileAttributesSize = Metatile::getDefaultAttributesSize(this->baseGameVersion);
+    const QHash<Metatile::Attr, Metatile::AttrLayout> layout = isPokefirered ? Metatile::defaultLayoutFRLG : Metatile::defaultLayoutRSE;
+    if (!readKeys.contains("metatile_behavior_mask")) this->metatileBehaviorMask = layout[Metatile::Attr::Behavior].mask;
+    if (!readKeys.contains("metatile_terrain_type_mask")) this->metatileTerrainTypeMask = layout[Metatile::Attr::TerrainType].mask;
+    if (!readKeys.contains("metatile_encounter_type_mask")) this->metatileEncounterTypeMask = layout[Metatile::Attr::EncounterType].mask;
+    if (!readKeys.contains("metatile_layer_type_mask")) this-> metatileLayerTypeMask = layout[Metatile::Attr::LayerType].mask;
 }
 
 QMap<QString, QString> ProjectConfig::getKeyValueMap() {
