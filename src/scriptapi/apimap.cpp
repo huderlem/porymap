@@ -635,10 +635,9 @@ int MainWindow::getMetatileLayerType(int metatileId) {
 
 void MainWindow::setMetatileLayerType(int metatileId, int layerType) {
     Metatile * metatile = this->getMetatile(metatileId);
-    uint8_t u_layerType = static_cast<uint8_t>(layerType);
-    if (!metatile || metatile->layerType == u_layerType || u_layerType >= NUM_METATILE_LAYER_TYPES)
+    if (!metatile)
         return;
-    metatile->layerType = u_layerType;
+    metatile->setLayerType(layerType);
     this->saveMetatileAttributesByMetatileId(metatileId);
 }
 
@@ -651,10 +650,9 @@ int MainWindow::getMetatileEncounterType(int metatileId) {
 
 void MainWindow::setMetatileEncounterType(int metatileId, int encounterType) {
     Metatile * metatile = this->getMetatile(metatileId);
-    uint8_t u_encounterType = static_cast<uint8_t>(encounterType);
-    if (!metatile || metatile->encounterType == u_encounterType || u_encounterType >= NUM_METATILE_ENCOUNTER_TYPES)
+    if (!metatile)
         return;
-    metatile->encounterType = u_encounterType;
+    metatile->setEncounterType(encounterType);
     this->saveMetatileAttributesByMetatileId(metatileId);
 }
 
@@ -667,10 +665,9 @@ int MainWindow::getMetatileTerrainType(int metatileId) {
 
 void MainWindow::setMetatileTerrainType(int metatileId, int terrainType) {
     Metatile * metatile = this->getMetatile(metatileId);
-    uint8_t u_terrainType = static_cast<uint8_t>(terrainType);
-    if (!metatile || metatile->terrainType == u_terrainType ||  u_terrainType >= NUM_METATILE_TERRAIN_TYPES)
+    if (!metatile)
         return;
-    metatile->terrainType = u_terrainType;
+    metatile->setTerrainType(terrainType);
     this->saveMetatileAttributesByMetatileId(metatileId);
 }
 
@@ -683,10 +680,9 @@ int MainWindow::getMetatileBehavior(int metatileId) {
 
 void MainWindow::setMetatileBehavior(int metatileId, int behavior) {
     Metatile * metatile = this->getMetatile(metatileId);
-    uint16_t u_behavior = static_cast<uint16_t>(behavior);
-    if (!metatile || metatile->behavior == u_behavior)
+    if (!metatile)
         return;
-    metatile->behavior = u_behavior;
+    metatile->setBehavior(behavior);
     this->saveMetatileAttributesByMetatileId(metatileId);
 }
 

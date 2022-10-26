@@ -41,9 +41,9 @@ public:
 public:
     QList<Tile> tiles;
     uint32_t behavior;
-    uint32_t layerType;
-    uint32_t encounterType;
     uint32_t terrainType;
+    uint32_t encounterType;
+    uint32_t layerType;
     uint32_t unusedAttributes;
     QString label;
 
@@ -61,10 +61,16 @@ public:
 
     static const QHash<Metatile::Attr, Metatile::AttrLayout> defaultLayoutFRLG;
     static const QHash<Metatile::Attr, Metatile::AttrLayout> defaultLayoutRSE;
+    static QHash<Metatile::Attr, Metatile::AttrLayout> customLayout;
 
     uint32_t getAttributes();
     void setAttributes(uint32_t data);
     void convertAttributes(uint32_t data, BaseGameVersion version);
+
+    void setBehavior(uint32_t);
+    void setTerrainType(uint32_t);
+    void setEncounterType(uint32_t);
+    void setLayerType(uint32_t);
 
     static int getIndexInTileset(int);
     static QPoint coordFromPixmapCoord(const QPointF &pixelCoord);
@@ -72,11 +78,11 @@ public:
     static void setCustomLayout();
 
 private:
-    static QHash<Metatile::Attr, Metatile::AttrLayout> customLayout;
     static uint32_t unusedAttrMask;
 
     void setAttributes(uint32_t, const QHash<Metatile::Attr, Metatile::AttrLayout>*);
-    static void setCustomAttributeLayout(Metatile::AttrLayout *, uint32_t, uint32_t, QString);
+    static void setCustomAttributeLayout(Metatile::AttrLayout *, uint32_t, uint32_t);
+    static bool isMaskTooSmall(Metatile::AttrLayout * layout, int n);
     static bool doMasksOverlap(QList<uint32_t>);
 };
 

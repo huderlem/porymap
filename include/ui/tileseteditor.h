@@ -111,9 +111,7 @@ private slots:
 
 private:
     void initUi();
-    void setMetatileBehaviors();
-    void setMetatileLayersUi();
-    void setVersionSpecificUi();
+    void setAttributesUi();
     void setMetatileLabelValidator();
     void initMetatileSelector();
     void initTileSelector();
