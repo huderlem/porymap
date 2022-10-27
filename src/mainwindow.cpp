@@ -505,7 +505,6 @@ bool MainWindow::openProject(QString dir) {
     userConfig.load();
     projectConfig.setProjectDir(dir);
     projectConfig.load();
-    Metatile::setCustomLayout();
 
     this->closeSupplementaryWindows();
     this->setProjectSpecificUIVisibility();
@@ -914,6 +913,7 @@ bool MainWindow::loadDataStructures() {
                 && project->readEventGraphics()
                 && project->readSongNames();
 
+    Metatile::setCustomLayout(project);
     Scripting::populateGlobalObject(this);
 
     return success && loadProjectCombos();

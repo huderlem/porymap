@@ -8,6 +8,8 @@
 #include <QPoint>
 #include <QString>
 
+class Project;
+
 enum {
     METATILE_LAYER_MIDDLE_TOP,
     METATILE_LAYER_BOTTOM_MIDDLE,
@@ -91,7 +93,7 @@ public:
     static int getIndexInTileset(int);
     static QPoint coordFromPixmapCoord(const QPointF &pixelCoord);
     static int getDefaultAttributesSize(BaseGameVersion version);
-    static void setCustomLayout();
+    static void setCustomLayout(Project*);
 
 private:
     // Stores how each attribute should be laid out for all metatiles, according to the user's config

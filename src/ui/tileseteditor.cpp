@@ -503,11 +503,26 @@ void TilesetEditor::on_checkBox_yFlip_stateChanged(int checked)
     this->metatileLayersItem->clearLastModifiedCoords();
 }
 
-void TilesetEditor::on_comboBox_metatileBehaviors_textActivated(const QString &metatileBehavior)
+void TilesetEditor::on_comboBox_metatileBehaviors_currentTextChanged(const QString &metatileBehavior)
 {
     if (this->metatile) {
+        int behavior;
+        if (project->metatileBehaviorMap.contains(metatileBehavior)) {
+            behavior = project->metatileBehaviorMap[metatileBehavior];
+        } else {
+            // Check if user has entered a number value instead
+            bool ok;
+            behavior = metatileBehavior.toInt(&ok);
+            if (!ok) return;
+        }
+
+        // This function can also be called when the user selects
+        // a different metatile. Stop this from being considered a change.
+        if (this->metatile->behavior == static_cast<uint32_t>(behavior))
+            return;
+
         Metatile *prevMetatile = new Metatile(*this->metatile);
-        this->metatile->setBehavior(project->metatileBehaviorMap[metatileBehavior]);
+        this->metatile->setBehavior(behavior);
         MetatileHistoryItem *commit = new MetatileHistoryItem(this->getSelectedMetatileId(),
                                                               prevMetatile, new Metatile(*this->metatile));
         metatileHistory.push(commit);

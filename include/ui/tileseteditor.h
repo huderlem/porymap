@@ -85,7 +85,7 @@ private slots:
 
     void on_actionRedo_triggered();
 
-    void on_comboBox_metatileBehaviors_textActivated(const QString &arg1);
+    void on_comboBox_metatileBehaviors_currentTextChanged(const QString &arg1);
 
     void on_lineEdit_metatileLabel_editingFinished();
 

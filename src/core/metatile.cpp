@@ -95,7 +95,7 @@ bool Metatile::isMaskTooSmall(MetatileAttr * attr, int max) {
     uint32_t n = log2(max);
 
     // Get a mask for all values 0 to max.
-    // This may fail for n=31, but that's not a concern here.
+    // This may fail for n > 30, but that's not possible here.
     uint32_t rangeMask = (1 << (n + 1)) - 1;
 
     return attr->getClamped(rangeMask) != rangeMask;
@@ -110,7 +110,7 @@ bool Metatile::doMasksOverlap(QList<uint32_t> masks) {
     return false;
 }
 
-void Metatile::setCustomLayout() {
+void Metatile::setCustomLayout(Project * project) {
     // Get the maximum size of any attribute mask
     const QHash<int, uint32_t> maxMasks = {
         {1, 0xFF},
@@ -135,9 +135,13 @@ void Metatile::setCustomLayout() {
         logWarn("Metatile attribute masks are overlapping. This may result in unexpected attribute values.");
     }
 
-    // The available options in the Tileset Editor for Terrain Type, Encounter Type, and Layer Type are hard-coded.
-    // Warn the user if they have set a nonzero mask that is too small to contain these options.
-    // They'll be allowed to select them, but they'll be truncated to a different value when revisited.
+    // Warn the user if they have set a nonzero mask that is too small to contain its available options.
+    // They'll be allowed to select the options, but they'll be truncated to a different value when revisited.
+    if (!project->metatileBehaviorMapInverse.isEmpty()) {
+        int maxBehavior = project->metatileBehaviorMapInverse.lastKey();
+        if (isMaskTooSmall(&Metatile::behaviorAttr, maxBehavior))
+            logWarn(QString("Metatile Behavior mask is too small to contain all %1 available options.").arg(maxBehavior));
+    }
     if (isMaskTooSmall(&Metatile::terrainTypeAttr, NUM_METATILE_TERRAIN_TYPES - 1))
         logWarn(QString("Metatile Terrain Type mask is too small to contain all %1 available options.").arg(NUM_METATILE_TERRAIN_TYPES));
     if (isMaskTooSmall(&Metatile::encounterTypeAttr, NUM_METATILE_ENCOUNTER_TYPES - 1))
