@@ -18,12 +18,15 @@ Tileset::Tileset(const Tileset &other)
       metatile_attrs_label(other.metatile_attrs_label),
       metatile_attrs_path(other.metatile_attrs_path),
       tilesImagePath(other.tilesImagePath),
-      tilesImage(other.tilesImage),
+      tilesImage(other.tilesImage.copy()),
       palettePaths(other.palettePaths),
-      tiles(other.tiles),
       palettes(other.palettes),
       palettePreviews(other.palettePreviews)
 {
+    for (auto tile : other.tiles) {
+        tiles.append(tile.copy());
+    }
+
     for (auto *metatile : other.metatiles) {
         metatiles.append(new Metatile(*metatile));
     }
@@ -39,11 +42,15 @@ Tileset &Tileset::operator=(const Tileset &other) {
     metatile_attrs_label = other.metatile_attrs_label;
     metatile_attrs_path = other.metatile_attrs_path;
     tilesImagePath = other.tilesImagePath;
-    tilesImage = other.tilesImage;
+    tilesImage = other.tilesImage.copy();
     palettePaths = other.palettePaths;
-    tiles = other.tiles;
     palettes = other.palettes;
     palettePreviews = other.palettePreviews;
+
+    tiles.clear();
+    for (auto tile : other.tiles) {
+        tiles.append(tile.copy());
+    }
 
     metatiles.clear();
     for (auto *metatile : other.metatiles) {
