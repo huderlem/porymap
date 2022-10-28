@@ -42,6 +42,8 @@ void NewMapPopup::init() {
     ui->spinBox_NewMap_Height->setMaximum(project->getMaxMapHeight());
     ui->spinBox_NewMap_BorderWidth->setMinimum(1);
     ui->spinBox_NewMap_BorderHeight->setMinimum(1);
+    ui->spinBox_NewMap_BorderWidth->setMaximum(MAX_BORDER_WIDTH);
+    ui->spinBox_NewMap_BorderHeight->setMaximum(MAX_BORDER_HEIGHT);
     ui->spinBox_NewMap_Floor_Number->setMinimum(-128);
     ui->spinBox_NewMap_Floor_Number->setMaximum(127);
 
