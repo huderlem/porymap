@@ -2070,8 +2070,8 @@ bool Project::readHealLocations() {
         HealLocation healLocation;
         if (match.hasMatch()) {
             QString mapName = match.captured("map");
-            int x = match.captured("x").toInt();
-            int y = match.captured("y").toInt();
+            int x = match.captured("x").toInt(nullptr, 0);
+            int y = match.captured("y").toInt(nullptr, 0);
             healLocation = HealLocation(idName, mapName, this->healLocations.size() + 1, x, y);
         } else {
             // This heal location has data, but is missing from the location table and won't be displayed by Porymap.
@@ -2091,7 +2091,7 @@ bool Project::readHealLocations() {
             QRegularExpression respawnNPCRegex(QString("%1(?<npc>[0-9]+)").arg(initializerPattern));
             match = respawnNPCRegex.match(text);
             if (match.hasMatch())
-                healLocation.respawnNPC = match.captured("npc").toInt();
+                healLocation.respawnNPC = match.captured("npc").toInt(nullptr, 0);
         }
 
         this->healLocations.append(healLocation);
@@ -2474,11 +2474,11 @@ bool Project::readEventGraphics() {
                 QRegularExpressionMatch dimensionMatch = re.match(dimensions_label);
                 QRegularExpressionMatch oamTablesMatch = re.match(subsprites_label);
                 if (oamTablesMatch.hasMatch()) {
-                    eventGraphics->spriteWidth = oamTablesMatch.captured(1).toInt();
-                    eventGraphics->spriteHeight = oamTablesMatch.captured(2).toInt();
+                    eventGraphics->spriteWidth = oamTablesMatch.captured(1).toInt(nullptr, 0);
+                    eventGraphics->spriteHeight = oamTablesMatch.captured(2).toInt(nullptr, 0);
                 } else if (dimensionMatch.hasMatch()) {
-                    eventGraphics->spriteWidth = dimensionMatch.captured(1).toInt();
-                    eventGraphics->spriteHeight = dimensionMatch.captured(2).toInt();
+                    eventGraphics->spriteWidth = dimensionMatch.captured(1).toInt(nullptr, 0);
+                    eventGraphics->spriteHeight = dimensionMatch.captured(2).toInt(nullptr, 0);
                 } else {
                     eventGraphics->spriteWidth = eventGraphics->spritesheet.width();
                     eventGraphics->spriteHeight = eventGraphics->spritesheet.height();

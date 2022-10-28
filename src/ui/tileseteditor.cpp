@@ -512,7 +512,7 @@ void TilesetEditor::on_comboBox_metatileBehaviors_currentTextChanged(const QStri
         } else {
             // Check if user has entered a number value instead
             bool ok;
-            behavior = metatileBehavior.toInt(&ok);
+            behavior = metatileBehavior.toInt(&ok, 0);
             if (!ok) return;
         }
 

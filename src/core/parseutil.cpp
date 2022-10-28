@@ -410,7 +410,7 @@ int ParseUtil::gameStringToInt(QString gameString, bool * ok) {
         return 1;
     if (QString::compare(gameString, "FALSE", Qt::CaseInsensitive) == 0)
         return 0;
-    return gameString.toInt(ok);
+    return gameString.toInt(ok, 0);
 }
 
 bool ParseUtil::gameStringToBool(QString gameString, bool * ok) {

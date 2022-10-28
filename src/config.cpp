@@ -136,7 +136,7 @@ void KeyValueConfigBase::save() {
 
 bool KeyValueConfigBase::getConfigBool(QString key, QString value) {
     bool ok;
-    int result = value.toInt(&ok);
+    int result = value.toInt(&ok, 0);
     if (!ok || (result != 0 && result != 1)) {
         logWarn(QString("Invalid config value for %1: '%2'. Must be 0 or 1.").arg(key).arg(value));
     }
