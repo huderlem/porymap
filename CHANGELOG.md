@@ -42,6 +42,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - The heal location prefixes `SPAWN_` and `HEAL_LOCATION_` may now be used interchangeably.
 - The number and order of entries in the heal location data tables can now be changed arbitrarily, and independently of each other.
 - The metatile behavior is now displayed in the bottom bar mouseover text.
+- Number values are now allowed in the Tileset Editor's Metatile Behavior field.
 - Removed some unnecessary error logs from the scripting API and added new useful ones.
 - If any JSON data is the incorrect type Porymap will now attempt to convert it.
 
@@ -62,11 +63,11 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix drawing large amounts of text with the scripting API causing a significant drop in performance.
 - Silence unnecessary error logging when parsing C defines Porymap doesn't use.
 - Fix some windows like the Tileset Editor not raising to the front when reactivated.
-- Metatile behaviors with no constant will now display their value in the Tileset Editor.
 - Fix incorrect limits on Floor Number and Border Width/Height in the New Map Options window.
 - Fix Border Width/Height being set to 0 when creating a new map from an existing layout.
 - Fix certain UI elements not highlighting red on some platforms.
 - Fix Open Config Folder not responding
+- Properly update the minimum offset for a connection when the map is changed.
 
 ## [4.5.0] - 2021-12-26
 ### Added

@@ -69,6 +69,7 @@ void Project::initSignals() {
         notice.setInformativeText(QString("The file %1 has changed on disk. Would you like to reload the project?")
                                   .arg(changed.remove(this->root + "/")));
         notice.setStandardButtons(QMessageBox::No | QMessageBox::Yes);
+        notice.setDefaultButton(QMessageBox::No);
         notice.setIcon(QMessageBox::Question);
 
         QCheckBox showAgainCheck("Do not ask again.");

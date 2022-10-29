@@ -1753,6 +1753,12 @@ void Editor::setConnectionMap(QString mapName) {
     setConnectionEditControlsEnabled(true);
     selected_connection_item->connection->map_name = mapName;
     setCurrentConnectionDirection(selected_connection_item->connection->direction);
+
+    // New map may have a different minimum offset than the last one. The maximum will be the same.
+    int min = selected_connection_item->getMinOffset();
+    ui->spinBox_ConnectionOffset->setMinimum(min);
+    onConnectionOffsetChanged(qMax(min, selected_connection_item->connection->offset));
+
     updateMirroredConnectionMap(selected_connection_item->connection, originalMapName);
     maskNonVisibleConnectionTiles();
 }
