@@ -407,6 +407,10 @@ QPixmap MapImageExporter::getFormattedMapPixmap(Map *map, bool ignoreBorder) {
     // draw events
     QPainter eventPainter(&pixmap);
     QList<Event *> events = map->getAllEvents();
+    int pixelOffset = 0;
+    if (!ignoreBorder && showBorder) {
+        pixelOffset = this->mode == ImageExporterMode::Normal ? BORDER_DISTANCE * 16 : STITCH_MODE_BORDER_DISTANCE * 16;
+    }
     for (Event *event : events) {
         editor->project->setEventPixmap(event);
         Event::Group group = event->getEventGroup();
@@ -415,7 +419,7 @@ QPixmap MapImageExporter::getFormattedMapPixmap(Map *map, bool ignoreBorder) {
          || (showBGs && group == Event::Group::Bg)
          || (showTriggers && group == Event::Group::Coord)
          || (showHealSpots && group == Event::Group::Heal))
-            eventPainter.drawImage(QPoint(event->getPixelX(), event->getPixelY()), event->getPixmap().toImage());
+            eventPainter.drawImage(QPoint(event->getPixelX() + pixelOffset, event->getPixelY() + pixelOffset), event->getPixmap().toImage());
     }
     eventPainter.end();
 
