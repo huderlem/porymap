@@ -7,7 +7,8 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 The **"Breaking Changes"** listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. It also includes changes to the scripting API that may change the behavior of existing porymap scripts. If porymap is used with a project or API script that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.
 
 ## [Unreleased]
-Nothing, yet.
+### Added
+- Added new config options for reorganizing metatile attributes.
 
 ## [5.0.0] - 2022-10-30
 ### Breaking Changes
@@ -22,7 +23,7 @@ Nothing, yet.
 - Add Cut/Copy/Paste for metatiles in the Tileset Editor.
 - Add button to copy the full metatile label to the clipboard in the Tileset Editor.
 - Add ability to export an image of the primary or secondary tileset's metatiles.
-- Add new config options for customizing metatile attributes, how new maps are filled, setting default tilesets, and whether the most recent project should be opened on launch.
+- Add new config options for customizing how new maps are filled, setting default tilesets, and whether the most recent project should be opened on launch.
 - Add color picker to palette editor for taking colors from the screen.
 - Add new features to the scripting API, including the ability to display messages and user input windows, set the overlay's opacity, rotation, scale, and clipping, interact with map header properties and the map border, read tile pixel data, and more.
 
