@@ -311,7 +311,6 @@ const Json & JsonArray::operator[] (int i) const {
 const Json Json::fromQJsonValue(QJsonValue value) {
     switch (value.type())
     {
-    default:
     case QJsonValue::String: return value.toString();
     case QJsonValue::Double: return value.toInt();
     case QJsonValue::Bool:   return value.toBool();
@@ -331,6 +330,7 @@ const Json Json::fromQJsonValue(QJsonValue value) {
             obj[it.key()] = Json::fromQJsonValue(it.value());
         return obj;
     }
+    default: return static_null();
     }
 }
 
