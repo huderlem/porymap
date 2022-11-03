@@ -18,7 +18,7 @@ Let's write a custom script that will randomize grass patterns when the user is 
 
 First, create a new script file called ``my_script.js``--place it in the project directory (e.g. ``pokefirered/``).
 
-Next, open the Porymap project config file, ``porymap.project.cfg``, in the project directory. Add the script file to the ``custom_scripts`` configuration value. Multiple script files can be loaded by separating the filepaths with a comma.
+Next, open the Porymap project config file, ``porymap.user.cfg``, in the project directory. Add the script file to the ``custom_scripts`` configuration value. Multiple script files can be loaded by separating the filepaths with a comma.
 
 .. code-block::
 
@@ -745,30 +745,6 @@ All tileset functions are callable via the global ``map`` object.
    :param array palettes: array of arrays of colors. Each color is a 3-element RGB array
    :param boolean forceRedraw: Redraw the elements with the updated palettes. Defaults to ``true``. Redrawing the elements that use palettes is expensive, so it can be useful to batch together many calls to palette functions and only set ``redraw`` to ``true`` on the final call.
 
-.. js:function:: map.getMetatileLayerOrder()
-
-   Gets the order that metatile layers are rendered.
-
-   :returns array: array of layers. The bottom layer is represented as 0.
-
-.. js:function:: map.setMetatileLayerOrder(order)
-
-   Sets the order that metatile layers are rendered.
-
-   :param array order: array of layers. The bottom layer is represented as 0.
-
-.. js:function:: map.getMetatileLayerOpacity()
-
-   Gets the opacities that metatile layers are rendered with.
-
-   :returns array: array of opacities for each layer. The bottom layer is the first element.
-
-.. js:function:: map.setMetatileLayerOpacity(opacities)
-
-   Sets the opacities that metatile layers are rendered with.
-
-   :param array opacities: array of opacities for each layer. The bottom layer is the first element.
-
 .. js:function:: map.getMetatileLabel(metatileId)
 
    Gets the label for the specified metatile.
@@ -1374,6 +1350,31 @@ All settings functions are callable via the global ``utility`` object.
    Sets the currently selected map view tab. Tabs are indexed from left to right, starting at 0 (``0``: Metatiles, ``1``: Collision, ``2``: Prefabs).
 
    :param number tab: index of the tab to select
+
+.. js:function:: utility.getMetatileLayerOrder()
+
+   Gets the order that metatile layers are rendered.
+
+   :returns array: array of layers. The bottom layer is represented as 0.
+
+.. js:function:: utility.setMetatileLayerOrder(order)
+
+   Sets the order that metatile layers are rendered.
+
+   :param array order: array of layers. The bottom layer is represented as 0.
+
+.. js:function:: utility.getMetatileLayerOpacity()
+
+   Gets the opacities that metatile layers are rendered with.
+
+   :returns array: array of opacities for each layer. The bottom layer is the first element.
+
+.. js:function:: utility.setMetatileLayerOpacity(opacities)
+
+   Sets the opacities that metatile layers are rendered with.
+
+   :param array opacities: array of opacities for each layer. The bottom layer is the first element.
+
 
 Utility Functions
 ^^^^^^^^^^^^^^^^^
