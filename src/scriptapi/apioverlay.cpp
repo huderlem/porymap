@@ -179,6 +179,18 @@ void MapView::setVerticalScale(qreal scale) {
     this->scene()->update();
 }
 
+void MapView::setScale(qreal hScale, qreal vScale, int layer) {
+    this->getOverlay(layer)->setScale(hScale, vScale);
+    this->scene()->update();
+}
+
+// Overload. No layer provided, set scale of all layers
+void MapView::setScale(qreal hScale, qreal vScale) {
+    foreach (Overlay * layer, this->overlayMap)
+        layer->setScale(hScale, vScale);
+    this->scene()->update();
+}
+
 int MapView::getRotation(int layer) {
     return this->getOverlay(layer)->getRotation();
 }

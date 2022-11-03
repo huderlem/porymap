@@ -106,6 +106,11 @@ void Overlay::setVScale(qreal scale) {
     this->vScale = scale;
 }
 
+void Overlay::setScale(qreal hScale, qreal vScale) {
+    this->hScale = hScale;
+    this->vScale = vScale;
+}
+
 int Overlay::getRotation() {
     return this->angle;
 }
