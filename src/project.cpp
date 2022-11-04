@@ -1388,7 +1388,7 @@ void Project::loadTilesetAssets(Tileset* tileset) {
     this->readTilesetPaths(tileset);
     QImage image;
     if (QFile::exists(tileset->tilesImagePath)) {
-        image = QImage(tileset->tilesImagePath);
+        image = QImage(tileset->tilesImagePath).convertToFormat(QImage::Format_Indexed8, Qt::ThresholdDither);
     } else {
         image = QImage(8, 8, QImage::Format_Indexed8);
     }
