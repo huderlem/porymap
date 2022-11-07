@@ -375,21 +375,6 @@ QString Project::readMapLocation(QString map_name) {
     return ParseUtil::jsonToQString(mapObj["region_map_section"]);
 }
 
-void Project::setNewMapHeader(Map* map, int mapIndex) {
-    map->layoutId = QString("%1").arg(mapIndex);
-    map->location = mapSectionValueToName.value(0);
-    map->requiresFlash = false;
-    map->weather = weatherNames.value(0, "WEATHER_NONE");
-    map->type = mapTypes.value(0, "MAP_TYPE_NONE");
-    map->song = defaultSong;
-    map->show_location = true;
-    map->allowBiking = true;
-    map->allowEscaping = false;
-    map->allowRunning = true;
-    map->floorNumber = 0;
-    map->battle_scene = mapBattleScenes.value(0, "MAP_BATTLE_SCENE_NORMAL");
-}
-
 bool Project::loadLayout(MapLayout *layout) {
     // Force these to run even if one fails
     bool loadedTilesets = loadLayoutTilesets(layout);
