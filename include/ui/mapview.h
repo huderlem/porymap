@@ -50,6 +50,8 @@ public:
     Q_INVOKABLE void setHorizontalScale(qreal scale);
     Q_INVOKABLE void setVerticalScale(qreal scale, int layer);
     Q_INVOKABLE void setVerticalScale(qreal scale);
+    Q_INVOKABLE void setScale(qreal hScale, qreal vScale, int layer);
+    Q_INVOKABLE void setScale(qreal hScale, qreal vScale);
     Q_INVOKABLE int getRotation(int layer = 0);
     Q_INVOKABLE void setRotation(int angle, int layer);
     Q_INVOKABLE void setRotation(int angle);

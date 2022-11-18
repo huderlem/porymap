@@ -1034,6 +1034,21 @@ All overlay functions are callable via the global ``overlay`` object.
 
    :param number scale: the scale to set
 
+.. js:function:: overlay.setScale(hScale, vScale, layer)
+
+   Sets the horizontal and vertical scale of the specified overlay layer. ``1.0`` is normal size.
+
+   :param number hScale: the horizontal scale to set
+   :param number vScale: the vertical scale to set
+   :param number layer: the layer id
+
+.. js:function:: overlay.setScale(hScale, vScale)
+
+   This is an overloaded function. Sets the horizontal and vertical scale of all active overlay layers. Layers that have not been used yet will not have their scale changed. ``1.0`` is normal size.
+
+   :param number hScale: the horizontal scale to set
+   :param number vScale: the vertical scale to set
+
 .. js:function:: overlay.getRotation(layer = 0)
 
    Gets the angle the specified overlay layer is rotated to.
