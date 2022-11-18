@@ -93,6 +93,7 @@ public:
     qreal getVScale();
     void setHScale(qreal scale);
     void setVScale(qreal scale);
+    void setScale(qreal hScale, qreal vScale);
     int getRotation();
     void setRotation(int angle);
     void rotate(int degrees);

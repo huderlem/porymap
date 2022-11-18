@@ -386,7 +386,7 @@
 <h2>Writing a Custom Script<a class="headerlink" href="#writing-a-custom-script" title="Permalink to this headline">¶</a></h2>
 <p>Let’s write a custom script that will randomize grass patterns when the user is editing the map. This is useful, since it’s cumbersome to manually add randomness to grass patches. With the custom script, it will happen automatically. Whenever the user paints a grass tile onto the map, the script will overwrite the tile with a random grass tile instead.</p>
 <p>First, create a new script file called <code class="docutils literal notranslate"><span class="pre">my_script.js</span></code>–place it in the project directory (e.g. <code class="docutils literal notranslate"><span class="pre">pokefirered/</span></code>).</p>
-<p>Next, open the Porymap project config file, <code class="docutils literal notranslate"><span class="pre">porymap.project.cfg</span></code>, in the project directory. Add the script file to the <code class="docutils literal notranslate"><span class="pre">custom_scripts</span></code> configuration value. Multiple script files can be loaded by separating the filepaths with a comma.</p>
+<p>Next, open the Porymap project config file, <code class="docutils literal notranslate"><span class="pre">porymap.user.cfg</span></code>, in the project directory. Add the script file to the <code class="docutils literal notranslate"><span class="pre">custom_scripts</span></code> configuration value. Multiple script files can be loaded by separating the filepaths with a comma.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">custom_scripts</span><span class="o">=</span><span class="n">my_script</span><span class="o">.</span><span class="n">js</span>
 </pre></div>
 </div>
@@ -1679,54 +1679,6 @@
 </dd></dl>
 
 <dl class="js function">
-<dt id="map.getMetatileLayerOrder">
-<code class="sig-prename descclassname">map.</code><code class="sig-name descname">getMetatileLayerOrder</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#map.getMetatileLayerOrder" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the order that metatile layers are rendered.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns array</dt>
-<dd class="field-odd"><p>array of layers. The bottom layer is represented as 0.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="js function">
-<dt id="map.setMetatileLayerOrder">
-<code class="sig-prename descclassname">map.</code><code class="sig-name descname">setMetatileLayerOrder</code><span class="sig-paren">(</span><em class="sig-param">order</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setMetatileLayerOrder" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the order that metatile layers are rendered.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Arguments</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>order</strong> (<em>array</em>) – array of layers. The bottom layer is represented as 0.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="js function">
-<dt id="map.getMetatileLayerOpacity">
-<code class="sig-prename descclassname">map.</code><code class="sig-name descname">getMetatileLayerOpacity</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#map.getMetatileLayerOpacity" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the opacities that metatile layers are rendered with.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns array</dt>
-<dd class="field-odd"><p>array of opacities for each layer. The bottom layer is the first element.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="js function">
-<dt id="map.setMetatileLayerOpacity">
-<code class="sig-prename descclassname">map.</code><code class="sig-name descname">setMetatileLayerOpacity</code><span class="sig-paren">(</span><em class="sig-param">opacities</em><span class="sig-paren">)</span><a class="headerlink" href="#map.setMetatileLayerOpacity" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the opacities that metatile layers are rendered with.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Arguments</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>opacities</strong> (<em>array</em>) – array of opacities for each layer. The bottom layer is the first element.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="js function">
 <dt id="map.getMetatileLabel">
 <code class="sig-prename descclassname">map.</code><code class="sig-name descname">getMetatileLabel</code><span class="sig-paren">(</span><em class="sig-param">metatileId</em><span class="sig-paren">)</span><a class="headerlink" href="#map.getMetatileLabel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets the label for the specified metatile.</p>
@@ -2848,6 +2800,54 @@
 <dt class="field-odd">Arguments</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>tab</strong> (<em>number</em>) – index of the tab to select</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="utility.getMetatileLayerOrder">
+<code class="sig-prename descclassname">utility.</code><code class="sig-name descname">getMetatileLayerOrder</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utility.getMetatileLayerOrder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the order that metatile layers are rendered.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns array</dt>
+<dd class="field-odd"><p>array of layers. The bottom layer is represented as 0.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="utility.setMetatileLayerOrder">
+<code class="sig-prename descclassname">utility.</code><code class="sig-name descname">setMetatileLayerOrder</code><span class="sig-paren">(</span><em class="sig-param">order</em><span class="sig-paren">)</span><a class="headerlink" href="#utility.setMetatileLayerOrder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the order that metatile layers are rendered.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>order</strong> (<em>array</em>) – array of layers. The bottom layer is represented as 0.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="utility.getMetatileLayerOpacity">
+<code class="sig-prename descclassname">utility.</code><code class="sig-name descname">getMetatileLayerOpacity</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utility.getMetatileLayerOpacity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the opacities that metatile layers are rendered with.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns array</dt>
+<dd class="field-odd"><p>array of opacities for each layer. The bottom layer is the first element.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt id="utility.setMetatileLayerOpacity">
+<code class="sig-prename descclassname">utility.</code><code class="sig-name descname">setMetatileLayerOpacity</code><span class="sig-paren">(</span><em class="sig-param">opacities</em><span class="sig-paren">)</span><a class="headerlink" href="#utility.setMetatileLayerOpacity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the opacities that metatile layers are rendered with.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>opacities</strong> (<em>array</em>) – array of opacities for each layer. The bottom layer is the first element.</p></li>
 </ul>
 </dd>
 </dl>
