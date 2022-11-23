@@ -118,7 +118,7 @@ QList<QRgb> parseJASC(QString filepath, bool *error) {
     }
 
     QList<QRgb> palette;
-    QRegularExpression re("(?<red>\\d+)\\s(?<green>\\d+)\\s(?<blue>\\d+)");
+    static const QRegularExpression re("(?<red>\\d+)\\s(?<green>\\d+)\\s(?<blue>\\d+)");
     while (!in.atEnd() && numColors > 0) {
         numColors--;
         QString line = in.readLine();

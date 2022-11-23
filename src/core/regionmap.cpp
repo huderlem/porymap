@@ -161,8 +161,8 @@ bool RegionMap::loadLayout(poryjson::Json layoutJson) {
             ParseUtil parser;
             QString text = parser.readTextFile(fullPath(this->layout_path));
 
-            QRegularExpression re("(?<qual_1>static)?\\s?(?<qual_2>const)?\\s?(?<type>[A-Za-z0-9_]+)?\\s+(?<label>[A-Za-z0-9_]+)"
-                                  "(\\[(?<const_1>[A-Za-z0-9_]+)\\])(\\[(?<const_2>[A-Za-z0-9_]+)\\])(\\[(?<const_3>[A-Za-z0-9_]+)\\])\\s+=");
+            static const QRegularExpression re("(?<qual_1>static)?\\s?(?<qual_2>const)?\\s?(?<type>[A-Za-z0-9_]+)?\\s+(?<label>[A-Za-z0-9_]+)"
+                "(\\[(?<const_1>[A-Za-z0-9_]+)\\])(\\[(?<const_2>[A-Za-z0-9_]+)\\])(\\[(?<const_3>[A-Za-z0-9_]+)\\])\\s+=");
 
             // check for layers, extract info
             QRegularExpressionMatch match = re.match(text);
@@ -179,7 +179,7 @@ bool RegionMap::loadLayout(poryjson::Json layoutJson) {
                 this->layout_array_label = label;
 
                 // find layers
-                QRegularExpression reLayers("(?<layer>\\[(?<label>LAYER_[A-Za-z0-9_]+)\\][^\\[\\]]+)");
+                static const QRegularExpression reLayers("(?<layer>\\[(?<label>LAYER_[A-Za-z0-9_]+)\\][^\\[\\]]+)");
                 QRegularExpressionMatchIterator i = reLayers.globalMatch(text);
                 while (i.hasNext()) {
                     QRegularExpressionMatch m = i.next();
@@ -187,7 +187,7 @@ bool RegionMap::loadLayout(poryjson::Json layoutJson) {
                     QString layerName = m.captured("label");
                     QString layerLayout = m.captured("layer");
 
-                    QRegularExpression rowRe("{(?<row>[A-Z0-9_, ]+)}");
+                    static const QRegularExpression rowRe("{(?<row>[A-Z0-9_, ]+)}");
                     QRegularExpressionMatchIterator j = rowRe.globalMatch(layerLayout);
 
                     this->layout_layers.append(layerName);
@@ -217,7 +217,7 @@ bool RegionMap::loadLayout(poryjson::Json layoutJson) {
 
             } else {
                 // try single-layered
-                QRegularExpression reAlt("(?<qual_1>static)?\\s?(?<qual_2>const)?\\s?(?<type>[A-Za-z0-9_]+)?\\s+(?<label>[A-Za-z0-9_]+)\\[\\]");
+                static const QRegularExpression reAlt("(?<qual_1>static)?\\s?(?<qual_2>const)?\\s?(?<type>[A-Za-z0-9_]+)?\\s+(?<label>[A-Za-z0-9_]+)\\[\\]");
                 QRegularExpressionMatch matchAlt = reAlt.match(text);
                 if (matchAlt.hasMatch()) {
                     // single dimensional
@@ -228,7 +228,7 @@ bool RegionMap::loadLayout(poryjson::Json layoutJson) {
                     this->layout_qualifiers = qualifiers + " " + type;
                     this->layout_array_label = label;
 
-                    QRegularExpression reSec("(?<sec>MAPSEC_[A-Za-z0-9_]+)");
+                    static const QRegularExpression reSec("(?<sec>MAPSEC_[A-Za-z0-9_]+)");
                     QRegularExpressionMatchIterator k = reSec.globalMatch(text);
 
                     QList<LayoutSquare> layout;
@@ -252,7 +252,7 @@ bool RegionMap::loadLayout(poryjson::Json layoutJson) {
                     this->layout_layers.append("main");
                     setLayout("main", layout);
                 } else {
-                    QRegularExpression reAlt2("(?<qual_1>static)?\\s?(?<qual_2>const)?\\s?(?<type>[A-Za-z0-9_]+)?\\s+(?<label>[A-Za-z0-9_]+)"
+                    static const QRegularExpression reAlt2("(?<qual_1>static)?\\s?(?<qual_2>const)?\\s?(?<type>[A-Za-z0-9_]+)?\\s+(?<label>[A-Za-z0-9_]+)"
                                   "(\\[(?<const_1>[A-Za-z0-9_]+)\\])(\\[(?<const_2>[A-Za-z0-9_]+)\\])\\s+=");
                     QRegularExpressionMatch matchAlt2 = reAlt2.match(text);
                     if (matchAlt2.hasMatch()) {
@@ -267,7 +267,7 @@ bool RegionMap::loadLayout(poryjson::Json layoutJson) {
                         this->layout_qualifiers = qualifiers + " " + type;
                         this->layout_array_label = label;
 
-                        QRegularExpression rowRe("{(?<row>[A-Z0-9_, ]+)}");
+                        static const QRegularExpression rowRe("{(?<row>[A-Z0-9_, ]+)}");
                         QRegularExpressionMatchIterator k = rowRe.globalMatch(text);
 
                         this->layout_layers.append("main");
@@ -779,7 +779,8 @@ QString RegionMap::fixCase(QString caps) {
     bool big = true;
     QString camel;
 
-    for (auto ch : caps.remove(QRegularExpression("({.*})")).remove("MAPSEC")) {
+    static const QRegularExpression re_braced("({.*})");
+    for (auto ch : caps.remove(re_braced).remove("MAPSEC")) {
         if (ch == '_' || ch == ' ') {
             big = true;
             continue;

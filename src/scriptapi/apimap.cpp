@@ -609,7 +609,7 @@ void MainWindow::setMetatileLabel(int metatileId, QString label) {
     if (!metatile)
         return;
 
-    QRegularExpression expression("[_A-Za-z0-9]*$");
+    static const QRegularExpression expression("[_A-Za-z0-9]*$");
     QRegularExpressionValidator validator(expression);
     int pos = 0;
     if (validator.validate(label, pos) != QValidator::Acceptable) {

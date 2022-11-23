@@ -164,7 +164,7 @@ void TilesetEditor::setAttributesUi() {
 
 void TilesetEditor::setMetatileLabelValidator() {
     //only allow characters valid for a symbol
-    QRegularExpression expression("[_A-Za-z0-9]*$");
+    static const QRegularExpression expression("[_A-Za-z0-9]*$");
     QRegularExpressionValidator *validator = new QRegularExpressionValidator(expression);
     this->ui->lineEdit_metatileLabel->setValidator(validator);
 }

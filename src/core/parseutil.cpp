@@ -40,7 +40,8 @@ void ParseUtil::logRecordedErrors() {
 }
 
 QString ParseUtil::createErrorMessage(const QString &message, const QString &expression) {
-    QStringList lines = this->text.split(QRegularExpression("[\r\n]"));
+    static const QRegularExpression newline("[\r\n]");
+    QStringList lines = this->text.split(newline);
     int lineNum = 0, colNum = 0;
     for (QString line : lines) {
         lineNum++;
@@ -90,9 +91,11 @@ QList<QStringList> ParseUtil::parseAsm(const QString &filename) {
             // There should not be anything else on the line.
             // gas will raise a syntax error if there is.
         } else {
-            int index = trimmedLine.indexOf(QRegularExpression("\\s+"));
+            static const QRegularExpression re_spaces("\\s+");
+            int index = trimmedLine.indexOf(re_spaces);
             const QString macro = trimmedLine.left(index);
-            QStringList params(trimmedLine.right(trimmedLine.length() - index).trimmed().split(QRegularExpression("\\s*,\\s*")));
+            static const QRegularExpression re_spacesCommaSpaces("\\s*,\\s*");
+            QStringList params(trimmedLine.right(trimmedLine.length() - index).trimmed().split(re_spacesCommaSpaces));
             params.prepend(macro);
             parsed.append(params);
         }
@@ -110,7 +113,7 @@ QList<Token> ParseUtil::tokenizeExpression(QString expression, const QMap<QStrin
     QList<Token> tokens;
 
     QStringList tokenTypes = (QStringList() << "hex" << "decimal" << "identifier" << "operator" << "leftparen" << "rightparen");
-    QRegularExpression re("^(?<hex>0x[0-9a-fA-F]+)|(?<decimal>[0-9]+)|(?<identifier>[a-zA-Z_0-9]+)|(?<operator>[+\\-*\\/<>|^%]+)|(?<leftparen>\\()|(?<rightparen>\\))");
+    static const QRegularExpression re("^(?<hex>0x[0-9a-fA-F]+)|(?<decimal>[0-9]+)|(?<identifier>[a-zA-Z_0-9]+)|(?<operator>[+\\-*\\/<>|^%]+)|(?<leftparen>\\()|(?<rightparen>\\))");
 
     expression = expression.trimmed();
     while (!expression.isEmpty()) {
@@ -257,7 +260,7 @@ QString ParseUtil::readCIncbin(const QString &filename, const QString &label) {
 
     this->text = readTextFile(this->root + "/" + filename);
 
-    QRegularExpression re(QString(
+    static const QRegularExpression re(QString(
         "\\b%1\\b"
         "\\s*\\[?\\s*\\]?\\s*=\\s*"
         "INCBIN_[US][0-9][0-9]?"
@@ -282,14 +285,14 @@ QStringList ParseUtil::readCIncbinArray(const QString &filename, const QString &
     this->text = readTextFile(this->root + "/" + filename);
 
     // Get the text starting after the label all the way to the definition's end
-    QRegularExpression re(QString("\\b%1\\b(.*?)};").arg(label), QRegularExpression::DotMatchesEverythingOption);
-    QRegularExpressionMatch arrayMatch = re.match(this->text);
+    static const QRegularExpression re_labelGroup(QString("\\b%1\\b(.*?)};").arg(label), QRegularExpression::DotMatchesEverythingOption);
+    QRegularExpressionMatch arrayMatch = re_labelGroup.match(this->text);
     if (!arrayMatch.hasMatch())
         return paths;
 
     // Extract incbin paths from the array
-    re.setPattern("INCBIN_[US][0-9][0-9]?\\(\\s*\"([^\"]*)\"\\s*\\)");
-    QRegularExpressionMatchIterator iter = re.globalMatch(arrayMatch.captured(1));
+    static const QRegularExpression re_incbin("INCBIN_[US][0-9][0-9]?\\(\\s*\"([^\"]*)\"\\s*\\)");
+    QRegularExpressionMatchIterator iter = re_incbin.globalMatch(arrayMatch.captured(1));
     while (iter.hasNext()) {
         paths.append(iter.next().captured(1));
     }
@@ -316,12 +319,14 @@ QMap<QString, int> ParseUtil::readCDefines(const QString &filename,
         return filteredDefines;
     }
 
-    this->text.replace(QRegularExpression("(//.*)|(\\/+\\*+[^*]*\\*+\\/+)"), "");
-    this->text.replace(QRegularExpression("(\\\\\\s+)"), "");
+    static const QRegularExpression re_extraChars("(//.*)|(\\/+\\*+[^*]*\\*+\\/+)");
+    this->text.replace(re_extraChars, "");
+    static const QRegularExpression re_extraSpaces("(\\\\\\s+)");
+    this->text.replace(re_extraSpaces, "");
     allDefines.insert("FALSE", 0);
     allDefines.insert("TRUE", 1);
 
-    QRegularExpression re("#define\\s+(?<defineName>\\w+)[^\\S\\n]+(?<defineValue>.+)");
+    static const QRegularExpression re("#define\\s+(?<defineName>\\w+)[^\\S\\n]+(?<defineValue>.+)");
     QRegularExpressionMatchIterator iter = re.globalMatch(this->text);
     this->errorMap.clear();
     while (iter.hasNext()) {
@@ -368,7 +373,7 @@ QStringList ParseUtil::readCArray(const QString &filename, const QString &label)
     this->file = filename;
     this->text = readTextFile(this->root + "/" + filename);
 
-    QRegularExpression re(QString(R"(\b%1\b\s*(\[?[^\]]*\])?\s*=\s*\{([^\}]*)\})").arg(label));
+    static const QRegularExpression re(QString(R"(\b%1\b\s*(\[?[^\]]*\])?\s*=\s*\{([^\}]*)\})").arg(label));
     QRegularExpressionMatch match = re.match(this->text);
 
     if (match.hasMatch()) {
@@ -376,7 +381,8 @@ QStringList ParseUtil::readCArray(const QString &filename, const QString &label)
         QStringList split = body.split(',');
         for (QString item : split) {
             item = item.trimmed();
-            if (!item.contains(QRegularExpression("[^A-Za-z0-9_&()\\s]"))) list.append(item);
+            static const QRegularExpression validChars("[^A-Za-z0-9_&()\\s]");
+            if (!item.contains(validChars)) list.append(item);
             // do not print error info here because this is called dozens of times
         }
     }
@@ -388,10 +394,11 @@ QMap<QString, QString> ParseUtil::readNamedIndexCArray(const QString &filename, 
     this->text = readTextFile(this->root + "/" + filename);
     QMap<QString, QString> map;
 
-    QRegularExpression re_text(QString(R"(\b%1\b\s*(\[?[^\]]*\])?\s*=\s*\{([^\}]*)\})").arg(label));
-    QString body = re_text.match(this->text).captured(2).replace(QRegularExpression("\\s*"), "");
+    static const QRegularExpression re_text(QString(R"(\b%1\b\s*(\[?[^\]]*\])?\s*=\s*\{([^\}]*)\})").arg(label));
+    static const QRegularExpression re_spaces("\\s*");
+    QString body = re_text.match(this->text).captured(2).replace(re_spaces, "");
 
-    QRegularExpression re("\\[(?<index>[A-Za-z0-9_]*)\\]=(?<value>&?[A-Za-z0-9_]*)");
+    static const QRegularExpression re("\\[(?<index>[A-Za-z0-9_]*)\\]=(?<value>&?[A-Za-z0-9_]*)");
     QRegularExpressionMatchIterator iter = re.globalMatch(body);
 
     while (iter.hasNext()) {

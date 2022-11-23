@@ -18,7 +18,7 @@ AboutPorymap::~AboutPorymap()
 QList<int> AboutPorymap::getVersionNumbers()
 {
     // Get the version string "#.#.#"
-    QRegularExpression regex("Version (\\d+)\\.(\\d+)\\.(\\d+)");
+    static const QRegularExpression regex("Version (\\d+)\\.(\\d+)\\.(\\d+)");
     QRegularExpressionMatch match = regex.match(ui->label_Version->text());
     if (!match.hasMatch()) {
         logError("Failed to locate Porymap version text");

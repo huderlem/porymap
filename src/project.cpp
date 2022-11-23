@@ -920,7 +920,8 @@ void Project::saveTilesetMetatileLabels(Tileset *primaryTileset, Tileset *second
     }
 
     auto getTilesetFromLabel = [](QString labelName) {
-        return QRegularExpression("METATILE_(?<tileset>[A-Za-z0-9]+)_").match(labelName).captured("tileset");
+        static const QRegularExpression re_tilesetName("METATILE_(?<tileset>[A-Za-z0-9]+)_");
+        return re_tilesetName.match(labelName).captured("tileset");
     };
 
     QString outputText = "#ifndef GUARD_METATILE_LABELS_H\n";
@@ -1410,10 +1411,12 @@ void Project::loadTilesetPalettes(Tileset* tileset) {
         QString path = tileset->palettePaths.value(i);
         QString text = parser.readTextFile(path);
         if (!text.isNull()) {
-            QStringList lines = text.split(QRegularExpression("[\r\n]"), Qt::SkipEmptyParts);
+            static const QRegularExpression re_lineBreak("[\r\n]");
+            QStringList lines = text.split(re_lineBreak, Qt::SkipEmptyParts);
             if (lines.length() == 19 && lines[0] == "JASC-PAL" && lines[1] == "0100" && lines[2] == "16") {
                 for (int j = 0; j < 16; j++) {
-                    QStringList rgb = lines[j + 3].split(QRegularExpression(" "), Qt::SkipEmptyParts);
+                    static const QRegularExpression re_space(" ");
+                    QStringList rgb = lines[j + 3].split(re_space, Qt::SkipEmptyParts);
                     if (rgb.length() != 3) {
                         logWarn(QString("Invalid tileset palette RGB value: '%1'").arg(lines[j + 3]));
                         palette.append(qRgb((j - 3) * 16, (j - 3) * 16, (j - 3) * 16));
@@ -1827,7 +1830,7 @@ bool Project::readTilesetLabels() {
             logError(QString("Failed to read tileset labels from '%1' or '%2'.").arg(filename).arg(asm_filename));
             return false;
         }
-        QRegularExpression re("(?<label>[A-Za-z0-9_]*):{1,2}[A-Za-z0-9_@ ]*\\s+.+\\s+\\.byte\\s+(?<isSecondary>[A-Za-z0-9_]+)");
+        static const QRegularExpression re("(?<label>[A-Za-z0-9_]*):{1,2}[A-Za-z0-9_@ ]*\\s+.+\\s+\\.byte\\s+(?<isSecondary>[A-Za-z0-9_]+)");
         QRegularExpressionMatchIterator iter = re.globalMatch(text);
         while (iter.hasNext()) {
             QRegularExpressionMatch match = iter.next();
@@ -1986,7 +1989,8 @@ bool Project::readHealLocations() {
     QString text = parser.readTextFile(root + "/" + filename);
 
     // Strip comments
-    text.replace(QRegularExpression("//.*?(\r\n?|\n)|/\\*.*?\\*/", QRegularExpression::DotMatchesEverythingOption), "");
+    static const QRegularExpression re_comments("//.*?(\r\n?|\n)|/\\*.*?\\*/", QRegularExpression::DotMatchesEverythingOption);
+    text.replace(re_comments, "");
 
     bool respawnEnabled = projectConfig.getHealLocationRespawnDataEnabled();
 
@@ -1995,7 +1999,7 @@ bool Project::readHealLocations() {
     this->healLocationDataQualifiers = this->getDataQualifiers(text, tableName);
 
     // Create regex pattern for the constants (ex: "SPAWN_PALLET_TOWN" or "HEAL_LOCATION_PETALBURG_CITY")
-    QRegularExpression constantsExpr = QRegularExpression("(SPAWN|HEAL_LOCATION)_[A-Za-z0-9_]+");
+    static const QRegularExpression constantsExpr("(SPAWN|HEAL_LOCATION)_[A-Za-z0-9_]+");
 
     // Find all the unique heal location constants used in the data tables.
     // Porymap doesn't care whether or not a constant appeared in the heal locations constants file.
@@ -2304,13 +2308,16 @@ bool Project::readEventScriptLabels() {
 }
 
 QString Project::fixPalettePath(QString path) {
-    path = path.replace(QRegularExpression("\\.gbapal$"), ".pal");
+    static const QRegularExpression re_gbapal("\\.gbapal$");
+    path = path.replace(re_gbapal, ".pal");
     return path;
 }
 
 QString Project::fixGraphicPath(QString path) {
-    path = path.replace(QRegularExpression("\\.lz$"), "");
-    path = path.replace(QRegularExpression("\\.[1248]bpp$"), ".png");
+    static const QRegularExpression re_lz("\\.lz$");
+    path = path.replace(re_lz, "");
+    static const QRegularExpression re_bpp("\\.[1248]bpp$");
+    path = path.replace(re_bpp, ".png");
     return path;
 }
 
@@ -2416,7 +2423,8 @@ bool Project::readEventGraphics() {
         QString subsprites_label = gfxInfoAttributes.value("subspriteTables");
 
         QString gfx_label = parser.readCArray(projectConfig.getFilePath(ProjectFilePath::data_obj_event_pic_tables), pic_label).value(0);
-        gfx_label = gfx_label.section(QRegularExpression("[\\(\\)]"), 1, 1);
+        static const QRegularExpression re_parens("[\\(\\)]");
+        gfx_label = gfx_label.section(re_parens, 1, 1);
         QString path = parser.readCIncbin(projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx), gfx_label);
 
         if (!path.isNull()) {
@@ -2424,7 +2432,7 @@ bool Project::readEventGraphics() {
             eventGraphics->spritesheet = QImage(root + "/" + path);
             if (!eventGraphics->spritesheet.isNull()) {
                 // Infer the sprite dimensions from the OAM labels.
-                QRegularExpression re("\\S+_(\\d+)x(\\d+)");
+                static const QRegularExpression re("\\S+_(\\d+)x(\\d+)");
                 QRegularExpressionMatch dimensionMatch = re.match(dimensions_label);
                 QRegularExpressionMatch oamTablesMatch = re.match(subsprites_label);
                 if (oamTablesMatch.hasMatch()) {
