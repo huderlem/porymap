@@ -31,7 +31,7 @@ PreferenceEditor::~PreferenceEditor()
 
 void PreferenceEditor::populateFields() {
     QStringList themes = { "default" };
-    QRegularExpression re(":/themes/([A-z0-9_-]+).qss");
+    static const QRegularExpression re(":/themes/([A-z0-9_-]+).qss");
     QDirIterator it(":/themes", QDirIterator::Subdirectories);
     while (it.hasNext()) {
         QString themeName = re.match(it.next()).captured(1);

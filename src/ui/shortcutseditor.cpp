@@ -102,7 +102,7 @@ void ShortcutsEditor::populateMainContainer() {
 QString ShortcutsEditor::getShortcutContext(const QObject *object) const {
     auto objectParentWidget = static_cast<QWidget *>(object->parent());
     auto context = objectParentWidget->window()->objectName();
-    QRegularExpression re("[A-Z]");
+    static const QRegularExpression re("[A-Z]");
     int i = context.indexOf(re, 1);
     while (i != -1) {
         if (context.at(i - 1) != ' ')

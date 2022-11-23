@@ -261,7 +261,8 @@ void Editor::addNewWildMonGroup(QWidget *window) {
     QLineEdit *lineEdit = new QLineEdit();
     lineEdit->setClearButtonEnabled(true);
     form.addRow(new QLabel("Group Base Label:"), lineEdit);
-    QRegularExpressionValidator *validator = new QRegularExpressionValidator(QRegularExpression("[_A-Za-z0-9]*"));
+    static const QRegularExpression re_validChars("[_A-Za-z0-9]*");
+    QRegularExpressionValidator *validator = new QRegularExpressionValidator(re_validChars);
     lineEdit->setValidator(validator);
     connect(lineEdit, &QLineEdit::textChanged, [this, &lineEdit, &buttonBox](QString text){
         if (this->project->encounterGroupLabels.contains(text)) {

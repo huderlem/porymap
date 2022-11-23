@@ -92,7 +92,7 @@ void KeyValueConfigBase::load() {
 
     QTextStream in(&file);
     QList<QString> configLines;
-    QRegularExpression re("^(?<key>[^=]+)=(?<value>.*)$");
+    static const QRegularExpression re("^(?<key>[^=]+)=(?<value>.*)$");
     while (!in.atEnd()) {
         QString line = in.readLine().trimmed();
         int commentIndex = line.indexOf("#");
@@ -1132,7 +1132,7 @@ QString ShortcutsConfig::cfgKey(const QObject *object) const {
         cfg_key = parentWidget->window()->objectName() + '_';
     cfg_key += object->objectName();
 
-    QRegularExpression re("[A-Z]");
+    static const QRegularExpression re("[A-Z]");
     int i = cfg_key.indexOf(re, 1);
     while (i != -1) {
         if (cfg_key.at(i - 1) != '_')

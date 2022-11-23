@@ -151,7 +151,7 @@ void RegionMapPropertiesDialog::accept() {
         ui->message_alias->setText("alias cannot be empty");
         ui->message_alias->setVisible(true);
     } else {
-        QRegularExpression re("[A-Za-z0-9_\\- ]+");
+        static const QRegularExpression re("[A-Za-z0-9_\\- ]+");
         int temp = 0;
         QRegularExpressionValidator v(re, 0);
         
