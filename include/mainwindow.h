@@ -390,6 +390,14 @@ private:
     QObjectList shortcutableObjects() const;
     void addCustomHeaderValue(QString key, QJsonValue value, bool isNew = false);
     int insertTilesetLabel(QStringList * list, QString label);
+
+    // TODO: remove
+    void runSpeedTest();
+    struct SpeedTestStruct {
+        qint64 openProject;
+        qint64 setMap;
+        qint64 saveAll;
+    };
 };
 
 enum MapListUserRoles {
