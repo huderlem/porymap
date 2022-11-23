@@ -119,6 +119,9 @@ void MainWindow::initShortcuts() {
     shortcutsConfig.load();
     shortcutsConfig.setDefaultShortcuts(shortcutableObjects());
     applyUserShortcuts();
+
+    // TODO: remove
+    auto *s = new QShortcut(QKeySequence("Ctrl+R"), this, [this](){runSpeedTest();});
 }
 
 void MainWindow::initExtraShortcuts() {
@@ -2863,4 +2866,66 @@ void MainWindow::closeEvent(QCloseEvent *event) {
     shortcutsConfig.save();
 
     QMainWindow::closeEvent(event);
+}
+
+#include <QElapsedTimer>
+void MainWindow::runSpeedTest() {
+    // 10 iterations of this function:
+    // 1 - load project
+    // 2 - switch map
+    // 3 - save all
+
+    if (!editor || !editor->project) return;
+
+    const int runs = 10;
+    QElapsedTimer timer;
+
+    QList<struct SpeedTestStruct> times;
+
+    timer.start();
+    for (int i = 0; i < runs; i++) {
+        struct SpeedTestStruct benchmarks;
+        setMap("SlateportCity"); // reset map
+        timer.restart();
+
+        // 1 - load project
+        openProject(editor->project->root);
+        benchmarks.openProject = timer.restart();
+
+        // 2 - switch maps
+        setMap("LilycoveCity");
+        benchmarks.setMap = timer.restart();
+
+        // 3 - save all
+        editor->saveProject();
+        benchmarks.saveAll = timer.restart();
+
+        // add time to list
+        times.append(benchmarks);
+    }
+
+    // summary
+    qint64 min = std::numeric_limits<qint64>::max(), max = 0, avg = 0;
+    QString summary = QString("RUN   LOAD  SWAP  SAVE  TOT   \n");
+    for (int i = 0; i < runs; i++) {
+        summary += QString::number(i+1).leftJustified(6, ' ');
+        qint64 open = times[i].openProject;
+        summary += QString::number(open).leftJustified(6, ' ');
+        qint64 swap = times[i].setMap;
+        summary += QString::number(swap).leftJustified(6, ' ');
+        qint64 save = times[i].saveAll;
+        summary += QString::number(save).leftJustified(6, ' ');
+        qint64 tot = open + swap + save;
+        summary += QString::number(tot).leftJustified(6, ' ');
+        summary += "\n";
+
+        if (tot < min) min = tot;
+        if (tot > max) max = tot;
+        avg += tot;
+    }
+    avg /= runs;
+
+    summary += "MIN: " + QString::number(min).leftJustified(6, ' ') + "MAX: " + QString::number(max).leftJustified(6, ' ') + "AVG: " + QString::number(avg) + "\n";
+
+    qDebug() << qUtf8Printable(summary);
 }
