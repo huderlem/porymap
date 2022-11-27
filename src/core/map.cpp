@@ -42,26 +42,6 @@ QString Map::mapConstantFromName(QString mapName) {
     return constantName;
 }
 
-QString Map::objectEventsLabelFromName(QString mapName)
-{
-    return QString("%1_EventObjects").arg(mapName);
-}
-
-QString Map::warpEventsLabelFromName(QString mapName)
-{
-    return QString("%1_MapWarps").arg(mapName);
-}
-
-QString Map::coordEventsLabelFromName(QString mapName)
-{
-    return QString("%1_MapCoordEvents").arg(mapName);
-}
-
-QString Map::bgEventsLabelFromName(QString mapName)
-{
-    return QString("%1_MapBGEvents").arg(mapName);
-}
-
 int Map::getWidth() {
     return layout->getWidth();
 }

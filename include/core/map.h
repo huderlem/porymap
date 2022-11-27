@@ -72,10 +72,6 @@ public:
     QList<float> metatileLayerOpacity;
     void setName(QString mapName);
     static QString mapConstantFromName(QString mapName);
-    static QString objectEventsLabelFromName(QString mapName);
-    static QString warpEventsLabelFromName(QString mapName);
-    static QString coordEventsLabelFromName(QString mapName);
-    static QString bgEventsLabelFromName(QString mapName);
     int getWidth();
     int getHeight();
     int getBorderWidth();
