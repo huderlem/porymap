@@ -2430,12 +2430,12 @@ void MainWindow::importMapFromAdvanceMap1_92()
     QString filepath = QFileDialog::getOpenFileName(
                 this,
                 QString("Import Map from Advance Map 1.92"),
-                this->editor->project->root,
+                this->editor->project->importExportPath,
                 "Advance Map 1.92 Map Files (*.map)");
     if (filepath.isEmpty()) {
         return;
     }
-
+    this->editor->project->setImportExportPath(filepath);
     MapParser parser;
     bool error = false;
     MapLayout *mapLayout = parser.parse(filepath, &error, editor->project);

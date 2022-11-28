@@ -34,7 +34,9 @@ QString RegionMapPropertiesDialog::browse(QString filter, QFileDialog::FileMode 
     if (!this->project) return QString();
     QFileDialog browser;
     browser.setFileMode(mode);
-    QString filepath = browser.getOpenFileName(this, "Select a File", this->project->root, filter);
+    QString filepath = browser.getOpenFileName(this, "Select a File", this->project->importExportPath, filter);
+    if (!filepath.isEmpty())
+        this->project->setImportExportPath(filepath);
 
     // remove the project root from the filepath
     return filepath.replace(this->project->root + "/", "");
