@@ -228,6 +228,8 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->showGrid = getConfigBool(key, value);
     } else if (key == "monitor_files") {
         this->monitorFiles = getConfigBool(key, value);
+    } else if (key == "tileset_checkerboard_fill") {
+        this->tilesetCheckerboardFill = getConfigBool(key, value);
     } else if (key == "theme") {
         this->theme = value;
     } else if (key == "text_editor_open_directory") {
@@ -262,6 +264,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("show_border", this->showBorder ? "1" : "0");
     map.insert("show_grid", this->showGrid ? "1" : "0");
     map.insert("monitor_files", this->monitorFiles ? "1" : "0");
+    map.insert("tileset_checkerboard_fill", this->tilesetCheckerboardFill ? "1" : "0");
     map.insert("theme", this->theme);
     map.insert("text_editor_open_directory", this->textEditorOpenFolder);
     map.insert("text_editor_goto_line", this->textEditorGotoLine);
@@ -308,6 +311,11 @@ void PorymapConfig::setPrettyCursors(bool enabled) {
 
 void PorymapConfig::setMonitorFiles(bool monitor) {
     this->monitorFiles = monitor;
+    this->save();
+}
+
+void PorymapConfig::setTilesetCheckerboardFill(bool checkerboard) {
+    this->tilesetCheckerboardFill = checkerboard;
     this->save();
 }
 
@@ -462,6 +470,10 @@ bool PorymapConfig::getShowGrid() {
 
 bool PorymapConfig::getMonitorFiles() {
     return this->monitorFiles;
+}
+
+bool PorymapConfig::getTilesetCheckerboardFill() {
+    return this->tilesetCheckerboardFill;
 }
 
 QString PorymapConfig::getTheme() {

@@ -9,6 +9,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ## [Unreleased]
 ### Added
 - Add `setScale` to the scripting API.
+- Add option to turn off the checkerboard fill for new tilesets.
 
 ## [5.0.0] - 2022-10-30
 ### Breaking Changes
