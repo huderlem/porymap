@@ -83,6 +83,7 @@ public:
     QFileSystemWatcher fileWatcher;
     QMap<QString, qint64> modifiedFileTimestamps;
     bool usingAsmTilesets;
+    QString importExportPath;
 
     const QPixmap entitiesPixmap = QPixmap(":/images/Entities_16x16.png");
 
@@ -212,6 +213,8 @@ public:
 
     QString getDefaultPrimaryTilesetLabel();
     QString getDefaultSecondaryTilesetLabel();
+
+    void setImportExportPath(QString filename);
 
     static int getNumTilesPrimary();
     static int getNumTilesTotal();

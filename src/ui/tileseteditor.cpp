@@ -620,12 +620,12 @@ void TilesetEditor::importTilesetTiles(Tileset *tileset, bool primary) {
     QString filepath = QFileDialog::getOpenFileName(
                 this,
                 QString("Import %1 Tileset Tiles Image").arg(descriptorCaps),
-                this->project->root,
+                this->project->importExportPath,
                 "Image Files (*.png *.bmp *.jpg *.dib)");
     if (filepath.isEmpty()) {
         return;
     }
-
+    this->project->setImportExportPath(filepath);
     logInfo(QString("Importing %1 tileset tiles '%2'").arg(descriptor).arg(filepath));
 
     // Read image data from buffer so that the built-in QImage doesn't try to detect file format
@@ -681,12 +681,12 @@ void TilesetEditor::importTilesetTiles(Tileset *tileset, bool primary) {
         QString filepath = QFileDialog::getOpenFileName(
             this,
             QString("Select Palette for Tiles Image").arg(descriptorCaps),
-            this->project->root,
+            this->project->importExportPath,
             "Palette Files (*.pal *.act *tpl *gpl)");
         if (filepath.isEmpty()) {
             return;
         }
-
+        this->project->setImportExportPath(filepath);
         bool error = false;
         QList<QRgb> palette = PaletteUtil::parse(filepath, &error);
         if (error) {
@@ -916,9 +916,10 @@ void TilesetEditor::pasteMetatile(const Metatile * toPaste)
 void TilesetEditor::on_actionExport_Primary_Tiles_Image_triggered()
 {
     QString defaultName = QString("%1_Tiles_Pal%2").arg(this->primaryTileset->name).arg(this->paletteId);
-    QString defaultFilepath = QString("%1/%2.png").arg(this->project->root).arg(defaultName);
+    QString defaultFilepath = QString("%1/%2.png").arg(this->project->importExportPath).arg(defaultName);
     QString filepath = QFileDialog::getSaveFileName(this, "Export Primary Tiles Image", defaultFilepath, "Image Files (*.png)");
     if (!filepath.isEmpty()) {
+        this->project->setImportExportPath(filepath);
         QImage image = this->tileSelector->buildPrimaryTilesIndexedImage();
         exportIndexed4BPPPng(image, filepath);
     }
@@ -927,9 +928,10 @@ void TilesetEditor::on_actionExport_Primary_Tiles_Image_triggered()
 void TilesetEditor::on_actionExport_Secondary_Tiles_Image_triggered()
 {
     QString defaultName = QString("%1_Tiles_Pal%2").arg(this->secondaryTileset->name).arg(this->paletteId);
-    QString defaultFilepath = QString("%1/%2.png").arg(this->project->root).arg(defaultName);
+    QString defaultFilepath = QString("%1/%2.png").arg(this->project->importExportPath).arg(defaultName);
     QString filepath = QFileDialog::getSaveFileName(this, "Export Secondary Tiles Image", defaultFilepath, "Image Files (*.png)");
     if (!filepath.isEmpty()) {
+        this->project->setImportExportPath(filepath);
         QImage image = this->tileSelector->buildSecondaryTilesIndexedImage();
         exportIndexed4BPPPng(image, filepath);
     }
@@ -938,9 +940,10 @@ void TilesetEditor::on_actionExport_Secondary_Tiles_Image_triggered()
 void TilesetEditor::on_actionExport_Primary_Metatiles_Image_triggered()
 {
     QString defaultName = QString("%1_Metatiles").arg(this->primaryTileset->name);
-    QString defaultFilepath = QString("%1/%2.png").arg(this->project->root).arg(defaultName);
+    QString defaultFilepath = QString("%1/%2.png").arg(this->project->importExportPath).arg(defaultName);
     QString filepath = QFileDialog::getSaveFileName(this, "Export Primary Metatiles Image", defaultFilepath, "Image Files (*.png)");
     if (!filepath.isEmpty()) {
+        this->project->setImportExportPath(filepath);
         QImage image = this->metatileSelector->buildPrimaryMetatilesImage();
         image.save(filepath, "PNG");
     }
@@ -949,9 +952,10 @@ void TilesetEditor::on_actionExport_Primary_Metatiles_Image_triggered()
 void TilesetEditor::on_actionExport_Secondary_Metatiles_Image_triggered()
 {
     QString defaultName = QString("%1_Metatiles").arg(this->secondaryTileset->name);
-    QString defaultFilepath = QString("%1/%2.png").arg(this->project->root).arg(defaultName);
+    QString defaultFilepath = QString("%1/%2.png").arg(this->project->importExportPath).arg(defaultName);
     QString filepath = QFileDialog::getSaveFileName(this, "Export Secondary Metatiles Image", defaultFilepath, "Image Files (*.png)");
     if (!filepath.isEmpty()) {
+        this->project->setImportExportPath(filepath);
         QImage image = this->metatileSelector->buildSecondaryMetatilesImage();
         image.save(filepath, "PNG");
     }
@@ -975,12 +979,12 @@ void TilesetEditor::importTilesetMetatiles(Tileset *tileset, bool primary)
     QString filepath = QFileDialog::getOpenFileName(
                 this,
                 QString("Import %1 Tileset Metatiles from Advance Map 1.92").arg(descriptorCaps),
-                this->project->root,
+                this->project->importExportPath,
                 "Advance Map 1.92 Metatile Files (*.bvd)");
     if (filepath.isEmpty()) {
         return;
     }
-
+    this->project->setImportExportPath(filepath);
     bool error = false;
     QList<Metatile*> metatiles = MetatileParser::parse(filepath, &error, primary);
     if (error) {
