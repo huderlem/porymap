@@ -10,6 +10,9 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ### Added
 - Add `setScale` to the scripting API.
 
+### Changed
+- Hovering on border metatiles with the mouse will now display their information in the bottom bar.
+
 ## [5.0.0] - 2022-10-30
 ### Breaking Changes
 - Proper support for pokefirered's clone objects was added, which requires the changes made in [pokefirered/#484](https://github.com/pret/pokefirered/pull/484).
