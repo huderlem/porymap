@@ -329,7 +329,7 @@ private:
     bool isProgrammaticEventTabChange;
     bool projectHasUnsavedChanges;
     bool projectOpenFailure = false;
-    bool openedNewMapDialog = false;
+    bool newMapDefaultsSet = false;
 
     MapSortOrder mapSortOrder;
 

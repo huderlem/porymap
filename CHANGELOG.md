@@ -13,6 +13,9 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ### Changed
 - Hovering on border metatiles with the mouse will now display their information in the bottom bar.
 
+### Fixed
+- Fix New Map settings being preserved when switching projects.
+
 ## [5.0.0] - 2022-10-30
 ### Breaking Changes
 - Proper support for pokefirered's clone objects was added, which requires the changes made in [pokefirered/#484](https://github.com/pret/pokefirered/pull/484).
