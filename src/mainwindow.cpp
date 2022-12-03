@@ -531,6 +531,7 @@ bool MainWindow::openProject(QString dir) {
 
     this->closeSupplementaryWindows();
     this->setProjectSpecificUIVisibility();
+    this->newMapDefaultsSet = false;
 
     Scripting::init(this);
     bool already_open = isProjectOpen() && (editor->project->root == dir);
@@ -1193,9 +1194,9 @@ void MainWindow::onNewMapCreated() {
 }
 
 void MainWindow::openNewMapPopupWindow() {
-    if (!openedNewMapDialog) {
+    if (!this->newMapDefaultsSet) {
         NewMapPopup::setDefaultSettings(this->editor->project);
-        openedNewMapDialog = true;
+        this->newMapDefaultsSet = true;
     }
     if (!this->newMapPrompt) {
         this->newMapPrompt = new NewMapPopup(this, this->editor->project);
