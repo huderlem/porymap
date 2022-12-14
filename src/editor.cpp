@@ -1443,6 +1443,10 @@ void Editor::displayBorderMetatiles() {
     selected_border_metatiles_item->draw();
     scene_selected_border_metatiles->addItem(selected_border_metatiles_item);
 
+    connect(selected_border_metatiles_item, &BorderMetatilesPixmapItem::hoveredBorderMetatileSelectionChanged,
+            this, &Editor::onHoveredMetatileSelectionChanged);
+    connect(selected_border_metatiles_item, &BorderMetatilesPixmapItem::hoveredBorderMetatileSelectionCleared,
+            this, &Editor::onHoveredMetatileSelectionCleared);
     connect(selected_border_metatiles_item, &BorderMetatilesPixmapItem::borderMetatilesChanged,
             this, &Editor::onBorderMetatilesChanged);
 }

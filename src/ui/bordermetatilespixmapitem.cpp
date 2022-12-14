@@ -54,3 +54,21 @@ void BorderMetatilesPixmapItem::draw() {
 
     emit borderMetatilesChanged();
 }
+
+void BorderMetatilesPixmapItem::hoverUpdate(const QPointF &pixmapPos) {
+    QPoint pos = Metatile::coordFromPixmapCoord(pixmapPos);
+    uint16_t metatileId = this->map->getBorderMetatileId(pos.x(), pos.y());
+    emit this->hoveredBorderMetatileSelectionChanged(metatileId);
+}
+
+void BorderMetatilesPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
+    this->hoverUpdate(event->pos());
+}
+
+void BorderMetatilesPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
+    this->hoverUpdate(event->pos());
+}
+
+void BorderMetatilesPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent*) {
+    emit this->hoveredBorderMetatileSelectionCleared();
+}
