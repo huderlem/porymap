@@ -10,6 +10,9 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ### Added
 - Add `setScale` to the scripting API.
 
+### Changed
+- Hovering on border metatiles with the mouse will now display their information in the bottom bar.
+
 ### Fixed
 - Fix New Map settings being preserved when switching projects.
 

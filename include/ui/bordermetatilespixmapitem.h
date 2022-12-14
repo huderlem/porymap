@@ -18,9 +18,18 @@ public:
     Map *map;
     void draw();
 signals:
+    void hoveredBorderMetatileSelectionChanged(uint16_t);
+    void hoveredBorderMetatileSelectionCleared();
     void borderMetatilesChanged();
+
+private:
+    void hoverUpdate(const QPointF &);
+
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent*);
+    void mouseMoveEvent(QGraphicsSceneMouseEvent*);
+    void hoverMoveEvent(QGraphicsSceneHoverEvent*);
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent*);
 };
 
 #endif // BORDERMETATILESPIXMAPITEM_H
