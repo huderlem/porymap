@@ -15,6 +15,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 
 ### Fixed
 - Fix New Map settings being preserved when switching projects.
+- Fix scripting API callback `onMapResized` not triggering.
 
 ## [5.0.0] - 2022-10-30
 ### Breaking Changes
