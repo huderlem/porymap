@@ -56,6 +56,7 @@ public:
         this->showBorder = true;
         this->showGrid = false;
         this->monitorFiles = true;
+        this->tilesetCheckerboardFill = true;
         this->theme = "default";
         this->textEditorOpenFolder = "";
         this->textEditorGotoLine = "";
@@ -75,6 +76,7 @@ public:
     void setShowBorder(bool enabled);
     void setShowGrid(bool enabled);
     void setMonitorFiles(bool monitor);
+    void setTilesetCheckerboardFill(bool checkerboard);
     void setTheme(QString theme);
     void setTextEditorOpenFolder(const QString &command);
     void setTextEditorGotoLine(const QString &command);
@@ -93,6 +95,7 @@ public:
     bool getShowBorder();
     bool getShowGrid();
     bool getMonitorFiles();
+    bool getTilesetCheckerboardFill();
     QString getTheme();
     QString getTextEditorOpenFolder();
     QString getTextEditorGotoLine();
@@ -127,6 +130,7 @@ private:
     bool showBorder;
     bool showGrid;
     bool monitorFiles;
+    bool tilesetCheckerboardFill;
     QString theme;
     QString textEditorOpenFolder;
     QString textEditorGotoLine;

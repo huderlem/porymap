@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>190</height>
+    <height>216</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -25,7 +25,7 @@
      <x>0</x>
      <y>0</y>
      <width>400</width>
-     <height>190</height>
+     <height>216</height>
     </rect>
    </property>
    <property name="sizePolicy">
@@ -50,7 +50,7 @@
     <property name="verticalSpacing">
      <number>6</number>
     </property>
-    <item row="3" column="0">
+    <item row="4" column="0">
      <spacer name="verticalSpacer">
       <property name="orientation">
        <enum>Qt::Vertical</enum>
@@ -74,7 +74,7 @@
       <property name="minimumSize">
        <size>
         <width>380</width>
-        <height>135</height>
+        <height>161</height>
        </size>
       </property>
       <property name="frameShape">
@@ -89,7 +89,7 @@
          <x>0</x>
          <y>0</y>
          <width>380</width>
-         <height>129</height>
+         <height>155</height>
         </rect>
        </property>
        <layout class="QFormLayout" name="formLayout">
@@ -174,11 +174,22 @@
           </property>
          </widget>
         </item>
+        <item row="4" column="0">
+         <widget class="QLabel" name="fillLabel">
+          <property name="text">
+           <string>Checkerboard Fill</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1">
+         <widget class="QCheckBox" name="fillCheckBox">
+         </widget>
+        </item>
        </layout>
       </widget>
      </widget>
     </item>
-    <item row="4" column="0">
+    <item row="5" column="0">
      <widget class="QDialogButtonBox" name="buttonBox">
       <property name="orientation">
        <enum>Qt::Horizontal</enum>

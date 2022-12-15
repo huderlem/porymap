@@ -19,10 +19,12 @@ public:
     QString fullSymbolName;
     QString friendlyName;
     bool isSecondary;
+    bool checkerboardFill;
 
 private slots:
     void NameOrSecondaryChanged();
     void SecondaryChanged();
+    void FillChanged();
 
 private:
     Ui::NewTilesetDialog *ui;

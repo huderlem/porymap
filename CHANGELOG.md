@@ -9,6 +9,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ## [Unreleased]
 ### Added
 - Add `setScale` to the scripting API.
+- Add option to turn off the checkerboard fill for new tilesets.
 
 ### Changed
 - Hovering on border metatiles with the mouse will now display their information in the bottom bar.

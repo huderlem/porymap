@@ -33,6 +33,7 @@ your project root as ``porymap.user.cfg``. You should add this file to your giti
    ``show_player_view``, 0, global, yes, Display a rectangle for the GBA screen radius
    ``show_cursor_tile``, 0, global, yes, Display a rectangle around the hovered metatile(s)
    ``monitor_files``, 1, global, yes, Whether porymap will monitor changes to project files
+   ``tileset_checkerboard_fill``, 1, global, yes, Whether new tilesets will be filled with a checkerboard pattern of metatiles.
    ``theme``, default, global, yes, The color theme for porymap windows and widgets
    ``text_editor_goto_line``, , global, yes, The command that will be executed when clicking the button next the ``Script`` combo-box.
    ``text_editor_open_directory``, , global, yes, The command that will be executed when clicking ``Open Project in Text Editor``.
