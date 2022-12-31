@@ -467,8 +467,8 @@ namespace fex
 
         while (index_ < tokens_.size())
         {
-            while (Next().type() != Token::Type::kConst)
-                ;
+            if (Next().type() != Token::Type::kConst)
+                continue;
             Next(); // struct
 
             std::string type = Next().string_value();
@@ -497,8 +497,8 @@ namespace fex
 
         while (index_ < tokens_.size())
         {
-            while (Next().type() != Token::Type::kConst)
-                ;
+            if (Next().type() != Token::Type::kConst)
+                continue;
             Next(); // struct
 
             Next(); // type
