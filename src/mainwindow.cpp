@@ -608,7 +608,7 @@ QString MainWindow::getDefaultMap() {
 }
 
 QString MainWindow::getExistingDirectory(QString dir) {
-    return QFileDialog::getExistingDirectory(this, "Open Directory", dir, QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    return QFileDialog::getExistingDirectory(this, "Open Directory", dir, QFileDialog::ShowDirsOnly);
 }
 
 void MainWindow::on_action_Open_Project_triggered()
