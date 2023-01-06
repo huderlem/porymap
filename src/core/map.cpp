@@ -135,7 +135,7 @@ QPixmap Map::renderCollision(qreal opacity, bool ignoreCache) {
     return collision_pixmap;
 }
 
-QPixmap Map::render(bool ignoreCache = false, MapLayout * fromLayout) {
+QPixmap Map::render(bool ignoreCache = false, MapLayout * fromLayout, QRect bounds) {
     bool changed_any = false;
     int width_ = getWidth();
     int height_ = getHeight();
@@ -154,6 +154,12 @@ QPixmap Map::render(bool ignoreCache = false, MapLayout * fromLayout) {
             continue;
         }
         changed_any = true;
+        int map_y = width_ ? i / width_ : 0;
+        int map_x = width_ ? i % width_ : 0;
+        if (bounds.isValid() && !bounds.contains(map_x, map_y)) {
+            continue;
+        }
+        QPoint metatile_origin = QPoint(map_x * 16, map_y * 16);
         Block block = layout->blockdata.at(i);
         QImage metatile_image = getMetatileImage(
             block.metatileId,
@@ -162,9 +168,6 @@ QPixmap Map::render(bool ignoreCache = false, MapLayout * fromLayout) {
             metatileLayerOrder,
             metatileLayerOpacity
         );
-        int map_y = width_ ? i / width_ : 0;
-        int map_x = width_ ? i % width_ : 0;
-        QPoint metatile_origin = QPoint(map_x * 16, map_y * 16);
         painter.drawImage(metatile_origin, metatile_image);
     }
     painter.end();
@@ -215,7 +218,6 @@ QPixmap Map::renderBorder(bool ignoreCache) {
 }
 
 QPixmap Map::renderConnection(MapConnection connection, MapLayout * fromLayout) {
-    render(true, fromLayout);
     int x, y, w, h;
     if (connection.direction == "up") {
         x = 0;
@@ -244,8 +246,9 @@ QPixmap Map::renderConnection(MapConnection connection, MapLayout * fromLayout) 
         w = getWidth();
         h = getHeight();
     }
+
+    render(true, fromLayout, QRect(x, y, w, h));
     QImage connection_image = image.copy(x * 16, y * 16, w * 16, h * 16);
-    //connection_image = connection_image.convertToFormat(QImage::Format_Grayscale8);
     return QPixmap::fromImage(connection_image);
 }
 

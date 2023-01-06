@@ -76,7 +76,7 @@ public:
     int getHeight();
     int getBorderWidth();
     int getBorderHeight();
-    QPixmap render(bool ignoreCache, MapLayout * fromLayout = nullptr);
+    QPixmap render(bool ignoreCache, MapLayout *fromLayout = nullptr, QRect bounds = QRect(0, 0, -1, -1));
     QPixmap renderCollision(qreal opacity, bool ignoreCache);
     bool mapBlockChanged(int i, const Blockdata &cache);
     bool borderBlockChanged(int i, const Blockdata &cache);
