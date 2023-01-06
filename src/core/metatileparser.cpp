@@ -78,6 +78,14 @@ QList<Metatile*> MetatileParser::parse(QString filepath, bool *error, bool prima
             tiles.append(tile);
         }
 
+        // AdvanceMap .bvd files only contain 8 tiles of data per metatile.
+        // If the user has triple-layer metatiles enabled we need to fill the remaining 4 tiles ourselves.
+        if (projectConfig.getTripleLayerMetatilesEnabled()) {
+            Tile tile = Tile();
+            for (int j = 0; j < 4; j++)
+                tiles.append(tile);
+        }
+
         int attrOffset = 4 + (numMetatiles * metatileSize) + (i * attrSize);
         uint32_t attributes = 0;
         for (int j = 0; j < attrSize; j++)
