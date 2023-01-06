@@ -498,15 +498,10 @@ bool RegionMapEditor::setup() {
     if (!region_maps.empty()) {
         setRegionMap(region_maps.begin()->second);
     }
-
-    this->show();
-    this->setWindowState(Qt::WindowState::WindowActive);
-    this->activateWindow();
-
     return true;
 }
 
-bool RegionMapEditor::load() {
+bool RegionMapEditor::load(bool silent) {
     // check for config json file
     QString jsonConfigFilepath = this->project->root + "/" + projectConfig.getFilePath(ProjectFilePath::json_region_porymap_cfg);
 
@@ -526,6 +521,7 @@ bool RegionMapEditor::load() {
     }
 
     if (badConfig) {
+        if (silent) return false;
         // show popup explaining next window
         QMessageBox warning;
         warning.setIcon(QMessageBox::Warning);

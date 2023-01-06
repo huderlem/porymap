@@ -26,7 +26,7 @@ public:
     explicit RegionMapEditor(QWidget *parent = 0, Project *pro = nullptr);
     ~RegionMapEditor();
 
-    bool load();
+    bool load(bool silent = false);
 
     void onRegionMapTileSelectorSelectedTileChanged(unsigned id);
     void onRegionMapTileSelectorHoveredTileChanged(unsigned id);
