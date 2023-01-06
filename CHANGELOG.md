@@ -15,6 +15,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Hovering on border metatiles with the mouse will now display their information in the bottom bar.
 
 ### Fixed
+- Fix the Region Map Editor being opened by the Shortcuts Editor.
 - Fix New Map settings being preserved when switching projects.
 - Fix scripting API callback `onMapResized` not triggering.
 - Fix crash when importing AdvanceMap metatiles while `enable_triple_layer_metatiles` is enabled.

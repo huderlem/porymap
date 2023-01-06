@@ -379,7 +379,7 @@ private:
     void setWindowDisabled(bool);
 
     void initTilesetEditor();
-    bool initRegionMapEditor();
+    bool initRegionMapEditor(bool silent = false);
     void initShortcutsEditor();
     void connectSubEditorsToShortcutsEditor();
 

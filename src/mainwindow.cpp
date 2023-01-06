@@ -1815,7 +1815,7 @@ void MainWindow::connectSubEditorsToShortcutsEditor() {
             tilesetEditor, &TilesetEditor::applyUserShortcuts);
 
     if (!regionMapEditor)
-        initRegionMapEditor();
+        initRegionMapEditor(true);
     if (regionMapEditor)
         connect(shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
                 regionMapEditor, &RegionMapEditor::applyUserShortcuts);
@@ -2813,23 +2813,19 @@ void MainWindow::on_pushButton_CreatePrefab_clicked() {
     }
 }
 
-bool MainWindow::initRegionMapEditor() {
+bool MainWindow::initRegionMapEditor(bool silent) {
     this->regionMapEditor = new RegionMapEditor(this, this->editor->project);
-    this->regionMapEditor->setAttribute(Qt::WA_DeleteOnClose);
-    connect(this->regionMapEditor, &QObject::destroyed, [this](){
-        this->regionMapEditor = nullptr;
-    });
-
-    bool success = this->regionMapEditor->load();
+    bool success = this->regionMapEditor->load(silent);
     if (!success) {
         delete this->regionMapEditor;
         this->regionMapEditor = nullptr;
-        QMessageBox msgBox(this);
-        QString errorMsg = QString("There was an error opening the region map data. Please see %1 for full error details.\n\n%3")
-                .arg(getLogPath())
-                .arg(getMostRecentError());
-        msgBox.critical(nullptr, "Error Opening Region Map Editor", errorMsg);
-
+        if (!silent) {
+            QMessageBox msgBox(this);
+            QString errorMsg = QString("There was an error opening the region map data. Please see %1 for full error details.\n\n%3")
+                    .arg(getLogPath())
+                    .arg(getMostRecentError());
+            msgBox.critical(nullptr, "Error Opening Region Map Editor", errorMsg);
+        }
         return false;
     }
 
