@@ -111,7 +111,6 @@ void Editor::setEditingCollision() {
     }
     if (map_item) {
         map_item->paintingMode = MapPixmapItem::PaintMode::Metatiles;
-        map_item->setVisible(false);
     }
     if (events_group) {
         events_group->setVisible(false);
