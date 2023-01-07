@@ -96,7 +96,7 @@ void Map::cacheCollision() {
         layout->cached_collision.append(block);
 }
 
-QPixmap Map::renderCollision(qreal opacity, bool ignoreCache) {
+QPixmap Map::renderCollision(bool ignoreCache) {
     bool changed_any = false;
     int width_ = getWidth();
     int height_ = getHeight();
@@ -115,17 +115,11 @@ QPixmap Map::renderCollision(qreal opacity, bool ignoreCache) {
         }
         changed_any = true;
         Block block = layout->blockdata.at(i);
-        QImage metatile_image = getMetatileImage(block.metatileId, layout->tileset_primary, layout->tileset_secondary, metatileLayerOrder, metatileLayerOpacity);
         QImage collision_metatile_image = getCollisionMetatileImage(block);
         int map_y = width_ ? i / width_ : 0;
         int map_x = width_ ? i % width_ : 0;
         QPoint metatile_origin = QPoint(map_x * 16, map_y * 16);
-        painter.setOpacity(1);
-        painter.drawImage(metatile_origin, metatile_image);
-        painter.save();
-        painter.setOpacity(opacity);
         painter.drawImage(metatile_origin, collision_metatile_image);
-        painter.restore();
     }
     painter.end();
     cacheCollision();
@@ -135,7 +129,7 @@ QPixmap Map::renderCollision(qreal opacity, bool ignoreCache) {
     return collision_pixmap;
 }
 
-QPixmap Map::render(bool ignoreCache = false, MapLayout * fromLayout, QRect bounds) {
+QPixmap Map::render(bool ignoreCache, MapLayout * fromLayout, QRect bounds) {
     bool changed_any = false;
     int width_ = getWidth();
     int height_ = getHeight();

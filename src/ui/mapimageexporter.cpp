@@ -359,11 +359,14 @@ QPixmap MapImageExporter::getFormattedMapPixmap(Map *map, bool ignoreBorder) {
 
     // draw background layer / base image
     map->render(true);
+    pixmap = map->pixmap;
+
     if (showCollision) {
-        map->renderCollision(editor->collisionOpacity, true);
-        pixmap = map->collision_pixmap;
-    } else {
-        pixmap = map->pixmap;
+        QPainter collisionPainter(&pixmap);
+        map->renderCollision(true);
+        collisionPainter.setOpacity(editor->collisionOpacity);
+        collisionPainter.drawPixmap(0, 0, map->collision_pixmap);
+        collisionPainter.end();
     }
 
     // draw map border
@@ -384,7 +387,6 @@ QPixmap MapImageExporter::getFormattedMapPixmap(Map *map, bool ignoreBorder) {
                 borderPainter.drawPixmap(x * 16, y * 16, map->layout->border_pixmap);
             }
         }
-
         borderPainter.drawImage(borderWidth, borderHeight, pixmap.toImage());
         borderPainter.end();
         pixmap = newPixmap;
