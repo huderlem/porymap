@@ -1508,14 +1508,31 @@ void Project::loadTilesetMetatiles(Tileset* tileset) {
     }
 }
 
-void Project::loadTilesetMetatileLabels(Tileset* tileset) {
-    QString tilesetPrefix = QString("METATILE_%1_").arg(QString(tileset->name).replace("gTileset_", ""));
+bool Project::readTilesetMetatileLabels() {
+    metatileLabelsMap.clear();
+
     QString metatileLabelsFilename = projectConfig.getFilePath(ProjectFilePath::constants_metatile_labels);
     fileWatcher.addPath(root + "/" + metatileLabelsFilename);
-    QMap<QString, int> labels = parser.readCDefines(metatileLabelsFilename, QStringList() << tilesetPrefix);
 
-    for (QString labelName : labels.keys()) {
-        int metatileId = labels[labelName];
+    QMap<QString, int> labels = parser.readCDefines(metatileLabelsFilename, QStringList() << "METATILE_");
+
+    for (QString label : this->tilesetLabelsOrdered) {
+        QString tilesetName = QString(label).replace("gTileset_", "");
+        for (QString key : labels.keys()) {
+            if (key.contains(tilesetName)) {
+                metatileLabelsMap[label][key] = labels[key];
+            }
+        }
+    }
+
+    return true;
+}
+
+void Project::loadTilesetMetatileLabels(Tileset* tileset) {
+    QString tilesetPrefix = QString("METATILE_%1_").arg(QString(tileset->name).replace("gTileset_", ""));
+
+    for (QString labelName : metatileLabelsMap[tileset->name].keys()) {
+        int metatileId = metatileLabelsMap[tileset->name][labelName];
         // subtract Project::num_tiles_primary from secondary metatiles
         int offset = tileset->is_secondary ? Project::num_tiles_primary : 0;
         Metatile *metatile = Tileset::getMetatile(metatileId - offset, tileset, nullptr);

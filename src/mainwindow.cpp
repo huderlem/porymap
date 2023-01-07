@@ -908,6 +908,7 @@ bool MainWindow::loadDataStructures() {
                 && project->readMetatileBehaviors()
                 && project->readTilesetProperties()
                 && project->readTilesetLabels()
+                && project->readTilesetMetatileLabels()
                 && project->readMaxMapDataSize()
                 && project->readHealLocations()
                 && project->readMiscellaneousConstants()
