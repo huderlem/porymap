@@ -1519,7 +1519,7 @@ bool Project::readTilesetMetatileLabels() {
     for (QString label : this->tilesetLabelsOrdered) {
         QString tilesetName = QString(label).replace("gTileset_", "");
         for (QString key : labels.keys()) {
-            if (key.contains(tilesetName)) {
+            if (key.contains(QString("METATILE_") + tilesetName)) {
                 metatileLabelsMap[label][key] = labels[key];
             }
         }
@@ -1540,7 +1540,7 @@ void Project::loadTilesetMetatileLabels(Tileset* tileset) {
             metatile->label = labelName.replace(tilesetPrefix, "");
         } else {
             QString hexString = QString("%1").arg(metatileId, 3, 16, QChar('0')).toUpper();
-            logError(QString("Metatile 0x%1 cannot be found in tileset '%2'").arg(hexString, tileset->name));
+            logError(QString("Metatile 0x%1 (%2) cannot be found in tileset '%3'").arg(hexString, labelName, tileset->name));
         }
     }
 }
