@@ -631,7 +631,8 @@ struct JsonParser final {
 
         if (str[i] != '.' && str[i] != 'e' && str[i] != 'E'
                 && (i - start_pos) <= static_cast<unsigned>(std::numeric_limits<int>::digits10)) {
-            return std::atoi(str.toStdString().c_str() + start_pos);
+            bool ok;
+            return str.mid(start_pos, i - start_pos).toInt(&ok);
         }
 
         // Decimal part
@@ -658,7 +659,8 @@ struct JsonParser final {
                 i++;
         }
 
-        return std::strtod(str.toStdString().c_str() + start_pos, nullptr);
+        bool ok;
+        return str.mid(start_pos, i - start_pos).toDouble(&ok);
     }
 
     /* expect(str, res)
