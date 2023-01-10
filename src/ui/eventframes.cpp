@@ -872,7 +872,7 @@ void HiddenItemFrame::initialize() {
 
     // underfoot
     if (projectConfig.getHiddenItemRequiresItemfinderEnabled()) {
-        this->check_itemfinder->setChecked(this->hiddenItem->getQuantity());
+        this->check_itemfinder->setChecked(this->hiddenItem->getUnderfoot());
     }
     this->hideable_itemfinder->setVisible(projectConfig.getHiddenItemRequiresItemfinderEnabled());
 }
