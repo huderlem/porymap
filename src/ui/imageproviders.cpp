@@ -8,10 +8,10 @@ QImage getCollisionMetatileImage(Block block) {
 }
 
 QImage getCollisionMetatileImage(int collision, int elevation) {
+    static const QImage collisionImage(":/images/collisions.png");
     int x = (collision != 0) * 16;
     int y = elevation * 16;
-    QPixmap collisionImage = QPixmap(":/images/collisions.png").copy(x, y, 16, 16);
-    return collisionImage.toImage();
+    return collisionImage.copy(x, y, 16, 16);
 }
 
 QImage getMetatileImage(
