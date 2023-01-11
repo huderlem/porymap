@@ -260,14 +260,14 @@ QString ParseUtil::readCIncbin(const QString &filename, const QString &label) {
 
     this->text = readTextFile(this->root + "/" + filename);
 
-    static const QRegularExpression re(QString(
-        "\\b%1\\b"
-        "\\s*\\[?\\s*\\]?\\s*=\\s*"
-        "INCBIN_[US][0-9][0-9]?"
-        "\\(\\s*\"([^\"]*)\"\\s*\\)").arg(label));
+    int start = this->text.indexOf(label);
+    if (start < 0) return path;
+    int end = this->text.indexOf(';', start);
+    QString incbinText = this->text.mid(start, end - start);
 
+    static const QRegularExpression re_incbin("\\s*\\[?\\s*\\]?\\s*=\\s*INCBIN_[US][0-9][0-9]?\\(\\s*\\\"(?<path>[^\\\"]*)\\\"\\s*\\)");
     QRegularExpressionMatch match;
-    qsizetype pos = this->text.indexOf(re, 0, &match);
+    qsizetype pos = incbinText.indexOf(re_incbin, 0, &match);
     if (pos != -1) {
         path = match.captured(1);
     }
@@ -284,15 +284,28 @@ QStringList ParseUtil::readCIncbinArray(const QString &filename, const QString &
 
     this->text = readTextFile(this->root + "/" + filename);
 
+    bool found = false;
+    QString arrayText;
+
     // Get the text starting after the label all the way to the definition's end
-    static const QRegularExpression re_labelGroup(QString("\\b%1\\b(.*?)};").arg(label), QRegularExpression::DotMatchesEverythingOption);
-    QRegularExpressionMatch arrayMatch = re_labelGroup.match(this->text);
-    if (!arrayMatch.hasMatch())
+    static const QRegularExpression re_labelGroup(QString("(?<label>[A-Za-z0-9_]+)\\[([^;]*?)};"), QRegularExpression::DotMatchesEverythingOption);
+    QRegularExpressionMatchIterator findLabelIter = re_labelGroup.globalMatch(this->text);
+    while (findLabelIter.hasNext()) {
+        QRegularExpressionMatch labelMatch = findLabelIter.next();
+        if (labelMatch.captured("label") == label) {
+            found = true;
+            arrayText = labelMatch.captured(2);
+            break;
+        }
+    }
+
+    if (!found) {
         return paths;
+    }
 
     // Extract incbin paths from the array
     static const QRegularExpression re_incbin("INCBIN_[US][0-9][0-9]?\\(\\s*\"([^\"]*)\"\\s*\\)");
-    QRegularExpressionMatchIterator iter = re_incbin.globalMatch(arrayMatch.captured(1));
+    QRegularExpressionMatchIterator iter = re_incbin.globalMatch(arrayText);
     while (iter.hasNext()) {
         paths.append(iter.next().captured(1));
     }
@@ -373,7 +386,7 @@ QStringList ParseUtil::readCArray(const QString &filename, const QString &label)
     this->file = filename;
     this->text = readTextFile(this->root + "/" + filename);
 
-    static const QRegularExpression re(QString(R"(\b%1\b\s*(\[?[^\]]*\])?\s*=\s*\{([^\}]*)\})").arg(label));
+    QRegularExpression re(QString(R"(\b%1\b\s*(\[?[^\]]*\])?\s*=\s*\{([^\}]*)\})").arg(label));
     QRegularExpressionMatch match = re.match(this->text);
 
     if (match.hasMatch()) {
@@ -394,15 +407,14 @@ QMap<QString, QString> ParseUtil::readNamedIndexCArray(const QString &filename, 
     this->text = readTextFile(this->root + "/" + filename);
     QMap<QString, QString> map;
 
-    static const QRegularExpression re_text(QString(R"(\b%1\b\s*(\[?[^\]]*\])?\s*=\s*\{([^\}]*)\})").arg(label));
-    static const QRegularExpression re_spaces("\\s*");
-    QString body = re_text.match(this->text).captured(2).replace(re_spaces, "");
+    QRegularExpression re_text(QString(R"(\b%1\b\s*(\[?[^\]]*\])?\s*=\s*\{([^\}]*)\})").arg(label));
+    QString arrayText = re_text.match(this->text).captured(2).replace(QRegularExpression("\\s*"), "");
 
-    static const QRegularExpression re("\\[(?<index>[A-Za-z0-9_]*)\\]=(?<value>&?[A-Za-z0-9_]*)");
-    QRegularExpressionMatchIterator iter = re.globalMatch(body);
+    static const QRegularExpression re_findRow("\\[(?<index>[A-Za-z0-9_]*)\\][\\s=]+(?<value>&?[A-Za-z0-9_]*)");
+    QRegularExpressionMatchIterator rowIter = re_findRow.globalMatch(arrayText);
 
-    while (iter.hasNext()) {
-        QRegularExpressionMatch match = iter.next();
+    while (rowIter.hasNext()) {
+        QRegularExpressionMatch match = rowIter.next();
         QString key = match.captured("index");
         QString value = match.captured("value");
         map.insert(key, value);
