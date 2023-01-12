@@ -40,7 +40,7 @@ public:
 class ParseUtil
 {
 public:
-    ParseUtil() { };
+    ParseUtil();
     void set_root(const QString &dir);
     static QString readTextFile(const QString &path);
     static int textFileLineCount(const QString &path);

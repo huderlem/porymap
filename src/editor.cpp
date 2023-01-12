@@ -1503,8 +1503,6 @@ void Editor::displayMapEvents() {
     }
     //objects_group->setFiltersChildEvents(false);
     events_group->setHandlesChildEvents(false);
-
-    emit objectsChanged();
 }
 
 DraggablePixmapItem *Editor::addMapEvent(Event *event) {

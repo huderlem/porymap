@@ -19,6 +19,10 @@ static QMap<QString, QString> fileCache;
 
 using OrderedJson = poryjson::Json;
 
+ParseUtil::ParseUtil() {
+    fileCache.clear();
+}
+
 void ParseUtil::set_root(const QString &dir) {
     this->root = dir;
 }
