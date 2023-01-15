@@ -1940,6 +1940,7 @@ void MainWindow::updateSelectedObjects() {
 
             selectedObject = current->getPixmapItem();
 
+            QSignalBlocker b(this->ui->spinner_ObjectID);
             this->ui->spinner_ObjectID->setMinimum(event_offs);
             this->ui->spinner_ObjectID->setMaximum(current->getMap()->events.value(eventGroup).length() + event_offs - 1);
             this->ui->spinner_ObjectID->setValue(current->getEventIndex() + event_offs);
@@ -1952,6 +1953,7 @@ void MainWindow::updateSelectedObjects() {
 
             selectedWarp = current->getPixmapItem();
 
+            QSignalBlocker b(this->ui->spinner_WarpID);
             this->ui->spinner_WarpID->setMinimum(event_offs);
             this->ui->spinner_WarpID->setMaximum(current->getMap()->events.value(eventGroup).length() + event_offs - 1);
             this->ui->spinner_WarpID->setValue(current->getEventIndex() + event_offs);
@@ -1964,6 +1966,7 @@ void MainWindow::updateSelectedObjects() {
 
             selectedTrigger = current->getPixmapItem();
 
+            QSignalBlocker b(this->ui->spinner_TriggerID);
             this->ui->spinner_TriggerID->setMinimum(event_offs);
             this->ui->spinner_TriggerID->setMaximum(current->getMap()->events.value(eventGroup).length() + event_offs - 1);
             this->ui->spinner_TriggerID->setValue(current->getEventIndex() + event_offs);
@@ -1976,6 +1979,7 @@ void MainWindow::updateSelectedObjects() {
 
             selectedBG = current->getPixmapItem();
 
+            QSignalBlocker b(this->ui->spinner_BgID);
             this->ui->spinner_BgID->setMinimum(event_offs);
             this->ui->spinner_BgID->setMaximum(current->getMap()->events.value(eventGroup).length() + event_offs - 1);
             this->ui->spinner_BgID->setValue(current->getEventIndex() + event_offs);
@@ -1988,6 +1992,7 @@ void MainWindow::updateSelectedObjects() {
 
             selectedHealspot = current->getPixmapItem();
 
+            QSignalBlocker b(this->ui->spinner_HealID);
             this->ui->spinner_HealID->setMinimum(event_offs);
             this->ui->spinner_HealID->setMaximum(current->getMap()->events.value(eventGroup).length() + event_offs - 1);
             this->ui->spinner_HealID->setValue(current->getEventIndex() + event_offs);
@@ -2868,7 +2873,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 }
 
 #include <QElapsedTimer>
-void MainWindow::runSpeedTest() {
+/*void MainWindow::runSpeedTest() {
     // 10 iterations of this function:
     // 1 - load project
     // 2 - switch map
@@ -2927,4 +2932,51 @@ void MainWindow::runSpeedTest() {
     summary += "MIN: " + QString::number(min).leftJustified(6, ' ') + "MAX: " + QString::number(max).leftJustified(6, ' ') + "AVG: " + QString::number(avg) + "\n";
 
     qDebug() << qUtf8Printable(summary);
+}*/
+
+#include <algorithm>
+#include <limits>
+//#include <cstdlib>
+void MainWindow::runSpeedTest() {
+    //
+    QList<qint64> times;
+
+    // groupedMapNames
+    QElapsedTimer timer;
+
+    //qDebug() << editor->project->groupedMapNames.first();
+
+    QStringList group0 = editor->project->groupedMapNames.first();
+
+    QString firstMap = group0.first();
+    setMap(firstMap);
+
+    //std::srand(unsigned(std::time(0)));
+    std::shuffle(group0.begin(), group0.end(), std::default_random_engine(69420));
+
+    timer.start();
+    for (QString mapName : group0) {
+        setMap(mapName);
+        times.append(timer.restart());
+    }
+
+    setMap(firstMap);
+
+    qint64 min = std::numeric_limits<qint64>::max();
+    qint64 max = 0;
+    qint64 average = 0;
+    qint64 count = 0;
+
+    for (qint64 val : times) {
+        if (val > max) max = val;
+        if (val < min) min = val;
+        average += val;
+        count++;
+        qDebug() << val;
+    }
+
+    average /= count;
+
+    qDebug() << "*** TIMING SUMMARY ***";
+    qDebug().nospace() << "min: " << min << "    " << "max: " << max << "    " << "avg: " << average;
 }
