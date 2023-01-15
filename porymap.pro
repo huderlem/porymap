@@ -70,6 +70,8 @@ SOURCES += src/core/block.cpp \
     src/ui/noscrollcombobox.cpp \
     src/ui/noscrollspinbox.cpp \
     src/ui/montabwidget.cpp \
+    src/ui/encountertablemodel.cpp \
+    src/ui/encountertabledelegates.cpp \
     src/ui/paletteeditor.cpp \
     src/ui/selectablepixmapitem.cpp \
     src/ui/tileseteditor.cpp \
@@ -154,6 +156,8 @@ HEADERS  += include/core/block.h \
     include/ui/noscrollcombobox.h \
     include/ui/noscrollspinbox.h \
     include/ui/montabwidget.h \
+    include/ui/encountertablemodel.h \
+    include/ui/encountertabledelegates.h \
     include/ui/adjustingstackedwidget.h \
     include/ui/paletteeditor.h \
     include/ui/selectablepixmapitem.h \

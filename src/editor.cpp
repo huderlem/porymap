@@ -7,6 +7,7 @@
 #include "mapsceneeventfilter.h"
 #include "metatile.h"
 #include "montabwidget.h"
+#include "encountertablemodel.h"
 #include "editcommands.h"
 #include "config.h"
 #include "scripting.h"
@@ -233,7 +234,7 @@ void Editor::displayWildMonTables() {
             tabWidget->clearTableAt(tabIndex);
 
             if (project->wildMonData.contains(map->constantName) && header.wildMons[fieldName].active) {
-                tabWidget->populateTab(tabIndex, header.wildMons[fieldName], fieldName);
+                tabWidget->populateTab(tabIndex, header.wildMons[fieldName]);
             } else {
                 tabWidget->setTabActive(tabIndex, false);
             }
@@ -338,7 +339,9 @@ void Editor::addNewWildMonGroup(QWidget *window) {
                 if (copyCheckbox->isChecked()) {
                     MonTabWidget *copyFrom = static_cast<MonTabWidget *>(stack->widget(stackIndex));
                     if (copyFrom->isTabEnabled(tabIndex)) {
-                        header.wildMons[fieldName] = copyMonInfoFromTab(copyFrom->tableAt(tabIndex), monField);
+                        QTableView *monTable = copyFrom->tableAt(tabIndex);
+                        EncounterTableModel *model = static_cast<EncounterTableModel *>(monTable->model());
+                        header.wildMons[fieldName] = model->encounterData();
                     }
                     else {
                         header.wildMons[fieldName] = getDefaultMonInfo(monField);
@@ -346,7 +349,7 @@ void Editor::addNewWildMonGroup(QWidget *window) {
                 } else {
                     header.wildMons[fieldName] = getDefaultMonInfo(monField);
                 }
-                tabWidget->populateTab(tabIndex, header.wildMons[fieldName], fieldName);
+                tabWidget->populateTab(tabIndex, header.wildMons[fieldName]);
             } else {
                 tabWidget->setTabActive(tabIndex, false);
             }
@@ -656,14 +659,13 @@ void Editor::saveEncounterTabData() {
 
             if (!tabWidget->isTabEnabled(fieldIndex++)) continue;
 
-            QTableWidget *monTable = static_cast<QTableWidget *>(tabWidget->widget(fieldIndex - 1));
-            QVector<WildPokemon> newWildMons;
-            encounterHeader.wildMons[fieldName] = copyMonInfoFromTab(monTable, monField);
+            QTableView *monTable = tabWidget->tableAt(fieldIndex - 1);
+            EncounterTableModel *model = static_cast<EncounterTableModel *>(monTable->model());
+            encounterHeader.wildMons[fieldName] = model->encounterData();
         }
     }
 }
 
-// Update encounters for every map based on the new encounter JSON field data.
 void Editor::updateEncounterFields(EncounterFields newFields) {
     EncounterFields oldFields = project->wildMonFields;
     // Go through fields and determine whether we need to update a field.

@@ -30,6 +30,5 @@ struct EncounterField {
 typedef QVector<EncounterField> EncounterFields;
 
 WildMonInfo getDefaultMonInfo(EncounterField field);
-WildMonInfo copyMonInfoFromTab(QTableWidget *table, EncounterField monField);
 
 #endif // GUARD_WILDMONINFO_H
