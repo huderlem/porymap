@@ -231,7 +231,6 @@ public:
 private:
     void updateMapLayout(Map*);
 
-    void setNewMapHeader(Map* map, int mapIndex);
     void setNewMapBlockdata(Map* map);
     void setNewMapBorder(Map *map);
     void setNewMapEvents(Map *map);

@@ -48,7 +48,7 @@ void NewMapPopup::init() {
     ui->spinBox_NewMap_Floor_Number->setMaximum(127);
 
     // Hide config specific ui elements
-    bool hasFlags = (projectConfig.getBaseGameVersion() != BaseGameVersion::pokeruby);
+    bool hasFlags = projectConfig.getMapAllowFlagsEnabled();
     ui->checkBox_NewMap_Allow_Running->setVisible(hasFlags);
     ui->checkBox_NewMap_Allow_Biking->setVisible(hasFlags);
     ui->checkBox_NewMap_Allow_Escape_Rope->setVisible(hasFlags);
@@ -293,7 +293,7 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
         newMap->needsHealLocation = true;
     }
 
-    if (projectConfig.getBaseGameVersion() != BaseGameVersion::pokeruby) {
+    if (projectConfig.getMapAllowFlagsEnabled()) {
         newMap->allowRunning = this->ui->checkBox_NewMap_Allow_Running->isChecked();
         newMap->allowBiking = this->ui->checkBox_NewMap_Allow_Biking->isChecked();
         newMap->allowEscaping = this->ui->checkBox_NewMap_Allow_Escape_Rope->isChecked();

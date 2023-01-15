@@ -8,6 +8,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 
 ## [Unreleased]
 ### Added
+- Add new config options for reorganizing metatile attributes.
 - Add `setScale` to the scripting API.
 - Add option to turn off the checkerboard fill for new tilesets.
 

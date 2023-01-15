@@ -42,7 +42,7 @@ QList<Metatile*> MetatileParser::parse(QString filepath, bool *error, bool prima
         return { };
     }
 
-    int attrSize = Metatile::getAttributesSize(version);
+    int attrSize = Metatile::getDefaultAttributesSize(version);
     int maxMetatiles = primaryTileset ? Project::getNumMetatilesPrimary() : Project::getNumMetatilesTotal() - Project::getNumMetatilesPrimary();
     int numMetatiles = static_cast<unsigned char>(in.at(0)) |
                                 (static_cast<unsigned char>(in.at(1)) << 8) |

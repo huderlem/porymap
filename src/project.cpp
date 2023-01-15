@@ -165,7 +165,7 @@ const QSet<QString> defaultTopLevelMapFields = {
 
 QSet<QString> Project::getTopLevelMapFields() {
     QSet<QString> topLevelMapFields = defaultTopLevelMapFields;
-    if (projectConfig.getBaseGameVersion() != BaseGameVersion::pokeruby) {
+    if (projectConfig.getMapAllowFlagsEnabled()) {
         topLevelMapFields.insert("allow_cycling");
         topLevelMapFields.insert("allow_escaping");
         topLevelMapFields.insert("allow_running");
@@ -200,7 +200,7 @@ bool Project::loadMapData(Map* map) {
     map->show_location = ParseUtil::jsonToBool(mapObj["show_map_name"]);
     map->battle_scene  = ParseUtil::jsonToQString(mapObj["battle_scene"]);
 
-    if (projectConfig.getBaseGameVersion() != BaseGameVersion::pokeruby) {
+    if (projectConfig.getMapAllowFlagsEnabled()) {
         map->allowBiking   = ParseUtil::jsonToBool(mapObj["allow_cycling"]);
         map->allowEscaping = ParseUtil::jsonToBool(mapObj["allow_escaping"]);
         map->allowRunning  = ParseUtil::jsonToBool(mapObj["allow_running"]);
@@ -373,26 +373,6 @@ QString Project::readMapLocation(QString map_name) {
 
     QJsonObject mapObj = mapDoc.object();
     return ParseUtil::jsonToQString(mapObj["region_map_section"]);
-}
-
-void Project::setNewMapHeader(Map* map, int mapIndex) {
-    map->layoutId = QString("%1").arg(mapIndex);
-    map->location = mapSectionValueToName.value(0);
-    map->requiresFlash = false;
-    map->weather = weatherNames.value(0, "WEATHER_NONE");
-    map->type = mapTypes.value(0, "MAP_TYPE_NONE");
-    map->song = defaultSong;
-    map->show_location = true;
-    if (projectConfig.getBaseGameVersion() != BaseGameVersion::pokeruby) {
-        map->allowBiking = true;
-        map->allowEscaping = false;
-        map->allowRunning = true;
-    }
-    if (projectConfig.getFloorNumberEnabled()) {
-        map->floorNumber = 0;
-    }
-
-    map->battle_scene = mapBattleScenes.value(0, "MAP_BATTLE_SCENE_NORMAL");
 }
 
 bool Project::loadLayout(MapLayout *layout) {
@@ -981,10 +961,9 @@ void Project::saveTilesetMetatileAttributes(Tileset *tileset) {
     QFile attrs_file(tileset->metatile_attrs_path);
     if (attrs_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
         QByteArray data;
-        BaseGameVersion version = projectConfig.getBaseGameVersion();
-        int attrSize = Metatile::getAttributesSize(version);
+        int attrSize = projectConfig.getMetatileAttributesSize();
         for (Metatile *metatile : tileset->metatiles) {
-            uint32_t attributes = metatile->getAttributes(version);
+            uint32_t attributes = metatile->getAttributes();
             for (int i = 0; i < attrSize; i++)
                 data.append(static_cast<char>(attributes >> (8 * i)));
         }
@@ -1265,7 +1244,7 @@ void Project::saveMap(Map *map) {
     mapObj["requires_flash"] = map->requiresFlash;
     mapObj["weather"] = map->weather;
     mapObj["map_type"] = map->type;
-    if (projectConfig.getBaseGameVersion() != BaseGameVersion::pokeruby) {
+    if (projectConfig.getMapAllowFlagsEnabled()) {
         mapObj["allow_cycling"] = map->allowBiking;
         mapObj["allow_escaping"] = map->allowEscaping;
         mapObj["allow_running"] = map->allowRunning;
@@ -1539,9 +1518,7 @@ void Project::loadTilesetMetatiles(Tileset* tileset) {
     if (attrs_file.open(QIODevice::ReadOnly)) {
         QByteArray data = attrs_file.readAll();
         int num_metatiles = tileset->metatiles.count();
-
-        BaseGameVersion version = projectConfig.getBaseGameVersion();
-        int attrSize = Metatile::getAttributesSize(version);
+        int attrSize = projectConfig.getMetatileAttributesSize();
         int num_metatileAttrs = data.length() / attrSize;
         if (num_metatiles != num_metatileAttrs) {
             logWarn(QString("Metatile count %1 does not match metatile attribute count %2 in %3").arg(num_metatiles).arg(num_metatileAttrs).arg(tileset->name));
@@ -1553,7 +1530,7 @@ void Project::loadTilesetMetatiles(Tileset* tileset) {
             uint32_t attributes = 0;
             for (int j = 0; j < attrSize; j++)
                 attributes |= static_cast<unsigned char>(data.at(i * attrSize + j)) << (8 * j);
-            tileset->metatiles.at(i)->setAttributes(attributes, version);
+            tileset->metatiles.at(i)->setAttributes(attributes);
         }
     } else {
         logError(QString("Could not open tileset metatile attributes file '%1'").arg(tileset->metatile_attrs_path));
@@ -2079,8 +2056,8 @@ bool Project::readHealLocations() {
         HealLocation healLocation;
         if (match.hasMatch()) {
             QString mapName = match.captured("map");
-            int x = match.captured("x").toInt();
-            int y = match.captured("y").toInt();
+            int x = match.captured("x").toInt(nullptr, 0);
+            int y = match.captured("y").toInt(nullptr, 0);
             healLocation = HealLocation(idName, mapName, this->healLocations.size() + 1, x, y);
         } else {
             // This heal location has data, but is missing from the location table and won't be displayed by Porymap.
@@ -2100,7 +2077,7 @@ bool Project::readHealLocations() {
             QRegularExpression respawnNPCRegex(QString("%1(?<npc>[0-9]+)").arg(initializerPattern));
             match = respawnNPCRegex.match(text);
             if (match.hasMatch())
-                healLocation.respawnNPC = match.captured("npc").toInt();
+                healLocation.respawnNPC = match.captured("npc").toInt(nullptr, 0);
         }
 
         this->healLocations.append(healLocation);
@@ -2483,11 +2460,11 @@ bool Project::readEventGraphics() {
                 QRegularExpressionMatch dimensionMatch = re.match(dimensions_label);
                 QRegularExpressionMatch oamTablesMatch = re.match(subsprites_label);
                 if (oamTablesMatch.hasMatch()) {
-                    eventGraphics->spriteWidth = oamTablesMatch.captured(1).toInt();
-                    eventGraphics->spriteHeight = oamTablesMatch.captured(2).toInt();
+                    eventGraphics->spriteWidth = oamTablesMatch.captured(1).toInt(nullptr, 0);
+                    eventGraphics->spriteHeight = oamTablesMatch.captured(2).toInt(nullptr, 0);
                 } else if (dimensionMatch.hasMatch()) {
-                    eventGraphics->spriteWidth = dimensionMatch.captured(1).toInt();
-                    eventGraphics->spriteHeight = dimensionMatch.captured(2).toInt();
+                    eventGraphics->spriteWidth = dimensionMatch.captured(1).toInt(nullptr, 0);
+                    eventGraphics->spriteHeight = dimensionMatch.captured(2).toInt(nullptr, 0);
                 } else {
                     eventGraphics->spriteWidth = eventGraphics->spritesheet.width();
                     eventGraphics->spriteHeight = eventGraphics->spritesheet.height();

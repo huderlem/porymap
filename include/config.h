@@ -36,6 +36,7 @@ protected:
     virtual void setUnreadKeys() = 0;
     bool getConfigBool(QString key, QString value);
     int getConfigInteger(QString key, QString value, int min, int max, int defaultValue);
+    long getConfigLong(QString key, QString value, long min, long max, long defaultValue);
 };
 
 class PorymapConfig: public KeyValueConfigBase
@@ -268,6 +269,12 @@ public:
     bool getTilesetsHaveCallback();
     void setTilesetsHaveIsCompressed(bool has);
     bool getTilesetsHaveIsCompressed();
+    int getMetatileAttributesSize();
+    uint32_t getMetatileBehaviorMask();
+    uint32_t getMetatileTerrainTypeMask();
+    uint32_t getMetatileEncounterTypeMask();
+    uint32_t getMetatileLayerTypeMask();
+    bool getMapAllowFlagsEnabled();
 protected:
     virtual QString getConfigFilepath() override;
     virtual void parseConfigKeyValue(QString key, QString value) override;
@@ -299,6 +306,12 @@ private:
     bool prefabImportPrompted;
     bool tilesetsHaveCallback;
     bool tilesetsHaveIsCompressed;
+    int metatileAttributesSize;
+    uint32_t metatileBehaviorMask;
+    uint32_t metatileTerrainTypeMask;
+    uint32_t metatileEncounterTypeMask;
+    uint32_t metatileLayerTypeMask;
+    bool enableMapAllowFlags;
 };
 
 extern ProjectConfig projectConfig;

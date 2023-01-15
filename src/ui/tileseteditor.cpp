@@ -99,9 +99,7 @@ void TilesetEditor::initUi() {
     this->ui->spinBox_paletteSelector->setMinimum(0);
     this->ui->spinBox_paletteSelector->setMaximum(Project::getNumPalettesTotal() - 1);
 
-    this->setMetatileBehaviors();
-    this->setMetatileLayersUi();
-    this->setVersionSpecificUi();
+    this->setAttributesUi();
     this->setMetatileLabelValidator();
 
     this->initMetatileSelector();
@@ -113,42 +111,54 @@ void TilesetEditor::initUi() {
     this->restoreWindowState();
 }
 
-void TilesetEditor::setMetatileBehaviors() {
-    for (int num : project->metatileBehaviorMapInverse.keys()) {
-        this->ui->comboBox_metatileBehaviors->addItem(project->metatileBehaviorMapInverse[num], num);
-    }
-}
-
-void TilesetEditor::setMetatileLayersUi() {
-    if (!projectConfig.getTripleLayerMetatilesEnabled()) {
-        this->ui->comboBox_layerType->addItem("Normal - Middle/Top", METATILE_LAYER_MIDDLE_TOP);
-        this->ui->comboBox_layerType->addItem("Covered - Bottom/Middle", METATILE_LAYER_BOTTOM_MIDDLE);
-        this->ui->comboBox_layerType->addItem("Split - Bottom/Top", METATILE_LAYER_BOTTOM_TOP);
+void TilesetEditor::setAttributesUi() {
+    // Behavior
+    if (Metatile::getBehaviorMask()) {
+        for (int num : project->metatileBehaviorMapInverse.keys()) {
+            this->ui->comboBox_metatileBehaviors->addItem(project->metatileBehaviorMapInverse[num], num);
+        }
     } else {
-        this->ui->comboBox_layerType->setVisible(false);
-        this->ui->label_layerType->setVisible(false);
-        this->ui->label_BottomTop->setText("Bottom/Middle/Top");
+        this->ui->comboBox_metatileBehaviors->setVisible(false);
+        this->ui->label_metatileBehavior->setVisible(false);
     }
-}
 
-void TilesetEditor::setVersionSpecificUi() {
-    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
-        this->ui->comboBox_encounterType->setVisible(true);
-        this->ui->label_encounterType->setVisible(true);
-        this->ui->comboBox_encounterType->addItem("None", ENCOUNTER_NONE);
-        this->ui->comboBox_encounterType->addItem("Land", ENCOUNTER_LAND);
-        this->ui->comboBox_encounterType->addItem("Water", ENCOUNTER_WATER);
-        this->ui->comboBox_terrainType->setVisible(true);
-        this->ui->label_terrainType->setVisible(true);
+    // Terrain Type
+    if (Metatile::getTerrainTypeMask()) {
         this->ui->comboBox_terrainType->addItem("Normal", TERRAIN_NONE);
         this->ui->comboBox_terrainType->addItem("Grass", TERRAIN_GRASS);
         this->ui->comboBox_terrainType->addItem("Water", TERRAIN_WATER);
         this->ui->comboBox_terrainType->addItem("Waterfall", TERRAIN_WATERFALL);
     } else {
-        this->ui->comboBox_encounterType->setVisible(false);
-        this->ui->label_encounterType->setVisible(false);
         this->ui->comboBox_terrainType->setVisible(false);
         this->ui->label_terrainType->setVisible(false);
+    }
+
+    // Encounter Type
+    if (Metatile::getEncounterTypeMask()) {
+        this->ui->comboBox_encounterType->addItem("None", ENCOUNTER_NONE);
+        this->ui->comboBox_encounterType->addItem("Land", ENCOUNTER_LAND);
+        this->ui->comboBox_encounterType->addItem("Water", ENCOUNTER_WATER);
+    } else {
+        this->ui->comboBox_encounterType->setVisible(false);
+        this->ui->label_encounterType->setVisible(false);
+    }
+
+    // Layer Type
+    if (!projectConfig.getTripleLayerMetatilesEnabled()) {
+        this->ui->comboBox_layerType->addItem("Normal - Middle/Top", METATILE_LAYER_MIDDLE_TOP);
+        this->ui->comboBox_layerType->addItem("Covered - Bottom/Middle", METATILE_LAYER_BOTTOM_MIDDLE);
+        this->ui->comboBox_layerType->addItem("Split - Bottom/Top", METATILE_LAYER_BOTTOM_TOP);
+        if (!Metatile::getLayerTypeMask()) {
+            // User doesn't have triple layer metatiles, but has no layer type attribute.
+            // Porymap is still using the layer type value to render metatiles, and with
+            // no mask set every metatile will be "Middle/Top", so just display the combo
+            // box but prevent the user from changing the value.
+            this->ui->comboBox_layerType->setEnabled(false);
+        }
+    } else {
+        this->ui->comboBox_layerType->setVisible(false);
+        this->ui->label_layerType->setVisible(false);
+        this->ui->label_BottomTop->setText("Bottom/Middle/Top");
     }
 }
 
@@ -373,13 +383,9 @@ void TilesetEditor::onSelectedMetatileChanged(uint16_t metatileId) {
     this->ui->graphicsView_metatileLayers->setFixedSize(this->metatileLayersItem->pixmap().width() + 2, this->metatileLayersItem->pixmap().height() + 2);
     this->ui->lineEdit_metatileLabel->setText(this->metatile->label);
     setComboValue(this->ui->comboBox_metatileBehaviors, this->metatile->behavior);
-    if (!projectConfig.getTripleLayerMetatilesEnabled()) {
-        setComboValue(this->ui->comboBox_layerType, this->metatile->layerType);
-    }
-    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
-        setComboValue(this->ui->comboBox_encounterType, this->metatile->encounterType);
-        setComboValue(this->ui->comboBox_terrainType, this->metatile->terrainType);
-    }
+    setComboValue(this->ui->comboBox_layerType, this->metatile->layerType);
+    setComboValue(this->ui->comboBox_encounterType, this->metatile->encounterType);
+    setComboValue(this->ui->comboBox_terrainType, this->metatile->terrainType);
 }
 
 void TilesetEditor::onHoveredTileChanged(uint16_t tile) {
@@ -512,11 +518,11 @@ void TilesetEditor::on_comboBox_metatileBehaviors_currentTextChanged(const QStri
 
         // This function can also be called when the user selects
         // a different metatile. Stop this from being considered a change.
-        if (this->metatile->behavior == static_cast<uint16_t>(behavior))
+        if (this->metatile->behavior == static_cast<uint32_t>(behavior))
             return;
 
         Metatile *prevMetatile = new Metatile(*this->metatile);
-        this->metatile->behavior = behavior;
+        this->metatile->setBehavior(behavior);
         MetatileHistoryItem *commit = new MetatileHistoryItem(this->getSelectedMetatileId(),
                                                               prevMetatile, new Metatile(*this->metatile));
         metatileHistory.push(commit);
@@ -552,7 +558,7 @@ void TilesetEditor::on_comboBox_layerType_activated(int layerType)
 {
     if (this->metatile) {
         Metatile *prevMetatile = new Metatile(*this->metatile);
-        this->metatile->layerType = static_cast<uint8_t>(layerType);
+        this->metatile->setLayerType(layerType);
         MetatileHistoryItem *commit = new MetatileHistoryItem(this->getSelectedMetatileId(),
                                                               prevMetatile, new Metatile(*this->metatile));
         metatileHistory.push(commit);
@@ -565,7 +571,7 @@ void TilesetEditor::on_comboBox_encounterType_activated(int encounterType)
 {
     if (this->metatile) {
         Metatile *prevMetatile = new Metatile(*this->metatile);
-        this->metatile->encounterType = static_cast<uint8_t>(encounterType);
+        this->metatile->setEncounterType(encounterType);
         MetatileHistoryItem *commit = new MetatileHistoryItem(this->getSelectedMetatileId(),
                                                               prevMetatile, new Metatile(*this->metatile));
         metatileHistory.push(commit);
@@ -577,7 +583,7 @@ void TilesetEditor::on_comboBox_terrainType_activated(int terrainType)
 {
     if (this->metatile) {
         Metatile *prevMetatile = new Metatile(*this->metatile);
-        this->metatile->terrainType = static_cast<uint8_t>(terrainType);
+        this->metatile->setTerrainType(terrainType);
         MetatileHistoryItem *commit = new MetatileHistoryItem(this->getSelectedMetatileId(),
                                                               prevMetatile, new Metatile(*this->metatile));
         metatileHistory.push(commit);
