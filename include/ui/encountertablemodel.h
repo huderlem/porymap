@@ -39,7 +39,7 @@ private:
     int numRows = 0;
     int numCols = 0;
 
-    QList<int> slotRatios;
+    QVector<int> slotRatios;
     QList<QString> groupNames;
     QList<double> slotPercentages;
 
