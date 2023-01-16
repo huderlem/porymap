@@ -146,7 +146,6 @@ public:
     QUndoGroup editGroup; // Manages the undo history for each map
 
     bool selectingEvent = false;
-    bool editingConnections = false;
 
     void shouldReselectEvents();
     void scaleMapView(int);
@@ -166,7 +165,7 @@ private:
     void setBorderItemsVisible(bool, qreal = 1);
     void setConnectionEditControlValues(MapConnection*);
     void setConnectionEditControlsEnabled(bool);
-    void setConnectionHighlights(bool);
+    void setConnectionsEditable(bool);
     void createConnectionItem(MapConnection* connection, bool hide);
     void populateConnectionMapPickers();
     void setDiveEmergeControls();

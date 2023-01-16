@@ -95,8 +95,7 @@ void Editor::setEditingMap() {
     }
     setBorderItemsVisible(ui->checkBox_ToggleBorder->isChecked());
     setConnectionItemsVisible(ui->checkBox_ToggleBorder->isChecked());
-    setConnectionHighlights(false);
-    this->editingConnections = false;
+    setConnectionsEditable(false);
     this->cursorMapTileRect->stopSingleTileMode();
     this->cursorMapTileRect->setActive(true);
 
@@ -119,8 +118,7 @@ void Editor::setEditingCollision() {
     }
     setBorderItemsVisible(ui->checkBox_ToggleBorder->isChecked());
     setConnectionItemsVisible(ui->checkBox_ToggleBorder->isChecked());
-    setConnectionHighlights(false);
-    this->editingConnections = false;
+    setConnectionsEditable(false);
     this->cursorMapTileRect->setSingleTileMode();
     this->cursorMapTileRect->setActive(true);
 
@@ -143,8 +141,7 @@ void Editor::setEditingObjects() {
     }
     setBorderItemsVisible(ui->checkBox_ToggleBorder->isChecked());
     setConnectionItemsVisible(ui->checkBox_ToggleBorder->isChecked());
-    setConnectionHighlights(false);
-    this->editingConnections = false;
+    setConnectionsEditable(false);
     this->cursorMapTileRect->setSingleTileMode();
     this->cursorMapTileRect->setActive(false);
 
@@ -192,8 +189,7 @@ void Editor::setEditingConnections() {
     }
     setBorderItemsVisible(true, 0.4);
     setConnectionItemsVisible(true);
-    setConnectionHighlights(true);
-    this->editingConnections = true;
+    setConnectionsEditable(true);
     this->cursorMapTileRect->setSingleTileMode();
     this->cursorMapTileRect->setActive(false);
 }
@@ -860,30 +856,20 @@ void Editor::setConnectionEditControlsEnabled(bool enabled) {
     }
 }
 
-void Editor::setConnectionHighlights(bool enabled) {
+void Editor::setConnectionsEditable(bool editable) {
     for (ConnectionPixmapItem* item : connection_items) {
-        bool isSelectedItem = item == selected_connection_item;
-        int zValue = (isSelectedItem || !enabled) ? 0 : -1;
-        qreal opacity = (isSelectedItem || !enabled) ? 1 : 0.75;
-        item->setZValue(zValue);
-        item->render(opacity);
-        if (enabled && isSelectedItem) {
-            QPixmap pixmap = item->pixmap();
-            QPainter painter(&pixmap);
-            painter.setPen(QColor(255, 0, 255));
-            painter.drawRect(0, 0, pixmap.width() - 1, pixmap.height() - 1);
-            painter.end();
-            item->setPixmap(pixmap);
-        }
+        item->setEditable(editable);
+        item->updateHighlight(item == selected_connection_item);
     }
 }
 
 void Editor::onConnectionItemSelected(ConnectionPixmapItem* connectionItem) {
-    selected_connection_item = connectionItem;
-    if (!selected_connection_item || !this->editingConnections)
+    if (!connectionItem)
         return;
 
-    setConnectionHighlights(true);
+    selected_connection_item = connectionItem;
+    for (ConnectionPixmapItem* item : connection_items)
+        item->updateHighlight(item == selected_connection_item);
     setConnectionEditControlsEnabled(true);
     setConnectionEditControlValues(selected_connection_item->connection);
     ui->spinBox_ConnectionOffset->setMaximum(selected_connection_item->getMaxOffset());

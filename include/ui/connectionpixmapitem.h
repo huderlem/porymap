@@ -29,6 +29,9 @@ public:
     void render(qreal opacity = 1);
     int getMinOffset();
     int getMaxOffset();
+    void setEditable(bool editable);
+    bool getEditable();
+    void updateHighlight(bool selected);
 
 protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
