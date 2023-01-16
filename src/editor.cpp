@@ -1630,7 +1630,7 @@ void Editor::updateMapBorder() {
 }
 
 void Editor::updateMapConnections() {
-   for (int i = 0; i < connection_items.size(); i++) {
+    for (int i = 0; i < connection_items.size(); i++) {
         Map *connected_map = project->getMap(connection_items[i]->connection->map_name);
         if (!connected_map)
             continue;
