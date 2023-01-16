@@ -392,7 +392,7 @@ QPixmap MapImageExporter::getFormattedMapPixmap(Map *map, bool ignoreBorder) {
     if (!this->mode) {
         // if showing connections, draw on outside of image
         QPainter connectionPainter(&pixmap);
-        for (auto connectionItem : editor->connection_edit_items) {
+        for (auto connectionItem : editor->connection_items) {
             QString direction = connectionItem->connection->direction;
             if ((showUpConnections && direction == "up")
              || (showDownConnections && direction == "down")
