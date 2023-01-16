@@ -1193,39 +1193,6 @@ void Project::saveMap(Map *map) {
         }
     }
 
-    QString layoutsFilepath = root + "/" + projectConfig.getFilePath(ProjectFilePath::json_layouts);
-    QJsonDocument layoutsDoc;
-    if (!parser.tryParseJsonFile(&layoutsDoc, layoutsFilepath)) {
-        logError(QString("Failed to read map layouts from %1").arg(layoutsFilepath));
-        return;
-    }
-
-    QFile layoutsFile(layoutsFilepath);
-    if (!layoutsFile.open(QIODevice::ReadWrite)) {
-        logError(QString("Error: Could not open %1 for read/write").arg(layoutsFilepath));
-        return;
-    }
-
-    // Append to "layouts" array in data/layouts/layouts.json.
-    QJsonObject layoutsObj = layoutsDoc.object();
-    QJsonArray layoutsArr = layoutsObj["layouts"].toArray();
-    QJsonObject newLayoutObj;
-    newLayoutObj["id"] = map->layout->id;
-    newLayoutObj["name"] = map->layout->name;
-    newLayoutObj["width"] = map->layout->width;
-    newLayoutObj["height"] = map->layout->height;
-    if (projectConfig.getUseCustomBorderSize()) {
-        newLayoutObj["border_width"] = map->layout->border_width;
-        newLayoutObj["border_height"] = map->layout->border_height;
-    }
-    newLayoutObj["primary_tileset"] = map->layout->tileset_primary_label;
-    newLayoutObj["secondary_tileset"] = map->layout->tileset_secondary_label;
-    newLayoutObj["border_filepath"] = map->layout->border_path;
-    newLayoutObj["blockdata_filepath"] = map->layout->blockdata_path;
-    layoutsArr.append(newLayoutObj);
-    layoutsFile.write(layoutsDoc.toJson());
-    layoutsFile.close();
-
     // Create map.json for map data.
     QString mapFilepath = QString("%1/map.json").arg(mapDataDir);
     QFile mapFile(mapFilepath);
