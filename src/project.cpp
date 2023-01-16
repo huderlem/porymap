@@ -91,6 +91,7 @@ void Project::initSignals() {
 
 void Project::set_root(QString dir) {
     this->root = dir;
+    this->importExportPath = dir;
     this->parser.set_root(dir);
 }
 
@@ -2551,4 +2552,9 @@ bool Project::calculateDefaultMapSize(){
 int Project::getMaxObjectEvents()
 {
     return Project::max_object_events;
+}
+
+void Project::setImportExportPath(QString filename)
+{
+    this->importExportPath = QFileInfo(filename).absolutePath();
 }

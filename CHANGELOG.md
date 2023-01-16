@@ -14,6 +14,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 
 ### Changed
 - Hovering on border metatiles with the mouse will now display their information in the bottom bar.
+- The last-used directory is now preserved in import/export file dialogs.
 
 ### Fixed
 - Fix the Region Map Editor being opened by the Shortcuts Editor.

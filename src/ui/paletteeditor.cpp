@@ -384,12 +384,12 @@ void PaletteEditor::on_actionImport_Palette_triggered()
     QString filepath = QFileDialog::getOpenFileName(
                 this,
                 QString("Import Tileset Palette"),
-                this->project->root,
+                this->project->importExportPath,
                 "Palette Files (*.pal *.act *tpl *gpl)");
     if (filepath.isEmpty()) {
         return;
     }
-
+    this->project->setImportExportPath(filepath);
     bool error = false;
     QList<QRgb> palette = PaletteUtil::parse(filepath, &error);
     if (error) {
