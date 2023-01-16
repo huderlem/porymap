@@ -22,17 +22,17 @@ bool MonTabWidget::eventFilter(QObject *, QEvent *event) {
 }
 
 void MonTabWidget::populate() {
-    EncounterFields fields = editor->project->wildMonFields;
+    auto fields = editor->project->encounterFieldTypes;
     activeTabs = QVector<bool>(fields.size(), false);
 
-    for (EncounterField field : fields) {
+    for (QString field : fields) {
         QTableWidget *table = new QTableWidget(this);
         table->setEditTriggers(QAbstractItemView::NoEditTriggers);
         table->setFocusPolicy(Qt::NoFocus);
         table->setSelectionMode(QAbstractItemView::NoSelection);
         table->setTabKeyNavigation(false);
         table->clearFocus();
-        addTab(table, field.name);
+        addTab(table, field);
     }
 }
 
@@ -45,7 +45,8 @@ void MonTabWidget::askActivateTab(int tabIndex, QPoint menuPos) {
     QAction actionActivateTab(QString("Add %1 data for this map...").arg(tabText), this);
     connect(&actionActivateTab, &QAction::triggered, [=](){
         clearTableAt(tabIndex);
-        populateTab(tabIndex, getDefaultMonInfo(editor->project->wildMonFields.at(tabIndex)), tabText);
+        auto monInfo = getDefaultMonInfo();
+        populateTab(tabIndex, monInfo, tabText);
         editor->saveEncounterTabData();
         setCurrentIndex(tabIndex);
         emit editor->wildMonDataChanged();
@@ -62,25 +63,60 @@ void MonTabWidget::clearTableAt(int tabIndex) {
     }
 }
 
-void MonTabWidget::populateTab(int tabIndex, WildMonInfo monInfo, QString fieldName) {
+static bool wildPokemonSameBesidesEncounterRate(WildPokemon &a, WildPokemon &b) {
+    return a.species == b.species && a.minLevel == b.minLevel && a.maxLevel == b.maxLevel;
+}
+
+static QVector<MonTableEntry> getPokemonEntries(QVector<QVector<WildPokemon>> &wildPokemon) {
+    // For each wild pokemon, create a MonTableEntry with the encounter rate for each time of day.
+    // If the same pokemon appears in multiple slots, add the encounter rate to the existing entry.
+    QVector<MonTableEntry> pokemonEntries;
+    for (int time = 0; time < wildPokemon.size(); time++) {
+        for (WildPokemon mon : wildPokemon[time]) {
+            bool found = false;
+            for (MonTableEntry &entry : pokemonEntries) {
+                if (wildPokemonSameBesidesEncounterRate(mon, entry)) {
+                    entry.encounterRateByTime[time] += mon.encounterRate;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                MonTableEntry entry(mon);
+                entry.encounterRateByTime[time] = mon.encounterRate;
+                pokemonEntries.append(entry);
+            }
+        }
+    }
+    return pokemonEntries;
+}
+
+void MonTabWidget::populateTab(int tabIndex, WildMonInfo &monInfo, QString fieldName) {
     QTableWidget *speciesTable = tableAt(tabIndex);
+    auto wildPokemon = getPokemonEntries(monInfo.wildPokemon);
 
     int fieldIndex = 0;
-    for (EncounterField field : editor->project->wildMonFields) {
-        if (field.name == fieldName) break;
+    for (QString field : editor->project->encounterFieldTypes) {
+        if (field == fieldName) break;
         fieldIndex++;
     }
-    bool insertGroupLabel = false;
-    if (!editor->project->wildMonFields[fieldIndex].groups.empty()) insertGroupLabel = true;
 
-    speciesTable->setRowCount(monInfo.wildPokemon.size());
-    speciesTable->setColumnCount(insertGroupLabel ? 8 : 7);
+    // Add empty rows to the table up to 15 rows.
+    while (wildPokemon.size() < 15) {
+        wildPokemon.append(WildPokemon());
+    }
+
+    speciesTable->setRowCount(wildPokemon.size());
+    speciesTable->setColumnCount(5 + editor->project->timesOfDay.size());
 
     QStringList landMonTableHeaders;
     landMonTableHeaders << "Slot";
-    if (insertGroupLabel) landMonTableHeaders << "Group";
-    landMonTableHeaders << "Species" << "Min Level" << "Max Level" 
-                        << "Encounter Chance" << "Slot Ratio" << "Encounter Rate";
+    landMonTableHeaders << "Species" << "Min Level" << "Max Level"; 
+    for (QString time : editor->project->timesOfDay) {
+        // Add header for Encounter Chance ([time]])
+        landMonTableHeaders << QString("Encounter Chance - %1").arg(time);
+    }
+    landMonTableHeaders << "Map Encounter Rate";
     speciesTable->setHorizontalHeaderLabels(landMonTableHeaders);
     speciesTable->horizontalHeader()->show();
     speciesTable->verticalHeader()->hide();
@@ -102,16 +138,15 @@ void MonTabWidget::populateTab(int tabIndex, WildMonInfo monInfo, QString fieldN
     });
     encounterLayout->addWidget(encounterRate);
     encounterFrame->setLayout(encounterLayout);
-    speciesTable->setCellWidget(0, insertGroupLabel? 7 : 6, encounterFrame);
+    speciesTable->setCellWidget(0, speciesTable->columnCount() - 1, encounterFrame);
 
-    int i = 0;
-    for (WildPokemon mon : monInfo.wildPokemon) {
-        createSpeciesTableRow(speciesTable, mon, i++, fieldName);
+    for(int i = 0; i < wildPokemon.size(); i++) {
+        createSpeciesTableRow(speciesTable, wildPokemon[i], i, fieldName);
     }
     this->setTabActive(tabIndex, true);
 }
 
-void MonTabWidget::createSpeciesTableRow(QTableWidget *table, WildPokemon mon, int index, QString fieldName) {
+void MonTabWidget::createSpeciesTableRow(QTableWidget *table, MonTableEntry mon, int index, QString fieldName) {
     QPixmap monIcon = QPixmap(editor->project->speciesToIconPath.value(mon.species)).copy(0, 0, 32, 32);
 
     QLabel *monNum = new QLabel(QString("%1.").arg(QString::number(index)));
@@ -153,34 +188,10 @@ void MonTabWidget::createSpeciesTableRow(QTableWidget *table, WildPokemon mon, i
     });
 
     int fieldIndex = 0;
-    for (EncounterField field : editor->project->wildMonFields) {
-        if (field.name == fieldName) break;
+    for (QString field : editor->project->encounterFieldTypes) {
+        if (field == fieldName) break;
         fieldIndex++;
     }
-
-    double slotChanceTotal = 0.0;
-    if (!editor->project->wildMonFields[fieldIndex].groups.empty()) {
-        for (auto groupKeyPair : editor->project->wildMonFields[fieldIndex].groups) {
-            QString groupKey = groupKeyPair.first;
-            if (editor->project->wildMonFields[fieldIndex].groups[groupKey].contains(index)) {
-                for (int chanceIndex : editor->project->wildMonFields[fieldIndex].groups[groupKey]) {
-                    slotChanceTotal += static_cast<double>(editor->project->wildMonFields[fieldIndex].encounterRates[chanceIndex]);
-                }
-                break;
-            }
-        }
-    } else {
-        for (auto chance : editor->project->wildMonFields[fieldIndex].encounterRates) {
-            slotChanceTotal += static_cast<double>(chance);
-        }
-    }
-    
-    QLabel *percentLabel = new QLabel(QString("%1%").arg(
-        QString::number(editor->project->wildMonFields[fieldIndex].encounterRates[index] / slotChanceTotal * 100.0, 'f', 2)
-    ));
-    QLabel *ratioLabel = new QLabel(QString("%1").arg(
-        QString::number(editor->project->wildMonFields[fieldIndex].encounterRates[index]
-    )));
 
     QFrame *speciesSelector = new QFrame;
     QHBoxLayout *speciesSelectorLayout = new QHBoxLayout;
@@ -197,27 +208,34 @@ void MonTabWidget::createSpeciesTableRow(QTableWidget *table, WildPokemon mon, i
     QVBoxLayout *maxLevelSpinboxLayout = new QVBoxLayout;
     maxLevelSpinboxLayout->addWidget(maxLevel);
     maxLevelFrame->setLayout(maxLevelSpinboxLayout);
+    
 
-    bool insertGroupLabel = false;
-    if (!editor->project->wildMonFields[fieldIndex].groups.empty()) insertGroupLabel = true;
     table->setCellWidget(index, 0, monNum);
-    if (insertGroupLabel) {
-        QString groupName = QString();
-        for (auto groupKeyPair : editor->project->wildMonFields[fieldIndex].groups) {
-            QString groupKey = groupKeyPair.first;
-            if (editor->project->wildMonFields[fieldIndex].groups[groupKey].contains(index)) {
-                groupName = groupKey;
-                break;
-            }
-        }
-        QLabel *groupNameLabel = new QLabel(groupName);
-        table->setCellWidget(index, 1, groupNameLabel);
+    table->setCellWidget(index, 1, speciesSelector);
+    table->setCellWidget(index, 2, minLevelFrame);
+    table->setCellWidget(index, 3, maxLevelFrame);
+
+    int column = 4;
+    for (auto rate : mon.encounterRateByTime) {
+        QDoubleSpinBox *encounterRate = new QDoubleSpinBox;
+        encounterRate->setMinimum(0.0);
+        encounterRate->setMaximum(100.0);
+        encounterRate->setDecimals(2);
+        encounterRate->setSingleStep(0.1);
+        // Convert from 0-256 to 0-100
+        encounterRate->setValue(rate / 2.56);
+
+        connect(encounterRate, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [this](int) {
+            editor->saveEncounterTabData();
+            emit editor->wildMonDataChanged();
+        });
+
+        QFrame *encounterRateFrame = new QFrame;
+        QVBoxLayout *encounterRateSpinboxLayout = new QVBoxLayout;
+        encounterRateSpinboxLayout->addWidget(encounterRate);
+        encounterRateFrame->setLayout(encounterRateSpinboxLayout);
+        table->setCellWidget(index, column++, encounterRateFrame);
     }
-    table->setCellWidget(index, insertGroupLabel? 2 : 1, speciesSelector);
-    table->setCellWidget(index, insertGroupLabel? 3 : 2, minLevelFrame);
-    table->setCellWidget(index, insertGroupLabel? 4 : 3, maxLevelFrame);
-    table->setCellWidget(index, insertGroupLabel? 5 : 4, percentLabel);
-    table->setCellWidget(index, insertGroupLabel? 6 : 5, ratioLabel);
 }
 
 QTableWidget *MonTabWidget::tableAt(int tabIndex) {

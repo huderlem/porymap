@@ -129,11 +129,12 @@ public:
     QString readMapLocation(QString map_name);
 
     bool readWildMonData();
-    tsl::ordered_map<QString, tsl::ordered_map<QString, WildPokemonHeader>> wildMonData;
+    tsl::ordered_map<QString, WildPokemonHeader> wildMonData;
+    QVector<QString> timesOfDay;
 
-    QVector<EncounterField> wildMonFields;
-    QVector<QString> encounterGroupLabels;
+    EncounterGroup encounterGroup;
     QVector<poryjson::Json::object> extraEncounterGroups;
+    QVector<QString> encounterFieldTypes;
 
     bool readSpeciesIconPaths();
     QMap<QString, QString> speciesToIconPath;

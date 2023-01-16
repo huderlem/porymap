@@ -278,9 +278,6 @@ private slots:
     void on_pushButton_DeleteCustomHeaderField_clicked();
     void on_tableWidget_CustomHeaderFields_cellChanged(int row, int column);
     void on_horizontalSlider_MetatileZoom_valueChanged(int value);
-    void on_pushButton_NewWildMonGroup_clicked();
-    void on_pushButton_DeleteWildMonGroup_clicked();
-    void on_pushButton_ConfigureEncountersJSON_clicked();
     void on_pushButton_CreatePrefab_clicked();
 
     void on_actionRegion_Map_Editor_triggered();

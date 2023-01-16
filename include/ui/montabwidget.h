@@ -8,6 +8,19 @@
 
 class Editor;
 
+struct MonTableEntry: WildPokemon {
+    QVector<double> encounterRateByTime;
+
+    // Constructor from a WildPokemon
+    MonTableEntry(WildPokemon mon, int timeCount = 2) {
+        species = mon.species;
+        minLevel = mon.minLevel;
+        maxLevel = mon.maxLevel;
+        encounterRate = mon.encounterRate;
+        encounterRateByTime = QVector<double>(timeCount, 0);
+    }
+};
+
 class MonTabWidget : public QTabWidget {
 
     Q_OBJECT
@@ -17,10 +30,10 @@ public:
     ~MonTabWidget(){};
 
     void populate();
-    void populateTab(int tabIndex, WildMonInfo monInfo, QString fieldName);
+    void populateTab(int tabIndex, WildMonInfo &monInfo, QString fieldName);
     void clear();
 
-    void createSpeciesTableRow(QTableWidget *table, WildPokemon mon, int index, QString fieldName);
+    void createSpeciesTableRow(QTableWidget *table, MonTableEntry mon, int index, QString fieldName);
 
     void clearTableAt(int index);
 

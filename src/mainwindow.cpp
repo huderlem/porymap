@@ -217,13 +217,6 @@ void MainWindow::initExtraSignals() {
     connect(ui->newEventToolButton, &NewEventToolButton::newEventAdded, this, &MainWindow::addNewEvent);
     connect(ui->tabWidget_EventType, &QTabWidget::currentChanged, this, &MainWindow::eventTabChanged);
 
-    // Change pages on wild encounter groups
-    QStackedWidget *stack = ui->stackedWidget_WildMons;
-    QComboBox *labelCombo = ui->comboBox_EncounterGroupLabel;
-    connect(labelCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index){
-        stack->setCurrentIndex(index);
-    });
-
     // Convert the layout of the map tools' frame into an adjustable FlowLayout
     FlowLayout *flowLayout = new FlowLayout;
     flowLayout->setContentsMargins(ui->frame_mapTools->layout()->contentsMargins());
@@ -2505,18 +2498,6 @@ void MainWindow::on_pushButton_RemoveConnection_clicked()
 {
     editor->removeCurrentConnection();
     markMapEdited();
-}
-
-void MainWindow::on_pushButton_NewWildMonGroup_clicked() {
-    editor->addNewWildMonGroup(this);
-}
-
-void MainWindow::on_pushButton_DeleteWildMonGroup_clicked() {
-    editor->deleteWildMonGroup();
-}
-
-void MainWindow::on_pushButton_ConfigureEncountersJSON_clicked() {
-    editor->configureEncounterJSON(this);
 }
 
 void MainWindow::on_comboBox_DiveMap_currentTextChanged(const QString &mapName)

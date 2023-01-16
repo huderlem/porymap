@@ -959,7 +959,7 @@ void UserConfig::setEncounterJsonActive(bool active) {
 }
 
 bool UserConfig::getEncounterJsonActive() {
-    return this->useEncounterJson;
+    return true;
 }
 
 void UserConfig::setCustomScripts(QList<QString> scripts) {
