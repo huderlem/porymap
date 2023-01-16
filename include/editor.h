@@ -81,8 +81,6 @@ public:
     void setConnectionMap(QString mapName);
     void addNewConnection();
     void removeCurrentConnection();
-    void addNewWildMonGroup(QWidget *window);
-    void deleteWildMonGroup();
     void updateDiveMap(QString mapName);
     void updateEmergeMap(QString mapName);
     void setSelectedConnectionFromMap(QString mapName);
@@ -90,7 +88,6 @@ public:
     void updateSecondaryTileset(QString tilesetLabel, bool forceLoad = false);
     void toggleBorderVisibility(bool visible, bool enableScriptCallback = true);
     void updateCustomMapHeaderValues(QTableWidget *);
-    void configureEncounterJSON(QWidget *);
     Tileset *getCurrentMapPrimaryTileset();
 
     DraggablePixmapItem *addMapEvent(Event *event);
@@ -176,7 +173,6 @@ private:
     void updateMirroredConnectionDirection(MapConnection*, QString);
     void updateMirroredConnectionMap(MapConnection*, QString);
     void updateMirroredConnection(MapConnection*, QString, QString, bool isDelete = false);
-    void updateEncounterFields(EncounterFields newFields);
     QString getMovementPermissionText(uint16_t collision, uint16_t elevation);
     QString getMetatileDisplayMessage(uint16_t metatileId);
     bool startDetachedProcess(const QString &command,

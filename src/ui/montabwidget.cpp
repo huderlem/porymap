@@ -26,33 +26,14 @@ bool MonTabWidget::eventFilter(QObject *, QEvent *event) {
 }
 
 void MonTabWidget::populate() {
-    EncounterFields fields = editor->project->wildMonFields;
-    activeTabs.resize(fields.size());
-    activeTabs.fill(false);
+    auto fields = editor->project->encounterFieldTypes;
+    activeTabs = QVector<bool>(fields.size(), false);
 
-    addDeleteTabButtons.resize(fields.size());
-    addDeleteTabButtons.fill(nullptr);
-    copyTabButtons.resize(fields.size());
-    copyTabButtons.fill(nullptr);
-
-    int index = 0;
-    for (EncounterField field : fields) {
+    for (QString field : fields) {
         QTableView *table = new QTableView(this);
         table->setEditTriggers(QAbstractItemView::AllEditTriggers);
         table->clearFocus();
-        addTab(table, field.name);
-
-        QPushButton *buttonAddDelete = new QPushButton(QIcon(":/icons/add.ico"), "");
-        connect(buttonAddDelete, &QPushButton::clicked, [=]() { actionAddDeleteTab(index); });
-        addDeleteTabButtons[index] = buttonAddDelete;
-        this->tabBar()->setTabButton(index, QTabBar::RightSide, buttonAddDelete);
-
-        QPushButton *buttonCopy = new QPushButton(QIcon(":/icons/clipboard.ico"), "");
-        connect(buttonCopy, &QPushButton::clicked, [=]() {actionCopyTab(index); });
-        copyTabButtons[index] = buttonCopy;
-        this->tabBar()->setTabButton(index, QTabBar::LeftSide, buttonCopy);
-
-        index++;
+        addTab(table, field);
     }
 }
 
@@ -65,12 +46,11 @@ void MonTabWidget::paste(int index) {
     if (!encounterClipboard.active) return;
 
     clearTableAt(index);
-    WildMonInfo newInfo = getDefaultMonInfo(this->editor->project->wildMonFields.at(index));
+    WildMonInfo newInfo = getDefaultMonInfo();
     combineEncounters(newInfo, encounterClipboard);
     populateTab(index, newInfo);
     emit editor->wildMonDataChanged();
 }
-
 void MonTabWidget::actionCopyTab(int index) {
     QMenu contextMenu(this);
 
@@ -98,7 +78,7 @@ void MonTabWidget::actionAddDeleteTab(int index) {
     else {
         // add tab
         clearTableAt(index);
-        populateTab(index, getDefaultMonInfo(editor->project->wildMonFields.at(index)));
+        populateTab(index, getDefaultMonInfo());
         editor->saveEncounterTabData();
         setCurrentIndex(index);
         emit editor->wildMonDataChanged();
@@ -119,7 +99,7 @@ void MonTabWidget::deactivateTab(int tabIndex) {
     EncounterTableModel *oldModel = static_cast<EncounterTableModel *>(speciesTable->model());
     WildMonInfo monInfo = oldModel->encounterData();
     monInfo.active = false;
-    EncounterTableModel *newModel = new EncounterTableModel(monInfo, editor->project->wildMonFields, tabIndex, this);
+    EncounterTableModel *newModel = new EncounterTableModel(monInfo, editor->project->encounterFieldTypes[tabIndex], this);
     speciesTable->setModel(newModel);
 
     setTabActive(tabIndex, false);
@@ -128,30 +108,27 @@ void MonTabWidget::deactivateTab(int tabIndex) {
 void MonTabWidget::populateTab(int tabIndex, WildMonInfo monInfo) {
     QTableView *speciesTable = tableAt(tabIndex);
 
-    EncounterTableModel *model = new EncounterTableModel(monInfo, editor->project->wildMonFields, tabIndex, this);
+    EncounterTableModel *model = new EncounterTableModel(monInfo, editor->project->encounterFieldTypes[tabIndex], this);
     connect(model, &EncounterTableModel::edited, editor, &Editor::saveEncounterTabData);
     speciesTable->setModel(model);
 
     speciesTable->setItemDelegateForColumn(EncounterTableModel::ColumnType::Species, new SpeciesComboDelegate(editor->project, this));
     speciesTable->setItemDelegateForColumn(EncounterTableModel::ColumnType::MinLevel, new SpinBoxDelegate(editor->project, this));
     speciesTable->setItemDelegateForColumn(EncounterTableModel::ColumnType::MaxLevel, new SpinBoxDelegate(editor->project, this));
+    speciesTable->setItemDelegateForColumn(EncounterTableModel::ColumnType::EncounterChanceDay, new SpinBoxDelegate(editor->project, this));
+    speciesTable->setItemDelegateForColumn(EncounterTableModel::ColumnType::EncounterChanceNight, new SpinBoxDelegate(editor->project, this));
     speciesTable->setItemDelegateForColumn(EncounterTableModel::ColumnType::EncounterRate, new SpinBoxDelegate(editor->project, this));
 
     speciesTable->horizontalHeader()->setSectionResizeMode(EncounterTableModel::ColumnType::Slot, QHeaderView::ResizeToContents);
-    speciesTable->horizontalHeader()->setSectionResizeMode(EncounterTableModel::ColumnType::Group, QHeaderView::ResizeToContents);
     speciesTable->horizontalHeader()->setSectionResizeMode(EncounterTableModel::ColumnType::Species, QHeaderView::Stretch);
     speciesTable->horizontalHeader()->setSectionResizeMode(EncounterTableModel::ColumnType::MinLevel, QHeaderView::Stretch);
     speciesTable->horizontalHeader()->setSectionResizeMode(EncounterTableModel::ColumnType::MaxLevel, QHeaderView::Stretch);
-    speciesTable->horizontalHeader()->setSectionResizeMode(EncounterTableModel::ColumnType::SlotRatio, QHeaderView::ResizeToContents);
-    speciesTable->horizontalHeader()->setSectionResizeMode(EncounterTableModel::ColumnType::EncounterChance, QHeaderView::ResizeToContents);
+    speciesTable->horizontalHeader()->setSectionResizeMode(EncounterTableModel::ColumnType::EncounterChanceDay, QHeaderView::ResizeToContents);
+    speciesTable->horizontalHeader()->setSectionResizeMode(EncounterTableModel::ColumnType::EncounterChanceNight, QHeaderView::ResizeToContents);
     speciesTable->horizontalHeader()->setSectionResizeMode(EncounterTableModel::ColumnType::EncounterRate, QHeaderView::ResizeToContents);
 
     // give enough vertical space for icons + margins
     speciesTable->verticalHeader()->setMinimumSectionSize(40);
-
-    if (editor->project->wildMonFields[tabIndex].groups.empty()) {
-        speciesTable->setColumnHidden(1, true);
-    }
 
     speciesTable->horizontalHeader()->show();
     this->setTabActive(tabIndex, true);
@@ -164,11 +141,4 @@ QTableView *MonTabWidget::tableAt(int tabIndex) {
 void MonTabWidget::setTabActive(int index, bool active) {
     activeTabs[index] = active;
     setTabEnabled(index, active);
-    if (!active) {
-        this->addDeleteTabButtons[index]->setIcon(QIcon(":/icons/add.ico"));
-        this->copyTabButtons[index]->hide();
-    } else {
-        this->addDeleteTabButtons[index]->setIcon(QIcon(":/icons/delete.ico"));
-        this->copyTabButtons[index]->show();
-    }
 }

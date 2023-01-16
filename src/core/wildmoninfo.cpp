@@ -3,14 +3,12 @@
 
 
 
-WildMonInfo getDefaultMonInfo(EncounterField field) {
+WildMonInfo getDefaultMonInfo(void) {
     WildMonInfo newInfo;
     newInfo.active = true;
     newInfo.encounterRate = 0;
 
-    int size = field.encounterRates.size();
-    while (size--)
-        newInfo.wildPokemon.append(WildPokemon());
+    newInfo.wildPokemon.append(WildPokemon());
 
     return newInfo;
 }

@@ -641,62 +641,54 @@ void Project::saveWildMonData() {
     monHeadersObject["label"] = "gWildMonHeaders";
     monHeadersObject["for_maps"] = true;
 
-    OrderedJson::array fieldsInfoArray;
-    for (EncounterField fieldInfo : wildMonFields) {
-        OrderedJson::object fieldObject;
-        OrderedJson::array rateArray;
-
-        for (int rate : fieldInfo.encounterRates) {
-            rateArray.push_back(rate);
-        }
-
-        fieldObject["type"] = fieldInfo.name;
-        fieldObject["encounter_rates"] = rateArray;
-
-        OrderedJson::object groupsObject;
-        for (auto groupNamePair : fieldInfo.groups) {
-            QString groupName = groupNamePair.first;
-            OrderedJson::array subGroupIndices;
-            std::sort(fieldInfo.groups[groupName].begin(), fieldInfo.groups[groupName].end());
-            for (int slotIndex : fieldInfo.groups[groupName]) {
-                subGroupIndices.push_back(slotIndex);
-            }
-            groupsObject[groupName] = subGroupIndices;
-        }
-        if (!groupsObject.empty()) fieldObject["groups"] = groupsObject;
-
-        fieldsInfoArray.append(fieldObject);
-    }
-    monHeadersObject["fields"] = fieldsInfoArray;
-
     OrderedJson::array encountersArray;
     for (auto keyPair : wildMonData) {
         QString key = keyPair.first;
-        for (auto grouplLabelPair : wildMonData[key]) {
-            QString groupLabel = grouplLabelPair.first;
-            OrderedJson::object encounterObject;
-            encounterObject["map"] = key;
-            encounterObject["base_label"] = groupLabel;
+        WildPokemonHeader encounterHeader = wildMonData[key];
+        OrderedJson::object encounterObject;
+        bool hasEncounters = false;
+        encounterObject["map"] = key;
+        encounterObject["base_label"] = key;
 
-            WildPokemonHeader encounterHeader = wildMonData[key][groupLabel];
-            for (auto fieldNamePair : encounterHeader.wildMons) {
-                QString fieldName = fieldNamePair.first;
-                OrderedJson::object fieldObject;
-                WildMonInfo monInfo = encounterHeader.wildMons[fieldName];
-                fieldObject["encounter_rate"] = monInfo.encounterRate;
-                OrderedJson::array monArray;
-                for (WildPokemon wildMon : monInfo.wildPokemon) {
-                    OrderedJson::object monEntry;
-                    monEntry["min_level"] = wildMon.minLevel;
-                    monEntry["max_level"] = wildMon.maxLevel;
-                    monEntry["species"] = wildMon.species;
-                    monArray.push_back(monEntry);
+        for (auto fieldNamePair : encounterHeader.wildMons) {
+            QString fieldName = fieldNamePair.first;
+            OrderedJson::object fieldObject;
+            WildMonInfo monInfo = encounterHeader.wildMons[fieldName];
+            fieldObject["encounter_rate"] = monInfo.encounterRate;
+            OrderedJson::array dayArray;
+            OrderedJson::array nightArray;
+            for (auto wildMon : monInfo.wildPokemon) {
+                if (wildMon.species == "NONE") continue; // Skip empty entries
+
+                if (wildMon.encounterChanceDay > 0) {
+                    OrderedJson::object dayEntry;
+                    dayEntry["min_level"] = wildMon.minLevel;
+                    dayEntry["max_level"] = wildMon.maxLevel;
+                    dayEntry["species"] = wildMon.species;
+                    dayEntry["encounter_rate"] = wildMon.encounterChanceDay;
+                    dayArray.push_back(dayEntry);
                 }
-                fieldObject["mons"] = monArray;
-                encounterObject[fieldName] = fieldObject;
+                
+                if (wildMon.encounterChanceNight > 0) {
+                    OrderedJson::object nightEntry;
+                    nightEntry["min_level"] = wildMon.minLevel;
+                    nightEntry["max_level"] = wildMon.maxLevel;
+                    nightEntry["species"] = wildMon.species;
+                    nightEntry["encounter_rate"] = wildMon.encounterChanceNight;
+                    nightArray.push_back(nightEntry);
+                }
             }
+            if (dayArray.size() > 0 || nightArray.size() > 0) {
+                OrderedJson::array monArrayArray = {dayArray, nightArray};
+                fieldObject["mons"] = monArrayArray;
+                encounterObject[fieldName] = fieldObject;
+                hasEncounters = true;
+            }
+        }
+        if (hasEncounters) {
             encountersArray.push_back(encounterObject);
         }
+        
     }
     monHeadersObject["encounters"] = encountersArray;
     wildEncounterGroups.push_back(monHeadersObject);
@@ -706,6 +698,9 @@ void Project::saveWildMonData() {
         wildEncounterGroups.push_back(extraObject);
     }
 
+    // DAY, NIGHT
+    OrderedJson::array timesArray = {"DAY", "NIGHT"};
+    wildEncountersObject["times"] = timesArray;
     wildEncountersObject["wild_encounter_groups"] = wildEncounterGroups;
 
     ignoreWatchedFileTemporarily(wildEncountersJsonFilepath);
@@ -1590,11 +1585,18 @@ void Project::deleteFile(QString path) {
     }
 }
 
+static bool nightMonMatchesDay(WildPokemon &night, WildPokemon &day) {
+    return day.encounterChanceNight == 0 && night.species == day.species && night.minLevel == day.minLevel && night.maxLevel == day.maxLevel;
+}
+
 bool Project::readWildMonData() {
     extraEncounterGroups.clear();
-    wildMonFields.clear();
     wildMonData.clear();
-    encounterGroupLabels.clear();
+    encounterFieldTypes.clear();
+    encounterFieldTypes.append("land_mons");
+    encounterFieldTypes.append("water_mons");
+    encounterFieldTypes.append("fishing_mons");
+    encounterFieldTypes.append("rock_smash_mons");
     if (!userConfig.getEncounterJsonActive()) {
         return true;
     }
@@ -1607,7 +1609,7 @@ bool Project::readWildMonData() {
         // Failing to read wild encounters data is not a critical error, just disable the
         // encounter editor and log a warning in case the user intended to have this data.
         userConfig.setEncounterJsonActive(false);
-        emit disableWildEncountersUI();
+        //emit disableWildEncountersUI();
         logWarn(QString("Failed to read wild encounters from %1").arg(wildMonJsonFilepath));
         return true;
     }
@@ -1619,26 +1621,9 @@ bool Project::readWildMonData() {
             continue;
         }
 
-        for (OrderedJson field : subObject["fields"].array_items()) {
-            EncounterField encounterField;
-            OrderedJson::object fieldObj = field.object_items();
-            encounterField.name = fieldObj["type"].string_value();
-            for (auto val : fieldObj["encounter_rates"].array_items()) {
-                encounterField.encounterRates.append(val.int_value());
-            }
-
-            QList<QString> subGroups;
-            for (auto groupPair : fieldObj["groups"].object_items()) {
-                subGroups.append(groupPair.first);
-            }
-            for (QString group : subGroups) {
-                OrderedJson::object groupsObj = fieldObj["groups"].object_items();
-                for (auto slotNum : groupsObj[group].array_items()) {
-                    encounterField.groups[group].append(slotNum.int_value());
-                }
-            }
-            wildMonFields.append(encounterField);
-        }
+        EncounterGroup group;
+        group.forMaps = true;
+        group.label = subObject["label"].string_value();
 
         auto encounters = subObject["encounters"].array_items();
         for (auto encounter : encounters) {
@@ -1647,24 +1632,49 @@ bool Project::readWildMonData() {
 
             WildPokemonHeader header;
 
-            for (EncounterField monField : wildMonFields) {
-                QString field = monField.name;
+            for (QString field : encounterFieldTypes) {
                 if (!encounterObj[field].is_null()) {
                     OrderedJson::object encounterFieldObj = encounterObj[field].object_items();
                     header.wildMons[field].active = true;
                     header.wildMons[field].encounterRate = encounterFieldObj["encounter_rate"].int_value();
-                    for (auto mon : encounterFieldObj["mons"].array_items()) {
+                    auto monTimes = encounterFieldObj["mons"].array_items();
+                    // Day
+                    auto dayMons = monTimes[0].array_items();
+                    for (auto mon : dayMons) {
                         WildPokemon newMon;
                         OrderedJson::object monObj = mon.object_items();
                         newMon.minLevel = monObj["min_level"].int_value();
                         newMon.maxLevel = monObj["max_level"].int_value();
                         newMon.species = monObj["species"].string_value();
+                        newMon.encounterChanceDay = monObj["encounter_rate"].int_value();
                         header.wildMons[field].wildPokemon.append(newMon);
+                    }
+                    // Night
+                    auto nightMons = monTimes[1].array_items();
+                    for (auto mon : nightMons) {
+                        WildPokemon newMon;
+                        OrderedJson::object monObj = mon.object_items();
+                        newMon.minLevel = monObj["min_level"].int_value();
+                        newMon.maxLevel = monObj["max_level"].int_value();
+                        newMon.species = monObj["species"].string_value();
+                        // Find matching day mon and merge
+                        bool foundMatch = false;
+                        for (int i = 0; i < header.wildMons[field].wildPokemon.size(); i++) {
+                            if (nightMonMatchesDay(header.wildMons[field].wildPokemon[i], newMon)) {
+                                header.wildMons[field].wildPokemon[i].encounterChanceNight = monObj["encounter_rate"].int_value();
+                                foundMatch = true;
+                                break;
+                            }
+                        }
+                        if (!foundMatch) {
+                            newMon.encounterChanceNight = monObj["encounter_rate"].int_value();
+                            header.wildMons[field].wildPokemon.append(newMon);
+                        }
                     }
                 }
             }
-            wildMonData[mapConstant].insert({encounterObj["base_label"].string_value(), header});
-            encounterGroupLabels.append(encounterObj["base_label"].string_value());
+            wildMonData.insert({mapConstant, header});
+            group.encounters.append(header);
         }
     }
 

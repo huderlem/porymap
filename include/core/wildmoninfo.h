@@ -8,28 +8,32 @@
 struct WildPokemon {
     int minLevel = 5;
     int maxLevel = 5;
+    int encounterChanceDay = 0;
+    int encounterChanceNight = 0;
     QString species = "SPECIES_NONE";
 };
 
 struct WildMonInfo {
-    bool active = false;
+    bool active = true;
     int encounterRate = 0;
     QVector<WildPokemon> wildPokemon;
 };
 
 struct WildPokemonHeader {
+    QString map;
+    QString baseLabel;
     tsl::ordered_map<QString, WildMonInfo> wildMons;
 };
 
-struct EncounterField {
-    QString name;
-    QVector<int> encounterRates;
-    tsl::ordered_map<QString, QVector<int>> groups;
+struct EncounterGroup {
+    QString label;
+    bool forMaps = false;
+    QVector<WildPokemonHeader> encounters;
 };
 
-typedef QVector<EncounterField> EncounterFields;
+typedef QVector<EncounterGroup> EncounterGroups;
 
-WildMonInfo getDefaultMonInfo(EncounterField field);
+WildMonInfo getDefaultMonInfo(void);
 void combineEncounters(WildMonInfo &to, WildMonInfo from);
 
 #endif // GUARD_WILDMONINFO_H

@@ -57,10 +57,18 @@ SpinBoxDelegate::SpinBoxDelegate(Project *project, QObject *parent) : QStyledIte
 }
 
 QWidget *SpinBoxDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &, const QModelIndex &index) const {
+    int col = index.column();
+    if (col == EncounterTableModel::ColumnType::EncounterChanceDay || col == EncounterTableModel::ColumnType::EncounterChanceNight) {
+        QDoubleSpinBox *editor2 = new QDoubleSpinBox(parent);
+        editor2->setFrame(false);
+        editor2->setMinimum(0);
+        editor2->setMaximum(100);
+        editor2->setSingleStep(0.001);
+        return editor2;
+    }
+
     QSpinBox *editor = new QSpinBox(parent);
     editor->setFrame(false);
-
-    int col = index.column();
     if (col == EncounterTableModel::ColumnType::MinLevel) {
         editor->setMinimum(this->project->miscConstants.value("min_level_define").toInt());
         editor->setMaximum(index.siblingAtColumn(EncounterTableModel::ColumnType::MaxLevel).data(Qt::EditRole).toInt());
@@ -78,6 +86,13 @@ QWidget *SpinBoxDelegate::createEditor(QWidget *parent, const QStyleOptionViewIt
 }
 
 void SpinBoxDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const {
+    int col = index.column();
+    if (col == EncounterTableModel::ColumnType::EncounterChanceDay || col == EncounterTableModel::ColumnType::EncounterChanceNight) {
+        QDoubleSpinBox *doubleSpinBox = static_cast<QDoubleSpinBox *>(editor);
+        doubleSpinBox->setValue(index.model()->data(index, Qt::EditRole).toDouble());
+        return;
+    }
+
     int value = index.model()->data(index, Qt::EditRole).toInt();
 
     QSpinBox *spinBox = static_cast<QSpinBox *>(editor);
@@ -85,6 +100,15 @@ void SpinBoxDelegate::setEditorData(QWidget *editor, const QModelIndex &index) c
 }
 
 void SpinBoxDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const {
+    int col = index.column();
+    if (col == EncounterTableModel::ColumnType::EncounterChanceDay || col == EncounterTableModel::ColumnType::EncounterChanceNight) {
+        QDoubleSpinBox *doubleSpinBox = static_cast<QDoubleSpinBox *>(editor);
+        doubleSpinBox->interpretText();
+        double value = doubleSpinBox->value();
+        model->setData(index, value, Qt::EditRole);
+        return;
+    }
+
     QSpinBox *spinBox = static_cast<QSpinBox*>(editor);
     spinBox->interpretText();
     int value = spinBox->value();
