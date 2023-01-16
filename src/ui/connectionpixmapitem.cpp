@@ -65,7 +65,34 @@ QVariant ConnectionPixmapItem::itemChange(GraphicsItemChange change, const QVari
     }
 }
 
+void ConnectionPixmapItem::setEditable(bool editable) {
+    setFlag(ItemIsMovable, editable);
+    setFlag(ItemSendsGeometryChanges, editable);
+}
+
+bool ConnectionPixmapItem::getEditable() {
+    return (this->flags() & ItemIsMovable) != 0;
+}
+
+void ConnectionPixmapItem::updateHighlight(bool selected) {
+    bool editable = this->getEditable();
+    int zValue = (selected || !editable) ? 0 : -1;
+    qreal opacity = (selected || !editable) ? 1 : 0.75;
+    this->setZValue(zValue);
+    this->render(opacity);
+    if (editable && selected) {
+        QPixmap pixmap = this->pixmap();
+        QPainter painter(&pixmap);
+        painter.setPen(QColor(255, 0, 255));
+        painter.drawRect(0, 0, pixmap.width() - 1, pixmap.height() - 1);
+        painter.end();
+        this->setPixmap(pixmap);
+    }
+}
+
 void ConnectionPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *) {
+    if (!this->getEditable())
+        return;
     emit connectionItemSelected(this);
 }
 

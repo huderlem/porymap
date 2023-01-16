@@ -13,6 +13,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Add option to turn off the checkerboard fill for new tilesets.
 
 ### Changed
+- Double-clicking on a connecting map on the Map or Events tabs will now open that map.
 - Hovering on border metatiles with the mouse will now display their information in the bottom bar.
 - The last-used directory is now preserved in import/export file dialogs.
 

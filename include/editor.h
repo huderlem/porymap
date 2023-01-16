@@ -110,8 +110,7 @@ public:
     QGraphicsPixmapItem *current_view = nullptr;
     MapPixmapItem *map_item = nullptr;
     ConnectionPixmapItem* selected_connection_item = nullptr;
-    QList<QGraphicsPixmapItem*> connection_items;
-    QList<ConnectionPixmapItem*> connection_edit_items;
+    QList<ConnectionPixmapItem*> connection_items;
     QGraphicsPathItem *connection_mask = nullptr;
     CollisionPixmapItem *collision_item = nullptr;
     QGraphicsItemGroup *events_group = nullptr;
@@ -166,7 +165,8 @@ private:
     void setBorderItemsVisible(bool, qreal = 1);
     void setConnectionEditControlValues(MapConnection*);
     void setConnectionEditControlsEnabled(bool);
-    void createConnectionItem(MapConnection* connection, bool hide);
+    void setConnectionsEditable(bool);
+    void createConnectionItem(MapConnection* connection);
     void populateConnectionMapPickers();
     void setDiveEmergeControls();
     void updateDiveEmergeMap(QString mapName, QString direction);
