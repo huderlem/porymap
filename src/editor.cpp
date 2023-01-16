@@ -1528,7 +1528,7 @@ void Editor::displayMapConnections() {
         if (connection->direction == "dive" || connection->direction == "emerge") {
             continue;
         }
-        createConnectionItem(connection, false);
+        createConnectionItem(connection);
     }
 
     if (!connection_items.empty()) {
@@ -1538,7 +1538,7 @@ void Editor::displayMapConnections() {
     maskNonVisibleConnectionTiles();
 }
 
-void Editor::createConnectionItem(MapConnection* connection, bool hide) {
+void Editor::createConnectionItem(MapConnection* connection) {
     Map *connected_map = project->getMap(connection->map_name);
     if (!connected_map) {
         return;
@@ -1566,7 +1566,6 @@ void Editor::createConnectionItem(MapConnection* connection, bool hide) {
     item->setY(y);
     item->setZValue(-1);
     scene->addItem(item);
-    item->setVisible(!hide);
     connect(item, &ConnectionPixmapItem::connectionMoved, this, &Editor::onConnectionMoved);
     connect(item, &ConnectionPixmapItem::connectionItemSelected, this, &Editor::onConnectionItemSelected);
     connect(item, &ConnectionPixmapItem::connectionItemDoubleClicked, this, &Editor::onConnectionItemDoubleClicked);
@@ -1758,7 +1757,7 @@ void Editor::addNewConnection() {
     newConnection->offset = 0;
     newConnection->map_name = defaultMapName;
     map->connections.append(newConnection);
-    createConnectionItem(newConnection, true);
+    createConnectionItem(newConnection);
     onConnectionItemSelected(connection_items.last());
     ui->label_NumConnections->setText(QString::number(map->connections.length()));
 

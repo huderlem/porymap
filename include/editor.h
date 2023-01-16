@@ -166,7 +166,7 @@ private:
     void setConnectionEditControlValues(MapConnection*);
     void setConnectionEditControlsEnabled(bool);
     void setConnectionsEditable(bool);
-    void createConnectionItem(MapConnection* connection, bool hide);
+    void createConnectionItem(MapConnection* connection);
     void populateConnectionMapPickers();
     void setDiveEmergeControls();
     void updateDiveEmergeMap(QString mapName, QString direction);
