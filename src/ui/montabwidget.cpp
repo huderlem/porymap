@@ -9,7 +9,7 @@
 MonTabWidget::MonTabWidget(Editor *editor, QWidget *parent) : QTabWidget(parent) {
     this->editor = editor;
     populate();
-    installEventFilter(this);
+    this->tabBar()->installEventFilter(this);
 }
 
 bool MonTabWidget::eventFilter(QObject *, QEvent *event) {
@@ -21,6 +21,10 @@ bool MonTabWidget::eventFilter(QObject *, QEvent *event) {
         if (tabIndex > -1) {
             askActivateTab(tabIndex, eventPos);
         }
+        return true;
+    }
+    else if (event->type() == QEvent::Wheel) {
+        return true;
     }
     return false;
 }
