@@ -2376,6 +2376,7 @@ void MainWindow::onTilesetsSaved(QString primaryTilesetLabel, QString secondaryT
 }
 
 void MainWindow::onWildMonDataChanged() {
+    editor->saveEncounterTabData();
     markMapEdited();
 }
 

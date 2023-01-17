@@ -41,27 +41,52 @@ void MonTabWidget::populate() {
 }
 
 void MonTabWidget::askActivateTab(int tabIndex, QPoint menuPos) {
-    if (activeTabs[tabIndex]) return;
+    if (activeTabs[tabIndex]) {
+        // copy from another tab
+        QMenu contextMenu(this);
 
-    QMenu contextMenu(this);
+        for (int i = 0; i < this->tabBar()->count(); i++) {
+            if (tabIndex == i) continue;
+            if (!activeTabs[i]) continue;
 
-    QString tabText = tabBar()->tabText(tabIndex);
-    QAction actionActivateTab(QString("Add %1 data for this map...").arg(tabText), this);
-    connect(&actionActivateTab, &QAction::triggered, [=](){
-        clearTableAt(tabIndex);
-        populateTab(tabIndex, getDefaultMonInfo(editor->project->wildMonFields.at(tabIndex)));
-        editor->saveEncounterTabData();
-        setCurrentIndex(tabIndex);
-        emit editor->wildMonDataChanged();
-    });
-    contextMenu.addAction(&actionActivateTab);
-    contextMenu.exec(mapToGlobal(menuPos));
+            QString tabText = this->tabBar()->tabText(i);
+            QAction *actionCopyFrom = new QAction(QString("Copy encounters from %1").arg(tabText), &contextMenu);
+
+            connect(actionCopyFrom, &QAction::triggered, [=](){
+                EncounterTableModel *model = static_cast<EncounterTableModel *>(this->tableAt(i)->model());
+                WildMonInfo copyInfo = model->encounterData();
+                clearTableAt(tabIndex);
+                WildMonInfo newInfo = getDefaultMonInfo(editor->project->wildMonFields.at(tabIndex));
+                combineEncounters(newInfo, copyInfo);
+                populateTab(tabIndex, newInfo);
+                emit editor->wildMonDataChanged();
+            });
+
+            contextMenu.addAction(actionCopyFrom);
+        }
+        contextMenu.exec(mapToGlobal(menuPos));
+    }
+    else {
+        QMenu contextMenu(this);
+
+        QString tabText = tabBar()->tabText(tabIndex);
+        QAction actionActivateTab(QString("Add %1 data for this map...").arg(tabText), this);
+        connect(&actionActivateTab, &QAction::triggered, [=](){
+            clearTableAt(tabIndex);
+            populateTab(tabIndex, getDefaultMonInfo(editor->project->wildMonFields.at(tabIndex)));
+            editor->saveEncounterTabData();
+            setCurrentIndex(tabIndex);
+            emit editor->wildMonDataChanged();
+        });
+        contextMenu.addAction(&actionActivateTab);
+        contextMenu.exec(mapToGlobal(menuPos));
+    }
 }
 
 void MonTabWidget::clearTableAt(int tabIndex) {
     QTableView *table = tableAt(tabIndex);
     if (table) {
-        table->setModel(nullptr);
+        table->reset();
         table->horizontalHeader()->hide();
     }
 }
@@ -78,12 +103,12 @@ void MonTabWidget::populateTab(int tabIndex, WildMonInfo monInfo) {
     speciesTable->setItemDelegateForColumn(EncounterTableModel::ColumnType::MaxLevel, new SpinBoxDelegate(editor->project, this));
     speciesTable->setItemDelegateForColumn(EncounterTableModel::ColumnType::EncounterRate, new SpinBoxDelegate(editor->project, this));
 
-    speciesTable->horizontalHeader()->setSectionResizeMode(EncounterTableModel::ColumnType::Slot, QHeaderView::ResizeToContents   );
-    speciesTable->horizontalHeader()->setSectionResizeMode(EncounterTableModel::ColumnType::Group, QHeaderView::ResizeToContents  );
+    speciesTable->horizontalHeader()->setSectionResizeMode(EncounterTableModel::ColumnType::Slot, QHeaderView::ResizeToContents);
+    speciesTable->horizontalHeader()->setSectionResizeMode(EncounterTableModel::ColumnType::Group, QHeaderView::ResizeToContents);
     speciesTable->horizontalHeader()->setSectionResizeMode(EncounterTableModel::ColumnType::Species, QHeaderView::Stretch);
     speciesTable->horizontalHeader()->setSectionResizeMode(EncounterTableModel::ColumnType::MinLevel, QHeaderView::Stretch);
     speciesTable->horizontalHeader()->setSectionResizeMode(EncounterTableModel::ColumnType::MaxLevel, QHeaderView::Stretch);
-    speciesTable->horizontalHeader()->setSectionResizeMode(EncounterTableModel::ColumnType::SlotRatio, QHeaderView::Stretch);
+    speciesTable->horizontalHeader()->setSectionResizeMode(EncounterTableModel::ColumnType::SlotRatio, QHeaderView::ResizeToContents);
     speciesTable->horizontalHeader()->setSectionResizeMode(EncounterTableModel::ColumnType::EncounterChance, QHeaderView::ResizeToContents);
     speciesTable->horizontalHeader()->setSectionResizeMode(EncounterTableModel::ColumnType::EncounterRate, QHeaderView::ResizeToContents);
 

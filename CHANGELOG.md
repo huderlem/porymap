@@ -11,6 +11,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Add new config options for reorganizing metatile attributes.
 - Add `setScale` to the scripting API.
 - Add option to turn off the checkerboard fill for new tilesets.
+- Add option (via right-click) to copy wild encounters from another tab.
 
 ### Changed
 - Double-clicking on a connecting map on the Map or Events tabs will now open that map.
