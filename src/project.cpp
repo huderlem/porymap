@@ -1563,9 +1563,6 @@ void Project::saveTextFile(QString path, QString text) {
     QFile file(path);
     if (file.open(QIODevice::WriteOnly)) {
         file.write(text.toUtf8());
-        if (gFileCache.contains(path)) {
-            gFileCache[path] = text;
-        }
     } else {
         logError(QString("Could not open '%1' for writing: ").arg(path) + file.errorString());
     }
@@ -1575,7 +1572,6 @@ void Project::appendTextFile(QString path, QString text) {
     QFile file(path);
     if (file.open(QIODevice::Append)) {
         file.write(text.toUtf8());
-        gFileCache[path] += text;
     } else {
         logError(QString("Could not open '%1' for appending: ").arg(path) + file.errorString());
     }
@@ -1585,8 +1581,6 @@ void Project::deleteFile(QString path) {
     QFile file(path);
     if (file.exists() && !file.remove()) {
         logError(QString("Could not delete file '%1': ").arg(path) + file.errorString());
-    } else {
-        gFileCache.remove(path);
     }
 }
 
@@ -2406,6 +2400,10 @@ bool Project::readEventGraphics() {
 
     QString filepath = projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx_info);
     const auto gfxInfos = parser.readCStructs(filepath, "", gfxInfoMemberMap);
+
+    QMap<QString, QStringList> picTables = parser.readCArrayMulti(projectConfig.getFilePath(ProjectFilePath::data_obj_event_pic_tables));
+    QMap<QString, QString> graphicIncbins = parser.readCIncbinMulti(projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx));
+
     for (QString gfxName : gfxNames) {
         EventGraphics * eventGraphics = new EventGraphics;
 
@@ -2420,10 +2418,10 @@ bool Project::readEventGraphics() {
         QString dimensions_label = gfxInfoAttributes.value("oam");
         QString subsprites_label = gfxInfoAttributes.value("subspriteTables");
 
-        QString gfx_label = parser.readCArray(projectConfig.getFilePath(ProjectFilePath::data_obj_event_pic_tables), pic_label).value(0);
+        QString gfx_label = picTables[pic_label].value(0);
         static const QRegularExpression re_parens("[\\(\\)]");
         gfx_label = gfx_label.section(re_parens, 1, 1);
-        QString path = parser.readCIncbin(projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx), gfx_label);
+        QString path = graphicIncbins[gfx_label];
 
         if (!path.isNull()) {
             path = fixGraphicPath(path);
@@ -2461,8 +2459,9 @@ bool Project::readSpeciesIconPaths() {
     fileWatcher.addPath(root + "/" + srcfilename);
     fileWatcher.addPath(root + "/" + incfilename);
     QMap<QString, QString> monIconNames = parser.readNamedIndexCArray(srcfilename, "gMonIconTable");
+    QMap<QString, QString> iconIncbins = parser.readCIncbinMulti(incfilename);
     for (QString species : monIconNames.keys()) {
-        QString path = parser.readCIncbin(incfilename, monIconNames.value(species));
+        QString path = iconIncbins[monIconNames.value(species)];
         speciesToIconPath.insert(species, root + "/" + path.replace("4bpp", "png"));
     }
     return true;

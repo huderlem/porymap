@@ -15,13 +15,9 @@ const QRegularExpression ParseUtil::re_poryScriptLabel("\\b(script)(\\((global|l
 const QRegularExpression ParseUtil::re_globalPoryScriptLabel("\\b(script)(\\((global)\\))?\\s*\\b(?<label>[\\w_][\\w\\d_]*)");
 const QRegularExpression ParseUtil::re_poryRawSection("\\b(raw)\\s*`(?<raw_script>[^`]*)");
 
-QMap<QString, QString> gFileCache;
-
 using OrderedJson = poryjson::Json;
 
-ParseUtil::ParseUtil() {
-    gFileCache.clear();
-}
+ParseUtil::ParseUtil() { }
 
 void ParseUtil::set_root(const QString &dir) {
     this->root = dir;
@@ -58,10 +54,6 @@ QString ParseUtil::createErrorMessage(const QString &message, const QString &exp
 }
 
 QString ParseUtil::readTextFile(const QString &path) {
-    if (gFileCache.contains(path)) {
-        return gFileCache[path];
-    }
-
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly)) {
         logError(QString("Could not open '%1': ").arg(path) + file.errorString());
@@ -76,7 +68,6 @@ QString ParseUtil::readTextFile(const QString &path) {
         text += in.readLine() + '\n';
     }
 
-    gFileCache[path] = text;
     return text;
 }
 
@@ -287,6 +278,25 @@ QString ParseUtil::readCIncbin(const QString &filename, const QString &label) {
     return path;
 }
 
+QMap<QString, QString> ParseUtil::readCIncbinMulti(const QString &filepath) {
+    QMap<QString, QString> incbinMap;
+
+    this->file = filepath;
+    this->text = readTextFile(this->root + "/" + filepath);
+
+    static const QRegularExpression regex("(?<label>[A-Za-z0-9_]+)\\s*\\[?\\s*\\]?\\s*=\\s*INCBIN_[US][0-9][0-9]?\\(\\s*\\\"(?<path>[^\\\\\"]*)\\\"\\s*\\)");
+
+    QRegularExpressionMatchIterator iter = regex.globalMatch(this->text);
+    while (iter.hasNext()) {
+        QRegularExpressionMatch match = iter.next();
+        QString label = match.captured("label");
+        QString labelText = match.captured("path");
+        incbinMap[label] = labelText;
+    }
+
+    return incbinMap;
+}
+
 QStringList ParseUtil::readCIncbinArray(const QString &filename, const QString &label) {
     QStringList paths;
 
@@ -413,6 +423,35 @@ QStringList ParseUtil::readCArray(const QString &filename, const QString &label)
     }
 
     return list;
+}
+
+QMap<QString, QStringList> ParseUtil::readCArrayMulti(const QString &filename) {
+    QMap<QString, QStringList> map;
+
+    this->file = filename;
+    this->text = readTextFile(this->root + "/" + filename);
+
+    static const QRegularExpression regex(R"((?<label>\b[A-Za-z0-9_]+\b)\s*(\[[^\]]*\])?\s*=\s*\{(?<body>[^\}]*)\})");
+
+    QRegularExpressionMatchIterator iter = regex.globalMatch(this->text);
+
+    while (iter.hasNext()) {
+        QRegularExpressionMatch match = iter.next();
+        QString label = match.captured("label");
+        QString body = match.captured("body");
+
+        QStringList list;
+        QStringList split = body.split(',');
+        for (QString item : split) {
+            item = item.trimmed();
+            static const QRegularExpression validChars("[^A-Za-z0-9_&()\\s]");
+            if (!item.contains(validChars)) list.append(item);
+            // do not print error info here because this is called dozens of times
+        }
+        map[label] = list;
+    }
+
+    return map;
 }
 
 QMap<QString, QString> ParseUtil::readNamedIndexCArray(const QString &filename, const QString &label) {
