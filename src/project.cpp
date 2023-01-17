@@ -1564,7 +1564,9 @@ void Project::saveTextFile(QString path, QString text) {
     QFile file(path);
     if (file.open(QIODevice::WriteOnly)) {
         file.write(text.toUtf8());
-        gFileCache[path] = text;
+        if (gFileCache.contains(path)) {
+            gFileCache[path] = text;
+        }
     } else {
         logError(QString("Could not open '%1' for writing: ").arg(path) + file.errorString());
     }
