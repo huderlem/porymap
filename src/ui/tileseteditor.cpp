@@ -917,6 +917,7 @@ void TilesetEditor::pasteMetatile(const Metatile * toPaste)
 
     MetatileHistoryItem *commit = new MetatileHistoryItem(metatileId, prevMetatile, new Metatile(*this->metatile));
     metatileHistory.push(commit);
+    this->hasUnsavedChanges = true;
 }
 
 void TilesetEditor::on_actionExport_Primary_Tiles_Image_triggered()
