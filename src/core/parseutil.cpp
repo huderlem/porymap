@@ -15,7 +15,7 @@ const QRegularExpression ParseUtil::re_poryScriptLabel("\\b(script)(\\((global|l
 const QRegularExpression ParseUtil::re_globalPoryScriptLabel("\\b(script)(\\((global)\\))?\\s*\\b(?<label>[\\w_][\\w\\d_]*)");
 const QRegularExpression ParseUtil::re_poryRawSection("\\b(raw)\\s*`(?<raw_script>[^`]*)");
 
-static QMap<QString, QString> fileCache;
+QMap<QString, QString> gFileCache;
 
 using OrderedJson = poryjson::Json;
 
@@ -56,8 +56,8 @@ QString ParseUtil::createErrorMessage(const QString &message, const QString &exp
 }
 
 QString ParseUtil::readTextFile(const QString &path) {
-    if (fileCache.contains(path)) {
-        return fileCache[path];
+    if (gFileCache.contains(path)) {
+        return gFileCache[path];
     }
 
     QFile file(path);

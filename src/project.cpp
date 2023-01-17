@@ -1564,6 +1564,7 @@ void Project::saveTextFile(QString path, QString text) {
     QFile file(path);
     if (file.open(QIODevice::WriteOnly)) {
         file.write(text.toUtf8());
+        gFileCache[path] = text;
     } else {
         logError(QString("Could not open '%1' for writing: ").arg(path) + file.errorString());
     }
@@ -1573,6 +1574,7 @@ void Project::appendTextFile(QString path, QString text) {
     QFile file(path);
     if (file.open(QIODevice::Append)) {
         file.write(text.toUtf8());
+        gFileCache[path] += text;
     } else {
         logError(QString("Could not open '%1' for appending: ").arg(path) + file.errorString());
     }
@@ -1582,6 +1584,8 @@ void Project::deleteFile(QString path) {
     QFile file(path);
     if (file.exists() && !file.remove()) {
         logError(QString("Could not delete file '%1': ").arg(path) + file.errorString());
+    } else {
+        gFileCache.remove(path);
     }
 }
 
