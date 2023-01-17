@@ -1407,38 +1407,13 @@ void Project::loadTilesetPalettes(Tileset* tileset) {
     QList<QList<QRgb>> palettes;
     QList<QList<QRgb>> palettePreviews;
     for (int i = 0; i < tileset->palettePaths.length(); i++) {
-        QList<QRgb> palette;
         QString path = tileset->palettePaths.value(i);
-        QString text = parser.readTextFile(path);
-        if (!text.isNull()) {
-            static const QRegularExpression re_lineBreak("[\r\n]");
-            QStringList lines = text.split(re_lineBreak, Qt::SkipEmptyParts);
-            if (lines.length() == 19 && lines[0] == "JASC-PAL" && lines[1] == "0100" && lines[2] == "16") {
-                for (int j = 0; j < 16; j++) {
-                    static const QRegularExpression re_space(" ");
-                    QStringList rgb = lines[j + 3].split(re_space, Qt::SkipEmptyParts);
-                    if (rgb.length() != 3) {
-                        logWarn(QString("Invalid tileset palette RGB value: '%1'").arg(lines[j + 3]));
-                        palette.append(qRgb((j - 3) * 16, (j - 3) * 16, (j - 3) * 16));
-                    } else {
-                        int red = rgb[0].toInt();
-                        int green = rgb[1].toInt();
-                        int blue = rgb[2].toInt();
-                        QRgb color = qRgb(red, green, blue);
-                        palette.append(color);
-                    }
-                }
-            } else {
-                logError(QString("Invalid JASC-PAL palette file for tileset: '%1'").arg(path));
-                for (int j = 0; j < 16; j++) {
-                    palette.append(qRgb(j * 16, j * 16, j * 16));
-                }
-            }
-        } else {
+        bool error = false;
+        QList<QRgb> palette = PaletteUtil::parse(path, &error);
+        if (error) {
             for (int j = 0; j < 16; j++) {
                 palette.append(qRgb(j * 16, j * 16, j * 16));
             }
-            logError(QString("Could not open tileset palette path '%1'").arg(path));
         }
 
         palettes.append(palette);
@@ -1588,6 +1563,7 @@ void Project::saveTextFile(QString path, QString text) {
     QFile file(path);
     if (file.open(QIODevice::WriteOnly)) {
         file.write(text.toUtf8());
+        gFileCache[path] = text;
     } else {
         logError(QString("Could not open '%1' for writing: ").arg(path) + file.errorString());
     }
@@ -1597,6 +1573,7 @@ void Project::appendTextFile(QString path, QString text) {
     QFile file(path);
     if (file.open(QIODevice::Append)) {
         file.write(text.toUtf8());
+        gFileCache[path] += text;
     } else {
         logError(QString("Could not open '%1' for appending: ").arg(path) + file.errorString());
     }
@@ -1606,6 +1583,8 @@ void Project::deleteFile(QString path) {
     QFile file(path);
     if (file.exists() && !file.remove()) {
         logError(QString("Could not delete file '%1': ").arg(path) + file.errorString());
+    } else {
+        gFileCache.remove(path);
     }
 }
 

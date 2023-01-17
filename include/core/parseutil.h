@@ -11,6 +11,10 @@
 #include <QMap>
 #include <QRegularExpression>
 
+
+
+extern QMap<QString, QString> gFileCache;
+
 enum TokenClass {
     Number,
     Operator,
@@ -43,6 +47,7 @@ public:
     ParseUtil();
     void set_root(const QString &dir);
     static QString readTextFile(const QString &path);
+    void invalidateTextFile(const QString &path);
     static int textFileLineCount(const QString &path);
     QList<QStringList> parseAsm(const QString &filename);
     int evaluateDefine(const QString&, const QMap<QString, int>&);
