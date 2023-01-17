@@ -15,8 +15,6 @@ const QRegularExpression ParseUtil::re_poryScriptLabel("\\b(script)(\\((global|l
 const QRegularExpression ParseUtil::re_globalPoryScriptLabel("\\b(script)(\\((global)\\))?\\s*\\b(?<label>[\\w_][\\w\\d_]*)");
 const QRegularExpression ParseUtil::re_poryRawSection("\\b(raw)\\s*`(?<raw_script>[^`]*)");
 
-QMap<QString, QString> gFileCache;
-
 using OrderedJson = poryjson::Json;
 
 ParseUtil::ParseUtil() { }
@@ -56,10 +54,6 @@ QString ParseUtil::createErrorMessage(const QString &message, const QString &exp
 }
 
 QString ParseUtil::readTextFile(const QString &path) {
-    if (gFileCache.contains(path)) {
-        return gFileCache[path];
-    }
-
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly)) {
         logError(QString("Could not open '%1': ").arg(path) + file.errorString());
