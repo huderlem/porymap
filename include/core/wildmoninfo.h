@@ -30,5 +30,6 @@ struct EncounterField {
 typedef QVector<EncounterField> EncounterFields;
 
 WildMonInfo getDefaultMonInfo(EncounterField field);
+void combineEncounters(WildMonInfo &to, WildMonInfo from);
 
 #endif // GUARD_WILDMONINFO_H

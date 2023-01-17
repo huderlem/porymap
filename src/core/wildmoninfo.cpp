@@ -14,3 +14,17 @@ WildMonInfo getDefaultMonInfo(EncounterField field) {
 
     return newInfo;
 }
+
+void combineEncounters(WildMonInfo &to, WildMonInfo from) {
+    to.encounterRate = from.encounterRate;
+
+    if (to.wildPokemon.size() == from.wildPokemon.size()) {
+        to.wildPokemon = from.wildPokemon;
+    }
+    else if (to.wildPokemon.size() > from.wildPokemon.size()) {
+        to.wildPokemon = from.wildPokemon + to.wildPokemon.mid(from.wildPokemon.size());
+    }
+    else {
+        to.wildPokemon = from.wildPokemon.mid(0, to.wildPokemon.size());
+    }
+}
