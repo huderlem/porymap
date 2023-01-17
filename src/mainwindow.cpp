@@ -2363,8 +2363,10 @@ void MainWindow::onTilesetsSaved(QString primaryTilesetLabel, QString secondaryT
     } else {
         this->editor->project->getTileset(secondaryTilesetLabel, true);
     }
-    if (updated)
+    if (updated) {
+        this->editor->map->clearBorderCache();
         redrawMapScene();
+    }
 }
 
 void MainWindow::onWildMonDataChanged() {

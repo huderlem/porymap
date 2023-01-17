@@ -99,6 +99,7 @@ public:
     QPixmap renderBorder(bool ignoreCache = false);
     void setDimensions(int newWidth, int newHeight, bool setNewBlockdata = true, bool enableScriptCallback = false);
     void setBorderDimensions(int newWidth, int newHeight, bool setNewBlockdata = true, bool enableScriptCallback = false);
+    void clearBorderCache();
     void cacheBorder();
     bool hasUnsavedChanges();
     bool isWithinBounds(int x, int y);

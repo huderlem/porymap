@@ -76,6 +76,10 @@ bool Map::borderBlockChanged(int i, const Blockdata &cache) {
     return layout->border.at(i) != cache.at(i);
 }
 
+void Map::clearBorderCache() {
+    layout->cached_border.clear();
+}
+
 void Map::cacheBorder() {
     layout->cached_border.clear();
     for (const auto &block : layout->border)

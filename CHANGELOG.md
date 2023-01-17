@@ -24,6 +24,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix crash when importing AdvanceMap metatiles while `enable_triple_layer_metatiles` is enabled.
 - Fix `File -> Open Project` not resolving folder shortcuts.
 - Fix bug where "Requires Itemfinder" checkbox is being checked by wrong data.
+- Fix the map border not immediately reflecting Tileset Editor changes.
 
 ## [5.0.0] - 2022-10-30
 ### Breaking Changes
