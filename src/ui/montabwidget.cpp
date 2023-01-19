@@ -32,6 +32,7 @@ void MonTabWidget::populate() {
     int index = 0;
     for (EncounterField field : fields) {
         QTableView *table = new QTableView(this);
+        table->setEditTriggers(QAbstractItemView::AllEditTriggers);
         table->clearFocus();
         addTab(table, field.name);
 
