@@ -13,17 +13,7 @@ MonTabWidget::MonTabWidget(Editor *editor, QWidget *parent) : QTabWidget(parent)
 }
 
 bool MonTabWidget::eventFilter(QObject *, QEvent *event) {
-    // Press right mouse button to activate tab.
-    if (event->type() == QEvent::MouseButtonPress
-     && static_cast<QMouseEvent *>(event)->button() == Qt::RightButton) {
-        QPoint eventPos = static_cast<QMouseEvent *>(event)->pos();
-        int tabIndex = tabBar()->tabAt(eventPos);
-        if (tabIndex > -1) {
-            askActivateTab(tabIndex, eventPos);
-        }
-        return true;
-    }
-    else if (event->type() == QEvent::Wheel) {
+    if (event->type() == QEvent::Wheel) {
         return true;
     }
     return false;
@@ -31,55 +21,74 @@ bool MonTabWidget::eventFilter(QObject *, QEvent *event) {
 
 void MonTabWidget::populate() {
     EncounterFields fields = editor->project->wildMonFields;
-    activeTabs = QVector<bool>(fields.size(), false);
+    activeTabs.resize(fields.size());
+    activeTabs.fill(false);
 
+    addDeleteTabButtons.resize(fields.size());
+    addDeleteTabButtons.fill(nullptr);
+    copyTabButtons.resize(fields.size());
+    copyTabButtons.fill(nullptr);
+
+    int index = 0;
     for (EncounterField field : fields) {
         QTableView *table = new QTableView(this);
         table->clearFocus();
         addTab(table, field.name);
+
+        QPushButton *buttonAddDelete = new QPushButton(QIcon(":/icons/add.ico"), "");
+        connect(buttonAddDelete, &QPushButton::clicked, [=]() { actionAddDeleteTab(index); });
+        addDeleteTabButtons[index] = buttonAddDelete;
+        this->tabBar()->setTabButton(index, QTabBar::RightSide, buttonAddDelete);
+
+        QPushButton *buttonCopy = new QPushButton(QIcon(":/icons/clipboard.ico"), "");
+        connect(buttonCopy, &QPushButton::clicked, [=]() {actionCopyTab(index); });
+        copyTabButtons[index] = buttonCopy;
+        this->tabBar()->setTabButton(index, QTabBar::LeftSide, buttonCopy);
+
+        index++;
     }
 }
 
-void MonTabWidget::askActivateTab(int tabIndex, QPoint menuPos) {
-    if (activeTabs[tabIndex]) {
-        // copy from another tab
-        QMenu contextMenu(this);
+void MonTabWidget::actionCopyTab(int index) {
+    QMenu contextMenu(this);
 
-        for (int i = 0; i < this->tabBar()->count(); i++) {
-            if (tabIndex == i) continue;
-            if (!activeTabs[i]) continue;
+    for (int i = 0; i < this->tabBar()->count(); i++) {
+        if (index == i) continue;
+        if (!activeTabs[i]) continue;
 
-            QString tabText = this->tabBar()->tabText(i);
-            QAction *actionCopyFrom = new QAction(QString("Copy encounters from %1").arg(tabText), &contextMenu);
+        QString tabText = this->tabBar()->tabText(i);
+        QAction *actionCopyFrom = new QAction(QString("Copy encounters from %1").arg(tabText), &contextMenu);
 
-            connect(actionCopyFrom, &QAction::triggered, [=](){
-                EncounterTableModel *model = static_cast<EncounterTableModel *>(this->tableAt(i)->model());
-                WildMonInfo copyInfo = model->encounterData();
-                clearTableAt(tabIndex);
-                WildMonInfo newInfo = getDefaultMonInfo(editor->project->wildMonFields.at(tabIndex));
-                combineEncounters(newInfo, copyInfo);
-                populateTab(tabIndex, newInfo);
-                emit editor->wildMonDataChanged();
-            });
-
-            contextMenu.addAction(actionCopyFrom);
-        }
-        contextMenu.exec(mapToGlobal(menuPos));
-    }
-    else {
-        QMenu contextMenu(this);
-
-        QString tabText = tabBar()->tabText(tabIndex);
-        QAction actionActivateTab(QString("Add %1 data for this map...").arg(tabText), this);
-        connect(&actionActivateTab, &QAction::triggered, [=](){
-            clearTableAt(tabIndex);
-            populateTab(tabIndex, getDefaultMonInfo(editor->project->wildMonFields.at(tabIndex)));
-            editor->saveEncounterTabData();
-            setCurrentIndex(tabIndex);
+        connect(actionCopyFrom, &QAction::triggered, [=](){
+            EncounterTableModel *model = static_cast<EncounterTableModel *>(this->tableAt(i)->model());
+            WildMonInfo copyInfo = model->encounterData();
+            clearTableAt(index);
+            WildMonInfo newInfo = getDefaultMonInfo(editor->project->wildMonFields.at(index));
+            combineEncounters(newInfo, copyInfo);
+            populateTab(index, newInfo);
             emit editor->wildMonDataChanged();
         });
-        contextMenu.addAction(&actionActivateTab);
-        contextMenu.exec(mapToGlobal(menuPos));
+
+        contextMenu.addAction(actionCopyFrom);
+    }
+    contextMenu.exec(mapToGlobal(this->copyTabButtons[index]->pos() + QPoint(0, this->copyTabButtons[index]->height())));
+}
+
+void MonTabWidget::actionAddDeleteTab(int index) {
+    if (activeTabs[index]) {
+        // delete tab
+        clearTableAt(index);
+        deactivateTab(index);
+        editor->saveEncounterTabData();
+        emit editor->wildMonDataChanged();
+    }
+    else {
+        // add tab
+        clearTableAt(index);
+        populateTab(index, getDefaultMonInfo(editor->project->wildMonFields.at(index)));
+        editor->saveEncounterTabData();
+        setCurrentIndex(index);
+        emit editor->wildMonDataChanged();
     }
 }
 
@@ -89,6 +98,18 @@ void MonTabWidget::clearTableAt(int tabIndex) {
         table->reset();
         table->horizontalHeader()->hide();
     }
+}
+
+void MonTabWidget::deactivateTab(int tabIndex) {
+    QTableView *speciesTable = tableAt(tabIndex);
+
+    EncounterTableModel *oldModel = static_cast<EncounterTableModel *>(speciesTable->model());
+    WildMonInfo monInfo = oldModel->encounterData();
+    monInfo.active = false;
+    EncounterTableModel *newModel = new EncounterTableModel(monInfo, editor->project->wildMonFields, tabIndex, this);
+    speciesTable->setModel(newModel);
+
+    setTabActive(tabIndex, false);
 }
 
 void MonTabWidget::populateTab(int tabIndex, WildMonInfo monInfo) {
@@ -131,8 +152,10 @@ void MonTabWidget::setTabActive(int index, bool active) {
     activeTabs[index] = active;
     setTabEnabled(index, active);
     if (!active) {
-        setTabToolTip(index, "Right-click an inactive tab to add new fields.");
+        this->addDeleteTabButtons[index]->setIcon(QIcon(":/icons/add.ico"));
+        this->copyTabButtons[index]->hide();
     } else {
-        setTabToolTip(index, QString());
+        this->addDeleteTabButtons[index]->setIcon(QIcon(":/icons/delete.ico"));
+        this->copyTabButtons[index]->show();
     }
 }
