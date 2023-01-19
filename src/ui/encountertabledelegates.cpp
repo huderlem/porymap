@@ -16,7 +16,9 @@ void SpeciesComboDelegate::paint(QPainter *painter, const QStyleOptionViewItem &
 
     QPixmap pm;
     if (!QPixmapCache::find(species, &pm)) {
-        pm.load(this->project->speciesToIconPath.value(species));
+        QImage img(this->project->speciesToIconPath.value(species));
+        img.setColor(0, qRgba(0, 0, 0, 0));
+        pm = QPixmap::fromImage(img);
         QPixmapCache::insert(species, pm);
     }
     QPixmap monIcon = pm.copy(0, 0, 32, 32);

@@ -18,6 +18,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Hovering on border metatiles with the mouse will now display their information in the bottom bar.
 - The last-used directory is now preserved in import/export file dialogs.
 - Encounter editing has been slightly modified in favor of a more performant ui.
+- Pokémon icons in the encounter editor have their transparency set.
 
 ### Fixed
 - Fix the Region Map Editor being opened by the Shortcuts Editor.
