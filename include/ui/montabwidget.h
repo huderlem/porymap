@@ -26,12 +26,17 @@ public:
 
 public slots:
     void setTabActive(int index, bool active = true);
+    void deactivateTab(int tabIndex);
 
 private:
     bool eventFilter(QObject *object, QEvent *event);
-    void askActivateTab(int tabIndex, QPoint menuPos);
+
+    void actionCopyTab(int index);
+    void actionAddDeleteTab(int index);
 
     QVector<bool> activeTabs;
+    QVector<QPushButton *> addDeleteTabButtons;
+    QVector<QPushButton *> copyTabButtons;
 
     Editor *editor;
 };

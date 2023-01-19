@@ -657,7 +657,10 @@ void Editor::saveEncounterTabData() {
         for (EncounterField monField : project->wildMonFields) {
             QString fieldName = monField.name;
 
-            if (!tabWidget->isTabEnabled(fieldIndex++)) continue;
+            if (!tabWidget->isTabEnabled(fieldIndex++)) {
+                encounterHeader.wildMons.erase(fieldName);
+                continue;
+            }
 
             QTableView *monTable = tabWidget->tableAt(fieldIndex - 1);
             EncounterTableModel *model = static_cast<EncounterTableModel *>(monTable->model());
