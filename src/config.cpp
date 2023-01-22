@@ -153,9 +153,9 @@ int KeyValueConfigBase::getConfigInteger(QString key, QString value, int min, in
     return qMin(max, qMax(min, result));
 }
 
-long KeyValueConfigBase::getConfigLong(QString key, QString value, long min, long max, long defaultValue) {
+uint32_t KeyValueConfigBase::getConfigUint32(QString key, QString value, uint32_t min, uint32_t max, uint32_t defaultValue) {
     bool ok;
-    long result = value.toLong(&ok, 0);
+    uint32_t result = value.toUInt(&ok, 0);
     if (!ok) {
         logWarn(QString("Invalid config value for %1: '%2'. Must be an integer.").arg(key).arg(value));
         return defaultValue;
@@ -579,13 +579,13 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         }
         this->metatileAttributesSize = size;
     } else if (key == "metatile_behavior_mask") {
-        this->metatileBehaviorMask = getConfigLong(key, value, 0, 0xFFFFFFFF, 0);
+        this->metatileBehaviorMask = getConfigUint32(key, value, 0, 0xFFFFFFFF, 0);
     } else if (key == "metatile_terrain_type_mask") {
-        this->metatileTerrainTypeMask = getConfigLong(key, value, 0, 0xFFFFFFFF, 0);
+        this->metatileTerrainTypeMask = getConfigUint32(key, value, 0, 0xFFFFFFFF, 0);
     } else if (key == "metatile_encounter_type_mask") {
-        this->metatileEncounterTypeMask = getConfigLong(key, value, 0, 0xFFFFFFFF, 0);
+        this->metatileEncounterTypeMask = getConfigUint32(key, value, 0, 0xFFFFFFFF, 0);
     } else if (key == "metatile_layer_type_mask") {
-        this->metatileLayerTypeMask = getConfigLong(key, value, 0, 0xFFFFFFFF, 0);
+        this->metatileLayerTypeMask = getConfigUint32(key, value, 0, 0xFFFFFFFF, 0);
     } else if (key == "enable_map_allow_flags") {
         this->enableMapAllowFlags = getConfigBool(key, value);
 #ifdef CONFIG_BACKWARDS_COMPATABILITY
