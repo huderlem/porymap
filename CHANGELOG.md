@@ -7,11 +7,14 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 The **"Breaking Changes"** listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. It also includes changes to the scripting API that may change the behavior of existing porymap scripts. If porymap is used with a project or API script that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.
 
 ## [Unreleased]
+Nothing, yet.
+
+## [5.1.0] - 2023-01-22
 ### Added
 - Add new config options for reorganizing metatile attributes.
 - Add `setScale` to the scripting API.
 - Add option to turn off the checkerboard fill for new tilesets.
-- Add option (via right-click) to copy wild encounters from another tab.
+- Add option to copy wild encounters from another encounters tab.
 
 ### Changed
 - Double-clicking on a connecting map on the Map or Events tabs will now open that map.
@@ -370,7 +373,8 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ## [1.0.0] - 2018-10-26
 This was the initial release.
 
-[Unreleased]: https://github.com/huderlem/porymap/compare/5.0.0...HEAD
+[Unreleased]: https://github.com/huderlem/porymap/compare/5.1.0...HEAD
+[5.1.0]: https://github.com/huderlem/porymap/compare/5.0.0...5.1.0
 [5.0.0]: https://github.com/huderlem/porymap/compare/4.5.0...5.0.0
 [4.5.0]: https://github.com/huderlem/porymap/compare/4.4.0...4.5.0
 [4.4.0]: https://github.com/huderlem/porymap/compare/4.3.1...4.4.0
