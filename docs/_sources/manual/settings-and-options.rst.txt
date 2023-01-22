@@ -33,6 +33,7 @@ your project root as ``porymap.user.cfg``. You should add this file to your giti
    ``show_player_view``, 0, global, yes, Display a rectangle for the GBA screen radius
    ``show_cursor_tile``, 0, global, yes, Display a rectangle around the hovered metatile(s)
    ``monitor_files``, 1, global, yes, Whether porymap will monitor changes to project files
+   ``tileset_checkerboard_fill``, 1, global, yes, Whether new tilesets will be filled with a checkerboard pattern of metatiles.
    ``theme``, default, global, yes, The color theme for porymap windows and widgets
    ``text_editor_goto_line``, , global, yes, The command that will be executed when clicking the button next the ``Script`` combo-box.
    ``text_editor_open_directory``, , global, yes, The command that will be executed when clicking ``Open Project in Text Editor``.
@@ -47,6 +48,7 @@ your project root as ``porymap.user.cfg``. You should add this file to your giti
    ``enable_hidden_item_requires_itemfinder``, 1 if ``pokefirered``, project, yes, Adds ``Requires Itemfinder`` to Hidden Item events
    ``enable_heal_location_respawn_data``, 1 if ``pokefirered``, project, yes, Adds ``Respawn Map`` and ``Respawn NPC`` to Heal Location events
    ``enable_floor_number``, 1 if ``pokefirered``, project, yes, Adds ``Floor Number`` to map headers
+   ``enable_map_allow_flags``, 1 if not ``pokeruby``, project, yes, "Adds ``Allow Running``, ``Allow Biking``, and ``Allow Dig & Escape Rope`` to map headers"
    ``create_map_text_file``, 1 if not ``pokeemerald``, project, yes, A ``text.inc`` or ``text.pory`` file will be created for any new map
    ``enable_triple_layer_metatiles``, 0, project, yes, Enables triple-layer metatiles (See https://github.com/pret/pokeemerald/wiki/Triple-layer-metatiles)
    ``new_map_metatile``, 1, project, yes, The metatile id that will be used to fill new maps
@@ -59,5 +61,10 @@ your project root as ``porymap.user.cfg``. You should add this file to your giti
    ``prefabs_import_prompted``, 0, project, no, Keeps track of whether or not the project was prompted for importing default prefabs
    ``tilesets_have_callback``, 1, project, yes, Whether new tileset headers should have the ``callback`` field
    ``tilesets_have_is_compressed``, 1, project, yes, Whether new tileset headers should have the ``isCompressed`` field
+   ``metatile_attributes_size``, 2 or 4, project, yes, The number of attribute bytes each metatile has
+   ``metatile_behavior_mask``, ``0xFF`` or ``0x1FF``, project, yes, The mask for the metatile Behavior attribute
+   ``metatile_encounter_type_mask``, ``0x0`` or ``0x7000000``, project, yes, The mask for the metatile Encounter Type attribute
+   ``metatile_layer_type_mask``, ``0xF000`` or ``0x60000000``, project, yes, The mask for the metatile Layer Type attribute
+   ``metatile_terrain_type_mask``, ``0x0`` or ``0x3E00``, project, yes, The mask for the metatile Terrain Type attribute
 
 Some of these settings can be toggled manually in porymap via the *Options* menu.

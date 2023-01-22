@@ -1,41 +1,45 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Editing Wild Encounters &mdash; porymap  documentation</title>
   
 
   
-  
-    <link rel="shortcut icon" href="../_static/porymap-icon-2.ico"/>
-  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+
   
   
 
   
-  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Creating New Maps" href="creating-new-maps.html" />
@@ -76,6 +80,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -83,7 +88,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">User Manual</span></p>
+              <p class="caption" role="heading"><span class="caption-text">User Manual</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="introduction.html#about-porymap">About Porymap</a></li>
@@ -109,6 +114,7 @@
 <li class="toctree-l2"><a class="reference internal" href="editing-map-tiles.html#change-map-border">Change Map Border</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-tiles.html#change-map-tilesets">Change Map Tilesets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-tiles.html#undo-redo">Undo &amp; Redo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-tiles.html#prefabs">Prefabs</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="editing-map-collisions.html">Editing Map Collisions</a><ul>
@@ -121,6 +127,7 @@
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#adding-deleting-events">Adding &amp; Deleting Events</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#event-positions">Event Positions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#object-events">Object Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#clone-object-events">Clone Object Events</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#warp-events">Warp Events</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#trigger-events">Trigger Events</a></li>
 <li class="toctree-l2"><a class="reference internal" href="editing-map-events.html#weather-trigger-events">Weather Trigger Events</a></li>
@@ -153,20 +160,68 @@
 <li class="toctree-l2"><a class="reference internal" href="region-map-editor.html#background-image-tab">Background Image Tab</a></li>
 <li class="toctree-l2"><a class="reference internal" href="region-map-editor.html#map-layout-tab">Map Layout Tab</a></li>
 <li class="toctree-l2"><a class="reference internal" href="region-map-editor.html#map-entries-tab">Map Entries Tab</a></li>
-<li class="toctree-l2"><a class="reference internal" href="region-map-editor.html#city-maps">City Maps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tileset-editor.html">The Tileset Editor</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tileset-editor.html#metatile-properties">Metatile Properties</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tileset-editor.html#layer-type">Layer Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tileset-editor.html#metatile-behavior">Metatile Behavior</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tileset-editor.html#encounter-type">Encounter Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tileset-editor.html#terrain-type">Terrain Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tileset-editor.html#metatile-label">Metatile Label</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tileset-editor.html#tools-menu">Tools Menu</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tileset-editor.html#import-tiles-image">Import Tiles Image…</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tileset-editor.html#import-metatiles-from-advance-map-1-92">Import Metatiles from Advance Map 1.92…</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tileset-editor.html#change-number-of-metatiles">Change Number of Metatiles</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tileset-editor.html#other-tools">Other Tools</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tileset-editor.html#palette-editor">Palette Editor</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="scripting-capabilities.html">Scripting Capabilities</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="scripting-capabilities.html#writing-a-custom-script">Writing a Custom Script</a></li>
 <li class="toctree-l2"><a class="reference internal" href="scripting-capabilities.html#registering-script-actions">Registering Script Actions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="scripting-capabilities.html#scripting-api">Scripting API</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="scripting-capabilities.html#callbacks">Callbacks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="scripting-capabilities.html#callbacks">Callbacks</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onProjectOpened"><code class="docutils literal notranslate"><span class="pre">onProjectOpened()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onProjectClosed"><code class="docutils literal notranslate"><span class="pre">onProjectClosed()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onMapOpened"><code class="docutils literal notranslate"><span class="pre">onMapOpened()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onBlockChanged"><code class="docutils literal notranslate"><span class="pre">onBlockChanged()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onBorderMetatileChanged"><code class="docutils literal notranslate"><span class="pre">onBorderMetatileChanged()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onBlockHoverChanged"><code class="docutils literal notranslate"><span class="pre">onBlockHoverChanged()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onBlockHoverCleared"><code class="docutils literal notranslate"><span class="pre">onBlockHoverCleared()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onMapResized"><code class="docutils literal notranslate"><span class="pre">onMapResized()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onBorderResized"><code class="docutils literal notranslate"><span class="pre">onBorderResized()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onMapShifted"><code class="docutils literal notranslate"><span class="pre">onMapShifted()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onTilesetUpdated"><code class="docutils literal notranslate"><span class="pre">onTilesetUpdated()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onMainTabChanged"><code class="docutils literal notranslate"><span class="pre">onMainTabChanged()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onMapViewTabChanged"><code class="docutils literal notranslate"><span class="pre">onMapViewTabChanged()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onBorderVisibilityToggled"><code class="docutils literal notranslate"><span class="pre">onBorderVisibilityToggled()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="scripting-capabilities.html#functions">Functions</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#map-editing-functions">Map Editing Functions</a></li>
-<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#map-overlay-functions">Map Overlay Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#map-header-editing-functions">Map Header Editing Functions</a></li>
 <li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#tileset-functions">Tileset Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#overlay-functions">Overlay Functions</a></li>
 <li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#settings-functions">Settings Functions</a></li>
 <li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#utility-functions">Utility Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="scripting-capabilities.html#constants">Constants</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#constants.max_primary_tiles"><code class="docutils literal notranslate"><span class="pre">constants.max_primary_tiles</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#constants.max_secondary_tiles"><code class="docutils literal notranslate"><span class="pre">constants.max_secondary_tiles</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#constants.max_primary_metatiles"><code class="docutils literal notranslate"><span class="pre">constants.max_primary_metatiles</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#constants.max_secondary_metatiles"><code class="docutils literal notranslate"><span class="pre">constants.max_secondary_metatiles</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#constants.layers_per_metatile"><code class="docutils literal notranslate"><span class="pre">constants.layers_per_metatile</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#constants.tiles_per_metatile"><code class="docutils literal notranslate"><span class="pre">constants.tiles_per_metatile</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#constants.base_game_version"><code class="docutils literal notranslate"><span class="pre">constants.base_game_version</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#constants.version.major"><code class="docutils literal notranslate"><span class="pre">constants.version.major</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#constants.version.minor"><code class="docutils literal notranslate"><span class="pre">constants.version.minor</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#constants.version.patch"><code class="docutils literal notranslate"><span class="pre">constants.version.patch</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -182,97 +237,110 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="settings-and-options.html">Porymap Settings</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../reference/changelog.html">Changelog</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#unreleased">Unreleased</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id1">4.5.0 - 2021-12-26</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id1">5.1.0 - 2023-01-22</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#added">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#changed">Changed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#fixed">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id2">4.4.0 - 2020-12-20</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id2">5.0.0 - 2022-10-30</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#breaking-changes">Breaking Changes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id3">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id4">Changed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id5">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id6">4.3.1 - 2020-07-17</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id6">4.5.0 - 2021-12-26</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id7">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id8">Changed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id9">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id10">4.3.0 - 2020-06-27</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id10">4.4.0 - 2020-12-20</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id11">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id12">Changed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id13">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id14">4.2.0 - 2020-06-06</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id14">4.3.1 - 2020-07-17</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id15">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id16">Changed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id17">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id18">4.1.0 - 2020-05-18</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id18">4.3.0 - 2020-06-27</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id19">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id20">Changed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id21">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id22">4.0.0 - 2020-04-28</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#breaking-changes">Breaking Changes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id22">4.2.0 - 2020-06-06</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id23">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id24">Changed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id25">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id26">3.0.1 - 2020-03-04</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id27">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id26">4.1.0 - 2020-05-18</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id27">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id28">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id29">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id28">3.0.0 - 2020-03-04</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id29">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id30">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id31">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id32">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id30">4.0.0 - 2020-04-28</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id31">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id32">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id33">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id34">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id33">2.0.0 - 2019-10-16</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id34">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id35">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id36">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id37">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id35">3.0.1 - 2020-03-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id36">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id38">1.2.2 - 2019-05-16</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id37">3.0.0 - 2020-03-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id38">Breaking Changes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id39">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id40">Changed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id41">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id42">1.2.1 - 2019-02-16</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id43">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id44">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id42">2.0.0 - 2019-10-16</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id43">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id44">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id45">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id46">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id45">1.2.0 - 2019-02-04</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id46">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id47">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id48">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id49">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id47">1.2.2 - 2019-05-16</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id48">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id49">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id50">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id50">1.1.0 - 2018-12-27</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id51">Breaking Changes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id51">1.2.1 - 2019-02-16</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id52">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id53">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id54">Fixed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id53">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id55">1.0.0 - 2018-10-26</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id54">1.2.0 - 2019-02-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id55">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id56">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id57">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id58">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id59">1.1.0 - 2018-12-27</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id60">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id61">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id62">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id63">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id64">1.0.0 - 2018-10-26</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/related-projects.html">Related Projects</a></li>
@@ -281,6 +349,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -315,18 +384,20 @@
 
 
 
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../index.html">Docs</a> &raquo;</li>
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
         
       <li>Editing Wild Encounters</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
-            
+          
             
               <a href="https://github.com/huderlem/porymap/blob/master/docsrc/manual/editing-wild-encounters.rst" class="fa fa-github"> Edit on GitHub</a>
             
@@ -342,65 +413,77 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="editing-wild-encounters">
-<h1>Editing Wild Encounters<a class="headerlink" href="#editing-wild-encounters" title="Permalink to this headline">¶</a></h1>
+  <section id="editing-wild-encounters">
+<h1>Editing Wild Encounters<a class="headerlink" href="#editing-wild-encounters" title="Permalink to this heading">¶</a></h1>
 <p>porymap provides a tab for editing the wild pokemon encounter JSON data.
 Navigate to the “Wild Pokemon” tab in porymap’s main window.</p>
 <p>If you open the tab and there are no wild encounters for the current map, you
 will see an empty screen (pictured below). Adding wild pokemon data is as
 simple as <a class="reference internal" href="#add-encounter-groups"><span class="std std-ref">adding new encounter groups</span></a>.</p>
-<div class="figure align-default" id="id1">
+<figure class="align-default" id="id1">
 <img alt="Empty Encounter Tab" src="../_images/no-encounters.png" />
-<p class="caption"><span class="caption-text">Empty Encounter Tab</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">Empty Encounter Tab</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 <p>Otherwise, you should see something similar to this:</p>
-<div class="figure align-default" id="id2">
+<figure class="align-default" id="id2">
 <img alt="Populated Encounter Tab" src="../_images/populated-encounter-tab.png" />
-<p class="caption"><span class="caption-text">Populated Encounter Tab</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">Populated Encounter Tab</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 <p>The tab for each field is active or disabled based on the encounter data for a
 given map.  If a tab is disabled, you can activate it, and therefore activate
 a new encounter field for the map.  To activate a field, right-click on the
 tab name for the field you want to add.</p>
-<div class="figure align-default" id="id3">
+<figure class="align-default" id="id3">
 <img alt="Activate Encounter Field" src="../_images/activate-tab.png" />
-<p class="caption"><span class="caption-text">Activate Encounter Field</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">Activate Encounter Field</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 <p>Editing the wild encounters is otherwise pretty straightforward.  You can
 adjust the minimum and maximum levels, the encounter rate, and species with the
 ui.</p>
-<div class="section" id="adding-new-encounter-groups">
-<span id="add-encounter-groups"></span><h2>Adding New Encounter Groups<a class="headerlink" href="#adding-new-encounter-groups" title="Permalink to this headline">¶</a></h2>
+<section id="adding-new-encounter-groups">
+<span id="add-encounter-groups"></span><h2>Adding New Encounter Groups<a class="headerlink" href="#adding-new-encounter-groups" title="Permalink to this heading">¶</a></h2>
 <p>An encounter group is just another set of wild encounters that are available
 for a single map.  In the vanilla games, only Altering Cave uses multiple
 encounter groups, but there are several reasons you might want them.</p>
 <p>In order to create a new encounter group, click the green (+) button next to
 the Group drop-down.  It will bring up this menu:</p>
-<div class="figure align-default" id="id4">
+<figure class="align-default" id="id4">
 <img alt="New Encounter Group Window" src="../_images/new-group-window.png" />
-<p class="caption"><span class="caption-text">New Encounter Group Window</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">New Encounter Group Window</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 <p>You can give your new encounter group a name (this must be uniqe, which is
 enforced), and you can choose which fields to activate for the group.  Checking
 the “copy from current group” box will copy not only the active fields but also
 the wild pokemon data for each field from the currently displayed group.</p>
 <p>One possible use for having multiple encounter groups for a single map is to
 implement time of day encounters.</p>
-<div class="figure align-default" id="id5">
+<figure class="align-default" id="id5">
 <img alt="Time of Day Encounter Groups" src="../_images/time-of-day-encounter-group.gif" />
-<p class="caption"><span class="caption-text">Time of Day Encounter Groups</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
-</div>
-</div>
-<div class="section" id="configuring-the-wild-encounter-fields">
-<span id="configure-encounter-json"></span><h2>Configuring the Wild Encounter Fields<a class="headerlink" href="#configuring-the-wild-encounter-fields" title="Permalink to this headline">¶</a></h2>
+<figcaption>
+<p><span class="caption-text">Time of Day Encounter Groups</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="configuring-the-wild-encounter-fields">
+<span id="configure-encounter-json"></span><h2>Configuring the Wild Encounter Fields<a class="headerlink" href="#configuring-the-wild-encounter-fields" title="Permalink to this heading">¶</a></h2>
 <p>An encounter field describes a group of wild encounters.  This includes the name
 of the field, a default number of pokemon in that field, and the encounter
 ratio for each index in that field.  These are all things you may want to
 change.  Click on the <em>Configure JSON…</em> button to bring up this window:</p>
-<div class="figure align-default" id="id6">
+<figure class="align-default" id="id6">
 <img alt="Configure JSON Window" src="../_images/configure-json.png" />
-<p class="caption"><span class="caption-text">Configure JSON Window</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">Configure JSON Window</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 <p>The Field drop-down will allow you select which field you want to manipulate.
 You can add a new one with the <em>Add New Field…</em> button.  The green (+) and
 red (-) buttons add and take away encounter slots for the field.  For each slot
@@ -408,52 +491,54 @@ you will see an adjustible number.  This represents the encounter chance for a
 pokemon at this index out of the total.</p>
 <p>Let’s add a <code class="docutils literal notranslate"><span class="pre">headbutt_mons</span></code> field to our wild encounters…</p>
 <p>First, we’ll add a new field and name it <code class="docutils literal notranslate"><span class="pre">headbutt_mons</span></code>.</p>
-<div class="figure align-default" id="id7">
+<figure class="align-default" id="id7">
 <img alt="New Field Name" src="../_images/configure-json-new-field.png" />
-<p class="caption"><span class="caption-text">New Field Name</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">New Field Name</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 <p>Then, we want four slots in this field, and we set encounter ratios for each
 slot.</p>
-<div class="figure align-default">
+<figure class="align-default">
 <img alt="../_images/headbutt-mon-field.png" src="../_images/headbutt-mon-field.png" />
-</div>
+</figure>
 <p>If we accept the changes, we can now assign pokemon to each slots, and adjust
 the levels.</p>
-<div class="figure align-default">
+<figure class="align-default">
 <img alt="../_images/headbutt-mons.png" src="../_images/headbutt-mons.png" />
-</div>
+</figure>
 <p>Changes made to the wild encounters are not saved to disk until you save the map.</p>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
            
           </div>
           <footer>
-  
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="creating-new-maps.html" class="btn btn-neutral float-right" title="Creating New Maps" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="editing-map-connections.html" class="btn btn-neutral float-left" title="Editing Map Connections" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+        <a href="creating-new-maps.html" class="btn btn-neutral float-right" title="Creating New Maps" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="editing-map-connections.html" class="btn btn-neutral float-left" title="Editing Map Connections" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2020, huderlem
+        &#169; Copyright 2023, huderlem.
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
-
         </div>
       </div>
 
@@ -461,7 +546,6 @@ the levels.</p>
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

@@ -1,41 +1,45 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Editing Map Tiles &mdash; porymap  documentation</title>
   
 
   
-  
-    <link rel="shortcut icon" href="../_static/porymap-icon-2.ico"/>
-  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+
   
   
 
   
-  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Editing Map Collisions" href="editing-map-collisions.html" />
@@ -76,6 +80,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -83,7 +88,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">User Manual</span></p>
+              <p class="caption" role="heading"><span class="caption-text">User Manual</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="introduction.html#about-porymap">About Porymap</a></li>
@@ -180,7 +185,23 @@
 <li class="toctree-l2"><a class="reference internal" href="scripting-capabilities.html#writing-a-custom-script">Writing a Custom Script</a></li>
 <li class="toctree-l2"><a class="reference internal" href="scripting-capabilities.html#registering-script-actions">Registering Script Actions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="scripting-capabilities.html#scripting-api">Scripting API</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="scripting-capabilities.html#callbacks">Callbacks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="scripting-capabilities.html#callbacks">Callbacks</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onProjectOpened"><code class="docutils literal notranslate"><span class="pre">onProjectOpened()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onProjectClosed"><code class="docutils literal notranslate"><span class="pre">onProjectClosed()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onMapOpened"><code class="docutils literal notranslate"><span class="pre">onMapOpened()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onBlockChanged"><code class="docutils literal notranslate"><span class="pre">onBlockChanged()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onBorderMetatileChanged"><code class="docutils literal notranslate"><span class="pre">onBorderMetatileChanged()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onBlockHoverChanged"><code class="docutils literal notranslate"><span class="pre">onBlockHoverChanged()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onBlockHoverCleared"><code class="docutils literal notranslate"><span class="pre">onBlockHoverCleared()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onMapResized"><code class="docutils literal notranslate"><span class="pre">onMapResized()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onBorderResized"><code class="docutils literal notranslate"><span class="pre">onBorderResized()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onMapShifted"><code class="docutils literal notranslate"><span class="pre">onMapShifted()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onTilesetUpdated"><code class="docutils literal notranslate"><span class="pre">onTilesetUpdated()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onMainTabChanged"><code class="docutils literal notranslate"><span class="pre">onMainTabChanged()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onMapViewTabChanged"><code class="docutils literal notranslate"><span class="pre">onMapViewTabChanged()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onBorderVisibilityToggled"><code class="docutils literal notranslate"><span class="pre">onBorderVisibilityToggled()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="scripting-capabilities.html#functions">Functions</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#map-editing-functions">Map Editing Functions</a></li>
 <li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#map-header-editing-functions">Map Header Editing Functions</a></li>
@@ -190,7 +211,19 @@
 <li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#utility-functions">Utility Functions</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="scripting-capabilities.html#constants">Constants</a></li>
+<li class="toctree-l3"><a class="reference internal" href="scripting-capabilities.html#constants">Constants</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#constants.max_primary_tiles"><code class="docutils literal notranslate"><span class="pre">constants.max_primary_tiles</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#constants.max_secondary_tiles"><code class="docutils literal notranslate"><span class="pre">constants.max_secondary_tiles</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#constants.max_primary_metatiles"><code class="docutils literal notranslate"><span class="pre">constants.max_primary_metatiles</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#constants.max_secondary_metatiles"><code class="docutils literal notranslate"><span class="pre">constants.max_secondary_metatiles</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#constants.layers_per_metatile"><code class="docutils literal notranslate"><span class="pre">constants.layers_per_metatile</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#constants.tiles_per_metatile"><code class="docutils literal notranslate"><span class="pre">constants.tiles_per_metatile</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#constants.base_game_version"><code class="docutils literal notranslate"><span class="pre">constants.base_game_version</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#constants.version.major"><code class="docutils literal notranslate"><span class="pre">constants.version.major</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#constants.version.minor"><code class="docutils literal notranslate"><span class="pre">constants.version.minor</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#constants.version.patch"><code class="docutils literal notranslate"><span class="pre">constants.version.patch</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -204,104 +237,110 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="settings-and-options.html">Porymap Settings</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../reference/changelog.html">Changelog</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#unreleased">Unreleased</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id1">5.0.0 - 2022-10-30</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#breaking-changes">Breaking Changes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id1">5.1.0 - 2023-01-22</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#added">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#changed">Changed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#fixed">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id2">4.5.0 - 2021-12-26</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id2">5.0.0 - 2022-10-30</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#breaking-changes">Breaking Changes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id3">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id4">Changed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id5">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id6">4.4.0 - 2020-12-20</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id6">4.5.0 - 2021-12-26</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id7">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id8">Changed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id9">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id10">4.3.1 - 2020-07-17</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id10">4.4.0 - 2020-12-20</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id11">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id12">Changed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id13">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id14">4.3.0 - 2020-06-27</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id14">4.3.1 - 2020-07-17</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id15">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id16">Changed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id17">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id18">4.2.0 - 2020-06-06</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id18">4.3.0 - 2020-06-27</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id19">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id20">Changed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id21">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id22">4.1.0 - 2020-05-18</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id22">4.2.0 - 2020-06-06</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id23">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id24">Changed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id25">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id26">4.0.0 - 2020-04-28</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id27">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id28">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id29">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id30">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id26">4.1.0 - 2020-05-18</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id27">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id28">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id29">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id31">3.0.1 - 2020-03-04</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id32">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id30">4.0.0 - 2020-04-28</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id31">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id32">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id33">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id34">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id33">3.0.0 - 2020-03-04</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id34">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id35">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id36">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id37">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id35">3.0.1 - 2020-03-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id36">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id38">2.0.0 - 2019-10-16</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id39">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id40">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id41">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id42">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id37">3.0.0 - 2020-03-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id38">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id39">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id40">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id41">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id43">1.2.2 - 2019-05-16</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id42">2.0.0 - 2019-10-16</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id43">Breaking Changes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id44">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id45">Changed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id46">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id47">1.2.1 - 2019-02-16</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id47">1.2.2 - 2019-05-16</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id48">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id49">Fixed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id49">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id50">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id50">1.2.0 - 2019-02-04</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id51">Breaking Changes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id51">1.2.1 - 2019-02-16</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id52">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id53">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id54">Fixed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id53">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id55">1.1.0 - 2018-12-27</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id56">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id57">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id58">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id59">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id54">1.2.0 - 2019-02-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id55">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id56">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id57">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id58">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id60">1.0.0 - 2018-10-26</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id59">1.1.0 - 2018-12-27</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id60">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id61">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id62">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id63">Fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id64">1.0.0 - 2018-10-26</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/related-projects.html">Related Projects</a></li>
@@ -310,6 +349,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -344,18 +384,20 @@
 
 
 
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../index.html">Docs</a> &raquo;</li>
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
         
       <li>Editing Map Tiles</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
-            
+          
             
               <a href="https://github.com/huderlem/porymap/blob/master/docsrc/manual/editing-map-tiles.rst" class="fa fa-github"> Edit on GitHub</a>
             
@@ -371,171 +413,205 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="editing-map-tiles">
-<span id="id1"></span><h1>Editing Map Tiles<a class="headerlink" href="#editing-map-tiles" title="Permalink to this headline">¶</a></h1>
+  <section id="editing-map-tiles">
+<span id="id1"></span><h1>Editing Map Tiles<a class="headerlink" href="#editing-map-tiles" title="Permalink to this heading">¶</a></h1>
 <p>Editing map tiles takes place in Porymap’s Main Window.  The map is laid out in a grid of what are called “metatiles”.  The editing basic flow is to make a metatile selection, and then paint that metatile selection onto the map.</p>
-<div class="section" id="visual-options">
-<h2>Visual Options<a class="headerlink" href="#visual-options" title="Permalink to this headline">¶</a></h2>
+<section id="visual-options">
+<h2>Visual Options<a class="headerlink" href="#visual-options" title="Permalink to this heading">¶</a></h2>
 <p>Before getting into the details of editing map tiles, you should be aware of some settings that make your life easier.</p>
 <p>A grid can be displayed over the editable map area by using the <code class="docutils literal notranslate"><span class="pre">Grid</span></code> checkbox, which is located in the toolbar above the map area.</p>
-<div class="figure align-default" id="id2">
+<figure class="align-default" id="id2">
 <img alt="Map Grid" src="../_images/map-grid.png" />
-<p class="caption"><span class="caption-text">Map Grid</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">Map Grid</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 <p>The border’s visibility, including the surrounding map connections, can be toggled with the <code class="docutils literal notranslate"><span class="pre">Border</span></code> checkbox, which is located in the toolbar above the map area.</p>
-<div class="figure align-default" id="id3">
+<figure class="align-default" id="id3">
 <img alt="Map Border Toggled Off" src="../_images/map-border-off.png" />
-<p class="caption"><span class="caption-text">Map Border Toggled Off</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">Map Border Toggled Off</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 <p>You can zoom in and out on the map with <em>View -&gt; Zoom In</em> (<code class="docutils literal notranslate"><span class="pre">Ctrl++</span></code> or <code class="docutils literal notranslate"><span class="pre">Ctrl+Mouse</span> <span class="pre">Wheel</span> <span class="pre">Scroll</span> <span class="pre">Up</span></code>) and <em>View -&gt; Zoom Out</em> (<code class="docutils literal notranslate"><span class="pre">Ctrl+-</span></code> or <code class="docutils literal notranslate"><span class="pre">Ctrl+Mouse</span> <span class="pre">Wheel</span> <span class="pre">Scroll</span> <span class="pre">Down</span></code>).</p>
 <p>By default, the mouse cursor will show a white indicator outline of the currently-hovered tile(s) of what will be painted.  You can disable this outline with <em>View -&gt; Cursor Tile Outline</em> (<code class="docutils literal notranslate"><span class="pre">C</span></code>).  Additionally, the cursor changes its appearance depending on which tool you currently have selected in the toolbar.  You can disable this with <em>View -&gt; Cursor Icons</em>.</p>
 <p>An indicator outline for the player’s in-game view radius can be toggled with <em>View -&gt; Player View Rectangle</em> (<code class="docutils literal notranslate"><span class="pre">V</span></code>).</p>
 <p>The Metatile Selection Pane can be zoomed in or out using the slider on the bottom.</p>
-<div class="figure align-default" id="id4">
+<figure class="align-default" id="id4">
 <img alt="Metatile Selection Zoom Slider" src="../_images/metatile-selection-slider.png" />
-<p class="caption"><span class="caption-text">Metatile Selection Zoom Slider</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
-</div>
-</div>
-<div class="section" id="selecting-metatiles">
-<h2>Selecting Metatiles<a class="headerlink" href="#selecting-metatiles" title="Permalink to this headline">¶</a></h2>
+<figcaption>
+<p><span class="caption-text">Metatile Selection Zoom Slider</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="selecting-metatiles">
+<h2>Selecting Metatiles<a class="headerlink" href="#selecting-metatiles" title="Permalink to this heading">¶</a></h2>
 <p>Before you paint onto the map, you need to select which metatiles you will be painting.  The primary way to do this is to click on a metatile from the Metatile Selection Pane.  Whenever you change your selection, the selection preview will update so you can see exactly what you have selected at all times.</p>
-<div class="figure align-default" id="id5">
+<figure class="align-default" id="id5">
 <img alt="Basic Metatile Selection" src="../_images/single-metatile-selection.gif" />
-<p class="caption"><span class="caption-text">Basic Metatile Selection</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">Basic Metatile Selection</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 <p>You can select more than one tile at a time by clicking and dragging the desired region.  For example, it’s convenient to select the entire Pokémon Center at once.</p>
-<div class="figure align-default" id="id6">
+<figure class="align-default" id="id6">
 <img alt="Multiple Metatile Selection" src="../_images/multiple-metatile-selection.gif" />
-<p class="caption"><span class="caption-text">Multiple Metatile Selection</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">Multiple Metatile Selection</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 <p>Metatiles can also be selected from existing metatiles on the map area.  Use the Eyedropper Tool with <em>Tools -&gt; Eyedropper</em> (<code class="docutils literal notranslate"><span class="pre">E</span></code>), or simply click the Eyedropper button <img alt="eyedropper-tool" src="../_images/eyedropper-tool.png" /> in the toolbar above the map area.  A more powerful way to do this is to right-click on the map when using the Pencil Tool or Bucket Fill Tool.  You can even right-click and drag to copy a region from the map.  In this example GIF, we demonstrate how quick and easy it is to use the right-click method to copy and paint metatiles.</p>
-<div class="figure align-default" id="id7">
+<figure class="align-default" id="id7">
 <img alt="Right-Click Metatile Selection" src="../_images/right-click-metatile-selection.gif" />
-<p class="caption"><span class="caption-text">Right-Click Metatile Selection</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">Right-Click Metatile Selection</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 <p>Now, let’s learn how to use the various tools to paint your metatile selection onto the map.</p>
-</div>
-<div class="section" id="pencil-tool">
-<h2>Pencil Tool<a class="headerlink" href="#pencil-tool" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="pencil-tool">
+<h2>Pencil Tool<a class="headerlink" href="#pencil-tool" title="Permalink to this heading">¶</a></h2>
 <p>The Pencil Tool <img alt="pencil-tool" src="../_images/pencil-tool.png" /> (<em>Tools -&gt; Pencil</em>, or <code class="docutils literal notranslate"><span class="pre">N</span></code>) is your bread and butter when editing maps.  Simply left-click to paint your current metatile selection onto the map.  You can click and drag to paint a bigger portion of the map.  When clicking and dragging, the metatiles will be painted as if they are snapping to a grid.  This simplifies things like painting large areas of trees.</p>
-<div class="figure align-default" id="id8">
+<figure class="align-default" id="id8">
 <img alt="Painting a Large Metatile Selection" src="../_images/snapping-painting.gif" />
-<p class="caption"><span class="caption-text">Painting a Large Metatile Selection</span><a class="headerlink" href="#id8" title="Permalink to this image">¶</a></p>
-</div>
-</div>
-<div class="section" id="pointer-tool">
-<h2>Pointer Tool<a class="headerlink" href="#pointer-tool" title="Permalink to this headline">¶</a></h2>
+<figcaption>
+<p><span class="caption-text">Painting a Large Metatile Selection</span><a class="headerlink" href="#id8" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="pointer-tool">
+<h2>Pointer Tool<a class="headerlink" href="#pointer-tool" title="Permalink to this heading">¶</a></h2>
 <p>The Pointer Tool <img alt="pointer-tool" src="../_images/pointer-tool.png" /> (<em>Tools -&gt; Pointer</em>, or <code class="docutils literal notranslate"><span class="pre">P</span></code>) doesn’t do anything.  It just allows you to click on the map without painting anything.</p>
-</div>
-<div class="section" id="bucket-fill-tool">
-<h2>Bucket Fill Tool<a class="headerlink" href="#bucket-fill-tool" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="bucket-fill-tool">
+<h2>Bucket Fill Tool<a class="headerlink" href="#bucket-fill-tool" title="Permalink to this heading">¶</a></h2>
 <p>The Bucket Fill Tool <img alt="bucket-fill-tool" src="../_images/bucket-fill-tool.png" /> (<em>Tools -&gt; Bucket Fill</em>, or <code class="docutils literal notranslate"><span class="pre">B</span></code>) works just like you think it does.  It fills a contiguous region of identical metatiles.  If you have a large metatile selection, it will fill the region with that pattern.  A useful shortcut for the Bucket Fill Tool is to middle-click when using the Pencil Tool.</p>
-<div class="figure align-default" id="id9">
+<figure class="align-default" id="id9">
 <img alt="Painting with Bucket Fill Tool" src="../_images/bucket-fill-painting.gif" />
-<p class="caption"><span class="caption-text">Painting with Bucket Fill Tool</span><a class="headerlink" href="#id9" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">Painting with Bucket Fill Tool</span><a class="headerlink" href="#id9" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 <p>Holding down the <code class="docutils literal notranslate"><span class="pre">Ctrl</span></code> key while using the Bucket Fill Tool will fill <em>all</em> matching metatiles on the map, rather that just the contiguous region.</p>
-</div>
-<div class="section" id="map-shift-tool">
-<h2>Map Shift Tool<a class="headerlink" href="#map-shift-tool" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="map-shift-tool">
+<h2>Map Shift Tool<a class="headerlink" href="#map-shift-tool" title="Permalink to this heading">¶</a></h2>
 <p>The Map Shift Tool <img alt="map-shift-tool" src="../_images/map-shift-tool.png" /> (<em>Tools -&gt; Map Shift</em>, or <code class="docutils literal notranslate"><span class="pre">S</span></code>) lets you shift the metatile positions of the entire map at the same time.  This is useful after resizing a map.  (Though, simply right-click copying the entire map is another way of accomplishing the same thing.)  Metatiles are wrapped around to the other side of the map when using the Map Shift Tool.  Simply click and drag on the map to perform the map shift.</p>
-<div class="figure align-default" id="id10">
+<figure class="align-default" id="id10">
 <img alt="Map Shift Tool" src="../_images/map-shift-painting.gif" />
-<p class="caption"><span class="caption-text">Map Shift Tool</span><a class="headerlink" href="#id10" title="Permalink to this image">¶</a></p>
-</div>
-</div>
-<div class="section" id="smart-paths">
-<h2>Smart Paths<a class="headerlink" href="#smart-paths" title="Permalink to this headline">¶</a></h2>
+<figcaption>
+<p><span class="caption-text">Map Shift Tool</span><a class="headerlink" href="#id10" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="smart-paths">
+<h2>Smart Paths<a class="headerlink" href="#smart-paths" title="Permalink to this heading">¶</a></h2>
 <p>Smart Paths provide an easy way to paint pathways, ponds, and mountains.  If there is any formation of metatiles that have a basic outline and a “middle” tile, then smart paths can help save you time when painting.  <strong>Smart Paths can only be used when you have a 3x3 metatile selection.</strong>  Smart Paths is only available when using the Pencil Tool or the Bucket Fill Tool.  To enable Smart Paths, you must either check the Smart Paths checkbox above the map area, or you can hold down the <code class="docutils literal notranslate"><span class="pre">Shift</span></code> key.  If you have the Smart Paths checkbox checked then you can temporarily disable smart paths by holding down the <code class="docutils literal notranslate"><span class="pre">Shift</span></code> key.  Below are a few examples that illustrate the power of Smart Paths.</p>
-<div class="figure align-default" id="id11">
+<figure class="align-default" id="id11">
 <img alt="Regular vs. Smart Paths" src="../_images/smart-paths-1-painting.gif" />
-<p class="caption"><span class="caption-text">Regular vs. Smart Paths</span><a class="headerlink" href="#id11" title="Permalink to this image">¶</a></p>
-</div>
-<div class="figure align-default" id="id12">
+<figcaption>
+<p><span class="caption-text">Regular vs. Smart Paths</span><a class="headerlink" href="#id11" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-default" id="id12">
 <img alt="Bucket Fill with Smart Paths" src="../_images/smart-paths-2-painting.gif" />
-<p class="caption"><span class="caption-text">Bucket Fill with Smart Paths</span><a class="headerlink" href="#id12" title="Permalink to this image">¶</a></p>
-</div>
-<div class="figure align-default" id="id13">
+<figcaption>
+<p><span class="caption-text">Bucket Fill with Smart Paths</span><a class="headerlink" href="#id12" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-default" id="id13">
 <img alt="Smart Paths from Right-Click Selection" src="../_images/smart-paths-3-painting.gif" />
-<p class="caption"><span class="caption-text">Smart Paths from Right-Click Selection</span><a class="headerlink" href="#id13" title="Permalink to this image">¶</a></p>
-</div>
-</div>
-<div class="section" id="straight-paths">
-<h2>Straight Paths<a class="headerlink" href="#straight-paths" title="Permalink to this headline">¶</a></h2>
+<figcaption>
+<p><span class="caption-text">Smart Paths from Right-Click Selection</span><a class="headerlink" href="#id13" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="straight-paths">
+<h2>Straight Paths<a class="headerlink" href="#straight-paths" title="Permalink to this heading">¶</a></h2>
 <p>Straight Paths allows for painting tiles in straight lines by snapping the cursor to that line.  Either the X or Y axis will be locked depending on the direction you start painting in.  To enable straight paths simply hold down <code class="docutils literal notranslate"><span class="pre">Ctrl</span></code> when painting tiles.  Straight paths works for both metatiles and collision tiles, and works in conjunction with <em>Smart Paths</em>.  It also works with the <em>Map Shift Tool</em>.  Straight path painting can be chained together with normal painting to allow you, for example, to paint a straight path, then release <code class="docutils literal notranslate"><span class="pre">Ctrl</span></code> to continue the path normally, then press <code class="docutils literal notranslate"><span class="pre">Ctrl</span></code> again to continue painting a straight path from that position.</p>
-</div>
-<div class="section" id="change-map-border">
-<h2>Change Map Border<a class="headerlink" href="#change-map-border" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="change-map-border">
+<h2>Change Map Border<a class="headerlink" href="#change-map-border" title="Permalink to this heading">¶</a></h2>
 <p>The map’s border can be modified by painting on the Border image, which is located above the metatile selection pane.</p>
-<div class="figure align-default" id="id14">
+<figure class="align-default" id="id14">
 <img alt="Change Map Border" src="../_images/map-border.png" />
-<p class="caption"><span class="caption-text">Change Map Border</span><a class="headerlink" href="#id14" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">Change Map Border</span><a class="headerlink" href="#id14" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 <p>The dimensions of the map’s border can also be adjusted for pokefirered projects via the <code class="docutils literal notranslate"><span class="pre">Change</span> <span class="pre">Dimensions</span></code> button. If you have modified your pokeemerald or pokeruby project to support custom border sizes you can enable this option with the <code class="docutils literal notranslate"><span class="pre">use_custom_border_size</span></code> field in your project’s <code class="docutils literal notranslate"><span class="pre">porymap.project.cfg</span></code> file.</p>
-</div>
-<div class="section" id="change-map-tilesets">
-<h2>Change Map Tilesets<a class="headerlink" href="#change-map-tilesets" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="change-map-tilesets">
+<h2>Change Map Tilesets<a class="headerlink" href="#change-map-tilesets" title="Permalink to this heading">¶</a></h2>
 <p>Every map uses exactly two Tilesets–primary and secondary.  These can be changed by choosing a different value from the two Tileset dropdowns.</p>
-<div class="figure align-default" id="id15">
+<figure class="align-default" id="id15">
 <img alt="Tileset Pickers" src="../_images/tileset-pickers.png" />
-<p class="caption"><span class="caption-text">Tileset Pickers</span><a class="headerlink" href="#id15" title="Permalink to this image">¶</a></p>
-</div>
-</div>
-<div class="section" id="undo-redo">
-<h2>Undo &amp; Redo<a class="headerlink" href="#undo-redo" title="Permalink to this headline">¶</a></h2>
+<figcaption>
+<p><span class="caption-text">Tileset Pickers</span><a class="headerlink" href="#id15" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="undo-redo">
+<h2>Undo &amp; Redo<a class="headerlink" href="#undo-redo" title="Permalink to this heading">¶</a></h2>
 <p>When painting metatiles, you can undo and redo actions you take.  This makes it very easy to fix mistakes or go back in time.  Undo can be performed with <code class="docutils literal notranslate"><span class="pre">Ctrl+Z</span></code> or <em>Edit -&gt; Undo</em>.  Redo can be performed with <code class="docutils literal notranslate"><span class="pre">Ctrl+Y</span></code> or <em>Edit -&gt; Redo</em>.</p>
-</div>
-<div class="section" id="prefabs">
-<h2>Prefabs<a class="headerlink" href="#prefabs" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="prefabs">
+<h2>Prefabs<a class="headerlink" href="#prefabs" title="Permalink to this heading">¶</a></h2>
 <p>Prefabs, or “prefabricated selections”, are a way to optimize your map-editing workflow by defining pre-built metatile selections. This can be useful when larger map objects can’t be selected from the main metatile selector window. For example, the Poké Mart building is only partially selectable in the metatile selector view.</p>
-<div class="figure align-default" id="id16">
+<figure class="align-default" id="id16">
 <img alt="Prefab Tab" src="../_images/prefab-list.png" />
-<p class="caption"><span class="caption-text">Prefab Tab</span><a class="headerlink" href="#id16" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">Prefab Tab</span><a class="headerlink" href="#id16" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 <p>Porymap provides a set of default prefabs for each supported base game version (pokeemerald, pokefirered, and pokeruby). When opening a project for the first time, Porymap will prompt the user for importing those default prefabs.</p>
 <p>To create a new prefab, simply select a group of metatiles from the main map view. (See the <a class="reference internal" href="#selecting-metatiles">Selecting Metatiles</a>. section above for how to use right-click-drag to select from the map area.) Then, click the “Create from Selection” button. This will bring up the following window where individual metatiles can be toggled on/off in the prefab. You can also give your prefab a name.</p>
-<div class="figure align-default" id="id17">
+<figure class="align-default" id="id17">
 <img alt="Prefab Creation Window" src="../_images/prefab-create.png" />
-<p class="caption"><span class="caption-text">Prefab Creation Window</span><a class="headerlink" href="#id17" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">Prefab Creation Window</span><a class="headerlink" href="#id17" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 <p>Prefabs are designated for whichever primary and secondary tilesets were used to create them. As such, any prefabs for with tilesets that are incompatible with the currently-opened map will be hidden from the Prefab list.</p>
 <p>To select a prefab to use for painting on the map, simply click on the prefab image in the list view.</p>
-<div class="figure align-default" id="id18">
+<figure class="align-default" id="id18">
 <img alt="Painting with a Prefab" src="../_images/prefab-demo.gif" />
-<p class="caption"><span class="caption-text">Painting with a Prefab</span><a class="headerlink" href="#id18" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">Painting with a Prefab</span><a class="headerlink" href="#id18" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 <p>Prefab data is saved to a JSON file. It defaults to <code class="docutils literal notranslate"><span class="pre">&lt;project_root&gt;/prefabs.json</span></code>. However, it can be configured in Porymap’s project config file using the <code class="docutils literal notranslate"><span class="pre">prefabs_filepath</span></code> setting.</p>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
            
           </div>
           <footer>
-  
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="editing-map-collisions.html" class="btn btn-neutral float-right" title="Editing Map Collisions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="navigation.html" class="btn btn-neutral float-left" title="Navigation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+        <a href="editing-map-collisions.html" class="btn btn-neutral float-right" title="Editing Map Collisions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="navigation.html" class="btn btn-neutral float-left" title="Navigation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2020, huderlem
+        &#169; Copyright 2023, huderlem.
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
-
         </div>
       </div>
 
@@ -543,7 +619,6 @@
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {
