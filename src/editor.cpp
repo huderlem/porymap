@@ -180,6 +180,7 @@ void Editor::setEditingConnections() {
             setConnectionMap(selected_connection_item->connection->map_name);
             setCurrentConnectionDirection(selected_connection_item->connection->direction);
         }
+        maskNonVisibleConnectionTiles();
     }
     if (collision_item) {
         collision_item->setVisible(false);
@@ -1582,6 +1583,7 @@ void Editor::maskNonVisibleConnectionTiles() {
             connection_mask->scene()->removeItem(connection_mask);
         }
         delete connection_mask;
+        connection_mask = nullptr;
     }
 
     QPainterPath mask;
