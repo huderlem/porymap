@@ -263,7 +263,7 @@ QString ParseUtil::readCIncbin(const QString &filename, const QString &label) {
 
     this->text = readTextFile(this->root + "/" + filename);
 
-    int start = this->text.indexOf(label);
+    int start = this->text.indexOf(QRegularExpression(label + "\b"));
     if (start < 0) return path;
     int end = this->text.indexOf(';', start);
     QString incbinText = this->text.mid(start, end - start);
