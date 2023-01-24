@@ -76,7 +76,7 @@ bool ConnectionPixmapItem::getEditable() {
 
 void ConnectionPixmapItem::updateHighlight(bool selected) {
     bool editable = this->getEditable();
-    int zValue = (selected || !editable) ? 0 : -1;
+    int zValue = (selected || !editable) ? -1 : -2;
     qreal opacity = (selected || !editable) ? 1 : 0.75;
     this->setZValue(zValue);
     this->render(opacity);
