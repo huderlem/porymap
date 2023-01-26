@@ -63,7 +63,7 @@ public:
     QPixmap collision_pixmap;
     QImage image;
     QPixmap pixmap;
-    
+
     QMap<Event::Group, QList<Event *>> events;
     QList<Event *> ownedEvents; // for memory management
 

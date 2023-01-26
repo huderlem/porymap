@@ -19,7 +19,7 @@
      <widget class="QLabel" name="label_Title">
       <property name="font">
        <font>
-        <family>Segoe UI</family>
+        <family>Arial</family>
         <pointsize>22</pointsize>
         <weight>75</weight>
         <bold>true</bold>
@@ -48,7 +48,7 @@
       </property>
       <property name="font">
        <font>
-        <family>Segoe UI</family>
+        <family>Arial</family>
         <pointsize>12</pointsize>
        </font>
       </property>
@@ -64,7 +64,7 @@
      <widget class="QLabel" name="label_Description">
       <property name="font">
        <font>
-        <family>Segoe UI</family>
+        <family>Arial</family>
        </font>
       </property>
       <property name="text">
