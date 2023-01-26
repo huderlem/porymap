@@ -461,6 +461,7 @@ bool Project::readMapLayouts() {
         layout->id = ParseUtil::jsonToQString(layoutObj["id"]);
         if (layout->id.isEmpty()) {
             logError(QString("Missing 'id' value on layout %1 in %2").arg(i).arg(layoutsFilepath));
+            delete layout;
             return false;
         }
         if (mapLayouts.contains(layout->id)) {
@@ -471,17 +472,20 @@ bool Project::readMapLayouts() {
         layout->name = ParseUtil::jsonToQString(layoutObj["name"]);
         if (layout->name.isEmpty()) {
             logError(QString("Missing 'name' value for %1 in %2").arg(layout->id).arg(layoutsFilepath));
+            delete layout;
             return false;
         }
         int lwidth = ParseUtil::jsonToInt(layoutObj["width"]);
         if (lwidth <= 0) {
             logError(QString("Invalid 'width' value '%1' for %2 in %3. Must be greater than 0.").arg(lwidth).arg(layout->id).arg(layoutsFilepath));
+            delete layout;
             return false;
         }
         layout->width = lwidth;
         int lheight = ParseUtil::jsonToInt(layoutObj["height"]);
         if (lheight <= 0) {
             logError(QString("Invalid 'height' value '%1' for %2 in %3. Must be greater than 0.").arg(lheight).arg(layout->id).arg(layoutsFilepath));
+            delete layout;
             return false;
         }
         layout->height = lheight;
@@ -507,21 +511,25 @@ bool Project::readMapLayouts() {
         layout->tileset_primary_label = ParseUtil::jsonToQString(layoutObj["primary_tileset"]);
         if (layout->tileset_primary_label.isEmpty()) {
             logError(QString("Missing 'primary_tileset' value for %1 in %2").arg(layout->id).arg(layoutsFilepath));
+            delete layout;
             return false;
         }
         layout->tileset_secondary_label = ParseUtil::jsonToQString(layoutObj["secondary_tileset"]);
         if (layout->tileset_secondary_label.isEmpty()) {
             logError(QString("Missing 'secondary_tileset' value for %1 in %2").arg(layout->id).arg(layoutsFilepath));
+            delete layout;
             return false;
         }
         layout->border_path = ParseUtil::jsonToQString(layoutObj["border_filepath"]);
         if (layout->border_path.isEmpty()) {
             logError(QString("Missing 'border_filepath' value for %1 in %2").arg(layout->id).arg(layoutsFilepath));
+            delete layout;
             return false;
         }
         layout->blockdata_path = ParseUtil::jsonToQString(layoutObj["blockdata_filepath"]);
         if (layout->blockdata_path.isEmpty()) {
             logError(QString("Missing 'blockdata_filepath' value for %1 in %2").arg(layout->id).arg(layoutsFilepath));
+            delete layout;
             return false;
         }
         mapLayouts.insert(layout->id, layout);
