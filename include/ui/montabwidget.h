@@ -14,7 +14,7 @@ class MonTabWidget : public QTabWidget {
 
 public:
     explicit MonTabWidget(Editor *editor = nullptr, QWidget *parent = nullptr);
-    ~MonTabWidget(){};
+    ~MonTabWidget();
 
     void populate();
     void populateTab(int tabIndex, WildMonInfo monInfo);

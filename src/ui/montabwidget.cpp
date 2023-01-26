@@ -6,10 +6,16 @@
 
 
 
+static WildMonInfo encounterClipboard;
+
 MonTabWidget::MonTabWidget(Editor *editor, QWidget *parent) : QTabWidget(parent) {
     this->editor = editor;
     populate();
     this->tabBar()->installEventFilter(this);
+}
+
+MonTabWidget::~MonTabWidget() {
+
 }
 
 bool MonTabWidget::eventFilter(QObject *, QEvent *event) {
@@ -53,25 +59,25 @@ void MonTabWidget::populate() {
 void MonTabWidget::actionCopyTab(int index) {
     QMenu contextMenu(this);
 
-    for (int i = 0; i < this->tabBar()->count(); i++) {
-        if (index == i) continue;
-        if (!activeTabs[i]) continue;
+    QAction *actionCopy = new QAction("Copy", &contextMenu);
+    connect(actionCopy, &QAction::triggered, [=](){
+        EncounterTableModel *model = static_cast<EncounterTableModel *>(this->tableAt(index)->model());
+        encounterClipboard = model->encounterData();
+    });
+    contextMenu.addAction(actionCopy);
 
-        QString tabText = this->tabBar()->tabText(i);
-        QAction *actionCopyFrom = new QAction(QString("Copy encounters from %1").arg(tabText), &contextMenu);
-
-        connect(actionCopyFrom, &QAction::triggered, [=](){
-            EncounterTableModel *model = static_cast<EncounterTableModel *>(this->tableAt(i)->model());
-            WildMonInfo copyInfo = model->encounterData();
+    if (encounterClipboard.active) {
+        QAction *actionPaste = new QAction("Paste", &contextMenu);
+        connect(actionPaste, &QAction::triggered, [=](){
             clearTableAt(index);
             WildMonInfo newInfo = getDefaultMonInfo(editor->project->wildMonFields.at(index));
-            combineEncounters(newInfo, copyInfo);
+            combineEncounters(newInfo, encounterClipboard);
             populateTab(index, newInfo);
             emit editor->wildMonDataChanged();
         });
-
-        contextMenu.addAction(actionCopyFrom);
+        contextMenu.addAction(actionPaste);
     }
+
     contextMenu.exec(mapToGlobal(this->copyTabButtons[index]->pos() + QPoint(0, this->copyTabButtons[index]->height())));
 }
 
