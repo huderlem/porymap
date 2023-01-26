@@ -410,11 +410,12 @@ bool Project::readMapLayouts() {
     mapLayouts.clear();
     mapLayoutsTable.clear();
 
-    QString layoutsFilepath = QString("%1/%2").arg(root).arg(projectConfig.getFilePath(ProjectFilePath::json_layouts));
-    fileWatcher.addPath(layoutsFilepath);
+    QString layoutsFilepath = projectConfig.getFilePath(ProjectFilePath::json_layouts);
+    QString fullFilepath = QString("%1/%2").arg(root).arg(layoutsFilepath);
+    fileWatcher.addPath(fullFilepath);
     QJsonDocument layoutsDoc;
-    if (!parser.tryParseJsonFile(&layoutsDoc, layoutsFilepath)) {
-        logError(QString("Failed to read map layouts from %1").arg(layoutsFilepath));
+    if (!parser.tryParseJsonFile(&layoutsDoc, fullFilepath)) {
+        logError(QString("Failed to read map layouts from %1").arg(fullFilepath));
         return false;
     }
 
@@ -462,33 +463,40 @@ bool Project::readMapLayouts() {
             logError(QString("Missing 'id' value on layout %1 in %2").arg(i).arg(layoutsFilepath));
             return false;
         }
+        if (mapLayouts.contains(layout->id)) {
+            logWarn(QString("Duplicate layout entry for %1 in %2 will be ignored.").arg(layout->id).arg(layoutsFilepath));
+            delete layout;
+            continue;
+        }
         layout->name = ParseUtil::jsonToQString(layoutObj["name"]);
         if (layout->name.isEmpty()) {
-            logError(QString("Missing 'name' value on layout %1 in %2").arg(i).arg(layoutsFilepath));
+            logError(QString("Missing 'name' value for %1 in %2").arg(layout->id).arg(layoutsFilepath));
             return false;
         }
         int lwidth = ParseUtil::jsonToInt(layoutObj["width"]);
         if (lwidth <= 0) {
-            logError(QString("Invalid layout 'width' value '%1' on layout %2 in %3. Must be greater than 0.").arg(lwidth).arg(i).arg(layoutsFilepath));
+            logError(QString("Invalid 'width' value '%1' for %2 in %3. Must be greater than 0.").arg(lwidth).arg(layout->id).arg(layoutsFilepath));
             return false;
         }
         layout->width = lwidth;
         int lheight = ParseUtil::jsonToInt(layoutObj["height"]);
         if (lheight <= 0) {
-            logError(QString("Invalid layout 'height' value '%1' on layout %2 in %3. Must be greater than 0.").arg(lheight).arg(i).arg(layoutsFilepath));
+            logError(QString("Invalid 'height' value '%1' for %2 in %3. Must be greater than 0.").arg(lheight).arg(layout->id).arg(layoutsFilepath));
             return false;
         }
         layout->height = lheight;
         if (useCustomBorderSize) {
             int bwidth = ParseUtil::jsonToInt(layoutObj["border_width"]);
             if (bwidth <= 0) {  // 0 is an expected border width/height that should be handled, GF used it for the RS layouts in FRLG
-                logWarn(QString("Invalid layout 'border_width' value '%1' on layout %2 in %3. Must be greater than 0. Using default (%4) instead.").arg(bwidth).arg(i).arg(layoutsFilepath).arg(DEFAULT_BORDER_WIDTH));
+                logWarn(QString("Invalid 'border_width' value '%1' for %2 in %3. Must be greater than 0. Using default (%4) instead.")
+                                .arg(bwidth).arg(layout->id).arg(layoutsFilepath).arg(DEFAULT_BORDER_WIDTH));
                 bwidth = DEFAULT_BORDER_WIDTH;
             }
             layout->border_width = bwidth;
             int bheight = ParseUtil::jsonToInt(layoutObj["border_height"]);
             if (bheight <= 0) {
-                logWarn(QString("Invalid layout 'border_height' value '%1' on layout %2 in %3. Must be greater than 0. Using default (%4) instead.").arg(bheight).arg(i).arg(layoutsFilepath).arg(DEFAULT_BORDER_HEIGHT));
+                logWarn(QString("Invalid 'border_height' value '%1' for %2 in %3. Must be greater than 0. Using default (%4) instead.")
+                                .arg(bheight).arg(layout->id).arg(layoutsFilepath).arg(DEFAULT_BORDER_HEIGHT));
                 bheight = DEFAULT_BORDER_HEIGHT;
             }
             layout->border_height = bheight;
@@ -498,22 +506,22 @@ bool Project::readMapLayouts() {
         }
         layout->tileset_primary_label = ParseUtil::jsonToQString(layoutObj["primary_tileset"]);
         if (layout->tileset_primary_label.isEmpty()) {
-            logError(QString("Missing 'primary_tileset' value on layout %1 in %2").arg(i).arg(layoutsFilepath));
+            logError(QString("Missing 'primary_tileset' value for %1 in %2").arg(layout->id).arg(layoutsFilepath));
             return false;
         }
         layout->tileset_secondary_label = ParseUtil::jsonToQString(layoutObj["secondary_tileset"]);
         if (layout->tileset_secondary_label.isEmpty()) {
-            logError(QString("Missing 'secondary_tileset' value on layout %1 in %2").arg(i).arg(layoutsFilepath));
+            logError(QString("Missing 'secondary_tileset' value for %1 in %2").arg(layout->id).arg(layoutsFilepath));
             return false;
         }
         layout->border_path = ParseUtil::jsonToQString(layoutObj["border_filepath"]);
         if (layout->border_path.isEmpty()) {
-            logError(QString("Missing 'border_filepath' value on layout %1 in %2").arg(i).arg(layoutsFilepath));
+            logError(QString("Missing 'border_filepath' value for %1 in %2").arg(layout->id).arg(layoutsFilepath));
             return false;
         }
         layout->blockdata_path = ParseUtil::jsonToQString(layoutObj["blockdata_filepath"]);
         if (layout->blockdata_path.isEmpty()) {
-            logError(QString("Missing 'blockdata_filepath' value on layout %1 in %2").arg(i).arg(layoutsFilepath));
+            logError(QString("Missing 'blockdata_filepath' value for %1 in %2").arg(layout->id).arg(layoutsFilepath));
             return false;
         }
         mapLayouts.insert(layout->id, layout);
