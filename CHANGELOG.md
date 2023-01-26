@@ -10,6 +10,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ### Fixed
 - Fix events being hidden behind connecting maps.
 - Fix some minor visual issues on the Connections tab.
+- Fix the updated pokefirered region map graphics appearing in grayscale.
 
 ## [5.1.0] - 2023-01-22
 ### Added
