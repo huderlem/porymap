@@ -30,11 +30,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Metatile labels with values defined outside their tileset are no longer deleted.
 - Fix the Tileset Editor retaining edit history after changing tilesets.
 - Fix some minor visual issues on the Connections tab.
-- Fix bug which caused encounter configurator to crash if slots in fields containing groups were deleted.
-- Fix bug which caused encounter configurator to crash if last field was deleted.
-- Fix map render when collision view was active while map changed.
 - Fix the updated pokefirered region map graphics appearing in grayscale.
-- Fix the API function `registerAction` not correctly handling actions with the same name.
 
 ## [5.1.0] - 2023-01-22
 ### Added
