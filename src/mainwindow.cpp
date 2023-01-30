@@ -19,6 +19,7 @@
 #include "prefab.h"
 #include "montabwidget.h"
 #include "imageexport.h"
+#include "maplistmodels.h"
 
 #include <QFileDialog>
 #include <QClipboard>
@@ -151,13 +152,14 @@ void MainWindow::initExtraShortcuts() {
     shortcutToggle_Smart_Paths->setObjectName("shortcutToggle_Smart_Paths");
     shortcutToggle_Smart_Paths->setWhatsThis("Toggle Smart Paths");
 
-    auto *shortcutExpand_All = new Shortcut(QKeySequence(), this, SLOT(on_toolButton_ExpandAll_clicked()));
-    shortcutExpand_All->setObjectName("shortcutExpand_All");
-    shortcutExpand_All->setWhatsThis("Map List: Expand all folders");
+    /// !TODO
+    // auto *shortcutExpand_All = new Shortcut(QKeySequence(), this, SLOT(on_toolButton_ExpandAll_clicked()));
+    // shortcutExpand_All->setObjectName("shortcutExpand_All");
+    // shortcutExpand_All->setWhatsThis("Map List: Expand all folders");
 
-    auto *shortcutCollapse_All = new Shortcut(QKeySequence(), this, SLOT(on_toolButton_CollapseAll_clicked()));
-    shortcutCollapse_All->setObjectName("shortcutCollapse_All");
-    shortcutCollapse_All->setWhatsThis("Map List: Collapse all folders");
+    // auto *shortcutCollapse_All = new Shortcut(QKeySequence(), this, SLOT(on_toolButton_CollapseAll_clicked()));
+    // shortcutCollapse_All->setObjectName("shortcutCollapse_All");
+    // shortcutCollapse_All->setWhatsThis("Map List: Collapse all folders");
 
     auto *shortcut_Open_Scripts = new Shortcut(QKeySequence(), ui->toolButton_Open_Scripts, SLOT(click()));
     shortcut_Open_Scripts->setObjectName("shortcut_Open_Scripts");
@@ -210,6 +212,7 @@ void MainWindow::initCustomUI() {
 }
 
 void MainWindow::initExtraSignals() {
+    /// !TODO
     // Right-clicking on items in the map list tree view brings up a context menu.
     ui->mapList->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->mapList, &QTreeView::customContextMenuRequested,
@@ -311,16 +314,17 @@ void MainWindow::initEditor() {
 }
 
 void MainWindow::initMiscHeapObjects() {
-    mapIcon = new QIcon(QStringLiteral(":/icons/map.ico"));
-    mapEditedIcon = new QIcon(QStringLiteral(":/icons/map_edited.ico"));
-    mapOpenedIcon = new QIcon(QStringLiteral(":/icons/map_opened.ico"));
+    // mapIcon = new QIcon(QStringLiteral(":/icons/map.ico"));
+    // mapEditedIcon = new QIcon(QStringLiteral(":/icons/map_edited.ico"));
+    // mapOpenedIcon = new QIcon(QStringLiteral(":/icons/map_opened.ico"));
 
-    mapListModel = new QStandardItemModel;
-    mapGroupItemsList = new QList<QStandardItem*>;
-    mapListProxyModel = new FilterChildrenProxyModel;
+    /// !TODO
+    // mapListModel = new QStandardItemModel;
+    // mapGroupItemsList = new QList<QStandardItem*>;
+    // mapListProxyModel = new FilterChildrenProxyModel;
 
-    mapListProxyModel->setSourceModel(mapListModel);
-    ui->mapList->setModel(mapListProxyModel);
+    // mapListProxyModel->setSourceModel(mapListModel);
+    // ui->mapList->setModel(mapListProxyModel);
 
     eventTabObjectWidget = ui->tab_Objects;
     eventTabWarpWidget = ui->tab_Warps;
@@ -332,23 +336,23 @@ void MainWindow::initMiscHeapObjects() {
 }
 
 void MainWindow::initMapSortOrder() {
-    QMenu *mapSortOrderMenu = new QMenu(this);
-    QActionGroup *mapSortOrderActionGroup = new QActionGroup(ui->toolButton_MapSortOrder);
+    // QMenu *mapSortOrderMenu = new QMenu(this);
+    // QActionGroup *mapSortOrderActionGroup = new QActionGroup(ui->toolButton_MapSortOrder);
 
-    mapSortOrderMenu->addAction(ui->actionSort_by_Group);
-    mapSortOrderMenu->addAction(ui->actionSort_by_Area);
-    mapSortOrderMenu->addAction(ui->actionSort_by_Layout);
-    ui->toolButton_MapSortOrder->setMenu(mapSortOrderMenu);
+    // mapSortOrderMenu->addAction(ui->actionSort_by_Group);
+    // mapSortOrderMenu->addAction(ui->actionSort_by_Area);
+    // mapSortOrderMenu->addAction(ui->actionSort_by_Layout);
+    // ui->toolButton_MapSortOrder->setMenu(mapSortOrderMenu);
 
-    mapSortOrderActionGroup->addAction(ui->actionSort_by_Group);
-    mapSortOrderActionGroup->addAction(ui->actionSort_by_Area);
-    mapSortOrderActionGroup->addAction(ui->actionSort_by_Layout);
+    // mapSortOrderActionGroup->addAction(ui->actionSort_by_Group);
+    // mapSortOrderActionGroup->addAction(ui->actionSort_by_Area);
+    // mapSortOrderActionGroup->addAction(ui->actionSort_by_Layout);
 
-    connect(mapSortOrderActionGroup, &QActionGroup::triggered, this, &MainWindow::mapSortOrder_changed);
+    // connect(mapSortOrderActionGroup, &QActionGroup::triggered, this, &MainWindow::mapSortOrder_changed);
 
-    QAction* sortOrder = ui->toolButton_MapSortOrder->menu()->actions()[mapSortOrder];
-    ui->toolButton_MapSortOrder->setIcon(sortOrder->icon());
-    sortOrder->setChecked(true);
+    // QAction* sortOrder = ui->toolButton_MapSortOrder->menu()->actions()[mapSortOrder];
+    // ui->toolButton_MapSortOrder->setIcon(sortOrder->icon());
+    // sortOrder->setChecked(true);
 }
 
 void MainWindow::showWindowTitle() {
@@ -393,46 +397,20 @@ void MainWindow::setProjectSpecificUIVisibility()
     ui->label_FloorNumber->setVisible(floorNumEnabled);
 }
 
-void MainWindow::mapSortOrder_changed(QAction *action)
-{
-    QList<QAction*> items = ui->toolButton_MapSortOrder->menu()->actions();
-    int i = 0;
-    for (; i < items.count(); i++)
-    {
-        if (items[i] == action)
-        {
-            break;
-        }
-    }
-
-    if (i != mapSortOrder)
-    {
-        ui->toolButton_MapSortOrder->setIcon(action->icon());
-        mapSortOrder = static_cast<MapSortOrder>(i);
-        porymapConfig.setMapSortOrder(mapSortOrder);
-        if (isProjectOpen())
-        {
-            sortMapList();
-            applyMapListFilter(ui->lineEdit_filterBox->text());
-        }
-    }
+void MainWindow::on_lineEdit_filterBox_textChanged(const QString &text) {
+    this->applyMapListFilter(text);
 }
 
-void MainWindow::on_lineEdit_filterBox_textChanged(const QString &arg1)
-{
-    this->applyMapListFilter(arg1);
-}
-
-void MainWindow::applyMapListFilter(QString filterText)
-{
-    mapListProxyModel->setFilterRegularExpression(QRegularExpression(filterText, QRegularExpression::CaseInsensitiveOption));
+void MainWindow::applyMapListFilter(QString filterText) {
+    /// !TODO
+    groupListProxyModel->setFilterRegularExpression(QRegularExpression(filterText, QRegularExpression::CaseInsensitiveOption));
     if (filterText.isEmpty()) {
         ui->mapList->collapseAll();
     } else {
         ui->mapList->expandToDepth(0);
     }
-    ui->mapList->setExpanded(mapListProxyModel->mapFromSource(mapListIndexes.value(editor->map->name)), true);
-    ui->mapList->scrollTo(mapListProxyModel->mapFromSource(mapListIndexes.value(editor->map->name)), QAbstractItemView::PositionAtCenter);
+    // ui->mapList->setExpanded(mapListProxyModel->mapFromSource(mapListIndexes.value(editor->map->name)), true);
+    // ui->mapList->scrollTo(mapListProxyModel->mapFromSource(mapListIndexes.value(editor->map->name)), QAbstractItemView::PositionAtCenter);
 }
 
 void MainWindow::loadUserSettings() {
@@ -650,8 +628,9 @@ bool MainWindow::setMap(QString map_name, bool scrollTreeView) {
         return false;
     }
 
-    if (editor->map != nullptr && !editor->map->name.isNull()) {
-        ui->mapList->setExpanded(mapListProxyModel->mapFromSource(mapListIndexes.value(editor->map->name)), false);
+    if (editor->map && !editor->map->name.isNull()) {
+        // !TODO: function to act on current view? or that does all the views
+        ui->mapList->setExpanded(groupListProxyModel->mapFromSource(mapGroupModel->indexOfMap(map_name)), false);
     }
 
     refreshMapScene();
@@ -659,12 +638,11 @@ bool MainWindow::setMap(QString map_name, bool scrollTreeView) {
 
     if (scrollTreeView) {
         // Make sure we clear the filter first so we actually have a scroll target
-        mapListProxyModel->setFilterRegularExpression(QString());
-        ui->mapList->setCurrentIndex(mapListProxyModel->mapFromSource(mapListIndexes.value(map_name)));
+        /// !TODO: make this onto a function that scrolls the current view taking a map name or layout name
+        groupListProxyModel->setFilterRegularExpression(QString());
+        ui->mapList->setCurrentIndex(groupListProxyModel->mapFromSource(mapGroupModel->indexOfMap(map_name)));
         ui->mapList->scrollTo(ui->mapList->currentIndex(), QAbstractItemView::PositionAtCenter);
     }
-
-    ui->mapList->setExpanded(mapListProxyModel->mapFromSource(mapListIndexes.value(map_name)), true);
 
     showWindowTitle();
 
@@ -973,169 +951,187 @@ bool MainWindow::loadProjectCombos() {
     return true;
 }
 
+/// !TODO
 bool MainWindow::populateMapList() {
+    // bool success = editor->project->readMapGroups();
+    // if (success) {
+    //     sortMapList();
+    // }
+    // return success;
     bool success = editor->project->readMapGroups();
-    if (success) {
-        sortMapList();
-    }
+
+    this->mapGroupModel = new MapGroupModel(editor->project);
+    this->groupListProxyModel = new FilterChildrenProxyModel();
+    groupListProxyModel->setSourceModel(this->mapGroupModel);
+    ui->mapList->setModel(groupListProxyModel);
+
+    // ui->mapList->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    // ui->mapList->setDragEnabled(true);
+    // ui->mapList->setAcceptDrops(true);
+    // ui->mapList->setDropIndicatorShown(true);
+
     return success;
+
+    //MapGroupModel
 }
 
 void MainWindow::sortMapList() {
-    Project *project = editor->project;
+    // Project *project = editor->project;
 
-    QIcon mapFolderIcon;
-    mapFolderIcon.addFile(QStringLiteral(":/icons/folder_closed_map.ico"), QSize(), QIcon::Normal, QIcon::Off);
-    mapFolderIcon.addFile(QStringLiteral(":/icons/folder_map.ico"), QSize(), QIcon::Normal, QIcon::On);
+    // QIcon mapFolderIcon;
+    // mapFolderIcon.addFile(QStringLiteral(":/icons/folder_closed_map.ico"), QSize(), QIcon::Normal, QIcon::Off);
+    // mapFolderIcon.addFile(QStringLiteral(":/icons/folder_map.ico"), QSize(), QIcon::Normal, QIcon::On);
 
-    QIcon folderIcon;
-    folderIcon.addFile(QStringLiteral(":/icons/folder_closed.ico"), QSize(), QIcon::Normal, QIcon::Off);
-    //folderIcon.addFile(QStringLiteral(":/icons/folder.ico"), QSize(), QIcon::Normal, QIcon::On);
+    // QIcon folderIcon;
+    // folderIcon.addFile(QStringLiteral(":/icons/folder_closed.ico"), QSize(), QIcon::Normal, QIcon::Off);
+    // //folderIcon.addFile(QStringLiteral(":/icons/folder.ico"), QSize(), QIcon::Normal, QIcon::On);
 
-    ui->mapList->setUpdatesEnabled(false);
-    mapListModel->clear();
-    mapGroupItemsList->clear();
-    QStandardItem *root = mapListModel->invisibleRootItem();
+    // ui->mapList->setUpdatesEnabled(false);
+    // mapListModel->clear();
+    // mapGroupItemsList->clear();
+    // QStandardItem *root = mapListModel->invisibleRootItem();
 
-    switch (mapSortOrder)
-    {
-        case MapSortOrder::Group:
-            for (int i = 0; i < project->groupNames.length(); i++) {
-                QString group_name = project->groupNames.value(i);
-                QStandardItem *group = new QStandardItem;
-                group->setText(group_name);
-                group->setIcon(mapFolderIcon);
-                group->setEditable(false);
-                group->setData(group_name, Qt::UserRole);
-                group->setData("map_group", MapListUserRoles::TypeRole);
-                group->setData(i, MapListUserRoles::GroupRole);
-                root->appendRow(group);
-                mapGroupItemsList->append(group);
-                QStringList names = project->groupedMapNames.value(i);
-                for (int j = 0; j < names.length(); j++) {
-                    QString map_name = names.value(j);
-                    QStandardItem *map = createMapItem(map_name, i, j);
-                    group->appendRow(map);
-                    mapListIndexes.insert(map_name, map->index());
-                }
-            }
-            break;
-        case MapSortOrder::Area:
-        {
-            QMap<QString, int> mapsecToGroupNum;
-            for (int i = 0; i < project->mapSectionNameToValue.size(); i++) {
-                QString mapsec_name = project->mapSectionValueToName.value(i);
-                QStandardItem *mapsec = new QStandardItem;
-                mapsec->setText(mapsec_name);
-                mapsec->setIcon(folderIcon);
-                mapsec->setEditable(false);
-                mapsec->setData(mapsec_name, Qt::UserRole);
-                mapsec->setData("map_sec", MapListUserRoles::TypeRole);
-                mapsec->setData(i, MapListUserRoles::GroupRole);
-                root->appendRow(mapsec);
-                mapGroupItemsList->append(mapsec);
-                mapsecToGroupNum.insert(mapsec_name, i);
-            }
-            for (int i = 0; i < project->groupNames.length(); i++) {
-                QStringList names = project->groupedMapNames.value(i);
-                for (int j = 0; j < names.length(); j++) {
-                    QString map_name = names.value(j);
-                    QStandardItem *map = createMapItem(map_name, i, j);
-                    QString location = project->readMapLocation(map_name);
-                    QStandardItem *mapsecItem = mapGroupItemsList->at(mapsecToGroupNum[location]);
-                    mapsecItem->setIcon(mapFolderIcon);
-                    mapsecItem->appendRow(map);
-                    mapListIndexes.insert(map_name, map->index());
-                }
-            }
-            break;
-        }
-        case MapSortOrder::Layout:
-        {
-            QMap<QString, int> layoutIndices;
-            for (int i = 0; i < project->mapLayoutsTable.length(); i++) {
-                QString layoutId = project->mapLayoutsTable.value(i);
-                MapLayout *layout = project->mapLayouts.value(layoutId);
-                QStandardItem *layoutItem = new QStandardItem;
-                layoutItem->setText(layout->name);
-                layoutItem->setIcon(folderIcon);
-                layoutItem->setEditable(false);
-                layoutItem->setData(layout->name, Qt::UserRole);
-                layoutItem->setData("map_layout", MapListUserRoles::TypeRole);
-                layoutItem->setData(layout->id, MapListUserRoles::TypeRole2);
-                layoutItem->setData(i, MapListUserRoles::GroupRole);
-                root->appendRow(layoutItem);
-                mapGroupItemsList->append(layoutItem);
-                layoutIndices[layoutId] = i;
-            }
-            for (int i = 0; i < project->groupNames.length(); i++) {
-                QStringList names = project->groupedMapNames.value(i);
-                for (int j = 0; j < names.length(); j++) {
-                    QString map_name = names.value(j);
-                    QStandardItem *map = createMapItem(map_name, i, j);
-                    QString layoutId = project->readMapLayoutId(map_name);
-                    QStandardItem *layoutItem = mapGroupItemsList->at(layoutIndices.value(layoutId));
-                    layoutItem->setIcon(mapFolderIcon);
-                    layoutItem->appendRow(map);
-                    mapListIndexes.insert(map_name, map->index());
-                }
-            }
-            break;
-        }
-    }
+    // switch (mapSortOrder)
+    // {
+    //     case MapSortOrder::Group:
+    //         for (int i = 0; i < project->groupNames.length(); i++) {
+    //             QString group_name = project->groupNames.value(i);
+    //             QStandardItem *group = new QStandardItem;
+    //             group->setText(group_name);
+    //             group->setIcon(mapFolderIcon);
+    //             group->setEditable(false);
+    //             group->setData(group_name, Qt::UserRole);
+    //             group->setData("map_group", MapListUserRoles::TypeRole);
+    //             group->setData(i, MapListUserRoles::GroupRole);
+    //             root->appendRow(group);
+    //             mapGroupItemsList->append(group);
+    //             QStringList names = project->groupedMapNames.value(i);
+    //             for (int j = 0; j < names.length(); j++) {
+    //                 QString map_name = names.value(j);
+    //                 QStandardItem *map = createMapItem(map_name, i, j);
+    //                 group->appendRow(map);
+    //                 mapListIndexes.insert(map_name, map->index());
+    //             }
+    //         }
+    //         break;
+    //     case MapSortOrder::Area:
+    //     {
+    //         QMap<QString, int> mapsecToGroupNum;
+    //         for (int i = 0; i < project->mapSectionNameToValue.size(); i++) {
+    //             QString mapsec_name = project->mapSectionValueToName.value(i);
+    //             QStandardItem *mapsec = new QStandardItem;
+    //             mapsec->setText(mapsec_name);
+    //             mapsec->setIcon(folderIcon);
+    //             mapsec->setEditable(false);
+    //             mapsec->setData(mapsec_name, Qt::UserRole);
+    //             mapsec->setData("map_sec", MapListUserRoles::TypeRole);
+    //             mapsec->setData(i, MapListUserRoles::GroupRole);
+    //             root->appendRow(mapsec);
+    //             mapGroupItemsList->append(mapsec);
+    //             mapsecToGroupNum.insert(mapsec_name, i);
+    //         }
+    //         for (int i = 0; i < project->groupNames.length(); i++) {
+    //             QStringList names = project->groupedMapNames.value(i);
+    //             for (int j = 0; j < names.length(); j++) {
+    //                 QString map_name = names.value(j);
+    //                 QStandardItem *map = createMapItem(map_name, i, j);
+    //                 QString location = project->readMapLocation(map_name);
+    //                 QStandardItem *mapsecItem = mapGroupItemsList->at(mapsecToGroupNum[location]);
+    //                 mapsecItem->setIcon(mapFolderIcon);
+    //                 mapsecItem->appendRow(map);
+    //                 mapListIndexes.insert(map_name, map->index());
+    //             }
+    //         }
+    //         break;
+    //     }
+    //     case MapSortOrder::Layout:
+    //     {
+    //         QMap<QString, int> layoutIndices;
+    //         for (int i = 0; i < project->mapLayoutsTable.length(); i++) {
+    //             QString layoutId = project->mapLayoutsTable.value(i);
+    //             MapLayout *layout = project->mapLayouts.value(layoutId);
+    //             QStandardItem *layoutItem = new QStandardItem;
+    //             layoutItem->setText(layout->name);
+    //             layoutItem->setIcon(folderIcon);
+    //             layoutItem->setEditable(false);
+    //             layoutItem->setData(layout->name, Qt::UserRole);
+    //             layoutItem->setData("map_layout", MapListUserRoles::TypeRole);
+    //             layoutItem->setData(layout->id, MapListUserRoles::TypeRole2);
+    //             layoutItem->setData(i, MapListUserRoles::GroupRole);
+    //             root->appendRow(layoutItem);
+    //             mapGroupItemsList->append(layoutItem);
+    //             layoutIndices[layoutId] = i;
+    //         }
+    //         for (int i = 0; i < project->groupNames.length(); i++) {
+    //             QStringList names = project->groupedMapNames.value(i);
+    //             for (int j = 0; j < names.length(); j++) {
+    //                 QString map_name = names.value(j);
+    //                 QStandardItem *map = createMapItem(map_name, i, j);
+    //                 QString layoutId = project->readMapLayoutId(map_name);
+    //                 QStandardItem *layoutItem = mapGroupItemsList->at(layoutIndices.value(layoutId));
+    //                 layoutItem->setIcon(mapFolderIcon);
+    //                 layoutItem->appendRow(map);
+    //                 mapListIndexes.insert(map_name, map->index());
+    //             }
+    //         }
+    //         break;
+    //     }
+    // }
 
-    ui->mapList->setUpdatesEnabled(true);
-    ui->mapList->repaint();
-    updateMapList();
+    // ui->mapList->setUpdatesEnabled(true);
+    // ui->mapList->repaint();
+    // updateMapList();
 }
 
+/// !TODO
 QStandardItem* MainWindow::createMapItem(QString mapName, int groupNum, int inGroupNum) {
-    QStandardItem *map = new QStandardItem;
-    map->setText(QString("[%1.%2] ").arg(groupNum).arg(inGroupNum, 2, 10, QLatin1Char('0')) + mapName);
-    map->setIcon(*mapIcon);
-    map->setEditable(false);
-    map->setData(mapName, Qt::UserRole);
-    map->setData("map_name", MapListUserRoles::TypeRole);
-    return map;
+    // QStandardItem *map = new QStandardItem;
+    // map->setText(QString("[%1.%2] ").arg(groupNum).arg(inGroupNum, 2, 10, QLatin1Char('0')) + mapName);
+    // map->setIcon(*mapIcon);
+    // map->setEditable(false);
+    // map->setData(mapName, Qt::UserRole);
+    // map->setData("map_name", MapListUserRoles::TypeRole);
+    // return map;
 }
 
 void MainWindow::onOpenMapListContextMenu(const QPoint &point)
 {
-    QModelIndex index = mapListProxyModel->mapToSource(ui->mapList->indexAt(point));
-    if (!index.isValid()) {
-        return;
-    }
+    /// !TODO
+    // QModelIndex index = mapListProxyModel->mapToSource(ui->mapList->indexAt(point));
+    // if (!index.isValid()) {
+    //     return;
+    // }
 
-    QStandardItem *selectedItem = mapListModel->itemFromIndex(index);
-    QVariant itemType = selectedItem->data(MapListUserRoles::TypeRole);
-    if (!itemType.isValid()) {
-        return;
-    }
+    // QStandardItem *selectedItem = mapListModel->itemFromIndex(index);
+    // QVariant itemType = selectedItem->data(MapListUserRoles::TypeRole);
+    // if (!itemType.isValid()) {
+    //     return;
+    // }
 
-    // Build custom context menu depending on which type of item was selected (map group, map name, etc.)
-    if (itemType == "map_group") {
-        QString groupName = selectedItem->data(Qt::UserRole).toString();
-        int groupNum = selectedItem->data(MapListUserRoles::GroupRole).toInt();
-        QMenu* menu = new QMenu(this);
-        QActionGroup* actions = new QActionGroup(menu);
-        actions->addAction(menu->addAction("Add New Map to Group"))->setData(groupNum);
-        connect(actions, &QActionGroup::triggered, this, &MainWindow::onAddNewMapToGroupClick);
-        menu->exec(QCursor::pos());
-    } else if (itemType == "map_sec") {
-        QString secName = selectedItem->data(Qt::UserRole).toString();
-        QMenu* menu = new QMenu(this);
-        QActionGroup* actions = new QActionGroup(menu);
-        actions->addAction(menu->addAction("Add New Map to Area"))->setData(secName);
-        connect(actions, &QActionGroup::triggered, this, &MainWindow::onAddNewMapToAreaClick);
-        menu->exec(QCursor::pos());
-    } else if (itemType == "map_layout") {
-        QString layoutId = selectedItem->data(MapListUserRoles::TypeRole2).toString();
-        QMenu* menu = new QMenu(this);
-        QActionGroup* actions = new QActionGroup(menu);
-        actions->addAction(menu->addAction("Add New Map with Layout"))->setData(layoutId);
-        connect(actions, &QActionGroup::triggered, this, &MainWindow::onAddNewMapToLayoutClick);
-        menu->exec(QCursor::pos());
-    }
+    // // Build custom context menu depending on which type of item was selected (map group, map name, etc.)
+    // if (itemType == "map_group") {
+    //     QString groupName = selectedItem->data(Qt::UserRole).toString();
+    //     int groupNum = selectedItem->data(MapListUserRoles::GroupRole).toInt();
+    //     QMenu* menu = new QMenu(this);
+    //     QActionGroup* actions = new QActionGroup(menu);
+    //     actions->addAction(menu->addAction("Add New Map to Group"))->setData(groupNum);
+    //     connect(actions, &QActionGroup::triggered, this, &MainWindow::onAddNewMapToGroupClick);
+    //     menu->exec(QCursor::pos());
+    // } else if (itemType == "map_sec") {
+    //     QString secName = selectedItem->data(Qt::UserRole).toString();
+    //     QMenu* menu = new QMenu(this);
+    //     QActionGroup* actions = new QActionGroup(menu);
+    //     actions->addAction(menu->addAction("Add New Map to Area"))->setData(secName);
+    //     connect(actions, &QActionGroup::triggered, this, &MainWindow::onAddNewMapToAreaClick);
+    //     menu->exec(QCursor::pos());
+    // } else if (itemType == "map_layout") {
+    //     QString layoutId = selectedItem->data(MapListUserRoles::TypeRole2).toString();
+    //     QMenu* menu = new QMenu(this);
+    //     QActionGroup* actions = new QActionGroup(menu);
+    //     actions->addAction(menu->addAction("Add New Map with Layout"))->setData(layoutId);
+    //     connect(actions, &QActionGroup::triggered, this, &MainWindow::onAddNewMapToLayoutClick);
+    //     menu->exec(QCursor::pos());
+    // }
 }
 
 void MainWindow::onAddNewMapToGroupClick(QAction* triggeredAction)
@@ -1170,14 +1166,15 @@ void MainWindow::onNewMapCreated() {
     editor->project->saveMap(newMap);
     editor->project->saveAllDataStructures();
 
-    QStandardItem* groupItem = mapGroupItemsList->at(newMapGroup);
-    int numMapsInGroup = groupItem->rowCount();
+    // !TODO
+    // QStandardItem* groupItem = mapGroupItemsList->at(newMapGroup);
+    // int numMapsInGroup = groupItem->rowCount();
 
-    QStandardItem *newMapItem = createMapItem(newMapName, newMapGroup, numMapsInGroup);
-    groupItem->appendRow(newMapItem);
-    mapListIndexes.insert(newMapName, newMapItem->index());
+    // QStandardItem *newMapItem = createMapItem(newMapName, newMapGroup, numMapsInGroup);
+    // groupItem->appendRow(newMapItem);
+    // mapListIndexes.insert(newMapName, newMapItem->index());
 
-    sortMapList();
+    // sortMapList();
     setMap(newMapName, true);
 
     if (newMap->needsHealLocation) {
@@ -1362,10 +1359,11 @@ void MainWindow::currentMetatilesSelectionChanged()
     }
 }
 
+/// !TODO
 void MainWindow::on_mapList_activated(const QModelIndex &index)
 {
     QVariant data = index.data(Qt::UserRole);
-    if (index.data(MapListUserRoles::TypeRole) == "map_name" && !data.isNull()) {
+    if (index.data(MapListRoles::TypeRole) == "map_name" && !data.isNull()) {
         QString mapName = data.toString();
         if (!setMap(mapName)) {
             QMessageBox msgBox(this);
@@ -1378,38 +1376,43 @@ void MainWindow::on_mapList_activated(const QModelIndex &index)
     }
 }
 
+/// !TODO something with the projectHasUnsavedChanges var
 void MainWindow::drawMapListIcons(QAbstractItemModel *model) {
-    projectHasUnsavedChanges = false;
-    QList<QModelIndex> list;
-    list.append(QModelIndex());
-    while (list.length()) {
-        QModelIndex parent = list.takeFirst();
-        for (int i = 0; i < model->rowCount(parent); i++) {
-            QModelIndex index = model->index(i, 0, parent);
-            if (model->hasChildren(index)) {
-                list.append(index);
-            }
-            QVariant data = index.data(Qt::UserRole);
-            if (!data.isNull()) {
-                QString map_name = data.toString();
-                if (editor->project && editor->project->mapCache.contains(map_name)) {
-                    QStandardItem *map = mapListModel->itemFromIndex(mapListIndexes.value(map_name));
-                    map->setIcon(*mapIcon);
-                    if (editor->project->mapCache.value(map_name)->hasUnsavedChanges()) {
-                        map->setIcon(*mapEditedIcon);
-                        projectHasUnsavedChanges = true;
-                    }
-                    if (editor->map->name == map_name) {
-                        map->setIcon(*mapOpenedIcon);
-                    }
-                }
-            }
-        }
-    }
+    // projectHasUnsavedChanges = false;
+    // QList<QModelIndex> list;
+    // list.append(QModelIndex());
+    // while (list.length()) {
+    //     QModelIndex parent = list.takeFirst();
+    //     for (int i = 0; i < model->rowCount(parent); i++) {
+    //         QModelIndex index = model->index(i, 0, parent);
+    //         if (model->hasChildren(index)) {
+    //             list.append(index);
+    //         }
+    //         QVariant data = index.data(Qt::UserRole);
+    //         if (!data.isNull()) {
+    //             QString map_name = data.toString();
+    //             if (editor->project && editor->project->mapCache.contains(map_name)) {
+    //                 QStandardItem *map = mapListModel->itemFromIndex(mapListIndexes.value(map_name));
+    //                 map->setIcon(*mapIcon);
+    //                 if (editor->project->mapCache.value(map_name)->hasUnsavedChanges()) {
+    //                     map->setIcon(*mapEditedIcon);
+    //                     projectHasUnsavedChanges = true;
+    //                 }
+    //                 if (editor->map->name == map_name) {
+    //                     map->setIcon(*mapOpenedIcon);
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 }
 
 void MainWindow::updateMapList() {
-    drawMapListIcons(mapListModel);
+    //MapGroupModel *model = static_cast<MapGroupModel *>(this->ui->mapList->model());
+    mapGroupModel->setMap(this->editor->map->name);
+    groupListProxyModel->layoutChanged();
+    //mapGroupModel->layoutChanged();
+    // drawMapListIcons(mapListModel);
 }
 
 void MainWindow::on_action_Save_Project_triggered() {
@@ -2667,18 +2670,42 @@ void MainWindow::initTilesetEditor() {
     connect(this->tilesetEditor, &TilesetEditor::tilesetsSaved, this, &MainWindow::onTilesetsSaved);
 }
 
-void MainWindow::on_toolButton_ExpandAll_clicked()
-{
-    if (ui->mapList) {
-        ui->mapList->expandToDepth(0);
-    }
+// void MainWindow::on_toolButton_ExpandAll_clicked()
+// {
+//     if (ui->mapList) {
+//         ui->mapList->expandToDepth(0);
+//     }
+// }
+
+// void MainWindow::on_toolButton_CollapseAll_clicked()
+// {
+//     if (ui->mapList) {
+//         ui->mapList->collapseAll();
+//     }
+// }
+
+void MainWindow::on_toolButton_ExpandAll_Groups_clicked() {
+    //
 }
 
-void MainWindow::on_toolButton_CollapseAll_clicked()
-{
-    if (ui->mapList) {
-        ui->mapList->collapseAll();
-    }
+void MainWindow::on_toolButton_CollapseAll_Groups_clicked() {
+    //
+}
+
+void MainWindow::on_toolButton_ExpandAll_Areas_clicked() {
+    //
+}
+
+void MainWindow::on_toolButton_CollapseAll_Areas_clicked() {
+    //
+}
+
+void MainWindow::on_toolButton_ExpandAll_Layouts_clicked() {
+    //
+}
+
+void MainWindow::on_toolButton_CollapseAll_Layouts_clicked() {
+    //
 }
 
 void MainWindow::on_actionAbout_Porymap_triggered()

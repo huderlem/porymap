@@ -58,6 +58,7 @@ SOURCES += src/core/block.cpp \
     src/ui/customattributestable.cpp \
     src/ui/eventframes.cpp \
     src/ui/filterchildrenproxymodel.cpp \
+    src/ui/maplistmodels.cpp \
     src/ui/graphicsview.cpp \
     src/ui/imageproviders.cpp \
     src/ui/mappixmapitem.cpp \
@@ -147,6 +148,7 @@ HEADERS  += include/core/block.h \
     include/ui/customattributestable.h \
     include/ui/eventframes.h \
     include/ui/filterchildrenproxymodel.h \
+    include/ui/maplistmodels.h \
     include/ui/graphicsview.h \
     include/ui/imageproviders.h \
     include/ui/mappixmapitem.h \
