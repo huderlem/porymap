@@ -96,13 +96,13 @@ void NewMapPopup::init() {
 void NewMapPopup::init(MapSortOrder type, QVariant data) {
     switch (type)
     {
-    case MapSortOrder::Group:
+    case MapSortOrder::SortByGroup:
         settings.group = project->groupNames.at(data.toInt());
         break;
-    case MapSortOrder::Area:
+    case MapSortOrder::SortByArea:
         settings.location = data.toString();
         break;
-    case MapSortOrder::Layout:
+    case MapSortOrder::SortByLayout:
         useLayout(data.toString());
         break;
     }

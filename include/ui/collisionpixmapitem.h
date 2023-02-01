@@ -3,18 +3,18 @@
 
 #include "metatileselector.h"
 #include "movementpermissionsselector.h"
-#include "mappixmapitem.h"
+#include "layoutpixmapitem.h"
 #include "map.h"
 #include "settings.h"
 
-class CollisionPixmapItem : public MapPixmapItem {
+class CollisionPixmapItem : public LayoutPixmapItem {
     Q_OBJECT
 public:
-    CollisionPixmapItem(Map *map, MovementPermissionsSelector *movementPermissionsSelector, MetatileSelector *metatileSelector, Settings *settings, qreal *opacity)
-        : MapPixmapItem(map, metatileSelector, settings){
+    CollisionPixmapItem(Layout *layout, MovementPermissionsSelector *movementPermissionsSelector, MetatileSelector *metatileSelector, Settings *settings, qreal *opacity)
+        : LayoutPixmapItem(layout, metatileSelector, settings){
         this->movementPermissionsSelector = movementPermissionsSelector;
         this->opacity = opacity;
-        map->setCollisionItem(this);
+        layout->setCollisionItem(this);
     }
     MovementPermissionsSelector *movementPermissionsSelector;
     qreal *opacity;

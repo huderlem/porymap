@@ -20,7 +20,7 @@
 #include "connectionpixmapitem.h"
 #include "currentselectedmetatilespixmapitem.h"
 #include "collisionpixmapitem.h"
-#include "mappixmapitem.h"
+#include "layoutpixmapitem.h"
 #include "settings.h"
 #include "movablerect.h"
 #include "cursortilerect.h"
@@ -46,7 +46,7 @@ public:
 
     Project *project = nullptr;
     Map *map = nullptr;
-    MapLayout *layout = nullptr; /* NEW */
+    Layout *layout = nullptr; /* NEW */
 
     QUndoGroup editGroup; // Manages the undo history for each map
 
@@ -60,6 +60,7 @@ public:
     void closeProject();
 
     bool setMap(QString map_name);
+    void unsetMap();
 
     Tileset *getCurrentMapPrimaryTileset();
 
@@ -123,7 +124,7 @@ public:
 
     QGraphicsScene *scene = nullptr;
     QGraphicsPixmapItem *current_view = nullptr;
-    MapPixmapItem *map_item = nullptr;
+    LayoutPixmapItem *map_item = nullptr;
     ConnectionPixmapItem* selected_connection_item = nullptr;
     QList<ConnectionPixmapItem*> connection_items;
     QGraphicsPathItem *connection_mask = nullptr;
@@ -201,11 +202,11 @@ private:
                                     qint64 *pid = nullptr);
 
 private slots:
-    void onMapStartPaint(QGraphicsSceneMouseEvent *event, MapPixmapItem *item);
-    void onMapEndPaint(QGraphicsSceneMouseEvent *event, MapPixmapItem *item);
+    void onMapStartPaint(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *item);
+    void onMapEndPaint(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *item);
     void setSmartPathCursorMode(QGraphicsSceneMouseEvent *event);
     void setStraightPathCursorMode(QGraphicsSceneMouseEvent *event);
-    void mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item);
+    void mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *item);
     void mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixmapItem *item);
     void onConnectionMoved(MapConnection*);
     void onConnectionItemSelected(ConnectionPixmapItem* connectionItem);

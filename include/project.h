@@ -56,8 +56,9 @@ public:
     QStringList mapLayoutsTable;
     QStringList mapLayoutsTableMaster;
     QString layoutsLabel;
-    QMap<QString, MapLayout*> mapLayouts;
-    QMap<QString, MapLayout*> mapLayoutsMaster;
+    QMap<QString, QString> layoutIdsToNames;
+    QMap<QString, Layout*> mapLayouts;
+    QMap<QString, Layout*> mapLayoutsMaster;
     QMap<QString, QString> mapSecToMapHoverName;
     QMap<QString, int> mapSectionNameToValue;
     QMap<int, QString> mapSectionValueToName;
@@ -115,8 +116,8 @@ public:
     QStringList tilesetLabelsOrdered;
 
     Blockdata readBlockdata(QString);
-    bool loadBlockdata(MapLayout*);
-    bool loadLayoutBorder(MapLayout*);
+    bool loadBlockdata(Layout *);
+    bool loadLayoutBorder(Layout *);
 
     void saveTextFile(QString path, QString text);
     void appendTextFile(QString path, QString text);
@@ -128,6 +129,7 @@ public:
     QString getProjectTitle();
 
     QString readMapLayoutId(QString map_name);
+    QString readMapLayoutName(QString mapName);
     QString readMapLocation(QString map_name);
 
     bool readWildMonData();
@@ -143,9 +145,9 @@ public:
     QSet<QString> getTopLevelMapFields();
     bool loadMapData(Map*);
     bool readMapLayouts();
-    bool loadLayout(MapLayout *);
+    bool loadLayout(Layout *);
     bool loadMapLayout(Map*);
-    bool loadLayoutTilesets(MapLayout*);
+    bool loadLayoutTilesets(Layout *);
     void loadTilesetAssets(Tileset*);
     void loadTilesetTiles(Tileset*, QImage);
     void loadTilesetMetatiles(Tileset*);

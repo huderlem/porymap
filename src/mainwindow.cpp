@@ -617,11 +617,31 @@ void MainWindow::on_action_Reload_Project_triggered() {
     }
 }
 
+void MainWindow::unsetMap() {
+    // 
+    logInfo("Disabling map-related edits");
+
+    //
+    this->editor->unsetMap();
+
+    // disable other tabs
+    this->ui->mainTabBar->setTabEnabled(0, true);
+    this->ui->mainTabBar->setTabEnabled(1, false);
+    this->ui->mainTabBar->setTabEnabled(2, false);
+    this->ui->mainTabBar->setTabEnabled(3, false);
+    this->ui->mainTabBar->setTabEnabled(4, false);
+
+    //
+}
+
 bool MainWindow::setMap(QString map_name, bool scrollTreeView) {
-    logInfo(QString("Setting map to '%1'").arg(map_name));
+    // if map name is empty, clear & disable map ui
     if (map_name.isEmpty()) {
+        unsetMap();
         return false;
     }
+
+    logInfo(QString("Setting map to '%1'").arg(map_name));
 
     if (!editor->setMap(map_name)) {
         logWarn(QString("Failed to set map to '%1'").arg(map_name));
@@ -965,6 +985,13 @@ bool MainWindow::populateMapList() {
     groupListProxyModel->setSourceModel(this->mapGroupModel);
     ui->mapList->setModel(groupListProxyModel);
 
+    this->layoutTreeModel = new LayoutTreeModel(editor->project);
+    this->layoutListProxyModel = new FilterChildrenProxyModel();
+    this->layoutListProxyModel->setSourceModel(this->layoutTreeModel);
+    ui->layoutList->setModel(layoutListProxyModel);
+
+    //connect(this->ui->layoutList, &QTreeView::doubleClicked, this, &MainWindow::on_layoutList_activated);
+
     // ui->mapList->setSelectionMode(QAbstractItemView::ExtendedSelection);
     // ui->mapList->setDragEnabled(true);
     // ui->mapList->setAcceptDrops(true);
@@ -993,7 +1020,7 @@ void MainWindow::sortMapList() {
 
     // switch (mapSortOrder)
     // {
-    //     case MapSortOrder::Group:
+    //     case MapSortOrder::SortByGroup:
     //         for (int i = 0; i < project->groupNames.length(); i++) {
     //             QString group_name = project->groupNames.value(i);
     //             QStandardItem *group = new QStandardItem;
@@ -1014,7 +1041,7 @@ void MainWindow::sortMapList() {
     //             }
     //         }
     //         break;
-    //     case MapSortOrder::Area:
+    //     case MapSortOrder::SortByArea:
     //     {
     //         QMap<QString, int> mapsecToGroupNum;
     //         for (int i = 0; i < project->mapSectionNameToValue.size(); i++) {
@@ -1044,7 +1071,7 @@ void MainWindow::sortMapList() {
     //         }
     //         break;
     //     }
-    //     case MapSortOrder::Layout:
+    //     case MapSortOrder::SortByLayout:
     //     {
     //         QMap<QString, int> layoutIndices;
     //         for (int i = 0; i < project->mapLayoutsTable.length(); i++) {
@@ -1137,19 +1164,19 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point)
 void MainWindow::onAddNewMapToGroupClick(QAction* triggeredAction)
 {
     openNewMapPopupWindow();
-    this->newMapPrompt->init(MapSortOrder::Group, triggeredAction->data());
+    this->newMapPrompt->init(MapSortOrder::SortByGroup, triggeredAction->data());
 }
 
 void MainWindow::onAddNewMapToAreaClick(QAction* triggeredAction)
 {
     openNewMapPopupWindow();
-    this->newMapPrompt->init(MapSortOrder::Area, triggeredAction->data());
+    this->newMapPrompt->init(MapSortOrder::SortByArea, triggeredAction->data());
 }
 
 void MainWindow::onAddNewMapToLayoutClick(QAction* triggeredAction)
 {
     openNewMapPopupWindow();
-    this->newMapPrompt->init(MapSortOrder::Layout, triggeredAction->data());
+    this->newMapPrompt->init(MapSortOrder::SortByLayout, triggeredAction->data());
 }
 
 void MainWindow::onNewMapCreated() {
@@ -1359,9 +1386,23 @@ void MainWindow::currentMetatilesSelectionChanged()
     }
 }
 
+// !TODO
+void MainWindow::on_mapListContainer_currentChanged(int index) {
+    //
+    switch (index) {
+    case MapListTab::Groups:
+        break;
+    case MapListTab::Areas:
+        break;
+    case MapListTab::Layouts:
+        //setMap(nullptr);
+        //setLayout(nullptr);
+        break;
+    }
+}
+
 /// !TODO
-void MainWindow::on_mapList_activated(const QModelIndex &index)
-{
+void MainWindow::on_mapList_activated(const QModelIndex &index) {
     QVariant data = index.data(Qt::UserRole);
     if (index.data(MapListRoles::TypeRole) == "map_name" && !data.isNull()) {
         QString mapName = data.toString();
@@ -1373,6 +1414,24 @@ void MainWindow::on_mapList_activated(const QModelIndex &index)
                     .arg(getMostRecentError());
             msgBox.critical(nullptr, "Error Opening Map", errorMsg);
         }
+    }
+}
+
+void MainWindow::on_areaList_activated(const QModelIndex &index) {
+    // 
+}
+
+void MainWindow::on_layoutList_activated(const QModelIndex &index) {
+    if (!index.isValid()) return;
+
+    QVariant data = index.data(Qt::UserRole);
+    if (index.data(MapListRoles::TypeRole) == "map_layout" && !data.isNull()) {
+        QString layoutName = data.toString();
+        // 
+        logInfo("Switching to a layout-only editing mode");
+        setMap(QString());
+        // setLayout(layout)
+        qDebug() << "set layout" << layoutName;
     }
 }
 
@@ -2616,21 +2675,21 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked()
     form.addRow(errorLabel);
 
     if (dialog.exec() == QDialog::Accepted) {
-        Map *map = editor->map;
-        Blockdata oldMetatiles = map->layout->blockdata;
-        Blockdata oldBorder = map->layout->border;
-        QSize oldMapDimensions(map->getWidth(), map->getHeight());
-        QSize oldBorderDimensions(map->getBorderWidth(), map->getBorderHeight());
+        Layout *layout = editor->layout;
+        Blockdata oldMetatiles = layout->blockdata;
+        Blockdata oldBorder = layout->border;
+        QSize oldMapDimensions(layout->getWidth(), layout->getHeight());
+        QSize oldBorderDimensions(layout->getBorderWidth(), layout->getBorderHeight());
         QSize newMapDimensions(widthSpinBox->value(), heightSpinBox->value());
         QSize newBorderDimensions(bwidthSpinBox->value(), bheightSpinBox->value());
         if (oldMapDimensions != newMapDimensions || oldBorderDimensions != newBorderDimensions) {
-            editor->map->setDimensions(newMapDimensions.width(), newMapDimensions.height(), true, true);
-            editor->map->setBorderDimensions(newBorderDimensions.width(), newBorderDimensions.height(), true, true);
-            editor->map->editHistory.push(new ResizeMap(map,
+            layout->setDimensions(newMapDimensions.width(), newMapDimensions.height(), true, true);
+            layout->setBorderDimensions(newBorderDimensions.width(), newBorderDimensions.height(), true, true);
+            editor->map->editHistory.push(new ResizeMap(layout,
                 oldMapDimensions, newMapDimensions,
-                oldMetatiles, map->layout->blockdata,
+                oldMetatiles, layout->blockdata,
                 oldBorderDimensions, newBorderDimensions,
-                oldBorder, map->layout->border
+                oldBorder, layout->border
             ));
         }
     }
@@ -2670,42 +2729,40 @@ void MainWindow::initTilesetEditor() {
     connect(this->tilesetEditor, &TilesetEditor::tilesetsSaved, this, &MainWindow::onTilesetsSaved);
 }
 
-// void MainWindow::on_toolButton_ExpandAll_clicked()
-// {
-//     if (ui->mapList) {
-//         ui->mapList->expandToDepth(0);
-//     }
-// }
-
-// void MainWindow::on_toolButton_CollapseAll_clicked()
-// {
-//     if (ui->mapList) {
-//         ui->mapList->collapseAll();
-//     }
-// }
-
 void MainWindow::on_toolButton_ExpandAll_Groups_clicked() {
-    //
+    if (ui->mapList) {
+        ui->mapList->expandToDepth(0);
+    }
 }
 
 void MainWindow::on_toolButton_CollapseAll_Groups_clicked() {
-    //
+    if (ui->mapList) {
+        ui->mapList->collapseAll();
+    }
 }
 
 void MainWindow::on_toolButton_ExpandAll_Areas_clicked() {
-    //
+    if (ui->areaList) {
+        ui->areaList->expandToDepth(0);
+    }
 }
 
 void MainWindow::on_toolButton_CollapseAll_Areas_clicked() {
-    //
+    if (ui->areaList) {
+        ui->areaList->collapseAll();
+    }
 }
 
 void MainWindow::on_toolButton_ExpandAll_Layouts_clicked() {
-    //
+    if (ui->layoutList) {
+        ui->layoutList->expandToDepth(0);
+    }
 }
 
 void MainWindow::on_toolButton_CollapseAll_Layouts_clicked() {
-    //
+    if (ui->layoutList) {
+        ui->layoutList->collapseAll();
+    }
 }
 
 void MainWindow::on_actionAbout_Porymap_triggered()

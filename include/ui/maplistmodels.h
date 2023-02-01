@@ -46,10 +46,40 @@ private:
 
     QString openMap;
 
-    // QIcon *mapIcon = nullptr;
-    // QIcon *mapEditedIcon = nullptr;
-    // QIcon *mapOpenedIcon = nullptr;
-    // QIcon *mapFolderIcon = nullptr;
+signals:
+    void edited();
+};
+
+
+
+class LayoutTreeModel : public QStandardItemModel {
+    Q_OBJECT
+
+public:
+    LayoutTreeModel(Project *project, QObject *parent = nullptr);
+    ~LayoutTreeModel() {}
+
+    QVariant data(const QModelIndex &index, int role) const override;
+
+public:
+    void setLayout(QString layoutName) { this->openLayout = layoutName; }
+
+    QStandardItem *createLayoutItem(QString layoutName);
+    QStandardItem *createMapItem(QString mapName);
+
+    QStandardItem *getItem(const QModelIndex &index) const;
+    QModelIndex indexOfLayout(QString layoutName);
+
+    void initialize();
+
+private:
+    Project *project;
+    QStandardItem *root = nullptr;
+
+    QMap<QString, QStandardItem *> layoutItems;
+    QMap<QString, QStandardItem *> mapItems;
+
+    QString openLayout;
 
 signals:
     void edited();

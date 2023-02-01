@@ -133,48 +133,8 @@ QPixmap Map::renderCollision(bool ignoreCache) {
     return collision_pixmap;
 }
 
-QPixmap Map::render(bool ignoreCache, MapLayout * fromLayout, QRect bounds) {
-    bool changed_any = false;
-    int width_ = getWidth();
-    int height_ = getHeight();
-    if (image.isNull() || image.width() != width_ * 16 || image.height() != height_ * 16) {
-        image = QImage(width_ * 16, height_ * 16, QImage::Format_RGBA8888);
-        changed_any = true;
-    }
-    if (layout->blockdata.isEmpty() || !width_ || !height_) {
-        pixmap = pixmap.fromImage(image);
-        return pixmap;
-    }
-
-    QPainter painter(&image);
-    for (int i = 0; i < layout->blockdata.length(); i++) {
-        if (!ignoreCache && !mapBlockChanged(i, layout->cached_blockdata)) {
-            continue;
-        }
-        changed_any = true;
-        int map_y = width_ ? i / width_ : 0;
-        int map_x = width_ ? i % width_ : 0;
-        if (bounds.isValid() && !bounds.contains(map_x, map_y)) {
-            continue;
-        }
-        QPoint metatile_origin = QPoint(map_x * 16, map_y * 16);
-        Block block = layout->blockdata.at(i);
-        QImage metatile_image = getMetatileImage(
-            block.metatileId,
-            fromLayout ? fromLayout->tileset_primary   : layout->tileset_primary,
-            fromLayout ? fromLayout->tileset_secondary : layout->tileset_secondary,
-            metatileLayerOrder,
-            metatileLayerOpacity
-        );
-        painter.drawImage(metatile_origin, metatile_image);
-    }
-    painter.end();
-    if (changed_any) {
-        cacheBlockdata();
-        pixmap = pixmap.fromImage(image);
-    }
-
-    return pixmap;
+QPixmap Map::render(bool ignoreCache, Layout *fromLayout, QRect bounds) {
+    return this->layout->render(ignoreCache, fromLayout, bounds);
 }
 
 QPixmap Map::renderBorder(bool ignoreCache) {
@@ -215,7 +175,7 @@ QPixmap Map::renderBorder(bool ignoreCache) {
     return layout->border_pixmap;
 }
 
-QPixmap Map::renderConnection(MapConnection connection, MapLayout * fromLayout) {
+QPixmap Map::renderConnection(MapConnection connection, Layout *fromLayout) {
     int x, y, w, h;
     if (connection.direction == "up") {
         x = 0;
@@ -245,9 +205,10 @@ QPixmap Map::renderConnection(MapConnection connection, MapLayout * fromLayout) 
         h = getHeight();
     }
 
-    render(true, fromLayout, QRect(x, y, w, h));
-    QImage connection_image = image.copy(x * 16, y * 16, w * 16, h * 16);
-    return QPixmap::fromImage(connection_image);
+    //render(true, fromLayout, QRect(x, y, w, h));
+    //QImage connection_image = image.copy(x * 16, y * 16, w * 16, h * 16);
+    return render(true, fromLayout, QRect(x, y, w, h)).copy(x * 16, y * 16, w * 16, h * 16);
+    //return QPixmap::fromImage(connection_image);
 }
 
 void Map::setNewDimensionsBlockdata(int newWidth, int newHeight) {

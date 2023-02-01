@@ -16,9 +16,9 @@
 #define CONFIG_BACKWARDS_COMPATABILITY
 
 enum MapSortOrder {
-    Group   =  0,
-    Area    =  1,
-    Layout  =  2,
+    SortByGroup   =  0,
+    SortByArea    =  1,
+    SortByLayout  =  2,
 };
 
 class KeyValueConfigBase
@@ -51,7 +51,7 @@ public:
     virtual void reset() override {
         this->recentProject = "";
         this->reopenOnLaunch = true;
-        this->mapSortOrder = MapSortOrder::Group;
+        this->mapSortOrder = MapSortOrder::SortByGroup;
         this->prettyCursors = true;
         this->collisionOpacity = 50;
         this->metatilesZoom = 30;

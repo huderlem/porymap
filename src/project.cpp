@@ -359,6 +359,10 @@ QString Project::readMapLayoutId(QString map_name) {
     return ParseUtil::jsonToQString(mapObj["layout"]);
 }
 
+QString Project::readMapLayoutName(QString mapName) {
+    return this->layoutIdsToNames[readMapLayoutId(mapName)];
+}
+
 QString Project::readMapLocation(QString map_name) {
     if (mapCache.contains(map_name)) {
         return mapCache.value(map_name)->location;
@@ -408,6 +412,7 @@ bool Project::loadMapLayout(Map* map) {
 bool Project::readMapLayouts() {
     mapLayouts.clear();
     mapLayoutsTable.clear();
+    layoutIdsToNames.clear();
 
     QString layoutsFilepath = projectConfig.getFilePath(ProjectFilePath::json_layouts);
     QString fullFilepath = QString("%1/%2").arg(root).arg(layoutsFilepath);
@@ -529,6 +534,7 @@ bool Project::readMapLayouts() {
         }
         mapLayouts.insert(layout->id, layout);
         mapLayoutsTable.append(layout->id);
+        layoutIdsToNames.insert(layout->id, layout->name);
     }
 
     // Deep copy
@@ -1336,11 +1342,12 @@ void Project::updateMapLayout(Map* map) {
         mapLayoutsTableMaster.append(map->layoutId);
     }
 
+    // !TODO
     // Deep copy
-    MapLayout *layout = mapLayouts.value(map->layoutId);
-    MapLayout *newLayout = new MapLayout();
-    *newLayout = *layout;
-    mapLayoutsMaster.insert(map->layoutId, newLayout);
+    // MapLayout *layout = mapLayouts.value(map->layoutId);
+    // MapLayout *newLayout = new MapLayout();
+    // *newLayout = *layout;
+    // mapLayoutsMaster.insert(map->layoutId, newLayout);
 }
 
 void Project::saveAllDataStructures() {

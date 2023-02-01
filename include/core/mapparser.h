@@ -10,7 +10,7 @@ class MapParser
 {
 public:
     MapParser();
-    MapLayout *parse(QString filepath, bool *error, Project *project);
+    Layout *parse(QString filepath, bool *error, Project *project);
 };
 
 #endif // MAPPARSER_H

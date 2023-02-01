@@ -25,7 +25,7 @@
 // porymap will reflect changes to it, but the value is hard-coded in the projects at the moment
 #define BORDER_DISTANCE 7
 
-class MapPixmapItem;
+class LayoutPixmapItem;
 class CollisionPixmapItem;
 class BorderMetatilesPixmapItem;
 
@@ -58,7 +58,7 @@ public:
 
     QMap<QString, QJsonValue> customHeaders;
 
-    MapLayout *layout;
+    Layout *layout = nullptr;
 
     bool isPersistedToFile = true;
     bool hasUnsavedDataChanges = false;
@@ -76,6 +76,7 @@ public:
 
     QList<MapConnection*> connections;
 
+    // !TODO
     QList<int> metatileLayerOrder;
     QList<float> metatileLayerOpacity;
 
@@ -92,17 +93,19 @@ public:
     void modify();
     void clean();
 
-    QPixmap render(bool ignoreCache = false, MapLayout *fromLayout = nullptr, QRect bounds = QRect(0, 0, -1, -1));
+    QPixmap render(bool ignoreCache = false, Layout *fromLayout = nullptr, QRect bounds = QRect(0, 0, -1, -1));
     QPixmap renderCollision(bool ignoreCache);
-    QPixmap renderConnection(MapConnection, MapLayout *);
+    QPixmap renderConnection(MapConnection, Layout *);
     QPixmap renderBorder(bool ignoreCache = false);
 
     bool mapBlockChanged(int i, const Blockdata &cache);
     bool borderBlockChanged(int i, const Blockdata &cache);
 
+    // !TODO: remove
     void cacheBlockdata();
     void cacheCollision();
 
+    /// !TODO: remove this
     bool getBlock(int x, int y, Block *out);
     void setBlock(int x, int y, Block block, bool enableScriptCallback = false);
     void setBlockdata(Blockdata blockdata, bool enableScriptCallback = false);
@@ -133,8 +136,11 @@ public:
 
     void openScript(QString label);
 
-    MapPixmapItem *mapItem = nullptr;
-    void setMapItem(MapPixmapItem *item) { mapItem = item; }
+private:
+    LayoutPixmapItem *mapItem = nullptr;
+
+public:
+    void setMapItem(LayoutPixmapItem *item) { mapItem = item; }
 
     CollisionPixmapItem *collisionItem = nullptr;
     void setCollisionItem(CollisionPixmapItem *item) { collisionItem = item; }

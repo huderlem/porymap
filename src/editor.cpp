@@ -83,7 +83,7 @@ void Editor::closeProject() {
 void Editor::setEditingMap() {
     current_view = map_item;
     if (map_item) {
-        map_item->paintingMode = MapPixmapItem::PaintMode::Metatiles;
+        map_item->paintingMode = LayoutPixmapItem::PaintMode::Metatiles;
         displayMapConnections();
         map_item->draw();
         map_item->setVisible(true);
@@ -133,7 +133,8 @@ void Editor::setEditingObjects() {
         events_group->setVisible(true);
     }
     if (map_item) {
-        map_item->paintingMode = MapPixmapItem::PaintMode::EventObjects;
+        // !TODO: change this pixmapitem paintmode
+        map_item->paintingMode = LayoutPixmapItem::PaintMode::EventObjects;
         displayMapConnections();
         map_item->draw();
         map_item->setVisible(true);
@@ -169,7 +170,7 @@ void Editor::setMapEditingButtonsEnabled(bool enabled) {
 void Editor::setEditingConnections() {
     current_view = map_item;
     if (map_item) {
-        map_item->paintingMode = MapPixmapItem::PaintMode::Disabled;
+        map_item->paintingMode = LayoutPixmapItem::PaintMode::Disabled;
         map_item->draw();
         map_item->setVisible(true);
         populateConnectionMapPickers();
@@ -1020,7 +1021,7 @@ void Editor::onHoveredMapMetatileChanged(const QPoint &pos) {
         return;
 
     this->updateCursorRectPos(x, y);
-    if (map_item->paintingMode == MapPixmapItem::PaintMode::Metatiles) {
+    if (map_item->paintingMode == LayoutPixmapItem::PaintMode::Metatiles) {
         int blockIndex = y * map->getWidth() + x;
         int metatileId = map->layout->blockdata.at(blockIndex).metatileId;
         this->ui->statusBar->showMessage(QString("X: %1, Y: %2, %3, Scale = %4x")
@@ -1029,7 +1030,7 @@ void Editor::onHoveredMapMetatileChanged(const QPoint &pos) {
                               .arg(getMetatileDisplayMessage(metatileId))
                               .arg(QString::number(zoomLevels[this->scaleIndex], 'g', 2)));
     }
-    else if (map_item->paintingMode == MapPixmapItem::PaintMode::EventObjects) {
+    else if (map_item->paintingMode == LayoutPixmapItem::PaintMode::EventObjects) {
         this->ui->statusBar->showMessage(QString("X: %1, Y: %2, Scale = %3x")
                               .arg(x)
                               .arg(y)
@@ -1040,8 +1041,8 @@ void Editor::onHoveredMapMetatileChanged(const QPoint &pos) {
 
 void Editor::onHoveredMapMetatileCleared() {
     this->setCursorRectVisible(false);
-    if (map_item->paintingMode == MapPixmapItem::PaintMode::Metatiles
-     || map_item->paintingMode == MapPixmapItem::PaintMode::EventObjects) {
+    if (map_item->paintingMode == LayoutPixmapItem::PaintMode::Metatiles
+     || map_item->paintingMode == LayoutPixmapItem::PaintMode::EventObjects) {
         this->ui->statusBar->clearMessage();
     }
     Scripting::cb_BlockHoverCleared();
@@ -1052,7 +1053,7 @@ void Editor::onHoveredMapMovementPermissionChanged(int x, int y) {
         return;
 
     this->updateCursorRectPos(x, y);
-    if (map_item->paintingMode == MapPixmapItem::PaintMode::Metatiles) {
+    if (map_item->paintingMode == LayoutPixmapItem::PaintMode::Metatiles) {
         int blockIndex = y * map->getWidth() + x;
         uint16_t collision = map->layout->blockdata.at(blockIndex).collision;
         uint16_t elevation = map->layout->blockdata.at(blockIndex).elevation;
@@ -1067,7 +1068,7 @@ void Editor::onHoveredMapMovementPermissionChanged(int x, int y) {
 
 void Editor::onHoveredMapMovementPermissionCleared() {
     this->setCursorRectVisible(false);
-    if (map_item->paintingMode == MapPixmapItem::PaintMode::Metatiles) {
+    if (map_item->paintingMode == LayoutPixmapItem::PaintMode::Metatiles) {
         this->ui->statusBar->clearMessage();
     }
     Scripting::cb_BlockHoverCleared();
@@ -1089,16 +1090,22 @@ QString Editor::getMovementPermissionText(uint16_t collision, uint16_t elevation
     return message;
 }
 
+void Editor::unsetMap() {
+    // disconnect previous map's signals so they are not firing
+    // multiple times if set again in the future
+    if (this->map) {
+        this->map->disconnect(this);
+    }
+
+    this->map = nullptr;
+}
+
 bool Editor::setMap(QString map_name) {
     if (map_name.isEmpty()) {
         return false;
     }
 
-    // disconnect previous map's signals so they are not firing
-    // multiple times if set again in the future
-    if (map) {
-        map->disconnect(this);
-    }
+    unsetMap();
 
     if (project) {
         Map *loadedMap = project->loadMap(map_name);
@@ -1107,6 +1114,7 @@ bool Editor::setMap(QString map_name) {
         }
 
         map = loadedMap;
+        this->layout = map->layout; // !TODO:
 
         editGroup.addStack(&map->editHistory);
         editGroup.setActiveStack(&map->editHistory);
@@ -1123,8 +1131,8 @@ bool Editor::setMap(QString map_name) {
     return true;
 }
 
-void Editor::onMapStartPaint(QGraphicsSceneMouseEvent *event, MapPixmapItem *item) {
-    if (item->paintingMode != MapPixmapItem::PaintMode::Metatiles) {
+void Editor::onMapStartPaint(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *item) {
+    if (item->paintingMode != LayoutPixmapItem::PaintMode::Metatiles) {
         return;
     }
 
@@ -1136,8 +1144,8 @@ void Editor::onMapStartPaint(QGraphicsSceneMouseEvent *event, MapPixmapItem *ite
     }
 }
 
-void Editor::onMapEndPaint(QGraphicsSceneMouseEvent *, MapPixmapItem *item) {
-    if (!(item->paintingMode == MapPixmapItem::PaintMode::Metatiles)) {
+void Editor::onMapEndPaint(QGraphicsSceneMouseEvent *, LayoutPixmapItem *item) {
+    if (!(item->paintingMode == LayoutPixmapItem::PaintMode::Metatiles)) {
         return;
     }
     this->cursorMapTileRect->stopRightClickSelectionAnchor();
@@ -1170,15 +1178,15 @@ void Editor::setStraightPathCursorMode(QGraphicsSceneMouseEvent *event) {
     }
 }
 
-void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item) {
+void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *item) {
     // TODO: add event tab object painting tool buttons stuff here
-    if (item->paintingMode == MapPixmapItem::PaintMode::Disabled) {
+    if (item->paintingMode == LayoutPixmapItem::PaintMode::Disabled) {
         return;
     }
 
     QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
 
-    if (item->paintingMode == MapPixmapItem::PaintMode::Metatiles) {
+    if (item->paintingMode == LayoutPixmapItem::PaintMode::Metatiles) {
         if (map_edit_mode == "paint") {
             if (event->buttons() & Qt::RightButton) {
                 item->updateMetatileSelection(event);
@@ -1225,7 +1233,7 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item
             }
             item->shift(event);
         }
-    } else if (item->paintingMode == MapPixmapItem::PaintMode::EventObjects) {
+    } else if (item->paintingMode == LayoutPixmapItem::PaintMode::EventObjects) {
         if (obj_edit_mode == "paint" && event->type() == QEvent::GraphicsSceneMousePress) {
             // Right-clicking while in paint mode will change mode to select.
             if (event->buttons() & Qt::RightButton) {
@@ -1253,7 +1261,7 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item
             }
         } else if (obj_edit_mode == "select") {
             // do nothing here, at least for now
-        } else if (obj_edit_mode == "shift" && item->map) {
+        } else if (obj_edit_mode == "shift") {
             static QPoint selection_origin;
             static unsigned actionId = 0;
 
@@ -1269,8 +1277,8 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item
 
                         QList<Event *> selectedEvents;
 
-                        for (DraggablePixmapItem *item : getObjects()) {
-                            selectedEvents.append(item->event);
+                        for (DraggablePixmapItem *pixmapItem : getObjects()) {
+                            selectedEvents.append(pixmapItem->event);
                         }
                         selection_origin = QPoint(pos.x(), pos.y());
 
@@ -1283,7 +1291,7 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item
 }
 
 void Editor::mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixmapItem *item) {
-    if (item->paintingMode != MapPixmapItem::PaintMode::Metatiles) {
+    if (item->paintingMode != LayoutPixmapItem::PaintMode::Metatiles) {
         return;
     }
 
@@ -1400,12 +1408,12 @@ void Editor::displayMetatileSelector() {
 }
 
 void Editor::displayMapMetatiles() {
-    map_item = new MapPixmapItem(map, this->metatile_selector_item, this->settings);
-    connect(map_item, &MapPixmapItem::mouseEvent, this, &Editor::mouseEvent_map);
-    connect(map_item, &MapPixmapItem::startPaint, this, &Editor::onMapStartPaint);
-    connect(map_item, &MapPixmapItem::endPaint, this, &Editor::onMapEndPaint);
-    connect(map_item, &MapPixmapItem::hoveredMapMetatileChanged, this, &Editor::onHoveredMapMetatileChanged);
-    connect(map_item, &MapPixmapItem::hoveredMapMetatileCleared, this, &Editor::onHoveredMapMetatileCleared);
+    map_item = new LayoutPixmapItem(this->layout, this->metatile_selector_item, this->settings);
+    connect(map_item, &LayoutPixmapItem::mouseEvent, this, &Editor::mouseEvent_map);
+    connect(map_item, &LayoutPixmapItem::startPaint, this, &Editor::onMapStartPaint);
+    connect(map_item, &LayoutPixmapItem::endPaint, this, &Editor::onMapEndPaint);
+    connect(map_item, &LayoutPixmapItem::hoveredMapMetatileChanged, this, &Editor::onHoveredMapMetatileChanged);
+    connect(map_item, &LayoutPixmapItem::hoveredMapMetatileCleared, this, &Editor::onHoveredMapMetatileCleared);
 
     map_item->draw(true);
     scene->addItem(map_item);
@@ -1425,7 +1433,7 @@ void Editor::displayMapMovementPermissions() {
         scene->removeItem(collision_item);
         delete collision_item;
     }
-    collision_item = new CollisionPixmapItem(map, this->movement_permissions_selector_item,
+    collision_item = new CollisionPixmapItem(this->layout, this->movement_permissions_selector_item,
                                              this->metatile_selector_item, this->settings, &this->collisionOpacity);
     connect(collision_item, &CollisionPixmapItem::mouseEvent, this, &Editor::mouseEvent_collision);
     connect(collision_item, &CollisionPixmapItem::hoveredMapMovementPermissionChanged,
@@ -1444,7 +1452,7 @@ void Editor::displayBorderMetatiles() {
     }
 
     scene_selected_border_metatiles = new QGraphicsScene;
-    selected_border_metatiles_item = new BorderMetatilesPixmapItem(map, this->metatile_selector_item);
+    selected_border_metatiles_item = new BorderMetatilesPixmapItem(this->layout, this->metatile_selector_item);
     selected_border_metatiles_item->draw();
     scene_selected_border_metatiles->addItem(selected_border_metatiles_item);
 
@@ -2035,7 +2043,7 @@ void Editor::selectedEventIndexChanged(int index, Event::Group eventGroup) {
 }
 
 void Editor::duplicateSelectedEvents() {
-    if (!selected_events || !selected_events->length() || !map || !current_view || map_item->paintingMode != MapPixmapItem::PaintMode::EventObjects)
+    if (!selected_events || !selected_events->length() || !map || !current_view || map_item->paintingMode != LayoutPixmapItem::PaintMode::EventObjects)
         return;
 
     QList<Event *> selectedEvents;
@@ -2207,7 +2215,7 @@ bool Editor::startDetachedProcess(const QString &command, const QString &working
 // is clicking on the background instead of an event.
 void Editor::objectsView_onMousePress(QMouseEvent *event) {
     // make sure we are in object editing mode
-    if (map_item && map_item->paintingMode != MapPixmapItem::PaintMode::EventObjects) {
+    if (map_item && map_item->paintingMode != LayoutPixmapItem::PaintMode::EventObjects) {
         return;
     }
     if (this->obj_edit_mode == "paint" && event->buttons() & Qt::RightButton) {

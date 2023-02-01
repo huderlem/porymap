@@ -217,3 +217,146 @@ QVariant MapGroupModel::data(const QModelIndex &index, int role) const {
 
     return QStandardItemModel::data(index, role);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //     case MapSortOrder::Layout:
+    //     {
+    //         QMap<QString, int> layoutIndices;
+    //         for (int i = 0; i < project->mapLayoutsTable.length(); i++) {
+    //             QString layoutId = project->mapLayoutsTable.value(i);
+    //             MapLayout *layout = project->mapLayouts.value(layoutId);
+    //             QStandardItem *layoutItem = new QStandardItem;
+    //             layoutItem->setText(layout->name);
+    //             layoutItem->setIcon(folderIcon);
+    //             layoutItem->setEditable(false);
+    //             layoutItem->setData(layout->name, Qt::UserRole);
+    //             layoutItem->setData("map_layout", MapListUserRoles::TypeRole);
+    //             layoutItem->setData(layout->id, MapListUserRoles::TypeRole2);
+    //             layoutItem->setData(i, MapListUserRoles::GroupRole);
+    //             root->appendRow(layoutItem);
+    //             mapGroupItemsList->append(layoutItem);
+    //             layoutIndices[layoutId] = i;
+    //         }
+    //         for (int i = 0; i < project->groupNames.length(); i++) {
+    //             QStringList names = project->groupedMapNames.value(i);
+    //             for (int j = 0; j < names.length(); j++) {
+    //                 QString map_name = names.value(j);
+    //                 QStandardItem *map = createMapItem(map_name, i, j);
+    //                 QString layoutId = project->readMapLayoutId(map_name);
+    //                 QStandardItem *layoutItem = mapGroupItemsList->at(layoutIndices.value(layoutId));
+    //                 layoutItem->setIcon(mapFolderIcon);
+    //                 layoutItem->appendRow(map);
+    //                 mapListIndexes.insert(map_name, map->index());
+    //             }
+    //         }
+    //         break;
+    //     }
+LayoutTreeModel::LayoutTreeModel(Project *project, QObject *parent) : QStandardItemModel(parent) {
+    //
+
+    this->project = project;
+    this->root = this->invisibleRootItem();
+
+    initialize();
+}
+
+QStandardItem *LayoutTreeModel::createLayoutItem(QString layoutName) {
+    QStandardItem *layout = new QStandardItem;
+    layout->setText(layoutName);
+    layout->setEditable(false);
+    layout->setData(layoutName, Qt::UserRole);
+    layout->setData("map_layout", MapListRoles::TypeRole);
+    // // group->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled);
+    this->layoutItems.insert(layoutName, layout);
+    return layout;
+}
+
+QStandardItem *LayoutTreeModel::createMapItem(QString mapName) {
+    QStandardItem *map = new QStandardItem;
+    map->setText(mapName);
+    map->setEditable(false);
+    map->setData(mapName, Qt::UserRole);
+    map->setData("map_name", MapListRoles::TypeRole);
+    map->setFlags(Qt::NoItemFlags | Qt::ItemNeverHasChildren);
+    this->mapItems.insert(mapName, map);
+    return map;
+}
+
+void LayoutTreeModel::initialize() {
+    for (int i = 0; i < this->project->mapLayoutsTable.length(); i++) {
+        //
+        QString layoutId = project->mapLayoutsTable.value(i);
+        MapLayout *layout = project->mapLayouts.value(layoutId);
+        QStandardItem *layoutItem = createLayoutItem(layout->name);
+        this->root->appendRow(layoutItem);
+    }
+
+    for (auto mapList : this->project->groupedMapNames) {
+        for (auto mapName : mapList) {
+            //
+            QString layoutName = project->readMapLayoutName(mapName);
+            QStandardItem *map = createMapItem(mapName);
+            this->layoutItems[layoutName]->appendRow(map);
+        }
+    }
+
+    // // project->readMapLayoutName
+}
+
+QStandardItem *LayoutTreeModel::getItem(const QModelIndex &index) const {
+    if (index.isValid()) {
+        QStandardItem *item = static_cast<QStandardItem*>(index.internalPointer());
+        if (item)
+            return item;
+    }
+    return this->root;
+}
+
+QModelIndex LayoutTreeModel::indexOfLayout(QString layoutName) {
+    if (this->layoutItems.contains(layoutName)) {
+        return this->layoutItems[layoutName]->index();
+    }
+    return QModelIndex();
+}
+
+QVariant LayoutTreeModel::data(const QModelIndex &index, int role) const {
+    int row = index.row();
+    int col = index.column();
+
+    if (role == Qt::DecorationRole) {
+        static QIcon mapIcon = QIcon(QStringLiteral(":/icons/map.ico"));
+        static QIcon mapEditedIcon = QIcon(QStringLiteral(":/icons/map_edited.ico"));
+        static QIcon mapOpenedIcon = QIcon(QStringLiteral(":/icons/map_opened.ico"));
+
+        QStandardItem *item = this->getItem(index)->child(row, col);
+        QString type = item->data(MapListRoles::TypeRole).toString();
+
+        if (type == "map_layout") {
+            return mapIcon;
+        }
+        else if (type == "map_name") {
+            return QVariant();
+        }
+
+        return QVariant();
+
+        // check if map or group
+        // if map, check if edited or open
+        //return QIcon(":/icons/porymap-icon-2.ico");
+    }
+
+    return QStandardItemModel::data(index, role);
+}
+

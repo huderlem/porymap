@@ -164,8 +164,13 @@ public slots:
 private slots:
     void on_action_Open_Project_triggered();
     void on_action_Reload_Project_triggered();
+
     void on_mapList_activated(const QModelIndex &index);
+    void on_areaList_activated(const QModelIndex &index);
+    void on_layoutList_activated(const QModelIndex &index);
+
     void on_action_Save_Project_triggered();
+
     void openWarpMap(QString map_name, int event_id, Event::Group event_group);
 
     void duplicate();
@@ -229,6 +234,7 @@ private slots:
     void on_toolButton_Move_clicked();
     void on_toolButton_Shift_clicked();
 
+    void on_mapListContainer_currentChanged(int index);
     void onOpenMapListContextMenu(const QPoint &point);
     void onAddNewMapToGroupClick(QAction* triggeredAction);
     void onAddNewMapToAreaClick(QAction* triggeredAction);
@@ -310,6 +316,11 @@ private:
 
     FilterChildrenProxyModel *groupListProxyModel;
     MapGroupModel *mapGroupModel;
+
+    FilterChildrenProxyModel *layoutListProxyModel;
+    LayoutTreeModel *layoutTreeModel;
+
+
     // QStandardItemModel *mapListModel;
     // QList<QStandardItem*> *mapGroupItemsList;
     // QMap<QString, QModelIndex> mapListIndexes;
@@ -342,10 +353,14 @@ private:
     bool newMapDefaultsSet = false;
 
     MapSortOrder mapSortOrder;
+    enum MapListTab { Groups, Areas, Layouts };
 
     bool tilesetNeedsRedraw = false;
 
+    bool setLayout(QString layoutName);
+
     bool setMap(QString, bool scrollTreeView = false);
+    void unsetMap();
     void redrawMapScene();
     void refreshMapScene();
     bool loadDataStructures();

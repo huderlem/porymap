@@ -172,15 +172,15 @@ void KeyValueConfigBase::setSaveDisabled(bool disabled) {
 }
 
 const QMap<MapSortOrder, QString> mapSortOrderMap = {
-    {MapSortOrder::Group, "group"},
-    {MapSortOrder::Layout, "layout"},
-    {MapSortOrder::Area, "area"},
+    {MapSortOrder::SortByGroup, "group"},
+    {MapSortOrder::SortByLayout, "layout"},
+    {MapSortOrder::SortByArea, "area"},
 };
 
 const QMap<QString, MapSortOrder> mapSortOrderReverseMap = {
-    {"group", MapSortOrder::Group},
-    {"layout", MapSortOrder::Layout},
-    {"area", MapSortOrder::Area},
+    {"group", MapSortOrder::SortByGroup},
+    {"layout", MapSortOrder::SortByLayout},
+    {"area", MapSortOrder::SortByArea},
 };
 
 PorymapConfig porymapConfig;
@@ -209,7 +209,7 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         if (mapSortOrderReverseMap.contains(sortOrder)) {
             this->mapSortOrder = mapSortOrderReverseMap.value(sortOrder);
         } else {
-            this->mapSortOrder = MapSortOrder::Group;
+            this->mapSortOrder = MapSortOrder::SortByGroup;
             logWarn(QString("Invalid config value for map_sort_order: '%1'. Must be 'group', 'area', or 'layout'.").arg(value));
         }
     } else if (key == "main_window_geometry") {

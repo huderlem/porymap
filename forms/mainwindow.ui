@@ -180,7 +180,7 @@
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="mapListContainerPage2" native="true">
+       <widget class="QWidget" name="mapListContainerPage2">
         <attribute name="title">
          <string>Areas</string>
         </attribute>
@@ -442,6 +442,9 @@
            </property>
            <property name="selectionBehavior">
             <enum>QAbstractItemView::SelectItems</enum>
+           </property>
+           <property name="expandsOnDoubleClick">
+            <bool>false</bool>
            </property>
            <attribute name="headerVisible">
             <bool>false</bool>

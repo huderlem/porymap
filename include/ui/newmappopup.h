@@ -24,7 +24,7 @@ public:
     QString layoutId;
     void init();
     void init(MapSortOrder type, QVariant data);
-    void init(MapLayout *);
+    void init(Layout *);
     static void setDefaultSettings(Project *project);
 
 signals:
@@ -37,7 +37,7 @@ private:
     bool checkNewMapGroup();
     void saveSettings();
     void useLayout(QString layoutId);
-    void useLayoutSettings(MapLayout *mapLayout);
+    void useLayoutSettings(Layout *mapLayout);
 
     struct Settings {
         QString group;
