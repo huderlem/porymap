@@ -111,7 +111,7 @@ void Editor::setEditingCollision() {
         collision_item->setVisible(true);
     }
     if (map_item) {
-        map_item->paintingMode = MapPixmapItem::PaintMode::Metatiles;
+        map_item->paintingMode = LayoutPixmapItem::PaintMode::Metatiles;
         map_item->draw();
         map_item->setVisible(true);
     }
@@ -1017,13 +1017,13 @@ void Editor::setCursorRectVisible(bool visible) {
 void Editor::onHoveredMapMetatileChanged(const QPoint &pos) {
     int x = pos.x();
     int y = pos.y();
-    if (!map->isWithinBounds(x, y))
+    if (!layout->isWithinBounds(x, y))
         return;
 
     this->updateCursorRectPos(x, y);
     if (map_item->paintingMode == LayoutPixmapItem::PaintMode::Metatiles) {
-        int blockIndex = y * map->getWidth() + x;
-        int metatileId = map->layout->blockdata.at(blockIndex).metatileId;
+        int blockIndex = y * layout->getWidth() + x;
+        int metatileId = layout->blockdata.at(blockIndex).metatileId;
         this->ui->statusBar->showMessage(QString("X: %1, Y: %2, %3, Scale = %4x")
                               .arg(x)
                               .arg(y)
@@ -1049,14 +1049,14 @@ void Editor::onHoveredMapMetatileCleared() {
 }
 
 void Editor::onHoveredMapMovementPermissionChanged(int x, int y) {
-    if (!map->isWithinBounds(x, y))
+    if (!layout->isWithinBounds(x, y))
         return;
 
     this->updateCursorRectPos(x, y);
     if (map_item->paintingMode == LayoutPixmapItem::PaintMode::Metatiles) {
-        int blockIndex = y * map->getWidth() + x;
-        uint16_t collision = map->layout->blockdata.at(blockIndex).collision;
-        uint16_t elevation = map->layout->blockdata.at(blockIndex).elevation;
+        int blockIndex = y * layout->getWidth() + x;
+        uint16_t collision = layout->blockdata.at(blockIndex).collision;
+        uint16_t elevation = layout->blockdata.at(blockIndex).elevation;
         QString message = QString("X: %1, Y: %2, %3")
                             .arg(x)
                             .arg(y)
@@ -1385,7 +1385,7 @@ void Editor::displayMetatileSelector() {
     }
     scene_metatiles = new QGraphicsScene;
     if (!metatile_selector_item) {
-        metatile_selector_item = new MetatileSelector(8, map);
+        metatile_selector_item = new MetatileSelector(8, this->layout);
         connect(metatile_selector_item, &MetatileSelector::hoveredMetatileSelectionChanged,
                 this, &Editor::onHoveredMetatileSelectionChanged);
         connect(metatile_selector_item, &MetatileSelector::hoveredMetatileSelectionCleared,
@@ -1394,7 +1394,7 @@ void Editor::displayMetatileSelector() {
                 this, &Editor::onSelectedMetatilesChanged);
         metatile_selector_item->select(0);
     } else {
-        metatile_selector_item->setMap(map);
+        metatile_selector_item->setLayout(this->layout);
         if (metatile_selector_item->primaryTileset
          && metatile_selector_item->primaryTileset != map->layout->tileset_primary)
             emit tilesetUpdated(map->layout->tileset_primary->name);
@@ -1471,14 +1471,14 @@ void Editor::displayCurrentMetatilesSelection() {
     }
 
     scene_current_metatile_selection = new QGraphicsScene;
-    current_metatile_selection_item = new CurrentSelectedMetatilesPixmapItem(map, this->metatile_selector_item);
+    current_metatile_selection_item = new CurrentSelectedMetatilesPixmapItem(this->layout, this->metatile_selector_item);
     current_metatile_selection_item->draw();
     scene_current_metatile_selection->addItem(current_metatile_selection_item);
 }
 
 void Editor::redrawCurrentMetatilesSelection() {
     if (current_metatile_selection_item) {
-        current_metatile_selection_item->setMap(map);
+        current_metatile_selection_item->setLayout(this->layout);
         current_metatile_selection_item->draw();
         emit currentMetatilesSelectionChanged();
     }
@@ -1635,7 +1635,7 @@ void Editor::displayMapBorder() {
     int borderHeight = map->getBorderHeight();
     int borderHorzDist = getBorderDrawDistance(borderWidth);
     int borderVertDist = getBorderDrawDistance(borderHeight);
-    QPixmap pixmap = map->renderBorder();
+    QPixmap pixmap = this->layout->renderBorder();
     for (int y = -borderVertDist; y < map->getHeight() + borderVertDist; y += borderHeight)
     for (int x = -borderHorzDist; x < map->getWidth() + borderHorzDist; x += borderWidth) {
         QGraphicsPixmapItem *item = new QGraphicsPixmapItem(pixmap);
@@ -1648,7 +1648,7 @@ void Editor::displayMapBorder() {
 }
 
 void Editor::updateMapBorder() {
-    QPixmap pixmap = this->map->renderBorder(true);
+    QPixmap pixmap = this->layout->renderBorder(true);
     for (auto item : this->borderItems) {
         item->setPixmap(pixmap);
     }
@@ -1925,7 +1925,7 @@ void Editor::updatePrimaryTileset(QString tilesetLabel, bool forceLoad)
     {
         map->layout->tileset_primary_label = tilesetLabel;
         map->layout->tileset_primary = project->getTileset(tilesetLabel, forceLoad);
-        map->clearBorderCache();
+        layout->clearBorderCache();
     }
 }
 
@@ -1935,7 +1935,7 @@ void Editor::updateSecondaryTileset(QString tilesetLabel, bool forceLoad)
     {
         map->layout->tileset_secondary_label = tilesetLabel;
         map->layout->tileset_secondary = project->getTileset(tilesetLabel, forceLoad);
-        map->clearBorderCache();
+        layout->clearBorderCache();
     }
 }
 

@@ -3,13 +3,14 @@
 
 #include "selectablepixmapitem.h"
 #include "tileset.h"
-#include "map.h"
+
+class Layout;
 
 class TilesetEditorMetatileSelector: public SelectablePixmapItem {
     Q_OBJECT
 public:
-    TilesetEditorMetatileSelector(Tileset *primaryTileset, Tileset *secondaryTileset, Map *map);
-    Map *map = nullptr;
+    TilesetEditorMetatileSelector(Tileset *primaryTileset, Tileset *secondaryTileset, Layout *layout);
+    Layout *layout = nullptr;
     void draw();
     bool select(uint16_t metatileId);
     void setTilesets(Tileset*, Tileset*, bool draw = true);

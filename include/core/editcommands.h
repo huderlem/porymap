@@ -342,12 +342,12 @@ public:
 
 
 
-// !TODO
+// !TODO: rename map vars to layout
 /// Implements a command to commit map edits from the scripting API.
 /// The scripting api can edit map/border blocks and dimensions.
 class ScriptEditMap : public QUndoCommand {
 public:
-    ScriptEditMap(Map *map,
+    ScriptEditMap(Layout *layout,
         QSize oldMapDimensions, QSize newMapDimensions,
         const Blockdata &oldMetatiles, const Blockdata &newMetatiles,
         QSize oldBorderDimensions, QSize newBorderDimensions,
@@ -361,7 +361,7 @@ public:
     int id() const override { return CommandId::ID_ScriptEditMap; }
 
 private:
-    Map *map;
+    Layout *layout = nullptr;
 
     Blockdata newMetatiles;
     Blockdata oldMetatiles;

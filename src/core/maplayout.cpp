@@ -36,6 +36,14 @@ int Layout::getBorderHeight() {
     return border_height;
 }
 
+bool Layout::isWithinBounds(int x, int y) {
+    return (x >= 0 && x < this->getWidth() && y >= 0 && y < this->getHeight());
+}
+
+bool Layout::isWithinBorderBounds(int x, int y) {
+    return (x >= 0 && x < this->getBorderWidth() && y >= 0 && y < this->getBorderHeight());
+}
+
 bool Layout::getBlock(int x, int y, Block *out) {
     if (isWithinBounds(x, y)) {
         int i = y * getWidth() + x;

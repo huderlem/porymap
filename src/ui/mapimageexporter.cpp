@@ -90,6 +90,7 @@ void MapImageExporter::saveImage() {
                 break;
             }
             case ImageExporterMode::Timelapse:
+                // !TODO: also need layout editHistory!
                 QProgressDialog progress("Building map timelapse...", "Cancel", 0, 1, this);
                 progress.setAutoClose(true);
                 progress.setWindowModality(Qt::WindowModal);
@@ -358,14 +359,19 @@ QPixmap MapImageExporter::getFormattedMapPixmap(Map *map, bool ignoreBorder) {
     QPixmap pixmap;
 
     // draw background layer / base image
-    map->render(true);
-    pixmap = map->pixmap;
+    Layout *layout = map->layout;
+    if (!layout) {
+        return QPixmap();
+    }
+
+    layout->render(true);
+    pixmap = layout->pixmap;
 
     if (showCollision) {
         QPainter collisionPainter(&pixmap);
-        map->renderCollision(true);
+        layout->renderCollision(true);
         collisionPainter.setOpacity(editor->collisionOpacity);
-        collisionPainter.drawPixmap(0, 0, map->collision_pixmap);
+        collisionPainter.drawPixmap(0, 0, layout->collision_pixmap);
         collisionPainter.end();
     }
 
@@ -375,16 +381,16 @@ QPixmap MapImageExporter::getFormattedMapPixmap(Map *map, bool ignoreBorder) {
     bool forceDrawBorder = showUpConnections || showDownConnections || showLeftConnections || showRightConnections;
     if (!ignoreBorder && (showBorder || forceDrawBorder)) {
         int borderDistance = this->mode ? STITCH_MODE_BORDER_DISTANCE : BORDER_DISTANCE;
-        map->renderBorder();
-        int borderHorzDist = editor->getBorderDrawDistance(map->getBorderWidth());
-        int borderVertDist = editor->getBorderDrawDistance(map->getBorderHeight());
+        layout->renderBorder();
+        int borderHorzDist = editor->getBorderDrawDistance(layout->getBorderWidth());
+        int borderVertDist = editor->getBorderDrawDistance(layout->getBorderHeight());
         borderWidth = borderDistance * 16;
         borderHeight = borderDistance * 16;
-        QPixmap newPixmap = QPixmap(map->pixmap.width() + borderWidth * 2, map->pixmap.height() + borderHeight * 2);
+        QPixmap newPixmap = QPixmap(layout->pixmap.width() + borderWidth * 2, layout->pixmap.height() + borderHeight * 2);
         QPainter borderPainter(&newPixmap);
-        for (int y = borderDistance - borderVertDist; y < map->getHeight() + borderVertDist * 2; y += map->getBorderHeight()) {
-            for (int x = borderDistance - borderHorzDist; x < map->getWidth() + borderHorzDist * 2; x += map->getBorderWidth()) {
-                borderPainter.drawPixmap(x * 16, y * 16, map->layout->border_pixmap);
+        for (int y = borderDistance - borderVertDist; y < layout->getHeight() + borderVertDist * 2; y += layout->getBorderHeight()) {
+            for (int x = borderDistance - borderHorzDist; x < layout->getWidth() + borderHorzDist * 2; x += layout->getBorderWidth()) {
+                borderPainter.drawPixmap(x * 16, y * 16, layout->border_pixmap);
             }
         }
         borderPainter.drawImage(borderWidth, borderHeight, pixmap.toImage());

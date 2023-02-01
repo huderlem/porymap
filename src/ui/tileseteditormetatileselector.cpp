@@ -3,11 +3,11 @@
 #include "project.h"
 #include <QPainter>
 
-TilesetEditorMetatileSelector::TilesetEditorMetatileSelector(Tileset *primaryTileset, Tileset *secondaryTileset, Map *map)
+TilesetEditorMetatileSelector::TilesetEditorMetatileSelector(Tileset *primaryTileset, Tileset *secondaryTileset, Layout *layout)
   : SelectablePixmapItem(32, 32, 1, 1) {
     this->setTilesets(primaryTileset, secondaryTileset, false);
     this->numMetatilesWide = 8;
-    this->map = map;
+    this->layout = layout;
     setAcceptHoverEvents(true);
     this->usedMetatiles.resize(Project::getNumMetatilesTotal());
 }
@@ -45,8 +45,8 @@ QImage TilesetEditorMetatileSelector::buildImage(int metatileIdStart, int numMet
                     metatileId,
                     this->primaryTileset,
                     this->secondaryTileset,
-                    map->metatileLayerOrder,
-                    map->metatileLayerOpacity,
+                    this->layout->metatileLayerOrder,
+                    this->layout->metatileLayerOpacity,
                     true)
                 .scaled(32, 32);
         int map_y = i / this->numMetatilesWide;

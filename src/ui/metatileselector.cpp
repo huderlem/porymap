@@ -26,7 +26,7 @@ void MetatileSelector::draw() {
         if (i >= primaryLength) {
             tile += Project::getNumMetatilesPrimary() - primaryLength;
         }
-        QImage metatile_image = getMetatileImage(tile, this->primaryTileset, this->secondaryTileset, map->metatileLayerOrder, map->metatileLayerOpacity);
+        QImage metatile_image = getMetatileImage(tile, this->primaryTileset, this->secondaryTileset, layout->metatileLayerOrder, layout->metatileLayerOpacity);
         int map_y = i / this->numMetatilesWide;
         int map_x = i % this->numMetatilesWide;
         QPoint metatile_origin = QPoint(map_x * 16, map_y * 16);
@@ -209,6 +209,6 @@ QPoint MetatileSelector::getMetatileIdCoordsOnWidget(uint16_t metatileId) {
     return pos;
 }
 
-void MetatileSelector::setMap(Map *map) {
-    this->map = map;
+void MetatileSelector::setLayout(Layout *layout) {
+    this->layout = layout;
 }

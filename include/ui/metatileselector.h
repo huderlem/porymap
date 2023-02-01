@@ -31,13 +31,13 @@ struct MetatileSelection
 class MetatileSelector: public SelectablePixmapItem {
     Q_OBJECT
 public:
-    MetatileSelector(int numMetatilesWide, Map *map): SelectablePixmapItem(16, 16) {
+    MetatileSelector(int numMetatilesWide, Layout *layout): SelectablePixmapItem(16, 16) {
         this->externalSelection = false;
         this->prefabSelection = false;
         this->numMetatilesWide = numMetatilesWide;
-        this->map = map;
-        this->primaryTileset = map->layout->tileset_primary;
-        this->secondaryTileset = map->layout->tileset_secondary;
+        this->layout = layout;
+        this->primaryTileset = layout->tileset_primary;
+        this->secondaryTileset = layout->tileset_secondary;
         this->selection = MetatileSelection{};
         setAcceptHoverEvents(true);
     }
@@ -50,7 +50,7 @@ public:
     void setPrefabSelection(MetatileSelection selection);
     void setExternalSelection(int, int, QList<uint16_t>, QList<QPair<uint16_t, uint16_t>>);
     QPoint getMetatileIdCoordsOnWidget(uint16_t);
-    void setMap(Map*);
+    void setLayout(Layout *layout);
     Tileset *primaryTileset;
     Tileset *secondaryTileset;
 protected:
@@ -63,7 +63,7 @@ private:
     bool externalSelection;
     bool prefabSelection;
     int numMetatilesWide;
-    Map *map;
+    Layout *layout;
     int externalSelectionWidth;
     int externalSelectionHeight;
     QList<uint16_t> externalSelectedMetatiles;

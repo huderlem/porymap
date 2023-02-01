@@ -77,9 +77,8 @@ public:
     int getBorderWidth();
     int getBorderHeight();
 
-    bool isWithinBounds(int x, int y) {
-        return (x >= 0 && x < this->getWidth() && y >= 0 && y < this->getHeight());
-    }
+    bool isWithinBounds(int x, int y);
+    bool isWithinBorderBounds(int x, int y);
 
     bool getBlock(int x, int y, Block *out);
     void setBlock(int x, int y, Block block, bool enableScriptCallback = false);

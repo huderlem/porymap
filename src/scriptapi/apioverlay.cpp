@@ -254,23 +254,23 @@ void MapView::addImage(int x, int y, QString filepath, int layer, bool useCache)
 }
 
 void MapView::createImage(int x, int y, QString filepath, int width, int height, int xOffset, int yOffset, qreal hScale, qreal vScale, int paletteId, bool setTransparency, int layer, bool useCache) {
-    if (!this->editor || !this->editor->map || !this->editor->map->layout
-     || !this->editor->map->layout->tileset_primary || !this->editor->map->layout->tileset_secondary)
+    if (!this->editor || !this->editor->map || !this->editor->layout
+     || !this->editor->layout->tileset_primary || !this->editor->layout->tileset_secondary)
         return;
     QList<QRgb> palette;
     if (paletteId != -1)
-        palette = Tileset::getPalette(paletteId, this->editor->map->layout->tileset_primary, this->editor->map->layout->tileset_secondary);
+        palette = Tileset::getPalette(paletteId, this->editor->layout->tileset_primary, this->editor->layout->tileset_secondary);
     if (this->getOverlay(layer)->addImage(x, y, filepath, useCache, width, height, xOffset, yOffset, hScale, vScale, palette, setTransparency))
         this->scene()->update();
 }
 
 void MapView::addTileImage(int x, int y, int tileId, bool xflip, bool yflip, int paletteId, bool setTransparency, int layer) {
-    if (!this->editor || !this->editor->map || !this->editor->map->layout
-     || !this->editor->map->layout->tileset_primary || !this->editor->map->layout->tileset_secondary)
+    if (!this->editor || !this->editor->map || !this->editor->layout
+     || !this->editor->layout->tileset_primary || !this->editor->layout->tileset_secondary)
         return;
     QImage image = getPalettedTileImage(tileId,
-                                        this->editor->map->layout->tileset_primary,
-                                        this->editor->map->layout->tileset_secondary,
+                                        this->editor->layout->tileset_primary,
+                                        this->editor->layout->tileset_secondary,
                                         paletteId)
                                         .mirrored(xflip, yflip);
     if (setTransparency)
@@ -285,14 +285,14 @@ void MapView::addTileImage(int x, int y, QJSValue tileObj, bool setTransparency,
 }
 
 void MapView::addMetatileImage(int x, int y, int metatileId, bool setTransparency, int layer) {
-    if (!this->editor || !this->editor->map || !this->editor->map->layout
-     || !this->editor->map->layout->tileset_primary || !this->editor->map->layout->tileset_secondary)
+    if (!this->editor || !this->editor->map || !this->editor->layout
+     || !this->editor->layout->tileset_primary || !this->editor->layout->tileset_secondary)
         return;
     QImage image = getMetatileImage(static_cast<uint16_t>(metatileId),
-                                    this->editor->map->layout->tileset_primary,
-                                    this->editor->map->layout->tileset_secondary,
-                                    this->editor->map->metatileLayerOrder,
-                                    this->editor->map->metatileLayerOpacity);
+                                    this->editor->layout->tileset_primary,
+                                    this->editor->layout->tileset_secondary,
+                                    this->editor->layout->metatileLayerOrder,
+                                    this->editor->layout->metatileLayerOpacity);
     if (setTransparency)
         image.setColor(0, qRgba(0, 0, 0, 0));
     if (this->getOverlay(layer)->addImage(x, y, image))

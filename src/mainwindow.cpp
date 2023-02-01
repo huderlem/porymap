@@ -536,7 +536,7 @@ bool MainWindow::openProject(QString dir) {
                 editor->metatile_selector_item,
                 ui->scrollAreaWidgetContents_Prefabs,
                 ui->label_prefabHelp,
-                editor->map);
+                editor->layout);
     Scripting::cb_ProjectOpened(dir);
     return true;
 }
@@ -674,7 +674,7 @@ bool MainWindow::setMap(QString map_name, bool scrollTreeView) {
     updateMapList();
 
     Scripting::cb_MapOpened(map_name);
-    prefab.updatePrefabUi(editor->map);
+    prefab.updatePrefabUi(editor->layout);
     updateTilesetEditor();
     return true;
 }
@@ -1352,7 +1352,7 @@ void MainWindow::on_actionNew_Tileset_triggered() {
 void MainWindow::updateTilesetEditor() {
     if (this->tilesetEditor) {
         this->tilesetEditor->update(
-            this->editor->map,
+            this->editor->layout,
             editor->ui->comboBox_PrimaryTileset->currentText(),
             editor->ui->comboBox_SecondaryTileset->currentText()
         );
@@ -1532,7 +1532,7 @@ void MainWindow::copy() {
             case 0:
             {
                 // copy the map image
-                QPixmap pixmap = editor->map ? editor->map->render(true) : QPixmap();
+                QPixmap pixmap = editor->layout ? editor->layout->render(true) : QPixmap();
                 setClipboardData(pixmap.toImage());
                 logInfo("Copied current map image to clipboard");
                 break;
@@ -1755,8 +1755,8 @@ void MainWindow::on_mapViewTab_tabBarClicked(int index)
             // User hasn't set up prefabs and hasn't been prompted before.
             // Ask if they'd like to import the default prefabs file.
             if (prefab.tryImportDefaultPrefabs(this, projectConfig.getBaseGameVersion()))
-                prefab.updatePrefabUi(this->editor->map);
-        } 
+                prefab.updatePrefabUi(this->editor->layout);
+        }
     }
     editor->setCursorRectVisible(false);
 }
@@ -2442,8 +2442,10 @@ void MainWindow::onTilesetsSaved(QString primaryTilesetLabel, QString secondaryT
     } else {
         this->editor->project->getTileset(secondaryTilesetLabel, true);
     }
-    if (updated)
+    if (updated) {
+        this->editor->layout->clearBorderCache();
         redrawMapScene();
+    }
 }
 
 void MainWindow::onWildMonDataChanged() {
@@ -2592,7 +2594,7 @@ void MainWindow::on_comboBox_PrimaryTileset_currentTextChanged(const QString &ti
         redrawMapScene();
         on_horizontalSlider_MetatileZoom_valueChanged(ui->horizontalSlider_MetatileZoom->value());
         updateTilesetEditor();
-        prefab.updatePrefabUi(editor->map);
+        prefab.updatePrefabUi(editor->layout);
         markMapEdited();
     }
 }
@@ -2604,7 +2606,7 @@ void MainWindow::on_comboBox_SecondaryTileset_currentTextChanged(const QString &
         redrawMapScene();
         on_horizontalSlider_MetatileZoom_valueChanged(ui->horizontalSlider_MetatileZoom->value());
         updateTilesetEditor();
-        prefab.updatePrefabUi(editor->map);
+        prefab.updatePrefabUi(editor->layout);
         markMapEdited();
     }
 }
@@ -2725,7 +2727,7 @@ void MainWindow::on_actionTileset_Editor_triggered()
 }
 
 void MainWindow::initTilesetEditor() {
-    this->tilesetEditor = new TilesetEditor(this->editor->project, this->editor->map, this);
+    this->tilesetEditor = new TilesetEditor(this->editor->project, this->editor->layout, this);
     connect(this->tilesetEditor, &TilesetEditor::tilesetsSaved, this, &MainWindow::onTilesetsSaved);
 }
 
@@ -2889,7 +2891,7 @@ void MainWindow::on_actionRegion_Map_Editor_triggered() {
 }
 
 void MainWindow::on_pushButton_CreatePrefab_clicked() {
-    PrefabCreationDialog dialog(this, this->editor->metatile_selector_item, this->editor->map);
+    PrefabCreationDialog dialog(this, this->editor->metatile_selector_item, this->editor->layout);
     dialog.setWindowTitle("Create Prefab");
     dialog.setWindowModality(Qt::NonModal);
     if (dialog.exec() == QDialog::Accepted) {

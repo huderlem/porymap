@@ -8,7 +8,8 @@
 #include "tileseteditormetatileselector.h"
 #include "tileseteditortileselector.h"
 #include "metatilelayersitem.h"
-#include "map.h"
+
+class Layout;
 
 namespace Ui {
 class TilesetEditor;
@@ -39,10 +40,10 @@ class TilesetEditor : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit TilesetEditor(Project*, Map*, QWidget *parent = nullptr);
+    explicit TilesetEditor(Project *project, Layout *layout, QWidget *parent = nullptr);
     ~TilesetEditor();
-    void update(Map *map, QString primaryTilsetLabel, QString secondaryTilesetLabel);
-    void updateMap(Map *map);
+    void update(Layout *layout, QString primaryTilsetLabel, QString secondaryTilesetLabel);
+    void updateLayout(Layout *layout);
     void updateTilesets(QString primaryTilsetLabel, QString secondaryTilesetLabel);
     bool selectMetatile(uint16_t metatileId);
     uint16_t getSelectedMetatileId();
@@ -148,7 +149,7 @@ private:
     MetatileLayersItem *metatileLayersItem = nullptr;
     PaletteEditor *paletteEditor = nullptr;
     Project *project = nullptr;
-    Map *map = nullptr;
+    Layout *layout = nullptr;
     Metatile *metatile = nullptr;
     Metatile *copiedMetatile = nullptr;
     QString copiedMetatileLabel;

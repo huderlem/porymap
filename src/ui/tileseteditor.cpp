@@ -13,14 +13,14 @@
 #include <QCloseEvent>
 #include <QImageReader>
 
-TilesetEditor::TilesetEditor(Project *project, Map *map, QWidget *parent) :
+TilesetEditor::TilesetEditor(Project *project, Layout *layout, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::TilesetEditor),
     project(project),
-    map(map),
+    layout(layout),
     hasUnsavedChanges(false)
 {
-    this->setTilesets(this->map->layout->tileset_primary_label, this->map->layout->tileset_secondary_label);
+    this->setTilesets(this->layout->tileset_primary_label, this->layout->tileset_secondary_label);
     this->initUi();
 }
 
@@ -42,14 +42,14 @@ TilesetEditor::~TilesetEditor()
     delete copiedMetatile;
 }
 
-void TilesetEditor::update(Map *map, QString primaryTilesetLabel, QString secondaryTilesetLabel) {
-    this->updateMap(map);
+void TilesetEditor::update(Layout *layout, QString primaryTilesetLabel, QString secondaryTilesetLabel) {
+    this->updateLayout(layout);
     this->updateTilesets(primaryTilesetLabel, secondaryTilesetLabel);
 }
 
-void TilesetEditor::updateMap(Map *map) {
-    this->map = map;
-    this->metatileSelector->map = map;
+void TilesetEditor::updateLayout(Layout *layout) {
+    this->layout = layout;
+    this->metatileSelector->layout = layout;
 }
 
 void TilesetEditor::updateTilesets(QString primaryTilesetLabel, QString secondaryTilesetLabel) {
@@ -178,7 +178,7 @@ void TilesetEditor::setMetatileLabelValidator() {
 
 void TilesetEditor::initMetatileSelector()
 {
-    this->metatileSelector = new TilesetEditorMetatileSelector(this->primaryTileset, this->secondaryTileset, this->map);
+    this->metatileSelector = new TilesetEditorMetatileSelector(this->primaryTileset, this->secondaryTileset, this->layout);
     connect(this->metatileSelector, &TilesetEditorMetatileSelector::hoveredMetatileChanged,
             this, &TilesetEditor::onHoveredMetatileChanged);
     connect(this->metatileSelector, &TilesetEditorMetatileSelector::hoveredMetatileCleared,
