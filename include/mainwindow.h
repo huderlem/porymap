@@ -357,7 +357,7 @@ private:
 
     bool tilesetNeedsRedraw = false;
 
-    bool setLayout(QString layoutName);
+    bool setLayout(QString layoutId);
 
     bool setMap(QString, bool scrollTreeView = false);
     void unsetMap();

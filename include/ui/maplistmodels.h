@@ -62,9 +62,9 @@ public:
     QVariant data(const QModelIndex &index, int role) const override;
 
 public:
-    void setLayout(QString layoutName) { this->openLayout = layoutName; }
+    void setLayout(QString layoutId) { this->openLayout = layoutId; }
 
-    QStandardItem *createLayoutItem(QString layoutName);
+    QStandardItem *createLayoutItem(QString layoutId);
     QStandardItem *createMapItem(QString mapName);
 
     QStandardItem *getItem(const QModelIndex &index) const;

@@ -81,6 +81,7 @@ void Editor::closeProject() {
 }
 
 void Editor::setEditingMap() {
+    qDebug() << "Editor::setEditingMap()";
     current_view = map_item;
     if (map_item) {
         map_item->paintingMode = LayoutPixmapItem::PaintMode::Metatiles;
@@ -932,8 +933,8 @@ void Editor::onHoveredMovementPermissionCleared() {
 }
 
 QString Editor::getMetatileDisplayMessage(uint16_t metatileId) {
-    Metatile *metatile = Tileset::getMetatile(metatileId, map->layout->tileset_primary, map->layout->tileset_secondary);
-    QString label = Tileset::getMetatileLabel(metatileId, map->layout->tileset_primary, map->layout->tileset_secondary);
+    Metatile *metatile = Tileset::getMetatile(metatileId, this->layout->tileset_primary, this->layout->tileset_secondary);
+    QString label = Tileset::getMetatileLabel(metatileId, this->layout->tileset_primary, this->layout->tileset_secondary);
     QString message = QString("Metatile: %1").arg(Metatile::getMetatileIdString(metatileId));
     if (label.size())
         message += QString(" \"%1\"").arg(label);
@@ -1113,20 +1114,38 @@ bool Editor::setMap(QString map_name) {
             return false;
         }
 
-        map = loadedMap;
-        this->layout = map->layout; // !TODO:
+        this->map = loadedMap;
+
+        // remove this
+        //this->layout = this->map->layout;
+        setLayout(map->layout->id);
 
         editGroup.addStack(&map->editHistory);
+
+        // !TODO: determine which stack is active based on edit mode too since layout will have something different
         editGroup.setActiveStack(&map->editHistory);
         selected_events->clear();
         if (!displayMap()) {
             return false;
         }
-        map_ruler->setMapDimensions(QSize(map->getWidth(), map->getHeight()));
-        connect(map, &Map::mapDimensionsChanged, map_ruler, &MapRuler::setMapDimensions);
+
         connect(map, &Map::openScriptRequested, this, &Editor::openScript);
         updateSelectedEvents();
     }
+
+    return true;
+}
+
+bool Editor::setLayout(QString layoutId) {
+    // 
+    this->layout = this->project->loadLayout(layoutId);
+
+    if (!displayLayout()) {
+        return false;
+    }
+
+    map_ruler->setMapDimensions(QSize(this->layout->getWidth(), this->layout->getHeight()));
+    connect(map, &Map::mapDimensionsChanged, map_ruler, &MapRuler::setMapDimensions);
 
     return true;
 }
@@ -1337,6 +1356,18 @@ void Editor::mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixm
 }
 
 bool Editor::displayMap() {
+
+    displayMapEvents();
+    displayMapConnections();
+    displayWildMonTables();
+
+    if (events_group) {
+        events_group->setVisible(false);
+    }
+    return true;
+}
+
+bool Editor::displayLayout() {
     if (!scene) {
         scene = new QGraphicsScene;
         MapSceneEventFilter *filter = new MapSceneEventFilter();
@@ -1351,17 +1382,15 @@ bool Editor::displayMap() {
         scene->removeItem(this->map_ruler);
     }
 
+    // !TODO: disassociate these functions from Map
     displayMetatileSelector();
-    displayMovementPermissionSelector();
     displayMapMetatiles();
+    displayMovementPermissionSelector();
     displayMapMovementPermissions();
     displayBorderMetatiles();
     displayCurrentMetatilesSelection();
-    displayMapEvents();
-    displayMapConnections();
     displayMapBorder();
     displayMapGrid();
-    displayWildMonTables();
 
     this->map_ruler->setZValue(1000);
     scene->addItem(this->map_ruler);
@@ -1372,9 +1401,7 @@ bool Editor::displayMap() {
     if (collision_item) {
         collision_item->setVisible(false);
     }
-    if (events_group) {
-        events_group->setVisible(false);
-    }
+
     return true;
 }
 
@@ -1396,12 +1423,12 @@ void Editor::displayMetatileSelector() {
     } else {
         metatile_selector_item->setLayout(this->layout);
         if (metatile_selector_item->primaryTileset
-         && metatile_selector_item->primaryTileset != map->layout->tileset_primary)
-            emit tilesetUpdated(map->layout->tileset_primary->name);
+         && metatile_selector_item->primaryTileset != this->layout->tileset_primary)
+            emit tilesetUpdated(this->layout->tileset_primary->name);
         if (metatile_selector_item->secondaryTileset
-         && metatile_selector_item->secondaryTileset != map->layout->tileset_secondary)
-            emit tilesetUpdated(map->layout->tileset_secondary->name);
-        metatile_selector_item->setTilesets(map->layout->tileset_primary, map->layout->tileset_secondary);
+         && metatile_selector_item->secondaryTileset != this->layout->tileset_secondary)
+            emit tilesetUpdated(this->layout->tileset_secondary->name);
+        metatile_selector_item->setTilesets(this->layout->tileset_primary, this->layout->tileset_secondary);
     }
 
     scene_metatiles->addItem(metatile_selector_item);
@@ -1548,11 +1575,13 @@ void Editor::displayMapConnections() {
     selected_connection_item = nullptr;
     connection_items.clear();
 
-    for (MapConnection *connection : map->connections) {
-        if (connection->direction == "dive" || connection->direction == "emerge") {
-            continue;
+    if (map) {
+        for (MapConnection *connection : map->connections) {
+            if (connection->direction == "dive" || connection->direction == "emerge") {
+                continue;
+            }
+            createConnectionItem(connection);
         }
-        createConnectionItem(connection);
     }
 
     if (!connection_items.empty()) {
@@ -1611,8 +1640,8 @@ void Editor::maskNonVisibleConnectionTiles() {
     mask.addRect(
         -BORDER_DISTANCE * 16,
         -BORDER_DISTANCE * 16,
-        (map->getWidth() + BORDER_DISTANCE * 2) * 16,
-        (map->getHeight() + BORDER_DISTANCE * 2) * 16
+        (layout->getWidth() + BORDER_DISTANCE * 2) * 16,
+        (layout->getHeight() + BORDER_DISTANCE * 2) * 16
     );
 
     // Mask the tiles with the current theme's background color.
@@ -1631,13 +1660,13 @@ void Editor::displayMapBorder() {
     }
     borderItems.clear();
 
-    int borderWidth = map->getBorderWidth();
-    int borderHeight = map->getBorderHeight();
+    int borderWidth = this->layout->getBorderWidth();
+    int borderHeight = this->layout->getBorderHeight();
     int borderHorzDist = getBorderDrawDistance(borderWidth);
     int borderVertDist = getBorderDrawDistance(borderHeight);
     QPixmap pixmap = this->layout->renderBorder();
-    for (int y = -borderVertDist; y < map->getHeight() + borderVertDist; y += borderHeight)
-    for (int x = -borderHorzDist; x < map->getWidth() + borderHorzDist; x += borderWidth) {
+    for (int y = -borderVertDist; y < this->layout->getHeight() + borderVertDist; y += borderHeight)
+    for (int x = -borderHorzDist; x < this->layout->getWidth() + borderHorzDist; x += borderWidth) {
         QGraphicsPixmapItem *item = new QGraphicsPixmapItem(pixmap);
         item->setX(x * 16);
         item->setY(y * 16);
@@ -1692,16 +1721,16 @@ void Editor::displayMapGrid() {
     gridLines.clear();
     ui->checkBox_ToggleGrid->disconnect();
 
-    int pixelWidth = map->getWidth() * 16;
-    int pixelHeight = map->getHeight() * 16;
-    for (int i = 0; i <= map->getWidth(); i++) {
+    int pixelWidth = this->layout->getWidth() * 16;
+    int pixelHeight = this->layout->getHeight() * 16;
+    for (int i = 0; i <= this->layout->getWidth(); i++) {
         int x = i * 16;
         QGraphicsLineItem *line = new QGraphicsLineItem(x, 0, x, pixelHeight);
         line->setVisible(ui->checkBox_ToggleGrid->isChecked());
         gridLines.append(line);
         connect(ui->checkBox_ToggleGrid, &QCheckBox::toggled, [=](bool checked){line->setVisible(checked);});
     }
-    for (int j = 0; j <= map->getHeight(); j++) {
+    for (int j = 0; j <= this->layout->getHeight(); j++) {
         int y = j * 16;
         QGraphicsLineItem *line = new QGraphicsLineItem(0, y, pixelWidth, y);
         line->setVisible(ui->checkBox_ToggleGrid->isChecked());
@@ -1921,20 +1950,20 @@ void Editor::updateDiveEmergeMap(QString mapName, QString direction) {
 
 void Editor::updatePrimaryTileset(QString tilesetLabel, bool forceLoad)
 {
-    if (map->layout->tileset_primary_label != tilesetLabel || forceLoad)
+    if (this->layout->tileset_primary_label != tilesetLabel || forceLoad)
     {
-        map->layout->tileset_primary_label = tilesetLabel;
-        map->layout->tileset_primary = project->getTileset(tilesetLabel, forceLoad);
+        this->layout->tileset_primary_label = tilesetLabel;
+        this->layout->tileset_primary = project->getTileset(tilesetLabel, forceLoad);
         layout->clearBorderCache();
     }
 }
 
 void Editor::updateSecondaryTileset(QString tilesetLabel, bool forceLoad)
 {
-    if (map->layout->tileset_secondary_label != tilesetLabel || forceLoad)
+    if (this->layout->tileset_secondary_label != tilesetLabel || forceLoad)
     {
-        map->layout->tileset_secondary_label = tilesetLabel;
-        map->layout->tileset_secondary = project->getTileset(tilesetLabel, forceLoad);
+        this->layout->tileset_secondary_label = tilesetLabel;
+        this->layout->tileset_secondary = project->getTileset(tilesetLabel, forceLoad);
         layout->clearBorderCache();
     }
 }
@@ -1956,7 +1985,7 @@ void Editor::updateCustomMapHeaderValues(QTableWidget *table)
 
 Tileset* Editor::getCurrentMapPrimaryTileset()
 {
-    QString tilesetLabel = map->layout->tileset_primary_label;
+    QString tilesetLabel = this->layout->tileset_primary_label;
     return project->getTileset(tilesetLabel);
 }
 

@@ -272,14 +272,14 @@ LayoutTreeModel::LayoutTreeModel(Project *project, QObject *parent) : QStandardI
     initialize();
 }
 
-QStandardItem *LayoutTreeModel::createLayoutItem(QString layoutName) {
+QStandardItem *LayoutTreeModel::createLayoutItem(QString layoutId) {
     QStandardItem *layout = new QStandardItem;
-    layout->setText(layoutName);
+    layout->setText(layoutId);
     layout->setEditable(false);
-    layout->setData(layoutName, Qt::UserRole);
+    layout->setData(layoutId, Qt::UserRole);
     layout->setData("map_layout", MapListRoles::TypeRole);
     // // group->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled);
-    this->layoutItems.insert(layoutName, layout);
+    this->layoutItems.insert(layoutId, layout);
     return layout;
 }
 
@@ -298,17 +298,16 @@ void LayoutTreeModel::initialize() {
     for (int i = 0; i < this->project->mapLayoutsTable.length(); i++) {
         //
         QString layoutId = project->mapLayoutsTable.value(i);
-        MapLayout *layout = project->mapLayouts.value(layoutId);
-        QStandardItem *layoutItem = createLayoutItem(layout->name);
+        QStandardItem *layoutItem = createLayoutItem(layoutId);
         this->root->appendRow(layoutItem);
     }
 
     for (auto mapList : this->project->groupedMapNames) {
         for (auto mapName : mapList) {
             //
-            QString layoutName = project->readMapLayoutName(mapName);
+            QString layoutId = project->readMapLayoutId(mapName);
             QStandardItem *map = createMapItem(mapName);
-            this->layoutItems[layoutName]->appendRow(map);
+            this->layoutItems[layoutId]->appendRow(map);
         }
     }
 
@@ -344,6 +343,15 @@ QVariant LayoutTreeModel::data(const QModelIndex &index, int role) const {
         QString type = item->data(MapListRoles::TypeRole).toString();
 
         if (type == "map_layout") {
+            QString layoutId = item->data(Qt::UserRole).toString();
+            if (layoutId == this->openLayout) {
+                return mapOpenedIcon;
+            }
+            else if (this->project->mapLayouts.contains(layoutId)) {
+                if (this->project->mapLayouts.value(layoutId)->hasUnsavedChanges()) {
+                    return mapEditedIcon;
+                }
+            }
             return mapIcon;
         }
         else if (type == "map_name") {

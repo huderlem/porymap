@@ -92,6 +92,8 @@ public:
     void clearBorderCache();
     void cacheBorder();
 
+    bool hasUnsavedChanges();
+
     bool layoutBlockChanged(int i, const Blockdata &cache);
 
     uint16_t getBorderMetatileId(int x, int y);

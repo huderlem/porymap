@@ -60,11 +60,14 @@ public:
     void closeProject();
 
     bool setMap(QString map_name);
+    bool setLayout(QString layoutName);
     void unsetMap();
 
     Tileset *getCurrentMapPrimaryTileset();
 
     bool displayMap();
+    bool displayLayout();
+
     void displayMetatileSelector();
     void displayMapMetatiles();
     void displayMapMovementPermissions();

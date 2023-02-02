@@ -679,6 +679,53 @@ bool MainWindow::setMap(QString map_name, bool scrollTreeView) {
     return true;
 }
 
+bool MainWindow::setLayout(QString layoutId) {
+    // if this->editor->setLayout(layoutName);
+    // this->editor->layout = layout;
+
+    if (!this->editor->setLayout(layoutId)) {
+        return false;
+    }
+
+    layoutTreeModel->setLayout(layoutId);
+
+    refreshMapScene();
+
+    // if (scrollTreeView) {
+    //     // Make sure we clear the filter first so we actually have a scroll target
+    //     /// !TODO: make this onto a function that scrolls the current view taking a map name or layout name
+    //     groupListProxyModel->setFilterRegularExpression(QString());
+    //     ui->mapList->setCurrentIndex(groupListProxyModel->mapFromSource(mapGroupModel->indexOfMap(map_name)));
+    //     ui->mapList->scrollTo(ui->mapList->currentIndex(), QAbstractItemView::PositionAtCenter);
+    // }
+
+    showWindowTitle();
+
+    updateMapList();
+
+    // connect(editor->map, &Map::mapChanged, this, &MainWindow::onMapChanged);
+    // connect(editor->map, &Map::mapNeedsRedrawing, this, &MainWindow::onMapNeedsRedrawing);
+    // connect(editor->map, &Map::modified, [this](){ this->markMapEdited(); });
+
+    // displayMapProperties
+    ui->comboBox_PrimaryTileset->blockSignals(true);
+    ui->comboBox_SecondaryTileset->blockSignals(true);
+    ui->comboBox_PrimaryTileset->setCurrentText(this->editor->layout->tileset_primary_label);
+    ui->comboBox_SecondaryTileset->setCurrentText(this->editor->layout->tileset_secondary_label);
+    ui->comboBox_PrimaryTileset->blockSignals(false);
+    ui->comboBox_SecondaryTileset->blockSignals(false);
+
+    //
+    // connect(editor->layout, &Layout::mapChanged, this, &MainWindow::onMapChanged);
+    // connect(editor->layout, &Layout::mapNeedsRedrawing, this, &MainWindow::onMapNeedsRedrawing);
+    // connect(editor->layout, &Layout::modified, [this](){ this->markMapEdited(); });
+
+    //
+    updateTilesetEditor();
+
+    return true;
+}
+
 void MainWindow::redrawMapScene()
 {
     if (!editor->displayMap())
@@ -1426,12 +1473,22 @@ void MainWindow::on_layoutList_activated(const QModelIndex &index) {
 
     QVariant data = index.data(Qt::UserRole);
     if (index.data(MapListRoles::TypeRole) == "map_layout" && !data.isNull()) {
-        QString layoutName = data.toString();
+        QString layoutId = data.toString();
         // 
         logInfo("Switching to a layout-only editing mode");
         setMap(QString());
+        //setLayout(layoutId);
         // setLayout(layout)
-        qDebug() << "set layout" << layoutName;
+        qDebug() << "set layout" << layoutId;
+
+        if (!setLayout(layoutId)) {
+            QMessageBox msgBox(this);
+            QString errorMsg = QString("There was an error opening layout %1. Please see %2 for full error details.\n\n%3")
+                    .arg(layoutId)
+                    .arg(getLogPath())
+                    .arg(getMostRecentError());
+            msgBox.critical(nullptr, "Error Opening Layout", errorMsg);
+        }
     }
 }
 
@@ -1468,8 +1525,15 @@ void MainWindow::drawMapListIcons(QAbstractItemModel *model) {
 
 void MainWindow::updateMapList() {
     //MapGroupModel *model = static_cast<MapGroupModel *>(this->ui->mapList->model());
-    mapGroupModel->setMap(this->editor->map->name);
-    groupListProxyModel->layoutChanged();
+    if (this->editor->map) {
+        mapGroupModel->setMap(this->editor->map->name);
+        groupListProxyModel->layoutChanged();
+    }
+
+    if (this->editor->layout) {
+        layoutTreeModel->setLayout(this->editor->layout->id);
+        layoutListProxyModel->layoutChanged();
+    }
     //mapGroupModel->layoutChanged();
     // drawMapListIcons(mapListModel);
 }
@@ -1746,6 +1810,7 @@ void MainWindow::on_mapViewTab_tabBarClicked(int index)
         Scripting::cb_MapViewTabChanged(oldIndex, index);
 
     if (index == 0) {
+        //if ()
         editor->setEditingMap();
     } else if (index == 1) {
         editor->setEditingCollision();
@@ -1768,6 +1833,8 @@ void MainWindow::on_action_Exit_triggered()
 
 void MainWindow::on_mainTabBar_tabBarClicked(int index)
 {
+    //if (!editor->map) return;
+
     int oldIndex = ui->mainTabBar->currentIndex();
     ui->mainTabBar->setCurrentIndex(index);
     if (index != oldIndex)
@@ -1787,6 +1854,8 @@ void MainWindow::on_mainTabBar_tabBarClicked(int index)
     } else if (index == 3) {
         editor->setEditingConnections();
     }
+
+    if (!editor->map) return;
     if (index != 4) {
         if (userConfig.getEncounterJsonActive())
             editor->saveEncounterTabData();

@@ -154,5 +154,6 @@ void Map::clean() {
 }
 
 bool Map::hasUnsavedChanges() {
-    return !editHistory.isClean() /* || !this->layout->editHistory.isClean() */ || hasUnsavedDataChanges || !isPersistedToFile;
+    // !TODO: layout not working here? map needs to be in cache before the layout being edited works
+    return !editHistory.isClean() || !this->layout->editHistory.isClean() || hasUnsavedDataChanges || !isPersistedToFile;
 }

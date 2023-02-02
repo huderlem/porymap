@@ -390,6 +390,19 @@ bool Project::loadLayout(MapLayout *layout) {
         && loadedBorder;
 }
 
+Layout *Project::loadLayout(QString layoutId) {
+    //
+    if (mapLayouts.contains(layoutId)) {
+        Layout *layout = mapLayouts[layoutId];
+        if (loadLayout(layout)) {
+            return layout;
+        }
+    }
+
+    logError(QString("Error: Failed to load layout '%1'").arg(layoutId));
+    return nullptr;
+}
+
 bool Project::loadMapLayout(Map* map) {
     if (!map->isPersistedToFile) {
         return true;

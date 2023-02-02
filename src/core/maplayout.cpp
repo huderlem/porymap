@@ -388,3 +388,7 @@ QPixmap Layout::renderBorder(bool ignoreCache) {
     }
     return this->border_pixmap;
 }
+
+bool Layout::hasUnsavedChanges() {
+    return !this->editHistory.isClean();
+}
