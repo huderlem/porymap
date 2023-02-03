@@ -158,7 +158,7 @@ void Editor::setMapEditingButtonsEnabled(bool enabled) {
     this->ui->pushButton_ChangeDimensions->setEnabled(enabled);
     // If the fill button is pressed, unpress it and select the pointer.
     if (!enabled && (this->ui->toolButton_Fill->isChecked() || this->ui->toolButton_Dropper->isChecked())) {
-        this->map_edit_mode = "select";
+        this->mapEditAction = EditAction::Select;
         this->settings->mapCursor = QCursor();
         this->cursorMapTileRect->setSingleTileMode();
         this->ui->toolButton_Fill->setChecked(false);
@@ -1145,7 +1145,7 @@ bool Editor::setLayout(QString layoutId) {
     }
 
     map_ruler->setMapDimensions(QSize(this->layout->getWidth(), this->layout->getHeight()));
-    connect(map, &Map::mapDimensionsChanged, map_ruler, &MapRuler::setMapDimensions);
+    connect(this->layout, &Layout::layoutDimensionsChanged, map_ruler, &MapRuler::setMapDimensions);
 
     return true;
 }
@@ -1156,7 +1156,7 @@ void Editor::onMapStartPaint(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *
     }
 
     QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
-    if (event->buttons() & Qt::RightButton && (map_edit_mode == "paint" || map_edit_mode == "fill")) {
+    if (event->buttons() & Qt::RightButton && (mapEditAction == EditAction::Paint || mapEditAction == EditAction::Fill)) {
         this->cursorMapTileRect->initRightClickSelectionAnchor(pos.x(), pos.y());
     } else {
         this->cursorMapTileRect->initAnchor(pos.x(), pos.y());
@@ -1206,7 +1206,7 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *i
     QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
 
     if (item->paintingMode == LayoutPixmapItem::PaintMode::Metatiles) {
-        if (map_edit_mode == "paint") {
+        if (mapEditAction == EditAction::Paint) {
             if (event->buttons() & Qt::RightButton) {
                 item->updateMetatileSelection(event);
             } else if (event->buttons() & Qt::MiddleButton) {
@@ -1228,9 +1228,9 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *i
                 }
                 item->paint(event);
             }
-        } else if (map_edit_mode == "select") {
+        } else if (mapEditAction == EditAction::Select) {
             item->select(event);
-        } else if (map_edit_mode == "fill") {
+        } else if (mapEditAction == EditAction::Fill) {
             if (event->buttons() & Qt::RightButton) {
                 item->updateMetatileSelection(event);
             } else if (event->modifiers() & Qt::ControlModifier) {
@@ -1238,13 +1238,13 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *i
             } else {
                 item->floodFill(event);
             }
-        } else if (map_edit_mode == "pick") {
+        } else if (mapEditAction == EditAction::Pick) {
             if (event->buttons() & Qt::RightButton) {
                 item->updateMetatileSelection(event);
             } else {
                 item->pick(event);
             }
-        } else if (map_edit_mode == "shift") {
+        } else if (mapEditAction == EditAction::Shift) {
             this->setStraightPathCursorMode(event);
             if (this->cursorMapTileRect->getStraightPathMode()) {
                 item->lockNondominantAxis(event);
@@ -1253,10 +1253,10 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *i
             item->shift(event);
         }
     } else if (item->paintingMode == LayoutPixmapItem::PaintMode::EventObjects) {
-        if (obj_edit_mode == "paint" && event->type() == QEvent::GraphicsSceneMousePress) {
+        if (objectEditAction == EditAction::Paint && event->type() == QEvent::GraphicsSceneMousePress) {
             // Right-clicking while in paint mode will change mode to select.
             if (event->buttons() & Qt::RightButton) {
-                this->obj_edit_mode = "select";
+                this->objectEditAction = EditAction::Select;
                 this->settings->mapCursor = QCursor();
                 this->cursorMapTileRect->setSingleTileMode();
                 this->ui->toolButton_Paint->setChecked(false);
@@ -1278,9 +1278,9 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *i
                     }
                 }
             }
-        } else if (obj_edit_mode == "select") {
+        } else if (objectEditAction == EditAction::Select) {
             // do nothing here, at least for now
-        } else if (obj_edit_mode == "shift") {
+        } else if (objectEditAction == EditAction::Shift) {
             static QPoint selection_origin;
             static unsigned actionId = 0;
 
@@ -1316,7 +1316,7 @@ void Editor::mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixm
 
     QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
 
-    if (map_edit_mode == "paint") {
+    if (mapEditAction == EditAction::Paint) {
         if (event->buttons() & Qt::RightButton) {
             item->updateMovementPermissionSelection(event);
         } else if (event->buttons() & Qt::MiddleButton) {
@@ -1333,9 +1333,9 @@ void Editor::mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixm
             }
             item->paint(event);
         }
-    } else if (map_edit_mode == "select") {
+    } else if (mapEditAction == EditAction::Select) {
         item->select(event);
-    } else if (map_edit_mode == "fill") {
+    } else if (mapEditAction == EditAction::Fill) {
         if (event->buttons() & Qt::RightButton) {
             item->pick(event);
         } else if (event->modifiers() & Qt::ControlModifier) {
@@ -1343,9 +1343,9 @@ void Editor::mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixm
         } else {
             item->floodFill(event);
         }
-    } else if (map_edit_mode == "pick") {
+    } else if (mapEditAction == EditAction::Pick) {
         item->pick(event);
-    } else if (map_edit_mode == "shift") {
+    } else if (mapEditAction == EditAction::Shift) {
         this->setStraightPathCursorMode(event);
         if (this->cursorMapTileRect->getStraightPathMode()) {
             item->lockNondominantAxis(event);
@@ -2247,8 +2247,8 @@ void Editor::objectsView_onMousePress(QMouseEvent *event) {
     if (map_item && map_item->paintingMode != LayoutPixmapItem::PaintMode::EventObjects) {
         return;
     }
-    if (this->obj_edit_mode == "paint" && event->buttons() & Qt::RightButton) {
-        this->obj_edit_mode = "select";
+    if (this->objectEditAction == EditAction::Paint && event->buttons() & Qt::RightButton) {
+        this->objectEditAction = EditAction::Select;
         this->settings->mapCursor = QCursor();
         this->cursorMapTileRect->setSingleTileMode();
         this->ui->toolButton_Paint->setChecked(false);

@@ -321,12 +321,6 @@ private:
     LayoutTreeModel *layoutTreeModel;
 
 
-    // QStandardItemModel *mapListModel;
-    // QList<QStandardItem*> *mapGroupItemsList;
-    // QMap<QString, QModelIndex> mapListIndexes;
-    // QIcon* mapIcon;
-    // QIcon* mapEditedIcon;
-    // QIcon* mapOpenedIcon;
 
     QAction *undoAction = nullptr;
     QAction *redoAction = nullptr;
@@ -374,12 +368,11 @@ private:
     void setRecentMap(QString map_name);
     QStandardItem* createMapItem(QString mapName, int groupNum, int inGroupNum);
 
-    void drawMapListIcons(QAbstractItemModel *model);
     void updateMapList();
 
     void displayMapProperties();
     void checkToolButtons();
-    void clickToolButtonFromEditMode(QString editMode);
+    void clickToolButtonFromEditAction(Editor::EditAction editAction);
 
     void markMapEdited();
     void showWindowTitle();

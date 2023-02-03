@@ -155,9 +155,13 @@ public:
 
     QList<DraggablePixmapItem *> *selected_events = nullptr;
 
+    enum class EditAction { None, Paint, Select, Fill, Shift, Pick, Move };
+    EditAction mapEditAction = EditAction::Paint;
+    EditAction objectEditAction = EditAction::Select;
+
     /// !TODO this
-    QString map_edit_mode = "paint";
-    QString obj_edit_mode = "select";
+    enum class EditMode { None, Map, Layout };
+    EditMode editMode = EditMode::Map;
 
     int scaleIndex = 2;
     qreal collisionOpacity = 0.5;

@@ -625,7 +625,6 @@ void MainWindow::unsetMap() {
     this->editor->unsetMap();
 
     // disable other tabs
-    this->ui->mainTabBar->setTabEnabled(0, true);
     this->ui->mainTabBar->setTabEnabled(1, false);
     this->ui->mainTabBar->setTabEnabled(2, false);
     this->ui->mainTabBar->setTabEnabled(3, false);
@@ -652,6 +651,11 @@ bool MainWindow::setMap(QString map_name, bool scrollTreeView) {
         // !TODO: function to act on current view? or that does all the views
         ui->mapList->setExpanded(groupListProxyModel->mapFromSource(mapGroupModel->indexOfMap(map_name)), false);
     }
+
+    this->ui->mainTabBar->setTabEnabled(1, true);
+    this->ui->mainTabBar->setTabEnabled(2, true);
+    this->ui->mainTabBar->setTabEnabled(3, true);
+    this->ui->mainTabBar->setTabEnabled(4, true);
 
     refreshMapScene();
     displayMapProperties();
@@ -1492,39 +1496,7 @@ void MainWindow::on_layoutList_activated(const QModelIndex &index) {
     }
 }
 
-/// !TODO something with the projectHasUnsavedChanges var
-void MainWindow::drawMapListIcons(QAbstractItemModel *model) {
-    // projectHasUnsavedChanges = false;
-    // QList<QModelIndex> list;
-    // list.append(QModelIndex());
-    // while (list.length()) {
-    //     QModelIndex parent = list.takeFirst();
-    //     for (int i = 0; i < model->rowCount(parent); i++) {
-    //         QModelIndex index = model->index(i, 0, parent);
-    //         if (model->hasChildren(index)) {
-    //             list.append(index);
-    //         }
-    //         QVariant data = index.data(Qt::UserRole);
-    //         if (!data.isNull()) {
-    //             QString map_name = data.toString();
-    //             if (editor->project && editor->project->mapCache.contains(map_name)) {
-    //                 QStandardItem *map = mapListModel->itemFromIndex(mapListIndexes.value(map_name));
-    //                 map->setIcon(*mapIcon);
-    //                 if (editor->project->mapCache.value(map_name)->hasUnsavedChanges()) {
-    //                     map->setIcon(*mapEditedIcon);
-    //                     projectHasUnsavedChanges = true;
-    //                 }
-    //                 if (editor->map->name == map_name) {
-    //                     map->setIcon(*mapOpenedIcon);
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
-}
-
 void MainWindow::updateMapList() {
-    //MapGroupModel *model = static_cast<MapGroupModel *>(this->ui->mapList->model());
     if (this->editor->map) {
         mapGroupModel->setMap(this->editor->map->name);
         groupListProxyModel->layoutChanged();
@@ -1534,8 +1506,6 @@ void MainWindow::updateMapList() {
         layoutTreeModel->setLayout(this->editor->layout->id);
         layoutListProxyModel->layoutChanged();
     }
-    //mapGroupModel->layoutChanged();
-    // drawMapListIcons(mapListModel);
 }
 
 void MainWindow::on_action_Save_Project_triggered() {
@@ -1846,11 +1816,11 @@ void MainWindow::on_mainTabBar_tabBarClicked(int index)
     if (index == 0) {
         ui->stackedWidget_MapEvents->setCurrentIndex(0);
         on_mapViewTab_tabBarClicked(ui->mapViewTab->currentIndex());
-        clickToolButtonFromEditMode(editor->map_edit_mode);
+        clickToolButtonFromEditAction(editor->mapEditAction);
     } else if (index == 1) {
         ui->stackedWidget_MapEvents->setCurrentIndex(1);
         editor->setEditingObjects();
-        clickToolButtonFromEditMode(editor->obj_edit_mode);
+        clickToolButtonFromEditAction(editor->objectEditAction);
     } else if (index == 3) {
         editor->setEditingConnections();
     }
@@ -2324,9 +2294,9 @@ void MainWindow::on_toolButton_deleteObject_clicked() {
 void MainWindow::on_toolButton_Paint_clicked()
 {
     if (ui->mainTabBar->currentIndex() == 0)
-        editor->map_edit_mode = "paint";
+        editor->mapEditAction = Editor::EditAction::Paint;
     else
-        editor->obj_edit_mode = "paint";
+        editor->objectEditAction = Editor::EditAction::Paint;
 
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/pencil_cursor.ico"), 10, 10);
 
@@ -2345,9 +2315,9 @@ void MainWindow::on_toolButton_Paint_clicked()
 void MainWindow::on_toolButton_Select_clicked()
 {
     if (ui->mainTabBar->currentIndex() == 0)
-        editor->map_edit_mode = "select";
+        editor->mapEditAction = Editor::EditAction::Select;
     else
-        editor->obj_edit_mode = "select";
+        editor->objectEditAction = Editor::EditAction::Select;
 
     editor->settings->mapCursor = QCursor();
     editor->cursorMapTileRect->setSingleTileMode();
@@ -2363,9 +2333,9 @@ void MainWindow::on_toolButton_Select_clicked()
 void MainWindow::on_toolButton_Fill_clicked()
 {
     if (ui->mainTabBar->currentIndex() == 0)
-        editor->map_edit_mode = "fill";
+        editor->mapEditAction = Editor::EditAction::Fill;
     else
-        editor->obj_edit_mode = "fill";
+        editor->objectEditAction = Editor::EditAction::Fill;
 
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/fill_color_cursor.ico"), 10, 10);
     editor->cursorMapTileRect->setSingleTileMode();
@@ -2381,9 +2351,9 @@ void MainWindow::on_toolButton_Fill_clicked()
 void MainWindow::on_toolButton_Dropper_clicked()
 {
     if (ui->mainTabBar->currentIndex() == 0)
-        editor->map_edit_mode = "pick";
+        editor->mapEditAction = Editor::EditAction::Pick;
     else
-        editor->obj_edit_mode = "pick";
+        editor->objectEditAction = Editor::EditAction::Pick;
 
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/pipette_cursor.ico"), 10, 10);
     editor->cursorMapTileRect->setSingleTileMode();
@@ -2399,9 +2369,9 @@ void MainWindow::on_toolButton_Dropper_clicked()
 void MainWindow::on_toolButton_Move_clicked()
 {
     if (ui->mainTabBar->currentIndex() == 0)
-        editor->map_edit_mode = "move";
+        editor->mapEditAction = Editor::EditAction::Move;
     else
-        editor->obj_edit_mode = "move";
+        editor->objectEditAction = Editor::EditAction::Move;
 
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/move.ico"), 7, 7);
     editor->cursorMapTileRect->setSingleTileMode();
@@ -2417,9 +2387,9 @@ void MainWindow::on_toolButton_Move_clicked()
 void MainWindow::on_toolButton_Shift_clicked()
 {
     if (ui->mainTabBar->currentIndex() == 0)
-        editor->map_edit_mode = "shift";
+        editor->mapEditAction = Editor::EditAction::Shift;
     else
-        editor->obj_edit_mode = "shift";
+        editor->objectEditAction = Editor::EditAction::Shift;
 
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/shift_cursor.ico"), 10, 10);
     editor->cursorMapTileRect->setSingleTileMode();
@@ -2433,37 +2403,37 @@ void MainWindow::on_toolButton_Shift_clicked()
 }
 
 void MainWindow::checkToolButtons() {
-    QString edit_mode;
+    Editor::EditAction editAction;
     if (ui->mainTabBar->currentIndex() == 0) {
-        edit_mode = editor->map_edit_mode;
+        editAction = editor->mapEditAction;
     } else {
-        edit_mode = editor->obj_edit_mode;
-        if (edit_mode == "select" && editor->map_ruler)
+        editAction = editor->objectEditAction;
+        if (editAction == Editor::EditAction::Select && editor->map_ruler)
             editor->map_ruler->setEnabled(true);
         else if (editor->map_ruler)
             editor->map_ruler->setEnabled(false);
     }
 
-    ui->toolButton_Paint->setChecked(edit_mode == "paint");
-    ui->toolButton_Select->setChecked(edit_mode == "select");
-    ui->toolButton_Fill->setChecked(edit_mode == "fill");
-    ui->toolButton_Dropper->setChecked(edit_mode == "pick");
-    ui->toolButton_Move->setChecked(edit_mode == "move");
-    ui->toolButton_Shift->setChecked(edit_mode == "shift");
+    ui->toolButton_Paint->setChecked(editAction == Editor::EditAction::Paint);
+    ui->toolButton_Select->setChecked(editAction == Editor::EditAction::Select);
+    ui->toolButton_Fill->setChecked(editAction == Editor::EditAction::Fill);
+    ui->toolButton_Dropper->setChecked(editAction == Editor::EditAction::Pick);
+    ui->toolButton_Move->setChecked(editAction == Editor::EditAction::Move);
+    ui->toolButton_Shift->setChecked(editAction == Editor::EditAction::Shift);
 }
 
-void MainWindow::clickToolButtonFromEditMode(QString editMode) {
-    if (editMode == "paint") {
+void MainWindow::clickToolButtonFromEditAction(Editor::EditAction editAction) {
+    if (editAction == Editor::EditAction::Paint) {
         on_toolButton_Paint_clicked();
-    } else if (editMode == "select") {
+    } else if (editAction == Editor::EditAction::Select) {
         on_toolButton_Select_clicked();
-    } else if (editMode == "fill") {
+    } else if (editAction == Editor::EditAction::Fill) {
         on_toolButton_Fill_clicked();
-    } else if (editMode == "pick") {
+    } else if (editAction == Editor::EditAction::Pick) {
         on_toolButton_Dropper_clicked();
-    } else if (editMode == "move") {
+    } else if (editAction == Editor::EditAction::Move) {
         on_toolButton_Move_clicked();
-    } else if (editMode == "shift") {
+    } else if (editAction == Editor::EditAction::Shift) {
         on_toolButton_Shift_clicked();
     }
 }
