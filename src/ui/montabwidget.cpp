@@ -56,25 +56,31 @@ void MonTabWidget::populate() {
     }
 }
 
+void MonTabWidget::copy(int index) {
+    EncounterTableModel *model = static_cast<EncounterTableModel *>(this->tableAt(index)->model());
+    encounterClipboard = model->encounterData();
+}
+
+void MonTabWidget::paste(int index) {
+    if (!encounterClipboard.active) return;
+
+    clearTableAt(index);
+    WildMonInfo newInfo = getDefaultMonInfo(this->editor->project->wildMonFields.at(index));
+    combineEncounters(newInfo, encounterClipboard);
+    populateTab(index, newInfo);
+    emit editor->wildMonDataChanged();
+}
+
 void MonTabWidget::actionCopyTab(int index) {
     QMenu contextMenu(this);
 
     QAction *actionCopy = new QAction("Copy", &contextMenu);
-    connect(actionCopy, &QAction::triggered, [=](){
-        EncounterTableModel *model = static_cast<EncounterTableModel *>(this->tableAt(index)->model());
-        encounterClipboard = model->encounterData();
-    });
+    connect(actionCopy, &QAction::triggered, [=]() { copy(index); });
     contextMenu.addAction(actionCopy);
 
     if (encounterClipboard.active) {
         QAction *actionPaste = new QAction("Paste", &contextMenu);
-        connect(actionPaste, &QAction::triggered, [=](){
-            clearTableAt(index);
-            WildMonInfo newInfo = getDefaultMonInfo(editor->project->wildMonFields.at(index));
-            combineEncounters(newInfo, encounterClipboard);
-            populateTab(index, newInfo);
-            emit editor->wildMonDataChanged();
-        });
+        connect(actionPaste, &QAction::triggered, [=]() { paste(index); });
         contextMenu.addAction(actionPaste);
     }
 

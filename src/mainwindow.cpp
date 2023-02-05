@@ -17,6 +17,7 @@
 #include "shortcut.h"
 #include "mapparser.h"
 #include "prefab.h"
+#include "montabwidget.h"
 
 #include <QFileDialog>
 #include <QClipboard>
@@ -1443,7 +1444,8 @@ void MainWindow::copy() {
             copyObject["height"] = editor->metatile_selector_item->getSelectionDimensions().y();
             setClipboardData(copyObject);
             logInfo("Copied metatile selection to clipboard");
-        } else if (objectName == "graphicsView_Map") {
+        }
+        else if (objectName == "graphicsView_Map") {
             // which tab are we in?
             switch (ui->mainTabBar->currentIndex())
             {
@@ -1497,6 +1499,13 @@ void MainWindow::copy() {
             }
             }
         }
+        else if (this->ui->mainTabBar->currentIndex() == 4) {
+            QWidget *w = this->ui->stackedWidget_WildMons->currentWidget();
+            if (w) {
+                MonTabWidget *mtw = static_cast<MonTabWidget *>(w);
+                mtw->copy(mtw->currentIndex());
+            }
+        }
     }
 }
 
@@ -1521,8 +1530,15 @@ void MainWindow::paste() {
     QClipboard *clipboard = QGuiApplication::clipboard();
     QString clipboardText(clipboard->text());
 
-
-    if (!clipboardText.isEmpty()) {
+    if (ui->mainTabBar->currentIndex() == 4) {
+        QWidget *w = this->ui->stackedWidget_WildMons->currentWidget();
+        if (w) {
+            w->setFocus();
+            MonTabWidget *mtw = static_cast<MonTabWidget *>(w);
+            mtw->paste(mtw->currentIndex());
+        }
+    }
+    else if (!clipboardText.isEmpty()) {
         // we only can paste json text
         // so, check if clipboard text is valid json
         QString parseError;

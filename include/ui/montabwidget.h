@@ -24,6 +24,9 @@ public:
 
     QTableView *tableAt(int tabIndex);
 
+    void copy(int index);
+    void paste(int index);
+
 public slots:
     void setTabActive(int index, bool active = true);
     void deactivateTab(int tabIndex);
