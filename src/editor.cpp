@@ -470,7 +470,7 @@ void Editor::configureEncounterJSON(QWidget *window) {
         QVBoxLayout *slotChoiceLayout = new QVBoxLayout;
         if (useGroups) {
             QComboBox *groupCombo = new QComboBox;
-            connect(groupCombo, QOverload<const QString &>::of(&QComboBox::textActivated), [&tempFields, &currentField, index](QString newGroupName) {
+            connect(groupCombo, QOverload<const QString &>::of(&QComboBox::textActivated), [&tempFields, &currentField, &updateTotal, index](QString newGroupName) {
                 for (EncounterField &field : tempFields) {
                     if (field.name == currentField.name) {
                         for (auto groupNameIterator : field.groups) {
@@ -487,6 +487,7 @@ void Editor::configureEncounterJSON(QWidget *window) {
                         break;
                     }
                 }
+                updateTotal(currentField);
             });
             for (auto groupNameIterator : currentField.groups) {
                 groupCombo->addItem(groupNameIterator.first);
@@ -544,6 +545,12 @@ void Editor::configureEncounterJSON(QWidget *window) {
             delete slot;
         }
 
+        if (!tempFields.size()) {
+            return;
+        }
+        if (index >= tempFields.size()) {
+            index = tempFields.size() - 1;
+        }
         EncounterField &currentField = tempFields[index];
         for (int i = 0; i < currentField.encounterRates.size(); i++) {
             grid.addWidget(createNewSlot(i, currentField), i / 4 + 1, i % 4);
@@ -604,10 +611,15 @@ void Editor::configureEncounterJSON(QWidget *window) {
     removeSlotButton->setFlat(true);
     connect(removeSlotButton, &QPushButton::clicked, [&fieldChoices, &drawSlotWidgets, &tempFields]() {
         EncounterField &field = tempFields[fieldChoices->currentIndex()];
-        if (field.encounterRates.size() > 1)
+        int lastIndex = field.encounterRates.size() - 1;
+        if (lastIndex > 0)
             field.encounterRates.removeLast();
+        for (auto &g : field.groups) {
+            field.groups[g.first].removeAll(lastIndex);
+        }
         drawSlotWidgets(fieldChoices->currentIndex());
     });
+    // TODO: method for editing groups?
 
     QFrame firstRow;
     QHBoxLayout firstRowLayout;
