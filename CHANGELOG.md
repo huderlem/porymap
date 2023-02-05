@@ -7,6 +7,9 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 The **"Breaking Changes"** listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. It also includes changes to the scripting API that may change the behavior of existing porymap scripts. If porymap is used with a project or API script that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.
 
 ## [Unreleased]
+### Changed
+- Change encounter tab copy and paste behavior.
+
 ### Fixed
 - Fix tilesets that share part of their name loading incorrectly.
 - Fix events being hidden behind connecting maps.
