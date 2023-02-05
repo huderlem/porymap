@@ -51,8 +51,7 @@ QImage TilemapTileSelector::setPalette(int paletteIndex) {
         {
             QVector<QRgb> newColorTable;
             int palMinLength = paletteIndex * 16 + 16;
-            if ((this->palette.count() < palMinLength) || (tilesetImage.colorTable().count() != 16)) {
-                // either a) the palette has less than 256 colors, or b) the image is improperly indexed
+            if (this->palette.count() < palMinLength) {
                 for (QRgb color : tilesetImage.colorTable()) {
                     int gray = qGray(color);
                     newColorTable.append(qRgb(gray, gray, gray));

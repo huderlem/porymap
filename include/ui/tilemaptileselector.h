@@ -126,6 +126,12 @@ public:
     TilemapTileSelector(QString tilesetFilepath, TilemapFormat format, QString palFilepath): SelectablePixmapItem(8, 8, 1, 1) {
         this->tileset = QImage(tilesetFilepath);
         this->format = format;
+        if (this->tileset.format() == QImage::Format::Format_Indexed8 && this->format == TilemapFormat::BPP_4) {
+            // Squash pixel data to fit 4BPP. Allows project repo to use 8BPP images for 4BPP tilemaps
+            uchar * pixel = this->tileset.bits();
+            for (int i = 0; i < this->tileset.sizeInBytes(); i++, pixel++)
+                *pixel %= 16;
+        }
         bool err;
         if (!palFilepath.isEmpty()) {
             this->palette = PaletteUtil::parse(palFilepath, &err);
