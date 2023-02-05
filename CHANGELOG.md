@@ -11,6 +11,9 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix tilesets that share part of their name loading incorrectly.
 - Fix events being hidden behind connecting maps.
 - Fix some minor visual issues on the Connections tab.
+- Fix bug which caused encounter configurator to crash if slots in fields containing groups were deleted.
+- Fix bug which caused encounter configurator to crash if last field was deleted.
+- Fix map render when collision view was active while map changed.
 
 ## [5.1.0] - 2023-01-22
 ### Added
