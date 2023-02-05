@@ -84,12 +84,6 @@ public:
     void updateMapBorder();
     void updateMapConnections();
 
-    void setEditingMap();
-    void setEditingCollision();
-    void setEditingObjects();
-    void setEditingConnections();
-    void setMapEditingButtonsEnabled(bool enabled);
-
     void setCurrentConnectionDirection(QString curDirection);
     void updateCurrentConnectionDirection(QString curDirection);
     void setConnectionsVisibility(bool visible);
@@ -160,8 +154,19 @@ public:
     EditAction objectEditAction = EditAction::Select;
 
     /// !TODO this
-    enum class EditMode { None, Map, Layout };
+    enum class EditMode { None, Disabled, Map, Layout, Objects, Connections, Encounters };
     EditMode editMode = EditMode::Map;
+    void setEditMode(EditMode mode) { this->editMode = mode; }
+    EditMode getEditMode() { return this->editMode; }
+
+    void setEditingMap();
+    void setEditingCollision();
+    void setEditingLayout();
+    void setEditingObjects();
+    void setEditingConnections();
+    void setEditingEncounters();
+
+    void setMapEditingButtonsEnabled(bool enabled);
 
     int scaleIndex = 2;
     qreal collisionOpacity = 0.5;

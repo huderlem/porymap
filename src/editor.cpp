@@ -81,7 +81,6 @@ void Editor::closeProject() {
 }
 
 void Editor::setEditingMap() {
-    qDebug() << "Editor::setEditingMap()";
     current_view = map_item;
     if (map_item) {
         map_item->paintingMode = LayoutPixmapItem::PaintMode::Metatiles;
@@ -102,6 +101,10 @@ void Editor::setEditingMap() {
     this->cursorMapTileRect->setActive(true);
 
     setMapEditingButtonsEnabled(true);
+}
+
+void Editor::setEditingLayout() {
+    // 
 }
 
 void Editor::setEditingCollision() {
@@ -152,22 +155,6 @@ void Editor::setEditingObjects() {
     setMapEditingButtonsEnabled(false);
 }
 
-void Editor::setMapEditingButtonsEnabled(bool enabled) {
-    this->ui->toolButton_Fill->setEnabled(enabled);
-    this->ui->toolButton_Dropper->setEnabled(enabled);
-    this->ui->pushButton_ChangeDimensions->setEnabled(enabled);
-    // If the fill button is pressed, unpress it and select the pointer.
-    if (!enabled && (this->ui->toolButton_Fill->isChecked() || this->ui->toolButton_Dropper->isChecked())) {
-        this->mapEditAction = EditAction::Select;
-        this->settings->mapCursor = QCursor();
-        this->cursorMapTileRect->setSingleTileMode();
-        this->ui->toolButton_Fill->setChecked(false);
-        this->ui->toolButton_Dropper->setChecked(false);
-        this->ui->toolButton_Select->setChecked(true);
-    }
-    this->ui->checkBox_smartPaths->setEnabled(enabled);
-}
-
 void Editor::setEditingConnections() {
     current_view = map_item;
     if (map_item) {
@@ -197,6 +184,26 @@ void Editor::setEditingConnections() {
     setConnectionsEditable(true);
     this->cursorMapTileRect->setSingleTileMode();
     this->cursorMapTileRect->setActive(false);
+}
+
+void Editor::setEditingEncounters() {
+    // 
+}
+
+void Editor::setMapEditingButtonsEnabled(bool enabled) {
+    this->ui->toolButton_Fill->setEnabled(enabled);
+    this->ui->toolButton_Dropper->setEnabled(enabled);
+    this->ui->pushButton_ChangeDimensions->setEnabled(enabled);
+    // If the fill button is pressed, unpress it and select the pointer.
+    if (!enabled && (this->ui->toolButton_Fill->isChecked() || this->ui->toolButton_Dropper->isChecked())) {
+        this->mapEditAction = EditAction::Select;
+        this->settings->mapCursor = QCursor();
+        this->cursorMapTileRect->setSingleTileMode();
+        this->ui->toolButton_Fill->setChecked(false);
+        this->ui->toolButton_Dropper->setChecked(false);
+        this->ui->toolButton_Select->setChecked(true);
+    }
+    this->ui->checkBox_smartPaths->setEnabled(enabled);
 }
 
 void Editor::displayWildMonTables() {

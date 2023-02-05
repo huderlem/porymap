@@ -335,6 +335,7 @@ void MainWindow::initMiscHeapObjects() {
     ui->tabWidget_EventType->clear();
 }
 
+// TODO
 void MainWindow::initMapSortOrder() {
     // QMenu *mapSortOrderMenu = new QMenu(this);
     // QActionGroup *mapSortOrderActionGroup = new QActionGroup(ui->toolButton_MapSortOrder);
@@ -356,10 +357,18 @@ void MainWindow::initMapSortOrder() {
 }
 
 void MainWindow::showWindowTitle() {
+    // !TODO, check editor editmode
     if (editor->map) {
         setWindowTitle(QString("%1%2 - %3")
             .arg(editor->map->hasUnsavedChanges() ? "* " : "")
             .arg(editor->map->name)
+            .arg(editor->project->getProjectTitle())
+        );
+    }
+    else if (editor->layout) {
+        setWindowTitle(QString("%1%2 - %3")
+            .arg(editor->layout->hasUnsavedChanges() ? "* " : "")
+            .arg(editor->layout->id)
             .arg(editor->project->getProjectTitle())
         );
     }
@@ -1780,7 +1789,6 @@ void MainWindow::on_mapViewTab_tabBarClicked(int index)
         Scripting::cb_MapViewTabChanged(oldIndex, index);
 
     if (index == 0) {
-        //if ()
         editor->setEditingMap();
     } else if (index == 1) {
         editor->setEditingCollision();

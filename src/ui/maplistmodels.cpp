@@ -274,7 +274,8 @@ LayoutTreeModel::LayoutTreeModel(Project *project, QObject *parent) : QStandardI
 
 QStandardItem *LayoutTreeModel::createLayoutItem(QString layoutId) {
     QStandardItem *layout = new QStandardItem;
-    layout->setText(layoutId);
+    layout->setText(this->project->layoutIdsToNames[layoutId]);
+    //layout->setText(layoutId);
     layout->setEditable(false);
     layout->setData(layoutId, Qt::UserRole);
     layout->setData("map_layout", MapListRoles::TypeRole);
