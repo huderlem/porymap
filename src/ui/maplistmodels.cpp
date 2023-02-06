@@ -180,6 +180,7 @@ QVariant MapGroupModel::data(const QModelIndex &index, int role) const {
     int col = index.column();
 
     if (role == Qt::DecorationRole) {
+        static QIcon mapGrayIcon = QIcon(QStringLiteral(":/icons/map_grayed.ico"));
         static QIcon mapIcon = QIcon(QStringLiteral(":/icons/map.ico"));
         static QIcon mapEditedIcon = QIcon(QStringLiteral(":/icons/map_edited.ico"));
         static QIcon mapOpenedIcon = QIcon(QStringLiteral(":/icons/map_opened.ico"));
@@ -206,8 +207,11 @@ QVariant MapGroupModel::data(const QModelIndex &index, int role) const {
                 if (this->project->mapCache.value(mapName)->hasUnsavedChanges()) {
                     return mapEditedIcon;
                 }
+                else {
+                    return mapIcon;
+                }
             }
-            return mapIcon;
+            return mapGrayIcon;
         }
 
         // check if map or group

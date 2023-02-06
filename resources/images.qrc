@@ -17,6 +17,7 @@
         <file>icons/map_edited.ico</file>
         <file>icons/map_opened.ico</file>
         <file>icons/map.ico</file>
+        <file>icons/map_grayed.ico</file>
         <file>icons/move.ico</file>
         <file>icons/pencil_cursor.ico</file>
         <file>icons/pencil.ico</file>

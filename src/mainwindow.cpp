@@ -368,7 +368,7 @@ void MainWindow::showWindowTitle() {
     else if (editor->layout) {
         setWindowTitle(QString("%1%2 - %3")
             .arg(editor->layout->hasUnsavedChanges() ? "* " : "")
-            .arg(editor->layout->id)
+            .arg(editor->layout->name)
             .arg(editor->project->getProjectTitle())
         );
     }
@@ -1646,7 +1646,7 @@ void MainWindow::setClipboardData(QImage image) {
 }
 
 void MainWindow::paste() {
-    if (!editor || !editor->project || !editor->map) return;
+    if (!editor || !editor->project || !(editor->map || editor->layout)) return;
 
     QClipboard *clipboard = QGuiApplication::clipboard();
     QString clipboardText(clipboard->text());
