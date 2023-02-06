@@ -200,6 +200,7 @@ private slots:
     void on_comboBox_Weather_currentTextChanged(const QString &arg1);
     void on_comboBox_Type_currentTextChanged(const QString &arg1);
     void on_comboBox_BattleScene_currentTextChanged(const QString &arg1);
+    void on_comboBox_LayoutSelector_currentTextChanged(const QString &arg1);
     void on_checkBox_ShowLocation_stateChanged(int selected);
     void on_checkBox_AllowRunning_stateChanged(int selected);
     void on_checkBox_AllowBiking_stateChanged(int selected);

@@ -29,6 +29,13 @@ void Map::setName(QString mapName) {
     constantName = mapConstantFromName(mapName);
 }
 
+void Map::setLayout(Layout *layout) {
+    this->layout = layout;
+    if (layout) {
+        this->layoutId = layout->id;
+    }
+}
+
 QString Map::mapConstantFromName(QString mapName) {
     // Transform map names of the form 'GraniteCave_B1F` into map constants like 'MAP_GRANITE_CAVE_B1F'.
     static const QRegularExpression caseChange("([a-z])([A-Z])");

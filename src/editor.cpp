@@ -1154,6 +1154,18 @@ bool Editor::setLayout(QString layoutId) {
     map_ruler->setMapDimensions(QSize(this->layout->getWidth(), this->layout->getHeight()));
     connect(this->layout, &Layout::layoutDimensionsChanged, map_ruler, &MapRuler::setMapDimensions);
 
+    ui->comboBox_PrimaryTileset->blockSignals(true);
+    ui->comboBox_SecondaryTileset->blockSignals(true);
+    ui->comboBox_PrimaryTileset->setCurrentText(this->layout->tileset_primary_label);
+    ui->comboBox_SecondaryTileset->setCurrentText(this->layout->tileset_secondary_label);
+    ui->comboBox_PrimaryTileset->blockSignals(false);
+    ui->comboBox_SecondaryTileset->blockSignals(false);
+
+    const QSignalBlocker b0(this->ui->comboBox_LayoutSelector);
+    int index = this->ui->comboBox_LayoutSelector->findText(layoutId);
+    if (index < 0) index = 0;
+    this->ui->comboBox_LayoutSelector->setCurrentIndex(index);
+
     return true;
 }
 

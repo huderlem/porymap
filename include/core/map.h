@@ -59,6 +59,7 @@ public:
     QMap<QString, QJsonValue> customHeaders;
 
     Layout *layout = nullptr;
+    void setLayout(Layout *layout);
 
     bool isPersistedToFile = true;
     bool hasUnsavedDataChanges = false;

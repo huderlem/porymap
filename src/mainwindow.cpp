@@ -640,6 +640,7 @@ void MainWindow::unsetMap() {
     this->ui->mainTabBar->setTabEnabled(4, false);
 
     //
+    this->ui->comboBox_LayoutSelector->setEnabled(false);
 }
 
 bool MainWindow::setMap(QString map_name, bool scrollTreeView) {
@@ -721,12 +722,7 @@ bool MainWindow::setLayout(QString layoutId) {
     // connect(editor->map, &Map::modified, [this](){ this->markMapEdited(); });
 
     // displayMapProperties
-    ui->comboBox_PrimaryTileset->blockSignals(true);
-    ui->comboBox_SecondaryTileset->blockSignals(true);
-    ui->comboBox_PrimaryTileset->setCurrentText(this->editor->layout->tileset_primary_label);
-    ui->comboBox_SecondaryTileset->setCurrentText(this->editor->layout->tileset_secondary_label);
-    ui->comboBox_PrimaryTileset->blockSignals(false);
-    ui->comboBox_SecondaryTileset->blockSignals(false);
+    
 
     //
     // connect(editor->layout, &Layout::mapChanged, this, &MainWindow::onMapChanged);
@@ -876,6 +872,18 @@ void MainWindow::displayMapProperties() {
     ui->tableWidget_CustomHeaderFields->blockSignals(false);
 }
 
+void MainWindow::on_comboBox_LayoutSelector_currentTextChanged(const QString &text) {
+    //
+    if (editor && editor->project && editor->map) {
+        if (editor->project->mapLayouts.contains(text)) {
+            editor->map->setLayout(editor->project->loadLayout(text));
+            // !TODO: method to setMapLayout instead of having to do whole setMap thing,
+            // also edit history and bug fixes
+            setMap(editor->map->name);
+        }
+    }
+}
+
 void MainWindow::on_comboBox_Song_currentTextChanged(const QString &song)
 {
     if (editor && editor->map) {
@@ -1012,6 +1020,7 @@ bool MainWindow::loadProjectCombos() {
     const QSignalBlocker blocker5(ui->comboBox_Weather);
     const QSignalBlocker blocker6(ui->comboBox_BattleScene);
     const QSignalBlocker blocker7(ui->comboBox_Type);
+    const QSignalBlocker blocker8(ui->comboBox_LayoutSelector);
 
     ui->comboBox_Song->clear();
     ui->comboBox_Song->addItems(project->songNames);
@@ -1027,6 +1036,8 @@ bool MainWindow::loadProjectCombos() {
     ui->comboBox_BattleScene->addItems(project->mapBattleScenes);
     ui->comboBox_Type->clear();
     ui->comboBox_Type->addItems(project->mapTypes);
+    ui->comboBox_LayoutSelector->clear();
+    ui->comboBox_LayoutSelector->addItems(project->mapLayoutsTable);
 
     return true;
 }
