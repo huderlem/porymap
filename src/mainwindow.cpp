@@ -203,7 +203,7 @@ void MainWindow::initCustomUI() {
     // Set up the tab bar
     while (ui->mainTabBar->count()) ui->mainTabBar->removeTab(0);
     ui->mainTabBar->addTab("Map");
-    ui->mainTabBar->setTabIcon(0, QIcon(QStringLiteral(":/icons/map.ico")));
+    ui->mainTabBar->setTabIcon(0, QIcon(QStringLiteral(":/icons/minimap.ico")));
     ui->mainTabBar->addTab("Events");
     ui->mainTabBar->setTabIcon(1, QIcon(QStringLiteral(":/icons/viewsprites.ico")));
     ui->mainTabBar->addTab("Header");
@@ -714,6 +714,9 @@ bool MainWindow::setMap(QString map_name, bool scroll) {
     connect(editor->map, &Map::mapNeedsRedrawing, this, &MainWindow::onMapNeedsRedrawing);
     connect(editor->map, &Map::modified, [this](){ this->markMapEdited(); });
 
+    connect(editor->layout, &Layout::layoutChanged, [this]() { onMapChanged(nullptr); });
+    connect(editor->layout, &Layout::needsRedrawing, this, &MainWindow::onLayoutNeedsRedrawing);
+
     setRecentMap(map_name);
     updateMapList();
 
@@ -747,8 +750,9 @@ bool MainWindow::setLayout(QString layoutId) {
 
     updateMapList();
 
-    // connect(editor->map, &Map::mapChanged, this, &MainWindow::onMapChanged);
-    // connect(editor->map, &Map::mapNeedsRedrawing, this, &MainWindow::onMapNeedsRedrawing);
+    // !TODO: make sure these connections are not duplicated / cleared later
+    connect(editor->layout, &Layout::layoutChanged, [this]() { onMapChanged(nullptr); });
+    connect(editor->layout, &Layout::needsRedrawing, this, &MainWindow::onLayoutNeedsRedrawing);
     // connect(editor->map, &Map::modified, [this](){ this->markMapEdited(); });
 
     // displayMapProperties
@@ -765,16 +769,21 @@ bool MainWindow::setLayout(QString layoutId) {
     return true;
 }
 
-void MainWindow::redrawMapScene()
-{
+void MainWindow::redrawMapScene() {
     if (!editor->displayMap())
         return;
 
     this->refreshMapScene();
 }
 
-void MainWindow::refreshMapScene()
-{
+void MainWindow::redrawLayoutScene() {
+    if (!editor->displayLayout())
+        return;
+
+    this->refreshMapScene();
+}
+
+void MainWindow::refreshMapScene() {
     on_mainTabBar_tabBarClicked(ui->mainTabBar->currentIndex());
 
     ui->graphicsView_Map->setScene(editor->scene);
@@ -2519,6 +2528,11 @@ void MainWindow::onMapNeedsRedrawing() {
     redrawMapScene();
 }
 
+void MainWindow::onLayoutNeedsRedrawing() {
+    qDebug() << "MainWindow::onLayoutNeedsRedrawing";
+    redrawLayoutScene();
+}
+
 void MainWindow::onMapCacheCleared() {
     editor->map = nullptr;
 }
@@ -2710,8 +2724,9 @@ void MainWindow::on_comboBox_SecondaryTileset_currentTextChanged(const QString &
     }
 }
 
-void MainWindow::on_pushButton_ChangeDimensions_clicked()
-{
+void MainWindow::on_pushButton_ChangeDimensions_clicked() {
+    if (!editor || !editor->layout) return;
+
     QDialog dialog(this, Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
     dialog.setWindowTitle("Change Map Dimensions");
     dialog.setWindowModality(Qt::NonModal);
@@ -2730,10 +2745,10 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked()
     heightSpinBox->setMaximum(editor->project->getMaxMapHeight());
     bwidthSpinBox->setMaximum(MAX_BORDER_WIDTH);
     bheightSpinBox->setMaximum(MAX_BORDER_HEIGHT);
-    widthSpinBox->setValue(editor->map->getWidth());
-    heightSpinBox->setValue(editor->map->getHeight());
-    bwidthSpinBox->setValue(editor->map->getBorderWidth());
-    bheightSpinBox->setValue(editor->map->getBorderHeight());
+    widthSpinBox->setValue(editor->layout->getWidth());
+    heightSpinBox->setValue(editor->layout->getHeight());
+    bwidthSpinBox->setValue(editor->layout->getBorderWidth());
+    bheightSpinBox->setValue(editor->layout->getBorderHeight());
     if (projectConfig.getUseCustomBorderSize()) {
         form.addRow(new QLabel("Map Width"), widthSpinBox);
         form.addRow(new QLabel("Map Height"), heightSpinBox);
@@ -2761,8 +2776,8 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked()
             dialog.accept();
         } else {
             QString errorText = QString("Error: The specified width and height are too large.\n"
-                    "The maximum map width and height is the following: (width + 15) * (height + 14) <= %1\n"
-                    "The specified map width and height was: (%2 + 15) * (%3 + 14) = %4")
+                    "The maximum layout width and height is the following: (width + 15) * (height + 14) <= %1\n"
+                    "The specified layout width and height was: (%2 + 15) * (%3 + 14) = %4")
                         .arg(maxMetatiles)
                         .arg(widthSpinBox->value())
                         .arg(heightSpinBox->value())
@@ -2786,7 +2801,7 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked()
         if (oldMapDimensions != newMapDimensions || oldBorderDimensions != newBorderDimensions) {
             layout->setDimensions(newMapDimensions.width(), newMapDimensions.height(), true, true);
             layout->setBorderDimensions(newBorderDimensions.width(), newBorderDimensions.height(), true, true);
-            editor->map->editHistory.push(new ResizeMap(layout,
+            editor->layout->editHistory.push(new ResizeMap(layout,
                 oldMapDimensions, newMapDimensions,
                 oldMetatiles, layout->blockdata,
                 oldBorderDimensions, newBorderDimensions,

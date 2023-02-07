@@ -380,18 +380,24 @@ QString Project::readMapLocation(QString map_name) {
 }
 
 bool Project::loadLayout(MapLayout *layout) {
-    // Force these to run even if one fails
-    bool loadedTilesets = loadLayoutTilesets(layout);
-    bool loadedBlockdata = loadBlockdata(layout);
-    bool loadedBorder = loadLayoutBorder(layout);
+    // !TODO: make sure this doesn't break anything, maybe do something better. new layouts work too?
+    if (!layout->loaded) {
+        // Force these to run even if one fails
+        bool loadedTilesets = loadLayoutTilesets(layout);
+        bool loadedBlockdata = loadBlockdata(layout);
+        bool loadedBorder = loadLayoutBorder(layout);
 
-    return loadedTilesets 
-        && loadedBlockdata 
-        && loadedBorder;
+        if (loadedTilesets && loadedBlockdata && loadedBorder) {
+            layout->loaded = true;
+            return true;
+        } else {
+            return false;
+        }
+    }
+    return true;
 }
 
 Layout *Project::loadLayout(QString layoutId) {
-    //
     if (mapLayouts.contains(layoutId)) {
         Layout *layout = mapLayouts[layoutId];
         if (loadLayout(layout)) {
@@ -415,7 +421,7 @@ bool Project::loadMapLayout(Map* map) {
         return false;
     }
 
-    if (map->hasUnsavedChanges()) {
+    if (map->hasUnsavedChanges() /* || map->layout->hasUnsavedChanges() */) {
         return true;
     } else {
         return loadLayout(map->layout);

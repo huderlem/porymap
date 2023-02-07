@@ -182,6 +182,7 @@ private slots:
     void onLoadMapRequested(QString, QString);
     void onMapChanged(Map *map);
     void onMapNeedsRedrawing();
+    void onLayoutNeedsRedrawing();
     void onTilesetsSaved(QString, QString);
     void onWildMonDataChanged();
     void openNewMapPopupWindow();
@@ -362,6 +363,7 @@ private:
     bool setMap(QString, bool scroll = false);
     void unsetMap();
     void redrawMapScene();
+    void redrawLayoutScene();
     void refreshMapScene();
     bool loadDataStructures();
     bool loadProjectCombos();

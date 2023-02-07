@@ -21,6 +21,8 @@ public:
 
     static QString layoutConstantFromName(QString mapName);
 
+    bool loaded = false;
+
     /// !TODO
     /* NEW */
     QList<Map *> maps;
@@ -119,7 +121,7 @@ private:
 
 signals:
     void layoutChanged(Layout *layout);
-    void modified();
+    //void modified();
     void layoutDimensionsChanged(const QSize &size);
     void needsRedrawing();
 };

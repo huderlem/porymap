@@ -1151,6 +1151,8 @@ bool Editor::setLayout(QString layoutId) {
         return false;
     }
 
+    // !TODO: editGroup addStack
+
     map_ruler->setMapDimensions(QSize(this->layout->getWidth(), this->layout->getHeight()));
     connect(this->layout, &Layout::layoutDimensionsChanged, map_ruler, &MapRuler::setMapDimensions);
 
