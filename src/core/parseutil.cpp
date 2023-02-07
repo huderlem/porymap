@@ -269,9 +269,8 @@ QString ParseUtil::readCIncbin(const QString &filename, const QString &label) {
         "INCBIN_[US][0-9][0-9]?"
         "\\(\\s*\"([^\"]*)\"\\s*\\)").arg(label));
 
-    static const QRegularExpression re_incbin("\\s*\\[?\\s*\\]?\\s*=\\s*INCBIN_[US][0-9][0-9]?\\(\\s*\\\"(?<path>[^\\\"]*)\\\"\\s*\\)");
     QRegularExpressionMatch match;
-    qsizetype pos = incbinText.indexOf(re_incbin, 0, &match);
+    qsizetype pos = this->text.indexOf(re, 0, &match);
     if (pos != -1) {
         path = match.captured(1);
     }
