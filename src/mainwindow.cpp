@@ -205,8 +205,11 @@ void MainWindow::initCustomUI() {
     ui->mainTabBar->addTab("Map");
     ui->mainTabBar->setTabIcon(0, QIcon(QStringLiteral(":/icons/map.ico")));
     ui->mainTabBar->addTab("Events");
+    ui->mainTabBar->setTabIcon(1, QIcon(QStringLiteral(":/icons/viewsprites.ico")));
     ui->mainTabBar->addTab("Header");
+    ui->mainTabBar->setTabIcon(2, QIcon(QStringLiteral(":/icons/application_form_edit.ico")));
     ui->mainTabBar->addTab("Connections");
+    ui->mainTabBar->setTabIcon(3, QIcon(QStringLiteral(":/icons/connections.ico")));
     ui->mainTabBar->addTab("Wild Pokemon");
     ui->mainTabBar->setTabIcon(4, QIcon(QStringLiteral(":/icons/tall_grass.ico")));
 }
@@ -340,6 +343,8 @@ void MainWindow::initMapSortOrder() {
     // QMenu *mapSortOrderMenu = new QMenu(this);
     // QActionGroup *mapSortOrderActionGroup = new QActionGroup(ui->toolButton_MapSortOrder);
 
+    // porymapConfig.setMapSortOrder(mapSortOrder);
+
     // mapSortOrderMenu->addAction(ui->actionSort_by_Group);
     // mapSortOrderMenu->addAction(ui->actionSort_by_Area);
     // mapSortOrderMenu->addAction(ui->actionSort_by_Layout);
@@ -410,14 +415,40 @@ void MainWindow::on_lineEdit_filterBox_textChanged(const QString &text) {
     this->applyMapListFilter(text);
 }
 
+void MainWindow::on_lineEdit_filterBox_Areas_textChanged(const QString &text) {
+    this->applyMapListFilter(text);
+}
+
+void MainWindow::on_lineEdit_filterBox_Layouts_textChanged(const QString &text) {
+    this->applyMapListFilter(text);
+}
+
 void MainWindow::applyMapListFilter(QString filterText) {
-    /// !TODO
-    groupListProxyModel->setFilterRegularExpression(QRegularExpression(filterText, QRegularExpression::CaseInsensitiveOption));
-    if (filterText.isEmpty()) {
-        ui->mapList->collapseAll();
-    } else {
-        ui->mapList->expandToDepth(0);
+    FilterChildrenProxyModel *proxy;
+    QTreeView *list;
+    switch (this->mapSortOrder) {
+    case MapSortOrder::SortByGroup:
+        proxy = this->groupListProxyModel;
+        list = this->ui->mapList;
+        break;
+    case MapSortOrder::SortByArea:
+        proxy = this->areaListProxyModel;
+        list = this->ui->areaList;
+        break;
+    case MapSortOrder::SortByLayout:
+        proxy = this->layoutListProxyModel;
+        list = this->ui->layoutList;
+        break;
     }
+
+    proxy->setFilterRegularExpression(QRegularExpression(filterText, QRegularExpression::CaseInsensitiveOption));
+    if (filterText.isEmpty()) {
+        list->collapseAll();
+    } else {
+        list->expandToDepth(0);
+    }
+
+    /// !TODO
     // ui->mapList->setExpanded(mapListProxyModel->mapFromSource(mapListIndexes.value(editor->map->name)), true);
     // ui->mapList->scrollTo(mapListProxyModel->mapFromSource(mapListIndexes.value(editor->map->name)), QAbstractItemView::PositionAtCenter);
 }
@@ -432,6 +463,9 @@ void MainWindow::loadUserSettings() {
     ui->checkBox_ToggleBorder->setChecked(porymapConfig.getShowBorder());
     ui->checkBox_ToggleGrid->setChecked(porymapConfig.getShowGrid());
     mapSortOrder = porymapConfig.getMapSortOrder();
+    this->ui->mapListContainer->blockSignals(true);
+    this->ui->mapListContainer->setCurrentIndex(static_cast<int>(this->mapSortOrder));
+    this->ui->mapListContainer->blockSignals(false);
     ui->horizontalSlider_CollisionTransparency->blockSignals(true);
     this->editor->collisionOpacity = static_cast<qreal>(porymapConfig.getCollisionOpacity()) / 100;
     ui->horizontalSlider_CollisionTransparency->setValue(porymapConfig.getCollisionOpacity());
@@ -643,7 +677,7 @@ void MainWindow::unsetMap() {
     this->ui->comboBox_LayoutSelector->setEnabled(false);
 }
 
-bool MainWindow::setMap(QString map_name, bool scrollTreeView) {
+bool MainWindow::setMap(QString map_name, bool scroll) {
     // if map name is empty, clear & disable map ui
     if (map_name.isEmpty()) {
         unsetMap();
@@ -670,12 +704,8 @@ bool MainWindow::setMap(QString map_name, bool scrollTreeView) {
     refreshMapScene();
     displayMapProperties();
 
-    if (scrollTreeView) {
-        // Make sure we clear the filter first so we actually have a scroll target
-        /// !TODO: make this onto a function that scrolls the current view taking a map name or layout name
-        groupListProxyModel->setFilterRegularExpression(QString());
-        ui->mapList->setCurrentIndex(groupListProxyModel->mapFromSource(mapGroupModel->indexOfMap(map_name)));
-        ui->mapList->scrollTo(ui->mapList->currentIndex(), QAbstractItemView::PositionAtCenter);
+    if (scroll) {
+        scrollTreeView(map_name);
     }
 
     showWindowTitle();
@@ -1042,13 +1072,7 @@ bool MainWindow::loadProjectCombos() {
     return true;
 }
 
-/// !TODO
 bool MainWindow::populateMapList() {
-    // bool success = editor->project->readMapGroups();
-    // if (success) {
-    //     sortMapList();
-    // }
-    // return success;
     bool success = editor->project->readMapGroups();
 
     this->mapGroupModel = new MapGroupModel(editor->project);
@@ -1056,21 +1080,43 @@ bool MainWindow::populateMapList() {
     groupListProxyModel->setSourceModel(this->mapGroupModel);
     ui->mapList->setModel(groupListProxyModel);
 
+    this->mapAreaModel = new MapAreaModel(editor->project);
+    this->areaListProxyModel = new FilterChildrenProxyModel();
+    areaListProxyModel->setSourceModel(this->mapAreaModel);
+    ui->areaList->setModel(areaListProxyModel);
+
     this->layoutTreeModel = new LayoutTreeModel(editor->project);
     this->layoutListProxyModel = new FilterChildrenProxyModel();
     this->layoutListProxyModel->setSourceModel(this->layoutTreeModel);
     ui->layoutList->setModel(layoutListProxyModel);
 
-    //connect(this->ui->layoutList, &QTreeView::doubleClicked, this, &MainWindow::on_layoutList_activated);
-
+    /// !TODO
     // ui->mapList->setSelectionMode(QAbstractItemView::ExtendedSelection);
     // ui->mapList->setDragEnabled(true);
     // ui->mapList->setAcceptDrops(true);
     // ui->mapList->setDropIndicatorShown(true);
 
     return success;
+}
 
-    //MapGroupModel
+void MainWindow::scrollTreeView(QString itemName) {
+    switch (ui->mapListContainer->currentIndex()) {
+    case MapListTab::Groups:
+        groupListProxyModel->setFilterRegularExpression(QString());
+        ui->mapList->setCurrentIndex(groupListProxyModel->mapFromSource(mapGroupModel->indexOfMap(itemName)));
+        ui->mapList->scrollTo(ui->mapList->currentIndex(), QAbstractItemView::PositionAtCenter);
+        break;
+    case MapListTab::Areas:
+        areaListProxyModel->setFilterRegularExpression(QString());
+        ui->areaList->setCurrentIndex(areaListProxyModel->mapFromSource(mapAreaModel->indexOfMap(itemName)));
+        ui->areaList->scrollTo(ui->areaList->currentIndex(), QAbstractItemView::PositionAtCenter);
+        break;
+    case MapListTab::Layouts:
+        layoutListProxyModel->setFilterRegularExpression(QString());
+        ui->layoutList->setCurrentIndex(layoutListProxyModel->mapFromSource(layoutTreeModel->indexOfLayout(itemName)));
+        ui->layoutList->scrollTo(ui->layoutList->currentIndex(), QAbstractItemView::PositionAtCenter);
+        break;
+    }
 }
 
 void MainWindow::sortMapList() {
@@ -1181,19 +1227,7 @@ void MainWindow::sortMapList() {
     // updateMapList();
 }
 
-/// !TODO
-QStandardItem* MainWindow::createMapItem(QString mapName, int groupNum, int inGroupNum) {
-    // QStandardItem *map = new QStandardItem;
-    // map->setText(QString("[%1.%2] ").arg(groupNum).arg(inGroupNum, 2, 10, QLatin1Char('0')) + mapName);
-    // map->setIcon(*mapIcon);
-    // map->setEditable(false);
-    // map->setData(mapName, Qt::UserRole);
-    // map->setData("map_name", MapListUserRoles::TypeRole);
-    // return map;
-}
-
-void MainWindow::onOpenMapListContextMenu(const QPoint &point)
-{
+void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
     /// !TODO
     // QModelIndex index = mapListProxyModel->mapToSource(ui->mapList->indexAt(point));
     // if (!index.isValid()) {
@@ -1462,14 +1496,19 @@ void MainWindow::on_mapListContainer_currentChanged(int index) {
     //
     switch (index) {
     case MapListTab::Groups:
+        this->mapSortOrder = MapSortOrder::SortByGroup;
+        if (this->editor && this->editor->map) scrollTreeView(this->editor->map->name);
         break;
     case MapListTab::Areas:
+        this->mapSortOrder = MapSortOrder::SortByArea;
+        if (this->editor && this->editor->map) scrollTreeView(this->editor->map->name);
         break;
     case MapListTab::Layouts:
-        //setMap(nullptr);
-        //setLayout(nullptr);
+        this->mapSortOrder = MapSortOrder::SortByLayout;
+        if (this->editor && this->editor->layout) scrollTreeView(this->editor->layout->id);
         break;
     }
+    porymapConfig.setMapSortOrder(this->mapSortOrder);
 }
 
 /// !TODO
@@ -1489,7 +1528,7 @@ void MainWindow::on_mapList_activated(const QModelIndex &index) {
 }
 
 void MainWindow::on_areaList_activated(const QModelIndex &index) {
-    // 
+    on_mapList_activated(index);
 }
 
 void MainWindow::on_layoutList_activated(const QModelIndex &index) {
@@ -1520,6 +1559,8 @@ void MainWindow::updateMapList() {
     if (this->editor->map) {
         mapGroupModel->setMap(this->editor->map->name);
         groupListProxyModel->layoutChanged();
+        mapAreaModel->setMap(this->editor->map->name);
+        areaListProxyModel->layoutChanged();
     }
 
     if (this->editor->layout) {

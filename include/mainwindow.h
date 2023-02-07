@@ -266,6 +266,8 @@ private slots:
     void on_actionTileset_Editor_triggered();
 
     void on_lineEdit_filterBox_textChanged(const QString &arg1);
+    void on_lineEdit_filterBox_Areas_textChanged(const QString &arg1);
+    void on_lineEdit_filterBox_Layouts_textChanged(const QString &arg1);
 
     void moveEvent(QMoveEvent *event);
     void closeEvent(QCloseEvent *);
@@ -318,6 +320,9 @@ private:
     FilterChildrenProxyModel *groupListProxyModel;
     MapGroupModel *mapGroupModel;
 
+    FilterChildrenProxyModel *areaListProxyModel;
+    MapAreaModel *mapAreaModel;
+
     FilterChildrenProxyModel *layoutListProxyModel;
     LayoutTreeModel *layoutTreeModel;
 
@@ -348,13 +353,13 @@ private:
     bool newMapDefaultsSet = false;
 
     MapSortOrder mapSortOrder;
-    enum MapListTab { Groups, Areas, Layouts };
+    enum MapListTab { Groups = 0, Areas, Layouts };
 
     bool tilesetNeedsRedraw = false;
 
     bool setLayout(QString layoutId);
 
-    bool setMap(QString, bool scrollTreeView = false);
+    bool setMap(QString, bool scroll = false);
     void unsetMap();
     void redrawMapScene();
     void refreshMapScene();
@@ -363,11 +368,11 @@ private:
     bool populateMapList();
     void sortMapList();
     void openSubWindow(QWidget * window);
+    void scrollTreeView(QString itemName);
     QString getExistingDirectory(QString);
     bool openProject(QString dir);
     QString getDefaultMap();
     void setRecentMap(QString map_name);
-    QStandardItem* createMapItem(QString mapName, int groupNum, int inGroupNum);
 
     void updateMapList();
 

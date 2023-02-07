@@ -15,7 +15,8 @@ enum MapListRoles {
     TypeRole2, // Used for various extra data needed.
 };
 
-// or QStandardItemModel??
+
+
 class MapGroupModel : public QStandardItemModel {
     Q_OBJECT
 
@@ -41,6 +42,42 @@ private:
     QStandardItem *root = nullptr;
 
     QMap<QString, QStandardItem *> groupItems;
+    QMap<QString, QStandardItem *> mapItems;
+    // TODO: if reordering, will the item be the same?
+
+    QString openMap;
+
+signals:
+    void edited();
+};
+
+
+
+class MapAreaModel : public QStandardItemModel {
+    Q_OBJECT
+
+public:
+    MapAreaModel(Project *project, QObject *parent = nullptr);
+    ~MapAreaModel() {}
+
+    QVariant data(const QModelIndex &index, int role) const override;
+
+public:
+    void setMap(QString mapName) { this->openMap = mapName; }
+
+    QStandardItem *createAreaItem(QString areaName, int areaIndex);
+    QStandardItem *createMapItem(QString mapName, int areaIndex, int mapIndex);
+
+    QStandardItem *getItem(const QModelIndex &index) const;
+    QModelIndex indexOfMap(QString mapName);
+
+    void initialize();
+
+private:
+    Project *project;
+    QStandardItem *root = nullptr;
+
+    QMap<QString, QStandardItem *> areaItems;
     QMap<QString, QStandardItem *> mapItems;
     // TODO: if reordering, will the item be the same?
 
