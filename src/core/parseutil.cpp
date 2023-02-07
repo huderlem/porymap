@@ -263,14 +263,14 @@ QString ParseUtil::readCIncbin(const QString &filename, const QString &label) {
 
     this->text = readTextFile(this->root + "/" + filename);
 
-    int start = this->text.indexOf(QRegularExpression(label + "\b"));
-    if (start < 0) return path;
-    int end = this->text.indexOf(';', start);
-    QString incbinText = this->text.mid(start, end - start);
+    QRegularExpression re(QString(
+        "\\b%1\\b"
+        "\\s*\\[?\\s*\\]?\\s*=\\s*"
+        "INCBIN_[US][0-9][0-9]?"
+        "\\(\\s*\"([^\"]*)\"\\s*\\)").arg(label));
 
-    static const QRegularExpression re_incbin("\\s*\\[?\\s*\\]?\\s*=\\s*INCBIN_[US][0-9][0-9]?\\(\\s*\\\"(?<path>[^\\\"]*)\\\"\\s*\\)");
     QRegularExpressionMatch match;
-    qsizetype pos = incbinText.indexOf(re_incbin, 0, &match);
+    qsizetype pos = this->text.indexOf(re, 0, &match);
     if (pos != -1) {
         path = match.captured(1);
     }
