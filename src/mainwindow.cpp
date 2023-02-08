@@ -221,6 +221,14 @@ void MainWindow::initExtraSignals() {
     connect(ui->mapList, &QTreeView::customContextMenuRequested,
             this, &MainWindow::onOpenMapListContextMenu);
 
+    ui->areaList->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->areaList, &QTreeView::customContextMenuRequested,
+            this, &MainWindow::onOpenMapListContextMenu);
+
+    ui->layoutList->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->layoutList, &QTreeView::customContextMenuRequested,
+            this, &MainWindow::onOpenMapListContextMenu);
+
     // other signals
     connect(ui->newEventToolButton, &NewEventToolButton::newEventAdded, this, &MainWindow::addNewEvent);
     connect(ui->tabWidget_EventType, &QTabWidget::currentChanged, this, &MainWindow::eventTabChanged);
@@ -296,7 +304,7 @@ void MainWindow::initEditor() {
     ui->menuEdit->addAction(showHistory);
 
     // Toggle an asterisk in the window title when the undo state is changed
-    connect(&editor->editGroup, &QUndoGroup::cleanChanged, this, &MainWindow::showWindowTitle);
+    connect(&editor->editGroup, &QUndoGroup::indexChanged, this, &MainWindow::showWindowTitle);
 
     // selecting objects from the spinners
     connect(this->ui->spinner_ObjectID, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
@@ -378,8 +386,8 @@ void MainWindow::showWindowTitle() {
         );
     }
     if (editor && editor->layout) {
-        // // QPixmap pixmap = editor->layout ? editor->layout->render(true) : QPixmap();
-        QPixmap pixmap = editor->layout ? editor->layout->render(false) : QPixmap();
+        //QPixmap pixmap = editor->layout ? editor->layout->render(false) : QPixmap();
+        QPixmap pixmap = editor->layout->pixmap;//getLayoutItemPixmap();
         if (!pixmap.isNull()) {
             ui->mainTabBar->setTabIcon(0, QIcon(pixmap.scaled(16, 16)));
         } else {
@@ -549,7 +557,7 @@ bool MainWindow::openProject(QString dir) {
     bool already_open = isProjectOpen() && (editor->project->root == dir);
     if (!already_open) {
         editor->closeProject();
-        editor->project = new Project(this);
+        editor->project = new Project(editor);
         QObject::connect(editor->project, &Project::reloadProject, this, &MainWindow::on_action_Reload_Project_triggered);
         QObject::connect(editor->project, &Project::disableWildEncountersUI, [this]() { this->setWildEncountersUIEnabled(false); });
         QObject::connect(editor->project, &Project::uncheckMonitorFilesAction, [this]() {
@@ -931,6 +939,7 @@ void MainWindow::on_comboBox_LayoutSelector_currentTextChanged(const QString &te
             // !TODO: method to setMapLayout instead of having to do whole setMap thing,
             // also edit history and bug fixes
             setMap(editor->map->name);
+            markMapEdited();
         }
     }
 }
@@ -1149,6 +1158,16 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
     // if (!index.isValid()) {
     //     return;
     // }
+
+    switch (ui->mapListContainer->currentIndex()) {
+        //
+    case MapListTab::Groups:
+        break;
+    case MapListTab::Areas:
+        break;
+    case MapListTab::Layouts:
+        break;
+    }
 
     // QStandardItem *selectedItem = mapListModel->itemFromIndex(index);
     // QVariant itemType = selectedItem->data(MapListUserRoles::TypeRole);

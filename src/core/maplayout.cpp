@@ -438,6 +438,10 @@ QPixmap Layout::renderBorder(bool ignoreCache) {
     return this->border_pixmap;
 }
 
+QPixmap Layout::getLayoutItemPixmap() {
+    return this->layoutItem ? this->layoutItem->pixmap() : QPixmap();
+}
+
 bool Layout::hasUnsavedChanges() {
     return !this->editHistory.isClean();
 }

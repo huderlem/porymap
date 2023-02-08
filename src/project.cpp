@@ -35,7 +35,7 @@ int Project::max_map_data_size = 10240; // 0x2800
 int Project::default_map_size = 20;
 int Project::max_object_events = 64;
 
-Project::Project(QWidget *parent) :
+Project::Project(QObject *parent) :
     QObject(parent),
     eventScriptLabelModel(this),
     eventScriptLabelCompleter(this)

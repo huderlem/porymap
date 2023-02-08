@@ -100,6 +100,10 @@ void Editor::setEditingMap() {
     this->cursorMapTileRect->stopSingleTileMode();
     this->cursorMapTileRect->setActive(true);
 
+    if (this->layout) {
+        this->editGroup.setActiveStack(&this->layout->editHistory);
+    }
+
     setMapEditingButtonsEnabled(true);
 }
 
@@ -128,6 +132,10 @@ void Editor::setEditingCollision() {
     this->cursorMapTileRect->setSingleTileMode();
     this->cursorMapTileRect->setActive(true);
 
+    if (this->layout) {
+        this->editGroup.setActiveStack(&this->layout->editHistory);
+    }
+
     setMapEditingButtonsEnabled(true);
 }
 
@@ -151,6 +159,10 @@ void Editor::setEditingObjects() {
     setConnectionsEditable(false);
     this->cursorMapTileRect->setSingleTileMode();
     this->cursorMapTileRect->setActive(false);
+
+    if (this->map) {
+        this->editGroup.setActiveStack(&this->map->editHistory);
+    }
 
     setMapEditingButtonsEnabled(false);
 }
@@ -184,6 +196,10 @@ void Editor::setEditingConnections() {
     setConnectionsEditable(true);
     this->cursorMapTileRect->setSingleTileMode();
     this->cursorMapTileRect->setActive(false);
+
+    if (this->map) {
+        this->editGroup.setActiveStack(&this->map->editHistory);
+    }
 }
 
 void Editor::setEditingEncounters() {
@@ -1152,6 +1168,8 @@ bool Editor::setLayout(QString layoutId) {
     }
 
     // !TODO: editGroup addStack
+
+    editGroup.addStack(&layout->editHistory);
 
     map_ruler->setMapDimensions(QSize(this->layout->getWidth(), this->layout->getHeight()));
     connect(this->layout, &Layout::layoutDimensionsChanged, map_ruler, &MapRuler::setMapDimensions);

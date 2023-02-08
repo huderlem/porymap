@@ -109,6 +109,8 @@ public:
     // QPixmap renderConnection(MapConnection, Layout *);
     QPixmap renderBorder(bool ignoreCache = false);
 
+    QPixmap getLayoutItemPixmap();
+
     void setLayoutItem(LayoutPixmapItem *item) { layoutItem = item; }
     void setCollisionItem(CollisionPixmapItem *item) { collisionItem = item; }
     void setBorderItem(BorderMetatilesPixmapItem *item) { borderItem = item; }
