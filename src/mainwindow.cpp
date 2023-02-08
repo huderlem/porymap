@@ -1153,68 +1153,79 @@ void MainWindow::sortMapList() {
 }
 
 void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
-    /// !TODO
-    // QModelIndex index = mapListProxyModel->mapToSource(ui->mapList->indexAt(point));
-    // if (!index.isValid()) {
-    //     return;
-    // }
+    QStandardItemModel *model;
+    int dataRole;
+    FilterChildrenProxyModel *proxy;
+    QTreeView *list;
+    void (MainWindow::*addFunction)(QAction *);
+    QString actionText;
 
-    switch (ui->mapListContainer->currentIndex()) {
-        //
-    case MapListTab::Groups:
+    switch (this->mapSortOrder) {
+    case MapSortOrder::SortByGroup:
+        model = this->mapGroupModel;
+        dataRole = MapListRoles::GroupRole;
+        proxy = this->groupListProxyModel;
+        list = this->ui->mapList;
+        addFunction = &MainWindow::onAddNewMapToGroupClick;
+        actionText = "Add New Map to Group";
         break;
-    case MapListTab::Areas:
+    case MapSortOrder::SortByArea:
+        model = this->mapAreaModel;
+        dataRole = Qt::UserRole;
+        proxy = this->areaListProxyModel;
+        list = this->ui->areaList;
+        addFunction = &MainWindow::onAddNewMapToAreaClick;
+        actionText = "Add New Map to Area";
         break;
-    case MapListTab::Layouts:
+    case MapSortOrder::SortByLayout:
+        model = this->layoutTreeModel;
+        dataRole = Qt::UserRole;
+        proxy = this->layoutListProxyModel;
+        list = this->ui->layoutList;
+        addFunction = &MainWindow::onAddNewMapToLayoutClick;
+        actionText = "Add New Map with Layout";
         break;
     }
 
-    // QStandardItem *selectedItem = mapListModel->itemFromIndex(index);
-    // QVariant itemType = selectedItem->data(MapListUserRoles::TypeRole);
-    // if (!itemType.isValid()) {
-    //     return;
-    // }
+    QModelIndex index = proxy->mapToSource(list->indexAt(point));
+    if (!index.isValid()) {
+        return;
+    }
 
-    // // Build custom context menu depending on which type of item was selected (map group, map name, etc.)
-    // if (itemType == "map_group") {
-    //     QString groupName = selectedItem->data(Qt::UserRole).toString();
-    //     int groupNum = selectedItem->data(MapListUserRoles::GroupRole).toInt();
-    //     QMenu* menu = new QMenu(this);
-    //     QActionGroup* actions = new QActionGroup(menu);
-    //     actions->addAction(menu->addAction("Add New Map to Group"))->setData(groupNum);
-    //     connect(actions, &QActionGroup::triggered, this, &MainWindow::onAddNewMapToGroupClick);
-    //     menu->exec(QCursor::pos());
-    // } else if (itemType == "map_sec") {
-    //     QString secName = selectedItem->data(Qt::UserRole).toString();
-    //     QMenu* menu = new QMenu(this);
-    //     QActionGroup* actions = new QActionGroup(menu);
-    //     actions->addAction(menu->addAction("Add New Map to Area"))->setData(secName);
-    //     connect(actions, &QActionGroup::triggered, this, &MainWindow::onAddNewMapToAreaClick);
-    //     menu->exec(QCursor::pos());
-    // } else if (itemType == "map_layout") {
-    //     QString layoutId = selectedItem->data(MapListUserRoles::TypeRole2).toString();
-    //     QMenu* menu = new QMenu(this);
-    //     QActionGroup* actions = new QActionGroup(menu);
-    //     actions->addAction(menu->addAction("Add New Map with Layout"))->setData(layoutId);
-    //     connect(actions, &QActionGroup::triggered, this, &MainWindow::onAddNewMapToLayoutClick);
-    //     menu->exec(QCursor::pos());
-    // }
+    QStandardItem *selectedItem = model->itemFromIndex(index);
+
+    if (selectedItem->parent()) {
+        return;
+    }
+
+    QVariant itemData = selectedItem->data(dataRole);
+    if (!itemData.isValid()) {
+        return;
+    }
+
+    QMenu menu(this);
+    QActionGroup actions(&menu);
+    actions.addAction(menu.addAction(actionText))->setData(itemData);
+    (this->*addFunction)(menu.exec(QCursor::pos()));
 }
 
-void MainWindow::onAddNewMapToGroupClick(QAction* triggeredAction)
-{
+void MainWindow::onAddNewMapToGroupClick(QAction* triggeredAction) {
+    if (!triggeredAction) return;
+
     openNewMapPopupWindow();
     this->newMapPrompt->init(MapSortOrder::SortByGroup, triggeredAction->data());
 }
 
-void MainWindow::onAddNewMapToAreaClick(QAction* triggeredAction)
-{
+void MainWindow::onAddNewMapToAreaClick(QAction* triggeredAction) {
+    if (!triggeredAction) return;
+
     openNewMapPopupWindow();
     this->newMapPrompt->init(MapSortOrder::SortByArea, triggeredAction->data());
 }
 
-void MainWindow::onAddNewMapToLayoutClick(QAction* triggeredAction)
-{
+void MainWindow::onAddNewMapToLayoutClick(QAction* triggeredAction) {
+    if (!triggeredAction) return;
+
     openNewMapPopupWindow();
     this->newMapPrompt->init(MapSortOrder::SortByLayout, triggeredAction->data());
 }

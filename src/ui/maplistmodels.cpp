@@ -29,6 +29,7 @@ QStandardItem *MapGroupModel::createMapItem(QString mapName, int groupIndex, int
     map->setEditable(false);
     map->setData(mapName, Qt::UserRole);
     map->setData("map_name", MapListRoles::TypeRole);
+    map->setData(groupIndex, MapListRoles::GroupRole);
     // map->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled);
     this->mapItems.insert(mapName, map);
     return map;

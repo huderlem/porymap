@@ -26,7 +26,7 @@ NewMapPopup::~NewMapPopup()
     delete ui;
 }
 
-void NewMapPopup::init() {
+void NewMapPopup::initUi() {
     // Populate combo boxes
     ui->comboBox_NewMap_Primary_Tileset->addItems(project->primaryTilesetLabels);
     ui->comboBox_NewMap_Secondary_Tileset->addItems(project->secondaryTilesetLabels);
@@ -34,6 +34,10 @@ void NewMapPopup::init() {
     ui->comboBox_NewMap_Song->addItems(project->songNames);
     ui->comboBox_NewMap_Type->addItems(project->mapTypes);
     ui->comboBox_NewMap_Location->addItems(project->mapSectionValueToName.values());
+
+    const QSignalBlocker b(ui->comboBox_Layout);
+    ui->comboBox_Layout->addItems(project->mapLayoutsTable);
+    this->layoutId = project->mapLayoutsTable.first();
 
     // Set spin box limits
     ui->spinBox_NewMap_Width->setMinimum(1);
@@ -66,6 +70,10 @@ void NewMapPopup::init() {
     ui->spinBox_NewMap_Floor_Number->setVisible(hasFloorNumber);
     ui->label_NewMap_Floor_Number->setVisible(hasFloorNumber);
 
+    this->updateGeometry();
+}
+
+void NewMapPopup::init() {
     // Restore previous settings
     ui->lineEdit_NewMap_Name->setText(project->getNewMapName());
     ui->comboBox_NewMap_Group->setTextItem(settings.group);
@@ -86,6 +94,7 @@ void NewMapPopup::init() {
     ui->spinBox_NewMap_Floor_Number->setValue(settings.floorNumber);
 
     // Connect signals
+    // !TODO: make sure this doesnt reconnect a million times
     connect(ui->spinBox_NewMap_Width, QOverload<int>::of(&QSpinBox::valueChanged), [=](int){checkNewMapDimensions();});
     connect(ui->spinBox_NewMap_Height, QOverload<int>::of(&QSpinBox::valueChanged), [=](int){checkNewMapDimensions();});
 
@@ -94,6 +103,7 @@ void NewMapPopup::init() {
 
 // Creating new map by right-clicking in the map list
 void NewMapPopup::init(MapSortOrder type, QVariant data) {
+    initUi();
     switch (type)
     {
     case MapSortOrder::SortByGroup:
@@ -103,6 +113,7 @@ void NewMapPopup::init(MapSortOrder type, QVariant data) {
         settings.location = data.toString();
         break;
     case MapSortOrder::SortByLayout:
+        this->ui->checkBox_UseExistingLayout->setCheckState(Qt::Checked);
         useLayout(data.toString());
         break;
     }
@@ -205,26 +216,58 @@ void NewMapPopup::saveSettings() {
 
 void NewMapPopup::useLayoutSettings(Layout *layout) {
     if (!layout) return;
+
     settings.width = layout->width;
+    ui->spinBox_NewMap_Width->setValue(layout->width);
+
     settings.height = layout->height;
+    ui->spinBox_NewMap_Height->setValue(layout->height);
+
     settings.borderWidth = layout->border_width;
+    ui->spinBox_NewMap_BorderWidth->setValue(layout->border_width);
+
     settings.borderHeight = layout->border_height;
+    ui->spinBox_NewMap_BorderWidth->setValue(layout->border_height);
+
     settings.primaryTilesetLabel = layout->tileset_primary_label;
+    ui->comboBox_NewMap_Primary_Tileset->setCurrentIndex(ui->comboBox_NewMap_Primary_Tileset->findText(layout->tileset_primary_label));
+
     settings.secondaryTilesetLabel = layout->tileset_secondary_label;
+    ui->comboBox_NewMap_Secondary_Tileset->setCurrentIndex(ui->comboBox_NewMap_Secondary_Tileset->findText(layout->tileset_secondary_label));
 }
 
 void NewMapPopup::useLayout(QString layoutId) {
     this->existingLayout = true;
     this->layoutId = layoutId;
-    useLayoutSettings(project->mapLayouts.value(this->layoutId));
 
-    // Dimensions and tilesets can't be changed for new maps using an existing layout
-    ui->spinBox_NewMap_Width->setDisabled(true);
-    ui->spinBox_NewMap_Height->setDisabled(true);
-    ui->spinBox_NewMap_BorderWidth->setDisabled(true);
-    ui->spinBox_NewMap_BorderHeight->setDisabled(true);
-    ui->comboBox_NewMap_Primary_Tileset->setDisabled(true);
-    ui->comboBox_NewMap_Secondary_Tileset->setDisabled(true);
+    this->ui->comboBox_Layout->setCurrentIndex(this->ui->comboBox_Layout->findText(layoutId));
+
+    useLayoutSettings(project->mapLayouts.value(this->layoutId));
+}
+
+void NewMapPopup::on_checkBox_UseExistingLayout_stateChanged(int state) {
+    bool layoutEditsEnabled = (state == Qt::Unchecked);
+    
+    this->ui->comboBox_Layout->setEnabled(!layoutEditsEnabled);
+
+    this->ui->spinBox_NewMap_Width->setEnabled(layoutEditsEnabled);
+    this->ui->spinBox_NewMap_Height->setEnabled(layoutEditsEnabled);
+    this->ui->spinBox_NewMap_BorderWidth->setEnabled(layoutEditsEnabled);
+    this->ui->spinBox_NewMap_BorderWidth->setEnabled(layoutEditsEnabled);
+    this->ui->comboBox_NewMap_Primary_Tileset->setEnabled(layoutEditsEnabled);
+    this->ui->comboBox_NewMap_Secondary_Tileset->setEnabled(layoutEditsEnabled);
+
+    if (!layoutEditsEnabled) {
+        useLayout(this->layoutId);//this->ui->comboBox_Layout->currentText());
+    } else {
+        this->existingLayout = false;
+    }
+}
+
+void NewMapPopup::on_comboBox_Layout_currentTextChanged(const QString &text) {
+    if (this->project->mapLayoutsTable.contains(text)) {
+        useLayout(text);
+    }
 }
 
 void NewMapPopup::on_lineEdit_NewMap_Name_textChanged(const QString &text) {

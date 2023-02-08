@@ -23,6 +23,7 @@ public:
     bool importedMap;
     QString layoutId;
     void init();
+    void initUi();
     void init(MapSortOrder type, QVariant data);
     void init(Layout *);
     static void setDefaultSettings(Project *project);
@@ -60,6 +61,8 @@ private:
     static struct Settings settings;
 
 private slots:
+    void on_checkBox_UseExistingLayout_stateChanged(int state);
+    void on_comboBox_Layout_currentTextChanged(const QString &text);
     void on_pushButton_NewMap_Accept_clicked();
     void on_lineEdit_NewMap_Name_textChanged(const QString &);
 };
