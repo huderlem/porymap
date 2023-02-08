@@ -45,6 +45,7 @@ Project::Project(QWidget *parent) :
 
 Project::~Project()
 {
+    clearLayoutsTable();
     clearMapCache();
     clearTilesetCache();
 }
@@ -108,7 +109,6 @@ void Project::clearMapCache() {
             delete map;
     }
     mapCache.clear();
-    emit mapCacheCleared();
 }
 
 void Project::clearTilesetCache() {
@@ -117,6 +117,17 @@ void Project::clearTilesetCache() {
             delete tileset;
     }
     tilesetCache.clear();
+}
+
+void Project::clearLayoutsTable() {
+    // clearMapLayouts
+    // QMap<QString, Layout*> mapLayouts;
+    // QMap<QString, Layout*> mapLayoutsMaster;
+    for (Layout *layout : mapLayouts.values()) {
+        if (layout)
+            delete layout;
+    }
+    mapLayouts.clear();
 }
 
 Map* Project::loadMap(QString map_name) {
@@ -379,7 +390,7 @@ QString Project::readMapLocation(QString map_name) {
     return ParseUtil::jsonToQString(mapObj["region_map_section"]);
 }
 
-bool Project::loadLayout(MapLayout *layout) {
+bool Project::loadLayout(Layout *layout) {
     // !TODO: make sure this doesn't break anything, maybe do something better. new layouts work too?
     if (!layout->loaded) {
         // Force these to run even if one fails
@@ -476,7 +487,7 @@ bool Project::readMapLayouts() {
             logError(QString("Layout %1 is missing field(s) in %2.").arg(i).arg(layoutsFilepath));
             return false;
         }
-        MapLayout *layout = new MapLayout();
+        Layout *layout = new Layout();
         layout->id = ParseUtil::jsonToQString(layoutObj["id"]);
         if (layout->id.isEmpty()) {
             logError(QString("Missing 'id' value on layout %1 in %2").arg(i).arg(layoutsFilepath));
@@ -557,8 +568,6 @@ bool Project::readMapLayouts() {
     }
 
     // Deep copy
-    mapLayoutsMaster = mapLayouts;
-    mapLayoutsMaster.detach();
     mapLayoutsTableMaster = mapLayoutsTable;
     mapLayoutsTableMaster.detach();
     return true;
@@ -578,7 +587,7 @@ void Project::saveMapLayouts() {
     bool useCustomBorderSize = projectConfig.getUseCustomBorderSize();
     OrderedJson::array layoutsArr;
     for (QString layoutId : mapLayoutsTableMaster) {
-        MapLayout *layout = mapLayouts.value(layoutId);
+        Layout *layout = mapLayouts.value(layoutId);
         OrderedJson::object layoutObj;
         layoutObj["id"] = layout->id;
         layoutObj["name"] = layout->name;
@@ -1046,7 +1055,7 @@ void Project::saveTilesetPalettes(Tileset *tileset) {
     }
 }
 
-bool Project::loadLayoutTilesets(MapLayout *layout) {
+bool Project::loadLayoutTilesets(Layout *layout) {
     layout->tileset_primary = getTileset(layout->tileset_primary_label);
     if (!layout->tileset_primary) {
         QString defaultTileset = this->getDefaultPrimaryTilesetLabel();
@@ -1114,7 +1123,7 @@ Tileset* Project::loadTileset(QString label, Tileset *tileset) {
     return tileset;
 }
 
-bool Project::loadBlockdata(MapLayout *layout) {
+bool Project::loadBlockdata(Layout *layout) {
     QString path = QString("%1/%2").arg(root).arg(layout->blockdata_path);
     layout->blockdata = readBlockdata(path);
     layout->lastCommitBlocks.blocks = layout->blockdata;
@@ -1143,7 +1152,7 @@ void Project::setNewMapBlockdata(Map *map) {
     map->layout->lastCommitBlocks.mapDimensions = QSize(width, height);
 }
 
-bool Project::loadLayoutBorder(MapLayout *layout) {
+bool Project::loadLayoutBorder(Layout *layout) {
     QString path = QString("%1/%2").arg(root).arg(layout->border_path);
     layout->border = readBlockdata(path);
     layout->lastCommitBlocks.border = layout->border;
@@ -1361,10 +1370,10 @@ void Project::updateMapLayout(Map* map) {
         mapLayoutsTableMaster.append(map->layoutId);
     }
 
-    // !TODO
+    // !TODO: why is[was] this a deep copy??
     // Deep copy
-    // MapLayout *layout = mapLayouts.value(map->layoutId);
-    // MapLayout *newLayout = new MapLayout();
+    // Layout *layout = mapLayouts.value(map->layoutId);
+    // Layout *newLayout = new Layout();
     // *newLayout = *layout;
     // mapLayoutsMaster.insert(map->layoutId, newLayout);
 }

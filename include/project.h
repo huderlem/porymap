@@ -58,7 +58,7 @@ public:
     QString layoutsLabel;
     QMap<QString, QString> layoutIdsToNames;
     QMap<QString, Layout*> mapLayouts;
-    QMap<QString, Layout*> mapLayoutsMaster;
+//    QMap<QString, Layout*> mapLayoutsMaster;
     QMap<QString, QString> mapSecToMapHoverName;
     QMap<QString, int> mapSectionNameToValue;
     QMap<int, QString> mapSectionValueToName;
@@ -95,6 +95,7 @@ public:
 
     void clearMapCache();
     void clearTilesetCache();
+    void clearLayoutsTable();
 
     struct DataQualifiers
     {
@@ -265,7 +266,6 @@ private:
 signals:
     void reloadProject();
     void uncheckMonitorFilesAction();
-    void mapCacheCleared();
     void disableWildEncountersUI();
 };
 

@@ -10,6 +10,7 @@
 #include <QCheckBox>
 #include <QCursor>
 #include <QUndoGroup>
+#include <QPointer>
 
 #include "mapconnection.h"
 #include "metatileselector.h"
@@ -45,8 +46,8 @@ public:
     QObject *parent = nullptr;
 
     Project *project = nullptr;
-    Map *map = nullptr;
-    Layout *layout = nullptr; /* NEW */
+    QPointer<Map> map = nullptr; // !TODO: since removed onMapCacheCleared, make sure this works as intended
+    QPointer<Layout> layout = nullptr; /* NEW */
 
     QUndoGroup editGroup; // Manages the undo history for each map
 

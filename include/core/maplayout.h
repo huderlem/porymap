@@ -19,13 +19,11 @@ class Layout : public QObject {
 public:
     Layout() {}
 
+    void copyAttributesFrom(Layout *other);
+
     static QString layoutConstantFromName(QString mapName);
 
     bool loaded = false;
-
-    /// !TODO
-    /* NEW */
-    QList<Map *> maps;
 
     QString id;
     QString name;
@@ -125,7 +123,5 @@ signals:
     void layoutDimensionsChanged(const QSize &size);
     void needsRedrawing();
 };
-
-using MapLayout = Layout;
 
 #endif // MAPLAYOUT_H

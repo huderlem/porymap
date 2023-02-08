@@ -187,7 +187,6 @@ private slots:
     void onWildMonDataChanged();
     void openNewMapPopupWindow();
     void onNewMapCreated();
-    void onMapCacheCleared();
     void importMapFromAdvanceMap1_92();
     void onMapRulerStatusChanged(const QString &);
     void applyUserShortcuts();

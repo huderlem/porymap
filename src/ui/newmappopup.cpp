@@ -110,12 +110,12 @@ void NewMapPopup::init(MapSortOrder type, QVariant data) {
 }
 
 // Creating new map from AdvanceMap import
-void NewMapPopup::init(MapLayout *mapLayout) {
+void NewMapPopup::init(Layout *mapLayout) {
     this->importedMap = true;
     useLayoutSettings(mapLayout);
 
     this->map = new Map();
-    this->map->layout = new MapLayout();
+    this->map->layout = new Layout();
     this->map->layout->blockdata = mapLayout->blockdata;
 
     if (!mapLayout->border.isEmpty()) {
@@ -203,7 +203,7 @@ void NewMapPopup::saveSettings() {
     settings.floorNumber = ui->spinBox_NewMap_Floor_Number->value();
 }
 
-void NewMapPopup::useLayoutSettings(MapLayout *layout) {
+void NewMapPopup::useLayoutSettings(Layout *layout) {
     if (!layout) return;
     settings.width = layout->width;
     settings.height = layout->height;
@@ -241,7 +241,7 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
         return;
     }
     Map *newMap = new Map;
-    MapLayout *layout;
+    Layout *layout;
 
     // If map name is not unique, use default value. Also use only valid characters.
     // After stripping invalid characters, strip any leading digits.
@@ -266,8 +266,8 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
         layout = this->project->mapLayouts.value(this->layoutId);
         newMap->needsLayoutDir = false;
     } else {
-        layout = new MapLayout;
-        layout->id = MapLayout::layoutConstantFromName(newMapName);
+        layout = new Layout;
+        layout->id = Layout::layoutConstantFromName(newMapName);
         layout->name = QString("%1_Layout").arg(newMap->name);
         layout->width = this->ui->spinBox_NewMap_Width->value();
         layout->height = this->ui->spinBox_NewMap_Height->value();
