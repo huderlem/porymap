@@ -57,7 +57,6 @@ void Scripting::loadModules(QStringList moduleFiles) {
                     messageBox.setDetailedText(getMostRecentError());
                     messageBox.setIcon(QMessageBox::Warning);
                     messageBox.addButton(QMessageBox::Ok);
-                    messageBox.setDefaultButton(QMessageBox::Ok);
                     QCheckBox * checkbox = new QCheckBox("Don't show this warning again");
                     messageBox.setCheckBox(checkbox);
                     QObject::connect(checkbox, &QCheckBox::stateChanged, [](int state) {
@@ -159,8 +158,22 @@ void Scripting::invokeAction(QString actionName) {
         QJSValue result = callbackFunction.call(QJSValueList());
         if (tryErrorJS(result)) continue;
     }
-    if (!foundFunction)
+    if (!foundFunction) {
         logError(QString("Unknown custom script function '%1'").arg(functionName));
+        if (porymapConfig.getWarnScriptAction()) {
+            QMessageBox messageBox(instance->mainWindow);
+            messageBox.setText("Failed to run custom action");
+            messageBox.setInformativeText(getMostRecentError());
+            messageBox.setIcon(QMessageBox::Warning);
+            messageBox.addButton(QMessageBox::Ok);
+            QCheckBox * checkbox = new QCheckBox("Don't show this warning again");
+            messageBox.setCheckBox(checkbox);
+            QObject::connect(checkbox, &QCheckBox::stateChanged, [](int state) {
+                porymapConfig.setWarnScriptAction(static_cast<Qt::CheckState>(state) != Qt::CheckState::Checked);
+            });
+            messageBox.exec();
+        }
+    }
 }
 
 void Scripting::cb_ProjectOpened(QString projectPath) {
