@@ -11,17 +11,26 @@ void ScriptUtility::registerAction(QString functionName, QString actionName, QSt
     if (!window || !window->ui || !window->ui->menuTools)
         return;
 
-    this->actionMap.insert(actionName, functionName);
-    if (this->actionMap.size() == 1) {
+    if (functionName.isEmpty() || actionName.isEmpty()) {
+        logError("Failed to register script action. 'functionName' and 'actionName' must be non-empty.");
+        return;
+    }
+
+    if (this->registeredActions.size() == 0) {
         QAction *section = window->ui->menuTools->addSection("Custom Actions");
         this->registeredActions.append(section);
     }
-    QAction *action = window->ui->menuTools->addAction(actionName, [actionName](){
-       Scripting::invokeAction(actionName);
+
+    const int actionIndex = this->registeredActions.size();
+    QAction *action = window->ui->menuTools->addAction(actionName, [actionIndex](){
+       Scripting::invokeAction(actionIndex);
     });
+
     if (!shortcut.isEmpty()) {
         action->setShortcut(QKeySequence(shortcut));
     }
+
+    this->actionMap.insert(actionIndex, functionName);
     this->registeredActions.append(action);
 }
 
@@ -31,8 +40,8 @@ void ScriptUtility::clearActions() {
     }
 }
 
-QString ScriptUtility::getActionFunctionName(QString actionName) {
-    return this->actionMap.value(actionName);
+QString ScriptUtility::getActionFunctionName(int actionIndex) {
+    return this->actionMap.value(actionIndex);
 }
 
 void ScriptUtility::setTimeout(QJSValue callback, int milliseconds) {

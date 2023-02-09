@@ -142,9 +142,9 @@ void Scripting::invokeCallback(CallbackType type, QJSValueList args) {
     }
 }
 
-void Scripting::invokeAction(QString actionName) {
+void Scripting::invokeAction(int actionIndex) {
     if (!instance || !instance->scriptUtility) return;
-    QString functionName = instance->scriptUtility->getActionFunctionName(actionName);
+    QString functionName = instance->scriptUtility->getActionFunctionName(actionIndex);
     if (functionName.isEmpty()) return;
 
     bool foundFunction = false;
