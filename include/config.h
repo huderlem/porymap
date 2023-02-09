@@ -62,6 +62,7 @@ public:
         this->textEditorOpenFolder = "";
         this->textEditorGotoLine = "";
         this->warnScriptLoad = true;
+        this->warnScriptAction = true;
     }
     void setRecentProject(QString project);
     void setReopenOnLaunch(bool enabled);
@@ -80,6 +81,7 @@ public:
     void setMonitorFiles(bool monitor);
     void setTilesetCheckerboardFill(bool checkerboard);
     void setWarnScriptLoad(bool enabled);
+    void setWarnScriptAction(bool enabled);
     void setTheme(QString theme);
     void setTextEditorOpenFolder(const QString &command);
     void setTextEditorGotoLine(const QString &command);
@@ -101,6 +103,7 @@ public:
     bool getMonitorFiles();
     bool getTilesetCheckerboardFill();
     bool getWarnScriptLoad();
+    bool getWarnScriptAction();
     QString getTheme();
     QString getTextEditorOpenFolder();
     QString getTextEditorGotoLine();
@@ -138,6 +141,7 @@ private:
     bool monitorFiles;
     bool tilesetCheckerboardFill;
     bool warnScriptLoad;
+    bool warnScriptAction;
     QString theme;
     QString textEditorOpenFolder;
     QString textEditorGotoLine;
