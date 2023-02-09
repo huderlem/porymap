@@ -35,7 +35,21 @@ QStandardItem *MapGroupModel::createMapItem(QString mapName, int groupIndex, int
     return map;
 }
 
+QStandardItem *MapGroupModel::insertMapItem(QString mapName, QString groupName) {
+    int groupIndex = this->project->groupNames.indexOf(groupName);
+    QStandardItem *group = this->groupItems[groupName];
+    if (!group) {
+        return nullptr;
+    }
+    int mapIndex = group->rowCount();
+    QStandardItem *map = createMapItem(mapName, groupIndex, mapIndex);
+    group->appendRow(map);
+    return map;
+}
+
 void MapGroupModel::initialize() {
+    this->groupItems.clear();
+    this->mapItems.clear();
     for (int i = 0; i < this->project->groupNames.length(); i++) {
         QString group_name = this->project->groupNames.value(i);
         QStandardItem *group = createGroupItem(group_name, i);
@@ -140,7 +154,21 @@ QStandardItem *MapAreaModel::createMapItem(QString mapName, int groupIndex, int 
     return map;
 }
 
+QStandardItem *MapAreaModel::insertMapItem(QString mapName, QString areaName, int groupIndex) {
+    // int areaIndex = this->project->mapSectionNameToValue[areaName];
+    QStandardItem *area = this->areaItems[areaName];
+    if (!area) {
+        return nullptr;
+    }
+    int mapIndex = area->rowCount();
+    QStandardItem *map = createMapItem(mapName, groupIndex, mapIndex);
+    area->appendRow(map);
+    return map;
+}
+
 void MapAreaModel::initialize() {
+    this->areaItems.clear();
+    this->mapItems.clear();
     for (int i = 0; i < this->project->mapSectionNameToValue.size(); i++) {
         QString mapsecName = project->mapSectionValueToName.value(i);
         QStandardItem *areaItem = createAreaItem(mapsecName, i);
@@ -256,7 +284,26 @@ QStandardItem *LayoutTreeModel::createMapItem(QString mapName) {
     return map;
 }
 
+QStandardItem *LayoutTreeModel::insertMapItem(QString mapName, QString layoutId) {
+    QStandardItem *layout = nullptr;
+    if (this->layoutItems.contains(layoutId)) {
+        layout = this->layoutItems[layoutId];
+    }
+    else {
+        layout = createLayoutItem(layoutId);
+        this->root->appendRow(layout);
+    }
+    if (!layout) {
+        return nullptr;
+    }
+    QStandardItem *map = createMapItem(mapName);
+    layout->appendRow(map);
+    return map;
+}
+
 void LayoutTreeModel::initialize() {
+    this->layoutItems.clear();
+    this->mapItems.clear();
     for (int i = 0; i < this->project->mapLayoutsTable.length(); i++) {
         QString layoutId = project->mapLayoutsTable.value(i);
         QStandardItem *layoutItem = createLayoutItem(layoutId);
@@ -265,7 +312,6 @@ void LayoutTreeModel::initialize() {
 
     for (auto mapList : this->project->groupedMapNames) {
         for (auto mapName : mapList) {
-            //
             QString layoutId = project->readMapLayoutId(mapName);
             QStandardItem *map = createMapItem(mapName);
             this->layoutItems[layoutId]->appendRow(map);

@@ -1248,6 +1248,10 @@ void MainWindow::onNewMapCreated() {
     // QStandardItem* groupItem = mapGroupItemsList->at(newMapGroup);
     // int numMapsInGroup = groupItem->rowCount();
 
+    this->mapGroupModel->insertMapItem(newMapName, editor->project->groupNames[newMapGroup]);
+    this->mapAreaModel->insertMapItem(newMapName, newMap->location, newMapGroup);
+    this->layoutTreeModel->insertMapItem(newMapName, newMap->layout->id);
+
     // QStandardItem *newMapItem = createMapItem(newMapName, newMapGroup, numMapsInGroup);
     // groupItem->appendRow(newMapItem);
     // mapListIndexes.insert(newMapName, newMapItem->index());

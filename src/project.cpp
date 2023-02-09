@@ -1775,6 +1775,7 @@ Map* Project::addNewMapToGroup(QString mapName, int groupNum, Map *newMap, bool 
     if (!existingLayout) {
         mapLayouts.insert(newMap->layoutId, newMap->layout);
         mapLayoutsTable.append(newMap->layoutId);
+        layoutIdsToNames.insert(newMap->layout->id, newMap->layout->name);
         if (!importedMap) {
             setNewMapBlockdata(newMap);
         }
