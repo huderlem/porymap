@@ -33,6 +33,7 @@ void Scripting::init(MainWindow *mainWindow) {
 }
 
 Scripting::Scripting(MainWindow *mainWindow) {
+    this->mainWindow = mainWindow;
     this->engine = new QJSEngine(mainWindow);
     this->engine->installExtensions(QJSEngine::ConsoleExtension);
     for (QString script : userConfig.getCustomScripts()) {
@@ -48,7 +49,24 @@ void Scripting::loadModules(QStringList moduleFiles) {
         if (module.isError()) {
             QString relativePath = QDir::cleanPath(userConfig.getProjectDir() + QDir::separator() + filepath);
             module = this->engine->importModule(relativePath);
-            if (tryErrorJS(module)) continue;
+            if (tryErrorJS(module)) {
+                if (porymapConfig.getWarnScriptLoad()) {
+                    QMessageBox messageBox(this->mainWindow);
+                    messageBox.setText("Failed to load script");
+                    messageBox.setInformativeText(QString("An error occurred while loading custom script file '%1'").arg(filepath));
+                    messageBox.setDetailedText(getMostRecentError());
+                    messageBox.setIcon(QMessageBox::Warning);
+                    messageBox.addButton(QMessageBox::Ok);
+                    messageBox.setDefaultButton(QMessageBox::Ok);
+                    QCheckBox * checkbox = new QCheckBox("Don't show this warning again");
+                    messageBox.setCheckBox(checkbox);
+                    QObject::connect(checkbox, &QCheckBox::stateChanged, [](int state) {
+                        porymapConfig.setWarnScriptLoad(static_cast<Qt::CheckState>(state) != Qt::CheckState::Checked);
+                    });
+                    messageBox.exec();
+                }
+                continue;
+            }
         }
 
         logInfo(QString("Successfully loaded custom script file '%1'").arg(filepath));

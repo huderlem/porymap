@@ -61,6 +61,7 @@ public:
     static QJSValue dialogInput(QJSValue input, bool selectedOk);
 
 private:
+    MainWindow *mainWindow;
     QJSEngine *engine;
     QStringList filepaths;
     QList<QJSValue> modules;
