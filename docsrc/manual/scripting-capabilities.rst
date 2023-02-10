@@ -1798,6 +1798,15 @@ All utility functions are callable via the global ``utility`` object.
    :param checked: whether the action initially has a check mark. Defaults to ``false``.
    :type checked: boolean
 
+.. js:function:: utility.registerToggleAction(functionName, actionName, shortcut = "", checked = false)
+
+   Registers a JavaScript function to an action that can be manually triggered in Porymap's ``Tools`` menu. Optionally, a keyboard shortcut (e.g. ``"Ctrl+P"``) can also be specified, assuming it doesn't collide with any existing shortcuts used by Porymap. A check mark will be toggled next to the action name each time its activated. Whether the check mark is initially present can be set with ``checked``. The function specified by ``functionName`` must have the ``export`` keyword.
+
+   :param string functionName: name of the JavaScript function
+   :param string actionName: name of the action that will be displayed in the ``Tools`` menu
+   :param string shortcut: optional keyboard shortcut
+   :param boolean checked: whether the action initially has a check mark. Defaults to ``false``.
+
 .. js:function:: utility.setTimeout(func, delayMs)
 
    This behaves essentially the same as JavaScript's ``setTimeout()`` that is used in web browsers or NodeJS. The ``func`` argument is a JavaScript function (NOT the name of a function) which will be executed after a delay. This is useful for creating animations or refreshing the overlay at constant intervals.
