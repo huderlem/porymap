@@ -12,7 +12,8 @@ public:
     ScriptUtility(MainWindow *mainWindow);
     void clearActions();
     QString getActionFunctionName(int actionIndex);
-    Q_INVOKABLE void registerAction(QString functionName, QString actionName, QString shortcut = "");
+    Q_INVOKABLE bool registerAction(QString functionName, QString actionName, QString shortcut = "");
+    Q_INVOKABLE bool registerToggleAction(QString functionName, QString actionName, QString shortcut = "", bool checked = false);
     Q_INVOKABLE void setTimeout(QJSValue callback, int milliseconds);
     Q_INVOKABLE void log(QString message);
     Q_INVOKABLE void warn(QString message);

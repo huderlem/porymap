@@ -7,13 +7,13 @@ ScriptUtility::ScriptUtility(MainWindow *mainWindow) {
     this->window = mainWindow;
 }
 
-void ScriptUtility::registerAction(QString functionName, QString actionName, QString shortcut) {
+bool ScriptUtility::registerAction(QString functionName, QString actionName, QString shortcut) {
     if (!window || !window->ui || !window->ui->menuTools)
-        return;
+        return false;
 
     if (functionName.isEmpty() || actionName.isEmpty()) {
         logError("Failed to register script action. 'functionName' and 'actionName' must be non-empty.");
-        return;
+        return false;
     }
 
     if (this->registeredActions.size() == 0) {
@@ -32,6 +32,16 @@ void ScriptUtility::registerAction(QString functionName, QString actionName, QSt
 
     this->actionMap.insert(actionIndex, functionName);
     this->registeredActions.append(action);
+    return true;
+}
+
+bool ScriptUtility::registerToggleAction(QString functionName, QString actionName, QString shortcut, bool checked) {
+    if (!registerAction(functionName, actionName, shortcut))
+        return false;
+    QAction *action = this->registeredActions.last();
+    action->setCheckable(true);
+    action->setChecked(checked);
+    return true;
 }
 
 void ScriptUtility::clearActions() {
