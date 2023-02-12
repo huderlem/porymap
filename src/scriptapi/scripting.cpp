@@ -50,20 +50,13 @@ void Scripting::loadModules(QStringList moduleFiles) {
             QString relativePath = QDir::cleanPath(userConfig.getProjectDir() + QDir::separator() + filepath);
             module = this->engine->importModule(relativePath);
             if (tryErrorJS(module)) {
-                if (porymapConfig.getWarnScriptLoad()) {
-                    QMessageBox messageBox(this->mainWindow);
-                    messageBox.setText("Failed to load script");
-                    messageBox.setInformativeText(QString("An error occurred while loading custom script file '%1'").arg(filepath));
-                    messageBox.setDetailedText(getMostRecentError());
-                    messageBox.setIcon(QMessageBox::Warning);
-                    messageBox.addButton(QMessageBox::Ok);
-                    QCheckBox * checkbox = new QCheckBox("Don't show this warning again");
-                    messageBox.setCheckBox(checkbox);
-                    QObject::connect(checkbox, &QCheckBox::stateChanged, [](int state) {
-                        porymapConfig.setWarnScriptLoad(static_cast<Qt::CheckState>(state) != Qt::CheckState::Checked);
-                    });
-                    messageBox.exec();
-                }
+                QMessageBox messageBox(this->mainWindow);
+                messageBox.setText("Failed to load script");
+                messageBox.setInformativeText(QString("An error occurred while loading custom script file '%1'").arg(filepath));
+                messageBox.setDetailedText(getMostRecentError());
+                messageBox.setIcon(QMessageBox::Warning);
+                messageBox.addButton(QMessageBox::Ok);
+                messageBox.exec();
                 continue;
             }
         }
@@ -160,19 +153,12 @@ void Scripting::invokeAction(int actionIndex) {
     }
     if (!foundFunction) {
         logError(QString("Unknown custom script function '%1'").arg(functionName));
-        if (porymapConfig.getWarnScriptAction()) {
-            QMessageBox messageBox(instance->mainWindow);
-            messageBox.setText("Failed to run custom action");
-            messageBox.setInformativeText(getMostRecentError());
-            messageBox.setIcon(QMessageBox::Warning);
-            messageBox.addButton(QMessageBox::Ok);
-            QCheckBox * checkbox = new QCheckBox("Don't show this warning again");
-            messageBox.setCheckBox(checkbox);
-            QObject::connect(checkbox, &QCheckBox::stateChanged, [](int state) {
-                porymapConfig.setWarnScriptAction(static_cast<Qt::CheckState>(state) != Qt::CheckState::Checked);
-            });
-            messageBox.exec();
-        }
+        QMessageBox messageBox(instance->mainWindow);
+        messageBox.setText("Failed to run custom action");
+        messageBox.setInformativeText(getMostRecentError());
+        messageBox.setIcon(QMessageBox::Warning);
+        messageBox.addButton(QMessageBox::Ok);
+        messageBox.exec();
     }
 }
 

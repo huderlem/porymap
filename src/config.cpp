@@ -240,10 +240,6 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->monitorFiles = getConfigBool(key, value);
     } else if (key == "tileset_checkerboard_fill") {
         this->tilesetCheckerboardFill = getConfigBool(key, value);
-    } else if (key == "warn_script_load") {
-        this->warnScriptLoad = getConfigBool(key, value);
-    } else if (key == "warn_script_action") {
-        this->warnScriptAction = getConfigBool(key, value);
     } else if (key == "theme") {
         this->theme = value;
     } else if (key == "text_editor_open_directory") {
@@ -279,8 +275,6 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("show_grid", this->showGrid ? "1" : "0");
     map.insert("monitor_files", this->monitorFiles ? "1" : "0");
     map.insert("tileset_checkerboard_fill", this->tilesetCheckerboardFill ? "1" : "0");
-    map.insert("warn_script_load", this->warnScriptLoad ? "1" : "0");
-    map.insert("warn_script_action", this->warnScriptAction ? "1" : "0");
     map.insert("theme", this->theme);
     map.insert("text_editor_open_directory", this->textEditorOpenFolder);
     map.insert("text_editor_goto_line", this->textEditorGotoLine);
@@ -332,16 +326,6 @@ void PorymapConfig::setMonitorFiles(bool monitor) {
 
 void PorymapConfig::setTilesetCheckerboardFill(bool checkerboard) {
     this->tilesetCheckerboardFill = checkerboard;
-    this->save();
-}
-
-void PorymapConfig::setWarnScriptLoad(bool enabled) {
-    this->warnScriptLoad = enabled;
-    this->save();
-}
-
-void PorymapConfig::setWarnScriptAction(bool enabled) {
-    this->warnScriptAction = enabled;
     this->save();
 }
 
@@ -500,14 +484,6 @@ bool PorymapConfig::getMonitorFiles() {
 
 bool PorymapConfig::getTilesetCheckerboardFill() {
     return this->tilesetCheckerboardFill;
-}
-
-bool PorymapConfig::getWarnScriptLoad() {
-    return this->warnScriptLoad;
-}
-
-bool PorymapConfig::getWarnScriptAction() {
-    return this->warnScriptAction;
 }
 
 QString PorymapConfig::getTheme() {
