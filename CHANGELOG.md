@@ -7,8 +7,12 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 The **"Breaking Changes"** listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. It also includes changes to the scripting API that may change the behavior of existing porymap scripts. If porymap is used with a project or API script that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.
 
 ## [Unreleased]
+### Added
+- Add `registerToggleAction` to the scripting API
+
 ### Changed
 - Change encounter tab copy and paste behavior.
+- A warning will appear if a custom script fails to load or an action fails to run.
 
 ### Fixed
 - Fix null characters being unpredictably written to some JSON files.
@@ -19,6 +23,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix bug which caused encounter configurator to crash if last field was deleted.
 - Fix map render when collision view was active while map changed.
 - Fix the updated pokefirered region map graphics appearing in grayscale.
+- Fix the API function `registerAction` not correctly handling actions with the same name.
 
 ## [5.1.0] - 2023-01-22
 ### Added

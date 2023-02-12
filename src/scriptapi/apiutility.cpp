@@ -7,22 +7,41 @@ ScriptUtility::ScriptUtility(MainWindow *mainWindow) {
     this->window = mainWindow;
 }
 
-void ScriptUtility::registerAction(QString functionName, QString actionName, QString shortcut) {
+bool ScriptUtility::registerAction(QString functionName, QString actionName, QString shortcut) {
     if (!window || !window->ui || !window->ui->menuTools)
-        return;
+        return false;
 
-    this->actionMap.insert(actionName, functionName);
-    if (this->actionMap.size() == 1) {
+    if (functionName.isEmpty() || actionName.isEmpty()) {
+        logError("Failed to register script action. 'functionName' and 'actionName' must be non-empty.");
+        return false;
+    }
+
+    if (this->registeredActions.size() == 0) {
         QAction *section = window->ui->menuTools->addSection("Custom Actions");
         this->registeredActions.append(section);
     }
-    QAction *action = window->ui->menuTools->addAction(actionName, [actionName](){
-       Scripting::invokeAction(actionName);
+
+    const int actionIndex = this->registeredActions.size();
+    QAction *action = window->ui->menuTools->addAction(actionName, [actionIndex](){
+       Scripting::invokeAction(actionIndex);
     });
+
     if (!shortcut.isEmpty()) {
         action->setShortcut(QKeySequence(shortcut));
     }
+
+    this->actionMap.insert(actionIndex, functionName);
     this->registeredActions.append(action);
+    return true;
+}
+
+bool ScriptUtility::registerToggleAction(QString functionName, QString actionName, QString shortcut, bool checked) {
+    if (!registerAction(functionName, actionName, shortcut))
+        return false;
+    QAction *action = this->registeredActions.last();
+    action->setCheckable(true);
+    action->setChecked(checked);
+    return true;
 }
 
 void ScriptUtility::clearActions() {
@@ -31,8 +50,8 @@ void ScriptUtility::clearActions() {
     }
 }
 
-QString ScriptUtility::getActionFunctionName(QString actionName) {
-    return this->actionMap.value(actionName);
+QString ScriptUtility::getActionFunctionName(int actionIndex) {
+    return this->actionMap.value(actionIndex);
 }
 
 void ScriptUtility::setTimeout(QJSValue callback, int milliseconds) {

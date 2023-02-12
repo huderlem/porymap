@@ -33,9 +33,7 @@ public:
     static void init(MainWindow *mainWindow);
     static void populateGlobalObject(MainWindow *mainWindow);
     static QJSEngine *getEngine();
-    static void registerAction(QString functionName, QString actionName);
-    static int numRegisteredActions();
-    static void invokeAction(QString actionName);
+    static void invokeAction(int actionIndex);
     static void cb_ProjectOpened(QString projectPath);
     static void cb_ProjectClosed(QString projectPath);
     static void cb_MetatileChanged(int x, int y, Block prevBlock, Block newBlock);
@@ -61,6 +59,7 @@ public:
     static QJSValue dialogInput(QJSValue input, bool selectedOk);
 
 private:
+    MainWindow *mainWindow;
     QJSEngine *engine;
     QStringList filepaths;
     QList<QJSValue> modules;

@@ -11,8 +11,9 @@ class ScriptUtility : public QObject
 public:
     ScriptUtility(MainWindow *mainWindow);
     void clearActions();
-    QString getActionFunctionName(QString actionName);
-    Q_INVOKABLE void registerAction(QString functionName, QString actionName, QString shortcut = "");
+    QString getActionFunctionName(int actionIndex);
+    Q_INVOKABLE bool registerAction(QString functionName, QString actionName, QString shortcut = "");
+    Q_INVOKABLE bool registerToggleAction(QString functionName, QString actionName, QString shortcut = "", bool checked = false);
     Q_INVOKABLE void setTimeout(QJSValue callback, int milliseconds);
     Q_INVOKABLE void log(QString message);
     Q_INVOKABLE void warn(QString message);
@@ -58,7 +59,7 @@ private:
 
     MainWindow *window;
     QList<QAction *> registeredActions;
-    QMap<QString, QString> actionMap;
+    QHash<int, QString> actionMap;
 };
 
 #endif // SCRIPTUTILITY_H

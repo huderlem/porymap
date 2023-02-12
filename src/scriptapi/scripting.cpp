@@ -33,6 +33,7 @@ void Scripting::init(MainWindow *mainWindow) {
 }
 
 Scripting::Scripting(MainWindow *mainWindow) {
+    this->mainWindow = mainWindow;
     this->engine = new QJSEngine(mainWindow);
     this->engine->installExtensions(QJSEngine::ConsoleExtension);
     for (QString script : userConfig.getCustomScripts()) {
@@ -48,7 +49,16 @@ void Scripting::loadModules(QStringList moduleFiles) {
         if (module.isError()) {
             QString relativePath = QDir::cleanPath(userConfig.getProjectDir() + QDir::separator() + filepath);
             module = this->engine->importModule(relativePath);
-            if (tryErrorJS(module)) continue;
+            if (tryErrorJS(module)) {
+                QMessageBox messageBox(this->mainWindow);
+                messageBox.setText("Failed to load script");
+                messageBox.setInformativeText(QString("An error occurred while loading custom script file '%1'").arg(filepath));
+                messageBox.setDetailedText(getMostRecentError());
+                messageBox.setIcon(QMessageBox::Warning);
+                messageBox.addButton(QMessageBox::Ok);
+                messageBox.exec();
+                continue;
+            }
         }
 
         logInfo(QString("Successfully loaded custom script file '%1'").arg(filepath));
@@ -125,9 +135,9 @@ void Scripting::invokeCallback(CallbackType type, QJSValueList args) {
     }
 }
 
-void Scripting::invokeAction(QString actionName) {
+void Scripting::invokeAction(int actionIndex) {
     if (!instance || !instance->scriptUtility) return;
-    QString functionName = instance->scriptUtility->getActionFunctionName(actionName);
+    QString functionName = instance->scriptUtility->getActionFunctionName(actionIndex);
     if (functionName.isEmpty()) return;
 
     bool foundFunction = false;
@@ -141,8 +151,15 @@ void Scripting::invokeAction(QString actionName) {
         QJSValue result = callbackFunction.call(QJSValueList());
         if (tryErrorJS(result)) continue;
     }
-    if (!foundFunction)
+    if (!foundFunction) {
         logError(QString("Unknown custom script function '%1'").arg(functionName));
+        QMessageBox messageBox(instance->mainWindow);
+        messageBox.setText("Failed to run custom action");
+        messageBox.setInformativeText(getMostRecentError());
+        messageBox.setIcon(QMessageBox::Warning);
+        messageBox.addButton(QMessageBox::Ok);
+        messageBox.exec();
+    }
 }
 
 void Scripting::cb_ProjectOpened(QString projectPath) {
