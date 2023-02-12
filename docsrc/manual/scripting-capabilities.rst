@@ -1802,10 +1802,14 @@ All utility functions are callable via the global ``utility`` object.
 
    Registers a JavaScript function to an action that can be manually triggered in Porymap's ``Tools`` menu. Optionally, a keyboard shortcut (e.g. ``"Ctrl+P"``) can also be specified, assuming it doesn't collide with any existing shortcuts used by Porymap. A check mark will be toggled next to the action name each time its activated. Whether the check mark is initially present can be set with ``checked``. The function specified by ``functionName`` must have the ``export`` keyword.
 
-   :param string functionName: name of the JavaScript function
-   :param string actionName: name of the action that will be displayed in the ``Tools`` menu
-   :param string shortcut: optional keyboard shortcut
-   :param boolean checked: whether the action initially has a check mark. Defaults to ``false``.
+   :param functionName: name of the JavaScript function
+   :type functionName: string
+   :param actionName: name of the action that will be displayed in the ``Tools`` menu
+   :type actionName: string
+   :param shortcut: optional keyboard shortcut
+   :type shortcut: string
+   :param checked: whether the action initially has a check mark. Defaults to ``false``.
+   :type checked: boolean
 
 .. js:function:: utility.setTimeout(func, delayMs)
 
