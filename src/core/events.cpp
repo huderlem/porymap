@@ -151,8 +151,6 @@ EventFrame *ObjectEvent::createEventFrame() {
     if (!this->eventFrame) {
         this->eventFrame = new ObjectFrame(this);
         this->eventFrame->setup();
-
-        QObject::connect(this->eventFrame, &QObject::destroyed, [this](){ this->eventFrame = nullptr; });
     }
     return this->eventFrame;
 }
@@ -307,8 +305,6 @@ EventFrame *CloneObjectEvent::createEventFrame() {
     if (!this->eventFrame) {
         this->eventFrame = new CloneObjectFrame(this);
         this->eventFrame->setup();
-
-        QObject::connect(this->eventFrame, &QObject::destroyed, [this](){ this->eventFrame = nullptr; });
     }
     return this->eventFrame;
 }
@@ -417,8 +413,6 @@ EventFrame *WarpEvent::createEventFrame() {
     if (!this->eventFrame) {
         this->eventFrame = new WarpFrame(this);
         this->eventFrame->setup();
-
-        QObject::connect(this->eventFrame, &QObject::destroyed, [this](){ this->eventFrame = nullptr; });
     }
     return this->eventFrame;
 }
@@ -509,8 +503,6 @@ EventFrame *TriggerEvent::createEventFrame() {
     if (!this->eventFrame) {
         this->eventFrame = new TriggerFrame(this);
         this->eventFrame->setup();
-
-        QObject::connect(this->eventFrame, &QObject::destroyed, [this](){ this->eventFrame = nullptr; });
     }
     return this->eventFrame;
 }
@@ -585,8 +577,6 @@ EventFrame *WeatherTriggerEvent::createEventFrame() {
     if (!this->eventFrame) {
         this->eventFrame = new WeatherTriggerFrame(this);
         this->eventFrame->setup();
-
-        QObject::connect(this->eventFrame, &QObject::destroyed, [this](){ this->eventFrame = nullptr; });
     }
     return this->eventFrame;
 }
@@ -660,8 +650,6 @@ EventFrame *SignEvent::createEventFrame() {
     if (!this->eventFrame) {
         this->eventFrame = new SignFrame(this);
         this->eventFrame->setup();
-
-        QObject::connect(this->eventFrame, &QObject::destroyed, [this](){ this->eventFrame = nullptr; });
     }
     return this->eventFrame;
 }
@@ -735,8 +723,6 @@ EventFrame *HiddenItemEvent::createEventFrame() {
     if (!this->eventFrame) {
         this->eventFrame = new HiddenItemFrame(this);
         this->eventFrame->setup();
-
-        QObject::connect(this->eventFrame, &QObject::destroyed, [this](){ this->eventFrame = nullptr; });
     }
     return this->eventFrame;
 }
@@ -830,8 +816,6 @@ EventFrame *SecretBaseEvent::createEventFrame() {
     if (!this->eventFrame) {
         this->eventFrame = new SecretBaseFrame(this);
         this->eventFrame->setup();
-
-        QObject::connect(this->eventFrame, &QObject::destroyed, [this](){ this->eventFrame = nullptr; });
     }
     return this->eventFrame;
 }
@@ -885,8 +869,6 @@ EventFrame *HealLocationEvent::createEventFrame() {
     if (!this->eventFrame) {
         this->eventFrame = new HealLocationFrame(this);
         this->eventFrame->setup();
-
-        QObject::connect(this->eventFrame, &QObject::destroyed, [this](){ this->eventFrame = nullptr; });
     }
     return this->eventFrame;
 }

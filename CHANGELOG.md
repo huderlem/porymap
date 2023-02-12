@@ -11,6 +11,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Change encounter tab copy and paste behavior.
 
 ### Fixed
+- Fix null characters being unpredictably written to some JSON files.
 - Fix tilesets that share part of their name loading incorrectly.
 - Fix events being hidden behind connecting maps.
 - Fix some minor visual issues on the Connections tab.
