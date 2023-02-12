@@ -1,10 +1,16 @@
 name: Build Porymap
+permissions:
+  contents: write
 
 on:
   push:
-    branches: [ master ]
+    branches:
+    - master
+    tags:
+    - '*'
   pull_request:
-    branches: [ master ]
+    branches:
+    - master
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -38,3 +44,61 @@ jobs:
 
       - name: Compile
         run: make
+
+  # build-static-windows:
+  #   runs-on: windows-latest
+  #   steps:
+  #     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+  #     - uses: actions/checkout@v2
+      
+  #     - uses: dsaltares/fetch-gh-release-asset@master
+  #       if: steps.cache-static-qt.outputs.cache-hit != 'true'
+  #       with:
+  #         repo: 'huderlem/porymap'
+  #         version: 'tags/5.0.0'
+  #         file: 'Qt-Static-Windows-mingw-6.0.1.zip'
+  #         token: ${{ secrets.GITHUB_TOKEN }}
+      
+  #     - name: Unzip Static Qt
+  #       if: steps.cache-static-qt.outputs.cache-hit != 'true'
+  #       run: powershell.exe -Command "Expand-Archive -Path Qt-Static-Windows-mingw-6.0.1.zip -DestinationPath ../Qt"
+      
+  #     - uses: dsaltares/fetch-gh-release-asset@master
+  #       with:
+  #         repo: 'huderlem/porymap'
+  #         version: 'tags/5.0.0'
+  #         file: 'mingw810_64.zip'
+  #         token: ${{ secrets.GITHUB_TOKEN }}
+      
+  #     - name: Unzip mingw
+  #       run: powershell.exe -Command "Expand-Archive -Path mingw810_64.zip -DestinationPath ../mingw810_64"
+      
+  #     - name: Add Qt Static to PATH
+  #       run: echo "$env:GITHUB_WORKSPACE/../Qt/6.0.1/bin" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+
+  #     - name: Add static config to .pro file
+  #       run: echo "CONFIG += qt static" >> porymap.pro
+      
+  #     - name: Add static qmake flags to .pro file
+  #       run: echo "QMAKE_LFLAGS += -static-libgcc -static-libstdc++ -static -lwinpthread" >> porymap.pro
+
+  #     - name: Run Qmake
+  #       env:
+  #         QTDIR: ../Qt/6.0.1
+  #       run: qmake.exe -o Makefile porymap.pro -spec win32-g++ "CONFIG+=qtquickcompiler"
+
+  #     - name: Add mingw to PATH
+  #       run: echo "$env:GITHUB_WORKSPACE/../mingw810_64/bin" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+
+  #     - name: Compile
+  #       env:
+  #         QTDIR: ../Qt/6.0.1
+  #       run: mingw32-make.exe -j8
+      
+  #     - name: Create Release
+  #       uses: softprops/action-gh-release@v1
+  #       if: startsWith(github.ref, 'refs/tags/')
+  #       with:
+  #         files: release/porymap.exe
+  #       env:
+  #           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
