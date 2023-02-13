@@ -20,6 +20,7 @@
 #include "montabwidget.h"
 #include "imageexport.h"
 #include "maplistmodels.h"
+#include "eventfilters.h"
 
 #include <QFileDialog>
 #include <QClipboard>
@@ -212,6 +213,10 @@ void MainWindow::initCustomUI() {
     ui->mainTabBar->setTabIcon(3, QIcon(QStringLiteral(":/icons/connections.ico")));
     ui->mainTabBar->addTab("Wild Pokemon");
     ui->mainTabBar->setTabIcon(4, QIcon(QStringLiteral(":/icons/tall_grass.ico")));
+
+    WheelFilter *wheelFilter = new WheelFilter(this);
+    ui->mainTabBar->installEventFilter(wheelFilter);
+    this->ui->mapListContainer->tabBar()->installEventFilter(wheelFilter);
 }
 
 void MainWindow::initExtraSignals() {
@@ -1110,6 +1115,16 @@ bool MainWindow::populateMapList() {
     groupListProxyModel->setSourceModel(this->mapGroupModel);
     ui->mapList->setModel(groupListProxyModel);
 
+    //
+    // connect(this->mapGroupModel, &QStandardItemModel::dataChanged, [=](const QModelIndex &, const QModelIndex &, const QList<int> &){
+    //     qDebug() << "mapGroupModel dataChanged";
+    // });
+
+    // connect(this->mapGroupModel, &MapGroupModel::edited, [=, this](){
+    //     qDebug() << "model edited with" << this->ui->mapList->selectionModel()->selection().size() << "items";
+    // }); removeSelected
+    connect(this->mapGroupModel, &MapGroupModel::dragMoveCompleted, this->ui->mapList, &MapTree::removeSelected);
+
     this->mapAreaModel = new MapAreaModel(editor->project);
     this->areaListProxyModel = new FilterChildrenProxyModel();
     areaListProxyModel->setSourceModel(this->mapAreaModel);
@@ -1121,10 +1136,11 @@ bool MainWindow::populateMapList() {
     ui->layoutList->setModel(layoutListProxyModel);
 
     /// !TODO
-    // ui->mapList->setSelectionMode(QAbstractItemView::ExtendedSelection);
-    // ui->mapList->setDragEnabled(true);
-    // ui->mapList->setAcceptDrops(true);
-    // ui->mapList->setDropIndicatorShown(true);
+    ui->mapList->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    ui->mapList->setDragEnabled(true);
+    ui->mapList->setAcceptDrops(true);
+    ui->mapList->setDropIndicatorShown(true);
+    ui->mapList->setDragDropMode(QAbstractItemView::InternalMove);
 
     return success;
 }
@@ -1244,19 +1260,11 @@ void MainWindow::onNewMapCreated() {
     editor->project->saveMap(newMap);
     editor->project->saveAllDataStructures();
 
-    // !TODO
-    // QStandardItem* groupItem = mapGroupItemsList->at(newMapGroup);
-    // int numMapsInGroup = groupItem->rowCount();
-
+    // Add new Map / Layout to the mapList models
     this->mapGroupModel->insertMapItem(newMapName, editor->project->groupNames[newMapGroup]);
     this->mapAreaModel->insertMapItem(newMapName, newMap->location, newMapGroup);
     this->layoutTreeModel->insertMapItem(newMapName, newMap->layout->id);
 
-    // QStandardItem *newMapItem = createMapItem(newMapName, newMapGroup, numMapsInGroup);
-    // groupItem->appendRow(newMapItem);
-    // mapListIndexes.insert(newMapName, newMapItem->index());
-
-    // sortMapList();
     setMap(newMapName, true);
 
     if (newMap->needsHealLocation) {
@@ -1512,10 +1520,17 @@ void MainWindow::updateMapList() {
         mapAreaModel->setMap(this->editor->map->name);
         areaListProxyModel->layoutChanged();
     }
+    else {
+        // !TODO
+        qDebug() << "need to clear map list";
+    }
 
     if (this->editor->layout) {
         layoutTreeModel->setLayout(this->editor->layout->id);
         layoutListProxyModel->layoutChanged();
+    }
+    else {
+        qDebug() << "need to clear layout list";
     }
 }
 

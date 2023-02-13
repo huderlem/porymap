@@ -2,6 +2,8 @@
 #ifndef MAPLISTMODELS_H
 #define MAPLISTMODELS_H
 
+#include <QTreeView>
+#include <QFontDatabase>
 #include <QStandardItemModel>
 #include <QMap>
 
@@ -17,6 +19,20 @@ enum MapListRoles {
 
 
 
+class MapTree : public QTreeView {
+    Q_OBJECT
+public:
+    MapTree(QWidget *parent) : QTreeView(parent) {
+        this->setDropIndicatorShown(true);
+        this->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    }
+
+public slots:
+    void removeSelected();
+};
+
+
+
 class MapGroupModel : public QStandardItemModel {
     Q_OBJECT
 
@@ -26,11 +42,16 @@ public:
 
     QVariant data(const QModelIndex &index, int role) const override;
 
+    Qt::DropActions supportedDropActions() const override;
+    QStringList mimeTypes() const override;
+    virtual QMimeData *mimeData(const QModelIndexList &indexes) const override;
+    virtual bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) override;
+
 public:
     void setMap(QString mapName) { this->openMap = mapName; }
 
     QStandardItem *createGroupItem(QString groupName, int groupIndex);
-    QStandardItem *createMapItem(QString mapName, int groupIndex, int mapIndex);
+    QStandardItem *createMapItem(QString mapName, QStandardItem *fromItem = nullptr);
 
     QStandardItem *insertMapItem(QString mapName, QString groupName);
 
@@ -38,6 +59,9 @@ public:
     QModelIndex indexOfMap(QString mapName);
 
     void initialize();
+
+private:
+    void updateProject();
 
 private:
     Project *project;
@@ -50,7 +74,7 @@ private:
     QString openMap;
 
 signals:
-    void edited();
+    void dragMoveCompleted();
 };
 
 

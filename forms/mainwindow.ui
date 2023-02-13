@@ -154,7 +154,7 @@
           </layout>
          </item>
          <item>
-          <widget class="QTreeView" name="mapList">
+          <widget class="MapTree" name="mapList">
            <property name="sizePolicy">
             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
              <horstretch>0</horstretch>
@@ -289,7 +289,7 @@
           </layout>
          </item>
          <item>
-          <widget class="QTreeView" name="areaList">
+          <widget class="MapTree" name="areaList">
            <property name="sizePolicy">
             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
              <horstretch>0</horstretch>
@@ -424,7 +424,7 @@
           </layout>
          </item>
          <item>
-          <widget class="QTreeView" name="layoutList">
+          <widget class="MapTree" name="layoutList">
            <property name="sizePolicy">
             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
              <horstretch>0</horstretch>
@@ -3606,6 +3606,11 @@
    <class>MapView</class>
    <extends>QWidget</extends>
    <header>mapview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>MapTree</class>
+   <extends>QTreeView</extends>
+   <header>maplistmodels.h</header>
   </customwidget>
  </customwidgets>
  <resources>

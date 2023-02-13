@@ -1,6 +1,18 @@
 #include "maplistmodels.h"
 
+#include <QMouseEvent>
+
 #include "project.h"
+#include "filterchildrenproxymodel.h"
+
+
+
+void MapTree::removeSelected() {
+    while (!this->selectedIndexes().isEmpty()) {
+        QModelIndex i = this->selectedIndexes().takeLast();
+        this->model()->removeRow(i.row(), i.parent());
+    }
+}
 
 
 
@@ -11,6 +23,122 @@ MapGroupModel::MapGroupModel(Project *project, QObject *parent) : QStandardItemM
     initialize();
 }
 
+Qt::DropActions MapGroupModel::supportedDropActions() const {
+    return Qt::MoveAction;
+}
+
+QStringList MapGroupModel::mimeTypes() const {
+    QStringList types;
+    types << "application/porymap.mapgroupmodel.map"
+          << "application/porymap.mapgroupmodel.group";
+    return types;
+}
+
+QMimeData *MapGroupModel::mimeData(const QModelIndexList &indexes) const {
+    QMimeData *mimeData = QStandardItemModel::mimeData(indexes);
+    QByteArray encodedData;
+
+    QDataStream stream(&encodedData, QIODevice::WriteOnly);
+
+    for (const QModelIndex &index : indexes) {
+        if (index.isValid()) {
+            QString mapName = data(index, Qt::UserRole).toString();
+            stream << mapName;
+        }
+    }
+
+    mimeData->setData("application/porymap.mapgroupmodel.map", encodedData);
+    return mimeData;
+}
+
+bool MapGroupModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parentIndex) {
+    if (action == Qt::IgnoreAction)
+        return true;
+ 
+    if (!data->hasFormat("application/porymap.mapgroupmodel.map"))
+        return false;
+
+    if (!parentIndex.isValid())
+        return false;
+
+    int firstRow = 0;
+ 
+    if (row != -1) {
+        firstRow = row;
+    }
+    else if (parentIndex.isValid()) {
+        firstRow = rowCount(parentIndex);
+    }
+
+    QByteArray encodedData = data->data("application/porymap.mapgroupmodel.map");
+    QDataStream stream(&encodedData, QIODevice::ReadOnly);
+    QStringList droppedMaps;
+    int rowCount = 0;
+
+    QList<QStandardItem *> newItems;
+
+    while (!stream.atEnd()) {
+        QString mapName;
+        stream >> mapName;
+        droppedMaps << mapName;
+        rowCount++;
+    }
+
+    this->insertRows(firstRow, rowCount, parentIndex);
+
+    int newItemIndex = 0;
+    for (QString mapName : droppedMaps) {
+        QModelIndex mapIndex = index(firstRow, 0, parentIndex);
+        QStandardItem *mapItem = this->itemFromIndex(mapIndex);
+        createMapItem(mapName, mapItem);
+        firstRow++;
+    }
+
+    // updateProject();
+
+    emit dragMoveCompleted();
+
+    return false;
+}
+
+
+/*
+    QStringList groupNames;
+    QMap<QString, int> mapGroups;
+    QList<QStringList> groupedMapNames;
+    QStringList mapNames;
+*/
+void MapGroupModel::updateProject() {
+    //
+    QStringList groups;
+    int numGroups = this->root->rowCount();
+    qDebug() << "group count:" << numGroups;
+
+    for (int g = 0; g < this->root->rowCount(); g++) {
+        QStandardItem *groupItem = this->item(g);
+        qDebug() << g << "group item" << groupItem->text(); //data(Qt::UserRole).toString();
+        for (int m = 0; m < groupItem->rowCount(); m++) {
+            //
+            QStandardItem *mapItem = groupItem->child(m);
+            qDebug() << "  " << m << "map item" << mapItem->data(Qt::UserRole).toString();
+        }
+    }
+
+    QList<QStringList> maps;
+    for (auto mapName : this->mapItems.keys()) {
+        //
+        QStandardItem *mapItem = this->mapItems[mapName];
+        QStandardItem *groupItem = mapItem->parent();
+        if (!groupItem) {
+            qDebug() << "FAIL: no parent" << mapName;
+            continue;
+        }
+        auto mapIndex = this->indexFromItem(mapItem).row();
+        auto groupIndex = this->indexFromItem(groupItem).row();
+        // qDebug().nospace() << "map: " << mapName << "[" << parentIndex.row() << "." << mapIndex.row() << "]";
+    }
+}
+
 QStandardItem *MapGroupModel::createGroupItem(QString groupName, int groupIndex) {
     QStandardItem *group = new QStandardItem;
     group->setText(groupName);
@@ -18,31 +146,30 @@ QStandardItem *MapGroupModel::createGroupItem(QString groupName, int groupIndex)
     group->setData(groupName, Qt::UserRole);
     group->setData("map_group", MapListRoles::TypeRole);
     group->setData(groupIndex, MapListRoles::GroupRole);
-    // group->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled);
+    group->setFlags(Qt::ItemIsEditable | /* Qt::ItemIsSelectable | */ Qt::ItemIsEnabled | /* Qt::ItemIsDragEnabled | */ Qt::ItemIsDropEnabled);
     this->groupItems.insert(groupName, group);
     return group;
 }
 
-QStandardItem *MapGroupModel::createMapItem(QString mapName, int groupIndex, int mapIndex) {
-    QStandardItem *map = new QStandardItem;
-    map->setText(QString("[%1.%2] ").arg(groupIndex).arg(mapIndex, 2, 10, QLatin1Char('0')) + mapName);
+QStandardItem *MapGroupModel::createMapItem(QString mapName, QStandardItem *map) {
+    if (!map) map = new QStandardItem;
     map->setEditable(false);
     map->setData(mapName, Qt::UserRole);
     map->setData("map_name", MapListRoles::TypeRole);
-    map->setData(groupIndex, MapListRoles::GroupRole);
-    // map->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled);
-    this->mapItems.insert(mapName, map);
+    // map->setData(groupIndex, MapListRoles::GroupRole);
+    map->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled);
+    this->mapItems[mapName] = map;
     return map;
 }
 
 QStandardItem *MapGroupModel::insertMapItem(QString mapName, QString groupName) {
-    int groupIndex = this->project->groupNames.indexOf(groupName);
+    //int groupIndex = this->project->groupNames.indexOf(groupName);
     QStandardItem *group = this->groupItems[groupName];
     if (!group) {
         return nullptr;
     }
-    int mapIndex = group->rowCount();
-    QStandardItem *map = createMapItem(mapName, groupIndex, mapIndex);
+    //int mapIndex = group->rowCount();
+    QStandardItem *map = createMapItem(mapName);
     group->appendRow(map);
     return map;
 }
@@ -54,10 +181,12 @@ void MapGroupModel::initialize() {
         QString group_name = this->project->groupNames.value(i);
         QStandardItem *group = createGroupItem(group_name, i);
         root->appendRow(group);
+        //this->setItem(0, i, group);
         QStringList names = this->project->groupedMapNames.value(i);
         for (int j = 0; j < names.length(); j++) {
             QString map_name = names.value(j);
-            QStandardItem *map = createMapItem(map_name, i, j);
+            QStandardItem *map = createMapItem(map_name);
+            //this->setItem(i, j, map);
             group->appendRow(map);
         }
     }
@@ -90,10 +219,13 @@ QVariant MapGroupModel::data(const QModelIndex &index, int role) const {
         static QIcon mapOpenedIcon = QIcon(QStringLiteral(":/icons/map_opened.ico"));
 
         static QIcon mapFolderIcon;
+        static QIcon folderIcon;
         static bool loaded = false;
         if (!loaded) {
             mapFolderIcon.addFile(QStringLiteral(":/icons/folder_closed_map.ico"), QSize(), QIcon::Normal, QIcon::Off);
             mapFolderIcon.addFile(QStringLiteral(":/icons/folder_map.ico"), QSize(), QIcon::Normal, QIcon::On);
+            folderIcon.addFile(QStringLiteral(":/icons/folder_closed.ico"), QSize(), QIcon::Normal, QIcon::Off);
+            folderIcon.addFile(QStringLiteral(":/icons/folder.ico"), QSize(), QIcon::Normal, QIcon::On);
             loaded = true;
         }
 
@@ -101,6 +233,9 @@ QVariant MapGroupModel::data(const QModelIndex &index, int role) const {
         QString type = item->data(MapListRoles::TypeRole).toString();
 
         if (type == "map_group") {
+            if (!item->hasChildren()) {
+                return folderIcon;
+            }
             return mapFolderIcon;
         } else if (type == "map_name") {
             QString mapName = item->data(Qt::UserRole).toString();
@@ -116,6 +251,14 @@ QVariant MapGroupModel::data(const QModelIndex &index, int role) const {
                 }
             }
             return mapGrayIcon;
+        }
+    }
+    else if (role == Qt::DisplayRole) {
+        //
+        QStandardItem *item = this->getItem(index)->child(row, col);
+
+        if (item->data(MapListRoles::TypeRole).toString() == "map_name") {
+            return QString("[%1.%2] ").arg(this->getItem(index)->row()).arg(row, 2, 10, QLatin1Char('0')) + item->data(Qt::UserRole).toString();
         }
     }
 

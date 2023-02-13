@@ -57,6 +57,7 @@ SOURCES += src/core/block.cpp \
     src/ui/cursortilerect.cpp \
     src/ui/customattributestable.cpp \
     src/ui/eventframes.cpp \
+    src/ui/eventfilters.cpp \
     src/ui/filterchildrenproxymodel.cpp \
     src/ui/maplistmodels.cpp \
     src/ui/graphicsview.cpp \
@@ -147,6 +148,7 @@ HEADERS  += include/core/block.h \
     include/ui/cursortilerect.h \
     include/ui/customattributestable.h \
     include/ui/eventframes.h \
+    include/ui/eventfilters.h \
     include/ui/filterchildrenproxymodel.h \
     include/ui/maplistmodels.h \
     include/ui/graphicsview.h \
