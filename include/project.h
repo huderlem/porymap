@@ -58,7 +58,7 @@ public:
     QString layoutsLabel;
     QMap<QString, QString> layoutIdsToNames;
     QMap<QString, Layout*> mapLayouts;
-//    QMap<QString, Layout*> mapLayoutsMaster;
+    QMap<QString, Layout*> mapLayoutsMaster;
     QMap<QString, QString> mapSecToMapHoverName;
     QMap<QString, int> mapSectionNameToValue;
     QMap<int, QString> mapSectionValueToName;
@@ -157,11 +157,12 @@ public:
     void loadTilesetPalettes(Tileset*);
     void readTilesetPaths(Tileset* tileset);
 
-    void saveLayoutBlockdata(Map*);
-    void saveLayoutBorder(Map*);
+    void saveLayout(Layout *);
+    void saveLayoutBlockdata(Layout *);
+    void saveLayoutBorder(Layout *);
     void writeBlockdata(QString, const Blockdata &);
     void saveAllMaps();
-    void saveMap(Map*);
+    void saveMap(Map *);
     void saveAllDataStructures();
     void saveMapLayouts();
     void saveMapGroups();
@@ -238,7 +239,7 @@ public:
     static int getMaxObjectEvents();
 
 private:
-    void updateMapLayout(Map*);
+    void updateLayout(Layout *);
 
     void setNewMapBlockdata(Map* map);
     void setNewMapBorder(Map *map);

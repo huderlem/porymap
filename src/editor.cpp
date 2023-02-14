@@ -62,10 +62,13 @@ void Editor::saveProject() {
 }
 
 void Editor::save() {
-    if (project && map) {
+    if (this->project && this->map) {
         saveUiFields();
-        project->saveMap(map);
-        project->saveAllDataStructures();
+        this->project->saveMap(this->map);
+        this->project->saveAllDataStructures();
+    }
+    else if (this->project && this->layout) {
+        this->project->saveLayout(this->layout);
     }
 }
 

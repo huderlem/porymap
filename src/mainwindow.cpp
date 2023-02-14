@@ -684,10 +684,6 @@ void MainWindow::on_action_Reload_Project_triggered() {
 }
 
 void MainWindow::unsetMap() {
-    // 
-    logInfo("Disabling map-related edits");
-
-    //
     this->editor->unsetMap();
 
     // disable other tabs
@@ -696,7 +692,6 @@ void MainWindow::unsetMap() {
     this->ui->mainTabBar->setTabEnabled(3, false);
     this->ui->mainTabBar->setTabEnabled(4, false);
 
-    //
     this->ui->comboBox_LayoutSelector->setEnabled(false);
 }
 
@@ -752,8 +747,12 @@ bool MainWindow::setMap(QString map_name, bool scroll) {
 }
 
 bool MainWindow::setLayout(QString layoutId) {
-    // if this->editor->setLayout(layoutName);
-    // this->editor->layout = layout;
+    if (this->editor->map)
+        logInfo("Switching to a layout-only editing mode. Disabling map-related edits.");
+
+    setMap(QString());
+
+    logInfo(QString("Setting layout to '%1'").arg(layoutId));
 
     if (!this->editor->setLayout(layoutId)) {
         return false;
@@ -762,17 +761,7 @@ bool MainWindow::setLayout(QString layoutId) {
     layoutTreeModel->setLayout(layoutId);
 
     refreshMapScene();
-
-    // if (scrollTreeView) {
-    //     // Make sure we clear the filter first so we actually have a scroll target
-    //     /// !TODO: make this onto a function that scrolls the current view taking a map name or layout name
-    //     groupListProxyModel->setFilterRegularExpression(QString());
-    //     ui->mapList->setCurrentIndex(groupListProxyModel->mapFromSource(mapGroupModel->indexOfMap(map_name)));
-    //     ui->mapList->scrollTo(ui->mapList->currentIndex(), QAbstractItemView::PositionAtCenter);
-    // }
-
     showWindowTitle();
-
     updateMapList();
 
     // !TODO: make sure these connections are not duplicated / cleared later
@@ -780,15 +769,6 @@ bool MainWindow::setLayout(QString layoutId) {
     connect(editor->layout, &Layout::needsRedrawing, this, &MainWindow::onLayoutNeedsRedrawing);
     // connect(editor->map, &Map::modified, [this](){ this->markMapEdited(); });
 
-    // displayMapProperties
-    
-
-    //
-    // connect(editor->layout, &Layout::mapChanged, this, &MainWindow::onMapChanged);
-    // connect(editor->layout, &Layout::mapNeedsRedrawing, this, &MainWindow::onMapNeedsRedrawing);
-    // connect(editor->layout, &Layout::modified, [this](){ this->markMapEdited(); });
-
-    //
     updateTilesetEditor();
 
     return true;
@@ -1116,15 +1096,6 @@ bool MainWindow::populateMapList() {
     ui->mapList->setModel(groupListProxyModel);
 
     this->ui->mapList->setItemDelegateForColumn(0, new GroupNameDelegate(this->editor->project, this));
-
-    //
-    // connect(this->mapGroupModel, &QStandardItemModel::dataChanged, [=](const QModelIndex &, const QModelIndex &, const QList<int> &){
-    //     qDebug() << "mapGroupModel dataChanged";
-    // });
-
-    // connect(this->mapGroupModel, &MapGroupModel::edited, [=, this](){
-    //     qDebug() << "model edited with" << this->ui->mapList->selectionModel()->selection().size() << "items";
-    // }); removeSelected
     connect(this->mapGroupModel, &MapGroupModel::dragMoveCompleted, this->ui->mapList, &MapTree::removeSelected);
 
     this->mapAreaModel = new MapAreaModel(editor->project);
@@ -1497,12 +1468,6 @@ void MainWindow::on_layoutList_activated(const QModelIndex &index) {
     QVariant data = index.data(Qt::UserRole);
     if (index.data(MapListRoles::TypeRole) == "map_layout" && !data.isNull()) {
         QString layoutId = data.toString();
-        // 
-        logInfo("Switching to a layout-only editing mode");
-        setMap(QString());
-        //setLayout(layoutId);
-        // setLayout(layout)
-        qDebug() << "set layout" << layoutId;
 
         if (!setLayout(layoutId)) {
             QMessageBox msgBox(this);
@@ -1517,22 +1482,28 @@ void MainWindow::on_layoutList_activated(const QModelIndex &index) {
 
 void MainWindow::updateMapList() {
     if (this->editor->map) {
-        mapGroupModel->setMap(this->editor->map->name);
-        groupListProxyModel->layoutChanged();
-        mapAreaModel->setMap(this->editor->map->name);
-        areaListProxyModel->layoutChanged();
+        this->mapGroupModel->setMap(this->editor->map->name);
+        this->groupListProxyModel->layoutChanged();
+        this->mapAreaModel->setMap(this->editor->map->name);
+        this->areaListProxyModel->layoutChanged();
     }
     else {
-        // !TODO
-        qDebug() << "need to clear map list";
+        this->mapGroupModel->setMap(QString());
+        this->groupListProxyModel->layoutChanged();
+        this->ui->mapList->clearSelection();
+        this->mapAreaModel->setMap(QString());
+        this->areaListProxyModel->layoutChanged();
+        this->ui->areaList->clearSelection();
     }
 
     if (this->editor->layout) {
-        layoutTreeModel->setLayout(this->editor->layout->id);
-        layoutListProxyModel->layoutChanged();
+        this->layoutTreeModel->setLayout(this->editor->layout->id);
+        this->layoutListProxyModel->layoutChanged();
     }
     else {
-        qDebug() << "need to clear layout list";
+        this->layoutTreeModel->setLayout(QString());
+        this->layoutListProxyModel->layoutChanged();
+        this->ui->layoutList->clearSelection();
     }
 }
 

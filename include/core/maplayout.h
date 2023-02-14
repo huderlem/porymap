@@ -19,8 +19,6 @@ class Layout : public QObject {
 public:
     Layout() {}
 
-    void copyAttributesFrom(Layout *other);
-
     static QString layoutConstantFromName(QString mapName);
 
     bool loaded = false;
@@ -72,6 +70,9 @@ public:
     QUndoStack editHistory;
 
 public:
+    Layout *copy();
+    void copyFrom(Layout *other);
+
     int getWidth();
     int getHeight();
     int getBorderWidth();

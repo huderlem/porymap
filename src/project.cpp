@@ -563,13 +563,12 @@ bool Project::readMapLayouts() {
             return false;
         }
         mapLayouts.insert(layout->id, layout);
+        mapLayoutsMaster.insert(layout->id, layout->copy());
         mapLayoutsTable.append(layout->id);
+        mapLayoutsTableMaster.append(layout->id);
         layoutIdsToNames.insert(layout->id, layout->name);
     }
 
-    // Deep copy
-    mapLayoutsTableMaster = mapLayoutsTable;
-    mapLayoutsTableMaster.detach();
     return true;
 }
 
@@ -587,7 +586,7 @@ void Project::saveMapLayouts() {
     bool useCustomBorderSize = projectConfig.getUseCustomBorderSize();
     OrderedJson::array layoutsArr;
     for (QString layoutId : mapLayoutsTableMaster) {
-        Layout *layout = mapLayouts.value(layoutId);
+        Layout *layout = mapLayoutsMaster.value(layoutId);
         OrderedJson::object layoutObj;
         layoutObj["id"] = layout->id;
         layoutObj["name"] = layout->name;
@@ -1191,14 +1190,14 @@ void Project::setNewMapBorder(Map *map) {
     map->layout->lastCommitBlocks.borderDimensions = QSize(width, height);
 }
 
-void Project::saveLayoutBorder(Map *map) {
-    QString path = QString("%1/%2").arg(root).arg(map->layout->border_path);
-    writeBlockdata(path, map->layout->border);
+void Project::saveLayoutBorder(Layout *layout) {
+    QString path = QString("%1/%2").arg(root).arg(layout->border_path);
+    writeBlockdata(path, layout->border);
 }
 
-void Project::saveLayoutBlockdata(Map* map) {
-    QString path = QString("%1/%2").arg(root).arg(map->layout->blockdata_path);
-    writeBlockdata(path, map->layout->blockdata);
+void Project::saveLayoutBlockdata(Layout *layout) {
+    QString path = QString("%1/%2").arg(root).arg(layout->blockdata_path);
+    writeBlockdata(path, layout->blockdata);
 }
 
 void Project::writeBlockdata(QString path, const Blockdata &blockdata) {
@@ -1353,21 +1352,28 @@ void Project::saveMap(Map *map) {
     jsonDoc.dump(&mapFile);
     mapFile.close();
 
-    saveLayoutBorder(map);
-    saveLayoutBlockdata(map);
+    saveLayout(map->layout);
     saveHealLocations(map);
-
-    // Update global data structures with current map data.
-    updateMapLayout(map);
 
     map->isPersistedToFile = true;
     map->hasUnsavedDataChanges = false;
     map->editHistory.setClean();
 }
 
-void Project::updateMapLayout(Map* map) {
-    if (!mapLayoutsTableMaster.contains(map->layoutId)) {
-        mapLayoutsTableMaster.append(map->layoutId);
+void Project::saveLayout(Layout *layout) {
+    //
+    saveLayoutBorder(layout);
+    saveLayoutBlockdata(layout);
+
+    // Update global data structures with current map data.
+    updateLayout(layout);
+
+    layout->editHistory.setClean();
+}
+
+void Project::updateLayout(Layout *layout) {
+    if (!mapLayoutsTableMaster.contains(layout->id)) {
+        mapLayoutsTableMaster.append(layout->id);
     }
 
     // !TODO: why is[was] this a deep copy??
@@ -1376,6 +1382,12 @@ void Project::updateMapLayout(Map* map) {
     // Layout *newLayout = new Layout();
     // *newLayout = *layout;
     // mapLayoutsMaster.insert(map->layoutId, newLayout);
+    if (mapLayoutsMaster.contains(layout->id)) {
+        mapLayoutsMaster[layout->id]->copyFrom(layout);
+    }
+    else {
+        mapLayoutsMaster.insert(layout->id, layout->copy());
+    }
 }
 
 void Project::saveAllDataStructures() {

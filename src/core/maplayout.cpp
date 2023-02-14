@@ -50,8 +50,27 @@
     // BorderMetatilesPixmapItem *borderItem = nullptr;
 
     // QUndoStack editHistory;
-void Layout::copyAttributesFrom(Layout *other) {
-    //
+Layout *Layout::copy() {
+    Layout *layout = new Layout;
+    layout->copyFrom(this);
+    return layout;
+}
+
+void Layout::copyFrom(Layout *other) {
+    this->id = other->id;
+    this->name = other->name;
+    this->width = other->width;
+    this->height = other->height;
+    this->border_width = other->border_width;
+    this->border_height = other->border_height;
+    this->border_path = other->border_path;
+    this->blockdata_path = other->blockdata_path;
+    this->tileset_primary_label = other->tileset_primary_label;
+    this->tileset_secondary_label = other->tileset_secondary_label;
+    this->tileset_primary = other->tileset_primary;
+    this->tileset_secondary = other->tileset_secondary;
+    this->blockdata = other->blockdata;
+    this->border = other->border;
 }
 
 QString Layout::layoutConstantFromName(QString mapName) {
