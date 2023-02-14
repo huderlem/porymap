@@ -66,7 +66,6 @@ SOURCES += src/core/block.cpp \
     src/ui/prefabcreationdialog.cpp \
     src/ui/regionmappixmapitem.cpp \
     src/ui/citymappixmapitem.cpp \
-    src/ui/mapsceneeventfilter.cpp \
     src/ui/metatilelayersitem.cpp \
     src/ui/metatileselector.cpp \
     src/ui/movablerect.cpp \
@@ -158,7 +157,6 @@ HEADERS  += include/core/block.h \
     include/ui/prefabcreationdialog.h \
     include/ui/regionmappixmapitem.h \
     include/ui/citymappixmapitem.h \
-    include/ui/mapsceneeventfilter.h \
     include/ui/metatilelayersitem.h \
     include/ui/metatileselector.h \
     include/ui/movablerect.h \

@@ -4,7 +4,7 @@
 #include "log.h"
 #include "mapconnection.h"
 #include "currentselectedmetatilespixmapitem.h"
-#include "mapsceneeventfilter.h"
+#include "eventfilters.h"
 #include "metatile.h"
 #include "montabwidget.h"
 #include "encountertablemodel.h"

@@ -1376,12 +1376,6 @@ void Project::updateLayout(Layout *layout) {
         mapLayoutsTableMaster.append(layout->id);
     }
 
-    // !TODO: why is[was] this a deep copy??
-    // Deep copy
-    // Layout *layout = mapLayouts.value(map->layoutId);
-    // Layout *newLayout = new Layout();
-    // *newLayout = *layout;
-    // mapLayoutsMaster.insert(map->layoutId, newLayout);
     if (mapLayoutsMaster.contains(layout->id)) {
         mapLayoutsMaster[layout->id]->copyFrom(layout);
     }
