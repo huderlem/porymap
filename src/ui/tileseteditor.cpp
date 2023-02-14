@@ -380,10 +380,10 @@ void TilesetEditor::onSelectedMetatileChanged(uint16_t metatileId) {
     this->metatileLayersItem->draw();
     this->ui->graphicsView_metatileLayers->setFixedSize(this->metatileLayersItem->pixmap().width() + 2, this->metatileLayersItem->pixmap().height() + 2);
 
-    bool isAlternateLabel = false;
-    QString label = Tileset::getMetatileLabel(metatileId, this->primaryTileset, this->secondaryTileset, &isAlternateLabel);
+    bool isShared = false;
+    QString label = Tileset::getMetatileLabel(metatileId, this->primaryTileset, this->secondaryTileset, &isShared);
     this->ui->lineEdit_metatileLabel->setText(label);
-    this->ui->lineEdit_metatileLabel->setReadOnly(isAlternateLabel);
+    this->ui->lineEdit_metatileLabel->setReadOnly(isShared);
 
     setComboValue(this->ui->comboBox_metatileBehaviors, this->metatile->behavior);
     setComboValue(this->ui->comboBox_layerType, this->metatile->layerType);
@@ -918,9 +918,9 @@ void TilesetEditor::copyMetatile(bool cut) {
     // Don't try to copy the label unless it's a cut, these should be unique to each metatile
     this->copiedMetatileLabel = "";
     if (cut) {
-        bool isAlternateLabel = false;
-        QString label = Tileset::getMetatileLabel(metatileId, this->primaryTileset, this->secondaryTileset, &isAlternateLabel);
-        if (!isAlternateLabel)
+        bool isShared = false;
+        QString label = Tileset::getMetatileLabel(metatileId, this->primaryTileset, this->secondaryTileset, &isShared);
+        if (!isShared)
             this->copiedMetatileLabel = label;
     }
 }
@@ -1165,12 +1165,11 @@ void TilesetEditor::countTileUsage() {
 }
 
 void TilesetEditor::on_copyButton_metatileLabel_clicked() {
-    // TODO: Handle alternate labels
     QString label = this->ui->lineEdit_metatileLabel->text();
     if (label.isEmpty()) return;
-    Tileset * tileset = Tileset::getMetatileTileset(this->getSelectedMetatileId(), this->primaryTileset, this->secondaryTileset);
+    Tileset * tileset = Tileset::getMetatileLabelTileset(this->getSelectedMetatileId(), this->primaryTileset, this->secondaryTileset);
     if (tileset)
-        label.prepend("METATILE_" + QString(tileset->name).replace("gTileset_", "") + "_");
+        label.prepend(tileset->getMetatileLabelPrefix());
     QGuiApplication::clipboard()->setText(label);
     QToolTip::showText(this->ui->copyButton_metatileLabel->mapToGlobal(QPoint(0, 0)), "Copied!");
 }

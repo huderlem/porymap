@@ -93,26 +93,33 @@ Metatile* Tileset::getMetatile(int metatileId, Tileset *primaryTileset, Tileset 
 
 // Metatile labels are stored per-tileset. When looking for a metatile label, first search in the tileset
 // that the metatile belongs to. If one isn't found, search in the other tileset. Labels coming from the
-// tileset that the metatile does not belong to cannot be edited via Porymap.
-QString Tileset::getMetatileLabel(int metatileId, Tileset *primaryTileset, Tileset *secondaryTileset, bool * isAlternateLabel) {
+// tileset that the metatile does not belong to are shared and cannot be edited via Porymap.
+Tileset* Tileset::getMetatileLabelTileset(int metatileId, Tileset *primaryTileset, Tileset *secondaryTileset, bool * isShared) {
     Tileset *mainTileset = nullptr;
-    Tileset *backupTileset = nullptr;
-    if (isAlternateLabel) *isAlternateLabel = false;
+    Tileset *alternateTileset = nullptr;
+    if (isShared) *isShared = false;
     if (metatileId < Project::getNumMetatilesPrimary()) {
         mainTileset = primaryTileset;
-        backupTileset = secondaryTileset;
+        alternateTileset = secondaryTileset;
     } else if (metatileId < Project::getNumMetatilesTotal()) {
         mainTileset = secondaryTileset;
-        backupTileset = primaryTileset;
+        alternateTileset = primaryTileset;
     }
 
     if (mainTileset && mainTileset->metatileLabels.contains(metatileId)) {
-        return mainTileset->metatileLabels.value(metatileId);
-    } else if (backupTileset && backupTileset->metatileLabels.contains(metatileId)) {
-        if (isAlternateLabel) *isAlternateLabel = true;
-        return backupTileset->metatileLabels.value(metatileId);
+        return mainTileset;
+    } else if (alternateTileset && alternateTileset->metatileLabels.contains(metatileId)) {
+        if (isShared) *isShared = true;
+        return alternateTileset;
     }
-    return QString();
+    return nullptr;
+}
+
+QString Tileset::getMetatileLabel(int metatileId, Tileset *primaryTileset, Tileset *secondaryTileset, bool * isShared) {
+    Tileset * tileset = Tileset::getMetatileLabelTileset(metatileId, primaryTileset, secondaryTileset, isShared);
+    if (!tileset)
+        return QString();
+    return tileset->metatileLabels.value(metatileId);
 }
 
 bool Tileset::setMetatileLabel(int metatileId, QString label, Tileset *primaryTileset, Tileset *secondaryTileset) {
@@ -128,6 +135,16 @@ bool Tileset::setMetatileLabel(int metatileId, QString label, Tileset *primaryTi
 
     tileset->metatileLabels[metatileId] = label;
     return true;
+}
+
+QString Tileset::getMetatileLabelPrefix()
+{
+    return Tileset::getMetatileLabelPrefix(this->name);
+}
+
+QString Tileset::getMetatileLabelPrefix(const QString &name)
+{
+    return QString("METATILE_%1_").arg(QString(name).replace("gTileset_", ""));
 }
 
 bool Tileset::metatileIsValid(uint16_t metatileId, Tileset *primaryTileset, Tileset *secondaryTileset) {

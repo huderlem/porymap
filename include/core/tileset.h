@@ -36,8 +36,11 @@ public:
     static Tileset* getMetatileTileset(int, Tileset*, Tileset*);
     static Tileset* getTileTileset(int, Tileset*, Tileset*);
     static Metatile* getMetatile(int, Tileset*, Tileset*);
-    static QString getMetatileLabel(int, Tileset *, Tileset *, bool * isAlternateLabel = nullptr);
+    static Tileset* getMetatileLabelTileset(int, Tileset*, Tileset*, bool * isShared = nullptr);
+    static QString getMetatileLabel(int, Tileset *, Tileset *, bool * isShared = nullptr);
     static bool setMetatileLabel(int, QString, Tileset *, Tileset *);
+    QString getMetatileLabelPrefix();
+    static QString getMetatileLabelPrefix(const QString &name);
     static QList<QList<QRgb>> getBlockPalettes(Tileset*, Tileset*, bool useTruePalettes = false);
     static QList<QRgb> getPalette(int, Tileset*, Tileset*, bool useTruePalettes = false);
     static bool metatileIsValid(uint16_t metatileId, Tileset *, Tileset *);

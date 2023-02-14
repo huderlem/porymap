@@ -891,8 +891,8 @@ void Project::saveTilesets(Tileset *primaryTileset, Tileset *secondaryTileset) {
 }
 
 void Project::saveTilesetMetatileLabels(Tileset *primaryTileset, Tileset *secondaryTileset) {
-    QString primaryPrefix = QString("METATILE_%1_").arg(QString(primaryTileset->name).replace("gTileset_", ""));
-    QString secondaryPrefix = QString("METATILE_%1_").arg(QString(secondaryTileset->name).replace("gTileset_", ""));
+    QString primaryPrefix = primaryTileset->getMetatileLabelPrefix();
+    QString secondaryPrefix = secondaryTileset->getMetatileLabelPrefix();
 
     QMap<QString, int> defines;
     bool definesFileModified = false;
@@ -1500,11 +1500,11 @@ bool Project::readTilesetMetatileLabels() {
 
     QMap<QString, int> labels = parser.readCDefines(metatileLabelsFilename, QStringList() << "METATILE_");
 
-    for (QString label : this->tilesetLabelsOrdered) {
-        QString tilesetName = QString(label).replace("gTileset_", "");
+    for (QString tilesetLabel : this->tilesetLabelsOrdered) {
+        QString metatileLabelPrefix = Tileset::getMetatileLabelPrefix(tilesetLabel);
         for (QString key : labels.keys()) {
-            if (key.contains(QString("METATILE_") + tilesetName + "_")) {
-                metatileLabelsMap[label][key] = labels[key];
+            if (key.startsWith(metatileLabelPrefix)) {
+                metatileLabelsMap[tilesetLabel][key] = labels[key];
             }
         }
     }
@@ -1513,12 +1513,12 @@ bool Project::readTilesetMetatileLabels() {
 }
 
 void Project::loadTilesetMetatileLabels(Tileset* tileset) {
-    QString tilesetPrefix = QString("METATILE_%1_").arg(QString(tileset->name).replace("gTileset_", ""));
+    QString metatileLabelPrefix = tileset->getMetatileLabelPrefix();
 
     // Reverse map for faster lookup by metatile id
     for (QString labelName : metatileLabelsMap[tileset->name].keys()) {
         int metatileId = metatileLabelsMap[tileset->name][labelName];
-        tileset->metatileLabels[metatileId] = labelName.replace(tilesetPrefix, "");
+        tileset->metatileLabels[metatileId] = labelName.replace(metatileLabelPrefix, "");
     }
 }
 
