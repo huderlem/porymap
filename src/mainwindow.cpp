@@ -1115,6 +1115,8 @@ bool MainWindow::populateMapList() {
     groupListProxyModel->setSourceModel(this->mapGroupModel);
     ui->mapList->setModel(groupListProxyModel);
 
+    this->ui->mapList->setItemDelegateForColumn(0, new GroupNameDelegate(this->editor->project, this));
+
     //
     // connect(this->mapGroupModel, &QStandardItemModel::dataChanged, [=](const QModelIndex &, const QModelIndex &, const QList<int> &){
     //     qDebug() << "mapGroupModel dataChanged";

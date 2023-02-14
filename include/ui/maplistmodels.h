@@ -4,6 +4,7 @@
 
 #include <QTreeView>
 #include <QFontDatabase>
+#include <QStyledItemDelegate>
 #include <QStandardItemModel>
 #include <QMap>
 
@@ -33,12 +34,31 @@ public slots:
 
 
 
+class GroupNameDelegate : public QStyledItemDelegate {
+    Q_OBJECT
+
+public:
+    GroupNameDelegate(Project *project, QObject *parent = nullptr) : QStyledItemDelegate(parent), project(project) {}
+
+    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
+    void setEditorData(QWidget *editor, const QModelIndex &index) const override;
+    void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const override;
+    void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
+
+private:
+    Project *project = nullptr;
+};
+
+
+
+class QRegularExpressionValidator;
+
 class MapGroupModel : public QStandardItemModel {
     Q_OBJECT
 
 public:
     MapGroupModel(Project *project, QObject *parent = nullptr);
-    ~MapGroupModel() {}
+    ~MapGroupModel() { }
 
     QVariant data(const QModelIndex &index, int role) const override;
 
@@ -46,6 +66,8 @@ public:
     QStringList mimeTypes() const override;
     virtual QMimeData *mimeData(const QModelIndexList &indexes) const override;
     virtual bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) override;
+
+    virtual bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
 
 public:
     void setMap(QString mapName) { this->openMap = mapName; }
@@ -69,7 +91,6 @@ private:
 
     QMap<QString, QStandardItem *> groupItems;
     QMap<QString, QStandardItem *> mapItems;
-    // TODO: if reordering, will the item be the same?
 
     QString openMap;
 
