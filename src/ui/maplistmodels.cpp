@@ -220,6 +220,8 @@ QModelIndex MapGroupModel::indexOfMap(QString mapName) {
 }
 
 QVariant MapGroupModel::data(const QModelIndex &index, int role) const {
+    if (!index.isValid()) return QVariant();
+
     int row = index.row();
     int col = index.column();
 
