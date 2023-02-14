@@ -932,14 +932,13 @@ void Editor::onHoveredMovementPermissionCleared() {
 
 QString Editor::getMetatileDisplayMessage(uint16_t metatileId) {
     Metatile *metatile = Tileset::getMetatile(metatileId, map->layout->tileset_primary, map->layout->tileset_secondary);
+    QString label = Tileset::getMetatileLabel(metatileId, map->layout->tileset_primary, map->layout->tileset_secondary);
     QString hexString = QString("%1").arg(metatileId, 3, 16, QChar('0')).toUpper();
     QString message = QString("Metatile: 0x%1").arg(hexString);
-    if (metatile) {
-        if (metatile->label.size())
-            message += QString(" \"%1\"").arg(metatile->label);
-        if (metatile->behavior) // Skip MB_NORMAL
-            message += QString(", Behavior: %1").arg(this->project->metatileBehaviorMapInverse.value(metatile->behavior, QString::number(metatile->behavior)));
-    }
+    if (label.size())
+        message += QString(" \"%1\"").arg(label);
+    if (metatile && metatile->behavior) // Skip MB_NORMAL
+        message += QString(", Behavior: %1").arg(this->project->metatileBehaviorMapInverse.value(metatile->behavior, QString::number(metatile->behavior)));
     return message;
 }
 

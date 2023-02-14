@@ -913,21 +913,15 @@ void Project::saveTilesetMetatileLabels(Tileset *primaryTileset, Tileset *second
     }
 
     // Add the new labels.
-    for (int i = 0; i < primaryTileset->metatiles.size(); i++) {
-        Metatile *metatile = primaryTileset->metatiles.at(i);
-        if (metatile->label.size() != 0) {
-            QString defineName = QString("%1%2").arg(primaryPrefix, metatile->label);
-            defines.insert(defineName, i);
-            definesFileModified = true;
-        }
+    for (int metatileId : primaryTileset->metatileLabels.keys()) {
+        QString defineName = QString("%1%2").arg(primaryPrefix, primaryTileset->metatileLabels.value(metatileId));
+        defines.insert(defineName, metatileId);
+        definesFileModified = true;
     }
-    for (int i = 0; i < secondaryTileset->metatiles.size(); i++) {
-        Metatile *metatile = secondaryTileset->metatiles.at(i);
-        if (metatile->label.size() != 0) {
-            QString defineName = QString("%1%2").arg(secondaryPrefix, metatile->label);
-            defines.insert(defineName, i + Project::num_tiles_primary);
-            definesFileModified = true;
-        }
+    for (int metatileId : secondaryTileset->metatileLabels.keys()) {
+        QString defineName = QString("%1%2").arg(secondaryPrefix, secondaryTileset->metatileLabels.value(metatileId));
+        defines.insert(defineName, metatileId);
+        definesFileModified = true;
     }
 
     if (!definesFileModified) {
@@ -1521,17 +1515,10 @@ bool Project::readTilesetMetatileLabels() {
 void Project::loadTilesetMetatileLabels(Tileset* tileset) {
     QString tilesetPrefix = QString("METATILE_%1_").arg(QString(tileset->name).replace("gTileset_", ""));
 
+    // Reverse map for faster lookup by metatile id
     for (QString labelName : metatileLabelsMap[tileset->name].keys()) {
         int metatileId = metatileLabelsMap[tileset->name][labelName];
-        // subtract Project::num_tiles_primary from secondary metatiles
-        int offset = tileset->is_secondary ? Project::num_tiles_primary : 0;
-        Metatile *metatile = Tileset::getMetatile(metatileId - offset, tileset, nullptr);
-        if (metatile) {
-            metatile->label = labelName.replace(tilesetPrefix, "");
-        } else {
-            QString hexString = QString("%1").arg(metatileId, 3, 16, QChar('0')).toUpper();
-            logError(QString("Metatile 0x%1 (%2) cannot be found in tileset '%3'").arg(hexString, labelName, tileset->name));
-        }
+        tileset->metatileLabels[metatileId] = labelName.replace(tilesetPrefix, "");
     }
 }
 

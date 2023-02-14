@@ -5,6 +5,7 @@
 #include "metatile.h"
 #include "tile.h"
 #include <QImage>
+#include <QHash>
 
 class Tileset
 {
@@ -28,12 +29,15 @@ public:
 
     QList<QImage> tiles;
     QList<Metatile*> metatiles;
+    QHash<int, QString> metatileLabels;
     QList<QList<QRgb>> palettes;
     QList<QList<QRgb>> palettePreviews;
 
     static Tileset* getMetatileTileset(int, Tileset*, Tileset*);
     static Tileset* getTileTileset(int, Tileset*, Tileset*);
     static Metatile* getMetatile(int, Tileset*, Tileset*);
+    static QString getMetatileLabel(int, Tileset *, Tileset *, bool * isAlternateLabel = nullptr);
+    static bool setMetatileLabel(int, QString, Tileset *, Tileset *);
     static QList<QList<QRgb>> getBlockPalettes(Tileset*, Tileset*, bool useTruePalettes = false);
     static QList<QRgb> getPalette(int, Tileset*, Tileset*, bool useTruePalettes = false);
     static bool metatileIsValid(uint16_t metatileId, Tileset *, Tileset *);

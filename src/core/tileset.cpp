@@ -20,6 +20,7 @@ Tileset::Tileset(const Tileset &other)
       tilesImagePath(other.tilesImagePath),
       tilesImage(other.tilesImage.copy()),
       palettePaths(other.palettePaths),
+      metatileLabels(other.metatileLabels),
       palettes(other.palettes),
       palettePreviews(other.palettePreviews)
 {
@@ -44,6 +45,7 @@ Tileset &Tileset::operator=(const Tileset &other) {
     tilesImagePath = other.tilesImagePath;
     tilesImage = other.tilesImage.copy();
     palettePaths = other.palettePaths;
+    metatileLabels = other.metatileLabels;
     palettes = other.palettes;
     palettePreviews = other.palettePreviews;
 
@@ -82,11 +84,50 @@ Tileset* Tileset::getMetatileTileset(int metatileId, Tileset *primaryTileset, Ti
 
 Metatile* Tileset::getMetatile(int metatileId, Tileset *primaryTileset, Tileset *secondaryTileset) {
     Tileset *tileset = Tileset::getMetatileTileset(metatileId, primaryTileset, secondaryTileset);
-    int index = Metatile::getIndexInTileset(metatileId);
     if (!tileset) {
         return nullptr;
     }
+    int index = Metatile::getIndexInTileset(metatileId);
     return tileset->metatiles.value(index, nullptr);
+}
+
+// Metatile labels are stored per-tileset. When looking for a metatile label, first search in the tileset
+// that the metatile belongs to. If one isn't found, search in the other tileset. Labels coming from the
+// tileset that the metatile does not belong to cannot be edited via Porymap.
+QString Tileset::getMetatileLabel(int metatileId, Tileset *primaryTileset, Tileset *secondaryTileset, bool * isAlternateLabel) {
+    Tileset *mainTileset = nullptr;
+    Tileset *backupTileset = nullptr;
+    if (isAlternateLabel) *isAlternateLabel = false;
+    if (metatileId < Project::getNumMetatilesPrimary()) {
+        mainTileset = primaryTileset;
+        backupTileset = secondaryTileset;
+    } else if (metatileId < Project::getNumMetatilesTotal()) {
+        mainTileset = secondaryTileset;
+        backupTileset = primaryTileset;
+    }
+
+    if (mainTileset && mainTileset->metatileLabels.contains(metatileId)) {
+        return mainTileset->metatileLabels.value(metatileId);
+    } else if (backupTileset && backupTileset->metatileLabels.contains(metatileId)) {
+        if (isAlternateLabel) *isAlternateLabel = true;
+        return backupTileset->metatileLabels.value(metatileId);
+    }
+    return QString();
+}
+
+bool Tileset::setMetatileLabel(int metatileId, QString label, Tileset *primaryTileset, Tileset *secondaryTileset) {
+    Tileset *tileset = Tileset::getMetatileTileset(metatileId, primaryTileset, secondaryTileset);
+    if (!tileset)
+        return false;
+
+    static const QRegularExpression expression("[_A-Za-z0-9]*$");
+    QRegularExpressionValidator validator(expression);
+    int pos = 0;
+    if (validator.validate(label, pos) != QValidator::Acceptable)
+        return false;
+
+    tileset->metatileLabels[metatileId] = label;
+    return true;
 }
 
 bool Tileset::metatileIsValid(uint16_t metatileId, Tileset *primaryTileset, Tileset *secondaryTileset) {

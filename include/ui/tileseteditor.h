@@ -127,7 +127,7 @@ private:
     void importTilesetTiles(Tileset*, bool);
     void importTilesetMetatiles(Tileset*, bool);
     void refresh();
-    void saveMetatileLabel();
+    void commitMetatileLabel();
     void closeEvent(QCloseEvent*);
     void countMetatileUsage();
     void countTileUsage();
@@ -146,6 +146,7 @@ private:
     Map *map = nullptr;
     Metatile *metatile = nullptr;
     Metatile *copiedMetatile = nullptr;
+    QString copiedMetatileLabel;
     int paletteId;
     bool tileXFlip;
     bool tileYFlip;
