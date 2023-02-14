@@ -598,7 +598,6 @@ void Project::saveMapGroups() {
     }
 
     OrderedJson::object mapGroupsObj;
-    mapGroupsObj["layouts_table_label"] = layoutsLabel;
 
     OrderedJson::array groupNamesArr;
     for (QString groupName : this->groupNames) {
