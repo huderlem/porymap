@@ -1509,7 +1509,7 @@ bool Project::readTilesetMetatileLabels() {
     for (QString label : this->tilesetLabelsOrdered) {
         QString tilesetName = QString(label).replace("gTileset_", "");
         for (QString key : labels.keys()) {
-            if (key.contains(QString("METATILE_") + tilesetName)) {
+            if (key.contains(QString("METATILE_") + tilesetName + "_")) {
                 metatileLabelsMap[label][key] = labels[key];
             }
         }
