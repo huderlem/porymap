@@ -330,18 +330,6 @@ void MainWindow::initEditor() {
 }
 
 void MainWindow::initMiscHeapObjects() {
-    // mapIcon = new QIcon(QStringLiteral(":/icons/map.ico"));
-    // mapEditedIcon = new QIcon(QStringLiteral(":/icons/map_edited.ico"));
-    // mapOpenedIcon = new QIcon(QStringLiteral(":/icons/map_opened.ico"));
-
-    /// !TODO
-    // mapListModel = new QStandardItemModel;
-    // mapGroupItemsList = new QList<QStandardItem*>;
-    // mapListProxyModel = new FilterChildrenProxyModel;
-
-    // mapListProxyModel->setSourceModel(mapListModel);
-    // ui->mapList->setModel(mapListProxyModel);
-
     eventTabObjectWidget = ui->tab_Objects;
     eventTabWarpWidget = ui->tab_Warps;
     eventTabTriggerWidget = ui->tab_Triggers;
@@ -351,27 +339,13 @@ void MainWindow::initMiscHeapObjects() {
     ui->tabWidget_EventType->clear();
 }
 
-// TODO
+// !TODO: scroll view on first showing
 void MainWindow::initMapSortOrder() {
-    // QMenu *mapSortOrderMenu = new QMenu(this);
-    // QActionGroup *mapSortOrderActionGroup = new QActionGroup(ui->toolButton_MapSortOrder);
+    mapSortOrder = porymapConfig.getMapSortOrder();
+    if (mapSortOrder == MapSortOrder::SortByLayout)
+        mapSortOrder = MapSortOrder::SortByGroup;
 
-    // porymapConfig.setMapSortOrder(mapSortOrder);
-
-    // mapSortOrderMenu->addAction(ui->actionSort_by_Group);
-    // mapSortOrderMenu->addAction(ui->actionSort_by_Area);
-    // mapSortOrderMenu->addAction(ui->actionSort_by_Layout);
-    // ui->toolButton_MapSortOrder->setMenu(mapSortOrderMenu);
-
-    // mapSortOrderActionGroup->addAction(ui->actionSort_by_Group);
-    // mapSortOrderActionGroup->addAction(ui->actionSort_by_Area);
-    // mapSortOrderActionGroup->addAction(ui->actionSort_by_Layout);
-
-    // connect(mapSortOrderActionGroup, &QActionGroup::triggered, this, &MainWindow::mapSortOrder_changed);
-
-    // QAction* sortOrder = ui->toolButton_MapSortOrder->menu()->actions()[mapSortOrder];
-    // ui->toolButton_MapSortOrder->setIcon(sortOrder->icon());
-    // sortOrder->setChecked(true);
+    this->ui->mapListContainer->setCurrentIndex(static_cast<int>(this->mapSortOrder));
 }
 
 void MainWindow::showWindowTitle() {
@@ -391,14 +365,14 @@ void MainWindow::showWindowTitle() {
         );
     }
     if (editor && editor->layout) {
-        //QPixmap pixmap = editor->layout ? editor->layout->render(false) : QPixmap();
-        QPixmap pixmap = editor->layout->pixmap;//getLayoutItemPixmap();
+        QPixmap pixmap = editor->layout->pixmap;
         if (!pixmap.isNull()) {
-            ui->mainTabBar->setTabIcon(0, QIcon(pixmap.scaled(16, 16)));
+            ui->mainTabBar->setTabIcon(0, QIcon(pixmap));
         } else {
             ui->mainTabBar->setTabIcon(0, QIcon(QStringLiteral(":/icons/map.ico")));
         }
     }
+    updateMapList();
 }
 
 void MainWindow::markMapEdited() {
@@ -485,10 +459,6 @@ void MainWindow::loadUserSettings() {
     this->editor->settings->cursorTileRectEnabled = porymapConfig.getShowCursorTile();
     ui->checkBox_ToggleBorder->setChecked(porymapConfig.getShowBorder());
     ui->checkBox_ToggleGrid->setChecked(porymapConfig.getShowGrid());
-    mapSortOrder = porymapConfig.getMapSortOrder();
-    this->ui->mapListContainer->blockSignals(true);
-    this->ui->mapListContainer->setCurrentIndex(static_cast<int>(this->mapSortOrder));
-    this->ui->mapListContainer->blockSignals(false);
     ui->horizontalSlider_CollisionTransparency->blockSignals(true);
     this->editor->collisionOpacity = static_cast<qreal>(porymapConfig.getCollisionOpacity()) / 100;
     ui->horizontalSlider_CollisionTransparency->setValue(porymapConfig.getCollisionOpacity());

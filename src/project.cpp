@@ -432,7 +432,7 @@ bool Project::loadMapLayout(Map* map) {
         return false;
     }
 
-    if (map->hasUnsavedChanges() /* || map->layout->hasUnsavedChanges() */) {
+    if (map->hasUnsavedChanges() || map->layout->hasUnsavedChanges()) {
         return true;
     } else {
         return loadLayout(map->layout);
