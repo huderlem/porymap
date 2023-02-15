@@ -7,6 +7,11 @@
 #include <QImage>
 #include <QHash>
 
+struct MetatileLabelPair {
+    QString normal;
+    QString shared;
+};
+
 class Tileset
 {
 public:
@@ -36,8 +41,9 @@ public:
     static Tileset* getMetatileTileset(int, Tileset*, Tileset*);
     static Tileset* getTileTileset(int, Tileset*, Tileset*);
     static Metatile* getMetatile(int, Tileset*, Tileset*);
-    static Tileset* getMetatileLabelTileset(int, Tileset*, Tileset*, bool * isShared = nullptr);
-    static QString getMetatileLabel(int, Tileset *, Tileset *, bool * isShared = nullptr);
+    static Tileset* getMetatileLabelTileset(int, Tileset*, Tileset*);
+    static QString getMetatileLabel(int, Tileset *, Tileset *);
+    static MetatileLabelPair getMetatileLabelPair(int metatileId, Tileset *primaryTileset, Tileset *secondaryTileset);
     static bool setMetatileLabel(int, QString, Tileset *, Tileset *);
     QString getMetatileLabelPrefix();
     static QString getMetatileLabelPrefix(const QString &name);

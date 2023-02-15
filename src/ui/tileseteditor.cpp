@@ -380,10 +380,9 @@ void TilesetEditor::onSelectedMetatileChanged(uint16_t metatileId) {
     this->metatileLayersItem->draw();
     this->ui->graphicsView_metatileLayers->setFixedSize(this->metatileLayersItem->pixmap().width() + 2, this->metatileLayersItem->pixmap().height() + 2);
 
-    bool isShared = false;
-    QString label = Tileset::getMetatileLabel(metatileId, this->primaryTileset, this->secondaryTileset, &isShared);
-    this->ui->lineEdit_metatileLabel->setText(label);
-    this->ui->lineEdit_metatileLabel->setReadOnly(isShared);
+    MetatileLabelPair labels = Tileset::getMetatileLabelPair(metatileId, this->primaryTileset, this->secondaryTileset);
+    this->ui->lineEdit_metatileLabel->setText(labels.normal);
+    this->ui->lineEdit_metatileLabel->setPlaceholderText(labels.shared);
 
     setComboValue(this->ui->comboBox_metatileBehaviors, this->metatile->behavior);
     setComboValue(this->ui->comboBox_layerType, this->metatile->layerType);
@@ -535,8 +534,6 @@ void TilesetEditor::on_comboBox_metatileBehaviors_currentTextChanged(const QStri
 
 void TilesetEditor::setMetatileLabel(QString label)
 {
-    if (this->ui->lineEdit_metatileLabel->isReadOnly())
-        return;
     this->ui->lineEdit_metatileLabel->setText(label);
     commitMetatileLabel();
 }
@@ -552,7 +549,7 @@ void TilesetEditor::commitMetatileLabel()
 
     // Only commit if the field has changed.
     uint16_t metatileId = this->getSelectedMetatileId();
-    QString currentLabel = Tileset::getMetatileLabel(metatileId, this->primaryTileset, this->secondaryTileset);
+    QString currentLabel = Tileset::getMetatileLabelPair(metatileId, this->primaryTileset, this->secondaryTileset).normal;
     QString newLabel = this->ui->lineEdit_metatileLabel->text();
     if (currentLabel != newLabel) {
         //Metatile *prevMetatile = new Metatile(*this->metatile);
@@ -915,14 +912,9 @@ void TilesetEditor::copyMetatile(bool cut) {
     else
         *this->copiedMetatile = *toCopy;
 
-    // Don't try to copy the label unless it's a cut, these should be unique to each metatile
-    this->copiedMetatileLabel = "";
-    if (cut) {
-        bool isShared = false;
-        QString label = Tileset::getMetatileLabel(metatileId, this->primaryTileset, this->secondaryTileset, &isShared);
-        if (!isShared)
-            this->copiedMetatileLabel = label;
-    }
+    // Don't try to copy the label unless it's a cut, these should be unique to each metatile.
+    // Never copy the "shared" metatile label.
+    this->copiedMetatileLabel = cut ? Tileset::getMetatileLabelPair(metatileId, this->primaryTileset, this->secondaryTileset).normal : "";
 }
 
 void TilesetEditor::pasteMetatile(const Metatile * toPaste)
@@ -1165,9 +1157,10 @@ void TilesetEditor::countTileUsage() {
 }
 
 void TilesetEditor::on_copyButton_metatileLabel_clicked() {
-    QString label = this->ui->lineEdit_metatileLabel->text();
+    uint16_t metatileId = this->getSelectedMetatileId();
+    QString label = Tileset::getMetatileLabel(metatileId, this->primaryTileset, this->secondaryTileset);
     if (label.isEmpty()) return;
-    Tileset * tileset = Tileset::getMetatileLabelTileset(this->getSelectedMetatileId(), this->primaryTileset, this->secondaryTileset);
+    Tileset * tileset = Tileset::getMetatileLabelTileset(metatileId, this->primaryTileset, this->secondaryTileset);
     if (tileset)
         label.prepend(tileset->getMetatileLabelPrefix());
     QGuiApplication::clipboard()->setText(label);

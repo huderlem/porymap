@@ -914,12 +914,16 @@ void Project::saveTilesetMetatileLabels(Tileset *primaryTileset, Tileset *second
 
     // Add the new labels.
     for (int metatileId : primaryTileset->metatileLabels.keys()) {
-        QString defineName = QString("%1%2").arg(primaryPrefix, primaryTileset->metatileLabels.value(metatileId));
+        QString label = primaryTileset->metatileLabels.value(metatileId);
+        if (label.isEmpty()) continue;
+        QString defineName = QString("%1%2").arg(primaryPrefix, label);
         defines.insert(defineName, metatileId);
         definesFileModified = true;
     }
     for (int metatileId : secondaryTileset->metatileLabels.keys()) {
-        QString defineName = QString("%1%2").arg(secondaryPrefix, secondaryTileset->metatileLabels.value(metatileId));
+        QString label = secondaryTileset->metatileLabels.value(metatileId);
+        if (label.isEmpty()) continue;
+        QString defineName = QString("%1%2").arg(secondaryPrefix, label);
         defines.insert(defineName, metatileId);
         definesFileModified = true;
     }
