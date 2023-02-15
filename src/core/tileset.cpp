@@ -145,6 +145,24 @@ QString Tileset::getOwnedMetatileLabel(int metatileId, Tileset *primaryTileset, 
     return labels.owned;
 }
 
+// Return the pair of possible metatile labels for the specified metatile.
+// "normal" is the label for the tileset to which the metatile belongs.
+// "shared" is the label for the tileset to which the metatile does not belong.
+MetatileLabelPair Tileset::getMetatileLabelPair(int metatileId, Tileset *primaryTileset, Tileset *secondaryTileset) {
+    MetatileLabelPair labels;
+    QString primaryMetatileLabel = primaryTileset ? primaryTileset->metatileLabels.value(metatileId) : "";
+    QString secondaryMetatileLabel = secondaryTileset ? secondaryTileset->metatileLabels.value(metatileId) : "";
+
+    if (metatileId < Project::getNumMetatilesPrimary()) {
+        labels.normal = primaryMetatileLabel;
+        labels.shared = secondaryMetatileLabel;
+    } else if (metatileId < Project::getNumMetatilesTotal()) {
+        labels.normal = secondaryMetatileLabel;
+        labels.shared = primaryMetatileLabel;
+    }
+    return labels;
+}
+
 bool Tileset::setMetatileLabel(int metatileId, QString label, Tileset *primaryTileset, Tileset *secondaryTileset) {
     Tileset *tileset = Tileset::getMetatileTileset(metatileId, primaryTileset, secondaryTileset);
     if (!tileset)
