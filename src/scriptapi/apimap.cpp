@@ -618,8 +618,6 @@ void MainWindow::setMetatileLabel(int metatileId, QString label) {
         return;
     }
 
-    // The user may not have the Tileset Editor open. This forcefully saves the change for them.
-    // If they do have the Tileset Editor open, this has the unintended side effect of saving other unsaved label changes.
     if (this->editor->project)
         this->editor->project->saveTilesetMetatileLabels(this->editor->map->layout->tileset_primary, this->editor->map->layout->tileset_secondary);
 }

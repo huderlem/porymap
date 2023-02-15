@@ -8,7 +8,7 @@
 #include <QHash>
 
 struct MetatileLabelPair {
-    QString normal;
+    QString owned;
     QString shared;
 };
 
@@ -43,6 +43,7 @@ public:
     static Metatile* getMetatile(int, Tileset*, Tileset*);
     static Tileset* getMetatileLabelTileset(int, Tileset*, Tileset*);
     static QString getMetatileLabel(int, Tileset *, Tileset *);
+    static QString getOwnedMetatileLabel(int, Tileset *, Tileset *);
     static MetatileLabelPair getMetatileLabelPair(int metatileId, Tileset *primaryTileset, Tileset *secondaryTileset);
     static bool setMetatileLabel(int, QString, Tileset *, Tileset *);
     QString getMetatileLabelPrefix();

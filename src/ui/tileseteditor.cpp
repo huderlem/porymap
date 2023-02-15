@@ -276,7 +276,7 @@ void TilesetEditor::restoreWindowState() {
 }
 
 void TilesetEditor::initMetatileHistory() {
-    MetatileHistoryItem *commit = new MetatileHistoryItem(0, nullptr, new Metatile(*metatile));
+    MetatileHistoryItem *commit = new MetatileHistoryItem(0, nullptr, new Metatile(*metatile), QString(), QString());
     metatileHistory.push(commit);
 }
 
@@ -381,7 +381,7 @@ void TilesetEditor::onSelectedMetatileChanged(uint16_t metatileId) {
     this->ui->graphicsView_metatileLayers->setFixedSize(this->metatileLayersItem->pixmap().width() + 2, this->metatileLayersItem->pixmap().height() + 2);
 
     MetatileLabelPair labels = Tileset::getMetatileLabelPair(metatileId, this->primaryTileset, this->secondaryTileset);
-    this->ui->lineEdit_metatileLabel->setText(labels.normal);
+    this->ui->lineEdit_metatileLabel->setText(labels.owned);
     this->ui->lineEdit_metatileLabel->setPlaceholderText(labels.shared);
 
     setComboValue(this->ui->comboBox_metatileBehaviors, this->metatile->behavior);
@@ -442,11 +442,7 @@ void TilesetEditor::onMetatileLayerTileChanged(int x, int y) {
 
     this->metatileSelector->draw();
     this->metatileLayersItem->draw();
-    this->hasUnsavedChanges = true;
-
-    MetatileHistoryItem *commit = new MetatileHistoryItem(this->getSelectedMetatileId(),
-                                                          prevMetatile, new Metatile(*this->metatile));
-    metatileHistory.push(commit);
+    this->commitMetatileChange(prevMetatile);
 }
 
 void TilesetEditor::onMetatileLayerSelectionChanged(QPoint selectionOrigin, int width, int height) {
@@ -525,10 +521,7 @@ void TilesetEditor::on_comboBox_metatileBehaviors_currentTextChanged(const QStri
 
         Metatile *prevMetatile = new Metatile(*this->metatile);
         this->metatile->setBehavior(behavior);
-        MetatileHistoryItem *commit = new MetatileHistoryItem(this->getSelectedMetatileId(),
-                                                              prevMetatile, new Metatile(*this->metatile));
-        metatileHistory.push(commit);
-        this->hasUnsavedChanges = true;
+        this->commitMetatileChange(prevMetatile);
     }
 }
 
@@ -545,20 +538,28 @@ void TilesetEditor::on_lineEdit_metatileLabel_editingFinished()
 
 void TilesetEditor::commitMetatileLabel()
 {
-    // TODO: Reimplement edit history for labels
-
     // Only commit if the field has changed.
     uint16_t metatileId = this->getSelectedMetatileId();
-    QString currentLabel = Tileset::getMetatileLabelPair(metatileId, this->primaryTileset, this->secondaryTileset).normal;
+    QString oldLabel = Tileset::getOwnedMetatileLabel(metatileId, this->primaryTileset, this->secondaryTileset);
     QString newLabel = this->ui->lineEdit_metatileLabel->text();
-    if (currentLabel != newLabel) {
-        //Metatile *prevMetatile = new Metatile(*this->metatile);
+    if (oldLabel != newLabel) {
+        Metatile *prevMetatile = new Metatile(*this->metatile);
         Tileset::setMetatileLabel(metatileId, newLabel, this->primaryTileset, this->secondaryTileset);
-        /*MetatileHistoryItem *commit = new MetatileHistoryItem(this->getSelectedMetatileId(),
-                                                              prevMetatile, new Metatile(*this->metatile));
-        metatileHistory.push(commit);*/
-        this->hasUnsavedChanges = true;
+        this->commitMetatileAndLabelChange(prevMetatile, oldLabel);
     }
+}
+
+void TilesetEditor::commitMetatileAndLabelChange(Metatile * prevMetatile, QString prevLabel)
+{
+    metatileHistory.push(new MetatileHistoryItem(this->getSelectedMetatileId(),
+                                                 prevMetatile, new Metatile(*this->metatile),
+                                                 prevLabel, this->ui->lineEdit_metatileLabel->text()));
+    this->hasUnsavedChanges = true;
+}
+
+void TilesetEditor::commitMetatileChange(Metatile * prevMetatile)
+{
+    this->commitMetatileAndLabelChange(prevMetatile, this->ui->lineEdit_metatileLabel->text());
 }
 
 void TilesetEditor::on_comboBox_layerType_activated(int layerType)
@@ -566,10 +567,7 @@ void TilesetEditor::on_comboBox_layerType_activated(int layerType)
     if (this->metatile) {
         Metatile *prevMetatile = new Metatile(*this->metatile);
         this->metatile->setLayerType(layerType);
-        MetatileHistoryItem *commit = new MetatileHistoryItem(this->getSelectedMetatileId(),
-                                                              prevMetatile, new Metatile(*this->metatile));
-        metatileHistory.push(commit);
-        this->hasUnsavedChanges = true;
+        this->commitMetatileChange(prevMetatile);
         this->metatileSelector->draw(); // Changing the layer type can affect how fully transparent metatiles appear
     }
 }
@@ -579,10 +577,7 @@ void TilesetEditor::on_comboBox_encounterType_activated(int encounterType)
     if (this->metatile) {
         Metatile *prevMetatile = new Metatile(*this->metatile);
         this->metatile->setEncounterType(encounterType);
-        MetatileHistoryItem *commit = new MetatileHistoryItem(this->getSelectedMetatileId(),
-                                                              prevMetatile, new Metatile(*this->metatile));
-        metatileHistory.push(commit);
-        this->hasUnsavedChanges = true;
+        this->commitMetatileChange(prevMetatile);
     }
 }
 
@@ -591,10 +586,7 @@ void TilesetEditor::on_comboBox_terrainType_activated(int terrainType)
     if (this->metatile) {
         Metatile *prevMetatile = new Metatile(*this->metatile);
         this->metatile->setTerrainType(terrainType);
-        MetatileHistoryItem *commit = new MetatileHistoryItem(this->getSelectedMetatileId(),
-                                                              prevMetatile, new Metatile(*this->metatile));
-        metatileHistory.push(commit);
-        this->hasUnsavedChanges = true;
+        this->commitMetatileChange(prevMetatile);
     }
 }
 
@@ -850,11 +842,15 @@ void TilesetEditor::onPaletteEditorChangedPalette(int paletteId) {
     this->on_spinBox_paletteSelector_valueChanged(paletteId);
 }
 
-bool TilesetEditor::replaceMetatile(uint16_t metatileId, const Metatile * src)
+bool TilesetEditor::replaceMetatile(uint16_t metatileId, const Metatile * src, QString label)
 {
     Metatile * dest = Tileset::getMetatile(metatileId, this->primaryTileset, this->secondaryTileset);
     if (!dest || !src || *dest == *src)
         return false;
+
+    Tileset::setMetatileLabel(metatileId, label, this->primaryTileset, this->secondaryTileset);
+    if (metatileId == this->getSelectedMetatileId())
+        this->ui->lineEdit_metatileLabel->setText(label);
 
     this->metatile = dest;
     *this->metatile = *src;
@@ -872,22 +868,21 @@ void TilesetEditor::on_actionUndo_triggered()
     Metatile *prev = commit->prevMetatile;
     if (!prev) return;
     this->metatileHistory.back();
-    this->replaceMetatile(commit->metatileId, prev);
+    this->replaceMetatile(commit->metatileId, prev, commit->prevLabel);
 }
 
 void TilesetEditor::on_actionRedo_triggered()
 {
     MetatileHistoryItem *commit = this->metatileHistory.next();
     if (!commit) return;
-    this->replaceMetatile(commit->metatileId, commit->newMetatile);
+    this->replaceMetatile(commit->metatileId, commit->newMetatile, commit->newLabel);
 }
 
 void TilesetEditor::on_actionCut_triggered()
 {
     Metatile * empty = new Metatile(projectConfig.getNumTilesInMetatile());
     this->copyMetatile(true);
-    this->pasteMetatile(empty);
-    this->setMetatileLabel("");
+    this->pasteMetatile(empty, "");
     delete empty;
 }
 
@@ -898,8 +893,7 @@ void TilesetEditor::on_actionCopy_triggered()
 
 void TilesetEditor::on_actionPaste_triggered()
 {
-    this->pasteMetatile(this->copiedMetatile);
-    this->setMetatileLabel(this->copiedMetatileLabel);
+    this->pasteMetatile(this->copiedMetatile, this->copiedMetatileLabel);
 }
 
 void TilesetEditor::copyMetatile(bool cut) {
@@ -913,22 +907,21 @@ void TilesetEditor::copyMetatile(bool cut) {
         *this->copiedMetatile = *toCopy;
 
     // Don't try to copy the label unless it's a cut, these should be unique to each metatile.
-    // Never copy the "shared" metatile label.
-    this->copiedMetatileLabel = cut ? Tileset::getMetatileLabelPair(metatileId, this->primaryTileset, this->secondaryTileset).normal : "";
+    this->copiedMetatileLabel = cut ? Tileset::getOwnedMetatileLabel(metatileId, this->primaryTileset, this->secondaryTileset) : QString();
 }
 
-void TilesetEditor::pasteMetatile(const Metatile * toPaste)
+void TilesetEditor::pasteMetatile(const Metatile * toPaste, QString newLabel)
 {
     Metatile *prevMetatile = new Metatile(*this->metatile);
+    QString prevLabel = this->ui->lineEdit_metatileLabel->text();
+    if (newLabel.isNull()) newLabel = prevLabel; // Don't change the label if one wasn't copied
     uint16_t metatileId = this->getSelectedMetatileId();
-    if (!this->replaceMetatile(metatileId, toPaste)) {
+    if (!this->replaceMetatile(metatileId, toPaste, newLabel)) {
         delete prevMetatile;
         return;
     }
 
-    MetatileHistoryItem *commit = new MetatileHistoryItem(metatileId, prevMetatile, new Metatile(*this->metatile));
-    metatileHistory.push(commit);
-    this->hasUnsavedChanges = true;
+    this->commitMetatileAndLabelChange(prevMetatile, prevLabel);
 }
 
 void TilesetEditor::on_actionExport_Primary_Tiles_Image_triggered()
@@ -1024,9 +1017,12 @@ void TilesetEditor::importTilesetMetatiles(Tileset *tileset, bool primary)
             break;
         }
 
+        uint16_t metatileId = static_cast<uint16_t>(metatileIdBase + i);
+        QString prevLabel = Tileset::getOwnedMetatileLabel(metatileId, this->primaryTileset, this->secondaryTileset);
         Metatile *prevMetatile = new Metatile(*tileset->metatiles.at(i));
-        MetatileHistoryItem *commit = new MetatileHistoryItem(static_cast<uint16_t>(metatileIdBase + i),
-                                                              prevMetatile, new Metatile(*metatiles.at(i)));
+        MetatileHistoryItem *commit = new MetatileHistoryItem(metatileId,
+                                                              prevMetatile, new Metatile(*metatiles.at(i)),
+                                                              prevLabel, prevLabel);
         metatileHistory.push(commit);
     }
 
