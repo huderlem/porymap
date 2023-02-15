@@ -146,7 +146,7 @@ QString Tileset::getOwnedMetatileLabel(int metatileId, Tileset *primaryTileset, 
 }
 
 // Return the pair of possible metatile labels for the specified metatile.
-// "normal" is the label for the tileset to which the metatile belongs.
+// "owned" is the label for the tileset to which the metatile belongs.
 // "shared" is the label for the tileset to which the metatile does not belong.
 MetatileLabelPair Tileset::getMetatileLabelPair(int metatileId, Tileset *primaryTileset, Tileset *secondaryTileset) {
     MetatileLabelPair labels;
@@ -154,13 +154,27 @@ MetatileLabelPair Tileset::getMetatileLabelPair(int metatileId, Tileset *primary
     QString secondaryMetatileLabel = secondaryTileset ? secondaryTileset->metatileLabels.value(metatileId) : "";
 
     if (metatileId < Project::getNumMetatilesPrimary()) {
-        labels.normal = primaryMetatileLabel;
+        labels.owned = primaryMetatileLabel;
         labels.shared = secondaryMetatileLabel;
     } else if (metatileId < Project::getNumMetatilesTotal()) {
-        labels.normal = secondaryMetatileLabel;
+        labels.owned = secondaryMetatileLabel;
         labels.shared = primaryMetatileLabel;
     }
     return labels;
+}
+
+// If the metatile has a label in the tileset it belongs to, return that label.
+// If it doesn't, and the metatile has a label in the other tileset, return that label.
+// Otherwise return an empty string.
+QString Tileset::getMetatileLabel(int metatileId, Tileset *primaryTileset, Tileset *secondaryTileset) {
+    MetatileLabelPair labels = Tileset::getMetatileLabelPair(metatileId, primaryTileset, secondaryTileset);
+    return !labels.owned.isEmpty() ? labels.owned : labels.shared;
+}
+
+// Just get the "owned" metatile label, i.e. the one for the tileset that the metatile belongs to.
+QString Tileset::getOwnedMetatileLabel(int metatileId, Tileset *primaryTileset, Tileset *secondaryTileset) {
+    MetatileLabelPair labels = Tileset::getMetatileLabelPair(metatileId, primaryTileset, secondaryTileset);
+    return labels.owned;
 }
 
 bool Tileset::setMetatileLabel(int metatileId, QString label, Tileset *primaryTileset, Tileset *secondaryTileset) {
