@@ -842,15 +842,16 @@ void TilesetEditor::onPaletteEditorChangedPalette(int paletteId) {
     this->on_spinBox_paletteSelector_valueChanged(paletteId);
 }
 
-bool TilesetEditor::replaceMetatile(uint16_t metatileId, const Metatile * src, QString label)
+bool TilesetEditor::replaceMetatile(uint16_t metatileId, const Metatile * src, QString newLabel)
 {
     Metatile * dest = Tileset::getMetatile(metatileId, this->primaryTileset, this->secondaryTileset);
-    if (!dest || !src || *dest == *src)
+    QString oldLabel = Tileset::getOwnedMetatileLabel(metatileId, this->primaryTileset, this->secondaryTileset);
+    if (!dest || !src || (*dest == *src && oldLabel == newLabel))
         return false;
 
-    Tileset::setMetatileLabel(metatileId, label, this->primaryTileset, this->secondaryTileset);
+    Tileset::setMetatileLabel(metatileId, newLabel, this->primaryTileset, this->secondaryTileset);
     if (metatileId == this->getSelectedMetatileId())
-        this->ui->lineEdit_metatileLabel->setText(label);
+        this->ui->lineEdit_metatileLabel->setText(newLabel);
 
     this->metatile = dest;
     *this->metatile = *src;
