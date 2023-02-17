@@ -79,7 +79,7 @@ A name can be given to metatiles so that they may be referenced in source code.
 These are defined in ``include/constants/metatile_labels.h``.
 
 For example, the metatile pictured above can be referenced using the define 
-``METATILE_General_Grass``.
+``METATILE_General_Plain_Grass``.
 This define name can be copied using the Copy button next to the metatile label text box.
 
 Sometimes it may be useful to have a ``METATILE`` define that applies to many tilesets.
