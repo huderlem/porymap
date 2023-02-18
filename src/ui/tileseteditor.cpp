@@ -22,7 +22,6 @@ TilesetEditor::TilesetEditor(Project *project, Map *map, QWidget *parent) :
 {
     this->setTilesets(this->map->layout->tileset_primary_label, this->map->layout->tileset_secondary_label);
     this->initUi();
-    this->initMetatileHistory();
 }
 
 TilesetEditor::~TilesetEditor()
@@ -64,7 +63,6 @@ void TilesetEditor::updateTilesets(QString primaryTilesetLabel, QString secondar
         if (result == QMessageBox::Yes)
             this->on_actionSave_Tileset_triggered();
     }
-    this->hasUnsavedChanges = false;
     this->setTilesets(primaryTilesetLabel, secondaryTilesetLabel);
     this->refresh();
 }
@@ -89,6 +87,7 @@ void TilesetEditor::setTilesets(QString primaryTilesetLabel, QString secondaryTi
     this->primaryTileset = new Tileset(*primaryTileset);
     this->secondaryTileset = new Tileset(*secondaryTileset);
     if (paletteEditor) paletteEditor->setTilesets(this->primaryTileset, this->secondaryTileset);
+    this->initMetatileHistory();
 }
 
 void TilesetEditor::initUi() {
@@ -276,12 +275,13 @@ void TilesetEditor::restoreWindowState() {
 }
 
 void TilesetEditor::initMetatileHistory() {
-    MetatileHistoryItem *commit = new MetatileHistoryItem(0, nullptr, new Metatile(*metatile), QString(), QString());
+    metatileHistory.clear();
+    MetatileHistoryItem *commit = new MetatileHistoryItem(0, nullptr, new Metatile(), QString(), QString());
     metatileHistory.push(commit);
+    this->hasUnsavedChanges = false;
 }
 
 void TilesetEditor::reset() {
-    this->hasUnsavedChanges = false;
     this->setTilesets(this->primaryTileset->name, this->secondaryTileset->name);
     if (this->paletteEditor)
         this->paletteEditor->setTilesets(this->primaryTileset, this->secondaryTileset);

@@ -10,9 +10,15 @@ public:
     History() { }
 
     ~History() {
+        clear();
+    }
+
+    void clear() {
         while (!history.isEmpty()) {
             delete history.takeLast();
         }
+        head = -1;
+        saved = -1;
     }
 
     T back() {
