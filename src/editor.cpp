@@ -1635,7 +1635,7 @@ void Editor::displayMapBorder() {
         QGraphicsPixmapItem *item = new QGraphicsPixmapItem(pixmap);
         item->setX(x * 16);
         item->setY(y * 16);
-        item->setZValue(-2);
+        item->setZValue(-3);
         scene->addItem(item);
         borderItems.append(item);
     }
