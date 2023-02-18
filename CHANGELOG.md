@@ -19,6 +19,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix tilesets that share part of their name loading incorrectly.
 - Fix events being hidden behind connecting maps.
 - Metatile labels with values defined outside their tileset are no longer deleted.
+- Fix the Tileset Editor retaining edit history after changing tilesets.
 - Fix some minor visual issues on the Connections tab.
 - Fix bug which caused encounter configurator to crash if slots in fields containing groups were deleted.
 - Fix bug which caused encounter configurator to crash if last field was deleted.
