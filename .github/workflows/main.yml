@@ -143,18 +143,18 @@ jobs:
       - name: Prep Release Directory
         if: startsWith(github.ref, 'refs/tags/')
         run: |
-          mkdir porymap-windows
-          cp release/porymap.exe porymap-windows/porymap.exe
-          cp RELEASE-README.txt porymap-windows/README.txt
+          mkdir porymap-windows-${{ github.ref_name }}
+          cp release/porymap.exe porymap-windows-${{ github.ref_name }}/porymap.exe
+          cp RELEASE-README.txt porymap-windows-${{ github.ref_name }}/README.txt
       
       - name: Bundle Release Directory
         if: startsWith(github.ref, 'refs/tags/')
-        run: powershell.exe -Command "Compress-Archive -Path porymap-windows -DestinationPath porymap-windows.zip"
+        run: powershell.exe -Command "Compress-Archive -Path porymap-windows -DestinationPath porymap-windows-${{ github.ref_name }}.zip"
       
       - name: Create Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: porymap-windows.zip
+          files: porymap-windows-${{ github.ref_name }}.zip
         env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
