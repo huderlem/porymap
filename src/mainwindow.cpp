@@ -1249,11 +1249,11 @@ void MainWindow::on_actionNew_Tileset_triggered() {
         newSet.metatiles_path = fullDirectoryPath + "/metatiles.bin";
         newSet.metatile_attrs_path = fullDirectoryPath + "/metatile_attributes.bin";
         newSet.is_secondary = createTilesetDialog->isSecondary;
-        int numMetaTiles = createTilesetDialog->isSecondary ? (Project::getNumTilesTotal() - Project::getNumTilesPrimary()) : Project::getNumTilesPrimary();
+        int numMetatiles = createTilesetDialog->isSecondary ? (Project::getNumMetatilesTotal() - Project::getNumMetatilesPrimary()) : Project::getNumMetatilesPrimary();
         QImage tilesImage(":/images/blank_tileset.png");
         editor->project->loadTilesetTiles(&newSet, tilesImage);
         int tilesPerMetatile = projectConfig.getNumTilesInMetatile();
-        for(int i = 0; i < numMetaTiles; ++i) {
+        for(int i = 0; i < numMetatiles; ++i) {
             Metatile *mt = new Metatile();
             for(int j = 0; j < tilesPerMetatile; ++j){
                 Tile tile = Tile();
