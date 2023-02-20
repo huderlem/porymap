@@ -5,6 +5,12 @@
 #include "metatile.h"
 #include "tile.h"
 #include <QImage>
+#include <QHash>
+
+struct MetatileLabelPair {
+    QString owned;
+    QString shared;
+};
 
 class Tileset
 {
@@ -28,12 +34,20 @@ public:
 
     QList<QImage> tiles;
     QList<Metatile*> metatiles;
+    QHash<int, QString> metatileLabels;
     QList<QList<QRgb>> palettes;
     QList<QList<QRgb>> palettePreviews;
 
     static Tileset* getMetatileTileset(int, Tileset*, Tileset*);
     static Tileset* getTileTileset(int, Tileset*, Tileset*);
     static Metatile* getMetatile(int, Tileset*, Tileset*);
+    static Tileset* getMetatileLabelTileset(int, Tileset*, Tileset*);
+    static QString getMetatileLabel(int, Tileset *, Tileset *);
+    static QString getOwnedMetatileLabel(int, Tileset *, Tileset *);
+    static MetatileLabelPair getMetatileLabelPair(int metatileId, Tileset *primaryTileset, Tileset *secondaryTileset);
+    static bool setMetatileLabel(int, QString, Tileset *, Tileset *);
+    QString getMetatileLabelPrefix();
+    static QString getMetatileLabelPrefix(const QString &name);
     static QList<QList<QRgb>> getBlockPalettes(Tileset*, Tileset*, bool useTruePalettes = false);
     static QList<QRgb> getPalette(int, Tileset*, Tileset*, bool useTruePalettes = false);
     static bool metatileIsValid(uint16_t metatileId, Tileset *, Tileset *);

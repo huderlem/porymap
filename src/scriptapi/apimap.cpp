@@ -598,32 +598,28 @@ Metatile * MainWindow::getMetatile(int metatileId) {
 }
 
 QString MainWindow::getMetatileLabel(int metatileId) {
-    Metatile * metatile = this->getMetatile(metatileId);
-    if (!metatile || metatile->label.size() == 0)
+    if (!this->editor || !this->editor->map || !this->editor->map->layout)
         return QString();
-    return metatile->label;
+    return Tileset::getMetatileLabel(metatileId, this->editor->map->layout->tileset_primary, this->editor->map->layout->tileset_secondary);
 }
 
 void MainWindow::setMetatileLabel(int metatileId, QString label) {
-    Metatile * metatile = this->getMetatile(metatileId);
-    if (!metatile)
+    if (!this->editor || !this->editor->map || !this->editor->map->layout)
         return;
 
-    static const QRegularExpression expression("[_A-Za-z0-9]*$");
-    QRegularExpressionValidator validator(expression);
-    int pos = 0;
-    if (validator.validate(label, pos) != QValidator::Acceptable) {
-        logError(QString("Invalid metatile label %1").arg(label));
-        return;
-    }
-
-    if (this->tilesetEditor && this->tilesetEditor->getSelectedMetatileId() == metatileId) {
+    // If the Tileset Editor is opened on this metatile we need to update the text box
+    if (this->tilesetEditor && this->tilesetEditor->getSelectedMetatileId() == metatileId){
         this->tilesetEditor->setMetatileLabel(label);
-    } else if (metatile->label != label) {
-        metatile->label = label;
-        if (this->editor->project)
-            this->editor->project->saveTilesetMetatileLabels(this->editor->map->layout->tileset_primary, this->editor->map->layout->tileset_secondary);
+        return;
     }
+
+    if (!Tileset::setMetatileLabel(metatileId, label, this->editor->map->layout->tileset_primary, this->editor->map->layout->tileset_secondary)) {
+        logError("Failed to set metatile label. Must be a valid metatile id and a label containing only letters, numbers, and underscores.");
+        return;
+    }
+
+    if (this->editor->project)
+        this->editor->project->saveTilesetMetatileLabels(this->editor->map->layout->tileset_primary, this->editor->map->layout->tileset_secondary);
 }
 
 int MainWindow::getMetatileLayerType(int metatileId) {

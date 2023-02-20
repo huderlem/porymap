@@ -76,12 +76,19 @@ Metatile Label
     *optional*
 
 A name can be given to metatiles so that they may be referenced in source code.
-These are defined in ``include/constants/metatile_labels.h`` and can be used in
-together with the ``METATILE_ID`` macro.
+These are defined in ``include/constants/metatile_labels.h``.
 
-For example, the metatile pictured above can be accessed like
-``METATILE_ID(General, Plain_Grass)``.
+For example, the metatile pictured above can be referenced using the define 
+``METATILE_General_Plain_Grass``.
+This define name can be copied using the Copy button next to the metatile label text box.
 
+Sometimes it may be useful to have a ``METATILE`` define that applies to many tilesets.
+This can be done by manually creating a ``METATILE`` define with a value outside its tileset.
+For example, the primary tileset ``SecretBase`` is associated with many secondary tilesets,
+all of which use the same labels. ``#define METATILE_SecretBase_PC 0x220`` defines a label
+for the secondary metatile id ``0x220`` which will be used by any secondary tileset that's
+paired with ``SecretBase``. Labels like this will appear gray in the text box, and can't
+be edited from within Porymap; they must be edited manually in ``metatile_labels.h``.
 
 
 

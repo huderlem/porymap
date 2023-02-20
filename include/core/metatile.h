@@ -70,7 +70,6 @@ public:
     uint32_t encounterType;
     uint32_t layerType;
     uint32_t unusedAttributes;
-    QString label;
 
     uint32_t getAttributes();
     void setAttributes(uint32_t data);
@@ -121,7 +120,6 @@ inline bool operator==(const Metatile &a, const Metatile &b) {
            a.encounterType    == b.encounterType &&
            a.terrainType      == b.terrainType &&
            a.unusedAttributes == b.unusedAttributes &&
-           a.label            == b.label &&
            a.tiles            == b.tiles;
 }
 

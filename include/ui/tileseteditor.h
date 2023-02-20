@@ -16,10 +16,12 @@ class TilesetEditor;
 
 class MetatileHistoryItem {
 public:
-    MetatileHistoryItem(uint16_t metatileId, Metatile *prevMetatile, Metatile *newMetatile) {
+    MetatileHistoryItem(uint16_t metatileId, Metatile *prevMetatile, Metatile *newMetatile, QString prevLabel, QString newLabel) {
         this->metatileId = metatileId;
         this->prevMetatile = prevMetatile;
         this->newMetatile = newMetatile;
+        this->prevLabel = prevLabel;
+        this->newLabel = newLabel;
     }
     ~MetatileHistoryItem() {
         delete this->prevMetatile;
@@ -28,6 +30,8 @@ public:
     uint16_t metatileId;
     Metatile *prevMetatile;
     Metatile *newMetatile;
+    QString prevLabel;
+    QString newLabel;
 };
 
 class TilesetEditor : public QMainWindow
@@ -127,14 +131,16 @@ private:
     void importTilesetTiles(Tileset*, bool);
     void importTilesetMetatiles(Tileset*, bool);
     void refresh();
-    void saveMetatileLabel();
+    void commitMetatileLabel();
     void closeEvent(QCloseEvent*);
     void countMetatileUsage();
     void countTileUsage();
     void copyMetatile(bool cut);
-    void pasteMetatile(const Metatile * toPaste);
-    bool replaceMetatile(uint16_t metatileId, const Metatile * src);
+    void pasteMetatile(const Metatile * toPaste, QString label);
+    bool replaceMetatile(uint16_t metatileId, const Metatile * src, QString label);
     void setComboValue(QComboBox * combo, int value);
+    void commitMetatileChange(Metatile * prevMetatile);
+    void commitMetatileAndLabelChange(Metatile * prevMetatile, QString prevLabel);
 
     Ui::TilesetEditor *ui;
     History<MetatileHistoryItem*> metatileHistory;
@@ -146,6 +152,7 @@ private:
     Map *map = nullptr;
     Metatile *metatile = nullptr;
     Metatile *copiedMetatile = nullptr;
+    QString copiedMetatileLabel;
     int paletteId;
     bool tileXFlip;
     bool tileYFlip;
