@@ -67,15 +67,26 @@ jobs:
       - name: Compile
         run: make
 
-      - name: Bundle
+      - name: Create Disk Image
         if: startsWith(github.ref, 'refs/tags/')
         run: macdeployqt actionstest.app -dmg
+
+      - name: Prep Release Directory
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          mkdir porymap-macOS-${{ github.ref_name }}
+          cp porymap.dmg porymap-macOS-${{ github.ref_name }}/porymap.dmg
+          cp RELEASE-README.txt porymap-macOS-${{ github.ref_name }}/README.txt
+
+      - name: Bundle Release Directory
+        if: startsWith(github.ref, 'refs/tags/')
+        run: zip -r porymap-macOS-${{ github.ref_name }}.zip porymap-macOS-${{ github.ref_name }}
 
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: actionstest.dmg
+          files: porymap-macOS-${{ github.ref_name }}.zip
         env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
