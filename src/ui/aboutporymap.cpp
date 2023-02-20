@@ -7,6 +7,8 @@ AboutPorymap::AboutPorymap(QWidget *parent) :
     ui(new Ui::AboutPorymap)
 {
     ui->setupUi(this);
+
+    this->ui->textBrowser->setSource(QUrl("qrc:/CHANGELOG.md"));
 }
 
 AboutPorymap::~AboutPorymap()
