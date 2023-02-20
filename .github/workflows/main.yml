@@ -16,11 +16,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
+  build-qt5-linux:
+    runs-on: ubuntu-latest
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
@@ -44,6 +41,43 @@ jobs:
 
       - name: Compile
         run: make
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - name: Cache Qt
+        id: cache-qt
+        uses: actions/cache@v1
+        with:
+          path: ../Qt
+          key: ${{ runner.os }}-QtCache
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '6.2.*'
+          cached: ${{ steps.cache-qt.outputs.cache-hit }}
+
+      - name: Configure
+        run: qmake -config release porymap.pro
+
+      - name: Compile
+        run: make
+
+      - name: Bundle
+        if: startsWith(github.ref, 'refs/tags/')
+        run: macdeployqt actionstest.app -dmg
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: actionstest.dmg
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-static-windows:
     runs-on: windows-latest
