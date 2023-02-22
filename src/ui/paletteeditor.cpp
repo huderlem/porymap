@@ -261,18 +261,15 @@ void PaletteEditor::setRgbFromSliders(int colorIndex) {
 void PaletteEditor::setRgbFromHexEdit(int colorIndex) {
     QString text = this->hexEdits[colorIndex]->text();
     bool ok = false;
+    int rgb = text.toInt(&ok, 16);
+    if (!ok) rgb = 0xFFFFFFFF;
     if (this->bitDepth == 15) {
-        int rgb15 = text.toInt(&ok, 16);
-        int rc = gbaRed(rgb15);
-        int gc = gbaGreen(rgb15);
-        int bc = gbaBlue(rgb15);
-        QRgb rgb = qRgb(rc, gc, bc);
-        if (!ok) rgb = 0xFFFFFFFF;
-        setRgb(colorIndex, rgb);
+        int rc = gbaRed(rgb);
+        int gc = gbaGreen(rgb);
+        int bc = gbaBlue(rgb);
+        setRgb(colorIndex, qRgb(rgb8(rc), rgb8(gc), rgb8(bc)));
     } else {
-        QRgb rgb = text.toInt(&ok, 16);
-        if (!ok) rgb = 0xFFFFFFFF;
-        setRgb(colorIndex, rgb);
+        setRgb(colorIndex, qRgb(qRed(rgb), qGreen(rgb), qBlue(rgb)));
     }
 }
 
