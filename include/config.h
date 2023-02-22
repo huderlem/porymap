@@ -81,6 +81,7 @@ public:
     void setTheme(QString theme);
     void setTextEditorOpenFolder(const QString &command);
     void setTextEditorGotoLine(const QString &command);
+    void setPaletteEditorBitDepth(int bitDepth);
     QString getRecentProject();
     bool getReopenOnLaunch();
     MapSortOrder getMapSortOrder();
@@ -100,6 +101,7 @@ public:
     QString getTheme();
     QString getTextEditorOpenFolder();
     QString getTextEditorGotoLine();
+    int getPaletteEditorBitDepth();
 protected:
     virtual QString getConfigFilepath() override;
     virtual void parseConfigKeyValue(QString key, QString value) override;
@@ -135,6 +137,7 @@ private:
     QString theme;
     QString textEditorOpenFolder;
     QString textEditorGotoLine;
+    int paletteEditorBitDepth;
 };
 
 extern PorymapConfig porymapConfig;

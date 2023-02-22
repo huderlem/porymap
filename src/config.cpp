@@ -246,6 +246,11 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->textEditorOpenFolder = value;
     } else if (key == "text_editor_goto_line") {
         this->textEditorGotoLine = value;
+    } else if (key == "palette_editor_bit_depth") {
+        this->paletteEditorBitDepth = getConfigInteger(key, value, 15, 24, 24);
+        if (this->paletteEditorBitDepth != 15 && this->paletteEditorBitDepth != 24){
+            this->paletteEditorBitDepth = 24;
+        }
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -278,6 +283,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("theme", this->theme);
     map.insert("text_editor_open_directory", this->textEditorOpenFolder);
     map.insert("text_editor_goto_line", this->textEditorGotoLine);
+    map.insert("palette_editor_bit_depth", QString("%1").arg(this->paletteEditorBitDepth));
     
     return map;
 }
@@ -400,6 +406,11 @@ void PorymapConfig::setTextEditorGotoLine(const QString &command) {
     this->save();
 }
 
+void PorymapConfig::setPaletteEditorBitDepth(int bitDepth) {
+    this->paletteEditorBitDepth = bitDepth;
+    this->save();
+}
+
 QString PorymapConfig::getRecentProject() {
     return this->recentProject;
 }
@@ -496,6 +507,10 @@ QString PorymapConfig::getTextEditorOpenFolder() {
 
 QString PorymapConfig::getTextEditorGotoLine() {
     return this->textEditorGotoLine;
+}
+
+int PorymapConfig::getPaletteEditorBitDepth() {
+    return this->paletteEditorBitDepth;
 }
 
 const QMap<BaseGameVersion, QString> baseGameVersionMap = {

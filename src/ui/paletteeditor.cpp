@@ -87,7 +87,13 @@ PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset 
         connect(this->pickButtons[i], &QToolButton::clicked, [this, i](){ this->pickColor(i); });
     }
 
-    setBitDepth(24);
+    int bitDepth = porymapConfig.getPaletteEditorBitDepth();
+    if (bitDepth == 15) {
+        this->ui->bit_depth_15->setChecked(true);
+    } else {
+        this->ui->bit_depth_24->setChecked(true);
+    }
+    setBitDepth(bitDepth);
 
     // Connect bit depth buttons
     connect(this->ui->bit_depth_15, &QRadioButton::toggled, [this](bool checked){ if (checked) this->setBitDepth(15); });
@@ -227,6 +233,7 @@ void PaletteEditor::setBitDepth(int bits) {
         break;
     }
     this->bitDepth = bits;
+    porymapConfig.setPaletteEditorBitDepth(bits);
     refreshColorUis();
     setSignalsEnabled(true);
 }

@@ -5051,7 +5051,7 @@
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
-        <widget class="QLabel" name="label">
+        <widget class="QLabel" name="label_Palette">
          <property name="text">
           <string>Palette</string>
          </property>
@@ -5095,9 +5095,6 @@
         <widget class="QRadioButton" name="bit_depth_24">
          <property name="text">
           <string>24</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
          </property>
         </widget>
        </item>
