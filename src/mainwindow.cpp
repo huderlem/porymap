@@ -342,8 +342,8 @@ void MainWindow::initMiscHeapObjects() {
 // !TODO: scroll view on first showing
 void MainWindow::initMapSortOrder() {
     mapSortOrder = porymapConfig.getMapSortOrder();
-    if (mapSortOrder == MapSortOrder::SortByLayout)
-        mapSortOrder = MapSortOrder::SortByGroup;
+    // if (mapSortOrder == MapSortOrder::SortByLayout)
+    //     mapSortOrder = MapSortOrder::SortByGroup;
 
     this->ui->mapListContainer->setCurrentIndex(static_cast<int>(this->mapSortOrder));
 }
@@ -541,16 +541,13 @@ bool MainWindow::openProject(QString dir) {
                 this->preferenceEditor->updateFields();
         });
         editor->project->set_root(dir);
-        success = loadDataStructures()
-               && populateMapList()
-               && setMap(getDefaultMap(), true);
+        success = loadDataStructures() && populateMapList() && setDefaultView();
     } else {
-        QString open_map = editor->map->name;
         editor->project->fileWatcher.removePaths(editor->project->fileWatcher.files());
         editor->project->clearLayoutsTable();
         editor->project->clearMapCache();
         editor->project->clearTilesetCache();
-        success = loadDataStructures() && populateMapList() && setMap(open_map, true);
+        success = loadDataStructures() && populateMapList() && setRecentView();
     }
     
     projectOpenFailure = !success;
@@ -579,6 +576,22 @@ bool MainWindow::openProject(QString dir) {
 
 bool MainWindow::isProjectOpen() {
     return !projectOpenFailure && editor && editor->project;
+}
+
+bool MainWindow::setDefaultView() {
+    if (this->mapSortOrder == MapSortOrder::SortByLayout) {
+        return setLayout(getDefaultLayout());
+    } else {
+        return setMap(getDefaultMap(), true);
+    }
+}
+
+bool MainWindow::setRecentView() {
+    if (this->mapSortOrder == MapSortOrder::SortByLayout) {
+        return setLayout(userConfig.getRecentLayout());
+    } else {
+        return setMap(userConfig.getRecentMap(), true);
+    }
 }
 
 QString MainWindow::getDefaultMap() {
@@ -616,6 +629,18 @@ void MainWindow::openSubWindow(QWidget * window) {
         window->raise();
         window->activateWindow();
     }
+}
+
+QString MainWindow::getDefaultLayout() {
+    if (editor && editor->project) {
+        QString recentLayout = userConfig.getRecentLayout();
+        if (!recentLayout.isEmpty() && editor->project->mapLayoutsTable.contains(recentLayout)) {
+            return recentLayout;
+        } else if (!editor->project->mapLayoutsTable.isEmpty()) {
+            return editor->project->mapLayoutsTable.first();
+        }
+    }
+    return QString();
 }
 
 QString MainWindow::getExistingDirectory(QString dir) {
@@ -707,7 +732,7 @@ bool MainWindow::setMap(QString map_name, bool scroll) {
     connect(editor->layout, &Layout::layoutChanged, [this]() { onMapChanged(nullptr); });
     connect(editor->layout, &Layout::needsRedrawing, this, &MainWindow::onLayoutNeedsRedrawing);
 
-    setRecentMap(map_name);
+    setRecentMapConfig(map_name);
     updateMapList();
 
     Scripting::cb_MapOpened(map_name);
@@ -740,6 +765,8 @@ bool MainWindow::setLayout(QString layoutId) {
     // connect(editor->map, &Map::modified, [this](){ this->markMapEdited(); });
 
     updateTilesetEditor();
+
+    setRecentLayoutConfig(layoutId);
 
     return true;
 }
@@ -825,8 +852,12 @@ void MainWindow::openWarpMap(QString map_name, int event_id, Event::Group event_
     }
 }
 
-void MainWindow::setRecentMap(QString mapName) {
+void MainWindow::setRecentMapConfig(QString mapName) {
     userConfig.setRecentMap(mapName);
+}
+
+void MainWindow::setRecentLayoutConfig(QString layoutId) {
+    userConfig.setRecentLayout(layoutId);
 }
 
 void MainWindow::displayMapProperties() {

@@ -344,12 +344,15 @@ public:
     }
     virtual void reset() override {
         this->recentMap = QString();
+        this->recentLayout = QString();
         this->useEncounterJson = true;
         this->customScripts.clear();
         this->readKeys.clear();
     }
     void setRecentMap(const QString &map);
     QString getRecentMap();
+    void setRecentLayout(const QString &map);
+    QString getRecentLayout();
     void setEncounterJsonActive(bool active);
     bool getEncounterJsonActive();
     void setProjectDir(QString projectDir);
@@ -371,6 +374,7 @@ protected:
 private:
     QString projectDir;
     QString recentMap;
+    QString recentLayout;
     bool useEncounterJson;
     QMap<QString, bool> customScripts;
     QStringList readKeys;

@@ -1164,6 +1164,8 @@ bool Editor::setMap(QString map_name) {
 
 bool Editor::setLayout(QString layoutId) {
     // 
+    if (layoutId.isEmpty()) return false;
+
     this->layout = this->project->loadLayout(layoutId);
 
     if (!displayLayout()) {
