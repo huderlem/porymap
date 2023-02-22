@@ -144,6 +144,9 @@ void ScriptUtility::setMainTab(int index) {
     // Can't select Wild Encounters tab if it's disabled
     if (index == 4 && !userConfig.getEncounterJsonActive())
         return;
+    // don't change tab when not editing a map
+    if (!window->editor || !window->editor->map)
+        return;
     window->on_mainTabBar_tabBarClicked(index);
 }
 
