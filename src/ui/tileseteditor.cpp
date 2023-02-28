@@ -68,7 +68,8 @@ void TilesetEditor::updateTilesets(QString primaryTilesetLabel, QString secondar
 }
 
 bool TilesetEditor::selectMetatile(uint16_t metatileId) {
-    if (!Tileset::metatileIsValid(metatileId, this->primaryTileset, this->secondaryTileset)) return false;
+    if (!Tileset::metatileIsValid(metatileId, this->primaryTileset, this->secondaryTileset) || this->lockSelection)
+        return false;
     this->metatileSelector->select(metatileId);
     QPoint pos = this->metatileSelector->getMetatileIdCoordsOnWidget(metatileId);
     this->ui->scrollArea_Metatiles->ensureVisible(pos.x(), pos.y());
@@ -592,18 +593,17 @@ void TilesetEditor::on_comboBox_terrainType_activated(int terrainType)
 
 void TilesetEditor::on_actionSave_Tileset_triggered()
 {
-    // need this temporary metatile ID to reset selection after saving
-    // when the tilesetsSaved signal is sent, it will be reset to the current map metatile
-    uint16_t reselectMetatileID = this->metatileSelector->getSelectedMetatileId();
-
+    // Need this temporary flag to stop selection resetting after saving.
+    // This is a workaround; redrawing the map's metatile selector shouldn't emit the same signal as when it's selected.
+    this->lockSelection = true;
     this->project->saveTilesets(this->primaryTileset, this->secondaryTileset);
     emit this->tilesetsSaved(this->primaryTileset->name, this->secondaryTileset->name);
-    this->metatileSelector->select(reselectMetatileID);
     if (this->paletteEditor) {
         this->paletteEditor->setTilesets(this->primaryTileset, this->secondaryTileset);
     }
     this->ui->statusbar->showMessage(QString("Saved primary and secondary Tilesets!"), 5000);
     this->hasUnsavedChanges = false;
+    this->lockSelection = false;
 }
 
 void TilesetEditor::on_actionImport_Primary_Tiles_triggered()

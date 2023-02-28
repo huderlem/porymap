@@ -164,6 +164,7 @@ private:
     QGraphicsScene *selectedTileScene = nullptr;
     QGraphicsPixmapItem *selectedTilePixmapItem = nullptr;
     QGraphicsScene *metatileLayersScene = nullptr;
+    bool lockSelection = false;
 
 signals:
     void tilesetsSaved(QString, QString);
