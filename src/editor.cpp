@@ -12,6 +12,7 @@
 #include "config.h"
 #include "scripting.h"
 #include "customattributestable.h"
+#include "mappixmapitem.h"
 #include <QCheckBox>
 #include <QPainter>
 #include <QMouseEvent>
@@ -1345,6 +1346,7 @@ bool Editor::displayMap() {
     }
 
     displayMetatileSelector();
+    displayStampSelector();
     displayMovementPermissionSelector();
     displayMapMetatiles();
     displayMapMovementPermissions();
@@ -1400,8 +1402,30 @@ void Editor::displayMetatileSelector() {
     scene_metatiles->addItem(metatile_selector_item);
 }
 
+void Editor::displayStampSelector() {
+    if (stamp_selector_item && stamp_selector_item->scene()) {
+        stamp_selector_item->scene()->removeItem(stamp_selector_item);
+        delete scene_stamps;
+    }
+    scene_stamps = new QGraphicsScene;
+    if (!stamp_selector_item) {
+        stamp_selector_item = new StampSelector(8, map);
+        stamp_selector_item->select(0);
+    } else {
+        stamp_selector_item->setMap(map);
+        stamp_selector_item->setTilesets(map->layout->tileset_primary, map->layout->tileset_secondary);
+    }
+
+    scene_stamps->addItem(stamp_selector_item);
+}
+
 void Editor::displayMapMetatiles() {
-    map_item = new MapPixmapItem(map, this->metatile_selector_item, this->settings);
+    map_item = new MapPixmapItem(map, this->metatile_selector_item, this->stamp_selector_item, this->settings, [=](){
+        if (this->ui->mapViewTab->currentIndex() == 2) {
+            return PaintType::PaintTypeStamp;
+        }
+        return PaintType::PaintTypeMetatile;
+    });
     connect(map_item, &MapPixmapItem::mouseEvent, this, &Editor::mouseEvent_map);
     connect(map_item, &MapPixmapItem::startPaint, this, &Editor::onMapStartPaint);
     connect(map_item, &MapPixmapItem::endPaint, this, &Editor::onMapEndPaint);
@@ -1426,8 +1450,13 @@ void Editor::displayMapMovementPermissions() {
         scene->removeItem(collision_item);
         delete collision_item;
     }
-    collision_item = new CollisionPixmapItem(map, this->movement_permissions_selector_item,
-                                             this->metatile_selector_item, this->settings, &this->collisionOpacity);
+    collision_item = new CollisionPixmapItem(map,
+                                             this->movement_permissions_selector_item,
+                                             this->metatile_selector_item,
+                                             this->stamp_selector_item,
+                                             this->settings,
+                                             &this->collisionOpacity,
+                                             []() {return PaintType::PaintTypeMetatile; });
     connect(collision_item, &CollisionPixmapItem::mouseEvent, this, &Editor::mouseEvent_collision);
     connect(collision_item, &CollisionPixmapItem::hoveredMapMovementPermissionChanged,
             this, &Editor::onHoveredMapMovementPermissionChanged);

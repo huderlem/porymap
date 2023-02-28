@@ -4,7 +4,13 @@
 #include "map.h"
 #include "settings.h"
 #include "metatileselector.h"
+#include "stampselector.h"
 #include <QGraphicsPixmapItem>
+
+enum PaintType {
+    PaintTypeMetatile,
+    PaintTypeStamp,
+};
 
 class MapPixmapItem : public QObject, public QGraphicsPixmapItem {
     Q_OBJECT
@@ -18,10 +24,12 @@ public:
         Metatiles,
         EventObjects
     };
-    MapPixmapItem(Map *map_, MetatileSelector *metatileSelector, Settings *settings) {
+    MapPixmapItem(Map *map_, MetatileSelector *metatileSelector, StampSelector *stampSelector, Settings *settings, std::function<PaintType(void)> getActivePaintType) {
         this->map = map_;
         this->map->setMapItem(this);
         this->metatileSelector = metatileSelector;
+        this->stampSelector = stampSelector;
+        this->getActivePaintType = getActivePaintType;
         this->settings = settings;
         this->paintingMode = PaintMode::Metatiles;
         this->lockedAxis = MapPixmapItem::Axis::None;
@@ -31,6 +39,8 @@ public:
     MapPixmapItem::PaintMode paintingMode;
     Map *map;
     MetatileSelector *metatileSelector;
+    StampSelector *stampSelector;
+    std::function<PaintType(void)> getActivePaintType;
     Settings *settings;
     bool active;
     bool has_mouse = false;

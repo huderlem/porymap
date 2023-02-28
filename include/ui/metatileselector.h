@@ -6,27 +6,7 @@
 #include "map.h"
 #include "tileset.h"
 #include "maplayout.h"
-
-struct MetatileSelectionItem
-{
-    bool enabled;
-    uint16_t metatileId;
-};
-
-struct CollisionSelectionItem
-{
-    bool enabled;
-    uint16_t collision;
-    uint16_t elevation;
-};
-
-struct MetatileSelection
-{
-    QPoint dimensions;
-    bool hasCollision;
-    QList<MetatileSelectionItem> metatileItems;
-    QList<CollisionSelectionItem> collisionItems;
-};
+#include "paintselection.h"
 
 class MetatileSelector: public SelectablePixmapItem {
     Q_OBJECT
@@ -38,7 +18,7 @@ public:
         this->map = map;
         this->primaryTileset = map->layout->tileset_primary;
         this->secondaryTileset = map->layout->tileset_secondary;
-        this->selection = MetatileSelection{};
+        this->selection = MetatileSelection();
         setAcceptHoverEvents(true);
     }
     QPoint getSelectionDimensions();
@@ -74,7 +54,6 @@ private:
     uint16_t getMetatileId(int x, int y);
     QPoint getMetatileIdCoords(uint16_t);
     bool shouldAcceptEvent(QGraphicsSceneMouseEvent*);
-    bool selectionIsValid();
 
 signals:
     void hoveredMetatileSelectionChanged(uint16_t);

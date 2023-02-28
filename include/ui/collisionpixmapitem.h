@@ -2,6 +2,7 @@
 #define COLLISIONPIXMAPITEM_H
 
 #include "metatileselector.h"
+//#include "stampselector.h"
 #include "movementpermissionsselector.h"
 #include "mappixmapitem.h"
 #include "map.h"
@@ -10,8 +11,14 @@
 class CollisionPixmapItem : public MapPixmapItem {
     Q_OBJECT
 public:
-    CollisionPixmapItem(Map *map, MovementPermissionsSelector *movementPermissionsSelector, MetatileSelector *metatileSelector, Settings *settings, qreal *opacity)
-        : MapPixmapItem(map, metatileSelector, settings){
+    CollisionPixmapItem(Map *map,
+                        MovementPermissionsSelector *movementPermissionsSelector,
+                        MetatileSelector *metatileSelector,
+                        StampSelector *stampSelector,
+                        Settings *settings,
+                        qreal *opacity,
+                        std::function<PaintType(void)> getActivePaintType)
+        : MapPixmapItem(map, metatileSelector, stampSelector, settings, getActivePaintType){
         this->movementPermissionsSelector = movementPermissionsSelector;
         this->opacity = opacity;
         map->setCollisionItem(this);

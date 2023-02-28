@@ -102,40 +102,42 @@ void MapPixmapItem::shift(int xDelta, int yDelta, bool fromScriptCall) {
 }
 
 void MapPixmapItem::paintNormal(int x, int y, bool fromScriptCall) {
-    MetatileSelection selection = this->metatileSelector->getMetatileSelection();
+    PaintSelection *selection = nullptr;
+    if (this->getActivePaintType() == PaintType::PaintTypeMetatile) {
+        MetatileSelection metatileSelection = this->metatileSelector->getMetatileSelection();
+        selection = &metatileSelection;
+    } else {
+        StampSelection stampSelection = this->stampSelector->getStampSelection();
+        selection = &stampSelection;
+    }
     int initialX = fromScriptCall ? x : this->paint_tile_initial_x;
     int initialY = fromScriptCall ? y : this->paint_tile_initial_y;
+    int selectionWidth = selection->dimensions.x();
+    int selectionHeight = selection->dimensions.y();
 
     // Snap the selected position to the top-left of the block boundary.
     // This allows painting via dragging the mouse to tile the painted region.
     int xDiff = x - initialX;
     int yDiff = y - initialY;
-    if (xDiff < 0 && xDiff % selection.dimensions.x() != 0) xDiff -= selection.dimensions.x();
-    if (yDiff < 0 && yDiff % selection.dimensions.y() != 0) yDiff -= selection.dimensions.y();
+    if (xDiff < 0 && xDiff % selectionWidth != 0) xDiff -= selectionWidth;
+    if (yDiff < 0 && yDiff % selectionHeight != 0) yDiff -= selectionHeight;
 
-    x = initialX + (xDiff / selection.dimensions.x()) * selection.dimensions.x();
-    y = initialY + (yDiff / selection.dimensions.y()) * selection.dimensions.y();
+    x = initialX + (xDiff / selectionWidth) * selectionWidth;
+    y = initialY + (yDiff / selectionHeight) * selectionHeight;
 
     // for edit history
     Blockdata oldMetatiles = !fromScriptCall ? map->layout->blockdata : Blockdata();
 
-    for (int i = 0; i < selection.dimensions.x() && i + x < map->getWidth(); i++)
-    for (int j = 0; j < selection.dimensions.y() && j + y < map->getHeight(); j++) {
+    for (int i = 0; i < selectionWidth && i + x < map->getWidth(); i++)
+    for (int j = 0; j < selectionHeight && j + y < map->getHeight(); j++) {
         int actualX = i + x;
         int actualY = j + y;
         Block block;
         if (map->getBlock(actualX, actualY, &block)) {
-            int index = j * selection.dimensions.x() + i;
-            MetatileSelectionItem item = selection.metatileItems.at(index);
-            if (!item.enabled)
-                continue;
-            block.metatileId = item.metatileId;
-            if (selection.hasCollision && selection.collisionItems.length() == selection.metatileItems.length()) {
-                CollisionSelectionItem collisionItem = selection.collisionItems.at(index);
-                block.collision = collisionItem.collision;
-                block.elevation = collisionItem.elevation;
+            int index = j * selectionWidth + i;
+            if (selection->paintNormal(index, &block)) {
+                map->setBlock(actualX, actualY, block, !fromScriptCall);
             }
-            map->setBlock(actualX, actualY, block, !fromScriptCall);
         }
     }
 

@@ -9,6 +9,7 @@
 #include "tileseteditortileselector.h"
 #include "metatilelayersitem.h"
 #include "map.h"
+#include "metatile.h"
 
 namespace Ui {
 class TilesetEditor;

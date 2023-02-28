@@ -27,6 +27,7 @@ SOURCES += src/core/block.cpp \
     src/core/metatileparser.cpp \
     src/core/paletteutil.cpp \
     src/core/parseutil.cpp \
+    src/core/stamp.cpp \
     src/core/tile.cpp \
     src/core/tileset.cpp \
     src/core/regionmap.cpp \
@@ -74,6 +75,7 @@ SOURCES += src/core/block.cpp \
     src/ui/encountertabledelegates.cpp \
     src/ui/paletteeditor.cpp \
     src/ui/selectablepixmapitem.cpp \
+    src/ui/stampselector.cpp \
     src/ui/tileseteditor.cpp \
     src/ui/tileseteditormetatileselector.cpp \
     src/ui/tileseteditortileselector.cpp \
@@ -87,6 +89,7 @@ SOURCES += src/core/block.cpp \
     src/ui/shortcut.cpp \
     src/ui/shortcutseditor.cpp \
     src/ui/multikeyedit.cpp \
+    src/ui/paintselection.cpp \
     src/ui/prefabframe.cpp \
     src/ui/preferenceeditor.cpp \
     src/ui/regionmappropertiesdialog.cpp \
@@ -113,6 +116,7 @@ HEADERS  += include/core/block.h \
     include/core/metatileparser.h \
     include/core/paletteutil.h \
     include/core/parseutil.h \
+    include/core/stamp.h \
     include/core/tile.h \
     include/core/tileset.h \
     include/core/regionmap.h \
@@ -133,6 +137,7 @@ HEADERS  += include/core/block.h \
     include/ui/collisionpixmapitem.h \
     include/ui/connectionpixmapitem.h \
     include/ui/currentselectedmetatilespixmapitem.h \
+    include/ui/paintselection.h \
     include/ui/prefabframe.h \
     include/ui/regionmaplayoutpixmapitem.h \
     include/ui/regionmapentriespixmapitem.h \
@@ -161,6 +166,7 @@ HEADERS  += include/core/block.h \
     include/ui/adjustingstackedwidget.h \
     include/ui/paletteeditor.h \
     include/ui/selectablepixmapitem.h \
+    include/ui/stampselector.h \
     include/ui/tileseteditor.h \
     include/ui/tileseteditormetatileselector.h \
     include/ui/tileseteditortileselector.h \

@@ -45,12 +45,11 @@ bool MetatileSelector::select(uint16_t metatileId) {
     if (!Tileset::metatileIsValid(metatileId, this->primaryTileset, this->secondaryTileset)) return false;
     this->externalSelection = false;
     this->prefabSelection = false;
-    this->selection = MetatileSelection{
-            QPoint(1, 1),
-            false,
-            QList<MetatileSelectionItem>({MetatileSelectionItem{true, metatileId}}),
-            QList<CollisionSelectionItem>(),
-    };
+    this->selection = MetatileSelection();
+    this->selection.dimensions = QPoint(1, 1);
+    this->selection.hasCollision = false;
+    this->selection.metatileItems = QList<MetatileSelectionItem>({MetatileSelectionItem{true, metatileId}});
+    this->selection.collisionItems = QList<CollisionSelectionItem>();
     QPoint coords = this->getMetatileIdCoords(metatileId);
     SelectablePixmapItem::select(coords.x(), coords.y(), 0, 0);
     this->updateSelectedMetatiles();

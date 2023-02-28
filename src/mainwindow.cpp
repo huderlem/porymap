@@ -696,6 +696,10 @@ void MainWindow::refreshMapScene()
     ui->graphicsView_Collision->setFixedSize(editor->movement_permissions_selector_item->pixmap().width() + 2, editor->movement_permissions_selector_item->pixmap().height() + 2);
 
     on_horizontalSlider_MetatileZoom_valueChanged(ui->horizontalSlider_MetatileZoom->value());
+
+    ui->graphicsView_Stamps->setScene(editor->scene_stamps);
+    //ui->graphicsView_Stamps->setSceneRect(editor->scene_stamps->sceneRect());
+    ui->graphicsView_Stamps->setFixedSize(editor->stamp_selector_item->pixmap().width() + 2, editor->stamp_selector_item->pixmap().height() + 2);
 }
 
 void MainWindow::openWarpMap(QString map_name, int event_id, Event::Group event_group) {
@@ -1673,6 +1677,8 @@ void MainWindow::on_mapViewTab_tabBarClicked(int index)
         editor->setEditingCollision();
     } else if (index == 2) {
         editor->setEditingMap();
+    } else if (index == 3) {
+        editor->setEditingMap();
         prefab.tryImportDefaultPrefabs(this->editor->map);
     }
     editor->setCursorRectVisible(false);
@@ -2205,7 +2211,7 @@ void MainWindow::on_toolButton_Paint_clicked()
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/pencil_cursor.ico"), 10, 10);
 
     // do not stop single tile mode when editing collision
-    if (ui->mapViewTab->currentIndex() == 0)
+    if (ui->mapViewTab->currentIndex() != 1)
         editor->cursorMapTileRect->stopSingleTileMode();
 
     ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);

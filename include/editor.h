@@ -13,6 +13,7 @@
 
 #include "mapconnection.h"
 #include "metatileselector.h"
+#include "stampselector.h"
 #include "movementpermissionsselector.h"
 #include "project.h"
 #include "ui_mainwindow.h"
@@ -54,6 +55,7 @@ public:
     void saveEncounterTabData();
     bool displayMap();
     void displayMetatileSelector();
+    void displayStampSelector();
     void displayMapMetatiles();
     void displayMapMovementPermissions();
     void displayBorderMetatiles();
@@ -126,6 +128,9 @@ public:
     QGraphicsScene *scene_collision_metatiles = nullptr;
     QGraphicsScene *scene_elevation_metatiles = nullptr;
     MetatileSelector *metatile_selector_item = nullptr;
+
+    QGraphicsScene *scene_stamps = nullptr;
+    StampSelector *stamp_selector_item = nullptr;
 
     BorderMetatilesPixmapItem *selected_border_metatiles_item = nullptr;
     CurrentSelectedMetatilesPixmapItem *current_metatile_selection_item = nullptr;
