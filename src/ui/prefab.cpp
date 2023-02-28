@@ -199,7 +199,7 @@ void Prefab::updatePrefabUi(Map *map) {
         frame->ui->label_Name->setText(item.name);
 
         auto scene = new QGraphicsScene;
-        scene->addPixmap(drawMetatileSelection(item.selection, map));
+        scene->addPixmap(drawMetatileSelection(&item.selection, map));
         scene->setSceneRect(scene->itemsBoundingRect());
         frame->ui->graphicsView_Prefab->setScene(scene);
         frame->ui->graphicsView_Prefab->setFixedSize(scene->itemsBoundingRect().width() + 2,
@@ -243,12 +243,12 @@ void Prefab::updatePrefabUi(Map *map) {
     prefabWidget->layout()->addItem(verticalSpacer);
 }
 
-void Prefab::addPrefab(MetatileSelection selection, Map *map, QString name) {
+void Prefab::addPrefab(MetatileSelection *selection, Map *map, QString name) {
     // First, determine which tilesets are actually used in this new prefab,
     // based on the metatile ids.
     bool usesPrimaryTileset = false;
     bool usesSecondaryTileset = false;
-    for (auto metatile : selection.metatileItems) {
+    for (auto metatile : selection->metatileItems) {
         if (!metatile.enabled)
             continue;
         if (metatile.metatileId < Project::getNumMetatilesPrimary()) {
@@ -263,7 +263,7 @@ void Prefab::addPrefab(MetatileSelection selection, Map *map, QString name) {
                            name,
                            usesPrimaryTileset ? map->layout->tileset_primary_label : "",
                            usesSecondaryTileset ? map->layout->tileset_secondary_label: "",
-                           selection
+                           *selection
                        });
     this->savePrefabs();
     this->updatePrefabUi(map);

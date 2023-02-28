@@ -5,16 +5,16 @@
 #include <QPainter>
 
 void BorderMetatilesPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
-    MetatileSelection selection = this->metatileSelector->getMetatileSelection();
+    MetatileSelection *selection = this->metatileSelector->getMetatileSelection();
     QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
     int width = map->getBorderWidth();
     int height = map->getBorderHeight();
 
     Blockdata oldBorder = map->layout->border;
 
-    for (int i = 0; i < selection.dimensions.x() && (i + pos.x()) < width; i++) {
-        for (int j = 0; j < selection.dimensions.y() && (j + pos.y()) < height; j++) {
-            MetatileSelectionItem item = selection.metatileItems.at(j * selection.dimensions.x() + i);
+    for (int i = 0; i < selection->dimensions.x() && (i + pos.x()) < width; i++) {
+        for (int j = 0; j < selection->dimensions.y() && (j + pos.y()) < height; j++) {
+            MetatileSelectionItem item = selection->metatileItems.at(j * selection->dimensions.x() + i);
             map->setBorderMetatileId(pos.x() + i, pos.y() + j, item.metatileId, true);
         }
     }

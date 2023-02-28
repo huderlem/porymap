@@ -22,7 +22,7 @@ public:
 private:
     Map *map;
     Ui::PrefabCreationDialog *ui;
-    MetatileSelection selection;
+    MetatileSelection *selection;
 };
 
 #endif // PREFABCREATIONDIALOG_H

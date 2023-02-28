@@ -5,7 +5,7 @@
 #include <QPainter>
 
 QPoint StampSelector::getSelectionDimensions() {
-    return selection.dimensions;
+    return selection->dimensions;
 }
 
 void StampSelector::draw() {
@@ -43,9 +43,8 @@ bool StampSelector::select(uint16_t stampId) {
     // TODO:
     if (stampId > 9999999999999) return false;
 
-    this->selection = StampSelection();
-    this->selection.dimensions = QPoint(1, 1);
-    this->selection.stampIds = QList<uint16_t>(stampId);
+    this->selection->dimensions = QPoint(1, 1);
+    this->selection->stampIds = QList<uint16_t>(stampId);
 
     QPoint coords = this->getStampIdCoords(stampId);
     SelectablePixmapItem::select(coords.x(), coords.y(), 0, 0);
@@ -60,7 +59,7 @@ void StampSelector::setTilesets(Tileset *primaryTileset, Tileset *secondaryTiles
     this->draw();
 }
 
-StampSelection StampSelector::getStampSelection() {
+StampSelection* StampSelector::getStampSelection() {
     return selection;
 }
 
@@ -90,16 +89,16 @@ void StampSelector::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
 }
 
 void StampSelector::updateSelectedStamps() {
-    this->selection.stampIds.clear();
-    this->selection.dimensions = SelectablePixmapItem::getSelectionDimensions();
+    this->selection->stampIds.clear();
+    this->selection->dimensions = SelectablePixmapItem::getSelectionDimensions();
     QPoint origin = this->getSelectionStart();
-    for (int j = 0; j < this->selection.dimensions.y(); j++) {
-        for (int i = 0; i < this->selection.dimensions.x(); i++) {
+    for (int j = 0; j < this->selection->dimensions.y(); j++) {
+        for (int i = 0; i < this->selection->dimensions.x(); i++) {
             uint16_t stampId = this->getStampId(origin.x() + i, origin.y() + j);
             // TODO: check if stamp id is valid
             if (false)
                 stampId = 0;
-            this->selection.stampIds.append(stampId);
+            this->selection->stampIds.append(stampId);
         }
     }
     emit selectedStampsChanged();

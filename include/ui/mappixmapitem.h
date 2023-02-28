@@ -91,6 +91,7 @@ public:
     QPoint adjustCoords(QPoint pos);
 
 private:
+    PaintSelection* getActiveSelection();
     void paintSmartPath(int x, int y, bool fromScriptCall = false);
     static QList<int> smartPathTable;
 

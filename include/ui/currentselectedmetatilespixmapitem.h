@@ -18,6 +18,6 @@ public:
     void setMap(Map *map) { this->map = map; }
 };
 
-QPixmap drawMetatileSelection(MetatileSelection selection, Map *map);
+QPixmap drawMetatileSelection(MetatileSelection *selection, Map *map);
 
 #endif // CURRENTSELECTEDMETATILESPIXMAPITEM_H

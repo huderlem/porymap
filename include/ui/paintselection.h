@@ -31,6 +31,12 @@ class MetatileSelection: public PaintSelection
 {
 public:
     MetatileSelection() {}
+    void clone(MetatileSelection other) {
+        this->dimensions = other.dimensions;
+        this->hasCollision = other.hasCollision;
+        this->metatileItems = other.metatileItems;
+        this->collisionItems = other.collisionItems;
+    }
     bool paintNormal(int index, Block *block) override;
     bool hasCollision = false;
     QList<MetatileSelectionItem> metatileItems;

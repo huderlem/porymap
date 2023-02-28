@@ -18,7 +18,7 @@ public:
         this->map = map;
         this->primaryTileset = map->layout->tileset_primary;
         this->secondaryTileset = map->layout->tileset_secondary;
-        this->selection = MetatileSelection();
+        this->selection = new MetatileSelection();
         setAcceptHoverEvents(true);
     }
     QPoint getSelectionDimensions();
@@ -26,7 +26,7 @@ public:
     bool select(uint16_t metatile);
     bool selectFromMap(uint16_t metatileId, uint16_t collision, uint16_t elevation);
     void setTilesets(Tileset*, Tileset*);
-    MetatileSelection getMetatileSelection();
+    MetatileSelection* getMetatileSelection();
     void setPrefabSelection(MetatileSelection selection);
     void setExternalSelection(int, int, QList<uint16_t>, QList<QPair<uint16_t, uint16_t>>);
     QPoint getMetatileIdCoordsOnWidget(uint16_t);
@@ -47,7 +47,7 @@ private:
     int externalSelectionWidth;
     int externalSelectionHeight;
     QList<uint16_t> externalSelectedMetatiles;
-    MetatileSelection selection;
+    MetatileSelection *selection;
 
     void updateSelectedMetatiles();
     void updateExternalSelectedMetatiles();

@@ -1334,8 +1334,8 @@ void MainWindow::redrawMetatileSelection()
 
     QPoint size = editor->metatile_selector_item->getSelectionDimensions();
     if (size.x() == 1 && size.y() == 1) {
-        MetatileSelection selection = editor->metatile_selector_item->getMetatileSelection();
-        QPoint pos = editor->metatile_selector_item->getMetatileIdCoordsOnWidget(selection.metatileItems.first().metatileId);
+        MetatileSelection *selection = editor->metatile_selector_item->getMetatileSelection();
+        QPoint pos = editor->metatile_selector_item->getMetatileIdCoordsOnWidget(selection->metatileItems.first().metatileId);
         pos *= scale;
         ui->scrollArea_2->ensureVisible(pos.x(), pos.y(), 8 * scale, 8 * scale);
     }
@@ -1345,8 +1345,8 @@ void MainWindow::currentMetatilesSelectionChanged()
 {
     redrawMetatileSelection();
     if (this->tilesetEditor) {
-        MetatileSelection selection = editor->metatile_selector_item->getMetatileSelection();
-        this->tilesetEditor->selectMetatile(selection.metatileItems.first().metatileId);
+        MetatileSelection *selection = editor->metatile_selector_item->getMetatileSelection();
+        this->tilesetEditor->selectMetatile(selection->metatileItems.first().metatileId);
     }
 }
 
@@ -1419,13 +1419,13 @@ void MainWindow::copy() {
             OrderedJson::object copyObject;
             copyObject["object"] = "metatile_selection";
             OrderedJson::array metatiles;
-            MetatileSelection selection = editor->metatile_selector_item->getMetatileSelection();
-            for (auto item : selection.metatileItems) {
+            MetatileSelection *selection = editor->metatile_selector_item->getMetatileSelection();
+            for (auto item : selection->metatileItems) {
                 metatiles.append(static_cast<int>(item.metatileId));
             }
             OrderedJson::array collisions;
-            if (selection.hasCollision) {
-                for (auto item : selection.collisionItems) {
+            if (selection->hasCollision) {
+                for (auto item : selection->collisionItems) {
                     OrderedJson::object collision;
                     collision["collision"] = item.collision;
                     collision["elevation"] = item.elevation;
@@ -1673,12 +1673,16 @@ void MainWindow::on_mapViewTab_tabBarClicked(int index)
 
     if (index == 0) {
         editor->setEditingMap();
+        editor->onSelectedMetatilesChanged();
     } else if (index == 1) {
         editor->setEditingCollision();
+        editor->onSelectedMetatilesChanged();
     } else if (index == 2) {
         editor->setEditingMap();
+        editor->onSelectedStampsChanged();
     } else if (index == 3) {
         editor->setEditingMap();
+        editor->onSelectedMetatilesChanged();
         prefab.tryImportDefaultPrefabs(this->editor->map);
     }
     editor->setCursorRectVisible(false);
@@ -2684,8 +2688,8 @@ void MainWindow::on_actionTileset_Editor_triggered()
         this->tilesetEditor->activateWindow();
     }
 
-    MetatileSelection selection = this->editor->metatile_selector_item->getMetatileSelection();
-    this->tilesetEditor->selectMetatile(selection.metatileItems.first().metatileId);
+    MetatileSelection *selection = this->editor->metatile_selector_item->getMetatileSelection();
+    this->tilesetEditor->selectMetatile(selection->metatileItems.first().metatileId);
 }
 
 void MainWindow::initTilesetEditor() {

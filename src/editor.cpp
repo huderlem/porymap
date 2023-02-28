@@ -957,6 +957,12 @@ void Editor::onSelectedMetatilesChanged() {
     this->redrawCurrentMetatilesSelection();
 }
 
+void Editor::onSelectedStampsChanged() {
+    QPoint size = this->stamp_selector_item->getSelectionDimensions();
+    this->cursorMapTileRect->updateSelectionSize(size.x(), size.y());
+    this->redrawCurrentMetatilesSelection();
+}
+
 void Editor::onWheelZoom(int s) {
     // Don't zoom the map when the user accidentally scrolls while performing a magic fill. (ctrl + middle button click)
     if (!(QApplication::mouseButtons() & Qt::MiddleButton)) {
@@ -1410,6 +1416,8 @@ void Editor::displayStampSelector() {
     scene_stamps = new QGraphicsScene;
     if (!stamp_selector_item) {
         stamp_selector_item = new StampSelector(8, map);
+        connect(stamp_selector_item, &StampSelector::selectedStampsChanged,
+                this, &Editor::onSelectedStampsChanged);
         stamp_selector_item->select(0);
     } else {
         stamp_selector_item->setMap(map);

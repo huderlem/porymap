@@ -164,6 +164,8 @@ public slots:
     void maskNonVisibleConnectionTiles();
     void onBorderMetatilesChanged();
     void selectedEventIndexChanged(int index, Event::Group eventGroup);
+    void onSelectedMetatilesChanged();
+    void onSelectedStampsChanged();
 
 private:
     void setConnectionItemsVisible(bool);
@@ -207,7 +209,6 @@ private slots:
     void onHoveredMapMetatileCleared();
     void onHoveredMapMovementPermissionChanged(int, int);
     void onHoveredMapMovementPermissionCleared();
-    void onSelectedMetatilesChanged();
     void onWheelZoom(int);
     void onToggleGridClicked(bool);
 

@@ -15,13 +15,13 @@ public:
         this->map = map;
         this->primaryTileset = map->layout->tileset_primary;
         this->secondaryTileset = map->layout->tileset_secondary;
-        this->selection = StampSelection{};
+        this->selection = new StampSelection();
     }
     QPoint getSelectionDimensions();
     void draw();
     bool select(uint16_t stampId);
     void setTilesets(Tileset*, Tileset*);
-    StampSelection getStampSelection();
+    StampSelection* getStampSelection();
     QPoint getStampIdCoordsOnWidget(uint16_t);
     void setMap(Map*);
     Tileset *primaryTileset;
@@ -33,7 +33,7 @@ protected:
 private:
     int numStampsWide;
     Map *map;
-    StampSelection selection;
+    StampSelection *selection;
 
     void updateSelectedStamps();
     uint16_t getStampId(int x, int y);
