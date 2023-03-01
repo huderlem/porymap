@@ -137,7 +137,7 @@ void MapPixmapItem::paintNormal(int x, int y, bool fromScriptCall) {
         Block block;
         if (map->getBlock(actualX, actualY, &block)) {
             int index = j * selectionWidth + i;
-            if (selection->paintNormal(index, &block)) {
+            if (selection->paintNormal(index, &block, map, 2)) {
                 map->setBlock(actualX, actualY, block, !fromScriptCall);
             }
         }
