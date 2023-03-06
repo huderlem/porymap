@@ -8,16 +8,31 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 
 ## [Unreleased]
 ### Changed
-- Change encounter tab copy and paste behavior.
+- The Palette Editor now remembers the Bit Depth setting.
 
 ### Fixed
+- Fix text boxes in the Palette Editor calculating color incorrectly.
+
+## [5.1.1] - 2023-02-20
+### Added
+- Add `registerToggleAction` to the scripting API
+
+### Changed
+- Change encounter tab copy and paste behavior.
+- A warning will appear if a custom script fails to load or an action fails to run.
+
+### Fixed
+- Fix null characters being unpredictably written to some JSON files.
 - Fix tilesets that share part of their name loading incorrectly.
 - Fix events being hidden behind connecting maps.
+- Metatile labels with values defined outside their tileset are no longer deleted.
+- Fix the Tileset Editor retaining edit history after changing tilesets.
 - Fix some minor visual issues on the Connections tab.
 - Fix bug which caused encounter configurator to crash if slots in fields containing groups were deleted.
 - Fix bug which caused encounter configurator to crash if last field was deleted.
 - Fix map render when collision view was active while map changed.
 - Fix the updated pokefirered region map graphics appearing in grayscale.
+- Fix the API function `registerAction` not correctly handling actions with the same name.
 
 ## [5.1.0] - 2023-01-22
 ### Added
@@ -383,7 +398,8 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ## [1.0.0] - 2018-10-26
 This was the initial release.
 
-[Unreleased]: https://github.com/huderlem/porymap/compare/5.1.0...HEAD
+[Unreleased]: https://github.com/huderlem/porymap/compare/5.1.1...HEAD
+[5.1.1]: https://github.com/huderlem/porymap/compare/5.1.0...5.1.1
 [5.1.0]: https://github.com/huderlem/porymap/compare/5.0.0...5.1.0
 [5.0.0]: https://github.com/huderlem/porymap/compare/4.5.0...5.0.0
 [4.5.0]: https://github.com/huderlem/porymap/compare/4.4.0...4.5.0
