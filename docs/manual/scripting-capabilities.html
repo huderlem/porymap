@@ -2025,10 +2025,10 @@
 <dl class="field-list simple">
 <dt class="field-odd">Arguments<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>metatileId</strong> (<span><code class="xref js js-func docutils literal notranslate"><span class="pre">number</span></code></span>) – id of target metatile</p></li>
-<li><p><strong>tileIndex</strong> (<span><code class="xref js js-func docutils literal notranslate"><span class="pre">number</span></code></span>) – index of the tile to set</p></li>
-<li><p><strong>tile</strong> (<span><code class="xref js js-func docutils literal notranslate"><span class="pre">object</span></code></span>) – the new tile. <code class="docutils literal notranslate"><span class="pre">tile</span></code> is an object with the properties <code class="docutils literal notranslate"><span class="pre">{tileId,</span> <span class="pre">xflip,</span> <span class="pre">yflip,</span> <span class="pre">palette}</span></code></p></li>
-<li><p><strong>forceRedraw</strong> (<span><code class="xref js js-func docutils literal notranslate"><span class="pre">boolean</span></code></span>) – Force the map view to refresh. Defaults to <code class="docutils literal notranslate"><span class="pre">true</span></code>. Redrawing the map view is expensive, so set to <code class="docutils literal notranslate"><span class="pre">false</span></code> when making many consecutive map edits, and then redraw the map once using <code class="docutils literal notranslate"><span class="pre">map.redraw()</span></code>.</p></li>
+<li><p><strong>metatileId</strong> (<span><code class="xref js js-func docutils literal notranslate"><span class="pre">number()</span></code></span>) – id of target metatile</p></li>
+<li><p><strong>tileIndex</strong> (<span><code class="xref js js-func docutils literal notranslate"><span class="pre">number()</span></code></span>) – index of the tile to set</p></li>
+<li><p><strong>tile</strong> (<span><code class="xref js js-func docutils literal notranslate"><span class="pre">object()</span></code></span>) – the new tile. <code class="docutils literal notranslate"><span class="pre">tile</span></code> is an object with the properties <code class="docutils literal notranslate"><span class="pre">{tileId,</span> <span class="pre">xflip,</span> <span class="pre">yflip,</span> <span class="pre">palette}</span></code></p></li>
+<li><p><strong>forceRedraw</strong> (<span><code class="xref js js-func docutils literal notranslate"><span class="pre">boolean()</span></code></span>) – Force the map view to refresh. Defaults to <code class="docutils literal notranslate"><span class="pre">true</span></code>. Redrawing the map view is expensive, so set to <code class="docutils literal notranslate"><span class="pre">false</span></code> when making many consecutive map edits, and then redraw the map once using <code class="docutils literal notranslate"><span class="pre">map.redraw()</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -2796,11 +2796,11 @@
 <dl class="field-list simple">
 <dt class="field-odd">Arguments<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<span><code class="xref js js-func docutils literal notranslate"><span class="pre">number</span></code></span>) – the x pixel coordinate of the image’s top-left corner (relative to the layer’s position)</p></li>
-<li><p><strong>y</strong> (<span><code class="xref js js-func docutils literal notranslate"><span class="pre">number</span></code></span>) – the y pixel coordinate of the image’s top-left corner (relative to the layer’s position)</p></li>
-<li><p><strong>tile</strong> (<span><code class="xref js js-func docutils literal notranslate"><span class="pre">object</span></code></span>) – the tile to create an image of. <code class="docutils literal notranslate"><span class="pre">tile</span></code> is an object with the properties <code class="docutils literal notranslate"><span class="pre">{tileId,</span> <span class="pre">xflip,</span> <span class="pre">yflip,</span> <span class="pre">palette}</span></code></p></li>
-<li><p><strong>setTransparency</strong> (<span><code class="xref js js-func docutils literal notranslate"><span class="pre">boolean</span></code></span>) – whether the color at index 0 should be overwritten with transparent pixels. Defaults to <code class="docutils literal notranslate"><span class="pre">false</span></code></p></li>
-<li><p><strong>layer</strong> (<span><code class="xref js js-func docutils literal notranslate"><span class="pre">number</span></code></span>) – the layer id. Defaults to <code class="docutils literal notranslate"><span class="pre">0</span></code></p></li>
+<li><p><strong>x</strong> (<span><code class="xref js js-func docutils literal notranslate"><span class="pre">number()</span></code></span>) – the x pixel coordinate of the image’s top-left corner (relative to the layer’s position)</p></li>
+<li><p><strong>y</strong> (<span><code class="xref js js-func docutils literal notranslate"><span class="pre">number()</span></code></span>) – the y pixel coordinate of the image’s top-left corner (relative to the layer’s position)</p></li>
+<li><p><strong>tile</strong> (<span><code class="xref js js-func docutils literal notranslate"><span class="pre">object()</span></code></span>) – the tile to create an image of. <code class="docutils literal notranslate"><span class="pre">tile</span></code> is an object with the properties <code class="docutils literal notranslate"><span class="pre">{tileId,</span> <span class="pre">xflip,</span> <span class="pre">yflip,</span> <span class="pre">palette}</span></code></p></li>
+<li><p><strong>setTransparency</strong> (<span><code class="xref js js-func docutils literal notranslate"><span class="pre">boolean()</span></code></span>) – whether the color at index 0 should be overwritten with transparent pixels. Defaults to <code class="docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><strong>layer</strong> (<span><code class="xref js js-func docutils literal notranslate"><span class="pre">number()</span></code></span>) – the layer id. Defaults to <code class="docutils literal notranslate"><span class="pre">0</span></code></p></li>
 </ul>
 </dd>
 </dl>
@@ -3062,6 +3062,22 @@
 <li><p><strong>actionName</strong> (<span><code class="xref js js-func docutils literal notranslate"><span class="pre">string</span></code></span>) – name of the action that will be displayed in the <code class="docutils literal notranslate"><span class="pre">Tools</span></code> menu</p></li>
 <li><p><strong>shortcut</strong> (<span><code class="xref js js-func docutils literal notranslate"><span class="pre">string</span></code></span>) – optional keyboard shortcut</p></li>
 <li><p><strong>checked</strong> (<span><code class="xref js js-func docutils literal notranslate"><span class="pre">boolean</span></code></span>) – whether the action initially has a check mark. Defaults to <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="utility.registerToggleAction">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">utility</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">registerToggleAction</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">functionName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actionName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shortcut</span> <span class="pre">=</span> <span class="pre">&quot;&quot;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">checked</span> <span class="pre">=</span> <span class="pre">false</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utility.registerToggleAction" title="Permalink to this definition"></a></dt>
+<dd><p>Registers a JavaScript function to an action that can be manually triggered in Porymap’s <code class="docutils literal notranslate"><span class="pre">Tools</span></code> menu. Optionally, a keyboard shortcut (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;Ctrl+P&quot;</span></code>) can also be specified, assuming it doesn’t collide with any existing shortcuts used by Porymap. A check mark will be toggled next to the action name each time its activated. Whether the check mark is initially present can be set with <code class="docutils literal notranslate"><span class="pre">checked</span></code>. The function specified by <code class="docutils literal notranslate"><span class="pre">functionName</span></code> must have the <code class="docutils literal notranslate"><span class="pre">export</span></code> keyword.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>functionName</strong> (<span><code class="xref js js-func docutils literal notranslate"><span class="pre">string()</span></code></span>) – name of the JavaScript function</p></li>
+<li><p><strong>actionName</strong> (<span><code class="xref js js-func docutils literal notranslate"><span class="pre">string()</span></code></span>) – name of the action that will be displayed in the <code class="docutils literal notranslate"><span class="pre">Tools</span></code> menu</p></li>
+<li><p><strong>shortcut</strong> (<span><code class="xref js js-func docutils literal notranslate"><span class="pre">string()</span></code></span>) – optional keyboard shortcut</p></li>
+<li><p><strong>checked</strong> (<span><code class="xref js js-func docutils literal notranslate"><span class="pre">boolean()</span></code></span>) – whether the action initially has a check mark. Defaults to <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
