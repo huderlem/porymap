@@ -188,3 +188,7 @@ epub_title = project
 
 # A list of files that should not be packed into the epub file.
 epub_exclude_files = ['search.html']
+
+# This setting disables the automatic addition of '()' for js:function argument types.
+# The fact that it applies to function argument types seems like a bug in Sphinx.
+add_function_parentheses = False
