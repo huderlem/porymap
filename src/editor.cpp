@@ -1178,6 +1178,16 @@ void Editor::setStraightPathCursorMode(QGraphicsSceneMouseEvent *event) {
     }
 }
 
+StampLayer Editor::getSelectedStampLayer() {
+    auto stampLayerButton = ui->buttonGroup_stampLayer->checkedButton();
+    if (stampLayerButton == ui->radioButton_stampTopLayer) {
+        return StampLayer::STAMP_LAYER_TOP;
+    } else if (stampLayerButton == ui->radioButton_stampBottomLayer) {
+        return StampLayer::STAMP_LAYER_BOTTOM;
+    }
+    return StampLayer::STAMP_LAYER_MIDDLE;
+}
+
 void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item) {
     // TODO: add event tab object painting tool buttons stuff here
     if (item->paintingMode == MapPixmapItem::PaintMode::Disabled) {
@@ -1207,7 +1217,7 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item
                     item->lockNondominantAxis(event);
                     pos = item->adjustCoords(pos);
                 }
-                item->paint(event);
+                item->paint(event, getSelectedStampLayer());
             }
         } else if (map_edit_mode == "select") {
             item->select(event);

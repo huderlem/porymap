@@ -59,7 +59,7 @@ public:
     MapPixmapItem::Axis lockedAxis;
     QPoint selection_origin;
     QList<QPoint> selection;
-    virtual void paint(QGraphicsSceneMouseEvent*);
+    virtual void paint(QGraphicsSceneMouseEvent*, StampLayer stampLayer);
     virtual void floodFill(QGraphicsSceneMouseEvent*);
     virtual void magicFill(QGraphicsSceneMouseEvent*);
     void magicFill(int x, int y, uint16_t metatileId, bool fromScriptCall = false);
@@ -86,7 +86,7 @@ public:
     void shift(int xDelta, int yDelta, bool fromScriptCall = false);
     virtual void draw(bool ignoreCache = false);
     void updateMetatileSelection(QGraphicsSceneMouseEvent *event);
-    void paintNormal(int x, int y, bool fromScriptCall = false);
+    void paintNormal(int x, int y, StampLayer stampLayer, bool fromScriptCall = false);
     void lockNondominantAxis(QGraphicsSceneMouseEvent *event);
     QPoint adjustCoords(QPoint pos);
 

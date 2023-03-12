@@ -3,7 +3,7 @@
 #include "metatile.h"
 #include "log.h"
 
-bool MetatileSelection::paintNormal(int index, Block *block, Map *map, int layer) {
+bool MetatileSelection::paintNormal(int index, Block *block, Map *map, StampLayer stampLayer) {
     MetatileSelectionItem item = this->metatileItems.at(index);
     if (!item.enabled)
         return false;
@@ -17,71 +17,24 @@ bool MetatileSelection::paintNormal(int index, Block *block, Map *map, int layer
     return true;
 }
 
-void adjustMetatileForLayer(int layer, int *baseOffset, Metatile *metatile) {
-    switch (metatile->layerType)
+int getLayerOffset(StampLayer stampLayer) {
+    switch (stampLayer)
     {
+    case StampLayer::STAMP_LAYER_BOTTOM:
+        return 0;
+    case StampLayer::STAMP_LAYER_TOP:
+        return 4;
     default:
-    case METATILE_LAYER_MIDDLE_TOP:
-        switch (layer)
-        {
-        case 0:
-            *baseOffset = 0;
-            metatile->layerType = METATILE_LAYER_BOTTOM_TOP;
-            for (int i = 0; i < 4; i++) {
-                metatile->tiles[i+4] = metatile->tiles[i];
-            }
-            break;
-        case 1:
-            *baseOffset = 0;
-            break;
-           case 2:
-            *baseOffset = 4;
-            break;
-        }
-        break;
-    case METATILE_LAYER_BOTTOM_MIDDLE:
-        switch (layer)
-        {
-        case 0:
-            *baseOffset = 0;
-            break;
-        case 1:
-            *baseOffset = 4;
-            break;
-           case 2:
-            *baseOffset = 4;
-            metatile->layerType = METATILE_LAYER_MIDDLE_TOP;
-            for (int i = 0; i < 4; i++) {
-                metatile->tiles[i] = metatile->tiles[i+4];
-            }
-            break;
-        }
-        break;
-    case METATILE_LAYER_BOTTOM_TOP:
-        switch (layer)
-        {
-        case 0:
-            *baseOffset = 0;
-            break;
-        case 1:
-            *baseOffset = 4;
-            metatile->layerType = METATILE_LAYER_BOTTOM_MIDDLE;
-            break;
-           case 2:
-            *baseOffset = 4;
-            break;
-        }
-        break;
+        return 0;
     }
 }
 
-bool StampSelection::paintNormal(int index, Block *block, Map *map, int layer) {
+bool StampSelection::paintNormal(int index, Block *block, Map *map, StampLayer stampLayer) {
     Tileset *primaryTileset = map->layout->tileset_primary;
     Tileset *secondaryTileset = map->layout->tileset_secondary;
     // 1. Build metatile by applying the stamp to the existing block.
     Metatile metatile = *(Tileset::getMetatile(block->metatileId, map->layout->tileset_primary, map->layout->tileset_secondary));
-    int baseOffset;
-    adjustMetatileForLayer(layer, &baseOffset, &metatile);
+    int baseOffset = getLayerOffset(stampLayer);
     metatile.tiles[baseOffset] = Tile(0x5, false, false, 2);
     metatile.tiles[baseOffset + 1] = Tile(0x5, true, false, 2);
     metatile.tiles[baseOffset + 2] = Tile(0x15, false, false, 2);

@@ -77,7 +77,7 @@ void MainWindow::setBlock(int x, int y, int rawValue, bool forceRedraw, bool com
 
 void MainWindow::setBlocksFromSelection(int x, int y, bool forceRedraw, bool commitChanges) {
     if (this->editor && this->editor->map_item) {
-        this->editor->map_item->paintNormal(x, y, true);
+        this->editor->map_item->paintNormal(x, y, StampLayer::STAMP_LAYER_BOTTOM, true);
         this->tryCommitMapChanges(commitChanges);
         this->tryRedrawMapArea(forceRedraw);
     }

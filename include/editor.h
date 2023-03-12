@@ -156,6 +156,7 @@ public:
     void scaleMapView(int);
     void openInTextEditor(const QString &path, int lineNum = 0) const;
     bool eventLimitReached(Event::Type type);
+    StampLayer getSelectedStampLayer();
 
 public slots:
     void openMapScripts() const;

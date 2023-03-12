@@ -7,7 +7,7 @@
 
 #define SWAP(a, b) do { if (a != b) { a ^= b; b ^= a; a ^= b; } } while (0)
 
-void MapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
+void MapPixmapItem::paint(QGraphicsSceneMouseEvent *event, StampLayer stampLayer) {
     if (map) {
         if (event->type() == QEvent::GraphicsSceneMouseRelease) {
             actionId_++;
@@ -31,13 +31,13 @@ void MapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
                 if (!shiftPressed && selectionDimensions.x() == 3 && selectionDimensions.y() == 3) {
                     paintSmartPath(pos.x(), pos.y());
                 } else {
-                    paintNormal(pos.x(), pos.y());
+                    paintNormal(pos.x(), pos.y(), stampLayer);
                 }
             } else {
                 if (shiftPressed && selectionDimensions.x() == 3 && selectionDimensions.y() == 3) {
                     paintSmartPath(pos.x(), pos.y());
                 } else {
-                    paintNormal(pos.x(), pos.y());
+                    paintNormal(pos.x(), pos.y(), stampLayer);
                 }
             }
         }
@@ -110,7 +110,7 @@ PaintSelection* MapPixmapItem::getActiveSelection() {
     }
 }
 
-void MapPixmapItem::paintNormal(int x, int y, bool fromScriptCall) {
+void MapPixmapItem::paintNormal(int x, int y, StampLayer stampLayer, bool fromScriptCall) {
     PaintSelection *selection = this->getActiveSelection();
     int initialX = fromScriptCall ? x : this->paint_tile_initial_x;
     int initialY = fromScriptCall ? y : this->paint_tile_initial_y;
@@ -137,7 +137,7 @@ void MapPixmapItem::paintNormal(int x, int y, bool fromScriptCall) {
         Block block;
         if (map->getBlock(actualX, actualY, &block)) {
             int index = j * selectionWidth + i;
-            if (selection->paintNormal(index, &block, map, 2)) {
+            if (selection->paintNormal(index, &block, map, stampLayer)) {
                 map->setBlock(actualX, actualY, block, !fromScriptCall);
             }
         }
