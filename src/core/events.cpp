@@ -244,6 +244,9 @@ void ObjectEvent::loadPixmap(Project *project) {
         // No sprite associated with this gfx constant.
         // Use default sprite instead.
         this->pixmap = project->entitiesPixmap.copy(0, 0, 16, 16);
+        this->spriteWidth = 16;
+        this->spriteHeight = 16;
+        this->usingSprite = false;
     } else {
         this->setFrameFromMovement(project->facingDirections.value(this->movement));
         this->setPixmapFromSpritesheet(eventGfx->spritesheet, eventGfx->spriteWidth, eventGfx->spriteHeight, eventGfx->inanimate);
@@ -387,6 +390,9 @@ void CloneObjectEvent::loadPixmap(Project *project) {
         // No sprite associated with this gfx constant.
         // Use default sprite instead.
         this->pixmap = project->entitiesPixmap.copy(0, 0, 16, 16);
+        this->spriteWidth = 16;
+        this->spriteHeight = 16;
+        this->usingSprite = false;
     } else {
         this->setFrameFromMovement(project->facingDirections.value(this->movement));
         this->setPixmapFromSpritesheet(eventGfx->spritesheet, eventGfx->spriteWidth, eventGfx->spriteHeight, eventGfx->inanimate);
