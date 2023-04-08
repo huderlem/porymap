@@ -8,7 +8,7 @@ void CollisionPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
         this->previousPos = pos;
         emit this->hoveredMapMovementPermissionChanged(pos.x(), pos.y());
     }
-    if (this->settings->betterCursors && this->paintingMode == LayoutPixmapItem::PaintMode::Metatiles) {
+    if (this->settings->betterCursors && this->getEditsEnabled()) {
         setCursor(this->settings->mapCursor);
     }
 }
@@ -21,7 +21,7 @@ void CollisionPixmapItem::hoverEnterEvent(QGraphicsSceneHoverEvent * event) {
 
 void CollisionPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
     emit this->hoveredMapMovementPermissionCleared();
-    if (this->settings->betterCursors && this->paintingMode == LayoutPixmapItem::PaintMode::Metatiles){
+    if (this->settings->betterCursors && this->getEditsEnabled()){
         unsetCursor();
     }
     this->has_mouse = false;

@@ -46,8 +46,8 @@ public:
     QObject *parent = nullptr;
 
     Project *project = nullptr;
-    QPointer<Map> map = nullptr; // !TODO: since removed onMapCacheCleared, make sure this works as intended
-    QPointer<Layout> layout = nullptr; /* NEW */
+    QPointer<Map> map = nullptr;
+    QPointer<Layout> layout = nullptr;
 
     QUndoGroup editGroup; // Manages the undo history for each map
 
@@ -118,8 +118,6 @@ public:
     void updateCursorRectPos(int x, int y);
     void setCursorRectVisible(bool visible);
 
-
-
     QGraphicsScene *scene = nullptr;
     QGraphicsPixmapItem *current_view = nullptr;
     LayoutPixmapItem *map_item = nullptr;
@@ -154,15 +152,18 @@ public:
     EditAction mapEditAction = EditAction::Paint;
     EditAction objectEditAction = EditAction::Select;
 
-    /// !TODO this
-    enum class EditMode { None, Disabled, Map, Layout, Objects, Connections, Encounters };
-    EditMode editMode = EditMode::Map;
+    enum class EditMode { None, Disabled, Metatiles, Collision, Header, Events, Connections, Encounters };
+    EditMode editMode = EditMode::None;
     void setEditMode(EditMode mode) { this->editMode = mode; }
     EditMode getEditMode() { return this->editMode; }
 
-    void setEditingMap();
+    bool getEditingLayout();
+
+    void setEditorView();
+    
+    void setEditingMetatiles();
     void setEditingCollision();
-    void setEditingLayout();
+    void setEditingHeader();
     void setEditingObjects();
     void setEditingConnections();
     void setEditingEncounters();

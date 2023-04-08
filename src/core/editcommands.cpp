@@ -24,7 +24,6 @@ int getEventTypeMask(QList<Event *> events) {
     return eventTypeMask;
 }
 
-/// !TODO:
 void renderBlocks(Layout *layout, bool ignoreCache = false) {
     layout->layoutItem->draw(ignoreCache);
     layout->collisionItem->draw(ignoreCache);
@@ -178,7 +177,7 @@ bool ShiftMetatiles::mergeWith(const QUndoCommand *command) {
     ************************************************************************
  ******************************************************************************/
 
-ResizeMap::ResizeMap(Layout *layout, QSize oldMapDimensions, QSize newMapDimensions,
+ResizeLayout::ResizeLayout(Layout *layout, QSize oldLayoutDimensions, QSize newLayoutDimensions,
     const Blockdata &oldMetatiles, const Blockdata &newMetatiles,
     QSize oldBorderDimensions, QSize newBorderDimensions,
     const Blockdata &oldBorder, const Blockdata &newBorder,
@@ -187,11 +186,11 @@ ResizeMap::ResizeMap(Layout *layout, QSize oldMapDimensions, QSize newMapDimensi
 
     this->layout = layout;
 
-    this->oldMapWidth = oldMapDimensions.width();
-    this->oldMapHeight = oldMapDimensions.height();
+    this->oldLayoutWidth = oldLayoutDimensions.width();
+    this->oldLayoutHeight = oldLayoutDimensions.height();
 
-    this->newMapWidth = newMapDimensions.width();
-    this->newMapHeight = newMapDimensions.height();
+    this->newLayoutWidth = newLayoutDimensions.width();
+    this->newLayoutHeight = newLayoutDimensions.height();
 
     this->oldMetatiles = oldMetatiles;
     this->newMetatiles = newMetatiles;
@@ -206,33 +205,33 @@ ResizeMap::ResizeMap(Layout *layout, QSize oldMapDimensions, QSize newMapDimensi
     this->newBorder = newBorder;
 }
 
-void ResizeMap::redo() {
+void ResizeLayout::redo() {
     QUndoCommand::redo();
 
     if (!layout) return;
 
     layout->blockdata = newMetatiles;
-    layout->setDimensions(newMapWidth, newMapHeight, false, true);
+    layout->setDimensions(newLayoutWidth, newLayoutHeight, false, true);
 
     layout->border = newBorder;
     layout->setBorderDimensions(newBorderWidth, newBorderHeight, false, true);
 
-    layout->lastCommitBlocks.mapDimensions = QSize(layout->getWidth(), layout->getHeight());
+    layout->lastCommitBlocks.layoutDimensions = QSize(layout->getWidth(), layout->getHeight());
     layout->lastCommitBlocks.borderDimensions = QSize(layout->getBorderWidth(), layout->getBorderHeight());
 
     layout->needsRedrawing();
 }
 
-void ResizeMap::undo() {
+void ResizeLayout::undo() {
     if (!layout) return;
 
     layout->blockdata = oldMetatiles;
-    layout->setDimensions(oldMapWidth, oldMapHeight, false, true);
+    layout->setDimensions(oldLayoutWidth, oldLayoutHeight, false, true);
 
     layout->border = oldBorder;
     layout->setBorderDimensions(oldBorderWidth, oldBorderHeight, false, true);
 
-    layout->lastCommitBlocks.mapDimensions = QSize(layout->getWidth(), layout->getHeight());
+    layout->lastCommitBlocks.layoutDimensions = QSize(layout->getWidth(), layout->getHeight());
     layout->lastCommitBlocks.borderDimensions = QSize(layout->getBorderWidth(), layout->getBorderHeight());
 
     layout->needsRedrawing();
@@ -487,23 +486,23 @@ int EventPaste::id() const {
     ************************************************************************
  ******************************************************************************/
 
-ScriptEditMap::ScriptEditMap(Layout *layout,
-        QSize oldMapDimensions, QSize newMapDimensions,
+ScriptEditLayout::ScriptEditLayout(Layout *layout,
+        QSize oldLayoutDimensions, QSize newLayoutDimensions,
         const Blockdata &oldMetatiles, const Blockdata &newMetatiles,
         QSize oldBorderDimensions, QSize newBorderDimensions,
         const Blockdata &oldBorder, const Blockdata &newBorder,
         QUndoCommand *parent) : QUndoCommand(parent) {
-    setText("Script Edit Map");
+    setText("Script Edit Layout");
 
     this->layout = layout;
 
     this->newMetatiles = newMetatiles;
     this->oldMetatiles = oldMetatiles;
 
-    this->oldMapWidth = oldMapDimensions.width();
-    this->oldMapHeight = oldMapDimensions.height();
-    this->newMapWidth = newMapDimensions.width();
-    this->newMapHeight = newMapDimensions.height();
+    this->oldLayoutWidth = oldLayoutDimensions.width();
+    this->oldLayoutHeight = oldLayoutDimensions.height();
+    this->newLayoutWidth = newLayoutDimensions.width();
+    this->newLayoutHeight = newLayoutDimensions.height();
 
     this->oldBorder = oldBorder;
     this->newBorder = newBorder;
@@ -514,14 +513,14 @@ ScriptEditMap::ScriptEditMap(Layout *layout,
     this->newBorderHeight = newBorderDimensions.height();
 }
 
-void ScriptEditMap::redo() {
+void ScriptEditLayout::redo() {
     QUndoCommand::redo();
 
     if (!layout) return;
 
-    if (newMapWidth != layout->getWidth() || newMapHeight != layout->getHeight()) {
+    if (newLayoutWidth != layout->getWidth() || newLayoutHeight != layout->getHeight()) {
         layout->blockdata = newMetatiles;
-        layout->setDimensions(newMapWidth, newMapHeight, false);
+        layout->setDimensions(newLayoutWidth, newLayoutHeight, false);
     } else {
         layout->setBlockdata(newMetatiles);
     }
@@ -534,21 +533,20 @@ void ScriptEditMap::redo() {
     }
 
     layout->lastCommitBlocks.blocks = newMetatiles;
-    layout->lastCommitBlocks.mapDimensions = QSize(newMapWidth, newMapHeight);
+    layout->lastCommitBlocks.layoutDimensions = QSize(newLayoutWidth, newLayoutHeight);
     layout->lastCommitBlocks.border = newBorder;
     layout->lastCommitBlocks.borderDimensions = QSize(newBorderWidth, newBorderHeight);
 
-    // !TODO
     renderBlocks(layout);
     layout->borderItem->draw();
 }
 
-void ScriptEditMap::undo() {
+void ScriptEditLayout::undo() {
     if (!layout) return;
 
-    if (oldMapWidth != layout->getWidth() || oldMapHeight != layout->getHeight()) {
+    if (oldLayoutWidth != layout->getWidth() || oldLayoutHeight != layout->getHeight()) {
         layout->blockdata = oldMetatiles;
-        layout->setDimensions(oldMapWidth, oldMapHeight, false);
+        layout->setDimensions(oldLayoutWidth, oldLayoutHeight, false);
     } else {
         layout->setBlockdata(oldMetatiles);
     }
@@ -561,11 +559,10 @@ void ScriptEditMap::undo() {
     }
 
     layout->lastCommitBlocks.blocks = oldMetatiles;
-    layout->lastCommitBlocks.mapDimensions = QSize(oldMapWidth, oldMapHeight);
+    layout->lastCommitBlocks.layoutDimensions = QSize(oldLayoutWidth, oldLayoutHeight);
     layout->lastCommitBlocks.border = oldBorder;
     layout->lastCommitBlocks.borderDimensions = QSize(oldBorderWidth, oldBorderHeight);
 
-    // !TODO
     renderBlocks(layout);
     layout->borderItem->draw();
 

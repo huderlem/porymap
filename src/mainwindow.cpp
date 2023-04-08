@@ -1780,11 +1780,11 @@ void MainWindow::on_mapViewTab_tabBarClicked(int index)
         Scripting::cb_MapViewTabChanged(oldIndex, index);
 
     if (index == 0) {
-        editor->setEditingMap();
+        editor->setEditingMetatiles();
     } else if (index == 1) {
         editor->setEditingCollision();
     } else if (index == 2) {
-        editor->setEditingMap();
+        editor->setEditingMetatiles();
         if (projectConfig.getPrefabFilepath().isEmpty() && !projectConfig.getPrefabImportPrompted()) {
             // User hasn't set up prefabs and hasn't been prompted before.
             // Ask if they'd like to import the default prefabs file.
@@ -1802,8 +1802,6 @@ void MainWindow::on_action_Exit_triggered()
 
 void MainWindow::on_mainTabBar_tabBarClicked(int index)
 {
-    //if (!editor->map) return;
-
     int oldIndex = ui->mainTabBar->currentIndex();
     ui->mainTabBar->setCurrentIndex(index);
     if (index != oldIndex)
@@ -1822,6 +1820,8 @@ void MainWindow::on_mainTabBar_tabBarClicked(int index)
         clickToolButtonFromEditAction(editor->objectEditAction);
     } else if (index == 3) {
         editor->setEditingConnections();
+    } else if (index == 4) {
+        editor->setEditingEncounters();
     }
 
     if (!editor->map) return;
@@ -2727,7 +2727,7 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked() {
         if (oldMapDimensions != newMapDimensions || oldBorderDimensions != newBorderDimensions) {
             layout->setDimensions(newMapDimensions.width(), newMapDimensions.height(), true, true);
             layout->setBorderDimensions(newBorderDimensions.width(), newBorderDimensions.height(), true, true);
-            editor->layout->editHistory.push(new ResizeMap(layout,
+            editor->layout->editHistory.push(new ResizeLayout(layout,
                 oldMapDimensions, newMapDimensions,
                 oldMetatiles, layout->blockdata,
                 oldBorderDimensions, newBorderDimensions,

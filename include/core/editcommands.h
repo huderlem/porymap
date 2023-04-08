@@ -22,9 +22,9 @@ enum CommandId {
     ID_PaintCollision,
     ID_BucketFillCollision,
     ID_MagicFillCollision,
-    ID_ResizeMap,
+    ID_ResizeLayout,
     ID_PaintBorder,
-    ID_ScriptEditMap,
+    ID_ScriptEditLayout,
     ID_EventMove,
     ID_EventShift,
     ID_EventCreate,
@@ -194,9 +194,9 @@ private:
 
 
 /// Implements a command to commit a map or border resize action.
-class ResizeMap : public QUndoCommand {
+class ResizeLayout : public QUndoCommand {
 public:
-    ResizeMap(Layout *layout, QSize oldMapDimensions, QSize newMapDimensions,
+    ResizeLayout(Layout *layout, QSize oldLayoutDimensions, QSize newLayoutDimensions,
         const Blockdata &oldMetatiles, const Blockdata &newMetatiles,
         QSize oldBorderDimensions, QSize newBorderDimensions,
         const Blockdata &oldBorder, const Blockdata &newBorder,
@@ -206,15 +206,15 @@ public:
     void redo() override;
 
     bool mergeWith(const QUndoCommand *) override { return false; }
-    int id() const override { return CommandId::ID_ResizeMap; }
+    int id() const override { return CommandId::ID_ResizeLayout; }
 
 private:
     Layout *layout = nullptr;
 
-    int oldMapWidth;
-    int oldMapHeight;
-    int newMapWidth;
-    int newMapHeight;
+    int oldLayoutWidth;
+    int oldLayoutHeight;
+    int newLayoutWidth;
+    int newLayoutHeight;
 
     int oldBorderWidth;
     int oldBorderHeight;
@@ -342,13 +342,12 @@ public:
 
 
 
-// !TODO: rename map vars to layout
 /// Implements a command to commit map edits from the scripting API.
 /// The scripting api can edit map/border blocks and dimensions.
-class ScriptEditMap : public QUndoCommand {
+class ScriptEditLayout : public QUndoCommand {
 public:
-    ScriptEditMap(Layout *layout,
-        QSize oldMapDimensions, QSize newMapDimensions,
+    ScriptEditLayout(Layout *layout,
+        QSize oldLayoutDimensions, QSize newLayoutDimensions,
         const Blockdata &oldMetatiles, const Blockdata &newMetatiles,
         QSize oldBorderDimensions, QSize newBorderDimensions,
         const Blockdata &oldBorder, const Blockdata &newBorder,
@@ -358,7 +357,7 @@ public:
     void redo() override;
 
     bool mergeWith(const QUndoCommand *) override { return false; }
-    int id() const override { return CommandId::ID_ScriptEditMap; }
+    int id() const override { return CommandId::ID_ScriptEditLayout; }
 
 private:
     Layout *layout = nullptr;
@@ -369,10 +368,10 @@ private:
     Blockdata newBorder;
     Blockdata oldBorder;
 
-    int oldMapWidth;
-    int oldMapHeight;
-    int newMapWidth;
-    int newMapHeight;
+    int oldLayoutWidth;
+    int oldLayoutHeight;
+    int newLayoutWidth;
+    int newLayoutHeight;
 
     int oldBorderWidth;
     int oldBorderHeight;

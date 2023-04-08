@@ -55,7 +55,7 @@ public:
     Blockdata cached_border;
     struct {
         Blockdata blocks;
-        QSize mapDimensions;
+        QSize layoutDimensions;
         Blockdata border;
         QSize borderDimensions;
     } lastCommitBlocks; // to track map changes

@@ -14,24 +14,15 @@ private:
     using QGraphicsPixmapItem::paint;
 
 public:
-    enum class PaintMode {
-        Disabled,
-        Metatiles,
-        EventObjects
-    };
-
     LayoutPixmapItem(Layout *layout, MetatileSelector *metatileSelector, Settings *settings) {
         this->layout = layout;
         // this->map->setMapItem(this);
         this->metatileSelector = metatileSelector;
         this->settings = settings;
-        this->paintingMode = PaintMode::Metatiles;
         this->lockedAxis = LayoutPixmapItem::Axis::None;
         this->prevStraightPathState = false;
         setAcceptHoverEvents(true);
     }
-
-    LayoutPixmapItem::PaintMode paintingMode;
 
     Layout *layout;
 
@@ -95,11 +86,16 @@ public:
     void lockNondominantAxis(QGraphicsSceneMouseEvent *event);
     QPoint adjustCoords(QPoint pos);
 
+    void setEditsEnabled(bool enabled) { this->editsEnabled = enabled; }
+    bool getEditsEnabled() { return this->editsEnabled; }
+
 private:
     void paintSmartPath(int x, int y, bool fromScriptCall = false);
     static QList<int> smartPathTable;
 
     unsigned actionId_ = 0;
+
+    bool editsEnabled = true;
 
 signals:
     void startPaint(QGraphicsSceneMouseEvent *, LayoutPixmapItem *);

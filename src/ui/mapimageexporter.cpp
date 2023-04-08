@@ -183,8 +183,8 @@ bool MapImageExporter::historyItemAppliesToFrame(const QUndoCommand *command) {
         case CommandId::ID_BucketFillMetatile:
         case CommandId::ID_MagicFillMetatile:
         case CommandId::ID_ShiftMetatiles:
-        case CommandId::ID_ResizeMap:
-        case CommandId::ID_ScriptEditMap:
+        case CommandId::ID_ResizeLayout:
+        case CommandId::ID_ScriptEditLayout:
             return true;
         case CommandId::ID_PaintCollision:
         case CommandId::ID_BucketFillCollision:

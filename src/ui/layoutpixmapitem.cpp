@@ -694,7 +694,7 @@ void LayoutPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
         this->metatilePos = pos;
         emit this->hoveredMapMetatileChanged(pos);
     }
-    if (this->settings->betterCursors && this->paintingMode != LayoutPixmapItem::PaintMode::Disabled) {
+    if (this->settings->betterCursors && this->editsEnabled) {
         setCursor(this->settings->mapCursor);
     }
 }
@@ -707,7 +707,7 @@ void LayoutPixmapItem::hoverEnterEvent(QGraphicsSceneHoverEvent * event) {
 
 void LayoutPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
     emit this->hoveredMapMetatileCleared();
-    if (this->settings->betterCursors && this->paintingMode != LayoutPixmapItem::PaintMode::Disabled) {
+    if (this->settings->betterCursors && this->editsEnabled) {
         unsetCursor();
     }
     this->has_mouse = false;

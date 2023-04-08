@@ -1126,7 +1126,7 @@ bool Project::loadBlockdata(Layout *layout) {
     QString path = QString("%1/%2").arg(root).arg(layout->blockdata_path);
     layout->blockdata = readBlockdata(path);
     layout->lastCommitBlocks.blocks = layout->blockdata;
-    layout->lastCommitBlocks.mapDimensions = QSize(layout->getWidth(), layout->getHeight());
+    layout->lastCommitBlocks.layoutDimensions = QSize(layout->getWidth(), layout->getHeight());
 
     if (layout->blockdata.count() != layout->getWidth() * layout->getHeight()) {
         logWarn(QString("Layout blockdata length %1 does not match dimensions %2x%3 (should be %4). Resizing blockdata.")
@@ -1148,7 +1148,7 @@ void Project::setNewMapBlockdata(Map *map) {
         map->layout->blockdata.append(block);
     }
     map->layout->lastCommitBlocks.blocks = map->layout->blockdata;
-    map->layout->lastCommitBlocks.mapDimensions = QSize(width, height);
+    map->layout->lastCommitBlocks.layoutDimensions = QSize(width, height);
 }
 
 bool Project::loadLayoutBorder(Layout *layout) {

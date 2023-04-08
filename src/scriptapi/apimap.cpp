@@ -44,8 +44,8 @@ void MainWindow::tryCommitMapChanges(bool commitChanges) {
     if (commitChanges) {
         Layout *layout = this->editor->layout;
         if (layout) {
-            layout->editHistory.push(new ScriptEditMap(layout,
-                layout->lastCommitBlocks.mapDimensions, QSize(layout->getWidth(), layout->getHeight()),
+            layout->editHistory.push(new ScriptEditLayout(layout,
+                layout->lastCommitBlocks.layoutDimensions, QSize(layout->getWidth(), layout->getHeight()),
                 layout->lastCommitBlocks.blocks, layout->blockdata,
                 layout->lastCommitBlocks.borderDimensions, QSize(layout->getBorderWidth(), layout->getBorderHeight()),
                 layout->lastCommitBlocks.border, layout->border

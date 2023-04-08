@@ -94,7 +94,6 @@ void NewMapPopup::init() {
     ui->spinBox_NewMap_Floor_Number->setValue(settings.floorNumber);
 
     // Connect signals
-    // !TODO: make sure this doesnt reconnect a million times
     connect(ui->spinBox_NewMap_Width, QOverload<int>::of(&QSpinBox::valueChanged), [=](int){checkNewMapDimensions();});
     connect(ui->spinBox_NewMap_Height, QOverload<int>::of(&QSpinBox::valueChanged), [=](int){checkNewMapDimensions();});
 
