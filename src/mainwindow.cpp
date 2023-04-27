@@ -2628,9 +2628,9 @@ void MainWindow::on_comboBox_EmergeMap_currentTextChanged(const QString &mapName
 
 void MainWindow::on_comboBox_PrimaryTileset_currentTextChanged(const QString &tilesetLabel)
 {
-    if (editor->project->primaryTilesetLabels.contains(tilesetLabel) && editor->map) {
+    if (editor->project->primaryTilesetLabels.contains(tilesetLabel) && editor->layout) {
         editor->updatePrimaryTileset(tilesetLabel);
-        redrawMapScene();
+        redrawLayoutScene();
         on_horizontalSlider_MetatileZoom_valueChanged(ui->horizontalSlider_MetatileZoom->value());
         updateTilesetEditor();
         prefab.updatePrefabUi(editor->layout);
@@ -2640,9 +2640,9 @@ void MainWindow::on_comboBox_PrimaryTileset_currentTextChanged(const QString &ti
 
 void MainWindow::on_comboBox_SecondaryTileset_currentTextChanged(const QString &tilesetLabel)
 {
-    if (editor->project->secondaryTilesetLabels.contains(tilesetLabel) && editor->map) {
+    if (editor->project->secondaryTilesetLabels.contains(tilesetLabel) && editor->layout) {
         editor->updateSecondaryTileset(tilesetLabel);
-        redrawMapScene();
+        redrawLayoutScene();
         on_horizontalSlider_MetatileZoom_valueChanged(ui->horizontalSlider_MetatileZoom->value());
         updateTilesetEditor();
         prefab.updatePrefabUi(editor->layout);
