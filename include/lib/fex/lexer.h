@@ -1,6 +1,7 @@
 #ifndef INCLUDE_CORE_LEXER_H
 #define INCLUDE_CORE_LEXER_H
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
