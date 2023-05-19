@@ -895,6 +895,8 @@ void Project::updateTilesetMetatileLabels(Tileset *tileset) {
     const QString prefix = tileset->getMetatileLabelPrefix();
     metatileLabelsMap[tileset->name].clear();
     for (int metatileId : tileset->metatileLabels.keys()) {
+        if (tileset->metatileLabels[metatileId].isEmpty())
+            continue;
         QString label = prefix + tileset->metatileLabels[metatileId];
         metatileLabelsMap[tileset->name][label] = metatileId;
     }
