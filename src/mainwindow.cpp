@@ -2490,7 +2490,7 @@ void MainWindow::on_spinBox_ConnectionOffset_valueChanged(int offset)
 
 void MainWindow::on_comboBox_ConnectedMap_currentTextChanged(const QString &mapName)
 {
-    if (editor->project->mapNames.contains(mapName)) {
+    if (mapName.isEmpty() || editor->project->mapNames.contains(mapName)) {
         editor->setConnectionMap(mapName);
         markMapEdited();
     }
@@ -2522,7 +2522,7 @@ void MainWindow::on_pushButton_ConfigureEncountersJSON_clicked() {
 
 void MainWindow::on_comboBox_DiveMap_currentTextChanged(const QString &mapName)
 {
-    if (editor->project->mapNames.contains(mapName)) {
+    if (mapName.isEmpty() || editor->project->mapNames.contains(mapName)) {
         editor->updateDiveMap(mapName);
         markMapEdited();
     }
@@ -2530,7 +2530,7 @@ void MainWindow::on_comboBox_DiveMap_currentTextChanged(const QString &mapName)
 
 void MainWindow::on_comboBox_EmergeMap_currentTextChanged(const QString &mapName)
 {
-    if (editor->project->mapNames.contains(mapName)) {
+    if (mapName.isEmpty() || editor->project->mapNames.contains(mapName)) {
         editor->updateEmergeMap(mapName);
         markMapEdited();
     }
