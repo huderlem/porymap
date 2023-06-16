@@ -18,6 +18,7 @@
 #include "mapparser.h"
 #include "prefab.h"
 #include "montabwidget.h"
+#include "imageexport.h"
 
 #include <QFileDialog>
 #include <QClipboard>
@@ -1280,7 +1281,7 @@ void MainWindow::on_actionNew_Tileset_triggered() {
         }
         newSet.palettes[0][1] = qRgb(255,0,255);
         newSet.palettePreviews[0][1] = qRgb(255,0,255);
-        editor->project->saveTilesetTilesImage(&newSet);
+        exportIndexed4BPPPng(newSet.tilesImage, newSet.tilesImagePath);
         editor->project->saveTilesetMetatiles(&newSet);
         editor->project->saveTilesetMetatileAttributes(&newSet);
         editor->project->saveTilesetPalettes(&newSet);

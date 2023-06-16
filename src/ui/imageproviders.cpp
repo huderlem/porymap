@@ -169,3 +169,12 @@ QImage getPalettedTileImage(uint16_t tileId, Tileset *primaryTileset, Tileset *s
 QImage getGreyscaleTileImage(uint16_t tileId, Tileset *primaryTileset, Tileset *secondaryTileset) {
     return getColoredTileImage(tileId, primaryTileset, secondaryTileset, greyscalePalette);
 }
+
+// gbagfx allows 4bpp image data to be represented with 8bpp .png files by considering only the lower 4 bits of each pixel.
+// Reproduce that here to support this type of image use.
+void flattenTo4bppImage(QImage * image) {
+    if (!image) return;
+    uchar * pixel = image->bits();
+    for (int i = 0; i < image->sizeInBytes(); i++, pixel++)
+        *pixel %= 16;
+}

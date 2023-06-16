@@ -701,15 +701,6 @@ void TilesetEditor::importTilesetTiles(Tileset *tileset, bool primary) {
             msgBox.setIcon(QMessageBox::Icon::Critical);
             msgBox.exec();
             return;
-        } else if (palette.length() != 16) {
-            QMessageBox msgBox(this);
-            msgBox.setText("Failed to import palette.");
-            QString message = QString("The palette must have exactly 16 colors, but it has %1.").arg(palette.length());
-            msgBox.setInformativeText(message);
-            msgBox.setDefaultButton(QMessageBox::Ok);
-            msgBox.setIcon(QMessageBox::Icon::Critical);
-            msgBox.exec();
-            return;
         }
 
         QVector<QRgb> colorTable = palette.toVector();
@@ -717,20 +708,21 @@ void TilesetEditor::importTilesetTiles(Tileset *tileset, bool primary) {
     }
 
     // Validate image is properly indexed to 16 colors.
-    if (image.colorCount() != 16) {
-        QMessageBox msgBox(this);
-        msgBox.setText("Failed to import tiles.");
-        msgBox.setInformativeText(QString("The image must be indexed and contain 16 total colors, or it must be un-indexed. The provided image has %1 indexed colors.")
-                                  .arg(image.colorCount()));
-        msgBox.setDefaultButton(QMessageBox::Ok);
-        msgBox.setIcon(QMessageBox::Icon::Critical);
-        msgBox.exec();
-        return;
+    int colorCount = image.colorCount();
+    if (colorCount > 16) {
+        flattenTo4bppImage(&image);
+    } else if (colorCount < 16) {
+        QVector<QRgb> colorTable = image.colorTable();
+        for (int i = colorTable.length(); i < 16; i++) {
+            colorTable.append(Qt::black);
+        }
+        image.setColorTable(colorTable);
     }
 
     this->project->loadTilesetTiles(tileset, image);
     this->refresh();
     this->hasUnsavedChanges = true;
+    tileset->hasUnsavedTilesImage = true;
 }
 
 void TilesetEditor::closeEvent(QCloseEvent *event)
