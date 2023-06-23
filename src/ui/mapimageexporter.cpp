@@ -98,8 +98,11 @@ void MapImageExporter::saveImage() {
                 progress.setMaximum(1);
                 progress.setValue(0);
 
-                int maxWidth = this->map->getWidth() * 16;
-                int maxHeight = this->map->getHeight() * 16;
+                Layout *layout = this->map->layout;
+                if (!layout) break;
+
+                int maxWidth = layout->getWidth() * 16;
+                int maxHeight = layout->getHeight() * 16;
                 if (showBorder) {
                     maxWidth += 2 * STITCH_MODE_BORDER_DISTANCE * 16;
                     maxHeight += 2 * STITCH_MODE_BORDER_DISTANCE * 16;
