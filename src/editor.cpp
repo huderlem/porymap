@@ -1918,6 +1918,7 @@ void Editor::updatePrimaryTileset(QString tilesetLabel, bool forceLoad)
     {
         map->layout->tileset_primary_label = tilesetLabel;
         map->layout->tileset_primary = project->getTileset(tilesetLabel, forceLoad);
+        map->clearBorderCache();
     }
 }
 
@@ -1927,6 +1928,7 @@ void Editor::updateSecondaryTileset(QString tilesetLabel, bool forceLoad)
     {
         map->layout->tileset_secondary_label = tilesetLabel;
         map->layout->tileset_secondary = project->getTileset(tilesetLabel, forceLoad);
+        map->clearBorderCache();
     }
 }
 

@@ -14,6 +14,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix text boxes in the Palette Editor calculating color incorrectly.
 - Fix default object sprites retaining dimensions and transparency of the previous sprite.
 - Fix connections not being deleted when the map name text box is cleared.
+- Fix the map border not updating when a tileset is changed.
 
 ## [5.1.1] - 2023-02-20
 ### Added
