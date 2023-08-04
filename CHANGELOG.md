@@ -9,6 +9,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ## [Unreleased]
 ### Changed
 - The Palette Editor now remembers the Bit Depth setting.
+- The min/max levels on the Wild Pokémon tab will now adjust automatically if they invalidate each other.
 
 ### Fixed
 - Fix text boxes in the Palette Editor calculating color incorrectly.
