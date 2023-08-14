@@ -38,6 +38,8 @@ public:
     QList<QList<QRgb>> palettes;
     QList<QList<QRgb>> palettePreviews;
 
+    bool hasUnsavedTilesImage;
+
     static Tileset* getMetatileTileset(int, Tileset*, Tileset*);
     static Tileset* getTileTileset(int, Tileset*, Tileset*);
     static Metatile* getMetatile(int, Tileset*, Tileset*);

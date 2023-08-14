@@ -13,6 +13,7 @@ QImage getMetatileImage(Metatile*, Tileset*, Tileset*, QList<int>, QList<float>,
 QImage getTileImage(uint16_t, Tileset*, Tileset*);
 QImage getPalettedTileImage(uint16_t, Tileset*, Tileset*, int, bool useTruePalettes = false);
 QImage getGreyscaleTileImage(uint16_t tile, Tileset *primaryTileset, Tileset *secondaryTileset);
+void flattenTo4bppImage(QImage * image);
 
 static QList<QRgb> greyscalePalette({
     qRgb(0, 0, 0),

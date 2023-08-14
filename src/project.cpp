@@ -6,7 +6,6 @@
 #include "paletteutil.h"
 #include "tile.h"
 #include "tileset.h"
-#include "imageexport.h"
 #include "map.h"
 
 #include "orderedjson.h"
@@ -1008,7 +1007,15 @@ void Project::saveTilesetMetatiles(Tileset *tileset) {
 }
 
 void Project::saveTilesetTilesImage(Tileset *tileset) {
-    exportIndexed4BPPPng(tileset->tilesImage, tileset->tilesImagePath);
+    // Only write the tiles image if it was changed.
+    // Porymap will only ever change an existing tiles image by importing a new one.
+    if (tileset->hasUnsavedTilesImage) {
+        if (!tileset->tilesImage.save(tileset->tilesImagePath, "PNG")) {
+            logError(QString("Failed to save tiles image '%1'").arg(tileset->tilesImagePath));
+            return;
+        }
+        tileset->hasUnsavedTilesImage = false;
+    }
 }
 
 void Project::saveTilesetPalettes(Tileset *tileset) {
@@ -1350,6 +1357,7 @@ void Project::loadTilesetAssets(Tileset* tileset) {
     QImage image;
     if (QFile::exists(tileset->tilesImagePath)) {
         image = QImage(tileset->tilesImagePath).convertToFormat(QImage::Format_Indexed8, Qt::ThresholdDither);
+        flattenTo4bppImage(&image);
     } else {
         image = QImage(8, 8, QImage::Format_Indexed8);
     }
