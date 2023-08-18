@@ -333,7 +333,7 @@ private:
 
     MapSortOrder mapSortOrder;
 
-    bool needsFullRedraw = false;
+    bool tilesetNeedsRedraw = false;
 
     bool setMap(QString, bool scrollTreeView = false);
     void redrawMapScene();

@@ -5,7 +5,7 @@
 #include "config.h"
 #include "imageproviders.h"
 
-// TODO: "needsFullRedraw" is used when redrawing the map after
+// TODO: "tilesetNeedsRedraw" is used when redrawing the map after
 // changing a metatile's tiles via script. It is unnecessarily
 // resource intensive. The map metatiles that need to be updated are
 // not marked as changed, so they will not be redrawn if the cache
@@ -16,13 +16,22 @@
 void MainWindow::tryRedrawMapArea(bool forceRedraw) {
     if (!forceRedraw) return;
 
-    if (this->needsFullRedraw) {
+    if (this->tilesetNeedsRedraw) {
+        // Refresh anything that can display metatiles
         this->editor->map_item->draw(true);
         this->editor->collision_item->draw(true);
         this->editor->selected_border_metatiles_item->draw();
         this->editor->updateMapBorder();
         this->editor->updateMapConnections();
-        this->needsFullRedraw = false;
+        if (this->tilesetEditor)
+            this->tilesetEditor->updateTilesets(this->editor->map->layout->tileset_primary_label, this->editor->map->layout->tileset_secondary_label);
+        if (this->editor->metatile_selector_item)
+            this->editor->metatile_selector_item->draw();
+        if (this->editor->selected_border_metatiles_item)
+            this->editor->selected_border_metatiles_item->draw();
+        if (this->editor->current_metatile_selection_item)
+            this->editor->current_metatile_selection_item->draw();
+        this->tilesetNeedsRedraw = false;
     } else {
         this->editor->map_item->draw();
         this->editor->collision_item->draw();
@@ -569,16 +578,6 @@ void MainWindow::saveMetatilesByMetatileId(int metatileId) {
     Tileset * tileset = Tileset::getMetatileTileset(metatileId, this->editor->map->layout->tileset_primary, this->editor->map->layout->tileset_secondary);
     if (this->editor->project && tileset)
         this->editor->project->saveTilesetMetatiles(tileset);
-
-    // Refresh anything that can display metatiles (except the actual map view)
-    if (this->tilesetEditor)
-        this->tilesetEditor->updateTilesets(this->editor->map->layout->tileset_primary_label, this->editor->map->layout->tileset_secondary_label);
-    if (this->editor->metatile_selector_item)
-        this->editor->metatile_selector_item->draw();
-    if (this->editor->selected_border_metatiles_item)
-        this->editor->selected_border_metatiles_item->draw();
-    if (this->editor->current_metatile_selection_item)
-        this->editor->current_metatile_selection_item->draw();
 }
 
 void MainWindow::saveMetatileAttributesByMetatileId(int metatileId) {
@@ -588,7 +587,7 @@ void MainWindow::saveMetatileAttributesByMetatileId(int metatileId) {
 
     // If the Tileset Editor is currently displaying the updated metatile, refresh it
     if (this->tilesetEditor && this->tilesetEditor->getSelectedMetatileId() == metatileId)
-        this->tilesetEditor->updateTilesets(this->editor->map->layout->tileset_primary_label, this->editor->map->layout->tileset_secondary_label);
+        this->tilesetEditor->onSelectedMetatileChanged(metatileId);
 }
 
 Metatile * MainWindow::getMetatile(int metatileId) {
@@ -735,7 +734,7 @@ void MainWindow::setMetatileTiles(int metatileId, QJSValue tilesObj, int tileSta
         metatile->tiles[tileStart] = Tile();
 
     this->saveMetatilesByMetatileId(metatileId);
-    this->needsFullRedraw = true;
+    this->tilesetNeedsRedraw = true;
     this->tryRedrawMapArea(forceRedraw);
 }
 
@@ -751,7 +750,7 @@ void MainWindow::setMetatileTiles(int metatileId, int tileId, bool xflip, bool y
         metatile->tiles[i] = tile;
 
     this->saveMetatilesByMetatileId(metatileId);
-    this->needsFullRedraw = true;
+    this->tilesetNeedsRedraw = true;
     this->tryRedrawMapArea(forceRedraw);
 }
 

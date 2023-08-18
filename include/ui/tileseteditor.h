@@ -52,11 +52,11 @@ public:
 
 public slots:
     void applyUserShortcuts();
+    void onSelectedMetatileChanged(uint16_t);
 
 private slots:
     void onHoveredMetatileChanged(uint16_t);
     void onHoveredMetatileCleared();
-    void onSelectedMetatileChanged(uint16_t);
     void onHoveredTileChanged(uint16_t);
     void onHoveredTileCleared();
     void onSelectedTilesChanged();
