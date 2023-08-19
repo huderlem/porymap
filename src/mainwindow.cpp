@@ -484,12 +484,18 @@ bool MainWindow::openRecentProject() {
         return false;
 
     QString default_dir = porymapConfig.getRecentProject();
-    if (!default_dir.isNull() && default_dir.length() > 0) {
-        logInfo(QString("Opening recent project: '%1'").arg(default_dir));
-        return openProject(default_dir);
+    if (default_dir.isNull() || default_dir.length() <= 0)
+        return false;
+
+    if (!QDir(default_dir).exists()) {
+        QString message = QString("Recent project directory '%1' doesn't exist.").arg(QDir::toNativeSeparators(default_dir));
+        logWarn(message);
+        this->statusBar()->showMessage(message);
+        return false;
     }
 
-    return false;
+    logInfo(QString("Opening recent project: '%1'").arg(default_dir));
+    return openProject(default_dir);
 }
 
 bool MainWindow::openProject(QString dir) {
