@@ -2206,7 +2206,7 @@ void MainWindow::on_toolButton_Paint_clicked()
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/pencil_cursor.ico"), 10, 10);
 
     // do not stop single tile mode when editing collision
-    if (ui->mapViewTab->currentIndex() == 0)
+    if (ui->mapViewTab->currentIndex() != 1)
         editor->cursorMapTileRect->stopSingleTileMode();
 
     ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
