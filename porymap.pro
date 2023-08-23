@@ -49,6 +49,7 @@ SOURCES += src/core/block.cpp \
     src/ui/currentselectedmetatilespixmapitem.cpp \
     src/ui/overlay.cpp \
     src/ui/prefab.cpp \
+    src/ui/projectsettingseditor.cpp \
     src/ui/regionmaplayoutpixmapitem.cpp \
     src/ui/regionmapentriespixmapitem.cpp \
     src/ui/cursortilerect.cpp \
@@ -134,6 +135,7 @@ HEADERS  += include/core/block.h \
     include/ui/connectionpixmapitem.h \
     include/ui/currentselectedmetatilespixmapitem.h \
     include/ui/prefabframe.h \
+    include/ui/projectsettingseditor.h \
     include/ui/regionmaplayoutpixmapitem.h \
     include/ui/regionmapentriespixmapitem.h \
     include/ui/cursortilerect.h \
@@ -201,7 +203,8 @@ FORMS    += forms/mainwindow.ui \
     forms/shortcutseditor.ui \
     forms/preferenceeditor.ui \
     forms/regionmappropertiesdialog.ui \
-    forms/colorpicker.ui
+    forms/colorpicker.ui \
+    forms/projectsettingseditor.ui
 
 RESOURCES += \
     resources/images.qrc \

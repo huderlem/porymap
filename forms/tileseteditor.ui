@@ -289,7 +289,7 @@
               </widget>
              </item>
              <item row="9" column="0">
-              <widget class="QComboBox" name="comboBox_encounterType"/>
+              <widget class="NoScrollComboBox" name="comboBox_encounterType"/>
              </item>
              <item row="2" column="0" colspan="3">
               <widget class="QLabel" name="label_metatileBehavior">
@@ -299,10 +299,10 @@
               </widget>
              </item>
              <item row="11" column="0">
-              <widget class="QComboBox" name="comboBox_terrainType"/>
+              <widget class="NoScrollComboBox" name="comboBox_terrainType"/>
              </item>
              <item row="1" column="2">
-              <widget class="QComboBox" name="comboBox_layerType"/>
+              <widget class="NoScrollComboBox" name="comboBox_layerType"/>
              </item>
              <item row="10" column="0">
               <widget class="QLabel" name="label_terrainType">

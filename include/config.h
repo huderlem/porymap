@@ -225,6 +225,7 @@ public:
         this->filePaths.clear();
         this->readKeys.clear();
     }
+    static const QStringList baseGameVersions;
     void setBaseGameVersion(BaseGameVersion baseGameVersion);
     BaseGameVersion getBaseGameVersion();
     QString getBaseGameVersionString();
@@ -256,10 +257,12 @@ public:
     int getNumTilesInMetatile();
     void setNewMapMetatileId(int metatileId);
     int getNewMapMetatileId();
+    QString getNewMapMetatileIdString();
     void setNewMapElevation(int elevation);
     int getNewMapElevation();
     void setNewMapBorderMetatileIds(QList<int> metatileIds);
     QList<int> getNewMapBorderMetatileIds();
+    QString getNewMapBorderMetatileIdsString();
     QString getDefaultPrimaryTileset();
     QString getDefaultSecondaryTileset();
     void setFilePath(ProjectFilePath pathId, QString path);
@@ -277,6 +280,7 @@ public:
     uint32_t getMetatileTerrainTypeMask();
     uint32_t getMetatileEncounterTypeMask();
     uint32_t getMetatileLayerTypeMask();
+    static QString getMaskString(uint32_t mask);
     bool getMapAllowFlagsEnabled();
 protected:
     virtual QString getConfigFilepath() override;

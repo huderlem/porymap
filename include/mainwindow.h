@@ -25,6 +25,7 @@
 #include "newtilesetdialog.h"
 #include "shortcutseditor.h"
 #include "preferenceeditor.h"
+#include "projectsettingseditor.h"
 
 
 
@@ -286,6 +287,7 @@ private slots:
     void on_actionRegion_Map_Editor_triggered();
     void on_actionEdit_Preferences_triggered();
     void togglePreferenceSpecificUi();
+    void on_actionEdit_Project_Settings_triggered();
 
 public:
     Ui::MainWindow *ui;
@@ -299,6 +301,7 @@ private:
     QPointer<MapImageExporter> mapImageExporter = nullptr;
     QPointer<NewMapPopup> newMapPrompt = nullptr;
     QPointer<PreferenceEditor> preferenceEditor = nullptr;
+    QPointer<ProjectSettingsEditor> projectSettingsEditor = nullptr;
     FilterChildrenProxyModel *mapListProxyModel;
     QStandardItemModel *mapListModel;
     QList<QStandardItem*> *mapGroupItemsList;

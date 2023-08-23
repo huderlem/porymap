@@ -11,8 +11,10 @@ public:
     explicit NoScrollComboBox(QWidget *parent = nullptr);
     void wheelEvent(QWheelEvent *event);
     void setTextItem(const QString &text);
+    void setNumberItem(int value);
 
 private:
+    void setItem(int index, const QString &text);
 };
 
 #endif // NOSCROLLCOMBOBOX_H

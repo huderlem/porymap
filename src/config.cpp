@@ -513,16 +513,22 @@ int PorymapConfig::getPaletteEditorBitDepth() {
     return this->paletteEditorBitDepth;
 }
 
+const QStringList ProjectConfig::baseGameVersions = {
+    "pokeruby",
+    "pokefirered",
+    "pokeemerald",
+};
+
 const QMap<BaseGameVersion, QString> baseGameVersionMap = {
-    {BaseGameVersion::pokeruby, "pokeruby"},
-    {BaseGameVersion::pokefirered, "pokefirered"},
-    {BaseGameVersion::pokeemerald, "pokeemerald"},
+    {BaseGameVersion::pokeruby, ProjectConfig::baseGameVersions[0]},
+    {BaseGameVersion::pokefirered, ProjectConfig::baseGameVersions[1]},
+    {BaseGameVersion::pokeemerald, ProjectConfig::baseGameVersions[2]},
 };
 
 const QMap<QString, BaseGameVersion> baseGameVersionReverseMap = {
-    {"pokeruby", BaseGameVersion::pokeruby},
-    {"pokefirered", BaseGameVersion::pokefirered},
-    {"pokeemerald", BaseGameVersion::pokeemerald},
+    {ProjectConfig::baseGameVersions[0], BaseGameVersion::pokeruby},
+    {ProjectConfig::baseGameVersions[1], BaseGameVersion::pokefirered},
+    {ProjectConfig::baseGameVersions[2], BaseGameVersion::pokeemerald},
 };
 
 ProjectConfig projectConfig;
@@ -578,6 +584,7 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
             int metatileId = getConfigInteger(key, metatileIds.at(i), 0, 1023, 0);
             this->newMapBorderMetatileIds.append(metatileId);
         }
+        // TODO: If insufficient metatiles are provided, it should loop the provided metatiles instead.
         for (; i < maxSize; i++) {
             // Set any metatiles not provided to 0
             this->newMapBorderMetatileIds.append(0);
@@ -657,7 +664,7 @@ void ProjectConfig::setUnreadKeys() {
     if (!readKeys.contains("metatile_behavior_mask")) this->metatileBehaviorMask = Metatile::getBehaviorMask(this->baseGameVersion);
     if (!readKeys.contains("metatile_terrain_type_mask")) this->metatileTerrainTypeMask = Metatile::getTerrainTypeMask(this->baseGameVersion);
     if (!readKeys.contains("metatile_encounter_type_mask")) this->metatileEncounterTypeMask = Metatile::getEncounterTypeMask(this->baseGameVersion);
-    if (!readKeys.contains("metatile_layer_type_mask")) this-> metatileLayerTypeMask = Metatile::getLayerTypeMask(this->baseGameVersion);
+    if (!readKeys.contains("metatile_layer_type_mask")) this->metatileLayerTypeMask = Metatile::getLayerTypeMask(this->baseGameVersion);
     if (!readKeys.contains("enable_map_allow_flags")) this->enableMapAllowFlags = (this->baseGameVersion != BaseGameVersion::pokeruby);
 }
 
@@ -675,12 +682,9 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("enable_floor_number", QString::number(this->enableFloorNumber));
     map.insert("create_map_text_file", QString::number(this->createMapTextFile));
     map.insert("enable_triple_layer_metatiles", QString::number(this->enableTripleLayerMetatiles));
-    map.insert("new_map_metatile", QString::number(this->newMapMetatileId));
+    map.insert("new_map_metatile", this->getNewMapMetatileIdString());
     map.insert("new_map_elevation", QString::number(this->newMapElevation));
-    QStringList metatiles;
-    for (auto metatile : this->newMapBorderMetatileIds)
-        metatiles << QString::number(metatile);
-    map.insert("new_map_border_metatiles", metatiles.join(","));
+    map.insert("new_map_border_metatiles", this->getNewMapBorderMetatileIdsString());
     map.insert("default_primary_tileset", this->defaultPrimaryTileset);
     map.insert("default_secondary_tileset", this->defaultSecondaryTileset);
     map.insert("prefabs_filepath", this->prefabFilepath);
@@ -691,10 +695,10 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("tilesets_have_callback", QString::number(this->tilesetsHaveCallback));
     map.insert("tilesets_have_is_compressed", QString::number(this->tilesetsHaveIsCompressed));
     map.insert("metatile_attributes_size", QString::number(this->metatileAttributesSize));
-    map.insert("metatile_behavior_mask", "0x" + QString::number(this->metatileBehaviorMask, 16).toUpper());
-    map.insert("metatile_terrain_type_mask", "0x" + QString::number(this->metatileTerrainTypeMask, 16).toUpper());
-    map.insert("metatile_encounter_type_mask", "0x" + QString::number(this->metatileEncounterTypeMask, 16).toUpper());
-    map.insert("metatile_layer_type_mask", "0x" + QString::number(this->metatileLayerTypeMask, 16).toUpper());
+    map.insert("metatile_behavior_mask", getMaskString(this->metatileBehaviorMask));
+    map.insert("metatile_terrain_type_mask", getMaskString(this->metatileTerrainTypeMask));
+    map.insert("metatile_encounter_type_mask", getMaskString(this->metatileEncounterTypeMask));
+    map.insert("metatile_layer_type_mask", getMaskString(this->metatileLayerTypeMask));
     map.insert("enable_map_allow_flags", QString::number(this->enableMapAllowFlags));
     return map;
 }
@@ -880,6 +884,10 @@ int ProjectConfig::getNewMapMetatileId() {
     return this->newMapMetatileId;
 }
 
+QString ProjectConfig::getNewMapMetatileIdString() {
+    return "0x" + QString::number(this->newMapMetatileId, 16).toUpper();
+}
+
 void ProjectConfig::setNewMapElevation(int elevation) {
     this->newMapElevation = elevation;
     this->save();
@@ -896,6 +904,14 @@ void ProjectConfig::setNewMapBorderMetatileIds(QList<int> metatileIds) {
 
 QList<int> ProjectConfig::getNewMapBorderMetatileIds() {
     return this->newMapBorderMetatileIds;
+}
+
+QString ProjectConfig::getNewMapBorderMetatileIdsString() {
+    QStringList metatiles;
+    for (auto metatileId : this->newMapBorderMetatileIds){
+        metatiles << ("0x" + QString::number(metatileId, 16).toUpper());
+    }
+    return metatiles.join(",");
 }
 
 QString ProjectConfig::getDefaultPrimaryTileset() {
@@ -963,6 +979,10 @@ uint32_t ProjectConfig::getMetatileEncounterTypeMask() {
 
 uint32_t ProjectConfig::getMetatileLayerTypeMask() {
     return this->metatileLayerTypeMask;
+}
+
+QString ProjectConfig::getMaskString(uint32_t mask) {
+    return "0x" + QString::number(mask, 16).toUpper();
 }
 
 bool ProjectConfig::getMapAllowFlagsEnabled() {

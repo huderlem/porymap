@@ -2751,6 +2751,23 @@ void MainWindow::togglePreferenceSpecificUi() {
         ui->actionOpen_Project_in_Text_Editor->setEnabled(true);
 }
 
+void MainWindow::on_actionEdit_Project_Settings_triggered() {
+    if (!this->projectSettingsEditor) {
+        this->projectSettingsEditor = new ProjectSettingsEditor(this, this->editor->project);
+        connect(this->projectSettingsEditor, &ProjectSettingsEditor::saved,
+                this, &MainWindow::togglePreferenceSpecificUi);
+    }
+
+    if (!this->projectSettingsEditor->isVisible()) {
+        this->projectSettingsEditor->show();
+    } else if (this->projectSettingsEditor->isMinimized()) {
+        this->projectSettingsEditor->showNormal();
+    } else {
+        this->projectSettingsEditor->raise();
+        this->projectSettingsEditor->activateWindow();
+    }
+}
+
 void MainWindow::on_pushButton_AddCustomHeaderField_clicked()
 {
     bool ok;
