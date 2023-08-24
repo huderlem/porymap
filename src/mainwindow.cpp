@@ -369,13 +369,11 @@ void MainWindow::markMapEdited() {
 }
 
 void MainWindow::setWildEncountersUIEnabled(bool enabled) {
-    ui->actionUse_Encounter_Json->setChecked(enabled);
     ui->mainTabBar->setTabEnabled(4, enabled);
 }
 
 void MainWindow::setProjectSpecificUIVisibility()
 {
-    ui->actionUse_Poryscript->setChecked(projectConfig.getUsePoryScript());
     this->setWildEncountersUIEnabled(userConfig.getEncounterJsonActive());
 
     bool hasFlags = projectConfig.getMapAllowFlagsEnabled();
@@ -1757,23 +1755,9 @@ void MainWindow::on_actionCursor_Tile_Outline_triggered()
     }
 }
 
-void MainWindow::on_actionUse_Encounter_Json_triggered(bool checked)
-{
-    QMessageBox warning(this);
-    warning.setText("You must reload the project for this setting to take effect.");
-    warning.setIcon(QMessageBox::Information);
-    warning.exec();
-    userConfig.setEncounterJsonActive(checked);
-}
-
 void MainWindow::on_actionMonitor_Project_Files_triggered(bool checked)
 {
     porymapConfig.setMonitorFiles(checked);
-}
-
-void MainWindow::on_actionUse_Poryscript_triggered(bool checked)
-{
-    projectConfig.setUsePoryScript(checked);
 }
 
 void MainWindow::on_actionOpen_Recent_Project_On_Launch_triggered(bool checked)

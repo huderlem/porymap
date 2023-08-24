@@ -957,9 +957,9 @@ void Project::saveTilesetMetatileLabels(Tileset *primaryTileset, Tileset *second
         }
         for (QString defineName : definesOut.keys()) {
             int value = defines[defineName];
-            QString line = QString("#define %1  0x%2\n")
+            QString line = QString("#define %1  %2\n")
                 .arg(defineName, -1 * longestLength)
-                .arg(QString("%1").arg(value, 3, 16, QChar('0')).toUpper());
+                .arg(Metatile::getMetatileIdString(value));
             outputText += line;
         }
         i += j;
@@ -1142,16 +1142,21 @@ void Project::setNewMapBorder(Map *map) {
     map->layout->border.clear();
     int width = map->getBorderWidth();
     int height = map->getBorderHeight();
-    if (width != DEFAULT_BORDER_WIDTH || height != DEFAULT_BORDER_HEIGHT) {
+
+    const QList<uint16_t> configMetatileIds = projectConfig.getNewMapBorderMetatileIds();
+    if (configMetatileIds.length() != width * height) {
+        // Border size doesn't match the number of default border metatiles.
+        // Fill the border with empty metatiles.
         for (int i = 0; i < width * height; i++) {
             map->layout->border.append(0);
         }
     } else {
-        QList<int> metatileIds = projectConfig.getNewMapBorderMetatileIds();
-        for (int i = 0; i < DEFAULT_BORDER_WIDTH * DEFAULT_BORDER_HEIGHT; i++) {
-            map->layout->border.append(qint16(metatileIds.at(i)));
+        // Fill the border with the default metatiles from the config.
+        for (int i = 0; i < width * height; i++) {
+            map->layout->border.append(configMetatileIds.at(i));
         }
     }
+
     map->layout->lastCommitBlocks.border = map->layout->border;
     map->layout->lastCommitBlocks.borderDimensions = QSize(width, height);
 }
@@ -2174,8 +2179,8 @@ bool Project::readCoordEventWeatherNames() {
     fileWatcher.addPath(root + "/" + filename);
     coordEventWeatherNames = parser.readCDefinesSorted(filename, prefixes);
     if (coordEventWeatherNames.isEmpty()) {
-        logError(QString("Failed to read coord event weather constants from %1").arg(filename));
-        return false;
+        logWarn(QString("Failed to read coord event weather constants from %1. Disabling Weather Trigger events.").arg(filename));
+        projectConfig.setEventWeatherTriggerEnabled(false);
     }
     return true;
 }
@@ -2189,8 +2194,8 @@ bool Project::readSecretBaseIds() {
     fileWatcher.addPath(root + "/" + filename);
     secretBaseIds = parser.readCDefinesSorted(filename, prefixes);
     if (secretBaseIds.isEmpty()) {
-        logError(QString("Failed to read secret base id constants from %1").arg(filename));
-        return false;
+        logWarn(QString("Failed to read secret base id constants from '%1'. Disabling Secret Base events.").arg(filename));
+        projectConfig.setEventSecretBaseEnabled(false);
     }
     return true;
 }

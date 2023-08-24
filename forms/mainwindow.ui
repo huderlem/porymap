@@ -3012,9 +3012,7 @@
     <property name="title">
      <string>Options</string>
     </property>
-    <addaction name="actionUse_Encounter_Json"/>
     <addaction name="actionMonitor_Project_Files"/>
-    <addaction name="actionUse_Poryscript"/>
     <addaction name="actionOpen_Recent_Project_On_Launch"/>
     <addaction name="separator"/>
     <addaction name="actionEdit_Project_Settings"/>
@@ -3065,28 +3063,12 @@
     <string>Ctrl+S</string>
    </property>
   </action>
-  <action name="actionUse_Encounter_Json">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Show Wild Encounter Tables</string>
-   </property>
-  </action>
   <action name="actionMonitor_Project_Files">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
     <string>Monitor Project Files</string>
-   </property>
-  </action>
-  <action name="actionUse_Poryscript">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Use Poryscript</string>
    </property>
   </action>
   <action name="actionOpen_Recent_Project_On_Launch">

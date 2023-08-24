@@ -119,6 +119,9 @@ void KeyValueConfigBase::load() {
 }
 
 void KeyValueConfigBase::save() {
+    if (this->saveDisabled)
+        return;
+
     QString text = "";
     QMap<QString, QString> map = this->getKeyValueMap();
     for (QMap<QString, QString>::iterator it = map.begin(); it != map.end(); it++) {
@@ -161,6 +164,11 @@ uint32_t KeyValueConfigBase::getConfigUint32(QString key, QString value, uint32_
         return defaultValue;
     }
     return qMin(max, qMax(min, result));
+}
+
+// For temporarily disabling saving during frequent config changes.
+void KeyValueConfigBase::setSaveDisabled(bool disabled) {
+    this->saveDisabled = disabled;
 }
 
 const QMap<MapSortOrder, QString> mapSortOrderMap = {
@@ -513,23 +521,33 @@ int PorymapConfig::getPaletteEditorBitDepth() {
     return this->paletteEditorBitDepth;
 }
 
-const QStringList ProjectConfig::baseGameVersions = {
+const QStringList ProjectConfig::versionStrings = {
     "pokeruby",
     "pokefirered",
     "pokeemerald",
 };
 
 const QMap<BaseGameVersion, QString> baseGameVersionMap = {
-    {BaseGameVersion::pokeruby, ProjectConfig::baseGameVersions[0]},
-    {BaseGameVersion::pokefirered, ProjectConfig::baseGameVersions[1]},
-    {BaseGameVersion::pokeemerald, ProjectConfig::baseGameVersions[2]},
+    {BaseGameVersion::pokeruby, ProjectConfig::versionStrings[0]},
+    {BaseGameVersion::pokefirered, ProjectConfig::versionStrings[1]},
+    {BaseGameVersion::pokeemerald, ProjectConfig::versionStrings[2]},
 };
 
 const QMap<QString, BaseGameVersion> baseGameVersionReverseMap = {
-    {ProjectConfig::baseGameVersions[0], BaseGameVersion::pokeruby},
-    {ProjectConfig::baseGameVersions[1], BaseGameVersion::pokefirered},
-    {ProjectConfig::baseGameVersions[2], BaseGameVersion::pokeemerald},
+    {ProjectConfig::versionStrings[0], BaseGameVersion::pokeruby},
+    {ProjectConfig::versionStrings[1], BaseGameVersion::pokefirered},
+    {ProjectConfig::versionStrings[2], BaseGameVersion::pokeemerald},
 };
+
+BaseGameVersion ProjectConfig::stringToBaseGameVersion(QString string, bool * ok) {
+    if (baseGameVersionReverseMap.contains(string)) {
+        if (ok) *ok = true;
+        return baseGameVersionReverseMap.value(string);
+    } else {
+        if (ok) *ok = false;
+        return BaseGameVersion::pokeemerald;
+    }
+}
 
 ProjectConfig projectConfig;
 
@@ -540,13 +558,10 @@ QString ProjectConfig::getConfigFilepath() {
 
 void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
     if (key == "base_game_version") {
-        QString baseGameVersion = value.toLower();
-        if (baseGameVersionReverseMap.contains(baseGameVersion)) {
-            this->baseGameVersion = baseGameVersionReverseMap.value(baseGameVersion);
-        } else {
-            this->baseGameVersion = BaseGameVersion::pokeemerald;
+        bool ok;
+        this->baseGameVersion = this->stringToBaseGameVersion(value.toLower(), &ok);
+        if (!ok)
             logWarn(QString("Invalid config value for base_game_version: '%1'. Must be 'pokeruby', 'pokefirered' or 'pokeemerald'.").arg(value));
-        }
     } else if (key == "use_poryscript") {
         this->usePoryScript = getConfigBool(key, value);
     } else if (key == "use_custom_border_size") {
@@ -571,23 +586,17 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
     } else if (key == "enable_triple_layer_metatiles") {
         this->enableTripleLayerMetatiles = getConfigBool(key, value);
     } else if (key == "new_map_metatile") {
-        this->newMapMetatileId = getConfigInteger(key, value, 0, 1023, 0);
+        this->newMapMetatileId = getConfigUint32(key, value, 0, 1023, 0);
     } else if (key == "new_map_elevation") {
         this->newMapElevation = getConfigInteger(key, value, 0, 15, 3);
     } else if (key == "new_map_border_metatiles") {
         this->newMapBorderMetatileIds.clear();
         QList<QString> metatileIds = value.split(",");
-        const int maxSize = DEFAULT_BORDER_WIDTH * DEFAULT_BORDER_HEIGHT;
-        const int size = qMin(metatileIds.size(), maxSize);
-        int i;
-        for (i = 0; i < size; i++) {
-            int metatileId = getConfigInteger(key, metatileIds.at(i), 0, 1023, 0);
+        for (int i = 0; i < metatileIds.size(); i++) {
+            // TODO: The max of 1023 here should eventually reflect Project::num_metatiles_total-1,
+            // but the config is parsed well before that constant is.
+            int metatileId = getConfigUint32(key, metatileIds.at(i), 0, 1023, 0);
             this->newMapBorderMetatileIds.append(metatileId);
-        }
-        // TODO: If insufficient metatiles are provided, it should loop the provided metatiles instead.
-        for (; i < maxSize; i++) {
-            // Set any metatiles not provided to 0
-            this->newMapBorderMetatileIds.append(0);
         }
     } else if (key == "default_primary_tileset") {
         this->defaultPrimaryTileset = value;
@@ -646,6 +655,13 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
     readKeys.append(key);
 }
 
+// Restore config to version-specific defaults
+void::ProjectConfig::reset(BaseGameVersion baseGameVersion) {
+    this->reset();
+    this->setBaseGameVersion(baseGameVersion);
+    this->setUnreadKeys();
+}
+
 void ProjectConfig::setUnreadKeys() {
     // Set game-version specific defaults for any config field that wasn't read
     bool isPokefirered = this->baseGameVersion == BaseGameVersion::pokefirered;
@@ -682,7 +698,7 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("enable_floor_number", QString::number(this->enableFloorNumber));
     map.insert("create_map_text_file", QString::number(this->createMapTextFile));
     map.insert("enable_triple_layer_metatiles", QString::number(this->enableTripleLayerMetatiles));
-    map.insert("new_map_metatile", this->getNewMapMetatileIdString());
+    map.insert("new_map_metatile", Metatile::getMetatileIdString(this->newMapMetatileId));
     map.insert("new_map_elevation", QString::number(this->newMapElevation));
     map.insert("new_map_border_metatiles", this->getNewMapBorderMetatileIdsString());
     map.insert("default_primary_tileset", this->defaultPrimaryTileset);
@@ -695,10 +711,10 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("tilesets_have_callback", QString::number(this->tilesetsHaveCallback));
     map.insert("tilesets_have_is_compressed", QString::number(this->tilesetsHaveIsCompressed));
     map.insert("metatile_attributes_size", QString::number(this->metatileAttributesSize));
-    map.insert("metatile_behavior_mask", getMaskString(this->metatileBehaviorMask));
-    map.insert("metatile_terrain_type_mask", getMaskString(this->metatileTerrainTypeMask));
-    map.insert("metatile_encounter_type_mask", getMaskString(this->metatileEncounterTypeMask));
-    map.insert("metatile_layer_type_mask", getMaskString(this->metatileLayerTypeMask));
+    map.insert("metatile_behavior_mask", "0x" + QString::number(this->metatileBehaviorMask, 16).toUpper());
+    map.insert("metatile_terrain_type_mask", "0x" + QString::number(this->metatileTerrainTypeMask, 16).toUpper());
+    map.insert("metatile_encounter_type_mask", "0x" + QString::number(this->metatileEncounterTypeMask, 16).toUpper());
+    map.insert("metatile_layer_type_mask", "0x" + QString::number(this->metatileLayerTypeMask, 16).toUpper());
     map.insert("enable_map_allow_flags", QString::number(this->enableMapAllowFlags));
     return map;
 }
@@ -875,17 +891,13 @@ int ProjectConfig::getNumTilesInMetatile() {
     return this->enableTripleLayerMetatiles ? 12 : 8;
 }
 
-void ProjectConfig::setNewMapMetatileId(int metatileId) {
+void ProjectConfig::setNewMapMetatileId(uint16_t metatileId) {
     this->newMapMetatileId = metatileId;
     this->save();
 }
 
-int ProjectConfig::getNewMapMetatileId() {
+uint16_t ProjectConfig::getNewMapMetatileId() {
     return this->newMapMetatileId;
-}
-
-QString ProjectConfig::getNewMapMetatileIdString() {
-    return "0x" + QString::number(this->newMapMetatileId, 16).toUpper();
 }
 
 void ProjectConfig::setNewMapElevation(int elevation) {
@@ -897,19 +909,19 @@ int ProjectConfig::getNewMapElevation() {
     return this->newMapElevation;
 }
 
-void ProjectConfig::setNewMapBorderMetatileIds(QList<int> metatileIds) {
+void ProjectConfig::setNewMapBorderMetatileIds(QList<uint16_t> metatileIds) {
     this->newMapBorderMetatileIds = metatileIds;
     this->save();
 }
 
-QList<int> ProjectConfig::getNewMapBorderMetatileIds() {
+QList<uint16_t> ProjectConfig::getNewMapBorderMetatileIds() {
     return this->newMapBorderMetatileIds;
 }
 
 QString ProjectConfig::getNewMapBorderMetatileIdsString() {
     QStringList metatiles;
     for (auto metatileId : this->newMapBorderMetatileIds){
-        metatiles << ("0x" + QString::number(metatileId, 16).toUpper());
+        metatiles << Metatile::getMetatileIdString(metatileId);
     }
     return metatiles.join(",");
 }
@@ -920,6 +932,16 @@ QString ProjectConfig::getDefaultPrimaryTileset() {
 
 QString ProjectConfig::getDefaultSecondaryTileset() {
     return this->defaultSecondaryTileset;
+}
+
+void ProjectConfig::setDefaultPrimaryTileset(QString tilesetName) {
+    this->defaultPrimaryTileset = tilesetName;
+    this->save();
+}
+
+void ProjectConfig::setDefaultSecondaryTileset(QString tilesetName) {
+    this->defaultSecondaryTileset = tilesetName;
+    this->save();
 }
 
 void ProjectConfig::setPrefabFilepath(QString filepath) {
@@ -965,6 +987,11 @@ int ProjectConfig::getMetatileAttributesSize() {
     return this->metatileAttributesSize;
 }
 
+void ProjectConfig::setMetatileAttributesSize(int size) {
+    this->metatileAttributesSize = size;
+    this->save();
+}
+
 uint32_t ProjectConfig::getMetatileBehaviorMask() {
     return this->metatileBehaviorMask;
 }
@@ -981,12 +1008,33 @@ uint32_t ProjectConfig::getMetatileLayerTypeMask() {
     return this->metatileLayerTypeMask;
 }
 
-QString ProjectConfig::getMaskString(uint32_t mask) {
-    return "0x" + QString::number(mask, 16).toUpper();
+void ProjectConfig::setMetatileBehaviorMask(uint32_t mask) {
+    this->metatileBehaviorMask = mask;
+    this->save();
+}
+
+void ProjectConfig::setMetatileTerrainTypeMask(uint32_t mask) {
+    this->metatileTerrainTypeMask = mask;
+    this->save();
+}
+
+void ProjectConfig::setMetatileEncounterTypeMask(uint32_t mask) {
+    this->metatileEncounterTypeMask = mask;
+    this->save();
+}
+
+void ProjectConfig::setMetatileLayerTypeMask(uint32_t mask) {
+    this->metatileLayerTypeMask = mask;
+    this->save();
 }
 
 bool ProjectConfig::getMapAllowFlagsEnabled() {
     return this->enableMapAllowFlags;
+}
+
+void ProjectConfig::setMapAllowFlagsEnabled(bool enabled) {
+    this->enableMapAllowFlags = enabled;
+    this->save();
 }
 
 

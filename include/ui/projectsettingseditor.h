@@ -31,11 +31,17 @@ private:
     NoScrollComboBox *combo_baseGameVersion;
     NoScrollComboBox *combo_attributesSize;
 
+    bool hasUnsavedChanges = false;
+
     void initUi();
     void saveFields();
+    void connectSignals();
+    void refresh();
+    bool prompt(const QString &text);
 
 private slots:
     void dialogButtonClicked(QAbstractButton *button);
+    void markEdited();
 };
 
 #endif // PROJECTSETTINGSEDITOR_H

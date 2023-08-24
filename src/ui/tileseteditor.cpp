@@ -348,8 +348,7 @@ void TilesetEditor::drawSelectedTiles() {
 
 void TilesetEditor::onHoveredMetatileChanged(uint16_t metatileId) {
     QString label = Tileset::getMetatileLabel(metatileId, this->primaryTileset, this->secondaryTileset);
-    QString hexString = QString("%1").arg(metatileId, 3, 16, QChar('0')).toUpper();
-    QString message = QString("Metatile: 0x%1").arg(hexString);
+    QString message = QString("Metatile: %1").arg(Metatile::getMetatileIdString(metatileId));
     if (label.size() != 0) {
         message += QString(" \"%1\"").arg(label);
     }
