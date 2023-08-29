@@ -73,6 +73,7 @@ public:
     void setTilesetEditorGeometry(QByteArray, QByteArray);
     void setPaletteEditorGeometry(QByteArray, QByteArray);
     void setRegionMapEditorGeometry(QByteArray, QByteArray);
+    void setProjectSettingsEditorGeometry(QByteArray, QByteArray);
     void setCollisionOpacity(int opacity);
     void setMetatilesZoom(int zoom);
     void setShowPlayerView(bool enabled);
@@ -93,6 +94,7 @@ public:
     QMap<QString, QByteArray> getTilesetEditorGeometry();
     QMap<QString, QByteArray> getPaletteEditorGeometry();
     QMap<QString, QByteArray> getRegionMapEditorGeometry();
+    QMap<QString, QByteArray> getProjectSettingsEditorGeometry();
     int getCollisionOpacity();
     int getMetatilesZoom();
     bool getShowPlayerView();
@@ -129,6 +131,8 @@ private:
     QByteArray paletteEditorState;
     QByteArray regionMapEditorGeometry;
     QByteArray regionMapEditorState;
+    QByteArray projectSettingsEditorGeometry;
+    QByteArray projectSettingsEditorState;
     int collisionOpacity;
     int metatilesZoom;
     bool showPlayerView;

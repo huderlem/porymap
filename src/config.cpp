@@ -234,6 +234,10 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->regionMapEditorGeometry = bytesFromString(value);
     } else if (key == "region_map_editor_state") {
         this->regionMapEditorState = bytesFromString(value);
+    } else if (key == "project_settings_editor_geometry") {
+        this->projectSettingsEditorGeometry = bytesFromString(value);
+    } else if (key == "project_settings_editor_state") {
+        this->projectSettingsEditorState = bytesFromString(value);
     } else if (key == "metatiles_zoom") {
         this->metatilesZoom = getConfigInteger(key, value, 10, 100, 30);
     } else if (key == "show_player_view") {
@@ -280,6 +284,8 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("palette_editor_state", stringFromByteArray(this->paletteEditorState));
     map.insert("region_map_editor_geometry", stringFromByteArray(this->regionMapEditorGeometry));
     map.insert("region_map_editor_state", stringFromByteArray(this->regionMapEditorState));
+    map.insert("project_settings_editor_geometry", stringFromByteArray(this->projectSettingsEditorGeometry));
+    map.insert("project_settings_editor_state", stringFromByteArray(this->projectSettingsEditorState));
     map.insert("collision_opacity", QString("%1").arg(this->collisionOpacity));
     map.insert("metatiles_zoom", QString("%1").arg(this->metatilesZoom));
     map.insert("show_player_view", this->showPlayerView ? "1" : "0");
@@ -367,6 +373,12 @@ void PorymapConfig::setPaletteEditorGeometry(QByteArray paletteEditorGeometry_, 
 void PorymapConfig::setRegionMapEditorGeometry(QByteArray regionMapEditorGeometry_, QByteArray regionMapEditorState_) {
     this->regionMapEditorGeometry = regionMapEditorGeometry_;
     this->regionMapEditorState = regionMapEditorState_;
+    this->save();
+}
+
+void PorymapConfig::setProjectSettingsEditorGeometry(QByteArray projectSettingsEditorGeometry_, QByteArray projectSettingsEditorState_) {
+    this->projectSettingsEditorGeometry = projectSettingsEditorGeometry_;
+    this->projectSettingsEditorState = projectSettingsEditorState_;
     this->save();
 }
 
@@ -469,6 +481,15 @@ QMap<QString, QByteArray> PorymapConfig::getRegionMapEditorGeometry() {
 
     geometry.insert("region_map_editor_geometry", this->regionMapEditorGeometry);
     geometry.insert("region_map_editor_state", this->regionMapEditorState);
+
+    return geometry;
+}
+
+QMap<QString, QByteArray> PorymapConfig::getProjectSettingsEditorGeometry() {
+    QMap<QString, QByteArray> geometry;
+
+    geometry.insert("project_settings_editor_geometry", this->projectSettingsEditorGeometry);
+    geometry.insert("project_settings_editor_state", this->projectSettingsEditorState);
 
     return geometry;
 }
@@ -658,7 +679,7 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
 // Restore config to version-specific defaults
 void::ProjectConfig::reset(BaseGameVersion baseGameVersion) {
     this->reset();
-    this->setBaseGameVersion(baseGameVersion);
+    this->baseGameVersion = baseGameVersion;
     this->setUnreadKeys();
 }
 

@@ -13,17 +13,14 @@
 ProjectSettingsEditor::ProjectSettingsEditor(QWidget *parent, Project *project) :
     QMainWindow(parent),
     ui(new Ui::ProjectSettingsEditor),
-    project(project),
-    combo_defaultPrimaryTileset(nullptr),
-    combo_defaultSecondaryTileset(nullptr),
-    combo_baseGameVersion(nullptr),
-    combo_attributesSize(nullptr)
+    project(project)
 {
     ui->setupUi(this);
-    initUi();
     setAttribute(Qt::WA_DeleteOnClose);
-    connectSignals();
-    refresh();
+    this->initUi();
+    this->connectSignals();
+    this->refresh();
+    this->restoreWindowState();
 }
 
 ProjectSettingsEditor::~ProjectSettingsEditor()
@@ -31,13 +28,17 @@ ProjectSettingsEditor::~ProjectSettingsEditor()
     delete ui;
 }
 
+// TODO: Move tool tips to editable areas
+
 void ProjectSettingsEditor::connectSignals() {
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &ProjectSettingsEditor::dialogButtonClicked);
+    connect(ui->button_ChoosePrefabs, &QAbstractButton::clicked, this, &ProjectSettingsEditor::choosePrefabsFileClicked);
 
     // Connect combo boxes
     QList<NoScrollComboBox *> combos = ui->centralwidget->findChildren<NoScrollComboBox *>();
     foreach(auto i, combos)
         connect(i, &QComboBox::currentTextChanged, this, &ProjectSettingsEditor::markEdited);
+    connect(ui->comboBox_BaseGameVersion, &QComboBox::currentTextChanged, this, &ProjectSettingsEditor::promptRestoreDefaults);
 
     // Connect check boxes
     QList<QCheckBox *> checkboxes = ui->centralwidget->findChildren<QCheckBox *>();
@@ -56,85 +57,50 @@ void ProjectSettingsEditor::connectSignals() {
 }
 
 void ProjectSettingsEditor::markEdited() {
-    this->hasUnsavedChanges = true;
+    // Don't treat signals emitted while the UI is refreshing as edits
+    if (!this->refreshing)
+        this->hasUnsavedChanges = true;
 }
 
 void ProjectSettingsEditor::initUi() {
-    // Create Default Tilesets combo boxes
-    auto *defaultTilesetsLayout = new QFormLayout(ui->groupBox_DefaultTilesets);
-    combo_defaultPrimaryTileset = new NoScrollComboBox(ui->groupBox_DefaultTilesets);
-    combo_defaultSecondaryTileset = new NoScrollComboBox(ui->groupBox_DefaultTilesets);
-    if (project) combo_defaultPrimaryTileset->addItems(project->primaryTilesetLabels);
-    if (project) combo_defaultSecondaryTileset->addItems(project->secondaryTilesetLabels);
-    defaultTilesetsLayout->addRow("Primary Tileset", combo_defaultPrimaryTileset);
-    defaultTilesetsLayout->addRow("Secondary Tileset", combo_defaultSecondaryTileset);
+    // Populate combo boxes
+    if (project) ui->comboBox_DefaultPrimaryTileset->addItems(project->primaryTilesetLabels);
+    if (project) ui->comboBox_DefaultSecondaryTileset->addItems(project->secondaryTilesetLabels);
+    ui->comboBox_BaseGameVersion->addItems(ProjectConfig::versionStrings);
+    ui->comboBox_AttributesSize->addItems({"1", "2", "4"});
 
-    // Create Base game version combo box
-    combo_baseGameVersion = new NoScrollComboBox(ui->widget_BaseGameVersion);
-    combo_baseGameVersion->addItems(ProjectConfig::versionStrings);
-    combo_baseGameVersion->setEditable(false);
-    ui->layout_BaseGameVersion->insertRow(0, "Base game version", combo_baseGameVersion);
-
-    // Create Attributes size combo box
-    auto *attributesSizeLayout = new QFormLayout(ui->widget_SizeDropdown);
-    combo_attributesSize = new NoScrollComboBox(ui->widget_SizeDropdown);
-    combo_attributesSize->addItems({"1", "2", "4"});
-    combo_attributesSize->setEditable(false);
-    attributesSizeLayout->addRow("", combo_attributesSize);
-
-    // Validate that the border metatiles text is a comma-separated list of hex values
-    static const QRegularExpression expression("^((0[xX])?[A-Fa-f0-9]+,)*(0[xX])?[A-Fa-f0-9]$");
+    // Validate that the border metatiles text is a comma-separated list of metatile values
+    const QString regex_Hex = "(0[xX])?[A-Fa-f0-9]+";
+    static const QRegularExpression expression(QString("^(%1,)*%1$").arg(regex_Hex)); // Comma-separated list of hex values
     QRegularExpressionValidator *validator = new QRegularExpressionValidator(expression);
     ui->lineEdit_BorderMetatiles->setValidator(validator);
 
     ui->spinBox_Elevation->setMaximum(15);
     ui->spinBox_FillMetatile->setMaximum(Project::getNumMetatilesTotal() - 1);
 
-    // TODO: These need to be subclassed to handle larger values
+    // TODO: These need to be subclassed (or changed to line edits) to handle larger values
     ui->spinBox_BehaviorMask->setMaximum(INT_MAX);
     ui->spinBox_EncounterTypeMask->setMaximum(INT_MAX);
     ui->spinBox_LayerTypeMask->setMaximum(INT_MAX);
     ui->spinBox_TerrainTypeMask->setMaximum(INT_MAX);
+}
 
-    // TODO: File picker for prefabs?
+void ProjectSettingsEditor::restoreWindowState() {
+    logInfo("Restoring project settings editor geometry from previous session.");
+    const QMap<QString, QByteArray> geometry = porymapConfig.getProjectSettingsEditorGeometry();
+    this->restoreGeometry(geometry.value("project_settings_editor_geometry"));
+    this->restoreState(geometry.value("project_settings_editor_state"));
 }
 
 // Set UI states using config data
 void ProjectSettingsEditor::refresh() {
-    const QSignalBlocker blocker0(combo_defaultPrimaryTileset);
-    const QSignalBlocker blocker1(combo_defaultSecondaryTileset);
-    const QSignalBlocker blocker2(combo_baseGameVersion);
-    const QSignalBlocker blocker3(combo_attributesSize);
-    const QSignalBlocker blocker4(ui->checkBox_UsePoryscript);
-    const QSignalBlocker blocker5(ui->checkBox_ShowWildEncounterTables);
-    const QSignalBlocker blocker6(ui->checkBox_CreateTextFile);
-    const QSignalBlocker blocker7(ui->checkBox_PrefabImportPrompted);
-    const QSignalBlocker blocker8(ui->checkBox_EnableTripleLayerMetatiles);
-    const QSignalBlocker blocker9(ui->checkBox_EnableRequiresItemfinder);
-    const QSignalBlocker blockerA(ui->checkBox_EnableQuantity);
-    const QSignalBlocker blockerB(ui->checkBox_EnableCloneObjects);
-    const QSignalBlocker blockerC(ui->checkBox_EnableWeatherTriggers);
-    const QSignalBlocker blockerD(ui->checkBox_EnableSecretBases);
-    const QSignalBlocker blockerE(ui->checkBox_EnableRespawn);
-    const QSignalBlocker blockerF(ui->checkBox_EnableAllowFlags);
-    const QSignalBlocker blocker10(ui->checkBox_EnableFloorNumber);
-    const QSignalBlocker blocker11(ui->checkBox_EnableCustomBorderSize);
-    const QSignalBlocker blocker12(ui->checkBox_OutputCallback);
-    const QSignalBlocker blocker13(ui->checkBox_OutputIsCompressed);
-    const QSignalBlocker blocker14(ui->spinBox_Elevation);
-    const QSignalBlocker blocker15(ui->spinBox_FillMetatile);
-    const QSignalBlocker blocker16(ui->spinBox_BehaviorMask);
-    const QSignalBlocker blocker17(ui->spinBox_EncounterTypeMask);
-    const QSignalBlocker blocker18(ui->spinBox_LayerTypeMask);
-    const QSignalBlocker blocker19(ui->spinBox_TerrainTypeMask);
-    const QSignalBlocker blocker1A(ui->lineEdit_BorderMetatiles);
-    const QSignalBlocker blocker1B(ui->lineEdit_PrefabsPath);
+    this->refreshing = true; // Block signals
 
     // Set combo box texts
-    combo_defaultPrimaryTileset->setTextItem(projectConfig.getDefaultPrimaryTileset());
-    combo_defaultSecondaryTileset->setTextItem(projectConfig.getDefaultSecondaryTileset());
-    combo_baseGameVersion->setTextItem(projectConfig.getBaseGameVersionString());
-    combo_attributesSize->setTextItem(QString::number(projectConfig.getMetatileAttributesSize()));
+    ui->comboBox_DefaultPrimaryTileset->setTextItem(projectConfig.getDefaultPrimaryTileset());
+    ui->comboBox_DefaultSecondaryTileset->setTextItem(projectConfig.getDefaultSecondaryTileset());
+    ui->comboBox_BaseGameVersion->setTextItem(projectConfig.getBaseGameVersionString());
+    ui->comboBox_AttributesSize->setTextItem(QString::number(projectConfig.getMetatileAttributesSize()));
 
     // Set check box states
     ui->checkBox_UsePoryscript->setChecked(projectConfig.getUsePoryScript());
@@ -165,11 +131,11 @@ void ProjectSettingsEditor::refresh() {
     // Set line edit texts
     ui->lineEdit_BorderMetatiles->setText(projectConfig.getNewMapBorderMetatileIdsString());
     ui->lineEdit_PrefabsPath->setText(projectConfig.getPrefabFilepath(false));
+
+    this->refreshing = false; // Allow signals
 }
 
-// TODO: Certain setting changes may require project reload
-
-void ProjectSettingsEditor::saveFields() {
+void ProjectSettingsEditor::save() {
     if (!this->hasUnsavedChanges)
         return;
 
@@ -177,10 +143,10 @@ void ProjectSettingsEditor::saveFields() {
     projectConfig.setSaveDisabled(true);
     userConfig.setSaveDisabled(true);
 
-    projectConfig.setDefaultPrimaryTileset(combo_defaultPrimaryTileset->currentText());
-    projectConfig.setDefaultSecondaryTileset(combo_defaultSecondaryTileset->currentText());
-    projectConfig.setBaseGameVersion(projectConfig.stringToBaseGameVersion(combo_baseGameVersion->currentText()));
-    projectConfig.setMetatileAttributesSize(combo_attributesSize->currentText().toInt());
+    projectConfig.setDefaultPrimaryTileset(ui->comboBox_DefaultPrimaryTileset->currentText());
+    projectConfig.setDefaultSecondaryTileset(ui->comboBox_DefaultSecondaryTileset->currentText());
+    projectConfig.setBaseGameVersion(projectConfig.stringToBaseGameVersion(ui->comboBox_BaseGameVersion->currentText()));
+    projectConfig.setMetatileAttributesSize(ui->comboBox_AttributesSize->currentText().toInt());
     projectConfig.setUsePoryScript(ui->checkBox_UsePoryscript->isChecked());
     userConfig.setEncounterJsonActive(ui->checkBox_ShowWildEncounterTables->isChecked());
     projectConfig.setCreateMapTextFileEnabled(ui->checkBox_CreateTextFile->isChecked());
@@ -200,9 +166,9 @@ void ProjectSettingsEditor::saveFields() {
     projectConfig.setNewMapElevation(ui->spinBox_Elevation->value());
     projectConfig.setNewMapMetatileId(ui->spinBox_FillMetatile->value());
     projectConfig.setMetatileBehaviorMask(ui->spinBox_BehaviorMask->value());
-    projectConfig.setMetatileTerrainTypeMask(ui->spinBox_EncounterTypeMask->value());
-    projectConfig.setMetatileEncounterTypeMask(ui->spinBox_LayerTypeMask->value());
-    projectConfig.setMetatileLayerTypeMask(ui->spinBox_TerrainTypeMask->value());
+    projectConfig.setMetatileTerrainTypeMask(ui->spinBox_TerrainTypeMask->value());
+    projectConfig.setMetatileEncounterTypeMask(ui->spinBox_EncounterTypeMask->value());
+    projectConfig.setMetatileLayerTypeMask(ui->spinBox_LayerTypeMask->value());
     projectConfig.setPrefabFilepath(ui->lineEdit_PrefabsPath->text());
 
     // Parse border metatile list
@@ -218,44 +184,106 @@ void ProjectSettingsEditor::saveFields() {
     projectConfig.save();
     userConfig.setSaveDisabled(false);
     userConfig.save();
-
     this->hasUnsavedChanges = false;
-    emit saved();
+
+    // Technically, a reload is not required for several of the config settings.
+    // For simplicity we prompt the user to reload when any setting is changed regardless.
+    this->projectNeedsReload = true;
 }
 
-// TODO: Standard prompt replacement?
-bool ProjectSettingsEditor::prompt(const QString &text) {
+void ProjectSettingsEditor::choosePrefabsFileClicked(bool) {
+    QString startPath = this->project->importExportPath;
+    QFileInfo fileInfo(ui->lineEdit_PrefabsPath->text());
+    if (fileInfo.exists() && fileInfo.isFile() && fileInfo.suffix() == "json") {
+        // Current setting is a valid JSON file. Start the file dialog there
+        startPath = fileInfo.dir().absolutePath();
+    }
+    QString filepath = QFileDialog::getOpenFileName(this, "Choose Prefabs File", startPath, "JSON Files (*.json)");
+    if (filepath.isEmpty())
+        return;
+    this->project->setImportExportPath(filepath);
+    ui->lineEdit_PrefabsPath->setText(filepath);
+    ui->checkBox_PrefabImportPrompted->setChecked(true);
+    this->hasUnsavedChanges = true;
+}
+
+int ProjectSettingsEditor::prompt(const QString &text, QMessageBox::StandardButton defaultButton) {
     QMessageBox messageBox(this);
     messageBox.setText(text);
     messageBox.setIcon(QMessageBox::Question);
-    messageBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No); // TODO: Cancel
-    return messageBox.exec() == QMessageBox::Yes;
+    messageBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | defaultButton);
+    messageBox.setDefaultButton(defaultButton);
+    return messageBox.exec();
+}
+
+bool ProjectSettingsEditor::promptSaveChanges() {
+    if (!this->hasUnsavedChanges)
+        return true;
+
+    int result = this->prompt("Settings have been modified, save changes?", QMessageBox::Cancel);
+    if (result == QMessageBox::Cancel)
+        return false;
+
+    if (result == QMessageBox::Yes)
+        this->save();
+    else if (result == QMessageBox::No)
+        this->hasUnsavedChanges = false; // Discarding changes
+
+    return true;
+}
+
+bool ProjectSettingsEditor::promptRestoreDefaults() {
+    if (this->refreshing)
+        return false;
+
+    const QString versionText = ui->comboBox_BaseGameVersion->currentText();
+    if (this->prompt(QString("Restore default config settings for %1?").arg(versionText)) == QMessageBox::No)
+        return false;
+
+    // Restore defaults by resetting config in memory, refreshing the UI, then restoring the config.
+    // Don't want to save changes until user accepts them.
+    ProjectConfig tempProject = projectConfig;
+    UserConfig tempUser = userConfig;
+    projectConfig.reset(projectConfig.stringToBaseGameVersion(versionText));
+    userConfig.reset();
+    this->refresh();
+    projectConfig = tempProject;
+    userConfig = tempUser;
+
+    this->hasUnsavedChanges = true;
+    return true;
 }
 
 void ProjectSettingsEditor::dialogButtonClicked(QAbstractButton *button) {
     auto buttonRole = ui->buttonBox->buttonRole(button);
     if (buttonRole == QDialogButtonBox::AcceptRole) {
-        saveFields();
+        // "OK" button
+        this->save();
         close();
-    } else if (buttonRole == QDialogButtonBox::ApplyRole) {
-        saveFields();
-    } else if (buttonRole == QDialogButtonBox::ResetRole) {
-        // Restore Defaults
-        // TODO: Confirm dialogue?
-        const QString versionText = combo_baseGameVersion->currentText();
-        if (!prompt(QString("Restore default config settings for %1?").arg(versionText)))
-            return;
-        projectConfig.reset(projectConfig.stringToBaseGameVersion(versionText));
-        projectConfig.save();
-        userConfig.reset();
-        userConfig.save();
-        refresh();
     } else if (buttonRole == QDialogButtonBox::RejectRole) {
-        if (this->hasUnsavedChanges && !prompt(QString("Discard unsaved changes?"))) {
-            // TODO:
-            // Unsaved changes prompt
-        }
+        // "Cancel" button
+        if (!this->promptSaveChanges())
+            return;
         close();
+    } else if (buttonRole == QDialogButtonBox::ResetRole) {
+        // "Restore Defaults" button
+        this->promptRestoreDefaults();
     }
-    // TODO: Save geometry on close
+}
+
+void ProjectSettingsEditor::closeEvent(QCloseEvent* event) {
+    if (!this->promptSaveChanges()) {
+        event->ignore();
+        return;
+    }
+
+    if (this->projectNeedsReload) {
+        if (this->prompt("Settings changed, reload project to apply changes?") == QMessageBox::Yes)
+            emit this->reloadProject();
+    }
+
+    porymapConfig.setProjectSettingsEditorGeometry(
+        this->saveGeometry(),
+        this->saveState()
+    );
 }

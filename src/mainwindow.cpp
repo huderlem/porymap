@@ -2738,8 +2738,8 @@ void MainWindow::togglePreferenceSpecificUi() {
 void MainWindow::on_actionEdit_Project_Settings_triggered() {
     if (!this->projectSettingsEditor) {
         this->projectSettingsEditor = new ProjectSettingsEditor(this, this->editor->project);
-        connect(this->projectSettingsEditor, &ProjectSettingsEditor::saved,
-                this, &MainWindow::togglePreferenceSpecificUi);
+        connect(this->projectSettingsEditor, &ProjectSettingsEditor::reloadProject,
+                this, &MainWindow::on_action_Reload_Project_triggered);
     }
 
     if (!this->projectSettingsEditor->isVisible()) {

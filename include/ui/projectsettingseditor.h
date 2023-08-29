@@ -21,26 +21,29 @@ public:
     ~ProjectSettingsEditor();
 
 signals:
-    void saved();
+    void reloadProject();
 
 private:
     Ui::ProjectSettingsEditor *ui;
     Project *project;
-    NoScrollComboBox *combo_defaultPrimaryTileset;
-    NoScrollComboBox *combo_defaultSecondaryTileset;
-    NoScrollComboBox *combo_baseGameVersion;
-    NoScrollComboBox *combo_attributesSize;
 
     bool hasUnsavedChanges = false;
+    bool projectNeedsReload = false;
+    bool refreshing = false;
 
     void initUi();
-    void saveFields();
     void connectSignals();
+    void restoreWindowState();
+    void save();
     void refresh();
-    bool prompt(const QString &text);
+    void closeEvent(QCloseEvent*);
+    int prompt(const QString &, QMessageBox::StandardButton = QMessageBox::Yes);
+    bool promptSaveChanges();
+    bool promptRestoreDefaults();
 
 private slots:
     void dialogButtonClicked(QAbstractButton *button);
+    void choosePrefabsFileClicked(bool);
     void markEdited();
 };
 
