@@ -801,8 +801,15 @@ BaseGameVersion ProjectConfig::getBaseGameVersion() {
     return this->baseGameVersion;
 }
 
+QString ProjectConfig::getBaseGameVersionString(BaseGameVersion version) {
+    if (!baseGameVersionMap.contains(version)) {
+        version = BaseGameVersion::pokeemerald;
+    }
+    return baseGameVersionMap.value(version);
+}
+
 QString ProjectConfig::getBaseGameVersionString() {
-    return baseGameVersionMap.value(this->baseGameVersion);
+    return this->getBaseGameVersionString(this->baseGameVersion);
 }
 
 void ProjectConfig::setUsePoryScript(bool usePoryScript) {
@@ -970,10 +977,7 @@ void ProjectConfig::setPrefabFilepath(QString filepath) {
     this->save();
 }
 
-QString ProjectConfig::getPrefabFilepath(bool setIfEmpty) {
-    if (setIfEmpty && this->prefabFilepath.isEmpty()) {
-        this->setPrefabFilepath("prefabs.json");
-    }
+QString ProjectConfig::getPrefabFilepath() {
     return this->prefabFilepath;
 }
 

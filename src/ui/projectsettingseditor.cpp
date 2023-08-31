@@ -2,6 +2,7 @@
 #include "ui_projectsettingseditor.h"
 #include "config.h"
 #include "noscrollcombobox.h"
+#include "prefab.h"
 
 #include <QAbstractButton>
 #include <QFormLayout>
@@ -31,8 +32,10 @@ ProjectSettingsEditor::~ProjectSettingsEditor()
 // TODO: Move tool tips to editable areas
 
 void ProjectSettingsEditor::connectSignals() {
+    // Connect buttons
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &ProjectSettingsEditor::dialogButtonClicked);
     connect(ui->button_ChoosePrefabs, &QAbstractButton::clicked, this, &ProjectSettingsEditor::choosePrefabsFileClicked);
+    connect(ui->button_ImportDefaultPrefabs, &QAbstractButton::clicked, this, &ProjectSettingsEditor::importDefaultPrefabsClicked);
 
     // Connect combo boxes
     QList<NoScrollComboBox *> combos = ui->centralwidget->findChildren<NoScrollComboBox *>();
@@ -106,7 +109,6 @@ void ProjectSettingsEditor::refresh() {
     ui->checkBox_UsePoryscript->setChecked(projectConfig.getUsePoryScript());
     ui->checkBox_ShowWildEncounterTables->setChecked(userConfig.getEncounterJsonActive());
     ui->checkBox_CreateTextFile->setChecked(projectConfig.getCreateMapTextFileEnabled());
-    ui->checkBox_PrefabImportPrompted->setChecked(projectConfig.getPrefabImportPrompted());
     ui->checkBox_EnableTripleLayerMetatiles->setChecked(projectConfig.getTripleLayerMetatilesEnabled());
     ui->checkBox_EnableRequiresItemfinder->setChecked(projectConfig.getHiddenItemRequiresItemfinderEnabled());
     ui->checkBox_EnableQuantity->setChecked(projectConfig.getHiddenItemQuantityEnabled());
@@ -130,7 +132,7 @@ void ProjectSettingsEditor::refresh() {
 
     // Set line edit texts
     ui->lineEdit_BorderMetatiles->setText(projectConfig.getNewMapBorderMetatileIdsString());
-    ui->lineEdit_PrefabsPath->setText(projectConfig.getPrefabFilepath(false));
+    ui->lineEdit_PrefabsPath->setText(projectConfig.getPrefabFilepath());
 
     this->refreshing = false; // Allow signals
 }
@@ -150,7 +152,6 @@ void ProjectSettingsEditor::save() {
     projectConfig.setUsePoryScript(ui->checkBox_UsePoryscript->isChecked());
     userConfig.setEncounterJsonActive(ui->checkBox_ShowWildEncounterTables->isChecked());
     projectConfig.setCreateMapTextFileEnabled(ui->checkBox_CreateTextFile->isChecked());
-    projectConfig.setPrefabImportPrompted(ui->checkBox_PrefabImportPrompted->isChecked());
     projectConfig.setTripleLayerMetatilesEnabled(ui->checkBox_EnableTripleLayerMetatiles->isChecked());
     projectConfig.setHiddenItemRequiresItemfinderEnabled(ui->checkBox_EnableRequiresItemfinder->isChecked());
     projectConfig.setHiddenItemQuantityEnabled(ui->checkBox_EnableQuantity->isChecked());
@@ -203,8 +204,17 @@ void ProjectSettingsEditor::choosePrefabsFileClicked(bool) {
         return;
     this->project->setImportExportPath(filepath);
     ui->lineEdit_PrefabsPath->setText(filepath);
-    ui->checkBox_PrefabImportPrompted->setChecked(true);
     this->hasUnsavedChanges = true;
+}
+
+void ProjectSettingsEditor::importDefaultPrefabsClicked(bool) {
+    // If the prompt is accepted the prefabs file will be created and its filepath will be saved in the config.
+    // No need to set hasUnsavedChanges here.
+    BaseGameVersion version = projectConfig.stringToBaseGameVersion(ui->comboBox_BaseGameVersion->currentText());
+    if (prefab.tryImportDefaultPrefabs(this, version, ui->lineEdit_PrefabsPath->text())) {
+        ui->lineEdit_PrefabsPath->setText(projectConfig.getPrefabFilepath()); // Refresh with new filepath
+        this->projectNeedsReload = true;
+    }
 }
 
 int ProjectSettingsEditor::prompt(const QString &text, QMessageBox::StandardButton defaultButton) {

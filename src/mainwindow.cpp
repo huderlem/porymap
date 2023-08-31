@@ -1678,7 +1678,12 @@ void MainWindow::on_mapViewTab_tabBarClicked(int index)
         editor->setEditingCollision();
     } else if (index == 2) {
         editor->setEditingMap();
-        prefab.tryImportDefaultPrefabs(this->editor->map);
+        if (projectConfig.getPrefabFilepath().isEmpty() && !projectConfig.getPrefabImportPrompted()) {
+            // User hasn't set up prefabs and hasn't been prompted before.
+            // Ask if they'd like to import the default prefabs file.
+            if (prefab.tryImportDefaultPrefabs(this, projectConfig.getBaseGameVersion()))
+                prefab.updatePrefabUi(this->editor->map);
+        } 
     }
     editor->setCursorRectVisible(false);
 }

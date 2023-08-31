@@ -228,6 +228,7 @@ public:
     void setBaseGameVersion(BaseGameVersion baseGameVersion);
     BaseGameVersion getBaseGameVersion();
     QString getBaseGameVersionString();
+    QString getBaseGameVersionString(BaseGameVersion version);
     BaseGameVersion stringToBaseGameVersion(QString string, bool * ok = nullptr);
     void setUsePoryScript(bool usePoryScript);
     bool getUsePoryScript();
@@ -269,7 +270,7 @@ public:
     void setFilePath(ProjectFilePath pathId, QString path);
     QString getFilePath(ProjectFilePath pathId);
     void setPrefabFilepath(QString filepath);
-    QString getPrefabFilepath(bool setIfEmpty);
+    QString getPrefabFilepath();
     void setPrefabImportPrompted(bool prompted);
     bool getPrefabImportPrompted();
     void setTilesetsHaveCallback(bool has);

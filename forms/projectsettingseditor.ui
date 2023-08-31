@@ -29,7 +29,7 @@
          <x>0</x>
          <y>0</y>
          <width>544</width>
-         <height>1096</height>
+         <height>1107</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -185,23 +185,6 @@
            <string>Prefabs</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_4">
-           <item row="0" column="1">
-            <widget class="QLineEdit" name="lineEdit_PrefabsPath"/>
-           </item>
-           <item row="1" column="0" colspan="2">
-            <widget class="QCheckBox" name="checkBox_PrefabImportPrompted">
-             <property name="text">
-              <string>Prefab import prompted</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="0">
-            <widget class="QLabel" name="label_PrefabsPath">
-             <property name="text">
-              <string>Prefabs Path</string>
-             </property>
-            </widget>
-           </item>
            <item row="0" column="2">
             <widget class="QToolButton" name="button_ChoosePrefabs">
              <property name="text">
@@ -210,6 +193,23 @@
              <property name="icon">
               <iconset resource="../resources/images.qrc">
                <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QPushButton" name="button_ImportDefaultPrefabs">
+             <property name="text">
+              <string>Import Defaults</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="lineEdit_PrefabsPath"/>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_PrefabsPath">
+             <property name="text">
+              <string>Prefabs Path</string>
              </property>
             </widget>
            </item>
