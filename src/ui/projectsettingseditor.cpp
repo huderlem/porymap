@@ -8,7 +8,7 @@
 #include <QFormLayout>
 
 /*
-    Editor for the settings in a user's porymap.project.cfg and porymap.user.cfg files.
+    Editor for the settings in a user's porymap.project.cfg file (and 'use_encounter_json' in porymap.user.cfg).
 */
 
 ProjectSettingsEditor::ProjectSettingsEditor(QWidget *parent, Project *project) :
@@ -32,31 +32,20 @@ ProjectSettingsEditor::~ProjectSettingsEditor()
 // TODO: Move tool tips to editable areas
 
 void ProjectSettingsEditor::connectSignals() {
-    // Connect buttons
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &ProjectSettingsEditor::dialogButtonClicked);
     connect(ui->button_ChoosePrefabs, &QAbstractButton::clicked, this, &ProjectSettingsEditor::choosePrefabsFileClicked);
     connect(ui->button_ImportDefaultPrefabs, &QAbstractButton::clicked, this, &ProjectSettingsEditor::importDefaultPrefabsClicked);
-
-    // Connect combo boxes
-    QList<NoScrollComboBox *> combos = ui->centralwidget->findChildren<NoScrollComboBox *>();
-    foreach(auto i, combos)
-        connect(i, &QComboBox::currentTextChanged, this, &ProjectSettingsEditor::markEdited);
     connect(ui->comboBox_BaseGameVersion, &QComboBox::currentTextChanged, this, &ProjectSettingsEditor::promptRestoreDefaults);
 
-    // Connect check boxes
-    QList<QCheckBox *> checkboxes = ui->centralwidget->findChildren<QCheckBox *>();
-    foreach(auto i, checkboxes)
-        connect(i, &QCheckBox::stateChanged, this, &ProjectSettingsEditor::markEdited);
-
-    // Connect spin boxes
-    QList<QSpinBox *> spinBoxes = ui->centralwidget->findChildren<QSpinBox *>();
-    foreach(auto i, spinBoxes)
-        connect(i, QOverload<int>::of(&QSpinBox::valueChanged), [this](int) { this->markEdited(); });
-
-    // Connect line edits
-    QList<QLineEdit *> lineEdits = ui->centralwidget->findChildren<QLineEdit *>();
-    foreach(auto i, lineEdits)
-        connect(i, &QLineEdit::textEdited, this, &ProjectSettingsEditor::markEdited);
+    // Record that there are unsaved changes if any of the settings are modified
+    for (auto combo : ui->centralwidget->findChildren<NoScrollComboBox *>())
+        connect(combo, &QComboBox::currentTextChanged, this, &ProjectSettingsEditor::markEdited);
+    for (auto checkBox : ui->centralwidget->findChildren<QCheckBox *>())
+        connect(checkBox, &QCheckBox::stateChanged, this, &ProjectSettingsEditor::markEdited);
+    for (auto spinBox : ui->centralwidget->findChildren<QSpinBox *>())
+        connect(spinBox, QOverload<int>::of(&QSpinBox::valueChanged), [this](int) { this->markEdited(); });
+    for (auto lineEdit : ui->centralwidget->findChildren<QLineEdit *>())
+        connect(lineEdit, &QLineEdit::textEdited, this, &ProjectSettingsEditor::markEdited);
 }
 
 void ProjectSettingsEditor::markEdited() {
@@ -143,7 +132,6 @@ void ProjectSettingsEditor::save() {
 
     // Prevent a call to save() for each of the config settings
     projectConfig.setSaveDisabled(true);
-    userConfig.setSaveDisabled(true);
 
     projectConfig.setDefaultPrimaryTileset(ui->comboBox_DefaultPrimaryTileset->currentText());
     projectConfig.setDefaultSecondaryTileset(ui->comboBox_DefaultSecondaryTileset->currentText());
@@ -183,8 +171,6 @@ void ProjectSettingsEditor::save() {
 
     projectConfig.setSaveDisabled(false);
     projectConfig.save();
-    userConfig.setSaveDisabled(false);
-    userConfig.save();
     this->hasUnsavedChanges = false;
 
     // Technically, a reload is not required for several of the config settings.
@@ -192,6 +178,7 @@ void ProjectSettingsEditor::save() {
     this->projectNeedsReload = true;
 }
 
+// TODO: If the selected file is in the project directory use a relative path
 void ProjectSettingsEditor::choosePrefabsFileClicked(bool) {
     QString startPath = this->project->importExportPath;
     QFileInfo fileInfo(ui->lineEdit_PrefabsPath->text());
@@ -253,12 +240,9 @@ bool ProjectSettingsEditor::promptRestoreDefaults() {
     // Restore defaults by resetting config in memory, refreshing the UI, then restoring the config.
     // Don't want to save changes until user accepts them.
     ProjectConfig tempProject = projectConfig;
-    UserConfig tempUser = userConfig;
     projectConfig.reset(projectConfig.stringToBaseGameVersion(versionText));
-    userConfig.reset();
     this->refresh();
     projectConfig = tempProject;
-    userConfig = tempUser;
 
     this->hasUnsavedChanges = true;
     return true;

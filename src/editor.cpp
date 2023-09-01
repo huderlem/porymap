@@ -2146,7 +2146,7 @@ void Editor::openScript(const QString &scriptLabel) const {
     openInTextEditor(scriptPath, lineNum);
 }
 
-void Editor::openInTextEditor(const QString &path, int lineNum) const {
+void Editor::openInTextEditor(const QString &path, int lineNum) {
     QString command = porymapConfig.getTextEditorGotoLine();
     if (command.isEmpty()) {
         // Open map scripts in the system's default editor.
@@ -2159,7 +2159,7 @@ void Editor::openInTextEditor(const QString &path, int lineNum) const {
         } else {
             command += " \"" + path + '\"';
         }
-        startDetachedProcess(command);
+        Editor::startDetachedProcess(command);
     }
 }
 
@@ -2172,7 +2172,7 @@ void Editor::openProjectInTextEditor() const {
     startDetachedProcess(command);
 }
 
-bool Editor::startDetachedProcess(const QString &command, const QString &workingDirectory, qint64 *pid) const {
+bool Editor::startDetachedProcess(const QString &command, const QString &workingDirectory, qint64 *pid) {
     logInfo("Executing command: " + command);
     QProcess process;
 #ifdef Q_OS_WIN

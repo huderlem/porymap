@@ -149,7 +149,7 @@ public:
 
     void shouldReselectEvents();
     void scaleMapView(int);
-    void openInTextEditor(const QString &path, int lineNum = 0) const;
+    static void openInTextEditor(const QString &path, int lineNum = 0);
     bool eventLimitReached(Event::Type type);
 
 public slots:
@@ -179,9 +179,9 @@ private:
     void updateEncounterFields(EncounterFields newFields);
     QString getMovementPermissionText(uint16_t collision, uint16_t elevation);
     QString getMetatileDisplayMessage(uint16_t metatileId);
-    bool startDetachedProcess(const QString &command,
-                              const QString &workingDirectory = QString(),
-                              qint64 *pid = nullptr) const;
+    static bool startDetachedProcess(const QString &command,
+                                    const QString &workingDirectory = QString(),
+                                    qint64 *pid = nullptr);
 
 private slots:
     void onMapStartPaint(QGraphicsSceneMouseEvent *event, MapPixmapItem *item);

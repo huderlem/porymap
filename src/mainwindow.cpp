@@ -590,6 +590,19 @@ QString MainWindow::getDefaultMap() {
     return QString();
 }
 
+void MainWindow::openSubWindow(QWidget * window) {
+    if (!window) return;
+
+    if (!window->isVisible()) {
+        window->show();
+    } else if (window->isMinimized()) {
+        window->showNormal();
+    } else {
+        window->raise();
+        window->activateWindow();
+    }
+}
+
 QString MainWindow::getExistingDirectory(QString dir) {
     return QFileDialog::getExistingDirectory(this, "Open Directory", dir, QFileDialog::ShowDirsOnly);
 }
@@ -1184,12 +1197,9 @@ void MainWindow::openNewMapPopupWindow() {
     if (!this->newMapPrompt) {
         this->newMapPrompt = new NewMapPopup(this, this->editor->project);
     }
-    if (!this->newMapPrompt->isVisible()) {
-        this->newMapPrompt->show();
-    } else {
-        this->newMapPrompt->raise();
-        this->newMapPrompt->activateWindow();
-    }
+
+    openSubWindow(this->newMapPrompt);
+
     connect(this->newMapPrompt, &NewMapPopup::applied, this, &MainWindow::onNewMapCreated);
     this->newMapPrompt->setAttribute(Qt::WA_DeleteOnClose);
 }
@@ -1775,14 +1785,7 @@ void MainWindow::on_actionEdit_Shortcuts_triggered()
     if (!shortcutsEditor)
         initShortcutsEditor();
 
-    if (shortcutsEditor->isHidden()) {
-        shortcutsEditor->show();
-    } else if (shortcutsEditor->isMinimized()) {
-        shortcutsEditor->showNormal();
-    } else {
-        shortcutsEditor->raise();
-        shortcutsEditor->activateWindow();
-    }
+    openSubWindow(shortcutsEditor);
 }
 
 void MainWindow::initShortcutsEditor() {
@@ -2461,13 +2464,7 @@ void MainWindow::showExportMapImageWindow(ImageExporterMode mode) {
     this->mapImageExporter = new MapImageExporter(this, this->editor, mode);
     this->mapImageExporter->setAttribute(Qt::WA_DeleteOnClose);
 
-    if (!this->mapImageExporter->isVisible()) {
-        this->mapImageExporter->show();
-    } else if (this->mapImageExporter->isMinimized()) {
-        this->mapImageExporter->showNormal();
-    } else {
-        this->mapImageExporter->activateWindow();
-    }
+    openSubWindow(this->mapImageExporter);
 }
 
 void MainWindow::on_comboBox_ConnectionDirection_currentTextChanged(const QString &direction)
@@ -2663,14 +2660,7 @@ void MainWindow::on_actionTileset_Editor_triggered()
         initTilesetEditor();
     }
 
-    if (!this->tilesetEditor->isVisible()) {
-        this->tilesetEditor->show();
-    } else if (this->tilesetEditor->isMinimized()) {
-        this->tilesetEditor->showNormal();
-    } else {
-        this->tilesetEditor->raise();
-        this->tilesetEditor->activateWindow();
-    }
+    openSubWindow(this->tilesetEditor);
 
     MetatileSelection selection = this->editor->metatile_selector_item->getMetatileSelection();
     this->tilesetEditor->selectMetatile(selection.metatileItems.first().metatileId);
@@ -2723,14 +2713,7 @@ void MainWindow::on_actionEdit_Preferences_triggered() {
                 this, &MainWindow::togglePreferenceSpecificUi);
     }
 
-    if (!preferenceEditor->isVisible()) {
-        preferenceEditor->show();
-    } else if (preferenceEditor->isMinimized()) {
-        preferenceEditor->showNormal();
-    } else {
-        preferenceEditor->raise();
-        preferenceEditor->activateWindow();
-    }
+    openSubWindow(preferenceEditor);
 }
 
 void MainWindow::togglePreferenceSpecificUi() {
@@ -2747,14 +2730,15 @@ void MainWindow::on_actionEdit_Project_Settings_triggered() {
                 this, &MainWindow::on_action_Reload_Project_triggered);
     }
 
-    if (!this->projectSettingsEditor->isVisible()) {
-        this->projectSettingsEditor->show();
-    } else if (this->projectSettingsEditor->isMinimized()) {
-        this->projectSettingsEditor->showNormal();
-    } else {
-        this->projectSettingsEditor->raise();
-        this->projectSettingsEditor->activateWindow();
+    openSubWindow(this->projectSettingsEditor);
+}
+
+void MainWindow::on_actionCustom_Scripts_triggered() {
+    if (!this->customScriptsEditor) {
+        this->customScriptsEditor = new CustomScriptsEditor(this);
     }
+
+    openSubWindow(this->customScriptsEditor);
 }
 
 void MainWindow::on_pushButton_AddCustomHeaderField_clicked()
@@ -2806,14 +2790,7 @@ void MainWindow::on_actionRegion_Map_Editor_triggered() {
         }
     }
 
-    if (!this->regionMapEditor->isVisible()) {
-        this->regionMapEditor->show();
-    } else if (this->regionMapEditor->isMinimized()) {
-        this->regionMapEditor->showNormal();
-    } else {
-        this->regionMapEditor->raise();
-        this->regionMapEditor->activateWindow();
-    }
+    openSubWindow(this->regionMapEditor);
 }
 
 void MainWindow::on_pushButton_CreatePrefab_clicked() {

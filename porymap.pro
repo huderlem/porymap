@@ -42,6 +42,8 @@ SOURCES += src/core/block.cpp \
     src/scriptapi/apiutility.cpp \
     src/scriptapi/scripting.cpp \
     src/ui/aboutporymap.cpp \
+    src/ui/customscriptseditor.cpp \
+    src/ui/customscriptslistitem.cpp \
     src/ui/draggablepixmapitem.cpp \
     src/ui/bordermetatilespixmapitem.cpp \
     src/ui/collisionpixmapitem.cpp \
@@ -129,6 +131,8 @@ HEADERS  += include/core/block.h \
     include/lib/orderedmap.h \
     include/lib/orderedjson.h \
     include/ui/aboutporymap.h \
+    include/ui/customscriptseditor.h \
+    include/ui/customscriptslistitem.h \
     include/ui/draggablepixmapitem.h \
     include/ui/bordermetatilespixmapitem.h \
     include/ui/collisionpixmapitem.h \
@@ -204,7 +208,9 @@ FORMS    += forms/mainwindow.ui \
     forms/preferenceeditor.ui \
     forms/regionmappropertiesdialog.ui \
     forms/colorpicker.ui \
-    forms/projectsettingseditor.ui
+    forms/projectsettingseditor.ui \
+    forms/customscriptseditor.ui \
+    forms/customscriptslistitem.ui
 
 RESOURCES += \
     resources/images.qrc \

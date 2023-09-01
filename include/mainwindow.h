@@ -26,6 +26,7 @@
 #include "shortcutseditor.h"
 #include "preferenceeditor.h"
 #include "projectsettingseditor.h"
+#include "customscriptseditor.h"
 
 
 
@@ -286,6 +287,7 @@ private slots:
     void on_actionEdit_Preferences_triggered();
     void togglePreferenceSpecificUi();
     void on_actionEdit_Project_Settings_triggered();
+    void on_actionCustom_Scripts_triggered();
 
 public:
     Ui::MainWindow *ui;
@@ -300,6 +302,7 @@ private:
     QPointer<NewMapPopup> newMapPrompt = nullptr;
     QPointer<PreferenceEditor> preferenceEditor = nullptr;
     QPointer<ProjectSettingsEditor> projectSettingsEditor = nullptr;
+    QPointer<CustomScriptsEditor> customScriptsEditor = nullptr;
     FilterChildrenProxyModel *mapListProxyModel;
     QStandardItemModel *mapListModel;
     QList<QStandardItem*> *mapGroupItemsList;
@@ -343,6 +346,7 @@ private:
     bool loadProjectCombos();
     bool populateMapList();
     void sortMapList();
+    void openSubWindow(QWidget * window);
     QString getExistingDirectory(QString);
     bool openProject(QString dir);
     QString getDefaultMap();

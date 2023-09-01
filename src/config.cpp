@@ -647,7 +647,7 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         userConfig.useEncounterJson = getConfigBool(key, value);
     } else if (key == "custom_scripts") {
         userConfig.customScripts.clear();
-        QList<QString> paths = value.split(",");
+        QList<QString> paths = value.split(",", Qt::SkipEmptyParts);
         paths.removeDuplicates();
         for (QString script : paths) {
             if (!script.isEmpty()) {
@@ -1077,7 +1077,7 @@ void UserConfig::parseConfigKeyValue(QString key, QString value) {
         this->useEncounterJson = getConfigBool(key, value);
     } else if (key == "custom_scripts") {
         this->customScripts.clear();
-        QList<QString> paths = value.split(",");
+        QList<QString> paths = value.split(",", Qt::SkipEmptyParts);
         paths.removeDuplicates();
         for (QString script : paths) {
             if (!script.isEmpty()) {
@@ -1133,12 +1133,12 @@ bool UserConfig::getEncounterJsonActive() {
     return this->useEncounterJson;
 }
 
-void UserConfig::setCustomScripts(QList<QString> scripts) {
+void UserConfig::setCustomScripts(QStringList scripts) {
     this->customScripts = scripts;
     this->save();
 }
 
-QList<QString> UserConfig::getCustomScripts() {
+QStringList UserConfig::getCustomScripts() {
     return this->customScripts;
 }
 

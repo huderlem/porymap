@@ -3018,6 +3018,7 @@
     <addaction name="actionEdit_Project_Settings"/>
     <addaction name="actionEdit_Preferences"/>
     <addaction name="actionEdit_Shortcuts"/>
+    <addaction name="actionCustom_Scripts"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -3312,6 +3313,11 @@
   <action name="actionEdit_Project_Settings">
    <property name="text">
     <string>Edit Project Settings...</string>
+   </property>
+  </action>
+  <action name="actionCustom_Scripts">
+   <property name="text">
+    <string>Custom Scripts...</string>
    </property>
   </action>
  </widget>
