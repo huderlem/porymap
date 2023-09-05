@@ -348,8 +348,11 @@ public:
     bool getEncounterJsonActive();
     void setProjectDir(QString projectDir);
     QString getProjectDir();
-    void setCustomScripts(QStringList scripts);
-    QStringList getCustomScripts();
+    void setCustomScripts(QStringList scripts, QList<bool> enabled);
+    QStringList getCustomScriptPaths();
+    QList<bool> getCustomScriptsEnabled();
+    void parseCustomScripts(QString input);
+    QString outputCustomScripts();
 protected:
     virtual QString getConfigFilepath() override;
     virtual void parseConfigKeyValue(QString key, QString value) override;
@@ -363,7 +366,7 @@ private:
     QString projectDir;
     QString recentMap;
     bool useEncounterJson;
-    QStringList customScripts;
+    QMap<QString, bool> customScripts;
     QStringList readKeys;
 };
 

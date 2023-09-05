@@ -31,16 +31,17 @@ private:
     QString importDir;
     const QString baseDir;
 
-    void displayScript(const QString &filepath);
+    void displayScript(const QString &filepath, bool enabled);
     QString chooseScript(QString dir);
 
     void removeScript(QListWidgetItem * item);
     void replaceScript(QListWidgetItem * item);
     void openScript(QListWidgetItem * item);
+    QString getScriptFilepath(QListWidgetItem * item, bool absolutePath = true) const;
+    void setScriptFilepath(QListWidgetItem * item, QString filepath) const;
+    bool getScriptEnabled(QListWidgetItem * item) const;
 
-    QString getListItemFilepath(QListWidgetItem * item) const;
-    void setListItemFilepath(QListWidgetItem * item, QString filepath) const;
-
+    void markEdited();
     int prompt(const QString &text, QMessageBox::StandardButton defaultButton);
     void save();
     void closeEvent(QCloseEvent*);

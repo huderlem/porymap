@@ -36,8 +36,11 @@ Scripting::Scripting(MainWindow *mainWindow) {
     this->mainWindow = mainWindow;
     this->engine = new QJSEngine(mainWindow);
     this->engine->installExtensions(QJSEngine::ConsoleExtension);
-    for (QString script : userConfig.getCustomScripts()) {
-        this->filepaths.append(script);
+    const QStringList paths = userConfig.getCustomScriptPaths();
+    const QList<bool> enabled = userConfig.getCustomScriptsEnabled();
+    for (int i = 0; i < paths.length(); i++) {
+        if (enabled.at(i))
+            this->filepaths.append(paths.at(i));
     }
     this->loadModules(this->filepaths);
     this->scriptUtility = new ScriptUtility(mainWindow);

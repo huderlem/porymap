@@ -8,8 +8,6 @@
 #include <QDir>
 #include <QFileDialog>
 
-// TODO: System for turning scripts on or off
-//
 // TODO: Better URL colors on dark themes
 // TODO: Save window state
 
@@ -23,8 +21,10 @@ CustomScriptsEditor::CustomScriptsEditor(QWidget *parent) :
     // This property seems to be reset if we don't set it programmatically
     ui->list->setDragDropMode(QAbstractItemView::NoDragDrop);
 
-    for (auto path : userConfig.getCustomScripts())
-        this->displayScript(path);
+    const QStringList paths = userConfig.getCustomScriptPaths();
+    const QList<bool> enabled = userConfig.getCustomScriptsEnabled();
+    for (int i = 0; i < paths.length(); i++)
+        this->displayScript(paths.at(i), enabled.at(i));
 
     this->importDir = userConfig.getProjectDir();
 
@@ -90,42 +90,55 @@ void CustomScriptsEditor::applyUserShortcuts() {
             shortcut->setKeys(shortcutsConfig.userShortcuts(shortcut));
 }
 
-void CustomScriptsEditor::displayScript(const QString &filepath) {
+void CustomScriptsEditor::displayScript(const QString &filepath, bool enabled) {
     auto item = new QListWidgetItem();
-    auto buttons = new CustomScriptsListItem();
+    auto widget = new CustomScriptsListItem();
 
-    buttons->ui->lineEdit_filepath->setText(filepath);
-    item->setSizeHint(buttons->sizeHint());
+    widget->ui->checkBox_Enable->setChecked(enabled);
+    widget->ui->lineEdit_filepath->setText(filepath);
+    item->setSizeHint(widget->sizeHint());
 
-    connect(buttons->ui->b_Choose, &QAbstractButton::clicked, [this, item](bool) { this->replaceScript(item); });
-    connect(buttons->ui->b_Edit,   &QAbstractButton::clicked, [this, item](bool) { this->openScript(item); });
-    connect(buttons->ui->b_Delete, &QAbstractButton::clicked, [this, item](bool) { this->removeScript(item); });
-    connect(buttons->ui->lineEdit_filepath, &QLineEdit::textEdited, [this](const QString&) { this->hasUnsavedChanges = true; });
+    connect(widget->ui->b_Choose, &QAbstractButton::clicked, [this, item](bool) { this->replaceScript(item); });
+    connect(widget->ui->b_Edit,   &QAbstractButton::clicked, [this, item](bool) { this->openScript(item); });
+    connect(widget->ui->b_Delete, &QAbstractButton::clicked, [this, item](bool) { this->removeScript(item); });
+    connect(widget->ui->checkBox_Enable, &QCheckBox::stateChanged, this, &CustomScriptsEditor::markEdited);
+    connect(widget->ui->lineEdit_filepath, &QLineEdit::textEdited, this, &CustomScriptsEditor::markEdited);
 
     // Per the Qt manual, for performance reasons QListWidget::setItemWidget shouldn't be used with non-static items.
     // There's an assumption here that users won't have enough scripts for that to be a problem.
     ui->list->addItem(item);
-    ui->list->setItemWidget(item, buttons);
+    ui->list->setItemWidget(item, widget);
 }
 
-QString CustomScriptsEditor::getListItemFilepath(QListWidgetItem * item) const {
+void CustomScriptsEditor::markEdited() {
+    this->hasUnsavedChanges = true;
+}
+
+QString CustomScriptsEditor::getScriptFilepath(QListWidgetItem * item, bool absolutePath) const {
     auto widget = dynamic_cast<CustomScriptsListItem *>(ui->list->itemWidget(item));
     if (!widget) return QString();
 
     QString path = widget->ui->lineEdit_filepath->text();
-    QFileInfo fileInfo(path);
-    if (fileInfo.isRelative())
-        path.prepend(this->baseDir);
+    if (absolutePath) {
+        QFileInfo fileInfo(path);
+        if (fileInfo.isRelative())
+            path.prepend(this->baseDir);
+    }
     return path;
 }
 
-void CustomScriptsEditor::setListItemFilepath(QListWidgetItem * item, QString filepath) const {
+void CustomScriptsEditor::setScriptFilepath(QListWidgetItem * item, QString filepath) const {
     auto widget = dynamic_cast<CustomScriptsListItem *>(ui->list->itemWidget(item));
     if (!widget) return;
 
     if (filepath.startsWith(this->baseDir))
         filepath.remove(0, this->baseDir.length());
     widget->ui->lineEdit_filepath->setText(filepath);
+}
+
+bool CustomScriptsEditor::getScriptEnabled(QListWidgetItem * item) const {
+    auto widget = dynamic_cast<CustomScriptsListItem *>(ui->list->itemWidget(item));
+    return widget && widget->ui->checkBox_Enable->isChecked();
 }
 
 QString CustomScriptsEditor::chooseScript(QString dir) {
@@ -139,13 +152,13 @@ void CustomScriptsEditor::addNewScript() {
     this->importDir = filepath;
     if (filepath.startsWith(this->baseDir))
         filepath.remove(0, this->baseDir.length());
-    this->displayScript(filepath);
-    this->hasUnsavedChanges = true;
+    this->displayScript(filepath, true);
+    this->markEdited();
 }
 
 void CustomScriptsEditor::removeScript(QListWidgetItem * item) {
     ui->list->takeItem(ui->list->row(item));
-    this->hasUnsavedChanges = true;
+    this->markEdited();
 }
 
 void CustomScriptsEditor::removeSelectedScripts() {
@@ -157,15 +170,15 @@ void CustomScriptsEditor::removeSelectedScripts() {
 }
 
 void CustomScriptsEditor::replaceScript(QListWidgetItem * item) {
-    const QString filepath = this->chooseScript(this->getListItemFilepath(item));
+    const QString filepath = this->chooseScript(this->getScriptFilepath(item));
     if (filepath.isEmpty())
         return;
-    this->setListItemFilepath(item, filepath);
-    this->hasUnsavedChanges = true;
+    this->setScriptFilepath(item, filepath);
+    this->markEdited();
 }
 
 void CustomScriptsEditor::openScript(QListWidgetItem * item) {
-    const QString path = this->getListItemFilepath(item);
+    const QString path = this->getScriptFilepath(item);
     QFileInfo fileInfo(path);
     if (!fileInfo.exists() || !fileInfo.isFile()){
         QMessageBox::warning(this, "", QString("Failed to open script '%1'").arg(path));
@@ -191,7 +204,16 @@ void CustomScriptsEditor::reloadScripts() {
 void CustomScriptsEditor::save() {
     if (!this->hasUnsavedChanges)
         return;
-    // TODO: Set new paths in config
+
+    QStringList paths;
+    QList<bool> enabledStates;
+    for (int i = 0; i < ui->list->count(); i++) {
+        auto item = ui->list->item(i);
+        paths.append(this->getScriptFilepath(item, false));
+        enabledStates.append(this->getScriptEnabled(item));
+    }
+
+    userConfig.setCustomScripts(paths, enabledStates);
     this->hasUnsavedChanges = false;
     this->reloadScripts();
 }
