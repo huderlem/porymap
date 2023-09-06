@@ -74,6 +74,7 @@ public:
     void setPaletteEditorGeometry(QByteArray, QByteArray);
     void setRegionMapEditorGeometry(QByteArray, QByteArray);
     void setProjectSettingsEditorGeometry(QByteArray, QByteArray);
+    void setCustomScriptsEditorGeometry(QByteArray, QByteArray);
     void setCollisionOpacity(int opacity);
     void setMetatilesZoom(int zoom);
     void setShowPlayerView(bool enabled);
@@ -95,6 +96,7 @@ public:
     QMap<QString, QByteArray> getPaletteEditorGeometry();
     QMap<QString, QByteArray> getRegionMapEditorGeometry();
     QMap<QString, QByteArray> getProjectSettingsEditorGeometry();
+    QMap<QString, QByteArray> getCustomScriptsEditorGeometry();
     int getCollisionOpacity();
     int getMetatilesZoom();
     bool getShowPlayerView();
@@ -133,6 +135,8 @@ private:
     QByteArray regionMapEditorState;
     QByteArray projectSettingsEditorGeometry;
     QByteArray projectSettingsEditorState;
+    QByteArray customScriptsEditorGeometry;
+    QByteArray customScriptsEditorState;
     int collisionOpacity;
     int metatilesZoom;
     bool showPlayerView;

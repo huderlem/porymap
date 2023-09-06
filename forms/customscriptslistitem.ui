@@ -52,6 +52,9 @@
    </item>
    <item>
     <widget class="QCheckBox" name="checkBox_Enable">
+     <property name="toolTip">
+      <string>If unchecked this script will be ignored</string>
+     </property>
      <property name="text">
       <string/>
      </property>

@@ -8,9 +8,6 @@
 #include <QDir>
 #include <QFileDialog>
 
-// TODO: Better URL colors on dark themes
-// TODO: Save window state
-
 CustomScriptsEditor::CustomScriptsEditor(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::CustomScriptsEditor),
@@ -33,6 +30,7 @@ CustomScriptsEditor::CustomScriptsEditor(QWidget *parent) :
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &CustomScriptsEditor::dialogButtonClicked);
 
     this->initShortcuts();
+    this->restoreWindowState();
 }
 
 CustomScriptsEditor::~CustomScriptsEditor()
@@ -88,6 +86,13 @@ void CustomScriptsEditor::applyUserShortcuts() {
     for (auto *shortcut : findChildren<Shortcut *>())
         if (!shortcut->objectName().isEmpty())
             shortcut->setKeys(shortcutsConfig.userShortcuts(shortcut));
+}
+
+void CustomScriptsEditor::restoreWindowState() {
+    logInfo("Restoring custom scripts editor geometry from previous session.");
+    const QMap<QString, QByteArray> geometry = porymapConfig.getCustomScriptsEditorGeometry();
+    this->restoreGeometry(geometry.value("custom_scripts_editor_geometry"));
+    this->restoreState(geometry.value("custom_scripts_editor_state"));
 }
 
 void CustomScriptsEditor::displayScript(const QString &filepath, bool enabled) {
@@ -243,11 +248,9 @@ void CustomScriptsEditor::closeEvent(QCloseEvent* event) {
         if (result == QMessageBox::Yes)
             this->save();
     }
-/*
-    // TODO
-    porymapConfig.setProjectSettingsEditorGeometry(
+
+    porymapConfig.setCustomScriptsEditorGeometry(
         this->saveGeometry(),
         this->saveState()
     );
-*/
 }

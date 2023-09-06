@@ -42,7 +42,7 @@
            <item>
             <widget class="QCheckBox" name="checkBox_UsePoryscript">
              <property name="toolTip">
-              <string/>
+              <string>Whether map script files should prefer using .pory</string>
              </property>
              <property name="text">
               <string>Use Poryscript</string>
@@ -95,13 +95,14 @@
           </property>
           <layout class="QGridLayout" name="gridLayout_3">
            <item row="0" column="1" colspan="2">
-            <widget class="QLineEdit" name="lineEdit_BorderMetatiles"/>
+            <widget class="QLineEdit" name="lineEdit_BorderMetatiles">
+             <property name="toolTip">
+              <string>A comma-separated list of metatile values that will be used to fill new map borders</string>
+             </property>
+            </widget>
            </item>
            <item row="2" column="0">
             <widget class="QLabel" name="label_Elevation">
-             <property name="toolTip">
-              <string>The default elevation that will be used to fill new maps</string>
-             </property>
              <property name="text">
               <string>Elevation</string>
              </property>
@@ -131,13 +132,14 @@
             </widget>
            </item>
            <item row="2" column="1">
-            <widget class="QSpinBox" name="spinBox_Elevation"/>
+            <widget class="QSpinBox" name="spinBox_Elevation">
+             <property name="toolTip">
+              <string>The default elevation that will be used to fill new maps</string>
+             </property>
+            </widget>
            </item>
            <item row="1" column="0">
             <widget class="QLabel" name="label_FillMetatile">
-             <property name="toolTip">
-              <string>The default metatile value that will be used to fill new maps</string>
-             </property>
              <property name="text">
               <string>Fill Metatile</string>
              </property>
@@ -145,9 +147,6 @@
            </item>
            <item row="0" column="0">
             <widget class="QLabel" name="label_BorderMetatiles">
-             <property name="toolTip">
-              <string>A comma-separated list of metatile values that will be used to fill new map borders</string>
-             </property>
              <property name="text">
               <string>Border Metatiles</string>
              </property>
@@ -155,6 +154,9 @@
            </item>
            <item row="1" column="1">
             <widget class="QSpinBox" name="spinBox_FillMetatile">
+             <property name="toolTip">
+              <string>The default metatile value that will be used to fill new maps</string>
+             </property>
              <property name="prefix">
               <string>0x</string>
              </property>
@@ -198,13 +200,20 @@
            </item>
            <item row="1" column="0">
             <widget class="QPushButton" name="button_ImportDefaultPrefabs">
+             <property name="toolTip">
+              <string>Restore the data in the prefabs file to the version defaults. Will create a new file if one doesn't exist.</string>
+             </property>
              <property name="text">
               <string>Import Defaults</string>
              </property>
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QLineEdit" name="lineEdit_PrefabsPath"/>
+            <widget class="QLineEdit" name="lineEdit_PrefabsPath">
+             <property name="toolTip">
+              <string>The file that will be used to populate the Prefabs tab</string>
+             </property>
+            </widget>
            </item>
            <item row="0" column="0">
             <widget class="QLabel" name="label_PrefabsPath">
@@ -301,6 +310,9 @@
            </item>
            <item row="7" column="1">
             <widget class="QSpinBox" name="spinBox_TerrainTypeMask">
+             <property name="toolTip">
+              <string>The mask used to read/write Terrain Type from the metatile's attributes data. If 0, this attribute is disabled.</string>
+             </property>
              <property name="prefix">
               <string>0x</string>
              </property>
@@ -321,9 +333,6 @@
            </item>
            <item row="7" column="0">
             <widget class="QLabel" name="label_TerrainTypeMask">
-             <property name="toolTip">
-              <string>The mask used to read/write Terrain Type from the metatile's attributes data. If 0, this attribute is disabled.</string>
-             </property>
              <property name="text">
               <string>Terrain Type mask</string>
              </property>
@@ -351,9 +360,6 @@
            </item>
            <item row="3" column="0">
             <widget class="QLabel" name="label_BehaviorMask">
-             <property name="toolTip">
-              <string>The mask used to read/write Metatile Behavior from the metatile's attributes data. If 0, this attribute is disabled.</string>
-             </property>
              <property name="text">
               <string>Behavior mask</string>
              </property>
@@ -361,6 +367,9 @@
            </item>
            <item row="3" column="1">
             <widget class="QSpinBox" name="spinBox_BehaviorMask">
+             <property name="toolTip">
+              <string>The mask used to read/write Metatile Behavior from the metatile's attributes data. If 0, this attribute is disabled.</string>
+             </property>
              <property name="prefix">
               <string>0x</string>
              </property>
@@ -391,6 +400,9 @@
            </item>
            <item row="5" column="1">
             <widget class="QSpinBox" name="spinBox_EncounterTypeMask">
+             <property name="toolTip">
+              <string>The mask used to read/write Encounter Type from the metatile's attributes data. If 0, this attribute is disabled.</string>
+             </property>
              <property name="prefix">
               <string>0x</string>
              </property>
@@ -401,9 +413,6 @@
            </item>
            <item row="5" column="0">
             <widget class="QLabel" name="label_EncounterTypeMask">
-             <property name="toolTip">
-              <string>The mask used to read/write Encounter Type from the metatile's attributes data. If 0, this attribute is disabled.</string>
-             </property>
              <property name="text">
               <string>Encounter Type mask</string>
              </property>
@@ -411,9 +420,6 @@
            </item>
            <item row="4" column="0">
             <widget class="QLabel" name="label_LayerTypeMask">
-             <property name="toolTip">
-              <string>The mask used to read/write Layer Type from the metatile's attributes data. If 0, this attribute is disabled.</string>
-             </property>
              <property name="text">
               <string>Layer Type mask</string>
              </property>
@@ -421,6 +427,9 @@
            </item>
            <item row="4" column="1">
             <widget class="QSpinBox" name="spinBox_LayerTypeMask">
+             <property name="toolTip">
+              <string>The mask used to read/write Layer Type from the metatile's attributes data. If 0, this attribute is disabled.</string>
+             </property>
              <property name="prefix">
               <string>0x</string>
              </property>

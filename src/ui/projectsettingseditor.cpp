@@ -29,8 +29,6 @@ ProjectSettingsEditor::~ProjectSettingsEditor()
     delete ui;
 }
 
-// TODO: Move tool tips to editable areas
-
 void ProjectSettingsEditor::connectSignals() {
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &ProjectSettingsEditor::dialogButtonClicked);
     connect(ui->button_ChoosePrefabs, &QAbstractButton::clicked, this, &ProjectSettingsEditor::choosePrefabsFileClicked);
@@ -178,7 +176,7 @@ void ProjectSettingsEditor::save() {
     this->projectNeedsReload = true;
 }
 
-// TODO: If the selected file is in the project directory use a relative path
+// Pick a file to use as the new prefabs file path
 void ProjectSettingsEditor::choosePrefabsFileClicked(bool) {
     QString startPath = this->project->importExportPath;
     QFileInfo fileInfo(ui->lineEdit_PrefabsPath->text());
@@ -190,6 +188,11 @@ void ProjectSettingsEditor::choosePrefabsFileClicked(bool) {
     if (filepath.isEmpty())
         return;
     this->project->setImportExportPath(filepath);
+
+    // Display relative path if this file is in the project folder
+    const QString projectDir = projectConfig.getProjectDir() + QDir::separator();
+    if (filepath.startsWith(projectDir))
+        filepath.remove(0, projectDir.length());
     ui->lineEdit_PrefabsPath->setText(filepath);
     this->hasUnsavedChanges = true;
 }

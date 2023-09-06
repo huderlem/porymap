@@ -33,19 +33,17 @@ private:
 
     void displayScript(const QString &filepath, bool enabled);
     QString chooseScript(QString dir);
-
     void removeScript(QListWidgetItem * item);
     void replaceScript(QListWidgetItem * item);
     void openScript(QListWidgetItem * item);
     QString getScriptFilepath(QListWidgetItem * item, bool absolutePath = true) const;
     void setScriptFilepath(QListWidgetItem * item, QString filepath) const;
     bool getScriptEnabled(QListWidgetItem * item) const;
-
     void markEdited();
     int prompt(const QString &text, QMessageBox::StandardButton defaultButton);
     void save();
     void closeEvent(QCloseEvent*);
-
+    void restoreWindowState();
     void initShortcuts();
     QObjectList shortcutableObjects() const;
     void applyUserShortcuts();

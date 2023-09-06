@@ -238,6 +238,10 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->projectSettingsEditorGeometry = bytesFromString(value);
     } else if (key == "project_settings_editor_state") {
         this->projectSettingsEditorState = bytesFromString(value);
+    } else if (key == "custom_scripts_editor_geometry") {
+        this->customScriptsEditorGeometry = bytesFromString(value);
+    } else if (key == "custom_scripts_editor_state") {
+        this->customScriptsEditorState = bytesFromString(value);
     } else if (key == "metatiles_zoom") {
         this->metatilesZoom = getConfigInteger(key, value, 10, 100, 30);
     } else if (key == "show_player_view") {
@@ -286,6 +290,8 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("region_map_editor_state", stringFromByteArray(this->regionMapEditorState));
     map.insert("project_settings_editor_geometry", stringFromByteArray(this->projectSettingsEditorGeometry));
     map.insert("project_settings_editor_state", stringFromByteArray(this->projectSettingsEditorState));
+    map.insert("custom_scripts_editor_geometry", stringFromByteArray(this->customScriptsEditorGeometry));
+    map.insert("custom_scripts_editor_state", stringFromByteArray(this->customScriptsEditorState));
     map.insert("collision_opacity", QString("%1").arg(this->collisionOpacity));
     map.insert("metatiles_zoom", QString("%1").arg(this->metatilesZoom));
     map.insert("show_player_view", this->showPlayerView ? "1" : "0");
@@ -379,6 +385,12 @@ void PorymapConfig::setRegionMapEditorGeometry(QByteArray regionMapEditorGeometr
 void PorymapConfig::setProjectSettingsEditorGeometry(QByteArray projectSettingsEditorGeometry_, QByteArray projectSettingsEditorState_) {
     this->projectSettingsEditorGeometry = projectSettingsEditorGeometry_;
     this->projectSettingsEditorState = projectSettingsEditorState_;
+    this->save();
+}
+
+void PorymapConfig::setCustomScriptsEditorGeometry(QByteArray customScriptsEditorGeometry_, QByteArray customScriptsEditorState_) {
+    this->customScriptsEditorGeometry = customScriptsEditorGeometry_;
+    this->customScriptsEditorState = customScriptsEditorState_;
     this->save();
 }
 
@@ -490,6 +502,15 @@ QMap<QString, QByteArray> PorymapConfig::getProjectSettingsEditorGeometry() {
 
     geometry.insert("project_settings_editor_geometry", this->projectSettingsEditorGeometry);
     geometry.insert("project_settings_editor_state", this->projectSettingsEditorState);
+
+    return geometry;
+}
+
+QMap<QString, QByteArray> PorymapConfig::getCustomScriptsEditorGeometry() {
+    QMap<QString, QByteArray> geometry;
+
+    geometry.insert("custom_scripts_editor_geometry", this->customScriptsEditorGeometry);
+    geometry.insert("custom_scripts_editor_state", this->customScriptsEditorState);
 
     return geometry;
 }
