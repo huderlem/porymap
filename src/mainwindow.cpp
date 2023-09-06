@@ -2736,9 +2736,21 @@ void MainWindow::on_actionEdit_Project_Settings_triggered() {
 void MainWindow::on_actionCustom_Scripts_triggered() {
     if (!this->customScriptsEditor) {
         this->customScriptsEditor = new CustomScriptsEditor(this);
+        connect(this->customScriptsEditor, &CustomScriptsEditor::reloadScriptEngine,
+                this, &MainWindow::reloadScriptEngine);
     }
 
     openSubWindow(this->customScriptsEditor);
+}
+
+void MainWindow::reloadScriptEngine() {
+    Scripting::init(this);
+    this->ui->graphicsView_Map->clearOverlayMap();
+    Scripting::populateGlobalObject(this);
+    // Lying to the scripts here, simulating a project reload
+    Scripting::cb_ProjectOpened(projectConfig.getProjectDir());
+    if (editor && editor->map)
+        Scripting::cb_MapOpened(editor->map->name);
 }
 
 void MainWindow::on_pushButton_AddCustomHeaderField_clicked()

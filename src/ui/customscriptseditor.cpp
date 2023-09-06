@@ -198,7 +198,7 @@ void CustomScriptsEditor::reloadScripts() {
             return;
         this->save();
     }
-    emit reloadScriptEngine(); // TODO: Catch this signal
+    emit reloadScriptEngine();
 }
 
 void CustomScriptsEditor::save() {

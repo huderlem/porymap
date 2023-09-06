@@ -288,6 +288,7 @@ private slots:
     void togglePreferenceSpecificUi();
     void on_actionEdit_Project_Settings_triggered();
     void on_actionCustom_Scripts_triggered();
+    void reloadScriptEngine();
 
 public:
     Ui::MainWindow *ui;
