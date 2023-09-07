@@ -214,8 +214,11 @@ void CustomScriptsEditor::save() {
     QList<bool> enabledStates;
     for (int i = 0; i < ui->list->count(); i++) {
         auto item = ui->list->item(i);
-        paths.append(this->getScriptFilepath(item, false));
-        enabledStates.append(this->getScriptEnabled(item));
+        const QString path = this->getScriptFilepath(item, false);
+        if (!path.isEmpty()) {
+            paths.append(path);
+            enabledStates.append(this->getScriptEnabled(item));
+        }
     }
 
     userConfig.setCustomScripts(paths, enabledStates);
