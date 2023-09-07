@@ -3015,9 +3015,9 @@
     <addaction name="actionMonitor_Project_Files"/>
     <addaction name="actionOpen_Recent_Project_On_Launch"/>
     <addaction name="separator"/>
-    <addaction name="actionEdit_Project_Settings"/>
-    <addaction name="actionEdit_Preferences"/>
-    <addaction name="actionEdit_Shortcuts"/>
+    <addaction name="actionProject_Settings"/>
+    <addaction name="actionPreferences"/>
+    <addaction name="actionShortcuts"/>
     <addaction name="actionCustom_Scripts"/>
    </widget>
    <addaction name="menuFile"/>
@@ -3272,9 +3272,9 @@
     <string>Export Map Stitch Image...</string>
    </property>
   </action>
-  <action name="actionEdit_Preferences">
+  <action name="actionPreferences">
    <property name="text">
-    <string>Edit Preferences...</string>
+    <string>Preferences...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+,</string>
@@ -3285,9 +3285,9 @@
     <string>Open Project in Text Editor</string>
    </property>
   </action>
-  <action name="actionEdit_Shortcuts">
+  <action name="actionShortcuts">
    <property name="text">
-    <string>Edit Shortcuts...</string>
+    <string>Shortcuts...</string>
    </property>
   </action>
   <action name="actionExport_Map_Timelapse_Image">
@@ -3310,9 +3310,9 @@
     <string>Import Map from Advance Map 1.92...</string>
    </property>
   </action>
-  <action name="actionEdit_Project_Settings">
+  <action name="actionProject_Settings">
    <property name="text">
-    <string>Edit Project Settings...</string>
+    <string>Project Settings...</string>
    </property>
   </action>
   <action name="actionCustom_Scripts">

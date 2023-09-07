@@ -41,6 +41,8 @@ private:
     bool promptSaveChanges();
     bool promptRestoreDefaults();
 
+    void createProjectPathsTable();
+
 private slots:
     void dialogButtonClicked(QAbstractButton *button);
     void choosePrefabsFileClicked(bool);

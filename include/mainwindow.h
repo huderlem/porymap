@@ -201,7 +201,7 @@ private slots:
     void on_spinBox_FloorNumber_valueChanged(int offset);
     void on_actionMonitor_Project_Files_triggered(bool checked);
     void on_actionOpen_Recent_Project_On_Launch_triggered(bool checked);
-    void on_actionEdit_Shortcuts_triggered();
+    void on_actionShortcuts_triggered();
 
     void on_actionZoom_In_triggered();
     void on_actionZoom_Out_triggered();
@@ -284,9 +284,9 @@ private slots:
     void on_pushButton_CreatePrefab_clicked();
 
     void on_actionRegion_Map_Editor_triggered();
-    void on_actionEdit_Preferences_triggered();
+    void on_actionPreferences_triggered();
     void togglePreferenceSpecificUi();
-    void on_actionEdit_Project_Settings_triggered();
+    void on_actionProject_Settings_triggered();
     void on_actionCustom_Scripts_triggered();
     void reloadScriptEngine();
 

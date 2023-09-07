@@ -1780,7 +1780,7 @@ void MainWindow::on_actionOpen_Recent_Project_On_Launch_triggered(bool checked)
     porymapConfig.setReopenOnLaunch(checked);
 }
 
-void MainWindow::on_actionEdit_Shortcuts_triggered()
+void MainWindow::on_actionShortcuts_triggered()
 {
     if (!shortcutsEditor)
         initShortcutsEditor();
@@ -2702,7 +2702,7 @@ void MainWindow::on_actionOpen_Config_Folder_triggered() {
     QDesktopServices::openUrl(QUrl::fromLocalFile(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)));
 }
 
-void MainWindow::on_actionEdit_Preferences_triggered() {
+void MainWindow::on_actionPreferences_triggered() {
     if (!preferenceEditor) {
         preferenceEditor = new PreferenceEditor(this);
         connect(preferenceEditor, &PreferenceEditor::themeChanged,
@@ -2723,7 +2723,7 @@ void MainWindow::togglePreferenceSpecificUi() {
         ui->actionOpen_Project_in_Text_Editor->setEnabled(true);
 }
 
-void MainWindow::on_actionEdit_Project_Settings_triggered() {
+void MainWindow::on_actionProject_Settings_triggered() {
     if (!this->projectSettingsEditor) {
         this->projectSettingsEditor = new ProjectSettingsEditor(this, this->editor->project);
         connect(this->projectSettingsEditor, &ProjectSettingsEditor::reloadProject,

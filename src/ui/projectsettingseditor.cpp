@@ -11,6 +11,8 @@
     Editor for the settings in a user's porymap.project.cfg file (and 'use_encounter_json' in porymap.user.cfg).
 */
 
+// TODO: Better red outline around warning section
+
 ProjectSettingsEditor::ProjectSettingsEditor(QWidget *parent, Project *project) :
     QMainWindow(parent),
     ui(new Ui::ProjectSettingsEditor),
@@ -19,6 +21,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(QWidget *parent, Project *project) 
     ui->setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
     this->initUi();
+    this->createProjectPathsTable();
     this->connectSignals();
     this->refresh();
     this->restoreWindowState();
@@ -40,7 +43,7 @@ void ProjectSettingsEditor::connectSignals() {
         connect(combo, &QComboBox::currentTextChanged, this, &ProjectSettingsEditor::markEdited);
     for (auto checkBox : ui->centralwidget->findChildren<QCheckBox *>())
         connect(checkBox, &QCheckBox::stateChanged, this, &ProjectSettingsEditor::markEdited);
-    for (auto spinBox : ui->centralwidget->findChildren<QSpinBox *>())
+    for (auto spinBox : ui->centralwidget->findChildren<NoScrollSpinBox *>())
         connect(spinBox, QOverload<int>::of(&QSpinBox::valueChanged), [this](int) { this->markEdited(); });
     for (auto lineEdit : ui->centralwidget->findChildren<QLineEdit *>())
         connect(lineEdit, &QLineEdit::textEdited, this, &ProjectSettingsEditor::markEdited);
@@ -73,6 +76,35 @@ void ProjectSettingsEditor::initUi() {
     ui->spinBox_EncounterTypeMask->setMaximum(INT_MAX);
     ui->spinBox_LayerTypeMask->setMaximum(INT_MAX);
     ui->spinBox_TerrainTypeMask->setMaximum(INT_MAX);
+}
+
+// TODO: Reduce vertical space between entries
+// TODO: Fix vertical misalignment between label and edit area
+// TODO: Add description / manual link at top?
+void ProjectSettingsEditor::createProjectPathsTable() {
+    auto pathPairs = ProjectConfig::defaultPaths.values();
+    for (auto pathPair : pathPairs) {
+        // Name of the path
+        auto name = new QLabel();
+        name->setText(pathPair.first);
+
+        // Editable area of the path
+        auto path = new QLineEdit();
+        path->setObjectName(pathPair.first); // Used when saving the paths
+        path->setPlaceholderText(pathPair.second);
+        path->setClearButtonEnabled(true);
+        auto button = new QToolButton();
+        button->setIcon(QIcon(":/icons/folder.ico"));
+        // TODO: file prompt
+        //connect(button, &QAbstractButton::clicked, this, &ProjectSettingsEditor::);
+
+        // Add to list
+        auto editFrame = new QFrame();
+        auto layout = new QHBoxLayout(editFrame);
+        layout->addWidget(path);
+        layout->addWidget(button);
+        ui->layout_ProjectPaths->addRow(name, editFrame);
+    }
 }
 
 void ProjectSettingsEditor::restoreWindowState() {
@@ -120,6 +152,8 @@ void ProjectSettingsEditor::refresh() {
     // Set line edit texts
     ui->lineEdit_BorderMetatiles->setText(projectConfig.getNewMapBorderMetatileIdsString());
     ui->lineEdit_PrefabsPath->setText(projectConfig.getPrefabFilepath());
+    for (auto lineEdit : ui->scrollAreaContents_ProjectPaths->findChildren<QLineEdit*>())
+        lineEdit->setText(projectConfig.getFilePath(lineEdit->objectName(), false));
 
     this->refreshing = false; // Allow signals
 }
@@ -157,11 +191,12 @@ void ProjectSettingsEditor::save() {
     projectConfig.setMetatileEncounterTypeMask(ui->spinBox_EncounterTypeMask->value());
     projectConfig.setMetatileLayerTypeMask(ui->spinBox_LayerTypeMask->value());
     projectConfig.setPrefabFilepath(ui->lineEdit_PrefabsPath->text());
+    for (auto lineEdit : ui->scrollAreaContents_ProjectPaths->findChildren<QLineEdit*>())
+        projectConfig.setFilePath(lineEdit->objectName(), lineEdit->text());
 
-    // Parse border metatile list
-    QList<QString> metatileIdStrings = ui->lineEdit_BorderMetatiles->text().split(",");
+    // Parse and save border metatile list
     QList<uint16_t> metatileIds;
-    for (auto s : metatileIdStrings) {
+    for (auto s : ui->lineEdit_BorderMetatiles->text().split(",")) {
         uint16_t metatileId = s.toUInt(nullptr, 0);
         metatileIds.append(qMin(metatileId, static_cast<uint16_t>(Project::getNumMetatilesTotal() - 1)));
     }

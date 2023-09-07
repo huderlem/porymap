@@ -227,6 +227,7 @@ public:
         this->filePaths.clear();
         this->readKeys.clear();
     }
+    static const QMap<ProjectFilePath, std::pair<QString, QString>> defaultPaths;
     static const QStringList versionStrings;
     void reset(BaseGameVersion baseGameVersion);
     void setBaseGameVersion(BaseGameVersion baseGameVersion);
@@ -271,8 +272,10 @@ public:
     QString getDefaultSecondaryTileset();
     void setDefaultPrimaryTileset(QString tilesetName);
     void setDefaultSecondaryTileset(QString tilesetName);
+    void setFilePath(QString pathId, QString path);
     void setFilePath(ProjectFilePath pathId, QString path);
-    QString getFilePath(ProjectFilePath pathId);
+    QString getFilePath(QString defaultPath, bool allowDefault = true);
+    QString getFilePath(ProjectFilePath pathId, bool allowDefault = true);
     void setPrefabFilepath(QString filepath);
     QString getPrefabFilepath();
     void setPrefabImportPrompted(bool prompted);

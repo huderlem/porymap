@@ -16,7 +16,7 @@
 #include <QAction>
 #include <QAbstractButton>
 
-const QMap<ProjectFilePath, std::pair<QString, QString>> defaultPaths = {
+const QMap<ProjectFilePath, std::pair<QString, QString>> ProjectConfig::defaultPaths = {
     {ProjectFilePath::data_map_folders,                 { "data_map_folders",                "data/maps/"}},
     {ProjectFilePath::data_scripts_folders,             { "data_scripts_folders",            "data/scripts/"}},
     {ProjectFilePath::data_layouts_folders,             { "data_layouts_folders",            "data/layouts/"}},
@@ -64,7 +64,7 @@ const QMap<ProjectFilePath, std::pair<QString, QString>> defaultPaths = {
 };
 
 ProjectFilePath reverseDefaultPaths(QString str) {
-    for (auto it = defaultPaths.constKeyValueBegin(); it != defaultPaths.constKeyValueEnd(); ++it) {
+    for (auto it = ProjectConfig::defaultPaths.constKeyValueBegin(); it != ProjectConfig::defaultPaths.constKeyValueEnd(); ++it) {
         if ((*it).second.first == str) return (*it).first;
     }
     return static_cast<ProjectFilePath>(-1);
@@ -793,17 +793,29 @@ QString ProjectConfig::getProjectDir() {
 
 void ProjectConfig::setFilePath(ProjectFilePath pathId, QString path) {
     if (!defaultPaths.contains(pathId)) return;
-    this->filePaths[pathId] = path;
+    if (path.isEmpty()) {
+        this->filePaths.remove(pathId);
+    } else {
+        this->filePaths[pathId] = path;
+    }
 }
 
-QString ProjectConfig::getFilePath(ProjectFilePath pathId) {
+void ProjectConfig::setFilePath(QString defaultPath, QString newPath) {
+    this->setFilePath(reverseDefaultPaths(defaultPath), newPath);
+}
+
+QString ProjectConfig::getFilePath(ProjectFilePath pathId, bool allowDefault) {
     if (this->filePaths.contains(pathId)) {
         return this->filePaths[pathId];
-    } else if (defaultPaths.contains(pathId)) {
+    } else if (allowDefault && defaultPaths.contains(pathId)) {
         return defaultPaths[pathId].second;
     } else {
         return QString();
     }
+}
+
+QString ProjectConfig::getFilePath(QString defaultPath, bool allowDefault) {
+    return this->getFilePath(reverseDefaultPaths(defaultPath), allowDefault);
 }
 
 void ProjectConfig::setBaseGameVersion(BaseGameVersion baseGameVersion) {
