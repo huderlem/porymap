@@ -33,7 +33,8 @@ You need to install Qt. The minimum supported version is currently Qt 5.14.2. Yo
 with `qtdiag`.
 
 ```
-sudo apt-get install qtdeclarative5-dev
+sudo apt-get install qt6-declarative-dev
+# if your distro does not have qt6-declarative-dev, try sudo apt-get install qtdeclarative5-dev
 qmake
 make
 ./porymap
