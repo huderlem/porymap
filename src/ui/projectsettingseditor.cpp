@@ -11,8 +11,6 @@
     Editor for the settings in a user's porymap.project.cfg file (and 'use_encounter_json' in porymap.user.cfg).
 */
 
-// TODO: Better red outline around warning section
-
 ProjectSettingsEditor::ProjectSettingsEditor(QWidget *parent, Project *project) :
     QMainWindow(parent),
     ui(new Ui::ProjectSettingsEditor),
@@ -78,14 +76,12 @@ void ProjectSettingsEditor::initUi() {
     ui->spinBox_TerrainTypeMask->setMaximum(INT_MAX);
 }
 
-// TODO: Reduce vertical space between entries
-// TODO: Fix vertical misalignment between label and edit area
-// TODO: Add description / manual link at top?
 void ProjectSettingsEditor::createProjectPathsTable() {
     auto pathPairs = ProjectConfig::defaultPaths.values();
     for (auto pathPair : pathPairs) {
         // Name of the path
         auto name = new QLabel();
+        name->setAlignment(Qt::AlignBottom);
         name->setText(pathPair.first);
 
         // Editable area of the path
@@ -99,11 +95,11 @@ void ProjectSettingsEditor::createProjectPathsTable() {
         //connect(button, &QAbstractButton::clicked, this, &ProjectSettingsEditor::);
 
         // Add to list
-        auto editFrame = new QFrame();
-        auto layout = new QHBoxLayout(editFrame);
+        auto editArea = new QWidget();
+        auto layout = new QHBoxLayout(editArea);
         layout->addWidget(path);
         layout->addWidget(button);
-        ui->layout_ProjectPaths->addRow(name, editFrame);
+        ui->layout_ProjectPaths->addRow(name, editArea);
     }
 }
 
