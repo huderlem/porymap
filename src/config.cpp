@@ -804,18 +804,29 @@ void ProjectConfig::setFilePath(QString defaultPath, QString newPath) {
     this->setFilePath(reverseDefaultPaths(defaultPath), newPath);
 }
 
-QString ProjectConfig::getFilePath(ProjectFilePath pathId, bool allowDefault) {
-    if (this->filePaths.contains(pathId)) {
-        return this->filePaths[pathId];
-    } else if (allowDefault && defaultPaths.contains(pathId)) {
-        return defaultPaths[pathId].second;
-    } else {
-        return QString();
+QString ProjectConfig::getFilePath(ProjectFilePath pathId, bool customOnly) {
+    const QString customPath = this->filePaths.value(pathId);
+
+    // When reading custom filepaths for the settings editor we don't care
+    // about the default path or whether the custom path exists.
+    if (customOnly)
+        return customPath;
+
+    if (!customPath.isEmpty()) {
+        // A custom filepath has been specified. If the file/folder exists, use that.
+        const QString absCustomPath = this->projectDir + QDir::separator() + customPath;
+        if (QFileInfo::exists(absCustomPath)) {
+            return customPath;
+        } else {
+            logError(QString("Custom project filepath '%1' not found. Using default.").arg(absCustomPath));
+        }
     }
+    return defaultPaths.contains(pathId) ? defaultPaths[pathId].second : QString();
+
 }
 
-QString ProjectConfig::getFilePath(QString defaultPath, bool allowDefault) {
-    return this->getFilePath(reverseDefaultPaths(defaultPath), allowDefault);
+QString ProjectConfig::getFilePath(QString defaultPath, bool customOnly) {
+    return this->getFilePath(reverseDefaultPaths(defaultPath), customOnly);
 }
 
 void ProjectConfig::setBaseGameVersion(BaseGameVersion baseGameVersion) {

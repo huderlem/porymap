@@ -274,8 +274,8 @@ public:
     void setDefaultSecondaryTileset(QString tilesetName);
     void setFilePath(QString pathId, QString path);
     void setFilePath(ProjectFilePath pathId, QString path);
-    QString getFilePath(QString defaultPath, bool allowDefault = true);
-    QString getFilePath(ProjectFilePath pathId, bool allowDefault = true);
+    QString getFilePath(QString defaultPath, bool customOnly = false);
+    QString getFilePath(ProjectFilePath pathId, bool customOnly = false);
     void setPrefabFilepath(QString filepath);
     QString getPrefabFilepath();
     void setPrefabImportPrompted(bool prompted);

@@ -30,6 +30,7 @@ private:
     bool hasUnsavedChanges = false;
     bool projectNeedsReload = false;
     bool refreshing = false;
+    const QString baseDir;
 
     void initUi();
     void connectSignals();
@@ -42,6 +43,7 @@ private:
     bool promptRestoreDefaults();
 
     void createProjectPathsTable();
+    QString chooseProjectFile(const QString &defaultFilepath);
 
 private slots:
     void dialogButtonClicked(QAbstractButton *button);

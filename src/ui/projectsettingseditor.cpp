@@ -14,7 +14,8 @@
 ProjectSettingsEditor::ProjectSettingsEditor(QWidget *parent, Project *project) :
     QMainWindow(parent),
     ui(new Ui::ProjectSettingsEditor),
-    project(project)
+    project(project),
+    baseDir(userConfig.getProjectDir() + QDir::separator())
 {
     ui->setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
@@ -84,23 +85,52 @@ void ProjectSettingsEditor::createProjectPathsTable() {
         name->setAlignment(Qt::AlignBottom);
         name->setText(pathPair.first);
 
-        // Editable area of the path
-        auto path = new QLineEdit();
-        path->setObjectName(pathPair.first); // Used when saving the paths
-        path->setPlaceholderText(pathPair.second);
-        path->setClearButtonEnabled(true);
+        // Filepath line edit
+        auto lineEdit = new QLineEdit();
+        lineEdit->setObjectName(pathPair.first); // Used when saving the paths
+        lineEdit->setPlaceholderText(pathPair.second);
+        lineEdit->setClearButtonEnabled(true);
+
+        // "Choose file" button
         auto button = new QToolButton();
         button->setIcon(QIcon(":/icons/folder.ico"));
-        // TODO: file prompt
-        //connect(button, &QAbstractButton::clicked, this, &ProjectSettingsEditor::);
+        connect(button, &QAbstractButton::clicked, [this, lineEdit](bool) {
+            const QString path = this->chooseProjectFile(lineEdit->placeholderText());
+            if (!path.isEmpty()) {
+                lineEdit->setText(path);
+                this->markEdited();
+            }
+        });
 
         // Add to list
         auto editArea = new QWidget();
         auto layout = new QHBoxLayout(editArea);
-        layout->addWidget(path);
+        layout->addWidget(lineEdit);
         layout->addWidget(button);
         ui->layout_ProjectPaths->addRow(name, editArea);
     }
+}
+
+QString ProjectSettingsEditor::chooseProjectFile(const QString &defaultFilepath) {
+    const QString startDir = this->baseDir + defaultFilepath;
+
+    QString path;
+    if (defaultFilepath.endsWith("/")){
+        // Default filepath is a folder, choose a new folder
+        path = QFileDialog::getExistingDirectory(this, "Choose Project File Folder", startDir) + QDir::separator();
+    } else{
+        // Default filepath is not a folder, choose a new file
+        path = QFileDialog::getOpenFileName(this, "Choose Project File", startDir);
+    }
+
+    if (!path.startsWith(this->baseDir)){
+        // Most of Porymap's file-parsing code for project files will assume that filepaths
+        // are relative to the root project folder, so we enforce that here.
+        QMessageBox::warning(this, "Failed to set custom filepath",
+                           QString("Custom filepaths must be inside the root project folder '%1'").arg(this->baseDir));
+        return QString();
+    }
+    return path.remove(0, this->baseDir.length());
 }
 
 void ProjectSettingsEditor::restoreWindowState() {
@@ -149,7 +179,7 @@ void ProjectSettingsEditor::refresh() {
     ui->lineEdit_BorderMetatiles->setText(projectConfig.getNewMapBorderMetatileIdsString());
     ui->lineEdit_PrefabsPath->setText(projectConfig.getPrefabFilepath());
     for (auto lineEdit : ui->scrollAreaContents_ProjectPaths->findChildren<QLineEdit*>())
-        lineEdit->setText(projectConfig.getFilePath(lineEdit->objectName(), false));
+        lineEdit->setText(projectConfig.getFilePath(lineEdit->objectName(), true));
 
     this->refreshing = false; // Allow signals
 }
@@ -221,9 +251,8 @@ void ProjectSettingsEditor::choosePrefabsFileClicked(bool) {
     this->project->setImportExportPath(filepath);
 
     // Display relative path if this file is in the project folder
-    const QString projectDir = projectConfig.getProjectDir() + QDir::separator();
-    if (filepath.startsWith(projectDir))
-        filepath.remove(0, projectDir.length());
+    if (filepath.startsWith(this->baseDir))
+        filepath.remove(0, this->baseDir.length());
     ui->lineEdit_PrefabsPath->setText(filepath);
     this->hasUnsavedChanges = true;
 }
