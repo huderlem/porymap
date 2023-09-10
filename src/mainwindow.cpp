@@ -1811,6 +1811,11 @@ void MainWindow::connectSubEditorsToShortcutsEditor() {
     if (regionMapEditor)
         connect(shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
                 regionMapEditor, &RegionMapEditor::applyUserShortcuts);
+
+    if (!customScriptsEditor)
+        initCustomScriptsEditor();
+    connect(shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
+            customScriptsEditor, &CustomScriptsEditor::applyUserShortcuts);
 }
 
 void MainWindow::on_actionPencil_triggered()
@@ -2734,13 +2739,16 @@ void MainWindow::on_actionProject_Settings_triggered() {
 }
 
 void MainWindow::on_actionCustom_Scripts_triggered() {
-    if (!this->customScriptsEditor) {
-        this->customScriptsEditor = new CustomScriptsEditor(this);
-        connect(this->customScriptsEditor, &CustomScriptsEditor::reloadScriptEngine,
-                this, &MainWindow::reloadScriptEngine);
-    }
+    if (!this->customScriptsEditor)
+        initCustomScriptsEditor();
 
     openSubWindow(this->customScriptsEditor);
+}
+
+void MainWindow::initCustomScriptsEditor() {
+    this->customScriptsEditor = new CustomScriptsEditor(this);
+    connect(this->customScriptsEditor, &CustomScriptsEditor::reloadScriptEngine,
+            this, &MainWindow::reloadScriptEngine);
 }
 
 void MainWindow::reloadScriptEngine() {

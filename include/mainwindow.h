@@ -387,6 +387,7 @@ private:
     void initTilesetEditor();
     bool initRegionMapEditor(bool silent = false);
     void initShortcutsEditor();
+    void initCustomScriptsEditor();
     void connectSubEditorsToShortcutsEditor();
 
     bool isProjectOpen();

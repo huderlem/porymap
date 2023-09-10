@@ -44,8 +44,7 @@ void CustomScriptsEditor::initShortcuts() {
     shortcut_remove->setObjectName("shortcut_remove");
     shortcut_remove->setWhatsThis("Remove Selected Scripts");
 
-    // TODO: Prevent ambiguity with MainWindow
-    auto *shortcut_open = new Shortcut(QKeySequence("Ctrl+O"), this, SLOT(openSelectedScripts()));
+    auto *shortcut_open = new Shortcut(QKeySequence(), this, SLOT(openSelectedScripts()));
     shortcut_open->setObjectName("shortcut_open");
     shortcut_open->setWhatsThis("Open Selected Scripts");
 
@@ -56,9 +55,6 @@ void CustomScriptsEditor::initShortcuts() {
     auto *shortcut_reload = new Shortcut(QKeySequence(), this, SLOT(reloadScripts()));
     shortcut_reload->setObjectName("shortcut_reload");
     shortcut_reload->setWhatsThis("Reload Scripts");
-
-    //connect(new QShortcut(QKeySequence("Backspace"), this), &QShortcut::activated, this, &CustomScriptsEditor::removeSelectedScripts);
-    //connect(new QShortcut(QKeySequence("Ctrl+O"), this), &QShortcut::activated, this, &CustomScriptsEditor::openSelectedScripts);
 
     shortcutsConfig.load();
     shortcutsConfig.setDefaultShortcuts(shortcutableObjects());
@@ -78,7 +74,6 @@ QObjectList CustomScriptsEditor::shortcutableObjects() const {
     return shortcutable_objects;
 }
 
-// TODO: Connect to shorcuts editor
 void CustomScriptsEditor::applyUserShortcuts() {
     for (auto *action : findChildren<QAction *>())
         if (!action->objectName().isEmpty())

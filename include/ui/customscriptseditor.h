@@ -24,6 +24,9 @@ public:
 signals:
     void reloadScriptEngine();
 
+public slots:
+    void applyUserShortcuts();
+
 private:
     Ui::CustomScriptsEditor *ui;
 
@@ -46,7 +49,6 @@ private:
     void restoreWindowState();
     void initShortcuts();
     QObjectList shortcutableObjects() const;
-    void applyUserShortcuts();
 
 private slots:
     void dialogButtonClicked(QAbstractButton *button);
