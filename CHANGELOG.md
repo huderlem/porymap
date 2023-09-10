@@ -8,12 +8,16 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 
 ## [Unreleased]
 ### Added
+- Adds an editor window under `Options -> Project Settings...` to customize the project-specific settings in `porymap.project.cfg` and `porymap.user.cfg`.
+- Adds an editor window under `Options -> Custom Scripts...` for Porymap's API scripts.
 - Support for 8BPP tileset tile images.
 
 ### Changed
 - The Palette Editor now remembers the Bit Depth setting.
 - The min/max levels on the Wild Pokémon tab will now adjust automatically if they invalidate each other.
 - If the recent project directory doesn't exist Porymap will open an empty project instead of failing with a misleading error message.
+- Settings under `Options` were relocated either to the `Preferences` window or `Options -> Project Settings`.
+- Secret Base and Weather Trigger events are automatically disabled if their respective constants files fail to parse, instead of not opening the project.
 
 ### Fixed
 - Fix text boxes in the Palette Editor calculating color incorrectly.
@@ -22,6 +26,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix the map border not updating when a tileset is changed.
 - Stop the Tileset Editor from scrolling to the initially selected metatile when saving.
 - Fix the selection outline sticking in single-tile mode on the Prefab tab.
+- Fix bad URL color contrast on dark themes.
 
 ## [5.1.1] - 2023-02-20
 ### Added
