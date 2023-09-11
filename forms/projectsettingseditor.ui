@@ -331,6 +331,9 @@
                 <property name="displayIntegerBase">
                  <number>16</number>
                 </property>
+                <property name="hasPadding">
+                 <bool>true</bool>
+                </property>
                </widget>
               </item>
               <item row="2" column="0">
@@ -388,6 +391,9 @@
                 <property name="displayIntegerBase">
                  <number>16</number>
                 </property>
+                <property name="hasPadding">
+                 <bool>true</bool>
+                </property>
                </widget>
               </item>
               <item row="10" column="0">
@@ -421,6 +427,9 @@
                 <property name="displayIntegerBase">
                  <number>16</number>
                 </property>
+                <property name="hasPadding">
+                 <bool>true</bool>
+                </property>
                </widget>
               </item>
               <item row="5" column="0">
@@ -447,6 +456,9 @@
                 </property>
                 <property name="displayIntegerBase">
                  <number>16</number>
+                </property>
+                <property name="hasPadding">
+                 <bool>true</bool>
                 </property>
                </widget>
               </item>

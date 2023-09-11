@@ -36,6 +36,7 @@ void ProjectSettingsEditor::connectSignals() {
     connect(ui->button_ChoosePrefabs, &QAbstractButton::clicked, this, &ProjectSettingsEditor::choosePrefabsFileClicked);
     connect(ui->button_ImportDefaultPrefabs, &QAbstractButton::clicked, this, &ProjectSettingsEditor::importDefaultPrefabsClicked);
     connect(ui->comboBox_BaseGameVersion, &QComboBox::currentTextChanged, this, &ProjectSettingsEditor::promptRestoreDefaults);
+    connect(ui->comboBox_AttributesSize, &QComboBox::currentTextChanged, this, &ProjectSettingsEditor::updateAttributeLimits);
 
     // Record that there are unsaved changes if any of the settings are modified
     for (auto combo : ui->centralwidget->findChildren<NoScrollComboBox *>())
@@ -71,12 +72,19 @@ void ProjectSettingsEditor::initUi() {
 
     ui->spinBox_Elevation->setMaximum(15);
     ui->spinBox_FillMetatile->setMaximum(Project::getNumMetatilesTotal() - 1);
+}
 
-    // TODO: These need to be subclassed (or changed to line edits) to handle larger values
-    ui->spinBox_BehaviorMask->setMaximum(UINT_MAX);
-    ui->spinBox_EncounterTypeMask->setMaximum(UINT_MAX);
-    ui->spinBox_LayerTypeMask->setMaximum(UINT_MAX);
-    ui->spinBox_TerrainTypeMask->setMaximum(UINT_MAX);
+void ProjectSettingsEditor::updateAttributeLimits(const QString &attrSize) {
+    QMap<QString, uint32_t> limits {
+        {"1", 0xFF},
+        {"2", 0xFFFF},
+        {"4", 0xFFFFFFFF},
+    };
+    uint32_t max = limits.value(attrSize, UINT_MAX);
+    ui->spinBox_BehaviorMask->setMaximum(max);
+    ui->spinBox_EncounterTypeMask->setMaximum(max);
+    ui->spinBox_LayerTypeMask->setMaximum(max);
+    ui->spinBox_TerrainTypeMask->setMaximum(max);
 }
 
 void ProjectSettingsEditor::createProjectPathsTable() {
@@ -151,6 +159,7 @@ void ProjectSettingsEditor::refresh() {
     ui->comboBox_DefaultSecondaryTileset->setTextItem(projectConfig.getDefaultSecondaryTileset());
     ui->comboBox_BaseGameVersion->setTextItem(projectConfig.getBaseGameVersionString());
     ui->comboBox_AttributesSize->setTextItem(QString::number(projectConfig.getMetatileAttributesSize()));
+    this->updateAttributeLimits(ui->comboBox_AttributesSize->currentText());
 
     // Set check box states
     ui->checkBox_UsePoryscript->setChecked(projectConfig.getUsePoryScript());

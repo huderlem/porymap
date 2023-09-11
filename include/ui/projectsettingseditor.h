@@ -49,6 +49,7 @@ private slots:
     void dialogButtonClicked(QAbstractButton *button);
     void choosePrefabsFileClicked(bool);
     void importDefaultPrefabsClicked(bool);
+    void updateAttributeLimits(const QString &attrSize);
     void markEdited();
 };
 
