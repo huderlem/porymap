@@ -19,6 +19,58 @@
      <number>9</number>
     </property>
     <item>
+     <widget class="QGroupBox" name="groupBox">
+      <property name="title">
+       <string>Miscellaneous</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_3">
+       <item row="0" column="3">
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="0" column="2">
+        <widget class="QCheckBox" name="checkBox_OpenRecentProject">
+         <property name="text">
+          <string>Open recent project on launch</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QCheckBox" name="checkBox_MonitorProjectFiles">
+         <property name="text">
+          <string>Monitor project files</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Maximum</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
      <widget class="QGroupBox" name="groupBox_Themes">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -65,8 +117,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>582</width>
-            <height>372</height>
+            <width>570</width>
+            <height>322</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_2">

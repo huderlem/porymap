@@ -452,8 +452,6 @@ void MainWindow::loadUserSettings() {
     ui->horizontalSlider_MetatileZoom->blockSignals(true);
     ui->horizontalSlider_MetatileZoom->setValue(porymapConfig.getMetatilesZoom());
     ui->horizontalSlider_MetatileZoom->blockSignals(false);
-    ui->actionMonitor_Project_Files->setChecked(porymapConfig.getMonitorFiles());
-    ui->actionOpen_Recent_Project_On_Launch->setChecked(porymapConfig.getReopenOnLaunch());
     setTheme(porymapConfig.getTheme());
 }
 
@@ -524,8 +522,11 @@ bool MainWindow::openProject(QString dir) {
         QObject::connect(editor->project, &Project::reloadProject, this, &MainWindow::on_action_Reload_Project_triggered);
         QObject::connect(editor->project, &Project::mapCacheCleared, this, &MainWindow::onMapCacheCleared);
         QObject::connect(editor->project, &Project::disableWildEncountersUI, [this]() { this->setWildEncountersUIEnabled(false); });
-        QObject::connect(editor->project, &Project::uncheckMonitorFilesAction, [this]() { ui->actionMonitor_Project_Files->setChecked(false); });
-        on_actionMonitor_Project_Files_triggered(porymapConfig.getMonitorFiles());
+        QObject::connect(editor->project, &Project::uncheckMonitorFilesAction, [this]() {
+            porymapConfig.setMonitorFiles(false);
+            if (this->preferenceEditor)
+                this->preferenceEditor->updateFields();
+        });
         editor->project->set_root(dir);
         success = loadDataStructures()
                && populateMapList()
@@ -1768,16 +1769,6 @@ void MainWindow::on_actionCursor_Tile_Outline_triggered()
         this->editor->cursorMapTileRect->setVisible(enabled && this->editor->cursorMapTileRect->getActive());
         ui->graphicsView_Map->scene()->update();
     }
-}
-
-void MainWindow::on_actionMonitor_Project_Files_triggered(bool checked)
-{
-    porymapConfig.setMonitorFiles(checked);
-}
-
-void MainWindow::on_actionOpen_Recent_Project_On_Launch_triggered(bool checked)
-{
-    porymapConfig.setReopenOnLaunch(checked);
 }
 
 void MainWindow::on_actionShortcuts_triggered()

@@ -3012,9 +3012,6 @@
     <property name="title">
      <string>Options</string>
     </property>
-    <addaction name="actionMonitor_Project_Files"/>
-    <addaction name="actionOpen_Recent_Project_On_Launch"/>
-    <addaction name="separator"/>
     <addaction name="actionProject_Settings"/>
     <addaction name="actionPreferences"/>
     <addaction name="actionShortcuts"/>
@@ -3062,22 +3059,6 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
-   </property>
-  </action>
-  <action name="actionMonitor_Project_Files">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Monitor Project Files</string>
-   </property>
-  </action>
-  <action name="actionOpen_Recent_Project_On_Launch">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Open Recent Project On Launch</string>
    </property>
   </action>
   <action name="action_NewMap">

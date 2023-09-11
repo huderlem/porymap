@@ -18,6 +18,7 @@ class PreferenceEditor : public QMainWindow
 public:
     explicit PreferenceEditor(QWidget *parent = nullptr);
     ~PreferenceEditor();
+    void updateFields();
 
 signals:
     void preferencesSaved();
@@ -27,8 +28,9 @@ private:
     Ui::PreferenceEditor *ui;
     NoScrollComboBox *themeSelector;
 
-    void populateFields();
+    void initFields();
     void saveFields();
+
 
 private slots:
     void dialogButtonClicked(QAbstractButton *button);

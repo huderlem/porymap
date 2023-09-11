@@ -199,8 +199,6 @@ private slots:
     void on_checkBox_AllowBiking_stateChanged(int selected);
     void on_checkBox_AllowEscaping_stateChanged(int selected);
     void on_spinBox_FloorNumber_valueChanged(int offset);
-    void on_actionMonitor_Project_Files_triggered(bool checked);
-    void on_actionOpen_Recent_Project_On_Launch_triggered(bool checked);
     void on_actionShortcuts_triggered();
 
     void on_actionZoom_In_triggered();
