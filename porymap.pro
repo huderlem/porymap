@@ -100,7 +100,8 @@ SOURCES += src/core/block.cpp \
     src/mainwindow.cpp \
     src/project.cpp \
     src/settings.cpp \
-    src/log.cpp
+    src/log.cpp \
+    src/ui/uintspinbox.cpp
 
 HEADERS  += include/core/block.h \
     include/core/blockdata.h \
@@ -192,7 +193,8 @@ HEADERS  += include/core/block.h \
     include/scripting.h \
     include/scriptutility.h \
     include/settings.h \
-    include/log.h
+    include/log.h \
+    include/ui/uintspinbox.h
 
 FORMS    += forms/mainwindow.ui \
     forms/prefabcreationdialog.ui \

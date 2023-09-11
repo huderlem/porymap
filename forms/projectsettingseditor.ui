@@ -321,7 +321,7 @@
                </widget>
               </item>
               <item row="7" column="1">
-               <widget class="NoScrollSpinBox" name="spinBox_TerrainTypeMask">
+               <widget class="UIntSpinBox" name="spinBox_TerrainTypeMask">
                 <property name="toolTip">
                  <string>The mask used to read/write Terrain Type from the metatile's attributes data. If 0, this attribute is disabled.</string>
                 </property>
@@ -378,7 +378,7 @@
                </widget>
               </item>
               <item row="3" column="1">
-               <widget class="NoScrollSpinBox" name="spinBox_BehaviorMask">
+               <widget class="UIntSpinBox" name="spinBox_BehaviorMask">
                 <property name="toolTip">
                  <string>The mask used to read/write Metatile Behavior from the metatile's attributes data. If 0, this attribute is disabled.</string>
                 </property>
@@ -411,7 +411,7 @@
                </widget>
               </item>
               <item row="5" column="1">
-               <widget class="NoScrollSpinBox" name="spinBox_EncounterTypeMask">
+               <widget class="UIntSpinBox" name="spinBox_EncounterTypeMask">
                 <property name="toolTip">
                  <string>The mask used to read/write Encounter Type from the metatile's attributes data. If 0, this attribute is disabled.</string>
                 </property>
@@ -438,7 +438,7 @@
                </widget>
               </item>
               <item row="4" column="1">
-               <widget class="NoScrollSpinBox" name="spinBox_LayerTypeMask">
+               <widget class="UIntSpinBox" name="spinBox_LayerTypeMask">
                 <property name="toolTip">
                  <string>The mask used to read/write Layer Type from the metatile's attributes data. If 0, this attribute is disabled.</string>
                 </property>
@@ -670,6 +670,11 @@
    <class>NoScrollSpinBox</class>
    <extends>QSpinBox</extends>
    <header>noscrollspinbox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>UIntSpinBox</class>
+   <extends>QAbstractSpinBox</extends>
+   <header>uintspinbox.h</header>
   </customwidget>
  </customwidgets>
  <resources>

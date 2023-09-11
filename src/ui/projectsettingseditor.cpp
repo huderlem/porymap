@@ -42,10 +42,12 @@ void ProjectSettingsEditor::connectSignals() {
         connect(combo, &QComboBox::currentTextChanged, this, &ProjectSettingsEditor::markEdited);
     for (auto checkBox : ui->centralwidget->findChildren<QCheckBox *>())
         connect(checkBox, &QCheckBox::stateChanged, this, &ProjectSettingsEditor::markEdited);
-    for (auto spinBox : ui->centralwidget->findChildren<NoScrollSpinBox *>())
-        connect(spinBox, QOverload<int>::of(&QSpinBox::valueChanged), [this](int) { this->markEdited(); });
     for (auto lineEdit : ui->centralwidget->findChildren<QLineEdit *>())
         connect(lineEdit, &QLineEdit::textEdited, this, &ProjectSettingsEditor::markEdited);
+    for (auto spinBox : ui->centralwidget->findChildren<NoScrollSpinBox *>())
+        connect(spinBox, &QSpinBox::textChanged, this, &ProjectSettingsEditor::markEdited);
+    for (auto spinBox : ui->centralwidget->findChildren<UIntSpinBox *>())
+        connect(spinBox, &UIntSpinBox::textChanged, this, &ProjectSettingsEditor::markEdited);
 }
 
 void ProjectSettingsEditor::markEdited() {
@@ -71,10 +73,10 @@ void ProjectSettingsEditor::initUi() {
     ui->spinBox_FillMetatile->setMaximum(Project::getNumMetatilesTotal() - 1);
 
     // TODO: These need to be subclassed (or changed to line edits) to handle larger values
-    ui->spinBox_BehaviorMask->setMaximum(INT_MAX);
-    ui->spinBox_EncounterTypeMask->setMaximum(INT_MAX);
-    ui->spinBox_LayerTypeMask->setMaximum(INT_MAX);
-    ui->spinBox_TerrainTypeMask->setMaximum(INT_MAX);
+    ui->spinBox_BehaviorMask->setMaximum(UINT_MAX);
+    ui->spinBox_EncounterTypeMask->setMaximum(UINT_MAX);
+    ui->spinBox_LayerTypeMask->setMaximum(UINT_MAX);
+    ui->spinBox_TerrainTypeMask->setMaximum(UINT_MAX);
 }
 
 void ProjectSettingsEditor::createProjectPathsTable() {
