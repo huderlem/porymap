@@ -117,6 +117,7 @@ void TilesetEditor::setAttributesUi() {
         for (int num : project->metatileBehaviorMapInverse.keys()) {
             this->ui->comboBox_metatileBehaviors->addItem(project->metatileBehaviorMapInverse[num], num);
         }
+        this->ui->comboBox_metatileBehaviors->setMinimumContentsLength(0);
     } else {
         this->ui->comboBox_metatileBehaviors->setVisible(false);
         this->ui->label_metatileBehavior->setVisible(false);
@@ -129,6 +130,7 @@ void TilesetEditor::setAttributesUi() {
         this->ui->comboBox_terrainType->addItem("Water", TERRAIN_WATER);
         this->ui->comboBox_terrainType->addItem("Waterfall", TERRAIN_WATERFALL);
         this->ui->comboBox_terrainType->setEditable(false);
+        this->ui->comboBox_terrainType->setMinimumContentsLength(0);
     } else {
         this->ui->comboBox_terrainType->setVisible(false);
         this->ui->label_terrainType->setVisible(false);
@@ -140,6 +142,7 @@ void TilesetEditor::setAttributesUi() {
         this->ui->comboBox_encounterType->addItem("Land", ENCOUNTER_LAND);
         this->ui->comboBox_encounterType->addItem("Water", ENCOUNTER_WATER);
         this->ui->comboBox_encounterType->setEditable(false);
+        this->ui->comboBox_encounterType->setMinimumContentsLength(0);
     } else {
         this->ui->comboBox_encounterType->setVisible(false);
         this->ui->label_encounterType->setVisible(false);
@@ -151,6 +154,7 @@ void TilesetEditor::setAttributesUi() {
         this->ui->comboBox_layerType->addItem("Covered - Bottom/Middle", METATILE_LAYER_BOTTOM_MIDDLE);
         this->ui->comboBox_layerType->addItem("Split - Bottom/Top", METATILE_LAYER_BOTTOM_TOP);
         this->ui->comboBox_layerType->setEditable(false);
+        this->ui->comboBox_layerType->setMinimumContentsLength(0);
         if (!Metatile::getLayerTypeMask()) {
             // User doesn't have triple layer metatiles, but has no layer type attribute.
             // Porymap is still using the layer type value to render metatiles, and with

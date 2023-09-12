@@ -17,6 +17,8 @@ PreferenceEditor::PreferenceEditor(QWidget *parent) :
     ui->setupUi(this);
     auto *formLayout = new QFormLayout(ui->groupBox_Themes);
     themeSelector = new NoScrollComboBox(ui->groupBox_Themes);
+    themeSelector->setEditable(false);
+    themeSelector->setMinimumContentsLength(0);
     formLayout->addRow("Themes", themeSelector);
     setAttribute(Qt::WA_DeleteOnClose);
     connect(ui->buttonBox, &QDialogButtonBox::clicked,
