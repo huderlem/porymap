@@ -34,6 +34,11 @@ Each of the settings in the ``Project Settings...`` window are described below.
 Preferences
 -----------
 
+.. figure:: images/settings-and-options/preferences.png
+   :align: left
+   :width: 60%
+   :alt: Preferences
+
 Use Poryscript
    If this is checked, a ``scripts.pory`` (and ``text.pory``, if applicable) file will be created alongside new maps, instead of a ``scripts.inc`` file. Additionally, ``.pory`` files will be considered when searching for scripts labels and when opening scripts files (in addition to the regular ``.inc`` files).
 
@@ -41,7 +46,7 @@ Use Poryscript
 
    Field name: ``use_poryscript``
 
-Show Wild Encounters
+Show Wild Encounter Tables
    If this is checked, the ``Wild Pokemon`` tab will be enabled and wild encounter data will be read from the project's encounters JSON file.
 
    If no encounters JSON file is found this will be automatically unchecked.
@@ -51,6 +56,11 @@ Show Wild Encounters
 
 Default Tilesets
 ----------------
+
+.. figure:: images/settings-and-options/default-tilesets.png
+   :align: left
+   :width: 60%
+   :alt: Default Tilesets
 
 Default Primary/Secondary Tilesest
    These will be the initially-selected tilesets when creating a new map, and will be used if a layout's tileset fails to load. If a default tileset is not found then the first tileset in the respective list will be used instead.
@@ -64,6 +74,11 @@ Default Primary/Secondary Tilesest
 
 New Map Defaults
 ----------------
+
+.. figure:: images/settings-and-options/new-map-defaults.png
+   :align: left
+   :width: 60%
+   :alt: New Map Defaults
 
 Border Metatiles
    This is a comma-separated list of metatile ID values that will be used to fill the border on new maps. If the number of metatiles in the border is not the same as the number of values in the list then the border will be filled with metatile ID ``0x000`` instead.
@@ -97,6 +112,11 @@ Create separate text file
 Prefabs
 -------
 
+.. figure:: images/settings-and-options/prefabs.png
+   :align: left
+   :width: 60%
+   :alt: Prefabs
+
 Prefabs Path
    This is the file path to a ``.json`` file that contains definitions of prefabs. This will be used to populate the ``Prefabs`` panel on the ``Map`` tab. If no path is specified prefabs will be saved to a new ``prefabs.json`` file in the root project folder. A new file can be selected with the folder button.
 
@@ -110,13 +130,23 @@ Prefabs Path
 Base game version
 -----------------
 
-   This is the name of base pret repository for this project. The options are ``pokeruby``, ``pokefirered``, and ``pokeemerald``, and can be selected (or automatically from the project folder name) when the project is first opened. Changing the base game version setting will prompt you to restore the default project settings for any of the three versions. You can also do this for the currently-selected base game version by selecting ``Restore Defaults`` at the bottom. For up-to-date projects changing this setting has no other effect.
+.. figure:: images/settings-and-options/base-game-version.png
+   :align: left
+   :width: 60%
+   :alt: Base Game Version
 
-   Field name: ``base_game_version``
+This is the name of base pret repository for this project. The options are ``pokeruby``, ``pokefirered``, and ``pokeemerald``, and can be selected (or automatically from the project folder name) when the project is first opened. Changing the base game version setting will prompt you to restore the default project settings for any of the three versions. You can also do this for the currently-selected base game version by selecting ``Restore Defaults`` at the bottom. For up-to-date projects changing this setting has no other effect.
+
+Field name: ``base_game_version``
 
 
 Tilesets / Metatiles
 --------------------
+
+.. figure:: images/settings-and-options/tilesets-metatiles.png
+   :align: left
+   :width: 60%
+   :alt: Tilesets / Metatiles
 
 Enable Triple Layer Metatiles
    Metatile data normally consists of 2 layers with 4 tiles each. If this is checked, they should instead consist of 3 layers with 4 tiles each. Additionally, the ``Layer Type`` option in the ``Tileset Editor`` will be removed. Note that layer type data will still be read and written according to your ``Layer Type mask`` setting.
@@ -173,7 +203,7 @@ Terrain Type mask
 
    Field name: ``metatile_terrain_type_mask``
 
-Output ``callback`` and ``isCompressed`` fields
+Output 'callback' and 'isCompressed' fields
    If these are checked, then ``callback`` and ``isCompressed`` fields will be output in the C data for new tilesets. Their default values will be ``NULL`` and ``TRUE``, respectively. 
 
    Defaults to ``checked`` for both.
@@ -191,6 +221,11 @@ Project Files
 
 Events
 ------
+
+.. figure:: images/settings-and-options/events.png
+   :align: left
+   :width: 60%
+   :alt: Events
 
 Enable Clone Objects
    If this is checked Clone Object Events will be available on the ``Events`` tab. For more information see https://huderlem.github.io/porymap/manual/editing-map-events.html#clone-object-events
@@ -213,21 +248,21 @@ Enable Weather Triggers
 
    Field name: ``enable_event_weather_trigger``
 
-Enable ``Quantity`` for Hidden Items
+Enable 'Quantity' for Hidden Items
    If this is checked the ``Quantity`` property will be available for Hidden Item Events. For more information see https://huderlem.github.io/porymap/manual/editing-map-events.html#hidden-item-event
 
    Defaults to ``checked`` for ``pokefirered`` and ``unchecked`` for other versions.
 
    Field name: ``enable_hidden_item_quantity``
 
-Enable ``Requires Itemfinder`` for Hidden Items
+Enable 'Requires Itemfinder' for Hidden Items
    If this is checked the ``Requires Itemfinder`` property will be available for Hidden Item Events. For more information see https://huderlem.github.io/porymap/manual/editing-map-events.html#hidden-item-event
 
    Defaults to ``checked`` for ``pokefirered`` and ``unchecked`` for other versions.
 
    Field name: ``enable_hidden_item_requires_itemfinder``
 
-Enable ``Repsawn Map/NPC`` for Heal Locations
+Enable 'Repsawn Map/NPC' for Heal Locations
    If this is checked the ``Respawn Map`` and ``Respawn NPC`` properties will be available for Heal Location events. For more information see https://huderlem.github.io/porymap/manual/editing-map-events.html#heal-location-healspots
 
    Defaults to ``checked`` for ``pokefirered`` and ``unchecked`` for other versions.
@@ -238,14 +273,19 @@ Enable ``Repsawn Map/NPC`` for Heal Locations
 Maps
 ----
 
-Enable ``Floor Number``
+.. figure:: images/settings-and-options/maps.png
+   :align: left
+   :width: 60%
+   :alt: Maps
+
+Enable 'Floor Number'
    If this is checked, a ``Floor Number`` option will become available on the ``Header`` tab and on the new map prompt. For more information see https://huderlem.github.io/porymap/manual/editing-map-header.html
 
    Defaults to ``checked`` for ``pokefirered`` and ``unchecked`` for other versions.
 
    Field name: ``enable_floor_number``
 
-Enable ``Allow Running/Biking/Escaping``
+Enable 'Allow Running/Biking/Escaping'
    If this is checked, ``Allow Running``, ``Allow Biking``, and ``Allow Dig & Escape Rope`` options will become available on the ``Header`` tab and on the new map prompt. For more information see https://huderlem.github.io/porymap/manual/editing-map-header.html
 
    Defaults to ``unchecked`` for ``pokeruby`` and ``checked`` for other versions.
