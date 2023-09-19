@@ -735,7 +735,7 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("enable_triple_layer_metatiles", QString::number(this->enableTripleLayerMetatiles));
     map.insert("new_map_metatile", Metatile::getMetatileIdString(this->newMapMetatileId));
     map.insert("new_map_elevation", QString::number(this->newMapElevation));
-    map.insert("new_map_border_metatiles", this->getNewMapBorderMetatileIdsString());
+    map.insert("new_map_border_metatiles", Metatile::getMetatileIdStringList(this->newMapBorderMetatileIds));
     map.insert("default_primary_tileset", this->defaultPrimaryTileset);
     map.insert("default_secondary_tileset", this->defaultSecondaryTileset);
     map.insert("prefabs_filepath", this->prefabFilepath);
@@ -981,14 +981,6 @@ void ProjectConfig::setNewMapBorderMetatileIds(QList<uint16_t> metatileIds) {
 
 QList<uint16_t> ProjectConfig::getNewMapBorderMetatileIds() {
     return this->newMapBorderMetatileIds;
-}
-
-QString ProjectConfig::getNewMapBorderMetatileIdsString() {
-    QStringList metatiles;
-    for (auto metatileId : this->newMapBorderMetatileIds){
-        metatiles << Metatile::getMetatileIdString(metatileId);
-    }
-    return metatiles.join(",");
 }
 
 QString ProjectConfig::getDefaultPrimaryTileset() {

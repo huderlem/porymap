@@ -42,6 +42,10 @@ private:
     bool promptSaveChanges();
     bool promptRestoreDefaults();
 
+    void setBorderMetatilesUi(bool customSize);
+    void setBorderMetatileIds(bool customSize, QList<uint16_t> metatileIds);
+    QList<uint16_t> getBorderMetatileIds(bool customSize);
+
     void createProjectPathsTable();
     QString chooseProjectFile(const QString &defaultFilepath);
 

@@ -81,9 +81,11 @@ New Map Defaults
    :alt: New Map Defaults
 
 Border Metatiles
-   This is a comma-separated list of metatile ID values that will be used to fill the border on new maps. If the number of metatiles in the border is not the same as the number of values in the list then the border will be filled with metatile ID ``0x000`` instead.
+   This is list of metatile ID values that will be used to fill the border on new maps. The spin boxes correspond to the top-left, top-right, bottom-left, and bottom-right border metatiles respectively.
 
-   Defaults to ``0x014,0x015,0x01C,0x01D`` for ``pokefirered``, and ``0x1D4,0x1D5,0x1DC,0x1DD`` for other versions.
+   If ``Enable Custom Border Size`` is checked, this will instead be a comma-separated list of metatile ID values that will be used to fill the border on new maps. Values in the list will be read sequentially to fill the new border left-to-right top-to-bottom. If the number of metatiles in the border for a new map is not the same as the number of values in the list then the border will be filled with metatile ID ``0x000`` instead.
+
+   Defaults to ``0x014``, ``0x015``, ``0x01C``, ``0x01D`` for ``pokefirered``, and ``0x1D4``, ``0x1D5``, ``0x1DC``, ``0x1DD`` for other versions.
 
    Field name: ``new_map_border_metatiles``
 

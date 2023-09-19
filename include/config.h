@@ -267,7 +267,6 @@ public:
     int getNewMapElevation();
     void setNewMapBorderMetatileIds(QList<uint16_t> metatileIds);
     QList<uint16_t> getNewMapBorderMetatileIds();
-    QString getNewMapBorderMetatileIdsString();
     QString getDefaultPrimaryTileset();
     QString getDefaultSecondaryTileset();
     void setDefaultPrimaryTileset(QString tilesetName);

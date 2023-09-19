@@ -37,6 +37,13 @@ void ProjectSettingsEditor::connectSignals() {
     connect(ui->button_ImportDefaultPrefabs, &QAbstractButton::clicked, this, &ProjectSettingsEditor::importDefaultPrefabsClicked);
     connect(ui->comboBox_BaseGameVersion, &QComboBox::currentTextChanged, this, &ProjectSettingsEditor::promptRestoreDefaults);
     connect(ui->comboBox_AttributesSize, &QComboBox::currentTextChanged, this, &ProjectSettingsEditor::updateAttributeLimits);
+    connect(ui->checkBox_EnableCustomBorderSize, &QCheckBox::stateChanged, [this](int state) {
+        bool customSize = (state == Qt::Checked);
+        // When switching between the spin boxes or line edit for border metatiles we set
+        // the newly-shown UI using the values from the hidden UI.
+        this->setBorderMetatileIds(customSize, this->getBorderMetatileIds(!customSize));
+        this->setBorderMetatilesUi(customSize);
+    });
 
     // Record that there are unsaved changes if any of the settings are modified
     for (auto combo : ui->centralwidget->findChildren<NoScrollComboBox *>())
@@ -69,9 +76,49 @@ void ProjectSettingsEditor::initUi() {
     static const QRegularExpression expression(QString("^(%1,)*%1$").arg(regex_Hex)); // Comma-separated list of hex values
     QRegularExpressionValidator *validator = new QRegularExpressionValidator(expression);
     ui->lineEdit_BorderMetatiles->setValidator(validator);
+    this->setBorderMetatilesUi(projectConfig.getUseCustomBorderSize());
 
+    int maxMetatileId = Project::getNumMetatilesTotal() - 1;
+    ui->spinBox_FillMetatile->setMaximum(maxMetatileId);
+    ui->spinBox_BorderMetatile1->setMaximum(maxMetatileId);
+    ui->spinBox_BorderMetatile2->setMaximum(maxMetatileId);
+    ui->spinBox_BorderMetatile3->setMaximum(maxMetatileId);
+    ui->spinBox_BorderMetatile4->setMaximum(maxMetatileId);
     ui->spinBox_Elevation->setMaximum(15);
-    ui->spinBox_FillMetatile->setMaximum(Project::getNumMetatilesTotal() - 1);
+}
+
+void ProjectSettingsEditor::setBorderMetatilesUi(bool customSize) {
+    ui->widget_DefaultSizeBorderMetatiles->setVisible(!customSize);
+    ui->widget_CustomSizeBorderMetatiles->setVisible(customSize);
+}
+
+void ProjectSettingsEditor::setBorderMetatileIds(bool customSize, QList<uint16_t> metatileIds) {
+    if (customSize) {
+        ui->lineEdit_BorderMetatiles->setText(Metatile::getMetatileIdStringList(metatileIds));
+    } else {
+        ui->spinBox_BorderMetatile1->setValue(metatileIds.value(0, 0x0));
+        ui->spinBox_BorderMetatile2->setValue(metatileIds.value(1, 0x0));
+        ui->spinBox_BorderMetatile3->setValue(metatileIds.value(2, 0x0));
+        ui->spinBox_BorderMetatile4->setValue(metatileIds.value(3, 0x0));
+    }
+}
+
+QList<uint16_t> ProjectSettingsEditor::getBorderMetatileIds(bool customSize) {
+    QList<uint16_t> metatileIds;
+    if (customSize) {
+        // Custom border size, read metatiles from line edit
+        for (auto s : ui->lineEdit_BorderMetatiles->text().split(",")) {
+            uint16_t metatileId = s.toUInt(nullptr, 0);
+            metatileIds.append(qMin(metatileId, static_cast<uint16_t>(Project::getNumMetatilesTotal() - 1)));
+        }
+    } else {
+        // Default border size, read metatiles from spin boxes
+        metatileIds.append(ui->spinBox_BorderMetatile1->value());
+        metatileIds.append(ui->spinBox_BorderMetatile2->value());
+        metatileIds.append(ui->spinBox_BorderMetatile3->value());
+        metatileIds.append(ui->spinBox_BorderMetatile4->value());
+    }
+    return metatileIds;
 }
 
 void ProjectSettingsEditor::updateAttributeLimits(const QString &attrSize) {
@@ -186,8 +233,12 @@ void ProjectSettingsEditor::refresh() {
     ui->spinBox_LayerTypeMask->setValue(projectConfig.getMetatileLayerTypeMask());
     ui->spinBox_TerrainTypeMask->setValue(projectConfig.getMetatileTerrainTypeMask());
 
+    // Set (and sync) border metatile IDs
+    auto metatileIds = projectConfig.getNewMapBorderMetatileIds();
+    this->setBorderMetatileIds(false, metatileIds);
+    this->setBorderMetatileIds(true, metatileIds);
+
     // Set line edit texts
-    ui->lineEdit_BorderMetatiles->setText(projectConfig.getNewMapBorderMetatileIdsString());
     ui->lineEdit_PrefabsPath->setText(projectConfig.getPrefabFilepath());
     for (auto lineEdit : ui->scrollAreaContents_ProjectPaths->findChildren<QLineEdit*>())
         lineEdit->setText(projectConfig.getFilePath(lineEdit->objectName(), true));
@@ -230,14 +281,7 @@ void ProjectSettingsEditor::save() {
     projectConfig.setPrefabFilepath(ui->lineEdit_PrefabsPath->text());
     for (auto lineEdit : ui->scrollAreaContents_ProjectPaths->findChildren<QLineEdit*>())
         projectConfig.setFilePath(lineEdit->objectName(), lineEdit->text());
-
-    // Parse and save border metatile list
-    QList<uint16_t> metatileIds;
-    for (auto s : ui->lineEdit_BorderMetatiles->text().split(",")) {
-        uint16_t metatileId = s.toUInt(nullptr, 0);
-        metatileIds.append(qMin(metatileId, static_cast<uint16_t>(Project::getNumMetatilesTotal() - 1)));
-    }
-    projectConfig.setNewMapBorderMetatileIds(metatileIds);
+    projectConfig.setNewMapBorderMetatileIds(this->getBorderMetatileIds(ui->checkBox_EnableCustomBorderSize->isChecked()));
 
     projectConfig.setSaveDisabled(false);
     projectConfig.save();

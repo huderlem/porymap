@@ -444,10 +444,6 @@ bool Project::readMapLayouts() {
         "blockdata_filepath",
     };
     bool useCustomBorderSize = projectConfig.getUseCustomBorderSize();
-    if (useCustomBorderSize) {
-        requiredFields.append("border_width");
-        requiredFields.append("border_height");
-    }
     for (int i = 0; i < layouts.size(); i++) {
         QJsonObject layoutObj = layouts[i].toObject();
         if (layoutObj.isEmpty())
