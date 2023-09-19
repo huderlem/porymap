@@ -22,6 +22,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix the map border not updating when a tileset is changed.
 - Improve the poor speed of the API functions `setMetatileTile` and `setMetatileTiles`.
 - Stop the Tileset Editor from scrolling to the initially selected metatile when saving.
+- Fix `0x0`/`NULL` appearing more than once in the scripts dropdown.
 - Fix the selection outline sticking in single-tile mode on the Prefab tab.
 
 ## [5.1.1] - 2023-02-20
