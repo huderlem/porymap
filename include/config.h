@@ -10,8 +10,8 @@
 #include <QMultiMap>
 
 // In both versions the default new map border is a generic tree
-#define DEFAULT_BORDER_RSE (QList<int>{468, 469, 476, 477})
-#define DEFAULT_BORDER_FRLG (QList<int>{20, 21, 28, 29})
+#define DEFAULT_BORDER_RSE (QList<uint16_t>{0x1D4, 0x1D5, 0x1DC, 0x1DD})
+#define DEFAULT_BORDER_FRLG (QList<uint16_t>{0x14, 0x15, 0x1C, 0x1D})
 
 #define CONFIG_BACKWARDS_COMPATABILITY
 
@@ -26,6 +26,7 @@ class KeyValueConfigBase
 public:
     void save();
     void load();
+    void setSaveDisabled(bool disabled);
     virtual ~KeyValueConfigBase();
     virtual void reset() = 0;
 protected:
@@ -37,6 +38,8 @@ protected:
     bool getConfigBool(QString key, QString value);
     int getConfigInteger(QString key, QString value, int min, int max, int defaultValue);
     uint32_t getConfigUint32(QString key, QString value, uint32_t min, uint32_t max, uint32_t defaultValue);
+private:
+    bool saveDisabled = false;
 };
 
 class PorymapConfig: public KeyValueConfigBase
@@ -70,6 +73,8 @@ public:
     void setTilesetEditorGeometry(QByteArray, QByteArray);
     void setPaletteEditorGeometry(QByteArray, QByteArray);
     void setRegionMapEditorGeometry(QByteArray, QByteArray);
+    void setProjectSettingsEditorGeometry(QByteArray, QByteArray);
+    void setCustomScriptsEditorGeometry(QByteArray, QByteArray);
     void setCollisionOpacity(int opacity);
     void setMetatilesZoom(int zoom);
     void setShowPlayerView(bool enabled);
@@ -90,6 +95,8 @@ public:
     QMap<QString, QByteArray> getTilesetEditorGeometry();
     QMap<QString, QByteArray> getPaletteEditorGeometry();
     QMap<QString, QByteArray> getRegionMapEditorGeometry();
+    QMap<QString, QByteArray> getProjectSettingsEditorGeometry();
+    QMap<QString, QByteArray> getCustomScriptsEditorGeometry();
     int getCollisionOpacity();
     int getMetatilesZoom();
     bool getShowPlayerView();
@@ -126,6 +133,10 @@ private:
     QByteArray paletteEditorState;
     QByteArray regionMapEditorGeometry;
     QByteArray regionMapEditorState;
+    QByteArray projectSettingsEditorGeometry;
+    QByteArray projectSettingsEditorState;
+    QByteArray customScriptsEditorGeometry;
+    QByteArray customScriptsEditorState;
     int collisionOpacity;
     int metatilesZoom;
     bool showPlayerView;
@@ -203,20 +214,11 @@ public:
     }
     virtual void reset() override {
         this->baseGameVersion = BaseGameVersion::pokeemerald;
-        this->useCustomBorderSize = false;
-        this->enableEventWeatherTrigger = true;
-        this->enableEventSecretBase = true;
-        this->enableHiddenItemQuantity = false;
-        this->enableHiddenItemRequiresItemfinder = false;
-        this->enableHealLocationRespawnData = false;
-        this->enableEventCloneObject = false;
-        this->enableFloorNumber = false;
-        this->createMapTextFile = false;
+        // Reset non-version-specific settings
         this->usePoryScript = false;
         this->enableTripleLayerMetatiles = false;
         this->newMapMetatileId = 1;
         this->newMapElevation = 3;
-        this->newMapBorderMetatileIds = DEFAULT_BORDER_RSE;
         this->defaultPrimaryTileset = "gTileset_General";
         this->prefabFilepath = QString();
         this->prefabImportPrompted = false;
@@ -225,9 +227,14 @@ public:
         this->filePaths.clear();
         this->readKeys.clear();
     }
+    static const QMap<ProjectFilePath, std::pair<QString, QString>> defaultPaths;
+    static const QStringList versionStrings;
+    void reset(BaseGameVersion baseGameVersion);
     void setBaseGameVersion(BaseGameVersion baseGameVersion);
     BaseGameVersion getBaseGameVersion();
     QString getBaseGameVersionString();
+    QString getBaseGameVersionString(BaseGameVersion version);
+    BaseGameVersion stringToBaseGameVersion(QString string, bool * ok = nullptr);
     void setUsePoryScript(bool usePoryScript);
     bool getUsePoryScript();
     void setProjectDir(QString projectDir);
@@ -254,18 +261,22 @@ public:
     bool getTripleLayerMetatilesEnabled();
     int getNumLayersInMetatile();
     int getNumTilesInMetatile();
-    void setNewMapMetatileId(int metatileId);
-    int getNewMapMetatileId();
+    void setNewMapMetatileId(uint16_t metatileId);
+    uint16_t getNewMapMetatileId();
     void setNewMapElevation(int elevation);
     int getNewMapElevation();
-    void setNewMapBorderMetatileIds(QList<int> metatileIds);
-    QList<int> getNewMapBorderMetatileIds();
+    void setNewMapBorderMetatileIds(QList<uint16_t> metatileIds);
+    QList<uint16_t> getNewMapBorderMetatileIds();
     QString getDefaultPrimaryTileset();
     QString getDefaultSecondaryTileset();
+    void setDefaultPrimaryTileset(QString tilesetName);
+    void setDefaultSecondaryTileset(QString tilesetName);
+    void setFilePath(QString pathId, QString path);
     void setFilePath(ProjectFilePath pathId, QString path);
-    QString getFilePath(ProjectFilePath pathId);
+    QString getFilePath(QString defaultPath, bool customOnly = false);
+    QString getFilePath(ProjectFilePath pathId, bool customOnly = false);
     void setPrefabFilepath(QString filepath);
-    QString getPrefabFilepath(bool setIfEmpty);
+    QString getPrefabFilepath();
     void setPrefabImportPrompted(bool prompted);
     bool getPrefabImportPrompted();
     void setTilesetsHaveCallback(bool has);
@@ -273,11 +284,17 @@ public:
     void setTilesetsHaveIsCompressed(bool has);
     bool getTilesetsHaveIsCompressed();
     int getMetatileAttributesSize();
+    void setMetatileAttributesSize(int size);
     uint32_t getMetatileBehaviorMask();
     uint32_t getMetatileTerrainTypeMask();
     uint32_t getMetatileEncounterTypeMask();
     uint32_t getMetatileLayerTypeMask();
+    void setMetatileBehaviorMask(uint32_t mask);
+    void setMetatileTerrainTypeMask(uint32_t mask);
+    void setMetatileEncounterTypeMask(uint32_t mask);
+    void setMetatileLayerTypeMask(uint32_t mask);
     bool getMapAllowFlagsEnabled();
+    void setMapAllowFlagsEnabled(bool enabled);
 protected:
     virtual QString getConfigFilepath() override;
     virtual void parseConfigKeyValue(QString key, QString value) override;
@@ -299,9 +316,9 @@ private:
     bool enableFloorNumber;
     bool createMapTextFile;
     bool enableTripleLayerMetatiles;
-    int newMapMetatileId;
+    uint16_t newMapMetatileId;
     int newMapElevation;
-    QList<int> newMapBorderMetatileIds;
+    QList<uint16_t> newMapBorderMetatileIds;
     QString defaultPrimaryTileset;
     QString defaultSecondaryTileset;
     QStringList readKeys;
@@ -337,8 +354,11 @@ public:
     bool getEncounterJsonActive();
     void setProjectDir(QString projectDir);
     QString getProjectDir();
-    void setCustomScripts(QList<QString> scripts);
-    QList<QString> getCustomScripts();
+    void setCustomScripts(QStringList scripts, QList<bool> enabled);
+    QStringList getCustomScriptPaths();
+    QList<bool> getCustomScriptsEnabled();
+    void parseCustomScripts(QString input);
+    QString outputCustomScripts();
 protected:
     virtual QString getConfigFilepath() override;
     virtual void parseConfigKeyValue(QString key, QString value) override;
@@ -352,7 +372,7 @@ private:
     QString projectDir;
     QString recentMap;
     bool useEncounterJson;
-    QList<QString> customScripts;
+    QMap<QString, bool> customScripts;
     QStringList readKeys;
 };
 

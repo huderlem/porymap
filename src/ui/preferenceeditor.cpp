@@ -17,11 +17,14 @@ PreferenceEditor::PreferenceEditor(QWidget *parent) :
     ui->setupUi(this);
     auto *formLayout = new QFormLayout(ui->groupBox_Themes);
     themeSelector = new NoScrollComboBox(ui->groupBox_Themes);
+    themeSelector->setEditable(false);
+    themeSelector->setMinimumContentsLength(0);
     formLayout->addRow("Themes", themeSelector);
     setAttribute(Qt::WA_DeleteOnClose);
     connect(ui->buttonBox, &QDialogButtonBox::clicked,
             this, &PreferenceEditor::dialogButtonClicked);
-    populateFields();
+    initFields();
+    updateFields();
 }
 
 PreferenceEditor::~PreferenceEditor()
@@ -29,7 +32,7 @@ PreferenceEditor::~PreferenceEditor()
     delete ui;
 }
 
-void PreferenceEditor::populateFields() {
+void PreferenceEditor::initFields() {
     QStringList themes = { "default" };
     static const QRegularExpression re(":/themes/([A-z0-9_-]+).qss");
     QDirIterator it(":/themes", QDirIterator::Subdirectories);
@@ -38,11 +41,14 @@ void PreferenceEditor::populateFields() {
         themes.append(themeName);
     }
     themeSelector->addItems(themes);
+}
+
+void PreferenceEditor::updateFields() {
     themeSelector->setCurrentText(porymapConfig.getTheme());
-
     ui->lineEdit_TextEditorOpenFolder->setText(porymapConfig.getTextEditorOpenFolder());
-
     ui->lineEdit_TextEditorGotoLine->setText(porymapConfig.getTextEditorGotoLine());
+    ui->checkBox_MonitorProjectFiles->setChecked(porymapConfig.getMonitorFiles());
+    ui->checkBox_OpenRecentProject->setChecked(porymapConfig.getReopenOnLaunch());
 }
 
 void PreferenceEditor::saveFields() {
@@ -53,8 +59,9 @@ void PreferenceEditor::saveFields() {
     }
 
     porymapConfig.setTextEditorOpenFolder(ui->lineEdit_TextEditorOpenFolder->text());
-
     porymapConfig.setTextEditorGotoLine(ui->lineEdit_TextEditorGotoLine->text());
+    porymapConfig.setMonitorFiles(ui->checkBox_MonitorProjectFiles->isChecked());
+    porymapConfig.setReopenOnLaunch(ui->checkBox_OpenRecentProject->isChecked());
 
     emit preferencesSaved();
 }

@@ -4,6 +4,7 @@
         <file>icons/collapse_all.ico</file>
         <file>icons/cursor.ico</file>
         <file>icons/delete.ico</file>
+        <file>icons/edit_document.ico</file>
         <file>icons/expand_all.ico</file>
         <file>icons/fill_color_cursor.ico</file>
         <file>icons/fill_color.ico</file>
@@ -24,6 +25,7 @@
         <file>icons/porymap-icon-1.ico</file>
         <file>icons/porymap-icon-2.ico</file>
         <file>icons/porymap.icns</file>
+        <file>icons/refresh.ico</file>
         <file>icons/shift_cursor.ico</file>
         <file>icons/shift.ico</file>
         <file>icons/sort_alphabet.ico</file>

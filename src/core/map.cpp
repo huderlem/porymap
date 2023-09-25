@@ -479,9 +479,9 @@ QStringList Map::eventScriptLabels(Event::Group group) const {
     }
 
     scriptLabels.removeAll("");
-    scriptLabels.removeDuplicates();
     scriptLabels.prepend("0x0");
     scriptLabels.prepend("NULL");
+    scriptLabels.removeDuplicates();
 
     return scriptLabels;
 }

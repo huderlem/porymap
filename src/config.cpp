@@ -16,7 +16,7 @@
 #include <QAction>
 #include <QAbstractButton>
 
-const QMap<ProjectFilePath, std::pair<QString, QString>> defaultPaths = {
+const QMap<ProjectFilePath, std::pair<QString, QString>> ProjectConfig::defaultPaths = {
     {ProjectFilePath::data_map_folders,                 { "data_map_folders",                "data/maps/"}},
     {ProjectFilePath::data_scripts_folders,             { "data_scripts_folders",            "data/scripts/"}},
     {ProjectFilePath::data_layouts_folders,             { "data_layouts_folders",            "data/layouts/"}},
@@ -64,7 +64,7 @@ const QMap<ProjectFilePath, std::pair<QString, QString>> defaultPaths = {
 };
 
 ProjectFilePath reverseDefaultPaths(QString str) {
-    for (auto it = defaultPaths.constKeyValueBegin(); it != defaultPaths.constKeyValueEnd(); ++it) {
+    for (auto it = ProjectConfig::defaultPaths.constKeyValueBegin(); it != ProjectConfig::defaultPaths.constKeyValueEnd(); ++it) {
         if ((*it).second.first == str) return (*it).first;
     }
     return static_cast<ProjectFilePath>(-1);
@@ -119,6 +119,9 @@ void KeyValueConfigBase::load() {
 }
 
 void KeyValueConfigBase::save() {
+    if (this->saveDisabled)
+        return;
+
     QString text = "";
     QMap<QString, QString> map = this->getKeyValueMap();
     for (QMap<QString, QString>::iterator it = map.begin(); it != map.end(); it++) {
@@ -161,6 +164,11 @@ uint32_t KeyValueConfigBase::getConfigUint32(QString key, QString value, uint32_
         return defaultValue;
     }
     return qMin(max, qMax(min, result));
+}
+
+// For temporarily disabling saving during frequent config changes.
+void KeyValueConfigBase::setSaveDisabled(bool disabled) {
+    this->saveDisabled = disabled;
 }
 
 const QMap<MapSortOrder, QString> mapSortOrderMap = {
@@ -226,6 +234,14 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->regionMapEditorGeometry = bytesFromString(value);
     } else if (key == "region_map_editor_state") {
         this->regionMapEditorState = bytesFromString(value);
+    } else if (key == "project_settings_editor_geometry") {
+        this->projectSettingsEditorGeometry = bytesFromString(value);
+    } else if (key == "project_settings_editor_state") {
+        this->projectSettingsEditorState = bytesFromString(value);
+    } else if (key == "custom_scripts_editor_geometry") {
+        this->customScriptsEditorGeometry = bytesFromString(value);
+    } else if (key == "custom_scripts_editor_state") {
+        this->customScriptsEditorState = bytesFromString(value);
     } else if (key == "metatiles_zoom") {
         this->metatilesZoom = getConfigInteger(key, value, 10, 100, 30);
     } else if (key == "show_player_view") {
@@ -272,6 +288,10 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("palette_editor_state", stringFromByteArray(this->paletteEditorState));
     map.insert("region_map_editor_geometry", stringFromByteArray(this->regionMapEditorGeometry));
     map.insert("region_map_editor_state", stringFromByteArray(this->regionMapEditorState));
+    map.insert("project_settings_editor_geometry", stringFromByteArray(this->projectSettingsEditorGeometry));
+    map.insert("project_settings_editor_state", stringFromByteArray(this->projectSettingsEditorState));
+    map.insert("custom_scripts_editor_geometry", stringFromByteArray(this->customScriptsEditorGeometry));
+    map.insert("custom_scripts_editor_state", stringFromByteArray(this->customScriptsEditorState));
     map.insert("collision_opacity", QString("%1").arg(this->collisionOpacity));
     map.insert("metatiles_zoom", QString("%1").arg(this->metatilesZoom));
     map.insert("show_player_view", this->showPlayerView ? "1" : "0");
@@ -359,6 +379,18 @@ void PorymapConfig::setPaletteEditorGeometry(QByteArray paletteEditorGeometry_, 
 void PorymapConfig::setRegionMapEditorGeometry(QByteArray regionMapEditorGeometry_, QByteArray regionMapEditorState_) {
     this->regionMapEditorGeometry = regionMapEditorGeometry_;
     this->regionMapEditorState = regionMapEditorState_;
+    this->save();
+}
+
+void PorymapConfig::setProjectSettingsEditorGeometry(QByteArray projectSettingsEditorGeometry_, QByteArray projectSettingsEditorState_) {
+    this->projectSettingsEditorGeometry = projectSettingsEditorGeometry_;
+    this->projectSettingsEditorState = projectSettingsEditorState_;
+    this->save();
+}
+
+void PorymapConfig::setCustomScriptsEditorGeometry(QByteArray customScriptsEditorGeometry_, QByteArray customScriptsEditorState_) {
+    this->customScriptsEditorGeometry = customScriptsEditorGeometry_;
+    this->customScriptsEditorState = customScriptsEditorState_;
     this->save();
 }
 
@@ -465,6 +497,24 @@ QMap<QString, QByteArray> PorymapConfig::getRegionMapEditorGeometry() {
     return geometry;
 }
 
+QMap<QString, QByteArray> PorymapConfig::getProjectSettingsEditorGeometry() {
+    QMap<QString, QByteArray> geometry;
+
+    geometry.insert("project_settings_editor_geometry", this->projectSettingsEditorGeometry);
+    geometry.insert("project_settings_editor_state", this->projectSettingsEditorState);
+
+    return geometry;
+}
+
+QMap<QString, QByteArray> PorymapConfig::getCustomScriptsEditorGeometry() {
+    QMap<QString, QByteArray> geometry;
+
+    geometry.insert("custom_scripts_editor_geometry", this->customScriptsEditorGeometry);
+    geometry.insert("custom_scripts_editor_state", this->customScriptsEditorState);
+
+    return geometry;
+}
+
 int PorymapConfig::getCollisionOpacity() {
     return this->collisionOpacity;
 }
@@ -513,17 +563,33 @@ int PorymapConfig::getPaletteEditorBitDepth() {
     return this->paletteEditorBitDepth;
 }
 
+const QStringList ProjectConfig::versionStrings = {
+    "pokeruby",
+    "pokefirered",
+    "pokeemerald",
+};
+
 const QMap<BaseGameVersion, QString> baseGameVersionMap = {
-    {BaseGameVersion::pokeruby, "pokeruby"},
-    {BaseGameVersion::pokefirered, "pokefirered"},
-    {BaseGameVersion::pokeemerald, "pokeemerald"},
+    {BaseGameVersion::pokeruby, ProjectConfig::versionStrings[0]},
+    {BaseGameVersion::pokefirered, ProjectConfig::versionStrings[1]},
+    {BaseGameVersion::pokeemerald, ProjectConfig::versionStrings[2]},
 };
 
 const QMap<QString, BaseGameVersion> baseGameVersionReverseMap = {
-    {"pokeruby", BaseGameVersion::pokeruby},
-    {"pokefirered", BaseGameVersion::pokefirered},
-    {"pokeemerald", BaseGameVersion::pokeemerald},
+    {ProjectConfig::versionStrings[0], BaseGameVersion::pokeruby},
+    {ProjectConfig::versionStrings[1], BaseGameVersion::pokefirered},
+    {ProjectConfig::versionStrings[2], BaseGameVersion::pokeemerald},
 };
+
+BaseGameVersion ProjectConfig::stringToBaseGameVersion(QString string, bool * ok) {
+    if (baseGameVersionReverseMap.contains(string)) {
+        if (ok) *ok = true;
+        return baseGameVersionReverseMap.value(string);
+    } else {
+        if (ok) *ok = false;
+        return BaseGameVersion::pokeemerald;
+    }
+}
 
 ProjectConfig projectConfig;
 
@@ -534,13 +600,10 @@ QString ProjectConfig::getConfigFilepath() {
 
 void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
     if (key == "base_game_version") {
-        QString baseGameVersion = value.toLower();
-        if (baseGameVersionReverseMap.contains(baseGameVersion)) {
-            this->baseGameVersion = baseGameVersionReverseMap.value(baseGameVersion);
-        } else {
-            this->baseGameVersion = BaseGameVersion::pokeemerald;
+        bool ok;
+        this->baseGameVersion = this->stringToBaseGameVersion(value.toLower(), &ok);
+        if (!ok)
             logWarn(QString("Invalid config value for base_game_version: '%1'. Must be 'pokeruby', 'pokefirered' or 'pokeemerald'.").arg(value));
-        }
     } else if (key == "use_poryscript") {
         this->usePoryScript = getConfigBool(key, value);
     } else if (key == "use_custom_border_size") {
@@ -565,22 +628,17 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
     } else if (key == "enable_triple_layer_metatiles") {
         this->enableTripleLayerMetatiles = getConfigBool(key, value);
     } else if (key == "new_map_metatile") {
-        this->newMapMetatileId = getConfigInteger(key, value, 0, 1023, 0);
+        this->newMapMetatileId = getConfigUint32(key, value, 0, 1023, 0);
     } else if (key == "new_map_elevation") {
         this->newMapElevation = getConfigInteger(key, value, 0, 15, 3);
     } else if (key == "new_map_border_metatiles") {
         this->newMapBorderMetatileIds.clear();
         QList<QString> metatileIds = value.split(",");
-        const int maxSize = DEFAULT_BORDER_WIDTH * DEFAULT_BORDER_HEIGHT;
-        const int size = qMin(metatileIds.size(), maxSize);
-        int i;
-        for (i = 0; i < size; i++) {
-            int metatileId = getConfigInteger(key, metatileIds.at(i), 0, 1023, 0);
+        for (int i = 0; i < metatileIds.size(); i++) {
+            // TODO: The max of 1023 here should eventually reflect Project::num_metatiles_total-1,
+            // but the config is parsed well before that constant is.
+            int metatileId = getConfigUint32(key, metatileIds.at(i), 0, 1023, 0);
             this->newMapBorderMetatileIds.append(metatileId);
-        }
-        for (; i < maxSize; i++) {
-            // Set any metatiles not provided to 0
-            this->newMapBorderMetatileIds.append(0);
         }
     } else if (key == "default_primary_tileset") {
         this->defaultPrimaryTileset = value;
@@ -609,14 +667,7 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
     } else if (key == "use_encounter_json") {
         userConfig.useEncounterJson = getConfigBool(key, value);
     } else if (key == "custom_scripts") {
-        userConfig.customScripts.clear();
-        QList<QString> paths = value.split(",");
-        paths.removeDuplicates();
-        for (QString script : paths) {
-            if (!script.isEmpty()) {
-                userConfig.customScripts.append(script);
-            }
-        }
+        userConfig.parseCustomScripts(value);
 #endif
     } else if (key.startsWith("path/")) {
         auto k = reverseDefaultPaths(key.mid(5));
@@ -639,6 +690,13 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
     readKeys.append(key);
 }
 
+// Restore config to version-specific defaults
+void::ProjectConfig::reset(BaseGameVersion baseGameVersion) {
+    this->reset();
+    this->baseGameVersion = baseGameVersion;
+    this->setUnreadKeys();
+}
+
 void ProjectConfig::setUnreadKeys() {
     // Set game-version specific defaults for any config field that wasn't read
     bool isPokefirered = this->baseGameVersion == BaseGameVersion::pokefirered;
@@ -657,7 +715,7 @@ void ProjectConfig::setUnreadKeys() {
     if (!readKeys.contains("metatile_behavior_mask")) this->metatileBehaviorMask = Metatile::getBehaviorMask(this->baseGameVersion);
     if (!readKeys.contains("metatile_terrain_type_mask")) this->metatileTerrainTypeMask = Metatile::getTerrainTypeMask(this->baseGameVersion);
     if (!readKeys.contains("metatile_encounter_type_mask")) this->metatileEncounterTypeMask = Metatile::getEncounterTypeMask(this->baseGameVersion);
-    if (!readKeys.contains("metatile_layer_type_mask")) this-> metatileLayerTypeMask = Metatile::getLayerTypeMask(this->baseGameVersion);
+    if (!readKeys.contains("metatile_layer_type_mask")) this->metatileLayerTypeMask = Metatile::getLayerTypeMask(this->baseGameVersion);
     if (!readKeys.contains("enable_map_allow_flags")) this->enableMapAllowFlags = (this->baseGameVersion != BaseGameVersion::pokeruby);
 }
 
@@ -675,12 +733,9 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("enable_floor_number", QString::number(this->enableFloorNumber));
     map.insert("create_map_text_file", QString::number(this->createMapTextFile));
     map.insert("enable_triple_layer_metatiles", QString::number(this->enableTripleLayerMetatiles));
-    map.insert("new_map_metatile", QString::number(this->newMapMetatileId));
+    map.insert("new_map_metatile", Metatile::getMetatileIdString(this->newMapMetatileId));
     map.insert("new_map_elevation", QString::number(this->newMapElevation));
-    QStringList metatiles;
-    for (auto metatile : this->newMapBorderMetatileIds)
-        metatiles << QString::number(metatile);
-    map.insert("new_map_border_metatiles", metatiles.join(","));
+    map.insert("new_map_border_metatiles", Metatile::getMetatileIdStringList(this->newMapBorderMetatileIds));
     map.insert("default_primary_tileset", this->defaultPrimaryTileset);
     map.insert("default_secondary_tileset", this->defaultSecondaryTileset);
     map.insert("prefabs_filepath", this->prefabFilepath);
@@ -738,17 +793,40 @@ QString ProjectConfig::getProjectDir() {
 
 void ProjectConfig::setFilePath(ProjectFilePath pathId, QString path) {
     if (!defaultPaths.contains(pathId)) return;
-    this->filePaths[pathId] = path;
+    if (path.isEmpty()) {
+        this->filePaths.remove(pathId);
+    } else {
+        this->filePaths[pathId] = path;
+    }
 }
 
-QString ProjectConfig::getFilePath(ProjectFilePath pathId) {
-    if (this->filePaths.contains(pathId)) {
-        return this->filePaths[pathId];
-    } else if (defaultPaths.contains(pathId)) {
-        return defaultPaths[pathId].second;
-    } else {
-        return QString();
+void ProjectConfig::setFilePath(QString defaultPath, QString newPath) {
+    this->setFilePath(reverseDefaultPaths(defaultPath), newPath);
+}
+
+QString ProjectConfig::getFilePath(ProjectFilePath pathId, bool customOnly) {
+    const QString customPath = this->filePaths.value(pathId);
+
+    // When reading custom filepaths for the settings editor we don't care
+    // about the default path or whether the custom path exists.
+    if (customOnly)
+        return customPath;
+
+    if (!customPath.isEmpty()) {
+        // A custom filepath has been specified. If the file/folder exists, use that.
+        const QString absCustomPath = this->projectDir + QDir::separator() + customPath;
+        if (QFileInfo::exists(absCustomPath)) {
+            return customPath;
+        } else {
+            logError(QString("Custom project filepath '%1' not found. Using default.").arg(absCustomPath));
+        }
     }
+    return defaultPaths.contains(pathId) ? defaultPaths[pathId].second : QString();
+
+}
+
+QString ProjectConfig::getFilePath(QString defaultPath, bool customOnly) {
+    return this->getFilePath(reverseDefaultPaths(defaultPath), customOnly);
 }
 
 void ProjectConfig::setBaseGameVersion(BaseGameVersion baseGameVersion) {
@@ -760,8 +838,15 @@ BaseGameVersion ProjectConfig::getBaseGameVersion() {
     return this->baseGameVersion;
 }
 
+QString ProjectConfig::getBaseGameVersionString(BaseGameVersion version) {
+    if (!baseGameVersionMap.contains(version)) {
+        version = BaseGameVersion::pokeemerald;
+    }
+    return baseGameVersionMap.value(version);
+}
+
 QString ProjectConfig::getBaseGameVersionString() {
-    return baseGameVersionMap.value(this->baseGameVersion);
+    return this->getBaseGameVersionString(this->baseGameVersion);
 }
 
 void ProjectConfig::setUsePoryScript(bool usePoryScript) {
@@ -871,12 +956,12 @@ int ProjectConfig::getNumTilesInMetatile() {
     return this->enableTripleLayerMetatiles ? 12 : 8;
 }
 
-void ProjectConfig::setNewMapMetatileId(int metatileId) {
+void ProjectConfig::setNewMapMetatileId(uint16_t metatileId) {
     this->newMapMetatileId = metatileId;
     this->save();
 }
 
-int ProjectConfig::getNewMapMetatileId() {
+uint16_t ProjectConfig::getNewMapMetatileId() {
     return this->newMapMetatileId;
 }
 
@@ -889,12 +974,12 @@ int ProjectConfig::getNewMapElevation() {
     return this->newMapElevation;
 }
 
-void ProjectConfig::setNewMapBorderMetatileIds(QList<int> metatileIds) {
+void ProjectConfig::setNewMapBorderMetatileIds(QList<uint16_t> metatileIds) {
     this->newMapBorderMetatileIds = metatileIds;
     this->save();
 }
 
-QList<int> ProjectConfig::getNewMapBorderMetatileIds() {
+QList<uint16_t> ProjectConfig::getNewMapBorderMetatileIds() {
     return this->newMapBorderMetatileIds;
 }
 
@@ -906,15 +991,22 @@ QString ProjectConfig::getDefaultSecondaryTileset() {
     return this->defaultSecondaryTileset;
 }
 
+void ProjectConfig::setDefaultPrimaryTileset(QString tilesetName) {
+    this->defaultPrimaryTileset = tilesetName;
+    this->save();
+}
+
+void ProjectConfig::setDefaultSecondaryTileset(QString tilesetName) {
+    this->defaultSecondaryTileset = tilesetName;
+    this->save();
+}
+
 void ProjectConfig::setPrefabFilepath(QString filepath) {
     this->prefabFilepath = filepath;
     this->save();
 }
 
-QString ProjectConfig::getPrefabFilepath(bool setIfEmpty) {
-    if (setIfEmpty && this->prefabFilepath.isEmpty()) {
-        this->setPrefabFilepath("prefabs.json");
-    }
+QString ProjectConfig::getPrefabFilepath() {
     return this->prefabFilepath;
 }
 
@@ -949,6 +1041,11 @@ int ProjectConfig::getMetatileAttributesSize() {
     return this->metatileAttributesSize;
 }
 
+void ProjectConfig::setMetatileAttributesSize(int size) {
+    this->metatileAttributesSize = size;
+    this->save();
+}
+
 uint32_t ProjectConfig::getMetatileBehaviorMask() {
     return this->metatileBehaviorMask;
 }
@@ -965,8 +1062,33 @@ uint32_t ProjectConfig::getMetatileLayerTypeMask() {
     return this->metatileLayerTypeMask;
 }
 
+void ProjectConfig::setMetatileBehaviorMask(uint32_t mask) {
+    this->metatileBehaviorMask = mask;
+    this->save();
+}
+
+void ProjectConfig::setMetatileTerrainTypeMask(uint32_t mask) {
+    this->metatileTerrainTypeMask = mask;
+    this->save();
+}
+
+void ProjectConfig::setMetatileEncounterTypeMask(uint32_t mask) {
+    this->metatileEncounterTypeMask = mask;
+    this->save();
+}
+
+void ProjectConfig::setMetatileLayerTypeMask(uint32_t mask) {
+    this->metatileLayerTypeMask = mask;
+    this->save();
+}
+
 bool ProjectConfig::getMapAllowFlagsEnabled() {
     return this->enableMapAllowFlags;
+}
+
+void ProjectConfig::setMapAllowFlagsEnabled(bool enabled) {
+    this->enableMapAllowFlags = enabled;
+    this->save();
 }
 
 
@@ -983,14 +1105,7 @@ void UserConfig::parseConfigKeyValue(QString key, QString value) {
     } else if (key == "use_encounter_json") {
         this->useEncounterJson = getConfigBool(key, value);
     } else if (key == "custom_scripts") {
-        this->customScripts.clear();
-        QList<QString> paths = value.split(",");
-        paths.removeDuplicates();
-        for (QString script : paths) {
-            if (!script.isEmpty()) {
-                this->customScripts.append(script);
-            }
-        }
+        this->parseCustomScripts(value);
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -1004,7 +1119,7 @@ QMap<QString, QString> UserConfig::getKeyValueMap() {
     QMap<QString, QString> map;
     map.insert("recent_map", this->recentMap);
     map.insert("use_encounter_json", QString::number(this->useEncounterJson));
-    map.insert("custom_scripts", this->customScripts.join(","));
+    map.insert("custom_scripts", this->outputCustomScripts());
     return map;
 }
 
@@ -1040,13 +1155,51 @@ bool UserConfig::getEncounterJsonActive() {
     return this->useEncounterJson;
 }
 
-void UserConfig::setCustomScripts(QList<QString> scripts) {
-    this->customScripts = scripts;
+// Read input from the config to get the script paths and whether each is enabled or disbled.
+// The format is a comma-separated list of paths. Each path can be followed (before the comma)
+// by a :0 or :1 to indicate whether it should be disabled or enabled, respectively. If neither
+// follow, it's assumed the script should be enabled.
+void UserConfig::parseCustomScripts(QString input) {
+    this->customScripts.clear();
+    QList<QString> paths = input.split(",", Qt::SkipEmptyParts);
+    for (QString path : paths) {
+        // Read and remove suffix
+        bool enabled = !path.endsWith(":0");
+        if (!enabled || path.endsWith(":1"))
+            path.chop(2);
+
+        if (!path.isEmpty()) {
+            // If a path is repeated only its last instance will be considered.
+            this->customScripts.insert(path, enabled);
+        }
+    }
+}
+
+// Inverse of UserConfig::parseCustomScripts
+QString UserConfig::outputCustomScripts() {
+    QStringList list;
+    QMapIterator<QString, bool> i(this->customScripts);
+    while (i.hasNext()) {
+        i.next();
+        list.append(QString("%1:%2").arg(i.key()).arg(i.value() ? "1" : "0"));
+    }
+    return list.join(",");
+}
+
+void UserConfig::setCustomScripts(QStringList scripts, QList<bool> enabled) {
+    this->customScripts.clear();
+    size_t size = qMin(scripts.length(), enabled.length());
+    for (size_t i = 0; i < size; i++)
+        this->customScripts.insert(scripts.at(i), enabled.at(i));
     this->save();
 }
 
-QList<QString> UserConfig::getCustomScripts() {
-    return this->customScripts;
+QStringList UserConfig::getCustomScriptPaths() {
+    return this->customScripts.keys();
+}
+
+QList<bool> UserConfig::getCustomScriptsEnabled() {
+    return this->customScripts.values();
 }
 
 ShortcutsConfig shortcutsConfig;

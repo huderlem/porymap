@@ -7,7 +7,7 @@ porymap requires Qt 5.14.2 & C++11.
 The easiest way to get Qt is through [homebrew](https://brew.sh/). 
 Once homebrew is installed, run these commands in Terminal:
 
-```
+```bash
 xcode-select --install
 
 brew update
@@ -32,8 +32,9 @@ Install [Qt development tools](https://www.qt.io/download-qt-installer), and use
 You need to install Qt. The minimum supported version is currently Qt 5.14.2. You can check your Qt version
 with `qtdiag`.
 
-```
-sudo apt-get install qt5-default qtdeclarative5-dev
+```bash
+sudo apt-get install qt6-declarative-dev
+# if your distro does not have qt6-declarative-dev, try sudo apt-get install qtdeclarative5-dev
 qmake
 make
 ./porymap

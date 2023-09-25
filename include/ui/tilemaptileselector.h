@@ -4,6 +4,7 @@
 
 #include "selectablepixmapitem.h"
 #include "paletteutil.h"
+#include "imageproviders.h"
 
 #include <memory>
 using std::shared_ptr;
@@ -127,10 +128,7 @@ public:
         this->tileset = QImage(tilesetFilepath);
         this->format = format;
         if (this->tileset.format() == QImage::Format::Format_Indexed8 && this->format == TilemapFormat::BPP_4) {
-            // Squash pixel data to fit 4BPP. Allows project repo to use 8BPP images for 4BPP tilemaps
-            uchar * pixel = this->tileset.bits();
-            for (int i = 0; i < this->tileset.sizeInBytes(); i++, pixel++)
-                *pixel %= 16;
+            flattenTo4bppImage(&this->tileset);
         }
         bool err;
         if (!palFilepath.isEmpty()) {

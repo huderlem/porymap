@@ -6,7 +6,6 @@
 #include "paletteutil.h"
 #include "tile.h"
 #include "tileset.h"
-#include "imageexport.h"
 #include "map.h"
 
 #include "orderedjson.h"
@@ -445,10 +444,6 @@ bool Project::readMapLayouts() {
         "blockdata_filepath",
     };
     bool useCustomBorderSize = projectConfig.getUseCustomBorderSize();
-    if (useCustomBorderSize) {
-        requiredFields.append("border_width");
-        requiredFields.append("border_height");
-    }
     for (int i = 0; i < layouts.size(); i++) {
         QJsonObject layoutObj = layouts[i].toObject();
         if (layoutObj.isEmpty())
@@ -916,10 +911,9 @@ QString Project::buildMetatileLabelsText(const QMap<QString, int> defines) {
     // Generate defines text
     QString output = QString();
     for (QString label : labels) {
-        int metatileId = defines[label];
-        QString line = QString("#define %1  0x%2\n")
+        QString line = QString("#define %1  %2\n")
             .arg(label, -1 * longestLength)
-            .arg(QString("%1").arg(metatileId, 3, 16, QChar('0')).toUpper());
+            .arg(Metatile::getMetatileIdString(defines[label]));
         output += line;
     }
     return output;
@@ -994,7 +988,15 @@ void Project::saveTilesetMetatiles(Tileset *tileset) {
 }
 
 void Project::saveTilesetTilesImage(Tileset *tileset) {
-    exportIndexed4BPPPng(tileset->tilesImage, tileset->tilesImagePath);
+    // Only write the tiles image if it was changed.
+    // Porymap will only ever change an existing tiles image by importing a new one.
+    if (tileset->hasUnsavedTilesImage) {
+        if (!tileset->tilesImage.save(tileset->tilesImagePath, "PNG")) {
+            logError(QString("Failed to save tiles image '%1'").arg(tileset->tilesImagePath));
+            return;
+        }
+        tileset->hasUnsavedTilesImage = false;
+    }
 }
 
 void Project::saveTilesetPalettes(Tileset *tileset) {
@@ -1121,16 +1123,21 @@ void Project::setNewMapBorder(Map *map) {
     map->layout->border.clear();
     int width = map->getBorderWidth();
     int height = map->getBorderHeight();
-    if (width != DEFAULT_BORDER_WIDTH || height != DEFAULT_BORDER_HEIGHT) {
+
+    const QList<uint16_t> configMetatileIds = projectConfig.getNewMapBorderMetatileIds();
+    if (configMetatileIds.length() != width * height) {
+        // Border size doesn't match the number of default border metatiles.
+        // Fill the border with empty metatiles.
         for (int i = 0; i < width * height; i++) {
             map->layout->border.append(0);
         }
     } else {
-        QList<int> metatileIds = projectConfig.getNewMapBorderMetatileIds();
-        for (int i = 0; i < DEFAULT_BORDER_WIDTH * DEFAULT_BORDER_HEIGHT; i++) {
-            map->layout->border.append(qint16(metatileIds.at(i)));
+        // Fill the border with the default metatiles from the config.
+        for (int i = 0; i < width * height; i++) {
+            map->layout->border.append(configMetatileIds.at(i));
         }
     }
+
     map->layout->lastCommitBlocks.border = map->layout->border;
     map->layout->lastCommitBlocks.borderDimensions = QSize(width, height);
 }
@@ -1336,6 +1343,7 @@ void Project::loadTilesetAssets(Tileset* tileset) {
     QImage image;
     if (QFile::exists(tileset->tilesImagePath)) {
         image = QImage(tileset->tilesImagePath).convertToFormat(QImage::Format_Indexed8, Qt::ThresholdDither);
+        flattenTo4bppImage(&image);
     } else {
         image = QImage(8, 8, QImage::Format_Indexed8);
     }
@@ -2164,8 +2172,8 @@ bool Project::readCoordEventWeatherNames() {
     fileWatcher.addPath(root + "/" + filename);
     coordEventWeatherNames = parser.readCDefinesSorted(filename, prefixes);
     if (coordEventWeatherNames.isEmpty()) {
-        logError(QString("Failed to read coord event weather constants from %1").arg(filename));
-        return false;
+        logWarn(QString("Failed to read coord event weather constants from %1. Disabling Weather Trigger events.").arg(filename));
+        projectConfig.setEventWeatherTriggerEnabled(false);
     }
     return true;
 }
@@ -2179,8 +2187,8 @@ bool Project::readSecretBaseIds() {
     fileWatcher.addPath(root + "/" + filename);
     secretBaseIds = parser.readCDefinesSorted(filename, prefixes);
     if (secretBaseIds.isEmpty()) {
-        logError(QString("Failed to read secret base id constants from %1").arg(filename));
-        return false;
+        logWarn(QString("Failed to read secret base id constants from '%1'. Disabling Secret Base events.").arg(filename));
+        projectConfig.setEventSecretBaseEnabled(false);
     }
     return true;
 }

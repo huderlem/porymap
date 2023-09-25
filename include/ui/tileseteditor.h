@@ -52,11 +52,11 @@ public:
 
 public slots:
     void applyUserShortcuts();
+    void onSelectedMetatileChanged(uint16_t);
 
 private slots:
     void onHoveredMetatileChanged(uint16_t);
     void onHoveredMetatileCleared();
-    void onSelectedMetatileChanged(uint16_t);
     void onHoveredTileChanged(uint16_t);
     void onHoveredTileCleared();
     void onSelectedTilesChanged();
@@ -138,7 +138,6 @@ private:
     void copyMetatile(bool cut);
     void pasteMetatile(const Metatile * toPaste, QString label);
     bool replaceMetatile(uint16_t metatileId, const Metatile * src, QString label);
-    void setComboValue(QComboBox * combo, int value);
     void commitMetatileChange(Metatile * prevMetatile);
     void commitMetatileAndLabelChange(Metatile * prevMetatile, QString prevLabel);
 
@@ -164,6 +163,7 @@ private:
     QGraphicsScene *selectedTileScene = nullptr;
     QGraphicsPixmapItem *selectedTilePixmapItem = nullptr;
     QGraphicsScene *metatileLayersScene = nullptr;
+    bool lockSelection = false;
 
 signals:
     void tilesetsSaved(QString, QString);

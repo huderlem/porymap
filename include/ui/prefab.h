@@ -23,7 +23,7 @@ public:
     void initPrefabUI(MetatileSelector *selector, QWidget *prefabWidget, QLabel *emptyPrefabLabel, Map *map);
     void addPrefab(MetatileSelection selection, Map *map, QString name);
     void updatePrefabUi(Map *map);
-    void tryImportDefaultPrefabs(Map *map);
+    bool tryImportDefaultPrefabs(QWidget * parent, BaseGameVersion version, QString filepath = "");
 
 private:
     MetatileSelector *selector;

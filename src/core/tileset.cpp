@@ -22,7 +22,8 @@ Tileset::Tileset(const Tileset &other)
       palettePaths(other.palettePaths),
       metatileLabels(other.metatileLabels),
       palettes(other.palettes),
-      palettePreviews(other.palettePreviews)
+      palettePreviews(other.palettePreviews),
+      hasUnsavedTilesImage(false)
 {
     for (auto tile : other.tiles) {
         tiles.append(tile.copy());

@@ -93,6 +93,15 @@ public:
     static QPoint coordFromPixmapCoord(const QPointF &pixelCoord);
     static int getDefaultAttributesSize(BaseGameVersion version);
     static void setCustomLayout(Project*);
+    static QString getMetatileIdString(uint16_t metatileId) {
+        return "0x" + QString("%1").arg(metatileId, 3, 16, QChar('0')).toUpper();
+    };
+    static QString getMetatileIdStringList(const QList<uint16_t> metatileIds) {
+        QStringList metatiles;
+        for (auto metatileId : metatileIds)
+            metatiles << Metatile::getMetatileIdString(metatileId);
+        return metatiles.join(",");
+    };
 
 private:
     // Stores how each attribute should be laid out for all metatiles, according to the user's config
