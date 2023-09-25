@@ -6,8 +6,12 @@ Porymap relies on the user maintaining a certain level of integrity with their p
 This is a list of files that porymap reads from and writes to. Generally, if porymap writes 
 to a file, it probably is not a good idea to edit yourself unless otherwise noted.
 
-The filepath that Porymap expects for each file can be overridden with config options. The name of each config override is listed in the table, and should begin with ``path/``.
-For example if you wanted to rename ``include/constants/items.h`` to ``headers/defines/stuff.h``, you would add ``path/constants_items=headers/defines/stuff.h`` to your project's ``porymap.project.cfg`` file.
+The filepath that Porymap expects for each file can be overridden under the ``Project Files`` section of ``Options -> Project Settings``. A new path can be specified by entering it in the text box or choosing it with the folder button. Paths are expected to be relative to the root project folder. If no path is specified, or if the file/folder specified does not exist, then the default path will be used instead. The name of each setting in this section is listed in the table below under ``Override``.
+
+.. figure:: images/project-files/settings.png
+    :align: center
+    :width: 75%
+    :alt: Settings
 
 
 .. csv-table::

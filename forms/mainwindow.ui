@@ -3012,13 +3012,10 @@
     <property name="title">
      <string>Options</string>
     </property>
-    <addaction name="actionUse_Encounter_Json"/>
-    <addaction name="actionMonitor_Project_Files"/>
-    <addaction name="actionUse_Poryscript"/>
-    <addaction name="actionOpen_Recent_Project_On_Launch"/>
-    <addaction name="separator"/>
-    <addaction name="actionEdit_Preferences"/>
-    <addaction name="actionEdit_Shortcuts"/>
+    <addaction name="actionProject_Settings"/>
+    <addaction name="actionPreferences"/>
+    <addaction name="actionShortcuts"/>
+    <addaction name="actionCustom_Scripts"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -3062,38 +3059,6 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
-   </property>
-  </action>
-  <action name="actionUse_Encounter_Json">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Show Wild Encounter Tables</string>
-   </property>
-  </action>
-  <action name="actionMonitor_Project_Files">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Monitor Project Files</string>
-   </property>
-  </action>
-  <action name="actionUse_Poryscript">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Use Poryscript</string>
-   </property>
-  </action>
-  <action name="actionOpen_Recent_Project_On_Launch">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Open Recent Project On Launch</string>
    </property>
   </action>
   <action name="action_NewMap">
@@ -3288,9 +3253,9 @@
     <string>Export Map Stitch Image...</string>
    </property>
   </action>
-  <action name="actionEdit_Preferences">
+  <action name="actionPreferences">
    <property name="text">
-    <string>Edit Preferences...</string>
+    <string>Preferences...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+,</string>
@@ -3301,9 +3266,9 @@
     <string>Open Project in Text Editor</string>
    </property>
   </action>
-  <action name="actionEdit_Shortcuts">
+  <action name="actionShortcuts">
    <property name="text">
-    <string>Edit Shortcuts...</string>
+    <string>Shortcuts...</string>
    </property>
   </action>
   <action name="actionExport_Map_Timelapse_Image">
@@ -3324,6 +3289,16 @@
   <action name="actionImport_Map_from_Advance_Map_1_92">
    <property name="text">
     <string>Import Map from Advance Map 1.92...</string>
+   </property>
+  </action>
+  <action name="actionProject_Settings">
+   <property name="text">
+    <string>Project Settings...</string>
+   </property>
+  </action>
+  <action name="actionCustom_Scripts">
+   <property name="text">
+    <string>Custom Scripts...</string>
    </property>
   </action>
  </widget>

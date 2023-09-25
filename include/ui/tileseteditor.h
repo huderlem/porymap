@@ -138,7 +138,6 @@ private:
     void copyMetatile(bool cut);
     void pasteMetatile(const Metatile * toPaste, QString label);
     bool replaceMetatile(uint16_t metatileId, const Metatile * src, QString label);
-    void setComboValue(QComboBox * combo, int value);
     void commitMetatileChange(Metatile * prevMetatile);
     void commitMetatileAndLabelChange(Metatile * prevMetatile, QString prevLabel);
 

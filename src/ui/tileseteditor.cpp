@@ -117,6 +117,7 @@ void TilesetEditor::setAttributesUi() {
         for (int num : project->metatileBehaviorMapInverse.keys()) {
             this->ui->comboBox_metatileBehaviors->addItem(project->metatileBehaviorMapInverse[num], num);
         }
+        this->ui->comboBox_metatileBehaviors->setMinimumContentsLength(0);
     } else {
         this->ui->comboBox_metatileBehaviors->setVisible(false);
         this->ui->label_metatileBehavior->setVisible(false);
@@ -128,6 +129,8 @@ void TilesetEditor::setAttributesUi() {
         this->ui->comboBox_terrainType->addItem("Grass", TERRAIN_GRASS);
         this->ui->comboBox_terrainType->addItem("Water", TERRAIN_WATER);
         this->ui->comboBox_terrainType->addItem("Waterfall", TERRAIN_WATERFALL);
+        this->ui->comboBox_terrainType->setEditable(false);
+        this->ui->comboBox_terrainType->setMinimumContentsLength(0);
     } else {
         this->ui->comboBox_terrainType->setVisible(false);
         this->ui->label_terrainType->setVisible(false);
@@ -138,6 +141,8 @@ void TilesetEditor::setAttributesUi() {
         this->ui->comboBox_encounterType->addItem("None", ENCOUNTER_NONE);
         this->ui->comboBox_encounterType->addItem("Land", ENCOUNTER_LAND);
         this->ui->comboBox_encounterType->addItem("Water", ENCOUNTER_WATER);
+        this->ui->comboBox_encounterType->setEditable(false);
+        this->ui->comboBox_encounterType->setMinimumContentsLength(0);
     } else {
         this->ui->comboBox_encounterType->setVisible(false);
         this->ui->label_encounterType->setVisible(false);
@@ -148,6 +153,8 @@ void TilesetEditor::setAttributesUi() {
         this->ui->comboBox_layerType->addItem("Normal - Middle/Top", METATILE_LAYER_MIDDLE_TOP);
         this->ui->comboBox_layerType->addItem("Covered - Bottom/Middle", METATILE_LAYER_BOTTOM_MIDDLE);
         this->ui->comboBox_layerType->addItem("Split - Bottom/Top", METATILE_LAYER_BOTTOM_TOP);
+        this->ui->comboBox_layerType->setEditable(false);
+        this->ui->comboBox_layerType->setMinimumContentsLength(0);
         if (!Metatile::getLayerTypeMask()) {
             // User doesn't have triple layer metatiles, but has no layer type attribute.
             // Porymap is still using the layer type value to render metatiles, and with
@@ -345,8 +352,7 @@ void TilesetEditor::drawSelectedTiles() {
 
 void TilesetEditor::onHoveredMetatileChanged(uint16_t metatileId) {
     QString label = Tileset::getMetatileLabel(metatileId, this->primaryTileset, this->secondaryTileset);
-    QString hexString = QString("%1").arg(metatileId, 3, 16, QChar('0')).toUpper();
-    QString message = QString("Metatile: 0x%1").arg(hexString);
+    QString message = QString("Metatile: %1").arg(Metatile::getMetatileIdString(metatileId));
     if (label.size() != 0) {
         message += QString(" \"%1\"").arg(label);
     }
@@ -355,24 +361,6 @@ void TilesetEditor::onHoveredMetatileChanged(uint16_t metatileId) {
 
 void TilesetEditor::onHoveredMetatileCleared() {
     this->ui->statusbar->clearMessage();
-}
-
-void TilesetEditor::setComboValue(QComboBox * combo, int value) {
-    int index = combo->findData(value);
-    if (index >= 0) {
-        // Valid item
-        combo->setCurrentIndex(index);
-    } else if (combo->isEditable()) {
-        // Invalid item in editable box, just display the text
-        combo->setCurrentText(QString::number(value));
-    } else {
-        // Invalid item in uneditable box, display text as placeholder
-        // On Qt < 5.15 this will display an empty box
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
-        combo->setPlaceholderText(QString::number(value));
-#endif
-        combo->setCurrentIndex(index);
-    }
 }
 
 void TilesetEditor::onSelectedMetatileChanged(uint16_t metatileId) {
@@ -385,10 +373,10 @@ void TilesetEditor::onSelectedMetatileChanged(uint16_t metatileId) {
     this->ui->lineEdit_metatileLabel->setText(labels.owned);
     this->ui->lineEdit_metatileLabel->setPlaceholderText(labels.shared);
 
-    setComboValue(this->ui->comboBox_metatileBehaviors, this->metatile->behavior);
-    setComboValue(this->ui->comboBox_layerType, this->metatile->layerType);
-    setComboValue(this->ui->comboBox_encounterType, this->metatile->encounterType);
-    setComboValue(this->ui->comboBox_terrainType, this->metatile->terrainType);
+    this->ui->comboBox_metatileBehaviors->setNumberItem(this->metatile->behavior);
+    this->ui->comboBox_layerType->setNumberItem(this->metatile->layerType);
+    this->ui->comboBox_encounterType->setNumberItem(this->metatile->encounterType);
+    this->ui->comboBox_terrainType->setNumberItem(this->metatile->terrainType);
 }
 
 void TilesetEditor::onHoveredTileChanged(uint16_t tile) {

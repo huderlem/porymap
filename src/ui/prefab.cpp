@@ -19,9 +19,11 @@
 using OrderedJson = poryjson::Json;
 using OrderedJsonDoc = poryjson::JsonDoc;
 
+const QString defaultFilepath = "prefabs.json";
+
 void Prefab::loadPrefabs() {
     this->items.clear();
-    QString filepath = projectConfig.getPrefabFilepath(false);
+    QString filepath = projectConfig.getPrefabFilepath();
     if (filepath.isEmpty()) return;
 
     ParseUtil parser;
@@ -85,8 +87,11 @@ void Prefab::loadPrefabs() {
 }
 
 void Prefab::savePrefabs() {
-    QString filepath = projectConfig.getPrefabFilepath(true);
-    if (filepath.isEmpty()) return;
+    QString filepath = projectConfig.getPrefabFilepath();
+    if (filepath.isEmpty()) {
+        filepath = defaultFilepath;
+        projectConfig.setPrefabFilepath(filepath);
+    }
 
     QFileInfo info(filepath);
     if (info.isRelative()) {
@@ -269,48 +274,58 @@ void Prefab::addPrefab(MetatileSelection selection, Map *map, QString name) {
     this->updatePrefabUi(map);
 }
 
-void Prefab::tryImportDefaultPrefabs(Map *map) {
-    BaseGameVersion version = projectConfig.getBaseGameVersion();
+bool Prefab::tryImportDefaultPrefabs(QWidget * parent, BaseGameVersion version, QString filepath) {
     // Ensure we have default prefabs for the project's game version.
     if (version != BaseGameVersion::pokeruby && version != BaseGameVersion::pokeemerald && version != BaseGameVersion::pokefirered)
-        return;
+        return false;
 
-    // Exit early if the user has already setup prefabs.
-    if (!projectConfig.getPrefabFilepath(false).isEmpty())
-        return;
+    if (filepath.isEmpty())
+        filepath = defaultFilepath;
 
-    // Exit early if the user has already gone through this import prompt before.
-    if (projectConfig.getPrefabImportPrompted())
-        return;
+    // Get the absolute filepath for writing/warnings
+    QString absFilepath;
+    QFileInfo fileInfo(filepath);
+    if (fileInfo.suffix().isEmpty())
+        filepath += ".json";
+    if (fileInfo.isRelative()) {
+        absFilepath = QDir::cleanPath(projectConfig.getProjectDir() + QDir::separator() + filepath);
+    } else {
+        absFilepath = filepath;
+    }
+
+    // The warning message when importing defaults changes if there's a pre-existing file.
+    QString fileWarning;
+    if (!QFileInfo::exists(absFilepath)) {
+        fileWarning = QString("This will create a file called '%1'").arg(absFilepath);
+    } else {
+        fileWarning = QString("This will overwrite any existing prefabs in '%1'").arg(absFilepath);
+    }
 
     // Display a dialog box to the user, asking if the default prefabs should be imported
     // into their project.
      QMessageBox::StandardButton prompt =
-             QMessageBox::question(nullptr,
+             QMessageBox::question(parent,
                                    "Import Default Prefabs",
-                                   QString("Would you like to import the default prefabs for %1? This will create a file called 'prefabs.json' in your project directory.")
-                                               .arg(projectConfig.getBaseGameVersionString()),
+                                   QString("Would you like to import the default prefabs for %1? %2.")
+                                               .arg(projectConfig.getBaseGameVersionString(version))
+                                               .arg(fileWarning),
                                    QMessageBox::Yes | QMessageBox::No);
 
-    if (prompt == QMessageBox::Yes) {
+    bool acceptedImport = (prompt == QMessageBox::Yes);
+    if (acceptedImport) {
         // Sets up the default prefabs.json filepath.
-        QString filepath = projectConfig.getPrefabFilepath(true);
-
-        QFileInfo info(filepath);
-        if (info.isRelative()) {
-            filepath = QDir::cleanPath(projectConfig.getProjectDir() + QDir::separator() + filepath);
-        }
-        QFile prefabsFile(filepath);
+        projectConfig.setPrefabFilepath(filepath);
+        QFile prefabsFile(absFilepath);
         if (!prefabsFile.open(QIODevice::WriteOnly)) {
             projectConfig.setPrefabFilepath(QString());
 
-            logError(QString("Error: Could not open %1 for writing").arg(filepath));
-            QMessageBox messageBox;
+            logError(QString("Error: Could not open %1 for writing").arg(absFilepath));
+            QMessageBox messageBox(parent);
             messageBox.setText("Failed to import default prefabs file!");
-            messageBox.setInformativeText(QString("Could not open \"%1\" for writing").arg(filepath));
+            messageBox.setInformativeText(QString("Could not open \"%1\" for writing").arg(absFilepath));
             messageBox.setIcon(QMessageBox::Warning);
             messageBox.exec();
-            return;
+            return false;
         }
 
         ParseUtil parser;
@@ -330,10 +345,10 @@ void Prefab::tryImportDefaultPrefabs(Map *map) {
         prefabsFile.write(content.toUtf8());
         prefabsFile.close();
         this->loadPrefabs();
-        this->updatePrefabUi(map);
     }
 
     projectConfig.setPrefabImportPrompted(true);
+    return acceptedImport;
 }
 
 Prefab prefab;

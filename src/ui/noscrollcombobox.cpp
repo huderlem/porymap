@@ -29,11 +29,30 @@ void NoScrollComboBox::wheelEvent(QWheelEvent *event)
         QComboBox::wheelEvent(event);
 }
 
+void NoScrollComboBox::setItem(int index, const QString &text)
+{
+    if (index >= 0) {
+        // Valid item
+        this->setCurrentIndex(index);
+    } else if (this->isEditable()) {
+        // Invalid item in editable box, just display the text
+        this->setCurrentText(text);
+    } else {
+        // Invalid item in uneditable box, display text as placeholder
+        // On Qt < 5.15 this will display an empty box
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
+        this->setPlaceholderText(text);
+#endif
+        this->setCurrentIndex(index);
+    }
+}
+
 void NoScrollComboBox::setTextItem(const QString &text)
 {
-    int index = this->findText(text);
-    if (index >= 0)
-        this->setCurrentIndex(index);
-    else
-        this->setCurrentText(text);
+    this->setItem(this->findText(text), text);
+}
+
+void NoScrollComboBox::setNumberItem(int value)
+{
+    this->setItem(this->findData(value), QString::number(value));
 }

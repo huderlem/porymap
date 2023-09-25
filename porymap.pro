@@ -42,6 +42,8 @@ SOURCES += src/core/block.cpp \
     src/scriptapi/apiutility.cpp \
     src/scriptapi/scripting.cpp \
     src/ui/aboutporymap.cpp \
+    src/ui/customscriptseditor.cpp \
+    src/ui/customscriptslistitem.cpp \
     src/ui/draggablepixmapitem.cpp \
     src/ui/bordermetatilespixmapitem.cpp \
     src/ui/collisionpixmapitem.cpp \
@@ -49,6 +51,7 @@ SOURCES += src/core/block.cpp \
     src/ui/currentselectedmetatilespixmapitem.cpp \
     src/ui/overlay.cpp \
     src/ui/prefab.cpp \
+    src/ui/projectsettingseditor.cpp \
     src/ui/regionmaplayoutpixmapitem.cpp \
     src/ui/regionmapentriespixmapitem.cpp \
     src/ui/cursortilerect.cpp \
@@ -97,7 +100,8 @@ SOURCES += src/core/block.cpp \
     src/mainwindow.cpp \
     src/project.cpp \
     src/settings.cpp \
-    src/log.cpp
+    src/log.cpp \
+    src/ui/uintspinbox.cpp
 
 HEADERS  += include/core/block.h \
     include/core/blockdata.h \
@@ -128,12 +132,15 @@ HEADERS  += include/core/block.h \
     include/lib/orderedmap.h \
     include/lib/orderedjson.h \
     include/ui/aboutporymap.h \
+    include/ui/customscriptseditor.h \
+    include/ui/customscriptslistitem.h \
     include/ui/draggablepixmapitem.h \
     include/ui/bordermetatilespixmapitem.h \
     include/ui/collisionpixmapitem.h \
     include/ui/connectionpixmapitem.h \
     include/ui/currentselectedmetatilespixmapitem.h \
     include/ui/prefabframe.h \
+    include/ui/projectsettingseditor.h \
     include/ui/regionmaplayoutpixmapitem.h \
     include/ui/regionmapentriespixmapitem.h \
     include/ui/cursortilerect.h \
@@ -186,7 +193,8 @@ HEADERS  += include/core/block.h \
     include/scripting.h \
     include/scriptutility.h \
     include/settings.h \
-    include/log.h
+    include/log.h \
+    include/ui/uintspinbox.h
 
 FORMS    += forms/mainwindow.ui \
     forms/prefabcreationdialog.ui \
@@ -201,7 +209,10 @@ FORMS    += forms/mainwindow.ui \
     forms/shortcutseditor.ui \
     forms/preferenceeditor.ui \
     forms/regionmappropertiesdialog.ui \
-    forms/colorpicker.ui
+    forms/colorpicker.ui \
+    forms/projectsettingseditor.ui \
+    forms/customscriptseditor.ui \
+    forms/customscriptslistitem.ui
 
 RESOURCES += \
     resources/images.qrc \

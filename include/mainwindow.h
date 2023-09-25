@@ -25,6 +25,8 @@
 #include "newtilesetdialog.h"
 #include "shortcutseditor.h"
 #include "preferenceeditor.h"
+#include "projectsettingseditor.h"
+#include "customscriptseditor.h"
 
 
 
@@ -197,11 +199,7 @@ private slots:
     void on_checkBox_AllowBiking_stateChanged(int selected);
     void on_checkBox_AllowEscaping_stateChanged(int selected);
     void on_spinBox_FloorNumber_valueChanged(int offset);
-    void on_actionUse_Encounter_Json_triggered(bool checked);
-    void on_actionMonitor_Project_Files_triggered(bool checked);
-    void on_actionUse_Poryscript_triggered(bool checked);
-    void on_actionOpen_Recent_Project_On_Launch_triggered(bool checked);
-    void on_actionEdit_Shortcuts_triggered();
+    void on_actionShortcuts_triggered();
 
     void on_actionZoom_In_triggered();
     void on_actionZoom_Out_triggered();
@@ -284,8 +282,11 @@ private slots:
     void on_pushButton_CreatePrefab_clicked();
 
     void on_actionRegion_Map_Editor_triggered();
-    void on_actionEdit_Preferences_triggered();
+    void on_actionPreferences_triggered();
     void togglePreferenceSpecificUi();
+    void on_actionProject_Settings_triggered();
+    void on_actionCustom_Scripts_triggered();
+    void reloadScriptEngine();
 
 public:
     Ui::MainWindow *ui;
@@ -299,6 +300,8 @@ private:
     QPointer<MapImageExporter> mapImageExporter = nullptr;
     QPointer<NewMapPopup> newMapPrompt = nullptr;
     QPointer<PreferenceEditor> preferenceEditor = nullptr;
+    QPointer<ProjectSettingsEditor> projectSettingsEditor = nullptr;
+    QPointer<CustomScriptsEditor> customScriptsEditor = nullptr;
     FilterChildrenProxyModel *mapListProxyModel;
     QStandardItemModel *mapListModel;
     QList<QStandardItem*> *mapGroupItemsList;
@@ -342,6 +345,7 @@ private:
     bool loadProjectCombos();
     bool populateMapList();
     void sortMapList();
+    void openSubWindow(QWidget * window);
     QString getExistingDirectory(QString);
     bool openProject(QString dir);
     QString getDefaultMap();
@@ -381,6 +385,7 @@ private:
     void initTilesetEditor();
     bool initRegionMapEditor(bool silent = false);
     void initShortcutsEditor();
+    void initCustomScriptsEditor();
     void connectSubEditorsToShortcutsEditor();
 
     bool isProjectOpen();
