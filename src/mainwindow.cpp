@@ -2833,34 +2833,13 @@ bool MainWindow::initRegionMapEditor(bool silent) {
 }
 
 void MainWindow::closeSupplementaryWindows() {
-    if (this->tilesetEditor) {
-        delete this->tilesetEditor;
-        this->tilesetEditor = nullptr;
-    }
-    if (this->regionMapEditor) {
-        delete this->regionMapEditor;
-        this->regionMapEditor = nullptr;
-    }
-    if (this->mapImageExporter) {
-        delete this->mapImageExporter;
-        this->mapImageExporter = nullptr;
-    }
-    if (this->newMapPrompt) {
-        delete this->newMapPrompt;
-        this->newMapPrompt = nullptr;
-    }
-    if (this->shortcutsEditor) {
-        delete this->shortcutsEditor;
-        this->shortcutsEditor = nullptr;
-    }
-    if (this->projectSettingsEditor) {
-        delete this->projectSettingsEditor;
-        this->projectSettingsEditor = nullptr;
-    }
-    if (this->customScriptsEditor) {
-        delete this->customScriptsEditor;
-        this->customScriptsEditor = nullptr;
-    }
+    delete this->tilesetEditor;
+    delete this->regionMapEditor;
+    delete this->mapImageExporter;
+    delete this->newMapPrompt;
+    delete this->shortcutsEditor;
+    delete this->projectSettingsEditor;
+    delete this->customScriptsEditor;
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
