@@ -268,7 +268,6 @@ QVariant MapGroupModel::data(const QModelIndex &index, int role) const {
         }
     }
     else if (role == Qt::DisplayRole) {
-        //
         QStandardItem *item = this->getItem(index)->child(row, col);
         QString type = item->data(MapListRoles::TypeRole).toString();
 
@@ -342,7 +341,9 @@ QStandardItem *MapAreaModel::insertMapItem(QString mapName, QString areaName, in
 void MapAreaModel::initialize() {
     this->areaItems.clear();
     this->mapItems.clear();
-    for (int i = 0; i < this->project->mapSectionNameToValue.size(); i++) {
+    this->setSortRole(MapListRoles::GroupRole);
+
+    for (int i : this->project->mapSectionNameToValue) {
         QString mapsecName = project->mapSectionValueToName.value(i);
         QStandardItem *areaItem = createAreaItem(mapsecName, i);
         this->root->appendRow(areaItem);
@@ -359,6 +360,7 @@ void MapAreaModel::initialize() {
             }
         }
     }
+    this->sort(0, Qt::AscendingOrder);
 }
 
 QStandardItem *MapAreaModel::getItem(const QModelIndex &index) const {
@@ -420,6 +422,16 @@ QVariant MapAreaModel::data(const QModelIndex &index, int role) const {
                 }
             }
             return mapGrayIcon;
+        }
+    }
+    else if (role == Qt::DisplayRole) {
+        QStandardItem *item = this->getItem(index)->child(row, col);
+        QString type = item->data(MapListRoles::TypeRole).toString();
+
+        if (type == "map_section") {
+            return QString("[0x%1] %2")
+                .arg(QString("%1").arg(item->data(MapListRoles::GroupRole).toInt(), 2, 16, QLatin1Char('0')).toUpper())
+                .arg(item->data(Qt::UserRole).toString());
         }
     }
 
