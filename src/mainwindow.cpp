@@ -1156,18 +1156,18 @@ void MainWindow::sortMapList() {
         case MapSortOrder::Area:
         {
             QMap<QString, int> mapsecToGroupNum;
-            for (int i = 0; i < project->mapSectionNameToValue.size(); i++) {
-                QString mapsec_name = project->mapSectionValueToName.value(i);
+            int row = 0;
+            for (auto mapsec_value : project->mapSectionValueToName.keys()) {
+                QString mapsec_name = project->mapSectionValueToName.value(mapsec_value);
                 QStandardItem *mapsec = new QStandardItem;
                 mapsec->setText(mapsec_name);
                 mapsec->setIcon(folderIcon);
                 mapsec->setEditable(false);
                 mapsec->setData(mapsec_name, Qt::UserRole);
                 mapsec->setData("map_sec", MapListUserRoles::TypeRole);
-                mapsec->setData(i, MapListUserRoles::GroupRole);
                 root->appendRow(mapsec);
                 mapGroupItemsList->append(mapsec);
-                mapsecToGroupNum.insert(mapsec_name, i);
+                mapsecToGroupNum.insert(mapsec_name, row++);
             }
             for (int i = 0; i < project->groupNames.length(); i++) {
                 QStringList names = project->groupedMapNames.value(i);
