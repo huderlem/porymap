@@ -2853,6 +2853,14 @@ void MainWindow::closeSupplementaryWindows() {
         delete this->shortcutsEditor;
         this->shortcutsEditor = nullptr;
     }
+    if (this->projectSettingsEditor) {
+        delete this->projectSettingsEditor;
+        this->projectSettingsEditor = nullptr;
+    }
+    if (this->customScriptsEditor) {
+        delete this->customScriptsEditor;
+        this->customScriptsEditor = nullptr;
+    }
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
