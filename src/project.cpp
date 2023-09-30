@@ -2025,7 +2025,7 @@ bool Project::readHealLocations() {
 
     for (const auto idName : constants) {
         // Create regex pattern for e.g. "SPAWN_PALLET_TOWN - 1] = "
-        const QString initializerPattern = QString("%1\\s*- 1\\]\\s* = ").arg(idName);
+        const QString initializerPattern = QString("%1\\s*-\\s*1\\s*\\]\\s*=\\s*").arg(idName);
 
         // Expression for location data, e.g. "SPAWN_PALLET_TOWN - 1] = {MAP_GROUP(PALLET_TOWN), MAP_NUM(PALLET_TOWN), x, y}"
         QRegularExpression locationRegex(QString("%1\\{%2,%3}").arg(initializerPattern).arg(mapPattern).arg(coordPattern));

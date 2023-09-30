@@ -28,6 +28,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Stop the Tileset Editor from scrolling to the initially selected metatile when saving.
 - Fix `0x0`/`NULL` appearing more than once in the scripts dropdown.
 - Fix the selection outline sticking in single-tile mode on the Prefab tab.
+- Fix heal location data being cleared if certain spaces aren't used in the table.
 - Fix bad URL color contrast on dark themes.
 
 ## [5.1.1] - 2023-02-20
