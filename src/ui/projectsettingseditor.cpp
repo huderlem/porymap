@@ -389,13 +389,15 @@ void ProjectSettingsEditor::closeEvent(QCloseEvent* event) {
         return;
     }
 
-    if (this->projectNeedsReload) {
-        if (this->prompt("Settings changed, reload project to apply changes?") == QMessageBox::Yes)
-            emit this->reloadProject();
-    }
-
     porymapConfig.setProjectSettingsEditorGeometry(
         this->saveGeometry(),
         this->saveState()
     );
+
+    if (this->projectNeedsReload) {
+        if (this->prompt("Settings changed, reload project to apply changes?") == QMessageBox::Yes){
+            // Reloading the project will destroy this window, no other work should happen after this signal is emitted
+            emit this->reloadProject();
+        }
+    }
 }

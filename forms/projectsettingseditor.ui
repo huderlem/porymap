@@ -282,6 +282,9 @@
              <property name="toolTip">
               <string>The file that will be used to populate the Prefabs tab</string>
              </property>
+             <property name="placeholderText">
+              <string>prefabs.json</string>
+             </property>
             </widget>
            </item>
            <item row="0" column="0">
