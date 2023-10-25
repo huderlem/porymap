@@ -365,6 +365,7 @@ void MainWindow::showWindowTitle() {
         );
     }
     if (editor && editor->layout) {
+        ui->mainTabBar->setTabIcon(0, QIcon());
         QPixmap pixmap = editor->layout->pixmap;
         if (!pixmap.isNull()) {
             ui->mainTabBar->setTabIcon(0, QIcon(pixmap));
