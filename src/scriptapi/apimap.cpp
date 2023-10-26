@@ -24,7 +24,7 @@ void MainWindow::tryRedrawMapArea(bool forceRedraw) {
         this->editor->updateMapBorder();
         this->editor->updateMapConnections();
         if (this->tilesetEditor)
-            this->tilesetEditor->updateTilesets(this->editor->map->layout->tileset_primary_label, this->editor->map->layout->tileset_secondary_label);
+            this->tilesetEditor->updateTilesets(this->editor->layout->tileset_primary_label, this->editor->layout->tileset_secondary_label);
         if (this->editor->metatile_selector_item)
             this->editor->metatile_selector_item->draw();
         if (this->editor->selected_border_metatiles_item)
@@ -341,7 +341,7 @@ void MainWindow::refreshAfterPaletteChange(Tileset *tileset) {
 }
 
 void MainWindow::setTilesetPalette(Tileset *tileset, int paletteIndex, QList<QList<int>> colors) {
-    if (!this->editor || !this->editor->map || !this->editor->layout)
+    if (!this->editor || !this->editor->layout)
         return;
     if (paletteIndex >= tileset->palettes.size())
         return;
@@ -357,7 +357,7 @@ void MainWindow::setTilesetPalette(Tileset *tileset, int paletteIndex, QList<QLi
 }
 
 void MainWindow::setPrimaryTilesetPalette(int paletteIndex, QList<QList<int>> colors, bool forceRedraw) {
-    if (!this->editor || !this->editor->map || !this->editor->layout || !this->editor->layout->tileset_primary)
+    if (!this->editor || !this->editor->layout || !this->editor->layout->tileset_primary)
         return;
     this->setTilesetPalette(this->editor->layout->tileset_primary, paletteIndex, colors);
     if (forceRedraw) {
@@ -366,7 +366,7 @@ void MainWindow::setPrimaryTilesetPalette(int paletteIndex, QList<QList<int>> co
 }
 
 void MainWindow::setPrimaryTilesetPalettes(QList<QList<QList<int>>> palettes, bool forceRedraw) {
-    if (!this->editor || !this->editor->map || !this->editor->layout || !this->editor->layout->tileset_primary)
+    if (!this->editor || !this->editor->layout || !this->editor->layout->tileset_primary)
         return;
     for (int i = 0; i < palettes.size(); i++) {
         this->setTilesetPalette(this->editor->layout->tileset_primary, i, palettes[i]);
@@ -377,7 +377,7 @@ void MainWindow::setPrimaryTilesetPalettes(QList<QList<QList<int>>> palettes, bo
 }
 
 void MainWindow::setSecondaryTilesetPalette(int paletteIndex, QList<QList<int>> colors, bool forceRedraw) {
-    if (!this->editor || !this->editor->map || !this->editor->layout || !this->editor->layout->tileset_secondary)
+    if (!this->editor || !this->editor->layout || !this->editor->layout->tileset_secondary)
         return;
     this->setTilesetPalette(this->editor->layout->tileset_secondary, paletteIndex, colors);
     if (forceRedraw) {
@@ -386,7 +386,7 @@ void MainWindow::setSecondaryTilesetPalette(int paletteIndex, QList<QList<int>> 
 }
 
 void MainWindow::setSecondaryTilesetPalettes(QList<QList<QList<int>>> palettes, bool forceRedraw) {
-    if (!this->editor || !this->editor->map || !this->editor->layout || !this->editor->layout->tileset_secondary)
+    if (!this->editor || !this->editor->layout || !this->editor->layout->tileset_secondary)
         return;
     for (int i = 0; i < palettes.size(); i++) {
         this->setTilesetPalette(this->editor->layout->tileset_secondary, i, palettes[i]);
@@ -420,25 +420,25 @@ QJSValue MainWindow::getTilesetPalettes(const QList<QList<QRgb>> &palettes) {
 }
 
 QJSValue MainWindow::getPrimaryTilesetPalette(int paletteIndex) {
-    if (!this->editor || !this->editor->map || !this->editor->layout || !this->editor->layout->tileset_primary)
+    if (!this->editor || !this->editor->layout || !this->editor->layout->tileset_primary)
         return QJSValue();
     return this->getTilesetPalette(this->editor->layout->tileset_primary->palettes, paletteIndex);
 }
 
 QJSValue MainWindow::getPrimaryTilesetPalettes() {
-    if (!this->editor || !this->editor->map || !this->editor->layout || !this->editor->layout->tileset_primary)
+    if (!this->editor || !this->editor->layout || !this->editor->layout->tileset_primary)
         return QJSValue();
     return this->getTilesetPalettes(this->editor->layout->tileset_primary->palettes);
 }
 
 QJSValue MainWindow::getSecondaryTilesetPalette(int paletteIndex) {
-    if (!this->editor || !this->editor->map || !this->editor->layout || !this->editor->layout->tileset_secondary)
+    if (!this->editor || !this->editor->layout || !this->editor->layout->tileset_secondary)
         return QJSValue();
     return this->getTilesetPalette(this->editor->layout->tileset_secondary->palettes, paletteIndex);
 }
 
 QJSValue MainWindow::getSecondaryTilesetPalettes() {
-    if (!this->editor || !this->editor->map || !this->editor->layout || !this->editor->layout->tileset_secondary)
+    if (!this->editor || !this->editor->layout || !this->editor->layout->tileset_secondary)
         return QJSValue();
     return this->getTilesetPalettes(this->editor->layout->tileset_secondary->palettes);
 }
@@ -452,7 +452,7 @@ void MainWindow::refreshAfterPalettePreviewChange() {
 }
 
 void MainWindow::setTilesetPalettePreview(Tileset *tileset, int paletteIndex, QList<QList<int>> colors) {
-    if (!this->editor || !this->editor->map || !this->editor->layout)
+    if (!this->editor || !this->editor->layout)
         return;
     if (paletteIndex >= tileset->palettePreviews.size())
         return;
@@ -467,7 +467,7 @@ void MainWindow::setTilesetPalettePreview(Tileset *tileset, int paletteIndex, QL
 }
 
 void MainWindow::setPrimaryTilesetPalettePreview(int paletteIndex, QList<QList<int>> colors, bool forceRedraw) {
-    if (!this->editor || !this->editor->map || !this->editor->layout || !this->editor->layout->tileset_primary)
+    if (!this->editor || !this->editor->layout || !this->editor->layout->tileset_primary)
         return;
     this->setTilesetPalettePreview(this->editor->layout->tileset_primary, paletteIndex, colors);
     if (forceRedraw) {
@@ -476,7 +476,7 @@ void MainWindow::setPrimaryTilesetPalettePreview(int paletteIndex, QList<QList<i
 }
 
 void MainWindow::setPrimaryTilesetPalettesPreview(QList<QList<QList<int>>> palettes, bool forceRedraw) {
-    if (!this->editor || !this->editor->map || !this->editor->layout || !this->editor->layout->tileset_primary)
+    if (!this->editor || !this->editor->layout || !this->editor->layout->tileset_primary)
         return;
     for (int i = 0; i < palettes.size(); i++) {
         this->setTilesetPalettePreview(this->editor->layout->tileset_primary, i, palettes[i]);
@@ -487,7 +487,7 @@ void MainWindow::setPrimaryTilesetPalettesPreview(QList<QList<QList<int>>> palet
 }
 
 void MainWindow::setSecondaryTilesetPalettePreview(int paletteIndex, QList<QList<int>> colors, bool forceRedraw) {
-    if (!this->editor || !this->editor->map || !this->editor->layout || !this->editor->layout->tileset_secondary)
+    if (!this->editor || !this->editor->layout || !this->editor->layout->tileset_secondary)
         return;
     this->setTilesetPalettePreview(this->editor->layout->tileset_secondary, paletteIndex, colors);
     if (forceRedraw) {
@@ -496,7 +496,7 @@ void MainWindow::setSecondaryTilesetPalettePreview(int paletteIndex, QList<QList
 }
 
 void MainWindow::setSecondaryTilesetPalettesPreview(QList<QList<QList<int>>> palettes, bool forceRedraw) {
-    if (!this->editor || !this->editor->map || !this->editor->layout || !this->editor->layout->tileset_secondary)
+    if (!this->editor || !this->editor->layout || !this->editor->layout->tileset_secondary)
         return;
     for (int i = 0; i < palettes.size(); i++) {
         this->setTilesetPalettePreview(this->editor->layout->tileset_secondary, i, palettes[i]);
@@ -507,61 +507,61 @@ void MainWindow::setSecondaryTilesetPalettesPreview(QList<QList<QList<int>>> pal
 }
 
 QJSValue MainWindow::getPrimaryTilesetPalettePreview(int paletteIndex) {
-    if (!this->editor || !this->editor->map || !this->editor->layout || !this->editor->layout->tileset_primary)
+    if (!this->editor || !this->editor->layout || !this->editor->layout->tileset_primary)
         return QJSValue();
     return this->getTilesetPalette(this->editor->layout->tileset_primary->palettePreviews, paletteIndex);
 }
 
 QJSValue MainWindow::getPrimaryTilesetPalettesPreview() {
-    if (!this->editor || !this->editor->map || !this->editor->layout || !this->editor->layout->tileset_primary)
+    if (!this->editor || !this->editor->layout || !this->editor->layout->tileset_primary)
         return QJSValue();
     return this->getTilesetPalettes(this->editor->layout->tileset_primary->palettePreviews);
 }
 
 QJSValue MainWindow::getSecondaryTilesetPalettePreview(int paletteIndex) {
-    if (!this->editor || !this->editor->map || !this->editor->layout || !this->editor->layout->tileset_secondary)
+    if (!this->editor || !this->editor->layout || !this->editor->layout->tileset_secondary)
         return QJSValue();
     return this->getTilesetPalette(this->editor->layout->tileset_secondary->palettePreviews, paletteIndex);
 }
 
 QJSValue MainWindow::getSecondaryTilesetPalettesPreview() {
-    if (!this->editor || !this->editor->map || !this->editor->layout || !this->editor->layout->tileset_secondary)
+    if (!this->editor || !this->editor->layout || !this->editor->layout->tileset_secondary)
         return QJSValue();
     return this->getTilesetPalettes(this->editor->layout->tileset_secondary->palettePreviews);
 }
 
 int MainWindow::getNumPrimaryTilesetMetatiles() {
-    if (!this->editor || !this->editor->map || !this->editor->layout || !this->editor->layout->tileset_primary)
+    if (!this->editor || !this->editor->layout || !this->editor->layout->tileset_primary)
         return 0;
     return this->editor->layout->tileset_primary->metatiles.length();
 }
 
 int MainWindow::getNumSecondaryTilesetMetatiles() {
-    if (!this->editor || !this->editor->map || !this->editor->layout || !this->editor->layout->tileset_secondary)
+    if (!this->editor || !this->editor->layout || !this->editor->layout->tileset_secondary)
         return 0;
     return this->editor->layout->tileset_secondary->metatiles.length();
 }
 
 int MainWindow::getNumPrimaryTilesetTiles() {
-    if (!this->editor || !this->editor->map || !this->editor->layout || !this->editor->layout->tileset_primary)
+    if (!this->editor || !this->editor->layout || !this->editor->layout->tileset_primary)
         return 0;
     return this->editor->layout->tileset_primary->tiles.length();
 }
 
 int MainWindow::getNumSecondaryTilesetTiles() {
-    if (!this->editor || !this->editor->map || !this->editor->layout || !this->editor->layout->tileset_secondary)
+    if (!this->editor || !this->editor->layout || !this->editor->layout->tileset_secondary)
         return 0;
     return this->editor->layout->tileset_secondary->tiles.length();
 }
 
 QString MainWindow::getPrimaryTileset() {
-    if (!this->editor || !this->editor->map || !this->editor->layout || !this->editor->layout->tileset_primary)
+    if (!this->editor || !this->editor->layout || !this->editor->layout->tileset_primary)
         return QString();
     return this->editor->layout->tileset_primary->name;
 }
 
 QString MainWindow::getSecondaryTileset() {
-    if (!this->editor || !this->editor->map || !this->editor->layout || !this->editor->layout->tileset_secondary)
+    if (!this->editor || !this->editor->layout || !this->editor->layout->tileset_secondary)
         return QString();
     return this->editor->layout->tileset_secondary->name;
 }
@@ -591,19 +591,19 @@ void MainWindow::saveMetatileAttributesByMetatileId(int metatileId) {
 }
 
 Metatile * MainWindow::getMetatile(int metatileId) {
-    if (!this->editor || !this->editor->map || !this->editor->layout)
+    if (!this->editor || !this->editor->layout)
         return nullptr;
     return Tileset::getMetatile(metatileId, this->editor->layout->tileset_primary, this->editor->layout->tileset_secondary);
 }
 
 QString MainWindow::getMetatileLabel(int metatileId) {
-    if (!this->editor || !this->editor->map || !this->editor->map->layout)
+    if (!this->editor || !this->editor->layout)
         return QString();
-    return Tileset::getMetatileLabel(metatileId, this->editor->map->layout->tileset_primary, this->editor->map->layout->tileset_secondary);
+    return Tileset::getMetatileLabel(metatileId, this->editor->layout->tileset_primary, this->editor->layout->tileset_secondary);
 }
 
 void MainWindow::setMetatileLabel(int metatileId, QString label) {
-    if (!this->editor || !this->editor->map || !this->editor->layout)
+    if (!this->editor || !this->editor->layout)
         return;
 
     // If the Tileset Editor is opened on this metatile we need to update the text box
@@ -612,13 +612,13 @@ void MainWindow::setMetatileLabel(int metatileId, QString label) {
         return;
     }
 
-    if (!Tileset::setMetatileLabel(metatileId, label, this->editor->layout->tileset_primary, this->editor->map->layout->tileset_secondary)) {
+    if (!Tileset::setMetatileLabel(metatileId, label, this->editor->layout->tileset_primary, this->editor->layout->tileset_secondary)) {
         logError("Failed to set metatile label. Must be a valid metatile id and a label containing only letters, numbers, and underscores.");
         return;
     }
 
     if (this->editor->project)
-        this->editor->project->saveTilesetMetatileLabels(this->editor->layout->tileset_primary, this->editor->map->layout->tileset_secondary);
+        this->editor->project->saveTilesetMetatileLabels(this->editor->layout->tileset_primary, this->editor->layout->tileset_secondary);
 }
 
 int MainWindow::getMetatileLayerType(int metatileId) {
