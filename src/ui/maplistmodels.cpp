@@ -19,7 +19,7 @@ void MapTree::removeSelected() {
 
 QWidget *GroupNameDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &, const QModelIndex &) const {
     QLineEdit *editor = new QLineEdit(parent);
-    static const QRegularExpression expression("gMapGroup_[A-Za-z0-9_]+");
+    static const QRegularExpression expression("[A-Za-z0-9_]+");
     editor->setPlaceholderText("gMapGroup_");
     QRegularExpressionValidator *validator = new QRegularExpressionValidator(expression, parent);
     editor->setValidator(validator);
