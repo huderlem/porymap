@@ -1269,6 +1269,7 @@ void MainWindow::openNewMapPopupWindow() {
 
 void MainWindow::on_action_NewMap_triggered() {
     openNewMapPopupWindow();
+    this->newMapPrompt->initUi();
     this->newMapPrompt->init();
 }
 

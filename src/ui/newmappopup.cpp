@@ -121,6 +121,7 @@ void NewMapPopup::init(MapSortOrder type, QVariant data) {
 
 // Creating new map from AdvanceMap import
 void NewMapPopup::init(Layout *mapLayout) {
+    initUi();
     this->importedMap = true;
     useLayoutSettings(mapLayout);
 
