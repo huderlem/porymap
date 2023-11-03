@@ -167,7 +167,7 @@ void CustomScriptsEditor::createNewScript() {
         return;
     }
     ParseUtil parser;
-    scriptFile.write(parser.readTextFile(":/text/script_template.js").toUtf8());
+    scriptFile.write(parser.readTextFile(":/text/script_template.txt").toUtf8());
     scriptFile.close();
     // TODO: When this dialog closes, focus returns to the editor window
     this->displayNewScript(filepath);
