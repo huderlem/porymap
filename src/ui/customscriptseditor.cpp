@@ -152,6 +152,11 @@ QString CustomScriptsEditor::chooseScript(QString dir) {
 
 void CustomScriptsEditor::createNewScript() {
     QString filepath = QFileDialog::getSaveFileName(this, "Create New Script File", this->fileDialogDir + "/new_script.js", "JavaScript Files (*.js)");
+
+    // QFileDialog::getSaveFileName returns focus to the main editor window when closed. Workaround for this below
+    this->raise();
+    this->activateWindow();
+
     if (filepath.isEmpty())
         return;
     this->fileDialogDir = filepath;
@@ -169,7 +174,7 @@ void CustomScriptsEditor::createNewScript() {
     ParseUtil parser;
     scriptFile.write(parser.readTextFile(":/text/script_template.txt").toUtf8());
     scriptFile.close();
-    // TODO: When this dialog closes, focus returns to the editor window
+
     this->displayNewScript(filepath);
 }
 
