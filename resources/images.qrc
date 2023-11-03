@@ -4,8 +4,10 @@
         <file>icons/collapse_all.ico</file>
         <file>icons/cursor.ico</file>
         <file>icons/delete.ico</file>
-        <file>icons/edit_document.ico</file>
         <file>icons/expand_all.ico</file>
+        <file>icons/file_add.ico</file>
+        <file>icons/file_edit.ico</file>
+        <file>icons/file_put.ico</file>
         <file>icons/fill_color_cursor.ico</file>
         <file>icons/fill_color.ico</file>
         <file>icons/folder_closed_map.ico</file>
