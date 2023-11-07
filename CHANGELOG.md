@@ -30,6 +30,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix the selection outline sticking in single-tile mode on the Prefab tab.
 - Fix heal location data being cleared if certain spaces aren't used in the table.
 - Fix bad URL color contrast on dark themes.
+- Fix some issues when too few/many pokémon are specified for a wild encounter group.
 
 ## [5.1.1] - 2023-02-20
 ### Added

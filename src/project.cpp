@@ -1670,6 +1670,11 @@ bool Project::readWildMonData() {
                         newMon.species = monObj["species"].string_value();
                         header.wildMons[field].wildPokemon.append(newMon);
                     }
+                    // If the user supplied too few pokémon for this group then we fill in the rest.
+                    for (int i = header.wildMons[field].wildPokemon.length(); i < monField.encounterRates.length(); i++) {
+                        WildPokemon newMon; // Keep default values
+                        header.wildMons[field].wildPokemon.append(newMon);
+                    }
                 }
             }
             wildMonData[mapConstant].insert({encounterObj["base_label"].string_value(), header});
