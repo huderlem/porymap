@@ -17,6 +17,7 @@ void DraggablePixmapItem::updatePosition() {
     } else {
         setZValue(event->getY());
     }
+    editor->updateWarpEventWarning(event);
 }
 
 void DraggablePixmapItem::emitPositionChanged() {

@@ -10,6 +10,8 @@
     Editor for the settings in a user's porymap.project.cfg file (and 'use_encounter_json' in porymap.user.cfg).
 */
 
+const int ProjectSettingsEditor::warpBehaviorsTab = 4;
+
 ProjectSettingsEditor::ProjectSettingsEditor(QWidget *parent, Project *project) :
     QMainWindow(parent),
     ui(new Ui::ProjectSettingsEditor),
@@ -84,11 +86,6 @@ void ProjectSettingsEditor::markEdited() {
         this->hasUnsavedChanges = true;
 }
 
-// Remember the current settings tab for future sessions
-void ProjectSettingsEditor::on_mainTabs_tabBarClicked(int index) {
-    porymapConfig.setProjectSettingsTab(index);
-}
-
 void ProjectSettingsEditor::initUi() {
     // Populate combo boxes
     if (project) {
@@ -98,9 +95,6 @@ void ProjectSettingsEditor::initUi() {
     }
     ui->comboBox_BaseGameVersion->addItems(ProjectConfig::versionStrings);
     ui->comboBox_AttributesSize->addItems({"1", "2", "4"});
-
-    // Select tab from last session
-    ui->mainTabs->setCurrentIndex(porymapConfig.getProjectSettingsTab());
 
     // Validate that the border metatiles text is a comma-separated list of metatile values
     static const QString regex_Hex = "(0[xX])?[A-Fa-f0-9]+";
@@ -161,6 +155,16 @@ void ProjectSettingsEditor::initUi() {
 void ProjectSettingsEditor::disableParsedSetting(QWidget * widget, const QString &name, const QString &filepath) {
     widget->setEnabled(false);
     widget->setToolTip(QString("This value has been read from '%1' in %2").arg(name).arg(filepath));
+}
+
+// Remember the current settings tab for future sessions
+void ProjectSettingsEditor::on_mainTabs_tabBarClicked(int index) {
+    porymapConfig.setProjectSettingsTab(index);
+}
+
+void ProjectSettingsEditor::setTab(int index) {
+    ui->mainTabs->setCurrentIndex(index);
+    porymapConfig.setProjectSettingsTab(index);
 }
 
 void ProjectSettingsEditor::setBorderMetatilesUi(bool customSize) {

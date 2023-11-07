@@ -106,6 +106,7 @@ void Editor::setEditingMap() {
     this->cursorMapTileRect->setActive(true);
 
     setMapEditingButtonsEnabled(true);
+    this->constructBehaviorValueList(); // TODO: Remove
 }
 
 void Editor::setEditingCollision() {
@@ -151,6 +152,7 @@ void Editor::setEditingObjects() {
     setConnectionsEditable(false);
     this->cursorMapTileRect->setSingleTileMode();
     this->cursorMapTileRect->setActive(false);
+    updateWarpEventWarnings();
 
     setMapEditingButtonsEnabled(false);
 }
@@ -1984,6 +1986,82 @@ void Editor::redrawObject(DraggablePixmapItem *item) {
             item->setPixmap(QPixmap::fromImage(image));
         }
         item->updatePosition();
+    }
+}
+
+/* TODO: Add tab to PSE for warp behaviors, containing:
+         - A description of what it means
+         - A check box to enable/disable the warning
+         - An editable list of warp behavior names
+
+*/
+// TODO: Relocate to file handling the "warp behaviors" window, make static list below a config default
+const QStringList warpBehaviorNames = {
+    "MB_NORTH_ARROW_WARP",
+    "MB_SOUTH_ARROW_WARP",
+    "MB_WEST_ARROW_WARP",
+    "MB_EAST_ARROW_WARP",
+    "MB_STAIRS_OUTSIDE_ABANDONED_SHIP",
+    "MB_WATER_SOUTH_ARROW_WARP",
+    "MB_SHOAL_CAVE_ENTRANCE",
+    "MB_SECRET_BASE_SPOT_RED_CAVE_OPEN",
+    "MB_SECRET_BASE_SPOT_BROWN_CAVE_OPEN",
+    "MB_SECRET_BASE_SPOT_YELLOW_CAVE_OPEN",
+    "MB_SECRET_BASE_SPOT_BLUE_CAVE_OPEN",
+    "MB_SECRET_BASE_SPOT_TREE_LEFT_OPEN",
+    "MB_SECRET_BASE_SPOT_TREE_RIGHT_OPEN",
+    "MB_SECRET_BASE_SPOT_SHRUB_OPEN",
+    "MB_ANIMATED_DOOR",
+    "MB_NON_ANIMATED_DOOR",
+    "MB_PETALBURG_GYM_DOOR",
+    "MB_WATER_DOOR",
+    "MB_LADDER",
+    "MB_UP_ESCALATOR",
+    "MB_DOWN_ESCALATOR",
+    "MB_DEEP_SOUTH_WARP",
+    "MB_LAVARIDGE_GYM_B1F_WARP",
+    "MB_LAVARIDGE_GYM_1F_WARP",
+    "MB_AQUA_HIDEOUT_WARP",
+    "MB_MT_PYRE_HOLE",
+    "MB_MOSSDEEP_GYM_WARP",
+    "MB_BRIDGE_OVER_OCEAN",
+};
+QSet<uint32_t> warpBehaviorValues;
+void Editor::constructBehaviorValueList() {
+    if (!project) return;
+    warpBehaviorValues.clear();
+    //warpBehaviorNames.removeDuplicates(); // TODO: Uncomment when list is actually dynamic
+    for (auto name : warpBehaviorNames) {
+        if (project->metatileBehaviorMap.contains(name)) {
+            warpBehaviorValues.insert(project->metatileBehaviorMap[name]);
+        }
+    }
+}
+
+// Warp events display a warning if they're not positioned on a metatile with a warp behavior.
+void Editor::updateWarpEventWarning(Event *event) {
+    if (!map || !event || event->getEventType() != Event::Type::Warp)
+        return;
+    Block block;
+    Metatile * metatile = nullptr;
+    WarpEvent * warpEvent = static_cast<WarpEvent*>(event);
+    if (map->getBlock(warpEvent->getX(), warpEvent->getY(), &block)) {
+        metatile = Tileset::getMetatile(block.metatileId(), map->layout->tileset_primary, map->layout->tileset_secondary);
+    }
+    // metatile may be null if the warp is in the map border. Display the warning in this case
+    bool validWarpBehavior = metatile && warpBehaviorValues.contains(metatile->behavior());
+    warpEvent->setWarningEnabled(!validWarpBehavior);
+}
+
+// The warp event behavior warning is updated whenever the event moves or the event selection changes.
+// It does not respond to changes in the underlying metatile. To capture the common case of a user painting
+// metatiles on the Map tab then returning to the Events tab we update the warings for all selected warp
+// events when the Events tab is opened. This does not cover the case where metatiles are painted while
+// still on the Events tab, such as by Undo/Redo or the scripting API.
+void Editor::updateWarpEventWarnings() {
+    if (selected_events) {
+        for (auto selection : *selected_events)
+            updateWarpEventWarning(selection->event);
     }
 }
 

@@ -345,6 +345,8 @@ public:
     void setDestinationWarpID(QString newDestinationWarpID) { this->destinationWarpID = newDestinationWarpID; }
     QString getDestinationWarpID() { return this->destinationWarpID; }
 
+    void setWarningEnabled(bool enabled);
+
 private:
     QString destinationMap;
     QString destinationWarpID;

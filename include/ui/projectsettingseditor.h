@@ -21,6 +21,9 @@ public:
     explicit ProjectSettingsEditor(QWidget *parent = nullptr, Project *project = nullptr);
     ~ProjectSettingsEditor();
 
+    static const int warpBehaviorsTab;
+    void setTab(int index);
+
 signals:
     void reloadProject();
 

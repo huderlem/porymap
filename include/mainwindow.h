@@ -159,6 +159,7 @@ public:
 public slots:
     void on_mainTabBar_tabBarClicked(int index);
     void on_mapViewTab_tabBarClicked(int index);
+    void openProjectSettingsEditor(int tab);
 
 private slots:
     void on_action_Open_Project_triggered();

@@ -517,6 +517,13 @@ QSet<QString> WarpEvent::getExpectedFields() {
     return expectedFields;
 }
 
+void WarpEvent::setWarningEnabled(bool enabled) {
+    WarpFrame * frame = static_cast<WarpFrame*>(this->getEventFrame());
+    if (frame && frame->warning)
+        frame->warning->setVisible(enabled);
+}
+
+
 
 Event *TriggerEvent::duplicate() {
     TriggerEvent *copy = new TriggerEvent();

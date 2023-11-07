@@ -2035,7 +2035,7 @@ void MainWindow::updateSelectedObjects() {
         EventFrame *eventFrame = event->createEventFrame();
         eventFrame->populate(this->editor->project);
         eventFrame->initialize();
-        eventFrame->connectSignals();
+        eventFrame->connectSignals(this);
         frames.append(eventFrame);
     }
 
@@ -2730,14 +2730,18 @@ void MainWindow::togglePreferenceSpecificUi() {
         ui->actionOpen_Project_in_Text_Editor->setEnabled(true);
 }
 
-void MainWindow::on_actionProject_Settings_triggered() {
+void MainWindow::openProjectSettingsEditor(int tab) {
     if (!this->projectSettingsEditor) {
         this->projectSettingsEditor = new ProjectSettingsEditor(this, this->editor->project);
         connect(this->projectSettingsEditor, &ProjectSettingsEditor::reloadProject,
                 this, &MainWindow::on_action_Reload_Project_triggered);
     }
-
+    this->projectSettingsEditor->setTab(tab);
     openSubWindow(this->projectSettingsEditor);
+}
+
+void MainWindow::on_actionProject_Settings_triggered() {
+    this->openProjectSettingsEditor(porymapConfig.getProjectSettingsTab());
 }
 
 void MainWindow::on_actionCustom_Scripts_triggered() {

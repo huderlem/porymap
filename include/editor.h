@@ -103,7 +103,8 @@ public:
     QList<DraggablePixmapItem *> getObjects();
     void updateCursorRectPos(int x, int y);
     void setCursorRectVisible(bool visible);
-
+    void updateWarpEventWarning(Event *event);
+    void updateWarpEventWarnings();
     bool eventLimitReached(Map *, Event::Type);
 
     QGraphicsScene *scene = nullptr;
@@ -189,6 +190,7 @@ private:
     static bool startDetachedProcess(const QString &command,
                                     const QString &workingDirectory = QString(),
                                     qint64 *pid = nullptr);
+    void constructBehaviorValueList(); // TODO: Remove
 
 private slots:
     void onMapStartPaint(QGraphicsSceneMouseEvent *event, MapPixmapItem *item);
