@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>374</width>
+    <width>535</width>
     <height>355</height>
    </rect>
   </property>
@@ -49,20 +49,40 @@
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
-           <widget class="QPushButton" name="button_AddNewScript">
+           <widget class="QPushButton" name="button_CreateNewScript">
+            <property name="toolTip">
+             <string>Create a new Porymap script file with a default template</string>
+            </property>
             <property name="text">
-             <string>Add New Script...</string>
+             <string>Create New Script...</string>
             </property>
             <property name="icon">
              <iconset resource="../resources/images.qrc">
-              <normaloff>:/icons/add.ico</normaloff>:/icons/add.ico</iconset>
+              <normaloff>:/icons/file_add.ico</normaloff>:/icons/file_add.ico</iconset>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="button_ReloadScripts">
+           <widget class="QPushButton" name="button_LoadScript">
+            <property name="toolTip">
+             <string>Add an existing script file to the list below</string>
+            </property>
             <property name="text">
-             <string>Reload Scripts</string>
+             <string>Load Script...</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../resources/images.qrc">
+              <normaloff>:/icons/file_put.ico</normaloff>:/icons/file_put.ico</iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="button_RefreshScripts">
+            <property name="toolTip">
+             <string>Refresh all loaded scripts to account for any recent edits</string>
+            </property>
+            <property name="text">
+             <string>Refresh Scripts</string>
             </property>
             <property name="icon">
              <iconset resource="../resources/images.qrc">
@@ -128,7 +148,7 @@
           <bool>false</bool>
          </property>
          <property name="dragDropMode">
-          <enum>QAbstractItemView::NoDragDrop</enum>
+          <enum>QAbstractItemView::DragOnly</enum>
          </property>
          <property name="defaultDropAction">
           <enum>Qt::IgnoreAction</enum>

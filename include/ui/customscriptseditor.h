@@ -31,10 +31,11 @@ private:
     Ui::CustomScriptsEditor *ui;
 
     bool hasUnsavedChanges = false;
-    QString importDir;
+    QString fileDialogDir;
     const QString baseDir;
 
     void displayScript(const QString &filepath, bool enabled);
+    void displayNewScript(QString filepath);
     QString chooseScript(QString dir);
     void removeScript(QListWidgetItem * item);
     void replaceScript(QListWidgetItem * item);
@@ -52,8 +53,9 @@ private:
 
 private slots:
     void dialogButtonClicked(QAbstractButton *button);
-    void addNewScript();
-    void reloadScripts();
+    void createNewScript();
+    void loadScript();
+    void refreshScripts();
     void removeSelectedScripts();
     void openSelectedScripts();
 };

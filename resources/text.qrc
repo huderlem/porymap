@@ -6,6 +6,7 @@
         <file>text/prefabs_default_emerald.json</file>
         <file>text/prefabs_default_firered.json</file>
         <file>text/prefabs_default_ruby.json</file>
+        <file>text/script_template.txt</file>
         <file>../CHANGELOG.md</file>
     </qresource>
 </RCC>
