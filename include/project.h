@@ -86,8 +86,6 @@ public:
     bool usingAsmTilesets;
     QString importExportPath;
 
-    const QPixmap entitiesPixmap = QPixmap(":/images/Entities_16x16.png");
-
     void set_root(QString);
 
     void initSignals();

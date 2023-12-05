@@ -7,6 +7,7 @@ QImage getCollisionMetatileImage(Block block) {
     return getCollisionMetatileImage(block.collision, block.elevation);
 }
 
+// TODO:
 QImage getCollisionMetatileImage(int collision, int elevation) {
     static const QImage collisionImage(":/images/collisions.png");
     int x = (collision != 0) * 16;

@@ -4,7 +4,7 @@
 #include "project.h"
 #include "config.h"
 
-
+QMap<Event::Group, const QPixmap*> Event::icons;
 
 Event::~Event() {
     if (this->eventFrame)
@@ -126,6 +126,45 @@ Event::Type Event::eventTypeFromString(QString type) {
     }
 }
 
+void Event::loadPixmap(Project *) {
+    const QPixmap * pixmap = Event::icons.value(this->getEventGroup());
+    this->pixmap = pixmap ? *pixmap : QPixmap();
+}
+
+void Event::initIcons() {
+    qDeleteAll(icons);
+    icons.clear();
+
+    const int w = 16;
+    const int h = 16;
+    static const QPixmap defaultIcons = QPixmap(":/images/Entities_16x16.png");
+
+    // Custom event icons may be provided by the user.
+    const int numIcons = qMin(defaultIcons.width() / w, static_cast<int>(Event::Group::None));
+    for (int i = 0; i < numIcons; i++) {
+        Event::Group group = static_cast<Event::Group>(i);
+        QString customIconPath = projectConfig.getEventIconPath(group);
+        if (customIconPath.isEmpty()) {
+            // No custom icon specified, use the default icon.
+            icons[group] = new QPixmap(defaultIcons.copy(i * w, 0, w, h));
+            continue;
+        }
+
+        // Try to load custom icon
+        QFileInfo info(customIconPath);
+        if (info.isRelative()) {
+            customIconPath = QDir::cleanPath(projectConfig.getProjectDir() + QDir::separator() + customIconPath);
+        }
+        const QPixmap customIcon = QPixmap(customIconPath);
+        if (customIcon.isNull()) {
+            // Custom icon failed to load, use the default icon.
+            icons[group] = new QPixmap(defaultIcons.copy(i * w, 0, w, h));
+            logError(QString("Failed to load custom event icon '%1', using default icon.").arg(customIconPath));
+        } else {
+            icons[group] = new QPixmap(customIcon);
+        }
+    }
+}
 
 
 Event *ObjectEvent::duplicate() {
@@ -243,7 +282,7 @@ void ObjectEvent::loadPixmap(Project *project) {
     if (!eventGfx || eventGfx->spritesheet.isNull()) {
         // No sprite associated with this gfx constant.
         // Use default sprite instead.
-        this->pixmap = project->entitiesPixmap.copy(0, 0, 16, 16);
+        Event::loadPixmap(project);
         this->spriteWidth = 16;
         this->spriteHeight = 16;
         this->usingSprite = false;
@@ -389,7 +428,7 @@ void CloneObjectEvent::loadPixmap(Project *project) {
     if (!eventGfx || eventGfx->spritesheet.isNull()) {
         // No sprite associated with this gfx constant.
         // Use default sprite instead.
-        this->pixmap = project->entitiesPixmap.copy(0, 0, 16, 16);
+        Event::loadPixmap(project);
         this->spriteWidth = 16;
         this->spriteHeight = 16;
         this->usingSprite = false;
@@ -477,17 +516,6 @@ QSet<QString> WarpEvent::getExpectedFields() {
     expectedFields << "x" << "y";
     return expectedFields;
 }
-
-void WarpEvent::loadPixmap(Project *project) {
-    this->pixmap = project->entitiesPixmap.copy(16, 0, 16, 16);
-}
-
-
-
-void CoordEvent::loadPixmap(Project *project) {
-    this->pixmap = project->entitiesPixmap.copy(32, 0, 16, 16);
-}
-
 
 
 Event *TriggerEvent::duplicate() {
@@ -628,12 +656,6 @@ QSet<QString> WeatherTriggerEvent::getExpectedFields() {
     expectedFields = expectedWeatherTriggerFields;
     expectedFields << "x" << "y";
     return expectedFields;
-}
-
-
-
-void BGEvent::loadPixmap(Project *project) {
-    this->pixmap = project->entitiesPixmap.copy(48, 0, 16, 16);
 }
 
 
@@ -896,8 +918,4 @@ void HealLocationEvent::setDefaultValues(Project *) {
         this->setRespawnMap(this->getMap()->name);
         this->setRespawnNPC(1);
     }
-}
-
-void HealLocationEvent::loadPixmap(Project *project) {
-    this->pixmap = project->entitiesPixmap.copy(64, 0, 16, 16);
 }

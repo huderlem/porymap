@@ -1484,7 +1484,7 @@ void Editor::displayMovementPermissionSelector() {
 
     scene_collision_metatiles = new QGraphicsScene;
     if (!movement_permissions_selector_item) {
-        movement_permissions_selector_item = new MovementPermissionsSelector();
+        movement_permissions_selector_item = new MovementPermissionsSelector(QPixmap(":/images/collisions.png").scaled(32 * 2, 32 * 16)); // TODO: Don't assume default
         connect(movement_permissions_selector_item, &MovementPermissionsSelector::hoveredMovementPermissionChanged,
                 this, &Editor::onHoveredMovementPermissionChanged);
         connect(movement_permissions_selector_item, &MovementPermissionsSelector::hoveredMovementPermissionCleared,

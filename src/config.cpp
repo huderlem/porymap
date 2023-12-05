@@ -684,6 +684,16 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         this->tilesetsHaveCallback = getConfigBool(key, value);
     } else if (key == "tilesets_have_is_compressed") {
         this->tilesetsHaveIsCompressed = getConfigBool(key, value);
+    } else if (key == "event_icon_path_object") {
+        this->eventIconPaths[Event::Group::Object] = value;
+    } else if (key == "event_icon_path_warp") {
+        this->eventIconPaths[Event::Group::Warp] = value;
+    } else if (key == "event_icon_path_coord") {
+        this->eventIconPaths[Event::Group::Coord] = value;
+    } else if (key == "event_icon_path_bg") {
+        this->eventIconPaths[Event::Group::Bg] = value;
+    } else if (key == "event_icon_path_heal") {
+        this->eventIconPaths[Event::Group::Heal] = value;
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -751,6 +761,11 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("metatile_encounter_type_mask", "0x" + QString::number(this->metatileEncounterTypeMask, 16).toUpper());
     map.insert("metatile_layer_type_mask", "0x" + QString::number(this->metatileLayerTypeMask, 16).toUpper());
     map.insert("enable_map_allow_flags", QString::number(this->enableMapAllowFlags));
+    map.insert("event_icon_path_object", this->eventIconPaths[Event::Group::Object]);
+    map.insert("event_icon_path_warp", this->eventIconPaths[Event::Group::Warp]);
+    map.insert("event_icon_path_coord", this->eventIconPaths[Event::Group::Coord]);
+    map.insert("event_icon_path_bg", this->eventIconPaths[Event::Group::Bg]);
+    map.insert("event_icon_path_heal", this->eventIconPaths[Event::Group::Heal]);
     return map;
 }
 
@@ -1091,6 +1106,24 @@ void ProjectConfig::setMapAllowFlagsEnabled(bool enabled) {
     this->save();
 }
 
+// TODO: Expose to project settings editor
+void ProjectConfig::setEventIconPath(Event::Group group, const QString &path) {
+    this->eventIconPaths[group] = path;
+    this->save();
+}
+
+QString ProjectConfig::getEventIconPath(Event::Group group) {
+    return this->eventIconPaths.value(group);
+}
+
+void ProjectConfig::setCollisionMapPath(const QString &path) {
+    this->collisionMapPath = path;
+    this->save();
+}
+
+QString ProjectConfig::getCollisionMapPath() {
+    return this->collisionMapPath;
+}
 
 UserConfig userConfig;
 

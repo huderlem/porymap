@@ -2,8 +2,7 @@
 #include <QPainter>
 
 void MovementPermissionsSelector::draw() {
-    QPixmap pixmap(":/images/collisions.png");
-    this->setPixmap(pixmap.scaled(64, 512));
+    this->setPixmap(this->basePixmap);
     this->drawSelection();
 }
 

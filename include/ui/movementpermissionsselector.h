@@ -6,7 +6,9 @@
 class MovementPermissionsSelector: public SelectablePixmapItem {
     Q_OBJECT
 public:
-    MovementPermissionsSelector(): SelectablePixmapItem(32, 32, 1, 1) {
+    MovementPermissionsSelector(QPixmap basePixmap) :
+        SelectablePixmapItem(32, 32, 1, 1),
+        basePixmap(basePixmap) {
         setAcceptHoverEvents(true);
     }
     void draw();
@@ -20,6 +22,7 @@ protected:
 
 private:
     void setSelectedMovementPermissions(QPointF);
+    const QPixmap basePixmap;
 
 signals:
     void hoveredMovementPermissionChanged(uint16_t, uint16_t);

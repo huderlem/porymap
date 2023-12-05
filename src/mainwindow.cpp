@@ -514,6 +514,7 @@ bool MainWindow::openProject(QString dir) {
     this->setProjectSpecificUIVisibility();
     this->newMapDefaultsSet = false;
 
+    Event::initIcons();
     Scripting::init(this);
     bool already_open = isProjectOpen() && (editor->project->root == dir);
     if (!already_open) {

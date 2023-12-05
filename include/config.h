@@ -9,6 +9,8 @@
 #include <QKeySequence>
 #include <QMultiMap>
 
+#include "events.h"
+
 // In both versions the default new map border is a generic tree
 #define DEFAULT_BORDER_RSE (QList<uint16_t>{0x1D4, 0x1D5, 0x1DC, 0x1DD})
 #define DEFAULT_BORDER_FRLG (QList<uint16_t>{0x14, 0x15, 0x1C, 0x1D})
@@ -295,6 +297,11 @@ public:
     void setMetatileLayerTypeMask(uint32_t mask);
     bool getMapAllowFlagsEnabled();
     void setMapAllowFlagsEnabled(bool enabled);
+    void setEventIconPath(Event::Group group, const QString &path);
+    QString getEventIconPath(Event::Group group);
+    void setCollisionMapPath(const QString &path);
+    QString getCollisionMapPath();
+
 protected:
     virtual QString getConfigFilepath() override;
     virtual void parseConfigKeyValue(QString key, QString value) override;
@@ -332,6 +339,8 @@ private:
     uint32_t metatileEncounterTypeMask;
     uint32_t metatileLayerTypeMask;
     bool enableMapAllowFlags;
+    QMap<Event::Group, QString> eventIconPaths;
+    QString collisionMapPath;
 };
 
 extern ProjectConfig projectConfig;
