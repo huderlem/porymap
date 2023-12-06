@@ -131,7 +131,7 @@ void Event::loadPixmap(Project *) {
     this->pixmap = pixmap ? *pixmap : QPixmap();
 }
 
-void Event::initIcons() {
+void Event::setIcons() {
     qDeleteAll(icons);
     icons.clear();
 
@@ -159,9 +159,9 @@ void Event::initIcons() {
         if (customIcon.isNull()) {
             // Custom icon failed to load, use the default icon.
             icons[group] = new QPixmap(defaultIcons.copy(i * w, 0, w, h));
-            logError(QString("Failed to load custom event icon '%1', using default icon.").arg(customIconPath));
+            logWarn(QString("Failed to load custom event icon '%1', using default icon.").arg(customIconPath));
         } else {
-            icons[group] = new QPixmap(customIcon);
+            icons[group] = new QPixmap(customIcon.scaled(w, h));
         }
     }
 }

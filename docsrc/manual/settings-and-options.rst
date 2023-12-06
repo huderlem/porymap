@@ -97,7 +97,7 @@ Fill Metatile
    Field name: ``new_map_metatile``
 
 Elevation
-   This is the elevation that will be used to fill new maps. New maps will be filled with passable collision.
+   This is the elevation that will be used to fill new maps. It will also be the default selection on the Collision tab when a map is opened. New maps will be filled with passable collision.
 
    Defaults to ``3``.
 

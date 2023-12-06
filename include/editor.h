@@ -138,6 +138,7 @@ public:
 
     int scaleIndex = 2;
     qreal collisionOpacity = 0.5;
+    static QList<QList<const QImage*>> collisionIcons;
 
     void objectsView_onMousePress(QMouseEvent *event);
 
@@ -151,6 +152,7 @@ public:
     void scaleMapView(int);
     static void openInTextEditor(const QString &path, int lineNum = 0);
     bool eventLimitReached(Event::Type type);
+    static void setCollisionGraphics();
 
 public slots:
     void openMapScripts() const;

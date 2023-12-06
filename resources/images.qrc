@@ -61,6 +61,7 @@
         <file>icons/ui/midnight_branch_more.png</file>
         <file>images/blank_tileset.png</file>
         <file>images/collisions.png</file>
+        <file>images/collisions_unknown.png</file>
         <file>images/Entities_16x16.png</file>
         <file>icons/clipboard.ico</file>
     </qresource>

@@ -6,8 +6,8 @@
 class MovementPermissionsSelector: public SelectablePixmapItem {
     Q_OBJECT
 public:
-    MovementPermissionsSelector(QPixmap basePixmap) :
-        SelectablePixmapItem(32, 32, 1, 1),
+    MovementPermissionsSelector(int cellWidth, int cellHeight, QPixmap basePixmap) :
+        SelectablePixmapItem(cellWidth, cellHeight, 1, 1),
         basePixmap(basePixmap) {
         setAcceptHoverEvents(true);
     }

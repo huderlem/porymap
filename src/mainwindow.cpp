@@ -391,6 +391,9 @@ void MainWindow::setProjectSpecificUIVisibility()
     bool floorNumEnabled = projectConfig.getFloorNumberEnabled();
     ui->spinBox_FloorNumber->setVisible(floorNumEnabled);
     ui->label_FloorNumber->setVisible(floorNumEnabled);
+
+    Event::setIcons();
+    Editor::setCollisionGraphics();
 }
 
 void MainWindow::mapSortOrder_changed(QAction *action)
@@ -514,7 +517,6 @@ bool MainWindow::openProject(QString dir) {
     this->setProjectSpecificUIVisibility();
     this->newMapDefaultsSet = false;
 
-    Event::initIcons();
     Scripting::init(this);
     bool already_open = isProjectOpen() && (editor->project->root == dir);
     if (!already_open) {

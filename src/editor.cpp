@@ -20,6 +20,11 @@
 #include <math.h>
 
 static bool selectNewEvents = false;
+static const QPixmap *collisionSheetPixmap = nullptr;
+static const int movementPermissionsSelectorCellSize = 32;
+
+// 2D array mapping collision+elevation combos to an icon.
+QList<QList<const QImage*>> Editor::collisionIcons;
 
 Editor::Editor(Ui::MainWindow* ui)
 {
@@ -1484,12 +1489,14 @@ void Editor::displayMovementPermissionSelector() {
 
     scene_collision_metatiles = new QGraphicsScene;
     if (!movement_permissions_selector_item) {
-        movement_permissions_selector_item = new MovementPermissionsSelector(QPixmap(":/images/collisions.png").scaled(32 * 2, 32 * 16)); // TODO: Don't assume default
+        movement_permissions_selector_item = new MovementPermissionsSelector(movementPermissionsSelectorCellSize,
+                                                                             movementPermissionsSelectorCellSize,
+                                                                             collisionSheetPixmap ? *collisionSheetPixmap : QPixmap());
         connect(movement_permissions_selector_item, &MovementPermissionsSelector::hoveredMovementPermissionChanged,
                 this, &Editor::onHoveredMovementPermissionChanged);
         connect(movement_permissions_selector_item, &MovementPermissionsSelector::hoveredMovementPermissionCleared,
                 this, &Editor::onHoveredMovementPermissionCleared);
-        movement_permissions_selector_item->select(0, 3);
+        movement_permissions_selector_item->select(0, projectConfig.getNewMapElevation()); // TODO: New map collision config?
     }
 
     scene_collision_metatiles->addItem(movement_permissions_selector_item);
@@ -2226,4 +2233,78 @@ void Editor::objectsView_onMousePress(QMouseEvent *event) {
         updateSelectedEvents();
     }
     selectingEvent = false;
+}
+
+// TODO: Show elevation & collision spinners on collision tab
+// TODO: Hide selection rect for elevation/collision combos not shown on the image
+// TODO: Zoom slider
+// TODO: Bug--Images with transparency allow users to paint metatiles on the Collision tab
+// Custom collision graphics may be provided by the user.
+void Editor::setCollisionGraphics() {
+    static const QImage defaultCollisionImgSheet = QImage(":/images/collisions.png");
+    QString customPath = projectConfig.getCollisionSheetPath();
+
+    QImage imgSheet;
+    if (!customPath.isEmpty()) {
+        // Try to load custom collision image
+        QFileInfo info(customPath);
+        if (info.isRelative()) {
+            customPath = QDir::cleanPath(projectConfig.getProjectDir() + QDir::separator() + customPath);
+        }
+        imgSheet = QImage(customPath);
+        if (imgSheet.isNull()) {
+            // Custom collision image failed to load, use default
+            logWarn(QString("Failed to load custom collision image '%1', using default.").arg(customPath));
+            imgSheet = defaultCollisionImgSheet;
+        }
+    } else {
+        // No custom collision image specified, use the default.
+        imgSheet = defaultCollisionImgSheet;
+    }
+
+    // Like the vanilla collision image, users are not required to provide an image that gives an icon for every elevation/collision combination.
+    // Instead they tell us how many are provided in their image by specifying the number of columns and rows.
+    const int imgColumns = projectConfig.getCollisionSheetWidth();
+    const int imgRows = projectConfig.getCollisionSheetHeight();
+
+    // Create a pixmap for the selector on the Collision tab
+    delete collisionSheetPixmap;
+    collisionSheetPixmap = new QPixmap(QPixmap::fromImage(imgSheet)
+                                                    .scaled(movementPermissionsSelectorCellSize * imgColumns,
+                                                            movementPermissionsSelectorCellSize * imgRows));
+
+    for (auto sublist : collisionIcons)
+        qDeleteAll(sublist);
+    collisionIcons.clear();
+
+    // Chop up the collision image sheet into separate icon images to be displayed on the map.
+    // Any icons for elevation/collision combinations that aren't provided by the image sheet are also created now.
+    const int w = 16;
+    const int h = 16;
+    const int numCollisions = 4; // TODO: Read value from elsewhere
+    const int numElevations = 16; // TODO: Read value from elsewhere
+    imgSheet = imgSheet.scaled(w * imgColumns, h * imgRows);
+    for (int collision = 0; collision < numCollisions; collision++) {
+        // If (collision >= imgColumns) here, it's a valid collision value, but it is not represented with an icon on the image sheet.
+        // In this case we just use the rightmost collision icon. This is mostly to support the vanilla case, where technically 0-3
+        // are valid collision values, but 1-3 have the same meaning, so the vanilla collision selector image only has 2 columns.
+        int x = ((collision < imgColumns) ? collision : imgColumns) * w;
+
+        QList<const QImage*> sublist;
+        for (int elevation = 0; elevation < numElevations; elevation++) {
+            if (elevation < imgRows) {
+                // This elevation has an icon on the image sheet, add it to the list
+                int y = elevation * h;
+                sublist.append(new QImage(imgSheet.copy(x, y, w, h)));
+            } else {
+                // This is a valid elevation value, but it has no icon on the image sheet.
+                // Give it a placeholder "?" icon (white if passable, red otherwise)
+                static const QImage placeholder = QImage(":/images/collisions_unknown.png");
+                static const QImage * placeholder_White = new QImage(placeholder.copy(0, 0, w, h));
+                static const QImage * placeholder_Red = new QImage(placeholder.copy(w, 0, w, h));
+                sublist.append(x == 0 ? placeholder_White : placeholder_Red);
+            }
+        }
+        collisionIcons.append(sublist);
+    }
 }

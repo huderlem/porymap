@@ -38,8 +38,8 @@ protected:
     virtual void onNewConfigFileCreated() = 0;
     virtual void setUnreadKeys() = 0;
     bool getConfigBool(QString key, QString value);
-    int getConfigInteger(QString key, QString value, int min, int max, int defaultValue);
-    uint32_t getConfigUint32(QString key, QString value, uint32_t min, uint32_t max, uint32_t defaultValue);
+    int getConfigInteger(QString key, QString value, int min = INT_MIN, int max = INT_MAX, int defaultValue = 0);
+    uint32_t getConfigUint32(QString key, QString value, uint32_t min = 0, uint32_t max = UINT_MAX, uint32_t defaultValue = 0);
 private:
     bool saveDisabled = false;
 };
@@ -227,6 +227,10 @@ public:
         this->tilesetsHaveCallback = true;
         this->tilesetsHaveIsCompressed = true;
         this->filePaths.clear();
+        this->eventIconPaths.clear();
+        this->collisionSheetPath = QString();
+        this->collisionSheetWidth = 2;
+        this->collisionSheetHeight = 16;
         this->readKeys.clear();
     }
     static const QMap<ProjectFilePath, std::pair<QString, QString>> defaultPaths;
@@ -299,8 +303,14 @@ public:
     void setMapAllowFlagsEnabled(bool enabled);
     void setEventIconPath(Event::Group group, const QString &path);
     QString getEventIconPath(Event::Group group);
-    void setCollisionMapPath(const QString &path);
-    QString getCollisionMapPath();
+    void setCollisionIconPath(int collision, const QString &path);
+    QString getCollisionIconPath(int collision);
+    void setCollisionSheetPath(const QString &path);
+    QString getCollisionSheetPath();
+    void setCollisionSheetWidth(int width);
+    int getCollisionSheetWidth();
+    void setCollisionSheetHeight(int height);
+    int getCollisionSheetHeight();
 
 protected:
     virtual QString getConfigFilepath() override;
@@ -340,7 +350,9 @@ private:
     uint32_t metatileLayerTypeMask;
     bool enableMapAllowFlags;
     QMap<Event::Group, QString> eventIconPaths;
-    QString collisionMapPath;
+    QString collisionSheetPath;
+    int collisionSheetWidth;
+    int collisionSheetHeight;
 };
 
 extern ProjectConfig projectConfig;

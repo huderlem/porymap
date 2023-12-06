@@ -628,8 +628,10 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
     } else if (key == "enable_triple_layer_metatiles") {
         this->enableTripleLayerMetatiles = getConfigBool(key, value);
     } else if (key == "new_map_metatile") {
+        // TODO: Update max
         this->newMapMetatileId = getConfigUint32(key, value, 0, 1023, 0);
     } else if (key == "new_map_elevation") {
+        // TODO: Update max
         this->newMapElevation = getConfigInteger(key, value, 0, 15, 3);
     } else if (key == "new_map_border_metatiles") {
         this->newMapBorderMetatileIds.clear();
@@ -652,13 +654,13 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         }
         this->metatileAttributesSize = size;
     } else if (key == "metatile_behavior_mask") {
-        this->metatileBehaviorMask = getConfigUint32(key, value, 0, 0xFFFFFFFF, 0);
+        this->metatileBehaviorMask = getConfigUint32(key, value);
     } else if (key == "metatile_terrain_type_mask") {
-        this->metatileTerrainTypeMask = getConfigUint32(key, value, 0, 0xFFFFFFFF, 0);
+        this->metatileTerrainTypeMask = getConfigUint32(key, value);
     } else if (key == "metatile_encounter_type_mask") {
-        this->metatileEncounterTypeMask = getConfigUint32(key, value, 0, 0xFFFFFFFF, 0);
+        this->metatileEncounterTypeMask = getConfigUint32(key, value);
     } else if (key == "metatile_layer_type_mask") {
-        this->metatileLayerTypeMask = getConfigUint32(key, value, 0, 0xFFFFFFFF, 0);
+        this->metatileLayerTypeMask = getConfigUint32(key, value);
     } else if (key == "enable_map_allow_flags") {
         this->enableMapAllowFlags = getConfigBool(key, value);
 #ifdef CONFIG_BACKWARDS_COMPATABILITY
@@ -694,6 +696,14 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         this->eventIconPaths[Event::Group::Bg] = value;
     } else if (key == "event_icon_path_heal") {
         this->eventIconPaths[Event::Group::Heal] = value;
+    } else if (key == "collision_sheet_path") {
+        this->collisionSheetPath = value;
+    } else if (key == "collision_sheet_width") {
+        // Max for these two keys is if a user specifies blocks with 1 bit for metatile ID and 15 bits for collision or elevation
+        // TODO: Test to make sure there shouldn't be a stricter limit given the UI
+        this->collisionSheetWidth = getConfigInteger(key, value, 1, 0x7FFF, 2);
+    } else if (key == "collision_sheet_height") {
+        this->collisionSheetHeight = getConfigInteger(key, value, 1, 0x7FFF, 16);
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -766,6 +776,9 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("event_icon_path_coord", this->eventIconPaths[Event::Group::Coord]);
     map.insert("event_icon_path_bg", this->eventIconPaths[Event::Group::Bg]);
     map.insert("event_icon_path_heal", this->eventIconPaths[Event::Group::Heal]);
+    map.insert("collision_sheet_path", this->collisionSheetPath);
+    map.insert("collision_sheet_width", QString::number(this->collisionSheetWidth));
+    map.insert("collision_sheet_height", QString::number(this->collisionSheetHeight));
     return map;
 }
 
@@ -1116,14 +1129,34 @@ QString ProjectConfig::getEventIconPath(Event::Group group) {
     return this->eventIconPaths.value(group);
 }
 
-void ProjectConfig::setCollisionMapPath(const QString &path) {
-    this->collisionMapPath = path;
+// TODO: Expose to project settings editor
+void ProjectConfig::setCollisionSheetPath(const QString &path) {
+    this->collisionSheetPath = path;
     this->save();
 }
 
-QString ProjectConfig::getCollisionMapPath() {
-    return this->collisionMapPath;
+QString ProjectConfig::getCollisionSheetPath() {
+    return this->collisionSheetPath;
 }
+
+void ProjectConfig::setCollisionSheetWidth(int width) {
+    this->collisionSheetWidth = width;
+    this->save();
+}
+
+int ProjectConfig::getCollisionSheetWidth() {
+    return this->collisionSheetWidth;
+}
+
+void ProjectConfig::setCollisionSheetHeight(int height) {
+    this->collisionSheetHeight = height;
+    this->save();
+}
+
+int ProjectConfig::getCollisionSheetHeight() {
+    return this->collisionSheetHeight;
+}
+
 
 UserConfig userConfig;
 

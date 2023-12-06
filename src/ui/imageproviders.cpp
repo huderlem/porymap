@@ -1,18 +1,16 @@
 #include "config.h"
 #include "imageproviders.h"
 #include "log.h"
+#include "editor.h"
 #include <QPainter>
 
 QImage getCollisionMetatileImage(Block block) {
     return getCollisionMetatileImage(block.collision, block.elevation);
 }
 
-// TODO:
 QImage getCollisionMetatileImage(int collision, int elevation) {
-    static const QImage collisionImage(":/images/collisions.png");
-    int x = (collision != 0) * 16;
-    int y = elevation * 16;
-    return collisionImage.copy(x, y, 16, 16);
+    const QImage * image = Editor::collisionIcons.at(collision).at(elevation);
+    return image ? *image : QImage();
 }
 
 QImage getMetatileImage(

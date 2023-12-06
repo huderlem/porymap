@@ -178,7 +178,7 @@ public:
     static QString eventGroupToString(Event::Group group);
     static QString eventTypeToString(Event::Type type);
     static Event::Type eventTypeFromString(QString type);
-    static void initIcons();
+    static void setIcons();
 
 // protected attributes
 protected:
@@ -259,8 +259,6 @@ public:
 public:
     void setFrameFromMovement(QString movement);
     void setPixmapFromSpritesheet(QImage, int, int, bool);
-
-    static const QPixmap * defaultIcon;
 
 
 protected:
@@ -347,8 +345,6 @@ public:
     void setDestinationWarpID(QString newDestinationWarpID) { this->destinationWarpID = newDestinationWarpID; }
     QString getDestinationWarpID() { return this->destinationWarpID; }
 
-    static const QPixmap * defaultIcon;
-
 private:
     QString destinationMap;
     QString destinationWarpID;
@@ -375,8 +371,6 @@ public:
     virtual void setDefaultValues(Project *project) override = 0;
 
     virtual QSet<QString> getExpectedFields() override = 0;
-
-    static const QPixmap * defaultIcon;
 };
 
 
@@ -476,8 +470,6 @@ public:
     virtual void setDefaultValues(Project *project) override = 0;
 
     virtual QSet<QString> getExpectedFields() override = 0;
-
-    static const QPixmap * defaultIcon;
 };
 
 
@@ -632,8 +624,6 @@ public:
 
     void setRespawnNPC(uint8_t newRespawnNPC) { this->respawnNPC = newRespawnNPC; }
     uint8_t getRespawnNPC() { return this->respawnNPC; }
-
-    static const QPixmap * defaultIcon;
 
 private:
     int index = -1;
