@@ -35,6 +35,10 @@ int Project::max_map_data_size = 10240; // 0x2800
 int Project::default_map_size = 20;
 int Project::max_object_events = 64;
 
+// TODO: Replace once Block layout can be edited
+int Project::max_collision = 3;
+int Project::max_elevation = 15;
+
 Project::Project(QWidget *parent) :
     QObject(parent),
     eventScriptLabelModel(this),
@@ -2577,6 +2581,16 @@ bool Project::calculateDefaultMapSize(){
 int Project::getMaxObjectEvents()
 {
     return Project::max_object_events;
+}
+
+int Project::getMaxCollision()
+{
+    return Project::max_collision;
+}
+
+int Project::getMaxElevation()
+{
+    return Project::max_elevation;
 }
 
 void Project::setImportExportPath(QString filename)

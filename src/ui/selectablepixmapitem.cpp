@@ -22,6 +22,7 @@ void SelectablePixmapItem::select(int x, int y, int width, int height)
     this->selectionOffsetX = qMax(0, qMin(width, this->maxSelectionWidth));
     this->selectionOffsetY = qMax(0, qMin(height, this->maxSelectionHeight));
     this->draw();
+    emit this->selectionChanged(x, y, width, height);
 }
 
 void SelectablePixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
@@ -76,6 +77,7 @@ void SelectablePixmapItem::updateSelection(int x, int y)
     }
 
     this->draw();
+    emit this->selectionChanged(x, y, width, height);
 }
 
 QPoint SelectablePixmapItem::getCellPos(QPointF pos)

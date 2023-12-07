@@ -230,6 +230,8 @@ public:
     static bool mapDimensionsValid(int width, int height);
     bool calculateDefaultMapSize();
     static int getMaxObjectEvents();
+    static int getMaxCollision();
+    static int getMaxElevation();
 
 private:
     void updateMapLayout(Map*);
@@ -253,6 +255,8 @@ private:
     static int max_map_data_size;
     static int default_map_size;
     static int max_object_events;
+    static int max_collision;
+    static int max_elevation;
 
     QStringListModel eventScriptLabelModel;
     QCompleter eventScriptLabelCompleter;

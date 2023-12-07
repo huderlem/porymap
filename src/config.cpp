@@ -244,6 +244,8 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->customScriptsEditorState = bytesFromString(value);
     } else if (key == "metatiles_zoom") {
         this->metatilesZoom = getConfigInteger(key, value, 10, 100, 30);
+    } else if (key == "collision_zoom") {
+        this->collisionZoom = getConfigInteger(key, value, 10, 100, 30);
     } else if (key == "show_player_view") {
         this->showPlayerView = getConfigBool(key, value);
     } else if (key == "show_cursor_tile") {
@@ -293,7 +295,8 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("custom_scripts_editor_geometry", stringFromByteArray(this->customScriptsEditorGeometry));
     map.insert("custom_scripts_editor_state", stringFromByteArray(this->customScriptsEditorState));
     map.insert("collision_opacity", QString("%1").arg(this->collisionOpacity));
-    map.insert("metatiles_zoom", QString("%1").arg(this->metatilesZoom));
+    map.insert("collision_zoom", QString::number(this->collisionZoom));
+    map.insert("metatiles_zoom", QString::number(this->metatilesZoom));
     map.insert("show_player_view", this->showPlayerView ? "1" : "0");
     map.insert("show_cursor_tile", this->showCursorTile ? "1" : "0");
     map.insert("show_border", this->showBorder ? "1" : "0");
@@ -396,6 +399,11 @@ void PorymapConfig::setCustomScriptsEditorGeometry(QByteArray customScriptsEdito
 
 void PorymapConfig::setCollisionOpacity(int opacity) {
     this->collisionOpacity = opacity;
+    // don't auto-save here because this can be called very frequently.
+}
+
+void PorymapConfig::setCollisionZoom(int zoom) {
+    this->collisionZoom = zoom;
     // don't auto-save here because this can be called very frequently.
 }
 
@@ -517,6 +525,10 @@ QMap<QString, QByteArray> PorymapConfig::getCustomScriptsEditorGeometry() {
 
 int PorymapConfig::getCollisionOpacity() {
     return this->collisionOpacity;
+}
+
+int PorymapConfig::getCollisionZoom() {
+    return this->collisionZoom;
 }
 
 int PorymapConfig::getMetatilesZoom() {

@@ -35,6 +35,9 @@ protected:
     void mouseMoveEvent(QGraphicsSceneMouseEvent*);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent*);
     virtual void drawSelection();
+
+signals:
+    void selectionChanged(int, int, int, int);
 };
 
 #endif // SELECTABLEPIXMAPITEM_H

@@ -372,7 +372,8 @@ void MainWindow::setWildEncountersUIEnabled(bool enabled) {
     ui->mainTabBar->setTabEnabled(4, enabled);
 }
 
-void MainWindow::setProjectSpecificUIVisibility()
+// Update the UI using information we've read from the user's project config file.
+void MainWindow::setProjectSpecificUI()
 {
     this->setWildEncountersUIEnabled(userConfig.getEncounterJsonActive());
 
@@ -393,7 +394,9 @@ void MainWindow::setProjectSpecificUIVisibility()
     ui->label_FloorNumber->setVisible(floorNumEnabled);
 
     Event::setIcons();
-    Editor::setCollisionGraphics();
+    editor->setCollisionGraphics();
+    ui->spinBox_SelectedElevation->setMaximum(Project::getMaxElevation());
+    ui->spinBox_SelectedCollision->setMaximum(Project::getMaxCollision());
 }
 
 void MainWindow::mapSortOrder_changed(QAction *action)
@@ -455,6 +458,9 @@ void MainWindow::loadUserSettings() {
     ui->horizontalSlider_MetatileZoom->blockSignals(true);
     ui->horizontalSlider_MetatileZoom->setValue(porymapConfig.getMetatilesZoom());
     ui->horizontalSlider_MetatileZoom->blockSignals(false);
+    ui->horizontalSlider_CollisionZoom->blockSignals(true);
+    ui->horizontalSlider_CollisionZoom->setValue(porymapConfig.getCollisionZoom());
+    ui->horizontalSlider_CollisionZoom->blockSignals(false);
     setTheme(porymapConfig.getTheme());
 }
 
@@ -514,7 +520,7 @@ bool MainWindow::openProject(QString dir) {
     projectConfig.load();
 
     this->closeSupplementaryWindows();
-    this->setProjectSpecificUIVisibility();
+    this->setProjectSpecificUI();
     this->newMapDefaultsSet = false;
 
     Scripting::init(this);
@@ -718,6 +724,7 @@ void MainWindow::refreshMapScene()
     ui->graphicsView_Collision->setFixedSize(editor->movement_permissions_selector_item->pixmap().width() + 2, editor->movement_permissions_selector_item->pixmap().height() + 2);
 
     on_horizontalSlider_MetatileZoom_valueChanged(ui->horizontalSlider_MetatileZoom->value());
+    on_horizontalSlider_CollisionZoom_valueChanged(ui->horizontalSlider_CollisionZoom->value());
 }
 
 void MainWindow::openWarpMap(QString map_name, int event_id, Event::Group event_group) {
@@ -2795,6 +2802,33 @@ void MainWindow::on_horizontalSlider_MetatileZoom_valueChanged(int value) {
                                                   ceil(static_cast<double>(editor->selected_border_metatiles_item->pixmap().height()) * scale) + 2);
 
     redrawMetatileSelection();
+}
+
+void MainWindow::on_horizontalSlider_CollisionZoom_valueChanged(int value) {
+    porymapConfig.setCollisionZoom(value);
+    double scale = pow(3.0, static_cast<double>(value - 30) / 30.0);
+
+    QTransform transform;
+    transform.scale(scale, scale);
+    QSize size(editor->movement_permissions_selector_item->pixmap().width(),
+               editor->movement_permissions_selector_item->pixmap().height());
+    size *= scale;
+
+    ui->graphicsView_Collision->setResizeAnchor(QGraphicsView::NoAnchor);
+    ui->graphicsView_Collision->setTransform(transform);
+    ui->graphicsView_Collision->setFixedSize(size.width() + 2, size.height() + 2);
+}
+
+void MainWindow::on_spinBox_SelectedCollision_valueChanged(int collision) {
+    if (!this->editor || !this->editor->movement_permissions_selector_item)
+        return;
+    this->editor->movement_permissions_selector_item->select(collision, ui->spinBox_SelectedElevation->value());
+}
+
+void MainWindow::on_spinBox_SelectedElevation_valueChanged(int elevation) {
+    if (!this->editor || !this->editor->movement_permissions_selector_item)
+        return;
+    this->editor->movement_permissions_selector_item->select(ui->spinBox_SelectedCollision->value(), elevation);
 }
 
 void MainWindow::on_actionRegion_Map_Editor_triggered() {

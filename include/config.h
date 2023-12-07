@@ -56,6 +56,7 @@ public:
         this->mapSortOrder = MapSortOrder::Group;
         this->prettyCursors = true;
         this->collisionOpacity = 50;
+        this->collisionZoom = 30;
         this->metatilesZoom = 30;
         this->showPlayerView = false;
         this->showCursorTile = true;
@@ -78,6 +79,7 @@ public:
     void setProjectSettingsEditorGeometry(QByteArray, QByteArray);
     void setCustomScriptsEditorGeometry(QByteArray, QByteArray);
     void setCollisionOpacity(int opacity);
+    void setCollisionZoom(int zoom);
     void setMetatilesZoom(int zoom);
     void setShowPlayerView(bool enabled);
     void setShowCursorTile(bool enabled);
@@ -100,6 +102,7 @@ public:
     QMap<QString, QByteArray> getProjectSettingsEditorGeometry();
     QMap<QString, QByteArray> getCustomScriptsEditorGeometry();
     int getCollisionOpacity();
+    int getCollisionZoom();
     int getMetatilesZoom();
     bool getShowPlayerView();
     bool getShowCursorTile();
@@ -140,6 +143,7 @@ private:
     QByteArray customScriptsEditorGeometry;
     QByteArray customScriptsEditorState;
     int collisionOpacity;
+    int collisionZoom;
     int metatilesZoom;
     bool showPlayerView;
     bool showCursorTile;

@@ -152,7 +152,7 @@ public:
     void scaleMapView(int);
     static void openInTextEditor(const QString &path, int lineNum = 0);
     bool eventLimitReached(Event::Type type);
-    static void setCollisionGraphics();
+    void setCollisionGraphics();
 
 public slots:
     void openMapScripts() const;
@@ -163,6 +163,10 @@ public slots:
     void selectedEventIndexChanged(int index, Event::Group eventGroup);
 
 private:
+    const QImage defaultCollisionImgSheet = QImage(":/images/collisions.png");
+    const QImage collisionPlaceholder = QImage(":/images/collisions_unknown.png");
+    QPixmap collisionSheetPixmap;
+
     void setConnectionItemsVisible(bool);
     void setBorderItemsVisible(bool, qreal = 1);
     void setConnectionEditControlValues(MapConnection*);
@@ -181,6 +185,7 @@ private:
     void updateEncounterFields(EncounterFields newFields);
     QString getMovementPermissionText(uint16_t collision, uint16_t elevation);
     QString getMetatileDisplayMessage(uint16_t metatileId);
+    void setCollisionTabSpinBoxes(uint16_t collision, uint16_t elevation);
     static bool startDetachedProcess(const QString &command,
                                     const QString &workingDirectory = QString(),
                                     qint64 *pid = nullptr);
