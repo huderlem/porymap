@@ -2820,15 +2820,13 @@ void MainWindow::on_horizontalSlider_CollisionZoom_valueChanged(int value) {
 }
 
 void MainWindow::on_spinBox_SelectedCollision_valueChanged(int collision) {
-    if (!this->editor || !this->editor->movement_permissions_selector_item)
-        return;
-    this->editor->movement_permissions_selector_item->select(collision, ui->spinBox_SelectedElevation->value());
+    if (this->editor && this->editor->movement_permissions_selector_item)
+        this->editor->movement_permissions_selector_item->select(collision, ui->spinBox_SelectedElevation->value());
 }
 
 void MainWindow::on_spinBox_SelectedElevation_valueChanged(int elevation) {
-    if (!this->editor || !this->editor->movement_permissions_selector_item)
-        return;
-    this->editor->movement_permissions_selector_item->select(ui->spinBox_SelectedCollision->value(), elevation);
+    if (this->editor && this->editor->movement_permissions_selector_item)
+        this->editor->movement_permissions_selector_item->select(ui->spinBox_SelectedCollision->value(), elevation);
 }
 
 void MainWindow::on_actionRegion_Map_Editor_triggered() {

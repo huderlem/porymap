@@ -1114,7 +1114,7 @@ void Project::setNewMapBlockdata(Map *map) {
     map->layout->blockdata.clear();
     int width = map->getWidth();
     int height = map->getHeight();
-    Block block(projectConfig.getNewMapMetatileId(), 0, projectConfig.getNewMapElevation());
+    Block block(projectConfig.getNewMapMetatileId(), projectConfig.getNewMapCollision(), projectConfig.getNewMapElevation());
     for (int i = 0; i < width * height; i++) {
         map->layout->blockdata.append(block);
     }

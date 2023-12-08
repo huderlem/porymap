@@ -1497,7 +1497,7 @@ void Editor::displayMovementPermissionSelector() {
         connect(movement_permissions_selector_item, &SelectablePixmapItem::selectionChanged, [this](int x, int y, int, int) {
             this->setCollisionTabSpinBoxes(x, y);
         });
-        movement_permissions_selector_item->select(0, projectConfig.getNewMapElevation()); // TODO: New map collision config?
+        movement_permissions_selector_item->select(projectConfig.getNewMapCollision(), projectConfig.getNewMapElevation());
     }
 
     scene_collision_metatiles->addItem(movement_permissions_selector_item);
@@ -2243,13 +2243,15 @@ void Editor::setCollisionTabSpinBoxes(uint16_t collision, uint16_t elevation) {
     ui->spinBox_SelectedElevation->setValue(elevation);
 }
 
-// TODO: Bug--Images with transparency allow users to paint metatiles on the Collision tab
 // Custom collision graphics may be provided by the user.
 void Editor::setCollisionGraphics() {
     QString customPath = projectConfig.getCollisionSheetPath();
 
     QImage imgSheet;
-    if (!customPath.isEmpty()) {
+    if (customPath.isEmpty()) {
+        // No custom collision image specified, use the default.
+        imgSheet = this->defaultCollisionImgSheet;
+    } else {
         // Try to load custom collision image
         QFileInfo info(customPath);
         if (info.isRelative()) {
@@ -2261,12 +2263,9 @@ void Editor::setCollisionGraphics() {
             logWarn(QString("Failed to load custom collision image '%1', using default.").arg(customPath));
             imgSheet = this->defaultCollisionImgSheet;
         }
-    } else {
-        // No custom collision image specified, use the default.
-        imgSheet = this->defaultCollisionImgSheet;
     }
 
-    // Like the vanilla collision image, users are not required to provide an image that gives an icon for every elevation/collision combination.
+    // Users are not required to provide an image that gives an icon for every elevation/collision combination.
     // Instead they tell us how many are provided in their image by specifying the number of columns and rows.
     const int imgColumns = projectConfig.getCollisionSheetWidth();
     const int imgRows = projectConfig.getCollisionSheetHeight();
@@ -2286,7 +2285,6 @@ void Editor::setCollisionGraphics() {
     const int w = 16, h = 16;
     imgSheet = imgSheet.scaled(w * imgColumns, h * imgRows);
     for (int collision = 0; collision <= Project::getMaxCollision(); collision++) {
-
         // If (collision >= imgColumns) here, it's a valid collision value, but it is not represented with an icon on the image sheet.
         // In this case we just use the rightmost collision icon. This is mostly to support the vanilla case, where technically 0-3
         // are valid collision values, but 1-3 have the same meaning, so the vanilla collision selector image only has 2 columns.

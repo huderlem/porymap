@@ -640,17 +640,19 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
     } else if (key == "enable_triple_layer_metatiles") {
         this->enableTripleLayerMetatiles = getConfigBool(key, value);
     } else if (key == "new_map_metatile") {
-        // TODO: Update max
+        // TODO: Update max once Block layout can be edited
         this->newMapMetatileId = getConfigUint32(key, value, 0, 1023, 0);
     } else if (key == "new_map_elevation") {
-        // TODO: Update max
+        // TODO: Update max once Block layout can be edited
         this->newMapElevation = getConfigInteger(key, value, 0, 15, 3);
+    } else if (key == "new_map_collision") {
+        // TODO: Update max once Block layout can be edited
+        this->newMapCollision = getConfigInteger(key, value, 0, 3, 0);
     } else if (key == "new_map_border_metatiles") {
         this->newMapBorderMetatileIds.clear();
         QList<QString> metatileIds = value.split(",");
         for (int i = 0; i < metatileIds.size(); i++) {
-            // TODO: The max of 1023 here should eventually reflect Project::num_metatiles_total-1,
-            // but the config is parsed well before that constant is.
+            // TODO: Update max once Block layout can be edited
             int metatileId = getConfigUint32(key, metatileIds.at(i), 0, 1023, 0);
             this->newMapBorderMetatileIds.append(metatileId);
         }
@@ -712,7 +714,6 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         this->collisionSheetPath = value;
     } else if (key == "collision_sheet_width") {
         // Max for these two keys is if a user specifies blocks with 1 bit for metatile ID and 15 bits for collision or elevation
-        // TODO: Test to make sure there shouldn't be a stricter limit given the UI
         this->collisionSheetWidth = getConfigInteger(key, value, 1, 0x7FFF, 2);
     } else if (key == "collision_sheet_height") {
         this->collisionSheetHeight = getConfigInteger(key, value, 1, 0x7FFF, 16);
@@ -767,6 +768,7 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("enable_triple_layer_metatiles", QString::number(this->enableTripleLayerMetatiles));
     map.insert("new_map_metatile", Metatile::getMetatileIdString(this->newMapMetatileId));
     map.insert("new_map_elevation", QString::number(this->newMapElevation));
+    map.insert("new_map_collision", QString::number(this->newMapCollision));
     map.insert("new_map_border_metatiles", Metatile::getMetatileIdStringList(this->newMapBorderMetatileIds));
     map.insert("default_primary_tileset", this->defaultPrimaryTileset);
     map.insert("default_secondary_tileset", this->defaultSecondaryTileset);
@@ -1014,6 +1016,15 @@ int ProjectConfig::getNewMapElevation() {
     return this->newMapElevation;
 }
 
+void ProjectConfig::setNewMapCollision(int collision) {
+    this->newMapCollision = collision;
+    this->save();
+}
+
+int ProjectConfig::getNewMapCollision() {
+    return this->newMapCollision;
+}
+
 void ProjectConfig::setNewMapBorderMetatileIds(QList<uint16_t> metatileIds) {
     this->newMapBorderMetatileIds = metatileIds;
     this->save();
@@ -1131,7 +1142,6 @@ void ProjectConfig::setMapAllowFlagsEnabled(bool enabled) {
     this->save();
 }
 
-// TODO: Expose to project settings editor
 void ProjectConfig::setEventIconPath(Event::Group group, const QString &path) {
     this->eventIconPaths[group] = path;
     this->save();
@@ -1141,7 +1151,6 @@ QString ProjectConfig::getEventIconPath(Event::Group group) {
     return this->eventIconPaths.value(group);
 }
 
-// TODO: Expose to project settings editor
 void ProjectConfig::setCollisionSheetPath(const QString &path) {
     this->collisionSheetPath = path;
     this->save();

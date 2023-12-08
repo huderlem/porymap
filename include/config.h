@@ -225,6 +225,7 @@ public:
         this->enableTripleLayerMetatiles = false;
         this->newMapMetatileId = 1;
         this->newMapElevation = 3;
+        this->newMapCollision = 0;
         this->defaultPrimaryTileset = "gTileset_General";
         this->prefabFilepath = QString();
         this->prefabImportPrompted = false;
@@ -275,6 +276,8 @@ public:
     uint16_t getNewMapMetatileId();
     void setNewMapElevation(int elevation);
     int getNewMapElevation();
+    void setNewMapCollision(int collision);
+    int getNewMapCollision();
     void setNewMapBorderMetatileIds(QList<uint16_t> metatileIds);
     QList<uint16_t> getNewMapBorderMetatileIds();
     QString getDefaultPrimaryTileset();
@@ -307,8 +310,6 @@ public:
     void setMapAllowFlagsEnabled(bool enabled);
     void setEventIconPath(Event::Group group, const QString &path);
     QString getEventIconPath(Event::Group group);
-    void setCollisionIconPath(int collision, const QString &path);
-    QString getCollisionIconPath(int collision);
     void setCollisionSheetPath(const QString &path);
     QString getCollisionSheetPath();
     void setCollisionSheetWidth(int width);
@@ -339,6 +340,7 @@ private:
     bool enableTripleLayerMetatiles;
     uint16_t newMapMetatileId;
     int newMapElevation;
+    int newMapCollision;
     QList<uint16_t> newMapBorderMetatileIds;
     QString defaultPrimaryTileset;
     QString defaultSecondaryTileset;
