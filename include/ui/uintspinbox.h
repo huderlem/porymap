@@ -64,4 +64,15 @@ signals:
     void textChanged(const QString &text);
 };
 
+class UIntHexSpinBox : public UIntSpinBox
+{
+    Q_OBJECT
+public:
+    UIntHexSpinBox(QWidget *parent = nullptr) : UIntSpinBox(parent) {
+        this->setPrefix("0x");
+        this->setDisplayIntegerBase(16);
+        this->setHasPadding(true);
+    }
+};
+
 #endif // UINTSPINBOX_H

@@ -269,6 +269,8 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         if (this->paletteEditorBitDepth != 15 && this->paletteEditorBitDepth != 24){
             this->paletteEditorBitDepth = 24;
         }
+    } else if (key == "project_settings_tab") {
+        this->projectSettingsTab = getConfigInteger(key, value, 0);
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -294,7 +296,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("project_settings_editor_state", stringFromByteArray(this->projectSettingsEditorState));
     map.insert("custom_scripts_editor_geometry", stringFromByteArray(this->customScriptsEditorGeometry));
     map.insert("custom_scripts_editor_state", stringFromByteArray(this->customScriptsEditorState));
-    map.insert("collision_opacity", QString("%1").arg(this->collisionOpacity));
+    map.insert("collision_opacity", QString::number(this->collisionOpacity));
     map.insert("collision_zoom", QString::number(this->collisionZoom));
     map.insert("metatiles_zoom", QString::number(this->metatilesZoom));
     map.insert("show_player_view", this->showPlayerView ? "1" : "0");
@@ -306,7 +308,8 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("theme", this->theme);
     map.insert("text_editor_open_directory", this->textEditorOpenFolder);
     map.insert("text_editor_goto_line", this->textEditorGotoLine);
-    map.insert("palette_editor_bit_depth", QString("%1").arg(this->paletteEditorBitDepth));
+    map.insert("palette_editor_bit_depth", QString::number(this->paletteEditorBitDepth));
+    map.insert("project_settings_tab", QString::number(this->projectSettingsTab));
     
     return map;
 }
@@ -451,6 +454,11 @@ void PorymapConfig::setPaletteEditorBitDepth(int bitDepth) {
     this->save();
 }
 
+void PorymapConfig::setProjectSettingsTab(int tab) {
+    this->projectSettingsTab = tab;
+    this->save();
+}
+
 QString PorymapConfig::getRecentProject() {
     return this->recentProject;
 }
@@ -573,6 +581,10 @@ QString PorymapConfig::getTextEditorGotoLine() {
 
 int PorymapConfig::getPaletteEditorBitDepth() {
     return this->paletteEditorBitDepth;
+}
+
+int PorymapConfig::getProjectSettingsTab() {
+    return this->projectSettingsTab;
 }
 
 const QStringList ProjectConfig::versionStrings = {
@@ -713,10 +725,10 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
     } else if (key == "collision_sheet_path") {
         this->collisionSheetPath = value;
     } else if (key == "collision_sheet_width") {
-        // Max for these two keys is if a user specifies blocks with 1 bit for metatile ID and 15 bits for collision or elevation
-        this->collisionSheetWidth = getConfigInteger(key, value, 1, 0x7FFF, 2);
+        // TODO: Update max once Block layout can be edited (0x7FFF for 15 bits)
+        this->collisionSheetWidth = getConfigInteger(key, value, 1, 4, 2);
     } else if (key == "collision_sheet_height") {
-        this->collisionSheetHeight = getConfigInteger(key, value, 1, 0x7FFF, 16);
+        this->collisionSheetHeight = getConfigInteger(key, value, 1, 16, 16);
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }

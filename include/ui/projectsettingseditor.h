@@ -48,13 +48,16 @@ private:
 
     void createProjectPathsTable();
     QString chooseProjectFile(const QString &defaultFilepath);
+    void choosePrefabsFile();
+    void chooseImageFile(QLineEdit * filepathEdit);
+    void chooseFile(QLineEdit * filepathEdit, const QString &description, const QString &extensions);
 
 private slots:
     void dialogButtonClicked(QAbstractButton *button);
-    void choosePrefabsFileClicked(bool);
     void importDefaultPrefabsClicked(bool);
     void updateAttributeLimits(const QString &attrSize);
     void markEdited();
+    void on_mainTabs_tabBarClicked(int index);
 };
 
 #endif // PROJECTSETTINGSEDITOR_H

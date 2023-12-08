@@ -33,7 +33,6 @@ ProjectSettingsEditor::~ProjectSettingsEditor()
 
 void ProjectSettingsEditor::connectSignals() {
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &ProjectSettingsEditor::dialogButtonClicked);
-    connect(ui->button_ChoosePrefabs, &QAbstractButton::clicked, this, &ProjectSettingsEditor::choosePrefabsFileClicked);
     connect(ui->button_ImportDefaultPrefabs, &QAbstractButton::clicked, this, &ProjectSettingsEditor::importDefaultPrefabsClicked);
     connect(ui->comboBox_BaseGameVersion, &QComboBox::currentTextChanged, this, &ProjectSettingsEditor::promptRestoreDefaults);
     connect(ui->comboBox_AttributesSize, &QComboBox::currentTextChanged, this, &ProjectSettingsEditor::updateAttributeLimits);
@@ -44,6 +43,15 @@ void ProjectSettingsEditor::connectSignals() {
         this->setBorderMetatileIds(customSize, this->getBorderMetatileIds(!customSize));
         this->setBorderMetatilesUi(customSize);
     });
+
+    // Connect file selection buttons
+    connect(ui->button_ChoosePrefabs,     &QAbstractButton::clicked, [this](bool) { this->choosePrefabsFile(); });
+    connect(ui->button_CollisionGraphics, &QAbstractButton::clicked, [this](bool) { this->chooseImageFile(ui->lineEdit_CollisionGraphics); });
+    connect(ui->button_ObjectsIcon,       &QAbstractButton::clicked, [this](bool) { this->chooseImageFile(ui->lineEdit_ObjectsIcon); });
+    connect(ui->button_WarpsIcon,         &QAbstractButton::clicked, [this](bool) { this->chooseImageFile(ui->lineEdit_WarpsIcon); });
+    connect(ui->button_TriggersIcon,      &QAbstractButton::clicked, [this](bool) { this->chooseImageFile(ui->lineEdit_TriggersIcon); });
+    connect(ui->button_BGsIcon,           &QAbstractButton::clicked, [this](bool) { this->chooseImageFile(ui->lineEdit_BGsIcon); });
+    connect(ui->button_HealspotsIcon,     &QAbstractButton::clicked, [this](bool) { this->chooseImageFile(ui->lineEdit_HealspotsIcon); });
 
     // Record that there are unsaved changes if any of the settings are modified
     for (auto combo : ui->centralwidget->findChildren<NoScrollComboBox *>())
@@ -64,12 +72,20 @@ void ProjectSettingsEditor::markEdited() {
         this->hasUnsavedChanges = true;
 }
 
+// Remember the current settings tab for future sessions
+void ProjectSettingsEditor::on_mainTabs_tabBarClicked(int index) {
+    porymapConfig.setProjectSettingsTab(index);
+}
+
 void ProjectSettingsEditor::initUi() {
     // Populate combo boxes
     if (project) ui->comboBox_DefaultPrimaryTileset->addItems(project->primaryTilesetLabels);
     if (project) ui->comboBox_DefaultSecondaryTileset->addItems(project->secondaryTilesetLabels);
     ui->comboBox_BaseGameVersion->addItems(ProjectConfig::versionStrings);
     ui->comboBox_AttributesSize->addItems({"1", "2", "4"});
+
+    // Select tab from last session
+    ui->mainTabs->setCurrentIndex(porymapConfig.getProjectSettingsTab());
 
     // Validate that the border metatiles text is a comma-separated list of metatile values
     const QString regex_Hex = "(0[xX])?[A-Fa-f0-9]+";
@@ -84,7 +100,10 @@ void ProjectSettingsEditor::initUi() {
     ui->spinBox_BorderMetatile2->setMaximum(maxMetatileId);
     ui->spinBox_BorderMetatile3->setMaximum(maxMetatileId);
     ui->spinBox_BorderMetatile4->setMaximum(maxMetatileId);
-    ui->spinBox_Elevation->setMaximum(15);
+    ui->spinBox_Elevation->setMaximum(Project::getMaxElevation());
+    ui->spinBox_Collision->setMaximum(Project::getMaxCollision());
+    ui->spinBox_MaxElevation->setMaximum(Project::getMaxElevation());
+    ui->spinBox_MaxCollision->setMaximum(Project::getMaxCollision());
 }
 
 void ProjectSettingsEditor::setBorderMetatilesUi(bool customSize) {
@@ -227,7 +246,10 @@ void ProjectSettingsEditor::refresh() {
 
     // Set spin box values
     ui->spinBox_Elevation->setValue(projectConfig.getNewMapElevation());
+    ui->spinBox_Collision->setValue(projectConfig.getNewMapCollision());
     ui->spinBox_FillMetatile->setValue(projectConfig.getNewMapMetatileId());
+    ui->spinBox_MaxElevation->setValue(projectConfig.getCollisionSheetHeight() - 1);
+    ui->spinBox_MaxCollision->setValue(projectConfig.getCollisionSheetWidth() - 1);
     ui->spinBox_BehaviorMask->setValue(projectConfig.getMetatileBehaviorMask());
     ui->spinBox_EncounterTypeMask->setValue(projectConfig.getMetatileEncounterTypeMask());
     ui->spinBox_LayerTypeMask->setValue(projectConfig.getMetatileLayerTypeMask());
@@ -240,6 +262,12 @@ void ProjectSettingsEditor::refresh() {
 
     // Set line edit texts
     ui->lineEdit_PrefabsPath->setText(projectConfig.getPrefabFilepath());
+    ui->lineEdit_CollisionGraphics->setText(projectConfig.getCollisionSheetPath());
+    ui->lineEdit_ObjectsIcon->setText(projectConfig.getEventIconPath(Event::Group::Object));
+    ui->lineEdit_WarpsIcon->setText(projectConfig.getEventIconPath(Event::Group::Warp));
+    ui->lineEdit_TriggersIcon->setText(projectConfig.getEventIconPath(Event::Group::Coord));
+    ui->lineEdit_BGsIcon->setText(projectConfig.getEventIconPath(Event::Group::Bg));
+    ui->lineEdit_HealspotsIcon->setText(projectConfig.getEventIconPath(Event::Group::Heal));
     for (auto lineEdit : ui->scrollAreaContents_ProjectPaths->findChildren<QLineEdit*>())
         lineEdit->setText(projectConfig.getFilePath(lineEdit->objectName(), true));
 
@@ -253,10 +281,13 @@ void ProjectSettingsEditor::save() {
     // Prevent a call to save() for each of the config settings
     projectConfig.setSaveDisabled(true);
 
+    // Save combo box settings
     projectConfig.setDefaultPrimaryTileset(ui->comboBox_DefaultPrimaryTileset->currentText());
     projectConfig.setDefaultSecondaryTileset(ui->comboBox_DefaultSecondaryTileset->currentText());
     projectConfig.setBaseGameVersion(projectConfig.stringToBaseGameVersion(ui->comboBox_BaseGameVersion->currentText()));
     projectConfig.setMetatileAttributesSize(ui->comboBox_AttributesSize->currentText().toInt());
+
+    // Save check box settings
     projectConfig.setUsePoryScript(ui->checkBox_UsePoryscript->isChecked());
     userConfig.setEncounterJsonActive(ui->checkBox_ShowWildEncounterTables->isChecked());
     projectConfig.setCreateMapTextFileEnabled(ui->checkBox_CreateTextFile->isChecked());
@@ -272,15 +303,30 @@ void ProjectSettingsEditor::save() {
     projectConfig.setUseCustomBorderSize(ui->checkBox_EnableCustomBorderSize->isChecked());
     projectConfig.setTilesetsHaveCallback(ui->checkBox_OutputCallback->isChecked());
     projectConfig.setTilesetsHaveIsCompressed(ui->checkBox_OutputIsCompressed->isChecked());
+
+    // Save spin box settings
     projectConfig.setNewMapElevation(ui->spinBox_Elevation->value());
+    projectConfig.setNewMapCollision(ui->spinBox_Collision->value());
     projectConfig.setNewMapMetatileId(ui->spinBox_FillMetatile->value());
+    projectConfig.setCollisionSheetHeight(ui->spinBox_MaxElevation->value() + 1);
+    projectConfig.setCollisionSheetWidth(ui->spinBox_MaxCollision->value() + 1);
     projectConfig.setMetatileBehaviorMask(ui->spinBox_BehaviorMask->value());
     projectConfig.setMetatileTerrainTypeMask(ui->spinBox_TerrainTypeMask->value());
     projectConfig.setMetatileEncounterTypeMask(ui->spinBox_EncounterTypeMask->value());
     projectConfig.setMetatileLayerTypeMask(ui->spinBox_LayerTypeMask->value());
+
+    // Save line edit settings
     projectConfig.setPrefabFilepath(ui->lineEdit_PrefabsPath->text());
+    projectConfig.setCollisionSheetPath(ui->lineEdit_CollisionGraphics->text());
+    projectConfig.setEventIconPath(Event::Group::Object, ui->lineEdit_ObjectsIcon->text());
+    projectConfig.setEventIconPath(Event::Group::Warp, ui->lineEdit_WarpsIcon->text());
+    projectConfig.setEventIconPath(Event::Group::Coord, ui->lineEdit_TriggersIcon->text());
+    projectConfig.setEventIconPath(Event::Group::Bg, ui->lineEdit_BGsIcon->text());
+    projectConfig.setEventIconPath(Event::Group::Heal, ui->lineEdit_HealspotsIcon->text());
     for (auto lineEdit : ui->scrollAreaContents_ProjectPaths->findChildren<QLineEdit*>())
         projectConfig.setFilePath(lineEdit->objectName(), lineEdit->text());
+
+    // Save border metatile IDs
     projectConfig.setNewMapBorderMetatileIds(this->getBorderMetatileIds(ui->checkBox_EnableCustomBorderSize->isChecked()));
 
     projectConfig.setSaveDisabled(false);
@@ -293,14 +339,16 @@ void ProjectSettingsEditor::save() {
 }
 
 // Pick a file to use as the new prefabs file path
-void ProjectSettingsEditor::choosePrefabsFileClicked(bool) {
-    QString startPath = this->project->importExportPath;
-    QFileInfo fileInfo(ui->lineEdit_PrefabsPath->text());
-    if (fileInfo.exists() && fileInfo.isFile() && fileInfo.suffix() == "json") {
-        // Current setting is a valid JSON file. Start the file dialog there
-        startPath = fileInfo.dir().absolutePath();
-    }
-    QString filepath = QFileDialog::getOpenFileName(this, "Choose Prefabs File", startPath, "JSON Files (*.json)");
+void ProjectSettingsEditor::choosePrefabsFile() {
+    this->chooseFile(ui->lineEdit_PrefabsPath, "Choose Prefabs File", "JSON Files (*.json)");
+}
+
+void ProjectSettingsEditor::chooseImageFile(QLineEdit * filepathEdit) {
+    this->chooseFile(filepathEdit, "Choose Image File", "Images (*.png *.jpg)");
+}
+
+void ProjectSettingsEditor::chooseFile(QLineEdit * filepathEdit, const QString &description, const QString &extensions) {
+    QString filepath = QFileDialog::getOpenFileName(this, description, this->project->importExportPath, extensions);
     if (filepath.isEmpty())
         return;
     this->project->setImportExportPath(filepath);
@@ -308,7 +356,7 @@ void ProjectSettingsEditor::choosePrefabsFileClicked(bool) {
     // Display relative path if this file is in the project folder
     if (filepath.startsWith(this->baseDir))
         filepath.remove(0, this->baseDir.length());
-    ui->lineEdit_PrefabsPath->setText(filepath);
+    if (filepathEdit) filepathEdit->setText(filepath);
     this->hasUnsavedChanges = true;
 }
 
