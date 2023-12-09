@@ -10,9 +10,12 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ### Added
 - Adds an editor window under `Options -> Project Settings...` to customize the project-specific settings in `porymap.project.cfg` and `porymap.user.cfg`.
 - Adds an editor window under `Options -> Custom Scripts...` for Porymap's API scripts.
+- Support customization of the default event icons and the collision/elevation graphics.
+- Adds a zoom slider to the Collision tab.
 - Support for 8BPP tileset tile images.
 
 ### Changed
+- The Collision tab now allows selection of any valid elevation/collision value.
 - The Palette Editor now remembers the Bit Depth setting.
 - The min/max levels on the Wild Pokémon tab will now adjust automatically if they invalidate each other.
 - If the recent project directory doesn't exist Porymap will open an empty project instead of failing with a misleading error message.
