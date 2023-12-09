@@ -316,6 +316,9 @@
                  <property name="toolTip">
                   <string>The image sheet that will be used to represent elevation and collision on the Collision tab</string>
                  </property>
+                 <property name="clearButtonEnabled">
+                  <bool>true</bool>
+                 </property>
                 </widget>
                </item>
                <item row="0" column="7">
@@ -795,12 +798,18 @@
                  <property name="toolTip">
                   <string>The icon that will be used to represent Warp events</string>
                  </property>
+                 <property name="clearButtonEnabled">
+                  <bool>true</bool>
+                 </property>
                 </widget>
                </item>
                <item row="4" column="1">
                 <widget class="QLineEdit" name="lineEdit_HealspotsIcon">
                  <property name="toolTip">
                   <string>The icon that will be used to represent Healspot events</string>
+                 </property>
+                 <property name="clearButtonEnabled">
+                  <bool>true</bool>
                  </property>
                 </widget>
                </item>
@@ -823,6 +832,9 @@
                  <property name="toolTip">
                   <string>The icon that will be used to represent Object events that don't have their own sprite</string>
                  </property>
+                 <property name="clearButtonEnabled">
+                  <bool>true</bool>
+                 </property>
                 </widget>
                </item>
                <item row="0" column="0">
@@ -837,12 +849,18 @@
                  <property name="toolTip">
                   <string>The icon that will be used to represent Trigger events</string>
                  </property>
+                 <property name="clearButtonEnabled">
+                  <bool>true</bool>
+                 </property>
                 </widget>
                </item>
                <item row="3" column="1">
                 <widget class="QLineEdit" name="lineEdit_BGsIcon">
                  <property name="toolTip">
                   <string>The icon that will be used to represent BG events</string>
+                 </property>
+                 <property name="clearButtonEnabled">
+                  <bool>true</bool>
                  </property>
                 </widget>
                </item>
