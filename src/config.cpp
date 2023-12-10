@@ -58,9 +58,11 @@ const QMap<ProjectFilePath, std::pair<QString, QString>> ProjectConfig::defaultP
     {ProjectFilePath::constants_region_map_sections,    { "constants_region_map_sections",   "include/constants/region_map_sections.h"}},
     {ProjectFilePath::constants_metatile_labels,        { "constants_metatile_labels",       "include/constants/metatile_labels.h"}},
     {ProjectFilePath::constants_metatile_behaviors,     { "constants_metatile_behaviors",    "include/constants/metatile_behaviors.h"}},
+    {ProjectFilePath::constants_species,                { "constants_species",               "include/constants/species.h"}},
     {ProjectFilePath::constants_fieldmap,               { "constants_fieldmap",              "include/fieldmap.h"}},
     {ProjectFilePath::pokemon_icon_table,               { "pokemon_icon_table",              "src/pokemon_icon.c"}},
     {ProjectFilePath::initial_facing_table,             { "initial_facing_table",            "src/event_object_movement.c"}},
+    {ProjectFilePath::pokemon_gfx,                      { "pokemon_gfx",                     "graphics/pokemon/"}},
 };
 
 ProjectFilePath reverseDefaultPaths(QString str) {
@@ -722,6 +724,8 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         this->eventIconPaths[Event::Group::Bg] = value;
     } else if (key == "event_icon_path_heal") {
         this->eventIconPaths[Event::Group::Heal] = value;
+    } else if (key.startsWith("pokemon_icon_path/")) {
+        this->pokemonIconPaths.insert(key.mid(18).toUpper(), value);
     } else if (key == "collision_sheet_path") {
         this->collisionSheetPath = value;
     } else if (key == "collision_sheet_width") {
@@ -802,6 +806,10 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("event_icon_path_coord", this->eventIconPaths[Event::Group::Coord]);
     map.insert("event_icon_path_bg", this->eventIconPaths[Event::Group::Bg]);
     map.insert("event_icon_path_heal", this->eventIconPaths[Event::Group::Heal]);
+    for (auto i = this->pokemonIconPaths.cbegin(), end = this->pokemonIconPaths.cend(); i != end; i++){
+        const QString path = i.value();
+        if (!path.isEmpty()) map.insert("pokemon_icon_path/" + i.key(), path);
+    }
     map.insert("collision_sheet_path", this->collisionSheetPath);
     map.insert("collision_sheet_width", QString::number(this->collisionSheetWidth));
     map.insert("collision_sheet_height", QString::number(this->collisionSheetHeight));
@@ -1161,6 +1169,19 @@ void ProjectConfig::setEventIconPath(Event::Group group, const QString &path) {
 
 QString ProjectConfig::getEventIconPath(Event::Group group) {
     return this->eventIconPaths.value(group);
+}
+
+void ProjectConfig::setPokemonIconPath(const QString &species, const QString &path) {
+    this->pokemonIconPaths[species] = path;
+    this->save();
+}
+
+QString ProjectConfig::getPokemonIconPath(const QString &species) {
+    return this->pokemonIconPaths.value(species);
+}
+
+QHash<QString, QString> ProjectConfig::getPokemonIconPaths() {
+    return this->pokemonIconPaths;
 }
 
 void ProjectConfig::setCollisionSheetPath(const QString &path) {

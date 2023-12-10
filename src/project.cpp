@@ -1775,15 +1775,6 @@ QString Project::getNewMapName() {
     return newMapName;
 }
 
-QStringList Project::getVisibilities() {
-    // TODO
-    QStringList names;
-    for (int i = 0; i < 16; i++) {
-        names.append(QString("%1").arg(i));
-    }
-    return names;
-}
-
 Project::DataQualifiers Project::getDataQualifiers(QString text, QString label) {
     Project::DataQualifiers qualifiers;
 
@@ -2477,17 +2468,87 @@ bool Project::readEventGraphics() {
 }
 
 bool Project::readSpeciesIconPaths() {
-    speciesToIconPath.clear();
-    QString srcfilename = projectConfig.getFilePath(ProjectFilePath::pokemon_icon_table);
-    QString incfilename = projectConfig.getFilePath(ProjectFilePath::data_pokemon_gfx);
+    this->speciesToIconPath.clear();
+
+    // Read map of species constants to icon names
+    const QString srcfilename = projectConfig.getFilePath(ProjectFilePath::pokemon_icon_table);
     fileWatcher.addPath(root + "/" + srcfilename);
+    const QMap<QString, QString> monIconNames = parser.readNamedIndexCArray(srcfilename, "gMonIconTable");
+
+    // Read map of icon names to filepaths. These are spread between two different files
+    const QString incfilename = projectConfig.getFilePath(ProjectFilePath::data_pokemon_gfx);
     fileWatcher.addPath(root + "/" + incfilename);
-    QMap<QString, QString> monIconNames = parser.readNamedIndexCArray(srcfilename, "gMonIconTable");
-    QMap<QString, QString> iconIncbins = parser.readCIncbinMulti(incfilename);
-    for (QString species : monIconNames.keys()) {
-        QString path = iconIncbins[monIconNames.value(species)];
-        speciesToIconPath.insert(species, root + "/" + path.replace("4bpp", "png"));
+    const QMap<QString, QString> iconIncbins = parser.readCIncbinMulti(incfilename);
+
+    // Read species constants. If this fails we can get them from the icon table (but we shouldn't rely on it).
+    static const QStringList prefixes("\\bSPECIES_");
+    const QString constantsFilename = projectConfig.getFilePath(ProjectFilePath::constants_species);
+    fileWatcher.addPath(root + "/" + constantsFilename);
+    const QMap<QString, int> defines = parser.readCDefines(constantsFilename, prefixes); // TODO: Suppress errors
+    const QStringList speciesNames = defines.isEmpty() ? monIconNames.keys() : defines.keys();
+
+    bool missingIcons = false;
+    for (auto species : speciesNames) {
+        QString path = QString();
+        if (monIconNames.contains(species) && iconIncbins.contains(monIconNames.value(species))) {
+            // We have the icon filepath from the icon table
+            path = QString("%1/%2").arg(root).arg(this->fixGraphicPath(iconIncbins[monIconNames.value(species)]));
+        } else {
+            // Failed to read icon filepath from the icon table, check filepaths where icons are normally located.
+            // Try to use the icon name (if we have it) to determine the directory, then try the species name.
+            // The name permuting is overkill, but it's making up for some of the fragility in the way we find icon paths.
+            QStringList possibleDirNames;
+            if (monIconNames.contains(species)) {
+                // Ex: For 'gMonIcon_QuestionMark' try 'question_mark'
+                static const QRegularExpression re("([a-z])([A-Z0-9])");
+                QString iconName = monIconNames.value(species);
+                iconName = iconName.mid(iconName.indexOf("_") + 1); // jump past prefix ('gMonIcon')
+                possibleDirNames.append(iconName.replace(re, "\\1_\\2").toLower());
+            }
+
+            // Ex: For 'SPECIES_FOO_BAR_BAZ' try 'foo_bar_baz'
+            possibleDirNames.append(species.mid(8).toLower());
+
+            // Permute paths with underscores.
+            // Ex: Try 'foo_bar/baz', 'foo/bar_baz', 'foobarbaz', 'foo_bar', and 'foo'
+            QStringList permutedNames;
+            for (auto dir : possibleDirNames) {
+                if (!dir.contains("_")) continue;
+                for (int i = dir.indexOf("_"); i > -1; i = dir.indexOf("_", i + 1)) {
+                    QString temp = dir;
+                    permutedNames.prepend(temp.replace(i, 1, "/"));
+                    permutedNames.append(dir.left(i)); // Prepend the others so the most generic name ('foo') ends up last
+                }
+                permutedNames.prepend(dir.remove("_"));
+            }
+            possibleDirNames.append(permutedNames);
+
+            possibleDirNames.removeDuplicates();
+            for (auto dir : possibleDirNames) {
+                if (dir.isEmpty()) continue;
+                const QString stdPath = QString("%1/%2%3/icon.png")
+                                                .arg(root)
+                                                .arg(projectConfig.getFilePath(ProjectFilePath::pokemon_gfx))
+                                                .arg(dir);
+                if (QFile::exists(stdPath)) {
+                    // Icon found at a normal filepath
+                    path = stdPath;
+                    break;
+                }
+            }
+
+            if (path.isEmpty() && projectConfig.getPokemonIconPath(species).isEmpty()) {
+                // Failed to find icon, this species will use a placeholder icon.
+                logWarn(QString("Failed to find Pokémon icon for '%1'").arg(species));
+                missingIcons = true;
+            }
+        }
+        this->speciesToIconPath.insert(species, path);
     }
+
+    // Logging this alongside every warning (if there are multiple) is obnoxious, just do it once at the end.
+    if (missingIcons) logInfo("Pokémon icon filepaths can be specified under 'Options->Project Settings'");
+
     return true;
 }
 

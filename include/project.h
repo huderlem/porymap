@@ -170,7 +170,6 @@ public:
     void saveTilesetPalettes(Tileset*);
 
     QString defaultSong;
-    QStringList getVisibilities();
     void appendTilesetLabel(QString label, QString isSecondaryStr);
     bool readTilesetLabels();
     bool readTilesetProperties();

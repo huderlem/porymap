@@ -16,9 +16,24 @@ void SpeciesComboDelegate::paint(QPainter *painter, const QStyleOptionViewItem &
 
     QPixmap pm;
     if (!QPixmapCache::find(species, &pm)) {
-        QImage img(this->project->speciesToIconPath.value(species));
-        img.setColor(0, qRgba(0, 0, 0, 0));
-        pm = QPixmap::fromImage(img);
+        // Prefer path from config. If not present, use the path parsed from project files
+        QString path = projectConfig.getPokemonIconPath(species);
+        if (path.isEmpty()) {
+            path = this->project->speciesToIconPath.value(species);
+        } else {
+            QFileInfo info(path);
+            if (info.isRelative())
+                path = QDir::cleanPath(projectConfig.getProjectDir() + QDir::separator() + path);
+        }
+
+        QImage img(path);
+        if (img.isNull()) {
+            // No icon for this species, use placeholder
+            pm = QPixmap(":images/pokemon_icon_placeholder.png");
+        } else {
+            img.setColor(0, qRgba(0, 0, 0, 0));
+            pm = QPixmap::fromImage(img);
+        }
         QPixmapCache::insert(species, pm);
     }
     QPixmap monIcon = pm.copy(0, 0, 32, 32);

@@ -36,6 +36,7 @@ void ProjectSettingsEditor::connectSignals() {
     connect(ui->button_ImportDefaultPrefabs, &QAbstractButton::clicked, this, &ProjectSettingsEditor::importDefaultPrefabsClicked);
     connect(ui->comboBox_BaseGameVersion, &QComboBox::currentTextChanged, this, &ProjectSettingsEditor::promptRestoreDefaults);
     connect(ui->comboBox_AttributesSize, &QComboBox::currentTextChanged, this, &ProjectSettingsEditor::updateAttributeLimits);
+    connect(ui->comboBox_IconSpecies, &QComboBox::currentTextChanged, this, &ProjectSettingsEditor::updatePokemonIconPath);
     connect(ui->checkBox_EnableCustomBorderSize, &QCheckBox::stateChanged, [this](int state) {
         bool customSize = (state == Qt::Checked);
         // When switching between the spin boxes or line edit for border metatiles we set
@@ -52,10 +53,13 @@ void ProjectSettingsEditor::connectSignals() {
     connect(ui->button_TriggersIcon,      &QAbstractButton::clicked, [this](bool) { this->chooseImageFile(ui->lineEdit_TriggersIcon); });
     connect(ui->button_BGsIcon,           &QAbstractButton::clicked, [this](bool) { this->chooseImageFile(ui->lineEdit_BGsIcon); });
     connect(ui->button_HealspotsIcon,     &QAbstractButton::clicked, [this](bool) { this->chooseImageFile(ui->lineEdit_HealspotsIcon); });
+    connect(ui->button_PokemonIcon,       &QAbstractButton::clicked, [this](bool) { this->chooseImageFile(ui->lineEdit_PokemonIcon); });
 
     // Record that there are unsaved changes if any of the settings are modified
-    for (auto combo : ui->centralwidget->findChildren<NoScrollComboBox *>())
-        connect(combo, &QComboBox::currentTextChanged, this, &ProjectSettingsEditor::markEdited);
+    for (auto combo : ui->centralwidget->findChildren<NoScrollComboBox *>()){
+        if (combo != ui->comboBox_IconSpecies) // Changes to the icon species combo box are just for info display, don't mark as unsaved
+            connect(combo, &QComboBox::currentTextChanged, this, &ProjectSettingsEditor::markEdited);
+    }
     for (auto checkBox : ui->centralwidget->findChildren<QCheckBox *>())
         connect(checkBox, &QCheckBox::stateChanged, this, &ProjectSettingsEditor::markEdited);
     for (auto lineEdit : ui->centralwidget->findChildren<QLineEdit *>())
@@ -79,8 +83,12 @@ void ProjectSettingsEditor::on_mainTabs_tabBarClicked(int index) {
 
 void ProjectSettingsEditor::initUi() {
     // Populate combo boxes
-    if (project) ui->comboBox_DefaultPrimaryTileset->addItems(project->primaryTilesetLabels);
-    if (project) ui->comboBox_DefaultSecondaryTileset->addItems(project->secondaryTilesetLabels);
+    if (project) {
+        ui->comboBox_DefaultPrimaryTileset->addItems(project->primaryTilesetLabels);
+        ui->comboBox_DefaultSecondaryTileset->addItems(project->secondaryTilesetLabels);
+        ui->comboBox_IconSpecies->addItems(project->speciesToIconPath.keys());
+        ui->comboBox_IconSpecies->setEditable(false);
+    }
     ui->comboBox_BaseGameVersion->addItems(ProjectConfig::versionStrings);
     ui->comboBox_AttributesSize->addItems({"1", "2", "4"});
 
@@ -151,6 +159,26 @@ void ProjectSettingsEditor::updateAttributeLimits(const QString &attrSize) {
     ui->spinBox_EncounterTypeMask->setMaximum(max);
     ui->spinBox_LayerTypeMask->setMaximum(max);
     ui->spinBox_TerrainTypeMask->setMaximum(max);
+}
+
+// Only one icon path is displayed at a time, so we need to keep track of the rest,
+// and update the path edit when the user changes the selected species.
+// The existing icon path map in ProjectConfig is left alone to allow unsaved changes.
+void ProjectSettingsEditor::updatePokemonIconPath(const QString &species) {
+    if (!project) return;
+
+    // If user was editing a path for a valid species, record filepath text before we wipe it.
+    if (!this->prevIconSpecies.isEmpty() && this->project->speciesToIconPath.contains(species)) {
+        this->editedPokemonIconPaths[this->prevIconSpecies] = ui->lineEdit_PokemonIcon->text();
+    }
+
+    QString editedPath = this->editedPokemonIconPaths.value(species);
+    QString defaultPath = this->project->speciesToIconPath.value(species);
+
+    const QSignalBlocker blocker(ui->lineEdit_PokemonIcon);
+    ui->lineEdit_PokemonIcon->setText(this->stripProjectDir(editedPath));
+    ui->lineEdit_PokemonIcon->setPlaceholderText(this->stripProjectDir(defaultPath));
+    this->prevIconSpecies = species;
 }
 
 void ProjectSettingsEditor::createProjectPathsTable() {
@@ -226,6 +254,8 @@ void ProjectSettingsEditor::refresh() {
     ui->comboBox_BaseGameVersion->setTextItem(projectConfig.getBaseGameVersionString());
     ui->comboBox_AttributesSize->setTextItem(QString::number(projectConfig.getMetatileAttributesSize()));
     this->updateAttributeLimits(ui->comboBox_AttributesSize->currentText());
+    this->editedPokemonIconPaths = projectConfig.getPokemonIconPaths();
+    this->updatePokemonIconPath(ui->comboBox_IconSpecies->currentText());
 
     // Set check box states
     ui->checkBox_UsePoryscript->setChecked(projectConfig.getUsePoryScript());
@@ -329,6 +359,11 @@ void ProjectSettingsEditor::save() {
     // Save border metatile IDs
     projectConfig.setNewMapBorderMetatileIds(this->getBorderMetatileIds(ui->checkBox_EnableCustomBorderSize->isChecked()));
 
+    // Save pokemon icon paths
+    this->editedPokemonIconPaths.insert(ui->comboBox_IconSpecies->currentText(), ui->lineEdit_PokemonIcon->text());
+    for (auto i = this->editedPokemonIconPaths.cbegin(), end = this->editedPokemonIconPaths.cend(); i != end; i++)
+        projectConfig.setPokemonIconPath(i.key(), i.value());
+
     projectConfig.setSaveDisabled(false);
     projectConfig.save();
     this->hasUnsavedChanges = false;
@@ -353,11 +388,16 @@ void ProjectSettingsEditor::chooseFile(QLineEdit * filepathEdit, const QString &
         return;
     this->project->setImportExportPath(filepath);
 
-    // Display relative path if this file is in the project folder
-    if (filepath.startsWith(this->baseDir))
-        filepath.remove(0, this->baseDir.length());
-    if (filepathEdit) filepathEdit->setText(filepath);
+    if (filepathEdit)
+        filepathEdit->setText(this->stripProjectDir(filepath));
     this->hasUnsavedChanges = true;
+}
+
+// Display relative path if this file is in the project folder
+QString ProjectSettingsEditor::stripProjectDir(QString s) {
+    if (s.startsWith(this->baseDir))
+        s.remove(0, this->baseDir.length());
+    return s;
 }
 
 void ProjectSettingsEditor::importDefaultPrefabsClicked(bool) {

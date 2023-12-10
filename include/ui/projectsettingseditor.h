@@ -31,6 +31,8 @@ private:
     bool projectNeedsReload = false;
     bool refreshing = false;
     const QString baseDir;
+    QHash<QString, QString> editedPokemonIconPaths;
+    QString prevIconSpecies;
 
     void initUi();
     void connectSignals();
@@ -51,11 +53,13 @@ private:
     void choosePrefabsFile();
     void chooseImageFile(QLineEdit * filepathEdit);
     void chooseFile(QLineEdit * filepathEdit, const QString &description, const QString &extensions);
+    QString stripProjectDir(QString s);
 
 private slots:
     void dialogButtonClicked(QAbstractButton *button);
     void importDefaultPrefabsClicked(bool);
     void updateAttributeLimits(const QString &attrSize);
+    void updatePokemonIconPath(const QString &species);
     void markEdited();
     void on_mainTabs_tabBarClicked(int index);
 };

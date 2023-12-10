@@ -212,9 +212,11 @@ enum ProjectFilePath {
     constants_region_map_sections,
     constants_metatile_labels,
     constants_metatile_behaviors,
+    constants_species,
     constants_fieldmap,
     initial_facing_table,
     pokemon_icon_table,
+    pokemon_gfx,
 };
 
 class ProjectConfig: public KeyValueConfigBase
@@ -238,6 +240,7 @@ public:
         this->tilesetsHaveIsCompressed = true;
         this->filePaths.clear();
         this->eventIconPaths.clear();
+        this->pokemonIconPaths.clear();
         this->collisionSheetPath = QString();
         this->collisionSheetWidth = 2;
         this->collisionSheetHeight = 16;
@@ -315,6 +318,9 @@ public:
     void setMapAllowFlagsEnabled(bool enabled);
     void setEventIconPath(Event::Group group, const QString &path);
     QString getEventIconPath(Event::Group group);
+    void setPokemonIconPath(const QString &species, const QString &path);
+    QString getPokemonIconPath(const QString & species);
+    QHash<QString, QString> getPokemonIconPaths();
     void setCollisionSheetPath(const QString &path);
     QString getCollisionSheetPath();
     void setCollisionSheetWidth(int width);
@@ -361,6 +367,7 @@ private:
     uint32_t metatileLayerTypeMask;
     bool enableMapAllowFlags;
     QMap<Event::Group, QString> eventIconPaths;
+    QHash<QString, QString> pokemonIconPaths;
     QString collisionSheetPath;
     int collisionSheetWidth;
     int collisionSheetHeight;
