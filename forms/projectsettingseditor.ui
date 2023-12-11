@@ -400,6 +400,9 @@
                    <verstretch>0</verstretch>
                   </sizepolicy>
                  </property>
+                 <property name="toolTip">
+                  <string>The icon that will be displayed on the Wild Pokémon tab for the above species</string>
+                 </property>
                  <property name="text">
                   <string>Species</string>
                  </property>

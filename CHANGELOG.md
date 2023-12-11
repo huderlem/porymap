@@ -21,6 +21,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - If the recent project directory doesn't exist Porymap will open an empty project instead of failing with a misleading error message.
 - Settings under `Options` were relocated either to the `Preferences` window or `Options -> Project Settings`.
 - Secret Base and Weather Trigger events are automatically disabled if their respective constants files fail to parse, instead of not opening the project.
+- If a Pokémon icon fails to load Porymap will attempt to predict its filepath.
 
 ### Fixed
 - Fix text boxes in the Palette Editor calculating color incorrectly.
@@ -34,6 +35,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix heal location data being cleared if certain spaces aren't used in the table.
 - Fix bad URL color contrast on dark themes.
 - Fix some issues when too few/many pokémon are specified for a wild encounter group.
+- If Porymap only needs the name of a C define stop reporting errors about its value.
 
 ## [5.1.1] - 2023-02-20
 ### Added
