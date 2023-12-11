@@ -56,7 +56,8 @@ public:
     QMap<QString, QString> readCIncbinMulti(const QString &filepath);
     QStringList readCIncbinArray(const QString &filename, const QString &label);
     QMap<QString, int> readCDefines(const QString &filename, const QStringList &prefixes, QMap<QString, int> = { });
-    QStringList readCDefinesSorted(const QString&, const QStringList&, const QMap<QString, int>& = { });
+    QStringList readCDefineNames(const QString&, const QStringList&);
+    QStringList readCDefineNamesByValue(const QString&, const QStringList&, const QMap<QString, int>& = { });
     QMap<QString, QHash<QString, QString>> readCStructs(const QString &, const QString & = "", const QHash<int, QString> = { });
     QList<QStringList> getLabelMacros(const QList<QStringList>&, const QString&);
     QStringList getLabelValues(const QList<QStringList>&, const QString&);
@@ -89,6 +90,7 @@ private:
     QString file;
     QString curDefine;
     QHash<QString, QStringList> errorMap;
+    QString readCDefinesFile(const QString &filename);
     QList<Token> tokenizeExpression(QString expression, const QMap<QString, int> &knownIdentifiers);
     QList<Token> generatePostfix(const QList<Token> &tokens);
     int evaluatePostfix(const QList<Token> &postfix);

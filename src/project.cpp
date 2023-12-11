@@ -2069,7 +2069,7 @@ bool Project::readItemNames() {
     QStringList prefixes("\\bITEM_(?!(B_)?USE_)");  // Exclude ITEM_USE_ and ITEM_B_USE_ constants
     QString filename = projectConfig.getFilePath(ProjectFilePath::constants_items);
     fileWatcher.addPath(root + "/" + filename);
-    itemNames = parser.readCDefinesSorted(filename, prefixes);
+    itemNames = parser.readCDefineNames(filename, prefixes);
     if (itemNames.isEmpty()) {
         logError(QString("Failed to read item constants from %1").arg(filename));
         return false;
@@ -2078,18 +2078,12 @@ bool Project::readItemNames() {
 }
 
 bool Project::readFlagNames() {
-    // First read MAX_TRAINERS_COUNT, used to skip over trainer flags
-    // If this fails flags may simply be out of order, no need to check for success
-    QString opponentsFilename = projectConfig.getFilePath(ProjectFilePath::constants_opponents);
-    fileWatcher.addPath(root + "/" + opponentsFilename);
-    QMap<QString, int> maxTrainers = parser.readCDefines(opponentsFilename, QStringList() << "\\bMAX_");
-    // Parse flags
     QStringList prefixes("\\bFLAG_");
-    QString flagsFilename = projectConfig.getFilePath(ProjectFilePath::constants_flags);
-    fileWatcher.addPath(root + "/" + flagsFilename);
-    flagNames = parser.readCDefinesSorted(flagsFilename, prefixes, maxTrainers);
+    QString filename = projectConfig.getFilePath(ProjectFilePath::constants_flags);
+    fileWatcher.addPath(root + "/" + filename);
+    flagNames = parser.readCDefineNames(filename, prefixes);
     if (flagNames.isEmpty()) {
-        logError(QString("Failed to read flag constants from %1").arg(flagsFilename));
+        logError(QString("Failed to read flag constants from %1").arg(filename));
         return false;
     }
     return true;
@@ -2099,7 +2093,7 @@ bool Project::readVarNames() {
     QStringList prefixes("\\bVAR_");
     QString filename = projectConfig.getFilePath(ProjectFilePath::constants_vars);
     fileWatcher.addPath(root + "/" + filename);
-    varNames = parser.readCDefinesSorted(filename, prefixes);
+    varNames = parser.readCDefineNames(filename, prefixes);
     if (varNames.isEmpty()) {
         logError(QString("Failed to read var constants from %1").arg(filename));
         return false;
@@ -2111,7 +2105,7 @@ bool Project::readMovementTypes() {
     QStringList prefixes("\\bMOVEMENT_TYPE_");
     QString filename = projectConfig.getFilePath(ProjectFilePath::constants_obj_event_movement);
     fileWatcher.addPath(root + "/" + filename);
-    movementTypes = parser.readCDefinesSorted(filename, prefixes);
+    movementTypes = parser.readCDefineNames(filename, prefixes);
     if (movementTypes.isEmpty()) {
         logError(QString("Failed to read movement type constants from %1").arg(filename));
         return false;
@@ -2134,7 +2128,7 @@ bool Project::readMapTypes() {
     QStringList prefixes("\\bMAP_TYPE_");
     QString filename = projectConfig.getFilePath(ProjectFilePath::constants_map_types);
     fileWatcher.addPath(root + "/" + filename);
-    mapTypes = parser.readCDefinesSorted(filename, prefixes);
+    mapTypes = parser.readCDefineNames(filename, prefixes);
     if (mapTypes.isEmpty()) {
         logError(QString("Failed to read map type constants from %1").arg(filename));
         return false;
@@ -2146,7 +2140,7 @@ bool Project::readMapBattleScenes() {
     QStringList prefixes("\\bMAP_BATTLE_SCENE_");
     QString filename = projectConfig.getFilePath(ProjectFilePath::constants_map_types);
     fileWatcher.addPath(root + "/" + filename);
-    mapBattleScenes = parser.readCDefinesSorted(filename, prefixes);
+    mapBattleScenes = parser.readCDefineNames(filename, prefixes);
     if (mapBattleScenes.isEmpty()) {
         logError(QString("Failed to read map battle scene constants from %1").arg(filename));
         return false;
@@ -2158,7 +2152,7 @@ bool Project::readWeatherNames() {
     QStringList prefixes("\\bWEATHER_");
     QString filename = projectConfig.getFilePath(ProjectFilePath::constants_weather);
     fileWatcher.addPath(root + "/" + filename);
-    weatherNames = parser.readCDefinesSorted(filename, prefixes);
+    weatherNames = parser.readCDefineNames(filename, prefixes);
     if (weatherNames.isEmpty()) {
         logError(QString("Failed to read weather constants from %1").arg(filename));
         return false;
@@ -2173,7 +2167,7 @@ bool Project::readCoordEventWeatherNames() {
     QStringList prefixes("\\bCOORD_EVENT_WEATHER_");
     QString filename = projectConfig.getFilePath(ProjectFilePath::constants_weather);
     fileWatcher.addPath(root + "/" + filename);
-    coordEventWeatherNames = parser.readCDefinesSorted(filename, prefixes);
+    coordEventWeatherNames = parser.readCDefineNames(filename, prefixes);
     if (coordEventWeatherNames.isEmpty()) {
         logWarn(QString("Failed to read coord event weather constants from %1. Disabling Weather Trigger events.").arg(filename));
         projectConfig.setEventWeatherTriggerEnabled(false);
@@ -2188,7 +2182,7 @@ bool Project::readSecretBaseIds() {
     QStringList prefixes("\\bSECRET_BASE_[A-Za-z0-9_]*_[0-9]+");
     QString filename = projectConfig.getFilePath(ProjectFilePath::constants_secret_bases);
     fileWatcher.addPath(root + "/" + filename);
-    secretBaseIds = parser.readCDefinesSorted(filename, prefixes);
+    secretBaseIds = parser.readCDefineNames(filename, prefixes);
     if (secretBaseIds.isEmpty()) {
         logWarn(QString("Failed to read secret base id constants from '%1'. Disabling Secret Base events.").arg(filename));
         projectConfig.setEventSecretBaseEnabled(false);
@@ -2200,7 +2194,7 @@ bool Project::readBgEventFacingDirections() {
     QStringList prefixes("\\bBG_EVENT_PLAYER_FACING_");
     QString filename = projectConfig.getFilePath(ProjectFilePath::constants_event_bg);
     fileWatcher.addPath(root + "/" + filename);
-    bgEventFacingDirections = parser.readCDefinesSorted(filename, prefixes);
+    bgEventFacingDirections = parser.readCDefineNames(filename, prefixes);
     if (bgEventFacingDirections.isEmpty()) {
         logError(QString("Failed to read bg event facing direction constants from %1").arg(filename));
         return false;
@@ -2212,7 +2206,7 @@ bool Project::readTrainerTypes() {
     QStringList prefixes("\\bTRAINER_TYPE_");
     QString filename = projectConfig.getFilePath(ProjectFilePath::constants_trainer_types);
     fileWatcher.addPath(root + "/" + filename);
-    trainerTypes = parser.readCDefinesSorted(filename, prefixes);
+    trainerTypes = parser.readCDefineNames(filename, prefixes);
     if (trainerTypes.isEmpty()) {
         logError(QString("Failed to read trainer type constants from %1").arg(filename));
         return false;
@@ -2243,13 +2237,14 @@ bool Project::readSongNames() {
     QStringList songDefinePrefixes{ "\\bSE_", "\\bMUS_" };
     QString filename = projectConfig.getFilePath(ProjectFilePath::constants_songs);
     fileWatcher.addPath(root + "/" + filename);
-    QMap<QString, int> songDefines = parser.readCDefines(filename, songDefinePrefixes);
-    this->songNames = songDefines.keys();
+    this->songNames = parser.readCDefineNames(filename, songDefinePrefixes);
     this->defaultSong = this->songNames.value(0, "MUS_DUMMY");
     if (this->songNames.isEmpty()) {
         logError(QString("Failed to read song names from %1.").arg(filename));
         return false;
     }
+    // Song names don't have a very useful order (esp. if we include SE_* values), so sort them alphabetically.
+    this->songNames.sort();
     return true;
 }
 
@@ -2484,8 +2479,9 @@ bool Project::readSpeciesIconPaths() {
     static const QStringList prefixes("\\bSPECIES_");
     const QString constantsFilename = projectConfig.getFilePath(ProjectFilePath::constants_species);
     fileWatcher.addPath(root + "/" + constantsFilename);
-    const QMap<QString, int> defines = parser.readCDefines(constantsFilename, prefixes); // TODO: Suppress errors
-    const QStringList speciesNames = defines.isEmpty() ? monIconNames.keys() : defines.keys();
+    QStringList speciesNames = parser.readCDefineNames(constantsFilename, prefixes);
+    if (speciesNames.isEmpty())
+        speciesNames = monIconNames.keys();
 
     bool missingIcons = false;
     for (auto species : speciesNames) {

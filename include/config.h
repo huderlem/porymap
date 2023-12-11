@@ -196,7 +196,6 @@ enum ProjectFilePath {
     constants_global,
     constants_map_groups,
     constants_items,
-    constants_opponents,
     constants_flags,
     constants_vars,
     constants_weather,

@@ -42,7 +42,6 @@ const QMap<ProjectFilePath, std::pair<QString, QString>> ProjectConfig::defaultP
     {ProjectFilePath::constants_global,                 { "constants_global",                "include/constants/global.h"}},
     {ProjectFilePath::constants_map_groups,             { "constants_map_groups",            "include/constants/map_groups.h"}},
     {ProjectFilePath::constants_items,                  { "constants_items",                 "include/constants/items.h"}},
-    {ProjectFilePath::constants_opponents,              { "constants_opponents",             "include/constants/opponents.h"}},
     {ProjectFilePath::constants_flags,                  { "constants_flags",                 "include/constants/flags.h"}},
     {ProjectFilePath::constants_vars,                   { "constants_vars",                  "include/constants/vars.h"}},
     {ProjectFilePath::constants_weather,                { "constants_weather",               "include/constants/weather.h"}},

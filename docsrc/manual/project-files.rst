@@ -44,7 +44,6 @@ The filepath that Porymap expects for each file can be overridden under the ``Pr
    include/constants/global.h, yes, no, ``constants_global``, reads ``OBJECT_EVENT_TEMPLATES_COUNT``
    include/constants/map_groups.h, no, yes, ``constants_map_groups``,
    include/constants/items.h, yes, no, ``constants_items``,
-   include/constants/opponents.h, yes, no, ``constants_opponents``, reads max trainers constant
    include/constants/flags.h, yes, no, ``constants_flags``,
    include/constants/vars.h, yes, no, ``constants_vars``,
    include/constants/weather.h, yes, no, ``constants_weather``,

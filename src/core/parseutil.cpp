@@ -334,16 +334,12 @@ QStringList ParseUtil::readCIncbinArray(const QString &filename, const QString &
     return paths;
 }
 
-QMap<QString, int> ParseUtil::readCDefines(const QString &filename,
-                                           const QStringList &prefixes,
-                                           QMap<QString, int> allDefines)
+QString ParseUtil::readCDefinesFile(const QString &filename)
 {
-    QMap<QString, int> filteredDefines;
-
     this->file = filename;
 
     if (this->file.isEmpty()) {
-        return filteredDefines;
+        return QString();
     }
 
     QString filepath = this->root + "/" + this->file;
@@ -351,13 +347,27 @@ QMap<QString, int> ParseUtil::readCDefines(const QString &filename,
 
     if (this->text.isNull()) {
         logError(QString("Failed to read C defines file: '%1'").arg(filepath));
-        return filteredDefines;
+        return QString();
     }
 
     static const QRegularExpression re_extraChars("(//.*)|(\\/+\\*+[^*]*\\*+\\/+)");
     this->text.replace(re_extraChars, "");
     static const QRegularExpression re_extraSpaces("(\\\\\\s+)");
     this->text.replace(re_extraSpaces, "");
+    return this->text;
+}
+
+QMap<QString, int> ParseUtil::readCDefines(const QString &filename,
+                                           const QStringList &prefixes,
+                                           QMap<QString, int> allDefines)
+{
+    QMap<QString, int> filteredDefines;
+
+    this->text = this->readCDefinesFile(filename);
+    if (this->text.isEmpty()) {
+        return filteredDefines;
+    }
+
     allDefines.insert("FALSE", 0);
     allDefines.insert("TRUE", 1);
 
@@ -383,13 +393,37 @@ QMap<QString, int> ParseUtil::readCDefines(const QString &filename,
     return filteredDefines;
 }
 
-QStringList ParseUtil::readCDefinesSorted(const QString &filename,
-                                          const QStringList &prefixes,
-                                          const QMap<QString, int> &knownDefines)
+// Similar to readCDefines, but for cases where we only need to show a list of define names.
+// We can skip evaluating each define (and by extension skip reporting any errors from this process).
+QStringList ParseUtil::readCDefineNames(const QString &filename, const QStringList &prefixes) {
+    QStringList filteredDefines;
+
+    this->text = this->readCDefinesFile(filename);
+    if (this->text.isEmpty()) {
+        return filteredDefines;
+    }
+
+    static const QRegularExpression re("#define\\s+(?<defineName>\\w+)[^\\S\\n]+");
+    QRegularExpressionMatchIterator iter = re.globalMatch(this->text);
+    while (iter.hasNext()) {
+        QRegularExpressionMatch match = iter.next();
+        QString name = match.captured("defineName");
+        for (QString prefix : prefixes) {
+            if (name.startsWith(prefix) || QRegularExpression(prefix).match(name).hasMatch()) {
+                filteredDefines.append(name);
+            }
+        }
+    }
+    return filteredDefines;
+}
+
+QStringList ParseUtil::readCDefineNamesByValue(const QString &filename,
+                                               const QStringList &prefixes,
+                                               const QMap<QString, int> &knownDefines)
 {
     QMap<QString, int> defines = readCDefines(filename, prefixes, knownDefines);
 
-    // The defines should be sorted by their underlying value, not alphabetically.
+    // The defines should be sorted by their underlying value, not alphabetically or in parse order.
     // Reverse the map and read out the resulting keys in order.
     QMultiMap<int, QString> definesInverse;
     for (QString defineName : defines.keys()) {
