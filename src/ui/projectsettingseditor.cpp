@@ -175,7 +175,6 @@ void ProjectSettingsEditor::updatePokemonIconPath(const QString &species) {
     QString editedPath = this->editedPokemonIconPaths.value(species);
     QString defaultPath = this->project->speciesToIconPath.value(species);
 
-    const QSignalBlocker blocker(ui->lineEdit_PokemonIcon);
     ui->lineEdit_PokemonIcon->setText(this->stripProjectDir(editedPath));
     ui->lineEdit_PokemonIcon->setPlaceholderText(this->stripProjectDir(defaultPath));
     this->prevIconSpecies = species;
@@ -254,6 +253,8 @@ void ProjectSettingsEditor::refresh() {
     ui->comboBox_BaseGameVersion->setTextItem(projectConfig.getBaseGameVersionString());
     ui->comboBox_AttributesSize->setTextItem(QString::number(projectConfig.getMetatileAttributesSize()));
     this->updateAttributeLimits(ui->comboBox_AttributesSize->currentText());
+
+    this->prevIconSpecies = QString();
     this->editedPokemonIconPaths = projectConfig.getPokemonIconPaths();
     this->updatePokemonIconPath(ui->comboBox_IconSpecies->currentText());
 

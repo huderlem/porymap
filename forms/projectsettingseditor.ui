@@ -38,8 +38,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>531</width>
-             <height>916</height>
+             <width>528</width>
+             <height>607</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_7">
@@ -69,6 +69,311 @@
               </layout>
              </widget>
             </item>
+            <item>
+             <widget class="QGroupBox" name="groupBox_Prefabs">
+              <property name="title">
+               <string>Prefabs</string>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_4">
+               <item row="0" column="2">
+                <widget class="QToolButton" name="button_ChoosePrefabs">
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="../resources/images.qrc">
+                   <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QPushButton" name="button_ImportDefaultPrefabs">
+                 <property name="toolTip">
+                  <string>Restore the data in the prefabs file to the version defaults. Will create a new file if one doesn't exist.</string>
+                 </property>
+                 <property name="text">
+                  <string>Import Defaults</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLineEdit" name="lineEdit_PrefabsPath">
+                 <property name="toolTip">
+                  <string>The file that will be used to populate the Prefabs tab</string>
+                 </property>
+                 <property name="placeholderText">
+                  <string>prefabs.json</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_PrefabsPath">
+                 <property name="text">
+                  <string>Prefabs Path</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="groupBox_CollisionGraphics">
+              <property name="title">
+               <string>Collision Graphics</string>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_7">
+               <item row="1" column="6">
+                <spacer name="horizontalSpacer">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item row="0" column="1" colspan="6">
+                <widget class="QLineEdit" name="lineEdit_CollisionGraphics">
+                 <property name="toolTip">
+                  <string>The image sheet that will be used to represent elevation and collision on the Collision tab</string>
+                 </property>
+                 <property name="clearButtonEnabled">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="7">
+                <widget class="QToolButton" name="button_CollisionGraphics">
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="../resources/images.qrc">
+                   <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_MaxElevation">
+                 <property name="text">
+                  <string>Max Elevation</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="5">
+                <widget class="NoScrollSpinBox" name="spinBox_MaxCollision">
+                 <property name="toolTip">
+                  <string>The maximum collision value represented with an icon on the image sheet</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="4">
+                <widget class="QLabel" name="label_MaxCollision">
+                 <property name="text">
+                  <string>Max Collision</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label">
+                 <property name="text">
+                  <string>Image Path</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="2">
+                <widget class="NoScrollSpinBox" name="spinBox_MaxElevation">
+                 <property name="toolTip">
+                  <string>The maximum elevation value represented with an icon on the image sheet</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="3">
+                <spacer name="horizontalSpacer_4">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeType">
+                  <enum>QSizePolicy::Maximum</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>5</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="groupBox_PokemonIcons">
+              <property name="title">
+               <string>Pokémon Icons</string>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_8">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_IconSpecies">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="text">
+                  <string>Species</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="5">
+                <widget class="QToolButton" name="button_PokemonIcon">
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="../resources/images.qrc">
+                   <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="2" colspan="4">
+                <widget class="NoScrollComboBox" name="comboBox_IconSpecies">
+                 <property name="editable">
+                  <bool>true</bool>
+                 </property>
+                 <property name="maxVisibleItems">
+                  <number>20</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_PokemonIcon">
+                 <property name="text">
+                  <string>Image Path</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="2" colspan="3">
+                <widget class="QLineEdit" name="lineEdit_PokemonIcon">
+                 <property name="toolTip">
+                  <string>The icon that will be displayed on the Wild Pokémon tab for the above species</string>
+                 </property>
+                 <property name="clearButtonEnabled">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QFrame" name="frame_Warning">
+              <property name="styleSheet">
+               <string notr="true">.QFrame { border: 1px solid red; }</string>
+              </property>
+              <property name="frameShape">
+               <enum>QFrame::StyledPanel</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Raised</enum>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_3">
+               <item>
+                <widget class="QLabel" name="label_Warning">
+                 <property name="font">
+                  <font>
+                   <pointsize>12</pointsize>
+                   <weight>75</weight>
+                   <bold>true</bold>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:13pt; color:#d7000c;&quot;&gt;WARNING:  &lt;/span&gt;&lt;span style=&quot; font-weight:400;&quot;&gt;The settings from this point below require project changes to function properly. Do not modify these settings without the necessary changes. &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QWidget" name="widget_BaseGameVersion" native="true">
+                 <layout class="QHBoxLayout" name="horizontalLayout_2">
+                  <item>
+                   <widget class="QLabel" name="label_BaseGameVersion">
+                    <property name="text">
+                     <string>Base game version</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="NoScrollComboBox" name="comboBox_BaseGameVersion">
+                    <property name="editable">
+                     <bool>false</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="horizontalSpacer_6">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_3">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_Maps">
+       <attribute name="title">
+        <string>Maps</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_17">
+        <item>
+         <widget class="QScrollArea" name="scrollArea_MapsTab">
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="scrollAreaWidgetContents_MapsTab">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>531</width>
+             <height>490</height>
+            </rect>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_16">
             <item>
              <widget class="QGroupBox" name="groupBox_NewMapDefaults">
               <property name="title">
@@ -246,208 +551,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QGroupBox" name="groupBox_Prefabs">
-              <property name="title">
-               <string>Prefabs</string>
-              </property>
-              <layout class="QGridLayout" name="gridLayout_4">
-               <item row="0" column="2">
-                <widget class="QToolButton" name="button_ChoosePrefabs">
-                 <property name="text">
-                  <string>...</string>
-                 </property>
-                 <property name="icon">
-                  <iconset resource="../resources/images.qrc">
-                   <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="0">
-                <widget class="QPushButton" name="button_ImportDefaultPrefabs">
-                 <property name="toolTip">
-                  <string>Restore the data in the prefabs file to the version defaults. Will create a new file if one doesn't exist.</string>
-                 </property>
-                 <property name="text">
-                  <string>Import Defaults</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="1">
-                <widget class="QLineEdit" name="lineEdit_PrefabsPath">
-                 <property name="toolTip">
-                  <string>The file that will be used to populate the Prefabs tab</string>
-                 </property>
-                 <property name="placeholderText">
-                  <string>prefabs.json</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="0">
-                <widget class="QLabel" name="label_PrefabsPath">
-                 <property name="text">
-                  <string>Prefabs Path</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <item>
-             <widget class="QGroupBox" name="groupBox_CollisionGraphics">
-              <property name="title">
-               <string>Collision Graphics</string>
-              </property>
-              <layout class="QGridLayout" name="gridLayout_7">
-               <item row="1" column="6">
-                <spacer name="horizontalSpacer">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>40</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
-               <item row="0" column="1" colspan="6">
-                <widget class="QLineEdit" name="lineEdit_CollisionGraphics">
-                 <property name="toolTip">
-                  <string>The image sheet that will be used to represent elevation and collision on the Collision tab</string>
-                 </property>
-                 <property name="clearButtonEnabled">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="7">
-                <widget class="QToolButton" name="button_CollisionGraphics">
-                 <property name="text">
-                  <string>...</string>
-                 </property>
-                 <property name="icon">
-                  <iconset resource="../resources/images.qrc">
-                   <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="0">
-                <widget class="QLabel" name="label_MaxElevation">
-                 <property name="text">
-                  <string>Max Elevation</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="5">
-                <widget class="NoScrollSpinBox" name="spinBox_MaxCollision">
-                 <property name="toolTip">
-                  <string>The maximum collision value represented with an icon on the image sheet</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="4">
-                <widget class="QLabel" name="label_MaxCollision">
-                 <property name="text">
-                  <string>Max Collision</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="0">
-                <widget class="QLabel" name="label">
-                 <property name="text">
-                  <string>Image Path</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="2">
-                <widget class="NoScrollSpinBox" name="spinBox_MaxElevation">
-                 <property name="toolTip">
-                  <string>The maximum elevation value represented with an icon on the image sheet</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="3">
-                <spacer name="horizontalSpacer_4">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                 <property name="sizeType">
-                  <enum>QSizePolicy::Maximum</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>5</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <item>
-             <widget class="QGroupBox" name="groupBox_PokemonIcons">
-              <property name="title">
-               <string>Pokémon Icons</string>
-              </property>
-              <layout class="QGridLayout" name="gridLayout_8">
-               <item row="0" column="0">
-                <widget class="QLabel" name="label_IconSpecies">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="toolTip">
-                  <string>The icon that will be displayed on the Wild Pokémon tab for the above species</string>
-                 </property>
-                 <property name="text">
-                  <string>Species</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="5">
-                <widget class="QToolButton" name="button_PokemonIcon">
-                 <property name="text">
-                  <string>...</string>
-                 </property>
-                 <property name="icon">
-                  <iconset resource="../resources/images.qrc">
-                   <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="2" colspan="4">
-                <widget class="NoScrollComboBox" name="comboBox_IconSpecies">
-                 <property name="editable">
-                  <bool>true</bool>
-                 </property>
-                 <property name="maxVisibleItems">
-                  <number>20</number>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="0">
-                <widget class="QLabel" name="label_PokemonIcon">
-                 <property name="text">
-                  <string>Image Path</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="2" colspan="3">
-                <widget class="QLineEdit" name="lineEdit_PokemonIcon">
-                 <property name="clearButtonEnabled">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <item>
-             <widget class="QFrame" name="frame_Warning">
+             <widget class="QFrame" name="frame_WarningMapsTab">
               <property name="styleSheet">
                <string notr="true">.QFrame { border: 1px solid red; }</string>
               </property>
@@ -457,9 +561,9 @@
               <property name="frameShadow">
                <enum>QFrame::Raised</enum>
               </property>
-              <layout class="QVBoxLayout" name="verticalLayout_3">
+              <layout class="QVBoxLayout" name="verticalLayout_18">
                <item>
-                <widget class="QLabel" name="label_Warning">
+                <widget class="QLabel" name="label_Warning_2">
                  <property name="font">
                   <font>
                    <pointsize>12</pointsize>
@@ -476,42 +580,9 @@
                 </widget>
                </item>
                <item>
-                <widget class="QWidget" name="widget_BaseGameVersion" native="true">
-                 <layout class="QHBoxLayout" name="horizontalLayout_2">
-                  <item>
-                   <widget class="QLabel" name="label_BaseGameVersion">
-                    <property name="text">
-                     <string>Base game version</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="NoScrollComboBox" name="comboBox_BaseGameVersion">
-                    <property name="editable">
-                     <bool>false</bool>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <spacer name="horizontalSpacer_6">
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>40</width>
-                      <height>20</height>
-                     </size>
-                    </property>
-                   </spacer>
-                  </item>
-                 </layout>
-                </widget>
-               </item>
-               <item>
-                <widget class="QGroupBox" name="groupBox_Maps">
+                <widget class="QGroupBox" name="groupBox_MapFields">
                  <property name="title">
-                  <string>Maps</string>
+                  <string>Fields</string>
                  </property>
                  <layout class="QGridLayout" name="gridLayout">
                   <item row="0" column="1">
@@ -564,7 +635,7 @@
              </widget>
             </item>
             <item>
-             <spacer name="verticalSpacer_3">
+             <spacer name="verticalSpacer_5">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
               </property>

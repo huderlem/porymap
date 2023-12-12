@@ -1265,7 +1265,7 @@
                      <item row="4" column="0" colspan="3">
                       <widget class="QSlider" name="horizontalSlider_CollisionTransparency">
                        <property name="minimum">
-                        <number>0</number>
+                        <number>1</number>
                        </property>
                        <property name="maximum">
                         <number>100</number>

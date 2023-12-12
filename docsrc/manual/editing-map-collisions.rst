@@ -9,7 +9,7 @@ Selecting Collision Types
 
 The Collision Type Selector is a tab next to the Metatile Selector.  It features 32 total different collision types.  The left column is for collision types that allow the player to walk through the tiles.  These are denoted by white text.  The right column is for collision types that are impassable by the player.  These are denoted by red text.
 
-The transparency slider above the collision types controls the transparency of the collision properties on the map view.
+The transparency slider above the collision types controls the transparency of the collision properties on the map view. The slider at the bottom of the panel zooms the selector image in and out.
 
 .. figure:: images/editing-map-collisions/map-collisions.png
     :alt: Map Collisions View
@@ -73,3 +73,6 @@ Multi-Level Collision Type |multi-level-collision-type-1| |multi-level-collision
 
 .. |multi-level-collision-type-2|
    image:: images/editing-map-collisions/multi-level-collision-type-2.png
+
+.. note::
+    For advanced usage: Any valid elevation/collision value combination can be selected using the ``Elevation`` and ``Collision`` value spinners, even if it's not represented graphically on the selector image. You may also resize/replace this selector image under ``Options -> Project Settings``.

@@ -6,12 +6,14 @@ Porymap relies on the user maintaining a certain level of integrity with their p
 This is a list of files that porymap reads from and writes to. Generally, if porymap writes 
 to a file, it probably is not a good idea to edit yourself unless otherwise noted.
 
-The filepath that Porymap expects for each file can be overridden under the ``Project Files`` section of ``Options -> Project Settings``. A new path can be specified by entering it in the text box or choosing it with the folder button. Paths are expected to be relative to the root project folder. If no path is specified, or if the file/folder specified does not exist, then the default path will be used instead. The name of each setting in this section is listed in the table below under ``Override``.
+The filepath that Porymap expects for each file can be overridden under the ``Project Files`` section of ``Options -> Project Settings``. A new path can be specified by entering it in the text box or choosing it with the |button-folder| button. Paths are expected to be relative to the root project folder. If no path is specified, or if the file/folder specified does not exist, then the default path will be used instead. The name of each setting in this section is listed in the table below under ``Override``.
 
-.. figure:: images/project-files/settings.png
-    :align: center
-    :width: 75%
-    :alt: Settings
+.. |button-folder| image:: images/scripting-capabilities/folder.png
+   :width: 24
+   :height: 24
+
+.. figure:: images/settings-and-options/tab-project-files.png
+   :alt: Project Files tab
 
 
 .. csv-table::
@@ -32,7 +34,7 @@ The filepath that Porymap expects for each file can be overridden under the ``Pr
    data/tilesets/graphics.inc, yes, yes, ``tilesets_graphics_asm``, only if ``tilesets_headers`` can't be found
    data/tilesets/metatiles.inc, yes, yes, ``tilesets_metatiles_asm``, only if ``tilesets_headers`` can't be found
    data/tilesets/[primary|secondary]/\*, yes, yes, ``data_tilesets_folders``, default tileset data location
-   src/data/wild_encounters.json, yes, yes, ``json_wild_encounters``,
+   src/data/wild_encounters.json, yes, yes, ``json_wild_encounters``, optional (only required to use Wild Pokémon tab)
    src/data/object_events/object_event_graphics_info_pointers.h, yes, no, ``data_obj_event_gfx_pointers``,
    src/data/object_events/object_event_graphics_info.h, yes, no, ``data_obj_event_gfx_info``,
    src/data/object_events/object_event_pic_tables.h, yes, no, ``data_obj_event_pic_tables``,
@@ -43,15 +45,15 @@ The filepath that Porymap expects for each file can be overridden under the ``Pr
    src/data/region_map/porymap_config.json, yes, yes, ``json_region_porymap_cfg``,
    include/constants/global.h, yes, no, ``constants_global``, reads ``OBJECT_EVENT_TEMPLATES_COUNT``
    include/constants/map_groups.h, no, yes, ``constants_map_groups``,
-   include/constants/items.h, yes, no, ``constants_items``,
-   include/constants/flags.h, yes, no, ``constants_flags``,
-   include/constants/vars.h, yes, no, ``constants_vars``,
-   include/constants/weather.h, yes, no, ``constants_weather``,
-   include/constants/songs.h, yes, no, ``constants_songs``,
+   include/constants/items.h, yes, no, ``constants_items``, for Hidden Item events
+   include/constants/flags.h, yes, no, ``constants_flags``, for Object and Hidden Item events
+   include/constants/vars.h, yes, no, ``constants_vars``, for Trigger events
+   include/constants/weather.h, yes, no, ``constants_weather``, for map weather and Weather Triggers
+   include/constants/songs.h, yes, no, ``constants_songs``, for map music
    include/constants/heal_locations.h, yes, yes, ``constants_heal_locations``,
-   include/constants/pokemon.h, yes, no, ``constants_pokemon``, reads min and max level constants
+   include/constants/pokemon.h, yes, no, ``constants_pokemon``, reads ``MIN_LEVEL`` and ``MAX_LEVEL``
    include/constants/map_types.h, yes, no, ``constants_map_types``,
-   include/constants/trainer_types.h, yes, no, ``constants_trainer_types``,
+   include/constants/trainer_types.h, yes, no, ``constants_trainer_types``, for Object events
    include/constants/secret_bases.h, yes, no, ``constants_secret_bases``, pokeemerald and pokeruby only
    include/constants/event_object_movement.h, yes, no, ``constants_obj_event_movement``,
    include/constants/event_objects.h, yes, no, ``constants_obj_events``,
@@ -59,8 +61,10 @@ The filepath that Porymap expects for each file can be overridden under the ``Pr
    include/constants/region_map_sections.h, yes, no, ``constants_region_map_sections``,
    include/constants/metatile_labels.h, yes, yes, ``constants_metatile_labels``,
    include/constants/metatile_behaviors.h, yes, no, ``constants_metatile_behaviors``,
+   include/constants/species.h, yes, no, ``constants_metatile_behaviors``, for the Wild Pokémon tab
    include/fieldmap.h, yes, no, ``constants_fieldmap``, reads tileset related constants
    src/event_object_movement.c, yes, no, ``initial_facing_table``, reads ``gInitialMovementTypeFacingDirections``
    src/pokemon_icon.c, yes, no, ``pokemon_icon_table``, reads files in ``gMonIconTable``
+   graphics/pokemon/*/icon.png, yes, no, ``pokemon_gfx``, to search for Pokémon icons if they aren't found in ``gMonIconTable``
 
 
