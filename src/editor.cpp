@@ -1027,7 +1027,7 @@ void Editor::onHoveredMapMetatileChanged(const QPoint &pos) {
     this->updateCursorRectPos(x, y);
     if (map_item->paintingMode == MapPixmapItem::PaintMode::Metatiles) {
         int blockIndex = y * map->getWidth() + x;
-        int metatileId = map->layout->blockdata.at(blockIndex).metatileId;
+        int metatileId = map->layout->blockdata.at(blockIndex).metatileId();
         this->ui->statusBar->showMessage(QString("X: %1, Y: %2, %3, Scale = %4x")
                               .arg(x)
                               .arg(y)
@@ -1059,8 +1059,8 @@ void Editor::onHoveredMapMovementPermissionChanged(int x, int y) {
     this->updateCursorRectPos(x, y);
     if (map_item->paintingMode == MapPixmapItem::PaintMode::Metatiles) {
         int blockIndex = y * map->getWidth() + x;
-        uint16_t collision = map->layout->blockdata.at(blockIndex).collision;
-        uint16_t elevation = map->layout->blockdata.at(blockIndex).elevation;
+        uint16_t collision = map->layout->blockdata.at(blockIndex).collision();
+        uint16_t elevation = map->layout->blockdata.at(blockIndex).elevation();
         QString message = QString("X: %1, Y: %2, %3")
                             .arg(x)
                             .arg(y)

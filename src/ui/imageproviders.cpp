@@ -5,7 +5,7 @@
 #include <QPainter>
 
 QImage getCollisionMetatileImage(Block block) {
-    return getCollisionMetatileImage(block.collision, block.elevation);
+    return getCollisionMetatileImage(block.collision(), block.elevation());
 }
 
 QImage getCollisionMetatileImage(int collision, int elevation) {

@@ -1057,7 +1057,7 @@ void TilesetEditor::countMetatileUsage() {
 
             // for each block in the layout, mark in the vector that it is used
             for (int i = 0; i < layout->blockdata.length(); i++) {
-                uint16_t metatileId = layout->blockdata.at(i).metatileId;
+                uint16_t metatileId = layout->blockdata.at(i).metatileId();
                 if (metatileId < this->project->getNumMetatilesPrimary()) {
                     if (usesPrimary) metatileSelector->usedMetatiles[metatileId]++;
                 } else {
@@ -1066,7 +1066,7 @@ void TilesetEditor::countMetatileUsage() {
             }
 
             for (int i = 0; i < layout->border.length(); i++) {
-                uint16_t metatileId = layout->border.at(i).metatileId;
+                uint16_t metatileId = layout->border.at(i).metatileId();
                 if (metatileId < this->project->getNumMetatilesPrimary()) {
                     if (usesPrimary) metatileSelector->usedMetatiles[metatileId]++;
                 } else {

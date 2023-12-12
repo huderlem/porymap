@@ -160,7 +160,7 @@ QPixmap Map::render(bool ignoreCache, MapLayout * fromLayout, QRect bounds) {
         QPoint metatile_origin = QPoint(map_x * 16, map_y * 16);
         Block block = layout->blockdata.at(i);
         QImage metatile_image = getMetatileImage(
-            block.metatileId,
+            block.metatileId(),
             fromLayout ? fromLayout->tileset_primary   : layout->tileset_primary,
             fromLayout ? fromLayout->tileset_secondary : layout->tileset_secondary,
             metatileLayerOrder,
@@ -201,7 +201,7 @@ QPixmap Map::renderBorder(bool ignoreCache) {
 
         changed_any = true;
         Block block = layout->border.at(i);
-        uint16_t metatileId = block.metatileId;
+        uint16_t metatileId = block.metatileId();
         QImage metatile_image = getMetatileImage(metatileId, layout->tileset_primary, layout->tileset_secondary, metatileLayerOrder, metatileLayerOpacity);
         int map_y = width_ ? i / width_ : 0;
         int map_x = width_ ? i % width_ : 0;
@@ -364,14 +364,14 @@ void Map::setBlockdata(Blockdata blockdata, bool enableScriptCallback) {
 
 uint16_t Map::getBorderMetatileId(int x, int y) {
     int i = y * getBorderWidth() + x;
-    return layout->border[i].metatileId;
+    return layout->border[i].metatileId();
 }
 
 void Map::setBorderMetatileId(int x, int y, uint16_t metatileId, bool enableScriptCallback) {
     int i = y * getBorderWidth() + x;
     if (i < layout->border.size()) {
-        uint16_t prevMetatileId = layout->border[i].metatileId;
-        layout->border[i].metatileId = metatileId;
+        uint16_t prevMetatileId = layout->border[i].metatileId();
+        layout->border[i].setMetatileId(metatileId);
         if (prevMetatileId != metatileId && enableScriptCallback) {
             Scripting::cb_BorderMetatileChanged(x, y, prevMetatileId, metatileId);
         }
@@ -387,7 +387,7 @@ void Map::setBorderBlockData(Blockdata blockdata, bool enableScriptCallback) {
         if (prevBlock != newBlock) {
             layout->border.replace(i, newBlock);
             if (enableScriptCallback)
-                Scripting::cb_BorderMetatileChanged(i % width, i / width, prevBlock.metatileId, newBlock.metatileId);
+                Scripting::cb_BorderMetatileChanged(i % width, i / width, prevBlock.metatileId(), newBlock.metatileId());
         }
     }
 }
@@ -404,25 +404,25 @@ void Map::_floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_
             continue;
         }
 
-        uint old_coll = block.collision;
-        uint old_elev = block.elevation;
+        uint old_coll = block.collision();
+        uint old_elev = block.elevation();
         if (old_coll == collision && old_elev == elevation) {
             continue;
         }
 
-        block.collision = collision;
-        block.elevation = elevation;
+        block.setCollision(collision);
+        block.setElevation(elevation);
         setBlock(x, y, block, true);
-        if (getBlock(x + 1, y, &block) && block.collision == old_coll && block.elevation == old_elev) {
+        if (getBlock(x + 1, y, &block) && block.collision() == old_coll && block.elevation() == old_elev) {
             todo.append(QPoint(x + 1, y));
         }
-        if (getBlock(x - 1, y, &block) && block.collision == old_coll && block.elevation == old_elev) {
+        if (getBlock(x - 1, y, &block) && block.collision() == old_coll && block.elevation() == old_elev) {
             todo.append(QPoint(x - 1, y));
         }
-        if (getBlock(x, y + 1, &block) && block.collision == old_coll && block.elevation == old_elev) {
+        if (getBlock(x, y + 1, &block) && block.collision() == old_coll && block.elevation() == old_elev) {
             todo.append(QPoint(x, y + 1));
         }
-        if (getBlock(x, y - 1, &block) && block.collision == old_coll && block.elevation == old_elev) {
+        if (getBlock(x, y - 1, &block) && block.collision() == old_coll && block.elevation() == old_elev) {
             todo.append(QPoint(x, y - 1));
         }
     }
@@ -430,22 +430,22 @@ void Map::_floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_
 
 void Map::floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation) {
     Block block;
-    if (getBlock(x, y, &block) && (block.collision != collision || block.elevation != elevation)) {
+    if (getBlock(x, y, &block) && (block.collision() != collision || block.elevation() != elevation)) {
         _floodFillCollisionElevation(x, y, collision, elevation);
     }
 }
 
 void Map::magicFillCollisionElevation(int initialX, int initialY, uint16_t collision, uint16_t elevation) {
     Block block;
-    if (getBlock(initialX, initialY, &block) && (block.collision != collision || block.elevation != elevation)) {
-        uint old_coll = block.collision;
-        uint old_elev = block.elevation;
+    if (getBlock(initialX, initialY, &block) && (block.collision() != collision || block.elevation() != elevation)) {
+        uint old_coll = block.collision();
+        uint old_elev = block.elevation();
 
         for (int y = 0; y < getHeight(); y++) {
             for (int x = 0; x < getWidth(); x++) {
-                if (getBlock(x, y, &block) && block.collision == old_coll && block.elevation == old_elev) {
-                    block.collision = collision;
-                    block.elevation = elevation;
+                if (getBlock(x, y, &block) && block.collision() == old_coll && block.elevation() == old_elev) {
+                    block.setCollision(collision);
+                    block.setElevation(elevation);
                     setBlock(x, y, block, true);
                 }
             }

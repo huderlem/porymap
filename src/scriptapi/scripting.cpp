@@ -305,9 +305,9 @@ void Scripting::cb_BorderVisibilityToggled(bool visible) {
 
 QJSValue Scripting::fromBlock(Block block) {
     QJSValue obj = instance->engine->newObject();
-    obj.setProperty("metatileId", block.metatileId);
-    obj.setProperty("collision", block.collision);
-    obj.setProperty("elevation", block.elevation);
+    obj.setProperty("metatileId", block.metatileId());
+    obj.setProperty("collision", block.collision());
+    obj.setProperty("elevation", block.elevation());
     obj.setProperty("rawValue", block.rawValue());
     return obj;
 }

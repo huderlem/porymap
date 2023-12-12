@@ -75,8 +75,8 @@ void CollisionPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
 
         Block block;
         if (map->getBlock(pos.x(), pos.y(), &block)) {
-            block.collision = this->selectedCollision->value();
-            block.elevation = this->selectedElevation->value();
+            block.setCollision(this->selectedCollision->value());
+            block.setElevation(this->selectedElevation->value());
             map->setBlock(pos.x(), pos.y(), block, true);
         }
 
@@ -139,7 +139,7 @@ void CollisionPixmapItem::updateSelection(QPoint pos) {
     Block block;
     if (map->getBlock(pos.x(), pos.y(), &block)) {
         const QSignalBlocker blocker(this->selectedCollision); // We only need a signal for changing one of them, not both
-        this->selectedCollision->setValue(block.collision);
-        this->selectedElevation->setValue(block.elevation);
+        this->selectedCollision->setValue(block.collision());
+        this->selectedElevation->setValue(block.elevation());
     }
 }

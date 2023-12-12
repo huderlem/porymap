@@ -99,7 +99,7 @@ int MainWindow::getMetatileId(int x, int y) {
     if (!this->editor->map->getBlock(x, y, &block)) {
         return 0;
     }
-    return block.metatileId;
+    return block.metatileId();
 }
 
 void MainWindow::setMetatileId(int x, int y, int metatileId, bool forceRedraw, bool commitChanges) {
@@ -109,7 +109,7 @@ void MainWindow::setMetatileId(int x, int y, int metatileId, bool forceRedraw, b
     if (!this->editor->map->getBlock(x, y, &block)) {
         return;
     }
-    this->editor->map->setBlock(x, y, Block(metatileId, block.collision, block.elevation));
+    this->editor->map->setBlock(x, y, Block(metatileId, block.collision(), block.elevation()));
     this->tryCommitMapChanges(commitChanges);
     this->tryRedrawMapArea(forceRedraw);
 }
@@ -121,7 +121,7 @@ int MainWindow::getCollision(int x, int y) {
     if (!this->editor->map->getBlock(x, y, &block)) {
         return 0;
     }
-    return block.collision;
+    return block.collision();
 }
 
 void MainWindow::setCollision(int x, int y, int collision, bool forceRedraw, bool commitChanges) {
@@ -131,7 +131,7 @@ void MainWindow::setCollision(int x, int y, int collision, bool forceRedraw, boo
     if (!this->editor->map->getBlock(x, y, &block)) {
         return;
     }
-    this->editor->map->setBlock(x, y, Block(block.metatileId, collision, block.elevation));
+    this->editor->map->setBlock(x, y, Block(block.metatileId(), collision, block.elevation()));
     this->tryCommitMapChanges(commitChanges);
     this->tryRedrawMapArea(forceRedraw);
 }
@@ -143,7 +143,7 @@ int MainWindow::getElevation(int x, int y) {
     if (!this->editor->map->getBlock(x, y, &block)) {
         return 0;
     }
-    return block.elevation;
+    return block.elevation();
 }
 
 void MainWindow::setElevation(int x, int y, int elevation, bool forceRedraw, bool commitChanges) {
@@ -153,7 +153,7 @@ void MainWindow::setElevation(int x, int y, int elevation, bool forceRedraw, boo
     if (!this->editor->map->getBlock(x, y, &block)) {
         return;
     }
-    this->editor->map->setBlock(x, y, Block(block.metatileId, block.collision, elevation));
+    this->editor->map->setBlock(x, y, Block(block.metatileId(), block.collision(), elevation));
     this->tryCommitMapChanges(commitChanges);
     this->tryRedrawMapArea(forceRedraw);
 }
