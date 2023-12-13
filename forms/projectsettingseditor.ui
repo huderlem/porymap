@@ -370,7 +370,7 @@
              <x>0</x>
              <y>0</y>
              <width>531</width>
-             <height>490</height>
+             <height>566</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_16">
@@ -577,6 +577,57 @@
                  <property name="wordWrap">
                   <bool>true</bool>
                  </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QGroupBox" name="groupBox_MapDataLayout">
+                 <property name="title">
+                  <string>Map Data Layout</string>
+                 </property>
+                 <layout class="QFormLayout" name="formLayout">
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_MetatileIdMask">
+                    <property name="text">
+                     <string>Metatile ID</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0">
+                   <widget class="QLabel" name="label_CollisionMask">
+                    <property name="text">
+                     <string>Collision</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="0">
+                   <widget class="QLabel" name="label_ElevationMask">
+                    <property name="text">
+                     <string>Elevation</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="UIntHexSpinBox" name="spinBox_MetatileIdMask" native="true">
+                    <property name="toolTip">
+                     <string>The mask used to read/write metatile IDs in map data.</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="1">
+                   <widget class="UIntHexSpinBox" name="spinBox_CollisionMask" native="true">
+                    <property name="toolTip">
+                     <string>The mask used to read/write collision values in map data.</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="1">
+                   <widget class="UIntHexSpinBox" name="spinBox_ElevationMask" native="true">
+                    <property name="toolTip">
+                     <string>The mask used to read/write elevation values in map data.</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
                 </widget>
                </item>
                <item>

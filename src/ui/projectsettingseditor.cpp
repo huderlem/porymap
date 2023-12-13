@@ -102,6 +102,7 @@ void ProjectSettingsEditor::initUi() {
     ui->lineEdit_BorderMetatiles->setValidator(validator);
     this->setBorderMetatilesUi(projectConfig.getUseCustomBorderSize());
 
+    // Set spin box limits
     int maxMetatileId = Project::getNumMetatilesTotal() - 1;
     ui->spinBox_FillMetatile->setMaximum(maxMetatileId);
     ui->spinBox_BorderMetatile1->setMaximum(maxMetatileId);
@@ -112,6 +113,11 @@ void ProjectSettingsEditor::initUi() {
     ui->spinBox_Collision->setMaximum(Project::getMaxCollision());
     ui->spinBox_MaxElevation->setMaximum(Project::getMaxElevation());
     ui->spinBox_MaxCollision->setMaximum(Project::getMaxCollision());
+    // TODO: Move to a global
+    ui->spinBox_MetatileIdMask->setMinimum(0x1);
+    ui->spinBox_MetatileIdMask->setMaximum(0xFFFF); // Metatile IDs can use all 16 bits of a block
+    ui->spinBox_CollisionMask->setMaximum(0xFFFE); // Collision/elevation can only use 15; metatile IDs must have at least 1 bit
+    ui->spinBox_ElevationMask->setMaximum(0xFFFE);
 }
 
 void ProjectSettingsEditor::setBorderMetatilesUi(bool customSize) {
@@ -285,6 +291,9 @@ void ProjectSettingsEditor::refresh() {
     ui->spinBox_EncounterTypeMask->setValue(projectConfig.getMetatileEncounterTypeMask());
     ui->spinBox_LayerTypeMask->setValue(projectConfig.getMetatileLayerTypeMask());
     ui->spinBox_TerrainTypeMask->setValue(projectConfig.getMetatileTerrainTypeMask());
+    ui->spinBox_MetatileIdMask->setValue(projectConfig.getBlockMetatileIdMask());
+    ui->spinBox_CollisionMask->setValue(projectConfig.getBlockCollisionMask());
+    ui->spinBox_ElevationMask->setValue(projectConfig.getBlockElevationMask());
 
     // Set (and sync) border metatile IDs
     auto metatileIds = projectConfig.getNewMapBorderMetatileIds();
@@ -345,6 +354,9 @@ void ProjectSettingsEditor::save() {
     projectConfig.setMetatileTerrainTypeMask(ui->spinBox_TerrainTypeMask->value());
     projectConfig.setMetatileEncounterTypeMask(ui->spinBox_EncounterTypeMask->value());
     projectConfig.setMetatileLayerTypeMask(ui->spinBox_LayerTypeMask->value());
+    projectConfig.setBlockMetatileIdMask(ui->spinBox_MetatileIdMask->value());
+    projectConfig.setBlockCollisionMask(ui->spinBox_CollisionMask->value());
+    projectConfig.setBlockElevationMask(ui->spinBox_ElevationMask->value());
 
     // Save line edit settings
     projectConfig.setPrefabFilepath(ui->lineEdit_PrefabsPath->text());

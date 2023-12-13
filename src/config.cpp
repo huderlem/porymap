@@ -688,6 +688,12 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         this->metatileEncounterTypeMask = getConfigUint32(key, value);
     } else if (key == "metatile_layer_type_mask") {
         this->metatileLayerTypeMask = getConfigUint32(key, value);
+    } else if (key == "block_metatile_id_mask") {
+        this->blockMetatileIdMask = getConfigUint32(key, value, 1, 0xFFFF);
+    } else if (key == "block_collision_mask") {
+        this->blockCollisionMask = getConfigUint32(key, value, 0, 0xFFFE);
+    } else if (key == "block_elevation_mask") {
+        this->blockElevationMask = getConfigUint32(key, value, 0, 0xFFFE);
     } else if (key == "enable_map_allow_flags") {
         this->enableMapAllowFlags = getConfigBool(key, value);
 #ifdef CONFIG_BACKWARDS_COMPATABILITY
@@ -799,6 +805,9 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("metatile_terrain_type_mask", "0x" + QString::number(this->metatileTerrainTypeMask, 16).toUpper());
     map.insert("metatile_encounter_type_mask", "0x" + QString::number(this->metatileEncounterTypeMask, 16).toUpper());
     map.insert("metatile_layer_type_mask", "0x" + QString::number(this->metatileLayerTypeMask, 16).toUpper());
+    map.insert("block_metatile_id_mask", "0x" + QString::number(this->blockMetatileIdMask, 16).toUpper());
+    map.insert("block_collision_mask", "0x" + QString::number(this->blockCollisionMask, 16).toUpper());
+    map.insert("block_elevation_mask", "0x" + QString::number(this->blockElevationMask, 16).toUpper());
     map.insert("enable_map_allow_flags", QString::number(this->enableMapAllowFlags));
     map.insert("event_icon_path_object", this->eventIconPaths[Event::Group::Object]);
     map.insert("event_icon_path_warp", this->eventIconPaths[Event::Group::Warp]);
@@ -1149,6 +1158,33 @@ void ProjectConfig::setMetatileEncounterTypeMask(uint32_t mask) {
 
 void ProjectConfig::setMetatileLayerTypeMask(uint32_t mask) {
     this->metatileLayerTypeMask = mask;
+    this->save();
+}
+
+uint16_t ProjectConfig::getBlockMetatileIdMask() {
+    return this->blockMetatileIdMask;
+}
+
+uint16_t ProjectConfig::getBlockCollisionMask() {
+    return this->blockCollisionMask;
+}
+
+uint16_t ProjectConfig::getBlockElevationMask() {
+    return this->blockElevationMask;
+}
+
+void ProjectConfig::setBlockMetatileIdMask(uint16_t mask) {
+    this->blockMetatileIdMask = mask;
+    this->save();
+}
+
+void ProjectConfig::setBlockCollisionMask(uint16_t mask) {
+    this->blockCollisionMask = mask;
+    this->save();
+}
+
+void ProjectConfig::setBlockElevationMask(uint16_t mask) {
+    this->blockElevationMask = mask;
     this->save();
 }
 

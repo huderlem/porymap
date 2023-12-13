@@ -243,6 +243,9 @@ public:
         this->collisionSheetPath = QString();
         this->collisionSheetWidth = 2;
         this->collisionSheetHeight = 16;
+        this->blockMetatileIdMask = 0x03FF;
+        this->blockCollisionMask = 0x0C00;
+        this->blockElevationMask = 0xF000;
         this->readKeys.clear();
     }
     static const QMap<ProjectFilePath, std::pair<QString, QString>> defaultPaths;
@@ -313,6 +316,12 @@ public:
     void setMetatileTerrainTypeMask(uint32_t mask);
     void setMetatileEncounterTypeMask(uint32_t mask);
     void setMetatileLayerTypeMask(uint32_t mask);
+    uint16_t getBlockMetatileIdMask();
+    uint16_t getBlockCollisionMask();
+    uint16_t getBlockElevationMask();
+    void setBlockMetatileIdMask(uint16_t mask);
+    void setBlockCollisionMask(uint16_t mask);
+    void setBlockElevationMask(uint16_t mask);
     bool getMapAllowFlagsEnabled();
     void setMapAllowFlagsEnabled(bool enabled);
     void setEventIconPath(Event::Group group, const QString &path);
@@ -364,6 +373,9 @@ private:
     uint32_t metatileTerrainTypeMask;
     uint32_t metatileEncounterTypeMask;
     uint32_t metatileLayerTypeMask;
+    uint16_t blockMetatileIdMask;
+    uint16_t blockCollisionMask;
+    uint16_t blockElevationMask;
     bool enableMapAllowFlags;
     QMap<Event::Group, QString> eventIconPaths;
     QHash<QString, QString> pokemonIconPaths;
