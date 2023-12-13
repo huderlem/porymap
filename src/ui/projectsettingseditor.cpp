@@ -103,16 +103,16 @@ void ProjectSettingsEditor::initUi() {
     this->setBorderMetatilesUi(projectConfig.getUseCustomBorderSize());
 
     // Set spin box limits
-    int maxMetatileId = Project::getNumMetatilesTotal() - 1;
+    int maxMetatileId = Block::getMaxMetatileId();
     ui->spinBox_FillMetatile->setMaximum(maxMetatileId);
     ui->spinBox_BorderMetatile1->setMaximum(maxMetatileId);
     ui->spinBox_BorderMetatile2->setMaximum(maxMetatileId);
     ui->spinBox_BorderMetatile3->setMaximum(maxMetatileId);
     ui->spinBox_BorderMetatile4->setMaximum(maxMetatileId);
-    ui->spinBox_Elevation->setMaximum(Project::getMaxElevation());
-    ui->spinBox_Collision->setMaximum(Project::getMaxCollision());
-    ui->spinBox_MaxElevation->setMaximum(Project::getMaxElevation());
-    ui->spinBox_MaxCollision->setMaximum(Project::getMaxCollision());
+    ui->spinBox_Elevation->setMaximum(Block::getMaxElevation());
+    ui->spinBox_Collision->setMaximum(Block::getMaxCollision());
+    ui->spinBox_MaxElevation->setMaximum(Block::getMaxElevation());
+    ui->spinBox_MaxCollision->setMaximum(Block::getMaxCollision());
     // TODO: Move to a global
     ui->spinBox_MetatileIdMask->setMinimum(0x1);
     ui->spinBox_MetatileIdMask->setMaximum(0xFFFF); // Metatile IDs can use all 16 bits of a block

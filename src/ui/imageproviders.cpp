@@ -50,7 +50,7 @@ QImage getMetatileImage(
     QPainter metatile_painter(&metatile_image);
     bool isTripleLayerMetatile = projectConfig.getTripleLayerMetatilesEnabled();
     const int numLayers = 3; // When rendering, metatiles always have 3 layers
-    int layerType = metatile->layerType;
+    uint32_t layerType = metatile->layerType();
     for (int layer = 0; layer < numLayers; layer++)
     for (int y = 0; y < 2; y++)
     for (int x = 0; x < 2; x++) {

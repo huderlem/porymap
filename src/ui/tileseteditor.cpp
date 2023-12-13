@@ -113,7 +113,7 @@ void TilesetEditor::initUi() {
 
 void TilesetEditor::setAttributesUi() {
     // Behavior
-    if (Metatile::getBehaviorMask()) {
+    if (projectConfig.getMetatileBehaviorMask() != 0) {
         for (int num : project->metatileBehaviorMapInverse.keys()) {
             this->ui->comboBox_metatileBehaviors->addItem(project->metatileBehaviorMapInverse[num], num);
         }
@@ -124,7 +124,7 @@ void TilesetEditor::setAttributesUi() {
     }
 
     // Terrain Type
-    if (Metatile::getTerrainTypeMask()) {
+    if (projectConfig.getMetatileTerrainTypeMask()) {
         this->ui->comboBox_terrainType->addItem("Normal", TERRAIN_NONE);
         this->ui->comboBox_terrainType->addItem("Grass", TERRAIN_GRASS);
         this->ui->comboBox_terrainType->addItem("Water", TERRAIN_WATER);
@@ -137,7 +137,7 @@ void TilesetEditor::setAttributesUi() {
     }
 
     // Encounter Type
-    if (Metatile::getEncounterTypeMask()) {
+    if (projectConfig.getMetatileEncounterTypeMask()) {
         this->ui->comboBox_encounterType->addItem("None", ENCOUNTER_NONE);
         this->ui->comboBox_encounterType->addItem("Land", ENCOUNTER_LAND);
         this->ui->comboBox_encounterType->addItem("Water", ENCOUNTER_WATER);
@@ -155,7 +155,7 @@ void TilesetEditor::setAttributesUi() {
         this->ui->comboBox_layerType->addItem("Split - Bottom/Top", METATILE_LAYER_BOTTOM_TOP);
         this->ui->comboBox_layerType->setEditable(false);
         this->ui->comboBox_layerType->setMinimumContentsLength(0);
-        if (!Metatile::getLayerTypeMask()) {
+        if (!projectConfig.getMetatileLayerTypeMask()) {
             // User doesn't have triple layer metatiles, but has no layer type attribute.
             // Porymap is still using the layer type value to render metatiles, and with
             // no mask set every metatile will be "Middle/Top", so just display the combo
@@ -373,10 +373,10 @@ void TilesetEditor::onSelectedMetatileChanged(uint16_t metatileId) {
     this->ui->lineEdit_metatileLabel->setText(labels.owned);
     this->ui->lineEdit_metatileLabel->setPlaceholderText(labels.shared);
 
-    this->ui->comboBox_metatileBehaviors->setNumberItem(this->metatile->behavior);
-    this->ui->comboBox_layerType->setNumberItem(this->metatile->layerType);
-    this->ui->comboBox_encounterType->setNumberItem(this->metatile->encounterType);
-    this->ui->comboBox_terrainType->setNumberItem(this->metatile->terrainType);
+    this->ui->comboBox_metatileBehaviors->setNumberItem(this->metatile->behavior());
+    this->ui->comboBox_layerType->setNumberItem(this->metatile->layerType());
+    this->ui->comboBox_encounterType->setNumberItem(this->metatile->encounterType());
+    this->ui->comboBox_terrainType->setNumberItem(this->metatile->terrainType());
 }
 
 void TilesetEditor::onHoveredTileChanged(uint16_t tile) {
@@ -505,7 +505,7 @@ void TilesetEditor::on_comboBox_metatileBehaviors_currentTextChanged(const QStri
 
         // This function can also be called when the user selects
         // a different metatile. Stop this from being considered a change.
-        if (this->metatile->behavior == static_cast<uint32_t>(behavior))
+        if (this->metatile->behavior() == static_cast<uint32_t>(behavior))
             return;
 
         Metatile *prevMetatile = new Metatile(*this->metatile);

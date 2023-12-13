@@ -941,8 +941,8 @@ QString Editor::getMetatileDisplayMessage(uint16_t metatileId) {
     QString message = QString("Metatile: %1").arg(Metatile::getMetatileIdString(metatileId));
     if (label.size())
         message += QString(" \"%1\"").arg(label);
-    if (metatile && metatile->behavior) // Skip MB_NORMAL
-        message += QString(", Behavior: %1").arg(this->project->metatileBehaviorMapInverse.value(metatile->behavior, QString::number(metatile->behavior)));
+    if (metatile && metatile->behavior()) // Skip MB_NORMAL
+        message += QString(", Behavior: %1").arg(this->project->metatileBehaviorMapInverse.value(metatile->behavior(), QString::number(metatile->behavior())));
     return message;
 }
 
@@ -2284,14 +2284,14 @@ void Editor::setCollisionGraphics() {
     // Any icons for combinations that aren't provided by the image sheet are also created now using default graphics.
     const int w = 16, h = 16;
     imgSheet = imgSheet.scaled(w * imgColumns, h * imgRows);
-    for (int collision = 0; collision <= Project::getMaxCollision(); collision++) {
+    for (int collision = 0; collision <= Block::getMaxCollision(); collision++) {
         // If (collision >= imgColumns) here, it's a valid collision value, but it is not represented with an icon on the image sheet.
         // In this case we just use the rightmost collision icon. This is mostly to support the vanilla case, where technically 0-3
         // are valid collision values, but 1-3 have the same meaning, so the vanilla collision selector image only has 2 columns.
         int x = ((collision < imgColumns) ? collision : (imgColumns - 1)) * w;
 
         QList<const QImage*> sublist;
-        for (int elevation = 0; elevation <= Project::getMaxElevation(); elevation++) {
+        for (int elevation = 0; elevation <= Block::getMaxElevation(); elevation++) {
             if (elevation < imgRows) {
                 // This elevation has an icon on the image sheet, add it to the list
                 int y = elevation * h;

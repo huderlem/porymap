@@ -85,6 +85,11 @@ public:
     QMap<QString, qint64> modifiedFileTimestamps;
     bool usingAsmTilesets;
     QString importExportPath;
+    bool parsedMetatileIdMask;
+    bool parsedCollisionMask;
+    bool parsedElevationMask;
+    bool parsedBehaviorMask;
+    bool parsedLayerTypeMask;
 
     void set_root(QString);
 
@@ -196,6 +201,7 @@ public:
     bool readObjEventGfxConstants();
     bool readSongNames();
     bool readEventGraphics();
+    bool readFieldmapMasks();
     QMap<QString, QMap<QString, QString>> readObjEventGfxInfo();
 
     void setEventPixmap(Event *event, bool forceLoad = false);
@@ -229,8 +235,6 @@ public:
     static bool mapDimensionsValid(int width, int height);
     bool calculateDefaultMapSize();
     static int getMaxObjectEvents();
-    static int getMaxCollision();
-    static int getMaxElevation();
 
 private:
     void updateMapLayout(Map*);
@@ -248,14 +252,11 @@ private:
     static int num_tiles_primary;
     static int num_tiles_total;
     static int num_metatiles_primary;
-    static int num_metatiles_total;
     static int num_pals_primary;
     static int num_pals_total;
     static int max_map_data_size;
     static int default_map_size;
     static int max_object_events;
-    static int max_collision;
-    static int max_elevation;
 
     QStringListModel eventScriptLabelModel;
     QCompleter eventScriptLabelCompleter;

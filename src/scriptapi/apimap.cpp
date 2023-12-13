@@ -625,7 +625,7 @@ int MainWindow::getMetatileLayerType(int metatileId) {
     Metatile * metatile = this->getMetatile(metatileId);
     if (!metatile)
         return -1;
-    return metatile->layerType;
+    return metatile->layerType();
 }
 
 void MainWindow::setMetatileLayerType(int metatileId, int layerType) {
@@ -640,7 +640,7 @@ int MainWindow::getMetatileEncounterType(int metatileId) {
     Metatile * metatile = this->getMetatile(metatileId);
     if (!metatile)
         return -1;
-    return metatile->encounterType;
+    return metatile->encounterType();
 }
 
 void MainWindow::setMetatileEncounterType(int metatileId, int encounterType) {
@@ -655,7 +655,7 @@ int MainWindow::getMetatileTerrainType(int metatileId) {
     Metatile * metatile = this->getMetatile(metatileId);
     if (!metatile)
         return -1;
-    return metatile->terrainType;
+    return metatile->terrainType();
 }
 
 void MainWindow::setMetatileTerrainType(int metatileId, int terrainType) {
@@ -670,7 +670,7 @@ int MainWindow::getMetatileBehavior(int metatileId) {
     Metatile * metatile = this->getMetatile(metatileId);
     if (!metatile)
         return -1;
-    return metatile->behavior;
+    return metatile->behavior();
 }
 
 void MainWindow::setMetatileBehavior(int metatileId, int behavior) {

@@ -27,17 +27,12 @@ using OrderedJsonDoc = poryjson::JsonDoc;
 
 int Project::num_tiles_primary = 512;
 int Project::num_tiles_total = 1024;
-int Project::num_metatiles_primary = 512;
-int Project::num_metatiles_total = 1024;
+int Project::num_metatiles_primary = 512; // TODO: Verify fits within max
 int Project::num_pals_primary = 6;
 int Project::num_pals_total = 13;
 int Project::max_map_data_size = 10240; // 0x2800
 int Project::default_map_size = 20;
 int Project::max_object_events = 64;
-
-// TODO: Replace once Block layout can be edited
-int Project::max_collision = 3;
-int Project::max_elevation = 15;
 
 Project::Project(QWidget *parent) :
     QObject(parent),
@@ -1870,8 +1865,7 @@ bool Project::readTilesetLabels() {
 }
 
 bool Project::readTilesetProperties() {
-    QStringList definePrefixes;
-    definePrefixes << "\\bNUM_";
+    static const QStringList definePrefixes{ "\\bNUM_" };
     QString filename = projectConfig.getFilePath(ProjectFilePath::constants_fieldmap);
     fileWatcher.addPath(root + "/" + filename);
     QMap<QString, int> defines = parser.readCDefines(filename, definePrefixes);
@@ -1900,14 +1894,6 @@ bool Project::readTilesetProperties() {
         logWarn(QString("Value for tileset property 'NUM_METATILES_IN_PRIMARY' not found. Using default (%1) instead.")
                 .arg(Project::num_metatiles_primary));
     }
-    it = defines.find("NUM_METATILES_TOTAL");
-    if (it != defines.end()) {
-        Project::num_metatiles_total = it.value();
-    }
-    else {
-        logWarn(QString("Value for tileset property 'NUM_METATILES_TOTAL' not found. Using default (%1) instead.")
-                .arg(Project::num_metatiles_total));
-    }
     it = defines.find("NUM_PALS_IN_PRIMARY");
     if (it != defines.end()) {
         Project::num_pals_primary = it.value();
@@ -1927,9 +1913,43 @@ bool Project::readTilesetProperties() {
     return true;
 }
 
+// Read data masks for Blocks and metatile attributes.
+// These settings are exposed in the settings window. If any are parsed from
+// the project they'll be visible in the settings window but not editable.
+bool Project::readFieldmapMasks() {
+    // We're looking for the suffix "_MASK". Technically our "prefix" is the whole define.
+    static const QStringList definePrefixes{ "\\b\\w+_MASK" };
+    QString filename = projectConfig.getFilePath(ProjectFilePath::global_fieldmap);
+    fileWatcher.addPath(root + "/" + filename);
+    QMap<QString, int> defines = parser.readCDefines(filename, definePrefixes);
+
+    auto it = defines.find("MAPGRID_METATILE_ID_MASK");
+    if ((parsedMetatileIdMask = (it != defines.end())))
+        projectConfig.setBlockMetatileIdMask(static_cast<uint16_t>(it.value()));
+
+    it = defines.find("MAPGRID_COLLISION_MASK");
+    if ((parsedCollisionMask = (it != defines.end())))
+        projectConfig.setBlockCollisionMask(static_cast<uint16_t>(it.value()));
+
+    it = defines.find("MAPGRID_ELEVATION_MASK");
+    if ((parsedElevationMask = (it != defines.end())))
+        projectConfig.setBlockElevationMask(static_cast<uint16_t>(it.value()));
+
+    // TODO: For FRLG, parse from fieldmap.c?
+
+    it = defines.find("METATILE_ATTR_BEHAVIOR_MASK");
+    if ((parsedBehaviorMask = (it != defines.end())))
+        projectConfig.setMetatileBehaviorMask(static_cast<uint32_t>(it.value()));
+
+    it = defines.find("METATILE_ATTR_LAYER_MASK");
+    if ((parsedLayerTypeMask = (it != defines.end())))
+        projectConfig.setMetatileLayerTypeMask(static_cast<uint32_t>(it.value()));
+
+    return true;
+}
+
 bool Project::readMaxMapDataSize() {
-    QStringList definePrefixes;
-    definePrefixes << "\\bMAX_";
+    static const QStringList definePrefixes{ "\\bMAX_" };
     QString filename = projectConfig.getFilePath(ProjectFilePath::constants_fieldmap); // already in fileWatcher from readTilesetProperties
     QMap<QString, int> defines = parser.readCDefines(filename, definePrefixes);
 
@@ -2272,7 +2292,7 @@ bool Project::readMiscellaneousConstants() {
 
     QString filename = projectConfig.getFilePath(ProjectFilePath::constants_global);
     fileWatcher.addPath(root + "/" + filename);
-    QStringList definePrefixes("\\bOBJECT_");
+    static const QStringList definePrefixes("\\bOBJECT_");
     QMap<QString, int> defines = parser.readCDefines(filename, definePrefixes);
 
     auto it = defines.find("OBJECT_EVENT_TEMPLATES_COUNT");
@@ -2573,7 +2593,7 @@ int Project::getNumMetatilesPrimary()
 
 int Project::getNumMetatilesTotal()
 {
-    return Project::num_metatiles_total;
+    return Block::getMaxMetatileId() + 1;
 }
 
 int Project::getNumPalettesPrimary()
@@ -2638,16 +2658,6 @@ bool Project::calculateDefaultMapSize(){
 int Project::getMaxObjectEvents()
 {
     return Project::max_object_events;
-}
-
-int Project::getMaxCollision()
-{
-    return Project::max_collision;
-}
-
-int Project::getMaxElevation()
-{
-    return Project::max_elevation;
 }
 
 void Project::setImportExportPath(QString filename)

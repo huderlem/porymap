@@ -395,8 +395,8 @@ void MainWindow::setProjectSpecificUI()
 
     Event::setIcons();
     editor->setCollisionGraphics();
-    ui->spinBox_SelectedElevation->setMaximum(Project::getMaxElevation());
-    ui->spinBox_SelectedCollision->setMaximum(Project::getMaxCollision());
+    ui->spinBox_SelectedElevation->setMaximum(Block::getMaxElevation());
+    ui->spinBox_SelectedCollision->setMaximum(Block::getMaxCollision());
 }
 
 void MainWindow::mapSortOrder_changed(QAction *action)
@@ -936,6 +936,7 @@ bool MainWindow::loadDataStructures() {
                 && project->readTilesetProperties()
                 && project->readTilesetLabels()
                 && project->readTilesetMetatileLabels()
+                && project->readFieldmapMasks()
                 && project->readMaxMapDataSize()
                 && project->readHealLocations()
                 && project->readMiscellaneousConstants()
@@ -946,7 +947,8 @@ bool MainWindow::loadDataStructures() {
                 && project->readEventGraphics()
                 && project->readSongNames();
 
-    Metatile::setCustomLayout(project);
+    Block::setLayout();
+    Metatile::setLayout(project);
     Scripting::populateGlobalObject(this);
 
     return success && loadProjectCombos();

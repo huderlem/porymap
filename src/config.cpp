@@ -59,6 +59,7 @@ const QMap<ProjectFilePath, std::pair<QString, QString>> ProjectConfig::defaultP
     {ProjectFilePath::constants_metatile_behaviors,     { "constants_metatile_behaviors",    "include/constants/metatile_behaviors.h"}},
     {ProjectFilePath::constants_species,                { "constants_species",               "include/constants/species.h"}},
     {ProjectFilePath::constants_fieldmap,               { "constants_fieldmap",              "include/fieldmap.h"}},
+    {ProjectFilePath::global_fieldmap,                  { "global_fieldmap",                 "include/global.fieldmap.h"}},
     {ProjectFilePath::pokemon_icon_table,               { "pokemon_icon_table",              "src/pokemon_icon.c"}},
     {ProjectFilePath::initial_facing_table,             { "initial_facing_table",            "src/event_object_movement.c"}},
     {ProjectFilePath::pokemon_gfx,                      { "pokemon_gfx",                     "graphics/pokemon/"}},
@@ -766,10 +767,10 @@ void ProjectConfig::setUnreadKeys() {
     if (!readKeys.contains("new_map_border_metatiles")) this->newMapBorderMetatileIds = isPokefirered ? DEFAULT_BORDER_FRLG : DEFAULT_BORDER_RSE;
     if (!readKeys.contains("default_secondary_tileset")) this->defaultSecondaryTileset = isPokefirered ? "gTileset_PalletTown" : "gTileset_Petalburg";
     if (!readKeys.contains("metatile_attributes_size")) this->metatileAttributesSize = Metatile::getDefaultAttributesSize(this->baseGameVersion);
-    if (!readKeys.contains("metatile_behavior_mask")) this->metatileBehaviorMask = Metatile::getBehaviorMask(this->baseGameVersion);
-    if (!readKeys.contains("metatile_terrain_type_mask")) this->metatileTerrainTypeMask = Metatile::getTerrainTypeMask(this->baseGameVersion);
-    if (!readKeys.contains("metatile_encounter_type_mask")) this->metatileEncounterTypeMask = Metatile::getEncounterTypeMask(this->baseGameVersion);
-    if (!readKeys.contains("metatile_layer_type_mask")) this->metatileLayerTypeMask = Metatile::getLayerTypeMask(this->baseGameVersion);
+    if (!readKeys.contains("metatile_behavior_mask")) this->metatileBehaviorMask = Metatile::getDefaultAttributesMask(this->baseGameVersion, Metatile::Attr::Behavior);
+    if (!readKeys.contains("metatile_terrain_type_mask")) this->metatileTerrainTypeMask = Metatile::getDefaultAttributesMask(this->baseGameVersion, Metatile::Attr::TerrainType);
+    if (!readKeys.contains("metatile_encounter_type_mask")) this->metatileEncounterTypeMask = Metatile::getDefaultAttributesMask(this->baseGameVersion, Metatile::Attr::EncounterType);
+    if (!readKeys.contains("metatile_layer_type_mask")) this->metatileLayerTypeMask = Metatile::getDefaultAttributesMask(this->baseGameVersion, Metatile::Attr::LayerType);
     if (!readKeys.contains("enable_map_allow_flags")) this->enableMapAllowFlags = (this->baseGameVersion != BaseGameVersion::pokeruby);
 }
 

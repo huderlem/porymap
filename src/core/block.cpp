@@ -1,4 +1,10 @@
 #include "block.h"
+#include "bitpacker.h"
+#include "config.h"
+
+static BitPacker bitsMetatileId = BitPacker(0x3FF);
+static BitPacker bitsCollision = BitPacker(0xC00);
+static BitPacker bitsElevation = BitPacker(0xF000);
 
 Block::Block() :
     m_metatileId(0),
@@ -12,10 +18,10 @@ Block::Block(uint16_t metatileId, uint16_t collision, uint16_t elevation) :
     m_elevation(elevation)
 {  }
 
-Block::Block(uint16_t word) :
-    m_metatileId(word & 0x3ff),
-    m_collision((word >> 10) & 0x3),
-    m_elevation((word >> 12) & 0xf)
+Block::Block(uint16_t data) :
+    m_metatileId(bitsMetatileId.unpack(data)),
+    m_collision(bitsCollision.unpack(data)),
+    m_elevation(bitsElevation.unpack(data))
 {  }
 
 Block::Block(const Block &other) :
@@ -32,16 +38,53 @@ Block &Block::operator=(const Block &other) {
 }
 
 uint16_t Block::rawValue() const {
-    return static_cast<uint16_t>(
-                (m_metatileId & 0x3ff) +
-                ((m_collision & 0x3) << 10) +
-                ((m_elevation & 0xf) << 12));
+    return bitsMetatileId.pack(m_metatileId)
+          | bitsCollision.pack(m_collision)
+          | bitsElevation.pack(m_elevation);
+}
+
+// TODO: Resolve TODOs for max block limits, and disable collision tab if collision and elevation are 0
+// TODO: After parsing, recalc max collision/elevation for selector image (in Metatile::setLayout?)
+// TODO: More generous config limits
+// TODO: Settings editor -- disable UI & restore after refresh, red flag overlapping masks
+// TODO: Generalize API tab disabling, i.e. check if disabled before allowing selection
+// TODO: Metatile selector looks like it's having a fit during group block select
+void Block::setLayout() {
+    bitsMetatileId.setMask(projectConfig.getBlockMetatileIdMask());
+    bitsCollision.setMask(projectConfig.getBlockCollisionMask());
+    bitsElevation.setMask(projectConfig.getBlockElevationMask());
 }
 
 bool Block::operator ==(Block other) const {
-    return (m_metatileId == other.m_metatileId) && (m_collision == other.m_collision) && (m_elevation == other.m_elevation);
+    return (m_metatileId == other.m_metatileId)
+        && (m_collision == other.m_collision)
+        && (m_elevation == other.m_elevation);
 }
 
 bool Block::operator !=(Block other) const {
     return !(operator ==(other));
+}
+
+void Block::setMetatileId(uint16_t metatileId) {
+    m_metatileId = bitsMetatileId.clamp(metatileId);
+}
+
+void Block::setCollision(uint16_t collision) {
+    m_collision = bitsCollision.clamp(collision);
+}
+
+void Block::setElevation(uint16_t elevation) {
+    m_elevation = bitsElevation.clamp(elevation);
+}
+
+uint16_t Block::getMaxMetatileId() {
+    return bitsMetatileId.maxValue();
+}
+
+uint16_t Block::getMaxCollision() {
+    return bitsCollision.maxValue();
+}
+
+uint16_t Block::getMaxElevation() {
+    return bitsElevation.maxValue();
 }

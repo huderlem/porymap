@@ -213,6 +213,7 @@ enum ProjectFilePath {
     constants_metatile_behaviors,
     constants_species,
     constants_fieldmap,
+    global_fieldmap,
     initial_facing_table,
     pokemon_icon_table,
     pokemon_gfx,

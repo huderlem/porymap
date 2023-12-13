@@ -16,6 +16,7 @@ QMAKE_CXXFLAGS += -std=c++17 -Wall
 QMAKE_TARGET_BUNDLE_PREFIX = com.pret
 
 SOURCES += src/core/block.cpp \
+    src/core/bitpacker.cpp \
     src/core/blockdata.cpp \
     src/core/events.cpp \
     src/core/heallocation.cpp \
@@ -104,6 +105,7 @@ SOURCES += src/core/block.cpp \
     src/ui/uintspinbox.cpp
 
 HEADERS  += include/core/block.h \
+    include/core/bitpacker.h \
     include/core/blockdata.h \
     include/core/events.h \
     include/core/heallocation.h \
