@@ -214,6 +214,7 @@ enum ProjectFilePath {
     constants_species,
     constants_fieldmap,
     global_fieldmap,
+    fieldmap,
     initial_facing_table,
     pokemon_icon_table,
     pokemon_gfx,
@@ -230,9 +231,9 @@ public:
         // Reset non-version-specific settings
         this->usePoryScript = false;
         this->enableTripleLayerMetatiles = false;
-        this->newMapMetatileId = 1;
-        this->newMapElevation = 3;
-        this->newMapCollision = 0;
+        this->defaultMetatileId = 1;
+        this->defaultElevation = 3;
+        this->defaultCollision = 0;
         this->defaultPrimaryTileset = "gTileset_General";
         this->prefabFilepath = QString();
         this->prefabImportPrompted = false;
@@ -283,12 +284,12 @@ public:
     bool getTripleLayerMetatilesEnabled();
     int getNumLayersInMetatile();
     int getNumTilesInMetatile();
-    void setNewMapMetatileId(uint16_t metatileId);
-    uint16_t getNewMapMetatileId();
-    void setNewMapElevation(int elevation);
-    int getNewMapElevation();
-    void setNewMapCollision(int collision);
-    int getNewMapCollision();
+    void setDefaultMetatileId(uint16_t metatileId);
+    uint16_t getDefaultMetatileId();
+    void setDefaultElevation(int elevation);
+    int getDefaultElevation();
+    void setDefaultCollision(int collision);
+    int getDefaultCollision();
     void setNewMapBorderMetatileIds(QList<uint16_t> metatileIds);
     QList<uint16_t> getNewMapBorderMetatileIds();
     QString getDefaultPrimaryTileset();
@@ -337,6 +338,18 @@ public:
     void setCollisionSheetHeight(int height);
     int getCollisionSheetHeight();
 
+    // TODO: Replace these once there's generic support for editing project names
+    static const QString metatileIdMaskName;
+    static const QString collisionMaskName;
+    static const QString elevationMaskName;
+    static const QString behaviorMaskName;
+    static const QString layerTypeMaskName;
+    static const QString behaviorTableName;
+    static const QString layerTypeTableName;
+    static const QString terrainTypeTableName;
+    static const QString encounterTypeTableName;
+    static const QString attrTableName;
+
 protected:
     virtual QString getConfigFilepath() override;
     virtual void parseConfigKeyValue(QString key, QString value) override;
@@ -358,9 +371,9 @@ private:
     bool enableFloorNumber;
     bool createMapTextFile;
     bool enableTripleLayerMetatiles;
-    uint16_t newMapMetatileId;
-    int newMapElevation;
-    int newMapCollision;
+    uint16_t defaultMetatileId;
+    uint16_t defaultElevation;
+    uint16_t defaultCollision;
     QList<uint16_t> newMapBorderMetatileIds;
     QString defaultPrimaryTileset;
     QString defaultSecondaryTileset;

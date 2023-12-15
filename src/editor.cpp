@@ -1080,16 +1080,16 @@ void Editor::onHoveredMapMovementPermissionCleared() {
 
 QString Editor::getMovementPermissionText(uint16_t collision, uint16_t elevation) {
     QString message;
-    if (collision == 0 && elevation == 0) {
-        message = "Collision: Transition between elevations";
-    } else if (collision == 0 && elevation == 15) {
-        message = "Collision: Multi-Level (Bridge)";
-    } else if (collision == 0 && elevation == 1) {
-        message = "Collision: Surf";
-    } else if (collision == 0) {
-        message = QString("Collision: Passable, Elevation: %1").arg(elevation);
-    } else {
+    if (collision != 0) {
         message = QString("Collision: Impassable (%1), Elevation: %2").arg(collision).arg(elevation);
+    } else if (elevation == 0) {
+        message = "Collision: Transition between elevations";
+    } else if (elevation == 15) {
+        message = "Collision: Multi-Level (Bridge)";
+    } else if (elevation == 1) {
+        message = "Collision: Surf";
+    } else {
+        message = QString("Collision: Passable, Elevation: %1").arg(elevation);
     }
     return message;
 }
@@ -1497,7 +1497,7 @@ void Editor::displayMovementPermissionSelector() {
         connect(movement_permissions_selector_item, &SelectablePixmapItem::selectionChanged, [this](int x, int y, int, int) {
             this->setCollisionTabSpinBoxes(x, y);
         });
-        movement_permissions_selector_item->select(projectConfig.getNewMapCollision(), projectConfig.getNewMapElevation());
+        movement_permissions_selector_item->select(projectConfig.getDefaultCollision(), projectConfig.getDefaultElevation());
     }
 
     scene_collision_metatiles->addItem(movement_permissions_selector_item);

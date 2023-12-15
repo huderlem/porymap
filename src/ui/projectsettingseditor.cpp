@@ -87,7 +87,6 @@ void ProjectSettingsEditor::initUi() {
         ui->comboBox_DefaultPrimaryTileset->addItems(project->primaryTilesetLabels);
         ui->comboBox_DefaultSecondaryTileset->addItems(project->secondaryTilesetLabels);
         ui->comboBox_IconSpecies->addItems(project->speciesToIconPath.keys());
-        ui->comboBox_IconSpecies->setEditable(false);
     }
     ui->comboBox_BaseGameVersion->addItems(ProjectConfig::versionStrings);
     ui->comboBox_AttributesSize->addItems({"1", "2", "4"});
@@ -96,14 +95,14 @@ void ProjectSettingsEditor::initUi() {
     ui->mainTabs->setCurrentIndex(porymapConfig.getProjectSettingsTab());
 
     // Validate that the border metatiles text is a comma-separated list of metatile values
-    const QString regex_Hex = "(0[xX])?[A-Fa-f0-9]+";
+    static const QString regex_Hex = "(0[xX])?[A-Fa-f0-9]+";
     static const QRegularExpression expression(QString("^(%1,)*%1$").arg(regex_Hex)); // Comma-separated list of hex values
     QRegularExpressionValidator *validator = new QRegularExpressionValidator(expression);
     ui->lineEdit_BorderMetatiles->setValidator(validator);
     this->setBorderMetatilesUi(projectConfig.getUseCustomBorderSize());
 
     // Set spin box limits
-    int maxMetatileId = Block::getMaxMetatileId();
+    uint16_t maxMetatileId = Block::getMaxMetatileId();
     ui->spinBox_FillMetatile->setMaximum(maxMetatileId);
     ui->spinBox_BorderMetatile1->setMaximum(maxMetatileId);
     ui->spinBox_BorderMetatile2->setMaximum(maxMetatileId);
@@ -113,16 +112,52 @@ void ProjectSettingsEditor::initUi() {
     ui->spinBox_Collision->setMaximum(Block::getMaxCollision());
     ui->spinBox_MaxElevation->setMaximum(Block::getMaxElevation());
     ui->spinBox_MaxCollision->setMaximum(Block::getMaxCollision());
-    // TODO: Move to a global
-    ui->spinBox_MetatileIdMask->setMinimum(0x1);
-    ui->spinBox_MetatileIdMask->setMaximum(0xFFFF); // Metatile IDs can use all 16 bits of a block
-    ui->spinBox_CollisionMask->setMaximum(0xFFFE); // Collision/elevation can only use 15; metatile IDs must have at least 1 bit
-    ui->spinBox_ElevationMask->setMaximum(0xFFFE);
+    //ui->spinBox_MetatileIdMask->setMinimum(0x1);
+    ui->spinBox_MetatileIdMask->setMaximum(Block::maxValue);
+    ui->spinBox_CollisionMask->setMaximum(Block::maxValue);
+    ui->spinBox_ElevationMask->setMaximum(Block::maxValue);
+
+    // Some settings can be determined by constants in the project.
+    // We reflect that here by disabling their UI elements.
+    if (project) {
+        const QString maskFilepath = projectConfig.getFilePath(ProjectFilePath::global_fieldmap);
+        const QString attrTableFilepath = projectConfig.getFilePath(ProjectFilePath::fieldmap);
+
+        // Block masks
+        if (project->disabledSettingsNames.contains(ProjectConfig::metatileIdMaskName))
+            this->disableParsedSetting(ui->spinBox_MetatileIdMask, ProjectConfig::metatileIdMaskName, maskFilepath);
+        if (project->disabledSettingsNames.contains(ProjectConfig::collisionMaskName))
+            this->disableParsedSetting(ui->spinBox_CollisionMask, ProjectConfig::collisionMaskName, maskFilepath);
+        if (project->disabledSettingsNames.contains(ProjectConfig::elevationMaskName))
+            this->disableParsedSetting(ui->spinBox_ElevationMask, ProjectConfig::elevationMaskName, maskFilepath);
+
+        // Behavior mask
+        if (project->disabledSettingsNames.contains(ProjectConfig::behaviorMaskName))
+            this->disableParsedSetting(ui->spinBox_BehaviorMask, ProjectConfig::behaviorMaskName, maskFilepath);
+        else if (project->disabledSettingsNames.contains(ProjectConfig::behaviorTableName))
+            this->disableParsedSetting(ui->spinBox_BehaviorMask, ProjectConfig::attrTableName, attrTableFilepath);
+
+        // Layer type mask
+        if (project->disabledSettingsNames.contains(ProjectConfig::layerTypeMaskName))
+            this->disableParsedSetting(ui->spinBox_LayerTypeMask, ProjectConfig::layerTypeMaskName, maskFilepath);
+        else if (project->disabledSettingsNames.contains(ProjectConfig::layerTypeTableName))
+            this->disableParsedSetting(ui->spinBox_LayerTypeMask, ProjectConfig::attrTableName, attrTableFilepath);
+
+        // Encounter and terrain type masks
+        if (project->disabledSettingsNames.contains(ProjectConfig::terrainTypeTableName))
+            this->disableParsedSetting(ui->spinBox_TerrainTypeMask, ProjectConfig::attrTableName, attrTableFilepath);
+        if (project->disabledSettingsNames.contains(ProjectConfig::encounterTypeTableName))
+            this->disableParsedSetting(ui->spinBox_EncounterTypeMask, ProjectConfig::attrTableName, attrTableFilepath);
+    }
+}
+
+void ProjectSettingsEditor::disableParsedSetting(QWidget * widget, const QString &name, const QString &filepath) {
+    widget->setEnabled(false);
+    widget->setToolTip(QString("This value has been read from '%1' in %2").arg(name).arg(filepath));
 }
 
 void ProjectSettingsEditor::setBorderMetatilesUi(bool customSize) {
-    ui->widget_DefaultSizeBorderMetatiles->setVisible(!customSize);
-    ui->widget_CustomSizeBorderMetatiles->setVisible(customSize);
+    ui->stackedWidget_BorderMetatiles->setCurrentIndex(customSize ? 0 : 1);
 }
 
 void ProjectSettingsEditor::setBorderMetatileIds(bool customSize, QList<uint16_t> metatileIds) {
@@ -155,7 +190,7 @@ QList<uint16_t> ProjectSettingsEditor::getBorderMetatileIds(bool customSize) {
 }
 
 void ProjectSettingsEditor::updateAttributeLimits(const QString &attrSize) {
-    QMap<QString, uint32_t> limits {
+    static const QMap<QString, uint32_t> limits {
         {"1", 0xFF},
         {"2", 0xFFFF},
         {"4", 0xFFFFFFFF},
@@ -170,20 +205,19 @@ void ProjectSettingsEditor::updateAttributeLimits(const QString &attrSize) {
 // Only one icon path is displayed at a time, so we need to keep track of the rest,
 // and update the path edit when the user changes the selected species.
 // The existing icon path map in ProjectConfig is left alone to allow unsaved changes.
-void ProjectSettingsEditor::updatePokemonIconPath(const QString &species) {
+void ProjectSettingsEditor::updatePokemonIconPath(const QString &newSpecies) {
     if (!project) return;
 
     // If user was editing a path for a valid species, record filepath text before we wipe it.
-    if (!this->prevIconSpecies.isEmpty() && this->project->speciesToIconPath.contains(species)) {
+    if (!this->prevIconSpecies.isEmpty() && this->project->speciesToIconPath.contains(this->prevIconSpecies))
         this->editedPokemonIconPaths[this->prevIconSpecies] = ui->lineEdit_PokemonIcon->text();
-    }
 
-    QString editedPath = this->editedPokemonIconPaths.value(species);
-    QString defaultPath = this->project->speciesToIconPath.value(species);
+    QString editedPath = this->editedPokemonIconPaths.value(newSpecies);
+    QString defaultPath = this->project->speciesToIconPath.value(newSpecies);
 
     ui->lineEdit_PokemonIcon->setText(this->stripProjectDir(editedPath));
     ui->lineEdit_PokemonIcon->setPlaceholderText(this->stripProjectDir(defaultPath));
-    this->prevIconSpecies = species;
+    this->prevIconSpecies = newSpecies;
 }
 
 void ProjectSettingsEditor::createProjectPathsTable() {
@@ -282,18 +316,18 @@ void ProjectSettingsEditor::refresh() {
     ui->checkBox_OutputIsCompressed->setChecked(projectConfig.getTilesetsHaveIsCompressed());
 
     // Set spin box values
-    ui->spinBox_Elevation->setValue(projectConfig.getNewMapElevation());
-    ui->spinBox_Collision->setValue(projectConfig.getNewMapCollision());
-    ui->spinBox_FillMetatile->setValue(projectConfig.getNewMapMetatileId());
+    ui->spinBox_Elevation->setValue(projectConfig.getDefaultElevation());
+    ui->spinBox_Collision->setValue(projectConfig.getDefaultCollision());
+    ui->spinBox_FillMetatile->setValue(projectConfig.getDefaultMetatileId());
     ui->spinBox_MaxElevation->setValue(projectConfig.getCollisionSheetHeight() - 1);
     ui->spinBox_MaxCollision->setValue(projectConfig.getCollisionSheetWidth() - 1);
-    ui->spinBox_BehaviorMask->setValue(projectConfig.getMetatileBehaviorMask());
-    ui->spinBox_EncounterTypeMask->setValue(projectConfig.getMetatileEncounterTypeMask());
-    ui->spinBox_LayerTypeMask->setValue(projectConfig.getMetatileLayerTypeMask());
-    ui->spinBox_TerrainTypeMask->setValue(projectConfig.getMetatileTerrainTypeMask());
-    ui->spinBox_MetatileIdMask->setValue(projectConfig.getBlockMetatileIdMask());
-    ui->spinBox_CollisionMask->setValue(projectConfig.getBlockCollisionMask());
-    ui->spinBox_ElevationMask->setValue(projectConfig.getBlockElevationMask());
+    ui->spinBox_BehaviorMask->setValue(projectConfig.getMetatileBehaviorMask() & ui->spinBox_BehaviorMask->maximum());
+    ui->spinBox_EncounterTypeMask->setValue(projectConfig.getMetatileEncounterTypeMask() & ui->spinBox_EncounterTypeMask->maximum());
+    ui->spinBox_LayerTypeMask->setValue(projectConfig.getMetatileLayerTypeMask() & ui->spinBox_LayerTypeMask->maximum());
+    ui->spinBox_TerrainTypeMask->setValue(projectConfig.getMetatileTerrainTypeMask() & ui->spinBox_TerrainTypeMask->maximum());
+    ui->spinBox_MetatileIdMask->setValue(projectConfig.getBlockMetatileIdMask() & ui->spinBox_MetatileIdMask->maximum());
+    ui->spinBox_CollisionMask->setValue(projectConfig.getBlockCollisionMask() & ui->spinBox_CollisionMask->maximum());
+    ui->spinBox_ElevationMask->setValue(projectConfig.getBlockElevationMask() & ui->spinBox_ElevationMask->maximum());
 
     // Set (and sync) border metatile IDs
     auto metatileIds = projectConfig.getNewMapBorderMetatileIds();
@@ -345,9 +379,9 @@ void ProjectSettingsEditor::save() {
     projectConfig.setTilesetsHaveIsCompressed(ui->checkBox_OutputIsCompressed->isChecked());
 
     // Save spin box settings
-    projectConfig.setNewMapElevation(ui->spinBox_Elevation->value());
-    projectConfig.setNewMapCollision(ui->spinBox_Collision->value());
-    projectConfig.setNewMapMetatileId(ui->spinBox_FillMetatile->value());
+    projectConfig.setDefaultElevation(ui->spinBox_Elevation->value());
+    projectConfig.setDefaultCollision(ui->spinBox_Collision->value());
+    projectConfig.setDefaultMetatileId(ui->spinBox_FillMetatile->value());
     projectConfig.setCollisionSheetHeight(ui->spinBox_MaxElevation->value() + 1);
     projectConfig.setCollisionSheetWidth(ui->spinBox_MaxCollision->value() + 1);
     projectConfig.setMetatileBehaviorMask(ui->spinBox_BehaviorMask->value());
@@ -373,7 +407,9 @@ void ProjectSettingsEditor::save() {
     projectConfig.setNewMapBorderMetatileIds(this->getBorderMetatileIds(ui->checkBox_EnableCustomBorderSize->isChecked()));
 
     // Save pokemon icon paths
-    this->editedPokemonIconPaths.insert(ui->comboBox_IconSpecies->currentText(), ui->lineEdit_PokemonIcon->text());
+    const QString species = ui->comboBox_IconSpecies->currentText();
+    if (this->project->speciesToIconPath.contains(species))
+        this->editedPokemonIconPaths.insert(species, ui->lineEdit_PokemonIcon->text());
     for (auto i = this->editedPokemonIconPaths.cbegin(), end = this->editedPokemonIconPaths.cend(); i != end; i++)
         projectConfig.setPokemonIconPath(i.key(), i.value());
 
@@ -496,6 +532,7 @@ void ProjectSettingsEditor::closeEvent(QCloseEvent* event) {
     );
 
     if (this->projectNeedsReload) {
+        // Note: Declining this prompt with changes that need a reload may cause problems
         if (this->prompt("Settings changed, reload project to apply changes?") == QMessageBox::Yes){
             // Reloading the project will destroy this window, no other work should happen after this signal is emitted
             emit this->reloadProject();

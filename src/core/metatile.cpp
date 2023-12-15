@@ -104,6 +104,7 @@ void Metatile::setLayout(Project * project) {
     uint32_t encounterTypeMask = projectConfig.getMetatileEncounterTypeMask() & maxMask;
     uint32_t layerTypeMask = projectConfig.getMetatileLayerTypeMask() & maxMask;
 
+    // TODO: Overlap handling to settings editor; set red text box with similar text warning if overlapping
     // Overlapping masks are technically ok, but probably not intended.
     // Additionally, Porymap will not properly reflect that the values are linked.
     if (doMasksOverlap({behaviorMask, terrainTypeMask, encounterTypeMask, layerTypeMask})) {

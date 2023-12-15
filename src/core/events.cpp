@@ -35,7 +35,7 @@ int Event::getEventIndex() {
 void Event::setDefaultValues(Project *) {
     this->setX(0);
     this->setY(0);
-    this->setElevation(3);
+    this->setElevation(projectConfig.getDefaultElevation());
 }
 
 void Event::readCustomValues(QJsonObject values) {

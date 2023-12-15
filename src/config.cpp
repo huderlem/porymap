@@ -16,6 +16,17 @@
 #include <QAction>
 #include <QAbstractButton>
 
+const QString ProjectConfig::metatileIdMaskName = "MAPGRID_METATILE_ID_MASK";
+const QString ProjectConfig::collisionMaskName = "MAPGRID_COLLISION_MASK";
+const QString ProjectConfig::elevationMaskName = "MAPGRID_ELEVATION_MASK";
+const QString ProjectConfig::behaviorMaskName = "METATILE_ATTR_BEHAVIOR_MASK";
+const QString ProjectConfig::layerTypeMaskName = "METATILE_ATTR_LAYER_MASK";
+const QString ProjectConfig::behaviorTableName = "METATILE_ATTRIBUTE_BEHAVIOR";
+const QString ProjectConfig::layerTypeTableName = "METATILE_ATTRIBUTE_LAYER_TYPE";
+const QString ProjectConfig::terrainTypeTableName = "METATILE_ATTRIBUTE_TERRAIN";
+const QString ProjectConfig::encounterTypeTableName =  "METATILE_ATTRIBUTE_ENCOUNTER_TYPE";
+const QString ProjectConfig::attrTableName = "sMetatileAttrMasks";
+
 const QMap<ProjectFilePath, std::pair<QString, QString>> ProjectConfig::defaultPaths = {
     {ProjectFilePath::data_map_folders,                 { "data_map_folders",                "data/maps/"}},
     {ProjectFilePath::data_scripts_folders,             { "data_scripts_folders",            "data/scripts/"}},
@@ -60,6 +71,7 @@ const QMap<ProjectFilePath, std::pair<QString, QString>> ProjectConfig::defaultP
     {ProjectFilePath::constants_species,                { "constants_species",               "include/constants/species.h"}},
     {ProjectFilePath::constants_fieldmap,               { "constants_fieldmap",              "include/fieldmap.h"}},
     {ProjectFilePath::global_fieldmap,                  { "global_fieldmap",                 "include/global.fieldmap.h"}},
+    {ProjectFilePath::fieldmap,                         { "fieldmap",                        "src/fieldmap.c"}},
     {ProjectFilePath::pokemon_icon_table,               { "pokemon_icon_table",              "src/pokemon_icon.c"}},
     {ProjectFilePath::initial_facing_table,             { "initial_facing_table",            "src/event_object_movement.c"}},
     {ProjectFilePath::pokemon_gfx,                      { "pokemon_gfx",                     "graphics/pokemon/"}},
@@ -653,21 +665,17 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         this->createMapTextFile = getConfigBool(key, value);
     } else if (key == "enable_triple_layer_metatiles") {
         this->enableTripleLayerMetatiles = getConfigBool(key, value);
-    } else if (key == "new_map_metatile") {
-        // TODO: Update max once Block layout can be edited
-        this->newMapMetatileId = getConfigUint32(key, value, 0, 1023, 0);
-    } else if (key == "new_map_elevation") {
-        // TODO: Update max once Block layout can be edited
-        this->newMapElevation = getConfigInteger(key, value, 0, 15, 3);
-    } else if (key == "new_map_collision") {
-        // TODO: Update max once Block layout can be edited
-        this->newMapCollision = getConfigInteger(key, value, 0, 3, 0);
+    } else if (key == "default_metatile") {
+        this->defaultMetatileId = getConfigUint32(key, value, 0, Block::maxValue);
+    } else if (key == "default_elevation") {
+        this->defaultElevation = getConfigUint32(key, value, 0, Block::maxValue);
+    } else if (key == "default_collision") {
+        this->defaultCollision = getConfigUint32(key, value, 0, Block::maxValue);
     } else if (key == "new_map_border_metatiles") {
         this->newMapBorderMetatileIds.clear();
         QList<QString> metatileIds = value.split(",");
         for (int i = 0; i < metatileIds.size(); i++) {
-            // TODO: Update max once Block layout can be edited
-            int metatileId = getConfigUint32(key, metatileIds.at(i), 0, 1023, 0);
+            int metatileId = getConfigUint32(key, metatileIds.at(i), 0, Block::maxValue);
             this->newMapBorderMetatileIds.append(metatileId);
         }
     } else if (key == "default_primary_tileset") {
@@ -690,11 +698,11 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
     } else if (key == "metatile_layer_type_mask") {
         this->metatileLayerTypeMask = getConfigUint32(key, value);
     } else if (key == "block_metatile_id_mask") {
-        this->blockMetatileIdMask = getConfigUint32(key, value, 1, 0xFFFF);
+        this->blockMetatileIdMask = getConfigUint32(key, value, 0, Block::maxValue);
     } else if (key == "block_collision_mask") {
-        this->blockCollisionMask = getConfigUint32(key, value, 0, 0xFFFE);
+        this->blockCollisionMask = getConfigUint32(key, value, 0, Block::maxValue);
     } else if (key == "block_elevation_mask") {
-        this->blockElevationMask = getConfigUint32(key, value, 0, 0xFFFE);
+        this->blockElevationMask = getConfigUint32(key, value, 0, Block::maxValue);
     } else if (key == "enable_map_allow_flags") {
         this->enableMapAllowFlags = getConfigBool(key, value);
 #ifdef CONFIG_BACKWARDS_COMPATABILITY
@@ -735,10 +743,9 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
     } else if (key == "collision_sheet_path") {
         this->collisionSheetPath = value;
     } else if (key == "collision_sheet_width") {
-        // TODO: Update max once Block layout can be edited (0x7FFF for 15 bits)
-        this->collisionSheetWidth = getConfigInteger(key, value, 1, 4, 2);
+        this->collisionSheetWidth = getConfigUint32(key, value, 1, Block::maxValue);
     } else if (key == "collision_sheet_height") {
-        this->collisionSheetHeight = getConfigInteger(key, value, 1, 16, 16);
+        this->collisionSheetHeight = getConfigUint32(key, value, 1, Block::maxValue);
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -788,9 +795,9 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("enable_floor_number", QString::number(this->enableFloorNumber));
     map.insert("create_map_text_file", QString::number(this->createMapTextFile));
     map.insert("enable_triple_layer_metatiles", QString::number(this->enableTripleLayerMetatiles));
-    map.insert("new_map_metatile", Metatile::getMetatileIdString(this->newMapMetatileId));
-    map.insert("new_map_elevation", QString::number(this->newMapElevation));
-    map.insert("new_map_collision", QString::number(this->newMapCollision));
+    map.insert("default_metatile", Metatile::getMetatileIdString(this->defaultMetatileId));
+    map.insert("default_elevation", QString::number(this->defaultElevation));
+    map.insert("default_collision", QString::number(this->defaultCollision));
     map.insert("new_map_border_metatiles", Metatile::getMetatileIdStringList(this->newMapBorderMetatileIds));
     map.insert("default_primary_tileset", this->defaultPrimaryTileset);
     map.insert("default_secondary_tileset", this->defaultSecondaryTileset);
@@ -1027,31 +1034,31 @@ int ProjectConfig::getNumTilesInMetatile() {
     return this->enableTripleLayerMetatiles ? 12 : 8;
 }
 
-void ProjectConfig::setNewMapMetatileId(uint16_t metatileId) {
-    this->newMapMetatileId = metatileId;
+void ProjectConfig::setDefaultMetatileId(uint16_t metatileId) {
+    this->defaultMetatileId = metatileId;
     this->save();
 }
 
-uint16_t ProjectConfig::getNewMapMetatileId() {
-    return this->newMapMetatileId;
+uint16_t ProjectConfig::getDefaultMetatileId() {
+    return this->defaultMetatileId;
 }
 
-void ProjectConfig::setNewMapElevation(int elevation) {
-    this->newMapElevation = elevation;
+void ProjectConfig::setDefaultElevation(int elevation) {
+    this->defaultElevation = elevation;
     this->save();
 }
 
-int ProjectConfig::getNewMapElevation() {
-    return this->newMapElevation;
+int ProjectConfig::getDefaultElevation() {
+    return this->defaultElevation;
 }
 
-void ProjectConfig::setNewMapCollision(int collision) {
-    this->newMapCollision = collision;
+void ProjectConfig::setDefaultCollision(int collision) {
+    this->defaultCollision = collision;
     this->save();
 }
 
-int ProjectConfig::getNewMapCollision() {
-    return this->newMapCollision;
+int ProjectConfig::getDefaultCollision() {
+    return this->defaultCollision;
 }
 
 void ProjectConfig::setNewMapBorderMetatileIds(QList<uint16_t> metatileIds) {

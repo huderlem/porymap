@@ -372,8 +372,8 @@ void MainWindow::setWildEncountersUIEnabled(bool enabled) {
     ui->mainTabBar->setTabEnabled(4, enabled);
 }
 
-// Update the UI using information we've read from the user's project config file.
-void MainWindow::setProjectSpecificUI()
+// Update the UI using information we've read from the user's project files.
+bool MainWindow::setProjectSpecificUI()
 {
     this->setWildEncountersUIEnabled(userConfig.getEncounterJsonActive());
 
@@ -397,6 +397,7 @@ void MainWindow::setProjectSpecificUI()
     editor->setCollisionGraphics();
     ui->spinBox_SelectedElevation->setMaximum(Block::getMaxElevation());
     ui->spinBox_SelectedCollision->setMaximum(Block::getMaxCollision());
+    return true;
 }
 
 void MainWindow::mapSortOrder_changed(QAction *action)
@@ -513,14 +514,12 @@ bool MainWindow::openProject(QString dir) {
 
     this->statusBar()->showMessage(QString("Opening project %1").arg(nativeDir));
 
-    bool success = true;
     userConfig.setProjectDir(dir);
     userConfig.load();
     projectConfig.setProjectDir(dir);
     projectConfig.load();
 
     this->closeSupplementaryWindows();
-    this->setProjectSpecificUI();
     this->newMapDefaultsSet = false;
 
     Scripting::init(this);
@@ -537,19 +536,18 @@ bool MainWindow::openProject(QString dir) {
                 this->preferenceEditor->updateFields();
         });
         editor->project->set_root(dir);
-        success = loadDataStructures()
-               && populateMapList()
-               && setMap(getDefaultMap(), true);
     } else {
-        QString open_map = editor->map->name;
         editor->project->fileWatcher.removePaths(editor->project->fileWatcher.files());
         editor->project->clearMapCache();
         editor->project->clearTilesetCache();
-        success = loadDataStructures() && populateMapList() && setMap(open_map, true);
     }
-    
-    projectOpenFailure = !success;
-    if (projectOpenFailure) {
+
+    this->projectOpenFailure = !(loadDataStructures()
+                              && setProjectSpecificUI()
+                              && populateMapList()
+                              && setInitialMap());
+
+    if (this->projectOpenFailure) {
         this->statusBar()->showMessage(QString("Failed to open project %1").arg(nativeDir));
         QMessageBox msgBox(this);
         QString errorMsg = QString("There was an error opening the project %1. Please see %2 for full error details.\n\n%3")
@@ -576,28 +574,31 @@ bool MainWindow::isProjectOpen() {
     return !projectOpenFailure && editor && editor->project;
 }
 
-QString MainWindow::getDefaultMap() {
-    if (editor && editor->project) {
-        QList<QStringList> names = editor->project->groupedMapNames;
-        if (!names.isEmpty()) {
-            QString recentMap = userConfig.getRecentMap();
-            if (!recentMap.isNull() && recentMap.length() > 0) {
-                for (int i = 0; i < names.length(); i++) {
-                    if (names.value(i).contains(recentMap)) {
-                        return recentMap;
-                    }
-                }
-            }
-            // Failing that, just get the first map in the list.
-            for (int i = 0; i < names.length(); i++) {
-                QStringList list = names.value(i);
-                if (list.length()) {
-                    return list.value(0);
-                }
+bool MainWindow::setInitialMap() {
+    QList<QStringList> names;
+    if (editor && editor->project)
+        names = editor->project->groupedMapNames;
+
+    QString recentMap = userConfig.getRecentMap();
+    if (!recentMap.isEmpty()) {
+        // Make sure the recent map is still in the map list
+        for (int i = 0; i < names.length(); i++) {
+            if (names.value(i).contains(recentMap)) {
+                return setMap(recentMap, true);
             }
         }
     }
-    return QString();
+
+    // Failing that, just get the first map in the list.
+    for (int i = 0; i < names.length(); i++) {
+        QStringList list = names.value(i);
+        if (list.length()) {
+            return setMap(list.value(0), true);
+        }
+    }
+
+    logError("Failed to load any map names.");
+    return false;
 }
 
 void MainWindow::openSubWindow(QWidget * window) {
@@ -654,7 +655,7 @@ bool MainWindow::setMap(QString map_name, bool scrollTreeView) {
         return false;
     }
 
-    if (!editor->setMap(map_name)) {
+    if (!editor || !editor->setMap(map_name)) {
         logWarn(QString("Failed to set map to '%1'").arg(map_name));
         return false;
     }
@@ -1461,8 +1462,8 @@ void MainWindow::copy() {
                 collisions.clear();
                 for (int i = 0; i < metatiles.length(); i++) {
                     OrderedJson::object collision;
-                    collision["collision"] = 0;
-                    collision["elevation"] = 3;
+                    collision["collision"] = projectConfig.getDefaultCollision();
+                    collision["elevation"] = projectConfig.getDefaultElevation();
                     collisions.append(collision);
                 }
             }

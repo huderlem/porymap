@@ -54,6 +54,7 @@ private:
     void chooseImageFile(QLineEdit * filepathEdit);
     void chooseFile(QLineEdit * filepathEdit, const QString &description, const QString &extensions);
     QString stripProjectDir(QString s);
+    void disableParsedSetting(QWidget * widget, const QString &name, const QString &filepath);
 
 private slots:
     void dialogButtonClicked(QAbstractButton *button);

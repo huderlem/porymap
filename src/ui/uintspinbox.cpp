@@ -18,6 +18,7 @@ UIntSpinBox::UIntSpinBox(QWidget *parent)
 };
 
 void UIntSpinBox::setValue(uint32_t val) {
+    val = qMax(m_minimum, qMin(m_maximum, val));
     if (m_value != val) {
         m_value = val;
         emit valueChanged(m_value);

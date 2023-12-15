@@ -85,11 +85,7 @@ public:
     QMap<QString, qint64> modifiedFileTimestamps;
     bool usingAsmTilesets;
     QString importExportPath;
-    bool parsedMetatileIdMask;
-    bool parsedCollisionMask;
-    bool parsedElevationMask;
-    bool parsedBehaviorMask;
-    bool parsedLayerTypeMask;
+    QSet<QString> disabledSettingsNames;
 
     void set_root(QString);
 

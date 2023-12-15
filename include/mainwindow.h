@@ -350,7 +350,7 @@ private:
     void openSubWindow(QWidget * window);
     QString getExistingDirectory(QString);
     bool openProject(QString dir);
-    QString getDefaultMap();
+    bool setInitialMap();
     void setRecentMap(QString map_name);
     QStandardItem* createMapItem(QString mapName, int groupNum, int inGroupNum);
 
@@ -372,7 +372,7 @@ private:
     void initMapSortOrder();
     void initShortcuts();
     void initExtraShortcuts();
-    void setProjectSpecificUI();
+    bool setProjectSpecificUI();
     void setWildEncountersUIEnabled(bool enabled);
     void loadUserSettings();
     void applyMapListFilter(QString filterText);

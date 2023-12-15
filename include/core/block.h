@@ -26,10 +26,12 @@ public:
     static uint16_t getMaxCollision();
     static uint16_t getMaxElevation();
 
+    static const uint16_t maxValue;
+
 private:
-    uint16_t m_metatileId; // 10
-    uint16_t m_collision;  // 2
-    uint16_t m_elevation;  // 4
+    uint16_t m_metatileId;
+    uint16_t m_collision;
+    uint16_t m_elevation;
 };
 
 #endif // BLOCK_H

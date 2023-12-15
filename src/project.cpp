@@ -297,7 +297,7 @@ bool Project::loadMapData(Map* map) {
             heal->setMap(map);
             heal->setX(loc.x);
             heal->setY(loc.y);
-            heal->setElevation(3);
+            heal->setElevation(projectConfig.getDefaultElevation());
             heal->setLocationName(loc.mapName);
             heal->setIdName(loc.idName);
             heal->setIndex(loc.index);
@@ -1109,7 +1109,7 @@ void Project::setNewMapBlockdata(Map *map) {
     map->layout->blockdata.clear();
     int width = map->getWidth();
     int height = map->getHeight();
-    Block block(projectConfig.getNewMapMetatileId(), projectConfig.getNewMapCollision(), projectConfig.getNewMapElevation());
+    Block block(projectConfig.getDefaultMetatileId(), projectConfig.getDefaultCollision(), projectConfig.getDefaultElevation());
     for (int i = 0; i < width * height; i++) {
         map->layout->blockdata.append(block);
     }
@@ -1914,37 +1914,78 @@ bool Project::readTilesetProperties() {
 }
 
 // Read data masks for Blocks and metatile attributes.
-// These settings are exposed in the settings window. If any are parsed from
-// the project they'll be visible in the settings window but not editable.
 bool Project::readFieldmapMasks() {
     // We're looking for the suffix "_MASK". Technically our "prefix" is the whole define.
     static const QStringList definePrefixes{ "\\b\\w+_MASK" };
-    QString filename = projectConfig.getFilePath(ProjectFilePath::global_fieldmap);
-    fileWatcher.addPath(root + "/" + filename);
-    QMap<QString, int> defines = parser.readCDefines(filename, definePrefixes);
+    QString globalFieldmap = projectConfig.getFilePath(ProjectFilePath::global_fieldmap);
+    fileWatcher.addPath(root + "/" + globalFieldmap);
+    QMap<QString, int> defines = parser.readCDefines(globalFieldmap, definePrefixes);
 
-    auto it = defines.find("MAPGRID_METATILE_ID_MASK");
-    if ((parsedMetatileIdMask = (it != defines.end())))
+    // These mask values are accessible via the settings editor for users who don't have these defines.
+    // If users do have the defines we disable them in the settings editor and direct them to their project files.
+    // Record the names we read so we know later which settings to disable.
+    const QStringList defineNames = defines.keys();
+    this->disabledSettingsNames = QSet<QString>(defineNames.constBegin(), defineNames.constEnd());
+
+    // Avoid repeatedly writing the config file
+    projectConfig.setSaveDisabled(true);
+
+    // Read Block masks
+    auto it = defines.find(ProjectConfig::metatileIdMaskName);
+    if (it != defines.end())
         projectConfig.setBlockMetatileIdMask(static_cast<uint16_t>(it.value()));
-
-    it = defines.find("MAPGRID_COLLISION_MASK");
-    if ((parsedCollisionMask = (it != defines.end())))
+    it = defines.find(ProjectConfig::collisionMaskName);
+    if (it != defines.end())
         projectConfig.setBlockCollisionMask(static_cast<uint16_t>(it.value()));
-
-    it = defines.find("MAPGRID_ELEVATION_MASK");
-    if ((parsedElevationMask = (it != defines.end())))
+    it = defines.find(ProjectConfig::elevationMaskName);
+    if (it != defines.end())
         projectConfig.setBlockElevationMask(static_cast<uint16_t>(it.value()));
 
-    // TODO: For FRLG, parse from fieldmap.c?
-
-    it = defines.find("METATILE_ATTR_BEHAVIOR_MASK");
-    if ((parsedBehaviorMask = (it != defines.end())))
+    // Read RSE metatile attribute masks
+    it = defines.find(ProjectConfig::behaviorMaskName);
+    if (it != defines.end())
         projectConfig.setMetatileBehaviorMask(static_cast<uint32_t>(it.value()));
-
-    it = defines.find("METATILE_ATTR_LAYER_MASK");
-    if ((parsedLayerTypeMask = (it != defines.end())))
+    it = defines.find(ProjectConfig::layerTypeMaskName);
+    if (it != defines.end())
         projectConfig.setMetatileLayerTypeMask(static_cast<uint32_t>(it.value()));
 
+    // pokefirered keeps its attribute masks in a separate table, parse this too.
+    QString srcFieldmap = projectConfig.getFilePath(ProjectFilePath::fieldmap);
+    const QMap<QString, QString> attrTable = parser.readNamedIndexCArray(srcFieldmap, ProjectConfig::attrTableName);
+    if (!attrTable.isEmpty()) {
+        fileWatcher.addPath(root + "/" + srcFieldmap);
+        bool ok;
+        // Read terrain type mask
+        uint32_t mask = attrTable.value(ProjectConfig::terrainTypeTableName).toUInt(&ok, 0);
+        if (ok) {
+            projectConfig.setMetatileTerrainTypeMask(mask);
+            this->disabledSettingsNames.insert(ProjectConfig::terrainTypeTableName);
+        }
+        // Read encounter type mask
+        mask = attrTable.value(ProjectConfig::encounterTypeTableName).toUInt(&ok, 0);
+        if (ok) {
+            projectConfig.setMetatileEncounterTypeMask(mask);
+            this->disabledSettingsNames.insert(ProjectConfig::encounterTypeTableName);
+        }
+        // If we haven't already parsed behavior and layer type then try those too
+        if (!this->disabledSettingsNames.contains(ProjectConfig::behaviorMaskName)) {
+            // Read behavior mask
+            mask = attrTable.value(ProjectConfig::behaviorTableName).toUInt(&ok, 0);
+            if (ok) {
+                projectConfig.setMetatileBehaviorMask(mask);
+                this->disabledSettingsNames.insert(ProjectConfig::behaviorTableName);
+            }
+        }
+        if (!this->disabledSettingsNames.contains(ProjectConfig::layerTypeMaskName)) {
+            // Read layer type mask
+            mask = attrTable.value(ProjectConfig::layerTypeTableName).toUInt(&ok, 0);
+            if (ok) {
+                projectConfig.setMetatileLayerTypeMask(mask);
+                this->disabledSettingsNames.insert(ProjectConfig::layerTypeTableName);
+            }
+        }
+    }
+    projectConfig.setSaveDisabled(false);
     return true;
 }
 
