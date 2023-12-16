@@ -82,73 +82,66 @@ uint32_t Metatile::getDefaultAttributesMask(BaseGameVersion version, Metatile::A
     return vanillaPackers.value(attr).mask();
 }
 
-bool Metatile::doMasksOverlap(QList<uint32_t> masks) {
-    for (int i = 0; i < masks.length(); i++)
-    for (int j = i + 1; j < masks.length(); j++) {
-        if (masks.at(i) & masks.at(j))
-            return true;
-    }
-    return false;
-}
-
-void Metatile::setLayout(Project * project) {
-    // Read masks from the config and limit them based on the specified attribute size.
-    const QHash<int, uint32_t> maxMasks = {
+uint32_t Metatile::getMaxAttributesMask() {
+    static const QHash<int, uint32_t> maxMasks = {
         {1, 0xFF},
         {2, 0xFFFF},
         {4, 0xFFFFFFFF},
     };
-    uint32_t maxMask = maxMasks.value(projectConfig.getMetatileAttributesSize(), 0);
-    uint32_t behaviorMask = projectConfig.getMetatileBehaviorMask() & maxMask;
-    uint32_t terrainTypeMask = projectConfig.getMetatileTerrainTypeMask() & maxMask;
-    uint32_t encounterTypeMask = projectConfig.getMetatileEncounterTypeMask() & maxMask;
-    uint32_t layerTypeMask = projectConfig.getMetatileLayerTypeMask() & maxMask;
+    return maxMasks.value(projectConfig.getMetatileAttributesSize(), 0);
+}
 
-    // TODO: Overlap handling to settings editor; set red text box with similar text warning if overlapping
-    // Overlapping masks are technically ok, but probably not intended.
-    // Additionally, Porymap will not properly reflect that the values are linked.
-    if (doMasksOverlap({behaviorMask, terrainTypeMask, encounterTypeMask, layerTypeMask})) {
-        logWarn("Metatile attribute masks are overlapping. This may result in unexpected attribute values.");
-    }
-
+void Metatile::setLayout(Project * project) {
+    uint32_t behaviorMask = projectConfig.getMetatileBehaviorMask();
+    uint32_t terrainTypeMask = projectConfig.getMetatileTerrainTypeMask();
+    uint32_t encounterTypeMask = projectConfig.getMetatileEncounterTypeMask();
+    uint32_t layerTypeMask = projectConfig.getMetatileLayerTypeMask();
 
     // Calculate mask of bits not used by standard behaviors so we can preserve this data.
     uint32_t unusedMask = ~(behaviorMask | terrainTypeMask | encounterTypeMask | layerTypeMask);
-    unusedMask &= maxMask;
+    unusedMask &= Metatile::getMaxAttributesMask();
 
     BitPacker packer = BitPacker(unusedMask);
     attributePackers.clear();
     attributePackers.insert(Metatile::Attr::Unused, unusedMask);
 
-    // TODO: Test displaying 32 bit behavior
-    // TODO: Logging masks to hex
     // Validate metatile behavior mask
     packer.setMask(behaviorMask);
     if (behaviorMask && !project->metatileBehaviorMapInverse.isEmpty()) {
         uint32_t maxBehavior = project->metatileBehaviorMapInverse.lastKey();
         if (packer.clamp(maxBehavior) != maxBehavior)
-            logWarn(QString("Metatile Behavior mask '%1' is insufficient to contain all available options.").arg(behaviorMask));
+            logWarn(QString("Metatile Behavior mask '0x%1' is insufficient to contain all available options.")
+                                .arg(QString::number(behaviorMask, 16).toUpper()));
     }
     attributePackers.insert(Metatile::Attr::Behavior, packer);
 
     // Validate terrain type mask
     packer.setMask(terrainTypeMask);
     const uint32_t maxTerrainType = NUM_METATILE_TERRAIN_TYPES - 1;
-    if (terrainTypeMask && packer.clamp(maxTerrainType) != maxTerrainType)
-        logWarn(QString("Metatile Terrain Type mask '%1' is insufficient to contain all %2 available options.").arg(terrainTypeMask).arg(maxTerrainType + 1));
+    if (terrainTypeMask && packer.clamp(maxTerrainType) != maxTerrainType) {
+        logWarn(QString("Metatile Terrain Type mask '0x%1' is insufficient to contain all %2 available options.")
+                            .arg(QString::number(terrainTypeMask, 16).toUpper())
+                            .arg(maxTerrainType + 1));
+    }
     attributePackers.insert(Metatile::Attr::TerrainType, packer);
 
     // Validate encounter type mask
     packer.setMask(encounterTypeMask);
     const uint32_t maxEncounterType = NUM_METATILE_ENCOUNTER_TYPES - 1;
-    if (encounterTypeMask && packer.clamp(maxEncounterType) != maxEncounterType)
-        logWarn(QString("Metatile Encounter Type mask '%1' is insufficient to contain all %2 available options.").arg(encounterTypeMask).arg(maxEncounterType + 1));
+    if (encounterTypeMask && packer.clamp(maxEncounterType) != maxEncounterType) {
+        logWarn(QString("Metatile Encounter Type mask '0x%1' is insufficient to contain all %2 available options.")
+                            .arg(QString::number(encounterTypeMask, 16).toUpper())
+                            .arg(maxEncounterType + 1));
+    }
     attributePackers.insert(Metatile::Attr::EncounterType, packer);
 
     // Validate terrain type mask
     packer.setMask(layerTypeMask);
     const uint32_t maxLayerType = NUM_METATILE_LAYER_TYPES - 1;
-    if (layerTypeMask && packer.clamp(maxLayerType) != maxLayerType)
-        logWarn(QString("Metatile Layer Type mask '%1' is insufficient to contain all %2 available options.").arg(layerTypeMask).arg(maxLayerType + 1));
+    if (layerTypeMask && packer.clamp(maxLayerType) != maxLayerType) {
+        logWarn(QString("Metatile Layer Type mask '0x%1' is insufficient to contain all %2 available options.")
+                            .arg(QString::number(layerTypeMask, 16).toUpper())
+                            .arg(maxLayerType + 1));
+    }
     attributePackers.insert(Metatile::Attr::LayerType, packer);
 }

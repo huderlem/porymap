@@ -373,7 +373,7 @@ void MainWindow::setWildEncountersUIEnabled(bool enabled) {
 }
 
 // Update the UI using information we've read from the user's project files.
-bool MainWindow::setProjectSpecificUI()
+void MainWindow::setProjectSpecificUI()
 {
     this->setWildEncountersUIEnabled(userConfig.getEncounterJsonActive());
 
@@ -397,7 +397,6 @@ bool MainWindow::setProjectSpecificUI()
     editor->setCollisionGraphics();
     ui->spinBox_SelectedElevation->setMaximum(Block::getMaxElevation());
     ui->spinBox_SelectedCollision->setMaximum(Block::getMaxCollision());
-    return true;
 }
 
 void MainWindow::mapSortOrder_changed(QAction *action)
@@ -543,7 +542,6 @@ bool MainWindow::openProject(QString dir) {
     }
 
     this->projectOpenFailure = !(loadDataStructures()
-                              && setProjectSpecificUI()
                               && populateMapList()
                               && setInitialMap());
 
@@ -948,8 +946,8 @@ bool MainWindow::loadDataStructures() {
                 && project->readEventGraphics()
                 && project->readSongNames();
 
-    Block::setLayout();
-    Metatile::setLayout(project);
+    project->applyParsedLimits();
+    setProjectSpecificUI();
     Scripting::populateGlobalObject(this);
 
     return success && loadProjectCombos();

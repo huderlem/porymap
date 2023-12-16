@@ -216,6 +216,7 @@ public:
     QString getDefaultSecondaryTilesetLabel();
 
     void setImportExportPath(QString filename);
+    void applyParsedLimits();
 
     static int getNumTilesPrimary();
     static int getNumTilesTotal();

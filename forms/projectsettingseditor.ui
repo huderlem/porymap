@@ -21,7 +21,7 @@
     <item>
      <widget class="QTabWidget" name="mainTabs">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tab_General">
        <attribute name="title">
@@ -370,7 +370,7 @@
              <x>0</x>
              <y>0</y>
              <width>531</width>
-             <height>545</height>
+             <height>587</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_16">
@@ -603,24 +603,17 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="1" column="0">
-                   <widget class="QLabel" name="label_CollisionMask">
-                    <property name="text">
-                     <string>Collision</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="0">
-                   <widget class="QLabel" name="label_ElevationMask">
-                    <property name="text">
-                     <string>Elevation</string>
-                    </property>
-                   </widget>
-                  </item>
                   <item row="0" column="1">
                    <widget class="UIntHexSpinBox" name="spinBox_MetatileIdMask" native="true">
                     <property name="toolTip">
                      <string>The mask used to read/write metatile IDs in map data.</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0">
+                   <widget class="QLabel" name="label_CollisionMask">
+                    <property name="text">
+                     <string>Collision</string>
                     </property>
                    </widget>
                   </item>
@@ -631,10 +624,30 @@
                     </property>
                    </widget>
                   </item>
+                  <item row="2" column="0">
+                   <widget class="QLabel" name="label_ElevationMask">
+                    <property name="text">
+                     <string>Elevation</string>
+                    </property>
+                   </widget>
+                  </item>
                   <item row="2" column="1">
                    <widget class="UIntHexSpinBox" name="spinBox_ElevationMask" native="true">
                     <property name="toolTip">
                      <string>The mask used to read/write elevation values in map data.</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="0" colspan="2">
+                   <widget class="QLabel" name="label_OverlapWarningBlocks">
+                    <property name="styleSheet">
+                     <string notr="true">color : red;</string>
+                    </property>
+                    <property name="text">
+                     <string>These masks have overlapping bits. This may result in unexpected value changes.</string>
+                    </property>
+                    <property name="wordWrap">
+                     <bool>true</bool>
                     </property>
                    </widget>
                   </item>
@@ -731,7 +744,7 @@
              <x>0</x>
              <y>0</y>
              <width>528</width>
-             <height>522</height>
+             <height>568</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -799,10 +812,17 @@
                   <string>Metatiles</string>
                  </property>
                  <layout class="QGridLayout" name="gridLayout_2">
-                  <item row="4" column="0">
-                   <widget class="QLabel" name="label_LayerTypeMask">
-                    <property name="text">
-                     <string>Layer Type mask</string>
+                  <item row="4" column="1">
+                   <widget class="UIntHexSpinBox" name="spinBox_LayerTypeMask" native="true">
+                    <property name="toolTip">
+                     <string>The mask used to read/write Layer Type from the metatile's attributes data. If 0, this attribute is disabled.</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="1">
+                   <widget class="UIntHexSpinBox" name="spinBox_BehaviorMask" native="true">
+                    <property name="toolTip">
+                     <string>The mask used to read/write Metatile Behavior from the metatile's attributes data. If 0, this attribute is disabled.</string>
                     </property>
                    </widget>
                   </item>
@@ -816,24 +836,33 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="2" column="1">
-                   <widget class="NoScrollComboBox" name="comboBox_AttributesSize">
-                    <property name="editable">
-                     <bool>false</bool>
+                  <item row="1" column="0">
+                   <spacer name="verticalSpacer">
+                    <property name="orientation">
+                     <enum>Qt::Vertical</enum>
                     </property>
-                   </widget>
-                  </item>
-                  <item row="5" column="1">
-                   <widget class="UIntHexSpinBox" name="spinBox_EncounterTypeMask" native="true">
-                    <property name="toolTip">
-                     <string>The mask used to read/write Encounter Type from the metatile's attributes data. If 0, this attribute is disabled.</string>
+                    <property name="sizeType">
+                     <enum>QSizePolicy::Maximum</enum>
                     </property>
-                   </widget>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>20</width>
+                      <height>10</height>
+                     </size>
+                    </property>
+                   </spacer>
                   </item>
-                  <item row="3" column="0">
-                   <widget class="QLabel" name="label_BehaviorMask">
+                  <item row="5" column="0">
+                   <widget class="QLabel" name="label_EncounterTypeMask">
                     <property name="text">
-                     <string>Behavior mask</string>
+                     <string>Encounter Type mask</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="0">
+                   <widget class="QCheckBox" name="checkBox_EnableTripleLayerMetatiles">
+                    <property name="text">
+                     <string>Enable Triple Layer Metatiles</string>
                     </property>
                    </widget>
                   </item>
@@ -844,18 +873,46 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="1" column="0">
-                   <spacer name="verticalSpacer">
-                    <property name="orientation">
-                     <enum>Qt::Vertical</enum>
+                  <item row="3" column="0">
+                   <widget class="QLabel" name="label_BehaviorMask">
+                    <property name="text">
+                     <string>Behavior mask</string>
                     </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>20</width>
-                      <height>15</height>
-                     </size>
+                   </widget>
+                  </item>
+                  <item row="8" column="0" colspan="2">
+                   <widget class="QLabel" name="label_OverlapWarningMetatiles">
+                    <property name="styleSheet">
+                     <string notr="true">color : red;</string>
                     </property>
-                   </spacer>
+                    <property name="text">
+                     <string>These masks have overlapping bits. This may result in unexpected value changes.</string>
+                    </property>
+                    <property name="wordWrap">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="5" column="1">
+                   <widget class="UIntHexSpinBox" name="spinBox_EncounterTypeMask" native="true">
+                    <property name="toolTip">
+                     <string>The mask used to read/write Encounter Type from the metatile's attributes data. If 0, this attribute is disabled.</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="4" column="0">
+                   <widget class="QLabel" name="label_LayerTypeMask">
+                    <property name="text">
+                     <string>Layer Type mask</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="1">
+                   <widget class="NoScrollComboBox" name="comboBox_AttributesSize">
+                    <property name="editable">
+                     <bool>false</bool>
+                    </property>
+                   </widget>
                   </item>
                   <item row="7" column="0">
                    <widget class="QLabel" name="label_TerrainTypeMask">
@@ -864,33 +921,21 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="5" column="0">
-                   <widget class="QLabel" name="label_EncounterTypeMask">
-                    <property name="text">
-                     <string>Encounter Type mask</string>
+                  <item row="9" column="0">
+                   <spacer name="verticalSpacer_6">
+                    <property name="orientation">
+                     <enum>Qt::Vertical</enum>
                     </property>
-                   </widget>
-                  </item>
-                  <item row="3" column="1">
-                   <widget class="UIntHexSpinBox" name="spinBox_BehaviorMask" native="true">
-                    <property name="toolTip">
-                     <string>The mask used to read/write Metatile Behavior from the metatile's attributes data. If 0, this attribute is disabled.</string>
+                    <property name="sizeType">
+                     <enum>QSizePolicy::MinimumExpanding</enum>
                     </property>
-                   </widget>
-                  </item>
-                  <item row="4" column="1">
-                   <widget class="UIntHexSpinBox" name="spinBox_LayerTypeMask" native="true">
-                    <property name="toolTip">
-                     <string>The mask used to read/write Layer Type from the metatile's attributes data. If 0, this attribute is disabled.</string>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>20</width>
+                      <height>1</height>
+                     </size>
                     </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="0">
-                   <widget class="QCheckBox" name="checkBox_EnableTripleLayerMetatiles">
-                    <property name="text">
-                     <string>Enable Triple Layer Metatiles</string>
-                    </property>
-                   </widget>
+                   </spacer>
                   </item>
                  </layout>
                 </widget>

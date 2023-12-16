@@ -21,7 +21,7 @@ void BitPacker::setMask(uint32_t mask) {
     m_maxValue = (m_setBits.length() >= 32) ? UINT_MAX : ((1 << m_setBits.length()) - 1);
 }
 
-// Given an arbitrary value to set for this bitfield member, returns a bounded value that can later be packed losslessly.
+// Given an arbitrary value to set for this bitfield member, returns a (potentially truncated) value that can later be packed losslessly.
 uint32_t BitPacker::clamp(uint32_t value) const {
     return (m_maxValue == UINT_MAX) ? value : (value % (m_maxValue + 1));
 }

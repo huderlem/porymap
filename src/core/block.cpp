@@ -12,7 +12,7 @@ static BitPacker bitsElevation = BitPacker(0xF000);
 Block::Block() :
     m_metatileId(0),
     m_collision(0),
-    m_elevation(0) 
+    m_elevation(0)
 {  }
 
 Block::Block(uint16_t metatileId, uint16_t collision, uint16_t elevation) :
@@ -46,32 +46,10 @@ uint16_t Block::rawValue() const {
           | bitsElevation.pack(m_elevation);
 }
 
-// TODO: After parsing, recalc config (or parsed!) values that depend on max collision/elevation
-/*      - newMapMetatileId
-        - newMapElevation
-        - newMapCollision
-        - newMapBorderMetatileIds
-        - collisionSheetWidth
-        - collisionSheetHeight
-        - NUM_METATILES_IN_PRIMARY
-        - event elevations
-        - metatile labels?
-
-*/
-// TODO: Settings editor -- disable UI & restore after refresh
 void Block::setLayout() {
     bitsMetatileId.setMask(projectConfig.getBlockMetatileIdMask());
     bitsCollision.setMask(projectConfig.getBlockCollisionMask());
     bitsElevation.setMask(projectConfig.getBlockElevationMask());
-
-    // Some settings may need to be reevaluated based on the layout
-    /*uint16_t metatileId = projectConfig.getNewMapMetatileId();
-    if (bitsMetatileId.clamp(metatileId) != metatileId)
-        projectConfig.setNewMapMetatileId(bitsMetatileId.clamp(metatileId));
-    uint16_t metatileId = projectConfig.getNewMapMetatileId();
-    if (bitsMetatileId.clamp(metatileId) != metatileId)
-        projectConfig.setNewMapMetatileId(bitsMetatileId.clamp(metatileId));*/
-    
 }
 
 bool Block::operator ==(Block other) const {

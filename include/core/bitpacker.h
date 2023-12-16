@@ -2,7 +2,6 @@
 #define BITPACKER_H
 
 #include <QList>
-//#include <cstdint>
 
 class BitPacker
 {

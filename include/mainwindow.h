@@ -372,7 +372,7 @@ private:
     void initMapSortOrder();
     void initShortcuts();
     void initExtraShortcuts();
-    bool setProjectSpecificUI();
+    void setProjectSpecificUI();
     void setWildEncountersUIEnabled(bool enabled);
     void loadUserSettings();
     void applyMapListFilter(QString filterText);

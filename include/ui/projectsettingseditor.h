@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "project.h"
+#include "ui_projectsettingseditor.h"
 
 class NoScrollComboBox;
 class QAbstractButton;
@@ -55,6 +56,7 @@ private:
     void chooseFile(QLineEdit * filepathEdit, const QString &description, const QString &extensions);
     QString stripProjectDir(QString s);
     void disableParsedSetting(QWidget * widget, const QString &name, const QString &filepath);
+    void updateMaskOverlapWarning(QLabel * warning, QList<UIntSpinBox*> masks);
 
 private slots:
     void dialogButtonClicked(QAbstractButton *button);
@@ -63,6 +65,8 @@ private slots:
     void updatePokemonIconPath(const QString &species);
     void markEdited();
     void on_mainTabs_tabBarClicked(int index);
+    void updateBlockMaskOverlapWarning();
+    void updateAttributeMaskOverlapWarning();
 };
 
 #endif // PROJECTSETTINGSEDITOR_H

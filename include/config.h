@@ -286,10 +286,10 @@ public:
     int getNumTilesInMetatile();
     void setDefaultMetatileId(uint16_t metatileId);
     uint16_t getDefaultMetatileId();
-    void setDefaultElevation(int elevation);
-    int getDefaultElevation();
-    void setDefaultCollision(int collision);
-    int getDefaultCollision();
+    void setDefaultElevation(uint16_t elevation);
+    uint16_t getDefaultElevation();
+    void setDefaultCollision(uint16_t collision);
+    uint16_t getDefaultCollision();
     void setNewMapBorderMetatileIds(QList<uint16_t> metatileIds);
     QList<uint16_t> getNewMapBorderMetatileIds();
     QString getDefaultPrimaryTileset();

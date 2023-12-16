@@ -27,7 +27,7 @@ using OrderedJsonDoc = poryjson::JsonDoc;
 
 int Project::num_tiles_primary = 512;
 int Project::num_tiles_total = 1024;
-int Project::num_metatiles_primary = 512; // TODO: Verify fits within max
+int Project::num_metatiles_primary = 512;
 int Project::num_pals_primary = 6;
 int Project::num_pals_total = 13;
 int Project::max_map_data_size = 10240; // 0x2800
@@ -1865,7 +1865,7 @@ bool Project::readTilesetLabels() {
 }
 
 bool Project::readTilesetProperties() {
-    static const QStringList definePrefixes{ "\\bNUM_" };
+    QStringList definePrefixes{ "\\bNUM_" };
     QString filename = projectConfig.getFilePath(ProjectFilePath::constants_fieldmap);
     fileWatcher.addPath(root + "/" + filename);
     QMap<QString, int> defines = parser.readCDefines(filename, definePrefixes);
@@ -1916,7 +1916,7 @@ bool Project::readTilesetProperties() {
 // Read data masks for Blocks and metatile attributes.
 bool Project::readFieldmapMasks() {
     // We're looking for the suffix "_MASK". Technically our "prefix" is the whole define.
-    static const QStringList definePrefixes{ "\\b\\w+_MASK" };
+    QStringList definePrefixes{ "\\b\\w+_MASK" };
     QString globalFieldmap = projectConfig.getFilePath(ProjectFilePath::global_fieldmap);
     fileWatcher.addPath(root + "/" + globalFieldmap);
     QMap<QString, int> defines = parser.readCDefines(globalFieldmap, definePrefixes);
@@ -1990,7 +1990,7 @@ bool Project::readFieldmapMasks() {
 }
 
 bool Project::readMaxMapDataSize() {
-    static const QStringList definePrefixes{ "\\bMAX_" };
+    QStringList definePrefixes{ "\\bMAX_" };
     QString filename = projectConfig.getFilePath(ProjectFilePath::constants_fieldmap); // already in fileWatcher from readTilesetProperties
     QMap<QString, int> defines = parser.readCDefines(filename, definePrefixes);
 
@@ -2333,7 +2333,7 @@ bool Project::readMiscellaneousConstants() {
 
     QString filename = projectConfig.getFilePath(ProjectFilePath::constants_global);
     fileWatcher.addPath(root + "/" + filename);
-    static const QStringList definePrefixes("\\bOBJECT_");
+    QStringList definePrefixes("\\bOBJECT_");
     QMap<QString, int> defines = parser.readCDefines(filename, definePrefixes);
 
     auto it = defines.find("OBJECT_EVENT_TEMPLATES_COUNT");
@@ -2704,4 +2704,33 @@ int Project::getMaxObjectEvents()
 void Project::setImportExportPath(QString filename)
 {
     this->importExportPath = QFileInfo(filename).absolutePath();
+}
+
+// The values of some config fields can limit the values of other config fields
+// (for example, metatile attributes size limits the metatile attribute masks).
+// Others depend on information in the project (for example the default metatile ID
+// can be limited by fieldmap defines)
+// Once we've read data from the project files we can adjust these accordingly.
+void Project::applyParsedLimits() {
+    // Avoid repeatedly writing the config file
+    projectConfig.setSaveDisabled(true);
+
+    uint32_t maxMask = Metatile::getMaxAttributesMask();
+    projectConfig.setMetatileBehaviorMask(projectConfig.getMetatileBehaviorMask() & maxMask);
+    projectConfig.setMetatileTerrainTypeMask(projectConfig.getMetatileTerrainTypeMask() & maxMask);
+    projectConfig.setMetatileEncounterTypeMask(projectConfig.getMetatileEncounterTypeMask() & maxMask);
+    projectConfig.setMetatileLayerTypeMask(projectConfig.getMetatileLayerTypeMask() & maxMask);
+
+    Block::setLayout();
+    Metatile::setLayout(this);
+
+    Project::num_metatiles_primary = qMin(Project::num_metatiles_primary, Block::getMaxMetatileId() + 1);
+    projectConfig.setDefaultMetatileId(qMin(projectConfig.getDefaultMetatileId(), Block::getMaxMetatileId()));
+    projectConfig.setDefaultElevation(qMin(projectConfig.getDefaultElevation(), Block::getMaxElevation()));
+    projectConfig.setDefaultCollision(qMin(projectConfig.getDefaultCollision(), Block::getMaxCollision()));
+    projectConfig.setCollisionSheetHeight(qMin(projectConfig.getCollisionSheetHeight(), Block::getMaxElevation() + 1));
+    projectConfig.setCollisionSheetWidth(qMin(projectConfig.getCollisionSheetWidth(), Block::getMaxCollision() + 1));
+
+    projectConfig.setSaveDisabled(false);
+    projectConfig.save();
 }

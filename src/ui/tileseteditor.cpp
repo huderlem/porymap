@@ -113,7 +113,7 @@ void TilesetEditor::initUi() {
 
 void TilesetEditor::setAttributesUi() {
     // Behavior
-    if (projectConfig.getMetatileBehaviorMask() != 0) {
+    if (projectConfig.getMetatileBehaviorMask()) {
         for (int num : project->metatileBehaviorMapInverse.keys()) {
             this->ui->comboBox_metatileBehaviors->addItem(project->metatileBehaviorMapInverse[num], num);
         }

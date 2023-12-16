@@ -11,7 +11,6 @@
 
 class Project;
 
-// TODO: Reevaluate enums
 enum {
     METATILE_LAYER_MIDDLE_TOP,
     METATILE_LAYER_BOTTOM_MIDDLE,
@@ -72,6 +71,7 @@ public:
     static int getIndexInTileset(int);
     static QPoint coordFromPixmapCoord(const QPointF &pixelCoord);
     static uint32_t getDefaultAttributesMask(BaseGameVersion version, Metatile::Attr attr);
+    static uint32_t getMaxAttributesMask();
     static int getDefaultAttributesSize(BaseGameVersion version);
     static void setLayout(Project*);
     static QString getMetatileIdString(uint16_t metatileId) {

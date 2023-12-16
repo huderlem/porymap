@@ -1043,21 +1043,21 @@ uint16_t ProjectConfig::getDefaultMetatileId() {
     return this->defaultMetatileId;
 }
 
-void ProjectConfig::setDefaultElevation(int elevation) {
+void ProjectConfig::setDefaultElevation(uint16_t elevation) {
     this->defaultElevation = elevation;
     this->save();
 }
 
-int ProjectConfig::getDefaultElevation() {
+uint16_t ProjectConfig::getDefaultElevation() {
     return this->defaultElevation;
 }
 
-void ProjectConfig::setDefaultCollision(int collision) {
+void ProjectConfig::setDefaultCollision(uint16_t collision) {
     this->defaultCollision = collision;
     this->save();
 }
 
-int ProjectConfig::getDefaultCollision() {
+uint16_t ProjectConfig::getDefaultCollision() {
     return this->defaultCollision;
 }
 

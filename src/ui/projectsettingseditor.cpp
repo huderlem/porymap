@@ -1,5 +1,4 @@
 #include "projectsettingseditor.h"
-#include "ui_projectsettingseditor.h"
 #include "config.h"
 #include "noscrollcombobox.h"
 #include "prefab.h"
@@ -54,6 +53,15 @@ void ProjectSettingsEditor::connectSignals() {
     connect(ui->button_BGsIcon,           &QAbstractButton::clicked, [this](bool) { this->chooseImageFile(ui->lineEdit_BGsIcon); });
     connect(ui->button_HealspotsIcon,     &QAbstractButton::clicked, [this](bool) { this->chooseImageFile(ui->lineEdit_HealspotsIcon); });
     connect(ui->button_PokemonIcon,       &QAbstractButton::clicked, [this](bool) { this->chooseImageFile(ui->lineEdit_PokemonIcon); });
+
+    // Display a warning if a mask value overlaps with another mask in its group.
+    connect(ui->spinBox_MetatileIdMask, &UIntSpinBox::textChanged, this, &ProjectSettingsEditor::updateBlockMaskOverlapWarning);
+    connect(ui->spinBox_CollisionMask,  &UIntSpinBox::textChanged, this, &ProjectSettingsEditor::updateBlockMaskOverlapWarning);
+    connect(ui->spinBox_ElevationMask,  &UIntSpinBox::textChanged, this, &ProjectSettingsEditor::updateBlockMaskOverlapWarning);
+    connect(ui->spinBox_BehaviorMask,      &UIntSpinBox::textChanged, this, &ProjectSettingsEditor::updateAttributeMaskOverlapWarning);
+    connect(ui->spinBox_LayerTypeMask,     &UIntSpinBox::textChanged, this, &ProjectSettingsEditor::updateAttributeMaskOverlapWarning);
+    connect(ui->spinBox_EncounterTypeMask, &UIntSpinBox::textChanged, this, &ProjectSettingsEditor::updateAttributeMaskOverlapWarning);
+    connect(ui->spinBox_TerrainTypeMask,   &UIntSpinBox::textChanged, this, &ProjectSettingsEditor::updateAttributeMaskOverlapWarning);
 
     // Record that there are unsaved changes if any of the settings are modified
     for (auto combo : ui->centralwidget->findChildren<NoScrollComboBox *>()){
@@ -112,7 +120,6 @@ void ProjectSettingsEditor::initUi() {
     ui->spinBox_Collision->setMaximum(Block::getMaxCollision());
     ui->spinBox_MaxElevation->setMaximum(Block::getMaxElevation());
     ui->spinBox_MaxCollision->setMaximum(Block::getMaxCollision());
-    //ui->spinBox_MetatileIdMask->setMinimum(0x1);
     ui->spinBox_MetatileIdMask->setMaximum(Block::maxValue);
     ui->spinBox_CollisionMask->setMaximum(Block::maxValue);
     ui->spinBox_ElevationMask->setMaximum(Block::maxValue);
@@ -187,6 +194,47 @@ QList<uint16_t> ProjectSettingsEditor::getBorderMetatileIds(bool customSize) {
         metatileIds.append(ui->spinBox_BorderMetatile4->value());
     }
     return metatileIds;
+}
+
+// Show/hide warning for overlapping mask values. These are technically ok, but probably not intended.
+// Additionally, Porymap will not properly reflect that the values are linked.
+void ProjectSettingsEditor::updateMaskOverlapWarning(QLabel * warning, QList<UIntSpinBox*> masks) {
+    // Find any overlapping masks
+    QMap<int, bool> overlapping;
+    for (int i = 0; i < masks.length(); i++)
+    for (int j = i + 1; j < masks.length(); j++) {
+        if (masks.at(i)->value() & masks.at(j)->value())
+            overlapping[i] = overlapping[j] = true;
+    }
+
+    // It'de nice if we could style this as a persistent red border around the line edit for any
+    // overlapping masks. As it is editing the border undesirably modifies the arrow buttons.
+    // This stylesheet will just highlight the currently selected line edit, which is fine enough.
+    static const QString styleSheet = "QAbstractSpinBox { selection-background-color: rgba(255, 0, 0, 25%) }";
+
+    // Update warning display
+    if (warning) warning->setHidden(overlapping.isEmpty());
+    for (int i = 0; i < masks.length(); i++)
+        masks.at(i)->setStyleSheet(overlapping.contains(i) ? styleSheet : "");
+}
+
+void ProjectSettingsEditor::updateBlockMaskOverlapWarning() {
+    const auto masks = QList<UIntSpinBox*>{
+        ui->spinBox_MetatileIdMask,
+        ui->spinBox_CollisionMask,
+        ui->spinBox_ElevationMask,
+    };
+    this->updateMaskOverlapWarning(ui->label_OverlapWarningBlocks, masks);
+}
+
+void ProjectSettingsEditor::updateAttributeMaskOverlapWarning() {
+    const auto masks = QList<UIntSpinBox*>{
+        ui->spinBox_BehaviorMask,
+        ui->spinBox_LayerTypeMask,
+        ui->spinBox_EncounterTypeMask,
+        ui->spinBox_TerrainTypeMask,
+    };
+    this->updateMaskOverlapWarning(ui->label_OverlapWarningMetatiles, masks);
 }
 
 void ProjectSettingsEditor::updateAttributeLimits(const QString &attrSize) {
