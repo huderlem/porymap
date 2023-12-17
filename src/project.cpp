@@ -885,86 +885,71 @@ void Project::saveTilesets(Tileset *primaryTileset, Tileset *secondaryTileset) {
     saveTilesetPalettes(secondaryTileset);
 }
 
+void Project::updateTilesetMetatileLabels(Tileset *tileset) {
+    // Erase old labels, then repopulate with new labels
+    const QString prefix = tileset->getMetatileLabelPrefix();
+    metatileLabelsMap[tileset->name].clear();
+    for (int metatileId : tileset->metatileLabels.keys()) {
+        if (tileset->metatileLabels[metatileId].isEmpty())
+            continue;
+        QString label = prefix + tileset->metatileLabels[metatileId];
+        metatileLabelsMap[tileset->name][label] = metatileId;
+    }
+}
+
+// Given a map of define names to define values, returns a formatted list of #defines
+QString Project::buildMetatileLabelsText(const QMap<QString, int> defines) {
+    QStringList labels = defines.keys();
+
+    // Setup for pretty formatting.
+    int longestLength = 0;
+    for (QString label : labels) {
+        if (label.size() > longestLength)
+            longestLength = label.size();
+    }
+
+    // Generate defines text
+    QString output = QString();
+    for (QString label : labels) {
+        QString line = QString("#define %1  %2\n")
+            .arg(label, -1 * longestLength)
+            .arg(Metatile::getMetatileIdString(defines[label]));
+        output += line;
+    }
+    return output;
+}
+
 void Project::saveTilesetMetatileLabels(Tileset *primaryTileset, Tileset *secondaryTileset) {
-    QString primaryPrefix = primaryTileset->getMetatileLabelPrefix();
-    QString secondaryPrefix = secondaryTileset->getMetatileLabelPrefix();
-
-    QMap<QString, int> defines;
-    bool definesFileModified = false;
-
-    QString metatileLabelsFilename = projectConfig.getFilePath(ProjectFilePath::constants_metatile_labels);
-    defines = parser.readCDefines(metatileLabelsFilename, (QStringList() << "METATILE_"));
-
-    // Purge old entries from the file.
-    QStringList definesToRemove;
-    for (QString defineName : defines.keys()) {
-        if (defineName.startsWith(primaryPrefix) || defineName.startsWith(secondaryPrefix)) {
-            definesToRemove << defineName;
-        }
-    }
-    for (QString defineName : definesToRemove) {
-        defines.remove(defineName);
-        definesFileModified = true;
-    }
-
-    // Add the new labels.
-    for (int metatileId : primaryTileset->metatileLabels.keys()) {
-        QString label = primaryTileset->metatileLabels.value(metatileId);
-        if (label.isEmpty()) continue;
-        QString defineName = QString("%1%2").arg(primaryPrefix, label);
-        defines.insert(defineName, metatileId);
-        definesFileModified = true;
-    }
-    for (int metatileId : secondaryTileset->metatileLabels.keys()) {
-        QString label = secondaryTileset->metatileLabels.value(metatileId);
-        if (label.isEmpty()) continue;
-        QString defineName = QString("%1%2").arg(secondaryPrefix, label);
-        defines.insert(defineName, metatileId);
-        definesFileModified = true;
-    }
-
-    if (!definesFileModified) {
+    // Skip writing the file if there are no labels in both the new and old sets
+    if (metatileLabelsMap[primaryTileset->name].size() == 0 && primaryTileset->metatileLabels.size() == 0
+     && metatileLabelsMap[secondaryTileset->name].size() == 0 && secondaryTileset->metatileLabels.size() == 0)
         return;
+
+    updateTilesetMetatileLabels(primaryTileset);
+    updateTilesetMetatileLabels(secondaryTileset);
+
+    // Recreate metatile labels file
+    const QString guardName = "GUARD_METATILE_LABELS_H";
+    QString outputText = QString("#ifndef %1\n#define %1\n").arg(guardName);
+
+    for (QString tilesetName : metatileLabelsMap.keys()) {
+        if (metatileLabelsMap[tilesetName].size() == 0)
+            continue;
+        outputText += QString("\n// %1\n").arg(tilesetName);
+        outputText += buildMetatileLabelsText(metatileLabelsMap[tilesetName]);
     }
 
-    auto getTilesetFromLabel = [](QString labelName) {
-        static const QRegularExpression re_tilesetName("METATILE_(?<tileset>[A-Za-z0-9]+)_");
-        return re_tilesetName.match(labelName).captured("tileset");
-    };
-
-    QString outputText = "#ifndef GUARD_METATILE_LABELS_H\n";
-    outputText += "#define GUARD_METATILE_LABELS_H\n";
-
-    for (int i = 0; i < defines.size();) {
-        QString defineName = defines.keys()[i];
-        QString currentTileset = getTilesetFromLabel(defineName);
-        outputText += QString("\n// gTileset_%1\n").arg(currentTileset);
-
-        int j = 0, longestLength = 0;
-        QMap<QString, int> definesOut;
-
-        // Setup for pretty formatting.
-        while (i + j < defines.size() && getTilesetFromLabel(defines.keys()[i + j]) == currentTileset) {
-            defineName = defines.keys()[i + j];
-            if (defineName.size() > longestLength)
-                longestLength = defineName.size();
-            definesOut.insert(defineName, defines[defineName]);
-            j++;
-        }
-        for (QString defineName : definesOut.keys()) {
-            int value = defines[defineName];
-            QString line = QString("#define %1  %2\n")
-                .arg(defineName, -1 * longestLength)
-                .arg(Metatile::getMetatileIdString(value));
-            outputText += line;
-        }
-        i += j;
+    if (unusedMetatileLabels.size() != 0) {
+        // Append any defines originally read from the file that aren't associated with any tileset.
+        outputText += QString("\n// Other\n");
+        outputText += buildMetatileLabelsText(unusedMetatileLabels);
     }
 
-    outputText += "\n#endif // GUARD_METATILE_LABELS_H\n";
+    outputText += QString("\n#endif // %1\n").arg(guardName);
 
-    ignoreWatchedFileTemporarily(root + "/" + metatileLabelsFilename);
-    saveTextFile(root + "/" + metatileLabelsFilename, outputText);
+    QString filename = projectConfig.getFilePath(ProjectFilePath::constants_metatile_labels);
+    ignoreWatchedFileTemporarily(root + "/" + filename);
+    saveTextFile(root + "/" + filename, outputText);
 }
 
 void Project::saveTilesetMetatileAttributes(Tileset *tileset) {
@@ -1505,20 +1490,32 @@ void Project::loadTilesetMetatiles(Tileset* tileset) {
     }
 }
 
+QString Project::findMetatileLabelsTileset(QString label) {
+    for (QString tilesetName : this->tilesetLabelsOrdered) {
+        QString metatileLabelPrefix = Tileset::getMetatileLabelPrefix(tilesetName);
+        if (label.startsWith(metatileLabelPrefix))
+            return tilesetName;
+    }
+    return QString();
+}
+
 bool Project::readTilesetMetatileLabels() {
     metatileLabelsMap.clear();
+    unusedMetatileLabels.clear();
 
     QString metatileLabelsFilename = projectConfig.getFilePath(ProjectFilePath::constants_metatile_labels);
     fileWatcher.addPath(root + "/" + metatileLabelsFilename);
 
-    QMap<QString, int> labels = parser.readCDefines(metatileLabelsFilename, QStringList() << "METATILE_");
+    QMap<QString, int> defines = parser.readCDefines(metatileLabelsFilename, QStringList() << "METATILE_");
 
-    for (QString tilesetLabel : this->tilesetLabelsOrdered) {
-        QString metatileLabelPrefix = Tileset::getMetatileLabelPrefix(tilesetLabel);
-        for (QString key : labels.keys()) {
-            if (key.startsWith(metatileLabelPrefix)) {
-                metatileLabelsMap[tilesetLabel][key] = labels[key];
-            }
+    for (QString label : defines.keys()) {
+        QString tilesetName = findMetatileLabelsTileset(label);
+        if (!tilesetName.isEmpty()) {
+            metatileLabelsMap[tilesetName][label] = defines[label];
+        } else {
+            // This #define name does not match any existing tileset.
+            // Save it separately to be outputted later.
+            unusedMetatileLabels[label] = defines[label];
         }
     }
 

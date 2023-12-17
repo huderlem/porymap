@@ -77,6 +77,7 @@ public:
     QStringList trainerTypes;
     QStringList globalScriptLabels;
     QMap<QString, QMap<QString, int>> metatileLabelsMap;
+    QMap<QString, int> unusedMetatileLabels;
     QMap<QString, int> metatileBehaviorMap;
     QMap<int, QString> metatileBehaviorMapInverse;
     QMap<QString, QString> facingDirections;
@@ -215,6 +216,10 @@ public:
 
     QString getDefaultPrimaryTilesetLabel();
     QString getDefaultSecondaryTilesetLabel();
+
+    void updateTilesetMetatileLabels(Tileset *tileset);
+    QString buildMetatileLabelsText(const QMap<QString, int> defines);
+    QString findMetatileLabelsTileset(QString label);
 
     void setImportExportPath(QString filename);
 
