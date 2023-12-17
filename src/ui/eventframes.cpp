@@ -525,9 +525,7 @@ void WarpFrame::connectSignals(MainWindow *window) {
 
     // warning
     this->warning->disconnect();
-    connect(this->warning, &QPushButton::clicked, [window]() {
-        window->openProjectSettingsEditor(ProjectSettingsEditor::warpBehaviorsTab);
-    });
+    connect(this->warning, &QPushButton::clicked, window, &MainWindow::onWarpBehaviorWarningClicked);
 }
 
 void WarpFrame::initialize() {

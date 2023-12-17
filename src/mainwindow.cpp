@@ -2744,6 +2744,33 @@ void MainWindow::on_actionProject_Settings_triggered() {
     this->openProjectSettingsEditor(porymapConfig.getProjectSettingsTab());
 }
 
+void MainWindow::onWarpBehaviorWarningClicked() {
+    static const QString text = QString(
+        "By default, Warp Events only function as exits if they're positioned on a metatile "
+        "whose Metatile Behavior is treated specially in your project's code."
+    );
+    static const QString informative = QString(
+        "<html><head/><body><p>"
+        "For instance, most floor metatiles in a cave have the behavior <b>MB_CAVE</b>, but the floor space in front of an "
+        "exit will have <b>MB_SOUTH_ARROW_WARP</b>, which is treated specially and will allow a Warp Event to warp the player. "
+        "You can see in the status bar what behavior a metatile has when you mouse over it, or by selecting it in the Tileset Editor."
+        "<br><br>"
+        "<b>Note</b>: Not all Warp Events that show this warning are incorrect! For example some warps may function "
+        "as a 1-way entrance, and others may have the metatile underneath them changed programmatically."
+        "<br><br>"
+        "You can disable this warning or edit the list of behaviors that silence this warning under <b>Options -> Project Settings...</b>"
+        "<br></html></body></p>"
+    );
+    QMessageBox msgBox(QMessageBox::Information, "porymap", text, QMessageBox::Close, this);
+    QPushButton *settings = msgBox.addButton("Open Settings...", QMessageBox::ActionRole);
+    msgBox.setDefaultButton(QMessageBox::Close);
+    msgBox.setTextFormat(Qt::RichText);
+    msgBox.setInformativeText(informative);
+    msgBox.exec();
+    if (msgBox.clickedButton() == settings)
+        this->openProjectSettingsEditor(ProjectSettingsEditor::eventsTab);
+}
+
 void MainWindow::on_actionCustom_Scripts_triggered() {
     if (!this->customScriptsEditor)
         initCustomScriptsEditor();

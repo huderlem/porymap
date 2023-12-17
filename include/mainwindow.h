@@ -159,7 +159,7 @@ public:
 public slots:
     void on_mainTabBar_tabBarClicked(int index);
     void on_mapViewTab_tabBarClicked(int index);
-    void openProjectSettingsEditor(int tab);
+    void onWarpBehaviorWarningClicked();
 
 private slots:
     void on_action_Open_Project_triggered();
@@ -390,7 +390,7 @@ private:
     void initShortcutsEditor();
     void initCustomScriptsEditor();
     void connectSubEditorsToShortcutsEditor();
-
+    void openProjectSettingsEditor(int tab);
     bool isProjectOpen();
     void showExportMapImageWindow(ImageExporterMode mode);
     void redrawMetatileSelection();

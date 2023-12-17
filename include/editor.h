@@ -190,7 +190,6 @@ private:
     static bool startDetachedProcess(const QString &command,
                                     const QString &workingDirectory = QString(),
                                     qint64 *pid = nullptr);
-    void constructBehaviorValueList(); // TODO: Remove
 
 private slots:
     void onMapStartPaint(QGraphicsSceneMouseEvent *event, MapPixmapItem *item);

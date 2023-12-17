@@ -16,6 +16,37 @@
 #include <QAction>
 #include <QAbstractButton>
 
+const QStringList ProjectConfig::defaultWarpBehaviors = {
+    "MB_NORTH_ARROW_WARP",
+    "MB_SOUTH_ARROW_WARP",
+    "MB_WEST_ARROW_WARP",
+    "MB_EAST_ARROW_WARP",
+    "MB_STAIRS_OUTSIDE_ABANDONED_SHIP",
+    "MB_WATER_SOUTH_ARROW_WARP",
+    "MB_SHOAL_CAVE_ENTRANCE",
+    "MB_SECRET_BASE_SPOT_RED_CAVE_OPEN",
+    "MB_SECRET_BASE_SPOT_BROWN_CAVE_OPEN",
+    "MB_SECRET_BASE_SPOT_YELLOW_CAVE_OPEN",
+    "MB_SECRET_BASE_SPOT_BLUE_CAVE_OPEN",
+    "MB_SECRET_BASE_SPOT_TREE_LEFT_OPEN",
+    "MB_SECRET_BASE_SPOT_TREE_RIGHT_OPEN",
+    "MB_SECRET_BASE_SPOT_SHRUB_OPEN",
+    "MB_ANIMATED_DOOR",
+    "MB_NON_ANIMATED_DOOR",
+    "MB_PETALBURG_GYM_DOOR",
+    "MB_WATER_DOOR",
+    "MB_LADDER",
+    "MB_UP_ESCALATOR",
+    "MB_DOWN_ESCALATOR",
+    "MB_DEEP_SOUTH_WARP",
+    "MB_LAVARIDGE_GYM_B1F_WARP",
+    "MB_LAVARIDGE_GYM_1F_WARP",
+    "MB_AQUA_HIDEOUT_WARP",
+    "MB_MT_PYRE_HOLE",
+    "MB_MOSSDEEP_GYM_WARP",
+    "MB_BRIDGE_OVER_OCEAN",
+};
+
 const QString ProjectConfig::metatileIdMaskName = "MAPGRID_METATILE_ID_MASK";
 const QString ProjectConfig::collisionMaskName = "MAPGRID_COLLISION_MASK";
 const QString ProjectConfig::elevationMaskName = "MAPGRID_ELEVATION_MASK";
@@ -746,6 +777,12 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         this->collisionSheetWidth = getConfigUint32(key, value, 1, Block::maxValue);
     } else if (key == "collision_sheet_height") {
         this->collisionSheetHeight = getConfigUint32(key, value, 1, Block::maxValue);
+    } else if (key == "warp_behaviors") {
+        value.remove(" ");
+        this->warpBehaviors = value.split(",", Qt::SkipEmptyParts);
+        this->warpBehaviors.removeDuplicates();
+    } else if (key == "warp_behavior_warning_disabled") {
+        this->warpBehaviorWarningDisabled = getConfigBool(key, value);
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -829,6 +866,9 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("collision_sheet_path", this->collisionSheetPath);
     map.insert("collision_sheet_width", QString::number(this->collisionSheetWidth));
     map.insert("collision_sheet_height", QString::number(this->collisionSheetHeight));
+    map.insert("warp_behaviors", this->warpBehaviors.join(","));
+    map.insert("warp_behavior_warning_disabled", QString::number(this->warpBehaviorWarningDisabled));
+
     return map;
 }
 
@@ -1252,6 +1292,24 @@ void ProjectConfig::setCollisionSheetHeight(int height) {
 
 int ProjectConfig::getCollisionSheetHeight() {
     return this->collisionSheetHeight;
+}
+
+void ProjectConfig::setWarpBehaviors(const QStringList &behaviors) {
+    this->warpBehaviors = behaviors;
+    this->save();
+}
+
+QStringList ProjectConfig::getWarpBehaviors() {
+    return this->warpBehaviors;
+}
+
+void ProjectConfig::setWarpBehaviorWarningDisabled(bool disabled) {
+    this->warpBehaviorWarningDisabled = disabled;
+    this->save();
+}
+
+bool ProjectConfig::getWarpBehaviorWarningDisabled() {
+    return this->warpBehaviorWarningDisabled;
 }
 
 

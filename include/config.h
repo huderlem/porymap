@@ -248,10 +248,13 @@ public:
         this->blockMetatileIdMask = 0x03FF;
         this->blockCollisionMask = 0x0C00;
         this->blockElevationMask = 0xF000;
+        this->warpBehaviors = defaultWarpBehaviors;
+        this->warpBehaviorWarningDisabled = false;
         this->readKeys.clear();
     }
     static const QMap<ProjectFilePath, std::pair<QString, QString>> defaultPaths;
     static const QStringList versionStrings;
+    static const QStringList defaultWarpBehaviors;
     void reset(BaseGameVersion baseGameVersion);
     void setBaseGameVersion(BaseGameVersion baseGameVersion);
     BaseGameVersion getBaseGameVersion();
@@ -329,7 +332,7 @@ public:
     void setEventIconPath(Event::Group group, const QString &path);
     QString getEventIconPath(Event::Group group);
     void setPokemonIconPath(const QString &species, const QString &path);
-    QString getPokemonIconPath(const QString & species);
+    QString getPokemonIconPath(const QString &species);
     QHash<QString, QString> getPokemonIconPaths();
     void setCollisionSheetPath(const QString &path);
     QString getCollisionSheetPath();
@@ -337,6 +340,10 @@ public:
     int getCollisionSheetWidth();
     void setCollisionSheetHeight(int height);
     int getCollisionSheetHeight();
+    void setWarpBehaviors(const QStringList &behaviors);
+    QStringList getWarpBehaviors();
+    void setWarpBehaviorWarningDisabled(bool disabled);
+    bool getWarpBehaviorWarningDisabled();
 
     // TODO: Replace these once there's generic support for editing project names
     static const QString metatileIdMaskName;
@@ -396,6 +403,8 @@ private:
     QString collisionSheetPath;
     int collisionSheetWidth;
     int collisionSheetHeight;
+    QStringList warpBehaviors;
+    bool warpBehaviorWarningDisabled;
 };
 
 extern ProjectConfig projectConfig;

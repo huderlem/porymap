@@ -10,7 +10,7 @@
     Editor for the settings in a user's porymap.project.cfg file (and 'use_encounter_json' in porymap.user.cfg).
 */
 
-const int ProjectSettingsEditor::warpBehaviorsTab = 4;
+const int ProjectSettingsEditor::eventsTab = 3;
 
 ProjectSettingsEditor::ProjectSettingsEditor(QWidget *parent, Project *project) :
     QMainWindow(parent),
@@ -45,6 +45,8 @@ void ProjectSettingsEditor::connectSignals() {
         this->setBorderMetatileIds(customSize, this->getBorderMetatileIds(!customSize));
         this->setBorderMetatilesUi(customSize);
     });
+    connect(ui->button_AddWarpBehavior,    &QAbstractButton::clicked, [this](bool) { this->updateWarpBehaviorsList(true); });
+    connect(ui->button_RemoveWarpBehavior, &QAbstractButton::clicked, [this](bool) { this->updateWarpBehaviorsList(false); });
 
     // Connect file selection buttons
     connect(ui->button_ChoosePrefabs,     &QAbstractButton::clicked, [this](bool) { this->choosePrefabsFile(); });
@@ -55,6 +57,7 @@ void ProjectSettingsEditor::connectSignals() {
     connect(ui->button_BGsIcon,           &QAbstractButton::clicked, [this](bool) { this->chooseImageFile(ui->lineEdit_BGsIcon); });
     connect(ui->button_HealspotsIcon,     &QAbstractButton::clicked, [this](bool) { this->chooseImageFile(ui->lineEdit_HealspotsIcon); });
     connect(ui->button_PokemonIcon,       &QAbstractButton::clicked, [this](bool) { this->chooseImageFile(ui->lineEdit_PokemonIcon); });
+
 
     // Display a warning if a mask value overlaps with another mask in its group.
     connect(ui->spinBox_MetatileIdMask, &UIntSpinBox::textChanged, this, &ProjectSettingsEditor::updateBlockMaskOverlapWarning);
@@ -67,7 +70,8 @@ void ProjectSettingsEditor::connectSignals() {
 
     // Record that there are unsaved changes if any of the settings are modified
     for (auto combo : ui->centralwidget->findChildren<NoScrollComboBox *>()){
-        if (combo != ui->comboBox_IconSpecies) // Changes to the icon species combo box are just for info display, don't mark as unsaved
+         // Changes to these two combo boxes are just for info display, don't mark as unsaved
+        if (combo != ui->comboBox_IconSpecies && combo != ui->comboBox_WarpBehaviors)
             connect(combo, &QComboBox::currentTextChanged, this, &ProjectSettingsEditor::markEdited);
     }
     for (auto checkBox : ui->centralwidget->findChildren<QCheckBox *>())
@@ -92,16 +96,24 @@ void ProjectSettingsEditor::initUi() {
         ui->comboBox_DefaultPrimaryTileset->addItems(project->primaryTilesetLabels);
         ui->comboBox_DefaultSecondaryTileset->addItems(project->secondaryTilesetLabels);
         ui->comboBox_IconSpecies->addItems(project->speciesToIconPath.keys());
+        ui->comboBox_WarpBehaviors->addItems(project->metatileBehaviorMap.keys());
     }
     ui->comboBox_BaseGameVersion->addItems(ProjectConfig::versionStrings);
     ui->comboBox_AttributesSize->addItems({"1", "2", "4"});
 
     // Validate that the border metatiles text is a comma-separated list of metatile values
     static const QString regex_Hex = "(0[xX])?[A-Fa-f0-9]+";
-    static const QRegularExpression expression(QString("^(%1,)*%1$").arg(regex_Hex)); // Comma-separated list of hex values
-    QRegularExpressionValidator *validator = new QRegularExpressionValidator(expression);
-    ui->lineEdit_BorderMetatiles->setValidator(validator);
+    static const QRegularExpression expression_HexList(QString("^(%1,)*%1$").arg(regex_Hex)); // Comma-separated list of hex values
+    QRegularExpressionValidator *validator_HexList = new QRegularExpressionValidator(expression_HexList);
+    ui->lineEdit_BorderMetatiles->setValidator(validator_HexList);
     this->setBorderMetatilesUi(projectConfig.getUseCustomBorderSize());
+
+    // Validate that the text added to the warp behavior list could be a valid define
+    // (we don't care whether it actually is a metatile behavior define)
+    static const QRegularExpression expression_Word("^[A-Za-z0-9_]*$");
+    QRegularExpressionValidator *validator_Word = new QRegularExpressionValidator(expression_Word);
+    ui->comboBox_WarpBehaviors->setValidator(validator_Word);
+    ui->textEdit_WarpBehaviors->setTextColor(Qt::gray);
 
     // Set spin box limits
     uint16_t maxMetatileId = Block::getMaxMetatileId();
@@ -272,6 +284,38 @@ void ProjectSettingsEditor::updatePokemonIconPath(const QString &newSpecies) {
     this->prevIconSpecies = newSpecies;
 }
 
+QStringList ProjectSettingsEditor::getWarpBehaviorsList() {
+    return ui->textEdit_WarpBehaviors->toPlainText().split("\n");
+}
+
+void ProjectSettingsEditor::setWarpBehaviorsList(QStringList list) {
+    ui->textEdit_WarpBehaviors->setText(list.join("\n"));
+}
+
+void ProjectSettingsEditor::updateWarpBehaviorsList(bool adding) {
+    const QString input = ui->comboBox_WarpBehaviors->currentText();
+    if (input.isEmpty())
+        return;
+
+    QStringList list = this->getWarpBehaviorsList();
+    int pos = list.indexOf(input);
+
+    if (adding && pos < 0) {
+        // Add text to list
+        list.prepend(input);
+    } else if (!adding && pos >= 0) {
+        // Remove text from list
+        list.removeAt(pos);
+    } else {
+        // Trying to add text already in list,
+        // or trying to remove text not in list
+        return;
+    }
+
+    this->setWarpBehaviorsList(list);
+    this->hasUnsavedChanges = true;
+}
+
 void ProjectSettingsEditor::createProjectPathsTable() {
     auto pathPairs = ProjectConfig::defaultPaths.values();
     for (auto pathPair : pathPairs) {
@@ -366,6 +410,7 @@ void ProjectSettingsEditor::refresh() {
     ui->checkBox_EnableCustomBorderSize->setChecked(projectConfig.getUseCustomBorderSize());
     ui->checkBox_OutputCallback->setChecked(projectConfig.getTilesetsHaveCallback());
     ui->checkBox_OutputIsCompressed->setChecked(projectConfig.getTilesetsHaveIsCompressed());
+    ui->checkBox_DisableWarning->setChecked(projectConfig.getWarpBehaviorWarningDisabled());
 
     // Set spin box values
     ui->spinBox_Elevation->setValue(projectConfig.getDefaultElevation());
@@ -396,6 +441,7 @@ void ProjectSettingsEditor::refresh() {
     ui->lineEdit_HealspotsIcon->setText(projectConfig.getEventIconPath(Event::Group::Heal));
     for (auto lineEdit : ui->scrollAreaContents_ProjectPaths->findChildren<QLineEdit*>())
         lineEdit->setText(projectConfig.getFilePath(lineEdit->objectName(), true));
+    this->setWarpBehaviorsList(projectConfig.getWarpBehaviors());
 
     this->refreshing = false; // Allow signals
 }
@@ -429,6 +475,7 @@ void ProjectSettingsEditor::save() {
     projectConfig.setUseCustomBorderSize(ui->checkBox_EnableCustomBorderSize->isChecked());
     projectConfig.setTilesetsHaveCallback(ui->checkBox_OutputCallback->isChecked());
     projectConfig.setTilesetsHaveIsCompressed(ui->checkBox_OutputIsCompressed->isChecked());
+    projectConfig.setWarpBehaviorWarningDisabled(ui->checkBox_DisableWarning->isChecked());
 
     // Save spin box settings
     projectConfig.setDefaultElevation(ui->spinBox_Elevation->value());
@@ -454,6 +501,8 @@ void ProjectSettingsEditor::save() {
     projectConfig.setEventIconPath(Event::Group::Heal, ui->lineEdit_HealspotsIcon->text());
     for (auto lineEdit : ui->scrollAreaContents_ProjectPaths->findChildren<QLineEdit*>())
         projectConfig.setFilePath(lineEdit->objectName(), lineEdit->text());
+
+    projectConfig.setWarpBehaviors(this->getWarpBehaviorsList());
 
     // Save border metatile IDs
     projectConfig.setNewMapBorderMetatileIds(this->getBorderMetatileIds(ui->checkBox_EnableCustomBorderSize->isChecked()));

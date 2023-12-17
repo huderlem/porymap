@@ -21,7 +21,7 @@ public:
     explicit ProjectSettingsEditor(QWidget *parent = nullptr, Project *project = nullptr);
     ~ProjectSettingsEditor();
 
-    static const int warpBehaviorsTab;
+    static const int eventsTab;
     void setTab(int index);
 
 signals:
@@ -60,6 +60,8 @@ private:
     QString stripProjectDir(QString s);
     void disableParsedSetting(QWidget * widget, const QString &name, const QString &filepath);
     void updateMaskOverlapWarning(QLabel * warning, QList<UIntSpinBox*> masks);
+    QStringList getWarpBehaviorsList();
+    void setWarpBehaviorsList(QStringList list);
 
 private slots:
     void dialogButtonClicked(QAbstractButton *button);
@@ -70,6 +72,7 @@ private slots:
     void on_mainTabs_tabBarClicked(int index);
     void updateBlockMaskOverlapWarning();
     void updateAttributeMaskOverlapWarning();
+    void updateWarpBehaviorsList(bool adding);
 };
 
 #endif // PROJECTSETTINGSEDITOR_H

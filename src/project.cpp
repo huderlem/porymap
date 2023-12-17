@@ -2291,6 +2291,17 @@ bool Project::readMetatileBehaviors() {
     for (QString defineName : this->metatileBehaviorMap.keys()) {
         this->metatileBehaviorMapInverse.insert(this->metatileBehaviorMap[defineName], defineName);
     }
+
+    // Construct warp behavior value list for the warp metatile behavior warning
+    const QStringList warpBehaviorNames = projectConfig.getWarpBehaviors();
+    this->warpBehaviorValues.clear();
+    for (auto name : warpBehaviorNames) {
+        if (this->metatileBehaviorMap.contains(name)) {
+            int value = this->metatileBehaviorMap.value(name);
+            this->warpBehaviorValues.insert(static_cast<uint32_t>(value));
+        }
+    }
+
     return true;
 }
 
