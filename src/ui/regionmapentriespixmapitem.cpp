@@ -8,7 +8,7 @@ void RegionMapEntriesPixmapItem::draw() {
 
     int entry_x, entry_y, entry_w, entry_h;
 
-    if (!entry.valid || entry.name == "MAPSEC_NONE") {
+    if (!entry.valid || entry.name == region_map->default_map_section) {
         entry_x = entry_y = 0;
         entry_w = entry_h = 1;
     } else {

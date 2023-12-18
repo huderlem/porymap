@@ -47,16 +47,64 @@ const QStringList ProjectConfig::defaultWarpBehaviors = {
     "MB_BRIDGE_OVER_OCEAN",
 };
 
-const QString ProjectConfig::metatileIdMaskName = "MAPGRID_METATILE_ID_MASK";
-const QString ProjectConfig::collisionMaskName = "MAPGRID_COLLISION_MASK";
-const QString ProjectConfig::elevationMaskName = "MAPGRID_ELEVATION_MASK";
-const QString ProjectConfig::behaviorMaskName = "METATILE_ATTR_BEHAVIOR_MASK";
-const QString ProjectConfig::layerTypeMaskName = "METATILE_ATTR_LAYER_MASK";
-const QString ProjectConfig::behaviorTableName = "METATILE_ATTRIBUTE_BEHAVIOR";
-const QString ProjectConfig::layerTypeTableName = "METATILE_ATTRIBUTE_LAYER_TYPE";
-const QString ProjectConfig::terrainTypeTableName = "METATILE_ATTRIBUTE_TERRAIN";
-const QString ProjectConfig::encounterTypeTableName =  "METATILE_ATTRIBUTE_ENCOUNTER_TYPE";
-const QString ProjectConfig::attrTableName = "sMetatileAttrMasks";
+// TODO: symbol_wild_encounters should ultimately be removed from the table below. We can determine this name when we read the project.
+const QMap<ProjectIdentifier, QPair<QString, QString>> ProjectConfig::defaultIdentifiers = {
+    // Symbols
+    {ProjectIdentifier::symbol_facing_directions,      {"symbol_facing_directions",      "gInitialMovementTypeFacingDirections"}},
+    {ProjectIdentifier::symbol_obj_event_gfx_pointers, {"symbol_obj_event_gfx_pointers", "gObjectEventGraphicsInfoPointers"}},
+    {ProjectIdentifier::symbol_pokemon_icon_table,     {"symbol_pokemon_icon_table",     "gMonIconTable"}},
+    {ProjectIdentifier::symbol_wild_encounters,        {"symbol_wild_encounters",        "gWildMonHeaders"}},
+    {ProjectIdentifier::symbol_heal_locations,         {"symbol_heal_locations",         "sHealLocations"}},
+    {ProjectIdentifier::symbol_spawn_points,           {"symbol_spawn_points",           "sSpawnPoints"}},
+    {ProjectIdentifier::symbol_spawn_maps,             {"symbol_spawn_maps",             "sWhiteoutRespawnHealCenterMapIdxs"}},
+    {ProjectIdentifier::symbol_spawn_npcs,             {"symbol_spawn_npcs",             "sWhiteoutRespawnHealerNpcIds"}},
+    {ProjectIdentifier::symbol_attribute_table,        {"symbol_attribute_table",        "sMetatileAttrMasks"}},
+    {ProjectIdentifier::symbol_tilesets_prefix,        {"symbol_tilesets_prefix",        "gTileset_"}},
+    // Defines
+    {ProjectIdentifier::define_obj_event_count,        {"define_obj_event_count",        "OBJECT_EVENT_TEMPLATES_COUNT"}},
+    {ProjectIdentifier::define_min_level,              {"define_min_level",              "MIN_LEVEL"}},
+    {ProjectIdentifier::define_max_level,              {"define_max_level",              "MAX_LEVEL"}},
+    {ProjectIdentifier::define_tiles_primary,          {"define_tiles_primary",          "NUM_TILES_IN_PRIMARY"}},
+    {ProjectIdentifier::define_tiles_total,            {"define_tiles_total",            "NUM_TILES_TOTAL"}},
+    {ProjectIdentifier::define_metatiles_primary,      {"define_metatiles_primary",      "NUM_METATILES_IN_PRIMARY"}},
+    {ProjectIdentifier::define_pals_primary,           {"define_pals_primary",           "NUM_PALS_IN_PRIMARY"}},
+    {ProjectIdentifier::define_pals_total,             {"define_pals_total",             "NUM_PALS_TOTAL"}},
+    {ProjectIdentifier::define_map_size,               {"define_map_size",               "MAX_MAP_DATA_SIZE"}},
+    {ProjectIdentifier::define_mask_metatile,          {"define_mask_metatile",          "MAPGRID_METATILE_ID_MASK"}},
+    {ProjectIdentifier::define_mask_collision,         {"define_mask_collision",         "MAPGRID_COLLISION_MASK"}},
+    {ProjectIdentifier::define_mask_elevation,         {"define_mask_elevation",         "MAPGRID_ELEVATION_MASK"}},
+    {ProjectIdentifier::define_mask_behavior,          {"define_mask_behavior",          "METATILE_ATTR_BEHAVIOR_MASK"}},
+    {ProjectIdentifier::define_mask_layer,             {"define_mask_layer",             "METATILE_ATTR_LAYER_MASK"}},
+    {ProjectIdentifier::define_attribute_behavior,     {"define_attribute_behavior",     "METATILE_ATTRIBUTE_BEHAVIOR"}},
+    {ProjectIdentifier::define_attribute_layer,        {"define_attribute_layer",        "METATILE_ATTRIBUTE_LAYER_TYPE"}},
+    {ProjectIdentifier::define_attribute_terrain,      {"define_attribute_terrain",      "METATILE_ATTRIBUTE_TERRAIN"}},
+    {ProjectIdentifier::define_attribute_encounter,    {"define_attribute_encounter",    "METATILE_ATTRIBUTE_ENCOUNTER_TYPE"}},
+    {ProjectIdentifier::define_metatile_label_prefix,  {"define_metatile_label_prefix",  "METATILE_"}},
+    {ProjectIdentifier::define_heal_locations_prefix,  {"define_heal_locations_prefix",  "HEAL_LOCATION_"}},
+    {ProjectIdentifier::define_spawn_prefix,           {"define_spawn_prefix",           "SPAWN_"}},
+    {ProjectIdentifier::define_map_prefix,             {"define_map_prefix",             "MAP_"}},
+    {ProjectIdentifier::define_map_dynamic,            {"define_map_dynamic",            "DYNAMIC"}},
+    {ProjectIdentifier::define_map_empty,              {"define_map_empty",              "UNDEFINED"}},
+    {ProjectIdentifier::define_map_section_prefix,     {"define_map_section_prefix",     "MAPSEC_"}},
+    {ProjectIdentifier::define_map_section_empty,      {"define_map_section_empty",      "NONE"}},
+    {ProjectIdentifier::define_map_section_count,      {"define_map_section_count",      "COUNT"}},
+    // Regex
+    {ProjectIdentifier::regex_behaviors,               {"regex_behaviors",               "\\bMB_"}},
+    {ProjectIdentifier::regex_obj_event_gfx,           {"regex_obj_event_gfx",           "\\bOBJ_EVENT_GFX_"}},
+    {ProjectIdentifier::regex_items,                   {"regex_items",                   "\\bITEM_(?!(B_)?USE_)"}}, // Exclude ITEM_USE_ and ITEM_B_USE_ constants
+    {ProjectIdentifier::regex_flags,                   {"regex_flags",                   "\\bFLAG_"}},
+    {ProjectIdentifier::regex_vars,                    {"regex_vars",                    "\\bVAR_"}},
+    {ProjectIdentifier::regex_movement_types,          {"regex_movement_types",          "\\bMOVEMENT_TYPE_"}},
+    {ProjectIdentifier::regex_map_types,               {"regex_map_types",               "\\bMAP_TYPE_"}},
+    {ProjectIdentifier::regex_battle_scenes,           {"regex_battle_scenes",           "\\bMAP_BATTLE_SCENE_"}},
+    {ProjectIdentifier::regex_weather,                 {"regex_weather",                 "\\bWEATHER_"}},
+    {ProjectIdentifier::regex_coord_event_weather,     {"regex_coord_event_weather",     "\\bCOORD_EVENT_WEATHER_"}},
+    {ProjectIdentifier::regex_secret_bases,            {"regex_secret_bases",            "\\bSECRET_BASE_[A-Za-z0-9_]*_[0-9]+"}},
+    {ProjectIdentifier::regex_sign_facing_directions,  {"regex_sign_facing_directions",  "\\bBG_EVENT_PLAYER_FACING_"}},
+    {ProjectIdentifier::regex_trainer_types,           {"regex_trainer_types",           "\\bTRAINER_TYPE_"}},
+    {ProjectIdentifier::regex_music,                   {"regex_music",                   "\\b(SE|MUS)_"}},
+    {ProjectIdentifier::regex_species,                 {"regex_species",                 "\\bSPECIES_"}},
+};
 
 const QMap<ProjectFilePath, std::pair<QString, QString>> ProjectConfig::defaultPaths = {
     {ProjectFilePath::data_map_folders,                 { "data_map_folders",                "data/maps/"}},
@@ -107,6 +155,13 @@ const QMap<ProjectFilePath, std::pair<QString, QString>> ProjectConfig::defaultP
     {ProjectFilePath::initial_facing_table,             { "initial_facing_table",            "src/event_object_movement.c"}},
     {ProjectFilePath::pokemon_gfx,                      { "pokemon_gfx",                     "graphics/pokemon/"}},
 };
+
+ProjectIdentifier reverseDefaultIdentifier(QString str) {
+    for (auto i = ProjectConfig::defaultIdentifiers.cbegin(), end = ProjectConfig::defaultIdentifiers.cend(); i != end; i++) {
+        if (i.value().first == str) return i.key();
+    }
+    return static_cast<ProjectIdentifier>(-1);
+}
 
 ProjectFilePath reverseDefaultPaths(QString str) {
     for (auto it = ProjectConfig::defaultPaths.constKeyValueBegin(); it != ProjectConfig::defaultPaths.constKeyValueEnd(); ++it) {
@@ -751,6 +806,13 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         } else {
             logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
         }
+    } else if (key.startsWith("ident/")) {
+        auto identifierId = reverseDefaultIdentifier(key.mid(6));
+        if (identifierId != static_cast<ProjectIdentifier>(-1)) {
+            this->setIdentifier(identifierId, value);
+        } else {
+            logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
+        }
     } else if (key == "prefabs_filepath") {
         this->prefabFilepath = value;
     } else if (key == "prefabs_import_prompted") {
@@ -863,6 +925,10 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
         const QString path = i.value();
         if (!path.isEmpty()) map.insert("pokemon_icon_path/" + i.key(), path);
     }
+    for (auto i = this->identifiers.cbegin(), end = this->identifiers.cend(); i != end; i++) {
+        // TODO: Test to ensure empties aren't output in config
+        map.insert("ident/"+defaultIdentifiers.value(i.key()).first, i.value());
+    }
     map.insert("collision_sheet_path", this->collisionSheetPath);
     map.insert("collision_sheet_width", QString::number(this->collisionSheetWidth));
     map.insert("collision_sheet_height", QString::number(this->collisionSheetHeight));
@@ -909,7 +975,7 @@ QString ProjectConfig::getProjectDir() {
     return this->projectDir;
 }
 
-void ProjectConfig::setFilePath(ProjectFilePath pathId, QString path) {
+void ProjectConfig::setFilePath(ProjectFilePath pathId, const QString &path) {
     if (!defaultPaths.contains(pathId)) return;
     if (path.isEmpty()) {
         this->filePaths.remove(pathId);
@@ -918,18 +984,20 @@ void ProjectConfig::setFilePath(ProjectFilePath pathId, QString path) {
     }
 }
 
-void ProjectConfig::setFilePath(QString defaultPath, QString newPath) {
-    this->setFilePath(reverseDefaultPaths(defaultPath), newPath);
+void ProjectConfig::setFilePath(const QString &pathId, const QString &path) {
+    this->setFilePath(reverseDefaultPaths(pathId), path);
 }
 
-QString ProjectConfig::getFilePath(ProjectFilePath pathId, bool customOnly) {
-    const QString customPath = this->filePaths.value(pathId);
+QString ProjectConfig::getCustomFilePath(ProjectFilePath pathId) {
+    return this->filePaths.value(pathId);
+}
 
-    // When reading custom filepaths for the settings editor we don't care
-    // about the default path or whether the custom path exists.
-    if (customOnly)
-        return customPath;
+QString ProjectConfig::getCustomFilePath(const QString &pathId) {
+    return this->getCustomFilePath(reverseDefaultPaths(pathId));
+}
 
+QString ProjectConfig::getFilePath(ProjectFilePath pathId) {
+    const QString customPath = this->getCustomFilePath(pathId);
     if (!customPath.isEmpty()) {
         // A custom filepath has been specified. If the file/folder exists, use that.
         const QString absCustomPath = this->projectDir + QDir::separator() + customPath;
@@ -943,8 +1011,33 @@ QString ProjectConfig::getFilePath(ProjectFilePath pathId, bool customOnly) {
 
 }
 
-QString ProjectConfig::getFilePath(QString defaultPath, bool customOnly) {
-    return this->getFilePath(reverseDefaultPaths(defaultPath), customOnly);
+void ProjectConfig::setIdentifier(ProjectIdentifier id, const QString &text) {
+    if (!defaultIdentifiers.contains(id)) return;
+    QString copy(text);
+    if (copy.isEmpty()) {
+        this->identifiers.remove(id);
+    } else {
+        this->identifiers[id] = copy;
+    }
+}
+
+void ProjectConfig::setIdentifier(const QString &id, const QString &text) {
+    this->setIdentifier(reverseDefaultIdentifier(id), text);
+}
+
+QString ProjectConfig::getCustomIdentifier(ProjectIdentifier id) {
+    return this->identifiers.value(id);
+}
+
+QString ProjectConfig::getCustomIdentifier(const QString &id) {
+    return this->getCustomIdentifier(reverseDefaultIdentifier(id));
+}
+
+QString ProjectConfig::getIdentifier(ProjectIdentifier id) {
+    const QString customText = this->getCustomIdentifier(id);
+    if (!customText.isEmpty())
+        return customText;
+    return defaultIdentifiers.contains(id) ? defaultIdentifiers[id].second : QString();
 }
 
 void ProjectConfig::setBaseGameVersion(BaseGameVersion baseGameVersion) {

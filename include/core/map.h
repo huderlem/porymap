@@ -71,7 +71,7 @@ public:
     QList<int> metatileLayerOrder;
     QList<float> metatileLayerOpacity;
     void setName(QString mapName);
-    static QString mapConstantFromName(QString mapName);
+    static QString mapConstantFromName(QString mapName, bool includePrefix = true);
     int getWidth();
     int getHeight();
     int getBorderWidth();

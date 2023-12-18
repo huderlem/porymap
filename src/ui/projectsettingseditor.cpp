@@ -135,32 +135,42 @@ void ProjectSettingsEditor::initUi() {
     if (project) {
         const QString maskFilepath = projectConfig.getFilePath(ProjectFilePath::global_fieldmap);
         const QString attrTableFilepath = projectConfig.getFilePath(ProjectFilePath::fieldmap);
+        const QString metatileIdMaskName = projectConfig.getIdentifier(ProjectIdentifier::define_mask_metatile);
+        const QString collisionMaskName = projectConfig.getIdentifier(ProjectIdentifier::define_mask_collision);
+        const QString elevationMaskName = projectConfig.getIdentifier(ProjectIdentifier::define_mask_elevation);
+        const QString behaviorMaskName = projectConfig.getIdentifier(ProjectIdentifier::define_mask_behavior);
+        const QString layerTypeMaskName = projectConfig.getIdentifier(ProjectIdentifier::define_mask_layer);
+        const QString terrainTypeTableName = projectConfig.getIdentifier(ProjectIdentifier::define_attribute_behavior);
+        const QString encounterTypeTableName = projectConfig.getIdentifier(ProjectIdentifier::define_attribute_layer);
+        const QString behaviorTableName = projectConfig.getIdentifier(ProjectIdentifier::define_attribute_terrain);
+        const QString layerTypeTableName = projectConfig.getIdentifier(ProjectIdentifier::define_attribute_encounter);
+        const QString attrTableName = projectConfig.getIdentifier(ProjectIdentifier::symbol_attribute_table);
 
         // Block masks
-        if (project->disabledSettingsNames.contains(ProjectConfig::metatileIdMaskName))
-            this->disableParsedSetting(ui->spinBox_MetatileIdMask, ProjectConfig::metatileIdMaskName, maskFilepath);
-        if (project->disabledSettingsNames.contains(ProjectConfig::collisionMaskName))
-            this->disableParsedSetting(ui->spinBox_CollisionMask, ProjectConfig::collisionMaskName, maskFilepath);
-        if (project->disabledSettingsNames.contains(ProjectConfig::elevationMaskName))
-            this->disableParsedSetting(ui->spinBox_ElevationMask, ProjectConfig::elevationMaskName, maskFilepath);
+        if (project->disabledSettingsNames.contains(metatileIdMaskName))
+            this->disableParsedSetting(ui->spinBox_MetatileIdMask, metatileIdMaskName, maskFilepath);
+        if (project->disabledSettingsNames.contains(collisionMaskName))
+            this->disableParsedSetting(ui->spinBox_CollisionMask, collisionMaskName, maskFilepath);
+        if (project->disabledSettingsNames.contains(elevationMaskName))
+            this->disableParsedSetting(ui->spinBox_ElevationMask, elevationMaskName, maskFilepath);
 
         // Behavior mask
-        if (project->disabledSettingsNames.contains(ProjectConfig::behaviorMaskName))
-            this->disableParsedSetting(ui->spinBox_BehaviorMask, ProjectConfig::behaviorMaskName, maskFilepath);
-        else if (project->disabledSettingsNames.contains(ProjectConfig::behaviorTableName))
-            this->disableParsedSetting(ui->spinBox_BehaviorMask, ProjectConfig::attrTableName, attrTableFilepath);
+        if (project->disabledSettingsNames.contains(behaviorMaskName))
+            this->disableParsedSetting(ui->spinBox_BehaviorMask, behaviorMaskName, maskFilepath);
+        else if (project->disabledSettingsNames.contains(behaviorTableName))
+            this->disableParsedSetting(ui->spinBox_BehaviorMask, attrTableName, attrTableFilepath);
 
         // Layer type mask
-        if (project->disabledSettingsNames.contains(ProjectConfig::layerTypeMaskName))
-            this->disableParsedSetting(ui->spinBox_LayerTypeMask, ProjectConfig::layerTypeMaskName, maskFilepath);
-        else if (project->disabledSettingsNames.contains(ProjectConfig::layerTypeTableName))
-            this->disableParsedSetting(ui->spinBox_LayerTypeMask, ProjectConfig::attrTableName, attrTableFilepath);
+        if (project->disabledSettingsNames.contains(layerTypeMaskName))
+            this->disableParsedSetting(ui->spinBox_LayerTypeMask, layerTypeMaskName, maskFilepath);
+        else if (project->disabledSettingsNames.contains(layerTypeTableName))
+            this->disableParsedSetting(ui->spinBox_LayerTypeMask, attrTableName, attrTableFilepath);
 
         // Encounter and terrain type masks
-        if (project->disabledSettingsNames.contains(ProjectConfig::terrainTypeTableName))
-            this->disableParsedSetting(ui->spinBox_TerrainTypeMask, ProjectConfig::attrTableName, attrTableFilepath);
-        if (project->disabledSettingsNames.contains(ProjectConfig::encounterTypeTableName))
-            this->disableParsedSetting(ui->spinBox_EncounterTypeMask, ProjectConfig::attrTableName, attrTableFilepath);
+        if (project->disabledSettingsNames.contains(terrainTypeTableName))
+            this->disableParsedSetting(ui->spinBox_TerrainTypeMask, attrTableName, attrTableFilepath);
+        if (project->disabledSettingsNames.contains(encounterTypeTableName))
+            this->disableParsedSetting(ui->spinBox_EncounterTypeMask, attrTableName, attrTableFilepath);
     }
 }
 
@@ -440,7 +450,7 @@ void ProjectSettingsEditor::refresh() {
     ui->lineEdit_BGsIcon->setText(projectConfig.getEventIconPath(Event::Group::Bg));
     ui->lineEdit_HealspotsIcon->setText(projectConfig.getEventIconPath(Event::Group::Heal));
     for (auto lineEdit : ui->scrollAreaContents_ProjectPaths->findChildren<QLineEdit*>())
-        lineEdit->setText(projectConfig.getFilePath(lineEdit->objectName(), true));
+        lineEdit->setText(projectConfig.getCustomFilePath(lineEdit->objectName()));
     this->setWarpBehaviorsList(projectConfig.getWarpBehaviors());
 
     this->refreshing = false; // Allow signals

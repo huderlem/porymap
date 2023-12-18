@@ -17,7 +17,11 @@ using std::make_shared;
 
 
 
-RegionMap::RegionMap(Project *project) {
+RegionMap::RegionMap(Project *project) : 
+    section_prefix(projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix)),
+    default_map_section(section_prefix + projectConfig.getIdentifier(ProjectIdentifier::define_map_section_empty)),
+    count_map_section(section_prefix + projectConfig.getIdentifier(ProjectIdentifier::define_map_section_count))
+{
     this->project = project;
 }
 
@@ -146,7 +150,7 @@ bool RegionMap::loadLayout(poryjson::Json layoutJson) {
 
                     LayoutSquare square;
                     square.map_section = square_section_name;
-                    square.has_map = (square_section_name != "MAPSEC_NONE" && !square_section_name.isEmpty());
+                    square.has_map = (square_section_name != this->default_map_section && !square_section_name.isEmpty());
                     square.x = x;
                     square.y = y;
 
@@ -204,7 +208,7 @@ bool RegionMap::loadLayout(poryjson::Json layoutJson) {
 
                             LayoutSquare square;
                             square.map_section = square_section_name;
-                            square.has_map = (square_section_name != "MAPSEC_NONE" && !square_section_name.isEmpty());
+                            square.has_map = (square_section_name != this->default_map_section && !square_section_name.isEmpty());
                             square.x = x;
                             square.y = y;
                             layout.append(square);
@@ -228,7 +232,7 @@ bool RegionMap::loadLayout(poryjson::Json layoutJson) {
                     this->layout_qualifiers = qualifiers + " " + type;
                     this->layout_array_label = label;
 
-                    static const QRegularExpression reSec("(?<sec>MAPSEC_[A-Za-z0-9_]+)");
+                    static const QRegularExpression reSec(QString("(?<sec>%1[A-Za-z0-9_]+)").arg(this->section_prefix));
                     QRegularExpressionMatchIterator k = reSec.globalMatch(text);
 
                     QList<LayoutSquare> layout;
@@ -242,7 +246,7 @@ bool RegionMap::loadLayout(poryjson::Json layoutJson) {
 
                         LayoutSquare square;
                         square.map_section = sec;
-                        square.has_map = (sec != "MAPSEC_NONE" && !sec.isEmpty());
+                        square.has_map = (sec != this->default_map_section && !sec.isEmpty());
                         square.x = x;
                         square.y = y;
                         layout.append(square);
@@ -283,7 +287,7 @@ bool RegionMap::loadLayout(poryjson::Json layoutJson) {
                                 QString square_section_name = section.trimmed();
                                 LayoutSquare square;
                                 square.map_section = square_section_name;
-                                square.has_map = (square_section_name != "MAPSEC_NONE" && !square_section_name.isEmpty());
+                                square.has_map = (square_section_name != this->default_map_section && !square_section_name.isEmpty());
                                 square.x = x;
                                 square.y = y;
                                 layout.append(square);
@@ -454,7 +458,7 @@ void RegionMap::saveLayout() {
 }
 
 void RegionMap::resetSquare(int index) {
-    this->layouts[this->current_layer][index].map_section = "MAPSEC_NONE";
+    this->layouts[this->current_layer][index].map_section = this->default_map_section;
     this->layouts[this->current_layer][index].has_map = false;
 }
 
@@ -473,7 +477,7 @@ void RegionMap::replaceSection(QString oldSection, QString newSection) {
     for (auto &square : this->layouts[this->current_layer]) {
         if (square.map_section == oldSection) {
             square.map_section = newSection;
-            square.has_map = (newSection != "MAPSEC_NONE");
+            square.has_map = (newSection != this->default_map_section);
         }
     }
 }
@@ -482,11 +486,11 @@ void RegionMap::swapSections(QString secA, QString secB) {
     for (auto &square : this->layouts[this->current_layer]) {
         if (square.map_section == secA) {
             square.map_section = secB;
-            square.has_map = (square.map_section != "MAPSEC_NONE");
+            square.has_map = (square.map_section != this->default_map_section);
         }
         else if (square.map_section == secB) {
             square.map_section = secA;
-            square.has_map = (square.map_section != "MAPSEC_NONE");
+            square.has_map = (square.map_section != this->default_map_section);
         }
     }
 }
@@ -725,7 +729,7 @@ void RegionMap::setSquareMapSection(int index, QString section) {
     int layoutIndex = tilemapToLayoutIndex(index);
     if (!(layoutIndex < 0 || !this->layouts.contains(this->current_layer))) {
         this->layouts[this->current_layer][layoutIndex].map_section = section;
-        this->layouts[this->current_layer][layoutIndex].has_map = !(section == "MAPSEC_NONE" || section.isEmpty());
+        this->layouts[this->current_layer][layoutIndex].has_map = !(section == this->default_map_section || section.isEmpty());
     }
 }
 
@@ -780,7 +784,7 @@ QString RegionMap::fixCase(QString caps) {
     QString camel;
 
     static const QRegularExpression re_braced("({.*})");
-    for (auto ch : caps.remove(re_braced).remove("MAPSEC")) {
+    for (auto ch : caps.remove(re_braced).remove(this->section_prefix)) {
         if (ch == '_' || ch == ' ') {
             big = true;
             continue;

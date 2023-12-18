@@ -372,13 +372,14 @@ bool CloneObjectEvent::loadFromJson(QJsonObject json, Project *project) {
     this->setTargetID(ParseUtil::jsonToInt(json["target_local_id"]));
 
     // Ensure the target map constant is valid before adding it to the events.
+    const QString dynamicMapConstant = project->getDynamicMapDefineName();
     QString mapConstant = ParseUtil::jsonToQString(json["target_map"]);
     if (project->mapConstantsToMapNames.contains(mapConstant)) {
         this->setTargetMap(project->mapConstantsToMapNames.value(mapConstant));
-    } else if (mapConstant == DYNAMIC_MAP_CONSTANT) {
+    } else if (mapConstant == dynamicMapConstant) {
         this->setTargetMap(DYNAMIC_MAP_NAME);
     } else {
-        logWarn(QString("Target Map constant '%1' is invalid. Using default '%2'.").arg(mapConstant).arg(DYNAMIC_MAP_CONSTANT));
+        logWarn(QString("Target Map constant '%1' is invalid. Using default '%2'.").arg(mapConstant).arg(dynamicMapConstant));
         this->setTargetMap(DYNAMIC_MAP_NAME);
     }
 
@@ -483,13 +484,14 @@ bool WarpEvent::loadFromJson(QJsonObject json, Project *project) {
     this->setDestinationWarpID(ParseUtil::jsonToQString(json["dest_warp_id"]));
 
     // Ensure the warp destination map constant is valid before adding it to the warps.
+    const QString dynamicMapConstant = project->getDynamicMapDefineName();
     QString mapConstant = ParseUtil::jsonToQString(json["dest_map"]);
     if (project->mapConstantsToMapNames.contains(mapConstant)) {
         this->setDestinationMap(project->mapConstantsToMapNames.value(mapConstant));
-    } else if (mapConstant == DYNAMIC_MAP_CONSTANT) {
+    } else if (mapConstant == dynamicMapConstant) {
         this->setDestinationMap(DYNAMIC_MAP_NAME);
     } else {
-        logWarn(QString("Destination Map constant '%1' is invalid. Using default '%2'.").arg(mapConstant).arg(DYNAMIC_MAP_CONSTANT));
+        logWarn(QString("Destination Map constant '%1' is invalid. Using default '%2'.").arg(mapConstant).arg(dynamicMapConstant));
         this->setDestinationMap(DYNAMIC_MAP_NAME);
     }
 
@@ -913,15 +915,16 @@ OrderedJson::object HealLocationEvent::buildEventJson(Project *) {
 }
 
 void HealLocationEvent::setDefaultValues(Project *) {
-    this->setElevation(3);
+    this->setElevation(projectConfig.getDefaultElevation());
     if (!this->getMap())
         return;
-    bool respawnEanbled = projectConfig.getHealLocationRespawnDataEnabled();
-    QString mapConstant = Map::mapConstantFromName(this->getMap()->name).remove(0,4);
-    QString prefix = respawnEanbled ? "SPAWN_" : "HEAL_LOCATION_";
+    bool respawnEnabled = projectConfig.getHealLocationRespawnDataEnabled();
+    const QString mapConstant = Map::mapConstantFromName(this->getMap()->name, false);
+    const QString prefix = projectConfig.getIdentifier(respawnEnabled ? ProjectIdentifier::define_spawn_prefix
+                                                                      : ProjectIdentifier::define_heal_locations_prefix);
     this->setLocationName(mapConstant);
     this->setIdName(prefix + mapConstant);
-    if (respawnEanbled) {
+    if (respawnEnabled) {
         this->setRespawnMap(this->getMap()->name);
         this->setRespawnNPC(1);
     }

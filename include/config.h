@@ -170,6 +170,61 @@ enum BaseGameVersion {
     pokeemerald,
 };
 
+enum ProjectIdentifier {
+    symbol_facing_directions,
+    symbol_obj_event_gfx_pointers,
+    symbol_pokemon_icon_table,
+    symbol_wild_encounters,
+    symbol_heal_locations,
+    symbol_spawn_points,
+    symbol_spawn_maps,
+    symbol_spawn_npcs,
+    symbol_attribute_table,
+    symbol_tilesets_prefix,
+    define_obj_event_count,
+    define_min_level,
+    define_max_level,
+    define_tiles_primary,
+    define_tiles_total,
+    define_metatiles_primary,
+    define_pals_primary,
+    define_pals_total,
+    define_map_size,
+    define_mask_metatile,
+    define_mask_collision,
+    define_mask_elevation,
+    define_mask_behavior,
+    define_mask_layer,
+    define_attribute_behavior,
+    define_attribute_layer,
+    define_attribute_terrain,
+    define_attribute_encounter,
+    define_metatile_label_prefix,
+    define_heal_locations_prefix,
+    define_spawn_prefix,
+    define_map_prefix,
+    define_map_dynamic,
+    define_map_empty,
+    define_map_section_prefix,
+    define_map_section_empty,
+    define_map_section_count,
+    regex_behaviors,
+    regex_obj_event_gfx,
+    regex_items,
+    regex_flags,
+    regex_vars,
+    regex_movement_types,
+    regex_map_types,
+    regex_battle_scenes,
+    regex_weather,
+    regex_coord_event_weather,
+    regex_secret_bases,
+    regex_sign_facing_directions,
+    regex_trainer_types,
+    regex_music,
+    regex_species,
+};
+
 enum ProjectFilePath {
     data_map_folders,
     data_scripts_folders,
@@ -250,11 +305,12 @@ public:
         this->blockElevationMask = 0xF000;
         this->warpBehaviors = defaultWarpBehaviors;
         this->warpBehaviorWarningDisabled = false;
+        this->identifiers.clear();
         this->readKeys.clear();
     }
+    static const QMap<ProjectIdentifier, QPair<QString, QString>> defaultIdentifiers;
     static const QMap<ProjectFilePath, std::pair<QString, QString>> defaultPaths;
     static const QStringList versionStrings;
-    static const QStringList defaultWarpBehaviors;
     void reset(BaseGameVersion baseGameVersion);
     void setBaseGameVersion(BaseGameVersion baseGameVersion);
     BaseGameVersion getBaseGameVersion();
@@ -299,10 +355,16 @@ public:
     QString getDefaultSecondaryTileset();
     void setDefaultPrimaryTileset(QString tilesetName);
     void setDefaultSecondaryTileset(QString tilesetName);
-    void setFilePath(QString pathId, QString path);
-    void setFilePath(ProjectFilePath pathId, QString path);
-    QString getFilePath(QString defaultPath, bool customOnly = false);
-    QString getFilePath(ProjectFilePath pathId, bool customOnly = false);
+    void setFilePath(const QString &pathId, const QString &path);
+    void setFilePath(ProjectFilePath pathId, const QString &path);
+    QString getCustomFilePath(ProjectFilePath pathId);
+    QString getCustomFilePath(const QString &pathId);
+    QString getFilePath(ProjectFilePath pathId);
+    void setIdentifier(ProjectIdentifier id, const QString &text);
+    void setIdentifier(const QString &id, const QString &text);
+    QString getCustomIdentifier(ProjectIdentifier id);
+    QString getCustomIdentifier(const QString &id);
+    QString getIdentifier(ProjectIdentifier id);
     void setPrefabFilepath(QString filepath);
     QString getPrefabFilepath();
     void setPrefabImportPrompted(bool prompted);
@@ -345,18 +407,6 @@ public:
     void setWarpBehaviorWarningDisabled(bool disabled);
     bool getWarpBehaviorWarningDisabled();
 
-    // TODO: Replace these once there's generic support for editing project names
-    static const QString metatileIdMaskName;
-    static const QString collisionMaskName;
-    static const QString elevationMaskName;
-    static const QString behaviorMaskName;
-    static const QString layerTypeMaskName;
-    static const QString behaviorTableName;
-    static const QString layerTypeTableName;
-    static const QString terrainTypeTableName;
-    static const QString encounterTypeTableName;
-    static const QString attrTableName;
-
 protected:
     virtual QString getConfigFilepath() override;
     virtual void parseConfigKeyValue(QString key, QString value) override;
@@ -364,8 +414,11 @@ protected:
     virtual void onNewConfigFileCreated() override;
     virtual void setUnreadKeys() override;
 private:
+    static const QStringList defaultWarpBehaviors;
+
     BaseGameVersion baseGameVersion;
     QString projectDir;
+    QMap<ProjectIdentifier, QString> identifiers;
     QMap<ProjectFilePath, QString> filePaths;
     bool usePoryScript;
     bool useCustomBorderSize;

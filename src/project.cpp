@@ -289,10 +289,12 @@ bool Project::loadMapData(Map* map) {
     }
 
     map->events[Event::Group::Heal].clear();
+    
+    const QString mapPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_map_prefix);
     for (auto it = healLocations.begin(); it != healLocations.end(); it++) {
         HealLocation loc = *it;
         //if TRUE map is flyable / has healing location
-        if (loc.mapName == QString(mapNamesToMapConstants.value(map->name)).remove(0,4)) {
+        if (loc.mapName == Map::mapConstantFromName(map->name, false)) {
             HealLocationEvent *heal = new HealLocationEvent();
             heal->setMap(map);
             heal->setX(loc.x);
@@ -301,12 +303,8 @@ bool Project::loadMapData(Map* map) {
             heal->setLocationName(loc.mapName);
             heal->setIdName(loc.idName);
             heal->setIndex(loc.index);
-
-            // TODO: what is this
-            // heal->put("destination_map_name", mapConstantsToMapNames.value(map->name));
-
             if (projectConfig.getHealLocationRespawnDataEnabled()) {
-                heal->setRespawnMap(mapConstantsToMapNames.value(QString("MAP_" + loc.respawnMap)));
+                heal->setRespawnMap(mapConstantsToMapNames.value(QString(mapPrefix + loc.respawnMap)));
                 heal->setRespawnNPC(loc.respawnNPC);
             }
             map->events[Event::Group::Heal].append(heal);
@@ -630,9 +628,8 @@ void Project::saveWildMonData() {
     OrderedJson::object wildEncountersObject;
     OrderedJson::array wildEncounterGroups;
 
-    // gWildMonHeaders label is not mutable
     OrderedJson::object monHeadersObject;
-    monHeadersObject["label"] = "gWildMonHeaders";
+    monHeadersObject["label"] = projectConfig.getIdentifier(ProjectIdentifier::symbol_wild_encounters);
     monHeadersObject["for_maps"] = true;
 
     OrderedJson::array fieldsInfoArray;
@@ -751,6 +748,12 @@ void Project::saveHealLocations(Map *map) {
     this->saveHealLocationsConstants();
 }
 
+QString Project::getHealLocationsTableName() {
+    if (projectConfig.getHealLocationRespawnDataEnabled())
+        return projectConfig.getIdentifier(ProjectIdentifier::symbol_spawn_points);
+    return projectConfig.getIdentifier(ProjectIdentifier::symbol_heal_locations);
+}
+
 // Saves heal location maps/coords/respawn data in root + /src/data/heal_locations.h
 void Project::saveHealLocationsData(Map *map) {
     // Update heal locations from map
@@ -774,20 +777,19 @@ void Project::saveHealLocationsData(Map *map) {
 
     // Create the definition text for each data table
     bool respawnEnabled = projectConfig.getHealLocationRespawnDataEnabled();
-    QString arrayName = respawnEnabled ? "sSpawnPoints" : "sHealLocations";
     const QString qualifiers = QString(healLocationDataQualifiers.isStatic ? "static " : "")
                              + QString(healLocationDataQualifiers.isConst ? "const " : "");
 
-    QString locationTableText = QString("%1struct HealLocation %2[] =\n{\n").arg(qualifiers).arg(arrayName);
+    QString locationTableText = QString("%1struct HealLocation %2[] =\n{\n").arg(qualifiers).arg(this->getHealLocationsTableName());
     QString respawnMapTableText, respawnNPCTableText;
     if (respawnEnabled) {
-        respawnMapTableText = QString("\n%1u16 sWhiteoutRespawnHealCenterMapIdxs[][2] =\n{\n").arg(qualifiers);
-        respawnNPCTableText = QString("\n%1u8 sWhiteoutRespawnHealerNpcIds[] =\n{\n").arg(qualifiers);
+        respawnMapTableText = QString("\n%1u16 %2[][2] =\n{\n").arg(qualifiers).arg(projectConfig.getIdentifier(ProjectIdentifier::symbol_spawn_maps));
+        respawnNPCTableText = QString("\n%1u8 %2[] =\n{\n").arg(qualifiers).arg(projectConfig.getIdentifier(ProjectIdentifier::symbol_spawn_npcs));
     }
 
     // Populate the data tables with the heal location data
     int i = 0;
-    const QString emptyMapName = "UNDEFINED"; // TODO: Use a project-wide constant here?
+    const QString emptyMapName = projectConfig.getIdentifier(ProjectIdentifier::define_map_empty);
     for (auto hl : this->healLocations) {
         // Add numbered suffix for duplicate constants
         if (healLocationsDupes.keys().contains(hl.idName)) {
@@ -1505,7 +1507,7 @@ bool Project::readTilesetMetatileLabels() {
     QString metatileLabelsFilename = projectConfig.getFilePath(ProjectFilePath::constants_metatile_labels);
     fileWatcher.addPath(root + "/" + metatileLabelsFilename);
 
-    static const QStringList prefixes = {"METATILE_"};
+    const QStringList prefixes = {QString("\\b%1").arg(projectConfig.getIdentifier(ProjectIdentifier::define_metatile_label_prefix))};
     QMap<QString, int> defines = parser.readCDefinesByPrefix(metatileLabelsFilename, prefixes);
 
     for (QString label : defines.keys()) {
@@ -1719,8 +1721,9 @@ bool Project::readMapGroups() {
         }
     }
 
-    mapConstantsToMapNames.insert(DYNAMIC_MAP_CONSTANT, DYNAMIC_MAP_NAME);
-    mapNamesToMapConstants.insert(DYNAMIC_MAP_NAME, DYNAMIC_MAP_CONSTANT);
+    const QString defineName = this->getDynamicMapDefineName();
+    mapConstantsToMapNames.insert(defineName, DYNAMIC_MAP_NAME);
+    mapNamesToMapConstants.insert(DYNAMIC_MAP_NAME, defineName);
     maps.append(DYNAMIC_MAP_NAME);
 
     groupNames = groups;
@@ -1862,62 +1865,72 @@ bool Project::readTilesetLabels() {
     return success;
 }
 
-// TODO: Names to config
 bool Project::readTilesetProperties() {
-    static const QStringList names = {
-        "NUM_TILES_IN_PRIMARY",
-        "NUM_TILES_TOTAL",
-        "NUM_METATILES_IN_PRIMARY",
-        "NUM_PALS_IN_PRIMARY",
-        "NUM_PALS_TOTAL",
-        "MAX_MAP_DATA_SIZE",
+    const QString numTilesPrimaryName = projectConfig.getIdentifier(ProjectIdentifier::define_tiles_primary);
+    const QString numTilesTotalName = projectConfig.getIdentifier(ProjectIdentifier::define_tiles_total);
+    const QString numMetatilesPrimaryName = projectConfig.getIdentifier(ProjectIdentifier::define_metatiles_primary);
+    const QString numPalsPrimaryName = projectConfig.getIdentifier(ProjectIdentifier::define_pals_primary);
+    const QString numPalsTotalName = projectConfig.getIdentifier(ProjectIdentifier::define_pals_total);
+    const QString maxMapSizeName = projectConfig.getIdentifier(ProjectIdentifier::define_map_size);
+    const QStringList names = {
+        numTilesPrimaryName,
+        numTilesTotalName,
+        numMetatilesPrimaryName,
+        numPalsPrimaryName,
+        numPalsTotalName,
+        maxMapSizeName,
     };
     QString filename = projectConfig.getFilePath(ProjectFilePath::constants_fieldmap);
     fileWatcher.addPath(root + "/" + filename);
     QMap<QString, int> defines = parser.readCDefinesByName(filename, names);
 
-    auto it = defines.find("NUM_TILES_IN_PRIMARY");
+    auto it = defines.find(numTilesPrimaryName);
     if (it != defines.end()) {
         Project::num_tiles_primary = it.value();
     }
     else {
-        logWarn(QString("Value for tileset property 'NUM_TILES_IN_PRIMARY' not found. Using default (%1) instead.")
+        logWarn(QString("Value for tileset property '%1' not found. Using default (%2) instead.")
+                .arg(numTilesPrimaryName)
                 .arg(Project::num_tiles_primary));
     }
-    it = defines.find("NUM_TILES_TOTAL");
+    it = defines.find(numTilesTotalName);
     if (it != defines.end()) {
         Project::num_tiles_total = it.value();
     }
     else {
-        logWarn(QString("Value for tileset property 'NUM_TILES_TOTAL' not found. Using default (%1) instead.")
+        logWarn(QString("Value for tileset property '%1' not found. Using default (%2) instead.")
+                .arg(numTilesTotalName)
                 .arg(Project::num_tiles_total));
     }
-    it = defines.find("NUM_METATILES_IN_PRIMARY");
+    it = defines.find(numMetatilesPrimaryName);
     if (it != defines.end()) {
         Project::num_metatiles_primary = it.value();
     }
     else {
-        logWarn(QString("Value for tileset property 'NUM_METATILES_IN_PRIMARY' not found. Using default (%1) instead.")
+        logWarn(QString("Value for tileset property '%1' not found. Using default (%2) instead.")
+                .arg(numMetatilesPrimaryName)
                 .arg(Project::num_metatiles_primary));
     }
-    it = defines.find("NUM_PALS_IN_PRIMARY");
+    it = defines.find(numPalsPrimaryName);
     if (it != defines.end()) {
         Project::num_pals_primary = it.value();
     }
     else {
-        logWarn(QString("Value for tileset property 'NUM_PALS_IN_PRIMARY' not found. Using default (%1) instead.")
+        logWarn(QString("Value for tileset property '%1' not found. Using default (%2) instead.")
+                .arg(numPalsPrimaryName)
                 .arg(Project::num_pals_primary));
     }
-    it = defines.find("NUM_PALS_TOTAL");
+    it = defines.find(numPalsTotalName);
     if (it != defines.end()) {
         Project::num_pals_total = it.value();
     }
     else {
-        logWarn(QString("Value for tileset property 'NUM_PALS_TOTAL' not found. Using default (%1) instead.")
+        logWarn(QString("Value for tileset property '%1' not found. Using default (%2) instead.")
+                .arg(numPalsTotalName)
                 .arg(Project::num_pals_total));
     }
 
-    it = defines.find("MAX_MAP_DATA_SIZE");
+    it = defines.find(maxMapSizeName);
     if (it != defines.end()) {
         int min = getMapDataSize(1, 1);
         if (it.value() >= min) {
@@ -1925,29 +1938,35 @@ bool Project::readTilesetProperties() {
             calculateDefaultMapSize();
         } else {
             // must be large enough to support a 1x1 map
-            logWarn(QString("Value for map property 'MAX_MAP_DATA_SIZE' is %1, must be at least %2. Using default (%3) instead.")
+            logWarn(QString("Value for map property '%1' is %2, must be at least %3. Using default (%4) instead.")
+                    .arg(maxMapSizeName)
                     .arg(it.value())
                     .arg(min)
                     .arg(Project::max_map_data_size));
         }
     }
     else {
-        logWarn(QString("Value for map property 'MAX_MAP_DATA_SIZE' not found. Using default (%1) instead.")
+        logWarn(QString("Value for map property '%1' not found. Using default (%2) instead.")
+                .arg(maxMapSizeName)
                 .arg(Project::max_map_data_size));
     }
 
     return true;
 }
 
-// TODO: Update for config
 // Read data masks for Blocks and metatile attributes.
 bool Project::readFieldmapMasks() {
-    static const QStringList searchNames = {
-        ProjectConfig::metatileIdMaskName,
-        ProjectConfig::collisionMaskName,
-        ProjectConfig::elevationMaskName,
-        ProjectConfig::behaviorMaskName,
-        ProjectConfig::layerTypeMaskName,
+    const QString metatileIdMaskName = projectConfig.getIdentifier(ProjectIdentifier::define_mask_metatile);
+    const QString collisionMaskName = projectConfig.getIdentifier(ProjectIdentifier::define_mask_collision);
+    const QString elevationMaskName = projectConfig.getIdentifier(ProjectIdentifier::define_mask_elevation);
+    const QString behaviorMaskName = projectConfig.getIdentifier(ProjectIdentifier::define_mask_behavior);
+    const QString layerTypeMaskName = projectConfig.getIdentifier(ProjectIdentifier::define_mask_layer);
+    const QStringList searchNames = {
+        metatileIdMaskName,
+        collisionMaskName,
+        elevationMaskName,
+        behaviorMaskName,
+        layerTypeMaskName,
     };
     QString globalFieldmap = projectConfig.getFilePath(ProjectFilePath::global_fieldmap);
     fileWatcher.addPath(root + "/" + globalFieldmap);
@@ -1963,57 +1982,63 @@ bool Project::readFieldmapMasks() {
     projectConfig.setSaveDisabled(true);
 
     // Read Block masks
-    auto it = defines.find(ProjectConfig::metatileIdMaskName);
+    auto it = defines.find(metatileIdMaskName);
     if (it != defines.end())
         projectConfig.setBlockMetatileIdMask(static_cast<uint16_t>(it.value()));
-    it = defines.find(ProjectConfig::collisionMaskName);
+    it = defines.find(collisionMaskName);
     if (it != defines.end())
         projectConfig.setBlockCollisionMask(static_cast<uint16_t>(it.value()));
-    it = defines.find(ProjectConfig::elevationMaskName);
+    it = defines.find(elevationMaskName);
     if (it != defines.end())
         projectConfig.setBlockElevationMask(static_cast<uint16_t>(it.value()));
 
     // Read RSE metatile attribute masks
-    it = defines.find(ProjectConfig::behaviorMaskName);
+    it = defines.find(behaviorMaskName);
     if (it != defines.end())
         projectConfig.setMetatileBehaviorMask(static_cast<uint32_t>(it.value()));
-    it = defines.find(ProjectConfig::layerTypeMaskName);
+    it = defines.find(layerTypeMaskName);
     if (it != defines.end())
         projectConfig.setMetatileLayerTypeMask(static_cast<uint32_t>(it.value()));
 
     // pokefirered keeps its attribute masks in a separate table, parse this too.
-    QString srcFieldmap = projectConfig.getFilePath(ProjectFilePath::fieldmap);
-    const QMap<QString, QString> attrTable = parser.readNamedIndexCArray(srcFieldmap, ProjectConfig::attrTableName);
+    const QString attrTableName = projectConfig.getIdentifier(ProjectIdentifier::symbol_attribute_table);
+    const QString srcFieldmap = projectConfig.getFilePath(ProjectFilePath::fieldmap);
+    const QMap<QString, QString> attrTable = parser.readNamedIndexCArray(srcFieldmap, attrTableName);
     if (!attrTable.isEmpty()) {
+        const QString terrainTypeTableName = projectConfig.getIdentifier(ProjectIdentifier::define_attribute_behavior);
+        const QString encounterTypeTableName = projectConfig.getIdentifier(ProjectIdentifier::define_attribute_layer);
+        const QString behaviorTableName = projectConfig.getIdentifier(ProjectIdentifier::define_attribute_terrain);
+        const QString layerTypeTableName = projectConfig.getIdentifier(ProjectIdentifier::define_attribute_encounter);
         fileWatcher.addPath(root + "/" + srcFieldmap);
+
         bool ok;
         // Read terrain type mask
-        uint32_t mask = attrTable.value(ProjectConfig::terrainTypeTableName).toUInt(&ok, 0);
+        uint32_t mask = attrTable.value(terrainTypeTableName).toUInt(&ok, 0);
         if (ok) {
             projectConfig.setMetatileTerrainTypeMask(mask);
-            this->disabledSettingsNames.insert(ProjectConfig::terrainTypeTableName);
+            this->disabledSettingsNames.insert(terrainTypeTableName);
         }
         // Read encounter type mask
-        mask = attrTable.value(ProjectConfig::encounterTypeTableName).toUInt(&ok, 0);
+        mask = attrTable.value(encounterTypeTableName).toUInt(&ok, 0);
         if (ok) {
             projectConfig.setMetatileEncounterTypeMask(mask);
-            this->disabledSettingsNames.insert(ProjectConfig::encounterTypeTableName);
+            this->disabledSettingsNames.insert(encounterTypeTableName);
         }
         // If we haven't already parsed behavior and layer type then try those too
-        if (!this->disabledSettingsNames.contains(ProjectConfig::behaviorMaskName)) {
+        if (!this->disabledSettingsNames.contains(behaviorMaskName)) {
             // Read behavior mask
-            mask = attrTable.value(ProjectConfig::behaviorTableName).toUInt(&ok, 0);
+            mask = attrTable.value(behaviorTableName).toUInt(&ok, 0);
             if (ok) {
                 projectConfig.setMetatileBehaviorMask(mask);
-                this->disabledSettingsNames.insert(ProjectConfig::behaviorTableName);
+                this->disabledSettingsNames.insert(behaviorTableName);
             }
         }
-        if (!this->disabledSettingsNames.contains(ProjectConfig::layerTypeMaskName)) {
+        if (!this->disabledSettingsNames.contains(layerTypeMaskName)) {
             // Read layer type mask
-            mask = attrTable.value(ProjectConfig::layerTypeTableName).toUInt(&ok, 0);
+            mask = attrTable.value(layerTypeTableName).toUInt(&ok, 0);
             if (ok) {
                 projectConfig.setMetatileLayerTypeMask(mask);
-                this->disabledSettingsNames.insert(ProjectConfig::layerTypeTableName);
+                this->disabledSettingsNames.insert(layerTypeTableName);
             }
         }
     }
@@ -2025,7 +2050,7 @@ bool Project::readRegionMapSections() {
     this->mapSectionNameToValue.clear();
     this->mapSectionValueToName.clear();
 
-    static const QStringList prefixes = {"\\bMAPSEC_"};
+    const QStringList prefixes = {QString("\\b%1").arg(projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix))};
     QString filename = projectConfig.getFilePath(ProjectFilePath::constants_region_map_sections);
     fileWatcher.addPath(root + "/" + filename);
     this->mapSectionNameToValue = parser.readCDefinesByPrefix(filename, prefixes);
@@ -2043,7 +2068,10 @@ bool Project::readRegionMapSections() {
 // Read the constants to preserve any "unused" heal locations when writing the file later
 bool Project::readHealLocationConstants() {
     this->healLocationNameToValue.clear();
-    static const QStringList prefixes = {"\\bSPAWN_", "\\bHEAL_LOCATION_"};
+    const QStringList prefixes = {
+        QString("\\b%1").arg(projectConfig.getIdentifier(ProjectIdentifier::define_heal_locations_prefix)),
+        QString("\\b%1").arg(projectConfig.getIdentifier(ProjectIdentifier::define_spawn_prefix))
+    };
     QString constantsFilename = projectConfig.getFilePath(ProjectFilePath::constants_heal_locations);
     fileWatcher.addPath(root + "/" + constantsFilename);
     this->healLocationNameToValue = parser.readCDefinesByPrefix(constantsFilename, prefixes);
@@ -2051,6 +2079,7 @@ bool Project::readHealLocationConstants() {
     return true;
 }
 
+// TODO: Simplify using the new C struct parsing functions (and indexed array parsing functions)
 bool Project::readHealLocations() {
     this->healLocationDataQualifiers = {};
     this->healLocations.clear();
@@ -2069,11 +2098,12 @@ bool Project::readHealLocations() {
     bool respawnEnabled = projectConfig.getHealLocationRespawnDataEnabled();
 
     // Get data qualifiers for the location data table
-    QString tableName = respawnEnabled ? "sSpawnPoints" : "sHealLocations";
-    this->healLocationDataQualifiers = this->getDataQualifiers(text, tableName);
+    this->healLocationDataQualifiers = this->getDataQualifiers(text, this->getHealLocationsTableName());
 
     // Create regex pattern for the constants (ex: "SPAWN_PALLET_TOWN" or "HEAL_LOCATION_PETALBURG_CITY")
-    static const QRegularExpression constantsExpr("(SPAWN|HEAL_LOCATION)_[A-Za-z0-9_]+");
+    const QString spawnPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_spawn_prefix);
+    const QString healLocPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_heal_locations_prefix);
+    const QRegularExpression constantsExpr(QString("\\b(%1|%2)[A-Za-z0-9_]+").arg(spawnPrefix).arg(healLocPrefix));
 
     // Find all the unique heal location constants used in the data tables.
     // Porymap doesn't care whether or not a constant appeared in the heal locations constants file.
@@ -2133,8 +2163,8 @@ bool Project::readHealLocations() {
 }
 
 bool Project::readItemNames() {
-    QStringList prefixes("\\bITEM_(?!(B_)?USE_)");  // Exclude ITEM_USE_ and ITEM_B_USE_ constants
-    QString filename = projectConfig.getFilePath(ProjectFilePath::constants_items);
+    const QStringList prefixes = {projectConfig.getIdentifier(ProjectIdentifier::regex_items)};  
+    const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_items);
     fileWatcher.addPath(root + "/" + filename);
     itemNames = parser.readCDefineNames(filename, prefixes);
     if (itemNames.isEmpty()) {
@@ -2145,8 +2175,8 @@ bool Project::readItemNames() {
 }
 
 bool Project::readFlagNames() {
-    QStringList prefixes("\\bFLAG_");
-    QString filename = projectConfig.getFilePath(ProjectFilePath::constants_flags);
+    const QStringList prefixes = {projectConfig.getIdentifier(ProjectIdentifier::regex_flags)};
+    const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_flags);
     fileWatcher.addPath(root + "/" + filename);
     flagNames = parser.readCDefineNames(filename, prefixes);
     if (flagNames.isEmpty()) {
@@ -2157,8 +2187,8 @@ bool Project::readFlagNames() {
 }
 
 bool Project::readVarNames() {
-    QStringList prefixes("\\bVAR_");
-    QString filename = projectConfig.getFilePath(ProjectFilePath::constants_vars);
+    const QStringList prefixes = {projectConfig.getIdentifier(ProjectIdentifier::regex_vars)};
+    const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_vars);
     fileWatcher.addPath(root + "/" + filename);
     varNames = parser.readCDefineNames(filename, prefixes);
     if (varNames.isEmpty()) {
@@ -2169,8 +2199,8 @@ bool Project::readVarNames() {
 }
 
 bool Project::readMovementTypes() {
-    QStringList prefixes("\\bMOVEMENT_TYPE_");
-    QString filename = projectConfig.getFilePath(ProjectFilePath::constants_obj_event_movement);
+    const QStringList prefixes = {projectConfig.getIdentifier(ProjectIdentifier::regex_movement_types)};
+    const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_obj_event_movement);
     fileWatcher.addPath(root + "/" + filename);
     movementTypes = parser.readCDefineNames(filename, prefixes);
     if (movementTypes.isEmpty()) {
@@ -2183,7 +2213,7 @@ bool Project::readMovementTypes() {
 bool Project::readInitialFacingDirections() {
     QString filename = projectConfig.getFilePath(ProjectFilePath::initial_facing_table);
     fileWatcher.addPath(root + "/" + filename);
-    facingDirections = parser.readNamedIndexCArray(filename, "gInitialMovementTypeFacingDirections");
+    facingDirections = parser.readNamedIndexCArray(filename, projectConfig.getIdentifier(ProjectIdentifier::symbol_facing_directions));
     if (facingDirections.isEmpty()) {
         logError(QString("Failed to read initial movement type facing directions from %1").arg(filename));
         return false;
@@ -2192,8 +2222,8 @@ bool Project::readInitialFacingDirections() {
 }
 
 bool Project::readMapTypes() {
-    QStringList prefixes("\\bMAP_TYPE_");
-    QString filename = projectConfig.getFilePath(ProjectFilePath::constants_map_types);
+    const QStringList prefixes = {projectConfig.getIdentifier(ProjectIdentifier::regex_map_types)};
+    const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_map_types);
     fileWatcher.addPath(root + "/" + filename);
     mapTypes = parser.readCDefineNames(filename, prefixes);
     if (mapTypes.isEmpty()) {
@@ -2204,8 +2234,8 @@ bool Project::readMapTypes() {
 }
 
 bool Project::readMapBattleScenes() {
-    QStringList prefixes("\\bMAP_BATTLE_SCENE_");
-    QString filename = projectConfig.getFilePath(ProjectFilePath::constants_map_types);
+    const QStringList prefixes = {projectConfig.getIdentifier(ProjectIdentifier::regex_battle_scenes)};
+    const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_map_types);
     fileWatcher.addPath(root + "/" + filename);
     mapBattleScenes = parser.readCDefineNames(filename, prefixes);
     if (mapBattleScenes.isEmpty()) {
@@ -2216,8 +2246,8 @@ bool Project::readMapBattleScenes() {
 }
 
 bool Project::readWeatherNames() {
-    QStringList prefixes("\\bWEATHER_");
-    QString filename = projectConfig.getFilePath(ProjectFilePath::constants_weather);
+    const QStringList prefixes = {projectConfig.getIdentifier(ProjectIdentifier::regex_weather)};
+    const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_weather);
     fileWatcher.addPath(root + "/" + filename);
     weatherNames = parser.readCDefineNames(filename, prefixes);
     if (weatherNames.isEmpty()) {
@@ -2231,8 +2261,8 @@ bool Project::readCoordEventWeatherNames() {
     if (!projectConfig.getEventWeatherTriggerEnabled())
         return true;
 
-    QStringList prefixes("\\bCOORD_EVENT_WEATHER_");
-    QString filename = projectConfig.getFilePath(ProjectFilePath::constants_weather);
+    const QStringList prefixes = {projectConfig.getIdentifier(ProjectIdentifier::regex_coord_event_weather)};
+    const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_weather);
     fileWatcher.addPath(root + "/" + filename);
     coordEventWeatherNames = parser.readCDefineNames(filename, prefixes);
     if (coordEventWeatherNames.isEmpty()) {
@@ -2246,8 +2276,8 @@ bool Project::readSecretBaseIds() {
     if (!projectConfig.getEventSecretBaseEnabled())
         return true;
 
-    QStringList prefixes("\\bSECRET_BASE_[A-Za-z0-9_]*_[0-9]+");
-    QString filename = projectConfig.getFilePath(ProjectFilePath::constants_secret_bases);
+    const QStringList prefixes = {projectConfig.getIdentifier(ProjectIdentifier::regex_secret_bases)};
+    const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_secret_bases);
     fileWatcher.addPath(root + "/" + filename);
     secretBaseIds = parser.readCDefineNames(filename, prefixes);
     if (secretBaseIds.isEmpty()) {
@@ -2258,8 +2288,8 @@ bool Project::readSecretBaseIds() {
 }
 
 bool Project::readBgEventFacingDirections() {
-    QStringList prefixes("\\bBG_EVENT_PLAYER_FACING_");
-    QString filename = projectConfig.getFilePath(ProjectFilePath::constants_event_bg);
+    const QStringList prefixes = {projectConfig.getIdentifier(ProjectIdentifier::regex_sign_facing_directions)};
+    const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_event_bg);
     fileWatcher.addPath(root + "/" + filename);
     bgEventFacingDirections = parser.readCDefineNames(filename, prefixes);
     if (bgEventFacingDirections.isEmpty()) {
@@ -2270,8 +2300,8 @@ bool Project::readBgEventFacingDirections() {
 }
 
 bool Project::readTrainerTypes() {
-    QStringList prefixes("\\bTRAINER_TYPE_");
-    QString filename = projectConfig.getFilePath(ProjectFilePath::constants_trainer_types);
+    const QStringList prefixes = {projectConfig.getIdentifier(ProjectIdentifier::regex_trainer_types)};
+    const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_trainer_types);
     fileWatcher.addPath(root + "/" + filename);
     trainerTypes = parser.readCDefineNames(filename, prefixes);
     if (trainerTypes.isEmpty()) {
@@ -2285,7 +2315,7 @@ bool Project::readMetatileBehaviors() {
     this->metatileBehaviorMap.clear();
     this->metatileBehaviorMapInverse.clear();
 
-    static const QStringList prefixes = {"\\bMB_"};
+    const QStringList prefixes = {projectConfig.getIdentifier(ProjectIdentifier::regex_behaviors)};
     QString filename = projectConfig.getFilePath(ProjectFilePath::constants_metatile_behaviors);
     fileWatcher.addPath(root + "/" + filename);
     this->metatileBehaviorMap = parser.readCDefinesByPrefix(filename, prefixes);
@@ -2312,22 +2342,22 @@ bool Project::readMetatileBehaviors() {
 }
 
 bool Project::readSongNames() {
-    QStringList songDefinePrefixes{ "\\bSE_", "\\bMUS_" };
-    QString filename = projectConfig.getFilePath(ProjectFilePath::constants_songs);
+    const QStringList prefixes = {projectConfig.getIdentifier(ProjectIdentifier::regex_music)};
+    const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_songs);
     fileWatcher.addPath(root + "/" + filename);
-    this->songNames = parser.readCDefineNames(filename, songDefinePrefixes);
-    this->defaultSong = this->songNames.value(0, "MUS_DUMMY");
+    this->songNames = parser.readCDefineNames(filename, prefixes);
     if (this->songNames.isEmpty()) {
         logError(QString("Failed to read song names from %1.").arg(filename));
         return false;
     }
+    this->defaultSong = this->songNames.value(0);
     // Song names don't have a very useful order (esp. if we include SE_* values), so sort them alphabetically.
     this->songNames.sort();
     return true;
 }
 
 bool Project::readObjEventGfxConstants() {
-    static const QStringList prefixes = {"\\bOBJ_EVENT_GFX_"};
+    const QStringList prefixes = {projectConfig.getIdentifier(ProjectIdentifier::regex_obj_event_gfx)};
     QString filename = projectConfig.getFilePath(ProjectFilePath::constants_obj_events);
     fileWatcher.addPath(root + "/" + filename);
     this->gfxDefines = parser.readCDefinesByPrefix(filename, prefixes);
@@ -2338,33 +2368,37 @@ bool Project::readObjEventGfxConstants() {
     return true;
 }
 
-// TODO: Names to config
 bool Project::readMiscellaneousConstants() {
     miscConstants.clear();
     if (userConfig.getEncounterJsonActive()) {
-        QString filename = projectConfig.getFilePath(ProjectFilePath::constants_pokemon);
+        const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_pokemon);
+        const QString minLevelName = projectConfig.getIdentifier(ProjectIdentifier::define_min_level);
+        const QString maxLevelName = projectConfig.getIdentifier(ProjectIdentifier::define_max_level);
         fileWatcher.addPath(root + "/" + filename);
-        QMap<QString, int> pokemonDefines = parser.readCDefinesByName(filename, {"MIN_LEVEL", "MAX_LEVEL"});
-        miscConstants.insert("max_level_define", pokemonDefines.value("MAX_LEVEL") > pokemonDefines.value("MIN_LEVEL") ? pokemonDefines.value("MAX_LEVEL") : 100);
-        miscConstants.insert("min_level_define", pokemonDefines.value("MIN_LEVEL") < pokemonDefines.value("MAX_LEVEL") ? pokemonDefines.value("MIN_LEVEL") : 1);
+        QMap<QString, int> pokemonDefines = parser.readCDefinesByName(filename, {minLevelName, maxLevelName});
+        miscConstants.insert("max_level_define", pokemonDefines.value(maxLevelName) > pokemonDefines.value(minLevelName) ? pokemonDefines.value(maxLevelName) : 100);
+        miscConstants.insert("min_level_define", pokemonDefines.value(minLevelName) < pokemonDefines.value(maxLevelName) ? pokemonDefines.value(minLevelName) : 1);
     }
 
-    QString filename = projectConfig.getFilePath(ProjectFilePath::constants_global);
+    const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_global);
+    const QString maxObjectEventsName = projectConfig.getIdentifier(ProjectIdentifier::define_obj_event_count);
     fileWatcher.addPath(root + "/" + filename);
-    QMap<QString, int> defines = parser.readCDefinesByName(filename, {"OBJECT_EVENT_TEMPLATES_COUNT"});
+    QMap<QString, int> defines = parser.readCDefinesByName(filename, {maxObjectEventsName});
 
-    auto it = defines.find("OBJECT_EVENT_TEMPLATES_COUNT");
+    auto it = defines.find(maxObjectEventsName);
     if (it != defines.end()) {
         if (it.value() > 0) {
             Project::max_object_events = it.value();
         } else {
-            logWarn(QString("Value for 'OBJECT_EVENT_TEMPLATES_COUNT' is %1, must be greater than 0. Using default (%2) instead.")
+            logWarn(QString("Value for '%1' is %2, must be greater than 0. Using default (%3) instead.")
+                    .arg(maxObjectEventsName)
                     .arg(it.value())
                     .arg(Project::max_object_events));
         }
     }
     else {
-        logWarn(QString("Value for 'OBJECT_EVENT_TEMPLATES_COUNT' not found. Using default (%1) instead.")
+        logWarn(QString("Value for '%1' not found. Using default (%2) instead.")
+                .arg(maxObjectEventsName)
                 .arg(Project::max_object_events));
     }
 
@@ -2471,7 +2505,9 @@ bool Project::readEventGraphics() {
                                        << root + "/" + projectConfig.getFilePath(ProjectFilePath::data_obj_event_pic_tables)
                                        << root + "/" + projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx));
 
-    QMap<QString, QString> pointerHash = parser.readNamedIndexCArray(projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx_pointers), "gObjectEventGraphicsInfoPointers");
+    const QString pointersFilepath = projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx_pointers);
+    const QString pointersName = projectConfig.getIdentifier(ProjectIdentifier::symbol_obj_event_gfx_pointers);
+    QMap<QString, QString> pointerHash = parser.readNamedIndexCArray(pointersFilepath, pointersName);
 
     qDeleteAll(eventGraphicsMap);
     eventGraphicsMap.clear();
@@ -2479,7 +2515,7 @@ bool Project::readEventGraphics() {
 
     // The positions of each of the required members for the gfx info struct.
     // For backwards compatibility if the struct doesn't use initializers.
-    const auto gfxInfoMemberMap = QHash<int, QString>{
+    static const auto gfxInfoMemberMap = QHash<int, QString>{
         {8, "inanimate"},
         {11, "oam"},
         {12, "subspriteTables"},
@@ -2546,21 +2582,23 @@ bool Project::readSpeciesIconPaths() {
     // Read map of species constants to icon names
     const QString srcfilename = projectConfig.getFilePath(ProjectFilePath::pokemon_icon_table);
     fileWatcher.addPath(root + "/" + srcfilename);
-    const QMap<QString, QString> monIconNames = parser.readNamedIndexCArray(srcfilename, "gMonIconTable");
+    const QString tableName = projectConfig.getIdentifier(ProjectIdentifier::symbol_pokemon_icon_table);
+    const QMap<QString, QString> monIconNames = parser.readNamedIndexCArray(srcfilename, tableName);
 
-    // Read map of icon names to filepaths. These are spread between two different files
+    // Read map of icon names to filepaths
     const QString incfilename = projectConfig.getFilePath(ProjectFilePath::data_pokemon_gfx);
     fileWatcher.addPath(root + "/" + incfilename);
     const QMap<QString, QString> iconIncbins = parser.readCIncbinMulti(incfilename);
 
     // Read species constants. If this fails we can get them from the icon table (but we shouldn't rely on it).
-    static const QStringList prefixes("\\bSPECIES_");
+    const QStringList prefixes = {projectConfig.getIdentifier(ProjectIdentifier::regex_species)};
     const QString constantsFilename = projectConfig.getFilePath(ProjectFilePath::constants_species);
     fileWatcher.addPath(root + "/" + constantsFilename);
     QStringList speciesNames = parser.readCDefineNames(constantsFilename, prefixes);
     if (speciesNames.isEmpty())
         speciesNames = monIconNames.keys();
 
+    // For each species, use the information gathered above to find the icon image.
     bool missingIcons = false;
     for (auto species : speciesNames) {
         QString path = QString();
@@ -2705,7 +2743,8 @@ bool Project::calculateDefaultMapSize(){
         // x^2 + 29x + (210 - max), then complete the square and simplify
         default_map_size = qFloor((qSqrt(4 * getMaxMapDataSize() + 1) - 29) / 2);
     } else {
-        logError(QString("'MAX_MAP_DATA_SIZE' of %1 is too small to support a 1x1 map. Must be at least %2.")
+        logError(QString("'%1' of %2 is too small to support a 1x1 map. Must be at least %3.")
+                    .arg(projectConfig.getIdentifier(ProjectIdentifier::define_map_size))
                     .arg(max)
                     .arg(getMapDataSize(1, 1)));
         return false;
@@ -2716,6 +2755,11 @@ bool Project::calculateDefaultMapSize(){
 int Project::getMaxObjectEvents()
 {
     return Project::max_object_events;
+}
+
+QString Project::getDynamicMapDefineName() {
+    const QString prefix = projectConfig.getIdentifier(ProjectIdentifier::define_map_prefix);
+    return prefix + projectConfig.getIdentifier(ProjectIdentifier::define_map_dynamic);
 }
 
 void Project::setImportExportPath(QString filename)

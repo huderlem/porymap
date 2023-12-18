@@ -26,8 +26,7 @@ struct EventGraphics
     bool inanimate;
 };
 
-// The constant and displayed name of the special map value used by warps with multiple potential destinations
-static QString DYNAMIC_MAP_CONSTANT = "MAP_DYNAMIC";
+// The displayed name of the special map value used by warps with multiple potential destinations
 static QString DYNAMIC_MAP_NAME = "Dynamic";
 
 class Project : public QObject
@@ -215,7 +214,7 @@ public:
 
     QString getDefaultPrimaryTilesetLabel();
     QString getDefaultSecondaryTilesetLabel();
-
+    QString getDynamicMapDefineName();
     void updateTilesetMetatileLabels(Tileset *tileset);
     QString buildMetatileLabelsText(const QMap<QString, int> defines);
     QString findMetatileLabelsTileset(QString label);
@@ -248,6 +247,7 @@ private:
 
     void saveHealLocationsData(Map *map);
     void saveHealLocationsConstants();
+    QString getHealLocationsTableName();
 
     void ignoreWatchedFileTemporarily(QString filepath);
 

@@ -54,8 +54,8 @@ public:
     QString readCIncbin(const QString &text, const QString &label);
     QMap<QString, QString> readCIncbinMulti(const QString &filepath);
     QStringList readCIncbinArray(const QString &filename, const QString &label);
-    QMap<QString, int> readCDefinesByPrefix(const QString &filename, const QStringList &prefixes);
-    QMap<QString, int> readCDefinesByName(const QString &filename, const QStringList &defineNames);
+    QMap<QString, int> readCDefinesByPrefix(const QString &filename, QStringList prefixes);
+    QMap<QString, int> readCDefinesByName(const QString &filename, QStringList names);
     QStringList readCDefineNames(const QString&, const QStringList&);
     QMap<QString, QHash<QString, QString>> readCStructs(const QString &, const QString & = "", const QHash<int, QString> = { });
     QList<QStringList> getLabelMacros(const QList<QStringList>&, const QString&);

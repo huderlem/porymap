@@ -425,12 +425,14 @@ QMap<QString, int> ParseUtil::readCDefines(const QString &filename, const QStrin
 }
 
 // Find and evaluate an unknown list of defines with a known name prefix.
-QMap<QString, int> ParseUtil::readCDefinesByPrefix(const QString &filename, const QStringList &prefixes) {
+QMap<QString, int> ParseUtil::readCDefinesByPrefix(const QString &filename, QStringList prefixes) {
+    prefixes.removeDuplicates();
     return this->readCDefines(filename, prefixes, false);
 }
 
 // Find and evaluate a specific set of defines with known names.
-QMap<QString, int> ParseUtil::readCDefinesByName(const QString &filename, const QStringList &names) {
+QMap<QString, int> ParseUtil::readCDefinesByName(const QString &filename, QStringList names) {
+    names.removeDuplicates();
     return this->readCDefines(filename, names, true);
 }
 

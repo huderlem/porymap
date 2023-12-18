@@ -29,11 +29,12 @@ void Map::setName(QString mapName) {
     constantName = mapConstantFromName(mapName);
 }
 
-QString Map::mapConstantFromName(QString mapName) {
+QString Map::mapConstantFromName(QString mapName, bool includePrefix) {
     // Transform map names of the form 'GraniteCave_B1F` into map constants like 'MAP_GRANITE_CAVE_B1F'.
     static const QRegularExpression caseChange("([a-z])([A-Z])");
     QString nameWithUnderscores = mapName.replace(caseChange, "\\1_\\2");
-    QString withMapAndUppercase = "MAP_" + nameWithUnderscores.toUpper();
+    const QString prefix = includePrefix ? projectConfig.getIdentifier(ProjectIdentifier::define_map_prefix) : "";
+    QString withMapAndUppercase = prefix + nameWithUnderscores.toUpper();
     static const QRegularExpression underscores("_+");
     QString constantName = withMapAndUppercase.replace(underscores, "_");
 

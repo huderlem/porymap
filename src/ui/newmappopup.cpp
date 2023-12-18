@@ -258,9 +258,9 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
     newMap->location = this->ui->comboBox_NewMap_Location->currentText();
     newMap->song = this->ui->comboBox_NewMap_Song->currentText();
     newMap->requiresFlash = false;
-    newMap->weather = this->project->weatherNames.value(0, "WEATHER_NONE");
+    newMap->weather = this->project->weatherNames.value(0);
     newMap->show_location = this->ui->checkBox_NewMap_Show_Location->isChecked();
-    newMap->battle_scene = this->project->mapBattleScenes.value(0, "MAP_BATTLE_SCENE_NORMAL");
+    newMap->battle_scene = this->project->mapBattleScenes.value(0);
 
     if (this->existingLayout) {
         layout = this->project->mapLayouts.value(this->layoutId);
