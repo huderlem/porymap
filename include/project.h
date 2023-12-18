@@ -177,7 +177,6 @@ public:
     bool readTilesetLabels();
     bool readTilesetProperties();
     bool readTilesetMetatileLabels();
-    bool readMaxMapDataSize();
     bool readRegionMapSections();
     bool readItemNames();
     bool readFlagNames();

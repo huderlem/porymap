@@ -936,7 +936,6 @@ bool MainWindow::loadDataStructures() {
                 && project->readTilesetLabels()
                 && project->readTilesetMetatileLabels()
                 && project->readFieldmapMasks()
-                && project->readMaxMapDataSize()
                 && project->readHealLocations()
                 && project->readMiscellaneousConstants()
                 && project->readSpeciesIconPaths()
