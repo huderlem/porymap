@@ -2005,10 +2005,10 @@ bool Project::readFieldmapMasks() {
     const QString srcFieldmap = projectConfig.getFilePath(ProjectFilePath::fieldmap);
     const QMap<QString, QString> attrTable = parser.readNamedIndexCArray(srcFieldmap, attrTableName);
     if (!attrTable.isEmpty()) {
-        const QString terrainTypeTableName = projectConfig.getIdentifier(ProjectIdentifier::define_attribute_behavior);
-        const QString encounterTypeTableName = projectConfig.getIdentifier(ProjectIdentifier::define_attribute_layer);
-        const QString behaviorTableName = projectConfig.getIdentifier(ProjectIdentifier::define_attribute_terrain);
-        const QString layerTypeTableName = projectConfig.getIdentifier(ProjectIdentifier::define_attribute_encounter);
+        const QString behaviorTableName = projectConfig.getIdentifier(ProjectIdentifier::define_attribute_behavior);
+        const QString layerTypeTableName = projectConfig.getIdentifier(ProjectIdentifier::define_attribute_layer);
+        const QString encounterTypeTableName = projectConfig.getIdentifier(ProjectIdentifier::define_attribute_encounter);
+        const QString terrainTypeTableName = projectConfig.getIdentifier(ProjectIdentifier::define_attribute_terrain);
         fileWatcher.addPath(root + "/" + srcFieldmap);
 
         bool ok;

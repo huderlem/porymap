@@ -141,10 +141,10 @@ void ProjectSettingsEditor::initUi() {
         const QString elevationMaskName = projectConfig.getIdentifier(ProjectIdentifier::define_mask_elevation);
         const QString behaviorMaskName = projectConfig.getIdentifier(ProjectIdentifier::define_mask_behavior);
         const QString layerTypeMaskName = projectConfig.getIdentifier(ProjectIdentifier::define_mask_layer);
-        const QString terrainTypeTableName = projectConfig.getIdentifier(ProjectIdentifier::define_attribute_behavior);
-        const QString encounterTypeTableName = projectConfig.getIdentifier(ProjectIdentifier::define_attribute_layer);
-        const QString behaviorTableName = projectConfig.getIdentifier(ProjectIdentifier::define_attribute_terrain);
-        const QString layerTypeTableName = projectConfig.getIdentifier(ProjectIdentifier::define_attribute_encounter);
+        const QString behaviorTableName = projectConfig.getIdentifier(ProjectIdentifier::define_attribute_behavior);
+        const QString layerTypeTableName = projectConfig.getIdentifier(ProjectIdentifier::define_attribute_layer);
+        const QString encounterTypeTableName = projectConfig.getIdentifier(ProjectIdentifier::define_attribute_encounter);
+        const QString terrainTypeTableName = projectConfig.getIdentifier(ProjectIdentifier::define_attribute_terrain);
         const QString attrTableName = projectConfig.getIdentifier(ProjectIdentifier::symbol_attribute_table);
 
         // Block masks
@@ -168,10 +168,10 @@ void ProjectSettingsEditor::initUi() {
             this->disableParsedSetting(ui->spinBox_LayerTypeMask, attrTableName, attrTableFilepath);
 
         // Encounter and terrain type masks
-        if (project->disabledSettingsNames.contains(terrainTypeTableName))
-            this->disableParsedSetting(ui->spinBox_TerrainTypeMask, attrTableName, attrTableFilepath);
         if (project->disabledSettingsNames.contains(encounterTypeTableName))
             this->disableParsedSetting(ui->spinBox_EncounterTypeMask, attrTableName, attrTableFilepath);
+        if (project->disabledSettingsNames.contains(terrainTypeTableName))
+            this->disableParsedSetting(ui->spinBox_TerrainTypeMask, attrTableName, attrTableFilepath);
     }
 }
 
