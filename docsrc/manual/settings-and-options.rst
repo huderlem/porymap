@@ -23,7 +23,7 @@ Project settings
    * :ref:`Maps <maps>`
    * :ref:`Tilesets <tilesets>`
    * :ref:`Events <events>`
-   * :ref:`Project Files <project-files>`
+   * :ref:`Files & Identifiers <files-identifiers>`
 
 A config file for project-specific settings is also created when opening a project in porymap for the first time. It is stored in your project root as ``porymap.project.cfg``. You may want to force commit this file so that other users will automatically have access to your project settings.
 
@@ -98,32 +98,38 @@ Maps
 .. figure:: images/settings-and-options/tab-maps.png
    :alt: Maps tab
 
-Border Metatiles
-   This is list of metatile ID values that will be used to fill the border on new maps. The spin boxes correspond to the top-left, top-right, bottom-left, and bottom-right border metatiles respectively.
+Map Data Defaults
+   Border Metatiles
+      This is list of metatile ID values that will be used to fill the border on new maps. The spin boxes correspond to the top-left, top-right, bottom-left, and bottom-right border metatiles respectively.
 
-   If ``Enable Custom Border Size`` is checked, this will instead be a comma-separated list of metatile ID values that will be used to fill the border on new maps. Values in the list will be read sequentially to fill the new border left-to-right top-to-bottom. If the number of metatiles in the border for a new map is not the same as the number of values in the list then the border will be filled with metatile ID ``0x000`` instead.
+      If ``Enable Custom Border Size`` is checked, this will instead be a comma-separated list of metatile ID values that will be used to fill the border on new maps. Values in the list will be read sequentially to fill the new border left-to-right top-to-bottom. If the number of metatiles in the border for a new map is not the same as the number of values in the list then the border will be filled with metatile ID ``0x000`` instead.
 
-   Defaults to ``0x014``, ``0x015``, ``0x01C``, ``0x01D`` for ``pokefirered``, and ``0x1D4``, ``0x1D5``, ``0x1DC``, ``0x1DD`` for other versions.
+      Defaults to ``0x014``, ``0x015``, ``0x01C``, ``0x01D`` for ``pokefirered``, and ``0x1D4``, ``0x1D5``, ``0x1DC``, ``0x1DD`` for other versions.
 
-Fill Metatile
-   This is the metatile ID value that will be used to fill new maps.
+   Metatile ID
+      This is the metatile ID value that will be used to fill new maps.
 
-   Defaults to ``0x1``.
+      Defaults to ``0x1``.
 
-Elevation
-   This is the elevation that will be used to fill new maps. It will also be used to set the default selection on the Collision tab when a map is opened.
+   Collision
+      This is the collision value that will be used to fill new maps. It will also be used to set the default selection on the Collision tab when the project is first opened.
 
-   Defaults to ``3``.
+      Defaults to ``0``.
 
-Collision
-   This is the collision that will be used to fill new maps. It will also be used to set the default selection on the Collision tab when a map is opened.
+   Elevation
+      This is the elevation value that will be used to fill new maps. It will also be used to set the default selection on the Collision tab when the project is first opened.
 
-   Defaults to ``0``.
+      Defaults to ``3``.
 
-Create separate text file
-   If this is checked, a ``text.inc`` (or ``text.pory``) file will be created alongside new maps.
+   Create separate text file
+      If this is checked, a ``text.inc`` (or ``text.pory``) file will be created alongside new maps.
 
-   Defaults to ``unchecked`` for ``pokeemerald`` and ``checked`` for other versions.
+      Defaults to ``unchecked`` for ``pokeemerald`` and ``checked`` for other versions.
+
+Map Data Layout
+   Each of these three settings are bit masks that will be used to read and write an attribute of the data that makes up each map space (metatile ID, collision, and elevation). A warning will be displayed if any of the masks overlap. Their values may be read from ``#define`` s in your project, in which case editing will be disabled and you can change their values by modifying them in your project.
+
+   Default to being read from ``MAPGRID_METATILE_ID_MASK``, ``MAPGRID_COLLISION_MASK``, and ``MAPGRID_ELEVATION_MASK``. If they can't be read, they default to ``0x3FF``, ``0xC00``, and ``0xF000`` respectively.
 
 Enable 'Floor Number'
    If this is checked, a ``Floor Number`` option will become available on the ``Header`` tab and on the new map prompt. For more information see `Editing Map Headers <https://huderlem.github.io/porymap/manual/editing-map-header.html>`_.
@@ -172,30 +178,27 @@ Attributes size
 Attribute masks
    Each of these four settings are bit masks that will be used to read and write a specific metatile attribute from the metatile attributes data. If you are instead importing metatile attribute data from AdvanceMap, a default mask value will be used to read the data, and the mask value specified here will be used to write the new file.
 
-   If any of the mask values are set to ``0x0``, the corresponding option in the Tileset Editor will be removed. The maximum for all the attribute masks is determined by the Attributes size setting.
+   If any of the mask values are set to ``0x0``, the corresponding option in the Tileset Editor will be removed. The maximum for all the attribute masks is determined by the Attributes size setting. A warning will be displayed if any of the masks overlap.
 
    - Metatile Behavior mask
       This is the mask value for the ``Metatile Behavior`` metatile attribute.
 
-      Defaults to ``0x1FF`` for ``pokefirered``, and ``0xFF`` for other versions.
+      Defaults to being read from ``sMetatileAttrMasks`` or ``METATILE_ATTR_BEHAVIOR_MASK``. If these can't be read, defaults to ``0x1FF`` for ``pokefirered``, and ``0xFF`` for other versions.
 
    - Layer Type mask
       This is the mask value for the ``Layer Type`` metatile attribute. If the value is set to ``0x0`` the ``Layer Type`` option will be disabled in the Tileset Editor, and all metatiles will be treated in the editor as if they had the ``Normal`` layer type.
 
-      Defaults to ``0x60000000`` for ``pokefirered`` and ``0xF000`` for other versions.
+      Defaults to being read from ``sMetatileAttrMasks`` or ``METATILE_ATTR_LAYER_MASK``. If these can't be read, defaults to ``0x60000000`` for ``pokefirered``, and ``0xF000`` for other versions.
 
    - Encounter Type mask
       This is the mask value for the ``Encounter Type`` metatile attribute.
 
-      Defaults to ``0x7000000`` for ``pokefirered`` and ``0x0`` for other versions.
+      Defaults to being read from ``sMetatileAttrMasks``. If this can't be read, defaults to ``0x7000000`` for ``pokefirered``, and ``0x0`` for other versions.
 
    - Terrain Type mask
       This is the mask value for the ``Terrain Type`` metatile attribute.
 
-      Defaults to ``0x3E00`` for ``pokefirered`` and ``0x0`` for other versions.
-
-   .. warning::
-      If any of the metatile attribute masks have overlapping or discontinous bits they may behave in unexpected ways. A warning will be logged in the Porymap log file if this happens
+      Defaults to being read from ``sMetatileAttrMasks``. If this can't be read, defaults to ``0x3E00`` for ``pokefirered``, and ``0x0`` for other versions.
 
 Output 'callback' and 'isCompressed' fields
    If these are checked, then ``callback`` and ``isCompressed`` fields will be output in the C data for new tilesets. Their default values will be ``NULL`` and ``TRUE``, respectively. 
@@ -216,6 +219,11 @@ Default Icons
    Events in the ``Objects`` group will only use this icon if there are no graphics associated with their ``Sprite`` field.
 
    The filepaths default to empty, which will use `Porymap's original icons <https://github.com/huderlem/porymap/blob/master/resources/images/Entities_16x16.png>`_.
+
+Warp Behaviors
+   By default, Warp Events only function as exits if they're positioned on a metatile whose Metatile Behavior is treated specially in your project's code. If any Warp Events are positioned on a metatile that doesn't have one of these behaviors they will display a warning. Here you can disable that warning, or edit the list of behavior names that will silence the warning.
+
+   Defaults to ``unchecked``, i.e. the warning is enabled. The list of behaviors is initially populated with all the vanilla warp behavior names across pokeemerald, pokefirered, and pokeruby.
 
 Enable Clone Objects
    If this is checked Clone Object Events will be available on the ``Events`` tab. For more information see `Clone Object Events <https://huderlem.github.io/porymap/manual/editing-map-events.html#clone-object-events>`_.
@@ -248,15 +256,22 @@ Enable 'Repsawn Map/NPC' for Heal Locations
    Defaults to ``checked`` for ``pokefirered`` and ``unchecked`` for other versions.
 
 
-.. _project-files:
+.. _files-identifiers:
 
-Project Files
--------------
+Files & Identifiers
+-------------------
 
-.. figure:: images/settings-and-options/tab-project-files.png
-   :alt: Project Files tab
+.. figure:: images/settings-and-options/tab-files.png
+   :alt: Files tab
 
-This is a list of the files and folders Porymap expects from your project. Each can be overridden by typing a new path or selecting a file/folder with the folder button. If the file/folder doesn't exist when the project is loaded then the default path will be used instead.
+.. figure:: images/settings-and-options/tab-identifiers.png
+   :alt: Identifiers tab
 
-For more information on each of these files/folders, see `Project Files <https://huderlem.github.io/porymap/manual/project-files.html>`_.
+These two tabs provide a way to override the filepaths and symbol/macro names Porymap expects to find in your project.
+
+For ``Files``, each can be overridden by typing a new path or selecting a file/folder with the |button-folder| button. If the file/folder doesn't exist when the project is loaded then the default path will be used instead.
+
+For ``Identifiers``, each can be overridden by typing a new name in the line edit. Overrides with ``regex`` in the name support the `regular expression syntax <https://perldoc.perl.org/perlre>`_ used by Qt.
+
+For more information on what each of these overrides does, see `Project Files <https://huderlem.github.io/porymap/manual/project-files.html>`_.
 

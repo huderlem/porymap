@@ -39,7 +39,7 @@
              <x>0</x>
              <y>0</y>
              <width>559</width>
-             <height>607</height>
+             <height>568</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_7">
@@ -343,7 +343,7 @@
               <property name="sizeHint" stdset="0">
                <size>
                 <width>20</width>
-                <height>40</height>
+                <height>1</height>
                </size>
               </property>
              </spacer>
@@ -370,7 +370,7 @@
              <x>0</x>
              <y>0</y>
              <width>559</width>
-             <height>587</height>
+             <height>548</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_16">
@@ -396,6 +396,43 @@
                    <number>0</number>
                   </property>
                  </layout>
+                </widget>
+               </item>
+               <item row="3" column="1">
+                <widget class="NoScrollSpinBox" name="spinBox_FillMetatile">
+                 <property name="toolTip">
+                  <string>The default metatile value that will be used to fill new maps</string>
+                 </property>
+                 <property name="prefix">
+                  <string>0x</string>
+                 </property>
+                 <property name="displayIntegerBase">
+                  <number>16</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="5" column="0">
+                <widget class="QLabel" name="label_Elevation">
+                 <property name="text">
+                  <string>Elevation</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="0">
+                <widget class="QLabel" name="label_FillMetatile">
+                 <property name="text">
+                  <string>Metatile ID</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="7" column="0" colspan="2">
+                <widget class="QCheckBox" name="checkBox_CreateTextFile">
+                 <property name="toolTip">
+                  <string>Whether a separate text.inc or text.pory file will be created for new maps, alongside the scripts file</string>
+                 </property>
+                 <property name="text">
+                  <string>Create separate text file</string>
+                 </property>
                 </widget>
                </item>
                <item row="0" column="0">
@@ -500,61 +537,24 @@
                  </widget>
                 </widget>
                </item>
-               <item row="3" column="0">
-                <widget class="QLabel" name="label_FillMetatile">
-                 <property name="text">
-                  <string>Fill Metatile</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="0">
-                <widget class="QLabel" name="label_Elevation">
-                 <property name="text">
-                  <string>Elevation</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="5" column="0">
-                <widget class="QLabel" name="label_Collision">
-                 <property name="text">
-                  <string>Collision</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="1">
-                <widget class="NoScrollSpinBox" name="spinBox_FillMetatile">
-                 <property name="toolTip">
-                  <string>The default metatile value that will be used to fill new maps</string>
-                 </property>
-                 <property name="prefix">
-                  <string>0x</string>
-                 </property>
-                 <property name="displayIntegerBase">
-                  <number>16</number>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="1">
+               <item row="5" column="1">
                 <widget class="NoScrollSpinBox" name="spinBox_Elevation">
                  <property name="toolTip">
                   <string>The default elevation that will be used to fill new maps</string>
                  </property>
                 </widget>
                </item>
-               <item row="5" column="1">
-                <widget class="NoScrollSpinBox" name="spinBox_Collision">
-                 <property name="toolTip">
-                  <string>The default collision that will be used to fill new maps</string>
+               <item row="4" column="0">
+                <widget class="QLabel" name="label_Collision">
+                 <property name="text">
+                  <string>Collision</string>
                  </property>
                 </widget>
                </item>
-               <item row="6" column="0" colspan="2">
-                <widget class="QCheckBox" name="checkBox_CreateTextFile">
+               <item row="4" column="1">
+                <widget class="NoScrollSpinBox" name="spinBox_Collision">
                  <property name="toolTip">
-                  <string>Whether a separate text.inc or text.pory file will be created for new maps, alongside the scripts file</string>
-                 </property>
-                 <property name="text">
-                  <string>Create separate text file</string>
+                  <string>The default collision that will be used to fill new maps</string>
                  </property>
                 </widget>
                </item>
@@ -717,7 +717,7 @@
               <property name="sizeHint" stdset="0">
                <size>
                 <width>20</width>
-                <height>40</height>
+                <height>1</height>
                </size>
               </property>
              </spacer>
@@ -1007,7 +1007,7 @@
              <x>0</x>
              <y>0</y>
              <width>559</width>
-             <height>827</height>
+             <height>788</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_8">
@@ -1340,7 +1340,7 @@
               <property name="sizeHint" stdset="0">
                <size>
                 <width>20</width>
-                <height>40</height>
+                <height>1</height>
                </size>
               </property>
              </spacer>
