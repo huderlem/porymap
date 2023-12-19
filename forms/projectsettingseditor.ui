@@ -1351,9 +1351,9 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab_ProjectFiles">
+      <widget class="QWidget" name="tab_Files">
        <attribute name="title">
-        <string>Project Files</string>
+        <string>Files</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_9">
         <item>
@@ -1372,9 +1372,9 @@
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_10">
             <item>
-             <widget class="QLabel" name="label_ProjectFiles">
+             <widget class="QLabel" name="label_ProjectFilesHelp">
               <property name="text">
-               <string>  &lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;https://huderlem.github.io/porymap/manual/project-files.html&quot;&gt;&lt;span style=&quot; text-decoration: underline;&quot;&gt;What are Project Files?&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>  &lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;https://huderlem.github.io/porymap/manual/project-files.html&quot;&gt;&lt;span style=&quot; text-decoration: underline;&quot;&gt;Help&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="textFormat">
                <enum>Qt::RichText</enum>
@@ -1423,6 +1423,100 @@
                    </rect>
                   </property>
                   <layout class="QFormLayout" name="layout_ProjectPaths">
+                   <property name="verticalSpacing">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>4</number>
+                   </property>
+                  </layout>
+                 </widget>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_Identifiers">
+       <attribute name="title">
+        <string>Identifiers</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_21">
+        <item>
+         <widget class="QScrollArea" name="scrollArea_IdentifiersTab">
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="scrollAreaWidgetContents_IdentifiersTab">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>559</width>
+             <height>490</height>
+            </rect>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_19">
+            <item>
+             <widget class="QLabel" name="label_IdentifiersHelp">
+              <property name="text">
+               <string>  &lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;https://huderlem.github.io/porymap/manual/project-files.html&quot;&gt;&lt;span style=&quot; text-decoration: underline;&quot;&gt;Help&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="textFormat">
+               <enum>Qt::RichText</enum>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+              </property>
+              <property name="openExternalLinks">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QWidget" name="widget_Identifiers" native="true">
+              <layout class="QVBoxLayout" name="verticalLayout_20">
+               <property name="spacing">
+                <number>2</number>
+               </property>
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+               <item>
+                <widget class="QScrollArea" name="scrollArea_Identifiers">
+                 <property name="lineWidth">
+                  <number>2</number>
+                 </property>
+                 <property name="widgetResizable">
+                  <bool>true</bool>
+                 </property>
+                 <widget class="QWidget" name="scrollAreaContents_Identifiers">
+                  <property name="geometry">
+                   <rect>
+                    <x>0</x>
+                    <y>0</y>
+                    <width>533</width>
+                    <height>440</height>
+                   </rect>
+                  </property>
+                  <layout class="QFormLayout" name="layout_Identifiers">
                    <property name="verticalSpacing">
                     <number>0</number>
                    </property>

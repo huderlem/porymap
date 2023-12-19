@@ -106,7 +106,7 @@ const QMap<ProjectIdentifier, QPair<QString, QString>> ProjectConfig::defaultIde
     {ProjectIdentifier::regex_species,                 {"regex_species",                 "\\bSPECIES_"}},
 };
 
-const QMap<ProjectFilePath, std::pair<QString, QString>> ProjectConfig::defaultPaths = {
+const QMap<ProjectFilePath, QPair<QString, QString>> ProjectConfig::defaultPaths = {
     {ProjectFilePath::data_map_folders,                 { "data_map_folders",                "data/maps/"}},
     {ProjectFilePath::data_scripts_folders,             { "data_scripts_folders",            "data/scripts/"}},
     {ProjectFilePath::data_layouts_folders,             { "data_layouts_folders",            "data/layouts/"}},

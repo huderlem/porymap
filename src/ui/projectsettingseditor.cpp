@@ -22,6 +22,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(QWidget *parent, Project *project) 
     setAttribute(Qt::WA_DeleteOnClose);
     this->initUi();
     this->createProjectPathsTable();
+    this->createProjectIdentifiersTable();
     this->connectSignals();
     this->refresh();
     this->restoreWindowState();
@@ -326,38 +327,54 @@ void ProjectSettingsEditor::updateWarpBehaviorsList(bool adding) {
     this->hasUnsavedChanges = true;
 }
 
-void ProjectSettingsEditor::createProjectPathsTable() {
-    auto pathPairs = ProjectConfig::defaultPaths.values();
-    for (auto pathPair : pathPairs) {
-        // Name of the path
+// Dynamically populate the tabs for project files and identifiers
+void ProjectSettingsEditor::createConfigTextTable(const QList<QPair<QString, QString>> configPairs, bool filesTab) {
+    for (auto pair : configPairs) {
+        const QString idName = pair.first;
+        const QString defaultText = pair.second;
+
         auto name = new QLabel();
         name->setAlignment(Qt::AlignBottom);
-        name->setText(pathPair.first);
+        name->setText(idName);
 
-        // Filepath line edit
         auto lineEdit = new QLineEdit();
-        lineEdit->setObjectName(pathPair.first); // Used when saving the paths
-        lineEdit->setPlaceholderText(pathPair.second);
+        lineEdit->setObjectName(idName); // Used when saving
+        lineEdit->setPlaceholderText(defaultText);
         lineEdit->setClearButtonEnabled(true);
-
-        // "Choose file" button
-        auto button = new QToolButton();
-        button->setIcon(QIcon(":/icons/folder.ico"));
-        connect(button, &QAbstractButton::clicked, [this, lineEdit](bool) {
-            const QString path = this->chooseProjectFile(lineEdit->placeholderText());
-            if (!path.isEmpty()) {
-                lineEdit->setText(path);
-                this->markEdited();
-            }
-        });
 
         // Add to list
         auto editArea = new QWidget();
         auto layout = new QHBoxLayout(editArea);
         layout->addWidget(lineEdit);
-        layout->addWidget(button);
-        ui->layout_ProjectPaths->addRow(name, editArea);
+
+        if (filesTab) {
+            // "Choose file" button
+            auto button = new QToolButton();
+            button->setIcon(QIcon(":/icons/folder.ico"));
+            connect(button, &QAbstractButton::clicked, [this, lineEdit](bool) {
+                const QString path = this->chooseProjectFile(lineEdit->placeholderText());
+                if (!path.isEmpty()) {
+                    lineEdit->setText(path);
+                    this->markEdited();
+                }
+            });
+            layout->addWidget(button);
+
+            ui->layout_ProjectPaths->addRow(name, editArea);
+        } else {
+            ui->layout_Identifiers->addRow(name, editArea);
+        }
     }
+}
+
+void ProjectSettingsEditor::createProjectPathsTable() {
+    auto pairs = ProjectConfig::defaultPaths.values();
+    this->createConfigTextTable(pairs, true);
+}
+
+void ProjectSettingsEditor::createProjectIdentifiersTable() {
+    auto pairs = ProjectConfig::defaultIdentifiers.values();
+    this->createConfigTextTable(pairs, false);
 }
 
 QString ProjectSettingsEditor::chooseProjectFile(const QString &defaultFilepath) {
@@ -451,6 +468,8 @@ void ProjectSettingsEditor::refresh() {
     ui->lineEdit_HealspotsIcon->setText(projectConfig.getEventIconPath(Event::Group::Heal));
     for (auto lineEdit : ui->scrollAreaContents_ProjectPaths->findChildren<QLineEdit*>())
         lineEdit->setText(projectConfig.getCustomFilePath(lineEdit->objectName()));
+    for (auto lineEdit : ui->scrollAreaContents_Identifiers->findChildren<QLineEdit*>())
+        lineEdit->setText(projectConfig.getCustomIdentifier(lineEdit->objectName()));
     this->setWarpBehaviorsList(projectConfig.getWarpBehaviors());
 
     this->refreshing = false; // Allow signals
@@ -511,7 +530,8 @@ void ProjectSettingsEditor::save() {
     projectConfig.setEventIconPath(Event::Group::Heal, ui->lineEdit_HealspotsIcon->text());
     for (auto lineEdit : ui->scrollAreaContents_ProjectPaths->findChildren<QLineEdit*>())
         projectConfig.setFilePath(lineEdit->objectName(), lineEdit->text());
-
+    for (auto lineEdit : ui->scrollAreaContents_Identifiers->findChildren<QLineEdit*>())
+        projectConfig.setIdentifier(lineEdit->objectName(), lineEdit->text());
     projectConfig.setWarpBehaviors(this->getWarpBehaviorsList());
 
     // Save border metatile IDs

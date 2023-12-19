@@ -309,7 +309,7 @@ public:
         this->readKeys.clear();
     }
     static const QMap<ProjectIdentifier, QPair<QString, QString>> defaultIdentifiers;
-    static const QMap<ProjectFilePath, std::pair<QString, QString>> defaultPaths;
+    static const QMap<ProjectFilePath, QPair<QString, QString>> defaultPaths;
     static const QStringList versionStrings;
     void reset(BaseGameVersion baseGameVersion);
     void setBaseGameVersion(BaseGameVersion baseGameVersion);
