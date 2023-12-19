@@ -1870,7 +1870,7 @@ bool Project::readTilesetLabels() {
     return success;
 }
 
-bool Project::readTilesetProperties() {
+bool Project::readFieldmapProperties() {
     const QString numTilesPrimaryName = projectConfig.getIdentifier(ProjectIdentifier::define_tiles_primary);
     const QString numTilesTotalName = projectConfig.getIdentifier(ProjectIdentifier::define_tiles_total);
     const QString numMetatilesPrimaryName = projectConfig.getIdentifier(ProjectIdentifier::define_metatiles_primary);
@@ -1885,57 +1885,25 @@ bool Project::readTilesetProperties() {
         numPalsTotalName,
         maxMapSizeName,
     };
-    QString filename = projectConfig.getFilePath(ProjectFilePath::constants_fieldmap);
+    const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_fieldmap);
     fileWatcher.addPath(root + "/" + filename);
-    QMap<QString, int> defines = parser.readCDefinesByName(filename, names);
+    const QMap<QString, int> defines = parser.readCDefinesByName(filename, names);
 
-    auto it = defines.find(numTilesPrimaryName);
-    if (it != defines.end()) {
-        Project::num_tiles_primary = it.value();
-    }
-    else {
-        logWarn(QString("Value for tileset property '%1' not found. Using default (%2) instead.")
-                .arg(numTilesPrimaryName)
-                .arg(Project::num_tiles_primary));
-    }
-    it = defines.find(numTilesTotalName);
-    if (it != defines.end()) {
-        Project::num_tiles_total = it.value();
-    }
-    else {
-        logWarn(QString("Value for tileset property '%1' not found. Using default (%2) instead.")
-                .arg(numTilesTotalName)
-                .arg(Project::num_tiles_total));
-    }
-    it = defines.find(numMetatilesPrimaryName);
-    if (it != defines.end()) {
-        Project::num_metatiles_primary = it.value();
-    }
-    else {
-        logWarn(QString("Value for tileset property '%1' not found. Using default (%2) instead.")
-                .arg(numMetatilesPrimaryName)
-                .arg(Project::num_metatiles_primary));
-    }
-    it = defines.find(numPalsPrimaryName);
-    if (it != defines.end()) {
-        Project::num_pals_primary = it.value();
-    }
-    else {
-        logWarn(QString("Value for tileset property '%1' not found. Using default (%2) instead.")
-                .arg(numPalsPrimaryName)
-                .arg(Project::num_pals_primary));
-    }
-    it = defines.find(numPalsTotalName);
-    if (it != defines.end()) {
-        Project::num_pals_total = it.value();
-    }
-    else {
-        logWarn(QString("Value for tileset property '%1' not found. Using default (%2) instead.")
-                .arg(numPalsTotalName)
-                .arg(Project::num_pals_total));
-    }
+    auto loadDefine = [defines](const QString name, int * dest) {
+        auto it = defines.find(name);
+        if (it != defines.end()) {
+            *dest = it.value();
+        } else {
+            logWarn(QString("Value for tileset property '%1' not found. Using default (%2) instead.").arg(name).arg(*dest));
+        }
+    };
+    loadDefine(numTilesPrimaryName,     &Project::num_tiles_primary);
+    loadDefine(numTilesTotalName,       &Project::num_tiles_total);
+    loadDefine(numMetatilesPrimaryName, &Project::num_metatiles_primary);
+    loadDefine(numPalsPrimaryName,      &Project::num_pals_primary);
+    loadDefine(numPalsTotalName,        &Project::num_pals_total);
 
-    it = defines.find(maxMapSizeName);
+    auto it = defines.find(maxMapSizeName);
     if (it != defines.end()) {
         int min = getMapDataSize(1, 1);
         if (it.value() >= min) {
@@ -2319,14 +2287,18 @@ bool Project::readTrainerTypes() {
 bool Project::readMetatileBehaviors() {
     this->metatileBehaviorMap.clear();
     this->metatileBehaviorMapInverse.clear();
+    this->warpBehaviorValues.clear();
 
     const QStringList prefixes = {projectConfig.getIdentifier(ProjectIdentifier::regex_behaviors)};
     QString filename = projectConfig.getFilePath(ProjectFilePath::constants_metatile_behaviors);
     fileWatcher.addPath(root + "/" + filename);
     QMap<QString, int> defines = parser.readCDefinesByPrefix(filename, prefixes);
     if (defines.isEmpty()) {
-        logError(QString("Failed to read metatile behaviors from %1.").arg(filename));
-        return false;
+        // Not having any metatile behavior names is ok (their values will be displayed instead).
+        // If the user's metatiles can have nonzero values then warn them, as they likely want names.
+        if (projectConfig.getMetatileBehaviorMask())
+            logWarn(QString("Failed to read metatile behaviors from %1.").arg(filename));
+        return true;
     }
 
     for (auto i = defines.cbegin(), end = defines.cend(); i != end; i++) {
@@ -2337,7 +2309,6 @@ bool Project::readMetatileBehaviors() {
 
     // Construct warp behavior value list for the warp metatile behavior warning
     const QStringList warpBehaviorNames = projectConfig.getWarpBehaviors();
-    this->warpBehaviorValues.clear();
     for (auto name : warpBehaviorNames) {
         if (this->metatileBehaviorMap.contains(name)) {
             int value = this->metatileBehaviorMap.value(name);

@@ -174,7 +174,6 @@ public:
     QString defaultSong;
     void appendTilesetLabel(QString label, QString isSecondaryStr);
     bool readTilesetLabels();
-    bool readTilesetProperties();
     bool readTilesetMetatileLabels();
     bool readRegionMapSections();
     bool readItemNames();
@@ -197,6 +196,7 @@ public:
     bool readObjEventGfxConstants();
     bool readSongNames();
     bool readEventGraphics();
+    bool readFieldmapProperties();
     bool readFieldmapMasks();
     QMap<QString, QMap<QString, QString>> readObjEventGfxInfo();
 
