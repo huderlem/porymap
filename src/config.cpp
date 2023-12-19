@@ -371,6 +371,8 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         }
     } else if (key == "project_settings_tab") {
         this->projectSettingsTab = getConfigInteger(key, value, 0);
+    } else if (key == "warp_behavior_warning_disabled") {
+        this->warpBehaviorWarningDisabled = getConfigBool(key, value);
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -410,6 +412,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("text_editor_goto_line", this->textEditorGotoLine);
     map.insert("palette_editor_bit_depth", QString::number(this->paletteEditorBitDepth));
     map.insert("project_settings_tab", QString::number(this->projectSettingsTab));
+    map.insert("warp_behavior_warning_disabled", QString::number(this->warpBehaviorWarningDisabled));
     
     return map;
 }
@@ -687,6 +690,15 @@ int PorymapConfig::getProjectSettingsTab() {
     return this->projectSettingsTab;
 }
 
+void PorymapConfig::setWarpBehaviorWarningDisabled(bool disabled) {
+    this->warpBehaviorWarningDisabled = disabled;
+    this->save();
+}
+
+bool PorymapConfig::getWarpBehaviorWarningDisabled() {
+    return this->warpBehaviorWarningDisabled;
+}
+
 const QStringList ProjectConfig::versionStrings = {
     "pokeruby",
     "pokefirered",
@@ -843,8 +855,6 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         value.remove(" ");
         this->warpBehaviors = value.split(",", Qt::SkipEmptyParts);
         this->warpBehaviors.removeDuplicates();
-    } else if (key == "warp_behavior_warning_disabled") {
-        this->warpBehaviorWarningDisabled = getConfigBool(key, value);
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -926,14 +936,12 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
         if (!path.isEmpty()) map.insert("pokemon_icon_path/" + i.key(), path);
     }
     for (auto i = this->identifiers.cbegin(), end = this->identifiers.cend(); i != end; i++) {
-        // TODO: Test to ensure empties aren't output in config
         map.insert("ident/"+defaultIdentifiers.value(i.key()).first, i.value());
     }
     map.insert("collision_sheet_path", this->collisionSheetPath);
     map.insert("collision_sheet_width", QString::number(this->collisionSheetWidth));
     map.insert("collision_sheet_height", QString::number(this->collisionSheetHeight));
     map.insert("warp_behaviors", this->warpBehaviors.join(","));
-    map.insert("warp_behavior_warning_disabled", QString::number(this->warpBehaviorWarningDisabled));
 
     return map;
 }
@@ -1394,15 +1402,6 @@ void ProjectConfig::setWarpBehaviors(const QStringList &behaviors) {
 
 QStringList ProjectConfig::getWarpBehaviors() {
     return this->warpBehaviors;
-}
-
-void ProjectConfig::setWarpBehaviorWarningDisabled(bool disabled) {
-    this->warpBehaviorWarningDisabled = disabled;
-    this->save();
-}
-
-bool ProjectConfig::getWarpBehaviorWarningDisabled() {
-    return this->warpBehaviorWarningDisabled;
 }
 
 

@@ -1990,7 +1990,7 @@ void Editor::redrawObject(DraggablePixmapItem *item) {
 
 // Warp events display a warning if they're not positioned on a metatile with a warp behavior.
 void Editor::updateWarpEventWarning(Event *event) {
-    if (projectConfig.getWarpBehaviorWarningDisabled())
+    if (porymapConfig.getWarpBehaviorWarningDisabled())
         return;
     if (!project || !map || !event || event->getEventType() != Event::Type::Warp)
         return;
@@ -2011,7 +2011,7 @@ void Editor::updateWarpEventWarning(Event *event) {
 // events when the Events tab is opened. This does not cover the case where metatiles are painted while
 // still on the Events tab, such as by Undo/Redo or the scripting API.
 void Editor::updateWarpEventWarnings() {
-    if (projectConfig.getWarpBehaviorWarningDisabled())
+    if (porymapConfig.getWarpBehaviorWarningDisabled())
         return;
     if (selected_events) {
         for (auto selection : *selected_events)

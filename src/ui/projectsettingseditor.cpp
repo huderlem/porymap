@@ -8,6 +8,8 @@
 
 /*
     Editor for the settings in a user's porymap.project.cfg file (and 'use_encounter_json' in porymap.user.cfg).
+    Disabling the warp behavior warning is actually part of porymap.cfg, but it's on this window because the
+    related settings are here (and project-specific).
 */
 
 const int ProjectSettingsEditor::eventsTab = 3;
@@ -437,7 +439,7 @@ void ProjectSettingsEditor::refresh() {
     ui->checkBox_EnableCustomBorderSize->setChecked(projectConfig.getUseCustomBorderSize());
     ui->checkBox_OutputCallback->setChecked(projectConfig.getTilesetsHaveCallback());
     ui->checkBox_OutputIsCompressed->setChecked(projectConfig.getTilesetsHaveIsCompressed());
-    ui->checkBox_DisableWarning->setChecked(projectConfig.getWarpBehaviorWarningDisabled());
+    ui->checkBox_DisableWarning->setChecked(porymapConfig.getWarpBehaviorWarningDisabled());
 
     // Set spin box values
     ui->spinBox_Elevation->setValue(projectConfig.getDefaultElevation());
@@ -504,7 +506,7 @@ void ProjectSettingsEditor::save() {
     projectConfig.setUseCustomBorderSize(ui->checkBox_EnableCustomBorderSize->isChecked());
     projectConfig.setTilesetsHaveCallback(ui->checkBox_OutputCallback->isChecked());
     projectConfig.setTilesetsHaveIsCompressed(ui->checkBox_OutputIsCompressed->isChecked());
-    projectConfig.setWarpBehaviorWarningDisabled(ui->checkBox_DisableWarning->isChecked());
+    porymapConfig.setWarpBehaviorWarningDisabled(ui->checkBox_DisableWarning->isChecked());
 
     // Save spin box settings
     projectConfig.setDefaultElevation(ui->spinBox_Elevation->value());

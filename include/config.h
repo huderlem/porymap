@@ -69,6 +69,7 @@ public:
         this->textEditorGotoLine = "";
         this->paletteEditorBitDepth = 24;
         this->projectSettingsTab = 0;
+        this->warpBehaviorWarningDisabled = false;
     }
     void setRecentProject(QString project);
     void setReopenOnLaunch(bool enabled);
@@ -94,6 +95,7 @@ public:
     void setTextEditorGotoLine(const QString &command);
     void setPaletteEditorBitDepth(int bitDepth);
     void setProjectSettingsTab(int tab);
+    void setWarpBehaviorWarningDisabled(bool disabled);
     QString getRecentProject();
     bool getReopenOnLaunch();
     MapSortOrder getMapSortOrder();
@@ -118,6 +120,7 @@ public:
     QString getTextEditorGotoLine();
     int getPaletteEditorBitDepth();
     int getProjectSettingsTab();
+    bool getWarpBehaviorWarningDisabled();
 protected:
     virtual QString getConfigFilepath() override;
     virtual void parseConfigKeyValue(QString key, QString value) override;
@@ -160,6 +163,7 @@ private:
     QString textEditorGotoLine;
     int paletteEditorBitDepth;
     int projectSettingsTab;
+    bool warpBehaviorWarningDisabled;
 };
 
 extern PorymapConfig porymapConfig;
@@ -304,7 +308,6 @@ public:
         this->blockCollisionMask = 0x0C00;
         this->blockElevationMask = 0xF000;
         this->warpBehaviors = defaultWarpBehaviors;
-        this->warpBehaviorWarningDisabled = false;
         this->identifiers.clear();
         this->readKeys.clear();
     }
@@ -404,8 +407,6 @@ public:
     int getCollisionSheetHeight();
     void setWarpBehaviors(const QStringList &behaviors);
     QStringList getWarpBehaviors();
-    void setWarpBehaviorWarningDisabled(bool disabled);
-    bool getWarpBehaviorWarningDisabled();
 
 protected:
     virtual QString getConfigFilepath() override;
@@ -457,7 +458,6 @@ private:
     int collisionSheetWidth;
     int collisionSheetHeight;
     QStringList warpBehaviors;
-    bool warpBehaviorWarningDisabled;
 };
 
 extern ProjectConfig projectConfig;
