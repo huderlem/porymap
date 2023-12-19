@@ -23,6 +23,7 @@ public:
 
     static const int eventsTab;
     void setTab(int index);
+    void closeQuietly();
 
 signals:
     void reloadProject();

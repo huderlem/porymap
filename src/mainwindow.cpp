@@ -2905,8 +2905,8 @@ void MainWindow::closeSupplementaryWindows() {
     delete this->mapImageExporter;
     delete this->newMapPrompt;
     delete this->shortcutsEditor;
-    delete this->projectSettingsEditor;
     delete this->customScriptsEditor;
+    if (this->projectSettingsEditor) this->projectSettingsEditor->closeQuietly();
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {

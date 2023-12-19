@@ -639,16 +639,22 @@ void ProjectSettingsEditor::dialogButtonClicked(QAbstractButton *button) {
     if (buttonRole == QDialogButtonBox::AcceptRole) {
         // "OK" button
         this->save();
-        close();
+        this->close();
     } else if (buttonRole == QDialogButtonBox::RejectRole) {
         // "Cancel" button
-        if (!this->promptSaveChanges())
-            return;
-        close();
+        this->close();
     } else if (buttonRole == QDialogButtonBox::ResetRole) {
         // "Restore Defaults" button
         this->promptRestoreDefaults();
     }
+}
+
+// Close event triggered by a project reload. User doesn't need any prompts, just close the window.
+void ProjectSettingsEditor::closeQuietly() {
+    // Turn off flags that trigger prompts
+    this->hasUnsavedChanges = false;
+    this->projectNeedsReload = false;
+    this->close();
 }
 
 void ProjectSettingsEditor::closeEvent(QCloseEvent* event) {
@@ -664,9 +670,8 @@ void ProjectSettingsEditor::closeEvent(QCloseEvent* event) {
 
     if (this->projectNeedsReload) {
         // Note: Declining this prompt with changes that need a reload may cause problems
-        if (this->prompt("Settings changed, reload project to apply changes?") == QMessageBox::Yes){
-            // Reloading the project will destroy this window, no other work should happen after this signal is emitted
+        if (this->prompt("Settings changed, reload project to apply changes?") == QMessageBox::Yes)
             emit this->reloadProject();
-        }
     }
+    QMainWindow::closeEvent(event);
 }
