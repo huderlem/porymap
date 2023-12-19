@@ -43,6 +43,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix some issues when too few/many pokémon are specified for a wild encounter group.
 - Fix Porymap reporting errors for macros it doesn't use.
 - Fix painting on the Collision tab with the opacity slider at 0 painting metatiles.
+- Fix crashes when File->Reload Project fails.
 
 ## [5.1.1] - 2023-02-20
 ### Added

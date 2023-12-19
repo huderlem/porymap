@@ -643,7 +643,8 @@ void MainWindow::on_action_Reload_Project_triggered() {
     warning.setIcon(QMessageBox::Warning);
 
     if (warning.exec() == QMessageBox::Ok) {
-        openProject(editor->project->root);
+        if (!openProject(editor->project->root))
+            setWindowDisabled(true);
     }
 }
 
