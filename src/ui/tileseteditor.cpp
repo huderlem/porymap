@@ -373,10 +373,10 @@ void TilesetEditor::onSelectedMetatileChanged(uint16_t metatileId) {
     this->ui->lineEdit_metatileLabel->setText(labels.owned);
     this->ui->lineEdit_metatileLabel->setPlaceholderText(labels.shared);
 
-    this->ui->comboBox_metatileBehaviors->setNumberItem(this->metatile->behavior());
-    this->ui->comboBox_layerType->setNumberItem(this->metatile->layerType());
-    this->ui->comboBox_encounterType->setNumberItem(this->metatile->encounterType());
-    this->ui->comboBox_terrainType->setNumberItem(this->metatile->terrainType());
+    this->ui->comboBox_metatileBehaviors->setHexItem(this->metatile->behavior());
+    this->ui->comboBox_layerType->setHexItem(this->metatile->layerType());
+    this->ui->comboBox_encounterType->setHexItem(this->metatile->encounterType());
+    this->ui->comboBox_terrainType->setHexItem(this->metatile->terrainType());
 }
 
 void TilesetEditor::onHoveredTileChanged(uint16_t tile) {
@@ -493,19 +493,19 @@ void TilesetEditor::on_checkBox_yFlip_stateChanged(int checked)
 void TilesetEditor::on_comboBox_metatileBehaviors_currentTextChanged(const QString &metatileBehavior)
 {
     if (this->metatile) {
-        int behavior;
+        uint32_t behavior;
         if (project->metatileBehaviorMap.contains(metatileBehavior)) {
             behavior = project->metatileBehaviorMap[metatileBehavior];
         } else {
             // Check if user has entered a number value instead
             bool ok;
-            behavior = metatileBehavior.toInt(&ok, 0);
+            behavior = metatileBehavior.toUInt(&ok, 0);
             if (!ok) return;
         }
 
         // This function can also be called when the user selects
         // a different metatile. Stop this from being considered a change.
-        if (this->metatile->behavior() == static_cast<uint32_t>(behavior))
+        if (this->metatile->behavior() == behavior)
             return;
 
         Metatile *prevMetatile = new Metatile(*this->metatile);

@@ -56,3 +56,8 @@ void NoScrollComboBox::setNumberItem(int value)
 {
     this->setItem(this->findData(value), QString::number(value));
 }
+
+void NoScrollComboBox::setHexItem(uint32_t value)
+{
+    this->setItem(this->findData(value), "0x" + QString::number(value, 16).toUpper());
+}

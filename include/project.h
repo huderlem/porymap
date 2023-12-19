@@ -75,10 +75,10 @@ public:
     QStringList bgEventFacingDirections;
     QStringList trainerTypes;
     QStringList globalScriptLabels;
-    QMap<QString, QMap<QString, int>> metatileLabelsMap;
-    QMap<QString, int> unusedMetatileLabels;
-    QMap<QString, int> metatileBehaviorMap;
-    QMap<int, QString> metatileBehaviorMapInverse;
+    QMap<QString, QMap<QString, uint16_t>> metatileLabelsMap;
+    QMap<QString, uint16_t> unusedMetatileLabels;
+    QMap<QString, uint32_t> metatileBehaviorMap;
+    QMap<uint32_t, QString> metatileBehaviorMapInverse;
     QSet<uint32_t> warpBehaviorValues;
     QMap<QString, QString> facingDirections;
     ParseUtil parser;
@@ -216,7 +216,7 @@ public:
     QString getDefaultSecondaryTilesetLabel();
     QString getDynamicMapDefineName();
     void updateTilesetMetatileLabels(Tileset *tileset);
-    QString buildMetatileLabelsText(const QMap<QString, int> defines);
+    QString buildMetatileLabelsText(const QMap<QString, uint16_t> defines);
     QString findMetatileLabelsTileset(QString label);
 
     void setImportExportPath(QString filename);

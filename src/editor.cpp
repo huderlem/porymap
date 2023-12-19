@@ -942,8 +942,10 @@ QString Editor::getMetatileDisplayMessage(uint16_t metatileId) {
     QString message = QString("Metatile: %1").arg(Metatile::getMetatileIdString(metatileId));
     if (label.size())
         message += QString(" \"%1\"").arg(label);
-    if (metatile && metatile->behavior()) // Skip MB_NORMAL
-        message += QString(", Behavior: %1").arg(this->project->metatileBehaviorMapInverse.value(metatile->behavior(), QString::number(metatile->behavior())));
+    if (metatile && metatile->behavior() != 0) { // Skip MB_NORMAL
+        const QString behaviorStr = this->project->metatileBehaviorMapInverse.value(metatile->behavior(), "0x" + QString::number(metatile->behavior(), 16));
+        message += QString(", Behavior: %1").arg(behaviorStr);
+    }
     return message;
 }
 

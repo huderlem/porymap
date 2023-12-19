@@ -899,7 +899,7 @@ void Project::updateTilesetMetatileLabels(Tileset *tileset) {
 }
 
 // Given a map of define names to define values, returns a formatted list of #defines
-QString Project::buildMetatileLabelsText(const QMap<QString, int> defines) {
+QString Project::buildMetatileLabelsText(const QMap<QString, uint16_t> defines) {
     QStringList labels = defines.keys();
 
     // Setup for pretty formatting.
@@ -2323,14 +2323,16 @@ bool Project::readMetatileBehaviors() {
     const QStringList prefixes = {projectConfig.getIdentifier(ProjectIdentifier::regex_behaviors)};
     QString filename = projectConfig.getFilePath(ProjectFilePath::constants_metatile_behaviors);
     fileWatcher.addPath(root + "/" + filename);
-    this->metatileBehaviorMap = parser.readCDefinesByPrefix(filename, prefixes);
-    if (this->metatileBehaviorMap.isEmpty()) {
+    QMap<QString, int> defines = parser.readCDefinesByPrefix(filename, prefixes);
+    if (defines.isEmpty()) {
         logError(QString("Failed to read metatile behaviors from %1.").arg(filename));
         return false;
     }
 
-    for (QString defineName : this->metatileBehaviorMap.keys()) {
-        this->metatileBehaviorMapInverse.insert(this->metatileBehaviorMap[defineName], defineName);
+    for (auto i = defines.cbegin(), end = defines.cend(); i != end; i++) {
+        uint32_t value = static_cast<uint32_t>(i.value());
+        this->metatileBehaviorMap.insert(i.key(), value);
+        this->metatileBehaviorMapInverse.insert(value, i.key());
     }
 
     // Construct warp behavior value list for the warp metatile behavior warning
