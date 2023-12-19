@@ -75,7 +75,7 @@ public:
     static int getDefaultAttributesSize(BaseGameVersion version);
     static void setLayout(Project*);
     static QString getMetatileIdString(uint16_t metatileId) {
-        return "0x" + QString("%1").arg(metatileId, 3, 16, QChar('0')).toUpper();
+        return "0x" + QString("%1").arg(metatileId, 4, 16, QChar('0')).toUpper();
     };
     static QString getMetatileIdStringList(const QList<uint16_t> metatileIds) {
         QStringList metatiles;

@@ -1511,13 +1511,18 @@ bool Project::readTilesetMetatileLabels() {
     QMap<QString, int> defines = parser.readCDefinesByPrefix(metatileLabelsFilename, prefixes);
 
     for (QString label : defines.keys()) {
+        uint32_t metatileId = static_cast<uint32_t>(defines[label]);
+        if (metatileId > Block::maxValue) {
+            metatileId &= Block::maxValue;
+            logWarn(QString("Value of metatile label '%1' truncated to %2").arg(label).arg(Metatile::getMetatileIdString(metatileId)));
+        }
         QString tilesetName = findMetatileLabelsTileset(label);
         if (!tilesetName.isEmpty()) {
-            metatileLabelsMap[tilesetName][label] = defines[label];
+            metatileLabelsMap[tilesetName][label] = metatileId;
         } else {
             // This #define name does not match any existing tileset.
             // Save it separately to be outputted later.
-            unusedMetatileLabels[label] = defines[label];
+            unusedMetatileLabels[label] = metatileId;
         }
     }
 
@@ -1529,7 +1534,7 @@ void Project::loadTilesetMetatileLabels(Tileset* tileset) {
 
     // Reverse map for faster lookup by metatile id
     for (QString labelName : metatileLabelsMap[tileset->name].keys()) {
-        int metatileId = metatileLabelsMap[tileset->name][labelName];
+        auto metatileId = metatileLabelsMap[tileset->name][labelName];
         tileset->metatileLabels[metatileId] = labelName.replace(metatileLabelPrefix, "");
     }
 }
