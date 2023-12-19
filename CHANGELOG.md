@@ -8,11 +8,14 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 
 ## [Unreleased]
 ### Added
-- Adds an editor window under `Options -> Project Settings...` to customize the project-specific settings in `porymap.project.cfg` and `porymap.user.cfg`.
-- Adds an editor window under `Options -> Custom Scripts...` for Porymap's API scripts.
-- Support customization of the default event icons and the collision/elevation graphics.
-- Adds a zoom slider to the Collision tab.
-- Support for 8BPP tileset tile images.
+- Add an editor window under `Options -> Project Settings...` to customize the project-specific settings in `porymap.project.cfg` and `porymap.user.cfg`.
+- Add an editor window under `Options -> Custom Scripts...` for Porymap's API scripts.
+- Add a warning to warp events if they're on an incomaptible metatile behavior.
+- Add settings for custom images, including the collision graphics, default event icons, and pokémon icons.
+- Add settings to override any symbol or macro names Porymap expects to find.
+- Add a zoom slider to the Collision tab.
+- Support for custom metatile ID, collision, and elevation data sizes.
+- Support for 8bpp tileset tile images.
 
 ### Changed
 - The Collision tab now allows selection of any valid elevation/collision value.
@@ -21,7 +24,9 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - If the recent project directory doesn't exist Porymap will open an empty project instead of failing with a misleading error message.
 - Settings under `Options` were relocated either to the `Preferences` window or `Options -> Project Settings`.
 - Secret Base and Weather Trigger events are automatically disabled if their respective constants files fail to parse, instead of not opening the project.
-- If a Pokémon icon fails to load Porymap will attempt to predict its filepath.
+- If a Pokémon icon fails to load Porymap will attempt to predict its filepath. If this also fails it will appear with a placeholder icon, and won't disppear when edited.
+- The bits in metatile attribute masks are now allowed to be non-contiguous.
+- Porymap will now attempt to read metatile attribute masks from the project.
 
 ### Fixed
 - Fix text boxes in the Palette Editor calculating color incorrectly.
@@ -36,7 +41,8 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix heal location data being cleared if certain spaces aren't used in the table.
 - Fix bad URL color contrast on dark themes.
 - Fix some issues when too few/many pokémon are specified for a wild encounter group.
-- If Porymap only needs the name of a C define stop reporting errors about its value.
+- Fix Porymap reporting errors for macros it doesn't use.
+- Fix painting on the Collision tab with the opacity slider at 0 painting metatiles.
 
 ## [5.1.1] - 2023-02-20
 ### Added
