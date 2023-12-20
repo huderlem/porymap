@@ -12,6 +12,19 @@ TilesetEditorMetatileSelector::TilesetEditorMetatileSelector(Tileset *primaryTil
     this->usedMetatiles.resize(Project::getNumMetatilesTotal());
 }
 
+int TilesetEditorMetatileSelector::numRows(int numMetatiles) {
+    int numMetatilesHigh = numMetatiles / this->numMetatilesWide;
+    if (numMetatiles % this->numMetatilesWide != 0) {
+        // Round up height for incomplete last row
+        numMetatilesHigh++;
+    }
+    return numMetatilesHigh;
+}
+
+int TilesetEditorMetatileSelector::numRows() {
+    return this->numRows(this->primaryTileset->metatiles.length() + this->secondaryTileset->metatiles.length());
+}
+
 QImage TilesetEditorMetatileSelector::buildAllMetatilesImage() {
     return this->buildImage(0, this->primaryTileset->metatiles.length() + this->secondaryTileset->metatiles.length());
 }
@@ -25,11 +38,7 @@ QImage TilesetEditorMetatileSelector::buildSecondaryMetatilesImage() {
 }
 
 QImage TilesetEditorMetatileSelector::buildImage(int metatileIdStart, int numMetatiles) {
-    int numMetatilesHigh = numMetatiles / this->numMetatilesWide;
-    if (numMetatiles % this->numMetatilesWide != 0) {
-        // Round up height for incomplete last row
-        numMetatilesHigh++;
-    }
+    int numMetatilesHigh = this->numRows(numMetatiles);
     int numPrimary = this->primaryTileset->metatiles.length();
     int maxPrimary = Project::getNumMetatilesPrimary();
     bool includesPrimary = metatileIdStart < maxPrimary;
@@ -158,6 +167,22 @@ QPoint TilesetEditorMetatileSelector::getMetatileIdCoordsOnWidget(uint16_t metat
 }
 
 void TilesetEditorMetatileSelector::drawFilters() {
+    if (this->showGrid) {
+        QPixmap pixmap = this->pixmap();
+        QPainter painter(&pixmap);
+        const int numColumns = this->numMetatilesWide;
+        const int numRows = this->numRows();
+        for (int column = 1; column < numColumns; column++) {
+            int x = column * 32;
+            painter.drawLine(x, 0, x, numRows * 32);
+        }
+        for (int row = 1; row < numRows; row++) {
+            int y = row * 32;
+            painter.drawLine(0, y, numColumns * 32, y);
+        }
+        painter.end();
+        this->setPixmap(pixmap);
+    }
     if (selectorShowUnused) {
         drawUnused();
     }

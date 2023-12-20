@@ -19,6 +19,7 @@ public:
     void setTilesets(Tileset*, Tileset*);
     void setMetatile(Metatile*);
     void clearLastModifiedCoords();
+    bool showGrid;
 private:
     Metatile* metatile;
     Tileset *primaryTileset;

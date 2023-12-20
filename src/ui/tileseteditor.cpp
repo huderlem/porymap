@@ -186,6 +186,10 @@ void TilesetEditor::initMetatileSelector()
     connect(this->metatileSelector, &TilesetEditorMetatileSelector::selectedMetatileChanged,
             this, &TilesetEditor::onSelectedMetatileChanged);
 
+    bool showGrid = porymapConfig.getShowTilesetEditorMetatileGrid();
+    this->ui->actionMetatile_Grid->setChecked(showGrid);
+    this->metatileSelector->showGrid = showGrid;
+
     this->metatilesScene = new QGraphicsScene;
     this->metatilesScene->addItem(this->metatileSelector);
     this->metatileSelector->draw();
@@ -201,6 +205,10 @@ void TilesetEditor::initMetatileLayersItem() {
             this, &TilesetEditor::onMetatileLayerTileChanged);
     connect(this->metatileLayersItem, &MetatileLayersItem::selectedTilesChanged,
             this, &TilesetEditor::onMetatileLayerSelectionChanged);
+
+    bool showGrid = porymapConfig.getShowTilesetEditorLayerGrid();
+    this->ui->actionLayer_Grid->setChecked(showGrid);
+    this->metatileLayersItem->showGrid = showGrid;
 
     this->metatileLayersScene = new QGraphicsScene;
     this->metatileLayersScene->addItem(this->metatileLayersItem);
@@ -1034,6 +1042,18 @@ void TilesetEditor::on_actionShow_UnusedTiles_toggled(bool checked) {
     if (checked) countTileUsage();
 
     this->tileSelector->draw();
+}
+
+void TilesetEditor::on_actionMetatile_Grid_triggered(bool checked) {
+    this->metatileSelector->showGrid = checked;
+    this->metatileSelector->draw();
+    porymapConfig.setShowTilesetEditorMetatileGrid(checked);
+}
+
+void TilesetEditor::on_actionLayer_Grid_triggered(bool checked) {
+    this->metatileLayersItem->showGrid = checked;
+    this->metatileLayersItem->draw();
+    porymapConfig.setShowTilesetEditorLayerGrid(checked);
 }
 
 void TilesetEditor::countMetatileUsage() {

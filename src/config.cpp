@@ -354,6 +354,10 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->showBorder = getConfigBool(key, value);
     } else if (key == "show_grid") {
         this->showGrid = getConfigBool(key, value);
+    } else if (key == "show_tileset_editor_metatile_grid") {
+        this->showTilesetEditorMetatileGrid = getConfigBool(key, value);
+    } else if (key == "show_tileset_editor_layer_grid") {
+        this->showTilesetEditorLayerGrid = getConfigBool(key, value);
     } else if (key == "monitor_files") {
         this->monitorFiles = getConfigBool(key, value);
     } else if (key == "tileset_checkerboard_fill") {
@@ -405,6 +409,8 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("show_cursor_tile", this->showCursorTile ? "1" : "0");
     map.insert("show_border", this->showBorder ? "1" : "0");
     map.insert("show_grid", this->showGrid ? "1" : "0");
+    map.insert("show_tileset_editor_metatile_grid", this->showTilesetEditorMetatileGrid ? "1" : "0");
+    map.insert("show_tileset_editor_layer_grid", this->showTilesetEditorLayerGrid ? "1" : "0");
     map.insert("monitor_files", this->monitorFiles ? "1" : "0");
     map.insert("tileset_checkerboard_fill", this->tilesetCheckerboardFill ? "1" : "0");
     map.insert("theme", this->theme);
@@ -538,6 +544,16 @@ void PorymapConfig::setShowGrid(bool enabled) {
     this->save();
 }
 
+void PorymapConfig::setShowTilesetEditorMetatileGrid(bool enabled) {
+    this->showTilesetEditorMetatileGrid = enabled;
+    this->save();
+}
+
+void PorymapConfig::setShowTilesetEditorLayerGrid(bool enabled) {
+    this->showTilesetEditorLayerGrid = enabled;
+    this->save();
+}
+
 void PorymapConfig::setTheme(QString theme) {
     this->theme = theme;
 }
@@ -660,6 +676,14 @@ bool PorymapConfig::getShowBorder() {
 
 bool PorymapConfig::getShowGrid() {
     return this->showGrid;
+}
+
+bool PorymapConfig::getShowTilesetEditorMetatileGrid() {
+    return this->showTilesetEditorMetatileGrid;
+}
+
+bool PorymapConfig::getShowTilesetEditorLayerGrid() {
+    return this->showTilesetEditorLayerGrid;
 }
 
 bool PorymapConfig::getMonitorFiles() {

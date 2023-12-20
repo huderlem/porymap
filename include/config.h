@@ -62,6 +62,8 @@ public:
         this->showCursorTile = true;
         this->showBorder = true;
         this->showGrid = false;
+        this->showTilesetEditorMetatileGrid = false;
+        this->showTilesetEditorLayerGrid = true;
         this->monitorFiles = true;
         this->tilesetCheckerboardFill = true;
         this->theme = "default";
@@ -88,6 +90,8 @@ public:
     void setShowCursorTile(bool enabled);
     void setShowBorder(bool enabled);
     void setShowGrid(bool enabled);
+    void setShowTilesetEditorMetatileGrid(bool enabled);
+    void setShowTilesetEditorLayerGrid(bool enabled);
     void setMonitorFiles(bool monitor);
     void setTilesetCheckerboardFill(bool checkerboard);
     void setTheme(QString theme);
@@ -113,6 +117,8 @@ public:
     bool getShowCursorTile();
     bool getShowBorder();
     bool getShowGrid();
+    bool getShowTilesetEditorMetatileGrid();
+    bool getShowTilesetEditorLayerGrid();
     bool getMonitorFiles();
     bool getTilesetCheckerboardFill();
     QString getTheme();
@@ -156,6 +162,8 @@ private:
     bool showCursorTile;
     bool showBorder;
     bool showGrid;
+    bool showTilesetEditorMetatileGrid;
+    bool showTilesetEditorLayerGrid;
     bool monitorFiles;
     bool tilesetCheckerboardFill;
     QString theme;

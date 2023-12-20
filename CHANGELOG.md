@@ -14,6 +14,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Add settings for custom images, including the collision graphics, default event icons, and pokémon icons.
 - Add settings to override any symbol or macro names Porymap expects to find.
 - Add a zoom slider to the Collision tab.
+- Add toggleable grids to the Tileset Editor.
 - Support for custom metatile ID, collision, and elevation data sizes.
 - Support for 8bpp tileset tile images.
 
