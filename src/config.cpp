@@ -16,35 +16,55 @@
 #include <QAction>
 #include <QAbstractButton>
 
-const QStringList ProjectConfig::defaultWarpBehaviors = {
-    "MB_NORTH_ARROW_WARP",
-    "MB_SOUTH_ARROW_WARP",
-    "MB_WEST_ARROW_WARP",
-    "MB_EAST_ARROW_WARP",
-    "MB_STAIRS_OUTSIDE_ABANDONED_SHIP",
-    "MB_WATER_SOUTH_ARROW_WARP",
-    "MB_SHOAL_CAVE_ENTRANCE",
-    "MB_SECRET_BASE_SPOT_RED_CAVE_OPEN",
-    "MB_SECRET_BASE_SPOT_BROWN_CAVE_OPEN",
-    "MB_SECRET_BASE_SPOT_YELLOW_CAVE_OPEN",
-    "MB_SECRET_BASE_SPOT_BLUE_CAVE_OPEN",
-    "MB_SECRET_BASE_SPOT_TREE_LEFT_OPEN",
-    "MB_SECRET_BASE_SPOT_TREE_RIGHT_OPEN",
-    "MB_SECRET_BASE_SPOT_SHRUB_OPEN",
-    "MB_ANIMATED_DOOR",
-    "MB_NON_ANIMATED_DOOR",
-    "MB_PETALBURG_GYM_DOOR",
-    "MB_WATER_DOOR",
-    "MB_LADDER",
-    "MB_UP_ESCALATOR",
-    "MB_DOWN_ESCALATOR",
-    "MB_DEEP_SOUTH_WARP",
-    "MB_LAVARIDGE_GYM_B1F_WARP",
-    "MB_LAVARIDGE_GYM_1F_WARP",
-    "MB_AQUA_HIDEOUT_WARP",
-    "MB_MT_PYRE_HOLE",
-    "MB_MOSSDEEP_GYM_WARP",
-    "MB_BRIDGE_OVER_OCEAN",
+const QSet<uint32_t> defaultWarpBehaviors_RSE = {
+    0x0E, // MB_MOSSDEEP_GYM_WARP
+    0x0F, // MB_MT_PYRE_HOLE
+    0x1B, // MB_STAIRS_OUTSIDE_ABANDONED_SHIP
+    0x1C, // MB_SHOAL_CAVE_ENTRANCE
+    0x29, // MB_LAVARIDGE_GYM_B1F_WARP
+    0x60, // MB_NON_ANIMATED_DOOR
+    0x61, // MB_LADDER
+    0x62, // MB_EAST_ARROW_WARP
+    0x63, // MB_WEST_ARROW_WARP
+    0x64, // MB_NORTH_ARROW_WARP
+    0x65, // MB_SOUTH_ARROW_WARP
+    0x67, // MB_AQUA_HIDEOUT_WARP
+    0x68, // MB_LAVARIDGE_GYM_1F_WARP
+    0x69, // MB_ANIMATED_DOOR
+    0x6A, // MB_UP_ESCALATOR
+    0x6B, // MB_DOWN_ESCALATOR
+    0x6C, // MB_WATER_DOOR
+    0x6D, // MB_WATER_SOUTH_ARROW_WARP
+    0x6E, // MB_DEEP_SOUTH_WARP
+    0x70, // MB_UNION_ROOM_WARP
+    0x8D, // MB_PETALBURG_GYM_DOOR
+    0x91, // MB_SECRET_BASE_SPOT_RED_CAVE_OPEN
+    0x93, // MB_SECRET_BASE_SPOT_BROWN_CAVE_OPEN
+    0x95, // MB_SECRET_BASE_SPOT_YELLOW_CAVE_OPEN
+    0x97, // MB_SECRET_BASE_SPOT_TREE_LEFT_OPEN
+    0x99, // MB_SECRET_BASE_SPOT_SHRUB_OPEN
+    0x9B, // MB_SECRET_BASE_SPOT_BLUE_CAVE_OPEN
+    0x9D, // MB_SECRET_BASE_SPOT_TREE_RIGHT_OPEN
+};
+
+const QSet<uint32_t> defaultWarpBehaviors_FRLG = {
+    0x60, // MB_CAVE_DOOR
+    0x61, // MB_LADDER
+    0x62, // MB_EAST_ARROW_WARP
+    0x63, // MB_WEST_ARROW_WARP
+    0x64, // MB_NORTH_ARROW_WARP
+    0x65, // MB_SOUTH_ARROW_WARP
+    0x66, // MB_FALL_WARP
+    0x67, // MB_REGULAR_WARP
+    0x68, // MB_LAVARIDGE_1F_WARP
+    0x69, // MB_WARP_DOOR
+    0x6A, // MB_UP_ESCALATOR
+    0x6B, // MB_DOWN_ESCALATOR
+    0x6C, // MB_UP_RIGHT_STAIR_WARP
+    0x6D, // MB_UP_LEFT_STAIR_WARP
+    0x6E, // MB_DOWN_RIGHT_STAIR_WARP
+    0x6F, // MB_DOWN_LEFT_STAIR_WARP
+    0x71, // MB_UNION_ROOM_WARP
 };
 
 // TODO: symbol_wild_encounters should ultimately be removed from the table below. We can determine this name when we read the project.
@@ -876,9 +896,11 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
     } else if (key == "collision_sheet_height") {
         this->collisionSheetHeight = getConfigUint32(key, value, 1, Block::maxValue);
     } else if (key == "warp_behaviors") {
+        this->warpBehaviors.clear();
         value.remove(" ");
-        this->warpBehaviors = value.split(",", Qt::SkipEmptyParts);
-        this->warpBehaviors.removeDuplicates();
+        QStringList behaviorList = value.split(",", Qt::SkipEmptyParts);
+        for (auto s : behaviorList)
+            this->warpBehaviors.insert(getConfigUint32(key, s));
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -912,6 +934,7 @@ void ProjectConfig::setUnreadKeys() {
     if (!readKeys.contains("metatile_encounter_type_mask")) this->metatileEncounterTypeMask = Metatile::getDefaultAttributesMask(this->baseGameVersion, Metatile::Attr::EncounterType);
     if (!readKeys.contains("metatile_layer_type_mask")) this->metatileLayerTypeMask = Metatile::getDefaultAttributesMask(this->baseGameVersion, Metatile::Attr::LayerType);
     if (!readKeys.contains("enable_map_allow_flags")) this->enableMapAllowFlags = (this->baseGameVersion != BaseGameVersion::pokeruby);
+    if (!readKeys.contains("warp_behaviors")) this->warpBehaviors = isPokefirered ? defaultWarpBehaviors_FRLG : defaultWarpBehaviors_RSE;
 }
 
 QMap<QString, QString> ProjectConfig::getKeyValueMap() {
@@ -965,7 +988,10 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("collision_sheet_path", this->collisionSheetPath);
     map.insert("collision_sheet_width", QString::number(this->collisionSheetWidth));
     map.insert("collision_sheet_height", QString::number(this->collisionSheetHeight));
-    map.insert("warp_behaviors", this->warpBehaviors.join(","));
+    QStringList warpBehaviorStrs;
+    for (auto value : this->warpBehaviors)
+        warpBehaviorStrs.append("0x" + QString("%1").arg(value, 2, 16, QChar('0')).toUpper());
+    map.insert("warp_behaviors", warpBehaviorStrs.join(","));
 
     return map;
 }
@@ -1419,12 +1445,12 @@ int ProjectConfig::getCollisionSheetHeight() {
     return this->collisionSheetHeight;
 }
 
-void ProjectConfig::setWarpBehaviors(const QStringList &behaviors) {
+void ProjectConfig::setWarpBehaviors(const QSet<uint32_t> &behaviors) {
     this->warpBehaviors = behaviors;
     this->save();
 }
 
-QStringList ProjectConfig::getWarpBehaviors() {
+QSet<uint32_t> ProjectConfig::getWarpBehaviors() {
     return this->warpBehaviors;
 }
 

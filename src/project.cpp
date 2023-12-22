@@ -2287,7 +2287,6 @@ bool Project::readTrainerTypes() {
 bool Project::readMetatileBehaviors() {
     this->metatileBehaviorMap.clear();
     this->metatileBehaviorMapInverse.clear();
-    this->warpBehaviorValues.clear();
 
     const QStringList prefixes = {projectConfig.getIdentifier(ProjectIdentifier::regex_behaviors)};
     QString filename = projectConfig.getFilePath(ProjectFilePath::constants_metatile_behaviors);
@@ -2305,15 +2304,6 @@ bool Project::readMetatileBehaviors() {
         uint32_t value = static_cast<uint32_t>(i.value());
         this->metatileBehaviorMap.insert(i.key(), value);
         this->metatileBehaviorMapInverse.insert(value, i.key());
-    }
-
-    // Construct warp behavior value list for the warp metatile behavior warning
-    const QStringList warpBehaviorNames = projectConfig.getWarpBehaviors();
-    for (auto name : warpBehaviorNames) {
-        if (this->metatileBehaviorMap.contains(name)) {
-            int value = this->metatileBehaviorMap.value(name);
-            this->warpBehaviorValues.insert(static_cast<uint32_t>(value));
-        }
     }
 
     return true;

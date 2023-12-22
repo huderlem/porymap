@@ -79,7 +79,6 @@ public:
     QMap<QString, uint16_t> unusedMetatileLabels;
     QMap<QString, uint32_t> metatileBehaviorMap;
     QMap<uint32_t, QString> metatileBehaviorMapInverse;
-    QSet<uint32_t> warpBehaviorValues;
     QMap<QString, QString> facingDirections;
     ParseUtil parser;
     QFileSystemWatcher fileWatcher;

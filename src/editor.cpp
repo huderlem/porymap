@@ -2003,7 +2003,7 @@ void Editor::updateWarpEventWarning(Event *event) {
         metatile = Tileset::getMetatile(block.metatileId(), map->layout->tileset_primary, map->layout->tileset_secondary);
     }
     // metatile may be null if the warp is in the map border. Display the warning in this case
-    bool validWarpBehavior = metatile && project->warpBehaviorValues.contains(metatile->behavior());
+    bool validWarpBehavior = metatile && projectConfig.getWarpBehaviors().contains(metatile->behavior());
     warpEvent->setWarningEnabled(!validWarpBehavior);
 }
 

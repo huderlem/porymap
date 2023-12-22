@@ -315,7 +315,6 @@ public:
         this->blockMetatileIdMask = 0x03FF;
         this->blockCollisionMask = 0x0C00;
         this->blockElevationMask = 0xF000;
-        this->warpBehaviors = defaultWarpBehaviors;
         this->identifiers.clear();
         this->readKeys.clear();
     }
@@ -413,8 +412,8 @@ public:
     int getCollisionSheetWidth();
     void setCollisionSheetHeight(int height);
     int getCollisionSheetHeight();
-    void setWarpBehaviors(const QStringList &behaviors);
-    QStringList getWarpBehaviors();
+    void setWarpBehaviors(const QSet<uint32_t> &behaviors);
+    QSet<uint32_t> getWarpBehaviors();
 
 protected:
     virtual QString getConfigFilepath() override;
@@ -423,8 +422,6 @@ protected:
     virtual void onNewConfigFileCreated() override;
     virtual void setUnreadKeys() override;
 private:
-    static const QStringList defaultWarpBehaviors;
-
     BaseGameVersion baseGameVersion;
     QString projectDir;
     QMap<ProjectIdentifier, QString> identifiers;
@@ -465,7 +462,7 @@ private:
     QString collisionSheetPath;
     int collisionSheetWidth;
     int collisionSheetHeight;
-    QStringList warpBehaviors;
+    QSet<uint32_t> warpBehaviors;
 };
 
 extern ProjectConfig projectConfig;

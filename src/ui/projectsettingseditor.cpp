@@ -302,12 +302,23 @@ QStringList ProjectSettingsEditor::getWarpBehaviorsList() {
 }
 
 void ProjectSettingsEditor::setWarpBehaviorsList(QStringList list) {
+    list.removeDuplicates();
+    list.sort();
     ui->textEdit_WarpBehaviors->setText(list.join("\n"));
 }
 
 void ProjectSettingsEditor::updateWarpBehaviorsList(bool adding) {
-    const QString input = ui->comboBox_WarpBehaviors->currentText();
+    QString input = ui->comboBox_WarpBehaviors->currentText();
     if (input.isEmpty())
+        return;
+
+    // Check if input was a value string for a named behavior
+    bool ok;
+    uint32_t value = input.toUInt(&ok, 0);
+    if (ok && project->metatileBehaviorMapInverse.contains(value))
+        input = project->metatileBehaviorMapInverse.value(value);
+
+    if (!project->metatileBehaviorMap.contains(input))
         return;
 
     QStringList list = this->getWarpBehaviorsList();
@@ -472,7 +483,15 @@ void ProjectSettingsEditor::refresh() {
         lineEdit->setText(projectConfig.getCustomFilePath(lineEdit->objectName()));
     for (auto lineEdit : ui->scrollAreaContents_Identifiers->findChildren<QLineEdit*>())
         lineEdit->setText(projectConfig.getCustomIdentifier(lineEdit->objectName()));
-    this->setWarpBehaviorsList(projectConfig.getWarpBehaviors());
+
+    // Set warp behaviors
+    auto behaviorValues = projectConfig.getWarpBehaviors();
+    QStringList behaviorNames;
+    for (auto value : behaviorValues) {
+        if (project->metatileBehaviorMapInverse.contains(value))
+            behaviorNames.append(project->metatileBehaviorMapInverse.value(value));
+    }
+    this->setWarpBehaviorsList(behaviorNames);
 
     this->refreshing = false; // Allow signals
 }
@@ -534,7 +553,13 @@ void ProjectSettingsEditor::save() {
         projectConfig.setFilePath(lineEdit->objectName(), lineEdit->text());
     for (auto lineEdit : ui->scrollAreaContents_Identifiers->findChildren<QLineEdit*>())
         projectConfig.setIdentifier(lineEdit->objectName(), lineEdit->text());
-    projectConfig.setWarpBehaviors(this->getWarpBehaviorsList());
+
+    // Save warp behaviors
+    QStringList behaviorNames = this->getWarpBehaviorsList();
+    QSet<uint32_t> behaviorValues;
+    for (auto name : behaviorNames)
+        behaviorValues.insert(project->metatileBehaviorMap.value(name));
+    projectConfig.setWarpBehaviors(behaviorValues);
 
     // Save border metatile IDs
     projectConfig.setNewMapBorderMetatileIds(this->getBorderMetatileIds(ui->checkBox_EnableCustomBorderSize->isChecked()));
