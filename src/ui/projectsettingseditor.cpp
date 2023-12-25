@@ -697,7 +697,7 @@ void ProjectSettingsEditor::closeEvent(QCloseEvent* event) {
 
     if (this->projectNeedsReload) {
         // Note: Declining this prompt with changes that need a reload may cause problems
-        if (this->prompt("Settings changed, reload project to apply changes?") == QMessageBox::Yes)
+        if (this->prompt("Settings saved, reload project to apply changes?") == QMessageBox::Yes)
             emit this->reloadProject();
     }
     QMainWindow::closeEvent(event);
