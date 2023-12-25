@@ -18,14 +18,6 @@
 #include <QVariant>
 #include <QFileSystemWatcher>
 
-struct EventGraphics
-{
-    QImage spritesheet;
-    int spriteWidth;
-    int spriteHeight;
-    bool inanimate;
-};
-
 // The displayed name of the special map value used by warps with multiple potential destinations
 static QString DYNAMIC_MAP_NAME = "Dynamic";
 
