@@ -269,7 +269,7 @@ Files & Identifiers
 
 These two tabs provide a way to override the filepaths and symbol/macro names Porymap expects to find in your project.
 
-For ``Files``, each can be overridden by typing a new path or selecting a file/folder with the |button-folder| button. If the file/folder doesn't exist when the project is loaded then the default path will be used instead.
+For ``Files``, each can be overridden by typing a new path or selecting a file/folder with the |button-folder| button. Paths are expected to be relative to the root project folder. If no path is specified, or if the file/folder specified does not exist, then the default path will be used instead.
 
 For ``Identifiers``, each can be overridden by typing a new name in the line edit. Overrides with ``regex`` in the name support the `regular expression syntax <https://perldoc.perl.org/perlre>`_ used by Qt.
 
