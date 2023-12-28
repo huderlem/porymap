@@ -319,7 +319,10 @@ QString PorymapConfig::getConfigFilepath() {
 
 void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
     if (key == "recent_project") {
-        this->recentProject = value;
+        QStringList paths = value.split(",", Qt::SkipEmptyParts);
+        for (auto path : paths)
+            this->recentProjects.append(path);
+        this->recentProjects.removeDuplicates();
     } else if (key == "reopen_on_launch") {
         this->reopenOnLaunch = getConfigBool(key, value);
     } else if (key == "pretty_cursors") {
@@ -404,7 +407,7 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
 
 QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     QMap<QString, QString> map;
-    map.insert("recent_project", this->recentProject);
+    map.insert("recent_project", this->recentProjects.join(","));
     map.insert("reopen_on_launch", this->reopenOnLaunch ? "1" : "0");
     map.insert("pretty_cursors", this->prettyCursors ? "1" : "0");
     map.insert("map_sort_order", mapSortOrderMap.value(this->mapSortOrder));
@@ -460,8 +463,14 @@ QByteArray PorymapConfig::bytesFromString(QString in) {
     return ba;
 }
 
-void PorymapConfig::setRecentProject(QString project) {
-    this->recentProject = project;
+void PorymapConfig::addRecentProject(QString project) {
+    this->recentProjects.removeOne(project);
+    this->recentProjects.prepend(project);
+    this->save();
+}
+
+void PorymapConfig::setRecentProjects(QStringList projects) {
+    this->recentProjects = projects;
     this->save();
 }
 
@@ -599,7 +608,11 @@ void PorymapConfig::setProjectSettingsTab(int tab) {
 }
 
 QString PorymapConfig::getRecentProject() {
-    return this->recentProject;
+    return this->recentProjects.value(0);
+}
+
+QStringList PorymapConfig::getRecentProjects() {
+    return this->recentProjects;
 }
 
 bool PorymapConfig::getReopenOnLaunch() {

@@ -51,7 +51,7 @@ public:
         reset();
     }
     virtual void reset() override {
-        this->recentProject = "";
+        this->recentProjects.clear();
         this->reopenOnLaunch = true;
         this->mapSortOrder = MapSortOrder::Group;
         this->prettyCursors = true;
@@ -73,7 +73,8 @@ public:
         this->projectSettingsTab = 0;
         this->warpBehaviorWarningDisabled = false;
     }
-    void setRecentProject(QString project);
+    void addRecentProject(QString project);
+    void setRecentProjects(QStringList projects);
     void setReopenOnLaunch(bool enabled);
     void setMapSortOrder(MapSortOrder order);
     void setPrettyCursors(bool enabled);
@@ -101,6 +102,7 @@ public:
     void setProjectSettingsTab(int tab);
     void setWarpBehaviorWarningDisabled(bool disabled);
     QString getRecentProject();
+    QStringList getRecentProjects();
     bool getReopenOnLaunch();
     MapSortOrder getMapSortOrder();
     bool getPrettyCursors();
@@ -134,7 +136,7 @@ protected:
     virtual void onNewConfigFileCreated() override {};
     virtual void setUnreadKeys() override {};
 private:
-    QString recentProject;
+    QStringList recentProjects;
     bool reopenOnLaunch;
     QString stringFromByteArray(QByteArray);
     QByteArray bytesFromString(QString);
