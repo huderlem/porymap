@@ -319,9 +319,7 @@ QString PorymapConfig::getConfigFilepath() {
 
 void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
     if (key == "recent_project") {
-        QStringList paths = value.split(",", Qt::SkipEmptyParts);
-        for (auto path : paths)
-            this->recentProjects.append(path);
+        this->recentProjects = value.split(",", Qt::SkipEmptyParts);
         this->recentProjects.removeDuplicates();
     } else if (key == "reopen_on_launch") {
         this->reopenOnLaunch = getConfigBool(key, value);
