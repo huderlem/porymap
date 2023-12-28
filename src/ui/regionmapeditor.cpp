@@ -796,14 +796,17 @@ void RegionMapEditor::displayRegionMapEntryOptions() {
 void RegionMapEditor::updateRegionMapEntryOptions(QString section) {
     if (!this->region_map->layoutEnabled()) return;
 
-    bool enabled = ((section != "MAPSEC_NONE") && (section != "MAPSEC_COUNT")) && (this->region_map_entries.contains(section));
+    bool isSpecialSection = (section == this->region_map->default_map_section
+                          || section == this->region_map->count_map_section);
+
+    bool enabled = (!isSpecialSection && this->region_map_entries.contains(section));
 
     this->ui->lineEdit_RM_MapName->setEnabled(enabled);
     this->ui->spinBox_RM_Entry_x->setEnabled(enabled);
     this->ui->spinBox_RM_Entry_y->setEnabled(enabled);
     this->ui->spinBox_RM_Entry_width->setEnabled(enabled);
     this->ui->spinBox_RM_Entry_height->setEnabled(enabled);
-    this->ui->pushButton_entryActivate->setEnabled(section != "MAPSEC_NONE" && section != "MAPSEC_COUNT");
+    this->ui->pushButton_entryActivate->setEnabled(!isSpecialSection);
     this->ui->pushButton_entryActivate->setText(enabled ? "Remove" : "Add");
 
     this->ui->lineEdit_RM_MapName->blockSignals(true);
@@ -831,7 +834,7 @@ void RegionMapEditor::updateRegionMapEntryOptions(QString section) {
 
 void RegionMapEditor::on_pushButton_entryActivate_clicked() {
     QString section = this->ui->comboBox_RM_Entry_MapSection->currentText();
-    if (section == "MAPSEC_NONE") return;
+    if (section == this->region_map->default_map_section) return;
 
     if (this->region_map_entries.contains(section)) {
         // disable
@@ -1297,7 +1300,7 @@ void RegionMapEditor::on_action_RegionMap_ClearLayout_triggered() {
     QMessageBox::StandardButton result = QMessageBox::question(
         this,
         "WARNING",
-        "This action will reset the entire map layout to MAPSEC_NONE, continue?",
+        QString("This action will reset the entire map layout to %1, continue?").arg(this->region_map->default_map_section),
         QMessageBox::Yes | QMessageBox::Cancel,
         QMessageBox::Yes
     );

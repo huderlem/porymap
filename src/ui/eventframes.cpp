@@ -3,9 +3,6 @@
 #include "editcommands.h"
 #include "draggablepixmapitem.h"
 
-#include "project.h"
-#include "editor.h"
-
 #include <limits>
 using std::numeric_limits;
 
@@ -109,7 +106,7 @@ void EventFrame::initCustomAttributesTable() {
     this->layout_contents->addWidget(customAttributes);
 }
 
-void EventFrame::connectSignals() {
+void EventFrame::connectSignals(MainWindow *) {
     this->connected = true;
 
     this->spinner_x->disconnect();
@@ -258,10 +255,10 @@ void ObjectFrame::setup() {
     EventFrame::initCustomAttributesTable();
 }
 
-void ObjectFrame::connectSignals() {
+void ObjectFrame::connectSignals(MainWindow *window) {
     if (this->connected) return;
 
-    EventFrame::connectSignals();
+    EventFrame::connectSignals(window);
 
     // sprite update
     this->combo_sprite->disconnect();
@@ -418,10 +415,10 @@ void CloneObjectFrame::setup() {
     EventFrame::initCustomAttributesTable();
 }
 
-void CloneObjectFrame::connectSignals() {
+void CloneObjectFrame::connectSignals(MainWindow *window) {
     if (this->connected) return;
 
-    EventFrame::connectSignals();
+    EventFrame::connectSignals(window);
 
     // update icon displayed in frame with target
     connect(this->clone->getPixmapItem(), &DraggablePixmapItem::spriteChanged, this->label_icon, &QLabel::setPixmap);
@@ -472,8 +469,6 @@ void CloneObjectFrame::populate(Project *project) {
     this->combo_target_map->addItems(project->mapNames);
 }
 
-
-
 void WarpFrame::setup() {
     EventFrame::setup();
 
@@ -493,14 +488,26 @@ void WarpFrame::setup() {
     l_form_dest_warp->addRow("Destination Warp", this->combo_dest_warp);
     this->layout_contents->addLayout(l_form_dest_warp);
 
+    // warning
+    static const QString warningText = "Warning:\n"
+                                       "This warp event is not positioned on a metatile with a warp behavior.\n"
+                                       "Click this warning for more details.";
+    QVBoxLayout *l_vbox_warning = new QVBoxLayout();
+    this->warning = new QPushButton(warningText, this);
+    this->warning->setFlat(true);
+    this->warning->setStyleSheet("color: red; text-align: left");
+    this->warning->setVisible(false);
+    l_vbox_warning->addWidget(this->warning);
+    this->layout_contents->addLayout(l_vbox_warning);
+
     // custom attributes
     EventFrame::initCustomAttributesTable();
 }
 
-void WarpFrame::connectSignals() {
+void WarpFrame::connectSignals(MainWindow *window) {
     if (this->connected) return;
 
-    EventFrame::connectSignals();
+    EventFrame::connectSignals(window);
 
     // dest map
     this->combo_dest_map->disconnect();
@@ -515,6 +522,10 @@ void WarpFrame::connectSignals() {
         this->warp->setDestinationWarpID(text);
         this->warp->modify();
     });
+
+    // warning
+    this->warning->disconnect();
+    connect(this->warning, &QPushButton::clicked, window, &MainWindow::onWarpBehaviorWarningClicked);
 }
 
 void WarpFrame::initialize() {
@@ -572,10 +583,10 @@ void TriggerFrame::setup() {
     EventFrame::initCustomAttributesTable();
 }
 
-void TriggerFrame::connectSignals() {
+void TriggerFrame::connectSignals(MainWindow *window) {
     if (this->connected) return;
 
-    EventFrame::connectSignals();
+    EventFrame::connectSignals(window);
 
     // label
     this->combo_script->disconnect();
@@ -657,10 +668,10 @@ void WeatherTriggerFrame::setup() {
     EventFrame::initCustomAttributesTable();
 }
 
-void WeatherTriggerFrame::connectSignals() {
+void WeatherTriggerFrame::connectSignals(MainWindow *window) {
     if (this->connected) return;
 
-    EventFrame::connectSignals();
+    EventFrame::connectSignals(window);
 
     // weather
     this->combo_weather->disconnect();
@@ -716,10 +727,10 @@ void SignFrame::setup() {
     EventFrame::initCustomAttributesTable();
 }
 
-void SignFrame::connectSignals() {
+void SignFrame::connectSignals(MainWindow *window) {
     if (this->connected) return;
 
-    EventFrame::connectSignals();
+    EventFrame::connectSignals(window);
 
     // facing dir
     this->combo_facing_dir->disconnect();
@@ -818,10 +829,10 @@ void HiddenItemFrame::setup() {
     EventFrame::initCustomAttributesTable();
 }
 
-void HiddenItemFrame::connectSignals() {
+void HiddenItemFrame::connectSignals(MainWindow *window) {
     if (this->connected) return;
 
-    EventFrame::connectSignals();
+    EventFrame::connectSignals(window);
 
     // item
     this->combo_item->disconnect();
@@ -909,10 +920,10 @@ void SecretBaseFrame::setup() {
     EventFrame::initCustomAttributesTable();
 }
 
-void SecretBaseFrame::connectSignals() {
+void SecretBaseFrame::connectSignals(MainWindow *window) {
     if (this->connected) return;
 
-    EventFrame::connectSignals();
+    EventFrame::connectSignals(window);
 
     this->combo_base_id->disconnect();
     connect(this->combo_base_id, &QComboBox::currentTextChanged, [this](const QString &text) {
@@ -973,10 +984,10 @@ void HealLocationFrame::setup() {
     EventFrame::initCustomAttributesTable();
 }
 
-void HealLocationFrame::connectSignals() {
+void HealLocationFrame::connectSignals(MainWindow *window) {
     if (this->connected) return;
 
-    EventFrame::connectSignals();
+    EventFrame::connectSignals(window);
 
     if (projectConfig.getHealLocationRespawnDataEnabled()) {
         this->combo_respawn_map->disconnect();

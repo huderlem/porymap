@@ -21,6 +21,9 @@
 
 static bool selectNewEvents = false;
 
+// 2D array mapping collision+elevation combos to an icon.
+QList<QList<const QImage*>> Editor::collisionIcons;
+
 Editor::Editor(Ui::MainWindow* ui)
 {
     this->ui = ui;
@@ -49,6 +52,8 @@ Editor::~Editor()
     delete this->playerViewRect;
     delete this->cursorMapTileRect;
     delete this->map_ruler;
+    for (auto sublist : collisionIcons)
+        qDeleteAll(sublist);
 
     closeProject();
 }
@@ -146,6 +151,7 @@ void Editor::setEditingObjects() {
     setConnectionsEditable(false);
     this->cursorMapTileRect->setSingleTileMode();
     this->cursorMapTileRect->setActive(false);
+    updateWarpEventWarnings();
 
     setMapEditingButtonsEnabled(false);
 }
@@ -936,8 +942,10 @@ QString Editor::getMetatileDisplayMessage(uint16_t metatileId) {
     QString message = QString("Metatile: %1").arg(Metatile::getMetatileIdString(metatileId));
     if (label.size())
         message += QString(" \"%1\"").arg(label);
-    if (metatile && metatile->behavior) // Skip MB_NORMAL
-        message += QString(", Behavior: %1").arg(this->project->metatileBehaviorMapInverse.value(metatile->behavior, QString::number(metatile->behavior)));
+    if (metatile && metatile->behavior() != 0) { // Skip MB_NORMAL
+        const QString behaviorStr = this->project->metatileBehaviorMapInverse.value(metatile->behavior(), "0x" + QString::number(metatile->behavior(), 16));
+        message += QString(", Behavior: %1").arg(behaviorStr);
+    }
     return message;
 }
 
@@ -1022,7 +1030,7 @@ void Editor::onHoveredMapMetatileChanged(const QPoint &pos) {
     this->updateCursorRectPos(x, y);
     if (map_item->paintingMode == MapPixmapItem::PaintMode::Metatiles) {
         int blockIndex = y * map->getWidth() + x;
-        int metatileId = map->layout->blockdata.at(blockIndex).metatileId;
+        int metatileId = map->layout->blockdata.at(blockIndex).metatileId();
         this->ui->statusBar->showMessage(QString("X: %1, Y: %2, %3, Scale = %4x")
                               .arg(x)
                               .arg(y)
@@ -1054,8 +1062,8 @@ void Editor::onHoveredMapMovementPermissionChanged(int x, int y) {
     this->updateCursorRectPos(x, y);
     if (map_item->paintingMode == MapPixmapItem::PaintMode::Metatiles) {
         int blockIndex = y * map->getWidth() + x;
-        uint16_t collision = map->layout->blockdata.at(blockIndex).collision;
-        uint16_t elevation = map->layout->blockdata.at(blockIndex).elevation;
+        uint16_t collision = map->layout->blockdata.at(blockIndex).collision();
+        uint16_t elevation = map->layout->blockdata.at(blockIndex).elevation();
         QString message = QString("X: %1, Y: %2, %3")
                             .arg(x)
                             .arg(y)
@@ -1075,16 +1083,16 @@ void Editor::onHoveredMapMovementPermissionCleared() {
 
 QString Editor::getMovementPermissionText(uint16_t collision, uint16_t elevation) {
     QString message;
-    if (collision == 0 && elevation == 0) {
-        message = "Collision: Transition between elevations";
-    } else if (collision == 0 && elevation == 15) {
-        message = "Collision: Multi-Level (Bridge)";
-    } else if (collision == 0 && elevation == 1) {
-        message = "Collision: Surf";
-    } else if (collision == 0) {
-        message = QString("Collision: Passable, Elevation: %1").arg(elevation);
-    } else {
+    if (collision != 0) {
         message = QString("Collision: Impassable (%1), Elevation: %2").arg(collision).arg(elevation);
+    } else if (elevation == 0) {
+        message = "Collision: Transition between elevations";
+    } else if (elevation == 15) {
+        message = "Collision: Multi-Level (Bridge)";
+    } else if (elevation == 1) {
+        message = "Collision: Surf";
+    } else {
+        message = QString("Collision: Passable, Elevation: %1").arg(elevation);
     }
     return message;
 }
@@ -1425,7 +1433,7 @@ void Editor::displayMapMovementPermissions() {
         scene->removeItem(collision_item);
         delete collision_item;
     }
-    collision_item = new CollisionPixmapItem(map, this->movement_permissions_selector_item,
+    collision_item = new CollisionPixmapItem(map, ui->spinBox_SelectedCollision, ui->spinBox_SelectedElevation,
                                              this->metatile_selector_item, this->settings, &this->collisionOpacity);
     connect(collision_item, &CollisionPixmapItem::mouseEvent, this, &Editor::mouseEvent_collision);
     connect(collision_item, &CollisionPixmapItem::hoveredMapMovementPermissionChanged,
@@ -1484,12 +1492,15 @@ void Editor::displayMovementPermissionSelector() {
 
     scene_collision_metatiles = new QGraphicsScene;
     if (!movement_permissions_selector_item) {
-        movement_permissions_selector_item = new MovementPermissionsSelector();
+        movement_permissions_selector_item = new MovementPermissionsSelector(this->collisionSheetPixmap);
         connect(movement_permissions_selector_item, &MovementPermissionsSelector::hoveredMovementPermissionChanged,
                 this, &Editor::onHoveredMovementPermissionChanged);
         connect(movement_permissions_selector_item, &MovementPermissionsSelector::hoveredMovementPermissionCleared,
                 this, &Editor::onHoveredMovementPermissionCleared);
-        movement_permissions_selector_item->select(0, 3);
+        connect(movement_permissions_selector_item, &SelectablePixmapItem::selectionChanged, [this](int x, int y, int, int) {
+            this->setCollisionTabSpinBoxes(x, y);
+        });
+        movement_permissions_selector_item->select(projectConfig.getDefaultCollision(), projectConfig.getDefaultElevation());
     }
 
     scene_collision_metatiles->addItem(movement_permissions_selector_item);
@@ -1979,6 +1990,37 @@ void Editor::redrawObject(DraggablePixmapItem *item) {
     }
 }
 
+// Warp events display a warning if they're not positioned on a metatile with a warp behavior.
+void Editor::updateWarpEventWarning(Event *event) {
+    if (porymapConfig.getWarpBehaviorWarningDisabled())
+        return;
+    if (!project || !map || !event || event->getEventType() != Event::Type::Warp)
+        return;
+    Block block;
+    Metatile * metatile = nullptr;
+    WarpEvent * warpEvent = static_cast<WarpEvent*>(event);
+    if (map->getBlock(warpEvent->getX(), warpEvent->getY(), &block)) {
+        metatile = Tileset::getMetatile(block.metatileId(), map->layout->tileset_primary, map->layout->tileset_secondary);
+    }
+    // metatile may be null if the warp is in the map border. Display the warning in this case
+    bool validWarpBehavior = metatile && projectConfig.getWarpBehaviors().contains(metatile->behavior());
+    warpEvent->setWarningEnabled(!validWarpBehavior);
+}
+
+// The warp event behavior warning is updated whenever the event moves or the event selection changes.
+// It does not respond to changes in the underlying metatile. To capture the common case of a user painting
+// metatiles on the Map tab then returning to the Events tab we update the warnings for all selected warp
+// events when the Events tab is opened. This does not cover the case where metatiles are painted while
+// still on the Events tab, such as by Undo/Redo or the scripting API.
+void Editor::updateWarpEventWarnings() {
+    if (porymapConfig.getWarpBehaviorWarningDisabled())
+        return;
+    if (selected_events) {
+        for (auto selection : *selected_events)
+            updateWarpEventWarning(selection->event);
+    }
+}
+
 void Editor::shouldReselectEvents() {
     selectNewEvents = true;
 }
@@ -2226,4 +2268,74 @@ void Editor::objectsView_onMousePress(QMouseEvent *event) {
         updateSelectedEvents();
     }
     selectingEvent = false;
+}
+
+void Editor::setCollisionTabSpinBoxes(uint16_t collision, uint16_t elevation) {
+    const QSignalBlocker blocker1(ui->spinBox_SelectedCollision);
+    const QSignalBlocker blocker2(ui->spinBox_SelectedElevation);
+    ui->spinBox_SelectedCollision->setValue(collision);
+    ui->spinBox_SelectedElevation->setValue(elevation);
+}
+
+// Custom collision graphics may be provided by the user.
+void Editor::setCollisionGraphics() {
+    QString customPath = projectConfig.getCollisionSheetPath();
+
+    QImage imgSheet;
+    if (customPath.isEmpty()) {
+        // No custom collision image specified, use the default.
+        imgSheet = this->defaultCollisionImgSheet;
+    } else {
+        // Try to load custom collision image
+        QFileInfo info(customPath);
+        if (info.isRelative()) {
+            customPath = QDir::cleanPath(projectConfig.getProjectDir() + QDir::separator() + customPath);
+        }
+        imgSheet = QImage(customPath);
+        if (imgSheet.isNull()) {
+            // Custom collision image failed to load, use default
+            logWarn(QString("Failed to load custom collision image '%1', using default.").arg(customPath));
+            imgSheet = this->defaultCollisionImgSheet;
+        }
+    }
+
+    // Users are not required to provide an image that gives an icon for every elevation/collision combination.
+    // Instead they tell us how many are provided in their image by specifying the number of columns and rows.
+    const int imgColumns = projectConfig.getCollisionSheetWidth();
+    const int imgRows = projectConfig.getCollisionSheetHeight();
+
+    // Create a pixmap for the selector on the Collision tab. If a project was previously opened we'll also need to refresh the selector.
+    this->collisionSheetPixmap = QPixmap::fromImage(imgSheet).scaled(MovementPermissionsSelector::CellWidth * imgColumns,
+                                                                     MovementPermissionsSelector::CellHeight * imgRows);
+    if (this->movement_permissions_selector_item)
+        this->movement_permissions_selector_item->setBasePixmap(this->collisionSheetPixmap);
+
+    for (auto sublist : collisionIcons)
+        qDeleteAll(sublist);
+    collisionIcons.clear();
+
+    // Use the image sheet to create an icon for each collision/elevation combination.
+    // Any icons for combinations that aren't provided by the image sheet are also created now using default graphics.
+    const int w = 16, h = 16;
+    imgSheet = imgSheet.scaled(w * imgColumns, h * imgRows);
+    for (int collision = 0; collision <= Block::getMaxCollision(); collision++) {
+        // If (collision >= imgColumns) here, it's a valid collision value, but it is not represented with an icon on the image sheet.
+        // In this case we just use the rightmost collision icon. This is mostly to support the vanilla case, where technically 0-3
+        // are valid collision values, but 1-3 have the same meaning, so the vanilla collision selector image only has 2 columns.
+        int x = ((collision < imgColumns) ? collision : (imgColumns - 1)) * w;
+
+        QList<const QImage*> sublist;
+        for (int elevation = 0; elevation <= Block::getMaxElevation(); elevation++) {
+            if (elevation < imgRows) {
+                // This elevation has an icon on the image sheet, add it to the list
+                int y = elevation * h;
+                sublist.append(new QImage(imgSheet.copy(x, y, w, h)));
+            } else {
+                // This is a valid elevation value, but it has no icon on the image sheet.
+                // Give it a placeholder "?" icon (red if impassable, white otherwise)
+                sublist.append(new QImage(this->collisionPlaceholder.copy(x != 0 ? w : 0, 0, w, h)));
+            }
+        }
+        collisionIcons.append(sublist);
+    }
 }

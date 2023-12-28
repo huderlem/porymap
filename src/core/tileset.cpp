@@ -168,7 +168,10 @@ QString Tileset::getMetatileLabelPrefix()
 
 QString Tileset::getMetatileLabelPrefix(const QString &name)
 {
-    return QString("METATILE_%1_").arg(QString(name).replace("gTileset_", ""));
+    // Default is "gTileset_Name" --> "METATILE_Name_"
+    const QString tilesetPrefix = projectConfig.getIdentifier(ProjectIdentifier::symbol_tilesets_prefix);
+    const QString labelPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_metatile_label_prefix);
+    return QString("%1%2_").arg(labelPrefix).arg(QString(name).replace(tilesetPrefix, ""));
 }
 
 bool Tileset::metatileIsValid(uint16_t metatileId, Tileset *primaryTileset, Tileset *secondaryTileset) {
@@ -343,7 +346,8 @@ QString Tileset::getExpectedDir(QString tilesetName, bool isSecondary)
     static const QRegularExpression re("([a-z])([A-Z0-9])");
     const QString category = isSecondary ? "secondary" : "primary";
     const QString basePath = projectConfig.getFilePath(ProjectFilePath::data_tilesets_folders) + category + "/";
-    return basePath + tilesetName.replace("gTileset_", "").replace(re, "\\1_\\2").toLower();
+    const QString prefix = projectConfig.getIdentifier(ProjectIdentifier::symbol_tilesets_prefix);
+    return basePath + tilesetName.replace(prefix, "").replace(re, "\\1_\\2").toLower();
 }
 
 // Get the expected positions of the members in struct Tileset.

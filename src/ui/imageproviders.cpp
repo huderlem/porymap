@@ -1,17 +1,16 @@
 #include "config.h"
 #include "imageproviders.h"
 #include "log.h"
+#include "editor.h"
 #include <QPainter>
 
 QImage getCollisionMetatileImage(Block block) {
-    return getCollisionMetatileImage(block.collision, block.elevation);
+    return getCollisionMetatileImage(block.collision(), block.elevation());
 }
 
 QImage getCollisionMetatileImage(int collision, int elevation) {
-    static const QImage collisionImage(":/images/collisions.png");
-    int x = (collision != 0) * 16;
-    int y = elevation * 16;
-    return collisionImage.copy(x, y, 16, 16);
+    const QImage * image = Editor::collisionIcons.at(collision).at(elevation);
+    return image ? *image : QImage();
 }
 
 QImage getMetatileImage(
@@ -51,7 +50,7 @@ QImage getMetatileImage(
     QPainter metatile_painter(&metatile_image);
     bool isTripleLayerMetatile = projectConfig.getTripleLayerMetatilesEnabled();
     const int numLayers = 3; // When rendering, metatiles always have 3 layers
-    int layerType = metatile->layerType;
+    uint32_t layerType = metatile->layerType();
     for (int layer = 0; layer < numLayers; layer++)
     for (int y = 0; y < 2; y++)
     for (int x = 0; x < 2; x++) {

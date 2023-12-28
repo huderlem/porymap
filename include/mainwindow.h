@@ -159,6 +159,7 @@ public:
 public slots:
     void on_mainTabBar_tabBarClicked(int index);
     void on_mapViewTab_tabBarClicked(int index);
+    void onWarpBehaviorWarningClicked();
 
 private slots:
     void on_action_Open_Project_triggered();
@@ -276,11 +277,13 @@ private slots:
     void on_pushButton_DeleteCustomHeaderField_clicked();
     void on_tableWidget_CustomHeaderFields_cellChanged(int row, int column);
     void on_horizontalSlider_MetatileZoom_valueChanged(int value);
+    void on_horizontalSlider_CollisionZoom_valueChanged(int value);
     void on_pushButton_NewWildMonGroup_clicked();
     void on_pushButton_DeleteWildMonGroup_clicked();
     void on_pushButton_ConfigureEncountersJSON_clicked();
     void on_pushButton_CreatePrefab_clicked();
-
+    void on_spinBox_SelectedElevation_valueChanged(int elevation);
+    void on_spinBox_SelectedCollision_valueChanged(int collision);
     void on_actionRegion_Map_Editor_triggered();
     void on_actionPreferences_triggered();
     void togglePreferenceSpecificUi();
@@ -348,7 +351,7 @@ private:
     void openSubWindow(QWidget * window);
     QString getExistingDirectory(QString);
     bool openProject(QString dir);
-    QString getDefaultMap();
+    bool setInitialMap();
     void setRecentMap(QString map_name);
     QStandardItem* createMapItem(QString mapName, int groupNum, int inGroupNum);
 
@@ -370,7 +373,7 @@ private:
     void initMapSortOrder();
     void initShortcuts();
     void initExtraShortcuts();
-    void setProjectSpecificUIVisibility();
+    void setProjectSpecificUI();
     void setWildEncountersUIEnabled(bool enabled);
     void loadUserSettings();
     void applyMapListFilter(QString filterText);
@@ -387,7 +390,7 @@ private:
     void initShortcutsEditor();
     void initCustomScriptsEditor();
     void connectSubEditorsToShortcutsEditor();
-
+    void openProjectSettingsEditor(int tab);
     bool isProjectOpen();
     void showExportMapImageWindow(ImageExporterMode mode);
     void redrawMetatileSelection();

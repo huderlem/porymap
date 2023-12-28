@@ -4,7 +4,7 @@
 #include "project.h"
 #include "config.h"
 
-
+QMap<Event::Group, const QPixmap*> Event::icons;
 
 Event::~Event() {
     if (this->eventFrame)
@@ -35,7 +35,7 @@ int Event::getEventIndex() {
 void Event::setDefaultValues(Project *) {
     this->setX(0);
     this->setY(0);
-    this->setElevation(3);
+    this->setElevation(projectConfig.getDefaultElevation());
 }
 
 void Event::readCustomValues(QJsonObject values) {
@@ -126,6 +126,45 @@ Event::Type Event::eventTypeFromString(QString type) {
     }
 }
 
+void Event::loadPixmap(Project *) {
+    const QPixmap * pixmap = Event::icons.value(this->getEventGroup());
+    this->pixmap = pixmap ? *pixmap : QPixmap();
+}
+
+void Event::setIcons() {
+    qDeleteAll(icons);
+    icons.clear();
+
+    const int w = 16;
+    const int h = 16;
+    static const QPixmap defaultIcons = QPixmap(":/images/Entities_16x16.png");
+
+    // Custom event icons may be provided by the user.
+    const int numIcons = qMin(defaultIcons.width() / w, static_cast<int>(Event::Group::None));
+    for (int i = 0; i < numIcons; i++) {
+        Event::Group group = static_cast<Event::Group>(i);
+        QString customIconPath = projectConfig.getEventIconPath(group);
+        if (customIconPath.isEmpty()) {
+            // No custom icon specified, use the default icon.
+            icons[group] = new QPixmap(defaultIcons.copy(i * w, 0, w, h));
+            continue;
+        }
+
+        // Try to load custom icon
+        QFileInfo info(customIconPath);
+        if (info.isRelative()) {
+            customIconPath = QDir::cleanPath(projectConfig.getProjectDir() + QDir::separator() + customIconPath);
+        }
+        const QPixmap customIcon = QPixmap(customIconPath);
+        if (customIcon.isNull()) {
+            // Custom icon failed to load, use the default icon.
+            icons[group] = new QPixmap(defaultIcons.copy(i * w, 0, w, h));
+            logWarn(QString("Failed to load custom event icon '%1', using default icon.").arg(customIconPath));
+        } else {
+            icons[group] = new QPixmap(customIcon.scaled(w, h));
+        }
+    }
+}
 
 
 Event *ObjectEvent::duplicate() {
@@ -243,7 +282,7 @@ void ObjectEvent::loadPixmap(Project *project) {
     if (!eventGfx || eventGfx->spritesheet.isNull()) {
         // No sprite associated with this gfx constant.
         // Use default sprite instead.
-        this->pixmap = project->entitiesPixmap.copy(0, 0, 16, 16);
+        Event::loadPixmap(project);
         this->spriteWidth = 16;
         this->spriteHeight = 16;
         this->usingSprite = false;
@@ -333,13 +372,14 @@ bool CloneObjectEvent::loadFromJson(QJsonObject json, Project *project) {
     this->setTargetID(ParseUtil::jsonToInt(json["target_local_id"]));
 
     // Ensure the target map constant is valid before adding it to the events.
+    const QString dynamicMapConstant = project->getDynamicMapDefineName();
     QString mapConstant = ParseUtil::jsonToQString(json["target_map"]);
     if (project->mapConstantsToMapNames.contains(mapConstant)) {
         this->setTargetMap(project->mapConstantsToMapNames.value(mapConstant));
-    } else if (mapConstant == DYNAMIC_MAP_CONSTANT) {
+    } else if (mapConstant == dynamicMapConstant) {
         this->setTargetMap(DYNAMIC_MAP_NAME);
     } else {
-        logWarn(QString("Target Map constant '%1' is invalid. Using default '%2'.").arg(mapConstant).arg(DYNAMIC_MAP_CONSTANT));
+        logWarn(QString("Target Map constant '%1' is invalid. Using default '%2'.").arg(mapConstant).arg(dynamicMapConstant));
         this->setTargetMap(DYNAMIC_MAP_NAME);
     }
 
@@ -389,7 +429,7 @@ void CloneObjectEvent::loadPixmap(Project *project) {
     if (!eventGfx || eventGfx->spritesheet.isNull()) {
         // No sprite associated with this gfx constant.
         // Use default sprite instead.
-        this->pixmap = project->entitiesPixmap.copy(0, 0, 16, 16);
+        Event::loadPixmap(project);
         this->spriteWidth = 16;
         this->spriteHeight = 16;
         this->usingSprite = false;
@@ -444,13 +484,14 @@ bool WarpEvent::loadFromJson(QJsonObject json, Project *project) {
     this->setDestinationWarpID(ParseUtil::jsonToQString(json["dest_warp_id"]));
 
     // Ensure the warp destination map constant is valid before adding it to the warps.
+    const QString dynamicMapConstant = project->getDynamicMapDefineName();
     QString mapConstant = ParseUtil::jsonToQString(json["dest_map"]);
     if (project->mapConstantsToMapNames.contains(mapConstant)) {
         this->setDestinationMap(project->mapConstantsToMapNames.value(mapConstant));
-    } else if (mapConstant == DYNAMIC_MAP_CONSTANT) {
+    } else if (mapConstant == dynamicMapConstant) {
         this->setDestinationMap(DYNAMIC_MAP_NAME);
     } else {
-        logWarn(QString("Destination Map constant '%1' is invalid. Using default '%2'.").arg(mapConstant).arg(DYNAMIC_MAP_CONSTANT));
+        logWarn(QString("Destination Map constant '%1' is invalid. Using default '%2'.").arg(mapConstant).arg(dynamicMapConstant));
         this->setDestinationMap(DYNAMIC_MAP_NAME);
     }
 
@@ -478,14 +519,10 @@ QSet<QString> WarpEvent::getExpectedFields() {
     return expectedFields;
 }
 
-void WarpEvent::loadPixmap(Project *project) {
-    this->pixmap = project->entitiesPixmap.copy(16, 0, 16, 16);
-}
-
-
-
-void CoordEvent::loadPixmap(Project *project) {
-    this->pixmap = project->entitiesPixmap.copy(32, 0, 16, 16);
+void WarpEvent::setWarningEnabled(bool enabled) {
+    WarpFrame * frame = static_cast<WarpFrame*>(this->getEventFrame());
+    if (frame && frame->warning)
+        frame->warning->setVisible(enabled);
 }
 
 
@@ -628,12 +665,6 @@ QSet<QString> WeatherTriggerEvent::getExpectedFields() {
     expectedFields = expectedWeatherTriggerFields;
     expectedFields << "x" << "y";
     return expectedFields;
-}
-
-
-
-void BGEvent::loadPixmap(Project *project) {
-    this->pixmap = project->entitiesPixmap.copy(48, 0, 16, 16);
 }
 
 
@@ -884,20 +915,17 @@ OrderedJson::object HealLocationEvent::buildEventJson(Project *) {
 }
 
 void HealLocationEvent::setDefaultValues(Project *) {
-    this->setElevation(3);
+    this->setElevation(projectConfig.getDefaultElevation());
     if (!this->getMap())
         return;
-    bool respawnEanbled = projectConfig.getHealLocationRespawnDataEnabled();
-    QString mapConstant = Map::mapConstantFromName(this->getMap()->name).remove(0,4);
-    QString prefix = respawnEanbled ? "SPAWN_" : "HEAL_LOCATION_";
+    bool respawnEnabled = projectConfig.getHealLocationRespawnDataEnabled();
+    const QString mapConstant = Map::mapConstantFromName(this->getMap()->name, false);
+    const QString prefix = projectConfig.getIdentifier(respawnEnabled ? ProjectIdentifier::define_spawn_prefix
+                                                                      : ProjectIdentifier::define_heal_locations_prefix);
     this->setLocationName(mapConstant);
     this->setIdName(prefix + mapConstant);
-    if (respawnEanbled) {
+    if (respawnEnabled) {
         this->setRespawnMap(this->getMap()->name);
         this->setRespawnNPC(1);
     }
-}
-
-void HealLocationEvent::loadPixmap(Project *project) {
-    this->pixmap = project->entitiesPixmap.copy(64, 0, 16, 16);
 }

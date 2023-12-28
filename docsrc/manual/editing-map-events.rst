@@ -110,7 +110,7 @@ Target Map
 Warp Events
 -----------
 
-Warp events are how the player is able to warp to other maps, such as entering a building.  Double-clicking on a warp will automatically open the destination map and select the destination warp.  This makes it very easy to navigate around in Porymap.
+Warp events are how the player is able to warp to other maps, such as entering a building.  Double-clicking on a warp will automatically open the destination map and select the destination warp.  This makes it very easy to navigate around in Porymap. Warps need to be on specific metatiles to function as an exit; a warning will appear if the warp event is not on one of these metatiles.
 
 .. figure:: images/editing-map-events/event-warp.png
     :alt: Warp Event Properties

@@ -1144,7 +1144,14 @@
                      <property name="bottomMargin">
                       <number>3</number>
                      </property>
-                     <item row="0" column="0">
+                     <item row="3" column="0">
+                      <widget class="QLabel" name="label">
+                       <property name="text">
+                        <string>Opacity</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="5" column="0" colspan="3">
                       <widget class="QScrollArea" name="scrollArea_1">
                        <property name="widgetResizable">
                         <bool>true</bool>
@@ -1154,8 +1161,8 @@
                          <rect>
                           <x>0</x>
                           <y>0</y>
-                          <width>428</width>
-                          <height>696</height>
+                          <width>427</width>
+                          <height>512</height>
                          </rect>
                         </property>
                         <layout class="QGridLayout" name="gridLayout_7">
@@ -1174,29 +1181,6 @@
                          <property name="spacing">
                           <number>0</number>
                          </property>
-                         <item row="0" column="1">
-                          <widget class="QLabel" name="label">
-                           <property name="text">
-                            <string>Opacity</string>
-                           </property>
-                          </widget>
-                         </item>
-                         <item row="1" column="1">
-                          <widget class="QSlider" name="horizontalSlider_CollisionTransparency">
-                           <property name="minimum">
-                            <number>0</number>
-                           </property>
-                           <property name="maximum">
-                            <number>100</number>
-                           </property>
-                           <property name="value">
-                            <number>50</number>
-                           </property>
-                           <property name="orientation">
-                            <enum>Qt::Horizontal</enum>
-                           </property>
-                          </widget>
-                         </item>
                          <item row="2" column="0">
                           <spacer name="horizontalSpacer_18">
                            <property name="orientation">
@@ -1223,6 +1207,12 @@
                              <width>64</width>
                              <height>512</height>
                             </size>
+                           </property>
+                           <property name="verticalScrollBarPolicy">
+                            <enum>Qt::ScrollBarAlwaysOff</enum>
+                           </property>
+                           <property name="horizontalScrollBarPolicy">
+                            <enum>Qt::ScrollBarAlwaysOff</enum>
                            </property>
                           </widget>
                          </item>
@@ -1254,6 +1244,83 @@
                          </item>
                         </layout>
                        </widget>
+                      </widget>
+                     </item>
+                     <item row="6" column="0" colspan="3">
+                      <widget class="QSlider" name="horizontalSlider_CollisionZoom">
+                       <property name="minimum">
+                        <number>10</number>
+                       </property>
+                       <property name="maximum">
+                        <number>90</number>
+                       </property>
+                       <property name="value">
+                        <number>30</number>
+                       </property>
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="4" column="0" colspan="3">
+                      <widget class="QSlider" name="horizontalSlider_CollisionTransparency">
+                       <property name="minimum">
+                        <number>1</number>
+                       </property>
+                       <property name="maximum">
+                        <number>100</number>
+                       </property>
+                       <property name="value">
+                        <number>50</number>
+                       </property>
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="0" column="0" colspan="3">
+                      <widget class="QFrame" name="frame_5">
+                       <property name="frameShape">
+                        <enum>QFrame::StyledPanel</enum>
+                       </property>
+                       <property name="frameShadow">
+                        <enum>QFrame::Raised</enum>
+                       </property>
+                       <layout class="QGridLayout" name="gridLayout_8">
+                        <item row="0" column="1">
+                         <widget class="QSpinBox" name="spinBox_SelectedElevation"/>
+                        </item>
+                        <item row="1" column="0">
+                         <widget class="QLabel" name="label_17">
+                          <property name="text">
+                           <string>Collision</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="1" column="1">
+                         <widget class="QSpinBox" name="spinBox_SelectedCollision"/>
+                        </item>
+                        <item row="0" column="0">
+                         <widget class="QLabel" name="label_16">
+                          <property name="text">
+                           <string>Elevation</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="0" column="2">
+                         <spacer name="horizontalSpacer_4">
+                          <property name="orientation">
+                           <enum>Qt::Horizontal</enum>
+                          </property>
+                          <property name="sizeHint" stdset="0">
+                           <size>
+                            <width>40</width>
+                            <height>20</height>
+                           </size>
+                          </property>
+                         </spacer>
+                        </item>
+                       </layout>
                       </widget>
                      </item>
                     </layout>
@@ -1314,8 +1381,8 @@
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>398</width>
-                             <height>631</height>
+                             <width>382</width>
+                             <height>611</height>
                             </rect>
                            </property>
                            <layout class="QVBoxLayout" name="verticalLayout_14">
@@ -1615,8 +1682,8 @@
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>434</width>
-                             <height>581</height>
+                             <width>100</width>
+                             <height>16</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -1709,8 +1776,8 @@
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>434</width>
-                             <height>581</height>
+                             <width>100</width>
+                             <height>16</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -1803,8 +1870,8 @@
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>434</width>
-                             <height>581</height>
+                             <width>100</width>
+                             <height>16</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -1903,8 +1970,8 @@
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>434</width>
-                             <height>581</height>
+                             <width>100</width>
+                             <height>16</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -1997,8 +2064,8 @@
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>434</width>
-                             <height>581</height>
+                             <width>100</width>
+                             <height>16</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -2051,8 +2118,8 @@
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>434</width>
-                             <height>625</height>
+                             <width>100</width>
+                             <height>30</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -2388,7 +2455,7 @@
                   <string>Custom fields will be added to the map.json file for the current map.</string>
                  </property>
                  <attribute name="horizontalHeaderVisible">
-                  <bool>true</bool>
+                  <bool>false</bool>
                  </attribute>
                  <attribute name="horizontalHeaderCascadingSectionResizes">
                   <bool>false</bool>

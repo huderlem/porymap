@@ -75,8 +75,8 @@ void CollisionPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
 
         Block block;
         if (map->getBlock(pos.x(), pos.y(), &block)) {
-            block.collision = this->movementPermissionsSelector->getSelectedCollision();
-            block.elevation = this->movementPermissionsSelector->getSelectedElevation();
+            block.setCollision(this->selectedCollision->value());
+            block.setElevation(this->selectedElevation->value());
             map->setBlock(pos.x(), pos.y(), block, true);
         }
 
@@ -93,8 +93,8 @@ void CollisionPixmapItem::floodFill(QGraphicsSceneMouseEvent *event) {
         Blockdata oldCollision = map->layout->blockdata;
 
         QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
-        uint16_t collision = this->movementPermissionsSelector->getSelectedCollision();
-        uint16_t elevation = this->movementPermissionsSelector->getSelectedElevation();
+        uint16_t collision = this->selectedCollision->value();
+        uint16_t elevation = this->selectedElevation->value();
         map->floodFillCollisionElevation(pos.x(), pos.y(), collision, elevation);
 
         if (map->layout->blockdata != oldCollision) {
@@ -109,8 +109,8 @@ void CollisionPixmapItem::magicFill(QGraphicsSceneMouseEvent *event) {
     } else if (map) {
         Blockdata oldCollision = map->layout->blockdata;
         QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
-        uint16_t collision = this->movementPermissionsSelector->getSelectedCollision();
-        uint16_t elevation = this->movementPermissionsSelector->getSelectedElevation();
+        uint16_t collision = this->selectedCollision->value();
+        uint16_t elevation = this->selectedElevation->value();
         map->magicFillCollisionElevation(pos.x(), pos.y(), collision, elevation);
 
         if (map->layout->blockdata != oldCollision) {
@@ -121,10 +121,7 @@ void CollisionPixmapItem::magicFill(QGraphicsSceneMouseEvent *event) {
 
 void CollisionPixmapItem::pick(QGraphicsSceneMouseEvent *event) {
     QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
-    Block block;
-    if (map->getBlock(pos.x(), pos.y(), &block)) {
-        this->movementPermissionsSelector->select(block.collision, block.elevation);
-    }
+    this->updateSelection(pos);
 }
 
 void CollisionPixmapItem::updateMovementPermissionSelection(QGraphicsSceneMouseEvent *event) {
@@ -135,9 +132,14 @@ void CollisionPixmapItem::updateMovementPermissionSelection(QGraphicsSceneMouseE
     if (pos.x() >= map->getWidth()) pos.setX(map->getWidth() - 1);
     if (pos.y() < 0) pos.setY(0);
     if (pos.y() >= map->getHeight()) pos.setY(map->getHeight() - 1);
+    this->updateSelection(pos);
+}
 
+void CollisionPixmapItem::updateSelection(QPoint pos) {
     Block block;
     if (map->getBlock(pos.x(), pos.y(), &block)) {
-        this->movementPermissionsSelector->select(block.collision, block.elevation);
+        const QSignalBlocker blocker(this->selectedCollision); // We only need a signal for changing one of them, not both
+        this->selectedCollision->setValue(block.collision());
+        this->selectedElevation->setValue(block.elevation());
     }
 }

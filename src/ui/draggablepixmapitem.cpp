@@ -17,6 +17,7 @@ void DraggablePixmapItem::updatePosition() {
     } else {
         setZValue(event->getY());
     }
+    editor->updateWarpEventWarning(event);
 }
 
 void DraggablePixmapItem::emitPositionChanged() {
@@ -93,9 +94,10 @@ void DraggablePixmapItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *) {
         emit editor->warpEventDoubleClicked(clone->getTargetMap(), clone->getTargetID(), Event::Group::Object);
     }
     else if (eventType == Event::Type::SecretBase) {
+        const QString mapPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_map_prefix);
         SecretBaseEvent *base = dynamic_cast<SecretBaseEvent *>(this->event);
         QString baseId = base->getBaseID();
-        QString destMap = editor->project->mapConstantsToMapNames.value("MAP_" + baseId.left(baseId.lastIndexOf("_")));
+        QString destMap = editor->project->mapConstantsToMapNames.value(mapPrefix + baseId.left(baseId.lastIndexOf("_")));
         emit editor->warpEventDoubleClicked(destMap, 0, Event::Group::Warp);
     }
 }

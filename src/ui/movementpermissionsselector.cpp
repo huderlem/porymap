@@ -1,10 +1,17 @@
 #include "movementpermissionsselector.h"
 #include <QPainter>
 
+const int MovementPermissionsSelector::CellWidth = 32;
+const int MovementPermissionsSelector::CellHeight = 32;
+
 void MovementPermissionsSelector::draw() {
-    QPixmap pixmap(":/images/collisions.png");
-    this->setPixmap(pixmap.scaled(64, 512));
+    this->setPixmap(this->basePixmap);
     this->drawSelection();
+}
+
+void MovementPermissionsSelector::setBasePixmap(QPixmap pixmap) {
+    this->basePixmap = pixmap;
+    this->draw();
 }
 
 uint16_t MovementPermissionsSelector::getSelectedCollision() {
@@ -16,7 +23,7 @@ uint16_t MovementPermissionsSelector::getSelectedElevation() {
 }
 
 void MovementPermissionsSelector::select(uint16_t collision, uint16_t elevation) {
-    SelectablePixmapItem::select(collision != 0, elevation, 0, 0);
+    SelectablePixmapItem::select(collision, elevation, 0, 0);
 }
 
 void MovementPermissionsSelector::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
