@@ -1625,6 +1625,10 @@ bool Project::readWildMonData() {
         return true;
     }
 
+    // For each encounter type, count the number of times each encounter rate value occurs.
+    // The most common value will be used as the default for new groups.
+    QMap<QString, QMap<int, int>> encounterRateFrequencyMaps;
+
     for (OrderedJson subObjectRef : wildMonObj["wild_encounter_groups"].array_items()) {
         OrderedJson::object subObject = subObjectRef.object_items();
         if (!subObject["for_maps"].bool_value()) {
@@ -1650,6 +1654,7 @@ bool Project::readWildMonData() {
                     encounterField.groups[group].append(slotNum.int_value());
                 }
             }
+            encounterRateFrequencyMaps.insert(encounterField.name, QMap<int, int>());
             wildMonFields.append(encounterField);
         }
 
@@ -1666,6 +1671,7 @@ bool Project::readWildMonData() {
                     OrderedJson::object encounterFieldObj = encounterObj[field].object_items();
                     header.wildMons[field].active = true;
                     header.wildMons[field].encounterRate = encounterFieldObj["encounter_rate"].int_value();
+                    encounterRateFrequencyMaps[field][header.wildMons[field].encounterRate]++;
                     for (auto mon : encounterFieldObj["mons"].array_items()) {
                         WildPokemon newMon;
                         OrderedJson::object monObj = mon.object_items();
@@ -1684,6 +1690,22 @@ bool Project::readWildMonData() {
             wildMonData[mapConstant].insert({encounterObj["base_label"].string_value(), header});
             encounterGroupLabels.append(encounterObj["base_label"].string_value());
         }
+    }
+
+    // For each encounter type, set default encounter rate to most common value.
+    // Iterate over map of encounter type names to frequency maps...
+    for (auto i = encounterRateFrequencyMaps.cbegin(), i_end = encounterRateFrequencyMaps.cend(); i != i_end; i++) {
+        int frequency = 0;
+        int rate = 1;
+        const QMap<int, int> frequencyMap = i.value();
+        // Iterate over frequency map (encounter rate to number of occurrences)...
+        for (auto j = frequencyMap.cbegin(), j_end = frequencyMap.cend(); j != j_end; j++) {
+            if (j.value() > frequency) {
+                frequency = j.value();
+                rate = j.key();
+            }
+        }
+        setDefaultEncounterRate(i.key(), rate);
     }
 
     return true;

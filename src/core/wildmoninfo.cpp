@@ -1,12 +1,15 @@
 #include "wildmoninfo.h"
 #include "montabwidget.h"
 
-
+QMap<QString, int> defaultEncounterRates;
+void setDefaultEncounterRate(QString fieldName, int rate) {
+    defaultEncounterRates[fieldName] = rate;
+}
 
 WildMonInfo getDefaultMonInfo(EncounterField field) {
     WildMonInfo newInfo;
     newInfo.active = true;
-    newInfo.encounterRate = 0;
+    newInfo.encounterRate = defaultEncounterRates.value(field.name, 1);
 
     int size = field.encounterRates.size();
     while (size--)
