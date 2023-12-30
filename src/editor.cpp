@@ -2167,13 +2167,12 @@ bool Editor::eventLimitReached(Event::Type event_type) {
 }
 
 void Editor::openMapScripts() const {
-    const QString scriptPath = project->getMapScriptsFilePath(map->name);
-    openInTextEditor(scriptPath);
+    openInTextEditor(map->getScriptsFilePath());
 }
 
 void Editor::openScript(const QString &scriptLabel) const {
     // Find the location of scriptLabel.
-    QStringList scriptPaths(project->getMapScriptsFilePath(map->name));
+    QStringList scriptPaths(map->getScriptsFilePath());
     scriptPaths << project->getEventScriptsFilePaths();
     int lineNum = 0;
     QString scriptPath = scriptPaths.first();
