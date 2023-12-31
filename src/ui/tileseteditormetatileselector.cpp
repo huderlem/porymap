@@ -69,9 +69,9 @@ QImage TilesetEditorMetatileSelector::buildImage(int metatileIdStart, int numMet
 
 void TilesetEditorMetatileSelector::draw() {
     this->setPixmap(QPixmap::fromImage(this->buildAllMetatilesImage()));
+    this->drawGrid();
     this->drawSelection();
-
-    drawFilters();
+    this->drawFilters();
 }
 
 bool TilesetEditorMetatileSelector::select(uint16_t metatileId) {
@@ -166,23 +166,27 @@ QPoint TilesetEditorMetatileSelector::getMetatileIdCoordsOnWidget(uint16_t metat
     return pos;
 }
 
-void TilesetEditorMetatileSelector::drawFilters() {
-    if (this->showGrid) {
-        QPixmap pixmap = this->pixmap();
-        QPainter painter(&pixmap);
-        const int numColumns = this->numMetatilesWide;
-        const int numRows = this->numRows();
-        for (int column = 1; column < numColumns; column++) {
-            int x = column * 32;
-            painter.drawLine(x, 0, x, numRows * 32);
-        }
-        for (int row = 1; row < numRows; row++) {
-            int y = row * 32;
-            painter.drawLine(0, y, numColumns * 32, y);
-        }
-        painter.end();
-        this->setPixmap(pixmap);
+void TilesetEditorMetatileSelector::drawGrid() {
+    if (!this->showGrid)
+        return;
+
+    QPixmap pixmap = this->pixmap();
+    QPainter painter(&pixmap);
+    const int numColumns = this->numMetatilesWide;
+    const int numRows = this->numRows();
+    for (int column = 1; column < numColumns; column++) {
+        int x = column * 32;
+        painter.drawLine(x, 0, x, numRows * 32);
     }
+    for (int row = 1; row < numRows; row++) {
+        int y = row * 32;
+        painter.drawLine(0, y, numColumns * 32, y);
+    }
+    painter.end();
+    this->setPixmap(pixmap);
+}
+
+void TilesetEditorMetatileSelector::drawFilters() {
     if (selectorShowUnused) {
         drawUnused();
     }

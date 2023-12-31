@@ -42,6 +42,7 @@ private:
     bool shouldAcceptEvent(QGraphicsSceneMouseEvent*);
     int numRows(int numMetatiles);
     int numRows();
+    void drawGrid();
     void drawFilters();
     void drawUnused();
     void drawCounts();
