@@ -288,22 +288,39 @@ void ObjectEvent::loadPixmap(Project *project) {
         this->usingSprite = false;
     } else {
         this->setFrameFromMovement(project->facingDirections.value(this->movement));
-        this->setPixmapFromSpritesheet(eventGfx->spritesheet, eventGfx->spriteWidth, eventGfx->spriteHeight, eventGfx->inanimate);
+        this->setPixmapFromSpritesheet(eventGfx);
     }
 }
 
-void ObjectEvent::setPixmapFromSpritesheet(QImage spritesheet, int spriteWidth, int spriteHeight, bool inanimate)
+void ObjectEvent::setPixmapFromSpritesheet(EventGraphics * gfx)
 {
-    int frame = inanimate ? 0 : this->frame;
-    QImage img = spritesheet.copy(frame * spriteWidth % spritesheet.width(), 0, spriteWidth, spriteHeight);
-    if (this->hFlip && !inanimate) {
-        img = img.transformed(QTransform().scale(-1, 1));
+    QImage img;
+    if (gfx->inanimate) {
+        img = gfx->spritesheet.copy(0, 0, gfx->spriteWidth, gfx->spriteHeight);
+    } else {
+        int x = 0;
+        int y = 0;
+
+        // Get frame's position in spritesheet.
+        // Assume horizontal layout. If position would exceed sheet width, try vertical layout.
+        if ((this->frame + 1) * gfx->spriteWidth <= gfx->spritesheet.width()) {
+            x = this->frame * gfx->spriteWidth;
+        } else if ((this->frame + 1) * gfx->spriteHeight <= gfx->spritesheet.height()) {
+            y = this->frame * gfx->spriteHeight;
+        }
+
+        img = gfx->spritesheet.copy(x, y, gfx->spriteWidth, gfx->spriteHeight);
+
+        // Right-facing sprite is just the left-facing sprite mirrored
+        if (this->hFlip) {
+            img = img.transformed(QTransform().scale(-1, 1));
+        }
     }
     // Set first palette color fully transparent.
     img.setColor(0, qRgba(0, 0, 0, 0));
     pixmap = QPixmap::fromImage(img);
-    this->spriteWidth = spriteWidth;
-    this->spriteHeight = spriteHeight;
+    this->spriteWidth = gfx->spriteWidth;
+    this->spriteHeight = gfx->spriteHeight;
     this->usingSprite = true;
 }
 
@@ -435,7 +452,7 @@ void CloneObjectEvent::loadPixmap(Project *project) {
         this->usingSprite = false;
     } else {
         this->setFrameFromMovement(project->facingDirections.value(this->movement));
-        this->setPixmapFromSpritesheet(eventGfx->spritesheet, eventGfx->spriteWidth, eventGfx->spriteHeight, eventGfx->inanimate);
+        this->setPixmapFromSpritesheet(eventGfx);
     }
 }
 

@@ -42,6 +42,13 @@ public:
     virtual void visitSign(SignEvent *) = 0;
 };
 
+struct EventGraphics
+{
+    QImage spritesheet;
+    int spriteWidth;
+    int spriteHeight;
+    bool inanimate;
+};
 
 
 ///
@@ -258,7 +265,7 @@ public:
 
 public:
     void setFrameFromMovement(QString movement);
-    void setPixmapFromSpritesheet(QImage, int, int, bool);
+    void setPixmapFromSpritesheet(EventGraphics * gfx);
 
 
 protected:
