@@ -3021,7 +3021,13 @@
     <property name="title">
      <string>File</string>
     </property>
+    <widget class="QMenu" name="menuOpen_Recent_Project">
+     <property name="title">
+      <string>Open Recent Project</string>
+     </property>
+    </widget>
     <addaction name="action_Open_Project"/>
+    <addaction name="menuOpen_Recent_Project"/>
     <addaction name="action_Reload_Project"/>
     <addaction name="action_Save"/>
     <addaction name="action_Save_Project"/>

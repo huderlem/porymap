@@ -65,12 +65,8 @@ MainWindow::MainWindow(QWidget *parent) :
     cleanupLargeLog();
 
     this->initWindow();
-    if (!this->openRecentProject()) {
-        setWindowDisabled(true);
-    } else {
-        setWindowDisabled(false);
+    if (this->openRecentProject())
         on_toolButton_Paint_clicked();
-    }
 
     // there is a bug affecting macOS users, where the trackpad deilveres a bad touch-release gesture
     // the warning is a bit annoying, so it is disabled here
@@ -93,6 +89,8 @@ void MainWindow::setWindowDisabled(bool disabled) {
     ui->menuBar->setDisabled(false);
     ui->menuFile->setDisabled(false);
     ui->action_Open_Project->setDisabled(false);
+    ui->menuOpen_Recent_Project->setDisabled(false);
+    refreshRecentProjectsMenu();
     ui->action_Exit->setDisabled(false);
     ui->menuHelp->setDisabled(false);
     ui->actionAbout_Porymap->setDisabled(false);
@@ -506,6 +504,7 @@ bool MainWindow::openRecentProject() {
 bool MainWindow::openProject(QString dir) {
     if (dir.isNull()) {
         projectOpenFailure = true;
+        setWindowDisabled(true);
         return false;
     }
 
@@ -553,11 +552,15 @@ bool MainWindow::openProject(QString dir) {
                 .arg(getLogPath())
                 .arg(getMostRecentError());
         msgBox.critical(nullptr, "Error Opening Project", errorMsg);
+        setWindowDisabled(true);
         return false;
     }
     
     showWindowTitle();
     this->statusBar()->showMessage(QString("Opened project %1").arg(nativeDir));
+
+    porymapConfig.addRecentProject(dir);
+    refreshRecentProjectsMenu();
 
     prefab.initPrefabUI(
                 editor->metatile_selector_item,
@@ -565,6 +568,7 @@ bool MainWindow::openProject(QString dir) {
                 ui->label_prefabHelp,
                 editor->map);
     Scripting::cb_ProjectOpened(dir);
+    setWindowDisabled(false);
     return true;
 }
 
@@ -599,6 +603,36 @@ bool MainWindow::setInitialMap() {
     return false;
 }
 
+void MainWindow::refreshRecentProjectsMenu() {
+    ui->menuOpen_Recent_Project->clear();
+    QStringList recentProjects = porymapConfig.getRecentProjects();
+
+    if (isProjectOpen()) {
+        // Don't show the currently open project in this menu
+        recentProjects.removeOne(this->editor->project->root);
+    }
+
+    // Add project paths to menu. Arbitrary limit of 10 items.
+    const int numItems = qMin(10, recentProjects.length());
+    for (int i = 0; i < numItems; i++) {
+        const QString path = recentProjects.at(i);
+        ui->menuOpen_Recent_Project->addAction(path, [this, path](){
+           this->openProject(path);
+        });
+    }
+
+    // Add action to clear list of paths
+    if (!recentProjects.isEmpty()) ui->menuOpen_Recent_Project->addSeparator();
+    QAction *clearAction = ui->menuOpen_Recent_Project->addAction("Clear Items", [this](){
+        QStringList paths = QStringList();
+        if (isProjectOpen())
+            paths.append(this->editor->project->root);
+        porymapConfig.setRecentProjects(paths);
+        this->refreshRecentProjectsMenu();
+    });
+    clearAction->setEnabled(!recentProjects.isEmpty());
+}
+
 void MainWindow::openSubWindow(QWidget * window) {
     if (!window) return;
 
@@ -628,8 +662,7 @@ void MainWindow::on_action_Open_Project_triggered()
             Scripting::cb_ProjectClosed(this->editor->project->root);
             this->ui->graphicsView_Map->clearOverlayMap();
         }
-        porymapConfig.setRecentProject(dir);
-        setWindowDisabled(!openProject(dir));
+        openProject(dir);
     }
 }
 
@@ -642,10 +675,8 @@ void MainWindow::on_action_Reload_Project_triggered() {
     warning.setDefaultButton(QMessageBox::Cancel);
     warning.setIcon(QMessageBox::Warning);
 
-    if (warning.exec() == QMessageBox::Ok) {
-        if (!openProject(editor->project->root))
-            setWindowDisabled(true);
-    }
+    if (warning.exec() == QMessageBox::Ok)
+        openProject(editor->project->root);
 }
 
 bool MainWindow::setMap(QString map_name, bool scrollTreeView) {

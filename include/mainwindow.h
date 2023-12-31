@@ -354,6 +354,7 @@ private:
     bool setInitialMap();
     void setRecentMap(QString map_name);
     QStandardItem* createMapItem(QString mapName, int groupNum, int inGroupNum);
+    void refreshRecentProjectsMenu();
 
     void drawMapListIcons(QAbstractItemModel *model);
     void updateMapList();
