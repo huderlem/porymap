@@ -10,6 +10,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ### Added
 - Add an editor window under `Options -> Project Settings...` to customize the project-specific settings in `porymap.project.cfg` and `porymap.user.cfg`.
 - Add an editor window under `Options -> Custom Scripts...` for Porymap's API scripts.
+- Add an `Open Recent Project` menu
 - Add a warning to warp events if they're on an incomaptible metatile behavior.
 - Add settings for custom images, including the collision graphics, default event icons, and pokémon icons.
 - Add settings to override any symbol or macro names Porymap expects to find.
@@ -19,6 +20,8 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Support for 8bpp tileset tile images.
 
 ### Changed
+- `Script` dropdowns now include scripts from the current map's scripts file.
+- Encouter Rate now defaults to the most commonly used value, rather than 0.
 - The Collision tab now allows selection of any valid elevation/collision value.
 - The Palette Editor now remembers the Bit Depth setting.
 - The min/max levels on the Wild Pokémon tab will now adjust automatically if they invalidate each other.
@@ -45,6 +48,8 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix Porymap reporting errors for macros it doesn't use.
 - Fix painting on the Collision tab with the opacity slider at 0 painting metatiles.
 - Fix crashes when File->Reload Project fails.
+- Fix overworld sprite facing directions if spritesheet has vertical layout.
+- Stop reporting `Error: Interrupted` for custom scripts during project reopen
 
 ## [5.1.1] - 2023-02-20
 ### Added
