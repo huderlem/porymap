@@ -367,14 +367,16 @@ void ObjectFrame::populate(Project *project) {
     this->combo_flag->addItems(project->flagNames);
     this->combo_trainer_type->addItems(project->trainerTypes);
 
-    QStringList scriptLabels = this->object->getMap()->eventScriptLabels() + project->getGlobalScriptLabels();
-    scriptLabels.removeDuplicates();
-
+    // The script dropdown is populated with scripts used by the map's events and from its scripts file.
+    QStringList scriptLabels;
     if (this->object->getMap()) {
-        const auto localScriptLabels = this->object->getMap()->eventScriptLabels();
-        this->combo_script->addItems(localScriptLabels);
+        scriptLabels.append(this->object->getMap()->getScriptLabels());
+        this->combo_script->addItems(scriptLabels);
     }
 
+    // The dropdown's autocomplete has all script labels across the full project.
+    scriptLabels.append(project->getGlobalScriptLabels());
+    scriptLabels.removeDuplicates();
     this->scriptCompleter = new QCompleter(scriptLabels, this);
     this->scriptCompleter->setCaseSensitivity(Qt::CaseInsensitive);
     this->scriptCompleter->setFilterMode(Qt::MatchContains);
@@ -635,15 +637,16 @@ void TriggerFrame::populate(Project *project) {
     // var combo
     this->combo_var->addItems(project->varNames);
 
-    // script
-    QStringList scriptLabels = this->trigger->getMap()->eventScriptLabels() + project->getGlobalScriptLabels();
-    scriptLabels.removeDuplicates();
-
+    // The script dropdown is populated with scripts used by the map's events and from its scripts file.
+    QStringList scriptLabels;
     if (this->trigger->getMap()) {
-        const auto localScriptLabels = this->trigger->getMap()->eventScriptLabels();
-        this->combo_script->addItems(localScriptLabels);
+        scriptLabels.append(this->trigger->getMap()->getScriptLabels());
+        this->combo_script->addItems(scriptLabels);
     }
 
+    // The dropdown's autocomplete has all script labels across the full project.
+    scriptLabels.append(project->getGlobalScriptLabels());
+    scriptLabels.removeDuplicates();
     this->scriptCompleter = new QCompleter(scriptLabels, this);
     this->scriptCompleter->setCaseSensitivity(Qt::CaseInsensitive);
     this->scriptCompleter->setFilterMode(Qt::MatchContains);
@@ -769,15 +772,16 @@ void SignFrame::populate(Project *project) {
     // facing dir
     this->combo_facing_dir->addItems(project->bgEventFacingDirections);
 
-    // script
-    QStringList scriptLabels = this->sign->getMap()->eventScriptLabels() + project->getGlobalScriptLabels();
-    scriptLabels.removeDuplicates();
-
+    // The script dropdown is populated with scripts used by the map's events and from its scripts file.
+    QStringList scriptLabels;
     if (this->sign->getMap()) {
-        const auto localScriptLabels = this->sign->getMap()->eventScriptLabels();
-        this->combo_script->addItems(localScriptLabels);
+        scriptLabels.append(this->sign->getMap()->getScriptLabels());
+        this->combo_script->addItems(scriptLabels);
     }
 
+    // The dropdown's autocomplete has all script labels across the full project.
+    scriptLabels.append(project->getGlobalScriptLabels());
+    scriptLabels.removeDuplicates();
     this->scriptCompleter = new QCompleter(scriptLabels, this);
     this->scriptCompleter->setCaseSensitivity(Qt::CaseInsensitive);
     this->scriptCompleter->setFilterMode(Qt::MatchContains);

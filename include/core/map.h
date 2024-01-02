@@ -53,6 +53,7 @@ public:
     QString battle_scene;
     QString sharedEventsMap = "";
     QString sharedScriptsMap = "";
+    QStringList scriptsFileLabels;
     QMap<QString, QJsonValue> customHeaders;
     MapLayout *layout;
     bool isPersistedToFile = true;
@@ -70,6 +71,7 @@ public:
     QList<MapConnection*> connections;
     QList<int> metatileLayerOrder;
     QList<float> metatileLayerOpacity;
+
     void setName(QString mapName);
     static QString mapConstantFromName(QString mapName, bool includePrefix = true);
     int getWidth();
@@ -92,7 +94,7 @@ public:
     void _floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
     void magicFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
     QList<Event *> getAllEvents() const;
-    QStringList eventScriptLabels(Event::Group group = Event::Group::None) const;
+    QStringList getScriptLabels(Event::Group group = Event::Group::None) const;
     void removeEvent(Event *);
     void addEvent(Event *);
     QPixmap renderConnection(MapConnection, MapLayout *);
@@ -105,6 +107,7 @@ public:
     bool isWithinBounds(int x, int y);
     bool isWithinBorderBounds(int x, int y);
     void openScript(QString label);
+    QString getScriptsFilePath() const;
 
     MapPixmapItem *mapItem = nullptr;
     void setMapItem(MapPixmapItem *item) { mapItem = item; }

@@ -27,6 +27,7 @@ Map::~Map() {
 void Map::setName(QString mapName) {
     name = mapName;
     constantName = mapConstantFromName(mapName);
+    scriptsFileLabels = ParseUtil::getGlobalScriptLabels(this->getScriptsFilePath());
 }
 
 QString Map::mapConstantFromName(QString mapName, bool includePrefix) {
@@ -462,9 +463,10 @@ QList<Event *> Map::getAllEvents() const {
     return all_events;
 }
 
-QStringList Map::eventScriptLabels(Event::Group group) const {
+QStringList Map::getScriptLabels(Event::Group group) const {
     QStringList scriptLabels;
 
+    // Get script labels currently in-use by the map's events
     if (group == Event::Group::None) {
         ScriptTracker scriptTracker;
         for (Event *event : this->getAllEvents()) {
@@ -479,12 +481,28 @@ QStringList Map::eventScriptLabels(Event::Group group) const {
         scriptLabels = scriptTracker.getScripts();
     }
 
-    scriptLabels.removeAll("");
+    // Add scripts from map's scripts file, and empty names.
+    scriptLabels.append(scriptsFileLabels);
     scriptLabels.prepend("0x0");
     scriptLabels.prepend("NULL");
+
+    scriptLabels.removeAll("");
     scriptLabels.removeDuplicates();
 
     return scriptLabels;
+}
+
+QString Map::getScriptsFilePath() const {
+    const bool usePoryscript = projectConfig.getUsePoryScript();
+    auto path = QDir::cleanPath(QString("%1/%2/%3/scripts")
+                                        .arg(projectConfig.getProjectDir())
+                                        .arg(projectConfig.getFilePath(ProjectFilePath::data_map_folders))
+                                        .arg(this->name));
+    auto extension = Project::getScriptFileExtension(usePoryscript);
+    if (usePoryscript && !QFile::exists(path + extension))
+        extension = Project::getScriptFileExtension(false);
+    path += extension;
+    return path;
 }
 
 void Map::removeEvent(Event *event) {

@@ -2425,7 +2425,7 @@ QString Project::fixGraphicPath(QString path) {
     return path;
 }
 
-QString Project::getScriptFileExtension(bool usePoryScript) const {
+QString Project::getScriptFileExtension(bool usePoryScript) {
     if(usePoryScript) {
         return ".pory";
     } else {
@@ -2438,16 +2438,6 @@ QString Project::getScriptDefaultString(bool usePoryScript, QString mapName) con
         return QString("mapscripts %1_MapScripts {}\n").arg(mapName);
     else
         return QString("%1_MapScripts::\n\t.byte 0\n").arg(mapName);
-}
-
-QString Project::getMapScriptsFilePath(const QString &mapName) const {
-    const bool usePoryscript = projectConfig.getUsePoryScript();
-    auto path = QDir::cleanPath(root + "/" + projectConfig.getFilePath(ProjectFilePath::data_map_folders) + "/" + mapName + "/scripts");
-    auto extension = getScriptFileExtension(usePoryscript);
-    if (usePoryscript && !QFile::exists(path + extension))
-        extension = getScriptFileExtension(false);
-    path += extension;
-    return path;
 }
 
 QStringList Project::getEventScriptsFilePaths() const {
