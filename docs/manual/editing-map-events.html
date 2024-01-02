@@ -1,49 +1,89 @@
-<!DOCTYPE html>
-<html class="writer-html5" lang="en" >
-<head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Editing Map Events &mdash; porymap  documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
-    <link rel="shortcut icon" href="../_static/porymap-icon-2.ico"/>
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
   
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
-    <script src="../_static/js/theme.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Editing Map Events &mdash; porymap  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/porymap-icon-2.ico"/>
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Editing Map Headers" href="editing-map-header.html" />
     <link rel="prev" title="Editing Map Collisions" href="editing-map-collisions.html" /> 
 </head>
 
-<body class="wy-body-for-nav"> 
+<body class="wy-body-for-nav">
+
+   
   <div class="wy-grid-for-nav">
+    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search"  style="background: linear-gradient(180deg, #08ACD5 50%, #FF6262 0%);" >
+          
 
           
+            <a href="../index.html" class="icon icon-home"> porymap
           
-          <a href="../index.html" class="icon icon-home">
-            porymap
+
+          
           </a>
+
+          
+            
+            
+          
+
+          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">User Manual</span></p>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Manual</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="introduction.html#about-porymap">About Porymap</a></li>
@@ -137,26 +177,11 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="scripting-capabilities.html">Scripting Capabilities</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="scripting-capabilities.html#custom-scripts-editor">Custom Scripts Editor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="scripting-capabilities.html#writing-a-custom-script">Writing a Custom Script</a></li>
 <li class="toctree-l2"><a class="reference internal" href="scripting-capabilities.html#registering-script-actions">Registering Script Actions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="scripting-capabilities.html#scripting-api">Scripting API</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="scripting-capabilities.html#callbacks">Callbacks</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onProjectOpened"><code class="docutils literal notranslate"><span class="pre">onProjectOpened</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onProjectClosed"><code class="docutils literal notranslate"><span class="pre">onProjectClosed</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onMapOpened"><code class="docutils literal notranslate"><span class="pre">onMapOpened</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onBlockChanged"><code class="docutils literal notranslate"><span class="pre">onBlockChanged</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onBorderMetatileChanged"><code class="docutils literal notranslate"><span class="pre">onBorderMetatileChanged</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onBlockHoverChanged"><code class="docutils literal notranslate"><span class="pre">onBlockHoverChanged</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onBlockHoverCleared"><code class="docutils literal notranslate"><span class="pre">onBlockHoverCleared</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onMapResized"><code class="docutils literal notranslate"><span class="pre">onMapResized</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onBorderResized"><code class="docutils literal notranslate"><span class="pre">onBorderResized</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onMapShifted"><code class="docutils literal notranslate"><span class="pre">onMapShifted</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onTilesetUpdated"><code class="docutils literal notranslate"><span class="pre">onTilesetUpdated</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onMainTabChanged"><code class="docutils literal notranslate"><span class="pre">onMainTabChanged</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onMapViewTabChanged"><code class="docutils literal notranslate"><span class="pre">onMapViewTabChanged</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#onBorderVisibilityToggled"><code class="docutils literal notranslate"><span class="pre">onBorderVisibilityToggled</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="scripting-capabilities.html#callbacks">Callbacks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="scripting-capabilities.html#functions">Functions</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#map-editing-functions">Map Editing Functions</a></li>
 <li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#map-header-editing-functions">Map Header Editing Functions</a></li>
@@ -166,19 +191,7 @@
 <li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#utility-functions">Utility Functions</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="scripting-capabilities.html#constants">Constants</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#constants.max_primary_tiles"><code class="docutils literal notranslate"><span class="pre">constants.max_primary_tiles</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#constants.max_secondary_tiles"><code class="docutils literal notranslate"><span class="pre">constants.max_secondary_tiles</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#constants.max_primary_metatiles"><code class="docutils literal notranslate"><span class="pre">constants.max_primary_metatiles</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#constants.max_secondary_metatiles"><code class="docutils literal notranslate"><span class="pre">constants.max_secondary_metatiles</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#constants.layers_per_metatile"><code class="docutils literal notranslate"><span class="pre">constants.layers_per_metatile</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#constants.tiles_per_metatile"><code class="docutils literal notranslate"><span class="pre">constants.tiles_per_metatile</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#constants.base_game_version"><code class="docutils literal notranslate"><span class="pre">constants.base_game_version</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#constants.version.major"><code class="docutils literal notranslate"><span class="pre">constants.version.major</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#constants.version.minor"><code class="docutils literal notranslate"><span class="pre">constants.version.minor</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="scripting-capabilities.html#constants.version.patch"><code class="docutils literal notranslate"><span class="pre">constants.version.patch</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="scripting-capabilities.html#constants">Constants</a></li>
 </ul>
 </li>
 </ul>
@@ -190,437 +203,477 @@
 <li class="toctree-l2"><a class="reference internal" href="shortcuts.html#region-map-editor">Region Map Editor</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="settings-and-options.html">Porymap Settings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="settings-and-options.html">Porymap Settings</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="settings-and-options.html#global-settings">Global settings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="settings-and-options.html#project-settings">Project settings</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="settings-and-options.html#general">General</a></li>
+<li class="toctree-l3"><a class="reference internal" href="settings-and-options.html#maps">Maps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="settings-and-options.html#tilesets">Tilesets</a></li>
+<li class="toctree-l3"><a class="reference internal" href="settings-and-options.html#events">Events</a></li>
+<li class="toctree-l3"><a class="reference internal" href="settings-and-options.html#files-identifiers">Files &amp; Identifiers</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../reference/changelog.html">Changelog</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#unreleased">Unreleased</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#added">Added</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#changed">Changed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#fixed">Fixed</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id1">5.1.1 - 2023-02-20</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#added">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id2">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id3">Fixed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id2">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id3">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id4">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id4">5.1.0 - 2023-01-22</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id5">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id6">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id7">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id5">5.1.0 - 2023-01-22</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id6">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id7">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id8">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id8">5.0.0 - 2022-10-30</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id9">5.0.0 - 2022-10-30</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#breaking-changes">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id9">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id10">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id11">Fixed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id10">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id11">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id12">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id12">4.5.0 - 2021-12-26</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id13">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id14">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id15">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id13">4.5.0 - 2021-12-26</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id14">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id15">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id16">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id16">4.4.0 - 2020-12-20</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id17">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id18">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id19">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id17">4.4.0 - 2020-12-20</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id18">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id19">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id20">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id20">4.3.1 - 2020-07-17</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id21">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id22">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id23">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id21">4.3.1 - 2020-07-17</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id22">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id23">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id24">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id24">4.3.0 - 2020-06-27</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id25">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id26">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id27">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id25">4.3.0 - 2020-06-27</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id26">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id27">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id28">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id28">4.2.0 - 2020-06-06</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id29">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id30">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id31">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id29">4.2.0 - 2020-06-06</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id30">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id31">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id32">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id32">4.1.0 - 2020-05-18</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id33">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id34">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id35">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id33">4.1.0 - 2020-05-18</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id34">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id35">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id36">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id36">4.0.0 - 2020-04-28</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id37">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id38">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id39">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id40">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id37">4.0.0 - 2020-04-28</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id38">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id39">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id40">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id41">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id41">3.0.1 - 2020-03-04</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id42">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id42">3.0.1 - 2020-03-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id43">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id43">3.0.0 - 2020-03-04</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id44">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id45">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id46">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id47">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id44">3.0.0 - 2020-03-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id45">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id46">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id47">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id48">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id48">2.0.0 - 2019-10-16</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id49">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id50">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id51">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id52">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id49">2.0.0 - 2019-10-16</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id50">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id51">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id52">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id53">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id53">1.2.2 - 2019-05-16</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id54">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id55">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id56">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id54">1.2.2 - 2019-05-16</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id55">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id56">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id57">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id57">1.2.1 - 2019-02-16</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id58">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id59">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id58">1.2.1 - 2019-02-16</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id59">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id60">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id60">1.2.0 - 2019-02-04</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id61">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id62">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id63">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id64">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id61">1.2.0 - 2019-02-04</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id62">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id63">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id64">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id65">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id65">1.1.0 - 2018-12-27</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id66">Breaking Changes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id67">Added</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id68">Changed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id69">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id66">1.1.0 - 2018-12-27</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id67">Breaking Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id68">Added</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id69">Changed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/changelog.html#id70">Fixed</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id70">1.0.0 - 2018-10-26</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/changelog.html#id71">1.0.0 - 2018-10-26</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/related-projects.html">Related Projects</a></li>
 </ul>
 
+            
+          
         </div>
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: linear-gradient(180deg, #08ACD5 50%, #FF6262 0%);" >
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">porymap</a>
+        
       </nav>
 
+
       <div class="wy-nav-content">
+        
         <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Editing Map Events</li>
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Editing Map Events</li>
+    
+    
       <li class="wy-breadcrumbs-aside">
+        
+            
+            
               <a href="https://github.com/huderlem/porymap/blob/master/docsrc/manual/editing-map-events.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-             
-  <section id="editing-map-events">
-<h1>Editing Map Events<a class="headerlink" href="#editing-map-events" title="Permalink to this heading"></a></h1>
+            
+  <div class="section" id="editing-map-events">
+<h1>Editing Map Events<a class="headerlink" href="#editing-map-events" title="Permalink to this headline">¶</a></h1>
 <p>Events are what bring your maps to life.  They include NPCs, signposts, warps, scripts, and more.  Open the <em>Events</em> tab above the map area, and let’s dissect what’s going on.</p>
-<figure class="align-default" id="id2">
+<div class="figure" id="id2">
 <img alt="Map Events View" src="../_images/map-events.png" />
-<figcaption>
-<p><span class="caption-text">Map Events View</span><a class="headerlink" href="#id2" title="Permalink to this image"></a></p>
-</figcaption>
-</figure>
-<p>All of the events are visible on the map.  The Event Details window on the right displays the properties of the currently-selected event.  If you look closely, you’ll see that the woman NPC near the Pokémon Center has a pink border around it because it’s selected.  To select a different event, simply click on an event in the map area.  Alternatively, you can use the spinner at the top of the event properties window.  Multiple events can be selected at the same time by holding <code class="docutils literal notranslate"><span class="pre">Ctrl</span></code> and clicking another event.</p>
-<figure class="align-default" id="id3">
-<img alt="Event Id Spinner" src="../_images/event-id-spinner.png" />
-<figcaption>
-<p><span class="caption-text">Event Id Spinner</span><a class="headerlink" href="#id3" title="Permalink to this image"></a></p>
-</figcaption>
-</figure>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>There is currently no undo/redo functionality when editing events!  Use Git version control!</p>
+<p class="caption"><span class="caption-text">Map Events View</span></p>
 </div>
-<section id="adding-deleting-events">
-<h2>Adding &amp; Deleting Events<a class="headerlink" href="#adding-deleting-events" title="Permalink to this heading"></a></h2>
+<p>All of the events are visible on the map.  The Event Details window on the right displays the properties of the currently-selected event.  If you look closely, you’ll see that the woman NPC near the Pokémon Center has a pink border around it because it’s selected.  To select a different event, simply click on an event in the map area.  Alternatively, you can use the spinner at the top of the event properties window.  Multiple events can be selected at the same time by holding <code class="docutils literal notranslate"><span class="pre">Ctrl</span></code> and clicking another event.</p>
+<div class="figure" id="id3">
+<img alt="Event Id Spinner" src="../_images/event-id-spinner.png" />
+<p class="caption"><span class="caption-text">Event Id Spinner</span></p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">There is currently no undo/redo functionality when editing events!  Use Git version control!</p>
+</div>
+<div class="section" id="adding-deleting-events">
+<h2>Adding &amp; Deleting Events<a class="headerlink" href="#adding-deleting-events" title="Permalink to this headline">¶</a></h2>
 <p>To add a new event, press the green plus button. <img alt="add-event-button" src="../_images/add-event-button.png" />  You can choose between the different types of events by clicking the small arrow on the right. You can also duplicate any currently selected events with <code class="docutils literal notranslate"><span class="pre">Ctrl+D</span></code>.</p>
 <p>To delete the selected event, press the delete button. <img alt="delete-event-button" src="../_images/delete-event-button.png" /></p>
-</section>
-<section id="event-positions">
-<h2>Event Positions<a class="headerlink" href="#event-positions" title="Permalink to this heading"></a></h2>
+</div>
+<div class="section" id="event-positions">
+<h2>Event Positions<a class="headerlink" href="#event-positions" title="Permalink to this headline">¶</a></h2>
 <p>All events have X/Y coordinates.  To move an Event, click and drag it to a new position on the map.  Alternatively, you can use the X and Y spinners in the event properties.</p>
-<figure class="align-default" id="id4">
+<div class="figure" id="id4">
 <img alt="Event Coordinates Spinners" src="../_images/event-coords-spinners.png" />
-<figcaption>
-<p><span class="caption-text">Event Coordinates Spinners</span><a class="headerlink" href="#id4" title="Permalink to this image"></a></p>
-</figcaption>
-</figure>
+<p class="caption"><span class="caption-text">Event Coordinates Spinners</span></p>
+</div>
 <p>Events also have an elevation, also known as Z coordinates (see image above).  Elevations are explained in detail in the <a class="reference internal" href="editing-map-collisions.html#collision-types"><span class="std std-ref">Collision Types</span></a> section.</p>
 <p>Next, we’ll cover each type of event in detail.</p>
-</section>
-<section id="object-events">
-<h2>Object Events<a class="headerlink" href="#object-events" title="Permalink to this heading"></a></h2>
+</div>
+<div class="section" id="object-events">
+<h2>Object Events<a class="headerlink" href="#object-events" title="Permalink to this headline">¶</a></h2>
 <p>Object events are typically used for NPCs (non-player-characters).  More technically, it’s any event that has a sprite and the ability to move around.  Object events are displayed using their assigned sprite, except for special cases.  Any object event that uses a dynamic sprite will be displayed as a blue square with an <cite>N</cite> <img alt="dynamic-sprite" src="../_images/dynamic-sprite.png" />.  Some examples of dynamic sprites are the player’s rival and berry trees.</p>
-<figure class="align-default" id="id5">
+<div class="figure" id="id5">
 <img alt="Object Event Properties" src="../_images/event-object.png" />
-<figcaption>
-<p><span class="caption-text">Object Event Properties</span><a class="headerlink" href="#id5" title="Permalink to this image"></a></p>
-</figcaption>
-</figure>
-<dl class="simple">
-<dt>Id</dt><dd><p>This is the local id of the object in the map.  Some script values use this local id to specify an object when using scripting commands such as <cite>applymovement</cite>.</p>
-</dd>
-<dt>Sprite</dt><dd><p>The sprite that is used by the object.</p>
-</dd>
-<dt>Movement</dt><dd><p>The movement type used by the object during normal gameplay.</p>
-</dd>
-<dt>Movement Radius X/Y</dt><dd><p>Movement types that involves walking or moving around the map can be bounded by a radius.  The ensures that the object is always within the specified range from its original position.</p>
-</dd>
-<dt>Script</dt><dd><p>The script that executes when the player interacts with the object.</p>
-</dd>
-<dt>Event Flag</dt><dd><p>The flag value that controls if the object is visible.  If the flag is set (equal to 1), then the object will be invisible.  If the Event Flag is set to <cite>0</cite>, then the object will always be visible because <cite>0</cite> means “no flag”.</p>
-</dd>
-<dt>Trainer Type</dt><dd><p>The trainer type used by the object. If the object is a trainer, <cite>TRAINER_TYPE_NORMAL</cite> means that the trainer will spot the player in the object’s line-of-sight.</p>
-</dd>
-<dt>Sight Radius or Berry Tree ID</dt><dd><p>If the object is a trainer, this property control how many tiles the trainer can see to spot the player for battle.  If the object is a berry tree, this specifies the global id of the berry tree.  Each berry tree in the game has a unique berry tree id.</p>
-</dd>
+<p class="caption"><span class="caption-text">Object Event Properties</span></p>
+</div>
+<dl class="docutils">
+<dt>Id</dt>
+<dd>This is the local id of the object in the map.  Some script values use this local id to specify an object when using scripting commands such as <cite>applymovement</cite>.</dd>
+<dt>Sprite</dt>
+<dd>The sprite that is used by the object.</dd>
+<dt>Movement</dt>
+<dd>The movement type used by the object during normal gameplay.</dd>
+<dt>Movement Radius X/Y</dt>
+<dd>Movement types that involves walking or moving around the map can be bounded by a radius.  The ensures that the object is always within the specified range from its original position.</dd>
+<dt>Script</dt>
+<dd>The script that executes when the player interacts with the object.</dd>
+<dt>Event Flag</dt>
+<dd>The flag value that controls if the object is visible.  If the flag is set (equal to 1), then the object will be invisible.  If the Event Flag is set to <cite>0</cite>, then the object will always be visible because <cite>0</cite> means “no flag”.</dd>
+<dt>Trainer Type</dt>
+<dd>The trainer type used by the object. If the object is a trainer, <cite>TRAINER_TYPE_NORMAL</cite> means that the trainer will spot the player in the object’s line-of-sight.</dd>
+<dt>Sight Radius or Berry Tree ID</dt>
+<dd>If the object is a trainer, this property control how many tiles the trainer can see to spot the player for battle.  If the object is a berry tree, this specifies the global id of the berry tree.  Each berry tree in the game has a unique berry tree id.</dd>
 </dl>
-</section>
-<section id="clone-object-events">
-<h2>Clone Object Events<a class="headerlink" href="#clone-object-events" title="Permalink to this heading"></a></h2>
+</div>
+<div class="section" id="clone-object-events">
+<h2>Clone Object Events<a class="headerlink" href="#clone-object-events" title="Permalink to this headline">¶</a></h2>
 <p>Clone Object events are a special type of object that inherits its properties from another Object event. They are used in-game to load objects that are visible in the connecting area of adjacent maps. The targeted object to clone is specified by id and map name. If the targeted object does not exist, or it’s also a clone, the sprite for graphics id 0 will be displayed instead. Double-clicking on a Clone Object will open the targeted map with the targeted object selected. This event type is exclusive to pokefirered projects; the code to process them does not exist in pokeemerald/pokeruby.</p>
-<figure class="align-default" id="id6">
+<div class="figure" id="id6">
 <img alt="Clone Object Event Properties" src="../_images/event-clone-object.png" />
-<figcaption>
-<p><span class="caption-text">Clone Object Event Properties</span><a class="headerlink" href="#id6" title="Permalink to this image"></a></p>
-</figcaption>
-</figure>
-<dl class="simple">
-<dt>Id</dt><dd><p>This is the local id of the object in the map.  Some script values use this local id to specify an object when using scripting commands such as <cite>applymovement</cite>.</p>
-</dd>
-<dt>Sprite</dt><dd><p>The sprite that is used by the object. Clone Objects inherit their sprite from the targeted object, so this cannot be edited. This field is not actually read by the game.</p>
-</dd>
-<dt>Target Local Id</dt><dd><p>The local id of the object to be cloned.</p>
-</dd>
-<dt>Target Map</dt><dd><p>The name of the map the object to be cloned is on.</p>
-</dd>
+<p class="caption"><span class="caption-text">Clone Object Event Properties</span></p>
+</div>
+<dl class="docutils">
+<dt>Id</dt>
+<dd>This is the local id of the object in the map.  Some script values use this local id to specify an object when using scripting commands such as <cite>applymovement</cite>.</dd>
+<dt>Sprite</dt>
+<dd>The sprite that is used by the object. Clone Objects inherit their sprite from the targeted object, so this cannot be edited. This field is not actually read by the game.</dd>
+<dt>Target Local Id</dt>
+<dd>The local id of the object to be cloned.</dd>
+<dt>Target Map</dt>
+<dd>The name of the map the object to be cloned is on.</dd>
 </dl>
-</section>
-<section id="warp-events">
-<span id="event-warps"></span><h2>Warp Events<a class="headerlink" href="#warp-events" title="Permalink to this heading"></a></h2>
-<p>Warp events are how the player is able to warp to other maps, such as entering a building.  Double-clicking on a warp will automatically open the destination map and select the destination warp.  This makes it very easy to navigate around in Porymap.</p>
-<figure class="align-default" id="id7">
+</div>
+<div class="section" id="warp-events">
+<span id="event-warps"></span><h2>Warp Events<a class="headerlink" href="#warp-events" title="Permalink to this headline">¶</a></h2>
+<p>Warp events are how the player is able to warp to other maps, such as entering a building.  Double-clicking on a warp will automatically open the destination map and select the destination warp.  This makes it very easy to navigate around in Porymap. Warps need to be on specific metatiles to function as an exit; a warning will appear if the warp event is not on one of these metatiles.</p>
+<div class="figure" id="id7">
 <img alt="Warp Event Properties" src="../_images/event-warp.png" />
-<figcaption>
-<p><span class="caption-text">Warp Event Properties</span><a class="headerlink" href="#id7" title="Permalink to this image"></a></p>
-</figcaption>
-</figure>
-<dl class="simple">
-<dt>Id</dt><dd><p>This is the local id of the warp in the map.  This is used when setting the Destination Warp property for another warp.</p>
-</dd>
-<dt>Destination Map</dt><dd><p>The destination map name.</p>
-</dd>
-<dt>Destination Warp</dt><dd><p>The Id of the warp in the destination map.</p>
-</dd>
+<p class="caption"><span class="caption-text">Warp Event Properties</span></p>
+</div>
+<dl class="docutils">
+<dt>Id</dt>
+<dd>This is the local id of the warp in the map.  This is used when setting the Destination Warp property for another warp.</dd>
+<dt>Destination Map</dt>
+<dd>The destination map name.</dd>
+<dt>Destination Warp</dt>
+<dd>The Id of the warp in the destination map.</dd>
 </dl>
-</section>
-<section id="trigger-events">
-<h2>Trigger Events<a class="headerlink" href="#trigger-events" title="Permalink to this heading"></a></h2>
+</div>
+<div class="section" id="trigger-events">
+<h2>Trigger Events<a class="headerlink" href="#trigger-events" title="Permalink to this headline">¶</a></h2>
 <p>Trigger events are scripts that execute when the player walks over them.  However, they only execute when a variable is equal some value.  Typically, they execute once, set the variable’s value to something else, and then never execute again because the variable’s value no longer matches.</p>
-<figure class="align-default" id="id8">
+<div class="figure" id="id8">
 <img alt="Trigger Event Properties" src="../_images/event-trigger.png" />
-<figcaption>
-<p><span class="caption-text">Trigger Event Properties</span><a class="headerlink" href="#id8" title="Permalink to this image"></a></p>
-</figcaption>
-</figure>
-<dl class="simple">
-<dt>Id</dt><dd><p>The local id of the trigger in the map.  This value is not used for anything.</p>
-</dd>
-<dt>Script</dt><dd><p>The script that executes when the player walks over the trigger AND when the <cite>Var</cite> equals the <cite>Var Value</cite>.</p>
-</dd>
-<dt>Var</dt><dd><p>The variable used to determine if the trigger’s Script should execute.</p>
-</dd>
-<dt>Var Value</dt><dd><p>The value that the Var must equal for the trigger’s Script to execute.</p>
-</dd>
+<p class="caption"><span class="caption-text">Trigger Event Properties</span></p>
+</div>
+<dl class="docutils">
+<dt>Id</dt>
+<dd>The local id of the trigger in the map.  This value is not used for anything.</dd>
+<dt>Script</dt>
+<dd>The script that executes when the player walks over the trigger AND when the <cite>Var</cite> equals the <cite>Var Value</cite>.</dd>
+<dt>Var</dt>
+<dd>The variable used to determine if the trigger’s Script should execute.</dd>
+<dt>Var Value</dt>
+<dd>The value that the Var must equal for the trigger’s Script to execute.</dd>
 </dl>
-</section>
-<section id="weather-trigger-events">
-<h2>Weather Trigger Events<a class="headerlink" href="#weather-trigger-events" title="Permalink to this heading"></a></h2>
+</div>
+<div class="section" id="weather-trigger-events">
+<h2>Weather Trigger Events<a class="headerlink" href="#weather-trigger-events" title="Permalink to this headline">¶</a></h2>
 <p>Weather trigger events are a very specific type of trigger.  When the player walks over a weather trigger, the overworld’s weather will transition to the specified weather type. This event type is unavailable for pokefirered projects; the functions to trigger weather changes were dummied out.</p>
-<figure class="align-default" id="id9">
+<div class="figure" id="id9">
 <img alt="Weather Trigger Event Properties" src="../_images/event-weather-trigger.png" />
-<figcaption>
-<p><span class="caption-text">Weather Trigger Event Properties</span><a class="headerlink" href="#id9" title="Permalink to this image"></a></p>
-</figcaption>
-</figure>
-<dl class="simple">
-<dt>Id</dt><dd><p>The local id of the trigger in the map.  This value is not used for anything.</p>
-</dd>
-<dt>Weather</dt><dd><p>The type of weather to transition to.</p>
-</dd>
+<p class="caption"><span class="caption-text">Weather Trigger Event Properties</span></p>
+</div>
+<dl class="docutils">
+<dt>Id</dt>
+<dd>The local id of the trigger in the map.  This value is not used for anything.</dd>
+<dt>Weather</dt>
+<dd>The type of weather to transition to.</dd>
 </dl>
-</section>
-<section id="sign-event">
-<h2>Sign Event<a class="headerlink" href="#sign-event" title="Permalink to this heading"></a></h2>
+</div>
+<div class="section" id="sign-event">
+<h2>Sign Event<a class="headerlink" href="#sign-event" title="Permalink to this headline">¶</a></h2>
 <p>Sign events, or signposts, are simple interactable scripts.  They are typically used for things like signs in front of buildings.  The player’s facing direction can be required to be a certain direction in order to interact with the sign.  Signs are the first of three “BG” event types.</p>
-<figure class="align-default" id="id10">
+<div class="figure" id="id10">
 <img alt="Sign Event Properties" src="../_images/event-sign.png" />
-<figcaption>
-<p><span class="caption-text">Sign Event Properties</span><a class="headerlink" href="#id10" title="Permalink to this image"></a></p>
-</figcaption>
-</figure>
-<dl class="simple">
-<dt>Id</dt><dd><p>The local id of the BG event in the map.  This value is not used for anything.</p>
-</dd>
-<dt>Player Facing Direction</dt><dd><p>The direction the player must be facing in order to execute the sign’s script.</p>
-</dd>
-<dt>Script</dt><dd><p>The script that executes when the player interacts with the sign.</p>
-</dd>
+<p class="caption"><span class="caption-text">Sign Event Properties</span></p>
+</div>
+<dl class="docutils">
+<dt>Id</dt>
+<dd>The local id of the BG event in the map.  This value is not used for anything.</dd>
+<dt>Player Facing Direction</dt>
+<dd>The direction the player must be facing in order to execute the sign’s script.</dd>
+<dt>Script</dt>
+<dd>The script that executes when the player interacts with the sign.</dd>
 </dl>
-</section>
-<section id="hidden-item-event">
-<h2>Hidden Item Event<a class="headerlink" href="#hidden-item-event" title="Permalink to this heading"></a></h2>
+</div>
+<div class="section" id="hidden-item-event">
+<h2>Hidden Item Event<a class="headerlink" href="#hidden-item-event" title="Permalink to this headline">¶</a></h2>
 <p>Hidden items are invisible items that can be picked up by the player. They each use a flag to ensure the item can only be picked up once.</p>
-<figure class="align-default" id="id11">
+<div class="figure" id="id11">
 <img alt="Hidden Item Event Properties" src="../_images/event-hidden-item.png" />
-<figcaption>
-<p><span class="caption-text">Hidden Item Event Properties</span><a class="headerlink" href="#id11" title="Permalink to this image"></a></p>
-</figcaption>
-</figure>
-<dl class="simple">
-<dt>Id</dt><dd><p>The local id of the BG event in the map.  This value is not used for anything.</p>
-</dd>
-<dt>Item</dt><dd><p>The item the player will receive when interacting with this hidden item.</p>
-</dd>
-<dt>Flag</dt><dd><p>This flag is set when the player receives the hidden item.</p>
-</dd>
-<dt>Quantity</dt><dd><p>Exclusive to pokefirered. The number of items received when the item is picked up.</p>
-</dd>
-<dt>Requires Itemfinder</dt><dd><p>Exclusive to pokefirered. When checked, the hidden item can only be received by standing on it and using the Itemfinder.</p>
-</dd>
+<p class="caption"><span class="caption-text">Hidden Item Event Properties</span></p>
+</div>
+<dl class="docutils">
+<dt>Id</dt>
+<dd>The local id of the BG event in the map.  This value is not used for anything.</dd>
+<dt>Item</dt>
+<dd>The item the player will receive when interacting with this hidden item.</dd>
+<dt>Flag</dt>
+<dd>This flag is set when the player receives the hidden item.</dd>
+<dt>Quantity</dt>
+<dd>Exclusive to pokefirered. The number of items received when the item is picked up.</dd>
+<dt>Requires Itemfinder</dt>
+<dd>Exclusive to pokefirered. When checked, the hidden item can only be received by standing on it and using the Itemfinder.</dd>
 </dl>
-</section>
-<section id="secret-base-event">
-<h2>Secret Base Event<a class="headerlink" href="#secret-base-event" title="Permalink to this heading"></a></h2>
+</div>
+<div class="section" id="secret-base-event">
+<h2>Secret Base Event<a class="headerlink" href="#secret-base-event" title="Permalink to this headline">¶</a></h2>
 <p>This is the event used to mark entrances to secret bases.  This event will only be functional on certain metatiles.  Unfortunately, they are hardcoded into the game’s engine (see <code class="docutils literal notranslate"><span class="pre">sSecretBaseEntranceMetatiles</span></code> in <code class="docutils literal notranslate"><span class="pre">src/secret_base.c</span></code>).
 This event type is unavailable for pokefirered projects; secret bases do not exist there.</p>
-<figure class="align-default" id="id12">
+<div class="figure" id="id12">
 <img alt="Secret Base Event Properties" src="../_images/event-secret-base.png" />
-<figcaption>
-<p><span class="caption-text">Secret Base Event Properties</span><a class="headerlink" href="#id12" title="Permalink to this image"></a></p>
-</figcaption>
-</figure>
-<dl class="simple">
-<dt>Id</dt><dd><p>The local id of the BG event in the map.  This value is not used for anything.</p>
-</dd>
-<dt>Secret Base Id</dt><dd><p>The id of the destination secret base.</p>
-</dd>
+<p class="caption"><span class="caption-text">Secret Base Event Properties</span></p>
+</div>
+<dl class="docutils">
+<dt>Id</dt>
+<dd>The local id of the BG event in the map.  This value is not used for anything.</dd>
+<dt>Secret Base Id</dt>
+<dd>The id of the destination secret base.</dd>
 </dl>
-</section>
-<section id="heal-location-healspots">
-<h2>Heal Location / Healspots<a class="headerlink" href="#heal-location-healspots" title="Permalink to this heading"></a></h2>
+</div>
+<div class="section" id="heal-location-healspots">
+<h2>Heal Location / Healspots<a class="headerlink" href="#heal-location-healspots" title="Permalink to this headline">¶</a></h2>
 <p>This event is used to control where a player will arrive when they white out or fly to the map. The white out functions a little differently between game versions. For pokeemerald and pokeruby players will arrive at the event’s coordinates after a white out, while in pokefirered they will arrive on the map set in <code class="docutils literal notranslate"><span class="pre">Respawn</span> <span class="pre">Map</span></code> and at hardcoded coordinates (see <code class="docutils literal notranslate"><span class="pre">SetWhiteoutRespawnWarpAndHealerNpc</span></code> in <code class="docutils literal notranslate"><span class="pre">src/heal_location.c</span></code>).</p>
-<figure class="align-default" id="id13">
+<div class="figure" id="id13">
 <img alt="Heal Location Properties" src="../_images/event-heal-location.png" />
-<figcaption>
-<p><span class="caption-text">Heal Location Properties</span><a class="headerlink" href="#id13" title="Permalink to this image"></a></p>
-</figcaption>
-</figure>
-<dl class="simple">
-<dt>Respawn Map</dt><dd><p>Exclusive to pokefirered. The map where the player will arrive when they white out (e.g. inside the PokéCenter that the heal location is in front of).</p>
-</dd>
-<dt>Respawn NPC</dt><dd><p>Exclusive to pokefirered. The local id of the NPC the player will interact with when they white out.</p>
-</dd>
+<p class="caption"><span class="caption-text">Heal Location Properties</span></p>
+</div>
+<dl class="docutils">
+<dt>Respawn Map</dt>
+<dd>Exclusive to pokefirered. The map where the player will arrive when they white out (e.g. inside the PokéCenter that the heal location is in front of).</dd>
+<dt>Respawn NPC</dt>
+<dd>Exclusive to pokefirered. The local id of the NPC the player will interact with when they white out.</dd>
 </dl>
-</section>
-<section id="open-map-scripts">
-<h2>Open Map Scripts<a class="headerlink" href="#open-map-scripts" title="Permalink to this heading"></a></h2>
+</div>
+<div class="section" id="open-map-scripts">
+<h2>Open Map Scripts<a class="headerlink" href="#open-map-scripts" title="Permalink to this headline">¶</a></h2>
 <p>Clicking the <code class="docutils literal notranslate"><span class="pre">Open</span> <span class="pre">Map</span> <span class="pre">Scripts</span></code> button <img alt="open-map-scripts-button" src="../_images/open-map-scripts-button.png" /> will open the map’s scripts file in your default text editor.  If nothing happens when this button is clicked, you may need to associate a text editor with the <cite>.inc</cite> file extension (or <cite>.pory</cite> if you’re using Porycript).</p>
 <p>Additionally, if you specify a <code class="docutils literal notranslate"><span class="pre">Goto</span> <span class="pre">Line</span> <span class="pre">Command</span></code> in <em>Options -&gt; Edit Preferences</em> then a tool-button will appear next to the <cite>Script</cite> combo-box in the <em>Events</em> tab. Clicking this button will open the file that contains the script directly to the line number of that script. If the script cannot be found in the project then the current map’s scripts file is opened.
 <img alt="go-to-script-button" src="../_images/go-to-script-button.png" /></p>
-</section>
-<section id="tool-buttons">
-<h2>Tool Buttons<a class="headerlink" href="#tool-buttons" title="Permalink to this heading"></a></h2>
+</div>
+<div class="section" id="tool-buttons">
+<h2>Tool Buttons<a class="headerlink" href="#tool-buttons" title="Permalink to this headline">¶</a></h2>
 <p>The event editing tab also extends functionality to a few of the tool buttons described in <a class="reference internal" href="editing-map-tiles.html#editing-map-tiles"><span class="std std-ref">Editing Map Tiles</span></a>.
 A brief description and animation is listed for each of the available tools below:</p>
-<dl class="simple">
-<dt>Pencil</dt><dd><p>When clicking on an existing event, the pencil tool will behave normally (as the standard cursor). It can also be used to “draw” events in a certain location. The event created will be a default-valued event of the same type as the currently selected event. Right-clicking with the Pencil Tool will return to the Pointer tool.</p>
-</dd>
+<dl class="docutils">
+<dt>Pencil</dt>
+<dd>When clicking on an existing event, the pencil tool will behave normally (as the standard cursor). It can also be used to “draw” events in a certain location. The event created will be a default-valued event of the same type as the currently selected event. Right-clicking with the Pencil Tool will return to the Pointer tool.</dd>
 </dl>
-<figure class="align-default" id="id14">
+<div class="figure" id="id14">
 <img alt="Drawing Object Events with the Pencil Tool" src="../_images/event-tool-pencil.gif" />
-<figcaption>
-<p><span class="caption-text">Drawing Object Events with the Pencil Tool</span><a class="headerlink" href="#id14" title="Permalink to this image"></a></p>
-</figcaption>
-</figure>
-<dl class="simple">
-<dt>Pointer</dt><dd><p>The Pointer Tool is the default tool for the event editing tab and allows you to select and move events on the map. The Pointer Tool also gives you access to the <a class="reference internal" href="#ruler-tool"><span class="std std-ref">Ruler Tool</span></a>.</p>
-</dd>
-<dt>Shift</dt><dd><p>You can use the Shift Tool to move any number of events together. When a selected event is dragged, all other selected events will move with it. When a tile with no event is clicked, all events on the map can be dragged.</p>
-</dd>
+<p class="caption"><span class="caption-text">Drawing Object Events with the Pencil Tool</span></p>
+</div>
+<dl class="docutils">
+<dt>Pointer</dt>
+<dd>The Pointer Tool is the default tool for the event editing tab and allows you to select and move events on the map. The Pointer Tool also gives you access to the <a class="reference internal" href="#ruler-tool"><span class="std std-ref">Ruler Tool</span></a>.</dd>
+<dt>Shift</dt>
+<dd>You can use the Shift Tool to move any number of events together. When a selected event is dragged, all other selected events will move with it. When a tile with no event is clicked, all events on the map can be dragged.</dd>
 </dl>
-<figure class="align-default" id="id15">
+<div class="figure" id="id15">
 <img alt="Moving Events with the Shift Tool" src="../_images/event-tool-shift.gif" />
-<figcaption>
-<p><span class="caption-text">Moving Events with the Shift Tool</span><a class="headerlink" href="#id15" title="Permalink to this image"></a></p>
-</figcaption>
-</figure>
-</section>
-<section id="ruler-tool">
-<span id="id1"></span><h2>Ruler Tool<a class="headerlink" href="#ruler-tool" title="Permalink to this heading"></a></h2>
+<p class="caption"><span class="caption-text">Moving Events with the Shift Tool</span></p>
+</div>
+</div>
+<div class="section" id="ruler-tool">
+<span id="id1"></span><h2>Ruler Tool<a class="headerlink" href="#ruler-tool" title="Permalink to this headline">¶</a></h2>
 <p>The Ruler Tool provides a convenient way to measure distance on the map. This is particularly useful for scripting object movement. With the Pointer Tool selected you can activate the ruler with a Right-click. With the ruler active you can move the mouse around to extend the ruler. The ruler can be deactivated with another Right-click, or locked in place with a Left-click (Left-click again to unlock the ruler).</p>
-<figure class="align-default" id="id16">
+<div class="figure" id="id16">
 <img alt="Measuring metatile distance with the Ruler Tool" src="../_images/event-tool-ruler.gif" />
-<figcaption>
-<p><span class="caption-text">Measuring metatile distance with the Ruler Tool</span><a class="headerlink" href="#id16" title="Permalink to this image"></a></p>
-</figcaption>
-</figure>
-</section>
-</section>
+<p class="caption"><span class="caption-text">Measuring metatile distance with the Ruler Tool</span></p>
+</div>
+</div>
+</div>
 
 
            </div>
+           
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="editing-map-collisions.html" class="btn btn-neutral float-left" title="Editing Map Collisions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="editing-map-header.html" class="btn btn-neutral float-right" title="Editing Map Headers" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="editing-map-header.html" class="btn btn-neutral float-right" title="Editing Map Headers" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="editing-map-collisions.html" class="btn btn-neutral float-left" title="Editing Map Collisions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
     </div>
+  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, huderlem.</p>
-  </div>
+    <p>
+        &copy; Copyright 2023, huderlem
 
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
+
         </div>
       </div>
+
     </section>
+
   </div>
-  <script>
+  
+
+
+  <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>
