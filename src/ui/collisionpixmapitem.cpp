@@ -138,7 +138,6 @@ void CollisionPixmapItem::updateMovementPermissionSelection(QGraphicsSceneMouseE
 void CollisionPixmapItem::updateSelection(QPoint pos) {
     Block block;
     if (map->getBlock(pos.x(), pos.y(), &block)) {
-        const QSignalBlocker blocker(this->selectedCollision); // We only need a signal for changing one of them, not both
         this->selectedCollision->setValue(block.collision());
         this->selectedElevation->setValue(block.elevation());
     }
