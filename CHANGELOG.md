@@ -11,7 +11,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Add an editor window under `Options -> Project Settings...` to customize the project-specific settings in `porymap.project.cfg` and `porymap.user.cfg`.
 - Add an editor window under `Options -> Custom Scripts...` for Porymap's API scripts.
 - Add an `Open Recent Project` menu
-- Add a warning to warp events if they're on an incomaptible metatile behavior.
+- Add a warning to warp events if they're on an incompatible metatile behavior.
 - Add settings for custom images, including the collision graphics, default event icons, and pokémon icons.
 - Add settings to override any symbol or macro names Porymap expects to find.
 - Add a zoom slider to the Collision tab.
@@ -21,14 +21,14 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 
 ### Changed
 - `Script` dropdowns now include scripts from the current map's scripts file.
-- Encouter Rate now defaults to the most commonly used value, rather than 0.
+- Encounter Rate now defaults to the most commonly used value, rather than 0.
 - The Collision tab now allows selection of any valid elevation/collision value.
 - The Palette Editor now remembers the Bit Depth setting.
 - The min/max levels on the Wild Pokémon tab will now adjust automatically if they invalidate each other.
 - If the recent project directory doesn't exist Porymap will open an empty project instead of failing with a misleading error message.
 - Settings under `Options` were relocated either to the `Preferences` window or `Options -> Project Settings`.
 - Secret Base and Weather Trigger events are automatically disabled if their respective constants files fail to parse, instead of not opening the project.
-- If a Pokémon icon fails to load Porymap will attempt to predict its filepath. If this also fails it will appear with a placeholder icon, and won't disppear when edited.
+- If a Pokémon icon fails to load Porymap will attempt to predict its filepath. If this also fails it will appear with a placeholder icon, and won't disappear when edited.
 - The bits in metatile attribute masks are now allowed to be non-contiguous.
 - Porymap will now attempt to read metatile attribute masks from the project.
 

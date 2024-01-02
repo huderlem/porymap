@@ -244,6 +244,7 @@ void CustomScriptsEditor::refreshScripts() {
             return;
         this->save();
     }
+    QToolTip::showText(ui->button_RefreshScripts->mapToGlobal(QPoint(0, 0)), "Refreshed!");
     emit reloadScriptEngine();
 }
 

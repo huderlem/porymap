@@ -609,11 +609,10 @@ QString ProjectSettingsEditor::stripProjectDir(QString s) {
 
 void ProjectSettingsEditor::importDefaultPrefabsClicked(bool) {
     // If the prompt is accepted the prefabs file will be created and its filepath will be saved in the config.
-    // No need to set hasUnsavedChanges here.
     BaseGameVersion version = projectConfig.stringToBaseGameVersion(ui->comboBox_BaseGameVersion->currentText());
     if (prefab.tryImportDefaultPrefabs(this, version, ui->lineEdit_PrefabsPath->text())) {
         ui->lineEdit_PrefabsPath->setText(projectConfig.getPrefabFilepath()); // Refresh with new filepath
-        this->projectNeedsReload = true;
+        this->hasUnsavedChanges = true;
     }
 }
 

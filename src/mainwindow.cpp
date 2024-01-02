@@ -2777,15 +2777,14 @@ void MainWindow::on_actionProject_Settings_triggered() {
 }
 
 void MainWindow::onWarpBehaviorWarningClicked() {
-    static const QString text = QString(
-        "By default, Warp Events only function as exits if they're positioned on a metatile "
-        "whose Metatile Behavior is treated specially in your project's code."
-    );
+    static const QString text = QString("Warp Events only function as exits on certain metatiles");
     static const QString informative = QString(
         "<html><head/><body><p>"
-        "For instance, most floor metatiles in a cave have the behavior <b>MB_CAVE</b>, but the floor space in front of an "
-        "exit will have <b>MB_SOUTH_ARROW_WARP</b>, which is treated specially and will allow a Warp Event to warp the player. "
-        "You can see in the status bar what behavior a metatile has when you mouse over it, or by selecting it in the Tileset Editor."
+        "For instance, most floor metatiles in a cave have the metatile behavior <b>MB_CAVE</b>, but the floor space in front of an exit "
+        "will have <b>MB_SOUTH_ARROW_WARP</b>, which is treated specially in your project's code to allow a Warp Event to warp the player. "
+        "<br><br>"
+        "You can see in the status bar what behavior a metatile has when you mouse over it, or by selecting it in the Tileset Editor. "
+        "The warning will disappear when the warp is positioned on a metatile with a behavior known to allow warps."
         "<br><br>"
         "<b>Note</b>: Not all Warp Events that show this warning are incorrect! For example some warps may function "
         "as a 1-way entrance, and others may have the metatile underneath them changed programmatically."
