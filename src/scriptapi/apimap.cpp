@@ -585,9 +585,15 @@ void MainWindow::saveMetatileAttributesByMetatileId(int metatileId) {
     if (this->editor->project && tileset)
         this->editor->project->saveTilesetMetatileAttributes(tileset);
 
-    // If the Tileset Editor is currently displaying the updated metatile, refresh it
-    if (this->tilesetEditor && this->tilesetEditor->getSelectedMetatileId() == metatileId)
-        this->tilesetEditor->onSelectedMetatileChanged(metatileId);
+    // If the tileset editor is open it needs to be refreshed with the new changes.
+    // Rather than do a full refresh (which is costly) we tell the editor it will need
+    // to reload the metatile from the project next time it's displayed.
+    // If it's currently being displayed, trigger this reload immediately.
+    if (this->tilesetEditor) {
+        this->tilesetEditor->queueMetatileReload(metatileId);
+        if (this->tilesetEditor->getSelectedMetatileId() == metatileId)
+            this->tilesetEditor->onSelectedMetatileChanged(metatileId);
+    }
 }
 
 Metatile * MainWindow::getMetatile(int metatileId) {

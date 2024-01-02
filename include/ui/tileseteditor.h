@@ -47,6 +47,7 @@ public:
     bool selectMetatile(uint16_t metatileId);
     uint16_t getSelectedMetatileId();
     void setMetatileLabel(QString label);
+    void queueMetatileReload(uint16_t metatileId);
 
     QObjectList shortcutableObjects() const;
 
@@ -166,6 +167,7 @@ private:
     QGraphicsPixmapItem *selectedTilePixmapItem = nullptr;
     QGraphicsScene *metatileLayersScene = nullptr;
     bool lockSelection = false;
+    QSet<uint16_t> metatileReloadQueue;
 
 signals:
     void tilesetsSaved(QString, QString);

@@ -81,6 +81,7 @@ uint16_t TilesetEditor::getSelectedMetatileId() {
 }
 
 void TilesetEditor::setTilesets(QString primaryTilesetLabel, QString secondaryTilesetLabel) {
+    this->metatileReloadQueue.clear();
     Tileset *primaryTileset = project->getTileset(primaryTilesetLabel);
     Tileset *secondaryTileset = project->getTileset(secondaryTilesetLabel);
     if (this->primaryTileset) delete this->primaryTileset;
@@ -373,6 +374,15 @@ void TilesetEditor::onHoveredMetatileCleared() {
 
 void TilesetEditor::onSelectedMetatileChanged(uint16_t metatileId) {
     this->metatile = Tileset::getMetatile(metatileId, this->primaryTileset, this->secondaryTileset);
+
+    // The scripting API allows users to change metatiles in the project, and these changes are saved to disk.
+    // The Tileset Editor (if open) needs to reflect these changes when the metatile is next displayed.
+    if (this->metatileReloadQueue.contains(metatileId)) {
+        this->metatileReloadQueue.remove(metatileId);
+        Metatile *updatedMetatile = Tileset::getMetatile(metatileId, this->map->layout->tileset_primary, this->map->layout->tileset_secondary);
+        if (updatedMetatile) *this->metatile = *updatedMetatile;
+    }
+
     this->metatileLayersItem->setMetatile(metatile);
     this->metatileLayersItem->draw();
     this->ui->graphicsView_metatileLayers->setFixedSize(this->metatileLayersItem->pixmap().width() + 2, this->metatileLayersItem->pixmap().height() + 2);
@@ -385,6 +395,10 @@ void TilesetEditor::onSelectedMetatileChanged(uint16_t metatileId) {
     this->ui->comboBox_layerType->setHexItem(this->metatile->layerType());
     this->ui->comboBox_encounterType->setHexItem(this->metatile->encounterType());
     this->ui->comboBox_terrainType->setHexItem(this->metatile->terrainType());
+}
+
+void TilesetEditor::queueMetatileReload(uint16_t metatileId) {
+    this->metatileReloadQueue.insert(metatileId);
 }
 
 void TilesetEditor::onHoveredTileChanged(uint16_t tile) {
