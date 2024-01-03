@@ -210,6 +210,7 @@ public:
     QString findMetatileLabelsTileset(QString label);
 
     void setImportExportPath(QString filename);
+    static QString getExistingFilepath(QString filepath);
     void applyParsedLimits();
 
     static int getNumTilesPrimary();

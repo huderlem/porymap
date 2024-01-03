@@ -202,11 +202,12 @@ bool Overlay::addPath(QList<int> xCoords, QList<int> yCoords, QString borderColo
 }
 
 bool Overlay::addImage(int x, int y, QString filepath, bool useCache, int width, int height, int xOffset, int yOffset, qreal hScale, qreal vScale, QList<QRgb> palette, bool setTransparency) {
-    QImage image = useCache ? Scripting::getImage(filepath) : QImage(filepath);
-    if (image.isNull()) {
+    const QImage * baseImage = Scripting::getImage(filepath, useCache);
+    if (!baseImage || baseImage->isNull()) {
         logError(QString("Failed to load image '%1'").arg(filepath));
         return false;
     }
+    QImage image = *baseImage;
 
     int fullWidth = image.width();
     int fullHeight = image.height();

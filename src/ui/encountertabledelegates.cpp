@@ -21,9 +21,7 @@ void SpeciesComboDelegate::paint(QPainter *painter, const QStyleOptionViewItem &
         if (path.isEmpty()) {
             path = this->project->speciesToIconPath.value(species);
         } else {
-            QFileInfo info(path);
-            if (info.isRelative())
-                path = QDir::cleanPath(projectConfig.getProjectDir() + QDir::separator() + path);
+            path = Project::getExistingFilepath(path);
         }
 
         QImage img(path);

@@ -2747,6 +2747,20 @@ void Project::setImportExportPath(QString filename)
     this->importExportPath = QFileInfo(filename).absolutePath();
 }
 
+// If the provided filepath is an absolute path to an existing file, return filepath.
+// If not, and the provided filepath is a relative path from the project dir to an existing file, return the relative path.
+// Otherwise return empty string.
+QString Project::getExistingFilepath(QString filepath) {
+    if (filepath.isEmpty() || QFile::exists(filepath))
+        return filepath;
+
+    filepath = QDir::cleanPath(projectConfig.getProjectDir() + QDir::separator() + filepath);
+    if (QFile::exists(filepath))
+        return filepath;
+
+    return QString();
+}
+
 // The values of some config fields can limit the values of other config fields
 // (for example, metatile attributes size limits the metatile attribute masks).
 // Others depend on information in the project (for example the default metatile ID

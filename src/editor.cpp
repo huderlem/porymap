@@ -2278,22 +2278,20 @@ void Editor::setCollisionTabSpinBoxes(uint16_t collision, uint16_t elevation) {
 
 // Custom collision graphics may be provided by the user.
 void Editor::setCollisionGraphics() {
-    QString customPath = projectConfig.getCollisionSheetPath();
+    QString filepath = projectConfig.getCollisionSheetPath();
 
     QImage imgSheet;
-    if (customPath.isEmpty()) {
+    if (filepath.isEmpty()) {
         // No custom collision image specified, use the default.
         imgSheet = this->defaultCollisionImgSheet;
     } else {
         // Try to load custom collision image
-        QFileInfo info(customPath);
-        if (info.isRelative()) {
-            customPath = QDir::cleanPath(projectConfig.getProjectDir() + QDir::separator() + customPath);
-        }
-        imgSheet = QImage(customPath);
+        QString validPath = Project::getExistingFilepath(filepath);
+        if (!validPath.isEmpty()) filepath = validPath; // Otherwise allow it to fail with the original path
+        imgSheet = QImage(filepath);
         if (imgSheet.isNull()) {
             // Custom collision image failed to load, use default
-            logWarn(QString("Failed to load custom collision image '%1', using default.").arg(customPath));
+            logWarn(QString("Failed to load custom collision image '%1', using default.").arg(filepath));
             imgSheet = this->defaultCollisionImgSheet;
         }
     }

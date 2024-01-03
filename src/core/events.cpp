@@ -151,10 +151,8 @@ void Event::setIcons() {
         }
 
         // Try to load custom icon
-        QFileInfo info(customIconPath);
-        if (info.isRelative()) {
-            customIconPath = QDir::cleanPath(projectConfig.getProjectDir() + QDir::separator() + customIconPath);
-        }
+        QString validPath = Project::getExistingFilepath(customIconPath);
+        if (!validPath.isEmpty()) customIconPath = validPath; // Otherwise allow it to fail with the original path
         const QPixmap customIcon = QPixmap(customIconPath);
         if (customIcon.isNull()) {
             // Custom icon failed to load, use the default icon.

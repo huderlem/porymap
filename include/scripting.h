@@ -55,7 +55,7 @@ public:
     static QJSValue version(QList<int> versionNums);
     static QJSValue dimensions(int width, int height);
     static QJSValue position(int x, int y);
-    static QImage getImage(QString filepath);
+    static const QImage * getImage(const QString &filepath, bool useCache);
     static QJSValue dialogInput(QJSValue input, bool selectedOk);
 
 private:

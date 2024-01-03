@@ -48,22 +48,20 @@ Scripting::Scripting(MainWindow *mainWindow) {
 
 void Scripting::loadModules(QStringList moduleFiles) {
     for (QString filepath : moduleFiles) {
-        QJSValue module = this->engine->importModule(filepath);
-        if (module.isError()) {
-            QString relativePath = QDir::cleanPath(userConfig.getProjectDir() + QDir::separator() + filepath);
-            module = this->engine->importModule(relativePath);
-            if (tryErrorJS(module)) {
-                QMessageBox messageBox(this->mainWindow);
-                messageBox.setText("Failed to load script");
-                messageBox.setInformativeText(QString("An error occurred while loading custom script file '%1'").arg(filepath));
-                messageBox.setDetailedText(getMostRecentError());
-                messageBox.setIcon(QMessageBox::Warning);
-                messageBox.addButton(QMessageBox::Ok);
-                messageBox.exec();
-                continue;
-            }
-        }
+        QString validPath = Project::getExistingFilepath(filepath);
+        if (!validPath.isEmpty()) filepath = validPath; // Otherwise allow it to fail with the original path
 
+        QJSValue module = this->engine->importModule(filepath);
+        if (tryErrorJS(module)) {
+            QMessageBox messageBox(this->mainWindow);
+            messageBox.setText("Failed to load script");
+            messageBox.setInformativeText(QString("An error occurred while loading custom script file '%1'").arg(filepath));
+            messageBox.setDetailedText(getMostRecentError());
+            messageBox.setIcon(QMessageBox::Warning);
+            messageBox.addButton(QMessageBox::Ok);
+            messageBox.exec();
+            continue;
+        }
         logInfo(QString("Successfully loaded custom script file '%1'").arg(filepath));
         this->modules.append(module);
     }
@@ -377,11 +375,22 @@ QJSEngine *Scripting::getEngine() {
     return instance->engine;
 }
 
-QImage Scripting::getImage(QString filepath) {
-    const QImage * image = instance->imageCache.value(filepath, nullptr);
-    if (!image) {
-        image = new QImage(filepath);
-        instance->imageCache.insert(filepath, image);
+const QImage * Scripting::getImage(const QString &inputFilepath, bool useCache) {
+    if (inputFilepath.isEmpty())
+        return nullptr;
+
+    const QImage * image;
+    if (useCache) {
+        // Try to retrieve image from the cache
+        image = instance->imageCache.value(inputFilepath, nullptr);
+        if (image) return image;
     }
-    return QImage(*image);
+
+    const QString filepath = Project::getExistingFilepath(inputFilepath);
+    if (filepath.isEmpty())
+        return nullptr;
+
+    image = new QImage(filepath);
+    instance->imageCache.insert(inputFilepath, image);
+    return image;
 }
