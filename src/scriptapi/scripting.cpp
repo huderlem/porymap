@@ -119,8 +119,8 @@ bool Scripting::tryErrorJS(QJSValue js) {
     // The script engine is interrupted during project reopen, during which
     // all script modules intentionally return as error objects.
     // We don't need to report these "errors" to the user.
-    //if (errStr == "Error: Interrupted")
-    //    return false;
+    if (errStr == "Error: Interrupted")
+        return false;
 
     // Convert properties to message strings
     QString fileErrStr = fileName == "undefined" ? "" : QString(" '%1'").arg(fileName);
