@@ -198,7 +198,7 @@ void ProjectSettingsEditor::setBorderMetatilesUi(bool customSize) {
 
 void ProjectSettingsEditor::setBorderMetatileIds(bool customSize, QList<uint16_t> metatileIds) {
     if (customSize) {
-        ui->lineEdit_BorderMetatiles->setText(Metatile::getMetatileIdStringList(metatileIds));
+        ui->lineEdit_BorderMetatiles->setText(Metatile::getMetatileIdStrings(metatileIds));
     } else {
         ui->spinBox_BorderMetatile1->setValue(metatileIds.value(0, 0x0));
         ui->spinBox_BorderMetatile2->setValue(metatileIds.value(1, 0x0));

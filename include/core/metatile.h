@@ -74,15 +74,8 @@ public:
     static uint32_t getMaxAttributesMask();
     static int getDefaultAttributesSize(BaseGameVersion version);
     static void setLayout(Project*);
-    static QString getMetatileIdString(uint16_t metatileId) {
-        return "0x" + QString("%1").arg(metatileId, 4, 16, QChar('0')).toUpper();
-    };
-    static QString getMetatileIdStringList(const QList<uint16_t> metatileIds) {
-        QStringList metatiles;
-        for (auto metatileId : metatileIds)
-            metatiles << Metatile::getMetatileIdString(metatileId);
-        return metatiles.join(",");
-    };
+    static QString getMetatileIdString(uint16_t metatileId);
+    static QString getMetatileIdStrings(const QList<uint16_t> metatileIds);
 
     inline bool operator==(const Metatile &other) {
         return this->tiles == other.tiles && this->attributes == other.attributes;
@@ -94,8 +87,6 @@ public:
 
 private:
     QMap<Metatile::Attr, uint32_t> attributes;
-
-    static bool doMasksOverlap(QList<uint32_t>);
 };
 
 #endif // METATILE_H

@@ -9,6 +9,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ## [Unreleased]
 ### Changed
 - The API functions `addImage` and `createImage` now support project-relative paths.
+- Metatile ID strings are now padded to their current max, not the overall max.
 
 ### Fixed
 - Fix API error reporting

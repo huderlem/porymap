@@ -40,6 +40,18 @@ QPoint Metatile::coordFromPixmapCoord(const QPointF &pixelCoord) {
     return QPoint(x, y);
 }
 
+static int numMetatileIdChars = 4;
+QString Metatile::getMetatileIdString(uint16_t metatileId) {
+    return "0x" + QString("%1").arg(metatileId, numMetatileIdChars, 16, QChar('0')).toUpper();
+};
+
+QString Metatile::getMetatileIdStrings(const QList<uint16_t> metatileIds) {
+    QStringList metatiles;
+    for (auto metatileId : metatileIds)
+        metatiles << Metatile::getMetatileIdString(metatileId);
+    return metatiles.join(",");
+};
+
 // Read and pack together this metatile's attributes.
 uint32_t Metatile::getAttributes() const {
     uint32_t data = 0;
@@ -92,6 +104,11 @@ uint32_t Metatile::getMaxAttributesMask() {
 }
 
 void Metatile::setLayout(Project * project) {
+    // Calculate the number of hex characters needed to display a metatile ID.
+    numMetatileIdChars = 0;
+    for (uint16_t i = Block::getMaxMetatileId(); i > 1; i /= 0xF)
+        numMetatileIdChars++;
+
     uint32_t behaviorMask = projectConfig.getMetatileBehaviorMask();
     uint32_t terrainTypeMask = projectConfig.getMetatileTerrainTypeMask();
     uint32_t encounterTypeMask = projectConfig.getMetatileEncounterTypeMask();

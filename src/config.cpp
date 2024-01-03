@@ -965,7 +965,7 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("default_metatile", Metatile::getMetatileIdString(this->defaultMetatileId));
     map.insert("default_elevation", QString::number(this->defaultElevation));
     map.insert("default_collision", QString::number(this->defaultCollision));
-    map.insert("new_map_border_metatiles", Metatile::getMetatileIdStringList(this->newMapBorderMetatileIds));
+    map.insert("new_map_border_metatiles", Metatile::getMetatileIdStrings(this->newMapBorderMetatileIds));
     map.insert("default_primary_tileset", this->defaultPrimaryTileset);
     map.insert("default_secondary_tileset", this->defaultSecondaryTileset);
     map.insert("prefabs_filepath", this->prefabFilepath);
