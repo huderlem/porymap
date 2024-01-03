@@ -325,12 +325,7 @@ private:
     QWidget *eventTabBGWidget;
     QWidget *eventTabHealspotWidget;
     QWidget *eventTabMultipleWidget;
-
-    DraggablePixmapItem *selectedObject;
-    DraggablePixmapItem *selectedWarp;
-    DraggablePixmapItem *selectedTrigger;
-    DraggablePixmapItem *selectedBG;
-    DraggablePixmapItem *selectedHealspot;
+    QMap<Event::Group, DraggablePixmapItem*> lastSelectedEvent;
 
     bool isProgrammaticEventTabChange;
     bool projectHasUnsavedChanges;

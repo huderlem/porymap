@@ -49,11 +49,6 @@ using OrderedJsonDoc = poryjson::JsonDoc;
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    selectedObject(nullptr),
-    selectedWarp(nullptr),
-    selectedTrigger(nullptr),
-    selectedBG(nullptr),
-    selectedHealspot(nullptr),
     isProgrammaticEventTabChange(false)
 {
     QCoreApplication::setOrganizationName("pret");
@@ -694,6 +689,7 @@ bool MainWindow::setMap(QString map_name, bool scrollTreeView) {
         ui->mapList->setExpanded(mapListProxyModel->mapFromSource(mapListIndexes.value(editor->map->name)), false);
     }
 
+    this->lastSelectedEvent.clear();
     refreshMapScene();
     displayMapProperties();
 
@@ -1929,24 +1925,11 @@ void MainWindow::displayEventTabs() {
 
 void MainWindow::updateObjects() {
     QList<DraggablePixmapItem *> all_objects = editor->getObjects();
-    if (selectedObject && !all_objects.contains(selectedObject)) {
-        selectedObject = nullptr;
+    for (auto i = this->lastSelectedEvent.cbegin(), end = this->lastSelectedEvent.cend(); i != end; i++) {
+        if (i.value() && !all_objects.contains(i.value()))
+            this->lastSelectedEvent.insert(i.key(), nullptr);
     }
-    if (selectedWarp && !all_objects.contains(selectedWarp)) {
-        selectedWarp = nullptr;
-    }
-    if (selectedTrigger && !all_objects.contains(selectedTrigger)) {
-        selectedTrigger = nullptr;
-    }
-    if (selectedBG && !all_objects.contains(selectedBG)) {
-        selectedBG = nullptr;
-    }
-    if (selectedHealspot && !all_objects.contains(selectedHealspot)) {
-        selectedHealspot = nullptr;
-    }
-
     displayEventTabs();
-
     updateSelectedObjects();
 }
 
@@ -1983,13 +1966,14 @@ void MainWindow::updateSelectedObjects() {
         Event::Group eventGroup = current->getEventGroup();
         int event_offs = Event::getIndexOffset(eventGroup);
 
+        if (eventGroup != Event::Group::None)
+            this->lastSelectedEvent.insert(eventGroup, current->getPixmapItem());
+
         switch (eventGroup) {
         case Event::Group::Object: {
             scrollTarget = ui->scrollArea_Objects;
             target = ui->scrollAreaWidgetContents_Objects;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Objects);
-
-            selectedObject = current->getPixmapItem();
 
             QSignalBlocker b(this->ui->spinner_ObjectID);
             this->ui->spinner_ObjectID->setMinimum(event_offs);
@@ -2002,8 +1986,6 @@ void MainWindow::updateSelectedObjects() {
             target = ui->scrollAreaWidgetContents_Warps;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Warps);
 
-            selectedWarp = current->getPixmapItem();
-
             QSignalBlocker b(this->ui->spinner_WarpID);
             this->ui->spinner_WarpID->setMinimum(event_offs);
             this->ui->spinner_WarpID->setMaximum(current->getMap()->events.value(eventGroup).length() + event_offs - 1);
@@ -2014,8 +1996,6 @@ void MainWindow::updateSelectedObjects() {
             scrollTarget = ui->scrollArea_Triggers;
             target = ui->scrollAreaWidgetContents_Triggers;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Triggers);
-
-            selectedTrigger = current->getPixmapItem();
 
             QSignalBlocker b(this->ui->spinner_TriggerID);
             this->ui->spinner_TriggerID->setMinimum(event_offs);
@@ -2028,8 +2008,6 @@ void MainWindow::updateSelectedObjects() {
             target = ui->scrollAreaWidgetContents_BGs;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_BGs);
 
-            selectedBG = current->getPixmapItem();
-
             QSignalBlocker b(this->ui->spinner_BgID);
             this->ui->spinner_BgID->setMinimum(event_offs);
             this->ui->spinner_BgID->setMaximum(current->getMap()->events.value(eventGroup).length() + event_offs - 1);
@@ -2040,8 +2018,6 @@ void MainWindow::updateSelectedObjects() {
             scrollTarget = ui->scrollArea_Healspots;
             target = ui->scrollAreaWidgetContents_Healspots;
             ui->tabWidget_EventType->setCurrentWidget(ui->tab_Healspots);
-
-            selectedHealspot = current->getPixmapItem();
 
             QSignalBlocker b(this->ui->spinner_HealID);
             this->ui->spinner_HealID->setMinimum(event_offs);
@@ -2133,27 +2109,20 @@ Event::Group MainWindow::getEventGroupFromTabWidget(QWidget *tab)
 void MainWindow::eventTabChanged(int index) {
     if (editor->map) {
         Event::Group group = getEventGroupFromTabWidget(ui->tabWidget_EventType->widget(index));
-        DraggablePixmapItem *selectedEvent = nullptr;
+        DraggablePixmapItem *selectedEvent = this->lastSelectedEvent.value(group, nullptr);
 
         switch (group) {
         case Event::Group::Object:
-            selectedEvent = selectedObject;
             ui->newEventToolButton->setDefaultAction(ui->newEventToolButton->newObjectAction);
             break;
         case Event::Group::Warp:
-            selectedEvent = selectedWarp;
             ui->newEventToolButton->setDefaultAction(ui->newEventToolButton->newWarpAction);
             break;
         case Event::Group::Coord:
-            selectedEvent = selectedTrigger;
             ui->newEventToolButton->setDefaultAction(ui->newEventToolButton->newTriggerAction);
             break;
         case Event::Group::Bg:
-            selectedEvent = selectedBG;
             ui->newEventToolButton->setDefaultAction(ui->newEventToolButton->newSignAction);
-            break;
-        case Event::Group::Heal:
-            selectedEvent = selectedHealspot;
             break;
         default:
             break;

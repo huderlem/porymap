@@ -106,7 +106,7 @@ uint32_t Metatile::getMaxAttributesMask() {
 void Metatile::setLayout(Project * project) {
     // Calculate the number of hex characters needed to display a metatile ID.
     numMetatileIdChars = 0;
-    for (uint16_t i = Block::getMaxMetatileId(); i > 1; i /= 0xF)
+    for (uint16_t i = Block::getMaxMetatileId(); i > 0; i /= 16)
         numMetatileIdChars++;
 
     uint32_t behaviorMask = projectConfig.getMetatileBehaviorMask();

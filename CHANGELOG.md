@@ -12,6 +12,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Metatile ID strings are now padded to their current max, not the overall max.
 
 ### Fixed
+- Fix the event group tabs sometimes showing an event from the wrong group
 - Fix API error reporting
 
 ## [5.2.0] - 2024-01-02
