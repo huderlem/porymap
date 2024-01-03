@@ -2082,6 +2082,14 @@ All constants are accessible via the global ``constants`` object.
 
    The maximum number of metatiles in a secondary tileset.
 
+.. js:attribute:: constants.num_primary_palettes
+
+   The number of palettes in a primary tileset.
+
+.. js:attribute:: constants.num_secondary_palettes
+
+   The number of palettes in a secondary tileset.
+
 .. js:attribute:: constants.layers_per_metatile
 
    The number of tile layers used in each metatile. This will either be ``2`` or ``3``, depending on the config setting ``enable_triple_layer_metatiles``.
@@ -2089,6 +2097,10 @@ All constants are accessible via the global ``constants`` object.
 .. js:attribute:: constants.tiles_per_metatile
 
    The number of tiles in each metatile. This will either be ``8`` or ``12``, depending on the config setting ``enable_triple_layer_metatiles``.
+
+.. js:attribute:: constants.metatile_behaviors
+
+   An object mapping metatile behavior names to their values. For example, ``constants.metatile_behaviors["MB_TALL_GRASS"]`` would normally be ``2``.
 
 .. js:attribute:: constants.base_game_version
 

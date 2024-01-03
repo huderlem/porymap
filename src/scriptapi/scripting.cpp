@@ -76,12 +76,6 @@ void Scripting::populateGlobalObject(MainWindow *mainWindow) {
 
     QJSValue constants = instance->engine->newObject();
 
-    // Get basic tile/metatile information
-    int numTilesPrimary = Project::getNumTilesPrimary();
-    int numTilesTotal = Project::getNumTilesTotal();
-    int numMetatilesPrimary = Project::getNumMetatilesPrimary();
-    int numMetatilesTotal = Project::getNumMetatilesTotal();
-
     // Invisibly create an "About" window to read Porymap version
     AboutPorymap *about = new AboutPorymap(mainWindow);
     if (about) {
@@ -91,17 +85,33 @@ void Scripting::populateGlobalObject(MainWindow *mainWindow) {
     } else {
         logError("Failed to read Porymap version for API");
     }
+
+    // Get basic tileset information
+    int numTilesPrimary = Project::getNumTilesPrimary();
+    int numMetatilesPrimary = Project::getNumMetatilesPrimary();
+    int numPalettesPrimary = Project::getNumPalettesPrimary();
     constants.setProperty("max_primary_tiles", numTilesPrimary);
-    constants.setProperty("max_secondary_tiles", numTilesTotal - numTilesPrimary);
+    constants.setProperty("max_secondary_tiles", Project::getNumTilesTotal() - numTilesPrimary);
     constants.setProperty("max_primary_metatiles", numMetatilesPrimary);
-    constants.setProperty("max_secondary_metatiles", numMetatilesTotal - numMetatilesPrimary);
+    constants.setProperty("max_secondary_metatiles", Project::getNumMetatilesTotal() - numMetatilesPrimary);
+    constants.setProperty("num_primary_palettes", numPalettesPrimary);
+    constants.setProperty("num_secondary_palettes", Project::getNumPalettesTotal() - numPalettesPrimary);
     constants.setProperty("layers_per_metatile", projectConfig.getNumLayersInMetatile());
     constants.setProperty("tiles_per_metatile", projectConfig.getNumTilesInMetatile());
+
     constants.setProperty("base_game_version", projectConfig.getBaseGameVersionString());
+
+    // Read out behavior values into constants object
+    QJSValue behaviorsArray = instance->engine->newObject();
+    const QMap<QString, uint32_t> * map = &mainWindow->editor->project->metatileBehaviorMap;
+    for (auto i = map->cbegin(), end = map->cend(); i != end; i++)
+        behaviorsArray.setProperty(i.key(), i.value());
+    constants.setProperty("metatile_behaviors", behaviorsArray);
 
     instance->engine->globalObject().setProperty("constants", constants);
 
     // Prevent changes to the constants object
+    instance->engine->evaluate("Object.freeze(constants.metatile_behaviors);");
     instance->engine->evaluate("Object.freeze(constants.version);");
     instance->engine->evaluate("Object.freeze(constants);");
 }
