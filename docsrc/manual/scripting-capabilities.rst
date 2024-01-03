@@ -1069,6 +1069,26 @@ All tileset functions are callable via the global ``map`` object.
    :param behavior: the behavior
    :type behavior: number
 
+.. js:function:: map.getMetatileBehaviorName(metatileId)
+
+   Gets the behavior name for the specified metatile. Returns an empty string if the metatile's behavior value has no name.
+
+   :param metatileId: id of target metatile
+   :type metatileId: number
+   :returns: the behavior name
+   :rtype: string
+
+.. js:function:: map.setMetatileBehaviorName(metatileId, behavior)
+
+   Sets the behavior name for the specified metatile. Does nothing if there is no metatile behavior define with the specified name.
+
+   **Warning:** This function writes directly to the tileset. There is no undo for this.
+
+   :param metatileId: id of target metatile
+   :type metatileId: number
+   :param behavior: the behavior name
+   :type behavior: string
+
 .. js:function:: map.getMetatileAttributes(metatileId)
 
    Gets the raw attributes value for the specified metatile.

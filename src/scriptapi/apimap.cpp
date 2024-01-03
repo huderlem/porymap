@@ -687,6 +687,25 @@ void MainWindow::setMetatileBehavior(int metatileId, int behavior) {
     this->saveMetatileAttributesByMetatileId(metatileId);
 }
 
+QString MainWindow::getMetatileBehaviorName(int metatileId) {
+    Metatile * metatile = this->getMetatile(metatileId);
+    if (!metatile || !this->editor->project)
+        return QString();
+    return this->editor->project->metatileBehaviorMapInverse.value(metatile->behavior(), QString());
+}
+
+void MainWindow::setMetatileBehaviorName(int metatileId, QString behavior) {
+    Metatile * metatile = this->getMetatile(metatileId);
+    if (!metatile || !this->editor->project)
+        return;
+    if (!this->editor->project->metatileBehaviorMap.contains(behavior)) {
+        logError(QString("Unknown metatile behavior '%1'").arg(behavior));
+        return;
+    }
+    metatile->setBehavior(this->editor->project->metatileBehaviorMap.value(behavior));
+    this->saveMetatileAttributesByMetatileId(metatileId);
+}
+
 int MainWindow::getMetatileAttributes(int metatileId) {
     Metatile * metatile = this->getMetatile(metatileId);
     if (!metatile)

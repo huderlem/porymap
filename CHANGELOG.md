@@ -8,6 +8,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 
 ## [Unreleased]
 ### Added
+- Add `getMetatileBehaviorName` and `setMetatileBehaviorName` to the API.
 - Add `metatile_behaviors`, `num_primary_palettes`, and `num_secondary_palettes` to `constants` in the API.
 
 ### Changed
