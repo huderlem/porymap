@@ -112,16 +112,17 @@ bool Scripting::tryErrorJS(QJSValue js) {
     if (!js.isError())
         return false;
 
-    // The script engine is interrupted during project reopen, during which
-    // all script modules intentionally return as error objects.
-    // We don't need to report these "errors" to the user.
-    if (!instance || !instance->engine || !instance->engine->isInterrupted())
-        return false;
-
     // Get properties of the error
     QFileInfo file(js.property("fileName").toString());
     QString fileName = file.fileName();
     QString lineNumber = js.property("lineNumber").toString();
+    QString errStr = js.toString();
+
+    // The script engine is interrupted during project reopen, during which
+    // all script modules intentionally return as error objects.
+    // We don't need to report these "errors" to the user.
+    //if (errStr == "Error: Interrupted")
+    //    return false;
 
     // Convert properties to message strings
     QString fileErrStr = fileName == "undefined" ? "" : QString(" '%1'").arg(fileName);
@@ -130,7 +131,7 @@ bool Scripting::tryErrorJS(QJSValue js) {
     logError(QString("Error in custom script%1%2: '%3'")
              .arg(fileErrStr)
              .arg(lineErrStr)
-             .arg(js.toString()));
+             .arg(errStr));
     return true;
 }
 
