@@ -748,12 +748,6 @@ void Project::saveHealLocations(Map *map) {
     this->saveHealLocationsConstants();
 }
 
-QString Project::getHealLocationsTableName() {
-    if (projectConfig.getHealLocationRespawnDataEnabled())
-        return projectConfig.getIdentifier(ProjectIdentifier::symbol_spawn_points);
-    return projectConfig.getIdentifier(ProjectIdentifier::symbol_heal_locations);
-}
-
 // Saves heal location maps/coords/respawn data in root + /src/data/heal_locations.h
 void Project::saveHealLocationsData(Map *map) {
     // Update heal locations from map
@@ -780,11 +774,13 @@ void Project::saveHealLocationsData(Map *map) {
     const QString qualifiers = QString(healLocationDataQualifiers.isStatic ? "static " : "")
                              + QString(healLocationDataQualifiers.isConst ? "const " : "");
 
-    QString locationTableText = QString("%1struct HealLocation %2[] =\n{\n").arg(qualifiers).arg(this->getHealLocationsTableName());
+    QString locationTableText = QString("%1%2 %3[] =\n{\n").arg(qualifiers)
+                                                           .arg(projectConfig.getIdentifier(ProjectIdentifier::symbol_heal_locations_type))
+                                                           .arg(this->healLocationsTableName);
     QString respawnMapTableText, respawnNPCTableText;
     if (respawnEnabled) {
-        respawnMapTableText = QString("\n%1u16 %2[][2] =\n{\n").arg(qualifiers).arg(projectConfig.getIdentifier(ProjectIdentifier::symbol_spawn_maps));
-        respawnNPCTableText = QString("\n%1u8 %2[] =\n{\n").arg(qualifiers).arg(projectConfig.getIdentifier(ProjectIdentifier::symbol_spawn_npcs));
+        respawnMapTableText = QString("\n%1%2[][2] =\n{\n").arg(qualifiers).arg(projectConfig.getIdentifier(ProjectIdentifier::symbol_spawn_maps));
+        respawnNPCTableText = QString("\n%1%2[] =\n{\n").arg(qualifiers).arg(projectConfig.getIdentifier(ProjectIdentifier::symbol_spawn_npcs));
     }
 
     // Populate the data tables with the heal location data
@@ -2087,7 +2083,6 @@ bool Project::readHealLocationConstants() {
 
 // TODO: Simplify using the new C struct parsing functions (and indexed array parsing functions)
 bool Project::readHealLocations() {
-    this->healLocationDataQualifiers = {};
     this->healLocations.clear();
 
     if (!this->readHealLocationConstants())
@@ -2103,8 +2098,19 @@ bool Project::readHealLocations() {
 
     bool respawnEnabled = projectConfig.getHealLocationRespawnDataEnabled();
 
-    // Get data qualifiers for the location data table
-    this->healLocationDataQualifiers = this->getDataQualifiers(text, this->getHealLocationsTableName());
+    // Search for the name of the main Heal Locations table
+    const QRegularExpression tableNameExpr(QString("%1\\s+(?<name>[A-Za-z0-9_]+)\\[").arg(projectConfig.getIdentifier(ProjectIdentifier::symbol_heal_locations_type)));
+    const QRegularExpressionMatch tableNameMatch = tableNameExpr.match(text);
+    if (tableNameMatch.hasMatch()) {
+        // Found table name, record it and its qualifiers for output when saving.
+        this->healLocationsTableName = tableNameMatch.captured("name");
+        this->healLocationDataQualifiers = this->getDataQualifiers(text, this->healLocationsTableName);
+    } else {
+        // No table name found, initialize default name for output when saving.
+        this->healLocationsTableName = respawnEnabled ? projectConfig.getIdentifier(ProjectIdentifier::symbol_spawn_points)
+                                                      : projectConfig.getIdentifier(ProjectIdentifier::symbol_heal_locations);
+        this->healLocationDataQualifiers = { .isStatic = true, .isConst = true };
+    }
 
     // Create regex pattern for the constants (ex: "SPAWN_PALLET_TOWN" or "HEAL_LOCATION_PETALBURG_CITY")
     const QString spawnPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_spawn_prefix);

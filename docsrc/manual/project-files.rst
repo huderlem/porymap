@@ -86,10 +86,11 @@ In addition to these files, there are some specific symbol and macro names that 
    ``symbol_obj_event_gfx_pointers``, ``gObjectEventGraphicsInfoPointers``, to map Object Event graphics IDs to graphics data
    ``symbol_pokemon_icon_table``, ``gMonIconTable``, to map species constants to icon images
    ``symbol_wild_encounters``, ``gWildMonHeaders``, output as the ``label`` property for the top-level wild ecounters JSON object
-   ``symbol_heal_locations``, ``sHealLocations``, only if ``Respawn Map/NPC`` is disabled
-   ``symbol_spawn_points``, ``sSpawnPoints``, only if ``Respawn Map/NPC`` is enabled
-   ``symbol_spawn_maps``, ``sWhiteoutRespawnHealCenterMapIdxs``, values for Heal Locations ``Respawn Map`` field
-   ``symbol_spawn_npcs``, ``sWhiteoutRespawnHealerNpcIds``, values for Heal Locations ``Respawn NPC`` field
+   ``symbol_heal_locations_type``, ``struct HealLocation``, the type for the Heal Locations table
+   ``symbol_heal_locations``, ``sHealLocations``, the default Heal Locations table name when ``Respawn Map/NPC`` is disabled
+   ``symbol_spawn_points``, ``sSpawnPoints``, the default Heal Locations table name when ``Respawn Map/NPC`` is enabled
+   ``symbol_spawn_maps``, ``u16 sWhiteoutRespawnHealCenterMapIdxs``, the type and table name for Heal Location ``Respawn Map`` values
+   ``symbol_spawn_npcs``, ``u8 sWhiteoutRespawnHealerNpcIds``, the type and table name for Heal Location ``Respawn NPC`` values
    ``symbol_attribute_table``, ``sMetatileAttrMasks``, optionally read to get settings on ``Tilesets`` tab
    ``symbol_tilesets_prefix``, ``gTileset_``, for new tileset names and to extract base tileset names
    ``define_obj_event_count``, ``OBJECT_EVENT_TEMPLATES_COUNT``, to limit total Object Events
