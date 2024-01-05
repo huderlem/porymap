@@ -35,9 +35,7 @@ int Project::default_map_size = 20;
 int Project::max_object_events = 64;
 
 Project::Project(QWidget *parent) :
-    QObject(parent),
-    eventScriptLabelModel(this),
-    eventScriptLabelCompleter(this)
+    QObject(parent)
 {
     initSignals();
 }
@@ -2406,18 +2404,13 @@ bool Project::readMiscellaneousConstants() {
     return true;
 }
 
-QStringList Project::getGlobalScriptLabels() {
-    return this->eventScriptLabelModel.stringList();
-}
-
 bool Project::readEventScriptLabels() {
+    globalScriptLabels.clear();
     for (const auto &filePath : getEventScriptsFilePaths())
         globalScriptLabels << ParseUtil::getGlobalScriptLabels(filePath);
 
-    eventScriptLabelModel.setStringList(globalScriptLabels);
-    eventScriptLabelCompleter.setModel(&eventScriptLabelModel);
-    eventScriptLabelCompleter.setCaseSensitivity(Qt::CaseInsensitive);
-    eventScriptLabelCompleter.setFilterMode(Qt::MatchContains);
+    globalScriptLabels.sort(Qt::CaseInsensitive);
+    globalScriptLabels.removeDuplicates();
 
     return true;
 }
@@ -2476,13 +2469,6 @@ QStringList Project::getEventScriptsFilePaths() const {
         filePaths << it_inc_maps.next();
 
     return filePaths;
-}
-
-QCompleter *Project::getEventScriptLabelCompleter(QStringList additionalScriptLabels) {
-    additionalScriptLabels << globalScriptLabels;
-    additionalScriptLabels.removeDuplicates();
-    eventScriptLabelModel.setStringList(additionalScriptLabels);
-    return &eventScriptLabelCompleter;
 }
 
 void Project::setEventPixmap(Event *event, bool forceLoad) {
