@@ -60,7 +60,7 @@ MainWindow::MainWindow(QWidget *parent) :
     cleanupLargeLog();
 
     this->initWindow();
-    if (this->openRecentProject())
+    if (porymapConfig.getReopenOnLaunch() && this->openProject(porymapConfig.getRecentProject(), true))
         on_toolButton_Paint_clicked();
 
     // there is a bug affecting macOS users, where the trackpad deilveres a bad touch-release gesture
@@ -477,35 +477,29 @@ void MainWindow::setTheme(QString theme) {
     }
 }
 
-bool MainWindow::openRecentProject() {
-    if (!porymapConfig.getReopenOnLaunch())
-        return false;
-
-    QString default_dir = porymapConfig.getRecentProject();
-    if (default_dir.isNull() || default_dir.length() <= 0)
-        return false;
-
-    if (!QDir(default_dir).exists()) {
-        QString message = QString("Recent project directory '%1' doesn't exist.").arg(QDir::toNativeSeparators(default_dir));
-        logWarn(message);
-        this->statusBar()->showMessage(message);
-        return false;
-    }
-
-    logInfo(QString("Opening recent project: '%1'").arg(default_dir));
-    return openProject(default_dir);
-}
-
-bool MainWindow::openProject(QString dir) {
-    if (dir.isNull()) {
+bool MainWindow::openProject(const QString &dir, bool initial) {
+    if (dir.isNull() || dir.length() <= 0) {
         projectOpenFailure = true;
-        setWindowDisabled(true);
+        if (!initial) setWindowDisabled(true);
         return false;
     }
 
-    QString nativeDir = QDir::toNativeSeparators(dir);
+    const QString projectString = QString("%1project '%2'").arg(initial ? "recent " : "").arg(QDir::toNativeSeparators(dir));
 
-    this->statusBar()->showMessage(QString("Opening project %1").arg(nativeDir));
+    if (!QDir(dir).exists()) {
+        projectOpenFailure = true;
+        const QString errorMsg = QString("Failed to open %1: No such directory").arg(projectString);
+        this->statusBar()->showMessage(errorMsg);
+        if (initial) {
+            // Graceful startup if recent project directory is missing
+            logWarn(errorMsg);
+        } else {
+            logError(errorMsg);
+            showProjectOpenFailure();
+        }
+        return false;
+    }
+    this->statusBar()->showMessage(QString("Opening %1").arg(projectString));
 
     userConfig.setProjectDir(dir);
     userConfig.load();
@@ -515,7 +509,10 @@ bool MainWindow::openProject(QString dir) {
     this->closeSupplementaryWindows();
     this->newMapDefaultsSet = false;
 
+    if (isProjectOpen())
+        Scripting::cb_ProjectClosed(editor->project->root);
     Scripting::init(this);
+
     bool already_open = isProjectOpen() && (editor->project->root == dir);
     if (!already_open) {
         editor->closeProject();
@@ -540,19 +537,16 @@ bool MainWindow::openProject(QString dir) {
                               && setInitialMap());
 
     if (this->projectOpenFailure) {
-        this->statusBar()->showMessage(QString("Failed to open project %1").arg(nativeDir));
-        QMessageBox msgBox(this);
-        QString errorMsg = QString("There was an error opening the project %1. Please see %2 for full error details.\n\n%3")
-                .arg(dir)
-                .arg(getLogPath())
-                .arg(getMostRecentError());
-        msgBox.critical(nullptr, "Error Opening Project", errorMsg);
-        setWindowDisabled(true);
+        this->statusBar()->showMessage(QString("Failed to open %1").arg(projectString));
+        showProjectOpenFailure();
         return false;
     }
     
     showWindowTitle();
-    this->statusBar()->showMessage(QString("Opened project %1").arg(nativeDir));
+
+    const QString successMessage = QString("Opened %1").arg(projectString);
+    this->statusBar()->showMessage(successMessage);
+    logInfo(successMessage);
 
     porymapConfig.addRecentProject(dir);
     refreshRecentProjectsMenu();
@@ -565,6 +559,14 @@ bool MainWindow::openProject(QString dir) {
     Scripting::cb_ProjectOpened(dir);
     setWindowDisabled(false);
     return true;
+}
+
+void MainWindow::showProjectOpenFailure() {
+    QString errorMsg = QString("There was an error opening the project. Please see %1 for full error details.").arg(getLogPath());
+    QMessageBox error(QMessageBox::Critical, "porymap", errorMsg, QMessageBox::Ok, this);
+    error.setDetailedText(getMostRecentError());
+    error.exec();
+    setWindowDisabled(true);
 }
 
 bool MainWindow::isProjectOpen() {
@@ -607,17 +609,22 @@ void MainWindow::refreshRecentProjectsMenu() {
         recentProjects.removeOne(this->editor->project->root);
     }
 
-    // Add project paths to menu. Arbitrary limit of 10 items.
-    const int numItems = qMin(10, recentProjects.length());
-    for (int i = 0; i < numItems; i++) {
+    // Add project paths to menu. Skip any paths to folders that don't exist
+    for (int i = 0; i < recentProjects.length(); i++) {
         const QString path = recentProjects.at(i);
-        ui->menuOpen_Recent_Project->addAction(path, [this, path](){
-           this->openProject(path);
-        });
+        if (QDir(path).exists()) {
+            ui->menuOpen_Recent_Project->addAction(path, [this, path](){
+                this->openProject(path);
+            });
+        }
+        // Arbitrary limit of 10 items.
+        if (ui->menuOpen_Recent_Project->actions().length() >= 10)
+            break;
     }
 
     // Add action to clear list of paths
-    if (!recentProjects.isEmpty()) ui->menuOpen_Recent_Project->addSeparator();
+    if (!ui->menuOpen_Recent_Project->actions().isEmpty())
+         ui->menuOpen_Recent_Project->addSeparator();
     QAction *clearAction = ui->menuOpen_Recent_Project->addAction("Clear Items", [this](){
         QStringList paths = QStringList();
         if (isProjectOpen())
@@ -652,13 +659,8 @@ void MainWindow::on_action_Open_Project_triggered()
         recent = userConfig.getRecentMap();
     }
     QString dir = getExistingDirectory(recent);
-    if (!dir.isEmpty()) {
-        if (this->editor && this->editor->project) {
-            Scripting::cb_ProjectClosed(this->editor->project->root);
-            this->ui->graphicsView_Map->clearOverlayMap();
-        }
+    if (!dir.isEmpty())
         openProject(dir);
-    }
 }
 
 void MainWindow::on_action_Reload_Project_triggered() {
@@ -2786,7 +2788,6 @@ void MainWindow::initCustomScriptsEditor() {
 
 void MainWindow::reloadScriptEngine() {
     Scripting::init(this);
-    this->ui->graphicsView_Map->clearOverlayMap();
     Scripting::populateGlobalObject(this);
     // Lying to the scripts here, simulating a project reload
     Scripting::cb_ProjectOpened(projectConfig.getProjectDir());

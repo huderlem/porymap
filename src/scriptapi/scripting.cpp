@@ -23,6 +23,7 @@ QMap<CallbackType, QString> callbackFunctions = {
 Scripting *instance = nullptr;
 
 void Scripting::init(MainWindow *mainWindow) {
+    mainWindow->ui->graphicsView_Map->clearOverlayMap();
     if (instance) {
         instance->engine->setInterrupted(true);
         instance->scriptUtility->clearActions();

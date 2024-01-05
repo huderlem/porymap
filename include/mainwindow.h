@@ -347,7 +347,8 @@ private:
     void sortMapList();
     void openSubWindow(QWidget * window);
     QString getExistingDirectory(QString);
-    bool openProject(QString dir);
+    bool openProject(const QString &dir, bool initial = false);
+    void showProjectOpenFailure();
     bool setInitialMap();
     void setRecentMap(QString map_name);
     QStandardItem* createMapItem(QString mapName, int groupNum, int inGroupNum);
@@ -377,7 +378,6 @@ private:
     void applyMapListFilter(QString filterText);
     void restoreWindowState();
     void setTheme(QString);
-    bool openRecentProject();
     void updateTilesetEditor();
     Event::Group getEventGroupFromTabWidget(QWidget *tab);
     void closeSupplementaryWindows();
