@@ -39,6 +39,7 @@ public:
         this->primaryTileset = map->layout->tileset_primary;
         this->secondaryTileset = map->layout->tileset_secondary;
         this->selection = MetatileSelection{};
+        this->cellPos = QPoint(-1, -1);
         setAcceptHoverEvents(true);
     }
     QPoint getSelectionDimensions();
@@ -68,13 +69,15 @@ private:
     int externalSelectionHeight;
     QList<uint16_t> externalSelectedMetatiles;
     MetatileSelection selection;
+    QPoint cellPos;
 
     void updateSelectedMetatiles();
     void updateExternalSelectedMetatiles();
-    uint16_t getMetatileId(int x, int y);
+    uint16_t getMetatileId(int x, int y) const;
     QPoint getMetatileIdCoords(uint16_t);
-    bool shouldAcceptEvent(QGraphicsSceneMouseEvent*);
+    bool positionIsValid(const QPoint &pos) const;
     bool selectionIsValid();
+    void hoverChanged();
 
 signals:
     void hoveredMetatileSelectionChanged(uint16_t);
