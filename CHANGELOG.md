@@ -16,6 +16,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Metatile ID strings are now padded to their current max, not the overall max.
 
 ### Fixed
+- Fix the metatile selector rectangle jumping when selecting up or left of the origin.
 - Fix the event group tabs sometimes showing an event from the wrong group
 - Fix API error reporting
 

@@ -4,7 +4,9 @@
 #include <QPainter>
 
 QPoint MetatileSelector::getSelectionDimensions() {
-    return selection.dimensions;
+    if (this->prefabSelection || this->externalSelection)
+        return selection.dimensions;
+    return SelectablePixmapItem::getSelectionDimensions();
 }
 
 void MetatileSelector::draw() {
@@ -155,7 +157,7 @@ void MetatileSelector::updateSelectedMetatiles() {
     this->selection.metatileItems.clear();
     this->selection.collisionItems.clear();
     this->selection.hasCollision = false;
-    this->selection.dimensions = SelectablePixmapItem::getSelectionDimensions();
+    this->selection.dimensions = this->getSelectionDimensions();
     QPoint origin = this->getSelectionStart();
     for (int j = 0; j < this->selection.dimensions.y(); j++) {
         for (int i = 0; i < this->selection.dimensions.x(); i++) {
