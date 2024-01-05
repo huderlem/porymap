@@ -18,6 +18,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ### Fixed
 - Fix the metatile selector rectangle jumping when selecting up or left of the origin.
 - Fix the event group tabs sometimes showing an event from the wrong group
+- Fix the clear buttons in the Shortcuts Editor not actually removing shortcuts.
 - Fix API error reporting
 
 ## [5.2.0] - 2024-01-02

@@ -140,6 +140,14 @@ void MultiKeyEdit::addNewKeySequenceEdit() {
     connect(lineEdit, &QLineEdit::customContextMenuRequested,
             this, &MultiKeyEdit::customContextMenuRequested);
 
+    // Gross way to connect the line edit's clear button.
+    auto actions = lineEdit->findChildren<QAction*>();
+    if (!actions.isEmpty()) {
+        connect(actions.first(), &QAction::triggered, this, [this, keySequenceEdit]() {
+            removeOne(keySequenceEdit->keySequence());
+        });
+    }
+
     layout()->addWidget(keySequenceEdit);
     keySequenceEdit_vec.append(keySequenceEdit);
 }
