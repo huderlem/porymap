@@ -58,6 +58,8 @@ public:
         this->collisionOpacity = 50;
         this->collisionZoom = 30;
         this->metatilesZoom = 30;
+        this->tilesetEditorMetatilesZoom = 30;
+        this->tilesetEditorTilesZoom = 30;
         this->showPlayerView = false;
         this->showCursorTile = true;
         this->showBorder = true;
@@ -87,6 +89,8 @@ public:
     void setCollisionOpacity(int opacity);
     void setCollisionZoom(int zoom);
     void setMetatilesZoom(int zoom);
+    void setTilesetEditorMetatilesZoom(int zoom);
+    void setTilesetEditorTilesZoom(int zoom);
     void setShowPlayerView(bool enabled);
     void setShowCursorTile(bool enabled);
     void setShowBorder(bool enabled);
@@ -115,6 +119,8 @@ public:
     int getCollisionOpacity();
     int getCollisionZoom();
     int getMetatilesZoom();
+    int getTilesetEditorMetatilesZoom();
+    int getTilesetEditorTilesZoom();
     bool getShowPlayerView();
     bool getShowCursorTile();
     bool getShowBorder();
@@ -160,6 +166,8 @@ private:
     int collisionOpacity;
     int collisionZoom;
     int metatilesZoom;
+    int tilesetEditorMetatilesZoom;
+    int tilesetEditorTilesZoom;
     bool showPlayerView;
     bool showCursorTile;
     bool showBorder;
