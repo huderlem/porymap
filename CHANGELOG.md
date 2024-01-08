@@ -12,8 +12,9 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Add `metatile_behaviors`, `num_primary_palettes`, and `num_secondary_palettes` to `constants` in the API.
 
 ### Changed
-- The API functions `addImage` and `createImage` now support project-relative paths.
 - Metatile ID strings are now padded to their current max, not the overall max.
+- The name of the Heal Locations table is no longer enforced.
+- The API functions `addImage` and `createImage` now support project-relative paths.
 
 ### Fixed
 - Fix the metatile selector rectangle jumping when selecting up or left of the origin.

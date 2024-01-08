@@ -93,6 +93,7 @@ public:
     };
     DataQualifiers getDataQualifiers(QString, QString);
     DataQualifiers healLocationDataQualifiers;
+    QString healLocationsTableName;
 
     QMap<QString, Map*> mapCache;
     Map* loadMap(QString);
@@ -238,7 +239,6 @@ private:
 
     void saveHealLocationsData(Map *map);
     void saveHealLocationsConstants();
-    QString getHealLocationsTableName();
 
     void ignoreWatchedFileTemporarily(QString filepath);
 
