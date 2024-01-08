@@ -14,25 +14,33 @@ public:
         this->primaryTileset = primaryTileset;
         this->secondaryTileset = secondaryTileset;
         this->clearLastModifiedCoords();
+        this->clearLastHoveredCoords();
+        setAcceptHoverEvents(true);
     }
     void draw();
     void setTilesets(Tileset*, Tileset*);
     void setMetatile(Metatile*);
     void clearLastModifiedCoords();
+    void clearLastHoveredCoords();
     bool showGrid;
 private:
     Metatile* metatile;
     Tileset *primaryTileset;
     Tileset *secondaryTileset;
-    QPoint prevChangedTile;
-    void getBoundedCoords(QPointF, int*, int*);
+    QPoint prevChangedPos;
+    QPoint prevHoveredPos;
+    QPoint getBoundedPos(const QPointF &);
 signals:
     void tileChanged(int, int);
     void selectedTilesChanged(QPoint, int, int);
+    void hoveredTileChanged(uint16_t);
+    void hoveredTileCleared();
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent*);
     void mouseMoveEvent(QGraphicsSceneMouseEvent*);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent*);
+    void hoverMoveEvent(QGraphicsSceneHoverEvent*);
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent*);
 };
 
 #endif // METATILELAYERSITEM_H

@@ -206,6 +206,10 @@ void TilesetEditor::initMetatileLayersItem() {
             this, &TilesetEditor::onMetatileLayerTileChanged);
     connect(this->metatileLayersItem, &MetatileLayersItem::selectedTilesChanged,
             this, &TilesetEditor::onMetatileLayerSelectionChanged);
+    connect(this->metatileLayersItem, &MetatileLayersItem::hoveredTileChanged,
+            this, &TilesetEditor::onHoveredTileChanged);
+    connect(this->metatileLayersItem, &MetatileLayersItem::hoveredTileCleared,
+            this, &TilesetEditor::onHoveredTileCleared);
 
     bool showGrid = porymapConfig.getShowTilesetEditorLayerGrid();
     this->ui->actionLayer_Grid->setChecked(showGrid);
@@ -861,6 +865,7 @@ bool TilesetEditor::replaceMetatile(uint16_t metatileId, const Metatile * src, Q
     this->metatileSelector->draw();
     this->metatileLayersItem->draw();
     this->metatileLayersItem->clearLastModifiedCoords();
+    this->metatileLayersItem->clearLastHoveredCoords();
     return true;
 }
 
