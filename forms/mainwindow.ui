@@ -1683,7 +1683,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>16</height>
+                             <height>30</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -1777,7 +1777,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>16</height>
+                             <height>30</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -1871,7 +1871,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>16</height>
+                             <height>30</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -1971,7 +1971,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>16</height>
+                             <height>30</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -2065,7 +2065,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>16</height>
+                             <height>30</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -2383,114 +2383,34 @@
              </widget>
             </item>
             <item>
-             <widget class="QFrame" name="frame_keyValue">
+             <widget class="CustomAttributesTable" name="customAttributesTable">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="frameShape">
                <enum>QFrame::StyledPanel</enum>
               </property>
               <property name="frameShadow">
                <enum>QFrame::Raised</enum>
               </property>
-              <layout class="QVBoxLayout" name="verticalLayout_10">
-               <item>
-                <widget class="QLabel" name="label_2">
-                 <property name="text">
-                  <string>Custom Fields</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QFrame" name="frame">
-                 <property name="frameShape">
-                  <enum>QFrame::NoFrame</enum>
-                 </property>
-                 <property name="frameShadow">
-                  <enum>QFrame::Plain</enum>
-                 </property>
-                 <layout class="QHBoxLayout" name="horizontalLayout_8">
-                  <property name="leftMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="topMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="rightMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="bottomMargin">
-                   <number>0</number>
-                  </property>
-                  <item>
-                   <widget class="QPushButton" name="pushButton_AddCustomHeaderField">
-                    <property name="text">
-                     <string>Add</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QPushButton" name="pushButton_DeleteCustomHeaderField">
-                    <property name="text">
-                     <string>Delete</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <spacer name="horizontalSpacer_2">
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>40</width>
-                      <height>20</height>
-                     </size>
-                    </property>
-                   </spacer>
-                  </item>
-                 </layout>
-                </widget>
-               </item>
-               <item>
-                <widget class="QTableWidget" name="tableWidget_CustomHeaderFields">
-                 <property name="toolTip">
-                  <string>Custom fields will be added to the map.json file for the current map.</string>
-                 </property>
-                 <attribute name="horizontalHeaderVisible">
-                  <bool>false</bool>
-                 </attribute>
-                 <attribute name="horizontalHeaderCascadingSectionResizes">
-                  <bool>false</bool>
-                 </attribute>
-                 <attribute name="horizontalHeaderHighlightSections">
-                  <bool>true</bool>
-                 </attribute>
-                 <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
-                  <bool>false</bool>
-                 </attribute>
-                 <attribute name="horizontalHeaderStretchLastSection">
-                  <bool>true</bool>
-                 </attribute>
-                 <attribute name="verticalHeaderVisible">
-                  <bool>false</bool>
-                 </attribute>
-                 <column>
-                  <property name="text">
-                   <string>Type</string>
-                  </property>
-                 </column>
-                 <column>
-                  <property name="text">
-                   <string>Key</string>
-                  </property>
-                 </column>
-                 <column>
-                  <property name="text">
-                   <string>Value</string>
-                  </property>
-                 </column>
-                </widget>
-               </item>
-              </layout>
+              <layout class="QVBoxLayout" name="verticalLayout_10"/>
              </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
             </item>
            </layout>
           </widget>
@@ -3402,6 +3322,12 @@
    <class>MapView</class>
    <extends>QWidget</extends>
    <header>mapview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>CustomAttributesTable</class>
+   <extends>QFrame</extends>
+   <header>customattributestable.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>

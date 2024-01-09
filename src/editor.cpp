@@ -1951,9 +1951,9 @@ void Editor::toggleBorderVisibility(bool visible, bool enableScriptCallback)
         Scripting::cb_BorderVisibilityToggled(visible);
 }
 
-void Editor::updateCustomMapHeaderValues(QTableWidget *table)
+void Editor::updateCustomMapHeaderValues()
 {
-    map->customHeaders = CustomAttributesTable::getAttributes(table);
+    map->customHeaders = ui->customAttributesTable->getAttributes();
     emit editedMapData();
 }
 

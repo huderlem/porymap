@@ -102,8 +102,9 @@ void EventFrame::setup() {
 }
 
 void EventFrame::initCustomAttributesTable() {
-    CustomAttributesTable *customAttributes = new CustomAttributesTable(this->event, this);
-    this->layout_contents->addWidget(customAttributes);
+    this->custom_attributes = new CustomAttributesTable(this);
+    this->custom_attributes->setAttributes(this->event->getCustomValues());
+    this->layout_contents->addWidget(this->custom_attributes);
 }
 
 void EventFrame::connectSignals(MainWindow *) {
@@ -132,6 +133,11 @@ void EventFrame::connectSignals(MainWindow *) {
     connect(this->spinner_z, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
         this->event->setZ(value);
         this->event->modify();
+    });
+
+    this->custom_attributes->disconnect();
+    connect(this->custom_attributes, &CustomAttributesTable::edited, [this]() {
+        this->event->setCustomValues(this->custom_attributes->getAttributes());
     });
 }
 

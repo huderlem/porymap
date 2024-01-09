@@ -8,11 +8,11 @@
 #include <QScrollBar>
 #include <QInputDialog>
 
-CustomAttributesTable::CustomAttributesTable(Event *event, QWidget *parent) :
+// TODO: Tooltip-- "Custom fields will be added to the map.json file for the current map."?
+// TODO: Fix squishing when first element is added
+CustomAttributesTable::CustomAttributesTable(QWidget *parent) :
     QFrame(parent)
 {
-    this->event = event;
-
     QVBoxLayout *layout = new QVBoxLayout(this);
     QLabel *label = new QLabel("Custom Attributes");
     layout->addWidget(label);
@@ -33,34 +33,30 @@ CustomAttributesTable::CustomAttributesTable(Event *event, QWidget *parent) :
     this->table->setColumnCount(3);
     this->table->setHorizontalHeaderLabels(QStringList({"Type", "Key", "Value"}));
     this->table->horizontalHeader()->setStretchLastSection(true);
+    this->table->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    this->table->horizontalHeader()->setVisible(false);
+    this->table->verticalHeader()->setVisible(false);
     layout->addWidget(this->table);
+    layout->addStretch(1);
 
-    QMap<QString, QJsonValue> customValues = this->event->getCustomValues();
-    for (auto it = customValues.begin(); it != customValues.end(); it++)
-        CustomAttributesTable::addAttribute(this->table, it.key(), it.value());
-
-    connect(addButton, &QPushButton::clicked, [=]() {
+    connect(addButton, &QPushButton::clicked, [this]() {
         bool ok;
-        QJsonValue value = CustomAttributesTable::pickType(this, &ok);
-        if (ok){
-            CustomAttributesTable::addAttribute(this->table, "", value, true);
-            this->event->setCustomValues(CustomAttributesTable::getAttributes(this->table));
-            this->resizeVertically();
+        QJsonValue value = this->pickType(&ok);
+        if (ok) {
+            this->addAttribute("", value, false);
+            emit this->edited();
         }
     });
 
-    connect(deleteButton, &QPushButton::clicked, [=]() {
-        if (CustomAttributesTable::deleteSelectedAttributes(this->table)) {
-            this->event->setCustomValues(CustomAttributesTable::getAttributes(this->table));
-            this->resizeVertically();
+    connect(deleteButton, &QPushButton::clicked, [this]() {
+        if (this->deleteSelectedAttributes()) {
+            emit this->edited();
         }
     });
 
-    connect(this->table, &QTableWidget::cellChanged, [=]() {
-        this->event->setCustomValues(CustomAttributesTable::getAttributes(this->table));
+    connect(this->table, &QTableWidget::cellChanged, [this]() {
+        emit this->edited();
     });
-
-    this->resizeVertically();
 }
 
 CustomAttributesTable::~CustomAttributesTable()
@@ -68,30 +64,31 @@ CustomAttributesTable::~CustomAttributesTable()
 }
 
 void CustomAttributesTable::resizeVertically() {
-    int horizontalHeaderHeight = this->table->horizontalHeader()->height();
-    int rowHeight = 0;
+    int height = 0;
     for (int i = 0; i < this->table->rowCount(); i++) {
-        rowHeight += this->table->rowHeight(0);
+        height += this->table->rowHeight(i);
     }
-    int totalHeight = horizontalHeaderHeight + rowHeight;
+
+    // Header disappears if there are no entries
     if (this->table->rowCount() == 0) {
-        totalHeight += 1;
+        this->table->horizontalHeader()->setVisible(false);
     } else {
-        totalHeight += 2;
+        this->table->horizontalHeader()->setVisible(true);
+        height += this->table->horizontalHeader()->height() + 2;
     }
-    this->table->setMinimumHeight(totalHeight);
-    this->table->setMaximumHeight(totalHeight);
+
+    this->table->setMinimumHeight(height);
+    this->table->setMaximumHeight(height);
+    this->updateGeometry();
 }
 
-const QMap<QString, QJsonValue> CustomAttributesTable::getAttributes(QTableWidget * table) {
+QMap<QString, QJsonValue> CustomAttributesTable::getAttributes() const {
     QMap<QString, QJsonValue> fields;
-    if (!table) return fields;
-
-    for (int row = 0; row < table->rowCount(); row++) {
+    for (int row = 0; row < this->table->rowCount(); row++) {
         QString key = "";
-        QTableWidgetItem *typeItem = table->item(row, 0);
-        QTableWidgetItem *keyItem = table->item(row, 1);
-        QTableWidgetItem *valueItem = table->item(row, 2);
+        QTableWidgetItem *typeItem = this->table->item(row, 0);
+        QTableWidgetItem *keyItem = this->table->item(row, 1);
+        QTableWidgetItem *valueItem = this->table->item(row, 2);
 
         if (keyItem) key = keyItem->text();
         if (key.isEmpty() || !typeItem || !valueItem)
@@ -121,19 +118,32 @@ const QMap<QString, QJsonValue> CustomAttributesTable::getAttributes(QTableWidge
     return fields;
 }
 
-QJsonValue CustomAttributesTable::pickType(QWidget * parent, bool * ok) {
-    const QMap<QString, QJsonValue> valueTypes = {
+QJsonValue CustomAttributesTable::pickType(bool * ok) {
+    static const QMap<QString, QJsonValue> valueTypes = {
         {"String",  QJsonValue(QString(""))},
         {"Number",  QJsonValue(0)},
         {"Boolean", QJsonValue(false)},
     };
-    QStringList typeNames = valueTypes.keys();
-    QString selection = QInputDialog::getItem(parent, "", "Choose Value Type", typeNames, typeNames.indexOf("String"), false, ok);
+    static const QStringList typeNames = valueTypes.keys();
+    static int defaultIndex = typeNames.indexOf("String");
+    QString selection = QInputDialog::getItem(this, "", "Choose Value Type", typeNames, defaultIndex, false, ok);
+
+    // Preserve selection for next time
+    int index = typeNames.indexOf(selection);
+    if (index >= 0) defaultIndex = index;
+
     return valueTypes.value(selection);
 }
 
-void CustomAttributesTable::addAttribute(QTableWidget * table, QString key, QJsonValue value, bool isNew) {
-    if (!table) return;
+void CustomAttributesTable::setAttributes(const QMap<QString, QJsonValue> attributes) {
+    this->table->setRowCount(0);
+    for (auto it = attributes.cbegin(); it != attributes.cend(); it++)
+        this->addAttribute(it.key(), it.value(), true);
+    this->resizeVertically();
+}
+
+void CustomAttributesTable::addAttribute(QString key, QJsonValue value, bool init) {
+    const QSignalBlocker blocker(this->table);
     QTableWidgetItem * valueItem;
     QJsonValue::Type type = value.type();
     switch (type)
@@ -154,7 +164,7 @@ void CustomAttributesTable::addAttribute(QTableWidget * table, QString key, QJso
         break;
     }
 
-    const QHash<QJsonValue::Type, QString> typeToName = {
+    static const QHash<QJsonValue::Type, QString> typeToName = {
         {QJsonValue::Bool, "Bool"},
         {QJsonValue::Double, "Number"},
         {QJsonValue::String, "String"},
@@ -168,27 +178,25 @@ void CustomAttributesTable::addAttribute(QTableWidget * table, QString key, QJso
     typeItem->setData(Qt::UserRole, type); // Record the type for writing to the file
     typeItem->setTextAlignment(Qt::AlignCenter);
 
-    int rowIndex = table->rowCount();
-    table->insertRow(rowIndex);
-    table->setItem(rowIndex, 0, typeItem);
-    table->setItem(rowIndex, 1, new QTableWidgetItem(key));
-    table->setItem(rowIndex, 2, valueItem);
+    int rowIndex = this->table->rowCount();
+    this->table->insertRow(rowIndex);
+    this->table->setItem(rowIndex, 0, typeItem);
+    this->table->setItem(rowIndex, 1, new QTableWidgetItem(key));
+    this->table->setItem(rowIndex, 2, valueItem);
 
-    if (isNew) {
+    if (!init) {
         valueItem->setText(""); // Erase the "0" in new numbers
-        table->selectRow(rowIndex);
+        this->table->selectRow(rowIndex);
+        this->resizeVertically();
     }
 }
 
-bool CustomAttributesTable::deleteSelectedAttributes(QTableWidget * table) {
-    if (!table)
-        return false;
-
-    int rowCount = table->rowCount();
+bool CustomAttributesTable::deleteSelectedAttributes() {
+    int rowCount = this->table->rowCount();
     if (rowCount <= 0)
         return false;
 
-    QModelIndexList indexList = table->selectionModel()->selectedIndexes();
+    QModelIndexList indexList = this->table->selectionModel()->selectedIndexes();
     QList<QPersistentModelIndex> persistentIndexes;
     for (QModelIndex index : indexList) {
         QPersistentModelIndex persistentIndex(index);
@@ -199,11 +207,12 @@ bool CustomAttributesTable::deleteSelectedAttributes(QTableWidget * table) {
         return false;
 
     for (QPersistentModelIndex index : persistentIndexes) {
-        table->removeRow(index.row());
+        this->table->removeRow(index.row());
     }
 
-    if (table->rowCount() > 0) {
-        table->selectRow(0);
+    if (this->table->rowCount() > 0) {
+        this->table->selectRow(0);
     }
+    this->resizeVertically();
     return true;
 }

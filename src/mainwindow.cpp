@@ -256,6 +256,7 @@ void MainWindow::initEditor() {
     connect(this->editor, &Editor::tilesetUpdated, this, &Scripting::cb_TilesetUpdated);
     connect(ui->toolButton_Open_Scripts, &QToolButton::pressed, this->editor, &Editor::openMapScripts);
     connect(ui->actionOpen_Project_in_Text_Editor, &QAction::triggered, this->editor, &Editor::openProjectInTextEditor);
+    connect(ui->customAttributesTable, &CustomAttributesTable::edited, this->editor, &Editor::updateCustomMapHeaderValues);
 
     this->loadUserSettings();
 
@@ -846,13 +847,7 @@ void MainWindow::displayMapProperties() {
     ui->checkBox_AllowEscaping->setChecked(map->allowEscaping);
     ui->spinBox_FloorNumber->setValue(map->floorNumber);
 
-    // Custom fields table.
-    ui->tableWidget_CustomHeaderFields->blockSignals(true);
-    ui->tableWidget_CustomHeaderFields->setRowCount(0);
-    for (auto it = map->customHeaders.begin(); it != map->customHeaders.end(); it++)
-        CustomAttributesTable::addAttribute(ui->tableWidget_CustomHeaderFields, it.key(), it.value());
-    ui->tableWidget_CustomHeaderFields->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    ui->tableWidget_CustomHeaderFields->blockSignals(false);
+    ui->customAttributesTable->setAttributes(map->customHeaders);
 }
 
 void MainWindow::on_comboBox_Song_currentTextChanged(const QString &song)
@@ -2798,27 +2793,6 @@ void MainWindow::reloadScriptEngine() {
     Scripting::cb_ProjectOpened(projectConfig.getProjectDir());
     if (editor && editor->map)
         Scripting::cb_MapOpened(editor->map->name);
-}
-
-void MainWindow::on_pushButton_AddCustomHeaderField_clicked()
-{
-    bool ok;
-    QJsonValue value = CustomAttributesTable::pickType(this, &ok);
-    if (ok){
-        CustomAttributesTable::addAttribute(this->ui->tableWidget_CustomHeaderFields, "", value, true);
-        this->editor->updateCustomMapHeaderValues(this->ui->tableWidget_CustomHeaderFields);
-    }
-}
-
-void MainWindow::on_pushButton_DeleteCustomHeaderField_clicked()
-{
-    if (CustomAttributesTable::deleteSelectedAttributes(this->ui->tableWidget_CustomHeaderFields))
-        this->editor->updateCustomMapHeaderValues(this->ui->tableWidget_CustomHeaderFields);
-}
-
-void MainWindow::on_tableWidget_CustomHeaderFields_cellChanged(int, int)
-{
-    this->editor->updateCustomMapHeaderValues(this->ui->tableWidget_CustomHeaderFields);
 }
 
 void MainWindow::on_horizontalSlider_MetatileZoom_valueChanged(int value) {

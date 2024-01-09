@@ -8,18 +8,23 @@
 
 class CustomAttributesTable : public QFrame
 {
+    Q_OBJECT
+
 public:
-    explicit CustomAttributesTable(Event *event, QWidget *parent = nullptr);
+    explicit CustomAttributesTable(QWidget *parent = nullptr);
     ~CustomAttributesTable();
 
-    static const QMap<QString, QJsonValue> getAttributes(QTableWidget * table);
-    static QJsonValue pickType(QWidget * parent, bool * ok = nullptr);
-    static void addAttribute(QTableWidget * table, QString key, QJsonValue value, bool isNew = false);
-    static bool deleteSelectedAttributes(QTableWidget * table);
+    QMap<QString, QJsonValue> getAttributes() const;
+    void setAttributes(const QMap<QString, QJsonValue> attributes);
+    bool deleteSelectedAttributes();
+
+signals:
+    void edited();
 
 private:
-    Event *event;
     QTableWidget *table;
+    QJsonValue pickType(bool * ok = nullptr);
+    void addAttribute(QString key, QJsonValue value, bool init);
     void resizeVertically();
 };
 

@@ -275,9 +275,6 @@ private slots:
     void on_actionAbout_Porymap_triggered();
     void on_actionOpen_Log_File_triggered();
     void on_actionOpen_Config_Folder_triggered();
-    void on_pushButton_AddCustomHeaderField_clicked();
-    void on_pushButton_DeleteCustomHeaderField_clicked();
-    void on_tableWidget_CustomHeaderFields_cellChanged(int row, int column);
     void on_horizontalSlider_MetatileZoom_valueChanged(int value);
     void on_horizontalSlider_CollisionZoom_valueChanged(int value);
     void on_pushButton_NewWildMonGroup_clicked();
