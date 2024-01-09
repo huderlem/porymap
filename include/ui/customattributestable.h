@@ -16,14 +16,19 @@ public:
 
     QMap<QString, QJsonValue> getAttributes() const;
     void setAttributes(const QMap<QString, QJsonValue> attributes);
+    void addAttribute(QString key, QJsonValue value);
     bool deleteSelectedAttributes();
+
+    void setDefaultAttribute(QString key, QJsonValue value);
+    void unsetDefaultAttribute(QString key);
+
+    const QStringList restrictedKeyNames; // TODO: Populate
 
 signals:
     void edited();
 
 private:
     QTableWidget *table;
-    QJsonValue pickType(bool * ok = nullptr);
     void addAttribute(QString key, QJsonValue value, bool init);
     void resizeVertically();
 };

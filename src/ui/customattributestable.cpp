@@ -1,4 +1,5 @@
 #include "customattributestable.h"
+#include "customattributesdialog.h"
 #include "parseutil.h"
 #include <QHBoxLayout>
 #include <QHeaderView>
@@ -41,9 +42,8 @@ CustomAttributesTable::CustomAttributesTable(QWidget *parent) :
 
     connect(addButton, &QPushButton::clicked, [this]() {
         bool ok;
-        QJsonValue value = this->pickType(&ok);
-        if (ok) {
-            this->addAttribute("", value, false);
+        CustomAttributesDialog dialog(this);
+        if (dialog.exec() == QDialog::Accepted) {
             emit this->edited();
         }
     });
@@ -63,6 +63,7 @@ CustomAttributesTable::~CustomAttributesTable()
 {
 }
 
+// TODO: Fix Header table size on first open
 void CustomAttributesTable::resizeVertically() {
     int height = 0;
     for (int i = 0; i < this->table->rowCount(); i++) {
@@ -118,28 +119,15 @@ QMap<QString, QJsonValue> CustomAttributesTable::getAttributes() const {
     return fields;
 }
 
-QJsonValue CustomAttributesTable::pickType(bool * ok) {
-    static const QMap<QString, QJsonValue> valueTypes = {
-        {"String",  QJsonValue(QString(""))},
-        {"Number",  QJsonValue(0)},
-        {"Boolean", QJsonValue(false)},
-    };
-    static const QStringList typeNames = valueTypes.keys();
-    static int defaultIndex = typeNames.indexOf("String");
-    QString selection = QInputDialog::getItem(this, "", "Choose Value Type", typeNames, defaultIndex, false, ok);
-
-    // Preserve selection for next time
-    int index = typeNames.indexOf(selection);
-    if (index >= 0) defaultIndex = index;
-
-    return valueTypes.value(selection);
-}
-
 void CustomAttributesTable::setAttributes(const QMap<QString, QJsonValue> attributes) {
     this->table->setRowCount(0);
     for (auto it = attributes.cbegin(); it != attributes.cend(); it++)
         this->addAttribute(it.key(), it.value(), true);
     this->resizeVertically();
+}
+
+void CustomAttributesTable::addAttribute(QString key, QJsonValue value) {
+    this->addAttribute(key, value, false);
 }
 
 void CustomAttributesTable::addAttribute(QString key, QJsonValue value, bool init) {
@@ -189,6 +177,14 @@ void CustomAttributesTable::addAttribute(QString key, QJsonValue value, bool ini
         this->table->selectRow(rowIndex);
         this->resizeVertically();
     }
+}
+
+void CustomAttributesTable::setDefaultAttribute(QString key, QJsonValue value) {
+    // TODO
+}
+
+void CustomAttributesTable::unsetDefaultAttribute(QString key) {
+    // TODO
 }
 
 bool CustomAttributesTable::deleteSelectedAttributes() {
