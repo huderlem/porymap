@@ -1,5 +1,5 @@
-Version: 5.1.1
-Date: February 20th, 2023
+Version: 5.2.0
+Date: January 2nd, 2024
 
 This version of porymap works with pokeruby and pokeemerald as of the following commit hashes:
 * pokeemerald: c76beed98990a57c84d3930190fd194abfedf7e8
@@ -11,6 +11,51 @@ Official Porymap documentation: https://huderlem.github.io/porymap/
 Please report any issues on GitHub: [https://github.com/huderlem/porymap/issues](https://github.com/huderlem/porymap/issues)
 
 -------------------------
+
+## [5.2.0] - 2024-01-02
+### Added
+- Add an editor window under `Options -> Project Settings...` to customize the project-specific settings in `porymap.project.cfg` and `porymap.user.cfg`.
+- Add an editor window under `Options -> Custom Scripts...` for Porymap's API scripts.
+- Add an `Open Recent Project` menu
+- Add a warning to warp events if they're on an incompatible metatile behavior.
+- Add settings for custom images, including the collision graphics, default event icons, and pokémon icons.
+- Add settings to override any symbol or macro names Porymap expects to find.
+- Add a zoom slider to the Collision tab.
+- Add toggleable grids to the Tileset Editor.
+- Support for custom metatile ID, collision, and elevation data sizes.
+- Support for 8bpp tileset tile images.
+
+### Changed
+- `Script` dropdowns now include scripts from the current map's scripts file.
+- Encounter Rate now defaults to the most commonly used value, rather than 0.
+- The Collision tab now allows selection of any valid elevation/collision value.
+- The Palette Editor now remembers the Bit Depth setting.
+- The min/max levels on the Wild Pokémon tab will now adjust automatically if they invalidate each other.
+- If the recent project directory doesn't exist Porymap will open an empty project instead of failing with a misleading error message.
+- Settings under `Options` were relocated either to the `Preferences` window or `Options -> Project Settings`.
+- Secret Base and Weather Trigger events are automatically disabled if their respective constants files fail to parse, instead of not opening the project.
+- If a Pokémon icon fails to load Porymap will attempt to predict its filepath. If this also fails it will appear with a placeholder icon, and won't disappear when edited.
+- The bits in metatile attribute masks are now allowed to be non-contiguous.
+- Porymap will now attempt to read metatile attribute masks from the project.
+
+### Fixed
+- Fix text boxes in the Palette Editor calculating color incorrectly.
+- Fix metatile labels being sorted incorrectly for tileset names with multiple underscores.
+- Fix default object sprites retaining dimensions and transparency of the previous sprite.
+- Fix connections not being deleted when the map name text box is cleared.
+- Fix the map border not updating when a tileset is changed.
+- Improve the poor speed of the API functions `setMetatileTile` and `setMetatileTiles`.
+- Stop the Tileset Editor from scrolling to the initially selected metatile when saving.
+- Fix `0x0`/`NULL` appearing more than once in the scripts dropdown.
+- Fix the selection outline sticking in single-tile mode on the Prefab tab.
+- Fix heal location data being cleared if certain spaces aren't used in the table.
+- Fix bad URL color contrast on dark themes.
+- Fix some issues when too few/many pokémon are specified for a wild encounter group.
+- Fix Porymap reporting errors for macros it doesn't use.
+- Fix painting on the Collision tab with the opacity slider at 0 painting metatiles.
+- Fix crashes when File->Reload Project fails.
+- Fix overworld sprite facing directions if spritesheet has vertical layout.
+- Stop reporting `Error: Interrupted` for custom scripts during project reopen
 
 ## [5.1.1] - 2023-02-20
 ### Added

@@ -118,6 +118,9 @@ public:
     void updateCursorRectPos(int x, int y);
     void setCursorRectVisible(bool visible);
 
+    void updateWarpEventWarning(Event *event);
+    void updateWarpEventWarnings();
+
     QGraphicsScene *scene = nullptr;
     QGraphicsPixmapItem *current_view = nullptr;
     LayoutPixmapItem *map_item = nullptr;
@@ -172,6 +175,7 @@ public:
 
     int scaleIndex = 2;
     qreal collisionOpacity = 0.5;
+    static QList<QList<const QImage*>> collisionIcons;
 
     void objectsView_onMousePress(QMouseEvent *event);
 
@@ -183,6 +187,7 @@ public:
     void scaleMapView(int);
     static void openInTextEditor(const QString &path, int lineNum = 0);
     bool eventLimitReached(Event::Type type);
+    void setCollisionGraphics();
 
 public slots:
     void openMapScripts() const;
@@ -193,6 +198,10 @@ public slots:
     void selectedEventIndexChanged(int index, Event::Group eventGroup);
 
 private:
+    const QImage defaultCollisionImgSheet = QImage(":/images/collisions.png");
+    const QImage collisionPlaceholder = QImage(":/images/collisions_unknown.png");
+    QPixmap collisionSheetPixmap;
+
     void setConnectionItemsVisible(bool);
     void setBorderItemsVisible(bool, qreal = 1);
     void setConnectionEditControlValues(MapConnection*);
@@ -211,6 +220,7 @@ private:
     void updateEncounterFields(EncounterFields newFields);
     QString getMovementPermissionText(uint16_t collision, uint16_t elevation);
     QString getMetatileDisplayMessage(uint16_t metatileId);
+    void setCollisionTabSpinBoxes(uint16_t collision, uint16_t elevation);
     static bool startDetachedProcess(const QString &command,
                                     const QString &workingDirectory = QString(),
                                     qint64 *pid = nullptr);

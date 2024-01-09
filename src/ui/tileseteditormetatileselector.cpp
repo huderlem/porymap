@@ -12,6 +12,19 @@ TilesetEditorMetatileSelector::TilesetEditorMetatileSelector(Tileset *primaryTil
     this->usedMetatiles.resize(Project::getNumMetatilesTotal());
 }
 
+int TilesetEditorMetatileSelector::numRows(int numMetatiles) {
+    int numMetatilesHigh = numMetatiles / this->numMetatilesWide;
+    if (numMetatiles % this->numMetatilesWide != 0) {
+        // Round up height for incomplete last row
+        numMetatilesHigh++;
+    }
+    return numMetatilesHigh;
+}
+
+int TilesetEditorMetatileSelector::numRows() {
+    return this->numRows(this->primaryTileset->metatiles.length() + this->secondaryTileset->metatiles.length());
+}
+
 QImage TilesetEditorMetatileSelector::buildAllMetatilesImage() {
     return this->buildImage(0, this->primaryTileset->metatiles.length() + this->secondaryTileset->metatiles.length());
 }
@@ -25,11 +38,7 @@ QImage TilesetEditorMetatileSelector::buildSecondaryMetatilesImage() {
 }
 
 QImage TilesetEditorMetatileSelector::buildImage(int metatileIdStart, int numMetatiles) {
-    int numMetatilesHigh = numMetatiles / this->numMetatilesWide;
-    if (numMetatiles % this->numMetatilesWide != 0) {
-        // Round up height for incomplete last row
-        numMetatilesHigh++;
-    }
+    int numMetatilesHigh = this->numRows(numMetatiles);
     int numPrimary = this->primaryTileset->metatiles.length();
     int maxPrimary = Project::getNumMetatilesPrimary();
     bool includesPrimary = metatileIdStart < maxPrimary;
@@ -60,9 +69,9 @@ QImage TilesetEditorMetatileSelector::buildImage(int metatileIdStart, int numMet
 
 void TilesetEditorMetatileSelector::draw() {
     this->setPixmap(QPixmap::fromImage(this->buildAllMetatilesImage()));
+    this->drawGrid();
     this->drawSelection();
-
-    drawFilters();
+    this->drawFilters();
 }
 
 bool TilesetEditorMetatileSelector::select(uint16_t metatileId) {
@@ -155,6 +164,26 @@ QPoint TilesetEditorMetatileSelector::getMetatileIdCoordsOnWidget(uint16_t metat
     pos.rx() = (pos.x() * this->cellWidth) + (this->cellWidth / 2);
     pos.ry() = (pos.y() * this->cellHeight) + (this->cellHeight / 2);
     return pos;
+}
+
+void TilesetEditorMetatileSelector::drawGrid() {
+    if (!this->showGrid)
+        return;
+
+    QPixmap pixmap = this->pixmap();
+    QPainter painter(&pixmap);
+    const int numColumns = this->numMetatilesWide;
+    const int numRows = this->numRows();
+    for (int column = 1; column < numColumns; column++) {
+        int x = column * 32;
+        painter.drawLine(x, 0, x, numRows * 32);
+    }
+    for (int row = 1; row < numRows; row++) {
+        int y = row * 32;
+        painter.drawLine(0, y, numColumns * 32, y);
+    }
+    painter.end();
+    this->setPixmap(pixmap);
 }
 
 void TilesetEditorMetatileSelector::drawFilters() {

@@ -23,10 +23,11 @@ CustomScriptsEditor::CustomScriptsEditor(QWidget *parent) :
     for (int i = 0; i < paths.length(); i++)
         this->displayScript(paths.at(i), enabled.at(i));
 
-    this->importDir = userConfig.getProjectDir();
+    this->fileDialogDir = userConfig.getProjectDir();
 
-    connect(ui->button_AddNewScript, &QAbstractButton::clicked, this, &CustomScriptsEditor::addNewScript);
-    connect(ui->button_ReloadScripts, &QAbstractButton::clicked, this, &CustomScriptsEditor::reloadScripts);
+    connect(ui->button_CreateNewScript, &QAbstractButton::clicked, this, &CustomScriptsEditor::createNewScript);
+    connect(ui->button_LoadScript, &QAbstractButton::clicked, this, &CustomScriptsEditor::loadScript);
+    connect(ui->button_RefreshScripts, &QAbstractButton::clicked, this, &CustomScriptsEditor::refreshScripts);
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &CustomScriptsEditor::dialogButtonClicked);
 
     this->initShortcuts();
@@ -48,13 +49,17 @@ void CustomScriptsEditor::initShortcuts() {
     shortcut_open->setObjectName("shortcut_open");
     shortcut_open->setWhatsThis("Open Selected Scripts");
 
-    auto *shortcut_addNew = new Shortcut(QKeySequence(), this, SLOT(addNewScript()));
-    shortcut_addNew->setObjectName("shortcut_addNew");
-    shortcut_addNew->setWhatsThis("Add New Script...");
+    auto *shortcut_createNew = new Shortcut(QKeySequence(), this, SLOT(createNewScript()));
+    shortcut_createNew->setObjectName("shortcut_createNew");
+    shortcut_createNew->setWhatsThis("Create New Script...");
 
-    auto *shortcut_reload = new Shortcut(QKeySequence(), this, SLOT(reloadScripts()));
-    shortcut_reload->setObjectName("shortcut_reload");
-    shortcut_reload->setWhatsThis("Reload Scripts");
+    auto *shortcut_load = new Shortcut(QKeySequence(), this, SLOT(loadScript()));
+    shortcut_load->setObjectName("shortcut_load");
+    shortcut_load->setWhatsThis("Load Script...");
+
+    auto *shortcut_refresh = new Shortcut(QKeySequence(), this, SLOT(refreshScripts()));
+    shortcut_refresh->setObjectName("shortcut_refresh");
+    shortcut_refresh->setWhatsThis("Refresh Scripts");
 
     shortcutsConfig.load();
     shortcutsConfig.setDefaultShortcuts(shortcutableObjects());
@@ -145,13 +150,54 @@ QString CustomScriptsEditor::chooseScript(QString dir) {
     return QFileDialog::getOpenFileName(this, "Choose Custom Script File", dir, "JavaScript Files (*.js)");
 }
 
-void CustomScriptsEditor::addNewScript() {
-    QString filepath = this->chooseScript(this->importDir);
+void CustomScriptsEditor::createNewScript() {
+    QString filepath = QFileDialog::getSaveFileName(this, "Create New Script File", this->fileDialogDir + "/new_script.js", "JavaScript Files (*.js)");
+
+    // QFileDialog::getSaveFileName returns focus to the main editor window when closed. Workaround for this below
+    this->raise();
+    this->activateWindow();
+
     if (filepath.isEmpty())
         return;
-    this->importDir = filepath;
+    this->fileDialogDir = filepath;
+
+    QFile scriptFile(filepath);
+    if (!scriptFile.open(QIODevice::WriteOnly)) {
+        logError(QString("Error: Could not open %1 for writing").arg(filepath));
+        QMessageBox messageBox(this);
+        messageBox.setText("Failed to create new script file!");
+        messageBox.setInformativeText(QString("Could not open \"%1\" for writing").arg(filepath));
+        messageBox.setIcon(QMessageBox::Warning);
+        messageBox.exec();
+        return;
+    }
+    ParseUtil parser;
+    scriptFile.write(parser.readTextFile(":/text/script_template.txt").toUtf8());
+    scriptFile.close();
+
+    this->displayNewScript(filepath);
+}
+
+void CustomScriptsEditor::loadScript() {
+    QString filepath = this->chooseScript(this->fileDialogDir);
+    if (filepath.isEmpty())
+        return;
+    this->fileDialogDir = filepath;
+    this->displayNewScript(filepath);
+}
+
+void CustomScriptsEditor::displayNewScript(QString filepath) {
     if (filepath.startsWith(this->baseDir))
         filepath.remove(0, this->baseDir.length());
+
+    // Verify new script path is not already in list
+    for (int i = 0; i < ui->list->count(); i++) {
+        if (filepath == this->getScriptFilepath(ui->list->item(i), false)) {
+            QMessageBox::information(this, "", QString("The script '%1' is already loaded").arg(filepath));
+            return;
+        }
+    }
+
     this->displayScript(filepath, true);
     this->markEdited();
 }
@@ -192,12 +238,13 @@ void CustomScriptsEditor::openSelectedScripts() {
         this->openScript(item);
 }
 
-void CustomScriptsEditor::reloadScripts() {
+void CustomScriptsEditor::refreshScripts() {
     if (this->hasUnsavedChanges) {
         if (this->prompt("Scripts have been modified, save changes and reload the script engine?", QMessageBox::Yes) == QMessageBox::No)
             return;
         this->save();
     }
+    QToolTip::showText(ui->button_RefreshScripts->mapToGlobal(QPoint(0, 0)), "Refreshed!");
     emit reloadScriptEngine();
 }
 
@@ -218,7 +265,7 @@ void CustomScriptsEditor::save() {
 
     userConfig.setCustomScripts(paths, enabledStates);
     this->hasUnsavedChanges = false;
-    this->reloadScripts();
+    this->refreshScripts();
 }
 
 int CustomScriptsEditor::prompt(const QString &text, QMessageBox::StandardButton defaultButton) {

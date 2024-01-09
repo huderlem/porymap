@@ -11,31 +11,70 @@ Porymap is extensible via scripting capabilities. This allows the user to write 
 - Procedurally Generated Maps
 - Randomize Grass Patterns
 
+
+Custom Scripts Editor
+---------------------
+
+Your custom scripts can be managed with the Custom Scripts Editor accessible under ``Options -> Custom Scripts...``.
+
+.. figure:: images/scripting-capabilities/custom-scripts-editor.png
+    :alt: Custom Scripts Editor
+    :width: 60%
+    :align: center
+
+    Custom Scripts Editor
+
+At the top there are three basic buttons for managing your scripts:
+ - |button-create| Opens a prompt to create a new script file, which will be populated with a basic template.
+ - |button-load| Lets you add an existing script file to Porymap that you've already created or downloaded from elsewhere.
+ - |button-refresh| Any edits made to your scripts while Porymap is already open will not be reflected until you select this button.
+
+Below these buttons is a list of all the custom scripts you have loaded for your project. Each entry will have a text box showing the path of the script file. This path can be freely updated, or you can choose a new path with the |button-folder| button next to it. The |button-edit| button will open the script file in your default text editor, and the |button-remove| button will remove it from the list. The check box to the left of the filepath indicates whether your script should be running. If you'd like to temporarily disable a script you can uncheck this box.
+
+.. |button-create| image:: images/scripting-capabilities/button-create.png
+   :height: 24
+.. |button-load| image:: images/scripting-capabilities/button-load.png
+   :height: 24
+.. |button-refresh| image:: images/scripting-capabilities/button-refresh.png
+   :height: 24
+.. |button-folder| image:: images/scripting-capabilities/folder.png
+   :width: 24
+   :height: 24
+.. |button-edit| image:: images/scripting-capabilities/file_edit.png
+   :width: 24
+   :height: 24
+.. |button-remove| image:: images/scripting-capabilities/delete.png
+   :width: 24
+   :height: 24
+
+
 Writing a Custom Script
 -----------------------
 
 Let's write a custom script that will randomize grass patterns when the user is editing the map. This is useful, since it's cumbersome to manually add randomness to grass patches. With the custom script, it will happen automatically. Whenever the user paints a grass tile onto the map, the script will overwrite the tile with a random grass tile instead.
 
-First, create a new script file called ``my_script.js``--place it in the project directory (e.g. ``pokefirered/``).
+First, open the ``Options -> Custom Scripts...`` window and select the |button-create| button. This will open a file save prompt; let's name our new script file ``my_script.js`` and save it. We've successfully added a new script! We can now see it listed in the editor.
 
-Next, open the Porymap project config file, ``porymap.user.cfg``, in the project directory. Add the script file to the ``custom_scripts`` configuration value. Multiple script files can be loaded by separating the filepaths with a comma.
+.. figure:: images/scripting-capabilities/new-script.png
+    :alt: Our New Script
+    :width: 60%
+    :align: center
 
-.. code-block::
-
-	custom_scripts=my_script.js
-
-Now that Porymap is configured to load the script file, let's write the actual code that will power the grass-randomizer. Scripts have access to several "callbacks" for events that occur while Porymap is running. This means our script can define functions for each of these callbacks. We're interested in the ``onBlockChanged()`` callback, since we want our script to take action whenever a user paints a block on the map.
+At the moment our script doesn't do anything. Let's select the |button-edit| button to open it and write the actual code that will power the grass-randomizer. Once the script file is open you will notice that there are several empty functions already inside. These are special "callback" functions that will be called automatically for certain events that occur while Porymap is running. We're interested in the ``onBlockChanged()`` callback, since we want our script to take action whenever a user paints a block on the map.
 
 .. code-block:: js
-	
-	// Porymap callback when a block is painted.
-	export function onBlockChanged(x, y, prevBlock, newBlock) {
-	    // Grass-randomizing logic goes here.
-	}
+   
+   // Porymap callback when a block is painted.
+   export function onBlockChanged(x, y, prevBlock, newBlock) {
+       // Grass-randomizing logic goes here.
+   }
 
-It's very **important** to remember to ``export`` the callback functions in the script. Otherwise, Porymap will not be able to execute them.
+We can leave the rest of the callback functions in here alone, or we can delete them because we're not using them. Every callback function does not need to be defined in your script. **Note**: For Porymap to be able to execute these callback functions they need to have the ``export`` keyword. The rest of the functions in your script do not need this keyword.
 
 In addition to the callbacks, Porymap also supports a scripting API so that the script can interact with Porymap in interesting ways. For example, a script can change a block or add overlay text on the map. Since we want to paint random grass tiles, we'll be using the ``map.setMetatileId()`` function. Let's fill in the rest of the grass-randomizing code.
+
+.. note::
+   **For pokeemerald/pokeruby users**: We only have 1 regular grass metatile, but if you want to try this script you could replace ``const grassTiles = [0x8, 0x9, 0x10, 0x11];`` in the code below with ``const grassTiles = [0x1, 0x4, 0xD];`` to randomize using tall grass and flowers instead!
 
 .. code-block:: js
 
@@ -58,7 +97,14 @@ In addition to the callbacks, Porymap also supports a scripting API so that the 
 	    }
 	}
 
-Let's test the script out by re-launching Porymap. If we try to paint grass on the map, we should see our script inserting a nice randomized grass pattern.
+Let's apply our changes by selecting the |button-refresh| button. Because we've added a new script we'll be met with this confirmation prompt. Accept this prompt by selecting ``YES``.
+
+.. figure:: images/scripting-capabilities/refresh-prompt.png
+    :alt: Refresh Scripts Prompt
+    :width: 60%
+    :align: center
+
+Now let's test our script! If we try to paint grass on the map, we should see our script inserting a nice randomized grass pattern.
 
 .. figure:: images/scripting-capabilities/porymap-scripting-grass.gif
     :alt: Grass-Randomizing Script
@@ -81,7 +127,7 @@ The grass-randomizer script above happens implicitly when the user paints on the
 	   utility.registerAction("applyNightTint", "View Night Tint", "T")
 	}
 
-Then, to trigger the ``applyNightTint()`` function, we could either click ``Tools -> View Night Tint`` or use the ``T`` keyboard shortcut.
+Then, to trigger the ``applyNightTint()`` function, we could either click ``Tools -> View Night Tint`` or use the ``T`` keyboard shortcut. **Note**: Like callbacks, functions registered using ``utility.registerAction()`` also need the ``export`` keyword for Porymap to call them.
 
 Now that we have an overview of how to utilize Porymap's scripting capabilities, the entire scripting API is documented below.
 
@@ -1022,6 +1068,26 @@ All tileset functions are callable via the global ``map`` object.
    :type metatileId: number
    :param behavior: the behavior
    :type behavior: number
+
+.. js:function:: map.getMetatileBehaviorName(metatileId)
+
+   Gets the behavior name for the specified metatile. Returns an empty string if the metatile's behavior value has no name.
+
+   :param metatileId: id of target metatile
+   :type metatileId: number
+   :returns: the behavior name
+   :rtype: string
+
+.. js:function:: map.setMetatileBehaviorName(metatileId, behavior)
+
+   Sets the behavior name for the specified metatile. Does nothing if there is no metatile behavior define with the specified name.
+
+   **Warning:** This function writes directly to the tileset. There is no undo for this.
+
+   :param metatileId: id of target metatile
+   :type metatileId: number
+   :param behavior: the behavior name
+   :type behavior: string
 
 .. js:function:: map.getMetatileAttributes(metatileId)
 
@@ -2036,6 +2102,14 @@ All constants are accessible via the global ``constants`` object.
 
    The maximum number of metatiles in a secondary tileset.
 
+.. js:attribute:: constants.num_primary_palettes
+
+   The number of palettes in a primary tileset.
+
+.. js:attribute:: constants.num_secondary_palettes
+
+   The number of palettes in a secondary tileset.
+
 .. js:attribute:: constants.layers_per_metatile
 
    The number of tile layers used in each metatile. This will either be ``2`` or ``3``, depending on the config setting ``enable_triple_layer_metatiles``.
@@ -2043,6 +2117,10 @@ All constants are accessible via the global ``constants`` object.
 .. js:attribute:: constants.tiles_per_metatile
 
    The number of tiles in each metatile. This will either be ``8`` or ``12``, depending on the config setting ``enable_triple_layer_metatiles``.
+
+.. js:attribute:: constants.metatile_behaviors
+
+   An object mapping metatile behavior names to their values. For example, ``constants.metatile_behaviors["MB_TALL_GRASS"]`` would normally be ``2``.
 
 .. js:attribute:: constants.base_game_version
 

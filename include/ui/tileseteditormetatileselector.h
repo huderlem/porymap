@@ -23,6 +23,7 @@ public:
     QVector<uint16_t> usedMetatiles;
     bool selectorShowUnused = false;
     bool selectorShowCounts = false;
+    bool showGrid;
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent*);
@@ -36,10 +37,13 @@ private:
     Tileset *secondaryTileset = nullptr;
     uint16_t selectedMetatile;
     int numMetatilesWide;
+    int numMetatilesHigh;
     uint16_t getMetatileId(int x, int y);
     QPoint getMetatileIdCoords(uint16_t);
     bool shouldAcceptEvent(QGraphicsSceneMouseEvent*);
-
+    int numRows(int numMetatiles);
+    int numRows();
+    void drawGrid();
     void drawFilters();
     void drawUnused();
     void drawCounts();

@@ -42,6 +42,13 @@ public:
     virtual void visitSign(SignEvent *) = 0;
 };
 
+struct EventGraphics
+{
+    QImage spritesheet;
+    int spriteWidth;
+    int spriteHeight;
+    bool inanimate;
+};
 
 
 ///
@@ -111,6 +118,7 @@ public:
         }
     }
 
+    static QMap<Event::Group, const QPixmap*> icons;
 
 // standard public methods
 public:
@@ -155,7 +163,7 @@ public:
     const QMap<QString, QJsonValue> getCustomValues() { return this->customValues; }
     void setCustomValues(const QMap<QString, QJsonValue> newCustomValues) { this->customValues = newCustomValues; }
 
-    virtual void loadPixmap(Project *project) = 0;
+    virtual void loadPixmap(Project *project);
 
     void setPixmap(QPixmap newPixmap) { this->pixmap = newPixmap; }
     QPixmap getPixmap() { return this->pixmap; }
@@ -177,6 +185,7 @@ public:
     static QString eventGroupToString(Event::Group group);
     static QString eventTypeToString(Event::Type type);
     static Event::Type eventTypeFromString(QString type);
+    static void setIcons();
 
 // protected attributes
 protected:
@@ -256,7 +265,7 @@ public:
 
 public:
     void setFrameFromMovement(QString movement);
-    void setPixmapFromSpritesheet(QImage, int, int, bool);
+    void setPixmapFromSpritesheet(EventGraphics * gfx);
 
 
 protected:
@@ -337,13 +346,13 @@ public:
 
     virtual QSet<QString> getExpectedFields() override;
 
-    virtual void loadPixmap(Project *) override;
-
     void setDestinationMap(QString newDestinationMap) { this->destinationMap = newDestinationMap; }
     QString getDestinationMap() { return this->destinationMap; }
 
     void setDestinationWarpID(QString newDestinationWarpID) { this->destinationWarpID = newDestinationWarpID; }
     QString getDestinationWarpID() { return this->destinationWarpID; }
+
+    void setWarningEnabled(bool enabled);
 
 private:
     QString destinationMap;
@@ -371,8 +380,6 @@ public:
     virtual void setDefaultValues(Project *project) override = 0;
 
     virtual QSet<QString> getExpectedFields() override = 0;
-
-    virtual void loadPixmap(Project *) override;
 };
 
 
@@ -472,8 +479,6 @@ public:
     virtual void setDefaultValues(Project *project) override = 0;
 
     virtual QSet<QString> getExpectedFields() override = 0;
-
-    virtual void loadPixmap(Project *project) override;
 };
 
 
@@ -613,8 +618,6 @@ public:
     virtual void setDefaultValues(Project *project) override;
 
     virtual QSet<QString> getExpectedFields() override { return QSet<QString>(); }
-
-    virtual void loadPixmap(Project *project) override;
 
     void setIndex(int newIndex) { this->index = newIndex; }
     int getIndex() { return this->index; }

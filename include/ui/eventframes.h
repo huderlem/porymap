@@ -6,6 +6,7 @@
 
 #include "noscrollspinbox.h"
 #include "noscrollcombobox.h"
+#include "mainwindow.h"
 
 #include "events.h"
 
@@ -22,7 +23,7 @@ public:
 
     virtual void setup();
     void initCustomAttributesTable();
-    virtual void connectSignals();
+    virtual void connectSignals(MainWindow *);
     virtual void initialize();
     virtual void populate(Project *project);
 
@@ -69,7 +70,7 @@ public:
 
     virtual void setup() override;
     virtual void initialize() override;
-    virtual void connectSignals() override;
+    virtual void connectSignals(MainWindow *) override;
     virtual void populate(Project *project) override;
 
 public:
@@ -101,7 +102,7 @@ public:
 
     virtual void setup() override;
     virtual void initialize() override;
-    virtual void connectSignals() override;
+    virtual void connectSignals(MainWindow *) override;
     virtual void populate(Project *project) override;
 
 public:
@@ -124,12 +125,13 @@ public:
 
     virtual void setup() override;
     virtual void initialize() override;
-    virtual void connectSignals() override;
+    virtual void connectSignals(MainWindow *) override;
     virtual void populate(Project *project) override;
 
 public:
     NoScrollComboBox *combo_dest_map;
     NoScrollComboBox *combo_dest_warp;
+    QPushButton *warning;
 
 private:
     WarpEvent *warp;
@@ -146,7 +148,7 @@ public:
 
     virtual void setup() override;
     virtual void initialize() override;
-    virtual void connectSignals() override;
+    virtual void connectSignals(MainWindow *) override;
     virtual void populate(Project *project) override;
 
 public:
@@ -171,7 +173,7 @@ public:
 
     virtual void setup() override;
     virtual void initialize() override;
-    virtual void connectSignals() override;
+    virtual void connectSignals(MainWindow *) override;
     virtual void populate(Project *project) override;
 
 public:
@@ -192,7 +194,7 @@ public:
 
     virtual void setup() override;
     virtual void initialize() override;
-    virtual void connectSignals() override;
+    virtual void connectSignals(MainWindow *) override;
     virtual void populate(Project *project) override;
 
 public:
@@ -216,7 +218,7 @@ public:
 
     virtual void setup() override;
     virtual void initialize() override;
-    virtual void connectSignals() override;
+    virtual void connectSignals(MainWindow *) override;
     virtual void populate(Project *project) override;
 
 public:
@@ -242,7 +244,7 @@ public:
 
     virtual void setup() override;
     virtual void initialize() override;
-    virtual void connectSignals() override;
+    virtual void connectSignals(MainWindow *) override;
     virtual void populate(Project *project) override;
 
 public:
@@ -263,7 +265,7 @@ public:
 
     virtual void setup() override;
     virtual void initialize() override;
-    virtual void connectSignals() override;
+    virtual void connectSignals(MainWindow *) override;
     virtual void populate(Project *project) override;
 
 public:

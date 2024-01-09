@@ -29,6 +29,7 @@ struct EncounterField {
 
 typedef QVector<EncounterField> EncounterFields;
 
+void setDefaultEncounterRate(QString fieldName, int rate);
 WildMonInfo getDefaultMonInfo(EncounterField field);
 void combineEncounters(WildMonInfo &to, WildMonInfo from);
 

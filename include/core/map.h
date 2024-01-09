@@ -56,6 +56,7 @@ public:
     QString sharedEventsMap = "";
     QString sharedScriptsMap = "";
 
+    QStringList scriptsFileLabels;
     QMap<QString, QJsonValue> customHeaders;
 
     Layout *layout = nullptr;
@@ -72,21 +73,23 @@ public:
 
     QList<MapConnection*> connections;
 
-    void setName(QString mapName);
-    static QString mapConstantFromName(QString mapName);
+    QList<int> metatileLayerOrder;
+    QList<float> metatileLayerOpacity;
 
-    /// !HERE /* layout related stuff */
+    void setName(QString mapName);
+    static QString mapConstantFromName(QString mapName, bool includePrefix = true);
+
     int getWidth();
     int getHeight();
     int getBorderWidth();
     int getBorderHeight();
 
     QList<Event *> getAllEvents() const;
-    QStringList eventScriptLabels(Event::Group group = Event::Group::None) const;
+    QStringList getScriptLabels(Event::Group group = Event::Group::None) const;
+    QString getScriptsFilePath() const;
+    void openScript(QString label);
     void removeEvent(Event *);
     void addEvent(Event *);
-
-    void openScript(QString label);
 
     QUndoStack editHistory;
     void modify();

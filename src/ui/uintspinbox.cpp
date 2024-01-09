@@ -18,6 +18,7 @@ UIntSpinBox::UIntSpinBox(QWidget *parent)
 };
 
 void UIntSpinBox::setValue(uint32_t val) {
+    val = qMax(m_minimum, qMin(m_maximum, val));
     if (m_value != val) {
         m_value = val;
         emit valueChanged(m_value);
@@ -103,29 +104,37 @@ void UIntSpinBox::onEditFinished() {
     QString input = this->lineEdit()->text();
 
     auto state = this->validate(input, pos);
+    if (state == QValidator::Invalid)
+        return;
+
+    auto newValue = m_value;
     if (state == QValidator::Acceptable) {
         // Valid input
-        m_value = this->valueFromText(input);
+        newValue = this->valueFromText(input);
     } else if (state == QValidator::Intermediate) {
         // User has deleted all the number text.
         // If they did this by selecting all text and then hitting delete
         // make sure to put the cursor back in front of the prefix.
-        m_value = m_minimum;
+        newValue = m_minimum;
         this->lineEdit()->setCursorPosition(m_prefix.length());
     }
+    if (newValue != m_value) {
+        m_value = newValue;
+        emit this->valueChanged(m_value);
+    }
+    emit this->textChanged(input);
 }
 
-void UIntSpinBox::stepBy(int steps)
-{
-    auto new_value = m_value;
-    if (steps < 0 && new_value + steps > new_value) {
-        new_value = 0;
-    } else if (steps > 0 && new_value + steps < new_value) {
-        new_value = UINT_MAX;
+void UIntSpinBox::stepBy(int steps) {
+    auto newValue = m_value;
+    if (steps < 0 && newValue + steps > newValue) {
+        newValue = 0;
+    } else if (steps > 0 && newValue + steps < newValue) {
+        newValue = UINT_MAX;
     } else {
-        new_value += steps;
+        newValue += steps;
     }
-    this->setValue(new_value);
+    this->setValue(newValue);
 }
 
 QString UIntSpinBox::stripped(QString input) const {
@@ -143,8 +152,9 @@ QValidator::State UIntSpinBox::validate(QString &input, int &pos) const {
     if (copy.isEmpty())
         return QValidator::Intermediate;
 
-    // Editing the prefix (if not deleting all text) is not allowed
-    if (pos < m_prefix.length())
+    // Editing the prefix (if not deleting all text) is not allowed.
+    // Nor is editing beyond the maximum value's character limit.
+    if (pos < m_prefix.length() || pos > (m_numChars + m_prefix.length()))
         return QValidator::Invalid;
 
     bool ok;

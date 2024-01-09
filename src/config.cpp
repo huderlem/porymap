@@ -16,7 +16,117 @@
 #include <QAction>
 #include <QAbstractButton>
 
-const QMap<ProjectFilePath, std::pair<QString, QString>> ProjectConfig::defaultPaths = {
+const QSet<uint32_t> defaultWarpBehaviors_RSE = {
+    0x0E, // MB_MOSSDEEP_GYM_WARP
+    0x0F, // MB_MT_PYRE_HOLE
+    0x1B, // MB_STAIRS_OUTSIDE_ABANDONED_SHIP
+    0x1C, // MB_SHOAL_CAVE_ENTRANCE
+    0x29, // MB_LAVARIDGE_GYM_B1F_WARP
+    0x60, // MB_NON_ANIMATED_DOOR
+    0x61, // MB_LADDER
+    0x62, // MB_EAST_ARROW_WARP
+    0x63, // MB_WEST_ARROW_WARP
+    0x64, // MB_NORTH_ARROW_WARP
+    0x65, // MB_SOUTH_ARROW_WARP
+    0x67, // MB_AQUA_HIDEOUT_WARP
+    0x68, // MB_LAVARIDGE_GYM_1F_WARP
+    0x69, // MB_ANIMATED_DOOR
+    0x6A, // MB_UP_ESCALATOR
+    0x6B, // MB_DOWN_ESCALATOR
+    0x6C, // MB_WATER_DOOR
+    0x6D, // MB_WATER_SOUTH_ARROW_WARP
+    0x6E, // MB_DEEP_SOUTH_WARP
+    0x70, // MB_UNION_ROOM_WARP
+    0x8D, // MB_PETALBURG_GYM_DOOR
+    0x91, // MB_SECRET_BASE_SPOT_RED_CAVE_OPEN
+    0x93, // MB_SECRET_BASE_SPOT_BROWN_CAVE_OPEN
+    0x95, // MB_SECRET_BASE_SPOT_YELLOW_CAVE_OPEN
+    0x97, // MB_SECRET_BASE_SPOT_TREE_LEFT_OPEN
+    0x99, // MB_SECRET_BASE_SPOT_SHRUB_OPEN
+    0x9B, // MB_SECRET_BASE_SPOT_BLUE_CAVE_OPEN
+    0x9D, // MB_SECRET_BASE_SPOT_TREE_RIGHT_OPEN
+};
+
+const QSet<uint32_t> defaultWarpBehaviors_FRLG = {
+    0x60, // MB_CAVE_DOOR
+    0x61, // MB_LADDER
+    0x62, // MB_EAST_ARROW_WARP
+    0x63, // MB_WEST_ARROW_WARP
+    0x64, // MB_NORTH_ARROW_WARP
+    0x65, // MB_SOUTH_ARROW_WARP
+    0x66, // MB_FALL_WARP
+    0x67, // MB_REGULAR_WARP
+    0x68, // MB_LAVARIDGE_1F_WARP
+    0x69, // MB_WARP_DOOR
+    0x6A, // MB_UP_ESCALATOR
+    0x6B, // MB_DOWN_ESCALATOR
+    0x6C, // MB_UP_RIGHT_STAIR_WARP
+    0x6D, // MB_UP_LEFT_STAIR_WARP
+    0x6E, // MB_DOWN_RIGHT_STAIR_WARP
+    0x6F, // MB_DOWN_LEFT_STAIR_WARP
+    0x71, // MB_UNION_ROOM_WARP
+};
+
+// TODO: symbol_wild_encounters should ultimately be removed from the table below. We can determine this name when we read the project.
+const QMap<ProjectIdentifier, QPair<QString, QString>> ProjectConfig::defaultIdentifiers = {
+    // Symbols
+    {ProjectIdentifier::symbol_facing_directions,      {"symbol_facing_directions",      "gInitialMovementTypeFacingDirections"}},
+    {ProjectIdentifier::symbol_obj_event_gfx_pointers, {"symbol_obj_event_gfx_pointers", "gObjectEventGraphicsInfoPointers"}},
+    {ProjectIdentifier::symbol_pokemon_icon_table,     {"symbol_pokemon_icon_table",     "gMonIconTable"}},
+    {ProjectIdentifier::symbol_wild_encounters,        {"symbol_wild_encounters",        "gWildMonHeaders"}},
+    {ProjectIdentifier::symbol_heal_locations,         {"symbol_heal_locations",         "sHealLocations"}},
+    {ProjectIdentifier::symbol_spawn_points,           {"symbol_spawn_points",           "sSpawnPoints"}},
+    {ProjectIdentifier::symbol_spawn_maps,             {"symbol_spawn_maps",             "sWhiteoutRespawnHealCenterMapIdxs"}},
+    {ProjectIdentifier::symbol_spawn_npcs,             {"symbol_spawn_npcs",             "sWhiteoutRespawnHealerNpcIds"}},
+    {ProjectIdentifier::symbol_attribute_table,        {"symbol_attribute_table",        "sMetatileAttrMasks"}},
+    {ProjectIdentifier::symbol_tilesets_prefix,        {"symbol_tilesets_prefix",        "gTileset_"}},
+    // Defines
+    {ProjectIdentifier::define_obj_event_count,        {"define_obj_event_count",        "OBJECT_EVENT_TEMPLATES_COUNT"}},
+    {ProjectIdentifier::define_min_level,              {"define_min_level",              "MIN_LEVEL"}},
+    {ProjectIdentifier::define_max_level,              {"define_max_level",              "MAX_LEVEL"}},
+    {ProjectIdentifier::define_tiles_primary,          {"define_tiles_primary",          "NUM_TILES_IN_PRIMARY"}},
+    {ProjectIdentifier::define_tiles_total,            {"define_tiles_total",            "NUM_TILES_TOTAL"}},
+    {ProjectIdentifier::define_metatiles_primary,      {"define_metatiles_primary",      "NUM_METATILES_IN_PRIMARY"}},
+    {ProjectIdentifier::define_pals_primary,           {"define_pals_primary",           "NUM_PALS_IN_PRIMARY"}},
+    {ProjectIdentifier::define_pals_total,             {"define_pals_total",             "NUM_PALS_TOTAL"}},
+    {ProjectIdentifier::define_map_size,               {"define_map_size",               "MAX_MAP_DATA_SIZE"}},
+    {ProjectIdentifier::define_mask_metatile,          {"define_mask_metatile",          "MAPGRID_METATILE_ID_MASK"}},
+    {ProjectIdentifier::define_mask_collision,         {"define_mask_collision",         "MAPGRID_COLLISION_MASK"}},
+    {ProjectIdentifier::define_mask_elevation,         {"define_mask_elevation",         "MAPGRID_ELEVATION_MASK"}},
+    {ProjectIdentifier::define_mask_behavior,          {"define_mask_behavior",          "METATILE_ATTR_BEHAVIOR_MASK"}},
+    {ProjectIdentifier::define_mask_layer,             {"define_mask_layer",             "METATILE_ATTR_LAYER_MASK"}},
+    {ProjectIdentifier::define_attribute_behavior,     {"define_attribute_behavior",     "METATILE_ATTRIBUTE_BEHAVIOR"}},
+    {ProjectIdentifier::define_attribute_layer,        {"define_attribute_layer",        "METATILE_ATTRIBUTE_LAYER_TYPE"}},
+    {ProjectIdentifier::define_attribute_terrain,      {"define_attribute_terrain",      "METATILE_ATTRIBUTE_TERRAIN"}},
+    {ProjectIdentifier::define_attribute_encounter,    {"define_attribute_encounter",    "METATILE_ATTRIBUTE_ENCOUNTER_TYPE"}},
+    {ProjectIdentifier::define_metatile_label_prefix,  {"define_metatile_label_prefix",  "METATILE_"}},
+    {ProjectIdentifier::define_heal_locations_prefix,  {"define_heal_locations_prefix",  "HEAL_LOCATION_"}},
+    {ProjectIdentifier::define_spawn_prefix,           {"define_spawn_prefix",           "SPAWN_"}},
+    {ProjectIdentifier::define_map_prefix,             {"define_map_prefix",             "MAP_"}},
+    {ProjectIdentifier::define_map_dynamic,            {"define_map_dynamic",            "DYNAMIC"}},
+    {ProjectIdentifier::define_map_empty,              {"define_map_empty",              "UNDEFINED"}},
+    {ProjectIdentifier::define_map_section_prefix,     {"define_map_section_prefix",     "MAPSEC_"}},
+    {ProjectIdentifier::define_map_section_empty,      {"define_map_section_empty",      "NONE"}},
+    {ProjectIdentifier::define_map_section_count,      {"define_map_section_count",      "COUNT"}},
+    // Regex
+    {ProjectIdentifier::regex_behaviors,               {"regex_behaviors",               "\\bMB_"}},
+    {ProjectIdentifier::regex_obj_event_gfx,           {"regex_obj_event_gfx",           "\\bOBJ_EVENT_GFX_"}},
+    {ProjectIdentifier::regex_items,                   {"regex_items",                   "\\bITEM_(?!(B_)?USE_)"}}, // Exclude ITEM_USE_ and ITEM_B_USE_ constants
+    {ProjectIdentifier::regex_flags,                   {"regex_flags",                   "\\bFLAG_"}},
+    {ProjectIdentifier::regex_vars,                    {"regex_vars",                    "\\bVAR_"}},
+    {ProjectIdentifier::regex_movement_types,          {"regex_movement_types",          "\\bMOVEMENT_TYPE_"}},
+    {ProjectIdentifier::regex_map_types,               {"regex_map_types",               "\\bMAP_TYPE_"}},
+    {ProjectIdentifier::regex_battle_scenes,           {"regex_battle_scenes",           "\\bMAP_BATTLE_SCENE_"}},
+    {ProjectIdentifier::regex_weather,                 {"regex_weather",                 "\\bWEATHER_"}},
+    {ProjectIdentifier::regex_coord_event_weather,     {"regex_coord_event_weather",     "\\bCOORD_EVENT_WEATHER_"}},
+    {ProjectIdentifier::regex_secret_bases,            {"regex_secret_bases",            "\\bSECRET_BASE_[A-Za-z0-9_]*_[0-9]+"}},
+    {ProjectIdentifier::regex_sign_facing_directions,  {"regex_sign_facing_directions",  "\\bBG_EVENT_PLAYER_FACING_"}},
+    {ProjectIdentifier::regex_trainer_types,           {"regex_trainer_types",           "\\bTRAINER_TYPE_"}},
+    {ProjectIdentifier::regex_music,                   {"regex_music",                   "\\b(SE|MUS)_"}},
+    {ProjectIdentifier::regex_species,                 {"regex_species",                 "\\bSPECIES_"}},
+};
+
+const QMap<ProjectFilePath, QPair<QString, QString>> ProjectConfig::defaultPaths = {
     {ProjectFilePath::data_map_folders,                 { "data_map_folders",                "data/maps/"}},
     {ProjectFilePath::data_scripts_folders,             { "data_scripts_folders",            "data/scripts/"}},
     {ProjectFilePath::data_layouts_folders,             { "data_layouts_folders",            "data/layouts/"}},
@@ -42,7 +152,6 @@ const QMap<ProjectFilePath, std::pair<QString, QString>> ProjectConfig::defaultP
     {ProjectFilePath::constants_global,                 { "constants_global",                "include/constants/global.h"}},
     {ProjectFilePath::constants_map_groups,             { "constants_map_groups",            "include/constants/map_groups.h"}},
     {ProjectFilePath::constants_items,                  { "constants_items",                 "include/constants/items.h"}},
-    {ProjectFilePath::constants_opponents,              { "constants_opponents",             "include/constants/opponents.h"}},
     {ProjectFilePath::constants_flags,                  { "constants_flags",                 "include/constants/flags.h"}},
     {ProjectFilePath::constants_vars,                   { "constants_vars",                  "include/constants/vars.h"}},
     {ProjectFilePath::constants_weather,                { "constants_weather",               "include/constants/weather.h"}},
@@ -58,10 +167,21 @@ const QMap<ProjectFilePath, std::pair<QString, QString>> ProjectConfig::defaultP
     {ProjectFilePath::constants_region_map_sections,    { "constants_region_map_sections",   "include/constants/region_map_sections.h"}},
     {ProjectFilePath::constants_metatile_labels,        { "constants_metatile_labels",       "include/constants/metatile_labels.h"}},
     {ProjectFilePath::constants_metatile_behaviors,     { "constants_metatile_behaviors",    "include/constants/metatile_behaviors.h"}},
+    {ProjectFilePath::constants_species,                { "constants_species",               "include/constants/species.h"}},
     {ProjectFilePath::constants_fieldmap,               { "constants_fieldmap",              "include/fieldmap.h"}},
+    {ProjectFilePath::global_fieldmap,                  { "global_fieldmap",                 "include/global.fieldmap.h"}},
+    {ProjectFilePath::fieldmap,                         { "fieldmap",                        "src/fieldmap.c"}},
     {ProjectFilePath::pokemon_icon_table,               { "pokemon_icon_table",              "src/pokemon_icon.c"}},
     {ProjectFilePath::initial_facing_table,             { "initial_facing_table",            "src/event_object_movement.c"}},
+    {ProjectFilePath::pokemon_gfx,                      { "pokemon_gfx",                     "graphics/pokemon/"}},
 };
+
+ProjectIdentifier reverseDefaultIdentifier(QString str) {
+    for (auto i = ProjectConfig::defaultIdentifiers.cbegin(), end = ProjectConfig::defaultIdentifiers.cend(); i != end; i++) {
+        if (i.value().first == str) return i.key();
+    }
+    return static_cast<ProjectIdentifier>(-1);
+}
 
 ProjectFilePath reverseDefaultPaths(QString str) {
     for (auto it = ProjectConfig::defaultPaths.constKeyValueBegin(); it != ProjectConfig::defaultPaths.constKeyValueEnd(); ++it) {
@@ -199,7 +319,8 @@ QString PorymapConfig::getConfigFilepath() {
 
 void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
     if (key == "recent_project") {
-        this->recentProject = value;
+        this->recentProjects = value.split(",", Qt::SkipEmptyParts);
+        this->recentProjects.removeDuplicates();
     } else if (key == "reopen_on_launch") {
         this->reopenOnLaunch = getConfigBool(key, value);
     } else if (key == "pretty_cursors") {
@@ -244,6 +365,8 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->customScriptsEditorState = bytesFromString(value);
     } else if (key == "metatiles_zoom") {
         this->metatilesZoom = getConfigInteger(key, value, 10, 100, 30);
+    } else if (key == "collision_zoom") {
+        this->collisionZoom = getConfigInteger(key, value, 10, 100, 30);
     } else if (key == "show_player_view") {
         this->showPlayerView = getConfigBool(key, value);
     } else if (key == "show_cursor_tile") {
@@ -252,6 +375,10 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->showBorder = getConfigBool(key, value);
     } else if (key == "show_grid") {
         this->showGrid = getConfigBool(key, value);
+    } else if (key == "show_tileset_editor_metatile_grid") {
+        this->showTilesetEditorMetatileGrid = getConfigBool(key, value);
+    } else if (key == "show_tileset_editor_layer_grid") {
+        this->showTilesetEditorLayerGrid = getConfigBool(key, value);
     } else if (key == "monitor_files") {
         this->monitorFiles = getConfigBool(key, value);
     } else if (key == "tileset_checkerboard_fill") {
@@ -267,6 +394,10 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         if (this->paletteEditorBitDepth != 15 && this->paletteEditorBitDepth != 24){
             this->paletteEditorBitDepth = 24;
         }
+    } else if (key == "project_settings_tab") {
+        this->projectSettingsTab = getConfigInteger(key, value, 0);
+    } else if (key == "warp_behavior_warning_disabled") {
+        this->warpBehaviorWarningDisabled = getConfigBool(key, value);
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -274,7 +405,7 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
 
 QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     QMap<QString, QString> map;
-    map.insert("recent_project", this->recentProject);
+    map.insert("recent_project", this->recentProjects.join(","));
     map.insert("reopen_on_launch", this->reopenOnLaunch ? "1" : "0");
     map.insert("pretty_cursors", this->prettyCursors ? "1" : "0");
     map.insert("map_sort_order", mapSortOrderMap.value(this->mapSortOrder));
@@ -292,18 +423,23 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("project_settings_editor_state", stringFromByteArray(this->projectSettingsEditorState));
     map.insert("custom_scripts_editor_geometry", stringFromByteArray(this->customScriptsEditorGeometry));
     map.insert("custom_scripts_editor_state", stringFromByteArray(this->customScriptsEditorState));
-    map.insert("collision_opacity", QString("%1").arg(this->collisionOpacity));
-    map.insert("metatiles_zoom", QString("%1").arg(this->metatilesZoom));
+    map.insert("collision_opacity", QString::number(this->collisionOpacity));
+    map.insert("collision_zoom", QString::number(this->collisionZoom));
+    map.insert("metatiles_zoom", QString::number(this->metatilesZoom));
     map.insert("show_player_view", this->showPlayerView ? "1" : "0");
     map.insert("show_cursor_tile", this->showCursorTile ? "1" : "0");
     map.insert("show_border", this->showBorder ? "1" : "0");
     map.insert("show_grid", this->showGrid ? "1" : "0");
+    map.insert("show_tileset_editor_metatile_grid", this->showTilesetEditorMetatileGrid ? "1" : "0");
+    map.insert("show_tileset_editor_layer_grid", this->showTilesetEditorLayerGrid ? "1" : "0");
     map.insert("monitor_files", this->monitorFiles ? "1" : "0");
     map.insert("tileset_checkerboard_fill", this->tilesetCheckerboardFill ? "1" : "0");
     map.insert("theme", this->theme);
     map.insert("text_editor_open_directory", this->textEditorOpenFolder);
     map.insert("text_editor_goto_line", this->textEditorGotoLine);
-    map.insert("palette_editor_bit_depth", QString("%1").arg(this->paletteEditorBitDepth));
+    map.insert("palette_editor_bit_depth", QString::number(this->paletteEditorBitDepth));
+    map.insert("project_settings_tab", QString::number(this->projectSettingsTab));
+    map.insert("warp_behavior_warning_disabled", QString::number(this->warpBehaviorWarningDisabled));
     
     return map;
 }
@@ -325,8 +461,14 @@ QByteArray PorymapConfig::bytesFromString(QString in) {
     return ba;
 }
 
-void PorymapConfig::setRecentProject(QString project) {
-    this->recentProject = project;
+void PorymapConfig::addRecentProject(QString project) {
+    this->recentProjects.removeOne(project);
+    this->recentProjects.prepend(project);
+    this->save();
+}
+
+void PorymapConfig::setRecentProjects(QStringList projects) {
+    this->recentProjects = projects;
     this->save();
 }
 
@@ -399,6 +541,11 @@ void PorymapConfig::setCollisionOpacity(int opacity) {
     // don't auto-save here because this can be called very frequently.
 }
 
+void PorymapConfig::setCollisionZoom(int zoom) {
+    this->collisionZoom = zoom;
+    // don't auto-save here because this can be called very frequently.
+}
+
 void PorymapConfig::setMetatilesZoom(int zoom) {
     this->metatilesZoom = zoom;
     // don't auto-save here because this can be called very frequently.
@@ -424,6 +571,16 @@ void PorymapConfig::setShowGrid(bool enabled) {
     this->save();
 }
 
+void PorymapConfig::setShowTilesetEditorMetatileGrid(bool enabled) {
+    this->showTilesetEditorMetatileGrid = enabled;
+    this->save();
+}
+
+void PorymapConfig::setShowTilesetEditorLayerGrid(bool enabled) {
+    this->showTilesetEditorLayerGrid = enabled;
+    this->save();
+}
+
 void PorymapConfig::setTheme(QString theme) {
     this->theme = theme;
 }
@@ -443,8 +600,17 @@ void PorymapConfig::setPaletteEditorBitDepth(int bitDepth) {
     this->save();
 }
 
+void PorymapConfig::setProjectSettingsTab(int tab) {
+    this->projectSettingsTab = tab;
+    this->save();
+}
+
 QString PorymapConfig::getRecentProject() {
-    return this->recentProject;
+    return this->recentProjects.value(0);
+}
+
+QStringList PorymapConfig::getRecentProjects() {
+    return this->recentProjects;
 }
 
 bool PorymapConfig::getReopenOnLaunch() {
@@ -519,6 +685,10 @@ int PorymapConfig::getCollisionOpacity() {
     return this->collisionOpacity;
 }
 
+int PorymapConfig::getCollisionZoom() {
+    return this->collisionZoom;
+}
+
 int PorymapConfig::getMetatilesZoom() {
     return this->metatilesZoom;
 }
@@ -537,6 +707,14 @@ bool PorymapConfig::getShowBorder() {
 
 bool PorymapConfig::getShowGrid() {
     return this->showGrid;
+}
+
+bool PorymapConfig::getShowTilesetEditorMetatileGrid() {
+    return this->showTilesetEditorMetatileGrid;
+}
+
+bool PorymapConfig::getShowTilesetEditorLayerGrid() {
+    return this->showTilesetEditorLayerGrid;
 }
 
 bool PorymapConfig::getMonitorFiles() {
@@ -561,6 +739,19 @@ QString PorymapConfig::getTextEditorGotoLine() {
 
 int PorymapConfig::getPaletteEditorBitDepth() {
     return this->paletteEditorBitDepth;
+}
+
+int PorymapConfig::getProjectSettingsTab() {
+    return this->projectSettingsTab;
+}
+
+void PorymapConfig::setWarpBehaviorWarningDisabled(bool disabled) {
+    this->warpBehaviorWarningDisabled = disabled;
+    this->save();
+}
+
+bool PorymapConfig::getWarpBehaviorWarningDisabled() {
+    return this->warpBehaviorWarningDisabled;
 }
 
 const QStringList ProjectConfig::versionStrings = {
@@ -627,17 +818,17 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         this->createMapTextFile = getConfigBool(key, value);
     } else if (key == "enable_triple_layer_metatiles") {
         this->enableTripleLayerMetatiles = getConfigBool(key, value);
-    } else if (key == "new_map_metatile") {
-        this->newMapMetatileId = getConfigUint32(key, value, 0, 1023, 0);
-    } else if (key == "new_map_elevation") {
-        this->newMapElevation = getConfigInteger(key, value, 0, 15, 3);
+    } else if (key == "default_metatile") {
+        this->defaultMetatileId = getConfigUint32(key, value, 0, Block::maxValue);
+    } else if (key == "default_elevation") {
+        this->defaultElevation = getConfigUint32(key, value, 0, Block::maxValue);
+    } else if (key == "default_collision") {
+        this->defaultCollision = getConfigUint32(key, value, 0, Block::maxValue);
     } else if (key == "new_map_border_metatiles") {
         this->newMapBorderMetatileIds.clear();
         QList<QString> metatileIds = value.split(",");
         for (int i = 0; i < metatileIds.size(); i++) {
-            // TODO: The max of 1023 here should eventually reflect Project::num_metatiles_total-1,
-            // but the config is parsed well before that constant is.
-            int metatileId = getConfigUint32(key, metatileIds.at(i), 0, 1023, 0);
+            int metatileId = getConfigUint32(key, metatileIds.at(i), 0, Block::maxValue);
             this->newMapBorderMetatileIds.append(metatileId);
         }
     } else if (key == "default_primary_tileset") {
@@ -652,13 +843,19 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         }
         this->metatileAttributesSize = size;
     } else if (key == "metatile_behavior_mask") {
-        this->metatileBehaviorMask = getConfigUint32(key, value, 0, 0xFFFFFFFF, 0);
+        this->metatileBehaviorMask = getConfigUint32(key, value);
     } else if (key == "metatile_terrain_type_mask") {
-        this->metatileTerrainTypeMask = getConfigUint32(key, value, 0, 0xFFFFFFFF, 0);
+        this->metatileTerrainTypeMask = getConfigUint32(key, value);
     } else if (key == "metatile_encounter_type_mask") {
-        this->metatileEncounterTypeMask = getConfigUint32(key, value, 0, 0xFFFFFFFF, 0);
+        this->metatileEncounterTypeMask = getConfigUint32(key, value);
     } else if (key == "metatile_layer_type_mask") {
-        this->metatileLayerTypeMask = getConfigUint32(key, value, 0, 0xFFFFFFFF, 0);
+        this->metatileLayerTypeMask = getConfigUint32(key, value);
+    } else if (key == "block_metatile_id_mask") {
+        this->blockMetatileIdMask = getConfigUint32(key, value, 0, Block::maxValue);
+    } else if (key == "block_collision_mask") {
+        this->blockCollisionMask = getConfigUint32(key, value, 0, Block::maxValue);
+    } else if (key == "block_elevation_mask") {
+        this->blockElevationMask = getConfigUint32(key, value, 0, Block::maxValue);
     } else if (key == "enable_map_allow_flags") {
         this->enableMapAllowFlags = getConfigBool(key, value);
 #ifdef CONFIG_BACKWARDS_COMPATABILITY
@@ -676,6 +873,13 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         } else {
             logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
         }
+    } else if (key.startsWith("ident/")) {
+        auto identifierId = reverseDefaultIdentifier(key.mid(6));
+        if (identifierId != static_cast<ProjectIdentifier>(-1)) {
+            this->setIdentifier(identifierId, value);
+        } else {
+            logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
+        }
     } else if (key == "prefabs_filepath") {
         this->prefabFilepath = value;
     } else if (key == "prefabs_import_prompted") {
@@ -684,6 +888,30 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         this->tilesetsHaveCallback = getConfigBool(key, value);
     } else if (key == "tilesets_have_is_compressed") {
         this->tilesetsHaveIsCompressed = getConfigBool(key, value);
+    } else if (key == "event_icon_path_object") {
+        this->eventIconPaths[Event::Group::Object] = value;
+    } else if (key == "event_icon_path_warp") {
+        this->eventIconPaths[Event::Group::Warp] = value;
+    } else if (key == "event_icon_path_coord") {
+        this->eventIconPaths[Event::Group::Coord] = value;
+    } else if (key == "event_icon_path_bg") {
+        this->eventIconPaths[Event::Group::Bg] = value;
+    } else if (key == "event_icon_path_heal") {
+        this->eventIconPaths[Event::Group::Heal] = value;
+    } else if (key.startsWith("pokemon_icon_path/")) {
+        this->pokemonIconPaths.insert(key.mid(18).toUpper(), value);
+    } else if (key == "collision_sheet_path") {
+        this->collisionSheetPath = value;
+    } else if (key == "collision_sheet_width") {
+        this->collisionSheetWidth = getConfigUint32(key, value, 1, Block::maxValue);
+    } else if (key == "collision_sheet_height") {
+        this->collisionSheetHeight = getConfigUint32(key, value, 1, Block::maxValue);
+    } else if (key == "warp_behaviors") {
+        this->warpBehaviors.clear();
+        value.remove(" ");
+        QStringList behaviorList = value.split(",", Qt::SkipEmptyParts);
+        for (auto s : behaviorList)
+            this->warpBehaviors.insert(getConfigUint32(key, s));
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -712,11 +940,12 @@ void ProjectConfig::setUnreadKeys() {
     if (!readKeys.contains("new_map_border_metatiles")) this->newMapBorderMetatileIds = isPokefirered ? DEFAULT_BORDER_FRLG : DEFAULT_BORDER_RSE;
     if (!readKeys.contains("default_secondary_tileset")) this->defaultSecondaryTileset = isPokefirered ? "gTileset_PalletTown" : "gTileset_Petalburg";
     if (!readKeys.contains("metatile_attributes_size")) this->metatileAttributesSize = Metatile::getDefaultAttributesSize(this->baseGameVersion);
-    if (!readKeys.contains("metatile_behavior_mask")) this->metatileBehaviorMask = Metatile::getBehaviorMask(this->baseGameVersion);
-    if (!readKeys.contains("metatile_terrain_type_mask")) this->metatileTerrainTypeMask = Metatile::getTerrainTypeMask(this->baseGameVersion);
-    if (!readKeys.contains("metatile_encounter_type_mask")) this->metatileEncounterTypeMask = Metatile::getEncounterTypeMask(this->baseGameVersion);
-    if (!readKeys.contains("metatile_layer_type_mask")) this->metatileLayerTypeMask = Metatile::getLayerTypeMask(this->baseGameVersion);
+    if (!readKeys.contains("metatile_behavior_mask")) this->metatileBehaviorMask = Metatile::getDefaultAttributesMask(this->baseGameVersion, Metatile::Attr::Behavior);
+    if (!readKeys.contains("metatile_terrain_type_mask")) this->metatileTerrainTypeMask = Metatile::getDefaultAttributesMask(this->baseGameVersion, Metatile::Attr::TerrainType);
+    if (!readKeys.contains("metatile_encounter_type_mask")) this->metatileEncounterTypeMask = Metatile::getDefaultAttributesMask(this->baseGameVersion, Metatile::Attr::EncounterType);
+    if (!readKeys.contains("metatile_layer_type_mask")) this->metatileLayerTypeMask = Metatile::getDefaultAttributesMask(this->baseGameVersion, Metatile::Attr::LayerType);
     if (!readKeys.contains("enable_map_allow_flags")) this->enableMapAllowFlags = (this->baseGameVersion != BaseGameVersion::pokeruby);
+    if (!readKeys.contains("warp_behaviors")) this->warpBehaviors = isPokefirered ? defaultWarpBehaviors_FRLG : defaultWarpBehaviors_RSE;
 }
 
 QMap<QString, QString> ProjectConfig::getKeyValueMap() {
@@ -733,9 +962,10 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("enable_floor_number", QString::number(this->enableFloorNumber));
     map.insert("create_map_text_file", QString::number(this->createMapTextFile));
     map.insert("enable_triple_layer_metatiles", QString::number(this->enableTripleLayerMetatiles));
-    map.insert("new_map_metatile", Metatile::getMetatileIdString(this->newMapMetatileId));
-    map.insert("new_map_elevation", QString::number(this->newMapElevation));
-    map.insert("new_map_border_metatiles", Metatile::getMetatileIdStringList(this->newMapBorderMetatileIds));
+    map.insert("default_metatile", Metatile::getMetatileIdString(this->defaultMetatileId));
+    map.insert("default_elevation", QString::number(this->defaultElevation));
+    map.insert("default_collision", QString::number(this->defaultCollision));
+    map.insert("new_map_border_metatiles", Metatile::getMetatileIdStrings(this->newMapBorderMetatileIds));
     map.insert("default_primary_tileset", this->defaultPrimaryTileset);
     map.insert("default_secondary_tileset", this->defaultSecondaryTileset);
     map.insert("prefabs_filepath", this->prefabFilepath);
@@ -750,7 +980,30 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("metatile_terrain_type_mask", "0x" + QString::number(this->metatileTerrainTypeMask, 16).toUpper());
     map.insert("metatile_encounter_type_mask", "0x" + QString::number(this->metatileEncounterTypeMask, 16).toUpper());
     map.insert("metatile_layer_type_mask", "0x" + QString::number(this->metatileLayerTypeMask, 16).toUpper());
+    map.insert("block_metatile_id_mask", "0x" + QString::number(this->blockMetatileIdMask, 16).toUpper());
+    map.insert("block_collision_mask", "0x" + QString::number(this->blockCollisionMask, 16).toUpper());
+    map.insert("block_elevation_mask", "0x" + QString::number(this->blockElevationMask, 16).toUpper());
     map.insert("enable_map_allow_flags", QString::number(this->enableMapAllowFlags));
+    map.insert("event_icon_path_object", this->eventIconPaths[Event::Group::Object]);
+    map.insert("event_icon_path_warp", this->eventIconPaths[Event::Group::Warp]);
+    map.insert("event_icon_path_coord", this->eventIconPaths[Event::Group::Coord]);
+    map.insert("event_icon_path_bg", this->eventIconPaths[Event::Group::Bg]);
+    map.insert("event_icon_path_heal", this->eventIconPaths[Event::Group::Heal]);
+    for (auto i = this->pokemonIconPaths.cbegin(), end = this->pokemonIconPaths.cend(); i != end; i++){
+        const QString path = i.value();
+        if (!path.isEmpty()) map.insert("pokemon_icon_path/" + i.key(), path);
+    }
+    for (auto i = this->identifiers.cbegin(), end = this->identifiers.cend(); i != end; i++) {
+        map.insert("ident/"+defaultIdentifiers.value(i.key()).first, i.value());
+    }
+    map.insert("collision_sheet_path", this->collisionSheetPath);
+    map.insert("collision_sheet_width", QString::number(this->collisionSheetWidth));
+    map.insert("collision_sheet_height", QString::number(this->collisionSheetHeight));
+    QStringList warpBehaviorStrs;
+    for (auto value : this->warpBehaviors)
+        warpBehaviorStrs.append("0x" + QString("%1").arg(value, 2, 16, QChar('0')).toUpper());
+    map.insert("warp_behaviors", warpBehaviorStrs.join(","));
+
     return map;
 }
 
@@ -791,7 +1044,7 @@ QString ProjectConfig::getProjectDir() {
     return this->projectDir;
 }
 
-void ProjectConfig::setFilePath(ProjectFilePath pathId, QString path) {
+void ProjectConfig::setFilePath(ProjectFilePath pathId, const QString &path) {
     if (!defaultPaths.contains(pathId)) return;
     if (path.isEmpty()) {
         this->filePaths.remove(pathId);
@@ -800,18 +1053,20 @@ void ProjectConfig::setFilePath(ProjectFilePath pathId, QString path) {
     }
 }
 
-void ProjectConfig::setFilePath(QString defaultPath, QString newPath) {
-    this->setFilePath(reverseDefaultPaths(defaultPath), newPath);
+void ProjectConfig::setFilePath(const QString &pathId, const QString &path) {
+    this->setFilePath(reverseDefaultPaths(pathId), path);
 }
 
-QString ProjectConfig::getFilePath(ProjectFilePath pathId, bool customOnly) {
-    const QString customPath = this->filePaths.value(pathId);
+QString ProjectConfig::getCustomFilePath(ProjectFilePath pathId) {
+    return this->filePaths.value(pathId);
+}
 
-    // When reading custom filepaths for the settings editor we don't care
-    // about the default path or whether the custom path exists.
-    if (customOnly)
-        return customPath;
+QString ProjectConfig::getCustomFilePath(const QString &pathId) {
+    return this->getCustomFilePath(reverseDefaultPaths(pathId));
+}
 
+QString ProjectConfig::getFilePath(ProjectFilePath pathId) {
+    const QString customPath = this->getCustomFilePath(pathId);
     if (!customPath.isEmpty()) {
         // A custom filepath has been specified. If the file/folder exists, use that.
         const QString absCustomPath = this->projectDir + QDir::separator() + customPath;
@@ -825,8 +1080,33 @@ QString ProjectConfig::getFilePath(ProjectFilePath pathId, bool customOnly) {
 
 }
 
-QString ProjectConfig::getFilePath(QString defaultPath, bool customOnly) {
-    return this->getFilePath(reverseDefaultPaths(defaultPath), customOnly);
+void ProjectConfig::setIdentifier(ProjectIdentifier id, const QString &text) {
+    if (!defaultIdentifiers.contains(id)) return;
+    QString copy(text);
+    if (copy.isEmpty()) {
+        this->identifiers.remove(id);
+    } else {
+        this->identifiers[id] = copy;
+    }
+}
+
+void ProjectConfig::setIdentifier(const QString &id, const QString &text) {
+    this->setIdentifier(reverseDefaultIdentifier(id), text);
+}
+
+QString ProjectConfig::getCustomIdentifier(ProjectIdentifier id) {
+    return this->identifiers.value(id);
+}
+
+QString ProjectConfig::getCustomIdentifier(const QString &id) {
+    return this->getCustomIdentifier(reverseDefaultIdentifier(id));
+}
+
+QString ProjectConfig::getIdentifier(ProjectIdentifier id) {
+    const QString customText = this->getCustomIdentifier(id);
+    if (!customText.isEmpty())
+        return customText;
+    return defaultIdentifiers.contains(id) ? defaultIdentifiers[id].second : QString();
 }
 
 void ProjectConfig::setBaseGameVersion(BaseGameVersion baseGameVersion) {
@@ -956,22 +1236,31 @@ int ProjectConfig::getNumTilesInMetatile() {
     return this->enableTripleLayerMetatiles ? 12 : 8;
 }
 
-void ProjectConfig::setNewMapMetatileId(uint16_t metatileId) {
-    this->newMapMetatileId = metatileId;
+void ProjectConfig::setDefaultMetatileId(uint16_t metatileId) {
+    this->defaultMetatileId = metatileId;
     this->save();
 }
 
-uint16_t ProjectConfig::getNewMapMetatileId() {
-    return this->newMapMetatileId;
+uint16_t ProjectConfig::getDefaultMetatileId() {
+    return this->defaultMetatileId;
 }
 
-void ProjectConfig::setNewMapElevation(int elevation) {
-    this->newMapElevation = elevation;
+void ProjectConfig::setDefaultElevation(uint16_t elevation) {
+    this->defaultElevation = elevation;
     this->save();
 }
 
-int ProjectConfig::getNewMapElevation() {
-    return this->newMapElevation;
+uint16_t ProjectConfig::getDefaultElevation() {
+    return this->defaultElevation;
+}
+
+void ProjectConfig::setDefaultCollision(uint16_t collision) {
+    this->defaultCollision = collision;
+    this->save();
+}
+
+uint16_t ProjectConfig::getDefaultCollision() {
+    return this->defaultCollision;
 }
 
 void ProjectConfig::setNewMapBorderMetatileIds(QList<uint16_t> metatileIds) {
@@ -1082,6 +1371,33 @@ void ProjectConfig::setMetatileLayerTypeMask(uint32_t mask) {
     this->save();
 }
 
+uint16_t ProjectConfig::getBlockMetatileIdMask() {
+    return this->blockMetatileIdMask;
+}
+
+uint16_t ProjectConfig::getBlockCollisionMask() {
+    return this->blockCollisionMask;
+}
+
+uint16_t ProjectConfig::getBlockElevationMask() {
+    return this->blockElevationMask;
+}
+
+void ProjectConfig::setBlockMetatileIdMask(uint16_t mask) {
+    this->blockMetatileIdMask = mask;
+    this->save();
+}
+
+void ProjectConfig::setBlockCollisionMask(uint16_t mask) {
+    this->blockCollisionMask = mask;
+    this->save();
+}
+
+void ProjectConfig::setBlockElevationMask(uint16_t mask) {
+    this->blockElevationMask = mask;
+    this->save();
+}
+
 bool ProjectConfig::getMapAllowFlagsEnabled() {
     return this->enableMapAllowFlags;
 }
@@ -1089,6 +1405,64 @@ bool ProjectConfig::getMapAllowFlagsEnabled() {
 void ProjectConfig::setMapAllowFlagsEnabled(bool enabled) {
     this->enableMapAllowFlags = enabled;
     this->save();
+}
+
+void ProjectConfig::setEventIconPath(Event::Group group, const QString &path) {
+    this->eventIconPaths[group] = path;
+    this->save();
+}
+
+QString ProjectConfig::getEventIconPath(Event::Group group) {
+    return this->eventIconPaths.value(group);
+}
+
+void ProjectConfig::setPokemonIconPath(const QString &species, const QString &path) {
+    this->pokemonIconPaths[species] = path;
+    this->save();
+}
+
+QString ProjectConfig::getPokemonIconPath(const QString &species) {
+    return this->pokemonIconPaths.value(species);
+}
+
+QHash<QString, QString> ProjectConfig::getPokemonIconPaths() {
+    return this->pokemonIconPaths;
+}
+
+void ProjectConfig::setCollisionSheetPath(const QString &path) {
+    this->collisionSheetPath = path;
+    this->save();
+}
+
+QString ProjectConfig::getCollisionSheetPath() {
+    return this->collisionSheetPath;
+}
+
+void ProjectConfig::setCollisionSheetWidth(int width) {
+    this->collisionSheetWidth = width;
+    this->save();
+}
+
+int ProjectConfig::getCollisionSheetWidth() {
+    return this->collisionSheetWidth;
+}
+
+void ProjectConfig::setCollisionSheetHeight(int height) {
+    this->collisionSheetHeight = height;
+    this->save();
+}
+
+int ProjectConfig::getCollisionSheetHeight() {
+    return this->collisionSheetHeight;
+}
+
+void ProjectConfig::setWarpBehaviors(const QSet<uint32_t> &behaviors) {
+    this->warpBehaviors = behaviors;
+    this->save();
+}
+
+QSet<uint32_t> ProjectConfig::getWarpBehaviors() {
+    return this->warpBehaviors;
 }
 
 

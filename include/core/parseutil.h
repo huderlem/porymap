@@ -48,15 +48,15 @@ public:
     void invalidateTextFile(const QString &path);
     static int textFileLineCount(const QString &path);
     QList<QStringList> parseAsm(const QString &filename);
-    int evaluateDefine(const QString&, const QMap<QString, int>&);
     QStringList readCArray(const QString &filename, const QString &label);
     QMap<QString, QStringList> readCArrayMulti(const QString &filename);
     QMap<QString, QString> readNamedIndexCArray(const QString &text, const QString &label);
     QString readCIncbin(const QString &text, const QString &label);
     QMap<QString, QString> readCIncbinMulti(const QString &filepath);
     QStringList readCIncbinArray(const QString &filename, const QString &label);
-    QMap<QString, int> readCDefines(const QString &filename, const QStringList &prefixes, QMap<QString, int> = { });
-    QStringList readCDefinesSorted(const QString&, const QStringList&, const QMap<QString, int>& = { });
+    QMap<QString, int> readCDefinesByPrefix(const QString &filename, QStringList prefixes);
+    QMap<QString, int> readCDefinesByName(const QString &filename, QStringList names);
+    QStringList readCDefineNames(const QString&, const QStringList&);
     QMap<QString, QHash<QString, QString>> readCStructs(const QString &, const QString & = "", const QHash<int, QString> = { });
     QList<QStringList> getLabelMacros(const QList<QStringList>&, const QString&);
     QStringList getLabelValues(const QList<QStringList>&, const QString&);
@@ -89,13 +89,16 @@ private:
     QString file;
     QString curDefine;
     QHash<QString, QStringList> errorMap;
-    QList<Token> tokenizeExpression(QString expression, const QMap<QString, int> &knownIdentifiers);
+    int evaluateDefine(const QString&, const QString &, QMap<QString, int>*, QMap<QString, QString>*);
+    QList<Token> tokenizeExpression(QString, QMap<QString, int>*, QMap<QString, QString>*);
     QList<Token> generatePostfix(const QList<Token> &tokens);
     int evaluatePostfix(const QList<Token> &postfix);
     void recordError(const QString &message);
     void recordErrors(const QStringList &errors);
     void logRecordedErrors();
     QString createErrorMessage(const QString &message, const QString &expression);
+    QString readCDefinesFile(const QString &filename);
+    QMap<QString, int> readCDefines(const QString &filename, const QStringList &searchText, bool fullMatch);
 
     static const QRegularExpression re_incScriptLabel;
     static const QRegularExpression re_globalIncScriptLabel;

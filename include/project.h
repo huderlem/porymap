@@ -18,16 +18,7 @@
 #include <QVariant>
 #include <QFileSystemWatcher>
 
-struct EventGraphics
-{
-    QImage spritesheet;
-    int spriteWidth;
-    int spriteHeight;
-    bool inanimate;
-};
-
-// The constant and displayed name of the special map value used by warps with multiple potential destinations
-static QString DYNAMIC_MAP_CONSTANT = "MAP_DYNAMIC";
+// The displayed name of the special map value used by warps with multiple potential destinations
 static QString DYNAMIC_MAP_NAME = "Dynamic";
 
 class Project : public QObject
@@ -77,17 +68,17 @@ public:
     QStringList bgEventFacingDirections;
     QStringList trainerTypes;
     QStringList globalScriptLabels;
-    QMap<QString, QMap<QString, int>> metatileLabelsMap;
-    QMap<QString, int> metatileBehaviorMap;
-    QMap<int, QString> metatileBehaviorMapInverse;
+    QMap<QString, QMap<QString, uint16_t>> metatileLabelsMap;
+    QMap<QString, uint16_t> unusedMetatileLabels;
+    QMap<QString, uint32_t> metatileBehaviorMap;
+    QMap<uint32_t, QString> metatileBehaviorMapInverse;
     QMap<QString, QString> facingDirections;
     ParseUtil parser;
     QFileSystemWatcher fileWatcher;
     QMap<QString, qint64> modifiedFileTimestamps;
     bool usingAsmTilesets;
     QString importExportPath;
-
-    const QPixmap entitiesPixmap = QPixmap(":/images/Entities_16x16.png");
+    QSet<QString> disabledSettingsNames;
 
     void set_root(QString);
 
@@ -177,12 +168,9 @@ public:
     void saveTilesetPalettes(Tileset*);
 
     QString defaultSong;
-    QStringList getVisibilities();
     void appendTilesetLabel(QString label, QString isSecondaryStr);
     bool readTilesetLabels();
-    bool readTilesetProperties();
     bool readTilesetMetatileLabels();
-    bool readMaxMapDataSize();
     bool readRegionMapSections();
     bool readItemNames();
     bool readFlagNames();
@@ -204,6 +192,8 @@ public:
     bool readObjEventGfxConstants();
     bool readSongNames();
     bool readEventGraphics();
+    bool readFieldmapProperties();
+    bool readFieldmapMasks();
     QMap<QString, QMap<QString, QString>> readObjEventGfxInfo();
 
     void setEventPixmap(Event *event, bool forceLoad = false);
@@ -211,17 +201,22 @@ public:
     QString fixPalettePath(QString path);
     QString fixGraphicPath(QString path);
 
-    QString getScriptFileExtension(bool usePoryScript) const;
+    static QString getScriptFileExtension(bool usePoryScript);
     QString getScriptDefaultString(bool usePoryScript, QString mapName) const;
-    QString getMapScriptsFilePath(const QString &mapName) const;
     QStringList getEventScriptsFilePaths() const;
     QCompleter *getEventScriptLabelCompleter(QStringList additionalScriptLabels);
     QStringList getGlobalScriptLabels();
 
     QString getDefaultPrimaryTilesetLabel();
     QString getDefaultSecondaryTilesetLabel();
+    QString getDynamicMapDefineName();
+    void updateTilesetMetatileLabels(Tileset *tileset);
+    QString buildMetatileLabelsText(const QMap<QString, uint16_t> defines);
+    QString findMetatileLabelsTileset(QString label);
 
     void setImportExportPath(QString filename);
+    static QString getExistingFilepath(QString filepath);
+    void applyParsedLimits();
 
     static int getNumTilesPrimary();
     static int getNumTilesTotal();
@@ -248,13 +243,13 @@ private:
 
     void saveHealLocationsData(Map *map);
     void saveHealLocationsConstants();
+    QString getHealLocationsTableName();
 
     void ignoreWatchedFileTemporarily(QString filepath);
 
     static int num_tiles_primary;
     static int num_tiles_total;
     static int num_metatiles_primary;
-    static int num_metatiles_total;
     static int num_pals_primary;
     static int num_pals_total;
     static int max_map_data_size;

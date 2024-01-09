@@ -10,11 +10,10 @@ EncounterTableModel::EncounterTableModel(WildMonInfo info, EncounterFields field
 
     this->resize(this->monInfo.wildPokemon.size(), ColumnType::Count);
 
-    this->slotRatios = fields[fieldIndex].encounterRates;
-
     for (int r = 0; r < this->numRows; r++) {
         this->groupNames.append(QString());
         this->slotPercentages.append(0.0);
+        this->slotRatios.append(fields[fieldIndex].encounterRates.value(r, 0));
     }
 
     if (!this->encounterFields[this->fieldIndex].groups.empty()) {

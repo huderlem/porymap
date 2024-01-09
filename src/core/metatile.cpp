@@ -2,58 +2,24 @@
 #include "tileset.h"
 #include "project.h"
 
-const QHash<QString, MetatileAttr> Metatile::defaultLayoutFRLG = {
-    {"behavior",      MetatileAttr(0x000001FF, 0) },
-    {"terrainType",   MetatileAttr(0x00003E00, 9) },
-    {"encounterType", MetatileAttr(0x07000000, 24) },
-    {"layerType",     MetatileAttr(0x60000000, 29) },
+// Stores how each attribute should be laid out for all metatiles, according to the vanilla games.
+// Used to set default config values and import maps with AdvanceMap.
+static const QMap<Metatile::Attr, BitPacker> attributePackersFRLG = {
+    {Metatile::Attr::Behavior,      BitPacker(0x000001FF) },
+    {Metatile::Attr::TerrainType,   BitPacker(0x00003E00) },
+    {Metatile::Attr::EncounterType, BitPacker(0x07000000) },
+    {Metatile::Attr::LayerType,     BitPacker(0x60000000) },
+  //{Metatile::Attr::Unused,        BitPacker(0x98FFC000) },
+};
+static const QMap<Metatile::Attr, BitPacker> attributePackersRSE = {
+    {Metatile::Attr::Behavior,      BitPacker(0x00FF) },
+  //{Metatile::Attr::Unused,        BitPacker(0x0F00) },
+    {Metatile::Attr::LayerType,     BitPacker(0xF000) },
 };
 
-const QHash<QString, MetatileAttr> Metatile::defaultLayoutRSE = {
-    {"behavior",      MetatileAttr(0x00FF, 0) },
-    {"terrainType",   MetatileAttr() },
-    {"encounterType", MetatileAttr() },
-    {"layerType",     MetatileAttr(0xF000, 12) },
-};
+static QMap<Metatile::Attr, BitPacker> attributePackers;
 
-const QHash<BaseGameVersion, const QHash<QString, MetatileAttr>*> Metatile::defaultLayouts = {
-    { BaseGameVersion::pokeruby,    &defaultLayoutRSE },
-    { BaseGameVersion::pokefirered, &defaultLayoutFRLG },
-    { BaseGameVersion::pokeemerald, &defaultLayoutRSE },
-};
-
-MetatileAttr Metatile::behaviorAttr;
-MetatileAttr Metatile::terrainTypeAttr;
-MetatileAttr Metatile::encounterTypeAttr;
-MetatileAttr Metatile::layerTypeAttr;
-
-uint32_t Metatile::unusedAttrMask = 0;
-
-MetatileAttr::MetatileAttr() :
-    mask(0),
-    shift(0)
-{  }
-
-MetatileAttr::MetatileAttr(uint32_t mask, int shift) :
-    mask(mask),
-    shift(shift)
-{  }
-
-Metatile::Metatile() :
-    behavior(0),
-    terrainType(0),
-    encounterType(0),
-    layerType(0),
-    unusedAttributes(0)
-{  }
-
-Metatile::Metatile(const int numTiles) :
-    behavior(0),
-    terrainType(0),
-    encounterType(0),
-    layerType(0),
-    unusedAttributes(0)
-{
+Metatile::Metatile(const int numTiles) {
     Tile tile = Tile();
     for (int i = 0; i < numTiles; i++) {
         this->tiles.append(tile);
@@ -74,120 +40,125 @@ QPoint Metatile::coordFromPixmapCoord(const QPointF &pixelCoord) {
     return QPoint(x, y);
 }
 
-// Set the layout of a metatile attribute using the mask read from the config file
-void Metatile::setCustomAttributeLayout(MetatileAttr * attr, uint32_t mask, uint32_t max) {
-    if (mask > max) {
-        uint32_t oldMask = mask;
-        mask &= max;
-        logWarn(QString("Metatile attribute mask '0x%1' has been truncated to '0x%2'")
-                .arg(QString::number(oldMask, 16).toUpper())
-                .arg(QString::number(mask, 16).toUpper()));
+static int numMetatileIdChars = 4;
+QString Metatile::getMetatileIdString(uint16_t metatileId) {
+    return "0x" + QString("%1").arg(metatileId, numMetatileIdChars, 16, QChar('0')).toUpper();
+};
+
+QString Metatile::getMetatileIdStrings(const QList<uint16_t> metatileIds) {
+    QStringList metatiles;
+    for (auto metatileId : metatileIds)
+        metatiles << Metatile::getMetatileIdString(metatileId);
+    return metatiles.join(",");
+};
+
+// Read and pack together this metatile's attributes.
+uint32_t Metatile::getAttributes() const {
+    uint32_t data = 0;
+    for (auto i = this->attributes.cbegin(), end = this->attributes.cend(); i != end; i++){
+        const auto packer = attributePackers.value(i.key());
+        data |= packer.pack(i.value());
     }
-    attr->mask = mask;
-    attr->shift = mask ? log2(mask & ~(mask - 1)) : 0; // Get position of the least significant set bit
+    return data;
 }
 
-// For checking whether a metatile attribute mask can contain all the available hard-coded options
-bool Metatile::isMaskTooSmall(MetatileAttr * attr, int max) {
-    if (attr->mask == 0 || max <= 0) return false;
-
-    // Get position of the most significant set bit
-    uint32_t n = log2(max);
-
-    // Get a mask for all values 0 to max.
-    // This may fail for n > 30, but that's not possible here.
-    uint32_t rangeMask = (1 << (n + 1)) - 1;
-
-    return attr->getClamped(rangeMask) != rangeMask;
-}
-
-bool Metatile::doMasksOverlap(QList<uint32_t> masks) {
-    for (int i = 0; i < masks.length(); i++)
-    for (int j = i + 1; j < masks.length(); j++) {
-        if (masks.at(i) & masks.at(j))
-            return true;
-    }
-    return false;
-}
-
-void Metatile::setCustomLayout(Project * project) {
-    // Get the maximum size of any attribute mask
-    const QHash<int, uint32_t> maxMasks = {
-        {1, 0xFF},
-        {2, 0xFFFF},
-        {4, 0xFFFFFFFF},
-    };
-    const uint32_t maxMask = maxMasks.value(projectConfig.getMetatileAttributesSize(), 0);
-
-    // Set custom attribute masks from the config file
-    setCustomAttributeLayout(&Metatile::behaviorAttr, projectConfig.getMetatileBehaviorMask(), maxMask);
-    setCustomAttributeLayout(&Metatile::terrainTypeAttr, projectConfig.getMetatileTerrainTypeMask(), maxMask);
-    setCustomAttributeLayout(&Metatile::encounterTypeAttr, projectConfig.getMetatileEncounterTypeMask(), maxMask);
-    setCustomAttributeLayout(&Metatile::layerTypeAttr, projectConfig.getMetatileLayerTypeMask(), maxMask);
-
-    // Set mask for preserving any attribute bits not used by Porymap
-    Metatile::unusedAttrMask = ~(getBehaviorMask() | getTerrainTypeMask() | getEncounterTypeMask() | getLayerTypeMask());
-    Metatile::unusedAttrMask &= maxMask;
-
-    // Overlapping masks are technically ok, but probably not intended.
-    // Additionally, Porymap will not properly reflect that the values are linked.
-    if (doMasksOverlap({getBehaviorMask(), getTerrainTypeMask(), getEncounterTypeMask(), getLayerTypeMask()})) {
-        logWarn("Metatile attribute masks are overlapping. This may result in unexpected attribute values.");
-    }
-
-    // Warn the user if they have set a nonzero mask that is too small to contain its available options.
-    // They'll be allowed to select the options, but they'll be truncated to a different value when revisited.
-    if (!project->metatileBehaviorMapInverse.isEmpty()) {
-        int maxBehavior = project->metatileBehaviorMapInverse.lastKey();
-        if (isMaskTooSmall(&Metatile::behaviorAttr, maxBehavior))
-            logWarn(QString("Metatile Behavior mask is too small to contain all %1 available options.").arg(maxBehavior));
-    }
-    if (isMaskTooSmall(&Metatile::terrainTypeAttr, NUM_METATILE_TERRAIN_TYPES - 1))
-        logWarn(QString("Metatile Terrain Type mask is too small to contain all %1 available options.").arg(NUM_METATILE_TERRAIN_TYPES));
-    if (isMaskTooSmall(&Metatile::encounterTypeAttr, NUM_METATILE_ENCOUNTER_TYPES - 1))
-        logWarn(QString("Metatile Encounter Type mask is too small to contain all %1 available options.").arg(NUM_METATILE_ENCOUNTER_TYPES));
-    if (isMaskTooSmall(&Metatile::layerTypeAttr, NUM_METATILE_LAYER_TYPES - 1))
-        logWarn(QString("Metatile Layer Type mask is too small to contain all %1 available options.").arg(NUM_METATILE_LAYER_TYPES));
-}
-
-uint32_t Metatile::getAttributes() {
-    uint32_t attributes = this->unusedAttributes & Metatile::unusedAttrMask;
-    attributes |= Metatile::behaviorAttr.toRaw(this->behavior);
-    attributes |= Metatile::terrainTypeAttr.toRaw(this->terrainType);
-    attributes |= Metatile::encounterTypeAttr.toRaw(this->encounterType);
-    attributes |= Metatile::layerTypeAttr.toRaw(this->layerType);
-    return attributes;
-}
-
+// Unpack and insert metatile attributes from the given data.
 void Metatile::setAttributes(uint32_t data) {
-    this->behavior = Metatile::behaviorAttr.fromRaw(data);
-    this->terrainType = Metatile::terrainTypeAttr.fromRaw(data);
-    this->encounterType = Metatile::encounterTypeAttr.fromRaw(data);
-    this->layerType = Metatile::layerTypeAttr.fromRaw(data);
-    this->unusedAttributes = data & Metatile::unusedAttrMask;
+    for (auto i = attributePackers.cbegin(), end = attributePackers.cend(); i != end; i++){
+        const auto packer = i.value();
+        this->setAttribute(i.key(), packer.unpack(data));
+    }
 }
 
-// Read attributes using a vanilla layout, then set them using the user's layout. For AdvanceMap import
+// Unpack and insert metatile attributes from the given data using a vanilla layout. For AdvanceMap import
 void Metatile::setAttributes(uint32_t data, BaseGameVersion version) {
-    const auto defaultLayout = Metatile::defaultLayouts.value(version);
-    this->setBehavior(defaultLayout->value("behavior").fromRaw(data));
-    this->setTerrainType(defaultLayout->value("terrainType").fromRaw(data));
-    this->setEncounterType(defaultLayout->value("encounterType").fromRaw(data));
-    this->setLayerType(defaultLayout->value("layerType").fromRaw(data));
+    const auto vanillaPackers = (version == BaseGameVersion::pokefirered) ? attributePackersFRLG : attributePackersRSE;
+    for (auto i = vanillaPackers.cbegin(), end = vanillaPackers.cend(); i != end; i++){
+        const auto packer = i.value();
+        this->setAttribute(i.key(), packer.unpack(data));
+    }
+}
+
+// Set the value for a metatile attribute, and fit it within the valid value range.
+void Metatile::setAttribute(Metatile::Attr attr, uint32_t value) {
+    const auto packer = attributePackers.value(attr);
+    this->attributes.insert(attr, packer.clamp(value));
 }
 
 int Metatile::getDefaultAttributesSize(BaseGameVersion version) {
     return (version == BaseGameVersion::pokefirered) ? 4 : 2;
 }
-uint32_t Metatile::getBehaviorMask(BaseGameVersion version) {
-    return Metatile::defaultLayouts.value(version)->value("behavior").mask;
+
+uint32_t Metatile::getDefaultAttributesMask(BaseGameVersion version, Metatile::Attr attr) {
+    const auto vanillaPackers = (version == BaseGameVersion::pokefirered) ? attributePackersFRLG : attributePackersRSE;
+    return vanillaPackers.value(attr).mask();
 }
-uint32_t Metatile::getTerrainTypeMask(BaseGameVersion version) {
-    return Metatile::defaultLayouts.value(version)->value("terrainType").mask;
+
+uint32_t Metatile::getMaxAttributesMask() {
+    static const QHash<int, uint32_t> maxMasks = {
+        {1, 0xFF},
+        {2, 0xFFFF},
+        {4, 0xFFFFFFFF},
+    };
+    return maxMasks.value(projectConfig.getMetatileAttributesSize(), 0);
 }
-uint32_t Metatile::getEncounterTypeMask(BaseGameVersion version) {
-    return Metatile::defaultLayouts.value(version)->value("encounterType").mask;
-}
-uint32_t Metatile::getLayerTypeMask(BaseGameVersion version) {
-    return Metatile::defaultLayouts.value(version)->value("layerType").mask;
+
+void Metatile::setLayout(Project * project) {
+    // Calculate the number of hex characters needed to display a metatile ID.
+    numMetatileIdChars = 0;
+    for (uint16_t i = Block::getMaxMetatileId(); i > 0; i /= 16)
+        numMetatileIdChars++;
+
+    uint32_t behaviorMask = projectConfig.getMetatileBehaviorMask();
+    uint32_t terrainTypeMask = projectConfig.getMetatileTerrainTypeMask();
+    uint32_t encounterTypeMask = projectConfig.getMetatileEncounterTypeMask();
+    uint32_t layerTypeMask = projectConfig.getMetatileLayerTypeMask();
+
+    // Calculate mask of bits not used by standard behaviors so we can preserve this data.
+    uint32_t unusedMask = ~(behaviorMask | terrainTypeMask | encounterTypeMask | layerTypeMask);
+    unusedMask &= Metatile::getMaxAttributesMask();
+
+    BitPacker packer = BitPacker(unusedMask);
+    attributePackers.clear();
+    attributePackers.insert(Metatile::Attr::Unused, unusedMask);
+
+    // Validate metatile behavior mask
+    packer.setMask(behaviorMask);
+    if (behaviorMask && !project->metatileBehaviorMapInverse.isEmpty()) {
+        uint32_t maxBehavior = project->metatileBehaviorMapInverse.lastKey();
+        if (packer.clamp(maxBehavior) != maxBehavior)
+            logWarn(QString("Metatile Behavior mask '0x%1' is insufficient to contain all available options.")
+                                .arg(QString::number(behaviorMask, 16).toUpper()));
+    }
+    attributePackers.insert(Metatile::Attr::Behavior, packer);
+
+    // Validate terrain type mask
+    packer.setMask(terrainTypeMask);
+    const uint32_t maxTerrainType = NUM_METATILE_TERRAIN_TYPES - 1;
+    if (terrainTypeMask && packer.clamp(maxTerrainType) != maxTerrainType) {
+        logWarn(QString("Metatile Terrain Type mask '0x%1' is insufficient to contain all %2 available options.")
+                            .arg(QString::number(terrainTypeMask, 16).toUpper())
+                            .arg(maxTerrainType + 1));
+    }
+    attributePackers.insert(Metatile::Attr::TerrainType, packer);
+
+    // Validate encounter type mask
+    packer.setMask(encounterTypeMask);
+    const uint32_t maxEncounterType = NUM_METATILE_ENCOUNTER_TYPES - 1;
+    if (encounterTypeMask && packer.clamp(maxEncounterType) != maxEncounterType) {
+        logWarn(QString("Metatile Encounter Type mask '0x%1' is insufficient to contain all %2 available options.")
+                            .arg(QString::number(encounterTypeMask, 16).toUpper())
+                            .arg(maxEncounterType + 1));
+    }
+    attributePackers.insert(Metatile::Attr::EncounterType, packer);
+
+    // Validate terrain type mask
+    packer.setMask(layerTypeMask);
+    const uint32_t maxLayerType = NUM_METATILE_LAYER_TYPES - 1;
+    if (layerTypeMask && packer.clamp(maxLayerType) != maxLayerType) {
+        logWarn(QString("Metatile Layer Type mask '0x%1' is insufficient to contain all %2 available options.")
+                            .arg(QString::number(layerTypeMask, 16).toUpper())
+                            .arg(maxLayerType + 1));
+    }
+    attributePackers.insert(Metatile::Attr::LayerType, packer);
 }

@@ -180,14 +180,14 @@ bool Layout::layoutBlockChanged(int i, const Blockdata &cache) {
 
 uint16_t Layout::getBorderMetatileId(int x, int y) {
     int i = y * getBorderWidth() + x;
-    return this->border[i].metatileId;
+    return this->border[i].metatileId();
 }
 
 void Layout::setBorderMetatileId(int x, int y, uint16_t metatileId, bool enableScriptCallback) {
     int i = y * getBorderWidth() + x;
     if (i < this->border.size()) {
-        uint16_t prevMetatileId = this->border[i].metatileId;
-        this->border[i].metatileId = metatileId;
+        uint16_t prevMetatileId = this->border[i].metatileId();
+        this->border[i].setMetatileId(metatileId);
         if (prevMetatileId != metatileId && enableScriptCallback) {
             Scripting::cb_BorderMetatileChanged(x, y, prevMetatileId, metatileId);
         }
@@ -203,7 +203,7 @@ void Layout::setBorderBlockData(Blockdata newBlockdata, bool enableScriptCallbac
         if (prevBlock != newBlock) {
             this->border.replace(i, newBlock);
             if (enableScriptCallback)
-                Scripting::cb_BorderMetatileChanged(i % width, i / width, prevBlock.metatileId, newBlock.metatileId);
+                Scripting::cb_BorderMetatileChanged(i % width, i / width, prevBlock.metatileId(), newBlock.metatileId());
         }
     }
 }
@@ -293,25 +293,25 @@ void Layout::_floodFillCollisionElevation(int x, int y, uint16_t collision, uint
             continue;
         }
 
-        uint old_coll = block.collision;
-        uint old_elev = block.elevation;
+        uint old_coll = block.collision();
+        uint old_elev = block.elevation();
         if (old_coll == collision && old_elev == elevation) {
             continue;
         }
 
-        block.collision = collision;
-        block.elevation = elevation;
+        block.setCollision(collision);
+        block.setElevation(elevation);
         setBlock(x, y, block, true);
-        if (getBlock(x + 1, y, &block) && block.collision == old_coll && block.elevation == old_elev) {
+        if (getBlock(x + 1, y, &block) && block.collision() == old_coll && block.elevation() == old_elev) {
             todo.append(QPoint(x + 1, y));
         }
-        if (getBlock(x - 1, y, &block) && block.collision == old_coll && block.elevation == old_elev) {
+        if (getBlock(x - 1, y, &block) && block.collision() == old_coll && block.elevation()== old_elev) {
             todo.append(QPoint(x - 1, y));
         }
-        if (getBlock(x, y + 1, &block) && block.collision == old_coll && block.elevation == old_elev) {
+        if (getBlock(x, y + 1, &block) && block.collision() == old_coll && block.elevation() == old_elev) {
             todo.append(QPoint(x, y + 1));
         }
-        if (getBlock(x, y - 1, &block) && block.collision == old_coll && block.elevation == old_elev) {
+        if (getBlock(x, y - 1, &block) && block.collision() == old_coll && block.elevation() == old_elev) {
             todo.append(QPoint(x, y - 1));
         }
     }
@@ -319,22 +319,22 @@ void Layout::_floodFillCollisionElevation(int x, int y, uint16_t collision, uint
 
 void Layout::floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation) {
     Block block;
-    if (getBlock(x, y, &block) && (block.collision != collision || block.elevation != elevation)) {
+    if (getBlock(x, y, &block) && (block.collision() != collision || block.elevation() != elevation)) {
         _floodFillCollisionElevation(x, y, collision, elevation);
     }
 }
 
 void Layout::magicFillCollisionElevation(int initialX, int initialY, uint16_t collision, uint16_t elevation) {
     Block block;
-    if (getBlock(initialX, initialY, &block) && (block.collision != collision || block.elevation != elevation)) {
-        uint old_coll = block.collision;
-        uint old_elev = block.elevation;
+    if (getBlock(initialX, initialY, &block) && (block.collision() != collision || block.elevation() != elevation)) {
+        uint old_coll = block.collision();
+        uint old_elev = block.elevation();
 
         for (int y = 0; y < getHeight(); y++) {
             for (int x = 0; x < getWidth(); x++) {
-                if (getBlock(x, y, &block) && block.collision == old_coll && block.elevation == old_elev) {
-                    block.collision = collision;
-                    block.elevation = elevation;
+                if (getBlock(x, y, &block) && block.collision() == old_coll && block.elevation() == old_elev) {
+                    block.setCollision(collision);
+                    block.setElevation(elevation);
                     setBlock(x, y, block, true);
                 }
             }
@@ -369,7 +369,7 @@ QPixmap Layout::render(bool ignoreCache, Layout *fromLayout, QRect bounds) {
         QPoint metatile_origin = QPoint(map_x * 16, map_y * 16);
         Block block = this->blockdata.at(i);
         QImage metatile_image = getMetatileImage(
-            block.metatileId,
+            block.metatileId(),
             fromLayout ? fromLayout->tileset_primary   : this->tileset_primary,
             fromLayout ? fromLayout->tileset_secondary : this->tileset_secondary,
             metatileLayerOrder,
@@ -443,7 +443,7 @@ QPixmap Layout::renderBorder(bool ignoreCache) {
 
         changed_any = true;
         Block block = this->border.at(i);
-        uint16_t metatileId = block.metatileId;
+        uint16_t metatileId = block.metatileId();
         QImage metatile_image = getMetatileImage(metatileId, this->tileset_primary, this->tileset_secondary, metatileLayerOrder, metatileLayerOpacity);
         int map_y = width_ ? i / width_ : 0;
         int map_x = width_ ? i % width_ : 0;

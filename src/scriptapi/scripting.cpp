@@ -48,22 +48,20 @@ Scripting::Scripting(MainWindow *mainWindow) {
 
 void Scripting::loadModules(QStringList moduleFiles) {
     for (QString filepath : moduleFiles) {
-        QJSValue module = this->engine->importModule(filepath);
-        if (module.isError()) {
-            QString relativePath = QDir::cleanPath(userConfig.getProjectDir() + QDir::separator() + filepath);
-            module = this->engine->importModule(relativePath);
-            if (tryErrorJS(module)) {
-                QMessageBox messageBox(this->mainWindow);
-                messageBox.setText("Failed to load script");
-                messageBox.setInformativeText(QString("An error occurred while loading custom script file '%1'").arg(filepath));
-                messageBox.setDetailedText(getMostRecentError());
-                messageBox.setIcon(QMessageBox::Warning);
-                messageBox.addButton(QMessageBox::Ok);
-                messageBox.exec();
-                continue;
-            }
-        }
+        QString validPath = Project::getExistingFilepath(filepath);
+        if (!validPath.isEmpty()) filepath = validPath; // Otherwise allow it to fail with the original path
 
+        QJSValue module = this->engine->importModule(filepath);
+        if (tryErrorJS(module)) {
+            QMessageBox messageBox(this->mainWindow);
+            messageBox.setText("Failed to load script");
+            messageBox.setInformativeText(QString("An error occurred while loading custom script file '%1'").arg(filepath));
+            messageBox.setDetailedText(getMostRecentError());
+            messageBox.setIcon(QMessageBox::Warning);
+            messageBox.addButton(QMessageBox::Ok);
+            messageBox.exec();
+            continue;
+        }
         logInfo(QString("Successfully loaded custom script file '%1'").arg(filepath));
         this->modules.append(module);
     }
@@ -78,12 +76,6 @@ void Scripting::populateGlobalObject(MainWindow *mainWindow) {
 
     QJSValue constants = instance->engine->newObject();
 
-    // Get basic tile/metatile information
-    int numTilesPrimary = Project::getNumTilesPrimary();
-    int numTilesTotal = Project::getNumTilesTotal();
-    int numMetatilesPrimary = Project::getNumMetatilesPrimary();
-    int numMetatilesTotal = Project::getNumMetatilesTotal();
-
     // Invisibly create an "About" window to read Porymap version
     AboutPorymap *about = new AboutPorymap(mainWindow);
     if (about) {
@@ -93,28 +85,52 @@ void Scripting::populateGlobalObject(MainWindow *mainWindow) {
     } else {
         logError("Failed to read Porymap version for API");
     }
+
+    // Get basic tileset information
+    int numTilesPrimary = Project::getNumTilesPrimary();
+    int numMetatilesPrimary = Project::getNumMetatilesPrimary();
+    int numPalettesPrimary = Project::getNumPalettesPrimary();
     constants.setProperty("max_primary_tiles", numTilesPrimary);
-    constants.setProperty("max_secondary_tiles", numTilesTotal - numTilesPrimary);
+    constants.setProperty("max_secondary_tiles", Project::getNumTilesTotal() - numTilesPrimary);
     constants.setProperty("max_primary_metatiles", numMetatilesPrimary);
-    constants.setProperty("max_secondary_metatiles", numMetatilesTotal - numMetatilesPrimary);
+    constants.setProperty("max_secondary_metatiles", Project::getNumMetatilesTotal() - numMetatilesPrimary);
+    constants.setProperty("num_primary_palettes", numPalettesPrimary);
+    constants.setProperty("num_secondary_palettes", Project::getNumPalettesTotal() - numPalettesPrimary);
     constants.setProperty("layers_per_metatile", projectConfig.getNumLayersInMetatile());
     constants.setProperty("tiles_per_metatile", projectConfig.getNumTilesInMetatile());
+
     constants.setProperty("base_game_version", projectConfig.getBaseGameVersionString());
+
+    // Read out behavior values into constants object
+    QJSValue behaviorsArray = instance->engine->newObject();
+    const QMap<QString, uint32_t> * map = &mainWindow->editor->project->metatileBehaviorMap;
+    for (auto i = map->cbegin(), end = map->cend(); i != end; i++)
+        behaviorsArray.setProperty(i.key(), i.value());
+    constants.setProperty("metatile_behaviors", behaviorsArray);
 
     instance->engine->globalObject().setProperty("constants", constants);
 
     // Prevent changes to the constants object
+    instance->engine->evaluate("Object.freeze(constants.metatile_behaviors);");
     instance->engine->evaluate("Object.freeze(constants.version);");
     instance->engine->evaluate("Object.freeze(constants);");
 }
 
 bool Scripting::tryErrorJS(QJSValue js) {
-    if (!js.isError()) return false;
+    if (!js.isError())
+        return false;
 
     // Get properties of the error
     QFileInfo file(js.property("fileName").toString());
     QString fileName = file.fileName();
     QString lineNumber = js.property("lineNumber").toString();
+    QString errStr = js.toString();
+
+    // The script engine is interrupted during project reopen, during which
+    // all script modules intentionally return as error objects.
+    // We don't need to report these "errors" to the user.
+    if (errStr == "Error: Interrupted")
+        return false;
 
     // Convert properties to message strings
     QString fileErrStr = fileName == "undefined" ? "" : QString(" '%1'").arg(fileName);
@@ -123,7 +139,7 @@ bool Scripting::tryErrorJS(QJSValue js) {
     logError(QString("Error in custom script%1%2: '%3'")
              .arg(fileErrStr)
              .arg(lineErrStr)
-             .arg(js.toString()));
+             .arg(errStr));
     return true;
 }
 
@@ -305,9 +321,9 @@ void Scripting::cb_BorderVisibilityToggled(bool visible) {
 
 QJSValue Scripting::fromBlock(Block block) {
     QJSValue obj = instance->engine->newObject();
-    obj.setProperty("metatileId", block.metatileId);
-    obj.setProperty("collision", block.collision);
-    obj.setProperty("elevation", block.elevation);
+    obj.setProperty("metatileId", block.metatileId());
+    obj.setProperty("collision", block.collision());
+    obj.setProperty("elevation", block.elevation());
     obj.setProperty("rawValue", block.rawValue());
     return obj;
 }
@@ -369,11 +385,22 @@ QJSEngine *Scripting::getEngine() {
     return instance->engine;
 }
 
-QImage Scripting::getImage(QString filepath) {
-    const QImage * image = instance->imageCache.value(filepath, nullptr);
-    if (!image) {
-        image = new QImage(filepath);
-        instance->imageCache.insert(filepath, image);
+const QImage * Scripting::getImage(const QString &inputFilepath, bool useCache) {
+    if (inputFilepath.isEmpty())
+        return nullptr;
+
+    const QImage * image;
+    if (useCache) {
+        // Try to retrieve image from the cache
+        image = instance->imageCache.value(inputFilepath, nullptr);
+        if (image) return image;
     }
-    return QImage(*image);
+
+    const QString filepath = Project::getExistingFilepath(inputFilepath);
+    if (filepath.isEmpty())
+        return nullptr;
+
+    image = new QImage(filepath);
+    instance->imageCache.insert(inputFilepath, image);
+    return image;
 }

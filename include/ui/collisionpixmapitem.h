@@ -1,6 +1,8 @@
 #ifndef COLLISIONPIXMAPITEM_H
 #define COLLISIONPIXMAPITEM_H
 
+#include <QSpinBox>
+
 #include "metatileselector.h"
 #include "movementpermissionsselector.h"
 #include "layoutpixmapitem.h"
@@ -10,13 +12,15 @@
 class CollisionPixmapItem : public LayoutPixmapItem {
     Q_OBJECT
 public:
-    CollisionPixmapItem(Layout *layout, MovementPermissionsSelector *movementPermissionsSelector, MetatileSelector *metatileSelector, Settings *settings, qreal *opacity)
+    CollisionPixmapItem(Layout *layout, QSpinBox * selectedCollision, QSpinBox * selectedElevation, MetatileSelector *metatileSelector, Settings *settings, qreal *opacity)
         : LayoutPixmapItem(layout, metatileSelector, settings){
-        this->movementPermissionsSelector = movementPermissionsSelector;
+        this->selectedCollision = selectedCollision;
+        this->selectedElevation = selectedElevation;
         this->opacity = opacity;
         layout->setCollisionItem(this);
     }
-    MovementPermissionsSelector *movementPermissionsSelector;
+    QSpinBox * selectedCollision;
+    QSpinBox * selectedElevation;
     qreal *opacity;
     void updateMovementPermissionSelection(QGraphicsSceneMouseEvent *event);
     virtual void paint(QGraphicsSceneMouseEvent*);
@@ -28,6 +32,7 @@ public:
 private:
     unsigned actionId_ = 0;
     QPoint previousPos;
+    void updateSelection(QPoint pos);
 
 signals:
     void mouseEvent(QGraphicsSceneMouseEvent *, CollisionPixmapItem *);

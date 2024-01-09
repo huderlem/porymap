@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>582</width>
-    <height>287</height>
+    <height>438</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -53,7 +53,7 @@
        </font>
       </property>
       <property name="text">
-       <string>Version 5.1.1 - February 20th, 2022</string>
+       <string>Version 5.2.0 - January 2nd, 2024</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -78,7 +78,7 @@
     <item>
      <widget class="QLabel" name="label_Manual">
       <property name="text">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Official Documentation: &lt;a href=&quot;https://huderlem.github.io/porymap/&quot;&gt;&lt;span style=&quot; text-decoration: underline;&quot;&gt;https://huderlem.github.io/porymap/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Official Documentation: &lt;a href=&quot;https://huderlem.github.io/porymap/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0069d9;&quot;&gt;https://huderlem.github.io/porymap/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -110,7 +110,7 @@
      <x>0</x>
      <y>0</y>
      <width>582</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>

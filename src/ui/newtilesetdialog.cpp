@@ -38,7 +38,7 @@ void NewTilesetDialog::SecondaryChanged(){
 
 void NewTilesetDialog::NameOrSecondaryChanged() {
     this->friendlyName = this->ui->nameLineEdit->text();
-    this->fullSymbolName = "gTileset_" + this->friendlyName;
+    this->fullSymbolName = projectConfig.getIdentifier(ProjectIdentifier::symbol_tilesets_prefix) + this->friendlyName;
     this->ui->symbolNameLineEdit->setText(this->fullSymbolName);
     this->path = Tileset::getExpectedDir(this->fullSymbolName, this->isSecondary);
     this->ui->pathLineEdit->setText(this->path);

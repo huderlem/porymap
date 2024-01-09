@@ -6,13 +6,19 @@
 class MovementPermissionsSelector: public SelectablePixmapItem {
     Q_OBJECT
 public:
-    MovementPermissionsSelector(): SelectablePixmapItem(32, 32, 1, 1) {
+    MovementPermissionsSelector(QPixmap basePixmap)
+    : SelectablePixmapItem(MovementPermissionsSelector::CellWidth, MovementPermissionsSelector::CellHeight, 1, 1) {
+        this->basePixmap = basePixmap;
         setAcceptHoverEvents(true);
     }
     void draw();
     uint16_t getSelectedCollision();
     uint16_t getSelectedElevation();
     void select(uint16_t collision, uint16_t elevation);
+    void setBasePixmap(QPixmap pixmap);
+
+    static const int CellWidth;
+    static const int CellHeight;
 
 protected:
     void hoverMoveEvent(QGraphicsSceneHoverEvent*);
@@ -20,6 +26,7 @@ protected:
 
 private:
     void setSelectedMovementPermissions(QPointF);
+    QPixmap basePixmap;
 
 signals:
     void hoveredMovementPermissionChanged(uint16_t, uint16_t);

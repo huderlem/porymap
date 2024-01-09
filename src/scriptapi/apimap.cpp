@@ -99,7 +99,7 @@ int MainWindow::getMetatileId(int x, int y) {
     if (!this->editor->layout->getBlock(x, y, &block)) {
         return 0;
     }
-    return block.metatileId;
+    return block.metatileId();
 }
 
 void MainWindow::setMetatileId(int x, int y, int metatileId, bool forceRedraw, bool commitChanges) {
@@ -109,7 +109,7 @@ void MainWindow::setMetatileId(int x, int y, int metatileId, bool forceRedraw, b
     if (!this->editor->layout->getBlock(x, y, &block)) {
         return;
     }
-    this->editor->layout->setBlock(x, y, Block(metatileId, block.collision, block.elevation));
+    this->editor->layout->setBlock(x, y, Block(metatileId, block.collision(), block.elevation()));
     this->tryCommitMapChanges(commitChanges);
     this->tryRedrawMapArea(forceRedraw);
 }
@@ -121,7 +121,7 @@ int MainWindow::getCollision(int x, int y) {
     if (!this->editor->layout->getBlock(x, y, &block)) {
         return 0;
     }
-    return block.collision;
+    return block.collision();
 }
 
 void MainWindow::setCollision(int x, int y, int collision, bool forceRedraw, bool commitChanges) {
@@ -131,7 +131,7 @@ void MainWindow::setCollision(int x, int y, int collision, bool forceRedraw, boo
     if (!this->editor->layout->getBlock(x, y, &block)) {
         return;
     }
-    this->editor->layout->setBlock(x, y, Block(block.metatileId, collision, block.elevation));
+    this->editor->layout->setBlock(x, y, Block(block.metatileId(), collision, block.elevation()));
     this->tryCommitMapChanges(commitChanges);
     this->tryRedrawMapArea(forceRedraw);
 }
@@ -143,7 +143,7 @@ int MainWindow::getElevation(int x, int y) {
     if (!this->editor->layout->getBlock(x, y, &block)) {
         return 0;
     }
-    return block.elevation;
+    return block.elevation();
 }
 
 void MainWindow::setElevation(int x, int y, int elevation, bool forceRedraw, bool commitChanges) {
@@ -153,7 +153,7 @@ void MainWindow::setElevation(int x, int y, int elevation, bool forceRedraw, boo
     if (!this->editor->layout->getBlock(x, y, &block)) {
         return;
     }
-    this->editor->layout->setBlock(x, y, Block(block.metatileId, block.collision, elevation));
+    this->editor->layout->setBlock(x, y, Block(block.metatileId(), block.collision(), elevation));
     this->tryCommitMapChanges(commitChanges);
     this->tryRedrawMapArea(forceRedraw);
 }
@@ -585,9 +585,15 @@ void MainWindow::saveMetatileAttributesByMetatileId(int metatileId) {
     if (this->editor->project && tileset)
         this->editor->project->saveTilesetMetatileAttributes(tileset);
 
-    // If the Tileset Editor is currently displaying the updated metatile, refresh it
-    if (this->tilesetEditor && this->tilesetEditor->getSelectedMetatileId() == metatileId)
-        this->tilesetEditor->onSelectedMetatileChanged(metatileId);
+    // If the tileset editor is open it needs to be refreshed with the new changes.
+    // Rather than do a full refresh (which is costly) we tell the editor it will need
+    // to reload the metatile from the project next time it's displayed.
+    // If it's currently being displayed, trigger this reload immediately.
+    if (this->tilesetEditor) {
+        this->tilesetEditor->queueMetatileReload(metatileId);
+        if (this->tilesetEditor->getSelectedMetatileId() == metatileId)
+            this->tilesetEditor->onSelectedMetatileChanged(metatileId);
+    }
 }
 
 Metatile * MainWindow::getMetatile(int metatileId) {
@@ -625,7 +631,7 @@ int MainWindow::getMetatileLayerType(int metatileId) {
     Metatile * metatile = this->getMetatile(metatileId);
     if (!metatile)
         return -1;
-    return metatile->layerType;
+    return metatile->layerType();
 }
 
 void MainWindow::setMetatileLayerType(int metatileId, int layerType) {
@@ -640,7 +646,7 @@ int MainWindow::getMetatileEncounterType(int metatileId) {
     Metatile * metatile = this->getMetatile(metatileId);
     if (!metatile)
         return -1;
-    return metatile->encounterType;
+    return metatile->encounterType();
 }
 
 void MainWindow::setMetatileEncounterType(int metatileId, int encounterType) {
@@ -655,7 +661,7 @@ int MainWindow::getMetatileTerrainType(int metatileId) {
     Metatile * metatile = this->getMetatile(metatileId);
     if (!metatile)
         return -1;
-    return metatile->terrainType;
+    return metatile->terrainType();
 }
 
 void MainWindow::setMetatileTerrainType(int metatileId, int terrainType) {
@@ -670,7 +676,7 @@ int MainWindow::getMetatileBehavior(int metatileId) {
     Metatile * metatile = this->getMetatile(metatileId);
     if (!metatile)
         return -1;
-    return metatile->behavior;
+    return metatile->behavior();
 }
 
 void MainWindow::setMetatileBehavior(int metatileId, int behavior) {
@@ -678,6 +684,25 @@ void MainWindow::setMetatileBehavior(int metatileId, int behavior) {
     if (!metatile)
         return;
     metatile->setBehavior(behavior);
+    this->saveMetatileAttributesByMetatileId(metatileId);
+}
+
+QString MainWindow::getMetatileBehaviorName(int metatileId) {
+    Metatile * metatile = this->getMetatile(metatileId);
+    if (!metatile || !this->editor->project)
+        return QString();
+    return this->editor->project->metatileBehaviorMapInverse.value(metatile->behavior(), QString());
+}
+
+void MainWindow::setMetatileBehaviorName(int metatileId, QString behavior) {
+    Metatile * metatile = this->getMetatile(metatileId);
+    if (!metatile || !this->editor->project)
+        return;
+    if (!this->editor->project->metatileBehaviorMap.contains(behavior)) {
+        logError(QString("Unknown metatile behavior '%1'").arg(behavior));
+        return;
+    }
+    metatile->setBehavior(this->editor->project->metatileBehaviorMap.value(behavior));
     this->saveMetatileAttributesByMetatileId(metatileId);
 }
 

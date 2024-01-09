@@ -21,7 +21,10 @@ class Project;
 
 struct LayoutSquare
 {
-    LayoutSquare() : map_section("MAPSEC_NONE"), x(-1), y(-1), has_map(false) {}
+    LayoutSquare() : x(-1), y(-1), has_map(false) {
+        const QString prefix = projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix);
+        map_section = prefix + projectConfig.getIdentifier(ProjectIdentifier::define_map_section_empty);
+    }
     QString map_section;
     int x;
     int y;
@@ -143,6 +146,10 @@ public:
     void redo();
 
     void emitDisplay();
+
+    const QString section_prefix;
+    const QString default_map_section;
+    const QString count_map_section;
 
 signals:
     void mapNeedsDisplaying();

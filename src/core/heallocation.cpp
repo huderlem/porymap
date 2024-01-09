@@ -26,7 +26,7 @@ HealLocation HealLocation::fromEvent(Event *fromEvent) {
     healLocation.y       = event->getY();
     if (projectConfig.getHealLocationRespawnDataEnabled()) {
         healLocation.respawnNPC = event->getRespawnNPC();
-        healLocation.respawnMap = Map::mapConstantFromName(event->getRespawnMap()).remove(0,4);
+        healLocation.respawnMap = Map::mapConstantFromName(event->getRespawnMap(), false);
     }
     return healLocation;
 }
