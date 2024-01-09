@@ -4,7 +4,9 @@
 #include <QPainter>
 
 QPoint MetatileSelector::getSelectionDimensions() {
-    return selection.dimensions;
+    if (this->prefabSelection || this->externalSelection)
+        return selection.dimensions;
+    return SelectablePixmapItem::getSelectionDimensions();
 }
 
 void MetatileSelector::draw() {
@@ -112,41 +114,55 @@ void MetatileSelector::setPrefabSelection(MetatileSelection selection) {
     emit selectedMetatilesChanged();
 }
 
-bool MetatileSelector::shouldAcceptEvent(QGraphicsSceneMouseEvent *event) {
-    QPoint pos = this->getCellPos(event->pos());
+bool MetatileSelector::positionIsValid(const QPoint &pos) const {
     return Tileset::metatileIsValid(getMetatileId(pos.x(), pos.y()), this->primaryTileset, this->secondaryTileset);
 }
 
 void MetatileSelector::mousePressEvent(QGraphicsSceneMouseEvent *event) {
-    if (!shouldAcceptEvent(event)) return;
+    QPoint pos = this->getCellPos(event->pos());
+    if (!positionIsValid(pos))
+        return;
+
+    this->cellPos = pos;
     SelectablePixmapItem::mousePressEvent(event);
     this->updateSelectedMetatiles();
 }
 
 void MetatileSelector::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
-    if (!shouldAcceptEvent(event)) return;
+    QPoint pos = this->getCellPos(event->pos());
+    if (!positionIsValid(pos) || this->cellPos == pos)
+        return;
+
+    this->cellPos = pos;
     SelectablePixmapItem::mouseMoveEvent(event);
     this->updateSelectedMetatiles();
-
-    QPoint pos = this->getCellPos(event->pos());
-    uint16_t metatileId = this->getMetatileId(pos.x(), pos.y());
-    emit this->hoveredMetatileSelectionChanged(metatileId);
+    this->hoverChanged();
 }
 
 void MetatileSelector::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
-    if (!shouldAcceptEvent(event)) return;
+    QPoint pos = this->getCellPos(event->pos());
+    if (!positionIsValid(pos))
+        return;
     SelectablePixmapItem::mouseReleaseEvent(event);
-    this->updateSelectedMetatiles();
 }
 
 void MetatileSelector::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
     QPoint pos = this->getCellPos(event->pos());
-    uint16_t metatileId = this->getMetatileId(pos.x(), pos.y());
+    if (!positionIsValid(pos) || this->cellPos == pos)
+        return;
+
+    this->cellPos = pos;
+    this->hoverChanged();
+}
+
+void MetatileSelector::hoverChanged() {
+    uint16_t metatileId = this->getMetatileId(this->cellPos.x(), this->cellPos.y());
     emit this->hoveredMetatileSelectionChanged(metatileId);
 }
 
 void MetatileSelector::hoverLeaveEvent(QGraphicsSceneHoverEvent*) {
     emit this->hoveredMetatileSelectionCleared();
+    this->cellPos = QPoint(-1, -1);
 }
 
 void MetatileSelector::updateSelectedMetatiles() {
@@ -155,7 +171,7 @@ void MetatileSelector::updateSelectedMetatiles() {
     this->selection.metatileItems.clear();
     this->selection.collisionItems.clear();
     this->selection.hasCollision = false;
-    this->selection.dimensions = SelectablePixmapItem::getSelectionDimensions();
+    this->selection.dimensions = this->getSelectionDimensions();
     QPoint origin = this->getSelectionStart();
     for (int j = 0; j < this->selection.dimensions.y(); j++) {
         for (int i = 0; i < this->selection.dimensions.x(); i++) {
@@ -180,7 +196,7 @@ void MetatileSelector::updateExternalSelectedMetatiles() {
     emit selectedMetatilesChanged();
 }
 
-uint16_t MetatileSelector::getMetatileId(int x, int y) {
+uint16_t MetatileSelector::getMetatileId(int x, int y) const {
     int index = y * this->numMetatilesWide + x;
     if (index < this->primaryTileset->metatiles.length()) {
         return static_cast<uint16_t>(index);

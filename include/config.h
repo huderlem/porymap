@@ -189,6 +189,7 @@ enum ProjectIdentifier {
     symbol_obj_event_gfx_pointers,
     symbol_pokemon_icon_table,
     symbol_wild_encounters,
+    symbol_heal_locations_type,
     symbol_heal_locations,
     symbol_spawn_points,
     symbol_spawn_maps,

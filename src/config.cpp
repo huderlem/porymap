@@ -74,10 +74,11 @@ const QMap<ProjectIdentifier, QPair<QString, QString>> ProjectConfig::defaultIde
     {ProjectIdentifier::symbol_obj_event_gfx_pointers, {"symbol_obj_event_gfx_pointers", "gObjectEventGraphicsInfoPointers"}},
     {ProjectIdentifier::symbol_pokemon_icon_table,     {"symbol_pokemon_icon_table",     "gMonIconTable"}},
     {ProjectIdentifier::symbol_wild_encounters,        {"symbol_wild_encounters",        "gWildMonHeaders"}},
+    {ProjectIdentifier::symbol_heal_locations_type,    {"symbol_heal_locations_type",    "struct HealLocation"}},
     {ProjectIdentifier::symbol_heal_locations,         {"symbol_heal_locations",         "sHealLocations"}},
     {ProjectIdentifier::symbol_spawn_points,           {"symbol_spawn_points",           "sSpawnPoints"}},
-    {ProjectIdentifier::symbol_spawn_maps,             {"symbol_spawn_maps",             "sWhiteoutRespawnHealCenterMapIdxs"}},
-    {ProjectIdentifier::symbol_spawn_npcs,             {"symbol_spawn_npcs",             "sWhiteoutRespawnHealerNpcIds"}},
+    {ProjectIdentifier::symbol_spawn_maps,             {"symbol_spawn_maps",             "u16 sWhiteoutRespawnHealCenterMapIdxs"}},
+    {ProjectIdentifier::symbol_spawn_npcs,             {"symbol_spawn_npcs",             "u8 sWhiteoutRespawnHealerNpcIds"}},
     {ProjectIdentifier::symbol_attribute_table,        {"symbol_attribute_table",        "sMetatileAttrMasks"}},
     {ProjectIdentifier::symbol_tilesets_prefix,        {"symbol_tilesets_prefix",        "gTileset_"}},
     // Defines

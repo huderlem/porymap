@@ -373,7 +373,8 @@ private:
     void openSubWindow(QWidget * window);
     void scrollTreeView(QString itemName);
     QString getExistingDirectory(QString);
-    bool openProject(QString dir);
+    bool openProject(const QString &dir, bool initial = false);
+    void showProjectOpenFailure();
     QString getDefaultMap();
     QString getDefaultLayout();
     void setRecentMapConfig(QString map_name);
@@ -406,7 +407,6 @@ private:
     void applyMapListFilter(QString filterText);
     void restoreWindowState();
     void setTheme(QString);
-    bool openRecentProject();
     void updateTilesetEditor();
     Event::Group getEventGroupFromTabWidget(QWidget *tab);
     void closeSupplementaryWindows();
