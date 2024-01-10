@@ -31,16 +31,23 @@ CustomAttributesDialog::CustomAttributesDialog(CustomAttributesTable *parent) :
         this->setNameEditHighlight(false);
     });
 
+    // Exclude delimiters used in the config
+    static const QRegularExpression expression("[^:,=/]*");
+    ui->lineEdit_Name->setValidator(new QRegularExpressionValidator(expression));
+
     // Button box
     connect(ui->buttonBox, &QDialogButtonBox::clicked, [this](QAbstractButton *button) {
         auto buttonRole = ui->buttonBox->buttonRole(button);
-        if (buttonRole == QDialogButtonBox::AcceptRole && this->verifyName()) {
+        if (buttonRole == QDialogButtonBox::AcceptRole && this->verifyInput()) {
             this->addNewAttribute();
             this->done(QDialog::Accepted);
         } else if (buttonRole == QDialogButtonBox::RejectRole) {
             this->done(QDialog::Rejected);
         }
     });
+
+    ui->spinBox_Value->setMinimum(INT_MIN);
+    ui->spinBox_Value->setMaximum(INT_MAX);
 }
 
 CustomAttributesDialog::~CustomAttributesDialog() {
@@ -51,7 +58,7 @@ void CustomAttributesDialog::setNameEditHighlight(bool highlight) {
     ui->lineEdit_Name->setStyleSheet(highlight ? "QLineEdit { background-color: rgba(255, 0, 0, 25%) }" : "");
 }
 
-bool CustomAttributesDialog::verifyName() {
+bool CustomAttributesDialog::verifyInput() {
     const QString name = ui->lineEdit_Name->text();
 
     if (name.isEmpty()) {
@@ -67,8 +74,16 @@ bool CustomAttributesDialog::verifyName() {
         return false;
     }
 
+    // Warn user if changing the default value of a "Default" custom attribute
+    if (this->table->defaultKeys().contains(name) && ui->checkBox_Default->isChecked()) {
+        const QString msg = QString("'%1' is already a default attribute. Replace its default value with '%2'?")
+                                    .arg(name)
+                                    .arg(this->getValue().toString());
+        if (QMessageBox::warning(this, "Warning", msg, QMessageBox::Yes | QMessageBox::Cancel) == QMessageBox::Cancel)
+            return false;
+    }
     // Warn user if key name would overwrite an existing custom attribute
-    if (this->table->keys().contains(name)) {
+    else if (this->table->keys().contains(name)) {
         const QString msg = QString("Overwrite value for existing attribute '%1'?").arg(name);
         if (QMessageBox::warning(this, "Warning", msg, QMessageBox::Yes | QMessageBox::Cancel) == QMessageBox::Cancel)
             return false;
@@ -77,20 +92,19 @@ bool CustomAttributesDialog::verifyName() {
     return true;
 }
 
-void CustomAttributesDialog::addNewAttribute() {
-    QJsonValue value;
+QVariant CustomAttributesDialog::getValue() const {
+    QVariant value;
     const QString type = ui->comboBox_Type->currentText();
     if (type == "String") {
-        value = QJsonValue(ui->lineEdit_Value->text());
+        value = QVariant(ui->lineEdit_Value->text());
     } else if (type == "Number") {
-        value = QJsonValue(ui->spinBox_Value->value());
+        value = QVariant(ui->spinBox_Value->value());
     } else if (type == "Boolean") {
-        value = QJsonValue(ui->checkBox_Value->isChecked());
+        value = QVariant(ui->checkBox_Value->isChecked());
     }
+    return value;
+}
 
-    const QString key = ui->lineEdit_Name->text();
-    this->table->addNewAttribute(key, value);
-
-    if (ui->checkBox_Default->isChecked())
-        this->table->setDefaultAttribute(key, value);
+void CustomAttributesDialog::addNewAttribute() {
+    this->table->addNewAttribute(ui->lineEdit_Name->text(), QJsonValue::fromVariant(this->getValue()), ui->checkBox_Default->isChecked());
 }

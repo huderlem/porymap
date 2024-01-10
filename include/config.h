@@ -29,6 +29,7 @@ public:
     void save();
     void load();
     void setSaveDisabled(bool disabled);
+    void logInvalidKey(const QString &key);
     virtual ~KeyValueConfigBase();
     virtual void reset() = 0;
 protected:
@@ -319,6 +320,8 @@ public:
         this->blockCollisionMask = 0x0C00;
         this->blockElevationMask = 0xF000;
         this->identifiers.clear();
+        this->defaultEventCustomAttributes.clear();
+        this->defaultMapCustomAttributes.clear();
         this->readKeys.clear();
     }
     static const QMap<ProjectIdentifier, QPair<QString, QString>> defaultIdentifiers;
@@ -417,6 +420,12 @@ public:
     int getCollisionSheetHeight();
     void setWarpBehaviors(const QSet<uint32_t> &behaviors);
     QSet<uint32_t> getWarpBehaviors();
+    void insertDefaultEventCustomAttribute(Event::Type eventType, const QString &key, QJsonValue value);
+    void insertDefaultMapCustomAttribute(const QString &key, QJsonValue value);
+    void removeDefaultEventCustomAttribute(Event::Type eventType, const QString &key);
+    void removeDefaultMapCustomAttribute(const QString &key);
+    QMap<QString, QJsonValue> getDefaultEventCustomAttributes(Event::Type eventType);
+    QMap<QString, QJsonValue> getDefaultMapCustomAttributes();
 
 protected:
     virtual QString getConfigFilepath() override;
@@ -425,6 +434,9 @@ protected:
     virtual void onNewConfigFileCreated() override;
     virtual void setUnreadKeys() override;
 private:
+    void parseCustomAttributes(const QString &key, const QString &value);
+    QString customAttributesToString(const QMap<QString, QJsonValue> attributes);
+
     BaseGameVersion baseGameVersion;
     QString projectDir;
     QMap<ProjectIdentifier, QString> identifiers;
@@ -466,6 +478,8 @@ private:
     int collisionSheetWidth;
     int collisionSheetHeight;
     QSet<uint32_t> warpBehaviors;
+    QMap<Event::Type, QMap<QString, QJsonValue>> defaultEventCustomAttributes;
+    QMap<QString, QJsonValue> defaultMapCustomAttributes;
 };
 
 extern ProjectConfig projectConfig;

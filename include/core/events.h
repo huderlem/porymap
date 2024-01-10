@@ -158,10 +158,11 @@ public:
     virtual void setDefaultValues(Project *project);
 
     virtual QSet<QString> getExpectedFields() = 0;
-    void readCustomValues(QJsonObject values);
-    void addCustomValuesTo(OrderedJson::object *obj);
-    const QMap<QString, QJsonValue> getCustomValues() { return this->customValues; }
-    void setCustomValues(const QMap<QString, QJsonValue> newCustomValues) { this->customValues = newCustomValues; }
+    void readCustomAttributes(QJsonObject values);
+    void addCustomAttributesTo(OrderedJson::object *obj);
+    const QMap<QString, QJsonValue> getCustomAttributes() { return this->customAttributes; }
+    void setCustomAttributes(const QMap<QString, QJsonValue> newCustomAttributes) { this->customAttributes = newCustomAttributes; }
+    void setDefaultCustomAttributes();
 
     virtual void loadPixmap(Project *project);
 
@@ -203,7 +204,7 @@ protected:
     int spriteHeight = 16;
     bool usingSprite = false;
 
-    QMap<QString, QJsonValue> customValues;
+    QMap<QString, QJsonValue> customAttributes;
 
     QPixmap pixmap;
     DraggablePixmapItem *pixmapItem = nullptr;

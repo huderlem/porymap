@@ -23,7 +23,8 @@ private:
     CustomAttributesTable *const table;
 
     void addNewAttribute();
-    bool verifyName();
+    bool verifyInput();
+    QVariant getValue() const;
     void setNameEditHighlight(bool highlight);
 };
 

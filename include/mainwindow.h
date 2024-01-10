@@ -379,7 +379,7 @@ private:
     Event::Group getEventGroupFromTabWidget(QWidget *tab);
     void closeSupplementaryWindows();
     void setWindowDisabled(bool);
-
+    void resetMapCustomAttributesTable();
     void initTilesetEditor();
     bool initRegionMapEditor(bool silent = false);
     void initShortcutsEditor();

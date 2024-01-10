@@ -302,10 +302,23 @@ void MainWindow::initEditor() {
         this->editor->selectedEventIndexChanged(value, Event::Group::Heal);
     });
 
+    // Connect the Custom Attributes table on the Header tab
     connect(ui->mapCustomAttributesTable, &CustomAttributesTable::edited, [this]() {
         this->markMapEdited();
         this->editor->updateCustomMapHeaderValues();
     });
+    connect(ui->mapCustomAttributesTable, &CustomAttributesTable::defaultSet, [](QString key, QJsonValue value) {
+        projectConfig.insertDefaultMapCustomAttribute(key, value);
+    });
+    connect(ui->mapCustomAttributesTable, &CustomAttributesTable::defaultRemoved, [](QString key) {
+        projectConfig.removeDefaultMapCustomAttribute(key);
+    });
+}
+
+void MainWindow::resetMapCustomAttributesTable() {
+    QStringList keys = projectConfig.getDefaultMapCustomAttributes().keys();
+    ui->mapCustomAttributesTable->setDefaultKeys(QSet<QString>(keys.begin(), keys.end()));
+    ui->mapCustomAttributesTable->setRestrictedKeys(Project::getTopLevelMapFields());
 }
 
 void MainWindow::initMiscHeapObjects() {
@@ -512,8 +525,8 @@ bool MainWindow::openProject(const QString &dir, bool initial) {
     projectConfig.load();
 
     this->closeSupplementaryWindows();
+    this->resetMapCustomAttributesTable();
     this->newMapDefaultsSet = false;
-    ui->mapCustomAttributesTable->setRestrictedKeys(Project::getTopLevelMapFields());
 
     if (isProjectOpen())
         Scripting::cb_ProjectClosed(editor->project->root);

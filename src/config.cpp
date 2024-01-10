@@ -292,6 +292,10 @@ void KeyValueConfigBase::setSaveDisabled(bool disabled) {
     this->saveDisabled = disabled;
 }
 
+void KeyValueConfigBase::logInvalidKey(const QString &key) {
+    logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
+}
+
 const QMap<MapSortOrder, QString> mapSortOrderMap = {
     {MapSortOrder::Group, "group"},
     {MapSortOrder::Layout, "layout"},
@@ -400,7 +404,7 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
     } else if (key == "warp_behavior_warning_disabled") {
         this->warpBehaviorWarningDisabled = getConfigBool(key, value);
     } else {
-        logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
+        logInvalidKey(key);
     }
 }
 
@@ -872,14 +876,14 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         if (k != static_cast<ProjectFilePath>(-1)) {
             this->setFilePath(k, value);
         } else {
-            logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
+            logInvalidKey(key);
         }
     } else if (key.startsWith("ident/")) {
         auto identifierId = reverseDefaultIdentifier(key.mid(6));
         if (identifierId != static_cast<ProjectIdentifier>(-1)) {
             this->setIdentifier(identifierId, value);
         } else {
-            logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
+            logInvalidKey(key);
         }
     } else if (key == "prefabs_filepath") {
         this->prefabFilepath = value;
@@ -913,8 +917,10 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         QStringList behaviorList = value.split(",", Qt::SkipEmptyParts);
         for (auto s : behaviorList)
             this->warpBehaviors.insert(getConfigUint32(key, s));
+    } else if (key.startsWith("custom_attributes/")) {
+        this->parseCustomAttributes(key, value);
     } else {
-        logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
+        logInvalidKey(key);
     }
     readKeys.append(key);
 }
@@ -1004,6 +1010,12 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     for (auto value : this->warpBehaviors)
         warpBehaviorStrs.append("0x" + QString("%1").arg(value, 2, 16, QChar('0')).toUpper());
     map.insert("warp_behaviors", warpBehaviorStrs.join(","));
+    if (!this->defaultMapCustomAttributes.isEmpty())
+        map.insert("custom_attributes/header", this->customAttributesToString(this->defaultMapCustomAttributes));
+    for (auto i = this->defaultEventCustomAttributes.cbegin(), end = this->defaultEventCustomAttributes.cend(); i != end; i++) {
+        if (!i.value().isEmpty())
+            map.insert("custom_attributes/" + Event::eventTypeToString(i.key()), this->customAttributesToString(i.value()));
+    }
 
     return map;
 }
@@ -1466,6 +1478,123 @@ QSet<uint32_t> ProjectConfig::getWarpBehaviors() {
     return this->warpBehaviors;
 }
 
+void ProjectConfig::insertDefaultEventCustomAttribute(Event::Type eventType, const QString &key, QJsonValue value) {
+    this->defaultEventCustomAttributes[eventType].insert(key, value);
+    this->save();
+}
+
+void ProjectConfig::insertDefaultMapCustomAttribute(const QString &key, QJsonValue value) {
+    this->defaultMapCustomAttributes.insert(key, value);
+    this->save();
+}
+
+void ProjectConfig::removeDefaultEventCustomAttribute(Event::Type eventType, const QString &key) {
+    this->defaultEventCustomAttributes[eventType].remove(key);
+    this->save();
+}
+
+void ProjectConfig::removeDefaultMapCustomAttribute(const QString &key) {
+    this->defaultMapCustomAttributes.remove(key);
+    this->save();
+}
+
+QMap<QString, QJsonValue> ProjectConfig::getDefaultEventCustomAttributes(Event::Type eventType) {
+    return this->defaultEventCustomAttributes.value(eventType);
+}
+
+QMap<QString, QJsonValue> ProjectConfig::getDefaultMapCustomAttributes() {
+    return this->defaultMapCustomAttributes;
+}
+
+void ProjectConfig::parseCustomAttributes(const QString &key, const QString &value) {
+    static const QRegularExpression regex("custom_attributes/(?<identifier>\\w+)");
+    auto match = regex.match(key);
+    if (!match.hasMatch()){
+        logInvalidKey(key);
+        return;
+    }
+
+    // Value should be a comma-separated list of sequences of the form 'key:type:value'.
+    // Some day if this config file is formatted as JSON data we wouldn't need to store 'type' (among other simplifications).
+    QMap<QString, QJsonValue> map;
+    const QStringList attributeSequences = value.split(",", Qt::SkipEmptyParts);
+    if (attributeSequences.isEmpty())
+        return;
+    for (auto sequence : attributeSequences) {
+        // Parse each 'type:key:value' sequence
+        const QStringList attributeData = sequence.split(":");
+        if (attributeData.length() != 3) {
+            logWarn(QString("Invalid value '%1' for custom attribute in '%2'").arg(sequence).arg(key));
+            continue;
+        }
+        const QString attrKey = attributeData.at(0);
+        const QString attrType = attributeData.at(1);
+        const QString attrValue = attributeData.at(2);
+
+        QJsonValue value;
+        if (attrType == "string") {
+            value = QJsonValue(attrValue);
+        } else if (attrType == "number") {
+            bool ok;
+            int num = attrValue.toInt(&ok, 0);
+            if (!ok)
+                logWarn(QString("Invalid value '%1' for custom attribute '%2' in '%3'").arg(attrValue).arg(attrKey).arg(key));
+            value = QJsonValue(num);
+        } else if (attrType == "bool") {
+            bool ok;
+            int num = attrValue.toInt(&ok, 0);
+            if (!ok || (num != 0 && num != 1))
+                logWarn(QString("Invalid value '%1' for custom attribute '%2' in '%3'").arg(attrValue).arg(attrKey).arg(key));
+            value = QJsonValue(num == 1);
+        } else {
+            logWarn(QString("Invalid value type '%1' for custom attribute '%2' in '%3'").arg(attrType).arg(attrKey).arg(key));
+            continue;
+        }
+        // Successfully parsed a 'type:key:value' sequence
+        map.insert(attrKey, value);
+    }
+
+    // Determine who the custom attribute map belongs to (either the map header or some Event type)
+    const QString identifier = match.captured("identifier");
+
+    if (identifier == "header") {
+        this->defaultMapCustomAttributes = map;
+        return;
+    }
+
+    Event::Type eventType = Event::eventTypeFromString(identifier);
+    if (eventType != Event::Type::None) {
+        this->defaultEventCustomAttributes[eventType] = map;
+        return;
+    }
+
+    logWarn(QString("Invalid custom attributes identifier '%1' in '%2'").arg(identifier).arg(key));
+}
+
+// Assemble comma-separated list of sequences of the form 'key:type:value'.
+QString ProjectConfig::customAttributesToString(const QMap<QString, QJsonValue> attributes) {
+    QStringList output;
+    for (auto i = attributes.cbegin(), end = attributes.cend(); i != end; i++) {
+        QString value;
+        QString typeStr;
+        QJsonValue::Type type = i.value().type();
+        if (type == QJsonValue::Type::String) {
+            typeStr = "string";
+            value = i.value().toString();
+        } else if (type == QJsonValue::Type::Double) {
+            typeStr = "number";
+            value = QString::number(i.value().toInt());
+        } else if (type == QJsonValue::Type::Bool) {
+            typeStr = "bool";
+            value = QString::number(i.value().toBool());
+        } else {
+            continue;
+        }
+        output.append(QString("%1:%2:%3").arg(i.key()).arg(typeStr).arg(value));
+    }
+    return output.join(",");
+}
+
 
 UserConfig userConfig;
 
@@ -1482,7 +1611,7 @@ void UserConfig::parseConfigKeyValue(QString key, QString value) {
     } else if (key == "custom_scripts") {
         this->parseCustomScripts(value);
     } else {
-        logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
+        logInvalidKey(key);
     }
     readKeys.append(key);
 }

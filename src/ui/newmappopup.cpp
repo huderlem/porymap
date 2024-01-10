@@ -303,6 +303,7 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
     if (projectConfig.getFloorNumberEnabled()) {
         newMap->floorNumber = this->ui->spinBox_NewMap_Floor_Number->value();
     }
+    newMap->customHeaders = projectConfig.getDefaultMapCustomAttributes();
 
     newMap->layout = layout;
     newMap->layoutId = layout->id;

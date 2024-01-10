@@ -15,14 +15,11 @@ enum Column {
     Count
 };
 
-// TODO: Tooltip-- "Custom fields will be added to the map.json file for the current map."?
-// TODO: Fix squishing when first element is added
-// TODO: Fix Header table size on first open
-// TODO: Take control of Delete key?
-// TODO: Edit history?
 CustomAttributesTable::CustomAttributesTable(QWidget *parent) :
     QFrame(parent)
 {
+    this->setAttribute(Qt::WA_DeleteOnClose);
+
     QVBoxLayout *layout = new QVBoxLayout(this);
     QLabel *label = new QLabel("Custom Attributes");
     layout->addWidget(label);
@@ -72,9 +69,19 @@ CustomAttributesTable::CustomAttributesTable(QWidget *parent) :
     // Adding the "Selectable" flag to the Key cell changes its appearance to match the Value cell, which
     // makes it confusing that you can't edit the Key cell. To keep the uneditable appearance and allow
     // deleting rows by selecting Key cells, we select the full row when a Key cell is selected.
+    // Double clicking the Key cell will begin editing the value cell, as it would for double-clicking the value cell.
     connect(this->table, &QTableWidget::cellClicked, [this](int row, int column) {
-        if (column == Column::Key) this->table->selectRow(row);
+        if (column == Column::Key) {
+            this->table->selectRow(row);
+        }
     });
+    connect(this->table, &QTableWidget::cellDoubleClicked, [this](int row, int column) {
+        if (column == Column::Key) {
+            auto index = this->table->model()->index(row, Column::Value);
+            this->table->edit(index);
+        }
+    });
+    // TODO: Right-click for context menu to set a default?
 }
 
 CustomAttributesTable::~CustomAttributesTable()
@@ -142,7 +149,7 @@ int CustomAttributesTable::addAttribute(const QString &key, QJsonValue value) {
         return -1;
 
     // Overwrite existing key (if present)
-    if (this->m_keys.remove(key))
+    if (this->m_keys.contains(key))
         this->removeAttribute(key);
 
     // Add new row
@@ -170,6 +177,7 @@ int CustomAttributesTable::addAttribute(const QString &key, QJsonValue value) {
         spinBox->setMinimum(INT_MIN);
         spinBox->setMaximum(INT_MAX);
         spinBox->setValue(ParseUtil::jsonToInt(value));
+        // This connection will be handled by QTableWidget::cellChanged for other cell types
         connect(spinBox, QOverload<int>::of(&QSpinBox::valueChanged), [this]() { emit this->edited(); });
         this->table->setCellWidget(rowIndex, Column::Value, spinBox);
         break;
@@ -194,9 +202,10 @@ int CustomAttributesTable::addAttribute(const QString &key, QJsonValue value) {
 }
 
 // For the user adding an attribute by interacting with the table
-void CustomAttributesTable::addNewAttribute(const QString &key, QJsonValue value) {
+void CustomAttributesTable::addNewAttribute(const QString &key, QJsonValue value, bool setAsDefault) {
     int row = this->addAttribute(key, value);
     if (row < 0) return;
+    if (setAsDefault) this->setDefaultAttribute(key, value);
     this->table->selectRow(row);
     this->resizeVertically();
 }
@@ -210,21 +219,25 @@ void CustomAttributesTable::setAttributes(const QMap<QString, QJsonValue> attrib
 }
 
 void CustomAttributesTable::setDefaultAttribute(const QString &key, QJsonValue value) {
-    // TODO
+    m_defaultKeys.insert(key);
+    emit this->defaultSet(key, value);
 }
 
 void CustomAttributesTable::unsetDefaultAttribute(const QString &key) {
-    // TODO
+    if (m_defaultKeys.remove(key))
+        emit this->defaultRemoved(key);
 }
 
 void CustomAttributesTable::removeAttribute(const QString &key) {
     for (int row = 0; row < this->table->rowCount(); row++) {
         auto keyItem = this->table->item(row, Column::Key);
         if (keyItem && keyItem->text() == key) {
+            this->m_keys.remove(key);
             this->table->removeRow(row);
             break;
         }
     }
+    // No need to adjust size because this is (at the moment) only used for replacement
 }
 
 bool CustomAttributesTable::deleteSelectedAttributes() {
@@ -243,7 +256,10 @@ bool CustomAttributesTable::deleteSelectedAttributes() {
         return false;
 
     for (QPersistentModelIndex index : persistentIndexes) {
-        this->table->removeRow(index.row());
+        auto row = index.row();
+        auto item = this->table->item(row, Column::Key);
+        if (item) this->m_keys.remove(item->text());
+        this->table->removeRow(row);
     }
 
     if (this->table->rowCount() > 0) {
@@ -257,8 +273,16 @@ QSet<QString> CustomAttributesTable::keys() const {
     return this->m_keys;
 }
 
+QSet<QString> CustomAttributesTable::defaultKeys() const {
+    return this->m_defaultKeys;
+}
+
 QSet<QString> CustomAttributesTable::restrictedKeys() const {
     return this->m_restrictedKeys;
+}
+
+void CustomAttributesTable::setDefaultKeys(const QSet<QString> keys) {
+    this->m_defaultKeys = keys;
 }
 
 void CustomAttributesTable::setRestrictedKeys(const QSet<QString> keys) {
