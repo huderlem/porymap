@@ -12,6 +12,8 @@
         <file>icons/fill_color.ico</file>
         <file>icons/folder_closed_map.ico</file>
         <file>icons/folder_closed.ico</file>
+        <file>icons/folder_eye_closed.ico</file>
+        <file>icons/folder_eye_open.ico</file>
         <file>icons/folder_map_edited.ico</file>
         <file>icons/folder_map_opened.ico</file>
         <file>icons/folder_map.ico</file>

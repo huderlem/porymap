@@ -2821,6 +2821,13 @@ void MainWindow::initTilesetEditor() {
     connect(this->tilesetEditor, &TilesetEditor::tilesetsSaved, this, &MainWindow::onTilesetsSaved);
 }
 
+void MainWindow::on_toolButton_HideShow_Groups_clicked() {
+    if (ui->mapList) {
+        this->groupListProxyModel->toggleHideEmpty();
+        this->groupListProxyModel->setFilterRegularExpression(this->ui->lineEdit_filterBox->text());
+    }
+}
+
 void MainWindow::on_toolButton_ExpandAll_Groups_clicked() {
     if (ui->mapList) {
         ui->mapList->expandToDepth(0);
@@ -2833,6 +2840,13 @@ void MainWindow::on_toolButton_CollapseAll_Groups_clicked() {
     }
 }
 
+void MainWindow::on_toolButton_HideShow_Areas_clicked() {
+    if (ui->areaList) {
+        this->areaListProxyModel->toggleHideEmpty();
+        this->areaListProxyModel->setFilterRegularExpression(this->ui->lineEdit_filterBox->text());
+    }
+}
+
 void MainWindow::on_toolButton_ExpandAll_Areas_clicked() {
     if (ui->areaList) {
         ui->areaList->expandToDepth(0);
@@ -2842,6 +2856,13 @@ void MainWindow::on_toolButton_ExpandAll_Areas_clicked() {
 void MainWindow::on_toolButton_CollapseAll_Areas_clicked() {
     if (ui->areaList) {
         ui->areaList->collapseAll();
+    }
+}
+
+void MainWindow::on_toolButton_HideShow_Layouts_clicked() {
+    if (ui->layoutList) {
+        this->layoutListProxyModel->toggleHideEmpty();
+        this->layoutListProxyModel->setFilterRegularExpression(this->ui->lineEdit_filterBox->text());
     }
 }
 

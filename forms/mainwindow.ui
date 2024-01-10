@@ -80,6 +80,31 @@
             <number>3</number>
            </property>
            <item>
+            <widget class="QToolButton" name="toolButton_HideShow_Groups">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Toggle hide all empty map folders&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../resources/images.qrc">
+               <normaloff>:/icons/folder_eye_closed.ico</normaloff>
+               <normalon>:/icons/folder_eye_open.ico</normalon>
+              </iconset>
+             </property>
+             <property name="popupMode">
+              <enum>QToolButton::InstantPopup</enum>
+             </property>
+             <property name="autoRaise">
+              <bool>true</bool>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QToolButton" name="toolButton_ExpandAll_Groups">
              <property name="toolTip">
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Expand all map folders&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -215,6 +240,31 @@
             <number>3</number>
            </property>
            <item>
+            <widget class="QToolButton" name="toolButton_HideShow_Areas">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Toggle hide all empty mapsection folders&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../resources/images.qrc">
+               <normaloff>:/icons/folder_eye_closed.ico</normaloff>
+               <normalon>:/icons/folder_eye_open.ico</normalon>
+              </iconset>
+             </property>
+             <property name="popupMode">
+              <enum>QToolButton::InstantPopup</enum>
+             </property>
+             <property name="autoRaise">
+              <bool>true</bool>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QToolButton" name="toolButton_ExpandAll_Areas">
              <property name="toolTip">
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Expand all map folders&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -349,6 +399,31 @@
            <property name="bottomMargin">
             <number>3</number>
            </property>
+           <item>
+            <widget class="QToolButton" name="toolButton_HideShow_Layouts">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Toggle hide all unused layouts&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../resources/images.qrc">
+               <normaloff>:/icons/folder_eye_closed.ico</normaloff>
+               <normalon>:/icons/folder_eye_open.ico</normalon>
+              </iconset>
+             </property>
+             <property name="popupMode">
+              <enum>QToolButton::InstantPopup</enum>
+             </property>
+             <property name="autoRaise">
+              <bool>true</bool>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
            <item>
             <widget class="QToolButton" name="toolButton_ExpandAll_Layouts">
              <property name="toolTip">
