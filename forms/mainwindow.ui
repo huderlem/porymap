@@ -2383,7 +2383,7 @@
              </widget>
             </item>
             <item>
-             <widget class="CustomAttributesTable" name="customAttributesTable">
+             <widget class="CustomAttributesTable" name="mapCustomAttributesTable">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
                 <horstretch>0</horstretch>

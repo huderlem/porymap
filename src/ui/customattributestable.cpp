@@ -17,7 +17,7 @@ enum Column {
 
 // TODO: Tooltip-- "Custom fields will be added to the map.json file for the current map."?
 // TODO: Fix squishing when first element is added
-// TODO: 'Overwriting' values adds a new attribute
+// TODO: Fix Header table size on first open
 // TODO: Take control of Delete key?
 // TODO: Edit history?
 CustomAttributesTable::CustomAttributesTable(QWidget *parent) :
@@ -81,7 +81,6 @@ CustomAttributesTable::~CustomAttributesTable()
 {
 }
 
-// TODO: Fix Header table size on first open
 void CustomAttributesTable::resizeVertically() {
     int height = 0;
     for (int i = 0; i < this->table->rowCount(); i++) {
@@ -105,7 +104,7 @@ QMap<QString, QJsonValue> CustomAttributesTable::getAttributes() const {
     QMap<QString, QJsonValue> fields;
     for (int row = 0; row < this->table->rowCount(); row++) {
         QString key = "";
-        QTableWidgetItem *keyItem = this->table->item(row, Column::Key);
+        auto keyItem = this->table->item(row, Column::Key);
         if (keyItem) key = keyItem->text();
         if (key.isEmpty())
             continue;
@@ -135,13 +134,22 @@ QMap<QString, QJsonValue> CustomAttributesTable::getAttributes() const {
     return fields;
 }
 
-int CustomAttributesTable::addAttribute(QString key, QJsonValue value) {
+int CustomAttributesTable::addAttribute(const QString &key, QJsonValue value) {
     const QSignalBlocker blocker(this->table);
-    QJsonValue::Type type = value.type();
+
+    // Certain key names cannot be used (if they would overwrite a field used outside this table)
+    if (this->m_restrictedKeys.contains(key))
+        return -1;
+
+    // Overwrite existing key (if present)
+    if (this->m_keys.remove(key))
+        this->removeAttribute(key);
 
     // Add new row
     int rowIndex = this->table->rowCount();
     this->table->insertRow(rowIndex);
+
+    QJsonValue::Type type = value.type();
 
     // Add key name to table
     auto keyItem = new QTableWidgetItem(key);
@@ -159,6 +167,8 @@ int CustomAttributesTable::addAttribute(QString key, QJsonValue value) {
     } case QJsonValue::Double: {
         // Add a spin box for editing number values
         auto spinBox = new QSpinBox(this->table);
+        spinBox->setMinimum(INT_MIN);
+        spinBox->setMaximum(INT_MAX);
         spinBox->setValue(ParseUtil::jsonToInt(value));
         connect(spinBox, QOverload<int>::of(&QSpinBox::valueChanged), [this]() { emit this->edited(); });
         this->table->setCellWidget(rowIndex, Column::Value, spinBox);
@@ -178,13 +188,16 @@ int CustomAttributesTable::addAttribute(QString key, QJsonValue value) {
         this->table->setItem(rowIndex, Column::Value, valueItem);
         break;
     }}
+    this->m_keys.insert(key);
 
     return rowIndex;
 }
 
 // For the user adding an attribute by interacting with the table
-void CustomAttributesTable::addNewAttribute(QString key, QJsonValue value) {
-    this->table->selectRow(this->addAttribute(key, value));
+void CustomAttributesTable::addNewAttribute(const QString &key, QJsonValue value) {
+    int row = this->addAttribute(key, value);
+    if (row < 0) return;
+    this->table->selectRow(row);
     this->resizeVertically();
 }
 
@@ -196,12 +209,22 @@ void CustomAttributesTable::setAttributes(const QMap<QString, QJsonValue> attrib
     this->resizeVertically();
 }
 
-void CustomAttributesTable::setDefaultAttribute(QString key, QJsonValue value) {
+void CustomAttributesTable::setDefaultAttribute(const QString &key, QJsonValue value) {
     // TODO
 }
 
-void CustomAttributesTable::unsetDefaultAttribute(QString key) {
+void CustomAttributesTable::unsetDefaultAttribute(const QString &key) {
     // TODO
+}
+
+void CustomAttributesTable::removeAttribute(const QString &key) {
+    for (int row = 0; row < this->table->rowCount(); row++) {
+        auto keyItem = this->table->item(row, Column::Key);
+        if (keyItem && keyItem->text() == key) {
+            this->table->removeRow(row);
+            break;
+        }
+    }
 }
 
 bool CustomAttributesTable::deleteSelectedAttributes() {
@@ -228,4 +251,16 @@ bool CustomAttributesTable::deleteSelectedAttributes() {
     }
     this->resizeVertically();
     return true;
+}
+
+QSet<QString> CustomAttributesTable::keys() const {
+    return this->m_keys;
+}
+
+QSet<QString> CustomAttributesTable::restrictedKeys() const {
+    return this->m_restrictedKeys;
+}
+
+void CustomAttributesTable::setRestrictedKeys(const QSet<QString> keys) {
+    this->m_restrictedKeys = keys;
 }

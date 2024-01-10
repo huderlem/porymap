@@ -16,20 +16,27 @@ public:
 
     QMap<QString, QJsonValue> getAttributes() const;
     void setAttributes(const QMap<QString, QJsonValue> attributes);
-    void addNewAttribute(QString key, QJsonValue value);
-    bool deleteSelectedAttributes();
+    void addNewAttribute(const QString &key, QJsonValue value);
 
-    void setDefaultAttribute(QString key, QJsonValue value);
-    void unsetDefaultAttribute(QString key);
+    void setDefaultAttribute(const QString &key, QJsonValue value);
+    void unsetDefaultAttribute(const QString &key);
 
-    const QStringList restrictedKeyNames; // TODO: Populate
+    QSet<QString> keys() const;
+    QSet<QString> restrictedKeys() const;
+    void setRestrictedKeys(const QSet<QString> keys);
 
 signals:
     void edited();
 
 private:
     QTableWidget *table;
-    int addAttribute(QString key, QJsonValue value);
+
+    QSet<QString> m_keys;
+    QSet<QString> m_restrictedKeys;
+
+    int addAttribute(const QString &key, QJsonValue value);
+    void removeAttribute(const QString &key);
+    bool deleteSelectedAttributes();
     void resizeVertically();
 };
 

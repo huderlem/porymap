@@ -103,6 +103,7 @@ void EventFrame::setup() {
 
 void EventFrame::initCustomAttributesTable() {
     this->custom_attributes = new CustomAttributesTable(this);
+    this->custom_attributes->setRestrictedKeys(this->event->getExpectedFields());
     this->custom_attributes->setAttributes(this->event->getCustomValues());
     this->layout_contents->addWidget(this->custom_attributes);
 }

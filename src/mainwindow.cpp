@@ -256,11 +256,6 @@ void MainWindow::initEditor() {
     connect(this->editor, &Editor::tilesetUpdated, this, &Scripting::cb_TilesetUpdated);
     connect(ui->toolButton_Open_Scripts, &QToolButton::pressed, this->editor, &Editor::openMapScripts);
     connect(ui->actionOpen_Project_in_Text_Editor, &QAction::triggered, this->editor, &Editor::openProjectInTextEditor);
-    connect(ui->customAttributesTable, &CustomAttributesTable::edited, [this]() {
-        logInfo("TODO");
-        this->markMapEdited();
-        this->editor->updateCustomMapHeaderValues();
-    });
 
     this->loadUserSettings();
 
@@ -305,6 +300,11 @@ void MainWindow::initEditor() {
     });
     connect(this->ui->spinner_HealID, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
         this->editor->selectedEventIndexChanged(value, Event::Group::Heal);
+    });
+
+    connect(ui->mapCustomAttributesTable, &CustomAttributesTable::edited, [this]() {
+        this->markMapEdited();
+        this->editor->updateCustomMapHeaderValues();
     });
 }
 
@@ -519,6 +519,7 @@ bool MainWindow::openProject(QString dir) {
 
     this->closeSupplementaryWindows();
     this->newMapDefaultsSet = false;
+    ui->mapCustomAttributesTable->setRestrictedKeys(Project::getTopLevelMapFields());
 
     Scripting::init(this);
     bool already_open = isProjectOpen() && (editor->project->root == dir);
@@ -851,7 +852,7 @@ void MainWindow::displayMapProperties() {
     ui->checkBox_AllowEscaping->setChecked(map->allowEscaping);
     ui->spinBox_FloorNumber->setValue(map->floorNumber);
 
-    ui->customAttributesTable->setAttributes(map->customHeaders);
+    ui->mapCustomAttributesTable->setAttributes(map->customHeaders);
 }
 
 void MainWindow::on_comboBox_Song_currentTextChanged(const QString &song)

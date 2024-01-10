@@ -60,7 +60,7 @@ bool CustomAttributesDialog::verifyName() {
     }
 
     // Invalidate name if it would collide with an expected JSON field name
-    if (this->table->restrictedKeyNames.contains(name)) {
+    if (this->table->restrictedKeys().contains(name)) {
         const QString msg = QString("The name '%1' is reserved, please choose a different name.").arg(name);
         QMessageBox::critical(this, "Error", msg);
         this->setNameEditHighlight(true);
@@ -68,7 +68,7 @@ bool CustomAttributesDialog::verifyName() {
     }
 
     // Warn user if key name would overwrite an existing custom attribute
-    if (this->table->getAttributes().keys().contains(name)) {
+    if (this->table->keys().contains(name)) {
         const QString msg = QString("Overwrite value for existing attribute '%1'?").arg(name);
         if (QMessageBox::warning(this, "Warning", msg, QMessageBox::Yes | QMessageBox::Cancel) == QMessageBox::Cancel)
             return false;

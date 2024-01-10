@@ -1953,7 +1953,7 @@ void Editor::toggleBorderVisibility(bool visible, bool enableScriptCallback)
 
 void Editor::updateCustomMapHeaderValues()
 {
-    map->customHeaders = ui->customAttributesTable->getAttributes();
+    map->customHeaders = ui->mapCustomAttributesTable->getAttributes();
     emit editedMapData();
 }
 
