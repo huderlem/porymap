@@ -16,7 +16,7 @@ public:
 
     QMap<QString, QJsonValue> getAttributes() const;
     void setAttributes(const QMap<QString, QJsonValue> attributes);
-    void addAttribute(QString key, QJsonValue value);
+    void addNewAttribute(QString key, QJsonValue value);
     bool deleteSelectedAttributes();
 
     void setDefaultAttribute(QString key, QJsonValue value);
@@ -29,7 +29,7 @@ signals:
 
 private:
     QTableWidget *table;
-    void addAttribute(QString key, QJsonValue value, bool init);
+    int addAttribute(QString key, QJsonValue value);
     void resizeVertically();
 };
 

@@ -138,6 +138,7 @@ void EventFrame::connectSignals(MainWindow *) {
     this->custom_attributes->disconnect();
     connect(this->custom_attributes, &CustomAttributesTable::edited, [this]() {
         this->event->setCustomValues(this->custom_attributes->getAttributes());
+        this->event->modify();
     });
 }
 

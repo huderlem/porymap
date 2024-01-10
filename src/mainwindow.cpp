@@ -256,7 +256,11 @@ void MainWindow::initEditor() {
     connect(this->editor, &Editor::tilesetUpdated, this, &Scripting::cb_TilesetUpdated);
     connect(ui->toolButton_Open_Scripts, &QToolButton::pressed, this->editor, &Editor::openMapScripts);
     connect(ui->actionOpen_Project_in_Text_Editor, &QAction::triggered, this->editor, &Editor::openProjectInTextEditor);
-    connect(ui->customAttributesTable, &CustomAttributesTable::edited, this->editor, &Editor::updateCustomMapHeaderValues);
+    connect(ui->customAttributesTable, &CustomAttributesTable::edited, [this]() {
+        logInfo("TODO");
+        this->markMapEdited();
+        this->editor->updateCustomMapHeaderValues();
+    });
 
     this->loadUserSettings();
 

@@ -89,7 +89,7 @@ void CustomAttributesDialog::addNewAttribute() {
     }
 
     const QString key = ui->lineEdit_Name->text();
-    this->table->addAttribute(key, value);
+    this->table->addNewAttribute(key, value);
 
     if (ui->checkBox_Default->isChecked())
         this->table->setDefaultAttribute(key, value);
