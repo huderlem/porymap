@@ -1208,6 +1208,7 @@ void MainWindow::scrollTreeView(QString itemName) {
     }
 }
 
+// !TODO: remove this?
 void MainWindow::sortMapList() {
 }
 
@@ -2564,6 +2565,17 @@ void MainWindow::on_action_Export_Map_Image_triggered() {
 }
 
 void MainWindow::on_actionExport_Stitched_Map_Image_triggered() {
+    if (!this->editor->map) {
+        QMessageBox warning(this);
+        warning.setText("Notice");
+        warning.setInformativeText("Map stich images are not possible without a map selected.");
+        warning.setStandardButtons(QMessageBox::Ok);
+        warning.setDefaultButton(QMessageBox::Cancel);
+        warning.setIcon(QMessageBox::Warning);
+
+        warning.exec();
+        return;
+    }
     showExportMapImageWindow(ImageExporterMode::Stitch);
 }
 
