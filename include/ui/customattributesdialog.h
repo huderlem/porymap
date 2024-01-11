@@ -18,6 +18,8 @@ public:
     explicit CustomAttributesDialog(CustomAttributesTable *parent);
     ~CustomAttributesDialog();
 
+    void setInput(const QString &key, QJsonValue value, bool setDefault);
+
 private:
     Ui::CustomAttributesDialog *ui;
     CustomAttributesTable *const table;

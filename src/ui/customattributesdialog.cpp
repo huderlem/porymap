@@ -14,12 +14,11 @@ CustomAttributesDialog::CustomAttributesDialog(CustomAttributesTable *parent) :
     ui->setupUi(this);
 
     // Type combo box
-    static const QStringList types = {"String", "Number", "Boolean"};
-    ui->comboBox_Type->addItems(types);
+    ui->comboBox_Type->addItems({"String", "Number", "Boolean"});
     ui->comboBox_Type->setEditable(false);
     connect(ui->comboBox_Type, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
         // When the value type is changed, update the value input widget
-        if (index >= 0 && index < types.length()){
+        if (index >= 0 && index < ui->stackedWidget_Value->count()){
             ui->stackedWidget_Value->setCurrentIndex(index);
             typeIndex = index;
         }
@@ -92,14 +91,32 @@ bool CustomAttributesDialog::verifyInput() {
     return true;
 }
 
+// For initializing the dialog with a state other than the default
+void CustomAttributesDialog::setInput(const QString &key, QJsonValue value, bool setDefault) {
+    ui->lineEdit_Name->setText(key);
+    ui->checkBox_Default->setChecked(setDefault);
+
+    auto type = value.type();
+    if (type == QJsonValue::Type::String) {
+        ui->lineEdit_Value->setText(value.toString());
+        ui->stackedWidget_Value->setCurrentWidget(ui->page_String);
+    } else if (type == QJsonValue::Type::Double) {
+        ui->spinBox_Value->setValue(value.toInt());
+        ui->stackedWidget_Value->setCurrentWidget(ui->page_Number);
+    } else if (type == QJsonValue::Type::Bool) {
+        ui->checkBox_Value->setChecked(value.toBool());
+        ui->stackedWidget_Value->setCurrentWidget(ui->page_Boolean);
+    }
+}
+
 QVariant CustomAttributesDialog::getValue() const {
     QVariant value;
-    const QString type = ui->comboBox_Type->currentText();
-    if (type == "String") {
+    auto widget = ui->stackedWidget_Value->currentWidget();
+    if (widget == ui->page_String) {
         value = QVariant(ui->lineEdit_Value->text());
-    } else if (type == "Number") {
+    } else if (widget == ui->page_Number) {
         value = QVariant(ui->spinBox_Value->value());
-    } else if (type == "Boolean") {
+    } else if (widget == ui->page_Boolean) {
         value = QVariant(ui->checkBox_Value->isChecked());
     }
     return value;

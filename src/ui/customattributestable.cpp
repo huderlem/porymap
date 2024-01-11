@@ -38,9 +38,11 @@ CustomAttributesTable::CustomAttributesTable(QWidget *parent) :
 
     this->table = new QTableWidget(this);
     this->table->setColumnCount(Column::Count);
+    this->table->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
     this->table->setHorizontalHeaderLabels(QStringList({"Key", "Value"}));
     this->table->horizontalHeader()->setStretchLastSection(true);
-    this->table->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    this->table->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
+    //this->table->horizontalHeader()->setMaximumSectionSize(this->table->horizontalHeader()->length()); // TODO
     this->table->horizontalHeader()->setVisible(false);
     this->table->verticalHeader()->setVisible(false);
     layout->addWidget(this->table);
@@ -69,19 +71,27 @@ CustomAttributesTable::CustomAttributesTable(QWidget *parent) :
     // Adding the "Selectable" flag to the Key cell changes its appearance to match the Value cell, which
     // makes it confusing that you can't edit the Key cell. To keep the uneditable appearance and allow
     // deleting rows by selecting Key cells, we select the full row when a Key cell is selected.
-    // Double clicking the Key cell will begin editing the value cell, as it would for double-clicking the value cell.
     connect(this->table, &QTableWidget::cellClicked, [this](int row, int column) {
         if (column == Column::Key) {
             this->table->selectRow(row);
         }
     });
+
+    // Double clicking the Key cell will bring up the dialog window to edit all the attribute's properties
     connect(this->table, &QTableWidget::cellDoubleClicked, [this](int row, int column) {
         if (column == Column::Key) {
-            auto index = this->table->model()->index(row, Column::Value);
-            this->table->edit(index);
+            // Get cell data
+            auto keyValuePair = this->getAttribute(row);
+            auto key = keyValuePair.first;
+
+            // Create dialog
+            CustomAttributesDialog dialog(this);
+            dialog.setInput(key, keyValuePair.second, this->m_defaultKeys.contains(key));
+            if (dialog.exec() == QDialog::Accepted) {
+                emit this->edited();
+            }
         }
     });
-    // TODO: Right-click for context menu to set a default?
 }
 
 CustomAttributesTable::~CustomAttributesTable()
@@ -110,35 +120,35 @@ void CustomAttributesTable::resizeVertically() {
 QMap<QString, QJsonValue> CustomAttributesTable::getAttributes() const {
     QMap<QString, QJsonValue> fields;
     for (int row = 0; row < this->table->rowCount(); row++) {
-        QString key = "";
-        auto keyItem = this->table->item(row, Column::Key);
-        if (keyItem) key = keyItem->text();
-        if (key.isEmpty())
-            continue;
-
-        // Read from the table data which JSON type to save the value as
-        QJsonValue::Type type = static_cast<QJsonValue::Type>(keyItem->data(Qt::UserRole).toInt());
-
-        QJsonValue value;
-        switch (type) {
-        case QJsonValue::String: {
-            value = QJsonValue(this->table->item(row, Column::Value)->text());
-            break;
-        } case QJsonValue::Double: {
-            auto spinBox = static_cast<QSpinBox*>(this->table->cellWidget(row, Column::Value));
-            value = QJsonValue(spinBox->value());
-            break;
-        } case QJsonValue::Bool: {
-            value = QJsonValue(this->table->item(row, Column::Value)->checkState() == Qt::Checked);
-            break;
-        } default: {
-            // All other types will just be preserved
-            value = this->table->item(row, Column::Value)->data(Qt::UserRole).toJsonValue();
-            break;
-        }}
-        fields[key] = value;
+        auto keyValuePair = this->getAttribute(row);
+        if (!keyValuePair.first.isEmpty())
+            fields[keyValuePair.first] = keyValuePair.second;
     }
     return fields;
+}
+
+QPair<QString, QJsonValue> CustomAttributesTable::getAttribute(int row) const {
+    auto keyItem = this->table->item(row, Column::Key);
+    if (!keyItem)
+        return QPair<QString, QJsonValue>();
+
+    // Read from the table data which JSON type to save the value as
+    QJsonValue::Type type = static_cast<QJsonValue::Type>(keyItem->data(Qt::UserRole).toInt());
+
+    QJsonValue value;
+    if (type == QJsonValue::String) {
+        value = QJsonValue(this->table->item(row, Column::Value)->text());
+    } else if (type == QJsonValue::Double) {
+        auto spinBox = static_cast<QSpinBox*>(this->table->cellWidget(row, Column::Value));
+        value = QJsonValue(spinBox->value());
+    } else if (type == QJsonValue::Bool) {
+        value = QJsonValue(this->table->item(row, Column::Value)->checkState() == Qt::Checked);
+    } else {
+        // All other types will just be preserved
+        value = this->table->item(row, Column::Value)->data(Qt::UserRole).toJsonValue();
+    }
+
+    return QPair<QString, QJsonValue>(keyItem->text(), value);
 }
 
 int CustomAttributesTable::addAttribute(const QString &key, QJsonValue value) {
@@ -163,6 +173,7 @@ int CustomAttributesTable::addAttribute(const QString &key, QJsonValue value) {
     keyItem->setFlags(Qt::ItemIsEnabled);
     keyItem->setData(Qt::UserRole, type); // Record the type for writing to the file
     keyItem->setTextAlignment(Qt::AlignCenter);
+    keyItem->setToolTip(key); // Display name as tool tip in case it's too long to see in the cell
     this->table->setItem(rowIndex, Column::Key, keyItem);
 
     // Add value to table
@@ -219,12 +230,12 @@ void CustomAttributesTable::setAttributes(const QMap<QString, QJsonValue> attrib
 }
 
 void CustomAttributesTable::setDefaultAttribute(const QString &key, QJsonValue value) {
-    m_defaultKeys.insert(key);
+    this->m_defaultKeys.insert(key);
     emit this->defaultSet(key, value);
 }
 
 void CustomAttributesTable::unsetDefaultAttribute(const QString &key) {
-    if (m_defaultKeys.remove(key))
+    if (this->m_defaultKeys.remove(key))
         emit this->defaultRemoved(key);
 }
 

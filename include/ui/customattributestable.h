@@ -36,6 +36,7 @@ private:
     QSet<QString> m_defaultKeys;    // All keys that are in this table by default (whether or not they're present)
     QSet<QString> m_restrictedKeys; // All keys not allowed in the table
 
+    QPair<QString, QJsonValue> getAttribute(int row) const;
     int addAttribute(const QString &key, QJsonValue value);
     void removeAttribute(const QString &key);
     bool deleteSelectedAttributes();
