@@ -11,7 +11,7 @@
 #include "editcommands.h"
 #include "config.h"
 #include "scripting.h"
-#include "customattributestable.h"
+#include "customattributesframe.h"
 #include <QCheckBox>
 #include <QPainter>
 #include <QMouseEvent>
@@ -1953,7 +1953,7 @@ void Editor::toggleBorderVisibility(bool visible, bool enableScriptCallback)
 
 void Editor::updateCustomMapHeaderValues()
 {
-    map->customHeaders = ui->mapCustomAttributesTable->getAttributes();
+    map->customHeaders = ui->mapCustomAttributesFrame->table->getAttributes();
     emit editedMapData();
 }
 

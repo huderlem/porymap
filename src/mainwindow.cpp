@@ -8,7 +8,7 @@
 #include "eventframes.h"
 #include "bordermetatilespixmapitem.h"
 #include "currentselectedmetatilespixmapitem.h"
-#include "customattributestable.h"
+#include "customattributesframe.h"
 #include "scripting.h"
 #include "adjustingstackedwidget.h"
 #include "draggablepixmapitem.h"
@@ -303,22 +303,22 @@ void MainWindow::initEditor() {
     });
 
     // Connect the Custom Attributes table on the Header tab
-    connect(ui->mapCustomAttributesTable, &CustomAttributesTable::edited, [this]() {
+    connect(ui->mapCustomAttributesFrame->table, &CustomAttributesTable::edited, [this]() {
         this->markMapEdited();
         this->editor->updateCustomMapHeaderValues();
     });
-    connect(ui->mapCustomAttributesTable, &CustomAttributesTable::defaultSet, [](QString key, QJsonValue value) {
+    connect(ui->mapCustomAttributesFrame->table, &CustomAttributesTable::defaultSet, [](QString key, QJsonValue value) {
         projectConfig.insertDefaultMapCustomAttribute(key, value);
     });
-    connect(ui->mapCustomAttributesTable, &CustomAttributesTable::defaultRemoved, [](QString key) {
+    connect(ui->mapCustomAttributesFrame->table, &CustomAttributesTable::defaultRemoved, [](QString key) {
         projectConfig.removeDefaultMapCustomAttribute(key);
     });
 }
 
 void MainWindow::resetMapCustomAttributesTable() {
     QStringList keys = projectConfig.getDefaultMapCustomAttributes().keys();
-    ui->mapCustomAttributesTable->setDefaultKeys(QSet<QString>(keys.begin(), keys.end()));
-    ui->mapCustomAttributesTable->setRestrictedKeys(Project::getTopLevelMapFields());
+    ui->mapCustomAttributesFrame->table->setDefaultKeys(QSet<QString>(keys.begin(), keys.end()));
+    ui->mapCustomAttributesFrame->table->setRestrictedKeys(Project::getTopLevelMapFields());
 }
 
 void MainWindow::initMiscHeapObjects() {
@@ -867,7 +867,7 @@ void MainWindow::displayMapProperties() {
     ui->checkBox_AllowEscaping->setChecked(map->allowEscaping);
     ui->spinBox_FloorNumber->setValue(map->floorNumber);
 
-    ui->mapCustomAttributesTable->setAttributes(map->customHeaders);
+    ui->mapCustomAttributesFrame->table->setAttributes(map->customHeaders);
 }
 
 void MainWindow::on_comboBox_Song_currentTextChanged(const QString &song)

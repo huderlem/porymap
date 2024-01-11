@@ -50,7 +50,7 @@ public:
     QFrame *frame_contents;
     QVBoxLayout *layout_contents;
 
-    CustomAttributesTable *custom_attributes;
+    CustomAttributesFrame *custom_attributes;
 
 protected:
     bool populated = false;

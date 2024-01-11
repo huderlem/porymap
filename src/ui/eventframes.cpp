@@ -1,5 +1,5 @@
 #include "eventframes.h"
-#include "customattributestable.h"
+#include "customattributesframe.h"
 #include "editcommands.h"
 #include "draggablepixmapitem.h"
 
@@ -102,10 +102,10 @@ void EventFrame::setup() {
 }
 
 void EventFrame::initCustomAttributesTable() {
-    this->custom_attributes = new CustomAttributesTable(this);
+    this->custom_attributes = new CustomAttributesFrame(this);
     QStringList keys = projectConfig.getDefaultEventCustomAttributes(this->event->getEventType()).keys();
-    this->custom_attributes->setDefaultKeys(QSet<QString>(keys.begin(), keys.end()));
-    this->custom_attributes->setRestrictedKeys(this->event->getExpectedFields());
+    this->custom_attributes->table->setDefaultKeys(QSet<QString>(keys.begin(), keys.end()));
+    this->custom_attributes->table->setRestrictedKeys(this->event->getExpectedFields());
     this->layout_contents->addWidget(this->custom_attributes);
 }
 
@@ -138,14 +138,14 @@ void EventFrame::connectSignals(MainWindow *) {
     });
 
     this->custom_attributes->disconnect();
-    connect(this->custom_attributes, &CustomAttributesTable::edited, [this]() {
-        this->event->setCustomAttributes(this->custom_attributes->getAttributes());
+    connect(this->custom_attributes->table, &CustomAttributesTable::edited, [this]() {
+        this->event->setCustomAttributes(this->custom_attributes->table->getAttributes());
         this->event->modify();
     });
-    connect(this->custom_attributes, &CustomAttributesTable::defaultSet, [this](QString key, QJsonValue value) {
+    connect(this->custom_attributes->table, &CustomAttributesTable::defaultSet, [this](QString key, QJsonValue value) {
         projectConfig.insertDefaultEventCustomAttribute(this->event->getEventType(), key, value);
     });
-    connect(this->custom_attributes, &CustomAttributesTable::defaultRemoved, [this](QString key) {
+    connect(this->custom_attributes->table, &CustomAttributesTable::defaultRemoved, [this](QString key) {
         projectConfig.removeDefaultEventCustomAttribute(this->event->getEventType(), key);
     });
 }
@@ -159,7 +159,7 @@ void EventFrame::initialize() {
     this->spinner_y->setValue(this->event->getY());
     this->spinner_z->setValue(this->event->getZ());
 
-    this->custom_attributes->setAttributes(this->event->getCustomAttributes());
+    this->custom_attributes->table->setAttributes(this->event->getCustomAttributes());
 
     this->label_icon->setPixmap(this->event->getPixmap());
 }

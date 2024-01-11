@@ -2383,7 +2383,7 @@
              </widget>
             </item>
             <item>
-             <widget class="CustomAttributesTable" name="mapCustomAttributesTable">
+             <widget class="CustomAttributesFrame" name="mapCustomAttributesFrame">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
                 <horstretch>0</horstretch>
@@ -3324,9 +3324,9 @@
    <header>mapview.h</header>
   </customwidget>
   <customwidget>
-   <class>CustomAttributesTable</class>
+   <class>CustomAttributesFrame</class>
    <extends>QFrame</extends>
-   <header>customattributestable.h</header>
+   <header>customattributesframe.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
