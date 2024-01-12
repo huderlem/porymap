@@ -1179,11 +1179,12 @@ bool MainWindow::populateMapList() {
     ui->layoutList->setModel(layoutListProxyModel);
 
     /// !TODO
-    ui->mapList->setSelectionMode(QAbstractItemView::ExtendedSelection);
-    ui->mapList->setDragEnabled(true);
-    ui->mapList->setAcceptDrops(true);
-    ui->mapList->setDropIndicatorShown(true);
-    ui->mapList->setDragDropMode(QAbstractItemView::InternalMove);
+    // ui->mapList->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    // ui->mapList->setDragEnabled(true);
+    // ui->mapList->setAcceptDrops(true);
+    // ui->mapList->setDropIndicatorShown(true);
+    // ui->mapList->setDragDropMode(QAbstractItemView::InternalMove);
+    on_toolButton_EnableDisable_EditGroups_clicked();
 
     return success;
 }
@@ -2849,6 +2850,24 @@ void MainWindow::on_toolButton_ExpandAll_Groups_clicked() {
 void MainWindow::on_toolButton_CollapseAll_Groups_clicked() {
     if (ui->mapList) {
         ui->mapList->collapseAll();
+    }
+}
+
+void MainWindow::on_toolButton_EnableDisable_EditGroups_clicked() {
+    if (this->ui->toolButton_EnableDisable_EditGroups->isChecked()) {
+        ui->mapList->setSelectionMode(QAbstractItemView::ExtendedSelection);
+        ui->mapList->setDragEnabled(true);
+        ui->mapList->setAcceptDrops(true);
+        ui->mapList->setDropIndicatorShown(true);
+        ui->mapList->setDragDropMode(QAbstractItemView::InternalMove);
+        ui->mapList->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed);
+    } else {
+        ui->mapList->setSelectionMode(QAbstractItemView::NoSelection);
+        ui->mapList->setDragEnabled(false);
+        ui->mapList->setAcceptDrops(false);
+        ui->mapList->setDropIndicatorShown(false);
+        ui->mapList->setDragDropMode(QAbstractItemView::NoDragDrop);
+        ui->mapList->setEditTriggers(QAbstractItemView::NoEditTriggers);
     }
 }
 

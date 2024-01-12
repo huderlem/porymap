@@ -282,6 +282,7 @@ private slots:
     void on_toolButton_HideShow_Groups_clicked();
     void on_toolButton_ExpandAll_Groups_clicked();
     void on_toolButton_CollapseAll_Groups_clicked();
+    void on_toolButton_EnableDisable_EditGroups_clicked();
     void on_toolButton_HideShow_Areas_clicked();
     void on_toolButton_ExpandAll_Areas_clicked();
     void on_toolButton_CollapseAll_Areas_clicked();

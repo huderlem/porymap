@@ -89,8 +89,8 @@
              </property>
              <property name="icon">
               <iconset resource="../resources/images.qrc">
-               <normaloff>:/icons/folder_eye_closed.ico</normaloff>
-               <normalon>:/icons/folder_eye_open.ico</normalon>
+               <normaloff>:/icons/folder_eye_open.ico</normaloff>
+               <normalon>:/icons/folder_eye_closed.ico</normalon>
               </iconset>
              </property>
              <property name="popupMode">
@@ -140,6 +140,31 @@
               <enum>QToolButton::InstantPopup</enum>
              </property>
              <property name="autoRaise">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="toolButton_EnableDisable_EditGroups">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Toggle editability of group folders&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../resources/images.qrc">
+               <normaloff>:/icons/lock_edit.ico</normaloff>
+               <normalon>:/icons/unlock_edit.ico</normalon>
+              </iconset>
+             </property>
+             <property name="popupMode">
+              <enum>QToolButton::InstantPopup</enum>
+             </property>
+             <property name="autoRaise">
+              <bool>true</bool>
+             </property>
+             <property name="checkable">
               <bool>true</bool>
              </property>
             </widget>
@@ -249,8 +274,8 @@
              </property>
              <property name="icon">
               <iconset resource="../resources/images.qrc">
-               <normaloff>:/icons/folder_eye_closed.ico</normaloff>
-               <normalon>:/icons/folder_eye_open.ico</normalon>
+               <normaloff>:/icons/folder_eye_open.ico</normaloff>
+               <normalon>:/icons/folder_eye_closed.ico</normalon>
               </iconset>
              </property>
              <property name="popupMode">
@@ -409,8 +434,8 @@
              </property>
              <property name="icon">
               <iconset resource="../resources/images.qrc">
-               <normaloff>:/icons/folder_eye_closed.ico</normaloff>
-               <normalon>:/icons/folder_eye_open.ico</normalon>
+               <normaloff>:/icons/folder_eye_open.ico</normaloff>
+               <normalon>:/icons/folder_eye_closed.ico</normalon>
               </iconset>
              </property>
              <property name="popupMode">
