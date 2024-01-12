@@ -200,8 +200,6 @@ public:
     static QString getScriptFileExtension(bool usePoryScript);
     QString getScriptDefaultString(bool usePoryScript, QString mapName) const;
     QStringList getEventScriptsFilePaths() const;
-    QCompleter *getEventScriptLabelCompleter(QStringList additionalScriptLabels);
-    QStringList getGlobalScriptLabels();
 
     QString getDefaultPrimaryTilesetLabel();
     QString getDefaultSecondaryTilesetLabel();
@@ -250,9 +248,6 @@ private:
     static int max_map_data_size;
     static int default_map_size;
     static int max_object_events;
-
-    QStringListModel eventScriptLabelModel;
-    QCompleter eventScriptLabelCompleter;
 
 signals:
     void reloadProject();
