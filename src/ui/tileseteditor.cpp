@@ -196,7 +196,7 @@ void TilesetEditor::initMetatileSelector()
     this->metatileSelector->draw();
 
     this->ui->graphicsView_Metatiles->setScene(this->metatilesScene);
-    this->ui->graphicsView_Metatiles->setFixedSize(this->metatileSelector->pixmap().width() + 2, this->metatileSelector->pixmap().height() + 2);
+    this->ui->horizontalSlider_MetatilesZoom->setValue(porymapConfig.getTilesetEditorMetatilesZoom());
 }
 
 void TilesetEditor::initMetatileLayersItem() {
@@ -236,7 +236,7 @@ void TilesetEditor::initTileSelector()
     this->tileSelector->draw();
 
     this->ui->graphicsView_Tiles->setScene(this->tilesScene);
-    this->ui->graphicsView_Tiles->setFixedSize(this->tileSelector->pixmap().width() + 2, this->tileSelector->pixmap().height() + 2);
+    this->ui->horizontalSlider_TilesZoom->setValue(porymapConfig.getTilesetEditorTilesZoom());
 }
 
 void TilesetEditor::initSelectedTileItem() {
@@ -1181,4 +1181,32 @@ void TilesetEditor::on_copyButton_metatileLabel_clicked() {
         label.prepend(tileset->getMetatileLabelPrefix());
     QGuiApplication::clipboard()->setText(label);
     QToolTip::showText(this->ui->copyButton_metatileLabel->mapToGlobal(QPoint(0, 0)), "Copied!");
+}
+
+void TilesetEditor::on_horizontalSlider_MetatilesZoom_valueChanged(int value) {
+    porymapConfig.setTilesetEditorMetatilesZoom(value);
+    double scale = pow(3.0, static_cast<double>(value - 30) / 30.0);
+
+    QTransform transform;
+    transform.scale(scale, scale);
+    QSize size(this->metatileSelector->pixmap().width(), this->metatileSelector->pixmap().height());
+    size *= scale;
+
+    this->ui->graphicsView_Metatiles->setResizeAnchor(QGraphicsView::NoAnchor);
+    this->ui->graphicsView_Metatiles->setTransform(transform);
+    this->ui->graphicsView_Metatiles->setFixedSize(size.width() + 2, size.height() + 2);
+}
+
+void TilesetEditor::on_horizontalSlider_TilesZoom_valueChanged(int value) {
+    porymapConfig.setTilesetEditorTilesZoom(value);
+    double scale = pow(3.0, static_cast<double>(value - 30) / 30.0);
+
+    QTransform transform;
+    transform.scale(scale, scale);
+    QSize size(this->tileSelector->pixmap().width(), this->tileSelector->pixmap().height());
+    size *= scale;
+
+    this->ui->graphicsView_Tiles->setResizeAnchor(QGraphicsView::NoAnchor);
+    this->ui->graphicsView_Tiles->setTransform(transform);
+    this->ui->graphicsView_Tiles->setFixedSize(size.width() + 2, size.height() + 2);
 }

@@ -168,6 +168,23 @@ void EventFrame::setActive(bool active) {
     this->blockSignals(!active);
 }
 
+void EventFrame::populateScriptDropdown(NoScrollComboBox * combo, Project * project) {
+    // The script dropdown is populated with scripts used by the map's events and from its scripts file.
+    if (this->event->getMap())
+        combo->addItems(this->event->getMap()->getScriptLabels());
+
+    // The dropdown's autocomplete has all script labels across the full project.
+    auto completer = new QCompleter(project->globalScriptLabels, combo);
+    completer->setCaseSensitivity(Qt::CaseInsensitive);
+    completer->setModelSorting(QCompleter::CaseInsensitivelySortedModel);
+    completer->setFilterMode(Qt::MatchContains);
+
+    // Improve display speed for the autocomplete popup
+    auto popup = (QListView *)completer->popup();
+    if (popup) popup->setUniformItemSizes(true);
+
+    combo->setCompleter(completer);
+}
 
 
 void ObjectFrame::setup() {
@@ -367,20 +384,7 @@ void ObjectFrame::populate(Project *project) {
     this->combo_flag->addItems(project->flagNames);
     this->combo_trainer_type->addItems(project->trainerTypes);
 
-    // The script dropdown is populated with scripts used by the map's events and from its scripts file.
-    QStringList scriptLabels;
-    if (this->object->getMap()) {
-        scriptLabels.append(this->object->getMap()->getScriptLabels());
-        this->combo_script->addItems(scriptLabels);
-    }
-
-    // The dropdown's autocomplete has all script labels across the full project.
-    scriptLabels.append(project->getGlobalScriptLabels());
-    scriptLabels.removeDuplicates();
-    this->scriptCompleter = new QCompleter(scriptLabels, this);
-    this->scriptCompleter->setCaseSensitivity(Qt::CaseInsensitive);
-    this->scriptCompleter->setFilterMode(Qt::MatchContains);
-    this->combo_script->setCompleter(this->scriptCompleter);
+    this->populateScriptDropdown(this->combo_script, project);
 }
 
 
@@ -637,20 +641,7 @@ void TriggerFrame::populate(Project *project) {
     // var combo
     this->combo_var->addItems(project->varNames);
 
-    // The script dropdown is populated with scripts used by the map's events and from its scripts file.
-    QStringList scriptLabels;
-    if (this->trigger->getMap()) {
-        scriptLabels.append(this->trigger->getMap()->getScriptLabels());
-        this->combo_script->addItems(scriptLabels);
-    }
-
-    // The dropdown's autocomplete has all script labels across the full project.
-    scriptLabels.append(project->getGlobalScriptLabels());
-    scriptLabels.removeDuplicates();
-    this->scriptCompleter = new QCompleter(scriptLabels, this);
-    this->scriptCompleter->setCaseSensitivity(Qt::CaseInsensitive);
-    this->scriptCompleter->setFilterMode(Qt::MatchContains);
-    this->combo_script->setCompleter(this->scriptCompleter);
+    this->populateScriptDropdown(this->combo_script, project);
 }
 
 
@@ -772,20 +763,7 @@ void SignFrame::populate(Project *project) {
     // facing dir
     this->combo_facing_dir->addItems(project->bgEventFacingDirections);
 
-    // The script dropdown is populated with scripts used by the map's events and from its scripts file.
-    QStringList scriptLabels;
-    if (this->sign->getMap()) {
-        scriptLabels.append(this->sign->getMap()->getScriptLabels());
-        this->combo_script->addItems(scriptLabels);
-    }
-
-    // The dropdown's autocomplete has all script labels across the full project.
-    scriptLabels.append(project->getGlobalScriptLabels());
-    scriptLabels.removeDuplicates();
-    this->scriptCompleter = new QCompleter(scriptLabels, this);
-    this->scriptCompleter->setCaseSensitivity(Qt::CaseInsensitive);
-    this->scriptCompleter->setFilterMode(Qt::MatchContains);
-    this->combo_script->setCompleter(this->scriptCompleter);
+    this->populateScriptDropdown(this->combo_script, project);
 }
 
 

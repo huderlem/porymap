@@ -137,6 +137,7 @@ QStringList Map::getScriptLabels(Event::Group group) const {
 
     // Add scripts from map's scripts file, and empty names.
     scriptLabels.append(scriptsFileLabels);
+    scriptLabels.sort(Qt::CaseInsensitive);
     scriptLabels.prepend("0x0");
     scriptLabels.prepend("NULL");
 

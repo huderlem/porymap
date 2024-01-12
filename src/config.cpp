@@ -368,6 +368,10 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->metatilesZoom = getConfigInteger(key, value, 10, 100, 30);
     } else if (key == "collision_zoom") {
         this->collisionZoom = getConfigInteger(key, value, 10, 100, 30);
+    } else if (key == "tileset_editor_metatiles_zoom") {
+        this->tilesetEditorMetatilesZoom = getConfigInteger(key, value, 10, 100, 30);
+    } else if (key == "tileset_editor_tiles_zoom") {
+        this->tilesetEditorTilesZoom = getConfigInteger(key, value, 10, 100, 30);
     } else if (key == "show_player_view") {
         this->showPlayerView = getConfigBool(key, value);
     } else if (key == "show_cursor_tile") {
@@ -427,6 +431,8 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("collision_opacity", QString::number(this->collisionOpacity));
     map.insert("collision_zoom", QString::number(this->collisionZoom));
     map.insert("metatiles_zoom", QString::number(this->metatilesZoom));
+    map.insert("tileset_editor_metatiles_zoom", QString::number(this->tilesetEditorMetatilesZoom));
+    map.insert("tileset_editor_tiles_zoom", QString::number(this->tilesetEditorTilesZoom));
     map.insert("show_player_view", this->showPlayerView ? "1" : "0");
     map.insert("show_cursor_tile", this->showCursorTile ? "1" : "0");
     map.insert("show_border", this->showBorder ? "1" : "0");
@@ -549,6 +555,16 @@ void PorymapConfig::setCollisionZoom(int zoom) {
 
 void PorymapConfig::setMetatilesZoom(int zoom) {
     this->metatilesZoom = zoom;
+    // don't auto-save here because this can be called very frequently.
+}
+
+void PorymapConfig::setTilesetEditorMetatilesZoom(int zoom) {
+    this->tilesetEditorMetatilesZoom = zoom;
+    // don't auto-save here because this can be called very frequently.
+}
+
+void PorymapConfig::setTilesetEditorTilesZoom(int zoom) {
+    this->tilesetEditorTilesZoom = zoom;
     // don't auto-save here because this can be called very frequently.
 }
 
@@ -692,6 +708,14 @@ int PorymapConfig::getCollisionZoom() {
 
 int PorymapConfig::getMetatilesZoom() {
     return this->metatilesZoom;
+}
+
+int PorymapConfig::getTilesetEditorMetatilesZoom() {
+    return this->tilesetEditorMetatilesZoom;
+}
+
+int PorymapConfig::getTilesetEditorTilesZoom() {
+    return this->tilesetEditorTilesZoom;
 }
 
 bool PorymapConfig::getShowPlayerView() {
