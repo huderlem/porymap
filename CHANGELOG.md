@@ -8,19 +8,27 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 
 ## [Unreleased]
 ### Added
+- Add zoom sliders to the Tileset Editor.
 - Add `getMetatileBehaviorName` and `setMetatileBehaviorName` to the API.
 - Add `metatile_behaviors`, `num_primary_palettes`, and `num_secondary_palettes` to `constants` in the API.
 
 ### Changed
 - Metatile ID strings are now padded to their current max, not the overall max.
+- Non-existent directories are now removed from the Open Recent Project menu.
+- Hovering on the layer view in the Tileset Editor now displays the tile ID.
+- Labels in the Script dropdown are now sorted alphabetically.
 - The name of the Heal Locations table is no longer enforced.
 - The API functions `addImage` and `createImage` now support project-relative paths.
 
 ### Fixed
 - Fix the metatile selector rectangle jumping when selecting up or left of the origin.
-- Fix the event group tabs sometimes showing an event from the wrong group
+- Fix the event group tabs sometimes showing an event from the wrong group.
 - Fix the clear buttons in the Shortcuts Editor not actually removing shortcuts.
-- Fix API error reporting
+- Fix slow speed for the script label autcomplete.
+- Fix deleted script labels still appearing in the autocomplete after project reload.
+- Fix the map search bar stealing focus on startup.
+- Fix Open Recent Project not clearing the API overlay
+- Fix API error reporting.
 
 ## [5.2.0] - 2024-01-02
 ### Added
