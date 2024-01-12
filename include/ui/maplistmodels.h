@@ -72,7 +72,7 @@ public:
 public:
     void setMap(QString mapName) { this->openMap = mapName; }
 
-    QStandardItem *createGroupItem(QString groupName, int groupIndex);
+    QStandardItem *createGroupItem(QString groupName, int groupIndex, QStandardItem *fromItem = nullptr);
     QStandardItem *createMapItem(QString mapName, QStandardItem *fromItem = nullptr);
 
     QStandardItem *insertMapItem(QString mapName, QString groupName);

@@ -59,7 +59,9 @@ Qt::DropActions MapGroupModel::supportedDropActions() const {
 QStringList MapGroupModel::mimeTypes() const {
     QStringList types;
     types << "application/porymap.mapgroupmodel.map"
-          << "application/porymap.mapgroupmodel.group";
+          << "application/porymap.mapgroupmodel.group"
+          << "application/porymap.mapgroupmodel.source.row"
+          << "application/porymap.mapgroupmodel.source.column";
     return types;
 }
 
@@ -68,6 +70,17 @@ QMimeData *MapGroupModel::mimeData(const QModelIndexList &indexes) const {
     QByteArray encodedData;
 
     QDataStream stream(&encodedData, QIODevice::WriteOnly);
+
+    // if dropping a selection containing a group(s) and map(s), clear all selection but first group.
+    for (const QModelIndex &index : indexes) {
+        if (index.isValid() && data(index, MapListRoles::TypeRole).toString() == "map_group") {
+            QString groupName = data(index, Qt::UserRole).toString();
+            stream << groupName;
+            mimeData->setData("application/porymap.mapgroupmodel.group", encodedData);
+            mimeData->setData("application/porymap.mapgroupmodel.source.row", QByteArray::number(index.row()));
+            return mimeData;
+        }
+    }
 
     for (const QModelIndex &index : indexes) {
         if (index.isValid()) {
@@ -83,11 +96,8 @@ QMimeData *MapGroupModel::mimeData(const QModelIndexList &indexes) const {
 bool MapGroupModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parentIndex) {
     if (action == Qt::IgnoreAction)
         return true;
- 
-    if (!data->hasFormat("application/porymap.mapgroupmodel.map"))
-        return false;
 
-    if (!parentIndex.isValid())
+    if (!parentIndex.isValid() && !data->hasFormat("application/porymap.mapgroupmodel.group"))
         return false;
 
     int firstRow = 0;
@@ -99,34 +109,68 @@ bool MapGroupModel::dropMimeData(const QMimeData *data, Qt::DropAction action, i
         firstRow = rowCount(parentIndex);
     }
 
-    QByteArray encodedData = data->data("application/porymap.mapgroupmodel.map");
-    QDataStream stream(&encodedData, QIODevice::ReadOnly);
-    QStringList droppedMaps;
-    int rowCount = 0;
+    if (data->hasFormat("application/porymap.mapgroupmodel.group")) {
+        if (parentIndex.row() != -1 || parentIndex.column() != -1) {
+            return false;
+        }
+        QByteArray encodedData = data->data("application/porymap.mapgroupmodel.group");
+        QDataStream stream(&encodedData, QIODevice::ReadOnly);
+        QString groupName;
+        int rowCount = 1;
 
-    QList<QStandardItem *> newItems;
+        while (!stream.atEnd()) {
+            stream >> groupName;
+        }
 
-    while (!stream.atEnd()) {
-        QString mapName;
-        stream >> mapName;
-        droppedMaps << mapName;
-        rowCount++;
+        this->insertRow(row, parentIndex);
+
+        // copy children to new node
+        int sourceRow = data->data("application/porymap.mapgroupmodel.source.row").toInt();
+        QModelIndex originIndex = this->index(sourceRow, 0);
+        QModelIndexList children;
+        QStringList mapsToMove;
+        for (int i = 0; i < this->rowCount(originIndex); ++i ) {
+            children << this->index( i, 0, originIndex);
+            mapsToMove << this->index( i, 0 , originIndex).data(Qt::UserRole).toString();
+        }
+
+        QModelIndex groupIndex = index(row, 0, parentIndex);
+        QStandardItem *groupItem = this->itemFromIndex(groupIndex);
+        createGroupItem(groupName, row, groupItem);
+
+        for (QString mapName : mapsToMove) {
+            QStandardItem *mapItem = createMapItem(mapName);
+            groupItem->appendRow(mapItem);
+        }
     }
+    else if (data->hasFormat("application/porymap.mapgroupmodel.map")) {
+        QByteArray encodedData = data->data("application/porymap.mapgroupmodel.map");
+        QDataStream stream(&encodedData, QIODevice::ReadOnly);
+        QStringList droppedMaps;
+        int rowCount = 0;
 
-    this->insertRows(firstRow, rowCount, parentIndex);
+        while (!stream.atEnd()) {
+            QString mapName;
+            stream >> mapName;
+            droppedMaps << mapName;
+            rowCount++;
+        }
 
-    int newItemIndex = 0;
-    for (QString mapName : droppedMaps) {
-        QModelIndex mapIndex = index(firstRow, 0, parentIndex);
-        QStandardItem *mapItem = this->itemFromIndex(mapIndex);
-        createMapItem(mapName, mapItem);
-        firstRow++;
+        this->insertRows(firstRow, rowCount, parentIndex);
+
+        int newItemIndex = 0;
+        for (QString mapName : droppedMaps) {
+            QModelIndex mapIndex = index(firstRow, 0, parentIndex);
+            QStandardItem *mapItem = this->itemFromIndex(mapIndex);
+            createMapItem(mapName, mapItem);
+            firstRow++;
+        }
     }
 
     emit dragMoveCompleted();
     updateProject();
 
-    return false;
+    return true;
 }
 
 void MapGroupModel::updateProject() {
@@ -158,13 +202,13 @@ void MapGroupModel::updateProject() {
     this->project->mapNames = mapNames;
 }
 
-QStandardItem *MapGroupModel::createGroupItem(QString groupName, int groupIndex) {
-    QStandardItem *group = new QStandardItem;
+QStandardItem *MapGroupModel::createGroupItem(QString groupName, int groupIndex, QStandardItem *group) {
+    if (!group) group = new QStandardItem;
     group->setText(groupName);
     group->setData(groupName, Qt::UserRole);
     group->setData("map_group", MapListRoles::TypeRole);
     group->setData(groupIndex, MapListRoles::GroupRole);
-    group->setFlags(Qt::ItemIsEnabled | Qt::ItemIsDropEnabled | Qt::ItemIsEditable);
+    group->setFlags(Qt::ItemIsEnabled | Qt::ItemIsDropEnabled | Qt::ItemIsEditable | Qt::ItemIsDragEnabled | Qt::ItemIsSelectable);
     this->groupItems.insert(groupName, group);
     return group;
 }
