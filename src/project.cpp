@@ -35,9 +35,7 @@ int Project::default_map_size = 20;
 int Project::max_object_events = 64;
 
 Project::Project(QObject *parent) :
-    QObject(parent),
-    eventScriptLabelModel(this),
-    eventScriptLabelCompleter(this)
+    QObject(parent)
 {
     initSignals();
 }
