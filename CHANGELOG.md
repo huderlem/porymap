@@ -27,6 +27,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix slow speed for the script label autcomplete.
 - Fix deleted script labels still appearing in the autocomplete after project reload.
 - Fix the map search bar stealing focus on startup.
+- Fix border metatiles view not resizing properly.
 - Fix Open Recent Project not clearing the API overlay
 - Fix API error reporting.
 

@@ -1389,7 +1389,7 @@ void MainWindow::redrawMetatileSelection()
         MetatileSelection selection = editor->metatile_selector_item->getMetatileSelection();
         QPoint pos = editor->metatile_selector_item->getMetatileIdCoordsOnWidget(selection.metatileItems.first().metatileId);
         pos *= scale;
-        ui->scrollArea_2->ensureVisible(pos.x(), pos.y(), 8 * scale, 8 * scale);
+        ui->scrollArea_MetatileSelector->ensureVisible(pos.x(), pos.y(), 8 * scale, 8 * scale);
     }
 }
 
