@@ -168,6 +168,7 @@ void TilesetEditor::setAttributesUi() {
         this->ui->label_layerType->setVisible(false);
         this->ui->label_BottomTop->setText("Bottom/Middle/Top");
     }
+    this->ui->frame_Properties->adjustSize();
 }
 
 void TilesetEditor::setMetatileLabelValidator() {
