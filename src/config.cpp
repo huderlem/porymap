@@ -342,12 +342,16 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->mapSplitterState = bytesFromString(value);
     } else if (key == "main_splitter_state") {
         this->mainSplitterState = bytesFromString(value);
+    } else if (key == "metatiles_splitter_state") {
+        this->metatilesSplitterState = bytesFromString(value);
     } else if (key == "collision_opacity") {
         this->collisionOpacity = getConfigInteger(key, value, 0, 100, 50);
     } else if (key == "tileset_editor_geometry") {
         this->tilesetEditorGeometry = bytesFromString(value);
     } else if (key == "tileset_editor_state") {
         this->tilesetEditorState = bytesFromString(value);
+    } else if (key == "tileset_editor_splitter_state") {
+        this->tilesetEditorSplitterState = bytesFromString(value);
     } else if (key == "palette_editor_geometry") {
         this->paletteEditorGeometry = bytesFromString(value);
     } else if (key == "palette_editor_state") {
@@ -418,8 +422,10 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("main_window_state", stringFromByteArray(this->mainWindowState));
     map.insert("map_splitter_state", stringFromByteArray(this->mapSplitterState));
     map.insert("main_splitter_state", stringFromByteArray(this->mainSplitterState));
+    map.insert("metatiles_splitter_state", stringFromByteArray(this->metatilesSplitterState));
     map.insert("tileset_editor_geometry", stringFromByteArray(this->tilesetEditorGeometry));
     map.insert("tileset_editor_state", stringFromByteArray(this->tilesetEditorState));
+    map.insert("tileset_editor_splitter_state", stringFromByteArray(this->tilesetEditorSplitterState));
     map.insert("palette_editor_geometry", stringFromByteArray(this->paletteEditorGeometry));
     map.insert("palette_editor_state", stringFromByteArray(this->paletteEditorState));
     map.insert("region_map_editor_geometry", stringFromByteArray(this->regionMapEditorGeometry));
@@ -505,17 +511,20 @@ void PorymapConfig::setTilesetCheckerboardFill(bool checkerboard) {
 }
 
 void PorymapConfig::setMainGeometry(QByteArray mainWindowGeometry_, QByteArray mainWindowState_,
-                                QByteArray mapSplitterState_, QByteArray mainSplitterState_) {
+                                QByteArray mapSplitterState_, QByteArray mainSplitterState_, QByteArray metatilesSplitterState_) {
     this->mainWindowGeometry = mainWindowGeometry_;
     this->mainWindowState = mainWindowState_;
     this->mapSplitterState = mapSplitterState_;
     this->mainSplitterState = mainSplitterState_;
+    this->metatilesSplitterState = metatilesSplitterState_;
     this->save();
 }
 
-void PorymapConfig::setTilesetEditorGeometry(QByteArray tilesetEditorGeometry_, QByteArray tilesetEditorState_) {
+void PorymapConfig::setTilesetEditorGeometry(QByteArray tilesetEditorGeometry_, QByteArray tilesetEditorState_,
+                                            QByteArray tilesetEditorSplitterState_) {
     this->tilesetEditorGeometry = tilesetEditorGeometry_;
     this->tilesetEditorState = tilesetEditorState_;
+    this->tilesetEditorSplitterState = tilesetEditorSplitterState_;
     this->save();
 }
 
@@ -649,6 +658,7 @@ QMap<QString, QByteArray> PorymapConfig::getMainGeometry() {
     geometry.insert("main_window_state", this->mainWindowState);
     geometry.insert("map_splitter_state", this->mapSplitterState);
     geometry.insert("main_splitter_state", this->mainSplitterState);
+    geometry.insert("metatiles_splitter_state", this->metatilesSplitterState);
 
     return geometry;
 }
@@ -658,6 +668,7 @@ QMap<QString, QByteArray> PorymapConfig::getTilesetEditorGeometry() {
 
     geometry.insert("tileset_editor_geometry", this->tilesetEditorGeometry);
     geometry.insert("tileset_editor_state", this->tilesetEditorState);
+    geometry.insert("tileset_editor_splitter_state", this->tilesetEditorSplitterState);
 
     return geometry;
 }

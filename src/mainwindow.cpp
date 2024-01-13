@@ -464,6 +464,7 @@ void MainWindow::restoreWindowState() {
     this->restoreState(geometry.value("main_window_state"));
     this->ui->splitter_map->restoreState(geometry.value("map_splitter_state"));
     this->ui->splitter_main->restoreState(geometry.value("main_splitter_state"));
+    this->ui->splitter_Metatiles->restoreState(geometry.value("metatiles_splitter_state"));
 }
 
 void MainWindow::setTheme(QString theme) {
@@ -2940,7 +2941,8 @@ void MainWindow::closeEvent(QCloseEvent *event) {
         this->saveGeometry(),
         this->saveState(),
         this->ui->splitter_map->saveState(),
-        this->ui->splitter_main->saveState()
+        this->ui->splitter_main->saveState(),
+        this->ui->splitter_Metatiles->saveState()
     );
     porymapConfig.save();
     shortcutsConfig.save();

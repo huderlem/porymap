@@ -80,8 +80,8 @@ public:
     void setReopenOnLaunch(bool enabled);
     void setMapSortOrder(MapSortOrder order);
     void setPrettyCursors(bool enabled);
-    void setMainGeometry(QByteArray, QByteArray, QByteArray, QByteArray);
-    void setTilesetEditorGeometry(QByteArray, QByteArray);
+    void setMainGeometry(QByteArray, QByteArray, QByteArray, QByteArray, QByteArray);
+    void setTilesetEditorGeometry(QByteArray, QByteArray, QByteArray);
     void setPaletteEditorGeometry(QByteArray, QByteArray);
     void setRegionMapEditorGeometry(QByteArray, QByteArray);
     void setProjectSettingsEditorGeometry(QByteArray, QByteArray);
@@ -151,10 +151,11 @@ private:
     QByteArray mainWindowGeometry;
     QByteArray mainWindowState;
     QByteArray mapSplitterState;
-    QByteArray eventsSlpitterState;
     QByteArray mainSplitterState;
+    QByteArray metatilesSplitterState;
     QByteArray tilesetEditorGeometry;
     QByteArray tilesetEditorState;
+    QByteArray tilesetEditorSplitterState;
     QByteArray paletteEditorGeometry;
     QByteArray paletteEditorState;
     QByteArray regionMapEditorGeometry;

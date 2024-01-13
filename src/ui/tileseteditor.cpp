@@ -293,6 +293,7 @@ void TilesetEditor::restoreWindowState() {
     QMap<QString, QByteArray> geometry = porymapConfig.getTilesetEditorGeometry();
     this->restoreGeometry(geometry.value("tileset_editor_geometry"));
     this->restoreState(geometry.value("tileset_editor_state"));
+    this->ui->splitter->restoreState(geometry.value("tileset_editor_splitter_state"));
 }
 
 void TilesetEditor::initMetatileHistory() {
@@ -766,7 +767,8 @@ void TilesetEditor::closeEvent(QCloseEvent *event)
         if (this->paletteEditor) this->paletteEditor->close();
         porymapConfig.setTilesetEditorGeometry(
             this->saveGeometry(),
-            this->saveState()
+            this->saveState(),
+            this->ui->splitter->saveState()
         );
     }
 }
