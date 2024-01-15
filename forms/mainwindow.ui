@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1287</width>
-    <height>815</height>
+    <height>903</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -713,7 +713,7 @@
                         <item>
                          <widget class="QSplitter" name="splitter_Metatiles">
                           <property name="sizePolicy">
-                           <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                           <sizepolicy hsizetype="Preferred" vsizetype="Ignored">
                             <horstretch>0</horstretch>
                             <verstretch>0</verstretch>
                            </sizepolicy>
@@ -765,6 +765,14 @@
                                <bool>true</bool>
                               </property>
                               <widget class="QWidget" name="scrollAreaWidgetContents_3">
+                               <property name="geometry">
+                                <rect>
+                                 <x>0</x>
+                                 <y>0</y>
+                                 <width>423</width>
+                                 <height>79</height>
+                                </rect>
+                               </property>
                                <layout class="QHBoxLayout" name="horizontalLayout_12">
                                 <property name="spacing">
                                  <number>0</number>
@@ -881,7 +889,7 @@
                                  <x>0</x>
                                  <y>0</y>
                                  <width>423</width>
-                                 <height>199</height>
+                                 <height>79</height>
                                 </rect>
                                </property>
                                <layout class="QHBoxLayout" name="horizontalLayout_7">
@@ -985,7 +993,7 @@
                               <x>8</x>
                               <y>0</y>
                               <width>411</width>
-                              <height>239</height>
+                              <height>446</height>
                              </rect>
                             </property>
                             <property name="sizePolicy">
@@ -1082,7 +1090,7 @@
                      <item row="0" column="0">
                       <widget class="QFrame" name="frame_Tilesets">
                        <property name="sizePolicy">
-                        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                          <horstretch>0</horstretch>
                          <verstretch>0</verstretch>
                         </sizepolicy>
@@ -1186,7 +1194,7 @@
                           <x>0</x>
                           <y>0</y>
                           <width>427</width>
-                          <height>512</height>
+                          <height>594</height>
                          </rect>
                         </property>
                         <layout class="QGridLayout" name="gridLayout_7">
@@ -1406,7 +1414,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>382</width>
-                             <height>611</height>
+                             <height>699</height>
                             </rect>
                            </property>
                            <layout class="QVBoxLayout" name="verticalLayout_14">
@@ -1707,7 +1715,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>16</height>
+                             <height>30</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -1801,7 +1809,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>16</height>
+                             <height>30</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -1895,7 +1903,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>16</height>
+                             <height>30</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -1995,7 +2003,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>16</height>
+                             <height>30</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -2089,7 +2097,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>16</height>
+                             <height>30</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
