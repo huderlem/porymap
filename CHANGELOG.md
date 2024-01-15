@@ -7,6 +7,9 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 The **"Breaking Changes"** listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. It also includes changes to the scripting API that may change the behavior of existing porymap scripts. If porymap is used with a project or API script that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.
 
 ## [Unreleased]
+Nothing, yet.
+
+## [5.3.0] - 2024-01-15
 ### Added
 - Add zoom sliders to the Tileset Editor.
 - Add `getMetatileBehaviorName` and `setMetatileBehaviorName` to the API.
@@ -461,7 +464,8 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ## [1.0.0] - 2018-10-26
 This was the initial release.
 
-[Unreleased]: https://github.com/huderlem/porymap/compare/5.2.0...HEAD
+[Unreleased]: https://github.com/huderlem/porymap/compare/5.3.0...HEAD
+[5.3.0]: https://github.com/huderlem/porymap/compare/5.2.0...5.3.0
 [5.2.0]: https://github.com/huderlem/porymap/compare/5.1.1...5.2.0
 [5.1.1]: https://github.com/huderlem/porymap/compare/5.1.0...5.1.1
 [5.1.0]: https://github.com/huderlem/porymap/compare/5.0.0...5.1.0
