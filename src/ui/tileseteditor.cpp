@@ -71,8 +71,7 @@ bool TilesetEditor::selectMetatile(uint16_t metatileId) {
     if (!Tileset::metatileIsValid(metatileId, this->primaryTileset, this->secondaryTileset) || this->lockSelection)
         return false;
     this->metatileSelector->select(metatileId);
-    QPoint pos = this->metatileSelector->getMetatileIdCoordsOnWidget(metatileId);
-    this->ui->scrollArea_Metatiles->ensureVisible(pos.x(), pos.y());
+    this->redrawMetatileSelector();
     return true;
 }
 
@@ -197,6 +196,7 @@ void TilesetEditor::initMetatileSelector()
     this->metatileSelector->draw();
 
     this->ui->graphicsView_Metatiles->setScene(this->metatilesScene);
+    this->ui->graphicsView_Metatiles->setResizeAnchor(QGraphicsView::AnchorViewCenter);
     this->ui->horizontalSlider_MetatilesZoom->setValue(porymapConfig.getTilesetEditorMetatilesZoom());
 }
 
@@ -237,6 +237,7 @@ void TilesetEditor::initTileSelector()
     this->tileSelector->draw();
 
     this->ui->graphicsView_Tiles->setScene(this->tilesScene);
+    this->ui->graphicsView_Tiles->setResizeAnchor(QGraphicsView::AnchorViewCenter);
     this->ui->horizontalSlider_TilesZoom->setValue(porymapConfig.getTilesetEditorTilesZoom());
 }
 
@@ -332,10 +333,8 @@ void TilesetEditor::refresh() {
         }
     }
 
-    this->ui->graphicsView_Tiles->setSceneRect(0, 0, this->tileSelector->pixmap().width() + 2, this->tileSelector->pixmap().height() + 2);
-    this->ui->graphicsView_Tiles->setFixedSize(this->tileSelector->pixmap().width() + 2, this->tileSelector->pixmap().height() + 2);
-    this->ui->graphicsView_Metatiles->setSceneRect(0, 0, this->metatileSelector->pixmap().width() + 2, this->metatileSelector->pixmap().height() + 2);
-    this->ui->graphicsView_Metatiles->setFixedSize(this->metatileSelector->pixmap().width() + 2, this->metatileSelector->pixmap().height() + 2);
+    this->redrawTileSelector();
+    this->redrawMetatileSelector();
     this->ui->graphicsView_selectedTile->setFixedSize(this->selectedTilePixmapItem->pixmap().width() + 2, this->selectedTilePixmapItem->pixmap().height() + 2);
 }
 
@@ -478,13 +477,12 @@ void TilesetEditor::onMetatileLayerSelectionChanged(QPoint selectionOrigin, int 
         }
     }
 
-    if (width == 1 && height == 1) {
-        this->tileSelector->highlight(static_cast<uint16_t>(tiles[0].tileId));
-        ui->spinBox_paletteSelector->setValue(tiles[0].palette);
-        QPoint pos = tileSelector->getTileCoordsOnWidget(static_cast<uint16_t>(tiles[0].tileId));
-        ui->scrollArea_Tiles->ensureVisible(pos.x(), pos.y());
-    }
     this->tileSelector->setExternalSelection(width, height, tiles, tileIdxs);
+    if (width == 1 && height == 1) {
+        ui->spinBox_paletteSelector->setValue(tiles[0].palette);
+        this->tileSelector->highlight(static_cast<uint16_t>(tiles[0].tileId));
+        this->redrawTileSelector();
+    }
     this->metatileLayersItem->clearLastModifiedCoords();
 }
 
@@ -1188,28 +1186,47 @@ void TilesetEditor::on_copyButton_metatileLabel_clicked() {
 
 void TilesetEditor::on_horizontalSlider_MetatilesZoom_valueChanged(int value) {
     porymapConfig.setTilesetEditorMetatilesZoom(value);
-    double scale = pow(3.0, static_cast<double>(value - 30) / 30.0);
+    this->redrawMetatileSelector();
+}
 
+void TilesetEditor::redrawMetatileSelector() {
+    QSize size(this->metatileSelector->pixmap().width(), this->metatileSelector->pixmap().height());
+    this->ui->graphicsView_Metatiles->setSceneRect(0, 0, size.width() + 2, size.height() + 2);
+
+    double scale = pow(3.0, static_cast<double>(porymapConfig.getTilesetEditorMetatilesZoom() - 30) / 30.0);
     QTransform transform;
     transform.scale(scale, scale);
-    QSize size(this->metatileSelector->pixmap().width(), this->metatileSelector->pixmap().height());
     size *= scale;
 
-    this->ui->graphicsView_Metatiles->setResizeAnchor(QGraphicsView::NoAnchor);
     this->ui->graphicsView_Metatiles->setTransform(transform);
     this->ui->graphicsView_Metatiles->setFixedSize(size.width() + 2, size.height() + 2);
+
+    QPoint pos = this->metatileSelector->getMetatileIdCoordsOnWidget(this->getSelectedMetatileId());
+    pos *= scale;
+    this->ui->scrollArea_Metatiles->ensureVisible(pos.x(), pos.y(), 8 * scale, 8 * scale);
 }
 
 void TilesetEditor::on_horizontalSlider_TilesZoom_valueChanged(int value) {
     porymapConfig.setTilesetEditorTilesZoom(value);
-    double scale = pow(3.0, static_cast<double>(value - 30) / 30.0);
+    this->redrawTileSelector();
+}
 
+void TilesetEditor::redrawTileSelector() {
+    QSize size(this->tileSelector->pixmap().width(), this->tileSelector->pixmap().height());
+    this->ui->graphicsView_Tiles->setSceneRect(0, 0, size.width() + 2, size.height() + 2);
+
+    double scale = pow(3.0, static_cast<double>(porymapConfig.getTilesetEditorTilesZoom() - 30) / 30.0);
     QTransform transform;
     transform.scale(scale, scale);
-    QSize size(this->tileSelector->pixmap().width(), this->tileSelector->pixmap().height());
     size *= scale;
 
-    this->ui->graphicsView_Tiles->setResizeAnchor(QGraphicsView::NoAnchor);
     this->ui->graphicsView_Tiles->setTransform(transform);
     this->ui->graphicsView_Tiles->setFixedSize(size.width() + 2, size.height() + 2);
+
+    auto tiles = this->tileSelector->getSelectedTiles(); // TODO: On non-external selections only
+    if (!tiles.isEmpty()) {
+        QPoint pos = this->tileSelector->getTileCoordsOnWidget(tiles[0].tileId);
+        pos *= scale;
+        this->ui->scrollArea_Tiles->ensureVisible(pos.x(), pos.y(), 8 * scale, 8 * scale);
+    }
 }
