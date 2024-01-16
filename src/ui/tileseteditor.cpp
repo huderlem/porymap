@@ -1223,7 +1223,7 @@ void TilesetEditor::redrawTileSelector() {
     this->ui->graphicsView_Tiles->setTransform(transform);
     this->ui->graphicsView_Tiles->setFixedSize(size.width() + 2, size.height() + 2);
 
-    auto tiles = this->tileSelector->getSelectedTiles(); // TODO: On non-external selections only
+    auto tiles = this->tileSelector->getSelectedTiles();
     if (!tiles.isEmpty()) {
         QPoint pos = this->tileSelector->getTileCoordsOnWidget(tiles[0].tileId);
         pos *= scale;
