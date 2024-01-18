@@ -78,6 +78,9 @@ public:
     bool usingAsmTilesets;
     QString importExportPath;
     QSet<QString> disabledSettingsNames;
+    bool weatherEventConstantsLoaded;
+    bool secretBaseConstantsLoaded;
+    bool wildEncountersLoaded;
 
     void set_root(QString);
 
@@ -253,7 +256,6 @@ signals:
     void reloadProject();
     void uncheckMonitorFilesAction();
     void mapCacheCleared();
-    void disableWildEncountersUI();
 };
 
 #endif // PROJECT_H

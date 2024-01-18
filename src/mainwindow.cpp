@@ -361,14 +361,12 @@ void MainWindow::markMapEdited() {
     }
 }
 
-void MainWindow::setWildEncountersUIEnabled(bool enabled) {
-    ui->mainTabBar->setTabEnabled(4, enabled);
-}
-
 // Update the UI using information we've read from the user's project files.
 void MainWindow::setProjectSpecificUI()
 {
-    this->setWildEncountersUIEnabled(userConfig.getEncounterJsonActive());
+    // Wild Encounters tab
+    // TODO: This index should come from an enum
+    ui->mainTabBar->setTabEnabled(4, editor->project->wildEncountersLoaded);
 
     bool hasFlags = projectConfig.getMapAllowFlagsEnabled();
     ui->checkBox_AllowRunning->setVisible(hasFlags);
@@ -378,8 +376,8 @@ void MainWindow::setProjectSpecificUI()
     ui->label_AllowBiking->setVisible(hasFlags);
     ui->label_AllowEscaping->setVisible(hasFlags);
 
-    ui->newEventToolButton->newWeatherTriggerAction->setVisible(projectConfig.getEventWeatherTriggerEnabled());
-    ui->newEventToolButton->newSecretBaseAction->setVisible(projectConfig.getEventSecretBaseEnabled());
+    ui->newEventToolButton->newWeatherTriggerAction->setVisible(editor->project->weatherEventConstantsLoaded);
+    ui->newEventToolButton->newSecretBaseAction->setVisible(editor->project->secretBaseConstantsLoaded);
     ui->newEventToolButton->newCloneObjectAction->setVisible(projectConfig.getEventCloneObjectEnabled());
 
     bool floorNumEnabled = projectConfig.getFloorNumberEnabled();
@@ -520,7 +518,6 @@ bool MainWindow::openProject(const QString &dir, bool initial) {
         editor->project = new Project(this);
         QObject::connect(editor->project, &Project::reloadProject, this, &MainWindow::on_action_Reload_Project_triggered);
         QObject::connect(editor->project, &Project::mapCacheCleared, this, &MainWindow::onMapCacheCleared);
-        QObject::connect(editor->project, &Project::disableWildEncountersUI, [this]() { this->setWildEncountersUIEnabled(false); });
         QObject::connect(editor->project, &Project::uncheckMonitorFilesAction, [this]() {
             porymapConfig.setMonitorFiles(false);
             if (this->preferenceEditor)
@@ -1767,7 +1764,7 @@ void MainWindow::on_mainTabBar_tabBarClicked(int index)
         editor->setEditingConnections();
     }
     if (index != 4) {
-        if (userConfig.getEncounterJsonActive())
+        if (editor->project && editor->project->wildEncountersLoaded)
             editor->saveEncounterTabData();
     }
     if (index != 1) {

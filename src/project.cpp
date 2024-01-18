@@ -614,7 +614,7 @@ void Project::saveMapGroups() {
 }
 
 void Project::saveWildMonData() {
-    if (!userConfig.getEncounterJsonActive()) return;
+    if (!this->wildEncountersLoaded) return;
 
     QString wildEncountersJsonFilepath = QString("%1/%2").arg(root).arg(projectConfig.getFilePath(ProjectFilePath::json_wild_encounters));
     QFile wildEncountersFile(wildEncountersJsonFilepath);
@@ -1602,6 +1602,7 @@ bool Project::readWildMonData() {
     wildMonFields.clear();
     wildMonData.clear();
     encounterGroupLabels.clear();
+    this->wildEncountersLoaded = false;
     if (!userConfig.getEncounterJsonActive()) {
         return true;
     }
@@ -1611,10 +1612,7 @@ bool Project::readWildMonData() {
 
     OrderedJson::object wildMonObj;
     if (!parser.tryParseOrderedJsonFile(&wildMonObj, wildMonJsonFilepath)) {
-        // Failing to read wild encounters data is not a critical error, just disable the
-        // encounter editor and log a warning in case the user intended to have this data.
-        userConfig.setEncounterJsonActive(false);
-        emit disableWildEncountersUI();
+        // Failing to read wild encounters data is not a critical error, the encounter editor will just be disabled
         logWarn(QString("Failed to read wild encounters from %1").arg(wildMonJsonFilepath));
         return true;
     }
@@ -1702,6 +1700,7 @@ bool Project::readWildMonData() {
         setDefaultEncounterRate(i.key(), rate);
     }
 
+    this->wildEncountersLoaded = true;
     return true;
 }
 
@@ -2268,6 +2267,7 @@ bool Project::readWeatherNames() {
 }
 
 bool Project::readCoordEventWeatherNames() {
+    this->weatherEventConstantsLoaded = false;
     if (!projectConfig.getEventWeatherTriggerEnabled())
         return true;
 
@@ -2277,12 +2277,15 @@ bool Project::readCoordEventWeatherNames() {
     coordEventWeatherNames = parser.readCDefineNames(filename, prefixes);
     if (coordEventWeatherNames.isEmpty()) {
         logWarn(QString("Failed to read coord event weather constants from %1. Disabling Weather Trigger events.").arg(filename));
-        projectConfig.setEventWeatherTriggerEnabled(false);
+        return true;
     }
+
+    this->weatherEventConstantsLoaded = true;
     return true;
 }
 
 bool Project::readSecretBaseIds() {
+    this->secretBaseConstantsLoaded = false;
     if (!projectConfig.getEventSecretBaseEnabled())
         return true;
 
@@ -2292,8 +2295,10 @@ bool Project::readSecretBaseIds() {
     secretBaseIds = parser.readCDefineNames(filename, prefixes);
     if (secretBaseIds.isEmpty()) {
         logWarn(QString("Failed to read secret base id constants from '%1'. Disabling Secret Base events.").arg(filename));
-        projectConfig.setEventSecretBaseEnabled(false);
+        return true;
     }
+
+    this->secretBaseConstantsLoaded = true;
     return true;
 }
 
