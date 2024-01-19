@@ -175,7 +175,7 @@ void NewMapPopup::setDefaultSettings(Project *project) {
     settings.secondaryTilesetLabel = project->getDefaultSecondaryTilesetLabel();
     settings.type = project->mapTypes.value(0, "0");
     settings.location = project->mapSectionNameToValue.keys().value(0, "0");
-    settings.song = project->songNames.value(0, "0");
+    settings.song = project->defaultSong;
     settings.canFlyTo = false;
     settings.showLocationName = true;
     settings.allowRunning = false;

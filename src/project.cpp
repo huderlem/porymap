@@ -2339,6 +2339,8 @@ bool Project::readSongNames() {
         logWarn(QString("Failed to read song names from %1.").arg(filename));
 
     // Song names don't have a very useful order (esp. if we include SE_* values), so sort them alphabetically.
+    // The default song should be the first in the list, not the first alphabetically, so save that before sorting.
+    this->defaultSong = this->songNames.value(0, "0");
     this->songNames.sort();
     return true;
 }
