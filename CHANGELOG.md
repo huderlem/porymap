@@ -8,11 +8,13 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 
 ## [Unreleased]
 ### Changed
-- If settings-specific features like Wild Encounters fail to load they are now only disabled for that session
+- If Wild Encounters fail to load they are now only disabled for that session, and the settings remain unchanged.
+- Defaults are used if project constants are missing, rather than failing to open the project or changing settings.
 
 ### Fixed
-- Fix the Tileset Editor selectors scrolling to the wrong selection when zoomed
-- Fix the Tileset Editor selectors getting extra white space when changing tilesets
+- Fix the Tileset Editor selectors scrolling to the wrong selection when zoomed.
+- Fix the Tileset Editor selectors getting extra white space when changing tilesets.
+- Fix a crash when adding disabled events with the Pencil tool.
 
 ## [5.3.0] - 2024-01-15
 ### Added

@@ -33,7 +33,7 @@ void NewMapPopup::init() {
     ui->comboBox_NewMap_Group->addItems(project->groupNames);
     ui->comboBox_NewMap_Song->addItems(project->songNames);
     ui->comboBox_NewMap_Type->addItems(project->mapTypes);
-    ui->comboBox_NewMap_Location->addItems(project->mapSectionValueToName.values());
+    ui->comboBox_NewMap_Location->addItems(project->mapSectionNameToValue.keys());
 
     // Set spin box limits
     ui->spinBox_NewMap_Width->setMinimum(1);
@@ -173,9 +173,9 @@ void NewMapPopup::setDefaultSettings(Project *project) {
     settings.borderHeight = DEFAULT_BORDER_HEIGHT;
     settings.primaryTilesetLabel = project->getDefaultPrimaryTilesetLabel();
     settings.secondaryTilesetLabel = project->getDefaultSecondaryTilesetLabel();
-    settings.type = project->mapTypes.at(0);
-    settings.location = project->mapSectionValueToName.values().at(0);
-    settings.song = project->defaultSong;
+    settings.type = project->mapTypes.value(0, "0");
+    settings.location = project->mapSectionNameToValue.keys().value(0, "0");
+    settings.song = project->songNames.value(0, "0");
     settings.canFlyTo = false;
     settings.showLocationName = true;
     settings.allowRunning = false;
@@ -258,9 +258,9 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
     newMap->location = this->ui->comboBox_NewMap_Location->currentText();
     newMap->song = this->ui->comboBox_NewMap_Song->currentText();
     newMap->requiresFlash = false;
-    newMap->weather = this->project->weatherNames.value(0);
+    newMap->weather = this->project->weatherNames.value(0, "0");
     newMap->show_location = this->ui->checkBox_NewMap_Show_Location->isChecked();
-    newMap->battle_scene = this->project->mapBattleScenes.value(0);
+    newMap->battle_scene = this->project->mapBattleScenes.value(0, "0");
 
     if (this->existingLayout) {
         layout = this->project->mapLayouts.value(this->layoutId);

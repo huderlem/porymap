@@ -78,8 +78,6 @@ public:
     bool usingAsmTilesets;
     QString importExportPath;
     QSet<QString> disabledSettingsNames;
-    bool weatherEventConstantsLoaded;
-    bool secretBaseConstantsLoaded;
     bool wildEncountersLoaded;
 
     void set_root(QString);
@@ -165,8 +163,6 @@ public:
     void saveTilesetMetatiles(Tileset*);
     void saveTilesetTilesImage(Tileset*);
     void saveTilesetPalettes(Tileset*);
-
-    QString defaultSong;
     void appendTilesetLabel(QString label, QString isSecondaryStr);
     bool readTilesetLabels();
     bool readTilesetMetatileLabels();

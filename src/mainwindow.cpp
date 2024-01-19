@@ -376,8 +376,8 @@ void MainWindow::setProjectSpecificUI()
     ui->label_AllowBiking->setVisible(hasFlags);
     ui->label_AllowEscaping->setVisible(hasFlags);
 
-    ui->newEventToolButton->newWeatherTriggerAction->setVisible(editor->project->weatherEventConstantsLoaded);
-    ui->newEventToolButton->newSecretBaseAction->setVisible(editor->project->secretBaseConstantsLoaded);
+    ui->newEventToolButton->newWeatherTriggerAction->setVisible(projectConfig.getEventWeatherTriggerEnabled());
+    ui->newEventToolButton->newSecretBaseAction->setVisible(projectConfig.getEventSecretBaseEnabled());
     ui->newEventToolButton->newCloneObjectAction->setVisible(projectConfig.getEventCloneObjectEnabled());
 
     bool floorNumEnabled = projectConfig.getFloorNumberEnabled();
@@ -498,7 +498,10 @@ bool MainWindow::openProject(const QString &dir, bool initial) {
         }
         return false;
     }
-    this->statusBar()->showMessage(QString("Opening %1").arg(projectString));
+
+    const QString openMessage = QString("Opening %1").arg(projectString);
+    this->statusBar()->showMessage(openMessage);
+    logInfo(openMessage);
 
     userConfig.setProjectDir(dir);
     userConfig.load();
@@ -541,10 +544,7 @@ bool MainWindow::openProject(const QString &dir, bool initial) {
     }
     
     showWindowTitle();
-
-    const QString successMessage = QString("Opened %1").arg(projectString);
-    this->statusBar()->showMessage(successMessage);
-    logInfo(successMessage);
+    this->statusBar()->showMessage(QString("Opened %1").arg(projectString));
 
     porymapConfig.addRecentProject(dir);
     refreshRecentProjectsMenu();
@@ -572,29 +572,22 @@ bool MainWindow::isProjectOpen() {
 }
 
 bool MainWindow::setInitialMap() {
-    QList<QStringList> names;
+    QStringList names;
     if (editor && editor->project)
-        names = editor->project->groupedMapNames;
+        names = editor->project->mapNames;
 
+    // Try to set most recently-opened map, if it's still in the list.
     QString recentMap = userConfig.getRecentMap();
-    if (!recentMap.isEmpty()) {
-        // Make sure the recent map is still in the map list
-        for (int i = 0; i < names.length(); i++) {
-            if (names.value(i).contains(recentMap)) {
-                return setMap(recentMap, true);
-            }
-        }
+    if (!recentMap.isEmpty() && names.contains(recentMap) && setMap(recentMap, true))
+        return true;
+
+    // Failing that, try loading maps in the map list sequentially.
+    for (auto name : names) {
+        if (name != recentMap && setMap(name, true))
+            return true;
     }
 
-    // Failing that, just get the first map in the list.
-    for (int i = 0; i < names.length(); i++) {
-        QStringList list = names.value(i);
-        if (list.length()) {
-            return setMap(list.value(0), true);
-        }
-    }
-
-    logError("Failed to load any map names.");
+    logError("Failed to load any maps.");
     return false;
 }
 
