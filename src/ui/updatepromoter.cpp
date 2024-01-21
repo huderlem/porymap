@@ -90,7 +90,6 @@ void UpdatePromoter::processWebpage(const QJsonDocument &data) {
 
         // We've found a valid release tag. If the version number is not newer than the host version then we can stop looking at releases.
         foundRelease = true;
-        logInfo(QString("Found release %1.%2.%3").arg(major).arg(minor).arg(patch)); // TODO: Remove
         if (major <= PORYMAP_VERSION_MAJOR && minor <= PORYMAP_VERSION_MINOR && patch <= PORYMAP_VERSION_PATCH)
             break;
 
