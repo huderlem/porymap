@@ -407,6 +407,8 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->projectSettingsTab = getConfigInteger(key, value, 0);
     } else if (key == "warp_behavior_warning_disabled") {
         this->warpBehaviorWarningDisabled = getConfigBool(key, value);
+    } else if (key == "check_for_updates") {
+        this->checkForUpdates = getConfigBool(key, value);
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -453,6 +455,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("palette_editor_bit_depth", QString::number(this->paletteEditorBitDepth));
     map.insert("project_settings_tab", QString::number(this->projectSettingsTab));
     map.insert("warp_behavior_warning_disabled", QString::number(this->warpBehaviorWarningDisabled));
+    map.insert("check_for_updates", QString::number(this->checkForUpdates));
     
     return map;
 }
@@ -788,6 +791,15 @@ void PorymapConfig::setWarpBehaviorWarningDisabled(bool disabled) {
 
 bool PorymapConfig::getWarpBehaviorWarningDisabled() {
     return this->warpBehaviorWarningDisabled;
+}
+
+void PorymapConfig::setCheckForUpdates(bool enabled) {
+    this->checkForUpdates = enabled;
+    this->save();
+}
+
+bool PorymapConfig::getCheckForUpdates() {
+    return this->checkForUpdates;
 }
 
 const QStringList ProjectConfig::versionStrings = {

@@ -66,6 +66,9 @@ MainWindow::MainWindow(QWidget *parent) :
     // there is a bug affecting macOS users, where the trackpad deilveres a bad touch-release gesture
     // the warning is a bit annoying, so it is disabled here
     QLoggingCategory::setFilterRules(QStringLiteral("qt.pointer.dispatch=false"));
+
+    if (porymapConfig.getCheckForUpdates())
+        this->checkForUpdates(false);
 }
 
 MainWindow::~MainWindow()
@@ -242,27 +245,30 @@ void MainWindow::initExtraSignals() {
     label_MapRulerStatus->setAlignment(Qt::AlignCenter);
     label_MapRulerStatus->setTextFormat(Qt::PlainText);
     label_MapRulerStatus->setTextInteractionFlags(Qt::TextSelectableByMouse);
-
-    // TODO: (if enabled) queue an automatic "Check for Updates"
 }
 
 // TODO: Relocate
 #include <QNetworkReply>
 #include <QNetworkRequest>
 void MainWindow::on_actionCheck_for_Updates_triggered() {
-    checkForUpdates();
+    checkForUpdates(true);
 }
 
-void MainWindow::checkForUpdates() {
+void MainWindow::checkForUpdates(bool requestedByUser) {
     if (!this->networkAccessManager)
         this->networkAccessManager = new QNetworkAccessManager(this);
 
     // We could get ".../releases/latest" to retrieve less data, but this would run into problems if the
     // most recent item on the releases page is not actually a new release (like the static windows build).
-    QNetworkRequest request(QUrl("https://api.github.com/repos/huderlem/porymap/releases"));
+    static const QUrl url("https://api.github.com/repos/huderlem/porymap/releases");
+    QNetworkRequest request(url);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
     QNetworkReply * reply = this->networkAccessManager->get(request);
+
+    if (requestedByUser) {
+        // TODO: Show dialog
+    }
 
     connect(reply, &QNetworkReply::finished, [this, reply] {
         QJsonDocument data = QJsonDocument::fromJson(reply->readAll());

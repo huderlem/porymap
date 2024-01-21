@@ -400,7 +400,7 @@ private:
     void addCustomHeaderValue(QString key, QJsonValue value, bool isNew = false);
     int insertTilesetLabel(QStringList * list, QString label);
 
-    void checkForUpdates();
+    void checkForUpdates(bool requestedByUser);
 };
 
 enum MapListUserRoles {

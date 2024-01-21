@@ -74,6 +74,7 @@ public:
         this->paletteEditorBitDepth = 24;
         this->projectSettingsTab = 0;
         this->warpBehaviorWarningDisabled = false;
+        this->checkForUpdates = true;
     }
     void addRecentProject(QString project);
     void setRecentProjects(QStringList projects);
@@ -105,6 +106,7 @@ public:
     void setPaletteEditorBitDepth(int bitDepth);
     void setProjectSettingsTab(int tab);
     void setWarpBehaviorWarningDisabled(bool disabled);
+    void setCheckForUpdates(bool enabled);
     QString getRecentProject();
     QStringList getRecentProjects();
     bool getReopenOnLaunch();
@@ -135,6 +137,7 @@ public:
     int getPaletteEditorBitDepth();
     int getProjectSettingsTab();
     bool getWarpBehaviorWarningDisabled();
+    bool getCheckForUpdates();
 protected:
     virtual QString getConfigFilepath() override;
     virtual void parseConfigKeyValue(QString key, QString value) override;
@@ -183,6 +186,7 @@ private:
     int paletteEditorBitDepth;
     int projectSettingsTab;
     bool warpBehaviorWarningDisabled;
+    bool checkForUpdates;
 };
 
 extern PorymapConfig porymapConfig;
