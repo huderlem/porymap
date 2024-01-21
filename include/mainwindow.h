@@ -12,6 +12,7 @@
 #include <QCloseEvent>
 #include <QAbstractItemModel>
 #include <QJSValue>
+#include <QNetworkAccessManager>
 #include "project.h"
 #include "orderedjson.h"
 #include "config.h"
@@ -288,6 +289,7 @@ private slots:
     void on_spinBox_SelectedCollision_valueChanged(int collision);
     void on_actionRegion_Map_Editor_triggered();
     void on_actionPreferences_triggered();
+    void on_actionCheck_for_Updates_triggered();
     void togglePreferenceSpecificUi();
     void on_actionProject_Settings_triggered();
     void on_actionCustom_Scripts_triggered();
@@ -296,6 +298,7 @@ private slots:
 public:
     Ui::MainWindow *ui;
     Editor *editor = nullptr;
+    QPointer<QNetworkAccessManager> networkAccessManager = nullptr;
 
 private:
     QLabel *label_MapRulerStatus = nullptr;
@@ -396,6 +399,8 @@ private:
     QObjectList shortcutableObjects() const;
     void addCustomHeaderValue(QString key, QJsonValue value, bool isNew = false);
     int insertTilesetLabel(QStringList * list, QString label);
+
+    void checkForUpdates();
 };
 
 enum MapListUserRoles {

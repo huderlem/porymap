@@ -242,6 +242,63 @@ void MainWindow::initExtraSignals() {
     label_MapRulerStatus->setAlignment(Qt::AlignCenter);
     label_MapRulerStatus->setTextFormat(Qt::PlainText);
     label_MapRulerStatus->setTextInteractionFlags(Qt::TextSelectableByMouse);
+
+    // TODO: (if enabled) queue an automatic "Check for Updates"
+}
+
+// TODO: Relocate
+#include <QNetworkReply>
+#include <QNetworkRequest>
+void MainWindow::on_actionCheck_for_Updates_triggered() {
+    checkForUpdates();
+}
+
+void MainWindow::checkForUpdates() {
+    if (!this->networkAccessManager)
+        this->networkAccessManager = new QNetworkAccessManager(this);
+
+    // We could get ".../releases/latest" to retrieve less data, but this would run into problems if the
+    // most recent item on the releases page is not actually a new release (like the static windows build).
+    QNetworkRequest request(QUrl("https://api.github.com/repos/huderlem/porymap/releases"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    QNetworkReply * reply = this->networkAccessManager->get(request);
+
+    connect(reply, &QNetworkReply::finished, [this, reply] {
+        QJsonDocument data = QJsonDocument::fromJson(reply->readAll());
+        QJsonArray releases = data.array();
+
+        // Read all the items on the releases page, stopping when we find a tag that parses as a version identifier.
+        // Objects in the releases page data are sorted newest to oldest. Although I can't find a guarantee of this in
+        // GitHub's API documentation, this seems unlikely to change.
+        for (int i = 0; i < releases.size(); i++) {
+            auto release = releases.at(i).toObject();
+
+            const QStringList tag = release.value("tag_name").toString().split(".");
+            if (tag.length() != 3) continue;
+
+            bool ok;
+            int major = tag.at(0).toInt(&ok);
+            if (!ok) continue;
+            int minor = tag.at(1).toInt(&ok);
+            if (!ok) continue;
+            int patch = tag.at(2).toInt(&ok);
+            if (!ok) continue;
+
+            const QString downloadLink = release.value("html_url").toString();
+            if (downloadLink.isEmpty()) continue;
+
+            // We've found a valid release tag, we can stop reading.
+            logInfo(QString("Newest release is %1.%2.%3\n%4").arg(major).arg(minor).arg(patch).arg(downloadLink));
+
+            // If the release was published very recently it won't have a description yet, in which case don't tell the user.
+            const QString changelog = release.value("body").toString();
+            if (changelog.isEmpty()) break;
+
+            // TODO: Compare version to host version, then show appropriate dialog
+            break;
+        }
+    });
 }
 
 void MainWindow::initEditor() {
