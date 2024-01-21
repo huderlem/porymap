@@ -33,6 +33,7 @@ private:
     void resetDialog();
     void processWebpage(const QJsonDocument &data);
     void processError(const QString &err);
+    bool isNewerVersion(int major, int minor, int patch);
 
 private slots:
     void dialogButtonClicked(QAbstractButton *button);

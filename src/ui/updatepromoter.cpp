@@ -90,7 +90,7 @@ void UpdatePromoter::processWebpage(const QJsonDocument &data) {
 
         // We've found a valid release tag. If the version number is not newer than the host version then we can stop looking at releases.
         foundRelease = true;
-        if (major <= PORYMAP_VERSION_MAJOR && minor <= PORYMAP_VERSION_MINOR && patch <= PORYMAP_VERSION_PATCH)
+        if (!this->isNewerVersion(major, minor, patch))
             break;
 
         const QString description = release.value("body").toString();
@@ -140,6 +140,14 @@ void UpdatePromoter::processError(const QString &err) {
     } else {
         logWarn(message);
     }
+}
+
+bool UpdatePromoter::isNewerVersion(int major, int minor, int patch) {
+    if (major != PORYMAP_VERSION_MAJOR)
+        return major > PORYMAP_VERSION_MAJOR;
+    if (minor != PORYMAP_VERSION_MINOR)
+        return minor > PORYMAP_VERSION_MINOR;
+    return patch > PORYMAP_VERSION_PATCH;
 }
 
 // The dialog can either be shown programmatically when an update is available
