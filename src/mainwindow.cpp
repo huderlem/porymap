@@ -53,6 +53,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     QCoreApplication::setOrganizationName("pret");
     QCoreApplication::setApplicationName("porymap");
+    QCoreApplication::setApplicationVersion(PORYMAP_VERSION);
     QApplication::setApplicationDisplayName("porymap");
     QApplication::setWindowIcon(QIcon(":/icons/porymap-icon-2.ico"));
     ui->setupUi(this);
@@ -301,7 +302,17 @@ void MainWindow::checkForUpdates(bool requestedByUser) {
             const QString changelog = release.value("body").toString();
             if (changelog.isEmpty()) break;
 
-            // TODO: Compare version to host version, then show appropriate dialog
+            bool newVersionAvailable;
+            if (major != PORYMAP_VERSION_MAJOR) {
+                newVersionAvailable = major > PORYMAP_VERSION_MAJOR;
+            } else if (minor != PORYMAP_VERSION_MINOR) {
+                newVersionAvailable = minor > PORYMAP_VERSION_MINOR;
+            } else {
+                newVersionAvailable = patch > PORYMAP_VERSION_PATCH;
+            }
+            logInfo(QString("Host version is %1").arg(newVersionAvailable ? "old" : "up to date"));
+
+            // TODO: Show appropriate dialog
             break;
         }
     });

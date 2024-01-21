@@ -8,23 +8,11 @@ AboutPorymap::AboutPorymap(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    this->ui->label_Version->setText(QString("Version %1 - %2").arg(PORYMAP_VERSION).arg(QStringLiteral(__DATE__)));
     this->ui->textBrowser->setSource(QUrl("qrc:/CHANGELOG.md"));
 }
 
 AboutPorymap::~AboutPorymap()
 {
     delete ui;
-}
-
-// Returns the Porymap version number as a list of ints with the order {major, minor, patch}
-QList<int> AboutPorymap::getVersionNumbers()
-{
-    // Get the version string "#.#.#"
-    static const QRegularExpression regex("Version (\\d+)\\.(\\d+)\\.(\\d+)");
-    QRegularExpressionMatch match = regex.match(ui->label_Version->text());
-    if (!match.hasMatch()) {
-        logError("Failed to locate Porymap version text");
-        return QList<int>({0, 0, 0});
-    }
-    return QList<int>({match.captured(1).toInt(), match.captured(2).toInt(), match.captured(3).toInt()});
 }
