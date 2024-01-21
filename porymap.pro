@@ -110,7 +110,8 @@ SOURCES += src/core/block.cpp \
     src/project.cpp \
     src/settings.cpp \
     src/log.cpp \
-    src/ui/uintspinbox.cpp
+    src/ui/uintspinbox.cpp \
+    src/ui/updatepromoter.cpp
 
 HEADERS  += include/core/block.h \
     include/core/bitpacker.h \
@@ -204,7 +205,8 @@ HEADERS  += include/core/block.h \
     include/scriptutility.h \
     include/settings.h \
     include/log.h \
-    include/ui/uintspinbox.h
+    include/ui/uintspinbox.h \
+    include/ui/updatepromoter.h
 
 FORMS    += forms/mainwindow.ui \
     forms/prefabcreationdialog.ui \
@@ -222,7 +224,8 @@ FORMS    += forms/mainwindow.ui \
     forms/colorpicker.ui \
     forms/projectsettingseditor.ui \
     forms/customscriptseditor.ui \
-    forms/customscriptslistitem.ui
+    forms/customscriptslistitem.ui \
+    forms/updatepromoter.ui
 
 RESOURCES += \
     resources/images.qrc \

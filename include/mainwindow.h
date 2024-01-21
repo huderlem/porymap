@@ -28,6 +28,7 @@
 #include "preferenceeditor.h"
 #include "projectsettingseditor.h"
 #include "customscriptseditor.h"
+#include "updatepromoter.h"
 
 
 
@@ -298,7 +299,6 @@ private slots:
 public:
     Ui::MainWindow *ui;
     Editor *editor = nullptr;
-    QPointer<QNetworkAccessManager> networkAccessManager = nullptr;
 
 private:
     QLabel *label_MapRulerStatus = nullptr;
@@ -310,6 +310,8 @@ private:
     QPointer<PreferenceEditor> preferenceEditor = nullptr;
     QPointer<ProjectSettingsEditor> projectSettingsEditor = nullptr;
     QPointer<CustomScriptsEditor> customScriptsEditor = nullptr;
+    QPointer<UpdatePromoter> updatePromoter = nullptr;
+    QPointer<QNetworkAccessManager> networkAccessManager = nullptr;
     FilterChildrenProxyModel *mapListProxyModel;
     QStandardItemModel *mapListModel;
     QList<QStandardItem*> *mapGroupItemsList;
