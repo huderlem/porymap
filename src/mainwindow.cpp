@@ -95,6 +95,7 @@ void MainWindow::setWindowDisabled(bool disabled) {
     ui->actionAbout_Porymap->setDisabled(false);
     ui->actionOpen_Log_File->setDisabled(false);
     ui->actionOpen_Config_Folder->setDisabled(false);
+    ui->actionCheck_for_Updates->setDisabled(false);
     if (!disabled)
         togglePreferenceSpecificUi();
 }
