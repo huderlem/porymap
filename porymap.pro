@@ -34,6 +34,7 @@ SOURCES += src/core/block.cpp \
     src/core/mapparser.cpp \
     src/core/metatile.cpp \
     src/core/metatileparser.cpp \
+    src/core/network.cpp \
     src/core/paletteutil.cpp \
     src/core/parseutil.cpp \
     src/core/tile.cpp \
@@ -126,6 +127,7 @@ HEADERS  += include/core/block.h \
     include/core/mapparser.h \
     include/core/metatile.h \
     include/core/metatileparser.h \
+    include/core/network.h \
     include/core/paletteutil.h \
     include/core/parseutil.h \
     include/core/tile.h \

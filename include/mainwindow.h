@@ -12,7 +12,6 @@
 #include <QCloseEvent>
 #include <QAbstractItemModel>
 #include <QJSValue>
-#include <QNetworkAccessManager>
 #include "project.h"
 #include "orderedjson.h"
 #include "config.h"
@@ -311,7 +310,7 @@ private:
     QPointer<ProjectSettingsEditor> projectSettingsEditor = nullptr;
     QPointer<CustomScriptsEditor> customScriptsEditor = nullptr;
     QPointer<UpdatePromoter> updatePromoter = nullptr;
-    QPointer<QNetworkAccessManager> networkAccessManager = nullptr;
+    QPointer<NetworkAccessManager> networkAccessManager = nullptr;
     FilterChildrenProxyModel *mapListProxyModel;
     QStandardItemModel *mapListModel;
     QList<QStandardItem*> *mapGroupItemsList;

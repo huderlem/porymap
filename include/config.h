@@ -8,6 +8,8 @@
 #include <QSize>
 #include <QKeySequence>
 #include <QMultiMap>
+#include <QDateTime>
+#include <QUrl>
 
 #include "events.h"
 
@@ -75,6 +77,8 @@ public:
         this->projectSettingsTab = 0;
         this->warpBehaviorWarningDisabled = false;
         this->checkForUpdates = true;
+        this->lastUpdateCheckTime = QDateTime();
+        this->rateLimitTimes.clear();
     }
     void addRecentProject(QString project);
     void setRecentProjects(QStringList projects);
@@ -107,6 +111,8 @@ public:
     void setProjectSettingsTab(int tab);
     void setWarpBehaviorWarningDisabled(bool disabled);
     void setCheckForUpdates(bool enabled);
+    void setLastUpdateCheckTime(QDateTime time);
+    void setRateLimitTimes(QMap<QUrl, QDateTime> map);
     QString getRecentProject();
     QStringList getRecentProjects();
     bool getReopenOnLaunch();
@@ -138,6 +144,8 @@ public:
     int getProjectSettingsTab();
     bool getWarpBehaviorWarningDisabled();
     bool getCheckForUpdates();
+    QDateTime getLastUpdateCheckTime();
+    QMap<QUrl, QDateTime> getRateLimitTimes();
 protected:
     virtual QString getConfigFilepath() override;
     virtual void parseConfigKeyValue(QString key, QString value) override;
@@ -187,6 +195,8 @@ private:
     int projectSettingsTab;
     bool warpBehaviorWarningDisabled;
     bool checkForUpdates;
+    QDateTime lastUpdateCheckTime;
+    QMap<QUrl, QDateTime> rateLimitTimes;
 };
 
 extern PorymapConfig porymapConfig;

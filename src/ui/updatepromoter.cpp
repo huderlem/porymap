@@ -3,13 +3,13 @@
 #include "log.h"
 #include "config.h"
 
-#include <QNetworkRequest>
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QDesktopServices>
+#include <QTimer>
 
-UpdatePromoter::UpdatePromoter(QWidget *parent, QNetworkAccessManager *manager)
+UpdatePromoter::UpdatePromoter(QWidget *parent, NetworkAccessManager *manager)
     : QDialog(parent),
       ui(new Ui::UpdatePromoter),
       manager(manager)
@@ -18,6 +18,7 @@ UpdatePromoter::UpdatePromoter(QWidget *parent, QNetworkAccessManager *manager)
 
     // Set up "Do not alert me" check box
     this->updatePreferences();
+    ui->checkBox_StopAlerts->setVisible(false);
     connect(ui->checkBox_StopAlerts, &QCheckBox::stateChanged, [this](int state) {
         bool enable = (state != Qt::Checked);
         porymapConfig.setCheckForUpdates(enable);
@@ -25,7 +26,9 @@ UpdatePromoter::UpdatePromoter(QWidget *parent, QNetworkAccessManager *manager)
     });
 
     // Set up button box
+    this->button_Retry = ui->buttonBox->button(QDialogButtonBox::Retry);
     this->button_Downloads = ui->buttonBox->addButton("Go to Downloads...", QDialogButtonBox::ActionRole);
+    ui->buttonBox->button(QDialogButtonBox::Close)->setDefault(true);
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &UpdatePromoter::dialogButtonClicked);
 
     this->resetDialog();
@@ -33,47 +36,55 @@ UpdatePromoter::UpdatePromoter(QWidget *parent, QNetworkAccessManager *manager)
 
 void UpdatePromoter::resetDialog() {
     this->button_Downloads->setEnabled(false);
+
     ui->text_Changelog->setVisible(false);
     ui->label_Warning->setVisible(false);
-    ui->label_Status->setText("Checking for updates...");
+    ui->label_Status->setText("");
 
     this->changelog = QString();
-    this->downloadLink = QString();
+    this->downloadUrl = QString();
+    this->breakingChanges = false;
+    this->foundReleases = false;
+    this->visitedUrls.clear();
 }
 
 void UpdatePromoter::checkForUpdates() {
-   // Ignore request if one is still active.
-    if (this->reply && !this->reply->isFinished())
+    // If the Retry button is disabled, making requests is disabled
+    if (!this->button_Retry->isEnabled())
         return;
-    this->resetDialog();
-    ui->buttonBox->button(QDialogButtonBox::Retry)->setEnabled(false);
 
-    // We could get ".../releases/latest" to retrieve less data, but this would run into problems if the
+    this->resetDialog();
+    this->button_Retry->setEnabled(false);
+    ui->label_Status->setText("Checking for updates...");
+
+    // We could use the URL ".../releases/latest" to retrieve less data, but this would run into problems if the
     // most recent item on the releases page is not actually a new release (like the static windows build).
     // By getting all releases we can also present a multi-version changelog of all changes since the host release.
-    static const QNetworkRequest request(QUrl("https://api.github.com/repos/huderlem/porymap/releases"));
-    this->reply = this->manager->get(request);
+    static const QUrl url("https://api.github.com/repos/huderlem/porymap/releases");
+    this->get(url);
+}
 
-    connect(this->reply, &QNetworkReply::finished, [this] {
-        ui->buttonBox->button(QDialogButtonBox::Retry)->setEnabled(true);
-        auto error = this->reply->error();
-        if (error == QNetworkReply::NoError) {
-            this->processWebpage(QJsonDocument::fromJson(this->reply->readAll()));
+void UpdatePromoter::get(const QUrl &url) {
+    this->visitedUrls.insert(url);
+    auto reply = this->manager->get(url);
+    connect(reply, &NetworkReplyData::finished, [this, reply] () {
+        if (!reply->errorString().isEmpty()) {
+            this->error(reply->errorString());
+            this->disableRequestsUntil(reply->retryAfter());
         } else {
-            this->processError(this->reply->errorString());
+            this->processWebpage(QJsonDocument::fromJson(reply->body()), reply->nextUrl());
         }
+        reply->deleteLater();
     });
 }
 
 // Read all the items on the releases page, ignoring entries without a version identifier tag.
 // Objects in the releases page data are sorted newest to oldest. 
-void UpdatePromoter::processWebpage(const QJsonDocument &data) {
-    bool updateAvailable = false;
-    bool breakingChanges = false;
-    bool foundRelease = false;
-
+// Returns true when finished, returns false to request processing for the next page.
+void UpdatePromoter::processWebpage(const QJsonDocument &data, const QUrl &nextUrl) {
     const QJsonArray releases = data.array();
-    for (int i = 0; i < releases.size(); i++) {
+    int i;
+    for (i = 0; i < releases.size(); i++) {
         auto release = releases.at(i).toObject();
 
         // Convert tag string to version numbers
@@ -89,57 +100,77 @@ void UpdatePromoter::processWebpage(const QJsonDocument &data) {
         if (!ok) continue;
 
         // We've found a valid release tag. If the version number is not newer than the host version then we can stop looking at releases.
-        foundRelease = true;
+        this->foundReleases = true;
         if (!this->isNewerVersion(major, minor, patch))
             break;
 
         const QString description = release.value("body").toString();
-        const QString url = release.value("html_url").toString();
-        if (description.isEmpty() || url.isEmpty()) {
+        if (description.isEmpty()) {
             // If the release was published very recently it won't have a description yet, in which case don't tell the user about it yet.
-            // If there's no URL, something has gone wrong and we should skip this release.
             continue; 
         }
 
-        if (this->downloadLink.isEmpty()) {
+        if (this->downloadUrl.isEmpty()) {
             // This is the first (newest) release we've found. Record its URL for download.
-            this->downloadLink = url;
-            breakingChanges = (major > PORYMAP_VERSION_MAJOR);
+            const QUrl url = QUrl(release.value("html_url").toString());
+            if (url.isEmpty()) {
+                // If there's no URL, something has gone wrong and we should skip this release.
+                continue;
+            }
+            this->downloadUrl = url;
+            this->breakingChanges = (major > PORYMAP_VERSION_MAJOR);
         }
 
         // Record the changelog of this release so we can show all changes since the host release.
         this->changelog.append(QString("## %1\n%2\n\n").arg(tagName).arg(description));
-        updateAvailable = true;
     }
 
-    if (!foundRelease) {
-        // We retrieved the webpage but didn't successfully parse any releases.
-        this->processError("Error parsing releases webpage");
+    // If we read the entire page then we didn't find a release as old as the host version.
+    // Keep looking on the second page, there might still be new releases there.
+    if (i == releases.size() && !nextUrl.isEmpty() && !this->visitedUrls.contains(nextUrl)) {
+        this->get(nextUrl);
         return;
     }
 
-    // If there's a new update available the dialog will always be opened.
-    // Otherwise the dialog is only open if the user requested it.
-    if (updateAvailable) {
-        this->button_Downloads->setEnabled(!this->downloadLink.isEmpty());
-        ui->text_Changelog->setMarkdown(this->changelog);
-        ui->text_Changelog->setVisible(true);
-        ui->label_Warning->setVisible(breakingChanges);
-        ui->label_Status->setText("A new version of Porymap is available!");
+    if (!this->foundReleases) {
+        // We retrieved the webpage but didn't successfully parse any releases.
+        this->error("Error parsing releases webpage");
+        return;
+    }
+
+    // Populate dialog with result
+    bool updateAvailable = !this->changelog.isEmpty();
+    ui->label_Status->setText(updateAvailable ? "A new version of Porymap is available!"
+                                              : "Your version of Porymap is up to date!");
+    ui->label_Warning->setVisible(this->breakingChanges);
+    ui->text_Changelog->setMarkdown(this->changelog);
+    ui->text_Changelog->setVisible(updateAvailable);
+    this->button_Downloads->setEnabled(!this->downloadUrl.isEmpty());
+    this->button_Retry->setEnabled(true);
+
+    // Alert the user if there's a new update available and the dialog wasn't already open.
+    // Show the window, but also show the option to turn off automatic alerts in the future.
+    if (updateAvailable && !this->isVisible()) {
+        ui->checkBox_StopAlerts->setVisible(true);
         this->show();
-    } else {
-        // The rest of the UI remains in the state set by resetDialog
-        ui->label_Status->setText("Your version of Porymap is up to date!");
-    }   
+    }
 }
 
-void UpdatePromoter::processError(const QString &err) {
+void UpdatePromoter::disableRequestsUntil(const QDateTime time) {
+    this->button_Retry->setEnabled(false);
+
+    auto timeUntil = QDateTime::currentDateTime().msecsTo(time);
+    if (timeUntil < 0) timeUntil = 0;
+    QTimer::singleShot(timeUntil, Qt::VeryCoarseTimer, [this]() {
+        this->button_Retry->setEnabled(true);
+    });
+}
+
+void UpdatePromoter::error(const QString &err) {
     const QString message = QString("Failed to check for version update: %1").arg(err);
-    if (this->isVisible()) {
-        ui->label_Status->setText(message);
-    } else {
+    ui->label_Status->setText(message);
+    if (!this->isVisible())
         logWarn(message);
-    }
 }
 
 bool UpdatePromoter::isNewerVersion(int major, int minor, int patch) {
@@ -150,35 +181,17 @@ bool UpdatePromoter::isNewerVersion(int major, int minor, int patch) {
     return patch > PORYMAP_VERSION_PATCH;
 }
 
-// The dialog can either be shown programmatically when an update is available
-// or if the user manually selects "Check for Updates" in the menu.
-// When the dialog is shown programmatically there is a check box to disable automatic alerts.
-// If the user requested the dialog (and it wasn't already open) this check box should be hidden.
-void UpdatePromoter::requestDialog() {
-    if (!this->isVisible()){
-        ui->checkBox_StopAlerts->setVisible(false);
-        this->show();
-    } else if (this->isMinimized()) {
-        this->showNormal();
-    } else {
-        this->raise();
-        this->activateWindow();
-    }
-}
-
 void UpdatePromoter::updatePreferences() {
     const QSignalBlocker blocker(ui->checkBox_StopAlerts);
-    ui->checkBox_StopAlerts->setChecked(porymapConfig.getCheckForUpdates());
+    ui->checkBox_StopAlerts->setChecked(!porymapConfig.getCheckForUpdates());
 }
 
 void UpdatePromoter::dialogButtonClicked(QAbstractButton *button) {
-    auto buttonRole = ui->buttonBox->buttonRole(button);
-    if (buttonRole == QDialogButtonBox::RejectRole) {
+    if (ui->buttonBox->buttonRole(button) == QDialogButtonBox::RejectRole) {
         this->close();
-    } else if (buttonRole == QDialogButtonBox::AcceptRole) {
-        // "Retry" button
+    } else if (button == this->button_Retry) {
         this->checkForUpdates();
-    } else if (button == this->button_Downloads && !this->downloadLink.isEmpty()) {
-        QDesktopServices::openUrl(QUrl(this->downloadLink));
+    } else if (button == this->button_Downloads) {
+        QDesktopServices::openUrl(this->downloadUrl);
     }
 }

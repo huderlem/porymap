@@ -59,6 +59,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     cleanupLargeLog();
+    logInfo(QString("Launching Porymap v%1").arg(PORYMAP_VERSION));
 
     this->initWindow();
     if (porymapConfig.getReopenOnLaunch() && this->openProject(porymapConfig.getRecentProject(), true))
@@ -255,7 +256,7 @@ void MainWindow::on_actionCheck_for_Updates_triggered() {
 
 void MainWindow::checkForUpdates(bool requestedByUser) {
     if (!this->networkAccessManager)
-        this->networkAccessManager = new QNetworkAccessManager(this);
+        this->networkAccessManager = new NetworkAccessManager(this);
 
     if (!this->updatePromoter) {
         this->updatePromoter = new UpdatePromoter(this, this->networkAccessManager);
@@ -265,9 +266,17 @@ void MainWindow::checkForUpdates(bool requestedByUser) {
         });
     }
 
-    if (requestedByUser)
-        this->updatePromoter->requestDialog();
+
+    if (requestedByUser) {
+        openSubWindow(this->updatePromoter);
+    } else {
+        // This is an automatic update check. Only run if we haven't done one in the last 5 minutes
+        QDateTime lastCheck = porymapConfig.getLastUpdateCheckTime();
+        if (lastCheck.addSecs(5*60) >= QDateTime::currentDateTime())
+            return;
+    }
     this->updatePromoter->checkForUpdates();
+    porymapConfig.setLastUpdateCheckTime(QDateTime::currentDateTime());
 }
 
 void MainWindow::initEditor() {
