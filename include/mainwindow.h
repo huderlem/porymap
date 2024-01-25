@@ -373,7 +373,6 @@ private:
     void initShortcuts();
     void initExtraShortcuts();
     void setProjectSpecificUI();
-    void setWildEncountersUIEnabled(bool enabled);
     void loadUserSettings();
     void applyMapListFilter(QString filterText);
     void restoreWindowState();

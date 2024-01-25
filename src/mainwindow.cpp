@@ -361,14 +361,12 @@ void MainWindow::markMapEdited() {
     }
 }
 
-void MainWindow::setWildEncountersUIEnabled(bool enabled) {
-    ui->mainTabBar->setTabEnabled(4, enabled);
-}
-
 // Update the UI using information we've read from the user's project files.
 void MainWindow::setProjectSpecificUI()
 {
-    this->setWildEncountersUIEnabled(userConfig.getEncounterJsonActive());
+    // Wild Encounters tab
+    // TODO: This index should come from an enum
+    ui->mainTabBar->setTabEnabled(4, editor->project->wildEncountersLoaded);
 
     bool hasFlags = projectConfig.getMapAllowFlagsEnabled();
     ui->checkBox_AllowRunning->setVisible(hasFlags);
@@ -500,7 +498,10 @@ bool MainWindow::openProject(const QString &dir, bool initial) {
         }
         return false;
     }
-    this->statusBar()->showMessage(QString("Opening %1").arg(projectString));
+
+    const QString openMessage = QString("Opening %1").arg(projectString);
+    this->statusBar()->showMessage(openMessage);
+    logInfo(openMessage);
 
     userConfig.setProjectDir(dir);
     userConfig.load();
@@ -520,7 +521,6 @@ bool MainWindow::openProject(const QString &dir, bool initial) {
         editor->project = new Project(this);
         QObject::connect(editor->project, &Project::reloadProject, this, &MainWindow::on_action_Reload_Project_triggered);
         QObject::connect(editor->project, &Project::mapCacheCleared, this, &MainWindow::onMapCacheCleared);
-        QObject::connect(editor->project, &Project::disableWildEncountersUI, [this]() { this->setWildEncountersUIEnabled(false); });
         QObject::connect(editor->project, &Project::uncheckMonitorFilesAction, [this]() {
             porymapConfig.setMonitorFiles(false);
             if (this->preferenceEditor)
@@ -544,10 +544,7 @@ bool MainWindow::openProject(const QString &dir, bool initial) {
     }
     
     showWindowTitle();
-
-    const QString successMessage = QString("Opened %1").arg(projectString);
-    this->statusBar()->showMessage(successMessage);
-    logInfo(successMessage);
+    this->statusBar()->showMessage(QString("Opened %1").arg(projectString));
 
     porymapConfig.addRecentProject(dir);
     refreshRecentProjectsMenu();
@@ -575,29 +572,22 @@ bool MainWindow::isProjectOpen() {
 }
 
 bool MainWindow::setInitialMap() {
-    QList<QStringList> names;
+    QStringList names;
     if (editor && editor->project)
-        names = editor->project->groupedMapNames;
+        names = editor->project->mapNames;
 
+    // Try to set most recently-opened map, if it's still in the list.
     QString recentMap = userConfig.getRecentMap();
-    if (!recentMap.isEmpty()) {
-        // Make sure the recent map is still in the map list
-        for (int i = 0; i < names.length(); i++) {
-            if (names.value(i).contains(recentMap)) {
-                return setMap(recentMap, true);
-            }
-        }
+    if (!recentMap.isEmpty() && names.contains(recentMap) && setMap(recentMap, true))
+        return true;
+
+    // Failing that, try loading maps in the map list sequentially.
+    for (auto name : names) {
+        if (name != recentMap && setMap(name, true))
+            return true;
     }
 
-    // Failing that, just get the first map in the list.
-    for (int i = 0; i < names.length(); i++) {
-        QStringList list = names.value(i);
-        if (list.length()) {
-            return setMap(list.value(0), true);
-        }
-    }
-
-    logError("Failed to load any map names.");
+    logError("Failed to load any maps.");
     return false;
 }
 
@@ -1767,7 +1757,7 @@ void MainWindow::on_mainTabBar_tabBarClicked(int index)
         editor->setEditingConnections();
     }
     if (index != 4) {
-        if (userConfig.getEncounterJsonActive())
+        if (editor->project && editor->project->wildEncountersLoaded)
             editor->saveEncounterTabData();
     }
     if (index != 1) {

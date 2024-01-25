@@ -614,7 +614,7 @@ void Project::saveMapGroups() {
 }
 
 void Project::saveWildMonData() {
-    if (!userConfig.getEncounterJsonActive()) return;
+    if (!this->wildEncountersLoaded) return;
 
     QString wildEncountersJsonFilepath = QString("%1/%2").arg(root).arg(projectConfig.getFilePath(ProjectFilePath::json_wild_encounters));
     QFile wildEncountersFile(wildEncountersJsonFilepath);
@@ -1602,6 +1602,7 @@ bool Project::readWildMonData() {
     wildMonFields.clear();
     wildMonData.clear();
     encounterGroupLabels.clear();
+    this->wildEncountersLoaded = false;
     if (!userConfig.getEncounterJsonActive()) {
         return true;
     }
@@ -1611,10 +1612,7 @@ bool Project::readWildMonData() {
 
     OrderedJson::object wildMonObj;
     if (!parser.tryParseOrderedJsonFile(&wildMonObj, wildMonJsonFilepath)) {
-        // Failing to read wild encounters data is not a critical error, just disable the
-        // encounter editor and log a warning in case the user intended to have this data.
-        userConfig.setEncounterJsonActive(false);
-        emit disableWildEncountersUI();
+        // Failing to read wild encounters data is not a critical error, the encounter editor will just be disabled
         logWarn(QString("Failed to read wild encounters from %1").arg(wildMonJsonFilepath));
         return true;
     }
@@ -1702,54 +1700,64 @@ bool Project::readWildMonData() {
         setDefaultEncounterRate(i.key(), rate);
     }
 
+    this->wildEncountersLoaded = true;
     return true;
 }
 
 bool Project::readMapGroups() {
-    mapConstantsToMapNames.clear();
-    mapNamesToMapConstants.clear();
-    mapGroups.clear();
+    this->mapConstantsToMapNames.clear();
+    this->mapNamesToMapConstants.clear();
+    this->mapGroups.clear();
+    this->groupNames.clear();
+    this->groupedMapNames.clear();
+    this->mapNames.clear();
 
-    QString mapGroupsFilepath = root + "/" + projectConfig.getFilePath(ProjectFilePath::json_map_groups);
-    fileWatcher.addPath(mapGroupsFilepath);
+    const QString filepath = root + "/" + projectConfig.getFilePath(ProjectFilePath::json_map_groups);
+    fileWatcher.addPath(filepath);
     QJsonDocument mapGroupsDoc;
-    if (!parser.tryParseJsonFile(&mapGroupsDoc, mapGroupsFilepath)) {
-        logError(QString("Failed to read map groups from %1").arg(mapGroupsFilepath));
+    if (!parser.tryParseJsonFile(&mapGroupsDoc, filepath)) {
+        logError(QString("Failed to read map groups from %1").arg(filepath));
         return false;
     }
 
     QJsonObject mapGroupsObj = mapGroupsDoc.object();
     QJsonArray mapGroupOrder = mapGroupsObj["group_order"].toArray();
-
-    QList<QStringList> groupedMaps;
-    QStringList maps;
-    QStringList groups;
     for (int groupIndex = 0; groupIndex < mapGroupOrder.size(); groupIndex++) {
         QString groupName = ParseUtil::jsonToQString(mapGroupOrder.at(groupIndex));
-        QJsonArray mapNames = mapGroupsObj.value(groupName).toArray();
-        groupedMaps.append(QStringList());
-        groups.append(groupName);
-        for (int j = 0; j < mapNames.size(); j++) {
-            QString mapName = ParseUtil::jsonToQString(mapNames.at(j));
-            mapGroups.insert(mapName, groupIndex);
-            groupedMaps[groupIndex].append(mapName);
-            maps.append(mapName);
+        QJsonArray mapNamesJson = mapGroupsObj.value(groupName).toArray();
+        this->groupedMapNames.append(QStringList());
+        this->groupNames.append(groupName);
+        for (int j = 0; j < mapNamesJson.size(); j++) {
+            QString mapName = ParseUtil::jsonToQString(mapNamesJson.at(j));
+            if (mapName == DYNAMIC_MAP_NAME) {
+                logWarn(QString("Ignoring map with reserved name '%1'.").arg(mapName));
+                continue;
+            }
+            this->mapGroups.insert(mapName, groupIndex);
+            this->groupedMapNames[groupIndex].append(mapName);
+            this->mapNames.append(mapName);
 
             // Build the mapping and reverse mapping between map constants and map names.
             QString mapConstant = Map::mapConstantFromName(mapName);
-            mapConstantsToMapNames.insert(mapConstant, mapName);
-            mapNamesToMapConstants.insert(mapName, mapConstant);
+            this->mapConstantsToMapNames.insert(mapConstant, mapName);
+            this->mapNamesToMapConstants.insert(mapName, mapConstant);
         }
     }
 
-    const QString defineName = this->getDynamicMapDefineName();
-    mapConstantsToMapNames.insert(defineName, DYNAMIC_MAP_NAME);
-    mapNamesToMapConstants.insert(DYNAMIC_MAP_NAME, defineName);
-    maps.append(DYNAMIC_MAP_NAME);
+    if (this->groupNames.isEmpty()) {
+        logError(QString("Failed to find any map groups in %1").arg(filepath));
+        return false;
+    }
+    if (this->mapNames.isEmpty()) {
+        logError(QString("Failed to find any map names in %1").arg(filepath));
+        return false;
+    }
 
-    groupNames = groups;
-    groupedMapNames = groupedMaps;
-    mapNames = maps;
+    const QString defineName = this->getDynamicMapDefineName();
+    this->mapConstantsToMapNames.insert(defineName, DYNAMIC_MAP_NAME);
+    this->mapNamesToMapConstants.insert(DYNAMIC_MAP_NAME, defineName);
+    this->mapNames.append(DYNAMIC_MAP_NAME);
+
     return true;
 }
 
@@ -2177,10 +2185,8 @@ bool Project::readItemNames() {
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_items);
     fileWatcher.addPath(root + "/" + filename);
     itemNames = parser.readCDefineNames(filename, prefixes);
-    if (itemNames.isEmpty()) {
-        logError(QString("Failed to read item constants from %1").arg(filename));
-        return false;
-    }
+    if (itemNames.isEmpty())
+        logWarn(QString("Failed to read item constants from %1").arg(filename));
     return true;
 }
 
@@ -2189,10 +2195,8 @@ bool Project::readFlagNames() {
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_flags);
     fileWatcher.addPath(root + "/" + filename);
     flagNames = parser.readCDefineNames(filename, prefixes);
-    if (flagNames.isEmpty()) {
-        logError(QString("Failed to read flag constants from %1").arg(filename));
-        return false;
-    }
+    if (flagNames.isEmpty())
+        logWarn(QString("Failed to read flag constants from %1").arg(filename));
     return true;
 }
 
@@ -2201,10 +2205,8 @@ bool Project::readVarNames() {
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_vars);
     fileWatcher.addPath(root + "/" + filename);
     varNames = parser.readCDefineNames(filename, prefixes);
-    if (varNames.isEmpty()) {
-        logError(QString("Failed to read var constants from %1").arg(filename));
-        return false;
-    }
+    if (varNames.isEmpty())
+        logWarn(QString("Failed to read var constants from %1").arg(filename));
     return true;
 }
 
@@ -2213,10 +2215,8 @@ bool Project::readMovementTypes() {
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_obj_event_movement);
     fileWatcher.addPath(root + "/" + filename);
     movementTypes = parser.readCDefineNames(filename, prefixes);
-    if (movementTypes.isEmpty()) {
-        logError(QString("Failed to read movement type constants from %1").arg(filename));
-        return false;
-    }
+    if (movementTypes.isEmpty())
+        logWarn(QString("Failed to read movement type constants from %1").arg(filename));
     return true;
 }
 
@@ -2224,10 +2224,8 @@ bool Project::readInitialFacingDirections() {
     QString filename = projectConfig.getFilePath(ProjectFilePath::initial_facing_table);
     fileWatcher.addPath(root + "/" + filename);
     facingDirections = parser.readNamedIndexCArray(filename, projectConfig.getIdentifier(ProjectIdentifier::symbol_facing_directions));
-    if (facingDirections.isEmpty()) {
-        logError(QString("Failed to read initial movement type facing directions from %1").arg(filename));
-        return false;
-    }
+    if (facingDirections.isEmpty())
+        logWarn(QString("Failed to read initial movement type facing directions from %1").arg(filename));
     return true;
 }
 
@@ -2236,10 +2234,8 @@ bool Project::readMapTypes() {
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_map_types);
     fileWatcher.addPath(root + "/" + filename);
     mapTypes = parser.readCDefineNames(filename, prefixes);
-    if (mapTypes.isEmpty()) {
-        logError(QString("Failed to read map type constants from %1").arg(filename));
-        return false;
-    }
+    if (mapTypes.isEmpty())
+        logWarn(QString("Failed to read map type constants from %1").arg(filename));
     return true;
 }
 
@@ -2248,10 +2244,8 @@ bool Project::readMapBattleScenes() {
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_map_types);
     fileWatcher.addPath(root + "/" + filename);
     mapBattleScenes = parser.readCDefineNames(filename, prefixes);
-    if (mapBattleScenes.isEmpty()) {
-        logError(QString("Failed to read map battle scene constants from %1").arg(filename));
-        return false;
-    }
+    if (mapBattleScenes.isEmpty())
+        logWarn(QString("Failed to read map battle scene constants from %1").arg(filename));
     return true;
 }
 
@@ -2260,10 +2254,8 @@ bool Project::readWeatherNames() {
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_weather);
     fileWatcher.addPath(root + "/" + filename);
     weatherNames = parser.readCDefineNames(filename, prefixes);
-    if (weatherNames.isEmpty()) {
-        logError(QString("Failed to read weather constants from %1").arg(filename));
-        return false;
-    }
+    if (weatherNames.isEmpty())
+        logWarn(QString("Failed to read weather constants from %1").arg(filename));
     return true;
 }
 
@@ -2275,10 +2267,8 @@ bool Project::readCoordEventWeatherNames() {
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_weather);
     fileWatcher.addPath(root + "/" + filename);
     coordEventWeatherNames = parser.readCDefineNames(filename, prefixes);
-    if (coordEventWeatherNames.isEmpty()) {
-        logWarn(QString("Failed to read coord event weather constants from %1. Disabling Weather Trigger events.").arg(filename));
-        projectConfig.setEventWeatherTriggerEnabled(false);
-    }
+    if (coordEventWeatherNames.isEmpty())
+        logWarn(QString("Failed to read coord event weather constants from %1").arg(filename));
     return true;
 }
 
@@ -2290,10 +2280,8 @@ bool Project::readSecretBaseIds() {
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_secret_bases);
     fileWatcher.addPath(root + "/" + filename);
     secretBaseIds = parser.readCDefineNames(filename, prefixes);
-    if (secretBaseIds.isEmpty()) {
-        logWarn(QString("Failed to read secret base id constants from '%1'. Disabling Secret Base events.").arg(filename));
-        projectConfig.setEventSecretBaseEnabled(false);
-    }
+    if (secretBaseIds.isEmpty())
+        logWarn(QString("Failed to read secret base id constants from '%1'").arg(filename));
     return true;
 }
 
@@ -2302,10 +2290,8 @@ bool Project::readBgEventFacingDirections() {
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_event_bg);
     fileWatcher.addPath(root + "/" + filename);
     bgEventFacingDirections = parser.readCDefineNames(filename, prefixes);
-    if (bgEventFacingDirections.isEmpty()) {
-        logError(QString("Failed to read bg event facing direction constants from %1").arg(filename));
-        return false;
-    }
+    if (bgEventFacingDirections.isEmpty())
+        logWarn(QString("Failed to read bg event facing direction constants from %1").arg(filename));
     return true;
 }
 
@@ -2314,10 +2300,8 @@ bool Project::readTrainerTypes() {
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_trainer_types);
     fileWatcher.addPath(root + "/" + filename);
     trainerTypes = parser.readCDefineNames(filename, prefixes);
-    if (trainerTypes.isEmpty()) {
-        logError(QString("Failed to read trainer type constants from %1").arg(filename));
-        return false;
-    }
+    if (trainerTypes.isEmpty())
+        logWarn(QString("Failed to read trainer type constants from %1").arg(filename));
     return true;
 }
 
@@ -2351,12 +2335,12 @@ bool Project::readSongNames() {
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_songs);
     fileWatcher.addPath(root + "/" + filename);
     this->songNames = parser.readCDefineNames(filename, prefixes);
-    if (this->songNames.isEmpty()) {
-        logError(QString("Failed to read song names from %1.").arg(filename));
-        return false;
-    }
-    this->defaultSong = this->songNames.value(0);
+    if (this->songNames.isEmpty())
+        logWarn(QString("Failed to read song names from %1.").arg(filename));
+
     // Song names don't have a very useful order (esp. if we include SE_* values), so sort them alphabetically.
+    // The default song should be the first in the list, not the first alphabetically, so save that before sorting.
+    this->defaultSong = this->songNames.value(0, "0");
     this->songNames.sort();
     return true;
 }
@@ -2366,10 +2350,8 @@ bool Project::readObjEventGfxConstants() {
     QString filename = projectConfig.getFilePath(ProjectFilePath::constants_obj_events);
     fileWatcher.addPath(root + "/" + filename);
     this->gfxDefines = parser.readCDefinesByPrefix(filename, prefixes);
-    if (this->gfxDefines.isEmpty()) {
-        logError(QString("Failed to read object event graphics constants from %1.").arg(filename));
-        return false;
-    }
+    if (this->gfxDefines.isEmpty())
+        logWarn(QString("Failed to read object event graphics constants from %1.").arg(filename));
     return true;
 }
 
