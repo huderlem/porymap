@@ -1206,7 +1206,8 @@ void TilesetEditor::redrawMetatileSelector() {
     pos *= scale;
 
     this->ui->scrollAreaWidgetContents_Metatiles->adjustSize();
-    this->ui->scrollArea_Metatiles->ensureVisible(pos.x(), pos.y(), 8 * scale, 8 * scale);
+    auto viewport = this->ui->scrollArea_Metatiles->viewport();
+    this->ui->scrollArea_Metatiles->ensureVisible(pos.x(), pos.y(), viewport->width() / 2, viewport->height() / 2);
 }
 
 void TilesetEditor::on_horizontalSlider_TilesZoom_valueChanged(int value) {
@@ -1231,6 +1232,7 @@ void TilesetEditor::redrawTileSelector() {
     if (!tiles.isEmpty()) {
         QPoint pos = this->tileSelector->getTileCoordsOnWidget(tiles[0].tileId);
         pos *= scale;
-        this->ui->scrollArea_Tiles->ensureVisible(pos.x(), pos.y(), 8 * scale, 8 * scale);
+        auto viewport = this->ui->scrollArea_Tiles->viewport();
+        this->ui->scrollArea_Tiles->ensureVisible(pos.x(), pos.y(), viewport->width() / 2, viewport->height() / 2);
     }
 }

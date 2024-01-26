@@ -390,7 +390,9 @@ private:
     void openProjectSettingsEditor(int tab);
     bool isProjectOpen();
     void showExportMapImageWindow(ImageExporterMode mode);
+    double getMetatilesZoomScale();
     void redrawMetatileSelection();
+    void scrollMetatileSelectorToSelection();
 
     QObjectList shortcutableObjects() const;
     void addCustomHeaderValue(QString key, QJsonValue value, bool isNew = false);

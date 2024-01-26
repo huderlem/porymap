@@ -1366,32 +1366,48 @@ void MainWindow::updateTilesetEditor() {
     }
 }
 
-void MainWindow::redrawMetatileSelection()
-{
-    double scale = pow(3.0, static_cast<double>(porymapConfig.getMetatilesZoom() - 30) / 30.0);
+double MainWindow::getMetatilesZoomScale() {
+    return pow(3.0, static_cast<double>(porymapConfig.getMetatilesZoom() - 30) / 30.0);
+}
+
+void MainWindow::redrawMetatileSelection() {
+    auto scale = getMetatilesZoomScale();
     QTransform transform;
     transform.scale(scale, scale);
 
     ui->graphicsView_currentMetatileSelection->setTransform(transform);
     ui->graphicsView_currentMetatileSelection->setFixedSize(editor->current_metatile_selection_item->pixmap().width() * scale, editor->current_metatile_selection_item->pixmap().height() * scale);
     ui->scrollAreaWidgetContents_SelectedMetatiles->adjustSize();
-
-    QPoint size = editor->metatile_selector_item->getSelectionDimensions();
-    if (size.x() == 1 && size.y() == 1) {
-        MetatileSelection selection = editor->metatile_selector_item->getMetatileSelection();
-        QPoint pos = editor->metatile_selector_item->getMetatileIdCoordsOnWidget(selection.metatileItems.first().metatileId);
-        pos *= scale;
-        ui->scrollArea_MetatileSelector->ensureVisible(pos.x(), pos.y(), 8 * scale, 8 * scale);
-    }
 }
 
-void MainWindow::currentMetatilesSelectionChanged()
-{
+void MainWindow::scrollMetatileSelectorToSelection() {
+    // Internal selections or 1x1 external selections can be scrolled to
+    if (!editor->metatile_selector_item->isInternalSelection() && editor->metatile_selector_item->getSelectionDimensions() != QPoint(1, 1))
+        return;
+
+    MetatileSelection selection = editor->metatile_selector_item->getMetatileSelection();
+    if (selection.metatileItems.isEmpty())
+        return;
+
+    QPoint pos = editor->metatile_selector_item->getMetatileIdCoordsOnWidget(selection.metatileItems.first().metatileId);
+    QPoint size = editor->metatile_selector_item->getSelectionDimensions();
+    pos += QPoint(size.x() - 1, size.y() - 1) * 16 / 2; // We want to focus on the center of the whole selection
+    pos *= getMetatilesZoomScale();
+
+    auto viewport = ui->scrollArea_MetatileSelector->viewport();
+    ui->scrollArea_MetatileSelector->ensureVisible(pos.x(), pos.y(), viewport->width() / 2, viewport->height() / 2);
+}
+
+void MainWindow::currentMetatilesSelectionChanged() {
     redrawMetatileSelection();
     if (this->tilesetEditor) {
         MetatileSelection selection = editor->metatile_selector_item->getMetatileSelection();
         this->tilesetEditor->selectMetatile(selection.metatileItems.first().metatileId);
     }
+
+    // Don't scroll to internal selections here, it will disrupt the user while they make their selection.
+    if (!editor->metatile_selector_item->isInternalSelection())
+        scrollMetatileSelectorToSelection();
 }
 
 void MainWindow::on_mapList_activated(const QModelIndex &index)
@@ -2836,6 +2852,7 @@ void MainWindow::on_horizontalSlider_MetatileZoom_valueChanged(int value) {
     ui->scrollAreaWidgetContents_BorderMetatiles->adjustSize();
 
     redrawMetatileSelection();
+    scrollMetatileSelectorToSelection();
 }
 
 void MainWindow::on_horizontalSlider_CollisionZoom_valueChanged(int value) {
