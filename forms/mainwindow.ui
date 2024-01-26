@@ -764,7 +764,7 @@
                               <property name="widgetResizable">
                                <bool>true</bool>
                               </property>
-                              <widget class="QWidget" name="scrollAreaWidgetContents_3">
+                              <widget class="QWidget" name="scrollAreaWidgetContents_BorderMetatiles">
                                <property name="geometry">
                                 <rect>
                                  <x>0</x>
@@ -883,7 +883,7 @@
                               <property name="widgetResizable">
                                <bool>true</bool>
                               </property>
-                              <widget class="QWidget" name="scrollAreaWidgetContents_6">
+                              <widget class="QWidget" name="scrollAreaWidgetContents_SelectedMetatiles">
                                <property name="geometry">
                                 <rect>
                                  <x>0</x>
@@ -984,7 +984,7 @@
                            <property name="alignment">
                             <set>Qt::AlignHCenter|Qt::AlignTop</set>
                            </property>
-                           <widget class="QWidget" name="scrollAreaWidgetContents_2">
+                           <widget class="QWidget" name="scrollAreaWidgetContents_MetatileSelector">
                             <property name="enabled">
                              <bool>true</bool>
                             </property>
@@ -1184,11 +1184,11 @@
                       </widget>
                      </item>
                      <item row="5" column="0" colspan="3">
-                      <widget class="QScrollArea" name="scrollArea_1">
+                      <widget class="QScrollArea" name="scrollArea_Collision">
                        <property name="widgetResizable">
                         <bool>true</bool>
                        </property>
-                       <widget class="QWidget" name="scrollAreaWidgetContents">
+                       <widget class="QWidget" name="scrollAreaWidgetContents_Collision">
                         <property name="geometry">
                          <rect>
                           <x>0</x>

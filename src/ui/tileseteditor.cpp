@@ -1204,6 +1204,8 @@ void TilesetEditor::redrawMetatileSelector() {
 
     QPoint pos = this->metatileSelector->getMetatileIdCoordsOnWidget(this->getSelectedMetatileId());
     pos *= scale;
+
+    this->ui->scrollAreaWidgetContents_Metatiles->adjustSize();
     this->ui->scrollArea_Metatiles->ensureVisible(pos.x(), pos.y(), 8 * scale, 8 * scale);
 }
 
@@ -1222,6 +1224,8 @@ void TilesetEditor::redrawTileSelector() {
 
     this->ui->graphicsView_Tiles->setTransform(transform);
     this->ui->graphicsView_Tiles->setFixedSize(size.width() + 2, size.height() + 2);
+
+    this->ui->scrollAreaWidgetContents_Tiles->adjustSize();
 
     auto tiles = this->tileSelector->getSelectedTiles();
     if (!tiles.isEmpty()) {

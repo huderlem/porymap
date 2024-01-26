@@ -734,10 +734,10 @@ void MainWindow::refreshMapScene()
     ui->graphicsView_Metatiles->setFixedSize(editor->metatile_selector_item->pixmap().width() + 2, editor->metatile_selector_item->pixmap().height() + 2);
 
     ui->graphicsView_BorderMetatile->setScene(editor->scene_selected_border_metatiles);
-    ui->graphicsView_BorderMetatile->setFixedSize(editor->selected_border_metatiles_item->pixmap().width() + 2, editor->selected_border_metatiles_item->pixmap().height() + 2);
+    ui->graphicsView_BorderMetatile->setFixedSize(editor->selected_border_metatiles_item->pixmap().width(), editor->selected_border_metatiles_item->pixmap().height());
 
     ui->graphicsView_currentMetatileSelection->setScene(editor->scene_current_metatile_selection);
-    ui->graphicsView_currentMetatileSelection->setFixedSize(editor->current_metatile_selection_item->pixmap().width() + 2, editor->current_metatile_selection_item->pixmap().height() + 2);
+    ui->graphicsView_currentMetatileSelection->setFixedSize(editor->current_metatile_selection_item->pixmap().width(), editor->current_metatile_selection_item->pixmap().height());
 
     ui->graphicsView_Collision->setScene(editor->scene_collision_metatiles);
     //ui->graphicsView_Collision->setSceneRect(editor->scene_collision_metatiles->sceneRect());
@@ -1373,7 +1373,8 @@ void MainWindow::redrawMetatileSelection()
     transform.scale(scale, scale);
 
     ui->graphicsView_currentMetatileSelection->setTransform(transform);
-    ui->graphicsView_currentMetatileSelection->setFixedSize(editor->current_metatile_selection_item->pixmap().width() * scale + 2, editor->current_metatile_selection_item->pixmap().height() * scale + 2);
+    ui->graphicsView_currentMetatileSelection->setFixedSize(editor->current_metatile_selection_item->pixmap().width() * scale, editor->current_metatile_selection_item->pixmap().height() * scale);
+    ui->scrollAreaWidgetContents_SelectedMetatiles->adjustSize();
 
     QPoint size = editor->metatile_selector_item->getSelectionDimensions();
     if (size.x() == 1 && size.y() == 1) {
@@ -2828,8 +2829,11 @@ void MainWindow::on_horizontalSlider_MetatileZoom_valueChanged(int value) {
     ui->graphicsView_Metatiles->setFixedSize(size.width() + 2, size.height() + 2);
 
     ui->graphicsView_BorderMetatile->setTransform(transform);
-    ui->graphicsView_BorderMetatile->setFixedSize(ceil(static_cast<double>(editor->selected_border_metatiles_item->pixmap().width()) * scale) + 2,
-                                                  ceil(static_cast<double>(editor->selected_border_metatiles_item->pixmap().height()) * scale) + 2);
+    ui->graphicsView_BorderMetatile->setFixedSize(ceil(static_cast<double>(editor->selected_border_metatiles_item->pixmap().width()) * scale),
+                                                  ceil(static_cast<double>(editor->selected_border_metatiles_item->pixmap().height()) * scale));
+
+    ui->scrollAreaWidgetContents_MetatileSelector->adjustSize();
+    ui->scrollAreaWidgetContents_BorderMetatiles->adjustSize();
 
     redrawMetatileSelection();
 }
@@ -2847,6 +2851,7 @@ void MainWindow::on_horizontalSlider_CollisionZoom_valueChanged(int value) {
     ui->graphicsView_Collision->setResizeAnchor(QGraphicsView::NoAnchor);
     ui->graphicsView_Collision->setTransform(transform);
     ui->graphicsView_Collision->setFixedSize(size.width() + 2, size.height() + 2);
+    ui->scrollAreaWidgetContents_Collision->adjustSize();
 }
 
 void MainWindow::on_spinBox_SelectedCollision_valueChanged(int collision) {
