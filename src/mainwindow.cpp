@@ -734,10 +734,10 @@ void MainWindow::refreshMapScene()
     ui->graphicsView_Metatiles->setFixedSize(editor->metatile_selector_item->pixmap().width() + 2, editor->metatile_selector_item->pixmap().height() + 2);
 
     ui->graphicsView_BorderMetatile->setScene(editor->scene_selected_border_metatiles);
-    ui->graphicsView_BorderMetatile->setFixedSize(editor->selected_border_metatiles_item->pixmap().width(), editor->selected_border_metatiles_item->pixmap().height());
+    ui->graphicsView_BorderMetatile->setFixedSize(editor->selected_border_metatiles_item->pixmap().width() + 2, editor->selected_border_metatiles_item->pixmap().height() + 2);
 
     ui->graphicsView_currentMetatileSelection->setScene(editor->scene_current_metatile_selection);
-    ui->graphicsView_currentMetatileSelection->setFixedSize(editor->current_metatile_selection_item->pixmap().width(), editor->current_metatile_selection_item->pixmap().height());
+    ui->graphicsView_currentMetatileSelection->setFixedSize(editor->current_metatile_selection_item->pixmap().width() + 2, editor->current_metatile_selection_item->pixmap().height() + 2);
 
     ui->graphicsView_Collision->setScene(editor->scene_collision_metatiles);
     //ui->graphicsView_Collision->setSceneRect(editor->scene_collision_metatiles->sceneRect());
@@ -1371,12 +1371,16 @@ double MainWindow::getMetatilesZoomScale() {
 }
 
 void MainWindow::redrawMetatileSelection() {
+    QSize size(editor->current_metatile_selection_item->pixmap().width(), editor->current_metatile_selection_item->pixmap().height());
+    ui->graphicsView_currentMetatileSelection->setSceneRect(0, 0, size.width(), size.height());
+
     auto scale = getMetatilesZoomScale();
     QTransform transform;
     transform.scale(scale, scale);
+    size *= scale;
 
     ui->graphicsView_currentMetatileSelection->setTransform(transform);
-    ui->graphicsView_currentMetatileSelection->setFixedSize(editor->current_metatile_selection_item->pixmap().width() * scale, editor->current_metatile_selection_item->pixmap().height() * scale);
+    ui->graphicsView_currentMetatileSelection->setFixedSize(size.width() + 2, size.height() + 2);
     ui->scrollAreaWidgetContents_SelectedMetatiles->adjustSize();
 }
 
@@ -1394,6 +1398,7 @@ void MainWindow::scrollMetatileSelectorToSelection() {
     pos += QPoint(size.x() - 1, size.y() - 1) * 16 / 2; // We want to focus on the center of the whole selection
     pos *= getMetatilesZoomScale();
 
+    // TODO: This snaps focus to the position if it's out of view. It should scroll slowly toward this target instead
     auto viewport = ui->scrollArea_MetatileSelector->viewport();
     ui->scrollArea_MetatileSelector->ensureVisible(pos.x(), pos.y(), viewport->width() / 2, viewport->height() / 2);
 }
@@ -2845,8 +2850,8 @@ void MainWindow::on_horizontalSlider_MetatileZoom_valueChanged(int value) {
     ui->graphicsView_Metatiles->setFixedSize(size.width() + 2, size.height() + 2);
 
     ui->graphicsView_BorderMetatile->setTransform(transform);
-    ui->graphicsView_BorderMetatile->setFixedSize(ceil(static_cast<double>(editor->selected_border_metatiles_item->pixmap().width()) * scale),
-                                                  ceil(static_cast<double>(editor->selected_border_metatiles_item->pixmap().height()) * scale));
+    ui->graphicsView_BorderMetatile->setFixedSize(ceil(static_cast<double>(editor->selected_border_metatiles_item->pixmap().width()) * scale) + 2,
+                                                  ceil(static_cast<double>(editor->selected_border_metatiles_item->pixmap().height()) * scale) + 2);
 
     ui->scrollAreaWidgetContents_MetatileSelector->adjustSize();
     ui->scrollAreaWidgetContents_BorderMetatiles->adjustSize();
