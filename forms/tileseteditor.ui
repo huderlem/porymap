@@ -86,7 +86,7 @@
              <number>6</number>
             </property>
             <item row="0" column="0">
-             <widget class="QGraphicsView" name="graphicsView_Metatiles">
+             <widget class="NoScrollGraphicsView" name="graphicsView_Metatiles">
               <property name="verticalScrollBarPolicy">
                <enum>Qt::ScrollBarAlwaysOff</enum>
               </property>
@@ -560,7 +560,7 @@
              <number>0</number>
             </property>
             <item row="0" column="0">
-             <widget class="QGraphicsView" name="graphicsView_Tiles">
+             <widget class="NoScrollGraphicsView" name="graphicsView_Tiles">
               <property name="verticalScrollBarPolicy">
                <enum>Qt::ScrollBarAlwaysOff</enum>
               </property>
@@ -805,6 +805,11 @@
    <class>NoScrollComboBox</class>
    <extends>QComboBox</extends>
    <header>noscrollcombobox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>NoScrollGraphicsView</class>
+   <extends>QGraphicsView</extends>
+   <header>mapview.h</header>
   </customwidget>
  </customwidgets>
  <resources>

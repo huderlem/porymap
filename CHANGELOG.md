@@ -14,6 +14,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 
 ### Fixed
 - Fix some minor visual issues with the various zoom sliders.
+- Smooth out scrolling when mouse is over tile/metatile images.
 - Fix the Tileset Editor selectors getting extra white space when changing tilesets.
 - Fix a crash when adding disabled events with the Pencil tool.
 
