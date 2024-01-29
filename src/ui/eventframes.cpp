@@ -171,7 +171,7 @@ void EventFrame::setActive(bool active) {
 void EventFrame::populateScriptDropdown(NoScrollComboBox * combo, Project * project) {
     // The script dropdown is populated with scripts used by the map's events and from its scripts file.
     if (this->event->getMap())
-        combo->addItems(this->event->getMap()->getScriptLabels());
+        combo->addItems(this->event->getMap()->getScriptLabels(this->event->getEventGroup()));
 
     // The dropdown's autocomplete has all script labels across the full project.
     auto completer = new QCompleter(project->globalScriptLabels, combo);

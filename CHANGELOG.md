@@ -15,6 +15,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix the Tileset Editor selectors scrolling to the wrong selection when zoomed.
 - Fix the Tileset Editor selectors getting extra white space when changing tilesets.
 - Fix a crash when adding disabled events with the Pencil tool.
+- Fix error log about failing to find the scripts file when a new map is created.
 
 ## [5.3.0] - 2024-01-15
 ### Added

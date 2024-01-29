@@ -60,6 +60,7 @@ public:
     bool hasUnsavedDataChanges = false;
     bool needsLayoutDir = true;
     bool needsHealLocation = false;
+    bool scriptsLoaded = false;
     QImage collision_image;
     QPixmap collision_pixmap;
     QImage image;
@@ -94,7 +95,7 @@ public:
     void _floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
     void magicFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
     QList<Event *> getAllEvents() const;
-    QStringList getScriptLabels(Event::Group group = Event::Group::None) const;
+    QStringList getScriptLabels(Event::Group group = Event::Group::None);
     void removeEvent(Event *);
     void addEvent(Event *);
     QPixmap renderConnection(MapConnection, MapLayout *);

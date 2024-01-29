@@ -27,7 +27,7 @@ Map::~Map() {
 void Map::setName(QString mapName) {
     name = mapName;
     constantName = mapConstantFromName(mapName);
-    scriptsFileLabels = ParseUtil::getGlobalScriptLabels(this->getScriptsFilePath());
+    scriptsLoaded = false;
 }
 
 QString Map::mapConstantFromName(QString mapName, bool includePrefix) {
@@ -463,7 +463,12 @@ QList<Event *> Map::getAllEvents() const {
     return all_events;
 }
 
-QStringList Map::getScriptLabels(Event::Group group) const {
+QStringList Map::getScriptLabels(Event::Group group) {
+    if (!this->scriptsLoaded) {
+        this->scriptsFileLabels = ParseUtil::getGlobalScriptLabels(this->getScriptsFilePath());
+        this->scriptsLoaded = true;
+    }
+
     QStringList scriptLabels;
 
     // Get script labels currently in-use by the map's events
@@ -482,7 +487,7 @@ QStringList Map::getScriptLabels(Event::Group group) const {
     }
 
     // Add scripts from map's scripts file, and empty names.
-    scriptLabels.append(scriptsFileLabels);
+    scriptLabels.append(this->scriptsFileLabels);
     scriptLabels.sort(Qt::CaseInsensitive);
     scriptLabels.prepend("0x0");
     scriptLabels.prepend("NULL");
