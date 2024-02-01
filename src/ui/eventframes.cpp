@@ -1,5 +1,5 @@
 #include "eventframes.h"
-#include "customattributestable.h"
+#include "customattributesframe.h"
 #include "editcommands.h"
 #include "draggablepixmapitem.h"
 
@@ -102,8 +102,11 @@ void EventFrame::setup() {
 }
 
 void EventFrame::initCustomAttributesTable() {
-    CustomAttributesTable *customAttributes = new CustomAttributesTable(this->event, this);
-    this->layout_contents->addWidget(customAttributes);
+    this->custom_attributes = new CustomAttributesFrame(this);
+    QStringList keys = projectConfig.getDefaultEventCustomAttributes(this->event->getEventType()).keys();
+    this->custom_attributes->table->setDefaultKeys(QSet<QString>(keys.begin(), keys.end()));
+    this->custom_attributes->table->setRestrictedKeys(this->event->getExpectedFields());
+    this->layout_contents->addWidget(this->custom_attributes);
 }
 
 void EventFrame::connectSignals(MainWindow *) {
@@ -133,6 +136,18 @@ void EventFrame::connectSignals(MainWindow *) {
         this->event->setZ(value);
         this->event->modify();
     });
+
+    this->custom_attributes->disconnect();
+    connect(this->custom_attributes->table, &CustomAttributesTable::edited, [this]() {
+        this->event->setCustomAttributes(this->custom_attributes->table->getAttributes());
+        this->event->modify();
+    });
+    connect(this->custom_attributes->table, &CustomAttributesTable::defaultSet, [this](QString key, QJsonValue value) {
+        projectConfig.insertDefaultEventCustomAttribute(this->event->getEventType(), key, value);
+    });
+    connect(this->custom_attributes->table, &CustomAttributesTable::defaultRemoved, [this](QString key) {
+        projectConfig.removeDefaultEventCustomAttribute(this->event->getEventType(), key);
+    });
 }
 
 void EventFrame::initialize() {
@@ -143,6 +158,8 @@ void EventFrame::initialize() {
     this->spinner_x->setValue(this->event->getX());
     this->spinner_y->setValue(this->event->getY());
     this->spinner_z->setValue(this->event->getZ());
+
+    this->custom_attributes->table->setAttributes(this->event->getCustomAttributes());
 
     this->label_icon->setPixmap(this->event->getPixmap());
 }

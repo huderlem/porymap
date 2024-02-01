@@ -8,7 +8,7 @@
 #include "eventframes.h"
 #include "bordermetatilespixmapitem.h"
 #include "currentselectedmetatilespixmapitem.h"
-#include "customattributestable.h"
+#include "customattributesframe.h"
 #include "scripting.h"
 #include "adjustingstackedwidget.h"
 #include "draggablepixmapitem.h"
@@ -301,6 +301,24 @@ void MainWindow::initEditor() {
     connect(this->ui->spinner_HealID, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
         this->editor->selectedEventIndexChanged(value, Event::Group::Heal);
     });
+
+    // Connect the Custom Attributes table on the Header tab
+    connect(ui->mapCustomAttributesFrame->table, &CustomAttributesTable::edited, [this]() {
+        this->markMapEdited();
+        this->editor->updateCustomMapHeaderValues();
+    });
+    connect(ui->mapCustomAttributesFrame->table, &CustomAttributesTable::defaultSet, [](QString key, QJsonValue value) {
+        projectConfig.insertDefaultMapCustomAttribute(key, value);
+    });
+    connect(ui->mapCustomAttributesFrame->table, &CustomAttributesTable::defaultRemoved, [](QString key) {
+        projectConfig.removeDefaultMapCustomAttribute(key);
+    });
+}
+
+void MainWindow::resetMapCustomAttributesTable() {
+    QStringList keys = projectConfig.getDefaultMapCustomAttributes().keys();
+    ui->mapCustomAttributesFrame->table->setDefaultKeys(QSet<QString>(keys.begin(), keys.end()));
+    ui->mapCustomAttributesFrame->table->setRestrictedKeys(Project::getTopLevelMapFields());
 }
 
 void MainWindow::initMiscHeapObjects() {
@@ -509,6 +527,7 @@ bool MainWindow::openProject(const QString &dir, bool initial) {
     projectConfig.load();
 
     this->closeSupplementaryWindows();
+    this->resetMapCustomAttributesTable();
     this->newMapDefaultsSet = false;
 
     if (isProjectOpen())
@@ -839,13 +858,7 @@ void MainWindow::displayMapProperties() {
     ui->checkBox_AllowEscaping->setChecked(map->allowEscaping);
     ui->spinBox_FloorNumber->setValue(map->floorNumber);
 
-    // Custom fields table.
-    ui->tableWidget_CustomHeaderFields->blockSignals(true);
-    ui->tableWidget_CustomHeaderFields->setRowCount(0);
-    for (auto it = map->customHeaders.begin(); it != map->customHeaders.end(); it++)
-        CustomAttributesTable::addAttribute(ui->tableWidget_CustomHeaderFields, it.key(), it.value());
-    ui->tableWidget_CustomHeaderFields->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    ui->tableWidget_CustomHeaderFields->blockSignals(false);
+    ui->mapCustomAttributesFrame->table->setAttributes(map->customHeaders);
 }
 
 void MainWindow::on_comboBox_Song_currentTextChanged(const QString &song)
@@ -2790,27 +2803,6 @@ void MainWindow::reloadScriptEngine() {
     Scripting::cb_ProjectOpened(projectConfig.getProjectDir());
     if (editor && editor->map)
         Scripting::cb_MapOpened(editor->map->name);
-}
-
-void MainWindow::on_pushButton_AddCustomHeaderField_clicked()
-{
-    bool ok;
-    QJsonValue value = CustomAttributesTable::pickType(this, &ok);
-    if (ok){
-        CustomAttributesTable::addAttribute(this->ui->tableWidget_CustomHeaderFields, "", value, true);
-        this->editor->updateCustomMapHeaderValues(this->ui->tableWidget_CustomHeaderFields);
-    }
-}
-
-void MainWindow::on_pushButton_DeleteCustomHeaderField_clicked()
-{
-    if (CustomAttributesTable::deleteSelectedAttributes(this->ui->tableWidget_CustomHeaderFields))
-        this->editor->updateCustomMapHeaderValues(this->ui->tableWidget_CustomHeaderFields);
-}
-
-void MainWindow::on_tableWidget_CustomHeaderFields_cellChanged(int, int)
-{
-    this->editor->updateCustomMapHeaderValues(this->ui->tableWidget_CustomHeaderFields);
 }
 
 void MainWindow::on_horizontalSlider_MetatileZoom_valueChanged(int value) {

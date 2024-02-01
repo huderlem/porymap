@@ -89,7 +89,6 @@ public:
     void updatePrimaryTileset(QString tilesetLabel, bool forceLoad = false);
     void updateSecondaryTileset(QString tilesetLabel, bool forceLoad = false);
     void toggleBorderVisibility(bool visible, bool enableScriptCallback = true);
-    void updateCustomMapHeaderValues(QTableWidget *);
     void configureEncounterJSON(QWidget *);
     Tileset *getCurrentMapPrimaryTileset();
 
@@ -162,6 +161,7 @@ public slots:
     void maskNonVisibleConnectionTiles();
     void onBorderMetatilesChanged();
     void selectedEventIndexChanged(int index, Event::Group eventGroup);
+    void updateCustomMapHeaderValues();
 
 private:
     const QImage defaultCollisionImgSheet = QImage(":/images/collisions.png");
