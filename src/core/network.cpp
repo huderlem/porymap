@@ -72,7 +72,11 @@ void NetworkAccessManager::processReply(QNetworkReply * reply, NetworkReplyData 
     if (!reply || !reply->isFinished())
         return;
 
-    auto url = reply->url();
+    // The url in the request and the url ultimately processed (reply->url()) may differ if the request was redirected.
+    // For identification purposes (e.g. knowing if we are rate limited before a request is made) we use the url that
+    // was originally given for the request.
+    auto url = data->m_url;
+
     reply->deleteLater();
 
     int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
@@ -88,7 +92,11 @@ void NetworkAccessManager::processReply(QNetworkReply * reply, NetworkReplyData 
 
     if (statusCode == 304) {
         // "Not Modified", data hasn't changed since our last request.
-        data->m_body = this->cache.value(url)->data;
+        auto cacheEntry = this->cache.value(url, nullptr);
+        if (cacheEntry)
+            data->m_body = cacheEntry->data;
+        else
+            data->m_error = "Failed to read webpage from cache.";
         return;
     }
 
