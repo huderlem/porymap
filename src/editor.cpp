@@ -129,6 +129,7 @@ void Editor::setEditorView() {
     switch (this->editMode) {
     case EditMode::Metatiles:
     case EditMode::Collision:
+        map_item->setEditsEnabled(true);
         this->editGroup.setActiveStack(&this->layout->editHistory);
         break;
     case EditMode::Events:
