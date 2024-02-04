@@ -2854,6 +2854,7 @@ void MainWindow::on_toolButton_CollapseAll_Groups_clicked() {
 }
 
 void MainWindow::on_toolButton_EnableDisable_EditGroups_clicked() {
+    this->ui->mapList->clearSelection();
     if (this->ui->toolButton_EnableDisable_EditGroups->isChecked()) {
         ui->mapList->setSelectionMode(QAbstractItemView::ExtendedSelection);
         ui->mapList->setDragEnabled(true);
