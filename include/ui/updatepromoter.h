@@ -37,8 +37,7 @@ private:
     void resetDialog();
     void get(const QUrl &url);
     void processWebpage(const QJsonDocument &data, const QUrl &nextUrl);
-    void disableRequestsUntil(const QDateTime time);
-    void error(const QString &err);
+    void error(const QString &err, const QDateTime time = QDateTime());
     bool isNewerVersion(int major, int minor, int patch);
 
 private slots:

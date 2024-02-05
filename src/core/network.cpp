@@ -147,7 +147,7 @@ void NetworkAccessManager::processReply(QNetworkReply * reply, NetworkReplyData 
         this->cache.insert(url, cacheEntry);
     }
     auto eTagHeader = reply->header(QNetworkRequest::ETagHeader);
-    if (eTagHeader.isValid())
+    if (eTagHeader.canConvert<QString>())
         cacheEntry->eTag = eTagHeader.toString();
 
     cacheEntry->data = data->m_body = reply->readAll();

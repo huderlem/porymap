@@ -69,8 +69,7 @@ void UpdatePromoter::get(const QUrl &url) {
     auto reply = this->manager->get(url);
     connect(reply, &NetworkReplyData::finished, [this, reply] () {
         if (!reply->errorString().isEmpty()) {
-            this->error(reply->errorString());
-            this->disableRequestsUntil(reply->retryAfter());
+            this->error(reply->errorString(), reply->retryAfter());
         } else {
             this->processWebpage(QJsonDocument::fromJson(reply->body()), reply->nextUrl());
         }
@@ -79,8 +78,7 @@ void UpdatePromoter::get(const QUrl &url) {
 }
 
 // Read all the items on the releases page, ignoring entries without a version identifier tag.
-// Objects in the releases page data are sorted newest to oldest. 
-// Returns true when finished, returns false to request processing for the next page.
+// Objects in the releases page data are sorted newest to oldest.
 void UpdatePromoter::processWebpage(const QJsonDocument &data, const QUrl &nextUrl) {
     const QJsonArray releases = data.array();
     int i;
@@ -156,21 +154,23 @@ void UpdatePromoter::processWebpage(const QJsonDocument &data, const QUrl &nextU
     }
 }
 
-void UpdatePromoter::disableRequestsUntil(const QDateTime time) {
-    this->button_Retry->setEnabled(false);
-
-    auto timeUntil = QDateTime::currentDateTime().msecsTo(time);
-    if (timeUntil < 0) timeUntil = 0;
-    QTimer::singleShot(timeUntil, Qt::VeryCoarseTimer, [this]() {
-        this->button_Retry->setEnabled(true);
-    });
-}
-
-void UpdatePromoter::error(const QString &err) {
+void UpdatePromoter::error(const QString &err, const QDateTime retryAfter) {
     const QString message = QString("Failed to check for version update: %1").arg(err);
     ui->label_Status->setText(message);
     if (!this->isVisible())
         logWarn(message);
+
+    // If a "retry after" date/time is provided, disable the Retry button until then.
+    // Otherwise users are allowed to retry after an error.
+    auto timeUntil = QDateTime::currentDateTime().msecsTo(retryAfter);
+    if (timeUntil > 0) {
+        this->button_Retry->setEnabled(false);
+        QTimer::singleShot(timeUntil, Qt::VeryCoarseTimer, [this]() {
+            this->button_Retry->setEnabled(true);
+        });
+    } else {
+        this->button_Retry->setEnabled(true);
+    }
 }
 
 bool UpdatePromoter::isNewerVersion(int major, int minor, int patch) {
