@@ -41,6 +41,12 @@
 #include <QSet>
 #include <QLoggingCategory>
 
+// We only publish release binaries for Windows and macOS.
+// This is relevant for the update promoter, which alerts users of a new release.
+#if defined(Q_OS_WIN) || defined(Q_OS_MACOS)
+#define RELEASE_PLATFORM
+#endif
+
 using OrderedJson = poryjson::Json;
 using OrderedJsonDoc = poryjson::JsonDoc;
 
@@ -110,6 +116,10 @@ void MainWindow::initWindow() {
     this->initMapSortOrder();
     this->initShortcuts();
     this->restoreWindowState();
+
+#ifndef RELEASE_PLATFORM
+    ui->actionCheck_for_Updates->setVisible(false);
+#endif
 
     setWindowDisabled(true);
 }
@@ -254,6 +264,7 @@ void MainWindow::on_actionCheck_for_Updates_triggered() {
     checkForUpdates(true);
 }
 
+#ifdef RELEASE_PLATFORM
 void MainWindow::checkForUpdates(bool requestedByUser) {
     if (!this->networkAccessManager)
         this->networkAccessManager = new NetworkAccessManager(this);
@@ -278,6 +289,9 @@ void MainWindow::checkForUpdates(bool requestedByUser) {
     this->updatePromoter->checkForUpdates();
     porymapConfig.setLastUpdateCheckTime(QDateTime::currentDateTime());
 }
+#else
+void MainWindow::checkForUpdates(bool) {}
+#endif
 
 void MainWindow::initEditor() {
     this->editor = new Editor(ui);
