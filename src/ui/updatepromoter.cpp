@@ -43,7 +43,7 @@ void UpdatePromoter::resetDialog() {
 
     this->changelog = QString();
     this->downloadUrl = QString();
-    this->breakingChanges = false;
+    this->newVersion = QVersionNumber();
     this->foundReleases = false;
     this->visitedUrls.clear();
 }
@@ -87,19 +87,12 @@ void UpdatePromoter::processWebpage(const QJsonDocument &data, const QUrl &nextU
 
         // Convert tag string to version numbers
         const QString tagName = release.value("tag_name").toString();
-        const QStringList tag = tagName.split(".");
-        if (tag.length() != 3) continue;
-        bool ok;
-        int major = tag.at(0).toInt(&ok);
-        if (!ok) continue;
-        int minor = tag.at(1).toInt(&ok);
-        if (!ok) continue;
-        int patch = tag.at(2).toInt(&ok);
-        if (!ok) continue;
+        const QVersionNumber version = QVersionNumber::fromString(tagName);
+        if (version.segmentCount() != 3) continue;
 
         // We've found a valid release tag. If the version number is not newer than the host version then we can stop looking at releases.
         this->foundReleases = true;
-        if (!this->isNewerVersion(major, minor, patch))
+        if (porymapVersion >= version)
             break;
 
         const QString description = release.value("body").toString();
@@ -116,7 +109,7 @@ void UpdatePromoter::processWebpage(const QJsonDocument &data, const QUrl &nextU
                 continue;
             }
             this->downloadUrl = url;
-            this->breakingChanges = (major > PORYMAP_VERSION_MAJOR);
+            this->newVersion = version;
         }
 
         // Record the changelog of this release so we can show all changes since the host release.
@@ -137,20 +130,25 @@ void UpdatePromoter::processWebpage(const QJsonDocument &data, const QUrl &nextU
     }
 
     // Populate dialog with result
-    bool updateAvailable = !this->changelog.isEmpty();
-    ui->label_Status->setText(updateAvailable ? "A new version of Porymap is available!"
-                                              : "Your version of Porymap is up to date!");
-    ui->label_Warning->setVisible(this->breakingChanges);
     ui->text_Changelog->setMarkdown(this->changelog);
-    ui->text_Changelog->setVisible(updateAvailable);
+    ui->text_Changelog->setVisible(!this->changelog.isEmpty());
     this->button_Downloads->setEnabled(!this->downloadUrl.isEmpty());
     this->button_Retry->setEnabled(true);
+    if (!this->newVersion.isNull()) {
+        ui->label_Status->setText("A new version of Porymap is available!");
+        ui->label_Warning->setVisible(this->newVersion.majorVersion() > porymapVersion.majorVersion());
 
-    // Alert the user if there's a new update available and the dialog wasn't already open.
-    // Show the window, but also show the option to turn off automatic alerts in the future.
-    if (updateAvailable && !this->isVisible()) {
-        ui->checkBox_StopAlerts->setVisible(true);
-        this->show();
+        // Alert the user about the new version if the dialog wasn't already open.
+        // Show the window, but also show the option to turn off automatic alerts in the future.
+        // We only show this alert once for a given release.
+        if (!this->isVisible() && this->newVersion > porymapConfig.getLastUpdateCheckVersion()) {
+            ui->checkBox_StopAlerts->setVisible(true);
+            this->show();
+        }
+        porymapConfig.setLastUpdateCheckVersion(this->newVersion);
+    } else {
+        ui->label_Status->setText("Your version of Porymap is up to date!");
+        ui->label_Warning->setVisible(false);
     }
 }
 
@@ -171,14 +169,6 @@ void UpdatePromoter::error(const QString &err, const QDateTime retryAfter) {
     } else {
         this->button_Retry->setEnabled(true);
     }
-}
-
-bool UpdatePromoter::isNewerVersion(int major, int minor, int patch) {
-    if (major != PORYMAP_VERSION_MAJOR)
-        return major > PORYMAP_VERSION_MAJOR;
-    if (minor != PORYMAP_VERSION_MINOR)
-        return minor > PORYMAP_VERSION_MINOR;
-    return patch > PORYMAP_VERSION_PATCH;
 }
 
 void UpdatePromoter::updatePreferences() {

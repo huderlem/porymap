@@ -14,14 +14,8 @@ RC_ICONS = resources/icons/porymap-icon-2.ico
 ICON = resources/icons/porymap.icns
 QMAKE_CXXFLAGS += -std=c++17 -Wall
 QMAKE_TARGET_BUNDLE_PREFIX = com.pret
-VERSION_MAJOR = 5
-VERSION_MINOR = 3
-VERSION_PATCH = 0
-VERSION = $${VERSION_MAJOR}.$${VERSION_MINOR}.$${VERSION_PATCH}
-DEFINES += PORYMAP_VERSION_MAJOR=$$VERSION_MAJOR \
-           PORYMAP_VERSION_MINOR=$$VERSION_MINOR \
-           PORYMAP_VERSION_PATCH=$$VERSION_PATCH \
-           PORYMAP_VERSION=\\\"$$VERSION\\\"
+VERSION = 5.3.0
+DEFINES += PORYMAP_VERSION=\\\"$$VERSION\\\"
 
 SOURCES += src/core/block.cpp \
     src/core/bitpacker.cpp \

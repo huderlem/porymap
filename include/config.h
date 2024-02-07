@@ -10,8 +10,11 @@
 #include <QMultiMap>
 #include <QDateTime>
 #include <QUrl>
+#include <QVersionNumber>
 
 #include "events.h"
+
+static const QVersionNumber porymapVersion = QVersionNumber::fromString(PORYMAP_VERSION);
 
 // In both versions the default new map border is a generic tree
 #define DEFAULT_BORDER_RSE (QList<uint16_t>{0x1D4, 0x1D5, 0x1DC, 0x1DD})
@@ -78,6 +81,7 @@ public:
         this->warpBehaviorWarningDisabled = false;
         this->checkForUpdates = true;
         this->lastUpdateCheckTime = QDateTime();
+        this->lastUpdateCheckVersion = porymapVersion;
         this->rateLimitTimes.clear();
     }
     void addRecentProject(QString project);
@@ -112,6 +116,7 @@ public:
     void setWarpBehaviorWarningDisabled(bool disabled);
     void setCheckForUpdates(bool enabled);
     void setLastUpdateCheckTime(QDateTime time);
+    void setLastUpdateCheckVersion(QVersionNumber version);
     void setRateLimitTimes(QMap<QUrl, QDateTime> map);
     QString getRecentProject();
     QStringList getRecentProjects();
@@ -145,6 +150,7 @@ public:
     bool getWarpBehaviorWarningDisabled();
     bool getCheckForUpdates();
     QDateTime getLastUpdateCheckTime();
+    QVersionNumber getLastUpdateCheckVersion();
     QMap<QUrl, QDateTime> getRateLimitTimes();
 protected:
     virtual QString getConfigFilepath() override;
@@ -196,6 +202,7 @@ private:
     bool warpBehaviorWarningDisabled;
     bool checkForUpdates;
     QDateTime lastUpdateCheckTime;
+    QVersionNumber lastUpdateCheckVersion;
     QMap<QUrl, QDateTime> rateLimitTimes;
 };
 

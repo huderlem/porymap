@@ -65,7 +65,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     cleanupLargeLog();
-    logInfo(QString("Launching Porymap v%1").arg(PORYMAP_VERSION));
+    logInfo(QString("Launching Porymap v%1").arg(QCoreApplication::applicationVersion()));
 
     this->initWindow();
     if (porymapConfig.getReopenOnLaunch() && this->openProject(porymapConfig.getRecentProject(), true))

@@ -411,6 +411,14 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->checkForUpdates = getConfigBool(key, value);
     } else if (key == "last_update_check_time") {
         this->lastUpdateCheckTime = QDateTime::fromString(value).toLocalTime();
+    } else if (key == "last_update_check_version") {
+        auto version = QVersionNumber::fromString(value);
+        if (version.segmentCount() != 3) {
+            logWarn(QString("Invalid config value for %1: '%2'. Must be 3 numbers separated by '.'").arg(key).arg(value));
+            this->lastUpdateCheckVersion = porymapVersion;
+        } else {
+            this->lastUpdateCheckVersion = version;
+        }
     } else if (key.startsWith("rate_limit_time/")) {
         static const QRegularExpression regex("\\brate_limit_time/(?<url>.+)");
         QRegularExpressionMatch match = regex.match(key);
@@ -465,6 +473,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("warp_behavior_warning_disabled", QString::number(this->warpBehaviorWarningDisabled));
     map.insert("check_for_updates", QString::number(this->checkForUpdates));
     map.insert("last_update_check_time", this->lastUpdateCheckTime.toUTC().toString());
+    map.insert("last_update_check_version", this->lastUpdateCheckVersion.toString());
     for (auto i = this->rateLimitTimes.cbegin(), end = this->rateLimitTimes.cend(); i != end; i++){
         // Only include rate limit times that are still active (i.e., in the future)
         const QDateTime time = i.value();
@@ -664,6 +673,11 @@ void PorymapConfig::setLastUpdateCheckTime(QDateTime time) {
     this->save();
 }
 
+void PorymapConfig::setLastUpdateCheckVersion(QVersionNumber version) {
+    this->lastUpdateCheckVersion = version;
+    this->save();
+}
+
 void PorymapConfig::setRateLimitTimes(QMap<QUrl, QDateTime> map) {
     this->rateLimitTimes = map;
     this->save();
@@ -829,6 +843,10 @@ bool PorymapConfig::getCheckForUpdates() {
 
 QDateTime PorymapConfig::getLastUpdateCheckTime() {
     return this->lastUpdateCheckTime;
+}
+
+QVersionNumber PorymapConfig::getLastUpdateCheckVersion() {
+    return this->lastUpdateCheckVersion;
 }
 
 QMap<QUrl, QDateTime> PorymapConfig::getRateLimitTimes() {

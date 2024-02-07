@@ -5,6 +5,7 @@
 
 #include <QDialog>
 #include <QPushButton>
+#include <QVersionNumber>
 
 namespace Ui {
 class UpdatePromoter;
@@ -29,7 +30,7 @@ private:
 
     QString changelog;
     QUrl downloadUrl;
-    bool breakingChanges;
+    QVersionNumber newVersion;
     bool foundReleases;
 
     QSet<QUrl> visitedUrls; // Prevent infinite redirection
@@ -38,7 +39,6 @@ private:
     void get(const QUrl &url);
     void processWebpage(const QJsonDocument &data, const QUrl &nextUrl);
     void error(const QString &err, const QDateTime time = QDateTime());
-    bool isNewerVersion(int major, int minor, int patch);
 
 private slots:
     void dialogButtonClicked(QAbstractButton *button);

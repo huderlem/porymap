@@ -78,9 +78,9 @@ void Scripting::populateGlobalObject(MainWindow *mainWindow) {
 
     // Get version numbers
     QJSValue version = instance->engine->newObject();
-    version.setProperty("major", PORYMAP_VERSION_MAJOR);
-    version.setProperty("minor", PORYMAP_VERSION_MINOR);
-    version.setProperty("patch", PORYMAP_VERSION_PATCH);
+    version.setProperty("major", porymapVersion.majorVersion());
+    version.setProperty("minor", porymapVersion.minorVersion());
+    version.setProperty("patch", porymapVersion.microVersion());
     constants.setProperty("version", version);
 
     // Get basic tileset information
