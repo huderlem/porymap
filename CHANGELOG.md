@@ -10,9 +10,11 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ### Changed
 - If Wild Encounters fail to load they are now only disabled for that session, and the settings remain unchanged.
 - Defaults are used if project constants are missing, rather than failing to open the project or changing settings.
+- Selector images now center on the selection when eyedropping or zooming.
 
 ### Fixed
-- Fix the Tileset Editor selectors scrolling to the wrong selection when zoomed.
+- Fix some minor visual issues with the various zoom sliders.
+- Smooth out scrolling when mouse is over tile/metatile images.
 - Fix the Tileset Editor selectors getting extra white space when changing tilesets.
 - Fix a crash when adding disabled events with the Pencil tool.
 - Fix error log about failing to find the scripts file when a new map is created.

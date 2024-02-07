@@ -59,12 +59,9 @@ bool MetatileSelector::select(uint16_t metatileId) {
     return true;
 }
 
-bool MetatileSelector::selectFromMap(uint16_t metatileId, uint16_t collision, uint16_t elevation) {
-    if (!Tileset::metatileIsValid(metatileId, this->primaryTileset, this->secondaryTileset)) return false;
-    this->select(metatileId);
-    this->selection.collisionItems.append(CollisionSelectionItem{true, collision, elevation});
-    this->selection.hasCollision = true;
-    return true;
+void MetatileSelector::selectFromMap(uint16_t metatileId, uint16_t collision, uint16_t elevation) {
+    QPair<uint16_t, uint16_t> movePermissions(collision, elevation);
+    this->setExternalSelection(1, 1, {metatileId}, {movePermissions});
 }
 
 void MetatileSelector::setTilesets(Tileset *primaryTileset, Tileset *secondaryTileset) {
@@ -99,6 +96,10 @@ void MetatileSelector::setExternalSelection(int width, int height, QList<uint16_
         if (!Tileset::metatileIsValid(metatileId, this->primaryTileset, this->secondaryTileset))
             metatileId = 0;
         this->selection.metatileItems.append(MetatileSelectionItem{true, metatileId});
+    }
+    if (this->selection.metatileItems.length() == 1) {
+        QPoint coords = this->getMetatileIdCoords(this->selection.metatileItems.first().metatileId);
+        SelectablePixmapItem::select(coords.x(), coords.y(), 0, 0);
     }
 
     this->draw();

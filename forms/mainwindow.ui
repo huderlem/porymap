@@ -764,7 +764,7 @@
                               <property name="widgetResizable">
                                <bool>true</bool>
                               </property>
-                              <widget class="QWidget" name="scrollAreaWidgetContents_3">
+                              <widget class="QWidget" name="scrollAreaWidgetContents_BorderMetatiles">
                                <property name="geometry">
                                 <rect>
                                  <x>0</x>
@@ -803,7 +803,7 @@
                                  </spacer>
                                 </item>
                                 <item>
-                                 <widget class="QGraphicsView" name="graphicsView_BorderMetatile">
+                                 <widget class="NoScrollGraphicsView" name="graphicsView_BorderMetatile">
                                   <property name="sizePolicy">
                                    <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
                                     <horstretch>0</horstretch>
@@ -883,7 +883,7 @@
                               <property name="widgetResizable">
                                <bool>true</bool>
                               </property>
-                              <widget class="QWidget" name="scrollAreaWidgetContents_6">
+                              <widget class="QWidget" name="scrollAreaWidgetContents_SelectedMetatiles">
                                <property name="geometry">
                                 <rect>
                                  <x>0</x>
@@ -922,7 +922,7 @@
                                  </spacer>
                                 </item>
                                 <item>
-                                 <widget class="QGraphicsView" name="graphicsView_currentMetatileSelection">
+                                 <widget class="NoScrollGraphicsView" name="graphicsView_currentMetatileSelection">
                                   <property name="sizePolicy">
                                    <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
                                     <horstretch>0</horstretch>
@@ -984,7 +984,7 @@
                            <property name="alignment">
                             <set>Qt::AlignHCenter|Qt::AlignTop</set>
                            </property>
-                           <widget class="QWidget" name="scrollAreaWidgetContents_2">
+                           <widget class="QWidget" name="scrollAreaWidgetContents_MetatileSelector">
                             <property name="enabled">
                              <bool>true</bool>
                             </property>
@@ -1032,7 +1032,7 @@
                               </spacer>
                              </item>
                              <item row="0" column="1">
-                              <widget class="QGraphicsView" name="graphicsView_Metatiles">
+                              <widget class="NoScrollGraphicsView" name="graphicsView_Metatiles">
                                <property name="enabled">
                                 <bool>true</bool>
                                </property>
@@ -1184,11 +1184,11 @@
                       </widget>
                      </item>
                      <item row="5" column="0" colspan="3">
-                      <widget class="QScrollArea" name="scrollArea_1">
+                      <widget class="QScrollArea" name="scrollArea_Collision">
                        <property name="widgetResizable">
                         <bool>true</bool>
                        </property>
-                       <widget class="QWidget" name="scrollAreaWidgetContents">
+                       <widget class="QWidget" name="scrollAreaWidgetContents_Collision">
                         <property name="geometry">
                          <rect>
                           <x>0</x>
@@ -1227,7 +1227,7 @@
                           </spacer>
                          </item>
                          <item row="2" column="1">
-                          <widget class="QGraphicsView" name="graphicsView_Collision">
+                          <widget class="NoScrollGraphicsView" name="graphicsView_Collision">
                            <property name="sizePolicy">
                             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                              <horstretch>0</horstretch>
@@ -3433,6 +3433,11 @@
   <customwidget>
    <class>MapView</class>
    <extends>QWidget</extends>
+   <header>mapview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>NoScrollGraphicsView</class>
+   <extends>QGraphicsView</extends>
    <header>mapview.h</header>
   </customwidget>
  </customwidgets>
