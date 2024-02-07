@@ -1398,7 +1398,6 @@ void MainWindow::scrollMetatileSelectorToSelection() {
     pos += QPoint(size.x() - 1, size.y() - 1) * 16 / 2; // We want to focus on the center of the whole selection
     pos *= getMetatilesZoomScale();
 
-    // TODO: This snaps focus to the position if it's out of view. It should scroll slowly toward this target instead
     auto viewport = ui->scrollArea_MetatileSelector->viewport();
     ui->scrollArea_MetatileSelector->ensureVisible(pos.x(), pos.y(), viewport->width() / 2, viewport->height() / 2);
 }
