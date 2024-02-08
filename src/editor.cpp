@@ -79,10 +79,11 @@ void Editor::saveUiFields() {
 }
 
 void Editor::closeProject() {
-    if (this->project) {
-        delete this->project;
-        this->project = nullptr;
-    }
+    if (!this->project)
+        return;
+
+    Scripting::cb_ProjectClosed(this->project->root);
+    delete this->project;
 }
 
 void Editor::setEditingMap() {

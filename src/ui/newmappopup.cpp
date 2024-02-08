@@ -14,6 +14,7 @@ NewMapPopup::NewMapPopup(QWidget *parent, Project *project) :
     QMainWindow(parent),
     ui(new Ui::NewMapPopup)
 {
+    this->setAttribute(Qt::WA_DeleteOnClose);
     ui->setupUi(this);
     this->project = project;
     this->existingLayout = false;

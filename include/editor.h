@@ -43,7 +43,7 @@ public:
 public:
     Ui::MainWindow* ui;
     QObject *parent = nullptr;
-    Project *project = nullptr;
+    QPointer<Project> project = nullptr;
     Map *map = nullptr;
     Settings *settings;
     void saveProject();

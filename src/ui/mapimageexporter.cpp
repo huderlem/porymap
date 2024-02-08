@@ -27,6 +27,7 @@ MapImageExporter::MapImageExporter(QWidget *parent_, Editor *editor_, ImageExpor
     QDialog(parent_),
     ui(new Ui::MapImageExporter)
 {
+    this->setAttribute(Qt::WA_DeleteOnClose);
     ui->setupUi(this);
     this->map = editor_->map;
     this->editor = editor_;

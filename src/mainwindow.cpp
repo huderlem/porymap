@@ -71,6 +71,7 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete label_MapRulerStatus;
+    delete editor;
     delete ui;
 }
 
@@ -477,8 +478,12 @@ void MainWindow::setTheme(QString theme) {
 }
 
 bool MainWindow::openProject(const QString &dir, bool initial) {
+    if (!this->closeProject()) {
+        logInfo("Aborted project open.");
+        return false;
+    }
+
     if (dir.isNull() || dir.length() <= 0) {
-        projectOpenFailure = true;
         if (!initial) setWindowDisabled(true);
         return false;
     }
@@ -486,7 +491,6 @@ bool MainWindow::openProject(const QString &dir, bool initial) {
     const QString projectString = QString("%1project '%2'").arg(initial ? "recent " : "").arg(QDir::toNativeSeparators(dir));
 
     if (!QDir(dir).exists()) {
-        projectOpenFailure = true;
         const QString errorMsg = QString("Failed to open %1: No such directory").arg(projectString);
         this->statusBar()->showMessage(errorMsg);
         if (initial) {
@@ -503,43 +507,30 @@ bool MainWindow::openProject(const QString &dir, bool initial) {
     this->statusBar()->showMessage(openMessage);
     logInfo(openMessage);
 
+    // TODO: Don't save these yet
     userConfig.setProjectDir(dir);
     userConfig.load();
     projectConfig.setProjectDir(dir);
     projectConfig.load();
 
-    this->closeSupplementaryWindows();
     this->newMapDefaultsSet = false;
 
-    if (isProjectOpen())
-        Scripting::cb_ProjectClosed(editor->project->root);
     Scripting::init(this);
 
-    bool already_open = isProjectOpen() && (editor->project->root == dir);
-    if (!already_open) {
-        editor->closeProject();
-        editor->project = new Project(this);
-        QObject::connect(editor->project, &Project::reloadProject, this, &MainWindow::on_action_Reload_Project_triggered);
-        QObject::connect(editor->project, &Project::mapCacheCleared, this, &MainWindow::onMapCacheCleared);
-        QObject::connect(editor->project, &Project::uncheckMonitorFilesAction, [this]() {
-            porymapConfig.setMonitorFiles(false);
-            if (this->preferenceEditor)
-                this->preferenceEditor->updateFields();
-        });
-        editor->project->set_root(dir);
-    } else {
-        editor->project->fileWatcher.removePaths(editor->project->fileWatcher.files());
-        editor->project->clearMapCache();
-        editor->project->clearTilesetCache();
-    }
+    this->editor->project = new Project(this);
+    QObject::connect(this->editor->project, &Project::reloadProject, this, &MainWindow::on_action_Reload_Project_triggered);
+    QObject::connect(this->editor->project, &Project::mapCacheCleared, this, &MainWindow::onMapCacheCleared);
+    QObject::connect(this->editor->project, &Project::uncheckMonitorFilesAction, [this]() {
+        porymapConfig.setMonitorFiles(false);
+        if (this->preferenceEditor)
+            this->preferenceEditor->updateFields();
+    });
+    this->editor->project->set_root(dir);
 
-    this->projectOpenFailure = !(loadDataStructures()
-                              && populateMapList()
-                              && setInitialMap());
-
-    if (this->projectOpenFailure) {
+    if (!(loadDataStructures() && populateMapList() && setInitialMap())) {
         this->statusBar()->showMessage(QString("Failed to open %1").arg(projectString));
         showProjectOpenFailure();
+        delete this->editor->project;
         return false;
     }
     
@@ -568,7 +559,7 @@ void MainWindow::showProjectOpenFailure() {
 }
 
 bool MainWindow::isProjectOpen() {
-    return !projectOpenFailure && editor && editor->project;
+    return editor && editor->project;
 }
 
 bool MainWindow::setInitialMap() {
@@ -1228,12 +1219,10 @@ void MainWindow::openNewMapPopupWindow() {
     }
     if (!this->newMapPrompt) {
         this->newMapPrompt = new NewMapPopup(this, this->editor->project);
+        connect(this->newMapPrompt, &NewMapPopup::applied, this, &MainWindow::onNewMapCreated);
     }
 
     openSubWindow(this->newMapPrompt);
-
-    connect(this->newMapPrompt, &NewMapPopup::applied, this, &MainWindow::onNewMapCreated);
-    this->newMapPrompt->setAttribute(Qt::WA_DeleteOnClose);
 }
 
 void MainWindow::on_action_NewMap_triggered() {
@@ -1749,11 +1738,6 @@ void MainWindow::on_mapViewTab_tabBarClicked(int index)
         } 
     }
     editor->setCursorRectVisible(false);
-}
-
-void MainWindow::on_action_Exit_triggered()
-{
-    QApplication::quit();
 }
 
 void MainWindow::on_mainTabBar_tabBarClicked(int index)
@@ -2486,11 +2470,8 @@ void MainWindow::importMapFromAdvanceMap1_92()
 void MainWindow::showExportMapImageWindow(ImageExporterMode mode) {
     if (!editor->project) return;
 
-    if (this->mapImageExporter)
-        delete this->mapImageExporter;
-
-    this->mapImageExporter = new MapImageExporter(this, this->editor, mode);
-    this->mapImageExporter->setAttribute(Qt::WA_DeleteOnClose);
+    if (!this->mapImageExporter)
+        this->mapImageExporter = new MapImageExporter(this, this->editor, mode);
 
     openSubWindow(this->mapImageExporter);
 }
@@ -2923,36 +2904,59 @@ bool MainWindow::initRegionMapEditor(bool silent) {
     return true;
 }
 
-void MainWindow::closeSupplementaryWindows() {
-    delete this->tilesetEditor;
-    delete this->regionMapEditor;
-    delete this->mapImageExporter;
-    delete this->newMapPrompt;
-    delete this->shortcutsEditor;
-    delete this->customScriptsEditor;
+// Attempt to close any open sub-windows of the main window, giving each a chance to abort the process.
+// Each of these are expected to be a QPointer to a widget with WA_DeleteOnClose set, so manually deleting
+// and nullifying the pointer members is not necessary here.
+// TODO: Testing
+bool MainWindow::closeSupplementaryWindows() {
+    if (this->tilesetEditor && !this->tilesetEditor->close())
+        return false;
+    if (this->regionMapEditor && !this->regionMapEditor->close())
+        return false;
+    if (this->mapImageExporter && !this->mapImageExporter->close())
+        return false;
+    if (this->newMapPrompt && !this->newMapPrompt->close())
+        return false;
+    if (this->shortcutsEditor && !this->shortcutsEditor->close())
+        return false;
+    if (this->preferenceEditor && !this->preferenceEditor->close())
+        return false;
+    if (this->customScriptsEditor && !this->customScriptsEditor->close())
+        return false;
     if (this->projectSettingsEditor) this->projectSettingsEditor->closeQuietly();
+
+    return true;
 }
 
-void MainWindow::closeEvent(QCloseEvent *event) {
-    if (isProjectOpen()) {
-        if (projectHasUnsavedChanges || (editor->map && editor->map->hasUnsavedChanges())) {
-            QMessageBox::StandardButton result = QMessageBox::question(
-                this, "porymap", "The project has been modified, save changes?",
-                QMessageBox::No | QMessageBox::Yes | QMessageBox::Cancel, QMessageBox::Yes);
+bool MainWindow::closeProject() {
+    if (!closeSupplementaryWindows())
+        return false;
 
-            if (result == QMessageBox::Yes) {
-                editor->saveProject();
-            } else if (result == QMessageBox::No) {
-                logWarn("Closing porymap with unsaved changes.");
-            } else if (result == QMessageBox::Cancel) {
-                event->ignore();
-                return;
-            }
+    if (!isProjectOpen())
+        return true;
+
+    if (projectHasUnsavedChanges || (editor->map && editor->map->hasUnsavedChanges())) {
+        QMessageBox::StandardButton result = QMessageBox::question(
+            this, "porymap", "The project has been modified, save changes?",
+            QMessageBox::No | QMessageBox::Yes | QMessageBox::Cancel, QMessageBox::Yes);
+
+        if (result == QMessageBox::Yes) {
+            editor->saveProject();
+        } else if (result == QMessageBox::No) {
+            logWarn("Closing project with unsaved changes.");
+        } else if (result == QMessageBox::Cancel) {
+            return false;
         }
-        projectConfig.save();
-        userConfig.save();
     }
+    projectConfig.save();
+    userConfig.save();
 
+    editor->closeProject();
+
+    return true;
+}
+
+void MainWindow::saveGlobalConfigs() {
     porymapConfig.setMainGeometry(
         this->saveGeometry(),
         this->saveState(),
@@ -2962,6 +2966,24 @@ void MainWindow::closeEvent(QCloseEvent *event) {
     );
     porymapConfig.save();
     shortcutsConfig.save();
+}
+
+void MainWindow::on_action_Exit_triggered() {
+    if (!closeProject())
+        return;
+
+    saveGlobalConfigs();
+
+    QApplication::quit();
+}
+
+void MainWindow::closeEvent(QCloseEvent *event) {
+    if (!closeProject()) {
+        event->ignore();
+        return;
+    }
+
+    saveGlobalConfigs();
 
     QMainWindow::closeEvent(event);
 }

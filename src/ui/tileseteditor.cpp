@@ -20,6 +20,7 @@ TilesetEditor::TilesetEditor(Project *project, Map *map, QWidget *parent) :
     map(map),
     hasUnsavedChanges(false)
 {
+    this->setAttribute(Qt::WA_DeleteOnClose);
     this->setTilesets(this->map->layout->tileset_primary_label, this->map->layout->tileset_secondary_label);
     this->initUi();
 }

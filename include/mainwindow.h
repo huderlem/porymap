@@ -295,7 +295,7 @@ private slots:
 
 public:
     Ui::MainWindow *ui;
-    Editor *editor = nullptr;
+    QPointer<Editor> editor = nullptr;
 
 private:
     QLabel *label_MapRulerStatus = nullptr;
@@ -331,7 +331,6 @@ private:
 
     bool isProgrammaticEventTabChange;
     bool projectHasUnsavedChanges;
-    bool projectOpenFailure = false;
     bool newMapDefaultsSet = false;
 
     MapSortOrder mapSortOrder;
@@ -348,7 +347,9 @@ private:
     void openSubWindow(QWidget * window);
     QString getExistingDirectory(QString);
     bool openProject(const QString &dir, bool initial = false);
+    bool closeProject();
     void showProjectOpenFailure();
+    void saveGlobalConfigs();
     bool setInitialMap();
     void setRecentMap(QString map_name);
     QStandardItem* createMapItem(QString mapName, int groupNum, int inGroupNum);
@@ -379,7 +380,7 @@ private:
     void setTheme(QString);
     void updateTilesetEditor();
     Event::Group getEventGroupFromTabWidget(QWidget *tab);
-    void closeSupplementaryWindows();
+    bool closeSupplementaryWindows();
     void setWindowDisabled(bool);
 
     void initTilesetEditor();

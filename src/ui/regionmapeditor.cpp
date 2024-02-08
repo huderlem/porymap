@@ -26,6 +26,7 @@ RegionMapEditor::RegionMapEditor(QWidget *parent, Project *project) :
     QMainWindow(parent),
     ui(new Ui::RegionMapEditor)
 {
+    this->setAttribute(Qt::WA_DeleteOnClose);
     this->ui->setupUi(this);
     this->project = project;
     this->initShortcuts();
