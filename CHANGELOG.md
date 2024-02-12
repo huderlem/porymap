@@ -7,6 +7,9 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 The **"Breaking Changes"** listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. It also includes changes to the scripting API that may change the behavior of existing porymap scripts. If porymap is used with a project or API script that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.
 
 ## [Unreleased]
+### Added
+- Add a `Check for Updates` option to show new releases (Windows and macOS only).
+
 ### Changed
 - If Wild Encounters fail to load they are now only disabled for that session, and the settings remain unchanged.
 - Defaults are used if project constants are missing, rather than failing to open the project or changing settings.
