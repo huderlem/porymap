@@ -407,6 +407,24 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->projectSettingsTab = getConfigInteger(key, value, 0);
     } else if (key == "warp_behavior_warning_disabled") {
         this->warpBehaviorWarningDisabled = getConfigBool(key, value);
+    } else if (key == "check_for_updates") {
+        this->checkForUpdates = getConfigBool(key, value);
+    } else if (key == "last_update_check_time") {
+        this->lastUpdateCheckTime = QDateTime::fromString(value).toLocalTime();
+    } else if (key == "last_update_check_version") {
+        auto version = QVersionNumber::fromString(value);
+        if (version.segmentCount() != 3) {
+            logWarn(QString("Invalid config value for %1: '%2'. Must be 3 numbers separated by '.'").arg(key).arg(value));
+            this->lastUpdateCheckVersion = porymapVersion;
+        } else {
+            this->lastUpdateCheckVersion = version;
+        }
+    } else if (key.startsWith("rate_limit_time/")) {
+        static const QRegularExpression regex("\\brate_limit_time/(?<url>.+)");
+        QRegularExpressionMatch match = regex.match(key);
+        if (match.hasMatch()) {
+            this->rateLimitTimes.insert(match.captured("url"), QDateTime::fromString(value).toLocalTime());
+        }
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -453,6 +471,15 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("palette_editor_bit_depth", QString::number(this->paletteEditorBitDepth));
     map.insert("project_settings_tab", QString::number(this->projectSettingsTab));
     map.insert("warp_behavior_warning_disabled", QString::number(this->warpBehaviorWarningDisabled));
+    map.insert("check_for_updates", QString::number(this->checkForUpdates));
+    map.insert("last_update_check_time", this->lastUpdateCheckTime.toUTC().toString());
+    map.insert("last_update_check_version", this->lastUpdateCheckVersion.toString());
+    for (auto i = this->rateLimitTimes.cbegin(), end = this->rateLimitTimes.cend(); i != end; i++){
+        // Only include rate limit times that are still active (i.e., in the future)
+        const QDateTime time = i.value();
+        if (!time.isNull() && time > QDateTime::currentDateTime())
+            map.insert("rate_limit_time/" + i.key().toString(), time.toUTC().toString());
+    }
     
     return map;
 }
@@ -631,6 +658,31 @@ void PorymapConfig::setProjectSettingsTab(int tab) {
     this->save();
 }
 
+void PorymapConfig::setWarpBehaviorWarningDisabled(bool disabled) {
+    this->warpBehaviorWarningDisabled = disabled;
+    this->save();
+}
+
+void PorymapConfig::setCheckForUpdates(bool enabled) {
+    this->checkForUpdates = enabled;
+    this->save();
+}
+
+void PorymapConfig::setLastUpdateCheckTime(QDateTime time) {
+    this->lastUpdateCheckTime = time;
+    this->save();
+}
+
+void PorymapConfig::setLastUpdateCheckVersion(QVersionNumber version) {
+    this->lastUpdateCheckVersion = version;
+    this->save();
+}
+
+void PorymapConfig::setRateLimitTimes(QMap<QUrl, QDateTime> map) {
+    this->rateLimitTimes = map;
+    this->save();
+}
+
 QString PorymapConfig::getRecentProject() {
     return this->recentProjects.value(0);
 }
@@ -781,13 +833,24 @@ int PorymapConfig::getProjectSettingsTab() {
     return this->projectSettingsTab;
 }
 
-void PorymapConfig::setWarpBehaviorWarningDisabled(bool disabled) {
-    this->warpBehaviorWarningDisabled = disabled;
-    this->save();
-}
-
 bool PorymapConfig::getWarpBehaviorWarningDisabled() {
     return this->warpBehaviorWarningDisabled;
+}
+
+bool PorymapConfig::getCheckForUpdates() {
+    return this->checkForUpdates;
+}
+
+QDateTime PorymapConfig::getLastUpdateCheckTime() {
+    return this->lastUpdateCheckTime;
+}
+
+QVersionNumber PorymapConfig::getLastUpdateCheckVersion() {
+    return this->lastUpdateCheckVersion;
+}
+
+QMap<QUrl, QDateTime> PorymapConfig::getRateLimitTimes() {
+    return this->rateLimitTimes;
 }
 
 const QStringList ProjectConfig::versionStrings = {

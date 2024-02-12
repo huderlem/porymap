@@ -49,6 +49,7 @@ void PreferenceEditor::updateFields() {
     ui->lineEdit_TextEditorGotoLine->setText(porymapConfig.getTextEditorGotoLine());
     ui->checkBox_MonitorProjectFiles->setChecked(porymapConfig.getMonitorFiles());
     ui->checkBox_OpenRecentProject->setChecked(porymapConfig.getReopenOnLaunch());
+    ui->checkBox_CheckForUpdates->setChecked(porymapConfig.getCheckForUpdates());
 }
 
 void PreferenceEditor::saveFields() {
@@ -58,10 +59,14 @@ void PreferenceEditor::saveFields() {
         emit themeChanged(theme);
     }
 
+    porymapConfig.setSaveDisabled(true);
     porymapConfig.setTextEditorOpenFolder(ui->lineEdit_TextEditorOpenFolder->text());
     porymapConfig.setTextEditorGotoLine(ui->lineEdit_TextEditorGotoLine->text());
     porymapConfig.setMonitorFiles(ui->checkBox_MonitorProjectFiles->isChecked());
     porymapConfig.setReopenOnLaunch(ui->checkBox_OpenRecentProject->isChecked());
+    porymapConfig.setCheckForUpdates(ui->checkBox_CheckForUpdates->isChecked());
+    porymapConfig.setSaveDisabled(false);
+    porymapConfig.save();
 
     emit preferencesSaved();
 }
