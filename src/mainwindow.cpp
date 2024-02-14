@@ -210,6 +210,24 @@ void MainWindow::initCustomUI() {
     WheelFilter *wheelFilter = new WheelFilter(this);
     ui->mainTabBar->installEventFilter(wheelFilter);
     this->ui->mapListContainer->tabBar()->installEventFilter(wheelFilter);
+
+    // Create buttons for adding and removing items from the mapList
+    QFrame *frame = new QFrame(this->ui->mapListContainer);
+    frame->setFrameShape(QFrame::NoFrame);
+    QHBoxLayout *layout = new QHBoxLayout(frame);
+
+    QPushButton *buttonAdd = new QPushButton(QIcon(":/icons/add.ico"), "");
+    connect(buttonAdd, &QPushButton::clicked, [this]() { this->mapListAddItem(); });
+    QPushButton *buttonRemove = new QPushButton(QIcon(":/icons/delete.ico"), "");
+    connect(buttonRemove, &QPushButton::clicked, [this]() { this->mapListRemoveItem(); });
+
+    layout->addWidget(buttonAdd);
+    layout->addWidget(buttonRemove);
+
+    layout->setSpacing(0);
+    layout->setContentsMargins(0, 0, 0, 0);
+
+    this->ui->mapListContainer->setCornerWidget(frame, Qt::TopRightCorner);
 }
 
 void MainWindow::initExtraSignals() {
@@ -1178,12 +1196,6 @@ bool MainWindow::populateMapList() {
     this->layoutListProxyModel->setSourceModel(this->layoutTreeModel);
     ui->layoutList->setModel(layoutListProxyModel);
 
-    /// !TODO
-    // ui->mapList->setSelectionMode(QAbstractItemView::ExtendedSelection);
-    // ui->mapList->setDragEnabled(true);
-    // ui->mapList->setAcceptDrops(true);
-    // ui->mapList->setDropIndicatorShown(true);
-    // ui->mapList->setDragDropMode(QAbstractItemView::InternalMove);
     on_toolButton_EnableDisable_EditGroups_clicked();
 
     return success;
@@ -1268,6 +1280,58 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
     QActionGroup actions(&menu);
     actions.addAction(menu.addAction(actionText))->setData(itemData);
     (this->*addFunction)(menu.exec(QCursor::pos()));
+}
+
+void MainWindow::mapListAddGroup() {
+    QDialog dialog(this, Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
+    dialog.setWindowModality(Qt::ApplicationModal);
+    QDialogButtonBox newItemButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
+    connect(&newItemButtonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(&newItemButtonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+    QLineEdit *newNameEdit = new QLineEdit(&dialog);
+    newNameEdit->setClearButtonEnabled(true);
+
+    static const QRegularExpression re_validChars("[_A-Za-z0-9]*$");
+    QRegularExpressionValidator *validator = new QRegularExpressionValidator(re_validChars);
+    newNameEdit->setValidator(validator);
+
+    QFormLayout form(&dialog);
+
+    form.addRow("New Group Name", newNameEdit);
+    form.addRow(&newItemButtonBox);
+
+    if (dialog.exec() == QDialog::Accepted) {
+        QString newFieldName = newNameEdit->text();
+        if (newFieldName.isEmpty()) return;
+        this->mapGroupModel->insertGroupItem(newFieldName);
+    }
+}
+
+void MainWindow::mapListAddLayout() {
+    // this->layoutTreeModel->insertMapItem(newMapName, newMap->layout->id);
+}
+
+void MainWindow::mapListAddArea() {
+    // this->mapAreaModel->insertMapItem(newMapName, newMap->location, newMapGroup);
+}
+
+void MainWindow::mapListAddItem() {
+    switch (this->ui->mapListContainer->currentIndex()) {
+    case 0:
+        this->mapListAddGroup();
+        break;
+    case 1:
+        this->mapListAddLayout();
+        break;
+    case 2:
+        this->mapListAddArea();
+        break;
+    }
+}
+
+void MainWindow::mapListRemoveItem() {
+    // !TODO
 }
 
 void MainWindow::onAddNewMapToGroupClick(QAction* triggeredAction) {

@@ -389,6 +389,11 @@ private:
     void refreshRecentProjectsMenu();
 
     void updateMapList();
+    void mapListAddItem();
+    void mapListRemoveItem();
+    void mapListAddGroup();
+    void mapListAddLayout();
+    void mapListAddArea();
 
     void displayMapProperties();
     void checkToolButtons();

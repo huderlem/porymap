@@ -75,6 +75,7 @@ public:
     QStandardItem *createGroupItem(QString groupName, int groupIndex, QStandardItem *fromItem = nullptr);
     QStandardItem *createMapItem(QString mapName, QStandardItem *fromItem = nullptr);
 
+    QStandardItem *insertGroupItem(QString groupName);
     QStandardItem *insertMapItem(QString mapName, QString groupName);
 
     QStandardItem *getItem(const QModelIndex &index) const;
@@ -83,6 +84,7 @@ public:
     void initialize();
 
 private:
+    friend class MapTree;
     void updateProject();
 
 private:

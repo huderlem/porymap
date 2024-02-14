@@ -156,15 +156,26 @@ bool MapGroupModel::dropMimeData(const QMimeData *data, Qt::DropAction action, i
             rowCount++;
         }
 
-        this->insertRows(firstRow, rowCount, parentIndex);
-
-        int newItemIndex = 0;
-        for (QString mapName : droppedMaps) {
-            QModelIndex mapIndex = index(firstRow, 0, parentIndex);
-            QStandardItem *mapItem = this->itemFromIndex(mapIndex);
-            createMapItem(mapName, mapItem);
-            firstRow++;
+        QStandardItem *groupItem = this->itemFromIndex(parentIndex);
+        if (groupItem->hasChildren()) {
+            this->insertRows(firstRow, rowCount, parentIndex);
+            for (QString mapName : droppedMaps) {
+                QModelIndex mapIndex = index(firstRow, 0, parentIndex);
+                QStandardItem *mapItem = this->itemFromIndex(mapIndex);
+                createMapItem(mapName, mapItem);
+                firstRow++;
+            }
         }
+        // for whatever reason insertRows doesn't work as I expected with childless items
+        // so just append all the new maps instead
+        else {
+            for (QString mapName : droppedMaps) {
+                QStandardItem *mapItem = createMapItem(mapName);
+                groupItem->appendRow(mapItem);
+                firstRow++;
+            }
+        }
+
     }
 
     emit dragMoveCompleted();
@@ -189,6 +200,10 @@ void MapGroupModel::updateProject() {
         QStringList mapsInGroup;
         for (int m = 0; m < groupItem->rowCount(); m++) {
             QStandardItem *mapItem = groupItem->child(m);
+            if (!mapItem) {
+                logError("An error occured while trying to apply updates to map group structure.");
+                return;
+            }
             QString mapName = mapItem->data(Qt::UserRole).toString();
             mapsInGroup.append(mapName);
             mapNames.append(mapName);
@@ -222,10 +237,17 @@ QStandardItem *MapGroupModel::createMapItem(QString mapName, QStandardItem *map)
     return map;
 }
 
+QStandardItem *MapGroupModel::insertGroupItem(QString groupName) {
+    QStandardItem *group = createGroupItem(groupName, this->groupItems.size());
+    this->root->appendRow(group);
+    this->updateProject();
+    return group;
+}
+
 QStandardItem *MapGroupModel::insertMapItem(QString mapName, QString groupName) {
     QStandardItem *group = this->groupItems[groupName];
     if (!group) {
-        return nullptr;
+        group = insertGroupItem(groupName);
     }
     QStandardItem *map = createMapItem(mapName);
     group->appendRow(map);
