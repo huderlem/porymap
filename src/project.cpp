@@ -385,6 +385,60 @@ QString Project::readMapLocation(QString map_name) {
     return ParseUtil::jsonToQString(mapObj["region_map_section"]);
 }
 
+Layout *Project::createNewLayout(Layout::SimpleSettings &layoutSettings) {
+    QString basePath = projectConfig.getFilePath(ProjectFilePath::data_layouts_folders);
+    Layout *layout;
+
+    // Handle the case where we are copying from an existing layout first.
+    if (!layoutSettings.from_id.isEmpty()) {
+        // load from layout
+        loadLayout(mapLayouts[layoutSettings.from_id]);
+
+        layout = mapLayouts[layoutSettings.from_id]->copy();
+        layout->name = layoutSettings.name;
+        layout->id = layoutSettings.id;
+        layout->border_path = QString("%1%2/border.bin").arg(basePath, layoutSettings.name);
+        layout->blockdata_path = QString("%1%2/map.bin").arg(basePath, layoutSettings.name);
+    }
+    else {
+        layout = new Layout;
+
+        layout->name = layoutSettings.name;
+        layout->id = layoutSettings.id;
+        layout->width = layoutSettings.width;
+        layout->height = layoutSettings.height;
+        layout->border_width = DEFAULT_BORDER_WIDTH;
+        layout->border_height = DEFAULT_BORDER_HEIGHT;
+        layout->tileset_primary_label = layoutSettings.tileset_primary_label;
+        layout->tileset_secondary_label = layoutSettings.tileset_secondary_label;
+        layout->border_path = QString("%1%2/border.bin").arg(basePath, layoutSettings.name);
+        layout->blockdata_path = QString("%1%2/map.bin").arg(basePath, layoutSettings.name);
+
+        setNewLayoutBlockdata(layout);
+        setNewLayoutBorder(layout);
+    }
+
+    // Create a new directory for the layout
+    QString newLayoutDir = QString(root + "/%1%2").arg(projectConfig.getFilePath(ProjectFilePath::data_layouts_folders), layout->name);
+    if (!QDir::root().mkdir(newLayoutDir)) {
+        logError(QString("Error: failed to create directory for new layout: '%1'").arg(newLayoutDir));
+        delete layout;
+        return nullptr;
+    }
+
+    mapLayouts.insert(layout->id, layout);
+    mapLayoutsMaster.insert(layout->id, layout->copy());
+    mapLayoutsTable.append(layout->id);
+    mapLayoutsTableMaster.append(layout->id);
+    layoutIdsToNames.insert(layout->id, layout->name);
+
+    saveLayout(layout);
+
+    this->loadLayout(layout);
+
+    return layout;
+}
+
 bool Project::loadLayout(Layout *layout) {
     // !TODO: make sure this doesn't break anything, maybe do something better. new layouts work too?
     if (!layout->loaded) {
@@ -1119,16 +1173,16 @@ bool Project::loadBlockdata(Layout *layout) {
     return true;
 }
 
-void Project::setNewMapBlockdata(Map *map) {
-    map->layout->blockdata.clear();
-    int width = map->getWidth();
-    int height = map->getHeight();
+void Project::setNewLayoutBlockdata(Layout *layout) {
+    layout->blockdata.clear();
+    int width = layout->getWidth();
+    int height = layout->getHeight();
     Block block(projectConfig.getDefaultMetatileId(), projectConfig.getDefaultCollision(), projectConfig.getDefaultElevation());
     for (int i = 0; i < width * height; i++) {
-        map->layout->blockdata.append(block);
+        layout->blockdata.append(block);
     }
-    map->layout->lastCommitBlocks.blocks = map->layout->blockdata;
-    map->layout->lastCommitBlocks.layoutDimensions = QSize(width, height);
+    layout->lastCommitBlocks.blocks = layout->blockdata;
+    layout->lastCommitBlocks.layoutDimensions = QSize(width, height);
 }
 
 bool Project::loadLayoutBorder(Layout *layout) {
@@ -1147,27 +1201,27 @@ bool Project::loadLayoutBorder(Layout *layout) {
     return true;
 }
 
-void Project::setNewMapBorder(Map *map) {
-    map->layout->border.clear();
-    int width = map->getBorderWidth();
-    int height = map->getBorderHeight();
+void Project::setNewLayoutBorder(Layout *layout) {
+    layout->border.clear();
+    int width = layout->getBorderWidth();
+    int height = layout->getBorderHeight();
 
     const QList<uint16_t> configMetatileIds = projectConfig.getNewMapBorderMetatileIds();
     if (configMetatileIds.length() != width * height) {
         // Border size doesn't match the number of default border metatiles.
         // Fill the border with empty metatiles.
         for (int i = 0; i < width * height; i++) {
-            map->layout->border.append(0);
+            layout->border.append(0);
         }
     } else {
         // Fill the border with the default metatiles from the config.
         for (int i = 0; i < width * height; i++) {
-            map->layout->border.append(configMetatileIds.at(i));
+            layout->border.append(configMetatileIds.at(i));
         }
     }
 
-    map->layout->lastCommitBlocks.border = map->layout->border;
-    map->layout->lastCommitBlocks.borderDimensions = QSize(width, height);
+    layout->lastCommitBlocks.border = layout->border;
+    layout->lastCommitBlocks.borderDimensions = QSize(width, height);
 }
 
 void Project::saveLayoutBorder(Layout *layout) {
@@ -1809,10 +1863,10 @@ Map* Project::addNewMapToGroup(QString mapName, int groupNum, Map *newMap, bool 
         mapLayoutsTable.append(newMap->layoutId);
         layoutIdsToNames.insert(newMap->layout->id, newMap->layout->name);
         if (!importedMap) {
-            setNewMapBlockdata(newMap);
+            setNewLayoutBlockdata(newMap->layout);
         }
         if (newMap->layout->border.isEmpty()) {
-            setNewMapBorder(newMap);
+            setNewLayoutBorder(newMap->layout);
         }
     }
 

@@ -155,6 +155,7 @@ public:
     QStandardItem *createLayoutItem(QString layoutId);
     QStandardItem *createMapItem(QString mapName);
 
+    QStandardItem *insertLayoutItem(QString layoutId);
     QStandardItem *insertMapItem(QString mapName, QString layoutId);
 
     QStandardItem *getItem(const QModelIndex &index) const;

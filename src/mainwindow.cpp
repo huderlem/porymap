@@ -1309,7 +1309,121 @@ void MainWindow::mapListAddGroup() {
 }
 
 void MainWindow::mapListAddLayout() {
-    // this->layoutTreeModel->insertMapItem(newMapName, newMap->layout->id);
+    if (!editor || !editor->project) return;
+
+    QDialog dialog(this, Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
+    dialog.setWindowModality(Qt::ApplicationModal);
+    QDialogButtonBox newItemButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
+    connect(&newItemButtonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+    QLineEdit *newNameEdit = new QLineEdit(&dialog);
+    newNameEdit->setClearButtonEnabled(true);
+
+    static const QRegularExpression re_validChars("[_A-Za-z0-9]*$");
+    QRegularExpressionValidator *validator = new QRegularExpressionValidator(re_validChars);
+    newNameEdit->setValidator(validator);
+
+    QLabel *newId = new QLabel("LAYOUT_", &dialog);
+    connect(newNameEdit, &QLineEdit::textChanged, [&](QString text){
+        newId->setText(Layout::layoutConstantFromName(text.remove("_Layout")));
+    });
+
+    NoScrollComboBox *useExistingCombo = new NoScrollComboBox(&dialog);
+    useExistingCombo->addItems(this->editor->project->mapLayoutsTable);
+    useExistingCombo->setEnabled(false);
+
+    QCheckBox *useExistingCheck = new QCheckBox(&dialog);
+
+    QLabel *errorMessageLabel = new QLabel(&dialog);
+    errorMessageLabel->setVisible(false);
+    errorMessageLabel->setStyleSheet("QLabel { background-color: rgba(255, 0, 0, 25%) }");
+    QString errorMessage;
+
+    QComboBox *primaryCombo = new QComboBox(&dialog);
+    primaryCombo->addItems(this->editor->project->primaryTilesetLabels);
+    QComboBox *secondaryCombo = new QComboBox(&dialog);
+    secondaryCombo->addItems(this->editor->project->secondaryTilesetLabels);
+
+    QSpinBox *widthSpin = new QSpinBox(&dialog);
+    QSpinBox *heightSpin = new QSpinBox(&dialog);
+
+    widthSpin->setMinimum(1);
+    heightSpin->setMinimum(1);
+    widthSpin->setMaximum(this->editor->project->getMaxMapWidth());
+    heightSpin->setMaximum(this->editor->project->getMaxMapHeight());
+
+    connect(useExistingCheck, &QCheckBox::stateChanged, [&](int state){
+        bool useExisting = (state == Qt::Checked);
+        useExistingCombo->setEnabled(useExisting);
+        primaryCombo->setEnabled(!useExisting);
+        secondaryCombo->setEnabled(!useExisting);
+        widthSpin->setEnabled(!useExisting);
+        heightSpin->setEnabled(!useExisting);
+    });
+
+    QFormLayout form(&dialog);
+    form.addRow("New Layout Name", newNameEdit);
+    form.addRow("New Layout ID", newId);
+    form.addRow("Copy Existing Layout", useExistingCheck);
+    form.addRow("", useExistingCombo);
+    form.addRow("Primary Tileset", primaryCombo);
+    form.addRow("Secondary Tileset", secondaryCombo);
+    form.addRow("Layout Width", widthSpin);
+    form.addRow("Layout Height", heightSpin);
+    form.addRow("", errorMessageLabel);
+
+    connect(&newItemButtonBox, &QDialogButtonBox::accepted, [&](){
+        // verify some things
+        bool issue = false;
+        QString tryLayoutName = newNameEdit->text();
+        // name not empty
+        if (tryLayoutName.isEmpty()) {
+            errorMessage = "Name cannot be empty";
+            issue = true;
+        }
+        // unique layout name & id
+        else if (this->editor->project->mapLayoutsTable.contains(newId->text())
+              || this->editor->project->layoutIdsToNames.find(tryLayoutName) != this->editor->project->layoutIdsToNames.end()) {
+            errorMessage = "Layout Name / ID is not unique";
+            issue = true;
+        }
+        // from id is existing value
+        else if (useExistingCheck->isChecked()) {
+            if (!this->editor->project->mapLayoutsTable.contains(useExistingCombo->currentText())) {
+                errorMessage = "Existing layout ID is not valid";
+                issue = true;
+            }
+        }
+
+        if (issue) {
+            // show error
+            errorMessageLabel->setText(errorMessage);
+            errorMessageLabel->setVisible(true);
+        }
+        else {
+            dialog.accept();
+        }
+    });
+
+    form.addRow(&newItemButtonBox);
+
+    if (dialog.exec() == QDialog::Accepted) {
+        Layout::SimpleSettings layoutSettings;
+        QString layoutName = newNameEdit->text();
+        layoutSettings.name = layoutName;
+        layoutSettings.id = Layout::layoutConstantFromName(layoutName.remove("_Layout"));
+        if (useExistingCheck->isChecked()) {
+            layoutSettings.from_id = useExistingCombo->currentText();
+        } else {
+            layoutSettings.width = widthSpin->value();
+            layoutSettings.height = heightSpin->value();
+            layoutSettings.tileset_primary_label = primaryCombo->currentText();
+            layoutSettings.tileset_secondary_label = secondaryCombo->currentText();
+        }
+        Layout *newLayout = this->editor->project->createNewLayout(layoutSettings);
+        QStandardItem *item = this->layoutTreeModel->insertLayoutItem(newLayout->id);
+        setLayout(newLayout->id);
+    }
 }
 
 void MainWindow::mapListAddArea() {
@@ -1322,10 +1436,10 @@ void MainWindow::mapListAddItem() {
         this->mapListAddGroup();
         break;
     case 1:
-        this->mapListAddLayout();
+        this->mapListAddArea();
         break;
     case 2:
-        this->mapListAddArea();
+        this->mapListAddLayout();
         break;
     }
 }

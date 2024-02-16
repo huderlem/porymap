@@ -535,6 +535,11 @@ QStandardItem *LayoutTreeModel::createMapItem(QString mapName) {
     return map;
 }
 
+QStandardItem *LayoutTreeModel::insertLayoutItem(QString layoutId) {
+    QStandardItem *layoutItem = this->createLayoutItem(layoutId);
+    this->root->appendRow(layoutItem);
+}
+
 QStandardItem *LayoutTreeModel::insertMapItem(QString mapName, QString layoutId) {
     QStandardItem *layout = nullptr;
     if (this->layoutItems.contains(layoutId)) {
@@ -591,6 +596,7 @@ QVariant LayoutTreeModel::data(const QModelIndex &index, int role) const {
     int col = index.column();
 
     if (role == Qt::DecorationRole) {
+        static QIcon mapGrayIcon = QIcon(QStringLiteral(":/icons/map_grayed.ico"));
         static QIcon mapIcon = QIcon(QStringLiteral(":/icons/map.ico"));
         static QIcon mapEditedIcon = QIcon(QStringLiteral(":/icons/map_edited.ico"));
         static QIcon mapOpenedIcon = QIcon(QStringLiteral(":/icons/map_opened.ico"));
@@ -606,6 +612,9 @@ QVariant LayoutTreeModel::data(const QModelIndex &index, int role) const {
             else if (this->project->mapLayouts.contains(layoutId)) {
                 if (this->project->mapLayouts.value(layoutId)->hasUnsavedChanges()) {
                     return mapEditedIcon;
+                }
+                else if (!this->project->mapLayouts[layoutId]->loaded) {
+                    return mapGrayIcon;
                 }
             }
             return mapIcon;

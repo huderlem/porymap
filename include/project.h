@@ -139,6 +139,7 @@ public:
     bool loadMapData(Map*);
     bool readMapLayouts();
     Layout *loadLayout(QString layoutId);
+    Layout *createNewLayout(Layout::SimpleSettings &layoutSettings);
     bool loadLayout(Layout *);
     bool loadMapLayout(Map*);
     bool loadLayoutTilesets(Layout *);
@@ -235,8 +236,8 @@ public:
 private:
     void updateLayout(Layout *);
 
-    void setNewMapBlockdata(Map* map);
-    void setNewMapBorder(Map *map);
+    void setNewLayoutBlockdata(Layout *layout);
+    void setNewLayoutBorder(Layout *layout);
     void setNewMapEvents(Map *map);
     void setNewMapConnections(Map *map);
 

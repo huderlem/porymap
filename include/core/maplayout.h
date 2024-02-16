@@ -69,6 +69,17 @@ public:
 
     QUndoStack editHistory;
 
+    // to simplify new layout settings transfer between functions
+    struct SimpleSettings {
+        QString id;
+        QString name;
+        int width;
+        int height;
+        QString tileset_primary_label;
+        QString tileset_secondary_label;
+        QString from_id = QString();
+    };
+
 public:
     Layout *copy();
     void copyFrom(Layout *other);

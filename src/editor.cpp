@@ -74,6 +74,7 @@ void Editor::save() {
     }
     else if (this->project && this->layout) {
         this->project->saveLayout(this->layout);
+        this->project->saveAllDataStructures();
     }
 }
 
