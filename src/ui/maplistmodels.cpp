@@ -392,6 +392,14 @@ QStandardItem *MapAreaModel::createMapItem(QString mapName, int groupIndex, int 
     return map;
 }
 
+QStandardItem *MapAreaModel::insertAreaItem(QString areaName) {
+    int newAreaIndex = this->project->appendMapsec(areaName);
+    QStandardItem *item = createAreaItem(areaName, newAreaIndex);
+    this->root->insertRow(newAreaIndex, item);
+    this->areaItems["MAPSEC_NONE"]->setData(newAreaIndex + 1, MapListRoles::GroupRole);
+    return item;
+}
+
 QStandardItem *MapAreaModel::insertMapItem(QString mapName, QString areaName, int groupIndex) {
     // int areaIndex = this->project->mapSectionNameToValue[areaName];
     QStandardItem *area = this->areaItems[areaName];

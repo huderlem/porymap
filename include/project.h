@@ -80,6 +80,9 @@ public:
     QString importExportPath;
     QSet<QString> disabledSettingsNames;
 
+    // For files that are read and could contain extra text
+    QMap<QString, QString> extraFileText;
+
     void set_root(QString);
 
     void initSignals();
@@ -135,6 +138,8 @@ public:
     bool readSpeciesIconPaths();
     QMap<QString, QString> speciesToIconPath;
 
+    int appendMapsec(QString name);
+
     QSet<QString> getTopLevelMapFields();
     bool loadMapData(Map*);
     bool readMapLayouts();
@@ -159,6 +164,7 @@ public:
     void saveAllDataStructures();
     void saveMapLayouts();
     void saveMapGroups();
+    void saveMapSections();
     void saveWildMonData();
     void saveMapConstantsHeader();
     void saveHealLocations(Map*);

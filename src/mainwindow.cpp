@@ -1427,7 +1427,35 @@ void MainWindow::mapListAddLayout() {
 }
 
 void MainWindow::mapListAddArea() {
-    // this->mapAreaModel->insertMapItem(newMapName, newMap->location, newMapGroup);
+    // Note: there is no checking here for the limits on map section count
+    QDialog dialog(this, Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
+    dialog.setWindowModality(Qt::ApplicationModal);
+    QDialogButtonBox newItemButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
+    connect(&newItemButtonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+    QLineEdit *newNameEdit = new QLineEdit(&dialog);
+    newNameEdit->setText(projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix));
+    newNameEdit->setClearButtonEnabled(false);
+
+    QRegularExpression re_validChars(QString("%1[_A-Za-z0-9]+$").arg(projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix)));
+    QRegularExpressionValidator *validator = new QRegularExpressionValidator(re_validChars);
+    newNameEdit->setValidator(validator);
+
+    connect(&newItemButtonBox, &QDialogButtonBox::accepted, [&](){
+        if (!this->editor->project->mapSectionNameToValue.contains(newNameEdit->text()))
+            dialog.accept();
+    });
+
+    QFormLayout form(&dialog);
+
+    form.addRow("New Map Section Name", newNameEdit);
+    form.addRow(&newItemButtonBox);
+
+    if (dialog.exec() == QDialog::Accepted) {
+        QString newFieldName = newNameEdit->text();
+        if (newFieldName.isEmpty()) return;
+        this->mapAreaModel->insertAreaItem(newFieldName);
+    }
 }
 
 void MainWindow::mapListAddItem() {

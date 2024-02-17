@@ -117,6 +117,7 @@ public:
     QStandardItem *createAreaItem(QString areaName, int areaIndex);
     QStandardItem *createMapItem(QString mapName, int areaIndex, int mapIndex);
 
+    QStandardItem *insertAreaItem(QString areaName);
     QStandardItem *insertMapItem(QString mapName, QString areaName, int groupIndex);
 
     QStandardItem *getItem(const QModelIndex &index) const;

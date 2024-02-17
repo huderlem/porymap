@@ -700,6 +700,34 @@ void Project::saveMapGroups() {
     mapGroupsFile.close();
 }
 
+void Project::saveMapSections() {
+    QString filepath = root + "/" + projectConfig.getFilePath(ProjectFilePath::constants_region_map_sections);
+
+    QString text = QString("#ifndef GUARD_REGIONMAPSEC_H\n");
+    text += QString("#define GUARD_REGIONMAPSEC_H\n\n");
+
+    int longestLength = 0;
+    for (QString label : this->mapSectionNameToValue.keys()) {
+        if (label.size() > longestLength)
+            longestLength = label.size();
+    }
+
+    // mapSectionValueToName
+    for (int value : this->mapSectionValueToName.keys()) {
+        QString line = QString("#define %1  0x%2\n")
+            .arg(this->mapSectionValueToName[value], -1 * longestLength)
+            .arg(QString("%1").arg(value, 2, 16, QLatin1Char('0')).toUpper());
+        text += line;
+    }
+
+    text += "\n" + this->extraFileText[projectConfig.getFilePath(ProjectFilePath::constants_region_map_sections)] + "\n";
+
+    text += QString("#endif // GUARD_REGIONMAPSEC_H\n");
+
+    ignoreWatchedFileTemporarily(filepath);
+    saveTextFile(filepath, text);
+}
+
 void Project::saveWildMonData() {
     if (!userConfig.getEncounterJsonActive()) return;
 
@@ -1421,6 +1449,7 @@ void Project::updateLayout(Layout *layout) {
 void Project::saveAllDataStructures() {
     saveMapLayouts();
     saveMapGroups();
+    saveMapSections();
     saveMapConstantsHeader();
     saveWildMonData();
 }
@@ -2158,7 +2187,44 @@ bool Project::readRegionMapSections() {
     for (QString defineName : this->mapSectionNameToValue.keys()) {
         this->mapSectionValueToName.insert(this->mapSectionNameToValue[defineName], defineName);
     }
+
+    // extra text
+    QString extraText;
+    QString fileText = ParseUtil::readTextFile(root + "/" + filename);
+    QTextStream stream(&fileText);
+    QString currentLine;
+    while (stream.readLineInto(&currentLine)) {
+        // is this line something that porymap will output again?
+        if (currentLine.isEmpty()) {
+            continue;
+        }
+        // include guards
+        else if (currentLine.contains("GUARD_REGIONMAPSEC_H")) {
+            continue;
+        }
+        // defines captured (not considering comments)
+        else if (currentLine.contains("#define " + projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix))) {
+            continue;
+        }
+        // everything else should be kept here
+        else {
+            extraText += currentLine + "\n";
+        }
+    }
+    stream.seek(0);
+    this->extraFileText[filename] = extraText;
     return true;
+}
+
+int Project::appendMapsec(QString name) {
+    // This function assumes a valid and unique name.
+    // Will return the new index.
+    int noneBefore = this->mapSectionNameToValue[projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix) + "NONE"];
+    this->mapSectionNameToValue[name] = noneBefore;
+    this->mapSectionValueToName[noneBefore] = name;
+    this->mapSectionNameToValue[projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix) + "NONE"] = noneBefore + 1;
+    this->mapSectionValueToName[noneBefore + 1] = projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix) + "NONE";
+    return noneBefore;
 }
 
 // Read the constants to preserve any "unused" heal locations when writing the file later
