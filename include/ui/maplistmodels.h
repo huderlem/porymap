@@ -77,6 +77,7 @@ public:
 
     QStandardItem *insertGroupItem(QString groupName);
     QStandardItem *insertMapItem(QString mapName, QString groupName);
+    void removeGroup(int groupIndex);
 
     QStandardItem *getItem(const QModelIndex &index) const;
     QModelIndex indexOfMap(QString mapName);
@@ -119,6 +120,7 @@ public:
 
     QStandardItem *insertAreaItem(QString areaName);
     QStandardItem *insertMapItem(QString mapName, QString areaName, int groupIndex);
+    void removeArea(int groupIndex);
 
     QStandardItem *getItem(const QModelIndex &index) const;
     QModelIndex indexOfMap(QString mapName);

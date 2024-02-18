@@ -394,6 +394,9 @@ private:
     void mapListAddGroup();
     void mapListAddLayout();
     void mapListAddArea();
+    void mapListRemoveGroup();
+    void mapListRemoveArea();
+    void mapListRemoveLayout();
 
     void displayMapProperties();
     void checkToolButtons();

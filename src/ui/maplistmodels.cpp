@@ -244,6 +244,11 @@ QStandardItem *MapGroupModel::insertGroupItem(QString groupName) {
     return group;
 }
 
+void MapGroupModel::removeGroup(int groupIndex) {
+    this->removeRow(groupIndex);
+    this->updateProject();
+}
+
 QStandardItem *MapGroupModel::insertMapItem(QString mapName, QString groupName) {
     QStandardItem *group = this->groupItems[groupName];
     if (!group) {
@@ -412,6 +417,11 @@ QStandardItem *MapAreaModel::insertMapItem(QString mapName, QString areaName, in
     return map;
 }
 
+void MapAreaModel::removeArea(int areaIndex) {
+    this->removeRow(areaIndex);
+    this->project->mapSectionNameToValue.remove(this->project->mapSectionValueToName.take(areaIndex));
+}
+
 void MapAreaModel::initialize() {
     this->areaItems.clear();
     this->mapItems.clear();
@@ -454,6 +464,8 @@ QModelIndex MapAreaModel::indexOfMap(QString mapName) {
 }
 
 QVariant MapAreaModel::data(const QModelIndex &index, int role) const {
+    if (!index.isValid()) return QVariant();
+
     int row = index.row();
     int col = index.column();
 
@@ -600,6 +612,8 @@ QModelIndex LayoutTreeModel::indexOfLayout(QString layoutName) {
 }
 
 QVariant LayoutTreeModel::data(const QModelIndex &index, int role) const {
+    if (!index.isValid()) return QVariant();
+
     int row = index.row();
     int col = index.column();
 

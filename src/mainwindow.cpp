@@ -1459,6 +1459,8 @@ void MainWindow::mapListAddArea() {
 }
 
 void MainWindow::mapListAddItem() {
+    if (!this->editor || !this->editor->project) return;
+
     switch (this->ui->mapListContainer->currentIndex()) {
     case 0:
         this->mapListAddGroup();
@@ -1472,8 +1474,61 @@ void MainWindow::mapListAddItem() {
     }
 }
 
+void MainWindow::mapListRemoveGroup() {
+    QItemSelectionModel *selectionModel = this->ui->mapList->selectionModel();
+    if (selectionModel->hasSelection()) {
+        QModelIndexList selectedIndexes = selectionModel->selectedRows();
+        for (QModelIndex proxyIndex : selectedIndexes) {
+            QModelIndex index = this->groupListProxyModel->mapToSource(proxyIndex);
+            QStandardItem *item = this->mapGroupModel->getItem(index)->child(index.row(), index.column());
+            if (!item) continue;
+            QString type = item->data(MapListRoles::TypeRole).toString();
+            if (type == "map_group" && !item->hasChildren()) {
+                QString groupName = item->data(Qt::UserRole).toString();
+                // delete empty group
+                this->mapGroupModel->removeGroup(index.row());
+            }
+        }
+    }
+}
+
+void MainWindow::mapListRemoveArea() {
+    QItemSelectionModel *selectionModel = this->ui->areaList->selectionModel();
+    if (selectionModel->hasSelection()) {
+        QModelIndexList selectedIndexes = selectionModel->selectedRows();
+        for (QModelIndex proxyIndex : selectedIndexes) {
+            QModelIndex index = this->areaListProxyModel->mapToSource(proxyIndex);
+            QStandardItem *item = this->mapAreaModel->getItem(index)->child(index.row(), index.column());
+            if (!item) continue;
+            QString type = item->data(MapListRoles::TypeRole).toString();
+            if (type == "map_section" && !item->hasChildren()) {
+                QString groupName = item->data(Qt::UserRole).toString();
+                // delete empty section
+                this->mapAreaModel->removeArea(index.row());
+            }
+        }
+    }
+}
+
+void MainWindow::mapListRemoveLayout() {
+    // TODO: consider this
+    // do nothing, for now at least
+}
+
 void MainWindow::mapListRemoveItem() {
-    // !TODO
+    if (!this->editor || !this->editor->project) return;
+
+    switch (this->ui->mapListContainer->currentIndex()) {
+    case 0:
+        this->mapListRemoveGroup();
+        break;
+    case 1:
+        this->mapListRemoveArea();
+        break;
+    case 2:
+        this->mapListRemoveLayout();
+        break;
+    }
 }
 
 void MainWindow::onAddNewMapToGroupClick(QAction* triggeredAction) {

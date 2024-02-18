@@ -712,6 +712,8 @@ void Project::saveMapSections() {
             longestLength = label.size();
     }
 
+    longestLength += 1;
+
     // mapSectionValueToName
     for (int value : this->mapSectionValueToName.keys()) {
         QString line = QString("#define %1  0x%2\n")
