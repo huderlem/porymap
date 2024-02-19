@@ -1511,8 +1511,7 @@ void MainWindow::mapListRemoveArea() {
 }
 
 void MainWindow::mapListRemoveLayout() {
-    // TODO: consider this
-    // do nothing, for now at least
+    // TODO: consider this in the future
 }
 
 void MainWindow::mapListRemoveItem() {
@@ -1523,10 +1522,12 @@ void MainWindow::mapListRemoveItem() {
         this->mapListRemoveGroup();
         break;
     case 1:
-        this->mapListRemoveArea();
+        // Disabled
+        // this->mapListRemoveArea();
         break;
     case 2:
-        this->mapListRemoveLayout();
+        // Disabled
+        // this->mapListRemoveLayout();
         break;
     }
 }
@@ -1758,7 +1759,6 @@ void MainWindow::currentMetatilesSelectionChanged()
 
 // !TODO
 void MainWindow::on_mapListContainer_currentChanged(int index) {
-    //
     switch (index) {
     case MapListTab::Groups:
         this->mapSortOrder = MapSortOrder::SortByGroup;
