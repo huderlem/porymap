@@ -67,6 +67,7 @@ public:
 
     bool needsLayoutDir = true;
     bool needsHealLocation = false;
+    bool scriptsLoaded = false;
 
     QMap<Event::Group, QList<Event *>> events;
     QList<Event *> ownedEvents; // for memory management
@@ -85,7 +86,7 @@ public:
     int getBorderHeight();
 
     QList<Event *> getAllEvents() const;
-    QStringList getScriptLabels(Event::Group group = Event::Group::None) const;
+    QStringList getScriptLabels(Event::Group group = Event::Group::None);
     QString getScriptsFilePath() const;
     void openScript(QString label);
     void removeEvent(Event *);

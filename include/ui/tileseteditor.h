@@ -134,6 +134,8 @@ private:
     void setTilesets(QString primaryTilesetLabel, QString secondaryTilesetLabel);
     void reset();
     void drawSelectedTiles();
+    void redrawTileSelector();
+    void redrawMetatileSelector();
     void importTilesetTiles(Tileset*, bool);
     void importTilesetMetatiles(Tileset*, bool);
     void refresh();

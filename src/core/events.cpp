@@ -233,8 +233,8 @@ bool ObjectEvent::loadFromJson(QJsonObject json, Project *) {
 }
 
 void ObjectEvent::setDefaultValues(Project *project) {
-    this->setGfx(project->gfxDefines.keys().first());
-    this->setMovement(project->movementTypes.first());
+    this->setGfx(project->gfxDefines.keys().value(0, "0"));
+    this->setMovement(project->movementTypes.value(0, "0"));
     this->setScript("NULL");
     this->setTrainerType(project->trainerTypes.value(0, "0"));
     this->setFlag("0");
@@ -404,7 +404,7 @@ bool CloneObjectEvent::loadFromJson(QJsonObject json, Project *project) {
 }
 
 void CloneObjectEvent::setDefaultValues(Project *project) {
-    this->setGfx(project->gfxDefines.keys().first());
+    this->setGfx(project->gfxDefines.keys().value(0, "0"));
     this->setTargetID(1);
     if (this->getMap()) this->setTargetMap(this->getMap()->name);
 }
@@ -436,8 +436,8 @@ void CloneObjectEvent::loadPixmap(Project *project) {
         this->movement = clonedObject->getMovement();
     } else {
         // Invalid object specified, use default graphics data (as would be shown in-game)
-        this->gfx = project->gfxDefines.key(0);
-        this->movement = project->movementTypes.first();
+        this->gfx = project->gfxDefines.key(0, "0");
+        this->movement = project->movementTypes.value(0, "0");
     }
 
     EventGraphics *eventGfx = project->eventGraphicsMap.value(gfx, nullptr);
@@ -596,7 +596,7 @@ bool TriggerEvent::loadFromJson(QJsonObject json, Project *) {
 
 void TriggerEvent::setDefaultValues(Project *project) {
     this->setScriptLabel("NULL");
-    this->setScriptVar(project->varNames.first());
+    this->setScriptVar(project->varNames.value(0, "0"));
     this->setScriptVarValue("0");
     this->setElevation(0);
 }
@@ -665,7 +665,7 @@ bool WeatherTriggerEvent::loadFromJson(QJsonObject json, Project *) {
 }
 
 void WeatherTriggerEvent::setDefaultValues(Project *project) {
-    this->setWeather(project->coordEventWeatherNames.first());
+    this->setWeather(project->coordEventWeatherNames.value(0, "0"));
     this->setElevation(0);
 }
 
@@ -734,7 +734,7 @@ bool SignEvent::loadFromJson(QJsonObject json, Project *) {
 }
 
 void SignEvent::setDefaultValues(Project *project) {
-    this->setFacingDirection(project->bgEventFacingDirections.first());
+    this->setFacingDirection(project->bgEventFacingDirections.value(0, "0"));
     this->setScriptLabel("NULL");
     this->setElevation(0);
 }
@@ -819,8 +819,8 @@ bool HiddenItemEvent::loadFromJson(QJsonObject json, Project *) {
 }
 
 void HiddenItemEvent::setDefaultValues(Project *project) {
-    this->setItem(project->itemNames.first());
-    this->setFlag(project->flagNames.first());
+    this->setItem(project->itemNames.value(0, "0"));
+    this->setFlag(project->flagNames.value(0, "0"));
     if (projectConfig.getHiddenItemQuantityEnabled()) {
         this->setQuantity(1);
     }
@@ -898,7 +898,7 @@ bool SecretBaseEvent::loadFromJson(QJsonObject json, Project *) {
 }
 
 void SecretBaseEvent::setDefaultValues(Project *project) {
-    this->setBaseID(project->secretBaseIds.first());
+    this->setBaseID(project->secretBaseIds.value(0, "0"));
     this->setElevation(0);
 }
 

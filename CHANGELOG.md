@@ -7,6 +7,25 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 The **"Breaking Changes"** listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. It also includes changes to the scripting API that may change the behavior of existing porymap scripts. If porymap is used with a project or API script that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.
 
 ## [Unreleased]
+Nothing, yet.
+
+## [5.4.0] - 2024-02-13
+### Added
+- Add a `Check for Updates` option to show new releases (Windows and macOS only).
+
+### Changed
+- If Wild Encounters fail to load they are now only disabled for that session, and the settings remain unchanged.
+- Defaults are used if project constants are missing, rather than failing to open the project or changing settings.
+- Selector images now center on the selection when eyedropping or zooming.
+
+### Fixed
+- Fix some minor visual issues with the various zoom sliders.
+- Smooth out scrolling when mouse is over tile/metatile images.
+- Fix the Tileset Editor selectors getting extra white space when changing tilesets.
+- Fix a crash when adding disabled events with the Pencil tool.
+- Fix error log about failing to find the scripts file when a new map is created.
+
+## [5.3.0] - 2024-01-15
 ### Added
 - Add zoom sliders to the Tileset Editor.
 - Add `getMetatileBehaviorName` and `setMetatileBehaviorName` to the API.
@@ -27,6 +46,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix slow speed for the script label autcomplete.
 - Fix deleted script labels still appearing in the autocomplete after project reload.
 - Fix the map search bar stealing focus on startup.
+- Fix border metatiles view not resizing properly.
 - Fix Open Recent Project not clearing the API overlay
 - Fix API error reporting.
 
@@ -460,7 +480,9 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ## [1.0.0] - 2018-10-26
 This was the initial release.
 
-[Unreleased]: https://github.com/huderlem/porymap/compare/5.2.0...HEAD
+[Unreleased]: https://github.com/huderlem/porymap/compare/5.4.0...HEAD
+[5.4.0]: https://github.com/huderlem/porymap/compare/5.3.0...5.4.0
+[5.3.0]: https://github.com/huderlem/porymap/compare/5.2.0...5.3.0
 [5.2.0]: https://github.com/huderlem/porymap/compare/5.1.1...5.2.0
 [5.1.1]: https://github.com/huderlem/porymap/compare/5.1.0...5.1.1
 [5.1.0]: https://github.com/huderlem/porymap/compare/5.0.0...5.1.0

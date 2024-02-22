@@ -26,6 +26,9 @@
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
         <widget class="QCheckBox" name="checkBox_MonitorProjectFiles">
+         <property name="toolTip">
+          <string>If checked, a prompt to reload your project will appear if relevant project files are edited</string>
+         </property>
          <property name="text">
           <string>Monitor project files</string>
          </property>
@@ -33,8 +36,21 @@
        </item>
        <item>
         <widget class="QCheckBox" name="checkBox_OpenRecentProject">
+         <property name="toolTip">
+          <string>If checked, Porymap will automatically open your most recently opened project on startup</string>
+         </property>
          <property name="text">
           <string>Open recent project on launch</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkBox_CheckForUpdates">
+         <property name="toolTip">
+          <string>If checked, Porymap will automatically alert you on startup if a new release is available</string>
+         </property>
+         <property name="text">
+          <string>Automatically check for updates</string>
          </property>
         </widget>
        </item>

@@ -1,7 +1,6 @@
 #include "scripting.h"
 #include "log.h"
 #include "config.h"
-#include "aboutporymap.h"
 
 QMap<CallbackType, QString> callbackFunctions = {
     {OnProjectOpened, "onProjectOpened"},
@@ -77,15 +76,12 @@ void Scripting::populateGlobalObject(MainWindow *mainWindow) {
 
     QJSValue constants = instance->engine->newObject();
 
-    // Invisibly create an "About" window to read Porymap version
-    AboutPorymap *about = new AboutPorymap(mainWindow);
-    if (about) {
-        QJSValue version = Scripting::version(about->getVersionNumbers());
-        constants.setProperty("version", version);
-        delete about;
-    } else {
-        logError("Failed to read Porymap version for API");
-    }
+    // Get version numbers
+    QJSValue version = instance->engine->newObject();
+    version.setProperty("major", porymapVersion.majorVersion());
+    version.setProperty("minor", porymapVersion.minorVersion());
+    version.setProperty("patch", porymapVersion.microVersion());
+    constants.setProperty("version", version);
 
     // Get basic tileset information
     int numTilesPrimary = Project::getNumTilesPrimary();
@@ -340,14 +336,6 @@ QJSValue Scripting::position(int x, int y) {
     QJSValue obj = instance->engine->newObject();
     obj.setProperty("x", x);
     obj.setProperty("y", y);
-    return obj;
-}
-
-QJSValue Scripting::version(QList<int> versionNums) {
-    QJSValue obj = instance->engine->newObject();
-    obj.setProperty("major", versionNums.at(0));
-    obj.setProperty("minor", versionNums.at(1));
-    obj.setProperty("patch", versionNums.at(2));
     return obj;
 }
 

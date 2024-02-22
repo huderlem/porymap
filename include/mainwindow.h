@@ -28,6 +28,7 @@
 #include "preferenceeditor.h"
 #include "projectsettingseditor.h"
 #include "customscriptseditor.h"
+#include "updatepromoter.h"
 
 
 
@@ -306,6 +307,7 @@ private slots:
     void on_spinBox_SelectedCollision_valueChanged(int collision);
     void on_actionRegion_Map_Editor_triggered();
     void on_actionPreferences_triggered();
+    void on_actionCheck_for_Updates_triggered();
     void togglePreferenceSpecificUi();
     void on_actionProject_Settings_triggered();
     void on_actionCustom_Scripts_triggered();
@@ -335,7 +337,8 @@ private:
     FilterChildrenProxyModel *layoutListProxyModel;
     LayoutTreeModel *layoutTreeModel;
 
-
+    QPointer<UpdatePromoter> updatePromoter = nullptr;
+    QPointer<NetworkAccessManager> networkAccessManager = nullptr;
 
     QAction *undoAction = nullptr;
     QAction *redoAction = nullptr;
@@ -414,7 +417,6 @@ private:
     void initShortcuts();
     void initExtraShortcuts();
     void setProjectSpecificUI();
-    void setWildEncountersUIEnabled(bool enabled);
     void loadUserSettings();
     void applyMapListFilter(QString filterText);
     void restoreWindowState();
@@ -432,11 +434,15 @@ private:
     void openProjectSettingsEditor(int tab);
     bool isProjectOpen();
     void showExportMapImageWindow(ImageExporterMode mode);
+    double getMetatilesZoomScale();
     void redrawMetatileSelection();
+    void scrollMetatileSelectorToSelection();
 
     QObjectList shortcutableObjects() const;
     void addCustomHeaderValue(QString key, QJsonValue value, bool isNew = false);
     int insertTilesetLabel(QStringList * list, QString label);
+
+    void checkForUpdates(bool requestedByUser);
 };
 
 #endif // MAINWINDOW_H

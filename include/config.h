@@ -8,8 +8,13 @@
 #include <QSize>
 #include <QKeySequence>
 #include <QMultiMap>
+#include <QDateTime>
+#include <QUrl>
+#include <QVersionNumber>
 
 #include "events.h"
+
+static const QVersionNumber porymapVersion = QVersionNumber::fromString(PORYMAP_VERSION);
 
 // In both versions the default new map border is a generic tree
 #define DEFAULT_BORDER_RSE (QList<uint16_t>{0x1D4, 0x1D5, 0x1DC, 0x1DD})
@@ -74,14 +79,18 @@ public:
         this->paletteEditorBitDepth = 24;
         this->projectSettingsTab = 0;
         this->warpBehaviorWarningDisabled = false;
+        this->checkForUpdates = true;
+        this->lastUpdateCheckTime = QDateTime();
+        this->lastUpdateCheckVersion = porymapVersion;
+        this->rateLimitTimes.clear();
     }
     void addRecentProject(QString project);
     void setRecentProjects(QStringList projects);
     void setReopenOnLaunch(bool enabled);
     void setMapSortOrder(MapSortOrder order);
     void setPrettyCursors(bool enabled);
-    void setMainGeometry(QByteArray, QByteArray, QByteArray, QByteArray);
-    void setTilesetEditorGeometry(QByteArray, QByteArray);
+    void setMainGeometry(QByteArray, QByteArray, QByteArray, QByteArray, QByteArray);
+    void setTilesetEditorGeometry(QByteArray, QByteArray, QByteArray);
     void setPaletteEditorGeometry(QByteArray, QByteArray);
     void setRegionMapEditorGeometry(QByteArray, QByteArray);
     void setProjectSettingsEditorGeometry(QByteArray, QByteArray);
@@ -105,6 +114,10 @@ public:
     void setPaletteEditorBitDepth(int bitDepth);
     void setProjectSettingsTab(int tab);
     void setWarpBehaviorWarningDisabled(bool disabled);
+    void setCheckForUpdates(bool enabled);
+    void setLastUpdateCheckTime(QDateTime time);
+    void setLastUpdateCheckVersion(QVersionNumber version);
+    void setRateLimitTimes(QMap<QUrl, QDateTime> map);
     QString getRecentProject();
     QStringList getRecentProjects();
     bool getReopenOnLaunch();
@@ -135,6 +148,10 @@ public:
     int getPaletteEditorBitDepth();
     int getProjectSettingsTab();
     bool getWarpBehaviorWarningDisabled();
+    bool getCheckForUpdates();
+    QDateTime getLastUpdateCheckTime();
+    QVersionNumber getLastUpdateCheckVersion();
+    QMap<QUrl, QDateTime> getRateLimitTimes();
 protected:
     virtual QString getConfigFilepath() override;
     virtual void parseConfigKeyValue(QString key, QString value) override;
@@ -151,10 +168,11 @@ private:
     QByteArray mainWindowGeometry;
     QByteArray mainWindowState;
     QByteArray mapSplitterState;
-    QByteArray eventsSlpitterState;
     QByteArray mainSplitterState;
+    QByteArray metatilesSplitterState;
     QByteArray tilesetEditorGeometry;
     QByteArray tilesetEditorState;
+    QByteArray tilesetEditorSplitterState;
     QByteArray paletteEditorGeometry;
     QByteArray paletteEditorState;
     QByteArray regionMapEditorGeometry;
@@ -182,6 +200,10 @@ private:
     int paletteEditorBitDepth;
     int projectSettingsTab;
     bool warpBehaviorWarningDisabled;
+    bool checkForUpdates;
+    QDateTime lastUpdateCheckTime;
+    QVersionNumber lastUpdateCheckVersion;
+    QMap<QUrl, QDateTime> rateLimitTimes;
 };
 
 extern PorymapConfig porymapConfig;

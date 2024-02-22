@@ -52,7 +52,6 @@ public:
     static QJSValue fromBlock(Block block);
     static QJSValue fromTile(Tile tile);
     static Tile toTile(QJSValue obj);
-    static QJSValue version(QList<int> versionNums);
     static QJSValue dimensions(int width, int height);
     static QJSValue position(int x, int y);
     static const QImage * getImage(const QString &filepath, bool useCache);

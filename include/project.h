@@ -55,6 +55,7 @@ public:
     QMap<int, QString> mapSectionValueToName;
     QMap<QString, EventGraphics*> eventGraphicsMap;
     QMap<QString, int> gfxDefines;
+    QString defaultSong;
     QStringList songNames;
     QStringList itemNames;
     QStringList flagNames;
@@ -79,6 +80,7 @@ public:
     bool usingAsmTilesets;
     QString importExportPath;
     QSet<QString> disabledSettingsNames;
+    bool wildEncountersLoaded;
 
     // For files that are read and could contain extra text
     QMap<QString, QString> extraFileText;
@@ -174,8 +176,6 @@ public:
     void saveTilesetMetatiles(Tileset*);
     void saveTilesetTilesImage(Tileset*);
     void saveTilesetPalettes(Tileset*);
-
-    QString defaultSong;
     void appendTilesetLabel(QString label, QString isSecondaryStr);
     bool readTilesetLabels();
     bool readTilesetMetatileLabels();
@@ -264,7 +264,6 @@ private:
 signals:
     void reloadProject();
     void uncheckMonitorFilesAction();
-    void disableWildEncountersUI();
 };
 
 #endif // PROJECT_H

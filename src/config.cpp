@@ -342,12 +342,16 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->mapSplitterState = bytesFromString(value);
     } else if (key == "main_splitter_state") {
         this->mainSplitterState = bytesFromString(value);
+    } else if (key == "metatiles_splitter_state") {
+        this->metatilesSplitterState = bytesFromString(value);
     } else if (key == "collision_opacity") {
         this->collisionOpacity = getConfigInteger(key, value, 0, 100, 50);
     } else if (key == "tileset_editor_geometry") {
         this->tilesetEditorGeometry = bytesFromString(value);
     } else if (key == "tileset_editor_state") {
         this->tilesetEditorState = bytesFromString(value);
+    } else if (key == "tileset_editor_splitter_state") {
+        this->tilesetEditorSplitterState = bytesFromString(value);
     } else if (key == "palette_editor_geometry") {
         this->paletteEditorGeometry = bytesFromString(value);
     } else if (key == "palette_editor_state") {
@@ -403,6 +407,24 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->projectSettingsTab = getConfigInteger(key, value, 0);
     } else if (key == "warp_behavior_warning_disabled") {
         this->warpBehaviorWarningDisabled = getConfigBool(key, value);
+    } else if (key == "check_for_updates") {
+        this->checkForUpdates = getConfigBool(key, value);
+    } else if (key == "last_update_check_time") {
+        this->lastUpdateCheckTime = QDateTime::fromString(value).toLocalTime();
+    } else if (key == "last_update_check_version") {
+        auto version = QVersionNumber::fromString(value);
+        if (version.segmentCount() != 3) {
+            logWarn(QString("Invalid config value for %1: '%2'. Must be 3 numbers separated by '.'").arg(key).arg(value));
+            this->lastUpdateCheckVersion = porymapVersion;
+        } else {
+            this->lastUpdateCheckVersion = version;
+        }
+    } else if (key.startsWith("rate_limit_time/")) {
+        static const QRegularExpression regex("\\brate_limit_time/(?<url>.+)");
+        QRegularExpressionMatch match = regex.match(key);
+        if (match.hasMatch()) {
+            this->rateLimitTimes.insert(match.captured("url"), QDateTime::fromString(value).toLocalTime());
+        }
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -418,8 +440,10 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("main_window_state", stringFromByteArray(this->mainWindowState));
     map.insert("map_splitter_state", stringFromByteArray(this->mapSplitterState));
     map.insert("main_splitter_state", stringFromByteArray(this->mainSplitterState));
+    map.insert("metatiles_splitter_state", stringFromByteArray(this->metatilesSplitterState));
     map.insert("tileset_editor_geometry", stringFromByteArray(this->tilesetEditorGeometry));
     map.insert("tileset_editor_state", stringFromByteArray(this->tilesetEditorState));
+    map.insert("tileset_editor_splitter_state", stringFromByteArray(this->tilesetEditorSplitterState));
     map.insert("palette_editor_geometry", stringFromByteArray(this->paletteEditorGeometry));
     map.insert("palette_editor_state", stringFromByteArray(this->paletteEditorState));
     map.insert("region_map_editor_geometry", stringFromByteArray(this->regionMapEditorGeometry));
@@ -447,6 +471,15 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("palette_editor_bit_depth", QString::number(this->paletteEditorBitDepth));
     map.insert("project_settings_tab", QString::number(this->projectSettingsTab));
     map.insert("warp_behavior_warning_disabled", QString::number(this->warpBehaviorWarningDisabled));
+    map.insert("check_for_updates", QString::number(this->checkForUpdates));
+    map.insert("last_update_check_time", this->lastUpdateCheckTime.toUTC().toString());
+    map.insert("last_update_check_version", this->lastUpdateCheckVersion.toString());
+    for (auto i = this->rateLimitTimes.cbegin(), end = this->rateLimitTimes.cend(); i != end; i++){
+        // Only include rate limit times that are still active (i.e., in the future)
+        const QDateTime time = i.value();
+        if (!time.isNull() && time > QDateTime::currentDateTime())
+            map.insert("rate_limit_time/" + i.key().toString(), time.toUTC().toString());
+    }
     
     return map;
 }
@@ -505,17 +538,20 @@ void PorymapConfig::setTilesetCheckerboardFill(bool checkerboard) {
 }
 
 void PorymapConfig::setMainGeometry(QByteArray mainWindowGeometry_, QByteArray mainWindowState_,
-                                QByteArray mapSplitterState_, QByteArray mainSplitterState_) {
+                                QByteArray mapSplitterState_, QByteArray mainSplitterState_, QByteArray metatilesSplitterState_) {
     this->mainWindowGeometry = mainWindowGeometry_;
     this->mainWindowState = mainWindowState_;
     this->mapSplitterState = mapSplitterState_;
     this->mainSplitterState = mainSplitterState_;
+    this->metatilesSplitterState = metatilesSplitterState_;
     this->save();
 }
 
-void PorymapConfig::setTilesetEditorGeometry(QByteArray tilesetEditorGeometry_, QByteArray tilesetEditorState_) {
+void PorymapConfig::setTilesetEditorGeometry(QByteArray tilesetEditorGeometry_, QByteArray tilesetEditorState_,
+                                            QByteArray tilesetEditorSplitterState_) {
     this->tilesetEditorGeometry = tilesetEditorGeometry_;
     this->tilesetEditorState = tilesetEditorState_;
+    this->tilesetEditorSplitterState = tilesetEditorSplitterState_;
     this->save();
 }
 
@@ -622,6 +658,31 @@ void PorymapConfig::setProjectSettingsTab(int tab) {
     this->save();
 }
 
+void PorymapConfig::setWarpBehaviorWarningDisabled(bool disabled) {
+    this->warpBehaviorWarningDisabled = disabled;
+    this->save();
+}
+
+void PorymapConfig::setCheckForUpdates(bool enabled) {
+    this->checkForUpdates = enabled;
+    this->save();
+}
+
+void PorymapConfig::setLastUpdateCheckTime(QDateTime time) {
+    this->lastUpdateCheckTime = time;
+    this->save();
+}
+
+void PorymapConfig::setLastUpdateCheckVersion(QVersionNumber version) {
+    this->lastUpdateCheckVersion = version;
+    this->save();
+}
+
+void PorymapConfig::setRateLimitTimes(QMap<QUrl, QDateTime> map) {
+    this->rateLimitTimes = map;
+    this->save();
+}
+
 QString PorymapConfig::getRecentProject() {
     return this->recentProjects.value(0);
 }
@@ -649,6 +710,7 @@ QMap<QString, QByteArray> PorymapConfig::getMainGeometry() {
     geometry.insert("main_window_state", this->mainWindowState);
     geometry.insert("map_splitter_state", this->mapSplitterState);
     geometry.insert("main_splitter_state", this->mainSplitterState);
+    geometry.insert("metatiles_splitter_state", this->metatilesSplitterState);
 
     return geometry;
 }
@@ -658,6 +720,7 @@ QMap<QString, QByteArray> PorymapConfig::getTilesetEditorGeometry() {
 
     geometry.insert("tileset_editor_geometry", this->tilesetEditorGeometry);
     geometry.insert("tileset_editor_state", this->tilesetEditorState);
+    geometry.insert("tileset_editor_splitter_state", this->tilesetEditorSplitterState);
 
     return geometry;
 }
@@ -770,13 +833,24 @@ int PorymapConfig::getProjectSettingsTab() {
     return this->projectSettingsTab;
 }
 
-void PorymapConfig::setWarpBehaviorWarningDisabled(bool disabled) {
-    this->warpBehaviorWarningDisabled = disabled;
-    this->save();
-}
-
 bool PorymapConfig::getWarpBehaviorWarningDisabled() {
     return this->warpBehaviorWarningDisabled;
+}
+
+bool PorymapConfig::getCheckForUpdates() {
+    return this->checkForUpdates;
+}
+
+QDateTime PorymapConfig::getLastUpdateCheckTime() {
+    return this->lastUpdateCheckTime;
+}
+
+QVersionNumber PorymapConfig::getLastUpdateCheckVersion() {
+    return this->lastUpdateCheckVersion;
+}
+
+QMap<QUrl, QDateTime> PorymapConfig::getRateLimitTimes() {
+    return this->rateLimitTimes;
 }
 
 const QStringList ProjectConfig::versionStrings = {

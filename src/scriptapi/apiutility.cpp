@@ -141,8 +141,8 @@ int ScriptUtility::getMainTab() {
 void ScriptUtility::setMainTab(int index) {
     if (!window || !window->ui || !window->ui->mainTabBar || index < 0 || index >= window->ui->mainTabBar->count())
         return;
-    // Can't select Wild Encounters tab if it's disabled
-    if (index == 4 && !userConfig.getEncounterJsonActive())
+    // Can't select tab if it's disabled
+    if (!window->ui->mainTabBar->isTabEnabled(index))
         return;
     // don't change tab when not editing a map
     if (!window->editor || !window->editor->map)

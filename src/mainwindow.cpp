@@ -43,6 +43,12 @@
 #include <QSet>
 #include <QLoggingCategory>
 
+// We only publish release binaries for Windows and macOS.
+// This is relevant for the update promoter, which alerts users of a new release.
+#if defined(Q_OS_WIN) || defined(Q_OS_MACOS)
+#define RELEASE_PLATFORM
+#endif
+
 using OrderedJson = poryjson::Json;
 using OrderedJsonDoc = poryjson::JsonDoc;
 
@@ -55,11 +61,13 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     QCoreApplication::setOrganizationName("pret");
     QCoreApplication::setApplicationName("porymap");
+    QCoreApplication::setApplicationVersion(PORYMAP_VERSION);
     QApplication::setApplicationDisplayName("porymap");
     QApplication::setWindowIcon(QIcon(":/icons/porymap-icon-2.ico"));
     ui->setupUi(this);
 
     cleanupLargeLog();
+    logInfo(QString("Launching Porymap v%1").arg(QCoreApplication::applicationVersion()));
 
     this->initWindow();
     if (porymapConfig.getReopenOnLaunch() && this->openProject(porymapConfig.getRecentProject(), true))
@@ -68,6 +76,9 @@ MainWindow::MainWindow(QWidget *parent) :
     // there is a bug affecting macOS users, where the trackpad deilveres a bad touch-release gesture
     // the warning is a bit annoying, so it is disabled here
     QLoggingCategory::setFilterRules(QStringLiteral("qt.pointer.dispatch=false"));
+
+    if (porymapConfig.getCheckForUpdates())
+        this->checkForUpdates(false);
 }
 
 MainWindow::~MainWindow()
@@ -93,6 +104,7 @@ void MainWindow::setWindowDisabled(bool disabled) {
     ui->actionAbout_Porymap->setDisabled(false);
     ui->actionOpen_Log_File->setDisabled(false);
     ui->actionOpen_Config_Folder->setDisabled(false);
+    ui->actionCheck_for_Updates->setDisabled(false);
     if (!disabled)
         togglePreferenceSpecificUi();
 }
@@ -106,6 +118,10 @@ void MainWindow::initWindow() {
     this->initMapSortOrder();
     this->initShortcuts();
     this->restoreWindowState();
+
+#ifndef RELEASE_PLATFORM
+    ui->actionCheck_for_Updates->setVisible(false);
+#endif
 
     setWindowDisabled(true);
 }
@@ -281,6 +297,39 @@ void MainWindow::initExtraSignals() {
     label_MapRulerStatus->setTextInteractionFlags(Qt::TextSelectableByMouse);
 }
 
+void MainWindow::on_actionCheck_for_Updates_triggered() {
+    checkForUpdates(true);
+}
+
+#ifdef RELEASE_PLATFORM
+void MainWindow::checkForUpdates(bool requestedByUser) {
+    if (!this->networkAccessManager)
+        this->networkAccessManager = new NetworkAccessManager(this);
+
+    if (!this->updatePromoter) {
+        this->updatePromoter = new UpdatePromoter(this, this->networkAccessManager);
+        connect(this->updatePromoter, &UpdatePromoter::changedPreferences, [this] {
+            if (this->preferenceEditor)
+                this->preferenceEditor->updateFields();
+        });
+    }
+
+
+    if (requestedByUser) {
+        openSubWindow(this->updatePromoter);
+    } else {
+        // This is an automatic update check. Only run if we haven't done one in the last 5 minutes
+        QDateTime lastCheck = porymapConfig.getLastUpdateCheckTime();
+        if (lastCheck.addSecs(5*60) >= QDateTime::currentDateTime())
+            return;
+    }
+    this->updatePromoter->checkForUpdates();
+    porymapConfig.setLastUpdateCheckTime(QDateTime::currentDateTime());
+}
+#else
+void MainWindow::checkForUpdates(bool) {}
+#endif
+
 void MainWindow::initEditor() {
     this->editor = new Editor(ui);
     connect(this->editor, &Editor::objectsChanged, this, &MainWindow::updateObjects);
@@ -394,14 +443,12 @@ void MainWindow::markMapEdited() {
     }
 }
 
-void MainWindow::setWildEncountersUIEnabled(bool enabled) {
-    ui->mainTabBar->setTabEnabled(4, enabled);
-}
-
 // Update the UI using information we've read from the user's project files.
 void MainWindow::setProjectSpecificUI()
 {
-    this->setWildEncountersUIEnabled(userConfig.getEncounterJsonActive());
+    // Wild Encounters tab
+    // TODO: This index should come from an enum
+    ui->mainTabBar->setTabEnabled(4, editor->project->wildEncountersLoaded);
 
     bool hasFlags = projectConfig.getMapAllowFlagsEnabled();
     ui->checkBox_AllowRunning->setVisible(hasFlags);
@@ -497,6 +544,7 @@ void MainWindow::restoreWindowState() {
     this->restoreState(geometry.value("main_window_state"));
     this->ui->splitter_map->restoreState(geometry.value("map_splitter_state"));
     this->ui->splitter_main->restoreState(geometry.value("main_splitter_state"));
+    this->ui->splitter_Metatiles->restoreState(geometry.value("metatiles_splitter_state"));
 }
 
 void MainWindow::setTheme(QString theme) {
@@ -532,7 +580,10 @@ bool MainWindow::openProject(const QString &dir, bool initial) {
         }
         return false;
     }
-    this->statusBar()->showMessage(QString("Opening %1").arg(projectString));
+
+    const QString openMessage = QString("Opening %1").arg(projectString);
+    this->statusBar()->showMessage(openMessage);
+    logInfo(openMessage);
 
     userConfig.setProjectDir(dir);
     userConfig.load();
@@ -551,7 +602,6 @@ bool MainWindow::openProject(const QString &dir, bool initial) {
         editor->closeProject();
         editor->project = new Project(editor);
         QObject::connect(editor->project, &Project::reloadProject, this, &MainWindow::on_action_Reload_Project_triggered);
-        QObject::connect(editor->project, &Project::disableWildEncountersUI, [this]() { this->setWildEncountersUIEnabled(false); });
         QObject::connect(editor->project, &Project::uncheckMonitorFilesAction, [this]() {
             porymapConfig.setMonitorFiles(false);
             if (this->preferenceEditor)
@@ -576,10 +626,7 @@ bool MainWindow::openProject(const QString &dir, bool initial) {
     }
     
     showWindowTitle();
-
-    const QString successMessage = QString("Opened %1").arg(projectString);
-    this->statusBar()->showMessage(successMessage);
-    logInfo(successMessage);
+    this->statusBar()->showMessage(QString("Opened %1").arg(projectString));
 
     porymapConfig.addRecentProject(dir);
     refreshRecentProjectsMenu();
@@ -647,29 +694,22 @@ QString MainWindow::getDefaultMap() {
 }
 
 bool MainWindow::setInitialMap() {
-    QList<QStringList> names;
+    QStringList names;
     if (editor && editor->project)
-        names = editor->project->groupedMapNames;
+        names = editor->project->mapNames;
 
+    // Try to set most recently-opened map, if it's still in the list.
     QString recentMap = userConfig.getRecentMap();
-    if (!recentMap.isEmpty()) {
-        // Make sure the recent map is still in the map list
-        for (int i = 0; i < names.length(); i++) {
-            if (names.value(i).contains(recentMap)) {
-                return setMap(recentMap, true);
-            }
-        }
+    if (!recentMap.isEmpty() && names.contains(recentMap) && setMap(recentMap, true))
+        return true;
+
+    // Failing that, try loading maps in the map list sequentially.
+    for (auto name : names) {
+        if (name != recentMap && setMap(name, true))
+            return true;
     }
 
-    // Failing that, just get the first map in the list.
-    for (int i = 0; i < names.length(); i++) {
-        QStringList list = names.value(i);
-        if (list.length()) {
-            return setMap(list.value(0), true);
-        }
-    }
-
-    logError("Failed to load any map names.");
+    logError("Failed to load any maps.");
     return false;
 }
 
@@ -1730,31 +1770,52 @@ void MainWindow::updateTilesetEditor() {
     }
 }
 
-void MainWindow::redrawMetatileSelection()
-{
-    double scale = pow(3.0, static_cast<double>(porymapConfig.getMetatilesZoom() - 30) / 30.0);
-    QTransform transform;
-    transform.scale(scale, scale);
-
-    ui->graphicsView_currentMetatileSelection->setTransform(transform);
-    ui->graphicsView_currentMetatileSelection->setFixedSize(editor->current_metatile_selection_item->pixmap().width() * scale + 2, editor->current_metatile_selection_item->pixmap().height() * scale + 2);
-
-    QPoint size = editor->metatile_selector_item->getSelectionDimensions();
-    if (size.x() == 1 && size.y() == 1) {
-        MetatileSelection selection = editor->metatile_selector_item->getMetatileSelection();
-        QPoint pos = editor->metatile_selector_item->getMetatileIdCoordsOnWidget(selection.metatileItems.first().metatileId);
-        pos *= scale;
-        ui->scrollArea_2->ensureVisible(pos.x(), pos.y(), 8 * scale, 8 * scale);
-    }
+double MainWindow::getMetatilesZoomScale() {
+    return pow(3.0, static_cast<double>(porymapConfig.getMetatilesZoom() - 30) / 30.0);
 }
 
-void MainWindow::currentMetatilesSelectionChanged()
-{
+void MainWindow::redrawMetatileSelection() {
+    QSize size(editor->current_metatile_selection_item->pixmap().width(), editor->current_metatile_selection_item->pixmap().height());
+    ui->graphicsView_currentMetatileSelection->setSceneRect(0, 0, size.width(), size.height());
+
+    auto scale = getMetatilesZoomScale();
+    QTransform transform;
+    transform.scale(scale, scale);
+    size *= scale;
+
+    ui->graphicsView_currentMetatileSelection->setTransform(transform);
+    ui->graphicsView_currentMetatileSelection->setFixedSize(size.width() + 2, size.height() + 2);
+    ui->scrollAreaWidgetContents_SelectedMetatiles->adjustSize();
+}
+
+void MainWindow::scrollMetatileSelectorToSelection() {
+    // Internal selections or 1x1 external selections can be scrolled to
+    if (!editor->metatile_selector_item->isInternalSelection() && editor->metatile_selector_item->getSelectionDimensions() != QPoint(1, 1))
+        return;
+
+    MetatileSelection selection = editor->metatile_selector_item->getMetatileSelection();
+    if (selection.metatileItems.isEmpty())
+        return;
+
+    QPoint pos = editor->metatile_selector_item->getMetatileIdCoordsOnWidget(selection.metatileItems.first().metatileId);
+    QPoint size = editor->metatile_selector_item->getSelectionDimensions();
+    pos += QPoint(size.x() - 1, size.y() - 1) * 16 / 2; // We want to focus on the center of the whole selection
+    pos *= getMetatilesZoomScale();
+
+    auto viewport = ui->scrollArea_MetatileSelector->viewport();
+    ui->scrollArea_MetatileSelector->ensureVisible(pos.x(), pos.y(), viewport->width() / 2, viewport->height() / 2);
+}
+
+void MainWindow::currentMetatilesSelectionChanged() {
     redrawMetatileSelection();
     if (this->tilesetEditor) {
         MetatileSelection selection = editor->metatile_selector_item->getMetatileSelection();
         this->tilesetEditor->selectMetatile(selection.metatileItems.first().metatileId);
     }
+
+    // Don't scroll to internal selections here, it will disrupt the user while they make their selection.
+    if (!editor->metatile_selector_item->isInternalSelection())
+        scrollMetatileSelectorToSelection();
 }
 
 // !TODO
@@ -2159,7 +2220,7 @@ void MainWindow::on_mainTabBar_tabBarClicked(int index)
 
     if (!editor->map) return;
     if (index != 4) {
-        if (userConfig.getEncounterJsonActive())
+        if (editor->project && editor->project->wildEncountersLoaded)
             editor->saveEncounterTabData();
     }
     if (index != 1) {
@@ -3207,6 +3268,9 @@ void MainWindow::togglePreferenceSpecificUi() {
         ui->actionOpen_Project_in_Text_Editor->setEnabled(false);
     else
         ui->actionOpen_Project_in_Text_Editor->setEnabled(true);
+
+    if (this->updatePromoter)
+        this->updatePromoter->updatePreferences();
 }
 
 void MainWindow::openProjectSettingsEditor(int tab) {
@@ -3310,7 +3374,11 @@ void MainWindow::on_horizontalSlider_MetatileZoom_valueChanged(int value) {
     ui->graphicsView_BorderMetatile->setFixedSize(ceil(static_cast<double>(editor->selected_border_metatiles_item->pixmap().width()) * scale) + 2,
                                                   ceil(static_cast<double>(editor->selected_border_metatiles_item->pixmap().height()) * scale) + 2);
 
+    ui->scrollAreaWidgetContents_MetatileSelector->adjustSize();
+    ui->scrollAreaWidgetContents_BorderMetatiles->adjustSize();
+
     redrawMetatileSelection();
+    scrollMetatileSelectorToSelection();
 }
 
 void MainWindow::on_horizontalSlider_CollisionZoom_valueChanged(int value) {
@@ -3326,6 +3394,7 @@ void MainWindow::on_horizontalSlider_CollisionZoom_valueChanged(int value) {
     ui->graphicsView_Collision->setResizeAnchor(QGraphicsView::NoAnchor);
     ui->graphicsView_Collision->setTransform(transform);
     ui->graphicsView_Collision->setFixedSize(size.width() + 2, size.height() + 2);
+    ui->scrollAreaWidgetContents_Collision->adjustSize();
 }
 
 void MainWindow::on_spinBox_SelectedCollision_valueChanged(int collision) {
@@ -3410,7 +3479,8 @@ void MainWindow::closeEvent(QCloseEvent *event) {
         this->saveGeometry(),
         this->saveState(),
         this->ui->splitter_map->saveState(),
-        this->ui->splitter_main->saveState()
+        this->ui->splitter_main->saveState(),
+        this->ui->splitter_Metatiles->saveState()
     );
     porymapConfig.save();
     shortcutsConfig.save();
