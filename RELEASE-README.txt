@@ -1,5 +1,5 @@
-Version: 5.4.0
-Date: February 13th, 2024
+Version: 5.4.1
+Date: March 21st, 2024
 
 This version of porymap works with pokeruby and pokeemerald as of the following commit hashes:
 * pokeemerald: c76beed98990a57c84d3930190fd194abfedf7e8
@@ -11,6 +11,10 @@ Official Porymap documentation: https://huderlem.github.io/porymap/
 Please report any issues on GitHub: [https://github.com/huderlem/porymap/issues](https://github.com/huderlem/porymap/issues)
 
 -------------------------
+
+## [5.4.1] - 2024-03-21
+### Fixed
+- Fix object event sprites not loading for some struct data formats.
 
 ## [5.4.0] - 2024-02-13
 ### Added
