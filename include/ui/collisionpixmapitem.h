@@ -4,19 +4,20 @@
 #include <QSpinBox>
 
 #include "metatileselector.h"
-#include "mappixmapitem.h"
+#include "movementpermissionsselector.h"
+#include "layoutpixmapitem.h"
 #include "map.h"
 #include "settings.h"
 
-class CollisionPixmapItem : public MapPixmapItem {
+class CollisionPixmapItem : public LayoutPixmapItem {
     Q_OBJECT
 public:
-    CollisionPixmapItem(Map *map, QSpinBox * selectedCollision, QSpinBox * selectedElevation, MetatileSelector *metatileSelector, Settings *settings, qreal *opacity)
-        : MapPixmapItem(map, metatileSelector, settings){
+    CollisionPixmapItem(Layout *layout, QSpinBox * selectedCollision, QSpinBox * selectedElevation, MetatileSelector *metatileSelector, Settings *settings, qreal *opacity)
+        : LayoutPixmapItem(layout, metatileSelector, settings){
         this->selectedCollision = selectedCollision;
         this->selectedElevation = selectedElevation;
         this->opacity = opacity;
-        map->setCollisionItem(this);
+        layout->setCollisionItem(this);
     }
     QSpinBox * selectedCollision;
     QSpinBox * selectedElevation;

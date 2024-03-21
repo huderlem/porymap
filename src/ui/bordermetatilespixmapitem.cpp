@@ -7,30 +7,30 @@
 void BorderMetatilesPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     MetatileSelection selection = this->metatileSelector->getMetatileSelection();
     QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
-    int width = map->getBorderWidth();
-    int height = map->getBorderHeight();
+    int width = layout->getBorderWidth();
+    int height = layout->getBorderHeight();
 
-    Blockdata oldBorder = map->layout->border;
+    Blockdata oldBorder = layout->border;
 
     for (int i = 0; i < selection.dimensions.x() && (i + pos.x()) < width; i++) {
         for (int j = 0; j < selection.dimensions.y() && (j + pos.y()) < height; j++) {
             MetatileSelectionItem item = selection.metatileItems.at(j * selection.dimensions.x() + i);
-            map->setBorderMetatileId(pos.x() + i, pos.y() + j, item.metatileId, true);
+            layout->setBorderMetatileId(pos.x() + i, pos.y() + j, item.metatileId, true);
         }
     }
 
-    if (map->layout->border != oldBorder) {
-        map->editHistory.push(new PaintBorder(map, oldBorder, map->layout->border, 0));
+    if (layout->border != oldBorder) {
+        layout->editHistory.push(new PaintBorder(layout, oldBorder, layout->border, 0));
     }
 
     emit borderMetatilesChanged();
 }
 
 void BorderMetatilesPixmapItem::draw() {
-    map->setBorderItem(this);
+    layout->setBorderItem(this);
 
-    int width = map->getBorderWidth();
-    int height = map->getBorderHeight();
+    int width = layout->getBorderWidth();
+    int height = layout->getBorderHeight();
     QImage image(16 * width, 16 * height, QImage::Format_RGBA8888);
     QPainter painter(&image);
 
@@ -39,11 +39,11 @@ void BorderMetatilesPixmapItem::draw() {
             int x = i * 16;
             int y = j * 16;
             QImage metatile_image = getMetatileImage(
-                        map->getBorderMetatileId(i, j),
-                        map->layout->tileset_primary,
-                        map->layout->tileset_secondary,
-                        map->metatileLayerOrder,
-                        map->metatileLayerOpacity);
+                        layout->getBorderMetatileId(i, j),
+                        layout->tileset_primary,
+                        layout->tileset_secondary,
+                        layout->metatileLayerOrder,
+                        layout->metatileLayerOpacity);
             QPoint metatile_origin = QPoint(x, y);
             painter.drawImage(metatile_origin, metatile_image);
         }
@@ -57,7 +57,7 @@ void BorderMetatilesPixmapItem::draw() {
 
 void BorderMetatilesPixmapItem::hoverUpdate(const QPointF &pixmapPos) {
     QPoint pos = Metatile::coordFromPixmapCoord(pixmapPos);
-    uint16_t metatileId = this->map->getBorderMetatileId(pos.x(), pos.y());
+    uint16_t metatileId = this->layout->getBorderMetatileId(pos.x(), pos.y());
     emit this->hoveredBorderMetatileSelectionChanged(metatileId);
 }
 

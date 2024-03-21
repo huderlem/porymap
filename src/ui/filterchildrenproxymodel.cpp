@@ -8,6 +8,15 @@ FilterChildrenProxyModel::FilterChildrenProxyModel(QObject *parent) :
 
 bool FilterChildrenProxyModel::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const
 {
+    if (this->hideEmpty && source_parent.row() < 0) // want to hide children
+    {
+        QModelIndex source_index = sourceModel()->index(source_row, this->filterKeyColumn(), source_parent) ;
+        if(source_index.isValid())
+        {
+            if (!sourceModel()->hasChildren(source_index))
+                return false;
+        }
+    }
     // custom behaviour :
     if(filterRegularExpression().pattern().isEmpty() == false)
     {

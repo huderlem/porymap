@@ -20,9 +20,9 @@ struct PrefabItem
 class Prefab
 {
 public:
-    void initPrefabUI(MetatileSelector *selector, QWidget *prefabWidget, QLabel *emptyPrefabLabel, Map *map);
-    void addPrefab(MetatileSelection selection, Map *map, QString name);
-    void updatePrefabUi(Map *map);
+    void initPrefabUI(MetatileSelector *selector, QWidget *prefabWidget, QLabel *emptyPrefabLabel, Layout *layout);
+    void addPrefab(MetatileSelection selection, Layout *layout, QString name);
+    void updatePrefabUi(Layout *layout);
     bool tryImportDefaultPrefabs(QWidget * parent, BaseGameVersion version, QString filepath = "");
 
 private:
