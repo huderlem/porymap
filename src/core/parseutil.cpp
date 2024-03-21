@@ -564,12 +564,12 @@ QMap<QString, QHash<QString, QString>> ParseUtil::readCStructs(const QString &fi
         for (const fex::ArrayValue &v : it->second.values()) {
             if (v.type() == fex::ArrayValue::Type::kValuePair) {
                 QString key = QString::fromStdString(v.pair().first);
-                QString value = QString::fromStdString(v.pair().second->string_value());
+                QString value = QString::fromStdString(v.pair().second->ToString());
                 values.insert(key, value);
             } else {
                 // For compatibility with structs that don't specify member names.
                 if (memberMap.contains(i) && !values.contains(memberMap.value(i)))
-                    values.insert(memberMap.value(i), QString::fromStdString(v.string_value()));
+                    values.insert(memberMap.value(i), QString::fromStdString(v.ToString()));
             }
             i++;
         }
