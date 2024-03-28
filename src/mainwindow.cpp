@@ -617,7 +617,7 @@ bool MainWindow::openProject(const QString &dir, bool initial) {
 
     this->projectOpenFailure = !(loadDataStructures()
                               && populateMapList()
-                              && setInitialMap());
+                              && (this->mapSortOrder == MapSortOrder::SortByLayout ? setInitialLayout() : setInitialMap()));
 
     if (this->projectOpenFailure) {
         this->statusBar()->showMessage(QString("Failed to open %1").arg(projectString));
@@ -710,6 +710,26 @@ bool MainWindow::setInitialMap() {
     }
 
     logError("Failed to load any maps.");
+    return false;
+}
+
+bool MainWindow::setInitialLayout() {
+    QStringList names;
+    if (editor && editor->project)
+        names = editor->project->mapLayoutsTable;
+
+    // Try to set most recently-opened layout, if it's still in the list.
+    QString recentLayout = userConfig.getRecentLayout();
+    if (!recentLayout.isEmpty() && names.contains(recentLayout) && setLayout(recentLayout))
+        return true;
+
+    // Failing that, try loading maps in the map list sequentially.
+    for (auto name : names) {
+        if (name != recentLayout && setLayout(name))
+            return true;
+    }
+
+    logError("Failed to load any layouts.");
     return false;
 }
 
@@ -980,10 +1000,12 @@ void MainWindow::openWarpMap(QString map_name, int event_id, Event::Group event_
 
 void MainWindow::setRecentMapConfig(QString mapName) {
     userConfig.setRecentMap(mapName);
+    userConfig.setRecentLayout("");
 }
 
 void MainWindow::setRecentLayoutConfig(QString layoutId) {
     userConfig.setRecentLayout(layoutId);
+    userConfig.setRecentMap("");
 }
 
 void MainWindow::displayMapProperties() {

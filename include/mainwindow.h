@@ -387,6 +387,7 @@ private:
     void setRecentMapConfig(QString map_name);
     void setRecentLayoutConfig(QString layoutId);
     bool setInitialMap();
+    bool setInitialLayout();
     void setRecentMap(QString map_name);
     QStandardItem* createMapItem(QString mapName, int groupNum, int inGroupNum);
     void refreshRecentProjectsMenu();
