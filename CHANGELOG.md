@@ -9,6 +9,10 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ## [Unreleased]
 Nothing, yet.
 
+## [5.4.1] - 2024-03-21
+### Fixed
+- Fix object event sprites not loading for some struct data formats.
+
 ## [5.4.0] - 2024-02-13
 ### Added
 - Add a `Check for Updates` option to show new releases (Windows and macOS only).
@@ -480,7 +484,8 @@ Nothing, yet.
 ## [1.0.0] - 2018-10-26
 This was the initial release.
 
-[Unreleased]: https://github.com/huderlem/porymap/compare/5.4.0...HEAD
+[Unreleased]: https://github.com/huderlem/porymap/compare/5.4.1...HEAD
+[5.4.1]: https://github.com/huderlem/porymap/compare/5.4.0...5.4.1
 [5.4.0]: https://github.com/huderlem/porymap/compare/5.3.0...5.4.0
 [5.3.0]: https://github.com/huderlem/porymap/compare/5.2.0...5.3.0
 [5.2.0]: https://github.com/huderlem/porymap/compare/5.1.1...5.2.0
