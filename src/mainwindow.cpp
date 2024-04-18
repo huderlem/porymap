@@ -250,7 +250,6 @@ void MainWindow::initCustomUI() {
 }
 
 void MainWindow::initExtraSignals() {
-    /// !TODO
     // Right-clicking on items in the map list tree view brings up a context menu.
     ui->mapList->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->mapList, &QTreeView::customContextMenuRequested,
@@ -402,17 +401,12 @@ void MainWindow::initMiscHeapObjects() {
     ui->tabWidget_EventType->clear();
 }
 
-// !TODO: scroll view on first showing
 void MainWindow::initMapSortOrder() {
     mapSortOrder = porymapConfig.getMapSortOrder();
-    // if (mapSortOrder == MapSortOrder::SortByLayout)
-    //     mapSortOrder = MapSortOrder::SortByGroup;
-
     this->ui->mapListContainer->setCurrentIndex(static_cast<int>(this->mapSortOrder));
 }
 
 void MainWindow::showWindowTitle() {
-    // !TODO, check editor editmode
     if (editor->map) {
         setWindowTitle(QString("%1%2 - %3")
             .arg(editor->map->hasUnsavedChanges() ? "* " : "")
@@ -490,18 +484,22 @@ void MainWindow::on_lineEdit_filterBox_Layouts_textChanged(const QString &text) 
 void MainWindow::applyMapListFilter(QString filterText) {
     FilterChildrenProxyModel *proxy;
     QTreeView *list;
+    QModelIndex sourceIndex;
     switch (this->mapSortOrder) {
     case MapSortOrder::SortByGroup:
         proxy = this->groupListProxyModel;
         list = this->ui->mapList;
+        sourceIndex = mapGroupModel->indexOfMap(editor->map->name);
         break;
     case MapSortOrder::SortByArea:
         proxy = this->areaListProxyModel;
         list = this->ui->areaList;
+        sourceIndex = mapAreaModel->indexOfMap(editor->map->name);
         break;
     case MapSortOrder::SortByLayout:
         proxy = this->layoutListProxyModel;
         list = this->ui->layoutList;
+        sourceIndex = layoutTreeModel->indexOfLayout(editor->layout->id);
         break;
     }
 
@@ -512,10 +510,8 @@ void MainWindow::applyMapListFilter(QString filterText) {
         list->expandToDepth(0);
     }
 
-    /// !TODO
-    // ui->mapList->setExpanded(groupListProxyModel->mapFromSource(mapGroupModel->indexOfMap(map_name)), false);
-    // ui->mapList->setExpanded(mapListProxyModel->mapFromSource(mapListIndexes.value(editor->map->name)), true);
-    // ui->mapList->scrollTo(mapListProxyModel->mapFromSource(mapListIndexes.value(editor->map->name)), QAbstractItemView::PositionAtCenter);
+    list->setExpanded(proxy->mapFromSource(sourceIndex), true);
+    list->scrollTo(proxy->mapFromSource(sourceIndex), QAbstractItemView::PositionAtCenter);
 }
 
 void MainWindow::loadUserSettings() {
@@ -1283,10 +1279,6 @@ void MainWindow::scrollTreeView(QString itemName) {
         ui->layoutList->scrollTo(ui->layoutList->currentIndex(), QAbstractItemView::PositionAtCenter);
         break;
     }
-}
-
-// !TODO: remove this?
-void MainWindow::sortMapList() {
 }
 
 void MainWindow::onOpenMapListContextMenu(const QPoint &point) {

@@ -379,7 +379,6 @@ private:
     bool loadDataStructures();
     bool loadProjectCombos();
     bool populateMapList();
-    void sortMapList();
     void openSubWindow(QWidget * window);
     void scrollTreeView(QString itemName);
     QString getExistingDirectory(QString);
