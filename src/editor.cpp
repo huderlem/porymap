@@ -139,7 +139,7 @@ void Editor::setEditorView() {
         }
         break;
     case EditMode::Connections:
-        populateConnectionMapPickers(); // !TODO: move to setmap or sumn/ displaymapconnections type ish
+        populateConnectionMapPickers();
         ui->label_NumConnections->setText(QString::number(map->connections.length()));
         setDiveEmergeControls();
 
@@ -155,7 +155,7 @@ void Editor::setEditorView() {
         setConnectionItemsVisible(true);
         setConnectionsEditable(true);
         this->cursorMapTileRect->setActive(false);
-        map_item->setEditsEnabled(false); // !TODO
+        map_item->setEditsEnabled(false);
     case EditMode::Header:
     case EditMode::Encounters:
     default:

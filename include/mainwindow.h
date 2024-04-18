@@ -280,6 +280,9 @@ private slots:
 
     void on_horizontalSlider_CollisionTransparency_valueChanged(int value);
 
+    void on_toolButton_HideShow_clicked();
+    void on_toolButton_ExpandAll_clicked();
+    void on_toolButton_CollapseAll_clicked();
     void on_toolButton_HideShow_Groups_clicked();
     void on_toolButton_ExpandAll_Groups_clicked();
     void on_toolButton_CollapseAll_Groups_clicked();

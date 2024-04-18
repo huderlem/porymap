@@ -162,14 +162,17 @@ void MainWindow::initExtraShortcuts() {
     shortcutToggle_Smart_Paths->setObjectName("shortcutToggle_Smart_Paths");
     shortcutToggle_Smart_Paths->setWhatsThis("Toggle Smart Paths");
 
-    /// !TODO
-    // auto *shortcutExpand_All = new Shortcut(QKeySequence(), this, SLOT(on_toolButton_ExpandAll_clicked()));
-    // shortcutExpand_All->setObjectName("shortcutExpand_All");
-    // shortcutExpand_All->setWhatsThis("Map List: Expand all folders");
+    auto *shortcutHide_Show = new Shortcut(QKeySequence(), this, SLOT(on_toolButton_HideShow_clicked()));
+    shortcutHide_Show->setObjectName("shortcutHide_Show");
+    shortcutHide_Show->setWhatsThis("Map List: Hide/Show Empty Folders");
 
-    // auto *shortcutCollapse_All = new Shortcut(QKeySequence(), this, SLOT(on_toolButton_CollapseAll_clicked()));
-    // shortcutCollapse_All->setObjectName("shortcutCollapse_All");
-    // shortcutCollapse_All->setWhatsThis("Map List: Collapse all folders");
+    auto *shortcutExpand_All = new Shortcut(QKeySequence(), this, SLOT(on_toolButton_ExpandAll_clicked()));
+    shortcutExpand_All->setObjectName("shortcutExpand_All");
+    shortcutExpand_All->setWhatsThis("Map List: Expand all folders");
+
+    auto *shortcutCollapse_All = new Shortcut(QKeySequence(), this, SLOT(on_toolButton_CollapseAll_clicked()));
+    shortcutCollapse_All->setObjectName("shortcutCollapse_All");
+    shortcutCollapse_All->setWhatsThis("Map List: Collapse all folders");
 
     auto *shortcut_Open_Scripts = new Shortcut(QKeySequence(), ui->toolButton_Open_Scripts, SLOT(click()));
     shortcut_Open_Scripts->setObjectName("shortcut_Open_Scripts");
@@ -905,8 +908,7 @@ bool MainWindow::setLayout(QString layoutId) {
     updateMapList();
 
     // !TODO: make sure these connections are not duplicated / cleared later
-    connect(editor->layout, &Layout::layoutChanged, [this]() { onMapChanged(nullptr); });
-    connect(editor->layout, &Layout::needsRedrawing, this, &MainWindow::onLayoutNeedsRedrawing);
+    connect(editor->layout, &Layout::needsRedrawing, this, &MainWindow::onLayoutNeedsRedrawing, Qt::UniqueConnection);
     // connect(editor->map, &Map::modified, [this](){ this->markMapEdited(); });
 
     updateTilesetEditor();
@@ -3176,6 +3178,48 @@ void MainWindow::on_actionTileset_Editor_triggered()
 void MainWindow::initTilesetEditor() {
     this->tilesetEditor = new TilesetEditor(this->editor->project, this->editor->layout, this);
     connect(this->tilesetEditor, &TilesetEditor::tilesetsSaved, this, &MainWindow::onTilesetsSaved);
+}
+
+void MainWindow::on_toolButton_ExpandAll_clicked() {
+    switch (ui->mapListContainer->currentIndex()) {
+    case MapListTab::Groups:
+        this->on_toolButton_ExpandAll_Groups_clicked();
+        break;
+    case MapListTab::Areas:
+        this->on_toolButton_ExpandAll_Areas_clicked();
+        break;
+    case MapListTab::Layouts:
+        this->on_toolButton_ExpandAll_Layouts_clicked();
+        break;
+    }
+}
+
+void MainWindow::on_toolButton_CollapseAll_clicked() {
+    switch (ui->mapListContainer->currentIndex()) {
+    case MapListTab::Groups:
+        this->on_toolButton_CollapseAll_Groups_clicked();
+        break;
+    case MapListTab::Areas:
+        this->on_toolButton_CollapseAll_Areas_clicked();
+        break;
+    case MapListTab::Layouts:
+        this->on_toolButton_CollapseAll_Layouts_clicked();
+        break;
+    }
+}
+
+void MainWindow::on_toolButton_HideShow_clicked() {
+    switch (ui->mapListContainer->currentIndex()) {
+    case MapListTab::Groups:
+        this->on_toolButton_HideShow_Groups_clicked();
+        break;
+    case MapListTab::Areas:
+        this->on_toolButton_HideShow_Areas_clicked();
+        break;
+    case MapListTab::Layouts:
+        this->on_toolButton_HideShow_Layouts_clicked();
+        break;
+    }
 }
 
 void MainWindow::on_toolButton_HideShow_Groups_clicked() {
