@@ -5,51 +5,8 @@
 #include "scripting.h"
 #include "imageproviders.h"
 
-    // QString id;
-    // QString name;
 
-    // int width;
-    // int height;
-    // int border_width;
-    // int border_height;
 
-    // QString border_path;
-    // QString blockdata_path;
-
-    // QString tileset_primary_label;
-    // QString tileset_secondary_label;
-
-    // Tileset *tileset_primary = nullptr;
-    // Tileset *tileset_secondary = nullptr;
-
-    // Blockdata blockdata;
-
-    // QImage image;
-    // QPixmap pixmap;
-    // QImage border_image;
-    // QPixmap border_pixmap;
-    // QImage collision_image;
-    // QPixmap collision_pixmap;
-
-    // Blockdata border;
-    // Blockdata cached_blockdata;
-    // Blockdata cached_collision;
-    // Blockdata cached_border;
-    // struct {
-    //     Blockdata blocks;
-    //     QSize mapDimensions;
-    //     Blockdata border;
-    //     QSize borderDimensions;
-    // } lastCommitBlocks; // to track map changes
-
-    // QList<int> metatileLayerOrder;
-    // QList<float> metatileLayerOpacity;
-
-    // LayoutPixmapItem *layoutItem = nullptr;
-    // CollisionPixmapItem *collisionItem = nullptr;
-    // BorderMetatilesPixmapItem *borderItem = nullptr;
-
-    // QUndoStack editHistory;
 Layout *Layout::copy() {
     Layout *layout = new Layout;
     layout->copyFrom(this);

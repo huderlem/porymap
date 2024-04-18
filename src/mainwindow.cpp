@@ -162,15 +162,15 @@ void MainWindow::initExtraShortcuts() {
     shortcutToggle_Smart_Paths->setObjectName("shortcutToggle_Smart_Paths");
     shortcutToggle_Smart_Paths->setWhatsThis("Toggle Smart Paths");
 
-    auto *shortcutHide_Show = new Shortcut(QKeySequence(), this, SLOT(on_toolButton_HideShow_clicked()));
+    auto *shortcutHide_Show = new Shortcut(QKeySequence(), this, SLOT(do_HideShow()));
     shortcutHide_Show->setObjectName("shortcutHide_Show");
     shortcutHide_Show->setWhatsThis("Map List: Hide/Show Empty Folders");
 
-    auto *shortcutExpand_All = new Shortcut(QKeySequence(), this, SLOT(on_toolButton_ExpandAll_clicked()));
+    auto *shortcutExpand_All = new Shortcut(QKeySequence(), this, SLOT(do_ExpandAll()));
     shortcutExpand_All->setObjectName("shortcutExpand_All");
     shortcutExpand_All->setWhatsThis("Map List: Expand all folders");
 
-    auto *shortcutCollapse_All = new Shortcut(QKeySequence(), this, SLOT(on_toolButton_CollapseAll_clicked()));
+    auto *shortcutCollapse_All = new Shortcut(QKeySequence(), this, SLOT(do_CollapseAll()));
     shortcutCollapse_All->setObjectName("shortcutCollapse_All");
     shortcutCollapse_All->setWhatsThis("Map List: Collapse all folders");
 
@@ -847,7 +847,6 @@ bool MainWindow::setMap(QString map_name, bool scroll) {
     }
 
     if (editor->map && !editor->map->name.isNull()) {
-        // !TODO: function to act on current view? or that does all the views
         ui->mapList->setExpanded(groupListProxyModel->mapFromSource(mapGroupModel->indexOfMap(map_name)), false);
     }
 
@@ -869,12 +868,12 @@ bool MainWindow::setMap(QString map_name, bool scroll) {
 
     showWindowTitle();
 
-    connect(editor->map, &Map::mapChanged, this, &MainWindow::onMapChanged);
-    connect(editor->map, &Map::mapNeedsRedrawing, this, &MainWindow::onMapNeedsRedrawing);
-    connect(editor->map, &Map::modified, [this](){ this->markMapEdited(); });
+    connect(editor->map, &Map::mapChanged, this, &MainWindow::onMapChanged, Qt::UniqueConnection);
+    connect(editor->map, &Map::mapNeedsRedrawing, this, &MainWindow::onMapNeedsRedrawing, Qt::UniqueConnection);
+    connect(editor->map, &Map::modified, this, &MainWindow::markMapEdited, Qt::UniqueConnection);
 
-    connect(editor->layout, &Layout::layoutChanged, [this]() { onMapChanged(nullptr); });
-    connect(editor->layout, &Layout::needsRedrawing, this, &MainWindow::onLayoutNeedsRedrawing);
+    connect(editor->layout, &Layout::layoutChanged, this, &MainWindow::onLayoutChanged, Qt::UniqueConnection);
+    connect(editor->layout, &Layout::needsRedrawing, this, &MainWindow::onLayoutNeedsRedrawing, Qt::UniqueConnection);
 
     setRecentMapConfig(map_name);
     updateMapList();
@@ -903,9 +902,7 @@ bool MainWindow::setLayout(QString layoutId) {
     showWindowTitle();
     updateMapList();
 
-    // !TODO: make sure these connections are not duplicated / cleared later
     connect(editor->layout, &Layout::needsRedrawing, this, &MainWindow::onLayoutNeedsRedrawing, Qt::UniqueConnection);
-    // connect(editor->map, &Map::modified, [this](){ this->markMapEdited(); });
 
     updateTilesetEditor();
 
@@ -1064,12 +1061,9 @@ void MainWindow::displayMapProperties() {
 }
 
 void MainWindow::on_comboBox_LayoutSelector_currentTextChanged(const QString &text) {
-    //
     if (editor && editor->project && editor->map) {
         if (editor->project->mapLayouts.contains(text)) {
             editor->map->setLayout(editor->project->loadLayout(text));
-            // !TODO: method to setMapLayout instead of having to do whole setMap thing,
-            // also edit history and bug fixes
             setMap(editor->map->name);
             markMapEdited();
         }
@@ -1834,7 +1828,6 @@ void MainWindow::currentMetatilesSelectionChanged() {
         scrollMetatileSelectorToSelection();
 }
 
-// !TODO
 void MainWindow::on_mapListContainer_currentChanged(int index) {
     switch (index) {
     case MapListTab::Groups:
@@ -1853,7 +1846,6 @@ void MainWindow::on_mapListContainer_currentChanged(int index) {
     porymapConfig.setMapSortOrder(this->mapSortOrder);
 }
 
-/// !TODO
 void MainWindow::on_mapList_activated(const QModelIndex &index) {
     QVariant data = index.data(Qt::UserRole);
     if (index.data(MapListRoles::TypeRole) == "map_name" && !data.isNull()) {
@@ -2844,6 +2836,10 @@ void MainWindow::onMapChanged(Map *) {
     updateMapList();
 }
 
+void MainWindow::onLayoutChanged(Layout *) {
+    updateMapList();
+}
+
 void MainWindow::onMapNeedsRedrawing() {
     redrawMapScene();
 }
@@ -3172,7 +3168,7 @@ void MainWindow::initTilesetEditor() {
     connect(this->tilesetEditor, &TilesetEditor::tilesetsSaved, this, &MainWindow::onTilesetsSaved);
 }
 
-void MainWindow::on_toolButton_ExpandAll_clicked() {
+void MainWindow::do_ExpandAll() {
     switch (ui->mapListContainer->currentIndex()) {
     case MapListTab::Groups:
         this->on_toolButton_ExpandAll_Groups_clicked();
@@ -3186,7 +3182,7 @@ void MainWindow::on_toolButton_ExpandAll_clicked() {
     }
 }
 
-void MainWindow::on_toolButton_CollapseAll_clicked() {
+void MainWindow::do_CollapseAll() {
     switch (ui->mapListContainer->currentIndex()) {
     case MapListTab::Groups:
         this->on_toolButton_CollapseAll_Groups_clicked();
@@ -3200,7 +3196,7 @@ void MainWindow::on_toolButton_CollapseAll_clicked() {
     }
 }
 
-void MainWindow::on_toolButton_HideShow_clicked() {
+void MainWindow::do_HideShow() {
     switch (ui->mapListContainer->currentIndex()) {
     case MapListTab::Groups:
         this->on_toolButton_HideShow_Groups_clicked();

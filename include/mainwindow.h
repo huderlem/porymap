@@ -185,6 +185,7 @@ private slots:
 
     void onLoadMapRequested(QString, QString);
     void onMapChanged(Map *map);
+    void onLayoutChanged(Layout *layout);
     void onMapNeedsRedrawing();
     void onLayoutNeedsRedrawing();
     void onTilesetsSaved(QString, QString);
@@ -280,9 +281,9 @@ private slots:
 
     void on_horizontalSlider_CollisionTransparency_valueChanged(int value);
 
-    void on_toolButton_HideShow_clicked();
-    void on_toolButton_ExpandAll_clicked();
-    void on_toolButton_CollapseAll_clicked();
+    void do_HideShow();
+    void do_ExpandAll();
+    void do_CollapseAll();
     void on_toolButton_HideShow_Groups_clicked();
     void on_toolButton_ExpandAll_Groups_clicked();
     void on_toolButton_CollapseAll_Groups_clicked();
