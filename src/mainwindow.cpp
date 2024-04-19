@@ -1617,6 +1617,8 @@ void MainWindow::onNewMapCreated() {
     editor->project->saveMap(newMap);
     editor->project->saveAllDataStructures();
 
+    loadProjectCombos(); // need to maybe repopulate layout combo
+
     // Add new Map / Layout to the mapList models
     this->mapGroupModel->insertMapItem(newMapName, editor->project->groupNames[newMapGroup]);
     this->mapAreaModel->insertMapItem(newMapName, newMap->location, newMapGroup);
@@ -1759,6 +1761,8 @@ void MainWindow::on_actionNew_Tileset_triggered() {
             this->ui->comboBox_SecondaryTileset->insertItem(index, createTilesetDialog->fullSymbolName);
         }
         insertTilesetLabel(&editor->project->tilesetLabelsOrdered, createTilesetDialog->fullSymbolName);
+
+        loadProjectCombos(); // need to reload tileset combos
 
         QMessageBox msgBox(this);
         msgBox.setText("Successfully created tileset.");
