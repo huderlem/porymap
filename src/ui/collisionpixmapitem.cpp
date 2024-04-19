@@ -50,7 +50,6 @@ void CollisionPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
 
 void CollisionPixmapItem::draw(bool ignoreCache) {
     if (this->layout) {
-        // !TODO
         this->layout->setCollisionItem(this);
         setPixmap(this->layout->renderCollision(ignoreCache));
         setOpacity(*this->opacity);

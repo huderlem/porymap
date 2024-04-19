@@ -93,13 +93,14 @@ void MapImageExporter::saveImage() {
                 break;
             }
             case ImageExporterMode::Timelapse:
-                // !TODO: also need layout editHistory!
+                // Timelapse will play in order of layout changes then map changes (events)
+                // TODO: potentially update in the future?
                 QGifImage timelapseImg;
                 timelapseImg.setDefaultDelay(timelapseDelayMs);
                 timelapseImg.setDefaultTransparentColor(QColor(0, 0, 0));
 
+                // lambda to avoid redundancy
                 auto generateTimelapseFromHistory = [=, this, &timelapseImg](QString progressText, QUndoStack &historyStack){
-                    //
                     QProgressDialog progress(progressText, "Cancel", 0, 1, this);
                     progress.setAutoClose(true);
                     progress.setWindowModality(Qt::WindowModal);

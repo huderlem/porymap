@@ -440,7 +440,6 @@ Layout *Project::createNewLayout(Layout::SimpleSettings &layoutSettings) {
 }
 
 bool Project::loadLayout(Layout *layout) {
-    // !TODO: make sure this doesn't break anything, maybe do something better. new layouts work too?
     if (!layout->loaded) {
         // Force these to run even if one fails
         bool loadedTilesets = loadLayoutTilesets(layout);
