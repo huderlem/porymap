@@ -298,7 +298,7 @@ bool RegionMapEditor::buildConfigDialog() {
     form.addRow(addMapButton);
 
     // allow user to add region maps
-    connect(addMapButton, &QPushButton::clicked, [this, regionMapList] {
+    connect(addMapButton, &QPushButton::clicked, [this, regionMapList, &updateJsonFromList] {
         poryjson::Json resultJson = configRegionMapDialog();
         poryjson::Json::object resultObj = resultJson.object_items();
 
@@ -310,6 +310,7 @@ bool RegionMapEditor::buildConfigDialog() {
         newItem->setText(resultObj["alias"].string_value());
         newItem->setData(Qt::UserRole, resultStr);
         regionMapList->addItem(newItem);
+        updateJsonFromList();
     });
 
     QPushButton *delMapButton = new QPushButton("Delete Selected Region Map");
