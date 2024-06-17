@@ -79,14 +79,20 @@ bool RegionMap::loadTilemap(poryjson::Json tilemapJson) {
         this->palette_path = tilemapObject["palette"].string_value();
     }
 
+    QFileInfo tilesetFileInfo(fullPath(this->tileset_path));
+    if (!tilesetFileInfo.exists() || !tilesetFileInfo.isFile()) {
+        logError(QString("Failed to open region map tileset file '%1'.").arg(tileset_path));
+        return false;
+    }
+
     QFile tilemapFile(fullPath(this->tilemap_path));
     if (!tilemapFile.open(QIODevice::ReadOnly)) {
-        logError(QString("Failed to open region map tilemap file %1.").arg(tilemap_path));
+        logError(QString("Failed to open region map tilemap file '%1'.").arg(tilemap_path));
         return false;
     }
 
     if (tilemapFile.size() < tilemapBytes()) {
-        logError(QString("The region map tilemap at %1 is too small.").arg(tilemap_path));
+        logError(QString("The region map tilemap at '%1' is too small.").arg(tilemap_path));
         return false;
     }
 

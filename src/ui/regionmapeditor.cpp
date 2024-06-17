@@ -402,16 +402,6 @@ bool RegionMapEditor::verifyConfig(poryjson::Json cfg) {
         logError("Region map config json has no map list.");
         return false;
     }
-
-    OrderedJson::array arr = obj["region_maps"].array_items();
-
-    for (auto ref : arr) {
-        RegionMap tempMap(this->project);
-        if (!tempMap.loadMapData(ref)) {
-            return false;
-        }
-    }
-
     return true;
 }
 
