@@ -79,9 +79,14 @@ bool RegionMap::loadTilemap(poryjson::Json tilemapJson) {
         this->palette_path = tilemapObject["palette"].string_value();
     }
 
-    QFileInfo tilesetFileInfo(fullPath(this->tileset_path));
-    if (!tilesetFileInfo.exists() || !tilesetFileInfo.isFile()) {
+    QImage tilesetFile(fullPath(this->tileset_path));
+    if (tilesetFile.isNull()) {
         logError(QString("Failed to open region map tileset file '%1'.").arg(tileset_path));
+        return false;
+    }
+
+    if (tilesetFile.width() < 8 || tilesetFile.height() < 8) {
+        logError(QString("Region map tileset file '%1' must be at least 8x8.").arg(tileset_path));
         return false;
     }
 
