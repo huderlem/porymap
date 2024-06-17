@@ -388,6 +388,7 @@ private:
 
     void initTilesetEditor();
     bool initRegionMapEditor(bool silent = false);
+    bool askToFixRegionMapEditor();
     void initShortcutsEditor();
     void initCustomScriptsEditor();
     void connectSubEditorsToShortcutsEditor();

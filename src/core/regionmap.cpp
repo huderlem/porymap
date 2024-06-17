@@ -303,7 +303,7 @@ bool RegionMap::loadLayout(poryjson::Json layoutJson) {
                         }
                         setLayout("main", layout);
                     } else {
-                        logError("Region map layout is not readable.");
+                        logError(QString("Failed to read region map layout from '%1'.").arg(this->layout_path));
                         return false;
                     }
                 }

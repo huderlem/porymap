@@ -599,6 +599,11 @@ void RegionMapEditor::on_actionSave_All_triggered() {
 }
 
 void RegionMapEditor::on_action_Configure_triggered() {
+    reconfigure();
+}
+
+bool RegionMapEditor::reconfigure() {
+    this->setupError = false;
     if (this->modified()) {
         QMessageBox warning;
         warning.setIcon(QMessageBox::Warning);
@@ -609,15 +614,16 @@ void RegionMapEditor::on_action_Configure_triggered() {
 
         if (warning.exec() == QMessageBox::Ok) {
             if (buildConfigDialog()) {
-                reload();
+                return reload();
             }
         }
     }
     else {
         if (buildConfigDialog()) {
-            reload();
+            return reload();
         }
     }
+    return false;
 }
 
 void RegionMapEditor::displayRegionMap() {

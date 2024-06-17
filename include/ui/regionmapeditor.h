@@ -42,6 +42,8 @@ public:
 
     void resizeTilemap(int width, int height);
 
+    bool reconfigure();
+
     QObjectList shortcutableObjects() const;
 
 public slots:
