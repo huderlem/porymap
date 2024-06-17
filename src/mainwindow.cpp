@@ -2960,15 +2960,14 @@ bool MainWindow::initRegionMapEditor(bool silent) {
     this->regionMapEditor = new RegionMapEditor(this, this->editor->project);
     bool success = this->regionMapEditor->load(silent);
     if (!success) {
-        delete this->regionMapEditor;
-        this->regionMapEditor = nullptr;
-        if (!silent) {
+        if (!silent && this->regionMapEditor->setupErrored()) {
             QMessageBox msgBox(this);
-            QString errorMsg = QString("There was an error opening the region map data. Please see %1 for full error details.\n\n%3")
+            QString errorMsg = QString("There was an error opening the region map data. Please see %1 for full error details.\n\n%2")
                     .arg(getLogPath())
                     .arg(getMostRecentError());
             msgBox.critical(nullptr, "Error Opening Region Map Editor", errorMsg);
         }
+        delete this->regionMapEditor;
         return false;
     }
 
