@@ -293,15 +293,15 @@ void KeyValueConfigBase::setSaveDisabled(bool disabled) {
 }
 
 const QMap<MapSortOrder, QString> mapSortOrderMap = {
-    {MapSortOrder::Group, "group"},
-    {MapSortOrder::Layout, "layout"},
-    {MapSortOrder::Area, "area"},
+    {MapSortOrder::SortByGroup, "group"},
+    {MapSortOrder::SortByLayout, "layout"},
+    {MapSortOrder::SortByArea, "area"},
 };
 
 const QMap<QString, MapSortOrder> mapSortOrderReverseMap = {
-    {"group", MapSortOrder::Group},
-    {"layout", MapSortOrder::Layout},
-    {"area", MapSortOrder::Area},
+    {"group", MapSortOrder::SortByGroup},
+    {"layout", MapSortOrder::SortByLayout},
+    {"area", MapSortOrder::SortByArea},
 };
 
 PorymapConfig porymapConfig;
@@ -331,7 +331,7 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         if (mapSortOrderReverseMap.contains(sortOrder)) {
             this->mapSortOrder = mapSortOrderReverseMap.value(sortOrder);
         } else {
-            this->mapSortOrder = MapSortOrder::Group;
+            this->mapSortOrder = MapSortOrder::SortByGroup;
             logWarn(QString("Invalid config value for map_sort_order: '%1'. Must be 'group', 'area', or 'layout'.").arg(value));
         }
     } else if (key == "main_window_geometry") {
@@ -1575,6 +1575,8 @@ QString UserConfig::getConfigFilepath() {
 void UserConfig::parseConfigKeyValue(QString key, QString value) {
     if (key == "recent_map") {
         this->recentMap = value;
+    } else if (key == "recent_layout") {
+        this->recentLayout = value;
     } else if (key == "use_encounter_json") {
         this->useEncounterJson = getConfigBool(key, value);
     } else if (key == "custom_scripts") {
@@ -1591,6 +1593,7 @@ void UserConfig::setUnreadKeys() {
 QMap<QString, QString> UserConfig::getKeyValueMap() {
     QMap<QString, QString> map;
     map.insert("recent_map", this->recentMap);
+    map.insert("recent_layout", this->recentLayout);
     map.insert("use_encounter_json", QString::number(this->useEncounterJson));
     map.insert("custom_scripts", this->outputCustomScripts());
     return map;
@@ -1617,6 +1620,15 @@ void UserConfig::setRecentMap(const QString &map) {
 
 QString UserConfig::getRecentMap() {
     return this->recentMap;
+}
+
+void UserConfig::setRecentLayout(const QString &layout) {
+    this->recentLayout = layout;
+    this->save();
+}
+
+QString UserConfig::getRecentLayout() {
+    return this->recentLayout;
 }
 
 void UserConfig::setEncounterJsonActive(bool active) {

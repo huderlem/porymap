@@ -25,7 +25,7 @@ class Project : public QObject
 {
     Q_OBJECT
 public:
-    Project(QWidget *parent = nullptr);
+    Project(QObject *parent = nullptr);
     ~Project();
 
     Project(const Project &) = delete;
@@ -47,8 +47,9 @@ public:
     QStringList mapLayoutsTable;
     QStringList mapLayoutsTableMaster;
     QString layoutsLabel;
-    QMap<QString, MapLayout*> mapLayouts;
-    QMap<QString, MapLayout*> mapLayoutsMaster;
+    QMap<QString, QString> layoutIdsToNames;
+    QMap<QString, Layout*> mapLayouts;
+    QMap<QString, Layout*> mapLayoutsMaster;
     QMap<QString, QString> mapSecToMapHoverName;
     QMap<QString, int> mapSectionNameToValue;
     QMap<int, QString> mapSectionValueToName;
@@ -81,12 +82,16 @@ public:
     QSet<QString> disabledSettingsNames;
     bool wildEncountersLoaded;
 
+    // For files that are read and could contain extra text
+    QMap<QString, QString> extraFileText;
+
     void set_root(QString);
 
     void initSignals();
 
     void clearMapCache();
     void clearTilesetCache();
+    void clearLayoutsTable();
 
     struct DataQualifiers
     {
@@ -109,8 +114,8 @@ public:
     QStringList tilesetLabelsOrdered;
 
     Blockdata readBlockdata(QString);
-    bool loadBlockdata(MapLayout*);
-    bool loadLayoutBorder(MapLayout*);
+    bool loadBlockdata(Layout *);
+    bool loadLayoutBorder(Layout *);
 
     void saveTextFile(QString path, QString text);
     void appendTextFile(QString path, QString text);
@@ -122,6 +127,7 @@ public:
     QString getProjectTitle();
 
     QString readMapLayoutId(QString map_name);
+    QString readMapLayoutName(QString mapName);
     QString readMapLocation(QString map_name);
 
     bool readWildMonData();
@@ -134,12 +140,16 @@ public:
     bool readSpeciesIconPaths();
     QMap<QString, QString> speciesToIconPath;
 
+    int appendMapsec(QString name);
+
     QSet<QString> getTopLevelMapFields();
     bool loadMapData(Map*);
     bool readMapLayouts();
-    bool loadLayout(MapLayout *);
+    Layout *loadLayout(QString layoutId);
+    Layout *createNewLayout(Layout::SimpleSettings &layoutSettings);
+    bool loadLayout(Layout *);
     bool loadMapLayout(Map*);
-    bool loadLayoutTilesets(MapLayout*);
+    bool loadLayoutTilesets(Layout *);
     void loadTilesetAssets(Tileset*);
     void loadTilesetTiles(Tileset*, QImage);
     void loadTilesetMetatiles(Tileset*);
@@ -147,14 +157,16 @@ public:
     void loadTilesetPalettes(Tileset*);
     void readTilesetPaths(Tileset* tileset);
 
-    void saveLayoutBlockdata(Map*);
-    void saveLayoutBorder(Map*);
+    void saveLayout(Layout *);
+    void saveLayoutBlockdata(Layout *);
+    void saveLayoutBorder(Layout *);
     void writeBlockdata(QString, const Blockdata &);
     void saveAllMaps();
-    void saveMap(Map*);
+    void saveMap(Map *);
     void saveAllDataStructures();
     void saveMapLayouts();
     void saveMapGroups();
+    void saveMapSections();
     void saveWildMonData();
     void saveMapConstantsHeader();
     void saveHealLocations(Map*);
@@ -228,10 +240,10 @@ public:
     static int getMaxObjectEvents();
 
 private:
-    void updateMapLayout(Map*);
+    void updateLayout(Layout *);
 
-    void setNewMapBlockdata(Map* map);
-    void setNewMapBorder(Map *map);
+    void setNewLayoutBlockdata(Layout *layout);
+    void setNewLayoutBorder(Layout *layout);
     void setNewMapEvents(Map *map);
     void setNewMapConnections(Map *map);
 
@@ -252,7 +264,6 @@ private:
 signals:
     void reloadProject();
     void uncheckMonitorFilesAction();
-    void mapCacheCleared();
 };
 
 #endif // PROJECT_H

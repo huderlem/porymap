@@ -64,9 +64,9 @@ private:
 
 
 /// Edit Layout Dimensions
-class ResizeLayout : public QUndoCommand {
+class ResizeRMLayout : public QUndoCommand {
 public:
-    ResizeLayout(RegionMap *map, int oldWidth, int oldHeight, int newWidth, int newHeight,
+    ResizeRMLayout(RegionMap *map, int oldWidth, int oldHeight, int newWidth, int newHeight,
         QMap<QString, QList<LayoutSquare>> oldLayouts, QMap<QString, QList<LayoutSquare>> newLayouts, QUndoCommand *parent = nullptr);
 
     void undo() override;

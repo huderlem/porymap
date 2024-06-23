@@ -10,6 +10,7 @@
 #include <QCheckBox>
 #include <QCursor>
 #include <QUndoGroup>
+#include <QPointer>
 
 #include "mapconnection.h"
 #include "metatileselector.h"
@@ -20,7 +21,7 @@
 #include "connectionpixmapitem.h"
 #include "currentselectedmetatilespixmapitem.h"
 #include "collisionpixmapitem.h"
-#include "mappixmapitem.h"
+#include "layoutpixmapitem.h"
 #include "settings.h"
 #include "movablerect.h"
 #include "cursortilerect.h"
@@ -43,16 +44,31 @@ public:
 public:
     Ui::MainWindow* ui;
     QObject *parent = nullptr;
+
     Project *project = nullptr;
-    Map *map = nullptr;
+    QPointer<Map> map = nullptr;
+    QPointer<Layout> layout = nullptr;
+
+    QUndoGroup editGroup; // Manages the undo history for each map
+
     Settings *settings;
-    void saveProject();
+
     void save();
-    void closeProject();
-    bool setMap(QString map_name);
+    void saveProject();
     void saveUiFields();
     void saveEncounterTabData();
+
+    void closeProject();
+
+    bool setMap(QString map_name);
+    bool setLayout(QString layoutName);
+    void unsetMap();
+
+    Tileset *getCurrentMapPrimaryTileset();
+
     bool displayMap();
+    bool displayLayout();
+
     void displayMetatileSelector();
     void displayMapMetatiles();
     void displayMapMovementPermissions();
@@ -69,11 +85,6 @@ public:
     void updateMapBorder();
     void updateMapConnections();
 
-    void setEditingMap();
-    void setEditingCollision();
-    void setEditingObjects();
-    void setEditingConnections();
-    void setMapEditingButtonsEnabled(bool enabled);
     void setCurrentConnectionDirection(QString curDirection);
     void updateCurrentConnectionDirection(QString curDirection);
     void setConnectionsVisibility(bool visible);
@@ -81,19 +92,21 @@ public:
     void setConnectionMap(QString mapName);
     void addNewConnection();
     void removeCurrentConnection();
-    void addNewWildMonGroup(QWidget *window);
-    void deleteWildMonGroup();
     void updateDiveMap(QString mapName);
     void updateEmergeMap(QString mapName);
     void setSelectedConnectionFromMap(QString mapName);
+
+    void addNewWildMonGroup(QWidget *window);
+    void deleteWildMonGroup();
+    void configureEncounterJSON(QWidget *);
+
     void updatePrimaryTileset(QString tilesetLabel, bool forceLoad = false);
     void updateSecondaryTileset(QString tilesetLabel, bool forceLoad = false);
     void toggleBorderVisibility(bool visible, bool enableScriptCallback = true);
     void updateCustomMapHeaderValues(QTableWidget *);
-    void configureEncounterJSON(QWidget *);
-    Tileset *getCurrentMapPrimaryTileset();
 
     DraggablePixmapItem *addMapEvent(Event *event);
+    bool eventLimitReached(Map *, Event::Type);
     void selectMapEvent(DraggablePixmapItem *object);
     void selectMapEvent(DraggablePixmapItem *object, bool toggle);
     DraggablePixmapItem *addNewEvent(Event::Type type);
@@ -101,31 +114,35 @@ public:
     void duplicateSelectedEvents();
     void redrawObject(DraggablePixmapItem *item);
     QList<DraggablePixmapItem *> getObjects();
+
     void updateCursorRectPos(int x, int y);
     void setCursorRectVisible(bool visible);
+
     void updateWarpEventWarning(Event *event);
     void updateWarpEventWarnings();
-    bool eventLimitReached(Map *, Event::Type);
 
     QGraphicsScene *scene = nullptr;
     QGraphicsPixmapItem *current_view = nullptr;
-    MapPixmapItem *map_item = nullptr;
+    LayoutPixmapItem *map_item = nullptr;
     ConnectionPixmapItem* selected_connection_item = nullptr;
     QList<ConnectionPixmapItem*> connection_items;
     QGraphicsPathItem *connection_mask = nullptr;
     CollisionPixmapItem *collision_item = nullptr;
     QGraphicsItemGroup *events_group = nullptr;
+
     QList<QGraphicsPixmapItem*> borderItems;
     QList<QGraphicsLineItem*> gridLines;
+    MapRuler *map_ruler = nullptr;
+
     MovableRect *playerViewRect = nullptr;
     CursorTileRect *cursorMapTileRect = nullptr;
-    MapRuler *map_ruler = nullptr;
 
     QGraphicsScene *scene_metatiles = nullptr;
     QGraphicsScene *scene_current_metatile_selection = nullptr;
     QGraphicsScene *scene_selected_border_metatiles = nullptr;
     QGraphicsScene *scene_collision_metatiles = nullptr;
     QGraphicsScene *scene_elevation_metatiles = nullptr;
+
     MetatileSelector *metatile_selector_item = nullptr;
 
     BorderMetatilesPixmapItem *selected_border_metatiles_item = nullptr;
@@ -134,8 +151,27 @@ public:
 
     QList<DraggablePixmapItem *> *selected_events = nullptr;
 
-    QString map_edit_mode = "paint";
-    QString obj_edit_mode = "select";
+    enum class EditAction { None, Paint, Select, Fill, Shift, Pick, Move };
+    EditAction mapEditAction = EditAction::Paint;
+    EditAction objectEditAction = EditAction::Select;
+
+    enum class EditMode { None, Disabled, Metatiles, Collision, Header, Events, Connections, Encounters };
+    EditMode editMode = EditMode::None;
+    void setEditMode(EditMode mode) { this->editMode = mode; }
+    EditMode getEditMode() { return this->editMode; }
+
+    bool getEditingLayout();
+
+    void setEditorView();
+    
+    void setEditingMetatiles();
+    void setEditingCollision();
+    void setEditingHeader();
+    void setEditingObjects();
+    void setEditingConnections();
+    void setEditingEncounters();
+
+    void setMapEditingButtonsEnabled(bool enabled);
 
     int scaleIndex = 2;
     qreal collisionOpacity = 0.5;
@@ -144,8 +180,6 @@ public:
     void objectsView_onMousePress(QMouseEvent *event);
 
     int getBorderDrawDistance(int dimension);
-
-    QUndoGroup editGroup; // Manages the undo history for each map
 
     bool selectingEvent = false;
 
@@ -192,11 +226,11 @@ private:
                                     qint64 *pid = nullptr);
 
 private slots:
-    void onMapStartPaint(QGraphicsSceneMouseEvent *event, MapPixmapItem *item);
-    void onMapEndPaint(QGraphicsSceneMouseEvent *event, MapPixmapItem *item);
+    void onMapStartPaint(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *item);
+    void onMapEndPaint(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *item);
     void setSmartPathCursorMode(QGraphicsSceneMouseEvent *event);
     void setStraightPathCursorMode(QGraphicsSceneMouseEvent *event);
-    void mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item);
+    void mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *item);
     void mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixmapItem *item);
     void onConnectionMoved(MapConnection*);
     void onConnectionItemSelected(ConnectionPixmapItem* connectionItem);
