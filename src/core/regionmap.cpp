@@ -79,14 +79,25 @@ bool RegionMap::loadTilemap(poryjson::Json tilemapJson) {
         this->palette_path = tilemapObject["palette"].string_value();
     }
 
+    QImage tilesetFile(fullPath(this->tileset_path));
+    if (tilesetFile.isNull()) {
+        logError(QString("Failed to open region map tileset file '%1'.").arg(tileset_path));
+        return false;
+    }
+
+    if (tilesetFile.width() < 8 || tilesetFile.height() < 8) {
+        logError(QString("Region map tileset file '%1' must be at least 8x8.").arg(tileset_path));
+        return false;
+    }
+
     QFile tilemapFile(fullPath(this->tilemap_path));
     if (!tilemapFile.open(QIODevice::ReadOnly)) {
-        logError(QString("Failed to open region map tilemap file %1.").arg(tilemap_path));
+        logError(QString("Failed to open region map tilemap file '%1'.").arg(tilemap_path));
         return false;
     }
 
     if (tilemapFile.size() < tilemapBytes()) {
-        logError(QString("The region map tilemap at %1 is too small.").arg(tilemap_path));
+        logError(QString("The region map tilemap at '%1' is too small.").arg(tilemap_path));
         return false;
     }
 
@@ -297,7 +308,7 @@ bool RegionMap::loadLayout(poryjson::Json layoutJson) {
                         }
                         setLayout("main", layout);
                     } else {
-                        logError("Region map layout is not readable.");
+                        logError(QString("Failed to read region map layout from '%1'.").arg(this->layout_path));
                         return false;
                     }
                 }

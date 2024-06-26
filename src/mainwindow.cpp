@@ -2960,21 +2960,41 @@ void MainWindow::on_pushButton_CreatePrefab_clicked() {
 
 bool MainWindow::initRegionMapEditor(bool silent) {
     this->regionMapEditor = new RegionMapEditor(this, this->editor->project);
-    bool success = this->regionMapEditor->load(silent);
-    if (!success) {
-        delete this->regionMapEditor;
-        this->regionMapEditor = nullptr;
-        if (!silent) {
-            QMessageBox msgBox(this);
-            QString errorMsg = QString("There was an error opening the region map data. Please see %1 for full error details.\n\n%3")
-                    .arg(getLogPath())
-                    .arg(getMostRecentError());
-            msgBox.critical(nullptr, "Error Opening Region Map Editor", errorMsg);
+    if (!this->regionMapEditor->load(silent)) {
+        // The region map editor either failed to load,
+        // or the user declined configuring their settings.
+        if (!silent && this->regionMapEditor->setupErrored()) {
+            if (this->askToFixRegionMapEditor())
+                return true;
         }
+        delete this->regionMapEditor;
         return false;
     }
 
     return true;
+}
+
+bool MainWindow::askToFixRegionMapEditor() {
+    QMessageBox msgBox;
+    msgBox.setIcon(QMessageBox::Critical);
+    msgBox.setText(QString("There was an error opening the region map data. Please see %1 for full error details.").arg(getLogPath()));
+    msgBox.setDetailedText(getMostRecentError());
+    msgBox.setStandardButtons(QMessageBox::Ok);
+    msgBox.setDefaultButton(QMessageBox::Ok);
+    auto reconfigButton = msgBox.addButton("Reconfigure", QMessageBox::ActionRole);
+    msgBox.exec();
+    if (msgBox.clickedButton() == reconfigButton) {
+        if (this->regionMapEditor->reconfigure()) {
+            // User fixed error
+            return true;
+        }
+        if (this->regionMapEditor->setupErrored()) {
+            // User's new settings still fail, show error and ask again
+            return this->askToFixRegionMapEditor();
+        }
+    }
+    // User accepted error
+    return false;
 }
 
 void MainWindow::closeSupplementaryWindows() {
