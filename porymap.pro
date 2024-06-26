@@ -46,6 +46,7 @@ SOURCES += src/core/block.cpp \
     src/scriptapi/apiutility.cpp \
     src/scriptapi/scripting.cpp \
     src/ui/aboutporymap.cpp \
+    src/ui/connectionslistitem.cpp \
     src/ui/customscriptseditor.cpp \
     src/ui/customscriptslistitem.cpp \
     src/ui/draggablepixmapitem.cpp \
@@ -139,6 +140,7 @@ HEADERS  += include/core/block.h \
     include/lib/orderedmap.h \
     include/lib/orderedjson.h \
     include/ui/aboutporymap.h \
+    include/ui/connectionslistitem.h \
     include/ui/customscriptseditor.h \
     include/ui/customscriptslistitem.h \
     include/ui/draggablepixmapitem.h \
@@ -205,6 +207,7 @@ HEADERS  += include/core/block.h \
     include/ui/updatepromoter.h
 
 FORMS    += forms/mainwindow.ui \
+    forms/connectionslistitem.ui \
     forms/prefabcreationdialog.ui \
     forms/prefabframe.ui \
     forms/tileseteditor.ui \

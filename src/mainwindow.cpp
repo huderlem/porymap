@@ -2546,18 +2546,19 @@ void MainWindow::showExportMapImageWindow(ImageExporterMode mode) {
     openSubWindow(this->mapImageExporter);
 }
 
+// TODO: Move responsibility to list item
 void MainWindow::on_comboBox_ConnectionDirection_currentTextChanged(const QString &direction)
 {
     editor->updateCurrentConnectionDirection(direction);
     markMapEdited();
 }
-
+// TODO: Move responsibility to list item
 void MainWindow::on_spinBox_ConnectionOffset_valueChanged(int offset)
 {
     editor->updateConnectionOffset(offset);
     markMapEdited();
 }
-
+// TODO: Move responsibility to list item
 void MainWindow::on_comboBox_ConnectedMap_currentTextChanged(const QString &mapName)
 {
     if (mapName.isEmpty() || editor->project->mapNames.contains(mapName)) {
@@ -2568,10 +2569,11 @@ void MainWindow::on_comboBox_ConnectedMap_currentTextChanged(const QString &mapN
 
 void MainWindow::on_pushButton_AddConnection_clicked()
 {
+    // TODO: Bring up a prompt for information. Mark the current map *AND* the connected map as edited
     editor->addNewConnection();
     markMapEdited();
 }
-
+// TODO: Move responsibility to list item
 void MainWindow::on_pushButton_RemoveConnection_clicked()
 {
     editor->removeCurrentConnection();

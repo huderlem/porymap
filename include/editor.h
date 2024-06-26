@@ -171,11 +171,10 @@ private:
     void setConnectionItemsVisible(bool);
     void setBorderItemsVisible(bool, qreal = 1);
     void setConnectionEditControlValues(MapConnection*);
-    void setConnectionEditControlsEnabled(bool);
     void setConnectionsEditable(bool);
     void createConnectionItem(MapConnection* connection);
-    void populateConnectionMapPickers();
-    void setDiveEmergeControls();
+    void populateConnectionsList();
+    void addConnectionToList(const MapConnection * connection);
     void updateDiveEmergeMap(QString mapName, QString direction);
     void onConnectionOffsetChanged(int newOffset);
     void removeMirroredConnection(MapConnection*);

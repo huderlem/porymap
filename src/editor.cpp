@@ -2,7 +2,7 @@
 #include "draggablepixmapitem.h"
 #include "imageproviders.h"
 #include "log.h"
-#include "mapconnection.h"
+#include "connectionslistitem.h"
 #include "currentselectedmetatilespixmapitem.h"
 #include "mapsceneeventfilter.h"
 #include "metatile.h"
@@ -178,11 +178,7 @@ void Editor::setEditingConnections() {
         map_item->paintingMode = MapPixmapItem::PaintMode::Disabled;
         map_item->draw();
         map_item->setVisible(true);
-        populateConnectionMapPickers();
-        ui->label_NumConnections->setText(QString::number(map->connections.length()));
-        setDiveEmergeControls();
-        bool controlsEnabled = selected_connection_item != nullptr;
-        setConnectionEditControlsEnabled(controlsEnabled);
+        populateConnectionsList();
         if (selected_connection_item) {
             onConnectionOffsetChanged(selected_connection_item->connection->offset);
             setConnectionMap(selected_connection_item->connection->map_name);
@@ -739,11 +735,18 @@ void Editor::updateEncounterFields(EncounterFields newFields) {
     project->wildMonFields = newFields;
 }
 
-void Editor::setDiveEmergeControls() {
-    ui->comboBox_DiveMap->blockSignals(true);
-    ui->comboBox_EmergeMap->blockSignals(true);
+void Editor::populateConnectionsList() {
+    const QSignalBlocker blocker1(ui->comboBox_DiveMap);
+    const QSignalBlocker blocker2(ui->comboBox_EmergeMap);
+
+    ui->comboBox_DiveMap->clear();
+    ui->comboBox_DiveMap->addItems(project->mapNames);
     ui->comboBox_DiveMap->setCurrentText("");
+
+    ui->comboBox_EmergeMap->clear();
+    ui->comboBox_EmergeMap->addItems(project->mapNames);
     ui->comboBox_EmergeMap->setCurrentText("");
+
     for (MapConnection* connection : map->connections) {
         if (connection->direction == "dive") {
             ui->comboBox_DiveMap->setCurrentText(connection->map_name);
@@ -751,25 +754,20 @@ void Editor::setDiveEmergeControls() {
             ui->comboBox_EmergeMap->setCurrentText(connection->map_name);
         }
     }
-    ui->comboBox_DiveMap->blockSignals(false);
-    ui->comboBox_EmergeMap->blockSignals(false);
+
+    // Clear any existing connections in list
+    for (auto w : ui->scrollAreaContents_ConnectionsList->findChildren<ConnectionsListItem*>())
+        w->deleteLater();
+
+    for (auto item :connection_items)
+        addConnectionToList(item->connection);
 }
 
-void Editor::populateConnectionMapPickers() {
-    ui->comboBox_ConnectedMap->blockSignals(true);
-    ui->comboBox_DiveMap->blockSignals(true);
-    ui->comboBox_EmergeMap->blockSignals(true);
-
-    ui->comboBox_ConnectedMap->clear();
-    ui->comboBox_ConnectedMap->addItems(project->mapNames);
-    ui->comboBox_DiveMap->clear();
-    ui->comboBox_DiveMap->addItems(project->mapNames);
-    ui->comboBox_EmergeMap->clear();
-    ui->comboBox_EmergeMap->addItems(project->mapNames);
-
-    ui->comboBox_ConnectedMap->blockSignals(false);
-    ui->comboBox_DiveMap->blockSignals(true);
-    ui->comboBox_EmergeMap->blockSignals(true);
+// TODO: Vertical scrolling
+void Editor::addConnectionToList(const MapConnection * connection) {
+    ConnectionsListItem *listItem = new ConnectionsListItem(ui->scrollAreaContents_ConnectionsList, project->mapNames);
+    listItem->populate(connection);
+    ui->layout_ConnectionsList->insertWidget(ui->layout_ConnectionsList->count() - 1, listItem); // Insert above the vertical spacer
 }
 
 void Editor::setConnectionItemsVisible(bool visible) {
@@ -848,38 +846,15 @@ void Editor::onConnectionMoved(MapConnection* connection) {
 }
 
 void Editor::onConnectionOffsetChanged(int newOffset) {
-    ui->spinBox_ConnectionOffset->blockSignals(true);
+    // Connections TODO: Change offset spin box for selected connection
+    /*ui->spinBox_ConnectionOffset->blockSignals(true);
     ui->spinBox_ConnectionOffset->setValue(newOffset);
     ui->spinBox_ConnectionOffset->blockSignals(false);
-
+    */
 }
 
 void Editor::setConnectionEditControlValues(MapConnection* connection) {
-    QString mapName = connection ? connection->map_name : "";
-    QString direction = connection ? connection->direction : "";
-    int offset = connection ? connection->offset : 0;
-
-    ui->comboBox_ConnectedMap->blockSignals(true);
-    ui->comboBox_ConnectionDirection->blockSignals(true);
-    ui->spinBox_ConnectionOffset->blockSignals(true);
-
-    ui->comboBox_ConnectedMap->setCurrentText(mapName);
-    ui->comboBox_ConnectionDirection->setCurrentText(direction);
-    ui->spinBox_ConnectionOffset->setValue(offset);
-
-    ui->comboBox_ConnectedMap->blockSignals(false);
-    ui->comboBox_ConnectionDirection->blockSignals(false);
-    ui->spinBox_ConnectionOffset->blockSignals(false);
-}
-
-void Editor::setConnectionEditControlsEnabled(bool enabled) {
-    ui->comboBox_ConnectionDirection->setEnabled(enabled);
-    ui->comboBox_ConnectedMap->setEnabled(enabled);
-    ui->spinBox_ConnectionOffset->setEnabled(enabled);
-
-    if (!enabled) {
-        setConnectionEditControlValues(nullptr);
-    }
+    // Connections TODO: Highlight selected connection
 }
 
 void Editor::setConnectionsEditable(bool editable) {
@@ -896,10 +871,11 @@ void Editor::onConnectionItemSelected(ConnectionPixmapItem* connectionItem) {
     selected_connection_item = connectionItem;
     for (ConnectionPixmapItem* item : connection_items)
         item->updateHighlight(item == selected_connection_item);
-    setConnectionEditControlsEnabled(true);
     setConnectionEditControlValues(selected_connection_item->connection);
+    /* // Connections TODO:
     ui->spinBox_ConnectionOffset->setMaximum(selected_connection_item->getMaxOffset());
     ui->spinBox_ConnectionOffset->setMinimum(selected_connection_item->getMinOffset());
+    */
     onConnectionOffsetChanged(selected_connection_item->connection->offset);
 }
 
@@ -918,9 +894,11 @@ void Editor::onConnectionItemDoubleClicked(ConnectionPixmapItem* connectionItem)
 }
 
 void Editor::onConnectionDirectionChanged(QString newDirection) {
+    /* // Connections TODO:
     ui->comboBox_ConnectionDirection->blockSignals(true);
     ui->comboBox_ConnectionDirection->setCurrentText(newDirection);
     ui->comboBox_ConnectionDirection->blockSignals(false);
+    */
 }
 
 void Editor::onBorderMetatilesChanged() {
@@ -1746,13 +1724,12 @@ void Editor::setConnectionMap(QString mapName) {
     }
 
     QString originalMapName = selected_connection_item->connection->map_name;
-    setConnectionEditControlsEnabled(true);
     selected_connection_item->connection->map_name = mapName;
     setCurrentConnectionDirection(selected_connection_item->connection->direction);
 
     // New map may have a different minimum offset than the last one. The maximum will be the same.
     int min = selected_connection_item->getMinOffset();
-    ui->spinBox_ConnectionOffset->setMinimum(min);
+    //ui->spinBox_ConnectionOffset->setMinimum(min); // Connections TODO:
     onConnectionOffsetChanged(qMax(min, selected_connection_item->connection->offset));
 
     updateMirroredConnectionMap(selected_connection_item->connection, originalMapName);
@@ -1786,8 +1763,8 @@ void Editor::addNewConnection() {
     newConnection->map_name = defaultMapName;
     map->connections.append(newConnection);
     createConnectionItem(newConnection);
+    addConnectionToList(newConnection);
     onConnectionItemSelected(connection_items.last());
-    ui->label_NumConnections->setText(QString::number(map->connections.length()));
 
     updateMirroredConnection(newConnection, newConnection->direction, newConnection->map_name);
 }
@@ -1867,9 +1844,7 @@ void Editor::removeCurrentConnection() {
     }
 
     selected_connection_item = nullptr;
-    setConnectionEditControlsEnabled(false);
-    ui->spinBox_ConnectionOffset->setValue(0);
-    ui->label_NumConnections->setText(QString::number(map->connections.length()));
+    //ui->spinBox_ConnectionOffset->setValue(0); // Connections TODO:
 
     if (connection_items.length() > 0) {
         onConnectionItemSelected(connection_items.last());
@@ -1918,8 +1893,6 @@ void Editor::updateDiveEmergeMap(QString mapName, QString direction) {
             updateMirroredConnectionMap(connection, originalMapName);
         }
     }
-
-    ui->label_NumConnections->setText(QString::number(map->connections.length()));
 }
 
 void Editor::updatePrimaryTileset(QString tilesetLabel, bool forceLoad)
