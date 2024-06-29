@@ -992,7 +992,7 @@
                              <rect>
                               <x>0</x>
                               <y>0</y>
-                              <width>98</width>
+                              <width>91</width>
                               <height>74</height>
                              </rect>
                             </property>
@@ -1193,7 +1193,7 @@
                          <rect>
                           <x>0</x>
                           <y>0</y>
-                          <width>98</width>
+                          <width>91</width>
                           <height>512</height>
                          </rect>
                         </property>
@@ -1413,8 +1413,8 @@
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>98</width>
-                             <height>444</height>
+                             <width>93</width>
+                             <height>460</height>
                             </rect>
                            </property>
                            <layout class="QVBoxLayout" name="verticalLayout_14">
@@ -1715,7 +1715,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>30</height>
+                             <height>16</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -1809,7 +1809,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>30</height>
+                             <height>16</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -1903,7 +1903,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>30</height>
+                             <height>16</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -2003,7 +2003,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>30</height>
+                             <height>16</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -2097,7 +2097,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>30</height>
+                             <height>16</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -2588,7 +2588,7 @@
                   <property name="bottomMargin">
                    <number>4</number>
                   </property>
-                  <item row="0" column="3">
+                  <item row="0" column="4">
                    <spacer name="horizontalSpacer_6">
                     <property name="orientation">
                      <enum>Qt::Horizontal</enum>
@@ -2601,7 +2601,7 @@
                     </property>
                    </spacer>
                   </item>
-                  <item row="0" column="4">
+                  <item row="0" column="5">
                    <widget class="QCheckBox" name="checkBox_MirrorConnections">
                     <property name="toolTip">
                      <string>If enabled, connections will automatically be updated on the connected map.</string>
@@ -2614,41 +2614,7 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="1" column="1">
-                   <widget class="QLabel" name="label_EmergeMap">
-                    <property name="text">
-                     <string>Emerge Map</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="1">
-                   <widget class="QLabel" name="label_DiveMap">
-                    <property name="text">
-                     <string>Dive Map</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="2">
-                   <widget class="NoScrollComboBox" name="comboBox_DiveMap">
-                    <property name="toolTip">
-                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Destination map name when using &lt;span style=&quot; font-weight:600;&quot;&gt;Dive&lt;/span&gt;. If empty, no such connection will exist.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                    </property>
-                    <property name="editable">
-                     <bool>true</bool>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="2">
-                   <widget class="NoScrollComboBox" name="comboBox_EmergeMap">
-                    <property name="toolTip">
-                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Destination map name when emerging using &lt;span style=&quot; font-weight:600;&quot;&gt;Dive&lt;/span&gt;. If empty, no such connection will exist.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                    </property>
-                    <property name="editable">
-                     <bool>true</bool>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="0">
+                  <item row="1" column="0">
                    <widget class="QToolButton" name="button_OpenDiveMap">
                     <property name="toolTip">
                      <string>Open the selected Dive Map</string>
@@ -2662,7 +2628,7 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="1" column="0">
+                  <item row="0" column="0">
                    <widget class="QToolButton" name="button_OpenEmergeMap">
                     <property name="toolTip">
                      <string>Open the selected Emerge Map</string>
@@ -2673,6 +2639,40 @@
                     <property name="icon">
                      <iconset resource="../resources/images.qrc">
                       <normaloff>:/icons/map_go.ico</normaloff>:/icons/map_go.ico</iconset>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QLabel" name="label_EmergeMap">
+                    <property name="text">
+                     <string>Emerge Map</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="1">
+                   <widget class="QLabel" name="label_DiveMap">
+                    <property name="text">
+                     <string>Dive Map</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="3">
+                   <widget class="NoScrollComboBox" name="comboBox_DiveMap">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Destination map name when using &lt;span style=&quot; font-weight:600;&quot;&gt;Dive&lt;/span&gt;. If empty, no such connection will exist.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                    <property name="editable">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="3">
+                   <widget class="NoScrollComboBox" name="comboBox_EmergeMap">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Destination map name when emerging using &lt;span style=&quot; font-weight:600;&quot;&gt;Dive&lt;/span&gt;. If empty, no such connection will exist.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                    <property name="editable">
+                     <bool>true</bool>
                     </property>
                    </widget>
                   </item>

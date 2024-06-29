@@ -718,6 +718,21 @@ void MainWindow::on_action_Reload_Project_triggered() {
         openProject(editor->project->root);
 }
 
+// setMap, but with a visible error message in case of failure.
+// Use when the user is specifically requesting a map to open.
+bool MainWindow::userSetMap(QString map_name, bool scrollTreeView) {
+    if (!setMap(map_name, scrollTreeView)) {
+        QMessageBox msgBox(this);
+        QString errorMsg = QString("There was an error opening map %1. Please see %2 for full error details.\n\n%3")
+                .arg(map_name)
+                .arg(getLogPath())
+                .arg(getMostRecentError());
+        msgBox.critical(nullptr, "Error Opening Map", errorMsg);
+        return false;
+    }
+    return true;
+}
+
 bool MainWindow::setMap(QString map_name, bool scrollTreeView) {
     logInfo(QString("Setting map to '%1'").arg(map_name));
     if (map_name.isEmpty()) {
@@ -810,15 +825,8 @@ void MainWindow::openWarpMap(QString map_name, int event_id, Event::Group event_
     }
 
     // Open the destination map.
-    if (!setMap(map_name, true)) {
-        QMessageBox msgBox(this);
-        QString errorMsg = QString("There was an error opening map %1. Please see %2 for full error details.\n\n%3")
-                .arg(map_name)
-                .arg(getLogPath())
-                .arg(getMostRecentError());
-        msgBox.critical(nullptr, "Error Opening Map", errorMsg);
+    if (!userSetMap(map_name, true))
         return;
-    }
 
     // Select the target event.
     int index = event_id - Event::getIndexOffset(event_group);
@@ -1468,17 +1476,8 @@ void MainWindow::currentMetatilesSelectionChanged() {
 void MainWindow::on_mapList_activated(const QModelIndex &index)
 {
     QVariant data = index.data(Qt::UserRole);
-    if (index.data(MapListUserRoles::TypeRole) == "map_name" && !data.isNull()) {
-        QString mapName = data.toString();
-        if (!setMap(mapName)) {
-            QMessageBox msgBox(this);
-            QString errorMsg = QString("There was an error opening map %1. Please see %2 for full error details.\n\n%3")
-                    .arg(mapName)
-                    .arg(getLogPath())
-                    .arg(getMostRecentError());
-            msgBox.critical(nullptr, "Error Opening Map", errorMsg);
-        }
-    }
+    if (index.data(MapListUserRoles::TypeRole) == "map_name" && !data.isNull())
+        userSetMap(data.toString());
 }
 
 void MainWindow::drawMapListIcons(QAbstractItemModel *model) {
@@ -2421,16 +2420,8 @@ void MainWindow::clickToolButtonFromEditMode(QString editMode) {
 }
 
 void MainWindow::onLoadMapRequested(QString mapName, QString fromMapName) {
-    if (!setMap(mapName, true)) {
-        QMessageBox msgBox(this);
-        QString errorMsg = QString("There was an error opening map %1. Please see %2 for full error details.\n\n%3")
-                .arg(mapName)
-                .arg(getLogPath())
-                .arg(getMostRecentError());
-        msgBox.critical(nullptr, "Error Opening Map", errorMsg);
-        return;
-    }
-    editor->setSelectedConnectionFromMap(fromMapName);
+    if (userSetMap(mapName, true))
+        editor->setSelectedConnectionFromMap(fromMapName);
 }
 
 void MainWindow::onMapChanged(Map *) {
@@ -2592,17 +2583,27 @@ void MainWindow::on_pushButton_ConfigureEncountersJSON_clicked() {
     editor->configureEncounterJSON(this);
 }
 
-void MainWindow::on_comboBox_DiveMap_currentTextChanged(const QString &mapName)
-{
-    if (mapName.isEmpty() || editor->project->mapNames.contains(mapName)) {
+void MainWindow::on_button_OpenDiveMap_clicked() {
+    const QString mapName = ui->comboBox_DiveMap->currentText();
+    if (editor->project->isExistingMapName(mapName))
+        userSetMap(mapName, true);
+}
+
+void MainWindow::on_button_OpenEmergeMap_clicked() {
+    const QString mapName = ui->comboBox_EmergeMap->currentText();
+    if (editor->project->isExistingMapName(mapName))
+        userSetMap(mapName, true);
+}
+
+void MainWindow::on_comboBox_DiveMap_currentTextChanged(const QString &mapName) {
+    if (editor->project->isExistingMapName(mapName)) {
         editor->updateDiveMap(mapName);
         markMapEdited();
     }
 }
 
-void MainWindow::on_comboBox_EmergeMap_currentTextChanged(const QString &mapName)
-{
-    if (mapName.isEmpty() || editor->project->mapNames.contains(mapName)) {
+void MainWindow::on_comboBox_EmergeMap_currentTextChanged(const QString &mapName) {
+    if (editor->project->isExistingMapName(mapName)) {
         editor->updateEmergeMap(mapName);
         markMapEdited();
     }

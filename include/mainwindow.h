@@ -248,6 +248,8 @@ private slots:
     void on_comboBox_ConnectedMap_currentTextChanged(const QString &mapName);
     void on_pushButton_AddConnection_clicked();
     void on_pushButton_RemoveConnection_clicked();
+    void on_button_OpenDiveMap_clicked();
+    void on_button_OpenEmergeMap_clicked();
     void on_comboBox_DiveMap_currentTextChanged(const QString &mapName);
     void on_comboBox_EmergeMap_currentTextChanged(const QString &mapName);
     void on_comboBox_PrimaryTileset_currentTextChanged(const QString &arg1);
@@ -342,6 +344,7 @@ private:
 
     bool tilesetNeedsRedraw = false;
 
+    bool userSetMap(QString, bool scrollTreeView = false);
     bool setMap(QString, bool scrollTreeView = false);
     void redrawMapScene();
     void refreshMapScene();

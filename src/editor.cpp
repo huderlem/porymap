@@ -763,7 +763,7 @@ void Editor::populateConnectionsList() {
         addConnectionToList(item->connection);
 }
 
-// TODO: Vertical scrolling
+// TODO: Don't allow splitter resizing to shrink list items to the point where horizontal scroll is needed
 void Editor::addConnectionToList(const MapConnection * connection) {
     ConnectionsListItem *listItem = new ConnectionsListItem(ui->scrollAreaContents_ConnectionsList, project->mapNames);
     listItem->populate(connection);
