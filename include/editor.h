@@ -74,11 +74,8 @@ public:
     void setEditingObjects();
     void setEditingConnections();
     void setMapEditingButtonsEnabled(bool enabled);
-    void setCurrentConnectionDirection(QString curDirection);
-    void updateCurrentConnectionDirection(QString curDirection);
     void setConnectionsVisibility(bool visible);
     void updateConnectionOffset(int offset);
-    void setConnectionMap(QString mapName);
     void addNewConnection();
     void removeCurrentConnection();
     void addNewWildMonGroup(QWidget *window);
@@ -170,8 +167,8 @@ private:
 
     void setConnectionItemsVisible(bool);
     void setBorderItemsVisible(bool, qreal = 1);
-    void setConnectionEditControlValues(MapConnection*);
     void setConnectionsEditable(bool);
+    void redrawConnection(ConnectionPixmapItem* connectionItem);
     void createConnectionItem(MapConnection* connection);
     void populateConnectionsList();
     void addConnectionToList(const MapConnection * connection);

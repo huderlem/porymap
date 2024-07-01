@@ -180,9 +180,8 @@ void Editor::setEditingConnections() {
         map_item->setVisible(true);
         populateConnectionsList();
         if (selected_connection_item) {
-            onConnectionOffsetChanged(selected_connection_item->connection->offset);
-            setConnectionMap(selected_connection_item->connection->map_name);
-            setCurrentConnectionDirection(selected_connection_item->connection->direction);
+            // TODO: Do we need additional handling here again
+            redrawConnection(selected_connection_item);
         }
         maskNonVisibleConnectionTiles();
     }
@@ -784,77 +783,99 @@ void Editor::setBorderItemsVisible(bool visible, qreal opacity) {
     }
 }
 
-void Editor::setCurrentConnectionDirection(QString curDirection) {
-    if (!selected_connection_item)
+void Editor::redrawConnection(ConnectionPixmapItem* connectionItem) {
+    if (!connectionItem || !connectionItem->connection)
         return;
-    Map *connected_map = project->getMap(selected_connection_item->connection->map_name);
-    if (!connected_map) {
+
+    const QString mapName = connectionItem->connection->map_name;
+    if (mapName.isEmpty())
+        return;
+
+    // TODO: What happens if a connection is saved with an empty name
+    if (mapName == DYNAMIC_MAP_NAME || !project->mapNames.contains(mapName)) {
+        logError(QString("Invalid map name '%1' specified for connection.").arg(mapName));
         return;
     }
 
-    selected_connection_item->connection->direction = curDirection;
+    Map *connectedMap = project->getMap(mapName);
+    if (!connectedMap)
+        return;
 
-    QPixmap pixmap = connected_map->renderConnection(*selected_connection_item->connection, map->layout);
-    int offset = selected_connection_item->connection->offset;
-    selected_connection_item->initialOffset = offset;
+    QPixmap pixmap = connectedMap->renderConnection(*connectionItem->connection, map->layout);
+
+    int offset = connectionItem->connection->offset;
+    connectionItem->initialOffset = offset;
     int x = 0, y = 0;
-    if (selected_connection_item->connection->direction == "up") {
+    if (connectionItem->connection->direction == "up") {
         x = offset * 16;
         y = -pixmap.height();
-    } else if (selected_connection_item->connection->direction == "down") {
+    } else if (connectionItem->connection->direction == "down") {
         x = offset * 16;
         y = map->getHeight() * 16;
-    } else if (selected_connection_item->connection->direction == "left") {
+    } else if (connectionItem->connection->direction == "left") {
         x = -pixmap.width();
         y = offset * 16;
-    } else if (selected_connection_item->connection->direction == "right") {
+    } else if (connectionItem->connection->direction == "right") {
         x = map->getWidth() * 16;
         y = offset * 16;
     }
 
-    selected_connection_item->basePixmap = pixmap;
-    QPainter painter(&pixmap);
-    painter.setPen(QColor(255, 0, 255));
-    painter.drawRect(0, 0, pixmap.width() - 1, pixmap.height() - 1);
-    painter.end();
-    selected_connection_item->setPixmap(pixmap);
-    selected_connection_item->initialX = x;
-    selected_connection_item->initialY = y;
-    selected_connection_item->blockSignals(true);
-    selected_connection_item->setX(x);
-    selected_connection_item->setY(y);
-    selected_connection_item->setZValue(-1);
-    selected_connection_item->blockSignals(false);
+    connectionItem->basePixmap = pixmap;
 
-    setConnectionEditControlValues(selected_connection_item->connection);
+    // TODO: Make sure offset limiting is correct (and updated)
+    // New map may have a different minimum offset than the last one. The maximum will be the same.
+    /*int min = selected_connection_item->getMinOffset();
+    //ui->spinBox_ConnectionOffset->setMinimum(min); // Connections TODO:
+    onConnectionOffsetChanged(qMax(min, selected_connection_item->connection->offset));*/
+
+    if (connectionItem == selected_connection_item) {
+        QPainter painter(&pixmap);
+        painter.setPen(QColor(255, 0, 255));
+        painter.drawRect(0, 0, pixmap.width() - 1, pixmap.height() - 1);
+        painter.end();
+    }
+    connectionItem->setPixmap(pixmap);
+    connectionItem->initialX = x;
+    connectionItem->initialY = y;
+    connectionItem->blockSignals(true);
+    connectionItem->setX(x);
+    connectionItem->setY(y);
+    connectionItem->setZValue(-1);
+    connectionItem->blockSignals(false);
+
+    // TODO:
+    //updateMirroredConnectionMap(selected_connection_item->connection, originalMapName);
+
+    maskNonVisibleConnectionTiles();
 }
 
-void Editor::updateCurrentConnectionDirection(QString curDirection) {
+// TODO: Generalize
+void Editor::updateConnectionOffset(int offset) {
     if (!selected_connection_item)
         return;
 
-    QString originalDirection = selected_connection_item->connection->direction;
-    setCurrentConnectionDirection(curDirection);
-    updateMirroredConnectionDirection(selected_connection_item->connection, originalDirection);
+    selected_connection_item->blockSignals(true);
+    offset = qMin(offset, selected_connection_item->getMaxOffset());
+    offset = qMax(offset, selected_connection_item->getMinOffset());
+    selected_connection_item->connection->offset = offset;
+    if (selected_connection_item->connection->direction == "up" || selected_connection_item->connection->direction == "down") {
+        selected_connection_item->setX(selected_connection_item->initialX + (offset - selected_connection_item->initialOffset) * 16);
+    } else if (selected_connection_item->connection->direction == "left" || selected_connection_item->connection->direction == "right") {
+        selected_connection_item->setY(selected_connection_item->initialY + (offset - selected_connection_item->initialOffset) * 16);
+    }
+    selected_connection_item->blockSignals(false);
+    updateMirroredConnectionOffset(selected_connection_item->connection);
     maskNonVisibleConnectionTiles();
 }
 
 void Editor::onConnectionMoved(MapConnection* connection) {
-    updateMirroredConnectionOffset(connection);
-    onConnectionOffsetChanged(connection->offset);
+    // TODO:
+    //updateMirroredConnectionOffset(connection);
+    
+    // TODO: Sync change to correct offset spin box
+
+    // TODO: This is likely the source of the visual masking bug while dragging (this happens after the move)
     maskNonVisibleConnectionTiles();
-}
-
-void Editor::onConnectionOffsetChanged(int newOffset) {
-    // Connections TODO: Change offset spin box for selected connection
-    /*ui->spinBox_ConnectionOffset->blockSignals(true);
-    ui->spinBox_ConnectionOffset->setValue(newOffset);
-    ui->spinBox_ConnectionOffset->blockSignals(false);
-    */
-}
-
-void Editor::setConnectionEditControlValues(MapConnection* connection) {
-    // Connections TODO: Highlight selected connection
 }
 
 void Editor::setConnectionsEditable(bool editable) {
@@ -871,12 +892,8 @@ void Editor::onConnectionItemSelected(ConnectionPixmapItem* connectionItem) {
     selected_connection_item = connectionItem;
     for (ConnectionPixmapItem* item : connection_items)
         item->updateHighlight(item == selected_connection_item);
-    setConnectionEditControlValues(selected_connection_item->connection);
-    /* // Connections TODO:
-    ui->spinBox_ConnectionOffset->setMaximum(selected_connection_item->getMaxOffset());
-    ui->spinBox_ConnectionOffset->setMinimum(selected_connection_item->getMinOffset());
-    */
-    onConnectionOffsetChanged(selected_connection_item->connection->offset);
+
+    // TODO: Handle the highlight done in redrawConnection?
 }
 
 void Editor::setSelectedConnectionFromMap(QString mapName) {
@@ -1690,50 +1707,6 @@ void Editor::displayMapGrid() {
         connect(ui->checkBox_ToggleGrid, &QCheckBox::toggled, [=](bool checked){line->setVisible(checked);});
     }
     connect(ui->checkBox_ToggleGrid, &QCheckBox::toggled, this, &Editor::onToggleGridClicked);
-}
-
-void Editor::updateConnectionOffset(int offset) {
-    if (!selected_connection_item)
-        return;
-
-    selected_connection_item->blockSignals(true);
-    offset = qMin(offset, selected_connection_item->getMaxOffset());
-    offset = qMax(offset, selected_connection_item->getMinOffset());
-    selected_connection_item->connection->offset = offset;
-    if (selected_connection_item->connection->direction == "up" || selected_connection_item->connection->direction == "down") {
-        selected_connection_item->setX(selected_connection_item->initialX + (offset - selected_connection_item->initialOffset) * 16);
-    } else if (selected_connection_item->connection->direction == "left" || selected_connection_item->connection->direction == "right") {
-        selected_connection_item->setY(selected_connection_item->initialY + (offset - selected_connection_item->initialOffset) * 16);
-    }
-    selected_connection_item->blockSignals(false);
-    updateMirroredConnectionOffset(selected_connection_item->connection);
-    maskNonVisibleConnectionTiles();
-}
-
-void Editor::setConnectionMap(QString mapName) {
-    if (!mapName.isEmpty() && !project->mapNames.contains(mapName)) {
-        logError(QString("Invalid map name '%1' specified for connection.").arg(mapName));
-        return;
-    }
-    if (!selected_connection_item)
-        return;
-
-    if (mapName.isEmpty() || mapName == DYNAMIC_MAP_NAME) {
-        removeCurrentConnection();
-        return;
-    }
-
-    QString originalMapName = selected_connection_item->connection->map_name;
-    selected_connection_item->connection->map_name = mapName;
-    setCurrentConnectionDirection(selected_connection_item->connection->direction);
-
-    // New map may have a different minimum offset than the last one. The maximum will be the same.
-    int min = selected_connection_item->getMinOffset();
-    //ui->spinBox_ConnectionOffset->setMinimum(min); // Connections TODO:
-    onConnectionOffsetChanged(qMax(min, selected_connection_item->connection->offset));
-
-    updateMirroredConnectionMap(selected_connection_item->connection, originalMapName);
-    maskNonVisibleConnectionTiles();
 }
 
 void Editor::addNewConnection() {

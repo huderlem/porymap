@@ -2537,37 +2537,10 @@ void MainWindow::showExportMapImageWindow(ImageExporterMode mode) {
     openSubWindow(this->mapImageExporter);
 }
 
-// TODO: Move responsibility to list item
-void MainWindow::on_comboBox_ConnectionDirection_currentTextChanged(const QString &direction)
-{
-    editor->updateCurrentConnectionDirection(direction);
-    markMapEdited();
-}
-// TODO: Move responsibility to list item
-void MainWindow::on_spinBox_ConnectionOffset_valueChanged(int offset)
-{
-    editor->updateConnectionOffset(offset);
-    markMapEdited();
-}
-// TODO: Move responsibility to list item
-void MainWindow::on_comboBox_ConnectedMap_currentTextChanged(const QString &mapName)
-{
-    if (mapName.isEmpty() || editor->project->mapNames.contains(mapName)) {
-        editor->setConnectionMap(mapName);
-        markMapEdited();
-    }
-}
-
 void MainWindow::on_pushButton_AddConnection_clicked()
 {
     // TODO: Bring up a prompt for information. Mark the current map *AND* the connected map as edited
     editor->addNewConnection();
-    markMapEdited();
-}
-// TODO: Move responsibility to list item
-void MainWindow::on_pushButton_RemoveConnection_clicked()
-{
-    editor->removeCurrentConnection();
     markMapEdited();
 }
 
@@ -2595,6 +2568,7 @@ void MainWindow::on_button_OpenEmergeMap_clicked() {
         userSetMap(mapName, true);
 }
 
+// TODO: Mirror change to/from other maps
 void MainWindow::on_comboBox_DiveMap_currentTextChanged(const QString &mapName) {
     if (editor->project->isExistingMapName(mapName)) {
         editor->updateDiveMap(mapName);

@@ -19,6 +19,14 @@ ConnectionsListItem::ConnectionsListItem(QWidget *parent, const QStringList &map
 
     ui->comboBox_Map->setMinimumContentsLength(6);
     ui->comboBox_Map->addItems(mapNames);
+
+    /* TODO: Spin box limits
+    ui->spinBox_ConnectionOffset->setMaximum(selected_connection_item->getMaxOffset());
+    ui->spinBox_ConnectionOffset->setMinimum(selected_connection_item->getMinOffset());
+    */
+
+    // TODO:
+    //connect(ui->button_Delete, &QAbstractButton::clicked, [this](bool) { this->d;});
 }
 
 void ConnectionsListItem::populate(const MapConnection * connection) {
@@ -35,3 +43,36 @@ ConnectionsListItem::~ConnectionsListItem()
 {
     delete ui;
 }
+
+// TODO
+void ConnectionsListItem::on_comboBox_Direction_currentTextChanged(const QString &direction)
+{
+    /*editor->updateCurrentConnectionDirection(direction);
+    markMapEdited();*/
+}
+
+// TODO
+void ConnectionsListItem::on_comboBox_Map_currentTextChanged(const QString &mapName)
+{
+    /*if (mapName.isEmpty() || editor->project->mapNames.contains(mapName)) {
+        editor->setConnectionMap(mapName);
+        markMapEdited();
+    }*/
+}
+
+// TODO
+void ConnectionsListItem::on_spinBox_Offset_valueChanged(int offset)
+{
+    /*editor->updateConnectionOffset(offset);
+    markMapEdited();*/
+}
+
+// TODO
+void ConnectionsListItem::on_button_Delete_clicked()
+{
+    /*
+    editor->removeCurrentConnection();
+    markMapEdited();
+    */
+}
+
