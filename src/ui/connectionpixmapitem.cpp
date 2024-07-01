@@ -13,20 +13,6 @@ void ConnectionPixmapItem::render(qreal opacity) {
     this->setPixmap(newPixmap);
 }
 
-int ConnectionPixmapItem::getMinOffset() {
-    if (this->connection->direction == "up" || this->connection->direction == "down")
-        return -(this->pixmap().width() / 16) - 6;
-    else
-        return -(this->pixmap().height() / 16) - 6;
-}
-
-int ConnectionPixmapItem::getMaxOffset() {
-    if (this->connection->direction == "up" || this->connection->direction == "down")
-        return this->baseMapWidth + 6;
-    else
-        return this->baseMapHeight + 6;
-}
-
 QVariant ConnectionPixmapItem::itemChange(GraphicsItemChange change, const QVariant &value)
 {
     if (change == ItemPositionChange) {
@@ -37,8 +23,6 @@ QVariant ConnectionPixmapItem::itemChange(GraphicsItemChange change, const QVari
         if (this->connection->direction == "up" || this->connection->direction == "down") {
             x = round(newPos.x() / 16) * 16;
             newOffset += (x - initialX) / 16;
-            newOffset = qMin(newOffset, this->getMaxOffset());
-            newOffset = qMax(newOffset, this->getMinOffset());
             x = newOffset * 16;
         }
         else {
@@ -48,8 +32,6 @@ QVariant ConnectionPixmapItem::itemChange(GraphicsItemChange change, const QVari
         if (this->connection->direction == "right" || this->connection->direction == "left") {
             y = round(newPos.y() / 16) * 16;
             newOffset += (y - this->initialY) / 16;
-            newOffset = qMin(newOffset, this->getMaxOffset());
-            newOffset = qMax(newOffset, this->getMinOffset());
             y = newOffset * 16;
         }
         else {

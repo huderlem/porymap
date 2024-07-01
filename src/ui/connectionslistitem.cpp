@@ -20,10 +20,8 @@ ConnectionsListItem::ConnectionsListItem(QWidget *parent, const QStringList &map
     ui->comboBox_Map->setMinimumContentsLength(6);
     ui->comboBox_Map->addItems(mapNames);
 
-    /* TODO: Spin box limits
-    ui->spinBox_ConnectionOffset->setMaximum(selected_connection_item->getMaxOffset());
-    ui->spinBox_ConnectionOffset->setMinimum(selected_connection_item->getMinOffset());
-    */
+    ui->spinBox_Offset->setMinimum(INT_MIN);
+    ui->spinBox_Offset->setMaximum(INT_MAX);
 
     // TODO:
     //connect(ui->button_Delete, &QAbstractButton::clicked, [this](bool) { this->d;});

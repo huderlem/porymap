@@ -27,8 +27,6 @@ public:
     int baseMapWidth;
     int baseMapHeight;
     void render(qreal opacity = 1);
-    int getMinOffset();
-    int getMaxOffset();
     void setEditable(bool editable);
     bool getEditable();
     void updateHighlight(bool selected);

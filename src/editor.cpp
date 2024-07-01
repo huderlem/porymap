@@ -822,12 +822,6 @@ void Editor::redrawConnection(ConnectionPixmapItem* connectionItem) {
 
     connectionItem->basePixmap = pixmap;
 
-    // TODO: Make sure offset limiting is correct (and updated)
-    // New map may have a different minimum offset than the last one. The maximum will be the same.
-    /*int min = selected_connection_item->getMinOffset();
-    //ui->spinBox_ConnectionOffset->setMinimum(min); // Connections TODO:
-    onConnectionOffsetChanged(qMax(min, selected_connection_item->connection->offset));*/
-
     if (connectionItem == selected_connection_item) {
         QPainter painter(&pixmap);
         painter.setPen(QColor(255, 0, 255));
@@ -855,8 +849,6 @@ void Editor::updateConnectionOffset(int offset) {
         return;
 
     selected_connection_item->blockSignals(true);
-    offset = qMin(offset, selected_connection_item->getMaxOffset());
-    offset = qMax(offset, selected_connection_item->getMinOffset());
     selected_connection_item->connection->offset = offset;
     if (selected_connection_item->connection->direction == "up" || selected_connection_item->connection->direction == "down") {
         selected_connection_item->setX(selected_connection_item->initialX + (offset - selected_connection_item->initialOffset) * 16);
