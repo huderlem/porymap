@@ -759,14 +759,49 @@ void Editor::populateConnectionsList() {
         w->deleteLater();
 
     for (auto item :connection_items)
-        addConnectionToList(item->connection);
+        addConnectionToList(item);
 }
 
 // TODO: Don't allow splitter resizing to shrink list items to the point where horizontal scroll is needed
-void Editor::addConnectionToList(const MapConnection * connection) {
-    ConnectionsListItem *listItem = new ConnectionsListItem(ui->scrollAreaContents_ConnectionsList, project->mapNames);
-    listItem->populate(connection);
+void Editor::addConnectionToList(ConnectionPixmapItem * connectionItem) {
+    ConnectionsListItem *listItem = new ConnectionsListItem(ui->scrollAreaContents_ConnectionsList, connectionItem->connection, project->mapNames);
     ui->layout_ConnectionsList->insertWidget(ui->layout_ConnectionsList->count() - 1, listItem); // Insert above the vertical spacer
+
+    connect(connectionItem, &ConnectionPixmapItem::connectionMoved, listItem, &ConnectionsListItem::updateUI);
+
+    // TODO: This is probably slower than necessary (we don't need a full redraw if we're just moving it)
+    // TODO: Handle mirroring
+    connect(listItem, &ConnectionsListItem::edited, [this, connectionItem] {
+        redrawConnection(connectionItem);
+        emit editedMapData();
+    });
+
+    connect(listItem, &ConnectionsListItem::deleted, [this, connectionItem] {
+        removeConnection(connectionItem);
+    });
+}
+
+// TODO: Connect to Delete key for selected connection
+void Editor::removeConnection(ConnectionPixmapItem* connectionItem) {
+    if (!connectionItem)
+        return;
+
+    map->connections.removeOne(connectionItem->connection);
+    connection_items.removeOne(connectionItem);
+    //removeMirroredConnection(connectionItem->connection); // TODO
+
+    if (connectionItem->scene())
+        connectionItem->scene()->removeItem(connectionItem);
+
+    if (connectionItem == selected_connection_item) {
+        selected_connection_item = nullptr;
+        if (!connection_items.isEmpty())
+            onConnectionItemSelected(connection_items.first());
+    }
+
+    delete connectionItem->connection;
+    delete connectionItem;
+    emit editedMapData();
 }
 
 void Editor::setConnectionItemsVisible(bool visible) {
@@ -781,6 +816,25 @@ void Editor::setBorderItemsVisible(bool visible, qreal opacity) {
         item->setVisible(visible);
         item->setOpacity(opacity);
     }
+}
+
+QPoint Editor::calculateConnectionPosition(const MapConnection *connection, const QPixmap &pixmap) {
+    int x = 0, y = 0;
+    const int mWidth = 16, mHeight = 16;
+    if (connection->direction == "up") {
+        x = connection->offset * mWidth;
+        y = -pixmap.height();
+    } else if (connection->direction == "down") {
+        x = connection->offset * mWidth;
+        y = map->getHeight() * mHeight;
+    } else if (connection->direction == "left") {
+        x = -pixmap.width();
+        y = connection->offset * mHeight;
+    } else if (connection->direction == "right") {
+        x = map->getWidth() * mWidth;
+        y = connection->offset * mHeight;
+    }
+    return QPoint(x, y);
 }
 
 void Editor::redrawConnection(ConnectionPixmapItem* connectionItem) {
@@ -802,25 +856,9 @@ void Editor::redrawConnection(ConnectionPixmapItem* connectionItem) {
         return;
 
     QPixmap pixmap = connectedMap->renderConnection(*connectionItem->connection, map->layout);
-
-    int offset = connectionItem->connection->offset;
-    connectionItem->initialOffset = offset;
-    int x = 0, y = 0;
-    if (connectionItem->connection->direction == "up") {
-        x = offset * 16;
-        y = -pixmap.height();
-    } else if (connectionItem->connection->direction == "down") {
-        x = offset * 16;
-        y = map->getHeight() * 16;
-    } else if (connectionItem->connection->direction == "left") {
-        x = -pixmap.width();
-        y = offset * 16;
-    } else if (connectionItem->connection->direction == "right") {
-        x = map->getWidth() * 16;
-        y = offset * 16;
-    }
-
+    connectionItem->initialOffset = connectionItem->connection->offset;
     connectionItem->basePixmap = pixmap;
+    QPoint pos = calculateConnectionPosition(connectionItem->connection, pixmap);
 
     if (connectionItem == selected_connection_item) {
         QPainter painter(&pixmap);
@@ -829,11 +867,11 @@ void Editor::redrawConnection(ConnectionPixmapItem* connectionItem) {
         painter.end();
     }
     connectionItem->setPixmap(pixmap);
-    connectionItem->initialX = x;
-    connectionItem->initialY = y;
+    connectionItem->initialX = pos.x();
+    connectionItem->initialY = pos.y();
     connectionItem->blockSignals(true);
-    connectionItem->setX(x);
-    connectionItem->setY(y);
+    connectionItem->setX(pos.x());
+    connectionItem->setY(pos.y());
     connectionItem->setZValue(-1);
     connectionItem->blockSignals(false);
 
@@ -843,7 +881,7 @@ void Editor::redrawConnection(ConnectionPixmapItem* connectionItem) {
     maskNonVisibleConnectionTiles();
 }
 
-// TODO: Generalize
+// TODO: Generalize, maybe use in addConnectionToList connection instead of full render
 void Editor::updateConnectionOffset(int offset) {
     if (!selected_connection_item)
         return;
@@ -863,11 +901,10 @@ void Editor::updateConnectionOffset(int offset) {
 void Editor::onConnectionMoved(MapConnection* connection) {
     // TODO:
     //updateMirroredConnectionOffset(connection);
-    
-    // TODO: Sync change to correct offset spin box
 
     // TODO: This is likely the source of the visual masking bug while dragging (this happens after the move)
     maskNonVisibleConnectionTiles();
+    emit editedMapData();
 }
 
 void Editor::setConnectionsEditable(bool editable) {
@@ -1559,30 +1596,18 @@ void Editor::createConnectionItem(MapConnection* connection) {
     }
 
     QPixmap pixmap = connected_map->renderConnection(*connection, map->layout);
-    int offset = connection->offset;
-    int x = 0, y = 0;
-    if (connection->direction == "up") {
-        x = offset * 16;
-        y = -pixmap.height();
-    } else if (connection->direction == "down") {
-        x = offset * 16;
-        y = map->getHeight() * 16;
-    } else if (connection->direction == "left") {
-        x = -pixmap.width();
-        y = offset * 16;
-    } else if (connection->direction == "right") {
-        x = map->getWidth() * 16;
-        y = offset * 16;
-    }
+    QPoint pos = calculateConnectionPosition(connection, pixmap);
 
-    ConnectionPixmapItem *item = new ConnectionPixmapItem(pixmap, connection, x, y, map->getWidth(), map->getHeight());
-    item->setX(x);
-    item->setY(y);
+    ConnectionPixmapItem *item = new ConnectionPixmapItem(pixmap, connection, pos.x(), pos.y(), map->getWidth(), map->getHeight());
+    item->setX(pos.x());
+    item->setY(pos.y());
     item->setZValue(-1);
     scene->addItem(item);
+
     connect(item, &ConnectionPixmapItem::connectionMoved, this, &Editor::onConnectionMoved);
     connect(item, &ConnectionPixmapItem::connectionItemSelected, this, &Editor::onConnectionItemSelected);
     connect(item, &ConnectionPixmapItem::connectionItemDoubleClicked, this, &Editor::onConnectionItemDoubleClicked);
+
     connection_items.append(item);
 }
 
@@ -1728,7 +1753,7 @@ void Editor::addNewConnection() {
     newConnection->map_name = defaultMapName;
     map->connections.append(newConnection);
     createConnectionItem(newConnection);
-    addConnectionToList(newConnection);
+    addConnectionToList(connection_items.last());
     onConnectionItemSelected(connection_items.last());
 
     updateMirroredConnection(newConnection, newConnection->direction, newConnection->map_name);
@@ -1793,27 +1818,6 @@ void Editor::updateMirroredConnection(MapConnection* connection, QString origina
     }
 
     mirrorConnection->offset = -connection->offset;
-}
-
-void Editor::removeCurrentConnection() {
-    if (!selected_connection_item)
-        return;
-
-    map->connections.removeOne(selected_connection_item->connection);
-    connection_items.removeOne(selected_connection_item);
-    removeMirroredConnection(selected_connection_item->connection);
-
-    if (selected_connection_item && selected_connection_item->scene()) {
-        selected_connection_item->scene()->removeItem(selected_connection_item);
-        delete selected_connection_item;
-    }
-
-    selected_connection_item = nullptr;
-    //ui->spinBox_ConnectionOffset->setValue(0); // Connections TODO:
-
-    if (connection_items.length() > 0) {
-        onConnectionItemSelected(connection_items.last());
-    }
 }
 
 void Editor::updateDiveMap(QString mapName) {

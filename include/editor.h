@@ -77,7 +77,7 @@ public:
     void setConnectionsVisibility(bool visible);
     void updateConnectionOffset(int offset);
     void addNewConnection();
-    void removeCurrentConnection();
+    void removeConnection(ConnectionPixmapItem* connectionItem);
     void addNewWildMonGroup(QWidget *window);
     void deleteWildMonGroup();
     void updateDiveMap(QString mapName);
@@ -168,10 +168,11 @@ private:
     void setConnectionItemsVisible(bool);
     void setBorderItemsVisible(bool, qreal = 1);
     void setConnectionsEditable(bool);
+    QPoint calculateConnectionPosition(const MapConnection *connection, const QPixmap &pixmap);
     void redrawConnection(ConnectionPixmapItem* connectionItem);
     void createConnectionItem(MapConnection* connection);
     void populateConnectionsList();
-    void addConnectionToList(const MapConnection * connection);
+    void addConnectionToList(ConnectionPixmapItem* connection);
     void updateDiveEmergeMap(QString mapName, QString direction);
     void onConnectionOffsetChanged(int newOffset);
     void removeMirroredConnection(MapConnection*);
