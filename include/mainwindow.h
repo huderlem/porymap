@@ -411,4 +411,23 @@ enum MapListUserRoles {
     TypeRole2, // Used for various extra data needed.
 };
 
+// These are namespaced in a struct to avoid colliding with e.g. class Map.
+struct MainTab {
+    enum {
+        Map,
+        Events,
+        Header,
+        Connections,
+        WildPokemon,
+    };
+};
+
+struct MapViewTab {
+    enum {
+        Metatiles,
+        Collision,
+        Prefabs,
+    };
+};
+
 #endif // MAINWINDOW_H

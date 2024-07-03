@@ -1852,7 +1852,7 @@ void Editor::toggleBorderVisibility(bool visible, bool enableScriptCallback)
 
 void Editor::updateBorderVisibility() {
     // On the connections tab, the border is always visible, and the connections can be edited.
-    bool editingConnections = (ui->mainTabBar->currentIndex() == 3);
+    bool editingConnections = (ui->mainTabBar->currentIndex() == MainTab::Connections);
     bool visible = (editingConnections || ui->checkBox_ToggleBorder->isChecked());
 
     // Update border

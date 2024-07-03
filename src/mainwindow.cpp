@@ -208,16 +208,23 @@ void MainWindow::applyUserShortcuts() {
             shortcut->setKeys(shortcutsConfig.userShortcuts(shortcut));
 }
 
+static const QMap<int, QString> mainTabNames = {
+    {MainTab::Map, "Map"},
+    {MainTab::Events, "Events"},
+    {MainTab::Header, "Header"},
+    {MainTab::Connections, "Connections"},
+    {MainTab::WildPokemon, "Wild Pokemon"},
+};
+
 void MainWindow::initCustomUI() {
     // Set up the tab bar
     while (ui->mainTabBar->count()) ui->mainTabBar->removeTab(0);
-    ui->mainTabBar->addTab("Map");
-    ui->mainTabBar->setTabIcon(0, QIcon(QStringLiteral(":/icons/map.ico")));
-    ui->mainTabBar->addTab("Events");
-    ui->mainTabBar->addTab("Header");
-    ui->mainTabBar->addTab("Connections");
-    ui->mainTabBar->addTab("Wild Pokemon");
-    ui->mainTabBar->setTabIcon(4, QIcon(QStringLiteral(":/icons/tall_grass.ico")));
+
+    for (int i = 0; i < mainTabNames.count(); i++)
+        ui->mainTabBar->addTab(mainTabNames.value(i));
+
+    ui->mainTabBar->setTabIcon(MainTab::Map, QIcon(QStringLiteral(":/icons/map.ico")));
+    ui->mainTabBar->setTabIcon(MainTab::WildPokemon, QIcon(QStringLiteral(":/icons/tall_grass.ico")));
 }
 
 void MainWindow::initExtraSignals() {
@@ -416,8 +423,7 @@ void MainWindow::markMapEdited() {
 void MainWindow::setProjectSpecificUI()
 {
     // Wild Encounters tab
-    // TODO: This index should come from an enum
-    ui->mainTabBar->setTabEnabled(4, editor->project->wildEncountersLoaded);
+    ui->mainTabBar->setTabEnabled(MainTab::WildPokemon, editor->project->wildEncountersLoaded);
 
     bool hasFlags = projectConfig.getMapAllowFlagsEnabled();
     ui->checkBox_AllowRunning->setVisible(hasFlags);
@@ -1569,7 +1575,7 @@ void MainWindow::copy() {
             {
             default:
                 break;
-            case 0:
+            case MainTab::Map:
             {
                 // copy the map image
                 QPixmap pixmap = editor->map ? editor->map->render(true) : QPixmap();
@@ -1577,7 +1583,7 @@ void MainWindow::copy() {
                 logInfo("Copied current map image to clipboard");
                 break;
             }
-            case 1:
+            case MainTab::Events:
             {
                 if (!editor || !editor->project) break;
 
@@ -1617,7 +1623,7 @@ void MainWindow::copy() {
             }
             }
         }
-        else if (this->ui->mainTabBar->currentIndex() == 4) {
+        else if (this->ui->mainTabBar->currentIndex() == MainTab::WildPokemon) {
             QWidget *w = this->ui->stackedWidget_WildMons->currentWidget();
             if (w) {
                 MonTabWidget *mtw = static_cast<MonTabWidget *>(w);
@@ -1648,7 +1654,7 @@ void MainWindow::paste() {
     QClipboard *clipboard = QGuiApplication::clipboard();
     QString clipboardText(clipboard->text());
 
-    if (ui->mainTabBar->currentIndex() == 4) {
+    if (ui->mainTabBar->currentIndex() == MainTab::WildPokemon) {
         QWidget *w = this->ui->stackedWidget_WildMons->currentWidget();
         if (w) {
             w->setFocus();
@@ -1676,7 +1682,7 @@ void MainWindow::paste() {
             {
             default:
                 break;
-            case 0:
+            case MainTab::Map:
             {
                 // can only paste currently selected metatiles on this tab
                 if (pasteObject["object"].toString() != "metatile_selection") {
@@ -1785,11 +1791,11 @@ void MainWindow::on_mapViewTab_tabBarClicked(int index)
     if (index != oldIndex)
         Scripting::cb_MapViewTabChanged(oldIndex, index);
 
-    if (index == 0) {
+    if (index == MapViewTab::Metatiles) {
         editor->setEditingMap();
-    } else if (index == 1) {
+    } else if (index == MapViewTab::Collision) {
         editor->setEditingCollision();
-    } else if (index == 2) {
+    } else if (index == MapViewTab::Prefabs) {
         editor->setEditingMap();
         if (projectConfig.getPrefabFilepath().isEmpty() && !projectConfig.getPrefabImportPrompted()) {
             // User hasn't set up prefabs and hasn't been prompted before.
@@ -1813,25 +1819,31 @@ void MainWindow::on_mainTabBar_tabBarClicked(int index)
     if (index != oldIndex)
         Scripting::cb_MainTabChanged(oldIndex, index);
 
-    int tabIndexToStackIndex[5] = {0, 0, 1, 2, 3};
-    ui->mainStackedWidget->setCurrentIndex(tabIndexToStackIndex[index]);
+    static const QMap<int, int> tabIndexToStackIndex = {
+        {MainTab::Map, 0},
+        {MainTab::Events, 0},
+        {MainTab::Header, 1},
+        {MainTab::Connections, 2},
+        {MainTab::WildPokemon, 3},
+    };
+    ui->mainStackedWidget->setCurrentIndex(tabIndexToStackIndex.value(index));
 
-    if (index == 0) {
+    if (index == MainTab::Map) {
         ui->stackedWidget_MapEvents->setCurrentIndex(0);
         on_mapViewTab_tabBarClicked(ui->mapViewTab->currentIndex());
         clickToolButtonFromEditMode(editor->map_edit_mode);
-    } else if (index == 1) {
+    } else if (index == MainTab::Events) {
         ui->stackedWidget_MapEvents->setCurrentIndex(1);
         editor->setEditingObjects();
         clickToolButtonFromEditMode(editor->obj_edit_mode);
-    } else if (index == 3) {
+    } else if (index == MainTab::Connections) {
         editor->setEditingConnections();
     }
-    if (index != 4) {
+    if (index != MainTab::WildPokemon) {
         if (editor->project && editor->project->wildEncountersLoaded)
             editor->saveEncounterTabData();
     }
-    if (index != 1) {
+    if (index != MainTab::Events) {
         editor->map_ruler->setEnabled(false);
     }
 }
@@ -2218,7 +2230,7 @@ void MainWindow::on_horizontalSlider_CollisionTransparency_valueChanged(int valu
 }
 
 void MainWindow::on_toolButton_deleteObject_clicked() {
-    if (ui->mainTabBar->currentIndex() != 1) {
+    if (ui->mainTabBar->currentIndex() != MainTab::Events) {
         // do not delete an event when not on event tab
         return;
     }
@@ -2268,15 +2280,14 @@ void MainWindow::on_toolButton_deleteObject_clicked() {
 
 void MainWindow::on_toolButton_Paint_clicked()
 {
-    if (ui->mainTabBar->currentIndex() == 0)
+    if (ui->mainTabBar->currentIndex() == MainTab::Map)
         editor->map_edit_mode = "paint";
     else
         editor->obj_edit_mode = "paint";
 
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/pencil_cursor.ico"), 10, 10);
 
-    // do not stop single tile mode when editing collision
-    if (ui->mapViewTab->currentIndex() != 1)
+    if (ui->mapViewTab->currentIndex() != MapViewTab::Collision)
         editor->cursorMapTileRect->stopSingleTileMode();
 
     ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -2290,7 +2301,7 @@ void MainWindow::on_toolButton_Paint_clicked()
 
 void MainWindow::on_toolButton_Select_clicked()
 {
-    if (ui->mainTabBar->currentIndex() == 0)
+    if (ui->mainTabBar->currentIndex() == MainTab::Map)
         editor->map_edit_mode = "select";
     else
         editor->obj_edit_mode = "select";
@@ -2309,7 +2320,7 @@ void MainWindow::on_toolButton_Select_clicked()
 
 void MainWindow::on_toolButton_Fill_clicked()
 {
-    if (ui->mainTabBar->currentIndex() == 0)
+    if (ui->mainTabBar->currentIndex() == MainTab::Map)
         editor->map_edit_mode = "fill";
     else
         editor->obj_edit_mode = "fill";
@@ -2328,7 +2339,7 @@ void MainWindow::on_toolButton_Fill_clicked()
 
 void MainWindow::on_toolButton_Dropper_clicked()
 {
-    if (ui->mainTabBar->currentIndex() == 0)
+    if (ui->mainTabBar->currentIndex() == MainTab::Map)
         editor->map_edit_mode = "pick";
     else
         editor->obj_edit_mode = "pick";
@@ -2347,7 +2358,7 @@ void MainWindow::on_toolButton_Dropper_clicked()
 
 void MainWindow::on_toolButton_Move_clicked()
 {
-    if (ui->mainTabBar->currentIndex() == 0)
+    if (ui->mainTabBar->currentIndex() == MainTab::Map)
         editor->map_edit_mode = "move";
     else
         editor->obj_edit_mode = "move";
@@ -2366,7 +2377,7 @@ void MainWindow::on_toolButton_Move_clicked()
 
 void MainWindow::on_toolButton_Shift_clicked()
 {
-    if (ui->mainTabBar->currentIndex() == 0)
+    if (ui->mainTabBar->currentIndex() == MainTab::Map)
         editor->map_edit_mode = "shift";
     else
         editor->obj_edit_mode = "shift";
@@ -2385,7 +2396,7 @@ void MainWindow::on_toolButton_Shift_clicked()
 
 void MainWindow::checkToolButtons() {
     QString edit_mode;
-    if (ui->mainTabBar->currentIndex() == 0) {
+    if (ui->mainTabBar->currentIndex() == MainTab::Map) {
         edit_mode = editor->map_edit_mode;
     } else {
         edit_mode = editor->obj_edit_mode;
