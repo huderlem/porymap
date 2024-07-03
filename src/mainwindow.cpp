@@ -2569,26 +2569,27 @@ void MainWindow::on_pushButton_ConfigureEncountersJSON_clicked() {
 
 void MainWindow::on_button_OpenDiveMap_clicked() {
     const QString mapName = ui->comboBox_DiveMap->currentText();
-    if (editor->project->isExistingMapName(mapName))
+    if (mapName != DYNAMIC_MAP_NAME && editor->project->mapNames.contains(mapName))
         userSetMap(mapName, true);
 }
 
 void MainWindow::on_button_OpenEmergeMap_clicked() {
     const QString mapName = ui->comboBox_EmergeMap->currentText();
-    if (editor->project->isExistingMapName(mapName))
+    if (mapName != DYNAMIC_MAP_NAME && editor->project->mapNames.contains(mapName))
         userSetMap(mapName, true);
 }
 
 // TODO: Mirror change to/from other maps
 void MainWindow::on_comboBox_DiveMap_currentTextChanged(const QString &mapName) {
-    if (editor->project->isExistingMapName(mapName)) {
+    // Include empty names as an update (user is deleting the connection)
+    if (mapName.isEmpty() || editor->project->mapNames.contains(mapName)) {
         editor->updateDiveMap(mapName);
         markMapEdited();
     }
 }
 
 void MainWindow::on_comboBox_EmergeMap_currentTextChanged(const QString &mapName) {
-    if (editor->project->isExistingMapName(mapName)) {
+    if (mapName.isEmpty() || editor->project->mapNames.contains(mapName)) {
         editor->updateEmergeMap(mapName);
         markMapEdited();
     }

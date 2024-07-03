@@ -4,6 +4,7 @@
 #include "mapconnection.h"
 
 #include <QFrame>
+#include <QMouseEvent>
 
 namespace Ui {
 class ConnectionsListItem;
@@ -22,14 +23,20 @@ public:
     ~ConnectionsListItem();
 
     void updateUI();
+    void setSelected(bool selected);
 
 private:
     Ui::ConnectionsListItem *ui;
     MapConnection * const connection;
+    bool isSelected = false;
+
+protected:
+    void mousePressEvent(QMouseEvent *);
 
 signals:
     void edited();
     void deleted();
+    void selected();
 
 private slots:
     void on_comboBox_Direction_currentTextChanged(const QString &direction);

@@ -1800,10 +1800,6 @@ QString Project::getNewMapName() {
     return newMapName;
 }
 
-bool Project::isExistingMapName(const QString &mapName) {
-    return !mapName.isEmpty() && mapName != DYNAMIC_MAP_NAME && this->mapNames.contains(mapName);
-}
-
 Project::DataQualifiers Project::getDataQualifiers(QString text, QString label) {
     Project::DataQualifiers qualifiers;
 

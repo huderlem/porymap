@@ -755,15 +755,29 @@ void Editor::addConnectionToList(ConnectionPixmapItem * connectionItem) {
     ConnectionsListItem *listItem = new ConnectionsListItem(ui->scrollAreaContents_ConnectionsList, connectionItem->connection, project->mapNames);
     ui->layout_ConnectionsList->insertWidget(ui->layout_ConnectionsList->count() - 1, listItem); // Insert above the vertical spacer
 
+    // Connect the pixmap item to the list item
     connect(connectionItem, &ConnectionPixmapItem::connectionMoved, listItem, &ConnectionsListItem::updateUI);
+    connect(connectionItem, &ConnectionPixmapItem::highlightChanged, listItem, &ConnectionsListItem::setSelected);
+    if (connectionItem == selected_connection_item)
+        listItem->setSelected(true);
 
-    // TODO: This is probably slower than necessary (we don't need a full redraw if we're just moving it)
-    // TODO: Handle mirroring
+    // Connect the list item to the pixmap item
+    connect(listItem, &ConnectionsListItem::selected, [this, connectionItem] {
+        if (connectionItem == selected_connection_item) {
+            // Already selected, no change
+            return;
+        }
+        // Deselect old connection and select new connection
+        if (selected_connection_item) selected_connection_item->updateHighlight(false);
+        selected_connection_item = connectionItem;
+        selected_connection_item->updateHighlight(true);
+    });
     connect(listItem, &ConnectionsListItem::edited, [this, connectionItem] {
+        // TODO: This is probably slower than necessary (we don't need a full redraw if we're just moving it)
+        // TODO: Handle mirroring
         redrawConnection(connectionItem);
         emit editedMapData();
     });
-
     connect(listItem, &ConnectionsListItem::deleted, [this, connectionItem] {
         removeConnection(connectionItem);
     });
@@ -834,16 +848,11 @@ void Editor::redrawConnection(ConnectionPixmapItem* connectionItem) {
     connectionItem->basePixmap = pixmap;
     QPoint pos = calculateConnectionPosition(connectionItem->connection, pixmap);
 
-    if (connectionItem == selected_connection_item) {
-        QPainter painter(&pixmap);
-        painter.setPen(QColor(255, 0, 255));
-        painter.drawRect(0, 0, pixmap.width() - 1, pixmap.height() - 1);
-        painter.end();
-    }
+    connectionItem->blockSignals(true);
     connectionItem->setPixmap(pixmap);
+    connectionItem->updateHighlight(connectionItem == selected_connection_item);
     connectionItem->initialX = pos.x();
     connectionItem->initialY = pos.y();
-    connectionItem->blockSignals(true);
     connectionItem->setX(pos.x());
     connectionItem->setY(pos.y());
     connectionItem->setZValue(-1);
@@ -888,8 +897,6 @@ void Editor::onConnectionItemSelected(ConnectionPixmapItem* connectionItem) {
     selected_connection_item = connectionItem;
     for (ConnectionPixmapItem* item : connection_items)
         item->updateHighlight(item == selected_connection_item);
-
-    // TODO: Handle the highlight done in redrawConnection?
 }
 
 // TODO: Inaccurate if there are multiple connections from the same map
@@ -1851,7 +1858,7 @@ void Editor::toggleBorderVisibility(bool visible, bool enableScriptCallback)
 }
 
 void Editor::updateBorderVisibility() {
-    // On the connections tab, the border is always visible, and the connections can be edited.
+    // On the connections tab the border is always visible, and the connections can be edited.
     bool editingConnections = (ui->mainTabBar->currentIndex() == MainTab::Connections);
     bool visible = (editingConnections || ui->checkBox_ToggleBorder->isChecked());
 

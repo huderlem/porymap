@@ -119,7 +119,6 @@ public:
     bool readMapGroups();
     Map* addNewMapToGroup(QString, int, Map*, bool, bool);
     QString getNewMapName();
-    bool isExistingMapName(const QString&);
     QString getProjectTitle();
 
     QString readMapLayoutId(QString map_name);

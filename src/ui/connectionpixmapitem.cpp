@@ -56,13 +56,23 @@ bool ConnectionPixmapItem::getEditable() {
     return (this->flags() & ItemIsMovable) != 0;
 }
 
+// TODO: Consider whether it still makes sense to highlight the "current" connection (given you can edit them at any point now)
 void ConnectionPixmapItem::updateHighlight(bool selected) {
-    bool editable = this->getEditable();
-    int zValue = (selected || !editable) ? -1 : -2;
-    qreal opacity = (selected || !editable) ? 1 : 0.75;
-    this->setZValue(zValue);
-    this->render(opacity);
-    if (editable && selected) {
+    const int normalZ = -1;
+    const qreal normalOpacity = 1.0;
+
+    // When editing is inactive the current selection is ignored, all connections should appear normal.
+    if (!this->getEditable()) {
+        this->setZValue(normalZ);
+        this->render(normalOpacity);
+        return;
+    }
+
+    this->setZValue(selected ? normalZ : -2);
+    this->render(selected ? normalOpacity : 0.75);
+
+    if (selected) {
+        // Draw highlight
         QPixmap pixmap = this->pixmap();
         QPainter painter(&pixmap);
         painter.setPen(QColor(255, 0, 255));
@@ -70,6 +80,11 @@ void ConnectionPixmapItem::updateHighlight(bool selected) {
         painter.end();
         this->setPixmap(pixmap);
     }
+
+    // Let the list UI know if the selection highlight changes so it can update accordingly
+    if (this->highlighted != selected)
+        emit highlightChanged(selected);
+    this->highlighted = selected;
 }
 
 void ConnectionPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *) {

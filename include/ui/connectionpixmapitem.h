@@ -33,6 +33,9 @@ public:
     bool getEditable();
     void updateHighlight(bool selected);
 
+private:
+    bool highlighted = false;
+
 protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
     void mousePressEvent(QGraphicsSceneMouseEvent*);
@@ -42,6 +45,7 @@ signals:
     void connectionItemSelected(ConnectionPixmapItem* connectionItem);
     void connectionItemDoubleClicked(ConnectionPixmapItem* connectionItem);
     void connectionMoved(MapConnection*);
+    void highlightChanged(bool highlighted);
 };
 
 #endif // CONNECTIONPIXMAPITEM_H

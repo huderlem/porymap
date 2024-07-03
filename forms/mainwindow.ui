@@ -260,7 +260,7 @@
            </sizepolicy>
           </property>
           <property name="currentIndex">
-           <number>2</number>
+           <number>0</number>
           </property>
           <property name="movable" stdset="0">
            <bool>false</bool>
@@ -769,8 +769,8 @@
                                 <rect>
                                  <x>0</x>
                                  <y>0</y>
-                                 <width>256</width>
-                                 <height>74</height>
+                                 <width>423</width>
+                                 <height>79</height>
                                 </rect>
                                </property>
                                <layout class="QHBoxLayout" name="horizontalLayout_12">
@@ -888,8 +888,8 @@
                                 <rect>
                                  <x>0</x>
                                  <y>0</y>
-                                 <width>256</width>
-                                 <height>74</height>
+                                 <width>423</width>
+                                 <height>79</height>
                                 </rect>
                                </property>
                                <layout class="QHBoxLayout" name="horizontalLayout_7">
@@ -990,10 +990,10 @@
                             </property>
                             <property name="geometry">
                              <rect>
-                              <x>0</x>
+                              <x>8</x>
                               <y>0</y>
-                              <width>91</width>
-                              <height>74</height>
+                              <width>411</width>
+                              <height>446</height>
                              </rect>
                             </property>
                             <property name="sizePolicy">
@@ -1193,8 +1193,8 @@
                          <rect>
                           <x>0</x>
                           <y>0</y>
-                          <width>91</width>
-                          <height>512</height>
+                          <width>427</width>
+                          <height>594</height>
                          </rect>
                         </property>
                         <layout class="QGridLayout" name="gridLayout_7">
@@ -1413,8 +1413,8 @@
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>93</width>
-                             <height>460</height>
+                             <width>382</width>
+                             <height>699</height>
                             </rect>
                            </property>
                            <layout class="QVBoxLayout" name="verticalLayout_14">
