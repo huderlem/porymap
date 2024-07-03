@@ -177,7 +177,7 @@ private slots:
     void copy();
     void paste();
 
-    void onLoadMapRequested(QString, QString);
+    void onConnectionItemDoubleClicked(QString, QString);
     void onMapChanged(Map *map);
     void onMapNeedsRedrawing();
     void onTilesetsSaved(QString, QString);

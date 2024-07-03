@@ -168,7 +168,7 @@ bool ScriptUtility::getGridVisibility() {
 }
 
 void ScriptUtility::setBorderVisibility(bool visible) {
-    window->editor->toggleBorderVisibility(visible, false);
+    window->ui->checkBox_ToggleBorder->setChecked(visible);
 }
 
 bool ScriptUtility::getBorderVisibility() {

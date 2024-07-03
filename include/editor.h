@@ -165,9 +165,7 @@ private:
     const QImage collisionPlaceholder = QImage(":/images/collisions_unknown.png");
     QPixmap collisionSheetPixmap;
 
-    void setConnectionItemsVisible(bool);
-    void setBorderItemsVisible(bool, qreal = 1);
-    void setConnectionsEditable(bool);
+    void updateBorderVisibility();
     QPoint calculateConnectionPosition(const MapConnection *connection, const QPixmap &pixmap);
     void redrawConnection(ConnectionPixmapItem* connectionItem);
     void createConnectionItem(MapConnection* connection);
@@ -197,8 +195,6 @@ private slots:
     void mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixmapItem *item);
     void onConnectionMoved(MapConnection*);
     void onConnectionItemSelected(ConnectionPixmapItem* connectionItem);
-    void onConnectionItemDoubleClicked(ConnectionPixmapItem* connectionItem);
-    void onConnectionDirectionChanged(QString newDirection);
     void onHoveredMovementPermissionChanged(uint16_t, uint16_t);
     void onHoveredMovementPermissionCleared();
     void onHoveredMetatileSelectionChanged(uint16_t);
@@ -213,7 +209,7 @@ private slots:
 
 signals:
     void objectsChanged();
-    void loadMapRequested(QString, QString);
+    void connectionItemDoubleClicked(QString, QString);
     void wildMonDataChanged();
     void warpEventDoubleClicked(QString, int, Event::Group);
     void currentMetatilesSelectionChanged();

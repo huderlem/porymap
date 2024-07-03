@@ -298,7 +298,7 @@ void MainWindow::checkForUpdates(bool) {}
 void MainWindow::initEditor() {
     this->editor = new Editor(ui);
     connect(this->editor, &Editor::objectsChanged, this, &MainWindow::updateObjects);
-    connect(this->editor, &Editor::loadMapRequested, this, &MainWindow::onLoadMapRequested);
+    connect(this->editor, &Editor::connectionItemDoubleClicked, this, &MainWindow::onConnectionItemDoubleClicked);
     connect(this->editor, &Editor::warpEventDoubleClicked, this, &MainWindow::openWarpMap);
     connect(this->editor, &Editor::currentMetatilesSelectionChanged, this, &MainWindow::currentMetatilesSelectionChanged);
     connect(this->editor, &Editor::wildMonDataChanged, this, &MainWindow::onWildMonDataChanged);
@@ -2419,8 +2419,8 @@ void MainWindow::clickToolButtonFromEditMode(QString editMode) {
     }
 }
 
-void MainWindow::onLoadMapRequested(QString mapName, QString fromMapName) {
-    if (userSetMap(mapName, true))
+void MainWindow::onConnectionItemDoubleClicked(QString mapName, QString fromMapName) {
+    if (mapName != fromMapName && userSetMap(mapName, true))
         editor->setSelectedConnectionFromMap(fromMapName);
 }
 
@@ -2706,8 +2706,7 @@ void MainWindow::on_checkBox_smartPaths_stateChanged(int selected)
 
 void MainWindow::on_checkBox_ToggleBorder_stateChanged(int selected)
 {
-    bool visible = selected != 0;
-    editor->toggleBorderVisibility(visible);
+    editor->toggleBorderVisibility(selected != 0);
 }
 
 void MainWindow::on_actionTileset_Editor_triggered()

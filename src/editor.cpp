@@ -99,9 +99,7 @@ void Editor::setEditingMap() {
     if (events_group) {
         events_group->setVisible(false);
     }
-    setBorderItemsVisible(ui->checkBox_ToggleBorder->isChecked());
-    setConnectionItemsVisible(ui->checkBox_ToggleBorder->isChecked());
-    setConnectionsEditable(false);
+    updateBorderVisibility();
     this->cursorMapTileRect->stopSingleTileMode();
     this->cursorMapTileRect->setActive(true);
 
@@ -123,9 +121,7 @@ void Editor::setEditingCollision() {
     if (events_group) {
         events_group->setVisible(false);
     }
-    setBorderItemsVisible(ui->checkBox_ToggleBorder->isChecked());
-    setConnectionItemsVisible(ui->checkBox_ToggleBorder->isChecked());
-    setConnectionsEditable(false);
+    updateBorderVisibility();
     this->cursorMapTileRect->setSingleTileMode();
     this->cursorMapTileRect->setActive(true);
 
@@ -146,9 +142,7 @@ void Editor::setEditingObjects() {
     if (collision_item) {
         collision_item->setVisible(false);
     }
-    setBorderItemsVisible(ui->checkBox_ToggleBorder->isChecked());
-    setConnectionItemsVisible(ui->checkBox_ToggleBorder->isChecked());
-    setConnectionsEditable(false);
+    updateBorderVisibility();
     this->cursorMapTileRect->setSingleTileMode();
     this->cursorMapTileRect->setActive(false);
     updateWarpEventWarnings();
@@ -179,10 +173,6 @@ void Editor::setEditingConnections() {
         map_item->draw();
         map_item->setVisible(true);
         populateConnectionsList();
-        if (selected_connection_item) {
-            // TODO: Do we need additional handling here again
-            redrawConnection(selected_connection_item);
-        }
         maskNonVisibleConnectionTiles();
     }
     if (collision_item) {
@@ -191,9 +181,7 @@ void Editor::setEditingConnections() {
     if (events_group) {
         events_group->setVisible(false);
     }
-    setBorderItemsVisible(true, 0.4);
-    setConnectionItemsVisible(true);
-    setConnectionsEditable(true);
+    updateBorderVisibility();
     this->cursorMapTileRect->setSingleTileMode();
     this->cursorMapTileRect->setActive(false);
 }
@@ -804,20 +792,6 @@ void Editor::removeConnection(ConnectionPixmapItem* connectionItem) {
     emit editedMapData();
 }
 
-void Editor::setConnectionItemsVisible(bool visible) {
-    for (ConnectionPixmapItem* item : connection_items) {
-        item->setVisible(visible);
-        item->setEnabled(visible);
-    }
-}
-
-void Editor::setBorderItemsVisible(bool visible, qreal opacity) {
-    for (QGraphicsPixmapItem* item : borderItems) {
-        item->setVisible(visible);
-        item->setOpacity(opacity);
-    }
-}
-
 QPoint Editor::calculateConnectionPosition(const MapConnection *connection, const QPixmap &pixmap) {
     int x = 0, y = 0;
     const int mWidth = 16, mHeight = 16;
@@ -883,7 +857,7 @@ void Editor::redrawConnection(ConnectionPixmapItem* connectionItem) {
 
 // TODO: Generalize, maybe use in addConnectionToList connection instead of full render
 void Editor::updateConnectionOffset(int offset) {
-    if (!selected_connection_item)
+    /*if (!selected_connection_item)
         return;
 
     selected_connection_item->blockSignals(true);
@@ -895,7 +869,7 @@ void Editor::updateConnectionOffset(int offset) {
     }
     selected_connection_item->blockSignals(false);
     updateMirroredConnectionOffset(selected_connection_item->connection);
-    maskNonVisibleConnectionTiles();
+    maskNonVisibleConnectionTiles();*/
 }
 
 void Editor::onConnectionMoved(MapConnection* connection) {
@@ -905,13 +879,6 @@ void Editor::onConnectionMoved(MapConnection* connection) {
     // TODO: This is likely the source of the visual masking bug while dragging (this happens after the move)
     maskNonVisibleConnectionTiles();
     emit editedMapData();
-}
-
-void Editor::setConnectionsEditable(bool editable) {
-    for (ConnectionPixmapItem* item : connection_items) {
-        item->setEditable(editable);
-        item->updateHighlight(item == selected_connection_item);
-    }
 }
 
 void Editor::onConnectionItemSelected(ConnectionPixmapItem* connectionItem) {
@@ -925,6 +892,7 @@ void Editor::onConnectionItemSelected(ConnectionPixmapItem* connectionItem) {
     // TODO: Handle the highlight done in redrawConnection?
 }
 
+// TODO: Inaccurate if there are multiple connections from the same map
 void Editor::setSelectedConnectionFromMap(QString mapName) {
     // Search for the first connection that connects to the given map map.
     for (ConnectionPixmapItem* item : connection_items) {
@@ -935,21 +903,9 @@ void Editor::setSelectedConnectionFromMap(QString mapName) {
     }
 }
 
-void Editor::onConnectionItemDoubleClicked(ConnectionPixmapItem* connectionItem) {
-    emit loadMapRequested(connectionItem->connection->map_name, map->name);
-}
-
-void Editor::onConnectionDirectionChanged(QString newDirection) {
-    /* // Connections TODO:
-    ui->comboBox_ConnectionDirection->blockSignals(true);
-    ui->comboBox_ConnectionDirection->setCurrentText(newDirection);
-    ui->comboBox_ConnectionDirection->blockSignals(false);
-    */
-}
-
 void Editor::onBorderMetatilesChanged() {
     displayMapBorder();
-    setBorderItemsVisible(ui->checkBox_ToggleBorder->isChecked());
+    updateBorderVisibility(); // TODO: Why do we need to call this here
 }
 
 void Editor::onHoveredMovementPermissionChanged(uint16_t collision, uint16_t elevation) {
@@ -1606,7 +1562,9 @@ void Editor::createConnectionItem(MapConnection* connection) {
 
     connect(item, &ConnectionPixmapItem::connectionMoved, this, &Editor::onConnectionMoved);
     connect(item, &ConnectionPixmapItem::connectionItemSelected, this, &Editor::onConnectionItemSelected);
-    connect(item, &ConnectionPixmapItem::connectionItemDoubleClicked, this, &Editor::onConnectionItemDoubleClicked);
+    connect(item, &ConnectionPixmapItem::connectionItemDoubleClicked, [this, item] {
+        emit this->connectionItemDoubleClicked(item->connection->map_name, map->name);
+    });
 
     connection_items.append(item);
 }
@@ -1886,11 +1844,31 @@ void Editor::updateSecondaryTileset(QString tilesetLabel, bool forceLoad)
 
 void Editor::toggleBorderVisibility(bool visible, bool enableScriptCallback)
 {
-    this->setBorderItemsVisible(visible);
-    this->setConnectionItemsVisible(visible);
     porymapConfig.setShowBorder(visible);
+    updateBorderVisibility();
     if (enableScriptCallback)
         Scripting::cb_BorderVisibilityToggled(visible);
+}
+
+void Editor::updateBorderVisibility() {
+    // On the connections tab, the border is always visible, and the connections can be edited.
+    bool editingConnections = (ui->mainTabBar->currentIndex() == 3);
+    bool visible = (editingConnections || ui->checkBox_ToggleBorder->isChecked());
+
+    // Update border
+    const qreal borderOpacity = editingConnections ? 0.4 : 1;
+    for (QGraphicsPixmapItem* item : borderItems) {
+        item->setVisible(visible);
+        item->setOpacity(borderOpacity);
+    }
+
+    // Update map connections
+    for (ConnectionPixmapItem* item : connection_items) {
+        item->setVisible(visible);
+        item->setEditable(editingConnections);
+        item->setEnabled(visible);
+        item->updateHighlight(item == selected_connection_item);
+    }
 }
 
 void Editor::updateCustomMapHeaderValues(QTableWidget *table)
