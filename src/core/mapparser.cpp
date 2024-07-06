@@ -7,7 +7,7 @@ MapParser::MapParser()
 {
 }
 
-MapLayout *MapParser::parse(QString filepath, bool *error, Project *project)
+Layout *MapParser::parse(QString filepath, bool *error, Project *project)
 {
     QFile file(filepath);
     if (!file.open(QIODevice::ReadOnly)) {
@@ -69,7 +69,7 @@ MapLayout *MapParser::parse(QString filepath, bool *error, Project *project)
         }
     }
 
-    MapLayout *mapLayout = new MapLayout();
+    Layout *mapLayout = new Layout();
     mapLayout->width = mapWidth;
     mapLayout->height = mapHeight;
     mapLayout->border_width = (borderWidth == 0) ?  DEFAULT_BORDER_WIDTH : borderWidth;

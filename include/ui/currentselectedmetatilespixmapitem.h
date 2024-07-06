@@ -1,23 +1,24 @@
 #ifndef CURRENTSELECTEDMETATILESPIXMAPITEM_H
 #define CURRENTSELECTEDMETATILESPIXMAPITEM_H
 
-#include "map.h"
 #include "metatileselector.h"
 #include <QGraphicsPixmapItem>
 
+class Layout;
+
 class CurrentSelectedMetatilesPixmapItem : public QGraphicsPixmapItem {
 public:
-    CurrentSelectedMetatilesPixmapItem(Map *map, MetatileSelector *metatileSelector) {
-        this->map = map;
+    CurrentSelectedMetatilesPixmapItem(Layout *layout, MetatileSelector *metatileSelector) {
+        this->layout = layout;
         this->metatileSelector = metatileSelector;
     }
-    Map* map = nullptr;
+    Layout *layout = nullptr;
     MetatileSelector *metatileSelector;
     void draw();
 
-    void setMap(Map *map) { this->map = map; }
+    void setLayout(Layout *layout) { this->layout = layout; }
 };
 
-QPixmap drawMetatileSelection(MetatileSelection selection, Map *map);
+QPixmap drawMetatileSelection(MetatileSelection selection, Layout *layout);
 
 #endif // CURRENTSELECTEDMETATILESPIXMAPITEM_H

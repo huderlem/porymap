@@ -27,6 +27,7 @@ public:
 private:
     Ui::MapImageExporter *ui;
 
+    Layout *layout = nullptr;
     Map *map = nullptr;
     Editor *editor = nullptr;
     QGraphicsScene *scene = nullptr;

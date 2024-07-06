@@ -1,21 +1,21 @@
 #ifndef BORDERMETATILESPIXMAPITEM_H
 #define BORDERMETATILESPIXMAPITEM_H
 
-#include "map.h"
+#include "maplayout.h"
 #include "metatileselector.h"
 #include <QGraphicsPixmapItem>
 
 class BorderMetatilesPixmapItem : public QObject, public QGraphicsPixmapItem {
     Q_OBJECT
 public:
-    BorderMetatilesPixmapItem(Map *map_, MetatileSelector *metatileSelector) {
-        this->map = map_;
-        this->map->setBorderItem(this);
+    BorderMetatilesPixmapItem(Layout *layout, MetatileSelector *metatileSelector) {
+        this->layout = layout;
+        this->layout->setBorderItem(this);
         this->metatileSelector = metatileSelector;
         setAcceptHoverEvents(true);
     }
     MetatileSelector *metatileSelector;
-    Map *map;
+    Layout *layout;
     void draw();
 signals:
     void hoveredBorderMetatileSelectionChanged(uint16_t);
