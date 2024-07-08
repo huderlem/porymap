@@ -128,7 +128,6 @@ private:
     void setNewBorderDimensionsBlockdata(int newWidth, int newHeight);
 
 signals:
-    void mapChanged(Map *map);
     void modified();
     void mapDimensionsChanged(const QSize &size);
     void mapNeedsRedrawing();

@@ -5,6 +5,8 @@
 #include <QString>
 #include <QHash>
 
+class Map;
+
 class MapConnection {
 public:
     QString direction;
@@ -12,12 +14,15 @@ public:
     QString map_name;
 };
 
-inline bool operator==(const MapConnection &c1, const MapConnection &c2) {
-    return c1.map_name == c2.map_name;
-}
+struct MapConnectionMirror {
+    MapConnection * connection = nullptr;
+    Map * map = nullptr;
+};
 
-inline uint qHash(const MapConnection &key) {
-    return qHash(key.map_name);
+inline bool operator==(const MapConnection &c1, const MapConnection &c2) {
+    return c1.direction == c2.direction &&
+           c1.offset == c2.offset &&
+           c1.map_name == c2.map_name;
 }
 
 #endif // MAPCONNECTION_H

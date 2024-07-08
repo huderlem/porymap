@@ -304,8 +304,8 @@ void Map::setDimensions(int newWidth, int newHeight, bool setNewBlockdata, bool 
         Scripting::cb_MapResized(oldWidth, oldHeight, newWidth, newHeight);
     }
 
-    emit mapChanged(this);
     emit mapDimensionsChanged(QSize(getWidth(), getHeight()));
+    modify();
 }
 
 void Map::setBorderDimensions(int newWidth, int newHeight, bool setNewBlockdata, bool enableScriptCallback) {
@@ -322,7 +322,7 @@ void Map::setBorderDimensions(int newWidth, int newHeight, bool setNewBlockdata,
         Scripting::cb_BorderResized(oldWidth, oldHeight, newWidth, newHeight);
     }
 
-    emit mapChanged(this);
+    modify();
 }
 
 void Map::openScript(QString label) {

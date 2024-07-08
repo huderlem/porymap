@@ -38,8 +38,8 @@ QVariant ConnectionPixmapItem::itemChange(GraphicsItemChange change, const QVari
             y = this->initialY;
         }
 
-        this->connection->offset = newOffset;
-        emit connectionMoved(this->connection);
+        if (this->connection->offset != newOffset)
+            emit connectionMoved(this->connection, newOffset);
         return QPointF(x, y);
     }
     else {

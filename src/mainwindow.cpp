@@ -310,7 +310,7 @@ void MainWindow::initEditor() {
     connect(this->editor, &Editor::currentMetatilesSelectionChanged, this, &MainWindow::currentMetatilesSelectionChanged);
     connect(this->editor, &Editor::wildMonDataChanged, this, &MainWindow::onWildMonDataChanged);
     connect(this->editor, &Editor::mapRulerStatusChanged, this, &MainWindow::onMapRulerStatusChanged);
-    connect(this->editor, &Editor::editedMapData, this, &MainWindow::markMapEdited);
+    connect(this->editor, &Editor::editedMapData, [this](Map* map) { this->markMapEdited(map); });
     connect(this->editor, &Editor::tilesetUpdated, this, &Scripting::cb_TilesetUpdated);
     connect(ui->toolButton_Open_Scripts, &QToolButton::pressed, this->editor, &Editor::openMapScripts);
     connect(ui->actionOpen_Project_in_Text_Editor, &QAction::triggered, this->editor, &Editor::openProjectInTextEditor);
@@ -413,10 +413,19 @@ void MainWindow::showWindowTitle() {
 }
 
 void MainWindow::markMapEdited() {
-    if (editor && editor->map) {
-        editor->map->hasUnsavedDataChanges = true;
+    if (editor) markMapEdited(editor->map);
+}
+
+void MainWindow::markMapEdited(Map* map) {
+    if (!map)
+        return;
+    map->hasUnsavedDataChanges = true;
+
+    // TODO: Only update the necessary list icon
+    updateMapList();
+
+    if (editor && editor->map == map)
         showWindowTitle();
-    }
 }
 
 // Update the UI using information we've read from the user's project files.
@@ -769,7 +778,6 @@ bool MainWindow::setMap(QString map_name, bool scrollTreeView) {
 
     showWindowTitle();
 
-    connect(editor->map, &Map::mapChanged, this, &MainWindow::onMapChanged);
     connect(editor->map, &Map::mapNeedsRedrawing, this, &MainWindow::onMapNeedsRedrawing);
     connect(editor->map, &Map::modified, [this](){ this->markMapEdited(); });
 
@@ -2440,10 +2448,6 @@ void MainWindow::onConnectionItemDoubleClicked(QString mapName, QString fromMapN
         editor->setSelectedConnectionFromMap(fromMapName);
 }
 
-void MainWindow::onMapChanged(Map *) {
-    updateMapList();
-}
-
 void MainWindow::onMapNeedsRedrawing() {
     redrawMapScene();
 }
@@ -2555,9 +2559,8 @@ void MainWindow::showExportMapImageWindow(ImageExporterMode mode) {
 
 void MainWindow::on_pushButton_AddConnection_clicked()
 {
-    // TODO: Bring up a prompt for information. Mark the current map *AND* the connected map as edited
+    // TODO: Bring up a prompt for information?
     editor->addNewConnection();
-    markMapEdited();
 }
 
 void MainWindow::on_pushButton_NewWildMonGroup_clicked() {
@@ -2584,20 +2587,15 @@ void MainWindow::on_button_OpenEmergeMap_clicked() {
         userSetMap(mapName, true);
 }
 
-// TODO: Mirror change to/from other maps
 void MainWindow::on_comboBox_DiveMap_currentTextChanged(const QString &mapName) {
     // Include empty names as an update (user is deleting the connection)
-    if (mapName.isEmpty() || editor->project->mapNames.contains(mapName)) {
+    if (mapName.isEmpty() || editor->project->mapNames.contains(mapName))
         editor->updateDiveMap(mapName);
-        markMapEdited();
-    }
 }
 
 void MainWindow::on_comboBox_EmergeMap_currentTextChanged(const QString &mapName) {
-    if (mapName.isEmpty() || editor->project->mapNames.contains(mapName)) {
+    if (mapName.isEmpty() || editor->project->mapNames.contains(mapName))
         editor->updateEmergeMap(mapName);
-        markMapEdited();
-    }
 }
 
 void MainWindow::on_comboBox_PrimaryTileset_currentTextChanged(const QString &tilesetLabel)

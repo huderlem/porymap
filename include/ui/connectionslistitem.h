@@ -19,15 +19,16 @@ class ConnectionsListItem : public QFrame
     Q_OBJECT
 
 public:
-    explicit ConnectionsListItem(QWidget *parent, MapConnection * connection, const QStringList &mapNames);
+    explicit ConnectionsListItem(QWidget *parent, MapConnection *connection, const QStringList &mapNames);
     ~ConnectionsListItem();
 
     void updateUI();
     void setSelected(bool selected);
 
+    MapConnection * connection;
+
 private:
     Ui::ConnectionsListItem *ui;
-    MapConnection * const connection;
     bool isSelected = false;
 
 protected:
@@ -35,10 +36,12 @@ protected:
     void mouseDoubleClickEvent(QMouseEvent *);
 
 signals:
-    void edited();
-    void deleteRequested();
+    void editedOffset(MapConnection *connection, int newOffset);
+    void editedDirection(MapConnection *connection, const QString &direction);
+    void editedMapName(MapConnection *connection, const QString &mapName);
+    void removed();
     void selected();
-    void doubleClicked();
+    void doubleClicked(const QString &mapName);
 
 private slots:
     void on_comboBox_Direction_currentTextChanged(const QString &direction);

@@ -5,8 +5,7 @@ static const QStringList directions = {"up", "down", "left", "right"};
 
 ConnectionsListItem::ConnectionsListItem(QWidget *parent, MapConnection * connection, const QStringList &mapNames) :
     QFrame(parent),
-    ui(new Ui::ConnectionsListItem),
-    connection(connection)
+    ui(new Ui::ConnectionsListItem)
 {
     ui->setupUi(this);
 
@@ -24,6 +23,7 @@ ConnectionsListItem::ConnectionsListItem(QWidget *parent, MapConnection * connec
     ui->spinBox_Offset->setMinimum(INT_MIN);
     ui->spinBox_Offset->setMaximum(INT_MAX);
 
+    this->connection = connection;
     this->updateUI();
 }
 
@@ -58,33 +58,31 @@ void ConnectionsListItem::mousePressEvent(QMouseEvent *) {
 }
 
 void ConnectionsListItem::mouseDoubleClickEvent(QMouseEvent *) {
-    emit doubleClicked();
+    emit doubleClicked(this->connection->map_name);
 }
 
 void ConnectionsListItem::on_comboBox_Direction_currentTextChanged(const QString &direction)
 {
-    this->connection->direction = direction;
     this->setSelected(true);
-    emit this->edited();
+    if (this->connection->direction != direction)
+        emit this->editedDirection(this->connection, direction);
 }
 
 void ConnectionsListItem::on_comboBox_Map_currentTextChanged(const QString &mapName)
 {
-    if (ui->comboBox_Map->findText(mapName) >= 0) {
-        this->connection->map_name = mapName;
-        this->setSelected(true);
-        emit this->edited();
-    }
+    this->setSelected(true);
+    if (ui->comboBox_Map->findText(mapName) >= 0 && this->connection->map_name != mapName)
+        emit this->editedMapName(this->connection, mapName);
 }
 
 void ConnectionsListItem::on_spinBox_Offset_valueChanged(int offset)
 {
-    this->connection->offset = offset;
     this->setSelected(true);
-    emit this->edited();
+    if (this->connection->offset != offset)
+        emit editedOffset(this->connection, offset);
 }
 
 void ConnectionsListItem::on_button_Delete_clicked()
 {
-    emit this->deleteRequested();
+    emit this->removed();
 }

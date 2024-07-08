@@ -178,7 +178,6 @@ private slots:
     void paste();
 
     void onConnectionItemDoubleClicked(QString, QString);
-    void onMapChanged(Map *map);
     void onMapNeedsRedrawing();
     void onTilesetsSaved(QString, QString);
     void onWildMonDataChanged();
@@ -366,6 +365,7 @@ private:
     void clickToolButtonFromEditMode(QString editMode);
 
     void markMapEdited();
+    void markMapEdited(Map*);
     void showWindowTitle();
 
     void initWindow();

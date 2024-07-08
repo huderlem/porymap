@@ -75,9 +75,10 @@ public:
     void setEditingConnections();
     void setMapEditingButtonsEnabled(bool enabled);
     void setConnectionsVisibility(bool visible);
-    void updateConnectionOffset(int offset);
     void addNewConnection();
-    void removeConnection(ConnectionPixmapItem* connectionItem);
+    void addConnection(Map* map, MapConnection* connection);
+    void removeConnection(Map* map, MapConnection* connection);
+    void removeConnectionItem(ConnectionPixmapItem* connectionItem, bool removeMirror = true);
     void removeSelectedConnection();
     void addNewWildMonGroup(QWidget *window);
     void deleteWildMonGroup();
@@ -168,17 +169,16 @@ private:
 
     void updateBorderVisibility();
     QPoint calculateConnectionPosition(const MapConnection *connection, const QPixmap &pixmap);
-    void redrawConnection(ConnectionPixmapItem* connectionItem);
+    void updateConnectionItem(ConnectionPixmapItem* connectionItem);
+    void updateConnectionItemPos(ConnectionPixmapItem* connectionItem);
     void createConnectionItem(MapConnection* connection);
     void populateConnectionsList();
     void addConnectionToList(ConnectionPixmapItem* connection);
     void updateDiveEmergeMap(QString mapName, QString direction);
-    void onConnectionOffsetChanged(int newOffset);
-    void removeMirroredConnection(MapConnection*);
-    void updateMirroredConnectionOffset(MapConnection*);
-    void updateMirroredConnectionDirection(MapConnection*, QString);
-    void updateMirroredConnectionMap(MapConnection*, QString);
-    void updateMirroredConnection(MapConnection*, QString, QString, bool isDelete = false);
+    bool shouldMirrorConnection(const MapConnection &source);
+    MapConnectionMirror getMirroredConnection(const MapConnection&);
+    void addMirroredConnection(const MapConnection&);
+    void removeMirroredConnection(const MapConnection&);
     void updateEncounterFields(EncounterFields newFields);
     QString getMovementPermissionText(uint16_t collision, uint16_t elevation);
     QString getMetatileDisplayMessage(uint16_t metatileId);
@@ -194,7 +194,9 @@ private slots:
     void setStraightPathCursorMode(QGraphicsSceneMouseEvent *event);
     void mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item);
     void mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixmapItem *item);
-    void onConnectionMoved(MapConnection*);
+    void setConnectionOffset(MapConnection *connection, int offset);
+    void setConnectionMap(MapConnection *connection, const QString &mapName);
+    void setConnectionDirection(MapConnection *connection, const QString &direction);
     void onConnectionItemSelected(ConnectionPixmapItem* connectionItem);
     void onHoveredMovementPermissionChanged(uint16_t, uint16_t);
     void onHoveredMovementPermissionCleared();
@@ -215,7 +217,7 @@ signals:
     void warpEventDoubleClicked(QString, int, Event::Group);
     void currentMetatilesSelectionChanged();
     void mapRulerStatusChanged(const QString &);
-    void editedMapData();
+    void editedMapData(Map*);
     void tilesetUpdated(QString);
 };
 

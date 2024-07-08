@@ -44,7 +44,7 @@ protected:
 signals:
     void connectionItemSelected(ConnectionPixmapItem* connectionItem);
     void connectionItemDoubleClicked(ConnectionPixmapItem* connectionItem);
-    void connectionMoved(MapConnection*);
+    void connectionMoved(MapConnection *, int newOffset);
     void highlightChanged(bool highlighted);
 };
 
