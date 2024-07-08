@@ -217,6 +217,7 @@ private slots:
     void on_actionMove_triggered();
     void on_actionMap_Shift_triggered();
 
+    void onDeleteKeyPressed();
     void on_toolButton_deleteObject_clicked();
 
     void addNewEvent(Event::Type type);

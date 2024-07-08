@@ -150,9 +150,9 @@ void MainWindow::initExtraShortcuts() {
     shortcutDuplicate_Events->setWhatsThis("Duplicate Selected Event(s)");
 
     auto *shortcutDelete_Object = new Shortcut(
-            {QKeySequence("Del"), QKeySequence("Backspace")}, this, SLOT(on_toolButton_deleteObject_clicked()));
+            {QKeySequence("Del"), QKeySequence("Backspace")}, this, SLOT(onDeleteKeyPressed()));
     shortcutDelete_Object->setObjectName("shortcutDelete_Object");
-    shortcutDelete_Object->setWhatsThis("Delete Selected Event(s)");
+    shortcutDelete_Object->setWhatsThis("Delete Selected Item(s)");
 
     auto *shortcutToggle_Border = new Shortcut(QKeySequence(), ui->checkBox_ToggleBorder, SLOT(toggle()));
     shortcutToggle_Border->setObjectName("shortcutToggle_Border");
@@ -2229,11 +2229,16 @@ void MainWindow::on_horizontalSlider_CollisionTransparency_valueChanged(int valu
     this->editor->collision_item->draw(true);
 }
 
-void MainWindow::on_toolButton_deleteObject_clicked() {
-    if (ui->mainTabBar->currentIndex() != MainTab::Events) {
-        // do not delete an event when not on event tab
-        return;
+void MainWindow::onDeleteKeyPressed() {
+    auto tab = ui->mainTabBar->currentIndex();
+    if (tab == MainTab::Events) {
+        on_toolButton_deleteObject_clicked();
+    } else if (tab == MainTab::Connections) {
+        if (editor) editor->removeSelectedConnection();
     }
+}
+
+void MainWindow::on_toolButton_deleteObject_clicked() {
     if (editor && editor->selected_events) {
         if (editor->selected_events->length()) {
             DraggablePixmapItem *nextSelectedEvent = nullptr;

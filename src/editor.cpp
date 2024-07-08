@@ -729,10 +729,12 @@ void Editor::populateConnectionsList() {
     ui->comboBox_DiveMap->clear();
     ui->comboBox_DiveMap->addItems(project->mapNames);
     ui->comboBox_DiveMap->setCurrentText("");
+    ui->comboBox_DiveMap->lineEdit()->setClearButtonEnabled(true);
 
     ui->comboBox_EmergeMap->clear();
     ui->comboBox_EmergeMap->addItems(project->mapNames);
     ui->comboBox_EmergeMap->setCurrentText("");
+    ui->comboBox_EmergeMap->lineEdit()->setClearButtonEnabled(true);
 
     for (MapConnection* connection : map->connections) {
         if (connection->direction == "dive") {
@@ -750,7 +752,6 @@ void Editor::populateConnectionsList() {
         addConnectionToList(item);
 }
 
-// TODO: Don't allow splitter resizing to shrink list items to the point where horizontal scroll is needed
 void Editor::addConnectionToList(ConnectionPixmapItem * connectionItem) {
     ConnectionsListItem *listItem = new ConnectionsListItem(ui->scrollAreaContents_ConnectionsList, connectionItem->connection, project->mapNames);
     ui->layout_ConnectionsList->insertWidget(ui->layout_ConnectionsList->count() - 1, listItem); // Insert above the vertical spacer
@@ -758,11 +759,12 @@ void Editor::addConnectionToList(ConnectionPixmapItem * connectionItem) {
     // Connect the pixmap item to the list item
     connect(connectionItem, &ConnectionPixmapItem::connectionMoved, listItem, &ConnectionsListItem::updateUI);
     connect(connectionItem, &ConnectionPixmapItem::highlightChanged, listItem, &ConnectionsListItem::setSelected);
+    connect(connectionItem, &ConnectionPixmapItem::destroyed, listItem, &ConnectionsListItem::deleteLater);
     if (connectionItem == selected_connection_item)
         listItem->setSelected(true);
 
-    // Connect the list item to the pixmap item
     connect(listItem, &ConnectionsListItem::selected, [this, connectionItem] {
+        // When the list item is selected, select the pixmap too
         if (connectionItem == selected_connection_item) {
             // Already selected, no change
             return;
@@ -773,17 +775,23 @@ void Editor::addConnectionToList(ConnectionPixmapItem * connectionItem) {
         selected_connection_item->updateHighlight(true);
     });
     connect(listItem, &ConnectionsListItem::edited, [this, connectionItem] {
+        // When the list item is edited update the pixmap
         // TODO: This is probably slower than necessary (we don't need a full redraw if we're just moving it)
         // TODO: Handle mirroring
         redrawConnection(connectionItem);
         emit editedMapData();
     });
-    connect(listItem, &ConnectionsListItem::deleted, [this, connectionItem] {
+    connect(listItem, &ConnectionsListItem::deleteRequested, [this, connectionItem] {
+        // 'Remove' button has been clicked. Delete the pixmap.
+        // The list item will be deleted via the earlier connection to the pixmap's 'destroyed' signal.
         removeConnection(connectionItem);
+    });
+    connect(listItem, &ConnectionsListItem::doubleClicked, [this, connectionItem] {
+        // Double clicking the list item opens the connected map
+        emit connectionItemDoubleClicked(connectionItem->connection->map_name, map->name);
     });
 }
 
-// TODO: Connect to Delete key for selected connection
 void Editor::removeConnection(ConnectionPixmapItem* connectionItem) {
     if (!connectionItem)
         return;
@@ -804,6 +812,10 @@ void Editor::removeConnection(ConnectionPixmapItem* connectionItem) {
     delete connectionItem->connection;
     delete connectionItem;
     emit editedMapData();
+}
+
+void Editor::removeSelectedConnection() {
+    removeConnection(selected_connection_item);
 }
 
 QPoint Editor::calculateConnectionPosition(const MapConnection *connection, const QPixmap &pixmap) {

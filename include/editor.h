@@ -78,6 +78,7 @@ public:
     void updateConnectionOffset(int offset);
     void addNewConnection();
     void removeConnection(ConnectionPixmapItem* connectionItem);
+    void removeSelectedConnection();
     void addNewWildMonGroup(QWidget *window);
     void deleteWildMonGroup();
     void updateDiveMap(QString mapName);

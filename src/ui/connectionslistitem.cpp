@@ -57,6 +57,10 @@ void ConnectionsListItem::mousePressEvent(QMouseEvent *) {
     this->setSelected(true);
 }
 
+void ConnectionsListItem::mouseDoubleClickEvent(QMouseEvent *) {
+    emit doubleClicked();
+}
+
 void ConnectionsListItem::on_comboBox_Direction_currentTextChanged(const QString &direction)
 {
     this->connection->direction = direction;
@@ -82,6 +86,5 @@ void ConnectionsListItem::on_spinBox_Offset_valueChanged(int offset)
 
 void ConnectionsListItem::on_button_Delete_clicked()
 {
-    this->deleteLater();
-    emit this->deleted();
+    emit this->deleteRequested();
 }

@@ -2588,6 +2588,16 @@
                   <property name="bottomMargin">
                    <number>4</number>
                   </property>
+                  <item row="1" column="3">
+                   <widget class="NoScrollComboBox" name="comboBox_DiveMap">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Destination map name when using &lt;span style=&quot; font-weight:600;&quot;&gt;Dive&lt;/span&gt;. If empty, no such connection will exist.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                    <property name="editable">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
                   <item row="0" column="4">
                    <spacer name="horizontalSpacer_6">
                     <property name="orientation">
@@ -2600,6 +2610,20 @@
                      </size>
                     </property>
                    </spacer>
+                  </item>
+                  <item row="0" column="0">
+                   <widget class="QToolButton" name="button_OpenEmergeMap">
+                    <property name="toolTip">
+                     <string>Open the selected Emerge Map</string>
+                    </property>
+                    <property name="text">
+                     <string>...</string>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../resources/images.qrc">
+                      <normaloff>:/icons/map_go.ico</normaloff>:/icons/map_go.ico</iconset>
+                    </property>
+                   </widget>
                   </item>
                   <item row="0" column="5">
                    <widget class="QCheckBox" name="checkBox_MirrorConnections">
@@ -2628,41 +2652,10 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="0" column="0">
-                   <widget class="QToolButton" name="button_OpenEmergeMap">
-                    <property name="toolTip">
-                     <string>Open the selected Emerge Map</string>
-                    </property>
-                    <property name="text">
-                     <string>...</string>
-                    </property>
-                    <property name="icon">
-                     <iconset resource="../resources/images.qrc">
-                      <normaloff>:/icons/map_go.ico</normaloff>:/icons/map_go.ico</iconset>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="1">
-                   <widget class="QLabel" name="label_EmergeMap">
-                    <property name="text">
-                     <string>Emerge Map</string>
-                    </property>
-                   </widget>
-                  </item>
                   <item row="1" column="1">
                    <widget class="QLabel" name="label_DiveMap">
                     <property name="text">
                      <string>Dive Map</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="3">
-                   <widget class="NoScrollComboBox" name="comboBox_DiveMap">
-                    <property name="toolTip">
-                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Destination map name when using &lt;span style=&quot; font-weight:600;&quot;&gt;Dive&lt;/span&gt;. If empty, no such connection will exist.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                    </property>
-                    <property name="editable">
-                     <bool>true</bool>
                     </property>
                    </widget>
                   </item>
@@ -2673,6 +2666,13 @@
                     </property>
                     <property name="editable">
                      <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QLabel" name="label_EmergeMap">
+                    <property name="text">
+                     <string>Emerge Map</string>
                     </property>
                    </widget>
                   </item>
@@ -2717,6 +2717,12 @@
                   </property>
                  </widget>
                  <widget class="QFrame" name="frame_EditConnectionsPanel">
+                  <property name="minimumSize">
+                   <size>
+                    <width>230</width>
+                    <height>0</height>
+                   </size>
+                  </property>
                   <property name="frameShape">
                    <enum>QFrame::StyledPanel</enum>
                   </property>
@@ -2739,6 +2745,9 @@
                     <widget class="QScrollArea" name="scrollArea_ConnectionsList">
                      <property name="frameShape">
                       <enum>QFrame::NoFrame</enum>
+                     </property>
+                     <property name="horizontalScrollBarPolicy">
+                      <enum>Qt::ScrollBarAlwaysOff</enum>
                      </property>
                      <property name="widgetResizable">
                       <bool>true</bool>

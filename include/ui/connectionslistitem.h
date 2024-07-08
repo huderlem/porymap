@@ -32,11 +32,13 @@ private:
 
 protected:
     void mousePressEvent(QMouseEvent *);
+    void mouseDoubleClickEvent(QMouseEvent *);
 
 signals:
     void edited();
-    void deleted();
+    void deleteRequested();
     void selected();
+    void doubleClicked();
 
 private slots:
     void on_comboBox_Direction_currentTextChanged(const QString &direction);
