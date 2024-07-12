@@ -28,13 +28,14 @@ public:
     int initialOffset;
     int baseMapWidth;
     int baseMapHeight;
-    void render(qreal opacity = 1);
+
     void setEditable(bool editable);
     bool getEditable();
-    void updateHighlight(bool selected);
+    void setSelected(bool selected);
+    void render();
 
 private:
-    bool highlighted = false;
+    bool selected = false;
 
 protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
@@ -42,10 +43,9 @@ protected:
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent*);
 
 signals:
-    void connectionItemSelected(ConnectionPixmapItem* connectionItem);
     void connectionItemDoubleClicked(ConnectionPixmapItem* connectionItem);
     void connectionMoved(MapConnection *, int newOffset);
-    void highlightChanged(bool highlighted);
+    void selectionChanged(bool selected);
 };
 
 #endif // CONNECTIONPIXMAPITEM_H

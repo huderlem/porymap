@@ -168,14 +168,13 @@ private:
     QPixmap collisionSheetPixmap;
 
     void updateBorderVisibility();
-    QPoint calculateConnectionPosition(const MapConnection *connection, const QPixmap &pixmap);
+    QPoint calculateConnectionPosition(const MapConnection &connection, const QPixmap &pixmap);
+    QPixmap getConnectionPixmap(const MapConnection &connection);
     void updateConnectionItem(ConnectionPixmapItem* connectionItem);
     void updateConnectionItemPos(ConnectionPixmapItem* connectionItem);
     void createConnectionItem(MapConnection* connection);
-    void populateConnectionsList();
     void addConnectionToList(ConnectionPixmapItem* connection);
     void updateDiveEmergeMap(QString mapName, QString direction);
-    bool shouldMirrorConnection(const MapConnection &source);
     MapConnectionMirror getMirroredConnection(const MapConnection&);
     void addMirroredConnection(const MapConnection&);
     void removeMirroredConnection(const MapConnection&);
@@ -197,7 +196,7 @@ private slots:
     void setConnectionOffset(MapConnection *connection, int offset);
     void setConnectionMap(MapConnection *connection, const QString &mapName);
     void setConnectionDirection(MapConnection *connection, const QString &direction);
-    void onConnectionItemSelected(ConnectionPixmapItem* connectionItem);
+    void setSelectedConnection(ConnectionPixmapItem* connectionItem);
     void onHoveredMovementPermissionChanged(uint16_t, uint16_t);
     void onHoveredMovementPermissionCleared();
     void onHoveredMetatileSelectionChanged(uint16_t);

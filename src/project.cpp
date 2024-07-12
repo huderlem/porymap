@@ -117,6 +117,9 @@ void Project::clearTilesetCache() {
 }
 
 Map* Project::loadMap(QString map_name) {
+    if (map_name == DYNAMIC_MAP_NAME)
+        return nullptr;
+
     Map *map;
     if (mapCache.contains(map_name)) {
         map = mapCache.value(map_name);

@@ -89,7 +89,6 @@ void Editor::setEditingMap() {
     current_view = map_item;
     if (map_item) {
         map_item->paintingMode = MapPixmapItem::PaintMode::Metatiles;
-        displayMapConnections();
         map_item->draw();
         map_item->setVisible(true);
     }
@@ -109,7 +108,6 @@ void Editor::setEditingMap() {
 void Editor::setEditingCollision() {
     current_view = collision_item;
     if (collision_item) {
-        displayMapConnections();
         collision_item->draw();
         collision_item->setVisible(true);
     }
@@ -135,7 +133,6 @@ void Editor::setEditingObjects() {
     }
     if (map_item) {
         map_item->paintingMode = MapPixmapItem::PaintMode::EventObjects;
-        displayMapConnections();
         map_item->draw();
         map_item->setVisible(true);
     }
@@ -172,8 +169,6 @@ void Editor::setEditingConnections() {
         map_item->paintingMode = MapPixmapItem::PaintMode::Disabled;
         map_item->draw();
         map_item->setVisible(true);
-        populateConnectionsList();
-        maskNonVisibleConnectionTiles();
     }
     if (collision_item) {
         collision_item->setVisible(false);
@@ -722,58 +717,15 @@ void Editor::updateEncounterFields(EncounterFields newFields) {
     project->wildMonFields = newFields;
 }
 
-void Editor::populateConnectionsList() {
-    const QSignalBlocker blocker1(ui->comboBox_DiveMap);
-    const QSignalBlocker blocker2(ui->comboBox_EmergeMap);
-
-    // TODO: We should probably just be doing this once, and updating the items when new maps are created.
-    ui->comboBox_DiveMap->clear();
-    ui->comboBox_EmergeMap->clear();
-    ui->comboBox_DiveMap->addItems(project->mapNames);
-    ui->comboBox_EmergeMap->addItems(project->mapNames);
-    ui->comboBox_DiveMap->setCurrentText("");
-    ui->comboBox_EmergeMap->setCurrentText("");
-    ui->comboBox_DiveMap->lineEdit()->setClearButtonEnabled(true);
-    ui->comboBox_EmergeMap->lineEdit()->setClearButtonEnabled(true);
-
-    for (MapConnection* connection : map->connections) {
-        if (connection->direction == "dive") {
-            ui->comboBox_DiveMap->setCurrentText(connection->map_name);
-        } else if (connection->direction == "emerge") {
-            ui->comboBox_EmergeMap->setCurrentText(connection->map_name);
-        }
-    }
-
-    // Clear any existing connections in list
-    for (auto listItem : ui->scrollAreaContents_ConnectionsList->findChildren<ConnectionsListItem*>())
-        listItem->deleteLater();
-
-    for (auto item :connection_items)
-        addConnectionToList(item);
-}
-
-// TODO: When connecting a map to itself the new mirror is shaded incorrectly
-// TODO: Set default focus to the selected connection, right now it defaults to the dive combo box
-
 void Editor::addConnectionToList(ConnectionPixmapItem * connectionItem) {
     ConnectionsListItem *listItem = new ConnectionsListItem(ui->scrollAreaContents_ConnectionsList, connectionItem->connection, project->mapNames);
     ui->layout_ConnectionsList->insertWidget(ui->layout_ConnectionsList->count() - 1, listItem); // Insert above the vertical spacer
 
     // Sync the selection highlight between the list UI and the graphical map connection
-    connect(connectionItem, &ConnectionPixmapItem::highlightChanged, listItem, &ConnectionsListItem::setSelected);
+    connect(connectionItem, &ConnectionPixmapItem::selectionChanged, listItem, &ConnectionsListItem::setSelected);
     connect(listItem, &ConnectionsListItem::selected, [this, connectionItem] {
-        // When the list item is selected, select the pixmap too
-        if (connectionItem == selected_connection_item) {
-            // Already selected, no change
-            return;
-        }
-        // Deselect old connection and select new connection
-        if (selected_connection_item) selected_connection_item->updateHighlight(false);
-        selected_connection_item = connectionItem;
-        selected_connection_item->updateHighlight(true);
+        setSelectedConnection(connectionItem);
     });
-    if (connectionItem == selected_connection_item)
-        listItem->setSelected(true);
 
     // Sync edits to 'offset' between the list UI and the graphical map connection
     connect(connectionItem, &ConnectionPixmapItem::connectionMoved, [this, listItem](MapConnection* connection, int offset) {
@@ -787,9 +739,10 @@ void Editor::addConnectionToList(ConnectionPixmapItem * connectionItem) {
 
     // Sync edits to 'direction' or 'map' between the list UI and the graphical map connection.
     // These are 1-way because the direction and map cannot be edited graphically, only via the list UI.
-    connect(listItem, &ConnectionsListItem::editedDirection, [this, connectionItem](MapConnection* connection, QString direction) {
+    connect(listItem, &ConnectionsListItem::editedDirection, [this, connectionItem, listItem](MapConnection* connection, QString direction) {
         setConnectionDirection(connection, direction);
-        updateConnectionItem(connectionItem); // TODO: Simplify?
+        updateConnectionItem(connectionItem); // TODO: Simplify
+        listItem->updateUI(); // Changing direction may have changed our offset too
     });
     connect(listItem, &ConnectionsListItem::editedMapName, [this, connectionItem](MapConnection* connection, QString mapName) {
         setConnectionMap(connection, mapName);
@@ -813,13 +766,13 @@ void Editor::addConnectionToList(ConnectionPixmapItem * connectionItem) {
 
 void Editor::addNewConnection() {
     // Find direction with least number of connections.
-    QMap<QString, int> directionCounts = QMap<QString, int>({{"up", 0}, {"right", 0}, {"down", 0}, {"left", 0}});
+    QMap<QString, int> directionCounts;
     for (MapConnection* connection : map->connections) {
         directionCounts[connection->direction]++;
     }
     QString minDirection = "up";
     int minCount = INT_MAX;
-    for (QString direction : directionCounts.keys()) {
+    for (QString direction : MapConnection::cardinalDirections) {
         if (directionCounts[direction] < minCount) {
             minDirection = direction;
             minCount = directionCounts[direction];
@@ -827,7 +780,6 @@ void Editor::addNewConnection() {
     }
 
     // Prefer not to connect the map to itself (we have to if it's the only map).
-    // TODO: Is this more or less sensible than a connection with no map name
     QString defaultMapName = project->mapNames.first();
     if (defaultMapName == map->name && project->mapNames.length() > 1) {
         defaultMapName = project->mapNames.at(1);
@@ -838,11 +790,14 @@ void Editor::addNewConnection() {
     newConnection->offset = 0;
     newConnection->map_name = defaultMapName;
     addConnection(map, newConnection);
-    onConnectionItemSelected(connection_items.last());
+    setSelectedConnection(connection_items.last());
     addMirroredConnection(*newConnection);
 }
 
 void Editor::addConnection(Map* map, MapConnection * connection) {
+    if (!map || !connection)
+        return;
+
     map->connections.append(connection);
     if (map == this->map) {
         // Adding a connection to the current map, we need to display it visually.
@@ -857,7 +812,6 @@ void Editor::addConnection(Map* map, MapConnection * connection) {
             ui->comboBox_EmergeMap->setCurrentText(connection->map_name);
         } else {
             createConnectionItem(connection);
-            addConnectionToList(connection_items.last());
         }
     }
     emit editedMapData(map);
@@ -885,7 +839,7 @@ void Editor::removeConnectionItem(ConnectionPixmapItem* connectionItem, bool rem
     if (connectionItem == selected_connection_item) {
         selected_connection_item = nullptr;
         if (!connection_items.isEmpty())
-            onConnectionItemSelected(connection_items.first());
+            setSelectedConnection(connection_items.first());
     }
     delete connectionItem;
 }
@@ -902,22 +856,9 @@ void Editor::removeSelectedConnection() {
     removeConnectionItem(selected_connection_item);
 }
 
-static const QMap<QString, QString> oppositeDirections = {
-    {"up", "down"}, {"down", "up"},
-    {"right", "left"}, {"left", "right"},
-    {"dive", "emerge"}, {"emerge", "dive"}
-};
-
-bool Editor::shouldMirrorConnection(const MapConnection &source) {
-    // The current map's connections are not mirrored if the user has disabled this setting,
-    // unless it's a connection to itself (which is mirrored by definition).
-    // TODO: Confirm in-game representation of the above fact is accurate.
-    return ui->checkBox_MirrorConnections->isChecked() || (map && map->name == source.map_name);
-}
-
 MapConnectionMirror Editor::getMirroredConnection(const MapConnection &source) {
     MapConnectionMirror mirror;
-    if (!map || !shouldMirrorConnection(source))
+    if (!map || !ui->checkBox_MirrorConnections->isChecked())
         return mirror;
 
     // Note: It's possible (and ok) for mirror.map == this->map
@@ -925,12 +866,10 @@ MapConnectionMirror Editor::getMirroredConnection(const MapConnection &source) {
     if (!mirror.map)
         return mirror;
 
-    MapConnection target;
-    target.direction = oppositeDirections.value(source.direction);
-    target.map_name = map->name;
-    target.offset = -source.offset;
-
     // Find the matching connection in the connected map.
+    // Note: There is no strict source -> mirror pairing, i.e. we are not guaranteed
+    // to always get the same MapConnection if there are multiple identical copies.
+    MapConnection target = MapConnection::mirror(source, map->name);
     for (auto connection : mirror.map->connections) {
         if (*connection == target) {
             mirror.connection = connection;
@@ -946,10 +885,7 @@ void Editor::addMirroredConnection(const MapConnection &source) {
         return;
 
     mirror.connection = new MapConnection;
-    mirror.connection->direction = oppositeDirections.value(source.direction);
-    mirror.connection->map_name = map->name;
-    mirror.connection->offset = -source.offset;
-
+    *mirror.connection = MapConnection::mirror(source, map->name);
     addConnection(mirror.map, mirror.connection);
 }
 
@@ -993,7 +929,7 @@ void Editor::updateDiveEmergeMap(QString mapName, QString direction) {
         return;
     }
 
-    // TODO: How does the game handle having multiple Dive/Emerge maps. Should we support this?
+    // Only the first Dive/Emerge map (if present) is considered, as in-game.
     MapConnection* connection = nullptr;
     for (MapConnection* conn : map->connections) {
         if (conn->direction == direction) {
@@ -1002,14 +938,18 @@ void Editor::updateDiveEmergeMap(QString mapName, QString direction) {
         }
     }
 
-    // We (lazily) always update the connection by deleting the old one and creating a new one.
-    // Unlike the displayed connections which can be updated rapidly by click+drag, this isn't
-    // really an issue for Dive/Emerge maps.
+    // Dive/Emerge maps aren't represented visually (aside from their combo boxes),
+    // so we have less to do here than a normal connection.
     if (connection) {
-        removeMirroredConnection(*connection);
-        removeConnection(map, connection);
-    }
-    if (!mapName.isEmpty() && mapName != DYNAMIC_MAP_NAME) {
+        // Update existing connection
+        if (mapName.isEmpty()) {
+            removeMirroredConnection(*connection);
+            removeConnection(map, connection);
+        } else {
+            setConnectionMap(connection, mapName);
+        }
+    } else if (!mapName.isEmpty()) {
+        // Create new connection
         connection = new MapConnection;
         connection->direction = direction;
         connection->offset = 0;
@@ -1019,23 +959,34 @@ void Editor::updateDiveEmergeMap(QString mapName, QString direction) {
     }
 }
 
-QPoint Editor::calculateConnectionPosition(const MapConnection *connection, const QPixmap &pixmap) {
+QPoint Editor::calculateConnectionPosition(const MapConnection &connection, const QPixmap &pixmap) {
     int x = 0, y = 0;
     const int mWidth = 16, mHeight = 16;
-    if (connection->direction == "up") {
-        x = connection->offset * mWidth;
+    if (connection.direction == "up") {
+        x = connection.offset * mWidth;
         y = -pixmap.height();
-    } else if (connection->direction == "down") {
-        x = connection->offset * mWidth;
+    } else if (connection.direction == "down") {
+        x = connection.offset * mWidth;
         y = map->getHeight() * mHeight;
-    } else if (connection->direction == "left") {
+    } else if (connection.direction == "left") {
         x = -pixmap.width();
-        y = connection->offset * mHeight;
-    } else if (connection->direction == "right") {
+        y = connection.offset * mHeight;
+    } else if (connection.direction == "right") {
         x = map->getWidth() * mWidth;
-        y = connection->offset * mHeight;
+        y = connection.offset * mHeight;
     }
     return QPoint(x, y);
+}
+
+QPixmap Editor::getConnectionPixmap(const MapConnection &connection) {
+    Map *connectedMap = project->getMap(connection.map_name);
+
+    // connectedMap will be null for MAP_DYNAMIC and any map that fails to load.
+    // The connection will be editable from the list, but no image will be displayed on the map.
+    if (!connectedMap)
+        return QPixmap();
+
+    return connectedMap->renderConnection(connection, map->layout);
 }
 
 void Editor::updateConnectionItem(ConnectionPixmapItem* connectionItem) {
@@ -1046,29 +997,22 @@ void Editor::updateConnectionItem(ConnectionPixmapItem* connectionItem) {
     if (mapName.isEmpty())
         return;
 
-    // TODO: What happens if a connection is saved with an empty name
-    if (mapName == DYNAMIC_MAP_NAME || !project->mapNames.contains(mapName)) {
+    if (!project->mapNames.contains(mapName)) {
         logError(QString("Invalid map name '%1' specified for connection.").arg(mapName));
         return;
     }
 
-    Map *connectedMap = project->getMap(mapName);
-    if (!connectedMap)
-        return;
-
-    QPixmap pixmap = connectedMap->renderConnection(*connectionItem->connection, map->layout);
     connectionItem->initialOffset = connectionItem->connection->offset;
-    connectionItem->basePixmap = pixmap;
-    QPoint pos = calculateConnectionPosition(connectionItem->connection, pixmap);
+    connectionItem->basePixmap = getConnectionPixmap(*connectionItem->connection);
+    QPoint pos = calculateConnectionPosition(*connectionItem->connection, connectionItem->basePixmap);
 
     connectionItem->blockSignals(true);
-    connectionItem->setPixmap(pixmap);
-    connectionItem->updateHighlight(connectionItem == selected_connection_item);
+    connectionItem->setPixmap(connectionItem->basePixmap);
     connectionItem->initialX = pos.x();
     connectionItem->initialY = pos.y();
     connectionItem->setX(pos.x());
     connectionItem->setY(pos.y());
-    connectionItem->setZValue(-1);
+    connectionItem->render();
     connectionItem->blockSignals(false);
 
     maskNonVisibleConnectionTiles();
@@ -1080,9 +1024,9 @@ void Editor::updateConnectionItemPos(ConnectionPixmapItem* connectionItem) {
 
     MapConnection *connection = connectionItem->connection;
     connectionItem->blockSignals(true);
-    if (connection->direction == "up" || connection->direction == "down") {
+    if (MapConnection::isVertical(connection->direction)) {
         connectionItem->setX(connectionItem->initialX + (connection->offset - connectionItem->initialOffset) * 16);
-    } else if (connection->direction == "left" || connection->direction == "right") {
+    } else if (MapConnection::isHorizontal(connection->direction)) {
         connectionItem->setY(connectionItem->initialY + (connection->offset - connectionItem->initialOffset) * 16);
     }
     connectionItem->blockSignals(false);
@@ -1115,7 +1059,6 @@ void Editor::setConnectionOffset(MapConnection *connection, int offset) {
             }
         }
     }
-    // TODO: If there's no mirror but there should be we're not creating one
 
     connection->offset = offset;
     emit editedMapData(map);
@@ -1141,19 +1084,26 @@ void Editor::setConnectionDirection(MapConnection *connection, const QString &di
 
     // TODO: Lazy
     removeMirroredConnection(*connection);
+
+    if (MapConnection::isHorizontal(connection->direction) != MapConnection::isHorizontal(direction)
+     || MapConnection::isVertical(connection->direction) != MapConnection::isVertical(direction)) {
+        // If the direction has changed between vertical/horizontal then the old offset may not make sense, so we reset it
+        setConnectionOffset(connection, 0);
+    }
     connection->direction = direction;
+
     addMirroredConnection(*connection);
 
     emit editedMapData(map);
 }
 
-void Editor::onConnectionItemSelected(ConnectionPixmapItem* connectionItem) {
-    if (!connectionItem)
+void Editor::setSelectedConnection(ConnectionPixmapItem* connectionItem) {
+    if (!connectionItem || connectionItem == selected_connection_item)
         return;
 
+    if (selected_connection_item) selected_connection_item->setSelected(false);
     selected_connection_item = connectionItem;
-    for (ConnectionPixmapItem* item : connection_items)
-        item->updateHighlight(item == selected_connection_item);
+    selected_connection_item->setSelected(true);
 }
 
 // TODO: Inaccurate if there are multiple connections from the same map
@@ -1161,7 +1111,7 @@ void Editor::setSelectedConnectionFromMap(QString mapName) {
     // Search for the first connection that connects to the given map map.
     for (ConnectionPixmapItem* item : connection_items) {
         if (item->connection->map_name == mapName) {
-            onConnectionItemSelected(item);
+            setSelectedConnection(item);
             break;
         }
     }
@@ -1606,6 +1556,7 @@ bool Editor::displayMap() {
     displayMapBorder();
     displayMapGrid();
     displayWildMonTables();
+    maskNonVisibleConnectionTiles();
 
     this->map_ruler->setZValue(1000);
     scene->addItem(this->map_ruler);
@@ -1795,41 +1746,56 @@ void Editor::displayMapConnections() {
     selected_connection_item = nullptr;
     connection_items.clear();
 
+    const QSignalBlocker blocker1(ui->comboBox_DiveMap);
+    const QSignalBlocker blocker2(ui->comboBox_EmergeMap);
+    ui->comboBox_DiveMap->clear();
+    ui->comboBox_EmergeMap->clear();
+    ui->comboBox_DiveMap->addItems(project->mapNames);
+    ui->comboBox_EmergeMap->addItems(project->mapNames);
+    ui->comboBox_DiveMap->setCurrentText("");
+    ui->comboBox_EmergeMap->setCurrentText("");
+
+    // Note: We only support editing 1 Dive and Emerge connection per map.
+    //       In a vanilla game only the first Dive/Emerge connection is considered, so allowing
+    //       users to have multiple is likely to lead to confusion. In case users have changed
+    //       this we won't delete extra diving connections, but we'll only display the first one.
     for (MapConnection *connection : map->connections) {
-        if (connection->direction == "dive" || connection->direction == "emerge") {
-            continue;
+        if (connection->direction == "dive") {
+            if (ui->comboBox_DiveMap->currentText().isEmpty())
+                ui->comboBox_DiveMap->setCurrentText(connection->map_name);
+        } else if (connection->direction == "emerge") {
+            if (ui->comboBox_EmergeMap->currentText().isEmpty())
+                ui->comboBox_EmergeMap->setCurrentText(connection->map_name);
+        } else {
+            // We allow any unknown direction names here. They'll be editable from the list menu.
+            createConnectionItem(connection);
         }
-        createConnectionItem(connection);
     }
 
-    if (!connection_items.empty()) {
-        onConnectionItemSelected(connection_items.first());
-    }
-
-    maskNonVisibleConnectionTiles();
+    if (!connection_items.empty())
+        setSelectedConnection(connection_items.first());
 }
 
 void Editor::createConnectionItem(MapConnection* connection) {
-    Map *connected_map = project->getMap(connection->map_name);
-    if (!connected_map) {
+    if (!connection)
         return;
-    }
-
-    QPixmap pixmap = connected_map->renderConnection(*connection, map->layout);
-    QPoint pos = calculateConnectionPosition(connection, pixmap);
-
+    QPixmap pixmap = getConnectionPixmap(*connection);
+    QPoint pos = calculateConnectionPosition(*connection, pixmap);
     ConnectionPixmapItem *item = new ConnectionPixmapItem(pixmap, connection, pos.x(), pos.y(), map->getWidth(), map->getHeight());
     item->setX(pos.x());
     item->setY(pos.y());
-    item->setZValue(-1);
+    item->render();
     scene->addItem(item);
 
-    connect(item, &ConnectionPixmapItem::connectionItemSelected, this, &Editor::onConnectionItemSelected);
+    connect(item, &ConnectionPixmapItem::selectionChanged, [this, item](bool selected) {
+        if (selected) setSelectedConnection(item);
+    });
     connect(item, &ConnectionPixmapItem::connectionItemDoubleClicked, [this, item] {
         emit this->connectionItemDoubleClicked(item->connection->map_name, map->name);
     });
 
     connection_items.append(item);
+    addConnectionToList(item);
 }
 
 // Hides connected map tiles that cannot be seen from the current map (beyond BORDER_DISTANCE).
@@ -1891,14 +1857,12 @@ void Editor::updateMapBorder() {
 }
 
 void Editor::updateMapConnections() {
-    for (int i = 0; i < connection_items.size(); i++) {
-        Map *connected_map = project->getMap(connection_items[i]->connection->map_name);
-        if (!connected_map)
+    for (auto item : connection_items) {
+        if (!item->connection)
             continue;
-
-        QPixmap pixmap = connected_map->renderConnection(*(connection_items[i]->connection), map->layout);
-        connection_items[i]->basePixmap = pixmap;
-        connection_items[i]->setPixmap(pixmap);
+        QPixmap pixmap = getConnectionPixmap(*item->connection);
+        item->basePixmap = pixmap;
+        item->setPixmap(pixmap);
     }
 
     maskNonVisibleConnectionTiles();
@@ -1992,7 +1956,7 @@ void Editor::updateBorderVisibility() {
         item->setVisible(visible);
         item->setEditable(editingConnections);
         item->setEnabled(visible);
-        item->updateHighlight(item == selected_connection_item);
+        item->render();
     }
 }
 

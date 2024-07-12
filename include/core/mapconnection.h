@@ -12,6 +12,12 @@ public:
     QString direction;
     int offset;
     QString map_name;
+
+    static const QStringList cardinalDirections;
+    static bool isCardinal(const QString &direction);
+    static bool isHorizontal(const QString &direction);
+    static bool isVertical(const QString &direction);
+    static MapConnection mirror(const MapConnection &source, const QString &mapName);
 };
 
 struct MapConnectionMirror {

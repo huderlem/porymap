@@ -736,6 +736,13 @@ void MainWindow::on_action_Reload_Project_triggered() {
 // setMap, but with a visible error message in case of failure.
 // Use when the user is specifically requesting a map to open.
 bool MainWindow::userSetMap(QString map_name, bool scrollTreeView) {
+    if (map_name == DYNAMIC_MAP_NAME) {
+        QMessageBox msgBox(this);
+        QString errorMsg = QString("The map '%1' can't be opened, it's a placeholder to indicate the specified map will be set programmatically.").arg(map_name);
+        msgBox.critical(nullptr, "Error Opening Map", errorMsg);
+        return false;
+    }
+
     if (!setMap(map_name, scrollTreeView)) {
         QMessageBox msgBox(this);
         QString errorMsg = QString("There was an error opening map %1. Please see %2 for full error details.\n\n%3")
@@ -750,7 +757,7 @@ bool MainWindow::userSetMap(QString map_name, bool scrollTreeView) {
 
 bool MainWindow::setMap(QString map_name, bool scrollTreeView) {
     logInfo(QString("Setting map to '%1'").arg(map_name));
-    if (map_name.isEmpty()) {
+    if (map_name.isEmpty() || map_name == DYNAMIC_MAP_NAME) {
         return false;
     }
 
@@ -828,10 +835,6 @@ void MainWindow::refreshMapScene()
 }
 
 void MainWindow::openWarpMap(QString map_name, int event_id, Event::Group event_group) {
-    // Can't warp to dynamic maps
-    if (map_name == DYNAMIC_MAP_NAME)
-        return;
-
     // Ensure valid destination map name.
     if (!editor->project->mapNames.contains(map_name)) {
         logError(QString("Invalid map name '%1'").arg(map_name));
@@ -1846,6 +1849,8 @@ void MainWindow::on_mainTabBar_tabBarClicked(int index)
         clickToolButtonFromEditMode(editor->obj_edit_mode);
     } else if (index == MainTab::Connections) {
         editor->setEditingConnections();
+        // Stop the Dive/Emerge combo boxes from getting the initial focus
+        ui->graphicsView_Map->setFocus();
     }
     if (index != MainTab::WildPokemon) {
         if (editor->project && editor->project->wildEncountersLoaded)
@@ -2577,13 +2582,13 @@ void MainWindow::on_pushButton_ConfigureEncountersJSON_clicked() {
 
 void MainWindow::on_button_OpenDiveMap_clicked() {
     const QString mapName = ui->comboBox_DiveMap->currentText();
-    if (mapName != DYNAMIC_MAP_NAME && editor->project->mapNames.contains(mapName))
+    if (editor->project->mapNames.contains(mapName))
         userSetMap(mapName, true);
 }
 
 void MainWindow::on_button_OpenEmergeMap_clicked() {
     const QString mapName = ui->comboBox_EmergeMap->currentText();
-    if (mapName != DYNAMIC_MAP_NAME && editor->project->mapNames.contains(mapName))
+    if (editor->project->mapNames.contains(mapName))
         userSetMap(mapName, true);
 }
 

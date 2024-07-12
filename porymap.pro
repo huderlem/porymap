@@ -24,6 +24,7 @@ SOURCES += src/core/block.cpp \
     src/core/heallocation.cpp \
     src/core/imageexport.cpp \
     src/core/map.cpp \
+    src/core/mapconnection.cpp \
     src/core/maplayout.cpp \
     src/core/mapparser.cpp \
     src/core/metatile.cpp \

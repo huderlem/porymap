@@ -1,6 +1,7 @@
 #include "noscrollcombobox.h"
 
 #include <QCompleter>
+#include <QLineEdit>
 
 NoScrollComboBox::NoScrollComboBox(QWidget *parent)
     : QComboBox(parent)
@@ -60,4 +61,9 @@ void NoScrollComboBox::setNumberItem(int value)
 void NoScrollComboBox::setHexItem(uint32_t value)
 {
     this->setItem(this->findData(value), "0x" + QString::number(value, 16).toUpper());
+}
+
+void NoScrollComboBox::setClearButtonEnabled(bool enabled) {
+    if (this->lineEdit())
+        this->lineEdit()->setClearButtonEnabled(enabled);
 }

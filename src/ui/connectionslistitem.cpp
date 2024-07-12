@@ -1,8 +1,6 @@
 #include "connectionslistitem.h"
 #include "ui_connectionslistitem.h"
 
-static const QStringList directions = {"up", "down", "left", "right"};
-
 ConnectionsListItem::ConnectionsListItem(QWidget *parent, MapConnection * connection, const QStringList &mapNames) :
     QFrame(parent),
     ui(new Ui::ConnectionsListItem)
@@ -15,7 +13,7 @@ ConnectionsListItem::ConnectionsListItem(QWidget *parent, MapConnection * connec
 
     ui->comboBox_Direction->setEditable(false);
     ui->comboBox_Direction->setMinimumContentsLength(0);
-    ui->comboBox_Direction->addItems(directions);
+    ui->comboBox_Direction->addItems(MapConnection::cardinalDirections);
 
     ui->comboBox_Map->setMinimumContentsLength(6);
     ui->comboBox_Map->addItems(mapNames);
