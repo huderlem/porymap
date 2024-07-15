@@ -198,16 +198,9 @@ KeyValueConfigBase::~KeyValueConfigBase() {
 void KeyValueConfigBase::load() {
     reset();
     QFile file(this->getConfigFilepath());
-    if (!file.exists()) {
-        if (!file.open(QIODevice::WriteOnly)) {
-            logError(QString("Could not create config file '%1'").arg(this->getConfigFilepath()));
-        } else {
-            file.close();
-            this->onNewConfigFileCreated();
-        }
-    }
-
-    if (!file.open(QIODevice::ReadOnly)) {
+    if (!file.exists())
+        this->init();
+    else if (!file.open(QIODevice::ReadOnly)) {
         logError(QString("Could not open config file '%1': ").arg(this->getConfigFilepath()) + file.errorString());
     }
 
@@ -234,15 +227,11 @@ void KeyValueConfigBase::load() {
         this->parseConfigKeyValue(match.captured("key").trimmed().toLower(), match.captured("value").trimmed());
     }
     this->setUnreadKeys();
-    this->save();
 
     file.close();
 }
 
 void KeyValueConfigBase::save() {
-    if (this->saveDisabled)
-        return;
-
     QString text = "";
     QMap<QString, QString> map = this->getKeyValueMap();
     for (QMap<QString, QString>::iterator it = map.begin(); it != map.end(); it++) {
@@ -285,11 +274,6 @@ uint32_t KeyValueConfigBase::getConfigUint32(QString key, QString value, uint32_
         return defaultValue;
     }
     return qMin(max, qMax(min, result));
-}
-
-// For temporarily disabling saving during frequent config changes.
-void KeyValueConfigBase::setSaveDisabled(bool disabled) {
-    this->saveDisabled = disabled;
 }
 
 const QMap<MapSortOrder, QString> mapSortOrderMap = {
@@ -504,183 +488,10 @@ QByteArray PorymapConfig::bytesFromString(QString in) {
 void PorymapConfig::addRecentProject(QString project) {
     this->recentProjects.removeOne(project);
     this->recentProjects.prepend(project);
-    this->save();
 }
 
 void PorymapConfig::setRecentProjects(QStringList projects) {
     this->recentProjects = projects;
-    this->save();
-}
-
-void PorymapConfig::setReopenOnLaunch(bool enabled) {
-    this->reopenOnLaunch = enabled;
-    this->save();
-}
-
-void PorymapConfig::setMapSortOrder(MapSortOrder order) {
-    this->mapSortOrder = order;
-    this->save();
-}
-
-void PorymapConfig::setPrettyCursors(bool enabled) {
-    this->prettyCursors = enabled;
-    this->save();
-}
-
-void PorymapConfig::setMonitorFiles(bool monitor) {
-    this->monitorFiles = monitor;
-    this->save();
-}
-
-void PorymapConfig::setTilesetCheckerboardFill(bool checkerboard) {
-    this->tilesetCheckerboardFill = checkerboard;
-    this->save();
-}
-
-void PorymapConfig::setMainGeometry(QByteArray mainWindowGeometry_, QByteArray mainWindowState_,
-                                QByteArray mapSplitterState_, QByteArray mainSplitterState_, QByteArray metatilesSplitterState_) {
-    this->mainWindowGeometry = mainWindowGeometry_;
-    this->mainWindowState = mainWindowState_;
-    this->mapSplitterState = mapSplitterState_;
-    this->mainSplitterState = mainSplitterState_;
-    this->metatilesSplitterState = metatilesSplitterState_;
-    this->save();
-}
-
-void PorymapConfig::setTilesetEditorGeometry(QByteArray tilesetEditorGeometry_, QByteArray tilesetEditorState_,
-                                            QByteArray tilesetEditorSplitterState_) {
-    this->tilesetEditorGeometry = tilesetEditorGeometry_;
-    this->tilesetEditorState = tilesetEditorState_;
-    this->tilesetEditorSplitterState = tilesetEditorSplitterState_;
-    this->save();
-}
-
-void PorymapConfig::setPaletteEditorGeometry(QByteArray paletteEditorGeometry_, QByteArray paletteEditorState_) {
-    this->paletteEditorGeometry = paletteEditorGeometry_;
-    this->paletteEditorState = paletteEditorState_;
-    this->save();
-}
-
-void PorymapConfig::setRegionMapEditorGeometry(QByteArray regionMapEditorGeometry_, QByteArray regionMapEditorState_) {
-    this->regionMapEditorGeometry = regionMapEditorGeometry_;
-    this->regionMapEditorState = regionMapEditorState_;
-    this->save();
-}
-
-void PorymapConfig::setProjectSettingsEditorGeometry(QByteArray projectSettingsEditorGeometry_, QByteArray projectSettingsEditorState_) {
-    this->projectSettingsEditorGeometry = projectSettingsEditorGeometry_;
-    this->projectSettingsEditorState = projectSettingsEditorState_;
-    this->save();
-}
-
-void PorymapConfig::setCustomScriptsEditorGeometry(QByteArray customScriptsEditorGeometry_, QByteArray customScriptsEditorState_) {
-    this->customScriptsEditorGeometry = customScriptsEditorGeometry_;
-    this->customScriptsEditorState = customScriptsEditorState_;
-    this->save();
-}
-
-void PorymapConfig::setCollisionOpacity(int opacity) {
-    this->collisionOpacity = opacity;
-    // don't auto-save here because this can be called very frequently.
-}
-
-void PorymapConfig::setCollisionZoom(int zoom) {
-    this->collisionZoom = zoom;
-    // don't auto-save here because this can be called very frequently.
-}
-
-void PorymapConfig::setMetatilesZoom(int zoom) {
-    this->metatilesZoom = zoom;
-    // don't auto-save here because this can be called very frequently.
-}
-
-void PorymapConfig::setTilesetEditorMetatilesZoom(int zoom) {
-    this->tilesetEditorMetatilesZoom = zoom;
-    // don't auto-save here because this can be called very frequently.
-}
-
-void PorymapConfig::setTilesetEditorTilesZoom(int zoom) {
-    this->tilesetEditorTilesZoom = zoom;
-    // don't auto-save here because this can be called very frequently.
-}
-
-void PorymapConfig::setShowPlayerView(bool enabled) {
-    this->showPlayerView = enabled;
-    this->save();
-}
-
-void PorymapConfig::setShowCursorTile(bool enabled) {
-    this->showCursorTile = enabled;
-    this->save();
-}
-
-void PorymapConfig::setShowBorder(bool enabled) {
-    this->showBorder = enabled;
-    this->save();
-}
-
-void PorymapConfig::setShowGrid(bool enabled) {
-    this->showGrid = enabled;
-    this->save();
-}
-
-void PorymapConfig::setShowTilesetEditorMetatileGrid(bool enabled) {
-    this->showTilesetEditorMetatileGrid = enabled;
-    this->save();
-}
-
-void PorymapConfig::setShowTilesetEditorLayerGrid(bool enabled) {
-    this->showTilesetEditorLayerGrid = enabled;
-    this->save();
-}
-
-void PorymapConfig::setTheme(QString theme) {
-    this->theme = theme;
-}
-
-void PorymapConfig::setTextEditorOpenFolder(const QString &command) {
-    this->textEditorOpenFolder = command;
-    this->save();
-}
-
-void PorymapConfig::setTextEditorGotoLine(const QString &command) {
-    this->textEditorGotoLine = command;
-    this->save();
-}
-
-void PorymapConfig::setPaletteEditorBitDepth(int bitDepth) {
-    this->paletteEditorBitDepth = bitDepth;
-    this->save();
-}
-
-void PorymapConfig::setProjectSettingsTab(int tab) {
-    this->projectSettingsTab = tab;
-    this->save();
-}
-
-void PorymapConfig::setWarpBehaviorWarningDisabled(bool disabled) {
-    this->warpBehaviorWarningDisabled = disabled;
-    this->save();
-}
-
-void PorymapConfig::setCheckForUpdates(bool enabled) {
-    this->checkForUpdates = enabled;
-    this->save();
-}
-
-void PorymapConfig::setLastUpdateCheckTime(QDateTime time) {
-    this->lastUpdateCheckTime = time;
-    this->save();
-}
-
-void PorymapConfig::setLastUpdateCheckVersion(QVersionNumber version) {
-    this->lastUpdateCheckVersion = version;
-    this->save();
-}
-
-void PorymapConfig::setRateLimitTimes(QMap<QUrl, QDateTime> map) {
-    this->rateLimitTimes = map;
-    this->save();
 }
 
 QString PorymapConfig::getRecentProject() {
@@ -691,16 +502,40 @@ QStringList PorymapConfig::getRecentProjects() {
     return this->recentProjects;
 }
 
-bool PorymapConfig::getReopenOnLaunch() {
-    return this->reopenOnLaunch;
+void PorymapConfig::setMainGeometry(QByteArray mainWindowGeometry_, QByteArray mainWindowState_,
+                                QByteArray mapSplitterState_, QByteArray mainSplitterState_, QByteArray metatilesSplitterState_) {
+    this->mainWindowGeometry = mainWindowGeometry_;
+    this->mainWindowState = mainWindowState_;
+    this->mapSplitterState = mapSplitterState_;
+    this->mainSplitterState = mainSplitterState_;
+    this->metatilesSplitterState = metatilesSplitterState_;
 }
 
-MapSortOrder PorymapConfig::getMapSortOrder() {
-    return this->mapSortOrder;
+void PorymapConfig::setTilesetEditorGeometry(QByteArray tilesetEditorGeometry_, QByteArray tilesetEditorState_,
+                                            QByteArray tilesetEditorSplitterState_) {
+    this->tilesetEditorGeometry = tilesetEditorGeometry_;
+    this->tilesetEditorState = tilesetEditorState_;
+    this->tilesetEditorSplitterState = tilesetEditorSplitterState_;
 }
 
-bool PorymapConfig::getPrettyCursors() {
-    return this->prettyCursors;
+void PorymapConfig::setPaletteEditorGeometry(QByteArray paletteEditorGeometry_, QByteArray paletteEditorState_) {
+    this->paletteEditorGeometry = paletteEditorGeometry_;
+    this->paletteEditorState = paletteEditorState_;
+}
+
+void PorymapConfig::setRegionMapEditorGeometry(QByteArray regionMapEditorGeometry_, QByteArray regionMapEditorState_) {
+    this->regionMapEditorGeometry = regionMapEditorGeometry_;
+    this->regionMapEditorState = regionMapEditorState_;
+}
+
+void PorymapConfig::setProjectSettingsEditorGeometry(QByteArray projectSettingsEditorGeometry_, QByteArray projectSettingsEditorState_) {
+    this->projectSettingsEditorGeometry = projectSettingsEditorGeometry_;
+    this->projectSettingsEditorState = projectSettingsEditorState_;
+}
+
+void PorymapConfig::setCustomScriptsEditorGeometry(QByteArray customScriptsEditorGeometry_, QByteArray customScriptsEditorState_) {
+    this->customScriptsEditorGeometry = customScriptsEditorGeometry_;
+    this->customScriptsEditorState = customScriptsEditorState_;
 }
 
 QMap<QString, QByteArray> PorymapConfig::getMainGeometry() {
@@ -761,98 +596,6 @@ QMap<QString, QByteArray> PorymapConfig::getCustomScriptsEditorGeometry() {
     return geometry;
 }
 
-int PorymapConfig::getCollisionOpacity() {
-    return this->collisionOpacity;
-}
-
-int PorymapConfig::getCollisionZoom() {
-    return this->collisionZoom;
-}
-
-int PorymapConfig::getMetatilesZoom() {
-    return this->metatilesZoom;
-}
-
-int PorymapConfig::getTilesetEditorMetatilesZoom() {
-    return this->tilesetEditorMetatilesZoom;
-}
-
-int PorymapConfig::getTilesetEditorTilesZoom() {
-    return this->tilesetEditorTilesZoom;
-}
-
-bool PorymapConfig::getShowPlayerView() {
-    return this->showPlayerView;
-}
-
-bool PorymapConfig::getShowCursorTile() {
-    return this->showCursorTile;
-}
-
-bool PorymapConfig::getShowBorder() {
-    return this->showBorder;
-}
-
-bool PorymapConfig::getShowGrid() {
-    return this->showGrid;
-}
-
-bool PorymapConfig::getShowTilesetEditorMetatileGrid() {
-    return this->showTilesetEditorMetatileGrid;
-}
-
-bool PorymapConfig::getShowTilesetEditorLayerGrid() {
-    return this->showTilesetEditorLayerGrid;
-}
-
-bool PorymapConfig::getMonitorFiles() {
-    return this->monitorFiles;
-}
-
-bool PorymapConfig::getTilesetCheckerboardFill() {
-    return this->tilesetCheckerboardFill;
-}
-
-QString PorymapConfig::getTheme() {
-    return this->theme;
-}
-
-QString PorymapConfig::getTextEditorOpenFolder() {
-    return this->textEditorOpenFolder;
-}
-
-QString PorymapConfig::getTextEditorGotoLine() {
-    return this->textEditorGotoLine;
-}
-
-int PorymapConfig::getPaletteEditorBitDepth() {
-    return this->paletteEditorBitDepth;
-}
-
-int PorymapConfig::getProjectSettingsTab() {
-    return this->projectSettingsTab;
-}
-
-bool PorymapConfig::getWarpBehaviorWarningDisabled() {
-    return this->warpBehaviorWarningDisabled;
-}
-
-bool PorymapConfig::getCheckForUpdates() {
-    return this->checkForUpdates;
-}
-
-QDateTime PorymapConfig::getLastUpdateCheckTime() {
-    return this->lastUpdateCheckTime;
-}
-
-QVersionNumber PorymapConfig::getLastUpdateCheckVersion() {
-    return this->lastUpdateCheckVersion;
-}
-
-QMap<QUrl, QDateTime> PorymapConfig::getRateLimitTimes() {
-    return this->rateLimitTimes;
-}
-
 const QStringList ProjectConfig::versionStrings = {
     "pokeruby",
     "pokefirered",
@@ -899,24 +642,24 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
     } else if (key == "use_custom_border_size") {
         this->useCustomBorderSize = getConfigBool(key, value);
     } else if (key == "enable_event_weather_trigger") {
-        this->enableEventWeatherTrigger = getConfigBool(key, value);
+        this->eventWeatherTriggerEnabled = getConfigBool(key, value);
     } else if (key == "enable_event_secret_base") {
-        this->enableEventSecretBase = getConfigBool(key, value);
+        this->eventSecretBaseEnabled = getConfigBool(key, value);
     } else if (key == "enable_hidden_item_quantity") {
-        this->enableHiddenItemQuantity = getConfigBool(key, value);
+        this->hiddenItemQuantityEnabled = getConfigBool(key, value);
     } else if (key == "enable_hidden_item_requires_itemfinder") {
-        this->enableHiddenItemRequiresItemfinder = getConfigBool(key, value);
+        this->hiddenItemRequiresItemfinderEnabled = getConfigBool(key, value);
     } else if (key == "enable_heal_location_respawn_data") {
-        this->enableHealLocationRespawnData = getConfigBool(key, value);
+        this->healLocationRespawnDataEnabled = getConfigBool(key, value);
     } else if (key == "enable_event_clone_object" || key == "enable_object_event_in_connection") {
-        this->enableEventCloneObject = getConfigBool(key, value);
+        this->eventCloneObjectEnabled = getConfigBool(key, value);
         key = "enable_event_clone_object"; // Backwards compatibiliy, replace old name above
     } else if (key == "enable_floor_number") {
-        this->enableFloorNumber = getConfigBool(key, value);
+        this->floorNumberEnabled = getConfigBool(key, value);
     } else if (key == "create_map_text_file") {
-        this->createMapTextFile = getConfigBool(key, value);
+        this->createMapTextFileEnabled = getConfigBool(key, value);
     } else if (key == "enable_triple_layer_metatiles") {
-        this->enableTripleLayerMetatiles = getConfigBool(key, value);
+        this->tripleLayerMetatilesEnabled = getConfigBool(key, value);
     } else if (key == "default_metatile") {
         this->defaultMetatileId = getConfigUint32(key, value, 0, Block::maxValue);
     } else if (key == "default_elevation") {
@@ -956,10 +699,10 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
     } else if (key == "block_elevation_mask") {
         this->blockElevationMask = getConfigUint32(key, value, 0, Block::maxValue);
     } else if (key == "enable_map_allow_flags") {
-        this->enableMapAllowFlags = getConfigBool(key, value);
+        this->mapAllowFlagsEnabled = getConfigBool(key, value);
 #ifdef CONFIG_BACKWARDS_COMPATABILITY
     } else if (key == "recent_map") {
-        userConfig.setRecentMap(value);
+        userConfig.recentMap = value;
     } else if (key == "use_encounter_json") {
         userConfig.useEncounterJson = getConfigBool(key, value);
     } else if (key == "custom_scripts") {
@@ -1028,14 +771,14 @@ void ProjectConfig::setUnreadKeys() {
     // Set game-version specific defaults for any config field that wasn't read
     bool isPokefirered = this->baseGameVersion == BaseGameVersion::pokefirered;
     if (!readKeys.contains("use_custom_border_size")) this->useCustomBorderSize = isPokefirered;
-    if (!readKeys.contains("enable_event_weather_trigger")) this->enableEventWeatherTrigger = !isPokefirered;
-    if (!readKeys.contains("enable_event_secret_base")) this->enableEventSecretBase = !isPokefirered;
-    if (!readKeys.contains("enable_hidden_item_quantity")) this->enableHiddenItemQuantity = isPokefirered;
-    if (!readKeys.contains("enable_hidden_item_requires_itemfinder")) this->enableHiddenItemRequiresItemfinder = isPokefirered;
-    if (!readKeys.contains("enable_heal_location_respawn_data")) this->enableHealLocationRespawnData = isPokefirered;
-    if (!readKeys.contains("enable_event_clone_object")) this->enableEventCloneObject = isPokefirered;
-    if (!readKeys.contains("enable_floor_number")) this->enableFloorNumber = isPokefirered;
-    if (!readKeys.contains("create_map_text_file")) this->createMapTextFile = (this->baseGameVersion != BaseGameVersion::pokeemerald);
+    if (!readKeys.contains("enable_event_weather_trigger")) this->eventWeatherTriggerEnabled = !isPokefirered;
+    if (!readKeys.contains("enable_event_secret_base")) this->eventSecretBaseEnabled = !isPokefirered;
+    if (!readKeys.contains("enable_hidden_item_quantity")) this->hiddenItemQuantityEnabled = isPokefirered;
+    if (!readKeys.contains("enable_hidden_item_requires_itemfinder")) this->hiddenItemRequiresItemfinderEnabled = isPokefirered;
+    if (!readKeys.contains("enable_heal_location_respawn_data")) this->healLocationRespawnDataEnabled = isPokefirered;
+    if (!readKeys.contains("enable_event_clone_object")) this->eventCloneObjectEnabled = isPokefirered;
+    if (!readKeys.contains("enable_floor_number")) this->floorNumberEnabled = isPokefirered;
+    if (!readKeys.contains("create_map_text_file")) this->createMapTextFileEnabled = (this->baseGameVersion != BaseGameVersion::pokeemerald);
     if (!readKeys.contains("new_map_border_metatiles")) this->newMapBorderMetatileIds = isPokefirered ? DEFAULT_BORDER_FRLG : DEFAULT_BORDER_RSE;
     if (!readKeys.contains("default_secondary_tileset")) this->defaultSecondaryTileset = isPokefirered ? "gTileset_PalletTown" : "gTileset_Petalburg";
     if (!readKeys.contains("metatile_attributes_size")) this->metatileAttributesSize = Metatile::getDefaultAttributesSize(this->baseGameVersion);
@@ -1043,7 +786,7 @@ void ProjectConfig::setUnreadKeys() {
     if (!readKeys.contains("metatile_terrain_type_mask")) this->metatileTerrainTypeMask = Metatile::getDefaultAttributesMask(this->baseGameVersion, Metatile::Attr::TerrainType);
     if (!readKeys.contains("metatile_encounter_type_mask")) this->metatileEncounterTypeMask = Metatile::getDefaultAttributesMask(this->baseGameVersion, Metatile::Attr::EncounterType);
     if (!readKeys.contains("metatile_layer_type_mask")) this->metatileLayerTypeMask = Metatile::getDefaultAttributesMask(this->baseGameVersion, Metatile::Attr::LayerType);
-    if (!readKeys.contains("enable_map_allow_flags")) this->enableMapAllowFlags = (this->baseGameVersion != BaseGameVersion::pokeruby);
+    if (!readKeys.contains("enable_map_allow_flags")) this->mapAllowFlagsEnabled = (this->baseGameVersion != BaseGameVersion::pokeruby);
     if (!readKeys.contains("warp_behaviors")) this->warpBehaviors = isPokefirered ? defaultWarpBehaviors_FRLG : defaultWarpBehaviors_RSE;
 }
 
@@ -1052,15 +795,15 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("base_game_version", baseGameVersionMap.value(this->baseGameVersion));
     map.insert("use_poryscript", QString::number(this->usePoryScript));
     map.insert("use_custom_border_size", QString::number(this->useCustomBorderSize));
-    map.insert("enable_event_weather_trigger", QString::number(this->enableEventWeatherTrigger));
-    map.insert("enable_event_secret_base", QString::number(this->enableEventSecretBase));
-    map.insert("enable_hidden_item_quantity", QString::number(this->enableHiddenItemQuantity));
-    map.insert("enable_hidden_item_requires_itemfinder", QString::number(this->enableHiddenItemRequiresItemfinder));
-    map.insert("enable_heal_location_respawn_data", QString::number(this->enableHealLocationRespawnData));
-    map.insert("enable_event_clone_object", QString::number(this->enableEventCloneObject));
-    map.insert("enable_floor_number", QString::number(this->enableFloorNumber));
-    map.insert("create_map_text_file", QString::number(this->createMapTextFile));
-    map.insert("enable_triple_layer_metatiles", QString::number(this->enableTripleLayerMetatiles));
+    map.insert("enable_event_weather_trigger", QString::number(this->eventWeatherTriggerEnabled));
+    map.insert("enable_event_secret_base", QString::number(this->eventSecretBaseEnabled));
+    map.insert("enable_hidden_item_quantity", QString::number(this->hiddenItemQuantityEnabled));
+    map.insert("enable_hidden_item_requires_itemfinder", QString::number(this->hiddenItemRequiresItemfinderEnabled));
+    map.insert("enable_heal_location_respawn_data", QString::number(this->healLocationRespawnDataEnabled));
+    map.insert("enable_event_clone_object", QString::number(this->eventCloneObjectEnabled));
+    map.insert("enable_floor_number", QString::number(this->floorNumberEnabled));
+    map.insert("create_map_text_file", QString::number(this->createMapTextFileEnabled));
+    map.insert("enable_triple_layer_metatiles", QString::number(this->tripleLayerMetatilesEnabled));
     map.insert("default_metatile", Metatile::getMetatileIdString(this->defaultMetatileId));
     map.insert("default_elevation", QString::number(this->defaultElevation));
     map.insert("default_collision", QString::number(this->defaultCollision));
@@ -1082,7 +825,7 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("block_metatile_id_mask", "0x" + QString::number(this->blockMetatileIdMask, 16).toUpper());
     map.insert("block_collision_mask", "0x" + QString::number(this->blockCollisionMask, 16).toUpper());
     map.insert("block_elevation_mask", "0x" + QString::number(this->blockElevationMask, 16).toUpper());
-    map.insert("enable_map_allow_flags", QString::number(this->enableMapAllowFlags));
+    map.insert("enable_map_allow_flags", QString::number(this->mapAllowFlagsEnabled));
     map.insert("event_icon_path_object", this->eventIconPaths[Event::Group::Object]);
     map.insert("event_icon_path_warp", this->eventIconPaths[Event::Group::Warp]);
     map.insert("event_icon_path_coord", this->eventIconPaths[Event::Group::Coord]);
@@ -1106,9 +849,10 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     return map;
 }
 
-void ProjectConfig::onNewConfigFileCreated() {
+void ProjectConfig::init() {
     QString dirName = QDir(this->projectDir).dirName().toLower();
     if (baseGameVersionReverseMap.contains(dirName)) {
+        // TODO: Improve detection (ex: emerald or pokeemerald-2 aren't currently auto-detected)
         this->baseGameVersion = baseGameVersionReverseMap.value(dirName);
         logInfo(QString("Auto-detected base_game_version as '%1'").arg(dirName));
     } else {
@@ -1124,6 +868,8 @@ void ProjectConfig::onNewConfigFileCreated() {
         baseGameVersionComboBox->addItem("pokeemerald", BaseGameVersion::pokeemerald);
         form.addRow(new QLabel("Game Version"), baseGameVersionComboBox);
 
+        // TODO: Advanced button to open the project settings window (with some settings disabled)
+
         QDialogButtonBox buttonBox(QDialogButtonBox::Ok, Qt::Horizontal, &dialog);
         QObject::connect(&buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
         form.addRow(&buttonBox);
@@ -1133,14 +879,6 @@ void ProjectConfig::onNewConfigFileCreated() {
         }
     }
     this->setUnreadKeys(); // Initialize version-specific options
-}
-
-void ProjectConfig::setProjectDir(QString projectDir) {
-    this->projectDir = projectDir;
-}
-
-QString ProjectConfig::getProjectDir() {
-    return this->projectDir;
 }
 
 void ProjectConfig::setFilePath(ProjectFilePath pathId, const QString &path) {
@@ -1208,15 +946,6 @@ QString ProjectConfig::getIdentifier(ProjectIdentifier id) {
     return defaultIdentifiers.contains(id) ? defaultIdentifiers[id].second : QString();
 }
 
-void ProjectConfig::setBaseGameVersion(BaseGameVersion baseGameVersion) {
-    this->baseGameVersion = baseGameVersion;
-    this->save();
-}
-
-BaseGameVersion ProjectConfig::getBaseGameVersion() {
-    return this->baseGameVersion;
-}
-
 QString ProjectConfig::getBaseGameVersionString(BaseGameVersion version) {
     if (!baseGameVersionMap.contains(version)) {
         version = BaseGameVersion::pokeemerald;
@@ -1228,287 +957,16 @@ QString ProjectConfig::getBaseGameVersionString() {
     return this->getBaseGameVersionString(this->baseGameVersion);
 }
 
-void ProjectConfig::setUsePoryScript(bool usePoryScript) {
-    this->usePoryScript = usePoryScript;
-    this->save();
-}
-
-bool ProjectConfig::getUsePoryScript() {
-    return this->usePoryScript;
-}
-
-void ProjectConfig::setUseCustomBorderSize(bool enable) {
-    this->useCustomBorderSize = enable;
-    this->save();
-}
-
-bool ProjectConfig::getUseCustomBorderSize() {
-    return this->useCustomBorderSize;
-}
-
-void ProjectConfig::setEventWeatherTriggerEnabled(bool enable) {
-    this->enableEventWeatherTrigger = enable;
-    this->save();
-}
-
-bool ProjectConfig::getEventWeatherTriggerEnabled() {
-    return this->enableEventWeatherTrigger;
-}
-
-void ProjectConfig::setEventSecretBaseEnabled(bool enable) {
-    this->enableEventSecretBase = enable;
-    this->save();
-}
-
-bool ProjectConfig::getEventSecretBaseEnabled() {
-    return this->enableEventSecretBase;
-}
-
-void ProjectConfig::setHiddenItemQuantityEnabled(bool enable) {
-    this->enableHiddenItemQuantity = enable;
-    this->save();
-}
-
-bool ProjectConfig::getHiddenItemQuantityEnabled() {
-    return this->enableHiddenItemQuantity;
-}
-
-void ProjectConfig::setHiddenItemRequiresItemfinderEnabled(bool enable) {
-    this->enableHiddenItemRequiresItemfinder = enable;
-    this->save();
-}
-
-bool ProjectConfig::getHiddenItemRequiresItemfinderEnabled() {
-    return this->enableHiddenItemRequiresItemfinder;
-}
-
-void ProjectConfig::setHealLocationRespawnDataEnabled(bool enable) {
-    this->enableHealLocationRespawnData = enable;
-    this->save();
-}
-
-bool ProjectConfig::getHealLocationRespawnDataEnabled() {
-    return this->enableHealLocationRespawnData;
-}
-
-void ProjectConfig::setEventCloneObjectEnabled(bool enable) {
-    this->enableEventCloneObject = enable;
-    this->save();
-}
-
-bool ProjectConfig::getEventCloneObjectEnabled() {
-    return this->enableEventCloneObject;
-}
-
-void ProjectConfig::setFloorNumberEnabled(bool enable) {
-    this->enableFloorNumber = enable;
-    this->save();
-}
-
-bool ProjectConfig::getFloorNumberEnabled() {
-    return this->enableFloorNumber;
-}
-
-void ProjectConfig::setCreateMapTextFileEnabled(bool enable) {
-    this->createMapTextFile = enable;
-    this->save();
-}
-
-bool ProjectConfig::getCreateMapTextFileEnabled() {
-    return this->createMapTextFile;
-}
-
-void ProjectConfig::setTripleLayerMetatilesEnabled(bool enable) {
-    this->enableTripleLayerMetatiles = enable;
-    this->save();
-}
-
-bool ProjectConfig::getTripleLayerMetatilesEnabled() {
-    return this->enableTripleLayerMetatiles;
-}
-
 int ProjectConfig::getNumLayersInMetatile() {
-    return this->enableTripleLayerMetatiles ? 3 : 2;
+    return this->tripleLayerMetatilesEnabled ? 3 : 2;
 }
 
 int ProjectConfig::getNumTilesInMetatile() {
-    return this->enableTripleLayerMetatiles ? 12 : 8;
-}
-
-void ProjectConfig::setDefaultMetatileId(uint16_t metatileId) {
-    this->defaultMetatileId = metatileId;
-    this->save();
-}
-
-uint16_t ProjectConfig::getDefaultMetatileId() {
-    return this->defaultMetatileId;
-}
-
-void ProjectConfig::setDefaultElevation(uint16_t elevation) {
-    this->defaultElevation = elevation;
-    this->save();
-}
-
-uint16_t ProjectConfig::getDefaultElevation() {
-    return this->defaultElevation;
-}
-
-void ProjectConfig::setDefaultCollision(uint16_t collision) {
-    this->defaultCollision = collision;
-    this->save();
-}
-
-uint16_t ProjectConfig::getDefaultCollision() {
-    return this->defaultCollision;
-}
-
-void ProjectConfig::setNewMapBorderMetatileIds(QList<uint16_t> metatileIds) {
-    this->newMapBorderMetatileIds = metatileIds;
-    this->save();
-}
-
-QList<uint16_t> ProjectConfig::getNewMapBorderMetatileIds() {
-    return this->newMapBorderMetatileIds;
-}
-
-QString ProjectConfig::getDefaultPrimaryTileset() {
-    return this->defaultPrimaryTileset;
-}
-
-QString ProjectConfig::getDefaultSecondaryTileset() {
-    return this->defaultSecondaryTileset;
-}
-
-void ProjectConfig::setDefaultPrimaryTileset(QString tilesetName) {
-    this->defaultPrimaryTileset = tilesetName;
-    this->save();
-}
-
-void ProjectConfig::setDefaultSecondaryTileset(QString tilesetName) {
-    this->defaultSecondaryTileset = tilesetName;
-    this->save();
-}
-
-void ProjectConfig::setPrefabFilepath(QString filepath) {
-    this->prefabFilepath = filepath;
-    this->save();
-}
-
-QString ProjectConfig::getPrefabFilepath() {
-    return this->prefabFilepath;
-}
-
-void ProjectConfig::setPrefabImportPrompted(bool prompted) {
-    this->prefabImportPrompted = prompted;
-    this->save();
-}
-
-bool ProjectConfig::getPrefabImportPrompted() {
-    return this->prefabImportPrompted;
-}
-
-void ProjectConfig::setTilesetsHaveCallback(bool has) {
-    this->tilesetsHaveCallback = has;
-    this->save();
-}
-
-bool ProjectConfig::getTilesetsHaveCallback() {
-    return this->tilesetsHaveCallback;
-}
-
-void ProjectConfig::setTilesetsHaveIsCompressed(bool has) {
-    this->tilesetsHaveIsCompressed = has;
-    this->save();
-}
-
-bool ProjectConfig::getTilesetsHaveIsCompressed() {
-    return this->tilesetsHaveIsCompressed;
-}
-
-int ProjectConfig::getMetatileAttributesSize() {
-    return this->metatileAttributesSize;
-}
-
-void ProjectConfig::setMetatileAttributesSize(int size) {
-    this->metatileAttributesSize = size;
-    this->save();
-}
-
-uint32_t ProjectConfig::getMetatileBehaviorMask() {
-    return this->metatileBehaviorMask;
-}
-
-uint32_t ProjectConfig::getMetatileTerrainTypeMask() {
-    return this->metatileTerrainTypeMask;
-}
-
-uint32_t ProjectConfig::getMetatileEncounterTypeMask() {
-    return this->metatileEncounterTypeMask;
-}
-
-uint32_t ProjectConfig::getMetatileLayerTypeMask() {
-    return this->metatileLayerTypeMask;
-}
-
-void ProjectConfig::setMetatileBehaviorMask(uint32_t mask) {
-    this->metatileBehaviorMask = mask;
-    this->save();
-}
-
-void ProjectConfig::setMetatileTerrainTypeMask(uint32_t mask) {
-    this->metatileTerrainTypeMask = mask;
-    this->save();
-}
-
-void ProjectConfig::setMetatileEncounterTypeMask(uint32_t mask) {
-    this->metatileEncounterTypeMask = mask;
-    this->save();
-}
-
-void ProjectConfig::setMetatileLayerTypeMask(uint32_t mask) {
-    this->metatileLayerTypeMask = mask;
-    this->save();
-}
-
-uint16_t ProjectConfig::getBlockMetatileIdMask() {
-    return this->blockMetatileIdMask;
-}
-
-uint16_t ProjectConfig::getBlockCollisionMask() {
-    return this->blockCollisionMask;
-}
-
-uint16_t ProjectConfig::getBlockElevationMask() {
-    return this->blockElevationMask;
-}
-
-void ProjectConfig::setBlockMetatileIdMask(uint16_t mask) {
-    this->blockMetatileIdMask = mask;
-    this->save();
-}
-
-void ProjectConfig::setBlockCollisionMask(uint16_t mask) {
-    this->blockCollisionMask = mask;
-    this->save();
-}
-
-void ProjectConfig::setBlockElevationMask(uint16_t mask) {
-    this->blockElevationMask = mask;
-    this->save();
-}
-
-bool ProjectConfig::getMapAllowFlagsEnabled() {
-    return this->enableMapAllowFlags;
-}
-
-void ProjectConfig::setMapAllowFlagsEnabled(bool enabled) {
-    this->enableMapAllowFlags = enabled;
-    this->save();
+    return this->tripleLayerMetatilesEnabled ? 12 : 8;
 }
 
 void ProjectConfig::setEventIconPath(Event::Group group, const QString &path) {
     this->eventIconPaths[group] = path;
-    this->save();
 }
 
 QString ProjectConfig::getEventIconPath(Event::Group group) {
@@ -1517,7 +975,6 @@ QString ProjectConfig::getEventIconPath(Event::Group group) {
 
 void ProjectConfig::setPokemonIconPath(const QString &species, const QString &path) {
     this->pokemonIconPaths[species] = path;
-    this->save();
 }
 
 QString ProjectConfig::getPokemonIconPath(const QString &species) {
@@ -1527,43 +984,6 @@ QString ProjectConfig::getPokemonIconPath(const QString &species) {
 QHash<QString, QString> ProjectConfig::getPokemonIconPaths() {
     return this->pokemonIconPaths;
 }
-
-void ProjectConfig::setCollisionSheetPath(const QString &path) {
-    this->collisionSheetPath = path;
-    this->save();
-}
-
-QString ProjectConfig::getCollisionSheetPath() {
-    return this->collisionSheetPath;
-}
-
-void ProjectConfig::setCollisionSheetWidth(int width) {
-    this->collisionSheetWidth = width;
-    this->save();
-}
-
-int ProjectConfig::getCollisionSheetWidth() {
-    return this->collisionSheetWidth;
-}
-
-void ProjectConfig::setCollisionSheetHeight(int height) {
-    this->collisionSheetHeight = height;
-    this->save();
-}
-
-int ProjectConfig::getCollisionSheetHeight() {
-    return this->collisionSheetHeight;
-}
-
-void ProjectConfig::setWarpBehaviors(const QSet<uint32_t> &behaviors) {
-    this->warpBehaviors = behaviors;
-    this->save();
-}
-
-QSet<uint32_t> ProjectConfig::getWarpBehaviors() {
-    return this->warpBehaviors;
-}
-
 
 UserConfig userConfig;
 
@@ -1596,36 +1016,10 @@ QMap<QString, QString> UserConfig::getKeyValueMap() {
     return map;
 }
 
-void UserConfig::onNewConfigFileCreated() {
+void UserConfig::init() {
     QString dirName = QDir(this->projectDir).dirName().toLower();
     this->useEncounterJson = true;
     this->customScripts.clear();
-}
-
-void UserConfig::setProjectDir(QString projectDir) {
-    this->projectDir = projectDir;
-}
-
-QString UserConfig::getProjectDir() {
-    return this->projectDir;
-}
-
-void UserConfig::setRecentMap(const QString &map) {
-    this->recentMap = map;
-    this->save();
-}
-
-QString UserConfig::getRecentMap() {
-    return this->recentMap;
-}
-
-void UserConfig::setEncounterJsonActive(bool active) {
-    this->useEncounterJson = active;
-    this->save();
-}
-
-bool UserConfig::getEncounterJsonActive() {
-    return this->useEncounterJson;
 }
 
 // Read input from the config to get the script paths and whether each is enabled or disbled.
@@ -1664,7 +1058,6 @@ void UserConfig::setCustomScripts(QStringList scripts, QList<bool> enabled) {
     size_t size = qMin(scripts.length(), enabled.length());
     for (size_t i = 0; i < size; i++)
         this->customScripts.insert(scripts.at(i), enabled.at(i));
-    this->save();
 }
 
 QStringList UserConfig::getCustomScriptPaths() {
@@ -1708,7 +1101,6 @@ QMap<QString, QString> ShortcutsConfig::getKeyValueMap() {
 
 void ShortcutsConfig::setDefaultShortcuts(const QObjectList &objects) {
     storeShortcutsFromList(StoreType::Default, objects);
-    save();
 }
 
 QList<QKeySequence> ShortcutsConfig::defaultShortcuts(const QObject *object) const {
@@ -1717,14 +1109,12 @@ QList<QKeySequence> ShortcutsConfig::defaultShortcuts(const QObject *object) con
 
 void ShortcutsConfig::setUserShortcuts(const QObjectList &objects) {
     storeShortcutsFromList(StoreType::User, objects);
-    save();
 }
 
 void ShortcutsConfig::setUserShortcuts(const QMultiMap<const QObject *, QKeySequence> &objects_keySequences) {
     for (auto *object : objects_keySequences.uniqueKeys())
         if (!object->objectName().isEmpty() && !object->objectName().startsWith("_q_"))
             storeShortcuts(StoreType::User, cfgKey(object), objects_keySequences.values(object));
-    save();
 }
 
 QList<QKeySequence> ShortcutsConfig::userShortcuts(const QObject *object) const {

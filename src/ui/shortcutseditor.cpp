@@ -53,6 +53,7 @@ void ShortcutsEditor::saveShortcuts() {
     }
 
     shortcutsConfig.setUserShortcuts(objects_keySequences);
+    shortcutsConfig.save();
     emit shortcutsSaved();
 }
 

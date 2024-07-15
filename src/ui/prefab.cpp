@@ -23,7 +23,7 @@ const QString defaultFilepath = "prefabs.json";
 
 void Prefab::loadPrefabs() {
     this->items.clear();
-    QString filepath = projectConfig.getPrefabFilepath();
+    QString filepath = projectConfig.prefabFilepath;
     if (filepath.isEmpty()) return;
 
     ParseUtil parser;
@@ -86,15 +86,14 @@ void Prefab::loadPrefabs() {
 }
 
 void Prefab::savePrefabs() {
-    QString filepath = projectConfig.getPrefabFilepath();
-    if (filepath.isEmpty()) {
-        filepath = defaultFilepath;
-        projectConfig.setPrefabFilepath(filepath);
-    }
+    if (projectConfig.prefabFilepath.isEmpty())
+        projectConfig.prefabFilepath = defaultFilepath;
+
+    QString filepath = projectConfig.prefabFilepath;
 
     QFileInfo info(filepath);
     if (info.isRelative()) {
-        filepath = QDir::cleanPath(projectConfig.getProjectDir() + QDir::separator() + filepath);
+        filepath = QDir::cleanPath(projectConfig.projectDir + QDir::separator() + filepath);
     }
     QFile prefabsFile(filepath);
     if (!prefabsFile.open(QIODevice::WriteOnly)) {
@@ -287,7 +286,7 @@ bool Prefab::tryImportDefaultPrefabs(QWidget * parent, BaseGameVersion version, 
     if (fileInfo.suffix().isEmpty())
         filepath += ".json";
     if (fileInfo.isRelative()) {
-        absFilepath = QDir::cleanPath(projectConfig.getProjectDir() + QDir::separator() + filepath);
+        absFilepath = QDir::cleanPath(projectConfig.projectDir + QDir::separator() + filepath);
     } else {
         absFilepath = filepath;
     }
@@ -313,10 +312,10 @@ bool Prefab::tryImportDefaultPrefabs(QWidget * parent, BaseGameVersion version, 
     bool acceptedImport = (prompt == QMessageBox::Yes);
     if (acceptedImport) {
         // Sets up the default prefabs.json filepath.
-        projectConfig.setPrefabFilepath(filepath);
+        projectConfig.prefabFilepath = filepath;
         QFile prefabsFile(absFilepath);
         if (!prefabsFile.open(QIODevice::WriteOnly)) {
-            projectConfig.setPrefabFilepath(QString());
+            projectConfig.prefabFilepath = QString();
 
             logError(QString("Error: Could not open %1 for writing").arg(absFilepath));
             QMessageBox messageBox(parent);
@@ -346,7 +345,7 @@ bool Prefab::tryImportDefaultPrefabs(QWidget * parent, BaseGameVersion version, 
         this->loadPrefabs();
     }
 
-    projectConfig.setPrefabImportPrompted(true);
+    projectConfig.prefabImportPrompted = true;
     return acceptedImport;
 }
 

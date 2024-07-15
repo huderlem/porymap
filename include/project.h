@@ -153,6 +153,7 @@ public:
     void saveAllMaps();
     void saveMap(Map*);
     void saveAllDataStructures();
+    void saveConfig();
     void saveMapLayouts();
     void saveMapGroups();
     void saveWildMonData();

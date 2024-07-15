@@ -360,7 +360,7 @@ void ObjectFrame::initialize() {
 
     // script
     this->combo_script->setCurrentText(this->object->getScript());
-    if (porymapConfig.getTextEditorGotoLine().isEmpty())
+    if (porymapConfig.textEditorGotoLine.isEmpty())
         this->button_script->hide();
 
     // flag
@@ -858,16 +858,16 @@ void HiddenItemFrame::initialize() {
     this->combo_flag->setTextItem(this->hiddenItem->getFlag());
 
     // quantity
-    if (projectConfig.getHiddenItemQuantityEnabled()) {
+    if (projectConfig.hiddenItemQuantityEnabled) {
         this->spinner_quantity->setValue(this->hiddenItem->getQuantity());
     }
-    this->hideable_quantity->setVisible(projectConfig.getHiddenItemQuantityEnabled());
+    this->hideable_quantity->setVisible(projectConfig.hiddenItemQuantityEnabled);
 
     // underfoot
-    if (projectConfig.getHiddenItemRequiresItemfinderEnabled()) {
+    if (projectConfig.hiddenItemRequiresItemfinderEnabled) {
         this->check_itemfinder->setChecked(this->hiddenItem->getUnderfoot());
     }
-    this->hideable_itemfinder->setVisible(projectConfig.getHiddenItemRequiresItemfinderEnabled());
+    this->hideable_itemfinder->setVisible(projectConfig.hiddenItemRequiresItemfinderEnabled);
 }
 
 void HiddenItemFrame::populate(Project *project) {
@@ -971,7 +971,7 @@ void HealLocationFrame::connectSignals(MainWindow *window) {
 
     EventFrame::connectSignals(window);
 
-    if (projectConfig.getHealLocationRespawnDataEnabled()) {
+    if (projectConfig.healLocationRespawnDataEnabled) {
         this->combo_respawn_map->disconnect();
         connect(this->combo_respawn_map, &QComboBox::currentTextChanged, [this](const QString &text) {
             this->healLocation->setRespawnMap(text);
@@ -992,7 +992,7 @@ void HealLocationFrame::initialize() {
     const QSignalBlocker blocker(this);
     EventFrame::initialize();
 
-    bool respawnEnabled = projectConfig.getHealLocationRespawnDataEnabled();
+    bool respawnEnabled = projectConfig.healLocationRespawnDataEnabled;
     if (respawnEnabled) {
         this->combo_respawn_map->setTextItem(this->healLocation->getRespawnMap());
         this->spinner_respawn_npc->setValue(this->healLocation->getRespawnNPC());
@@ -1008,6 +1008,6 @@ void HealLocationFrame::populate(Project *project) {
     const QSignalBlocker blocker(this);
     EventFrame::populate(project);
 
-    if (projectConfig.getHealLocationRespawnDataEnabled())
+    if (projectConfig.healLocationRespawnDataEnabled)
         this->combo_respawn_map->addItems(project->mapNames);
 }

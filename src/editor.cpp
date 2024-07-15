@@ -1501,7 +1501,7 @@ void Editor::displayMovementPermissionSelector() {
         connect(movement_permissions_selector_item, &SelectablePixmapItem::selectionChanged, [this](int x, int y, int, int) {
             this->setCollisionTabSpinBoxes(x, y);
         });
-        movement_permissions_selector_item->select(projectConfig.getDefaultCollision(), projectConfig.getDefaultElevation());
+        movement_permissions_selector_item->select(projectConfig.defaultCollision, projectConfig.defaultElevation);
     }
 
     scene_collision_metatiles->addItem(movement_permissions_selector_item);
@@ -1684,7 +1684,7 @@ int Editor::getBorderDrawDistance(int dimension) {
 }
 
 void Editor::onToggleGridClicked(bool checked) {
-    porymapConfig.setShowGrid(checked);
+    porymapConfig.showGrid = checked;
     if (ui->graphicsView_Map->scene())
         ui->graphicsView_Map->scene()->update();
 }
@@ -1947,7 +1947,7 @@ void Editor::toggleBorderVisibility(bool visible, bool enableScriptCallback)
 {
     this->setBorderItemsVisible(visible);
     this->setConnectionItemsVisible(visible);
-    porymapConfig.setShowBorder(visible);
+    porymapConfig.showBorder = visible;
     if (enableScriptCallback)
         Scripting::cb_BorderVisibilityToggled(visible);
 }
@@ -1993,7 +1993,7 @@ void Editor::redrawObject(DraggablePixmapItem *item) {
 
 // Warp events display a warning if they're not positioned on a metatile with a warp behavior.
 void Editor::updateWarpEventWarning(Event *event) {
-    if (porymapConfig.getWarpBehaviorWarningDisabled())
+    if (porymapConfig.warpBehaviorWarningDisabled)
         return;
     if (!project || !map || !event || event->getEventType() != Event::Type::Warp)
         return;
@@ -2004,7 +2004,7 @@ void Editor::updateWarpEventWarning(Event *event) {
         metatile = Tileset::getMetatile(block.metatileId(), map->layout->tileset_primary, map->layout->tileset_secondary);
     }
     // metatile may be null if the warp is in the map border. Display the warning in this case
-    bool validWarpBehavior = metatile && projectConfig.getWarpBehaviors().contains(metatile->behavior());
+    bool validWarpBehavior = metatile && projectConfig.warpBehaviors.contains(metatile->behavior());
     warpEvent->setWarningEnabled(!validWarpBehavior);
 }
 
@@ -2014,7 +2014,7 @@ void Editor::updateWarpEventWarning(Event *event) {
 // events when the Events tab is opened. This does not cover the case where metatiles are painted while
 // still on the Events tab, such as by Undo/Redo or the scripting API.
 void Editor::updateWarpEventWarnings() {
-    if (porymapConfig.getWarpBehaviorWarningDisabled())
+    if (porymapConfig.warpBehaviorWarningDisabled)
         return;
     if (selected_events) {
         for (auto selection : *selected_events)
@@ -2189,7 +2189,7 @@ void Editor::openScript(const QString &scriptLabel) const {
 }
 
 void Editor::openInTextEditor(const QString &path, int lineNum) {
-    QString command = porymapConfig.getTextEditorGotoLine();
+    QString command = porymapConfig.textEditorGotoLine;
     if (command.isEmpty()) {
         // Open map scripts in the system's default editor.
         QDesktopServices::openUrl(QUrl::fromLocalFile(path));
@@ -2206,7 +2206,7 @@ void Editor::openInTextEditor(const QString &path, int lineNum) {
 }
 
 void Editor::openProjectInTextEditor() const {
-    QString command = porymapConfig.getTextEditorOpenFolder();
+    QString command = porymapConfig.textEditorOpenFolder;
     if (command.contains("%D"))
         command.replace("%D", '\"' + project->root + '\"');
     else
@@ -2279,7 +2279,7 @@ void Editor::setCollisionTabSpinBoxes(uint16_t collision, uint16_t elevation) {
 
 // Custom collision graphics may be provided by the user.
 void Editor::setCollisionGraphics() {
-    QString filepath = projectConfig.getCollisionSheetPath();
+    QString filepath = projectConfig.collisionSheetPath;
 
     QImage imgSheet;
     if (filepath.isEmpty()) {
@@ -2299,8 +2299,8 @@ void Editor::setCollisionGraphics() {
 
     // Users are not required to provide an image that gives an icon for every elevation/collision combination.
     // Instead they tell us how many are provided in their image by specifying the number of columns and rows.
-    const int imgColumns = projectConfig.getCollisionSheetWidth();
-    const int imgRows = projectConfig.getCollisionSheetHeight();
+    const int imgColumns = projectConfig.collisionSheetWidth;
+    const int imgRows = projectConfig.collisionSheetHeight;
 
     // Create a pixmap for the selector on the Collision tab. If a project was previously opened we'll also need to refresh the selector.
     this->collisionSheetPixmap = QPixmap::fromImage(imgSheet).scaled(MovementPermissionsSelector::CellWidth * imgColumns,

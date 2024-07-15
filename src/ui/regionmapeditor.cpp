@@ -202,7 +202,7 @@ void buildFireredDefaults(poryjson::Json &json) {
 
 poryjson::Json RegionMapEditor::buildDefaultJson() {
     poryjson::Json defaultJson;
-    switch (projectConfig.getBaseGameVersion()) {
+    switch (projectConfig.baseGameVersion) {
         case BaseGameVersion::pokeemerald:
             buildEmeraldDefaults(defaultJson);
             break;
@@ -345,7 +345,7 @@ bool RegionMapEditor::buildConfigDialog() {
 
     // for sake of convenience, option to just use defaults for each basegame version
     QPushButton *config_useProjectDefault;
-    switch (projectConfig.getBaseGameVersion()) {
+    switch (projectConfig.baseGameVersion) {
         case BaseGameVersion::pokefirered:
             config_useProjectDefault = new QPushButton("\nUse pokefirered defaults\n");
             break;

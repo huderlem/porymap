@@ -355,7 +355,6 @@ private:
     void showProjectOpenFailure();
     void saveGlobalConfigs();
     bool setInitialMap();
-    void setRecentMap(QString map_name);
     QStandardItem* createMapItem(QString mapName, int groupNum, int inGroupNum);
     void refreshRecentProjectsMenu();
 

@@ -87,7 +87,7 @@ PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset 
         connect(this->pickButtons[i], &QToolButton::clicked, [this, i](){ this->pickColor(i); });
     }
 
-    int bitDepth = porymapConfig.getPaletteEditorBitDepth();
+    int bitDepth = porymapConfig.paletteEditorBitDepth;
     if (bitDepth == 15) {
         this->ui->bit_depth_15->setChecked(true);
     } else {
@@ -233,7 +233,7 @@ void PaletteEditor::setBitDepth(int bits) {
         break;
     }
     this->bitDepth = bits;
-    porymapConfig.setPaletteEditorBitDepth(bits);
+    porymapConfig.paletteEditorBitDepth = bits;
     refreshColorUis();
     setSignalsEnabled(true);
 }
