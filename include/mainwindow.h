@@ -27,6 +27,7 @@
 #include "preferenceeditor.h"
 #include "projectsettingseditor.h"
 #include "customscriptseditor.h"
+#include "updatepromoter.h"
 
 
 
@@ -288,6 +289,7 @@ private slots:
     void on_spinBox_SelectedCollision_valueChanged(int collision);
     void on_actionRegion_Map_Editor_triggered();
     void on_actionPreferences_triggered();
+    void on_actionCheck_for_Updates_triggered();
     void togglePreferenceSpecificUi();
     void on_actionProject_Settings_triggered();
     void on_actionCustom_Scripts_triggered();
@@ -307,6 +309,8 @@ private:
     QPointer<PreferenceEditor> preferenceEditor = nullptr;
     QPointer<ProjectSettingsEditor> projectSettingsEditor = nullptr;
     QPointer<CustomScriptsEditor> customScriptsEditor = nullptr;
+    QPointer<UpdatePromoter> updatePromoter = nullptr;
+    QPointer<NetworkAccessManager> networkAccessManager = nullptr;
     FilterChildrenProxyModel *mapListProxyModel;
     QStandardItemModel *mapListModel;
     QList<QStandardItem*> *mapGroupItemsList;
@@ -385,6 +389,7 @@ private:
 
     void initTilesetEditor();
     bool initRegionMapEditor(bool silent = false);
+    bool askToFixRegionMapEditor();
     void initShortcutsEditor();
     void initCustomScriptsEditor();
     void connectSubEditorsToShortcutsEditor();
@@ -398,6 +403,8 @@ private:
     QObjectList shortcutableObjects() const;
     void addCustomHeaderValue(QString key, QJsonValue value, bool isNew = false);
     int insertTilesetLabel(QStringList * list, QString label);
+
+    void checkForUpdates(bool requestedByUser);
 };
 
 enum MapListUserRoles {

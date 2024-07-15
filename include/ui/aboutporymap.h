@@ -14,7 +14,6 @@ class AboutPorymap : public QMainWindow
 public:
     explicit AboutPorymap(QWidget *parent = nullptr);
     ~AboutPorymap();
-    QList<int> getVersionNumbers();
 private:
     Ui::AboutPorymap *ui;
 };

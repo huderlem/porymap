@@ -9,6 +9,26 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ## [Unreleased]
 Nothing, yet.
 
+## [5.4.1] - 2024-03-21
+### Fixed
+- Fix object event sprites not loading for some struct data formats.
+
+## [5.4.0] - 2024-02-13
+### Added
+- Add a `Check for Updates` option to show new releases (Windows and macOS only).
+
+### Changed
+- If Wild Encounters fail to load they are now only disabled for that session, and the settings remain unchanged.
+- Defaults are used if project constants are missing, rather than failing to open the project or changing settings.
+- Selector images now center on the selection when eyedropping or zooming.
+
+### Fixed
+- Fix some minor visual issues with the various zoom sliders.
+- Smooth out scrolling when mouse is over tile/metatile images.
+- Fix the Tileset Editor selectors getting extra white space when changing tilesets.
+- Fix a crash when adding disabled events with the Pencil tool.
+- Fix error log about failing to find the scripts file when a new map is created.
+
 ## [5.3.0] - 2024-01-15
 ### Added
 - Add zoom sliders to the Tileset Editor.
@@ -464,7 +484,9 @@ Nothing, yet.
 ## [1.0.0] - 2018-10-26
 This was the initial release.
 
-[Unreleased]: https://github.com/huderlem/porymap/compare/5.3.0...HEAD
+[Unreleased]: https://github.com/huderlem/porymap/compare/5.4.1...HEAD
+[5.4.1]: https://github.com/huderlem/porymap/compare/5.4.0...5.4.1
+[5.4.0]: https://github.com/huderlem/porymap/compare/5.3.0...5.4.0
 [5.3.0]: https://github.com/huderlem/porymap/compare/5.2.0...5.3.0
 [5.2.0]: https://github.com/huderlem/porymap/compare/5.1.1...5.2.0
 [5.1.1]: https://github.com/huderlem/porymap/compare/5.1.0...5.1.1

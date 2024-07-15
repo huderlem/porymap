@@ -41,6 +41,14 @@
 #include <QSet>
 #include <QLoggingCategory>
 
+// We only publish release binaries for Windows and macOS.
+// This is relevant for the update promoter, which alerts users of a new release.
+// TODO: Currently the update promoter is disabled on our Windows releases because
+//       the pre-compiled Qt build doesn't link OpenSSL. Re-enable below once this is fixed.
+#if /*defined(Q_OS_WIN) || */defined(Q_OS_MACOS)
+#define RELEASE_PLATFORM
+#endif
+
 using OrderedJson = poryjson::Json;
 using OrderedJsonDoc = poryjson::JsonDoc;
 
@@ -53,11 +61,13 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     QCoreApplication::setOrganizationName("pret");
     QCoreApplication::setApplicationName("porymap");
+    QCoreApplication::setApplicationVersion(PORYMAP_VERSION);
     QApplication::setApplicationDisplayName("porymap");
     QApplication::setWindowIcon(QIcon(":/icons/porymap-icon-2.ico"));
     ui->setupUi(this);
 
     cleanupLargeLog();
+    logInfo(QString("Launching Porymap v%1").arg(QCoreApplication::applicationVersion()));
 
     this->initWindow();
     if (porymapConfig.getReopenOnLaunch() && this->openProject(porymapConfig.getRecentProject(), true))
@@ -66,6 +76,9 @@ MainWindow::MainWindow(QWidget *parent) :
     // there is a bug affecting macOS users, where the trackpad deilveres a bad touch-release gesture
     // the warning is a bit annoying, so it is disabled here
     QLoggingCategory::setFilterRules(QStringLiteral("qt.pointer.dispatch=false"));
+
+    if (porymapConfig.getCheckForUpdates())
+        this->checkForUpdates(false);
 }
 
 MainWindow::~MainWindow()
@@ -92,6 +105,7 @@ void MainWindow::setWindowDisabled(bool disabled) {
     ui->actionAbout_Porymap->setDisabled(false);
     ui->actionOpen_Log_File->setDisabled(false);
     ui->actionOpen_Config_Folder->setDisabled(false);
+    ui->actionCheck_for_Updates->setDisabled(false);
     if (!disabled)
         togglePreferenceSpecificUi();
 }
@@ -105,6 +119,10 @@ void MainWindow::initWindow() {
     this->initMapSortOrder();
     this->initShortcuts();
     this->restoreWindowState();
+
+#ifndef RELEASE_PLATFORM
+    ui->actionCheck_for_Updates->setVisible(false);
+#endif
 
     setWindowDisabled(true);
 }
@@ -244,6 +262,39 @@ void MainWindow::initExtraSignals() {
     label_MapRulerStatus->setTextFormat(Qt::PlainText);
     label_MapRulerStatus->setTextInteractionFlags(Qt::TextSelectableByMouse);
 }
+
+void MainWindow::on_actionCheck_for_Updates_triggered() {
+    checkForUpdates(true);
+}
+
+#ifdef RELEASE_PLATFORM
+void MainWindow::checkForUpdates(bool requestedByUser) {
+    if (!this->networkAccessManager)
+        this->networkAccessManager = new NetworkAccessManager(this);
+
+    if (!this->updatePromoter) {
+        this->updatePromoter = new UpdatePromoter(this, this->networkAccessManager);
+        connect(this->updatePromoter, &UpdatePromoter::changedPreferences, [this] {
+            if (this->preferenceEditor)
+                this->preferenceEditor->updateFields();
+        });
+    }
+
+
+    if (requestedByUser) {
+        openSubWindow(this->updatePromoter);
+    } else {
+        // This is an automatic update check. Only run if we haven't done one in the last 5 minutes
+        QDateTime lastCheck = porymapConfig.getLastUpdateCheckTime();
+        if (lastCheck.addSecs(5*60) >= QDateTime::currentDateTime())
+            return;
+    }
+    this->updatePromoter->checkForUpdates();
+    porymapConfig.setLastUpdateCheckTime(QDateTime::currentDateTime());
+}
+#else
+void MainWindow::checkForUpdates(bool) {}
+#endif
 
 void MainWindow::initEditor() {
     this->editor = new Editor(ui);
@@ -2730,6 +2781,9 @@ void MainWindow::togglePreferenceSpecificUi() {
         ui->actionOpen_Project_in_Text_Editor->setEnabled(false);
     else
         ui->actionOpen_Project_in_Text_Editor->setEnabled(true);
+
+    if (this->updatePromoter)
+        this->updatePromoter->updatePreferences();
 }
 
 void MainWindow::openProjectSettingsEditor(int tab) {
@@ -2887,21 +2941,41 @@ void MainWindow::on_pushButton_CreatePrefab_clicked() {
 
 bool MainWindow::initRegionMapEditor(bool silent) {
     this->regionMapEditor = new RegionMapEditor(this, this->editor->project);
-    bool success = this->regionMapEditor->load(silent);
-    if (!success) {
-        delete this->regionMapEditor;
-        this->regionMapEditor = nullptr;
-        if (!silent) {
-            QMessageBox msgBox(this);
-            QString errorMsg = QString("There was an error opening the region map data. Please see %1 for full error details.\n\n%3")
-                    .arg(getLogPath())
-                    .arg(getMostRecentError());
-            msgBox.critical(nullptr, "Error Opening Region Map Editor", errorMsg);
+    if (!this->regionMapEditor->load(silent)) {
+        // The region map editor either failed to load,
+        // or the user declined configuring their settings.
+        if (!silent && this->regionMapEditor->setupErrored()) {
+            if (this->askToFixRegionMapEditor())
+                return true;
         }
+        delete this->regionMapEditor;
         return false;
     }
 
     return true;
+}
+
+bool MainWindow::askToFixRegionMapEditor() {
+    QMessageBox msgBox;
+    msgBox.setIcon(QMessageBox::Critical);
+    msgBox.setText(QString("There was an error opening the region map data. Please see %1 for full error details.").arg(getLogPath()));
+    msgBox.setDetailedText(getMostRecentError());
+    msgBox.setStandardButtons(QMessageBox::Ok);
+    msgBox.setDefaultButton(QMessageBox::Ok);
+    auto reconfigButton = msgBox.addButton("Reconfigure", QMessageBox::ActionRole);
+    msgBox.exec();
+    if (msgBox.clickedButton() == reconfigButton) {
+        if (this->regionMapEditor->reconfigure()) {
+            // User fixed error
+            return true;
+        }
+        if (this->regionMapEditor->setupErrored()) {
+            // User's new settings still fail, show error and ask again
+            return this->askToFixRegionMapEditor();
+        }
+    }
+    // User accepted error
+    return false;
 }
 
 // Attempt to close any open sub-windows of the main window, giving each a chance to abort the process.

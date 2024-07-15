@@ -1715,7 +1715,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>30</height>
+                             <height>16</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -1809,7 +1809,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>30</height>
+                             <height>16</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -1903,7 +1903,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>30</height>
+                             <height>16</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -2003,7 +2003,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>30</height>
+                             <height>16</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -2097,7 +2097,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>30</height>
+                             <height>16</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -3112,6 +3112,7 @@
     <addaction name="actionAbout_Porymap"/>
     <addaction name="actionOpen_Log_File"/>
     <addaction name="actionOpen_Config_Folder"/>
+    <addaction name="actionCheck_for_Updates"/>
    </widget>
    <widget class="QMenu" name="menuOptions">
     <property name="title">
@@ -3404,6 +3405,14 @@
   <action name="actionCustom_Scripts">
    <property name="text">
     <string>Custom Scripts...</string>
+   </property>
+  </action>
+  <action name="actionCheck_for_Updates">
+   <property name="text">
+    <string>Check for Updates...</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::ApplicationSpecificRole</enum>
    </property>
   </action>
  </widget>

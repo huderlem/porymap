@@ -1,5 +1,5 @@
-Version: 5.3.0
-Date: January 15th, 2024
+Version: 5.4.1
+Date: March 21st, 2024
 
 This version of porymap works with pokeruby and pokeemerald as of the following commit hashes:
 * pokeemerald: c76beed98990a57c84d3930190fd194abfedf7e8
@@ -11,6 +11,26 @@ Official Porymap documentation: https://huderlem.github.io/porymap/
 Please report any issues on GitHub: [https://github.com/huderlem/porymap/issues](https://github.com/huderlem/porymap/issues)
 
 -------------------------
+
+## [5.4.1] - 2024-03-21
+### Fixed
+- Fix object event sprites not loading for some struct data formats.
+
+## [5.4.0] - 2024-02-13
+### Added
+- Add a `Check for Updates` option to show new releases (Windows and macOS only).
+
+### Changed
+- If Wild Encounters fail to load they are now only disabled for that session, and the settings remain unchanged.
+- Defaults are used if project constants are missing, rather than failing to open the project or changing settings.
+- Selector images now center on the selection when eyedropping or zooming.
+
+### Fixed
+- Fix some minor visual issues with the various zoom sliders.
+- Smooth out scrolling when mouse is over tile/metatile images.
+- Fix the Tileset Editor selectors getting extra white space when changing tilesets.
+- Fix a crash when adding disabled events with the Pencil tool.
+- Fix error log about failing to find the scripts file when a new map is created.
 
 ## [5.3.0] - 2024-01-15
 ### Added

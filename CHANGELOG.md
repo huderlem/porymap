@@ -7,6 +7,19 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 The **"Breaking Changes"** listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. It also includes changes to the scripting API that may change the behavior of existing porymap scripts. If porymap is used with a project or API script that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.
 
 ## [Unreleased]
+### Fixed
+- Fix `Add Region Map...` not updating the region map settings file.
+- Fix some crashes on invalid region map tilesets.
+- Improve error reporting for invalid region map editor settings.
+
+## [5.4.1] - 2024-03-21
+### Fixed
+- Fix object event sprites not loading for some struct data formats.
+
+## [5.4.0] - 2024-02-13
+### Added
+- Add a `Check for Updates` option to show new releases (Windows and macOS only).
+
 ### Changed
 - If Wild Encounters fail to load they are now only disabled for that session, and the settings remain unchanged.
 - Defaults are used if project constants are missing, rather than failing to open the project or changing settings.
@@ -474,7 +487,9 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ## [1.0.0] - 2018-10-26
 This was the initial release.
 
-[Unreleased]: https://github.com/huderlem/porymap/compare/5.3.0...HEAD
+[Unreleased]: https://github.com/huderlem/porymap/compare/5.4.1...HEAD
+[5.4.1]: https://github.com/huderlem/porymap/compare/5.4.0...5.4.1
+[5.4.0]: https://github.com/huderlem/porymap/compare/5.3.0...5.4.0
 [5.3.0]: https://github.com/huderlem/porymap/compare/5.2.0...5.3.0
 [5.2.0]: https://github.com/huderlem/porymap/compare/5.1.1...5.2.0
 [5.1.1]: https://github.com/huderlem/porymap/compare/5.1.0...5.1.1

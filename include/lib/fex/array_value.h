@@ -77,16 +77,16 @@ namespace fex
             switch (type_)
             {
             case Type::kEmpty:
-                return "kEmpty: {}";
+                return "{}";
             case Type::kNumber:
-                return "kNumber: " + std::to_string(int_value_);
+                return std::to_string(int_value_);
             case Type::kString:
-                return "kString: \"" + string_value_ + "\"";
+                return "\"" + string_value_ + "\"";
             case Type::kIdentifier:
-                return "kIdentifier: " + string_value_;
+                return string_value_;
             case Type::kValueList:
             {
-                std::string out = "kValueList: {\n";
+                std::string out = "{\n";
                 for (const ArrayValue &v : values_)
                 {
                     out += "\t" + v.ToString() + ",\n";
@@ -94,7 +94,7 @@ namespace fex
                 return out + "}\n";
             }
             case Type::kValuePair:
-                return "kValuePair: " + pair_.first + " = " + pair_.second->ToString() + "\n";
+                return pair_.first + " = " + pair_.second->ToString() + "\n";
             }
         }
 
