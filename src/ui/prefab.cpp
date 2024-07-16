@@ -338,6 +338,9 @@ bool Prefab::tryImportDefaultPrefabs(QWidget * parent, BaseGameVersion version, 
         case BaseGameVersion::pokeemerald:
             content = parser.readTextFile(":/text/prefabs_default_emerald.json");
             break;
+        default:
+            content = QString();
+            break;
         }
 
         prefabsFile.write(content.toUtf8());

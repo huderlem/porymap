@@ -158,6 +158,7 @@ private:
 extern PorymapConfig porymapConfig;
 
 enum BaseGameVersion {
+    none,
     pokeruby,
     pokefirered,
     pokeemerald,
@@ -303,7 +304,7 @@ public:
     static const QMap<ProjectIdentifier, QPair<QString, QString>> defaultIdentifiers;
     static const QMap<ProjectFilePath, QPair<QString, QString>> defaultPaths;
     static const QStringList versionStrings;
-    static BaseGameVersion stringToBaseGameVersion(QString string, bool * ok = nullptr);
+    static BaseGameVersion stringToBaseGameVersion(const QString &string);
 
     void reset(BaseGameVersion baseGameVersion);
     void setFilePath(ProjectFilePath pathId, const QString &path);

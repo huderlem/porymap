@@ -608,20 +608,32 @@ const QMap<BaseGameVersion, QString> baseGameVersionMap = {
     {BaseGameVersion::pokeemerald, ProjectConfig::versionStrings[2]},
 };
 
-const QMap<QString, BaseGameVersion> baseGameVersionReverseMap = {
-    {ProjectConfig::versionStrings[0], BaseGameVersion::pokeruby},
-    {ProjectConfig::versionStrings[1], BaseGameVersion::pokefirered},
-    {ProjectConfig::versionStrings[2], BaseGameVersion::pokeemerald},
+const QMap<BaseGameVersion, QStringList> versionDetectNames = {
+    {BaseGameVersion::pokeruby, {"ruby", "sapphire"}},
+    {BaseGameVersion::pokefirered, {"firered", "leafgreen"}},
+    {BaseGameVersion::pokeemerald, {"emerald"}},
 };
 
-BaseGameVersion ProjectConfig::stringToBaseGameVersion(QString string, bool * ok) {
-    if (baseGameVersionReverseMap.contains(string)) {
-        if (ok) *ok = true;
-        return baseGameVersionReverseMap.value(string);
-    } else {
-        if (ok) *ok = false;
-        return BaseGameVersion::pokeemerald;
+// If a string exclusively contains one version name we assume its identity,
+// otherwise we leave it unknown and we'll need the user to tell us the version.
+BaseGameVersion ProjectConfig::stringToBaseGameVersion(const QString &string) {
+    BaseGameVersion version = BaseGameVersion::none;
+    for (auto i = versionDetectNames.cbegin(), end = versionDetectNames.cend(); i != end; i++) {
+        // Compare the given string to all the possible names for this game version
+        const QStringList names = i.value();
+        for (auto name : names) {
+            if (string.contains(name)) {
+                if (version != BaseGameVersion::none) {
+                    // The given string matches multiple versions, so we can't be sure which it is.
+                    return BaseGameVersion::none;
+                }
+                version = i.key();
+                break;
+            }
+        }
     }
+    // We finished checking the names for each version; the name either matched 1 version or none.
+    return version;
 }
 
 ProjectConfig projectConfig;
@@ -633,10 +645,11 @@ QString ProjectConfig::getConfigFilepath() {
 
 void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
     if (key == "base_game_version") {
-        bool ok;
-        this->baseGameVersion = this->stringToBaseGameVersion(value.toLower(), &ok);
-        if (!ok)
+        this->baseGameVersion = this->stringToBaseGameVersion(value.toLower());
+        if (this->baseGameVersion == BaseGameVersion::none) {
             logWarn(QString("Invalid config value for base_game_version: '%1'. Must be 'pokeruby', 'pokefirered' or 'pokeemerald'.").arg(value));
+            this->baseGameVersion = BaseGameVersion::pokeemerald;
+        }
     } else if (key == "use_poryscript") {
         this->usePoryScript = getConfigBool(key, value);
     } else if (key == "use_custom_border_size") {
@@ -851,10 +864,11 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
 
 void ProjectConfig::init() {
     QString dirName = QDir(this->projectDir).dirName().toLower();
-    if (baseGameVersionReverseMap.contains(dirName)) {
-        // TODO: Improve detection (ex: emerald or pokeemerald-2 aren't currently auto-detected)
-        this->baseGameVersion = baseGameVersionReverseMap.value(dirName);
-        logInfo(QString("Auto-detected base_game_version as '%1'").arg(dirName));
+
+    BaseGameVersion version = stringToBaseGameVersion(dirName);
+    if (version != BaseGameVersion::none) {
+        this->baseGameVersion = version;
+        logInfo(QString("Auto-detected base_game_version as '%1'").arg(getBaseGameVersionString(version)));
     } else {
         QDialog dialog(nullptr, Qt::WindowTitleHint);
         dialog.setWindowTitle("Project Configuration");
