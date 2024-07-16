@@ -890,6 +890,8 @@ void ProjectConfig::init() {
 
         if (dialog.exec() == QDialog::Accepted) {
             this->baseGameVersion = static_cast<BaseGameVersion>(baseGameVersionComboBox->currentData().toInt());
+        } else {
+            // TODO: If user closes window Porymap assumes pokeemerald; it should instead abort project opening
         }
     }
     this->setUnreadKeys(); // Initialize version-specific options

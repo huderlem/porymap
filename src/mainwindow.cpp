@@ -413,35 +413,6 @@ void MainWindow::markMapEdited() {
     }
 }
 
-// Update the UI using information we've read from the user's project files.
-void MainWindow::setProjectSpecificUI()
-{
-    // Wild Encounters tab
-    // TODO: This index should come from an enum
-    ui->mainTabBar->setTabEnabled(4, editor->project->wildEncountersLoaded);
-
-    bool hasFlags = projectConfig.mapAllowFlagsEnabled;
-    ui->checkBox_AllowRunning->setVisible(hasFlags);
-    ui->checkBox_AllowBiking->setVisible(hasFlags);
-    ui->checkBox_AllowEscaping->setVisible(hasFlags);
-    ui->label_AllowRunning->setVisible(hasFlags);
-    ui->label_AllowBiking->setVisible(hasFlags);
-    ui->label_AllowEscaping->setVisible(hasFlags);
-
-    ui->newEventToolButton->newWeatherTriggerAction->setVisible(projectConfig.eventWeatherTriggerEnabled);
-    ui->newEventToolButton->newSecretBaseAction->setVisible(projectConfig.eventSecretBaseEnabled);
-    ui->newEventToolButton->newCloneObjectAction->setVisible(projectConfig.eventCloneObjectEnabled);
-
-    bool floorNumEnabled = projectConfig.floorNumberEnabled;
-    ui->spinBox_FloorNumber->setVisible(floorNumEnabled);
-    ui->label_FloorNumber->setVisible(floorNumEnabled);
-
-    Event::setIcons();
-    editor->setCollisionGraphics();
-    ui->spinBox_SelectedElevation->setMaximum(Block::getMaxElevation());
-    ui->spinBox_SelectedCollision->setMaximum(Block::getMaxCollision());
-}
-
 void MainWindow::mapSortOrder_changed(QAction *action)
 {
     QList<QAction*> items = ui->toolButton_MapSortOrder->menu()->actions();
@@ -528,13 +499,13 @@ void MainWindow::setTheme(QString theme) {
 }
 
 bool MainWindow::openProject(const QString &dir, bool initial) {
-    if (!this->closeProject()) {
-        logInfo("Aborted project open.");
-        return false;
-    }
-
     if (dir.isNull() || dir.length() <= 0) {
-        if (!initial) setWindowDisabled(true);
+        // If this happened on startup it's because the user has no recent projects, which is fine.
+        // This shouldn't happen otherwise, but if it does then display an error.
+        if (!initial) {
+            logError("Failed to open project: Directory name cannot be empty");
+            showProjectOpenFailure();
+        }
         return false;
     }
 
@@ -550,6 +521,13 @@ bool MainWindow::openProject(const QString &dir, bool initial) {
             logError(errorMsg);
             showProjectOpenFailure();
         }
+        return false;
+    }
+
+    // The above checks can fail and the user will be allowed to continue with their currently-opened project (if there is one).
+    // We close the current project below, after which either the new project will open successfully or the window will be disabled.
+    if (!this->closeProject()) {
+        logInfo("Aborted project open.");
         return false;
     }
 
@@ -577,8 +555,14 @@ bool MainWindow::openProject(const QString &dir, bool initial) {
     });
     this->editor->project->set_root(dir);
 
+    // Make sure project looks reasonable before attempting to load it
+    if (!checkProjectSanity()) {
+        delete this->editor->project;
+        return false;
+    }
+
     // Load the project
-    if (!(loadDataStructures() && populateMapList() && setInitialMap())) {
+    if (!(loadProjectData() && setProjectUI() && setInitialMap())) {
         this->statusBar()->showMessage(QString("Failed to open %1").arg(projectString));
         showProjectOpenFailure();
         delete this->editor->project;
@@ -606,12 +590,39 @@ bool MainWindow::openProject(const QString &dir, bool initial) {
     return true;
 }
 
+bool MainWindow::loadProjectData() {
+    bool success = editor->project->load();
+    Scripting::populateGlobalObject(this);
+    return success;
+}
+
+bool MainWindow::checkProjectSanity() {
+    if (editor->project->sanityCheck())
+        return true;
+
+    QMessageBox msgBox;
+    msgBox.setIcon(QMessageBox::Critical);
+    msgBox.setText(QString("The selected directory appears to be invalid."));
+    msgBox.setInformativeText(QString("The directory '%1' is missing key files.\n\n"
+                                      "Make sure you selected the correct project directory "
+                                      "(the one used to make your <b>.gba</b> file, e.g. 'pokeemerald').").arg(editor->project->root));
+    msgBox.setStandardButtons(QMessageBox::Ok);
+    msgBox.setDefaultButton(QMessageBox::Ok);
+    auto tryAnyway = msgBox.addButton("Try Anyway", QMessageBox::ActionRole);
+    msgBox.exec();
+    if (msgBox.clickedButton() == tryAnyway) {
+        // The user has chosen to try to load this project anyway.
+        // This will almost certainly fail, but they'll get a more specific error message.
+        return true;
+    }
+    return false;
+}
+
 void MainWindow::showProjectOpenFailure() {
     QString errorMsg = QString("There was an error opening the project. Please see %1 for full error details.").arg(getLogPath());
     QMessageBox error(QMessageBox::Critical, "porymap", errorMsg, QMessageBox::Ok, this);
     error.setDetailedText(getMostRecentError());
     error.exec();
-    setWindowDisabled(true);
 }
 
 bool MainWindow::isProjectOpen() {
@@ -975,45 +986,8 @@ void MainWindow::on_spinBox_FloorNumber_valueChanged(int offset)
     }
 }
 
-bool MainWindow::loadDataStructures() {
-    Project *project = editor->project;
-    bool success = project->readMapLayouts()
-                && project->readRegionMapSections()
-                && project->readItemNames()
-                && project->readFlagNames()
-                && project->readVarNames()
-                && project->readMovementTypes()
-                && project->readInitialFacingDirections()
-                && project->readMapTypes()
-                && project->readMapBattleScenes()
-                && project->readWeatherNames()
-                && project->readCoordEventWeatherNames()
-                && project->readSecretBaseIds() 
-                && project->readBgEventFacingDirections()
-                && project->readTrainerTypes()
-                && project->readMetatileBehaviors()
-                && project->readFieldmapProperties()
-                && project->readFieldmapMasks()
-                && project->readTilesetLabels()
-                && project->readTilesetMetatileLabels()
-                && project->readHealLocations()
-                && project->readMiscellaneousConstants()
-                && project->readSpeciesIconPaths()
-                && project->readWildMonData()
-                && project->readEventScriptLabels()
-                && project->readObjEventGfxConstants()
-                && project->readEventGraphics()
-                && project->readSongNames();
-
-    project->applyParsedLimits();
-    setProjectSpecificUI();
-    Scripting::populateGlobalObject(this);
-
-    return success && loadProjectCombos();
-}
-
-bool MainWindow::loadProjectCombos() {
-    // set up project ui comboboxes
+// Update the UI using information we've read from the user's project files.
+bool MainWindow::setProjectUI() {
     Project *project = editor->project;
 
     // Block signals to the comboboxes while they are being modified
@@ -1025,6 +999,7 @@ bool MainWindow::loadProjectCombos() {
     const QSignalBlocker blocker6(ui->comboBox_BattleScene);
     const QSignalBlocker blocker7(ui->comboBox_Type);
 
+    // Set up project comboboxes
     ui->comboBox_Song->clear();
     ui->comboBox_Song->addItems(project->songNames);
     ui->comboBox_Location->clear();
@@ -1040,15 +1015,36 @@ bool MainWindow::loadProjectCombos() {
     ui->comboBox_Type->clear();
     ui->comboBox_Type->addItems(project->mapTypes);
 
-    return true;
-}
+    sortMapList();
 
-bool MainWindow::populateMapList() {
-    bool success = editor->project->readMapGroups();
-    if (success) {
-        sortMapList();
-    }
-    return success;
+    // Show/hide parts of the UI that are dependent on the user's project settings
+
+    // Wild Encounters tab
+    // TODO: This index should come from an enum
+    ui->mainTabBar->setTabEnabled(4, editor->project->wildEncountersLoaded);
+
+    bool hasFlags = projectConfig.mapAllowFlagsEnabled;
+    ui->checkBox_AllowRunning->setVisible(hasFlags);
+    ui->checkBox_AllowBiking->setVisible(hasFlags);
+    ui->checkBox_AllowEscaping->setVisible(hasFlags);
+    ui->label_AllowRunning->setVisible(hasFlags);
+    ui->label_AllowBiking->setVisible(hasFlags);
+    ui->label_AllowEscaping->setVisible(hasFlags);
+
+    ui->newEventToolButton->newWeatherTriggerAction->setVisible(projectConfig.eventWeatherTriggerEnabled);
+    ui->newEventToolButton->newSecretBaseAction->setVisible(projectConfig.eventSecretBaseEnabled);
+    ui->newEventToolButton->newCloneObjectAction->setVisible(projectConfig.eventCloneObjectEnabled);
+
+    bool floorNumEnabled = projectConfig.floorNumberEnabled;
+    ui->spinBox_FloorNumber->setVisible(floorNumEnabled);
+    ui->label_FloorNumber->setVisible(floorNumEnabled);
+
+    Event::setIcons();
+    editor->setCollisionGraphics();
+    ui->spinBox_SelectedElevation->setMaximum(Block::getMaxElevation());
+    ui->spinBox_SelectedCollision->setMaximum(Block::getMaxCollision());
+
+    return true;
 }
 
 void MainWindow::sortMapList() {
@@ -3019,6 +3015,7 @@ bool MainWindow::closeProject() {
         }
     }
     editor->closeProject();
+    setWindowDisabled(true);
 
     return true;
 }

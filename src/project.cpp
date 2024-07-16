@@ -91,6 +91,60 @@ void Project::set_root(QString dir) {
     this->parser.set_root(dir);
 }
 
+// Before attempting the initial project load we should check for a few notable files.
+// If all are missing then we can warn the user, they may have accidentally selected the wrong folder.
+bool Project::sanityCheck() {
+    // The goal with the file selection is to pick files that are important enough that any reasonable project would have
+    // at least 1 in the expected location, but unique enough that they're unlikely to overlap with a completely unrelated
+    // directory (e.g. checking for 'data/maps/' is a bad choice because it's too generic, pokeyellow would pass for instance)
+    static const QSet<ProjectFilePath> pathsToCheck = {
+        ProjectFilePath::json_map_groups,
+        ProjectFilePath::json_layouts,
+        ProjectFilePath::tilesets_headers,
+        ProjectFilePath::global_fieldmap,
+    };
+    for (auto pathId : pathsToCheck) {
+        const QString path = QString("%1/%2").arg(this->root).arg(projectConfig.getFilePath(pathId));
+        QFileInfo fileInfo(path);
+        if (fileInfo.exists() && fileInfo.isFile())
+            return true;
+    }
+    return false;
+}
+
+bool Project::load() {
+    bool success = readMapLayouts()
+                && readRegionMapSections()
+                && readItemNames()
+                && readFlagNames()
+                && readVarNames()
+                && readMovementTypes()
+                && readInitialFacingDirections()
+                && readMapTypes()
+                && readMapBattleScenes()
+                && readWeatherNames()
+                && readCoordEventWeatherNames()
+                && readSecretBaseIds() 
+                && readBgEventFacingDirections()
+                && readTrainerTypes()
+                && readMetatileBehaviors()
+                && readFieldmapProperties()
+                && readFieldmapMasks()
+                && readTilesetLabels()
+                && readTilesetMetatileLabels()
+                && readHealLocations()
+                && readMiscellaneousConstants()
+                && readSpeciesIconPaths()
+                && readWildMonData()
+                && readEventScriptLabels()
+                && readObjEventGfxConstants()
+                && readEventGraphics()
+                && readSongNames()
+                && readMapGroups();
+    applyParsedLimits();
+    return success;
+}
+
 QString Project::getProjectTitle() {
     if (!root.isNull()) {
         return root.section('/', -1);

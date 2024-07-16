@@ -344,9 +344,9 @@ private:
     bool setMap(QString, bool scrollTreeView = false);
     void redrawMapScene();
     void refreshMapScene();
-    bool loadDataStructures();
-    bool loadProjectCombos();
-    bool populateMapList();
+    bool checkProjectSanity();
+    bool loadProjectData();
+    bool setProjectUI();
     void sortMapList();
     void openSubWindow(QWidget * window);
     QString getExistingDirectory(QString);
@@ -376,7 +376,6 @@ private:
     void initMapSortOrder();
     void initShortcuts();
     void initExtraShortcuts();
-    void setProjectSpecificUI();
     void loadUserSettings();
     void applyMapListFilter(QString filterText);
     void restoreWindowState();

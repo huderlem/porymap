@@ -97,6 +97,9 @@ public:
     DataQualifiers healLocationDataQualifiers;
     QString healLocationsTableName;
 
+    bool sanityCheck();
+    bool load();
+
     QMap<QString, Map*> mapCache;
     Map* loadMap(QString);
     Map* getMap(QString);
