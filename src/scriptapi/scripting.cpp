@@ -21,14 +21,19 @@ QMap<CallbackType, QString> callbackFunctions = {
 
 Scripting *instance = nullptr;
 
+void Scripting::stop() {
+    if (!instance) return;
+    instance->engine->setInterrupted(true);
+    instance->scriptUtility->clearActions();
+    qDeleteAll(instance->imageCache);
+    delete instance;
+    instance = nullptr;
+}
+
 void Scripting::init(MainWindow *mainWindow) {
-    mainWindow->ui->graphicsView_Map->clearOverlayMap();
-    if (instance) {
-        instance->engine->setInterrupted(true);
-        instance->scriptUtility->clearActions();
-        qDeleteAll(instance->imageCache);
-        delete instance;
-    }
+    if (mainWindow->ui->graphicsView_Map)
+        mainWindow->ui->graphicsView_Map->clearOverlayMap();
+    Scripting::stop();
     instance = new Scripting(mainWindow);
 }
 

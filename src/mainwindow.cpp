@@ -70,7 +70,7 @@ MainWindow::MainWindow(QWidget *parent) :
     logInfo(QString("Launching Porymap v%1").arg(QCoreApplication::applicationVersion()));
 
     this->initWindow();
-    if (porymapConfig.reopenOnLaunch && this->openProject(porymapConfig.getRecentProject(), true))
+    if (porymapConfig.reopenOnLaunch && !porymapConfig.projectManuallyClosed && this->openProject(porymapConfig.getRecentProject(), true))
         on_toolButton_Paint_clicked();
 
     // there is a bug affecting macOS users, where the trackpad deilveres a bad touch-release gesture
@@ -498,7 +498,7 @@ void MainWindow::setTheme(QString theme) {
     }
 }
 
-bool MainWindow::openProject(const QString &dir, bool initial) {
+bool MainWindow::openProject(QString dir, bool initial) {
     if (dir.isNull() || dir.length() <= 0) {
         // If this happened on startup it's because the user has no recent projects, which is fine.
         // This shouldn't happen otherwise, but if it does then display an error.
@@ -526,7 +526,7 @@ bool MainWindow::openProject(const QString &dir, bool initial) {
 
     // The above checks can fail and the user will be allowed to continue with their currently-opened project (if there is one).
     // We close the current project below, after which either the new project will open successfully or the window will be disabled.
-    if (!this->closeProject()) {
+    if (!closeProject()) {
         logInfo("Aborted project open.");
         return false;
     }
@@ -577,6 +577,7 @@ bool MainWindow::openProject(const QString &dir, bool initial) {
     showWindowTitle();
     this->statusBar()->showMessage(QString("Opened %1").arg(projectString));
 
+    porymapConfig.projectManuallyClosed = false;
     porymapConfig.addRecentProject(dir);
     refreshRecentProjectsMenu();
 
@@ -600,12 +601,14 @@ bool MainWindow::checkProjectSanity() {
     if (editor->project->sanityCheck())
         return true;
 
+    logWarn(QString("The directory '%1' failed the project sanity check.").arg(editor->project->root));
+
     QMessageBox msgBox;
     msgBox.setIcon(QMessageBox::Critical);
     msgBox.setText(QString("The selected directory appears to be invalid."));
     msgBox.setInformativeText(QString("The directory '%1' is missing key files.\n\n"
                                       "Make sure you selected the correct project directory "
-                                      "(the one used to make your <b>.gba</b> file, e.g. 'pokeemerald').").arg(editor->project->root));
+                                      "(the one used to make your .gba file, e.g. 'pokeemerald').").arg(editor->project->root));
     msgBox.setStandardButtons(QMessageBox::Ok);
     msgBox.setDefaultButton(QMessageBox::Ok);
     auto tryAnyway = msgBox.addButton("Try Anyway", QMessageBox::ActionRole);
@@ -719,6 +722,11 @@ void MainWindow::on_action_Reload_Project_triggered() {
 
     if (warning.exec() == QMessageBox::Ok)
         openProject(editor->project->root);
+}
+
+void MainWindow::on_action_Close_Project_triggered() {
+    closeProject();
+    porymapConfig.projectManuallyClosed = true;
 }
 
 bool MainWindow::setMap(QString map_name, bool scrollTreeView) {
@@ -1045,6 +1053,29 @@ bool MainWindow::setProjectUI() {
     ui->spinBox_SelectedCollision->setMaximum(Block::getMaxCollision());
 
     return true;
+}
+
+void MainWindow::clearProjectUI() {
+    // Block signals to the comboboxes while they are being modified
+    const QSignalBlocker blocker1(ui->comboBox_Song);
+    const QSignalBlocker blocker2(ui->comboBox_Location);
+    const QSignalBlocker blocker3(ui->comboBox_PrimaryTileset);
+    const QSignalBlocker blocker4(ui->comboBox_SecondaryTileset);
+    const QSignalBlocker blocker5(ui->comboBox_Weather);
+    const QSignalBlocker blocker6(ui->comboBox_BattleScene);
+    const QSignalBlocker blocker7(ui->comboBox_Type);
+
+    ui->comboBox_Song->clear();
+    ui->comboBox_Location->clear();
+    ui->comboBox_PrimaryTileset->clear();
+    ui->comboBox_SecondaryTileset->clear();
+    ui->comboBox_Weather->clear();
+    ui->comboBox_BattleScene->clear();
+    ui->comboBox_Type->clear();
+
+    // Clear map list
+    mapListModel->clear();
+    mapGroupItemsList->clear();
 }
 
 void MainWindow::sortMapList() {
@@ -2514,8 +2545,12 @@ void MainWindow::importMapFromAdvanceMap1_92()
 void MainWindow::showExportMapImageWindow(ImageExporterMode mode) {
     if (!editor->project) return;
 
-    if (!this->mapImageExporter)
-        this->mapImageExporter = new MapImageExporter(this, this->editor, mode);
+    // If the user is requesting this window again we assume it's for a new
+    // window (the map/mode may have changed), so delete the old window.
+    if (this->mapImageExporter)
+        delete this->mapImageExporter;
+
+    this->mapImageExporter = new MapImageExporter(this, this->editor, mode);
 
     openSubWindow(this->mapImageExporter);
 }
@@ -2972,24 +3007,41 @@ bool MainWindow::askToFixRegionMapEditor() {
 }
 
 // Attempt to close any open sub-windows of the main window, giving each a chance to abort the process.
-// Each of these are expected to be a QPointer to a widget with WA_DeleteOnClose set, so manually deleting
-// and nullifying the pointer members is not necessary here.
+// Each of these windows is a widget with WA_DeleteOnClose set, so manually deleting them isn't necessary.
+// Because they're tracked with QPointers nullifying them shouldn't be necessary either, but it seems the
+// delete is happening too late and some of the pointers haven't been cleared by the time we need them to,
+// so we nullify them all here anyway.
 bool MainWindow::closeSupplementaryWindows() {
     if (this->tilesetEditor && !this->tilesetEditor->close())
         return false;
+    this->tilesetEditor = nullptr;
+
     if (this->regionMapEditor && !this->regionMapEditor->close())
         return false;
+    this->regionMapEditor = nullptr;
+
     if (this->mapImageExporter && !this->mapImageExporter->close())
         return false;
+    this->mapImageExporter = nullptr;
+
     if (this->newMapPrompt && !this->newMapPrompt->close())
         return false;
+    this->newMapPrompt = nullptr;
+
     if (this->shortcutsEditor && !this->shortcutsEditor->close())
         return false;
+    this->shortcutsEditor = nullptr;
+
     if (this->preferenceEditor && !this->preferenceEditor->close())
         return false;
+    this->preferenceEditor = nullptr;
+
     if (this->customScriptsEditor && !this->customScriptsEditor->close())
         return false;
+    this->customScriptsEditor = nullptr;
+
     if (this->projectSettingsEditor) this->projectSettingsEditor->closeQuietly();
+    this->projectSettingsEditor = nullptr;
 
     return true;
 }
@@ -3014,8 +3066,10 @@ bool MainWindow::closeProject() {
             return false;
         }
     }
+    clearProjectUI();
     editor->closeProject();
     setWindowDisabled(true);
+    setWindowTitle(QCoreApplication::applicationName());
 
     return true;
 }

@@ -198,9 +198,9 @@ KeyValueConfigBase::~KeyValueConfigBase() {
 void KeyValueConfigBase::load() {
     reset();
     QFile file(this->getConfigFilepath());
-    if (!file.exists())
+    if (!file.exists()) {
         this->init();
-    else if (!file.open(QIODevice::ReadOnly)) {
+    } else if (!file.open(QIODevice::ReadOnly)) {
         logError(QString("Could not open config file '%1': ").arg(this->getConfigFilepath()) + file.errorString());
     }
 
@@ -306,6 +306,8 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
     if (key == "recent_project") {
         this->recentProjects = value.split(",", Qt::SkipEmptyParts);
         this->recentProjects.removeDuplicates();
+    } else if (key == "project_manually_closed") {
+        this->projectManuallyClosed = getConfigBool(key, value);
     } else if (key == "reopen_on_launch") {
         this->reopenOnLaunch = getConfigBool(key, value);
     } else if (key == "pretty_cursors") {
@@ -417,6 +419,7 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
 QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     QMap<QString, QString> map;
     map.insert("recent_project", this->recentProjects.join(","));
+    map.insert("project_manually_closed", this->projectManuallyClosed ? "1" : "0");
     map.insert("reopen_on_launch", this->reopenOnLaunch ? "1" : "0");
     map.insert("pretty_cursors", this->prettyCursors ? "1" : "0");
     map.insert("map_sort_order", mapSortOrderMap.value(this->mapSortOrder));
@@ -882,7 +885,7 @@ void ProjectConfig::init() {
         baseGameVersionComboBox->addItem("pokeemerald", BaseGameVersion::pokeemerald);
         form.addRow(new QLabel("Game Version"), baseGameVersionComboBox);
 
-        // TODO: Advanced button to open the project settings window (with some settings disabled)
+        // TODO: Add an 'Advanced' button to open the project settings window (with some settings disabled)
 
         QDialogButtonBox buttonBox(QDialogButtonBox::Ok, Qt::Horizontal, &dialog);
         QObject::connect(&buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
@@ -891,7 +894,7 @@ void ProjectConfig::init() {
         if (dialog.exec() == QDialog::Accepted) {
             this->baseGameVersion = static_cast<BaseGameVersion>(baseGameVersionComboBox->currentData().toInt());
         } else {
-            // TODO: If user closes window Porymap assumes pokeemerald; it should instead abort project opening
+            logWarn(QString("No base_game_version selected, using default '%1'").arg(getBaseGameVersionString(this->baseGameVersion)));
         }
     }
     this->setUnreadKeys(); // Initialize version-specific options

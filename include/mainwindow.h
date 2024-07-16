@@ -167,6 +167,7 @@ public slots:
 private slots:
     void on_action_Open_Project_triggered();
     void on_action_Reload_Project_triggered();
+    void on_action_Close_Project_triggered();
     void on_mapList_activated(const QModelIndex &index);
     void on_action_Save_Project_triggered();
     void openWarpMap(QString map_name, int event_id, Event::Group event_group);
@@ -347,10 +348,11 @@ private:
     bool checkProjectSanity();
     bool loadProjectData();
     bool setProjectUI();
+    void clearProjectUI();
     void sortMapList();
     void openSubWindow(QWidget * window);
     QString getExistingDirectory(QString);
-    bool openProject(const QString &dir, bool initial = false);
+    bool openProject(QString dir, bool initial = false);
     bool closeProject();
     void showProjectOpenFailure();
     void saveGlobalConfigs();

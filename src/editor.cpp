@@ -81,8 +81,9 @@ void Editor::saveUiFields() {
 void Editor::closeProject() {
     if (!this->project)
         return;
-
     Scripting::cb_ProjectClosed(this->project->root);
+    Scripting::stop();
+    clearMap();
     delete this->project;
 }
 
@@ -204,9 +205,8 @@ void Editor::setEditingConnections() {
     this->cursorMapTileRect->setActive(false);
 }
 
-void Editor::displayWildMonTables() {
+void Editor::clearWildMonTables() {
     QStackedWidget *stack = ui->stackedWidget_WildMons;
-    QComboBox *labelCombo = ui->comboBox_EncounterGroupLabel;
 
     // delete widgets from previous map data if they exist
     while (stack->count()) {
@@ -215,18 +215,24 @@ void Editor::displayWildMonTables() {
         delete oldWidget;
     }
 
-    labelCombo->clear();
+    ui->comboBox_EncounterGroupLabel->clear();
+}
+
+void Editor::displayWildMonTables() {
+    clearWildMonTables();
 
     // Don't try to read encounter data if it doesn't exist on disk for this map.
     if (!project->wildMonData.contains(map->constantName)) {
         return;
     }
 
+    QComboBox *labelCombo = ui->comboBox_EncounterGroupLabel;
     for (auto groupPair : project->wildMonData[map->constantName])
         labelCombo->addItem(groupPair.first);
 
     labelCombo->setCurrentText(labelCombo->itemText(0));
 
+    QStackedWidget *stack = ui->stackedWidget_WildMons;
     int labelIndex = 0;
     for (auto labelPair : project->wildMonData[map->constantName]) {
 
@@ -1337,6 +1343,35 @@ void Editor::mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixm
     }
 }
 
+// On project close we want to leave the editor view empty.
+// Otherwise a map is normally only cleared when a new one is being displayed.
+void Editor::clearMap() {
+    clearMetatileSelector();
+    clearMovementPermissionSelector();
+    clearMapMetatiles();
+    clearMapMovementPermissions();
+    clearBorderMetatiles();
+    clearCurrentMetatilesSelection();
+    clearMapEvents();
+    //clearMapConnections();
+    clearMapBorder();
+    clearMapGrid();
+    clearWildMonTables();
+
+    // TODO: Handle connections after redesign PR.
+    selected_connection_item = nullptr;
+    connection_items.clear();
+    connection_mask = nullptr;
+
+    current_view = nullptr;
+    map = nullptr;
+
+    // These are normally preserved between map displays, we only delete them now.
+    delete scene;
+    delete metatile_selector_item;
+    delete movement_permissions_selector_item;
+}
+
 bool Editor::displayMap() {
     if (!scene) {
         scene = new QGraphicsScene;
@@ -1344,12 +1379,6 @@ bool Editor::displayMap() {
         scene->installEventFilter(filter);
         connect(filter, &MapSceneEventFilter::wheelZoom, this, &Editor::onWheelZoom);
         scene->installEventFilter(this->map_ruler);
-    }
-
-    if (map_item && scene) {
-        scene->removeItem(map_item);
-        delete map_item;
-        scene->removeItem(this->map_ruler);
     }
 
     displayMetatileSelector();
@@ -1379,11 +1408,16 @@ bool Editor::displayMap() {
     return true;
 }
 
-void Editor::displayMetatileSelector() {
+void Editor::clearMetatileSelector() {
     if (metatile_selector_item && metatile_selector_item->scene()) {
         metatile_selector_item->scene()->removeItem(metatile_selector_item);
         delete scene_metatiles;
     }
+}
+
+void Editor::displayMetatileSelector() {
+    clearMetatileSelector();
+
     scene_metatiles = new QGraphicsScene;
     if (!metatile_selector_item) {
         metatile_selector_item = new MetatileSelector(8, map);
@@ -1408,7 +1442,17 @@ void Editor::displayMetatileSelector() {
     scene_metatiles->addItem(metatile_selector_item);
 }
 
+void Editor::clearMapMetatiles() {
+    if (map_item && scene) {
+        scene->removeItem(map_item);
+        delete map_item;
+        scene->removeItem(this->map_ruler);
+    }
+}
+
 void Editor::displayMapMetatiles() {
+    clearMapMetatiles();
+
     map_item = new MapPixmapItem(map, this->metatile_selector_item, this->settings);
     connect(map_item, &MapPixmapItem::mouseEvent, this, &Editor::mouseEvent_map);
     connect(map_item, &MapPixmapItem::startPaint, this, &Editor::onMapStartPaint);
@@ -1429,11 +1473,16 @@ void Editor::displayMapMetatiles() {
     );
 }
 
-void Editor::displayMapMovementPermissions() {
+void Editor::clearMapMovementPermissions() {
     if (collision_item && scene) {
         scene->removeItem(collision_item);
         delete collision_item;
     }
+}
+
+void Editor::displayMapMovementPermissions() {
+    clearMapMovementPermissions();
+
     collision_item = new CollisionPixmapItem(map, ui->spinBox_SelectedCollision, ui->spinBox_SelectedElevation,
                                              this->metatile_selector_item, this->settings, &this->collisionOpacity);
     connect(collision_item, &CollisionPixmapItem::mouseEvent, this, &Editor::mouseEvent_collision);
@@ -1446,11 +1495,16 @@ void Editor::displayMapMovementPermissions() {
     scene->addItem(collision_item);
 }
 
-void Editor::displayBorderMetatiles() {
+void Editor::clearBorderMetatiles() {
     if (selected_border_metatiles_item && selected_border_metatiles_item->scene()) {
         selected_border_metatiles_item->scene()->removeItem(selected_border_metatiles_item);
         delete selected_border_metatiles_item;
+        delete scene_selected_border_metatiles;
     }
+}
+
+void Editor::displayBorderMetatiles() {
+    clearBorderMetatiles();
 
     scene_selected_border_metatiles = new QGraphicsScene;
     selected_border_metatiles_item = new BorderMetatilesPixmapItem(map, this->metatile_selector_item);
@@ -1465,11 +1519,17 @@ void Editor::displayBorderMetatiles() {
             this, &Editor::onBorderMetatilesChanged);
 }
 
-void Editor::displayCurrentMetatilesSelection() {
+void Editor::clearCurrentMetatilesSelection() {
     if (current_metatile_selection_item && current_metatile_selection_item->scene()) {
         current_metatile_selection_item->scene()->removeItem(current_metatile_selection_item);
         delete current_metatile_selection_item;
+        current_metatile_selection_item = nullptr;
+        delete scene_current_metatile_selection;
     }
+}
+
+void Editor::displayCurrentMetatilesSelection() {
+    clearCurrentMetatilesSelection();
 
     scene_current_metatile_selection = new QGraphicsScene;
     current_metatile_selection_item = new CurrentSelectedMetatilesPixmapItem(map, this->metatile_selector_item);
@@ -1485,11 +1545,15 @@ void Editor::redrawCurrentMetatilesSelection() {
     }
 }
 
-void Editor::displayMovementPermissionSelector() {
+void Editor::clearMovementPermissionSelector() {
     if (movement_permissions_selector_item && movement_permissions_selector_item->scene()) {
         movement_permissions_selector_item->scene()->removeItem(movement_permissions_selector_item);
         delete scene_collision_metatiles;
     }
+}
+
+void Editor::displayMovementPermissionSelector() {
+    clearMovementPermissionSelector();
 
     scene_collision_metatiles = new QGraphicsScene;
     if (!movement_permissions_selector_item) {
@@ -1507,7 +1571,7 @@ void Editor::displayMovementPermissionSelector() {
     scene_collision_metatiles->addItem(movement_permissions_selector_item);
 }
 
-void Editor::displayMapEvents() {
+void Editor::clearMapEvents() {
     if (events_group) {
         for (QGraphicsItem *child : events_group->childItems()) {
             events_group->removeFromGroup(child);
@@ -1519,9 +1583,13 @@ void Editor::displayMapEvents() {
         }
 
         delete events_group;
+        events_group = nullptr;
     }
-
     selected_events->clear();
+}
+
+void Editor::displayMapEvents() {
+    clearMapEvents();
 
     events_group = new QGraphicsItemGroup;
     scene->addItem(events_group);
@@ -1626,7 +1694,7 @@ void Editor::maskNonVisibleConnectionTiles() {
     connection_mask = scene->addPath(mask, pen, brush);
 }
 
-void Editor::displayMapBorder() {
+void Editor::clearMapBorder() {
     for (QGraphicsPixmapItem* item : borderItems) {
         if (item->scene()) {
             item->scene()->removeItem(item);
@@ -1634,6 +1702,10 @@ void Editor::displayMapBorder() {
         delete item;
     }
     borderItems.clear();
+}
+
+void Editor::displayMapBorder() {
+    clearMapBorder();
 
     int borderWidth = map->getBorderWidth();
     int borderHeight = map->getBorderHeight();
@@ -1646,7 +1718,7 @@ void Editor::displayMapBorder() {
         item->setX(x * 16);
         item->setY(y * 16);
         item->setZValue(-3);
-        scene->addItem(item);
+        scene->addItem(item); // TODO: If the scene is taking ownership here is a double-free possible?
         borderItems.append(item);
     }
 }
@@ -1689,11 +1761,15 @@ void Editor::onToggleGridClicked(bool checked) {
         ui->graphicsView_Map->scene()->update();
 }
 
-void Editor::displayMapGrid() {
+void Editor::clearMapGrid() {
     for (QGraphicsLineItem* item : gridLines) {
         if (item) delete item;
     }
     gridLines.clear();
+}
+
+void Editor::displayMapGrid() {
+    clearMapGrid();
     ui->checkBox_ToggleGrid->disconnect();
 
     int pixelWidth = map->getWidth() * 16;

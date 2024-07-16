@@ -54,6 +54,7 @@ public:
     }
     virtual void reset() override {
         this->recentProjects.clear();
+        this->projectManuallyClosed = false;
         this->reopenOnLaunch = true;
         this->mapSortOrder = MapSortOrder::Group;
         this->prettyCursors = true;
@@ -99,6 +100,7 @@ public:
     QMap<QString, QByteArray> getCustomScriptsEditorGeometry();
 
     bool reopenOnLaunch;
+    bool projectManuallyClosed;
     MapSortOrder mapSortOrder;
     bool prettyCursors;
     int collisionOpacity;
