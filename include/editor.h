@@ -175,9 +175,9 @@ private:
     void createConnectionItem(MapConnection* connection);
     void addConnectionToList(ConnectionPixmapItem* connection);
     void updateDiveEmergeMap(QString mapName, QString direction);
-    MapConnectionMirror getMirroredConnection(const MapConnection&);
-    void addMirroredConnection(const MapConnection&);
-    void removeMirroredConnection(const MapConnection&);
+    MapConnectionMirror getMirroredConnection(MapConnection*);
+    void addMirroredConnection(MapConnection*);
+    void removeMirroredConnection(MapConnection*);
     void updateEncounterFields(EncounterFields newFields);
     QString getMovementPermissionText(uint16_t collision, uint16_t elevation);
     QString getMetatileDisplayMessage(uint16_t metatileId);

@@ -791,7 +791,7 @@ void Editor::addNewConnection() {
     newConnection->map_name = defaultMapName;
     addConnection(map, newConnection);
     setSelectedConnection(connection_items.last());
-    addMirroredConnection(*newConnection);
+    addMirroredConnection(newConnection);
 }
 
 void Editor::addConnection(Map* map, MapConnection * connection) {
@@ -821,16 +821,14 @@ void Editor::removeConnectionItem(ConnectionPixmapItem* connectionItem, bool rem
     if (!connectionItem)
         return;
 
-    if (connectionItem->connection) {
-        if (removeMirror) {
-            // If a map is connected to itself and we delete the connection then this function
-            // will be called twice, once for the target of the delete and once for its mirror.
-            // We only want to try deleting the mirror once, on the first call (because the mirror
-            // of the mirror is the original target again, and we already deleted it).
-            removeMirroredConnection(*connectionItem->connection);
-        }
-        removeConnection(map, connectionItem->connection);
+    if (removeMirror) {
+        // If a map is connected to itself and we delete the connection then this function
+        // will be called twice, once for the target of the delete and once for its mirror.
+        // We only want to try deleting the mirror once, on the first call (because the mirror
+        // of the mirror is the original target again, and we already deleted it).
+        removeMirroredConnection(connectionItem->connection);
     }
+    removeConnection(map, connectionItem->connection);
 
     connection_items.removeOne(connectionItem);
     if (connectionItem->scene())
@@ -856,22 +854,22 @@ void Editor::removeSelectedConnection() {
     removeConnectionItem(selected_connection_item);
 }
 
-MapConnectionMirror Editor::getMirroredConnection(const MapConnection &source) {
+MapConnectionMirror Editor::getMirroredConnection(MapConnection* source) {
     MapConnectionMirror mirror;
-    if (!map || !ui->checkBox_MirrorConnections->isChecked())
+    if (!map || !source || !ui->checkBox_MirrorConnections->isChecked())
         return mirror;
 
     // Note: It's possible (and ok) for mirror.map == this->map
-    mirror.map = project->getMap(source.map_name);
+    mirror.map = project->getMap(source->map_name);
     if (!mirror.map)
         return mirror;
 
     // Find the matching connection in the connected map.
     // Note: There is no strict source -> mirror pairing, i.e. we are not guaranteed
     // to always get the same MapConnection if there are multiple identical copies.
-    MapConnection target = MapConnection::mirror(source, map->name);
+    MapConnection target = MapConnection::mirror(*source, map->name);
     for (auto connection : mirror.map->connections) {
-        if (*connection == target) {
+        if (*connection == target && connection != source) {
             mirror.connection = connection;
             break;
         }
@@ -879,27 +877,27 @@ MapConnectionMirror Editor::getMirroredConnection(const MapConnection &source) {
     return mirror;
 }
 
-void Editor::addMirroredConnection(const MapConnection &source) {
+void Editor::addMirroredConnection(MapConnection* source) {
     MapConnectionMirror mirror = getMirroredConnection(source);
     if (!mirror.map)
         return;
 
     mirror.connection = new MapConnection;
-    *mirror.connection = MapConnection::mirror(source, map->name);
+    *mirror.connection = MapConnection::mirror(*source, map->name);
     addConnection(mirror.map, mirror.connection);
 }
 
-void Editor::removeMirroredConnection(const MapConnection &source) {
+void Editor::removeMirroredConnection(MapConnection* source) {
     MapConnectionMirror mirror = getMirroredConnection(source);
     if (!mirror.map || !mirror.connection)
         return;
 
     if (map == mirror.map) {
         // The connection to delete is displayed on the currently-opened map, we need to delete it visually as well.
-        if (source.direction == "dive") {
+        if (source->direction == "dive") {
             const QSignalBlocker blocker(ui->comboBox_DiveMap);
             ui->comboBox_DiveMap->setCurrentText("");
-        } else if (source.direction == "emerge") {
+        } else if (source->direction == "emerge") {
             const QSignalBlocker blocker(ui->comboBox_EmergeMap);
             ui->comboBox_EmergeMap->setCurrentText("");
         } else {
@@ -943,7 +941,7 @@ void Editor::updateDiveEmergeMap(QString mapName, QString direction) {
     if (connection) {
         // Update existing connection
         if (mapName.isEmpty()) {
-            removeMirroredConnection(*connection);
+            removeMirroredConnection(connection);
             removeConnection(map, connection);
         } else {
             setConnectionMap(connection, mapName);
@@ -955,7 +953,7 @@ void Editor::updateDiveEmergeMap(QString mapName, QString direction) {
         connection->offset = 0;
         connection->map_name = mapName;
         addConnection(map, connection);
-        addMirroredConnection(*connection);
+        addMirroredConnection(connection);
     }
 }
 
@@ -1037,7 +1035,7 @@ void Editor::setConnectionOffset(MapConnection *connection, int offset) {
     if (!connection || !map || connection->offset == offset)
         return;
 
-    MapConnectionMirror mirror = getMirroredConnection(*connection);
+    MapConnectionMirror mirror = getMirroredConnection(connection);
     if (mirror.connection && mirror.map) {
         mirror.connection->offset = -offset;
         if (mirror.map != map) {
@@ -1071,9 +1069,9 @@ void Editor::setConnectionMap(MapConnection *connection, const QString &mapName)
     if (!connection || !map || connection->map_name == mapName)
         return;
 
-    removeMirroredConnection(*connection);
+    removeMirroredConnection(connection);
     connection->map_name = mapName;
-    addMirroredConnection(*connection);
+    addMirroredConnection(connection);
 
     emit editedMapData(map);
 }
@@ -1083,7 +1081,7 @@ void Editor::setConnectionDirection(MapConnection *connection, const QString &di
         return;
 
     // TODO: Lazy
-    removeMirroredConnection(*connection);
+    removeMirroredConnection(connection);
 
     if (MapConnection::isHorizontal(connection->direction) != MapConnection::isHorizontal(direction)
      || MapConnection::isVertical(connection->direction) != MapConnection::isVertical(direction)) {
@@ -1092,7 +1090,7 @@ void Editor::setConnectionDirection(MapConnection *connection, const QString &di
     }
     connection->direction = direction;
 
-    addMirroredConnection(*connection);
+    addMirroredConnection(connection);
 
     emit editedMapData(map);
 }
@@ -1781,9 +1779,7 @@ void Editor::createConnectionItem(MapConnection* connection) {
         return;
     QPixmap pixmap = getConnectionPixmap(*connection);
     QPoint pos = calculateConnectionPosition(*connection, pixmap);
-    ConnectionPixmapItem *item = new ConnectionPixmapItem(pixmap, connection, pos.x(), pos.y(), map->getWidth(), map->getHeight());
-    item->setX(pos.x());
-    item->setY(pos.y());
+    ConnectionPixmapItem *item = new ConnectionPixmapItem(pixmap, connection, pos.x(), pos.y());
     item->render();
     scene->addItem(item);
 
@@ -1860,9 +1856,8 @@ void Editor::updateMapConnections() {
     for (auto item : connection_items) {
         if (!item->connection)
             continue;
-        QPixmap pixmap = getConnectionPixmap(*item->connection);
-        item->basePixmap = pixmap;
-        item->setPixmap(pixmap);
+        item->basePixmap = getConnectionPixmap(*item->connection);
+        item->render();
     }
 
     maskNonVisibleConnectionTiles();

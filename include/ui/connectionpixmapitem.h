@@ -8,7 +8,7 @@
 class ConnectionPixmapItem : public QObject, public QGraphicsPixmapItem {
     Q_OBJECT
 public:
-    ConnectionPixmapItem(QPixmap pixmap, MapConnection* connection, int x, int y, int baseMapWidth, int baseMapHeight)
+    ConnectionPixmapItem(QPixmap pixmap, MapConnection* connection, int x, int y)
     : QGraphicsPixmapItem(pixmap),
       connection(connection)
     {
@@ -18,16 +18,14 @@ public:
         this->initialX = x;
         this->initialY = y;
         this->initialOffset = connection->offset;
-        this->baseMapWidth = baseMapWidth;
-        this->baseMapHeight = baseMapHeight;
+        this->setX(x);
+        this->setY(y);
     }
     QPixmap basePixmap;
     MapConnection* const connection;
     int initialX;
     int initialY;
     int initialOffset;
-    int baseMapWidth;
-    int baseMapHeight;
 
     void setEditable(bool editable);
     bool getEditable();
