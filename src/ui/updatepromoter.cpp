@@ -20,8 +20,7 @@ UpdatePromoter::UpdatePromoter(QWidget *parent, NetworkAccessManager *manager)
     this->updatePreferences();
     ui->checkBox_StopAlerts->setVisible(false);
     connect(ui->checkBox_StopAlerts, &QCheckBox::stateChanged, [this](int state) {
-        bool enable = (state != Qt::Checked);
-        porymapConfig.setCheckForUpdates(enable);
+        porymapConfig.checkForUpdates = (state != Qt::Checked);
         emit this->changedPreferences();
     });
 
@@ -141,11 +140,11 @@ void UpdatePromoter::processWebpage(const QJsonDocument &data, const QUrl &nextU
         // Alert the user about the new version if the dialog wasn't already open.
         // Show the window, but also show the option to turn off automatic alerts in the future.
         // We only show this alert once for a given release.
-        if (!this->isVisible() && this->newVersion > porymapConfig.getLastUpdateCheckVersion()) {
+        if (!this->isVisible() && this->newVersion > porymapConfig.lastUpdateCheckVersion) {
             ui->checkBox_StopAlerts->setVisible(true);
             this->show();
         }
-        porymapConfig.setLastUpdateCheckVersion(this->newVersion);
+        porymapConfig.lastUpdateCheckVersion = this->newVersion;
     } else {
         ui->label_Status->setText("Your version of Porymap is up to date!");
         ui->label_Warning->setVisible(false);
@@ -173,7 +172,7 @@ void UpdatePromoter::error(const QString &err, const QDateTime retryAfter) {
 
 void UpdatePromoter::updatePreferences() {
     const QSignalBlocker blocker(ui->checkBox_StopAlerts);
-    ui->checkBox_StopAlerts->setChecked(!porymapConfig.getCheckForUpdates());
+    ui->checkBox_StopAlerts->setChecked(!porymapConfig.checkForUpdates);
 }
 
 void UpdatePromoter::dialogButtonClicked(QAbstractButton *button) {

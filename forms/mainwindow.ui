@@ -2941,6 +2941,7 @@
     <addaction name="action_Open_Project"/>
     <addaction name="menuOpen_Recent_Project"/>
     <addaction name="action_Reload_Project"/>
+    <addaction name="action_Close_Project"/>
     <addaction name="action_Save"/>
     <addaction name="action_Save_Project"/>
     <addaction name="separator"/>
@@ -3293,6 +3294,14 @@
    </property>
    <property name="menuRole">
     <enum>QAction::ApplicationSpecificRole</enum>
+   </property>
+  </action>
+  <action name="action_Close_Project">
+   <property name="text">
+    <string>Close Project</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+W</string>
    </property>
   </action>
  </widget>

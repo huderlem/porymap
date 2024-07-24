@@ -100,7 +100,7 @@ uint32_t Metatile::getMaxAttributesMask() {
         {2, 0xFFFF},
         {4, 0xFFFFFFFF},
     };
-    return maxMasks.value(projectConfig.getMetatileAttributesSize(), 0);
+    return maxMasks.value(projectConfig.metatileAttributesSize, 0);
 }
 
 void Metatile::setLayout(Project * project) {
@@ -109,10 +109,10 @@ void Metatile::setLayout(Project * project) {
     for (uint16_t i = Block::getMaxMetatileId(); i > 0; i /= 16)
         numMetatileIdChars++;
 
-    uint32_t behaviorMask = projectConfig.getMetatileBehaviorMask();
-    uint32_t terrainTypeMask = projectConfig.getMetatileTerrainTypeMask();
-    uint32_t encounterTypeMask = projectConfig.getMetatileEncounterTypeMask();
-    uint32_t layerTypeMask = projectConfig.getMetatileLayerTypeMask();
+    uint32_t behaviorMask = projectConfig.metatileBehaviorMask;
+    uint32_t terrainTypeMask = projectConfig.metatileTerrainTypeMask;
+    uint32_t encounterTypeMask = projectConfig.metatileEncounterTypeMask;
+    uint32_t layerTypeMask = projectConfig.metatileLayerTypeMask;
 
     // Calculate mask of bits not used by standard behaviors so we can preserve this data.
     uint32_t unusedMask = ~(behaviorMask | terrainTypeMask | encounterTypeMask | layerTypeMask);
