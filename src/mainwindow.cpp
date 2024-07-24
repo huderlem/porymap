@@ -471,6 +471,13 @@ void MainWindow::applyMapListFilter(QString filterText)
 }
 
 void MainWindow::loadUserSettings() {
+    const QSignalBlocker blocker1(ui->horizontalSlider_CollisionTransparency);
+    const QSignalBlocker blocker2(ui->slider_DiveEmergeMapOpacity);
+    const QSignalBlocker blocker3(ui->slider_DiveMapOpacity);
+    const QSignalBlocker blocker4(ui->slider_EmergeMapOpacity);
+    const QSignalBlocker blocker5(ui->horizontalSlider_MetatileZoom);
+    const QSignalBlocker blocker6(ui->horizontalSlider_CollisionZoom);
+
     ui->actionBetter_Cursors->setChecked(porymapConfig.prettyCursors);
     this->editor->settings->betterCursors = porymapConfig.prettyCursors;
     ui->actionPlayer_View_Rectangle->setChecked(porymapConfig.showPlayerView);
@@ -479,17 +486,17 @@ void MainWindow::loadUserSettings() {
     this->editor->settings->cursorTileRectEnabled = porymapConfig.showCursorTile;
     ui->checkBox_ToggleBorder->setChecked(porymapConfig.showBorder);
     ui->checkBox_ToggleGrid->setChecked(porymapConfig.showGrid);
+    ui->groupBox_DiveMapOpacity->setChecked(porymapConfig.showDiveEmergeMaps);
     mapSortOrder = porymapConfig.mapSortOrder;
-    ui->horizontalSlider_CollisionTransparency->blockSignals(true);
+
     this->editor->collisionOpacity = static_cast<qreal>(porymapConfig.collisionOpacity) / 100;
     ui->horizontalSlider_CollisionTransparency->setValue(porymapConfig.collisionOpacity);
-    ui->horizontalSlider_CollisionTransparency->blockSignals(false);
-    ui->horizontalSlider_MetatileZoom->blockSignals(true);
+    ui->slider_DiveEmergeMapOpacity->setValue(porymapConfig.diveEmergeMapOpacity);
+    ui->slider_DiveMapOpacity->setValue(porymapConfig.diveMapOpacity);
+    ui->slider_EmergeMapOpacity->setValue(porymapConfig.emergeMapOpacity);
     ui->horizontalSlider_MetatileZoom->setValue(porymapConfig.metatilesZoom);
-    ui->horizontalSlider_MetatileZoom->blockSignals(false);
-    ui->horizontalSlider_CollisionZoom->blockSignals(true);
     ui->horizontalSlider_CollisionZoom->setValue(porymapConfig.collisionZoom);
-    ui->horizontalSlider_CollisionZoom->blockSignals(false);
+
     setTheme(porymapConfig.theme);
 }
 
@@ -2261,6 +2268,37 @@ void MainWindow::eventTabChanged(int index) {
     }
 
     isProgrammaticEventTabChange = false;
+}
+
+void MainWindow::on_groupBox_DiveMapOpacity_toggled(bool on) {
+    // Qt doesn't change the style of disabled sliders, so we do it ourselves
+    QString stylesheet = on ? "" : "QSlider::groove:horizontal {border: 1px solid #999999; border-radius: 3px; height: 2px; background: #B1B1B1;}"
+                                   "QSlider::handle:horizontal {border: 1px solid #444444; border-radius: 3px; width: 10px; height: 9px; margin: -5px -1px; background: #5C5C5C; }";
+    ui->slider_DiveEmergeMapOpacity->setStyleSheet(stylesheet);
+    ui->slider_DiveMapOpacity->setStyleSheet(stylesheet);
+    ui->slider_EmergeMapOpacity->setStyleSheet(stylesheet);
+
+    porymapConfig.showDiveEmergeMaps = on;
+    this->editor->updateDiveEmergeVisibility();
+}
+
+// Normally a map only has either a Dive map connection or an Emerge map connection,
+// in which case we only show a single opacity slider to modify the one in use.
+// If a user has both connections we show two separate opacity sliders so they can
+// modify them independently.
+void MainWindow::on_slider_DiveEmergeMapOpacity_valueChanged(int value) {
+    porymapConfig.diveEmergeMapOpacity = value;
+    this->editor->updateDiveEmergeVisibility();
+}
+
+void MainWindow::on_slider_DiveMapOpacity_valueChanged(int value) {
+    porymapConfig.diveMapOpacity = value;
+    this->editor->updateDiveEmergeVisibility();
+}
+
+void MainWindow::on_slider_EmergeMapOpacity_valueChanged(int value) {
+    porymapConfig.emergeMapOpacity = value;
+    this->editor->updateDiveEmergeVisibility();
 }
 
 void MainWindow::on_horizontalSlider_CollisionTransparency_valueChanged(int value) {

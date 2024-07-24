@@ -1715,7 +1715,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>30</height>
+                             <height>16</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -1809,7 +1809,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>30</height>
+                             <height>16</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -1903,7 +1903,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>30</height>
+                             <height>16</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -2003,7 +2003,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>30</height>
+                             <height>16</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -2097,7 +2097,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>30</height>
+                             <height>16</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -2601,34 +2601,7 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="0" column="4">
-                   <spacer name="horizontalSpacer_6">
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>40</width>
-                      <height>20</height>
-                     </size>
-                    </property>
-                   </spacer>
-                  </item>
-                  <item row="0" column="0">
-                   <widget class="QToolButton" name="button_OpenEmergeMap">
-                    <property name="toolTip">
-                     <string>Open the selected Emerge Map</string>
-                    </property>
-                    <property name="text">
-                     <string>...</string>
-                    </property>
-                    <property name="icon">
-                     <iconset resource="../resources/images.qrc">
-                      <normaloff>:/icons/map_go.ico</normaloff>:/icons/map_go.ico</iconset>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="5">
+                  <item row="0" column="7">
                    <widget class="QCheckBox" name="checkBox_MirrorConnections">
                     <property name="toolTip">
                      <string>If enabled, connections will automatically be updated on the connected map.</string>
@@ -2641,24 +2614,17 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="1" column="0">
-                   <widget class="QToolButton" name="button_OpenDiveMap">
-                    <property name="toolTip">
-                     <string>Open the selected Dive Map</string>
-                    </property>
-                    <property name="text">
-                     <string>...</string>
-                    </property>
-                    <property name="icon">
-                     <iconset resource="../resources/images.qrc">
-                      <normaloff>:/icons/map_go.ico</normaloff>:/icons/map_go.ico</iconset>
-                    </property>
-                   </widget>
-                  </item>
                   <item row="1" column="1">
                    <widget class="QLabel" name="label_DiveMap">
                     <property name="text">
                      <string>Dive Map</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QLabel" name="label_EmergeMap">
+                    <property name="text">
+                     <string>Emerge Map</string>
                     </property>
                    </widget>
                   </item>
@@ -2675,10 +2641,161 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="0" column="1">
-                   <widget class="QLabel" name="label_EmergeMap">
+                  <item row="0" column="6">
+                   <spacer name="horizontalSpacer_6">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item row="1" column="0">
+                   <widget class="QToolButton" name="button_OpenDiveMap">
+                    <property name="toolTip">
+                     <string>Open the selected Dive Map</string>
+                    </property>
                     <property name="text">
-                     <string>Emerge Map</string>
+                     <string>...</string>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../resources/images.qrc">
+                      <normaloff>:/icons/map_go.ico</normaloff>:/icons/map_go.ico</iconset>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="4" rowspan="2">
+                   <widget class="QGroupBox" name="groupBox_DiveMapOpacity">
+                    <property name="title">
+                     <string>Show Emerge/Dive Maps</string>
+                    </property>
+                    <property name="flat">
+                     <bool>true</bool>
+                    </property>
+                    <property name="checkable">
+                     <bool>true</bool>
+                    </property>
+                    <property name="checked">
+                     <bool>true</bool>
+                    </property>
+                    <layout class="QHBoxLayout" name="horizontalLayout_3">
+                     <property name="leftMargin">
+                      <number>0</number>
+                     </property>
+                     <property name="topMargin">
+                      <number>0</number>
+                     </property>
+                     <property name="rightMargin">
+                      <number>0</number>
+                     </property>
+                     <property name="bottomMargin">
+                      <number>0</number>
+                     </property>
+                     <item>
+                      <widget class="QStackedWidget" name="stackedWidget_DiveMapOpacity">
+                       <property name="currentIndex">
+                        <number>1</number>
+                       </property>
+                       <widget class="QWidget" name="page_OpacitySeparate">
+                        <layout class="QVBoxLayout" name="verticalLayout_19">
+                         <property name="leftMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="topMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="rightMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="bottomMargin">
+                          <number>0</number>
+                         </property>
+                         <item>
+                          <widget class="QSlider" name="slider_EmergeMapOpacity">
+                           <property name="minimum">
+                            <number>10</number>
+                           </property>
+                           <property name="maximum">
+                            <number>90</number>
+                           </property>
+                           <property name="value">
+                            <number>30</number>
+                           </property>
+                           <property name="orientation">
+                            <enum>Qt::Horizontal</enum>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QSlider" name="slider_DiveMapOpacity">
+                           <property name="minimum">
+                            <number>10</number>
+                           </property>
+                           <property name="maximum">
+                            <number>90</number>
+                           </property>
+                           <property name="value">
+                            <number>30</number>
+                           </property>
+                           <property name="orientation">
+                            <enum>Qt::Horizontal</enum>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </widget>
+                       <widget class="QWidget" name="page_OpacityCombined">
+                        <layout class="QVBoxLayout" name="verticalLayout_20">
+                         <property name="leftMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="topMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="rightMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="bottomMargin">
+                          <number>0</number>
+                         </property>
+                         <item>
+                          <widget class="QSlider" name="slider_DiveEmergeMapOpacity">
+                           <property name="minimum">
+                            <number>10</number>
+                           </property>
+                           <property name="maximum">
+                            <number>90</number>
+                           </property>
+                           <property name="value">
+                            <number>30</number>
+                           </property>
+                           <property name="orientation">
+                            <enum>Qt::Horizontal</enum>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </widget>
+                      </widget>
+                     </item>
+                    </layout>
+                   </widget>
+                  </item>
+                  <item row="0" column="0">
+                   <widget class="QToolButton" name="button_OpenEmergeMap">
+                    <property name="toolTip">
+                     <string>Open the selected Emerge Map</string>
+                    </property>
+                    <property name="text">
+                     <string>...</string>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../resources/images.qrc">
+                      <normaloff>:/icons/map_go.ico</normaloff>:/icons/map_go.ico</iconset>
                     </property>
                    </widget>
                   </item>
@@ -2763,8 +2880,8 @@
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>100</width>
-                        <height>30</height>
+                        <width>365</width>
+                        <height>651</height>
                        </rect>
                       </property>
                       <layout class="QVBoxLayout" name="layout_ConnectionsList">

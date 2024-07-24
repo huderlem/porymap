@@ -58,6 +58,10 @@ public:
         this->reopenOnLaunch = true;
         this->mapSortOrder = MapSortOrder::Group;
         this->prettyCursors = true;
+        this->showDiveEmergeMaps = false;
+        this->diveEmergeMapOpacity = 30;
+        this->diveMapOpacity = 15;
+        this->emergeMapOpacity = 15;
         this->collisionOpacity = 50;
         this->collisionZoom = 30;
         this->metatilesZoom = 30;
@@ -103,6 +107,10 @@ public:
     bool projectManuallyClosed;
     MapSortOrder mapSortOrder;
     bool prettyCursors;
+    bool showDiveEmergeMaps;
+    int diveEmergeMapOpacity;
+    int diveMapOpacity;
+    int emergeMapOpacity;
     int collisionOpacity;
     int collisionZoom;
     int metatilesZoom;

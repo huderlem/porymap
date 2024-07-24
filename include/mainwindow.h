@@ -269,6 +269,10 @@ private slots:
 
     void eventTabChanged(int index);
 
+    void on_groupBox_DiveMapOpacity_toggled(bool on);
+    void on_slider_DiveEmergeMapOpacity_valueChanged(int value);
+    void on_slider_DiveMapOpacity_valueChanged(int value);
+    void on_slider_EmergeMapOpacity_valueChanged(int value);
     void on_horizontalSlider_CollisionTransparency_valueChanged(int value);
     void on_toolButton_ExpandAll_clicked();
     void on_toolButton_CollapseAll_clicked();

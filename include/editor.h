@@ -75,10 +75,11 @@ public:
     void setEditingConnections();
     void setMapEditingButtonsEnabled(bool enabled);
     void setConnectionsVisibility(bool visible);
+    void updateDiveEmergeVisibility();
     void addNewConnection();
-    void addConnection(Map* map, MapConnection* connection);
-    void removeConnection(Map* map, MapConnection* connection);
-    void removeConnectionItem(ConnectionPixmapItem* connectionItem, bool removeMirror = true);
+    void addConnection(Map* map, MapConnection* connection, bool addMirror = true);
+    void removeConnection(Map* map, MapConnection* connection, bool removeMirror = true);
+    void removeConnectionItem(ConnectionPixmapItem* connectionItem);
     void removeSelectedConnection();
     void addNewWildMonGroup(QWidget *window);
     void deleteWildMonGroup();
@@ -111,6 +112,8 @@ public:
     QPointer<MapPixmapItem> map_item = nullptr;
     ConnectionPixmapItem* selected_connection_item = nullptr;
     QList<ConnectionPixmapItem*> connection_items;
+    QGraphicsPixmapItem *dive_map_overlay = nullptr;
+    QGraphicsPixmapItem *emerge_map_overlay = nullptr;
     QGraphicsPathItem *connection_mask = nullptr;
     QPointer<CollisionPixmapItem> collision_item = nullptr;
     QGraphicsItemGroup *events_group = nullptr;
@@ -175,6 +178,8 @@ private:
     void clearCurrentMetatilesSelection();
     void clearMapEvents();
     void clearMapConnections();
+    void clearDiveMap();
+    void clearEmergeMap();
     void clearConnectionMask();
     void clearMapBorder();
     void clearMapGrid();
@@ -186,7 +191,8 @@ private:
     void updateConnectionItemPos(ConnectionPixmapItem* connectionItem);
     void createConnectionItem(MapConnection* connection);
     void addConnectionToList(ConnectionPixmapItem* connection);
-    void updateDiveEmergeMap(QString mapName, QString direction);
+    void createDiveEmergeConnection(MapConnection* connection);
+    void setDiveEmergeMapName(QString mapName, QString direction);
     MapConnectionMirror getMirroredConnection(MapConnection*);
     void addMirroredConnection(MapConnection*);
     void removeMirroredConnection(MapConnection*);

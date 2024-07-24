@@ -9,10 +9,10 @@ class ConnectionPixmapItem : public QObject, public QGraphicsPixmapItem {
     Q_OBJECT
 public:
     ConnectionPixmapItem(QPixmap pixmap, MapConnection* connection, int x, int y)
-    : QGraphicsPixmapItem(pixmap),
-      connection(connection)
+    : QGraphicsPixmapItem(pixmap)
     {
         this->basePixmap = pixmap;
+        this->connection = connection;
         setFlag(ItemIsMovable);
         setFlag(ItemSendsGeometryChanges);
         this->initialX = x;
@@ -22,7 +22,7 @@ public:
         this->setY(y);
     }
     QPixmap basePixmap;
-    MapConnection* const connection;
+    MapConnection* connection;
     int initialX;
     int initialY;
     int initialOffset;
