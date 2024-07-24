@@ -26,6 +26,7 @@ RegionMapEditor::RegionMapEditor(QWidget *parent, Project *project) :
     QMainWindow(parent),
     ui(new Ui::RegionMapEditor)
 {
+    this->setAttribute(Qt::WA_DeleteOnClose);
     this->ui->setupUi(this);
     this->project = project;
     this->configFilepath = QString("%1/%2").arg(this->project->root).arg(projectConfig.getFilePath(ProjectFilePath::json_region_porymap_cfg));
@@ -201,17 +202,17 @@ void buildFireredDefaults(poryjson::Json &json) {
 
 poryjson::Json RegionMapEditor::buildDefaultJson() {
     poryjson::Json defaultJson;
-    switch (projectConfig.getBaseGameVersion()) {
+    switch (projectConfig.baseGameVersion) {
         case BaseGameVersion::pokeemerald:
             buildEmeraldDefaults(defaultJson);
             break;
-
         case BaseGameVersion::pokeruby:
             buildRubyDefaults(defaultJson);
             break;
-
         case BaseGameVersion::pokefirered:
             buildFireredDefaults(defaultJson);
+            break;
+        default:
             break;
     }
 
@@ -314,7 +315,7 @@ bool RegionMapEditor::buildConfigDialog() {
     QPushButton *delMapButton = new QPushButton("Delete Selected Region Map");
     form.addRow(delMapButton);
 
-    connect(delMapButton, &QPushButton::clicked, [this, regionMapList, &updateJsonFromList] {
+    connect(delMapButton, &QPushButton::clicked, [regionMapList, &updateJsonFromList] {
         QListWidgetItem *item = regionMapList->currentItem();
         if (item) {
             regionMapList->removeItemWidget(item);
@@ -343,8 +344,8 @@ bool RegionMapEditor::buildConfigDialog() {
 
 
     // for sake of convenience, option to just use defaults for each basegame version
-    QPushButton *config_useProjectDefault;
-    switch (projectConfig.getBaseGameVersion()) {
+    QPushButton *config_useProjectDefault = nullptr;
+    switch (projectConfig.baseGameVersion) {
         case BaseGameVersion::pokefirered:
             config_useProjectDefault = new QPushButton("\nUse pokefirered defaults\n");
             break;

@@ -44,28 +44,26 @@ void PreferenceEditor::initFields() {
 }
 
 void PreferenceEditor::updateFields() {
-    themeSelector->setCurrentText(porymapConfig.getTheme());
-    ui->lineEdit_TextEditorOpenFolder->setText(porymapConfig.getTextEditorOpenFolder());
-    ui->lineEdit_TextEditorGotoLine->setText(porymapConfig.getTextEditorGotoLine());
-    ui->checkBox_MonitorProjectFiles->setChecked(porymapConfig.getMonitorFiles());
-    ui->checkBox_OpenRecentProject->setChecked(porymapConfig.getReopenOnLaunch());
-    ui->checkBox_CheckForUpdates->setChecked(porymapConfig.getCheckForUpdates());
+    themeSelector->setCurrentText(porymapConfig.theme);
+    ui->lineEdit_TextEditorOpenFolder->setText(porymapConfig.textEditorOpenFolder);
+    ui->lineEdit_TextEditorGotoLine->setText(porymapConfig.textEditorGotoLine);
+    ui->checkBox_MonitorProjectFiles->setChecked(porymapConfig.monitorFiles);
+    ui->checkBox_OpenRecentProject->setChecked(porymapConfig.reopenOnLaunch);
+    ui->checkBox_CheckForUpdates->setChecked(porymapConfig.checkForUpdates);
 }
 
 void PreferenceEditor::saveFields() {
-    if (themeSelector->currentText() != porymapConfig.getTheme()) {
+    if (themeSelector->currentText() != porymapConfig.theme) {
         const auto theme = themeSelector->currentText();
-        porymapConfig.setTheme(theme);
+        porymapConfig.theme = theme;
         emit themeChanged(theme);
     }
 
-    porymapConfig.setSaveDisabled(true);
-    porymapConfig.setTextEditorOpenFolder(ui->lineEdit_TextEditorOpenFolder->text());
-    porymapConfig.setTextEditorGotoLine(ui->lineEdit_TextEditorGotoLine->text());
-    porymapConfig.setMonitorFiles(ui->checkBox_MonitorProjectFiles->isChecked());
-    porymapConfig.setReopenOnLaunch(ui->checkBox_OpenRecentProject->isChecked());
-    porymapConfig.setCheckForUpdates(ui->checkBox_CheckForUpdates->isChecked());
-    porymapConfig.setSaveDisabled(false);
+    porymapConfig.textEditorOpenFolder = ui->lineEdit_TextEditorOpenFolder->text();
+    porymapConfig.textEditorGotoLine = ui->lineEdit_TextEditorGotoLine->text();
+    porymapConfig.monitorFiles = ui->checkBox_MonitorProjectFiles->isChecked();
+    porymapConfig.reopenOnLaunch = ui->checkBox_OpenRecentProject->isChecked();
+    porymapConfig.checkForUpdates = ui->checkBox_CheckForUpdates->isChecked();
     porymapConfig.save();
 
     emit preferencesSaved();

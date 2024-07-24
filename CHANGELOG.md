@@ -7,10 +7,21 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 The **"Breaking Changes"** listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. It also includes changes to the scripting API that may change the behavior of existing porymap scripts. If porymap is used with a project or API script that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.
 
 ## [Unreleased]
+### Added
+- Add a `Close Project` option
+- An alert will be displayed when attempting to open a seemingly invalid project.
+
+### Changed
+- The base game version is now auto-detected if the project name contains only one of "emerald", "firered/leafgreen", or "ruby/sapphire".
+- It's now possible to cancel quitting if there are unsaved changes in sub-windows.
+
 ### Fixed
 - Fix `Add Region Map...` not updating the region map settings file.
 - Fix some crashes on invalid region map tilesets.
 - Improve error reporting for invalid region map editor settings.
+- Fix config files being written before the project is opened successfully.
+- Fix the map and other project info still displaying if a new project fails to open.
+- Fix unsaved changes being ignored when quitting (such as with Cmd+Q on macOS).
 
 ## [5.4.1] - 2024-03-21
 ### Fixed

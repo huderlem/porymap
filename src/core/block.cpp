@@ -47,9 +47,9 @@ uint16_t Block::rawValue() const {
 }
 
 void Block::setLayout() {
-    bitsMetatileId.setMask(projectConfig.getBlockMetatileIdMask());
-    bitsCollision.setMask(projectConfig.getBlockCollisionMask());
-    bitsElevation.setMask(projectConfig.getBlockElevationMask());
+    bitsMetatileId.setMask(projectConfig.blockMetatileIdMask);
+    bitsCollision.setMask(projectConfig.blockCollisionMask);
+    bitsElevation.setMask(projectConfig.blockElevationMask);
 }
 
 bool Block::operator ==(Block other) const {

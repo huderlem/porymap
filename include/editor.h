@@ -43,7 +43,7 @@ public:
 public:
     Ui::MainWindow* ui;
     QObject *parent = nullptr;
-    Project *project = nullptr;
+    QPointer<Project> project = nullptr;
     Map *map = nullptr;
     Settings *settings;
     void saveProject();
@@ -107,13 +107,13 @@ public:
     void updateWarpEventWarnings();
     bool eventLimitReached(Map *, Event::Type);
 
-    QGraphicsScene *scene = nullptr;
+    QPointer<QGraphicsScene> scene = nullptr;
     QGraphicsPixmapItem *current_view = nullptr;
-    MapPixmapItem *map_item = nullptr;
+    QPointer<MapPixmapItem> map_item = nullptr;
     ConnectionPixmapItem* selected_connection_item = nullptr;
     QList<ConnectionPixmapItem*> connection_items;
     QGraphicsPathItem *connection_mask = nullptr;
-    CollisionPixmapItem *collision_item = nullptr;
+    QPointer<CollisionPixmapItem> collision_item = nullptr;
     QGraphicsItemGroup *events_group = nullptr;
     QList<QGraphicsPixmapItem*> borderItems;
     QList<QGraphicsLineItem*> gridLines;
@@ -121,16 +121,15 @@ public:
     CursorTileRect *cursorMapTileRect = nullptr;
     MapRuler *map_ruler = nullptr;
 
-    QGraphicsScene *scene_metatiles = nullptr;
-    QGraphicsScene *scene_current_metatile_selection = nullptr;
-    QGraphicsScene *scene_selected_border_metatiles = nullptr;
-    QGraphicsScene *scene_collision_metatiles = nullptr;
-    QGraphicsScene *scene_elevation_metatiles = nullptr;
-    MetatileSelector *metatile_selector_item = nullptr;
+    QPointer<QGraphicsScene> scene_metatiles = nullptr;
+    QPointer<QGraphicsScene> scene_current_metatile_selection = nullptr;
+    QPointer<QGraphicsScene> scene_selected_border_metatiles = nullptr;
+    QPointer<QGraphicsScene> scene_collision_metatiles = nullptr;
+    QPointer<MetatileSelector> metatile_selector_item = nullptr;
 
-    BorderMetatilesPixmapItem *selected_border_metatiles_item = nullptr;
+    QPointer<BorderMetatilesPixmapItem> selected_border_metatiles_item = nullptr;
     CurrentSelectedMetatilesPixmapItem *current_metatile_selection_item = nullptr;
-    MovementPermissionsSelector *movement_permissions_selector_item = nullptr;
+    QPointer<MovementPermissionsSelector> movement_permissions_selector_item = nullptr;
 
     QList<DraggablePixmapItem *> *selected_events = nullptr;
 
@@ -168,6 +167,18 @@ private:
     const QImage collisionPlaceholder = QImage(":/images/collisions_unknown.png");
     QPixmap collisionSheetPixmap;
 
+    void clearMap();
+    void clearMetatileSelector();
+    void clearMovementPermissionSelector();
+    void clearMapMetatiles();
+    void clearMapMovementPermissions();
+    void clearBorderMetatiles();
+    void clearCurrentMetatilesSelection();
+    void clearMapEvents();
+    //void clearMapConnections();
+    void clearMapBorder();
+    void clearMapGrid();
+    void clearWildMonTables();
     void setConnectionItemsVisible(bool);
     void setBorderItemsVisible(bool, qreal = 1);
     void setConnectionEditControlValues(MapConnection*);

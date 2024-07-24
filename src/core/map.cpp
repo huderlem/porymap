@@ -499,9 +499,9 @@ QStringList Map::getScriptLabels(Event::Group group) {
 }
 
 QString Map::getScriptsFilePath() const {
-    const bool usePoryscript = projectConfig.getUsePoryScript();
+    const bool usePoryscript = projectConfig.usePoryScript;
     auto path = QDir::cleanPath(QString("%1/%2/%3/scripts")
-                                        .arg(projectConfig.getProjectDir())
+                                        .arg(projectConfig.projectDir)
                                         .arg(projectConfig.getFilePath(ProjectFilePath::data_map_folders))
                                         .arg(this->name));
     auto extension = Project::getScriptFileExtension(usePoryscript);

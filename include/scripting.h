@@ -30,6 +30,7 @@ class Scripting
 {
 public:
     Scripting(MainWindow *mainWindow);
+    static void stop();
     static void init(MainWindow *mainWindow);
     static void populateGlobalObject(MainWindow *mainWindow);
     static QJSEngine *getEngine();

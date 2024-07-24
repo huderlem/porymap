@@ -167,6 +167,7 @@ public slots:
 private slots:
     void on_action_Open_Project_triggered();
     void on_action_Reload_Project_triggered();
+    void on_action_Close_Project_triggered();
     void on_mapList_activated(const QModelIndex &index);
     void on_action_Save_Project_triggered();
     void openWarpMap(QString map_name, int event_id, Event::Group event_group);
@@ -297,7 +298,7 @@ private slots:
 
 public:
     Ui::MainWindow *ui;
-    Editor *editor = nullptr;
+    QPointer<Editor> editor = nullptr;
 
 private:
     QLabel *label_MapRulerStatus = nullptr;
@@ -335,7 +336,6 @@ private:
 
     bool isProgrammaticEventTabChange;
     bool projectHasUnsavedChanges;
-    bool projectOpenFailure = false;
     bool newMapDefaultsSet = false;
 
     MapSortOrder mapSortOrder;
@@ -345,16 +345,18 @@ private:
     bool setMap(QString, bool scrollTreeView = false);
     void redrawMapScene();
     void refreshMapScene();
-    bool loadDataStructures();
-    bool loadProjectCombos();
-    bool populateMapList();
+    bool checkProjectSanity();
+    bool loadProjectData();
+    bool setProjectUI();
+    void clearProjectUI();
     void sortMapList();
     void openSubWindow(QWidget * window);
     QString getExistingDirectory(QString);
-    bool openProject(const QString &dir, bool initial = false);
+    bool openProject(QString dir, bool initial = false);
+    bool closeProject();
     void showProjectOpenFailure();
+    void saveGlobalConfigs();
     bool setInitialMap();
-    void setRecentMap(QString map_name);
     QStandardItem* createMapItem(QString mapName, int groupNum, int inGroupNum);
     void refreshRecentProjectsMenu();
 
@@ -376,14 +378,13 @@ private:
     void initMapSortOrder();
     void initShortcuts();
     void initExtraShortcuts();
-    void setProjectSpecificUI();
     void loadUserSettings();
     void applyMapListFilter(QString filterText);
     void restoreWindowState();
     void setTheme(QString);
     void updateTilesetEditor();
     Event::Group getEventGroupFromTabWidget(QWidget *tab);
-    void closeSupplementaryWindows();
+    bool closeSupplementaryWindows();
     void setWindowDisabled(bool);
 
     void initTilesetEditor();
