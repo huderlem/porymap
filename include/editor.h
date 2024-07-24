@@ -174,7 +174,8 @@ private:
     void clearBorderMetatiles();
     void clearCurrentMetatilesSelection();
     void clearMapEvents();
-    //void clearMapConnections();
+    void clearMapConnections();
+    void clearConnectionMask();
     void clearMapBorder();
     void clearMapGrid();
     void clearWildMonTables();

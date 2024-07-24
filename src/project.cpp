@@ -1819,18 +1819,22 @@ bool Project::readMapGroups() {
 }
 
 Map* Project::addNewMapToGroup(QString mapName, int groupNum, Map *newMap, bool existingLayout, bool importedMap) {
-    mapNames.append(mapName);
-    mapGroups.insert(mapName, groupNum);
-    groupedMapNames[groupNum].append(mapName);
+    int mapNamePos = 0;
+    for (int i = 0; i <= groupNum; i++)
+        mapNamePos += this->groupedMapNames.value(i).length();
+
+    this->mapNames.insert(mapNamePos, mapName);
+    this->mapGroups.insert(mapName, groupNum);
+    this->groupedMapNames[groupNum].append(mapName);
 
     newMap->isPersistedToFile = false;
     newMap->setName(mapName);
 
-    mapConstantsToMapNames.insert(newMap->constantName, newMap->name);
-    mapNamesToMapConstants.insert(newMap->name, newMap->constantName);
+    this->mapConstantsToMapNames.insert(newMap->constantName, newMap->name);
+    this->mapNamesToMapConstants.insert(newMap->name, newMap->constantName);
     if (!existingLayout) {
-        mapLayouts.insert(newMap->layoutId, newMap->layout);
-        mapLayoutsTable.append(newMap->layoutId);
+        this->mapLayouts.insert(newMap->layoutId, newMap->layout);
+        this->mapLayoutsTable.append(newMap->layoutId);
         if (!importedMap) {
             setNewMapBlockdata(newMap);
         }

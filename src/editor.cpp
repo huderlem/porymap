@@ -1546,16 +1546,13 @@ void Editor::clearMap() {
     clearBorderMetatiles();
     clearCurrentMetatilesSelection();
     clearMapEvents();
-    //clearMapConnections();
+    clearMapConnections();
     clearMapBorder();
     clearMapGrid();
     clearWildMonTables();
+    clearConnectionMask();
 
-    // TODO: Handle connections after redesign PR.
-    selected_connection_item = nullptr;
-    connection_items.clear();
-    connection_mask = nullptr;
-
+    // Clear pointers to objects deleted elsewhere
     current_view = nullptr;
     map = nullptr;
 
@@ -1804,7 +1801,7 @@ DraggablePixmapItem *Editor::addMapEvent(Event *event) {
     return object;
 }
 
-void Editor::displayMapConnections() {
+void Editor::clearMapConnections() {
     for (ConnectionPixmapItem* item : connection_items) {
         if (item->scene()) {
             item->scene()->removeItem(item);
@@ -1813,13 +1810,13 @@ void Editor::displayMapConnections() {
     }
     selected_connection_item = nullptr;
     connection_items.clear();
+}
+
+void Editor::displayMapConnections() {
+    clearMapConnections();
 
     const QSignalBlocker blocker1(ui->comboBox_DiveMap);
     const QSignalBlocker blocker2(ui->comboBox_EmergeMap);
-    ui->comboBox_DiveMap->clear();
-    ui->comboBox_EmergeMap->clear();
-    ui->comboBox_DiveMap->addItems(project->mapNames);
-    ui->comboBox_EmergeMap->addItems(project->mapNames);
     ui->comboBox_DiveMap->setCurrentText("");
     ui->comboBox_EmergeMap->setCurrentText("");
 
@@ -1864,8 +1861,7 @@ void Editor::createConnectionItem(MapConnection* connection) {
     addConnectionToList(item);
 }
 
-// Hides connected map tiles that cannot be seen from the current map (beyond BORDER_DISTANCE).
-void Editor::maskNonVisibleConnectionTiles() {
+void Editor::clearConnectionMask() {
     if (connection_mask) {
         if (connection_mask->scene()) {
             connection_mask->scene()->removeItem(connection_mask);
@@ -1873,6 +1869,11 @@ void Editor::maskNonVisibleConnectionTiles() {
         delete connection_mask;
         connection_mask = nullptr;
     }
+}
+
+// Hides connected map tiles that cannot be seen from the current map (beyond BORDER_DISTANCE).
+void Editor::maskNonVisibleConnectionTiles() {
+    clearConnectionMask();
 
     QPainterPath mask;
     mask.addRect(scene->itemsBoundingRect().toRect());

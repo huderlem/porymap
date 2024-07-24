@@ -1031,6 +1031,8 @@ bool MainWindow::setProjectUI() {
     const QSignalBlocker blocker5(ui->comboBox_Weather);
     const QSignalBlocker blocker6(ui->comboBox_BattleScene);
     const QSignalBlocker blocker7(ui->comboBox_Type);
+    const QSignalBlocker blocker8(ui->comboBox_DiveMap);
+    const QSignalBlocker blocker9(ui->comboBox_EmergeMap);
 
     // Set up project comboboxes
     ui->comboBox_Song->clear();
@@ -1047,6 +1049,10 @@ bool MainWindow::setProjectUI() {
     ui->comboBox_BattleScene->addItems(project->mapBattleScenes);
     ui->comboBox_Type->clear();
     ui->comboBox_Type->addItems(project->mapTypes);
+    ui->comboBox_DiveMap->clear();
+    ui->comboBox_DiveMap->addItems(project->mapNames);
+    ui->comboBox_EmergeMap->clear();
+    ui->comboBox_EmergeMap->addItems(project->mapNames);
 
     sortMapList();
 
@@ -1088,6 +1094,8 @@ void MainWindow::clearProjectUI() {
     const QSignalBlocker blocker5(ui->comboBox_Weather);
     const QSignalBlocker blocker6(ui->comboBox_BattleScene);
     const QSignalBlocker blocker7(ui->comboBox_Type);
+    const QSignalBlocker blocker8(ui->comboBox_DiveMap);
+    const QSignalBlocker blocker9(ui->comboBox_EmergeMap);
 
     ui->comboBox_Song->clear();
     ui->comboBox_Location->clear();
@@ -1096,6 +1104,8 @@ void MainWindow::clearProjectUI() {
     ui->comboBox_Weather->clear();
     ui->comboBox_BattleScene->clear();
     ui->comboBox_Type->clear();
+    ui->comboBox_DiveMap->clear();
+    ui->comboBox_EmergeMap->clear();
 
     // Clear map list
     mapListModel->clear();
@@ -1300,6 +1310,16 @@ void MainWindow::onNewMapCreated() {
 
     sortMapList();
     setMap(newMapName, true);
+
+    // Refresh any combo box that displays map names and persists between maps
+    // (others combo boxes like for warp destinations are repopulated when the map changes).
+    int index = this->editor->project->mapNames.indexOf(newMapName);
+    if (index >= 0) {
+        const QSignalBlocker blocker1(ui->comboBox_DiveMap);
+        const QSignalBlocker blocker2(ui->comboBox_EmergeMap);
+        ui->comboBox_DiveMap->insertItem(index, newMapName);
+        ui->comboBox_EmergeMap->insertItem(index, newMapName);
+    }
 
     if (newMap->needsHealLocation) {
         addNewEvent(Event::Type::HealLocation);
