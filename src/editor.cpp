@@ -81,6 +81,7 @@ void Editor::saveUiFields() {
 void Editor::closeProject() {
     if (!this->project)
         return;
+    this->project->saveConfig();
     Scripting::cb_ProjectClosed(this->project->root);
     Scripting::stop();
     clearMap();

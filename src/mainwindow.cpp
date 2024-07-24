@@ -571,8 +571,7 @@ bool MainWindow::openProject(QString dir, bool initial) {
     }
 
     // Only create the config files once the project has opened successfully in case the user selected an invalid directory
-    userConfig.save();
-    projectConfig.save();
+    this->editor->project->saveConfig();
     
     showWindowTitle();
     this->statusBar()->showMessage(QString("Opened %1").arg(projectString));
