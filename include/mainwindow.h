@@ -269,6 +269,7 @@ private slots:
 
     void eventTabChanged(int index);
 
+    void on_actionDive_Emerge_Map_triggered();
     void on_groupBox_DiveMapOpacity_toggled(bool on);
     void on_slider_DiveEmergeMapOpacity_valueChanged(int value);
     void on_slider_DiveMapOpacity_valueChanged(int value);
@@ -409,6 +410,7 @@ private:
     int insertTilesetLabel(QStringList * list, QString label);
 
     void checkForUpdates(bool requestedByUser);
+    void setDiveEmergeMapVisible(bool visible);
 };
 
 enum MapListUserRoles {

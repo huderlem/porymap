@@ -486,7 +486,6 @@ void MainWindow::loadUserSettings() {
     this->editor->settings->cursorTileRectEnabled = porymapConfig.showCursorTile;
     ui->checkBox_ToggleBorder->setChecked(porymapConfig.showBorder);
     ui->checkBox_ToggleGrid->setChecked(porymapConfig.showGrid);
-    ui->groupBox_DiveMapOpacity->setChecked(porymapConfig.showDiveEmergeMaps);
     mapSortOrder = porymapConfig.mapSortOrder;
 
     this->editor->collisionOpacity = static_cast<qreal>(porymapConfig.collisionOpacity) / 100;
@@ -498,6 +497,7 @@ void MainWindow::loadUserSettings() {
     ui->horizontalSlider_CollisionZoom->setValue(porymapConfig.collisionZoom);
 
     setTheme(porymapConfig.theme);
+    setDiveEmergeMapVisible(porymapConfig.showDiveEmergeMaps);
 }
 
 void MainWindow::restoreWindowState() {
@@ -910,12 +910,8 @@ void MainWindow::displayMapProperties() {
     ui->frame_3->setEnabled(true);
     Map *map = editor->map;
 
-    ui->comboBox_PrimaryTileset->blockSignals(true);
-    ui->comboBox_SecondaryTileset->blockSignals(true);
     ui->comboBox_PrimaryTileset->setCurrentText(map->layout->tileset_primary_label);
     ui->comboBox_SecondaryTileset->setCurrentText(map->layout->tileset_secondary_label);
-    ui->comboBox_PrimaryTileset->blockSignals(false);
-    ui->comboBox_SecondaryTileset->blockSignals(false);
 
     ui->comboBox_Song->setCurrentText(map->song);
     ui->comboBox_Location->setCurrentText(map->location);
@@ -1058,8 +1054,10 @@ bool MainWindow::setProjectUI() {
     ui->comboBox_Type->addItems(project->mapTypes);
     ui->comboBox_DiveMap->clear();
     ui->comboBox_DiveMap->addItems(project->mapNames);
+    ui->comboBox_DiveMap->setClearButtonEnabled(true);
     ui->comboBox_EmergeMap->clear();
     ui->comboBox_EmergeMap->addItems(project->mapNames);
+    ui->comboBox_EmergeMap->setClearButtonEnabled(true);
 
     sortMapList();
 
@@ -2270,15 +2268,29 @@ void MainWindow::eventTabChanged(int index) {
     isProgrammaticEventTabChange = false;
 }
 
+void MainWindow::on_actionDive_Emerge_Map_triggered() {
+    setDiveEmergeMapVisible(ui->actionDive_Emerge_Map->isChecked());
+}
+
 void MainWindow::on_groupBox_DiveMapOpacity_toggled(bool on) {
+    setDiveEmergeMapVisible(on);
+}
+
+void MainWindow::setDiveEmergeMapVisible(bool visible) {
     // Qt doesn't change the style of disabled sliders, so we do it ourselves
-    QString stylesheet = on ? "" : "QSlider::groove:horizontal {border: 1px solid #999999; border-radius: 3px; height: 2px; background: #B1B1B1;}"
-                                   "QSlider::handle:horizontal {border: 1px solid #444444; border-radius: 3px; width: 10px; height: 9px; margin: -5px -1px; background: #5C5C5C; }";
+    QString stylesheet = visible ? "" : "QSlider::groove:horizontal {border: 1px solid #999999; border-radius: 3px; height: 2px; background: #B1B1B1;}"
+                                        "QSlider::handle:horizontal {border: 1px solid #444444; border-radius: 3px; width: 10px; height: 9px; margin: -5px -1px; background: #5C5C5C; }";
     ui->slider_DiveEmergeMapOpacity->setStyleSheet(stylesheet);
     ui->slider_DiveMapOpacity->setStyleSheet(stylesheet);
     ui->slider_EmergeMapOpacity->setStyleSheet(stylesheet);
 
-    porymapConfig.showDiveEmergeMaps = on;
+    // Sync UI toggle elements
+    const QSignalBlocker blocker1(ui->groupBox_DiveMapOpacity);
+    const QSignalBlocker blocker2(ui->actionDive_Emerge_Map);
+    ui->groupBox_DiveMapOpacity->setChecked(visible);
+    ui->actionDive_Emerge_Map->setChecked(visible);
+
+    porymapConfig.showDiveEmergeMaps = visible;
     this->editor->updateDiveEmergeVisibility();
 }
 

@@ -951,7 +951,6 @@ void Editor::createDiveEmergeConnection(MapConnection* connection) {
     } else {
         item = new QGraphicsPixmapItem(connectedMap->render());
     }
-    // TODO: Set pos. In-game, how are diving coordinates converted if the maps are different sizes?
     scene->addItem(item);
 
     if (connection->direction == "dive") {
@@ -995,9 +994,6 @@ void Editor::setDiveEmergeMapName(QString mapName, QString direction) {
     }
 
     if (connection) {
-        if (connection->map_name == mapName)
-            return;
-
         // Update existing connection
         if (mapName.isEmpty()) {
             removeConnection(map, connection);
