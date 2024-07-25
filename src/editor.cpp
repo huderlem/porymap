@@ -844,15 +844,20 @@ void Editor::removeConnectionItem(ConnectionPixmapItem* connectionItem) {
     if (!connectionItem)
         return;
 
-    connection_items.removeOne(connectionItem);
+    int index = connection_items.indexOf(connectionItem);
+    if (index >= 0) {
+        connection_items.removeAt(index);
+        if (connectionItem == selected_connection_item) {
+            // This was the selected connection, select the next one up in the list.
+            selected_connection_item = nullptr;
+            if (index != 0) index--;
+            if (connection_items.length() > index)
+                setSelectedConnection(connection_items.at(index));
+        }
+    }
+
     if (connectionItem->scene())
         connectionItem->scene()->removeItem(connectionItem);
-
-    if (connectionItem == selected_connection_item) {
-        selected_connection_item = nullptr;
-        if (!connection_items.isEmpty())
-            setSelectedConnection(connection_items.first());
-    }
 
     removeConnection(map, connectionItem->connection);
 
