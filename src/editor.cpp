@@ -728,26 +728,24 @@ void Editor::updateEncounterFields(EncounterFields newFields) {
 void Editor::createConnectionItem(MapConnection* connection) {
     if (!connection)
         return;
+
+    // Create connection image
     QPixmap pixmap = getConnectionPixmap(*connection);
     QPoint pos = calculateConnectionPosition(*connection, pixmap);
-    ConnectionPixmapItem *item = new ConnectionPixmapItem(pixmap, connection, pos.x(), pos.y());
-    item->render();
-    scene->addItem(item);
+    ConnectionPixmapItem *connectionItem = new ConnectionPixmapItem(pixmap, connection, pos.x(), pos.y());
+    connectionItem->render();
+    scene->addItem(connectionItem);
 
-    connect(item, &ConnectionPixmapItem::selectionChanged, [this, item](bool selected) {
-        if (selected) setSelectedConnection(item);
-    });
-    connect(item, &ConnectionPixmapItem::connectionItemDoubleClicked, [this, item] {
-        emit this->connectionItemDoubleClicked(item->connection->map_name, map->name);
-    });
-
-    connection_items.append(item);
-    addConnectionToList(item);
-}
-
-void Editor::addConnectionToList(ConnectionPixmapItem * connectionItem) {
+    // Create item for the list panel
     ConnectionsListItem *listItem = new ConnectionsListItem(ui->scrollAreaContents_ConnectionsList, connectionItem->connection, project->mapNames);
     ui->layout_ConnectionsList->insertWidget(ui->layout_ConnectionsList->count() - 1, listItem); // Insert above the vertical spacer
+
+    connect(connectionItem, &ConnectionPixmapItem::selectionChanged, [this, connectionItem](bool selected) {
+        if (selected) setSelectedConnection(connectionItem);
+    });
+    connect(connectionItem, &ConnectionPixmapItem::connectionItemDoubleClicked, [this, connectionItem] {
+        emit this->connectionItemDoubleClicked(connectionItem->connection->map_name, map->name);
+    });
 
     // Sync the selection highlight between the list UI and the graphical map connection
     connect(connectionItem, &ConnectionPixmapItem::selectionChanged, listItem, &ConnectionsListItem::setSelected);
@@ -789,6 +787,8 @@ void Editor::addConnectionToList(ConnectionPixmapItem * connectionItem) {
     connect(listItem, &ConnectionsListItem::doubleClicked, [this](QString connectedMapName) {
         emit connectionItemDoubleClicked(connectedMapName, map->name);
     });
+
+    connection_items.append(connectionItem);
 }
 
 
@@ -924,13 +924,17 @@ MapConnectionMirror Editor::getMirroredConnection(MapConnection* source) {
 }
 
 void Editor::addMirroredConnection(MapConnection* source) {
-    MapConnectionMirror mirror = getMirroredConnection(source);
-    if (!mirror.map)
+    if (!map || !source || !ui->checkBox_MirrorConnections->isChecked())
         return;
 
-    mirror.connection = new MapConnection; // TODO: Are we leaking memory here if mirror.connection != nullptr
-    *mirror.connection = MapConnection::mirror(*source, map->name);
-    addConnection(mirror.map, mirror.connection, false);
+    // Note: It's possible (and ok) for connectedMap == this->map
+    Map* connectedMap = project->getMap(source->map_name);
+    if (!connectedMap)
+        return;
+
+    MapConnection *mirror = new MapConnection;
+    *mirror = MapConnection::mirror(*source, map->name);
+    addConnection(connectedMap, mirror, false);
 }
 
 void Editor::removeMirroredConnection(MapConnection* source) {
@@ -938,19 +942,22 @@ void Editor::removeMirroredConnection(MapConnection* source) {
     removeConnection(mirror.map, mirror.connection, false);
 }
 
+// TODO: Self-connecting a Dive/Emerge map connection will not actually replace any existing Dive/Emerge connection, if there is one.
 void Editor::createDiveEmergeConnection(MapConnection* connection) {
     if (!connection)
         return;
     
-    QGraphicsPixmapItem *item;
+    // Create image of Dive/Emerge map
+    QPixmap pixmap;
     Map *connectedMap = project->getMap(connection->map_name);
     if (!connectedMap || connectedMap == this->map) {
         // There's no point in rendering a map on top of itself.
         // We create an empty image anyway to allow for changes later.
-        item = new QGraphicsPixmapItem(QPixmap());
+        pixmap = QPixmap();
     } else {
-        item = new QGraphicsPixmapItem(connectedMap->render());
+        pixmap = connectedMap->render();
     }
+    QGraphicsPixmapItem *item = new QGraphicsPixmapItem(pixmap);
     scene->addItem(item);
 
     if (connection->direction == "dive") {
@@ -1986,7 +1993,7 @@ void Editor::displayMapBorder() {
         item->setX(x * 16);
         item->setY(y * 16);
         item->setZValue(-3);
-        scene->addItem(item); // TODO: If the scene is taking ownership here is a double-free possible?
+        scene->addItem(item);
         borderItems.append(item);
     }
 }

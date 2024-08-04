@@ -13,7 +13,7 @@ MapConnection MapConnection::mirror(const MapConnection &source, const QString &
     };
 
     MapConnection mirror;
-    mirror.direction = oppositeDirections.value(source.direction/*, source.direction*/);
+    mirror.direction = oppositeDirections.value(source.direction, source.direction);
     mirror.map_name = mapName;
     mirror.offset = -source.offset;
 

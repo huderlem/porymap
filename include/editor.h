@@ -190,7 +190,6 @@ private:
     void updateConnectionItem(ConnectionPixmapItem* connectionItem);
     void updateConnectionItemPos(ConnectionPixmapItem* connectionItem);
     void createConnectionItem(MapConnection* connection);
-    void addConnectionToList(ConnectionPixmapItem* connection);
     void createDiveEmergeConnection(MapConnection* connection);
     void setDiveEmergeMapName(QString mapName, QString direction);
     MapConnectionMirror getMirroredConnection(MapConnection*);
