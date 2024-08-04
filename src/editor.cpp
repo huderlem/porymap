@@ -905,7 +905,7 @@ void Editor::removeConnection(MapConnection* connection, bool removeMirror) {
 }
 
 MapConnection* Editor::getMirroredConnection(MapConnection* source) {
-    if (!source || !ui->checkBox_MirrorConnections->isChecked())
+    if (!source || !porymapConfig.mirrorConnectingMaps)
         return nullptr;
 
     // Note: It's possible (and ok) for connectedMap == this->map
@@ -925,7 +925,7 @@ MapConnection* Editor::getMirroredConnection(MapConnection* source) {
 }
 
 void Editor::addMirroredConnection(MapConnection* source) {
-    if (!source || !ui->checkBox_MirrorConnections->isChecked())
+    if (!source || !porymapConfig.mirrorConnectingMaps)
         return;
     addConnection(source->createMirror(), false);
 }

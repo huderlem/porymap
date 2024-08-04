@@ -486,6 +486,7 @@ void MainWindow::loadUserSettings() {
     this->editor->settings->cursorTileRectEnabled = porymapConfig.showCursorTile;
     ui->checkBox_ToggleBorder->setChecked(porymapConfig.showBorder);
     ui->checkBox_ToggleGrid->setChecked(porymapConfig.showGrid);
+    ui->checkBox_MirrorConnections->setChecked(porymapConfig.mirrorConnectingMaps);
     mapSortOrder = porymapConfig.mapSortOrder;
 
     this->editor->collisionOpacity = static_cast<qreal>(porymapConfig.collisionOpacity) / 100;
@@ -2805,6 +2806,11 @@ void MainWindow::on_checkBox_smartPaths_stateChanged(int selected)
 void MainWindow::on_checkBox_ToggleBorder_stateChanged(int selected)
 {
     editor->toggleBorderVisibility(selected != 0);
+}
+
+void MainWindow::on_checkBox_MirrorConnections_stateChanged(int selected)
+{
+    porymapConfig.mirrorConnectingMaps = (selected == Qt::Checked);
 }
 
 void MainWindow::on_actionTileset_Editor_triggered()
